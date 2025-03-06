@@ -1,0 +1,515 @@
+/************************************************************
+*  STORESTYLE.CSS - Unified & Consolidated with Background Colors
+*  
+*  Contains:
+*    1) General & Reset
+*    2) Header & Menus
+*    3) Carousel
+*    4) Card Items (Products)
+*    5) Footer (Price & Votes)
+*    6) Modal (Zoom View)
+************************************************************/
+
+/* ----------------------------------------------------------
+1. General & Reset
+---------------------------------------------------------- */
+:root {
+--spacing-small: 4px;
+--spacing-medium: 8px;
+--spacing-large: 16px;
+
+/* Example color variables (optional) */
+--color-header-bg: #333;       /* Dark header */
+--color-body-bg: #f9f9f9;      /* Light page background */
+--color-carousel-bg: #ececec;  /* Slightly lighter gray for carousel */
+--color-card-bg: #fff;         /* White for each product card */
+--color-modal-overlay: rgba(0,0,0,0.8);
+}
+
+@font-face {
+font-family: 'Josefin_Medium';
+src: url('/fonts/JosefinSans-Medium.ttf') format('truetype');
+}
+
+@font-face {
+font-family: 'Josefin_Bold';
+src: url('/fonts/JosefinSans-Bold.ttf') format('truetype');
+}
+
+@font-face {
+font-family: 'Josefin_Light';
+src: url('/fonts/JosefinSans-Light.ttf') format('truetype');
+}
+
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+}
+
+/* Page + Body background color */
+body,
+html {
+font-family: 'Arial', sans-serif;
+background-color: var(--color-body-bg);
+color: #333;
+}
+
+/* ----------------------------------------------------------
+2. Header & Top Menu
+---------------------------------------------------------- */
+.header {
+padding: var(--spacing-large);
+background-color: var(--color-header-bg); /* Dark Gray */
+color: #fff;
+text-align: center;
+position: relative;
+}
+
+.header-title {
+font-size: 28px;
+font-family: 'Josefin_Bold', sans-serif;
+margin-bottom: var(--spacing-medium);
+}
+
+.header-subtitle {
+font-size: 16px;
+font-family: 'Josefin_Light', sans-serif;
+color: #ccc;
+}
+
+/* Top Menu (desktop) */
+.top-menu {
+display: flex;
+justify-content: center;
+background-color: var(--color-header-bg);
+padding: 10px 0;
+}
+
+.top-menu ul {
+list-style: none;
+display: flex;
+gap: 20px;
+}
+
+.top-menu li a {
+color: #fff;
+text-decoration: none;
+font-family: 'Josefin_Medium';
+font-size: 16px;
+transition: color 0.3s;
+}
+
+.top-menu li a:hover {
+color: #ddd;
+}
+
+/* FAB Menu (mobile) */
+.fab-menu {
+display: none; /* Hidden on desktop by default */
+position: fixed;
+bottom: 20px;
+right: 20px;
+background-color: var(--color-header-bg);
+color: #fff;
+border: none;
+width: 56px;
+height: 56px;
+border-radius: 50%;
+box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+cursor: pointer;
+justify-content: center;
+align-items: center;
+z-index: 1000;
+transition: transform 0.2s ease-in-out;
+}
+
+.fab-menu:active {
+transform: scale(0.95);
+}
+
+.material-icons {
+font-size: 24px;
+}
+
+/* Mobile Menu Overlay */
+.mobile-menu-overlay {
+display: none;
+position: fixed;
+top: 0; 
+left: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0,0,0,0.8);
+color: #fff;
+z-index: 1000;
+justify-content: center;
+align-items: center;
+flex-direction: column;
+}
+
+.mobile-menu-overlay ul {
+list-style: none;
+text-align: center;
+}
+
+.mobile-menu-overlay li {
+margin: 15px 0;
+}
+
+.mobile-menu-overlay a {
+color: #fff;
+text-decoration: none;
+font-size: 20px;
+font-family: 'Josefin_Bold';
+}
+
+/* Responsive: show FAB & overlay, hide top-menu on smaller screens */
+@media (max-width: 768px) {
+.top-menu {
+display: none;
+}
+.fab-menu {
+display: flex;
+}
+.mobile-menu-overlay.active {
+display: flex;
+}
+}
+
+/* ----------------------------------------------------------
+3. Carousel Grid
+---------------------------------------------------------- */
+.carousel {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+gap: var(--spacing-medium);
+padding: var(--spacing-medium);
+
+/* Background color to confirm it's styled */
+background-color: var(--color-carousel-bg);
+
+overflow: hidden;
+}
+
+/* ----------------------------------------------------------
+4. Card / Carousel Items
+---------------------------------------------------------- */
+.carousel-item {
+background: var(--color-card-bg); /* White by default */
+border-radius: 12px;
+box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+display: flex;
+flex-direction: column; /* stack content vertically */
+text-align: center;
+padding: var(--spacing-medium);
+/* No forced min-height: let content define height. */
+}
+
+/* Image Container (maintains aspect ratio with padding-top) */
+.img-container {
+position: relative;
+width: 100%;
+padding-top: 75%; /* ~4:3 ratio. Adjust if needed. */
+overflow: hidden;
+margin-bottom: var(--spacing-medium);
+}
+
+.carousel-image {
+position: absolute;
+top: 0; 
+left: 0;
+width: 100%;
+height: 100%;
+object-fit: cover;
+border-radius: 8px;
+}
+
+/* Dots for multiple images */
+.image-indicator {
+display: flex;
+justify-content: center;
+margin-bottom: var(--spacing-medium);
+width: 100%;
+}
+
+.indicator-dot {
+width: 8px;
+height: 8px;
+margin: 0 var(--spacing-small);
+border-radius: 50%;
+background-color: #ccc;
+transition: background-color 0.3s ease;
+}
+.indicator-dot.active {
+background-color: #333;
+}
+
+/* Title & Description */
+.title {
+font-family: 'Josefin_Bold', sans-serif;
+font-size: 18px;
+color: #333;
+margin-bottom: var(--spacing-small);
+line-height: 1.4;
+}
+
+.description {
+font-family: 'Josefin_Light', sans-serif;
+font-size: 14px;
+color: #666;
+line-height: 1.5;
+margin-bottom: var(--spacing-medium);
+
+/* If you want a consistent card height, limit lines here: */
+overflow: hidden;
+text-overflow: ellipsis;
+display: -webkit-box;
+-webkit-line-clamp: 3; 
+-webkit-box-orient: vertical;
+}
+
+/* ----------------------------------------------------------
+5. Footer (Price & Votes)
+---------------------------------------------------------- */
+/* 
+Subtle "footer bar" look:
+Slight gradient, more padding, minimal separation from the card content
+*/
+.footer-elements {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-top: auto;
+padding: 12px; /* a bit more than var(--spacing-medium) */
+border-top: 1px solid #eee;
+background: linear-gradient(
+to right,
+rgba(255,255,255,0.7),
+rgba(255,255,255,0.9)
+);
+}
+
+/* Price as a "badge" with some hover effect */
+.price {
+font-family: 'Josefin_Medium', sans-serif;
+font-size: 16px;
+color: #333;
+background-color: rgba(255,255,255,0.9);
+padding: 6px 12px;
+border-radius: 20px; /* more pill-shaped */
+box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+transition: transform 0.2s ease;
+}
+.price:hover {
+transform: scale(1.05);
+}
+
+/* Center the heart + votes inside .vote-container */
+.vote-container {
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 8px;
+padding-right: 8px;
+}
+
+/* Heart button with a small circle hover highlight */
+.heart-button {
+width: 24px;
+height: 24px;
+background-color: transparent;
+border: none;
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+border-radius: 50%; /* circle around the heart */
+transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.heart-button:hover {
+transform: scale(1.1);
+box-shadow: 0 0 4px rgba(0,0,0,0.15);
+}
+
+/* Heart shape */
+.heart-button::before {
+content: "";
+width: 100%;
+height: 100%;
+background-color: #ccc;
+clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+/* Toggled "liked" state => deeper red */
+.heart-button.liked::before {
+background-color: #e63946;
+transform: scale(1.2);
+}
+
+/* Vote count with a slight highlight / label feel */
+.likes-count {
+font-family: 'Josefin_Medium', sans-serif;
+font-size: 14px;
+color: #555;
+text-align: center;
+white-space: nowrap;
+padding: 2px 4px;
+border-radius: 4px;
+}
+
+/* If you want a pop effect on vote update */
+.likes-count.updated {
+animation: votePop 0.4s ease;
+}
+
+@keyframes votePop {
+0%   { transform: scale(1); }
+50%  { transform: scale(1.3); }
+100% { transform: scale(1); }
+}
+
+/* ----------------------------------------------------------
+6. Modal (Zoom/Enlarge) + Animations
+---------------------------------------------------------- */
+.modal {
+display: none; /* hidden by default */
+position: fixed;
+top: 0; 
+left: 0;
+width: 100%;
+height: 100%;
+
+/* Dark overlay to confirm modal is displayed */
+background-color: var(--color-modal-overlay);
+
+z-index: 2000; /* Ensure it's above other elements */
+justify-content: center;
+align-items: center;
+overflow: hidden; /* Prevent background scrolling */
+opacity: 0;
+transition: opacity 0.3s ease; /* Smooth fade-in/fade-out */
+}
+
+.modal.active {
+display: flex;
+opacity: 1; /* fade in with the transition above */
+}
+
+/* Modal Content Container */
+.modal-content {
+position: relative;
+background: #fff;
+max-width: 90%;
+max-height: 90%;
+width: auto;
+height: auto;
+border-radius: 10px;
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+display: flex;
+align-items: center;
+justify-content: center;
+overflow: hidden;
+animation: scaleUp 0.3s ease; /* Scale animation on open */
+}
+
+/* Scale-up keyframe for "pop" effect */
+@keyframes scaleUp {
+0% {
+transform: scale(0.95);
+}
+100% {
+transform: scale(1);
+}
+}
+
+/* Close Button (Material Icons) */
+.modal-close {
+position: absolute;
+top: 15px;
+right: 15px;
+font-size: 28px;
+color: #333;
+cursor: pointer;
+background: none;
+border: none;
+font-family: 'Material Icons'; /* Ensure this font is loaded externally */
+z-index: 11;
+transition: color 0.2s ease;
+}
+
+.modal-close:hover {
+color: #000;
+}
+
+/* Left and Right Navigation Arrows */
+.modal-nav {
+position: absolute;
+top: 50%;
+transform: translateY(-50%);
+font-size: 32px;
+color: #666;
+background: none;
+border: none;
+cursor: pointer;
+z-index: 11;
+font-family: 'Material Icons';
+transition: color 0.2s ease;
+}
+
+.modal-nav:hover {
+color: #fff;
+}
+.modal-nav-left {
+left: 20px;
+}
+.modal-nav-right {
+right: 20px;
+}
+
+/* Image Container in the modal */
+.modal-image-container {
+width: 100%;
+height: auto;
+display: flex;
+align-items: center;
+justify-content: center;
+overflow: hidden;
+position: relative;
+}
+
+/* Responsive, zoomable image in the modal */
+.modal-image {
+max-width: 100%;
+max-height: 100%;
+object-fit: contain;
+transition: transform 0.3s ease; /* Smooth zoom transition */
+}
+
+/* Optional fadeIn/fadeOut keyframes (if you want separate classes) */
+.modal.fade-in {
+animation: fadeIn 0.3s ease forwards;
+}
+.modal.fade-out {
+animation: fadeOut 0.3s ease forwards;
+}
+
+@keyframes fadeIn {
+0% {
+opacity: 0;
+}
+100% {
+opacity: 1;
+}
+}
+@keyframes fadeOut {
+0% {
+opacity: 1;
+}
+100% {
+opacity: 0;
+}
+}
+
+/* End of storestyle.css */

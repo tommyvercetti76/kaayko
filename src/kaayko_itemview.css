@@ -1,0 +1,141 @@
+/* General Modal Styling */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8); /* Dark overlay */
+    z-index: 10;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* Prevent background scrolling */
+    opacity: 0;
+    transition: opacity 0.3s ease; /* Smooth fade-in/fade-out */
+}
+
+/* Show modal when it has the 'active' class */
+.modal.active {
+    display: flex;
+    opacity: 1;
+}
+
+/* Modal Content Container */
+.modal-content {
+    position: relative;
+    background: #fff;
+    max-width: 90%;
+    max-height: 90%;
+    width: auto;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    animation: scaleUp 0.3s ease; /* Scale animation for open */
+}
+
+/* Close Button */
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 28px;
+    color: #333;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: 'Material Icons'; /* Ensure Material Icons font is loaded */
+    z-index: 11;
+    transition: color 0.2s ease;
+}
+
+.modal-close:hover {
+    color: #000;
+}
+
+/* Left and Right Navigation Arrows */
+.modal-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 32px;
+    color: #666;
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 11;
+    font-family: 'Material Icons';
+    transition: color 0.2s ease;
+}
+
+.modal-nav:hover {
+    color: #fff;
+}
+
+.modal-nav-left {
+    left: 20px;
+}
+
+.modal-nav-right {
+    right: 20px;
+}
+
+/* Image Container for Responsive Aspect Ratio */
+.modal-image-container {
+    width: 100%;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Responsive, Zoomable Image Styling */
+.modal-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease; /* Smooth zoom transition */
+}
+
+/* Animation for modal scaling up on open */
+@keyframes scaleUp {
+    0% {
+        transform: scale(0.95);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Optional: Transition for fade-in/fade-out */
+.modal.fade-in {
+    animation: fadeIn 0.3s ease forwards;
+}
+
+.modal.fade-out {
+    animation: fadeOut 0.3s ease forwards;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
