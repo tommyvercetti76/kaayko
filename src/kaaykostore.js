@@ -43,6 +43,10 @@ import {
   
   // When the page is fully loaded, fetch products and setup modal close handlers
   document.addEventListener('DOMContentLoaded', () => {
+    // Disable right-click context menu
+    document.addEventListener('contextmenu', (event) => {
+      event.preventDefault();
+    });
     fetchProductData();
     setupModalCloseHandlers();
     setupMobileMenu();
