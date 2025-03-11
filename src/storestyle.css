@@ -26,8 +26,8 @@
   --color-modal-overlay: rgba(0,0,0,0.8);
 
   /* New subtle accent colors (you can tweak these) */
-  --color-accent: #08a045;       /* A pleasant green accent */
-  --color-accent-hover: #067a35; /* Darker green for hover states */
+  --color-accent: #ff8c00;       /* A pleasant green accent */
+  --color-accent-hover: #ff8c00; /* Darker green for hover states */
 }
 
 @font-face {
@@ -531,5 +531,54 @@ html {
   }
 }
 
+/* --- Active Menu Item with Professional Orange Underline --- */
+.active-tag {
+  position: relative;
+  font-weight: bold;
+  color: #ff8c00; /* Professional orange */
+  text-decoration: none; /* Remove default underline */
+}
+
+.active-tag::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px; /* Adjust as needed */
+  width: 100%;
+  height: 2px;
+  background-color: #ff8c00;
+  transform: scaleX(1);
+  transform-origin: bottom left;
+  transition: transform 0.3s ease-out;
+}
+
+/* --- Carousel Item Entrance Animation --- */
+.carousel-item.animate {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.5s forwards;
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- Fade Transition for Carousel when filtering --- */
+.carousel {
+  background-color: transparent;
+  transition: opacity 0.3s ease;
+  opacity: 1;
+}
+
+.carousel.fade-out {
+  opacity: 0;
+}
 
 /* End of storestyle.css */
