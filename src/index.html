@@ -18,13 +18,10 @@
     <h1 class="header-title">Kaayko Store</h1>
     <p class="header-subtitle">Vote now, pay later.</p>
 
-    <!-- Desktop Navigation Menu -->
+    <!-- Desktop Navigation Menu (populated dynamically in populateMenu) -->
     <nav class="top-menu">
       <ul>
-        <li><a href="#popular">Popular</a></li>
-        <li><a href="#philosophy">Philosophy</a></li>
-        <li><a href="#originals">Originals</a></li>
-        <li><a href="#other">Other Stuff</a></li>
+        <!-- Dynamically filled by populateMenu(tags) -->
       </ul>
     </nav>
 
@@ -37,10 +34,7 @@
   <!-- Mobile Menu Overlay (shown when FAB is clicked on small screens) -->
   <div class="mobile-menu-overlay">
     <ul>
-      <li><a href="#popular">Popular</a></li>
-      <li><a href="#philosophy">Philosophy</a></li>
-      <li><a href="#originals">Originals</a></li>
-      <li><a href="#other">Other Stuff</a></li>
+      <!-- You can also choose to dynamically fill these if you want the same tags in mobile. -->
     </ul>
   </div>
 
@@ -75,22 +69,16 @@
 
       <!-- Container for dynamically injected images -->
       <div id="modal-image-container" class="modal-image-container">
-        <img
-          src=""
-          alt="Product Image"
-          id="modal-image"
-          class="modal-image"
-        />
+        <!-- Populated by openModal -->
       </div>
     </div>
   </div>
 
-  
   <!-- Your JavaScript (fetches products, builds the carousel, handles modal, etc.) -->
   <script type="module" src="scripts/kaayko_main.js"></script>
   <script type="module" src="scripts/kaayko_firebaseConfig.js"></script>
   <script type="module" src="scripts/kaayko_dataService.js"></script>
   <script type="module" src="scripts/kaayko_ui.js"></script>
-  
+
 </body>
 </html>
