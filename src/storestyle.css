@@ -4,10 +4,10 @@
 *  Contains:
 *    1) General & Reset
 *    2) Header & Menus
-*    3) Carousel
-*    4) Card Items (Products)
-*    5) Footer (Price & Votes)
-*    6) Modal (Zoom View)
+*    3) Carousel Grid & Card Items
+*    4) Footer (Price & Votes)
+*    5) Modal (Zoom View)
+*    6) Animations & Transitions
 ************************************************************/
 
 /* ----------------------------------------------------------
@@ -18,16 +18,16 @@
   --spacing-medium: 8px;
   --spacing-large: 16px;
 
-  /* Example color variables (optional) */
+  /* Color variables */
   --color-header-bg: #333;       /* Dark header */
-  --color-body-bg: #f9f9f9;      /* Light page background */
-  --color-carousel-bg: #ececec;  /* Slightly lighter gray for carousel */
-  --color-card-bg: #fff;         /* White for each product card */
+  --color-body-bg: #f9f9f9;        /* Light background */
+  --color-carousel-bg: #ececec;    /* Carousel container background */
+  --color-card-bg: #fff;           /* Product card background */
   --color-modal-overlay: rgba(0,0,0,0.8);
 
-  /* New subtle accent colors (you can tweak these) */
-  --color-accent: #ff8c00;       /* A pleasant green accent */
-  --color-accent-hover: #ff8c00; /* Darker green for hover states */
+  /* Accent colors – changed to professional orange */
+  --color-accent: #ff8c00;
+  --color-accent-hover: #ff8c00;
 }
 
 @font-face {
@@ -51,29 +51,25 @@
   box-sizing: border-box;
 }
 
-/* Page + Body background color */
 body,
 html {
   font-family: 'Arial', sans-serif;
   background-color: var(--color-body-bg);
   color: #333;
-  /* Smooth scrolling for nicer feel */
   scroll-behavior: smooth;
 }
 
 /* ----------------------------------------------------------
-2. Header & Top Menu
+2. Header & Menus
 ---------------------------------------------------------- */
 .header {
   padding: var(--spacing-large);
-  /* Subtle gradient for a more modern look */
   background: linear-gradient(135deg, #444 0%, #222 100%);
   color: #fff;
   text-align: center;
   position: relative;
 }
 
-/* Keep the existing structure but add transitions */
 .header-title {
   font-size: 28px;
   font-family: 'Josefin_Bold', sans-serif;
@@ -87,11 +83,10 @@ html {
   color: #ccc;
 }
 
-/* Top Menu (desktop) */
+/* Desktop Top Menu */
 .top-menu {
   display: flex;
   justify-content: center;
-  /* Match the new gradient or keep original background */
   background: linear-gradient(135deg, #444 0%, #222 100%);
   padding: 10px 0;
 }
@@ -115,9 +110,9 @@ html {
   transform: scale(1.05);
 }
 
-/* FAB Menu (mobile) */
+/* FAB Menu (Mobile) */
 .fab-menu {
-  display: none; /* Hidden on desktop by default */
+  display: none; /* Only visible on mobile */
   position: fixed;
   bottom: 20px;
   right: 20px;
@@ -152,8 +147,7 @@ html {
 .mobile-menu-overlay {
   display: none;
   position: fixed;
-  top: 0; 
-  left: 0;
+  top: 0; left: 0;
   width: 100%;
   height: 100%;
   background-color: rgba(0,0,0,0.8);
@@ -162,7 +156,6 @@ html {
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  /* Subtle fade-in transition */
   transition: opacity 0.3s ease;
   opacity: 0;
 }
@@ -193,40 +186,29 @@ html {
   color: var(--color-accent);
 }
 
-/* Responsive: show FAB & overlay, hide top-menu on smaller screens */
 @media (max-width: 768px) {
-  .top-menu {
-    display: none;
-  }
-  .fab-menu {
-    display: flex;
-  }
+  .top-menu { display: none; }
+  .fab-menu { display: flex; }
 }
 
 /* ----------------------------------------------------------
-3. Carousel Grid
+3. Carousel Grid & Card Items
 ---------------------------------------------------------- */
 .carousel {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: var(--spacing-medium);
   padding: var(--spacing-medium);
-
-  /* Background color for the carousel container */
   background-color: var(--color-carousel-bg);
-
   overflow: hidden;
 }
 
-/* ----------------------------------------------------------
-4. Card / Carousel Items
----------------------------------------------------------- */
 .carousel-item {
-  background: var(--color-card-bg); /* White by default */
+  background: var(--color-card-bg);
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   display: flex;
-  flex-direction: column; /* stack content vertically */
+  flex-direction: column;
   text-align: center;
   padding: var(--spacing-medium);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -237,26 +219,22 @@ html {
   box-shadow: 0 6px 18px rgba(0,0,0,0.15);
 }
 
-/* Image Container (maintains aspect ratio with padding-top) */
 .img-container {
   position: relative;
   width: 100%;
-  padding-top: 75%; /* ~4:3 ratio. Adjust if needed. */
+  padding-top: 75%; /* ~4:3 ratio */
   overflow: hidden;
   margin-bottom: var(--spacing-medium);
 }
 
 .carousel-image {
   position: absolute;
-  top: 0; 
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   object-fit: cover;
   border-radius: 8px;
 }
 
-/* Dots for multiple images */
 .image-indicator {
   display: flex;
   justify-content: center;
@@ -272,11 +250,11 @@ html {
   background-color: #ccc;
   transition: background-color 0.3s ease;
 }
+
 .indicator-dot.active {
   background-color: #333;
 }
 
-/* Title & Description */
 .title {
   font-family: 'Josefin_Bold', sans-serif;
   font-size: 18px;
@@ -294,59 +272,43 @@ html {
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 3; 
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
 }
 
 /* ----------------------------------------------------------
-5. Footer (Price & Votes)
+4. Footer (Price & Votes)
 ---------------------------------------------------------- */
-/* 
-  Minimal symmetrical footer:
-  3 equal columns if you have 3 elements (price, diamond, votes).
-  If you add a 4th item, you'll get 4 equal columns, etc.
-
-  - No special backgrounds or borders on price/votes
-  - Diamond is centered in its own column
-  - Everything is baseline-aligned in one row
-*/
-
 .footer-elements {
   display: grid;
-  /* EXACT 3 columns for price, diamond, votes: */
   grid-template-columns: repeat(3, 1fr);
-  /* or "repeat(auto-fit, minmax(0,1fr))" if you want to adapt for more/less items */
-  
-  align-items: center;   /* vertically center each cell’s content */
-  justify-items: center; /* horizontally center content in each cell */
-  gap: 0;                /* no extra spacing between columns by default */
+  align-items: center;
+  justify-items: center;
+  gap: 0;
   margin-top: auto;
   padding: 12px;
   border-top: 1px solid #eee;
-  /* Minimal white (or no background) for the footer */
-  background: #fff; 
+  background: #fff;
 }
 
-/* PRICE: no background, no extra box-shadow */
 .price {
   font-family: 'Josefin_Medium', sans-serif;
   font-size: 16px;
   color: #333;
-  /* remove any prior background, padding, radius, shadow */
   background: none;
   border: none;
   padding: 0;
   margin: 0;
   transition: transform 0.2s ease;
 }
+
 .price:hover {
   transform: scale(1.05);
 }
 
-/* DIAMOND (heart-button) in the middle column */
 .heart-button {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   background: none;
   border: none;
   cursor: pointer;
@@ -355,26 +317,26 @@ html {
   justify-content: center;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+
 .heart-button:hover {
   transform: scale(1.1);
-  box-shadow: 0 0 4px rgba(0,0,0,0.15);
+  /* box-shadow: 0 0 4px rgba(0,0,0,0.15); */
 }
+
 .heart-button::before {
   content: "";
   display: block;
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   background-color: #ccc;
-  /* diamond shape */
   clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
+
 .heart-button.liked::before {
   background-color: #e63946;
   transform: scale(1.2);
 }
 
-/* VOTE COUNT (3rd column), no background or shadow */
 .likes-count {
   font-family: 'Josefin_Medium', sans-serif;
   font-size: 14px;
@@ -383,9 +345,11 @@ html {
   margin: 0;
   padding: 0;
 }
+
 .likes-count.updated {
   animation: votePop 0.4s ease;
 }
+
 @keyframes votePop {
   0%   { transform: scale(1); }
   50%  { transform: scale(1.3); }
@@ -393,60 +357,47 @@ html {
 }
 
 /* ----------------------------------------------------------
-6. Modal (Zoom/Enlarge) + Animations
+5. Modal (Zoom/Enlarge)
 ---------------------------------------------------------- */
 .modal {
-  display: none; /* hidden by default */
+  display: none;
   position: fixed;
-  top: 0; 
-  left: 0;
-  width: 100%;
-  height: 100%;
-
-  /* Dark overlay to confirm modal is displayed */
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   background-color: var(--color-modal-overlay);
-
-  z-index: 2000; /* Ensure it's above other elements */
+  z-index: 2000;
   justify-content: center;
   align-items: center;
-  overflow: hidden; /* Prevent background scrolling */
+  overflow: hidden;
   opacity: 0;
-  transition: opacity 0.3s ease; /* Smooth fade-in/fade-out */
+  transition: opacity 0.3s ease;
 }
 
 .modal.active {
   display: flex;
-  opacity: 1; /* fade in with the transition above */
+  opacity: 1;
 }
 
-/* Modal Content Container */
 .modal-content {
   position: relative;
   background: #fff;
   max-width: 90%;
   max-height: 90%;
-  width: auto;
-  height: auto;
+  width: auto; height: auto;
   border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  animation: scaleUp 0.3s ease; /* Scale animation on open */
+  animation: scaleUp 0.3s ease;
 }
 
-/* Scale-up keyframe for "pop" effect */
 @keyframes scaleUp {
-  0% {
-    transform: scale(0.95);
-  }
-  100% {
-    transform: scale(1);
-  }
+  0% { transform: scale(0.95); }
+  100% { transform: scale(1); }
 }
 
-/* Close Button (Material Icons) */
 .modal-close {
   position: absolute;
   top: 15px;
@@ -456,15 +407,15 @@ html {
   cursor: pointer;
   background: none;
   border: none;
-  font-family: 'Material Icons'; /* Ensure this font is loaded externally */
+  font-family: 'Material Icons';
   z-index: 11;
   transition: color 0.2s ease;
 }
+
 .modal-close:hover {
   color: #000;
 }
 
-/* Left and Right Navigation Arrows */
 .modal-nav {
   position: absolute;
   top: 50%;
@@ -478,17 +429,14 @@ html {
   font-family: 'Material Icons';
   transition: color 0.2s ease;
 }
+
 .modal-nav:hover {
   color: #fff;
 }
-.modal-nav-left {
-  left: 20px;
-}
-.modal-nav-right {
-  right: 20px;
-}
 
-/* Image Container in the modal */
+.modal-nav-left { left: 20px; }
+.modal-nav-right { right: 20px; }
+
 .modal-image-container {
   width: 100%;
   height: auto;
@@ -499,51 +447,29 @@ html {
   position: relative;
 }
 
-/* Responsive, zoomable image in the modal */
 .modal-image {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
-  transition: transform 0.3s ease; /* Smooth zoom transition */
+  transition: transform 0.3s ease;
 }
 
-/* Optional fadeIn/fadeOut keyframes (if you want separate classes) */
-.modal.fade-in {
-  animation: fadeIn 0.3s ease forwards;
-}
-.modal.fade-out {
-  animation: fadeOut 0.3s ease forwards;
-}
-@keyframes fadeIn {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-@keyframes fadeOut {
-  0% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-/* --- Active Menu Item with Professional Orange Underline --- */
+/* ----------------------------------------------------------
+6. Animations & Transitions
+---------------------------------------------------------- */
+/* Active Menu Item Underline (Professional Orange) */
 .active-tag {
   position: relative;
   font-weight: bold;
-  color: #ff8c00; /* Professional orange */
-  text-decoration: none; /* Remove default underline */
+  color: #ff8c00;
+  text-decoration: none;
 }
 
 .active-tag::after {
   content: "";
   position: absolute;
   left: 0;
-  bottom: -2px; /* Adjust as needed */
+  bottom: -2px;
   width: 100%;
   height: 2px;
   background-color: #ff8c00;
@@ -552,7 +478,7 @@ html {
   transition: transform 0.3s ease-out;
 }
 
-/* --- Carousel Item Entrance Animation --- */
+/* Entrance Animation for Carousel Items */
 .carousel-item.animate {
   opacity: 0;
   transform: translateY(20px);
@@ -560,17 +486,11 @@ html {
 }
 
 @keyframes fadeInUp {
-  0% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
-/* --- Fade Transition for Carousel when filtering --- */
+/* Fade Transition for Carousel when filtering */
 .carousel {
   background-color: transparent;
   transition: opacity 0.3s ease;
