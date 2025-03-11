@@ -150,11 +150,7 @@ function createCarouselItem(item) {
 
   const priceEl = createTextElement('p', 'price', item.price);
 
-  // OLD CODE (commented out):
-  // const voteContainer = createLikeButton(item);
-  // footer.append(priceEl, voteContainer);
-
-  // NEW CODE: Destructure heartButton and votesCountEl from createLikeButton()
+  // Destructure heartButton and votesCountEl from createLikeButton()
   const { heartButton, votesCountEl } = createLikeButton(item);
   footer.append(priceEl, heartButton, votesCountEl);
 
@@ -181,7 +177,7 @@ function buildImageContainer(imageUrls) {
     const img = document.createElement('img');
     img.src = src;
     img.className = 'carousel-image';
-    // Instead of display block/none, use active class for fade
+    // Use active class for fade effect; only first image is active initially.
     if (index === 0) {
       img.classList.add('active');
     }
@@ -204,6 +200,17 @@ function createImageIndicator(length, currentImageIndex) {
   for (let i = 0; i < length; i++) {
     const dot = document.createElement('span');
     dot.className = 'indicator-dot' + (i === currentImageIndex ? ' active' : '');
+    // Add click event to change image when dot is clicked
+    dot.addEventListener('click', () => {
+      const container = indicator.parentElement.querySelector('.img-container');
+      const images = container.querySelectorAll('.carousel-image');
+      // Remove active class from all images and dots
+      images.forEach(img => img.classList.remove('active'));
+      Array.from(indicator.children).forEach(child => child.classList.remove('active'));
+      // Set the chosen index as active
+      images[i].classList.add('active');
+      dot.classList.add('active');
+    });
     indicator.appendChild(dot);
   }
 
@@ -212,7 +219,7 @@ function createImageIndicator(length, currentImageIndex) {
 
 /**
  * Allows swiping through images in the carousel.
- * Enhanced for desktop by tracking mouseup on the entire document.
+ * Separates touch and mouse event handling for better performance on each device type.
  * @param {HTMLElement} container - The container holding all images.
  * @param {number} length - The total number of images.
  * @param {HTMLElement} indicator - The dot indicators to update on swipe.
@@ -220,54 +227,66 @@ function createImageIndicator(length, currentImageIndex) {
 function addSwipeFunctionality(container, length, indicator) {
   let startX = 0;
   let currentImageIndex = 0;
-  let isDragging = false; // track if user is actually dragging
+  const swipeThreshold = 50; // pixels
 
-  // Mouse events - Enhanced to handle release outside container
-  container.addEventListener('mousedown', (e) => {
-    isDragging = true;
-    startX = e.clientX;
-  });
+  // Detect if the device supports touch (coarse pointer) or not.
+  const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
-  container.addEventListener('mouseup', (e) => {
-    if (!isDragging) return;
-    isDragging = false;
-    handleSwipe(e.clientX - startX);
-  });
-
-  document.addEventListener('mouseup', (e) => {
-    if (!isDragging) return;
-    isDragging = false;
-    handleSwipe(e.clientX - startX);
-  });
-
-  // Touch events
-  container.addEventListener('touchstart', (e) => {
-    startX = e.touches[0].clientX;
-  });
-
-  container.addEventListener('touchend', (e) => {
-    handleSwipe(e.changedTouches[0].clientX - startX);
-  });
+  if (isTouchDevice) {
+    // Use touch events exclusively on mobile devices.
+    container.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].clientX;
+    }, { passive: true });
+    
+    container.addEventListener('touchend', (e) => {
+      const deltaX = e.changedTouches[0].clientX - startX;
+      processSwipe(deltaX);
+    });
+  } else {
+    // Use mouse events for desktop devices.
+    let isDragging = false;
+    container.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      startX = e.clientX;
+    });
+    
+    container.addEventListener('mouseup', (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+      const deltaX = e.clientX - startX;
+      processSwipe(deltaX);
+    });
+    
+    // In case the mouseup happens outside the container.
+    document.addEventListener('mouseup', (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+      const deltaX = e.clientX - startX;
+      processSwipe(deltaX);
+    });
+  }
 
   /**
-   * Determines direction of swipe based on deltaX, updates displayed image and indicator.
+   * Processes the swipe delta to change the active image and indicator.
    * @param {number} deltaX - The horizontal distance moved by the swipe.
    */
-  function handleSwipe(deltaX) {
-    if (Math.abs(deltaX) > 50) {
+  function processSwipe(deltaX) {
+    if (Math.abs(deltaX) > swipeThreshold) {
       const images = container.querySelectorAll('.carousel-image');
       if (!images.length) return;
 
-      // Remove active from current
+      // Remove active class from current image and its indicator dot
       images[currentImageIndex].classList.remove('active');
       indicator.children[currentImageIndex].classList.remove('active');
 
-      // Compute next image index (left or right)
-      currentImageIndex = deltaX < 0
-        ? (currentImageIndex + 1) % length
-        : (currentImageIndex - 1 + length) % length;
+      // Calculate new index based on swipe direction
+      if (deltaX < 0) {
+        currentImageIndex = (currentImageIndex + 1) % length;
+      } else {
+        currentImageIndex = (currentImageIndex - 1 + length) % length;
+      }
 
-      // Add active to new
+      // Add active class to the new image and its indicator dot
       images[currentImageIndex].classList.add('active');
       indicator.children[currentImageIndex].classList.add('active');
     }
@@ -295,7 +314,7 @@ function openModal(item) {
     const img = document.createElement('img');
     img.src = src;
     img.className = 'modal-image';
-    // Use "active" class instead of display
+    // Use active class so only the first image shows initially
     if (index === 0) {
       img.classList.add('active');
     }
@@ -336,7 +355,7 @@ function setupModalNavigation(container, length, currentImageIndex) {
   leftButton.onclick = () => updateImageIndex(currentImageIndex - 1);
   rightButton.onclick = () => updateImageIndex(currentImageIndex + 1);
 
-  // Mouse events
+  // Mouse events for swipe navigation in modal
   let startX = 0;
   let isDraggingModal = false;
 
@@ -357,11 +376,10 @@ function setupModalNavigation(container, length, currentImageIndex) {
     handleSwipe(e.clientX - startX);
   });
 
-  // Touch events
+  // Touch events for modal
   container.addEventListener('touchstart', (e) => {
     startX = e.touches[0].clientX;
   });
-
   container.addEventListener('touchend', (e) => {
     handleSwipe(e.changedTouches[0].clientX - startX);
   });
