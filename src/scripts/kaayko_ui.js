@@ -114,8 +114,6 @@ import {
   
   /**
    * Adds swipe functionality for the image carousel on both desktop and mobile.
-   * New images will be shown ONLY when the user swipes.
-   * This function updates both the display style of images and the active dot.
    * @param {HTMLElement} container - The container holding the carousel images
    * @param {number} length - Total number of images
    * @param {HTMLElement} indicator - The dot indicator container
@@ -123,7 +121,7 @@ import {
   function addSwipeFunctionality(container, length, indicator) {
     let startX = 0;
     let currentImageIndex = 0;
-    const swipeThreshold = 50; // Minimum distance (px) for a valid swipe
+    const swipeThreshold = 50;
   
     if (window.PointerEvent) {
       container.addEventListener("pointerdown", e => {
@@ -131,13 +129,10 @@ import {
       });
       container.addEventListener("pointerup", e => handleSwipe(e.clientX - startX));
     } else {
-      // Touch events
       container.addEventListener("touchstart", e => {
         startX = e.touches[0].clientX;
       }, { passive: true });
       container.addEventListener("touchend", e => handleSwipe(e.changedTouches[0].clientX - startX));
-  
-      // Mouse events
       container.addEventListener("mousedown", e => {
         startX = e.clientX;
       });
@@ -146,27 +141,20 @@ import {
       });
     }
   
-    /**
-     * Processes the swipe delta to change images if threshold is met.
-     * @param {number} deltaX - The horizontal distance moved by the swipe
-     */
     function handleSwipe(deltaX) {
       if (Math.abs(deltaX) > swipeThreshold) {
         const images = container.querySelectorAll(".carousel-image");
         if (!images.length) return;
   
-        // Hide current image and remove its active dot
         images[currentImageIndex].style.display = "none";
         indicator.children[currentImageIndex].classList.remove("active");
   
-        // Determine next index based on swipe direction
         if (deltaX < 0) {
           currentImageIndex = (currentImageIndex + 1) % length;
         } else {
           currentImageIndex = (currentImageIndex - 1 + length) % length;
         }
   
-        // Show the new image and set active dot
         images[currentImageIndex].style.display = "block";
         indicator.children[currentImageIndex].classList.add("active");
       }
@@ -182,10 +170,8 @@ import {
     const modalImageContainer = document.getElementById("modal-image-container");
     if (!modal || !modalImageContainer) return;
   
-    // Clear any previous images in the modal
     modalImageContainer.innerHTML = "";
   
-    // Insert new images; show only the first image
     item.imgSrc.forEach((src, index) => {
       const img = document.createElement("img");
       img.src = src;
@@ -194,10 +180,7 @@ import {
       modalImageContainer.appendChild(img);
     });
   
-    // Display the modal
     modal.classList.add("active");
-  
-    // Set up navigation (arrows and swipe) within the modal
     setupModalNavigation(modalImageContainer, item.imgSrc.length, 0);
   }
   
@@ -217,10 +200,6 @@ import {
       return;
     }
   
-    /**
-     * Updates the active modal image based on the new index.
-     * @param {number} newIndex - The new image index.
-     */
     function updateImageIndex(newIndex) {
       images[currentImageIndex].style.display = "none";
       currentImageIndex = (newIndex + length) % length;
@@ -249,10 +228,6 @@ import {
       });
     }
   
-    /**
-     * Processes the swipe delta in the modal to change images.
-     * @param {number} deltaX - The horizontal distance moved.
-     */
     function handleModalSwipe(deltaX) {
       if (Math.abs(deltaX) > 50) {
         updateImageIndex(deltaX < 0 ? currentImageIndex + 1 : currentImageIndex - 1);
@@ -291,9 +266,6 @@ import {
     votesCount.className = "likes-count";
     votesCount.textContent = `${currentVotes} Votes`;
   
-    /**
-     * Updates the heart button visuals based on the liked state.
-     */
     function updateHeartButtonVisuals() {
       if (isLiked) {
         button.classList.add("liked");
@@ -303,7 +275,6 @@ import {
     }
     updateHeartButtonVisuals();
   
-    // Toggle liked state and update votes in Firestore
     button.addEventListener("click", async () => {
       isLiked = !isLiked;
       const voteChange = isLiked ? 1 : -1;
@@ -346,6 +317,7 @@ import {
     fabMenu.addEventListener("click", () => mobileMenuOverlay.classList.toggle("active"));
   
     mobileMenuOverlay.addEventListener("click", e => {
+      // If user clicks outside or on a link, close overlay
       if (e.target === mobileMenuOverlay || e.target.tagName === "A") {
         mobileMenuOverlay.classList.remove("active");
       }
@@ -353,42 +325,66 @@ import {
   }
   
   /**
-   * Dynamically populates a tag-based menu (including "All") and filters products upon selection.
+   * Dynamically populates a tag-based menu (including "All") in BOTH
+   * desktop (.top-menu ul) and mobile (.mobile-menu-overlay ul).
+   * When a tag is clicked, we filter products by that tag and
+   * close the mobile overlay if applicable.
+   * 
    * @param {Array<string>} tags - Array of unique tags with "All" at index 0.
    */
   export function populateMenu(tags) {
-    // 1. Find the existing top menu <ul>
-    const topMenu = document.querySelector(".top-menu ul");
-    if (!topMenu) return;
+    const desktopMenu = document.querySelector(".top-menu ul");
+    const mobileMenu = document.querySelector(".mobile-menu-overlay ul");
   
-    // 2. Clear any existing items
-    topMenu.innerHTML = "";
+    if (!desktopMenu && !mobileMenu) return;
   
-    // 3. Create a menu item for each tag
-    tags.forEach(tag => {
-      const li = document.createElement("li");
-      const link = document.createElement("a");
-      link.href = "#";
-      link.textContent = tag;
+    function buildMenuItems(menuUl) {
+      menuUl.innerHTML = "";
   
-      // Filter products by this tag on click
-      link.addEventListener("click", async e => {
-        e.preventDefault();
+      tags.forEach(tag => {
+        const li = document.createElement("li");
+        const link = document.createElement("a");
+        link.href = "#";
+        link.textContent = tag;
   
-        // Remove underline from any previously active menu item
-        document.querySelectorAll(".top-menu ul li a").forEach(a => {
-          a.classList.remove("active-tag");
+        link.addEventListener("click", async e => {
+          e.preventDefault();
+  
+          // Remove underline from previously active link (desktop only)
+          if (menuUl.classList.contains("top-menu-ul")) {
+            document.querySelectorAll(".top-menu ul li a").forEach(a => {
+              a.classList.remove("active-tag");
+            });
+            link.classList.add("active-tag");
+          }
+  
+          // Fetch products by tag
+          const filteredProducts = await fetchProductsByTag(tag);
+          populateCarousel(filteredProducts);
+  
+          // Close mobile overlay if this is the mobile menu
+          if (menuUl.classList.contains("mobile-menu-ul")) {
+            const mobileOverlay = document.querySelector(".mobile-menu-overlay");
+            if (mobileOverlay) {
+              mobileOverlay.classList.remove("active");
+            }
+          }
         });
   
-        // Add underline to the clicked link
-        link.classList.add("active-tag");
-  
-        // If "All," fetch all products; else, fetch by tag
-        const filteredProducts = await fetchProductsByTag(tag);
-        populateCarousel(filteredProducts);
+        li.appendChild(link);
+        menuUl.appendChild(li);
       });
+    }
   
-      li.appendChild(link);
-      topMenu.appendChild(li);
-    });
+    // Mark the desktop menu UL for active-tag highlighting
+    if (desktopMenu) {
+      desktopMenu.classList.add("top-menu-ul");
+      buildMenuItems(desktopMenu);
+    }
+  
+    // Mark the mobile menu UL for overlay logic
+    if (mobileMenu) {
+      mobileMenu.classList.add("mobile-menu-ul");
+      buildMenuItems(mobileMenu);
+    }
   }
