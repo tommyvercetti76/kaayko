@@ -3,7 +3,7 @@ import { updateProductVotes } from "./kaayko_dataService.js";
 
 /**
  * Populates the carousel with product items.
- * @param {Array<Object>} items - An array of product objects from Firestore.
+ * @param {Array<Object>} items - An array of product objects from Firestore
  */
 export function populateCarousel(items) {
   const carousel = document.getElementById('carousel');
@@ -21,14 +21,14 @@ export function populateCarousel(items) {
 
 /**
  * Creates a single carousel item element (including images, indicators, title, etc.).
- * @param {Object} item - A single product object.
- * @returns {HTMLElement} The DOM element representing the carousel item.
+ * @param {Object} item - A single product object
+ * @returns {HTMLElement} The DOM element representing the carousel item
  */
 function createCarouselItem(item) {
   const carouselItem = document.createElement('div');
   carouselItem.className = 'carousel-item';
 
-  // Build image container (with multiple images)
+  // Build image container (multiple images)
   const imgContainer = buildImageContainer(item.imgSrc);
   carouselItem.appendChild(imgContainer);
 
@@ -36,49 +36,39 @@ function createCarouselItem(item) {
   const imageIndicator = createImageIndicator(item.imgSrc.length, 0);
   carouselItem.appendChild(imageIndicator);
 
-  // Title and description elements
+  // Title and description
   const title = createTextElement('h3', 'title', item.title);
   const description = createTextElement('p', 'description', item.description);
 
-  // Footer with price and like button container
+  // Footer with price and voting button
   const footer = document.createElement('div');
   footer.className = 'footer-elements';
   const priceEl = createTextElement('p', 'price', item.price);
   const { heartButton, votesCountEl } = createLikeButton(item);
   footer.append(priceEl, heartButton, votesCountEl);
 
-  // Append title, description, and footer to the carousel item
+  // Append title, description, and footer to carousel item
   carouselItem.append(title, description, footer);
 
-  // Add swipe functionality (desktop and mobile) on the image container.
-  // This function sets a "swiped" flag (data attribute) on the container.
+  // Add swipe functionality (desktop + mobile) on the image container.
   addSwipeFunctionality(imgContainer, item.imgSrc.length, imageIndicator);
 
-  // On click, open modal only if a swipe did NOT occur.
-  imgContainer.addEventListener('click', () => {
-    // If a swipe was detected, reset flag and do not open modal.
-    if (imgContainer.dataset.swiped === "true") {
-      imgContainer.dataset.swiped = "false";
-      return;
-    }
-    openModal(item);
-  });
+  // Open modal on image container click (swipe does not interfere with modal open)
+  imgContainer.addEventListener('click', () => openModal(item));
 
   return carouselItem;
 }
 
 /**
  * Builds the image container that holds multiple images (displayed one at a time).
- * @param {string[]} imageUrls - An array of image URLs.
- * @returns {HTMLElement} A DIV wrapping all images.
+ * @param {string[]} imageUrls - An array of image URLs
+ * @returns {HTMLElement} A DIV wrapping all images
  */
 function buildImageContainer(imageUrls) {
   const imgContainer = document.createElement('div');
   imgContainer.className = 'img-container';
-  // Initialize swipe flag to false.
-  imgContainer.dataset.swiped = "false";
 
-  // Insert each image; show only the first image initially.
+  // Insert each image, marking the first as active and using display style.
   imageUrls.forEach((src, index) => {
     const img = document.createElement('img');
     img.src = src;
@@ -92,19 +82,18 @@ function buildImageContainer(imageUrls) {
 
 /**
  * Creates dot indicators for the carousel images.
- * @param {number} length - Total number of images.
- * @param {number} currentImageIndex - The initially active image index.
- * @returns {HTMLElement} A container DIV holding the dot indicators.
+ * @param {number} length - Total number of images
+ * @param {number} currentImageIndex - The initially active image index
+ * @returns {HTMLElement} A container DIV holding the dot indicators
  */
 function createImageIndicator(length, currentImageIndex) {
   const indicator = document.createElement('div');
   indicator.className = 'image-indicator';
 
-  // Create each dot, marking the current index as active.
+  // Create each dot, highlighting the current index
   for (let i = 0; i < length; i++) {
     const dot = document.createElement('span');
     dot.className = 'indicator-dot' + (i === currentImageIndex ? ' active' : '');
-    // Clicking a dot changes the active image.
     dot.addEventListener('click', () => {
       const container = indicator.parentElement.querySelector('.img-container');
       const images = container.querySelectorAll('.carousel-image');
@@ -121,53 +110,50 @@ function createImageIndicator(length, currentImageIndex) {
 
 /**
  * Adds swipe functionality for the image carousel on both desktop and mobile.
- * A new image will be shown only when the user swipes.
- * Also sets a flag on the container to prevent a swipe from triggering a click.
- * @param {HTMLElement} container - The container holding the carousel images.
- * @param {number} length - Total number of images.
- * @param {HTMLElement} indicator - The dot indicator container.
+ * New images will be shown ONLY when the user swipes.
+ * This function updates both the display style of images and the active dot.
+ * @param {HTMLElement} container - The container holding the carousel images
+ * @param {number} length - Total number of images
+ * @param {HTMLElement} indicator - The dot indicator container
  */
 function addSwipeFunctionality(container, length, indicator) {
   let startX = 0;
   let currentImageIndex = 0;
-  const swipeThreshold = 50; // Minimum horizontal distance (px) for a valid swipe.
+  const swipeThreshold = 50;  // Minimum distance (px) for a valid swipe
+  const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
-  // Use Pointer Events if available; fallback to touch/mouse events.
+  // Use pointer events if available; fallback to touch/mouse events.
   if (window.PointerEvent) {
     container.addEventListener('pointerdown', e => { startX = e.clientX; });
     container.addEventListener('pointerup', e => handleSwipe(e.clientX - startX));
   } else {
-    // Touch events.
     container.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
     container.addEventListener('touchend', e => handleSwipe(e.changedTouches[0].clientX - startX));
-    // Mouse events.
     container.addEventListener('mousedown', e => { startX = e.clientX; });
     container.addEventListener('mouseup', e => handleSwipe(e.clientX - startX));
   }
 
   /**
-   * Determines if a valid swipe occurred and updates the displayed image and indicator.
-   * Also sets a "swiped" flag so that a click event does not open the modal.
+   * Processes the swipe delta to change images if the threshold is met.
+   * Updates the display style of images and the active dot.
    * @param {number} deltaX - The horizontal distance moved by the swipe.
    */
   function handleSwipe(deltaX) {
     if (Math.abs(deltaX) > swipeThreshold) {
       const images = container.querySelectorAll('.carousel-image');
       if (!images.length) return;
-
-      // Mark that a swipe occurred.
-      container.dataset.swiped = "true";
-
-      // Hide the current image and remove indicator highlight.
+      // Hide current image and remove its active dot.
       images[currentImageIndex].style.display = 'none';
       indicator.children[currentImageIndex].classList.remove('active');
 
-      // Update index based on swipe direction.
-      currentImageIndex = deltaX < 0
-        ? (currentImageIndex + 1) % length
-        : (currentImageIndex - 1 + length) % length;
+      // Determine next index based on swipe direction.
+      if (deltaX < 0) {
+        currentImageIndex = (currentImageIndex + 1) % length;
+      } else {
+        currentImageIndex = (currentImageIndex - 1 + length) % length;
+      }
 
-      // Show the new image and update indicator.
+      // Show new image and set active dot.
       images[currentImageIndex].style.display = 'block';
       indicator.children[currentImageIndex].classList.add('active');
     }
@@ -183,10 +169,10 @@ export function openModal(item) {
   const modalImageContainer = document.getElementById('modal-image-container');
   if (!modal || !modalImageContainer) return;
 
-  // Clear any previous images.
+  // Clear any previous images in the modal.
   modalImageContainer.innerHTML = '';
 
-  // Insert new images; display only the first image initially.
+  // Insert new images into the modal container; show only the first image.
   item.imgSrc.forEach((src, index) => {
     const img = document.createElement('img');
     img.src = src;
@@ -206,7 +192,7 @@ export function openModal(item) {
  * Sets up navigation (arrow clicks and swipe) inside the modal.
  * @param {HTMLElement} container - The container holding modal images.
  * @param {number} length - Total number of images.
- * @param {number} currentImageIndex - The index of the currently displayed image.
+ * @param {number} currentImageIndex - The currently displayed image index.
  */
 function setupModalNavigation(container, length, currentImageIndex) {
   const images = container.querySelectorAll('.modal-image');
@@ -228,11 +214,9 @@ function setupModalNavigation(container, length, currentImageIndex) {
     images[currentImageIndex].style.display = 'block';
   }
 
-  // Arrow click events.
   leftButton.onclick = () => updateImageIndex(currentImageIndex - 1);
   rightButton.onclick = () => updateImageIndex(currentImageIndex + 1);
 
-  // Set up swipe events in the modal.
   let startX = 0;
   if (window.PointerEvent) {
     container.addEventListener('pointerdown', e => { startX = e.clientX; });
@@ -246,7 +230,7 @@ function setupModalNavigation(container, length, currentImageIndex) {
 
   /**
    * Processes the swipe delta in the modal to change images.
-   * @param {number} deltaX - The horizontal distance moved.
+   * @param {number} deltaX - The horizontal distance moved by the swipe.
    */
   function handleModalSwipe(deltaX) {
     if (Math.abs(deltaX) > 50) {
@@ -273,7 +257,7 @@ function createTextElement(tag, className, text) {
  * Creates a like (heart) button with a dynamic vote count.
  * Uses Firestore's atomic update to avoid race conditions.
  * @param {Object} item - The product object containing 'id' and 'votes'.
- * @returns {{ heartButton: HTMLElement, votesCountEl: HTMLElement }} A container with the button and vote count.
+ * @returns {{ heartButton: HTMLElement, votesCountEl: HTMLElement }}
  */
 function createLikeButton(item) {
   const button = document.createElement('button');
@@ -298,7 +282,7 @@ function createLikeButton(item) {
   }
   updateHeartButtonVisuals();
 
-  // Toggle liked state and update Firestore on click.
+  // Toggle liked state and update votes in Firestore.
   button.addEventListener('click', async () => {
     isLiked = !isLiked;
     const voteChange = isLiked ? 1 : -1;
@@ -308,10 +292,7 @@ function createLikeButton(item) {
     votesCount.textContent = `${currentVotes} Votes`;
   });
 
-  // Wrap button and vote count in a container.
-  const container = document.createElement('div');
-  container.append(button, votesCount);
-  return container;
+  return { heartButton: button, votesCountEl: votesCount };
 }
 
 /**
@@ -322,12 +303,10 @@ export function setupModalCloseHandlers() {
   const closeButton = document.getElementById('close-modal-button');
   if (!modal) return;
 
-  // Close modal on close button click.
   if (closeButton) {
     closeButton.onclick = () => modal.classList.remove('active');
   }
 
-  // Close modal when clicking outside the modal content.
   modal.addEventListener('click', (e) => {
     if (e.target === modal) {
       modal.classList.remove('active');
@@ -343,10 +322,8 @@ export function setupMobileMenu() {
   const mobileMenuOverlay = document.querySelector('.mobile-menu-overlay');
   if (!fabMenu || !mobileMenuOverlay) return;
 
-  // Toggle the mobile menu overlay on FAB click.
   fabMenu.addEventListener('click', () => mobileMenuOverlay.classList.toggle('active'));
 
-  // Hide mobile menu if user clicks outside or on a menu link.
   mobileMenuOverlay.addEventListener('click', (e) => {
     if (e.target === mobileMenuOverlay || e.target.tagName === 'A') {
       mobileMenuOverlay.classList.remove('active');
