@@ -709,7 +709,7 @@ html {
 }
 
 .testimonial-content p {
-  font-family: 'Arial', sans-serif;
+  font-family: 'Josefin_Light', sans-serif; /* Using the same font as About content */
   font-size: 14px;
   color: #555;
   margin-bottom: 5px;
