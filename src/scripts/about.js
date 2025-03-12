@@ -35,26 +35,26 @@ const avatarColors = [
    * Array of fake testimonials.
    */
   const fakeTestimonials = [
-    { name: "Alice Johnson", review: "Absolutely amazing quality and design. Kaayko never disappoints!" },
+    { name: "Alice Johnson", review: "Absolutely amazing quality and design. Kaayko never disappoints! My mother in law was disappointed at first but then we fed her to pigs." },
     { name: "Brian Smith", review: "I love the unique style and attention to detail. Highly recommend!" },
-    { name: "Catherine Lee", review: "Exceptional quality and service. My go-to brand for stylish products." },
-    { name: "David Kim", review: "A fantastic experience from start to finish. Truly premium!" },
+    { name: "Catherine Lee", review: "My journey from a Neanderthal to Narayan is complete only because I stumbled on Kaayko!" },
+    { name: "David Kim", review: "A premium brand that deserves premium prices. The kids in China are OK with this!" },
     { name: "Emily Davis", review: "The products are as innovative as they are beautiful. Very impressed!" },
     { name: "Frank Moore", review: "Outstanding design and functionality. I wear my Kaayko shirt with pride." },
-    { name: "Grace Chen", review: "The detail and care in every product is evident. Love it!" },
-    { name: "Henry Patel", review: "High-quality, stylish, and sustainable. Exactly what I look for!" },
-    { name: "Isabella Rivera", review: "My favorite brand for everyday style and comfort." },
-    { name: "Jack Thompson", review: "The modern aesthetic and premium quality make Kaayko stand out." },
-    { name: "Katherine Adams", review: "Every piece feels uniquely crafted. I am a loyal customer." },
-    { name: "Liam Brown", review: "Top-notch materials and design. A truly remarkable brand." },
-    { name: "Mia Wilson", review: "The blend of tradition and modernity in their products is inspiring." },
-    { name: "Noah Martinez", review: "I appreciate the focus on sustainability and quality." },
-    { name: "Olivia Garcia", review: "Beautifully designed and exceptionally comfortable. Highly recommended!" },
-    { name: "Paul Anderson", review: "An experience that elevates your style effortlessly." },
-    { name: "Quinn Harris", review: "Every product tells a story. I am impressed with the creativity." },
-    { name: "Rachel Clark", review: "The craftsmanship is evident in every detail. A must-have brand!" },
-    { name: "Samuel Lewis", review: "Bold, innovative, and timeless. Kaayko has it all." },
-    { name: "Tina Reynolds", review: "Truly a brand that cares about its customers. Exquisite designs!" }
+    { name: "Grace Chen", review: "The detail and care in every product is evident. Love it! My wife loved it and she's a nihilist!" },
+    { name: "Henry Patel", review: "High-quality, stylish, and sustainable. Finally something impressed me after that quickly taken corner in Liverpool." },
+    { name: "Isabella Rivera", review: "My favorite brand for everyday style and comfort. If kaayko was a religion, I'm the priestess and shall rep it untill the Lord commandeth." },
+    { name: "Jack Thompson", review: "The modern aesthetic and premium quality make Kaayko stand out. Do you know who else stands out? Racism." },
+    { name: "Katherine Adams", review: "Every piece feels uniquely crafted. I am as loyal a customer as I am a husband and believe me, I've been married a dozen times." },
+    { name: "Liam Brown", review: "Top-notch materials and design. A truly remarkable brand. Without Kaayko, you feel nothing!" },
+    { name: "Mia Wilson", review: "The blend of tradition and modernity in their products is inspiring. Kaayko is life!" },
+    { name: "Noah Martinez", review: "I appreciate the focus on sustainability and quality. Their deforestation operations are highly ethical and tress consent before they are chopped. Wait, that's paper. Paper is made from tress." },
+    { name: "Olivia Garcia", review: "Beautifully designed and exceptionally comfortable. Highly recommended! I also highly recommend you staying hydrated." },
+    { name: "Paul Anderson", review: "An experience that elevates your style effortlessly. People will ask you, do not tell them." },
+    { name: "Quinn Harris", review: "Every product tells a story. I am impressed with the creativity. Some stories are too long but then I remind myself that it's not the stories but my attention span which sucks." },
+    { name: "Rachel Clark", review: "The craftsmanship is evident in every detail. A must-have brand! Even my unborn baby has an order placed!" },
+    { name: "Samuel Lewis", review: "Bold, innovative, and timeless. Kaayko has it all. If someone is offended, tell them to suck it." },
+    { name: "Tina Reynolds", review: "I was hungry for four days and finally I reached a town with a cafe and internet. I bought a t-shirt form Kaayko.com and died hungry. They call me a Corpse with Class." }
   ];
   
   /**
