@@ -8,6 +8,7 @@
 *    4) Footer (Price & Votes)
 *    5) Modal (Zoom View)
 *    6) Animations & Transitions
+*    7) About Modal & Testimonials Styles
 ************************************************************/
 
 /* ----------------------------------------------------------
@@ -19,13 +20,13 @@
   --spacing-large: 16px;
 
   /* Color variables */
-  --color-header-bg: #333;       /* Dark header */
-  --color-body-bg: #f9f9f9;        /* Light background */
-  --color-carousel-bg: #ececec;    /* Carousel container background */
-  --color-card-bg: #fff;           /* Product card background */
+  --color-header-bg: #333;
+  --color-body-bg: #f9f9f9;
+  --color-carousel-bg: #ececec;
+  --color-card-bg: #fff;
   --color-modal-overlay: rgba(0,0,0,0.8);
 
-  /* Accent colors – changed to professional orange */
+  /* Accent colors – professional orange */
   --color-accent: #ff8c00;
   --color-accent-hover: #ff8c00;
 }
@@ -83,7 +84,6 @@ html {
   color: #ccc;
 }
 
-/* Desktop Top Menu */
 .top-menu {
   display: flex;
   justify-content: center;
@@ -110,9 +110,8 @@ html {
   transform: scale(1.05);
 }
 
-/* FAB Menu (Mobile) */
 .fab-menu {
-  display: none; /* Only visible on mobile */
+  display: none;
   position: fixed;
   bottom: 20px;
   right: 20px;
@@ -143,7 +142,6 @@ html {
   font-size: 24px;
 }
 
-/* Mobile Menu Overlay */
 .mobile-menu-overlay {
   display: none;
   position: fixed;
@@ -222,7 +220,7 @@ html {
 .img-container {
   position: relative;
   width: 100%;
-  padding-top: 75%; /* ~4:3 ratio */
+  padding-top: 75%;
   overflow: hidden;
   margin-bottom: var(--spacing-medium);
 }
@@ -320,13 +318,13 @@ html {
 
 .heart-button:hover {
   transform: scale(1.1);
-  /* box-shadow: 0 0 4px rgba(0,0,0,0.15); */
 }
 
 .heart-button::before {
   content: "";
   display: block;
-  width: 100%; height: 100%;
+  width: 100%; 
+  height: 100%;
   background-color: #ccc;
   clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
   transition: background-color 0.3s ease, transform 0.2s ease;
@@ -360,10 +358,11 @@ html {
 5. Modal (Zoom/Enlarge)
 ---------------------------------------------------------- */
 .modal {
-  display: none;
+  display: none; /* Hidden by default */
   position: fixed;
   top: 0; left: 0;
-  width: 100%; height: 100%;
+  width: 100%; 
+  height: 100%;
   background-color: var(--color-modal-overlay);
   z-index: 2000;
   justify-content: center;
@@ -383,7 +382,8 @@ html {
   background: #fff;
   max-width: 90%;
   max-height: 90%;
-  width: auto; height: auto;
+  width: auto;
+  height: auto;
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   display: flex;
@@ -434,8 +434,13 @@ html {
   color: #fff;
 }
 
-.modal-nav-left { left: 20px; }
-.modal-nav-right { right: 20px; }
+.modal-nav-left {
+  left: 20px;
+}
+
+.modal-nav-right {
+  right: 20px;
+}
 
 .modal-image-container {
   width: 100%;
@@ -499,6 +504,242 @@ html {
 
 .carousel.fade-out {
   opacity: 0;
+}
+
+/* ----------------------------------------------------------
+7. About Modal & Testimonials Styles (Responsive Adjustments)
+---------------------------------------------------------- */
+
+/* About Modal Overlay */
+.about-modal {
+  display: none;
+  position: fixed;
+  top: 0; 
+  left: 0;
+  width: 100%; 
+  height: 100%;
+  background-color: var(--color-modal-overlay);
+  z-index: 3000;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.about-modal.active {
+  display: flex;
+  opacity: 1;
+}
+
+/* Main container for the About modal with fixed dimensions and overall padding */
+.about-modal-content {
+  position: relative;
+  background: #fff;
+  width: 80%;
+  max-width: 800px;
+  height: 80%;
+  max-height: 700px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  padding: 20px; /* Overall padding for a professional look */
+  animation: scaleUp 0.3s ease;
+  overflow: hidden;
+}
+
+/* Header area: contains the close button and tabs.
+   Reduced bottom margin for a tighter space. */
+.about-modal-header {
+  position: relative;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+  padding: 0 30px;
+  margin-bottom: 10px; /* Reduced from 20px to 10px */
+}
+
+/* Close button: extra spacing ensures it does not overlap any content.
+   On mobile, we adjust its position via media query below. */
+.about-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 28px;
+  color: #333;
+  cursor: pointer;
+  background: none;
+  border: none;
+  z-index: 11;
+  transition: color 0.2s ease;
+}
+
+.about-close:hover {
+  color: #000;
+}
+
+/* Tabs container: centered horizontally with ample gap */
+.tabs {
+  display: flex;
+  gap: 40px;
+}
+
+/* Tab link styling with increased padding for a larger click area */
+.tab-link {
+  font-family: 'Josefin_Bold', sans-serif;
+  font-size: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.3s;
+  color: #333;
+  padding: 10px 15px;
+}
+
+.tab-link:hover {
+  color: var(--color-accent);
+}
+
+.tab-link.active {
+  color: var(--color-accent);
+  position: relative;
+}
+
+.tab-link.active::after {
+  content: "";
+  position: absolute;
+  left: 0; 
+  bottom: 0;
+  width: 100%;
+  height: 3px;
+  background-color: var(--color-accent);
+  transition: width 0.3s ease;
+}
+
+/* Modal body: fills the remaining vertical space */
+.about-modal-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Scrollable container for tab content with aesthetic internal padding */
+.tab-content-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* Hide all tab content by default; show only the active tab */
+.tab-content {
+  display: none;
+  margin: 0;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* About tab content styling: header, sub-header, and description text */
+.about-text {
+  text-align: center;
+  padding: 0 20px; /* Extra horizontal padding */
+}
+
+.about-text h2 {
+  font-family: 'Josefin_Bold', sans-serif;
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.about-text h3 {
+  font-family: 'Josefin_Medium', sans-serif;
+  font-size: 20px;
+  color: #555;
+  margin-bottom: 15px;
+}
+
+.about-text p {
+  font-family: 'Josefin_Light', sans-serif;
+  font-size: 16px;
+  color: #555;
+  line-height: 1.6;
+  margin: 0 auto;
+  max-width: 90%;
+}
+
+/* Testimonials: reviews container with extra side padding */
+.reviews-container {
+  border-top: 1px solid #eee;
+  margin-top: 20px;
+  padding: 20px; /* Uniform padding on all sides */
+}
+
+.testimonial {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 10px;
+}
+
+.testimonial:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--color-accent);
+  color: #fff;
+  font-family: 'Josefin_Bold', sans-serif;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+}
+
+.testimonial-content p {
+  font-family: 'Arial', sans-serif;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+.testimonial-content .name {
+  font-family: 'Josefin_Medium', sans-serif;
+  font-size: 14px;
+  color: #333;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .about-modal-content {
+    width: 90%;
+    padding: 10px; /* Reduce overall padding on smaller screens */
+  }
+  .about-modal-header {
+    padding: 0 15px;
+    margin-bottom: 10px;
+  }
+  .tab-content-container {
+    padding: 10px; /* Reduced padding for mobile */
+  }
+  /* Adjust close button position on mobile if necessary */
+  .about-close {
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+  }
 }
 
 /* End of storestyle.css */
