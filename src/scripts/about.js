@@ -1,41 +1,42 @@
-// scripts/about.js
-
 /**
- * This module initializes the About modal.
- * It sets up tab switching between the "About" and "Testimonials" sections,
- * shuffles and populates the Testimonials tab with fake reviews,
- * and randomizes the avatar background colors for visual variety.
+ * scripts/about.js
+ * 
+ * Purpose:
+ *   - Provides fakeTestimonials array,
+ *   - shuffleArray() function,
+ *   - createTestimonialElement() function
+ * 
+ * Then the "testimonials.html" can import these to display random reviews.
  */
 
 /**
- * Array of possible avatar background colors for variety.
+ * An array of possible avatar background colors
  */
 const avatarColors = [
-    "#ff8c00", // Professional orange
-    "#e63946", // Red
-    "#2a9d8f", // Teal
-    "#264653", // Dark slate
-    "#f4a261", // Light orange
-    "#457b9d", // Steel blue
-    "#8a4fff", // Purple
-    "#00b4d8", // Cyan
-    "#6a994e"  // Greenish
-  ];
-  
-  /**
-   * Returns a random color from the avatarColors array.
-   * @returns {string} A random hex color code.
-   */
-  function getRandomAvatarColor() {
-    const index = Math.floor(Math.random() * avatarColors.length);
-    return avatarColors[index];
-  }
-  
-  /**
-   * Array of fake testimonials.
-   */
-  const fakeTestimonials = [
-    { name: "Alice Johnson", review: "Absolutely amazing quality and design. Kaayko never disappoints! My mother in law was disappointed at first but then we fed her to pigs." },
+  "#ff8c00", // Orange
+  "#e63946", // Red
+  "#2a9d8f", // Teal
+  "#264653", // Dark slate
+  "#f4a261", // Light orange
+  "#457b9d", // Steel blue
+  "#8a4fff", // Purple
+  "#00b4d8", // Cyan
+  "#6a994e"  // Greenish
+];
+
+/**
+ * Returns a random color from avatarColors array.
+ */
+function getRandomAvatarColor() {
+  const index = Math.floor(Math.random() * avatarColors.length);
+  return avatarColors[index];
+}
+
+/**
+ * An array of fake testimonials
+ */
+export const fakeTestimonials = [
+  { name: "Alice Johnson", review: "Absolutely amazing quality and design. Kaayko never disappoints! My mother in law was disappointed at first but then we fed her to pigs." },
     { name: "Brian Smith", review: "I love the unique style and attention to detail. Highly recommend!" },
     { name: "Catherine Lee", review: "My journey from a Neanderthal to Narayan is complete only because I stumbled on Kaayko!" },
     { name: "David Kim", review: "A premium brand that deserves premium prices. The kids in China are OK with this!" },
@@ -55,94 +56,49 @@ const avatarColors = [
     { name: "Rachel Clark", review: "The craftsmanship is evident in every detail. A must-have brand! Even my unborn baby has an order placed!" },
     { name: "Samuel Lewis", review: "Bold, innovative, and timeless. Kaayko has it all. If someone is offended, tell them to suck it." },
     { name: "Tina Reynolds", review: "I was hungry for four days and finally I reached a town with a cafe and internet. I bought a t-shirt form Kaayko.com and died hungry. They call me a Corpse with Class." }
-  ];
-  
-  /**
-   * Shuffles an array in place using the Fisher-Yates algorithm.
-   * @param {Array} array - The array to shuffle.
-   * @returns {Array} The shuffled array.
-   */
-  function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
+];
+
+/**
+ * Shuffles an array in place using the Fisher-Yates algorithm
+ * @param {Array} array - The array to shuffle
+ * @returns {Array} The same array, shuffled
+ */
+export function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
   }
-  
-  /**
-   * Populates the Testimonials tab with fake reviews.
-   */
-  function populateTestimonials() {
-    const reviewsContainer = document.querySelector("#testimonialsTab .reviews-container");
-    if (!reviewsContainer) return;
-    
-    reviewsContainer.innerHTML = "";
-    const testimonials = shuffleArray([...fakeTestimonials]);
-    testimonials.forEach(testimonial => {
-      const testimonialElem = createTestimonialElement(testimonial);
-      reviewsContainer.appendChild(testimonialElem);
-    });
-  }
-  
-  /**
-   * Creates a testimonial element with a random avatar background.
-   * @param {Object} data - The testimonial data containing 'name' and 'review'.
-   * @returns {HTMLElement} The testimonial element.
-   */
-  function createTestimonialElement(data) {
-    const container = document.createElement("div");
-    container.className = "testimonial";
-    
-    const avatar = document.createElement("div");
-    avatar.className = "avatar";
-    avatar.textContent = data.name.charAt(0).toUpperCase();
-    avatar.style.backgroundColor = getRandomAvatarColor();
-    
-    const content = document.createElement("div");
-    content.className = "testimonial-content";
-    
-    const reviewText = document.createElement("p");
-    reviewText.textContent = `"${data.review}"`;
-    
-    const reviewerName = document.createElement("span");
-    reviewerName.className = "name";
-    reviewerName.textContent = data.name;
-    
-    content.appendChild(reviewText);
-    content.appendChild(reviewerName);
-    container.appendChild(avatar);
-    container.appendChild(content);
-    
-    return container;
-  }
-  
-  /**
-   * Initializes tab functionality for the About modal.
-   */
-  function initAboutTabs() {
-    const tabLinks = document.querySelectorAll(".tab-link");
-    const tabContents = document.querySelectorAll(".tab-content");
-    
-    tabLinks.forEach(link => {
-      link.addEventListener("click", () => {
-        tabLinks.forEach(l => l.classList.remove("active"));
-        tabContents.forEach(content => content.classList.remove("active"));
-        
-        link.classList.add("active");
-        const targetId = link.getAttribute("data-tab");
-        document.getElementById(targetId).classList.add("active");
-        
-        if (targetId === "testimonialsTab") {
-          populateTestimonials();
-        }
-      });
-    });
-  }
-  
-  /**
-   * Initialize the About modal tabs when DOM is ready.
-   */
-  document.addEventListener("DOMContentLoaded", () => {
-    initAboutTabs();
-  });
+  return array;
+}
+
+/**
+ * Creates a testimonial element with random avatar background
+ * @param {Object} data - { name, review }
+ * @returns {HTMLElement} A .testimonial DOM element
+ */
+export function createTestimonialElement(data) {
+  const container = document.createElement("div");
+  container.className = "testimonial";
+
+  const avatar = document.createElement("div");
+  avatar.className = "avatar";
+  avatar.textContent = data.name.charAt(0).toUpperCase();
+  avatar.style.backgroundColor = getRandomAvatarColor();
+
+  const content = document.createElement("div");
+  content.className = "testimonial-content";
+
+  const reviewText = document.createElement("p");
+  reviewText.textContent = `"${data.review}"`;
+
+  const reviewerName = document.createElement("span");
+  reviewerName.className = "name";
+  reviewerName.textContent = data.name;
+
+  content.appendChild(reviewText);
+  content.appendChild(reviewerName);
+  container.appendChild(avatar);
+  container.appendChild(content);
+
+  return container;
+}

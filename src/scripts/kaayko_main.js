@@ -1,29 +1,34 @@
 // scripts/kaayko_main.js
+
 import {
-    fetchProductData,
-    fetchAllTags
-  } from "./kaayko_dataService.js";
-  import {
-    populateCarousel,
-    setupModalCloseHandlers,
-    setupMobileMenu,
-    populateMenu
-  } from "./kaayko_ui.js";
-  
-  /**
-   * The entry point: fetch all products, set up the UI, etc.
-   */
-  document.addEventListener("DOMContentLoaded", () => {
-    // Disable right-click context menu
-    document.addEventListener("contextmenu", event => event.preventDefault());
-  
-    // 1. Fetch and render all products initially
-    fetchProductData().then(products => populateCarousel(products));
-  
-    // 2. Fetch all tags (including "All") and populate the dynamic menu
-    fetchAllTags().then(tags => populateMenu(tags));
-  
-    // 3. Setup modal close functionality and mobile menu toggle
-    setupModalCloseHandlers();
-    setupMobileMenu();
-  });
+  fetchProductData,
+  fetchAllCategories
+} from "./kaayko_dataService.js";
+
+import {
+  populateCarousel,
+  setupModalCloseHandlers,
+  setupMobileMenu,
+  populateMenu
+} from "./kaayko_ui.js";
+
+/**
+ * Main entry point for Kaayko Store:
+ * 1) Shows all products in the carousel
+ * 2) Builds a dynamic menu from categories (like "Apparel")
+ * 3) Sets up modals & mobile menu
+ */
+document.addEventListener("DOMContentLoaded", () => {
+  // Disable right-click
+  document.addEventListener("contextmenu", event => event.preventDefault());
+
+  // 1) Load & display all products
+  fetchProductData().then(products => populateCarousel(products));
+
+  // 2) Load categories (no "All") & populate menu
+  fetchAllCategories().then(categories => populateMenu(categories));
+
+  // 3) Setup product modal close & mobile menu
+  setupModalCloseHandlers();
+  setupMobileMenu();
+});

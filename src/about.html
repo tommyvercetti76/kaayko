@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kaayko | About</title>
+
+  <!-- Same storestyle.css for consistent design -->
+  <link rel="stylesheet" href="storestyle.css"/>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+  <header class="header">
+    <h1 class="header-title">Kaayko Store</h1>
+    <p class="header-subtitle">Vote now, pay later.</p>
+
+    <!-- Simple nav for about page -->
+    <nav class="top-menu">
+      <ul>
+        <!-- We want the order: Apparel, About, Testimonials -->
+        <li><a href="index.html">Apparel</a></li>
+        <li><a href="about.html" class="active">About</a></li>
+        <li><a href="testimonials.html">Testimonials</a></li>
+      </ul>
+    </nav>
+
+    <!-- FAB for Mobile Menu -->
+    <button class="fab-menu" aria-label="Open Menu">
+      <span class="material-icons">menu</span>
+    </button>
+  </header>
+
+  <div class="mobile-menu-overlay">
+    <ul>
+      <li><a href="index.html">Apparel</a></li>
+      <li><a href="about.html" class="active">About</a></li>
+      <li><a href="testimonials.html">Testimonials</a></li>
+    </ul>
+  </div>
+
+  <main style="flex: 1;">
+    <div class="about-hero" style="text-align: center; margin-bottom: 20px;">
+      <img src="assets/about-header.jpg" alt="Kaayko About" style="max-width: 100%; height: auto; border-radius: 6px;" />
+    </div>
+    <section class="about-text" style="max-width: 800px; margin: 0 auto; text-align: center;">
+      <h2>Welcome To Kaayko</h2>
+      <h3 style="font-family: 'Josefin_Light'; color: #666; margin-bottom: 20px;">
+        Coming at your mind, not the money.
+      </h3>
+      <p>
+        At Kaayko, we believe you need a better thought representation when 
+        you are putting yourself “Out There”. 
+        “Out There” is anywhere you feel attacked by bad vibes, crazy people 
+        and unruly pets, kids or both. 
+        We believe that True Zen is not achieved by sitting on a mountain 
+        hoping the world will heal itself. 
+        True Zen is in putting on Kaayko 
+        Merch and battling these adversities every single day. 
+        Kaayko is a rebellion you need but do not deserve. 
+        If you truly see the world as it is, you will wear Kaayko.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
+  </footer>
+
+  <script type="module" src="scripts/kaayko_main.js"></script>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

@@ -1,4 +1,5 @@
 // scripts/kaayko_dataService.js
+
 import { db, storage } from "./kaayko_firebaseConfig.js";
 import {
   collection,
@@ -16,9 +17,10 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
 
 /**
- * Fetches all products from the "kaaykoproducts" collection.
- * Merges each product with its associated image URLs.
- * @returns {Promise<Array<Object>>} Array of product objects with imgSrc added.
+ * Fetches all products from "kaaykoproducts", merges each product
+ * with its associated image URLs from Firebase Storage.
+ *
+ * @returns {Promise<Array<Object>>} Array of products, each with "imgSrc".
  */
 export async function fetchProductData() {
   try {
@@ -28,13 +30,14 @@ export async function fetchProductData() {
       ...docSnap.data()
     }));
 
-    // Fetch images for each product in parallel
+    // For each product, fetch images
     const productsWithImages = await Promise.all(
       productList.map(async product => {
         const images = await fetchImagesByProductId(product.productID);
         return { ...product, imgSrc: images };
       })
     );
+
     return productsWithImages;
   } catch (error) {
     console.error("Error fetching product data:", error);
@@ -43,9 +46,9 @@ export async function fetchProductData() {
 }
 
 /**
- * Fetches image URLs for a given product from Firebase Storage.
+ * Fetches image URLs for a given product ID from Firebase Storage.
  * @param {string} productID - The product's folder ID in Storage.
- * @returns {Promise<Array<string>>} Array of download URLs.
+ * @returns {Promise<Array<string>>} Array of image download URLs.
  */
 export async function fetchImagesByProductId(productID) {
   try {
@@ -58,71 +61,63 @@ export async function fetchImagesByProductId(productID) {
   }
 }
 
-/**
- * Fetches all unique tags from products in the "kaaykoproducts" collection.
- * @returns {Promise<Array<string>>} Array of unique tags (plus "All").
- */
-export async function fetchAllTags() {
-  try {
-    const allProducts = await fetchProductData();
-    const tagsSet = new Set();
+/* --------------------------------------------------------------------------
+ *                          Category-Based Fetching
+ * -------------------------------------------------------------------------- */
 
-    // Collect all tags from each product's tags array
-    allProducts.forEach(product => {
-      if (product.tags && Array.isArray(product.tags)) {
-        product.tags.forEach(tag => tagsSet.add(tag));
+/**
+ * Fetches unique categories from "kaaykoproducts".
+ * We remove "All" entirely, so only real categories remain.
+ *
+ * @returns {Promise<Array<string>>} e.g. ["Apparel", "Shoes"]
+ * If you only want "Apparel", ensure the Firestore docs have that category.
+ */
+export async function fetchAllCategories() {
+  try {
+    const snapshot = await getDocs(collection(db, "kaaykoproducts"));
+    const categoriesSet = new Set();
+
+    snapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      if (typeof data.category === "string" && data.category.trim().length > 0) {
+        categoriesSet.add(data.category);
       }
     });
 
-    // Add an "All" option at the beginning
-    // We'll handle "All" logic in the UI code
-    return ["All", ...Array.from(tagsSet)];
+    // Return an array with no "All"
+    return [...Array.from(categoriesSet)];
   } catch (error) {
-    console.error("Error fetching tags:", error);
-    return ["All"];
-  }
-}
-
-/**
- * Fetches products whose tags array contains the specified tag (case-sensitive).
- * @param {string} tag - The tag to filter by.
- * @returns {Promise<Array<Object>>} Array of product objects with the given tag.
- */
-export async function fetchProductsByTag(tag) {
-  try {
-    // If user selected "All," return all products
-    if (tag === "All") {
-      return await fetchProductData();
-    }
-
-    // Use array-contains for tag-based filtering
-    const q = query(collection(db, "kaaykoproducts"), where("tags", "array-contains", tag));
-    const snapshot = await getDocs(q);
-
-    // Merge image URLs for each filtered product
-    const products = snapshot.docs.map(docSnap => ({
-      id: docSnap.id,
-      ...docSnap.data()
-    }));
-
-    const productsWithImages = await Promise.all(
-      products.map(async product => {
-        const images = await fetchImagesByProductId(product.productID);
-        return { ...product, imgSrc: images };
-      })
-    );
-
-    return productsWithImages;
-  } catch (error) {
-    console.error("Error fetching products by tag:", error);
+    console.error("Error fetching categories:", error);
     return [];
   }
 }
 
 /**
- * Updates the vote count for a product using atomic increment.
- * @param {string} productId - The Firestore document ID.
- * @param {number} voteChange - +1 for like, -1 for unlike.
+ * Fetches products for a given category. If your site
+ * only has "Apparel," then that is all you'll see.
+ *
+ * @param {string} category - The category name from Firestore docs.
+ * @returns {Promise<Array<Object>>} Filtered product objects.
+ */
+export async function fetchProductsByCategory(category) {
+  try {
+    const allProducts = await fetchProductData();
+    // If user selects "Apparel", we filter for product.category === "Apparel"
+    return allProducts.filter(product => product.category === category);
+  } catch (error) {
+    console.error("Error fetching products by category:", error);
+    return [];
+  }
+}
+
+/* --------------------------------------------------------------------------
+ *                          Voting (Likes)
+ * -------------------------------------------------------------------------- */
+
+/**
+ * Atomically updates the "votes" field in Firestore for a given product.
+ * @param {string} productId - The document ID in Firestore.
+ * @param {number} voteChange - +1 or -1
  */
 export async function updateProductVotes(productId, voteChange) {
   try {

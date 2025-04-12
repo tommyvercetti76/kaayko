@@ -1,18 +1,24 @@
 /************************************************************
-*  STORESTYLE.CSS - Unified & Consolidated with Background Colors
+*  STORESTYLE.CSS - Unified Styles for Kaayko
 *  
-*  Contains:
-*    1) General & Reset
-*    2) Header & Menus
-*    3) Carousel Grid & Card Items
-*    4) Footer (Price & Votes)
-*    5) Modal (Zoom View)
+*  Purpose:
+*    - Provide a single stylesheet used by ALL site pages:
+*      (index.html, about.html, testimonials.html)
+*    - Includes pinned footer, header + mobile menu,
+*      product carousel, and optional testimonials styling.
+* 
+*  Sections:
+*    1) Reset & Body Layout
+*    2) Header & Mobile Menu
+*    3) Carousel (Index Page)
+*    4) Footer & Sticky Bottom
+*    5) Modal (Zoomed Product Images)
 *    6) Animations & Transitions
-*    7) About Modal & Testimonials Styles
+*    7) Testimonials
 ************************************************************/
 
 /* ----------------------------------------------------------
-1. General & Reset
+1. Reset & Body Layout
 ---------------------------------------------------------- */
 :root {
   --spacing-small: 4px;
@@ -31,6 +37,7 @@
   --color-accent-hover: #ff8c00;
 }
 
+/* Custom fonts (Josefin) */
 @font-face {
   font-family: 'Josefin_Medium';
   src: url('fonts/JosefinSans-Medium.ttf') format('truetype');
@@ -46,22 +53,33 @@
   src: url('fonts/JosefinSans-Light.ttf') format('truetype');
 }
 
+/* Basic reset */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-body,
-html {
-  font-family: 'Arial', sans-serif;
+/* Flex layout for pinned footer */
+html, body {
+  height: 100%;
   background-color: var(--color-body-bg);
   color: #333;
   scroll-behavior: smooth;
 }
 
+body {
+  font-family: 'Arial', sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1; /* Let main content push footer to bottom */
+}
+
 /* ----------------------------------------------------------
-2. Header & Menus
+2. Header & Mobile Menu
 ---------------------------------------------------------- */
 .header {
   padding: var(--spacing-large);
@@ -84,6 +102,7 @@ html {
   color: #ccc;
 }
 
+/* Desktop top menu container */
 .top-menu {
   display: flex;
   justify-content: center;
@@ -97,6 +116,7 @@ html {
   gap: 20px;
 }
 
+/* Desktop menu items */
 .top-menu li a {
   color: #fff;
   text-decoration: none;
@@ -110,6 +130,7 @@ html {
   transform: scale(1.05);
 }
 
+/* Floating Action Button for mobile (hamburger icon) */
 .fab-menu {
   display: none;
   position: fixed;
@@ -142,10 +163,12 @@ html {
   font-size: 24px;
 }
 
+/* Mobile overlay menu for small screens */
 .mobile-menu-overlay {
   display: none;
   position: fixed;
-  top: 0; left: 0;
+  top: 0; 
+  left: 0;
   width: 100%;
   height: 100%;
   background-color: rgba(0,0,0,0.8);
@@ -184,13 +207,18 @@ html {
   color: var(--color-accent);
 }
 
+/* Hide desktop menu, show FAB on small screens */
 @media (max-width: 768px) {
-  .top-menu { display: none; }
-  .fab-menu { display: flex; }
+  .top-menu { 
+    display: none; 
+  }
+  .fab-menu { 
+    display: flex; 
+  }
 }
 
 /* ----------------------------------------------------------
-3. Carousel Grid & Card Items
+3. Carousel Grid & Card Items (For Index Page)
 ---------------------------------------------------------- */
 .carousel {
   display: grid;
@@ -217,6 +245,7 @@ html {
   box-shadow: 0 6px 18px rgba(0,0,0,0.15);
 }
 
+/* Container for images in the carousel */
 .img-container {
   position: relative;
   width: 100%;
@@ -228,7 +257,8 @@ html {
 .carousel-image {
   position: absolute;
   top: 0; left: 0;
-  width: 100%; height: 100%;
+  width: 100%; 
+  height: 100%;
   object-fit: cover;
   border-radius: 8px;
 }
@@ -253,6 +283,7 @@ html {
   background-color: #333;
 }
 
+/* Titles & descriptions inside carousel */
 .title {
   font-family: 'Josefin_Bold', sans-serif;
   font-size: 18px;
@@ -275,7 +306,7 @@ html {
 }
 
 /* ----------------------------------------------------------
-4. Footer (Price & Votes)
+4. Footer & Sticky Bottom
 ---------------------------------------------------------- */
 .footer-elements {
   display: grid;
@@ -354,8 +385,17 @@ html {
   100% { transform: scale(1); }
 }
 
+/* The site-wide footer pinned at bottom */
+footer {
+  text-align: center;
+  background: #f1f1f1;
+  padding: 20px;
+  font-family: 'Josefin_Light';
+  font-size: 14px;
+}
+
 /* ----------------------------------------------------------
-5. Modal (Zoom/Enlarge)
+5. Modal (Zoom/Enlarge) for Product Images
 ---------------------------------------------------------- */
 .modal {
   display: none; /* Hidden by default */
@@ -462,14 +502,16 @@ html {
 /* ----------------------------------------------------------
 6. Animations & Transitions
 ---------------------------------------------------------- */
-/* Active Menu Item Underline (Professional Orange) */
+
+/* Active menu item highlight (professional orange) */
 .active-tag {
   position: relative;
   font-weight: bold;
-  color: #ff8c00;
+  color: var(--color-accent);
   text-decoration: none;
 }
 
+/* Animate an optional underline if desired */
 .active-tag::after {
   content: "";
   position: absolute;
@@ -477,13 +519,13 @@ html {
   bottom: -2px;
   width: 100%;
   height: 2px;
-  background-color: #ff8c00;
+  background-color: var(--color-accent);
   transform: scaleX(1);
   transform-origin: bottom left;
   transition: transform 0.3s ease-out;
 }
 
-/* Entrance Animation for Carousel Items */
+/* Carousel item fade-in animation */
 .carousel-item.animate {
   opacity: 0;
   transform: translateY(20px);
@@ -495,7 +537,7 @@ html {
   100% { opacity: 1; transform: translateY(0); }
 }
 
-/* Fade Transition for Carousel when filtering */
+/* Fade transition when filtering */
 .carousel {
   background-color: transparent;
   transition: opacity 0.3s ease;
@@ -507,183 +549,13 @@ html {
 }
 
 /* ----------------------------------------------------------
-7. About Modal & Testimonials Styles (Revised - No Top Divider)
+7. Testimonials Styles
 ---------------------------------------------------------- */
-
-/* About Modal Overlay: full-screen dark overlay */
-.about-modal {
-  display: none;
-  position: fixed;
-  top: 0; 
-  left: 0;
-  width: 100%; 
-  height: 100%;
-  background-color: var(--color-modal-overlay);
-  z-index: 3000;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.about-modal.active {
-  display: flex;
-  opacity: 1;
-}
-
-/* Main container for the About modal with fixed dimensions and overall padding */
-.about-modal-content {
-  position: relative;
-  background: #fff;
-  width: 80%;
-  max-width: 800px;
-  height: 80%;
-  max-height: 700px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  display: flex;
-  flex-direction: column;
-  padding: 20px;  /* Overall internal padding */
-  animation: scaleUp 0.3s ease;
-  overflow: hidden;
-}
-
-/* Header area for close button and tabs */
-.about-modal-header {
-  position: relative;
-  height: 60px; /* Fixed height for header (tabs + close button) */
-  display: flex;
-  align-items: center;
-  justify-content: center; /* Center tabs horizontally */
-  background-color: #fff;
-  padding: 0 20px;
-  margin-bottom: 10px; /* Reduced margin between header and body */
-}
-
-/* Close button (X) in the header with extra spacing */
-.about-close {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  font-size: 28px;
-  color: #333;
-  cursor: pointer;
-  background: none;
-  border: none;
-  z-index: 11;
-  transition: color 0.2s ease;
-}
-
-.about-close:hover {
-  color: #000;
-}
-
-/* Tabs container: evenly spaced tabs */
-.tabs {
-  display: flex;
-  gap: 40px;
-}
-
-/* Tab link styling: ample padding and hover effects */
-.tab-link {
-  font-family: 'Josefin_Bold', sans-serif;
-  font-size: 16px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: color 0.3s;
-  color: #333;
-  padding: 10px 15px;
-}
-
-.tab-link:hover {
-  color: var(--color-accent);
-}
-
-.tab-link.active {
-  color: var(--color-accent);
-  position: relative;
-}
-
-.tab-link.active::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: 3px;
-  background-color: var(--color-accent);
-  transition: width 0.3s ease;
-}
-
-/* Modal body: occupies remaining space, holds tab contents */
-.about-modal-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* Scrollable container for tab content with ample internal padding */
-.tab-content-container {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-}
-
-/* Hide all tab content by default; show active tab content */
-.tab-content {
-  display: none;
-  margin: 0;
-}
-
-.tab-content.active {
-  display: block;
-}
-
-/* About Tab Content Styling */
-.about-text {
-  text-align: center;
-  padding: 0 20px; /* Extra horizontal padding for about text */
-}
-
-.about-text h2 {
-  font-family: 'Josefin_Bold', sans-serif;
-  font-size: 24px;
-  color: #333;
-  margin-bottom: 10px;
-  text-align: center;
-}
-
-.about-text h3 {
-  font-family: 'Josefin_Medium', sans-serif;
-  font-size: 20px;
-  color: #555;
-  margin-bottom: 15px;
-  text-align: center;
-}
-
-.about-text p {
-  font-family: 'Josefin_Light', sans-serif;
-  font-size: 16px;
-  color: #555;
-  line-height: 1.6;
-  margin: 0 auto;
-  max-width: 90%;
-  text-align: center;
-}
-
-/* Testimonials Styles */
-
-/* Reviews container: Removed border-top to avoid divider above first testimonial */
 .reviews-container {
-  /* margin-top: 20px; */
   padding-left: 20px;
   padding-right: 20px;
 }
 
-/* Testimonial items: Each has a bottom divider except the last one */
 .testimonial {
   display: flex;
   align-items: flex-start;
@@ -697,13 +569,13 @@ html {
   margin-bottom: 0;
 }
 
-/* Avatar styling: Circle with random background color (set in JS) */
+/* Circular avatar with random background (set by about.js) */
 .avatar {
   flex-shrink: 0;
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: var(--color-accent); /* Default fallback */
+  background-color: var(--color-accent);
   color: #fff;
   font-family: 'Josefin_Bold', sans-serif;
   font-size: 18px;
@@ -713,7 +585,6 @@ html {
   margin-right: 16px;
 }
 
-/* Testimonial content text styling using Josefin fonts */
 .testimonial-content p {
   font-family: 'Josefin_Light', sans-serif;
   font-size: 14px;
@@ -726,26 +597,3 @@ html {
   font-size: 14px;
   color: #333;
 }
-
-/* Responsive Adjustments for smaller screens */
-@media (max-width: 768px) {
-  .about-modal-content {
-    width: 90%;
-    padding: 10px;
-  }
-  .about-modal-header {
-    padding: 0 15px;
-    margin-bottom: 10px;
-  }
-  .tab-content-container {
-    padding: 10px;
-  }
-  /* Adjust close button for mobile */
-  .about-close {
-    top: 10px;
-    right: 10px;
-    font-size: 24px;
-  }
-}
-
-/* End of storestyle.css */

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kaayko | Testimonials</title>
+
+  <link rel="stylesheet" href="storestyle.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+  <header class="header">
+    <h1 class="header-title">Kaayko Store</h1>
+    <p class="header-subtitle">Vote now, pay later.</p>
+
+    <!-- Simple top menu: "Apparel", "About", "Testimonials" -->
+    <nav class="top-menu">
+      <ul>
+        <li><a href="index.html">Apparel</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="testimonials.html" class="active">Testimonials</a></li>
+      </ul>
+    </nav>
+
+    <button class="fab-menu" aria-label="Open Menu">
+      <span class="material-icons">menu</span>
+    </button>
+  </header>
+
+  <div class="mobile-menu-overlay">
+    <ul>
+      <li><a href="index.html">Apparel</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="testimonials.html" class="active">Testimonials</a></li>
+    </ul>
+  </div>
+
+  <main style="max-width: 900px; margin: 30px auto; padding: 0 20px; flex: 1;">
+    <h2 style="
+      font-family: 'Josefin_Bold', sans-serif; 
+      font-size: 24px; 
+      color: #333;
+      margin-bottom: 20px;
+      text-align: center;
+    ">
+      What People Are Saying
+    </h2>
+
+    <!-- Container for the reviews, to be populated by about.js data -->
+    <div id="testimonialsContainer" class="reviews-container"></div>
+  </main>
+
+  <footer>
+    <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
+  </footer>
+
+  <!-- If you want the same store script logic for the mobile menu, you can do: -->
+  <script type="module" src="scripts/kaayko_main.js"></script>
+  <script type="module" src="scripts/kaayko_ui.js"></script>
+
+  <!-- Then import your about.js module below: -->
+  <script type="module">
+    import { fakeTestimonials, shuffleArray, createTestimonialElement } from "./scripts/about.js";
+
+    // Keep the year updated
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    function loadStandaloneTestimonials() {
+      const container = document.getElementById("testimonialsContainer");
+      if (!container) return;
+
+      container.innerHTML = "";
+      // Shuffle the array so the testimonials appear in random order
+      const shuffled = shuffleArray([...fakeTestimonials]);
+
+      // Create each testimonial DOM element and append it
+      shuffled.forEach(t => {
+        const elem = createTestimonialElement(t);
+        container.appendChild(elem);
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", loadStandaloneTestimonials);
+  </script>
+</body>
+</html>

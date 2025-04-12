@@ -4,106 +4,65 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Kaayko Store</title>
-  <!-- Main CSS file -->
+
+  <!-- Main CSS file (the same for all pages) -->
   <link rel="stylesheet" href="storestyle.css">
-  <!-- Material Icons for modal and menu icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
-  <!-- Header with Title, Subtitle, and Navigation Menu -->
   <header class="header">
     <h1 class="header-title">Kaayko Store</h1>
     <p class="header-subtitle">Vote now, pay later.</p>
-    <!-- Desktop Navigation Menu (populated dynamically by populateMenu(tags)) -->
+
+    <!-- Desktop Nav: empty UL; filled by populateMenu() in JS -->
     <nav class="top-menu">
-      <ul>
-        <!-- Dynamic items will be injected here -->
-      </ul>
+      <ul></ul>
     </nav>
-    <!-- Floating Action Button for Mobile Menu -->
+
+    <!-- FAB for Mobile Nav -->
     <button class="fab-menu" aria-label="Open Menu">
       <span class="material-icons">menu</span>
     </button>
   </header>
   
-  <!-- Mobile Menu Overlay (populated dynamically) -->
+  <!-- Mobile overlay with an empty UL, also filled by populateMenu() -->
   <div class="mobile-menu-overlay">
-    <ul>
-      <!-- Dynamic items will be injected here -->
-    </ul>
+    <ul></ul>
   </div>
   
-  <!-- Main Carousel Section (populated with product cards) -->
-  <section id="carousel" class="carousel" aria-live="polite"></section>
-  
-  <!-- Modal for Zoomable Product Images -->
+  <main style="flex: 1;">
+    <section id="carousel" class="carousel" aria-live="polite"></section>
+  </main>
+
+  <!-- Modal for zoomable images -->
   <div id="modal" class="modal" role="dialog" aria-modal="true">
     <div class="modal-content">
-      <!-- Close Button for Product Modal -->
       <button id="close-modal-button" class="modal-close material-icons" aria-label="Close modal">
         close
       </button>
-      <!-- Navigation Arrows -->
       <button class="modal-nav modal-nav-left material-icons" aria-label="Previous image">
         chevron_left
       </button>
       <button class="modal-nav modal-nav-right material-icons" aria-label="Next image">
         chevron_right
       </button>
-      <!-- Container for dynamically injected modal images -->
-      <div id="modal-image-container" class="modal-image-container">
-        <!-- Filled by openModal() -->
-      </div>
+      <div id="modal-image-container" class="modal-image-container"></div>
     </div>
   </div>
-  
-  <!-- About Modal: Contains tabbed content for About & Testimonials -->
-  <div id="aboutModal" class="modal about-modal" role="dialog" aria-modal="true">
-    <div class="about-modal-content">
-      <!-- Modal Header: Contains the Close button and Tabs -->
-      <div class="about-modal-header">
-        <!-- Close Button with extra spacing -->
-        <button id="close-about-modal" class="modal-close about-close material-icons" aria-label="Close About modal">
-          close
-        </button>
-        <!-- Tabs Row: Centered tabs -->
-        <div class="tabs">
-          <button class="tab-link active" data-tab="aboutTab">About</button>
-          <button class="tab-link" data-tab="testimonialsTab">Testimonials</button>
-        </div>
-      </div>
-      <!-- Modal Body: Fixed area for tab contents -->
-      <div class="about-modal-body">
-        <div class="tab-content-container">
-          <!-- About Tab Content: Includes a header, sub-header, and description -->
-          <div id="aboutTab" class="tab-content active">
-            <div class="about-text">
-              <h2>Welcome To Kaayko</h2>
-              <h3>The Rebellion You Need (but do not deserve)</h3>
-              <p>
-                At Kaayko, we believe you need a better thought representation when you are putting yourself “Out There”.
-                “Out There” is anywhere you feel attacked by bad vibes, crazy people and unruly pets, kids or both. 
-                At Kaayko, we believe that True Zen is not achieved sitting on a mountain and hoping the world will heal itself. 
-                True Zen is in putting on Kaayko Merch and battling these adversities every single day.
-              </p>
-            </div>
-          </div>
-          <!-- Testimonials Tab Content -->
-          <div id="testimonialsTab" class="tab-content">
-            <div class="reviews-container">
-              <!-- Testimonials will be dynamically injected via about.js -->
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- JavaScript Files -->
+
+  <footer>
+    <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
+  </footer>
+
+  <!-- Scripts -->
   <script type="module" src="scripts/kaayko_main.js"></script>
   <script type="module" src="scripts/kaayko_firebaseConfig.js"></script>
   <script type="module" src="scripts/kaayko_dataService.js"></script>
   <script type="module" src="scripts/kaayko_ui.js"></script>
-  <script type="module" src="scripts/about.js"></script>
+
+  <script>
+    // Keep the footer year updated
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
