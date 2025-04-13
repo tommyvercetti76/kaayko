@@ -1,11 +1,12 @@
 /************************************************************
 *  STORESTYLE.CSS - Unified Styles for Kaayko
-*  
+*
 *  Purpose:
 *    - Provide a single stylesheet used by ALL site pages:
 *      (index.html, about.html, testimonials.html)
 *    - Includes pinned footer, header + mobile menu,
-*      product carousel, and optional testimonials styling.
+*      product carousel, modal for zoomed images,
+*      testimonials styling, page headings, and a cover flow collage.
 *
 *  Sections:
 *    1) Reset & Body Layout
@@ -16,6 +17,7 @@
 *    6) Animations & Transitions
 *    7) Testimonials
 *    8) About & Testimonials Page Headings
+*    8A) Single-Row Cover Flow Collage for About Page Header
 ************************************************************/
 
 /* ----------------------------------------------------------
@@ -38,7 +40,6 @@
   --color-accent-hover: #ff8c00;
 }
 
-/* Custom fonts (Josefin) */
 @font-face {
   font-family: 'Josefin_Medium';
   src: url('fonts/JosefinSans-Medium.ttf') format('truetype');
@@ -54,14 +55,12 @@
   src: url('fonts/JosefinSans-Light.ttf') format('truetype');
 }
 
-/* Basic reset */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* Flex layout for pinned footer */
 html, body {
   height: 100%;
   background-color: var(--color-body-bg);
@@ -76,15 +75,15 @@ body {
 }
 
 main {
-  flex: 1; /* Let main content push footer to bottom */
-  padding: 0 var(--spacing-medium); /* Slight horizontal padding for smaller screens */
+  flex: 1;
+  padding: 0 var(--spacing-medium);
 }
 
 /* ----------------------------------------------------------
 2. Header & Mobile Menu
 ---------------------------------------------------------- */
 .header {
-  padding: var(--spacing-large);
+  padding: calc(var(--spacing-large) * 1.5) var(--spacing-large) var(--spacing-large);
   background: linear-gradient(135deg, #444 0%, #222 100%);
   color: #fff;
   text-align: center;
@@ -104,7 +103,6 @@ main {
   color: #ccc;
 }
 
-/* Desktop top menu container */
 .top-menu {
   display: flex;
   justify-content: center;
@@ -118,7 +116,6 @@ main {
   gap: 20px;
 }
 
-/* Desktop menu items */
 .top-menu li a {
   color: #fff;
   text-decoration: none;
@@ -132,7 +129,6 @@ main {
   transform: scale(1.05);
 }
 
-/* Floating Action Button for mobile (hamburger icon) */
 .fab-menu {
   display: none;
   position: fixed;
@@ -165,11 +161,10 @@ main {
   font-size: 24px;
 }
 
-/* Mobile overlay menu for small screens */
 .mobile-menu-overlay {
   display: none;
   position: fixed;
-  top: 0; 
+  top: 0;
   left: 0;
   width: 100%;
   height: 100%;
@@ -209,13 +204,22 @@ main {
   color: var(--color-accent);
 }
 
-/* Hide desktop menu, show FAB on small screens */
+/* For mobile: Increase header padding and font sizes */
 @media (max-width: 768px) {
-  .top-menu { 
-    display: none; 
+  .top-menu {
+    display: none;
   }
-  .fab-menu { 
-    display: flex; 
+  .fab-menu {
+    display: flex;
+  }
+  .header {
+    padding: calc(var(--spacing-large) * 1.8) var(--spacing-large) var(--spacing-large);
+  }
+  .header-title {
+    font-size: 32px;
+  }
+  .header-subtitle {
+    font-size: 18px;
   }
 }
 
@@ -247,7 +251,6 @@ main {
   box-shadow: 0 6px 18px rgba(0,0,0,0.15);
 }
 
-/* Container for images in the carousel */
 .img-container {
   position: relative;
   width: 100%;
@@ -258,8 +261,9 @@ main {
 
 .carousel-image {
   position: absolute;
-  top: 0; left: 0;
-  width: 100%; 
+  top: 0;
+  left: 0;
+  width: 100%;
   height: 100%;
   object-fit: cover;
   border-radius: 8px;
@@ -285,7 +289,6 @@ main {
   background-color: #333;
 }
 
-/* Titles & descriptions inside carousel */
 .title {
   font-family: 'Josefin_Bold', sans-serif;
   font-size: 18px;
@@ -356,7 +359,7 @@ main {
 .heart-button::before {
   content: "";
   display: block;
-  width: 100%; 
+  width: 100%;
   height: 100%;
   background-color: #ccc;
   clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
@@ -387,12 +390,11 @@ main {
   100% { transform: scale(1); }
 }
 
-/* The site-wide footer pinned at bottom */
 footer {
   text-align: center;
   background: #f1f1f1;
   padding: 20px;
-  font-family: 'Josefin_Light';
+  font-family: 'Josefin_Light', sans-serif;
   font-size: 14px;
 }
 
@@ -400,10 +402,11 @@ footer {
 5. Modal (Zoom/Enlarge) for Product Images
 ---------------------------------------------------------- */
 .modal {
-  display: none; /* Hidden by default */
+  display: none;
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; 
+  top: 0;
+  left: 0;
+  width: 100%;
   height: 100%;
   background-color: var(--color-modal-overlay);
   z-index: 2000;
@@ -504,8 +507,6 @@ footer {
 /* ----------------------------------------------------------
 6. Animations & Transitions
 ---------------------------------------------------------- */
-
-/* Active menu item highlight (professional orange) */
 .active-tag {
   position: relative;
   font-weight: bold;
@@ -513,7 +514,6 @@ footer {
   text-decoration: none;
 }
 
-/* Animate an optional underline if desired */
 .active-tag::after {
   content: "";
   position: absolute;
@@ -527,7 +527,6 @@ footer {
   transition: transform 0.3s ease-out;
 }
 
-/* Carousel item fade-in animation */
 .carousel-item.animate {
   opacity: 0;
   transform: translateY(20px);
@@ -539,7 +538,6 @@ footer {
   100% { opacity: 1; transform: translateY(0); }
 }
 
-/* Fade transition when filtering */
 .carousel {
   background-color: transparent;
   transition: opacity 0.3s ease;
@@ -571,7 +569,6 @@ footer {
   margin-bottom: 0;
 }
 
-/* Circular avatar with random background (set by about.js) */
 .avatar {
   flex-shrink: 0;
   width: 40px;
@@ -600,19 +597,15 @@ footer {
   color: #333;
 }
 
-.testimonials-heading {
-  font-family: 'Josefin_Bold', sans-serif;
-  font-size: 24px;
-  color: #333;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
 /* ----------------------------------------------------------
 8. About & Testimonials Page Headings
 ---------------------------------------------------------- */
 
-/* For About Page: .about-text region */
+.about-text {
+  text-align: center;
+  padding-top: 32px;
+}
+
 .about-text h2 {
   font-family: 'Josefin_Bold', sans-serif;
   font-size: 24px;
@@ -638,34 +631,42 @@ footer {
   margin-right: auto;
 }
 
-/* ----------------------------------------------------------
-8A. Single-Row Cover Flow Collage for About Page Header
----------------------------------------------------------- */
-/* Container for the header collage – spans full viewport width on desktop */
+.testimonials-heading {
+  font-family: 'Josefin_Bold', sans-serif;
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/************************************************************
+ *  8A. Single-Row Cover Flow Collage for About Page Header
+ ************************************************************/
+/* Desktop: Full-width collage header */
 .about-hero-collage {
   display: flex;
-  flex-wrap: nowrap;      /* Single row */
-  gap: 12px;              /* Gap between images */
-  overflow-x: auto;       /* Horizontal scrolling if needed */
-  width: 100vw;           /* Full viewport width */
-  margin-left: calc(50% - 50vw); /* Bleed to left edge */
+  flex-wrap: nowrap;
+  gap: 12px;
+  overflow-x: auto;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
   padding: var(--spacing-medium) 0;
-  background-color: #f0f0f0; /* Optional background */
+  background-color: #f0f0f0;
   scroll-behavior: smooth;
 }
 
-/* Each collage slice container remains at original size; the image is scaled up by 50% */
+/* Each collage slice container at its original “ideal” size */
 .collage-slice {
   flex: 0 0 auto;
-  width: 300px;   /* Ideal width on desktop */
-  height: 200px;  /* Ideal height on desktop */
+  width: 300px;
+  height: 200px;
   position: relative;
   overflow: hidden;
   border-radius: 6px;
   transition: transform 0.3s ease;
 }
 
-/* The image fills the container and is zoomed in by 50% (scale 1.5) */
+/* The image is scaled up by 50% within the container */
 .collage-slice img {
   width: 100%;
   height: 100%;
@@ -674,19 +675,20 @@ footer {
   transition: transform 0.3s ease;
 }
 
-/* Optional hover effect for a slight scale-down to reveal more */
+/* Optional hover effect on desktop */
 .collage-slice:hover img {
   transform: scale(1.3);
 }
 
-/* Responsive adjustments for mobile (cover-flow album style) */
+/* Responsive adjustments for mobile (iPod cover flow style) */
 @media (max-width: 768px) {
   .about-hero-collage {
     gap: 6px;
+    padding: calc(var(--spacing-medium) * 1.5) 0;
   }
   .collage-slice {
     width: 150px;
-    height: 100px;
+    height: 150px;
   }
   .collage-slice img {
     transform: scale(1.3);
