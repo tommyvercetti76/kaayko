@@ -600,6 +600,14 @@ footer {
   color: #333;
 }
 
+.testimonials-heading {
+  font-family: 'Josefin_Bold', sans-serif;
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
 /* ----------------------------------------------------------
 8. About & Testimonials Page Headings
 ---------------------------------------------------------- */
@@ -630,11 +638,57 @@ footer {
   margin-right: auto;
 }
 
-/* For Testimonials Page's main heading */
-.testimonials-heading {
-  font-family: 'Josefin_Bold', sans-serif;
-  font-size: 24px;
-  color: #333;
-  margin-bottom: 20px;
-  text-align: center;
+/* ----------------------------------------------------------
+8A. Single-Row Cover Flow Collage for About Page Header
+---------------------------------------------------------- */
+/* Container for the header collage – spans full viewport width on desktop */
+.about-hero-collage {
+  display: flex;
+  flex-wrap: nowrap;      /* Single row */
+  gap: 12px;              /* Gap between images */
+  overflow-x: auto;       /* Horizontal scrolling if needed */
+  width: 100vw;           /* Full viewport width */
+  margin-left: calc(50% - 50vw); /* Bleed to left edge */
+  padding: var(--spacing-medium) 0;
+  background-color: #f0f0f0; /* Optional background */
+  scroll-behavior: smooth;
+}
+
+/* Each collage slice container remains at original size; the image is scaled up by 50% */
+.collage-slice {
+  flex: 0 0 auto;
+  width: 300px;   /* Ideal width on desktop */
+  height: 200px;  /* Ideal height on desktop */
+  position: relative;
+  overflow: hidden;
+  border-radius: 6px;
+  transition: transform 0.3s ease;
+}
+
+/* The image fills the container and is zoomed in by 50% (scale 1.5) */
+.collage-slice img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.5);
+  transition: transform 0.3s ease;
+}
+
+/* Optional hover effect for a slight scale-down to reveal more */
+.collage-slice:hover img {
+  transform: scale(1.3);
+}
+
+/* Responsive adjustments for mobile (cover-flow album style) */
+@media (max-width: 768px) {
+  .about-hero-collage {
+    gap: 6px;
+  }
+  .collage-slice {
+    width: 150px;
+    height: 100px;
+  }
+  .collage-slice img {
+    transform: scale(1.3);
+  }
 }

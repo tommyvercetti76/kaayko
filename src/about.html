@@ -5,54 +5,69 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Kaayko | About</title>
 
-  <!-- Unified storestyle.css -->
+  <!-- Unified stylesheet for all pages -->
   <link rel="stylesheet" href="storestyle.css"/>
+  <!-- Material Icons for menu icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
-  <!-- HEADER -->
+  <!-- HEADER: Contains site title, subtitle, and smart menu.
+       The menu is populated dynamically by JavaScript. -->
   <header class="header">
     <h1 class="header-title">Kaayko Store</h1>
     <p class="header-subtitle">Vote now, pay later.</p>
 
-    <!-- We'll fill with "Home" & "Testimonials" if about.html is detected -->
+    <!-- Desktop Top Menu (populated by JavaScript via populateMenu()) -->
     <nav class="top-menu">
       <ul></ul>
     </nav>
 
+    <!-- Mobile Menu Toggle (FAB) -->
     <button class="fab-menu" aria-label="Open Menu">
       <span class="material-icons">menu</span>
     </button>
   </header>
 
-  <!-- MOBILE OVERLAY -->
+  <!-- Mobile Menu Overlay (populated by JavaScript) -->
   <div class="mobile-menu-overlay">
     <ul></ul>
   </div>
 
-  <!-- MAIN CONTENT: About Page -->
+  <!-- MAIN CONTENT -->
   <main>
-    <div class="about-hero" style="text-align: center; margin-bottom: 20px;">
-      <img 
-        src="assets/about-header.jpg" 
-        alt="Kaayko About"
-        style="max-width: 100%; height: auto; border-radius: 6px;"
-      />
+    <!-- SECTION 1: Header Collage -->
+    <!-- The single-row collage spans the full width on desktop and behaves in a cover-flow style on mobile.
+         Each collage-slice container remains at its original “ideal” size while the image is zoomed in by 50%. -->
+    <div class="about-hero-collage">
+      <div class="collage-slice">
+        <img src="assets/Lifeisopinion_2.png" alt="Life is Opinion">
+      </div>
+      <div class="collage-slice">
+        <img src="assets/AssaultBae_1.png" alt="Assault Bae">
+      </div>
+      <div class="collage-slice">
+        <img src="assets/Live_3.png" alt="Live Shirt">
+      </div>
+      <div class="collage-slice">
+        <img src="assets/Nagpur_3.png" alt="Nagpur Shirt">
+      </div>
+      <div class="collage-slice">
+        <img src="assets/ShutUp_1.png" alt="Shut Up Shirt">
+      </div>
+      <div class="collage-slice">
+        <img src="assets/StraightOutta_1.png" alt="Straight Outta">
+      </div>
     </div>
-    <!-- about-text container for consistent styling in storestyle.css -->
+
+    <!-- SECTION 2: About Text -->
     <section class="about-text">
       <h2>Welcome To Kaayko</h2>
       <h3>Coming at your mind, not the money.</h3>
       <p>
-        At Kaayko, we believe you need a better thought representation when
-        you are putting yourself “Out There”. “Out There” is anywhere you feel
-        attacked by bad vibes, crazy people and unruly pets, kids or both.
+        At Kaayko, we believe you need a better thought representation when you are putting yourself “Out There”. “Out There” is anywhere you feel attacked by bad vibes, crazy people, and unruly pets, kids or both.
       </p>
       <p>
-        True Zen is not achieved by sitting on a mountain hoping the world will
-        heal itself. True Zen is in putting on Kaayko Merch and battling these
-        adversities every single day. Kaayko is a rebellion you need but do not
-        deserve. If you truly see the world as it is, you will wear Kaayko.
+        True Zen is not achieved by sitting on a mountain hoping the world will heal itself. True Zen is in putting on Kaayko Merch and battling these adversities every single day. Kaayko is a rebellion you need but do not deserve. If you truly see the world as it is, you will wear Kaayko.
       </p>
     </section>
   </main>
@@ -62,12 +77,20 @@
     <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
   </footer>
 
-  <!-- Optionally load store scripts for the same menu logic, etc. -->
+  <!-- Store scripts for menu logic, mobile overlay, etc. -->
   <script type="module" src="scripts/kaayko_main.js"></script>
   <script type="module" src="scripts/kaayko_ui.js"></script>
-
   <script>
+    // Set footer year automatically
     document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+  <!-- Initialize the "smart" menu (for About page, it should show "Home" and "Testimonials") -->
+  <script type="module">
+    import { populateMenu, setupMobileMenu } from "./scripts/kaayko_ui.js";
+    document.addEventListener("DOMContentLoaded", () => {
+      populateMenu();
+      setupMobileMenu();
+    });
   </script>
 </body>
 </html>
