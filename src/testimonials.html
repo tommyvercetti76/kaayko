@@ -13,31 +13,22 @@
     <h1 class="header-title">Kaayko Store</h1>
     <p class="header-subtitle">Vote now, pay later.</p>
 
-    <!-- Simple top menu: "Apparel", "About", "Testimonials" -->
+    <!-- We'll fill with "Home" & "About" if testimonials.html is detected -->
     <nav class="top-menu">
-      <ul>
-        <li><a href="index.html">Apparel</a></li>
-        <li><a href="about.html">About</a></li>
-        <li><a href="testimonials.html" class="active">Testimonials</a></li>
-      </ul>
+      <ul></ul>
     </nav>
-
     <button class="fab-menu" aria-label="Open Menu">
       <span class="material-icons">menu</span>
     </button>
   </header>
 
   <div class="mobile-menu-overlay">
-    <ul>
-      <li><a href="index.html">Apparel</a></li>
-      <li><a href="about.html">About</a></li>
-      <li><a href="testimonials.html" class="active">Testimonials</a></li>
-    </ul>
+    <ul></ul>
   </div>
 
   <main style="max-width: 900px; margin: 30px auto; padding: 0 20px; flex: 1;">
     <h2 style="
-      font-family: 'Josefin_Bold', sans-serif; 
+      /* font-family: 'Josefin_Bold'; */
       font-size: 24px; 
       color: #333;
       margin-bottom: 20px;
@@ -54,15 +45,14 @@
     <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
   </footer>
 
-  <!-- If you want the same store script logic for the mobile menu, you can do: -->
+  <!-- If you want the same store logic for the menu, etc. -->
   <script type="module" src="scripts/kaayko_main.js"></script>
   <script type="module" src="scripts/kaayko_ui.js"></script>
 
-  <!-- Then import your about.js module below: -->
+  <!-- Then import about.js for the testimonial logic (fakeTestimonials, etc.) -->
   <script type="module">
     import { fakeTestimonials, shuffleArray, createTestimonialElement } from "./scripts/about.js";
 
-    // Keep the year updated
     document.getElementById('year').textContent = new Date().getFullYear();
 
     function loadStandaloneTestimonials() {
@@ -70,17 +60,23 @@
       if (!container) return;
 
       container.innerHTML = "";
-      // Shuffle the array so the testimonials appear in random order
+      // Shuffle the array
       const shuffled = shuffleArray([...fakeTestimonials]);
-
-      // Create each testimonial DOM element and append it
+      // Create each testimonial DOM element
       shuffled.forEach(t => {
         const elem = createTestimonialElement(t);
         container.appendChild(elem);
       });
     }
 
-    document.addEventListener("DOMContentLoaded", loadStandaloneTestimonials);
+    document.addEventListener("DOMContentLoaded", () => {
+      loadStandaloneTestimonials();
+      // Populate the "smart" menu: "Home" + "About" if testimonials
+      import("./scripts/kaayko_ui.js").then(({ populateMenu, setupMobileMenu }) => {
+        populateMenu();
+        setupMobileMenu();
+      });
+    });
   </script>
 </body>
 </html>

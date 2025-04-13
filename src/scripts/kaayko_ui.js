@@ -1,4 +1,15 @@
-// scripts/kaayko_ui.js
+/**
+ * scripts/kaayko_ui.js
+ * 
+ * Purpose:
+ *   - Manages the UI logic for Kaayko store:
+ *       1) Carousel population (images, swipes, indicators),
+ *       2) Modals (zoomed images),
+ *       3) Voting (like) button,
+ *       4) Mobile menu toggling,
+ *       5) A "smart" menu that changes which links appear depending
+ *          on the current page (index, about, or testimonials).
+ */
 
 import {
   fetchProductsByCategory,
@@ -20,12 +31,13 @@ export function populateCarousel(items) {
   // Clear old contents
   carousel.innerHTML = "";
 
-  // For each product
+  // For each product, create a carousel item
   items.forEach(item => {
     const carouselItem = createCarouselItem(item);
     carousel.appendChild(carouselItem);
   });
 
+  // Animate the items in
   animateCarouselItems();
 }
 
@@ -42,7 +54,7 @@ function createCarouselItem(item) {
   const imgContainer = buildImageContainer(item.imgSrc);
   carouselItem.appendChild(imgContainer);
 
-  // Indicators
+  // Dot indicators
   const imageIndicator = createImageIndicator(item.imgSrc.length, 0);
   carouselItem.appendChild(imageIndicator);
 
@@ -59,13 +71,11 @@ function createCarouselItem(item) {
 
   footer.append(priceEl, heartButton, votesCountEl);
 
-  // Append
+  // Append Title, Description, Footer to the item
   carouselItem.append(title, description, footer);
 
-  // Swipe
+  // Enable swipe & open modal on click
   addSwipeFunctionality(imgContainer, item.imgSrc.length, imageIndicator);
-
-  // Modal on click
   imgContainer.addEventListener("click", () => openModal(item));
 
   return carouselItem;
@@ -88,6 +98,11 @@ function animateCarouselItems() {
  *                   Image Container & Indicators
  * -------------------------------------------------------------------------- */
 
+/**
+ * Builds the image container that holds multiple images (display one at a time).
+ * @param {string[]} imageUrls - The product's image URLs
+ * @returns {HTMLElement} A DIV container
+ */
 function buildImageContainer(imageUrls) {
   const container = document.createElement("div");
   container.className = "img-container";
@@ -96,12 +111,19 @@ function buildImageContainer(imageUrls) {
     const img = document.createElement("img");
     img.src = src;
     img.className = "carousel-image";
+    // Show the first image, hide the rest
     img.style.display = index === 0 ? "block" : "none";
     container.appendChild(img);
   });
   return container;
 }
 
+/**
+ * Creates dot indicators for the images. Clicking a dot reveals the corresponding image.
+ * @param {number} length - how many images
+ * @param {number} currentIndex - which image is initially active
+ * @returns {HTMLElement} The dot indicator container
+ */
 function createImageIndicator(length, currentIndex) {
   const indicator = document.createElement("div");
   indicator.className = "image-indicator";
@@ -122,30 +144,37 @@ function createImageIndicator(length, currentIndex) {
   return indicator;
 }
 
+/**
+ * Adds swipe or drag events to cycle through images left/right.
+ */
 function addSwipeFunctionality(container, length, indicator) {
   let startX = 0;
   let currentImageIndex = 0;
-  const swipeThreshold = 50;
+  const swipeThreshold = 50; // pixels
 
   function handleSwipe(deltaX) {
     if (Math.abs(deltaX) > swipeThreshold) {
       const images = container.querySelectorAll(".carousel-image");
       if (!images.length) return;
 
+      // Hide old
       images[currentImageIndex].style.display = "none";
       indicator.children[currentImageIndex].classList.remove("active");
 
+      // Next or previous index
       if (deltaX < 0) {
         currentImageIndex = (currentImageIndex + 1) % length;
       } else {
         currentImageIndex = (currentImageIndex - 1 + length) % length;
       }
 
+      // Show new
       images[currentImageIndex].style.display = "block";
       indicator.children[currentImageIndex].classList.add("active");
     }
   }
 
+  // Use pointer events if available, else fallback
   if (window.PointerEvent) {
     container.addEventListener("pointerdown", e => (startX = e.clientX));
     container.addEventListener("pointerup", e => handleSwipe(e.clientX - startX));
@@ -153,7 +182,9 @@ function addSwipeFunctionality(container, length, indicator) {
     container.addEventListener("touchstart", e => {
       startX = e.touches[0].clientX;
     }, { passive: true });
-    container.addEventListener("touchend", e => handleSwipe(e.changedTouches[0].clientX - startX));
+    container.addEventListener("touchend", e => {
+      handleSwipe(e.changedTouches[0].clientX - startX);
+    });
     container.addEventListener("mousedown", e => (startX = e.clientX));
     container.addEventListener("mouseup", e => handleSwipe(e.clientX - startX));
   }
@@ -163,11 +194,16 @@ function addSwipeFunctionality(container, length, indicator) {
  *                           Modal for Images
  * -------------------------------------------------------------------------- */
 
+/**
+ * Opens a modal showing all images for the given product item.
+ * @param {Object} item - The product object with .imgSrc array
+ */
 export function openModal(item) {
   const modal = document.getElementById("modal");
   const modalImageContainer = document.getElementById("modal-image-container");
   if (!modal || !modalImageContainer) return;
 
+  // Clear old
   modalImageContainer.innerHTML = "";
   item.imgSrc.forEach((src, idx) => {
     const img = document.createElement("img");
@@ -181,6 +217,9 @@ export function openModal(item) {
   setupModalNavigation(modalImageContainer, item.imgSrc.length, 0);
 }
 
+/**
+ * Sets up left/right arrow navigation & swipe within the modal
+ */
 function setupModalNavigation(container, length, currentIndex) {
   const images = container.querySelectorAll(".modal-image");
   const leftBtn = document.querySelector(".modal-nav-left");
@@ -222,6 +261,9 @@ function setupModalNavigation(container, length, currentIndex) {
  *                      Helpers: Text & Like Button
  * -------------------------------------------------------------------------- */
 
+/**
+ * Creates a simple text element
+ */
 function createTextElement(tag, className, text) {
   const el = document.createElement(tag);
   el.className = className;
@@ -229,6 +271,9 @@ function createTextElement(tag, className, text) {
   return el;
 }
 
+/**
+ * Creates a like/heart button that updates Firestore on click.
+ */
 function createLikeButton(item) {
   const button = document.createElement("button");
   button.className = "heart-button";
@@ -265,6 +310,9 @@ function createLikeButton(item) {
  *                        Modal Close Handlers
  * -------------------------------------------------------------------------- */
 
+/**
+ * Allows closing the modal by clicking outside or pressing the 'close' button.
+ */
 export function setupModalCloseHandlers() {
   const modal = document.getElementById("modal");
   if (!modal) return;
@@ -285,6 +333,9 @@ export function setupModalCloseHandlers() {
  *                           Mobile Menu
  * -------------------------------------------------------------------------- */
 
+/**
+ * Toggles the mobile overlay menu on smaller screens.
+ */
 export function setupMobileMenu() {
   const fab = document.querySelector(".fab-menu");
   const overlay = document.querySelector(".mobile-menu-overlay");
@@ -292,6 +343,7 @@ export function setupMobileMenu() {
 
   fab.addEventListener("click", () => overlay.classList.toggle("active"));
 
+  // Close if user clicks background or a link
   overlay.addEventListener("click", e => {
     if (e.target === overlay || e.target.tagName === "A") {
       overlay.classList.remove("active");
@@ -300,121 +352,77 @@ export function setupMobileMenu() {
 }
 
 /* --------------------------------------------------------------------------
- *                      DYNAMIC MENU (Ordered)
- * -------------------------------------------------------------------------- */
+ *                       "Smart" Menu Mechanism
+-------------------------------------------------------------------------- */
 
 /**
- * We want the menu order: "Apparel", then "About", then "Testimonials".
- * We highlight the current page link based on the pathname.
+ * Decides which menu items to show based on the current path:
+ *  - If user is on homepage ("/" or "/index.html"), show "About" & "Testimonials"
+ *  - If on "/about" => show "Home" & "Testimonials"
+ *  - If on "/testimonials" => show "Home" & "About"
+ *  - Otherwise, you can adjust as needed.
  */
-export function populateMenu(categories) {
+export function populateMenu() {
   const desktopMenu = document.querySelector(".top-menu ul");
   const mobileMenu = document.querySelector(".mobile-menu-overlay ul");
-  if (!desktopMenu && !mobileMenu) return;
+  if (!desktopMenu || !mobileMenu) return;
 
-  // If your Firestore returns ["apparel"], and you want to display "Apparel"
-  // we transform it for display
-  const capitalized = categories.map(cat => {
-    return {
-      raw: cat,  // the exact string from Firestore
-      display: cat.charAt(0).toUpperCase() + cat.slice(1) 
-    };
+  // Determine which page the user is on
+  const pathname = window.location.pathname; 
+
+  let desktopLinks = [];
+
+  // If on homepage => "About", "Testimonials"
+  if (pathname.endsWith("index.html") || pathname === "/" || pathname === "") {
+    desktopLinks = [
+      { text: "About", href: "about.html" },
+      { text: "Testimonials", href: "testimonials.html" }
+    ];
+  }
+  // If on about => "Home", "Testimonials"
+  else if (pathname.endsWith("about.html")) {
+    desktopLinks = [
+      { text: "Home", href: "index.html" },
+      { text: "Testimonials", href: "testimonials.html" }
+    ];
+  }
+  // If on testimonials => "Home", "About"
+  else if (pathname.endsWith("testimonials.html")) {
+    desktopLinks = [
+      { text: "Home", href: "index.html" },
+      { text: "About", href: "about.html" }
+    ];
+  }
+  else {
+    // fallback
+    desktopLinks = [
+      { text: "Home", href: "index.html" },
+      { text: "About", href: "about.html" },
+      { text: "Testimonials", href: "testimonials.html" }
+    ];
+  }
+
+  const mobileLinks = [...desktopLinks];
+
+  // Build desktop
+  desktopMenu.innerHTML = "";
+  desktopLinks.forEach(link => {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.textContent = link.text;
+    a.href = link.href;
+    li.appendChild(a);
+    desktopMenu.appendChild(li);
   });
 
-  function buildMenuItems(menuUl) {
-    menuUl.innerHTML = "";
-
-    // Build each category link (like "Apparel")
-    capitalized.forEach(obj => {
-      const li = document.createElement("li");
-      const a = document.createElement("a");
-      a.textContent = obj.display; // "Apparel" to user
-      a.href = "#";
-
-      a.addEventListener("click", async e => {
-        e.preventDefault();
-        // Clear active
-        Array.from(menuUl.querySelectorAll("a")).forEach(x => x.classList.remove("active"));
-
-        a.classList.add("active");
-
-        // This calls fetchProductsByCategory("apparel") 
-        // even though the user sees "Apparel"
-        const newProducts = await fetchProductsByCategory(obj.raw);
-        fadeOutInCarousel(newProducts);
-
-        // close mobile overlay if needed
-        if (menuUl.classList.contains("mobile-menu-ul")) {
-          document.querySelector(".mobile-menu-overlay").classList.remove("active");
-        }
-      });
-
-      li.appendChild(a);
-      menuUl.appendChild(li);
-    });
-
-    // Then add your static "About" and "Testimonials" links
-    // (or in the order you prefer)
-    // e.g. "About" next, then "Testimonials"
-    {
-      const li = document.createElement("li");
-      const a = document.createElement("a");
-      a.textContent = "About";
-      a.href = "about.html";
-      li.appendChild(a);
-      menuUl.appendChild(li);
-    }
-
-    {
-      const li = document.createElement("li");
-      const a = document.createElement("a");
-      a.textContent = "Testimonials";
-      a.href = "testimonials.html";
-      li.appendChild(a);
-      menuUl.appendChild(li);
-    }
-
-    // highlightActiveLink(menuUl) if you want to highlight based on the current page
-  }
-
-  if (desktopMenu) buildMenuItems(desktopMenu);
-  if (mobileMenu) {
-    mobileMenu.classList.add("mobile-menu-ul");
-    buildMenuItems(mobileMenu);
-  }
-}
-
-/**
- * Helper to fade out the current carousel, load new products, fade in.
- */
-async function fadeOutInCarousel(newProducts) {
-  const carousel = document.getElementById("carousel");
-  if (!carousel) return;
-
-  carousel.classList.add("fade-out");
-  await new Promise(resolve => setTimeout(resolve, 300));
-  populateCarousel(newProducts);
-  carousel.classList.remove("fade-out");
-}
-
-/**
- * Highlights the correct nav link based on the current window.location or page.
- * If path is /about.html, we highlight "About". If /testimonials.html, highlight that, etc.
- */
-function highlightActiveLink(menuUl) {
-  const pathname = window.location.pathname; 
-  // e.g. "/about.html" or "/testimonials.html" or "/index.html"
-
-  const links = menuUl.querySelectorAll("a");
-  links.forEach(link => {
-    const href = link.getAttribute("href");
-    if (!href) return;
-
-    // If user is at "about.html" or "testimonials.html" or "index.html"
-    if (pathname.endsWith(href)) {
-      link.classList.add("active");
-    } else {
-      link.classList.remove("active");
-    }
+  // Build mobile
+  mobileMenu.innerHTML = "";
+  mobileLinks.forEach(link => {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.textContent = link.text;
+    a.href = link.href;
+    li.appendChild(a);
+    mobileMenu.appendChild(li);
   });
 }

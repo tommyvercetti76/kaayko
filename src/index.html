@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Kaayko Store</title>
 
-  <!-- Main CSS file (the same for all pages) -->
+  <!-- Main CSS file (shared) -->
   <link rel="stylesheet" href="storestyle.css">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
@@ -14,7 +14,7 @@
     <h1 class="header-title">Kaayko Store</h1>
     <p class="header-subtitle">Vote now, pay later.</p>
 
-    <!-- Desktop Nav: empty UL; filled by populateMenu() in JS -->
+    <!-- We'll fill with "About" & "Testimonials" if index page -->
     <nav class="top-menu">
       <ul></ul>
     </nav>
@@ -24,26 +24,34 @@
       <span class="material-icons">menu</span>
     </button>
   </header>
-  
+
   <!-- Mobile overlay with an empty UL, also filled by populateMenu() -->
   <div class="mobile-menu-overlay">
     <ul></ul>
   </div>
-  
+
   <main style="flex: 1;">
+    <!-- Our product carousel -->
     <section id="carousel" class="carousel" aria-live="polite"></section>
   </main>
 
-  <!-- Modal for zoomable images -->
+  <!-- Modal for zoomable product images -->
   <div id="modal" class="modal" role="dialog" aria-modal="true">
     <div class="modal-content">
-      <button id="close-modal-button" class="modal-close material-icons" aria-label="Close modal">
+      <button 
+        id="close-modal-button" 
+        class="modal-close material-icons" 
+        aria-label="Close modal">
         close
       </button>
-      <button class="modal-nav modal-nav-left material-icons" aria-label="Previous image">
+      <button 
+        class="modal-nav modal-nav-left material-icons" 
+        aria-label="Previous image">
         chevron_left
       </button>
-      <button class="modal-nav modal-nav-right material-icons" aria-label="Next image">
+      <button 
+        class="modal-nav modal-nav-right material-icons" 
+        aria-label="Next image">
         chevron_right
       </button>
       <div id="modal-image-container" class="modal-image-container"></div>
@@ -63,6 +71,15 @@
   <script>
     // Keep the footer year updated
     document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+
+  <!-- The "smart menu" calls: Show "About" & "Testimonials" if index. -->
+  <script type="module">
+    import { populateMenu, setupMobileMenu } from "./scripts/kaayko_ui.js";
+    document.addEventListener("DOMContentLoaded", () => {
+      populateMenu();      // "About" + "Testimonials"
+      setupMobileMenu();   // toggles overlay
+    });
   </script>
 </body>
 </html>
