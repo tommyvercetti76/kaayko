@@ -1,68 +1,65 @@
 /************************************************************
-*  STORESTYLE.CSS - Unified Styles for Kaayko (With Full Dark Mode)
+*  STORESTYLE.CSS - Kaayko (Seamless Dark Mode, No Overscroll)
 *
 *  Purpose:
-*    - Provide a single stylesheet used by ALL site pages:
-*      (index.html, about.html, testimonials.html)
-*    - Includes pinned footer, header + mobile menu,
-*      product carousel, modal for zoomed images,
-*      testimonials styling, page headings, a cover flow collage,
-*      and a togglable dark mode theme with localStorage persistence.
+*    - Single stylesheet for index.html, about.html, testimonials.html
+*    - Pinned footer, header/mobile menu, product carousel, modal,
+*      testimonials styling, cover flow collage,
+*      togglable dark mode with localStorage.
+*    - Eliminates phantom white background by:
+*       1) Forcing <html> and <body> to the same background
+*       2) Setting width: 100%; overflow-x: hidden to avoid horizontal overscroll
+*       3) No partial container backgrounds
 *
 *  Sections:
-*    1) Reset & Body Layout
+*    1) Reset & Global Layout
 *    2) Header & Mobile Menu
-*    3) Carousel (Index Page)
+*    3) Carousel
 *    4) Footer & Sticky Bottom
-*    5) Modal (Zoomed Product Images)
+*    5) Modal
 *    6) Animations & Transitions
 *    7) Testimonials
 *    8) About & Testimonials Page Headings
-*    8A) Single-Row Cover Flow Collage for About Page Header
-*    9) Dark Theme Overrides (full coverage for all containers)
+*    8A) Cover Flow Collage
+*    9) Dark Theme Overrides
+*   10) Text Selection
 ************************************************************/
 
 /* ----------------------------------------------------------
-1. Reset & Body Layout
+1) Reset & Global Layout
 ---------------------------------------------------------- */
 :root {
   --spacing-small: 4px;
   --spacing-medium: 8px;
   --spacing-large: 16px;
 
-  /* Base Light-Mode Colors */
-  --color-header-bg: #333;
+  /* Light-Mode Colors & Accents */
   --color-body-bg: #f9f9f9;
-  --color-carousel-bg: #ececec;
-  --color-card-bg: #fff;
+  --color-header-bg: #333;
   --color-modal-overlay: rgba(0,0,0,0.8);
-
-  /* Accent colors – professional orange */
   --color-accent: #ff8c00;
-  --color-accent-hover: #ff8c00;
-
-  /* Text colors for Light Mode */
   --color-text-base: #333;
   --color-text-subtle: #666;
-  --color-text-secondary: #ccc; /* used in header-subtitle etc. */
+  --color-text-secondary: #ccc;
 
-  /* New “off black” for About/Testimonials in LIGHT mode */
+  /* Light mode “off-black” for certain text (testimonials, about) */
   --color-off-black: #111;
 
-  /* New “bright ivory” for About/Testimonials in DARK mode */
+  /* Dark-mode special text color */
   --color-bright-ivory: #fffff0;
+
+  /* Used for cards in light mode (dark mode overrides it) */
+  --color-card-bg: #fff;
 }
 
 @font-face {
   font-family: 'Josefin_Medium';
   src: url('fonts/JosefinSans-Medium.ttf') format('truetype');
 }
-
 @font-face {
   font-family: 'Josefin_Bold';
   src: url('fonts/JosefinSans-Bold.ttf') format('truetype');
 }
-
 @font-face {
   font-family: 'Josefin_Light';
   src: url('fonts/JosefinSans-Light.ttf') format('truetype');
@@ -74,26 +71,38 @@
   box-sizing: border-box;
 }
 
+/* 
+ * KEY: make sure <html> & <body> are same size and background,
+ *      plus overflow-x: hidden to avoid horizontal overscroll
+ */
 html, body {
+  width: 100%;
   height: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;   /* prevents sideways overscroll white block */
   background-color: var(--color-body-bg);
   color: var(--color-text-base);
   scroll-behavior: smooth;
+  overscroll-behavior: none; 
+  -webkit-overflow-scrolling: touch;
 }
 
+/* Body is a flex container to place footer at bottom if content is short */
 body {
   font-family: 'Arial', sans-serif;
   display: flex;
   flex-direction: column;
 }
 
+/* Main inherits background from body, no separate color. */
 main {
   flex: 1;
   padding: 0 var(--spacing-medium);
+  background: inherit;
 }
 
 /* ----------------------------------------------------------
-2. Header & Mobile Menu
+2) Header & Mobile Menu
 ---------------------------------------------------------- */
 .header {
   padding: calc(var(--spacing-large) * 1.5) var(--spacing-large) var(--spacing-large);
@@ -102,19 +111,15 @@ main {
   text-align: center;
   position: relative;
 }
-
-/* +4 px from 28 -> 32 */
 .header-title {
   font-size: 30px;
-  font-family: 'Josefin_Bold', sans-serif;
+  font-family: 'Josefin_Bold';
   margin-bottom: var(--spacing-medium);
   letter-spacing: 1px;
 }
-
-/* +4 px from 16 -> 20 */
 .header-subtitle {
   font-size: 18px;
-  font-family: 'Josefin_Light', sans-serif;
+  font-family: 'Josefin_Light';
   color: var(--color-text-secondary);
 }
 
@@ -124,123 +129,101 @@ main {
   background: linear-gradient(135deg, #444 0%, #222 100%);
   padding: 10px 0;
 }
-
 .top-menu ul {
   list-style: none;
   display: flex;
   gap: 20px;
 }
-
-/* +4 px from 16 -> 20 */
 .top-menu li a {
   color: #fff;
-  text-decoration: none;
   font-family: 'Josefin_Medium';
   font-size: 18px;
+  text-decoration: none;
   transition: color 0.3s, transform 0.3s;
 }
-
 .top-menu li a:hover {
   color: var(--color-accent);
   transform: scale(1.05);
 }
 
-/* FAB menu (unchanged) */
+/* Floating Action Button for mobile nav */
 .fab-menu {
   display: none;
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  bottom: 20px; right: 20px;
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  border: none;
   background-color: var(--color-header-bg);
   color: #fff;
-  border: none;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
   box-shadow: 0 4px 6px rgba(0,0,0,0.2);
   cursor: pointer;
-  justify-content: center;
-  align-items: center;
+  justify-content: center; align-items: center;
   z-index: 1000;
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
-
 .fab-menu:hover {
   transform: translateY(-2px) scale(1.02);
   box-shadow: 0 6px 12px rgba(0,0,0,0.3);
 }
-
 .fab-menu:active {
   transform: scale(0.95);
 }
-
 .material-icons {
   font-size: 24px;
 }
 
-/* The main theme-toggle icon (slightly angled).
-   The user had that at 165 or 180. We'll keep as is. */
+/* The dark-mode “crescent” icon */
 .theme-toggle-icon {
   background: none;
   border: none;
   cursor: pointer;
   font-size: 26px;
   position: absolute;
-  top: 24px; 
-  right: 24px; 
+  top: 24px; right: 24px;
   color: #fff;
-  align-self: center;
   transform: rotate(165deg);
 }
-
 .theme-toggle-icon:hover {
   transform: rotate(165deg) scale(1.05);
 }
 
+/* Mobile overlay menu */
 .mobile-menu-overlay {
   display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  position: fixed; top:0; left:0;
+  width:100%; height:100%;
   background-color: rgba(0,0,0,0.8);
-  color: #fff;
+  color:#fff; 
   z-index: 1000;
-  justify-content: center;
-  align-items: center;
   flex-direction: column;
-  transition: opacity 0.3s ease;
+  justify-content: center; align-items: center;
+  transition: opacity 0.3s;
   opacity: 0;
 }
-
 .mobile-menu-overlay.active {
   display: flex;
   opacity: 1;
 }
-
 .mobile-menu-overlay ul {
   list-style: none;
   text-align: center;
 }
-
 .mobile-menu-overlay li {
   margin: 15px 0;
 }
-
 .mobile-menu-overlay a {
   color: #fff;
-  text-decoration: none;
-  font-size: 20px; /* matches top-menu li a */
   font-family: 'Josefin_Bold';
+  font-size: 20px;
+  text-decoration: none;
   transition: color 0.3s;
 }
-
 .mobile-menu-overlay a:hover {
   color: var(--color-accent);
 }
 
-/* For mobile: Increase header padding and font sizes */
+/* On smaller screens: hide top menu, show fab */
 @media (max-width: 768px) {
   .top-menu {
     display: none;
@@ -249,96 +232,72 @@ main {
     display: flex;
   }
   .header {
-    padding: calc(var(--spacing-large) * 1.8) var(--spacing-large) var(--spacing-large);
+    padding: calc(var(--spacing-large)*1.8) var(--spacing-large) var(--spacing-large);
   }
   .header-title {
-    font-size: 32px; /* +4 from 32 if you'd like a further step on small screens */
+    font-size: 32px;
   }
   .header-subtitle {
-    font-size: 20px; /* +4 from 18, etc. */
+    font-size: 20px;
   }
 }
 
 /* ----------------------------------------------------------
-3. Carousel (Index Page)
+3) Carousel
 ---------------------------------------------------------- */
 .carousel {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px,1fr));
   gap: var(--spacing-medium);
   padding: var(--spacing-medium);
-  background-color: var(--color-carousel-bg);
-  overflow: hidden;
+  background: inherit; /* no forced BG => inherits from body */
 }
-
-/* .title +4 px from 18 -> 22
-   .description +4 px from 14 -> 18 */
 .carousel-item {
   background: var(--color-card-bg);
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  display: flex;
-  flex-direction: column;
+  display: flex; flex-direction: column;
   text-align: center;
   padding: var(--spacing-medium);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s, box-shadow 0.3s;
 }
-
 .carousel-item:hover {
   transform: translateY(-4px);
   box-shadow: 0 6px 18px rgba(0,0,0,0.15);
 }
-
 .img-container {
-  position: relative;
-  width: 100%;
-  padding-top: 75%;
-  overflow: hidden;
-  margin-bottom: var(--spacing-medium);
+  position: relative; width:100%; padding-top:75%;
+  overflow: hidden; margin-bottom: var(--spacing-medium);
 }
-
 .carousel-image {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  position: absolute; top:0; left:0;
+  width: 100%; height: 100%;
   object-fit: cover;
   border-radius: 8px;
 }
-
 .image-indicator {
-  display: flex;
-  justify-content: center;
+  display: flex; justify-content: center;
   margin-bottom: var(--spacing-medium);
-  width: 100%;
 }
-
 .indicator-dot {
-  width: 8px;
-  height: 8px;
+  width: 8px; height: 8px;
   margin: 0 var(--spacing-small);
   border-radius: 50%;
   background-color: #ccc;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s;
 }
-
 .indicator-dot.active {
   background-color: #333;
 }
-
-/* +4 from 18 -> 22 */
 .title {
-  font-family: 'Josefin_Bold', sans-serif;
+  font-family: 'Josefin_Bold';
   font-size: 20px;
   color: var(--color-text-base);
   margin-bottom: var(--spacing-small);
   line-height: 1.4;
 }
-
-/* +4 from 14 -> 18 */
 .description {
-  font-family: 'Josefin_Light', sans-serif;
+  font-family: 'Josefin_Light';
   font-size: 16px;
   color: var(--color-text-subtle);
   line-height: 1.5;
@@ -351,203 +310,142 @@ main {
 }
 
 /* ----------------------------------------------------------
-4. Footer & Sticky Bottom
+4) Footer & Sticky Bottom
 ---------------------------------------------------------- */
 .footer-elements {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  align-items: center;
-  justify-items: center;
-  gap: 0;
+  align-items: center; justify-items: center;
   margin-top: auto;
   padding: 12px;
+  gap: 0;
   border-top: 1px solid #eee;
-  background: #fff;
+  background: #fff; /* changed in dark mode */
 }
-
-/* +4 from 16 -> 20 */
 .price {
-  font-family: 'Josefin_Medium', sans-serif;
+  font-family: 'Josefin_Medium';
   font-size: 18px;
   color: #333;
-  background: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-  transition: transform 0.2s ease;
+  border: none; background: none;
+  padding: 0; margin: 0;
+  transition: transform 0.2s;
 }
-
 .price:hover {
   transform: scale(1.05);
 }
-
 .heart-button {
-  width: 32px;
-  height: 32px;
-  background: none;
-  border: none;
+  width: 32px; height: 32px;
+  border: none; background: none;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
-
 .heart-button:hover {
   transform: scale(1.1);
 }
-
 .heart-button::before {
   content: "";
   display: block;
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   background-color: #ccc;
-  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  clip-path: polygon(50%0%,100%50%,50%100%,0%50%);
+  transition: background-color 0.3s, transform 0.2s;
 }
-
 .heart-button.liked::before {
   background-color: #e63946;
   transform: scale(1.2);
 }
-
-/* +4 from 14 -> 18 */
 .likes-count {
-  font-family: 'Josefin_Medium', sans-serif;
+  font-family: 'Josefin_Medium';
   font-size: 16px;
   color: #555;
   white-space: nowrap;
-  margin: 0;
-  padding: 0;
+  margin: 0; padding: 0;
 }
-
 .likes-count.updated {
   animation: votePop 0.4s ease;
 }
-
 @keyframes votePop {
-  0%   { transform: scale(1); }
-  50%  { transform: scale(1.3); }
-  100% { transform: scale(1); }
+  0% { transform: scale(1);}
+  50%{ transform: scale(1.3);}
+  100%{ transform: scale(1);}
 }
 
 footer {
   text-align: center;
   background: #f1f1f1;
   padding: 20px;
-  font-family: 'Josefin_Light', sans-serif;
-  font-size: 14px; /* you can +4 if desired to 18 here as well if EVERYTHING means footers too. */
+  font-family: 'Josefin_Light';
+  font-size: 14px;
 }
 
 /* ----------------------------------------------------------
-5. Modal (Zoom/Enlarge) for Product Images
+5) Modal (Zoomed Product Images)
 ---------------------------------------------------------- */
 .modal {
   display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  position: fixed; top:0; left:0;
+  width:100%; height:100%;
   background-color: var(--color-modal-overlay);
   z-index: 2000;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  justify-content: center; align-items: center;
+  overflow: hidden; opacity: 0;
+  transition: opacity 0.3s;
 }
-
 .modal.active {
   display: flex;
   opacity: 1;
 }
-
 .modal-content {
   position: relative;
   background: #fff;
-  max-width: 90%;
-  max-height: 90%;
-  width: auto;
-  height: auto;
+  max-width: 90%; max-height: 90%;
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   overflow: hidden;
   animation: scaleUp 0.3s ease;
 }
-
 @keyframes scaleUp {
-  0% { transform: scale(0.95); }
-  100% { transform: scale(1); }
+  0% { transform: scale(0.95);}
+  100%{ transform: scale(1);}
 }
-
 .modal-close {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  font-size: 28px;
-  color: #333;
-  cursor: pointer;
-  background: none;
-  border: none;
-  font-family: 'Material Icons';
-  z-index: 11;
-  transition: color 0.2s ease;
+  position: absolute; top:15px; right:15px;
+  font-size:28px; color:#333;
+  cursor: pointer; background:none; border:none;
+  font-family:'Material Icons';
+  z-index:11; transition: color 0.2s;
 }
-
 .modal-close:hover {
   color: #000;
 }
-
 .modal-nav {
-  position: absolute;
-  top: 50%;
+  position: absolute; top:50%;
   transform: translateY(-50%);
-  font-size: 32px;
-  color: #666;
-  background: none;
-  border: none;
-  cursor: pointer;
-  z-index: 11;
-  font-family: 'Material Icons';
-  transition: color 0.2s ease;
+  font-size:32px; color:#666;
+  background:none; border:none; cursor:pointer;
+  z-index:11; font-family:'Material Icons';
+  transition: color 0.2s;
 }
-
 .modal-nav:hover {
   color: #fff;
 }
-
-.modal-nav-left {
-  left: 20px;
-}
-
-.modal-nav-right {
-  right: 20px;
-}
-
+.modal-nav-left { left: 20px; }
+.modal-nav-right{ right:20px; }
 .modal-image-container {
-  width: 100%;
-  height: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  position: relative;
+  width:100%; height:auto;
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden; position:relative;
 }
-
 .modal-image {
-  max-width: 100%;
-  max-height: 100%;
+  max-width:100%; max-height:100%;
   object-fit: contain;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s;
 }
 
 /* ----------------------------------------------------------
-6. Animations & Transitions
+6) Animations & Transitions
 ---------------------------------------------------------- */
 .active-tag {
   position: relative;
@@ -555,185 +453,136 @@ footer {
   color: var(--color-accent);
   text-decoration: none;
 }
-
 .active-tag::after {
   content: "";
-  position: absolute;
-  left: 0;
-  bottom: -2px;
-  width: 100%;
-  height: 2px;
+  position: absolute; left:0; bottom:-2px;
+  width:100%; height:2px;
   background-color: var(--color-accent);
   transform: scaleX(1);
   transform-origin: bottom left;
   transition: transform 0.3s ease-out;
 }
-
 .carousel-item.animate {
-  opacity: 0;
-  transform: translateY(20px);
+  opacity:0; transform: translateY(20px);
   animation: fadeInUp 0.5s forwards;
 }
-
 @keyframes fadeInUp {
-  0% { opacity: 0; transform: translateY(20px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
-.carousel {
-  background-color: transparent;
-  transition: opacity 0.3s ease;
-  opacity: 1;
-}
-
-.carousel.fade-out {
-  opacity: 0;
+  0% { opacity:0; transform:translateY(20px);}
+  100%{ opacity:1; transform:translateY(0);}
 }
 
 /* ----------------------------------------------------------
-7. Testimonials Styles
+7) Testimonials
 ---------------------------------------------------------- */
 .reviews-container {
-  padding-left: 20px;
-  padding-right: 20px;
-  background-color: #f9f9f9;
-  /* Force "off black" for textual content in light mode */
+  padding: 0 20px;
   color: var(--color-off-black);
+  /* no forced BG => inherits from <body>/<html> */
 }
-
 .testimonial {
-  display: flex;
-  align-items: flex-start;
+  display: flex; align-items:flex-start;
   margin-bottom: 20px;
-  border-bottom: 1px solid #f0f0f0;
-  padding-bottom: 10px;
+  border-bottom:1px solid #f0f0f0;
+  padding-bottom:10px;
 }
-
-/* +4 from 14 -> 18 for all testimonial text */
 .testimonial:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
+  border-bottom:none; margin-bottom:0;
 }
-
 .avatar {
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  flex-shrink:0;
+  width:40px; height:40px;
+  border-radius:50%;
   background-color: var(--color-accent);
-  color: #fff;
-  font-family: 'Josefin_Bold', sans-serif;
-  font-size: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 16px;
-  margin-top: 2px;
+  color:#fff;
+  font-family:'Josefin_Bold';
+  font-size:18px;
+  display:flex; align-items:center; justify-content:center;
+  margin-right:16px; margin-top:2px;
 }
-
-/* We'll unify testimonial text color to off black, size +4 px. */
 .testimonial-content p {
-  font-family: 'Josefin_Light', sans-serif;
-  font-size: 18px;
+  font-family:'Josefin_Light';
+  font-size:18px;
   color: var(--color-off-black);
-  margin-bottom: 8px;
+  margin-bottom:8px;
 }
-
 .testimonial-content .name {
-  font-family: 'Josefin_Medium', sans-serif;
-  font-size: 16px;
+  font-family:'Josefin_Medium';
+  font-size:16px;
   color: var(--color-off-black);
 }
 
 /* ----------------------------------------------------------
-8. About & Testimonials Page Headings
+8) About & Testimonials Page Headings
 ---------------------------------------------------------- */
 .about-text {
   text-align: center;
-  padding-top: 32px;
-  /* Also unify about text color to off black in light mode */
+  padding-top:32px;
   color: var(--color-off-black);
 }
-
-/* +4 px from 24 -> 28 */
 .about-text h2 {
-  font-family: 'Josefin_Bold', sans-serif;
-  font-size: 26px;
-  margin-bottom: 12px;
+  font-family:'Josefin_Bold';
+  font-size:26px;
+  margin-bottom:12px;
 }
-
-/* +4 px from 18 -> 22 */
 .about-text h3 {
-  font-family: 'Josefin_Medium', sans-serif;
-  font-size: 20px;
-  margin-bottom: 16px;
+  font-family:'Josefin_Medium';
+  font-size:20px;
+  margin-bottom:16px;
 }
-
-/* +4 px from 15 -> 19 */
 .about-text p {
-  font-family: 'Josefin_Light', sans-serif;
-  font-size: 16px;
-  line-height: 1.4;
-  margin-bottom: 20px;
-  max-width: 90%;
-  margin-left: auto;
-  margin-right: auto;
+  font-family:'Josefin_Light';
+  font-size:16px;
+  line-height:1.4;
+  margin-bottom:20px;
+  max-width:90%;
+  margin-left:auto;
+  margin-right:auto;
 }
-
-/* .testimonials-heading +4 from 24 -> 28, off black by default */
 .testimonials-heading {
-  font-family: 'Josefin_Bold', sans-serif;
-  font-size: 26px;
+  font-family:'Josefin_Bold';
+  font-size:26px;
   color: var(--color-off-black);
-  margin-bottom: 24px;
-  text-align: center;
+  margin-bottom:24px;
+  text-align:center;
 }
 
 /************************************************************
- *  8A. Single-Row Cover Flow Collage for About Page Header
+ * 8A) Single-Row Cover Flow Collage (About Page Header)
  ************************************************************/
 .about-hero-collage {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 12px;
-  overflow-x: auto;
-  width: 100vw;
+  display: flex; flex-wrap:nowrap;
+  gap:12px;
+  overflow-x:auto;
+  width:100vw;
   margin-left: calc(50% - 50vw);
   padding: var(--spacing-medium) 0;
-  background-color: #f0f0f0;
   scroll-behavior: smooth;
+  /* inherits background */
 }
-
 .collage-slice {
-  flex: 0 0 auto;
-  width: 300px;
-  height: 200px;
-  position: relative;
-  overflow: hidden;
-  border-radius: 6px;
+  flex:0 0 auto;
+  width:300px; height:200px;
+  position:relative;
+  overflow:hidden;
+  border-radius:6px;
   transition: transform 0.4s ease;
 }
-
 .collage-slice img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width:100%; height:100%;
+  object-fit:cover;
   transform: scale(1.6);
-  transition: transform 0.3s ease;
+  transition:transform 0.3s ease;
 }
-
 .collage-slice:hover img {
   transform: scale(1.4);
 }
-
-@media (max-width: 768px) {
+@media(max-width:768px) {
   .about-hero-collage {
-    gap: 8px;
-    padding: calc(var(--spacing-medium) * 1.5) 0;
+    gap:8px;
+    padding: calc(var(--spacing-medium)*1.5) 0;
   }
   .collage-slice {
-    width: 150px;
-    height: 150px;
+    width:150px; height:150px;
   }
   .collage-slice img {
     transform: scale(1.3);
@@ -741,86 +590,75 @@ footer {
 }
 
 /* ----------------------------------------------------------
-9. DARK THEME OVERRIDES
-   We apply these by toggling .dark-theme on body.
+9) Dark Theme Overrides
 ---------------------------------------------------------- */
 .dark-theme {
-  --color-header-bg: #1f1f1f;
-  --color-body-bg: #111; 
-  --color-carousel-bg: #252525;
+  /* Overriding root variables in dark mode */
+  --color-body-bg: #111;
   --color-card-bg: #1c1c1c;
+  --color-text-base: #ccc;
+  --color-text-subtle: #999;
+  --color-text-secondary: #777;
   --color-modal-overlay: rgba(0,0,0,0.8);
-
-  /* Dark theme text coloring */
-  --color-text-base: #ccc;      
-  --color-text-subtle: #999;    
-  --color-text-secondary: #777; 
-
-  /* Our new variable for bright ivory in dark mode. */
   --color-bright-ivory: #fffff0;
 }
 
-/* Header & top-menu in dark theme */
+/* Critically, apply black to BOTH <html> & <body> in dark mode */
+.dark-theme html,
+.dark-theme body {
+  background-color: #111 !important;
+}
+
+/* Dark theme header/footer */
 .dark-theme .header {
   background: linear-gradient(135deg, #1f1f1f 0%, #111 100%);
   color: #fff;
 }
-
 .dark-theme .top-menu {
   background: linear-gradient(135deg, #1f1f1f 0%, #111 100%);
 }
-
-/* Footer & other containers in dark theme */
 .dark-theme footer {
-  background: #222;
-  color: #ccc;
+  background:#222;
+  color:#ccc;
 }
-
 .dark-theme .footer-elements {
-  background: #222;
-  border-top: 1px solid #444;
+  background:#222;
+  border-top:1px solid #444;
 }
 
-/* Make sure the reviews-container also gets a dark background */
-.dark-theme .reviews-container {
-  background-color: #111;
-}
-
-/* Adjust testimonial border so no white lines appear */
-.dark-theme .testimonial {
-  border-bottom: 1px solid #444;
-}
-
-/* about-hero-collage in dark theme */
-.dark-theme .about-hero-collage {
-  background-color: #2a2a2a;
-}
-
-/* modal content darker in dark theme */
+/* Dark mode modal content */
 .dark-theme .modal-content {
-  background: #333;
+  background:#333;
 }
 
-/* In dark mode, the crescent is golden. */
+/* Dark mode “crescent” => golden */
 .dark-theme .theme-toggle-icon {
   color: #FFD700;
 }
 
-/* Price & like/vote count also golden in dark mode. */
+/* Price & likes => golden in dark mode */
 .dark-theme .price,
 .dark-theme .likes-count {
   color: #FFD700;
 }
 
-/* -------------- CRITICAL for Ivory in About/Testimonials -------------- */
-
-/* Everything in .about-text + .testimonials-heading + .reviews-container
-   becomes bright ivory (#fffff0) in dark mode. 
-   This ensures headings + paragraphs + testimonial text become that color. */
+/* About/testimonials text => bright ivory in dark mode */
 .dark-theme .about-text,
 .dark-theme .testimonials-heading,
 .dark-theme .reviews-container,
 .dark-theme .testimonial-content p,
 .dark-theme .testimonial-content .name {
   color: var(--color-bright-ivory) !important;
+}
+
+/* ----------------------------------------------------------
+10) Text Selection
+---------------------------------------------------------- */
+::selection {
+  background-color: var(--color-accent);
+  color: #fff;
+}
+.dark-theme ::selection {
+  background-color:#ffd700;
+  color:#111;
 }
