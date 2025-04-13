@@ -9,12 +9,51 @@
  *       4) Mobile menu toggling,
  *       5) A "smart" menu that changes which links appear depending
  *          on the current page (index, about, or testimonials).
+ *   - Also includes a Dark Mode icon button that applies a .dark-theme class
+ *     to <body>, with localStorage so user preference persists across pages.
  */
 
 import {
   fetchProductsByCategory,
   updateProductVotes
 } from "./kaayko_dataService.js";
+
+/* --------------------------------------------------------------------------
+ *                         Initialize Dark Mode
+ * -------------------------------------------------------------------------- */
+
+/**
+ * Checks localStorage to see if user previously set dark mode on,
+ * then updates body accordingly. 
+ * Also wires up the icon so it toggles .dark-theme and persists preference.
+ */
+function initializeDarkMode() {
+  const isDark = localStorage.getItem("darkMode") === "true";
+  if (isDark) {
+    document.body.classList.add("dark-theme");
+  }
+
+  const themeButton = document.querySelector('.theme-toggle-icon');
+  if (themeButton) {
+    themeButton.addEventListener('click', () => {
+      document.body.classList.toggle('dark-theme');
+      const nowDark = document.body.classList.contains('dark-theme');
+      localStorage.setItem("darkMode", nowDark ? "true" : "false");
+    });
+  }
+}
+
+/**
+ * We call this on DOMContentLoaded in each page,
+ * after we do populateMenu() etc.
+ */
+function runPageInit() {
+  initializeDarkMode();
+  // If we had other page-wide initialization, we could do it here.
+}
+
+/* Export runPageInit so we can call it from the HTML if we want. */
+export { runPageInit };
 
 /* --------------------------------------------------------------------------
  *                         Populate Carousel & Items
@@ -184,9 +223,6 @@ function addSwipeFunctionality(container, length, indicator) {
  *                           Modal for Images
  * -------------------------------------------------------------------------- */
 
-/**
- * Opens a modal showing all images for the given product item.
- */
 export function openModal(item) {
   const modal = document.getElementById("modal");
   const modalImageContainer = document.getElementById("modal-image-container");
@@ -250,9 +286,6 @@ function setupModalNavigation(container, length, currentIndex) {
  *                      Helpers: Text & Like Button
  * -------------------------------------------------------------------------- */
 
-/**
- * Creates a simple text element
- */
 function createTextElement(tag, className, text) {
   const el = document.createElement(tag);
   el.className = className;
@@ -260,9 +293,6 @@ function createTextElement(tag, className, text) {
   return el;
 }
 
-/**
- * Creates a like/heart button that updates Firestore on click.
- */
 function createLikeButton(item) {
   const button = document.createElement("button");
   button.className = "heart-button";
@@ -299,9 +329,6 @@ function createLikeButton(item) {
  *                        Modal Close Handlers
  * -------------------------------------------------------------------------- */
 
-/**
- * Allows closing the modal by clicking outside or pressing the 'close' button.
- */
 export function setupModalCloseHandlers() {
   const modal = document.getElementById("modal");
   if (!modal) return;
@@ -322,10 +349,10 @@ export function setupModalCloseHandlers() {
  *                           Mobile Menu
  * -------------------------------------------------------------------------- */
 
-/**
- * Toggles the mobile overlay menu on smaller screens.
- */
 export function setupMobileMenu() {
+  // First run the localStorage-based dark-mode logic
+  runPageInit();
+
   const fab = document.querySelector(".fab-menu");
   const overlay = document.querySelector(".mobile-menu-overlay");
   if (!fab || !overlay) return;
@@ -335,6 +362,7 @@ export function setupMobileMenu() {
   });
 
   overlay.addEventListener("click", e => {
+    // Close overlay if clicking outside or on a link
     if (e.target === overlay || e.target.tagName === "A") {
       overlay.classList.remove("active");
     }
@@ -345,12 +373,6 @@ export function setupMobileMenu() {
  *                       "Smart" Menu Mechanism
  * -------------------------------------------------------------------------- */
 
-/**
- * Decides which menu items to show based on the current path:
- *  - If user is on homepage ("/" or "/index.html"), show "About" & "Testimonials"
- *  - If on "/about" => show "Home" & "Testimonials"
- *  - If on "/testimonials" => show "Home" & "About"
- */
 export function populateMenu() {
   const desktopMenu = document.querySelector(".top-menu ul");
   const mobileMenu = document.querySelector(".mobile-menu-overlay ul");
@@ -389,6 +411,7 @@ export function populateMenu() {
     ];
   }
 
+  // The mobile menu gets the same links
   const mobileLinks = [...desktopLinks];
 
   // Populate the top menu

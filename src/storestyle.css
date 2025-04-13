@@ -1,12 +1,13 @@
 /************************************************************
-*  STORESTYLE.CSS - Unified Styles for Kaayko
+*  STORESTYLE.CSS - Unified Styles for Kaayko (With Full Dark Mode)
 *
 *  Purpose:
 *    - Provide a single stylesheet used by ALL site pages:
 *      (index.html, about.html, testimonials.html)
 *    - Includes pinned footer, header + mobile menu,
 *      product carousel, modal for zoomed images,
-*      testimonials styling, page headings, and a cover flow collage.
+*      testimonials styling, page headings, a cover flow collage,
+*      and a togglable dark mode theme with localStorage persistence.
 *
 *  Sections:
 *    1) Reset & Body Layout
@@ -18,6 +19,7 @@
 *    7) Testimonials
 *    8) About & Testimonials Page Headings
 *    8A) Single-Row Cover Flow Collage for About Page Header
+*    9) Dark Theme Overrides (full coverage for all containers)
 ************************************************************/
 
 /* ----------------------------------------------------------
@@ -28,7 +30,7 @@
   --spacing-medium: 8px;
   --spacing-large: 16px;
 
-  /* Color variables */
+  /* Base Light-Mode Colors */
   --color-header-bg: #333;
   --color-body-bg: #f9f9f9;
   --color-carousel-bg: #ececec;
@@ -38,6 +40,11 @@
   /* Accent colors – professional orange */
   --color-accent: #ff8c00;
   --color-accent-hover: #ff8c00;
+
+  /* Text colors for Light Mode */
+  --color-text-base: #333;
+  --color-text-subtle: #666;
+  --color-text-secondary: #ccc; /* used in header-subtitle etc. */
 }
 
 @font-face {
@@ -64,7 +71,7 @@
 html, body {
   height: 100%;
   background-color: var(--color-body-bg);
-  color: #333;
+  color: var(--color-text-base);
   scroll-behavior: smooth;
 }
 
@@ -85,7 +92,7 @@ main {
 .header {
   padding: calc(var(--spacing-large) * 1.5) var(--spacing-large) var(--spacing-large);
   background: linear-gradient(135deg, #444 0%, #222 100%);
-  color: #fff;
+  color: #fff; /* text in header is white-ish in light mode */
   text-align: center;
   position: relative;
 }
@@ -100,7 +107,7 @@ main {
 .header-subtitle {
   font-size: 16px;
   font-family: 'Josefin_Light', sans-serif;
-  color: #ccc;
+  color: var(--color-text-secondary);
 }
 
 .top-menu {
@@ -129,6 +136,7 @@ main {
   transform: scale(1.05);
 }
 
+/* FAB menu for smaller screens */
 .fab-menu {
   display: none;
   position: fixed;
@@ -159,6 +167,25 @@ main {
 
 .material-icons {
   font-size: 24px;
+}
+
+/* The main theme-toggle icon (the crescent).
+   We rotate it 180° so it flips direction.
+*/
+.theme-toggle-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 26px;
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  color: #fff;
+  transform: rotate(180deg); /* 1) Change direction of crescent */
+}
+
+.theme-toggle-icon:hover {
+  transform: rotate(180deg) scale(1.05);
 }
 
 .mobile-menu-overlay {
@@ -292,7 +319,7 @@ main {
 .title {
   font-family: 'Josefin_Bold', sans-serif;
   font-size: 18px;
-  color: #333;
+  color: var(--color-text-base);
   margin-bottom: var(--spacing-small);
   line-height: 1.4;
 }
@@ -300,7 +327,7 @@ main {
 .description {
   font-family: 'Josefin_Light', sans-serif;
   font-size: 14px;
-  color: #666;
+  color: var(--color-text-subtle);
   line-height: 1.5;
   margin-bottom: var(--spacing-medium);
   overflow: hidden;
@@ -554,6 +581,7 @@ footer {
 .reviews-container {
   padding-left: 20px;
   padding-right: 20px;
+  background-color: #f9f9f9;
 }
 
 .testimonial {
@@ -587,20 +615,19 @@ footer {
 .testimonial-content p {
   font-family: 'Josefin_Light', sans-serif;
   font-size: 14px;
-  color: #555;
+  color: var(--color-text-subtle);
   margin-bottom: 5px;
 }
 
 .testimonial-content .name {
   font-family: 'Josefin_Medium', sans-serif;
   font-size: 14px;
-  color: #333;
+  color: var(--color-text-base);
 }
 
 /* ----------------------------------------------------------
 8. About & Testimonials Page Headings
 ---------------------------------------------------------- */
-
 .about-text {
   text-align: center;
   padding-top: 32px;
@@ -609,21 +636,21 @@ footer {
 .about-text h2 {
   font-family: 'Josefin_Bold', sans-serif;
   font-size: 24px;
-  color: #333;
+  color: var(--color-text-base);
   margin-bottom: 12px;
 }
 
 .about-text h3 {
   font-family: 'Josefin_Medium', sans-serif;
   font-size: 18px;
-  color: #666;
+  color: var(--color-text-subtle);
   margin-bottom: 15px;
 }
 
 .about-text p {
   font-family: 'Josefin_Light', sans-serif;
   font-size: 15px;
-  color: #555;
+  color: var(--color-text-subtle);
   line-height: 1.6;
   margin-bottom: 20px;
   max-width: 90%;
@@ -634,7 +661,7 @@ footer {
 .testimonials-heading {
   font-family: 'Josefin_Bold', sans-serif;
   font-size: 24px;
-  color: #333;
+  color: var(--color-text-base);
   margin-bottom: 20px;
   text-align: center;
 }
@@ -642,7 +669,6 @@ footer {
 /************************************************************
  *  8A. Single-Row Cover Flow Collage for About Page Header
  ************************************************************/
-/* Desktop: Full-width collage header */
 .about-hero-collage {
   display: flex;
   flex-wrap: nowrap;
@@ -655,7 +681,6 @@ footer {
   scroll-behavior: smooth;
 }
 
-/* Each collage slice container at its original “ideal” size */
 .collage-slice {
   flex: 0 0 auto;
   width: 300px;
@@ -666,7 +691,6 @@ footer {
   transition: transform 0.3s ease;
 }
 
-/* The image is scaled up by 50% within the container */
 .collage-slice img {
   width: 100%;
   height: 100%;
@@ -675,12 +699,10 @@ footer {
   transition: transform 0.3s ease;
 }
 
-/* Optional hover effect on desktop */
 .collage-slice:hover img {
   transform: scale(1.3);
 }
 
-/* Responsive adjustments for mobile (iPod cover flow style) */
 @media (max-width: 768px) {
   .about-hero-collage {
     gap: 6px;
@@ -693,4 +715,73 @@ footer {
   .collage-slice img {
     transform: scale(1.3);
   }
+}
+
+/* ----------------------------------------------------------
+9. DARK THEME OVERRIDES
+   We apply these by toggling .dark-theme on body.
+---------------------------------------------------------- */
+.dark-theme {
+  --color-header-bg: #1f1f1f;
+  --color-body-bg: #111; 
+  --color-carousel-bg: #252525;
+  --color-card-bg: #1c1c1c;
+  --color-modal-overlay: rgba(0,0,0,0.8);
+
+  /* Dark theme text coloring */
+  --color-text-base: #ccc;      
+  --color-text-subtle: #999;    
+  --color-text-secondary: #777; 
+}
+
+/* Header & top-menu in dark theme */
+.dark-theme .header {
+  background: linear-gradient(135deg, #1f1f1f 0%, #111 100%);
+  color: #fff;
+}
+
+.dark-theme .top-menu {
+  background: linear-gradient(135deg, #1f1f1f 0%, #111 100%);
+}
+
+/* Footer & other containers in dark theme */
+.dark-theme footer {
+  background: #222;
+  color: #ccc;
+}
+
+.dark-theme .footer-elements {
+  background: #222;
+  border-top: 1px solid #444;
+}
+
+/* Make sure the reviews-container also gets a dark background */
+.dark-theme .reviews-container {
+  background-color: #111;
+}
+
+/* Adjust testimonial border so no white lines appear */
+.dark-theme .testimonial {
+  border-bottom: 1px solid #444;
+}
+
+/* about-hero-collage in dark theme */
+.dark-theme .about-hero-collage {
+  background-color: #2a2a2a;
+}
+
+/* modal content darker in dark theme */
+.dark-theme .modal-content {
+  background: #333;
+}
+
+/* 2) In dark mode, have the crescent be golden */
+.dark-theme .theme-toggle-icon {
+  color: #FFD700; /* Golden glow when dark mode is active */
+}
+
+/* 3) Price & like/vote count also show in golden color in dark mode */
+.dark-theme .price,
+.dark-theme .likes-count {
+  color: #FFD700; /* Golden color to stand out in dark mode */
 }
