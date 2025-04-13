@@ -5,37 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Kaayko Store</title>
 
-  <!-- Main CSS file (shared) -->
+  <!-- Main CSS (shared across all pages) -->
   <link rel="stylesheet" href="storestyle.css">
+  <!-- Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
+  <!-- HEADER -->
   <header class="header">
     <h1 class="header-title">Kaayko Store</h1>
     <p class="header-subtitle">Vote now, pay later.</p>
 
-    <!-- We'll fill with "About" & "Testimonials" if index page -->
+    <!-- We'll fill with "About" & "Testimonials" if on index.html -->
     <nav class="top-menu">
       <ul></ul>
     </nav>
 
-    <!-- FAB for Mobile Nav -->
+    <!-- Floating Action Button for Mobile Menu -->
     <button class="fab-menu" aria-label="Open Menu">
       <span class="material-icons">menu</span>
     </button>
   </header>
 
-  <!-- Mobile overlay with an empty UL, also filled by populateMenu() -->
+  <!-- Mobile menu overlay -->
   <div class="mobile-menu-overlay">
     <ul></ul>
   </div>
 
+  <!-- MAIN: the product carousel for the store -->
   <main style="flex: 1;">
-    <!-- Our product carousel -->
     <section id="carousel" class="carousel" aria-live="polite"></section>
   </main>
 
-  <!-- Modal for zoomable product images -->
+  <!-- MODAL for zooming product images -->
   <div id="modal" class="modal" role="dialog" aria-modal="true">
     <div class="modal-content">
       <button 
@@ -58,28 +60,20 @@
     </div>
   </div>
 
+  <!-- FOOTER -->
   <footer>
     <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
   </footer>
 
-  <!-- Scripts -->
+  <!-- Scripts (Firebase config, data service, main UI logic) -->
   <script type="module" src="scripts/kaayko_main.js"></script>
   <script type="module" src="scripts/kaayko_firebaseConfig.js"></script>
   <script type="module" src="scripts/kaayko_dataService.js"></script>
   <script type="module" src="scripts/kaayko_ui.js"></script>
 
+  <!-- Keep year updated -->
   <script>
-    // Keep the footer year updated
     document.getElementById('year').textContent = new Date().getFullYear();
-  </script>
-
-  <!-- The "smart menu" calls: Show "About" & "Testimonials" if index. -->
-  <script type="module">
-    import { populateMenu, setupMobileMenu } from "./scripts/kaayko_ui.js";
-    document.addEventListener("DOMContentLoaded", () => {
-      populateMenu();      // "About" + "Testimonials"
-      setupMobileMenu();   // toggles overlay
-    });
   </script>
 </body>
 </html>

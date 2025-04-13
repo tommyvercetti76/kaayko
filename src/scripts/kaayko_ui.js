@@ -65,16 +65,15 @@ function createCarouselItem(item) {
   // Footer: Price + Votes
   const footer = document.createElement("div");
   footer.className = "footer-elements";
-
   const priceEl = createTextElement("p", "price", item.price);
   const { heartButton, votesCountEl } = createLikeButton(item);
 
   footer.append(priceEl, heartButton, votesCountEl);
 
-  // Append Title, Description, Footer to the item
+  // Attach everything
   carouselItem.append(title, description, footer);
 
-  // Enable swipe & open modal on click
+  // Swipe & modal
   addSwipeFunctionality(imgContainer, item.imgSrc.length, imageIndicator);
   imgContainer.addEventListener("click", () => openModal(item));
 
@@ -98,10 +97,8 @@ function animateCarouselItems() {
  *                   Image Container & Indicators
  * -------------------------------------------------------------------------- */
 
-/**
+/** 
  * Builds the image container that holds multiple images (display one at a time).
- * @param {string[]} imageUrls - The product's image URLs
- * @returns {HTMLElement} A DIV container
  */
 function buildImageContainer(imageUrls) {
   const container = document.createElement("div");
@@ -120,9 +117,6 @@ function buildImageContainer(imageUrls) {
 
 /**
  * Creates dot indicators for the images. Clicking a dot reveals the corresponding image.
- * @param {number} length - how many images
- * @param {number} currentIndex - which image is initially active
- * @returns {HTMLElement} The dot indicator container
  */
 function createImageIndicator(length, currentIndex) {
   const indicator = document.createElement("div");
@@ -157,24 +151,20 @@ function addSwipeFunctionality(container, length, indicator) {
       const images = container.querySelectorAll(".carousel-image");
       if (!images.length) return;
 
-      // Hide old
       images[currentImageIndex].style.display = "none";
       indicator.children[currentImageIndex].classList.remove("active");
 
-      // Next or previous index
       if (deltaX < 0) {
         currentImageIndex = (currentImageIndex + 1) % length;
       } else {
         currentImageIndex = (currentImageIndex - 1 + length) % length;
       }
 
-      // Show new
       images[currentImageIndex].style.display = "block";
       indicator.children[currentImageIndex].classList.add("active");
     }
   }
 
-  // Use pointer events if available, else fallback
   if (window.PointerEvent) {
     container.addEventListener("pointerdown", e => (startX = e.clientX));
     container.addEventListener("pointerup", e => handleSwipe(e.clientX - startX));
@@ -196,14 +186,13 @@ function addSwipeFunctionality(container, length, indicator) {
 
 /**
  * Opens a modal showing all images for the given product item.
- * @param {Object} item - The product object with .imgSrc array
  */
 export function openModal(item) {
   const modal = document.getElementById("modal");
   const modalImageContainer = document.getElementById("modal-image-container");
   if (!modal || !modalImageContainer) return;
 
-  // Clear old
+  // Clear old images
   modalImageContainer.innerHTML = "";
   item.imgSrc.forEach((src, idx) => {
     const img = document.createElement("img");
@@ -341,9 +330,10 @@ export function setupMobileMenu() {
   const overlay = document.querySelector(".mobile-menu-overlay");
   if (!fab || !overlay) return;
 
-  fab.addEventListener("click", () => overlay.classList.toggle("active"));
+  fab.addEventListener("click", () => {
+    overlay.classList.toggle("active");
+  });
 
-  // Close if user clicks background or a link
   overlay.addEventListener("click", e => {
     if (e.target === overlay || e.target.tagName === "A") {
       overlay.classList.remove("active");
@@ -353,40 +343,37 @@ export function setupMobileMenu() {
 
 /* --------------------------------------------------------------------------
  *                       "Smart" Menu Mechanism
--------------------------------------------------------------------------- */
+ * -------------------------------------------------------------------------- */
 
 /**
  * Decides which menu items to show based on the current path:
  *  - If user is on homepage ("/" or "/index.html"), show "About" & "Testimonials"
  *  - If on "/about" => show "Home" & "Testimonials"
  *  - If on "/testimonials" => show "Home" & "About"
- *  - Otherwise, you can adjust as needed.
  */
 export function populateMenu() {
   const desktopMenu = document.querySelector(".top-menu ul");
   const mobileMenu = document.querySelector(".mobile-menu-overlay ul");
   if (!desktopMenu || !mobileMenu) return;
 
-  // Determine which page the user is on
   const pathname = window.location.pathname; 
-
   let desktopLinks = [];
 
-  // If on homepage => "About", "Testimonials"
+  // If on index => "About" & "Testimonials"
   if (pathname.endsWith("index.html") || pathname === "/" || pathname === "") {
     desktopLinks = [
       { text: "About", href: "about.html" },
       { text: "Testimonials", href: "testimonials.html" }
     ];
   }
-  // If on about => "Home", "Testimonials"
+  // If on about => "Home" & "Testimonials"
   else if (pathname.endsWith("about.html")) {
     desktopLinks = [
       { text: "Home", href: "index.html" },
       { text: "Testimonials", href: "testimonials.html" }
     ];
   }
-  // If on testimonials => "Home", "About"
+  // If on testimonials => "Home" & "About"
   else if (pathname.endsWith("testimonials.html")) {
     desktopLinks = [
       { text: "Home", href: "index.html" },
@@ -394,7 +381,7 @@ export function populateMenu() {
     ];
   }
   else {
-    // fallback
+    // fallback for unknown pages
     desktopLinks = [
       { text: "Home", href: "index.html" },
       { text: "About", href: "about.html" },
@@ -404,7 +391,7 @@ export function populateMenu() {
 
   const mobileLinks = [...desktopLinks];
 
-  // Build desktop
+  // Populate the top menu
   desktopMenu.innerHTML = "";
   desktopLinks.forEach(link => {
     const li = document.createElement("li");
@@ -415,7 +402,7 @@ export function populateMenu() {
     desktopMenu.appendChild(li);
   });
 
-  // Build mobile
+  // Populate the mobile overlay menu
   mobileMenu.innerHTML = "";
   mobileLinks.forEach(link => {
     const li = document.createElement("li");

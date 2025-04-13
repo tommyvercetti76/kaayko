@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Kaayko | About</title>
 
-  <!-- Same storestyle.css for consistent design -->
   <link rel="stylesheet" href="storestyle.css"/>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
+  <!-- HEADER -->
   <header class="header">
     <h1 class="header-title">Kaayko Store</h1>
     <p class="header-subtitle">Vote now, pay later.</p>
@@ -18,17 +18,19 @@
     <nav class="top-menu">
       <ul></ul>
     </nav>
+
     <button class="fab-menu" aria-label="Open Menu">
       <span class="material-icons">menu</span>
     </button>
   </header>
 
+  <!-- MOBILE OVERLAY -->
   <div class="mobile-menu-overlay">
     <ul></ul>
   </div>
 
+  <!-- MAIN CONTENT: About Page -->
   <main style="flex: 1;">
-    <!-- about content ... -->
     <div class="about-hero" style="text-align: center; margin-bottom: 20px;">
       <img 
         src="assets/about-header.jpg" 
@@ -47,25 +49,17 @@
     </section>
   </main>
 
+  <!-- FOOTER -->
   <footer>
     <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
   </footer>
 
-  <!-- If you want the store scripts for the same menu logic: -->
+  <!-- Optionally load any store scripts if we want the same menu logic, etc. -->
   <script type="module" src="scripts/kaayko_main.js"></script>
   <script type="module" src="scripts/kaayko_ui.js"></script>
 
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
-  </script>
-
-  <!-- The "smart" menu calls: Show "Home" & "Testimonials" if about.html. -->
-  <script type="module">
-    import { populateMenu, setupMobileMenu } from "./scripts/kaayko_ui.js";
-    document.addEventListener("DOMContentLoaded", () => {
-      populateMenu();      // "Home" + "Testimonials"
-      setupMobileMenu();
-    });
   </script>
 </body>
 </html>

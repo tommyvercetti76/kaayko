@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
+  <!-- HEADER -->
   <header class="header">
     <h1 class="header-title">Kaayko Store</h1>
     <p class="header-subtitle">Vote now, pay later.</p>
@@ -22,34 +23,37 @@
     </button>
   </header>
 
+  <!-- MOBILE OVERLAY -->
   <div class="mobile-menu-overlay">
     <ul></ul>
   </div>
 
+  <!-- MAIN CONTENT: Testimonials listing -->
   <main style="max-width: 900px; margin: 30px auto; padding: 0 20px; flex: 1;">
-    <h2 style="
-      /* font-family: 'Josefin_Bold'; */
-      font-size: 24px; 
-      color: #333;
-      margin-bottom: 20px;
-      text-align: center;
-    ">
+    <h2
+      style="
+        font-size: 24px; 
+        color: #333;
+        margin-bottom: 20px;
+        text-align: center;
+      "
+    >
       What People Are Saying
     </h2>
-
     <!-- Container for the reviews, to be populated by about.js data -->
     <div id="testimonialsContainer" class="reviews-container"></div>
   </main>
 
+  <!-- FOOTER -->
   <footer>
     <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
   </footer>
 
-  <!-- If you want the same store logic for the menu, etc. -->
+  <!-- For the same store logic (mobile menu, etc.) -->
   <script type="module" src="scripts/kaayko_main.js"></script>
   <script type="module" src="scripts/kaayko_ui.js"></script>
 
-  <!-- Then import about.js for the testimonial logic (fakeTestimonials, etc.) -->
+  <!-- Then import about.js for the testimonial logic -->
   <script type="module">
     import { fakeTestimonials, shuffleArray, createTestimonialElement } from "./scripts/about.js";
 
@@ -70,12 +74,8 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
+      // Load the list of testimonials
       loadStandaloneTestimonials();
-      // Populate the "smart" menu: "Home" + "About" if testimonials
-      import("./scripts/kaayko_ui.js").then(({ populateMenu, setupMobileMenu }) => {
-        populateMenu();
-        setupMobileMenu();
-      });
     });
   </script>
 </body>
