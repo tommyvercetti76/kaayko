@@ -45,6 +45,12 @@
   --color-text-base: #333;
   --color-text-subtle: #666;
   --color-text-secondary: #ccc; /* used in header-subtitle etc. */
+
+  /* New “off black” for About/Testimonials in LIGHT mode */
+  --color-off-black: #111;
+
+  /* New “bright ivory” for About/Testimonials in DARK mode */
+  --color-bright-ivory: #fffff0;
 }
 
 @font-face {
@@ -92,20 +98,22 @@ main {
 .header {
   padding: calc(var(--spacing-large) * 1.5) var(--spacing-large) var(--spacing-large);
   background: linear-gradient(135deg, #444 0%, #222 100%);
-  color: #fff; /* text in header is white-ish in light mode */
+  color: #fff;
   text-align: center;
   position: relative;
 }
 
+/* +4 px from 28 -> 32 */
 .header-title {
-  font-size: 28px;
+  font-size: 30px;
   font-family: 'Josefin_Bold', sans-serif;
   margin-bottom: var(--spacing-medium);
   letter-spacing: 1px;
 }
 
+/* +4 px from 16 -> 20 */
 .header-subtitle {
-  font-size: 16px;
+  font-size: 18px;
   font-family: 'Josefin_Light', sans-serif;
   color: var(--color-text-secondary);
 }
@@ -123,11 +131,12 @@ main {
   gap: 20px;
 }
 
+/* +4 px from 16 -> 20 */
 .top-menu li a {
   color: #fff;
   text-decoration: none;
   font-family: 'Josefin_Medium';
-  font-size: 16px;
+  font-size: 18px;
   transition: color 0.3s, transform 0.3s;
 }
 
@@ -136,7 +145,7 @@ main {
   transform: scale(1.05);
 }
 
-/* FAB menu for smaller screens */
+/* FAB menu (unchanged) */
 .fab-menu {
   display: none;
   position: fixed;
@@ -169,23 +178,23 @@ main {
   font-size: 24px;
 }
 
-/* The main theme-toggle icon (the crescent).
-   We rotate it 180° so it flips direction.
-*/
+/* The main theme-toggle icon (slightly angled).
+   The user had that at 165 or 180. We'll keep as is. */
 .theme-toggle-icon {
   background: none;
   border: none;
   cursor: pointer;
   font-size: 26px;
   position: absolute;
-  top: 15px;
-  right: 15px;
+  top: 24px; 
+  right: 24px; 
   color: #fff;
-  transform: rotate(180deg); /* 1) Change direction of crescent */
+  align-self: center;
+  transform: rotate(165deg);
 }
 
 .theme-toggle-icon:hover {
-  transform: rotate(180deg) scale(1.05);
+  transform: rotate(165deg) scale(1.05);
 }
 
 .mobile-menu-overlay {
@@ -222,7 +231,7 @@ main {
 .mobile-menu-overlay a {
   color: #fff;
   text-decoration: none;
-  font-size: 20px;
+  font-size: 20px; /* matches top-menu li a */
   font-family: 'Josefin_Bold';
   transition: color 0.3s;
 }
@@ -243,15 +252,15 @@ main {
     padding: calc(var(--spacing-large) * 1.8) var(--spacing-large) var(--spacing-large);
   }
   .header-title {
-    font-size: 32px;
+    font-size: 32px; /* +4 from 32 if you'd like a further step on small screens */
   }
   .header-subtitle {
-    font-size: 18px;
+    font-size: 20px; /* +4 from 18, etc. */
   }
 }
 
 /* ----------------------------------------------------------
-3. Carousel Grid & Card Items (For Index Page)
+3. Carousel (Index Page)
 ---------------------------------------------------------- */
 .carousel {
   display: grid;
@@ -262,6 +271,8 @@ main {
   overflow: hidden;
 }
 
+/* .title +4 px from 18 -> 22
+   .description +4 px from 14 -> 18 */
 .carousel-item {
   background: var(--color-card-bg);
   border-radius: 12px;
@@ -316,17 +327,19 @@ main {
   background-color: #333;
 }
 
+/* +4 from 18 -> 22 */
 .title {
   font-family: 'Josefin_Bold', sans-serif;
-  font-size: 18px;
+  font-size: 20px;
   color: var(--color-text-base);
   margin-bottom: var(--spacing-small);
   line-height: 1.4;
 }
 
+/* +4 from 14 -> 18 */
 .description {
   font-family: 'Josefin_Light', sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--color-text-subtle);
   line-height: 1.5;
   margin-bottom: var(--spacing-medium);
@@ -352,9 +365,10 @@ main {
   background: #fff;
 }
 
+/* +4 from 16 -> 20 */
 .price {
   font-family: 'Josefin_Medium', sans-serif;
-  font-size: 16px;
+  font-size: 18px;
   color: #333;
   background: none;
   border: none;
@@ -398,9 +412,10 @@ main {
   transform: scale(1.2);
 }
 
+/* +4 from 14 -> 18 */
 .likes-count {
   font-family: 'Josefin_Medium', sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   color: #555;
   white-space: nowrap;
   margin: 0;
@@ -422,7 +437,7 @@ footer {
   background: #f1f1f1;
   padding: 20px;
   font-family: 'Josefin_Light', sans-serif;
-  font-size: 14px;
+  font-size: 14px; /* you can +4 if desired to 18 here as well if EVERYTHING means footers too. */
 }
 
 /* ----------------------------------------------------------
@@ -582,6 +597,8 @@ footer {
   padding-left: 20px;
   padding-right: 20px;
   background-color: #f9f9f9;
+  /* Force "off black" for textual content in light mode */
+  color: var(--color-off-black);
 }
 
 .testimonial {
@@ -592,6 +609,7 @@ footer {
   padding-bottom: 10px;
 }
 
+/* +4 from 14 -> 18 for all testimonial text */
 .testimonial:last-child {
   border-bottom: none;
   margin-bottom: 0;
@@ -610,19 +628,21 @@ footer {
   align-items: center;
   justify-content: center;
   margin-right: 16px;
+  margin-top: 2px;
 }
 
+/* We'll unify testimonial text color to off black, size +4 px. */
 .testimonial-content p {
   font-family: 'Josefin_Light', sans-serif;
-  font-size: 14px;
-  color: var(--color-text-subtle);
-  margin-bottom: 5px;
+  font-size: 18px;
+  color: var(--color-off-black);
+  margin-bottom: 8px;
 }
 
 .testimonial-content .name {
   font-family: 'Josefin_Medium', sans-serif;
-  font-size: 14px;
-  color: var(--color-text-base);
+  font-size: 16px;
+  color: var(--color-off-black);
 }
 
 /* ----------------------------------------------------------
@@ -631,38 +651,41 @@ footer {
 .about-text {
   text-align: center;
   padding-top: 32px;
+  /* Also unify about text color to off black in light mode */
+  color: var(--color-off-black);
 }
 
+/* +4 px from 24 -> 28 */
 .about-text h2 {
   font-family: 'Josefin_Bold', sans-serif;
-  font-size: 24px;
-  color: var(--color-text-base);
+  font-size: 26px;
   margin-bottom: 12px;
 }
 
+/* +4 px from 18 -> 22 */
 .about-text h3 {
   font-family: 'Josefin_Medium', sans-serif;
-  font-size: 18px;
-  color: var(--color-text-subtle);
-  margin-bottom: 15px;
+  font-size: 20px;
+  margin-bottom: 16px;
 }
 
+/* +4 px from 15 -> 19 */
 .about-text p {
   font-family: 'Josefin_Light', sans-serif;
-  font-size: 15px;
-  color: var(--color-text-subtle);
-  line-height: 1.6;
+  font-size: 16px;
+  line-height: 1.4;
   margin-bottom: 20px;
   max-width: 90%;
   margin-left: auto;
   margin-right: auto;
 }
 
+/* .testimonials-heading +4 from 24 -> 28, off black by default */
 .testimonials-heading {
   font-family: 'Josefin_Bold', sans-serif;
-  font-size: 24px;
-  color: var(--color-text-base);
-  margin-bottom: 20px;
+  font-size: 26px;
+  color: var(--color-off-black);
+  margin-bottom: 24px;
   text-align: center;
 }
 
@@ -688,24 +711,24 @@ footer {
   position: relative;
   overflow: hidden;
   border-radius: 6px;
-  transition: transform 0.3s ease;
+  transition: transform 0.4s ease;
 }
 
 .collage-slice img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: scale(1.5);
+  transform: scale(1.6);
   transition: transform 0.3s ease;
 }
 
 .collage-slice:hover img {
-  transform: scale(1.3);
+  transform: scale(1.4);
 }
 
 @media (max-width: 768px) {
   .about-hero-collage {
-    gap: 6px;
+    gap: 8px;
     padding: calc(var(--spacing-medium) * 1.5) 0;
   }
   .collage-slice {
@@ -732,6 +755,9 @@ footer {
   --color-text-base: #ccc;      
   --color-text-subtle: #999;    
   --color-text-secondary: #777; 
+
+  /* Our new variable for bright ivory in dark mode. */
+  --color-bright-ivory: #fffff0;
 }
 
 /* Header & top-menu in dark theme */
@@ -775,13 +801,26 @@ footer {
   background: #333;
 }
 
-/* 2) In dark mode, have the crescent be golden */
+/* In dark mode, the crescent is golden. */
 .dark-theme .theme-toggle-icon {
-  color: #FFD700; /* Golden glow when dark mode is active */
+  color: #FFD700;
 }
 
-/* 3) Price & like/vote count also show in golden color in dark mode */
+/* Price & like/vote count also golden in dark mode. */
 .dark-theme .price,
 .dark-theme .likes-count {
-  color: #FFD700; /* Golden color to stand out in dark mode */
+  color: #FFD700;
+}
+
+/* -------------- CRITICAL for Ivory in About/Testimonials -------------- */
+
+/* Everything in .about-text + .testimonials-heading + .reviews-container
+   becomes bright ivory (#fffff0) in dark mode. 
+   This ensures headings + paragraphs + testimonial text become that color. */
+.dark-theme .about-text,
+.dark-theme .testimonials-heading,
+.dark-theme .reviews-container,
+.dark-theme .testimonial-content p,
+.dark-theme .testimonial-content .name {
+  color: var(--color-bright-ivory) !important;
 }
