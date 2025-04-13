@@ -6,7 +6,7 @@
 *      (index.html, about.html, testimonials.html)
 *    - Includes pinned footer, header + mobile menu,
 *      product carousel, and optional testimonials styling.
-* 
+*
 *  Sections:
 *    1) Reset & Body Layout
 *    2) Header & Mobile Menu
@@ -15,6 +15,7 @@
 *    5) Modal (Zoomed Product Images)
 *    6) Animations & Transitions
 *    7) Testimonials
+*    8) About & Testimonials Page Headings
 ************************************************************/
 
 /* ----------------------------------------------------------
@@ -76,6 +77,7 @@ body {
 
 main {
   flex: 1; /* Let main content push footer to bottom */
+  padding: 0 var(--spacing-medium); /* Slight horizontal padding for smaller screens */
 }
 
 /* ----------------------------------------------------------
@@ -596,4 +598,43 @@ footer {
   font-family: 'Josefin_Medium', sans-serif;
   font-size: 14px;
   color: #333;
+}
+
+/* ----------------------------------------------------------
+8. About & Testimonials Page Headings
+---------------------------------------------------------- */
+
+/* For About Page: .about-text region */
+.about-text h2 {
+  font-family: 'Josefin_Bold', sans-serif;
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.about-text h3 {
+  font-family: 'Josefin_Medium', sans-serif;
+  font-size: 18px;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.about-text p {
+  font-family: 'Josefin_Light', sans-serif;
+  font-size: 15px;
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  max-width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* For Testimonials Page's main heading */
+.testimonials-heading {
+  font-family: 'Josefin_Bold', sans-serif;
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
 }

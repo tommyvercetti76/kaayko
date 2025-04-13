@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Kaayko | About</title>
 
+  <!-- Unified storestyle.css -->
   <link rel="stylesheet" href="storestyle.css"/>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
@@ -30,7 +31,7 @@
   </div>
 
   <!-- MAIN CONTENT: About Page -->
-  <main style="flex: 1;">
+  <main>
     <div class="about-hero" style="text-align: center; margin-bottom: 20px;">
       <img 
         src="assets/about-header.jpg" 
@@ -38,13 +39,20 @@
         style="max-width: 100%; height: auto; border-radius: 6px;"
       />
     </div>
-    <section class="about-text" style="max-width: 800px; margin: 0 auto; text-align: center;">
+    <!-- about-text container for consistent styling in storestyle.css -->
+    <section class="about-text">
       <h2>Welcome To Kaayko</h2>
-      <h3 style="color: #666; margin-bottom: 20px;">
-        Coming at your mind, not the money.
-      </h3>
+      <h3>Coming at your mind, not the money.</h3>
       <p>
-        At Kaayko, we believe you need a better thought representation ...
+        At Kaayko, we believe you need a better thought representation when
+        you are putting yourself “Out There”. “Out There” is anywhere you feel
+        attacked by bad vibes, crazy people and unruly pets, kids or both.
+      </p>
+      <p>
+        True Zen is not achieved by sitting on a mountain hoping the world will
+        heal itself. True Zen is in putting on Kaayko Merch and battling these
+        adversities every single day. Kaayko is a rebellion you need but do not
+        deserve. If you truly see the world as it is, you will wear Kaayko.
       </p>
     </section>
   </main>
@@ -54,7 +62,7 @@
     <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
   </footer>
 
-  <!-- Optionally load any store scripts if we want the same menu logic, etc. -->
+  <!-- Optionally load store scripts for the same menu logic, etc. -->
   <script type="module" src="scripts/kaayko_main.js"></script>
   <script type="module" src="scripts/kaayko_ui.js"></script>
 

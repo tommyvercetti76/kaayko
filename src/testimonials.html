@@ -23,28 +23,18 @@
     </button>
   </header>
 
-  <!-- MOBILE OVERLAY -->
   <div class="mobile-menu-overlay">
     <ul></ul>
   </div>
 
-  <!-- MAIN CONTENT: Testimonials listing -->
-  <main style="max-width: 900px; margin: 30px auto; padding: 0 20px; flex: 1;">
-    <h2
-      style="
-        font-size: 24px; 
-        color: #333;
-        margin-bottom: 20px;
-        text-align: center;
-      "
-    >
-      What People Are Saying
-    </h2>
-    <!-- Container for the reviews, to be populated by about.js data -->
+  <main style="max-width: 900px; margin: 30px auto;">
+    <!-- Use .testimonials-heading for consistent styling from storestyle.css -->
+    <h2 class="testimonials-heading">What People Are Saying</h2>
+
+    <!-- Container for the reviews, populated by about.js data -->
     <div id="testimonialsContainer" class="reviews-container"></div>
   </main>
 
-  <!-- FOOTER -->
   <footer>
     <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
   </footer>
