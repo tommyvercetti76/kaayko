@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "kaaykostore",
+    "site": "Kaaykostore",
     "public": "src",
     "ignore": [
       "firebase.json",
