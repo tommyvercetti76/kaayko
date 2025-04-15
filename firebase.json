@@ -6,7 +6,6 @@
       "firebase.json",
       "**/node_modules/**"
     ],
-    // ADD HEADERS:
     "headers": [
       {
         "source": "src/apple-app-site-association",
