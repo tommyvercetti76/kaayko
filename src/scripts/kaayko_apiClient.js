@@ -1,63 +1,85 @@
-// scripts/kaayko_apiClient.js
-
 /**
- * @file kaayko_apiClient.js
- * @description
- *   Thin wrapper over the Kaayko Store REST API.
- *   All product data (including image URLs) and voting
- *   is done via HTTP, so your front‑end no longer needs
- *   direct Firebase imports.
+ * scripts/kaayko_apiClient.js
+ *
+ * Thin wrapper over our Cloud Functions API.
+ * • All fetches return JSON.
+ * • Errors on non‑OK responses.
  */
 
-/** Base URL of your deployed API — change to prod when ready */
-const BASE_URL = "https://us-central1-kaayko-api-dev.cloudfunctions.net/api";
+const API_BASE = "https://us-central1-kaayko-api-dev.cloudfunctions.net/api";
 
 /**
- * Fetches the full list of products (with imgSrc arrays).
- * @returns {Promise<Array<Object>>} resolves to array of product objects.
+ * Fetches the full list of products.
+ *
+ * GET /products
+ *
+ * @returns {Promise<Array<Object>>} Resolves to an array of product objects.
+ * @throws {Error} If the network request fails or returns non‑OK.
  */
 export async function getAllProducts() {
-  const res = await fetch(`${BASE_URL}/products`);
+  const res = await fetch(`${API_BASE}/products`);
   if (!res.ok) {
-    throw new Error(`API error (${res.status}): ${await res.text()}`);
+    throw new Error(`getAllProducts failed: ${res.status} ${res.statusText}`);
   }
-  return await res.json();
+  return res.json();
 }
 
 /**
- * Fetches a single product by its Firestore docID.
- * @param {string} id – the Firestore document ID.
- * @returns {Promise<Object>} resolves to a single product object.
+ * Fetches a single product by its Firestore document ID.
+ *
+ * GET /products/:id
+ *
+ * @param {string} productId – the Firestore document ID of the product
+ * @returns {Promise<Object>} Resolves to the product object.
+ * @throws {Error} If the network request fails, returns 404, or non‑OK.
  */
-export async function getProductById(id) {
-  const res = await fetch(`${BASE_URL}/products/${encodeURIComponent(id)}`);
+export async function getProductByID(productId) {
+  if (!productId) {
+    throw new Error("getProductByID requires a productId");
+  }
+  const res = await fetch(`${API_BASE}/products/${encodeURIComponent(productId)}`);
   if (res.status === 404) {
-    throw new Error("Product not found");
+    throw new Error(`Product ${productId} not found (404)`);
   }
   if (!res.ok) {
-    throw new Error(`API error (${res.status}): ${await res.text()}`);
+    throw new Error(`getProductByID failed: ${res.status} ${res.statusText}`);
   }
-  return await res.json();
+  return res.json();
 }
 
 /**
- * Atomically updates the vote count for a product.
- * @param {string} id         – Firestore document ID.
- * @param {1|-1}   voteChange – +1 to upvote, −1 to remove vote.
- * @returns {Promise<boolean>} resolves true on success.
+ * Sends a vote change (+1 or -1) for a given product.
+ *
+ * POST /products/:id/vote
+ * Body: { voteChange: 1 | -1 }
+ *
+ * @param {string} productId – Firestore document ID of the product
+ * @param {1|-1}   voteChange – +1 to upvote, -1 to remove vote
+ * @returns {Promise<{success: boolean}>} Resolves to { success: true } on success.
+ * @throws {Error} If the network request fails or returns non‑OK.
  */
-export async function voteOnProduct(id, voteChange) {
+export async function voteOnProduct(productId, voteChange) {
+  if (!productId) {
+    throw new Error("voteOnProduct requires a productId");
+  }
+  if (![1, -1].includes(voteChange)) {
+    throw new Error("voteOnProduct requires voteChange of +1 or -1");
+  }
+
   const res = await fetch(
-    `${BASE_URL}/products/${encodeURIComponent(id)}/vote`,
+    `${API_BASE}/products/${encodeURIComponent(productId)}/vote`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ voteChange })
     }
   );
+
   if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.error || `Vote API error (${res.status})`);
+    const body = await res.text().catch(() => "");
+    throw new Error(
+      `voteOnProduct failed: ${res.status} ${res.statusText} ${body}`
+    );
   }
-  return (await res.json()).success === true;
+  return res.json();
 }

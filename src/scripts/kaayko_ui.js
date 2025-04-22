@@ -1,23 +1,33 @@
-// scripts/kaayko_ui.js
 /**
  * scripts/kaayko_ui.js
  *
  * Manages all UI behavior:
- *  • Carousel rendering & swipe
- *  • Image‐zoom modal
- *  • Voting (♥ button) via API
- *  • Mobile menu toggle
- *  • “Smart” menu links
- *  • Dark‑mode toggle
+ *  1) Carousel rendering & swipe
+ *  2) Image‑zoom modal
+ *  3) Voting (♥ button) via our REST API
+ *  4) Mobile menu toggle
+ *  5) “Smart” menu links
+ *  6) Dark‑mode toggle
+ *
+ * Uses an image‑proxy so the real signed URLs never hit the client.
  */
 
 import { voteOnProduct } from "./kaayko_apiClient.js";
 
+// point this at your Cloud Function image proxy
+const IMAGE_PROXY_BASE =
+  "https://us-central1-kaayko-api-dev.cloudfunctions.net/api/images";
+
+
+
 /* ==========================================================================
-   Dark‑Mode Toggle
+   1) Dark‑Mode Toggle
    ========================================================================== */
 
-/** Read/write user theme preference in localStorage */
+/**
+ * Read/write user theme preference in localStorage,
+ * toggles ".dark-theme" on <body>.
+ */
 function initializeDarkMode() {
   const isDark = localStorage.getItem("darkMode") === "true";
   document.body.classList.toggle("dark-theme", isDark);
@@ -30,18 +40,23 @@ function initializeDarkMode() {
   });
 }
 
-/** Called on every page load */
+/** Called on every page load (before other UI wires) */
 export function runPageInit() {
   initializeDarkMode();
 }
 
-/* ==========================================================================
-   Carousel Rendering
-   ========================================================================== */
+
+
+ /* ==========================================================================
+    2) Carousel Rendering
+    ========================================================================== */
 
 /**
  * Renders an array of product objects into the "#carousel" container.
- * @param {Array<Object>} items  each must include id, title, description, price, votes, imgSrc[]
+ * Each item must include:
+ *   id, title, description, price, votes, productID, imgSrc: [<signedURL>,…]
+ *
+ * @param {Array<Object>} items
  */
 export function populateCarousel(items) {
   const carousel = document.getElementById("carousel");
@@ -49,14 +64,14 @@ export function populateCarousel(items) {
   carousel.innerHTML = "";
 
   items.forEach(item => {
-    const el = createCarouselItem(item);
-    carousel.appendChild(el);
+    const card = createCarouselItem(item);
+    carousel.appendChild(card);
   });
 
   animateCarouselItems();
 }
 
-/** Fade‑in animation with staggered, random delays */
+/** Apply fade‑in animation on each card with a random stagger */
 function animateCarouselItems() {
   document.querySelectorAll("#carousel .carousel-item").forEach(card => {
     const delay = (Math.random() * 0.8).toFixed(2) + "s";
@@ -65,63 +80,88 @@ function animateCarouselItems() {
   });
 }
 
-/** Build a single carousel card */
+/**
+ * Build one carousel card:
+ *   • image container & dot indicator
+ *   • title, description
+ *   • footer with price + heart + votes
+ */
 function createCarouselItem(item) {
   const card = document.createElement("div");
   card.className = "carousel-item";
 
-  // -- Images & Indicators
-  const imgContainer = buildImageContainer(item.imgSrc);
-  const indicator  = createImageIndicator(item.imgSrc.length, 0);
+  // — Images (using proxy) & indicator dots
+  const imgContainer = buildImageContainer(item);
+  const indicator    = createImageIndicator(item.imgSrc.length, 0);
   card.append(imgContainer, indicator);
 
-  // -- Title & Description
+  // — Title & Description
   const titleEl = textEl("h3", "title", item.title);
   const descEl  = textEl("p",  "description", item.description);
 
-  // -- Footer: Price + Heart + VoteCount
+  // — Footer: price + ♥ + vote count
   const footer = document.createElement("div");
   footer.className = "footer-elements";
-  const priceEl       = textEl("p", "price", item.price);
+  const priceEl            = textEl("p", "price", item.price);
   const { heartButton, votesCountEl } = createLikeButton(item);
   footer.append(priceEl, heartButton, votesCountEl);
 
   card.append(titleEl, descEl, footer);
 
-  // -- Swipe handling & click to open modal
+  // — Swipe handling & click to zoom
   addSwipe(imgContainer, item.imgSrc.length, indicator);
   imgContainer.addEventListener("click", () => openModal(item));
 
   return card;
 }
 
-/** Simple helper to create a text element */
+/** Utility: create an element with text */
 function textEl(tag, cls, txt) {
   const e = document.createElement(tag);
-  e.className = cls;
+  e.className   = cls;
   e.textContent = txt;
   return e;
 }
 
-/* ==========================================================================
-   Image Container & Swipe
-   ========================================================================== */
 
-/** Wraps multiple <img> tags, shows only the first initially */
-function buildImageContainer(urls) {
-  const c = document.createElement("div");
-  c.className = "img-container";
-  urls.forEach((src, i) => {
+
+ /* ==========================================================================
+    3) Image Container & Swipe
+    ========================================================================== */
+
+/**
+ * Wraps multiple <img> tags (all hidden except the first).
+ * Replaces the signedURL with your proxy path:
+ *    /api/images/:productID/:fileName
+ *
+ * @param {Object} item  from your API → must have .productID & .imgSrc[]
+ */
+function buildImageContainer(item) {
+  const container = document.createElement("div");
+  container.className = "img-container";
+
+  item.imgSrc.forEach((signedURL, i) => {
+    // extract just the fileName from signedURL
+    const url = new URL(signedURL);
+    const rawName = url.pathname.split("/").pop();       // e.g. "StraightOutta_1.png"
+    const fileName = rawName.split("%2F").pop();         // fallback if double‑encoded
+
+    // use the proxy instead of the signedURL
+    const proxyURL = `${IMAGE_PROXY_BASE}/${encodeURIComponent(item.productID)}/${encodeURIComponent(fileName)}`;
+
     const img = document.createElement("img");
-    img.src = src;
+    img.src       = proxyURL;
     img.className = "carousel-image";
     img.style.display = i === 0 ? "block" : "none";
-    c.append(img);
+    container.append(img);
   });
-  return c;
+
+  return container;
 }
 
-/** Dots under each carousel showing current image */
+/**
+ * Dots under the carousel. Clicking a dot jumps to that image.
+ */
 function createImageIndicator(length, currentIdx) {
   const dots = document.createElement("div");
   dots.className = "image-indicator";
@@ -140,10 +180,12 @@ function createImageIndicator(length, currentIdx) {
   return dots;
 }
 
-/** Swipe left/right to change images */
+/**
+ * Swipe left/right to cycle images.
+ * Uses PointerEvent on desktop, touch on mobile.
+ */
 function addSwipe(container, count, indicator) {
   let startX = 0, idx = 0, threshold = 50;
-
   const process = dx => {
     if (Math.abs(dx) < threshold) return;
     const imgs = container.querySelectorAll(".carousel-image");
@@ -154,7 +196,6 @@ function addSwipe(container, count, indicator) {
     indicator.children[idx].classList.add("active");
   };
 
-  // pointer for desktop, touch for mobile
   if (window.PointerEvent) {
     container.addEventListener("pointerdown", e => startX = e.clientX);
     container.addEventListener("pointerup",   e => process(e.clientX - startX));
@@ -164,19 +205,30 @@ function addSwipe(container, count, indicator) {
   }
 }
 
-/* ==========================================================================
-   Modal (Zoomed) View
-   ========================================================================== */
 
+
+ /* ==========================================================================
+    4) Modal (Zoomed) View
+    ========================================================================== */
+
+/**
+ * Opens a full‑screen modal showing all images for this item.
+ * @param {Object} item  must have .imgSrc[] & .productID
+ */
 export function openModal(item) {
   const modal = document.getElementById("modal");
   const box   = document.getElementById("modal-image-container");
   if (!modal || !box) return;
 
   box.innerHTML = "";
-  item.imgSrc.forEach((src, i) => {
+  item.imgSrc.forEach((signedURL, i) => {
+    const url = new URL(signedURL);
+    const rawName = url.pathname.split("/").pop();
+    const fileName = rawName.split("%2F").pop();
+    const proxyURL = `${IMAGE_PROXY_BASE}/${encodeURIComponent(item.productID)}/${encodeURIComponent(fileName)}`;
+
     const img = document.createElement("img");
-    img.src = src;
+    img.src       = proxyURL;
     img.className = "modal-image";
     img.style.display = i === 0 ? "block" : "none";
     box.append(img);
@@ -186,6 +238,7 @@ export function openModal(item) {
   setupModalNav(box, item.imgSrc.length);
 }
 
+/** Wire up left/right arrows & swipe inside the modal */
 function setupModalNav(container, count) {
   let idx = 0, startX = 0;
   const prev = document.querySelector(".modal-nav-left");
@@ -202,10 +255,9 @@ function setupModalNav(container, count) {
   next?.addEventListener("click", () => show(idx + 1));
 
   container.addEventListener("mousedown", e => startX = e.clientX);
-  container.addEventListener("mouseup", (e) => {
-    if (Math.abs(e.clientX - startX) > 50) {
-      show(e.clientX < startX ? idx + 1 : idx - 1);
-    }
+  container.addEventListener("mouseup",   e => {
+    const dx = e.clientX - startX;
+    if (Math.abs(dx) > 50) show(dx < 0 ? idx + 1 : idx - 1);
   });
   container.addEventListener("touchstart", e => startX = e.touches[0].clientX, {passive:true});
   container.addEventListener("touchend",   e => {
@@ -214,16 +266,22 @@ function setupModalNav(container, count) {
   });
 }
 
-/* ==========================================================================
-   Voting (♥ button)
-   ========================================================================== */
+
+
+ /* ==========================================================================
+    5) Voting (♥ button)
+    ========================================================================== */
 
 /**
  * Creates a heart button + vote‑count span.
- * Hitting ♥ calls our API, optimistically toggles UI, rolls back on error.
+ * Clicking ♥ calls our API, optimistically toggles UI,
+ * rolls back if it fails.
+ *
+ * @param {Object} item  needs .id and .votes
+ * @returns {{heartButton:HTMLButtonElement, votesCountEl:HTMLSpanElement}}
  */
 function createLikeButton(item) {
-  const btn = document.createElement("button");
+  const btn     = document.createElement("button");
   btn.className = "heart-button";
 
   let liked = false;
@@ -242,25 +300,30 @@ function createLikeButton(item) {
     const delta = liked ? -1 : +1;
     liked = !liked;
     refresh();
+
     try {
       await voteOnProduct(item.id, delta);
       votes += delta;
       countEl.textContent = `${votes} Votes`;
     } catch (err) {
       console.error("Vote error:", err);
+      // rollback
       liked = !liked;
       refresh();
-      alert("Oops—couldn’t update vote.");
+      alert("Oops—couldn't update vote.");
     }
   });
 
   return { heartButton: btn, votesCountEl: countEl };
 }
 
-/* ==========================================================================
-   Modal‑Close & Mobile Menu
-   ========================================================================== */
 
+
+ /* ==========================================================================
+    6) Modal‑Close & Mobile Menu
+    ========================================================================== */
+
+/** Closes the modal when clicking the X or backdrop */
 export function setupModalCloseHandlers() {
   const modal = document.getElementById("modal");
   const btn   = document.getElementById("close-modal-button");
@@ -271,10 +334,11 @@ export function setupModalCloseHandlers() {
   });
 }
 
+/** Toggles your FAB / overlay menu on mobile */
 export function setupMobileMenu() {
   runPageInit();
-  const fab    = document.querySelector(".fab-menu");
-  const overlay= document.querySelector(".mobile-menu-overlay");
+  const fab     = document.querySelector(".fab-menu");
+  const overlay = document.querySelector(".mobile-menu-overlay");
   if (!fab || !overlay) return;
   fab.addEventListener("click", () => overlay.classList.toggle("active"));
   overlay.addEventListener("click", e => {
@@ -284,26 +348,35 @@ export function setupMobileMenu() {
   });
 }
 
-/* ==========================================================================
-   “Smart” Menu Links
-   ========================================================================== */
 
+
+ /* ==========================================================================
+    7) “Smart” Menu Links
+    ========================================================================== */
+
+/**
+ * Show only the two relevant top‑links depending on path:
+ *   index → About + Testimonials
+ *   about → Home + Testimonials
+ *   testimonials → Home + About
+ *   else → all three
+ */
 export function populateMenu() {
   const desk = document.querySelector(".top-menu ul");
   const mob  = document.querySelector(".mobile-menu-overlay ul");
   if (!desk || !mob) return;
 
   const path = window.location.pathname;
-  let links = [];
+  let links;
 
   if (path.endsWith("index.html") || path === "/" || path === "") {
     links = [
-      { text: "About", href: "about.html" },
+      { text: "About",        href: "about.html" },
       { text: "Testimonials", href: "testimonials.html" }
     ];
   } else if (path.endsWith("about.html")) {
     links = [
-      { text: "Home", href: "index.html" },
+      { text: "Home",         href: "index.html" },
       { text: "Testimonials", href: "testimonials.html" }
     ];
   } else if (path.endsWith("testimonials.html")) {
@@ -313,8 +386,8 @@ export function populateMenu() {
     ];
   } else {
     links = [
-      { text: "Home", href: "index.html" },
-      { text: "About", href: "about.html" },
+      { text: "Home",         href: "index.html" },
+      { text: "About",        href: "about.html" },
       { text: "Testimonials", href: "testimonials.html" }
     ];
   }
@@ -325,7 +398,7 @@ export function populateMenu() {
       const li = document.createElement("li");
       const a  = document.createElement("a");
       a.textContent = l.text;
-      a.href = l.href;
+      a.href        = l.href;
       li.append(a);
       menu.append(li);
     });
