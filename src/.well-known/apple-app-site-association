@@ -3,19 +3,15 @@
     "apps": [],
     "details": [
       {
-        "appIDs": [
-          "3C2C5UW48Y.com.rohan.store.kaayko.app"
-        ],
-        "paths": [
-          "*"
-        ]
+        "appIDs": [ "3C2C5UW48Y.com.rohan.store.kaayko.app" ],
+        "paths":  [ "*" ]
       },
       {
-        "appIDs": [
-          "3C2C5UW48Y.com.rohan.store.kaayko.app.Clip"
-        ],
+        "appIDs": [ "3C2C5UW48Y.com.rohan.store.kaayko.app.Clip" ],
         "paths": [
-          "/?productID=*"
+          "/?productID=sabarmati",
+          "/?productID=pikachu",
+          "/?productID=shutup"
         ]
       }
     ]
