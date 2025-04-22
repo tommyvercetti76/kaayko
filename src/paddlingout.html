@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Kaayko | Paddling Out</title>
+
+  <!-- Shared store CSS for header, footer, menu -->
+  <link rel="stylesheet" href="storestyle.css" />
+
+  <!-- Page‑specific styles -->
+  <link rel="stylesheet" href="paddlingout.css" />
+
+  <!-- Material Icons (for header/menu) -->
+  <link
+    href="https://fonts.googleapis.com/icon?family=Material+Icons"
+    rel="stylesheet"
+  />
+</head>
+<body>
+  <!-- HEADER (same as other pages) -->
+  <header class="header">
+    <h1 class="header-title">Kaayko Store</h1>
+    <p class="header-subtitle">Vote now, pay later.</p>
+    <nav class="top-menu"><ul></ul></nav>
+    <button class="fab-menu" aria-label="Open Menu">
+      <span class="material-icons">menu</span>
+    </button>
+    <button
+      class="theme-toggle-icon material-icons"
+      aria-label="Toggle Dark Mode"
+    >
+      brightness_3
+    </button>
+  </header>
+
+  <!-- Mobile menu overlay -->
+  <div class="mobile-menu-overlay"><ul></ul></div>
+
+  <!-- Main content: grid of cards -->
+  <main style="flex:1;">
+    <section class="container" id="cardsContainer"></section>
+  </main>
+
+  <!-- Modal for gallery -->
+  <div id="myModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <div class="gallery"></div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
+  </footer>
+
+  <!-- Shared scripts -->
+  <script type="module" src="scripts/kaayko_main.js"></script>
+  <script type="module" src="scripts/kaayko_ui.js"></script>
+
+  <!-- This page’s script -->
+  <script src="scripts/paddlingout.js"></script>
+
+  <!-- Set current year -->
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

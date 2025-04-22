@@ -6,7 +6,7 @@
  *  2) Image‑zoom modal
  *  3) Voting (♥ button) via our REST API
  *  4) Mobile menu toggle
- *  5) “Smart” menu links
+ *  5) “Smart” menu links (including Paddling Out)
  *  6) Dark‑mode toggle
  *
  * Uses an image‑proxy so the real signed URLs never hit the client.
@@ -355,52 +355,73 @@ export function setupMobileMenu() {
     ========================================================================== */
 
 /**
- * Show only the two relevant top‑links depending on path:
- *   index → About + Testimonials
- *   about → Home + Testimonials
- *   testimonials → Home + About
- *   else → all three
+ * Show exactly three top‑links, swapping out the current page for “Home”.
+ *
+ *   • On index.html (or “/”):   [About, Testimonials, Paddling Out]
+ *   • On about.html:            [Home, Testimonials, Paddling Out]
+ *   • On testimonials.html:     [Home, About, Paddling Out]
+ *   • On paddlingout.html:      [Home, About, Testimonials]
  */
 export function populateMenu() {
   const desk = document.querySelector(".top-menu ul");
   const mob  = document.querySelector(".mobile-menu-overlay ul");
   if (!desk || !mob) return;
 
-  const path = window.location.pathname;
-  let links;
+  const path = window.location.pathname.split("/").pop();
+  let links = [];
 
-  if (path.endsWith("index.html") || path === "/" || path === "") {
-    links = [
-      { text: "About",        href: "about.html" },
-      { text: "Testimonials", href: "testimonials.html" }
-    ];
-  } else if (path.endsWith("about.html")) {
-    links = [
-      { text: "Home",         href: "index.html" },
-      { text: "Testimonials", href: "testimonials.html" }
-    ];
-  } else if (path.endsWith("testimonials.html")) {
-    links = [
-      { text: "Home", href: "index.html" },
-      { text: "About", href: "about.html" }
-    ];
-  } else {
-    links = [
-      { text: "Home",         href: "index.html" },
-      { text: "About",        href: "about.html" },
-      { text: "Testimonials", href: "testimonials.html" }
-    ];
+  switch (path) {
+    case "":
+    case "index.html":
+      links = [
+        { text: "About",        href: "about.html" },
+        { text: "Testimonials", href: "testimonials.html" },
+        { text: "Paddling Out", href: "paddlingout.html" }
+      ];
+      break;
+
+    case "about.html":
+      links = [
+        { text: "Home",         href: "index.html" },
+        { text: "Testimonials", href: "testimonials.html" },
+        { text: "Paddling Out", href: "paddlingout.html" }
+      ];
+      break;
+
+    case "testimonials.html":
+      links = [
+        { text: "Home",         href: "index.html" },
+        { text: "About",        href: "about.html" },
+        { text: "Paddling Out", href: "paddlingout.html" }
+      ];
+      break;
+
+    case "paddlingout.html":
+      links = [
+        { text: "Home",         href: "index.html" },
+        { text: "About",        href: "about.html" },
+        { text: "Testimonials", href: "testimonials.html" }
+      ];
+      break;
+
+    default:
+      // if you ever add more pages, default back to home‑centric
+      links = [
+        { text: "Home",         href: "index.html" },
+        { text: "About",        href: "about.html" },
+        { text: "Paddling Out", href: "paddlingout.html" }
+      ];
   }
 
   [desk, mob].forEach(menu => {
     menu.innerHTML = "";
-    links.forEach(l => {
+    for (const { text, href } of links) {
       const li = document.createElement("li");
       const a  = document.createElement("a");
-      a.textContent = l.text;
-      a.href        = l.href;
+      a.textContent = text;
+      a.href        = href;
       li.append(a);
       menu.append(li);
-    });
+    }
   });
 }
