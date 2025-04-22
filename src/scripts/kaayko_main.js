@@ -1,16 +1,14 @@
+// scripts/kaayko_main.js
 /**
  * scripts/kaayko_main.js
- * 
- * Purpose:
- *   - The main entry point for index.html (the store)
- *   - Fetches products, sets up the carousel, modal close logic,
- *     plus calls the "smart" menu so we show only "About" & "Testimonials" on index.
+ *
+ * Entry point for index.html (the Kaayko store page).
+ * • Fetches product data from our REST API
+ * • Renders the carousel
+ * • Wires up modal‐close, mobile menu & “smart” menu
  */
 
-import {
-  fetchProductData,
-  fetchAllCategories
-} from "./kaayko_dataService.js";
+import { getAllProducts } from "./kaayko_apiClient.js";
 import {
   populateCarousel,
   setupModalCloseHandlers,
@@ -18,17 +16,21 @@ import {
   populateMenu
 } from "./kaayko_ui.js";
 
-document.addEventListener("DOMContentLoaded", () => {
-  // Disable right-click
-  document.addEventListener("contextmenu", event => event.preventDefault());
+document.addEventListener("DOMContentLoaded", async () => {
+  // 1) Disable right-click context menu
+  document.addEventListener("contextmenu", e => e.preventDefault());
 
-  // 1) Load & display all products in the carousel
-  fetchProductData().then(products => populateCarousel(products));
+  // 2) Load & display products
+  try {
+    const products = await getAllProducts();
+    populateCarousel(products);
+  } catch (err) {
+    console.error("Failed to load products:", err);
+    alert("Sorry—couldn't load products. Please try again later.");
+  }
 
-  // 2) Setup product modal close & mobile menu
+  // 3) Wire up UI behaviors
   setupModalCloseHandlers();
   setupMobileMenu();
-
-  // 3) Setup "smart" menu which shows "About" & "Testimonials" if on index
-  populateMenu(); 
+  populateMenu();
 });

@@ -1,438 +1,333 @@
+// scripts/kaayko_ui.js
 /**
  * scripts/kaayko_ui.js
- * 
- * Purpose:
- *   - Manages the UI logic for Kaayko store:
- *       1) Carousel population (images, swipes, indicators),
- *       2) Modals (zoomed images),
- *       3) Voting (like) button,
- *       4) Mobile menu toggling,
- *       5) A "smart" menu that changes which links appear depending
- *          on the current page (index, about, or testimonials).
- *   - Also includes a Dark Mode icon button that applies a .dark-theme class
- *     to <body>, with localStorage so user preference persists across pages.
+ *
+ * Manages all UI behavior:
+ *  • Carousel rendering & swipe
+ *  • Image‐zoom modal
+ *  • Voting (♥ button) via API
+ *  • Mobile menu toggle
+ *  • “Smart” menu links
+ *  • Dark‑mode toggle
  */
 
-import {
-  fetchProductsByCategory,
-  updateProductVotes
-} from "./kaayko_dataService.js";
+import { voteOnProduct } from "./kaayko_apiClient.js";
 
-/* --------------------------------------------------------------------------
- *                         Initialize Dark Mode
- * -------------------------------------------------------------------------- */
+/* ==========================================================================
+   Dark‑Mode Toggle
+   ========================================================================== */
 
-/**
- * Checks localStorage to see if user previously set dark mode on,
- * then updates body accordingly. 
- * Also wires up the icon so it toggles .dark-theme and persists preference.
- */
+/** Read/write user theme preference in localStorage */
 function initializeDarkMode() {
   const isDark = localStorage.getItem("darkMode") === "true";
-  if (isDark) {
-    document.body.classList.add("dark-theme");
-  }
+  document.body.classList.toggle("dark-theme", isDark);
 
-  const themeButton = document.querySelector('.theme-toggle-icon');
-  if (themeButton) {
-    themeButton.addEventListener('click', () => {
-      document.body.classList.toggle('dark-theme');
-      const nowDark = document.body.classList.contains('dark-theme');
-      localStorage.setItem("darkMode", nowDark ? "true" : "false");
-    });
-  }
+  const btn = document.querySelector(".theme-toggle-icon");
+  if (!btn) return;
+  btn.addEventListener("click", () => {
+    const nowDark = document.body.classList.toggle("dark-theme");
+    localStorage.setItem("darkMode", nowDark);
+  });
 }
 
-/**
- * We call this on DOMContentLoaded in each page,
- * after we do populateMenu() etc.
- */
-function runPageInit() {
+/** Called on every page load */
+export function runPageInit() {
   initializeDarkMode();
-  // If we had other page-wide initialization, we could do it here.
 }
 
-/* Export runPageInit so we can call it from the HTML if we want. */
-export { runPageInit };
-
-/* --------------------------------------------------------------------------
- *                         Populate Carousel & Items
- * -------------------------------------------------------------------------- */
+/* ==========================================================================
+   Carousel Rendering
+   ========================================================================== */
 
 /**
- * Populates the carousel with product items, then animates each card.
- * @param {Array<Object>} items - Array of product objects from Firestore.
+ * Renders an array of product objects into the "#carousel" container.
+ * @param {Array<Object>} items  each must include id, title, description, price, votes, imgSrc[]
  */
 export function populateCarousel(items) {
   const carousel = document.getElementById("carousel");
   if (!carousel) return;
-
-  // Clear old contents
   carousel.innerHTML = "";
 
-  // For each product, create a carousel item
   items.forEach(item => {
-    const carouselItem = createCarouselItem(item);
-    carousel.appendChild(carouselItem);
+    const el = createCarouselItem(item);
+    carousel.appendChild(el);
   });
 
-  // Animate the items in
   animateCarouselItems();
 }
 
-/**
- * Creates a single carousel item (images, indicators, title, etc.).
- * @param {Object} item - A product object (title, category, imgSrc, etc.)
- * @returns {HTMLElement} The carousel item element.
- */
-function createCarouselItem(item) {
-  const carouselItem = document.createElement("div");
-  carouselItem.className = "carousel-item";
-
-  // Images
-  const imgContainer = buildImageContainer(item.imgSrc);
-  carouselItem.appendChild(imgContainer);
-
-  // Dot indicators
-  const imageIndicator = createImageIndicator(item.imgSrc.length, 0);
-  carouselItem.appendChild(imageIndicator);
-
-  // Title & Description
-  const title = createTextElement("h3", "title", item.title);
-  const description = createTextElement("p", "description", item.description);
-
-  // Footer: Price + Votes
-  const footer = document.createElement("div");
-  footer.className = "footer-elements";
-  const priceEl = createTextElement("p", "price", item.price);
-  const { heartButton, votesCountEl } = createLikeButton(item);
-
-  footer.append(priceEl, heartButton, votesCountEl);
-
-  // Attach everything
-  carouselItem.append(title, description, footer);
-
-  // Swipe & modal
-  addSwipeFunctionality(imgContainer, item.imgSrc.length, imageIndicator);
-  imgContainer.addEventListener("click", () => openModal(item));
-
-  return carouselItem;
-}
-
-/**
- * Animates each carousel item with a random delay for a professional look.
- */
+/** Fade‑in animation with staggered, random delays */
 function animateCarouselItems() {
-  const items = document.querySelectorAll("#carousel .carousel-item");
-  const maxDelay = 0.82;
-  items.forEach(item => {
-    const delay = Math.random() * maxDelay;
-    item.style.animationDelay = `${delay.toFixed(2)}s`;
-    item.classList.add("animate");
+  document.querySelectorAll("#carousel .carousel-item").forEach(card => {
+    const delay = (Math.random() * 0.8).toFixed(2) + "s";
+    card.style.animationDelay = delay;
+    card.classList.add("animate");
   });
 }
 
-/* --------------------------------------------------------------------------
- *                   Image Container & Indicators
- * -------------------------------------------------------------------------- */
+/** Build a single carousel card */
+function createCarouselItem(item) {
+  const card = document.createElement("div");
+  card.className = "carousel-item";
 
-/** 
- * Builds the image container that holds multiple images (display one at a time).
- */
-function buildImageContainer(imageUrls) {
-  const container = document.createElement("div");
-  container.className = "img-container";
+  // -- Images & Indicators
+  const imgContainer = buildImageContainer(item.imgSrc);
+  const indicator  = createImageIndicator(item.imgSrc.length, 0);
+  card.append(imgContainer, indicator);
 
-  imageUrls.forEach((src, index) => {
+  // -- Title & Description
+  const titleEl = textEl("h3", "title", item.title);
+  const descEl  = textEl("p",  "description", item.description);
+
+  // -- Footer: Price + Heart + VoteCount
+  const footer = document.createElement("div");
+  footer.className = "footer-elements";
+  const priceEl       = textEl("p", "price", item.price);
+  const { heartButton, votesCountEl } = createLikeButton(item);
+  footer.append(priceEl, heartButton, votesCountEl);
+
+  card.append(titleEl, descEl, footer);
+
+  // -- Swipe handling & click to open modal
+  addSwipe(imgContainer, item.imgSrc.length, indicator);
+  imgContainer.addEventListener("click", () => openModal(item));
+
+  return card;
+}
+
+/** Simple helper to create a text element */
+function textEl(tag, cls, txt) {
+  const e = document.createElement(tag);
+  e.className = cls;
+  e.textContent = txt;
+  return e;
+}
+
+/* ==========================================================================
+   Image Container & Swipe
+   ========================================================================== */
+
+/** Wraps multiple <img> tags, shows only the first initially */
+function buildImageContainer(urls) {
+  const c = document.createElement("div");
+  c.className = "img-container";
+  urls.forEach((src, i) => {
     const img = document.createElement("img");
     img.src = src;
     img.className = "carousel-image";
-    // Show the first image, hide the rest
-    img.style.display = index === 0 ? "block" : "none";
-    container.appendChild(img);
+    img.style.display = i === 0 ? "block" : "none";
+    c.append(img);
   });
-  return container;
+  return c;
 }
 
-/**
- * Creates dot indicators for the images. Clicking a dot reveals the corresponding image.
- */
-function createImageIndicator(length, currentIndex) {
-  const indicator = document.createElement("div");
-  indicator.className = "image-indicator";
-
+/** Dots under each carousel showing current image */
+function createImageIndicator(length, currentIdx) {
+  const dots = document.createElement("div");
+  dots.className = "image-indicator";
   for (let i = 0; i < length; i++) {
     const dot = document.createElement("span");
-    dot.className = "indicator-dot" + (i === currentIndex ? " active" : "");
+    dot.className = "indicator-dot" + (i === currentIdx ? " active" : "");
     dot.addEventListener("click", () => {
-      const images = indicator.parentElement.querySelectorAll(".carousel-image");
-      images.forEach(img => (img.style.display = "none"));
-      Array.from(indicator.children).forEach(child => child.classList.remove("active"));
-
-      images[i].style.display = "block";
+      const imgs = dots.parentElement.querySelectorAll(".carousel-image");
+      imgs.forEach(img => (img.style.display = "none"));
+      Array.from(dots.children).forEach(d => d.classList.remove("active"));
+      imgs[i].style.display = "block";
       dot.classList.add("active");
     });
-    indicator.appendChild(dot);
+    dots.append(dot);
   }
-  return indicator;
+  return dots;
 }
 
-/**
- * Adds swipe or drag events to cycle through images left/right.
- */
-function addSwipeFunctionality(container, length, indicator) {
-  let startX = 0;
-  let currentImageIndex = 0;
-  const swipeThreshold = 50; // pixels
+/** Swipe left/right to change images */
+function addSwipe(container, count, indicator) {
+  let startX = 0, idx = 0, threshold = 50;
 
-  function handleSwipe(deltaX) {
-    if (Math.abs(deltaX) > swipeThreshold) {
-      const images = container.querySelectorAll(".carousel-image");
-      if (!images.length) return;
+  const process = dx => {
+    if (Math.abs(dx) < threshold) return;
+    const imgs = container.querySelectorAll(".carousel-image");
+    imgs[idx].style.display = "none";
+    indicator.children[idx].classList.remove("active");
+    idx = dx < 0 ? (idx + 1) % count : (idx - 1 + count) % count;
+    imgs[idx].style.display = "block";
+    indicator.children[idx].classList.add("active");
+  };
 
-      images[currentImageIndex].style.display = "none";
-      indicator.children[currentImageIndex].classList.remove("active");
-
-      if (deltaX < 0) {
-        currentImageIndex = (currentImageIndex + 1) % length;
-      } else {
-        currentImageIndex = (currentImageIndex - 1 + length) % length;
-      }
-
-      images[currentImageIndex].style.display = "block";
-      indicator.children[currentImageIndex].classList.add("active");
-    }
-  }
-
+  // pointer for desktop, touch for mobile
   if (window.PointerEvent) {
-    container.addEventListener("pointerdown", e => (startX = e.clientX));
-    container.addEventListener("pointerup", e => handleSwipe(e.clientX - startX));
+    container.addEventListener("pointerdown", e => startX = e.clientX);
+    container.addEventListener("pointerup",   e => process(e.clientX - startX));
   } else {
-    container.addEventListener("touchstart", e => {
-      startX = e.touches[0].clientX;
-    }, { passive: true });
-    container.addEventListener("touchend", e => {
-      handleSwipe(e.changedTouches[0].clientX - startX);
-    });
-    container.addEventListener("mousedown", e => (startX = e.clientX));
-    container.addEventListener("mouseup", e => handleSwipe(e.clientX - startX));
+    container.addEventListener("touchstart", e => startX = e.touches[0].clientX, {passive:true});
+    container.addEventListener("touchend",   e => process(e.changedTouches[0].clientX - startX));
   }
 }
 
-/* --------------------------------------------------------------------------
- *                           Modal for Images
- * -------------------------------------------------------------------------- */
+/* ==========================================================================
+   Modal (Zoomed) View
+   ========================================================================== */
 
 export function openModal(item) {
   const modal = document.getElementById("modal");
-  const modalImageContainer = document.getElementById("modal-image-container");
-  if (!modal || !modalImageContainer) return;
+  const box   = document.getElementById("modal-image-container");
+  if (!modal || !box) return;
 
-  // Clear old images
-  modalImageContainer.innerHTML = "";
-  item.imgSrc.forEach((src, idx) => {
+  box.innerHTML = "";
+  item.imgSrc.forEach((src, i) => {
     const img = document.createElement("img");
     img.src = src;
     img.className = "modal-image";
-    img.style.display = idx === 0 ? "block" : "none";
-    modalImageContainer.appendChild(img);
+    img.style.display = i === 0 ? "block" : "none";
+    box.append(img);
   });
 
   modal.classList.add("active");
-  setupModalNavigation(modalImageContainer, item.imgSrc.length, 0);
+  setupModalNav(box, item.imgSrc.length);
 }
+
+function setupModalNav(container, count) {
+  let idx = 0, startX = 0;
+  const prev = document.querySelector(".modal-nav-left");
+  const next = document.querySelector(".modal-nav-right");
+  const imgs = container.querySelectorAll(".modal-image");
+
+  function show(i) {
+    imgs[idx].style.display = "none";
+    idx = (i + count) % count;
+    imgs[idx].style.display = "block";
+  }
+
+  prev?.addEventListener("click", () => show(idx - 1));
+  next?.addEventListener("click", () => show(idx + 1));
+
+  container.addEventListener("mousedown", e => startX = e.clientX);
+  container.addEventListener("mouseup", (e) => {
+    if (Math.abs(e.clientX - startX) > 50) {
+      show(e.clientX < startX ? idx + 1 : idx - 1);
+    }
+  });
+  container.addEventListener("touchstart", e => startX = e.touches[0].clientX, {passive:true});
+  container.addEventListener("touchend",   e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 50) show(dx < 0 ? idx + 1 : idx - 1);
+  });
+}
+
+/* ==========================================================================
+   Voting (♥ button)
+   ========================================================================== */
 
 /**
- * Sets up left/right arrow navigation & swipe within the modal
+ * Creates a heart button + vote‑count span.
+ * Hitting ♥ calls our API, optimistically toggles UI, rolls back on error.
  */
-function setupModalNavigation(container, length, currentIndex) {
-  const images = container.querySelectorAll(".modal-image");
-  const leftBtn = document.querySelector(".modal-nav-left");
-  const rightBtn = document.querySelector(".modal-nav-right");
-
-  if (!leftBtn || !rightBtn) {
-    console.error("Modal nav buttons not found.");
-    return;
-  }
-
-  function updateIndex(newIdx) {
-    images[currentIndex].style.display = "none";
-    currentIndex = (newIdx + length) % length;
-    images[currentIndex].style.display = "block";
-  }
-
-  leftBtn.onclick = () => updateIndex(currentIndex - 1);
-  rightBtn.onclick = () => updateIndex(currentIndex + 1);
-
-  let startX = 0;
-  function handleModalSwipe(deltaX) {
-    if (Math.abs(deltaX) > 50) {
-      updateIndex(deltaX < 0 ? currentIndex + 1 : currentIndex - 1);
-    }
-  }
-
-  if (window.PointerEvent) {
-    container.addEventListener("pointerdown", e => (startX = e.clientX));
-    container.addEventListener("pointerup", e => handleModalSwipe(e.clientX - startX));
-  } else {
-    container.addEventListener("touchstart", e => (startX = e.touches[0].clientX), { passive: true });
-    container.addEventListener("touchend", e => handleModalSwipe(e.changedTouches[0].clientX - startX));
-    container.addEventListener("mousedown", e => (startX = e.clientX));
-    container.addEventListener("mouseup", e => handleModalSwipe(e.clientX - startX));
-  }
-}
-
-/* --------------------------------------------------------------------------
- *                      Helpers: Text & Like Button
- * -------------------------------------------------------------------------- */
-
-function createTextElement(tag, className, text) {
-  const el = document.createElement(tag);
-  el.className = className;
-  el.textContent = text;
-  return el;
-}
-
 function createLikeButton(item) {
-  const button = document.createElement("button");
-  button.className = "heart-button";
+  const btn = document.createElement("button");
+  btn.className = "heart-button";
 
-  let isLiked = false;
-  let currentVotes = item.votes || 0;
+  let liked = false;
+  let votes = item.votes || 0;
 
-  const votesCount = document.createElement("span");
-  votesCount.className = "likes-count";
-  votesCount.textContent = `${currentVotes} Votes`;
+  const countEl = document.createElement("span");
+  countEl.className = "likes-count";
+  countEl.textContent = `${votes} Votes`;
 
-  function updateHeartVisuals() {
-    if (isLiked) {
-      button.classList.add("liked");
-    } else {
-      button.classList.remove("liked");
-    }
+  function refresh() {
+    btn.classList.toggle("liked", liked);
   }
-  updateHeartVisuals();
+  refresh();
 
-  button.addEventListener("click", async () => {
-    isLiked = !isLiked;
-    const voteChange = isLiked ? 1 : -1;
-    await updateProductVotes(item.id, voteChange);
-    currentVotes += voteChange;
-    updateHeartVisuals();
-    votesCount.textContent = `${currentVotes} Votes`;
+  btn.addEventListener("click", async () => {
+    const delta = liked ? -1 : +1;
+    liked = !liked;
+    refresh();
+    try {
+      await voteOnProduct(item.id, delta);
+      votes += delta;
+      countEl.textContent = `${votes} Votes`;
+    } catch (err) {
+      console.error("Vote error:", err);
+      liked = !liked;
+      refresh();
+      alert("Oops—couldn’t update vote.");
+    }
   });
 
-  return { heartButton: button, votesCountEl: votesCount };
+  return { heartButton: btn, votesCountEl: countEl };
 }
 
-/* --------------------------------------------------------------------------
- *                        Modal Close Handlers
- * -------------------------------------------------------------------------- */
+/* ==========================================================================
+   Modal‑Close & Mobile Menu
+   ========================================================================== */
 
 export function setupModalCloseHandlers() {
   const modal = document.getElementById("modal");
+  const btn   = document.getElementById("close-modal-button");
   if (!modal) return;
-
-  const closeButton = document.getElementById("close-modal-button");
-  if (closeButton) {
-    closeButton.onclick = () => modal.classList.remove("active");
-  }
-
+  btn?.addEventListener("click", () => modal.classList.remove("active"));
   modal.addEventListener("click", e => {
-    if (e.target === modal) {
-      modal.classList.remove("active");
-    }
+    if (e.target === modal) modal.classList.remove("active");
   });
 }
 
-/* --------------------------------------------------------------------------
- *                           Mobile Menu
- * -------------------------------------------------------------------------- */
-
 export function setupMobileMenu() {
-  // First run the localStorage-based dark-mode logic
   runPageInit();
-
-  const fab = document.querySelector(".fab-menu");
-  const overlay = document.querySelector(".mobile-menu-overlay");
+  const fab    = document.querySelector(".fab-menu");
+  const overlay= document.querySelector(".mobile-menu-overlay");
   if (!fab || !overlay) return;
-
-  fab.addEventListener("click", () => {
-    overlay.classList.toggle("active");
-  });
-
+  fab.addEventListener("click", () => overlay.classList.toggle("active"));
   overlay.addEventListener("click", e => {
-    // Close overlay if clicking outside or on a link
     if (e.target === overlay || e.target.tagName === "A") {
       overlay.classList.remove("active");
     }
   });
 }
 
-/* --------------------------------------------------------------------------
- *                       "Smart" Menu Mechanism
- * -------------------------------------------------------------------------- */
+/* ==========================================================================
+   “Smart” Menu Links
+   ========================================================================== */
 
 export function populateMenu() {
-  const desktopMenu = document.querySelector(".top-menu ul");
-  const mobileMenu = document.querySelector(".mobile-menu-overlay ul");
-  if (!desktopMenu || !mobileMenu) return;
+  const desk = document.querySelector(".top-menu ul");
+  const mob  = document.querySelector(".mobile-menu-overlay ul");
+  if (!desk || !mob) return;
 
-  const pathname = window.location.pathname; 
-  let desktopLinks = [];
+  const path = window.location.pathname;
+  let links = [];
 
-  // If on index => "About" & "Testimonials"
-  if (pathname.endsWith("index.html") || pathname === "/" || pathname === "") {
-    desktopLinks = [
+  if (path.endsWith("index.html") || path === "/" || path === "") {
+    links = [
       { text: "About", href: "about.html" },
       { text: "Testimonials", href: "testimonials.html" }
     ];
-  }
-  // If on about => "Home" & "Testimonials"
-  else if (pathname.endsWith("about.html")) {
-    desktopLinks = [
+  } else if (path.endsWith("about.html")) {
+    links = [
       { text: "Home", href: "index.html" },
       { text: "Testimonials", href: "testimonials.html" }
     ];
-  }
-  // If on testimonials => "Home" & "About"
-  else if (pathname.endsWith("testimonials.html")) {
-    desktopLinks = [
+  } else if (path.endsWith("testimonials.html")) {
+    links = [
       { text: "Home", href: "index.html" },
       { text: "About", href: "about.html" }
     ];
-  }
-  else {
-    // fallback for unknown pages
-    desktopLinks = [
+  } else {
+    links = [
       { text: "Home", href: "index.html" },
       { text: "About", href: "about.html" },
       { text: "Testimonials", href: "testimonials.html" }
     ];
   }
 
-  // The mobile menu gets the same links
-  const mobileLinks = [...desktopLinks];
-
-  // Populate the top menu
-  desktopMenu.innerHTML = "";
-  desktopLinks.forEach(link => {
-    const li = document.createElement("li");
-    const a = document.createElement("a");
-    a.textContent = link.text;
-    a.href = link.href;
-    li.appendChild(a);
-    desktopMenu.appendChild(li);
-  });
-
-  // Populate the mobile overlay menu
-  mobileMenu.innerHTML = "";
-  mobileLinks.forEach(link => {
-    const li = document.createElement("li");
-    const a = document.createElement("a");
-    a.textContent = link.text;
-    a.href = link.href;
-    li.appendChild(a);
-    mobileMenu.appendChild(li);
+  [desk, mob].forEach(menu => {
+    menu.innerHTML = "";
+    links.forEach(l => {
+      const li = document.createElement("li");
+      const a  = document.createElement("a");
+      a.textContent = l.text;
+      a.href = l.href;
+      li.append(a);
+      menu.append(li);
+    });
   });
 }
