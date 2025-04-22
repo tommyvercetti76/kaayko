@@ -14,6 +14,48 @@
     src: url('/fonts/JosefinSans-Light.ttf') format('truetype');
 }
 
+/* ==========================================================================
+   Dark‑Mode Overrides for Paddling Out Page
+   ========================================================================== */
+
+   body.dark-theme {
+    background-color: #121212;
+    color: #e0e0e0;
+  }
+  
+  body.dark-theme .container {
+    background-color: #1e1e1e;
+  }
+  
+  body.dark-theme .card {
+    background: #242424;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.6);
+  }
+  
+  body.dark-theme .card-title,
+  body.dark-theme .card-subtitle,
+  body.dark-theme .card-description {
+    color: #f0f0f0;
+  }
+  
+  body.dark-theme .card-footer {
+    background-color: #1e1e1e;
+    border-top-color: #333;
+  }
+  
+  body.dark-theme .modal-content {
+    background-color: #1e1e1e;
+  }
+  
+  body.dark-theme .close {
+    color: #fff;
+  }
+  
+  body.dark-theme footer {
+    background-color: #141414;
+    color: #888;
+  }
+
 /* Container styles */
 .container {
     display: flex;
