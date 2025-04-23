@@ -2,20 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Kaayko | Paddling Out</title>
 
-  <!-- Shared store CSS for header, footer, menu -->
+  <!-- shared header/footer/menu styles -->
   <link rel="stylesheet" href="storestyle.css"/>
 
-  <!-- Page-specific styles -->
+  <!-- page-specific styling -->
   <link rel="stylesheet" href="paddlingout.css"/>
 
   <!-- Material Icons (for header/menu) -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
 </head>
 <body>
-  <!-- HEADER (shared across site) -->
+  <!-- HEADER (same site-wide) -->
   <header class="header">
     <h1 class="header-title">Kaayko Store</h1>
     <p class="header-subtitle">Vote now, pay later.</p>
@@ -28,10 +28,10 @@
     </button>
   </header>
 
-  <!-- Mobile overlay menu -->
+  <!-- mobile overlay nav -->
   <div class="mobile-menu-overlay"><ul></ul></div>
 
-  <!-- MAIN: grid of paddling-spot cards -->
+  <!-- MAIN: grid of cards -->
   <main style="flex:1;">
     <section class="container" id="cardsContainer"></section>
   </main>
@@ -41,14 +41,16 @@
     <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
   </footer>
 
-  <!-- Shared UI scripts: dark-mode, menu logic, etc. -->
+  <!-- shared UI scripts: menu + dark-mode toggle -->
   <script type="module" src="scripts/kaayko_main.js"></script>
   <script type="module" src="scripts/kaayko_ui.js"></script>
 
-  <!-- Paddling Out page script -->
+  <!-- paddling-out logic -->
   <script src="scripts/paddlingout.js"></script>
 
-  <!-- Set current year -->
-  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+  <!-- update footer year -->
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>

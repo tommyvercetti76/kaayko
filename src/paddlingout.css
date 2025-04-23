@@ -1,9 +1,18 @@
-/*==============================================================================
-  paddlingout.css
-  Page-specific styles for Paddling Out page
-==============================================================================*/
+/* paddlingout.css
+ *
+ * 1) Custom fonts
+ * 2) Dark-mode overrides
+ * 3) Container & card layout
+ * 4) In-card carousel
+ * 5) Text, spacing, footer & icons
+ * 6) Tooltips
+ * 7) Page-indicator dots
+ * 8) Responsive
+ */
 
-/* Custom fonts */
+/*─────────────────────────────────────────────────────────────────────────────
+  1) Custom fonts
+─────────────────────────────────────────────────────────────────────────────*/
 @font-face {
     font-family: 'Josefin_Medium';
     src: url('/fonts/JosefinSans-Medium.ttf') format('truetype');
@@ -17,15 +26,15 @@
     src: url('/fonts/JosefinSans-Light.ttf') format('truetype');
   }
   
-  /*==============================================================================
-    Dark-Mode Overrides
-  ==============================================================================*/
+  /*─────────────────────────────────────────────────────────────────────────────
+    2) Dark-mode overrides
+  ─────────────────────────────────────────────────────────────────────────────*/
   body.dark-theme {
-    background-color: #121212;
+    background: #121212;
     color: #e0e0e0;
   }
   body.dark-theme .container {
-    background-color: #1e1e1e;
+    background: transparent;  /* blend with body in dark mode */
   }
   body.dark-theme .card {
     background: #242424;
@@ -39,83 +48,67 @@
     color: #f0f0f0;
   }
   body.dark-theme .card-footer {
-    background-color: #1e1e1e;
+    background: #1e1e1e;
     border-top-color: #333;
   }
   body.dark-theme footer {
-    background-color: #141414;
+    background: #141414;
     color: #888;
   }
   
-  /*==============================================================================
-    Container & Card Layout
-  ==============================================================================*/
+  /*─────────────────────────────────────────────────────────────────────────────
+    3) Container & card layout
+  ─────────────────────────────────────────────────────────────────────────────*/
   .container {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 20px;
     padding: 20px;
-    background-color: #f9f9f9;
+    background: #f9f9f9;
   }
   .card {
-    background: #ffffff;
+    background: #fff;
     border-radius: 15px;
-    overflow: hidden;
     box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     width: calc(25% - 20px);
-    margin-bottom: 20px;
-    transition: transform .3s ease, box-shadow .3s ease;
+    overflow: visible; /* allow tooltips to overflow */
+    transition: transform .3s, box-shadow .3s;
     cursor: pointer;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
   }
   .card:hover {
     transform: translateY(-10px);
     box-shadow: 0 20px 40px rgba(0,0,0,0.2);
   }
   
-  /*==============================================================================
-    Image & Indicator
-  ==============================================================================*/
-  .card-image {
+  /*─────────────────────────────────────────────────────────────────────────────
+    4) In-card Carousel
+  ─────────────────────────────────────────────────────────────────────────────*/
+  .img-container {
+    position: relative;
+    overflow: hidden;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+  }
+  .carousel-image {
     width: 100%;
-    height: 200px;
+    height: 240px;
     object-fit: cover;
-    transition: transform .3s ease;
+    display: none;
+    transition: transform .2s;
   }
-  .card:hover .card-image {
-    transform: scale(1.05);
+  .carousel-image.active {
+    display: block;
   }
-  /* indicator dots BELOW image and ABOVE text */
-  .image-indicator {
-    text-align: center;
-    margin: 8px 0;
-  }
-  .indicator-dot {
-    display: inline-block;
-    width: 8px; height: 8px;
-    margin: 0 4px;
-    border-radius: 50%;
-    background: rgba(0,0,0,0.3);
-    cursor: pointer;
-    transition: background .2s;
-  }
-  .indicator-dot.active {
-    background: #000;
-  }
-  /* invert for dark mode */
-  body.dark-theme .indicator-dot {
-    background: rgba(255,255,255,0.3);
-  }
-  body.dark-theme .indicator-dot.active {
-    background: #fff;
+  .card:hover .carousel-image.active {
+    transform: scale(1.04);
   }
   
-  /*==============================================================================
-    Card Content & Footer
-  ==============================================================================*/
+  /*─────────────────────────────────────────────────────────────────────────────
+    5) Text & spacing
+  ─────────────────────────────────────────────────────────────────────────────*/
   .card-content {
     padding: 20px;
     text-align: center;
@@ -123,43 +116,41 @@
   .card-title {
     font-family: 'Josefin_Bold', Arial, sans-serif;
     font-size: 1.5rem;
-    color: #333;
     margin: 0;
+    color: #333;
   }
   .card-subtitle {
     font-family: 'Josefin_Medium', Arial, sans-serif;
-    font-size: 1rem;    /* ~4px smaller */
+    font-size: 1rem;      /* reduced by ~4px */
+    margin: 5px 0 12px;   /* extra gap below */
     color: #666;
-    margin: 5px 0 12px; /* extra bottom space */
   }
   .card-description {
     font-family: 'Josefin_Light', Arial, sans-serif;
     font-size: 1rem;
-    color: #777;
     margin-bottom: 15px;
+    color: #777;
   }
   
+  /*─────────────────────────────────────────────────────────────────────────────
+    6) Footer & icons
+  ─────────────────────────────────────────────────────────────────────────────*/
   .card-footer {
     display: flex;
     justify-content: space-evenly;
     align-items: center;
     padding: 10px 0;
     border-top: 1px solid #eee;
-    background-color: #f9f9f9;
     position: relative;
+    background: #f9f9f9;
+    overflow: visible;
   }
-  
-  /* Parking / toilet / video / location icons */
   .icon {
     width: 40px; height: 40px;
     border: 2px solid ivory;
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: ivory;
-    color: black;
-    font-size: 18px;
+    background: ivory;
+    display: flex; justify-content: center; align-items: center;
     cursor: pointer;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     transition: transform .2s, background-color .2s;
@@ -171,23 +162,31 @@
     transform: translateY(-2px);
     background-color: #d3d3d3;
   }
-  /* Unicode icons */
-  .parking-icon::before  { content: 'P';    }
-  .toilet-icon::before   { content: '\1F6BD'; }
-  .youtube-icon::before  { content: '\25B6';  }
-  .location-icon::before { content: '\1F4CD'; }
-  /* hover tooltip */
+  .parking-icon::before  { content: 'P';     font-size:18px; }
+  .toilet-icon::before   { content: '\1F6BD'; font-size:18px; }
+  .youtube-icon::before  { content: '\25B6';  font-size:18px; }
+  .location-icon::before { content: '\1F4CD'; font-size:18px; }
+  
+  /*─────────────────────────────────────────────────────────────────────────────
+    7) Tooltips (desktop + touch + keyboard)
+  ─────────────────────────────────────────────────────────────────────────────*/
   .icon::after {
     content: attr(title);
     position: absolute;
-    bottom: 150%; left: 50%;
+    bottom: calc(100% + 8px);
+    left: 50%;
     transform: translateX(-50%);
-    background: black; color: white;
-    padding: 5px; border-radius:5px;
+    background: #000;
+    color: #fff;
+    padding: 5px;
+    border-radius: 5px;
     white-space: nowrap;
-    opacity: 0; transition: opacity .2s;
-    font-family: 'Josefin_Light', Arial, sans-serif;
+    opacity: 0;
+    transition: opacity .2s;
     pointer-events: none;
+    z-index: 10;
+    font-family: 'Josefin_Light', Arial, sans-serif;
+    font-size: 14px;
   }
   .icon:hover::after,
   .icon:focus::after,
@@ -195,9 +194,33 @@
     opacity: 1;
   }
   
-  /*==============================================================================
-    Responsive
-  ==============================================================================*/
+  /*─────────────────────────────────────────────────────────────────────────────
+    8) Page-indicator dots
+  ─────────────────────────────────────────────────────────────────────────────*/
+  .image-indicator {
+    text-align: center;
+  }
+  .indicator-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    margin: 0 4px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.2);
+    cursor: pointer;
+  }
+  .indicator-dot.active {
+    background: rgba(0,0,0,0.5);
+  }
+  body.dark-theme .indicator-dot {
+    background: rgba(255,255,255,0.3);
+  }
+  body.dark-theme .indicator-dot.active {
+    background: rgba(255,255,255,0.8);
+  }
+  
+  /*─────────────────────────────────────────────────────────────────────────────
+    9) Responsive
+  ─────────────────────────────────────────────────────────────────────────────*/
   @media (max-width: 768px) {
     .card { width: calc(50% - 20px); }
   }

@@ -1,170 +1,149 @@
 /**
  * scripts/paddlingout.js
  *
- * Client for the “Paddling Out” REST API.
  * • GET  /paddlingOut          → list all spots
- * • GET  /paddlingOut/:id      → single spot + images
- * • Renders a grid of cards; clicking a card navigates
+ * • GET  /paddlingOut/:id      → single spot
+ * • Renders an in-card carousel; clicking a card navigates
  *   to detail view (same page with ?id=<lakeName>).
- * • Each card shows an image carousel with indicator dots
- *   below the image, above the title.
- *
- * Query string:
- *   • ?id=<lakeName>  → show only that spot
+ * • All icon & dot clicks use event.stopPropagation()
+ * • Swipe left/right moves carousel sequentially
  */
 
 const API_BASE = "https://us-central1-kaayko-api-dev.cloudfunctions.net/api";
 
 document.addEventListener("DOMContentLoaded", () => {
   const container = document.getElementById("cardsContainer");
-  const params    = new URLSearchParams(window.location.search);
+  const params    = new URLSearchParams(location.search);
   const spotId    = params.get("id");
 
-  // 1) Decide list vs detail
-  if (spotId) {
-    fetchSingleSpot(spotId);
-  } else {
-    fetchAllSpots();
-  }
+  // 1) fetch list or single
+  if (spotId) fetchSingleSpot(spotId);
+  else        fetchAllSpots();
 
-  /**
-   * GET /paddlingOut → list all spots
-   */
+  /** GET all spots */
   function fetchAllSpots() {
     fetch(`${API_BASE}/paddlingOut`)
-      .then(res => res.json())
+      .then(r => r.json())
       .then(spots => {
         container.innerHTML = "";
         spots.forEach(spot => {
           container.insertAdjacentHTML("beforeend", renderCard(spot));
         });
-        wireUpCardInteractions();
+        wireUpCarousels();
       })
       .catch(() => showError("Error loading spots."));
   }
 
-  /**
-   * GET /paddlingOut/:id → single spot
-   * @param {string} id
-   */
+  /** GET one spot detail */
   function fetchSingleSpot(id) {
     fetch(`${API_BASE}/paddlingOut/${encodeURIComponent(id)}`)
-      .then(res => {
-        if (!res.ok) throw new Error("Not found");
-        return res.json();
+      .then(r => {
+        if (!r.ok) throw new Error();
+        return r.json();
       })
       .then(spot => {
         container.innerHTML = renderCard(spot);
-        wireUpCardInteractions();
+        wireUpCarousels();
       })
       .catch(() => showError("Spot not found."));
   }
 
   /**
-   * Build one card’s HTML, with data-attributes for carousel
-   * @param {object} spot
+   * Build HTML for one spot card,
+   * including in-card carousel images & dots.
    */
   function renderCard(spot) {
-    // join URLs with pipe to store in data-imgsrc
-    const imgs = spot.imgSrc;
-    const dataImgs = imgs.join("|");
-    const thumb = imgs[0] || "/images/placeholder.png";
-
-    // build indicator dots
-    let dotsHtml = `<div class="image-indicator">`;
-    imgs.forEach((_, i) => {
-      dotsHtml += `<span class="indicator-dot${i === 0 ? " active" : ""}" data-index="${i}"></span>`;
+    // images
+    let imgs = `<div class="img-container">`;
+    spot.imgSrc.forEach((url, i) => {
+      imgs += `<img src="${url}"
+                    data-index="${i}"
+                    class="carousel-image${i===0?" active":""}">`;
     });
-    dotsHtml += `</div>`;
+    imgs += `</div>`;
 
+    // dots
+    let dots = `<div class="image-indicator">`;
+    spot.imgSrc.forEach((_,i) => {
+      dots += `<span class="indicator-dot${i===0?" active":""}"
+                    data-index="${i}"
+                    onclick="event.stopPropagation()"></span>`;
+    });
+    dots += `</div>`;
+
+    // icons: add tabindex for mobile/tooltips
+    const stop   = "onclick=\"event.stopPropagation()\"";
+    const tab = "tabindex=\"0\"";
     return `
-      <div
-        class="card"
-        data-id="${spot.id}"
-        data-imgsrc="${dataImgs}"
-        data-current="0"
-        onclick="window.location='paddlingout.html?id=${spot.id}'"
-      >
-        <img
-          class="card-image"
-          src="${thumb}"
-          alt="${spot.title}"
-          loading="lazy"
-        />
-        ${dotsHtml}
+      <div class="card"
+           onclick="location.href='paddlingout.html?id=${spot.id}'">
+        ${imgs}
+        ${dots}
         <div class="card-content">
           <h2 class="card-title">${spot.title}</h2>
           <p class="card-subtitle">${spot.subtitle}</p>
           <p class="card-description">${spot.text}</p>
         </div>
         <div class="card-footer">
-          <span class="icon parking-icon"   title="Parking Available"></span>
-          <span class="icon toilet-icon"    title="Toilets Available"></span>
-          <span class="icon youtube-icon"   title="Video"
-                onclick="openYoutube('${spot.youtubeURL}');event.stopPropagation()"></span>
-          <span class="icon location-icon"  title="Take me there"
-                onclick="openLocation(${spot.location.latitude},${spot.location.longitude});event.stopPropagation()"></span>
+          <span class="icon parking-icon" title="Parking Available" ${tab} ${stop}></span>
+          <span class="icon toilet-icon" title="Toilets Available" ${tab} ${stop}></span>
+          <span class="icon youtube-icon"
+                title="Video" ${tab}
+                ${stop}; openYoutube('${spot.youtubeURL}')\"></span>
+          <span class="icon location-icon"
+                title="Take me there" ${tab}
+                ${stop}; openLocation(${spot.location.latitude},${spot.location.longitude})\"></span>
         </div>
-      </div>`;
+      </div>
+    `;
   }
 
   /**
-   * After cards are in DOM, wire up each carousel & dots
+   * Wire up every card’s carousel:
+   *  • dot clicks → show that slide
+   *  • pointer/touch swipe → prev/next
    */
-  function wireUpCardInteractions() {
-    document.querySelectorAll(".card").forEach(card => {
-      const imgEl = card.querySelector(".card-image");
-      const dots  = card.querySelectorAll(".indicator-dot");
-      const imgs  = card.dataset.imgsrc.split("|");
-      let current  = 0;
+  function wireUpCarousels() {
+    container.querySelectorAll(".card").forEach(card => {
+      const imgs = card.querySelectorAll(".carousel-image");
+      const dots = card.querySelectorAll(".indicator-dot");
+      let idx = 0;
 
-      // dot-click changes image
-      dots.forEach(dot => {
-        dot.addEventListener("click", e => {
-          e.stopPropagation();
-          const idx = Number(dot.dataset.index);
-          imgEl.src = imgs[idx];
-          dots.forEach(d => d.classList.toggle("active", Number(d.dataset.index) === idx));
-          card.dataset.current = idx;
-          current = idx;
-        });
-      });
+      function show(i) {
+        idx = (i + imgs.length) % imgs.length;
+        imgs.forEach((img,j) => img.classList.toggle("active", j===idx));
+        dots.forEach((d,j)  => d.classList.toggle("active", j===idx));
+      }
 
-      // swipe/drag on image to change slide
+      // dot clicks
+      dots.forEach(dot => dot.addEventListener("click", () => {
+        show(+dot.dataset.index);
+      }));
+
+      // swipe
       let startX = 0;
-      imgEl.addEventListener("touchstart", e => { startX = e.touches[0].clientX; }, { passive: true });
-      imgEl.addEventListener("touchend", e => {
-        const dx = e.changedTouches[0].clientX - startX;
-        if (Math.abs(dx) > 50) {
-          const nextIdx = (current + (dx < 0 ? 1 : -1) + imgs.length) % imgs.length;
-          imgEl.src = imgs[nextIdx];
-          dots.forEach(d => d.classList.toggle("active", Number(d.dataset.index) === nextIdx));
-          card.dataset.current = nextIdx;
-          current = nextIdx;
-        }
-      });
-      // desktop drag
-      imgEl.addEventListener("pointerdown", e => { startX = e.clientX; });
-      imgEl.addEventListener("pointerup",   e => {
+      const cont = card.querySelector(".img-container");
+      cont.addEventListener("pointerdown", e => startX = e.clientX);
+      cont.addEventListener("pointerup", e => {
         const dx = e.clientX - startX;
-        if (Math.abs(dx) > 50) {
-          const nextIdx = (current + (dx < 0 ? 1 : -1) + imgs.length) % imgs.length;
-          imgEl.src = imgs[nextIdx];
-          dots.forEach(d => d.classList.toggle("active", Number(d.dataset.index) === nextIdx));
-          card.dataset.current = nextIdx;
-          current = nextIdx;
-        }
+        if (Math.abs(dx) > 40) show(dx < 0 ? idx+1 : idx-1);
+      });
+      cont.addEventListener("touchstart", e => startX = e.touches[0].clientX, {passive:true});
+      cont.addEventListener("touchend", e => {
+        const dx = e.changedTouches[0].clientX - startX;
+        if (Math.abs(dx) > 40) show(dx < 0 ? idx+1 : idx-1);
       });
     });
   }
 
-  /** Helper: open YouTube in new tab */
-  window.openYoutube   = url => window.open(url, "_blank");
-  /** Helper: open Google Maps */
-  window.openLocation  = (lat, lon) => window.open(`https://maps.google.com?q=${lat},${lon}`, "_blank");
+  /** Open YouTube in new tab */
+  window.openYoutube = url => window.open(url,"_blank");
+  /** Open Google Maps */
+  window.openLocation = (lat,lon) =>
+    window.open(`https://maps.google.com?q=${lat},${lon}`,"_blank");
 
-  /** Show an error if fetch fails */
-  function showError(text) {
-    container.innerHTML = `<div class="error">${text}</div>`;
+  /** show an error message in the grid */
+  function showError(msg) {
+    container.innerHTML = `<div class="error">${msg}</div>`;
   }
 });
