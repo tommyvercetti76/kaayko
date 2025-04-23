@@ -10,7 +10,7 @@
 const API_BASE   = "https://us-central1-kaayko-api-dev.cloudfunctions.net/api";
 const VIDEOS_DIR = "/src/assets"; // put your MP4s here
 const HERO_VIDEOS = [
-  "paddle1.mp4"
+  "paddle2.mp4"
 ];
 
 document.addEventListener("DOMContentLoaded", () => {
