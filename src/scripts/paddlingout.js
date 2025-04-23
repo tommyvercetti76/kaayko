@@ -8,7 +8,7 @@
  */
 
 const API_BASE   = "https://us-central1-kaayko-api-dev.cloudfunctions.net/api";
-const VIDEOS_DIR = "/src/assets"; // put your MP4s here
+const VIDEOS_DIR = "/assets"; // put your MP4s here
 const HERO_VIDEOS = [
   "paddle2.mp4"
 ];
