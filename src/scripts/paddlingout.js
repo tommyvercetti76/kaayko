@@ -1,26 +1,25 @@
 /**
  * scripts/paddlingout.js
  *
- * • GET  /paddlingOut          → list all spots
- * • GET  /paddlingOut/:id      → single spot
- * • Renders an in-card carousel; clicking a card navigates
- *   to detail view (same page with ?id=<lakeName>).
- * • All icon & dot clicks use event.stopPropagation()
- * • Swipe left/right moves carousel sequentially
+ * • GET /paddlingOut         → list all spots
+ * • GET /paddlingOut/:id     → single spot
+ * • Renders an in-card carousel; clicking a card → detail view
+ * • All interactive elements stop propagation so icons & dots
+ *   don’t trigger a card click (navigation).
  */
 
 const API_BASE = "https://us-central1-kaayko-api-dev.cloudfunctions.net/api";
 
 document.addEventListener("DOMContentLoaded", () => {
   const container = document.getElementById("cardsContainer");
-  const params    = new URLSearchParams(location.search);
+  const params    = new URLSearchParams(window.location.search);
   const spotId    = params.get("id");
 
-  // 1) fetch list or single
+  // 1) Fetch list or single
   if (spotId) fetchSingleSpot(spotId);
   else        fetchAllSpots();
 
-  /** GET all spots */
+  /** GET /paddlingOut → list all spots */
   function fetchAllSpots() {
     fetch(`${API_BASE}/paddlingOut`)
       .then(r => r.json())
@@ -34,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .catch(() => showError("Error loading spots."));
   }
 
-  /** GET one spot detail */
+  /** GET /paddlingOut/:id → single spot */
   function fetchSingleSpot(id) {
     fetch(`${API_BASE}/paddlingOut/${encodeURIComponent(id)}`)
       .then(r => {
@@ -49,31 +48,26 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * Build HTML for one spot card,
-   * including in-card carousel images & dots.
+   * Build one card’s HTML, including its carousel & dots.
    */
   function renderCard(spot) {
-    // images
-    let imgs = `<div class="img-container">`;
-    spot.imgSrc.forEach((url, i) => {
-      imgs += `<img src="${url}"
-                    data-index="${i}"
-                    class="carousel-image${i===0?" active":""}">`;
+    // carousel images
+    let imgs = `<div class="img-container" onclick="event.stopPropagation()">`;
+    spot.imgSrc.forEach((url,i) => {
+      imgs += `<img src="${url}" data-index="${i}"
+                     class="carousel-image${i===0?" active":""}">`;
     });
     imgs += `</div>`;
 
-    // dots
-    let dots = `<div class="image-indicator">`;
+    // indicator dots
+    let dots = `<div class="image-indicator" onclick="event.stopPropagation()">`;
     spot.imgSrc.forEach((_,i) => {
       dots += `<span class="indicator-dot${i===0?" active":""}"
-                    data-index="${i}"
-                    onclick="event.stopPropagation()"></span>`;
+                    data-index="${i}"></span>`;
     });
     dots += `</div>`;
 
-    // icons: add tabindex for mobile/tooltips
-    const stop   = "onclick=\"event.stopPropagation()\"";
-    const tab = "tabindex=\"0\"";
+    // card markup
     return `
       <div class="card"
            onclick="location.href='paddlingout.html?id=${spot.id}'">
@@ -85,23 +79,21 @@ document.addEventListener("DOMContentLoaded", () => {
           <p class="card-description">${spot.text}</p>
         </div>
         <div class="card-footer">
-          <span class="icon parking-icon" title="Parking Available" ${tab} ${stop}></span>
-          <span class="icon toilet-icon" title="Toilets Available" ${tab} ${stop}></span>
-          <span class="icon youtube-icon"
-                title="Video" ${tab}
-                ${stop}; openYoutube('${spot.youtubeURL}')\"></span>
-          <span class="icon location-icon"
-                title="Take me there" ${tab}
-                ${stop}; openLocation(${spot.location.latitude},${spot.location.longitude})\"></span>
+          <span class="icon parking-icon"   title="Parking Available"></span>
+          <span class="icon toilet-icon"    title="Toilets Available"></span>
+          <span class="icon youtube-icon"   title="Video"
+                onclick="event.stopPropagation();openYoutube('${spot.youtubeURL}')"></span>
+          <span class="icon location-icon"  title="Take me there"
+                onclick="event.stopPropagation();openLocation(${spot.location.latitude},${spot.location.longitude})"></span>
         </div>
       </div>
     `;
   }
 
   /**
-   * Wire up every card’s carousel:
-   *  • dot clicks → show that slide
-   *  • pointer/touch swipe → prev/next
+   * After DOM insertion, wire up each carousel:
+   * – dot clicks
+   * – pointer/touch swipes
    */
   function wireUpCarousels() {
     container.querySelectorAll(".card").forEach(card => {
@@ -116,33 +108,33 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // dot clicks
-      dots.forEach(dot => dot.addEventListener("click", () => {
-        show(+dot.dataset.index);
-      }));
+      dots.forEach(dot => {
+        dot.addEventListener("click", () => show(+dot.dataset.index));
+      });
 
-      // swipe
+      // swipe handling
       let startX = 0;
       const cont = card.querySelector(".img-container");
       cont.addEventListener("pointerdown", e => startX = e.clientX);
-      cont.addEventListener("pointerup", e => {
+      cont.addEventListener("pointerup",   e => {
         const dx = e.clientX - startX;
-        if (Math.abs(dx) > 40) show(dx < 0 ? idx+1 : idx-1);
+        if (Math.abs(dx) > 30) show(dx < 0 ? idx+1 : idx-1);
       });
-      cont.addEventListener("touchstart", e => startX = e.touches[0].clientX, {passive:true});
-      cont.addEventListener("touchend", e => {
+      cont.addEventListener("touchstart",  e => startX = e.touches[0].clientX, {passive:true});
+      cont.addEventListener("touchend",    e => {
         const dx = e.changedTouches[0].clientX - startX;
-        if (Math.abs(dx) > 40) show(dx < 0 ? idx+1 : idx-1);
+        if (Math.abs(dx) > 30) show(dx < 0 ? idx+1 : idx-1);
       });
     });
   }
 
   /** Open YouTube in new tab */
-  window.openYoutube = url => window.open(url,"_blank");
+  window.openYoutube   = url => window.open(url, "_blank");
   /** Open Google Maps */
-  window.openLocation = (lat,lon) =>
-    window.open(`https://maps.google.com?q=${lat},${lon}`,"_blank");
+  window.openLocation  = (lat,lon) =>
+    window.open(`https://maps.google.com?q=${lat},${lon}`, "_blank");
 
-  /** show an error message in the grid */
+  /** Show error if fetch fails */
   function showError(msg) {
     container.innerHTML = `<div class="error">${msg}</div>`;
   }

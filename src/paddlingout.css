@@ -1,229 +1,248 @@
-/* paddlingout.css
+/**
+ * paddlingout.css
  *
  * 1) Custom fonts
  * 2) Dark-mode overrides
  * 3) Container & card layout
  * 4) In-card carousel
- * 5) Text, spacing, footer & icons
- * 6) Tooltips
+ * 5) Text & spacing tweaks
+ * 6) Footer & icons (tooltips never clipped)
  * 7) Page-indicator dots
- * 8) Responsive
+ * 8) Responsive breakpoints
  */
 
-/*─────────────────────────────────────────────────────────────────────────────
-  1) Custom fonts
+ /*─────────────────────────────────────────────────────────────────────────────
+   1) Custom fonts
+ ─────────────────────────────────────────────────────────────────────────────*/
+ @font-face {
+   font-family: 'Josefin_Medium';
+   src: url('/fonts/JosefinSans-Medium.ttf') format('truetype');
+ }
+ @font-face {
+   font-family: 'Josefin_Bold';
+   src: url('/fonts/JosefinSans-Bold.ttf') format('truetype');
+ }
+ @font-face {
+   font-family: 'Josefin_Light';
+   src: url('/fonts/JosefinSans-Light.ttf') format('truetype');
+ }
+
+ /*─────────────────────────────────────────────────────────────────────────────
+   2) Dark-mode overrides
 ─────────────────────────────────────────────────────────────────────────────*/
-@font-face {
-    font-family: 'Josefin_Medium';
-    src: url('/fonts/JosefinSans-Medium.ttf') format('truetype');
-  }
-  @font-face {
-    font-family: 'Josefin_Bold';
-    src: url('/fonts/JosefinSans-Bold.ttf') format('truetype');
-  }
-  @font-face {
-    font-family: 'Josefin_Light';
-    src: url('/fonts/JosefinSans-Light.ttf') format('truetype');
-  }
-  
-  /*─────────────────────────────────────────────────────────────────────────────
-    2) Dark-mode overrides
-  ─────────────────────────────────────────────────────────────────────────────*/
-  body.dark-theme {
+body.dark-theme {
     background: #121212;
     color: #e0e0e0;
   }
+  /* keep container transparent so body shows through */
   body.dark-theme .container {
-    background: transparent;  /* blend with body in dark mode */
+    background: transparent;
   }
+  /* card background & shadow */
   body.dark-theme .card {
     background: #242424;
     box-shadow: 0 10px 20px rgba(0,0,0,0.6);
   }
+  /* lake title in gold */
   body.dark-theme .card-title {
-    color: gold;  /* lake title in gold */
+    color: gold;
   }
+  /* subtitle & description in light gray */
   body.dark-theme .card-subtitle,
   body.dark-theme .card-description {
     color: #f0f0f0;
   }
+  /* footer panel */
   body.dark-theme .card-footer {
     background: #1e1e1e;
     border-top-color: #333;
   }
+  /* preserve ivory background & black glyph on all icons */
+  body.dark-theme .icon {
+    background: ivory !important;
+    color: black !important;
+  }
+  /* tooltip bubble still black on dark */
+  body.dark-theme .icon::after {
+    background: #000;
+    color: #fff;
+  }
+  /* footer background & text */
   body.dark-theme footer {
     background: #141414;
     color: #888;
   }
-  
-  /*─────────────────────────────────────────────────────────────────────────────
-    3) Container & card layout
-  ─────────────────────────────────────────────────────────────────────────────*/
-  .container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
-    padding: 20px;
-    background: #f9f9f9;
-  }
-  .card {
-    background: #fff;
-    border-radius: 15px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    width: calc(25% - 20px);
-    overflow: visible; /* allow tooltips to overflow */
-    transition: transform .3s, box-shadow .3s;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-  }
-  .card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-  }
-  
-  /*─────────────────────────────────────────────────────────────────────────────
-    4) In-card Carousel
-  ─────────────────────────────────────────────────────────────────────────────*/
-  .img-container {
-    position: relative;
-    overflow: hidden;
-    border-top-left-radius: 15px;
-    border-top-right-radius: 15px;
-  }
-  .carousel-image {
-    width: 100%;
-    height: 240px;
-    object-fit: cover;
-    display: none;
-    transition: transform .2s;
-  }
-  .carousel-image.active {
-    display: block;
-  }
-  .card:hover .carousel-image.active {
-    transform: scale(1.04);
-  }
-  
-  /*─────────────────────────────────────────────────────────────────────────────
-    5) Text & spacing
-  ─────────────────────────────────────────────────────────────────────────────*/
-  .card-content {
-    padding: 20px;
-    text-align: center;
-  }
-  .card-title {
-    font-family: 'Josefin_Bold', Arial, sans-serif;
-    font-size: 1.5rem;
-    margin: 0;
-    color: #333;
-  }
-  .card-subtitle {
-    font-family: 'Josefin_Medium', Arial, sans-serif;
-    font-size: 1rem;      /* reduced by ~4px */
-    margin: 5px 0 12px;   /* extra gap below */
-    color: #666;
-  }
-  .card-description {
-    font-family: 'Josefin_Light', Arial, sans-serif;
-    font-size: 1rem;
-    margin-bottom: 15px;
-    color: #777;
-  }
-  
-  /*─────────────────────────────────────────────────────────────────────────────
-    6) Footer & icons
-  ─────────────────────────────────────────────────────────────────────────────*/
-  .card-footer {
-    display: flex;
-    justify-content: space-evenly;
-    align-items: center;
-    padding: 10px 0;
-    border-top: 1px solid #eee;
-    position: relative;
-    background: #f9f9f9;
-    overflow: visible;
-  }
-  .icon {
-    width: 40px; height: 40px;
-    border: 2px solid ivory;
-    border-radius: 50%;
-    background: ivory;
-    display: flex; justify-content: center; align-items: center;
-    cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    transition: transform .2s, background-color .2s;
-    position: relative;
-  }
-  .icon:hover,
-  .icon:focus,
-  .icon:active {
-    transform: translateY(-2px);
-    background-color: #d3d3d3;
-  }
-  .parking-icon::before  { content: 'P';     font-size:18px; }
-  .toilet-icon::before   { content: '\1F6BD'; font-size:18px; }
-  .youtube-icon::before  { content: '\25B6';  font-size:18px; }
-  .location-icon::before { content: '\1F4CD'; font-size:18px; }
-  
-  /*─────────────────────────────────────────────────────────────────────────────
-    7) Tooltips (desktop + touch + keyboard)
-  ─────────────────────────────────────────────────────────────────────────────*/
-  .icon::after {
-    content: attr(title);
-    position: absolute;
-    bottom: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
-    background: #000;
-    color: #fff;
-    padding: 5px;
-    border-radius: 5px;
-    white-space: nowrap;
-    opacity: 0;
-    transition: opacity .2s;
-    pointer-events: none;
-    z-index: 10;
-    font-family: 'Josefin_Light', Arial, sans-serif;
-    font-size: 14px;
-  }
-  .icon:hover::after,
-  .icon:focus::after,
-  .icon:active::after {
-    opacity: 1;
-  }
-  
-  /*─────────────────────────────────────────────────────────────────────────────
-    8) Page-indicator dots
-  ─────────────────────────────────────────────────────────────────────────────*/
-  .image-indicator {
-    text-align: center;
-  }
-  .indicator-dot {
-    display: inline-block;
-    width: 8px; height: 8px;
-    margin: 0 4px;
-    border-radius: 50%;
-    background: rgba(0,0,0,0.2);
-    cursor: pointer;
-  }
-  .indicator-dot.active {
-    background: rgba(0,0,0,0.5);
-  }
+  /* inactive indicator dots: light semi-opaque white */
   body.dark-theme .indicator-dot {
-    background: rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.2);
   }
+  /* active dot: gold accent */
   body.dark-theme .indicator-dot.active {
-    background: rgba(255,255,255,0.8);
+    background: gold;
   }
-  
-  /*─────────────────────────────────────────────────────────────────────────────
-    9) Responsive
-  ─────────────────────────────────────────────────────────────────────────────*/
-  @media (max-width: 768px) {
-    .card { width: calc(50% - 20px); }
-  }
-  @media (max-width: 480px) {
-    .card { width: 100%; }
-  }
+
+ /*─────────────────────────────────────────────────────────────────────────────
+   3) Container & card layout
+ ─────────────────────────────────────────────────────────────────────────────*/
+ .container {
+   display: flex;
+   flex-wrap: wrap;
+   justify-content: center;
+   gap: 20px;
+   padding: 20px;
+   background: transparent;  /* no panel behind card */
+ }
+ .card {
+   background: #fff;
+   border-radius: 15px;
+   box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+   width: calc(25% - 20px);
+   overflow: visible;        /* allow tooltips */
+   transition: transform .3s, box-shadow .3s;
+   cursor: pointer;
+   display: flex;
+   flex-direction: column;
+ }
+ .card:hover {
+   transform: translateY(-10px);
+   box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+ }
+
+ /*─────────────────────────────────────────────────────────────────────────────
+   4) In-card carousel (tight gap + rounded corners)
+ ─────────────────────────────────────────────────────────────────────────────*/
+ .img-container {
+   position: relative;
+   overflow: hidden;
+   border-top-left-radius: 15px;
+   border-top-right-radius: 15px;
+ }
+ .img-container img {
+   width: 100%;
+   height: 220px;
+   object-fit: cover;
+   display: none;
+ }
+ .img-container img.active {
+   display: block;
+ }
+ .card:hover .img-container img.active {
+   transform: scale(1.05);
+ }
+
+ /*─────────────────────────────────────────────────────────────────────────────
+   5) Text & spacing tweaks
+ ─────────────────────────────────────────────────────────────────────────────*/
+ .card-content {
+   padding: 16px;
+   text-align: center;
+ }
+ .card-title {
+   font-family: 'Josefin_Bold', Arial, sans-serif;
+   font-size: 1.5rem;
+   margin: 0;
+   color: #333;
+ }
+ .card-subtitle {
+   font-family: 'Josefin_Medium', Arial, sans-serif;
+   font-size: 1rem;
+   margin: 5px 0 12px; /* extra bottom space */
+   color: #666;
+ }
+ .card-description {
+   font-family: 'Josefin_Light', Arial, sans-serif;
+   font-size: 1rem;
+   margin-bottom: 15px;
+   color: #777;
+ }
+
+ /*─────────────────────────────────────────────────────────────────────────────
+   6) Footer & icons (tooltips never clipped)
+ ─────────────────────────────────────────────────────────────────────────────*/
+ .card-footer {
+   display: flex;
+   justify-content: space-evenly;
+   align-items: center;
+   padding: 10px 0;
+   border-top: 1px solid #eee;
+   background: #f9f9f9;
+   position: relative;
+   overflow: visible;       /* allow tooltips */
+ }
+ .icon {
+   width: 40px; height: 40px;
+   border: 2px solid ivory;
+   border-radius: 50%;
+   background: ivory;       /* always ivory—even in dark mode */
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   cursor: pointer;
+   box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+   transition: transform .2s, background-color .2s;
+   position: relative;
+ }
+ .icon:hover,
+ .icon:focus,
+ .icon:active {
+   transform: translateY(-2px);
+   background: #d3d3d3;
+ }
+ .parking-icon::before  { content: 'P';      font-size: 18px; }
+ .toilet-icon::before   { content: '\1F6BD'; font-size: 18px; }
+ .youtube-icon::before  { content: '\25B6';  font-size: 18px; }
+ .location-icon::before { content: '\1F4CD'; font-size: 18px; }
+/* Tooltip bubble, positioned above and never clipped */
+ .icon::after {
+   content: attr(title);
+   position: absolute;
+   top: -calc(100% + 8px);
+   left: 50%;
+   transform: translateX(-50%);
+   background: #000;
+   color: #fff;
+   padding: 5px;
+   border-radius: 5px;
+   white-space: nowrap;
+   opacity: 0;
+   transition: opacity .2s;
+   pointer-events: none;
+   z-index: 1000;
+   font-family: 'Josefin_Light', Arial, sans-serif;
+   font-size: 14px;
+ }
+ .icon:hover::after,
+ .icon:focus::after,
+ .icon:active::after {
+   opacity: 1;
+ }
+
+ /*─────────────────────────────────────────────────────────────────────────────
+   7) Page-indicator dots (tightened gap)
+ ─────────────────────────────────────────────────────────────────────────────*/
+ .image-indicator {
+   text-align: center;
+   margin: 2px 0;           /* small gap */
+ }
+ .indicator-dot {
+   display: inline-block;
+   width: 8px; height: 8px;
+   margin: 0 4px;
+   border-radius: 50%;
+   background: rgba(0,0,0,0.2);
+   cursor: pointer;
+ }
+ .indicator-dot.active {
+   background: #333;        /* light-mode accent */
+ }
+ /* dark-mode override above */
+
+ /*─────────────────────────────────────────────────────────────────────────────
+   8) Responsive breakpoints
+ ─────────────────────────────────────────────────────────────────────────────*/
+ @media (max-width: 768px) {
+   .card { width: calc(50% - 20px); }
+ }
+ @media (max-width: 480px) {
+   .card { width: 100%; }
+ }
