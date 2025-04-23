@@ -15,7 +15,7 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
 </head>
 <body>
-  <!-- HEADER (shared across site) -->
+  <!-- HEADER (same as other pages) -->
   <header class="header">
     <h1 class="header-title">Kaayko Store</h1>
     <p class="header-subtitle">Vote now, pay later.</p>
@@ -27,6 +27,15 @@
       brightness_3
     </button>
   </header>
+
+  <!-- ───────────────────────────────────────────────────────────────────
+       9) HERO VIDEO PREVIEW
+       • Autoplays, muted, loops, playsinline
+       • Randomly chosen from /assets via JS
+  ─────────────────────────────────────────────────────────────────── -->
+  <div class="hero-video">
+    <video id="previewVideo" autoplay muted loop playsinline></video>
+  </div>
 
   <!-- Mobile overlay menu -->
   <div class="mobile-menu-overlay"><ul></ul></div>
@@ -45,7 +54,7 @@
   <script type="module" src="scripts/kaayko_main.js"></script>
   <script type="module" src="scripts/kaayko_ui.js"></script>
 
-  <!-- Paddling Out page script -->
+  <!-- Paddling Out page script (with random hero video) -->
   <script src="scripts/paddlingout.js"></script>
 
   <!-- Set current year -->
