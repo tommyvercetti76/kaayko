@@ -2,6 +2,8 @@
   "hosting": {
     "site": "kaaykostore",
     "public": "src",
+    "cleanUrls": true,    
+    "trailingSlash": false,
     "ignore": [
       "firebase.json",
       "**/node_modules/**"
@@ -9,21 +11,18 @@
     "headers": [
       {
         "source": "/apple-app-site-association",
-        "headers": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ]
+        "headers": [{ "key": "Content-Type", "value": "application/json" }]
       },
       {
         "source": "/.well-known/apple-app-site-association",
-        "headers": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ]
+        "headers": [{ "key": "Content-Type", "value": "application/json" }]
+      },
+      {
+        "source": "/assets/**",
+        "headers": [{
+          "key": "Cache-Control",
+          "value": "public,max-age=31536000,immutable"
+        }]
       }
     ]
   }
