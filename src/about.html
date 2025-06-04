@@ -1,32 +1,43 @@
+<!-- about.html - Kaayko Store About Page -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- SEO Meta Tags -->
   <title>Kaayko | About</title>
+  <meta name="description" content="Learn about Kaayko, where your thoughts are represented boldly through unique apparel. Discover our vision and exclusive designs.">
+  
+  <!-- Open Graph Meta Tags for social sharing -->
+  <meta property="og:title" content="About Kaayko | Unique Thought Representation">
+  <meta property="og:description" content="Kaayko offers expressive apparel to make bold statements effortlessly. Explore our philosophy and standout designs.">
+  <meta property="og:image" content="assets/social-share-kaayko.png">
+  <meta property="og:type" content="website">
 
   <!-- Unified stylesheet for all pages -->
   <link rel="stylesheet" href="storestyle.css" />
+
   <!-- Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
-  <!-- HEADER: Displays title, subtitle, and dynamic menu -->
+  <!-- HEADER: Includes site title, subtitle, navigation menu, mobile menu button, and dark mode toggle -->
   <header class="header">
     <h1 class="header-title">Kaayko Store</h1>
     <p class="header-subtitle">Vote now, pay later.</p>
 
-    <!-- Desktop menu: populated by JS -->
+    <!-- Desktop navigation menu dynamically populated via kaayko_ui.js -->
     <nav class="top-menu">
       <ul></ul>
     </nav>
 
-    <!-- Mobile FAB (Floating Action Button) -->
+    <!-- Mobile Floating Action Button (FAB) for opening mobile menu -->
     <button class="fab-menu" aria-label="Open Menu">
       <span class="material-icons">menu</span>
     </button>
 
-    <!-- Dark Mode Toggle (crescent) -->
+    <!-- Dark Mode Toggle Button -->
     <button 
       class="theme-toggle-icon material-icons" 
       aria-label="Toggle Dark Mode">
@@ -34,49 +45,69 @@
     </button>
   </header>
 
-  <!-- MOBILE OVERLAY MENU -->
+  <!-- MOBILE OVERLAY MENU: Dynamically populated via kaayko_ui.js -->
   <div class="mobile-menu-overlay">
     <ul></ul>
   </div>
 
-  <!-- MAIN CONTENT: Cover flow collage & about section -->
+  <!-- MAIN CONTENT -->
   <main>
-    <!-- SECTION 1: Visual Collage Banner -->
+    <!-- SECTION 1: Visual Collage Banner showcasing featured designs -->
     <div class="about-hero-collage">
-      <div class="collage-slice"><img src="assets/Lifeisopinion_2.png" alt="Life is Opinion" /></div>
-      <div class="collage-slice"><img src="assets/AssaultBae_1.png" alt="Assault Bae" /></div>
-      <div class="collage-slice"><img src="assets/Live_3.png" alt="Live Shirt" /></div>
-      <div class="collage-slice"><img src="assets/Nagpur_3.png" alt="Nagpur Shirt" /></div>
-      <div class="collage-slice"><img src="assets/ShutUp_1.png" alt="Shut Up Shirt" /></div>
-      <div class="collage-slice"><img src="assets/StraightOutta_1.png" alt="Straight Outta" /></div>
+      <div class="collage-slice">
+        <img src="assets/Lifeisopinion_2.png" alt="Life is Opinion Shirt Design" />
+      </div>
+      <div class="collage-slice">
+        <img src="assets/AssaultBae_1.png" alt="Assault Bae Shirt Design" />
+      </div>
+      <div class="collage-slice">
+        <img src="assets/Live_3.png" alt="Live Shirt Design" />
+      </div>
+      <div class="collage-slice">
+        <img src="assets/Nagpur_3.png" alt="Nagpur Shirt Design" />
+      </div>
+      <div class="collage-slice">
+        <img src="assets/ShutUp_1.png" alt="Shut Up Shirt Design" />
+      </div>
+      <div class="collage-slice">
+        <img src="assets/StraightOutta_1.png" alt="Straight Outta Shirt Design" />
+      </div>
     </div>
 
-    <!-- SECTION 2: Textual About Description -->
+    <!-- SECTION 2: Textual description of Kaayko's philosophy -->
     <section class="about-text">
       <h2>Welcome To Kaayko</h2>
       <h3>You deserve love, not this.</h3>
       <p>
-        However, this ain't an illusion. <br> At Kaayko, we believe you need a better thought representation when you are
-        <br>“Out There”. <br>You will be attacked by bad vibes, crazy people and unruly pets, kids or both.<br>
-        At Kaayko, we believe not in raising voice but raising wallet. <br>
-        Show them who you really are with what they cannot afford.<br>
-        <br>They'll love you for it.<br>
+        However, this ain't an illusion. <br>
+        At Kaayko, we believe you need a better thought representation when you are<br>
+        “Out There”.<br>
+        You will be attacked by bad vibes, crazy people, and unruly pets, kids or both.<br>
+        Try not to raise your voice. Instead raise your wallet(s).<br>
+        Show them who you truly are with what they cannot afford.<br>
+        <br>
+        They'll love you for it.<br>
       </p>
     </section>
   </main>
 
-  <!-- FOOTER -->
+  <!-- FOOTER: Contains copyright information -->
   <footer>
     <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
   </footer>
 
-  <!-- SCRIPT INITS: Only run smart menu ONCE via correct import -->
+  <!-- SCRIPT IMPORTS: Initialize dynamic menu and mobile interactions -->
   <script type="module">
     import { populateMenu, setupMobileMenu } from "./scripts/kaayko_ui.js";
 
     document.addEventListener("DOMContentLoaded", () => {
+      // Dynamically set the current year
       document.getElementById("year").textContent = new Date().getFullYear();
+
+      // Initialize the top navigation menu
       populateMenu();
+
+      // Initialize the mobile menu interactions
       setupMobileMenu();
     });
   </script>

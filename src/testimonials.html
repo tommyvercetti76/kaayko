@@ -1,79 +1,96 @@
+<!-- testimonials.html - Kaayko Store Testimonials Page -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Kaayko | Testimonials</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <!-- SEO Metadata -->
+  <title>Kaayko | Testimonials</title>
+  <meta name="description" content="Read what our customers say about Kaayko's unique apparel and their shopping experiences.">
+
+  <!-- Open Graph Metadata for Social Media Sharing -->
+  <meta property="og:title" content="Kaayko Store Testimonials">
+  <meta property="og:description" content="See customer feedback on Kaayko's expressive and unique apparel designs.">
+  <meta property="og:image" content="assets/social-share-kaayko.png">
+  <meta property="og:type" content="website">
+
+  <!-- Unified stylesheet for all pages -->
   <link rel="stylesheet" href="storestyle.css">
+
+  <!-- Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
-  <!-- HEADER -->
+  <!-- HEADER SECTION -->
   <header class="header">
     <h1 class="header-title">Kaayko Store</h1>
     <p class="header-subtitle">Vote now, pay later.</p>
 
-    <!-- We'll fill with "Home" & "About" if testimonials.html is detected -->
+    <!-- Top navigation menu (populated dynamically via JS) -->
     <nav class="top-menu">
       <ul></ul>
     </nav>
 
-    <!-- Mobile FAB (Floating Action Button) -->
+    <!-- Mobile Floating Action Button (FAB) for Menu -->
     <button class="fab-menu" aria-label="Open Menu">
       <span class="material-icons">menu</span>
     </button>
 
-    <!-- Dark Mode Toggle (crescent) -->
-    <button 
-      class="theme-toggle-icon material-icons" 
-      aria-label="Toggle Dark Mode">
+    <!-- Dark Mode Toggle -->
+    <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode">
       brightness_3
     </button>
   </header>
 
+  <!-- Mobile overlay menu (populated dynamically via JS) -->
   <div class="mobile-menu-overlay">
     <ul></ul>
   </div>
 
+  <!-- MAIN CONTENT AREA -->
   <main style="max-width: 900px; margin: 30px auto;">
-    <!-- Use .testimonials-heading for consistent styling from storestyle.css -->
+    <!-- Page Heading -->
     <h2 class="testimonials-heading">What People Are Saying</h2>
 
-    <!-- Container for the reviews, populated by about.js data -->
+    <!-- Testimonials Container (populated dynamically via about.js) -->
     <div id="testimonialsContainer" class="reviews-container"></div>
   </main>
 
+  <!-- FOOTER -->
   <footer>
     <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
   </footer>
 
-  <!-- For the same store logic (mobile menu, etc.) -->
+  <!-- JavaScript Imports -->
+  <!-- Common UI logic and mobile menu interactions -->
   <script type="module" src="scripts/kaayko_main.js"></script>
   <script type="module" src="scripts/kaayko_ui.js"></script>
 
-  <!-- Then import about.js for the testimonial logic -->
+  <!-- Testimonials logic using about.js -->
   <script type="module">
     import { fakeTestimonials, shuffleArray, createTestimonialElement } from "./scripts/about.js";
 
+    // Set current year dynamically
     document.getElementById('year').textContent = new Date().getFullYear();
 
+    // Function to load and display shuffled testimonials
     function loadStandaloneTestimonials() {
       const container = document.getElementById("testimonialsContainer");
       if (!container) return;
 
       container.innerHTML = "";
-      // Shuffle the array
+      // Shuffle testimonials array to display in random order
       const shuffled = shuffleArray([...fakeTestimonials]);
-      // Create each testimonial DOM element
-      shuffled.forEach(t => {
-        const elem = createTestimonialElement(t);
+      // Populate each testimonial into the DOM
+      shuffled.forEach(testimonial => {
+        const elem = createTestimonialElement(testimonial);
         container.appendChild(elem);
       });
     }
 
+    // Initialize testimonials on DOMContentLoaded event
     document.addEventListener("DOMContentLoaded", () => {
-      // Load the list of testimonials
       loadStandaloneTestimonials();
     });
   </script>
