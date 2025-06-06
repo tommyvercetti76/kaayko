@@ -1,4 +1,4 @@
-<!-- testimonials.html - Kaayko Store Testimonials Page -->
+<!-- testimonials.html - Kaayko Store Testimonials Page (with unified header)  -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,40 +15,59 @@
   <meta property="og:image" content="assets/social-share-kaayko.png">
   <meta property="og:type" content="website">
 
-  <!-- Unified stylesheet for all pages -->
+  <!-- 1) Unified site‐wide CSS (header, footer, menu, dark mode) -->
   <link rel="stylesheet" href="storestyle.css">
+  <!-- (No changes in CSS functionality)  -->
 
-  <!-- Material Icons -->
+  <!-- 2) Paddling Out’s header CSS (flex layout, hide hamburger, menu overrides) -->
+  <link rel="stylesheet" href="paddlingout.css">
+  <!-- (Overridden .top-menu background to transparent; .fab-menu hidden on desktop)  -->
+
+  <!-- Material Icons (for dark‐mode icon, hamburger, etc.) -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
-  <!-- HEADER SECTION -->
+  <!-- ────────────────────────────────────────────────────────────────────
+       HEADER: Shared across Home/About/Testimonials (no hero‐banner/video‐toggle)
+       • Left: brand (title + subtitle)
+       • Center: top‐menu (transparent background, floats on header)
+       • Right: dark‐mode toggle + hidden hamburger on desktop
+  ────────────────────────────────────────────────────────────────────── -->
   <header class="header">
-    <h1 class="header-title">Kaayko Store</h1>
-    <p class="header-subtitle">Vote now, pay later.</p>
+    <div class="header-top">
+      <!-- Brand: stacked title + subtitle -->
+      <div class="header-brand">
+        <h1 class="header-title">Kaayko Store</h1>
+        <p class="header-subtitle">Vote now, pay later.</p>
+      </div>
 
-    <!-- Top navigation menu (populated dynamically via JS) -->
-    <nav class="top-menu">
-      <ul></ul>
-    </nav>
+      <!-- Desktop navigation menu (populated dynamically via kaayko_ui.js) -->
+      <nav class="top-menu">
+        <ul></ul>
+      </nav>
 
-    <!-- Mobile Floating Action Button (FAB) for Menu -->
-    <button class="fab-menu" aria-label="Open Menu">
-      <span class="material-icons">menu</span>
-    </button>
-
-    <!-- Dark Mode Toggle -->
-    <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode">
-      brightness_3
-    </button>
+      <!-- Right‐side controls: dark‐mode toggle + (hidden) hamburger on desktop -->
+      <div class="header-controls">
+        <!-- Dark Mode Toggle -->
+        <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode">
+          brightness_3
+        </button>
+        <!-- Floating Action Button (FAB) for mobile nav (hidden on desktop) -->
+        <button class="fab-menu material-icons" aria-label="Open Menu (mobile only)">
+          menu
+        </button>
+      </div>
+    </div>
   </header>
 
-  <!-- Mobile overlay menu (populated dynamically via JS) -->
+  <!-- MOBILE OVERLAY MENU: shown/hidden by kaayko_ui.js -->
   <div class="mobile-menu-overlay">
     <ul></ul>
   </div>
 
-  <!-- MAIN CONTENT AREA -->
+  <!-- ────────────────────────────────────────────────────────────────────
+       MAIN CONTENT AREA: Testimonials
+  ────────────────────────────────────────────────────────────────────── -->
   <main style="max-width: 900px; margin: 30px auto;">
     <!-- Page Heading -->
     <h2 class="testimonials-heading">What People Are Saying</h2>
@@ -57,17 +76,18 @@
     <div id="testimonialsContainer" class="reviews-container"></div>
   </main>
 
-  <!-- FOOTER -->
+  <!-- ────────────────────────────────────────────────────────────────────
+       FOOTER
+  ────────────────────────────────────────────────────────────────────── -->
   <footer>
     <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
   </footer>
 
-  <!-- JavaScript Imports -->
-  <!-- Common UI logic and mobile menu interactions -->
+  <!-- ────────────────────────────────────────────────────────────────────
+       SCRIPTS: Populate menu, enable dark mode, load testimonials
+  ────────────────────────────────────────────────────────────────────── -->
   <script type="module" src="scripts/kaayko_main.js"></script>
   <script type="module" src="scripts/kaayko_ui.js"></script>
-
-  <!-- Testimonials logic using about.js -->
   <script type="module">
     import { fakeTestimonials, shuffleArray, createTestimonialElement } from "./scripts/about.js";
 

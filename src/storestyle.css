@@ -73,7 +73,7 @@
 
 /* 
  * KEY: make sure <html> & <body> are same size and background,
- *      plus overflow-x: hidden to avoid horizontal overscroll
+ *      plus overflow-x: hidden to avoid horizontal overscroll white block
  *      and fix iOS footer by min-height: -webkit-fill-available
  */
 html, body {
@@ -143,7 +143,8 @@ main {
 .top-menu {
   display: flex;
   justify-content: center;
-  background: linear-gradient(135deg, #444 0%, #222 100%);
+  /* We no longer set a background here—PaddlingOut.css will override */
+  /* background: linear-gradient(135deg, #444 0%, #222 100%); */
   padding: 10px 0;
 }
 .top-menu ul {
@@ -157,6 +158,7 @@ main {
   font-size: 18px;
   text-decoration: none;
   transition: color 0.3s, transform 0.3s;
+  /* We do NOT set any background on the <a> itself */
 }
 .top-menu li a:hover {
   color: var(--color-accent);
@@ -165,7 +167,7 @@ main {
 
 /* Floating Action Button for mobile nav */
 .fab-menu {
-  display: none;
+  display: none;  /* Hidden by default on desktop */
   position: fixed;
   bottom: 20px; right: 20px;
   width: 56px; height: 56px;
@@ -630,7 +632,7 @@ footer {
   color: #fff;
 }
 .dark-theme .top-menu {
-  background: linear-gradient(135deg, #1f1f1f 0%, #111 100%);
+  background: inherit; /* no forced gradient; header is already dark */
 }
 .dark-theme footer {
   background:#222;

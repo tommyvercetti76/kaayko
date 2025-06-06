@@ -1,6 +1,7 @@
 /**
  * paddlingout.css
  *
+ * 0) Reset body margin/padding so no gray “frame” remains
  * 1) Custom fonts
  * 2) Dark-mode overrides
  * 3) Container & card layout
@@ -9,13 +10,24 @@
  * 6) Footer & icons (tooltips never clipped)
  * 7) Page-indicator dots
  * 8) Responsive breakpoints
- * 9) Hero video styling
- * 10) HEIGHT FIX – equal row heights (added previously)
- * 11) SINGLE-CARD CENTERING  ← ★ new (adds 12 lines)
+ * 9) Hero banner styling (part of header now)
+ * 10) HEIGHT FIX – equal card heights
+ * 11) SINGLE-CARD CENTERING
+ * 12) MENU & HAMBURGER OVERRIDES (remove background, hide hamburger on desktop)
  */
 
 /*─────────────────────────────────────────────────────────────────────────────
-  1) Custom fonts
+ 0) Reset body margin/padding (remove gray “frame”)
+─────────────────────────────────────────────────────────────────────────────*/
+body {
+  margin: 0;
+  padding: 0;
+  background: #f2f2f2; /* page background color (light gray) */
+  font-family: Arial, sans-serif;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+ 1) Custom fonts
 ─────────────────────────────────────────────────────────────────────────────*/
 @font-face {
   font-family: 'Josefin_Medium';
@@ -31,7 +43,7 @@
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
-  2) Dark-mode overrides
+ 2) Dark-mode overrides
 ─────────────────────────────────────────────────────────────────────────────*/
 body.dark-theme {
   background: #121212;
@@ -76,9 +88,11 @@ body.dark-theme .indicator-dot.active {
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
-  3) Container & card layout
+ 3) Container & card layout
 ─────────────────────────────────────────────────────────────────────────────*/
 .container {
+  position: relative; /* make cards stack under header/hero-banner */
+  z-index: 1;         /* ensure cards sit beneath header’s hero-banner */
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -93,7 +107,7 @@ body.dark-theme .indicator-dot.active {
   box-shadow: 0 10px 20px rgba(0,0,0,0.1);
   width: calc(25% - 20px);
   overflow: visible; /* allow tooltips */
-  transition: transform .3s, box-shadow .3s;
+  transition: transform 0.3s, box-shadow 0.3s;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -105,7 +119,7 @@ body.dark-theme .indicator-dot.active {
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
-  4) In-card carousel
+ 4) In-card carousel
 ─────────────────────────────────────────────────────────────────────────────*/
 .img-container {
   position: relative;
@@ -127,7 +141,7 @@ body.dark-theme .indicator-dot.active {
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
-  5) Text & spacing tweaks
+ 5) Text & spacing tweaks
 ─────────────────────────────────────────────────────────────────────────────*/
 .card-content {
   padding: 8px;
@@ -155,7 +169,7 @@ body.dark-theme .indicator-dot.active {
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
-  6) Footer & icons (tooltips never clipped)
+ 6) Footer & icons (tooltips never clipped)
 ─────────────────────────────────────────────────────────────────────────────*/
 .card-footer {
   display: flex;
@@ -169,14 +183,17 @@ body.dark-theme .indicator-dot.active {
   z-index: 1;
 }
 .icon {
-  width: 40px; height: 40px;
+  width: 40px;
+  height: 40px;
   border: 2px solid ivory;
   border-radius: 50%;
   background: ivory;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  transition: transform .2s, background-color .2s;
+  transition: transform 0.2s, background-color 0.2s;
   position: relative;
   z-index: 2;
 }
@@ -186,10 +203,10 @@ body.dark-theme .indicator-dot.active {
   transform: translateY(-2px);
   background: #d3d3d3;
 }
-.parking-icon::before  { content: 'P';      font-size: 18px; }
-.toilet-icon::before   { content: '\1F6BD'; font-size: 18px; }
-.youtube-icon::before  { content: '\25B6';  font-size: 18px; }
-.location-icon::before { content: '\1F4CD'; font-size: 18px; }
+.parking-icon::before { content: 'P';      font-size: 18px; }
+.toilet-icon::before  { content: '\1F6BD'; font-size: 18px; }
+.youtube-icon::before { content: '\25B6';  font-size: 18px; }
+.location-icon::before{ content: '\1F4CD'; font-size: 18px; }
 /* Tooltip bubble, positioned above and never clipped */
 .icon::after {
   content: attr(title);
@@ -203,7 +220,7 @@ body.dark-theme .indicator-dot.active {
   border-radius: 5px;
   white-space: nowrap;
   opacity: 0;
-  transition: opacity .2s;
+  transition: opacity 0.2s;
   pointer-events: none;
   z-index: 9999;
   font-family: 'Josefin_Light', Arial, sans-serif;
@@ -216,7 +233,7 @@ body.dark-theme .indicator-dot.active {
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
-  7) Page-indicator dots (8px gap)
+ 7) Page-indicator dots (8px gap)
 ─────────────────────────────────────────────────────────────────────────────*/
 .image-indicator {
   text-align: center;
@@ -224,7 +241,8 @@ body.dark-theme .indicator-dot.active {
 }
 .indicator-dot {
   display: inline-block;
-  width: 8px; height: 8px;
+  width: 8px;
+  height: 8px;
   margin: 0 4px;
   border-radius: 50%;
   background: rgba(0,0,0,0.2);
@@ -237,33 +255,207 @@ body.dark-theme .indicator-dot.active {
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
-  8) Responsive breakpoints
+ 8) Responsive breakpoints
 ─────────────────────────────────────────────────────────────────────────────*/
 @media (max-width: 768px) {
-  .card { width: calc(50% - 20px); }
+  .card {
+    width: calc(50% - 20px);
+  }
+  .header-title {
+    font-size: 1.5rem; /* shrink title */
+  }
+  .header-subtitle {
+    font-size: 0.9rem; /* shrink subtitle */
+  }
 }
 @media (max-width: 480px) {
-  .card { width: 100%; }
+  .card {
+    width: 100%;
+  }
+  .hero-video {
+    height: 30vh;   /* make banner less tall on small phones */
+    min-height: 200px;
+  }
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
-  9) Hero video styling
+ 9) Hero banner styling (now part of header)
 ─────────────────────────────────────────────────────────────────────────────*/
+/* Overwrite earlier .header rules to ensure Paddling Out header is pure black */
+.header {
+  display: flex;
+  flex-direction: column;
+  background-color: #000; /* pure black */
+  position: relative;     /* for stacking and collapsed state */
+  z-index: 100;           /* ensure header always on top */
+  width: 100%;
+  margin: 0;              /* flush to top */
+  padding: 0;
+}
+/* ── .header-top: left = brand, right = menu + controls ───────────────────── */
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;      /* top & bottom padding */
+  background-color: #000;  /* pure black */
+  color: #fff;
+  flex-wrap: wrap;         /* allow wrapping on narrow viewports */
+}
+/* header-brand (title + subtitle stacked) */
+.header-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* left-align text */
+}
+.header-title {
+  font-family: 'Josefin_Bold', Arial, sans-serif;
+  font-size: 2rem;
+  margin: 0;
+  color: #fff;
+}
+.header-subtitle {
+  font-family: 'Josefin_Light', Arial, sans-serif;
+  font-size: 1rem;
+  margin: 6px 0 0 0;
+  color: #ccc;
+}
+/* top-menu (desktop) */
+.top-menu {
+  /* Removed any background so that menu text “floats” on pure black header */
+  background: transparent !important;
+  padding: 0 !important;
+}
+.top-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+.top-menu ul li {
+  margin: 0 12px;
+}
+.top-menu ul li a {
+  color: #fff;
+  text-decoration: none;
+  font-family: 'Josefin_Medium', Arial, sans-serif;
+  background: transparent; /* no colored background behind links */
+  padding: 6px 10px;
+  border-radius: 4px;
+}
+.top-menu ul li a:hover {
+  background: rgba(255,255,255,0.1);
+}
+/* header-controls (dark-mode, toggle, hamburger) */
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* Hide the hamburger on desktop by default */
+.fab-menu {
+  display: none;
+}
+.theme-toggle-icon,
+.video-toggle,
+.fab-menu {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 6px;
+}
+.fab-menu .material-icons,
+.theme-toggle-icon .material-icons,
+.video-toggle .material-icons {
+  font-size: 24px;
+}
+/* ── Mobile overlay menu (exactly as before) ───────────────────────────── */
+.mobile-menu-overlay {
+  display: none;
+  position: fixed; top:0; left:0;
+  width:100%; height:100%;
+  background-color: rgba(0,0,0,0.8);
+  color:#fff; 
+  z-index: 1000;
+  flex-direction: column;
+  justify-content: center; align-items: center;
+  transition: opacity 0.3s;
+  opacity: 0;
+}
+.mobile-menu-overlay.active {
+  display: flex;
+  opacity: 1;
+}
+.mobile-menu-overlay ul {
+  list-style: none;
+  text-align: center;
+}
+.mobile-menu-overlay li {
+  margin: 15px 0;
+}
+.mobile-menu-overlay a {
+  color: #fff;
+  font-family: 'Josefin_Bold', Arial, sans-serif;
+  font-size: 20px;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+.mobile-menu-overlay a:hover {
+  color: gold;
+}
+/* ── .hero-banner (below .header-top) ─────────────────────────────────── */
+.hero-banner {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
 .hero-video {
+  position: relative;
   width: 100%;
   height: 50vh;
   min-height: 300px;
+  background-color: #000; /* black until video load/plays */
   overflow: hidden;
-  position: relative;
 }
 .hero-video video {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
+/* Play/pause button always visible, no change needed */
+.video-control-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0,0,0,0.6);
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 5;
+  opacity: 1;
+  transition: background-color 0.2s;
+}
+.video-control-button:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+.video-control-button .material-icons {
+  color: #fff;
+  font-size: 32px;
+}
+/* Hide hero-banner when header has .collapsed */
+.header.collapsed .hero-banner {
+  display: none;
+}
 
 /*─────────────────────────────────────────────────────────────────────────────
-10) HEIGHT FIX – EQUAL CARD HEIGHTS WITHOUT CHANGING WIDTHS
+ 10) HEIGHT FIX – EQUAL CARD HEIGHTS WITHOUT CHANGING WIDTHS
 ─────────────────────────────────────────────────────────────────────────────*/
 @media (min-width: 769px) {
   .container {
@@ -271,41 +463,64 @@ body.dark-theme .indicator-dot.active {
     grid-template-columns: repeat(4, 1fr);
     grid-auto-rows: 1fr;
   }
-  .card         { width: 100%; height: 100%; }
-  .card-content { flex: 1; }
+  .card {
+    width: 100%;
+    height: 100%;
+  }
+  .card-content {
+    flex: 1;
+  }
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
-11) SINGLE-CARD CENTERING (detail view, no width change)
+ 11) SINGLE-CARD CENTERING (detail view, no width change)
 ─────────────────────────────────────────────────────────────────────────────*/
-/* When there’s only ONE .card in the container (the ?id= page),
-   keep its original width (25 % – four-up desktop rhythm) but
-   center it horizontally with auto margins so it’s not glued left.   */
+.container > .card:only-child {
+  margin-left: auto;
+  margin-right: auto; /* center in available space */
+}
+@media (max-width: 768px) {
+  /* on smaller screens, card expands to 50%/100% via earlier breakpoints */
+}
 
-   .container > .card:only-child {
-    margin-left: auto;
-    margin-right: auto;      /* center in available space          */
-    /* keep the original width calc(25% - 20px) defined above       */
-  }
-  
-  @media (max-width: 768px) {
-    /* on tablets/phones the card already expands to 50 % / 100 % via
-       earlier break-points, so no extra centering rules are needed   */
-  }
-
-  /*─────────────────────────────────────────────────────────────────────────────
-12) SINGLE-CARD VIEW — perfect centering
-   •  JS adds .single-card to <section id="cardsContainer"> when only one card
+/*─────────────────────────────────────────────────────────────────────────────
+ 12) SINGLE-CARD VIEW – perfect centering
 ─────────────────────────────────────────────────────────────────────────────*/
 .container.single-card {
-  /* override grid / flex settings only in this mode */
   display: flex !important;
-  align-items: center;         /* vertical centering   */
-  justify-content: center;     /* horizontal centering */
+  align-items: center;       /* vertical centering */
+  justify-content: center;   /* horizontal centering */
   min-height: calc(100vh - 200px); /* leave space for header & footer */
 }
 .container.single-card .card {
-  width: 320px;                /* nice readable width  */
+  width: 320px; /* nice readable width */
   max-width: 90%;
-  margin: 0;                   /* kill any auto margins from grid rules */
+  margin: 0;    /* remove any extra auto margins */
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+ 8) Responsive breakpoints (fab-menu show on mobile)
+─────────────────────────────────────────────────────────────────────────────*/
+@media (max-width: 768px) {
+  .top-menu {
+    display: none;
+  }
+  .fab-menu {
+    display: flex; /* only appear at ≤768px */
+  }
+  .header-title {
+    font-size: 1.5rem; /* shrink title */
+  }
+  .header-subtitle {
+    font-size: 0.9rem; /* shrink subtitle */
+  }
+}
+@media (max-width: 480px) {
+  .card {
+    width: 100%;
+  }
+  .hero-video {
+    height: 30vh;   /* make banner less tall on small phones */
+    min-height: 200px;
+  }
 }
