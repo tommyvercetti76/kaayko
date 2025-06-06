@@ -1,4 +1,3 @@
-<!-- testimonials.html - Kaayko Store Testimonials Page (with unified header)  -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,11 +16,11 @@
 
   <!-- 1) Unified site‐wide CSS (header, footer, menu, dark mode) -->
   <link rel="stylesheet" href="storestyle.css">
-  <!-- (No changes in CSS functionality)  -->
+  <!-- (No changes in CSS functionality)  [oai_citation:6‡storestyle.css](file-service://file-E8HNkk6Mv6BjPzR9hs74o4) -->
 
   <!-- 2) Paddling Out’s header CSS (flex layout, hide hamburger, menu overrides) -->
   <link rel="stylesheet" href="paddlingout.css">
-  <!-- (Overridden .top-menu background to transparent; .fab-menu hidden on desktop)  -->
+  <!-- (Overrides .top-menu background to transparent; .fab-menu hidden on desktop)  [oai_citation:7‡paddlingout.css](file-service://file-5ABQ7hA4887cbVLxXZ2ZuT) -->
 
   <!-- Material Icons (for dark‐mode icon, hamburger, etc.) -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -37,8 +36,8 @@
     <div class="header-top">
       <!-- Brand: stacked title + subtitle -->
       <div class="header-brand">
-        <h1 class="header-title">Kaayko Store</h1>
-        <p class="header-subtitle">Vote now, pay later.</p>
+        <h1 class="header-title">Kaayko: Testimonials</h1>
+        <p class="header-subtitle">They love us!</p>
       </div>
 
       <!-- Desktop navigation menu (populated dynamically via kaayko_ui.js) -->
@@ -86,32 +85,30 @@
   <!-- ────────────────────────────────────────────────────────────────────
        SCRIPTS: Populate menu, enable dark mode, load testimonials
   ────────────────────────────────────────────────────────────────────── -->
-  <script type="module" src="scripts/kaayko_main.js"></script>
   <script type="module" src="scripts/kaayko_ui.js"></script>
   <script type="module">
     import { fakeTestimonials, shuffleArray, createTestimonialElement } from "./scripts/about.js";
 
-    // Set current year dynamically
-    document.getElementById('year').textContent = new Date().getFullYear();
+    // When DOM is ready, do:
+    document.addEventListener("DOMContentLoaded", () => {
+      // 1) Populate the year
+      document.getElementById('year').textContent = new Date().getFullYear();
 
-    // Function to load and display shuffled testimonials
-    function loadStandaloneTestimonials() {
+      // 2) Initialize dark mode + menu (from kaayko_ui.js)
+      import("./scripts/kaayko_ui.js").then(({ runPageInit, populateMenu, setupMobileMenu }) => {
+        runPageInit();
+        populateMenu();
+        setupMobileMenu();
+      });
+
+      // 3) Load and display shuffled testimonials
       const container = document.getElementById("testimonialsContainer");
-      if (!container) return;
-
       container.innerHTML = "";
-      // Shuffle testimonials array to display in random order
       const shuffled = shuffleArray([...fakeTestimonials]);
-      // Populate each testimonial into the DOM
       shuffled.forEach(testimonial => {
         const elem = createTestimonialElement(testimonial);
         container.appendChild(elem);
       });
-    }
-
-    // Initialize testimonials on DOMContentLoaded event
-    document.addEventListener("DOMContentLoaded", () => {
-      loadStandaloneTestimonials();
     });
   </script>
 </body>

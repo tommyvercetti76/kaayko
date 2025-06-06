@@ -1,4 +1,3 @@
-<!-- about.html - Kaayko Store About Page (with unified header)  -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,11 +16,11 @@
 
   <!-- 1) Unified site‐wide CSS (header, mobile menu, dark‐mode, etc.) -->
   <link rel="stylesheet" href="storestyle.css" />
-  <!-- (No changes in CSS functionality)  -->
+  <!-- (No changes in CSS functionality)  [oai_citation:0‡storestyle.css](file-service://file-E8HNkk6Mv6BjPzR9hs74o4) -->
 
   <!-- 2) Paddling Out’s header CSS (flex layout, hide hamburger, menu overrides) -->
   <link rel="stylesheet" href="paddlingout.css" />
-  <!-- (Overrides .top-menu background to transparent; ensures .fab-menu hidden on desktop)  -->
+  <!-- (Overrides .top-menu to transparent; hides hamburger on desktop)  [oai_citation:1‡paddlingout.css](file-service://file-5ABQ7hA4887cbVLxXZ2ZuT) -->
 
   <!-- Material Icons (for dark‐mode icon, hamburger, etc.) -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -30,15 +29,15 @@
   <!-- ─────────────────────────────────────────────────────────────────────────
        HEADER: Shared across Home/About/Testimonials (no hero‐banner/video‐toggle)
        • Left: brand (title + subtitle)
-       • Center: top‐menu (transparent background, floats on header)
+       • Center: top‐menu (transparent background)
        • Right: dark‐mode toggle + hidden hamburger on desktop
   ──────────────────────────────────────────────────────────────────────────── -->
   <header class="header">
     <div class="header-top">
       <!-- Brand: stacked title + subtitle -->
       <div class="header-brand">
-        <h1 class="header-title">Kaayko Store</h1>
-        <p class="header-subtitle">Vote now, pay later.</p>
+        <h1 class="header-title">Kaayko: About</h1>
+        <p class="header-subtitle">Our Mission, Your Money</p>
       </div>
 
       <!-- Desktop navigation menu (populated dynamically via kaayko_ui.js) -->
@@ -118,18 +117,22 @@
   <!-- ─────────────────────────────────────────────────────────────────────────
        SCRIPTS: Populate menu, enable dark mode, handle mobile overlay
   ──────────────────────────────────────────────────────────────────────────── -->
+  <script type="module" src="scripts/kaayko_ui.js"></script>
   <script type="module">
-    import { populateMenu, setupMobileMenu } from "./scripts/kaayko_ui.js";
-
+    // After the menu script loads, you can set the year
     document.addEventListener("DOMContentLoaded", () => {
       // Dynamically set the current year
       document.getElementById("year").textContent = new Date().getFullYear();
-
-      // Initialize the top navigation menu
-      populateMenu();
-
-      // Initialize the mobile menu interactions
-      setupMobileMenu();
+      // Build the desktop + mobile menus
+      // (populateMenu() lives in kaayko_ui.js)
+      import("./scripts/kaayko_ui.js").then(({ populateMenu, setupMobileMenu, runPageInit }) => {
+        // First initialize dark mode
+        runPageInit();
+        // Then populate all navigation (desktop + mobile)
+        populateMenu();
+        // Finally wire up the mobile overlay toggle
+        setupMobileMenu();
+      });
     });
   </script>
 </body>

@@ -3,13 +3,13 @@
  *
  * Manages all UI behavior:
  *  1) Carousel rendering & swipe
- *  2) Image‑zoom modal
+ *  2) Image-zoom modal
  *  3) Voting (♥ button) via our REST API
  *  4) Mobile menu toggle
- *  5) “Smart” menu links (including Paddling Out)
- *  6) Dark‑mode toggle
+ *  5) “Smart” menu links (including Paddling Out)
+ *  6) Dark-mode toggle
  *
- * Uses an image‑proxy so the real signed URLs never hit the client.
+ * Uses an image-proxy so the real signed URLs never hit the client.
  */
 
 import { voteOnProduct } from "./kaayko_apiClient.js";
@@ -21,7 +21,7 @@ const IMAGE_PROXY_BASE =
 
 
 /* ==========================================================================
-   1) Dark‑Mode Toggle
+   1) Dark-Mode Toggle
    ========================================================================== */
 
 /**
@@ -71,7 +71,7 @@ export function populateCarousel(items) {
   animateCarouselItems();
 }
 
-/** Apply fade‑in animation on each card with a random stagger */
+/** Apply fade-in animation on each card with a random stagger */
 function animateCarouselItems() {
   document.querySelectorAll("#carousel .carousel-item").forEach(card => {
     const delay = (Math.random() * 0.8).toFixed(2) + "s";
@@ -144,7 +144,7 @@ function buildImageContainer(item) {
     // extract just the fileName from signedURL
     const url = new URL(signedURL);
     const rawName = url.pathname.split("/").pop();       // e.g. "StraightOutta_1.png"
-    const fileName = rawName.split("%2F").pop();         // fallback if double‑encoded
+    const fileName = rawName.split("%2F").pop();         // fallback if double-encoded
 
     // use the proxy instead of the signedURL
     const proxyURL = `${IMAGE_PROXY_BASE}/${encodeURIComponent(item.productID)}/${encodeURIComponent(fileName)}`;
@@ -212,7 +212,7 @@ function addSwipe(container, count, indicator) {
     ========================================================================== */
 
 /**
- * Opens a full‑screen modal showing all images for this item.
+ * Opens a full-screen modal showing all images for this item.
  * @param {Object} item  must have .imgSrc[] & .productID
  */
 export function openModal(item) {
@@ -273,7 +273,7 @@ function setupModalNav(container, count) {
     ========================================================================== */
 
 /**
- * Creates a heart button + vote‑count span.
+ * Creates a heart button + vote-count span.
  * Clicking ♥ calls our API, optimistically toggles UI,
  * rolls back if it fails.
  *
@@ -320,7 +320,7 @@ function createLikeButton(item) {
 
 
  /* ==========================================================================
-    6) Modal‑Close & Mobile Menu
+    6) Modal-Close & Mobile Menu
     ========================================================================== */
 
 /** Closes the modal when clicking the X or backdrop */
@@ -355,11 +355,11 @@ export function setupMobileMenu() {
     ========================================================================== */
 
 /**
- * Show exactly three top‑links, swapping out the current page for “Home”.
+ * Show exactly three top-links, swapping out the current page for “Home”.
  *
- *   • On index.html (or “/”):   [About, Testimonials, Paddling Out]
- *   • On about.html:            [Home, Testimonials, Paddling Out]
- *   • On testimonials.html:     [Home, About, Paddling Out]
+ *   • On index.html (or “/”):   [About, Testimonials, Paddling Out]
+ *   • On about.html:            [Home, Testimonials, Paddling Out]
+ *   • On testimonials.html:     [Home, About, Paddling Out]
  *   • On paddlingout.html:      [Home, About, Testimonials]
  */
 export function populateMenu() {
@@ -367,61 +367,48 @@ export function populateMenu() {
   const mob  = document.querySelector(".mobile-menu-overlay ul");
   if (!desk || !mob) return;
 
-  const path = window.location.pathname.split("/").pop();
+  // Grab the last segment of the path and lowercase it
+  const path = window.location.pathname.split("/").pop()?.toLowerCase() || "";
+
   let links = [];
 
-  switch (path) {
-    case "":
-    case "index.html":
-      links = [
-        { text: "About",        href: "about.html" },
-        { text: "Testimonials", href: "testimonials.html" },
-        { text: "Paddling Out", href: "paddlingout.html" }
-      ];
-      break;
-
-    case "about.html":
-      links = [
-        { text: "Home",         href: "index.html" },
-        { text: "Testimonials", href: "testimonials.html" },
-        { text: "Paddling Out", href: "paddlingout.html" }
-      ];
-      break;
-
-    case "testimonials.html":
-      links = [
-        { text: "Home",         href: "index.html" },
-        { text: "About",        href: "about.html" },
-        { text: "Paddling Out", href: "paddlingout.html" }
-      ];
-      break;
-
-    case "paddlingout.html":
-      links = [
-        { text: "Home",         href: "index.html" },
-        { text: "About",        href: "about.html" },
-        { text: "Testimonials", href: "testimonials.html" }
-      ];
-      break;
-
-    default:
-      // if you ever add more pages, default back to home‑centric
-      links = [
-        { text: "Home",         href: "index.html" },
-        { text: "About",        href: "about.html" },
-        { text: "Paddling Out", href: "paddlingout.html" }
-      ];
+  if (path.endsWith("about.html")) {
+    links = [
+      { text: "Home", href: "index.html" },
+      { text: "Testimonials", href: "testimonials.html" },
+      { text: "Paddling Out", href: "paddlingout.html" }
+    ];
+  } else if (path.endsWith("testimonials.html")) {
+    links = [
+      { text: "Home", href: "index.html" },
+      { text: "About", href: "about.html" },
+      { text: "Paddling Out", href: "paddlingout.html" }
+    ];
+  } else if (path.endsWith("paddlingout.html")) {
+    links = [
+      { text: "Home", href: "index.html" },
+      { text: "About", href: "about.html" },
+      { text: "Testimonials", href: "testimonials.html" }
+    ];
+  } else {
+    // Default (index.html or any other route)
+    links = [
+      { text: "About", href: "about.html" },
+      { text: "Testimonials", href: "testimonials.html" },
+      { text: "Paddling Out", href: "paddlingout.html" }
+    ];
   }
 
+  // Populate both desktop and mobile menus
   [desk, mob].forEach(menu => {
     menu.innerHTML = "";
-    for (const { text, href } of links) {
+    links.forEach(({ text, href }) => {
       const li = document.createElement("li");
       const a  = document.createElement("a");
       a.textContent = text;
       a.href        = href;
       li.append(a);
       menu.append(li);
-    }
+    });
   });
 }
