@@ -1,0 +1,234 @@
+/* File: header.css
+ *
+ * Shared header & hero-banner styles + header dark-mode overrides
+ */
+
+/*─────────────────────────────────────────────────────────────────────────────
+ 1) Base Header Layout (light mode)
+─────────────────────────────────────────────────────────────────────────────*/
+.header {
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #444 0%, #222 100%);
+  position: relative;
+  z-index: 100;
+  width: 100%;
+  margin: 0;
+  padding: 14px 20px;
+  color: #fff;
+}
+
+/* Make header-top a 3-column flex container */
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Left column: brand stacked, left-aligned */
+.header-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.header-title {
+  font-family: 'Josefin_Bold', Arial, sans-serif;
+  font-size: 2rem;
+  margin: 0;
+  color: #fff;
+}
+.header-subtitle {
+  font-family: 'Josefin_Light', Arial, sans-serif;
+  font-size: 1rem;
+  margin: 6px 0 0;
+  color: #ccc;
+}
+
+/* Center column: desktop nav expands and centers its items */
+.top-menu {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  background: transparent !important;
+  padding: 0 !important;
+}
+.top-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+.top-menu ul li {
+  margin: 0 12px;
+}
+.top-menu ul li a {
+  color: #fff;
+  text-decoration: none;
+  font-family: 'Josefin_Medium', Arial, sans-serif;
+  padding: 6px 10px;
+  border-radius: 4px;
+  transition: background 0.3s;
+}
+.top-menu ul li a:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+/* Right column: controls stay at intrinsic size */
+.header-controls {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.theme-toggle-icon,
+.video-toggle,
+.fab-menu {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 6px;
+}
+.material-icons {
+  font-size: 24px;
+}
+
+/* Floating Action Button (hamburger) */
+.fab-menu {
+  display: none; /* shown via JS at ≤768px */
+}
+
+/* Mobile overlay menu */
+.mobile-menu-overlay {
+  display: none;
+  position: fixed; top:0; left:0;
+  width:100%; height:100%;
+  background-color: rgba(0,0,0,0.8);
+  color:#fff;
+  z-index:1000;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  opacity:0;
+  transition: opacity 0.3s;
+}
+.mobile-menu-overlay.active {
+  display:flex;
+  opacity:1;
+}
+.mobile-menu-overlay ul {
+  list-style:none;
+  text-align:center;
+}
+.mobile-menu-overlay li {
+  margin:15px 0;
+}
+.mobile-menu-overlay a {
+  color:#fff;
+  font-family:'Josefin_Bold',Arial,sans-serif;
+  font-size:20px;
+  text-decoration:none;
+  transition:color 0.3s;
+}
+.mobile-menu-overlay a:hover {
+  color:gold;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+ 2) Hero-Banner (only on paddlingout.html)
+─────────────────────────────────────────────────────────────────────────────*/
+.hero-banner {
+  width:100%;
+  margin:0;
+  padding:0;
+}
+.hero-video {
+  position:relative;
+  width:100%;
+  height:50vh;
+  min-height:300px;
+  background-color:#000;
+  overflow:hidden;
+}
+.hero-video video {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.video-control-button {
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background-color:rgba(0,0,0,0.6);
+  border:none;
+  border-radius:50%;
+  width:60px;
+  height:60px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  cursor:pointer;
+  z-index:5;
+  opacity:1;
+  transition:background-color 0.2s;
+}
+.video-control-button:hover {
+  background-color:rgba(0,0,0,0.8);
+}
+.video-control-button .material-icons {
+  color:#fff;
+  font-size:32px;
+}
+.header.collapsed .hero-banner {
+  display:none;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+ 3) Responsive tweaks for header
+─────────────────────────────────────────────────────────────────────────────*/
+@media (max-width: 768px) {
+  .top-menu { display: none; }
+  .fab-menu { display: flex; }
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+ 4) Dark-Mode Overrides (header only)
+─────────────────────────────────────────────────────────────────────────────*/
+.dark-theme .header {
+  background: linear-gradient(135deg, #1f1f1f 0%, #111 100%);
+  color: #fff;
+}
+.dark-theme .header-top {
+  background: transparent !important;
+}
+.dark-theme .header-title {
+  color: var(--color-text-base);
+}
+.dark-theme .header-subtitle {
+  color: var(--color-text-secondary);
+}
+.dark-theme .top-menu ul li a {
+  color: #fff;
+}
+.dark-theme .top-menu ul li a:hover {
+  color: var(--color-accent);
+}
+.dark-theme .theme-toggle-icon,
+.dark-theme .material-icons,
+.dark-theme .video-toggle,
+.dark-theme .fab-menu {
+  color: #FFD700;
+}
+.dark-theme .fab-menu {
+  background-color: #222;
+}
+.dark-theme .mobile-menu-overlay {
+  background-color: rgba(0,0,0,0.8);
+}
+.dark-theme .mobile-menu-overlay a {
+  color: var(--color-bright-ivory);
+}
+.dark-theme .mobile-menu-overlay a:hover {
+  color: var(--color-accent);
+}

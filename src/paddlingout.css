@@ -2,18 +2,15 @@
  * paddlingout.css
  *
  * 0) Reset body margin/padding so no gray “frame” remains
- * 1) Custom fonts
- * 2) Dark-mode overrides
- * 3) Container & card layout
- * 4) In-card carousel
- * 5) Text & spacing tweaks
- * 6) Footer & icons (tooltips never clipped)
- * 7) Page-indicator dots
- * 8) Responsive breakpoints
- * 9) Hero banner styling (part of header now)
- * 10) HEIGHT FIX – equal card heights
- * 11) SINGLE-CARD CENTERING
- * 12) MENU & HAMBURGER OVERRIDES (remove background, hide hamburger on desktop)
+ * 1) Container & card layout
+ * 2) In-card carousel
+ * 3) Text & spacing tweaks
+ * 4) Footer & icons (tooltips never clipped)
+ * 5) Page-indicator dots
+ * 6) Responsive breakpoints (cards only)
+ * 7) HEIGHT FIX – equal card heights
+ * 8) SINGLE-CARD CENTERING
+ * 9) SINGLE-CARD VIEW – perfect centering
  */
 
 /*─────────────────────────────────────────────────────────────────────────────
@@ -27,86 +24,25 @@ body {
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
- 1) Custom fonts
-─────────────────────────────────────────────────────────────────────────────*/
-@font-face {
-  font-family: 'Josefin_Medium';
-  src: url('/fonts/JosefinSans-Medium.ttf') format('truetype');
-}
-@font-face {
-  font-family: 'Josefin_Bold';
-  src: url('/fonts/JosefinSans-Bold.ttf') format('truetype');
-}
-@font-face {
-  font-family: 'Josefin_Light';
-  src: url('/fonts/JosefinSans-Light.ttf') format('truetype');
-}
-
-/*─────────────────────────────────────────────────────────────────────────────
- 2) Dark-mode overrides
-─────────────────────────────────────────────────────────────────────────────*/
-body.dark-theme {
-  background: #121212;
-  color: #e0e0e0;
-}
-body.dark-theme .container {
-  background: transparent;
-}
-body.dark-theme .card {
-  background: #242424;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.6);
-}
-body.dark-theme .card-title {
-  color: gold; /* lake title in gold */
-}
-body.dark-theme .card-subtitle,
-body.dark-theme .card-description {
-  color: #f0f0f0;
-}
-body.dark-theme .card-footer {
-  background: #1e1e1e;
-  border-top-color: #333;
-}
-/* icons remain ivory so they pop against dark */
-body.dark-theme .icon {
-  background: ivory !important;
-  color: black !important;
-}
-body.dark-theme .icon::after {
-  background: #000;
-  color: #fff;
-}
-body.dark-theme footer {
-  background: #141414;
-  color: #888;
-}
-body.dark-theme .indicator-dot {
-  background: rgba(255,255,255,0.2);
-}
-body.dark-theme .indicator-dot.active {
-  background: gold;
-}
-
-/*─────────────────────────────────────────────────────────────────────────────
- 3) Container & card layout
+ 1) Container & card layout
 ─────────────────────────────────────────────────────────────────────────────*/
 .container {
-  position: relative; /* make cards stack under header/hero-banner */
-  z-index: 1;         /* ensure cards sit beneath header’s hero-banner */
+  position: relative; /* stack under header */
+  z-index: 1;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 20px;
   padding: 20px;
   background: transparent;
-  overflow: visible; /* allow tooltips at edges */
+  overflow: visible; /* allow tooltips */
 }
 .card {
   background: #fff;
   border-radius: 15px;
   box-shadow: 0 10px 20px rgba(0,0,0,0.1);
   width: calc(25% - 20px);
-  overflow: visible; /* allow tooltips */
+  overflow: visible;
   transition: transform 0.3s, box-shadow 0.3s;
   cursor: pointer;
   display: flex;
@@ -119,7 +55,7 @@ body.dark-theme .indicator-dot.active {
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
- 4) In-card carousel
+ 2) In-card carousel
 ─────────────────────────────────────────────────────────────────────────────*/
 .img-container {
   position: relative;
@@ -141,7 +77,7 @@ body.dark-theme .indicator-dot.active {
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
- 5) Text & spacing tweaks
+ 3) Text & spacing tweaks
 ─────────────────────────────────────────────────────────────────────────────*/
 .card-content {
   padding: 8px;
@@ -169,7 +105,7 @@ body.dark-theme .indicator-dot.active {
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
- 6) Footer & icons (tooltips never clipped)
+ 4) Footer & icons (tooltips never clipped)
 ─────────────────────────────────────────────────────────────────────────────*/
 .card-footer {
   display: flex;
@@ -233,7 +169,7 @@ body.dark-theme .indicator-dot.active {
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
- 7) Page-indicator dots (8px gap)
+ 5) Page-indicator dots
 ─────────────────────────────────────────────────────────────────────────────*/
 .image-indicator {
   text-align: center;
@@ -255,207 +191,21 @@ body.dark-theme .indicator-dot.active {
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
- 8) Responsive breakpoints
+ 6) Responsive breakpoints (cards only)
 ─────────────────────────────────────────────────────────────────────────────*/
 @media (max-width: 768px) {
   .card {
     width: calc(50% - 20px);
-  }
-  .header-title {
-    font-size: 1.5rem; /* shrink title */
-  }
-  .header-subtitle {
-    font-size: 0.9rem; /* shrink subtitle */
   }
 }
 @media (max-width: 480px) {
   .card {
     width: 100%;
   }
-  .hero-video {
-    height: 30vh;   /* make banner less tall on small phones */
-    min-height: 200px;
-  }
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
- 9) Hero banner styling (now part of header)
-─────────────────────────────────────────────────────────────────────────────*/
-/* Overwrite earlier .header rules to ensure Paddling Out header is pure black */
-.header {
-  display: flex;
-  flex-direction: column;
-  background-color: #000; /* pure black */
-  position: relative;     /* for stacking and collapsed state */
-  z-index: 100;           /* ensure header always on top */
-  width: 100%;
-  margin: 0;              /* flush to top */
-  padding: 0;
-}
-/* ── .header-top: left = brand, right = menu + controls ───────────────────── */
-.header-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 20px;      /* top & bottom padding */
-  background-color: #000;  /* pure black */
-  color: #fff;
-  flex-wrap: wrap;         /* allow wrapping on narrow viewports */
-}
-/* header-brand (title + subtitle stacked) */
-.header-brand {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start; /* left-align text */
-}
-.header-title {
-  font-family: 'Josefin_Bold', Arial, sans-serif;
-  font-size: 2rem;
-  margin: 0;
-  color: #fff;
-}
-.header-subtitle {
-  font-family: 'Josefin_Light', Arial, sans-serif;
-  font-size: 1rem;
-  margin: 6px 0 0 0;
-  color: #ccc;
-}
-/* top-menu (desktop) */
-.top-menu {
-  /* Removed any background so that menu text “floats” on pure black header */
-  background: transparent !important;
-  padding: 0 !important;
-}
-.top-menu ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-}
-.top-menu ul li {
-  margin: 0 12px;
-}
-.top-menu ul li a {
-  color: #fff;
-  text-decoration: none;
-  font-family: 'Josefin_Medium', Arial, sans-serif;
-  background: transparent; /* no colored background behind links */
-  padding: 6px 10px;
-  border-radius: 4px;
-}
-.top-menu ul li a:hover {
-  background: rgba(255,255,255,0.1);
-}
-/* header-controls (dark-mode, toggle, hamburger) */
-.header-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-/* Hide the hamburger on desktop by default */
-.fab-menu {
-  display: none;
-}
-.theme-toggle-icon,
-.video-toggle,
-.fab-menu {
-  background: none;
-  border: none;
-  color: #fff;
-  cursor: pointer;
-  padding: 6px;
-}
-.fab-menu .material-icons,
-.theme-toggle-icon .material-icons,
-.video-toggle .material-icons {
-  font-size: 24px;
-}
-/* ── Mobile overlay menu (exactly as before) ───────────────────────────── */
-.mobile-menu-overlay {
-  display: none;
-  position: fixed; top:0; left:0;
-  width:100%; height:100%;
-  background-color: rgba(0,0,0,0.8);
-  color:#fff; 
-  z-index: 1000;
-  flex-direction: column;
-  justify-content: center; align-items: center;
-  transition: opacity 0.3s;
-  opacity: 0;
-}
-.mobile-menu-overlay.active {
-  display: flex;
-  opacity: 1;
-}
-.mobile-menu-overlay ul {
-  list-style: none;
-  text-align: center;
-}
-.mobile-menu-overlay li {
-  margin: 15px 0;
-}
-.mobile-menu-overlay a {
-  color: #fff;
-  font-family: 'Josefin_Bold', Arial, sans-serif;
-  font-size: 20px;
-  text-decoration: none;
-  transition: color 0.3s;
-}
-.mobile-menu-overlay a:hover {
-  color: gold;
-}
-/* ── .hero-banner (below .header-top) ─────────────────────────────────── */
-.hero-banner {
-  width: 100%;
-  margin: 0;
-  padding: 0;
-}
-.hero-video {
-  position: relative;
-  width: 100%;
-  height: 50vh;
-  min-height: 300px;
-  background-color: #000; /* black until video load/plays */
-  overflow: hidden;
-}
-.hero-video video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-/* Play/pause button always visible, no change needed */
-.video-control-button {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: rgba(0,0,0,0.6);
-  border: none;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  z-index: 5;
-  opacity: 1;
-  transition: background-color 0.2s;
-}
-.video-control-button:hover {
-  background-color: rgba(0, 0, 0, 0.8);
-}
-.video-control-button .material-icons {
-  color: #fff;
-  font-size: 32px;
-}
-/* Hide hero-banner when header has .collapsed */
-.header.collapsed .hero-banner {
-  display: none;
-}
-
-/*─────────────────────────────────────────────────────────────────────────────
- 10) HEIGHT FIX – EQUAL CARD HEIGHTS WITHOUT CHANGING WIDTHS
+ 7) HEIGHT FIX – equal card heights
 ─────────────────────────────────────────────────────────────────────────────*/
 @media (min-width: 769px) {
   .container {
@@ -473,54 +223,24 @@ body.dark-theme .indicator-dot.active {
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
- 11) SINGLE-CARD CENTERING (detail view, no width change)
+ 8) SINGLE-CARD CENTERING (detail view, no width change)
 ─────────────────────────────────────────────────────────────────────────────*/
 .container > .card:only-child {
   margin-left: auto;
-  margin-right: auto; /* center in available space */
-}
-@media (max-width: 768px) {
-  /* on smaller screens, card expands to 50%/100% via earlier breakpoints */
+  margin-right: auto;
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
- 12) SINGLE-CARD VIEW – perfect centering
+ 9) SINGLE-CARD VIEW – perfect centering
 ─────────────────────────────────────────────────────────────────────────────*/
 .container.single-card {
   display: flex !important;
-  align-items: center;       /* vertical centering */
-  justify-content: center;   /* horizontal centering */
-  min-height: calc(100vh - 200px); /* leave space for header & footer */
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 200px);
 }
 .container.single-card .card {
-  width: 320px; /* nice readable width */
+  width: 320px;
   max-width: 90%;
-  margin: 0;    /* remove any extra auto margins */
-}
-
-/*─────────────────────────────────────────────────────────────────────────────
- 8) Responsive breakpoints (fab-menu show on mobile)
-─────────────────────────────────────────────────────────────────────────────*/
-@media (max-width: 768px) {
-  .top-menu {
-    display: none;
-  }
-  .fab-menu {
-    display: flex; /* only appear at ≤768px */
-  }
-  .header-title {
-    font-size: 1.5rem; /* shrink title */
-  }
-  .header-subtitle {
-    font-size: 0.9rem; /* shrink subtitle */
-  }
-}
-@media (max-width: 480px) {
-  .card {
-    width: 100%;
-  }
-  .hero-video {
-    height: 30vh;   /* make banner less tall on small phones */
-    min-height: 200px;
-  }
+  margin: 0;
 }

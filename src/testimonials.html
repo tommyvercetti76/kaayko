@@ -6,72 +6,58 @@
 
   <!-- SEO Metadata -->
   <title>Kaayko | Testimonials</title>
-  <meta name="description" content="Read what our customers say about Kaayko's unique apparel and their shopping experiences.">
+  <meta name="description" content="Read what our customers say about Kaayko's unique apparel and their shopping experiences." />
 
-  <!-- Open Graph Metadata for Social Media Sharing -->
-  <meta property="og:title" content="Kaayko Store Testimonials">
-  <meta property="og:description" content="See customer feedback on Kaayko's expressive and unique apparel designs.">
-  <meta property="og:image" content="assets/social-share-kaayko.png">
-  <meta property="og:type" content="website">
+  <!-- Open Graph Metadata for Social Sharing -->
+  <meta property="og:title" content="Kaayko Store Testimonials" />
+  <meta property="og:description" content="See customer feedback on Kaayko's expressive and unique apparel designs." />
+  <meta property="og:image" content="assets/social-share-kaayko.png" />
+  <meta property="og:type" content="website" />
 
-  <!-- 1) Unified site‐wide CSS (header, footer, menu, dark mode) -->
+  <!-- 1) Global Stylesheet: resets, typography, carousel, modal, dark-mode, etc. -->
   <link rel="stylesheet" href="storestyle.css">
-  <!-- (No changes in CSS functionality)  [oai_citation:6‡storestyle.css](file-service://file-E8HNkk6Mv6BjPzR9hs74o4) -->
 
-  <!-- 2) Paddling Out’s header CSS (flex layout, hide hamburger, menu overrides) -->
-  <link rel="stylesheet" href="paddlingout.css">
-  <!-- (Overrides .top-menu background to transparent; .fab-menu hidden on desktop)  [oai_citation:7‡paddlingout.css](file-service://file-5ABQ7hA4887cbVLxXZ2ZuT) -->
+  <!-- 2) Header Styles: shared header layout & dark-mode overrides -->
+  <link rel="stylesheet" href="header.css">
 
-  <!-- Material Icons (for dark‐mode icon, hamburger, etc.) -->
+  <!-- 3) Material Icons (for dark-mode toggle, hamburger, etc.) -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
+
 <body>
   <!-- ────────────────────────────────────────────────────────────────────
-       HEADER: Shared across Home/About/Testimonials (no hero‐banner/video‐toggle)
-       • Left: brand (title + subtitle)
-       • Center: top‐menu (transparent background, floats on header)
-       • Right: dark‐mode toggle + hidden hamburger on desktop
+       HEADER: Shared across all pages
+       • Brand (title + subtitle)
+       • Desktop menu (populated by header.js)
+       • Dark-mode toggle & mobile FAB
+       • Mobile overlay menu
   ────────────────────────────────────────────────────────────────────── -->
   <header class="header">
     <div class="header-top">
-      <!-- Brand: stacked title + subtitle -->
       <div class="header-brand">
         <h1 class="header-title">Kaayko: Testimonials</h1>
         <p class="header-subtitle">They love us!</p>
       </div>
-
-      <!-- Desktop navigation menu (populated dynamically via kaayko_ui.js) -->
-      <nav class="top-menu">
-        <ul></ul>
-      </nav>
-
-      <!-- Right‐side controls: dark‐mode toggle + (hidden) hamburger on desktop -->
+      <nav class="top-menu"><ul></ul></nav>
       <div class="header-controls">
-        <!-- Dark Mode Toggle -->
         <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode">
           brightness_3
         </button>
-        <!-- Floating Action Button (FAB) for mobile nav (hidden on desktop) -->
-        <button class="fab-menu material-icons" aria-label="Open Menu (mobile only)">
+        <button class="fab-menu material-icons" aria-label="Open Menu">
           menu
         </button>
       </div>
     </div>
   </header>
 
-  <!-- MOBILE OVERLAY MENU: shown/hidden by kaayko_ui.js -->
-  <div class="mobile-menu-overlay">
-    <ul></ul>
-  </div>
+  <!-- Mobile overlay menu -->
+  <div class="mobile-menu-overlay"><ul></ul></div>
 
   <!-- ────────────────────────────────────────────────────────────────────
        MAIN CONTENT AREA: Testimonials
   ────────────────────────────────────────────────────────────────────── -->
   <main style="max-width: 900px; margin: 30px auto;">
-    <!-- Page Heading -->
     <h2 class="testimonials-heading">What People Are Saying</h2>
-
-    <!-- Testimonials Container (populated dynamically via about.js) -->
     <div id="testimonialsContainer" class="reviews-container"></div>
   </main>
 
@@ -83,31 +69,24 @@
   </footer>
 
   <!-- ────────────────────────────────────────────────────────────────────
-       SCRIPTS: Populate menu, enable dark mode, load testimonials
+       SCRIPTS (type="module"):
+       1) header.js          → dark-mode, menus, mobile overlay, hero toggle
+       2) testimonials.js    → load & render testimonials
+       3) inline snippet     → dynamic year
   ────────────────────────────────────────────────────────────────────── -->
-  <script type="module" src="scripts/kaayko_ui.js"></script>
+  <script type="module" src="scripts/header.js"></script>
   <script type="module">
-    import { fakeTestimonials, shuffleArray, createTestimonialElement } from "./scripts/about.js";
+    import { fakeTestimonials, shuffleArray, createTestimonialElement } from './scripts/about.js';
 
-    // When DOM is ready, do:
-    document.addEventListener("DOMContentLoaded", () => {
-      // 1) Populate the year
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1) Set current year
       document.getElementById('year').textContent = new Date().getFullYear();
 
-      // 2) Initialize dark mode + menu (from kaayko_ui.js)
-      import("./scripts/kaayko_ui.js").then(({ runPageInit, populateMenu, setupMobileMenu }) => {
-        runPageInit();
-        populateMenu();
-        setupMobileMenu();
-      });
-
-      // 3) Load and display shuffled testimonials
-      const container = document.getElementById("testimonialsContainer");
-      container.innerHTML = "";
-      const shuffled = shuffleArray([...fakeTestimonials]);
-      shuffled.forEach(testimonial => {
-        const elem = createTestimonialElement(testimonial);
-        container.appendChild(elem);
+      // 2) Render shuffled testimonials
+      const container = document.getElementById('testimonialsContainer');
+      container.innerHTML = '';
+      shuffleArray(fakeTestimonials).forEach(testimonial => {
+        container.appendChild(createTestimonialElement(testimonial));
       });
     });
   </script>

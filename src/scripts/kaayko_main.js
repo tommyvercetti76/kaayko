@@ -1,41 +1,25 @@
+// File: scripts/kaayko_main.js
 /**
- * scripts/kaayko_main.js
- *
  * Entry point for index.html (the Kaayko store page).
  * • Disables right-click context menu
- * • Initializes dark-mode toggle
  * • Renders product carousel
- * • Wires up modal-close, mobile-menu toggle, and "smart" menu links
+ * • Wires up modal-close buttons
  */
 
+import { getAllProducts } from "./kaayko_apiClient.js";
 import {
-  getAllProducts,
-  getProductByID      // for future detail-page use
-} from "./kaayko_apiClient.js";
-
-import {
-  runPageInit,
   populateCarousel,
-  setupModalCloseHandlers,
-  setupMobileMenu,
-  populateMenu
+  setupModalCloseHandlers
 } from "./kaayko_ui.js";
 
-// Wait for the DOM to be fully loaded
 document.addEventListener("DOMContentLoaded", async () => {
-  // 1) Disable the default context menu (makes "Save as…" harder)
+  // 1) Disable the default right-click menu
   document.addEventListener("contextmenu", e => e.preventDefault());
 
-  // 2) Initialize shared UI behaviors
-  //    - Dark-mode toggle
-  //    - Modal close buttons
-  //    - "Smart" desktop and mobile menus
-  runPageInit();
+  // 2) Modal close handlers (for image-zoom modal)
   setupModalCloseHandlers();
-  setupMobileMenu();
-  populateMenu();
 
-  // 3) Fetch and render all products in the carousel
+  // 3) Fetch & render all products into the carousel
   try {
     const products = await getAllProducts();
     populateCarousel(products);

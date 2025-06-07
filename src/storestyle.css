@@ -632,20 +632,20 @@ footer {
   color: #fff;
 }
 .dark-theme .top-menu {
-  background: inherit; /* no forced gradient; header is already dark */
+  background: inherit;
 }
 .dark-theme footer {
-  background:#222;
-  color:#ccc;
+  background: #222;
+  color: #ccc;
 }
 .dark-theme .footer-elements {
-  background:#222;
-  border-top:1px solid #444;
+  background: #222;
+  border-top: 1px solid #444;
 }
 
 /* Dark mode modal content */
 .dark-theme .modal-content {
-  background:#333;
+  background: #333;
 }
 
 /* Dark mode “crescent” => golden */
@@ -666,6 +666,39 @@ footer {
 .dark-theme .testimonial-content p,
 .dark-theme .testimonial-content .name {
   color: var(--color-bright-ivory) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   Paddling-Out – Page-specific dark-mode overrides
+─────────────────────────────────────────────────────────────────────────────*/
+.dark-theme .card {
+  background: #242424;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.6);
+}
+.dark-theme .card-title {
+  color: gold; /* lake title in gold */
+}
+.dark-theme .card-subtitle,
+.dark-theme .card-description {
+  color: #f0f0f0;
+}
+.dark-theme .card-footer {
+  background: #1e1e1e;
+  border-top-color: #333;
+}
+.dark-theme .icon {
+  background: ivory !important;
+  color: black !important;
+}
+.dark-theme .icon::after {
+  background: #000;
+  color: #fff;
+}
+.dark-theme .indicator-dot {
+  background: rgba(255,255,255,0.2);
+}
+.dark-theme .indicator-dot.active {
+  background: gold;
 }
 
 /* ----------------------------------------------------------

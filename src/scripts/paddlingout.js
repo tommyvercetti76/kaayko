@@ -1,190 +1,124 @@
-// File: scripts/paddlingout.js
-//
-// • Selects a random hero video from /assets (on demand only)
-// • Handles dark-mode toggle + menu (desktop & mobile) via kaayko_ui.js
-// • Falls back to manual mobile-menu wiring in case kaayko_ui fails
-// • GET /paddlingOut         → list all spots
-// • GET /paddlingOut/:id     → detail view (single-spot page)
-// • Renders in-card carousel with swipe + dots
-// • Shows parking & restroom icons only if available
-// • Shows YouTube icon if URL provided
-// • Autoplay the hero video exactly once, then rely on translucent button
-
-import { runPageInit, populateMenu, setupMobileMenu } from "./kaayko_ui.js";
+/**
+ * File: scripts/paddlingout.js
+ *
+ * Responsibilities:
+ *   1) Hide hero banner on detail pages
+ *   2) Autoplay a random hero video once on list pages
+ *   3) Fetch and render paddling spots (list & detail views)
+ *   4) Build cards with in‐card image carousel (dots + swipe)
+ *   5) Attach footer icons (parking, restrooms, YouTube, location)
+ *   6) Expose global helpers for YouTube & map links
+ *   7) Insert the current year into the footer
+ */
 
 const API_BASE    = "https://us-central1-kaayko-api-dev.cloudfunctions.net/api";
-const VIDEOS_DIR  = "/src/assets";    // where your MP4 lives
-const HERO_VIDEOS = ["paddle2.mp4"];  // possible hero filenames
+const VIDEOS_DIR  = "/src/assets";
+const HERO_VIDEOS = ["paddle2.mp4"];
 
 document.addEventListener("DOMContentLoaded", () => {
-  // ────────────────────────────────────────────────────────────────────────────
-  // STEP 1: Wire up dark-mode + desktop & mobile menu
-  // ────────────────────────────────────────────────────────────────────────────
-  runPageInit();
-  populateMenu();
-  setupMobileMenu();
 
-  // Fallback if kaayko_ui.js failed to attach mobile-menu toggle
-  const fab     = document.querySelector(".fab-menu");
-  const overlay = document.querySelector(".mobile-menu-overlay");
-  if (fab && overlay) {
-    fab.addEventListener("click", () => {
-      overlay.classList.toggle("active");
-    });
-    overlay.addEventListener("click", e => {
-      if (e.target === overlay || e.target.tagName === "A") {
-        overlay.classList.remove("active");
-      }
-    });
-  }
+  //──────────────────────────────────────────────────────────────────────────────
+  // Section 1: Query Parameters & DOM Elements
+  //──────────────────────────────────────────────────────────────────────────────
+  const params     = new URLSearchParams(window.location.search);
+  const spotId     = params.get("id");                         // if present → detail
+  const heroVideo  = document.getElementById("previewVideo");  // <video> element
+  const heroBanner = document.querySelector(".hero-banner");   // video wrapper
+  const container  = document.getElementById("cardsContainer");// cards container
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // STEP 2: Detect “list” vs “detail” page
-  // ────────────────────────────────────────────────────────────────────────────
-  const params      = new URLSearchParams(window.location.search);
-  const spotId      = params.get("id");                         // if present → detail
-  const heroVideoEl = document.getElementById("previewVideo");  // <video> element
-  const heroBanner  = document.querySelector(".hero-banner");   // wrapper for video
-  const container   = document.getElementById("cardsContainer");// where cards go
-
-  // On detail pages, hide the banner entirely
+  //──────────────────────────────────────────────────────────────────────────────
+  // Section 2: Hide Hero Banner on Detail Pages
+  //──────────────────────────────────────────────────────────────────────────────
   if (spotId && heroBanner) {
     heroBanner.style.display = "none";
   }
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // STEP 3: Pick random hero video and autoplay exactly once (list only)
-  // ────────────────────────────────────────────────────────────────────────────
-  let chosenVideo = null;
-  if (!spotId && heroVideoEl) {
-    chosenVideo = HERO_VIDEOS[Math.floor(Math.random() * HERO_VIDEOS.length)];
-    // Autoplay once on load:
-    heroVideoEl.src = `${VIDEOS_DIR}/${chosenVideo}`;
-    heroVideoEl
-      .play()
-      .catch(() => {
-        // If autoplay is blocked, user can tap the translucent button.
-      });
+  //──────────────────────────────────────────────────────────────────────────────
+  // Section 3: Autoplay Random Hero Video (List View Only)
+  //──────────────────────────────────────────────────────────────────────────────
+  if (!spotId && heroVideo) {
+    const choice = HERO_VIDEOS[Math.floor(Math.random() * HERO_VIDEOS.length)];
+    heroVideo.src = `${VIDEOS_DIR}/${choice}`;
+    heroVideo.play().catch(() => {
+      // Autoplay blocked by browser → user can manually click play
+    });
   }
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // STEP 4: Fetch all spots or a single spot
-  // ────────────────────────────────────────────────────────────────────────────
-  if (spotId) {
-    fetchSingleSpot(spotId);
-  } else {
-    fetchAllSpots();
-  }
+  //──────────────────────────────────────────────────────────────────────────────
+  // Section 4: Fetch & Render Spots (List vs Detail)
+  //──────────────────────────────────────────────────────────────────────────────
+  if (spotId) fetchSingle(spotId);
+  else        fetchAll();
 
-  function fetchAllSpots() {
+  function fetchAll() {
     fetch(`${API_BASE}/paddlingOut`)
-      .then(resp => resp.json())
+      .then(r => r.json())
       .then(spots => {
         container.innerHTML = "";
         container.classList.remove("single-card");
-        spots.forEach(spot => {
-          const cardNode = renderCard(spot);
-          container.appendChild(cardNode);
-        });
+        spots.forEach(spot => container.append(renderCard(spot)));
         wireUpCarousels();
       })
       .catch(() => showError("Error loading spots."));
   }
 
-  function fetchSingleSpot(id) {
+  function fetchSingle(id) {
     fetch(`${API_BASE}/paddlingOut/${encodeURIComponent(id)}`)
-      .then(resp => {
-        if (!resp.ok) throw new Error("Not found");
-        return resp.json();
-      })
+      .then(r => r.ok ? r.json() : Promise.reject())
       .then(spot => {
         container.innerHTML = "";
-        container.classList.add("single-card"); // center this one card
-        const cardNode = renderCard(spot);
-        container.appendChild(cardNode);
+        container.classList.add("single-card");
+        container.append(renderCard(spot));
         wireUpCarousels();
       })
       .catch(() => showError("Spot not found."));
   }
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // STEP 5: Build one “card” from the <template id="card-template">
-  // ────────────────────────────────────────────────────────────────────────────
+  //──────────────────────────────────────────────────────────────────────────────
+  // Section 5: renderCard(spot) → Clones template & populates a .card element
+  //──────────────────────────────────────────────────────────────────────────────
   function renderCard(spot) {
-    // Clone <template> to create a new card element:
-    const template = document.getElementById("card-template");
-    const clone    = template.content.cloneNode(true);
-    const card     = clone.querySelector(".card");
+    const tpl   = document.getElementById("card-template");
+    const clone = tpl.content.cloneNode(true);
+    const card  = clone.querySelector(".card");
+    const imgs  = card.querySelector(".img-container");
+    const dots  = card.querySelector(".image-indicator");
+    const foot  = card.querySelector(".card-footer");
 
-    // 5a) Populate images in .img-container
-    const imgContainer = card.querySelector(".img-container");
+    // 5a) Populate images & indicator dots
     spot.imgSrc.forEach((url, i) => {
+      // Image
       const img = document.createElement("img");
       img.src = url;
+      img.className = `carousel-image${i===0 ? " active" : ""}`;
       img.dataset.index = i;
-      img.classList.add("carousel-image");
-      if (i === 0) img.classList.add("active");
-      imgContainer.appendChild(img);
-    });
+      imgs.appendChild(img);
 
-    // 5b) Populate dots in .image-indicator
-    const dotContainer = card.querySelector(".image-indicator");
-    spot.imgSrc.forEach((_, i) => {
+      // Dot
       const dot = document.createElement("span");
-      dot.classList.add("indicator-dot");
-      if (i === 0) dot.classList.add("active");
+      dot.className = `indicator-dot${i===0 ? " active" : ""}`;
       dot.dataset.index = i;
       dot.addEventListener("click", e => {
         e.stopPropagation();
-        showImageInThisCard(card, i);
+        showImage(card, i);
       });
-      dotContainer.appendChild(dot);
+      dots.appendChild(dot);
     });
 
-    // 5c) Fill in title/subtitle/description
+    // 5b) Populate text fields
     card.querySelector(".card-title").textContent       = spot.title;
     card.querySelector(".card-subtitle").textContent    = spot.subtitle;
     card.querySelector(".card-description").textContent = spot.text;
 
-    // 5d) Footer icons
-    const footer = card.querySelector(".card-footer");
-    if (spot.parkingAvl === true) {
-      const el = document.createElement("span");
-      el.className = "icon parking-icon";
-      el.title = "Parking Available";
-      el.addEventListener("click", e => e.stopPropagation());
-      footer.appendChild(el);
-    }
-    if (spot.restroomsAvl === true) {
-      const el = document.createElement("span");
-      el.className = "icon toilet-icon";
-      el.title = "Restrooms Available";
-      el.addEventListener("click", e => e.stopPropagation());
-      footer.appendChild(el);
-    }
-    if (spot.youtubeURL && spot.youtubeURL.trim() !== "") {
-      const el = document.createElement("span");
-      el.className = "icon youtube-icon";
-      el.title = "Video";
-      el.addEventListener("click", e => {
-        e.stopPropagation();
-        openYoutube(spot.youtubeURL);
-      });
-      footer.appendChild(el);
-    }
-    // Always show location icon
-    {
-      const el = document.createElement("span");
-      el.className = "icon location-icon";
-      el.title = "Take me there";
-      el.addEventListener("click", e => {
-        e.stopPropagation();
-        openLocation(spot.location.latitude, spot.location.longitude);
-      });
-      footer.appendChild(el);
-    }
+    // 5c) Footer icons
+    if (spot.parkingAvl)   foot.append(icon("parking-icon",   "Parking Available"));
+    if (spot.restroomsAvl) foot.append(icon("toilet-icon",    "Restrooms Available"));
+    if (spot.youtubeURL)   foot.append(icon("youtube-icon",   "Video", () => openYoutube(spot.youtubeURL)));
+    foot.append(icon("location-icon", "Take me there", () =>
+      openLocation(spot.location.latitude, spot.location.longitude)
+    ));
 
-    // 5e) Clicking the card (except icons) navigates to detail
+    // 5d) Card click → navigate to detail page
     card.addEventListener("click", () => {
       window.location.href = `paddlingout.html?id=${spot.id}`;
     });
@@ -192,157 +126,75 @@ document.addEventListener("DOMContentLoaded", () => {
     return card;
   }
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // STEP 6: Helper to show “image index” in the given card
-  // ────────────────────────────────────────────────────────────────────────────
-  function showImageInThisCard(card, index) {
-    const imgs = card.querySelectorAll(".carousel-image");
-    const dots = card.querySelectorAll(".indicator-dot");
-    let curr = 0;
-    imgs.forEach((img, i) => {
-      if (img.classList.contains("active")) curr = i;
+  /**
+   * Helper: create a footer icon element
+   * @param {string} cls    CSS class for the icon
+   * @param {string} title  Tooltip text
+   * @param {Function} [onClick] Optional click handler
+   */
+  function icon(cls, title, onClick) {
+    const el = document.createElement("span");
+    el.className = `icon ${cls}`;
+    el.title = title;
+    el.addEventListener("click", e => {
+      e.stopPropagation();
+      onClick?.();
     });
-    const newIndex = (index + imgs.length) % imgs.length;
-    imgs.forEach((img, i) => {
-      img.classList.toggle("active", i === newIndex);
-    });
-    dots.forEach((d, i) => {
-      d.classList.toggle("active", i === newIndex);
-    });
+    return el;
   }
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // STEP 7: Attach swipe logic to all cards in container
-  // ────────────────────────────────────────────────────────────────────────────
+  //──────────────────────────────────────────────────────────────────────────────
+  // Section 6: showImage(card, idx) → Switches active image & dot
+  //──────────────────────────────────────────────────────────────────────────────
+  function showImage(card, idx) {
+    const images = card.querySelectorAll(".carousel-image");
+    const dots   = card.querySelectorAll(".indicator-dot");
+    const next   = (idx + images.length) % images.length;
+
+    images.forEach((img, i) => img.classList.toggle("active", i === next));
+    dots  .forEach((d,   i) => d.classList.toggle("active", i === next));
+  }
+
+  //──────────────────────────────────────────────────────────────────────────────
+  // Section 7: wireUpCarousels() → Attaches swipe logic to each card
+  //──────────────────────────────────────────────────────────────────────────────
   function wireUpCarousels() {
     container.querySelectorAll(".card").forEach(card => {
-      const imgs = card.querySelectorAll(".carousel-image");
       let startX = 0;
+      const imgs = card.querySelectorAll(".carousel-image");
 
-      const onPointerDown = e => {
-        startX = e.clientX;
-      };
-      const onPointerUp = e => {
-        const dx = e.clientX - startX;
-        if (Math.abs(dx) > 40) {
-          let curr = 0;
-          imgs.forEach((img, i) => {
-            if (img.classList.contains("active")) curr = i;
-          });
-          const newIndex = dx < 0 ? curr + 1 : curr - 1;
-          showImageInThisCard(card, newIndex);
-        }
+      const onEnd = dx => {
+        if (Math.abs(dx) < 40) return;
+        const curr = [...imgs].findIndex(i => i.classList.contains("active"));
+        showImage(card, dx < 0 ? curr + 1 : curr - 1);
       };
 
-      const pic = card.querySelector(".img-container");
-      pic.addEventListener("pointerdown", onPointerDown);
-      pic.addEventListener("pointerup", onPointerUp);
-      pic.addEventListener("touchstart", e => {
-        startX = e.touches[0].clientX;
-      }, { passive: true });
-      pic.addEventListener("touchend", e => {
-        const dx = e.changedTouches[0].clientX - startX;
-        if (Math.abs(dx) > 40) {
-          let curr = 0;
-          imgs.forEach((img, i) => {
-            if (img.classList.contains("active")) curr = i;
-          });
-          const newIndex = dx < 0 ? curr + 1 : curr - 1;
-          showImageInThisCard(card, newIndex);
-        }
-      });
+      const box = card.querySelector(".img-container");
+      box.addEventListener("pointerdown", e => startX = e.clientX);
+      box.addEventListener("pointerup",   e => onEnd(e.clientX - startX));
+      box.addEventListener("touchstart",  e => startX = e.touches[0].clientX, { passive: true });
+      box.addEventListener("touchend",    e => onEnd(e.changedTouches[0].clientX - startX));
     });
   }
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // STEP 8: Simple error-message helper
-  // ────────────────────────────────────────────────────────────────────────────
+  //──────────────────────────────────────────────────────────────────────────────
+  // Section 8: showError(msg) → Displays a simple error message
+  //──────────────────────────────────────────────────────────────────────────────
   function showError(msg) {
     container.innerHTML = `<div class="error">${msg}</div>`;
   }
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // STEP 9: Expose global helpers (onclick attributes in icons)
-  // ────────────────────────────────────────────────────────────────────────────
-  window.openYoutube = url => window.open(url, "_blank");
+  //──────────────────────────────────────────────────────────────────────────────
+  // Section 9: Global Helpers → window.openYoutube & window.openLocation
+  //──────────────────────────────────────────────────────────────────────────────
+  window.openYoutube  = url => window.open(url, "_blank");
   window.openLocation = (lat, lon) =>
     window.open(`https://maps.google.com?q=${lat},${lon}`, "_blank");
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // STEP 10: Insert current year into the footer
-  // ────────────────────────────────────────────────────────────────────────────
-  const yearEl = document.getElementById("year");
-  if (yearEl) {
-    yearEl.textContent = new Date().getFullYear();
-  }
+  //──────────────────────────────────────────────────────────────────────────────
+  // Section 10: Insert Current Year into Footer
+  //──────────────────────────────────────────────────────────────────────────────
+  const yEl = document.getElementById("year");
+  if (yEl) yEl.textContent = new Date().getFullYear();
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // CARET TOGGLE: show/hide the .hero-banner when clicked
-  // ────────────────────────────────────────────────────────────────────────────
-  const videoToggle = document.getElementById("videoToggle");
-  if (videoToggle && heroBanner) {
-    function updateToggleIcon() {
-      const iconEl = videoToggle.querySelector(".material-icons");
-      if (document.querySelector(".header").classList.contains("collapsed")) {
-        iconEl.textContent = "expand_more"; // down‐caret
-      } else {
-        iconEl.textContent = "expand_less"; // up‐caret
-      }
-    }
-
-    // Initialize on load (no “collapsed” → up‐caret)
-    updateToggleIcon();
-
-    videoToggle.addEventListener("click", () => {
-      document.querySelector(".header").classList.toggle("collapsed");
-      updateToggleIcon();
-    });
-  }
-
-  // ────────────────────────────────────────────────────────────────────────────
-  // PLAY/PAUSE/REPLAY BUTTON (semi-transparent circle over video)
-  // ────────────────────────────────────────────────────────────────────────────
-  const videoControlBtn  = document.getElementById("videoControlButton");
-  const videoControlIcon = videoControlBtn.querySelector(".material-icons");
-  const videoElem        = document.getElementById("previewVideo");
-
-  if (videoControlBtn && videoElem) {
-    function setControlIcon(name) {
-      videoControlIcon.textContent = name;
-    }
-
-    videoControlBtn.addEventListener("click", () => {
-      // If never started or ended, rewind & play
-      if ((!videoElem.src || videoElem.currentTime >= videoElem.duration) && chosenVideo) {
-        videoElem.currentTime = 0;
-        videoElem.play();
-        return;
-      }
-      // If paused, play; if playing, pause
-      if (videoElem.paused) {
-        videoElem.play();
-      } else {
-        videoElem.pause();
-      }
-    });
-
-    videoElem.addEventListener("play", () => {
-      setControlIcon("pause");
-    });
-    videoElem.addEventListener("pause", () => {
-      if (videoElem.currentTime < videoElem.duration) {
-        setControlIcon("play_arrow");
-      }
-    });
-    videoElem.addEventListener("ended", () => {
-      setControlIcon("replay");
-    });
-
-    // Initialize the correct icon: if autoplay failed, videoElem.paused is true → show ▶
-    if (videoElem.paused) {
-      setControlIcon("play_arrow");
-    } else {
-      setControlIcon("pause");
-    }
-  }
 });

@@ -6,88 +6,61 @@
 
   <!-- SEO Meta Tags -->
   <title>Kaayko | About</title>
-  <meta name="description" content="Learn about Kaayko, where your thoughts are represented boldly through unique apparel. Discover our vision and exclusive designs.">
+  <meta name="description" content="Learn about Kaayko, where your thoughts are represented boldly through unique apparel. Discover our vision and exclusive designs." />
   
   <!-- Open Graph Meta Tags for social sharing -->
-  <meta property="og:title" content="About Kaayko | Unique Thought Representation">
-  <meta property="og:description" content="Kaayko offers expressive apparel to make bold statements effortlessly. Explore our philosophy and standout designs.">
-  <meta property="og:image" content="assets/social-share-kaayko.png">
-  <meta property="og:type" content="website">
+  <meta property="og:title" content="About Kaayko | Unique Thought Representation" />
+  <meta property="og:description" content="Kaayko offers expressive apparel to make bold statements effortlessly. Explore our philosophy and standout designs." />
+  <meta property="og:image" content="assets/social-share-kaayko.png" />
+  <meta property="og:type" content="website" />
 
-  <!-- 1) Unified site‐wide CSS (header, mobile menu, dark‐mode, etc.) -->
+  <!-- 1) Global Stylesheet: resets, typography, carousel, modal, dark-mode, etc. -->
   <link rel="stylesheet" href="storestyle.css" />
-  <!-- (No changes in CSS functionality)  [oai_citation:0‡storestyle.css](file-service://file-E8HNkk6Mv6BjPzR9hs74o4) -->
 
-  <!-- 2) Paddling Out’s header CSS (flex layout, hide hamburger, menu overrides) -->
-  <link rel="stylesheet" href="paddlingout.css" />
-  <!-- (Overrides .top-menu to transparent; hides hamburger on desktop)  [oai_citation:1‡paddlingout.css](file-service://file-5ABQ7hA4887cbVLxXZ2ZuT) -->
+  <!-- 2) Header Styles: shared header + dark-mode overrides -->
+  <link rel="stylesheet" href="header.css" />
 
-  <!-- Material Icons (for dark‐mode icon, hamburger, etc.) -->
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- 3) Material Icons (for dark-mode toggle, hamburger, etc.) -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 </head>
+
 <body>
-  <!-- ─────────────────────────────────────────────────────────────────────────
-       HEADER: Shared across Home/About/Testimonials (no hero‐banner/video‐toggle)
-       • Left: brand (title + subtitle)
-       • Center: top‐menu (transparent background)
-       • Right: dark‐mode toggle + hidden hamburger on desktop
-  ──────────────────────────────────────────────────────────────────────────── -->
+  <!-- ────────────────────────────────────────────────────────────────────
+       HEADER: Shared across all pages
+       • Brand (title + subtitle)
+       • Desktop menu (populated by header.js)
+       • Dark-mode toggle & mobile FAB
+       • Mobile overlay menu
+  ────────────────────────────────────────────────────────────────────── -->
   <header class="header">
     <div class="header-top">
-      <!-- Brand: stacked title + subtitle -->
       <div class="header-brand">
         <h1 class="header-title">Kaayko: About</h1>
         <p class="header-subtitle">Our Mission, Your Money</p>
       </div>
-
-      <!-- Desktop navigation menu (populated dynamically via kaayko_ui.js) -->
-      <nav class="top-menu">
-        <ul></ul>
-      </nav>
-
-      <!-- Right‐side controls: dark‐mode toggle + (hidden) hamburger on desktop -->
+      <nav class="top-menu"><ul></ul></nav>
       <div class="header-controls">
-        <!-- Dark Mode Toggle -->
-        <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode">
-          brightness_3
-        </button>
-        <!-- Floating Action Button (FAB) for mobile nav (hidden on desktop) -->
-        <button class="fab-menu material-icons" aria-label="Open Menu (mobile only)">
-          menu
-        </button>
+        <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode">brightness_3</button>
+        <button class="fab-menu material-icons" aria-label="Open Menu">menu</button>
       </div>
     </div>
   </header>
 
-  <!-- MOBILE OVERLAY MENU: shown/hidden by kaayko_ui.js -->
-  <div class="mobile-menu-overlay">
-    <ul></ul>
-  </div>
+  <!-- Mobile overlay menu -->
+  <div class="mobile-menu-overlay"><ul></ul></div>
 
-  <!-- ─────────────────────────────────────────────────────────────────────────
+  <!-- ────────────────────────────────────────────────────────────────────
        MAIN CONTENT: About page
-  ──────────────────────────────────────────────────────────────────────────── -->
+  ────────────────────────────────────────────────────────────────────── -->
   <main>
     <!-- SECTION 1: Visual Collage Banner showcasing featured designs -->
     <div class="about-hero-collage">
-      <div class="collage-slice">
-        <img src="assets/Lifeisopinion_2.png" alt="Life is Opinion Shirt Design" />
-      </div>
-      <div class="collage-slice">
-        <img src="assets/AssaultBae_1.png" alt="Assault Bae Shirt Design" />
-      </div>
-      <div class="collage-slice">
-        <img src="assets/Live_3.png" alt="Live Shirt Design" />
-      </div>
-      <div class="collage-slice">
-        <img src="assets/Nagpur_3.png" alt="Nagpur Shirt Design" />
-      </div>
-      <div class="collage-slice">
-        <img src="assets/ShutUp_1.png" alt="Shut Up Shirt Design" />
-      </div>
-      <div class="collage-slice">
-        <img src="assets/StraightOutta_1.png" alt="Straight Outta Shirt Design" />
-      </div>
+      <div class="collage-slice"><img src="assets/Lifeisopinion_2.png" alt="Life is Opinion Shirt Design" /></div>
+      <div class="collage-slice"><img src="assets/AssaultBae_1.png" alt="Assault Bae Shirt Design" /></div>
+      <div class="collage-slice"><img src="assets/Live_3.png" alt="Live Shirt Design" /></div>
+      <div class="collage-slice"><img src="assets/Nagpur_3.png" alt="Nagpur Shirt Design" /></div>
+      <div class="collage-slice"><img src="assets/ShutUp_1.png" alt="Shut Up Shirt Design" /></div>
+      <div class="collage-slice"><img src="assets/StraightOutta_1.png" alt="Straight Outta Shirt Design" /></div>
     </div>
 
     <!-- SECTION 2: Textual description of Kaayko's philosophy -->
@@ -95,45 +68,32 @@
       <h2>Welcome To Kaayko</h2>
       <h3>You deserve love, not this.</h3>
       <p>
-        However, this ain't an illusion. <br>
+        However, this ain't an illusion.<br>
         At Kaayko, we believe you need a better thought representation when you are<br>
         “Out There”.<br>
         You will be attacked by bad vibes, crazy people, and unruly pets, kids or both.<br>
         Try not to raise your voice. Instead raise your wallet(s).<br>
-        Show them who you truly are with what they cannot afford.<br>
-        <br>
+        Show them who you truly are with what they cannot afford.<br><br>
         They'll love you for it.<br>
       </p>
     </section>
   </main>
 
-  <!-- ─────────────────────────────────────────────────────────────────────────
-       FOOTER: Contains copyright information
-  ──────────────────────────────────────────────────────────────────────────── -->
+  <!-- ────────────────────────────────────────────────────────────────────
+       FOOTER
+  ────────────────────────────────────────────────────────────────────── -->
   <footer>
     <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
   </footer>
 
-  <!-- ─────────────────────────────────────────────────────────────────────────
-       SCRIPTS: Populate menu, enable dark mode, handle mobile overlay
-  ──────────────────────────────────────────────────────────────────────────── -->
-  <script type="module" src="scripts/kaayko_ui.js"></script>
-  <script type="module">
-    // After the menu script loads, you can set the year
-    document.addEventListener("DOMContentLoaded", () => {
-      // Dynamically set the current year
-      document.getElementById("year").textContent = new Date().getFullYear();
-      // Build the desktop + mobile menus
-      // (populateMenu() lives in kaayko_ui.js)
-      import("./scripts/kaayko_ui.js").then(({ populateMenu, setupMobileMenu, runPageInit }) => {
-        // First initialize dark mode
-        runPageInit();
-        // Then populate all navigation (desktop + mobile)
-        populateMenu();
-        // Finally wire up the mobile overlay toggle
-        setupMobileMenu();
-      });
-    });
+  <!-- ────────────────────────────────────────────────────────────────────
+       SCRIPTS (ES modules)
+       1) header.js  → dark-mode, menus, mobile overlay
+       2) inline      → set dynamic year
+  ────────────────────────────────────────────────────────────────────── -->
+  <script type="module" src="scripts/header.js"></script>
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
   </script>
 </body>
 </html>

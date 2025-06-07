@@ -7,58 +7,38 @@
 
   <!-- 0) Shared store CSS (header, footer, menu, dark mode) -->
   <link rel="stylesheet" href="storestyle.css" />
-  <!-- (No changes in CSS functionality)  [oai_citation:3‡storestyle.css](file-service://file-E8HNkk6Mv6BjPzR9hs74o4) -->
 
-  <!-- 1) Page‐specific CSS (cards, carousel, video toggle, plus header overrides) -->
+  <!-- 1) Header CSS (shared header + dark mode + hero toggle) -->
+  <link rel="stylesheet" href="header.css" />
+
+  <!-- 2) Page-specific CSS (cards, carousel, etc.) -->
   <link rel="stylesheet" href="paddlingout.css" />
-  <!-- (Overrides .top-menu background to transparent; ensures .fab-menu hidden on desktop)  [oai_citation:4‡paddlingout.css](file-service://file-5ABQ7hA4887cbVLxXZ2ZuT) -->
 
-  <!-- Material Icons (for caret, play/pause icons, etc.) -->
+  <!-- Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
 </head>
 <body>
-  <!-- ────────────────────────────────────────────────────────────────────
-       HEADER (stacked title + subtitle, desktop menu, dark‐mode, 
-       video toggle, mobile menu)
-  ──────────────────────────────────────────────────────────────────────-->
+  <!-- HEADER (brand / menu / dark toggle / hero toggle / mobile menu) -->
   <header class="header">
     <div class="header-top">
-      <!-- Brand: title + subtitle stacked vertically -->
       <div class="header-brand">
         <h1 class="header-title">Kaayko: Paddling Out</h1>
         <p class="header-subtitle">Not easy, but pretty</p>
       </div>
-
-      <!-- Desktop navigation menu (populated by kaayko_ui.js) -->
-      <nav class="top-menu">
-        <ul></ul>
-      </nav>
-
-      <!-- Right‐side controls: dark‐mode, video toggle, hamburger (hidden on desktop) -->
+      <nav class="top-menu"><ul></ul></nav>
       <div class="header-controls">
-        <!-- Dark Mode Toggle -->
         <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode">
           brightness_3
         </button>
-
-        <!-- VIDEO TOGGLE: collapse/expand the hero‐banner -->
         <button id="videoToggle" class="video-toggle">
           <span class="material-icons">expand_less</span>
         </button>
-
-        <!-- Mobile Floating Action Button (FAB) for opening overlay menu -->
-        <button class="fab-menu material-icons" aria-label="Open Menu (mobile only)">
+        <button class="fab-menu material-icons" aria-label="Open Menu">
           menu
         </button>
       </div>
     </div>
-
-    <!-- Mobile overlay menu (hidden by default; populated via kaayko_ui.js) -->
-    <div class="mobile-menu-overlay">
-      <ul></ul>
-    </div>
-
-    <!-- Hero banner (video); hides when <header> has class="collapsed" -->
+    <div class="mobile-menu-overlay"><ul></ul></div>
     <div class="hero-banner">
       <div class="hero-video">
         <video id="previewVideo" muted playsinline preload="none"></video>
@@ -69,24 +49,17 @@
     </div>
   </header>
 
-  <!-- ────────────────────────────────────────────────────────────────────
-       MAIN CONTENT: Cards (injected by paddlingout.js)
-  ──────────────────────────────────────────────────────────────────────-->
+  <!-- MAIN: Cards injected by paddlingout.js -->
   <main>
     <section class="container" id="cardsContainer"></section>
   </main>
 
-  <!-- ────────────────────────────────────────────────────────────────────
-       FOOTER
-  ──────────────────────────────────────────────────────────────────────-->
+  <!-- FOOTER -->
   <footer>
     <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
   </footer>
 
-  <!-- ────────────────────────────────────────────────────────────────────
-       Templates & Scripts
-  ──────────────────────────────────────────────────────────────────────-->
-  <!-- Template for a single “card” -->
+  <!-- TEMPLATES -->
   <template id="card-template">
     <div class="card">
       <div class="img-container"></div>
@@ -100,18 +73,18 @@
     </div>
   </template>
 
-  <!-- 1) kaayko_main.js (global shims, e.g. set & read dark mode) -->
-  <script type="module" src="scripts/kaayko_main.js"></script>
-  <!-- 2) kaayko_ui.js   (populateMenu(), setupMobileMenu(), video toggle wiring) -->
+  <!-- SCRIPTS -->
+  <!-- 1) Header behaviors: dark-mode, menu, hero-banner toggle -->
+  <script type="module" src="scripts/header.js"></script>
+  <!-- 2) UI helpers: populateCarousel, modal, voting, etc. -->
   <script type="module" src="scripts/kaayko_ui.js"></script>
-  <!-- 3) paddlingout.js (fetch card data, render cards, handle carousel) -->
+  <!-- 3) Page logic: fetch spots, render cards, wire up carousel -->
   <script type="module" src="scripts/paddlingout.js"></script>
 
-  <script type="module">
-    // Set the current year into the footer
+  <!-- Set year in footer -->
+  <script>
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("year").textContent = new Date().getFullYear();
-      // The rest of the initialization (dark mode, menu, video toggle) is handled inside paddlingout.js via runPageInit/populateMenu/setupMobileMenu
     });
   </script>
 </body>

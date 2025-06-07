@@ -1,25 +1,32 @@
-<!--
-  index.html — Kaayko Store Home
-  • Uses storestyle.css for all header/nav, carousel, modal, dark-mode, etc.
-  • Header includes smart desktop menu, dark-mode toggle, and mobile FAB
-  • Mobile overlay nav must be inside <header> immediately after .header-top
-  • Scripts loaded as ES modules: UI first, then API client, then main init
--->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- SEO Metadata -->
   <title>Kaayko Store - Unique T-Shirts, Vote Now Pay Later</title>
   <meta name="description" content="Kaayko Store offers uniquely designed T-shirts. Vote for your favorite designs and pay later!">
 
-  <!-- Global Stylesheet -->
+  <!-- 1) Global Stylesheet: resets, typography, carousel, modal, dark-mode, etc. -->
   <link rel="stylesheet" href="storestyle.css">
-  <!-- Material Icons -->
+
+  <!-- 2) Header Styles: shared header + hero-banner layouts and dark-mode overrides -->
+  <link rel="stylesheet" href="header.css">
+
+  <!-- 3) Material Icons (for dark-mode toggle, menu, modal nav, etc.) -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
+
 <body>
-  <!-- HEADER: Brand + Desktop Menu + Controls -->
+  <!-- ────────────────────────────────────────────────────────────────────
+       HEADER (shared across all pages)
+       • Brand (title + subtitle)
+       • Desktop menu (populated by header.js)
+       • Dark-mode toggle & mobile FAB (hamburger)
+       • Mobile overlay menu
+       • Hero-banner collapse only on pages that include it
+  ──────────────────────────────────────────────────────────────────────-->
   <header class="header">
     <div class="header-top">
       <!-- Brand -->
@@ -27,37 +34,34 @@
         <h1 class="header-title">Kaayko Store</h1>
         <p class="header-subtitle">Vote now, pay later.</p>
       </div>
-
       <!-- Desktop navigation -->
-      <nav class="top-menu">
-        <ul></ul>
-      </nav>
-
-      <!-- Right-side controls -->
+      <nav class="top-menu"><ul></ul></nav>
+      <!-- Controls -->
       <div class="header-controls">
-        <!-- Dark-mode toggle -->
+        <!-- Dark Mode Toggle -->
         <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode">
           brightness_3
         </button>
-        <!-- Mobile FAB (hidden on desktop via CSS) -->
+        <!-- Mobile FAB -->
         <button class="fab-menu material-icons" aria-label="Open Menu">
           menu
         </button>
       </div>
     </div>
-
-    <!-- Mobile overlay menu (populated & toggled by JS) -->
-    <div class="mobile-menu-overlay">
-      <ul></ul>
-    </div>
+    <!-- Mobile overlay menu -->
+    <div class="mobile-menu-overlay"><ul></ul></div>
   </header>
 
-  <!-- MAIN: Product Carousel -->
+  <!-- ────────────────────────────────────────────────────────────────────
+       MAIN CONTENT: Product carousel (injected by kaayko_main.js)
+  ──────────────────────────────────────────────────────────────────────-->
   <main>
     <section id="carousel" class="carousel" aria-live="polite"></section>
   </main>
 
-  <!-- IMAGE MODAL -->
+  <!-- ────────────────────────────────────────────────────────────────────
+       IMAGE MODAL (zoomed carousel items)
+  ──────────────────────────────────────────────────────────────────────-->
   <div id="modal" class="modal" role="dialog" aria-modal="true">
     <div class="modal-content">
       <button id="close-modal-button" class="modal-close material-icons" aria-label="Close">
@@ -73,17 +77,23 @@
     </div>
   </div>
 
-  <!-- FOOTER -->
+  <!-- ────────────────────────────────────────────────────────────────────
+       FOOTER
+  ──────────────────────────────────────────────────────────────────────-->
   <footer>
     <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
   </footer>
 
-  <!-- MODULE SCRIPTS: load UI first, then API, then main init -->
-  <script type="module" src="scripts/kaayko_ui.js"></script>
+  <!-- ────────────────────────────────────────────────────────────────────
+       SCRIPTS (type="module" ensures ES import/exports)
+       1) header.js        → dark-mode, menus, hero-banner toggle
+       2) kaayko_apiClient → fetch product data
+       3) kaayko_main      → render carousel, modal, voting logic
+       4) inline year      → set current year in footer
+  ──────────────────────────────────────────────────────────────────────-->
+  <script type="module" src="scripts/header.js"></script>
   <script type="module" src="scripts/kaayko_apiClient.js"></script>
   <script type="module" src="scripts/kaayko_main.js"></script>
-
-  <!-- Dynamic Year -->
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>
