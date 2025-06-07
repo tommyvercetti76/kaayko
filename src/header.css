@@ -1,7 +1,7 @@
-/* File: header.css
- *
- * Shared header & hero-banner styles + header dark-mode overrides
- */
+/* ==========================================================================
+   File: header.css
+   Shared header & hero-banner styles + exhaustive dark-mode overrides
+   ========================================================================== */
 
 /*─────────────────────────────────────────────────────────────────────────────
  1) Base Header Layout (light mode)
@@ -18,18 +18,19 @@
   color: #fff;
 }
 
-/* Make header-top a 3-column flex container */
+/*─────────────────────────────────────────────────────────────────────────────
+ 2) Header-top: brand | nav | controls
+─────────────────────────────────────────────────────────────────────────────*/
 .header-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-/* Left column: brand stacked, left-aligned */
+/* ─── Brand ───────────────────────────────────────────────────────────────── */
 .header-brand {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
 }
 .header-title {
   font-family: 'Josefin_Bold', Arial, sans-serif;
@@ -44,48 +45,76 @@
   color: #ccc;
 }
 
-/* Center column: desktop nav expands and centers its items */
+/* ─── Desktop Nav ─────────────────────────────────────────────────────────── */
 .top-menu {
   flex: 1;
   display: flex;
   justify-content: center;
-  background: transparent !important;
-  padding: 0 !important;
 }
 .top-menu ul {
   list-style: none;
+  display: flex;
   margin: 0;
   padding: 0;
-  display: flex;
 }
-.top-menu ul li {
+.top-menu li {
   margin: 0 12px;
 }
-.top-menu ul li a {
-  color: #fff;
+.top-menu a {
   text-decoration: none;
   font-family: 'Josefin_Medium', Arial, sans-serif;
   padding: 6px 10px;
   border-radius: 4px;
+  color: #fff;
   transition: background 0.3s;
 }
-.top-menu ul li a:hover {
+.top-menu a:hover {
   background: rgba(255,255,255,0.1);
 }
 
-/* Right column: controls stay at intrinsic size */
+/* ─── Controls ────────────────────────────────────────────────────────────── */
 .header-controls {
-  flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.theme-toggle-icon,
-.video-toggle,
-.fab-menu {
+
+/* ─── Theme Toggle ────────────────────────────────────────────────────────── */
+.theme-toggle-icon {
+  position: relative;
+  font-family: 'Material Icons';
+  font-feature-settings: 'liga';
+  font-size: 24px;
+  color: var(--color-bright-ivory);  /* ivory in light mode */
   background: none;
   border: none;
-  color: #fff;
+  cursor: pointer;
+  padding: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+}
+.theme-toggle-icon::before {
+  content: "lightbulb_outline";
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+html.dark-theme .theme-toggle-icon {
+  color: var(--color-accent);
+}
+html.dark-theme .theme-toggle-icon::before {
+  content: "lightbulb";
+  filter: drop-shadow(0 0 4px rgba(255,215,0,0.6));
+}
+
+/* ─── Other Controls ──────────────────────────────────────────────────────── */
+.video-toggle {
+  background: none;
+  border: none;
   cursor: pointer;
   padding: 6px;
 }
@@ -93,142 +122,256 @@
   font-size: 24px;
 }
 
-/* Floating Action Button (hamburger) */
+/*─────────────────────────────────────────────────────────────────────────────
+ 3) Mobile FAB & Overlay Menu
+─────────────────────────────────────────────────────────────────────────────*/
 .fab-menu {
-  display: none; /* shown via JS at ≤768px */
+  display: none;              /* shown via JS at ≤768px */
+  position: relative;
+  width: 36px;
+  height: 36px;
+  padding: 6px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  color: transparent;         /* hide inner 'menu' text */
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  /* prep for injected icon */
+  font-family: 'Material Icons';
+  font-feature-settings: 'liga';
+  font-size: 0;               /* inner text hidden; pseudo uses its own size */
+}
+.fab-menu::before {
+  content: "menu";
+  font-family: 'Material Icons';
+  font-feature-settings: 'liga';
+  font-size: 24px;
+  line-height: 1;
+  color: var(--color-bright-ivory);  /* ivory in light mode */
+  display: inline-block;
+  transition: color 0.3s ease, filter 0.3s ease, opacity 0.3s ease;
+}
+.fab-menu:hover::before {
+  opacity: 0.85;
 }
 
-/* Mobile overlay menu */
+@media (max-width: 768px) {
+  .top-menu { display: none; }
+  .fab-menu { display: inline-flex; }
+}
+
 .mobile-menu-overlay {
   display: none;
-  position: fixed; top:0; left:0;
-  width:100%; height:100%;
+  position: fixed;
+  inset: 0;
   background-color: rgba(0,0,0,0.8);
-  color:#fff;
-  z-index:1000;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  opacity:0;
+  color: #fff;
+  z-index: 1000;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
   transition: opacity 0.3s;
 }
 .mobile-menu-overlay.active {
-  display:flex;
-  opacity:1;
+  display: flex;
+  opacity: 1;
 }
 .mobile-menu-overlay ul {
-  list-style:none;
-  text-align:center;
+  list-style: none;
+  text-align: center;
+  margin: 0;
+  padding: 0;
 }
 .mobile-menu-overlay li {
-  margin:15px 0;
+  margin: 15px 0;
 }
 .mobile-menu-overlay a {
-  color:#fff;
-  font-family:'Josefin_Bold',Arial,sans-serif;
-  font-size:20px;
-  text-decoration:none;
-  transition:color 0.3s;
+  font-family: 'Josefin_Bold', Arial, sans-serif;
+  font-size: 20px;
+  color: #fff;
+  text-decoration: none;
+  transition: color 0.3s;
 }
 .mobile-menu-overlay a:hover {
-  color:gold;
+  color: var(--color-accent);
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
- 2) Hero-Banner (only on paddlingout.html)
+ 4) Hero-Banner (paddlingout.html only)
 ─────────────────────────────────────────────────────────────────────────────*/
 .hero-banner {
-  width:100%;
-  margin:0;
-  padding:0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 .hero-video {
-  position:relative;
-  width:100%;
-  height:50vh;
-  min-height:300px;
-  background-color:#000;
-  overflow:hidden;
+  position: relative;
+  width: 100%;
+  height: 50vh;
+  min-height: 300px;
+  background-color: #000;
+  overflow: hidden;
 }
 .hero-video video {
-  width:100%;
-  height:100%;
-  object-fit:cover;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .video-control-button {
-  position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  background-color:rgba(0,0,0,0.6);
-  border:none;
-  border-radius:50%;
-  width:60px;
-  height:60px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  cursor:pointer;
-  z-index:5;
-  opacity:1;
-  transition:background-color 0.2s;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0,0,0,0.6);
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 5;
+  opacity: 1;
+  transition: background-color 0.2s;
 }
 .video-control-button:hover {
-  background-color:rgba(0,0,0,0.8);
+  background-color: rgba(0,0,0,0.8);
 }
 .video-control-button .material-icons {
-  color:#fff;
-  font-size:32px;
+  color: #fff;
+  font-size: 32px;
 }
 .header.collapsed .hero-banner {
-  display:none;
+  display: none;
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
- 3) Responsive tweaks for header
+ 5) Responsive Header Tweaks
 ─────────────────────────────────────────────────────────────────────────────*/
 @media (max-width: 768px) {
   .top-menu { display: none; }
-  .fab-menu { display: flex; }
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
- 4) Dark-Mode Overrides (header only)
+ 6) Dark-Mode Overrides (applied when <html class="dark-theme">)
 ─────────────────────────────────────────────────────────────────────────────*/
-.dark-theme .header {
+html.dark-theme {
+  --color-body-bg:        #111;
+  --color-header-bg:      #111;
+  --color-modal-overlay:  rgba(0,0,0,0.8);
+  --color-text-base:      #ccc;
+  --color-text-subtle:    #999;
+  --color-text-secondary: #777;
+  --color-bright-ivory:   #fffff0;
+  --color-accent:         #FFD700;
+  --color-card-bg:        #1c1c1c;
+}
+html.dark-theme,
+html.dark-theme body {
+  background-color: var(--color-body-bg) !important;
+  color: var(--color-text-base);
+}
+html.dark-theme .header {
   background: linear-gradient(135deg, #1f1f1f 0%, #111 100%);
   color: #fff;
 }
-.dark-theme .header-top {
-  background: transparent !important;
-}
-.dark-theme .header-title {
-  color: var(--color-text-base);
-}
-.dark-theme .header-subtitle {
-  color: var(--color-text-secondary);
-}
-.dark-theme .top-menu ul li a {
+html.dark-theme .header-title {
   color: #fff;
 }
-.dark-theme .top-menu ul li a:hover {
+html.dark-theme .header-subtitle {
+  color: var(--color-text-secondary);
+}
+html.dark-theme .top-menu a {
+  color: #fff;
+}
+html.dark-theme .top-menu a:hover {
   color: var(--color-accent);
 }
-.dark-theme .theme-toggle-icon,
-.dark-theme .material-icons,
-.dark-theme .video-toggle,
-.dark-theme .fab-menu {
-  color: #FFD700;
+html.dark-theme .mobile-menu-overlay {
+  background-color: var(--color-modal-overlay);
 }
-.dark-theme .fab-menu {
-  background-color: #222;
-}
-.dark-theme .mobile-menu-overlay {
-  background-color: rgba(0,0,0,0.8);
-}
-.dark-theme .mobile-menu-overlay a {
+html.dark-theme .mobile-menu-overlay a {
   color: var(--color-bright-ivory);
 }
-.dark-theme .mobile-menu-overlay a:hover {
+html.dark-theme .mobile-menu-overlay a:hover {
   color: var(--color-accent);
+}
+html.dark-theme .video-control-button {
+  background-color: rgba(255,255,255,0.1);
+}
+html.dark-theme .video-control-button:hover {
+  background-color: rgba(255,255,255,0.2);
+}
+html.dark-theme .fab-menu::before {
+  color: var(--color-accent);
+  filter: drop-shadow(0 0 2px rgba(255,215,0,0.5));
+}
+html.dark-theme .header.collapsed .hero-banner {
+  display: none;
+}
+html.dark-theme footer {
+  background: #222;
+  color: #ccc;
+}
+html.dark-theme .footer-elements {
+  background: #222;
+  border-top: 1px solid #444;
+}
+html.dark-theme .modal-content {
+  background: #333;
+}
+html.dark-theme .price,
+html.dark-theme .likes-count {
+  color: var(--color-accent);
+}
+html.dark-theme .about-text,
+html.dark-theme .testimonials-heading,
+html.dark-theme .reviews-container,
+html.dark-theme .testimonial-content p,
+html.dark-theme .testimonial-content .name {
+  color: var(--color-bright-ivory) !important;
+}
+html.dark-theme .card {
+  background: #242424;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.6);
+}
+html.dark-theme .card-title {
+  color: gold;
+}
+html.dark-theme .card-subtitle,
+html.dark-theme .card-description {
+  color: #f0f0f0;
+}
+html.dark-theme .card-footer {
+  background: #1e1e1e;
+  border-top-color: #333;
+}
+html.dark-theme .icon {
+  background: ivory !important;
+  color: black !important;
+}
+html.dark-theme .icon::after {
+  background: #000;
+  color: #fff;
+}
+html.dark-theme .indicator-dot {
+  background: rgba(255,255,255,0.2);
+}
+html.dark-theme .indicator-dot.active {
+  background: var(--color-accent);
+}
+::selection {
+  background-color: var(--color-accent);
+  color: #fff;
+}
+html.dark-theme ::selection {
+  background-color: var(--color-accent);
+  color: #111;
 }

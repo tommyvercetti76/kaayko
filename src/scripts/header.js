@@ -5,18 +5,20 @@ const DARK_KEY = "darkTheme";
 
 /** ───────────────────────────────────────────────────────────────────────────
  * 1) Dark-Mode Toggle
- *    Reads/stores preference, toggles .dark-theme on <body>,
+ *    Reads/stores preference, toggles .dark-theme on <html>,
  *    and wires up the crescent button.
  *───────────────────────────────────────────────────────────────────────────*/
 function initializeDarkMode() {
+  const root = document.documentElement;
   const isDark = localStorage.getItem(DARK_KEY) === "enabled";
-  document.body.classList.toggle("dark-theme", isDark);
+  root.classList.toggle("dark-theme", isDark);
 
   const btn = document.querySelector(".theme-toggle-icon");
   if (!btn) return;
+
   btn.addEventListener("click", () => {
-    const now = document.body.classList.toggle("dark-theme");
-    localStorage.setItem(DARK_KEY, now ? "enabled" : "disabled");
+    const nowEnabled = root.classList.toggle("dark-theme");
+    localStorage.setItem(DARK_KEY, nowEnabled ? "enabled" : "disabled");
   });
 }
 
@@ -94,16 +96,16 @@ function setupHeroToggle() {
   if (!btn || !header) return;
 
   const icon = btn.querySelector(".material-icons");
-  const update = () => {
+  const updateIcon = () => {
     icon.textContent = header.classList.contains("collapsed")
       ? "expand_more"
       : "expand_less";
   };
 
-  update();
+  updateIcon();
   btn.addEventListener("click", () => {
     header.classList.toggle("collapsed");
-    update();
+    updateIcon();
   });
 }
 
