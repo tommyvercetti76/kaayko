@@ -4,6 +4,8 @@
  *  1) Carousel rendering & swipe
  *  2) Image-zoom modal + navigation
  *  3) Voting (♥ button)
+ *
+ * Updated: now skips any item where `isAvailable !== true`
  */
 
 import { voteOnProduct } from "./kaayko_apiClient.js";
@@ -15,15 +17,29 @@ const IMAGE_PROXY_BASE =
 /* ==========================================================================
    1) Carousel Rendering & Swipe
    ========================================================================== */
+/**
+ * Renders the product carousel into the #carousel element,
+ * skipping any product where `isAvailable` is explicitly `false`.
+ *
+ * @param {Array<Object>} items – array of product objects, each with an `isAvailable` boolean
+ */
 export function populateCarousel(items) {
   const carousel = document.getElementById("carousel");
   if (!carousel) return;
+
+  // Clear out any existing content
   carousel.innerHTML = "";
 
-  items.forEach(item => {
+  // Only display items where isAvailable !== false (i.e. true or undefined)
+  const visibleItems = items.filter(item => item.isAvailable !== false);
+
+  // Create and append a card for each visible product
+  visibleItems.forEach(item => {
     const card = createCarouselItem(item);
     carousel.appendChild(card);
   });
+
+  // Kick off any animations on the newly-inserted cards
   animateCarouselItems();
 }
 
