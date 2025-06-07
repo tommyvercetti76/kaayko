@@ -1,65 +1,74 @@
-<!-- index.html - Kaayko Store Home -->
+<!--
+  index.html — Kaayko Store Home
+  • Uses storestyle.css for all header/nav, carousel, modal, dark-mode, etc.
+  • Header includes smart desktop menu, dark-mode toggle, and mobile FAB
+  • Mobile overlay nav must be inside <header> immediately after .header-top
+  • Scripts loaded as ES modules: UI first, then API client, then main init
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <!-- SEO Metadata -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Kaayko Store - Unique T-Shirts, Vote Now Pay Later</title>
   <meta name="description" content="Kaayko Store offers uniquely designed T-shirts. Vote for your favorite designs and pay later!">
-  
-  <!-- Open Graph for social sharing -->
-  <meta property="og:title" content="Kaayko Store - Vote Now Pay Later">
-  <meta property="og:description" content="Discover unique T-shirt designs. Vote now and make them yours later.">
-  <meta property="og:image" content="assets/social-share-kaayko.png">
-  <meta property="og:type" content="website">
-  
-  <!-- Main CSS -->
+
+  <!-- Global Stylesheet -->
   <link rel="stylesheet" href="storestyle.css">
-  
   <!-- Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
-  <!-- HEADER SECTION -->
+  <!-- HEADER: Brand + Desktop Menu + Controls -->
   <header class="header">
-    <h1 class="header-title">Kaayko Store</h1>
-    <p class="header-subtitle">Vote now, pay later.</p>
+    <div class="header-top">
+      <!-- Brand -->
+      <div class="header-brand">
+        <h1 class="header-title">Kaayko Store</h1>
+        <p class="header-subtitle">Vote now, pay later.</p>
+      </div>
 
-    <!-- Top menu dynamically filled by kaayko_ui.js -->
-    <nav class="top-menu">
+      <!-- Desktop navigation -->
+      <nav class="top-menu">
+        <ul></ul>
+      </nav>
+
+      <!-- Right-side controls -->
+      <div class="header-controls">
+        <!-- Dark-mode toggle -->
+        <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode">
+          brightness_3
+        </button>
+        <!-- Mobile FAB (hidden on desktop via CSS) -->
+        <button class="fab-menu material-icons" aria-label="Open Menu">
+          menu
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile overlay menu (populated & toggled by JS) -->
+    <div class="mobile-menu-overlay">
       <ul></ul>
-    </nav>
-
-    <!-- Mobile Menu FAB -->
-    <button class="fab-menu" aria-label="Open Menu">
-      <span class="material-icons">menu</span>
-    </button>
-
-    <!-- Dark Mode Toggle -->
-    <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode">
-      brightness_3
-    </button>
+    </div>
   </header>
 
-  <!-- Mobile Overlay Menu (populated via JS) -->
-  <div class="mobile-menu-overlay">
-    <ul></ul>
-  </div>
-
-  <!-- MAIN CONTENT AREA -->
-  <main style="flex: 1;">
-    <!-- Product Carousel (dynamically loaded by kaayko_main.js) -->
+  <!-- MAIN: Product Carousel -->
+  <main>
     <section id="carousel" class="carousel" aria-live="polite"></section>
   </main>
 
-  <!-- Product Image Modal (managed via JS) -->
+  <!-- IMAGE MODAL -->
   <div id="modal" class="modal" role="dialog" aria-modal="true">
     <div class="modal-content">
-      <button id="close-modal-button" class="modal-close material-icons" aria-label="Close modal">close</button>
-      <button class="modal-nav modal-nav-left material-icons" aria-label="Previous image">chevron_left</button>
-      <button class="modal-nav modal-nav-right material-icons" aria-label="Next image">chevron_right</button>
+      <button id="close-modal-button" class="modal-close material-icons" aria-label="Close">
+        close
+      </button>
+      <button class="modal-nav modal-nav-left material-icons" aria-label="Previous">
+        chevron_left
+      </button>
+      <button class="modal-nav modal-nav-right material-icons" aria-label="Next">
+        chevron_right
+      </button>
       <div id="modal-image-container" class="modal-image-container"></div>
     </div>
   </div>
@@ -69,12 +78,12 @@
     <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
   </footer>
 
-  <!-- JS IMPORTS -->
+  <!-- MODULE SCRIPTS: load UI first, then API, then main init -->
+  <script type="module" src="scripts/kaayko_ui.js"></script>
   <script type="module" src="scripts/kaayko_apiClient.js"></script>
   <script type="module" src="scripts/kaayko_main.js"></script>
-  <script type="module" src="scripts/kaayko_ui.js"></script>
 
-  <!-- Update footer year dynamically -->
+  <!-- Dynamic Year -->
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>

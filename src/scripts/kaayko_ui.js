@@ -62,55 +62,65 @@ export function populateMenu() {
     'testimonials.html': { name: 'Testimonials',   url: 'testimonials.html' },
     'paddlingout.html':  { name: 'Paddling Out',   url: 'paddlingout.html' }
   };
-  // Determine current file name (default to index.html)
-  const path = window.location.pathname;
-  let current = path.substring(path.lastIndexOf('/') + 1);
-  if (!current) current = 'index.html';
 
+  const currentFile = window.location.pathname.split('/').pop() || 'index.html';
   const desktopUl = document.querySelector('.top-menu ul');
   const mobileUl  = document.querySelector('.mobile-menu-overlay ul');
   if (!desktopUl || !mobileUl) return;
   desktopUl.innerHTML = '';
   mobileUl.innerHTML  = '';
 
-  // Build menu: include all entries except the current page
   Object.entries(mapping).forEach(([file, info]) => {
-    if (file === current) return;
+    if (file === currentFile) return;
     const li = document.createElement('li');
     const a  = document.createElement('a');
     a.href        = info.url;
     a.textContent = info.name;
     li.appendChild(a);
     desktopUl.appendChild(li);
-
-    // Clone for mobile overlay
-    const liMobile = li.cloneNode(true);
-    mobileUl.appendChild(liMobile);
+    mobileUl.appendChild(li.cloneNode(true));
   });
 }
 
 /**
- * Sets up the mobile menu FAB toggle and overlay behavior.
- * The .fab-menu button shows only on mobile via CSS, so no extra checks needed here.
+ * Sets up the mobile menu FAB toggle and overlay.
+ * Only active under 768px; hides and unbinds on desktop.
  */
 export function setupMobileMenu() {
   const fab     = document.querySelector('.fab-menu');
   const overlay = document.querySelector('.mobile-menu-overlay');
   if (!fab || !overlay) return;
-  fab.addEventListener('click', () => {
-    overlay.classList.toggle('active');
-  });
-  overlay.addEventListener('click', e => {
-    // Close when clicking outside or on a link
+
+  // Toggle handler
+  const toggleOverlay = () => overlay.classList.toggle('active');
+  // Overlay click handler
+  const overlayClickHandler = e => {
     if (e.target === overlay || e.target.tagName === 'A') {
       overlay.classList.remove('active');
     }
-  });
+  };
+
+  // Manage binding based on viewport
+  const mql = window.matchMedia('(max-width: 768px)');
+  const handleViewportChange = e => {
+    if (e.matches) {
+      fab.style.display = '';
+      fab.addEventListener('click', toggleOverlay);
+      overlay.addEventListener('click', overlayClickHandler);
+    } else {
+      fab.style.display = 'none';
+      fab.removeEventListener('click', toggleOverlay);
+      overlay.removeEventListener('click', overlayClickHandler);
+      overlay.classList.remove('active');
+    }
+  };
+
+  // Listen for viewport changes and initialize
+  mql.addEventListener('change', handleViewportChange);
+  handleViewportChange(mql);
 }
 
-
-
- /* ==========================================================================
+/* ==========================================================================
     2) Carousel Rendering
     ========================================================================== */
 
