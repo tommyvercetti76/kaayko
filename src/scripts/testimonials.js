@@ -40,8 +40,16 @@ function shuffleArray(arr) {
 /** Extract filename from signed URL */
 function extractFileName(signedUrl) {
   const url = new URL(signedUrl);
-  const parts = url.pathname.split("%2F");
-  return parts[parts.length - 1];
+  let path = url.pathname;
+
+  // only decode if there’s an escaped slash
+  if (path.includes('%2F')) {
+    path = decodeURIComponent(path);
+  }
+
+  // now split on real slashes and take the last segment
+  const segments = path.split('/');
+  return segments.pop();
 }
 
 /** Compose your proxy URL */
