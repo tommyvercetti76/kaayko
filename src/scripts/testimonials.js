@@ -112,11 +112,14 @@ export async function renderTestimonials(containerId) {
     return;
   }
 
-  // build pool of one {img, votes} per product
+  // build pool: one entry per product
   const pool = products
     .flatMap(p => {
       if (!Array.isArray(p.imgSrc) || !p.imgSrc[0]) return [];
-      return [{ img: makeProxyUrl(p.productID, p.imgSrc[0]), votes: p.votes || 0 }];
+      return [{
+        img: makeProxyUrl(p.productID, p.imgSrc[0]),
+        votes: p.votes || 0
+      }];
     });
 
   if (!pool.length) {
@@ -124,17 +127,22 @@ export async function renderTestimonials(containerId) {
     return;
   }
 
-  // shuffle & render 20
-  shuffleArray(fakeTestimonials.slice())
-    .forEach(r => {
-      const pick = pool[Math.floor(Math.random() * pool.length)];
-      container.appendChild(
-        createTestimonialCard({
-          name:   r.name,
-          review: r.review,
-          imgSrc: pick.img,
-          votes:  pick.votes
-        })
-      );
-    });
+  // sort by votes descending, take top 20
+  let top20 = pool
+    .sort((a, b) => b.votes - a.votes)
+    .slice(0, 20);
+
+  // **shuffle** to randomize display order
+  top20 = shuffleArray(top20);
+
+  // render them, pairing each with one fake review
+  top20.forEach((pick, i) => {
+    const fake = fakeTestimonials[i % fakeTestimonials.length];
+    container.appendChild(createTestimonialCard({
+      name:   fake.name,
+      review: fake.review,
+      imgSrc: pick.img,
+      votes:  pick.votes
+    }));
+  });
 }

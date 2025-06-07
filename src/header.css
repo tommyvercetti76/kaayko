@@ -1,6 +1,7 @@
 /* ==========================================================================
    File: header.css
    Shared header & hero-banner styles + exhaustive dark-mode overrides
+   Includes Filter Toggle icon styling
    ========================================================================== */
 
 /*─────────────────────────────────────────────────────────────────────────────
@@ -81,6 +82,43 @@
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* ─── Filter Toggle Icon ─────────────────────────────────────────────────── */
+/* ─── Filter Toggle Icon ─────────────────────────────────────────────────── */
+#filter-toggle {
+  font-family: 'Material Icons';
+  font-feature-settings: 'liga';
+  font-size: 24px;
+  color: var(--color-bright-ivory);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px; /* space before dark-mode toggle */
+  opacity: 0.8;
+  transition: opacity 0.2s, color 0.2s;
+}
+#filter-toggle:hover {
+  opacity: 1;
+}
+/* when any filters are active */
+#filter-toggle.active {
+  color: var(--color-accent);
+}
+
+/* make sure your existing .header-controls has enough room: */
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+html.dark-theme #filter-toggle {
+  color: var(--color-accent);
 }
 
 /* ─── Theme Toggle ────────────────────────────────────────────────────────── */
@@ -272,7 +310,7 @@ html.dark-theme {
   --color-modal-overlay:  rgba(0,0,0,0.8);
   --color-text-base:      #ccc;
   --color-text-subtle:    #999;
-  --color-text-secondary: #777;
+  --color-text-secondary:#777;
   --color-bright-ivory:   #fffff0;
   --color-accent:         #FFD700;
   --color-card-bg:        #1c1c1c;

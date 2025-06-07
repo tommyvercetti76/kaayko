@@ -1,0 +1,219 @@
+/* ==========================================================================
+   File: kaaykoFilterModal.css
+   Semi-transparent backdrop + heavy shadow + Josefin fonts
+   Perfected slider thumbs & checkbox accents
+   ========================================================================== */
+
+:root {
+  /* backdrop & panel colors */
+  --filter-backdrop:   rgba(0, 0, 0, 0.6);
+  --filter-panel-bg:   rgba(20, 20, 20, 0.95);
+  --filter-radius:     12px;
+  --filter-gap:        18px;
+  /* text & accent */
+  --filter-text:       #fffff0;   /* ivory */
+  --filter-accent:     #FFD700;   /* gold */
+  --filter-track:      #444;      /* slider track */
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Overlay backdrop
+─────────────────────────────────────────────────────────────────────────────*/
+.filter-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--filter-backdrop);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+  padding: var(--filter-gap);
+}
+.filter-overlay.active {
+  display: flex;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Panel
+─────────────────────────────────────────────────────────────────────────────*/
+.filter-panel {
+  position: relative;
+  background: var(--filter-panel-bg);
+  border-radius: var(--filter-radius);
+  box-shadow: 0 16px 32px rgba(0,0,0,0.8);
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: var(--filter-gap);
+  color: var(--filter-text);
+  font-family: 'Josefin_Light', sans-serif;
+}
+
+/* Panel header */
+.filter-panel h2 {
+  margin: 0 0 var(--filter-gap);
+  font-size: 1.6rem;
+  font-family: 'Josefin_Bold';
+  border-bottom: 1px solid #444;
+  padding-bottom: 8px;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Sections
+─────────────────────────────────────────────────────────────────────────────*/
+.filter-section {
+  margin-top: var(--filter-gap);
+  font-family: 'Josefin_Medium';
+}
+.filter-section + .filter-section {
+  border-top: 1px solid #444;
+  padding-top: var(--filter-gap);
+}
+
+/* Labels on sliders */
+.slider-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-family: 'Josefin_Medium';
+  font-size: 1rem;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Range sliders
+─────────────────────────────────────────────────────────────────────────────*/
+.filter-panel input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  background: var(--filter-track);
+  border-radius: 3px;
+  outline: none;
+  margin: 0;
+  cursor: pointer;
+}
+
+/* Webkit thumb */
+.filter-panel input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--filter-accent);
+  border: 2px solid var(--filter-text);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.filter-panel input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+}
+
+/* Firefox thumb */
+.filter-panel input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--filter-accent);
+  border: 2px solid var(--filter-text);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.filter-panel input[type="range"]::-moz-range-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+}
+
+/* Track styling for Firefox */
+.filter-panel input[type="range"]::-moz-range-track {
+  background: var(--filter-track);
+  height: 6px;
+  border-radius: 3px;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Checkboxes
+─────────────────────────────────────────────────────────────────────────────*/
+.filter-section label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  cursor: pointer;
+  font-family: 'Josefin_Light';
+}
+.filter-section input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  accent-color: var(--filter-accent);
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+.filter-section input[type="checkbox"]:hover {
+  transform: scale(1.1);
+}
+.filter-section label span {
+  font-size: 1rem;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Action buttons
+─────────────────────────────────────────────────────────────────────────────*/
+.filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--filter-gap);
+  margin-top: var(--filter-gap);
+}
+.filter-actions button {
+  font-family: 'Josefin_Medium';
+  font-size: 0.95rem;
+  background: none;
+  border: 2px solid var(--filter-accent);
+  color: var(--filter-accent);
+  padding: 8px 16px;
+  border-radius: var(--filter-radius);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, transform 0.1s ease;
+}
+.filter-actions button:hover {
+  background: var(--filter-accent);
+  color: #222;
+  transform: translateY(-2px);
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Close icon (×)
+─────────────────────────────────────────────────────────────────────────────*/
+.filter-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  font-family: 'Material Icons';
+  font-size: 28px;
+  color: var(--filter-text);
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.filter-close:hover {
+  opacity: 1;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Light / Dark-mode adaptivity
+─────────────────────────────────────────────────────────────────────────────*/
+html.light-theme .filter-panel {
+  background: #fff;
+  color: #111;
+}
+html.light-theme {
+  --filter-track:      #ddd;
+  --filter-panel-bg:   #ffffff;
+  --filter-backdrop:   rgba(255,255,255,0.7);
+  --filter-text:       #111;
+  --filter-accent:     #fffff0; /* ivory accent in light mode */
+}

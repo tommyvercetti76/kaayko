@@ -1,35 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- SEO Metadata -->
   <title>Kaayko Store - Unique T-Shirts, Vote Now Pay Later</title>
-  <meta name="description" content="Kaayko Store offers uniquely designed T-shirts. Vote for your favorite designs and pay later!">
-  <meta name="keywords" content="Kaayko, Sarcastic T-Shirts, Fashion for future, Unique Apparel">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://kaayko.com/">
+  <meta name="description" content="Kaayko Store offers uniquely designed T-shirts. Vote for your favorite designs and pay later!" />
+  <meta name="keywords" content="Kaayko, Sarcastic T-Shirts, Fashion for future, Unique Apparel" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://kaayko.com/" />
 
-  <!-- 1) Global Stylesheet: resets, typography, carousel, modal, dark-mode, etc. -->
-  <link rel="stylesheet" href="storestyle.css">
+  <!-- 1) Global Styles -->
+  <link rel="stylesheet" href="storestyle.css" />
 
-  <!-- 2) Header Styles: shared header + hero-banner layouts and dark-mode overrides -->
-  <link rel="stylesheet" href="header.css">
+  <!-- 2) Header + Filter Toggle Styles -->
+  <link rel="stylesheet" href="header.css" />
+  <link rel="stylesheet" href="kaaykoFilterModal.css" />
 
-  <!-- 3) Material Icons (for dark-mode toggle, menu, modal nav, etc.) -->
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- 3) Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 </head>
 
 <body>
-  <!-- ────────────────────────────────────────────────────────────────────
-       HEADER (shared across all pages)
-       • Brand (title + subtitle)
-       • Desktop menu (populated by header.js)
-       • Dark-mode toggle & mobile FAB (hamburger)
-       • Mobile overlay menu
-       • Hero-banner collapse only on pages that include it
-  ──────────────────────────────────────────────────────────────────────-->
+  <!-- HEADER (shared across all pages) -->
   <header class="header">
     <div class="header-top">
       <!-- Brand -->
@@ -37,65 +31,111 @@
         <h1 class="header-title">Kaayko Store</h1>
         <p class="header-subtitle">Vote now, pay later.</p>
       </div>
+
       <!-- Desktop navigation -->
       <nav class="top-menu"><ul></ul></nav>
-      <!-- Controls -->
+
+      <!-- Controls: Filter | Dark-mode | Mobile menu -->
       <div class="header-controls">
-        <!-- Dark Mode Toggle -->
+        <!-- 1) Filter Toggle -->
+        <button id="filter-toggle" class="material-icons" aria-label="Open Filters">
+          filter_list
+        </button>
+        <!-- 2) Dark Mode Toggle -->
         <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode"></button>
-        </button>
-        <!-- Mobile FAB -->
-        <button class="fab-menu material-icons" aria-label="Open Menu">
-          menu
-        </button>
+        <!-- 3) Mobile FAB (hamburger) -->
+        <button class="fab-menu material-icons" aria-label="Open Menu">menu</button>
       </div>
     </div>
     <!-- Mobile overlay menu -->
     <div class="mobile-menu-overlay"><ul></ul></div>
   </header>
 
-  <!-- ────────────────────────────────────────────────────────────────────
-       MAIN CONTENT: Product carousel (injected by kaayko_main.js)
-  ──────────────────────────────────────────────────────────────────────-->
+  <!-- FILTER MODAL (hidden by default) -->
+  <div class="filter-overlay">
+    <div class="filter-panel">
+      <h2>Filter Products</h2>
+
+      <!-- PRICE slider -->
+      <div class="filter-section" id="price-section">
+        <div class="slider-label">
+          <span>Price:</span>
+          <span id="price-value"></span>
+        </div>
+        <input
+          type="range"
+          id="price-slider"
+          min="0"
+          max="0"
+          value="0"
+        />
+      </div>
+
+      <!-- TAG checkboxes -->
+      <div class="filter-section" id="tags-section">
+        <strong>Tags:</strong>
+        <div id="tag-options"></div>
+      </div>
+
+      <!-- VOTES slider -->
+      <div class="filter-section" id="votes-section">
+        <div class="slider-label">
+          <span>Min Votes:</span>
+          <span id="votes-value">0</span>
+        </div>
+        <input
+          type="range"
+          id="votes-slider"
+          min="0"
+          max="0"
+          value="0"
+        />
+      </div>
+
+      <!-- ACTION buttons -->
+      <div class="filter-actions">
+        <button id="filter-reset">Reset</button>
+        <button id="filter-apply">Apply</button>
+      </div>
+
+      <!-- CLOSE icon -->
+      <button
+        class="filter-close material-icons"
+        id="filter-close"
+        aria-label="Close Filters"
+      >close</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT: Product carousel (injected by kaayko_main.js) -->
   <main>
     <section id="carousel" class="carousel" aria-live="polite"></section>
   </main>
 
-  <!-- ────────────────────────────────────────────────────────────────────
-       IMAGE MODAL (zoomed carousel items)
-  ──────────────────────────────────────────────────────────────────────-->
+  <!-- IMAGE MODAL (zoomed carousel items) -->
   <div id="modal" class="modal" role="dialog" aria-modal="true">
     <div class="modal-content">
-      <button id="close-modal-button" class="modal-close material-icons" aria-label="Close">
-        close
-      </button>
-      <button class="modal-nav modal-nav-left material-icons" aria-label="Previous">
-        chevron_left
-      </button>
-      <button class="modal-nav modal-nav-right material-icons" aria-label="Next">
-        chevron_right
-      </button>
+      <button id="close-modal-button" class="modal-close material-icons" aria-label="Close">close</button>
+      <button class="modal-nav modal-nav-left material-icons" aria-label="Previous">chevron_left</button>
+      <button class="modal-nav modal-nav-right material-icons" aria-label="Next">chevron_right</button>
       <div id="modal-image-container" class="modal-image-container"></div>
     </div>
   </div>
 
-  <!-- ────────────────────────────────────────────────────────────────────
-       FOOTER
-  ──────────────────────────────────────────────────────────────────────-->
+  <!-- FOOTER -->
   <footer>
     <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
   </footer>
 
-  <!-- ────────────────────────────────────────────────────────────────────
-       SCRIPTS (type="module" ensures ES import/exports)
-       1) header.js        → dark-mode, menus, hero-banner toggle
-       2) kaayko_apiClient → fetch product data
-       3) kaayko_main      → render carousel, modal, voting logic
-       4) inline year      → set current year in footer
-  ──────────────────────────────────────────────────────────────────────-->
+  <!-- SCRIPTS -->
   <script type="module" src="scripts/header.js"></script>
   <script type="module" src="scripts/kaayko_apiClient.js"></script>
   <script type="module" src="scripts/kaayko_main.js"></script>
+
+  <!-- 4) Filter-modal controller -->
+  <script type="module" src="scripts/kaaykoFilterModal.js"></script>
+
+  <!-- Inline: current year -->
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>
