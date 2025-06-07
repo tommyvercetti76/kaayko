@@ -337,21 +337,24 @@ footer {
    (drop this in place of your existing section 7)
 ---------------------------------------------------------- */
 
+/* container grid */
 .reviews-container {
   display: grid;
   gap: 24px;
   padding: 0 20px;
 }
 
+/* each testimonial card */
 .testimonial {
   display: flex;
-  align-items: center;
+  align-items: center;           
   background: var(--color-card-bg);
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   overflow: hidden;
 }
 
+/* avatar block on the left, flush to card edge */
 .avatar-container {
   position: relative;
   flex-shrink: 0;
@@ -367,6 +370,7 @@ footer {
   object-fit: cover;
 }
 
+/* overlay footer with heart + count */
 .avatar-footer {
   position: absolute;
   bottom: 0; left: 0; right: 0;
@@ -376,43 +380,43 @@ footer {
   gap: 6px;
   padding: 6px 0;
 
-  /* Light-mode: white blur */
+  /* Light-mode: semi-opaque white with blur  */
   background: rgba(255,255,255,0.5);
   backdrop-filter: blur(4px);
   border-top: 1px solid rgba(0,0,0,0.1);
 }
-
-/* Dark-mode: switch to a semi-transparent black blur */
+/* Dark-mode: switch to semi-opaque black */
 .dark-theme .avatar-footer {
   background: rgba(0,0,0,0.5);
   backdrop-filter: blur(4px);
   border-top: 1px solid rgba(255,255,255,0.1);
 }
 
+/* heart icon styling */
 .avatar-footer .material-icons {
   font-size: 16px;
   line-height: 1;
-  /* black in light, gold in dark */
-  color: var(--color-text-base);
+  color: var(--color-text-base);          /* black in light */
   text-shadow: none;
 }
 .dark-theme .avatar-footer .material-icons {
-  color: #ffd700;
+  color: #ffd700;                          /* gold in dark */
   text-shadow: 0 0 6px rgba(255,223,0,0.8);
 }
 
+/* numeric count styling */
 .avatar-footer span {
   font-family: 'Josefin_Medium';
   font-size: 14px;
-  /* black in light, gold in dark */
-  color: var(--color-text-base);
+  color: var(--color-text-base);          /* black in light */
   text-shadow: none;
 }
 .dark-theme .avatar-footer span {
-  color: #ffd700;
+  color: #ffd700;                         /* gold in dark */
   text-shadow: 0 0 6px rgba(255,223,0,0.8);
 }
 
+/* testimonial text area */
 .testimonial-content {
   flex: 1;
   padding: 16px 0;
