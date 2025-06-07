@@ -333,68 +333,97 @@ footer {
 }
 
 /* ----------------------------------------------------------
-7) Testimonials (Larger Avatar, Full-Width Touching Edges)
+7) Testimonials
+   (drop this in place of your existing section 7)
 ---------------------------------------------------------- */
+
 .reviews-container {
   display: grid;
   gap: 24px;
   padding: 0 20px;
 }
 
-/* testimonial card itself */
 .testimonial {
   display: flex;
-  align-items: center;           /* vertically center image + text */
+  align-items: center;
   background: var(--color-card-bg);
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  padding: 2px;                  /* more breathing room */
+  overflow: hidden;
 }
 
-/* avatar block now bigger & flush to its edges */
 .avatar-container {
   position: relative;
-  width: 92px;                   /* bump up size */
-  height: 100px;
-  border-radius: 12px;            /* same corner radius as card */
-  overflow: hidden;
   flex-shrink: 0;
-  margin-right: 24px;             /* more spacing from text */
+  width: 92px;
+  height: 100px;
+  border-radius: 12px 0 0 12px;
+  overflow: hidden;
+  margin-right: 24px;
 }
-
 .avatar-container img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
 }
 
-/* vote badge overlaid at very bottom of the avatar */
 .avatar-footer {
   position: absolute;
-  bottom: 0;
-  left: 0; right: 0;
-  background: rgba(0,0,0,0.4);
-  color: #fff;
-  font-family: 'Josefin_Medium';
-  font-size: 14px;                /* slightly bigger vote text */
-  text-align: center;
-  padding: 4px 0;                 /* a bit more padding */
+  bottom: 0; left: 0; right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 0;
+
+  /* Light-mode: white blur */
+  background: rgba(255,255,255,0.5);
+  backdrop-filter: blur(4px);
+  border-top: 1px solid rgba(0,0,0,0.1);
 }
 
-/* text side of the card */
+/* Dark-mode: switch to a semi-transparent black blur */
+.dark-theme .avatar-footer {
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.avatar-footer .material-icons {
+  font-size: 16px;
+  line-height: 1;
+  /* black in light, gold in dark */
+  color: var(--color-text-base);
+  text-shadow: none;
+}
+.dark-theme .avatar-footer .material-icons {
+  color: #ffd700;
+  text-shadow: 0 0 6px rgba(255,223,0,0.8);
+}
+
+.avatar-footer span {
+  font-family: 'Josefin_Medium';
+  font-size: 14px;
+  /* black in light, gold in dark */
+  color: var(--color-text-base);
+  text-shadow: none;
+}
+.dark-theme .avatar-footer span {
+  color: #ffd700;
+  text-shadow: 0 0 6px rgba(255,223,0,0.8);
+}
+
 .testimonial-content {
   flex: 1;
+  padding: 16px 0;
 }
-
 .testimonial-content p {
   font-family: 'Josefin_Light';
   font-size: 16px;
   color: var(--color-text-base);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   line-height: 1.4;
 }
-
 .testimonial-content .name {
   font-family: 'Josefin_Medium';
   font-size: 14px;

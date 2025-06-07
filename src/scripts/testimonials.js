@@ -51,6 +51,7 @@ function makeProxyUrl(productID, signedUrl) {
 }
 
 /** Build one testimonial card */
+/** Build one testimonial card */
 function createTestimonialCard({ name, review, imgSrc, votes }) {
   const card = document.createElement("div");
   card.className = "testimonial";
@@ -66,10 +67,10 @@ function createTestimonialCard({ name, review, imgSrc, votes }) {
     avatarWrapper.appendChild(img);
   }
 
-  // footer overlay with votes
+  // footer overlay with votes (now a heart instead of a star)
   const footer = document.createElement("div");
   footer.className = "avatar-footer";
-  footer.textContent = `⭐ ${votes}`;
+  footer.innerHTML = `<i class="material-icons" aria-hidden="true">favorite</i> ${votes}`;
   avatarWrapper.appendChild(footer);
 
   // text content
