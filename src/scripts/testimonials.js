@@ -1,12 +1,10 @@
 import { getAllProducts } from "./kaayko_apiClient.js";
 
-// 1) Point at your existing image‐proxy function:
+// 1) Image‐proxy base (reuse your existing Cloud Function)
 const IMAGE_PROXY_BASE =
   "https://us-central1-kaayko-api-dev.cloudfunctions.net/api/images";
 
-// ─────────────────────────────────────────────────────────────────
-// 1) All 20 fake reviews live here now (no more about.js)
-// ─────────────────────────────────────────────────────────────────
+// 2) Your 20 fake reviews
 const fakeTestimonials = [
   { name: "Alice Johnson",   review: "Absolutely amazing quality and design. Kaayko never disappoints! My mother in law was disappointed at first but then we fed her to pigs." },
   { name: "Brian Smith",     review: "I love the unique style and attention to detail. Highly recommend!" },
@@ -30,7 +28,6 @@ const fakeTestimonials = [
   { name: "Tina Reynolds",   review: "I was hungry for four days and finally reached a town with a café and internet. I bought a T-shirt from Kaayko.com and died hungry. They call me Corpse with Class." }
 ];
 
-
 /** Fisher–Yates shuffle */
 function shuffleArray(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
@@ -40,49 +37,42 @@ function shuffleArray(arr) {
   return arr;
 }
 
-/** Extract the raw filename from a signed URL */
+/** Extract filename from signed URL */
 function extractFileName(signedUrl) {
   const url = new URL(signedUrl);
-  // url.pathname ends with "...%2F<folder>%2F<fileName>"
   const parts = url.pathname.split("%2F");
-  return parts[parts.length - 1]; // e.g. "tBone1.png"
+  return parts[parts.length - 1];
 }
 
-/** Build the same proxy URL your carousel uses */
+/** Compose your proxy URL */
 function makeProxyUrl(productID, signedUrl) {
   const fileName = extractFileName(signedUrl);
-  return `${IMAGE_PROXY_BASE}/` +
-         `${encodeURIComponent(productID)}/` +
-         `${encodeURIComponent(fileName)}`;
+  return `${IMAGE_PROXY_BASE}/${encodeURIComponent(productID)}/${encodeURIComponent(fileName)}`;
 }
 
-/** Creates one testimonial card */
-/** Creates one testimonial card */
+/** Build one testimonial card */
 function createTestimonialCard({ name, review, imgSrc, votes }) {
   const card = document.createElement("div");
   card.className = "testimonial";
 
-  // 1) Avatar circle
-  const avatar = document.createElement("div");
-  avatar.className = "avatar";
+  // avatar block
+  const avatarWrapper = document.createElement("div");
+  avatarWrapper.className = "avatar-container";
+
   if (imgSrc) {
     const img = document.createElement("img");
     img.src = imgSrc;
     img.alt = name;
-    avatar.appendChild(img);
+    avatarWrapper.appendChild(img);
   }
 
-  // 2) Vote badge
-  const badge = document.createElement("div");
-  badge.className = "avatar-votes";
-  badge.textContent = `⭐ ${votes}`;
+  // footer overlay with votes
+  const footer = document.createElement("div");
+  footer.className = "avatar-footer";
+  footer.textContent = `⭐ ${votes}`;
+  avatarWrapper.appendChild(footer);
 
-  // NEW: wrapper to stack them
-  const avatarWrapper = document.createElement("div");
-  avatarWrapper.className = "avatar-wrapper";
-  avatarWrapper.append(avatar, badge);
-
-  // 3) Text content
+  // text content
   const content = document.createElement("div");
   content.className = "testimonial-content";
   const p = document.createElement("p");
@@ -92,14 +82,13 @@ function createTestimonialCard({ name, review, imgSrc, votes }) {
   who.textContent = name;
   content.append(p, who);
 
-  // 4) Put it all together
+  // assemble
   card.append(avatarWrapper, content);
   return card;
 }
 
 /**
- * Fetch & render all 20 fakeTestimonials,
- * pairing each with a random product-image & vote count.
+ * Renders all 20 testimonials into #<containerId>
  */
 export async function renderTestimonials(containerId) {
   const container = document.getElementById(containerId);
@@ -114,19 +103,19 @@ export async function renderTestimonials(containerId) {
     return;
   }
 
-  // Build a pool of { img: proxyUrl, votes }
-  const pool = products.flatMap(p => {
-    if (!Array.isArray(p.imgSrc) || !p.imgSrc[0]) return [];
-    const proxy = makeProxyUrl(p.productID, p.imgSrc[0]);
-    return [{ img: proxy, votes: p.votes || 0 }];
-  });
+  // build pool of one {img, votes} per product
+  const pool = products
+    .flatMap(p => {
+      if (!Array.isArray(p.imgSrc) || !p.imgSrc[0]) return [];
+      return [{ img: makeProxyUrl(p.productID, p.imgSrc[0]), votes: p.votes || 0 }];
+    });
 
   if (!pool.length) {
     container.textContent = "No product images available.";
     return;
   }
 
-  // Shuffle and render
+  // shuffle & render 20
   shuffleArray(fakeTestimonials.slice())
     .forEach(r => {
       const pick = pool[Math.floor(Math.random() * pool.length)];
