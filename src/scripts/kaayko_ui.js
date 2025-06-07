@@ -40,9 +40,72 @@ function initializeDarkMode() {
   });
 }
 
-/** Called on every page load (before other UI wires) */
+// File: scripts/kaayko_ui.js
+// Provides theme initialization, menu population, and mobile menu toggle behaviors
+
+/**
+ * Initializes dark mode based on localStorage and wires up the theme-toggle buttons.
+ */
 export function runPageInit() {
   initializeDarkMode();
+}
+
+/**
+ * Populates the desktop and mobile navigation menus.
+ * On the Store page (index.html), shows About, Testimonials, Paddling Out.
+ * On other pages, replaces that page's link with "Store".
+ */
+export function populateMenu() {
+  const mapping = {
+    'index.html':        { name: 'Store',         url: 'index.html' },
+    'about.html':        { name: 'About',         url: 'about.html' },
+    'testimonials.html': { name: 'Testimonials',   url: 'testimonials.html' },
+    'paddlingout.html':  { name: 'Paddling Out',   url: 'paddlingout.html' }
+  };
+  // Determine current file name (default to index.html)
+  const path = window.location.pathname;
+  let current = path.substring(path.lastIndexOf('/') + 1);
+  if (!current) current = 'index.html';
+
+  const desktopUl = document.querySelector('.top-menu ul');
+  const mobileUl  = document.querySelector('.mobile-menu-overlay ul');
+  if (!desktopUl || !mobileUl) return;
+  desktopUl.innerHTML = '';
+  mobileUl.innerHTML  = '';
+
+  // Build menu: include all entries except the current page
+  Object.entries(mapping).forEach(([file, info]) => {
+    if (file === current) return;
+    const li = document.createElement('li');
+    const a  = document.createElement('a');
+    a.href        = info.url;
+    a.textContent = info.name;
+    li.appendChild(a);
+    desktopUl.appendChild(li);
+
+    // Clone for mobile overlay
+    const liMobile = li.cloneNode(true);
+    mobileUl.appendChild(liMobile);
+  });
+}
+
+/**
+ * Sets up the mobile menu FAB toggle and overlay behavior.
+ * The .fab-menu button shows only on mobile via CSS, so no extra checks needed here.
+ */
+export function setupMobileMenu() {
+  const fab     = document.querySelector('.fab-menu');
+  const overlay = document.querySelector('.mobile-menu-overlay');
+  if (!fab || !overlay) return;
+  fab.addEventListener('click', () => {
+    overlay.classList.toggle('active');
+  });
+  overlay.addEventListener('click', e => {
+    // Close when clicking outside or on a link
+    if (e.target === overlay || e.target.tagName === 'A') {
+      overlay.classList.remove('active');
+    }
+  });
 }
 
 
@@ -331,84 +394,5 @@ export function setupModalCloseHandlers() {
   btn?.addEventListener("click", () => modal.classList.remove("active"));
   modal.addEventListener("click", e => {
     if (e.target === modal) modal.classList.remove("active");
-  });
-}
-
-/** Toggles your FAB / overlay menu on mobile */
-export function setupMobileMenu() {
-  runPageInit();
-  const fab     = document.querySelector(".fab-menu");
-  const overlay = document.querySelector(".mobile-menu-overlay");
-  if (!fab || !overlay) return;
-  fab.addEventListener("click", () => overlay.classList.toggle("active"));
-  overlay.addEventListener("click", e => {
-    if (e.target === overlay || e.target.tagName === "A") {
-      overlay.classList.remove("active");
-    }
-  });
-}
-
-
-
- /* ==========================================================================
-    7) “Smart” Menu Links
-    ========================================================================== */
-
-/**
- * Show exactly three top-links, swapping out the current page for “Home”.
- *
- *   • On index.html (or “/”):   [About, Testimonials, Paddling Out]
- *   • On about.html:            [Home, Testimonials, Paddling Out]
- *   • On testimonials.html:     [Home, About, Paddling Out]
- *   • On paddlingout.html:      [Home, About, Testimonials]
- */
-export function populateMenu() {
-  const desk = document.querySelector(".top-menu ul");
-  const mob  = document.querySelector(".mobile-menu-overlay ul");
-  if (!desk || !mob) return;
-
-  // Grab the last segment of the path and lowercase it
-  const path = window.location.pathname.split("/").pop()?.toLowerCase() || "";
-
-  let links = [];
-
-  if (path.endsWith("about.html")) {
-    links = [
-      { text: "Home", href: "index.html" },
-      { text: "Testimonials", href: "testimonials.html" },
-      { text: "Paddling Out", href: "paddlingout.html" }
-    ];
-  } else if (path.endsWith("testimonials.html")) {
-    links = [
-      { text: "Home", href: "index.html" },
-      { text: "About", href: "about.html" },
-      { text: "Paddling Out", href: "paddlingout.html" }
-    ];
-  } else if (path.endsWith("paddlingout.html")) {
-    links = [
-      { text: "Home", href: "index.html" },
-      { text: "About", href: "about.html" },
-      { text: "Testimonials", href: "testimonials.html" }
-    ];
-  } else {
-    // Default (index.html or any other route)
-    links = [
-      { text: "About", href: "about.html" },
-      { text: "Testimonials", href: "testimonials.html" },
-      { text: "Paddling Out", href: "paddlingout.html" }
-    ];
-  }
-
-  // Populate both desktop and mobile menus
-  [desk, mob].forEach(menu => {
-    menu.innerHTML = "";
-    links.forEach(({ text, href }) => {
-      const li = document.createElement("li");
-      const a  = document.createElement("a");
-      a.textContent = text;
-      a.href        = href;
-      li.append(a);
-      menu.append(li);
-    });
   });
 }
