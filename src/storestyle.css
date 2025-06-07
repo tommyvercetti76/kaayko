@@ -336,40 +336,67 @@ footer {
 7) Testimonials
 ---------------------------------------------------------- */
 .reviews-container {
+  display: grid;
+  gap: 24px;
   padding: 0 20px;
-  color: var(--color-off-black);
-  /* no forced BG => inherits from <body>/<html> */
 }
+
 .testimonial {
-  display: flex; align-items:flex-start;
-  margin-bottom: 20px;
-  border-bottom:1px solid #f0f0f0;
-  padding-bottom:10px;
+  display: flex;
+  align-items: center;       /* ← now vertically centers image + text */
+  background: var(--color-card-bg);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 16px;
 }
-.testimonial:last-child {
-  border-bottom:none; margin-bottom:0;
+
+.avatar-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 16px; /* space between image+badge and content */
 }
+
 .avatar {
-  flex-shrink:0;
-  width:40px; height:40px;
-  border-radius:50%;
-  background-color: var(--color-accent);
-  color:#fff;
-  font-family:'Josefin_Bold';
-  font-size:18px;
-  display:flex; align-items:center; justify-content:center;
-  margin-right:16px; margin-top:2px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(255,255,255,0.6);  /* semi-transparent circle */
 }
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-votes {
+  margin-top: 6px;            /* small gap below avatar */
+  font-size: 12px;
+  font-family: 'Josefin_Medium';
+  color: var(--color-text-base);
+  text-align: center;
+  background: transparent;
+}
+
+.testimonial-content {
+  flex: 1;
+}
+
 .testimonial-content p {
-  font-family:'Josefin_Light';
-  font-size:18px;
-  color: var(--color-off-black);
-  margin-bottom:8px;
+  font-family: 'Josefin_Light';
+  font-size: 16px;
+  color: var(--color-text-base);
+  margin-bottom: 8px;
+  line-height: 1.4;
 }
+
 .testimonial-content .name {
-  font-family:'Josefin_Medium';
-  font-size:16px;
-  color: var(--color-off-black);
+  display: block;
+  font-family: 'Josefin_Medium';
+  font-size: 14px;
+  color: var(--color-text-base);
 }
 
 /* ----------------------------------------------------------

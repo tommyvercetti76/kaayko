@@ -70,35 +70,3 @@ export function shuffleArray(array) {
   }
   return array;
 }
-
-/**
- * Creates a testimonial element with random avatar background
- * @param {Object} data - { name, review }
- * @returns {HTMLElement} A .testimonial DOM element
- */
-export function createTestimonialElement(data) {
-  const container = document.createElement("div");
-  container.className = "testimonial";
-
-  const avatar = document.createElement("div");
-  avatar.className = "avatar";
-  avatar.textContent = data.name.charAt(0).toUpperCase();
-  avatar.style.backgroundColor = getRandomAvatarColor();
-
-  const content = document.createElement("div");
-  content.className = "testimonial-content";
-
-  const reviewText = document.createElement("p");
-  reviewText.textContent = `"${data.review}"`;
-
-  const reviewerName = document.createElement("span");
-  reviewerName.className = "name";
-  reviewerName.textContent = data.name;
-
-  content.appendChild(reviewText);
-  content.appendChild(reviewerName);
-  container.appendChild(avatar);
-  container.appendChild(content);
-
-  return container;
-}

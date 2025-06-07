@@ -8,30 +8,20 @@
   <title>Kaayko | Testimonials</title>
   <meta name="description" content="Read what our customers say about Kaayko's unique apparel and their shopping experiences." />
 
-  <!-- Open Graph Metadata for Social Sharing -->
-  <meta property="og:title" content="Kaayko Store Testimonials" />
+  <!-- Open Graph Metadata -->
+  <meta property="og:title"       content="Kaayko Store Testimonials" />
   <meta property="og:description" content="See customer feedback on Kaayko's expressive and unique apparel designs." />
-  <meta property="og:image" content="assets/social-share-kaayko.png" />
-  <meta property="og:type" content="website" />
+  <meta property="og:image"       content="assets/social-share-kaayko.png" />
+  <meta property="og:type"        content="website" />
 
-  <!-- 1) Global Stylesheet: resets, typography, carousel, modal, dark-mode, etc. -->
+  <!-- Stylesheets -->
   <link rel="stylesheet" href="storestyle.css">
-
-  <!-- 2) Header Styles: shared header layout & dark-mode overrides -->
   <link rel="stylesheet" href="header.css">
-
-  <!-- 3) Material Icons (for dark-mode toggle, hamburger, etc.) -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 
 <body>
-  <!-- ────────────────────────────────────────────────────────────────────
-       HEADER: Shared across all pages
-       • Brand (title + subtitle)
-       • Desktop menu (populated by header.js)
-       • Dark-mode toggle & mobile FAB
-       • Mobile overlay menu
-  ────────────────────────────────────────────────────────────────────── -->
+  <!-- HEADER (unchanged) -->
   <header class="header">
     <div class="header-top">
       <div class="header-brand">
@@ -40,53 +30,40 @@
       </div>
       <nav class="top-menu"><ul></ul></nav>
       <div class="header-controls">
-        <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode">
-        </button>
-        <button class="fab-menu material-icons" aria-label="Open Menu">
-          menu
-        </button>
+        <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode"></button>
+        <button class="fab-menu material-icons"      aria-label="Open Menu">menu</button>
       </div>
     </div>
   </header>
-
-  <!-- Mobile overlay menu -->
   <div class="mobile-menu-overlay"><ul></ul></div>
 
-  <!-- ────────────────────────────────────────────────────────────────────
-       MAIN CONTENT AREA: Testimonials
-  ────────────────────────────────────────────────────────────────────── -->
+  <!-- MAIN CONTENT -->
   <main style="max-width: 900px; margin: 30px auto;">
     <h2 class="testimonials-heading">What People Are Saying</h2>
     <div id="testimonialsContainer" class="reviews-container"></div>
   </main>
 
-  <!-- ────────────────────────────────────────────────────────────────────
-       FOOTER
-  ────────────────────────────────────────────────────────────────────── -->
+  <!-- FOOTER -->
   <footer>
     <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
   </footer>
 
-  <!-- ────────────────────────────────────────────────────────────────────
-       SCRIPTS (type="module"):
-       1) header.js          → dark-mode, menus, mobile overlay, hero toggle
-       2) testimonials.js    → load & render testimonials
-       3) inline snippet     → dynamic year
-  ────────────────────────────────────────────────────────────────────── -->
+  <!-- SCRIPTS -->
+  <!-- 1) header.js (dark-mode, menu, etc.) -->
   <script type="module" src="scripts/header.js"></script>
+
+  <!-- 2) your testimonials renderer -->
+  <script type="module" src="scripts/testimonials.js"></script>
+
+  <!-- 3) inline module to set year & kick off testimonials -->
   <script type="module">
-    import { fakeTestimonials, shuffleArray, createTestimonialElement } from './scripts/about.js';
+    import { renderTestimonials } from './scripts/testimonials.js';
 
-    document.addEventListener('DOMContentLoaded', () => {
-      // 1) Set current year
-      document.getElementById('year').textContent = new Date().getFullYear();
-
-      // 2) Render shuffled testimonials
-      const container = document.getElementById('testimonialsContainer');
-      container.innerHTML = '';
-      shuffleArray(fakeTestimonials).forEach(testimonial => {
-        container.appendChild(createTestimonialElement(testimonial));
-      });
+    document.addEventListener("DOMContentLoaded", () => {
+      // Dynamic footer year
+      document.getElementById("year").textContent = new Date().getFullYear();
+      // Render all 20 fake testimonials (with real product images & votes)
+      renderTestimonials("testimonialsContainer");
     });
   </script>
 </body>
