@@ -4,14 +4,17 @@
     "details": [
       {
         "appIDs": [ "3C2C5UW48Y.com.rohan.store.kaayko.app" ],
-        "paths":  [ "*" ]
+        "paths": [
+          "/", 
+          "/index.html",
+          "/about.html",
+          "/testimonials.html"
+        ]
       },
       {
         "appIDs": [ "3C2C5UW48Y.com.rohan.store.kaayko.app.Clip" ],
         "paths": [
-          "/?productID=sabarmati",
-          "/?productID=pikachu",
-          "/?productID=shutup"
+          "/paddlingout.html"
         ]
       }
     ]
