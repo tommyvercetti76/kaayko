@@ -3,23 +3,24 @@
     "apps": [],
     "details": [
       {
-        "appIDs": [ "3C2C5UW48Y.com.rohan.store.kaayko.app" ],
+        "appIDs": [
+          "3C2C5UW48Y.com.rohan.store.kaayko.app"
+        ],
         "paths": [
-          "/",               
+          "NOT /paddlingout.html*",
+          "/",
           "/index.html",
           "/about.html",
-          "/testimonials.html"
+          "/testimonials.html",
+          "/*"
         ]
-      }
-    ]
-  },
-  "appclips": {
-    "apps": [],
-    "details": [
+      },
       {
-        "appIDs": [ "3C2C5UW48Y.com.rohan.store.kaayko.app.Clip" ],
+        "appIDs": [
+          "3C2C5UW48Y.com.rohan.store.kaayko.app.Clip"
+        ],
         "paths": [
-          "/paddlingout.html"
+          "/paddlingout.html*"
         ]
       }
     ]
