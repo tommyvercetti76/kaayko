@@ -10,20 +10,23 @@
 
   <!-- SEO Meta Tags -->
   <title>Kaayko | About</title>
-  <meta name="description" content="Learn about Kaayko: apparel that accurately represents your thoughts. Discover our vision and exclusive designs.">
-  <meta name="keywords" content="Kaayko, About, Apparel Philosophy, Unique Designs">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://kaayko.com/about.html">
+  <meta name="description" content="Learn about Kaayko: apparel that accurately represents your thoughts. Discover our vision and exclusive designs." />
+  <meta name="keywords" content="Kaayko, About, Apparel Philosophy, Unique Designs" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://kaayko.com/about.html" />
 
-  <!-- 1) Global Stylesheet -->
+  <!-- 1) Global Stylesheet: resets, typography, carousel, modal, dark-mode, etc. -->
   <link rel="stylesheet" href="storestyle.css" />
-  <!-- 2) Header Styles -->
+
+  <!-- 2) Header Styles: shared header + dark-mode overrides -->
   <link rel="stylesheet" href="header.css" />
-  <!-- 3) Material Icons -->
+
+  <!-- 3) Material Icons (for dark-mode toggle, hamburger, etc.) -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 </head>
 
 <body>
+  <!-- HEADER: Shared across all pages -->
   <header class="header">
     <div class="header-top">
       <div class="header-brand">
@@ -38,12 +41,22 @@
     </div>
   </header>
 
+  <!-- Mobile overlay menu -->
   <div class="mobile-menu-overlay"><ul></ul></div>
 
+  <!-- MAIN CONTENT: About page -->
   <main>
+    <!-- SECTION 1: Visual Collage Banner -->
     <div class="about-hero-collage">
-      <!-- your collage images… -->
+      <div class="collage-slice"><img src="assets/Lifeisopinion_2.png" alt="Life is Opinion Shirt Design" /></div>
+      <div class="collage-slice"><img src="assets/AssaultBae_1.png" alt="Assault Bae Shirt Design" /></div>
+      <div class="collage-slice"><img src="assets/Live_3.png" alt="Live Shirt Design" /></div>
+      <div class="collage-slice"><img src="assets/Nagpur_3.png" alt="Nagpur Shirt Design" /></div>
+      <div class="collage-slice"><img src="assets/ShutUp_1.png" alt="Shut Up Shirt Design" /></div>
+      <div class="collage-slice"><img src="assets/StraightOutta_1.png" alt="Straight Outta Shirt Design" /></div>
     </div>
+
+    <!-- SECTION 2: Textual description of Kaayko's philosophy -->
     <section class="about-text">
       <h2>Welcome to Kaayko</h2>
       <h3>You deserve it</h3>
@@ -59,13 +72,15 @@
     </section>
   </main>
 
+  <!-- FOOTER -->
   <footer>
     <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
   </footer>
 
+  <!-- SCRIPTS -->
   <script type="module" src="scripts/header.js"></script>
   <script>
-    document.getElementById("year").textContent = new Date().getFullYear();
+    document.getElementById('year').textContent = new Date().getFullYear();
   </script>
 </body>
 </html>
