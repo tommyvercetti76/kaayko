@@ -4,10 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- iOS Smart App Banner -->
+  <!-- Smart App Banner: shows “Download” if not installed, “Open” if installed -->
   <meta name="apple-itunes-app"
-        content="app-id=333903271,
-                 app-argument=https://kaayko.com/about.html" />
+        content="app-id=6747012283, app-argument=https://kaayko.com/about.html" />
 
   <!-- SEO Meta Tags -->
   <title>Kaayko | About</title>
@@ -16,20 +15,15 @@
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://kaayko.com/about.html">
 
-  <!-- 1) Global Stylesheet: resets, typography, carousel, modal, dark-mode, etc. -->
+  <!-- 1) Global Stylesheet -->
   <link rel="stylesheet" href="storestyle.css" />
-
-  <!-- 2) Header Styles: shared header + dark-mode overrides -->
+  <!-- 2) Header Styles -->
   <link rel="stylesheet" href="header.css" />
-
-  <!-- 3) Material Icons (for dark-mode toggle, hamburger, etc.) -->
+  <!-- 3) Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 </head>
 
 <body>
-  <!-- ────────────────────────────────────────────────────────────────────
-       HEADER: Shared across all pages
-  ────────────────────────────────────────────────────────────────────── -->
   <header class="header">
     <div class="header-top">
       <div class="header-brand">
@@ -44,31 +38,19 @@
     </div>
   </header>
 
-  <!-- Mobile overlay menu -->
   <div class="mobile-menu-overlay"><ul></ul></div>
 
-  <!-- ────────────────────────────────────────────────────────────────────
-       MAIN CONTENT: About page
-  ────────────────────────────────────────────────────────────────────── -->
   <main>
-    <!-- SECTION 1: Visual Collage Banner -->
     <div class="about-hero-collage">
-      <div class="collage-slice"><img src="assets/Lifeisopinion_2.png" alt="Life is Opinion Shirt Design" /></div>
-      <div class="collage-slice"><img src="assets/AssaultBae_1.png" alt="Assault Bae Shirt Design" /></div>
-      <div class="collage-slice"><img src="assets/Live_3.png" alt="Live Shirt Design" /></div>
-      <div class="collage-slice"><img src="assets/Nagpur_3.png" alt="Nagpur Shirt Design" /></div>
-      <div class="collage-slice"><img src="assets/ShutUp_1.png" alt="Shut Up Shirt Design" /></div>
-      <div class="collage-slice"><img src="assets/StraightOutta_1.png" alt="Straight Outta Shirt Design" /></div>
+      <!-- your collage images… -->
     </div>
-
-    <!-- SECTION 2: Textual description of Kaayko's philosophy -->
     <section class="about-text">
       <h2>Welcome to Kaayko</h2>
       <h3>You deserve it</h3>
       <p>
         Kaayko offers a chance to wear your beliefs.<br>
         Kaayko will turn heads, spark conversations.<br><br>
-        As Seagulls squawk nearby-<br>
+        As Seagulls squawk nearby—<br>
         Shoo them away with style<br><br>
         Cloak yourself in Clarity.<br>
         Delegate your beliefs to Kaayko.<br><br>
@@ -77,16 +59,10 @@
     </section>
   </main>
 
-  <!-- ────────────────────────────────────────────────────────────────────
-       FOOTER
-  ────────────────────────────────────────────────────────────────────── -->
   <footer>
-    <p>&copy; <span id="year"></span> Kaayko©. All rights reserved.</p>
+    <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
   </footer>
 
-  <!-- ────────────────────────────────────────────────────────────────────
-       SCRIPTS (ES modules)
-  ────────────────────────────────────────────────────────────────────── -->
   <script type="module" src="scripts/header.js"></script>
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
