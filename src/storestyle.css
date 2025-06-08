@@ -537,3 +537,27 @@ footer {
   background-color:#ffd700;
   color: #111;
 }
+
+/* 11) Force “mobile-card” sizing & centering on all viewports */
+.carousel {
+  /* center the whole grid if there are fewer cards than will fit */
+  justify-content: center;
+}
+
+/* make each card a fixed, mobile-friendly width */
+.carousel-item {
+  max-width: 300px;    /* same as your phone-style cards */
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* on desktop, lay out fixed-width columns and center them */
+@media (min-width: 768px) {
+  .carousel {
+    display: grid;                                       /* reaffirm grid */
+    grid-template-columns: repeat(auto-fit, 300px);       /* exactly 300px columns */
+    gap: var(--spacing-medium);
+    justify-content: center;                             /* keep them centered */
+    padding: var(--spacing-medium);
+  }
+}
