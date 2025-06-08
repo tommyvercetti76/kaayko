@@ -31,23 +31,20 @@
         <h1 class="header-title">Kaayko Store</h1>
         <p class="header-subtitle">Vote now, pay later.</p>
       </div>
-
       <!-- Desktop navigation -->
       <nav class="top-menu"><ul></ul></nav>
-
       <!-- Controls: Filter | Dark-mode | Mobile menu -->
       <div class="header-controls">
-        <!-- 1) Filter Toggle -->
+        <!-- Filter Toggle -->
         <button id="filter-toggle" class="material-icons" aria-label="Open Filters">
           filter_list
         </button>
-        <!-- 2) Dark Mode Toggle -->
+        <!-- Dark Mode Toggle -->
         <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode"></button>
-        <!-- 3) Mobile FAB (hamburger) -->
+        <!-- Mobile FAB -->
         <button class="fab-menu material-icons" aria-label="Open Menu">menu</button>
       </div>
     </div>
-    <!-- Mobile overlay menu -->
     <div class="mobile-menu-overlay"><ul></ul></div>
   </header>
 
@@ -56,49 +53,34 @@
     <div class="filter-panel">
       <h2>Filter Products</h2>
 
-      <!-- PRICE slider -->
+      <!-- PRICE FACETS -->
       <div class="filter-section" id="price-section">
-        <div class="slider-label">
-          <span>Price:</span>
-          <span id="price-value"></span>
-        </div>
-        <input
-          type="range"
-          id="price-slider"
-          min="0"
-          max="0"
-          value="0"
-        />
+        <strong>Price:</strong>
+        <div class="chip-group" id="price-chips"><!-- JS will inject: <div class="chip" data-value="$">$</div> etc. --></div>
       </div>
 
-      <!-- TAG checkboxes -->
+      <!-- TAG FACETS -->
       <div class="filter-section" id="tags-section">
         <strong>Tags:</strong>
-        <div id="tag-options"></div>
+        <div class="chip-group" id="tag-chips"><!-- JS will inject: <div class="chip" data-value="Philosophy">Philosophy</div> etc. --></div>
       </div>
 
-      <!-- VOTES slider -->
+      <!-- MIN VOTES SLIDER -->
       <div class="filter-section" id="votes-section">
         <div class="slider-label">
           <span>Min Votes:</span>
           <span id="votes-value">0</span>
         </div>
-        <input
-          type="range"
-          id="votes-slider"
-          min="0"
-          max="0"
-          value="0"
-        />
+        <input type="range" id="votes-slider" min="0" max="0" value="0" />
       </div>
 
-      <!-- ACTION buttons -->
+      <!-- ACTION BUTTONS -->
       <div class="filter-actions">
         <button id="filter-reset">Reset</button>
         <button id="filter-apply">Apply</button>
       </div>
 
-      <!-- CLOSE icon -->
+      <!-- CLOSE ICON -->
       <button
         class="filter-close material-icons"
         id="filter-close"
@@ -107,12 +89,12 @@
     </div>
   </div>
 
-  <!-- MAIN CONTENT: Product carousel (injected by kaayko_main.js) -->
+  <!-- MAIN CONTENT: Product carousel -->
   <main>
     <section id="carousel" class="carousel" aria-live="polite"></section>
   </main>
 
-  <!-- IMAGE MODAL (zoomed carousel items) -->
+  <!-- IMAGE MODAL -->
   <div id="modal" class="modal" role="dialog" aria-modal="true">
     <div class="modal-content">
       <button id="close-modal-button" class="modal-close material-icons" aria-label="Close">close</button>
@@ -131,8 +113,6 @@
   <script type="module" src="scripts/header.js"></script>
   <script type="module" src="scripts/kaayko_apiClient.js"></script>
   <script type="module" src="scripts/kaayko_main.js"></script>
-
-  <!-- 4) Filter-modal controller -->
   <script type="module" src="scripts/kaaykoFilterModal.js"></script>
 
   <!-- Inline: current year -->

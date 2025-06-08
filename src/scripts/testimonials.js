@@ -6,26 +6,26 @@ const IMAGE_PROXY_BASE =
 
 // 2) Your 20 fake reviews
 const fakeTestimonials = [
-  { name: "Alice Johnson",   review: "Absolutely amazing quality and design. Kaayko never disappoints! My mother in law was disappointed at first but then we fed her to pigs." },
-  { name: "Brian Smith",     review: "I love the unique style and attention to detail. Highly recommend!" },
-  { name: "Catherine Lee",   review: "My journey from a Neanderthal to Narayan is complete only because I stumbled on Kaayko!" },
-  { name: "David Kim",       review: "A premium brand that deserves premium prices. The kids in China are OK with this!" },
-  { name: "Emily Davis",     review: "The products are as innovative as they are beautiful. Very impressed!" },
-  { name: "Frank Moore",     review: "Outstanding design and functionality. I wear my Kaayko shirt with pride." },
-  { name: "Grace Chen",      review: "The detail and care in every product is evident. Love it! My wife loved it and she's a nihilist!" },
-  { name: "Henry Patel",     review: "High-quality, stylish, and sustainable. Finally something impressed me after that quickly taken corner in Liverpool." },
-  { name: "Isabella Rivera", review: "My favorite brand for everyday style and comfort. If Kaayko was a religion, I'm the priestess and shall rep it until the Lord commandeth." },
-  { name: "Jack Thompson",   review: "The modern aesthetic and premium quality make Kaayko stand out. Do you know who else stands out? Racism." },
-  { name: "Katherine Adams", review: "Every piece feels uniquely crafted. I am as loyal a customer as I am a husband and believe me, I've been married a dozen times." },
-  { name: "Liam Brown",      review: "Top-notch materials and design. A truly remarkable brand. Without Kaayko, you feel nothing!" },
-  { name: "Mia Wilson",      review: "The blend of tradition and modernity in their products is inspiring. Kaayko is life!" },
-  { name: "Noah Martinez",   review: "I appreciate the focus on sustainability and quality. Their deforestation operations are highly ethical and trees consent before they are chopped." },
+  { name: "Alice Johnson",      review: "Absolutely amazing designs. Kaayko never disappoints! My mother in law was disappointed at first but then we fed her to pigs." },
+  { name: "James Madison",       review: "I love the unique style and attention to detail. Highly recommend! A little expensive, but what price do you put on freedom of expressions?" },
+  { name: "Katherine Murthy",   review: "My journey from a Neanderthal to Narayan is complete because I stumbled on Kaayko!" },
+  { name: "David Kim",          review: "A premium brand that deserves premium prices. The kids in Nicaragua are OK with this!" },
+  { name: "Emily Davis",        review: "The products are as innovative as they are beautiful. Very impressed on a 3 am Tuesday Morning!" },
+  { name: "Frank Neutral",      review: "Outstanding designs. I wear my Kaayko shirt with pride. Not that one. But not that one either." },
+  { name: "Grace Chen",         review: "The detail and care in every design is evident. Love it! My wife loved it and she's a nihilist!" },
+  { name: "Bohran Mamdhany",    review: "High-quality, stylish, and questionably sustainable. Finally something impressed me after the elevator knob in my rehab clinic." },
+  { name: "Isabella Rivera",    review: "Kaayko is enlightening. If Kaayko was a religion, I'd know it's not Kaayko." },
+  { name: "Jack Thompson",      review: "The modern aesthetic and premium quality make Kaayko stand out. Do you know who else stands out? Racism." },
+  { name: "Katherine Adams",      review: "Every piece feels uniquely crafted by a child. I can see the innocence in every stitch." },
+  { name: "Kamlakar Lagingfeld",  review: "Top-notch materials and design. A truly remarkable brand. Makes me feel alive again!" },
+  { name: "Yama Doot",       review: "Kaayko makes funerals funky and death marches danceable. Kaayko is fashion we never deserved! Wait, this is not the right forum??" },
+  { name: "Noah Martinez",   review: "I appreciate the focus on sustainability. Their 'FUR-REAL - Furry Union for Rights — Repurposing Excess Animal Layers' program is a game changer." },
   { name: "Olivia Garcia",   review: "Beautifully designed and exceptionally comfortable. Highly recommended! I also highly recommend you staying hydrated." },
-  { name: "Paul Anderson",   review: "An experience that elevates your style effortlessly. People will ask you, do not tell them." },
-  { name: "Quinn Harris",    review: "Every product tells a story. I am impressed with the creativity. Some stories are too long but then I remind myself it's not the stories but my attention span which sucks." },
-  { name: "Rachel Clark",    review: "The craftsmanship is evident in every detail. A must-have brand! Even my unborn baby has an order placed!" },
-  { name: "Samuel Lewis",    review: "Bold, innovative, and timeless. Kaayko has it all. If someone is offended, tell them to suck it." },
-  { name: "Tina Reynolds",   review: "I was hungry for four days and finally reached a town with a café and internet. I bought a T-shirt from Kaayko.com and died hungry. They call me Corpse with Class." }
+  { name: "Paul Anderson",   review: "An experience that elevates your style effortlessly. People will ask you, tell them to drink water. Don't encourage them to buy this. It's all mine." },
+  { name: "Quinn Harris",    review: "Every product tells a story. Some stories are too long but then I remind myself it's not the stories but my attention span which sucks." },
+  { name: "Rachel Clark",    review: "The craftsmanship is evident in every detail. A must-have brand! Even my unborn baby has an order placed for his eldest daughter!" },
+  { name: "Samuel Lewis",    review: "Bold, innovative, and timeless. Kaayko has it all. If someone is offended, tell them to drink water and stay hydrated in this this heat of hatred." },
+  { name: "Tina Reynolds",   review: "For a hill, men would kill. Why? They do not know. Exactly how I do not know why did I not know about Kaayko" }
 ];
 
 /** Fisher–Yates shuffle */

@@ -1,19 +1,29 @@
 /* ==========================================================================
    File: kaaykoFilterModal.css
-   Semi-transparent backdrop + heavy shadow + Josefin fonts
-   Perfected slider thumbs & checkbox accents
+   Faceted-Chips Filter Modal: Dark & Light Modes, Dynamic Disabling
    ========================================================================== */
 
+/*─────────────────────────────────────────────────────────────────────────────
+  0) Theme Variables
+─────────────────────────────────────────────────────────────────────────────*/
 :root {
-  /* backdrop & panel colors */
-  --filter-backdrop:   rgba(0, 0, 0, 0.6);
-  --filter-panel-bg:   rgba(20, 20, 20, 0.95);
-  --filter-radius:     12px;
-  --filter-gap:        18px;
-  /* text & accent */
+  /* Dark mode */
+  --filter-backdrop:   rgba(0,0,0,0.6);
+  --filter-panel-bg:   rgba(20,20,20,0.95);
   --filter-text:       #fffff0;   /* ivory */
   --filter-accent:     #FFD700;   /* gold */
   --filter-track:      #444;      /* slider track */
+  --radius:            12px;
+  --gap:               18px;
+}
+
+/* Light‐theme overrides */
+html.light-theme {
+  --filter-backdrop:   rgba(255,255,255,0.7);
+  --filter-panel-bg:   rgba(255,255,255,0.95);
+  --filter-text:       #111;      /* charcoal */
+  --filter-accent:     #fffff0;   /* ivory */
+  --filter-track:      #ddd;
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
@@ -21,13 +31,12 @@
 ─────────────────────────────────────────────────────────────────────────────*/
 .filter-overlay {
   display: none;
-  position: fixed;
-  inset: 0;
+  position: fixed; inset: 0;
   background: var(--filter-backdrop);
   z-index: 2000;
+  padding: var(--gap);
   align-items: center;
   justify-content: center;
-  padding: var(--filter-gap);
 }
 .filter-overlay.active {
   display: flex;
@@ -39,181 +48,164 @@
 .filter-panel {
   position: relative;
   background: var(--filter-panel-bg);
-  border-radius: var(--filter-radius);
+  color:      var(--filter-text);
+  border-radius: var(--radius);
   box-shadow: 0 16px 32px rgba(0,0,0,0.8);
-  width: 100%;
-  max-width: 420px;
-  max-height: 90vh;
-  overflow-y: auto;
-  padding: var(--filter-gap);
-  color: var(--filter-text);
+  width:       100%;
+  max-width:   420px;
+  max-height:  90vh;
+  overflow-y:  auto;
+  padding:     var(--gap);
   font-family: 'Josefin_Light', sans-serif;
 }
 
-/* Panel header */
+/* Header */
 .filter-panel h2 {
-  margin: 0 0 var(--filter-gap);
-  font-size: 1.6rem;
-  font-family: 'Josefin_Bold';
-  border-bottom: 1px solid #444;
-  padding-bottom: 8px;
+  margin:        0 0 var(--gap);
+  font-size:     1.6rem;
+  font-family:   'Josefin_Bold';
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+  padding-bottom:8px;
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
-  Sections
+  Sections & Dividers
 ─────────────────────────────────────────────────────────────────────────────*/
 .filter-section {
-  margin-top: var(--filter-gap);
-  font-family: 'Josefin_Medium';
+  margin-top:   var(--gap);
+  font-family:  'Josefin_Medium';
 }
 .filter-section + .filter-section {
-  border-top: 1px solid #444;
-  padding-top: var(--filter-gap);
-}
-
-/* Labels on sliders */
-.slider-label {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
-  font-family: 'Josefin_Medium';
-  font-size: 1rem;
+  border-top:   1px solid rgba(255,255,255,0.2);
+  padding-top:  var(--gap);
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
-  Range sliders
+  Faceted Chips
+─────────────────────────────────────────────────────────────────────────────*/
+.chip-group {
+  display:      flex;
+  flex-wrap:    wrap;
+  gap:          8px;
+  margin-top:   8px;
+}
+.chip {
+  display:          inline-flex;
+  align-items:      center;
+  padding:          6px 12px;
+  border:           2px solid var(--filter-accent);
+  border-radius:    9999px;
+  background:       transparent;
+  color:            var(--filter-text);
+  font-family:      'Josefin_Medium';
+  font-size:        0.95rem;
+  cursor:           pointer;
+  transition:       background 0.2s, color 0.2s, transform 0.1s ease;
+}
+.chip:hover {
+  transform:        translateY(-1px);
+  background:       rgba(255,255,255,0.15);
+}
+.chip.selected {
+  background:       var(--filter-accent);
+  color:            #222;
+}
+.chip.disabled {
+  opacity:          0.4;
+  pointer-events:   none;
+}
+.chip.disabled:hover {
+  transform:        none;
+  background:       transparent;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Slider Label
+─────────────────────────────────────────────────────────────────────────────*/
+.slider-label {
+  display:          flex;
+  justify-content:  space-between;
+  margin-bottom:    8px;
+  font-family:      'Josefin_Medium';
+  font-size:        1rem;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+  Range slider
 ─────────────────────────────────────────────────────────────────────────────*/
 .filter-panel input[type="range"] {
   -webkit-appearance: none;
-  width: 100%;
-  height: 6px;
-  background: var(--filter-track);
-  border-radius: 3px;
-  outline: none;
-  margin: 0;
-  cursor: pointer;
+  width:              100%;
+  height:             6px;
+  background:         var(--filter-track);
+  border-radius:      3px;
+  outline:            none;
+  cursor:             pointer;
+  margin:             0;
 }
-
-/* Webkit thumb */
-.filter-panel input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--filter-accent);
-  border: 2px solid var(--filter-text);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-.filter-panel input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-}
-
-/* Firefox thumb */
+.filter-panel input[type="range"]::-webkit-slider-thumb,
 .filter-panel input[type="range"]::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--filter-accent);
-  border: 2px solid var(--filter-text);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  width:              18px;
+  height:             18px;
+  border-radius:      50%;
+  background:         var(--filter-accent);
+  border:             2px solid var(--filter-text);
+  box-shadow:         0 2px 6px rgba(0,0,0,0.4);
+  transition:         transform 0.15s ease, box-shadow 0.15s ease;
 }
+.filter-panel input[type="range"]::-webkit-slider-thumb:hover,
 .filter-panel input[type="range"]::-moz-range-thumb:hover {
-  transform: scale(1.2);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+  transform:          scale(1.2);
+  box-shadow:         0 4px 8px rgba(0,0,0,0.5);
 }
-
-/* Track styling for Firefox */
 .filter-panel input[type="range"]::-moz-range-track {
-  background: var(--filter-track);
-  height: 6px;
-  border-radius: 3px;
-}
-
-/*─────────────────────────────────────────────────────────────────────────────
-  Checkboxes
-─────────────────────────────────────────────────────────────────────────────*/
-.filter-section label {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-  cursor: pointer;
-  font-family: 'Josefin_Light';
-}
-.filter-section input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
-  margin-right: 10px;
-  accent-color: var(--filter-accent);
-  cursor: pointer;
-  transition: transform 0.1s ease;
-}
-.filter-section input[type="checkbox"]:hover {
-  transform: scale(1.1);
-}
-.filter-section label span {
-  font-size: 1rem;
+  background:         var(--filter-track);
+  height:             6px;
+  border-radius:      3px;
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
   Action buttons
 ─────────────────────────────────────────────────────────────────────────────*/
 .filter-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--filter-gap);
-  margin-top: var(--filter-gap);
+  display:          flex;
+  justify-content:  flex-end;
+  gap:              var(--gap);
+  margin-top:       var(--gap);
 }
 .filter-actions button {
-  font-family: 'Josefin_Medium';
-  font-size: 0.95rem;
-  background: none;
-  border: 2px solid var(--filter-accent);
-  color: var(--filter-accent);
-  padding: 8px 16px;
-  border-radius: var(--filter-radius);
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s, transform 0.1s ease;
+  font-family:      'Josefin_Medium';
+  font-size:        0.95rem;
+  background:       none;
+  border:           2px solid var(--filter-accent);
+  color:            var(--filter-accent);
+  padding:          8px 16px;
+  border-radius:    var(--radius);
+  cursor:           pointer;
+  transition:       background 0.2s, color 0.2s, transform 0.1s ease;
 }
 .filter-actions button:hover {
-  background: var(--filter-accent);
-  color: #222;
-  transform: translateY(-2px);
+  background:       var(--filter-accent);
+  color:            #222;
+  transform:        translateY(-2px);
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
-  Close icon (×)
+  Close icon
 ─────────────────────────────────────────────────────────────────────────────*/
 .filter-close {
-  position: absolute;
-  top: 14px; right: 14px;
-  font-family: 'Material Icons';
-  font-size: 28px;
-  color: var(--filter-text);
-  background: none;
-  border: none;
-  cursor: pointer;
-  opacity: 0.7;
-  transition: opacity 0.2s;
+  position:       absolute;
+  top:            14px;
+  right:          14px;
+  font-family:    'Material Icons';
+  font-size:      28px;
+  color:          var(--filter-text);
+  background:     none;
+  border:         none;
+  cursor:         pointer;
+  opacity:        0.7;
+  transition:     opacity 0.2s;
 }
 .filter-close:hover {
-  opacity: 1;
-}
-
-/*─────────────────────────────────────────────────────────────────────────────
-  Light / Dark-mode adaptivity
-─────────────────────────────────────────────────────────────────────────────*/
-html.light-theme .filter-panel {
-  background: #fff;
-  color: #111;
-}
-html.light-theme {
-  --filter-track:      #ddd;
-  --filter-panel-bg:   #ffffff;
-  --filter-backdrop:   rgba(255,255,255,0.7);
-  --filter-text:       #111;
-  --filter-accent:     #fffff0; /* ivory accent in light mode */
+  opacity:        1;
 }
