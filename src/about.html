@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <!-- iOS Smart App Banner -->
+  <meta name="apple-itunes-app"
+        content="app-id=3C2C5UW48Y,
+                 app-argument=https://kaayko.com/about.html" />
+
   <!-- SEO Meta Tags -->
   <title>Kaayko | About</title>
   <meta name="description" content="Learn about Kaayko: apparel that accurately represents your thoughts. Discover our vision and exclusive designs.">
@@ -24,10 +29,6 @@
 <body>
   <!-- ────────────────────────────────────────────────────────────────────
        HEADER: Shared across all pages
-       • Brand (title + subtitle)
-       • Desktop menu (populated by header.js)
-       • Dark-mode toggle & mobile FAB
-       • Mobile overlay menu
   ────────────────────────────────────────────────────────────────────── -->
   <header class="header">
     <div class="header-top">
@@ -50,7 +51,7 @@
        MAIN CONTENT: About page
   ────────────────────────────────────────────────────────────────────── -->
   <main>
-    <!-- SECTION 1: Visual Collage Banner showcasing featured designs -->
+    <!-- SECTION 1: Visual Collage Banner -->
     <div class="about-hero-collage">
       <div class="collage-slice"><img src="assets/Lifeisopinion_2.png" alt="Life is Opinion Shirt Design" /></div>
       <div class="collage-slice"><img src="assets/AssaultBae_1.png" alt="Assault Bae Shirt Design" /></div>
@@ -85,8 +86,6 @@
 
   <!-- ────────────────────────────────────────────────────────────────────
        SCRIPTS (ES modules)
-       1) header.js  → dark-mode, menus, mobile overlay
-       2) inline      → set dynamic year
   ────────────────────────────────────────────────────────────────────── -->
   <script type="module" src="scripts/header.js"></script>
   <script>
