@@ -328,7 +328,7 @@ html.dark-theme .header-title {
   color: #fff;
 }
 html.dark-theme .header-subtitle {
-  color: var(--color-text-secondary);
+  color: var(--color-accent);
 }
 html.dark-theme .top-menu a {
   color: #fff;
