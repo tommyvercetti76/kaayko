@@ -1,6 +1,6 @@
 /* ==========================================================================
    File: header.css
-   Shared header & hero-banner styles + exhaustive dark-mode overrides
+   Shared header styles + exhaustive dark-mode overrides
    Includes Filter Toggle icon styling
    ========================================================================== */
 
@@ -154,12 +154,6 @@ html.dark-theme .theme-toggle-icon::before {
 }
 
 /* ─── Other Controls ──────────────────────────────────────────────────────── */
-.video-toggle {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
-}
 .material-icons {
   font-size: 24px;
 }
@@ -245,56 +239,6 @@ html.dark-theme .theme-toggle-icon::before {
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
- 4) Hero-Banner (paddlingout.html only)
-─────────────────────────────────────────────────────────────────────────────*/
-.hero-banner {
-  width: 100%;
-  margin: 0;
-  padding: 0;
-}
-.hero-video {
-  position: relative;
-  width: 100%;
-  height: 50vh;
-  min-height: 300px;
-  background-color: #000;
-  overflow: hidden;
-}
-.hero-video video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.video-control-button {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: rgba(0,0,0,0.6);
-  border: none;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  z-index: 5;
-  opacity: 1;
-  transition: background-color 0.2s;
-}
-.video-control-button:hover {
-  background-color: rgba(0,0,0,0.8);
-}
-.video-control-button .material-icons {
-  color: #fff;
-  font-size: 32px;
-}
-.header.collapsed .hero-banner {
-  display: none;
-}
-
-/*─────────────────────────────────────────────────────────────────────────────
  5) Responsive Header Tweaks
 ─────────────────────────────────────────────────────────────────────────────*/
 @media (max-width: 768px) {
@@ -345,18 +289,9 @@ html.dark-theme .mobile-menu-overlay a {
 html.dark-theme .mobile-menu-overlay a:hover {
   color: var(--color-accent);
 }
-html.dark-theme .video-control-button {
-  background-color: rgba(255,255,255,0.1);
-}
-html.dark-theme .video-control-button:hover {
-  background-color: rgba(255,255,255,0.2);
-}
 html.dark-theme .fab-menu::before {
   color: var(--color-accent);
   filter: drop-shadow(0 0 2px rgba(255,215,0,0.5));
-}
-html.dark-theme .header.collapsed .hero-banner {
-  display: none;
 }
 html.dark-theme footer {
   background: #222;

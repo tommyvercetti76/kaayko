@@ -87,34 +87,10 @@ function setupMobileMenu() {
 }
 
 /** ───────────────────────────────────────────────────────────────────────────
- * 4) Hero-Banner Collapse/Expand (only on paddlingout.html)
- *    Wires up the caret toggle to show/hide .hero-banner.
- *───────────────────────────────────────────────────────────────────────────*/
-function setupHeroToggle() {
-  const btn    = document.getElementById("videoToggle");
-  const header = document.querySelector(".header");
-  if (!btn || !header) return;
-
-  const icon = btn.querySelector(".material-icons");
-  const updateIcon = () => {
-    icon.textContent = header.classList.contains("collapsed")
-      ? "expand_more"
-      : "expand_less";
-  };
-
-  updateIcon();
-  btn.addEventListener("click", () => {
-    header.classList.toggle("collapsed");
-    updateIcon();
-  });
-}
-
-/** ───────────────────────────────────────────────────────────────────────────
  * Init all header/UI behavior once DOM is ready
  *───────────────────────────────────────────────────────────────────────────*/
 document.addEventListener("DOMContentLoaded", () => {
   initializeDarkMode();
   populateMenu();
   setupMobileMenu();
-  setupHeroToggle();
 });

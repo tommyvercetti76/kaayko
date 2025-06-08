@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Kaayko | Paddling Out</title>
-  <meta name="description" content="Experience Kaayko's Paddling Out collection: Your Paddling adventure begins here..">
+  <meta name="description" content="Experience Kaayko's Paddling Out collection: Your paddling adventure begins here.">
   <meta name="keywords" content="Kaayko Kayaks, Paddling Out, Kayaking, Nature, Paddling in National Parks">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://kaayko.com/paddlingout.html">
@@ -12,7 +12,7 @@
   <!-- 0) Shared store CSS (header, footer, menu, dark mode) -->
   <link rel="stylesheet" href="storestyle.css" />
 
-  <!-- 1) Header CSS (shared header + dark mode + hero toggle) -->
+  <!-- 1) Header CSS (shared header + dark-mode overrides) -->
   <link rel="stylesheet" href="header.css" />
 
   <!-- 2) Page-specific CSS (cards, carousel, etc.) -->
@@ -21,35 +21,28 @@
   <!-- Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
 </head>
+
 <body>
-  <!-- HEADER (brand / menu / dark toggle / hero toggle / mobile menu) -->
+  <!-- HEADER: Brand / nav / dark-mode toggle / mobile menu -->
   <header class="header">
     <div class="header-top">
       <div class="header-brand">
         <h1 class="header-title">Kaayko: Paddling Out</h1>
         <p class="header-subtitle">Not easy, but pretty</p>
       </div>
+
+      <!-- Desktop nav (populated by header.js) -->
       <nav class="top-menu"><ul></ul></nav>
+
+      <!-- Controls: Dark-mode toggle + mobile FAB -->
       <div class="header-controls">
-        <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode">
-        </button>
-        <button id="videoToggle" class="video-toggle">
-          <span class="material-icons">expand_less</span>
-        </button>
-        <button class="fab-menu material-icons" aria-label="Open Menu">
-          menu
-        </button>
+        <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode"></button>
+        <button class="fab-menu material-icons" aria-label="Open Menu">menu</button>
       </div>
     </div>
+
+    <!-- Mobile overlay menu -->
     <div class="mobile-menu-overlay"><ul></ul></div>
-    <div class="hero-banner">
-      <div class="hero-video">
-        <video id="previewVideo" muted playsinline preload="none"></video>
-        <button id="videoControlButton" class="video-control-button">
-          <span class="material-icons">play_arrow</span>
-        </button>
-      </div>
-    </div>
   </header>
 
   <!-- MAIN: Cards injected by paddlingout.js -->
@@ -62,7 +55,7 @@
     <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
   </footer>
 
-  <!-- TEMPLATES -->
+  <!-- Card template for paddlingout.js -->
   <template id="card-template">
     <div class="card">
       <div class="img-container"></div>
@@ -77,14 +70,14 @@
   </template>
 
   <!-- SCRIPTS -->
-  <!-- 1) Header behaviors: dark-mode, menu, hero-banner toggle -->
+  <!-- 1) Header behaviors: dark-mode, menu -->
   <script type="module" src="scripts/header.js"></script>
-  <!-- 2) UI helpers: populateCarousel, modal, voting, etc. -->
+  <!-- 2) UI helpers: carousel, modal, voting -->
   <script type="module" src="scripts/kaayko_ui.js"></script>
-  <!-- 3) Page logic: fetch spots, render cards, wire up carousel -->
+  <!-- 3) Page logic: fetch & render paddling spots -->
   <script type="module" src="scripts/paddlingout.js"></script>
 
-  <!-- Set year in footer -->
+  <!-- Set current year in footer -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("year").textContent = new Date().getFullYear();
