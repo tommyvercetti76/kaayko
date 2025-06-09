@@ -1,4 +1,7 @@
 {
+  "functions": {
+    "source": "functions"
+  },
   "hosting": {
     "site": "kaaykostore",
     "public": "src",
@@ -19,16 +22,28 @@
         "headers":[{"key":"Cache-Control","value":"public,max-age=31536000,immutable"}]
       }
     ],
-    "redirects":[
-      { "source": "/ul/about",        "destination": "/about.html",        "type":302 },
-      { "source": "/ul/testimonials", "destination": "/testimonials.html", "type":302 },
-      { "source": "/ul/paddlingout",  "destination": "/paddlingout.html",  "type":302 }
+    "redirects": [
+      {
+        "source": "/ul/about",
+        "destination": "/about.html",
+        "type": 302
+      },
+      {
+        "source": "/ul/testimonials",
+        "destination": "/testimonials.html",
+        "type": 302
+      },
+      {
+        "source": "/ul/paddlingout",
+        "destination": "/paddlingout.html",
+        "type": 302
+      }
     ],
-    "rewrites":[
-      { "source": "/ul",     "function": "ssr" },
-      { "source": "/ul/",    "function": "ssr" },
-      { "source": "/ul/**",  "function": "ssr" },
-      { "source": "**",      "destination": "/index.html" }
+    "rewrites": [
+      { "source": "/ul",   "function": "ssr" },
+      { "source": "/ul/",  "function": "ssr" },
+      { "source": "/ul/**","function": "ssr" },
+      { "source": "**",    "destination": "/index.html" }
     ]
   }
 }
