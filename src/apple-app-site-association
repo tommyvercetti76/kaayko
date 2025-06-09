@@ -6,25 +6,28 @@
         "appIDs": [
           "3C2C5UW48Y.com.rohan.store.kaayko.app"
         ],
-        "defaults": { "caseSensitive": false },
         "components": [
           {
-            "/": "/paddlingout*",
-            "exclude": true
-          },
-          { "/": "/" },
-          { "/": "/index.html" },
-          { "/": "/about*" },
-          { "/": "/testimonials*" }
+            "/": "/*"
+          }
         ]
       },
       {
         "appIDs": [
           "3C2C5UW48Y.com.rohan.store.kaayko.app.Clip"
         ],
-        "defaults": { "caseSensitive": false },
         "components": [
-          { "/": "/paddlingout*" }
+          {
+            "/": "/*",
+            "?": {
+              "productID": [
+                "broke",
+                "nagpur",
+                "life",
+                "tBone"
+              ]
+            }
+          }
         ]
       }
     ]
