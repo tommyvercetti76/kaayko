@@ -2,7 +2,7 @@
   "hosting": {
     "site": "kaaykostore",
     "public": "src",
-    "cleanUrls": true,    
+    "cleanUrls": true,
     "trailingSlash": false,
     "ignore": [
       "firebase.json",
@@ -23,6 +23,20 @@
           "key": "Cache-Control",
           "value": "public,max-age=31536000,immutable"
         }]
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "/ul/about",
+        "destination": "/about.html"
+      },
+      {
+        "source": "/ul/testimonials",
+        "destination": "/testimonials.html"
+      },
+      {
+        "source": "/ul/paddlingout",
+        "destination": "/paddlingout.html"
       }
     ]
   }
