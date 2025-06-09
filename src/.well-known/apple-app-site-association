@@ -3,23 +3,23 @@
     "apps": [],
     "details": [
       {
-        "appIDs": [ "3C2C5UW48Y.com.rohan.store.kaayko.app" ],
+        "appIDs": ["3C2C5UW48Y.com.rohan.store.kaayko.app"],
         "defaults": { "caseSensitive": false },
         "components": [
-          { "/": "/*", "?": { "productID": [], "exclude": true } },
-          { "/": "/*" }
+          { "/": "/ul/*", "?": { "productID": [], "exclude": true } },
+          { "/": "/ul/*" }
         ]
       },
       {
-        "appIDs": [ "3C2C5UW48Y.com.rohan.store.kaayko.app.Clip" ],
+        "appIDs": ["3C2C5UW48Y.com.rohan.store.kaayko.app.Clip"],
         "defaults": { "caseSensitive": false },
         "components": [
-          { "/": "/*", "?": { "productID": [] } }
+          { "/": "/ul/*", "?": { "productID": [] } }
         ]
       }
     ]
   },
   "appclips": {
-    "apps": [ "3C2C5UW48Y.com.rohan.store.kaayko.app.Clip" ]
+    "apps": ["3C2C5UW48Y.com.rohan.store.kaayko.app.Clip"]
   }
 }
