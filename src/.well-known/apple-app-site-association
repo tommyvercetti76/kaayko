@@ -13,8 +13,8 @@
             "comment": "root/index.html" 
           },
           { "/": "/index.html" },
-          { "/": "/about.html" },
-          { "/": "/testimonials.html" }
+          { "/": "/about*" },
+          { "/": "/testimonials*" }
         ]
       },
       {
