@@ -3,27 +3,35 @@
     "apps": [],
     "details": [
       {
-        "appIDs": [ "3C2C5UW48Y.com.rohan.store.kaayko.app" ],
+        "appIDs": [
+          "3C2C5UW48Y.com.rohan.store.kaayko.app"
+        ],
         "defaults": { "caseSensitive": false },
         "components": [
-          { "/": "/paddlingout*", 
-            "exclude": true 
-          }, 
-          { "/": "/", 
-            "comment": "root/index.html" 
+          {
+            "/": "/paddlingout.html*",
+            "exclude": true
           },
+          { "/": "/" },
           { "/": "/index.html" },
-          { "/": "/about*" },
-          { "/": "/testimonials*" }
+          { "/": "/about.html" },
+          { "/": "/testimonials.html" }
         ]
       },
       {
-        "appIDs": [ "3C2C5UW48Y.com.rohan.store.kaayko.app.Clip" ],
+        "appIDs": [
+          "3C2C5UW48Y.com.rohan.store.kaayko.app.Clip"
+        ],
         "defaults": { "caseSensitive": false },
         "components": [
-          { "/": "/paddlingout*" }
+          { "/": "/paddlingout.html*" }
         ]
       }
+    ]
+  },
+  "appclips": {
+    "apps": [
+      "3C2C5UW48Y.com.rohan.store.kaayko.app.Clip"
     ]
   }
 }
