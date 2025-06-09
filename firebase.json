@@ -25,11 +25,27 @@
         }]
       }
     ],
-    "rewrites": [
-      { "source": "/ul/about",        "destination": "/about.html"       },
-      { "source": "/ul/testimonials", "destination": "/testimonials.html"},
-      { "source": "/ul/paddlingout",  "destination": "/paddlingout.html" },
-      { "source": "/ul",              "destination": "/index.html"       }
+    "redirects": [
+      {
+        "source": "/ul/about",
+        "destination": "/about.html",
+        "type": 302
+      },
+      {
+        "source": "/ul/testimonials",
+        "destination": "/testimonials.html",
+        "type": 302
+      },
+      {
+        "source": "/ul/paddlingout",
+        "destination": "/paddlingout.html",
+        "type": 302
+      },
+      {
+        "source": "/ul",
+        "destination": "/index.html",
+        "type": 302
+      }
     ]
   }
 }
