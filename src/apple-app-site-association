@@ -9,13 +9,13 @@
         "defaults": { "caseSensitive": false },
         "components": [
           {
-            "/": "/paddlingout.html*",
+            "/": "/paddlingout*",
             "exclude": true
           },
           { "/": "/" },
           { "/": "/index.html" },
-          { "/": "/about.html" },
-          { "/": "/testimonials.html" }
+          { "/": "/about*" },
+          { "/": "/testimonials*" }
         ]
       },
       {
@@ -24,7 +24,7 @@
         ],
         "defaults": { "caseSensitive": false },
         "components": [
-          { "/": "/paddlingout.html*" }
+          { "/": "/paddlingout*" }
         ]
       }
     ]
