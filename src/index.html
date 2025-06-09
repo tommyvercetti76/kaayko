@@ -11,6 +11,27 @@
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://kaayko.com/" />
 
+  <!-- ─────────── Smart App Banner injector ─────────── -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Only these productIDs fire the App Clip banner
+      const CLIP_IDS = ['broke','nagpur','life','tBone'];
+      const pid = new URLSearchParams(window.location.search).get('productID');
+      if (!pid || !CLIP_IDS.includes(pid)) return;
+
+      // Create & append the meta tag
+      const m = document.createElement('meta');
+      m.name = 'apple-itunes-app';
+      m.content = [
+        'app-id=6747012577',
+        'app-clip-bundle-id=com.rohan.store.kaayko.app.Clip',
+        `app-argument=${location.href}`
+      ].join(',');
+      document.head.appendChild(m);
+    });
+  </script>
+  <!-- ───────────────────────────────────────────────────── -->
+
   <!-- 1) Global Styles -->
   <link rel="stylesheet" href="storestyle.css" />
 
@@ -52,20 +73,14 @@
   <div class="filter-overlay">
     <div class="filter-panel">
       <h2>Filter Products</h2>
-
-      <!-- PRICE FACETS -->
       <div class="filter-section" id="price-section">
         <strong>Price:</strong>
-        <div class="chip-group" id="price-chips"><!-- JS will inject: <div class="chip" data-value="$">$</div> etc. --></div>
+        <div class="chip-group" id="price-chips"></div>
       </div>
-
-      <!-- TAG FACETS -->
       <div class="filter-section" id="tags-section">
         <strong>Tags:</strong>
-        <div class="chip-group" id="tag-chips"><!-- JS will inject: <div class="chip" data-value="Philosophy">Philosophy</div> etc. --></div>
+        <div class="chip-group" id="tag-chips"></div>
       </div>
-
-      <!-- MIN VOTES SLIDER -->
       <div class="filter-section" id="votes-section">
         <div class="slider-label">
           <span>Min Votes:</span>
@@ -73,19 +88,13 @@
         </div>
         <input type="range" id="votes-slider" min="0" max="0" value="0" />
       </div>
-
-      <!-- ACTION BUTTONS -->
       <div class="filter-actions">
         <button id="filter-reset">Reset</button>
         <button id="filter-apply">Apply</button>
       </div>
-
-      <!-- CLOSE ICON -->
-      <button
-        class="filter-close material-icons"
-        id="filter-close"
-        aria-label="Close Filters"
-      >close</button>
+      <button class="filter-close material-icons" id="filter-close" aria-label="Close Filters">
+        close
+      </button>
     </div>
   </div>
 
