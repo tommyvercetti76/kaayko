@@ -40,11 +40,12 @@
         "source": "/ul/paddlingout",
         "destination": "/paddlingout.html",
         "type": 302
-      },
+      }
+    ],
+    "rewrites": [
       {
         "source": "/ul",
-        "destination": "/index.html",
-        "type": 302
+        "destination": "/index.html"
       }
     ]
   }
