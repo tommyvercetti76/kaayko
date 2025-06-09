@@ -26,18 +26,10 @@
       }
     ],
     "rewrites": [
-      {
-        "source": "/ul/about",
-        "destination": "/about.html"
-      },
-      {
-        "source": "/ul/testimonials",
-        "destination": "/testimonials.html"
-      },
-      {
-        "source": "/ul/paddlingout",
-        "destination": "/paddlingout.html"
-      }
+      { "source": "/ul/about",          "destination": "/about.html"        },
+      { "source": "/ul/testimonials",   "destination": "/testimonials.html" },
+      { "source": "/ul/paddlingout",    "destination": "/paddlingout.html"  },
+      { "source": "/ul",                "destination": "/index.html"        }
     ]
   }
 }

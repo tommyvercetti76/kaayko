@@ -13,21 +13,18 @@
 
   <!-- ─────────── Smart App Banner injector ─────────── -->
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // Only these productIDs fire the App Clip banner
-      const CLIP_IDS = ['broke','nagpur','life','tBone'];
-      const pid = new URLSearchParams(window.location.search).get('productID');
-      if (!pid || !CLIP_IDS.includes(pid)) return;
-
-      // Create & append the meta tag
-      const m = document.createElement('meta');
-      m.name = 'apple-itunes-app';
-      m.content = [
-        'app-id=6747012577',
-        'app-clip-bundle-id=com.rohan.store.kaayko.app.Clip',
-        `app-argument=${location.href}`
-      ].join(',');
-      document.head.appendChild(m);
+    document.addEventListener('DOMContentLoaded', ()=>{
+      // Only fire for ANY productID → App Clip
+      if (new URLSearchParams(location.search).has('productID')) {
+        const m = document.createElement('meta');
+        m.name = 'apple-itunes-app';
+        m.content = [
+          'app-id=6747012577',
+          'app-clip-bundle-id=com.rohan.store.kaayko.app.Clip',
+          `app-argument=${location.href}`
+        ].join(',');
+        document.head.appendChild(m);
+      }
     });
   </script>
   <!-- ───────────────────────────────────────────────────── -->
