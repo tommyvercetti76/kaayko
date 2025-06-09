@@ -132,6 +132,18 @@ main {
   transform: translateY(-4px);
   box-shadow: 0 6px 18px rgba(0,0,0,0.15);
 }
+
+#carousel.single-card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 120px); /* adjust for your header height */
+}
+#carousel.single-card .carousel-item {
+  max-width: 320px;
+  width: 100%;
+}
+
 .img-container {
   position: relative;
   width: 100%;
