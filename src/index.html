@@ -10,25 +10,7 @@
   <meta name="keywords" content="Kaayko, Sarcastic T-Shirts, Fashion for future, Unique Apparel" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://kaayko.com/" />
-
-  <!-- ─────────── Smart App Banner injector ─────────── -->
-  <script>
-    document.addEventListener('DOMContentLoaded', ()=>{
-      // Only fire for ANY productID → App Clip
-      if (new URLSearchParams(location.search).has('productID')) {
-        const m = document.createElement('meta');
-        m.name = 'apple-itunes-app';
-        m.content = [
-          'app-id=6747012577',
-          'app-clip-bundle-id=com.rohan.store.kaayko.app.Clip',
-          `app-argument=${location.href}`
-        ].join(',');
-        document.head.appendChild(m);
-      }
-    });
-  </script>
-  <!-- ───────────────────────────────────────────────────── -->
-
+  
   <!-- 1) Global Styles -->
   <link rel="stylesheet" href="/storestyle.css" />
 

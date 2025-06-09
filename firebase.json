@@ -1,4 +1,7 @@
 {
+  "functions": {
+    "source": "functions"
+  },
   "hosting": {
     "site": "kaaykostore",
     "public": "src",
@@ -11,11 +14,17 @@
     "headers": [
       {
         "source": "/apple-app-site-association",
-        "headers": [{ "key": "Content-Type", "value": "application/json" }]
+        "headers": [{
+          "key": "Content-Type",
+          "value": "application/json"
+        }]
       },
       {
         "source": "/.well-known/apple-app-site-association",
-        "headers": [{ "key": "Content-Type", "value": "application/json" }]
+        "headers": [{
+          "key": "Content-Type",
+          "value": "application/json"
+        }]
       },
       {
         "source": "/assets/**",
@@ -45,6 +54,14 @@
     "rewrites": [
       {
         "source": "/ul",
+        "function": "ssr"
+      },
+      {
+        "source": "/ul/**",
+        "function": "ssr"
+      },
+      {
+        "source": "**",
         "destination": "/index.html"
       }
     ]
