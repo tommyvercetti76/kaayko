@@ -6,15 +6,15 @@
         "appIDs": ["3C2C5UW48Y.com.rohan.store.kaayko.app"],
         "defaults": { "caseSensitive": false },
         "components": [
-          { "/": "/ul/*", "?": { "productID": [], "exclude": true } },
-          { "/": "/ul/*" }
+          { "/": "/ul*", "?": { "productID": [], "exclude": true } },
+          { "/": "/ul*" }
         ]
       },
       {
         "appIDs": ["3C2C5UW48Y.com.rohan.store.kaayko.app.Clip"],
         "defaults": { "caseSensitive": false },
         "components": [
-          { "/": "/ul/*", "?": { "productID": [] } }
+          { "/": "/ul*", "?": { "productID": [] } }
         ]
       }
     ]
