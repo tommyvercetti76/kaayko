@@ -2,60 +2,219 @@
  * scripts/about.js
  * 
  * Purpose:
- *   - Provides fakeTestimonials array,
- *   - shuffleArray() function,
- *   - createTestimonialElement() function
- * 
- * Then the "testimonials.html" can import these to display random reviews.
+ *   - Dynamic About page supporting both "store" and "paddling" modes
+ *   - Loads appropriate content and images based on mode
+ *   - For paddling mode: fetches random lakes from paddlingOut API
+ *   - For store mode: uses existing testimonials and content
  */
 
-/**
- * An array of possible avatar background colors
- */
-const avatarColors = [
-  "#ff8c00", // Orange
-  "#e63946", // Red
-  "#2a9d8f", // Teal
-  "#264653", // Dark slate
-  "#f4a261", // Light orange
-  "#457b9d", // Steel blue
-  "#8a4fff", // Purple
-  "#00b4d8", // Cyan
-  "#6a994e"  // Greenish
-];
+// Detect mode from URL parameter or default to paddling for new homepage structure
+const urlParams = new URLSearchParams(window.location.search);
+const pageMode = urlParams.get('mode') || 'paddling'; // Default to paddling since it's now our main focus
 
 /**
- * Returns a random color from avatarColors array.
+ * Content configurations for different modes
  */
-function getRandomAvatarColor() {
-  const index = Math.floor(Math.random() * avatarColors.length);
-  return avatarColors[index];
+const pageContent = {
+  store: {
+    title: "Kaayko: About",
+    subtitle: "Our Mission, Your Money", 
+    mainHeading: "About Kaayko",
+    description: "Learn about Kaayko: apparel that accurately represents your thoughts. Discover our vision and exclusive designs.",
+    heroText: "Kaayko represents the intersection of thoughtful design and authentic expression. Every piece in our collection is crafted to reflect your unique perspective.",
+    founderTitle: "A Message from Our Founder",
+    founderMessage: "Kaayko started as a simple idea: what if clothing could be as unique and complex as the thoughts we carry? Today, we continue that mission by creating pieces that don't just look good—they feel authentic to who you are.",
+    imageSource: 'testimonials' // Use testimonial avatars
+  },
+  paddling: {
+    title: "Kaayko: Paddling Out",
+    subtitle: "Not easy, but pretty",
+    mainHeading: "About Paddling Out",
+    description: "Discover Kaayko's intelligent paddle condition forecasts with ML-powered safety ratings. Know before you go paddling with Konfidence!",
+    heroText: "Paddling Out combines advanced machine learning with real-time weather data to provide accurate paddle condition forecasts. Our mission is to help you paddle with confidence.",
+    founderTitle: "A Message from Our Founder", 
+    founderMessage: "Water calls to us in ways we barely understand. Paddling Out is our attempt to bridge the gap between passion and preparation, using technology to help you connect safely with the waters you love.",
+    imageSource: 'lakes' // Use lake images from API
+  }
+};
+
+/**
+ * Initialize page content based on mode
+ */
+function initializeAboutPage() {
+  const content = pageContent[pageMode];
+  
+  // Update page title and meta
+  document.title = content.title;
+  document.querySelector('meta[name="description"]').setAttribute('content', content.description);
+  
+  // Update header content
+  const headerTitle = document.querySelector('.header-title');
+  const headerSubtitle = document.querySelector('.header-subtitle');
+  if (headerTitle) headerTitle.textContent = content.title;
+  if (headerSubtitle) headerSubtitle.textContent = content.subtitle;
+  
+  // Update main content
+  updateMainContent(content);
+  
+  // Load appropriate images
+  if (content.imageSource === 'lakes') {
+    loadRandomLakeImages();
+  } else {
+    loadTestimonialAvatars();
+  }
 }
 
 /**
- * An array of fake testimonials
+ * Update main content sections
  */
-export const fakeTestimonials = [
-  { name: "Alice Johnson", review: "Absolutely amazing quality and design. Kaayko never disappoints! My mother in law was disappointed at first but then we fed her to pigs." },
+function updateMainContent(content) {
+  const mainSection = document.querySelector('main');
+  if (!mainSection) return;
+  
+  mainSection.innerHTML = `
+    <section class="about-hero">
+      <h1>${content.mainHeading}</h1>
+      <p class="hero-description">${content.heroText}</p>
+    </section>
+    
+    <section class="image-showcase">
+      <div class="image-grid" id="dynamicImageGrid">
+        <!-- Images will be loaded dynamically here -->
+      </div>
+    </section>
+    
+    <section class="founder-message">
+      <h2>${content.founderTitle}</h2>
+      <p>${content.founderMessage}</p>
+    </section>
+  `;
+}
+
+/**
+ * Load random lake images from paddling API
+ */
+async function loadRandomLakeImages() {
+  try {
+    // Fetch lakes from the paddlingOut API
+    const response = await fetch('/api/lakes'); // Assuming we have an endpoint that lists all lakes
+    const lakes = await response.json();
+    
+    if (!lakes || lakes.length === 0) {
+      console.warn('No lakes data available');
+      return;
+    }
+    
+    // Get 5 random unique lakes
+    const shuffledLakes = shuffleArray([...lakes]);
+    const selectedLakes = shuffledLakes.slice(0, 5);
+    
+    const imageGrid = document.getElementById('dynamicImageGrid');
+    if (!imageGrid) return;
+    
+    imageGrid.innerHTML = selectedLakes.map(lake => `
+      <div class="image-item">
+        <img src="${lake.image || '/assets/default-lake.jpg'}" alt="${lake.name}" />
+        <div class="image-caption">
+          <strong>${lake.name}</strong>
+          <span class="location">${lake.location}</span>
+          <a href="/paddlingout.html?lake=${encodeURIComponent(lake.name)}" class="view-link">
+            View Conditions
+          </a>
+        </div>
+      </div>
+    `).join('');
+    
+  } catch (error) {
+    console.error('Error loading lake images:', error);
+    // Fallback to placeholder images
+    loadPlaceholderLakeImages();
+  }
+}
+
+/**
+ * Fallback lake images if API fails
+ */
+function loadPlaceholderLakeImages() {
+  const placeholderLakes = [
+    { name: "Ambazari Lake", location: "Nagpur, Maharashtra", image: "/assets/Nagpur_3.png" },
+    { name: "Marine Drive", location: "Mumbai, Maharashtra", image: "/assets/AssaultBae_1.png" },
+    { name: "Venna Lake", location: "Mahabaleshwar, Maharashtra", image: "/assets/Live_3.png" },
+    { name: "Rankala Lake", location: "Kolhapur, Maharashtra", image: "/assets/StraightOutta_1.png" },
+    { name: "Powai Lake", location: "Mumbai, Maharashtra", image: "/assets/ShutUp_1.png" }
+  ];
+  
+  const imageGrid = document.getElementById('dynamicImageGrid');
+  if (!imageGrid) return;
+  
+  imageGrid.innerHTML = placeholderLakes.map(lake => `
+    <div class="image-item">
+      <img src="${lake.image}" alt="${lake.name}" />
+      <div class="image-caption">
+        <strong>${lake.name}</strong>
+        <span class="location">${lake.location}</span>
+        <a href="/paddlingout.html?lake=${encodeURIComponent(lake.name)}" class="view-link">
+          View Conditions
+        </a>
+      </div>
+    </div>
+  `).join('');
+}
+    /**
+ * Load testimonial avatars for store mode
+ */
+function loadTestimonialAvatars() {
+  const fakeTestimonials = [
+    { name: "Alice Johnson", review: "Absolutely amazing quality and design. Kaayko never disappoints!" },
     { name: "Brian Smith", review: "I love the unique style and attention to detail. Highly recommend!" },
     { name: "Catherine Lee", review: "My journey from a Neanderthal to Narayan is complete only because I stumbled on Kaayko!" },
-    { name: "David Kim", review: "A premium brand that deserves premium prices. The kids in China are OK with this!" },
-    { name: "Emily Davis", review: "The products are as innovative as they are beautiful. Very impressed!" },
-    { name: "Frank Moore", review: "Outstanding design and functionality. I wear my Kaayko shirt with pride." },
-    { name: "Grace Chen", review: "The detail and care in every product is evident. Love it! My wife loved it and she's a nihilist!" },
-    { name: "Henry Patel", review: "High-quality, stylish, and sustainable. Finally something impressed me after that quickly taken corner in Liverpool." },
-    { name: "Isabella Rivera", review: "My favorite brand for everyday style and comfort. If kaayko was a religion, I'm the priestess and shall rep it untill the Lord commandeth." },
-    { name: "Jack Thompson", review: "The modern aesthetic and premium quality make Kaayko stand out. Do you know who else stands out? Racism." },
-    { name: "Katherine Adams", review: "Every piece feels uniquely crafted. I am as loyal a customer as I am a husband and believe me, I've been married a dozen times." },
-    { name: "Liam Brown", review: "Top-notch materials and design. A truly remarkable brand. Without Kaayko, you feel nothing!" },
-    { name: "Mia Wilson", review: "The blend of tradition and modernity in their products is inspiring. Kaayko is life!" },
-    { name: "Noah Martinez", review: "I appreciate the focus on sustainability and quality. Their deforestation operations are highly ethical and tress consent before they are chopped. Wait, that's paper. Paper is made from tress." },
-    { name: "Olivia Garcia", review: "Beautifully designed and exceptionally comfortable. Highly recommended! I also highly recommend you staying hydrated." },
-    { name: "Paul Anderson", review: "An experience that elevates your style effortlessly. People will ask you, do not tell them." },
-    { name: "Quinn Harris", review: "Every product tells a story. I am impressed with the creativity. Some stories are too long but then I remind myself that it's not the stories but my attention span which sucks." },
-    { name: "Rachel Clark", review: "The craftsmanship is evident in every detail. A must-have brand! Even my unborn baby has an order placed!" },
-    { name: "Samuel Lewis", review: "Bold, innovative, and timeless. Kaayko has it all. If someone is offended, tell them to suck it." },
-    { name: "Tina Reynolds", review: "I was hungry for four days and finally I reached a town with a cafe and internet. I bought a t-shirt form Kaayko.com and died hungry. They call me a Corpse with Class." }
+    { name: "David Kim", review: "A premium brand that deserves premium prices." },
+    { name: "Emily Davis", review: "The products are as innovative as they are beautiful. Very impressed!" }
+  ];
+  
+  const imageGrid = document.getElementById('dynamicImageGrid');
+  if (!imageGrid) return;
+  
+  const avatarColors = ["#ff8c00", "#e63946", "#2a9d8f", "#264653", "#f4a261"];
+  
+  imageGrid.innerHTML = fakeTestimonials.map((testimonial, index) => `
+    <div class="image-item">
+      <div class="avatar-placeholder" style="background-color: ${avatarColors[index]}; width: 100%; height: 200px; display: flex; align-items: center; justify-content: center; border-radius: 10px;">
+        <span style="font-size: 48px; color: white; font-weight: bold;">${testimonial.name.charAt(0)}</span>
+      </div>
+      <div class="image-caption">
+        <strong>${testimonial.name}</strong>
+        <span class="review">"${testimonial.review.substring(0, 50)}..."</span>
+        <a href="/testimonials.html" class="view-link">
+          Read More
+        </a>
+      </div>
+    </div>
+  `).join('');
+}
+
+/**
+ * Utility function to shuffle array
+ */
+function shuffleArray(array) {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+// Initialize the page when DOM is loaded
+document.addEventListener('DOMContentLoaded', initializeAboutPage);
+
+// Export for legacy compatibility
+export const fakeTestimonials = [
+  { name: "Alice Johnson", review: "Absolutely amazing quality and design. Kaayko never disappoints!" },
+  { name: "Brian Smith", review: "I love the unique style and attention to detail. Highly recommend!" },
+  { name: "Catherine Lee", review: "My journey from a Neanderthal to Narayan is complete only because I stumbled on Kaayko!" },
+  { name: "David Kim", review: "A premium brand that deserves premium prices." },
+  { name: "Emily Davis", review: "The products are as innovative as they are beautiful. Very impressed!" }
 ];
 
 /**

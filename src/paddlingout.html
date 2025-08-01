@@ -24,6 +24,15 @@
 
   <!-- 2) Page-specific CSS (cards, carousel, etc.) -->
   <link rel="stylesheet" href="/paddlingout.css" />
+  
+  <!-- 3) Lake Modal CSS -->
+  <link rel="stylesheet" href="/scripts/lakeModal.css" />
+  
+  <!-- 4) Component CSS -->
+  <link rel="stylesheet" href="/scripts/components/RatingHero.css" />
+  <link rel="stylesheet" href="/scripts/components/SafetyWarnings.css" />
+  <link rel="stylesheet" href="/scripts/components/WeatherStats.css" />
+  <link rel="stylesheet" href="/scripts/components/Heatmap.css" />
 
   <!-- Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
@@ -41,8 +50,9 @@
       <!-- Desktop nav (populated by header.js) -->
       <nav class="top-menu"><ul></ul></nav>
 
-      <!-- Controls: Dark-mode toggle + mobile FAB -->
+      <!-- Controls: Dark-mode toggle + custom location + mobile FAB -->
       <div class="header-controls">
+        <button class="custom-location-btn material-icons" aria-label="Custom Location" title="Enter Custom Coordinates">place</button>
         <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode"></button>
         <button class="fab-menu material-icons" aria-label="Open Menu">menu</button>
       </div>
@@ -81,7 +91,19 @@
   <script type="module" src="scripts/header.js"></script>
   <!-- 2) UI helpers: carousel, modal, voting -->
   <script type="module" src="scripts/kaayko_ui.js"></script>
-  <!-- 3) Page logic: fetch & render paddling spots -->
+  <!-- 3) Component scripts -->
+  <script src="scripts/components/RatingHero.js"></script>
+  <script src="scripts/components/SafetyWarnings.js"></script>
+  <script src="scripts/components/WeatherStats.js"></script>
+  <script src="scripts/components/Heatmap.js"></script>
+  <!-- 4) Service layer -->
+  <script src="scripts/services/apiClient.js"></script>
+  <script src="scripts/services/dataTransformer.js"></script>
+  <!-- 5) Simplified Lake Modal -->
+  <script src="scripts/lakeModalSimple.js"></script>
+  <!-- 6) Custom Location Feature -->
+  <script src="scripts/customLocation.js"></script>
+  <!-- 7) Page logic: fetch & render paddling spots -->
   <script type="module" src="scripts/paddlingout.js"></script>
 
   <!-- Set current year in footer -->

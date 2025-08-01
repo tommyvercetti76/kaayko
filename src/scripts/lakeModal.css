@@ -1,0 +1,460 @@
+/**
+ * Lake Modal Styles - Container and Layout Only
+ * Individual components have their own CSS files
+ */
+
+/* Import font definitions from main site */
+@font-face {
+  font-family: 'Josefin_Medium';
+  src: url('../fonts/JosefinSans-Medium.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Josefin_Bold';
+  src: url('../fonts/JosefinSans-Bold.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Josefin_Light';
+  src: url('../fonts/JosefinSans-Light.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Josefin_Regular';
+  src: url('../fonts/JosefinSans-Regular.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Josefin_SemiBold';
+  src: url('../fonts/JosefinSans-SemiBold.ttf') format('truetype');
+}
+
+/* Color variables matching site theme */
+:root {
+  --modal-bg: #fff;
+  --modal-text: #333;
+  --modal-text-light: #666;
+  --modal-text-subtle: #999;
+  --modal-accent: #ff8c00;
+  --modal-border: #e0e0e0;
+  --modal-bg-light: #f9f9f9;
+  --modal-bg-dark: #333;
+  --modal-success: #28a745;
+  --modal-warning: #ffc107;
+  --modal-danger: #dc3545;
+  --modal-info: #17a2b8;
+}
+
+/* Dark mode variables - using existing dark-theme system */
+html.dark-theme {
+  --modal-bg: #333;
+  --modal-text: ivory;
+  --modal-text-light: #ccc;
+  --modal-text-subtle: #aaa;
+  --modal-border: #555;
+  --modal-bg-light: #444;
+  --modal-bg-dark: #222;
+}
+
+/* ==========================
+   MODAL CONTAINER & LAYOUT
+   ========================== */
+
+.lake-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
+  z-index: 10000;
+  font-family: 'Josefin_Regular', Arial, sans-serif;
+}
+
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+  z-index: 10001;
+}
+
+.modal-container {
+  background: var(--modal-bg);
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  max-width: 900px;
+  max-height: 90vh;
+  max-height: calc(var(--vh, 1vh) * 90);
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 10002;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================
+   MODAL HEADER
+   ========================== */
+
+.modal-header {
+  background: linear-gradient(135deg, var(--modal-bg-dark) 0%, #222 100%);
+  color: white;
+  padding: 24px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 16px 16px 0 0;
+}
+
+.modal-title h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.2;
+  font-family: 'Josefin_Bold', Arial, sans-serif;
+}
+
+.modal-subtitle {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  opacity: 0.9;
+  font-weight: 400;
+  font-family: 'Josefin_Light', Arial, sans-serif;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 28px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ==========================
+   MODAL BODY & CONTENT GRID
+   ========================== */
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.modal-content-grid {
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr;
+  grid-template-areas: 
+    "rating-hero"
+    "heatmap"
+    "stats"
+    "location"
+    "timestamp";
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Component Containers - Layout with Grid Areas */
+.rating-hero-wrapper {
+  grid-area: rating-hero;
+  position: relative;
+  margin: 8px;
+  padding: 4px;
+  max-width: calc(100% - 16px);
+  box-sizing: border-box;
+}
+
+#ratingHeroContainer {
+  position: relative;
+  z-index: 1;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.safety-warnings-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 10;
+}
+
+#heatmapContainer {
+  grid-area: heatmap;
+  min-height: 450px;
+  margin-bottom: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+#weatherStatsContainer {
+  grid-area: stats;
+  margin-bottom: 8px;
+}
+
+.location-info {
+  grid-area: location;
+  margin-top: 12px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 3px solid #007bff;
+}
+
+/* Dark mode support for location info */
+html.dark-theme .location-info {
+  background: var(--modal-bg-light);
+  border-left-color: #0d6efd;
+}
+
+html.dark-theme .location-label {
+  color: ivory;
+}
+
+html.dark-theme .location-item span:last-child {
+  color: #ccc;
+}
+
+.update-timestamp {
+  grid-area: timestamp;
+  text-align: center;
+  margin: 8px 0;
+  padding: 8px;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+/* Dark mode support for timestamp */
+html.dark-theme .update-timestamp {
+  background: var(--modal-bg-light);
+}
+
+html.dark-theme .update-timestamp small {
+  color: #ccc;
+}
+
+/* Loading States */
+.loading-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  color: #666;
+  font-style: italic;
+}
+
+.loading-spinner {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #007bff;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+  margin-right: 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Update Timestamp Styling */
+.update-timestamp small {
+  color: #666;
+  font-size: 0.85em;
+  font-style: italic;
+}
+
+/* Location Info Styling */
+.location-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  padding: 2px 0;
+}
+
+.location-item:last-child {
+  margin-bottom: 0;
+}
+
+.location-label {
+  font-weight: 600;
+  color: #333;
+  min-width: 100px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 0;
+    align-items: flex-start;
+  }
+  
+  .modal-container {
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    max-width: 100vw;
+    border-radius: 0;
+  }
+  
+  .modal-content-grid {
+    padding: 4px;
+    gap: 0px;
+    grid-template-areas: 
+      "rating-hero"
+      "heatmap"
+      "location"
+      "timestamp";
+  }
+  
+  .rating-hero-wrapper {
+    margin: 1px;
+    padding: 1px;
+    margin-bottom: 1px;
+  }
+  
+  #heatmapContainer {
+    margin-bottom: 0px;
+    padding-bottom: 0px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  #weatherStatsContainer {
+    margin-bottom: 0px;
+    padding-bottom: 0px;
+    display: none; /* Hide weather stats on mobile to eliminate space */
+  }
+  
+  .location-info {
+    margin-top: 0px;
+    padding: 4px;
+  }
+  
+  .update-timestamp {
+    margin: 1px 0;
+    padding: 2px;
+  }
+  
+  .modal-header {
+    padding: 8px 12px;
+  }
+  
+  .modal-header h2 {
+    font-size: 1.2em;
+  }
+  
+  /* Override any heatmap spacing */
+  .heatmap-container {
+    margin: 0px !important;
+    gap: 0px !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Hide/minimize any other spacing elements */
+  .chart-header {
+    margin-bottom: 0px !important;
+  }
+  
+  /* Hide the third header with clock icon */
+  .current-highlight {
+    display: none !important;
+  }
+  
+  /* Ensure no hidden spacers */
+  .safety-warnings-overlay,
+  .ml-indicator {
+    display: none !important;
+  }
+}
+
+/* ===== ML/Fallback Indicator Styles ===== */
+.ml-indicator {
+  margin: 16px 0 8px 0;
+  padding: 12px;
+  border-radius: 8px;
+  font-family: 'Josefin_Regular', sans-serif;
+  font-size: 14px;
+  border-left: 4px solid;
+}
+
+.ml-status {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ml-powered {
+  background-color: rgba(76, 175, 80, 0.1);
+  border-color: #4CAF50;
+  color: #2E7D32;
+}
+
+.ml-fallback {
+  background-color: rgba(255, 193, 7, 0.1);
+  border-color: #FFC107;
+  color: #F57C00;
+}
+
+.ml-details {
+  font-size: 12px;
+  opacity: 0.8;
+  font-family: 'Josefin_Light', sans-serif;
+}
+
+.ml-confidence,
+.fallback-reason {
+  font-family: 'Courier New', monospace;
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+/* Dark theme adjustments */
+html.dark-theme .ml-powered {
+  background-color: rgba(76, 175, 80, 0.2);
+  color: #81C784;
+}
+
+html.dark-theme .ml-fallback {
+  background-color: rgba(255, 193, 7, 0.2);
+  color: #FFD54F;
+}
+
+html.dark-theme .ml-confidence,
+html.dark-theme .fallback-reason {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+  

@@ -4,7 +4,11 @@
  * 0) Reset body margin/padding so no gray “frame” remains
  * 1) Container & card layout
  * 2) In-card carousel
- * 3) Text & spacing tweaks
+ * .parking-icon::before { content: 'P';      font-size: 18px; }
+.toilet-icon::before  { content: '\1F6BD'; font-size: 18px; }
+.youtube-icon::before { content: '\25B6';  font-size: 18px; }
+.chat-icon::before    { content: '\1F4AC'; font-size: 18px; }
+.location-icon::before{ content: '\1F4CD'; font-size: 18px; }ext & spacing tweaks
  * 4) Footer & icons (tooltips never clipped)
  * 5) Page-indicator dots
  * 6) Responsive breakpoints (cards only)
@@ -89,19 +93,19 @@ body {
   font-family: 'Josefin_Bold', Arial, sans-serif;
   font-size: 1.5rem;
   margin: 0;
-  color: #333;
+  color: #000; /* Ensure title is always black */
 }
 .card-subtitle {
   font-family: 'Josefin_Medium', Arial, sans-serif;
   font-size: 1rem;
   margin: 5px 0 12px;
-  color: #666;
+  color: #666; /* Keep subtitle gray as requested */
 }
 .card-description {
   font-family: 'Josefin_Light', Arial, sans-serif;
   font-size: 1rem;
   margin-bottom: 15px;
-  color: #777;
+  color: #333; /* Change from #777 to darker for better readability - region/timezone text */
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
@@ -142,6 +146,9 @@ body {
 .parking-icon::before { content: 'P';      font-size: 18px; }
 .toilet-icon::before  { content: '\1F6BD'; font-size: 18px; }
 .youtube-icon::before { content: '\25B6';  font-size: 18px; }
+.chat-icon::before    { content: '\1F4AC'; font-size: 18px; }
+.robot-icon::before   { content: '\1F916'; font-size: 18px; } /* Robot emoji for AI/ML predictions */
+.analytics-icon::before { content: '\1F4CA'; font-size: 18px; }
 .location-icon::before{ content: '\1F4CD'; font-size: 18px; }
 /* Tooltip bubble, positioned above and never clipped */
 .icon::after {
@@ -244,3 +251,4 @@ body {
   max-width: 90%;
   margin: 0;
 }
+

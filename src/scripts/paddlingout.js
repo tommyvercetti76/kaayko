@@ -11,8 +11,9 @@
  *   7) Insert the current year into the footer
  */
 
-const API_BASE    = "https://us-central1-kaayko-api-dev.cloudfunctions.net/api";
-const VIDEOS_DIR  = "/assets";
+// API Configuration - Local Firebase Functions Emulator
+const API_BASE = "https://api-vwcc5j4qda-uc.a.run.app"; // Production Functions URL
+const VIDEOS_DIR = "/assets";
 const HERO_VIDEOS = ["paddle2.mp4"];
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -114,6 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (spot.parkingAvl)   foot.append(icon("parking-icon",   "Parking Available"));
     if (spot.restroomsAvl) foot.append(icon("toilet-icon",    "Restrooms Available"));
     if (spot.youtubeURL)   foot.append(icon("youtube-icon",   "Video", () => openYoutube(spot.youtubeURL)));
+    foot.append(icon("robot-icon", "AI-Powered Lake Conditions & ML Predictions", () => lakeModal.open(spot)));
     foot.append(icon("location-icon", "Take me there", () =>
       openLocation(spot.location.latitude, spot.location.longitude)
     ));
@@ -190,6 +192,8 @@ document.addEventListener("DOMContentLoaded", () => {
   window.openYoutube  = url => window.open(url, "_blank");
   window.openLocation = (lat, lon) =>
     window.open(`https://maps.google.com?q=${lat},${lon}`, "_blank");
+
+
 
   //──────────────────────────────────────────────────────────────────────────────
   // Section 10: Insert Current Year into Footer

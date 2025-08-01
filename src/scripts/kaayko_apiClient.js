@@ -4,9 +4,11 @@
  * Thin wrapper over our Cloud Functions API.
  * • All fetches return JSON.
  * • Errors on non‑OK responses.
+ * • Unified backend: kaayko-api-dev handles all operations using kaaykostore Firestore
  */
 
-const API_BASE = "https://us-central1-kaayko-api-dev.cloudfunctions.net/api";
+// Local development configuration - Firebase Functions Emulator
+const API_BASE = "https://api-vwcc5j4qda-uc.a.run.app"; // Production Firebase Functions
 
 /**
  * Fetches the full list of products.

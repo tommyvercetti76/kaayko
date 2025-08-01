@@ -1,0 +1,592 @@
+/* RatingHero Component Styles - Clean Fixed Layout */
+.rating-hero {
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  border-radius: 8px;
+  padding: 16px;
+  color: var(--modal-text, ivory);
+  margin: 8px;
+  /* BLUE BORDER - MUST BE VISIBLE */
+  border: 10px solid #ff0000 !important;
+  outline: 5px solid #1d4ed8 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
+  /* Make elements tight - NO centering */
+  display: block;
+  width: auto;
+  max-width: 100%;
+}
+
+/* Responsive rating hero */
+@media (max-width: 768px) {
+  .rating-hero {
+    padding: 12px;
+    margin: 4px;
+    border-width: 6px;
+    outline-width: 3px;
+  }
+}
+
+@media (max-width: 480px) {
+  .rating-hero {
+    padding: 8px;
+    margin: 2px;
+    border-width: 4px;
+    outline-width: 2px;
+    border-radius: 6px;
+  }
+}
+
+/* Dark mode support */
+html.dark-theme .rating-hero {
+  color: ivory;
+}
+
+html:not(.dark-theme) .rating-hero {
+  color: #333;
+}
+
+.skill-level-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.header-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  justify-content: flex-start;
+}
+
+/* Responsive header layout */
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+}
+
+.rating-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  margin-right: 24px;
+}
+
+/* Responsive rating section */
+@media (max-width: 768px) {
+  .rating-section {
+    margin-right: 0;
+    margin-bottom: 8px;
+  }
+}
+
+.rating-circle {
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+  border: 3px solid white;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.rating-number {
+  font-size: 32px;
+  font-weight: bold;
+  line-height: 1;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+  /* Ensure readability on all background colors */
+}
+
+.now-indicator {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  margin-top: 4px;
+  opacity: 0.9;
+  text-align: center;
+}
+
+/* Theme support for rating number */
+html.dark-theme .rating-number {
+  color: ivory;
+}
+
+html:not(.dark-theme) .rating-number {
+  color: black;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.7);
+}
+
+/* Theme support for NOW indicator */
+html.dark-theme .now-indicator {
+  color: ivory;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+html:not(.dark-theme) .now-indicator {
+  color: black;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.7);
+}
+
+.paddle-score-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+/* Theme support for paddle score label */
+html.dark-theme .paddle-score-label {
+  color: ivory;
+}
+
+html:not(.dark-theme) .paddle-score-label {
+  color: black;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.7);
+}
+
+.skill-info {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Units Toggle */
+.units-toggle {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  margin-bottom: 0;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+/* Responsive units toggle */
+@media (max-width: 480px) {
+  .units-toggle {
+    gap: 12px;
+    margin-top: 16px;
+  }
+}
+
+.units-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+  padding: 6px 12px;
+  font-size: 12px;
+  font-family: 'JosefinSans-Medium', 'Josefin Sans', sans-serif;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  min-width: 80px;
+  text-align: center;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive units button */
+@media (max-width: 480px) {
+  .units-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+    min-width: 90px;
+  }
+}
+
+.units-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.95);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.units-btn.active {
+  background: linear-gradient(135deg, rgba(29, 78, 216, 0.9), rgba(59, 130, 246, 0.8));
+  border-color: rgba(29, 78, 216, 1);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(29, 78, 216, 0.3);
+}
+
+/* Theme support for units toggle */
+html.dark-theme .units-btn {
+  color: rgba(255, 250, 240, 0.7);
+}
+
+html.dark-theme .units-btn:hover {
+  color: rgba(255, 250, 240, 0.9);
+}
+
+html.dark-theme .units-btn.active {
+  color: ivory;
+}
+
+html:not(.dark-theme) .units-btn {
+  color: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+html:not(.dark-theme) .units-btn:hover {
+  color: rgba(0, 0, 0, 0.9);
+  background: rgba(0, 0, 0, 0.15);
+}
+
+html:not(.dark-theme) .units-btn.active {
+  color: black;
+}
+
+/* Rating circle colors based on score */
+.rating-circle[data-rating*="0"], 
+.rating-circle[data-rating*="1"] {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+}
+
+.rating-circle[data-rating*="2"] {
+  background: linear-gradient(135deg, #fd7e14, #e8590c);
+}
+
+.rating-circle[data-rating*="3"] {
+  background: linear-gradient(135deg, #ffc107, #e0a800);
+}
+
+.rating-circle[data-rating*="4"], 
+.rating-circle[data-rating*="5"] {
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+}
+
+.rating-circle:hover {
+  transform: scale(1.05);
+}
+
+.skill-title {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* Theme support for skill title */
+html.dark-theme .skill-title {
+  color: ivory;
+}
+
+html:not(.dark-theme) .skill-title {
+  color: black;
+}
+
+/* Skill level badge with color tint for skill title */
+.skill-level-badge.skill-beginner ~ .skill-title,
+.skill-title.skill-beginner {
+  color: #34d399;
+}
+
+.skill-level-badge.skill-intermediate ~ .skill-title,
+.skill-title.skill-intermediate {
+  color: #fbbf24;
+}
+
+.skill-level-badge.skill-advanced ~ .skill-title,
+.skill-title.skill-advanced {
+  color: #f87171;
+}
+
+.skill-level-badge.skill-expert ~ .skill-title,
+.skill-title.skill-expert {
+  color: #a855f7;
+}
+
+.skill-level-badge {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
+/* Smaller version when inline with recommendation */
+.skill-recommendation .skill-level-badge {
+  padding: 4px 12px;
+  font-size: 12px;
+  margin-bottom: 0;
+}
+
+.skill-level-badge.skill-beginner {
+  background: transparent;
+  color: #34d399;
+  border: 1px solid #34d399;
+}
+
+.skill-level-badge.skill-intermediate {
+  background: transparent;
+  color: #fbbf24;
+  border: 1px solid #fbbf24;
+}
+
+.skill-level-badge.skill-advanced {
+  background: transparent;
+  color: #f87171;
+  border: 1px solid #f87171;
+}
+
+.skill-level-badge.skill-expert {
+  background: transparent;
+  color: #a855f7;
+  border: 1px solid #a855f7;
+}
+
+.core-weather-inline {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, auto);
+  gap: 6px;
+  margin-top: 6px;
+  padding-left: 24px;
+  padding-right: 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Responsive grid layout - ALWAYS 2 rows, 3 columns */
+@media (max-width: 768px) {
+  .core-weather-inline {
+    grid-template-columns: repeat(3, 1fr) !important;
+    grid-template-rows: repeat(2, auto) !important;
+    gap: 4px;
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .core-weather-inline {
+    grid-template-columns: repeat(3, 1fr) !important;
+    grid-template-rows: repeat(2, auto) !important;
+    gap: 2px;
+    padding-left: 2px;
+    padding-right: 2px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .core-weather-inline {
+    padding-left: 32px;
+    padding-right: 32px;
+    gap: 8px;
+  }
+}
+
+.weather-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  min-width: 0;
+}
+
+/* Responsive weather stat adjustments - compact for smaller grid cells */
+@media (max-width: 768px) {
+  .weather-stat {
+    padding: 2px 1px;
+    gap: 1px;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .weather-stat .weather-data {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .weather-stat {
+    padding: 1px;
+    gap: 1px;
+  }
+  
+  .weather-icon {
+    font-size: 12px;
+  }
+  
+  .weather-value {
+    font-size: 11px;
+  }
+  
+  .weather-label {
+    font-size: 9px;
+  }
+}
+
+.weather-stat:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.weather-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.weather-data {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.weather-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+}
+
+/* Theme support for weather value */
+html.dark-theme .weather-value {
+  color: ivory;
+}
+
+html:not(.dark-theme) .weather-value {
+  color: black;
+}
+
+.weather-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Theme support for weather label */
+html.dark-theme .weather-label {
+  color: rgba(255, 250, 240, 0.7); /* Ivory with transparency */
+}
+
+html:not(.dark-theme) .weather-label {
+  color: rgba(0, 0, 0, 0.7); /* Black with transparency */
+}
+
+.skill-recommendation {
+  background: transparent;
+  border-left: 3px solid rgba(255, 255, 255, 0.3);
+  padding: 8px 12px;
+  border-radius: 0;
+  font-style: italic;
+  font-size: 14px;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Color-coded border notch based on skill level */
+.skill-recommendation.skill-beginner {
+  border-left-color: #34d399;
+}
+
+.skill-recommendation.skill-intermediate {
+  border-left-color: #fbbf24;
+}
+
+.skill-recommendation.skill-experienced {
+  border-left-color: #f87171;
+}
+
+.skill-recommendation.skill-expert {
+  border-left-color: #a855f7;
+}
+
+.skill-recommendation.skill-danger {
+  border-left-color: #dc3545;
+}
+
+.recommendation-text {
+  flex: 1;
+}
+
+/* Theme support for recommendation text */
+html.dark-theme .recommendation-text {
+  color: ivory;
+}
+
+html:not(.dark-theme) .recommendation-text {
+  color: black;
+}
+
+.skill-details {
+  font-size: 12px;
+  line-height: 1.3;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+  background: transparent;
+  padding: 8px 12px;
+  border-radius: 0;
+}
+
+/* Theme support for skill details */
+html.dark-theme .skill-details {
+  color: rgba(255, 250, 240, 0.8); /* Ivory with transparency */
+}
+
+html:not(.dark-theme) .skill-details {
+  color: rgba(0, 0, 0, 0.8); /* Black with transparency */
+}
+
+/* Mobile Responsive - REMOVED CONFLICTING RULES */
+@media (max-width: 768px) {
+  .rating-hero {
+    padding: 20px;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .rating-circle {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .rating-number {
+    font-size: 28px;
+  }
+  
+  .rating-label {
+    font-size: 10px;
+  }
+  
+  .weather-stat {
+    padding: 8px 10px;
+  }
+}

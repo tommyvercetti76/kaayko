@@ -28,10 +28,13 @@ function initializeDarkMode() {
  *───────────────────────────────────────────────────────────────────────────*/
 function populateMenu() {
   const mapping = {
-    "index.html":        { name: "Store",        url: "index.html" },
-    "about.html":        { name: "About",        url: "about.html" },
-    "testimonials.html": { name: "Testimonials", url: "testimonials.html" },
-    "paddlingout.html":  { name: "Paddling Out", url: "paddlingout.html" }
+    // Hidden from navigation but still accessible via direct URL
+    // "index.html":        { name: "Store",        url: "index.html" },
+    // "testimonials.html": { name: "Testimonials", url: "testimonials.html" },
+    // "paddlingout.html":  { name: "Paddling Out", url: "paddlingout.html" }, // Homepage, no need in menu
+    
+    // Visible navigation items
+    "about.html":        { name: "About",        url: "about.html" }
   };
   const current = window.location.pathname.split("/").pop() || "index.html";
   const desktopUl = document.querySelector(".top-menu ul");

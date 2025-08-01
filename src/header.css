@@ -158,6 +158,56 @@ html.dark-theme .theme-toggle-icon::before {
   font-size: 24px;
 }
 
+/* Custom Location Button */
+.custom-location-btn {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  padding: 6px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  color: transparent;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  
+  font-family: 'Material Icons';
+  font-feature-settings: 'liga';
+  font-size: 0;
+  transition: all 0.3s ease;
+}
+
+.custom-location-btn::before {
+  content: "place";
+  font-family: 'Material Icons';
+  font-feature-settings: 'liga';
+  font-size: 22px;
+  line-height: 1;
+  color: var(--color-bright-ivory);
+  display: inline-block;
+  transition: color 0.3s ease, filter 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+}
+
+.custom-location-btn:hover::before {
+  opacity: 0.85;
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
+}
+
+.custom-location-btn:active::before {
+  transform: scale(0.95);
+}
+
+/* Dark mode support for custom location button */
+html.dark-theme .custom-location-btn::before {
+  color: var(--color-bright-ivory);
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.2));
+}
+
 /*─────────────────────────────────────────────────────────────────────────────
  3) Mobile FAB & Overlay Menu
 ─────────────────────────────────────────────────────────────────────────────*/
