@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+    <script src="/js/prod-config.js"></script>  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Kaayko | Paddling Out</title>
   <!-- Smart App Banner for the App Clip -->
@@ -17,22 +17,22 @@
   <link rel="canonical" href="https://kaayko.com/paddlingout.html">
 
   <!-- 0) Shared store CSS (header, footer, menu, dark mode) -->
-  <link rel="stylesheet" href="/storestyle.css" />
+  <link rel="stylesheet" href="/css/storestyle.css" />
 
   <!-- 1) Header CSS (shared header + dark-mode overrides) -->
-  <link rel="stylesheet" href="/header.css" />
+  <link rel="stylesheet" href="/css/header.css" />
 
   <!-- 2) Page-specific CSS (cards, carousel, etc.) -->
-  <link rel="stylesheet" href="/paddlingout.css" />
+  <link rel="stylesheet" href="/css/paddlingout.css" />
   
   <!-- 3) Lake Modal CSS -->
-  <link rel="stylesheet" href="/scripts/lakeModal.css" />
+  <link rel="stylesheet" href="/css/advancedModal.css" />
   
   <!-- 4) Component CSS -->
-  <link rel="stylesheet" href="/scripts/components/RatingHero.css" />
-  <link rel="stylesheet" href="/scripts/components/SafetyWarnings.css" />
-  <link rel="stylesheet" href="/scripts/components/WeatherStats.css" />
-  <link rel="stylesheet" href="/scripts/components/Heatmap.css" />
+  <link rel="stylesheet" href="/js/components/RatingHero.css" />
+  <link rel="stylesheet" href="/js/components/SafetyWarnings.css" />
+  <link rel="stylesheet" href="/js/components/WeatherStats.css" />
+  <link rel="stylesheet" href="/js/components/Heatmap.css" />
 
   <!-- Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
@@ -50,16 +50,25 @@
       <!-- Desktop nav (populated by header.js) -->
       <nav class="top-menu"><ul></ul></nav>
 
-      <!-- Controls: Dark-mode toggle + custom location + mobile FAB -->
+      <!-- Controls: Only theme toggle visible on mobile, others hidden on mobile -->
       <div class="header-controls">
-        <button class="custom-location-btn material-icons" aria-label="Custom Location" title="Enter Custom Coordinates">place</button>
+        <button class="custom-location-btn material-icons desktop-only" aria-label="Custom Location" title="Enter Custom Coordinates">place</button>
         <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode"></button>
-        <button class="fab-menu material-icons" aria-label="Open Menu">menu</button>
+        <button class="fab-menu material-icons mobile-only" aria-label="Open Menu">menu</button>
       </div>
     </div>
 
     <!-- Mobile overlay menu -->
-    <div class="mobile-menu-overlay"><ul></ul></div>
+    <div class="mobile-menu-overlay">
+      <ul></ul>
+      <!-- Mobile-only controls inside hamburger menu -->
+      <div class="mobile-controls">
+        <button class="custom-location-btn-mobile material-icons" aria-label="Custom Location" title="Enter Custom Coordinates">
+          <span class="material-icons">place</span>
+          <span>Custom Location</span>
+        </button>
+      </div>
+    </div>
   </header>
 
   <!-- MAIN: Cards injected by paddlingout.js -->
@@ -87,24 +96,33 @@
   </template>
 
   <!-- SCRIPTS -->
-  <!-- 1) Header behaviors: dark-mode, menu -->
-  <script type="module" src="scripts/header.js"></script>
-  <!-- 2) UI helpers: carousel, modal, voting -->
-  <script type="module" src="scripts/kaayko_ui.js"></script>
-  <!-- 3) Component scripts -->
-  <script src="scripts/components/RatingHero.js"></script>
-  <script src="scripts/components/SafetyWarnings.js"></script>
-  <script src="scripts/components/WeatherStats.js"></script>
-  <script src="scripts/components/Heatmap.js"></script>
-  <!-- 4) Service layer -->
-  <script src="scripts/services/apiClient.js"></script>
-  <script src="scripts/services/dataTransformer.js"></script>
-  <!-- 5) Simplified Lake Modal -->
-  <script src="scripts/lakeModalSimple.js"></script>
-  <!-- 6) Custom Location Feature -->
-  <script src="scripts/customLocation.js"></script>
-  <!-- 7) Page logic: fetch & render paddling spots -->
-  <script type="module" src="scripts/paddlingout.js"></script>
+  <!-- 1) Main application entry point -->
+  <script type="module" src="js/main.js"></script>
+  
+  <!-- 2) Header behaviors: dark-mode, menu -->
+  <script type="module" src="js/header.js"></script>
+  
+  <!-- 3) UI helpers: carousel, modal, voting -->
+  <script type="module" src="js/kaayko_ui.js"></script>
+  
+  <!-- 4) Component scripts -->
+  <script src="js/components/RatingHero.js"></script>
+  <script src="js/components/SafetyWarnings.js"></script>
+  <script src="js/components/WeatherStats.js"></script>
+  <script src="js/components/Heatmap.js"></script>
+  
+  <!-- 5) Service layer -->
+  <script src="js/services/apiClient.js"></script>
+  <script src="js/services/dataTransformer.js"></script>
+  
+  <!-- 6) Simplified Lake Modal -->
+  <script src="js/advancedModal.js"></script>
+  
+  <!-- 7) Custom Location Feature -->
+  <script src="js/customLocation.js"></script>
+  
+  <!-- 8) Page logic: fetch & render paddling spots -->
+  <script type="module" src="js/paddlingout.js"></script>
 
   <!-- Set current year in footer -->
   <script>

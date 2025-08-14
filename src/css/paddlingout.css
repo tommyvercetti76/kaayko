@@ -148,31 +148,138 @@ body {
 .youtube-icon::before { content: '\25B6';  font-size: 18px; }
 .chat-icon::before    { content: '\1F4AC'; font-size: 18px; }
 .robot-icon::before   { content: '\1F916'; font-size: 18px; } /* Robot emoji for AI/ML predictions */
-.analytics-icon::before { content: '\1F4CA'; font-size: 18px; }
-.location-icon::before{ content: '\1F4CD'; font-size: 18px; }
-/* Tooltip bubble, positioned above and never clipped */
-.icon::after {
+.icon.paddle-score-icon {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  font-family: 'Josefin_Light', Arial, sans-serif !important;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid rgba(255,255,255,0.15) !important;
+  position: relative;
+  /* Enhanced shadow layering for depth */
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+  box-sizing: border-box !important;
+}
+
+.icon.paddle-score-icon:hover {
+  transform: translateY(-2px) scale(1.05);
+  filter: drop-shadow(0 6px 16px rgba(0,0,0,0.3));
+  border-color: rgba(255,255,255,0.3) !important;
+  /* Add subtle glow effect */
+  box-shadow: 
+    0 0 0 2px rgba(255,255,255,0.1),
+    0 4px 20px rgba(0,0,0,0.3) !important;
+}
+
+/* Dark mode support for paddle score icons */
+html.dark-theme .icon.paddle-score-icon {
+  border-color: rgba(255,255,255,0.1) !important;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.8));
+  /* Ensure ADA-compliant colors are preserved */
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+html.dark-theme .icon.paddle-score-icon:hover {
+  border-color: rgba(255,255,255,0.2) !important;
+  box-shadow: 
+    0 0 0 2px rgba(255,255,255,0.05),
+    0 4px 20px rgba(0,0,0,0.4) !important;
+}
+
+/* Force inline styles to take precedence over any theme overrides */
+.icon.paddle-score-icon[style*="background-color"] {
+  background-color: inherit !important;
+}
+
+.icon.paddle-score-icon[style*="color"] {
+  color: inherit !important;
+}
+
+/* ADA-compliant paddle score tooltip styling */
+.icon.paddle-score-icon::after {
   content: attr(title);
-  position: absolute;
-  top: -calc(100% + 8px);
+  position: fixed;
+  bottom: 100px;
   left: 50%;
   transform: translateX(-50%);
-  background: #000;
-  color: #fff;
-  padding: 5px;
-  border-radius: 5px;
+  /* High contrast background for ADA compliance */
+  background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+  color: #FFFDD0; /* Ivory text for maximum contrast */
+  padding: 14px 20px;
+  border-radius: 12px;
   white-space: nowrap;
   opacity: 0;
-  transition: opacity 0.2s;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
-  z-index: 9999;
+  z-index: 999999;
+  font-family: 'Josefin_Light', Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  /* Enhanced shadow system for depth and accessibility */
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.7),
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 253, 208, 0.2); /* Ivory border */
+  backdrop-filter: blur(16px);
+  max-width: 300px;
+  text-align: center;
+  /* Subtle glow for attraction */
+  filter: drop-shadow(0 0 8px rgba(255, 253, 208, 0.1));
+}
+
+.icon.paddle-score-icon:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-12px);
+  /* Enhance glow on hover */
+  filter: drop-shadow(0 0 12px rgba(255, 253, 208, 0.2));
+}
+.analytics-icon::before { content: '\1F4CA'; font-size: 18px; }
+.location-icon::before{ content: '\1F4CD'; font-size: 18px; }
+/* Beautiful tooltip bubble - ALWAYS ON TOP, no conflicts */
+.icon::after {
+  content: attr(title);
+  position: fixed; /* Use fixed positioning to avoid clipping */
+  bottom: 100px; /* Position above footer area */
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #2c3e50, #34495e);
+  color: #ffffff;
+  padding: 10px 16px;
+  border-radius: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  z-index: 999999; /* Highest possible z-index */
   font-family: 'Josefin_Light', Arial, sans-serif;
   font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  max-width: 250px;
+  text-align: center;
 }
+
 .icon:hover::after,
 .icon:focus::after,
 .icon:active::after {
   opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-8px); /* Elegant slide up */
 }
 
 /*─────────────────────────────────────────────────────────────────────────────

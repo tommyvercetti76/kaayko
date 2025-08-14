@@ -1,28 +1,30 @@
 /* RatingHero Component Styles - Clean Fixed Layout */
 .rating-hero {
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  background: var(--modal-bg-light, #f9f9f9);
   border-radius: 8px;
-  padding: 16px;
-  color: var(--modal-text, ivory);
-  margin: 8px;
-  /* BLUE BORDER - MUST BE VISIBLE */
-  border: 10px solid #ff0000 !important;
-  outline: 5px solid #1d4ed8 !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  padding: 12px;
+  color: var(--modal-text, #333);
+  margin: 4px;
+  border: 1px solid var(--modal-border, #e0e0e0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
-  /* Make elements tight - NO centering */
   display: block;
   width: auto;
   max-width: 100%;
 }
 
+/* Dark mode support */
+html.dark-theme .rating-hero {
+  background: var(--modal-bg-dark, #444);
+  color: var(--modal-text, ivory);
+  border-color: var(--modal-border, #555);
+}
+
 /* Responsive rating hero */
 @media (max-width: 768px) {
   .rating-hero {
-    padding: 12px;
-    margin: 4px;
-    border-width: 6px;
-    outline-width: 3px;
+    padding: 10px;
+    margin: 2px;
   }
 }
 

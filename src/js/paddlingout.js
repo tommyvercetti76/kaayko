@@ -11,8 +11,9 @@
  *   7) Insert the current year into the footer
  */
 
-// API Configuration - Local Firebase Functions Emulator
-const API_BASE = "https://api-vwcc5j4qda-uc.a.run.app"; // Production Functions URL
+// API Configuration - Dynamic based on API client mode
+// const API_BASE = "https://api-vwcc5j4qda-uc.a.run.app"; // Production Functions URL
+// Now using dynamic API client instead
 const VIDEOS_DIR = "/assets";
 const HERO_VIDEOS = ["paddle2.mp4"];
 
@@ -52,24 +53,52 @@ document.addEventListener("DOMContentLoaded", () => {
   else        fetchAll();
 
   function fetchAll() {
-    fetch(`${API_BASE}/paddlingOut`)
+    // Dynamic API endpoint - with production override support
+    const spotEndpoint = window.FORCE_PRODUCTION_MODE 
+      ? window.PRODUCTION_API_BASE  // Force production mode
+      : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? `${window.location.origin}/api`  // Local Firebase emulator
+        : "https://us-central1-kaaykostore.cloudfunctions.net/api";  // CORRECT Production URL
+    
+    const currentMode = window.FORCE_PRODUCTION_MODE ? 'production' : (window.apiClient?.getMode() || 'local');
+    
+    console.log(`📍 Fetching paddle spots from ${spotEndpoint} (${currentMode} mode)`);
+    
+    fetch(`${spotEndpoint}/paddlingOut`)
       .then(r => r.json())
-      .then(spots => {
+      .then(async spots => {
         container.innerHTML = "";
         container.classList.remove("single-card");
-        spots.forEach(spot => container.append(renderCard(spot)));
+        
+        // Process cards in parallel for better performance
+        const cardPromises = spots.map(spot => renderCard(spot));
+        const cards = await Promise.all(cardPromises);
+        cards.forEach(card => container.append(card));
+        
         wireUpCarousels();
       })
       .catch(() => showError("Error loading spots."));
   }
 
   function fetchSingle(id) {
-    fetch(`${API_BASE}/paddlingOut/${encodeURIComponent(id)}`)
+    // Dynamic API endpoint - with production override support
+    const spotEndpoint = window.FORCE_PRODUCTION_MODE 
+      ? window.PRODUCTION_API_BASE  // Force production mode
+      : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? `${window.location.origin}/api`  // Local Firebase emulator
+        : "https://us-central1-kaaykostore.cloudfunctions.net/api";  // CORRECT Production URL
+    
+    const currentMode = window.FORCE_PRODUCTION_MODE ? 'production' : (window.apiClient?.getMode() || 'local');
+    
+    console.log(`📍 Fetching single spot from ${spotEndpoint} (${currentMode} mode)`);
+    
+    fetch(`${spotEndpoint}/paddlingOut/${encodeURIComponent(id)}`)
       .then(r => r.ok ? r.json() : Promise.reject())
-      .then(spot => {
+      .then(async spot => {
         container.innerHTML = "";
         container.classList.add("single-card");
-        container.append(renderCard(spot));
+        const card = await renderCard(spot);
+        container.append(card);
         wireUpCarousels();
       })
       .catch(() => showError("Spot not found."));
@@ -78,7 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
   //──────────────────────────────────────────────────────────────────────────────
   // Section 5: renderCard(spot) → Clones template & populates a .card element
   //──────────────────────────────────────────────────────────────────────────────
-  function renderCard(spot) {
+  async function renderCard(spot) {
     const tpl   = document.getElementById("card-template");
     const clone = tpl.content.cloneNode(true);
     const card  = clone.querySelector(".card");
@@ -115,7 +144,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (spot.parkingAvl)   foot.append(icon("parking-icon",   "Parking Available"));
     if (spot.restroomsAvl) foot.append(icon("toilet-icon",    "Restrooms Available"));
     if (spot.youtubeURL)   foot.append(icon("youtube-icon",   "Video", () => openYoutube(spot.youtubeURL)));
-    foot.append(icon("robot-icon", "AI-Powered Lake Conditions & ML Predictions", () => lakeModal.open(spot)));
+    
+    // Use smart paddle score icon instead of generic robot
+    const paddleScoreIcon = await createPaddleScoreIcon(spot);
+    foot.append(paddleScoreIcon);
+    
     foot.append(icon("location-icon", "Take me there", () =>
       openLocation(spot.location.latitude, spot.location.longitude)
     ));
@@ -134,6 +167,175 @@ document.addEventListener("DOMContentLoaded", () => {
    * @param {string} title  Tooltip text
    * @param {Function} [onClick] Optional click handler
    */
+  /**
+   * Create a color-coded paddle score icon that shows cached score
+   */
+  async function createPaddleScoreIcon(spot) {
+    const scoreIcon = document.createElement("span");
+    scoreIcon.className = "icon paddle-score-icon";
+    scoreIcon.title = "Loading paddle score...";
+    scoreIcon.textContent = "?"; // Loading indicator
+    scoreIcon.style.setProperty('background-color', '#6b7280', 'important'); // Gray background while loading
+    scoreIcon.style.setProperty('color', '#ffffff', 'important'); // White text
+    scoreIcon.style.setProperty('font-family', "'Josefin_Light', Arial, sans-serif", 'important');
+    
+    // Still clickable to open modal
+    scoreIcon.addEventListener("click", e => {
+      e.stopPropagation();
+      console.log('🏄 Paddle score icon clicked!');
+      console.log('🔍 API Client available:', !!window.apiClient);
+      console.log('🔍 API Client mode:', window.apiClient?.getMode());
+      advancedModal.open(spot);
+    });
+    
+    // Fetch score asynchronously and update icon
+    fetchPaddleScore(spot, scoreIcon);
+    
+    return scoreIcon;
+  }
+
+  /**
+   * Fetch paddle score from cache and update icon
+   */
+  async function fetchPaddleScore(spot, iconElement) {
+    try {
+      if (!window.apiClient) {
+        iconElement.textContent = "?";
+        iconElement.style.setProperty('background-color', '#6b7280', 'important');
+        iconElement.style.setProperty('color', '#ffffff', 'important');
+        iconElement.title = "API client not available - click for details";
+        return;
+      }
+
+      const lat = spot.location.latitude;
+      const lng = spot.location.longitude;
+      
+      // Use fast forecast to get current score quickly
+      const data = await window.apiClient.getFastForecast(lat, lng);
+      console.log(`🔍 Card DEBUG (${spot.name}): getFastForecast returned:`, data);
+      
+      if (data?.forecast?.[0]?.hourly) {
+        // Use shared data extraction logic to ensure consistency with modal
+        const currentData = window.dataTransformer.extractCurrentConditions(data);
+        console.log(`🔍 Card DEBUG (${spot.name}): dataTransformer.extractCurrentConditions returned:`, currentData);
+        
+        if (currentData?.rating) {
+          const score = currentData.rating;
+          console.log(`🔍 Card DEBUG (${spot.name}): Final score from dataTransformer = ${score}`);
+          
+          const { icon, backgroundColor, textColor, boxShadow, description } = getPaddleScoreDisplay(score);
+          
+          iconElement.textContent = icon;
+          
+          // Apply ADA-compliant styling with attractive shadows
+          iconElement.style.setProperty('background-color', backgroundColor, 'important');
+          iconElement.style.setProperty('color', textColor, 'important');
+          iconElement.style.setProperty('box-shadow', boxShadow, 'important');
+          iconElement.style.setProperty('font-family', "'Josefin_Light', Arial, sans-serif", 'important');
+          iconElement.style.setProperty('border', '2px solid rgba(255,255,255,0.1)', 'important');
+          
+          iconElement.title = `${description} (Click for full forecast)`;
+        } else {
+          iconElement.textContent = "?";
+          iconElement.style.setProperty('background-color', '#6b7280', 'important');
+          iconElement.style.setProperty('color', '#ffffff', 'important');
+          iconElement.title = "No score available - click for forecast";
+        }
+      } else {
+        iconElement.textContent = "?";
+        iconElement.style.setProperty('background-color', '#6b7280', 'important');
+        iconElement.style.setProperty('color', '#ffffff', 'important');
+        iconElement.title = "Score unavailable - click for details";
+      }
+    } catch (error) {
+      console.warn('Failed to fetch paddle score:', error);
+      iconElement.textContent = "!";
+      iconElement.style.setProperty('background-color', '#ef4444', 'important');
+      iconElement.style.setProperty('color', '#ffffff', 'important');
+      iconElement.title = "Score error - click for forecast";
+    }
+  }
+
+  /**
+   * Get display properties for paddle score using ADA-compliant color system
+   * with high contrast ratios and attractive shadows
+   */
+  function getPaddleScoreDisplay(score) {
+    const roundedScore = Math.round(score * 10) / 10; // Round to 1 decimal
+    
+    // ADA-COMPLIANT color grading with proper contrast ratios (4.5:1 minimum)
+    let backgroundColor, textColor, boxShadow;
+    
+    if (score >= 4.5) {
+      // Excellent+ - Deep forest green with ivory text
+      backgroundColor = "#1B4332"; // Dark forest green
+      textColor = "#FFFDD0"; // Ivory
+      boxShadow = "0 4px 12px rgba(27, 67, 50, 0.4), 0 2px 4px rgba(0,0,0,0.3)";
+    } else if (score >= 4.0) {
+      // Excellent - Rich green with ivory text  
+      backgroundColor = "#2D5A32"; // Rich green
+      textColor = "#FFFDD0"; // Ivory
+      boxShadow = "0 4px 12px rgba(45, 90, 50, 0.4), 0 2px 4px rgba(0,0,0,0.3)";
+    } else if (score >= 3.5) {
+      // Mildly challenging - Deep golden amber with black text
+      backgroundColor = "#B8860B"; // Dark goldenrod
+      textColor = "#000000"; // True black
+      boxShadow = "0 4px 12px rgba(184, 134, 11, 0.4), 0 2px 4px rgba(0,0,0,0.3)";
+    } else if (score >= 3.0) {
+      // Challenging - Burnt orange with ivory text
+      backgroundColor = "#CC5500"; // Burnt orange
+      textColor = "#FFFDD0"; // Ivory
+      boxShadow = "0 4px 12px rgba(204, 85, 0, 0.4), 0 2px 4px rgba(0,0,0,0.3)";
+    } else if (score >= 2.5) {
+      // Difficult - Deep red-orange with ivory text
+      backgroundColor = "#B22222"; // Fire brick red
+      textColor = "#FFFDD0"; // Ivory
+      boxShadow = "0 4px 12px rgba(178, 34, 34, 0.4), 0 2px 4px rgba(0,0,0,0.3)";
+    } else if (score >= 2.0) {
+      // Very difficult - Dark crimson with ivory text
+      backgroundColor = "#8B0000"; // Dark red
+      textColor = "#FFFDD0"; // Ivory
+      boxShadow = "0 4px 12px rgba(139, 0, 0, 0.5), 0 2px 4px rgba(0,0,0,0.4)";
+    } else if (score >= 1.5) {
+      // Extremely difficult - Very dark red with ivory text
+      backgroundColor = "#660000"; // Very dark red
+      textColor = "#FFFDD0"; // Ivory
+      boxShadow = "0 4px 12px rgba(102, 0, 0, 0.6), 0 2px 4px rgba(0,0,0,0.4)";
+    } else if (score >= 1.0) {
+      // Dangerous - Near black with ivory text
+      backgroundColor = "#2F1B14"; // Very dark brown-red
+      textColor = "#FFFDD0"; // Ivory
+      boxShadow = "0 4px 12px rgba(47, 27, 20, 0.7), 0 2px 4px rgba(0,0,0,0.5)";
+    } else {
+      // Extremely dangerous - Pure black with ivory text
+      backgroundColor = "#000000"; // True black
+      textColor = "#FFFDD0"; // Ivory
+      boxShadow = "0 4px 12px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(255, 0, 0, 0.3)";
+    }
+    
+    // Get description based on user-specified score ranges
+    let description;
+    if (score >= 4.5) {
+      description = "Excellent conditions";
+    } else if (score >= 4.0) {
+      description = "Good conditions";
+    } else if (score >= 3.5) {
+      description = "Mildly challenging conditions";
+    } else if (score >= 3.0) {
+      description = "Challenging conditions";
+    } else {
+      description = "Difficult conditions";
+    }
+    
+    return {
+      icon: roundedScore,
+      backgroundColor,
+      textColor,
+      boxShadow,
+      description
+    };
+  }
+
   function icon(cls, title, onClick) {
     const el = document.createElement("span");
     el.className = `icon ${cls}`;

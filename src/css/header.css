@@ -208,6 +208,8 @@ html.dark-theme .custom-location-btn::before {
   filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.2));
 }
 
+
+
 /*─────────────────────────────────────────────────────────────────────────────
  3) Mobile FAB & Overlay Menu
 ─────────────────────────────────────────────────────────────────────────────*/
@@ -255,7 +257,7 @@ html.dark-theme .custom-location-btn::before {
   display: none;
   position: fixed;
   inset: 0;
-  background-color: rgba(0,0,0,0.8);
+  background-color: rgba(0,0,0,0.95);  /* Less transparent - was 0.8 */
   color: #fff;
   z-index: 1000;
   flex-direction: column;
@@ -289,10 +291,68 @@ html.dark-theme .custom-location-btn::before {
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
- 5) Responsive Header Tweaks
+ 5) Responsive Header Tweaks & Mobile Controls
 ─────────────────────────────────────────────────────────────────────────────*/
+
+/* Hide/show elements based on screen size */
+.desktop-only {
+  display: inline-flex;
+}
+.mobile-only {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .top-menu { display: none; }
+  
+  .desktop-only {
+    display: none;
+  }
+  .mobile-only {
+    display: inline-flex;
+  }
+}
+
+/* Mobile controls inside hamburger menu */
+.mobile-controls {
+  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  margin-top: 20px;
+}
+
+.mobile-controls button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 12px 16px;
+  margin: 10px 0;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #fff;
+  font-family: 'Josefin_Light', Arial, sans-serif;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.mobile-controls button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.mobile-controls button span {
+  margin-right: 8px;
+}
+
+.mobile-controls .api-mode-toggle-mobile {
+  background: rgba(255, 215, 0, 0.2);
+  border-color: rgba(255, 215, 0, 0.3);
+}
+
+.mobile-controls .api-mode-toggle-mobile:hover {
+  background: rgba(255, 215, 0, 0.3);
 }
 
 /*─────────────────────────────────────────────────────────────────────────────

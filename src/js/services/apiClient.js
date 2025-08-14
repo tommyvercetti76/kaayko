@@ -3,9 +3,46 @@
  */
 class ApiClient {
   constructor() {
-    this.baseUrl = 'https://api-vwcc5j4qda-uc.a.run.app';
+    // API endpoint configuration
+    this.productionUrl = 'https://us-central1-kaaykostore.cloudfunctions.net/api';  // Updated to correct Firebase Functions URL
+    this.emulatorUrl = 'http://127.0.0.1:5002/kaaykostore/us-central1';
+    
+    // Current mode: 'production' (real-time) or 'emulator' (cached)
+    this.mode = 'production'; // Default to production
+    this.baseUrl = this.productionUrl;
+    
     this.cache = new Map();
     this.cacheTimeout = 10 * 60 * 1000; // 10 minutes
+  }
+
+  // Toggle between production (real-time) and emulator (cached) endpoints
+  setMode(mode) {
+    if (mode === 'emulator') {
+      this.mode = 'emulator';
+      this.baseUrl = this.emulatorUrl;
+      console.log('🔄 Switched to Firebase Emulator (Cached Data)');
+    } else {
+      this.mode = 'production';
+      this.baseUrl = this.productionUrl;
+      console.log('🔄 Switched to Production API (Real-time Data)');
+    }
+    
+    // Clear cache when switching modes to ensure fresh data
+    this.cache.clear();
+  }
+
+  // Get current mode
+  getMode() {
+    return this.mode;
+  }
+
+  // Get current endpoint info
+  getCurrentEndpoint() {
+    return {
+      mode: this.mode,
+      url: this.baseUrl,
+      type: this.mode === 'emulator' ? 'Cached Data (Firebase)' : 'Real-time Data (Production)'
+    };
   }
 
   // Generate cache key
@@ -338,6 +375,155 @@ class ApiClient {
     
     // Ensure rating stays in valid range
     return Math.max(1.0, Math.min(5.0, Math.round(rating * 10) / 10));
+  }
+
+  // Fast forecast endpoint - always uses optimized fastForecast endpoint
+  async getFastForecast(lat, lng) {
+    // FastForecast is exported as separate function, not under /api path
+    const baseUrl = this.mode === 'emulator' 
+      ? 'http://127.0.0.1:5002/kaaykostore/us-central1'
+      : 'https://us-central1-kaaykostore.cloudfunctions.net';
+    const url = `${baseUrl}/fastForecast?lat=${lat}&lng=${lng}`;
+    
+    try {
+      console.log(`⚡ Fetching optimized forecast from: ${url}`);
+      
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log(`✅ Got fast forecast data in ${data.metadata?.responseTime || 'N/A'}`);
+      
+      return data;
+      
+    } catch (error) {
+      console.error(`❌ Fast forecast failed, falling back to regular forecast:`, error);
+      // Fall back to regular forecast method only if fastForecast fails
+      return this.getForecastData(lat, lng);
+    }
+  }
+
+  // Cache manager endpoint - only available in emulator mode
+  async getCacheManager() {
+    if (this.mode !== 'emulator') {
+      throw new Error('Cache manager is only available in emulator mode');
+    }
+    
+    const url = `${this.baseUrl}/cacheManager/api/cache/stats`;
+    
+    try {
+      console.log(`📊 Fetching cache status from: ${url}`);
+      
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log(`✅ Got cache manager data`);
+      
+      return data;
+      
+    } catch (error) {
+      console.error(`❌ Cache manager failed:`, error);
+      throw error;
+    }
+  }
+
+  // Get performance comparison between cached and real-time
+  async getPerformanceComparison(lat, lng) {
+    const results = {
+      cached: null,
+      realtime: null,
+      comparison: null
+    };
+
+    try {
+      // Test cached data (emulator)
+      const originalMode = this.mode;
+      
+      // Switch to emulator and test
+      this.setMode('emulator');
+      const cachedStart = Date.now();
+      results.cached = await this.getFastForecast(lat, lng);
+      results.cached.responseTime = Date.now() - cachedStart;
+      
+      // Switch to production and test
+      this.setMode('production');
+      const realtimeStart = Date.now();
+      results.realtime = await this.getForecastData(lat, lng);
+      results.realtime.responseTime = Date.now() - realtimeStart;
+      
+      // Restore original mode
+      this.setMode(originalMode);
+      
+      // Calculate comparison
+      results.comparison = {
+        speedImprovement: Math.round((results.realtime.responseTime / results.cached.responseTime) * 10) / 10,
+        cachedTime: results.cached.responseTime,
+        realtimeTime: results.realtime.responseTime,
+        dataMatch: this.compareForecastData(results.cached, results.realtime)
+      };
+      
+      console.log(`📊 Performance comparison complete:`, results.comparison);
+      
+    } catch (error) {
+      console.error(`❌ Performance comparison failed:`, error);
+      throw error;
+    }
+    
+    return results;
+  }
+
+  // Compare two forecast datasets for accuracy
+  compareForecastData(cached, realtime) {
+    try {
+      if (!cached?.forecast || !realtime?.forecast) {
+        return { match: false, reason: 'Missing forecast data' };
+      }
+      
+      // Compare first day data as sample
+      const cachedDay = cached.forecast[0];
+      const realtimeDay = realtime.forecast[0];
+      
+      if (!cachedDay?.hourly || !realtimeDay?.hourly) {
+        return { match: false, reason: 'Missing hourly data' };
+      }
+      
+      // Check a few key hours
+      const hoursToCheck = ['8', '12', '18'];
+      let matches = 0;
+      let total = 0;
+      
+      for (const hour of hoursToCheck) {
+        if (cachedDay.hourly[hour] && realtimeDay.hourly[hour]) {
+          const cachedRating = cachedDay.hourly[hour].prediction?.rating;
+          const realtimeRating = realtimeDay.hourly[hour].prediction?.rating;
+          
+          if (cachedRating && realtimeRating) {
+            total++;
+            if (Math.abs(cachedRating - realtimeRating) < 0.5) {
+              matches++;
+            }
+          }
+        }
+      }
+      
+      const accuracy = total > 0 ? (matches / total) * 100 : 0;
+      
+      return {
+        match: accuracy > 80,
+        accuracy: Math.round(accuracy),
+        matches,
+        total,
+        reason: accuracy > 80 ? 'Data matches within tolerance' : 'Significant differences detected'
+      };
+      
+    } catch (error) {
+      return { match: false, reason: `Comparison error: ${error.message}` };
+    }
   }
 }
 

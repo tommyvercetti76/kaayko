@@ -4,29 +4,29 @@
 .heatmap-container {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  margin: 10px 8px; /* Add 8px side margins */
-  align-items: stretch; /* Allow full width expansion */
-  justify-content: center; /* Center contents vertically */
-  width: calc(100% - 16px); /* Full width minus side margins */
+  gap: 8px;
+  margin: 4px;
+  align-items: stretch;
+  justify-content: center;
+  width: calc(100% - 8px);
 }
 
 /* Heatmap header styling */
 .chart-header {
   text-align: center;
-  margin-bottom: 15px;
-  width: 100%; /* Match parent width */
+  margin-bottom: 8px;
+  width: 100%;
 }
 
 .chart-title {
   font-family: 'Josefin_Bold', Arial, sans-serif;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
-  color: #000;
-  margin: 0 0 8px 0;
+  color: var(--modal-text, #000);
+  margin: 0 0 4px 0;
   text-transform: uppercase;
   letter-spacing: 1px;
-  width: 100%; /* Match parent width */
+  width: 100%;
 }
 
 .chart-description {

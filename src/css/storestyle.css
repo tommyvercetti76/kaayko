@@ -56,15 +56,15 @@
 /* CUSTOM FONTS */
 @font-face {
   font-family: 'Josefin_Medium';
-  src: url('fonts/JosefinSans-Medium.ttf') format('truetype');
+  src: url('../fonts/JosefinSans-Medium.ttf') format('truetype');
 }
 @font-face {
   font-family: 'Josefin_Bold';
-  src: url('fonts/JosefinSans-Bold.ttf') format('truetype');
+  src: url('../fonts/JosefinSans-Bold.ttf') format('truetype');
 }
 @font-face {
   font-family: 'Josefin_Light';
-  src: url('fonts/JosefinSans-Light.ttf') format('truetype');
+  src: url('../fonts/JosefinSans-Light.ttf') format('truetype');
 }
 
 /* RESET */

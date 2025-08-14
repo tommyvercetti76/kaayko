@@ -12,8 +12,8 @@
   <link rel="canonical" href="https://kaayko.com/testimonials.html">
 
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="/storestyle.css">
-  <link rel="stylesheet" href="/header.css">
+  <link rel="stylesheet" href="/css/storestyle.css">
+  <link rel="stylesheet" href="/css/header.css">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 
@@ -47,14 +47,14 @@
 
   <!-- SCRIPTS -->
   <!-- 1) header.js (dark-mode, menu, etc.) -->
-  <script type="module" src="scripts/header.js"></script>
+  <script type="module" src="js/header.js"></script>
 
   <!-- 2) your testimonials renderer -->
-  <script type="module" src="scripts/testimonials.js"></script>
+  <script type="module" src="js/testimonials.js"></script>
 
   <!-- 3) inline module to set year & kick off testimonials -->
   <script type="module">
-    import { renderTestimonials } from './scripts/testimonials.js';
+    import { renderTestimonials } from './js/testimonials.js';
 
     document.addEventListener("DOMContentLoaded", () => {
       // Dynamic footer year

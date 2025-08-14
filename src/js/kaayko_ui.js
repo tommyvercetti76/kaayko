@@ -10,9 +10,10 @@
 
 import { voteOnProduct } from "./kaayko_apiClient.js";
 
-// Cloud Function image proxy base
-const IMAGE_PROXY_BASE =
-  "https://us-central1-kaayko-api-dev.cloudfunctions.net/api/images";
+// Cloud Function image proxy base - auto-detect environment
+const IMAGE_PROXY_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? `${window.location.origin}/api/images`  // Local Firebase emulator
+  : "https://us-central1-kaayko-api-dev.cloudfunctions.net/api/images";  // Production
 
 /* ==========================================================================
    1) Carousel Rendering & Swipe

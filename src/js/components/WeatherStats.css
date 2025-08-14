@@ -2,19 +2,19 @@
 
 /* Weather Stats header styling */
 .weather-stats-container {
-  margin: 20px 0;
+  margin: 8px 0;
 }
 
 .weather-stats-header {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 8px;
 }
 
 .weather-stats-title {
   font-family: 'Josefin_Bold', Arial, sans-serif;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
-  color: #000;
+  color: var(--modal-text, #000);
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 1px;

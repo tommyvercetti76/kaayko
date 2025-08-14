@@ -51,7 +51,7 @@ class CustomLocationModal {
       link.id = cssId;
       link.rel = 'stylesheet';
       link.type = 'text/css';
-      link.href = '/scripts/customLocation.css';
+      link.href = '/css/customLocation.css';
       document.head.appendChild(link);
       console.log('Custom Location CSS loaded');
     }
@@ -98,37 +98,38 @@ class CustomLocationModal {
       <div class="custom-location-modal">
         <div class="modal-header">
           <h2>Custom Location</h2>
-          <p>Enter coordinates to get paddle conditions for any water body worldwide</p>
           <button class="modal-close">&times;</button>
         </div>
         <div class="modal-body">
           <div class="input-group">
-            <label class="input-label">Coordinates</label>
+            <div class="location-options">
+              <button class="btn btn-location" id="use-current-location">
+                <span class="material-icons">my_location</span>
+                Current Location
+              </button>
+              <button class="btn-refresh" id="refresh-fields" title="Clear fields">
+                <span class="material-icons">refresh</span>
+              </button>
+            </div>
             <div class="input-row">
-              <div class="input-wrapper">
-                <input 
-                  type="number" 
-                  class="coord-input" 
-                  id="latitude-input"
-                  placeholder="Latitude (e.g., 37.7749)"
-                  step="any"
-                  min="-90"
-                  max="90"
-                >
-                <div class="input-hint">Range: -90 to 90</div>
-              </div>
-              <div class="input-wrapper">
-                <input 
-                  type="number" 
-                  class="coord-input" 
-                  id="longitude-input"
-                  placeholder="Longitude (e.g., -122.4194)"
-                  step="any"
-                  min="-180"
-                  max="180"
-                >
-                <div class="input-hint">Range: -180 to 180</div>
-              </div>
+              <input 
+                type="number" 
+                class="coord-input" 
+                id="latitude-input"
+                placeholder="Latitude"
+                step="any"
+                min="-90"
+                max="90"
+              >
+              <input 
+                type="number" 
+                class="coord-input" 
+                id="longitude-input"
+                placeholder="Longitude"
+                step="any"
+                min="-180"
+                max="180"
+              >
             </div>
           </div>
           
@@ -139,51 +140,59 @@ class CustomLocationModal {
 
           <div class="modal-actions">
             <button class="btn btn-cancel" id="cancel-btn">Cancel</button>
-            <button class="btn btn-primary" id="submit-btn">
+            <button class="btn btn-submit" id="submit-btn">
               <span class="btn-text">Get Conditions</span>
+              <span class="btn-loader"></span>
             </button>
           </div>
         </div>
       </div>
     `;
+
     return modal;
   }
 
-  // Add modal event listeners
+    // Add modal event listeners
   addModalEventListeners() {
     const closeBtn = this.modal.querySelector('.modal-close');
     const cancelBtn = this.modal.querySelector('#cancel-btn');
     const submitBtn = this.modal.querySelector('#submit-btn');
+    const locationBtn = this.modal.querySelector('#use-current-location');
+    const refreshBtn = this.modal.querySelector('#refresh-fields');
     const latInput = this.modal.querySelector('#latitude-input');
     const lngInput = this.modal.querySelector('#longitude-input');
 
     // Close handlers
     closeBtn.addEventListener('click', () => this.close());
     cancelBtn.addEventListener('click', () => this.close());
-    this.modal.addEventListener('click', (e) => {
-      if (e.target === this.modal) this.close();
-    });
-
+    
     // Submit handler
     submitBtn.addEventListener('click', () => this.handleSubmit());
-
+    
+    // Location handler
+    locationBtn.addEventListener('click', () => this.getCurrentLocation());
+    
+    // Refresh handler
+    refreshBtn.addEventListener('click', () => this.refreshFields());
+    
     // Input validation
     latInput.addEventListener('input', () => this.validateInput(latInput, 'latitude'));
     lngInput.addEventListener('input', () => this.validateInput(lngInput, 'longitude'));
-
-    // Enter key submission
+    
+    // Enter key handler
     [latInput, lngInput].forEach(input => {
-      input.addEventListener('keydown', (e) => {
+      input.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
-          e.preventDefault();
           this.handleSubmit();
         }
       });
     });
-
-    // Escape key close
-    document.addEventListener('keydown', this.escapeHandler = (e) => {
-      if (e.key === 'Escape') this.close();
+    
+    // Overlay click to close
+    this.modal.addEventListener('click', (e) => {
+      if (e.target === this.modal) {
+        this.close();
+      }
     });
   }
 
@@ -219,6 +228,119 @@ class CustomLocationModal {
     const isReady = isValidLat && isValidLng && !this.isValidating;
 
     submitBtn.disabled = !isReady;
+  }
+
+  // Refresh/clear all fields
+  refreshFields() {
+    const latInput = this.modal.querySelector('#latitude-input');
+    const lngInput = this.modal.querySelector('#longitude-input');
+    const errorMessage = this.modal.querySelector('#error-message');
+    const submitBtn = this.modal.querySelector('#submit-btn');
+    
+    // Clear inputs
+    latInput.value = '';
+    lngInput.value = '';
+    
+    // Hide error message
+    errorMessage.classList.remove('show');
+    
+    // Reset button state
+    submitBtn.disabled = true;
+    submitBtn.classList.remove('loading');
+    
+    // Reset input validation states
+    latInput.classList.remove('error', 'valid');
+    lngInput.classList.remove('error', 'valid');
+    
+    // Focus on latitude input
+    latInput.focus();
+    
+    console.log('🔄 Fields refreshed');
+  }
+
+  // Get current location using browser geolocation
+  async getCurrentLocation() {
+    const locationBtn = this.modal.querySelector('#use-current-location');
+    const latInput = this.modal.querySelector('#latitude-input');
+    const lngInput = this.modal.querySelector('#longitude-input');
+
+    if (!navigator.geolocation) {
+      this.showError({
+        title: "Geolocation Not Supported",
+        message: "Your browser doesn't support location services. Please enter coordinates manually."
+      });
+      return;
+    }
+
+    // Update button state
+    locationBtn.disabled = true;
+    const originalText = locationBtn.innerHTML;
+    locationBtn.innerHTML = `
+      <span class="material-icons">hourglass_empty</span>
+      Getting Location...
+    `;
+
+    try {
+      const position = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          resolve,
+          reject,
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 60000
+          }
+        );
+      });
+
+      const lat = position.coords.latitude.toFixed(6);
+      const lng = position.coords.longitude.toFixed(6);
+
+      // Fill in the coordinates
+      latInput.value = lat;
+      lngInput.value = lng;
+
+      // Trigger validation
+      this.validateInput(latInput, 'latitude');
+      this.validateInput(lngInput, 'longitude');
+
+      // Success feedback
+      locationBtn.innerHTML = `
+        <span class="material-icons">check_circle</span>
+        Location Found!
+      `;
+      
+      // Auto-proceed with validation and submission after a brief delay
+      setTimeout(async () => {
+        locationBtn.innerHTML = originalText;
+        locationBtn.disabled = false;
+        
+        // Automatically proceed with the location
+        console.log('🚀 Auto-proceeding with current location');
+        await this.handleSubmit();
+      }, 1000);
+
+    } catch (error) {
+      let errorMessage = "Unable to get your location. ";
+      
+      if (error.code === error.PERMISSION_DENIED) {
+        errorMessage += "Please allow location access and try again.";
+      } else if (error.code === error.POSITION_UNAVAILABLE) {
+        errorMessage += "Location information is unavailable.";
+      } else if (error.code === error.TIMEOUT) {
+        errorMessage += "Location request timed out.";
+      } else {
+        errorMessage += "Please enter coordinates manually.";
+      }
+
+      this.showError({
+        title: "Location Error",
+        message: errorMessage
+      });
+
+      locationBtn.innerHTML = originalText;
+      locationBtn.disabled = false;
+    }
   }
 
   // Handle form submission
@@ -271,11 +393,11 @@ class CustomLocationModal {
       // Close this modal
       this.close();
 
-      // Open lake modal with custom location
-      if (window.lakeModal) {
-        await window.lakeModal.open(spot);
+      // Open advanced modal with custom location
+      if (window.advancedModal) {
+        await window.advancedModal.open(spot);
       } else {
-        console.error('Lake modal not available');
+        console.error('Advanced modal not available');
       }
 
     } catch (error) {
@@ -346,36 +468,63 @@ class CustomLocationModal {
   // Validate if coordinates are over a water body
   async validateWaterBody(lat, lng, locationName) {
     try {
-      // For now, be permissive to restore functionality
-      // The original validation was too strict and blocking everything
       console.log('🌊 Validating water body for:', locationName || `${lat}, ${lng}`);
       
-      // Quick check for obvious land-based keywords in location name
-      if (locationName) {
-        const landKeywords = [
-          'street', 'road', 'avenue', 'boulevard', 'highway', 'mall', 'center',
-          'building', 'hospital', 'school', 'university', 'airport', 'station'
-        ];
-        
-        const locationLower = locationName.toLowerCase();
-        const hasLandKeyword = landKeywords.some(keyword => 
-          locationLower.includes(keyword)
-        );
-        
-        if (hasLandKeyword) {
-          console.log('❌ Location appears to be land-based:', locationName);
-          return false;
+      // Use Nominatim (OpenStreetMap) for reverse geocoding
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+        {
+          headers: {
+            'User-Agent': 'Kaayko-Paddling-App'
+          }
         }
+      );
+      
+      if (!response.ok) {
+        throw new Error('Geocoding service unavailable');
       }
-
-      // For most cases, allow the location and let the API handle it
-      // This restores the previous working behavior
-      console.log('✅ Location validation passed');
-      return true;
+      
+      const data = await response.json();
+      
+      // Check if location is over water
+      const waterTypes = ['water', 'natural', 'waterway', 'bay', 'strait', 'fjord', 'sound'];
+      const isWater = waterTypes.some(type => 
+        data.category === type || 
+        data.type === type ||
+        (data.address && Object.values(data.address).some(addr => 
+          typeof addr === 'string' && 
+          (addr.toLowerCase().includes('lake') || 
+           addr.toLowerCase().includes('river') || 
+           addr.toLowerCase().includes('ocean') ||
+           addr.toLowerCase().includes('sea') ||
+           addr.toLowerCase().includes('bay') ||
+           addr.toLowerCase().includes('pond'))
+        ))
+      );
+      
+      // Additional check for water-related features
+      const display_name = data.display_name || '';
+      const hasWaterKeywords = display_name.toLowerCase().includes('lake') ||
+                              display_name.toLowerCase().includes('river') ||
+                              display_name.toLowerCase().includes('ocean') ||
+                              display_name.toLowerCase().includes('sea') ||
+                              display_name.toLowerCase().includes('bay') ||
+                              display_name.toLowerCase().includes('pond') ||
+                              display_name.toLowerCase().includes('water');
+      
+      const isValidWater = isWater || hasWaterKeywords;
+      
+      if (isValidWater) {
+        console.log('✅ Valid water body confirmed');
+      } else {
+        console.log('❌ Location appears to be on land');
+      }
+      
+      return isValidWater;
       
     } catch (error) {
-      // If validation fails, be permissive to avoid blocking valid locations
-      console.warn('Water body validation failed, allowing location:', error);
+      console.warn('⚠️ Could not validate water body:', error);
+      // If validation fails, allow the user to proceed (fallback)
       return true;
     }
   }
@@ -482,5 +631,5 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('🎯 Custom Location feature initialized');
 });
 
-// Export for global access
+// Export for global access (available if needed)
 window.CustomLocationModal = CustomLocationModal;
