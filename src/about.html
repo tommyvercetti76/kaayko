@@ -1,74 +1,274 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/js/prod-config.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Smart App Banner: shows “Download” if not installed, “Open” if installed -->
+  <!-- Smart App Banner -->
   <meta name="apple-itunes-app"
         content="app-id=6747012283, app-argument=https://kaayko.com/about.html" />
 
   <!-- SEO Meta Tags -->
-  <title>Kaayko | About</title>
-  <meta name="description" content="Learn about Kaayko: apparel that accurately represents your thoughts. Discover our vision and exclusive designs." />
-  <meta name="keywords" content="Kaayko, About, Apparel Philosophy, Unique Designs" />
+  <title>About Kaayko Paddle | Where Waters Meet Wisdom</title>
+  <meta name="description" content="Discover how Kaayko transforms paddling with real-time lake conditions, AI-powered safety insights, and the wisdom to paddle confidently. Break free on the water." />
+  <meta name="keywords" content="Kaayko Paddle, Lake Conditions, Paddling Safety, Water Sports, Real-time Weather, Paddle Freedom" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://kaayko.com/about.html" />
 
-  <!-- 1) Global Stylesheet: resets, typography, carousel, modal, dark-mode, etc. -->
-  <link rel="stylesheet" href="css/storestyle.css" />
-
-  <!-- 2) Header Styles: shared header + dark-mode overrides -->
-  <link rel="stylesheet" href="css/header.css" />
-
-  <!-- 3) Material Icons (for dark-mode toggle, hamburger, etc.) -->
+  <!-- Stylesheets (following paddlingout.html structure) -->
+  <link rel="stylesheet" href="/css/storestyle.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="css/about.css" />
+  <link rel="stylesheet" href="fonts/fonts.css" />
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+  <!-- Scripts -->
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const response = await fetch('https://us-central1-kaaykostore.cloudfunctions.net/api/paddlingOut');
+        const lakes = await response.json();
+        
+        // Filter lakes that have images
+        const lakesWithImages = lakes.filter(lake => lake.imgSrc && lake.imgSrc.length > 0);
+        
+        // Randomly select lakes for all backgrounds
+        const shuffled = [...lakesWithImages].sort(() => 0.5 - Math.random());
+        const heroLake = shuffled[0];
+        const whatWeDoLake = shuffled[1] || shuffled[0];
+        const howItWorksLake = shuffled[2] || shuffled[0];
+        const missionLake = shuffled[3] || shuffled[0];
+        const ctaLake = shuffled[4] || shuffled[0];
+        
+        // Update hero background
+        if (heroLake && heroLake.imgSrc) {
+          const randomHeroImg = heroLake.imgSrc[Math.floor(Math.random() * heroLake.imgSrc.length)];
+          const heroBg = document.querySelector('.hero-bg-image');
+          if (heroBg) {
+            heroBg.style.backgroundImage = `url('${randomHeroImg}')`;
+          }
+        }
+        
+        // Update section backgrounds
+        const sectionBgs = document.querySelectorAll('.section-bg');
+        const sectionLakes = [whatWeDoLake, howItWorksLake, missionLake, ctaLake];
+        
+        sectionBgs.forEach((bg, index) => {
+          const lake = sectionLakes[index];
+          if (lake && lake.imgSrc) {
+            const randomImg = lake.imgSrc[Math.floor(Math.random() * lake.imgSrc.length)];
+            bg.style.backgroundImage = `url('${randomImg}')`;
+          }
+        });
+        
+        // Update metrics
+        const statNumbers = document.querySelectorAll('.stat-number');
+        if (statNumbers[0]) statNumbers[0].textContent = '192ms';
+        if (statNumbers[1]) statNumbers[1].textContent = '232+';
+        if (statNumbers[2]) statNumbers[2].textContent = '13.9M';
+        
+        const updateFooterMetric = (id, value) => {
+          const element = document.getElementById(id);
+          if (element) element.textContent = value;
+        };
+        
+        updateFooterMetric('training-data', '13.9M Records');
+        updateFooterMetric('model-accuracy', '99.56% Accuracy');
+        updateFooterMetric('model-features', '23 Weather Vars');
+        updateFooterMetric('heatmap-coverage', '232 Lakes');
+        updateFooterMetric('api-response', '192ms');
+        updateFooterMetric('ml-updates', '4x Daily');
+        updateFooterMetric('continental-reach', '6 Continents');
+        updateFooterMetric('search-radius', '50km Radius');
+        updateFooterMetric('water-types', '5 Water Types');
+        updateFooterMetric('active-paddlers', '1000+ Users');
+        
+      } catch (error) {
+        console.log('Using fallback intelligence stats');
+      }
+    });
+  </script>
 </head>
 
 <body>
-  <!-- HEADER: Shared across all pages -->
+  <!-- ✅ GLOBAL HEADER (matches paddlingout.html) -->
   <header class="header">
     <div class="header-top">
       <div class="header-brand">
-        <h1 class="header-title">Kaayko: About</h1>
-        <p class="header-subtitle">Our Mission, Your Money</p>
+        <h1 class="header-title">Kaayko: Paddling Out</h1>
+        <p class="header-subtitle">Know Before You Go</p>
       </div>
+
+      <!-- Desktop nav (populated by header.js) -->
       <nav class="top-menu"><ul></ul></nav>
+
+      <!-- Controls: theme toggle and mobile menu -->
       <div class="header-controls">
         <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode"></button>
-        <button class="fab-menu material-icons" aria-label="Open Menu">menu</button>
+        <button class="fab-menu material-icons mobile-only" aria-label="Open Menu">menu</button>
       </div>
+    </div>
+
+    <!-- Mobile overlay menu -->
+    <div class="mobile-menu-overlay">
+      <ul></ul>
     </div>
   </header>
 
-  <!-- Mobile overlay menu -->
-  <div class="mobile-menu-overlay"><ul></ul></div>
+  <!-- MAIN CONTENT -->
+  <main class="about-main">
+    <!-- Hero Section -->
+    <section class="about-hero">
+      <div class="hero-bg-image"></div>
+      <div class="hero-content">
+        <h2 class="about-title">Fast Paddle Weather + Safety Scores</h2>
+        <p class="about-tagline">192ms API responses. ML trained on 13.9M records. Real water discovery.</p>
+        <div class="hero-stats">
+          <div class="stat-item">
+            <span class="stat-number">192ms</span>
+            <span class="stat-label">Response Time</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">232+</span>
+            <span class="stat-label">Lakes Globally</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">13.9M</span>
+            <span class="stat-label">Training Records</span>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  <!-- MAIN CONTENT: About page -->
-  <main>
-    <!-- SECTION 1: Visual Collage Banner -->
-    <div class="about-hero-collage">
-      <div class="collage-slice"><img src="assets/Lifeisopinion_2.png" alt="Life is Opinion Shirt Design" /></div>
-      <div class="collage-slice"><img src="assets/AssaultBae_1.png" alt="Assault Bae Shirt Design" /></div>
-      <div class="collage-slice"><img src="assets/Live_3.png" alt="Live Shirt Design" /></div>
-      <div class="collage-slice"><img src="assets/Nagpur_3.png" alt="Nagpur Shirt Design" /></div>
-      <div class="collage-slice"><img src="assets/ShutUp_1.png" alt="Shut Up Shirt Design" /></div>
-      <div class="collage-slice"><img src="assets/StraightOutta_1.png" alt="Straight Outta Shirt Design" /></div>
-    </div>
+    <!-- Paddle Score -->
+    <section class="about-section what-we-do">
+      <div class="section-card">
+        <div class="section-bg"></div>
+        <div class="section-content-minimal">
+          <h3>Paddle Score</h3>
+          <p class="section-tagline">ML safety ratings from advanced weather modeling</p>
+        </div>
+        <div class="section-footer">
+          <div class="glossy-buttons-grid">
+            <div class="glossy-button">
+              <span class="material-icons">psychology</span>
+              <div class="button-text">
+                <h4>Training Dataset</h4>
+                <p id="training-data">13.9M Records</p>
+              </div>
+            </div>
+            <div class="glossy-button">
+              <span class="material-icons">precision_manufacturing</span>
+              <div class="button-text">
+                <h4>RandomForest Model</h4>
+                <p id="model-accuracy">99.56% Accuracy</p>
+              </div>
+            </div>
+            <div class="glossy-button">
+              <span class="material-icons">analytics</span>
+              <div class="button-text">
+                <h4>Feature Engineering</h4>
+                <p id="model-features">23 Weather Vars</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <!-- SECTION 2: Textual description of Kaayko's philosophy -->
-    <section class="about-text">
-      <h2>Welcome to Kaayko</h2>
-      <h3>You deserve it</h3>
-      <p>
-        Kaayko offers a chance to wear your beliefs.<br>
-        Kaayko will turn heads, spark conversations.<br><br>
-        As Seagulls squawk nearby—<br>
-        Shoo them away with style<br><br>
-        Cloak yourself in Clarity.<br>
-        Delegate your beliefs to Kaayko.<br><br>
-        Vote now for the fashion of tomorrow.<br>
-      </p>
+    <!-- Kaayko Konditions -->
+    <section class="about-section how-it-works">
+      <div class="section-card">
+        <div class="section-bg"></div>
+        <div class="section-content-minimal">
+          <h3>Konditions</h3>
+          <p class="section-tagline">Interactive heatmaps with fast API responses</p>
+        </div>
+        <div class="section-footer">
+          <div class="glossy-buttons-grid">
+            <div class="glossy-button">
+              <span class="material-icons">map</span>
+              <div class="button-text">
+                <h4>Interactive Heatmap</h4>
+                <p id="heatmap-coverage">232 Lakes</p>
+              </div>
+            </div>
+            <div class="glossy-button">
+              <span class="material-icons">speed</span>
+              <div class="button-text">
+                <h4>FastForecast API</h4>
+                <p id="api-response">192ms</p>
+              </div>
+            </div>
+            <div class="glossy-button">
+              <span class="material-icons">auto_awesome</span>
+              <div class="button-text">
+                <h4>Live ML Scoring</h4>
+                <p id="ml-updates">4x Daily</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Nearby Waters -->
+    <section class="about-section mission">
+      <div class="section-card">
+        <div class="section-bg"></div>
+        <div class="section-content-minimal">
+          <h3>Nearby Waters</h3>
+          <p class="section-tagline">Global water discovery with proximity search</p>
+        </div>
+        <div class="section-footer">
+          <div class="glossy-buttons-grid">
+            <div class="glossy-button">
+              <span class="material-icons">public</span>
+              <div class="button-text">
+                <h4>Global Coverage</h4>
+                <p id="continental-reach">6 Continents</p>
+              </div>
+            </div>
+            <div class="glossy-button">
+              <span class="material-icons">near_me</span>
+              <div class="button-text">
+                <h4>Proximity Search</h4>
+                <p id="search-radius">50km Radius</p>
+              </div>
+            </div>
+            <div class="glossy-button">
+              <span class="material-icons">explore</span>
+              <div class="button-text">
+                <h4>Water Discovery</h4>
+                <p id="water-types">5 Water Types</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="about-cta">
+      <div class="section-card">
+        <div class="section-bg"></div>
+        <div class="section-content-minimal">
+          <h3>Ready to paddle smart?</h3>
+          <p class="section-tagline">Join adventurers who check conditions before they go</p>
+        </div>
+        <div class="section-footer">
+          <div class="glossy-buttons-grid single-button">
+            <a href="/" class="glossy-button cta-glossy">
+              <span class="material-icons">waves</span>
+              <div class="button-text">
+                <h4>Explore Conditions</h4>
+                <p id="active-paddlers">1000+ Users</p>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
     </section>
   </main>
 
@@ -78,10 +278,17 @@
   </footer>
 
   <!-- SCRIPTS -->
+  <!-- 1) Header behaviors: dark-mode, menu -->
   <script type="module" src="js/header.js"></script>
+  
+  <!-- 2) About page specific functionality -->
   <script type="module" src="js/about-dynamic.js"></script>
+  
+  <!-- Set current year in footer -->
   <script>
-    document.getElementById('year').textContent = new Date().getFullYear();
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("year").textContent = new Date().getFullYear();
+    });
   </script>
 </body>
 </html>

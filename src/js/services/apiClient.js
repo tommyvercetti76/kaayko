@@ -4,12 +4,17 @@
 class ApiClient {
   constructor() {
     // API endpoint configuration
-    this.productionUrl = 'https://us-central1-kaaykostore.cloudfunctions.net/api';  // Updated to correct Firebase Functions URL
-    this.emulatorUrl = 'http://127.0.0.1:5002/kaaykostore/us-central1';
+    this.productionUrl = 'https://api-vwcc5j4qda-uc.a.run.app';  // Updated to correct Firebase Functions v2 URL
+    this.emulatorUrl = 'http://127.0.0.1:5001/kaaykostore/us-central1/api';
     
-    // Current mode: 'production' (real-time) or 'emulator' (cached)
-    this.mode = 'production'; // Default to production
-    this.baseUrl = this.productionUrl;
+    // Auto-detect mode based on hostname
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    
+    // Current mode: 'production' (real-time) or 'emulator' (cached) 
+    this.mode = isLocalhost ? 'emulator' : 'production';
+    this.baseUrl = isLocalhost ? this.emulatorUrl : this.productionUrl;
+    
+    console.log(`🚀 API Client initialized in ${this.mode} mode: ${this.baseUrl}`);
     
     this.cache = new Map();
     this.cacheTimeout = 10 * 60 * 1000; // 10 minutes
@@ -111,7 +116,7 @@ class ApiClient {
       console.log(`🔄 Have fallback cached, checking if API is working again...`);
     }
 
-    const url = `${this.baseUrl}/paddlePredict/forecast?lat=${lat}&lng=${lng}`;
+    const url = `${this.baseUrl}/forecast?lat=${lat}&lng=${lng}`;
     
     try {
       console.log(`📡 Fetching forecast data from: ${url}`);
@@ -160,7 +165,7 @@ class ApiClient {
       return cached.data;
     }
 
-    const url = `${this.baseUrl}/paddlePredict?lat=${lat}&lng=${lng}`;
+    const url = `${this.baseUrl}/paddleScore?location=${lat},${lng}`;
     
     try {
       console.log(`📡 Fetching current data from: ${url}`);
@@ -226,20 +231,20 @@ class ApiClient {
           warnings: [],
           beaufortScale: Math.min(12, Math.floor(locationData.baseWind / 3)),
           
-          // ML prediction results with localized rating
+          // Simplified fallback - no local scoring, just reasonable defaults
           prediction: {
-            rating: this.calculateLocalizedRating(locationData, hour),
-            originalRating: this.calculateLocalizedRating(locationData, hour),
+            rating: 3.0,  // Neutral fallback score
+            originalRating: 3.0,
             safetyDeduction: 0,
-            mlModelUsed: false, // Using fallback
+            mlModelUsed: false,
             predictionSource: 'local-fallback'
           },
           
-          // For backward compatibility
-          originalRating: this.calculateLocalizedRating(locationData, hour),
+          // For backward compatibility - use simple fallback values
+          originalRating: 3.0,
           safetyDeduction: 0,
-          apiRating: this.calculateLocalizedRating(locationData, hour),
-          rating: this.calculateLocalizedRating(locationData, hour),
+          apiRating: 3.0,
+          rating: 3.0,
           mlModelUsed: false,
           predictionSource: 'local-fallback'
         };
@@ -351,39 +356,19 @@ class ApiClient {
     };
   }
 
-  // Calculate localized paddle rating based on conditions and time
-  calculateLocalizedRating(locationData, hour) {
-    let rating = 4.0; // Start optimistic
-    
-    // Time of day factors
-    if (hour < 7 || hour > 19) rating -= 0.5; // Early morning/evening
-    if (hour >= 11 && hour <= 15) rating += 0.3; // Good midday conditions
-    
-    // Temperature factors
-    if (locationData.baseTemp < 10) rating -= 1.0; // Cold
-    if (locationData.baseTemp > 35) rating -= 0.7; // Too hot
-    if (locationData.baseTemp >= 18 && locationData.baseTemp <= 28) rating += 0.2; // Ideal
-    
-    // Wind factors
-    if (locationData.baseWind > 20) rating -= 1.5; // Too windy
-    if (locationData.baseWind > 15) rating -= 0.8; // Moderate wind
-    if (locationData.baseWind <= 10) rating += 0.2; // Light wind is good
-    
-    // Visibility and UV
-    if (locationData.visibility < 10) rating -= 0.3;
-    if (locationData.uvIndex > 7) rating -= 0.2; // High UV
-    
-    // Ensure rating stays in valid range
-    return Math.max(1.0, Math.min(5.0, Math.round(rating * 10) / 10));
-  }
-
   // Fast forecast endpoint - always uses optimized fastForecast endpoint
   async getFastForecast(lat, lng) {
-    // FastForecast is exported as separate function, not under /api path
-    const baseUrl = this.mode === 'emulator' 
-      ? 'http://127.0.0.1:5002/kaaykostore/us-central1'
-      : 'https://us-central1-kaaykostore.cloudfunctions.net';
-    const url = `${baseUrl}/fastForecast?lat=${lat}&lng=${lng}`;
+    const cacheKey = this.getCacheKey(lat, lng, true);
+    const cached = this.cache.get(cacheKey);
+
+    // Return cached data if valid AND it's real API data (not fallback)
+    if (cached && this.isCacheValid(cached) && !this.isFallbackData(cached.data)) {
+      console.log(`⚡ Using cached fast forecast for ${lat},${lng}`);
+      return cached.data;
+    }
+
+    // Use the same base URL logic as other methods
+    const url = `${this.baseUrl}/fastForecast?lat=${lat}&lng=${lng}`;
     
     try {
       console.log(`⚡ Fetching optimized forecast from: ${url}`);
@@ -395,6 +380,14 @@ class ApiClient {
       
       const data = await response.json();
       console.log(`✅ Got fast forecast data in ${data.metadata?.responseTime || 'N/A'}`);
+      
+      // Cache the result
+      this.cache.set(cacheKey, {
+        data,
+        timestamp: Date.now()
+      });
+
+      this.cleanOldCache();
       
       return data;
       

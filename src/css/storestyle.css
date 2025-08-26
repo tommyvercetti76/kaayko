@@ -1,59 +1,37 @@
 /************************************************************
- *  STORESTYLE.CSS - Kaayko (Seamless Dark Mode, No Overscroll)
- *
- *  Purpose:
- *    - Single stylesheet for index.html, about.html, testimonials.html
- *    - Pinned footer, product carousel, modal,
- *      testimonials styling, cover flow collage,
- *      togglable dark mode with localStorage.
- *    - Eliminates phantom white background by:
- *       1) Forcing <html> and <body> to the same background
- *       2) Setting width: 100%; overflow-x: hidden to avoid horizontal overscroll
- *       3) No partial container backgrounds
- *
- *  Sections:
- *    1) Reset & Global Layout
- *    3) Carousel
- *    4) Footer & Sticky Bottom
- *    5) Modal
- *    6) Animations & Transitions
- *    7) Testimonials
- *    8) About & Testimonials Page Headings
- *    8A) Cover Flow Collage
- *   10) Text Selection
+ *  BASE.CSS - Global / shared styles for all pages
+ *  - Variables, fonts, resets, layout
+ *  - Carousel, footer, modal, animations
+ *  - Testimonials, text selection, generic dark theme bits
  ************************************************************/
 
 /* ----------------------------------------------------------
-1) RESET & GLOBAL LAYOUT
-   - Define spacing & color variables
-   - Load custom Josefin fonts
-   - Zero out margins/padding on every element
-   - Make html/body full-screen, hide horizontal overflow
+1) RESET & GLOBAL LAYOUT (shared)
 ---------------------------------------------------------- */
 :root {
   /* SPACING SCALE */
-  --spacing-small: 4px;       /* very tight gaps */
-  --spacing-medium: 8px;      /* default gutter */
-  --spacing-large: 16px;      /* generous padding */
+  --spacing-small: 4px;
+  --spacing-medium: 8px;
+  --spacing-large: 16px;
 
   /* COLOR PALETTE */
-  --color-body-bg:       #f9f9f9;       /* page background */
-  --color-header-bg:     #333;          /* (unused here) */
-  --color-modal-overlay: rgba(0,0,0,0.8);/* modal backdrop */
-  --color-accent:        #ff8c00;       /* brand accent */
-  --color-text-base:     #333;          /* primary text */
-  --color-text-subtle:   #666;          /* secondary text */
-  --color-text-secondary:#ccc;          /* tertiary text */
+  --color-body-bg: #f9f9f9;
+  --color-header-bg: #333;
+  --color-modal-overlay: rgba(0,0,0,0.8);
+  --color-accent: #ff8c00;
+  --color-text-base: #333;
+  --color-text-subtle: #666;
+  --color-text-secondary: #ccc;
 
   /* SPECIAL TEXT COLORS */
-  --color-off-black:   #111;    /* for headings in light mode */
-  --color-bright-ivory:#fffff0; /* for icons in dark mode */
+  --color-off-black: #111;
+  --color-bright-ivory:#fffff0;
 
   /* CARD BACKGROUND */
-  --color-card-bg: #fff;        /* testimonials, carousel, etc. */
+  --color-card-bg: #fff;
 }
 
-/* CUSTOM FONTS */
+/* CUSTOM FONTS (shared) */
 @font-face {
   font-family: 'Josefin_Medium';
   src: url('../fonts/JosefinSans-Medium.ttf') format('truetype');
@@ -67,15 +45,10 @@
   src: url('../fonts/JosefinSans-Light.ttf') format('truetype');
 }
 
-/* RESET */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/* RESET (shared) */
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* FULL-HEIGHT LAYOUT */
-/* Ensures no phantom white overscroll, smooth scrolling */
+/* FULL-HEIGHT LAYOUT (shared) */
 html, body {
   width: 100%;
   height: 100%;
@@ -89,27 +62,18 @@ html, body {
   -webkit-overflow-scrolling: touch;
 }
 
-/* BODY FLEX HELPERS */
-/* Pushes footer to bottom if content is short */
+/* BODY FLEX HELPERS (shared) */
 body {
   font-family: 'Arial', sans-serif;
   display: flex;
   flex-direction: column;
 }
 
-/* MAIN CONTAINER */
-/* Inherits background, horizontal padding */
-main {
-  flex: 1;
-  padding: 0 var(--spacing-medium);
-  background: inherit;
-}
-
+/* MAIN CONTAINER (shared) */
+main { flex: 1; padding: 0 var(--spacing-medium); background: inherit; }
 
 /* ----------------------------------------------------------
-3) CAROUSEL (index.html product grid)
-   - Responsive grid
-   - Card styling & hover effects
+3) CAROUSEL (shared – used on index and elsewhere)
 ---------------------------------------------------------- */
 .carousel {
   display: grid;
@@ -117,459 +81,138 @@ main {
   gap: var(--spacing-medium);
   padding: var(--spacing-medium);
   background: inherit;
+  justify-content: center; /* also centers when few items */
 }
+#carousel.single-card {
+  display: flex; justify-content: center; align-items: center;
+  min-height: calc(100vh - 120px);
+}
+#carousel.single-card .carousel-item { max-width: 320px; width: 100%; }
+
 .carousel-item {
   background: var(--color-card-bg);
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  display: flex;
-  flex-direction: column;
+  display: flex; flex-direction: column;
   text-align: center;
   padding: var(--spacing-medium);
   transition: transform 0.3s, box-shadow 0.3s;
-}
-.carousel-item:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
-}
-
-#carousel.single-card {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: calc(100vh - 120px); /* adjust for your header height */
-}
-#carousel.single-card .carousel-item {
-  max-width: 320px;
+  max-width: 300px; /* mobile-card sizing everywhere */
   width: 100%;
-}
-
-.img-container {
-  position: relative;
-  width: 100%;
-  padding-top: 75%;             /* 4:3 aspect ratio */
-  overflow: hidden;
-  margin-bottom: var(--spacing-medium);
-}
-.carousel-image {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  object-fit: cover;
-  border-radius: 8px;
-}
-.image-indicator {
-  display: flex; justify-content: center;
-  margin-bottom: var(--spacing-medium);
-}
-.indicator-dot {
-  width: 8px; height: 8px;
-  margin: 0 var(--spacing-small);
-  border-radius: 50%;
-  background-color: #ccc;
-  transition: background-color 0.3s;
-}
-.indicator-dot.active {
-  background-color: #333;
-}
-.title {
-  font-family: 'Josefin_Bold';
-  font-size: 20px;
-  color: var(--color-text-base);
-  margin-bottom: var(--spacing-small);
-  line-height: 1.4;
-}
-.description {
-  font-family: 'Josefin_Light';
-  font-size: 16px;
-  color: var(--color-text-subtle);
-  line-height: 1.5;
-  margin-bottom: var(--spacing-medium);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-}
-
-
-/* ----------------------------------------------------------
-4) FOOTER & STICKY BOTTOM
-   - Three-column grid (price, heart, count)
-   - Hover/pointer effects
----------------------------------------------------------- */
-.footer-elements {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  align-items: center;
-  justify-items: center;
-  margin-top: auto;
-  padding: 12px;
-  border-top: 1px solid #eee;
-  background: #fff;             /* flips in dark mode */
-}
-.price {
-  font-family: 'Josefin_Medium';
-  font-size: 18px;
-  color: #333;
-  background: none;
-  border: none;
-  transition: transform 0.2s;
-}
-.price:hover {
-  transform: scale(1.05);
-}
-.heart-button {
-  width: 32px; height: 32px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.heart-button:hover {
-  transform: scale(1.1);
-}
-.heart-button::before {
-  content: "";
-  display: block;
-  width: 100%; height: 100%;
-  background-color: #ccc;
-  clip-path: polygon(50% 0%,100% 50%,50% 100%,0% 50%);
-  transition: background-color 0.3s, transform 0.2s;
-}
-.heart-button.liked::before {
-  background-color: #e63946;
-  transform: scale(1.2);
-}
-.likes-count {
-  font-family: 'Josefin_Medium';
-  font-size: 16px;
-  color: #555;
-  white-space: nowrap;
-}
-.likes-count.updated {
-  animation: votePop 0.4s ease;
-}
-/* pop animation for count */
-@keyframes votePop {
-  0%   { transform: scale(1); }
-  50%  { transform: scale(1.3); }
-  100% { transform: scale(1); }
-}
-
-footer {
-  text-align: center;
-  background: #f1f1f1;
-  padding: 20px;
-  font-family: 'Josefin_Light';
-  font-size: 14px;
-}
-
-
-/* ----------------------------------------------------------
-5) MODAL (zoomed product)
----------------------------------------------------------- */
-.modal {
-  display: none;
-  position: fixed; top: 0; left: 0;
-  width: 100%; height: 100%;
-  background-color: var(--color-modal-overlay);
-  z-index: 2000;
-  justify-content: center;
-  align-items: center;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-.modal.active {
-  display: flex;
-  opacity: 1;
-}
-.modal-content {
-  position: relative;
-  background: #fff;
-  max-width: 90%;
-  max-height: 90%;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  overflow: hidden;
-  animation: scaleUp 0.3s ease;
-}
-@keyframes scaleUp {
-  from { transform: scale(0.95); }
-  to   { transform: scale(1);      }
-}
-.modal-close {
-  position: absolute; top: 15px; right: 15px;
-  font-family: 'Material Icons';
-  font-size: 28px;
-  color: #333;
-  background: none; border: none;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-.modal-close:hover {
-  color: #000;
-}
-.modal-nav {
-  position: absolute; top: 50%;
-  transform: translateY(-50%);
-  font-family: 'Material Icons';
-  font-size: 32px;
-  color: #666;
-  background: none; border: none;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-.modal-nav:hover {
-  color: #fff;
-}
-.modal-nav-left { left: 20px; }
-.modal-nav-right{ right:20px; }
-.modal-image-container {
-  display: flex; align-items:center; justify-content:center;
-  width:100%; height:auto; overflow:hidden;
-}
-.modal-image {
-  max-width: 100%; max-height: 100%;
-  object-fit: contain;
-  transition: transform 0.3s;
-}
-
-
-/* ----------------------------------------------------------
-6) ANIMATIONS & TRANSITIONS
-   - Underline tags, fadeInUp for carousel
----------------------------------------------------------- */
-.active-tag {
-  position: relative;
-  font-weight: bold;
-  color: var(--color-accent);
-  text-decoration: none;
-}
-.active-tag::after {
-  content: "";
-  position: absolute; left:0; bottom:-2px;
-  width: 100%; height:2px;
-  background-color: var(--color-accent);
-  transform-origin: bottom left;
-  transition: transform 0.3s ease-out;
-}
-.carousel-item.animate {
-  opacity: 0;
-  transform: translateY(20px);
-  animation: fadeInUp 0.5s forwards;
-}
-@keyframes fadeInUp {
-  to { opacity:1; transform: translateY(0); }
-}
-/* ----------------------------------------------------------
-7) TESTIMONIALS
-   - Full-width cards, left-aligned avatar + overlay footer
-   - Adds horizontal padding to the text area so it doesn’t hug the edges
----------------------------------------------------------- */
-.reviews-container {
-  display: grid;
-  gap: 16px;
-  padding: 0 20px;
-}
-
-/* Card wrapper */
-.testimonial {
-  display: flex;
-  align-items: stretch;       /* make avatar fill full height */
-  background: var(--color-card-bg);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  overflow: hidden;
-}
-
-/* Avatar container */
-.avatar-container {
-  position: relative;
-  flex-shrink: 0;             /* never shrink below set width */
-  width: 100px;               /* fixed width */
-  margin-right: 16px;         /* gap to text */
-  border-radius: 12px 0 0 12px;
-  overflow: hidden;
-  display: flex;              /* allow img to fill height */
-}
-
-/* Avatar image */
-.avatar-container img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-/* Overlay footer (heart + count) */
-.avatar-footer {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 4px 0;
-  background: rgba(255,255,255,0.5);   /* light mode */
-  backdrop-filter: blur(4px);
-  border-top: 1px solid rgba(0,0,0,0.1);
-}
-/* Dark-mode overlay */
-.dark-theme .avatar-footer {
-  background: rgba(0,0,0,0.5);
-  border-top: 1px solid rgba(255,255,255,0.1);
-}
-
-/* Heart icon inside footer */
-.avatar-footer .material-icons {
-  font-size: 16px;
-  color: var(--color-text-base);        /* black in light */
-  text-shadow: none;
-}
-.dark-theme .avatar-footer .material-icons {
-  color: #ffd700;                       /* gold in dark */
-  text-shadow: 0 0 6px rgba(255,223,0,0.8);
-}
-
-/* Numeric vote count */
-.avatar-footer span {
-  font-family: 'Josefin_Medium';
-  font-size: 14px;
-  color: var(--color-text-base);        /* black in light */
-}
-.dark-theme .avatar-footer span {
-  color: #ffd700;                       /* gold in dark */
-  text-shadow: 0 0 6px rgba(255,223,0,0.8);
-}
-
-/* Testimonial text column */
-/* ← padding: top/bottom 20px, left/right 16px */
-.testimonial-content {
-  flex: 1;
-  padding: 12px 8px;
-}
-.testimonial-content p {
-  font-family: 'Josefin_Light';
-  font-size: 16px;
-  color: var(--color-text-base);
-  margin-bottom: 8px;
-  line-height: 1.4;
-}
-.testimonial-content .name {
-  font-family: 'Josefin_Medium';
-  font-size: 14px;
-  color: var(--color-text-base);
-}
-
-/* ----------------------------------------------------------
-8) ABOUT & TESTIMONIALS PAGE HEADINGS
----------------------------------------------------------- */
-.about-text {
-  text-align: center;
-  padding-top: 32px;
-  color: var(--color-off-black);
-}
-.about-text h2 {
-  font-family: 'Josefin_Bold';
-  font-size: 26px;
-  margin-bottom: 12px;
-}
-.about-text h3 {
-  font-family: 'Josefin_Medium';
-  font-size: 20px;
-  margin-bottom: 16px;
-}
-.about-text p {
-  font-family: 'Josefin_Light';
-  font-size: 16px;
-  line-height: 1.4;
-  margin-bottom: 20px;
-  max-width: 90%;
   margin: 0 auto;
 }
-.testimonials-heading {
-  font-family: 'Josefin_Bold';
-  font-size: 26px;
-  color: var(--color-off-black);
-  margin-bottom: 24px;
-  text-align: center;
+.carousel-item:hover { transform: translateY(-4px); box-shadow: 0 6px 18px rgba(0,0,0,0.15); }
+.img-container { position: relative; width: 100%; padding-top: 75%; overflow: hidden; margin-bottom: var(--spacing-medium); }
+.carousel-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+.image-indicator { display: flex; justify-content: center; margin-bottom: var(--spacing-medium); }
+.indicator-dot { width: 8px; height: 8px; margin: 0 var(--spacing-small); border-radius: 50%; background-color: #ccc; transition: background-color 0.3s; }
+.indicator-dot.active { background-color: #333; }
+.title { font-family: 'Josefin_Bold'; font-size: 20px; color: var(--color-text-base); margin-bottom: var(--spacing-small); line-height: 1.4; }
+.description {
+  font-family: 'Josefin_Light'; font-size: 16px; color: var(--color-text-subtle);
+  line-height: 1.5; margin-bottom: var(--spacing-medium);
+  overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
 }
-
+/* Desktop column sizing */
+@media (min-width: 768px) {
+  .carousel {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, 300px);
+    gap: var(--spacing-medium);
+    justify-content: center;
+    padding: var(--spacing-medium);
+  }
+}
 
 /* ----------------------------------------------------------
-8A) COVER FLOW COLLAGE (ABOUT PAGE)
-   - Single-row horizontal scroller, no wrap
+4) FOOTER & STICKY BOTTOM (shared)
+---------------------------------------------------------- */
+.footer-elements {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  align-items: center; justify-items: center;
+  margin-top: auto; padding: 12px; border-top: 1px solid #eee; background: #fff;
+}
+.price { font-family: 'Josefin_Medium'; font-size: 18px; color: #333; background: none; border: none; transition: transform 0.2s; }
+.price:hover { transform: scale(1.05); }
+.heart-button { width: 32px; height: 32px; background: none; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: transform 0.2s, box-shadow 0.2s; }
+.heart-button:hover { transform: scale(1.1); }
+.heart-button::before {
+  content: ""; display: block; width: 100%; height: 100%;
+  background-color: #ccc; clip-path: polygon(50% 0%,100% 50%,50% 100%,0% 50%);
+  transition: background-color 0.3s, transform 0.2s;
+}
+.heart-button.liked::before { background-color: #e63946; transform: scale(1.2); }
+.likes-count { font-family: 'Josefin_Medium'; font-size: 16px; color: #555; white-space: nowrap; }
+.likes-count.updated { animation: votePop 0.4s ease; }
+@keyframes votePop { 0%{transform:scale(1)} 50%{transform:scale(1.3)} 100%{transform:scale(1)} }
+
+footer { text-align: center; background: #f1f1f1; padding: 20px; font-family: 'Josefin_Light'; font-size: 14px; }
+
+/* ----------------------------------------------------------
+5) MODAL (shared)
+---------------------------------------------------------- */
+.modal { display:none; position:fixed; inset:0; width:100%; height:100%; background-color: var(--color-modal-overlay); z-index:2000; justify-content:center; align-items:center; opacity:0; transition: opacity 0.3s; }
+.modal.active { display:flex; opacity:1; }
+.modal-content { position:relative; background:#fff; max-width:90%; max-height:90%; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.3); overflow:hidden; animation: scaleUp 0.3s ease; }
+@keyframes scaleUp { from { transform: scale(0.95);} to { transform: scale(1);} }
+.modal-close { position:absolute; top:15px; right:15px; font-family:'Material Icons'; font-size:28px; color:#333; background:none; border:none; cursor:pointer; transition: color 0.2s; }
+.modal-close:hover { color:#000; }
+.modal-nav { position:absolute; top:50%; transform: translateY(-50%); font-family:'Material Icons'; font-size:32px; color:#666; background:none; border:none; cursor:pointer; transition: color 0.2s; }
+.modal-nav:hover { color:#fff; }
+.modal-nav-left { left:20px; } .modal-nav-right { right:20px; }
+.modal-image-container { display:flex; align-items:center; justify-content:center; width:100%; height:auto; overflow:hidden; }
+.modal-image { max-width:100%; max-height:100%; object-fit:contain; transition: transform 0.3s; }
+
+/* ----------------------------------------------------------
+6) ANIMATIONS & TRANSITIONS (shared)
+---------------------------------------------------------- */
+.active-tag { position:relative; font-weight:bold; color: var(--color-accent); text-decoration:none; }
+.active-tag::after { content:""; position:absolute; left:0; bottom:-2px; width:100%; height:2px; background-color: var(--color-accent); transform-origin: bottom left; transition: transform 0.3s ease-out; }
+.carousel-item.animate { opacity:0; transform: translateY(20px); animation: fadeInUp 0.5s forwards; }
+@keyframes fadeInUp { to { opacity:1; transform: translateY(0);} }
+
+/* ----------------------------------------------------------
+7) TESTIMONIALS (shared)
+---------------------------------------------------------- */
+.reviews-container { display: grid; gap: 16px; padding: 0 20px; }
+.testimonial { display:flex; align-items:stretch; background: var(--color-card-bg); border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.1); overflow:hidden; }
+.avatar-container { position:relative; flex-shrink:0; width:100px; margin-right:16px; border-radius:12px 0 0 12px; overflow:hidden; display:flex; }
+.avatar-container img { width:100%; height:100%; object-fit:cover; display:block; }
+.avatar-footer { position:absolute; bottom:0; left:0; right:0; display:flex; align-items:center; justify-content:center; gap:6px; padding:4px 0; background: rgba(255,255,255,0.5); backdrop-filter: blur(4px); border-top: 1px solid rgba(0,0,0,0.1); }
+.dark-theme .avatar-footer { background: rgba(0,0,0,0.5); border-top:1px solid rgba(255,255,255,0.1); }
+.avatar-footer .material-icons { font-size:16px; color: var(--color-text-base); text-shadow:none; }
+.dark-theme .avatar-footer .material-icons { color:#ffd700; text-shadow:0 0 6px rgba(255,223,0,0.8); }
+.avatar-footer span { font-family:'Josefin_Medium'; font-size:14px; color: var(--color-text-base); }
+.dark-theme .avatar-footer span { color:#ffd700; text-shadow:0 0 6px rgba(255,223,0,0.8); }
+.testimonial-content { flex:1; padding:12px 8px; }
+.testimonial-content p { font-family:'Josefin_Light'; font-size:16px; color: var(--color-text-base); margin-bottom:8px; line-height:1.4; }
+.testimonial-content .name { font-family:'Josefin_Medium'; font-size:14px; color: var(--color-text-base); }
+
+/* Shared headings blocks used across pages */
+.about-text { text-align:center; padding-top:32px; color: var(--color-off-black); }
+.about-text h2 { font-family:'Josefin_Bold'; font-size:26px; margin-bottom:12px; }
+.about-text h3 { font-family:'Josefin_Medium'; font-size:20px; margin-bottom:16px; }
+.about-text p { font-family:'Josefin_Light'; font-size:16px; line-height:1.4; margin-bottom:20px; max-width:90%; margin:0 auto; }
+.testimonials-heading { font-family:'Josefin_Bold'; font-size:26px; color: var(--color-off-black); margin-bottom:24px; text-align:center; }
+
+/* ----------------------------------------------------------
+8A) COVER FLOW COLLAGE (shared block used by About page; safe here)
 ---------------------------------------------------------- */
 .about-hero-collage {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 12px;
-  overflow-x: auto;
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  padding: var(--spacing-medium) 0;
-  scroll-behavior: smooth;
+  display:flex; flex-wrap:nowrap; gap:12px; overflow-x:auto; width:100vw;
+  margin-left: calc(50% - 50vw); padding: var(--spacing-medium) 0; scroll-behavior:smooth;
 }
-.collage-slice {
-  flex: 0 0 auto;
-  width: 300px; height: 200px;
-  position: relative;
-  overflow: hidden;
-  border-radius: 6px;
-  transition: transform 0.4s ease;
-}
-.collage-slice img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-  transform: scale(1.6);
-  transition: transform 0.3s ease;
-}
-.collage-slice:hover img {
-  transform: scale(1.4);
-}
-/* Smaller on narrow viewports */
+.collage-slice { flex:0 0 auto; width:300px; height:200px; position:relative; overflow:hidden; border-radius:6px; transition: transform 0.4s ease; }
+.collage-slice img { width:100%; height:100%; object-fit:cover; transform: scale(1.6); transition: transform 0.3s ease; }
+.collage-slice:hover img { transform: scale(1.4); }
 @media (max-width: 768px) {
-  .about-hero-collage { gap: 8px; padding: 1.5 * var(--spacing-medium) 0; }
-  .collage-slice { width: 150px; height: 150px; }
+  .about-hero-collage { gap:8px; padding: calc(1.5 * var(--spacing-medium)) 0; }
+  .collage-slice { width:150px; height:150px; }
   .collage-slice img { transform: scale(1.3); }
 }
 
 /* ----------------------------------------------------------
-10) Text Selection
+10) Text Selection (shared)
 ---------------------------------------------------------- */
-::selection {
-  background-color: var(--color-accent);
-  color: #fff;
-}
-.dark-theme ::selection {
-  background-color:#ffd700;
-  color: #111;
-}
-
-/* 11) Force “mobile-card” sizing & centering on all viewports */
-.carousel {
-  /* center the whole grid if there are fewer cards than will fit */
-  justify-content: center;
-}
-
-/* make each card a fixed, mobile-friendly width */
-.carousel-item {
-  max-width: 300px;    /* same as your phone-style cards */
-  width: 100%;
-  margin: 0 auto;
-}
-
-/* on desktop, lay out fixed-width columns and center them */
-@media (min-width: 768px) {
-  .carousel {
-    display: grid;                                       /* reaffirm grid */
-    grid-template-columns: repeat(auto-fit, 300px);       /* exactly 300px columns */
-    gap: var(--spacing-medium);
-    justify-content: center;                             /* keep them centered */
-    padding: var(--spacing-medium);
-  }
-}
+::selection { background-color: var(--color-accent); color:#fff; }
+.dark-theme ::selection { background-color:#ffd700; color:#111; }

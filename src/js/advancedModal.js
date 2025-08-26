@@ -60,13 +60,19 @@ class AdvancedLakeModal {
     this.modal = document.createElement('div');
     this.modal.className = 'advanced-modal';
     
+    // Check if this was opened from custom location search
+    const hasSearchContext = spot.searchContext;
+    
     this.modal.innerHTML = `
       <div class="advanced-overlay">
         <div class="advanced-container">
           <div class="advanced-header">
             <div class="advanced-title">
-              <h2>${spot.title}</h2>
-              <p class="advanced-subtitle">${spot.subtitle || ''}</p>
+              ${hasSearchContext ? '<button class="advanced-back" aria-label="Back to search results">←</button>' : ''}
+              <div class="title-content">
+                <h2>${spot.title}</h2>
+                <p class="advanced-subtitle">${spot.subtitle || ''}</p>
+              </div>
             </div>
             <button class="advanced-close">&times;</button>
           </div>
@@ -89,6 +95,14 @@ class AdvancedLakeModal {
         this.close();
       }
     });
+
+    // Add back button listener if it exists
+    const backBtn = this.modal.querySelector('.advanced-back');
+    if (backBtn && hasSearchContext) {
+      backBtn.addEventListener('click', () => {
+        this.handleBackToSearch(spot.searchContext);
+      });
+    }
   }
 
   // Add modal to DOM
@@ -104,21 +118,23 @@ class AdvancedLakeModal {
     const contentDiv = this.modal.querySelector('.advanced-content');
     
     try {
-      // Get forecast data using fastForecast
-      const forecastData = await window.apiClient.getFastForecast(
-        spot.location.latitude, 
-        spot.location.longitude
-      );
+      // Get both current conditions (paddleScore) and forecast data (fastForecast)
+      const [currentData, forecastData] = await Promise.all([
+        window.apiClient.getCurrentData(spot.location.latitude, spot.location.longitude),
+        window.apiClient.getFastForecast(spot.location.latitude, spot.location.longitude)
+      ]);
       
-      console.log('✅ Forecast data received:', {
-        success: forecastData?.success,
-        responseTime: forecastData?.metadata?.responseTime,
+      console.log('✅ Data received:', {
+        currentSuccess: currentData?.success,
+        forecastSuccess: forecastData?.success,
+        currentResponseTime: currentData?.metadata?.responseTime,
+        forecastResponseTime: forecastData?.metadata?.responseTime,
         mode: window.apiClient?.getMode()
       });
       
       // Create content and render components
-      contentDiv.innerHTML = this.createContent(spot, forecastData);
-      this.renderComponents(forecastData);
+      contentDiv.innerHTML = this.createContent(spot, forecastData, currentData);
+      this.renderComponents(forecastData, currentData);
       
     } catch (error) {
       console.error('❌ Failed to load spot data:', error);
@@ -129,7 +145,7 @@ class AdvancedLakeModal {
   }
 
   // Create main content structure
-  createContent(spot, forecastData) {
+  createContent(spot, forecastData, currentData) {
     const location = forecastData.location;
     
     // Update modal title with API location name if available
@@ -184,46 +200,77 @@ class AdvancedLakeModal {
   }
 
   // Render all components
-  renderComponents(forecastData) {
-    this.renderHero(forecastData);
+  renderComponents(forecastData, currentData) {
+    this.renderHero(currentData, forecastData);
     this.renderSafetyWarnings(forecastData);
     this.renderHeatmap(forecastData);
   }
 
-  // Render Rating Hero component
-  renderHero(forecastData) {
-    const heroData = window.dataTransformer?.prepareHeroData?.(forecastData);
-    if (!heroData) return;
+    // Render Rating Hero component
+  renderHero(currentData, forecastData) {
+    console.log('🏆 renderHero called with:', currentData);
+    
+    if (!currentData?.paddleScore) {
+      console.warn('⚠️ No paddleScore data for hero:', currentData);
+      return;
+    }
 
     const container = document.getElementById('ratingHeroContainer');
-    if (!container) return;
+    if (!container) {
+      console.error('❌ No ratingHeroContainer found');
+      return;
+    }
 
     try {
       const ratingHero = new window.RatingHero();
       container.innerHTML = '';
-      const element = ratingHero.render(
-        heroData.rating,
-        heroData.interpretation,
-        heroData.weather
-      );
+      
+      // Extract data from paddleScore API response
+      const rating = currentData.paddleScore.rating;
+      const interpretation = {
+        skillLevel: this.getSkillLevelFromRating(rating),
+        recommendation: currentData.paddleScore.interpretation,
+        details: `Confidence: ${currentData.paddleScore.confidence} | ML Model: ${currentData.paddleScore.mlModelUsed}`,
+        penalties: currentData.paddleScore.penalties || [],
+        originalRating: currentData.paddleScore.originalRating || rating,
+        totalPenalty: currentData.paddleScore.totalPenalty || 0
+      };
+      
+      // Merge conditions with penalty information for safety analysis
+      const weather = {
+        ...currentData.conditions,
+        penalties: currentData.paddleScore.penalties || [],
+        originalRating: currentData.paddleScore.originalRating || rating,
+        totalPenalty: currentData.paddleScore.totalPenalty || 0,
+        hasPenalties: currentData.paddleScore.penalties && currentData.paddleScore.penalties.length > 0
+      };
+      
+      console.log('🏆 RatingHero data prepared:', { rating, interpretation, weather, forecastData });
+      console.log('⚠️ SAFETY CHECK - Penalties:', weather.penalties);
+      
+      const element = ratingHero.render(rating, interpretation, weather, forecastData);
       container.appendChild(element);
-      console.log('✅ RatingHero rendered');
+      console.log('✅ RatingHero rendered with paddleScore rating:', rating);
     } catch (error) {
       console.error('❌ Failed to render RatingHero:', error);
     }
+  }
+
+  // Get appropriate skill level based on rating
+  getSkillLevelFromRating(rating) {
+    if (rating >= 4.5) return 'BEGINNERS WELCOME';
+    if (rating >= 4.0) return 'BEGINNERS WITH GUIDANCE';
+    if (rating >= 3.5) return 'MODERATE SKILL REQUIRED';
+    if (rating >= 3.0) return 'EXPERIENCED ONLY';
+    if (rating >= 2.5) return 'EXPERT LEVEL';
+    return 'NOT RECOMMENDED';
   }
 
   // Render Safety Warnings component
   renderSafetyWarnings(forecastData) {
     const warnings = window.dataTransformer?.prepareWarningsData?.(forecastData) || [];
     
-    // Add test warnings if none found (temporary)
-    const displayWarnings = warnings.length > 0 ? warnings : [
-      "High wind conditions - use caution", 
-      "Water temperature below safe levels"
-    ];
-    
-    if (!displayWarnings.length) return;
+    if (!warnings.length) return;
 
     const container = document.getElementById('safetyWarningsContainer');
     if (!container) return;
@@ -231,10 +278,10 @@ class AdvancedLakeModal {
     try {
       const safetyWarnings = new window.SafetyWarnings();
       container.innerHTML = '';
-      const element = safetyWarnings.render(displayWarnings);
+      const element = safetyWarnings.render(warnings);
       if (element) {
         container.appendChild(element);
-        console.log('✅ SafetyWarnings rendered with', displayWarnings.length, 'warnings');
+        console.log('✅ SafetyWarnings rendered with', warnings.length, 'warnings');
       }
     } catch (error) {
       console.error('❌ Failed to render SafetyWarnings:', error);
@@ -252,9 +299,10 @@ class AdvancedLakeModal {
     try {
       const heatmap = new window.Heatmap();
       container.innerHTML = '';
-      const element = heatmap.render(heatmapData);
+      // Pass location data for timezone calculations
+      const element = heatmap.render(heatmapData, forecastData.location);
       container.appendChild(element);
-      console.log('✅ Heatmap rendered');
+      console.log('✅ Heatmap rendered with location timezone support');
     } catch (error) {
       console.error('❌ Failed to render Heatmap:', error);
     }
@@ -392,6 +440,19 @@ class AdvancedLakeModal {
       this.modal = null;
       this.currentSpot = null;
       this.isLoading = false;
+    }
+  }
+
+  // Handle back to search functionality
+  handleBackToSearch(searchContext) {
+    console.log('🔙 Navigating back to search results:', searchContext);
+    
+    // Close this modal first
+    this.close();
+    
+    // Restore search results in custom location modal
+    if (window.customLocationModal && searchContext) {
+      window.customLocationModal.restoreSearchResults(searchContext);
     }
   }
 

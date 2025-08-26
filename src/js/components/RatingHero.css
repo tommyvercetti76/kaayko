@@ -258,23 +258,502 @@ html:not(.dark-theme) .units-btn.active {
   color: black;
 }
 
-/* Rating circle colors based on score */
-.rating-circle[data-rating*="0"], 
-.rating-circle[data-rating*="1"] {
-  background: linear-gradient(135deg, #dc3545, #c82333);
+/* PENALTY INFORMATION DISPLAY */
+.penalty-info {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 8px 0;
+  font-size: 12px;
 }
 
-.rating-circle[data-rating*="2"] {
-  background: linear-gradient(135deg, #fd7e14, #e8590c);
+.penalty-info-none {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05));
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 8px 0;
+  font-size: 12px;
+  color: #10b981;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
 }
 
-.rating-circle[data-rating*="3"] {
-  background: linear-gradient(135deg, #ffc107, #e0a800);
+.penalty-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  font-weight: 600;
 }
 
-.rating-circle[data-rating*="4"], 
-.rating-circle[data-rating*="5"] {
-  background: linear-gradient(135deg, #28a745, #1e7e34);
+.penalty-icon {
+  font-size: 14px;
+}
+
+.penalty-title {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.penalty-impact {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.penalty-calculation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 6px 0;
+  padding: 6px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.original-score {
+  color: #10b981;
+  font-weight: 700;
+}
+
+.penalty-arrow {
+  color: #6b7280;
+  font-weight: 400;
+}
+
+.final-score {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.penalty-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.penalty-item {
+  font-size: 11px;
+  line-height: 1.3;
+  opacity: 0.9;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Dark theme adjustments for penalties */
+html.dark-theme .penalty-info {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+html.dark-theme .penalty-info-none {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.08));
+  border-color: rgba(16, 185, 129, 0.25);
+  color: #34d399;
+}
+
+html.dark-theme .penalty-item {
+  color: rgba(255, 250, 240, 0.8);
+}
+
+html.dark-theme .penalty-calculation {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+html:not(.dark-theme) .penalty-info {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.02));
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+html:not(.dark-theme) .penalty-info-none {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(5, 150, 105, 0.04));
+  border-color: rgba(16, 185, 129, 0.15);
+  color: #059669;
+}
+
+html:not(.dark-theme) .penalty-item {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+html:not(.dark-theme) .penalty-calculation {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+html:not(.dark-theme) .penalty-header,
+html:not(.dark-theme) .penalty-title {
+  color: rgba(0, 0, 0, 0.8);
+}
+
+html.dark-theme .penalty-header,
+html.dark-theme .penalty-title {
+  color: rgba(255, 250, 240, 0.9);
+}
+
+/* Mobile responsiveness for penalty info */
+@media (max-width: 768px) {
+  .penalty-info {
+    padding: 10px;
+    font-size: 11px;
+  }
+  
+  .penalty-header {
+    gap: 4px;
+  }
+  
+  .penalty-title {
+    font-size: 12px;
+  }
+  
+  .penalty-impact {
+    font-size: 11px;
+    padding: 1px 4px;
+  }
+  
+  .penalty-calculation {
+    font-size: 12px;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .penalty-info {
+    padding: 8px;
+  }
+  
+  .penalty-calculation {
+    flex-direction: column;
+    gap: 4px;
+    text-align: center;
+  }
+  
+  .penalty-arrow {
+    transform: rotate(90deg);
+  }
+}
+
+/* MODERN SKILL LEVEL DISPLAY */
+.skill-recommendation-modern {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.skill-level-display {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skill-level-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.skill-icon {
+  font-size: 24px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.skill-level-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.skill-level-badge-modern {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+}
+
+.skill-confidence {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.8;
+  letter-spacing: 0.3px;
+}
+
+.skill-description {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  margin: 4px 0;
+  opacity: 0.9;
+}
+
+.conditions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.condition-item {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-left: 3px solid rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.95);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* CRITICAL/DANGEROUS condition highlighting */
+.condition-item.dangerous-condition {
+  background: rgba(255, 59, 48, 0.25) !important;
+  border-left-color: #FF3B30 !important;
+  border-left-width: 4px !important;
+  font-weight: 600 !important;
+  animation: pulse-danger 2s infinite;
+  color: #FFFFFF !important;
+}
+
+@keyframes pulse-danger {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* Color coding based on rating theme */
+.skill-recommendation-modern.skill-danger .condition-item {
+  background: rgba(255, 59, 48, 0.15);
+  border-left-color: #FF3B30;
+  color: #FFE5E5;
+}
+
+.skill-recommendation-modern.skill-expert .condition-item {
+  background: rgba(255, 149, 0, 0.15);
+  border-left-color: #FF9500;
+  color: #FFF4E5;
+}
+
+.skill-recommendation-modern.skill-experienced .condition-item {
+  background: rgba(255, 204, 0, 0.15);
+  border-left-color: #FFCC00;
+  color: #FFFAE5;
+}
+
+.skill-recommendation-modern.skill-intermediate .condition-item {
+  background: rgba(52, 199, 89, 0.15);
+  border-left-color: #34C759;
+  color: #E5F9E8;
+}
+
+.skill-recommendation-modern.skill-beginner .condition-item {
+  background: rgba(0, 122, 255, 0.15);
+  border-left-color: #007AFF;
+  color: #E5F3FF;
+}
+
+/* Dark mode adjustments */
+html.dark-theme .condition-item {
+  background: rgba(255, 255, 255, 0.08);
+  border-left-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.skill-advice {
+  font-size: 13px;
+  font-style: italic;
+  opacity: 0.85;
+  padding-left: 12px;
+  border-left: 2px solid rgba(255, 255, 255, 0.3);
+  margin-top: 8px;
+}
+
+/* Color schemes for different skill levels */
+.skill-recommendation-modern.skill-beginner {
+  background: linear-gradient(135deg, rgba(52, 211, 153, 0.15), rgba(16, 185, 129, 0.1));
+  border-color: rgba(52, 211, 153, 0.3);
+}
+
+.skill-beginner .skill-level-badge-modern {
+  color: #10b981;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.skill-beginner .skill-confidence {
+  color: #059669;
+}
+
+.skill-beginner .skill-advice {
+  border-left-color: #10b981;
+}
+
+.skill-recommendation-modern.skill-intermediate {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.1));
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.skill-intermediate .skill-level-badge-modern {
+  color: #f59e0b;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.skill-intermediate .skill-confidence {
+  color: #d97706;
+}
+
+.skill-intermediate .skill-advice {
+  border-left-color: #f59e0b;
+}
+
+.skill-recommendation-modern.skill-experienced {
+  background: linear-gradient(135deg, rgba(248, 113, 113, 0.15), rgba(239, 68, 68, 0.1));
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+.skill-experienced .skill-level-badge-modern {
+  color: #ef4444;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.skill-experienced .skill-confidence {
+  color: #dc2626;
+}
+
+.skill-experienced .skill-advice {
+  border-left-color: #ef4444;
+}
+
+.skill-recommendation-modern.skill-expert {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(147, 51, 234, 0.1));
+  border-color: rgba(168, 85, 247, 0.3);
+}
+
+.skill-expert .skill-level-badge-modern {
+  color: #a855f7;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.skill-expert .skill-confidence {
+  color: #9333ea;
+}
+
+.skill-expert .skill-advice {
+  border-left-color: #a855f7;
+}
+
+.skill-recommendation-modern.skill-danger {
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.2), rgba(185, 28, 28, 0.15));
+  border-color: rgba(220, 38, 38, 0.4);
+}
+
+.skill-danger .skill-level-badge-modern {
+  color: #dc2626;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.skill-danger .skill-confidence {
+  color: #b91c1c;
+}
+
+.skill-danger .skill-advice {
+  border-left-color: #dc2626;
+}
+
+/* Dark theme adjustments */
+html.dark-theme .skill-recommendation-modern {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+html.dark-theme .skill-description,
+html.dark-theme .skill-advice,
+html.dark-theme .skill-confidence {
+  color: rgba(255, 250, 240, 0.9);
+}
+
+html:not(.dark-theme) .skill-description,
+html:not(.dark-theme) .skill-advice,
+html:not(.dark-theme) .skill-confidence {
+  color: rgba(0, 0, 0, 0.8);
+}
+
+html:not(.dark-theme) .skill-recommendation-modern {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.04));
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .skill-recommendation-modern {
+    padding: 12px;
+    margin-top: 12px;
+  }
+  
+  .skill-level-header {
+    gap: 8px;
+  }
+  
+  .skill-icon {
+    font-size: 20px;
+  }
+  
+  .skill-level-badge-modern {
+    font-size: 14px;
+  }
+  
+  .skill-description {
+    font-size: 13px;
+  }
+  
+  .skill-advice {
+    font-size: 12px;
+    padding-left: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .skill-recommendation-modern {
+    padding: 10px;
+    border-radius: 8px;
+  }
+  
+  .skill-level-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 6px;
+  }
+  
+  .skill-level-text {
+    align-items: center;
+    text-align: center;
+  }
+}
+
+/* Legacy skill recommendation styles - keep for backward compatibility */
+.rating-circle {
+  /* Colors will be set dynamically by RatingHero.js to match paddlingout.js */
+  transition: all 0.3s ease;
 }
 
 .rating-circle:hover {

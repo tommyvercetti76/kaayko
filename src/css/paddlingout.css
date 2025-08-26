@@ -109,7 +109,7 @@ body {
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
- 4) Footer & icons (tooltips never clipped)
+ 4) Footer & icons (tooltips never clipped) - ENHANCED MOBILE CONSISTENCY
 ─────────────────────────────────────────────────────────────────────────────*/
 .card-footer {
   display: flex;
@@ -122,32 +122,82 @@ body {
   overflow: visible;
   z-index: 1;
 }
+
+/* CONSISTENT CIRCULAR BUTTON BASE STYLING */
 .icon {
   width: 40px;
   height: 40px;
-  border: 2px solid ivory;
+  border: 2px solid #e8e8e8;
   border-radius: 50%;
-  background: ivory;
+  background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  transition: transform 0.2s, background-color 0.2s;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   z-index: 2;
+  font-weight: 600;
+  color: #333;
+  /* Ensure consistent sizing */
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
+
+/* CONSISTENT HOVER STATES FOR ALL BUTTONS */
 .icon:hover,
 .icon:focus,
 .icon:active {
-  transform: translateY(-2px);
-  background: #d3d3d3;
+  transform: translateY(-3px) scale(1.05);
+  background: #f5f5f5;
+  border-color: #d0d0d0;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.25);
 }
-.parking-icon::before { content: 'P';      font-size: 18px; }
-.toilet-icon::before  { content: '\1F6BD'; font-size: 18px; }
-.youtube-icon::before { content: '\25B6';  font-size: 18px; }
-.chat-icon::before    { content: '\1F4AC'; font-size: 18px; }
-.robot-icon::before   { content: '\1F916'; font-size: 18px; } /* Robot emoji for AI/ML predictions */
+
+/* ICON CONTENT WITH BETTER CONSISTENCY */
+.parking-icon::before { 
+  content: 'P';      
+  font-size: 18px; 
+  font-weight: 700;
+  color: #2c5530; /* Consistent green theme */
+}
+.toilet-icon::before  { 
+  content: '\1F6BD'; 
+  font-size: 16px; 
+  filter: grayscale(20%) brightness(0.8);
+}
+.youtube-icon::before { 
+  content: '▶';  
+  font-size: 16px; 
+  color: #c4302b; /* YouTube red consistency */
+  margin-left: 2px; /* Optical alignment for play button */
+  font-weight: 900; /* Bolder play icon */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+.chat-icon::before    { 
+  content: '\1F4AC'; 
+  font-size: 16px; 
+  filter: grayscale(20%) brightness(0.8);
+}
+.robot-icon::before   { 
+  content: '\1F916'; 
+  font-size: 16px; 
+  filter: grayscale(20%) brightness(0.8);
+}
+.analytics-icon::before { 
+  content: '\1F4CA'; 
+  font-size: 16px; 
+  filter: grayscale(20%) brightness(0.8);
+}
+.location-icon::before{ 
+  content: '\1F4CD'; 
+  font-size: 16px; 
+  color: #d32f2f; /* Consistent location pin red */
+  filter: brightness(0.9);
+}
+
+/* PADDLE SCORE ICON - KEEP COMPLETELY UNTOUCHED */
 .icon.paddle-score-icon {
   width: 40px !important;
   height: 40px !important;
@@ -191,6 +241,63 @@ html.dark-theme .icon.paddle-score-icon:hover {
   box-shadow: 
     0 0 0 2px rgba(255,255,255,0.05),
     0 4px 20px rgba(0,0,0,0.4) !important;
+}
+
+/* DARK MODE FOOTER CONSISTENCY */
+html.dark-theme .card-footer {
+  background: #1a1a1a;
+  border-top: 1px solid #333;
+}
+
+html.dark-theme .icon {
+  background: #2d2d2d;
+  border-color: #404040;
+  color: #e0e0e0;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+}
+
+html.dark-theme .icon:hover,
+html.dark-theme .icon:focus,
+html.dark-theme .icon:active {
+  background: #353535;
+  border-color: #555;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+}
+
+/* Dark mode icon colors */
+html.dark-theme .parking-icon::before { color: #4caf50; }
+html.dark-theme .youtube-icon::before { color: #ff4444; }
+html.dark-theme .location-icon::before { color: #ff5252; }
+
+/* MOBILE DARK MODE ENHANCEMENTS */
+@media (max-width: 768px) {
+  html.dark-theme .card-footer {
+    background: #1e1e1e;
+    border-top: 1px solid #404040;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.3);
+  }
+}
+
+@media (max-width: 480px) {
+  html.dark-theme .card-footer {
+    background: linear-gradient(180deg, #1e1e1e 0%, #161616 100%);
+    border-top: 1px solid #404040;
+    box-shadow: 0 -3px 12px rgba(0,0,0,0.4);
+  }
+  
+  html.dark-theme .icon {
+    background: #2a2a2a;
+    border-color: #484848;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+  }
+  
+  html.dark-theme .icon:hover,
+  html.dark-theme .icon:focus,
+  html.dark-theme .icon:active {
+    background: #323232;
+    border-color: #555;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.6);
+  }
 }
 
 /* Force inline styles to take precedence over any theme overrides */
@@ -245,7 +352,7 @@ html.dark-theme .icon.paddle-score-icon:hover {
 }
 .analytics-icon::before { content: '\1F4CA'; font-size: 18px; }
 .location-icon::before{ content: '\1F4CD'; font-size: 18px; }
-/* Beautiful tooltip bubble - ALWAYS ON TOP, no conflicts */
+/* Beautiful tooltip bubble - ENHANCED FOR MOBILE CONSISTENCY */
 .icon::after {
   content: attr(title);
   position: fixed; /* Use fixed positioning to avoid clipping */
@@ -282,6 +389,35 @@ html.dark-theme .icon.paddle-score-icon:hover {
   transform: translateX(-50%) translateY(-8px); /* Elegant slide up */
 }
 
+/* MOBILE TOOLTIP IMPROVEMENTS */
+@media (max-width: 768px) {
+  .icon::after {
+    bottom: 80px;
+    font-size: 15px;
+    padding: 12px 18px;
+    border-radius: 14px;
+    max-width: 280px;
+  }
+}
+
+@media (max-width: 480px) {
+  .icon::after {
+    bottom: 70px;
+    font-size: 16px;
+    padding: 14px 20px;
+    border-radius: 16px;
+    max-width: 90vw;
+    left: 50vw;
+    transform: translateX(-50%);
+  }
+  
+  .icon:hover::after,
+  .icon:focus::after,
+  .icon:active::after {
+    transform: translateX(-50%) translateY(-10px);
+  }
+}
+
 /*─────────────────────────────────────────────────────────────────────────────
  5) Page-indicator dots
 ─────────────────────────────────────────────────────────────────────────────*/
@@ -305,17 +441,97 @@ html.dark-theme .icon.paddle-score-icon:hover {
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
- 6) Responsive breakpoints (cards only)
+ 6) Responsive breakpoints (cards + ENHANCED MOBILE FOOTER STYLING)
 ─────────────────────────────────────────────────────────────────────────────*/
 @media (max-width: 768px) {
   .card {
     width: calc(50% - 20px);
   }
+  
+  /* ENHANCED MOBILE FOOTER STYLING */
+  .card-footer {
+    padding: 12px 0;
+    background: #ffffff;
+    border-top: 1px solid #e0e0e0;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
+  }
+  
+  /* MOBILE ICON IMPROVEMENTS */
+  .icon {
+    width: 44px;
+    height: 44px;
+    border: 2px solid #f0f0f0;
+    background: #fafafa;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  }
+  
+  .icon:hover,
+  .icon:focus,
+  .icon:active {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+  }
+  
+  /* LARGER TOUCH TARGETS FOR MOBILE */
+  .parking-icon::before { font-size: 20px; }
+  .toilet-icon::before { font-size: 18px; }
+  .youtube-icon::before { 
+    font-size: 17px; 
+    font-weight: 900; 
+    margin-left: 1px;
+  }
+  .chat-icon::before { font-size: 18px; }
+  .robot-icon::before { font-size: 18px; }
+  .analytics-icon::before { font-size: 18px; }
+  .location-icon::before { font-size: 18px; }
 }
+
 @media (max-width: 480px) {
   .card {
     width: 100%;
   }
+  
+  /* MOBILE-FIRST FOOTER DESIGN */
+  .card-footer {
+    padding: 16px 8px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8f8f8 100%);
+    border-top: 1px solid #e8e8e8;
+    box-shadow: 0 -3px 12px rgba(0,0,0,0.08);
+    gap: 4px;
+  }
+  
+  /* OPTIMIZED MOBILE ICONS */
+  .icon {
+    width: 46px;
+    height: 46px;
+    border: 2px solid #eeeeee;
+    background: #ffffff;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    margin: 0 2px;
+  }
+  
+  .icon:hover,
+  .icon:focus,
+  .icon:active {
+    transform: translateY(-1px) scale(1.02);
+    background: #f9f9f9;
+    border-color: #e0e0e0;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  }
+  
+  /* CONSISTENT MOBILE ICON SIZES */
+  .parking-icon::before { font-size: 22px; font-weight: 800; }
+  .toilet-icon::before { font-size: 20px; }
+  .youtube-icon::before { 
+    font-size: 18px; 
+    font-weight: 900; 
+    margin-left: 1px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  }
+  .chat-icon::before { font-size: 20px; }
+  .robot-icon::before { font-size: 20px; }
+  .analytics-icon::before { font-size: 20px; }
+  .location-icon::before { font-size: 20px; }
 }
 
 /*─────────────────────────────────────────────────────────────────────────────

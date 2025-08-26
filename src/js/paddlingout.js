@@ -168,92 +168,44 @@ document.addEventListener("DOMContentLoaded", () => {
    * @param {Function} [onClick] Optional click handler
    */
   /**
-   * Create a color-coded paddle score icon that shows cached score
+   * Create a color-coded paddle score icon that shows the included score
    */
   async function createPaddleScoreIcon(spot) {
     const scoreIcon = document.createElement("span");
     scoreIcon.className = "icon paddle-score-icon";
-    scoreIcon.title = "Loading paddle score...";
-    scoreIcon.textContent = "?"; // Loading indicator
-    scoreIcon.style.setProperty('background-color', '#6b7280', 'important'); // Gray background while loading
-    scoreIcon.style.setProperty('color', '#ffffff', 'important'); // White text
     scoreIcon.style.setProperty('font-family', "'Josefin_Light', Arial, sans-serif", 'important');
     
     // Still clickable to open modal
     scoreIcon.addEventListener("click", e => {
       e.stopPropagation();
-      console.log('🏄 Paddle score icon clicked!');
-      console.log('🔍 API Client available:', !!window.apiClient);
-      console.log('🔍 API Client mode:', window.apiClient?.getMode());
-      advancedModal.open(spot);
+      console.log('🏄 Paddle score icon clicked for:', spot.title);
+      if (window.advancedModal) {
+        advancedModal.open(spot);
+      }
     });
     
-    // Fetch score asynchronously and update icon
-    fetchPaddleScore(spot, scoreIcon);
+    // Use the paddle score that's already included in the spot data
+    if (spot.paddleScore && typeof spot.paddleScore.rating === 'number') {
+      const score = spot.paddleScore.rating;
+      console.log(`🏄 Using included paddle score for ${spot.title}: ${score}`);
+      
+      const { icon, backgroundColor, textColor, boxShadow, description } = getPaddleScoreDisplay(score);
+      
+      scoreIcon.textContent = icon;
+      scoreIcon.style.setProperty('background-color', backgroundColor, 'important');
+      scoreIcon.style.setProperty('color', textColor, 'important');
+      scoreIcon.style.setProperty('box-shadow', boxShadow, 'important');
+      scoreIcon.style.setProperty('border', '2px solid rgba(255,255,255,0.1)', 'important');
+      scoreIcon.title = `${description} (Click for details)`;
+    } else {
+      // Fallback if no paddle score is available
+      scoreIcon.textContent = "?";
+      scoreIcon.style.setProperty('background-color', '#6b7280', 'important');
+      scoreIcon.style.setProperty('color', '#ffffff', 'important');
+      scoreIcon.title = "Score unavailable - click for details";
+    }
     
     return scoreIcon;
-  }
-
-  /**
-   * Fetch paddle score from cache and update icon
-   */
-  async function fetchPaddleScore(spot, iconElement) {
-    try {
-      if (!window.apiClient) {
-        iconElement.textContent = "?";
-        iconElement.style.setProperty('background-color', '#6b7280', 'important');
-        iconElement.style.setProperty('color', '#ffffff', 'important');
-        iconElement.title = "API client not available - click for details";
-        return;
-      }
-
-      const lat = spot.location.latitude;
-      const lng = spot.location.longitude;
-      
-      // Use fast forecast to get current score quickly
-      const data = await window.apiClient.getFastForecast(lat, lng);
-      console.log(`🔍 Card DEBUG (${spot.name}): getFastForecast returned:`, data);
-      
-      if (data?.forecast?.[0]?.hourly) {
-        // Use shared data extraction logic to ensure consistency with modal
-        const currentData = window.dataTransformer.extractCurrentConditions(data);
-        console.log(`🔍 Card DEBUG (${spot.name}): dataTransformer.extractCurrentConditions returned:`, currentData);
-        
-        if (currentData?.rating) {
-          const score = currentData.rating;
-          console.log(`🔍 Card DEBUG (${spot.name}): Final score from dataTransformer = ${score}`);
-          
-          const { icon, backgroundColor, textColor, boxShadow, description } = getPaddleScoreDisplay(score);
-          
-          iconElement.textContent = icon;
-          
-          // Apply ADA-compliant styling with attractive shadows
-          iconElement.style.setProperty('background-color', backgroundColor, 'important');
-          iconElement.style.setProperty('color', textColor, 'important');
-          iconElement.style.setProperty('box-shadow', boxShadow, 'important');
-          iconElement.style.setProperty('font-family', "'Josefin_Light', Arial, sans-serif", 'important');
-          iconElement.style.setProperty('border', '2px solid rgba(255,255,255,0.1)', 'important');
-          
-          iconElement.title = `${description} (Click for full forecast)`;
-        } else {
-          iconElement.textContent = "?";
-          iconElement.style.setProperty('background-color', '#6b7280', 'important');
-          iconElement.style.setProperty('color', '#ffffff', 'important');
-          iconElement.title = "No score available - click for forecast";
-        }
-      } else {
-        iconElement.textContent = "?";
-        iconElement.style.setProperty('background-color', '#6b7280', 'important');
-        iconElement.style.setProperty('color', '#ffffff', 'important');
-        iconElement.title = "Score unavailable - click for details";
-      }
-    } catch (error) {
-      console.warn('Failed to fetch paddle score:', error);
-      iconElement.textContent = "!";
-      iconElement.style.setProperty('background-color', '#ef4444', 'important');
-      iconElement.style.setProperty('color', '#ffffff', 'important');
-      iconElement.title = "Score error - click for forecast";
-    }
   }
 
   /**
@@ -261,55 +213,55 @@ document.addEventListener("DOMContentLoaded", () => {
    * with high contrast ratios and attractive shadows
    */
   function getPaddleScoreDisplay(score) {
-    const roundedScore = Math.round(score * 10) / 10; // Round to 1 decimal
+    // Score is already properly formatted by API (rounded to 0.5 increments)
     
     // ADA-COMPLIANT color grading with proper contrast ratios (4.5:1 minimum)
     let backgroundColor, textColor, boxShadow;
     
     if (score >= 4.5) {
-      // Excellent+ - Deep forest green with ivory text
-      backgroundColor = "#1B4332"; // Dark forest green
-      textColor = "#FFFDD0"; // Ivory
+      // Excellent+ - 0% gradient position
+      backgroundColor = "#1B4332";
+      textColor = "#FFFFFF";
       boxShadow = "0 4px 12px rgba(27, 67, 50, 0.4), 0 2px 4px rgba(0,0,0,0.3)";
     } else if (score >= 4.0) {
-      // Excellent - Rich green with ivory text  
-      backgroundColor = "#2D5A32"; // Rich green
-      textColor = "#FFFDD0"; // Ivory
+      // Excellent - 15% gradient position
+      backgroundColor = "#2D5A32";
+      textColor = "#FFFFFF";
       boxShadow = "0 4px 12px rgba(45, 90, 50, 0.4), 0 2px 4px rgba(0,0,0,0.3)";
     } else if (score >= 3.5) {
-      // Mildly challenging - Deep golden amber with black text
-      backgroundColor = "#B8860B"; // Dark goldenrod
-      textColor = "#000000"; // True black
-      boxShadow = "0 4px 12px rgba(184, 134, 11, 0.4), 0 2px 4px rgba(0,0,0,0.3)";
+      // Good - 30% gradient position
+      backgroundColor = "#CD853F";
+      textColor = "#FFFFFF";
+      boxShadow = "0 4px 12px rgba(205, 133, 63, 0.4), 0 2px 4px rgba(0,0,0,0.3)";
     } else if (score >= 3.0) {
-      // Challenging - Burnt orange with ivory text
-      backgroundColor = "#CC5500"; // Burnt orange
-      textColor = "#FFFDD0"; // Ivory
-      boxShadow = "0 4px 12px rgba(204, 85, 0, 0.4), 0 2px 4px rgba(0,0,0,0.3)";
+      // Fair - 45% gradient position
+      backgroundColor = "#E36414";
+      textColor = "#FFFFFF";
+      boxShadow = "0 4px 12px rgba(227, 100, 20, 0.4), 0 2px 4px rgba(0,0,0,0.3)";
     } else if (score >= 2.5) {
-      // Difficult - Deep red-orange with ivory text
-      backgroundColor = "#B22222"; // Fire brick red
-      textColor = "#FFFDD0"; // Ivory
-      boxShadow = "0 4px 12px rgba(178, 34, 34, 0.4), 0 2px 4px rgba(0,0,0,0.3)";
+      // Poor - 60% gradient position
+      backgroundColor = "#C0392B";
+      textColor = "#FFFFFF";
+      boxShadow = "0 4px 12px rgba(192, 57, 43, 0.4), 0 2px 4px rgba(0,0,0,0.3)";
     } else if (score >= 2.0) {
-      // Very difficult - Dark crimson with ivory text
-      backgroundColor = "#8B0000"; // Dark red
-      textColor = "#FFFDD0"; // Ivory
-      boxShadow = "0 4px 12px rgba(139, 0, 0, 0.5), 0 2px 4px rgba(0,0,0,0.4)";
+      // Dangerous - 75% gradient position
+      backgroundColor = "#8E0E00";
+      textColor = "#FFFFFF";
+      boxShadow = "0 4px 12px rgba(142, 14, 0, 0.5), 0 2px 4px rgba(0,0,0,0.4)";
     } else if (score >= 1.5) {
-      // Extremely difficult - Very dark red with ivory text
-      backgroundColor = "#660000"; // Very dark red
-      textColor = "#FFFDD0"; // Ivory
-      boxShadow = "0 4px 12px rgba(102, 0, 0, 0.6), 0 2px 4px rgba(0,0,0,0.4)";
+      // Very Dangerous - 85% gradient position
+      backgroundColor = "#5B0000";
+      textColor = "#FFFFFF";
+      boxShadow = "0 4px 12px rgba(91, 0, 0, 0.6), 0 2px 4px rgba(0,0,0,0.4)";
     } else if (score >= 1.0) {
-      // Dangerous - Near black with ivory text
-      backgroundColor = "#2F1B14"; // Very dark brown-red
-      textColor = "#FFFDD0"; // Ivory
-      boxShadow = "0 4px 12px rgba(47, 27, 20, 0.7), 0 2px 4px rgba(0,0,0,0.5)";
+      // Critical - 95% gradient position
+      backgroundColor = "#2B1815";
+      textColor = "#FFFFFF";
+      boxShadow = "0 4px 12px rgba(43, 24, 21, 0.7), 0 2px 4px rgba(0,0,0,0.5)";
     } else {
-      // Extremely dangerous - Pure black with ivory text
-      backgroundColor = "#000000"; // True black
-      textColor = "#FFFDD0"; // Ivory
+      // Extremely Critical - 100% gradient position
+      backgroundColor = "#000000";
+      textColor = "#FFFFFF";
       boxShadow = "0 4px 12px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(255, 0, 0, 0.3)";
     }
     
@@ -320,7 +272,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (score >= 4.0) {
       description = "Good conditions";
     } else if (score >= 3.5) {
-      description = "Mildly challenging conditions";
+      description = "Good conditions - Heat caution advised";
     } else if (score >= 3.0) {
       description = "Challenging conditions";
     } else {
@@ -328,7 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     return {
-      icon: roundedScore,
+      icon: score,
       backgroundColor,
       textColor,
       boxShadow,

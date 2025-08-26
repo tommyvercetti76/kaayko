@@ -7,6 +7,6 @@
 window.FORCE_PRODUCTION_MODE = true;
 
 // Set the correct production API URL
-window.PRODUCTION_API_BASE = "https://us-central1-kaaykostore.cloudfunctions.net/api";
+window.PRODUCTION_API_BASE = "https://api-vwcc5j4qda-uc.a.run.app";
 
 console.log("🚀 PRODUCTION MODE FORCED - Using:", window.PRODUCTION_API_BASE);

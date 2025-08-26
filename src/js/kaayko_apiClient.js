@@ -12,7 +12,7 @@ const API_BASE = window.FORCE_PRODUCTION_MODE
   ? window.PRODUCTION_API_BASE  // Force production mode
   : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       ? `${window.location.origin}/api`  // Local Firebase emulator
-      : "https://us-central1-kaaykostore.cloudfunctions.net/api"); // CORRECT Firebase Functions URL
+      : "https://api-vwcc5j4qda-uc.a.run.app"); // CORRECT Firebase Functions v2 URL
 
 /**
  * Fetches the full list of products.

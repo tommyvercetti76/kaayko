@@ -1,24 +1,21 @@
 /* -------------------------------------------
- * Heatmap Component Styles - Clean 3x3 Grid Layout
+ * Clean Heatmap Styles - Simple Blended Visualization  
  * ------------------------------------------- */
-.heatmap-container {
+
+.heatmap-new-container {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin: 4px;
-  align-items: stretch;
-  justify-content: center;
-  width: calc(100% - 8px);
+  gap: 12px;
+  margin: 8px;
+  width: calc(100% - 16px);
 }
 
-/* Heatmap header styling */
-.chart-header {
+.heatmap-header {
   text-align: center;
   margin-bottom: 8px;
-  width: 100%;
 }
 
-.chart-title {
+.heatmap-title {
   font-family: 'Josefin_Bold', Arial, sans-serif;
   font-size: 18px;
   font-weight: 700;
@@ -26,830 +23,242 @@
   margin: 0 0 4px 0;
   text-transform: uppercase;
   letter-spacing: 1px;
-  width: 100%;
 }
 
-.chart-description {
+.heatmap-subtitle {
   font-family: 'Josefin_Light', Arial, sans-serif;
   font-size: 14px;
   color: #666;
   margin: 0;
   font-style: italic;
-  width: 100%; /* Match parent width */
 }
 
-/* Dark mode support for heatmap headers */
-html.dark-theme .chart-title {
+/* Dark mode support */
+html.dark-theme .heatmap-title {
   color: ivory;
 }
 
-html.dark-theme .chart-description {
+html.dark-theme .heatmap-subtitle {
   color: #ccc;
 }
 
-/* New grid layout styles */
-.heatmap-grid-layout {
+.heatmap-grid {
   display: flex;
   flex-direction: column;
-  width: 100%; /* Match parent width */
-  max-width: 100%; /* Allow full expansion on desktop */
-  margin: 0 auto; /* Center horizontally */
+  gap: 8px;
 }
 
-.grid-wrapper {
+.heatmap-row {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.day-label {
   display: flex;
-  flex-direction: column;
-  border: 1px solid rgba(255, 255, 255, 0.03);
-  border-radius: 8px;
-  overflow: visible;
-  background: rgba(255, 255, 255, 0.005);
-  padding: 2px;
-  width: 100%; /* Match parent width */
-}
-
-/* Expanded hourly grid layout */
-.grid-wrapper.expanded-hourly {
-  max-width: 100%; /* Allow full expansion instead of fixed 900px */
-}
-
-.grid-row.expanded-period {
-  min-height: 140px; /* Taller default height to fill space better */
-}
-
-.day-period-container {
-  display: flex;
-  flex-direction: column;
-  padding: 0; /* Remove padding so tiles fill completely */
-  border-left: 1px solid rgba(255, 255, 255, 0.02);
-  background: rgba(255, 255, 255, 0.01);
-  height: 100%; /* Fill the full row height */
-  cursor: pointer; /* Indicate clickability */
-  transition: all 0.2s ease;
-  position: relative;
-}
-
-.day-period-container:hover {
+  align-items: center;
+  justify-content: center;
+  font-family: 'Josefin_Bold', Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
   background: rgba(255, 255, 255, 0.05);
-  transform: scale(1.01);
-  border-left: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  color: var(--modal-text, #333);
+  text-align: center;
+  white-space: pre-line;
+  line-height: 1.3;
+  padding: 8px;
 }
 
-.day-period-container:active {
-  transform: scale(0.99);
-}
-
-.hourly-period-grid {
-  display: flex;
-  flex-direction: column; /* Stack hourly tiles vertically */
-  height: 100%; /* Fill the container completely */
-  width: 100%;
-}
-
-/* Desktop view - show individual hourly tiles */
-.desktop-hourly-tiles {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  width: 100%;
-}
-
-/* Mobile view - show blended gradient tile */
-.mobile-blended-tile {
-  display: none; /* Hidden on desktop */
-  height: 100%;
-  width: 100%;
-  min-height: 60px; /* Ensure minimum height */
+.gradient-strip {
+  height: 80px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
-  transition: all 0.2s ease;
-  border: 0.5px solid rgba(255, 255, 255, 0.08);
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none; /* Prevent text selection on tap */
-}
-
-.mobile-blended-tile:hover {
-  transform: scale(1.02);
-  border-color: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
-}
-
-/* Enhanced mobile touch feedback */
-.mobile-blended-tile:active {
-  transform: scale(0.98);
-  border-color: rgba(255, 255, 255, 0.5);
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
-}
-
-/* Individual hourly tiles */
-.hourly-tile {
-  border-radius: 0;
   transition: all 0.2s ease;
   position: relative;
-  flex: 1; /* Fill available vertical space equally */
-  min-height: 22px; /* Taller default minimum height per tile */
-  border: 0.5px solid rgba(255, 255, 255, 0.08); /* Even finer grid lines */
-  cursor: pointer;
-  width: 100%;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none; /* Prevent text selection on tap */
+  display: flex;
+  align-items: flex-end;
+  overflow: visible; /* Changed to allow tooltip to show */
 }
 
-.hourly-tile:hover {
-  transform: scale(1.02);
-  border-color: rgba(255, 255, 255, 0.4);
+.gradient-strip:hover {
+  transform: scale(1.01);
+  filter: brightness(1.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   z-index: 10;
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
 }
 
-/* Enhanced mobile touch feedback for hourly tiles */
-.hourly-tile:active {
-  transform: scale(0.98);
-  border-color: rgba(255, 255, 255, 0.6);
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
-}
-
-/* Current hour highlighting */
-.hourly-tile.current-hour {
-  border: 1px solid #ffffff;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-}
-
-/* Tooltip styling */
-.hourly-tile[title]:hover::after {
-  content: attr(title);
+/* Hover tooltip */
+.hover-tooltip {
   position: absolute;
+  top: -60px;
+  transform: translateX(-50%);
   background: rgba(0, 0, 0, 0.9);
   color: white;
   padding: 8px 12px;
-  border-radius: 4px;
-  font-size: 12px;
-  white-space: pre-line;
-  z-index: 1000;
-  left: 50%;
-  top: -10px;
-  transform: translateX(-50%) translateY(-100%);
-  min-width: 200px;
-  text-align: left;
-  pointer-events: none;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-/* Responsive Design - Tighter on smaller screens */
-@media (max-width: 768px) {
-  /* Center and expand heatmap in mobile */
-  .heatmap-container {
-    width: calc(100% - 16px); /* Full width minus side margins */
-    margin: 0 8px; /* Maintain 8px side margins on mobile */
-    padding-top: 8px; /* Add 8px padding between subheader and heatmap */
-    display: flex;
-    flex-direction: column;
-    align-items: stretch; /* Stretch to full width on mobile */
-    justify-content: center;
-    max-height: 70vh; /* Prevent exceeding viewport height */
-  }
-  
-  .heatmap-grid-layout {
-    width: 100%;
-    max-width: 100%;
-    margin: 0;
-    transform: scale(1.0); /* Remove scaling to let it fill naturally */
-    transform-origin: center;
-  }
-  
-  .grid-wrapper.expanded-hourly {
-    max-width: 100%;
-    width: 100%;
-  }
-  
-  .grid-row.expanded-period {
-    min-height: 120px; /* Balanced mobile rows - taller but not excessive */
-  }
-  
-  /* Hide individual hourly tiles on mobile */
-  .desktop-hourly-tiles {
-    display: none;
-  }
-  
-  /* Show blended gradient tiles on mobile */
-  .mobile-blended-tile {
-    display: block;
-    min-height: 120px; /* Match the expanded period height for balanced fill */
-  }
-  
-  .hourly-tile {
-    min-height: 25px; /* Taller individual tiles on mobile for better fill */
-    border: 0.25px solid rgba(255, 255, 255, 0.06);
-  }
-  
-  .hourly-tile[title]:hover::after {
-    min-width: 150px;
-    font-size: 11px;
-    padding: 6px 8px;
-  }
-}
-
-@media (max-width: 480px) {
-  /* Maintain centered expansion on very small screens */
-  .heatmap-grid-layout {
-    transform: scale(1.0); /* No scaling, let it fill naturally */
-  }
-  
-  .grid-row.expanded-period {
-    min-height: 100px; /* Reasonable height for small screens */
-  }
-  
-  /* Ensure blended tiles fill the space on very small screens */
-  .mobile-blended-tile {
-    display: block;
-    min-height: 100px; /* Match the period height for balanced fill */
-    border: 0.25px solid rgba(255, 255, 255, 0.04);
-  }
-  
-  .hourly-tile {
-    min-height: 20px; /* Taller individual tiles on small screens too */
-    border: 0.25px solid rgba(255, 255, 255, 0.04);
-  }
-  
-  .hourly-tile[title]:hover::after {
-    min-width: 120px;
-    font-size: 10px;
-    padding: 4px 6px;
-  }
-}
-
-@media (min-width: 1200px) {
-  .grid-row.expanded-period {
-    min-height: 160px; /* Taller on big screens to fill space */
-  }
-  
-  .hourly-tile {
-    min-height: 25px; /* Taller tiles on larger screens */
-  }
-}
-
-/* Current hour highlighting */
-.hourly-tile.current-hour {
-  border: 2px solid #ffffff;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-}
-
-.hourly-tile .interpolated-indicator {
-  position: absolute;
-  bottom: 2px;
-  left: 2px;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 7px;
-  font-style: italic;
-}
-
-/* Data type styling */
-.hourly-tile.real-data {
-  border-color: rgba(255, 255, 255, 0.12);
-}
-
-.hourly-tile.interpolated-data {
-  border-color: rgba(255, 255, 255, 0.06);
-  opacity: 0.8;
-}
-
-.hourly-tile.empty-data {
-  background: rgba(128, 128, 128, 0.3) !important;
-  border-color: rgba(255, 255, 255, 0.04);
-  opacity: 0.5;
-}
-
-/* Current conditions highlighting for expanded view */
-.hourly-tile.current-hour {
-  border: 2px solid #00ff88;
-  box-shadow: 0 0 8px rgba(0, 255, 136, 0.3);
-}
-
-/* Responsive design for smaller screens */
-@media (max-width: 768px) {
-  .grid-wrapper.expanded-hourly {
-    max-width: 100%;
-  }
-  
-  .hourly-period-grid {
-    grid-template-columns: repeat(3, 1fr); /* Stack to 3 columns on mobile */
-    gap: 3px;
-  }
-  
-  .hourly-tile {
-    min-height: 45px;
-    padding: 4px 2px;
-  }
-  
-  .hourly-tile .rating-value {
-    font-size: 10px;
-  }
-  
-  .hourly-tile .hour-label,
-  .hourly-tile .rating-mini-text {
-    font-size: 7px;
-  }
-}
-
-.grid-header {
-  display: grid;
-  grid-template-columns: 120px 1fr 1fr 1fr;
-  background: rgba(255, 255, 255, 0.01);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-}
-
-.period-label-header {
-  /* Empty corner cell in grid header - hidden */
-  background: transparent;
-  border: none;
-}
-
-.day-header {
-  padding: 12px 8px;
-  text-align: center;
-  font-family: 'Josefin_Bold', Arial, sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--modal-text);
-  border-left: 1px solid rgba(255, 255, 255, 0.02);
-}
-
-.grid-row {
-  display: grid;
-  grid-template-columns: 120px 1fr 1fr 1fr;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.015);
-}
-
-.grid-row:last-child {
-  border-bottom: none;
-}
-
-.period-label {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 15px;
-  font-family: 'Josefin_Medium', Arial, sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--modal-text);
-  background: rgba(255, 255, 255, 0.005);
-  border-right: 1px solid rgba(255, 255, 255, 0.02);
-  min-height: 80px;
-}
-
-.rating-tile {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px 10px;
-  min-height: 80px;
-  border-left: 1px solid rgba(255, 255, 255, 0.02);
-  transition: all 0.2s ease;
-  position: relative;
-}
-
-.rating-tile:hover {
-  transform: scale(1.02);
-  box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1);
-}
-
-.rating-value {
-  font-family: 'Josefin_Bold', Arial, sans-serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: white;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-  margin-bottom: 4px;
-}
-
-.rating-text {
-  font-family: 'Josefin_Medium', Arial, sans-serif;
-  font-size: 10px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.heatmap-error {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  margin: 20px 0;
-}
-
-.error-message {
-  font-family: 'Josefin_Medium', Arial, sans-serif;
-  font-size: 14px;
-  color: var(--modal-text-light);
-  text-align: center;
-}
-
-.error-message span {
-  display: block;
-  font-size: 16px;
-  color: var(--modal-text);
-}
-
-/* Heatmap legend styles - now aligned with grid boundaries */
-.heatmap-legend {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-top: 20px;
-  padding: 15px;
-  background: transparent;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  /* Legend now inherits width constraints from heatmap-grid-layout parent */
-}
-
-.heatmap-legend .legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: 'Josefin_Medium', Arial, sans-serif;
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--modal-text);
-}
-
-.heatmap-legend .legend-color {
-  width: 14px;
-  height: 14px;
-  border-radius: 3px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.heatmap-legend .legend-item.excellent .legend-color {
-  background: #4CAF50;
-}
-
-.heatmap-legend .legend-item.good .legend-color {
-  background: #8BC34A;
-}
-
-.heatmap-legend .legend-item.fair .legend-color {
-  background: #FFC107;
-}
-
-.heatmap-legend .legend-item.poor .legend-color {
-  background: #F44336;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-  .heatmap-container {
-    gap: 10px;
-    margin: 10px 8px; /* Maintain 8px side margins */
-    padding-top: 8px; /* Add 8px padding between subheader and heatmap */
-  }
-  
-  .grid-header {
-    grid-template-columns: 100px 1fr 1fr 1fr;
-    width: 100%; /* Match parent width */
-  }
-  
-  .grid-row {
-    grid-template-columns: 100px 1fr 1fr 1fr;
-    width: 100%; /* Match parent width */
-  }
-  
-  .period-label {
-    padding: 0 10px;
-    font-size: 11px;
-    min-height: 70px;
-  }
-  
-  .rating-tile {
-    padding: 15px 8px;
-    min-height: 70px;
-  }
-  
-  .rating-value {
-    font-size: 16px;
-  }
-  
-  .rating-text {
-    font-size: 9px;
-  }
-  
-  .day-header {
-    padding: 10px 6px;
-    font-size: 12px;
-  }
-
-  .heatmap-legend {
-    grid-template-columns: 1fr;
-    gap: 8px;
-    margin-top: 15px;
-    padding: 12px;
-  }
-
-  .heatmap-legend .legend-item {
-    font-size: 10px;
-  }
-}
-
-@media (max-width: 480px) {
-  .grid-header {
-    grid-template-columns: 80px 1fr 1fr 1fr;
-  }
-  
-  .grid-row {
-    grid-template-columns: 80px 1fr 1fr 1fr;
-  }
-  
-  .period-label {
-    padding: 0 8px;
-    font-size: 10px;
-    min-height: 60px;
-  }
-  
-  .rating-tile {
-    padding: 12px 6px;
-    min-height: 60px;
-  }
-  
-  .rating-value {
-    font-size: 14px;
-  }
-  
-  .rating-text {
-    font-size: 8px;
-  }
-  
-  .day-header {
-    padding: 8px 4px;
-    font-size: 11px;
-  }
-}
-
-/* ===== Current Conditions Highlighting ===== */
-.current-highlight {
-  margin-top: 8px;
-  font-family: 'Josefin_Regular', Arial, sans-serif;
-}
-
-.current-indicator {
   font-size: 12px;
-  color: #ff8c00;
-  font-weight: 500;
-}
-
-.rating-tile.current-conditions {
-  position: relative;
-  border: 2px solid #ff8c00;
-  box-shadow: 0 0 10px rgba(255, 140, 0, 0.3);
-  transform: scale(1.05);
-}
-
-.current-badge {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  background: #ff8c00;
-  color: white;
-  font-size: 8px;
-  font-weight: bold;
-  padding: 2px 6px;
-  border-radius: 8px;
   font-family: 'Josefin_Bold', Arial, sans-serif;
-  z-index: 10;
   white-space: nowrap;
-}
-
-.factor-indicator {
-  position: absolute;
-  bottom: 4px;
-  right: 4px;
-  font-size: 12px;
-  opacity: 0.8;
-}
-
-/* Dark theme adjustments for current conditions */
-html.dark-theme .current-indicator {
-  color: #ffb347;
-}
-
-html.dark-theme .rating-tile.current-conditions {
-  border-color: #ffb347;
-  box-shadow: 0 0 10px rgba(255, 179, 71, 0.3);
-}
-
-html.dark-theme .current-badge {
-  background: #ffb347;
-  color: #333;
-}
-
-/* ===== Period Submodal Styles ===== */
-.period-submodal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(8px);
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: all 0.3s ease;
   pointer-events: none;
-}
-
-.period-submodal-overlay.show {
-  opacity: 1;
-  pointer-events: all;
-}
-
-.period-submodal-overlay.hide {
-  opacity: 0;
-  transform: scale(0.9);
-}
-
-.period-submodal {
-  background: rgba(20, 25, 35, 0.95);
+  z-index: 20;
+  display: none;
+  backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
-  width: 90%;
-  max-width: 600px;
-  max-height: 80vh;
-  overflow: hidden;
-  transform: scale(0.9);
-  transition: transform 0.3s ease;
-}
-
-.period-submodal-overlay.show .period-submodal {
-  transform: scale(1);
-}
-
-.submodal-header {
-  padding: 20px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: relative;
-}
-
-.submodal-header h3 {
-  font-family: 'Josefin_Bold', Arial, sans-serif;
-  font-size: 20px;
-  color: white;
-  margin: 0 0 4px 0;
-}
-
-.submodal-header p {
-  font-family: 'Josefin_Regular', Arial, sans-serif;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
-  margin: 0;
-}
-
-.submodal-close {
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 28px;
-  cursor: pointer;
-  padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-}
-
-.submodal-close:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-}
-
-.submodal-content {
-  padding: 20px 24px;
-  max-height: 60vh;
-  overflow-y: auto;
-}
-
-.hourly-subgrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-}
-
-.subgrid-tile {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  padding: 16px;
-  text-align: center;
-  transition: all 0.2s ease;
-  position: relative;
-  min-height: 120px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.subgrid-tile:hover {
-  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.subgrid-tile.current-hour {
-  border: 2px solid #00ff88;
-  box-shadow: 0 0 12px rgba(0, 255, 136, 0.3);
+.hover-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.9);
 }
 
-.subgrid-tile.empty {
-  background: rgba(128, 128, 128, 0.2);
-  opacity: 0.6;
-}
-
-.subgrid-hour {
-  font-family: 'Josefin_Bold', Arial, sans-serif;
-  font-size: 14px;
-  color: white;
-  margin-bottom: 8px;
-  font-weight: 600;
-}
-
-.subgrid-rating {
-  font-family: 'Josefin_Bold', Arial, sans-serif;
-  font-size: 24px;
-  color: white;
-  font-weight: 700;
-  margin-bottom: 4px;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-}
-
-.subgrid-text {
-  font-family: 'Josefin_Medium', Arial, sans-serif;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.9);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 12px;
-}
-
-.subgrid-details {
+.tooltip-content {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-family: 'Josefin_Regular', Arial, sans-serif;
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.8);
+  gap: 2px;
+  text-align: center;
 }
 
-.subgrid-details span {
-  display: block;
+.tooltip-time {
+  font-weight: 600;
+  font-size: 13px;
+  color: #3b82f6;
 }
 
-/* Mobile responsive submodal */
+.tooltip-rating {
+  font-size: 11px;
+  opacity: 0.9;
+}
+
+.gradient-strip.current-day {
+  border: 2px solid #3b82f6;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+}
+
+.current-hour-indicator {
+  position: absolute;
+  top: -8px;
+  width: 12px;
+  height: 12px;
+  background: #3b82f6;
+  border: 2px solid white;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.4);
+  z-index: 5;
+}
+
+/* Column Headers */
+.heatmap-column-headers {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.column-spacer {
+  width: 100px; /* Match the day label column width */
+}
+
+.time-period-headers {
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0;
+}
+
+.time-period-header {
+  color: var(--modal-text, #666);
+  font-size: 12px;
+  font-family: 'Josefin_Bold', Arial, sans-serif;
+  font-weight: 600;
+  flex: 1;
+  text-align: center;
+  opacity: 0.8;
+}
+
+/* Dark mode support */
+html.dark-theme .time-period-header {
+  color: #ccc;
+}
+
+/* Mobile responsiveness */
 @media (max-width: 768px) {
-  .period-submodal {
-    width: 95%;
-    max-width: none;
-    margin: 10px;
+  .heatmap-row {
+    grid-template-columns: 80px 1fr;
+    gap: 8px;
   }
   
-  .submodal-header {
-    padding: 16px 20px;
+  .heatmap-column-headers {
+    grid-template-columns: 80px 1fr;
+    gap: 8px;
   }
   
-  .submodal-header h3 {
-    font-size: 18px;
+  .column-spacer {
+    width: 80px;
   }
   
-  .submodal-content {
-    padding: 16px 20px;
+  .day-label {
+    font-size: 12px;
+    padding: 6px;
   }
   
-  .hourly-subgrid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+  .gradient-strip {
+    height: 70px;
   }
   
-  .subgrid-tile {
-    min-height: 100px;
-    padding: 12px;
+  .time-period-header {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .heatmap-row {
+    grid-template-columns: 70px 1fr;
+    gap: 6px;
   }
   
-  .subgrid-rating {
-    font-size: 20px;
+  .heatmap-column-headers {
+    grid-template-columns: 70px 1fr;
+    gap: 6px;
   }
+  
+  .column-spacer {
+    width: 70px;
+  }
+  
+  .day-label {
+    font-size: 11px;
+    padding: 4px;
+  }
+  
+  .gradient-strip {
+    height: 60px;
+  }
+  
+  .time-period-header {
+    font-size: 10px;
+  }
+}
+
+/* Error state */
+.heatmap-error {
+  text-align: center;
+  padding: 20px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  color: #ef4444;
+}
+
+.error-message {
+  font-family: 'Josefin_Light', Arial, sans-serif;
+  font-size: 14px;
 }

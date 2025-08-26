@@ -1,0 +1,421 @@
+/************************************************************
+ * ABOUT.CSS — World-class hero tiles & typography (CSS-only)
+ * - No HTML changes needed
+ * - Uniform card frame & image behavior
+ * - Josefin typography for main titles/subtitles
+ ************************************************************/
+
+/* ----------------------------------------------------------
+   0) Base tokens (safe to theme)
+---------------------------------------------------------- */
+:root{
+  /* Frame */
+  --hero-radius: 28px;
+  --hero-border: rgba(255,255,255,0.12);
+  --hero-shadow: 0 20px 50px rgba(0,0,0,0.35);
+
+  /* Texts on imagery */
+  --hero-title: #f5f7f8;
+  --hero-text:  rgba(245,247,248,0.92);
+
+  /* Glass chips */
+  --chip-border: rgba(255,255,255,0.18);
+  --chip-bg-1: rgba(255,255,255,0.08);
+  --chip-bg-2: rgba(255,255,255,0.03);
+  --chip-shadow: 0 6px 26px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.08);
+
+  /* Accents */
+  --badge: #ffd400;   /* warm yellow badge */
+  --accent: #00f2fe;  /* cyan stat color */
+
+  /* Fallback body colors */
+  --page-bg: #0f1214;
+  --text-body: #e8eaed;
+}
+
+/* ----------------------------------------------------------
+   1) Fonts (local or Google-served — both work)
+   - Keep your existing <link> to Google if you prefer
+---------------------------------------------------------- */
+@font-face{
+  font-family:"Josefin Sans";
+  font-style:normal;
+  font-weight:300;
+  font-display:swap;
+  src: local("Josefin Sans Light"),
+       url("../fonts/JosefinSans-Light.ttf") format("truetype");
+}
+@font-face{
+  font-family:"Josefin Sans";
+  font-style:normal;
+  font-weight:500;
+  font-display:swap;
+  src: local("Josefin Sans Medium"),
+       url("../fonts/JosefinSans-Medium.ttf") format("truetype");
+}
+@font-face{
+  font-family:"Josefin Sans";
+  font-style:normal;
+  font-weight:700;
+  font-display:swap;
+  src: local("Josefin Sans Bold"),
+       url("../fonts/JosefinSans-Bold.ttf") format("truetype");
+}
+
+/* ----------------------------------------------------------
+   2) Global reset / base
+---------------------------------------------------------- */
+*{ box-sizing:border-box; margin:0; padding:0; }
+html,body{ height:100%; background:var(--page-bg); color:var(--text-body); }
+body{ font-family:"Josefin Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+
+/* page wrapper */
+.about-main{
+  max-width:1200px;
+  margin:0 auto;
+  padding:0 20px;
+}
+
+/* Utility: make any background image act like hero tiles */
+.bg-cover{ background-size:contain !important; background-position:center; background-repeat:no-repeat; }
+
+/* Guard: if a section uses <img> instead of CSS bg */
+.about-hero img,
+.section-card img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+/* ----------------------------------------------------------
+   3) Universal “hero tile” frame (Hero + all sections + CTA)
+---------------------------------------------------------- */
+.hero-frame,
+.about-section .section-card,
+.about-cta .section-card{
+  position:relative;
+  margin:60px 0;
+  border-radius:var(--hero-radius);
+  overflow:hidden;
+  border:1px solid var(--hero-border);
+  box-shadow:var(--hero-shadow);
+  isolation:isolate;
+  background:transparent;
+  height:500px;
+  min-height:500px;
+}
+
+/* background layer (uses inline style or JS to set image) */
+.hero-frame > .hero-bg-image,
+.about-section .section-bg,
+.about-cta .section-bg{
+  position:absolute; inset:0;
+  background-size:contain !important;   /* <— fits entire image without cropping */
+  background-position:center;
+  background-repeat:no-repeat;
+  z-index:-2;
+}
+
+/* vignette (matches your “Break free” tile) */
+.hero-frame::after,
+.about-section .section-card::after,
+.about-cta .section-card::after{
+  content:"";
+  position:absolute; inset:0;
+  background:
+    radial-gradient(120% 80% at 50% 40%,
+      rgba(0,0,0,0.12) 0%,
+      rgba(0,0,0,0.44) 58%,
+      rgba(0,0,0,0.66) 100%);
+  z-index:-1;
+}
+
+/* ----------------------------------------------------------
+   4) Top Hero (Break free look)
+---------------------------------------------------------- */
+.about-hero{
+  /* also acts as a frame */
+  composes: hero-frame;
+  /* CSS fallback for engines that don’t support composes */
+  position:relative;
+  min-height:70vh;
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
+  margin:60px 0;
+  border-radius:var(--hero-radius);
+  text-align:center;
+  border:1px solid var(--hero-border);
+  box-shadow:var(--hero-shadow);
+  isolation:isolate;
+}
+
+/* background layer already defined above as .hero-bg-image */
+.hero-bg-image{
+  position:absolute; inset:0;
+  background-size:contain !important;
+  background-position:center;
+  background-repeat:no-repeat;
+}
+
+/* Content */
+.hero-content{
+  position:relative; z-index:2; flex:1;
+  max-width:1000px;
+  padding:clamp(28px, 5vw, 64px);
+  color:var(--hero-title);
+}
+
+/* Title & subhead — cinematic Josefin */
+.about-title,
+.site-hero-title{
+  font-family:"Josefin Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-weight:300;
+  letter-spacing:.02em;
+  font-size:clamp(2.6rem, 6vw, 4.6rem);
+  line-height:1.14;
+  color:var(--hero-title);
+  text-shadow:0 3px 18px rgba(0,0,0,.55);
+  margin-bottom:18px;
+}
+
+/* Generic site hero (for “Kaayko: Paddling Out”) */
+.site-hero-title.kayko{
+  font-weight:700;                /* bolder brand masthead if desired */
+  letter-spacing:.015em;
+}
+
+/* Subheads (for “Never Easy, always pretty”) */
+.about-tagline,
+.site-hero-subtitle{
+  font-family:"Josefin Sans", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-weight:300;
+  font-size:clamp(1.05rem, 2.2vw, 1.6rem);
+  line-height:1.6;
+  color:var(--hero-text);
+  text-shadow:0 2px 12px rgba(0,0,0,.45);
+  margin-bottom:32px;
+}
+
+/* ----------------------------------------------------------
+   5) Hero stats → glass chips
+---------------------------------------------------------- */
+.hero-stats{
+  display:grid;
+  grid-template-columns:repeat(3, minmax(220px,1fr));
+  gap:clamp(12px, 2vw, 24px);
+  justify-content:center;
+}
+.stat-item{
+  text-align:center;
+  padding:18px 22px;
+  border-radius:18px;
+  border:1px solid var(--chip-border);
+  background:linear-gradient(180deg, var(--chip-bg-1), var(--chip-bg-2));
+  backdrop-filter:blur(10px);
+  box-shadow:var(--chip-shadow);
+  color:var(--hero-title);
+  min-width:120px;
+}
+.stat-number{
+  display:block;
+  font-size:clamp(1.6rem, 3vw, 2.4rem);
+  font-weight:700;
+  color:var(--accent);
+  text-shadow:0 2px 10px rgba(0,242,254,.3);
+}
+.stat-label{ display:block; font-size:.95rem; opacity:.9; margin-top:.4rem; }
+
+/* stack on narrow */
+@media (max-width:900px){ .hero-stats{ grid-template-columns:1fr; } }
+
+/* ----------------------------------------------------------
+   6) Section tiles — unified with hero
+---------------------------------------------------------- */
+.section-content-minimal{
+  position:relative; z-index:2;
+  padding:clamp(28px, 5vw, 64px) 30px 20px;
+  text-align:center;
+  height:calc(100% - 140px);
+  display:flex; flex-direction:column; justify-content:center;
+  color:var(--hero-title);
+}
+.section-content-minimal h3{
+  font-weight:700;
+  font-size:clamp(2rem, 4.5vw, 2.8rem);
+  color:var(--hero-title);
+  text-shadow:0 3px 18px rgba(0,0,0,.55);
+  margin-bottom:16px;
+}
+.section-tagline{
+  font-weight:400;
+  font-size:clamp(1.05rem, 2.2vw, 1.35rem);
+  color:var(--hero-text);
+  text-shadow:0 2px 12px rgba(0,0,0,.45);
+  max-width:820px;
+  margin:0 auto;
+}
+
+/* footer pinned to bottom; no opaque box */
+.section-footer{
+  position:absolute; left:0; right:0; bottom:0;
+  z-index:3; padding:20px; background:none;
+}
+
+/* ----------------------------------------------------------
+   7) Chips / buttons (metrics & CTA) — one look everywhere
+---------------------------------------------------------- */
+.glossy-buttons-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(220px,1fr));
+  gap:clamp(12px, 2vw, 24px);
+  align-items:stretch;
+  margin:0;
+}
+.glossy-buttons-grid.single-button{ grid-template-columns:1fr; max-width:340px; margin:0 auto; }
+
+.glossy-button,
+.glossy-button.cta-glossy{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  align-items:center;
+  gap:12px;
+  padding:18px 22px;
+  border-radius:18px;
+  text-decoration:none;
+  min-height:64px;
+
+  color:var(--hero-title);
+  background:linear-gradient(180deg, var(--chip-bg-1), var(--chip-bg-2));
+  border:1px solid var(--chip-border);
+  backdrop-filter:blur(10px);
+  box-shadow:var(--chip-shadow);
+  transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+.glossy-button:hover,
+.glossy-button.cta-glossy:hover{
+  transform:translateY(-2px);
+  box-shadow:0 10px 30px rgba(0,0,0,.34);
+  background:linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.05));
+}
+
+/* round icon badge */
+.glossy-button .material-icons{
+  width:36px; height:36px; border-radius:50%;
+  display:grid; place-items:center;
+  background:var(--badge); color:#111;
+  font-size:20px; text-shadow:none;
+}
+
+/* numbered badge variant */
+.step-number{
+  width:36px; height:36px; border-radius:50%;
+  display:grid; place-items:center;
+  background:var(--badge); color:#111;
+  font-weight:800; font-size:1rem; box-shadow:none;
+}
+
+/* chip texts */
+.button-text h4{
+  font-weight:700; font-size:1.15rem; margin:0 0 2px 0;
+  color:var(--hero-title); text-shadow:0 1px 3px rgba(0,0,0,.3);
+}
+.button-text p{
+  font-weight:400; font-size:.98rem; margin:0;
+  color:rgba(245,247,248,.88);
+}
+
+/* ----------------------------------------------------------
+   8) CTA wrapper — no extra inset/box, matches other tiles
+---------------------------------------------------------- */
+.about-cta{ color:var(--hero-title); text-align:center; padding:0; margin:80px 0; border-radius:0; }
+
+/* ----------------------------------------------------------
+   9) Site-wide hero typography helpers
+   Use these anywhere (e.g., index.html masthead)
+---------------------------------------------------------- */
+.site-hero{
+  position:relative; text-align:center; color:var(--hero-title);
+}
+.site-hero-title{
+  composes: site-hero-title from none; /* safe no-op in most engines */
+}
+.site-hero-subtitle{}
+
+/* ----------------------------------------------------------
+   10) Responsive
+---------------------------------------------------------- */
+@media (max-width:768px){
+  .about-hero{ margin:30px 0; padding:30px 0; min-height:60vh; }
+  .hero-content{ padding:26px; }
+  .about-section .section-card,
+  .about-cta .section-card{ height:420px; min-height:420px; margin:30px 0; }
+  .section-footer{ padding:15px; }
+  .glossy-buttons-grid{ grid-template-columns:1fr; gap:12px; }
+}
+
+/* ----------------------------------------------------------
+   11) Dark theme niceties (inherits glass well)
+---------------------------------------------------------- */
+html.dark-theme .about-title,
+html.dark-theme .section-content-minimal h3,
+html.dark-theme .site-hero-title{ color:#fffff0; }
+html.dark-theme .about-tagline,
+html.dark-theme .section-tagline,
+html.dark-theme .site-hero-subtitle{ color:rgba(255,255,255,.86); }
+
+/* Text selection on imagery */
+::selection{ background:#00acc1; color:#fff; }
+
+/* ================== IMAGE FIX (append-only) ==================
+   Force full-bleed images on hero + all section tiles.
+   Keeps your current CSS intact; just overrides 'contain'.
+   ============================================================ */
+
+.about-hero > .hero-bg-image,
+.about-section .section-card > .section-bg,
+.about-cta .section-card > .section-bg,
+.bg-cover {
+  background-size: cover !important;          /* replace contain */
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+
+  /* crispness & seam prevention on GPU compositing */
+  transform: translateZ(0);
+  will-change: transform;
+  image-rendering: auto;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* If any section accidentally injects a gradient + image together,
+   prefer the image to show edge-to-edge. */
+.about-hero > .hero-bg-image,
+.about-section .section-card > .section-bg,
+.about-cta .section-card > .section-bg {
+  background-blend-mode: normal;              /* don't dull the photo */
+}
+
+/* When an <img> is used instead of CSS bg, ensure it behaves like a cover */
+.about-hero img,
+.section-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;                           /* fill without distortion */
+  object-position: center;
+  display: block;
+  image-rendering: auto;
+}
+
+/* Optional: ultra-tall or ultra-wide screens keep composition centered */
+@media (min-aspect-ratio: 21/9) {
+  .about-hero > .hero-bg-image,
+  .about-section .section-card > .section-bg,
+  .about-cta .section-card > .section-bg { background-position: 50% 45% !important; }
+}
+@media (max-aspect-ratio: 3/4) {
+  .about-hero > .hero-bg-image,
+  .about-section .section-card > .section-bg,
+  .about-cta .section-card > .section-bg { background-position: 50% 40% !important; }
+}
+/* ================= END IMAGE FIX ================= */
