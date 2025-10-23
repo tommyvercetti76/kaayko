@@ -312,24 +312,141 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   //──────────────────────────────────────────────────────────────────────────────
-  // Section 7: wireUpCarousels() → Attaches swipe logic to each card
+  // Section 7: wireUpCarousels() → Attaches enhanced swipe logic to each card
   //──────────────────────────────────────────────────────────────────────────────
   function wireUpCarousels() {
     container.querySelectorAll(".card").forEach(card => {
       let startX = 0;
+      let isDragging = false;
+      let hasSwiped = false;
       const imgs = card.querySelectorAll(".carousel-image");
 
       const onEnd = dx => {
-        if (Math.abs(dx) < 40) return;
+        console.log(`🏞️ Paddling swipe detected: dx=${dx}, threshold=40`);
+        if (Math.abs(dx) < 40) {
+          console.log(`⚠️ Paddling swipe too small, ignoring`);
+          return false;
+        }
+        
+        hasSwiped = true;
         const curr = [...imgs].findIndex(i => i.classList.contains("active"));
-        showImage(card, dx < 0 ? curr + 1 : curr - 1);
+        const next = dx < 0 ? curr + 1 : curr - 1;
+        console.log(`🏞️ Paddling image: ${curr} → ${next}`);
+        showImage(card, next);
+        return true;
       };
 
       const box = card.querySelector(".img-container");
-      box.addEventListener("pointerdown", e => startX = e.clientX);
-      box.addEventListener("pointerup",   e => onEnd(e.clientX - startX));
-      box.addEventListener("touchstart",  e => startX = e.touches[0].clientX, { passive: true });
-      box.addEventListener("touchend",    e => onEnd(e.changedTouches[0].clientX - startX));
+      
+      // Add styling for better touch interaction
+      box.style.touchAction = 'pan-y pinch-zoom';
+      box.style.userSelect = 'none';
+      box.style.cursor = 'grab';
+
+      // Prevent modal/navigation interference
+      box.addEventListener('click', (e) => {
+        if (hasSwiped) {
+          console.log(`🚫 Preventing navigation due to paddling swipe`);
+          e.stopPropagation();
+          e.preventDefault();
+          hasSwiped = false;
+        }
+      }, true);
+
+      if (window.PointerEvent) {
+        console.log(`🏞️ Using pointer events for paddling swipe`);
+        box.addEventListener("pointerdown", e => {
+          startX = e.clientX;
+          isDragging = true;
+          hasSwiped = false;
+          box.style.cursor = 'grabbing';
+          console.log(`👇 Paddling pointer down at ${startX}`);
+          e.preventDefault();
+        });
+        
+        box.addEventListener("pointermove", e => {
+          if (isDragging) {
+            const dx = e.clientX - startX;
+            if (Math.abs(dx) > 10) {
+              hasSwiped = true;
+            }
+          }
+        });
+        
+        box.addEventListener("pointerup", e => {
+          if (isDragging) {
+            const dx = e.clientX - startX;
+            console.log(`👆 Paddling pointer up at ${e.clientX}, dx=${dx}`);
+            onEnd(dx);
+            isDragging = false;
+            box.style.cursor = 'grab';
+          }
+        });
+      } else {
+        console.log(`🏞️ Using touch events for paddling swipe`);
+        box.addEventListener("touchstart", e => {
+          startX = e.touches[0].clientX;
+          isDragging = true;
+          hasSwiped = false;
+          console.log(`👇 Paddling touch start at ${startX}`);
+        }, { passive: false });
+        
+        box.addEventListener("touchmove", e => {
+          if (isDragging) {
+            const dx = e.touches[0].clientX - startX;
+            if (Math.abs(dx) > 10) {
+              hasSwiped = true;
+              e.preventDefault(); // Prevent scrolling
+            }
+          }
+        }, { passive: false });
+        
+        box.addEventListener("touchend", e => {
+          if (isDragging) {
+            const dx = e.changedTouches[0].clientX - startX;
+            console.log(`👆 Paddling touch end, dx=${dx}`);
+            onEnd(dx);
+            isDragging = false;
+          }
+        });
+
+        // Add mouse events for desktop
+        box.addEventListener("mousedown", e => {
+          startX = e.clientX;
+          isDragging = true;
+          hasSwiped = false;
+          box.style.cursor = 'grabbing';
+          console.log(`🖱️ Paddling mouse down at ${startX}`);
+          e.preventDefault();
+        });
+        
+        box.addEventListener("mousemove", e => {
+          if (isDragging) {
+            const dx = e.clientX - startX;
+            if (Math.abs(dx) > 10) {
+              hasSwiped = true;
+            }
+          }
+        });
+        
+        box.addEventListener("mouseup", e => {
+          if (isDragging) {
+            const dx = e.clientX - startX;
+            console.log(`🖱️ Paddling mouse up at ${e.clientX}, dx=${dx}`);
+            onEnd(dx);
+            isDragging = false;
+            box.style.cursor = 'grab';
+          }
+        });
+        
+        // Prevent mouse leave from breaking the interaction
+        box.addEventListener("mouseleave", e => {
+          if (isDragging) {
+            isDragging = false;
+            box.style.cursor = 'grab';
+          }
+        });
+      }
     });
   }
 

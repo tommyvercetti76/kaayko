@@ -24,10 +24,16 @@ class RatingHero {
     const skillRecommendation = interpretation.recommendation || 'Assess conditions carefully before paddling';
     const skillDetails = interpretation.skillDetails || interpretation.details || 'Weather conditions require careful evaluation';
     
-    // Extract penalty information for transparency
+    // Extract penalty information for transparency (GOLD STANDARD compatibility)
     const penalties = weather?.penaltiesApplied || interpretation?.penalties || [];
     const originalRating = weather?.originalRating || interpretation?.originalRating || rating;
     const totalPenalty = weather?.totalPenalty || interpretation?.totalPenalty || 0;
+    
+    // GOLD STANDARD v3 ML model provides direct ratings without additional penalties
+    const isGoldStandard = weather?.isGoldStandard || weather?.v3ModelUsed;
+    if (isGoldStandard) {
+      console.log('🏆 Using GOLD STANDARD v3 ML model rating - no additional penalties applied');
+    }
     
     // Get professional skill level information based on rating
     const skillInfo = this.getSkillInfo(rating, weather, forecastData);
@@ -258,7 +264,11 @@ class RatingHero {
     return 'Experienced';
   }
 
-  renderPenaltyInfo(penalties, originalRating, totalPenalty, finalRating) {
+  renderPenaltyInfo(penalties, originalRating, totalPenalty, finalRating, isGoldStandard = false) {
+    if (isGoldStandard) {
+      return '<div class="penalty-info-gold"><span class="penalty-icon">🏆</span> GOLD STANDARD v3 ML Model - Pure rating without additional penalties</div>';
+    }
+    
     if (!penalties || penalties.length === 0 || totalPenalty === 0) {
       return '<div class="penalty-info-none"><span class="penalty-icon">✨</span> No paddle penalties - ideal conditions!</div>';
     }
@@ -334,6 +344,33 @@ class RatingHero {
       
       const details = [];
       
+      // GOLD STANDARD v3 model handling
+      if (conditions.isGoldStandard || conditions.v3ModelUsed) {
+        console.log('🏆 GOLD STANDARD conditions - using v3 ML model analysis');
+        details.push('🏆 GOLD STANDARD v3 ML Model rating');
+        details.push('✨ Advanced 57-feature analysis applied');
+        details.push('🧠 Real-time weather & marine data integrated');
+        
+        // Add standard condition analysis for GOLD STANDARD
+        if (conditions.beaufortScale !== undefined) {
+          const beaufortDescriptions = {
+            0: "🏄 Calm waters (B0)",
+            1: "🍃 Light air (B1)", 
+            2: "💨 Light breeze (B2)",
+            3: "🌬️ Gentle breeze (B3)",
+            4: "💨 Moderate breeze (B4)",
+            5: "🌪️ Fresh breeze (B5)",
+            6: "⚠️ Strong breeze (B6)",
+            7: "🚨 High winds (B7)",
+            8: "⛈️ Gale force (B8)"
+          };
+          details.push(beaufortDescriptions[conditions.beaufortScale] || `⚠️ B${conditions.beaufortScale} winds`);
+        }
+        
+        return details;
+      }
+      
+      // LEGACY penalty system handling (for backward compatibility)
       // SAFETY FIRST: If penalties exist, show them ALL clearly
       if (conditions.hasPenalties && conditions.penalties && conditions.penalties.length > 0) {
         console.log('🚨 SAFETY ANALYSIS - Processing penalties:', conditions.penalties);

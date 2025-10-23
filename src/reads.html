@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/prod-config.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Smart App Banner -->
+  <meta name="apple-itunes-app"
+        content="app-id=6747012283, app-argument=https://kaayko.com/reads.html" />
+
+  <!-- SEO Meta Tags -->
+  <title>Reads | Kaayko Paddle Blog - Paddling Stories & Adventures</title>
+  <meta name="description" content="Explore paddling stories, adventures, tips, and insights from the Kaayko community. Discover new perspectives on water sports and paddling culture." />
+  <meta name="keywords" content="Kaayko Blog, Paddling Stories, Kayak Adventures, Water Sports Articles, Paddling Tips, Lake Stories, Outdoor Adventures" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://kaayko.com/reads.html" />
+
+  <!-- Standard Stylesheets (like other pages) -->
+  <link rel="stylesheet" href="/css/storestyle.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+  <!-- Page-specific styles for blog access -->
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: var(--bg-color);
+      font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+    }
+
+    /* Main content area */
+    main {
+      margin-top: 60px; /* Reduced from 80px */
+      padding: 20px;
+      min-height: calc(100vh - 120px);
+    }
+
+    .reads-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Hero Section */
+    .reads-hero {
+      text-align: center;
+      margin-bottom: 40px;
+      padding: 0px 20px 20px 20px;
+    }
+
+    .reads-hero h1 {
+      font-family: 'Josefin_Bold', 'Josefin Sans', Arial, sans-serif;
+      font-size: 3rem;
+      color: var(--color-text-base, #333);
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #d4af37, #ffd700);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .reads-hero p {
+      font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+      font-size: 1.2rem;
+      color: var(--color-text-subtle, #666);
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Blog Access - Single Card Centered */
+    .blog-access-grid {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 40px;
+    }
+
+    .blog-card.centered {
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .blog-card {
+      background: var(--color-card-bg, #fff);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+      text-align: center;
+    }
+
+    .blog-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+      border-color: #d4af37;
+    }
+
+    .blog-card.primary {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      color: #ffffff;
+      border-color: #d4af37;
+    }
+
+    .blog-card.primary:hover {
+      box-shadow: 0 12px 40px rgba(212, 175, 55, 0.3);
+    }
+
+    .card-icon {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    }
+
+    .blog-card h3 {
+      font-family: 'Josefin_Bold', 'Josefin Sans', Arial, sans-serif;
+      font-size: 1.5rem;
+      margin-bottom: 16px;
+      color: inherit;
+    }
+
+    .blog-card p {
+      font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 24px;
+      opacity: 0.9;
+    }
+
+    .blog-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      background: #d4af37;
+      color: #1a1a1a;
+      text-decoration: none;
+      border-radius: 8px;
+      font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+    }
+
+    .blog-button:hover {
+      background: #ffd700;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+    }
+
+    .blog-button.primary {
+      background: linear-gradient(135deg, #d4af37 0%, #ffd700 100%);
+      color: #1a1a1a;
+      font-weight: 700;
+      padding: 16px 32px;
+      font-size: 1.1rem;
+    }
+
+    .external-icon {
+      font-size: 1.2rem;
+      transition: transform 0.3s ease;
+    }
+
+    .blog-button:hover .external-icon {
+      transform: translateX(2px) translateY(-2px);
+    }
+
+    /* Dark theme support */
+    .dark-theme .blog-card:not(.primary) {
+      background: #2a2a2a;
+      color: #ffffff;
+      border-color: #444;
+    }
+
+    .dark-theme .blog-card:not(.primary):hover {
+      border-color: #d4af37;
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+      main {
+        margin-top: 50px; /* Reduced for mobile */
+        padding: 20px 15px;
+      }
+      
+      .reads-hero h1 {
+        font-size: 2.2rem;
+      }
+      
+      .reads-hero {
+        margin-bottom: 40px;
+        padding: 0px 20px 20px 20px;
+      }
+      
+      .blog-access-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      
+      .blog-card {
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- STANDARD HEADER (exactly like other pages) -->
+  <header class="header">
+    <div class="header-top">
+      <div class="header-brand">
+        <h1 class="header-title">Kaayko Reads</h1>
+        <p class="header-subtitle">Stories from the water</p>
+      </div>
+
+      <!-- Desktop navigation -->
+      <nav class="top-menu"><ul></ul></nav>
+
+      <!-- Controls -->
+      <div class="header-controls">
+        <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode"></button>
+        <button class="fab-menu material-icons mobile-only" aria-label="Open Menu">menu</button>
+      </div>
+    </div>
+    
+    <!-- Mobile overlay menu -->
+    <div class="mobile-menu-overlay">
+      <ul></ul>
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <main>
+    <div class="reads-container">
+      <!-- Hero Section -->
+      <div class="reads-hero">
+        <h1>Kaayko Reads</h1>
+        <p>Discover paddling stories, adventures, and insights from the water</p>
+      </div>
+
+      <!-- Blog Access - Single Simple Option -->
+      <div class="blog-access-grid">
+        <!-- Single Main Blog Link -->
+        <div class="blog-card primary centered">
+          <div class="card-icon">📖</div>
+          <h3>Kaayko Blog</h3>
+          <p>Read our paddling stories, tips, and adventures from the water.</p>
+          <a href="https://blog.kaayko.com" target="_blank" class="blog-button primary">
+            Read Stories
+            <span class="external-icon">↗</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/header.js"></script>
+  <script src="js/secretStore.js"></script>
+  
+  <script>
+    // Simple page initialization
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set current year
+      const yearElement = document.getElementById('year');
+      if (yearElement) {
+        yearElement.textContent = new Date().getFullYear();
+      }
+
+      // Add click tracking for blog links
+      const blogButtons = document.querySelectorAll('.blog-button');
+      blogButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const destination = this.href;
+          console.log('📖 Blog link clicked:', destination);
+          
+          // Optional: Add analytics tracking here
+          // trackEvent('blog_link_click', { destination });
+        });
+      });
+
+      console.log('📚 Kaayko Reads page initialized - Blog access ready');
+    });
+  </script>
+</body>
+</html>

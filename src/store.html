@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/prod-config.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Smart App Banner -->
+  <meta name="apple-itunes-app"
+        content="app-id=6747012283, app-argument=https://kaayko.com/store.html" />
+
+  <!-- SEO Metadata -->
+  <title>Kaayko Store - Unique T-Shirts, Vote Now Pay Later</title>
+  <meta name="description" content="Kaayko Store offers uniquely designed T-shirts. Vote for your favorite designs and pay later!" />
+  <meta name="keywords" content="Kaayko, Sarcastic T-Shirts, Fashion for future, Unique Apparel" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://kaayko.com/store.html" />
+  
+  <!-- 1) Global Styles -->
+  <link rel="stylesheet" href="/css/storestyle.css" />
+
+  <!-- 2) Header + Filter Toggle Styles -->
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/kaaykoFilterModal.css" />
+  <link rel="stylesheet" href="/css/secretStore.css" />
+
+  <!-- 3) Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+</head>
+
+<body>
+  <!-- HEADER (shared across all pages) -->
+  <header class="header">
+    <div class="header-top">
+      <!-- Brand -->
+      <div class="header-brand">
+        <h1 class="header-title">Kaayko Store</h1>
+        <p class="header-subtitle">Vote now, pay later.</p>
+      </div>
+      <!-- Desktop navigation -->
+      <nav class="top-menu"><ul></ul></nav>
+      <!-- Controls: Filter | Dark-mode | Mobile menu -->
+      <div class="header-controls">
+        <!-- Filter Toggle -->
+        <button id="filter-toggle" class="material-icons" aria-label="Open Filters">
+          filter_list
+        </button>
+        <!-- Dark Mode Toggle -->
+        <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode"></button>
+        <!-- Mobile FAB -->
+        <button class="fab-menu material-icons mobile-only" aria-label="Open Menu">menu</button>
+      </div>
+    </div>
+    
+    <!-- Mobile overlay menu -->
+    <div class="mobile-menu-overlay">
+      <ul></ul>
+    </div>
+  </header>
+
+  <!-- FILTER MODAL (hidden by default) -->
+  <div class="filter-overlay">
+    <div class="filter-panel">
+      <h2>Filter Products</h2>
+      <div class="filter-section" id="price-section">
+        <strong>Price:</strong>
+        <div class="chip-group" id="price-chips"></div>
+      </div>
+      <div class="filter-section" id="tags-section">
+        <strong>Tags:</strong>
+        <div class="chip-group" id="tag-chips"></div>
+      </div>
+      <div class="filter-section" id="votes-section">
+        <div class="slider-label">
+          <span>Min Votes:</span>
+          <span id="votes-value">0</span>
+        </div>
+        <input type="range" id="votes-slider" min="0" max="0" value="0" />
+      </div>
+      <div class="filter-actions">
+        <button id="filter-reset">Reset</button>
+        <button id="filter-apply">Apply</button>
+      </div>
+      <button class="filter-close material-icons" id="filter-close" aria-label="Close Filters">
+        close
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT: Product carousel -->
+  <main>
+    <section id="carousel" class="carousel" aria-live="polite"></section>
+  </main>
+
+  <!-- IMAGE MODAL -->
+  <div id="modal" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <button id="close-modal-button" class="modal-close material-icons" aria-label="Close">close</button>
+      <button class="modal-nav modal-nav-left material-icons" aria-label="Previous">chevron_left</button>
+      <button class="modal-nav modal-nav-right material-icons" aria-label="Next">chevron_right</button>
+      <div id="modal-image-container" class="modal-image-container"></div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
+  </footer>
+
+  <!-- SCRIPTS -->
+  <script src="js/secretStore.js"></script>
+  <script src="js/header.js"></script>
+  <script type="module" src="js/kaayko_apiClient.js"></script>
+  <script type="module" src="js/kaayko-main.js"></script>
+  <script src="js/kaaykoFilterModal.js"></script>
+  <script type="module" src="js/kaayko_ui.js"></script>
+
+  <!-- Inline: current year -->
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

@@ -88,12 +88,8 @@ function buildImageContainer(item) {
   container.className = "img-container";
 
   item.imgSrc.forEach((signedURL, i) => {
-    const url      = new URL(signedURL);
-    const rawName  = url.pathname.split("/").pop();
-    const fileName = rawName.split("%2F").pop();
-    const proxy    = `${IMAGE_PROXY_BASE}/${encodeURIComponent(item.productID)}/${encodeURIComponent(fileName)}`;
     const img      = document.createElement("img");
-    img.src        = proxy;
+    img.src        = signedURL; // Use direct Firebase Storage URL
     img.className  = "carousel-image";
     img.style.display = i === 0 ? "block" : "none";
     container.append(img);
@@ -120,23 +116,139 @@ function createImageIndicator(count, current) {
 }
 
 function addSwipe(container, count, indicator) {
+  console.log(`🖐️ Adding swipe to container with ${count} images`);
   let startX = 0, idx = 0, threshold = 50;
+  let isDragging = false;
+  let hasSwiped = false;
+  
   const process = dx => {
-    if (Math.abs(dx) < threshold) return;
+    console.log(`👆 Swipe detected: dx=${dx}, threshold=${threshold}`);
+    if (Math.abs(dx) < threshold) {
+      console.log(`⚠️ Swipe too small, ignoring`);
+      return false;
+    }
+    
+    hasSwiped = true;
     const imgs = container.querySelectorAll(".carousel-image");
+    console.log(`🖼️ Found ${imgs.length} images, current idx=${idx}`);
+    
     imgs[idx].style.display = "none";
     indicator.children[idx].classList.remove("active");
     idx = dx < 0 ? (idx + 1) % count : (idx - 1 + count) % count;
+    console.log(`➡️ New idx=${idx}`);
     imgs[idx].style.display = "block";
     indicator.children[idx].classList.add("active");
+    return true;
   };
 
+  // Add touch area styling to ensure touch events work
+  container.style.touchAction = 'pan-y pinch-zoom';
+  container.style.userSelect = 'none';
+  container.style.cursor = 'grab';
+
+  // Prevent modal opening when swiping
+  container.addEventListener('click', (e) => {
+    if (hasSwiped) {
+      console.log(`🚫 Preventing modal open due to swipe`);
+      e.stopPropagation();
+      e.preventDefault();
+      hasSwiped = false;
+    }
+  }, true);
+
   if (window.PointerEvent) {
-    container.addEventListener("pointerdown", e => startX = e.clientX);
-    container.addEventListener("pointerup",   e => process(e.clientX - startX));
+    console.log(`📱 Using pointer events for swipe`);
+    container.addEventListener("pointerdown", e => {
+      startX = e.clientX;
+      isDragging = true;
+      hasSwiped = false;
+      container.style.cursor = 'grabbing';
+      console.log(`👇 Pointer down at ${startX}`);
+      e.preventDefault();
+    });
+    
+    container.addEventListener("pointermove", e => {
+      if (isDragging) {
+        const dx = e.clientX - startX;
+        if (Math.abs(dx) > 10) {
+          hasSwiped = true;
+        }
+      }
+    });
+    
+    container.addEventListener("pointerup", e => {
+      if (isDragging) {
+        const dx = e.clientX - startX;
+        console.log(`👆 Pointer up at ${e.clientX}, dx=${dx}`);
+        process(dx);
+        isDragging = false;
+        container.style.cursor = 'grab';
+      }
+    });
   } else {
-    container.addEventListener("touchstart", e => startX = e.touches[0].clientX, {passive:true});
-    container.addEventListener("touchend",   e => process(e.changedTouches[0].clientX - startX));
+    console.log(`📱 Using touch events for swipe`);
+    container.addEventListener("touchstart", e => {
+      startX = e.touches[0].clientX;
+      isDragging = true;
+      hasSwiped = false;
+      console.log(`👇 Touch start at ${startX}`);
+    }, {passive: false});
+    
+    container.addEventListener("touchmove", e => {
+      if (isDragging) {
+        const dx = e.touches[0].clientX - startX;
+        if (Math.abs(dx) > 10) {
+          hasSwiped = true;
+          e.preventDefault(); // Prevent scrolling
+        }
+      }
+    }, {passive: false});
+    
+    container.addEventListener("touchend", e => {
+      if (isDragging) {
+        const dx = e.changedTouches[0].clientX - startX;
+        console.log(`👆 Touch end, dx=${dx}`);
+        process(dx);
+        isDragging = false;
+      }
+    });
+    
+    // Also add mouse events for desktop
+    container.addEventListener("mousedown", e => {
+      startX = e.clientX;
+      isDragging = true;
+      hasSwiped = false;
+      container.style.cursor = 'grabbing';
+      console.log(`🖱️ Mouse down at ${startX}`);
+      e.preventDefault();
+    });
+    
+    container.addEventListener("mousemove", e => {
+      if (isDragging) {
+        const dx = e.clientX - startX;
+        if (Math.abs(dx) > 10) {
+          hasSwiped = true;
+        }
+      }
+    });
+    
+    container.addEventListener("mouseup", e => {
+      if (isDragging) {
+        const dx = e.clientX - startX;
+        console.log(`🖱️ Mouse up at ${e.clientX}, dx=${dx}`);
+        process(dx);
+        isDragging = false;
+        container.style.cursor = 'grab';
+      }
+    });
+    
+    // Prevent mouse leave from breaking the interaction
+    container.addEventListener("mouseleave", e => {
+      if (isDragging) {
+        isDragging = false;
+        container.style.cursor = 'grab';
+      }
+    });
   }
 }
 
@@ -150,12 +262,8 @@ export function openModal(item) {
 
   box.innerHTML = "";
   item.imgSrc.forEach((signedURL, i) => {
-    const url      = new URL(signedURL);
-    const rawName  = url.pathname.split("/").pop();
-    const fileName = rawName.split("%2F").pop();
-    const proxy    = `${IMAGE_PROXY_BASE}/${encodeURIComponent(item.productID)}/${encodeURIComponent(fileName)}`;
     const img      = document.createElement("img");
-    img.src        = proxy;
+    img.src        = signedURL; // Use direct Firebase Storage URL
     img.className  = "modal-image";
     img.style.display = i === 0 ? "block" : "none";
     box.append(img);

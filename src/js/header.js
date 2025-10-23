@@ -28,12 +28,10 @@ function initializeDarkMode() {
  *───────────────────────────────────────────────────────────────────────────*/
 function populateMenu() {
   const mapping = {
-    // Hidden from navigation but still accessible via direct URL
-    // "index.html":        { name: "Store",        url: "index.html" },
-    // "testimonials.html": { name: "Testimonials", url: "testimonials.html" },
-    // "paddlingout.html":  { name: "Paddling Out", url: "paddlingout.html" }, // Homepage, no need in menu
-    
-    // Visible navigation items
+    // Main navigation items
+    "paddlingout.html":  { name: "Paddling Out", url: "paddlingout.html" },
+    "store.html":        { name: "Store",        url: "store.html" },
+    "reads.html":        { name: "Reads",        url: "reads.html" },
     "about.html":        { name: "About",        url: "about.html" }
   };
   const current = window.location.pathname.split("/").pop() || "index.html";
@@ -50,10 +48,37 @@ function populateMenu() {
     const a  = document.createElement("a");
     a.href        = info.url;
     a.textContent = info.name;
+    
+    // Add special handling for Store links
+    if (file === 'store.html') {
+      a.addEventListener('click', handleStoreNavigation);
+    }
+    
     li.appendChild(a);
     desktopUl.appendChild(li);
     mobileUl.appendChild(li.cloneNode(true));
   });
+  
+  // Also add event listeners to mobile menu store links
+  const mobileStoreLinks = mobileUl.querySelectorAll('a[href="store.html"]');
+  mobileStoreLinks.forEach(link => {
+    link.addEventListener('click', handleStoreNavigation);
+  });
+}
+
+/** ───────────────────────────────────────────────────────────────────────────
+ * 2.1) Handle Store Navigation - Check for Secret Access
+ *      Prevents access to store without secret keyword
+ *───────────────────────────────────────────────────────────────────────────*/
+function handleStoreNavigation(e) {
+  const hasAccess = localStorage.getItem('kaaykoStoreAccess') === 'granted';
+  if (!hasAccess) {
+    e.preventDefault();
+    console.log('🔐 Store access attempted without keyword');
+    
+    // Directly redirect to store page which will show the modal
+    window.location.href = 'store.html';
+  }
 }
 
 /** ───────────────────────────────────────────────────────────────────────────

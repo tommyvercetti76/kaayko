@@ -104,6 +104,8 @@ body{ font-family:"Josefin Sans", system-ui, -apple-system, Segoe UI, Roboto, Ar
   background:transparent;
   height:500px;
   min-height:500px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* background layer (uses inline style or JS to set image) */
@@ -236,9 +238,10 @@ body{ font-family:"Josefin Sans", system-ui, -apple-system, Segoe UI, Roboto, Ar
   position:relative; z-index:2;
   padding:clamp(28px, 5vw, 64px) 30px 20px;
   text-align:center;
-  height:calc(100% - 140px);
+  flex: 1;
   display:flex; flex-direction:column; justify-content:center;
   color:var(--hero-title);
+  min-height: 200px;
 }
 .section-content-minimal h3{
   font-weight:700;
@@ -258,8 +261,11 @@ body{ font-family:"Josefin Sans", system-ui, -apple-system, Segoe UI, Roboto, Ar
 
 /* footer pinned to bottom; no opaque box */
 .section-footer{
-  position:absolute; left:0; right:0; bottom:0;
-  z-index:3; padding:20px; background:none;
+  position:relative;
+  z-index:3; 
+  padding:20px; 
+  background:none;
+  margin-top: auto;
 }
 
 /* ----------------------------------------------------------
@@ -348,10 +354,50 @@ body{ font-family:"Josefin Sans", system-ui, -apple-system, Segoe UI, Roboto, Ar
 @media (max-width:768px){
   .about-hero{ margin:30px 0; padding:30px 0; min-height:60vh; }
   .hero-content{ padding:26px; }
+  
+  /* Give more height for mobile to prevent overlap */
   .about-section .section-card,
-  .about-cta .section-card{ height:420px; min-height:420px; margin:30px 0; }
-  .section-footer{ padding:15px; }
-  .glossy-buttons-grid{ grid-template-columns:1fr; gap:12px; }
+  .about-cta .section-card{ 
+    height: auto; 
+    min-height: 500px; 
+    margin: 30px 0; 
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Adjust content area to take available space minus footer */
+  .section-content-minimal{
+    height: auto;
+    flex: 1;
+    min-height: 200px;
+    padding: 30px 20px 20px;
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center;
+  }
+  
+  /* Footer positioning - ensure it doesn't overlap */
+  .section-footer{ 
+    position: relative; 
+    padding: 20px 15px 30px; 
+    background: none;
+    margin-top: auto;
+  }
+  
+  /* Single column layout for buttons */
+  .glossy-buttons-grid{ 
+    grid-template-columns: 1fr; 
+    gap: 16px; 
+    max-width: 100%;
+  }
+  
+  /* Smaller button text for mobile */
+  .button-text h4{
+    font-size: 1.05rem;
+  }
+  .button-text p{
+    font-size: 0.9rem;
+  }
 }
 
 /* ----------------------------------------------------------
@@ -366,6 +412,26 @@ html.dark-theme .site-hero-subtitle{ color:rgba(255,255,255,.86); }
 
 /* Text selection on imagery */
 ::selection{ background:#00acc1; color:#fff; }
+
+/* ----------------------------------------------------------
+   12) Kaayko Footer Override (ensure proper styling)
+---------------------------------------------------------- */
+footer {
+  text-align: center !important;
+  background: #f1f1f1 !important;
+  padding: 20px !important;
+  font-family: 'Josefin Sans', 'Josefin_Light', Arial, sans-serif !important;
+  font-size: 14px !important;
+  color: #333 !important;
+  font-weight: 300 !important;
+  margin-top: 60px;
+}
+
+.dark-theme footer {
+  background: #1a1a1a !important;
+  color: #e8eaed !important;
+  border-top: 1px solid #333;
+}
 
 /* ================== IMAGE FIX (append-only) ==================
    Force full-bleed images on hero + all section tiles.

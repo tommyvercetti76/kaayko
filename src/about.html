@@ -62,27 +62,34 @@
           }
         });
         
-        // Update metrics
+        // Update hero metrics with latest ML breakthrough results (Sept 2025)
         const statNumbers = document.querySelectorAll('.stat-number');
-        if (statNumbers[0]) statNumbers[0].textContent = '192ms';
-        if (statNumbers[1]) statNumbers[1].textContent = '232+';
-        if (statNumbers[2]) statNumbers[2].textContent = '13.9M';
+        if (statNumbers[0]) statNumbers[0].textContent = '99.98%';
+        if (statNumbers[1]) statNumbers[1].textContent = '2,779';
+        if (statNumbers[2]) statNumbers[2].textContent = '192ms';
         
         const updateFooterMetric = (id, value) => {
           const element = document.getElementById(id);
           if (element) element.textContent = value;
         };
         
-        updateFooterMetric('training-data', '13.9M Records');
-        updateFooterMetric('model-accuracy', '99.56% Accuracy');
-        updateFooterMetric('model-features', '23 Weather Vars');
-        updateFooterMetric('heatmap-coverage', '232 Lakes');
-        updateFooterMetric('api-response', '192ms');
+        // ML Training Section
+        updateFooterMetric('training-data', '13.6M Samples');
+        updateFooterMetric('model-accuracy', '99.98% R² Score');
+        updateFooterMetric('model-features', '3-Worker Parallel');
+        
+        // API Performance Section  
+        updateFooterMetric('api-response', '192ms Average');
+        updateFooterMetric('cache-system', '7-Day Intelligent');
         updateFooterMetric('ml-updates', '4x Daily');
-        updateFooterMetric('continental-reach', '6 Continents');
-        updateFooterMetric('search-radius', '50km Radius');
-        updateFooterMetric('water-types', '5 Water Types');
-        updateFooterMetric('active-paddlers', '1000+ Users');
+        
+        // Global Intelligence Section
+        updateFooterMetric('lake-coverage', '2,779 Lakes');
+        updateFooterMetric('feature-count', '50+ Variables');
+        updateFooterMetric('safety-system', 'Weather-Based');
+        
+        // CTA Section
+        updateFooterMetric('active-paddlers', 'Made with Love and Logic');
         
       } catch (error) {
         console.log('Using fallback intelligence stats');
@@ -123,53 +130,53 @@
       <div class="hero-bg-image"></div>
       <div class="hero-content">
         <h2 class="about-title">Fast Paddle Weather + Safety Scores</h2>
-        <p class="about-tagline">192ms API responses. ML trained on 13.9M records. Real water discovery.</p>
+        <p class="about-tagline">192ms API responses. 99.98% R² ML accuracy on 13.6M samples. Real water discovery.</p>
         <div class="hero-stats">
           <div class="stat-item">
-            <span class="stat-number">192ms</span>
-            <span class="stat-label">Response Time</span>
+            <span class="stat-number">99.98%</span>
+            <span class="stat-label">ML Accuracy</span>
           </div>
           <div class="stat-item">
-            <span class="stat-number">232+</span>
+            <span class="stat-number">2,779</span>
             <span class="stat-label">Lakes Globally</span>
           </div>
           <div class="stat-item">
-            <span class="stat-number">13.9M</span>
-            <span class="stat-label">Training Records</span>
+            <span class="stat-number">192ms</span>
+            <span class="stat-label">API Response</span>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Paddle Score -->
+    <!-- ML Training -->
     <section class="about-section what-we-do">
       <div class="section-card">
         <div class="section-bg"></div>
         <div class="section-content-minimal">
-          <h3>Paddle Score</h3>
-          <p class="section-tagline">ML safety ratings from advanced weather modeling</p>
+          <h3>ML Training</h3>
+          <p class="section-tagline">Advanced ensemble ML with parallel training architecture</p>
         </div>
         <div class="section-footer">
           <div class="glossy-buttons-grid">
             <div class="glossy-button">
-              <span class="material-icons">psychology</span>
+              <span class="material-icons">dataset</span>
               <div class="button-text">
-                <h4>Training Dataset</h4>
-                <p id="training-data">13.9M Records</p>
+                <h4>Training Scale</h4>
+                <p id="training-data">13.6M Samples</p>
               </div>
             </div>
             <div class="glossy-button">
               <span class="material-icons">precision_manufacturing</span>
               <div class="button-text">
-                <h4>RandomForest Model</h4>
-                <p id="model-accuracy">99.56% Accuracy</p>
+                <h4>GradientBoosting</h4>
+                <p id="model-accuracy">99.98% R² Score</p>
               </div>
             </div>
             <div class="glossy-button">
-              <span class="material-icons">analytics</span>
+              <span class="material-icons">memory</span>
               <div class="button-text">
-                <h4>Feature Engineering</h4>
-                <p id="model-features">23 Weather Vars</p>
+                <h4>M1 Max Optimized</h4>
+                <p id="model-features">3-Worker Parallel</p>
               </div>
             </div>
           </div>
@@ -177,34 +184,34 @@
       </div>
     </section>
 
-    <!-- Kaayko Konditions -->
+    <!-- API Performance -->
     <section class="about-section how-it-works">
       <div class="section-card">
         <div class="section-bg"></div>
         <div class="section-content-minimal">
-          <h3>Konditions</h3>
-          <p class="section-tagline">Interactive heatmaps with fast API responses</p>
+          <h3>API Performance</h3>
+          <p class="section-tagline">FastForecast API with intelligent 7-day caching system</p>
         </div>
         <div class="section-footer">
           <div class="glossy-buttons-grid">
             <div class="glossy-button">
-              <span class="material-icons">map</span>
-              <div class="button-text">
-                <h4>Interactive Heatmap</h4>
-                <p id="heatmap-coverage">232 Lakes</p>
-              </div>
-            </div>
-            <div class="glossy-button">
               <span class="material-icons">speed</span>
               <div class="button-text">
-                <h4>FastForecast API</h4>
-                <p id="api-response">192ms</p>
+                <h4>Response Time</h4>
+                <p id="api-response">192ms Average</p>
               </div>
             </div>
             <div class="glossy-button">
-              <span class="material-icons">auto_awesome</span>
+              <span class="material-icons">storage</span>
               <div class="button-text">
-                <h4>Live ML Scoring</h4>
+                <h4>Smart Caching</h4>
+                <p id="cache-system">7-Day Intelligent</p>
+              </div>
+            </div>
+            <div class="glossy-button">
+              <span class="material-icons">update</span>
+              <div class="button-text">
+                <h4>ML Updates</h4>
                 <p id="ml-updates">4x Daily</p>
               </div>
             </div>
@@ -213,35 +220,35 @@
       </div>
     </section>
 
-    <!-- Nearby Waters -->
+    <!-- Global Intelligence -->
     <section class="about-section mission">
       <div class="section-card">
         <div class="section-bg"></div>
         <div class="section-content-minimal">
-          <h3>Nearby Waters</h3>
-          <p class="section-tagline">Global water discovery with proximity search</p>
+          <h3>Global Intelligence</h3>
+          <p class="section-tagline">2,779 lakes with real-time weather integration and safety systems</p>
         </div>
         <div class="section-footer">
           <div class="glossy-buttons-grid">
             <div class="glossy-button">
               <span class="material-icons">public</span>
               <div class="button-text">
-                <h4>Global Coverage</h4>
-                <p id="continental-reach">6 Continents</p>
+                <h4>Lake Database</h4>
+                <p id="lake-coverage">2,779 Lakes</p>
               </div>
             </div>
             <div class="glossy-button">
-              <span class="material-icons">near_me</span>
+              <span class="material-icons">analytics</span>
               <div class="button-text">
-                <h4>Proximity Search</h4>
-                <p id="search-radius">50km Radius</p>
+                <h4>Feature Engineering</h4>
+                <p id="feature-count">50+ Variables</p>
               </div>
             </div>
             <div class="glossy-button">
-              <span class="material-icons">explore</span>
+              <span class="material-icons">warning</span>
               <div class="button-text">
-                <h4>Water Discovery</h4>
-                <p id="water-types">5 Water Types</p>
+                <h4>Safety System</h4>
+                <p id="safety-system">Weather-Based</p>
               </div>
             </div>
           </div>
@@ -263,7 +270,7 @@
               <span class="material-icons">waves</span>
               <div class="button-text">
                 <h4>Explore Conditions</h4>
-                <p id="active-paddlers">1000+ Users</p>
+                <p id="active-paddlers">Made with Love and Logic</p>
               </div>
             </a>
           </div>
@@ -280,6 +287,7 @@
   <!-- SCRIPTS -->
   <!-- 1) Header behaviors: dark-mode, menu -->
   <script type="module" src="js/header.js"></script>
+  <script src="js/secretStore.js"></script>
   
   <!-- 2) About page specific functionality -->
   <script type="module" src="js/about-dynamic.js"></script>
