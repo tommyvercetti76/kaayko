@@ -72,14 +72,25 @@
   border-radius: 4px;
   color: #fff;
   transition: all 0.3s;
+  position: relative;
 }
 .top-menu a:hover {
   background: rgba(255,255,255,0.1);
 }
 .top-menu a.active {
-  background: rgba(255, 215, 0, 0.2);
   color: #ffd700;
   font-family: 'Josefin_Bold', Arial, sans-serif;
+}
+.top-menu a.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: #ffd700;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+  border-radius: 2px;
 }
 
 /* ─── Controls ────────────────────────────────────────────────────────────── */

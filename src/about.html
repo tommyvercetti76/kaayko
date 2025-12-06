@@ -3,103 +3,72 @@
 <head>
   <script src="/js/prod-config.js"></script>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>About Kaayko | Collection of Services</title>
+  
   <!-- Smart App Banner -->
   <meta name="apple-itunes-app"
-        content="app-id=6747012283, app-argument=https://kaayko.com/about.html" />
+      content="app-id=6747012283, app-argument=https://kaayko.com/about.html" />
+  
+  <meta name="description" content="Discover Kaayko's collection of services: Paddling Out, Lakes Near Me, Store, Reads, and Admin. Signals, not slogans.">
+  <meta name="keywords" content="Kaayko Services, Paddling Out, Lake Discovery, Water Sports, Smart Links">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://kaayko.com/about.html">
 
-  <!-- SEO Meta Tags -->
-  <title>About Kaayko Paddle | Where Waters Meet Wisdom</title>
-  <meta name="description" content="Discover how Kaayko transforms paddling with real-time lake conditions, AI-powered safety insights, and the wisdom to paddle confidently. Break free on the water." />
-  <meta name="keywords" content="Kaayko Paddle, Lake Conditions, Paddling Safety, Water Sports, Real-time Weather, Paddle Freedom" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://kaayko.com/about.html" />
-
-  <!-- Stylesheets (following paddlingout.html structure) -->
+  <!-- Shared store CSS (header, footer, menu, dark mode) -->
   <link rel="stylesheet" href="/css/storestyle.css" />
+  
+  <!-- Header CSS -->
   <link rel="stylesheet" href="/css/header.css" />
-  <link rel="stylesheet" href="css/about.css" />
-  <link rel="stylesheet" href="fonts/fonts.css" />
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-
-  <!-- Scripts -->
-  <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        const response = await fetch('https://us-central1-kaaykostore.cloudfunctions.net/api/paddlingOut');
-        const lakes = await response.json();
-        
-        // Filter lakes that have images
-        const lakesWithImages = lakes.filter(lake => lake.imgSrc && lake.imgSrc.length > 0);
-        
-        // Randomly select lakes for all backgrounds
-        const shuffled = [...lakesWithImages].sort(() => 0.5 - Math.random());
-        const heroLake = shuffled[0];
-        const whatWeDoLake = shuffled[1] || shuffled[0];
-        const howItWorksLake = shuffled[2] || shuffled[0];
-        const missionLake = shuffled[3] || shuffled[0];
-        const ctaLake = shuffled[4] || shuffled[0];
-        
-        // Update hero background
-        if (heroLake && heroLake.imgSrc) {
-          const randomHeroImg = heroLake.imgSrc[Math.floor(Math.random() * heroLake.imgSrc.length)];
-          const heroBg = document.querySelector('.hero-bg-image');
-          if (heroBg) {
-            heroBg.style.backgroundImage = `url('${randomHeroImg}')`;
-          }
-        }
-        
-        // Update section backgrounds
-        const sectionBgs = document.querySelectorAll('.section-bg');
-        const sectionLakes = [whatWeDoLake, howItWorksLake, missionLake, ctaLake];
-        
-        sectionBgs.forEach((bg, index) => {
-          const lake = sectionLakes[index];
-          if (lake && lake.imgSrc) {
-            const randomImg = lake.imgSrc[Math.floor(Math.random() * lake.imgSrc.length)];
-            bg.style.backgroundImage = `url('${randomImg}')`;
-          }
-        });
-        
-        // Update hero metrics with latest ML breakthrough results (Sept 2025)
-        const statNumbers = document.querySelectorAll('.stat-number');
-        if (statNumbers[0]) statNumbers[0].textContent = '99.98%';
-        if (statNumbers[1]) statNumbers[1].textContent = '2,779';
-        if (statNumbers[2]) statNumbers[2].textContent = '192ms';
-        
-        const updateFooterMetric = (id, value) => {
-          const element = document.getElementById(id);
-          if (element) element.textContent = value;
-        };
-        
-        // ML Training Section
-        updateFooterMetric('training-data', '13.6M Samples');
-        updateFooterMetric('model-accuracy', '99.98% R² Score');
-        updateFooterMetric('model-features', '3-Worker Parallel');
-        
-        // API Performance Section  
-        updateFooterMetric('api-response', '192ms Average');
-        updateFooterMetric('cache-system', '7-Day Intelligent');
-        updateFooterMetric('ml-updates', '4x Daily');
-        
-        // Global Intelligence Section
-        updateFooterMetric('lake-coverage', '2,779 Lakes');
-        updateFooterMetric('feature-count', '50+ Variables');
-        updateFooterMetric('safety-system', 'Weather-Based');
-        
-        // CTA Section
-        updateFooterMetric('active-paddlers', 'Made with Love and Logic');
-        
-      } catch (error) {
-        console.log('Using fallback intelligence stats');
-      }
-    });
-  </script>
+  
+  <!-- About page specific CSS -->
+  <link rel="stylesheet" href="/css/about.css" />
+  
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+  
+  <style>
+    /* Force body flexbox layout for sticky footer */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      scroll-behavior: smooth;
+    }
+    
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    
+    .about-page-content {
+      flex: 1;
+    }
+    
+    footer {
+      margin-top: auto;
+    }
+    
+    /* Hero must fill entire viewport on load */
+    .hero-dark {
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    /* Ensure next section starts completely below the fold */
+    .constellation-section {
+      margin-top: 0;
+      padding-top: 100px;
+    }
+  </style>
 </head>
 
-<body>
-  <!-- ✅ GLOBAL HEADER (matches paddlingout.html) -->
+<body class="dark-theme">
+  <!-- HEADER -->
   <header class="header">
     <div class="header-top">
       <div class="header-brand">
@@ -124,160 +93,100 @@
   </header>
 
   <!-- MAIN CONTENT -->
-  <main class="about-main">
-    <!-- Hero Section -->
-    <section class="about-hero">
-      <div class="hero-bg-image"></div>
+  <div class="about-page-content">
+    
+    <!-- A. HERO SECTION -->
+    <section class="hero-dark" id="hero">
       <div class="hero-content">
-        <h2 class="about-title">Fast Paddle Weather + Safety Scores</h2>
-        <p class="about-tagline">192ms API responses. 99.98% R² ML accuracy on 13.6M samples. Real water discovery.</p>
-        <div class="hero-stats">
-          <div class="stat-item">
-            <span class="stat-number">99.98%</span>
-            <span class="stat-label">ML Accuracy</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-number">2,779</span>
-            <span class="stat-label">Lakes Globally</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-number">192ms</span>
-            <span class="stat-label">API Response</span>
-          </div>
+        <p class="hero-pretitle">Built in silence. Refined through obsession.</p>
+        <h1 class="hero-title">KAAYKO</h1>
+        <p class="hero-tagline">Water. Maps. Intelligence.</p>
+        <div class="hero-ctas">
+          <a href="#services" class="cta-primary">Explore</a>
         </div>
+        <div class="scroll-hint">↓</div>
       </div>
     </section>
 
-    <!-- ML Training -->
-    <section class="about-section what-we-do">
-      <div class="section-card">
-        <div class="section-bg"></div>
-        <div class="section-content-minimal">
-          <h3>ML Training</h3>
-          <p class="section-tagline">Advanced ensemble ML with parallel training architecture</p>
-        </div>
-        <div class="section-footer">
-          <div class="glossy-buttons-grid">
-            <div class="glossy-button">
-              <span class="material-icons">dataset</span>
-              <div class="button-text">
-                <h4>Training Scale</h4>
-                <p id="training-data">13.6M Samples</p>
-              </div>
-            </div>
-            <div class="glossy-button">
-              <span class="material-icons">precision_manufacturing</span>
-              <div class="button-text">
-                <h4>GradientBoosting</h4>
-                <p id="model-accuracy">99.98% R² Score</p>
-              </div>
-            </div>
-            <div class="glossy-button">
-              <span class="material-icons">memory</span>
-              <div class="button-text">
-                <h4>M1 Max Optimized</h4>
-                <p id="model-features">3-Worker Parallel</p>
-              </div>
-            </div>
+    <!-- B. CONSTELLATION SECTION -->
+    <section class="constellation-section" id="services">
+      <div class="service-tiles">
+        
+        <button class="service-tile" data-service="paddling-out" data-url="/paddlingout.html">
+          <svg class="tile-icon" viewBox="0 0 48 48">
+            <path d="M8 24 Q16 16, 24 24 T40 24" stroke-linecap="round"/>
+            <path d="M8 30 Q16 22, 24 30 T40 30" stroke-linecap="round"/>
+          </svg>
+          <div>
+            <div class="tile-label">Paddling Out</div>
+            <div class="tile-hint">AI reads water.<br>You decide.</div>
           </div>
-        </div>
+        </button>
+
+        <button class="service-tile" data-service="lakes-near-me" data-url="/paddlingout.html#search">
+          <svg class="tile-icon" viewBox="0 0 48 48">
+            <circle cx="24" cy="24" r="12"/>
+            <path d="M24 12 L24 8 M24 40 L24 36 M36 24 L40 24 M8 24 L12 24" stroke-linecap="round"/>
+          </svg>
+          <div>
+            <div class="tile-label">Lakes Near Me</div>
+            <div class="tile-hint">Find water no one<br>told you about</div>
+          </div>
+        </button>
+
+        <button class="service-tile" data-service="store" data-url="/store.html">
+          <svg class="tile-icon" viewBox="0 0 48 48">
+            <rect x="12" y="16" width="24" height="20" rx="2"/>
+            <path d="M12 16 L16 12 L32 12 L36 16" stroke-linejoin="round"/>
+          </svg>
+          <div>
+            <div class="tile-label">Store</div>
+            <div class="tile-hint">Community votes.<br>We manufacture.</div>
+          </div>
+        </button>
+
+        <button class="service-tile" data-service="reads" data-url="/reads.html">
+          <svg class="tile-icon" viewBox="0 0 48 48">
+            <rect x="14" y="10" width="20" height="28" rx="2"/>
+            <line x1="18" y1="18" x2="30" y2="18"/>
+            <line x1="18" y1="24" x2="30" y2="24"/>
+            <line x1="18" y1="30" x2="26" y2="30"/>
+          </svg>
+          <div>
+            <div class="tile-label">Reads</div>
+            <div class="tile-hint">Unfiltered thoughts.<br>No algorithm.</div>
+          </div>
+        </button>
+
+        <button class="service-tile" data-service="admin" data-url="/admin/smartlinks.html">
+          <svg class="tile-icon" viewBox="0 0 48 48">
+            <circle cx="16" cy="24" r="4"/>
+            <circle cx="32" cy="24" r="4"/>
+            <line x1="20" y1="24" x2="28" y2="24"/>
+          </svg>
+          <div>
+            <div class="tile-label">Admin</div>
+            <div class="tile-hint">Track everything.<br>Miss nothing.</div>
+          </div>
+        </button>
+
       </div>
     </section>
 
-    <!-- API Performance -->
-    <section class="about-section how-it-works">
-      <div class="section-card">
-        <div class="section-bg"></div>
-        <div class="section-content-minimal">
-          <h3>API Performance</h3>
-          <p class="section-tagline">FastForecast API with intelligent 7-day caching system</p>
+    <!-- SERVICE MODAL -->
+    <div class="service-modal-overlay" id="serviceModal">
+      <div class="service-modal">
+        <button class="modal-close" aria-label="Close modal">&times;</button>
+        <div class="modal-icon-container">
+          <svg class="modal-icon" id="modalIcon" viewBox="0 0 48 48"></svg>
         </div>
-        <div class="section-footer">
-          <div class="glossy-buttons-grid">
-            <div class="glossy-button">
-              <span class="material-icons">speed</span>
-              <div class="button-text">
-                <h4>Response Time</h4>
-                <p id="api-response">192ms Average</p>
-              </div>
-            </div>
-            <div class="glossy-button">
-              <span class="material-icons">storage</span>
-              <div class="button-text">
-                <h4>Smart Caching</h4>
-                <p id="cache-system">7-Day Intelligent</p>
-              </div>
-            </div>
-            <div class="glossy-button">
-              <span class="material-icons">update</span>
-              <div class="button-text">
-                <h4>ML Updates</h4>
-                <p id="ml-updates">4x Daily</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <h2 class="modal-title" id="modalTitle"></h2>
+        <p class="modal-description" id="modalDescription"></p>
+        <button class="modal-cta" id="modalCta">Take me there</button>
       </div>
-    </section>
+    </div>
 
-    <!-- Global Intelligence -->
-    <section class="about-section mission">
-      <div class="section-card">
-        <div class="section-bg"></div>
-        <div class="section-content-minimal">
-          <h3>Global Intelligence</h3>
-          <p class="section-tagline">2,779 lakes with real-time weather integration and safety systems</p>
-        </div>
-        <div class="section-footer">
-          <div class="glossy-buttons-grid">
-            <div class="glossy-button">
-              <span class="material-icons">public</span>
-              <div class="button-text">
-                <h4>Lake Database</h4>
-                <p id="lake-coverage">2,779 Lakes</p>
-              </div>
-            </div>
-            <div class="glossy-button">
-              <span class="material-icons">analytics</span>
-              <div class="button-text">
-                <h4>Feature Engineering</h4>
-                <p id="feature-count">50+ Variables</p>
-              </div>
-            </div>
-            <div class="glossy-button">
-              <span class="material-icons">warning</span>
-              <div class="button-text">
-                <h4>Safety System</h4>
-                <p id="safety-system">Weather-Based</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Call to Action -->
-    <section class="about-cta">
-      <div class="section-card">
-        <div class="section-bg"></div>
-        <div class="section-content-minimal">
-          <h3>Ready to paddle smart?</h3>
-          <p class="section-tagline">Join adventurers who check conditions before they go</p>
-        </div>
-        <div class="section-footer">
-          <div class="glossy-buttons-grid single-button">
-            <a href="/" class="glossy-button cta-glossy">
-              <span class="material-icons">waves</span>
-              <div class="button-text">
-                <h4>Explore Conditions</h4>
-                <p id="active-paddlers">Made with Love and Logic</p>
-              </div>
-            </a>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
+  </div>
 
   <!-- FOOTER -->
   <footer>
@@ -285,17 +194,108 @@
   </footer>
 
   <!-- SCRIPTS -->
-  <!-- 1) Header behaviors: dark-mode, menu -->
   <script type="module" src="js/header.js"></script>
   <script src="js/secretStore.js"></script>
-  
-  <!-- 2) About page specific functionality -->
   <script type="module" src="js/about-dynamic.js"></script>
   
-  <!-- Set current year in footer -->
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("year").textContent = new Date().getFullYear();
+    // Set current year
+    document.getElementById('year').textContent = new Date().getFullYear();
+    
+    // Smooth scroll to services section when clicking Explore
+    document.querySelector('a[href="#services"]')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      document.getElementById('services')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    // Service modal data
+    const serviceData = {
+      'paddling-out': {
+        title: 'Paddling Out',
+        description: 'Machine learning meets weather. Our v3 model analyzes 13.6M samples with 99.98% accuracy to predict paddle conditions across 18 handpicked locations. Nature decides the forecast. AI translates it. You decide when to launch.',
+        icon: '<path d="M8 24 Q16 16, 24 24 T40 24" stroke-linecap="round"/><path d="M8 30 Q16 22, 24 30 T40 30" stroke-linecap="round"/>'
+      },
+      'lakes-near-me': {
+        title: 'Lakes Near Me',
+        description: 'OpenStreetMap-powered geospatial discovery. Find lakes, rivers, and reservoirs within any radius—from neighborhood ponds to remote alpine waters. Real-time water body detection. No algorithms curating your search. Just pure cartographic data.',
+        icon: '<circle cx="24" cy="24" r="12"/><path d="M24 12 L24 8 M24 40 L24 36 M36 24 L40 24 M8 24 L12 24" stroke-linecap="round"/>'
+      },
+      'store': {
+        title: 'Store',
+        description: 'Democracy meets manufacturing. The community votes on designs. We produce what gets traction. No inventory waste. No mass production guessing. Every piece exists because paddlers wanted it. Quality over quantity. Always.',
+        icon: '<rect x="12" y="16" width="24" height="20" rx="2"/><path d="M12 16 L16 12 L32 12 L36 16" stroke-linejoin="round"/>'
+      },
+      'reads': {
+        title: 'Reads',
+        description: 'Perspectives on paddling culture, gear, and adventures. Written by paddlers, for paddlers. No SEO optimization. No engagement metrics. No editorial filter designed to keep you scrolling. Just honest stories from the water.',
+        icon: '<rect x="14" y="10" width="20" height="28" rx="2"/><line x1="18" y1="18" x2="30" y2="18"/><line x1="18" y1="24" x2="30" y2="24"/><line x1="18" y1="30" x2="26" y2="30"/>'
+      },
+      'admin': {
+        title: 'Admin',
+        description: 'Smart link management with enterprise-grade analytics. Track engagement, measure performance, understand your audience. Complete control over your digital presence. Built in-house. No third-party dependencies. Your data stays yours.',
+        icon: '<circle cx="16" cy="24" r="4"/><circle cx="32" cy="24" r="4"/><line x1="20" y1="24" x2="28" y2="24"/>'
+      }
+    };
+
+    // Modal functionality
+    const modal = document.getElementById('serviceModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalDescription = document.getElementById('modalDescription');
+    const modalIcon = document.getElementById('modalIcon');
+    const modalCta = document.getElementById('modalCta');
+    const modalClose = document.querySelector('.modal-close');
+    
+    let currentUrl = '';
+
+    // Open modal when clicking service tiles
+    document.querySelectorAll('.service-tile').forEach(tile => {
+      tile.addEventListener('click', (e) => {
+        e.preventDefault();
+        const service = tile.dataset.service;
+        const url = tile.dataset.url;
+        const data = serviceData[service];
+        
+        if (data) {
+          modalTitle.textContent = data.title;
+          modalDescription.textContent = data.description;
+          modalIcon.innerHTML = data.icon;
+          currentUrl = url;
+          
+          // Store whether to open in new tab (admin only)
+          modalCta.dataset.openInNewTab = service === 'admin' ? 'true' : 'false';
+          
+          modal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        }
+      });
+    });
+
+    // Close modal
+    function closeModal() {
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    modalClose.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    // Navigate when clicking CTA
+    modalCta.addEventListener('click', () => {
+      if (modalCta.dataset.openInNewTab === 'true') {
+        window.open(currentUrl, '_blank');
+        closeModal();
+      } else {
+        window.location.href = currentUrl;
+      }
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('active')) {
+        closeModal();
+      }
     });
   </script>
 </body>
