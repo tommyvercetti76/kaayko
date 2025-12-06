@@ -573,21 +573,95 @@
         
         const { clientSecret } = await response.json();
         desktopStripe = Stripe(STRIPE_KEY);
-        const elements = desktopStripe.elements({ clientSecret });
+        const elements = desktopStripe.elements({
+          clientSecret,
+          appearance: {
+            theme: 'night',
+            variables: {
+              colorPrimary: '#d4af37',
+              colorBackground: '#1a1a1a',
+              colorText: '#ffffff',
+              colorDanger: '#ff4444',
+              fontFamily: 'Josefin_Medium, Arial, sans-serif',
+              spacingUnit: '4px',
+              borderRadius: '8px'
+            },
+            rules: {
+              '.Label': {
+                color: '#ffffff',
+                fontSize: '13px',
+                fontWeight: '500',
+                marginBottom: '8px'
+              },
+              '.Input': {
+                backgroundColor: '#0a0a0a',
+                border: '1px solid rgba(255,255,255,0.2)',
+                color: '#ffffff'
+              },
+              '.Input:focus': {
+                border: '1px solid #d4af37',
+                boxShadow: '0 0 0 1px #d4af37'
+              }
+            }
+          },
+          fields: {
+            billingDetails: {
+              address: 'auto'
+            }
+          }
+        });
         const paymentElement = elements.create('payment');
-        paymentElement.mount('#cart-payment-element');
+        const addressElement = elements.create('address', {
+          mode: 'shipping',
+          allowedCountries: ['US']
+        });
+        const container = document.getElementById('cart-payment-element');
+        container.innerHTML = '';
+        const addressDiv = document.createElement('div');
+        addressDiv.style.marginBottom = '20px';
+        const paymentDiv = document.createElement('div');
+        container.appendChild(addressDiv);
+        container.appendChild(paymentDiv);
+        addressElement.mount(addressDiv);
+        paymentElement.mount(paymentDiv);
         
         const btn = document.getElementById('cart-complete-order-btn');
-        paymentElement.on('ready', () => { btn.disabled = false; });
+        let addressComplete = false;
+        let paymentComplete = false;
+        
+        const checkFormComplete = () => {
+          btn.disabled = !(addressComplete && paymentComplete);
+        };
+        
+        addressElement.on('change', (event) => {
+          addressComplete = event.complete;
+          checkFormComplete();
+        });
+        
+        paymentElement.on('change', (event) => {
+          paymentComplete = event.complete;
+          checkFormComplete();
+        });
         
         btn.addEventListener('click', async () => {
           btn.disabled = true;
-          btn.textContent = 'Processing...';
+          btn.innerHTML = '<span class="material-icons" style="font-size: 16px; animation: spin 1s linear infinite;">refresh</span> Processing...';
+          
           const { error } = await desktopStripe.confirmPayment({
             elements,
-            confirmParams: { return_url: window.location.origin + '/src/success.html' }
+            confirmParams: {
+              return_url: window.location.origin + '/order-success.html'
+            }
           });
-          if (error) { alert(error.message); btn.disabled = false; btn.textContent = 'Complete Order'; }
+          
+          if (error) {
+            showErrorMessage(error.message);
+            btn.disabled = false;
+            btn.innerHTML = 'Complete Order';
+            
+            // Log error for debugging
+            console.error('Payment error:', error);
+          }
         });
       } catch (error) { console.error('Payment init error:', error); }
     }
@@ -643,18 +717,87 @@
         });
         const { clientSecret } = await response.json();
         mobileStripe = Stripe(STRIPE_KEY);
-        const elements = mobileStripe.elements({ clientSecret });
+        const elements = mobileStripe.elements({
+          clientSecret,
+          appearance: {
+            theme: 'night',
+            variables: {
+              colorPrimary: '#d4af37',
+              colorBackground: '#1a1a1a',
+              colorText: '#ffffff',
+              colorDanger: '#ff4444',
+              fontFamily: 'Josefin_Medium, Arial, sans-serif',
+              spacingUnit: '4px',
+              borderRadius: '8px'
+            },
+            rules: {
+              '.Label': {
+                color: '#ffffff',
+                fontSize: '13px',
+                fontWeight: '500',
+                marginBottom: '8px'
+              },
+              '.Input': {
+                backgroundColor: '#0a0a0a',
+                border: '1px solid rgba(255,255,255,0.2)',
+                color: '#ffffff'
+              },
+              '.Input:focus': {
+                border: '1px solid #d4af37',
+                boxShadow: '0 0 0 1px #d4af37'
+              }
+            }
+          },
+          fields: {
+            billingDetails: {
+              address: 'auto'
+            }
+          }
+        });
         const paymentElement = elements.create('payment');
-        paymentElement.mount('#mobile-payment-element');
-        paymentElement.on('ready', () => { mobileBtn.disabled = false; });
+        const addressElement = elements.create('address', {
+          mode: 'shipping',
+          allowedCountries: ['US']
+        });
+        const container = document.getElementById('mobile-payment-element');
+        container.innerHTML = '';
+        const addressDiv = document.createElement('div');
+        addressDiv.style.marginBottom = '16px';
+        const paymentDiv = document.createElement('div');
+        container.appendChild(addressDiv);
+        container.appendChild(paymentDiv);
+        addressElement.mount(addressDiv);
+        paymentElement.mount(paymentDiv);
+        let addressComplete = false;
+        let paymentComplete = false;
+        
+        const checkFormComplete = () => {
+          mobileBtn.disabled = !(addressComplete && paymentComplete);
+        };
+        
+        addressElement.on('change', (event) => {
+          addressComplete = event.complete;
+          checkFormComplete();
+        });
+        
+        paymentElement.on('change', (event) => {
+          paymentComplete = event.complete;
+          checkFormComplete();
+        });
+        
         mobileBtn.addEventListener('click', async () => {
           mobileBtn.disabled = true;
-          mobileBtn.textContent = 'Processing...';
+          mobileBtn.innerHTML = '<span class="material-icons" style="font-size: 16px; animation: spin 1s linear infinite;">refresh</span> Processing...';
           const { error } = await mobileStripe.confirmPayment({
             elements,
-            confirmParams: { return_url: window.location.origin + '/src/success.html' }
+            confirmParams: { return_url: window.location.origin + '/order-success.html' }
           });
-          if (error) { alert(error.message); mobileBtn.disabled = false; mobileBtn.textContent = 'Complete Order'; }
+          if (error) { 
+            showErrorMessage(error.message); 
+            mobileBtn.disabled = false; 
+            mobileBtn.innerHTML = 'Complete Order';
+            console.error('Mobile payment error:', error);
+          }
         });
       } catch (error) { console.error('Mobile payment error:', error); }
     }
@@ -668,6 +811,18 @@
     handle.addEventListener('touchstart', handleStart);
     handle.addEventListener('touchmove', handleMove);
     handle.addEventListener('touchend', handleEnd);
+    
+    function showErrorMessage(message) {
+      const errorDiv = document.createElement('div');
+      errorDiv.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #ef4444; color: white; padding: 16px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 10000; max-width: 90%; font-family: Josefin_Medium, Arial, sans-serif; font-size: 14px;';
+      errorDiv.innerHTML = `<span class="material-icons" style="vertical-align: middle; margin-right: 8px; font-size: 18px;">error</span>${message}`;
+      document.body.appendChild(errorDiv);
+      setTimeout(() => errorDiv.remove(), 5000);
+    }
+    
+    const style = document.createElement('style');
+    style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+    document.head.appendChild(style);
     
     cartManager.subscribe(renderCart);
     renderCart();
