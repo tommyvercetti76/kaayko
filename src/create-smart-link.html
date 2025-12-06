@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kaayko Smart Links - Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #d4af37;
+      --dark: #1a1a1a;
+      --light: #ffffff;
+      --gray: #666666;
+      --success: #4caf50;
+      --error: #f44336;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Josefin Sans', sans-serif;
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      color: var(--light);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--gold), #ffd700);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: var(--gray);
+      font-size: 1.1rem;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(212, 175, 55, 0.3);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+      backdrop-filter: blur(10px);
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--gold);
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--light);
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--gold);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    select {
+      cursor: pointer;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: auto;
+    }
+
+    .checkbox-group label {
+      margin: 0;
+      text-transform: none;
+      letter-spacing: normal;
+      font-weight: 400;
+      color: var(--light);
+    }
+
+    button {
+      background: var(--gold);
+      color: var(--dark);
+      border: none;
+      padding: 16px 32px;
+      border-radius: 8px;
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    button:hover {
+      background: #ffd700;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+    }
+
+    button:disabled {
+      background: var(--gray);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .loading {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 20px;
+      color: var(--gold);
+    }
+
+    .loading.show {
+      display: flex;
+    }
+
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(212, 175, 55, 0.3);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .result {
+      display: none;
+      margin-top: 24px;
+      padding: 24px;
+      border-radius: 12px;
+      background: rgba(76, 175, 80, 0.1);
+      border: 2px solid var(--success);
+    }
+
+    .result.show {
+      display: block;
+    }
+
+    .result.error {
+      background: rgba(244, 67, 54, 0.1);
+      border-color: var(--error);
+    }
+
+    .result h3 {
+      margin-bottom: 16px;
+      color: var(--success);
+    }
+
+    .result.error h3 {
+      color: var(--error);
+    }
+
+    .link-item {
+      margin-bottom: 16px;
+    }
+
+    .link-item label {
+      font-size: 0.85rem;
+      color: var(--gray);
+      margin-bottom: 4px;
+    }
+
+    .link-value {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid rgba(212, 175, 55, 0.2);
+    }
+
+    .link-text {
+      flex: 1;
+      font-family: 'Courier New', monospace;
+      color: var(--gold);
+      word-break: break-all;
+    }
+
+    .copy-btn {
+      background: rgba(212, 175, 55, 0.2);
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      min-width: 80px;
+    }
+
+    .copy-btn:hover {
+      background: var(--gold);
+      color: var(--dark);
+    }
+
+    .copy-btn.copied {
+      background: var(--success);
+      color: var(--light);
+      border-color: var(--success);
+    }
+
+    .metadata-preview {
+      margin-top: 16px;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      display: none;
+    }
+
+    .metadata-preview.show {
+      display: block;
+    }
+
+    .metadata-preview h4 {
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+
+    .metadata-field {
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+
+    .metadata-field strong {
+      color: var(--gold);
+    }
+
+    .tab-group {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 12px 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .tab.active {
+      background: var(--gold);
+      color: var(--dark);
+      border-color: var(--gold);
+      font-weight: 700;
+    }
+
+    .panel {
+      display: none;
+    }
+
+    .panel.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🔗 Kaayko Smart Links</h1>
+      <p class="subtitle">Create shareable links for lakes, products, categories & more</p>
+    </header>
+
+    <div class="card">
+      <div class="tab-group">
+        <div class="tab active" onclick="switchTab('simple')">🎯 Simple Mode</div>
+        <div class="tab" onclick="switchTab('advanced')">⚙️ Advanced Mode</div>
+      </div>
+
+      <!-- Simple Mode Panel -->
+      <div id="simple-panel" class="panel active">
+        <form id="simple-form" onsubmit="createSimpleLink(event)">
+          <div class="form-group">
+            <label for="content-type">Content Type</label>
+            <select id="content-type" required onchange="updateSimpleForm()">
+              <option value="">Select content type...</option>
+              <option value="lake">🏞️ Paddling Location (Lake/River)</option>
+              <option value="product">👕 Store Product</option>
+              <option value="category">📂 Product Category</option>
+              <option value="store">🏪 Entire Store</option>
+              <option value="reads">📖 Blog Article (Future)</option>
+              <option value="qr">📱 QR Code Link</option>
+              <option value="promo">🎯 Marketing Campaign</option>
+            </select>
+          </div>
+
+          <div id="content-id-group" class="form-group" style="display: none;">
+            <label for="content-id">Content ID</label>
+            <input 
+              type="text" 
+              id="content-id" 
+              placeholder="e.g., trinity, funny-tshirt-001, sarcastic"
+              pattern="[a-zA-Z0-9_-]{3,50}"
+            >
+            <small style="color: var(--gray); display: block; margin-top: 8px;">
+              Use lowercase letters, numbers, dashes, and underscores only (3-50 characters)
+            </small>
+          </div>
+
+          <div class="checkbox-group">
+            <input type="checkbox" id="auto-enrich" checked>
+            <label for="auto-enrich">🔍 Auto-fetch metadata from database (title, image, price, etc.)</label>
+          </div>
+
+          <div class="checkbox-group" id="bypass-secret-group" style="display: none;">
+            <input type="checkbox" id="bypass-secret">
+            <label for="bypass-secret">🔓 Bypass store secret keyword check (allow direct access)</label>
+          </div>
+
+          <div class="form-group">
+            <label for="utm-source">UTM Source (Optional)</label>
+            <input type="text" id="utm-source" placeholder="e.g., instagram, twitter, email">
+          </div>
+
+          <button type="submit">
+            <span class="material-icons">link</span>
+            Create Smart Link
+          </button>
+        </form>
+      </div>
+
+      <!-- Advanced Mode Panel -->
+      <div id="advanced-panel" class="panel">
+        <form id="advanced-form" onsubmit="createAdvancedLink(event)">
+          <div class="form-group">
+            <label for="adv-space">Space</label>
+            <select id="adv-space" required>
+              <option value="lake">lake</option>
+              <option value="product">product</option>
+              <option value="category">category</option>
+              <option value="store">store</option>
+              <option value="reads">reads</option>
+              <option value="spot">spot</option>
+              <option value="qr">qr</option>
+              <option value="promo">promo</option>
+              <option value="custom">custom</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="adv-link-id">Link ID</label>
+            <input type="text" id="adv-link-id" required pattern="[a-zA-Z0-9_-]{3,50}">
+          </div>
+
+          <div class="form-group">
+            <label for="adv-ios">iOS Destination (Optional)</label>
+            <input type="text" id="adv-ios" placeholder="kaayko://paddlingOut?id=trinity">
+          </div>
+
+          <div class="form-group">
+            <label for="adv-android">Android Destination (Optional)</label>
+            <input type="text" id="adv-android" placeholder="kaayko://paddlingOut?id=trinity">
+          </div>
+
+          <div class="form-group">
+            <label for="adv-web">Web Destination (Optional)</label>
+            <input type="text" id="adv-web" placeholder="https://kaayko.com/paddlingout.html?id=trinity">
+          </div>
+
+          <div class="form-group">
+            <label for="adv-title">Metadata Title (Optional)</label>
+            <input type="text" id="adv-title" placeholder="Trinity River - Paddle Conditions">
+          </div>
+
+          <div class="form-group">
+            <label for="adv-description">Metadata Description (Optional)</label>
+            <textarea id="adv-description" placeholder="Real-time paddle forecast with ML predictions"></textarea>
+          </div>
+
+          <div class="checkbox-group">
+            <input type="checkbox" id="adv-auto-enrich" checked>
+            <label for="adv-auto-enrich">Auto-enrich metadata</label>
+          </div>
+
+          <button type="submit">
+            <span class="material-icons">settings</span>
+            Create Advanced Link
+          </button>
+        </form>
+      </div>
+
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <span>Creating smart link...</span>
+      </div>
+
+      <div class="metadata-preview" id="metadata-preview">
+        <h4>📊 Enriched Metadata Preview</h4>
+        <div id="metadata-content"></div>
+      </div>
+
+      <div class="result" id="result">
+        <h3 id="result-title">✅ Smart Link Created!</h3>
+        
+        <div class="link-item">
+          <label>Short URL</label>
+          <div class="link-value">
+            <span class="link-text" id="short-url"></span>
+            <button class="copy-btn" onclick="copyToClipboard('short-url', this)">Copy</button>
+          </div>
+        </div>
+
+        <div class="link-item">
+          <label>QR Code URL</label>
+          <div class="link-value">
+            <span class="link-text" id="qr-url"></span>
+            <button class="copy-btn" onclick="copyToClipboard('qr-url', this)">Copy</button>
+          </div>
+        </div>
+
+        <div class="link-item">
+          <label>iOS Deep Link</label>
+          <div class="link-value">
+            <span class="link-text" id="ios-url"></span>
+            <button class="copy-btn" onclick="copyToClipboard('ios-url', this)">Copy</button>
+          </div>
+        </div>
+
+        <div class="link-item">
+          <label>Android Deep Link</label>
+          <div class="link-value">
+            <span class="link-text" id="android-url"></span>
+            <button class="copy-btn" onclick="copyToClipboard('android-url', this)">Copy</button>
+          </div>
+        </div>
+
+        <div class="link-item">
+          <label>Web URL</label>
+          <div class="link-value">
+            <span class="link-text" id="web-url"></span>
+            <button class="copy-btn" onclick="copyToClipboard('web-url', this)">Copy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://127.0.0.1:5001/kaaykostore/us-central1/api'
+      : 'https://us-central1-kaaykostore.cloudfunctions.net/api';
+
+    function switchTab(tab) {
+      const tabs = document.querySelectorAll('.tab');
+      const panels = document.querySelectorAll('.panel');
+      
+      tabs.forEach(t => t.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+      
+      if (tab === 'simple') {
+        tabs[0].classList.add('active');
+        panels[0].classList.add('active');
+      } else {
+        tabs[1].classList.add('active');
+        panels[1].classList.add('active');
+      }
+      
+      hideResult();
+    }
+
+    function updateSimpleForm() {
+      const contentType = document.getElementById('content-type').value;
+      const idGroup = document.getElementById('content-id-group');
+      const bypassGroup = document.getElementById('bypass-secret-group');
+      const contentIdInput = document.getElementById('content-id');
+      
+      if (contentType === 'store') {
+        idGroup.style.display = 'none';
+        contentIdInput.required = false;
+        bypassGroup.style.display = 'flex';
+      } else if (contentType) {
+        idGroup.style.display = 'block';
+        contentIdInput.required = true;
+        bypassGroup.style.display = contentType.includes('product') || contentType === 'category' ? 'flex' : 'none';
+      } else {
+        idGroup.style.display = 'none';
+        bypassGroup.style.display = 'none';
+        contentIdInput.required = false;
+      }
+    }
+
+    async function createSimpleLink(e) {
+      e.preventDefault();
+      
+      const contentType = document.getElementById('content-type').value;
+      const contentId = document.getElementById('content-id').value || 'home';
+      const utmSource = document.getElementById('utm-source').value;
+      
+      // Build web destination based on content type
+      let webDestination;
+      if (contentType === 'lake' || contentType === 'spot') {
+        webDestination = `https://kaayko.com/paddlingout?id=${contentId}`;
+      } else if (contentType === 'product') {
+        webDestination = `https://kaayko.com/store.html?product=${contentId}`;
+      } else if (contentType === 'category') {
+        webDestination = `https://kaayko.com/store.html?category=${contentId}`;
+      } else if (contentType === 'store') {
+        webDestination = `https://kaayko.com/store.html`;
+      } else {
+        webDestination = `https://kaayko.com/${contentType}?id=${contentId}`;
+      }
+      
+      // Build iOS deep link
+      const iosDestination = contentType === 'store' 
+        ? 'kaayko://store'
+        : `kaayko://${contentType}/${contentId}`;
+      
+      const payload = {
+        webDestination,
+        iosDestination,
+        androidDestination: iosDestination,
+        title: `${contentType.charAt(0).toUpperCase() + contentType.slice(1)}: ${contentId}`,
+        createdBy: 'admin@kaayko.com',
+        utm: utmSource ? { source: utmSource, medium: 'social', campaign: 'kaayko' } : undefined
+      };
+      
+      // Remove undefined values
+      Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
+      
+      await createLink(payload);
+    }
+
+    async function createAdvancedLink(e) {
+      e.preventDefault();
+      
+      const webDest = document.getElementById('adv-web').value;
+      const title = document.getElementById('adv-title').value;
+      
+      if (!webDest) {
+        alert('Web destination is required');
+        return;
+      }
+      
+      const payload = {
+        webDestination: webDest,
+        iosDestination: document.getElementById('adv-ios').value || undefined,
+        androidDestination: document.getElementById('adv-android').value || undefined,
+        title: title || 'Untitled Link',
+        description: document.getElementById('adv-description').value || undefined,
+        createdBy: 'admin@kaayko.com',
+        metadata: {}
+      };
+      
+      // Remove undefined values
+      Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
+      
+      await createLink(payload);
+    }
+
+    async function createLink(payload) {
+      const loading = document.getElementById('loading');
+      const result = document.getElementById('result');
+      const metadataPreview = document.getElementById('metadata-preview');
+      
+      loading.classList.add('show');
+      result.classList.remove('show');
+      metadataPreview.classList.remove('show');
+      
+      try {
+        const response = await fetch(`${API_BASE}/smartlinks`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to create link');
+        }
+        
+        loading.classList.remove('show');
+        showResult(data.link);
+        
+        // Show metadata if enriched
+        if (data.link.metadata && data.link.metadata.enriched) {
+          showMetadataPreview(data.link.metadata);
+        }
+        
+      } catch (error) {
+        loading.classList.remove('show');
+        showError(error.message);
+      }
+    }
+
+    function showResult(link) {
+      document.getElementById('result-title').textContent = '✅ Smart Link Created!';
+      document.getElementById('result').classList.remove('error');
+      document.getElementById('result').classList.add('show');
+      
+      // Backend returns: { code, shortUrl, iosDestination, androidDestination, webDestination }
+      const fullShortUrl = link.shortUrl.startsWith('http') ? link.shortUrl : `https://kaayko.com/l/${link.code}`;
+      document.getElementById('short-url').textContent = fullShortUrl;
+      
+      // Generate QR code URL (backend doesn't provide this)
+      const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(fullShortUrl)}&size=300x300`;
+      document.getElementById('qr-url').textContent = qrCodeUrl;
+      
+      document.getElementById('ios-url').textContent = link.iosDestination || 'N/A';
+      document.getElementById('android-url').textContent = link.androidDestination || 'N/A';
+      document.getElementById('web-url').textContent = link.webDestination || 'N/A';
+    }
+
+    function showError(message) {
+      document.getElementById('result-title').textContent = '❌ Error';
+      document.getElementById('result').classList.add('error');
+      document.getElementById('result').classList.add('show');
+      
+      document.getElementById('short-url').textContent = message;
+      document.querySelectorAll('.link-item').forEach((item, i) => {
+        if (i > 0) item.style.display = 'none';
+      });
+    }
+
+    function showMetadataPreview(metadata) {
+      const preview = document.getElementById('metadata-preview');
+      const content = document.getElementById('metadata-content');
+      
+      content.innerHTML = `
+        ${metadata.title ? `<div class="metadata-field"><strong>Title:</strong> ${metadata.title}</div>` : ''}
+        ${metadata.description ? `<div class="metadata-field"><strong>Description:</strong> ${metadata.description}</div>` : ''}
+        ${metadata.price ? `<div class="metadata-field"><strong>Price:</strong> ${metadata.price}</div>` : ''}
+        ${metadata.votes !== undefined ? `<div class="metadata-field"><strong>Votes:</strong> ${metadata.votes}</div>` : ''}
+        ${metadata.productCount ? `<div class="metadata-field"><strong>Product Count:</strong> ${metadata.productCount}</div>` : ''}
+        ${metadata.type ? `<div class="metadata-field"><strong>Type:</strong> ${metadata.type}</div>` : ''}
+      `;
+      
+      preview.classList.add('show');
+    }
+
+    function hideResult() {
+      document.getElementById('result').classList.remove('show');
+      document.getElementById('metadata-preview').classList.remove('show');
+      document.querySelectorAll('.link-item').forEach(item => item.style.display = 'block');
+    }
+
+    function copyToClipboard(elementId, button) {
+      const text = document.getElementById(elementId).textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = button.textContent;
+        button.textContent = '✓ Copied';
+        button.classList.add('copied');
+        
+        setTimeout(() => {
+          button.textContent = originalText;
+          button.classList.remove('copied');
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

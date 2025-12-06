@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Clear Cache</title>
+</head>
+<body>
+  <h1>Clearing Cache...</h1>
+  <script>
+    // Clear localStorage
+    localStorage.clear();
+    console.log('✅ localStorage cleared');
+    
+    // Clear sessionStorage  
+    sessionStorage.clear();
+    console.log('✅ sessionStorage cleared');
+    
+    // Redirect to login
+    setTimeout(() => {
+      window.location.href = './login.html';
+    }, 1000);
+  </script>
+</body>
+</html>

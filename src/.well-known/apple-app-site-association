@@ -11,7 +11,44 @@
         },
         "components": [
           {
-            "/": "/l/*"
+            "/": "/lake/*",
+            "comment": "Paddling locations - k.kaayko.com/lake/trinity"
+          },
+          {
+            "/": "/product/*",
+            "comment": "Individual products - k.kaayko.com/product/tshirt-001"
+          },
+          {
+            "/": "/category/*",
+            "comment": "Product categories - k.kaayko.com/category/sarcastic"
+          },
+          {
+            "/": "/store",
+            "comment": "Full store catalog"
+          },
+          {
+            "/": "/store/*",
+            "comment": "Store campaigns"
+          },
+          {
+            "/": "/reads/*",
+            "comment": "Blog articles (future)"
+          },
+          {
+            "/": "/qr/*/*",
+            "comment": "QR code links"
+          },
+          {
+            "/": "/spot/*",
+            "comment": "Custom spots (future)"
+          },
+          {
+            "/": "/promo/*",
+            "comment": "Marketing campaigns"
+          },
+          {
+            "/": "/l/*",
+            "comment": "Legacy deep links"
           },
           {
             "/": "/paddlingout"
@@ -26,6 +63,18 @@
           "caseSensitive": false
         },
         "components": [
+          {
+            "/": "/lake/*",
+            "comment": "App Clip for lakes"
+          },
+          {
+            "/": "/product/*",
+            "comment": "App Clip for products"
+          },
+          {
+            "/": "/qr/*/*",
+            "comment": "App Clip for QR scans"
+          },
           {
             "/": "/l/*"
           },

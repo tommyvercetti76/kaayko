@@ -26,6 +26,9 @@
 
   <!-- 3) Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  
+  <!-- 4) Stripe.js -->
+  <script src="https://js.stripe.com/v3/"></script>
 </head>
 
 <body>
@@ -110,13 +113,65 @@
   <!-- SCRIPTS -->
   <script src="js/secretStore.js"></script>
   <script src="js/header.js"></script>
+  <script type="module" src="js/cartManager.js"></script>
+  <script type="module" src="js/sustainabilityAlert.js"></script>
   <script type="module" src="js/kaayko_apiClient.js"></script>
   <script type="module" src="js/kaayko-main.js"></script>
   <script src="js/kaaykoFilterModal.js"></script>
   <script type="module" src="js/kaayko_ui.js"></script>
 
-  <!-- Inline: current year -->
-  <script>
+  <!-- Initialize Cart Manager -->
+  <script type="module">
+    import { cartManager } from './js/cartManager.js';
+    import './js/sustainabilityAlert.js';
+    
+    // Make cart manager globally available
+    window.cartManager = cartManager;
+    
+    // Add cart icon to header (store only)
+    const headerControls = document.querySelector('.header-controls');
+    if (headerControls) {
+      const cartBtn = document.createElement('a');
+      cartBtn.href = 'cart.html';
+      cartBtn.className = 'cart-nav-button';
+      cartBtn.innerHTML = `
+        <span class="material-icons">shopping_cart</span>
+        <span class="cart-badge">0</span>
+      `;
+      
+      // Insert before filter button
+      headerControls.insertBefore(cartBtn, headerControls.firstChild);
+      
+      // Update badge on cart changes
+      const updateBadge = () => {
+        const count = cartManager.getCount();
+        const badge = cartBtn.querySelector('.cart-badge');
+        badge.textContent = count;
+        badge.style.display = count > 0 ? 'flex' : 'none';
+      };
+      
+      cartManager.subscribe(updateBadge);
+      updateBadge(); // Initial
+      
+      // Also refresh all cart button states when cart changes
+      cartManager.subscribe(() => {
+        // Update all cart buttons on the page
+        document.querySelectorAll('.cart-button').forEach(btn => {
+          const productId = btn.dataset.productId;
+          const isInCart = cartManager.hasProduct(productId);
+          const label = btn.querySelector('.cart-label');
+          
+          if (isInCart) {
+            btn.classList.add('in-cart');
+            if (label) label.textContent = 'In Cart';
+          } else {
+            btn.classList.remove('in-cart');
+            if (label) label.textContent = 'Buy';
+          }
+        });
+      });
+    }
+    
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>
 </body>

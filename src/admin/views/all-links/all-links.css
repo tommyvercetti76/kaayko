@@ -1,0 +1,15 @@
+/**
+ * All Links View Styles
+ * Table and list styles for displaying all links
+ */
+
+/* Links table styling is in base CSS */
+/* This file is a placeholder for view-specific overrides */
+
+.links-view .card {
+  padding: 0;
+}
+
+.table-container {
+  overflow-x: auto;
+}

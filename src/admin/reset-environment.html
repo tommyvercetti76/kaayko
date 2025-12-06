@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Reset Environment</title>
+</head>
+<body>
+  <h1>Resetting Environment to Production...</h1>
+  <script>
+    // Force set environment to production
+    localStorage.setItem('kaayko_environment', 'production');
+    console.log('✅ Environment set to: production');
+    
+    // Show current localStorage
+    console.log('📦 Current localStorage:');
+    console.log('  kaayko_environment:', localStorage.getItem('kaayko_environment'));
+    console.log('  kaayko_auth_token:', localStorage.getItem('kaayko_auth_token') ? 'EXISTS' : 'MISSING');
+    console.log('  kaayko_user:', localStorage.getItem('kaayko_user') ? 'EXISTS' : 'MISSING');
+    
+    // Redirect
+    setTimeout(() => {
+      window.location.href = './smartlinks.html';
+    }, 1000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/prod-config.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  
+  <title>Cart - Kaayko Store</title>
+  
+  <link rel="stylesheet" href="/fonts/fonts.css" />
+  <link rel="stylesheet" href="/css/storestyle.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  
+  <style>
+    html, body { 
+      overflow-x: hidden; 
+      max-width: 100vw; 
+      margin: 0; 
+      padding: 0;
+      height: auto;
+      min-height: 100vh;
+    }
+    
+    /* Simple Top Nav */
+    .cart-top-nav {
+      background: #0a0a0a;
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+    }
+    
+    .cart-top-nav-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+    
+    .cart-top-nav h1 {
+      font-family: 'Josefin_Bold', Arial, sans-serif;
+      font-size: 24px;
+      color: #ffd700;
+      margin: 0;
+    }
+    
+    .cart-top-nav-links {
+      display: flex;
+      gap: 20px;
+    }
+    
+    .cart-top-nav a {
+      font-family: 'Josefin_Medium', Arial, sans-serif;
+      font-size: 14px;
+      color: #ffd700;
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: opacity 0.2s;
+    }
+    
+    .cart-top-nav a:hover {
+      opacity: 0.7;
+    }
+    
+    .cart-page-wrapper {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
+      padding: 20px 20px 60px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    
+    .cart-page { max-width: 1200px; margin: 0 auto; width: 100%; }
+    .cart-header h1 { font-family: 'Josefin_Bold', Arial, sans-serif; font-size: 22px; color: #fff; margin: 0 0 20px 0; }
+    
+    /* Order Summary Bar - Premium Clean */
+    .cart-summary-bar {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 14px 24px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+    
+    .cart-summary-bar-title { 
+      font-family: 'Josefin_Bold', Arial, sans-serif; 
+      font-size: 11px; 
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+    
+    .cart-summary-bar-details { 
+      display: flex; 
+      gap: 24px; 
+      font-family: 'Josefin_Medium', Arial, sans-serif; 
+      font-size: 12px; 
+      color: rgba(255, 255, 255, 0.7);
+      flex: 1;
+      letter-spacing: 0.3px;
+    }
+    
+    .cart-summary-bar-total {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'Josefin_Bold', Arial, sans-serif;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+      white-space: nowrap;
+      letter-spacing: 0.5px;
+    }
+    
+    .cart-summary-bar-total-value {
+      font-family: 'Josefin_Bold', Arial, sans-serif;
+      font-size: 20px;
+      color: #ffd700;
+      letter-spacing: 0.5px;
+    }
+    
+    /* Two Column Layout - Desktop */
+    .cart-content-wrapper { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; }
+    
+    /* Cart Items */
+    .cart-items-column {
+      background: transparent;
+      border: none;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .cart-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 14px 20px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      transition: border-color 0.2s;
+    }
+    
+    .cart-item:hover { border-color: rgba(255, 255, 255, 0.15); }
+    
+    .cart-item-image { 
+      width: 90px; 
+      height: 90px; 
+      border-radius: 6px; 
+      object-fit: cover; 
+      flex-shrink: 0;
+      display: block;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .cart-item-details { 
+      flex: 1; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 4px;
+      min-width: 0;
+    }
+    
+    .cart-item-title { 
+      font-family: 'Josefin_Bold', Arial, sans-serif; 
+      font-size: 16px; 
+      color: #fff; 
+      margin: 0;
+      line-height: 1.3;
+    }
+    
+    .cart-item-meta { 
+      font-family: 'Josefin_Medium', Arial, sans-serif;
+      font-size: 12px; 
+      color: rgba(255, 255, 255, 0.5); 
+      margin: 0;
+      letter-spacing: 0.3px;
+    }
+    
+    .cart-item-price-remove {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    
+    .cart-item-price { 
+      font-family: 'Josefin_Bold', Arial, sans-serif; 
+      font-size: 18px; 
+      color: #ffd700; 
+      margin: 0;
+      white-space: nowrap;
+    }
+    
+    .cart-item-remove {
+      background: none;
+      border: none;
+      color: #ff4444;
+      padding: 0;
+      cursor: pointer;
+      font-family: 'Josefin_Medium', Arial, sans-serif;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      transition: opacity 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    
+    .cart-item-remove:hover { opacity: 0.7; }
+    
+    /* Desktop Payment Panel - Aligned with Summary */
+    .cart-summary-panel {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    
+    .cart-summary-title { font-family: 'Josefin_Bold', Arial, sans-serif; font-size: 17px; color: #ffd700; margin: 0 0 12px 0; }
+    .payment-prompt { font-size: 11px; color: #888; margin: 0 0 12px 0; }
+    #cart-payment-element { margin-bottom: 12px; }
+    
+    .cart-checkout-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #4caf50, #45a049);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-family: 'Josefin_Bold', Arial, sans-serif;
+      font-size: 15px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.3s;
+    }
+    
+    .cart-checkout-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4); }
+    .cart-checkout-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    /* Empty Cart */
+    .cart-empty { text-align: center; padding: 60px 20px; color: #fff; }
+    .cart-empty-icon { font-size: 64px; color: rgba(255, 255, 255, 0.2); margin-bottom: 20px; }
+    .cart-empty h2 { font-family: 'Josefin_Bold', Arial, sans-serif; font-size: 24px; margin: 0 0 12px 0; }
+    .cart-empty p { font-size: 14px; color: #888; margin-bottom: 24px; }
+    
+    .cart-back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: #ffd700;
+      color: #1a1a1a;
+      text-decoration: none;
+      border-radius: 6px;
+      font-family: 'Josefin_Bold', Arial, sans-serif;
+      transition: all 0.3s;
+    }
+    
+    .cart-back-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4); }
+    
+    /* Hide mobile elements on desktop */
+    .mobile-checkout-notch, .mobile-bottom-sheet-overlay, .mobile-bottom-sheet { display: none; }
+    
+    /* ======== MOBILE BOTTOM SHEET ======== */
+    @media (max-width: 768px) {
+      .cart-page-wrapper { padding: 12px 12px 100px; }
+      .cart-header h1 { font-size: 16px; margin-bottom: 12px; }
+      
+      /* Compact Summary */
+      .cart-summary-bar { flex-wrap: wrap; padding: 12px 14px; gap: 12px; }
+      .cart-summary-bar-title { width: 100%; font-size: 14px; }
+      .cart-summary-bar-details { width: 100%; flex-wrap: wrap; gap: 12px 16px; font-size: 12px; }
+      .cart-summary-bar-total {
+        width: 100%;
+        margin-left: 0;
+        padding: 10px 0 0 0;
+        border-left: none;
+        border-top: 1px solid rgba(255, 215, 0, 0.25);
+        justify-content: space-between;
+      }
+      .cart-summary-bar-total-value { font-size: 22px; }
+      
+      /* Single Column */
+      .cart-content-wrapper { grid-template-columns: 1fr; gap: 0; }
+      .cart-summary-panel { display: none !important; }
+      .cart-items-column { padding: 10px; max-height: none; margin-bottom: 20px; }
+      .cart-item { padding: 10px; max-height: 100px; }
+      
+      /* NOTCH BAR */
+      .mobile-checkout-notch {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.98), rgba(255, 140, 0, 0.95));
+        backdrop-filter: blur(10px);
+        padding: 12px 16px;
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+        z-index: 1000;
+        cursor: pointer;
+      }
+      
+      .mobile-checkout-notch::before {
+        content: '';
+        position: absolute;
+        top: 6px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 4px;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 2px;
+      }
+      
+      .mobile-notch-total { font-family: 'Josefin_Bold', Arial, sans-serif; font-size: 16px; color: #1a1a1a; }
+      .mobile-notch-button {
+        background: #1a1a1a;
+        color: #ffd700;
+        padding: 10px 20px;
+        border-radius: 20px;
+        font-family: 'Josefin_Bold', Arial, sans-serif;
+        font-size: 14px;
+        border: none;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      
+      /* OVERLAY */
+      .mobile-bottom-sheet-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 1001;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+      }
+      
+      .mobile-bottom-sheet-overlay.active { display: block; opacity: 1; visibility: visible; }
+      
+      /* BOTTOM SHEET */
+      .mobile-bottom-sheet {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #1a1a1a;
+        border-radius: 20px 20px 0 0;
+        z-index: 1002;
+        transform: translateY(100%);
+        transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+        max-height: 92vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
+      }
+      
+      .mobile-bottom-sheet.active { display: flex; transform: translateY(0); }
+      
+      /* HANDLE */
+      .mobile-sheet-handle { width: 100%; padding: 12px 0; display: flex; justify-content: center; cursor: grab; touch-action: none; }
+      .mobile-sheet-handle:active { cursor: grabbing; }
+      .mobile-sheet-handle-bar { width: 40px; height: 4px; background: rgba(255, 255, 255, 0.3); border-radius: 2px; }
+      
+      /* HEADER */
+      .mobile-sheet-header { padding: 0 20px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+      .mobile-sheet-title { font-family: 'Josefin_Bold', Arial, sans-serif; font-size: 20px; color: #ffd700; margin: 0 0 8px 0; }
+      .mobile-sheet-total { font-family: 'Josefin_Medium', Arial, sans-serif; font-size: 14px; color: #aaa; }
+      .mobile-sheet-total-value { font-family: 'Josefin_Bold', Arial, sans-serif; font-size: 18px; color: #ffd700; margin-left: 8px; }
+      
+      /* CONTENT */
+      .mobile-sheet-content { flex: 1; overflow-y: auto; padding: 20px; -webkit-overflow-scrolling: touch; }
+      
+      /* FOOTER */
+      .mobile-sheet-footer {
+        padding: 16px 20px;
+        padding-bottom: max(16px, env(safe-area-inset-bottom));
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        background: #1a1a1a;
+      }
+      
+      .mobile-sheet-content .payment-prompt { margin-bottom: 16px; }
+      .mobile-sheet-footer .cart-checkout-btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Simple Top Nav -->
+  <div class="cart-top-nav">
+    <div class="cart-top-nav-content">
+      <h1>Kaayko Store</h1>
+      <div class="cart-top-nav-links">
+        <a href="store.html">Store</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="cart-page-wrapper">
+    <div class="cart-page">
+      <div class="cart-header"><h1>Your Cart</h1></div>
+      <div id="cart-content"></div>
+    </div>
+
+    <!-- MOBILE BOTTOM SHEET -->
+    <div class="mobile-checkout-notch" id="mobileCheckoutNotch">
+      <span class="mobile-notch-total">Total: <span id="mobileNotchTotal">$0.00</span></span>
+      <button class="mobile-notch-button">Checkout</button>
+    </div>
+
+    <div class="mobile-bottom-sheet-overlay" id="mobileSheetOverlay"></div>
+    
+    <div class="mobile-bottom-sheet" id="mobileBottomSheet">
+      <div class="mobile-sheet-handle" id="mobileSheetHandle">
+        <div class="mobile-sheet-handle-bar"></div>
+      </div>
+      
+      <div class="mobile-sheet-header">
+        <h2 class="mobile-sheet-title">Complete Your Order</h2>
+        <div class="mobile-sheet-total">Total: <span class="mobile-sheet-total-value" id="mobileSheetTotal">$0.00</span></div>
+      </div>
+      
+      <div class="mobile-sheet-content">
+        <p class="payment-prompt">Secure checkout powered by Stripe</p>
+        <div id="mobile-payment-element">
+          <div style="padding: 20px; text-align: center; color: rgba(255,255,255,0.5);">
+            <div style="height: 40px; background: rgba(255,255,255,0.05); border-radius: 4px; margin-bottom: 12px; animation: pulse 1.5s ease-in-out infinite;"></div>
+            <div style="height: 40px; background: rgba(255,255,255,0.05); border-radius: 4px; margin-bottom: 12px; animation: pulse 1.5s ease-in-out infinite; animation-delay: 0.2s;"></div>
+            <div style="height: 40px; background: rgba(255,255,255,0.05); border-radius: 4px; animation: pulse 1.5s ease-in-out infinite; animation-delay: 0.4s;"></div>
+            <p style="margin-top: 16px; font-size: 12px;">Loading payment form...</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mobile-sheet-footer">
+        <button class="cart-checkout-btn" id="mobileCheckoutBtn" disabled>Complete Order</button>
+      </div>
+    </div>
+  </div>
+
+  <footer style="background: #0a0a0a; padding: 20px; text-align: center; color: #666; font-size: 12px; margin-top: 40px;">
+    <p style="margin: 0;">&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
+  </footer>
+
+  <script type="module" src="js/header.js"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <script type="module">
+    import { cartManager } from './js/cartManager.js';
+    
+    const STRIPE_KEY = 'pk_test_51Sb3SRGhBi2rBXlYPnG9eqAUfRUGyHKYcATYekHRX0IvmggnVbJSNpKNDUcv3m8z1vokdf8pieFXfQf8T0aEQrFN00WKO0aymr';
+    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://127.0.0.1:5001/kaaykostore/us-central1/api'
+      : 'https://us-central1-kaaykostore.cloudfunctions.net/api';
+    
+    let desktopStripe, mobileStripe;
+    
+    function renderCart() {
+      const container = document.getElementById('cart-content');
+      const items = cartManager.getItems();
+      
+      if (items.length === 0) {
+        container.innerHTML = `
+          <div class="cart-empty">
+            <div class="cart-empty-icon material-icons">shopping_cart</div>
+            <h2>Your cart is empty</h2>
+            <p>Pick up to 2 unique designs from our sustainable collection.</p>
+            <a href="store.html" class="cart-back-btn"><span class="material-icons">arrow_back</span> Back to Store</a>
+          </div>
+        `;
+        document.getElementById('mobileCheckoutNotch').style.display = 'none';
+        return;
+      }
+      
+      const total = cartManager.getTotalPrice();
+      const totalFormatted = total.toFixed(2);
+      
+      let html = `
+        <div class="cart-summary-bar">
+          <div class="cart-summary-bar-title">Order Summary</div>
+          <div class="cart-summary-bar-details">
+            <div>Items: ${items.length}</div>
+            <div>Designs: ${items.length} of 2 max</div>
+            <div>Shipping: Free</div>
+          </div>
+          <div class="cart-summary-bar-total"><span>Total:</span><span class="cart-summary-bar-total-value">$${totalFormatted}</span></div>
+        </div>
+        <div class="cart-content-wrapper">
+          <div class="cart-items-column">`;
+      
+      items.forEach(item => {
+        html += `
+          <div class="cart-item">
+            <img src="${item.imgSrc}" alt="${item.title}" class="cart-item-image" onerror="this.style.backgroundColor='rgba(255,255,255,0.1)';this.alt='Image unavailable'">
+            <div class="cart-item-details">
+              <h3 class="cart-item-title">${item.title}</h3>
+              <div class="cart-item-meta">${item.gender} • Size ${item.size}</div>
+            </div>
+            <div class="cart-item-price-remove">
+              <div class="cart-item-price">${item.price}</div>
+              <button class="cart-item-remove" data-product-id="${item.productId}">
+                <span class="material-icons" style="font-size: 12px;">delete</span> Remove
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      
+      html += `</div>
+          <div class="cart-summary-panel">
+            <div class="cart-summary-title">Payment</div>
+            <p class="payment-prompt">Secure checkout powered by Stripe</p>
+            <div id="cart-payment-element">
+              <div style="padding: 20px; text-align: center; color: rgba(255,255,255,0.5);">
+                <div style="height: 40px; background: rgba(255,255,255,0.05); border-radius: 4px; margin-bottom: 12px; animation: pulse 1.5s ease-in-out infinite;"></div>
+                <div style="height: 40px; background: rgba(255,255,255,0.05); border-radius: 4px; margin-bottom: 12px; animation: pulse 1.5s ease-in-out infinite; animation-delay: 0.2s;"></div>
+                <div style="height: 40px; background: rgba(255,255,255,0.05); border-radius: 4px; animation: pulse 1.5s ease-in-out infinite; animation-delay: 0.4s;"></div>
+                <p style="margin-top: 16px; font-size: 12px;">Loading payment form...</p>
+              </div>
+            </div>
+            <button id="cart-complete-order-btn" class="cart-checkout-btn" disabled>Complete Order</button>
+          </div>
+        </div>
+        <style>
+          @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+          }
+        </style>`;
+      
+      container.innerHTML = html;
+      
+      container.querySelectorAll('.cart-item-remove').forEach(btn => {
+        btn.addEventListener('click', () => {
+          cartManager.removeItem(btn.dataset.productId);
+          renderCart();
+        });
+      });
+      
+      if (window.innerWidth > 768) initDesktopPayment(items, total);
+      updateMobileUI(totalFormatted);
+    }
+    
+    async function initDesktopPayment(items, total) {
+      try {
+        const response = await fetch(`${API_URL}/createPaymentIntent`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productId: items.map(i => i.productId).join(','),
+            productTitle: items.map(i => `${i.title} (${i.gender} ${i.size})`).join(', '),
+            size: items.map(i => i.size).join(', '),
+            price: `$${total.toFixed(2)}`
+          })
+        });
+        
+        const { clientSecret } = await response.json();
+        desktopStripe = Stripe(STRIPE_KEY);
+        const elements = desktopStripe.elements({ clientSecret });
+        const paymentElement = elements.create('payment');
+        paymentElement.mount('#cart-payment-element');
+        
+        const btn = document.getElementById('cart-complete-order-btn');
+        paymentElement.on('ready', () => { btn.disabled = false; });
+        
+        btn.addEventListener('click', async () => {
+          btn.disabled = true;
+          btn.textContent = 'Processing...';
+          const { error } = await desktopStripe.confirmPayment({
+            elements,
+            confirmParams: { return_url: window.location.origin + '/src/success.html' }
+          });
+          if (error) { alert(error.message); btn.disabled = false; btn.textContent = 'Complete Order'; }
+        });
+      } catch (error) { console.error('Payment init error:', error); }
+    }
+    
+    // MOBILE BOTTOM SHEET
+    let sheetOpen = false, dragY = 0, startY = 0;
+    const notch = document.getElementById('mobileCheckoutNotch');
+    const overlay = document.getElementById('mobileSheetOverlay');
+    const sheet = document.getElementById('mobileBottomSheet');
+    const handle = document.getElementById('mobileSheetHandle');
+    const mobileBtn = document.getElementById('mobileCheckoutBtn');
+    
+    function updateMobileUI(total) {
+      if (window.innerWidth <= 768) {
+        notch.style.display = 'flex';
+        document.getElementById('mobileNotchTotal').textContent = `$${total}`;
+        document.getElementById('mobileSheetTotal').textContent = `$${total}`;
+      } else {
+        notch.style.display = 'none';
+      }
+    }
+    
+    function openSheet() {
+      if (window.innerWidth > 768) return;
+      sheetOpen = true;
+      overlay.classList.add('active');
+      sheet.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      if (!mobileStripe) initMobilePayment();
+    }
+    
+    function closeSheet() {
+      sheetOpen = false;
+      overlay.classList.remove('active');
+      sheet.classList.remove('active');
+      document.body.style.overflow = '';
+      sheet.style.transform = '';
+    }
+    
+    async function initMobilePayment() {
+      try {
+        const items = cartManager.getItems();
+        const total = cartManager.getTotalPrice();
+        const response = await fetch(`${API_URL}/createPaymentIntent`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productId: items.map(i => i.productId).join(','),
+            productTitle: items.map(i => `${i.title} (${i.gender} ${i.size})`).join(', '),
+            size: items.map(i => i.size).join(', '),
+            price: `$${total.toFixed(2)}`
+          })
+        });
+        const { clientSecret } = await response.json();
+        mobileStripe = Stripe(STRIPE_KEY);
+        const elements = mobileStripe.elements({ clientSecret });
+        const paymentElement = elements.create('payment');
+        paymentElement.mount('#mobile-payment-element');
+        paymentElement.on('ready', () => { mobileBtn.disabled = false; });
+        mobileBtn.addEventListener('click', async () => {
+          mobileBtn.disabled = true;
+          mobileBtn.textContent = 'Processing...';
+          const { error } = await mobileStripe.confirmPayment({
+            elements,
+            confirmParams: { return_url: window.location.origin + '/src/success.html' }
+          });
+          if (error) { alert(error.message); mobileBtn.disabled = false; mobileBtn.textContent = 'Complete Order'; }
+        });
+      } catch (error) { console.error('Mobile payment error:', error); }
+    }
+    
+    function handleStart(e) { startY = e.touches[0].clientY; sheet.style.transition = 'none'; }
+    function handleMove(e) { const touchY = e.touches[0].clientY; dragY = touchY - startY; if (dragY > 0) sheet.style.transform = `translateY(${dragY}px)`; }
+    function handleEnd() { sheet.style.transition = ''; if (dragY > 150) closeSheet(); else sheet.style.transform = ''; dragY = 0; }
+    
+    notch.addEventListener('click', openSheet);
+    overlay.addEventListener('click', closeSheet);
+    handle.addEventListener('touchstart', handleStart);
+    handle.addEventListener('touchmove', handleMove);
+    handle.addEventListener('touchend', handleEnd);
+    
+    cartManager.subscribe(renderCart);
+    renderCart();
+    document.getElementById('year').textContent = new Date().getFullYear();
+    window.addEventListener('resize', () => renderCart());
+  </script>
+</body>
+</html>

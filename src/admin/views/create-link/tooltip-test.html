@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tooltip System Test - Kaayko Admin</title>
+  <link rel="stylesheet" href="create-link.css">
+  <style>
+    body {
+      background: #0a0a0a;
+      color: #f5f5dc;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      padding: 40px;
+      line-height: 1.6;
+    }
+    
+    .test-section {
+      margin-bottom: 60px;
+      padding: 30px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+    }
+    
+    .test-section h2 {
+      color: var(--gold);
+      margin-bottom: 20px;
+    }
+    
+    .test-row {
+      display: flex;
+      gap: 40px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    
+    .test-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 15px 20px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+    }
+    
+    .edge-test {
+      position: relative;
+      min-height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .corner {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .corner.top-left { top: 20px; left: 20px; }
+    .corner.top-right { top: 20px; right: 20px; }
+    .corner.bottom-left { bottom: 20px; left: 20px; }
+    .corner.bottom-right { bottom: 20px; right: 20px; }
+    .corner.center { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    
+    code {
+      background: rgba(218, 165, 32, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--gold);
+      font-size: 0.9em;
+    }
+    
+    .success { color: #4ade80; }
+    .warning { color: #fbbf24; }
+    
+    kbd {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-family: monospace;
+      font-size: 0.85em;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎯 Tooltip System Test Suite</h1>
+  <p>This page tests the new accessible tooltip system with smart placement.</p>
+  
+  <!-- Test 1: Basic Functionality -->
+  <div class="test-section">
+    <h2>1. Basic Tooltip Display</h2>
+    <p>Hover or focus on the info icons to see tooltips. Press <kbd>Tab</kbd> to navigate, <kbd>Esc</kbd> to close.</p>
+    
+    <div class="test-row">
+      <div class="test-item">
+        <span>Short tooltip</span>
+        <button type="button" class="info-icon" aria-label="More information">
+          i
+          <span class="tooltip" role="tooltip" data-placement="top">This is a short tooltip</span>
+        </button>
+      </div>
+      
+      <div class="test-item">
+        <span>Medium tooltip</span>
+        <button type="button" class="info-icon" aria-label="More information">
+          i
+          <span class="tooltip" role="tooltip" data-placement="top">This tooltip has more text to demonstrate proper word wrapping and multi-line support.</span>
+        </button>
+      </div>
+      
+      <div class="test-item">
+        <span>Long tooltip</span>
+        <button type="button" class="info-icon" aria-label="More information">
+          i
+          <span class="tooltip" role="tooltip" data-placement="top">This is a very long tooltip that demonstrates the maximum width constraint and proper text wrapping behavior. It should never overflow the viewport or break the layout. The text should remain legible and well-formatted even with extensive content like this example.</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Test 2: Placement Variants -->
+  <div class="test-section">
+    <h2>2. Placement Variants</h2>
+    <p>Each tooltip is explicitly placed in a different direction.</p>
+    
+    <div class="test-row">
+      <div class="test-item">
+        <span>Top placement</span>
+        <button type="button" class="info-icon" aria-label="More information">
+          i
+          <span class="tooltip" role="tooltip" data-placement="top">Tooltip appears above the icon with arrow pointing down</span>
+        </button>
+      </div>
+      
+      <div class="test-item">
+        <span>Bottom placement</span>
+        <button type="button" class="info-icon" aria-label="More information">
+          i
+          <span class="tooltip" role="tooltip" data-placement="bottom">Tooltip appears below the icon with arrow pointing up</span>
+        </button>
+      </div>
+      
+      <div class="test-item">
+        <span>Right placement</span>
+        <button type="button" class="info-icon" aria-label="More information">
+          i
+          <span class="tooltip" role="tooltip" data-placement="right">Tooltip appears to the right with arrow pointing left</span>
+        </button>
+      </div>
+      
+      <div class="test-item">
+        <span>Left placement</span>
+        <button type="button" class="info-icon" aria-label="More information">
+          i
+          <span class="tooltip" role="tooltip" data-placement="left">Tooltip appears to the left with arrow pointing right</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Test 3: Edge Detection -->
+  <div class="test-section">
+    <h2>3. Smart Edge Detection (JavaScript Required)</h2>
+    <p class="warning">⚠️ These tooltips should auto-flip to stay in viewport. Try resizing your browser window.</p>
+    
+    <div class="edge-test">
+      <div class="corner top-left">
+        <span>Top-Left</span>
+        <button type="button" class="info-icon" aria-label="More information">
+          i
+          <span class="tooltip" role="tooltip">Should flip to bottom or right</span>
+        </button>
+      </div>
+      
+      <div class="corner top-right">
+        <span>Top-Right</span>
+        <button type="button" class="info-icon" aria-label="More information">
+          i
+          <span class="tooltip" role="tooltip">Should flip to bottom or left</span>
+        </button>
+      </div>
+      
+      <div class="corner center">
+        <span>Center</span>
+        <button type="button" class="info-icon" aria-label="More information">
+          i
+          <span class="tooltip" role="tooltip">Should display top (default) with plenty of space</span>
+        </button>
+      </div>
+      
+      <div class="corner bottom-left">
+        <span>Bottom-Left</span>
+        <button type="button" class="info-icon" aria-label="More information">
+          i
+          <span class="tooltip" role="tooltip">Should flip to top or right</span>
+        </button>
+      </div>
+      
+      <div class="corner bottom-right">
+        <span>Bottom-Right</span>
+        <button type="button" class="info-icon" aria-label="More information">
+          i
+          <span class="tooltip" role="tooltip">Should flip to top or left</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Test 4: Form Context -->
+  <div class="test-section">
+    <h2>4. Real Form Field Context</h2>
+    <p>Tooltips in actual form labels (matches production usage).</p>
+    
+    <div class="form-group">
+      <label for="test-input-1">
+        Link Title <span class="required">*</span>
+        <button type="button" class="info-icon" aria-label="More information">
+          i
+          <span class="tooltip" role="tooltip">Give your link a memorable name so you can find it later</span>
+        </button>
+      </label>
+      <input type="text" id="test-input-1" class="form-input" placeholder="Summer Sale 2024">
+    </div>
+    
+    <div class="form-group">
+      <label for="test-input-2">
+        Destination URL <span class="required">*</span>
+        <button type="button" class="info-icon" aria-label="More information">
+          i
+          <span class="tooltip" role="tooltip">The web page people will see when they click your link</span>
+        </button>
+      </label>
+      <input type="url" id="test-input-2" class="form-input" placeholder="https://kaayko.com/summer-sale">
+    </div>
+    
+    <div class="form-group">
+      <label for="test-input-3">
+        Custom Code
+        <button type="button" class="info-icon" aria-label="More information">
+          i
+          <span class="tooltip" role="tooltip">This creates your short link: kaayko.com/l/your-code-here. Use letters, numbers, hyphens, and underscores only.</span>
+        </button>
+      </label>
+      <input type="text" id="test-input-3" class="form-input" placeholder="summer-sale">
+    </div>
+  </div>
+  
+  <!-- Test 5: Accessibility -->
+  <div class="test-section">
+    <h2>5. Accessibility Checklist</h2>
+    <ul style="list-style: none; padding: 0;">
+      <li class="success">✅ Icons are focusable via Tab key</li>
+      <li class="success">✅ Tooltips show on focus and hover</li>
+      <li class="success">✅ Tooltips hide on blur and mouse leave</li>
+      <li class="success">✅ Escape key hides tooltip</li>
+      <li class="success">✅ ARIA attributes set (<code>role="tooltip"</code>, <code>aria-describedby</code>, <code>aria-hidden</code>)</li>
+      <li class="success">✅ Visible focus outline (gold ring)</li>
+      <li class="success">✅ Touch events supported (tap to toggle)</li>
+      <li class="success">✅ Reduced motion support</li>
+    </ul>
+    
+    <p><strong>Try it:</strong></p>
+    <ol>
+      <li>Press <kbd>Tab</kbd> repeatedly to navigate icons</li>
+      <li>Press <kbd>Shift</kbd>+<kbd>Tab</kbd> to go backwards</li>
+      <li>Press <kbd>Esc</kbd> while focused to close tooltip</li>
+      <li>Use a screen reader to hear announcements</li>
+      <li>On mobile, tap icons to toggle tooltips</li>
+    </ol>
+  </div>
+  
+  <!-- Test 6: Visual Quality -->
+  <div class="test-section">
+    <h2>6. Visual Quality Check</h2>
+    <div class="test-item">
+      <span>Hover to inspect arrow, border, shadow, spacing</span>
+      <button type="button" class="info-icon" aria-label="More information">
+        i
+        <span class="tooltip" role="tooltip" data-placement="top">✨ Check that the arrow is gold, border is crisp, shadow is subtle, text is legible, and spacing feels balanced. The tooltip should have rounded corners and fade in smoothly.</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- JavaScript to initialize tooltips -->
+  <script type="module">
+    /**
+     * Initialize accessible tooltips with smart placement
+     */
+    function initTooltips() {
+      const icons = document.querySelectorAll('.info-icon');
+      
+      icons.forEach((icon, index) => {
+        const tooltip = icon.querySelector('.tooltip');
+        if (!tooltip) return;
+        
+        // Setup accessibility attributes
+        const tooltipId = `tooltip-${index}`;
+        tooltip.id = tooltipId;
+        tooltip.setAttribute('role', 'tooltip');
+        tooltip.setAttribute('aria-hidden', 'true');
+        
+        icon.setAttribute('aria-describedby', tooltipId);
+        
+        // Default placement if not set
+        if (!tooltip.hasAttribute('data-placement')) {
+          tooltip.setAttribute('data-placement', 'top');
+        }
+        
+        // Show tooltip with viewport-safe placement
+        const showTooltip = () => {
+          placeTooltip(icon, tooltip);
+          tooltip.setAttribute('aria-hidden', 'false');
+        };
+        
+        // Hide tooltip
+        const hideTooltip = () => {
+          tooltip.setAttribute('aria-hidden', 'true');
+        };
+        
+        // Mouse events
+        icon.addEventListener('mouseenter', showTooltip);
+        icon.addEventListener('mouseleave', hideTooltip);
+        
+        // Keyboard events
+        icon.addEventListener('focusin', showTooltip);
+        icon.addEventListener('focusout', hideTooltip);
+        
+        // ESC key handler
+        icon.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            hideTooltip();
+            icon.blur();
+          }
+        });
+        
+        // Touch events (mobile)
+        let touchTimeout;
+        icon.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          
+          if (tooltip.getAttribute('aria-hidden') === 'false') {
+            hideTooltip();
+            return;
+          }
+          
+          showTooltip();
+          
+          clearTimeout(touchTimeout);
+          touchTimeout = setTimeout(hideTooltip, 5000);
+        });
+        
+        document.addEventListener('touchstart', (e) => {
+          if (!icon.contains(e.target) && !tooltip.contains(e.target)) {
+            hideTooltip();
+            clearTimeout(touchTimeout);
+          }
+        });
+      });
+    }
+
+    /**
+     * Place tooltip with viewport-safe coordinates
+     */
+    function placeTooltip(icon, tip) {
+      const pad = 12;
+      const m = pad;
+      const ir = icon.getBoundingClientRect();
+      
+      tip.style.opacity = '0';
+      tip.style.visibility = 'hidden';
+      tip.style.position = 'fixed';
+      tip.style.left = '0px';
+      tip.style.top = '0px';
+      tip.style.maxWidth = `min(36ch, calc(100vw - ${2 * m}px))`;
+      
+      const oldDisplay = tip.style.display;
+      tip.style.display = 'block';
+      const tr = tip.getBoundingClientRect();
+      tip.style.display = oldDisplay;
+      
+      let x = ir.left + ir.width / 2;
+      let y = ir.top - m;
+      let rot = '45deg';
+      
+      const roomAbove = ir.top - m;
+      const needH = tr.height + m;
+      
+      if (roomAbove >= needH) {
+        y = ir.top - m;
+        tip.style.transform = 'translate(-50%, -100%)';
+        rot = '45deg';
+      } else {
+        y = ir.bottom + m;
+        tip.style.transform = 'translate(-50%, 0%)';
+        rot = '-135deg';
+      }
+      
+      const clampedX = Math.max(m, Math.min(x, window.innerWidth - m));
+      
+      tip.style.setProperty('--tt-x', clampedX + 'px');
+      tip.style.setProperty('--tt-y', y + 'px');
+      tip.style.setProperty('--tt-rot', rot);
+      
+      tip.style.opacity = '';
+      tip.style.visibility = '';
+    }
+
+    // Initialize on load
+    initTooltips();
+    
+    // Reinitialize on resize (for edge detection test)
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(initTooltips, 100);
+    });
+  </script>
+</body>
+</html>

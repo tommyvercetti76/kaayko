@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Links Enterprise | Kaayko</title>
+  
+  <!-- Kaayko Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheets - Modular Architecture v6.0 -->
+    <link rel="stylesheet" href="css/smartlinks-base.css?v=6.3.3">
+    <link rel="stylesheet" href="views/create-link/create-link.css?v=1.5">
+</head>
+<body>
+  
+  <div class="app-container">
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">K</div>
+      <h2>Kaayko Links</h2>
+      <div class="version">Enterprise v5.0</div>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-view="dashboard">
+        <span class="nav-icon">◆</span>
+        <span>Dashboard</span>
+      </a>
+      <a href="#" class="nav-item" data-view="create">
+        <span class="nav-icon">+</span>
+        <span>Create Link</span>
+      </a>
+      <a href="#" class="nav-item" data-view="links">
+        <span class="nav-icon">≡</span>
+        <span>All Links</span>
+      </a>
+      <a href="#" class="nav-item" data-view="qrcodes">
+        <span class="nav-icon">▢</span>
+        <span>QR Codes</span>
+      </a>
+      <a href="#" class="nav-item" data-view="analytics">
+        <span class="nav-icon">▲</span>
+        <span>Analytics</span>
+      </a>
+    </nav>
+    
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div style="display: flex; align-items: center; gap: var(--space-md);">
+          <div class="user-avatar">
+            <span id="user-initial">?</span>
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <div id="user-email">Loading...</div>
+            <div id="user-role">User</div>
+          </div>
+        </div>
+      </div>
+      <button id="logout-btn">Logout</button>
+      
+      <div class="env-switch">
+        <label>Environment</label>
+        <select id="env-select">
+          <option value="local">Local Development</option>
+          <option value="production">Production</option>
+        </select>
+      </div>
+    </div>
+  </aside>
+  
+  <!-- Main Content -->
+  <main class="main-content">
+    
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <div class="api-status">
+        <span class="status-dot"></span>
+        <span>API Connected</span>
+      </div>
+      <div id="sync-actions" style="display: none;">
+        <button class="btn-primary" onclick="syncToProduction()" style="background: linear-gradient(135deg, #1a8917, #0d4a0c);">
+          <span>⬆</span>
+          <span>Push to Production</span>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Dashboard View -->
+    <div id="dashboard-view" class="view">
+      <header class="view-header">
+        <h1>Dashboard</h1>
+        <p>Real-time overview of your smart links performance</p>
+      </header>
+      
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">🔗</div>
+          <div class="stat-label">Total Links</div>
+          <div class="stat-value" id="stat-totalLinks">0</div>
+          <div class="stat-change">+0 this week</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon">📊</div>
+          <div class="stat-label">Total Clicks</div>
+          <div class="stat-value" id="stat-totalClicks">0</div>
+          <div class="stat-change">+0 this week</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon">✓</div>
+          <div class="stat-label">Active Links</div>
+          <div class="stat-value" id="stat-activeLinks">0</div>
+          <div class="stat-change">All operational</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon">⚡</div>
+          <div class="stat-label">Conversion Rate</div>
+          <div class="stat-value" id="stat-conversionRate">0%</div>
+          <div class="stat-change">Performance metric</div>
+        </div>
+      </div>
+      
+      <!-- Recent Links -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Recent Links</h3>
+          <a href="#" class="btn-secondary" data-view="links">View All</a>
+        </div>
+        <div id="recent-links">
+          <div class="loading">Loading recent links...</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Create Link View -->
+    <div id="create-view" class="view hidden">
+      <header class="view-header">
+        <div>
+          <h1>Create New Link</h1>
+          <p>Create a short link that works everywhere - track clicks, customize destinations, and generate QR codes</p>
+        </div>
+      </header>
+      
+      <!-- Quick Guide -->
+      <div class="form-guide">
+        <div class="guide-step">
+          <div class="guide-number">1</div>
+          <div class="guide-text">
+            <strong>Basic Info</strong>
+            <span>Name your link and set the destination</span>
+          </div>
+        </div>
+        <div class="guide-separator">→</div>
+        <div class="guide-step">
+          <div class="guide-number">2</div>
+          <div class="guide-text">
+            <strong>Customize</strong>
+            <span>Add platforms and UTM parameters</span>
+          </div>
+        </div>
+        <div class="guide-separator">→</div>
+        <div class="guide-step">
+          <div class="guide-number">3</div>
+          <div class="guide-text">
+            <strong>Launch</strong>
+            <span>Review and create your link</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <form id="create-form">
+          
+          <!-- Core Fields (Always Visible) -->
+          <div class="form-section">
+            <h3>Essential Details</h3>
+            
+            <div class="form-group">
+              <label for="title">
+                What's this link for? <span class="required">*</span>
+                <button type="button" class="info-icon" aria-label="More information">
+                  i
+                  <span class="tooltip" role="tooltip">Give your link a memorable name so you can find it later</span>
+                </button>
+              </label>
+              <input type="text" id="title" class="form-input" required placeholder="Summer Sale 2024">
+            </div>
+            
+                        <div class="form-group">
+              <label for="webDestination">
+                Where should it go? <span class="required">*</span>
+                <button type="button" class="info-icon" aria-label="More information">
+                  i
+                  <span class="tooltip" role="tooltip">The web page people will see when they click your link</span>
+                </button>
+              </label>
+              <input type="url" id="webDestination" class="form-input" required placeholder="https://kaayko.com/summer-sale">
+            </div>
+            
+            <div class="form-group">
+              <label for="createdBy">
+                Who's creating this? <span class="required">*</span>
+                <button type="button" class="info-icon" aria-label="More information">
+                  i
+                  <span class="tooltip" role="tooltip">Your name or team name for tracking purposes</span>
+                </button>
+              </label>
+              <input type="text" id="createdBy" class="form-input" required placeholder="marketing-team">
+            </div>
+            
+            <div class="form-group">
+              <label for="short-code">
+                Choose your short code <span class="required">*</span>
+                <button type="button" class="info-icon" aria-label="More information">
+                  i
+                  <span class="tooltip" role="tooltip">This creates your short link: kaayko.com/l/your-code-here</span>
+                </button>
+              </label>
+              <input type="text" id="short-code" name="short-code" class="form-input" required placeholder="summer-sale" pattern="[a-zA-Z0-9_-]+" minlength="3">
+              <span class="form-hint">💡 Letters, numbers, hyphens, and underscores only • Minimum 3 characters</span>
+            </div>
+          </div>
+          
+          <!-- Platform Destinations (Collapsible) -->
+          <div class="collapsible">
+            <div class="collapsible-header">
+              <span class="collapsible-title">
+                <span class="collapsible-icon">📱</span>
+                Mobile App Links (Optional)
+              </span>
+              <span class="collapsible-toggle">▼</span>
+            </div>
+            <div class="collapsible-content">
+              <div class="collapsible-body">
+                <p class="help-text">Have a mobile app? Set different destinations for iPhone and Android users. Otherwise, they'll see your web page.</p>
+                
+                <div class="form-group">
+                  <label for="iosDestination">
+                    iPhone/iPad Link
+                    <button type="button" class="info-icon" aria-label="More information">
+                      i
+                      <span class="tooltip" role="tooltip">Where iOS users go (leave blank to use web link)</span>
+                    </button>
+                  </label>
+                  <input type="text" id="iosDestination" class="form-input" placeholder="kaayko://spot/beach-123">
+                </div>
+                
+                <div class="form-group">
+                  <label for="androidDestination">
+                    Android Link
+                    <button type="button" class="info-icon" aria-label="More information">
+                      i
+                      <span class="tooltip" role="tooltip">Where Android users go (leave blank to use web link)</span>
+                    </button>
+                  </label>
+                  <input type="text" id="androidDestination" class="form-input" placeholder="kaayko://spot/beach-123">
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- UTM Parameters (Collapsible) -->
+          <div class="collapsible">
+            <div class="collapsible-header">
+              <span class="collapsible-title">
+                <span class="collapsible-icon">UTM</span>
+                UTM Tracking Parameters
+              </span>
+              <span class="collapsible-toggle">▼</span>
+            </div>
+            <div class="collapsible-content">
+              <div class="collapsible-body">
+                <p class="help-text">Add UTM parameters for detailed campaign tracking in Google Analytics.</p>
+                
+                <div class="form-group">
+                  <label for="utmSource">
+                    UTM Source
+                    <button type="button" class="info-icon" aria-label="More information">
+                      i
+                      <span class="tooltip" role="tooltip">Identifies which site sent the traffic (e.g., newsletter, facebook, google)</span>
+                    </button>
+                  </label>
+                  <input type="text" id="utmSource" class="form-input" placeholder="newsletter">
+                </div>
+                
+                <div class="form-group">
+                  <label for="utmMedium">
+                    UTM Medium
+                    <button type="button" class="info-icon" aria-label="More information">
+                      i
+                      <span class="tooltip" role="tooltip">Identifies what type of link was used (e.g., email, cpc, social)</span>
+                    </button>
+                  </label>
+                  <input type="text" id="utmMedium" class="form-input" placeholder="email">
+                </div>
+                
+                <div class="form-group">
+                  <label for="utmCampaign">
+                    UTM Campaign
+                    <button type="button" class="info-icon" aria-label="More information">
+                      i
+                      <span class="tooltip" role="tooltip">Identifies a specific product promotion or campaign (e.g., summer_sale)</span>
+                    </button>
+                  </label>
+                  <input type="text" id="utmCampaign" class="form-input" placeholder="summer_sale_2024">
+                </div>
+                
+                <div class="form-group">
+                  <label for="utmTerm">
+                    UTM Term
+                    <button type="button" class="info-icon" aria-label="More information">
+                      i
+                      <span class="tooltip" role="tooltip">Identifies paid search keywords. Rarely used for organic campaigns.</span>
+                    </button>
+                  </label>
+                  <input type="text" id="utmTerm" class="form-input" placeholder="paddle+kayak">
+                </div>
+                
+                <div class="form-group">
+                  <label for="utmContent">
+                    UTM Content
+                    <button type="button" class="info-icon" aria-label="More information">
+                      i
+                      <span class="tooltip" role="tooltip">Differentiates similar content or links within the same ad (e.g., header-link, footer-link)</span>
+                    </button>
+                  </label>
+                  <input type="text" id="utmContent" class="form-input" placeholder="hero-cta">
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Advanced Options (Collapsible) -->
+          <div class="collapsible">
+            <div class="collapsible-header">
+              <span class="collapsible-title">
+                <span class="collapsible-icon">Options</span>
+                Advanced Options
+              </span>
+              <span class="collapsible-toggle">▼</span>
+            </div>
+            <div class="collapsible-content">
+              <div class="collapsible-body">
+                
+                <div class="form-group">
+                  <label for="expiresAt">
+                    Expiration Date
+                    <button type="button" class="info-icon" aria-label="More information">
+                      i
+                      <span class="tooltip" role="tooltip">Optional: Set a date when this link should stop working. Leave empty for no expiration.</span>
+                    </button>
+                  </label>
+                  <input type="datetime-local" id="expiresAt" class="form-input">
+                </div>
+                
+                <div class="toggle-option">
+                  <div class="toggle-option-info">
+                    <div class="toggle-option-label">
+                      <strong>Link Enabled</strong>
+                      <button type="button" class="info-icon" aria-label="More information">
+                        i
+                        <span class="tooltip" role="tooltip">Uncheck to create a disabled link. Disabled links return 404.</span>
+                      </button>
+                    </div>
+                    <p class="toggle-option-desc">When disabled, this link will not work and return a 404 error</p>
+                  </div>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="enabled" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                
+                <div class="toggle-option">
+                  <div class="toggle-option-info">
+                    <div class="toggle-option-label">
+                      <strong>Generate QR Code</strong>
+                      <button type="button" class="info-icon" aria-label="More information">
+                        i
+                        <span class="tooltip" role="tooltip">Display QR code modal immediately after creating the link</span>
+                      </button>
+                    </div>
+                    <p class="toggle-option-desc">Show QR code after link creation for easy download</p>
+                  </div>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="generateQR">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                
+                <div class="toggle-option">
+                  <div class="toggle-option-info">
+                    <div class="toggle-option-label">
+                      <strong>App Store Default</strong>
+                      <button type="button" class="info-icon" aria-label="More information">
+                        i
+                        <span class="tooltip" role="tooltip">Send mobile users to App Store, desktop users to web version</span>
+                      </button>
+                    </div>
+                    <p class="toggle-option-desc">Redirect mobile browsers to App Store instead of web</p>
+                  </div>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="appStoreDefault">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Submit -->
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">✨ Create Link</button>
+            <button type="reset" class="btn btn-secondary" onclick="resetCreateForm()">Clear Form</button>
+          </div>
+          
+        </form>
+      </div>
+    </div>
+    
+    <!-- All Links View -->
+    <div id="links-view" class="view hidden">
+      <header class="view-header">
+        <h1>All Smart Links</h1>
+        <p>Manage and monitor all your short links</p>
+      </header>
+      
+      <div class="card">
+        <div id="links-loading" class="loading">Loading links...</div>
+        <div id="links-empty" class="empty-state hidden">
+          <div class="empty-icon">🔗</div>
+          <h3>No Links Yet</h3>
+          <p>Create your first smart link to get started</p>
+        </div>
+        <div id="links-table"></div>
+      </div>
+    </div>
+    
+    <!-- QR Codes View -->
+    <div id="qrcodes-view" class="view hidden">
+      <header class="view-header">
+        <h1>QR Code Gallery</h1>
+        <p>Generate, download, and manage QR codes for your links</p>
+      </header>
+      
+      <div id="qr-gallery" class="qr-gallery">
+        <!-- QR codes will be loaded here -->
+      </div>
+      
+      <div id="qr-empty" class="empty-state hidden">
+        <div class="empty-icon">▢</div>
+        <p>No links yet. Create a link to see its QR code here!</p>
+      </div>
+    </div>
+    
+    <!-- Analytics View -->
+    <div id="analytics-view" class="view hidden">
+      <header class="view-header">
+        <h1>Analytics Dashboard</h1>
+        <p>Track performance and engagement metrics</p>
+      </header>
+      
+      <div id="analytics-content"></div>
+    </div>
+    
+  </main>
+  
+  <!-- QR Code Sidebar -->
+  <div id="qr-sidebar" class="qr-sidebar">
+    <div class="qr-sidebar-header">
+      <h3>QR Code</h3>
+      <button class="modal-close" onclick="closeQRSidebar()">✕</button>
+    </div>
+    <div class="qr-sidebar-body" id="qr-sidebar-body">
+      <!-- Dynamic QR content -->
+    </div>
+  </div>
+  
+  <!-- Modal -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-title">Modal Title</h2>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="modal-body">
+        <!-- Dynamic content -->
+      </div>
+    </div>
+  </div>
+  
+  </div> <!-- .app-container -->
+  
+  <!-- Scripts - Modular Architecture v6.0 -->
+    <!-- App Script -->
+          <!-- Core JS Module -->
+    <script type="module" src="js/smartlinks-core.js?v=6.5.4"></script>
+</body>
+</html>
+  
+</body>
+</html>

@@ -32,9 +32,12 @@ function populateMenu() {
     "paddlingout.html":  { name: "Paddling Out", url: "paddlingout.html" },
     "store.html":        { name: "Store",        url: "store.html" },
     "reads.html":        { name: "Reads",        url: "reads.html" },
-    "about.html":        { name: "About",        url: "about.html" }
+    "about.html":        { name: "About",        url: "about.html" },
+    "admin/login.html":  { name: "Admin",        url: "admin/login.html" }
   };
   const current = window.location.pathname.split("/").pop() || "index.html";
+  const isStorePage = current === "store.html" || current === "cart.html";
+  
   const desktopUl = document.querySelector(".top-menu ul");
   const mobileUl  = document.querySelector(".mobile-menu-overlay ul");
   if (!desktopUl || !mobileUl) return;
@@ -43,11 +46,19 @@ function populateMenu() {
   mobileUl.innerHTML  = "";
 
   Object.entries(mapping).forEach(([file, info]) => {
-    if (file === current) return;
+    // For cart.html, show all links including Store
+    // For other pages, skip the current page
+    if (file === current && current !== "cart.html") return;
+    
     const li = document.createElement("li");
     const a  = document.createElement("a");
     a.href        = info.url;
     a.textContent = info.name;
+    
+    // Mark Store as active when on store or cart pages
+    if (file === 'store.html' && isStorePage) {
+      a.classList.add('active');
+    }
     
     // Add special handling for Store links
     if (file === 'store.html') {
@@ -56,13 +67,14 @@ function populateMenu() {
     
     li.appendChild(a);
     desktopUl.appendChild(li);
-    mobileUl.appendChild(li.cloneNode(true));
-  });
-  
-  // Also add event listeners to mobile menu store links
-  const mobileStoreLinks = mobileUl.querySelectorAll('a[href="store.html"]');
-  mobileStoreLinks.forEach(link => {
-    link.addEventListener('click', handleStoreNavigation);
+    
+    // Clone for mobile menu
+    const mobileLi = li.cloneNode(true);
+    const mobileA = mobileLi.querySelector('a');
+    if (file === 'store.html') {
+      mobileA.addEventListener('click', handleStoreNavigation);
+    }
+    mobileUl.appendChild(mobileLi);
   });
 }
 

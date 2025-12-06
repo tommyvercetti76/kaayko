@@ -1,0 +1,214 @@
+/**
+ * QR Codes View Styles - Sleek Gallery Design
+ * Streamlined cards with hover URL display and functional buttons
+ */
+
+.qr-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.qr-card {
+  position: relative;
+  background: var(--surface);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.qr-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  border-color: var(--gold-primary);
+}
+
+/* QR Image Container with Hover Overlay */
+.qr-card-image {
+  position: relative;
+  aspect-ratio: 1;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  overflow: hidden;
+}
+
+.qr-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.qr-card:hover .qr-card-image img {
+  transform: scale(1.05);
+}
+
+/* URL Overlay - Shows on Hover */
+.qr-url-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.92);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.qr-card:hover .qr-url-overlay {
+  opacity: 1;
+  visibility: visible;
+}
+
+.qr-url-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--gold-primary);
+  margin-bottom: 12px;
+}
+
+.qr-url-display {
+  font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+  font-size: 14px;
+  color: #ffffff;
+  word-break: break-all;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* Card Content */
+.qr-card-content {
+  padding: 20px 24px;
+  background: var(--surface);
+}
+
+.qr-card-title {
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.qr-card-code {
+  font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  color: var(--gold-primary);
+  font-weight: 600;
+  margin-bottom: 12px;
+  padding: 4px 8px;
+  background: rgba(212, 175, 55, 0.1);
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.qr-card-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--muted);
+  align-items: center;
+}
+
+.qr-card-stats span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Sleek Action Buttons */
+.qr-card-actions {
+  display: flex;
+  gap: 8px;
+  padding: 16px 24px 20px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.qr-action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--on-surface);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.qr-action-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  flex-shrink: 0;
+}
+
+.qr-action-btn:hover {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+.qr-action-btn:active {
+  transform: translateY(0);
+}
+
+/* Primary Download Button */
+.qr-action-btn.primary {
+  background: linear-gradient(135deg, var(--gold-primary) 0%, #c4961a 100%);
+  border-color: var(--gold-primary);
+  color: #000000;
+  font-weight: 600;
+}
+
+.qr-action-btn.primary:hover {
+  background: linear-gradient(135deg, #ffed4e 0%, var(--gold-primary) 100%);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .qr-gallery {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  
+  .qr-card-image {
+    padding: 24px;
+  }
+  
+  .qr-action-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  
+  .qr-action-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+}
