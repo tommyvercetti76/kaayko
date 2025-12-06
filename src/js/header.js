@@ -24,54 +24,65 @@ function initializeDarkMode() {
 
 /** ───────────────────────────────────────────────────────────────────────────
  * 2) Populate Desktop & Mobile Menu
- *    Dynamically builds nav links, skipping the current page.
+ *    Fixed nav tabs with dynamic subtitle system.
  *───────────────────────────────────────────────────────────────────────────*/
 function populateMenu() {
-  const mapping = {
-    // Main navigation items
-    "paddlingout.html":  { name: "Paddling Out", url: "paddlingout.html" },
-    "store.html":        { name: "Store",        url: "store.html" },
-    "reads.html":        { name: "Reads",        url: "reads.html" },
-    "about.html":        { name: "About",        url: "about.html" },
-    "admin/login.html":  { name: "Admin",        url: "admin/login.html" }
-  };
-  const current = window.location.pathname.split("/").pop() || "index.html";
-  const isStorePage = current === "store.html" || current === "cart.html";
+  // Fixed navigation tabs - ALWAYS show these 5
+  const tabs = [
+    { name: "Paddling Out", url: "paddlingout.html", subtitle: "Know Before You Go" },
+    { name: "Store", url: "store.html", subtitle: "Made for the Wild" },
+    { name: "Reads", url: "reads.html", subtitle: "Thoughts. Perspectives. Stories." },
+    { name: "About", url: "about.html", subtitle: "Water. Maps. Intelligence." },
+    { name: "Admin", url: "admin/smartlinks.html", subtitle: "Smart Links. Insights." }
+  ];
+  
+  const currentPath = window.location.pathname;
+  const currentPage = currentPath.split("/").pop() || "index.html";
+  const isStorePage = currentPage === "store.html" || currentPage === "cart.html";
+  const isAdminPage = currentPath.includes("/admin/");
   
   const desktopUl = document.querySelector(".top-menu ul");
   const mobileUl  = document.querySelector(".mobile-menu-overlay ul");
+  const subtitleEl = document.querySelector(".header-subtitle");
+  
   if (!desktopUl || !mobileUl) return;
 
   desktopUl.innerHTML = "";
   mobileUl.innerHTML  = "";
 
-  Object.entries(mapping).forEach(([file, info]) => {
-    // For cart.html, show all links including Store
-    // For other pages, skip the current page
-    if (file === current && current !== "cart.html") return;
+  tabs.forEach(tab => {
+    // Determine if this tab is active - match against href or path
+    const isActive = currentPath.includes(tab.url.replace('.html', '')) || 
+                     currentPage === tab.url ||
+                     (tab.url === "store.html" && isStorePage) ||
+                     (tab.url === "admin/smartlinks.html" && isAdminPage);
     
+    // Desktop tab
     const li = document.createElement("li");
     const a  = document.createElement("a");
-    a.href        = info.url;
-    a.textContent = info.name;
+    a.href        = tab.url;
+    a.textContent = tab.name;
     
-    // Mark Store as active when on store or cart pages
-    if (file === 'store.html' && isStorePage) {
+    if (isActive) {
       a.classList.add('active');
+      // Update subtitle for active tab
+      if (subtitleEl) {
+        subtitleEl.textContent = tab.subtitle;
+      }
     }
     
     // Add special handling for Store links
-    if (file === 'store.html') {
+    if (tab.url === 'store.html') {
       a.addEventListener('click', handleStoreNavigation);
     }
     
     li.appendChild(a);
     desktopUl.appendChild(li);
     
-    // Clone for mobile menu
+    // Mobile tab
     const mobileLi = li.cloneNode(true);
     const mobileA = mobileLi.querySelector('a');
-    if (file === 'store.html') {
+    if (tab.url === 'store.html') {
       mobileA.addEventListener('click', handleStoreNavigation);
     }
     mobileUl.appendChild(mobileLi);
