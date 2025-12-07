@@ -232,15 +232,15 @@ html.dark-theme .theme-toggle-icon::before {
   font-size: 24px;
 }
 
-/* Custom Location Button */
+/* Custom Location Button - Kaayko Gold Theme */
 .custom-location-btn {
   position: relative;
-  width: 36px;
-  height: 36px;
-  padding: 6px;
-  border: none;
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  border: 2px solid #d4af37;
   border-radius: 50%;
-  background: transparent;
+  background: rgba(212, 175, 55, 0.1);
   cursor: pointer;
   color: transparent;
   overflow: hidden;
@@ -253,23 +253,36 @@ html.dark-theme .theme-toggle-icon::before {
   font-feature-settings: 'liga';
   font-size: 0;
   transition: all 0.3s ease;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
 }
 
 .custom-location-btn::before {
   content: "place";
   font-family: 'Material Icons';
   font-feature-settings: 'liga';
-  font-size: 22px;
+  font-size: 24px;
   line-height: 1;
-  color: var(--color-bright-ivory);
+  color: #d4af37;
   display: inline-block;
-  transition: color 0.3s ease, filter 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.4));
+}
+
+.custom-location-btn:hover {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: #f5d976;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+  transform: translateY(-2px);
 }
 
 .custom-location-btn:hover::before {
-  opacity: 0.85;
-  transform: scale(1.1);
-  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.6));
+}
+
+.custom-location-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
 }
 
 .custom-location-btn:active::before {
@@ -277,9 +290,20 @@ html.dark-theme .theme-toggle-icon::before {
 }
 
 /* Dark mode support for custom location button */
+html.dark-theme .custom-location-btn {
+  border-color: #d4af37;
+  background: rgba(212, 175, 55, 0.15);
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+}
+
 html.dark-theme .custom-location-btn::before {
-  color: var(--color-bright-ivory);
-  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.2));
+  color: #d4af37;
+  filter: drop-shadow(0 0 6px rgba(212, 175, 55, 0.5));
+}
+
+html.dark-theme .custom-location-btn:hover {
+  background: rgba(212, 175, 55, 0.25);
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.5);
 }
 
 

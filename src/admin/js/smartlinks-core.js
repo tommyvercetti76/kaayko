@@ -50,6 +50,11 @@ const VIEW_CONFIGS = {
     module: '../views/analytics/analytics.js',
     css: 'views/analytics/analytics.css',
     container: '#analytics-view'
+  },
+  'tenant-onboarding': {
+    module: '../views/tenant-onboarding/tenant-onboarding.js',
+    css: 'views/tenant-onboarding/tenant-onboarding.css',
+    container: '#tenant-onboarding-view'
   }
 };
 
@@ -228,14 +233,19 @@ function initUserMenu() {
   
   const emailEl = document.getElementById('user-email');
   const roleEl = document.getElementById('user-role');
+  const tenantEl = document.getElementById('user-tenant');
   const initialEl = document.getElementById('user-initial');
   const logoutBtn = document.getElementById('logout-btn');
+  const tenantSwitcher = document.getElementById('tenant-switcher');
+  const tenantSelect = document.getElementById('tenant-select');
   
   console.log('   Elements found:', {
     emailEl: !!emailEl,
     roleEl: !!roleEl,
+    tenantEl: !!tenantEl,
     initialEl: !!initialEl,
-    logoutBtn: !!logoutBtn
+    logoutBtn: !!logoutBtn,
+    tenantSwitcher: !!tenantSwitcher
   });
   
   if (AUTH.user && AUTH.user.email) {
@@ -248,15 +258,28 @@ function initUserMenu() {
       roleEl.textContent = AUTH.user.role || 'user';
       console.log('   ✅ Role set to:', roleEl.textContent);
     }
+    if (tenantEl) {
+      const tenantName = AUTH.user.tenantName || localStorage.getItem('kaayko_tenant_id') || 'Default';
+      tenantEl.textContent = `Tenant: ${tenantName}`;
+      console.log('   ✅ Tenant set to:', tenantName);
+    }
     if (initialEl) {
       initialEl.textContent = (AUTH.user.email || '?')[0].toUpperCase();
       console.log('   ✅ Initial set to:', initialEl.textContent);
+    }
+    
+    // Show tenant switcher for super-admins
+    if (AUTH.user.role === 'super-admin' && tenantSwitcher && tenantSelect) {
+      console.log('   👑 Super-admin detected - showing tenant switcher');
+      tenantSwitcher.style.display = 'block';
+      initTenantSwitcher(tenantSelect);
     }
   } else {
     console.error('   ❌ AUTH.user is missing or invalid:', AUTH.user);
     // Set fallback values
     if (emailEl) emailEl.textContent = 'Unknown User';
     if (roleEl) roleEl.textContent = 'N/A';
+    if (tenantEl) tenantEl.textContent = 'Tenant: N/A';
     if (initialEl) initialEl.textContent = '?';
   }
   
@@ -266,6 +289,64 @@ function initUserMenu() {
         await AUTH.logout();
       }
     });
+  }
+}
+
+async function initTenantSwitcher(tenantSelect) {
+  try {
+    // Fetch all tenants
+    const response = await fetch(`${CONFIG.API_BASE}/tenants`, {
+      headers: { 'Authorization': `Bearer ${AUTH.token}` }
+    });
+    
+    if (!response.ok) {
+      console.error('Failed to fetch tenants for switcher');
+      return;
+    }
+    
+    const data = await response.json();
+    const tenants = data.tenants || [];
+    
+    // Clear and populate dropdown
+    tenantSelect.innerHTML = '';
+    const currentTenantId = localStorage.getItem('kaayko_tenant_id') || 'kaayko-default';
+    
+    tenants.forEach(tenant => {
+      const option = document.createElement('option');
+      option.value = tenant.id;
+      option.textContent = tenant.name;
+      if (tenant.id === currentTenantId) {
+        option.selected = true;
+      }
+      tenantSelect.appendChild(option);
+    });
+    
+    // Handle tenant switch
+    tenantSelect.addEventListener('change', async (e) => {
+      const newTenantId = e.target.value;
+      if (!newTenantId) return;
+      
+      if (confirm(`Switch to tenant: ${e.target.options[e.target.selectedIndex].text}?`)) {
+        // Update localStorage
+        localStorage.setItem('kaayko_tenant_id', newTenantId);
+        
+        // Update user object
+        const user = JSON.parse(localStorage.getItem('kaayko_user'));
+        user.tenantId = newTenantId;
+        user.tenantName = e.target.options[e.target.selectedIndex].text;
+        localStorage.setItem('kaayko_user', JSON.stringify(user));
+        
+        // Reload page to apply new tenant context
+        window.location.reload();
+      } else {
+        // Revert selection
+        tenantSelect.value = currentTenantId;
+      }
+    });
+    
+    console.log('   ✅ Tenant switcher initialized with', tenants.length, 'tenants');
+  } catch (error) {
+    console.error('Error initializing tenant switcher:', error);
   }
 }
 

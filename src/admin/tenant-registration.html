@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns#">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  
+  <!-- Primary Meta Tags -->
+  <title>Kortex Tenant Registration - Enterprise Link Management | Kaayko</title>
+  <meta name="description" content="Register your organization for Kortex by Kaayko. Enterprise-grade intelligent link routing, smart link creation, and comprehensive analytics for brands.">
+  <meta name="keywords" content="kortex registration, enterprise link management, smart links, link analytics, tenant onboarding, kaayko enterprise">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://kaayko.com/admin/tenant-registration.html">
+  
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://kaayko.com/admin/tenant-registration.html">
+  <meta property="og:title" content="Kortex Tenant Registration">
+  <meta property="og:description" content="Enterprise link routing platform. Register your organization for intelligent link management.">
+  
+  <!-- Security -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <link rel="icon" type="image/png" href="/favicon-32x32.png">
+  <meta name="theme-color" content="#d4af37">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary: #d4af37;
+      --bg-dark: #0a0a0a;
+      --bg-card: #1a1a1a;
+      --text-primary: #ffffff;
+      --text-secondary: #a0a0a0;
+      --error: #ef4444;
+      --success: #10b981;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Josefin Sans', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .logo {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, var(--primary), #ffd700);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: 700;
+      color: #000;
+      margin: 0 auto 24px;
+    }
+
+    h1 {
+      font-size: 36px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 16px;
+      margin-bottom: 40px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .section {
+      margin-bottom: 32px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--primary);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 640px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--bg-dark);
+      border: 2px solid #2a2a2a;
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 15px;
+      transition: all 0.3s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .helper-text {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 6px;
+    }
+
+    button {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--primary), #ffd700);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(212, 175, 55, 0.3);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .alert {
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      display: none;
+    }
+
+    .alert.show {
+      display: block;
+    }
+
+    .alert.success {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--success);
+    }
+
+    .alert.error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: var(--error);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      display: none;
+    }
+
+    .loading.show {
+      display: block;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #2a2a2a;
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .back-link {
+      text-align: center;
+      margin-top: 24px;
+    }
+
+    .back-link a {
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 14px;
+      transition: opacity 0.3s;
+    }
+
+    .back-link a:hover {
+      opacity: 0.8;
+    }
+
+    .success-message {
+      text-align: center;
+      padding: 40px;
+      display: none;
+    }
+
+    .success-message.show {
+      display: block;
+    }
+
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      background: var(--success);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      margin: 0 auto 24px;
+    }
+  </style>
+</head>
+<body>
+  
+  <div class="container">
+    <div class="logo">K</div>
+    <h1>Tenant Registration</h1>
+    <p class="subtitle">Register your organization for Kaayko Kortex</p>
+    
+    <div class="card">
+      <div id="alert" class="alert"></div>
+      
+      <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <p style="color: var(--text-secondary);">Submitting registration...</p>
+      </div>
+      
+      <div id="success-message" class="success-message">
+        <div class="success-icon">✓</div>
+        <h2 style="margin-bottom: 16px;">Registration Submitted!</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 24px;">
+          Thank you for registering. Our team will review your application and contact you within 24-48 hours.
+        </p>
+        <button onclick="window.location.href='./login.html'" style="max-width: 300px; margin: 0 auto;">
+          Back to Login
+        </button>
+      </div>
+      
+      <form id="registration-form">
+        <!-- Organization Information -->
+        <div class="section">
+          <div class="section-title">Organization Information</div>
+          
+          <div class="form-group">
+            <label for="org-name">Organization Name *</label>
+            <input type="text" id="org-name" required placeholder="Acme Corporation">
+            <div class="helper-text">The name of your company or organization</div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="domain">Preferred Domain *</label>
+              <input type="text" id="domain" required placeholder="go.acme.com">
+              <div class="helper-text">Your custom short link domain</div>
+            </div>
+            
+            <div class="form-group">
+              <label for="path-prefix">Path Prefix</label>
+              <input type="text" id="path-prefix" value="/l" placeholder="/l">
+              <div class="helper-text">URL path prefix (default: /l)</div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="website">Website URL</label>
+            <input type="url" id="website" placeholder="https://www.acme.com">
+          </div>
+          
+          <div class="form-group">
+            <label for="description">Brief Description</label>
+            <textarea id="description" placeholder="Tell us about your organization and how you plan to use Smart Links..."></textarea>
+          </div>
+        </div>
+        
+        <!-- Primary Contact -->
+        <div class="section">
+          <div class="section-title">Primary Contact</div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="contact-name">Full Name *</label>
+              <input type="text" id="contact-name" required placeholder="John Doe">
+            </div>
+            
+            <div class="form-group">
+              <label for="contact-title">Job Title *</label>
+              <input type="text" id="contact-title" required placeholder="Marketing Manager">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="contact-email">Email Address *</label>
+              <input type="email" id="contact-email" required placeholder="john@acme.com">
+              <div class="helper-text">This will be your admin account</div>
+            </div>
+            
+            <div class="form-group">
+              <label for="contact-phone">Phone Number</label>
+              <input type="tel" id="contact-phone" placeholder="+1 (555) 123-4567">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Technical Details -->
+        <div class="section">
+          <div class="section-title">Technical Details (Optional)</div>
+          
+          <div class="form-group">
+            <label for="expected-volume">Expected Monthly Link Volume</label>
+            <select id="expected-volume">
+              <option value="">Select volume...</option>
+              <option value="0-1000">0 - 1,000 links</option>
+              <option value="1000-10000">1,000 - 10,000 links</option>
+              <option value="10000-100000">10,000 - 100,000 links</option>
+              <option value="100000+">100,000+ links</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="use-cases">Primary Use Cases</label>
+            <textarea id="use-cases" placeholder="Marketing campaigns, product launches, social media, email marketing, etc."></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label for="integrations">Required Integrations</label>
+            <input type="text" id="integrations" placeholder="Zapier, Slack, HubSpot, etc.">
+          </div>
+        </div>
+        
+        <button type="submit" id="submit-btn">
+          Submit Registration Request
+        </button>
+      </form>
+    </div>
+    
+    <div class="back-link">
+      <a href="./login.html">← Back to Login</a>
+    </div>
+  </div>
+
+  <script type="module">
+    const CONFIG = {
+      ENVIRONMENT: 'production',
+      PROD_API: 'https://us-central1-kaaykostore.cloudfunctions.net/api',
+      get API_BASE() {
+        return this.PROD_API;
+      }
+    };
+
+    const form = document.getElementById('registration-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const loading = document.getElementById('loading');
+    const successMessage = document.getElementById('success-message');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      try {
+        // Show loading
+        submitBtn.disabled = true;
+        form.style.display = 'none';
+        loading.classList.add('show');
+        hideAlert();
+        
+        // Collect form data
+        const registrationData = {
+          organization: {
+            name: document.getElementById('org-name').value,
+            domain: document.getElementById('domain').value,
+            pathPrefix: document.getElementById('path-prefix').value || '/l',
+            website: document.getElementById('website').value,
+            description: document.getElementById('description').value
+          },
+          contact: {
+            name: document.getElementById('contact-name').value,
+            title: document.getElementById('contact-title').value,
+            email: document.getElementById('contact-email').value,
+            phone: document.getElementById('contact-phone').value
+          },
+          technical: {
+            expectedVolume: document.getElementById('expected-volume').value,
+            useCases: document.getElementById('use-cases').value,
+            integrations: document.getElementById('integrations').value
+          },
+          submittedAt: new Date().toISOString(),
+          status: 'pending'
+        };
+        
+        console.log('📝 Submitting registration:', registrationData);
+        
+        // Submit to backend (you'll need to create this endpoint)
+        const response = await fetch(`${CONFIG.API_BASE}/smartlinks/tenant-registration`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(registrationData)
+        });
+        
+        if (!response.ok) {
+          throw new Error('Registration submission failed');
+        }
+        
+        const result = await response.json();
+        console.log('✅ Registration submitted:', result);
+        
+        // Show success message
+        loading.classList.remove('show');
+        successMessage.classList.add('show');
+        
+      } catch (error) {
+        console.error('❌ Registration error:', error);
+        showAlert('error', 'Failed to submit registration. Please try again or contact support.');
+        submitBtn.disabled = false;
+        form.style.display = 'block';
+        loading.classList.remove('show');
+      }
+    });
+
+    function showAlert(type, message) {
+      const alert = document.getElementById('alert');
+      alert.className = `alert ${type} show`;
+      alert.textContent = message;
+    }
+
+    function hideAlert() {
+      const alert = document.getElementById('alert');
+      alert.className = 'alert';
+      alert.textContent = '';
+    }
+
+    console.log('✅ Tenant registration page initialized');
+  </script>
+</body>
+</html>

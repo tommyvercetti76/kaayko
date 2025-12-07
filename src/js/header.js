@@ -33,7 +33,7 @@ function populateMenu() {
     { name: "Store", url: "store.html", subtitle: "Made for the Wild" },
     { name: "Reads", url: "reads.html", subtitle: "Thoughts. Perspectives. Stories." },
     { name: "About", url: "about.html", subtitle: "Water. Maps. Intelligence." },
-    { name: "Admin", url: "admin/smartlinks.html", subtitle: "Smart Links. Insights." }
+    { name: "Kortex", url: "admin/smartlinks.html", subtitle: "Intelligent Link Routing" }
   ];
   
   const currentPath = window.location.pathname;

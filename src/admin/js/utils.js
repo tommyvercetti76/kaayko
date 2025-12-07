@@ -121,3 +121,14 @@ export function calculateConversionRate(stats) {
   const enabledRate = ((stats.enabledLinks || 0) / stats.totalLinks) * 100;
   return `${enabledRate.toFixed(1)}%`;
 }
+
+export function copyToClipboard(text, successMessage = 'Copied to clipboard!') {
+  return navigator.clipboard.writeText(text).then(() => {
+    showSuccess(successMessage);
+    return true;
+  }).catch((err) => {
+    console.error('Failed to copy:', err);
+    showError('Failed to copy to clipboard');
+    return false;
+  });
+}

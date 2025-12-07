@@ -1,13 +1,90 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" prefix="og: http://ogp.me/ns#">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Login | Kaayko</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   
+  <!-- Primary Meta Tags -->
+  <title>Kortex Login - Enterprise Link Management Platform | Kaayko</title>
+  <meta name="title" content="Kortex - Intelligent Link Routing System | Enterprise Multi-Tenant Platform">
+  <meta name="description" content="Access Kortex, the enterprise-grade intelligent link routing platform. Multi-tenant short link management with real-time analytics, smart routing, custom domains, and developer APIs. Built for brands managing high-volume link campaigns.">
+  <meta name="keywords" content="link management platform, enterprise short links, URL shortener, multi-tenant link routing, smart link platform, branded short links, link analytics, QR code generator, deep linking, attribution tracking, marketing links, campaign tracking, custom domain links, API link management, kortex, kaayko">
+  <meta name="author" content="Kaayko">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <link rel="canonical" href="https://kaayko.com/admin/login.html">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://kaayko.com/admin/login.html">
+  <meta property="og:title" content="Kortex - Enterprise Link Management Platform">
+  <meta property="og:description" content="Multi-tenant intelligent link routing with real-time analytics, custom domains, and developer APIs. Enterprise-grade link management for high-volume campaigns.">
+  <meta property="og:image" content="https://kaayko.com/assets/kortex-og-image.png">
+  <meta property="og:site_name" content="Kaayko Kortex">
+  <meta property="og:locale" content="en_US">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://kaayko.com/admin/login.html">
+  <meta name="twitter:title" content="Kortex - Intelligent Link Routing System">
+  <meta name="twitter:description" content="Enterprise multi-tenant link platform with smart routing, real-time analytics, and API access.">
+  <meta name="twitter:image" content="https://kaayko.com/assets/kortex-twitter-card.png">
+  <meta name="twitter:creator" content="@kaayko">
+  
+  <!-- Schema.org Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Kortex",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web",
+    "description": "Enterprise-grade intelligent link routing platform with multi-tenant architecture, real-time analytics, custom domains, and developer APIs.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "provider": {
+      "@type": "Organization",
+      "name": "Kaayko",
+      "url": "https://kaayko.com"
+    },
+    "screenshot": "https://kaayko.com/assets/kortex-screenshot.png",
+    "featureList": [
+      "Multi-tenant architecture",
+      "Real-time analytics",
+      "Smart link routing",
+      "Custom domain support",
+      "QR code generation",
+      "Developer API",
+      "Webhook integrations",
+      "Attribution tracking"
+    ]
+  }
+  </script>
+  
+  <!-- Security Headers -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.cloudfunctions.net https://*.googleapis.com; frame-src https://accounts.google.com;">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  
+  <!-- Performance & Preconnect -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://www.gstatic.com">
+  <link rel="dns-prefetch" href="https://us-central1-kaaykostore.cloudfunctions.net">
   <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#d4af37">
   
   <style>
     :root {
@@ -31,15 +108,173 @@
       background: var(--bg-dark);
       color: var(--text-primary);
       min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      padding: 40px;
+      gap: 60px;
+    }
+    
+    @media (max-width: 968px) {
+      body {
+        grid-template-columns: 1fr;
+        padding: 20px;
+        gap: 0;
+        display: block;
+        overflow-x: hidden;
+      }
+    }
+
+    .product-showcase {
+      max-width: 520px;
+      justify-self: end;
+    }
+    
+    @media (max-width: 968px) {
+      .product-showcase {
+        justify-self: center;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+        padding-bottom: 80px;
+      }
+    }
+    
+    .product-showcase h2 {
+      font-size: 48px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--primary), #ffd700);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.1;
+    }
+    
+    .product-showcase .tagline {
+      font-size: 18px;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+    
+    .feature-grid {
+      display: grid;
+      gap: 16px;
+      margin-top: 32px;
+    }
+    
+    .feature-item {
+      display: flex;
+      align-items: start;
+      gap: 12px;
+      padding: 16px;
+      background: rgba(212, 175, 55, 0.05);
+      border: 1px solid rgba(212, 175, 55, 0.15);
+      border-radius: 8px;
+      transition: all 0.3s;
+    }
+    
+    .feature-item:hover {
+      background: rgba(212, 175, 55, 0.08);
+      border-color: rgba(212, 175, 55, 0.3);
+      transform: translateX(4px);
+    }
+    
+    .feature-icon {
+      width: 48px;
+      height: 48px;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(212, 175, 55, 0.05));
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+    
+    .feature-icon .material-icons {
+      font-size: 28px;
+      color: var(--primary);
+    }
+    
+    .feature-content h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .feature-content p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin: 0;
     }
 
     .login-container {
       width: 100%;
       max-width: 420px;
+      justify-self: start;
+    }
+    
+    @media (max-width: 968px) {
+      .login-container {
+        justify-self: center;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 40px 0;
+      }
+    }
+    
+    /* Scroll Arrow */
+    .scroll-arrow {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      animation: bounce 2s infinite;
+    }
+    
+    @media (max-width: 968px) {
+      .scroll-arrow {
+        display: flex;
+      }
+    }
+    
+    .scroll-arrow span {
+      font-size: 12px;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+    }
+    
+    .scroll-arrow .material-icons {
+      font-size: 32px;
+      color: var(--primary);
+    }
+    
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% {
+        transform: translateX(-50%) translateY(0);
+      }
+      40% {
+        transform: translateX(-50%) translateY(-10px);
+      }
+      60% {
+        transform: translateX(-50%) translateY(-5px);
+      }
     }
 
     .logo {
@@ -93,7 +328,7 @@
       letter-spacing: 0.5px;
     }
 
-    input {
+    input, select {
       width: 100%;
       padding: 14px 16px;
       background: var(--bg-dark);
@@ -105,10 +340,25 @@
       transition: all 0.3s ease;
     }
 
-    input:focus {
+    input:focus, select:focus {
       outline: none;
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+    }
+    
+    select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23d4af37' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      padding-right: 40px;
+    }
+    
+    select option {
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      padding: 10px;
     }
 
     button {
@@ -205,13 +455,65 @@
       color: var(--text-secondary);
     }
   </style>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 </head>
 <body>
   
-  <div class="login-container">
+  <!-- Product Showcase - Left Side -->
+  <div class="product-showcase">
+    <h2>Kortex</h2>
+    <p class="tagline">
+      Transform every link into actionable intelligence. Enterprise smart link platform built for high-growth brands scaling attribution, engagement, and conversions across channels.
+    </p>
+    
+    <div class="feature-grid">
+      <div class="feature-item">
+        <div class="feature-icon"><span class="material-icons">business</span></div>
+        <div class="feature-content">
+          <h4>Enterprise Multi-Tenancy</h4>
+          <p>White-labeled environments with isolated data, custom domains, and granular role-based access for agencies and brands</p>
+        </div>
+      </div>
+      
+      <div class="feature-item">
+        <div class="feature-icon"><span class="material-icons">insights</span></div>
+        <div class="feature-content">
+          <h4>Real-Time Attribution</h4>
+          <p>Sub-second click tracking with UTM preservation, conversion funnels, and cohort analytics across 50+ data points</p>
+        </div>
+      </div>
+      
+      <div class="feature-item">
+        <div class="feature-icon"><span class="material-icons">alt_route</span></div>
+        <div class="feature-content">
+          <h4>Context-Aware Routing</h4>
+          <p>Dynamic destination switching based on device type, geo-location, language, time-of-day, and custom user segments</p>
+        </div>
+      </div>
+      
+      <div class="feature-item">
+        <div class="feature-icon"><span class="material-icons">code</span></div>
+        <div class="feature-content">
+          <h4>Developer-First API</h4>
+          <p>RESTful endpoints with Swagger docs, webhook integrations, bulk import/export, and 99.9% uptime SLA</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Scroll Arrow (Mobile Only) -->
+    <div class="scroll-arrow" id="scrollArrow">
+      <span>Login</span>
+      <span class="material-icons">keyboard_arrow_down</span>
+    </div>
+  </div>
+  
+  <!-- Login Form - Right Side -->
+  <div class="login-container" id="loginSection">
     <div class="logo">K</div>
-    <h1>Admin Login</h1>
-    <p class="subtitle">Kaayko Enterprise Administration</p>
+    <h1>Kortex Login</h1>
+    <p class="subtitle">Intelligent Link Routing System</p>
     
     <div class="card">
       <div style="text-align: center;">
@@ -248,6 +550,13 @@
           >
         </div>
         
+        <div class="form-group" id="tenant-selection-group" style="display: none;">
+          <label for="tenant">Select Tenant</label>
+          <select id="tenant">
+            <option value="">Loading tenants...</option>
+          </select>
+        </div>
+        
         <button type="submit" id="login-btn">
           Login
         </button>
@@ -258,10 +567,17 @@
           Forgot password?
         </a>
       </div>
+      
+      <div style="text-align: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid #2a2a2a;">
+        <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 8px;">New organization?</p>
+        <a href="./tenant-registration.html" style="color: var(--primary); text-decoration: none; font-size: 14px; font-weight: 600; transition: opacity 0.3s;">
+          Register Your Tenant →
+        </a>
+      </div>
     </div>
     
     <div class="footer">
-      <p>© 2025 Kaayko. Enterprise Admin System.</p>
+      <p>© 2025 Kaayko Kortex - Intelligent Link Routing System.</p>
     </div>
   </div>
 
@@ -326,10 +642,29 @@
       }
     });
 
+    // State management
+    let loginState = {
+      user: null,
+      idToken: null,
+      role: null,
+      tenants: [],
+      step: 'credentials' // 'credentials' or 'tenant-selection'
+    };
+
     // Handle login
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       
+      if (loginState.step === 'credentials') {
+        // Step 1: Authenticate user
+        await handleCredentialsStep();
+      } else if (loginState.step === 'tenant-selection') {
+        // Step 2: Select tenant and complete login
+        await handleTenantSelectionStep();
+      }
+    });
+    
+    async function handleCredentialsStep() {
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       const loginBtn = document.getElementById('login-btn');
@@ -364,28 +699,21 @@
           throw new Error('Access denied. Admin role required.');
         }
         
-        // Store auth state for frontend
-        const userData = {
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName || user.email.split('@')[0],
-          role: role,
-          emailVerified: user.emailVerified
-        };
+        // Store in state
+        loginState.user = user;
+        loginState.idToken = idToken;
+        loginState.role = role;
         
-        localStorage.setItem('kaayko_auth_token', idToken);
-        localStorage.setItem('kaayko_user', JSON.stringify(userData));
-        localStorage.setItem('kaayko_environment', CONFIG.ENVIRONMENT);
+        // Fetch available tenants for this user
+        await fetchUserTenants(idToken, user.uid, role);
         
-        console.log('✅ Auth state stored in localStorage');
+        // Show tenant selection
+        loginState.step = 'tenant-selection';
+        showTenantSelection();
         
-        // Show success
-        showAlert('success', 'Login successful! Redirecting...');
-        
-        // Redirect to admin portal
-        setTimeout(() => {
-          window.location.href = './smartlinks.html';
-        }, 1000);
+        loginBtn.disabled = false;
+        form.style.display = 'block';
+        loading.classList.remove('show');
         
       } catch (error) {
         console.error('Login error:', error);
@@ -409,7 +737,139 @@
         form.style.display = 'block';
         loading.classList.remove('show');
       }
-    });
+    }
+    
+    async function fetchUserTenants(idToken, uid, role) {
+      try {
+        // Fetch tenants directly from the new /smartlinks/tenants endpoint
+        console.log('🔍 Fetching tenants for user:', uid, 'role:', role);
+        
+        const tenantsResponse = await fetch(`${CONFIG.API_BASE}/smartlinks/tenants`, {
+          headers: { 'Authorization': `Bearer ${idToken}` }
+        });
+        
+        if (!tenantsResponse.ok) {
+          console.error('Failed to fetch tenants:', tenantsResponse.status);
+          throw new Error('Failed to fetch tenants');
+        }
+        
+        const tenantsData = await tenantsResponse.json();
+        console.log('✅ Tenants API response:', tenantsData);
+        
+        if (tenantsData.success && tenantsData.tenants && tenantsData.tenants.length > 0) {
+          loginState.tenants = tenantsData.tenants;
+        } else {
+          // Fallback to default tenant
+          loginState.tenants = [
+            { id: 'kaayko-default', name: 'Kaayko (Default)' }
+          ];
+        }
+        
+        console.log('✅ Loaded tenants:', loginState.tenants);
+        
+      } catch (error) {
+        console.error('❌ Error fetching tenants:', error);
+        // Fallback to default tenant
+        loginState.tenants = [
+          { id: 'kaayko-default', name: 'Kaayko (Default)' }
+        ];
+        console.log('⚠️  Using fallback default tenant');
+      }
+    }
+    
+    function showTenantSelection() {
+      // Hide email/password fields
+      document.getElementById('email').parentElement.style.display = 'none';
+      document.getElementById('password').parentElement.style.display = 'none';
+      
+      // Show tenant selection
+      const tenantGroup = document.getElementById('tenant-selection-group');
+      tenantGroup.style.display = 'block';
+      
+      // Populate tenant dropdown
+      const tenantSelect = document.getElementById('tenant');
+      tenantSelect.innerHTML = '';
+      
+      if (loginState.tenants.length === 0) {
+        tenantSelect.innerHTML = '<option value="">No tenants available</option>';
+      } else if (loginState.tenants.length === 1) {
+        // Auto-select if only one tenant
+        const tenant = loginState.tenants[0];
+        tenantSelect.innerHTML = `<option value="${tenant.id}" selected>${tenant.name}</option>`;
+      } else {
+        // Multiple tenants - show selection
+        tenantSelect.innerHTML = '<option value="">-- Select a tenant --</option>';
+        loginState.tenants.forEach(tenant => {
+          const option = document.createElement('option');
+          option.value = tenant.id;
+          option.textContent = tenant.name;
+          tenantSelect.appendChild(option);
+        });
+      }
+      
+      // Update button text
+      document.getElementById('login-btn').textContent = 'Continue to Dashboard';
+      
+      // Show info message
+      const roleLabel = loginState.role === 'super-admin' ? 'Super Admin' : 'Admin';
+      showAlert('success', `Authenticated as ${roleLabel}. Select your tenant to continue.`);
+    }
+    
+    async function handleTenantSelectionStep() {
+      const tenantId = document.getElementById('tenant').value;
+      
+      if (!tenantId) {
+        showAlert('error', 'Please select a tenant');
+        return;
+      }
+      
+      const loginBtn = document.getElementById('login-btn');
+      const loading = document.getElementById('loading');
+      const form = document.getElementById('login-form');
+      
+      try {
+        loginBtn.disabled = true;
+        form.style.display = 'none';
+        loading.classList.add('show');
+        hideAlert();
+        
+        // Find selected tenant
+        const selectedTenant = loginState.tenants.find(t => t.id === tenantId);
+        
+        // Store auth state with tenant context
+        const userData = {
+          uid: loginState.user.uid,
+          email: loginState.user.email,
+          displayName: loginState.user.displayName || loginState.user.email.split('@')[0],
+          role: loginState.role,
+          emailVerified: loginState.user.emailVerified,
+          tenantId: tenantId,
+          tenantName: selectedTenant?.name || tenantId
+        };
+        
+        localStorage.setItem('kaayko_auth_token', loginState.idToken);
+        localStorage.setItem('kaayko_user', JSON.stringify(userData));
+        localStorage.setItem('kaayko_tenant_id', tenantId);
+        localStorage.setItem('kaayko_environment', CONFIG.ENVIRONMENT);
+        
+        console.log('✅ Auth state stored with tenant:', tenantId);
+        
+        // Show success
+        showAlert('success', `Logging in to ${selectedTenant?.name || tenantId}...`);
+        
+        // Redirect to admin portal
+        setTimeout(() => {
+          window.location.href = './smartlinks.html';
+        }, 1000);
+        
+      } catch (error) {
+        console.error('Tenant selection error:', error);
+        showAlert('error', 'Failed to complete login. Please try again.');
+        loginBtn.disabled = false;
+        form.style.display = 'block';
+        loading.classList.remove('show');
+      }
+    }
 
     // Helper functions
     function showAlert(type, message) {
@@ -424,24 +884,30 @@
       alert.textContent = '';
     }
 
-    // Check if already logged in
+    // Check if already logged in (simple check)
     auth.onAuthStateChanged(async (user) => {
       if (user) {
-        try {
-          const idToken = await user.getIdToken();
-          const response = await fetch(`${CONFIG.API_BASE}/admin/me`, {
-            headers: { 'Authorization': `Bearer ${idToken}` }
-          });
-          
-          if (response.ok) {
-            // Already logged in, redirect
-            window.location.href = './smartlinks.html';
-          }
-        } catch (error) {
-          // Stay on login page
+        const storedToken = localStorage.getItem('kaayko_auth_token');
+        const storedTenant = localStorage.getItem('kaayko_tenant_id');
+        
+        if (storedToken && storedTenant) {
+          console.log('✅ Already authenticated, redirecting...');
+          window.location.href = './smartlinks.html';
         }
       }
     });
+    
+    // Scroll arrow functionality (mobile only)
+    const scrollArrow = document.getElementById('scrollArrow');
+    const loginSection = document.getElementById('loginSection');
+    
+    if (scrollArrow && loginSection) {
+      scrollArrow.addEventListener('click', () => {
+        loginSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+    
+    console.log('✅ Login page initialized');
   </script>
 </body>
 </html>

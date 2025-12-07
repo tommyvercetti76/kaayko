@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /cart.html
+Disallow: /order-success.html
+Disallow: /redirect.html
+Disallow: /create-smart-link.html
+
+# Allow specific admin pages
+Allow: /admin/tenant-registration.html
+
+# Sitemap
+Sitemap: https://kaayko.com/sitemap.xml

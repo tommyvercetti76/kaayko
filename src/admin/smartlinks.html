@@ -1,14 +1,53 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" prefix="og: http://ogp.me/ns#">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Links Enterprise | Kaayko</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   
-  <!-- Kaayko Fonts -->
+  <!-- Primary Meta Tags -->
+  <title>Kortex Dashboard - Enterprise Link Management | Kaayko</title>
+  <meta name="title" content="Kortex - Intelligent Link Routing System | Enterprise Dashboard">
+  <meta name="description" content="Manage your enterprise link campaigns with Kortex. Real-time analytics, custom domains, QR codes, smart routing, and developer APIs. Multi-tenant platform for high-volume link management.">
+  <meta name="keywords" content="link dashboard, URL management, link analytics, campaign tracking, branded links, enterprise URL shortener, multi-tenant platform, link routing, marketing automation, attribution tracking, kortex dashboard, kaayko">
+  <meta name="author" content="Kaayko">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="canonical" href="https://kaayko.com/admin/smartlinks.html">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://kaayko.com/admin/">
+  <meta property="og:title" content="Kortex Dashboard - Enterprise Link Management">
+  <meta property="og:description" content="Real-time link analytics, custom domains, and intelligent routing. Enterprise-grade platform for managing high-volume link campaigns.">
+  <meta property="og:image" content="https://kaayko.com/assets/kortex-dashboard-og.png">
+  <meta property="og:site_name" content="Kaayko Kortex">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://kaayko.com/admin/">
+  <meta name="twitter:title" content="Kortex - Enterprise Link Platform">
+  <meta name="twitter:description" content="Multi-tenant link management with real-time analytics and smart routing.">
+  <meta name="twitter:image" content="https://kaayko.com/assets/kortex-dashboard-twitter.png">
+  
+  <!-- Security Headers -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.cloudfunctions.net https://*.googleapis.com https://api.qrserver.com; frame-src 'none';">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  
+  <!-- Performance & Preconnect -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://www.gstatic.com">
+  <link rel="dns-prefetch" href="https://us-central1-kaaykostore.cloudfunctions.net">
+  <link rel="dns-prefetch" href="https://api.qrserver.com">
   <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#d4af37">
   
   <!-- Stylesheets - Modular Architecture v6.0 -->
     <link rel="stylesheet" href="css/smartlinks-base.css?v=6.3.3">
@@ -21,9 +60,9 @@
   <aside class="sidebar">
     <div class="sidebar-header">
       <div class="logo">K</div>
-      <h2>Kaayko</h2>
-      <p class="sidebar-subtitle">Smart Links. Insights.</p>
-      <div class="version">Enterprise v5.0</div>
+      <h2>Kortex</h2>
+      <p class="sidebar-subtitle">Intelligent Link Routing</p>
+      <div class="version">v5.0</div>
     </div>
     
     <nav class="sidebar-nav">
@@ -47,6 +86,10 @@
         <span class="nav-icon">▲</span>
         <span>Analytics</span>
       </a>
+      <a href="#" class="nav-item" data-view="tenant-onboarding">
+        <span class="nav-icon">👥</span>
+        <span>Tenant Onboarding</span>
+      </a>
     </nav>
     
     <div class="sidebar-footer">
@@ -58,9 +101,19 @@
           <div style="flex: 1; min-width: 0;">
             <div id="user-email">Loading...</div>
             <div id="user-role">User</div>
+            <div id="user-tenant" style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Loading tenant...</div>
           </div>
         </div>
       </div>
+      
+      <!-- Tenant Switcher (Super-Admin Only) -->
+      <div id="tenant-switcher" style="display: none; margin-bottom: 12px;">
+        <label style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block;">Switch Tenant</label>
+        <select id="tenant-select" style="width: 100%; padding: 8px 12px; background: var(--bg-input); border: 1px solid var(--border-medium); border-radius: 6px; color: var(--text-primary); font-size: 13px; cursor: pointer;">
+          <option value="">Loading...</option>
+        </select>
+      </div>
+      
       <button id="logout-btn">Logout</button>
       
       <div class="env-switch">
@@ -468,6 +521,67 @@
       </header>
       
       <div id="analytics-content"></div>
+    </div>
+    
+    <!-- Tenant Onboarding View -->
+    <div id="tenant-onboarding-view" class="view hidden">
+      <div id="tenant-onboarding-root">
+        
+        <!-- Wizard Header -->
+        <div class="wizard-header">
+          <h1>Tenant Onboarding</h1>
+          <p>Set up a new external client/brand in Smart Links Platform</p>
+        </div>
+        
+        <!-- Step Indicator -->
+        <div class="wizard-steps">
+          <div class="wizard-step" data-step="1">
+            <div class="step-circle">1</div>
+            <div class="step-label">Tenant</div>
+          </div>
+          <div class="wizard-step-line"></div>
+          <div class="wizard-step" data-step="2">
+            <div class="step-circle">2</div>
+            <div class="step-label">Admin User</div>
+          </div>
+          <div class="wizard-step-line"></div>
+          <div class="wizard-step" data-step="3">
+            <div class="step-circle">3</div>
+            <div class="step-label">Domain</div>
+          </div>
+          <div class="wizard-step-line"></div>
+          <div class="wizard-step" data-step="4">
+            <div class="step-circle">4</div>
+            <div class="step-label">API Keys</div>
+          </div>
+          <div class="wizard-step-line"></div>
+          <div class="wizard-step" data-step="5">
+            <div class="step-circle">5</div>
+            <div class="step-label">Webhooks</div>
+          </div>
+          <div class="wizard-step-line"></div>
+          <div class="wizard-step" data-step="6">
+            <div class="step-circle">6</div>
+            <div class="step-label">Summary</div>
+          </div>
+        </div>
+        
+        <!-- Content Card -->
+        <div class="wizard-content" id="wizard-content">
+          <!-- Step content will be injected here by JS -->
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="wizard-actions">
+          <button id="wizard-prev" class="btn-secondary">
+            <span>← Back</span>
+          </button>
+          <button id="wizard-next" class="btn-primary">
+            <span>Next →</span>
+          </button>
+        </div>
+        
+      </div>
     </div>
     
   </main>

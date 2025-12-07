@@ -61,6 +61,23 @@ document.addEventListener('DOMContentLoaded', function() {
   
   console.log('🔐 Store page detected, checking access...');
   
+  // KORTEX BYPASS: ONLY for store access via smart links
+  // Check if user came from a Kortex smart link redirect
+  const urlParams = new URLSearchParams(window.location.search);
+  const hasKortexBypass = urlParams.get('bypass') === 'kortex' && urlParams.has('ref');
+  
+  if (hasKortexBypass) {
+    const linkRef = urlParams.get('ref');
+    console.log(`✅ Kortex smart link bypass detected (${linkRef}) - granting store access`);
+    const accessKey = atob('a2FheWtvU3RvcmVBY2Nlc3M=');
+    localStorage.setItem(accessKey, atob('Z3JhbnRlZA=='));
+    
+    // Clean URL by removing bypass parameters
+    const cleanUrl = window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
+    return; // Skip auth modal entirely
+  }
+  
   // Check access persistence
   const accessKey = atob('a2FheWtvU3RvcmVBY2Nlc3M=');
   const hasAccess = localStorage.getItem(accessKey) === atob('Z3JhbnRlZA==');

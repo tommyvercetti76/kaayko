@@ -93,6 +93,7 @@ export const AUTH = {
     // Clear local storage
     localStorage.removeItem('kaayko_auth_token');
     localStorage.removeItem('kaayko_user');
+    localStorage.removeItem('kaayko_tenant_id');
     
     // Redirect to login
     window.location.href = './login.html';
@@ -116,15 +117,22 @@ export async function apiFetch(endpoint, options = {}) {
   console.log('   Method:', options.method || 'GET');
   console.log('   AUTH token:', AUTH.token ? 'EXISTS' : 'MISSING');
   
+  // Get tenant ID from localStorage
+  const tenantId = localStorage.getItem('kaayko_tenant_id');
+  
   const fetchOptions = {
     ...options,
     headers: {
       ...AUTH.getHeaders(),
+      ...(tenantId && { 'X-Kaayko-Tenant-Id': tenantId }),
       ...(options.headers || {})
     }
   };
   
   console.log('   Headers:', fetchOptions.headers);
+  if (tenantId) {
+    console.log('   Tenant:', tenantId);
+  }
   
   try {
     const response = await fetch(url, fetchOptions);

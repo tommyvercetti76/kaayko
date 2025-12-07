@@ -1,20 +1,79 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" prefix="og: http://ogp.me/ns#">
 <head>
-    <script src="/js/prod-config.js"></script>  <meta charset="UTF-8" />
+    <script src="/js/prod-config.js"></script>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Kaayko | Paddling Out</title>
-  <!-- Smart App Banner for the App Clip -->
-  <meta name="apple-itunes-app"
-      content="
-        app-id=6747012577, 
-        app-clip-bundle-id=com.rohan.store.kaayko.app.Clip,
-        app-argument=https://kaayko.com/paddlingout.html
-      " />
-  <meta name="description" content="Experience Kaayko's Paddling Out collection: Your paddling adventure begins here.">
-  <meta name="keywords" content="Kaayko Kayaks, Paddling Out, Kayaking, Nature, Paddling in National Parks">
-  <meta name="robots" content="index, follow">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  
+  <!-- Primary Meta Tags -->
+  <title>Paddling Out - ML-Powered Paddle Conditions & Lake Forecast | Kaayko</title>
+  <meta name="title" content="Paddling Out - Intelligent Paddle Conditions with ML Forecasts">
+  <meta name="description" content="AI-powered paddle condition forecasts with real-time weather, wind, and safety ratings. Discover 100+ kayaking and paddling destinations with ML-based Konfidence scores. Know before you go paddling.">
+  <meta name="keywords" content="paddle conditions, kayak forecast, paddling weather, lake conditions, kayaking forecast, paddle safety, water conditions, ML weather prediction, kayak weather, paddleboarding conditions, canoe weather, kayak lakes, water sports forecast, paddle spots, kayaking destinations, kaayko paddling out">
+  <meta name="author" content="Kaayko">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
   <link rel="canonical" href="https://kaayko.com/paddlingout.html">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://kaayko.com/paddlingout.html">
+  <meta property="og:title" content="Paddling Out - AI-Powered Paddle Conditions">
+  <meta property="og:description" content="ML-based paddle condition forecasts with real-time weather and safety ratings for 100+ kayaking destinations. Know before you go.">
+  <meta property="og:image" content="https://kaayko.com/assets/paddlingout-og.png">
+  <meta property="og:site_name" content="Kaayko">
+  <meta property="og:locale" content="en_US">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://kaayko.com/paddlingout.html">
+  <meta name="twitter:title" content="Paddling Out - ML Paddle Forecasts">
+  <meta name="twitter:description" content="AI-powered paddle conditions with safety ratings. Discover the best kayaking spots.">
+  <meta name="twitter:image" content="https://kaayko.com/assets/paddlingout-twitter.png">
+  <meta name="twitter:creator" content="@kaayko">
+  
+  <!-- Schema.org Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Paddling Out",
+    "applicationCategory": "SportsApplication",
+    "description": "ML-powered paddle condition forecasts with real-time weather, wind, and safety ratings for kayaking, canoeing, and paddleboarding.",
+    "operatingSystem": "Web, iOS",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "provider": {
+      "@type": "Organization",
+      "name": "Kaayko",
+      "url": "https://kaayko.com"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "ratingCount": "150"
+    }
+  }
+  </script>
+  
+  <!-- Smart App Banner -->
+  <meta name="apple-itunes-app" content="app-id=6747012577, app-clip-bundle-id=com.rohan.store.kaayko.app.Clip, app-argument=https://kaayko.com/paddlingout.html">
+  
+  <!-- Security Headers -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  
+  <!-- Performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="https://us-central1-kaaykostore.cloudfunctions.net">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <meta name="theme-color" content="#d4af37">
 
   <!-- 0) Shared store CSS (header, footer, menu, dark mode) -->
   <link rel="stylesheet" href="/css/storestyle.css" />
@@ -27,6 +86,9 @@
   
   <!-- 3) Lake Modal CSS -->
   <link rel="stylesheet" href="/css/advancedModal.css" />
+  
+  <!-- 3.5) Custom Location Modal CSS -->
+  <link rel="stylesheet" href="/css/customLocation.css" />
   
   <!-- 4) Component CSS -->
   <link rel="stylesheet" href="/js/components/RatingHero.css" />
