@@ -439,6 +439,25 @@
       </div>
       
       <div class="mobile-sheet-content">
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; color: #ccc; font-size: 13px; margin-bottom: 6px; font-family: 'Josefin_Medium', Arial, sans-serif;">Email <span style="color: #ffd700;">*</span></label>
+          <input type="email" id="mobile-customer-email" placeholder="you@example.com" required style="width: 100%; padding: 12px; background: #1a1a1a; border: 2px solid #333; border-radius: 6px; color: #fff; font-size: 14px; font-family: 'Josefin_Light', Arial, sans-serif;" />
+          <div id="mobile-email-error" style="display: none; color: #ff4444; font-size: 12px; margin-top: 4px;"></div>
+        </div>
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; color: #ccc; font-size: 13px; margin-bottom: 6px; font-family: 'Josefin_Medium', Arial, sans-serif;">Phone <span style="color: #999;">(optional)</span></label>
+          <input type="tel" id="mobile-customer-phone" placeholder="+1 (555) 123-4567" style="width: 100%; padding: 12px; background: #1a1a1a; border: 2px solid #333; border-radius: 6px; color: #fff; font-size: 14px; font-family: 'Josefin_Light', Arial, sans-serif;" />
+        </div>
+        
+        <div style="margin-bottom: 20px; padding: 12px; background: rgba(255, 215, 0, 0.05); border-radius: 6px; border: 1px solid rgba(255, 215, 0, 0.2);">
+          <label style="display: flex; align-items: start; cursor: pointer; font-family: 'Josefin_Light', Arial, sans-serif;">
+            <input type="checkbox" id="mobile-data-consent" checked style="margin-right: 10px; margin-top: 2px; cursor: pointer;" />
+            <span style="color: #ccc; font-size: 12px; line-height: 1.5;">
+              Save my shipping info for order fulfillment. You can opt out anytime. <a href="/privacy" style="color: #ffd700; text-decoration: underline;">Privacy Policy</a>
+            </span>
+          </label>
+        </div>
+        
         <p class="payment-prompt">Secure checkout powered by Stripe</p>
         <div id="mobile-payment-element">
           <div style="padding: 20px; text-align: center; color: rgba(255,255,255,0.5);">
@@ -525,7 +544,27 @@
       
       html += `</div>
           <div class="cart-summary-panel">
-            <div class="cart-summary-title">Payment</div>
+            <div class="cart-summary-title">Contact Information</div>
+            <div style="margin-bottom: 20px;">
+              <label style="display: block; color: #ccc; font-size: 13px; margin-bottom: 6px; font-family: 'Josefin_Medium', Arial, sans-serif;">Email <span style="color: #ffd700;">*</span></label>
+              <input type="email" id="cart-customer-email" placeholder="you@example.com" required style="width: 100%; padding: 10px; background: #1a1a1a; border: 2px solid #333; border-radius: 6px; color: #fff; font-size: 14px; font-family: 'Josefin_Light', Arial, sans-serif;" />
+              <div id="cart-email-error" style="display: none; color: #ff4444; font-size: 12px; margin-top: 4px;"></div>
+            </div>
+            <div style="margin-bottom: 20px;">
+              <label style="display: block; color: #ccc; font-size: 13px; margin-bottom: 6px; font-family: 'Josefin_Medium', Arial, sans-serif;">Phone <span style="color: #999;">(optional)</span></label>
+              <input type="tel" id="cart-customer-phone" placeholder="+1 (555) 123-4567" style="width: 100%; padding: 10px; background: #1a1a1a; border: 2px solid #333; border-radius: 6px; color: #fff; font-size: 14px; font-family: 'Josefin_Light', Arial, sans-serif;" />
+            </div>
+            
+            <div style="margin-bottom: 20px; padding: 12px; background: rgba(255, 215, 0, 0.05); border-radius: 6px; border: 1px solid rgba(255, 215, 0, 0.2);">
+              <label style="display: flex; align-items: start; cursor: pointer; font-family: 'Josefin_Light', Arial, sans-serif;">
+                <input type="checkbox" id="cart-data-consent" checked style="margin-right: 10px; margin-top: 2px; cursor: pointer;" />
+                <span style="color: #ccc; font-size: 12px; line-height: 1.5;">
+                  Save my shipping info for order fulfillment. You can opt out anytime. <a href="/privacy" style="color: #ffd700; text-decoration: underline;">Privacy Policy</a>
+                </span>
+              </label>
+            </div>
+            
+            <div class="cart-summary-title" style="margin-top: 24px;">Payment</div>
             <p class="payment-prompt">Secure checkout powered by Stripe</p>
             <div id="cart-payment-element">
               <div style="padding: 20px; text-align: center; color: rgba(255,255,255,0.5);">
@@ -560,18 +599,47 @@
     
     async function initDesktopPayment(items, total) {
       try {
+        const consentCheckbox = document.getElementById('cart-data-consent');
+        const emailInput = document.getElementById('cart-email');
+        const phoneInput = document.getElementById('cart-phone');
+        
+        const requestBody = {
+          items: items.map(i => {
+            // Parse price safely - handle string or number
+            let priceNum = typeof i.price === 'number' ? i.price : parseFloat(String(i.price).replace(/[$,]/g, ''));
+            if (isNaN(priceNum)) priceNum = 69.98; // Fallback price
+            
+            return {
+              productId: i.productId,
+              productTitle: i.title,
+              size: i.size,
+              gender: i.gender,
+              price: `$${priceNum.toFixed(2)}`
+            };
+          }),
+          price: `$${total.toFixed(2)}`,
+          customerEmail: emailInput?.value.trim() || null,
+          customerPhone: phoneInput?.value.trim() || null,
+          dataRetentionConsent: consentCheckbox?.checked || false
+        };
+        
+        console.log('📤 Desktop sending to API:', requestBody);
+        
         const response = await fetch(`${API_URL}/createPaymentIntent`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            productId: items.map(i => i.productId).join(','),
-            productTitle: items.map(i => `${i.title} (${i.gender} ${i.size})`).join(', '),
-            size: items.map(i => i.size).join(', '),
-            price: `$${total.toFixed(2)}`
-          })
+          body: JSON.stringify(requestBody)
         });
         
-        const { clientSecret } = await response.json();
+        console.log('📥 Desktop response status:', response.status);
+        const responseData = await response.json();
+        console.log('📥 Desktop response data:', responseData);
+        
+        if (!response.ok) {
+          throw new Error(JSON.stringify(responseData));
+        }
+        
+        const { clientSecret } = responseData;
         desktopStripe = Stripe(STRIPE_KEY);
         const elements = desktopStripe.elements({
           clientSecret,
@@ -626,11 +694,36 @@
         paymentElement.mount(paymentDiv);
         
         const btn = document.getElementById('cart-complete-order-btn');
+        const emailInput = document.getElementById('cart-customer-email');
+        const phoneInput = document.getElementById('cart-customer-phone');
+        const emailError = document.getElementById('cart-email-error');
         let addressComplete = false;
         let paymentComplete = false;
+        let emailValid = false;
+        
+        const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        
+        emailInput.addEventListener('input', () => {
+          const email = emailInput.value.trim();
+          if (!email) {
+            emailInput.style.borderColor = '#333';
+            emailError.style.display = 'none';
+            emailValid = false;
+          } else if (validateEmail(email)) {
+            emailInput.style.borderColor = '#10b981';
+            emailError.style.display = 'none';
+            emailValid = true;
+          } else {
+            emailInput.style.borderColor = '#ff4444';
+            emailError.textContent = 'Please enter a valid email';
+            emailError.style.display = 'block';
+            emailValid = false;
+          }
+          checkFormComplete();
+        });
         
         const checkFormComplete = () => {
-          btn.disabled = !(addressComplete && paymentComplete);
+          btn.disabled = !(addressComplete && paymentComplete && emailValid);
         };
         
         addressElement.on('change', (event) => {
@@ -644,13 +737,30 @@
         });
         
         btn.addEventListener('click', async () => {
+          const customerEmail = emailInput.value.trim();
+          const customerPhone = phoneInput.value.trim();
+          
+          if (!validateEmail(customerEmail)) {
+            emailError.textContent = 'Please enter a valid email';
+            emailError.style.display = 'block';
+            emailInput.style.borderColor = '#ff4444';
+            return;
+          }
+          
           btn.disabled = true;
           btn.innerHTML = '<span class="material-icons" style="font-size: 16px; animation: spin 1s linear infinite;">refresh</span> Processing...';
           
           const { error } = await desktopStripe.confirmPayment({
             elements,
             confirmParams: {
-              return_url: window.location.origin + '/order-success.html'
+              return_url: window.location.origin + '/order-success.html?email=' + encodeURIComponent(customerEmail),
+              receipt_email: customerEmail,
+              payment_method_data: {
+                billing_details: {
+                  email: customerEmail,
+                  phone: customerPhone || undefined
+                }
+              }
             }
           });
           
@@ -705,17 +815,46 @@
       try {
         const items = cartManager.getItems();
         const total = cartManager.getTotalPrice();
+        const consentCheckbox = document.getElementById('mobile-data-consent');
+        const emailInput = document.getElementById('mobile-email');
+        const phoneInput = document.getElementById('mobile-phone');
+        
+        const requestBody = {
+          items: items.map(i => {
+            // Parse price safely - handle string or number
+            let priceNum = typeof i.price === 'number' ? i.price : parseFloat(String(i.price).replace(/[$,]/g, ''));
+            if (isNaN(priceNum)) priceNum = 69.98; // Fallback price
+            
+            return {
+              productId: i.productId,
+              productTitle: i.title,
+              size: i.size,
+              gender: i.gender,
+              price: `$${priceNum.toFixed(2)}`
+            };
+          }),
+          price: `$${total.toFixed(2)}`,
+          customerEmail: emailInput?.value.trim() || null,
+          customerPhone: phoneInput?.value.trim() || null,
+          dataRetentionConsent: consentCheckbox?.checked || false
+        };
+        
+        console.log('📤 Sending to API:', requestBody);
+        
         const response = await fetch(`${API_URL}/createPaymentIntent`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            productId: items.map(i => i.productId).join(','),
-            productTitle: items.map(i => `${i.title} (${i.gender} ${i.size})`).join(', '),
-            size: items.map(i => i.size).join(', '),
-            price: `$${total.toFixed(2)}`
-          })
+          body: JSON.stringify(requestBody)
         });
-        const { clientSecret } = await response.json();
+        
+        console.log('📥 Response status:', response.status);
+        const responseData = await response.json();
+        console.log('📥 Response data:', responseData);
+        
+        if (!response.ok) {
+          throw new Error(JSON.stringify(responseData));
+        }
+        const { clientSecret } = responseData;
         mobileStripe = Stripe(STRIPE_KEY);
         const elements = mobileStripe.elements({
           clientSecret,
@@ -768,11 +907,37 @@
         container.appendChild(paymentDiv);
         addressElement.mount(addressDiv);
         paymentElement.mount(paymentDiv);
+        
+        const emailInput = document.getElementById('mobile-customer-email');
+        const phoneInput = document.getElementById('mobile-customer-phone');
+        const emailError = document.getElementById('mobile-email-error');
         let addressComplete = false;
         let paymentComplete = false;
+        let emailValid = false;
+        
+        const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        
+        emailInput.addEventListener('input', () => {
+          const email = emailInput.value.trim();
+          if (!email) {
+            emailInput.style.borderColor = '#333';
+            emailError.style.display = 'none';
+            emailValid = false;
+          } else if (validateEmail(email)) {
+            emailInput.style.borderColor = '#10b981';
+            emailError.style.display = 'none';
+            emailValid = true;
+          } else {
+            emailInput.style.borderColor = '#ff4444';
+            emailError.textContent = 'Please enter a valid email';
+            emailError.style.display = 'block';
+            emailValid = false;
+          }
+          checkFormComplete();
+        });
         
         const checkFormComplete = () => {
-          mobileBtn.disabled = !(addressComplete && paymentComplete);
+          mobileBtn.disabled = !(addressComplete && paymentComplete && emailValid);
         };
         
         addressElement.on('change', (event) => {
@@ -786,11 +951,30 @@
         });
         
         mobileBtn.addEventListener('click', async () => {
+          const customerEmail = emailInput.value.trim();
+          const customerPhone = phoneInput.value.trim();
+          
+          if (!validateEmail(customerEmail)) {
+            emailError.textContent = 'Please enter a valid email';
+            emailError.style.display = 'block';
+            emailInput.style.borderColor = '#ff4444';
+            return;
+          }
+          
           mobileBtn.disabled = true;
           mobileBtn.innerHTML = '<span class="material-icons" style="font-size: 16px; animation: spin 1s linear infinite;">refresh</span> Processing...';
           const { error } = await mobileStripe.confirmPayment({
             elements,
-            confirmParams: { return_url: window.location.origin + '/order-success.html' }
+            confirmParams: { 
+              return_url: window.location.origin + '/order-success.html?email=' + encodeURIComponent(customerEmail),
+              receipt_email: customerEmail,
+              payment_method_data: {
+                billing_details: {
+                  email: customerEmail,
+                  phone: customerPhone || undefined
+                }
+              }
+            }
           });
           if (error) { 
             showErrorMessage(error.message); 

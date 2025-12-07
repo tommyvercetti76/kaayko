@@ -663,12 +663,9 @@ function createBuyButton(item) {
 }
 
 function openPurchaseModal(item) {
-  // Create modal if it doesn't exist
-  let modal = document.getElementById("purchase-modal");
-  if (!modal) {
-    modal = createPurchaseModal();
-    document.body.appendChild(modal);
-  }
+  // Redirect to cart instead of opening modal
+  window.location.href = '/cart.html';
+  return;
   
   // Populate modal with product info
   const productImage = modal.querySelector("#purchase-product-image");
@@ -839,28 +836,54 @@ function openPurchaseModal(item) {
   modal.classList.add("active");
 }
 
-function createPurchaseModal() {
-  const modal = document.createElement("div");
-  modal.id = "purchase-modal";
-  modal.className = "purchase-modal";
-  
-  modal.innerHTML = `
-    <div class="purchase-modal-content">
-      <button class="purchase-modal-close material-icons" aria-label="Close">close</button>
-      
-      <div class="purchase-modal-body">
-        <div class="purchase-product-preview">
-          
-          <div class="sustainability-message">
-            <span class="material-icons">eco</span>
-            <p><strong>One at a time for sustainability.</strong><br>
-            We believe in mindful consumption. Each purchase is crafted with care, 
-            reducing waste and environmental impact.</p>
-          </div>
-          
-          <div class="image-carousel-container">
-            <img id="purchase-product-image" src="" alt="Product" />
-            <div class="purchase-indicator-dots"></div>
+/* ==========================================================================
+   4) Purchase Modal - REMOVED (Using cart.html checkout only)
+   ========================================================================== */
+// All purchase modal code removed per user request - using cart.html for all checkout
+
+/* ========================================================================== 
+                placeholder="you@example.com"
+                required
+                style="
+                  width: 100%;
+                  padding: 10px 12px;
+                  background: #1a1a1a;
+                  border: 2px solid #333;
+                  border-radius: 6px;
+                  color: #fff;
+                  font-family: 'Josefin_Light', Arial, sans-serif;
+                  font-size: 14px;
+                  transition: border-color 0.2s;
+                "
+              />
+              <div id="email-error-msg" style="display: none; color: #ff4444; font-size: 12px; margin-top: 4px; font-family: 'Josefin_Light', Arial, sans-serif;"></div>
+            </div>
+            
+            <div>
+              <label for="customer-phone-input" style="display: block; color: #ccc; font-family: 'Josefin_Light', Arial, sans-serif; font-size: 14px; margin-bottom: 6px;">
+                Phone <span style="color: #999;">(optional)</span>
+              </label>
+              <input 
+                type="tel" 
+                id="customer-phone-input" 
+                placeholder="+1 (555) 123-4567"
+                style="
+                  width: 100%;
+                  padding: 10px 12px;
+                  background: #1a1a1a;
+                  border: 2px solid #333;
+                  border-radius: 6px;
+                  color: #fff;
+                  font-family: 'Josefin_Light', Arial, sans-serif;
+                  font-size: 14px;
+                  transition: border-color 0.2s;
+                "
+              />
+            </div>
+            
+            <p style="color: #999; font-size: 12px; margin-top: 12px; font-family: 'Josefin_Light', Arial, sans-serif;">
+              We'll send your order confirmation and receipt to this email.
+            </p>
           </div>
           
           <div class="selection-overlay">
@@ -897,12 +920,13 @@ function createPurchaseModal() {
           <div class="payment-section">
             <h3>Complete Your Purchase</h3>
             <p class="payment-prompt">Secure checkout powered by Stripe</p>
+            
             <form id="payment-form">
               <div id="payment-element">
                 <!-- Stripe Payment Element will be inserted here -->
               </div>
               <div id="payment-message" class="payment-message"></div>
-              <button id="purchase-checkout-btn" class="checkout-button" type="submit">
+              <button id="purchase-checkout-btn" class="checkout-button" type="submit" disabled>
                 <span class="spinner hidden" id="spinner"></span>
                 <span class="button-text">Complete Order</span>
               </button>
@@ -956,11 +980,39 @@ async function initializeStripePayment(item, size, gender, modal) {
   const submitButton = modal.querySelector('#purchase-checkout-btn');
   const paymentForm = modal.querySelector('#payment-form');
   const paymentMessage = modal.querySelector('#payment-message');
+  const emailInput = modal.querySelector('#customer-email-input');
+  const phoneInput = modal.querySelector('#customer-phone-input');
+  const emailError = modal.querySelector('#email-error-msg');
   
   // Initialize Stripe (only once)
   if (!stripe) {
     stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
   }
+  
+  // Email validation
+  const validateEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+  
+  // Real-time email validation
+  emailInput.addEventListener('input', () => {
+    const email = emailInput.value.trim();
+    if (!email) {
+      emailInput.style.borderColor = '#333';
+      emailError.style.display = 'none';
+      submitButton.disabled = true;
+    } else if (validateEmail(email)) {
+      emailInput.style.borderColor = '#10b981';
+      emailError.style.display = 'none';
+      submitButton.disabled = false;
+    } else {
+      emailInput.style.borderColor = '#ff4444';
+      emailError.textContent = 'Please enter a valid email';
+      emailError.style.display = 'block';
+      submitButton.disabled = true;
+    }
+  });
   
   try {
     // Detect local vs production environment
@@ -994,23 +1046,43 @@ async function initializeStripePayment(item, size, gender, modal) {
       throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
     
-    const { clientSecret } = await response.json();
+    const { clientSecret, paymentIntentId } = await response.json();
+    
+    // Store payment intent ID for later use
+    modal.setAttribute('data-payment-intent-id', paymentIntentId);
     
     // Create the Payment Element
-    elements = stripe.elements({ clientSecret });
+    elements = stripe.elements({ 
+      clientSecret,
+      appearance: {
+        theme: 'night',
+        variables: {
+          colorPrimary: '#ffd700',
+        }
+      }
+    });
     
     const paymentElementInstance = elements.create('payment', {
       layout: 'tabs',
       fields: {
         billingDetails: {
+          name: 'auto',
+          email: 'auto',  // Let Stripe collect email
           address: 'auto'
         }
+      },
+      terms: {
+        card: 'auto',  // Show Link/save option
+      },
+      wallets: {
+        applePay: 'auto',
+        googlePay: 'auto'
       }
     });
     
     paymentElementInstance.mount('#payment-element');
     
-    // Enable submit button when payment element is ready
+    // Enable button when payment element is ready
     paymentElementInstance.on('ready', () => {
       submitButton.disabled = false;
       submitButton.querySelector('.button-text').textContent = 'Complete Order';
@@ -1020,7 +1092,7 @@ async function initializeStripePayment(item, size, gender, modal) {
     paymentForm.removeEventListener('submit', handleStripeSubmit);
     paymentForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      await handleStripeSubmit(e, stripe, elements, submitButton, paymentMessage, modal);
+      await handleStripeSubmit(e, stripe, elements, submitButton, paymentMessage, modal, emailInput, phoneInput, emailError);
     });
     
   } catch (error) {
@@ -1030,29 +1102,62 @@ async function initializeStripePayment(item, size, gender, modal) {
   }
 }
 
-async function handleStripeSubmit(e, stripe, elements, submitButton, paymentMessage, modal) {
+async function handleStripeSubmit(e, stripe, elements, submitButton, paymentMessage, modal, emailInput, phoneInput, emailError) {
+  // Final email validation
+  const customerEmail = emailInput.value.trim();
+  const customerPhone = phoneInput.value.trim();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  
+  if (!customerEmail || !emailRegex.test(customerEmail)) {
+    emailError.textContent = 'Please enter a valid email before completing purchase';
+    emailError.style.display = 'block';
+    emailInput.style.borderColor = '#ff4444';
+    emailInput.focus();
+    return;
+  }
+  
   submitButton.disabled = true;
   submitButton.querySelector('.spinner').classList.remove('hidden');
   submitButton.querySelector('.button-text').textContent = 'Processing...';
   
-  const { error } = await stripe.confirmPayment({
-    elements,
-    confirmParams: {
-      return_url: `${window.location.origin}/order-confirmation.html`,
-    },
-  });
-  
-  if (error) {
-    paymentMessage.textContent = error.message;
+  try {
+    console.log('📧 Customer email:', customerEmail);
+    console.log('📱 Customer phone:', customerPhone);
+    
+    // Confirm payment with customer email included
+    const { error } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: `${window.location.origin}/order-success.html?email=${encodeURIComponent(customerEmail)}`,
+        receipt_email: customerEmail,
+        payment_method_data: {
+          billing_details: {
+            email: customerEmail,
+            phone: customerPhone || undefined
+          }
+        }
+      },
+    });
+    
+    if (error) {
+      paymentMessage.textContent = error.message;
+      paymentMessage.classList.add('error');
+      submitButton.disabled = false;
+      submitButton.querySelector('.spinner').classList.add('hidden');
+      submitButton.querySelector('.button-text').textContent = 'Complete Order';
+    } else {
+      // Payment successful - will redirect to return_url
+      paymentMessage.textContent = 'Payment successful! Redirecting...';
+      paymentMessage.classList.remove('error');
+      paymentMessage.classList.add('success');
+    }
+  } catch (error) {
+    console.error('Payment error:', error);
+    paymentMessage.textContent = 'Payment failed. Please try again.';
     paymentMessage.classList.add('error');
     submitButton.disabled = false;
     submitButton.querySelector('.spinner').classList.add('hidden');
     submitButton.querySelector('.button-text').textContent = 'Complete Order';
-  } else {
-    // Payment successful - will redirect to return_url
-    paymentMessage.textContent = 'Payment successful! Redirecting...';
-    paymentMessage.classList.remove('error');
-    paymentMessage.classList.add('success');
   }
 }
 

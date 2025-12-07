@@ -239,7 +239,7 @@
     
     <div class="info-box">
       <p><strong>📧 Confirmation email sent</strong></p>
-      <p>We've sent your order confirmation and receipt to your email. Please allow 5-7 business days for delivery.</p>
+      <p>We've sent your order confirmation and receipt to <strong id="customer-email">your email</strong>. Please allow 5-7 business days for delivery.</p>
       <p style="margin-top: 12px;"><strong>🌿 Sustainability Impact:</strong> Your purchase helps remove ocean plastics and supports eco-friendly manufacturing.</p>
     </div>
     
@@ -255,6 +255,7 @@
     </div>
   </div>
   
+  <script src="https://js.stripe.com/v3/"></script>
   <script type="module">
     import { cartManager } from './js/cartManager.js';
     
@@ -271,6 +272,7 @@
     // Get payment intent ID from URL
     const urlParams = new URLSearchParams(window.location.search);
     const paymentIntentId = urlParams.get('payment_intent');
+    const paymentIntentClientSecret = urlParams.get('payment_intent_client_secret');
     const redirectStatus = urlParams.get('redirect_status');
     
     // Handle error scenarios - redirect to cart with error message
@@ -310,6 +312,24 @@
     } else {
       document.getElementById('item-count').textContent = `${items.length} item${items.length !== 1 ? 's' : ''}`;
       document.getElementById('total-paid').textContent = `$${total.toFixed(2)}`;
+    }
+    
+    // Get email from URL parameter (passed from checkout)
+    const emailParam = urlParams.get('email');
+    if (emailParam) {
+      document.getElementById('customer-email').textContent = emailParam;
+      console.log('✅ Displaying email from URL:', emailParam);
+    } else {
+      // Fallback: try to get from Stripe
+      if (paymentIntentClientSecret) {
+        const stripe = Stripe('pk_test_51Sb3SRGhBi2rBXlYPnG9eqAUfRUGyHKYcATYekHRX0IvmggnVbJSNpKNDUcv3m8z1vokdf8pieFXfQf8T0aEQrFN00WKO0aymr');
+        stripe.retrievePaymentIntent(paymentIntentClientSecret).then(({ paymentIntent }) => {
+          console.log('📧 Receipt Email:', paymentIntent.receipt_email);
+          if (paymentIntent.receipt_email) {
+            document.getElementById('customer-email').textContent = paymentIntent.receipt_email;
+          }
+        });
+      }
     }
     
     // Clear cart immediately after successful payment
