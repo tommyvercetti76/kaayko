@@ -176,13 +176,24 @@ class CustomLocationModal {
         navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 });
       });
       
-      const lat = pos.coords.latitude.toFixed(6);
-      const lng = pos.coords.longitude.toFixed(6);
+      const lat = parseFloat(pos.coords.latitude.toFixed(6));
+      const lng = parseFloat(pos.coords.longitude.toFixed(6));
       
       this.modal.querySelector('#latitude-input').value = lat;
       this.modal.querySelector('#longitude-input').value = lng;
       
-      // Auto-search
+      // Check if we already have results for this location (within 10km)
+      if (this.lastSearchResults && this.lastSearchResults.searchLat && this.lastSearchResults.searchLng) {
+        const distance = this.calculateDistance(lat, lng, this.lastSearchResults.searchLat, this.lastSearchResults.searchLng);
+        if (distance < 10) {
+          console.log('✓ Using cached results (same location)');
+          btn.disabled = false;
+          btn.innerHTML = '<span class="material-icons">my_location</span> Use My Current Location';
+          return; // Don't re-search
+        }
+      }
+      
+      // Auto-search only if location changed
       setTimeout(() => this.search(), 500);
     } catch (err) {
       this.showError('Unable to get your location. Please enter coordinates manually.');
@@ -190,6 +201,17 @@ class CustomLocationModal {
       btn.disabled = false;
       btn.innerHTML = '<span class="material-icons">my_location</span> Use My Current Location';
     }
+  }
+  
+  calculateDistance(lat1, lng1, lat2, lng2) {
+    const R = 6371; // km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
   }
 
   async search() {
@@ -200,13 +222,19 @@ class CustomLocationModal {
     
     if (!this.validateCoords(lat, lng)) return;
     
+    // Check if we already have results for this exact location
+    if (this.lastSearchResults && this.lastSearchResults.searchLat === lat && this.lastSearchResults.searchLng === lng) {
+      console.log('✓ Already showing results for this location');
+      return; // Don't re-search
+    }
+    
     this.isSearching = true;
     this.showProgress();
     this.hideError();
     
     try {
       const response = await fetch(
-        `https://api-vwcc5j4qda-uc.a.run.app/nearbyWater?lat=${lat}&lng=${lng}&radius=50`
+        `https://us-central1-kaaykostore.cloudfunctions.net/api/nearbyWater?lat=${lat}&lng=${lng}&radius=50&nocache=1`
       );
       
       if (!response.ok) throw new Error('API request failed');
@@ -241,17 +269,39 @@ class CustomLocationModal {
   }
 
   async displayResults(bodies, searchLat, searchLng) {
+    // Smart filtering - prioritize quality results
+    const filtered = bodies.filter(body => {
+      // Remove very distant results unless high relevancy
+      if (body.distanceMiles > 30 && (!body.relevancy || body.relevancy < 60)) return false;
+      
+      // Remove ponds unless close or high relevancy
+      if (body.type === 'Pond' && body.distanceMiles > 8 && (!body.relevancy || body.relevancy < 50)) return false;
+      
+      // Remove private access spots
+      if (body.access === 'private' || body.access === 'no') return false;
+      
+      return true;
+    });
+    
+    // Sort by relevancy if available, otherwise by distance
+    filtered.sort((a, b) => {
+      if (a.relevancy && b.relevancy) {
+        return b.relevancy - a.relevancy;
+      }
+      return a.distanceMiles - b.distanceMiles;
+    });
+    
     const results = this.modal.querySelector('#results');
     results.innerHTML = `
       <div class="results-header">
         <span class="material-icons">water</span>
-        Found ${bodies.length} water bodies near ${searchLat.toFixed(2)}, ${searchLng.toFixed(2)}
+        Found ${filtered.length} paddle-worthy water bodies
       </div>
     `;
     
-    // Get paddle scores in parallel
+    // Get paddle scores in parallel for top 12
     const withScores = await Promise.all(
-      bodies.slice(0, 10).map(async (body) => {
+      filtered.slice(0, 12).map(async (body) => {
         const score = await this.getPaddleScore(body.lat, body.lng);
         return { ...body, score };
       })
@@ -267,10 +317,27 @@ class CustomLocationModal {
     withScores.forEach(body => {
       const card = document.createElement('div');
       card.className = 'water-body-card';
+      
+      // Build paddling features badges
+      const features = body.paddlingFeatures || {};
+      const badges = [];
+      if (features.boatLaunch) badges.push('<span class="badge badge-launch">🚤 Launch</span>');
+      if (features.boatRental) badges.push('<span class="badge badge-rental">🛶 Rental</span>');
+      if (features.canoeAccess || features.kayakAccess) badges.push('<span class="badge badge-paddle">🏄 Paddle</span>');
+      if (features.publicAccess || body.access === 'public') badges.push('<span class="badge badge-public">✓ Public</span>');
+      if (body.publicLand) badges.push(`<span class="badge badge-park">⛰️ ${body.publicLand.name}</span>`);
+      
+      // Build subtitle with useful info
+      let subtitle = `${body.type} • ${body.distanceMiles} mi`;
+      if (body.areaKm2 > 1) {
+        subtitle += ` • ${body.areaKm2} km²`;
+      }
+      
       card.innerHTML = `
         <div class="body-info">
           <h3>${body.name}</h3>
-          <p>${body.type} • ${body.distanceMiles} mi away</p>
+          <p>${subtitle}</p>
+          ${badges.length > 0 ? `<div class="body-badges">${badges.join('')}</div>` : ''}
         </div>
         <div class="body-score ${this.getScoreClass(body.score)}" title="Paddle Score (1-5)">
           ${body.score || '—'}

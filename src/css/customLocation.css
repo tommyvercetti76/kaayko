@@ -390,6 +390,60 @@
   font-family: 'Josefin_Light', sans-serif;
 }
 
+.body-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'Josefin_Medium', sans-serif;
+  white-space: nowrap;
+}
+
+.badge-launch {
+  background: rgba(100, 200, 255, 0.15);
+  color: #64c8ff;
+  border: 1px solid rgba(100, 200, 255, 0.3);
+}
+
+.badge-rental {
+  background: rgba(120, 180, 255, 0.15);
+  color: #78b4ff;
+  border: 1px solid rgba(120, 180, 255, 0.3);
+}
+
+.badge-paddle {
+  background: rgba(80, 255, 200, 0.15);
+  color: #50ffc8;
+  border: 1px solid rgba(80, 255, 200, 0.3);
+}
+
+.badge-public {
+  background: rgba(100, 255, 100, 0.15);
+  color: #64ff64;
+  border: 1px solid rgba(100, 255, 100, 0.3);
+}
+
+.badge-park {
+  background: rgba(200, 150, 100, 0.15);
+  color: #ffb864;
+  border: 1px solid rgba(200, 150, 100, 0.3);
+}
+
+.badge-size {
+  background: rgba(180, 180, 200, 0.15);
+  color: #b4b4c8;
+  border: 1px solid rgba(180, 180, 200, 0.3);
+}
+
 .body-score {
   font-size: 24px;
   font-weight: 700;
