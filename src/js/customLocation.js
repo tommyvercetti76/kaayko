@@ -100,23 +100,23 @@ class CustomLocationModal {
             <svg class="wave-svg" viewBox="0 0 1000 100" preserveAspectRatio="none">
               <defs>
                 <!-- Outer pill shape clip -->
-                <clipPath id="bar-clip">
+                <clipPath id="bar-clip" clipPathUnits="userSpaceOnUse">
                   <rect x="0" y="0" width="1000" height="100" rx="50" ry="50" />
                 </clipPath>
 
-                <!-- Horizontal progress clip (width will be driven by JS) -->
-                <clipPath id="progress-clip">
-                  <rect id="progress-rect" x="0" y="0" width="0" height="100" />
+                <!-- Horizontal progress clip with rounded edge (width driven by JS) -->
+                <clipPath id="progress-clip" clipPathUnits="userSpaceOnUse">
+                  <rect id="progress-rect" x="0" y="0" width="0" height="100" rx="50" ry="50" />
                 </clipPath>
               </defs>
 
-              <!-- We first clip everything to the pill bar -->
+              <!-- Clip everything to pill bar -->
               <g clip-path="url(#bar-clip)">
-                <!-- Optional dark water background so "empty" area looks like glass -->
+                <!-- Dark water background for glass effect -->
                 <rect x="0" y="0" width="1000" height="100"
                       fill="rgba(10,20,30,0.9)" />
 
-                <!-- Actual liquid lives inside progress-clip, so it fills left→right -->
+                <!-- Liquid fills left→right via progress-clip -->
                 <g clip-path="url(#progress-clip)" class="wave-group">
                   <path class="wave wave-back" d=""></path>
                   <path class="wave wave-front" d=""></path>
