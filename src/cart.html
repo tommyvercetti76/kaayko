@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/fonts/fonts.css" />
   <link rel="stylesheet" href="/css/storestyle.css" />
   <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/kaaykoFilterModal.css" />
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
   
   <style>
@@ -20,47 +21,6 @@
       padding: 0;
       height: auto;
       min-height: 100vh;
-    }
-    
-    /* Simple Top Nav */
-    .cart-top-nav {
-      background: #0a0a0a;
-      padding: 16px 20px;
-      border-bottom: 1px solid rgba(255, 215, 0, 0.2);
-    }
-    
-    .cart-top-nav-content {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      gap: 30px;
-    }
-    
-    .cart-top-nav h1 {
-      font-family: 'Josefin_Bold', Arial, sans-serif;
-      font-size: 24px;
-      color: #ffd700;
-      margin: 0;
-    }
-    
-    .cart-top-nav-links {
-      display: flex;
-      gap: 20px;
-    }
-    
-    .cart-top-nav a {
-      font-family: 'Josefin_Medium', Arial, sans-serif;
-      font-size: 14px;
-      color: #ffd700;
-      text-decoration: none;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      transition: opacity 0.2s;
-    }
-    
-    .cart-top-nav a:hover {
-      opacity: 0.7;
     }
     
     .cart-page-wrapper {
@@ -404,15 +364,30 @@
   </style>
 </head>
 <body>
-  <!-- Simple Top Nav -->
-  <div class="cart-top-nav">
-    <div class="cart-top-nav-content">
-      <h1>Kaayko Store</h1>
-      <div class="cart-top-nav-links">
-        <a href="store.html">Store</a>
+  <!-- HEADER (shared across all pages) -->
+  <header class="header">
+    <div class="header-top">
+      <!-- Brand -->
+      <div class="header-brand">
+        <h1 class="header-title">Kaayko</h1>
+        <p class="header-subtitle">Made for the Wild</p>
+      </div>
+      <!-- Desktop navigation -->
+      <nav class="top-menu"><ul></ul></nav>
+      <!-- Controls: Dark-mode | Mobile menu -->
+      <div class="header-controls">
+        <!-- Dark Mode Toggle -->
+        <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode"></button>
+        <!-- Mobile FAB -->
+        <button class="fab-menu material-icons mobile-only" aria-label="Open Menu">menu</button>
       </div>
     </div>
-  </div>
+    
+    <!-- Mobile overlay menu -->
+    <div class="mobile-menu-overlay">
+      <ul></ul>
+    </div>
+  </header>
 
   <div class="cart-page-wrapper">
     <div class="cart-page">
@@ -593,15 +568,18 @@
         });
       });
       
-      if (window.innerWidth > 768) initDesktopPayment(items, total);
+      if (window.innerWidth > 768) initPayment('desktop', items, total);
       updateMobileUI(totalFormatted);
     }
     
-    async function initDesktopPayment(items, total) {
+    // UNIFIED PAYMENT FUNCTION - works for both mobile and desktop
+    async function initPayment(mode, items, total) {
+      const isMobile = mode === 'mobile';
+      const prefix = isMobile ? 'mobile-' : 'cart-';
+      
       try {
-        const consentCheckbox = document.getElementById('cart-data-consent');
-        const emailInput = document.getElementById('cart-email');
-        const phoneInput = document.getElementById('cart-phone');
+        const consentCheckbox = document.getElementById(`${prefix}data-consent`);
+        const phoneInputInitial = document.getElementById(`${prefix}phone`);
         
         const requestBody = {
           items: items.map(i => {
@@ -618,12 +596,12 @@
             };
           }),
           price: `$${total.toFixed(2)}`,
-          customerEmail: emailInput?.value.trim() || null,
-          customerPhone: phoneInput?.value.trim() || null,
+          customerEmail: document.getElementById(`${prefix}customer-email`)?.value.trim() || null,
+          customerPhone: phoneInputInitial?.value.trim() || null,
           dataRetentionConsent: consentCheckbox?.checked || false
         };
         
-        console.log('📤 Desktop sending to API:', requestBody);
+        console.log(`📤 ${mode} sending to API:`, requestBody);
         
         const response = await fetch(`${API_URL}/createPaymentIntent`, {
           method: 'POST',
@@ -631,17 +609,19 @@
           body: JSON.stringify(requestBody)
         });
         
-        console.log('📥 Desktop response status:', response.status);
+        console.log(`📥 ${mode} response status:`, response.status);
         const responseData = await response.json();
-        console.log('📥 Desktop response data:', responseData);
+        console.log(`📥 ${mode} response data:`, responseData);
         
         if (!response.ok) {
           throw new Error(JSON.stringify(responseData));
         }
         
         const { clientSecret } = responseData;
-        desktopStripe = Stripe(STRIPE_KEY);
-        const elements = desktopStripe.elements({
+        const stripe = Stripe(STRIPE_KEY);
+        if (isMobile) mobileStripe = stripe;
+        else desktopStripe = stripe;
+        const elements = stripe.elements({
           clientSecret,
           appearance: {
             theme: 'night',
@@ -683,20 +663,20 @@
           mode: 'shipping',
           allowedCountries: ['US']
         });
-        const container = document.getElementById('cart-payment-element');
+        const container = document.getElementById(`${prefix}payment-element`);
         container.innerHTML = '';
         const addressDiv = document.createElement('div');
-        addressDiv.style.marginBottom = '20px';
+        addressDiv.style.marginBottom = isMobile ? '16px' : '20px';
         const paymentDiv = document.createElement('div');
         container.appendChild(addressDiv);
         container.appendChild(paymentDiv);
         addressElement.mount(addressDiv);
         paymentElement.mount(paymentDiv);
         
-        const btn = document.getElementById('cart-complete-order-btn');
-        const emailInput = document.getElementById('cart-customer-email');
-        const phoneInput = document.getElementById('cart-customer-phone');
-        const emailError = document.getElementById('cart-email-error');
+        const btn = document.getElementById(isMobile ? 'mobileCheckoutBtn' : 'cart-complete-order-btn');
+        const emailInput = document.getElementById(`${prefix}customer-email`);
+        const phoneInput = document.getElementById(`${prefix}customer-phone`);
+        const emailError = document.getElementById(`${prefix}email-error`);
         let addressComplete = false;
         let paymentComplete = false;
         let emailValid = false;
@@ -750,7 +730,7 @@
           btn.disabled = true;
           btn.innerHTML = '<span class="material-icons" style="font-size: 16px; animation: spin 1s linear infinite;">refresh</span> Processing...';
           
-          const { error } = await desktopStripe.confirmPayment({
+          const { error } = await stripe.confirmPayment({
             elements,
             confirmParams: {
               return_url: window.location.origin + '/order-success.html?email=' + encodeURIComponent(customerEmail),
@@ -770,10 +750,10 @@
             btn.innerHTML = 'Complete Order';
             
             // Log error for debugging
-            console.error('Payment error:', error);
+            console.error(`${mode} payment error:`, error);
           }
         });
-      } catch (error) { console.error('Payment init error:', error); }
+      } catch (error) { console.error(`${mode} payment init error:`, error); }
     }
     
     // MOBILE BOTTOM SHEET
@@ -800,7 +780,11 @@
       overlay.classList.add('active');
       sheet.classList.add('active');
       document.body.style.overflow = 'hidden';
-      if (!mobileStripe) initMobilePayment();
+      if (!mobileStripe) {
+        const items = cartManager.getItems();
+        const total = cartManager.getTotalPrice();
+        initPayment('mobile', items, total);
+      }
     }
     
     function closeSheet() {
@@ -809,181 +793,6 @@
       sheet.classList.remove('active');
       document.body.style.overflow = '';
       sheet.style.transform = '';
-    }
-    
-    async function initMobilePayment() {
-      try {
-        const items = cartManager.getItems();
-        const total = cartManager.getTotalPrice();
-        const consentCheckbox = document.getElementById('mobile-data-consent');
-        const emailInput = document.getElementById('mobile-email');
-        const phoneInput = document.getElementById('mobile-phone');
-        
-        const requestBody = {
-          items: items.map(i => {
-            // Parse price safely - handle string or number
-            let priceNum = typeof i.price === 'number' ? i.price : parseFloat(String(i.price).replace(/[$,]/g, ''));
-            if (isNaN(priceNum)) priceNum = 69.98; // Fallback price
-            
-            return {
-              productId: i.productId,
-              productTitle: i.title,
-              size: i.size,
-              gender: i.gender,
-              price: `$${priceNum.toFixed(2)}`
-            };
-          }),
-          price: `$${total.toFixed(2)}`,
-          customerEmail: emailInput?.value.trim() || null,
-          customerPhone: phoneInput?.value.trim() || null,
-          dataRetentionConsent: consentCheckbox?.checked || false
-        };
-        
-        console.log('📤 Sending to API:', requestBody);
-        
-        const response = await fetch(`${API_URL}/createPaymentIntent`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
-        });
-        
-        console.log('📥 Response status:', response.status);
-        const responseData = await response.json();
-        console.log('📥 Response data:', responseData);
-        
-        if (!response.ok) {
-          throw new Error(JSON.stringify(responseData));
-        }
-        const { clientSecret } = responseData;
-        mobileStripe = Stripe(STRIPE_KEY);
-        const elements = mobileStripe.elements({
-          clientSecret,
-          appearance: {
-            theme: 'night',
-            variables: {
-              colorPrimary: '#d4af37',
-              colorBackground: '#1a1a1a',
-              colorText: '#ffffff',
-              colorDanger: '#ff4444',
-              fontFamily: 'Josefin_Medium, Arial, sans-serif',
-              spacingUnit: '4px',
-              borderRadius: '8px'
-            },
-            rules: {
-              '.Label': {
-                color: '#ffffff',
-                fontSize: '13px',
-                fontWeight: '500',
-                marginBottom: '8px'
-              },
-              '.Input': {
-                backgroundColor: '#0a0a0a',
-                border: '1px solid rgba(255,255,255,0.2)',
-                color: '#ffffff'
-              },
-              '.Input:focus': {
-                border: '1px solid #d4af37',
-                boxShadow: '0 0 0 1px #d4af37'
-              }
-            }
-          },
-          fields: {
-            billingDetails: {
-              address: 'auto'
-            }
-          }
-        });
-        const paymentElement = elements.create('payment');
-        const addressElement = elements.create('address', {
-          mode: 'shipping',
-          allowedCountries: ['US']
-        });
-        const container = document.getElementById('mobile-payment-element');
-        container.innerHTML = '';
-        const addressDiv = document.createElement('div');
-        addressDiv.style.marginBottom = '16px';
-        const paymentDiv = document.createElement('div');
-        container.appendChild(addressDiv);
-        container.appendChild(paymentDiv);
-        addressElement.mount(addressDiv);
-        paymentElement.mount(paymentDiv);
-        
-        const emailInput = document.getElementById('mobile-customer-email');
-        const phoneInput = document.getElementById('mobile-customer-phone');
-        const emailError = document.getElementById('mobile-email-error');
-        let addressComplete = false;
-        let paymentComplete = false;
-        let emailValid = false;
-        
-        const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-        
-        emailInput.addEventListener('input', () => {
-          const email = emailInput.value.trim();
-          if (!email) {
-            emailInput.style.borderColor = '#333';
-            emailError.style.display = 'none';
-            emailValid = false;
-          } else if (validateEmail(email)) {
-            emailInput.style.borderColor = '#10b981';
-            emailError.style.display = 'none';
-            emailValid = true;
-          } else {
-            emailInput.style.borderColor = '#ff4444';
-            emailError.textContent = 'Please enter a valid email';
-            emailError.style.display = 'block';
-            emailValid = false;
-          }
-          checkFormComplete();
-        });
-        
-        const checkFormComplete = () => {
-          mobileBtn.disabled = !(addressComplete && paymentComplete && emailValid);
-        };
-        
-        addressElement.on('change', (event) => {
-          addressComplete = event.complete;
-          checkFormComplete();
-        });
-        
-        paymentElement.on('change', (event) => {
-          paymentComplete = event.complete;
-          checkFormComplete();
-        });
-        
-        mobileBtn.addEventListener('click', async () => {
-          const customerEmail = emailInput.value.trim();
-          const customerPhone = phoneInput.value.trim();
-          
-          if (!validateEmail(customerEmail)) {
-            emailError.textContent = 'Please enter a valid email';
-            emailError.style.display = 'block';
-            emailInput.style.borderColor = '#ff4444';
-            return;
-          }
-          
-          mobileBtn.disabled = true;
-          mobileBtn.innerHTML = '<span class="material-icons" style="font-size: 16px; animation: spin 1s linear infinite;">refresh</span> Processing...';
-          const { error } = await mobileStripe.confirmPayment({
-            elements,
-            confirmParams: { 
-              return_url: window.location.origin + '/order-success.html?email=' + encodeURIComponent(customerEmail),
-              receipt_email: customerEmail,
-              payment_method_data: {
-                billing_details: {
-                  email: customerEmail,
-                  phone: customerPhone || undefined
-                }
-              }
-            }
-          });
-          if (error) { 
-            showErrorMessage(error.message); 
-            mobileBtn.disabled = false; 
-            mobileBtn.innerHTML = 'Complete Order';
-            console.error('Mobile payment error:', error);
-          }
-        });
-      } catch (error) { console.error('Mobile payment error:', error); }
     }
     
     function handleStart(e) { startY = e.touches[0].clientY; sheet.style.transition = 'none'; }
@@ -1012,6 +821,18 @@
     renderCart();
     document.getElementById('year').textContent = new Date().getFullYear();
     window.addEventListener('resize', () => renderCart());
+  </script>
+  
+  <!-- Hide non-Store menu items on cart page -->
+  <script type="module">
+    // Wait for header.js to populate menu, then hide non-Store items
+    setTimeout(() => {
+      document.querySelectorAll('.top-menu a, .mobile-menu-overlay a').forEach(link => {
+        if (!link.textContent.includes('Store')) {
+          link.parentElement.style.display = 'none';
+        }
+      });
+    }, 0);
   </script>
 </body>
 </html>
