@@ -51,6 +51,11 @@ const VIEW_CONFIGS = {
     css: 'views/analytics/analytics.css',
     container: '#analytics-view'
   },
+  billing: {
+    module: '../views/billing/billing.js',
+    css: 'views/billing/billing.css',
+    container: '#billing-view'
+  },
   'tenant-onboarding': {
     module: '../views/tenant-onboarding/tenant-onboarding.js',
     css: 'views/tenant-onboarding/tenant-onboarding.css',
@@ -152,12 +157,25 @@ async function switchView(viewName) {
 // ============================================================================
 
 function initNavigation() {
+  // Handle sidebar nav items
   document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', (e) => {
       e.preventDefault();
       const view = item.dataset.view;
       switchView(view);
     });
+  });
+  
+  // Handle ANY element with data-view attribute (View All buttons, etc.)
+  document.addEventListener('click', (e) => {
+    const target = e.target.closest('[data-view]');
+    if (target && !target.classList.contains('nav-item')) {
+      e.preventDefault();
+      const view = target.dataset.view;
+      if (view && VIEW_CONFIGS[view]) {
+        switchView(view);
+      }
+    }
   });
 }
 
@@ -294,13 +312,15 @@ function initUserMenu() {
 
 async function initTenantSwitcher(tenantSelect) {
   try {
-    // Fetch all tenants
-    const response = await fetch(`${CONFIG.API_BASE}/tenants`, {
+    // Fetch all tenants - use the correct smartlinks/tenants endpoint
+    const response = await fetch(`${CONFIG.API_BASE}/smartlinks/tenants`, {
       headers: { 'Authorization': `Bearer ${AUTH.token}` }
     });
     
     if (!response.ok) {
-      console.error('Failed to fetch tenants for switcher');
+      console.warn('Tenant switcher unavailable (single tenant mode)');
+      // Hide tenant switcher if tenants endpoint not available
+      tenantSelect.closest('.tenant-switcher')?.classList.add('hidden');
       return;
     }
     

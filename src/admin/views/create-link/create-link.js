@@ -303,7 +303,7 @@ function resetCreateForm() {
 
 /**
  * Load link data for editing
- * UPDATED: Matches backend API v2.1.0 response format
+ * ROBUST: Handles multiple code field formats from legacy data
  */
 async function loadLinkForEditing(code) {
   try {
@@ -315,26 +315,34 @@ async function loadLinkForEditing(code) {
     
     // Backend returns simple array of links
     const links = data.links || [];
-    const link = links.find(l => l.code === code);
+    const link = links.find(l => (l.code || l.shortCode || l.id) === code);
     
     if (!link) {
       utils.showError('Link not found');
       return;
     }
     
-    // Store editing code in STATE
-    STATE.editingCode = code;
+    // Get the actual code from the link (handles all formats)
+    const actualCode = link.code || link.shortCode || link.id;
     
-    // Populate form with link data (backend v2.1.0 schema)
+    // Store editing code in STATE
+    STATE.editingCode = actualCode;
+    
+    // Populate form with link data (robust field handling)
     const utm = link.utm || {};
     
-    document.getElementById('short-code').value = code;
+    // Get destinations - handle both flat and nested formats
+    const webDest = link.webDestination || link.destinations?.web || '';
+    const iosDest = link.iosDestination || link.destinations?.ios || '';
+    const androidDest = link.androidDestination || link.destinations?.android || '';
+    
+    document.getElementById('short-code').value = actualCode;
     document.getElementById('short-code').readOnly = true;
     document.getElementById('title').value = link.title || '';
-    document.getElementById('webDestination').value = link.webDestination || '';
+    document.getElementById('webDestination').value = webDest;
     document.getElementById('createdBy').value = link.createdBy || '';
-    document.getElementById('iosDestination').value = link.iosDestination || '';
-    document.getElementById('androidDestination').value = link.androidDestination || '';
+    document.getElementById('iosDestination').value = iosDest;
+    document.getElementById('androidDestination').value = androidDest;
     
     // Backend UTM format: { source, medium, campaign } (no utm_ prefix)
     ['Source', 'Medium', 'Campaign', 'Term', 'Content'].forEach(field => {
@@ -359,7 +367,7 @@ async function loadLinkForEditing(code) {
     
     // Update form header
     const formHeader = document.querySelector('#create-view .view-header h1');
-    if (formHeader) formHeader.textContent = `Edit Link: ${code}`;
+    if (formHeader) formHeader.textContent = `Edit Link: ${actualCode}`;
     
     const submitBtn = document.querySelector('#create-view .btn-primary[type="submit"]');
     if (submitBtn) submitBtn.innerHTML = '💾 Update Link';

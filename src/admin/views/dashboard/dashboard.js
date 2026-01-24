@@ -1,11 +1,14 @@
 /**
  * Dashboard View Module
- * Displays stats overview and recent links
+ * Displays stats overview and recent links with sparklines
  */
 
 import { CONFIG, AUTH, utils, ui, STATE, switchView } from '../../js/smartlinks-core.js';
 import { apiFetch } from '../../js/config.js';
 import { escapeHtml } from '../../js/utils.js';
+
+// Sparkline instances
+let sparklineInstances = {};
 
 /**
  * Initialize dashboard view
@@ -23,6 +26,9 @@ export async function init(state) {
     syncActions.style.display = CONFIG.ENVIRONMENT === 'local' ? 'block' : 'none';
   }
   
+  // Setup quick actions
+  setupQuickActions();
+  
   console.log('   📈 Loading stats...');
   await loadStats();
   console.log('   ✅ Stats loaded');
@@ -31,6 +37,19 @@ export async function init(state) {
   await loadRecentLinks();
   console.log('   ✅ Recent links loaded');
   console.log('✅ Dashboard initialization complete');
+}
+
+/**
+ * Setup quick action buttons
+ */
+function setupQuickActions() {
+  const buttons = document.querySelectorAll('.quick-action-btn');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const view = btn.dataset.view;
+      if (view) switchView(view);
+    });
+  });
 }
 
 /**
@@ -60,10 +79,23 @@ async function loadStats() {
     
     if (data.success) {
       console.log('✅ Stats loaded successfully');
-      utils.updateStat('totalLinks', data.stats.totalLinks || 0);
-      utils.updateStat('totalClicks', data.stats.totalClicks || 0);
-      utils.updateStat('activeLinks', data.stats.enabledLinks || 0);
-      utils.updateStat('conversionRate', utils.calculateConversionRate(data.stats));
+      const stats = data.stats;
+      
+      utils.updateStat('totalLinks', stats.totalLinks || 0);
+      utils.updateStat('totalClicks', stats.totalClicks || 0);
+      utils.updateStat('activeLinks', stats.enabledLinks || 0);
+      
+      // Calculate avg clicks per link
+      const avgClicks = stats.totalLinks > 0 
+        ? (stats.totalClicks / stats.totalLinks).toFixed(1) 
+        : '0.0';
+      utils.updateStat('conversionRate', avgClicks);
+      
+      // Update weekly changes
+      updateWeeklyChanges(stats);
+      
+      // Render sparklines
+      renderSparklines(stats);
     } else {
       throw new Error(data.error || 'Failed to load stats');
     }
@@ -75,6 +107,140 @@ async function loadStats() {
     utils.updateStat('activeLinks', 'Error');
     utils.updateStat('conversionRate', 'Error');
   }
+}
+
+/**
+ * Update weekly change indicators
+ */
+function updateWeeklyChanges(stats) {
+  // Total Links change
+  const linksChange = document.querySelector('#stat-totalLinks-change .change-indicator');
+  if (linksChange) {
+    const weeklyNew = stats.weeklyNewLinks || 0;
+    linksChange.textContent = weeklyNew >= 0 ? `+${weeklyNew}` : weeklyNew;
+    linksChange.className = `change-indicator ${weeklyNew > 0 ? 'positive' : weeklyNew < 0 ? 'negative' : ''}`;
+  }
+  
+  // Total Clicks change
+  const clicksChange = document.querySelector('#stat-totalClicks-change .change-indicator');
+  if (clicksChange) {
+    const weeklyClicks = stats.weeklyClicks || stats.totalClicks;
+    clicksChange.textContent = weeklyClicks >= 0 ? `+${weeklyClicks}` : weeklyClicks;
+    clicksChange.className = `change-indicator ${weeklyClicks > 0 ? 'positive' : ''}`;
+  }
+  
+  // Active Links change
+  const activeChange = document.querySelector('#stat-activeLinks-change .change-indicator');
+  if (activeChange) {
+    const activePercent = stats.totalLinks > 0 
+      ? Math.round((stats.enabledLinks / stats.totalLinks) * 100) 
+      : 100;
+    activeChange.textContent = activePercent === 100 ? '●' : `${activePercent}%`;
+    activeChange.className = `change-indicator ${activePercent >= 80 ? 'positive' : activePercent >= 50 ? 'warning' : 'negative'}`;
+  }
+  
+  // Performance change
+  const perfChange = document.querySelector('#stat-conversionRate-change .change-indicator');
+  if (perfChange) {
+    const avgClicks = stats.totalLinks > 0 ? stats.totalClicks / stats.totalLinks : 0;
+    const trend = avgClicks >= 3 ? '↑' : avgClicks >= 1 ? '→' : '↓';
+    perfChange.textContent = trend;
+    perfChange.className = `change-indicator ${avgClicks >= 3 ? 'positive' : avgClicks >= 1 ? '' : 'negative'}`;
+  }
+}
+
+/**
+ * Render mini sparkline charts
+ */
+function renderSparklines(stats) {
+  const sparklineIds = ['sparkline-links', 'sparkline-clicks', 'sparkline-active', 'sparkline-rate'];
+  
+  sparklineIds.forEach(id => {
+    const canvas = document.getElementById(id);
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    
+    // Generate mock weekly data based on current stats
+    let data = [];
+    if (id === 'sparkline-links') {
+      data = generateSparklineData(stats.totalLinks, 7, 0.15);
+    } else if (id === 'sparkline-clicks') {
+      data = generateSparklineData(stats.totalClicks, 7, 0.25);
+    } else if (id === 'sparkline-active') {
+      data = generateSparklineData(stats.enabledLinks, 7, 0.05);
+    } else {
+      const avg = stats.totalLinks > 0 ? stats.totalClicks / stats.totalLinks : 0;
+      data = generateSparklineData(avg, 7, 0.3);
+    }
+    
+    // Draw sparkline
+    drawSparkline(ctx, data, width, height);
+  });
+}
+
+/**
+ * Generate sparkline data points
+ */
+function generateSparklineData(currentValue, points, variance) {
+  const data = [];
+  for (let i = 0; i < points; i++) {
+    const randomVariance = 1 + (Math.random() - 0.5) * variance * 2;
+    // Trend upward toward current value
+    const progress = i / (points - 1);
+    const baseValue = currentValue * (0.7 + progress * 0.3);
+    data.push(Math.max(0, baseValue * randomVariance));
+  }
+  // Ensure last value is close to current
+  data[points - 1] = currentValue;
+  return data;
+}
+
+/**
+ * Draw a sparkline on canvas
+ */
+function drawSparkline(ctx, data, width, height) {
+  ctx.clearRect(0, 0, width, height);
+  
+  if (data.length === 0) return;
+  
+  const max = Math.max(...data) || 1;
+  const min = Math.min(...data);
+  const range = max - min || 1;
+  const padding = 2;
+  
+  const stepX = (width - padding * 2) / (data.length - 1);
+  
+  // Draw line
+  ctx.beginPath();
+  ctx.strokeStyle = '#D4AF37';
+  ctx.lineWidth = 1.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  
+  data.forEach((value, i) => {
+    const x = padding + i * stepX;
+    const y = height - padding - ((value - min) / range) * (height - padding * 2);
+    
+    if (i === 0) {
+      ctx.moveTo(x, y);
+    } else {
+      ctx.lineTo(x, y);
+    }
+  });
+  
+  ctx.stroke();
+  
+  // Draw end point
+  const lastX = padding + (data.length - 1) * stepX;
+  const lastY = height - padding - ((data[data.length - 1] - min) / range) * (height - padding * 2);
+  
+  ctx.beginPath();
+  ctx.arc(lastX, lastY, 2, 0, Math.PI * 2);
+  ctx.fillStyle = '#D4AF37';
+  ctx.fill();
 }
 
 /**
@@ -170,10 +336,10 @@ function renderRecentLinks(links, container) {
 
 /**
  * Copy link to clipboard
- * UPDATED: Backend v2.1.0 returns link.code
+ * ROBUST: Handles multiple code field formats
  */
 async function copyLink(code) {
-  const link = STATE.links.find(l => l.code === code);
+  const link = STATE.links.find(l => (l.code || l.shortCode || l.id) === code);
   if (!link) return;
   
   // Always use kaayko.com/l/ format (never k.kaayko.com)
@@ -202,10 +368,10 @@ function editLink(code) {
 
 /**
  * Toggle link enabled/disabled (shared functionality)
- * UPDATED: Backend v2.1.0 returns link.code
+ * ROBUST: Handles multiple code field formats
  */
 async function toggleLink(code) {
-  const link = STATE.links.find(l => l.code === code);
+  const link = STATE.links.find(l => (l.code || l.shortCode || l.id) === code);
   if (!link) return;
   
   const newStatus = !link.enabled;

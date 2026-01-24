@@ -77,17 +77,26 @@ export function renderLinksTable(links) {
 }
 
 function renderLinkRow(link) {
-  // UPDATED: Backend v2.1.0 returns link.code (no fallback needed)
-  const code = link.code;
+  // ROBUST: Handle multiple code field formats from legacy data
+  const code = link.code || link.shortCode || link.id;
+  
+  // Skip rendering if no code available
+  if (!code) {
+    console.warn('Link missing code field:', link);
+    return ''; // Skip this row entirely
+  }
+  
   const rowClass = getRowClass(link);
   const created = formatDate(link.createdAt);
   const expires = link.expiresAt ? formatDate(link.expiresAt) : '∞ Never';
   const isEnabled = link.enabled !== false;
   const toggleClass = isEnabled ? 'toggle-active' : 'toggle-inactive';
-  const toggleTitle = isEnabled ? 'Disable' : 'Enable';
-  const shortUrl = link.shortUrl || `kaayko.com/l/${code}`;
+  const toggleTitle = isEnabled ? 'Click to disable' : 'Click to enable';
   
-  // Backend no longer returns clickCount (use analytics endpoint for stats)
+  // CONSISTENT: Always show full https URL format
+  const shortUrl = link.shortUrl || `https://kaayko.com/l/${code}`;
+  
+  // Display clicks - handle all formats
   const displayClicks = link.clickCount !== undefined ? link.clickCount : '-';
   
   return `

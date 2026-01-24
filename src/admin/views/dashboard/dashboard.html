@@ -4,35 +4,75 @@
   <p>Real-time overview of your smart links performance</p>
 </header>
 
-<!-- Stats Cards -->
+<!-- Stats Cards with Sparklines -->
 <div class="stats-grid">
   <div class="stat-card">
     <div class="stat-icon">🔗</div>
-    <div class="stat-label">Total Links</div>
-    <div class="stat-value" id="stat-totalLinks">0</div>
-    <div class="stat-change">+0 this week</div>
+    <div class="stat-content">
+      <div class="stat-label">Total Links</div>
+      <div class="stat-value" id="stat-totalLinks">0</div>
+      <div class="stat-change" id="stat-totalLinks-change">
+        <span class="change-indicator">—</span>
+        <span class="change-label">this week</span>
+      </div>
+      <canvas id="sparkline-links" class="sparkline" width="80" height="24"></canvas>
+    </div>
   </div>
   
   <div class="stat-card">
     <div class="stat-icon">📊</div>
-    <div class="stat-label">Total Clicks</div>
-    <div class="stat-value" id="stat-totalClicks">0</div>
-    <div class="stat-change">+0 this week</div>
+    <div class="stat-content">
+      <div class="stat-label">Total Clicks</div>
+      <div class="stat-value" id="stat-totalClicks">0</div>
+      <div class="stat-change" id="stat-totalClicks-change">
+        <span class="change-indicator">—</span>
+        <span class="change-label">this week</span>
+      </div>
+      <canvas id="sparkline-clicks" class="sparkline" width="80" height="24"></canvas>
+    </div>
   </div>
   
   <div class="stat-card">
     <div class="stat-icon">✓</div>
-    <div class="stat-label">Active Links</div>
-    <div class="stat-value" id="stat-activeLinks">0</div>
-    <div class="stat-change">All operational</div>
+    <div class="stat-content">
+      <div class="stat-label">Active Links</div>
+      <div class="stat-value" id="stat-activeLinks">0</div>
+      <div class="stat-change" id="stat-activeLinks-change">
+        <span class="change-indicator positive">●</span>
+        <span class="change-label">All operational</span>
+      </div>
+      <canvas id="sparkline-active" class="sparkline" width="80" height="24"></canvas>
+    </div>
   </div>
   
   <div class="stat-card">
     <div class="stat-icon">⚡</div>
-    <div class="stat-label">Conversion Rate</div>
-    <div class="stat-value" id="stat-conversionRate">0%</div>
-    <div class="stat-change">Performance metric</div>
+    <div class="stat-content">
+      <div class="stat-label">Avg Clicks/Link</div>
+      <div class="stat-value" id="stat-conversionRate">0%</div>
+      <div class="stat-change" id="stat-conversionRate-change">
+        <span class="change-indicator">—</span>
+        <span class="change-label">performance</span>
+      </div>
+      <canvas id="sparkline-rate" class="sparkline" width="80" height="24"></canvas>
+    </div>
   </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="quick-actions">
+  <button class="quick-action-btn" data-view="create">
+    <span class="btn-icon">➕</span>
+    <span>New Link</span>
+  </button>
+  <button class="quick-action-btn" data-view="analytics">
+    <span class="btn-icon">📈</span>
+    <span>Analytics</span>
+  </button>
+  <button class="quick-action-btn" data-view="links">
+    <span class="btn-icon">🔗</span>
+    <span>All Links</span>
+  </button>
 </div>
 
 <!-- Recent Links -->

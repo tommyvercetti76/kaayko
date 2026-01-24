@@ -71,19 +71,15 @@
 
 /* Form Sections */
 .form-section, .destination-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
-  border: 1px solid rgba(218, 165, 32, 0.1);
-  border-radius: 18px;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  transition: border-color 0.3s ease, background 0.3s ease;
 }
 
 .form-section:hover, .destination-card:hover {
-  border-color: rgba(218, 165, 32, 0.25);
-  background: linear-gradient(135deg, rgba(218, 165, 32, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25),
-              0 0 0 1px rgba(218, 165, 32, 0.1);
+  border-color: rgba(218, 165, 32, 0.15);
+  background: rgba(218, 165, 32, 0.02);
 }
 
 /* Form Guide */
@@ -159,46 +155,44 @@
   gap: 12px;
 }
 
-/* Collapsibles - Professional Dropdown Design */
+/* Collapsibles - Clean Accordion Design */
 .collapsible {
   margin-bottom: 20px;
-  border: 1px solid var(--border);
   border-radius: var(--r-12);
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.01) 100%);
-  transition: color 0.25s, background 0.25s, border-color 0.25s, box-shadow 0.25s;
+  transition: box-shadow 0.25s ease;
   overflow: visible;
 }
 
 .collapsible:hover {
-  border-color: var(--border);
-  box-shadow: var(--sh-card);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .collapsible-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 28px;
+  padding: 20px 24px;
   background: transparent;
   cursor: pointer;
   user-select: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 14px;
-  min-height: 72px;
-  border: 1.5px solid rgba(218, 165, 32, 0.15);
+  border-radius: var(--r-12);
+  min-height: 64px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .collapsible-header:hover {
-  background: linear-gradient(135deg, rgba(218, 165, 32, 0.08), rgba(218, 165, 32, 0.02));
-  border-color: rgba(218, 165, 32, 0.3);
-  transform: translateX(4px);
+  background: rgba(218, 165, 32, 0.04);
+  border-color: rgba(218, 165, 32, 0.2);
 }
 
 .collapsible.active .collapsible-header {
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
-  background: linear-gradient(135deg, rgba(218, 165, 32, 0.12), rgba(218, 165, 32, 0.04));
-  border-color: rgba(218, 165, 32, 0.4);
+  background: rgba(218, 165, 32, 0.06);
+  border-color: rgba(218, 165, 32, 0.25);
+  border-bottom-color: transparent;
 }
 
 .collapsible-title {
@@ -247,9 +241,10 @@
 }
 
 .collapsible-body {
-  padding: 28px 24px;
-  border-top: 1px solid var(--border);
-  background: rgba(0, 0, 0, 0.15);
+  padding: 24px;
+  border: 1px solid rgba(218, 165, 32, 0.25);
+  border-top: none;
+  background: rgba(0, 0, 0, 0.1);
   border-bottom-left-radius: var(--r-12);
   border-bottom-right-radius: var(--r-12);
 }
@@ -398,18 +393,16 @@
   justify-content: space-between;
   gap: 20px;
   padding: 16px 20px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.15);
   border-radius: var(--r-12);
-  transition: color 0.25s, background 0.25s, border-color 0.25s;
+  transition: background 0.2s ease;
   margin-bottom: 16px;
   position: relative;
   overflow: visible !important;
 }
 
 .toggle-option:hover {
-  background: rgba(0, 0, 0, 0.3);
-  border-color: var(--border);
+  background: rgba(0, 0, 0, 0.25);
 }
 
 .toggle-option-info {
@@ -452,13 +445,13 @@
 .form-input, .form-textarea, .form-select {
   width: 100%;
   padding: 14px 16px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1.5px solid var(--border);
-  border-radius: var(--r-12);
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--r-8);
   font-size: 15px;
   color: var(--on-surface);
   font-family: 'Josefin Sans', sans-serif;
-  transition: color 0.25s, background 0.25s, border-color 0.25s, box-shadow 0.25s;
+  transition: border-color 0.2s ease, background 0.2s ease;
   outline: none;
 }
 
@@ -468,14 +461,12 @@
 }
 
 .form-input:hover, .form-textarea:hover, .form-select:hover {
-  border-color: var(--border);
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.35);
 }
 
 .form-input:focus, .form-textarea:focus, .form-select:focus {
   border-color: var(--gold);
-  background: rgba(0, 0, 0, 0.5);
-  box-shadow: 0 0 0 3px rgba(218, 165, 32, 0.1);
+  background: rgba(0, 0, 0, 0.35);
 }
 
 .form-textarea {
@@ -562,9 +553,8 @@
   position: absolute;
   inset: 0;
   background: rgba(255, 255, 255, 0.1);
-  border: 1.5px solid var(--border);
   border-radius: 30px;
-  transition: color 0.25s, background 0.25s, border-color 0.25s;
+  transition: background 0.25s ease;
 }
 
 .toggle-slider::before {
@@ -572,17 +562,16 @@
   position: absolute;
   height: 22px;
   width: 22px;
-  left: 3px;
-  bottom: 2.5px;
+  left: 4px;
+  bottom: 4px;
   background: white;
   border-radius: 50%;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .toggle-switch input:checked + .toggle-slider {
   background: linear-gradient(135deg, #4ade80, #22c55e);
-  border-color: #22c55e;
 }
 
 .toggle-switch input:checked + .toggle-slider::before {
@@ -591,7 +580,6 @@
 
 .toggle-switch:hover .toggle-slider {
   background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.25);
 }
 
 .toggle-switch input:checked:hover + .toggle-slider {

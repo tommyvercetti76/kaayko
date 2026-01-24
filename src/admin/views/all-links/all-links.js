@@ -91,10 +91,10 @@ export function copyLink(code) {
 
 /**
  * Toggle link enabled/disabled
- * UPDATED: Matches backend API v2.1.0 (link.code field)
+ * ROBUST: Handles multiple code field formats
  */
 export async function toggleLink(code) {
-  const link = STATE.links.find(l => l.code === code);
+  const link = STATE.links.find(l => (l.code || l.shortCode || l.id) === code);
   if (!link) return;
   
   const newStatus = !link.enabled;

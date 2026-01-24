@@ -6,7 +6,7 @@
 /* Stats Grid */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: var(--space-lg);
   margin-bottom: var(--space-xl);
 }
@@ -17,6 +17,11 @@
   border-radius: var(--radius-md);
   padding: var(--space-lg);
   transition: all var(--transition-base);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  position: relative;
+  overflow: hidden;
 }
 
 .stat-card:hover {
@@ -27,11 +32,16 @@
 
 .stat-icon {
   font-size: 2rem;
-  margin-bottom: var(--space-sm);
+  flex-shrink: 0;
+}
+
+.stat-content {
+  flex: 1;
+  min-width: 0;
 }
 
 .stat-label {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
   margin-bottom: var(--space-xs);
   text-transform: uppercase;
@@ -40,24 +50,87 @@
 }
 
 .stat-value {
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: var(--text-primary);
-  line-height: 1;
+  line-height: 1.2;
   margin-bottom: var(--space-xs);
 }
 
 .stat-change {
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.stat-change.positive {
+.change-indicator {
+  font-weight: 600;
+}
+
+.change-indicator.positive {
   color: var(--success);
 }
 
-.stat-change.negative {
+.change-indicator.negative {
   color: var(--error);
+}
+
+.change-indicator.warning {
+  color: var(--warning);
+}
+
+.change-label {
+  color: var(--text-muted);
+}
+
+/* Sparkline */
+.sparkline {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  opacity: 0.6;
+}
+
+.stat-card:hover .sparkline {
+  opacity: 1;
+}
+
+/* Quick Actions */
+.quick-actions {
+  display: flex;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+  flex-wrap: wrap;
+}
+
+.quick-action-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-lg);
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.quick-action-btn:hover {
+  border-color: var(--gold-primary);
+  background: rgba(212, 175, 55, 0.1);
+  transform: translateY(-1px);
+}
+
+.quick-action-btn .btn-icon {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 1.1rem;
 }
 
 /* Recent Links Section */

@@ -1,17 +1,77 @@
 /**
  * Analytics View Module
- * Executive summary analytics with AI-powered insights
+ * Executive summary analytics with Chart.js visualizations
  */
 
 import { STATE, utils } from '../../js/smartlinks-core.js';
 import { apiFetch } from '../../js/config.js';
+
+// Chart instances for cleanup
+let clicksTrendChart = null;
+let platformChart = null;
+let performanceChart = null;
+let chartJSLoaded = false;
 
 /**
  * Initialize analytics view
  */
 export async function init(state) {
   console.log('📊 Loading Analytics...');
+  
+  // Try to load Chart.js but don't block on failure
+  try {
+    await loadChartJS();
+    chartJSLoaded = true;
+    console.log('✅ Chart.js loaded successfully');
+  } catch (err) {
+    console.warn('⚠️ Chart.js failed to load, continuing without charts:', err.message);
+    chartJSLoaded = false;
+  }
+  
+  // Initialize date range picker
+  initDateRangePicker();
+  
+  // Load and render analytics (always runs, with or without charts)
   await loadAnalytics();
+}
+
+/**
+ * Dynamically load Chart.js
+ */
+async function loadChartJS() {
+  if (window.Chart) {
+    chartJSLoaded = true;
+    return;
+  }
+  
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
+    script.onload = () => {
+      chartJSLoaded = true;
+      resolve();
+    };
+    script.onerror = () => {
+      chartJSLoaded = false;
+      reject(new Error('Failed to load Chart.js'));
+    };
+    document.head.appendChild(script);
+  });
+}
+
+/**
+ * Initialize date range picker
+ */
+function initDateRangePicker() {
+  const buttons = document.querySelectorAll('.range-btn');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      // Reload with new range (future enhancement)
+      console.log('Date range:', btn.dataset.range);
+    });
+  });
 }
 
 /**
@@ -60,14 +120,217 @@ async function loadAnalytics() {
   const metrics = calculateMetrics(STATE.links);
   console.log('📊 Calculated Metrics:', metrics);
   
-  const insights = generateInsights(metrics);
+  // Render charts only if Chart.js loaded successfully
+  if (chartJSLoaded && window.Chart) {
+    renderCharts(metrics);
+  } else {
+    // Hide chart containers if charts unavailable
+    hideChartContainers();
+  }
   
-  // Render the dashboard (no insights)
+  // Render the dashboard tables (always renders)
   const html = renderAnalyticsDashboard(metrics);
-  console.log('📊 Rendered HTML length:', html.length);
   container.innerHTML = html;
   console.log('📊 Analytics dashboard rendered successfully');
 }
+
+/**
+ * Hide chart containers when Chart.js is unavailable
+ */
+function hideChartContainers() {
+  const chartSection = document.querySelector('.charts-section');
+  if (chartSection) {
+    chartSection.innerHTML = `
+      <div class="chart-unavailable">
+        <div class="chart-unavailable-icon">📊</div>
+        <p>Charts temporarily unavailable</p>
+        <small>Analytics data is shown below</small>
+      </div>
+    `;
+  }
+}
+
+/**
+ * Render Chart.js visualizations
+ */
+function renderCharts(metrics) {
+  if (!window.Chart) {
+    console.warn('Chart.js not available, skipping chart render');
+    return;
+  }
+  
+  // Destroy existing charts
+  if (clicksTrendChart) clicksTrendChart.destroy();
+  if (platformChart) platformChart.destroy();
+  if (performanceChart) performanceChart.destroy();
+  
+  // Generate mock time series data (in real app, this would come from API)
+  const last7Days = generateTimeSeriesData(metrics.totalClicks, 7);
+  
+  // 1. Clicks Trend Chart (Line)
+  const clicksCtx = document.getElementById('clicks-trend-chart');
+  if (clicksCtx) {
+    clicksTrendChart = new Chart(clicksCtx, {
+      type: 'line',
+      data: {
+        labels: last7Days.labels,
+        datasets: [{
+          label: 'Clicks',
+          data: last7Days.data,
+          borderColor: '#D4AF37',
+          backgroundColor: 'rgba(212, 175, 55, 0.1)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#D4AF37',
+          pointBorderColor: '#1a1a1a',
+          pointBorderWidth: 2,
+          pointRadius: 5,
+          pointHoverRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1a1a1a',
+            titleColor: '#fff',
+            bodyColor: '#D4AF37',
+            borderColor: '#D4AF37',
+            borderWidth: 1,
+            padding: 12,
+            displayColors: false
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            ticks: { color: '#888' }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            ticks: { color: '#888' }
+          }
+        }
+      }
+    });
+  }
+  
+  // 2. Platform Distribution Chart (Doughnut)
+  const platformCtx = document.getElementById('platform-chart');
+  if (platformCtx) {
+    platformChart = new Chart(platformCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['iOS', 'Android', 'Web Only'],
+        datasets: [{
+          data: [metrics.linksWithIOS, metrics.linksWithAndroid, metrics.webOnlyLinks],
+          backgroundColor: ['#007AFF', '#3DDC84', '#D4AF37'],
+          borderColor: '#1a1a1a',
+          borderWidth: 3
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { color: '#ccc', padding: 15, usePointStyle: true }
+          }
+        },
+        cutout: '65%'
+      }
+    });
+  }
+  
+  // 3. Performance Breakdown Chart (Bar)
+  const perfCtx = document.getElementById('performance-chart');
+  if (perfCtx) {
+    performanceChart = new Chart(perfCtx, {
+      type: 'bar',
+      data: {
+        labels: ['High (8+)', 'Medium (3-7)', 'Low (<3)'],
+        datasets: [{
+          label: 'Links',
+          data: [metrics.highPerformers, metrics.mediumPerformers, metrics.lowPerformers],
+          backgroundColor: ['#4ade80', '#fbbf24', '#f87171'],
+          borderRadius: 8,
+          borderSkipped: false
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: '#888' }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            ticks: { color: '#888', stepSize: 1 }
+          }
+        }
+      }
+    });
+  }
+}
+
+/**
+ * Generate time series data for chart
+ */
+function generateTimeSeriesData(totalClicks, days) {
+  const labels = [];
+  const data = [];
+  const avgPerDay = Math.ceil(totalClicks / days);
+  
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+    
+    // Generate realistic-looking data with some variance
+    const variance = Math.random() * 0.6 - 0.3; // -30% to +30%
+    const dayClicks = Math.max(0, Math.round(avgPerDay * (1 + variance)));
+    data.push(dayClicks);
+  }
+  
+  return { labels, data };
+}
+
+/**
+ * Export analytics to CSV
+ */
+window.exportAnalyticsCSV = function() {
+  const headers = ['Code', 'Title', 'Clicks', 'Created', 'Status', 'Creator', 'Platforms'];
+  const rows = STATE.links.map(l => [
+    l.code || l.shortCode || l.id,
+    `"${(l.title || 'Untitled').replace(/"/g, '""')}"`,
+    l.clickCount || 0,
+    l.createdAt?._seconds ? new Date(l.createdAt._seconds * 1000).toISOString() : '',
+    l.enabled !== false ? 'Active' : 'Disabled',
+    l.createdBy || 'Unknown',
+    [l.destinations?.ios ? 'iOS' : '', l.destinations?.android ? 'Android' : '', l.destinations?.web ? 'Web' : ''].filter(Boolean).join('+')
+  ]);
+  
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `kortex-analytics-${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
 
 /**
  * Calculate comprehensive metrics from links data

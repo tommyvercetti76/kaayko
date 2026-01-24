@@ -1,1 +1,64 @@
-<!-- Analytics View Placeholder -->
+<!-- Analytics View - Enterprise Dashboard -->
+<div class="analytics-view">
+  <!-- Header with Date Range Selector -->
+  <header class="view-header analytics-header">
+    <div class="header-left">
+      <h1>📊 Analytics</h1>
+      <p>Performance insights and campaign metrics</p>
+    </div>
+    <div class="header-right">
+      <div class="date-range-picker">
+        <button class="range-btn active" data-range="7d">7 Days</button>
+        <button class="range-btn" data-range="30d">30 Days</button>
+        <button class="range-btn" data-range="90d">90 Days</button>
+        <button class="range-btn" data-range="all">All Time</button>
+      </div>
+      <button class="btn-secondary export-btn" onclick="window.exportAnalyticsCSV()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        Export CSV
+      </button>
+    </div>
+  </header>
+
+  <!-- Charts Section -->
+  <div class="charts-section">
+    <div class="chart-card chart-card-large">
+      <div class="chart-header">
+        <h3>📈 Click Trends</h3>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-dot clicks"></span> Clicks</span>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="clicks-trend-chart"></canvas>
+      </div>
+    </div>
+    
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>📱 Platform Distribution</h3>
+      </div>
+      <div class="chart-container chart-container-small">
+        <canvas id="platform-chart"></canvas>
+      </div>
+    </div>
+    
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>🎯 Performance Breakdown</h3>
+      </div>
+      <div class="chart-container chart-container-small">
+        <canvas id="performance-chart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dynamic Content -->
+  <div id="analytics-content">
+    <div class="loading">Loading analytics...</div>
+  </div>
+</div>
