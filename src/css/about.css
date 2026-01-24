@@ -228,6 +228,38 @@
   max-width: 180px;
 }
 
+/* Kortex tile - subtle distinction */
+.service-tile.kortex-tile {
+  background: rgba(255, 215, 0, 0.02);
+  border-color: rgba(255, 215, 0, 0.12);
+}
+
+.service-tile.kortex-tile::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.4), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.service-tile.kortex-tile:hover::after {
+  opacity: 1;
+}
+
+/* Kortex icon pulse on hover */
+.service-tile.kortex-tile .tile-icon {
+  transition: stroke 0.3s ease, filter 0.3s ease;
+}
+
+.service-tile.kortex-tile:hover .tile-icon {
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));
+}
+
 /* ============================================
    C. SIGNALS STRIP
 ============================================ */
@@ -414,6 +446,64 @@
   box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
 }
 
+/* Kortex capabilities in modal */
+.modal-capabilities {
+  display: none;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 2rem;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 215, 0, 0.1);
+}
+
+.modal-capabilities.visible {
+  display: grid;
+}
+
+.capability {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.capability svg {
+  width: 24px;
+  height: 24px;
+  stroke: #ffd700;
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.capability span {
+  font-family: 'Josefin_Light', sans-serif;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* Kortex modal enhancement */
+.service-modal.kortex-modal {
+  border-color: #ffd700;
+  max-width: 620px;
+}
+
+.service-modal.kortex-modal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+
 /* Modal Responsive */
 @media (max-width: 768px) {
   .service-modal {
@@ -439,4 +529,54 @@
     top: 0.75rem;
     right: 0.75rem;
   }
+  
+  .modal-capabilities {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 1rem;
+  }
+  
+  .capability svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .capability span {
+    font-size: 0.65rem;
+  }
+}
+
+/* ============================================
+   G. PHILOSOPHY SECTION
+============================================ */
+.philosophy-section {
+  padding: 100px 20px;
+  background: #0a0a0a;
+  border-top: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.philosophy-content {
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.philosophy-content h2 {
+  font-family: 'Josefin_Bold', sans-serif;
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  color: #d4af37;
+  margin: 0 0 32px 0;
+  letter-spacing: 0.02em;
+}
+
+.philosophy-content p {
+  font-family: 'Josefin_Light', sans-serif;
+  font-size: 1.125rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.9;
+  margin: 0 0 24px 0;
+}
+
+.philosophy-content p:last-child {
+  margin-bottom: 0;
 }

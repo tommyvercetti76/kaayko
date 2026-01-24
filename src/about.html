@@ -146,9 +146,9 @@
     <!-- A. HERO SECTION -->
     <section class="hero-dark" id="hero">
       <div class="hero-content">
-        <p class="hero-pretitle">Built in silence. Refined through obsession.</p>
+        <p class="hero-pretitle">Conditions. Spots. Expression.</p>
         <h1 class="hero-title">KAAYKO</h1>
-        <p class="hero-tagline">Water. Maps. Intelligence.</p>
+        <p class="hero-tagline">Know the water before you touch&nbsp;it.</p>
         <div class="hero-ctas">
           <a href="#services" class="cta-primary">Explore</a>
         </div>
@@ -160,40 +160,40 @@
     <section class="constellation-section" id="services">
       <div class="service-tiles">
         
-        <button class="service-tile" data-service="paddling-out" data-url="/paddlingout.html">
+        <a href="/paddlingout.html" class="service-tile">
           <svg class="tile-icon" viewBox="0 0 48 48">
             <path d="M8 24 Q16 16, 24 24 T40 24" stroke-linecap="round"/>
             <path d="M8 30 Q16 22, 24 30 T40 30" stroke-linecap="round"/>
           </svg>
           <div>
             <div class="tile-label">Paddling Out</div>
-            <div class="tile-hint">AI reads water.<br>You decide.</div>
+            <div class="tile-hint">ML conditions.<br>Any lake on Earth.</div>
           </div>
-        </button>
+        </a>
 
-        <button class="service-tile" data-service="lakes-near-me" data-url="/paddlingout.html#search">
+        <a href="/paddlingout.html#search" class="service-tile">
           <svg class="tile-icon" viewBox="0 0 48 48">
             <circle cx="24" cy="24" r="12"/>
             <path d="M24 12 L24 8 M24 40 L24 36 M36 24 L40 24 M8 24 L12 24" stroke-linecap="round"/>
           </svg>
           <div>
             <div class="tile-label">Lakes Near Me</div>
-            <div class="tile-hint">Find water no one<br>told you about</div>
+            <div class="tile-hint">Discover spots.<br>Anywhere.</div>
           </div>
-        </button>
+        </a>
 
-        <button class="service-tile" data-service="store" data-url="/store.html">
+        <a href="/store.html" class="service-tile">
           <svg class="tile-icon" viewBox="0 0 48 48">
             <rect x="12" y="16" width="24" height="20" rx="2"/>
             <path d="M12 16 L16 12 L32 12 L36 16" stroke-linejoin="round"/>
           </svg>
           <div>
             <div class="tile-label">Store</div>
-            <div class="tile-hint">Community votes.<br>We manufacture.</div>
+            <div class="tile-hint">Original artwork.<br>Wearable expression.</div>
           </div>
-        </button>
+        </a>
 
-        <button class="service-tile" data-service="reads" data-url="/reads.html">
+        <a href="/reads.html" class="service-tile">
           <svg class="tile-icon" viewBox="0 0 48 48">
             <rect x="14" y="10" width="20" height="28" rx="2"/>
             <line x1="18" y1="18" x2="30" y2="18"/>
@@ -202,37 +202,39 @@
           </svg>
           <div>
             <div class="tile-label">Reads</div>
-            <div class="tile-hint">Unfiltered thoughts.<br>No algorithm.</div>
+            <div class="tile-hint">Perspectives.<br>No algorithm.</div>
           </div>
-        </button>
+        </a>
 
-        <button class="service-tile" data-service="admin" data-url="/admin/smartlinks.html">
+        <a href="/admin/smartlinks.html" class="service-tile kortex-tile" target="_blank">
           <svg class="tile-icon" viewBox="0 0 48 48">
             <circle cx="16" cy="24" r="4"/>
             <circle cx="32" cy="24" r="4"/>
             <line x1="20" y1="24" x2="28" y2="24"/>
+            <circle cx="24" cy="12" r="3" opacity="0.5"/>
+            <circle cx="24" cy="36" r="3" opacity="0.5"/>
+            <line x1="18" y1="21" x2="22" y2="14" opacity="0.5"/>
+            <line x1="30" y1="21" x2="26" y2="14" opacity="0.5"/>
+            <line x1="18" y1="27" x2="22" y2="34" opacity="0.5"/>
+            <line x1="30" y1="27" x2="26" y2="34" opacity="0.5"/>
           </svg>
           <div>
             <div class="tile-label">Kortex</div>
-            <div class="tile-hint">Track everything.<br>Miss nothing.</div>
+            <div class="tile-hint">Smart links.<br>Your analytics.</div>
           </div>
-        </button>
+        </a>
 
       </div>
     </section>
 
-    <!-- SERVICE MODAL -->
-    <div class="service-modal-overlay" id="serviceModal">
-      <div class="service-modal">
-        <button class="modal-close" aria-label="Close modal">&times;</button>
-        <div class="modal-icon-container">
-          <svg class="modal-icon" id="modalIcon" viewBox="0 0 48 48"></svg>
-        </div>
-        <h2 class="modal-title" id="modalTitle"></h2>
-        <p class="modal-description" id="modalDescription"></p>
-        <button class="modal-cta" id="modalCta">Take me there</button>
+    <!-- D. PHILOSOPHY SECTION -->
+    <section class="philosophy-section">
+      <div class="philosophy-content">
+        <h2>Built for Paddlers</h2>
+        <p>Machine learning that reads conditions on any lake on the planet. A map to find your next spot. A store for artwork that says something. Writing worth your time. And Kortex—smart link infrastructure for those who build.</p>
+        <p>Five things. Each one made because we needed it ourselves.</p>
       </div>
-    </div>
+    </section>
 
   </div>
 
@@ -254,96 +256,6 @@
     document.querySelector('a[href="#services"]')?.addEventListener('click', (e) => {
       e.preventDefault();
       document.getElementById('services')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-
-    // Service modal data
-    const serviceData = {
-      'paddling-out': {
-        title: 'Paddling Out',
-        description: 'Machine learning meets weather. Our v3 model analyzes 13.6M samples with 99.98% accuracy to predict paddle conditions across 18 handpicked locations. Nature decides the forecast. AI translates it. You decide when to launch.',
-        icon: '<path d="M8 24 Q16 16, 24 24 T40 24" stroke-linecap="round"/><path d="M8 30 Q16 22, 24 30 T40 30" stroke-linecap="round"/>'
-      },
-      'lakes-near-me': {
-        title: 'Lakes Near Me',
-        description: 'OpenStreetMap-powered geospatial discovery. Find lakes, rivers, and reservoirs within any radius—from neighborhood ponds to remote alpine waters. Real-time water body detection. No algorithms curating your search. Just pure cartographic data.',
-        icon: '<circle cx="24" cy="24" r="12"/><path d="M24 12 L24 8 M24 40 L24 36 M36 24 L40 24 M8 24 L12 24" stroke-linecap="round"/>'
-      },
-      'store': {
-        title: 'Store',
-        description: 'Democracy meets manufacturing. The community votes on designs. We produce what gets traction. No inventory waste. No mass production guessing. Every piece exists because paddlers wanted it. Quality over quantity. Always.',
-        icon: '<rect x="12" y="16" width="24" height="20" rx="2"/><path d="M12 16 L16 12 L32 12 L36 16" stroke-linejoin="round"/>'
-      },
-      'reads': {
-        title: 'Reads',
-        description: 'Perspectives on paddling culture, gear, and adventures. Written by paddlers, for paddlers. No SEO optimization. No engagement metrics. No editorial filter designed to keep you scrolling. Just honest stories from the water.',
-        icon: '<rect x="14" y="10" width="20" height="28" rx="2"/><line x1="18" y1="18" x2="30" y2="18"/><line x1="18" y1="24" x2="30" y2="24"/><line x1="18" y1="30" x2="26" y2="30"/>'
-      },
-      'admin': {
-        title: 'Kortex',
-        description: 'Smart link management with enterprise-grade analytics. Track engagement, measure performance, understand your audience. Complete control over your digital presence. Built in-house. No third-party dependencies. Your data stays yours.',
-        icon: '<circle cx="16" cy="24" r="4"/><circle cx="32" cy="24" r="4"/><line x1="20" y1="24" x2="28" y2="24"/>'
-      }
-    };
-
-    // Modal functionality
-    const modal = document.getElementById('serviceModal');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalDescription = document.getElementById('modalDescription');
-    const modalIcon = document.getElementById('modalIcon');
-    const modalCta = document.getElementById('modalCta');
-    const modalClose = document.querySelector('.modal-close');
-    
-    let currentUrl = '';
-
-    // Open modal when clicking service tiles
-    document.querySelectorAll('.service-tile').forEach(tile => {
-      tile.addEventListener('click', (e) => {
-        e.preventDefault();
-        const service = tile.dataset.service;
-        const url = tile.dataset.url;
-        const data = serviceData[service];
-        
-        if (data) {
-          modalTitle.textContent = data.title;
-          modalDescription.textContent = data.description;
-          modalIcon.innerHTML = data.icon;
-          currentUrl = url;
-          
-          // Store whether to open in new tab (admin only)
-          modalCta.dataset.openInNewTab = service === 'admin' ? 'true' : 'false';
-          
-          modal.classList.add('active');
-          document.body.style.overflow = 'hidden';
-        }
-      });
-    });
-
-    // Close modal
-    function closeModal() {
-      modal.classList.remove('active');
-      document.body.style.overflow = '';
-    }
-
-    modalClose.addEventListener('click', closeModal);
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) closeModal();
-    });
-
-    // Navigate when clicking CTA
-    modalCta.addEventListener('click', () => {
-      if (modalCta.dataset.openInNewTab === 'true') {
-        window.open(currentUrl, '_blank');
-        closeModal();
-      } else {
-        window.location.href = currentUrl;
-      }
-    });
-
-    // Close on Escape key
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && modal.classList.contains('active')) {
-        closeModal();
-      }
     });
   </script>
 </body>
