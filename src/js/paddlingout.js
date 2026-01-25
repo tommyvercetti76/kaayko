@@ -135,6 +135,39 @@ document.addEventListener("DOMContentLoaded", () => {
       dots.appendChild(dot);
     });
 
+    // 5a-2) Wire up carousel arrows
+    const prevBtn = imgs.querySelector('.carousel-prev');
+    const nextBtn = imgs.querySelector('.carousel-next');
+    
+    if (prevBtn && nextBtn) {
+      const getActiveIndex = () => {
+        const activeImg = card.querySelector('.carousel-image.active');
+        return activeImg ? parseInt(activeImg.dataset.index, 10) : 0;
+      };
+      
+      prevBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        const totalImages = spot.imgSrc.length;
+        const currentIdx = getActiveIndex();
+        const prevIdx = (currentIdx - 1 + totalImages) % totalImages;
+        showImage(card, prevIdx);
+      });
+      
+      nextBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        const totalImages = spot.imgSrc.length;
+        const currentIdx = getActiveIndex();
+        const nextIdx = (currentIdx + 1) % totalImages;
+        showImage(card, nextIdx);
+      });
+      
+      // Hide arrows if only one image
+      if (spot.imgSrc.length <= 1) {
+        prevBtn.style.display = 'none';
+        nextBtn.style.display = 'none';
+      }
+    }
+
     // 5b) Populate text fields
     card.querySelector(".card-title").textContent       = spot.title;
     card.querySelector(".card-subtitle").textContent    = spot.subtitle;
@@ -153,7 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
       openLocation(spot.location.latitude, spot.location.longitude)
     ));
 
-    // 5d) Card click → navigate to detail page
+    // 5d) Card click → ALWAYS navigate to detail page
     card.addEventListener("click", () => {
       window.location.href = `paddlingout.html?id=${spot.id}`;
     });

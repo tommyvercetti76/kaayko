@@ -133,6 +133,30 @@
     </div>
   </header>
 
+  <!-- VIEW TOGGLE -->
+  <div class="view-toggle-bar">
+    <div class="view-toggle-container">
+      <button class="view-toggle-btn active" data-view="grid" title="Grid View">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/>
+          <rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+      </button>
+      <button class="view-toggle-btn" data-view="list" title="List View">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+          <circle cx="3" cy="6" r="1" fill="currentColor"/>
+          <circle cx="3" cy="12" r="1" fill="currentColor"/>
+          <circle cx="3" cy="18" r="1" fill="currentColor"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
   <!-- MAIN: Cards injected by paddlingout.js -->
   <main>
     <section class="container" id="cardsContainer"></section>
@@ -146,7 +170,10 @@
   <!-- Card template for paddlingout.js -->
   <template id="card-template">
     <div class="card">
-      <div class="img-container"></div>
+      <div class="img-container">
+        <button class="carousel-arrow carousel-prev" aria-label="Previous image">‹</button>
+        <button class="carousel-arrow carousel-next" aria-label="Next image">›</button>
+      </div>
       <div class="image-indicator"></div>
       <div class="card-content">
         <h2 class="card-title"></h2>
@@ -192,6 +219,39 @@
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("year").textContent = new Date().getFullYear();
+      
+      // Check if we're in single card mode
+      const urlParams = new URLSearchParams(window.location.search);
+      const isSingleCard = urlParams.has("id");
+      
+      // View toggle functionality
+      const container = document.getElementById("cardsContainer");
+      const toggleBtns = document.querySelectorAll(".view-toggle-btn");
+      const toggleBar = document.querySelector(".view-toggle-bar");
+      
+      // Hide toggle bar in single card mode
+      if (isSingleCard && toggleBar) {
+        toggleBar.style.display = "none";
+        container.classList.remove("list-view"); // Always grid for single card
+        return;
+      }
+      
+      // Load saved view preference (only for list view)
+      const savedView = localStorage.getItem("paddlingout-view") || "grid";
+      setView(savedView);
+      
+      toggleBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+          const view = btn.dataset.view;
+          setView(view);
+          localStorage.setItem("paddlingout-view", view);
+        });
+      });
+      
+      function setView(view) {
+        toggleBtns.forEach(b => b.classList.toggle("active", b.dataset.view === view));
+        container.classList.toggle("list-view", view === "list");
+      }
     });
   </script>
 </body>
