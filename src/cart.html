@@ -13,9 +13,8 @@
   <meta name="keywords" content="kaayko cart, shopping cart, outdoor gear checkout, paddling apparel, water sports products, kayak accessories">
   <meta name="robots" content="noindex, nofollow">
   
-  <!-- Security -->
+  <!-- Security - X-Frame-Options set via Firebase hosting headers -->
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
   <link rel="icon" type="image/png" href="/favicon-32x32.png">
   <meta name="theme-color" content="#d4af37">
   
@@ -340,34 +339,43 @@
         z-index: 1002;
         transform: translateY(100%);
         transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
-        max-height: 92vh;
+        max-height: 85vh;
         display: flex;
         flex-direction: column;
         box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
       }
       
       .mobile-bottom-sheet.active { display: flex; transform: translateY(0); }
       
       /* HANDLE */
-      .mobile-sheet-handle { width: 100%; padding: 12px 0; display: flex; justify-content: center; cursor: grab; touch-action: none; }
+      .mobile-sheet-handle { width: 100%; padding: 12px 0; display: flex; justify-content: center; cursor: grab; touch-action: none; flex-shrink: 0; }
       .mobile-sheet-handle:active { cursor: grabbing; }
       .mobile-sheet-handle-bar { width: 40px; height: 4px; background: rgba(255, 255, 255, 0.3); border-radius: 2px; }
       
       /* HEADER */
-      .mobile-sheet-header { padding: 0 20px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+      .mobile-sheet-header { padding: 0 20px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); flex-shrink: 0; }
       .mobile-sheet-title { font-family: 'Josefin_Bold', Arial, sans-serif; font-size: 20px; color: #ffd700; margin: 0 0 8px 0; }
       .mobile-sheet-total { font-family: 'Josefin_Medium', Arial, sans-serif; font-size: 14px; color: #aaa; }
       .mobile-sheet-total-value { font-family: 'Josefin_Bold', Arial, sans-serif; font-size: 18px; color: #ffd700; margin-left: 8px; }
       
-      /* CONTENT */
-      .mobile-sheet-content { flex: 1; overflow-y: auto; padding: 20px; -webkit-overflow-scrolling: touch; }
+      /* CONTENT - Scrollable */
+      .mobile-sheet-content { 
+        flex: 1; 
+        overflow-y: auto; 
+        overflow-x: hidden;
+        padding: 16px 20px; 
+        -webkit-overflow-scrolling: touch;
+        min-height: 0;
+      }
       
-      /* FOOTER */
+      /* FOOTER - Always visible at bottom */
       .mobile-sheet-footer {
-        padding: 16px 20px;
-        padding-bottom: max(16px, env(safe-area-inset-bottom));
+        padding: 14px 20px;
+        padding-bottom: max(14px, env(safe-area-inset-bottom));
         border-top: 1px solid rgba(255, 255, 255, 0.1);
         background: #1a1a1a;
+        flex-shrink: 0;
       }
       
       .mobile-sheet-content .payment-prompt { margin-bottom: 16px; }
