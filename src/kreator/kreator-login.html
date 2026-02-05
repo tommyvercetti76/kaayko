@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  
+  <!-- Primary Meta Tags -->
+  <title>Kreator Login - Kaayko Seller Platform</title>
+  <meta name="title" content="Kreator Login - Kaayko Seller Platform">
+  <meta name="description" content="Sign in to your Kaayko Kreator seller dashboard to manage your products, track orders, and grow your store.">
+  <meta name="robots" content="noindex, nofollow">
+  
+  <!-- Favicon & Theme -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <meta name="theme-color" content="#10b981">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/kreator-base.css">
+  
+  <!-- Firebase SDK for Google Auth -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script>
+    // Initialize Firebase - PRODUCTION CONFIG
+    const firebaseConfig = {
+      apiKey: "AIzaSyC59ECKLt3rowOoavF76hV_djb--W4jekA",
+      authDomain: "kaaykostore.firebaseapp.com",
+      projectId: "kaaykostore",
+      appId: "1:87383373015:web:ee1ce56d4f5192ec67ec92",
+      storageBucket: "kaaykostore.firebasestorage.app",
+      messagingSenderId: "87383373015"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+  
+  <style>
+    body {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--bg-app);
+    }
+    
+    @media (max-width: 968px) {
+      body {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* Left Panel - Branding */
+    .brand-panel {
+      background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
+      padding: var(--space-2xl);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    @media (max-width: 968px) {
+      .brand-panel {
+        display: none;
+      }
+    }
+    
+    .brand-panel::before {
+      content: '';
+      position: absolute;
+      top: -30%;
+      right: -30%;
+      width: 80%;
+      height: 80%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    
+    .brand-panel::after {
+      content: '';
+      position: absolute;
+      bottom: -20%;
+      left: -20%;
+      width: 60%;
+      height: 60%;
+      background: radial-gradient(circle, rgba(0, 0, 0, 0.1) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    
+    .brand-content {
+      max-width: 400px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .brand-logo {
+      width: 64px;
+      height: 64px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: var(--space-xl);
+      backdrop-filter: blur(10px);
+    }
+    
+    .brand-title {
+      font-size: 36px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: var(--space-md);
+      line-height: 1.2;
+    }
+    
+    .brand-description {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.7;
+      margin-bottom: var(--space-xl);
+    }
+    
+    .brand-features {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+    
+    .feature-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      background: rgba(255, 255, 255, 0.15);
+      padding: 10px 16px;
+      border-radius: var(--radius-full);
+      color: white;
+      font-size: 13px;
+      width: fit-content;
+      backdrop-filter: blur(10px);
+    }
+    
+    .feature-pill .material-icons {
+      font-size: 18px;
+    }
+    
+    /* Right Panel - Login Form */
+    .login-panel {
+      padding: var(--space-2xl);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow-y: auto;
+    }
+    
+    .login-container {
+      max-width: 400px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    
+    .login-header {
+      text-align: center;
+      margin-bottom: var(--space-xl);
+    }
+    
+    .mobile-logo {
+      display: none;
+      width: 56px;
+      height: 56px;
+      margin: 0 auto var(--space-md);
+      background: linear-gradient(135deg, var(--kreator-primary), var(--kreator-secondary));
+      border-radius: var(--radius-lg);
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 700;
+      color: white;
+    }
+    
+    @media (max-width: 968px) {
+      .mobile-logo {
+        display: flex;
+      }
+    }
+    
+    .login-header h1 {
+      font-size: 24px;
+      color: var(--text-primary);
+      margin-bottom: var(--space-xs);
+    }
+    
+    .login-header p {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+    
+    /* OAuth Buttons */
+    .oauth-section {
+      margin-bottom: var(--space-xl);
+    }
+    
+    .oauth-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-md);
+      padding: 14px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition-base);
+    }
+    
+    .oauth-btn:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--kreator-primary);
+    }
+    
+    .oauth-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+    
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      margin-bottom: var(--space-xl);
+    }
+    
+    .divider-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border-medium);
+    }
+    
+    .divider-text {
+      color: var(--text-muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    /* Login Form */
+    .login-form {
+      margin-bottom: var(--space-lg);
+    }
+    
+    .password-field {
+      position: relative;
+    }
+    
+    .password-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+    }
+    
+    .password-toggle:hover {
+      color: var(--text-secondary);
+    }
+    
+    .form-options {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-lg);
+    }
+    
+    .remember-me {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-size: 13px;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+    
+    .remember-me input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--kreator-primary);
+      cursor: pointer;
+    }
+    
+    .forgot-link {
+      color: var(--kreator-primary);
+      font-size: 13px;
+      text-decoration: none;
+    }
+    
+    .forgot-link:hover {
+      text-decoration: underline;
+    }
+    
+    .login-btn {
+      width: 100%;
+      padding: 14px 24px;
+      background: linear-gradient(135deg, var(--kreator-primary), var(--kreator-secondary));
+      border: none;
+      border-radius: var(--radius-md);
+      color: white;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition-base);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+    }
+    
+    .login-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-kreator);
+    }
+    
+    .login-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    /* Alert */
+    .login-alert {
+      margin-bottom: var(--space-lg);
+      padding: var(--space-md);
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      display: none;
+    }
+    
+    .login-alert.error {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      background: var(--error-bg);
+      color: var(--error);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+    
+    .login-alert.success {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    
+    /* Footer Links */
+    .login-footer {
+      text-align: center;
+    }
+    
+    .login-footer p {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    
+    .login-footer a {
+      color: var(--kreator-primary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    
+    .login-footer a:hover {
+      text-decoration: underline;
+    }
+    
+    /* Back Link */
+    .back-link {
+      position: absolute;
+      top: var(--space-lg);
+      right: var(--space-lg);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      transition: color var(--transition-fast);
+    }
+    
+    .back-link:hover {
+      color: var(--text-secondary);
+    }
+    
+    @media (max-width: 968px) {
+      .back-link {
+        top: var(--space-md);
+        right: var(--space-md);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <a href="/paddlingout.html" class="back-link">
+    Back to Kaayko
+    <span class="material-icons" style="font-size: 18px;">arrow_forward</span>
+  </a>
+
+  <!-- Left Panel - Branding -->
+  <section class="brand-panel">
+    <div class="brand-content">
+      <div class="brand-logo">K</div>
+      <h1 class="brand-title">Kaayko Kreator</h1>
+      <p class="brand-description">
+        Your seller dashboard for managing products, tracking orders, 
+        and growing your business on Kaayko Store.
+      </p>
+      <div class="brand-features">
+        <span class="feature-pill">
+          <span class="material-icons">inventory_2</span>
+          Product Management
+        </span>
+        <span class="feature-pill">
+          <span class="material-icons">shopping_bag</span>
+          Order Tracking
+        </span>
+        <span class="feature-pill">
+          <span class="material-icons">payments</span>
+          Earnings Dashboard
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Right Panel - Login Form -->
+  <section class="login-panel">
+    <div class="login-container">
+      <header class="login-header">
+        <div class="mobile-logo">K</div>
+        <h1>Welcome Back</h1>
+        <p>Sign in to your seller dashboard</p>
+      </header>
+      
+      <!-- OAuth -->
+      <div class="oauth-section">
+        <button type="button" class="oauth-btn" id="google-login-btn">
+          <svg viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          Continue with Google
+        </button>
+      </div>
+      
+      <div class="divider">
+        <span class="divider-line"></span>
+        <span class="divider-text">or sign in with email</span>
+        <span class="divider-line"></span>
+      </div>
+      
+      <!-- Alert -->
+      <div class="login-alert" id="login-alert">
+        <span class="material-icons" style="font-size: 18px;">error_outline</span>
+        <span id="alert-message">Error message</span>
+      </div>
+      
+      <!-- Login Form -->
+      <form class="login-form" id="login-form">
+        <div class="form-group">
+          <label class="form-label" for="email">Email</label>
+          <input type="email" id="email" name="email" class="form-input" 
+                 placeholder="your@email.com" required autocomplete="email">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <div class="password-field">
+            <input type="password" id="password" name="password" class="form-input" 
+                   placeholder="Enter your password" required autocomplete="current-password">
+            <button type="button" class="password-toggle" onclick="togglePassword()">
+              <span class="material-icons">visibility</span>
+            </button>
+          </div>
+        </div>
+        
+        <div class="form-options">
+          <label class="remember-me">
+            <input type="checkbox" id="remember" name="remember">
+            Remember me
+          </label>
+          <a href="forgot-password.html" class="forgot-link">Forgot password?</a>
+        </div>
+        
+        <button type="submit" class="login-btn" id="login-btn">
+          <span class="btn-text">Sign In</span>
+          <span class="loading-spinner" style="display: none;"></span>
+        </button>
+      </form>
+      
+      <footer class="login-footer">
+        <p>Want to sell on Kaayko? <a href="apply.html">Apply to become a seller</a></p>
+      </footer>
+    </div>
+  </section>
+
+  <script type="module">
+    import { login, signInWithGoogle, getAuthState } from './js/kreator-api.js';
+    
+    // Check if already logged in
+    const authState = getAuthState();
+    if (authState.isAuthenticated) {
+      window.location.href = 'dashboard.html';
+    }
+    
+    // Password toggle
+    window.togglePassword = function() {
+      const field = document.getElementById('password');
+      const icon = document.querySelector('.password-toggle .material-icons');
+      
+      if (field.type === 'password') {
+        field.type = 'text';
+        icon.textContent = 'visibility_off';
+      } else {
+        field.type = 'password';
+        icon.textContent = 'visibility';
+      }
+    };
+    
+    // Show alert
+    function showAlert(message, type = 'error') {
+      const alert = document.getElementById('login-alert');
+      const messageEl = document.getElementById('alert-message');
+      const icon = alert.querySelector('.material-icons');
+      
+      alert.className = 'login-alert ' + type;
+      messageEl.textContent = message;
+      icon.textContent = type === 'error' ? 'error_outline' : 'check_circle';
+    }
+    
+    function hideAlert() {
+      document.getElementById('login-alert').className = 'login-alert';
+    }
+    
+    // Google login
+    document.getElementById('google-login-btn').addEventListener('click', async function() {
+      const btn = this;
+      const originalText = btn.innerHTML;
+      
+      btn.innerHTML = '<svg style="width:20px;height:20px;margin-right:8px;animation:spin 1s linear infinite" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" opacity="0.3"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" fill="none"/></svg> Signing in...';
+      btn.disabled = true;
+      
+      try {
+        console.log('[Login] Starting Google sign-in...');
+        const result = await signInWithGoogle();
+        console.log('[Login] signInWithGoogle returned:', result);
+        
+        // Check if we got auth data (token saved means success)
+        const hasToken = localStorage.getItem('kreator_auth_token');
+        console.log('[Login] Token in localStorage:', !!hasToken);
+        
+        if (hasToken || result.success || (result.data && result.data.token)) {
+          console.log('[Login] ✅ Success! Redirecting NOW...');
+          showAlert('Login successful! Redirecting...', 'success');
+          // Redirect immediately, no delay
+          window.location.replace('./dashboard.html');
+          return;
+        } else {
+          console.log('[Login] ❌ No token found after sign-in');
+          throw new Error(result.error || result.message || 'Google sign-in failed - no token received');
+        }
+      } catch (error) {
+        console.error('[Login] Google login error:', error);
+        showAlert(error.message || 'Google sign-in failed. Please try again.');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    });
+    
+    // Form submission
+    document.getElementById('login-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      hideAlert();
+      
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      
+      if (!email || !password) {
+        showAlert('Please enter both email and password.');
+        return;
+      }
+      
+      const btn = document.getElementById('login-btn');
+      const btnText = btn.querySelector('.btn-text');
+      const spinner = btn.querySelector('.loading-spinner');
+      
+      // Show loading
+      btnText.textContent = 'Signing in...';
+      spinner.style.display = 'inline-block';
+      btn.disabled = true;
+      
+      try {
+        const result = await login(email, password);
+        
+        if (result.success) {
+          showAlert('Login successful! Redirecting...', 'success');
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 500);
+        } else {
+          throw new Error(result.error || 'Login failed');
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        showAlert(error.message || 'Invalid email or password. Please try again.');
+        
+        // Reset button
+        btnText.textContent = 'Sign In';
+        spinner.style.display = 'none';
+        btn.disabled = false;
+      }
+    });
+    
+    // Check for redirect message
+    const urlParams = new URLSearchParams(window.location.search);
+    const message = urlParams.get('message');
+    if (message === 'logged_out') {
+      showAlert('You have been logged out.', 'success');
+    } else if (message === 'session_expired') {
+      showAlert('Your session has expired. Please sign in again.');
+    } else if (message === 'application_pending') {
+      showAlert('Your application is pending review. We will email you when approved.', 'success');
+    }
+  </script>
+</body>
+</html>

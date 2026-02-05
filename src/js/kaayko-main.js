@@ -3,6 +3,7 @@
  * Entry point for index.html (the Kaayko store page).
  * • Disables right-click context menu
  * • Renders product carousel (all items or single deep-linked item)
+ * • Supports store filtering via ?store= parameter
  * • Wires up modal-close buttons
  */
 
@@ -31,9 +32,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Make populateCarousel globally available for filtering
     window.populateCarousel = populateCarousel;
 
-    // detect deep-link via ?productID=… or ?id=…
+    // detect deep-link via ?productID=… or ?id=… or store filter via ?store=…
     const params = new URLSearchParams(window.location.search);
     const pid    = params.get("productID") || params.get("id");
+    const storeSlug = params.get("store");
 
     if (pid) {
       // try to find that specific product
@@ -45,6 +47,44 @@ document.addEventListener("DOMContentLoaded", async () => {
       } else {
         // fallback to showing all
         populateCarousel(products);
+      }
+    } else if (storeSlug) {
+      // Filter products by store slug
+      const storeProducts = products.filter(p => p.storeSlug === storeSlug);
+      
+      if (storeProducts.length > 0) {
+        // Update page title and show store header
+        const storeName = storeProducts[0].storeName || storeSlug;
+        document.title = `${storeName} - Kaayko Store`;
+        
+        // Add store header banner
+        const carousel = document.getElementById("carousel");
+        if (carousel) {
+          const storeBanner = document.createElement('div');
+          storeBanner.className = 'store-banner';
+          storeBanner.innerHTML = `
+            <div class="store-banner-content">
+              <h2 class="store-banner-name">${storeName}</h2>
+              <p class="store-banner-count">${storeProducts.length} product${storeProducts.length !== 1 ? 's' : ''}</p>
+              <a href="/store.html" class="store-banner-link">← Browse All Products</a>
+            </div>
+          `;
+          carousel.parentNode.insertBefore(storeBanner, carousel);
+        }
+        
+        populateCarousel(storeProducts);
+      } else {
+        // No products found for this store
+        const carousel = document.getElementById("carousel");
+        if (carousel) {
+          carousel.innerHTML = `
+            <div class="store-empty">
+              <h2>No products found</h2>
+              <p>This store doesn't have any products yet.</p>
+              <a href="/store.html" class="store-back-link">Browse All Products</a>
+            </div>
+          `;
+        }
       }
     } else {
       // no deep-link param → show full list

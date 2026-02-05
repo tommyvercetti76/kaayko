@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Product - Kaayko Kreator</title>
+  <meta name="robots" content="noindex, nofollow">
+  
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <meta name="theme-color" content="#10b981">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/kreator-base.css">
+  
+  <style>
+    .page-container {
+      min-height: 100vh;
+      background: var(--bg-base);
+      padding: var(--space-lg);
+    }
+    
+    .page-header {
+      max-width: 700px;
+      margin: 0 auto var(--space-xl);
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+    
+    .back-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    
+    .back-btn:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-primary);
+    }
+    
+    .page-title {
+      flex: 1;
+    }
+    
+    .page-title h1 {
+      font-size: 24px;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    
+    .page-title p {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    
+    .form-card {
+      max-width: 700px;
+      margin: 0 auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl);
+    }
+    
+    .form-section {
+      margin-bottom: var(--space-xl);
+    }
+    
+    .form-section:last-child {
+      margin-bottom: 0;
+    }
+    
+    .form-section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--space-md);
+      padding-bottom: var(--space-sm);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    
+    .form-group {
+      margin-bottom: var(--space-md);
+    }
+    
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-xs);
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-size: 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: var(--kreator-primary);
+      box-shadow: 0 0 0 3px var(--kreator-subtle);
+    }
+    
+    .form-input::placeholder {
+      color: var(--text-muted);
+    }
+    
+    textarea.form-input {
+      resize: vertical;
+      min-height: 100px;
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-md);
+    }
+    
+    .size-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-sm);
+    }
+    
+    .size-option {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .size-option:hover {
+      border-color: var(--kreator-primary);
+    }
+    
+    .size-option input {
+      display: none;
+    }
+    
+    .size-option.selected {
+      background: var(--kreator-subtle);
+      border-color: var(--kreator-primary);
+      color: var(--kreator-primary);
+    }
+    
+    .image-upload-area {
+      border: 2px dashed var(--border-medium);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .image-upload-area:hover {
+      border-color: var(--kreator-primary);
+      background: var(--kreator-subtle);
+    }
+    
+    .image-upload-area .material-icons {
+      font-size: 48px;
+      color: var(--text-muted);
+      margin-bottom: var(--space-sm);
+    }
+    
+    .image-upload-area p {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    
+    .image-previews {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-sm);
+      margin-top: var(--space-md);
+    }
+    
+    .image-preview {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+    
+    .image-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .image-preview .remove-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 24px;
+      height: 24px;
+      background: rgba(0,0,0,0.7);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .form-actions {
+      display: flex;
+      gap: var(--space-md);
+      justify-content: flex-end;
+      margin-top: var(--space-xl);
+      padding-top: var(--space-lg);
+      border-top: 1px solid var(--border-subtle);
+    }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      border: none;
+    }
+    
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-medium);
+    }
+    
+    .btn-secondary:hover {
+      background: var(--bg-card-hover);
+    }
+    
+    .btn-kreator {
+      background: var(--kreator-primary);
+      color: white;
+    }
+    
+    .btn-kreator:hover {
+      background: var(--kreator-hover);
+    }
+    
+    .btn-kreator:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .status-message {
+      padding: var(--space-md);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-lg);
+      display: none;
+    }
+    
+    .status-message.error {
+      display: block;
+      background: var(--error-bg);
+      color: var(--error);
+      border: 1px solid var(--error);
+    }
+    
+    .status-message.success {
+      display: block;
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid var(--success);
+    }
+    
+    @media (max-width: 600px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      
+      .page-container {
+        padding: var(--space-md);
+      }
+      
+      .form-card {
+        padding: var(--space-lg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <header class="page-header">
+      <a href="./dashboard.html" class="back-btn">
+        <span class="material-icons">arrow_back</span>
+      </a>
+      <div class="page-title">
+        <h1>Add New Product</h1>
+        <p>List a new item for sale on Kaayko</p>
+      </div>
+    </header>
+    
+    <div class="form-card">
+      <div id="status-message" class="status-message"></div>
+      
+      <form id="product-form">
+        <div class="form-section">
+          <h3 class="form-section-title">Basic Information</h3>
+          
+          <div class="form-group">
+            <label class="form-label" for="product-title">Product Title *</label>
+            <input type="text" id="product-title" class="form-input" placeholder="e.g., Classic Adventure Tee" required maxlength="100">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="product-description">Description *</label>
+            <textarea id="product-description" class="form-input" rows="4" placeholder="Describe your product..." required maxlength="500"></textarea>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="product-price">Price (USD) *</label>
+              <input type="number" id="product-price" class="form-input" placeholder="29.99" step="0.01" min="0.99" max="9999.99" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="product-quantity">Stock Quantity *</label>
+              <input type="number" id="product-quantity" class="form-input" placeholder="100" min="1" max="9999" required>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h3 class="form-section-title">Category & Tags</h3>
+          
+          <div class="form-group">
+            <label class="form-label" for="product-category">Category *</label>
+            <select id="product-category" class="form-input" required>
+              <option value="">Select category...</option>
+              <option value="apparel">Apparel & Clothing</option>
+              <option value="accessories">Accessories</option>
+              <option value="art">Art & Prints</option>
+              <option value="digital">Digital Products</option>
+              <option value="souvenirs">Souvenirs & Gifts</option>
+              <option value="coaching">Coaching & Sessions</option>
+              <option value="courses">Courses & Education</option>
+              <option value="fitness">Fitness & Sports</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="product-tags">Tags (comma separated)</label>
+            <input type="text" id="product-tags" class="form-input" placeholder="e.g., casual, summer, outdoor">
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h3 class="form-section-title">Sizes & Colors</h3>
+          
+          <div class="form-group">
+            <label class="form-label">Available Sizes</label>
+            <div class="size-options" id="size-options">
+              <label class="size-option" data-size="XS">
+                <input type="checkbox" name="sizes" value="XS">
+                <span>XS</span>
+              </label>
+              <label class="size-option" data-size="S">
+                <input type="checkbox" name="sizes" value="S">
+                <span>S</span>
+              </label>
+              <label class="size-option" data-size="M">
+                <input type="checkbox" name="sizes" value="M" checked>
+                <span>M</span>
+              </label>
+              <label class="size-option" data-size="L">
+                <input type="checkbox" name="sizes" value="L" checked>
+                <span>L</span>
+              </label>
+              <label class="size-option" data-size="XL">
+                <input type="checkbox" name="sizes" value="XL">
+                <span>XL</span>
+              </label>
+              <label class="size-option" data-size="XXL">
+                <input type="checkbox" name="sizes" value="XXL">
+                <span>XXL</span>
+              </label>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="product-colors">Available Colors (comma separated)</label>
+            <input type="text" id="product-colors" class="form-input" placeholder="e.g., Black, White, Navy">
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <h3 class="form-section-title">Product Images</h3>
+          
+          <div class="image-upload-area" id="image-upload-area">
+            <input type="file" id="product-images" accept="image/*" multiple style="display: none;">
+            <span class="material-icons">cloud_upload</span>
+            <p>Click or drag images here<br><small>Up to 5 images, max 5MB each</small></p>
+          </div>
+          <div class="image-previews" id="image-previews"></div>
+        </div>
+        
+        <div class="form-actions">
+          <a href="./dashboard.html" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-kreator" id="save-btn">
+            <span class="material-icons" style="font-size: 18px;">save</span>
+            Save Product
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { AUTH } from './js/kreator-api.js';
+    
+    // Check auth
+    if (!AUTH.init()) {
+      window.location.href = './kreator-login.html';
+    }
+    
+    const form = document.getElementById('product-form');
+    const statusMessage = document.getElementById('status-message');
+    const saveBtn = document.getElementById('save-btn');
+    const imageUploadArea = document.getElementById('image-upload-area');
+    const imageInput = document.getElementById('product-images');
+    const imagePreviews = document.getElementById('image-previews');
+    
+    let selectedImages = [];
+    
+    // Size options toggle
+    document.querySelectorAll('.size-option').forEach(option => {
+      const checkbox = option.querySelector('input');
+      if (checkbox.checked) option.classList.add('selected');
+      
+      option.addEventListener('click', () => {
+        checkbox.checked = !checkbox.checked;
+        option.classList.toggle('selected', checkbox.checked);
+      });
+    });
+    
+    // Image upload
+    imageUploadArea.addEventListener('click', () => imageInput.click());
+    
+    imageUploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      imageUploadArea.style.borderColor = 'var(--kreator-primary)';
+    });
+    
+    imageUploadArea.addEventListener('dragleave', () => {
+      imageUploadArea.style.borderColor = 'var(--border-medium)';
+    });
+    
+    imageUploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      imageUploadArea.style.borderColor = 'var(--border-medium)';
+      handleFiles(e.dataTransfer.files);
+    });
+    
+    imageInput.addEventListener('change', (e) => {
+      handleFiles(e.target.files);
+    });
+    
+    function handleFiles(files) {
+      for (const file of files) {
+        if (selectedImages.length >= 5) break;
+        if (!file.type.startsWith('image/')) continue;
+        if (file.size > 5 * 1024 * 1024) continue;
+        
+        selectedImages.push(file);
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const div = document.createElement('div');
+          div.className = 'image-preview';
+          div.innerHTML = `
+            <img src="${e.target.result}" alt="Preview">
+            <button type="button" class="remove-btn" data-index="${selectedImages.length - 1}">
+              <span class="material-icons" style="font-size: 16px;">close</span>
+            </button>
+          `;
+          imagePreviews.appendChild(div);
+          
+          div.querySelector('.remove-btn').addEventListener('click', (evt) => {
+            const idx = parseInt(evt.currentTarget.dataset.index);
+            selectedImages.splice(idx, 1);
+            div.remove();
+            updatePreviewIndexes();
+          });
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+    
+    function updatePreviewIndexes() {
+      imagePreviews.querySelectorAll('.remove-btn').forEach((btn, i) => {
+        btn.dataset.index = i;
+      });
+    }
+    
+    // Form submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const title = document.getElementById('product-title').value.trim();
+      const description = document.getElementById('product-description').value.trim();
+      const price = document.getElementById('product-price').value;
+      const quantity = document.getElementById('product-quantity').value;
+      const category = document.getElementById('product-category').value;
+      const tags = document.getElementById('product-tags').value;
+      const colors = document.getElementById('product-colors').value;
+      
+      const sizes = [];
+      document.querySelectorAll('input[name="sizes"]:checked').forEach(cb => {
+        sizes.push(cb.value);
+      });
+      
+      if (!title || !description || !price || !category) {
+        showStatus('Please fill in all required fields', 'error');
+        return;
+      }
+      
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<span class="material-icons" style="font-size: 18px;">hourglass_empty</span> Saving...';
+      
+      try {
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('description', description);
+        formData.append('price', price);
+        formData.append('quantity', quantity);
+        formData.append('category', category);
+        formData.append('tags', JSON.stringify(tags.split(',').map(t => t.trim()).filter(Boolean)));
+        formData.append('availableSizes', JSON.stringify(sizes));
+        formData.append('availableColors', JSON.stringify(colors.split(',').map(c => c.trim()).filter(Boolean)));
+        
+        selectedImages.forEach((img, idx) => {
+          formData.append('images', img);
+        });
+        
+        const response = await fetch('https://api-vwcc5j4qda-uc.a.run.app/kreators/products', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${AUTH.token}`
+          },
+          body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showStatus('Product created successfully! Redirecting...', 'success');
+          setTimeout(() => {
+            window.location.href = './dashboard.html#products';
+          }, 1500);
+        } else {
+          showStatus(result.message || 'Failed to create product', 'error');
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = '<span class="material-icons" style="font-size: 18px;">save</span> Save Product';
+        }
+      } catch (error) {
+        showStatus('Network error. Please try again.', 'error');
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<span class="material-icons" style="font-size: 18px;">save</span> Save Product';
+      }
+    });
+    
+    function showStatus(message, type) {
+      statusMessage.textContent = message;
+      statusMessage.className = 'status-message ' + type;
+      statusMessage.scrollIntoView({ behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>

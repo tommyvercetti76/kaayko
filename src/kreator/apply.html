@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  
+  <!-- Primary Meta Tags -->
+  <title>Sell on Kaayko - Join the Kreator Marketplace</title>
+  <meta name="title" content="Sell on Kaayko - Join the Kreator Marketplace">
+  <meta name="description" content="List your outdoor and paddling products on Kaayko Store. Join our curated marketplace of quality gear from passionate creators and manufacturers.">
+  <meta name="keywords" content="sell on kaayko, outdoor marketplace, paddling gear seller, kayak equipment vendor, outdoor product creator">
+  <meta name="author" content="Kaayko">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://kaayko.com/kreator/apply.html">
+  
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://kaayko.com/kreator/apply.html">
+  <meta property="og:title" content="Sell Your Products on Kaayko">
+  <meta property="og:description" content="Join our curated marketplace. Reach paddling enthusiasts who appreciate quality outdoor gear.">
+  <meta property="og:image" content="https://kaayko.com/assets/kreator-og.png">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Sell Your Products on Kaayko">
+  <meta name="twitter:description" content="Join our curated marketplace for outdoor and paddling products.">
+  
+  <!-- Favicon & Theme -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <meta name="theme-color" content="#10b981">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/kreator-base.css">
+  
+  <style>
+    /* Page Layout */
+    .page-split {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    
+    @media (max-width: 1024px) {
+      .page-split {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* Showcase Section */
+    .showcase-section {
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+      padding: var(--space-2xl);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .showcase-section::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    
+    @media (max-width: 1024px) {
+      .showcase-section { display: none; }
+    }
+    
+    .showcase-content {
+      max-width: 520px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .showcase-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      background: var(--kreator-subtle);
+      color: var(--kreator-primary);
+      padding: 8px 16px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: var(--space-lg);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .showcase-title {
+      font-size: 42px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: var(--space-md);
+      line-height: 1.1;
+    }
+    
+    .showcase-title span {
+      background: linear-gradient(135deg, var(--kreator-primary), #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .showcase-description {
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: var(--space-xl);
+    }
+    
+    .benefits-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .benefit-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-md);
+      padding: var(--space-md) 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    
+    .benefit-item:last-child { border-bottom: none; }
+    
+    .benefit-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--kreator-subtle);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    
+    .benefit-icon .material-icons {
+      color: var(--kreator-primary);
+      font-size: 20px;
+    }
+    
+    .benefit-text h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    
+    .benefit-text p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-md);
+      margin-top: var(--space-xl);
+      padding-top: var(--space-xl);
+      border-top: 1px solid var(--border-subtle);
+    }
+    
+    .stat-item { text-align: center; }
+    
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--kreator-primary);
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    
+    /* Form Section */
+    .form-section {
+      background: var(--bg-app);
+      padding: var(--space-2xl) var(--space-xl);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      overflow-y: auto;
+      max-height: 100vh;
+    }
+    
+    .form-container {
+      max-width: 520px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    
+    .form-header {
+      text-align: center;
+      margin-bottom: var(--space-xl);
+    }
+    
+    .form-logo {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto var(--space-md);
+      background: linear-gradient(135deg, var(--kreator-primary), var(--kreator-secondary));
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-kreator);
+    }
+    
+    .form-logo .material-icons {
+      font-size: 28px;
+      color: white;
+    }
+    
+    .form-header h1 {
+      font-size: 24px;
+      color: var(--text-primary);
+      margin-bottom: var(--space-xs);
+    }
+    
+    .form-header p {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+    
+    /* Progress Steps */
+    .progress-container { margin-bottom: var(--space-xl); }
+    
+    .progress-steps {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin-bottom: var(--space-sm);
+    }
+    
+    .progress-steps::before {
+      content: '';
+      position: absolute;
+      top: 16px;
+      left: 40px;
+      right: 40px;
+      height: 2px;
+      background: var(--border-medium);
+    }
+    
+    .progress-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .step-number {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-full);
+      background: var(--bg-card);
+      border: 2px solid var(--border-medium);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: all var(--transition-base);
+    }
+    
+    .progress-step.active .step-number,
+    .progress-step.completed .step-number {
+      background: var(--kreator-primary);
+      border-color: var(--kreator-primary);
+      color: white;
+    }
+    
+    .step-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: var(--space-xs);
+      text-align: center;
+    }
+    
+    .progress-step.active .step-label {
+      color: var(--kreator-primary);
+      font-weight: 600;
+    }
+    
+    /* Form Steps */
+    .form-step {
+      display: none;
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    .form-step.active { display: block; }
+    
+    .step-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--space-xs);
+    }
+    
+    .step-description {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: var(--space-lg);
+    }
+    
+    /* Form Row */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-md);
+    }
+    
+    @media (max-width: 480px) {
+      .form-row { grid-template-columns: 1fr; }
+    }
+    
+    /* Category Selection */
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-sm);
+    }
+    
+    .category-option {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-md);
+      background: var(--bg-card);
+      border: 2px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    
+    .category-option:hover {
+      border-color: var(--kreator-primary);
+      background: var(--kreator-subtle);
+    }
+    
+    .category-option input { display: none; }
+    
+    .category-option.selected {
+      border-color: var(--kreator-primary);
+      background: var(--kreator-subtle);
+    }
+    
+    .category-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--bg-input);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .category-option.selected .category-icon {
+      background: var(--kreator-primary);
+    }
+    
+    .category-icon .material-icons {
+      font-size: 18px;
+      color: var(--text-muted);
+    }
+    
+    .category-option.selected .category-icon .material-icons {
+      color: white;
+    }
+    
+    .category-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    
+    .category-option.selected .category-label {
+      color: var(--kreator-primary);
+    }
+    
+    /* Checkbox Group */
+    .checkbox-group {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-md);
+      padding: var(--space-md);
+      background: var(--bg-card);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      margin-bottom: var(--space-md);
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--kreator-primary);
+      cursor: pointer;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    
+    .checkbox-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    
+    .checkbox-label a {
+      color: var(--kreator-primary);
+      text-decoration: none;
+    }
+    
+    .checkbox-label a:hover { text-decoration: underline; }
+    
+    /* Form Actions */
+    .form-actions {
+      display: flex;
+      gap: var(--space-md);
+      margin-top: var(--space-xl);
+    }
+    
+    .form-actions .btn { flex: 1; }
+    
+    /* Info Box */
+    .info-box {
+      display: flex;
+      gap: var(--space-md);
+      padding: var(--space-md);
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-lg);
+    }
+    
+    .info-box .material-icons {
+      color: var(--kreator-primary);
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    
+    .info-box p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    
+    /* Success State */
+    .success-state {
+      text-align: center;
+      padding: var(--space-xl);
+      display: none;
+    }
+    
+    .success-state.show { display: block; }
+    
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto var(--space-lg);
+      background: var(--kreator-subtle);
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .success-icon .material-icons {
+      font-size: 40px;
+      color: var(--kreator-primary);
+    }
+    
+    .success-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: var(--space-sm);
+    }
+    
+    .success-message {
+      color: var(--text-secondary);
+      margin-bottom: var(--space-lg);
+      line-height: 1.6;
+    }
+    
+    .application-id {
+      background: var(--bg-card);
+      padding: var(--space-md);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-lg);
+    }
+    
+    .application-id-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: var(--space-xs);
+    }
+    
+    .application-id-value {
+      font-family: monospace;
+      font-size: 16px;
+      color: var(--kreator-primary);
+      font-weight: 600;
+    }
+    
+    .next-steps {
+      text-align: left;
+      background: var(--bg-card);
+      border-radius: var(--radius-md);
+      padding: var(--space-lg);
+      margin-bottom: var(--space-lg);
+    }
+    
+    .next-steps h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--space-md);
+    }
+    
+    .next-steps ol {
+      margin: 0;
+      padding-left: var(--space-lg);
+    }
+    
+    .next-steps li {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-sm);
+      line-height: 1.5;
+    }
+    
+    /* Footer */
+    .form-footer {
+      text-align: center;
+      margin-top: var(--space-lg);
+      padding-top: var(--space-lg);
+      border-top: 1px solid var(--border-subtle);
+    }
+    
+    .form-footer p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    
+    .form-footer a {
+      color: var(--kreator-primary);
+      text-decoration: none;
+    }
+    
+    .form-footer a:hover { text-decoration: underline; }
+    
+    /* Alert styling */
+    .alert {
+      display: none;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-md);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-lg);
+      font-size: 13px;
+    }
+    
+    .alert.show { display: flex; }
+    
+    .alert-error {
+      background: var(--error-bg);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: var(--error);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page-split">
+    <!-- Showcase Section (Left) -->
+    <section class="showcase-section">
+      <div class="showcase-content">
+        <span class="showcase-badge">
+          <span class="material-icons" style="font-size: 14px;">storefront</span>
+          Kaayko Store
+        </span>
+        
+        <h1 class="showcase-title">
+          Sell Your <span>Products & Services</span> Online
+        </h1>
+        
+        <p class="showcase-description">
+          Launch your business on Kaayko Store. Whether you sell physical products, digital goods, 
+          coaching sessions, or consulting services — we provide the platform for you to succeed.
+        </p>
+        
+        <ul class="benefits-list">
+          <li class="benefit-item">
+            <div class="benefit-icon">
+              <span class="material-icons">storefront</span>
+            </div>
+            <div class="benefit-text">
+              <h4>Your Own Storefront</h4>
+              <p>Get a dedicated seller page to showcase all your products and services</p>
+            </div>
+          </li>
+          
+          <li class="benefit-item">
+            <div class="benefit-icon">
+              <span class="material-icons">payments</span>
+            </div>
+            <div class="benefit-text">
+              <h4>Simple Payouts</h4>
+              <p>Get paid directly to your bank. No complicated setup required</p>
+            </div>
+          </li>
+          
+          <li class="benefit-item">
+            <div class="benefit-icon">
+              <span class="material-icons">dashboard</span>
+            </div>
+            <div class="benefit-text">
+              <h4>Easy Management</h4>
+              <p>Simple dashboard to manage products, orders, and track your earnings</p>
+            </div>
+          </li>
+          
+          <li class="benefit-item">
+            <div class="benefit-icon">
+              <span class="material-icons">support</span>
+            </div>
+            <div class="benefit-text">
+              <h4>Seller Support</h4>
+              <p>We're here to help you succeed with dedicated seller support</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+    
+    <!-- Form Section (Right) -->
+    <section class="form-section">
+      <div class="form-container">
+        <div class="form-header">
+          <div class="form-logo">
+            <span class="material-icons">storefront</span>
+          </div>
+          <h1>Seller Application</h1>
+          <p>Tell us about yourself and your products</p>
+        </div>
+        
+        <!-- Progress Steps -->
+        <div class="progress-container" id="progress-container">
+          <div class="progress-steps">
+            <div class="progress-step active" data-step="1">
+              <div class="step-number">1</div>
+              <div class="step-label">Business</div>
+            </div>
+            <div class="progress-step" data-step="2">
+              <div class="step-number">2</div>
+              <div class="step-label">Products</div>
+            </div>
+            <div class="progress-step" data-step="3">
+              <div class="step-number">3</div>
+              <div class="step-label">Operations</div>
+            </div>
+            <div class="progress-step" data-step="4">
+              <div class="step-number">4</div>
+              <div class="step-label">Submit</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Alert Container -->
+        <div class="alert alert-error" id="error-alert">
+          <span class="material-icons" style="font-size: 18px;">error_outline</span>
+          <span id="error-message">Please fill in all required fields</span>
+        </div>
+        
+        <form id="application-form">
+          <!-- Step 1: Business Information -->
+          <div class="form-step active" data-step="1">
+            <h2 class="step-title">Business Information</h2>
+            <p class="step-description">Tell us about you and your business</p>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="firstName">First Name *</label>
+                <input type="text" id="firstName" class="form-input" placeholder="Your first name" required>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="lastName">Last Name *</label>
+                <input type="text" id="lastName" class="form-input" placeholder="Your last name" required>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="email">Email Address *</label>
+              <input type="email" id="email" class="form-input" placeholder="you@company.com" required>
+              <p class="form-hint">We'll use this for all account communications</p>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="phone">Phone Number *</label>
+              <input type="tel" id="phone" class="form-input" placeholder="+1 (555) 123-4567" required>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="businessName">Business/Brand Name *</label>
+              <input type="text" id="businessName" class="form-input" placeholder="Your company or brand name" required>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="businessType">Business Type *</label>
+              <select id="businessType" class="form-input" required>
+                <option value="">Select business type...</option>
+                <option value="sole_proprietor">Sole Proprietor</option>
+                <option value="llc">LLC</option>
+                <option value="corporation">Corporation</option>
+                <option value="partnership">Partnership</option>
+                <option value="individual_maker">Individual Maker/Artisan</option>
+                <option value="manufacturer">Manufacturer</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="website">Website (Optional)</label>
+              <input type="url" id="website" class="form-input" placeholder="https://yourwebsite.com">
+            </div>
+            
+            <div class="form-actions">
+              <button type="button" class="btn btn-kreator" onclick="nextStep()">
+                Continue
+                <span class="material-icons" style="font-size: 18px;">arrow_forward</span>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Step 2: What You're Selling -->
+          <div class="form-step" data-step="2">
+            <h2 class="step-title">What You're Selling</h2>
+            <p class="step-description">Select all categories that apply to your offerings</p>
+            
+            <div class="form-group">
+              <label class="form-label">Categories * (Select all that apply)</label>
+              <div class="category-grid">
+                <label class="category-option" data-category="apparel">
+                  <input type="checkbox" name="categories" value="apparel">
+                  <div class="category-icon"><span class="material-icons">checkroom</span></div>
+                  <span class="category-label">Apparel & Fashion</span>
+                </label>
+                
+                <label class="category-option" data-category="souvenirs">
+                  <input type="checkbox" name="categories" value="souvenirs">
+                  <div class="category-icon"><span class="material-icons">redeem</span></div>
+                  <span class="category-label">Souvenirs & Gifts</span>
+                </label>
+                
+                <label class="category-option" data-category="coaching">
+                  <input type="checkbox" name="categories" value="coaching">
+                  <div class="category-icon"><span class="material-icons">psychology</span></div>
+                  <span class="category-label">Life Coaching</span>
+                </label>
+                
+                <label class="category-option" data-category="consulting">
+                  <input type="checkbox" name="categories" value="consulting">
+                  <div class="category-icon"><span class="material-icons">support_agent</span></div>
+                  <span class="category-label">Consulting Services</span>
+                </label>
+                
+                <label class="category-option" data-category="digital">
+                  <input type="checkbox" name="categories" value="digital">
+                  <div class="category-icon"><span class="material-icons">download</span></div>
+                  <span class="category-label">Digital Products</span>
+                </label>
+                
+                <label class="category-option" data-category="art">
+                  <input type="checkbox" name="categories" value="art">
+                  <div class="category-icon"><span class="material-icons">palette</span></div>
+                  <span class="category-label">Art & Crafts</span>
+                </label>
+                
+                <label class="category-option" data-category="fitness">
+                  <input type="checkbox" name="categories" value="fitness">
+                  <div class="category-icon"><span class="material-icons">fitness_center</span></div>
+                  <span class="category-label">Fitness & Wellness</span>
+                </label>
+                
+                <label class="category-option" data-category="sports">
+                  <input type="checkbox" name="categories" value="sports">
+                  <div class="category-icon"><span class="material-icons">rowing</span></div>
+                  <span class="category-label">Sports & Outdoors</span>
+                </label>
+                
+                <label class="category-option" data-category="courses">
+                  <input type="checkbox" name="categories" value="courses">
+                  <div class="category-icon"><span class="material-icons">school</span></div>
+                  <span class="category-label">Courses & Training</span>
+                </label>
+                
+                <label class="category-option" data-category="other">
+                  <input type="checkbox" name="categories" value="other">
+                  <div class="category-icon"><span class="material-icons">more_horiz</span></div>
+                  <span class="category-label">Other</span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="productCount">Products to List *</label>
+                <select id="productCount" class="form-input" required>
+                  <option value="">Select range...</option>
+                  <option value="1-5">1-5 products</option>
+                  <option value="6-20">6-20 products</option>
+                  <option value="21-50">21-50 products</option>
+                  <option value="51-100">51-100 products</option>
+                  <option value="100+">100+ products</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="priceRange">Price Range *</label>
+                <select id="priceRange" class="form-input" required>
+                  <option value="">Select price range...</option>
+                  <option value="under_25">Under $25</option>
+                  <option value="25_50">$25 - $50</option>
+                  <option value="50_100">$50 - $100</option>
+                  <option value="100_250">$100 - $250</option>
+                  <option value="250_500">$250 - $500</option>
+                  <option value="500_plus">$500+</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="productDescription">Describe Your Products *</label>
+              <textarea id="productDescription" class="form-input" rows="4" 
+                placeholder="Tell us about your products, what makes them unique, and why paddlers would love them..." required></textarea>
+              <p class="form-hint">Be specific about materials, craftsmanship, and unique selling points (minimum 50 characters)</p>
+            </div>
+            
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" onclick="prevStep()">
+                <span class="material-icons" style="font-size: 18px;">arrow_back</span>
+                Back
+              </button>
+              <button type="button" class="btn btn-kreator" onclick="nextStep()">
+                Continue
+                <span class="material-icons" style="font-size: 18px;">arrow_forward</span>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Step 3: Operations & Fulfillment -->
+          <div class="form-step" data-step="3">
+            <h2 class="step-title">Operations & Fulfillment</h2>
+            <p class="step-description">Shipping, inventory, and business operations</p>
+            
+            <div class="form-group">
+              <label class="form-label" for="location">Business Location *</label>
+              <input type="text" id="location" class="form-input" placeholder="City, State/Province, Country" required>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="shippingCapability">Shipping Capability *</label>
+                <select id="shippingCapability" class="form-input" required>
+                  <option value="">Select...</option>
+                  <option value="domestic_only">Domestic (USA) Only</option>
+                  <option value="north_america">North America</option>
+                  <option value="international">International</option>
+                  <option value="local_pickup">Local Pickup Only</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="fulfillmentTime">Fulfillment Time *</label>
+                <select id="fulfillmentTime" class="form-input" required>
+                  <option value="">Select...</option>
+                  <option value="1-2_days">1-2 business days</option>
+                  <option value="3-5_days">3-5 business days</option>
+                  <option value="1-2_weeks">1-2 weeks</option>
+                  <option value="2-4_weeks">2-4 weeks (custom)</option>
+                  <option value="varies">Varies by product</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="inventoryManagement">Inventory Approach *</label>
+                <select id="inventoryManagement" class="form-input" required>
+                  <option value="">Select...</option>
+                  <option value="ready_stock">Ready stock / Warehouse</option>
+                  <option value="made_to_order">Made-to-order</option>
+                  <option value="dropship">Dropship</option>
+                  <option value="hybrid">Hybrid</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="yearsInBusiness">Years in Business</label>
+                <select id="yearsInBusiness" class="form-input">
+                  <option value="">Select...</option>
+                  <option value="new">Just starting</option>
+                  <option value="1-2">1-2 years</option>
+                  <option value="3-5">3-5 years</option>
+                  <option value="5-10">5-10 years</option>
+                  <option value="10+">10+ years</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="otherPlatforms">Other Selling Platforms</label>
+              <input type="text" id="otherPlatforms" class="form-input" placeholder="e.g., Amazon, Etsy, own website">
+              <p class="form-hint">Helps us understand your e-commerce experience</p>
+            </div>
+            
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" onclick="prevStep()">
+                <span class="material-icons" style="font-size: 18px;">arrow_back</span>
+                Back
+              </button>
+              <button type="button" class="btn btn-kreator" onclick="nextStep()">
+                Continue
+                <span class="material-icons" style="font-size: 18px;">arrow_forward</span>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Step 4: Review & Submit -->
+          <div class="form-step" data-step="4">
+            <h2 class="step-title">Review & Submit</h2>
+            <p class="step-description">Almost there! Review and submit your application</p>
+            
+            <div class="info-box">
+              <span class="material-icons">info</span>
+              <p>Our team reviews all applications within <strong>2-3 business days</strong>. We'll email you with next steps once approved.</p>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="hearAboutUs">How did you hear about Kaayko?</label>
+              <select id="hearAboutUs" class="form-input">
+                <option value="">Select option...</option>
+                <option value="search">Search Engine (Google, etc.)</option>
+                <option value="social">Social Media</option>
+                <option value="referral">Referral from another seller</option>
+                <option value="customer">I'm a Kaayko customer</option>
+                <option value="paddling_community">Paddling community/forum</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="additionalInfo">Anything else we should know?</label>
+              <textarea id="additionalInfo" class="form-input" rows="3" 
+                placeholder="Certifications, awards, media features, or anything that makes your brand stand out..."></textarea>
+            </div>
+            
+            <label class="checkbox-group">
+              <input type="checkbox" id="termsAgree" required>
+              <span class="checkbox-label">
+                I agree to the <a href="terms.html" target="_blank">Seller Terms & Conditions</a> 
+                and understand that all products must meet Kaayko's quality standards.
+              </span>
+            </label>
+            
+            <label class="checkbox-group">
+              <input type="checkbox" id="authenticProducts" required>
+              <span class="checkbox-label">
+                I confirm that all products I list will be authentic, accurately described, 
+                and I have the legal right to sell them.
+              </span>
+            </label>
+            
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" onclick="prevStep()">
+                <span class="material-icons" style="font-size: 18px;">arrow_back</span>
+                Back
+              </button>
+              <button type="submit" class="btn btn-kreator" id="submit-btn">
+                <span class="btn-text">Submit Application</span>
+                <span class="loading-spinner" style="display: none;"></span>
+              </button>
+            </div>
+          </div>
+        </form>
+        
+        <!-- Success State -->
+        <div class="success-state" id="success-state">
+          <div class="success-icon">
+            <span class="material-icons">celebration</span>
+          </div>
+          <h2 class="success-title">Application Submitted!</h2>
+          <p class="success-message">
+            Thank you for your interest in selling on Kaayko. We're excited to review your application!
+          </p>
+          
+          <div class="application-id">
+            <div class="application-id-label">Your Application ID</div>
+            <div class="application-id-value" id="application-id-display">-</div>
+          </div>
+          
+          <div class="next-steps">
+            <h3>What happens next?</h3>
+            <ol>
+              <li><strong>Application Review</strong> — Our team reviews within 2-3 business days</li>
+              <li><strong>Email Confirmation</strong> — You'll receive your application status via email</li>
+              <li><strong>Onboarding</strong> — If approved, we'll send you a link to set up your seller account</li>
+              <li><strong>Start Listing</strong> — Add your products and start reaching our community!</li>
+            </ol>
+          </div>
+          
+          <a href="check-status.html" class="btn btn-kreator" style="width: 100%;">
+            Check Application Status
+          </a>
+        </div>
+        
+        <div class="form-footer" id="form-footer">
+          <p>Already a seller? <a href="kreator-login.html">Sign in to your account</a></p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Category selection - separate script to ensure it always works -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Category selection handling
+      document.querySelectorAll('.category-option').forEach(option => {
+        option.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          this.classList.toggle('selected');
+          const checkbox = this.querySelector('input[type="checkbox"]');
+          if (checkbox) {
+            checkbox.checked = this.classList.contains('selected');
+          }
+        });
+      });
+    });
+  </script>
+
+  <script type="module">
+    import { submitApplication } from './js/kreator-api.js';
+    
+    let currentStep = 1;
+    const totalSteps = 4;
+    
+    // Navigation functions
+    window.nextStep = function() {
+      if (!validateCurrentStep()) return;
+      
+      if (currentStep < totalSteps) {
+        document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.remove('active');
+        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.remove('active');
+        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.add('completed');
+        
+        currentStep++;
+        
+        document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.add('active');
+        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.add('active');
+        
+        // Scroll to top
+        document.querySelector('.form-section').scrollTop = 0;
+      }
+    };
+    
+    window.prevStep = function() {
+      if (currentStep > 1) {
+        document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.remove('active');
+        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.remove('active');
+        
+        currentStep--;
+        
+        document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.add('active');
+        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.remove('completed');
+        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.add('active');
+        
+        hideError();
+      }
+    };
+    
+    function validateCurrentStep() {
+      hideError();
+      
+      if (currentStep === 1) {
+        const firstName = document.getElementById('firstName').value.trim();
+        const lastName = document.getElementById('lastName').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const businessName = document.getElementById('businessName').value.trim();
+        const businessType = document.getElementById('businessType').value;
+        
+        if (!firstName || !lastName) {
+          showError('Please enter your first and last name');
+          return false;
+        }
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          showError('Please enter a valid email address');
+          return false;
+        }
+        if (!phone) {
+          showError('Please enter your phone number');
+          return false;
+        }
+        if (!businessName) {
+          showError('Please enter your business or brand name');
+          return false;
+        }
+        if (!businessType) {
+          showError('Please select your business type');
+          return false;
+        }
+      }
+      
+      if (currentStep === 2) {
+        const categories = document.querySelectorAll('input[name="categories"]:checked');
+        const productCount = document.getElementById('productCount').value;
+        const priceRange = document.getElementById('priceRange').value;
+        const productDescription = document.getElementById('productDescription').value.trim();
+        
+        if (categories.length === 0) {
+          showError('Please select at least one product category');
+          return false;
+        }
+        if (!productCount) {
+          showError('Please select how many products you plan to list');
+          return false;
+        }
+        if (!priceRange) {
+          showError('Please select your typical price range');
+          return false;
+        }
+        if (!productDescription || productDescription.length < 50) {
+          showError('Please provide a more detailed product description (at least 50 characters)');
+          return false;
+        }
+      }
+      
+      if (currentStep === 3) {
+        const location = document.getElementById('location').value.trim();
+        const shippingCapability = document.getElementById('shippingCapability').value;
+        const fulfillmentTime = document.getElementById('fulfillmentTime').value;
+        const inventoryManagement = document.getElementById('inventoryManagement').value;
+        
+        if (!location) {
+          showError('Please enter your business location');
+          return false;
+        }
+        if (!shippingCapability) {
+          showError('Please select your shipping capability');
+          return false;
+        }
+        if (!fulfillmentTime) {
+          showError('Please select your typical fulfillment time');
+          return false;
+        }
+        if (!inventoryManagement) {
+          showError('Please select your inventory management approach');
+          return false;
+        }
+      }
+      
+      return true;
+    }
+    
+    function showError(message) {
+      const errorAlert = document.getElementById('error-alert');
+      const errorMessage = document.getElementById('error-message');
+      errorMessage.textContent = message;
+      errorAlert.classList.add('show');
+      errorAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    function hideError() {
+      document.getElementById('error-alert').classList.remove('show');
+    }
+    
+    // Form submission
+    document.getElementById('application-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const termsAgree = document.getElementById('termsAgree').checked;
+      const authenticProducts = document.getElementById('authenticProducts').checked;
+      
+      if (!termsAgree || !authenticProducts) {
+        showError('Please agree to the terms and confirm product authenticity');
+        return;
+      }
+      
+      const btn = document.getElementById('submit-btn');
+      const btnText = btn.querySelector('.btn-text');
+      const spinner = btn.querySelector('.loading-spinner');
+      
+      btnText.textContent = 'Submitting...';
+      spinner.style.display = 'inline-block';
+      btn.disabled = true;
+      
+      // Gather categories
+      const categories = [];
+      document.querySelectorAll('input[name="categories"]:checked').forEach(cb => {
+        categories.push(cb.value);
+      });
+      
+      // Build application data
+      const applicationData = {
+        // Personal Info
+        firstName: document.getElementById('firstName').value.trim(),
+        lastName: document.getElementById('lastName').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        
+        // Business Info
+        businessName: document.getElementById('businessName').value.trim(),
+        businessType: document.getElementById('businessType').value,
+        website: document.getElementById('website').value.trim() || null,
+        
+        // Product Info
+        productCategories: categories,
+        productCount: document.getElementById('productCount').value,
+        priceRange: document.getElementById('priceRange').value,
+        productDescription: document.getElementById('productDescription').value.trim(),
+        
+        // Operations
+        location: document.getElementById('location').value.trim(),
+        shippingCapability: document.getElementById('shippingCapability').value,
+        fulfillmentTime: document.getElementById('fulfillmentTime').value,
+        inventoryManagement: document.getElementById('inventoryManagement').value,
+        yearsInBusiness: document.getElementById('yearsInBusiness').value || null,
+        otherPlatforms: document.getElementById('otherPlatforms').value.trim() || null,
+        
+        // Additional
+        hearAboutUs: document.getElementById('hearAboutUs').value || null,
+        additionalInfo: document.getElementById('additionalInfo').value.trim() || null,
+        
+        // Agreements
+        agreedToTerms: true,
+        confirmedAuthenticity: true,
+        
+        // Metadata
+        applicationType: 'seller',
+        source: 'website'
+      };
+      
+      try {
+        const result = await submitApplication(applicationData);
+        
+        if (result.success) {
+          // Show success
+          document.getElementById('application-form').style.display = 'none';
+          document.getElementById('progress-container').style.display = 'none';
+          document.getElementById('form-footer').style.display = 'none';
+          document.getElementById('success-state').classList.add('show');
+          document.getElementById('application-id-display').textContent = result.applicationId || result.data?.id || result.id;
+          
+          // Update header
+          document.querySelector('.form-header h1').textContent = 'Thank You!';
+          document.querySelector('.form-header p').textContent = 'Your application has been received';
+        } else {
+          throw new Error(result.error || 'Failed to submit application');
+        }
+      } catch (error) {
+        console.error('Application error:', error);
+        showError(error.message || 'Failed to submit application. Please try again.');
+        
+        btnText.textContent = 'Submit Application';
+        spinner.style.display = 'none';
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

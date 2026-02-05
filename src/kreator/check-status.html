@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  
+  <!-- Primary Meta Tags -->
+  <title>Check Application Status - Kaayko Kreator</title>
+  <meta name="robots" content="noindex, nofollow">
+  
+  <!-- Favicon & Theme -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <meta name="theme-color" content="#10b981">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/kreator-base.css">
+  
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-xl);
+      background: linear-gradient(135deg, #0a0a0a 0%, #111 50%, #0a0a0a 100%);
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 480px;
+    }
+    
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-xl);
+      padding: var(--space-xl);
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: var(--space-xl);
+    }
+    
+    .header-icon {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto var(--space-md);
+      background: var(--kreator-subtle);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .header-icon .material-icons {
+      font-size: 28px;
+      color: var(--kreator-primary);
+    }
+    
+    .header h1 {
+      font-size: 22px;
+      color: var(--text-primary);
+      margin-bottom: var(--space-xs);
+    }
+    
+    .header p {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+    
+    /* Status Display */
+    .status-display {
+      display: none;
+    }
+    
+    .status-display.show {
+      display: block;
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    .status-card {
+      background: var(--bg-input);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      text-align: center;
+    }
+    
+    .status-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto var(--space-md);
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .status-icon .material-icons {
+      font-size: 32px;
+    }
+    
+    .status-icon.pending {
+      background: var(--warning-bg);
+    }
+    
+    .status-icon.pending .material-icons {
+      color: var(--warning);
+    }
+    
+    .status-icon.approved {
+      background: var(--success-bg);
+    }
+    
+    .status-icon.approved .material-icons {
+      color: var(--success);
+    }
+    
+    .status-icon.rejected {
+      background: var(--error-bg);
+    }
+    
+    .status-icon.rejected .material-icons {
+      color: var(--error);
+    }
+    
+    .status-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--space-xs);
+    }
+    
+    .status-message {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: var(--space-lg);
+    }
+    
+    .status-details {
+      display: grid;
+      gap: var(--space-sm);
+      text-align: left;
+      padding: var(--space-md);
+      background: var(--bg-card);
+      border-radius: var(--radius-md);
+      margin-top: var(--space-lg);
+    }
+    
+    .status-detail {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+    
+    .status-detail-label {
+      color: var(--text-muted);
+    }
+    
+    .status-detail-value {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+    
+    .submit-btn {
+      width: 100%;
+      padding: 14px 24px;
+      background: linear-gradient(135deg, var(--kreator-primary), var(--kreator-secondary));
+      border: none;
+      border-radius: var(--radius-md);
+      color: white;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition-base);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+    }
+    
+    .submit-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-kreator);
+    }
+    
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-xl);
+      margin-top: var(--space-lg);
+    }
+    
+    .footer-links a {
+      color: var(--kreator-primary);
+      font-size: 13px;
+      text-decoration: none;
+    }
+    
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+    
+    .back-link {
+      display: block;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      text-decoration: none;
+      margin-top: var(--space-lg);
+      transition: color var(--transition-fast);
+    }
+    
+    .back-link:hover {
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="header">
+        <div class="header-icon">
+          <span class="material-icons">fact_check</span>
+        </div>
+        <h1>Check Application Status</h1>
+        <p>Enter your details to view your application status</p>
+      </div>
+      
+      <form id="check-form">
+        <div class="form-group">
+          <label class="form-label" for="applicationId">Application ID</label>
+          <input type="text" id="applicationId" class="form-input" placeholder="app_XXXXXXXXXX" required>
+          <p class="form-hint">You received this when you submitted your application</p>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="email">Email Address</label>
+          <input type="email" id="email" class="form-input" placeholder="your@email.com" required>
+        </div>
+        
+        <button type="submit" class="submit-btn" id="submit-btn">
+          <span class="btn-text">Check Status</span>
+          <span class="loading-spinner" style="display: none;"></span>
+        </button>
+      </form>
+      
+      <!-- Status Display -->
+      <div class="status-display" id="status-display">
+        <div class="status-card">
+          <div class="status-icon" id="status-icon">
+            <span class="material-icons">hourglass_empty</span>
+          </div>
+          <h2 class="status-title" id="status-title">Application Pending</h2>
+          <p class="status-message" id="status-message">
+            Your application is being reviewed by our team.
+          </p>
+          
+          <div id="action-buttons"></div>
+          
+          <div class="status-details">
+            <div class="status-detail">
+              <span class="status-detail-label">Application ID</span>
+              <span class="status-detail-value" id="detail-id">-</span>
+            </div>
+            <div class="status-detail">
+              <span class="status-detail-label">Submitted</span>
+              <span class="status-detail-value" id="detail-date">-</span>
+            </div>
+            <div class="status-detail">
+              <span class="status-detail-label">Status</span>
+              <span class="status-detail-value" id="detail-status">-</span>
+            </div>
+          </div>
+        </div>
+        
+        <button class="btn btn-secondary" id="check-another-btn" style="width: 100%; margin-top: var(--space-lg);">
+          Check Another Application
+        </button>
+      </div>
+      
+      <div class="footer-links">
+        <a href="apply.html">Apply Now</a>
+        <a href="kreator-login.html">Sign In</a>
+      </div>
+    </div>
+    
+    <a href="/paddlingout.html" class="back-link">Back to Kaayko</a>
+  </div>
+
+  <script type="module">
+    import { checkApplicationStatus } from './js/kreator-api.js';
+    
+    const form = document.getElementById('check-form');
+    const statusDisplay = document.getElementById('status-display');
+    
+    // Check URL params for pre-filled data
+    const urlParams = new URLSearchParams(window.location.search);
+    const prefillId = urlParams.get('id');
+    const prefillEmail = urlParams.get('email');
+    
+    if (prefillId) document.getElementById('applicationId').value = prefillId;
+    if (prefillEmail) document.getElementById('email').value = prefillEmail;
+    
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const applicationId = document.getElementById('applicationId').value.trim();
+      const email = document.getElementById('email').value.trim();
+      
+      if (!applicationId || !email) return;
+      
+      const btn = document.getElementById('submit-btn');
+      const btnText = btn.querySelector('.btn-text');
+      const spinner = btn.querySelector('.loading-spinner');
+      
+      btnText.textContent = 'Checking...';
+      spinner.style.display = 'inline-block';
+      btn.disabled = true;
+      
+      try {
+        const result = await checkApplicationStatus(applicationId, email);
+        
+        if (result.success) {
+          displayStatus(result.data);
+        } else {
+          throw new Error(result.error || 'Failed to check status');
+        }
+      } catch (error) {
+        console.error('Status check error:', error);
+        alert(error.message || 'Failed to check application status. Please verify your details.');
+        
+        btnText.textContent = 'Check Status';
+        spinner.style.display = 'none';
+        btn.disabled = false;
+      }
+    });
+    
+    function displayStatus(data) {
+      const statusIcon = document.getElementById('status-icon');
+      const statusTitle = document.getElementById('status-title');
+      const statusMessage = document.getElementById('status-message');
+      const actionButtons = document.getElementById('action-buttons');
+      
+      // Reset
+      statusIcon.className = 'status-icon';
+      actionButtons.innerHTML = '';
+      
+      switch (data.status) {
+        case 'pending':
+          statusIcon.classList.add('pending');
+          statusIcon.querySelector('.material-icons').textContent = 'hourglass_empty';
+          statusTitle.textContent = 'Application Pending';
+          statusMessage.textContent = 'Your application is being reviewed by our team. This typically takes 2-3 business days.';
+          break;
+          
+        case 'approved':
+          statusIcon.classList.add('approved');
+          statusIcon.querySelector('.material-icons').textContent = 'check_circle';
+          statusTitle.textContent = 'Application Approved! 🎉';
+          statusMessage.textContent = 'Congratulations! Check your email for instructions to complete your account setup.';
+          actionButtons.innerHTML = `
+            <a href="kreator-login.html" class="btn btn-kreator" style="width: 100%;">
+              Go to Dashboard
+            </a>
+          `;
+          break;
+          
+        case 'rejected':
+          statusIcon.classList.add('rejected');
+          statusIcon.querySelector('.material-icons').textContent = 'cancel';
+          statusTitle.textContent = 'Application Not Approved';
+          statusMessage.textContent = data.rejectionReason || 'Unfortunately, your application was not approved at this time. You may reapply in the future.';
+          actionButtons.innerHTML = `
+            <a href="apply.html" class="btn btn-secondary" style="width: 100%;">
+              Apply Again
+            </a>
+          `;
+          break;
+          
+        default:
+          statusIcon.classList.add('pending');
+          statusIcon.querySelector('.material-icons').textContent = 'help_outline';
+          statusTitle.textContent = 'Status Unknown';
+          statusMessage.textContent = 'Unable to determine application status.';
+      }
+      
+      // Update details
+      document.getElementById('detail-id').textContent = data.applicationId;
+      document.getElementById('detail-date').textContent = data.submittedAt 
+        ? new Date(data.submittedAt).toLocaleDateString() 
+        : '-';
+      document.getElementById('detail-status').textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
+      
+      // Show status display
+      form.style.display = 'none';
+      statusDisplay.classList.add('show');
+    }
+    
+    // Check another button
+    document.getElementById('check-another-btn').addEventListener('click', function() {
+      form.style.display = 'block';
+      statusDisplay.classList.remove('show');
+      
+      // Reset form
+      form.reset();
+      const btn = document.getElementById('submit-btn');
+      btn.querySelector('.btn-text').textContent = 'Check Status';
+      btn.querySelector('.loading-spinner').style.display = 'none';
+      btn.disabled = false;
+    });
+  </script>
+</body>
+</html>

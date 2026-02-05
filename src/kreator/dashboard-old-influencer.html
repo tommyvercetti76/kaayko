@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  
+  <!-- Primary Meta Tags -->
+  <title>Kreator Dashboard - Kaayko</title>
+  <meta name="title" content="Kreator Dashboard - Kaayko Creator Platform">
+  <meta name="description" content="Manage your smart links, track analytics, and grow your audience with the Kaayko Kreator dashboard.">
+  <meta name="robots" content="noindex, nofollow">
+  
+  <!-- Favicon & Theme -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <meta name="theme-color" content="#10b981">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/kreator-base.css">
+  
+  <style>
+    /* Dashboard-specific styles */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-xl);
+      padding-bottom: var(--space-lg);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    
+    body.light-theme .top-bar {
+      border-bottom-color: var(--border-subtle-light);
+    }
+    
+    .welcome-text h2 {
+      font-size: 20px;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    
+    body.light-theme .welcome-text h2 {
+      color: var(--text-primary-light);
+    }
+    
+    .welcome-text p {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+    
+    .theme-toggle {
+      background: var(--bg-card);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: 8px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all var(--transition-fast);
+    }
+    
+    .theme-toggle:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-primary);
+    }
+    
+    body.light-theme .theme-toggle {
+      background: var(--bg-card-light);
+      border-color: var(--border-medium-light);
+      color: var(--text-secondary-light);
+    }
+    
+    /* Quick Actions */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-md);
+      margin-bottom: var(--space-xl);
+    }
+    
+    .quick-action-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all var(--transition-base);
+    }
+    
+    body.light-theme .quick-action-card {
+      background: var(--bg-card-light);
+      border-color: var(--border-subtle-light);
+    }
+    
+    .quick-action-card:hover {
+      border-color: var(--kreator-primary);
+      box-shadow: var(--shadow-kreator);
+      transform: translateY(-2px);
+    }
+    
+    .quick-action-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--kreator-subtle);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    
+    .quick-action-icon .material-icons {
+      font-size: 24px;
+      color: var(--kreator-primary);
+    }
+    
+    .quick-action-text h4 {
+      font-size: 14px;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+    
+    body.light-theme .quick-action-text h4 {
+      color: var(--text-primary-light);
+    }
+    
+    .quick-action-text p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
+    /* Activity Section */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-lg);
+    }
+    
+    .section-title {
+      font-size: 16px;
+      color: var(--text-primary);
+    }
+    
+    body.light-theme .section-title {
+      color: var(--text-primary-light);
+    }
+    
+    .view-all-link {
+      color: var(--kreator-primary);
+      font-size: 13px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .view-all-link:hover {
+      text-decoration: underline;
+    }
+    
+    /* Recent Links List */
+    .links-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+    
+    .link-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-md);
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      transition: all var(--transition-fast);
+    }
+    
+    body.light-theme .link-item {
+      background: var(--bg-card-light);
+      border-color: var(--border-subtle-light);
+    }
+    
+    .link-item:hover {
+      border-color: var(--border-medium);
+    }
+    
+    .link-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--kreator-subtle);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    
+    .link-icon .material-icons {
+      font-size: 20px;
+      color: var(--kreator-primary);
+    }
+    
+    .link-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .link-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    body.light-theme .link-title {
+      color: var(--text-primary-light);
+    }
+    
+    .link-url {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .link-stats {
+      display: flex;
+      align-items: center;
+      gap: var(--space-lg);
+      flex-shrink: 0;
+    }
+    
+    .link-stat {
+      text-align: right;
+    }
+    
+    .link-stat-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    body.light-theme .link-stat-value {
+      color: var(--text-primary-light);
+    }
+    
+    .link-stat-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    
+    .link-actions {
+      display: flex;
+      gap: var(--space-xs);
+    }
+    
+    .link-action-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    
+    .link-action-btn:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-primary);
+    }
+    
+    body.light-theme .link-action-btn:hover {
+      background: var(--bg-card-hover-light);
+      color: var(--text-primary-light);
+    }
+    
+    /* Empty state */
+    .empty-links {
+      text-align: center;
+      padding: var(--space-2xl);
+      background: var(--bg-card);
+      border: 1px dashed var(--border-medium);
+      border-radius: var(--radius-lg);
+    }
+    
+    body.light-theme .empty-links {
+      background: var(--bg-card-light);
+      border-color: var(--border-medium-light);
+    }
+    
+    .empty-links .material-icons {
+      font-size: 48px;
+      color: var(--text-muted);
+      margin-bottom: var(--space-md);
+    }
+    
+    .empty-links h3 {
+      font-size: 16px;
+      color: var(--text-primary);
+      margin-bottom: var(--space-sm);
+    }
+    
+    body.light-theme .empty-links h3 {
+      color: var(--text-primary-light);
+    }
+    
+    .empty-links p {
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-bottom: var(--space-lg);
+    }
+    
+    /* Dashboard Grid */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: var(--space-xl);
+      margin-top: var(--space-xl);
+    }
+    
+    @media (max-width: 1200px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* Activity Feed */
+    .activity-feed {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+    
+    .activity-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-md);
+      padding: var(--space-md);
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+    }
+    
+    body.light-theme .activity-item {
+      background: var(--bg-card-light);
+      border-color: var(--border-subtle-light);
+    }
+    
+    .activity-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--gold-subtle);
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    
+    .activity-icon .material-icons {
+      font-size: 18px;
+      color: var(--gold-primary);
+    }
+    
+    .activity-icon.click {
+      background: var(--info-bg);
+    }
+    
+    .activity-icon.click .material-icons {
+      color: var(--info);
+    }
+    
+    .activity-icon.conversion {
+      background: var(--success-bg);
+    }
+    
+    .activity-icon.conversion .material-icons {
+      color: var(--success);
+    }
+    
+    .activity-content {
+      flex: 1;
+    }
+    
+    .activity-text {
+      font-size: 13px;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+    
+    body.light-theme .activity-text {
+      color: var(--text-primary-light);
+    }
+    
+    .activity-time {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    
+    /* Views */
+    .view {
+      display: none;
+    }
+    
+    .view.active {
+      display: block;
+      animation: fadeIn 0.3s ease-out;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">K</div>
+        <div class="sidebar-brand">
+          <h2>Kreator</h2>
+          <p class="sidebar-subtitle">Creator Dashboard</p>
+          <span class="sidebar-version">v1.0</span>
+        </div>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-view="dashboard">
+          <span class="nav-icon material-icons">dashboard</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="#" class="nav-item" data-view="links">
+          <span class="nav-icon material-icons">link</span>
+          <span>My Links</span>
+          <span class="nav-badge" id="links-count">0</span>
+        </a>
+        <a href="#" class="nav-item" data-view="analytics">
+          <span class="nav-icon material-icons">insights</span>
+          <span>Analytics</span>
+        </a>
+        <a href="#" class="nav-item" data-view="earnings">
+          <span class="nav-icon material-icons">payments</span>
+          <span>Earnings</span>
+        </a>
+        <a href="#" class="nav-item" data-view="profile">
+          <span class="nav-icon material-icons">person</span>
+          <span>Profile</span>
+        </a>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="user-card">
+          <div class="user-avatar" id="sidebar-avatar">K</div>
+          <div class="user-info">
+            <div class="user-name" id="sidebar-name">Kreator</div>
+            <div class="user-email" id="sidebar-email">email@example.com</div>
+            <div class="user-status">Active</div>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-small" id="logout-btn" style="width: 100%;">
+          <span class="material-icons" style="font-size: 16px;">logout</span>
+          Sign Out
+        </button>
+      </div>
+    </aside>
+    
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+      <span class="material-icons">menu</span>
+    </button>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Dashboard View -->
+      <div id="dashboard-view" class="view active">
+        <div class="top-bar">
+          <div class="welcome-text">
+            <h2 id="welcome-message">Welcome back!</h2>
+            <p>Here's what's happening with your links</p>
+          </div>
+          <div class="top-actions">
+            <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+              <span class="material-icons">dark_mode</span>
+            </button>
+            <a href="create-link.html" class="btn btn-kreator">
+              <span class="material-icons" style="font-size: 18px;">add</span>
+              Create Link
+            </a>
+          </div>
+        </div>
+        
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">🔗</div>
+            <div class="stat-label">Total Links</div>
+            <div class="stat-value" id="stat-total-links">0</div>
+            <div class="stat-change">All time</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">👆</div>
+            <div class="stat-label">Total Clicks</div>
+            <div class="stat-value" id="stat-total-clicks">0</div>
+            <div class="stat-change">Last 30 days</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-label">Earnings</div>
+            <div class="stat-value" id="stat-earnings">$0.00</div>
+            <div class="stat-change">This month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📈</div>
+            <div class="stat-label">Conversion Rate</div>
+            <div class="stat-value" id="stat-conversion">0%</div>
+            <div class="stat-change">Click to purchase</div>
+          </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+          <a href="create-link.html" class="quick-action-card">
+            <div class="quick-action-icon">
+              <span class="material-icons">add_link</span>
+            </div>
+            <div class="quick-action-text">
+              <h4>Create New Link</h4>
+              <p>Share products with your audience</p>
+            </div>
+          </a>
+          <a href="#" class="quick-action-card" data-view="analytics">
+            <div class="quick-action-icon">
+              <span class="material-icons">bar_chart</span>
+            </div>
+            <div class="quick-action-text">
+              <h4>View Analytics</h4>
+              <p>Track your performance</p>
+            </div>
+          </a>
+          <a href="#" class="quick-action-card" data-view="profile">
+            <div class="quick-action-icon">
+              <span class="material-icons">settings</span>
+            </div>
+            <div class="quick-action-text">
+              <h4>Edit Profile</h4>
+              <p>Update your information</p>
+            </div>
+          </a>
+        </div>
+        
+        <div class="dashboard-grid">
+          <!-- Recent Links -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="section-title">Recent Links</h3>
+              <a href="#" class="view-all-link" data-view="links">
+                View all
+                <span class="material-icons" style="font-size: 16px;">arrow_forward</span>
+              </a>
+            </div>
+            <div class="card-body" id="recent-links">
+              <div class="empty-links">
+                <span class="material-icons">link_off</span>
+                <h3>No links yet</h3>
+                <p>Create your first smart link to start earning</p>
+                <a href="create-link.html" class="btn btn-kreator">
+                  Create Link
+                </a>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Recent Activity -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="section-title">Recent Activity</h3>
+            </div>
+            <div class="card-body" id="recent-activity">
+              <div class="activity-feed">
+                <div class="activity-item">
+                  <div class="activity-icon">
+                    <span class="material-icons">celebration</span>
+                  </div>
+                  <div class="activity-content">
+                    <div class="activity-text">Welcome to Kaayko Kreator!</div>
+                    <div class="activity-time">Just now</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Links View -->
+      <div id="links-view" class="view">
+        <header class="view-header">
+          <h1>My Links</h1>
+          <p>Manage and track all your smart links</p>
+        </header>
+        
+        <div class="card">
+          <div class="card-body" id="all-links">
+            <div class="empty-links">
+              <span class="material-icons">link_off</span>
+              <h3>No links yet</h3>
+              <p>Create your first smart link to start earning</p>
+              <a href="create-link.html" class="btn btn-kreator">
+                Create Link
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Analytics View -->
+      <div id="analytics-view" class="view">
+        <header class="view-header">
+          <h1>Analytics</h1>
+          <p>Track your link performance and audience insights</p>
+        </header>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">👆</div>
+            <div class="stat-label">Clicks Today</div>
+            <div class="stat-value">0</div>
+            <div class="stat-change">vs yesterday</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-label">Avg. CTR</div>
+            <div class="stat-value">0%</div>
+            <div class="stat-change">Click-through rate</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🌍</div>
+            <div class="stat-label">Countries</div>
+            <div class="stat-value">0</div>
+            <div class="stat-change">Unique locations</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📱</div>
+            <div class="stat-label">Mobile</div>
+            <div class="stat-value">0%</div>
+            <div class="stat-change">Mobile traffic</div>
+          </div>
+        </div>
+        
+        <div class="card" style="margin-top: var(--space-xl);">
+          <div class="card-body">
+            <div class="empty-links">
+              <span class="material-icons">insights</span>
+              <h3>Analytics coming soon</h3>
+              <p>Create links to start collecting analytics data</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Earnings View -->
+      <div id="earnings-view" class="view">
+        <header class="view-header">
+          <h1>Earnings</h1>
+          <p>Track your commissions and payouts</p>
+        </header>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-label">Balance</div>
+            <div class="stat-value">$0.00</div>
+            <div class="stat-change">Available to withdraw</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📈</div>
+            <div class="stat-label">This Month</div>
+            <div class="stat-value">$0.00</div>
+            <div class="stat-change">Pending</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-label">Conversions</div>
+            <div class="stat-value">0</div>
+            <div class="stat-change">This month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">💳</div>
+            <div class="stat-label">Total Paid</div>
+            <div class="stat-value">$0.00</div>
+            <div class="stat-change">All time</div>
+          </div>
+        </div>
+        
+        <div class="card" style="margin-top: var(--space-xl);">
+          <div class="card-body">
+            <div class="empty-links">
+              <span class="material-icons">account_balance_wallet</span>
+              <h3>No earnings yet</h3>
+              <p>Start sharing links to earn commissions</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Profile View -->
+      <div id="profile-view" class="view">
+        <header class="view-header">
+          <h1>Profile Settings</h1>
+          <p>Manage your account information</p>
+        </header>
+        
+        <div class="card">
+          <div class="card-body">
+            <form id="profile-form">
+              <div class="form-group">
+                <label class="form-label" for="profile-name">Display Name</label>
+                <input type="text" id="profile-name" class="form-input" placeholder="Your display name">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="profile-email">Email</label>
+                <input type="email" id="profile-email" class="form-input" disabled>
+                <p class="form-hint">Email cannot be changed</p>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="profile-bio">Bio</label>
+                <textarea id="profile-bio" class="form-textarea" placeholder="Tell us about yourself..."></textarea>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Social Links</label>
+                <div style="display: grid; gap: var(--space-md);">
+                  <input type="url" id="profile-instagram" class="form-input" placeholder="Instagram URL">
+                  <input type="url" id="profile-youtube" class="form-input" placeholder="YouTube URL">
+                  <input type="url" id="profile-tiktok" class="form-input" placeholder="TikTok URL">
+                  <input type="url" id="profile-website" class="form-input" placeholder="Website URL">
+                </div>
+              </div>
+              
+              <button type="submit" class="btn btn-kreator">
+                Save Changes
+              </button>
+            </form>
+          </div>
+        </div>
+        
+        <div class="card" style="margin-top: var(--space-lg);">
+          <div class="card-header">
+            <h3 class="card-title">Security</h3>
+          </div>
+          <div class="card-body">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-lg);">
+              <div>
+                <h4 style="font-size: 14px; margin-bottom: 4px;">Password</h4>
+                <p style="font-size: 13px; color: var(--text-muted);">Change your account password</p>
+              </div>
+              <button class="btn btn-secondary btn-small" id="change-password-btn">
+                Change Password
+              </button>
+            </div>
+            
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div>
+                <h4 style="font-size: 14px; margin-bottom: 4px;">Google Account</h4>
+                <p style="font-size: 13px; color: var(--text-muted);" id="google-status">Not connected</p>
+              </div>
+              <button class="btn btn-secondary btn-small" id="google-connect-btn">
+                Connect
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { getProfile, getMyLinks, logout, getAuthState } from './js/kreator-api.js';
+    
+    // Check authentication
+    const authState = getAuthState();
+    if (!authState.isAuthenticated) {
+      window.location.href = 'kreator-login.html';
+    }
+    
+    let kreatorData = authState.kreator;
+    
+    // Initialize dashboard
+    async function initDashboard() {
+      // Update sidebar with user info
+      updateUserInfo();
+      
+      // Load profile data
+      try {
+        const profile = await getProfile();
+        if (profile?.success) {
+          kreatorData = profile.data;
+          updateUserInfo();
+          populateProfileForm();
+        }
+      } catch (error) {
+        console.error('Failed to load profile:', error);
+      }
+      
+      // Load links
+      loadLinks();
+    }
+    
+    function updateUserInfo() {
+      if (kreatorData) {
+        const name = kreatorData.displayName || kreatorData.fullName || 'Kreator';
+        const email = kreatorData.email || '';
+        const initial = name[0].toUpperCase();
+        
+        document.getElementById('sidebar-name').textContent = name;
+        document.getElementById('sidebar-email').textContent = email;
+        document.getElementById('sidebar-avatar').textContent = initial;
+        document.getElementById('welcome-message').textContent = `Welcome back, ${name.split(' ')[0]}!`;
+      }
+    }
+    
+    function populateProfileForm() {
+      if (kreatorData) {
+        document.getElementById('profile-name').value = kreatorData.displayName || kreatorData.fullName || '';
+        document.getElementById('profile-email').value = kreatorData.email || '';
+        document.getElementById('profile-bio').value = kreatorData.bio || '';
+        
+        if (kreatorData.socialLinks) {
+          document.getElementById('profile-instagram').value = kreatorData.socialLinks.instagram || '';
+          document.getElementById('profile-youtube').value = kreatorData.socialLinks.youtube || '';
+          document.getElementById('profile-tiktok').value = kreatorData.socialLinks.tiktok || '';
+          document.getElementById('profile-website').value = kreatorData.socialLinks.website || '';
+        }
+        
+        // Google status
+        const hasGoogle = kreatorData.authProviders?.includes('google');
+        document.getElementById('google-status').textContent = hasGoogle ? 'Connected' : 'Not connected';
+        document.getElementById('google-connect-btn').textContent = hasGoogle ? 'Disconnect' : 'Connect';
+      }
+    }
+    
+    async function loadLinks() {
+      try {
+        const result = await getMyLinks();
+        if (result?.success && result.data.links) {
+          const links = result.data.links;
+          document.getElementById('links-count').textContent = links.length;
+          document.getElementById('stat-total-links').textContent = links.length;
+          
+          if (links.length > 0) {
+            renderLinks(links);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load links:', error);
+      }
+    }
+    
+    function renderLinks(links) {
+      const recentContainer = document.getElementById('recent-links');
+      const allContainer = document.getElementById('all-links');
+      
+      const createLinkItem = (link) => `
+        <div class="link-item">
+          <div class="link-icon">
+            <span class="material-icons">link</span>
+          </div>
+          <div class="link-info">
+            <div class="link-title">${link.title || 'Untitled Link'}</div>
+            <div class="link-url">${link.shortUrl || link.code}</div>
+          </div>
+          <div class="link-stats">
+            <div class="link-stat">
+              <div class="link-stat-value">${link.clicks || 0}</div>
+              <div class="link-stat-label">Clicks</div>
+            </div>
+          </div>
+          <div class="link-actions">
+            <button class="link-action-btn" title="Copy link" onclick="copyLink('${link.shortUrl}')">
+              <span class="material-icons">content_copy</span>
+            </button>
+            <button class="link-action-btn" title="View analytics">
+              <span class="material-icons">bar_chart</span>
+            </button>
+          </div>
+        </div>
+      `;
+      
+      // Recent links (first 5)
+      const recentLinks = links.slice(0, 5);
+      recentContainer.innerHTML = `<div class="links-list">${recentLinks.map(createLinkItem).join('')}</div>`;
+      
+      // All links
+      allContainer.innerHTML = `<div class="links-list">${links.map(createLinkItem).join('')}</div>`;
+    }
+    
+    // Copy link to clipboard
+    window.copyLink = function(url) {
+      navigator.clipboard.writeText(url).then(() => {
+        // Could show a toast notification here
+        console.log('Link copied!');
+      });
+    };
+    
+    // Navigation
+    document.querySelectorAll('[data-view]').forEach(el => {
+      el.addEventListener('click', function(e) {
+        e.preventDefault();
+        const viewId = this.dataset.view;
+        showView(viewId);
+        
+        // Update nav items
+        document.querySelectorAll('.nav-item').forEach(nav => {
+          nav.classList.remove('active');
+          if (nav.dataset.view === viewId) {
+            nav.classList.add('active');
+          }
+        });
+      });
+    });
+    
+    function showView(viewId) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById(`${viewId}-view`).classList.add('active');
+    }
+    
+    // Mobile menu
+    document.getElementById('mobile-menu-toggle').addEventListener('click', function() {
+      document.querySelector('.sidebar').classList.toggle('open');
+    });
+    
+    // Theme toggle
+    const themeToggle = document.getElementById('theme-toggle');
+    const savedTheme = localStorage.getItem('kreator_theme');
+    if (savedTheme === 'light') {
+      document.body.classList.add('light-theme');
+      themeToggle.querySelector('.material-icons').textContent = 'light_mode';
+    }
+    
+    themeToggle.addEventListener('click', function() {
+      const isLight = document.body.classList.toggle('light-theme');
+      localStorage.setItem('kreator_theme', isLight ? 'light' : 'dark');
+      this.querySelector('.material-icons').textContent = isLight ? 'light_mode' : 'dark_mode';
+    });
+    
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', function() {
+      if (confirm('Are you sure you want to sign out?')) {
+        logout();
+      }
+    });
+    
+    // Profile form
+    document.getElementById('profile-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      // TODO: Implement profile update
+      alert('Profile update coming soon!');
+    });
+    
+    // Initialize
+    initDashboard();
+  </script>
+</body>
+</html>

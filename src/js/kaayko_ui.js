@@ -62,6 +62,18 @@ function createCarouselItem(item) {
 
   const titleEl = textEl("h3", "title", item.title);
   const descEl  = textEl("p",  "description", item.description);
+  
+  // Add store/seller attribution if available
+  if (item.storeName && item.storeSlug) {
+    const storeLink = document.createElement("a");
+    storeLink.className = "product-store-link";
+    storeLink.href = `/store.html?store=${encodeURIComponent(item.storeSlug)}`;
+    storeLink.textContent = `by ${item.storeName}`;
+    storeLink.addEventListener("click", (e) => e.stopPropagation());
+    card.append(titleEl, storeLink, descEl);
+  } else {
+    card.append(titleEl, descEl);
+  }
 
   const footer = document.createElement("div");
   footer.className = "footer-elements";
@@ -72,16 +84,20 @@ function createCarouselItem(item) {
   
   const priceSymbols = textEl("p", "price", item.price);
   
-  // Convert price symbols to actual dollar amount
+  // Convert price symbols to actual dollar amount - use actualPrice if available
   const actualPrice = document.createElement("p");
   actualPrice.className = "actual-price";
-  const priceMap = {
-    "$$$$": "$49.99",
-    "$$$": "$39.99", 
-    "$$": "$29.99",
-    "$": "$19.99"
-  };
-  actualPrice.textContent = priceMap[item.price] || item.price;
+  if (item.actualPrice) {
+    actualPrice.textContent = `$${item.actualPrice.toFixed(2)}`;
+  } else {
+    const priceMap = {
+      "$$$$": "$49.99",
+      "$$$": "$39.99", 
+      "$$": "$29.99",
+      "$": "$19.99"
+    };
+    actualPrice.textContent = priceMap[item.price] || item.price;
+  }
   
   priceContainer.append(priceSymbols, actualPrice);
   
@@ -94,7 +110,7 @@ function createCarouselItem(item) {
   
   footer.append(priceContainer, voteContainer, buyButton);
 
-  card.append(titleEl, descEl, footer);
+  card.append(footer);
   addSwipe(imgContainer, item.imgSrc.length, indicator);
   imgContainer.addEventListener("click", () => openModal(item));
 

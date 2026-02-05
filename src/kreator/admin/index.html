@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  
+  <title>Kreator Admin - Application Management</title>
+  <meta name="robots" content="noindex, nofollow">
+  
+  <!-- Favicon & Theme -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <meta name="theme-color" content="#10b981">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-app: #0a0a0a;
+      --bg-card: #111;
+      --bg-card-hover: #1a1a1a;
+      --bg-input: #1a1a1a;
+      --text-primary: #f5f5f5;
+      --text-secondary: #a3a3a3;
+      --text-muted: #737373;
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-medium: rgba(255, 255, 255, 0.1);
+      --kreator-primary: #10b981;
+      --kreator-secondary: #059669;
+      --kreator-subtle: rgba(16, 185, 129, 0.1);
+      --success: #10b981;
+      --success-bg: rgba(16, 185, 129, 0.1);
+      --warning: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.1);
+      --error: #ef4444;
+      --error-bg: rgba(239, 68, 68, 0.1);
+      --info: #3b82f6;
+      --info-bg: rgba(59, 130, 246, 0.1);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-full: 9999px;
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --space-xl: 32px;
+      --space-2xl: 48px;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Josefin Sans', sans-serif;
+      background: var(--bg-app);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+    
+    /* Header */
+    .admin-header {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: var(--space-md) var(--space-xl);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+    
+    .header-logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--kreator-primary), var(--kreator-secondary));
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: white;
+      font-size: 18px;
+    }
+    
+    .header-title h1 {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    
+    .header-title p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: var(--space-md);
+    }
+    
+    /* Auth Section */
+    .auth-section {
+      max-width: 400px;
+      margin: 100px auto;
+      padding: var(--space-xl);
+      text-align: center;
+    }
+    
+    .auth-section h2 {
+      margin-bottom: var(--space-md);
+    }
+    
+    .auth-section p {
+      color: var(--text-secondary);
+      margin-bottom: var(--space-lg);
+    }
+    
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 14px;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: var(--kreator-primary);
+    }
+    
+    .btn {
+      padding: 14px 24px;
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, var(--kreator-primary), var(--kreator-secondary));
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn-secondary {
+      background: var(--bg-card);
+      border: 1px solid var(--border-medium);
+      color: var(--text-primary);
+    }
+    
+    .btn-secondary:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--kreator-primary);
+    }
+    
+    .btn-small {
+      padding: 8px 16px;
+      font-size: 13px;
+    }
+    
+    .btn-approve {
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn-reject {
+      background: var(--error-bg);
+      color: var(--error);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    /* Main Content */
+    .admin-content {
+      padding: var(--space-xl);
+      max-width: 1400px;
+      margin: 0 auto;
+      display: none;
+    }
+    
+    .admin-content.show {
+      display: block;
+    }
+    
+    /* Stats */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-md);
+      margin-bottom: var(--space-xl);
+    }
+    
+    @media (max-width: 900px) {
+      .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+    }
+    
+    .stat-card h3 {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: var(--space-sm);
+    }
+    
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+    }
+    
+    .stat-value.pending { color: var(--warning); }
+    .stat-value.approved { color: var(--success); }
+    .stat-value.rejected { color: var(--error); }
+    .stat-value.total { color: var(--kreator-primary); }
+    
+    /* Filters */
+    .filters-row {
+      display: flex;
+      gap: var(--space-md);
+      margin-bottom: var(--space-lg);
+      flex-wrap: wrap;
+    }
+    
+    .filter-btn {
+      padding: 10px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-full);
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .filter-btn:hover {
+      border-color: var(--kreator-primary);
+      color: var(--kreator-primary);
+    }
+    
+    .filter-btn.active {
+      background: var(--kreator-subtle);
+      border-color: var(--kreator-primary);
+      color: var(--kreator-primary);
+    }
+    
+    /* Applications Table */
+    .applications-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    
+    .card-header {
+      padding: var(--space-lg);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .card-header h2 {
+      font-size: 16px;
+    }
+    
+    .applications-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .applications-table th,
+    .applications-table td {
+      padding: var(--space-md);
+      text-align: left;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    
+    .applications-table th {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      background: rgba(0, 0, 0, 0.2);
+    }
+    
+    .applications-table tr:hover {
+      background: var(--bg-card-hover);
+    }
+    
+    .applicant-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .applicant-name {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .applicant-email {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
+    .business-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .business-name {
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    
+    .business-type {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: capitalize;
+    }
+    
+    .categories-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    
+    .category-tag {
+      padding: 3px 8px;
+      background: var(--bg-input);
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-transform: capitalize;
+    }
+    
+    .status-badge {
+      padding: 6px 12px;
+      border-radius: var(--radius-full);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .status-badge.pending {
+      background: var(--warning-bg);
+      color: var(--warning);
+    }
+    
+    .status-badge.approved {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+    
+    .status-badge.rejected {
+      background: var(--error-bg);
+      color: var(--error);
+    }
+    
+    .action-btns {
+      display: flex;
+      gap: var(--space-xs);
+    }
+    
+    .action-btn {
+      padding: 6px 12px;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .action-btn.approve {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+    
+    .action-btn.approve:hover {
+      background: var(--success);
+      color: white;
+    }
+    
+    .action-btn.reject {
+      background: var(--error-bg);
+      color: var(--error);
+    }
+    
+    .action-btn.reject:hover {
+      background: var(--error);
+      color: white;
+    }
+    
+    .action-btn.view {
+      background: var(--info-bg);
+      color: var(--info);
+    }
+    
+    .date-cell {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: var(--space-2xl);
+      color: var(--text-muted);
+    }
+    
+    .empty-state .material-icons {
+      font-size: 48px;
+      margin-bottom: var(--space-md);
+    }
+    
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: var(--space-xl);
+    }
+    
+    .modal-overlay.show {
+      display: flex;
+    }
+    
+    .modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-lg);
+      max-width: 600px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    
+    .modal-header {
+      padding: var(--space-lg);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .modal-header h3 {
+      font-size: 18px;
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 24px;
+    }
+    
+    .modal-body {
+      padding: var(--space-lg);
+    }
+    
+    .detail-row {
+      display: flex;
+      margin-bottom: var(--space-md);
+      padding-bottom: var(--space-md);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    
+    .detail-label {
+      width: 140px;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    
+    .detail-value {
+      flex: 1;
+      color: var(--text-primary);
+    }
+    
+    .modal-footer {
+      padding: var(--space-lg);
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--space-md);
+    }
+    
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: var(--space-2xl);
+      color: var(--text-muted);
+    }
+    
+    .loading-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border-medium);
+      border-top-color: var(--kreator-primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto var(--space-md);
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .applications-table {
+        display: block;
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="admin-header">
+    <div class="header-brand">
+      <div class="header-logo">K</div>
+      <div class="header-title">
+        <h1>Kreator Admin</h1>
+        <p>Application Management</p>
+      </div>
+    </div>
+    <div class="header-actions" id="header-actions" style="display: none;">
+      <button class="btn btn-secondary btn-small" onclick="refreshData()">
+        <span class="material-icons" style="font-size: 18px;">refresh</span>
+        Refresh
+      </button>
+      <button class="btn btn-secondary btn-small" onclick="logout()">
+        <span class="material-icons" style="font-size: 18px;">logout</span>
+        Logout
+      </button>
+    </div>
+  </header>
+
+  <!-- Auth Section -->
+  <section class="auth-section" id="auth-section">
+    <h2>Admin Login</h2>
+    <p>Enter the admin passphrase to access application management</p>
+    <form class="auth-form" id="auth-form">
+      <input type="password" id="admin-pass" class="form-input" placeholder="Admin Passphrase" required>
+      <button type="submit" class="btn btn-primary">Access Admin Panel</button>
+    </form>
+  </section>
+
+  <!-- Main Content -->
+  <main class="admin-content" id="admin-content">
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <h3>Pending Review</h3>
+        <div class="stat-value pending" id="stat-pending">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Approved</h3>
+        <div class="stat-value approved" id="stat-approved">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Rejected</h3>
+        <div class="stat-value rejected" id="stat-rejected">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Total Applications</h3>
+        <div class="stat-value total" id="stat-total">0</div>
+      </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="filters-row">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="pending">Pending</button>
+      <button class="filter-btn" data-filter="approved">Approved</button>
+      <button class="filter-btn" data-filter="rejected">Rejected</button>
+    </div>
+    
+    <!-- Applications Table -->
+    <div class="applications-card">
+      <div class="card-header">
+        <h2>Seller Applications</h2>
+        <span id="app-count">0 applications</span>
+      </div>
+      
+      <div id="applications-container">
+        <div class="loading">
+          <div class="loading-spinner"></div>
+          <p>Loading applications...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Detail Modal -->
+  <div class="modal-overlay" id="detail-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Application Details</h3>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-body">
+        <!-- Populated dynamically -->
+      </div>
+      <div class="modal-footer" id="modal-footer">
+        <!-- Actions -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Simple admin auth (in production, use proper auth)
+    const ADMIN_PASS = 'kaayko2026admin'; // Change this!
+    const API_BASE = 'https://api-vwcc5j4qda-uc.a.run.app';
+    
+    let isAuthenticated = false;
+    let applications = [];
+    let currentFilter = 'all';
+    
+    // Check saved auth
+    if (localStorage.getItem('kreator_admin_auth') === 'true') {
+      showAdmin();
+    }
+    
+    // Auth form
+    document.getElementById('auth-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const pass = document.getElementById('admin-pass').value;
+      
+      if (pass === ADMIN_PASS) {
+        localStorage.setItem('kreator_admin_auth', 'true');
+        showAdmin();
+      } else {
+        alert('Invalid passphrase');
+      }
+    });
+    
+    function showAdmin() {
+      isAuthenticated = true;
+      document.getElementById('auth-section').style.display = 'none';
+      document.getElementById('admin-content').classList.add('show');
+      document.getElementById('header-actions').style.display = 'flex';
+      loadApplications();
+    }
+    
+    function logout() {
+      localStorage.removeItem('kreator_admin_auth');
+      location.reload();
+    }
+    
+    // Load applications from API
+    async function loadApplications() {
+      try {
+        const response = await fetch(`${API_BASE}/kreators/admin/applications`, {
+          headers: {
+            'X-Admin-Key': ADMIN_PASS
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch applications');
+        }
+        
+        const data = await response.json();
+        // data.data contains { applications: [], total, limit, offset, hasMore }
+        applications = data.data?.applications || [];
+        
+        updateStats();
+        renderApplications();
+      } catch (error) {
+        console.error('Error loading applications:', error);
+        document.getElementById('applications-container').innerHTML = `
+          <div class="empty-state">
+            <span class="material-icons">error_outline</span>
+            <p>Failed to load applications. Make sure the admin API endpoint is available.</p>
+            <p style="font-size: 12px; margin-top: 8px;">Error: ${error.message}</p>
+          </div>
+        `;
+      }
+    }
+    
+    function refreshData() {
+      document.getElementById('applications-container').innerHTML = `
+        <div class="loading">
+          <div class="loading-spinner"></div>
+          <p>Loading applications...</p>
+        </div>
+      `;
+      loadApplications();
+    }
+    
+    function updateStats() {
+      const pending = applications.filter(a => a.status === 'pending').length;
+      const approved = applications.filter(a => a.status === 'approved').length;
+      const rejected = applications.filter(a => a.status === 'rejected').length;
+      
+      document.getElementById('stat-pending').textContent = pending;
+      document.getElementById('stat-approved').textContent = approved;
+      document.getElementById('stat-rejected').textContent = rejected;
+      document.getElementById('stat-total').textContent = applications.length;
+    }
+    
+    function renderApplications() {
+      const filtered = currentFilter === 'all' 
+        ? applications 
+        : applications.filter(a => a.status === currentFilter);
+      
+      document.getElementById('app-count').textContent = `${filtered.length} applications`;
+      
+      if (filtered.length === 0) {
+        document.getElementById('applications-container').innerHTML = `
+          <div class="empty-state">
+            <span class="material-icons">inbox</span>
+            <p>No applications found</p>
+          </div>
+        `;
+        return;
+      }
+      
+      const html = `
+        <table class="applications-table">
+          <thead>
+            <tr>
+              <th>Applicant</th>
+              <th>Business</th>
+              <th>Categories</th>
+              <th>Status</th>
+              <th>Applied</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filtered.map(app => `
+              <tr>
+                <td>
+                  <div class="applicant-info">
+                    <span class="applicant-name">${app.firstName} ${app.lastName}</span>
+                    <span class="applicant-email">${app.email}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="business-info">
+                    <span class="business-name">${app.businessName || 'N/A'}</span>
+                    <span class="business-type">${(app.businessType || '').replace(/_/g, ' ')}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="categories-list">
+                    ${(app.productCategories || []).slice(0, 3).map(c => `
+                      <span class="category-tag">${c}</span>
+                    `).join('')}
+                    ${(app.productCategories || []).length > 3 ? `<span class="category-tag">+${app.productCategories.length - 3}</span>` : ''}
+                  </div>
+                </td>
+                <td>
+                  <span class="status-badge ${app.status}">${app.status}</span>
+                </td>
+                <td>
+                  <span class="date-cell">${formatDate(app.createdAt)}</span>
+                </td>
+                <td>
+                  <div class="action-btns">
+                    <button class="action-btn view" onclick="viewApplication('${app.id}')">View</button>
+                    ${app.status === 'pending' ? `
+                      <button class="action-btn approve" onclick="approveApplication('${app.id}')">Approve</button>
+                      <button class="action-btn reject" onclick="rejectApplication('${app.id}')">Reject</button>
+                    ` : ''}
+                  </div>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+      
+      document.getElementById('applications-container').innerHTML = html;
+    }
+    
+    function formatDate(timestamp) {
+      if (!timestamp) return 'N/A';
+      const date = timestamp._seconds 
+        ? new Date(timestamp._seconds * 1000) 
+        : new Date(timestamp);
+      return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric' 
+      });
+    }
+    
+    // Filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentFilter = this.dataset.filter;
+        renderApplications();
+      });
+    });
+    
+    // View application details
+    function viewApplication(id) {
+      const app = applications.find(a => a.id === id);
+      if (!app) return;
+      
+      const modalBody = document.getElementById('modal-body');
+      modalBody.innerHTML = `
+        <div class="detail-row">
+          <div class="detail-label">Application ID</div>
+          <div class="detail-value" style="font-family: monospace;">${app.id}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Status</div>
+          <div class="detail-value"><span class="status-badge ${app.status}">${app.status}</span></div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Name</div>
+          <div class="detail-value">${app.firstName} ${app.lastName}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Email</div>
+          <div class="detail-value">${app.email}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Phone</div>
+          <div class="detail-value">${app.phone || 'N/A'}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Business Name</div>
+          <div class="detail-value">${app.businessName || 'N/A'}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Business Type</div>
+          <div class="detail-value" style="text-transform: capitalize;">${(app.businessType || 'N/A').replace(/_/g, ' ')}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Website</div>
+          <div class="detail-value">${app.website ? `<a href="${app.website}" target="_blank" style="color: var(--kreator-primary);">${app.website}</a>` : 'N/A'}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Categories</div>
+          <div class="detail-value">
+            <div class="categories-list">
+              ${(app.productCategories || []).map(c => `<span class="category-tag">${c}</span>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Products to List</div>
+          <div class="detail-value">${app.productCount || 'N/A'}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Price Range</div>
+          <div class="detail-value">${(app.priceRange || 'N/A').replace(/_/g, ' ')}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Description</div>
+          <div class="detail-value">${app.productDescription || 'N/A'}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Location</div>
+          <div class="detail-value">${app.location || 'N/A'}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Shipping</div>
+          <div class="detail-value">${(app.shippingCapability || 'N/A').replace(/_/g, ' ')}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Fulfillment</div>
+          <div class="detail-value">${(app.fulfillmentTime || 'N/A').replace(/_/g, ' ')}</div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-label">Applied On</div>
+          <div class="detail-value">${formatDate(app.createdAt)}</div>
+        </div>
+      `;
+      
+      const modalFooter = document.getElementById('modal-footer');
+      if (app.status === 'pending') {
+        modalFooter.innerHTML = `
+          <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+          <button class="btn btn-reject" onclick="rejectApplication('${app.id}'); closeModal();">Reject</button>
+          <button class="btn btn-approve" onclick="approveApplication('${app.id}'); closeModal();">Approve</button>
+        `;
+      } else {
+        modalFooter.innerHTML = `
+          <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+        `;
+      }
+      
+      document.getElementById('detail-modal').classList.add('show');
+    }
+    
+    function closeModal() {
+      document.getElementById('detail-modal').classList.remove('show');
+    }
+    
+    // Approve/Reject applications
+    async function approveApplication(id) {
+      if (!confirm('Approve this application? An onboarding email will be sent to the applicant.')) return;
+      
+      try {
+        const response = await fetch(`${API_BASE}/kreators/admin/applications/${id}/approve`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-Key': ADMIN_PASS
+          }
+        });
+        
+        if (!response.ok) throw new Error('Failed to approve');
+        
+        alert('Application approved! Onboarding email sent.');
+        refreshData();
+      } catch (error) {
+        alert('Error approving application: ' + error.message);
+      }
+    }
+    
+    async function rejectApplication(id) {
+      const reason = prompt('Rejection reason (optional):');
+      if (reason === null) return; // Cancelled
+      
+      try {
+        const response = await fetch(`${API_BASE}/kreators/admin/applications/${id}/reject`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-Key': ADMIN_PASS
+          },
+          body: JSON.stringify({ reason })
+        });
+        
+        if (!response.ok) throw new Error('Failed to reject');
+        
+        alert('Application rejected.');
+        refreshData();
+      } catch (error) {
+        alert('Error rejecting application: ' + error.message);
+      }
+    }
+    
+    // Close modal on overlay click
+    document.getElementById('detail-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+  </script>
+</body>
+</html>

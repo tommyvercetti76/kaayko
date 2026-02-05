@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  
+  <!-- Primary Meta Tags -->
+  <title>Become a Kreator - Join the Kaayko Creator Program</title>
+  <meta name="title" content="Become a Kreator - Join the Kaayko Creator Program">
+  <meta name="description" content="Join Kaayko's exclusive creator program. Share your passion for paddling, earn commissions, and grow your audience with our intelligent link platform.">
+  <meta name="keywords" content="kaayko kreator, creator program, paddling influencer, outdoor creator, affiliate program, content creator, brand ambassador">
+  <meta name="author" content="Kaayko">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://kaayko.com/kreator/apply.html">
+  
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://kaayko.com/kreator/apply.html">
+  <meta property="og:title" content="Become a Kaayko Kreator">
+  <meta property="og:description" content="Join our creator program. Share your paddling passion and earn with intelligent link tools.">
+  <meta property="og:image" content="https://kaayko.com/assets/kreator-og.png">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Become a Kaayko Kreator">
+  <meta name="twitter:description" content="Join our creator program. Share your paddling passion and earn with intelligent link tools.">
+  
+  <!-- Favicon & Theme -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <meta name="theme-color" content="#10b981">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/kreator-base.css">
+  
+  <style>
+    /* Page-specific styles */
+    .page-split {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    
+    @media (max-width: 968px) {
+      .page-split {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* Showcase Section */
+    .showcase-section {
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+      padding: var(--space-2xl);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .showcase-section::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    
+    @media (max-width: 968px) {
+      .showcase-section {
+        display: none;
+      }
+    }
+    
+    .showcase-content {
+      max-width: 480px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .showcase-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      background: var(--kreator-subtle);
+      color: var(--kreator-primary);
+      padding: 8px 16px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: var(--space-lg);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .showcase-title {
+      font-size: 42px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: var(--space-md);
+      line-height: 1.1;
+    }
+    
+    .showcase-title span {
+      background: linear-gradient(135deg, var(--kreator-primary), #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .showcase-description {
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: var(--space-xl);
+    }
+    
+    .benefits-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .benefit-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-md);
+      padding: var(--space-md) 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    
+    .benefit-item:last-child {
+      border-bottom: none;
+    }
+    
+    .benefit-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--kreator-subtle);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    
+    .benefit-icon .material-icons {
+      color: var(--kreator-primary);
+      font-size: 20px;
+    }
+    
+    .benefit-text h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    
+    .benefit-text p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    
+    /* Form Section */
+    .form-section {
+      background: var(--bg-app);
+      padding: var(--space-2xl);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow-y: auto;
+    }
+    
+    .form-container {
+      max-width: 440px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    
+    .form-header {
+      text-align: center;
+      margin-bottom: var(--space-xl);
+    }
+    
+    .form-logo {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto var(--space-md);
+      background: linear-gradient(135deg, var(--kreator-primary), var(--kreator-secondary));
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 700;
+      color: white;
+      box-shadow: var(--shadow-kreator);
+    }
+    
+    .form-header h1 {
+      font-size: 24px;
+      color: var(--text-primary);
+      margin-bottom: var(--space-xs);
+    }
+    
+    .form-header p {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+    
+    /* Progress Steps */
+    .progress-steps {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-xl);
+    }
+    
+    .progress-step {
+      width: 8px;
+      height: 8px;
+      border-radius: var(--radius-full);
+      background: var(--border-medium);
+      transition: all var(--transition-base);
+    }
+    
+    .progress-step.active {
+      width: 24px;
+      background: var(--kreator-primary);
+    }
+    
+    .progress-step.completed {
+      background: var(--kreator-primary);
+    }
+    
+    /* Form Steps */
+    .form-step {
+      display: none;
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    .form-step.active {
+      display: block;
+    }
+    
+    /* Social Links Group */
+    .social-links-group {
+      display: grid;
+      gap: var(--space-md);
+    }
+    
+    .social-input-wrapper {
+      display: flex;
+      align-items: center;
+      background: var(--bg-input);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      transition: all var(--transition-fast);
+    }
+    
+    .social-input-wrapper:focus-within {
+      border-color: var(--kreator-primary);
+      box-shadow: 0 0 0 3px var(--kreator-subtle);
+    }
+    
+    .social-prefix {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      background: var(--bg-card);
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+    
+    .social-prefix .material-icons {
+      font-size: 20px;
+    }
+    
+    .social-input-wrapper input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 12px;
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+    
+    .social-input-wrapper input:focus {
+      outline: none;
+    }
+    
+    .social-input-wrapper input::placeholder {
+      color: var(--text-muted);
+    }
+    
+    /* Checkbox Group */
+    .checkbox-group {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-md);
+      padding: var(--space-md);
+      background: var(--bg-card);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--kreator-primary);
+      cursor: pointer;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    
+    .checkbox-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    
+    .checkbox-label a {
+      color: var(--kreator-primary);
+      text-decoration: none;
+    }
+    
+    .checkbox-label a:hover {
+      text-decoration: underline;
+    }
+    
+    /* Form Actions */
+    .form-actions {
+      display: flex;
+      gap: var(--space-md);
+      margin-top: var(--space-xl);
+    }
+    
+    .form-actions .btn {
+      flex: 1;
+    }
+    
+    /* Success State */
+    .success-state {
+      text-align: center;
+      padding: var(--space-xl);
+    }
+    
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto var(--space-lg);
+      background: var(--kreator-subtle);
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .success-icon .material-icons {
+      font-size: 40px;
+      color: var(--kreator-primary);
+    }
+    
+    .success-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: var(--space-sm);
+    }
+    
+    .success-message {
+      color: var(--text-secondary);
+      margin-bottom: var(--space-lg);
+      line-height: 1.6;
+    }
+    
+    .application-id {
+      background: var(--bg-card);
+      padding: var(--space-md);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-lg);
+    }
+    
+    .application-id-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: var(--space-xs);
+    }
+    
+    .application-id-value {
+      font-family: monospace;
+      font-size: 16px;
+      color: var(--kreator-primary);
+      font-weight: 600;
+    }
+    
+    /* Footer Links */
+    .form-footer {
+      text-align: center;
+      margin-top: var(--space-xl);
+      padding-top: var(--space-lg);
+      border-top: 1px solid var(--border-subtle);
+    }
+    
+    .form-footer p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    
+    .form-footer a {
+      color: var(--kreator-primary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    
+    .form-footer a:hover {
+      text-decoration: underline;
+    }
+    
+    /* Back to Kaayko */
+    .back-link {
+      position: absolute;
+      top: var(--space-lg);
+      left: var(--space-lg);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 13px;
+      transition: color var(--transition-fast);
+      z-index: 10;
+    }
+    
+    .back-link:hover {
+      color: var(--text-primary);
+    }
+    
+    .back-link .material-icons {
+      font-size: 18px;
+    }
+  </style>
+</head>
+
+<body>
+  <a href="/paddlingout.html" class="back-link">
+    <span class="material-icons">arrow_back</span>
+    Back to Kaayko
+  </a>
+
+  <div class="page-split">
+    <!-- Left: Showcase -->
+    <section class="showcase-section">
+      <div class="showcase-content">
+        <span class="showcase-badge">
+          <span class="material-icons" style="font-size: 14px;">stars</span>
+          Creator Program
+        </span>
+        
+        <h1 class="showcase-title">
+          Share Your <span>Passion</span><br>
+          Grow Your Audience
+        </h1>
+        
+        <p class="showcase-description">
+          Join the Kaayko Kreator program and turn your love for paddling into opportunity. 
+          Get access to exclusive tools, earn commissions, and connect with a community of 
+          outdoor enthusiasts.
+        </p>
+        
+        <ul class="benefits-list">
+          <li class="benefit-item">
+            <div class="benefit-icon">
+              <span class="material-icons">link</span>
+            </div>
+            <div class="benefit-text">
+              <h4>Smart Links</h4>
+              <p>Create intelligent tracking links that adapt to your audience</p>
+            </div>
+          </li>
+          <li class="benefit-item">
+            <div class="benefit-icon">
+              <span class="material-icons">insights</span>
+            </div>
+            <div class="benefit-text">
+              <h4>Real-Time Analytics</h4>
+              <p>Track clicks, conversions, and earnings with detailed dashboards</p>
+            </div>
+          </li>
+          <li class="benefit-item">
+            <div class="benefit-icon">
+              <span class="material-icons">payments</span>
+            </div>
+            <div class="benefit-text">
+              <h4>Earn Commissions</h4>
+              <p>Get paid for every sale you generate through your content</p>
+            </div>
+          </li>
+          <li class="benefit-item">
+            <div class="benefit-icon">
+              <span class="material-icons">groups</span>
+            </div>
+            <div class="benefit-text">
+              <h4>Exclusive Community</h4>
+              <p>Connect with fellow kreators and access insider resources</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Right: Application Form -->
+    <section class="form-section">
+      <div class="form-container">
+        <header class="form-header">
+          <div class="form-logo">K</div>
+          <h1>Apply to Become a Kreator</h1>
+          <p>Tell us about yourself and your content</p>
+        </header>
+        
+        <!-- Progress Indicator -->
+        <div class="progress-steps">
+          <div class="progress-step active" data-step="1"></div>
+          <div class="progress-step" data-step="2"></div>
+          <div class="progress-step" data-step="3"></div>
+        </div>
+        
+        <form id="application-form">
+          <!-- Step 1: Basic Info -->
+          <div class="form-step active" data-step="1">
+            <div class="form-group">
+              <label class="form-label" for="fullName">Full Name *</label>
+              <input type="text" id="fullName" name="fullName" class="form-input" 
+                     placeholder="Enter your full name" required>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="email">Email Address *</label>
+              <input type="email" id="email" name="email" class="form-input" 
+                     placeholder="your@email.com" required>
+              <p class="form-hint">We'll send application updates to this email</p>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="location">Location</label>
+              <input type="text" id="location" name="location" class="form-input" 
+                     placeholder="City, State/Country">
+            </div>
+            
+            <div class="form-actions">
+              <button type="button" class="btn btn-kreator btn-large" onclick="nextStep()">
+                Continue
+                <span class="material-icons" style="font-size: 18px;">arrow_forward</span>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Step 2: Social & Content -->
+          <div class="form-step" data-step="2">
+            <div class="form-group">
+              <label class="form-label">Social Media Profiles</label>
+              <p class="form-hint" style="margin-bottom: var(--space-md);">Add at least one social profile</p>
+              
+              <div class="social-links-group">
+                <div class="social-input-wrapper">
+                  <span class="social-prefix">
+                    <span class="material-icons">photo_camera</span>
+                  </span>
+                  <input type="url" id="instagram" name="instagram" 
+                         placeholder="Instagram profile URL">
+                </div>
+                
+                <div class="social-input-wrapper">
+                  <span class="social-prefix">
+                    <span class="material-icons">smart_display</span>
+                  </span>
+                  <input type="url" id="youtube" name="youtube" 
+                         placeholder="YouTube channel URL">
+                </div>
+                
+                <div class="social-input-wrapper">
+                  <span class="social-prefix">
+                    <span class="material-icons">music_note</span>
+                  </span>
+                  <input type="url" id="tiktok" name="tiktok" 
+                         placeholder="TikTok profile URL">
+                </div>
+                
+                <div class="social-input-wrapper">
+                  <span class="social-prefix">
+                    <span class="material-icons">public</span>
+                  </span>
+                  <input type="url" id="website" name="website" 
+                         placeholder="Personal website or blog">
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="followerCount">Total Follower Count</label>
+              <select id="followerCount" name="followerCount" class="form-select">
+                <option value="">Select range...</option>
+                <option value="under_1k">Under 1,000</option>
+                <option value="1k_5k">1,000 - 5,000</option>
+                <option value="5k_10k">5,000 - 10,000</option>
+                <option value="10k_50k">10,000 - 50,000</option>
+                <option value="50k_100k">50,000 - 100,000</option>
+                <option value="over_100k">100,000+</option>
+              </select>
+            </div>
+            
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" onclick="prevStep()">
+                <span class="material-icons" style="font-size: 18px;">arrow_back</span>
+                Back
+              </button>
+              <button type="button" class="btn btn-kreator" onclick="nextStep()">
+                Continue
+                <span class="material-icons" style="font-size: 18px;">arrow_forward</span>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Step 3: About & Submit -->
+          <div class="form-step" data-step="3">
+            <div class="form-group">
+              <label class="form-label" for="contentType">Content Focus *</label>
+              <select id="contentType" name="contentType" class="form-select" required>
+                <option value="">Select your primary content type...</option>
+                <option value="kayaking">Kayaking</option>
+                <option value="paddleboarding">Paddleboarding / SUP</option>
+                <option value="canoeing">Canoeing</option>
+                <option value="fishing">Fishing</option>
+                <option value="outdoor_general">General Outdoor/Adventure</option>
+                <option value="travel">Travel & Exploration</option>
+                <option value="fitness">Fitness & Training</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="motivation">Why do you want to join? *</label>
+              <textarea id="motivation" name="motivation" class="form-textarea" 
+                        placeholder="Tell us about your passion for the outdoors and why you'd be a great Kaayko Kreator..." 
+                        required></textarea>
+              <p class="form-hint">Minimum 50 characters</p>
+            </div>
+            
+            <div class="form-group">
+              <label class="checkbox-group">
+                <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
+                <span class="checkbox-label">
+                  I agree to the <a href="/kreator/terms.html" target="_blank">Kreator Terms of Service</a> 
+                  and <a href="/privacy.html" target="_blank">Privacy Policy</a>
+                </span>
+              </label>
+            </div>
+            
+            <div class="form-group">
+              <label class="checkbox-group">
+                <input type="checkbox" id="agreeComms" name="agreeComms">
+                <span class="checkbox-label">
+                  I'd like to receive updates, tips, and news from Kaayko (optional)
+                </span>
+              </label>
+            </div>
+            
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" onclick="prevStep()">
+                <span class="material-icons" style="font-size: 18px;">arrow_back</span>
+                Back
+              </button>
+              <button type="submit" class="btn btn-kreator" id="submit-btn">
+                <span class="btn-text">Submit Application</span>
+                <span class="loading-spinner" style="display: none;"></span>
+              </button>
+            </div>
+          </div>
+        </form>
+        
+        <!-- Success State (hidden by default) -->
+        <div id="success-state" class="success-state" style="display: none;">
+          <div class="success-icon">
+            <span class="material-icons">check_circle</span>
+          </div>
+          <h2 class="success-title">Application Submitted!</h2>
+          <p class="success-message">
+            Thank you for your interest in becoming a Kaayko Kreator. 
+            We'll review your application and get back to you within 2-3 business days.
+          </p>
+          <div class="application-id">
+            <div class="application-id-label">Your Application ID</div>
+            <div class="application-id-value" id="app-id-display">-</div>
+          </div>
+          <p class="success-message" style="font-size: 13px;">
+            Save this ID to check your application status.
+          </p>
+          <a href="/paddlingout.html" class="btn btn-kreator btn-large">
+            Back to Kaayko
+          </a>
+        </div>
+        
+        <footer class="form-footer">
+          <p>Already a Kreator? <a href="kreator-login.html">Sign in</a></p>
+        </footer>
+      </div>
+    </section>
+  </div>
+
+  <script type="module">
+    import { submitApplication } from './js/kreator-api.js';
+    
+    let currentStep = 1;
+    const totalSteps = 3;
+    
+    // Step navigation
+    window.nextStep = function() {
+      if (validateStep(currentStep)) {
+        if (currentStep < totalSteps) {
+          currentStep++;
+          updateStepUI();
+        }
+      }
+    };
+    
+    window.prevStep = function() {
+      if (currentStep > 1) {
+        currentStep--;
+        updateStepUI();
+      }
+    };
+    
+    function updateStepUI() {
+      // Update form steps
+      document.querySelectorAll('.form-step').forEach(step => {
+        step.classList.remove('active');
+        if (parseInt(step.dataset.step) === currentStep) {
+          step.classList.add('active');
+        }
+      });
+      
+      // Update progress indicators
+      document.querySelectorAll('.progress-step').forEach(indicator => {
+        const step = parseInt(indicator.dataset.step);
+        indicator.classList.remove('active', 'completed');
+        if (step === currentStep) {
+          indicator.classList.add('active');
+        } else if (step < currentStep) {
+          indicator.classList.add('completed');
+        }
+      });
+    }
+    
+    function validateStep(step) {
+      const stepEl = document.querySelector(`.form-step[data-step="${step}"]`);
+      const requiredFields = stepEl.querySelectorAll('[required]');
+      let valid = true;
+      
+      requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+          field.classList.add('error');
+          valid = false;
+        } else {
+          field.classList.remove('error');
+        }
+      });
+      
+      // Step 2: Require at least one social link
+      if (step === 2) {
+        const socialInputs = ['instagram', 'youtube', 'tiktok', 'website'];
+        const hasSocial = socialInputs.some(id => document.getElementById(id).value.trim());
+        if (!hasSocial) {
+          alert('Please add at least one social media profile.');
+          valid = false;
+        }
+      }
+      
+      // Step 3: Validate motivation length
+      if (step === 3) {
+        const motivation = document.getElementById('motivation').value.trim();
+        if (motivation.length < 50) {
+          document.getElementById('motivation').classList.add('error');
+          alert('Please write at least 50 characters about why you want to join.');
+          valid = false;
+        }
+      }
+      
+      return valid;
+    }
+    
+    // Form submission
+    document.getElementById('application-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      if (!validateStep(currentStep)) return;
+      
+      const submitBtn = document.getElementById('submit-btn');
+      const btnText = submitBtn.querySelector('.btn-text');
+      const spinner = submitBtn.querySelector('.loading-spinner');
+      
+      // Show loading state
+      btnText.textContent = 'Submitting...';
+      spinner.style.display = 'inline-block';
+      submitBtn.disabled = true;
+      
+      // Collect form data
+      const socialLinks = {};
+      if (document.getElementById('instagram').value) {
+        socialLinks.instagram = document.getElementById('instagram').value;
+      }
+      if (document.getElementById('youtube').value) {
+        socialLinks.youtube = document.getElementById('youtube').value;
+      }
+      if (document.getElementById('tiktok').value) {
+        socialLinks.tiktok = document.getElementById('tiktok').value;
+      }
+      if (document.getElementById('website').value) {
+        socialLinks.website = document.getElementById('website').value;
+      }
+      
+      const applicationData = {
+        email: document.getElementById('email').value,
+        fullName: document.getElementById('fullName').value,
+        location: document.getElementById('location').value || undefined,
+        socialLinks: Object.keys(socialLinks).length > 0 ? socialLinks : undefined,
+        followerCount: document.getElementById('followerCount').value || undefined,
+        contentType: document.getElementById('contentType').value,
+        motivation: document.getElementById('motivation').value,
+        marketingConsent: document.getElementById('agreeComms').checked
+      };
+      
+      try {
+        const result = await submitApplication(applicationData);
+        
+        if (result.success) {
+          // Show success state
+          document.getElementById('application-form').style.display = 'none';
+          document.querySelector('.progress-steps').style.display = 'none';
+          document.getElementById('success-state').style.display = 'block';
+          document.getElementById('app-id-display').textContent = result.data.applicationId;
+        } else {
+          throw new Error(result.error || 'Application failed');
+        }
+      } catch (error) {
+        console.error('Application error:', error);
+        alert(error.message || 'Failed to submit application. Please try again.');
+        
+        // Reset button
+        btnText.textContent = 'Submit Application';
+        spinner.style.display = 'none';
+        submitBtn.disabled = false;
+      }
+    });
+    
+    // Remove error class on input
+    document.querySelectorAll('.form-input, .form-textarea, .form-select').forEach(field => {
+      field.addEventListener('input', function() {
+        this.classList.remove('error');
+      });
+    });
+  </script>
+</body>
+</html>

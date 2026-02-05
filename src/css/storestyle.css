@@ -1525,3 +1525,117 @@ Sustainability Alert Modal
 ---------------------------------------------------------- */
 ::selection { background-color: var(--color-accent); color:#fff; }
 .dark-theme ::selection { background-color:#ffd700; color:#111; }
+
+/* ----------------------------------------------------------
+12) Store Banner (for filtered store views)
+---------------------------------------------------------- */
+.store-banner {
+  background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
+  padding: 24px 20px;
+  margin: 0 -8px 24px -8px;
+  border-radius: 0 0 20px 20px;
+  text-align: center;
+  color: white;
+}
+
+.store-banner-content {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.store-banner-name {
+  font-family: 'Josefin_Bold', sans-serif;
+  font-size: 28px;
+  margin-bottom: 8px;
+  color: #fff;
+}
+
+.store-banner-count {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 12px;
+}
+
+.store-banner-link {
+  display: inline-block;
+  color: var(--color-accent);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.store-banner-link:hover {
+  color: #ffa500;
+  text-decoration: underline;
+}
+
+/* Store Empty State */
+.store-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--color-text-subtle);
+}
+
+.store-empty h2 {
+  font-family: 'Josefin_Bold', sans-serif;
+  font-size: 24px;
+  margin-bottom: 12px;
+  color: var(--color-text-base);
+}
+
+.store-empty p {
+  font-size: 16px;
+  margin-bottom: 24px;
+}
+
+.store-back-link {
+  display: inline-block;
+  background: var(--color-accent);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.store-back-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
+}
+
+/* Dark theme adjustments */
+.dark-theme .store-banner {
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+  border-bottom: 1px solid #333;
+}
+
+.dark-theme .store-empty h2 {
+  color: #fff;
+}
+
+/* ----------------------------------------------------------
+13) Product Store Link
+---------------------------------------------------------- */
+.product-store-link {
+  display: block;
+  font-size: 12px;
+  color: var(--color-text-subtle);
+  text-decoration: none;
+  margin: -4px 0 8px 0;
+  transition: color 0.2s;
+}
+
+.product-store-link:hover {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+.dark-theme .product-store-link {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.dark-theme .product-store-link:hover {
+  color: var(--color-accent);
+}

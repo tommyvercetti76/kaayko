@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  
+  <!-- Primary Meta Tags -->
+  <title>Seller Dashboard - Kaayko Kreator</title>
+  <meta name="title" content="Seller Dashboard - Kaayko Kreator Platform">
+  <meta name="description" content="Manage your products, track orders, and grow your sales with the Kaayko Kreator seller dashboard.">
+  <meta name="robots" content="noindex, nofollow">
+  
+  <!-- Favicon & Theme -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <meta name="theme-color" content="#10b981">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/kreator-base.css">
+  
+  <style>
+    /* Dashboard-specific styles */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-xl);
+      padding-bottom: var(--space-lg);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    
+    body.light-theme .top-bar {
+      border-bottom-color: var(--border-subtle-light);
+    }
+    
+    .welcome-text h2 {
+      font-size: 20px;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    
+    body.light-theme .welcome-text h2 {
+      color: var(--text-primary-light);
+    }
+    
+    .welcome-text p {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+    
+    .theme-toggle {
+      background: var(--bg-card);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: 8px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all var(--transition-fast);
+    }
+    
+    .theme-toggle:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-primary);
+    }
+    
+    body.light-theme .theme-toggle {
+      background: var(--bg-card-light);
+      border-color: var(--border-medium-light);
+      color: var(--text-secondary-light);
+    }
+    
+    /* Quick Actions */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-md);
+      margin-bottom: var(--space-xl);
+    }
+    
+    .quick-action-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all var(--transition-base);
+    }
+    
+    body.light-theme .quick-action-card {
+      background: var(--bg-card-light);
+      border-color: var(--border-subtle-light);
+    }
+    
+    .quick-action-card:hover {
+      border-color: var(--kreator-primary);
+      box-shadow: var(--shadow-kreator);
+      transform: translateY(-2px);
+    }
+    
+    .quick-action-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--kreator-subtle);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    
+    .quick-action-icon .material-icons {
+      font-size: 24px;
+      color: var(--kreator-primary);
+    }
+    
+    .quick-action-text h4 {
+      font-size: 14px;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+    
+    body.light-theme .quick-action-text h4 {
+      color: var(--text-primary-light);
+    }
+    
+    .quick-action-text p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
+    /* Section Header */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-lg);
+    }
+    
+    .section-title {
+      font-size: 16px;
+      color: var(--text-primary);
+    }
+    
+    body.light-theme .section-title {
+      color: var(--text-primary-light);
+    }
+    
+    .view-all-link {
+      color: var(--kreator-primary);
+      font-size: 13px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .view-all-link:hover {
+      text-decoration: underline;
+    }
+    
+    /* Products List */
+    .products-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+    
+    .product-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-md);
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      transition: all var(--transition-fast);
+    }
+    
+    body.light-theme .product-item {
+      background: var(--bg-card-light);
+      border-color: var(--border-subtle-light);
+    }
+    
+    .product-item:hover {
+      border-color: var(--border-medium);
+    }
+    
+    .product-image {
+      width: 56px;
+      height: 56px;
+      background: var(--bg-input);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    
+    .product-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .product-image .material-icons {
+      font-size: 24px;
+      color: var(--text-muted);
+    }
+    
+    .product-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .product-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    body.light-theme .product-title {
+      color: var(--text-primary-light);
+    }
+    
+    .product-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      gap: var(--space-md);
+    }
+    
+    .product-stats {
+      display: flex;
+      align-items: center;
+      gap: var(--space-lg);
+      flex-shrink: 0;
+    }
+    
+    .product-stat {
+      text-align: right;
+    }
+    
+    .product-stat-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    body.light-theme .product-stat-value {
+      color: var(--text-primary-light);
+    }
+    
+    .product-stat-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    
+    .product-status {
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      font-size: 11px;
+      font-weight: 600;
+    }
+    
+    .product-status.active {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+    
+    .product-status.pending {
+      background: var(--warning-bg);
+      color: var(--warning);
+    }
+    
+    .product-status.draft {
+      background: var(--bg-input);
+      color: var(--text-muted);
+    }
+    
+    /* Orders List */
+    .orders-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+    
+    .order-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-md);
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      transition: all var(--transition-fast);
+    }
+    
+    body.light-theme .order-item {
+      background: var(--bg-card-light);
+      border-color: var(--border-subtle-light);
+    }
+    
+    .order-item:hover {
+      border-color: var(--border-medium);
+    }
+    
+    .order-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    
+    .order-icon.pending { background: var(--warning-bg); }
+    .order-icon.pending .material-icons { color: var(--warning); }
+    
+    .order-icon.processing { background: var(--info-bg); }
+    .order-icon.processing .material-icons { color: var(--info); }
+    
+    .order-icon.shipped { background: var(--kreator-subtle); }
+    .order-icon.shipped .material-icons { color: var(--kreator-primary); }
+    
+    .order-icon.delivered { background: var(--success-bg); }
+    .order-icon.delivered .material-icons { color: var(--success); }
+    
+    .order-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .order-number {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+    
+    body.light-theme .order-number {
+      color: var(--text-primary-light);
+    }
+    
+    .order-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
+    .order-amount {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--kreator-primary);
+    }
+    
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: var(--space-2xl);
+      background: var(--bg-card);
+      border: 1px dashed var(--border-medium);
+      border-radius: var(--radius-lg);
+    }
+    
+    body.light-theme .empty-state {
+      background: var(--bg-card-light);
+      border-color: var(--border-medium-light);
+    }
+    
+    .empty-state .material-icons {
+      font-size: 48px;
+      color: var(--text-muted);
+      margin-bottom: var(--space-md);
+    }
+    
+    .empty-state h3 {
+      font-size: 16px;
+      color: var(--text-primary);
+      margin-bottom: var(--space-sm);
+    }
+    
+    body.light-theme .empty-state h3 {
+      color: var(--text-primary-light);
+    }
+    
+    .empty-state p {
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-bottom: var(--space-lg);
+    }
+    
+    /* Dashboard Grid */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: var(--space-xl);
+      margin-top: var(--space-xl);
+    }
+    
+    @media (max-width: 1200px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* Activity Feed */
+    .activity-feed {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+    
+    .activity-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-md);
+      padding: var(--space-md);
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+    }
+    
+    body.light-theme .activity-item {
+      background: var(--bg-card-light);
+      border-color: var(--border-subtle-light);
+    }
+    
+    .activity-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--kreator-subtle);
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    
+    .activity-icon .material-icons {
+      font-size: 18px;
+      color: var(--kreator-primary);
+    }
+    
+    .activity-icon.order { background: var(--success-bg); }
+    .activity-icon.order .material-icons { color: var(--success); }
+    
+    .activity-icon.sale { background: var(--gold-subtle); }
+    .activity-icon.sale .material-icons { color: var(--gold-primary); }
+    
+    .activity-icon.info { background: var(--info-bg); }
+    .activity-icon.info .material-icons { color: var(--info); }
+    
+    .activity-content {
+      flex: 1;
+    }
+    
+    .activity-text {
+      font-size: 13px;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+    
+    body.light-theme .activity-text {
+      color: var(--text-primary-light);
+    }
+    
+    .activity-time {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    
+    /* Views */
+    .view {
+      display: none;
+    }
+    
+    .view.active {
+      display: block;
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    /* Pending Setup Banner */
+    .pending-setup-banner {
+      background: linear-gradient(135deg, var(--warning-bg), rgba(245, 158, 11, 0.1));
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      margin-bottom: var(--space-xl);
+      display: flex;
+      align-items: center;
+      gap: var(--space-lg);
+    }
+    
+    .pending-setup-banner .banner-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--warning-bg);
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    
+    .pending-setup-banner .banner-icon .material-icons {
+      font-size: 24px;
+      color: var(--warning);
+    }
+    
+    .pending-setup-banner .banner-content {
+      flex: 1;
+    }
+    
+    .pending-setup-banner h3 {
+      font-size: 15px;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    
+    body.light-theme .pending-setup-banner h3 {
+      color: var(--text-primary-light);
+    }
+    
+    .pending-setup-banner p {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    
+    .setup-checklist {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-sm);
+      margin-top: var(--space-md);
+    }
+    
+    .setup-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      padding: 6px 12px;
+      background: rgba(255,255,255,0.1);
+      border-radius: var(--radius-full);
+    }
+    
+    .setup-item.complete { color: var(--success); }
+    .setup-item.pending { color: var(--text-muted); }
+    
+    .setup-item .material-icons { font-size: 14px; }
+    
+    /* Products Grid for Product Management View */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--space-lg);
+    }
+    
+    .product-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: all var(--transition-base);
+    }
+    
+    body.light-theme .product-card {
+      background: var(--bg-card-light);
+      border-color: var(--border-subtle-light);
+    }
+    
+    .product-card:hover {
+      border-color: var(--kreator-primary);
+      box-shadow: var(--shadow-kreator);
+      transform: translateY(-2px);
+    }
+    
+    .product-card-image {
+      width: 100%;
+      height: 160px;
+      background: var(--bg-input);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .product-card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .product-card-image .material-icons {
+      font-size: 48px;
+      color: var(--text-muted);
+    }
+    
+    .product-card-body {
+      padding: var(--space-md);
+    }
+    
+    .product-card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--space-xs);
+    }
+    
+    body.light-theme .product-card-title {
+      color: var(--text-primary-light);
+    }
+    
+    .product-card-price {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--kreator-primary);
+      margin-bottom: var(--space-sm);
+    }
+    
+    .product-card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
+    .product-card-actions {
+      display: flex;
+      gap: var(--space-xs);
+      padding: var(--space-sm) var(--space-md);
+      border-top: 1px solid var(--border-subtle);
+    }
+    
+    body.light-theme .product-card-actions {
+      border-top-color: var(--border-subtle-light);
+    }
+    
+    .product-card-actions button {
+      flex: 1;
+      padding: var(--space-sm);
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all var(--transition-fast);
+    }
+    
+    .product-card-actions button:hover {
+      background: var(--bg-input);
+      color: var(--kreator-primary);
+    }
+    
+    .product-card-actions button .material-icons {
+      font-size: 16px;
+    }
+    
+    /* Earnings Chart Placeholder */
+    .chart-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+    
+    body.light-theme .chart-container {
+      background: var(--bg-card-light);
+      border-color: var(--border-subtle-light);
+    }
+    
+    .chart-container .material-icons {
+      font-size: 48px;
+      color: var(--text-muted);
+    }
+    
+    .chart-container p {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    
+    /* Payout Table */
+    .payout-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .payout-table th,
+    .payout-table td {
+      padding: var(--space-md);
+      text-align: left;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    
+    body.light-theme .payout-table th,
+    body.light-theme .payout-table td {
+      border-bottom-color: var(--border-subtle-light);
+    }
+    
+    .payout-table th {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    
+    .payout-table td {
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+    
+    body.light-theme .payout-table td {
+      color: var(--text-primary-light);
+    }
+    
+    .payout-status {
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      font-size: 11px;
+      font-weight: 600;
+    }
+    
+    .payout-status.completed {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+    
+    .payout-status.pending {
+      background: var(--warning-bg);
+      color: var(--warning);
+    }
+    
+    .payout-status.processing {
+      background: var(--info-bg);
+      color: var(--info);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">K</div>
+        <div class="sidebar-brand">
+          <h2>Kreator</h2>
+          <p class="sidebar-subtitle">Seller Dashboard</p>
+          <span class="sidebar-version">v2.0</span>
+        </div>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-view="dashboard">
+          <span class="nav-icon material-icons">dashboard</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="#" class="nav-item" data-view="products">
+          <span class="nav-icon material-icons">inventory_2</span>
+          <span>Products</span>
+          <span class="nav-badge" id="products-count">0</span>
+        </a>
+        <a href="#" class="nav-item" data-view="orders">
+          <span class="nav-icon material-icons">shopping_bag</span>
+          <span>Orders</span>
+          <span class="nav-badge" id="orders-count">0</span>
+        </a>
+        <a href="#" class="nav-item" data-view="earnings">
+          <span class="nav-icon material-icons">payments</span>
+          <span>Earnings</span>
+        </a>
+        <a href="#" class="nav-item" data-view="profile">
+          <span class="nav-icon material-icons">person</span>
+          <span>Profile</span>
+        </a>
+        <a href="#" class="nav-item" data-view="settings">
+          <span class="nav-icon material-icons">settings</span>
+          <span>Settings</span>
+        </a>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="user-card">
+          <div class="user-avatar" id="sidebar-avatar">K</div>
+          <div class="user-info">
+            <div class="user-name" id="sidebar-name">Seller</div>
+            <div class="user-email" id="sidebar-email">email@example.com</div>
+            <div class="user-status">Active Seller</div>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-small" id="logout-btn" style="width: 100%;">
+          <span class="material-icons" style="font-size: 16px;">logout</span>
+          Sign Out
+        </button>
+      </div>
+    </aside>
+    
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+      <span class="material-icons">menu</span>
+    </button>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Dashboard View -->
+      <div id="dashboard-view" class="view active">
+        <div class="top-bar">
+          <div class="welcome-text">
+            <h2 id="welcome-message">Welcome back!</h2>
+            <p>Here's your store performance overview</p>
+          </div>
+          <div class="top-actions">
+            <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+              <span class="material-icons">dark_mode</span>
+            </button>
+            <a href="./add-product.html" class="btn btn-kreator">
+              <span class="material-icons" style="font-size: 18px;">add</span>
+              Add Product
+            </a>
+          </div>
+        </div>
+        
+        <!-- Pending Setup Banner (show only if incomplete) -->
+        <div class="pending-setup-banner" id="setup-banner" style="display: none;">
+          <div class="banner-icon">
+            <span class="material-icons">pending_actions</span>
+          </div>
+          <div class="banner-content">
+            <h3>Complete your seller setup</h3>
+            <p>Finish these steps to start receiving orders</p>
+            <div class="setup-checklist">
+              <div class="setup-item complete" id="setup-profile">
+                <span class="material-icons">check_circle</span>
+                Profile
+              </div>
+              <div class="setup-item pending" id="setup-payment">
+                <span class="material-icons">radio_button_unchecked</span>
+                Payment Info
+              </div>
+              <div class="setup-item pending" id="setup-products">
+                <span class="material-icons">radio_button_unchecked</span>
+                Add Products
+              </div>
+              <div class="setup-item pending" id="setup-shipping">
+                <span class="material-icons">radio_button_unchecked</span>
+                Shipping Settings
+              </div>
+            </div>
+          </div>
+          <a href="#" class="btn btn-kreator" data-view="settings">Complete Setup</a>
+        </div>
+        
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-label">Total Products</div>
+            <div class="stat-value" id="stat-total-products">0</div>
+            <div class="stat-change">Listed on store</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🛒</div>
+            <div class="stat-label">Orders</div>
+            <div class="stat-value" id="stat-orders">0</div>
+            <div class="stat-change">This month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-label">Revenue</div>
+            <div class="stat-value" id="stat-revenue">$0.00</div>
+            <div class="stat-change">This month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">⭐</div>
+            <div class="stat-label">Rating</div>
+            <div class="stat-value" id="stat-rating">--</div>
+            <div class="stat-change">From customers</div>
+          </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+          <a href="./add-product.html" class="quick-action-card">
+            <div class="quick-action-icon">
+              <span class="material-icons">add_box</span>
+            </div>
+            <div class="quick-action-text">
+              <h4>Add New Product</h4>
+              <p>List a new item for sale</p>
+            </div>
+          </a>
+          <a href="#" class="quick-action-card" id="view-store-link" target="_blank">
+            <div class="quick-action-icon">
+              <span class="material-icons">storefront</span>
+            </div>
+            <div class="quick-action-text">
+              <h4>View My Store</h4>
+              <p>See your public store page</p>
+            </div>
+          </a>
+          <a href="#" class="quick-action-card" data-view="orders">
+            <div class="quick-action-icon">
+              <span class="material-icons">local_shipping</span>
+            </div>
+            <div class="quick-action-text">
+              <h4>Manage Orders</h4>
+              <p>Process and ship orders</p>
+            </div>
+          </a>
+          <a href="#" class="quick-action-card" data-view="earnings">
+            <div class="quick-action-icon">
+              <span class="material-icons">account_balance</span>
+            </div>
+            <div class="quick-action-text">
+              <h4>View Earnings</h4>
+              <p>Track your revenue</p>
+            </div>
+          </a>
+        </div>
+        
+        <div class="dashboard-grid">
+          <!-- Recent Orders -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="section-title">Recent Orders</h3>
+              <a href="#" class="view-all-link" data-view="orders">
+                View all
+                <span class="material-icons" style="font-size: 16px;">arrow_forward</span>
+              </a>
+            </div>
+            <div class="card-body" id="recent-orders">
+              <div class="empty-state">
+                <span class="material-icons">shopping_bag</span>
+                <h3>No orders yet</h3>
+                <p>Orders will appear here once customers start buying</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Recent Activity -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="section-title">Activity</h3>
+            </div>
+            <div class="card-body" id="recent-activity">
+              <div class="activity-feed">
+                <div class="activity-item">
+                  <div class="activity-icon info">
+                    <span class="material-icons">celebration</span>
+                  </div>
+                  <div class="activity-content">
+                    <div class="activity-text">Welcome to Kaayko Kreator!</div>
+                    <div class="activity-time">Just now</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Products Overview -->
+        <div class="card" style="margin-top: var(--space-xl);">
+          <div class="card-header">
+            <h3 class="section-title">Your Products</h3>
+            <a href="#" class="view-all-link" data-view="products">
+              Manage all
+              <span class="material-icons" style="font-size: 16px;">arrow_forward</span>
+            </a>
+          </div>
+          <div class="card-body" id="products-overview">
+            <div class="empty-state">
+              <span class="material-icons">inventory_2</span>
+              <h3>No products yet</h3>
+              <p>Add your first product to start selling</p>
+              <a href="./add-product.html" class="btn btn-kreator">
+                Add Product
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Products View -->
+      <div id="products-view" class="view">
+        <header class="view-header">
+          <div>
+            <h1>Products</h1>
+            <p>Manage your product catalog</p>
+          </div>
+          <a href="./add-product.html" class="btn btn-kreator">
+            <span class="material-icons" style="font-size: 18px;">add</span>
+            Add Product
+          </a>
+        </header>
+        
+        <div class="card">
+          <div class="card-body" id="all-products">
+            <div class="empty-state">
+              <span class="material-icons">inventory_2</span>
+              <h3>No products yet</h3>
+              <p>Add your first product to start selling on Kaayko</p>
+              <a href="./add-product.html" class="btn btn-kreator">
+                Add Your First Product
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Orders View -->
+      <div id="orders-view" class="view">
+        <header class="view-header">
+          <div>
+            <h1>Orders</h1>
+            <p>Manage and fulfill customer orders</p>
+          </div>
+        </header>
+        
+        <div class="stats-grid" style="margin-bottom: var(--space-xl);">
+          <div class="stat-card">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-label">Pending</div>
+            <div class="stat-value" id="orders-pending">0</div>
+            <div class="stat-change">Awaiting processing</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-label">Processing</div>
+            <div class="stat-value" id="orders-processing">0</div>
+            <div class="stat-change">Being prepared</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🚚</div>
+            <div class="stat-label">Shipped</div>
+            <div class="stat-value" id="orders-shipped">0</div>
+            <div class="stat-change">In transit</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-label">Completed</div>
+            <div class="stat-value" id="orders-completed">0</div>
+            <div class="stat-change">Delivered</div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-body" id="all-orders">
+            <div class="empty-state">
+              <span class="material-icons">shopping_bag</span>
+              <h3>No orders yet</h3>
+              <p>When customers order your products, they'll appear here</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Earnings View -->
+      <div id="earnings-view" class="view">
+        <header class="view-header">
+          <div>
+            <h1>Earnings</h1>
+            <p>Track your revenue and payouts</p>
+          </div>
+        </header>
+        
+        <div class="stats-grid" style="margin-bottom: var(--space-xl);">
+          <div class="stat-card">
+            <div class="stat-icon">💵</div>
+            <div class="stat-label">Available Balance</div>
+            <div class="stat-value" id="earnings-balance">$0.00</div>
+            <div class="stat-change">Ready to withdraw</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📈</div>
+            <div class="stat-label">This Month</div>
+            <div class="stat-value" id="earnings-month">$0.00</div>
+            <div class="stat-change">Net earnings</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-label">Pending</div>
+            <div class="stat-value" id="earnings-pending">$0.00</div>
+            <div class="stat-change">Awaiting settlement</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-label">Total Earned</div>
+            <div class="stat-value" id="earnings-total">$0.00</div>
+            <div class="stat-change">All time</div>
+          </div>
+        </div>
+        
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="section-title">Earnings Overview</h3>
+            </div>
+            <div class="card-body">
+              <div class="chart-container">
+                <span class="material-icons">show_chart</span>
+                <p>Earnings chart coming soon</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card-header">
+              <h3 class="section-title">Recent Payouts</h3>
+            </div>
+            <div class="card-body" id="recent-payouts">
+              <div class="empty-state" style="padding: var(--space-lg);">
+                <span class="material-icons" style="font-size: 36px;">account_balance_wallet</span>
+                <h3 style="font-size: 14px;">No payouts yet</h3>
+                <p style="font-size: 12px;">Payouts are processed weekly</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Profile View -->
+      <div id="profile-view" class="view">
+        <header class="view-header">
+          <h1>Profile</h1>
+          <p>Manage your seller profile</p>
+        </header>
+        
+        <div class="card">
+          <div class="card-header">
+            <h3 class="section-title">Business Information</h3>
+          </div>
+          <div class="card-body">
+            <form id="profile-form">
+              <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+                <div class="form-group">
+                  <label class="form-label" for="profile-firstName">First Name</label>
+                  <input type="text" id="profile-firstName" class="form-input" placeholder="First name">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="profile-lastName">Last Name</label>
+                  <input type="text" id="profile-lastName" class="form-input" placeholder="Last name">
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="profile-businessName">Business Name</label>
+                <input type="text" id="profile-businessName" class="form-input" placeholder="Your business name">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="profile-email">Email</label>
+                <input type="email" id="profile-email" class="form-input" disabled>
+                <p class="form-hint">Contact support to change your email</p>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="profile-phone">Phone</label>
+                <input type="tel" id="profile-phone" class="form-input" placeholder="Phone number">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="profile-location">Location</label>
+                <input type="text" id="profile-location" class="form-input" placeholder="City, State, Country">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="profile-bio">Store Description</label>
+                <textarea id="profile-bio" class="form-input" rows="3" placeholder="Tell customers about your store and what you sell..."></textarea>
+              </div>
+              
+              <button type="submit" class="btn btn-kreator">
+                Save Changes
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Settings View -->
+      <div id="settings-view" class="view">
+        <header class="view-header">
+          <h1>Settings</h1>
+          <p>Configure your seller account</p>
+        </header>
+        
+        <div class="card" style="margin-bottom: var(--space-xl);">
+          <div class="card-header">
+            <h3 class="section-title">Payment Information</h3>
+          </div>
+          <div class="card-body">
+            <div class="empty-state" style="padding: var(--space-lg);">
+              <span class="material-icons" style="font-size: 36px;">account_balance</span>
+              <h3 style="font-size: 14px;">Connect your bank account</h3>
+              <p style="font-size: 12px;">Add payment details to receive payouts</p>
+              <button class="btn btn-kreator" style="margin-top: var(--space-md);">
+                Connect Bank
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card" style="margin-bottom: var(--space-xl);">
+          <div class="card-header">
+            <h3 class="section-title">Shipping Settings</h3>
+          </div>
+          <div class="card-body">
+            <form id="shipping-form">
+              <div class="form-group">
+                <label class="form-label" for="shipping-origin">Ship From Address</label>
+                <input type="text" id="shipping-origin" class="form-input" placeholder="Your warehouse/pickup address">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="shipping-capability">Shipping Coverage</label>
+                <select id="shipping-capability" class="form-input">
+                  <option value="domestic_only">Domestic (USA) Only</option>
+                  <option value="north_america">North America</option>
+                  <option value="international">International</option>
+                  <option value="local_pickup">Local Pickup Only</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="fulfillment-time">Typical Fulfillment Time</label>
+                <select id="fulfillment-time" class="form-input">
+                  <option value="1-2_days">1-2 business days</option>
+                  <option value="3-5_days">3-5 business days</option>
+                  <option value="1-2_weeks">1-2 weeks</option>
+                  <option value="2-4_weeks">2-4 weeks (custom)</option>
+                  <option value="varies">Varies by product</option>
+                </select>
+              </div>
+              
+              <button type="submit" class="btn btn-kreator">
+                Save Shipping Settings
+              </button>
+            </form>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header">
+            <h3 class="section-title">Security</h3>
+          </div>
+          <div class="card-body">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-lg);">
+              <div>
+                <strong style="color: var(--text-primary);">Change Password</strong>
+                <p style="font-size: 13px; color: var(--text-muted);">Update your account password</p>
+              </div>
+              <button class="btn btn-secondary">Change</button>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong style="color: var(--text-primary);">Two-Factor Authentication</strong>
+                <p style="font-size: 13px; color: var(--text-muted);">Add an extra layer of security</p>
+              </div>
+              <button class="btn btn-secondary">Enable</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Connected Accounts -->
+        <div class="card" style="margin-top: var(--space-xl);">
+          <div class="card-header">
+            <h3 class="section-title">Connected Accounts</h3>
+          </div>
+          <div class="card-body">
+            <div id="google-connection" style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <svg width="24" height="24" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                <div>
+                  <strong style="color: var(--text-primary);">Google Account</strong>
+                  <p id="google-email" style="font-size: 13px; color: var(--text-muted);">Connected</p>
+                </div>
+              </div>
+              <button id="disconnect-google-btn" class="btn btn-secondary" style="color: #f59e0b;">Disconnect</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Danger Zone -->
+        <div class="card" style="margin-top: var(--space-xl); border-color: #ef4444;">
+          <div class="card-header" style="border-bottom-color: #ef444433;">
+            <h3 class="section-title" style="color: #ef4444;">Danger Zone</h3>
+          </div>
+          <div class="card-body">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong style="color: var(--text-primary);">Delete Account</strong>
+                <p style="font-size: 13px; color: var(--text-muted);">Permanently delete your seller account and all data</p>
+              </div>
+              <button id="delete-account-btn" class="btn" style="background: #ef4444; color: white; border: none;">Delete Account</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { AUTH, getProfile, updateProfile } from './js/kreator-api.js';
+    
+    // Initialize auth - use stored data, don't redirect
+    if (!AUTH.init()) {
+      window.location.href = './kreator-login.html';
+      throw new Error('Not authenticated');
+    }
+    
+    // Get stored kreator data immediately
+    const storedKreator = AUTH.kreator;
+    
+    // DOM elements
+    const sidebarName = document.getElementById('sidebar-name');
+    const sidebarEmail = document.getElementById('sidebar-email');
+    const sidebarAvatar = document.getElementById('sidebar-avatar');
+    const welcomeMessage = document.getElementById('welcome-message');
+    
+    // Immediately populate with stored data
+    if (storedKreator) {
+      const displayName = storedKreator.businessName || storedKreator.displayName || 'Seller';
+      sidebarName.textContent = displayName;
+      sidebarEmail.textContent = storedKreator.email || '';
+      sidebarAvatar.textContent = displayName.charAt(0).toUpperCase();
+      welcomeMessage.textContent = `Welcome back, ${displayName}!`;
+    }
+    
+    // Load full user data from API (non-blocking, won't redirect on failure)
+    async function loadUserData() {
+      try {
+        // Direct API call without requireAuth redirect
+        const response = await fetch('https://api-vwcc5j4qda-uc.a.run.app/kreators/me', {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${AUTH.token}`
+          }
+        });
+        
+        if (!response.ok) {
+          console.warn('[Dashboard] Could not fetch profile, using stored data');
+          return;
+        }
+        
+        const result = await response.json();
+        
+        if (result?.success && result.data) {
+          const user = result.data;
+          const displayName = user.businessName || user.displayName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Seller';
+          
+          sidebarName.textContent = displayName;
+          sidebarEmail.textContent = user.email || storedKreator?.email || '';
+          sidebarAvatar.textContent = displayName.charAt(0).toUpperCase();
+          welcomeMessage.textContent = `Welcome back, ${displayName}!`;
+          
+          // Update profile form if elements exist
+          const setVal = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+          setVal('profile-firstName', user.firstName);
+          setVal('profile-lastName', user.lastName);
+          setVal('profile-businessName', user.businessName);
+          setVal('profile-email', user.email);
+          setVal('profile-phone', user.phone);
+          setVal('profile-location', user.location);
+          setVal('profile-bio', user.bio);
+          
+          // Show setup banner for new users
+          if (!user.setupComplete) {
+            const banner = document.getElementById('setup-banner');
+            if (banner) banner.style.display = 'flex';
+          }
+        }
+      } catch (error) {
+        console.warn('[Dashboard] Profile fetch failed, using stored data:', error.message);
+      }
+    }
+    
+    // Generate store slug from business name
+    function generateStoreSlug(businessName) {
+      return businessName
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .substring(0, 50);
+    }
+    
+    // Set up View My Store link
+    function updateViewStoreLink() {
+      const viewStoreLink = document.getElementById('view-store-link');
+      if (viewStoreLink && storedKreator) {
+        const storeName = storedKreator.businessName || storedKreator.displayName || 'store';
+        const storeSlug = generateStoreSlug(storeName);
+        viewStoreLink.href = `https://kaayko.com/store.html?store=${encodeURIComponent(storeSlug)}`;
+      }
+    }
+    
+    // Initialize store link
+    updateViewStoreLink();
+    
+    // View navigation
+    const navItems = document.querySelectorAll('.nav-item');
+    const views = document.querySelectorAll('.view');
+    const quickActionCards = document.querySelectorAll('.quick-action-card[data-view]');
+    const viewAllLinks = document.querySelectorAll('.view-all-link[data-view]');
+    
+    function switchView(viewId) {
+      // Update nav
+      navItems.forEach(item => {
+        item.classList.toggle('active', item.dataset.view === viewId);
+      });
+      
+      // Update views
+      views.forEach(view => {
+        view.classList.toggle('active', view.id === `${viewId}-view`);
+      });
+      
+      // Close mobile menu
+      document.querySelector('.sidebar').classList.remove('active');
+    }
+    
+    // Nav item clicks
+    navItems.forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        const viewId = item.dataset.view;
+        if (viewId) switchView(viewId);
+      });
+    });
+    
+    // Quick action clicks
+    quickActionCards.forEach(card => {
+      card.addEventListener('click', (e) => {
+        e.preventDefault();
+        const viewId = card.dataset.view;
+        if (viewId) switchView(viewId);
+      });
+    });
+    
+    // View all links
+    viewAllLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const viewId = link.dataset.view;
+        if (viewId) switchView(viewId);
+      });
+    });
+    
+    // Load products for the products view
+    async function loadProducts() {
+      try {
+        const response = await fetch('https://api-vwcc5j4qda-uc.a.run.app/kreators/products', {
+          headers: {
+            'Authorization': `Bearer ${AUTH.token}`
+          }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+          renderProductsList(result.data);
+          document.getElementById('products-count').textContent = result.data.length;
+        }
+      } catch (error) {
+        console.warn('Failed to load products:', error);
+      }
+    }
+    
+    function renderProductsList(products) {
+      const container = document.getElementById('all-products');
+      if (!container) {
+        console.warn('[Dashboard] products container not found');
+        return;
+      }
+      
+      if (products.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <span class="material-icons" style="font-size:48px;">inventory_2</span>
+            <h3>No products yet</h3>
+            <p>Add your first product to start selling on Kaayko</p>
+            <a href="./add-product.html" class="btn btn-kreator">Add Your First Product</a>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = products.map(p => {
+        // Handle both actualPrice (number) and price (symbol like $$)
+        const priceDisplay = p.actualPrice 
+          ? `$${p.actualPrice.toFixed(2)}`
+          : (typeof p.price === 'number' ? `$${p.price.toFixed(2)}` : p.price);
+        
+        return `
+          <div class="product-card" data-id="${p.id}">
+            <img src="${p.imgSrc?.[0] || '/assets/placeholder.png'}" alt="${p.title}" class="product-image">
+            <div class="product-info">
+              <h4>${p.title}</h4>
+              <p class="product-price">${priceDisplay}</p>
+              <span class="product-status ${p.isAvailable ? 'active' : 'inactive'}">${p.isAvailable ? 'Active' : 'Inactive'}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    // Load products on init
+    loadProducts();
+    
+    // Mobile menu toggle
+    document.getElementById('mobile-menu-toggle').addEventListener('click', () => {
+      document.querySelector('.sidebar').classList.toggle('active');
+    });
+    
+    // Theme toggle
+    const themeToggle = document.getElementById('theme-toggle');
+    const savedTheme = localStorage.getItem('kreator_theme') || 'dark';
+    
+    if (savedTheme === 'light') {
+      document.body.classList.add('light-theme');
+      themeToggle.innerHTML = '<span class="material-icons">light_mode</span>';
+    }
+    
+    themeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('light-theme');
+      const isLight = document.body.classList.contains('light-theme');
+      localStorage.setItem('kreator_theme', isLight ? 'light' : 'dark');
+      themeToggle.innerHTML = `<span class="material-icons">${isLight ? 'light_mode' : 'dark_mode'}</span>`;
+    });
+    
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      AUTH.logout();
+    });
+    
+    // Profile form
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const updates = {
+        firstName: document.getElementById('profile-firstName').value.trim(),
+        lastName: document.getElementById('profile-lastName').value.trim(),
+        businessName: document.getElementById('profile-businessName').value.trim(),
+        phone: document.getElementById('profile-phone').value.trim(),
+        location: document.getElementById('profile-location').value.trim(),
+        bio: document.getElementById('profile-bio').value.trim()
+      };
+      
+      try {
+        const result = await updateProfile(updates);
+        if (result?.success) {
+          alert('Profile updated successfully!');
+          loadUserData();
+        } else {
+          throw new Error(result?.error || 'Failed to update');
+        }
+      } catch (error) {
+        alert('Failed to update profile: ' + error.message);
+      }
+    });
+    
+    // Disconnect Google
+    document.getElementById('disconnect-google-btn').addEventListener('click', async () => {
+      if (!confirm('Are you sure you want to disconnect your Google account? You will need to set a password to log in.')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch('https://api-vwcc5j4qda-uc.a.run.app/kreators/auth/google/disconnect', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${AUTH.token}`
+          }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          alert('Google account disconnected. Please set a password to continue using your account.');
+          loadUserData();
+        } else {
+          throw new Error(result.message || 'Failed to disconnect');
+        }
+      } catch (error) {
+        alert('Failed to disconnect Google: ' + error.message);
+      }
+    });
+    
+    // Delete Account
+    document.getElementById('delete-account-btn').addEventListener('click', async () => {
+      const confirmed = prompt('This will permanently delete your account and all data. Type "DELETE" to confirm:');
+      
+      if (confirmed !== 'DELETE') {
+        alert('Account deletion cancelled.');
+        return;
+      }
+      
+      try {
+        const response = await fetch('https://api-vwcc5j4qda-uc.a.run.app/kreators/me', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${AUTH.token}`
+          }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          alert('Your account has been deleted.');
+          AUTH.logout();
+        } else {
+          throw new Error(result.message || 'Failed to delete account');
+        }
+      } catch (error) {
+        alert('Failed to delete account: ' + error.message);
+      }
+    });
+    
+    // Initialize
+    loadUserData();
+    
+    // Set demo counts (will be replaced with real data)
+    document.getElementById('products-count').textContent = '0';
+    document.getElementById('orders-count').textContent = '0';
+  </script>
+</body>
+</html>

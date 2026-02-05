@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  
+  <!-- Primary Meta Tags -->
+  <title>Complete Your Kreator Account - Kaayko</title>
+  <meta name="title" content="Complete Your Kreator Account Setup">
+  <meta name="description" content="Set up your password and complete your Kaayko Kreator account registration.">
+  <meta name="robots" content="noindex, nofollow">
+  
+  <!-- Favicon & Theme -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <meta name="theme-color" content="#10b981">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/kreator-base.css">
+  
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-xl);
+      background: linear-gradient(135deg, #0a0a0a 0%, #111 50%, #0a0a0a 100%);
+    }
+    
+    .onboarding-container {
+      width: 100%;
+      max-width: 480px;
+    }
+    
+    .onboarding-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+    }
+    
+    .card-header {
+      background: linear-gradient(135deg, var(--kreator-primary), var(--kreator-secondary));
+      padding: var(--space-2xl) var(--space-xl);
+      text-align: center;
+    }
+    
+    .header-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto var(--space-md);
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .header-icon .material-icons {
+      font-size: 32px;
+      color: white;
+    }
+    
+    .card-header h1 {
+      color: white;
+      font-size: 24px;
+      margin-bottom: var(--space-xs);
+    }
+    
+    .card-header p {
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 14px;
+    }
+    
+    .card-body {
+      padding: var(--space-xl);
+    }
+    
+    /* Verification States */
+    .state {
+      display: none;
+    }
+    
+    .state.active {
+      display: block;
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    /* Loading State */
+    .loading-state {
+      text-align: center;
+      padding: var(--space-xl) 0;
+    }
+    
+    .loading-spinner-large {
+      width: 48px;
+      height: 48px;
+      border: 3px solid var(--border-medium);
+      border-top-color: var(--kreator-primary);
+      border-radius: 50%;
+      margin: 0 auto var(--space-lg);
+      animation: spin 0.8s linear infinite;
+    }
+    
+    .loading-text {
+      color: var(--text-secondary);
+    }
+    
+    /* Error State */
+    .error-state {
+      text-align: center;
+    }
+    
+    .error-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto var(--space-lg);
+      background: var(--error-bg);
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .error-icon .material-icons {
+      font-size: 32px;
+      color: var(--error);
+    }
+    
+    .error-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--space-sm);
+    }
+    
+    .error-message {
+      color: var(--text-secondary);
+      margin-bottom: var(--space-lg);
+      line-height: 1.6;
+    }
+    
+    /* Setup Form State */
+    .user-info-banner {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      background: var(--bg-input);
+      padding: var(--space-md);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-xl);
+    }
+    
+    .user-avatar {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--kreator-primary), var(--kreator-secondary));
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+    
+    .user-details {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .user-name {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+    
+    .user-email {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    
+    .verified-badge {
+      background: var(--kreator-subtle);
+      color: var(--kreator-primary);
+      padding: 4px 8px;
+      border-radius: var(--radius-full);
+      font-size: 11px;
+      font-weight: 600;
+    }
+    
+    /* Password Strength */
+    .password-field {
+      position: relative;
+    }
+    
+    .password-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+    }
+    
+    .password-toggle:hover {
+      color: var(--text-secondary);
+    }
+    
+    .password-strength {
+      margin-top: var(--space-sm);
+    }
+    
+    .strength-bar {
+      height: 4px;
+      background: var(--bg-input);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      margin-bottom: var(--space-xs);
+    }
+    
+    .strength-fill {
+      height: 100%;
+      width: 0;
+      transition: all var(--transition-base);
+      border-radius: var(--radius-full);
+    }
+    
+    .strength-fill.weak { width: 25%; background: var(--error); }
+    .strength-fill.fair { width: 50%; background: var(--warning); }
+    .strength-fill.good { width: 75%; background: var(--info); }
+    .strength-fill.strong { width: 100%; background: var(--kreator-primary); }
+    
+    .strength-text {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    
+    .password-requirements {
+      margin-top: var(--space-md);
+      padding: var(--space-md);
+      background: var(--bg-input);
+      border-radius: var(--radius-md);
+    }
+    
+    .requirement {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: var(--space-xs);
+    }
+    
+    .requirement:last-child {
+      margin-bottom: 0;
+    }
+    
+    .requirement .material-icons {
+      font-size: 16px;
+    }
+    
+    .requirement.met {
+      color: var(--kreator-primary);
+    }
+    
+    .requirement.met .material-icons {
+      color: var(--kreator-primary);
+    }
+    
+    /* Success State */
+    .success-state {
+      text-align: center;
+    }
+    
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto var(--space-lg);
+      background: var(--kreator-subtle);
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .success-icon .material-icons {
+      font-size: 40px;
+      color: var(--kreator-primary);
+    }
+    
+    .success-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: var(--space-sm);
+    }
+    
+    .success-message {
+      color: var(--text-secondary);
+      margin-bottom: var(--space-xl);
+      line-height: 1.6;
+    }
+    
+    /* Countdown */
+    .countdown {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: var(--space-md);
+    }
+    
+    .countdown span {
+      color: var(--kreator-primary);
+      font-weight: 600;
+    }
+    
+    /* Back Link */
+    .back-link {
+      display: block;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      text-decoration: none;
+      margin-top: var(--space-lg);
+      transition: color var(--transition-fast);
+    }
+    
+    .back-link:hover {
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="onboarding-container">
+    <div class="onboarding-card">
+      <div class="card-header">
+        <div class="header-icon">
+          <span class="material-icons">storefront</span>
+        </div>
+        <h1>Welcome, Seller!</h1>
+        <p>Complete your seller account setup</p>
+      </div>
+      
+      <div class="card-body">
+        <!-- Loading State -->
+        <div id="loading-state" class="state active">
+          <div class="loading-state">
+            <div class="loading-spinner-large"></div>
+            <p class="loading-text">Verifying your invitation...</p>
+          </div>
+        </div>
+        
+        <!-- Error State -->
+        <div id="error-state" class="state">
+          <div class="error-state">
+            <div class="error-icon">
+              <span class="material-icons">error_outline</span>
+            </div>
+            <h2 class="error-title">Invalid or Expired Link</h2>
+            <p class="error-message" id="error-message">
+              This invitation link is no longer valid. It may have expired or already been used.
+            </p>
+            <a href="apply.html" class="btn btn-kreator btn-large" style="width: 100%;">
+              Apply Again
+            </a>
+          </div>
+        </div>
+        
+        <!-- Setup Form State -->
+        <div id="setup-state" class="state">
+          <div class="user-info-banner">
+            <div class="user-avatar" id="user-initial">K</div>
+            <div class="user-details">
+              <div class="user-name" id="user-name">Kreator</div>
+              <div class="user-email" id="user-email">email@example.com</div>
+            </div>
+            <span class="verified-badge">Approved</span>
+          </div>
+          
+          <form id="setup-form">
+            <div class="form-group">
+              <label class="form-label" for="displayName">Display Name</label>
+              <input type="text" id="displayName" name="displayName" class="form-input" 
+                     placeholder="How you want to be known">
+              <p class="form-hint">This will be visible to others</p>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="password">Create Password *</label>
+              <div class="password-field">
+                <input type="password" id="password" name="password" class="form-input" 
+                       placeholder="Create a strong password" required>
+                <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                  <span class="material-icons">visibility</span>
+                </button>
+              </div>
+              <div class="password-strength">
+                <div class="strength-bar">
+                  <div class="strength-fill" id="strength-fill"></div>
+                </div>
+                <span class="strength-text" id="strength-text">Enter a password</span>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="confirmPassword">Confirm Password *</label>
+              <div class="password-field">
+                <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" 
+                       placeholder="Confirm your password" required>
+                <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
+                  <span class="material-icons">visibility</span>
+                </button>
+              </div>
+            </div>
+            
+            <div class="password-requirements">
+              <div class="requirement" id="req-length">
+                <span class="material-icons">close</span>
+                At least 8 characters
+              </div>
+              <div class="requirement" id="req-uppercase">
+                <span class="material-icons">close</span>
+                One uppercase letter
+              </div>
+              <div class="requirement" id="req-lowercase">
+                <span class="material-icons">close</span>
+                One lowercase letter
+              </div>
+              <div class="requirement" id="req-number">
+                <span class="material-icons">close</span>
+                One number
+              </div>
+              <div class="requirement" id="req-match">
+                <span class="material-icons">close</span>
+                Passwords match
+              </div>
+            </div>
+            
+            <button type="submit" class="btn btn-kreator btn-large" id="setup-btn" 
+                    style="width: 100%; margin-top: var(--space-xl);">
+              <span class="btn-text">Complete Setup</span>
+              <span class="loading-spinner" style="display: none;"></span>
+            </button>
+          </form>
+        </div>
+        
+        <!-- Success State -->
+        <div id="success-state" class="state">
+          <div class="success-state">
+            <div class="success-icon">
+              <span class="material-icons">celebration</span>
+            </div>
+            <h2 class="success-title">You're All Set!</h2>
+            <p class="success-message">
+              Your seller account is now active. You can sign in to your dashboard 
+              and start listing your products on Kaayko Store.
+            </p>
+            <a href="kreator-login.html" class="btn btn-kreator btn-large" style="width: 100%;">
+              Go to Dashboard
+            </a>
+            <p class="countdown">
+              Redirecting in <span id="countdown">5</span> seconds...
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <a href="/paddlingout.html" class="back-link">Back to Kaayko</a>
+  </div>
+
+  <script type="module">
+    import { verifyMagicLink, completeOnboarding } from './js/kreator-api.js';
+    
+    let magicToken = null;
+    let kreatorData = null;
+    
+    // Get token from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    magicToken = urlParams.get('token');
+    
+    // States
+    function showState(stateId) {
+      document.querySelectorAll('.state').forEach(s => s.classList.remove('active'));
+      document.getElementById(stateId).classList.add('active');
+    }
+    
+    // Verify token on page load
+    async function verifyToken() {
+      if (!magicToken) {
+        showError('No invitation token provided. Please use the link from your email.');
+        return;
+      }
+      
+      try {
+        const result = await verifyMagicLink(magicToken);
+        
+        if (result.success && result.data.valid) {
+          kreatorData = result.data;
+          
+          // Update UI with kreator info
+          document.getElementById('user-name').textContent = kreatorData.fullName || 'Kreator';
+          document.getElementById('user-email').textContent = kreatorData.email;
+          document.getElementById('user-initial').textContent = 
+            (kreatorData.fullName || kreatorData.email)[0].toUpperCase();
+          
+          // Pre-fill display name
+          if (kreatorData.fullName) {
+            document.getElementById('displayName').value = kreatorData.fullName;
+          }
+          
+          showState('setup-state');
+        } else {
+          showError(result.data?.reason || 'This invitation link is invalid or has expired.');
+        }
+      } catch (error) {
+        console.error('Verification error:', error);
+        showError(error.message || 'Failed to verify invitation. Please try again.');
+      }
+    }
+    
+    function showError(message) {
+      document.getElementById('error-message').textContent = message;
+      showState('error-state');
+    }
+    
+    // Password visibility toggle
+    window.togglePassword = function(fieldId) {
+      const field = document.getElementById(fieldId);
+      const btn = field.nextElementSibling;
+      const icon = btn.querySelector('.material-icons');
+      
+      if (field.type === 'password') {
+        field.type = 'text';
+        icon.textContent = 'visibility_off';
+      } else {
+        field.type = 'password';
+        icon.textContent = 'visibility';
+      }
+    };
+    
+    // Password strength checker
+    function checkPasswordStrength(password) {
+      const requirements = {
+        length: password.length >= 8,
+        uppercase: /[A-Z]/.test(password),
+        lowercase: /[a-z]/.test(password),
+        number: /[0-9]/.test(password)
+      };
+      
+      // Update requirement indicators
+      updateRequirement('req-length', requirements.length);
+      updateRequirement('req-uppercase', requirements.uppercase);
+      updateRequirement('req-lowercase', requirements.lowercase);
+      updateRequirement('req-number', requirements.number);
+      
+      // Calculate strength
+      const metCount = Object.values(requirements).filter(Boolean).length;
+      const strengthFill = document.getElementById('strength-fill');
+      const strengthText = document.getElementById('strength-text');
+      
+      if (password.length === 0) {
+        strengthFill.className = 'strength-fill';
+        strengthText.textContent = 'Enter a password';
+      } else if (metCount <= 1) {
+        strengthFill.className = 'strength-fill weak';
+        strengthText.textContent = 'Weak password';
+      } else if (metCount === 2) {
+        strengthFill.className = 'strength-fill fair';
+        strengthText.textContent = 'Fair password';
+      } else if (metCount === 3) {
+        strengthFill.className = 'strength-fill good';
+        strengthText.textContent = 'Good password';
+      } else {
+        strengthFill.className = 'strength-fill strong';
+        strengthText.textContent = 'Strong password';
+      }
+      
+      return requirements;
+    }
+    
+    function updateRequirement(id, met) {
+      const el = document.getElementById(id);
+      const icon = el.querySelector('.material-icons');
+      
+      if (met) {
+        el.classList.add('met');
+        icon.textContent = 'check';
+      } else {
+        el.classList.remove('met');
+        icon.textContent = 'close';
+      }
+    }
+    
+    // Check password match
+    function checkPasswordMatch() {
+      const password = document.getElementById('password').value;
+      const confirm = document.getElementById('confirmPassword').value;
+      const matches = password && confirm && password === confirm;
+      updateRequirement('req-match', matches);
+      return matches;
+    }
+    
+    // Event listeners for password fields
+    document.getElementById('password').addEventListener('input', function() {
+      checkPasswordStrength(this.value);
+      checkPasswordMatch();
+    });
+    
+    document.getElementById('confirmPassword').addEventListener('input', checkPasswordMatch);
+    
+    // Form submission
+    document.getElementById('setup-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const displayName = document.getElementById('displayName').value.trim();
+      
+      // Validate password requirements
+      const reqs = checkPasswordStrength(password);
+      if (!reqs.length || !reqs.uppercase || !reqs.lowercase || !reqs.number) {
+        alert('Please meet all password requirements.');
+        return;
+      }
+      
+      // Check passwords match
+      if (password !== confirmPassword) {
+        alert('Passwords do not match.');
+        return;
+      }
+      
+      const submitBtn = document.getElementById('setup-btn');
+      const btnText = submitBtn.querySelector('.btn-text');
+      const spinner = submitBtn.querySelector('.loading-spinner');
+      
+      // Show loading
+      btnText.textContent = 'Setting up...';
+      spinner.style.display = 'inline-block';
+      submitBtn.disabled = true;
+      
+      try {
+        const result = await completeOnboarding(magicToken, password, displayName || null);
+        
+        if (result.success) {
+          showState('success-state');
+          
+          // Countdown redirect
+          let seconds = 5;
+          const countdownEl = document.getElementById('countdown');
+          const interval = setInterval(() => {
+            seconds--;
+            countdownEl.textContent = seconds;
+            if (seconds <= 0) {
+              clearInterval(interval);
+              window.location.href = 'kreator-login.html';
+            }
+          }, 1000);
+        } else {
+          throw new Error(result.error || 'Setup failed');
+        }
+      } catch (error) {
+        console.error('Setup error:', error);
+        alert(error.message || 'Failed to complete setup. Please try again.');
+        
+        // Reset button
+        btnText.textContent = 'Complete Setup';
+        spinner.style.display = 'none';
+        submitBtn.disabled = false;
+      }
+    });
+    
+    // Start verification
+    verifyToken();
+  </script>
+</body>
+</html>

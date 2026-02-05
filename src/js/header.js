@@ -1,5 +1,4 @@
 // File: header.js
-
 // LocalStorage key for dark-mode
 const DARK_KEY = "darkTheme";
 
@@ -27,12 +26,13 @@ function initializeDarkMode() {
  *    Fixed nav tabs with dynamic subtitle system.
  *───────────────────────────────────────────────────────────────────────────*/
 function populateMenu() {
-  // Fixed navigation tabs - ALWAYS show these 5
+  // Fixed navigation tabs - ALWAYS show these 6
   const tabs = [
     { name: "Paddling Out", url: "paddlingout.html", subtitle: "Know Before You Go" },
     { name: "Store", url: "store.html", subtitle: "Made for the Wild" },
     { name: "Reads", url: "reads.html", subtitle: "Thoughts. Perspectives. Stories." },
     { name: "About", url: "about.html", subtitle: "Water. Maps. Intelligence." },
+    { name: "Kreator", url: "kreator/apply.html", subtitle: "Creator Program" },
     { name: "Kortex", url: "admin/smartlinks.html", subtitle: "Intelligent Link Routing" }
   ];
   
@@ -40,6 +40,7 @@ function populateMenu() {
   const currentPage = currentPath.split("/").pop() || "index.html";
   const isStorePage = currentPage === "store.html" || currentPage === "cart.html";
   const isAdminPage = currentPath.includes("/admin/");
+  const isKreatorPage = currentPath.includes("/kreator/");
   
   const desktopUl = document.querySelector(".top-menu ul");
   const mobileUl  = document.querySelector(".mobile-menu-overlay ul");
@@ -55,7 +56,8 @@ function populateMenu() {
     const isActive = currentPath.includes(tab.url.replace('.html', '')) || 
                      currentPage === tab.url ||
                      (tab.url === "store.html" && isStorePage) ||
-                     (tab.url === "admin/smartlinks.html" && isAdminPage);
+                     (tab.url === "admin/smartlinks.html" && isAdminPage) ||
+                     (tab.url === "kreator/apply.html" && isKreatorPage);
     
     // Desktop tab
     const li = document.createElement("li");
