@@ -28,7 +28,7 @@ The Tenant Onboarding module provides a complete guided workflow for super-admin
 
 ### 1. View Registration
 
-The view is registered in `smartlinks-core.js`:
+The view is registered in `kortex-core.js`:
 
 ```javascript
 'tenant-onboarding': {
@@ -40,7 +40,7 @@ The view is registered in `smartlinks-core.js`:
 
 ### 2. Navigation
 
-Added to sidebar navigation in `smartlinks.html`:
+Added to sidebar navigation in `kortex.html`:
 
 ```html
 <a href="#" class="nav-item" data-view="tenant-onboarding">
@@ -51,7 +51,7 @@ Added to sidebar navigation in `smartlinks.html`:
 
 ### 3. Access
 
-Navigate to: `smartlinks.html?view=tenant-onboarding`
+Navigate to: `kortex.html?view=tenant-onboarding`
 
 ---
 
@@ -238,7 +238,7 @@ The module maintains wizard state in `wizardState` object:
 ## Styling
 
 ### Theme Consistency
-- Matches `smartlinks-base.css` dark theme
+- Matches `kortex-base.css` dark theme
 - Uses CSS variables:
   - `--gold-primary` for accents
   - `--bg-card` for surfaces

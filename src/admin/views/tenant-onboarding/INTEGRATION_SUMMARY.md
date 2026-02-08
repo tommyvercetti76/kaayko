@@ -14,8 +14,8 @@
 ### 2. Modified Core Files
 ```
 /frontend/src/admin/
-├── smartlinks.html          ✅ Updated (added nav item + view container)
-├── js/smartlinks-core.js    ✅ Updated (registered view in VIEW_CONFIGS)
+├── kortex.html          ✅ Updated (added nav item + view container)
+├── js/kortex-core.js    ✅ Updated (registered view in VIEW_CONFIGS)
 └── js/utils.js             ✅ Updated (added copyToClipboard function)
 ```
 
@@ -58,7 +58,7 @@
 
 ### URL Access
 ```
-https://your-admin-portal.com/admin/smartlinks.html?view=tenant-onboarding
+https://your-admin-portal.com/admin/kortex.html?view=tenant-onboarding
 ```
 
 ---
@@ -197,7 +197,7 @@ cd local-dev/scripts
 ./start-local.sh
 
 # 2. Navigate to admin portal
-open http://localhost:5000/admin/smartlinks.html
+open http://localhost:5000/admin/kortex.html
 
 # 3. Click "Tenant Onboarding" in sidebar
 

@@ -33,7 +33,7 @@ function populateMenu() {
     { name: "Reads", url: "reads.html", subtitle: "Thoughts. Perspectives. Stories." },
     { name: "About", url: "about.html", subtitle: "Water. Maps. Intelligence." },
     { name: "Kreator", url: "kreator/apply.html", subtitle: "Creator Program" },
-    { name: "Kortex", url: "admin/smartlinks.html", subtitle: "Intelligent Link Routing" }
+    { name: "Kortex", url: "admin/kortex.html", subtitle: "Intelligent Link Routing" }
   ];
   
   const currentPath = window.location.pathname;
@@ -56,7 +56,7 @@ function populateMenu() {
     const isActive = currentPath.includes(tab.url.replace('.html', '')) || 
                      currentPage === tab.url ||
                      (tab.url === "store.html" && isStorePage) ||
-                     (tab.url === "admin/smartlinks.html" && isAdminPage) ||
+                     (tab.url === "admin/kortex.html" && isAdminPage) ||
                      (tab.url === "kreator/apply.html" && isKreatorPage);
     
     // Desktop tab

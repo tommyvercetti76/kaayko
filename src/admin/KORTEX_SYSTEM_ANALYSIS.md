@@ -121,7 +121,7 @@ Admin Portal → GET /api/smartlinks/stats
 ## 🔌 Backend API
 
 ### Location
-**Path:** `/Users/Rohan/Desktop/kaayko-monorepo/api/functions/api/smartLinks/`
+**Path:** `/Users/Rohan/Desktop/kaayko-monorepo/api/functions/api/kortex/`
 
 ### API Endpoints
 
@@ -159,12 +159,12 @@ Admin Portal → GET /api/smartlinks/stats
 ### Backend Code Structure
 
 ```
-api/functions/api/smartLinks/
-├── smartLinks.js              # Main router (Express routes)
-├── smartLinkService.js        # Business logic layer
-├── smartLinkValidation.js     # Code generation & validation
-├── smartLinkEnrichment.js     # UTM params, metadata enrichment
-├── smartLinkDefaults.js       # Default destinations
+api/functions/api/kortex/
+├── kortex.js              # Main router (Express routes)
+├── kortexService.js        # Business logic layer
+├── kortexValidation.js     # Code generation & validation
+├── kortexEnrichment.js     # UTM params, metadata enrichment
+├── kortexDefaults.js       # Default destinations
 ├── redirectHandler.js         # Platform detection & redirect logic
 ├── publicRouter.js            # Public-facing /l/:id routes
 └── README.md                  # API documentation
@@ -172,7 +172,7 @@ api/functions/api/smartLinks/
 
 ### Key Backend Functions
 
-**1. Create Short Link (`smartLinkService.js`)**
+**1. Create Short Link (`kortexService.js`)**
 ```javascript
 async function createShortLink(data) {
   // Validate: at least one destination required
@@ -193,7 +193,7 @@ async function handleRedirect(req, res, code, options) {
 }
 ```
 
-**3. Link Validation (`smartLinkValidation.js`)**
+**3. Link Validation (`kortexValidation.js`)**
 ```javascript
 function generateShortCode() {
   // Format: lk + 4 random chars (lk1ngp, lk9xrf)
@@ -242,14 +242,14 @@ async function requireAdmin(req, res, next) {
 
 ```
 admin/
-├── smartlinks.html           # Main SPA shell
+├── kortex.html           # Main SPA shell
 ├── login.html                # Firebase auth login
 ├── clear-cache.html          # Cache management utility
 ├── reset-environment.html    # Environment reset tool
 ├── css/
-│   └── smartlinks-base.css   # Global styles
+│   └── kortex-base.css   # Global styles
 ├── js/
-│   ├── smartlinks-core.js    # App initialization & routing
+│   ├── kortex-core.js    # App initialization & routing
 │   ├── config.js             # Config & auth utilities
 │   ├── utils.js              # Helper functions
 │   └── ui.js                 # UI components
@@ -281,7 +281,7 @@ admin/
 **Pattern:** Modular SPA with Dynamic View Loading
 
 ```javascript
-// smartlinks-core.js
+// kortex-core.js
 const VIEW_CONFIGS = {
   dashboard: {
     module: '../views/dashboard/dashboard.js',
@@ -461,13 +461,13 @@ User → login.html
   ├─ Store in localStorage:
   │   ├─ kaayko_auth_token: <JWT token>
   │   └─ kaayko_user: { uid, email, role, displayName }
-  └─ Redirect → smartlinks.html
+  └─ Redirect → kortex.html
 ```
 
 **2. Session Management**
 
 ```javascript
-// Check auth on page load (smartlinks-core.js)
+// Check auth on page load (kortex-core.js)
 AUTH.init() {
   const token = localStorage.getItem('kaayko_auth_token');
   const user = localStorage.getItem('kaayko_user');
@@ -660,7 +660,7 @@ AUTH.logout() {
 
 ```javascript
 // views/dashboard/dashboard.js
-import { CONFIG, AUTH, STATE } from '../../js/smartlinks-core.js';
+import { CONFIG, AUTH, STATE } from '../../js/kortex-core.js';
 import { apiFetch } from '../../js/config.js';
 import * as utils from '../../js/utils.js';
 
@@ -688,7 +688,7 @@ async function loadRecentLinks() {
 **Example: Smart Link Service**
 
 ```javascript
-// api/smartLinks/smartLinkService.js
+// api/kortex/kortexService.js
 const admin = require('firebase-admin');
 const db = admin.firestore();
 
@@ -850,7 +850,7 @@ CONFIG.setEnvironment('local');
 #### 2. Production
 
 **Frontend:**
-- URL: `https://kaaykostore.web.app/admin/smartlinks.html`
+- URL: `https://kaaykostore.web.app/admin/kortex.html`
 - Hosting: Firebase Hosting
 
 **Backend:**
@@ -1110,7 +1110,7 @@ const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${e
 ### Essential Reading
 
 1. **Architecture:** This document (you're reading it!)
-2. **API Reference:** `/api/functions/api/smartLinks/README.md`
+2. **API Reference:** `/api/functions/api/kortex/README.md`
 3. **Frontend Guide:** `/frontend/src/admin/QUICK_START.md`
 4. **Deployment:** `/api/deployment/README.md`
 
@@ -1130,7 +1130,7 @@ curl -X POST http://127.0.0.1:5001/kaaykostore/us-central1/api/smartlinks \
 
 **Add a new view:**
 1. Create `views/my-view/my-view.html|css|js`
-2. Register in `smartlinks-core.js`:
+2. Register in `kortex-core.js`:
    ```javascript
    const VIEW_CONFIGS = {
      myview: {
@@ -1140,7 +1140,7 @@ curl -X POST http://127.0.0.1:5001/kaaykostore/us-central1/api/smartlinks \
      }
    };
    ```
-3. Add navigation link in `smartlinks.html`
+3. Add navigation link in `kortex.html`
 
 ---
 

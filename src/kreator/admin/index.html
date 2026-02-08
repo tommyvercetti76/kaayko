@@ -659,7 +659,10 @@
   <script>
     // Simple admin auth (in production, use proper auth)
     const ADMIN_PASS = 'kaayko2026admin'; // Change this!
-    const API_BASE = 'https://api-vwcc5j4qda-uc.a.run.app';
+    const _isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    const API_BASE = _isLocal
+      ? 'http://127.0.0.1:5001/kaaykostore/us-central1/api'
+      : 'https://api-vwcc5j4qda-uc.a.run.app';
     
     let isAuthenticated = false;
     let applications = [];

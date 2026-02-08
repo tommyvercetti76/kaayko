@@ -3,7 +3,7 @@
  * Displays QR codes for all links in a gallery view
  */
 
-import { STATE, CONFIG, utils } from '../../js/smartlinks-core.js';
+import { STATE, CONFIG, utils } from '../../js/kortex-core.js';
 import { apiFetch } from '../../js/config.js';
 
 /**

@@ -566,7 +566,11 @@
           formData.append('images', img);
         });
         
-        const response = await fetch('https://api-vwcc5j4qda-uc.a.run.app/kreators/products', {
+        const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+        const apiBase = isLocal
+          ? 'http://127.0.0.1:5001/kaaykostore/us-central1/api'
+          : 'https://api-vwcc5j4qda-uc.a.run.app';
+        const response = await fetch(`${apiBase}/kreators/products`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${AUTH.token}`

@@ -3,7 +3,7 @@
  * Subscription management and payment handling
  */
 
-import { CONFIG, AUTH, utils, STATE } from '../../js/smartlinks-core.js';
+import { CONFIG, AUTH, utils, STATE } from '../../js/kortex-core.js';
 import { apiFetch } from '../../js/config.js';
 
 // Plan configurations

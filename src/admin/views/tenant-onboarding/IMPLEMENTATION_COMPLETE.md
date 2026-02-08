@@ -40,8 +40,8 @@ A complete, fully functional **Tenant Onboarding UI Module** for the Kaayko Smar
 ### Modified Files
 ```
 ✅ /frontend/src/admin/
-   ├── smartlinks.html                 (Added nav item + view container)
-   ├── js/smartlinks-core.js          (Registered view in VIEW_CONFIGS)
+   ├── kortex.html                 (Added nav item + view container)
+   ├── js/kortex-core.js          (Registered view in VIEW_CONFIGS)
    └── js/utils.js                    (Added copyToClipboard function)
 ```
 
@@ -50,13 +50,13 @@ A complete, fully functional **Tenant Onboarding UI Module** for the Kaayko Smar
 ## 🎯 How to Access
 
 ### From Admin Portal
-1. Navigate to: `https://your-domain.com/admin/smartlinks.html`
+1. Navigate to: `https://your-domain.com/admin/kortex.html`
 2. Click **"Tenant Onboarding"** in sidebar (👥 icon)
 3. Follow the 6-step wizard
 
 ### Direct URL
 ```
-https://your-domain.com/admin/smartlinks.html?view=tenant-onboarding
+https://your-domain.com/admin/kortex.html?view=tenant-onboarding
 ```
 
 ---
@@ -87,7 +87,7 @@ The UI is **complete and ready**, but requires these backend endpoints:
 - **Error Handling:** Try/catch with user-friendly messages
 
 ### Dependencies
-- ✅ `smartlinks-core.js` - Routing & state
+- ✅ `kortex-core.js` - Routing & state
 - ✅ `config.js` - API configuration & fetch wrapper
 - ✅ `utils.js` - Helper functions (toast, clipboard, etc.)
 
@@ -187,7 +187,7 @@ firebase deploy --only hosting
 # Implement the 5 required endpoints
 # See QUICKSTART.md for code examples
 cd api/functions
-# Add tenant endpoints to api/smartLinks/
+# Add tenant endpoints to api/kortex/
 ```
 
 ### Phase 3: Testing 🧪 (After Backend)
@@ -401,7 +401,7 @@ firebase deploy --only hosting
 # See QUICKSTART.md for code examples
 
 # 3. Test end-to-end
-open http://localhost:5000/admin/smartlinks.html?view=tenant-onboarding
+open http://localhost:5000/admin/kortex.html?view=tenant-onboarding
 
 # 4. Deploy backend
 cd api/deployment

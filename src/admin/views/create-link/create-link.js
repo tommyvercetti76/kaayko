@@ -3,7 +3,7 @@
  * Handles link creation and editing form
  */
 
-import { STATE, CONFIG, AUTH, utils, ui } from '../../js/smartlinks-core.js';
+import { STATE, CONFIG, AUTH, utils, ui } from '../../js/kortex-core.js';
 import { apiFetch } from '../../js/config.js';
 
 /**
@@ -381,5 +381,5 @@ async function loadLinkForEditing(code) {
 // Export edit function to be called from other modules
 export function editLink(code) {
   STATE.editingCode = code;
-  // View will be switched by smartlinks-core
+  // View will be switched by kortex-core
 }

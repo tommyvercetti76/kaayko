@@ -3,7 +3,7 @@
  * Executive summary analytics with Chart.js visualizations
  */
 
-import { STATE, utils } from '../../js/smartlinks-core.js';
+import { STATE, utils } from '../../js/kortex-core.js';
 import { apiFetch } from '../../js/config.js';
 
 // Chart instances for cleanup

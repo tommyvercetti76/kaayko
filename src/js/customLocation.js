@@ -1,5 +1,9 @@
 /* Clean Custom Location Modal - 300 lines max */
 
+const CUSTOM_LOC_API_BASE = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+  ? 'http://127.0.0.1:5001/kaaykostore/us-central1/api'
+  : 'https://us-central1-kaaykostore.cloudfunctions.net/api';
+
 class CustomLocationModal {
   constructor() {
     this.modal = null;
@@ -234,7 +238,7 @@ class CustomLocationModal {
     
     try {
       const response = await fetch(
-        `https://us-central1-kaaykostore.cloudfunctions.net/api/nearbyWater?lat=${lat}&lng=${lng}&radius=50&nocache=1`
+        `${CUSTOM_LOC_API_BASE}/nearbyWater?lat=${lat}&lng=${lng}&radius=50&nocache=1`
       );
       
       if (!response.ok) throw new Error('API request failed');
@@ -374,7 +378,7 @@ class CustomLocationModal {
   async getPaddleScore(lat, lng) {
     try {
       const res = await fetch(
-        `https://us-central1-kaaykostore.cloudfunctions.net/api/paddleScore?lat=${lat}&lng=${lng}`,
+        `${CUSTOM_LOC_API_BASE}/paddleScore?lat=${lat}&lng=${lng}`,
         { timeout: 5000 }
       );
       if (!res.ok) {

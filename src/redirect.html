@@ -85,8 +85,11 @@
 
         document.getElementById('message').textContent = `Loading link: ${code}`;
 
-        // Fetch link data from API
-        const API_BASE = 'https://us-central1-kaaykostore.cloudfunctions.net/api';
+        // Fetch link data from API — auto-detect emulator
+        const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+        const API_BASE = isLocal
+          ? 'http://127.0.0.1:5001/kaaykostore/us-central1/api'
+          : 'https://us-central1-kaaykostore.cloudfunctions.net/api';
         const response = await fetch(`${API_BASE}/smartlinks/r/${code}`);
         
         if (!response.ok) {

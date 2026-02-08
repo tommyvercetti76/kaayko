@@ -3,7 +3,7 @@
  * Displays stats overview and recent links with sparklines
  */
 
-import { CONFIG, AUTH, utils, ui, STATE, switchView } from '../../js/smartlinks-core.js';
+import { CONFIG, AUTH, utils, ui, STATE, switchView } from '../../js/kortex-core.js';
 import { apiFetch } from '../../js/config.js';
 import { escapeHtml } from '../../js/utils.js';
 
