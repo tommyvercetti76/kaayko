@@ -1158,6 +1158,327 @@ tbody td {
 }
 
 /* ============================================================================
+   HAMBURGER BUTTON
+   ============================================================================ */
+
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 36px;
+  height: 36px;
+  padding: 6px;
+  background: transparent;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.hamburger span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: var(--text-secondary);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.hamburger:hover {
+  border-color: var(--gold-primary);
+}
+
+.hamburger:hover span {
+  background: var(--gold-primary);
+}
+
+.hamburger.active span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.hamburger.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger.active span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* ============================================================================
+   SIDEBAR OVERLAY
+   ============================================================================ */
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 99;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.open {
+  opacity: 1;
+}
+
+/* ============================================================================
+   RESPONSIVE — TABLET (≤1024px)
+   Sidebar collapses off-screen, hamburger appears
+   ============================================================================ */
+
+@media (max-width: 1024px) {
+  .hamburger {
+    display: flex;
+  }
+
+  .sidebar-overlay {
+    display: block;
+    pointer-events: none;
+  }
+
+  .sidebar-overlay.open {
+    pointer-events: auto;
+  }
+
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
+
+  .top-bar {
+    padding: 10px var(--space-md);
+    gap: var(--space-sm);
+  }
+
+  .view {
+    padding: var(--space-md);
+  }
+
+  .view-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+  }
+
+  .view-header h1 {
+    font-size: 20px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-sm);
+  }
+
+  .card {
+    padding: var(--space-md);
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+  }
+
+  /* Table: horizontal scroll with sticky first column */
+  .table-container {
+    margin: 0 calc(var(--space-md) * -1);
+    width: calc(100% + var(--space-md) * 2);
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  thead th,
+  tbody td {
+    padding: var(--space-sm) var(--space-md);
+    font-size: 12px;
+  }
+
+  .link-actions {
+    gap: 2px;
+  }
+
+  .action-btn-labeled {
+    padding: 4px 6px;
+    font-size: 8px;
+  }
+
+  .action-btn-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  /* Form adjustments */
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-section {
+    padding: var(--space-md);
+  }
+
+  /* Modal */
+  .modal-content {
+    width: 95%;
+    max-height: 95vh;
+  }
+
+  /* QR sidebar */
+  .qr-sidebar {
+    width: 100%;
+    right: -100%;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE — MOBILE (≤640px)
+   Full stacking, compact layout
+   ============================================================================ */
+
+@media (max-width: 640px) {
+  .view {
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .view-header h1 {
+    font-size: 18px;
+  }
+
+  .view-header p {
+    font-size: 12px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-sm);
+  }
+
+  .stat-card {
+    min-height: auto;
+    padding: var(--space-md);
+  }
+
+  .stat-value {
+    font-size: 22px;
+  }
+
+  .stat-label {
+    font-size: 9px;
+  }
+
+  .stat-icon {
+    font-size: 16px;
+  }
+
+  .card {
+    padding: var(--space-sm);
+    border-radius: var(--radius-sm);
+  }
+
+  .card-header {
+    padding-bottom: var(--space-sm);
+    margin-bottom: var(--space-sm);
+  }
+
+  /* Hide less important table columns */
+  table .col-status,
+  table .col-created,
+  table .col-clicks {
+    display: none;
+  }
+
+  thead th,
+  tbody td {
+    padding: var(--space-sm);
+    font-size: 11px;
+  }
+
+  .btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .btn-icon {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  /* Form compact */
+  .form-group label {
+    font-size: 11px;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    padding: 9px 10px;
+    font-size: 13px;
+  }
+
+  .collapsible-header {
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .collapsible-title {
+    font-size: 13px;
+  }
+
+  .field-group {
+    grid-template-columns: 1fr;
+  }
+
+  .form-guide {
+    padding: var(--space-md);
+  }
+
+  .guide-step {
+    padding: var(--space-sm);
+  }
+
+  /* Badges */
+  .badge {
+    padding: 3px 8px;
+    font-size: 10px;
+  }
+
+  /* QR gallery */
+  .qr-gallery {
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+  }
+
+  /* Sidebar footer compact when open */
+  .sidebar-footer {
+    padding: var(--space-sm);
+  }
+
+  .sidebar-header {
+    padding: var(--space-md);
+  }
+
+  .logo {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+}
+
+/* ============================================================================
    FORM SECTIONS & COLLAPSIBLES
    ============================================================================ */
 

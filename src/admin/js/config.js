@@ -11,7 +11,7 @@ export const CONFIG = {
   
   // API endpoints
   LOCAL_API: 'http://127.0.0.1:5001/kaaykostore/us-central1/api',
-  PROD_API: 'https://us-central1-kaaykostore.cloudfunctions.net/api',
+  PROD_API: 'https://api-vwcc5j4qda-uc.a.run.app',
   
   QR_API: 'https://api.qrserver.com/v1/create-qr-code/',
   VERSION: '4.5.0',

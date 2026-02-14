@@ -146,13 +146,13 @@
     <!-- A. HERO SECTION -->
     <section class="hero-dark" id="hero">
       <div class="hero-content">
-        <p class="hero-pretitle">Conditions. Spots. Expression.</p>
-        <h1 class="hero-title">KAAYKO</h1>
-        <p class="hero-tagline">Know the water before you touch&nbsp;it.</p>
-        <div class="hero-ctas">
+        <p class="hero-pretitle hero-enter">Conditions. Spots. Expression.</p>
+        <h1 class="hero-title hero-enter">KAAYKO</h1>
+        <p class="hero-tagline hero-enter">Know the water before you touch&nbsp;it.</p>
+        <div class="hero-ctas hero-enter">
           <a href="#services" class="cta-primary">Explore</a>
         </div>
-        <div class="scroll-hint">↓</div>
+        <div class="scroll-hint hero-enter">↓</div>
       </div>
     </section>
 
@@ -160,7 +160,7 @@
     <section class="constellation-section" id="services">
       <div class="service-tiles">
         
-        <a href="/paddlingout.html" class="service-tile">
+        <a href="/paddlingout.html" class="service-tile reveal">
           <svg class="tile-icon" viewBox="0 0 48 48">
             <path d="M8 24 Q16 16, 24 24 T40 24" stroke-linecap="round"/>
             <path d="M8 30 Q16 22, 24 30 T40 30" stroke-linecap="round"/>
@@ -171,7 +171,7 @@
           </div>
         </a>
 
-        <a href="/paddlingout.html#search" class="service-tile">
+        <a href="/paddlingout.html#search" class="service-tile reveal">
           <svg class="tile-icon" viewBox="0 0 48 48">
             <circle cx="24" cy="24" r="12"/>
             <path d="M24 12 L24 8 M24 40 L24 36 M36 24 L40 24 M8 24 L12 24" stroke-linecap="round"/>
@@ -182,7 +182,7 @@
           </div>
         </a>
 
-        <a href="/store.html" class="service-tile">
+        <a href="/store.html" class="service-tile reveal">
           <svg class="tile-icon" viewBox="0 0 48 48">
             <rect x="12" y="16" width="24" height="20" rx="2"/>
             <path d="M12 16 L16 12 L32 12 L36 16" stroke-linejoin="round"/>
@@ -193,7 +193,7 @@
           </div>
         </a>
 
-        <a href="/reads.html" class="service-tile">
+        <a href="/reads.html" class="service-tile reveal">
           <svg class="tile-icon" viewBox="0 0 48 48">
             <rect x="14" y="10" width="20" height="28" rx="2"/>
             <line x1="18" y1="18" x2="30" y2="18"/>
@@ -206,7 +206,7 @@
           </div>
         </a>
 
-        <a href="/admin/kortex.html" class="service-tile kortex-tile" target="_blank">
+        <a href="/kortex" class="service-tile kortex-tile reveal">
           <svg class="tile-icon" viewBox="0 0 48 48">
             <circle cx="16" cy="24" r="4"/>
             <circle cx="32" cy="24" r="4"/>
@@ -229,7 +229,7 @@
 
     <!-- D. PHILOSOPHY SECTION -->
     <section class="philosophy-section">
-      <div class="philosophy-content">
+      <div class="philosophy-content reveal">
         <h2>Built for Paddlers</h2>
         <p>Machine learning that reads conditions on any lake on the planet. A map to find your next spot. A store for artwork that says something. Writing worth your time. And Kortex—smart link infrastructure for those who build.</p>
         <p>Five things. Each one made because we needed it ourselves.</p>
@@ -257,6 +257,18 @@
       e.preventDefault();
       document.getElementById('services')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
+
+    // Scroll-reveal observer
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          revealObserver.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
   </script>
 </body>
 </html>

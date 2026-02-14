@@ -30,7 +30,7 @@
   <meta name="twitter:image" content="https://kaayko.com/assets/kortex-dashboard-twitter.png">
   
   <!-- Security Headers -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com https://cdn.jsdelivr.net https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.cloudfunctions.net https://*.googleapis.com https://api.qrserver.com https://api.stripe.com; frame-src https://js.stripe.com https://hooks.stripe.com;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com https://cdn.jsdelivr.net https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.cloudfunctions.net https://*.run.app https://*.googleapis.com https://api.qrserver.com https://api.stripe.com; frame-src https://js.stripe.com https://hooks.stripe.com;">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta http-equiv="X-Frame-Options" content="DENY">
   <meta http-equiv="X-XSS-Protection" content="1; mode=block">
@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://www.gstatic.com">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="preconnect" href="https://js.stripe.com">
-  <link rel="dns-prefetch" href="https://us-central1-kaaykostore.cloudfunctions.net">
+  <link rel="dns-prefetch" href="https://api-vwcc5j4qda-uc.a.run.app">
   <link rel="dns-prefetch" href="https://api.qrserver.com">
   <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
   
@@ -132,11 +132,17 @@
     </div>
   </aside>
   
+  <!-- Sidebar Overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  
   <!-- Main Content -->
   <main class="main-content">
     
     <!-- Top Bar -->
     <div class="top-bar">
+      <button class="hamburger" id="hamburger-btn" aria-label="Toggle sidebar">
+        <span></span><span></span><span></span>
+      </button>
       <div class="api-status">
         <span class="status-dot"></span>
         <span>API Connected</span>
@@ -677,12 +683,39 @@
   
   </div> <!-- .app-container -->
   
+  <!-- Responsive Sidebar Toggle -->
+  <script>
+    (function(){
+      const btn = document.getElementById('hamburger-btn');
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      if(!btn||!sidebar||!overlay) return;
+      function toggle(){
+        const open = sidebar.classList.toggle('open');
+        overlay.classList.toggle('open', open);
+        btn.classList.toggle('active', open);
+        document.body.style.overflow = open ? 'hidden' : '';
+      }
+      function close(){
+        sidebar.classList.remove('open');
+        overlay.classList.remove('open');
+        btn.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+      btn.addEventListener('click', toggle);
+      overlay.addEventListener('click', close);
+      // Close sidebar when nav item clicked on mobile
+      sidebar.querySelectorAll('.nav-item').forEach(function(item){
+        item.addEventListener('click', function(){
+          if(window.innerWidth <= 1024) close();
+        });
+      });
+    })();
+  </script>
+
   <!-- Scripts - Modular Architecture v6.0 -->
     <!-- App Script -->
           <!-- Core JS Module -->
     <script type="module" src="js/kortex-core.js?v=6.5.4"></script>
-</body>
-</html>
-  
 </body>
 </html>

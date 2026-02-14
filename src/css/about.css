@@ -580,3 +580,77 @@
 .philosophy-content p:last-child {
   margin-bottom: 0;
 }
+
+/* ============================================
+   H. SCROLL REVEAL ANIMATIONS
+============================================ */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Stagger service tiles on desktop */
+.service-tiles .reveal:nth-child(2) { transition-delay: 80ms; }
+.service-tiles .reveal:nth-child(3) { transition-delay: 160ms; }
+.service-tiles .reveal:nth-child(4) { transition-delay: 240ms; }
+.service-tiles .reveal:nth-child(5) { transition-delay: 320ms; }
+
+/* ============================================
+   I. HERO ENTRANCE ANIMATION
+============================================ */
+.hero-enter {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: heroFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.hero-content > .hero-enter:nth-child(1) { animation-delay: 0.15s; }
+.hero-content > .hero-enter:nth-child(2) { animation-delay: 0.3s; }
+.hero-content > .hero-enter:nth-child(3) { animation-delay: 0.45s; }
+.hero-content > .hero-enter:nth-child(4) { animation-delay: 0.6s; }
+.hero-content > .hero-enter:nth-child(5) { animation-delay: 0.75s; }
+
+@keyframes heroFadeIn {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ============================================
+   J. HERO GLOW & TITLE EFFECTS
+============================================ */
+
+/* Breathing glow behind hero title */
+.hero-dark::before {
+  animation: glowBreathe 6s ease-in-out infinite;
+}
+
+@keyframes glowBreathe {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.12); }
+}
+
+/* Title gold pulse */
+@keyframes titlePulse {
+  0%, 100% { text-shadow: 0 0 40px rgba(255,215,0,0.2); }
+  50% { text-shadow: 0 0 80px rgba(255,215,0,0.4), 0 0 120px rgba(255,215,0,0.08); }
+}
+
+.hero-title {
+  animation: titlePulse 4s ease-in-out infinite;
+}
+
+/* Reset stagger on mobile — each tile reveals individually */
+@media (max-width: 768px) {
+  .service-tiles .reveal:nth-child(n) {
+    transition-delay: 0s;
+  }
+}

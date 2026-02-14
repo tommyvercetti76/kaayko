@@ -114,6 +114,18 @@
       .form-row {
         grid-template-columns: 1fr;
       }
+
+      h1 {
+        font-size: 24px !important;
+      }
+
+      .card, .pricing-card, .success-card {
+        padding: 20px !important;
+      }
+
+      .container {
+        padding: 20px 12px !important;
+      }
     }
 
     .form-group {
@@ -294,7 +306,7 @@
         <p style="color: var(--text-secondary); margin-bottom: 24px;">
           Thank you for registering. Our team will review your application and contact you within 24-48 hours.
         </p>
-        <button onclick="window.location.href='./login.html'" style="max-width: 300px; margin: 0 auto;">
+        <button onclick="window.location.href='/kortex'" style="max-width: 300px; margin: 0 auto;">
           Back to Login
         </button>
       </div>
@@ -405,7 +417,7 @@
   <script type="module">
     const CONFIG = {
       ENVIRONMENT: 'production',
-      PROD_API: 'https://us-central1-kaaykostore.cloudfunctions.net/api',
+      PROD_API: 'https://api-vwcc5j4qda-uc.a.run.app',
       get API_BASE() {
         return this.PROD_API;
       }

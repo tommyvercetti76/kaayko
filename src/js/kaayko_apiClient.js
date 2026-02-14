@@ -4,7 +4,7 @@
  * Thin wrapper over our Cloud Functions API.
  * • All fetches return JSON.
  * • Errors on non‑OK responses.
- * • Unified backend: kaayko-api-dev handles all operations using kaaykostore Firestore
+ * • Unified backend: kaaykostore handles all operations using kaaykostore Firestore
  */
 
 // API Base URL - auto-detect environment with production override

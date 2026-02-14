@@ -29,6 +29,10 @@
         "headers": [{ "key":"Cache-Control","value":"public,max-age=31536000,immutable"}]
       }
     ],
+    "redirects": [
+      { "source": "/admin/login", "destination": "/kortex", "type": 301 },
+      { "source": "/admin/login.html", "destination": "/kortex", "type": 301 }
+    ],
     "rewrites": [
       { "source": "/api/**", "function": "api" },
       { "source": "/l/**", "function": "api" },

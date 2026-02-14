@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns#">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>Kortex — Smart Link Infrastructure | Kaayko</title>
+  <meta name="title" content="Kortex — Smart Link Infrastructure by Kaayko">
+  <meta name="description" content="Create short links, route by device, A/B test destinations, and track every click in real time. Developer API, webhooks, multi-tenant architecture. Start free.">
+  <meta name="keywords" content="smart links, link management, URL shortener, link analytics, attribution tracking, A/B testing links, short link API, webhook link events, multi-tenant links, developer link API, kaayko kortex, platform routing">
+  <meta name="author" content="Kaayko">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+  <link rel="canonical" href="https://kaayko.com/kortex">
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://kaayko.com/kortex">
+  <meta property="og:title" content="Kortex — Smart Link Infrastructure">
+  <meta property="og:description" content="Create, route, and measure every link. Platform-aware routing, real-time analytics, A/B testing, attribution, webhooks, and a developer API.">
+  <meta property="og:image" content="https://kaayko.com/assets/kortex-og-image.png">
+  <meta property="og:site_name" content="Kaayko Kortex">
+  <meta property="og:locale" content="en_US">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://kaayko.com/kortex">
+  <meta name="twitter:title" content="Kortex — Smart Link Infrastructure">
+  <meta name="twitter:description" content="Short links with device routing, analytics, attribution, and a full developer API. By Kaayko.">
+  <meta name="twitter:image" content="https://kaayko.com/assets/kortex-twitter-card.png">
+  <meta name="twitter:creator" content="@kaayko">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Kortex",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web",
+    "description": "Smart link infrastructure with platform routing, click analytics, attribution tracking, webhooks, and a developer API.",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "provider": { "@type": "Organization", "name": "Kaayko", "url": "https://kaayko.com" },
+    "featureList": [
+      "Branded short links with custom slugs",
+      "iOS / Android / Web device routing",
+      "A/B split testing with weighted variants",
+      "Real-time click analytics",
+      "Click-to-install attribution",
+      "HMAC-signed webhook events",
+      "Scoped developer API keys",
+      "Multi-tenant architecture with RBAC"
+    ]
+  }
+  </script>
+
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.cloudfunctions.net https://*.run.app https://*.googleapis.com; frame-src https://accounts.google.com;">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://api-vwcc5j4qda-uc.a.run.app">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#0a0a0a">
+
+<style>
+/* ================================================================
+   KORTEX — Kaayko design language
+   Josefin_Bold / _Medium / _Light (local TTF)
+   #0a0a0a bg · #ffd700 gold · #f5f5f5 text
+================================================================ */
+
+@font-face{font-family:'Josefin_Bold';src:url('/fonts/JosefinSans-Bold.ttf') format('truetype')}
+@font-face{font-family:'Josefin_Medium';src:url('/fonts/JosefinSans-Medium.ttf') format('truetype')}
+@font-face{font-family:'Josefin_Light';src:url('/fonts/JosefinSans-Light.ttf') format('truetype')}
+
+:root{
+  --gold:#ffd700;--gold-l:#ffed4e;
+  --bg:#0a0a0a;--surface:rgba(255,255,255,0.02);
+  --border:rgba(255,255,255,0.08);--border-gold:rgba(255,215,0,0.25);
+  --text:#f5f5f5;--text-2:rgba(245,245,245,0.7);
+  --text-3:rgba(245,245,245,0.5);--text-4:rgba(245,245,245,0.3);
+  --err:#ef4444;--ok:#22c55e;
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:70px;-webkit-text-size-adjust:100%}
+body{font-family:'Josefin_Light',Arial,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;line-height:1.6;overflow-x:hidden}
+a{color:inherit;text-decoration:none}ul{list-style:none}
+
+/* ─── NAV ─── */
+.nav{position:fixed;inset:0 0 auto;z-index:100;background:rgba(10,10,10,0.85);backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);border-bottom:1px solid var(--border)}
+.nav-inner{max-width:1080px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-mark{width:28px;height:28px;border-radius:6px;background:var(--gold);display:grid;place-items:center;font-family:'Josefin_Bold',sans-serif;font-size:14px;color:#000}
+.nav-name{font-family:'Josefin_Bold',sans-serif;font-size:0.9rem;letter-spacing:0.02em}
+.nav-links{display:flex;align-items:center;gap:28px}
+.nav-link{font-family:'Josefin_Medium',sans-serif;font-size:0.8rem;color:var(--text-3);transition:color .2s}
+.nav-link:hover{color:var(--text)}
+.nav-cta{font-family:'Josefin_Bold',sans-serif;font-size:0.75rem;letter-spacing:0.04em;text-transform:uppercase;color:#000;background:var(--gold);padding:6px 16px;border-radius:6px;transition:box-shadow .2s,transform .2s}
+.nav-cta:hover{box-shadow:0 4px 12px rgba(255,215,0,0.25);transform:translateY(-1px)}
+
+/* ─── LAYOUT ─── */
+.section{padding:80px 24px}
+.section--alt{background:rgba(255,255,255,0.015)}
+.container{max-width:1080px;margin:0 auto}
+
+/* ─── SECTION HEADERS (tight) ─── */
+.sh{margin-bottom:40px}
+.sh-tag{display:inline-flex;align-items:center;gap:6px;font-family:'Josefin_Medium',sans-serif;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.sh-tag::before{content:'';width:12px;height:1px;background:var(--gold)}
+.sh-title{font-family:'Josefin_Bold',sans-serif;font-size:clamp(1.75rem,3.5vw,2.5rem);line-height:1.15;letter-spacing:-0.02em;margin-bottom:8px}
+.sh-desc{font-family:'Josefin_Light',sans-serif;font-size:0.9rem;color:var(--text-2);max-width:440px;line-height:1.6}
+
+/* ─── HERO ─── */
+.hero{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;text-align:center;padding:80px 24px 60px;position:relative;overflow:hidden;background:radial-gradient(ellipse at center,rgba(255,215,0,0.04) 0%,var(--bg) 60%)}
+.hero::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:700px;height:700px;background:radial-gradient(circle,rgba(255,215,0,0.07) 0%,transparent 60%);filter:blur(80px);pointer-events:none;animation:breathe 6s ease-in-out infinite}
+@keyframes breathe{0%,100%{opacity:.5;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}}
+.hero-inner{position:relative;z-index:1;max-width:660px}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;font-family:'Josefin_Medium',sans-serif;font-size:0.75rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold);border:1px solid var(--border-gold);padding:5px 14px;border-radius:100px;margin-bottom:28px}
+.hero-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--gold)}
+.hero-title{font-family:'Josefin_Bold',sans-serif;font-size:clamp(4rem,12vw,7rem);line-height:1.05;letter-spacing:-0.03em;margin-bottom:20px;color:#fff;text-shadow:0 0 40px rgba(255,215,0,0.25);animation:titlePulse 4s ease-in-out infinite}
+@keyframes titlePulse{0%,100%{text-shadow:0 0 40px rgba(255,215,0,0.2)}50%{text-shadow:0 0 80px rgba(255,215,0,0.35)}}
+.hero-sub{font-family:'Josefin_Light',sans-serif;font-size:clamp(1rem,2vw,1.25rem);color:var(--text-2);line-height:1.7;margin-bottom:36px}
+.hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.hero-scroll{font-family:'Josefin_Light',sans-serif;font-size:1.5rem;color:rgba(255,215,0,0.4);margin-top:48px;animation:bounce 2s infinite}
+@keyframes bounce{0%,20%,50%,80%,100%{transform:translateY(0)}40%{transform:translateY(-10px)}60%{transform:translateY(-5px)}}
+
+/* ─── BUTTONS ─── */
+.btn{display:inline-flex;align-items:center;justify-content:center;font-family:'Josefin_Bold',sans-serif;font-size:0.8rem;letter-spacing:0.04em;text-transform:uppercase;padding:12px 28px;border-radius:6px;border:none;cursor:pointer;transition:all .2s ease}
+.btn--gold{background:var(--gold);color:#0a0a0a}
+.btn--gold:hover{background:var(--gold-l);box-shadow:0 4px 20px rgba(255,215,0,0.3);transform:translateY(-1px)}
+.btn--ghost{border:1px solid var(--border);color:var(--text-2);background:transparent}
+.btn--ghost:hover{border-color:var(--border-gold);color:var(--gold)}
+.btn--sm{padding:10px 20px;font-size:0.7rem}
+.btn--block{width:100%}
+
+/* ─── FEATURE GRID ─── */
+.feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+.feat{padding:36px 28px;background:var(--bg);transition:background .25s}
+.feat:hover{background:rgba(255,255,255,0.015)}
+.feat-icon{width:40px;height:40px;border-radius:8px;background:rgba(255,215,0,0.06);display:grid;place-items:center;margin-bottom:18px}
+.feat-icon .material-icons{font-size:19px;color:var(--gold)}
+.feat-name{font-family:'Josefin_Bold',sans-serif;font-size:1.05rem;margin-bottom:10px;letter-spacing:0.01em;color:var(--text)}
+.feat-desc{font-family:'Josefin_Light',sans-serif;font-size:0.82rem;color:var(--text-2);line-height:1.65}
+
+/* ─── PRICING ─── */
+.plan-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:stretch}
+.plan{display:flex;flex-direction:column;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:28px 22px 24px;position:relative;transition:border-color .2s,box-shadow .2s}
+.plan:hover{border-color:var(--border-gold)}
+.plan--hl{border-color:var(--border-gold);background:linear-gradient(180deg,rgba(255,215,0,0.03) 0%,var(--bg) 40%);box-shadow:0 0 0 1px var(--border-gold),0 8px 40px rgba(255,215,0,0.05)}
+.plan-badge{position:absolute;top:0;left:22px;background:var(--gold);color:#000;font-family:'Josefin_Bold',sans-serif;font-size:9px;letter-spacing:0.06em;text-transform:uppercase;padding:3px 10px;border-radius:0 0 6px 6px}
+.plan-name{font-family:'Josefin_Medium',sans-serif;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:12px}
+.plan-price{font-family:'Josefin_Bold',sans-serif;font-size:2.5rem;line-height:1;margin-bottom:3px}
+.plan-price span{font-family:'Josefin_Light',sans-serif;font-size:0.8rem;color:var(--text-3)}
+.plan-note{font-family:'Josefin_Light',sans-serif;font-size:0.7rem;color:var(--text-3);margin-bottom:20px}
+.plan-divider{height:1px;background:var(--border);margin-bottom:20px}
+.plan-includes{font-family:'Josefin_Medium',sans-serif;font-size:0.65rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.plan-list{flex:1;margin-bottom:24px}
+.plan-list li{display:flex;align-items:flex-start;gap:7px;font-family:'Josefin_Light',sans-serif;font-size:0.78rem;color:var(--text-2);padding:4px 0}
+.plan-list li::before{content:'✓';font-weight:700;color:var(--gold);flex-shrink:0;font-size:0.7rem;margin-top:2px}
+.plan-cta{margin-top:auto}
+
+/* ─── CONNECT PANEL ─── */
+.connect-shell{border:1px solid var(--border);border-radius:16px;overflow:hidden;display:grid;grid-template-columns:1fr auto 1fr;background:var(--bg)}
+.connect-panel{padding:40px 36px;display:flex;flex-direction:column}
+.connect-divider{width:1px;background:linear-gradient(180deg,transparent 0%,var(--border-gold) 20%,var(--border-gold) 80%,transparent 100%)}
+.panel-head{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.panel-icon{width:36px;height:36px;border-radius:8px;display:grid;place-items:center;flex-shrink:0}
+.panel-icon .material-icons{font-size:18px}
+.panel-icon--gold{background:rgba(255,215,0,0.1);border:1px solid var(--border-gold)}
+.panel-icon--gold .material-icons{color:var(--gold)}
+.panel-icon--solid{background:var(--gold)}
+.panel-icon--solid .material-icons{color:#0a0a0a}
+.panel-title{font-family:'Josefin_Bold',sans-serif;font-size:1rem;letter-spacing:0.01em}
+.panel-sub{font-family:'Josefin_Light',sans-serif;font-size:0.75rem;color:var(--text-3)}
+/* Both forms fill their panel equally */
+.connect-panel form{display:flex;flex-direction:column;flex:1}
+.connect-panel .inq-cta,.connect-panel .login-btn{margin-top:auto}
+
+/* ─── INQUIRY FORM ─── */
+.inq-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.inq-field{margin-bottom:12px}
+.inq-label{display:block;font-family:'Josefin_Medium',sans-serif;font-size:0.7rem;color:var(--text-3);margin-bottom:3px;letter-spacing:0.02em}
+.inq-input,.inq-textarea,.inq-select{width:100%;padding:9px 12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Josefin_Light',sans-serif;font-size:0.85rem;transition:border-color .15s}
+.inq-input:focus,.inq-textarea:focus,.inq-select:focus{outline:none;border-color:var(--gold)}
+.inq-input::placeholder,.inq-textarea::placeholder{color:var(--text-4)}
+.inq-textarea{min-height:72px;resize:vertical}
+.inq-select{appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23ffd700'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.inq-ok{display:none;padding:10px 14px;margin-top:10px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:8px;font-family:'Josefin_Light',sans-serif;font-size:0.8rem;color:var(--ok)}
+.inq-ok.show{display:block}
+
+/* ─── LOGIN ─── */
+.login-wrap{display:flex;flex-direction:column;flex:1}
+.login-wrap form{flex:1;display:flex;flex-direction:column}
+.login-wrap .login-btn{margin-top:auto}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-family:'Josefin_Medium',sans-serif;font-size:0.7rem;color:var(--text-3);margin-bottom:3px;letter-spacing:0.02em}
+.connect-panel input,.connect-panel select{width:100%;padding:9px 12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Josefin_Light',sans-serif;font-size:0.85rem;transition:border-color .15s}
+.connect-panel input:focus,.connect-panel select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,215,0,0.06)}
+.connect-panel select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23ffd700'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.connect-panel select option{background:var(--bg);color:var(--text)}
+.login-btn{width:100%;padding:10px;background:var(--gold);border:none;border-radius:8px;color:#000;font-family:'Josefin_Bold',sans-serif;font-size:0.8rem;letter-spacing:0.04em;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.login-btn:hover:not(:disabled){background:var(--gold-l);box-shadow:0 4px 12px rgba(255,215,0,0.25);transform:translateY(-1px)}
+.login-btn:disabled{opacity:.5;cursor:not-allowed}
+.login-foot{text-align:center;margin-top:14px;font-family:'Josefin_Light',sans-serif;font-size:0.8rem}
+.login-foot a{color:var(--gold);transition:opacity .15s}
+.login-foot a:hover{opacity:.8}
+.login-divider{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);text-align:center}
+.login-divider p{font-family:'Josefin_Light',sans-serif;font-size:0.7rem;color:var(--text-3);margin-bottom:3px}
+.login-divider a{font-family:'Josefin_Medium',sans-serif;font-size:0.8rem;color:var(--gold)}
+.environment-badge{display:inline-block;padding:2px 8px;background:rgba(255,215,0,0.06);border:1px solid var(--border-gold);border-radius:4px;font-family:'Josefin_Medium',sans-serif;font-size:9px;letter-spacing:0.06em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+
+/* ─── ALERTS / LOADING ─── */
+.alert{padding:9px 12px;border-radius:8px;margin-bottom:14px;font-family:'Josefin_Light',sans-serif;font-size:0.8rem;display:none}
+.alert.show{display:block}
+.alert.error{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:var(--err)}
+.alert.success{background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);color:var(--ok)}
+.loading{display:none;text-align:center;padding:20px}
+.loading.show{display:block}
+.spinner{width:28px;height:28px;border:2px solid rgba(255,215,0,0.12);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ─── FOOTER ─── */
+.foot{padding:28px 24px;text-align:center;border-top:1px solid var(--border)}
+.foot p{font-family:'Josefin_Light',sans-serif;font-size:0.7rem;color:var(--text-3)}
+.foot a{color:var(--gold)}
+
+/* ─── SCROLL REVEAL ─── */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:none}
+.stagger>.reveal:nth-child(2){transition-delay:60ms}
+.stagger>.reveal:nth-child(3){transition-delay:120ms}
+.stagger>.reveal:nth-child(4){transition-delay:180ms}
+.stagger>.reveal:nth-child(5){transition-delay:240ms}
+.stagger>.reveal:nth-child(6){transition-delay:300ms}
+.stagger>.reveal:nth-child(7){transition-delay:360ms}
+.stagger>.reveal:nth-child(8){transition-delay:420ms}
+.hero-enter{opacity:0;transform:translateY(20px);animation:heroIn .8s cubic-bezier(.16,1,.3,1) forwards}
+.hero-inner>.hero-enter:nth-child(1){animation-delay:.15s}
+.hero-inner>.hero-enter:nth-child(2){animation-delay:.3s}
+.hero-inner>.hero-enter:nth-child(3){animation-delay:.45s}
+.hero-inner>.hero-enter:nth-child(4){animation-delay:.6s}
+.hero-inner>.hero-enter:nth-child(5){animation-delay:.75s}
+@keyframes heroIn{to{opacity:1;transform:none}}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:960px){
+  .feat-grid{grid-template-columns:repeat(2,1fr)}
+  .plan-grid{grid-template-columns:repeat(2,1fr)}
+  .connect-shell{grid-template-columns:1fr;border-radius:12px}
+  .connect-divider{width:100%;height:1px;background:linear-gradient(90deg,transparent 0%,var(--border-gold) 20%,var(--border-gold) 80%,transparent 100%)}
+  .connect-panel{padding:32px 24px}
+  .inq-row{grid-template-columns:1fr}
+  .nav-link:not(.nav-cta){display:none}
+}
+@media(max-width:600px){
+  .section{padding:60px 16px}
+  .plan-grid{grid-template-columns:1fr;max-width:360px;margin-left:auto;margin-right:auto}
+  .feat-grid{grid-template-columns:1fr 1fr}
+  .hero{padding:80px 16px 60px}
+  .sh{margin-bottom:32px}
+  .stagger>.reveal:nth-child(n){transition-delay:0s}
+}
+</style>
+</head>
+
+<body>
+
+<!-- ════════ NAV ════════ -->
+<nav class="nav" role="navigation">
+  <div class="nav-inner">
+    <a href="/" class="nav-brand">
+      <span class="nav-mark">K</span>
+      <span class="nav-name">Kortex</span>
+    </a>
+    <div class="nav-links">
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#pricing" class="nav-link">Pricing</a>
+      <a href="#connect" class="nav-link">Contact</a>
+      <a href="#connect" class="nav-link nav-cta">Sign In</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ════════ HERO ════════ -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge hero-enter">by Kaayko</div>
+    <h1 class="hero-title hero-enter">KORTEX</h1>
+    <p class="hero-sub hero-enter">One link. Every device. Full&nbsp;picture.</p>
+    <div class="hero-actions hero-enter">
+      <a href="#pricing" class="btn btn--gold">See Plans</a>
+      <a href="#connect" class="btn btn--ghost">Sign In</a>
+    </div>
+    <div class="hero-scroll hero-enter">↓</div>
+  </div>
+</section>
+
+<!-- ════════ FEATURES ════════ -->
+<section class="section section--alt" id="features">
+  <div class="container">
+    <div class="sh reveal">
+      <div class="sh-tag">Capabilities</div>
+      <h2 class="sh-title">One platform. Links, routing, analytics.</h2>
+    </div>
+
+    <div class="feat-grid stagger">
+      <div class="feat reveal">
+        <div class="feat-icon"><span class="material-icons">link</span></div>
+        <div class="feat-name">Smart Links</div>
+        <p class="feat-desc">Branded short URLs with custom or auto-generated codes</p>
+      </div>
+      <div class="feat reveal">
+        <div class="feat-icon"><span class="material-icons">devices</span></div>
+        <div class="feat-name">Device Routing</div>
+        <p class="feat-desc">One URL sends users to iOS, Android, or web automatically</p>
+      </div>
+      <div class="feat reveal">
+        <div class="feat-icon"><span class="material-icons">science</span></div>
+        <div class="feat-name">A/B Testing</div>
+        <p class="feat-desc">Weighted traffic splits across multiple destinations</p>
+      </div>
+      <div class="feat reveal">
+        <div class="feat-icon"><span class="material-icons">bar_chart</span></div>
+        <div class="feat-name">Click Analytics</div>
+        <p class="feat-desc">Clicks, referrers, devices, and UTM campaigns in one dashboard</p>
+      </div>
+      <div class="feat reveal">
+        <div class="feat-icon"><span class="material-icons">track_changes</span></div>
+        <div class="feat-name">Attribution</div>
+        <p class="feat-desc">Connects ad clicks to app installs across store redirects</p>
+      </div>
+      <div class="feat reveal">
+        <div class="feat-icon"><span class="material-icons">bolt</span></div>
+        <div class="feat-name">Webhooks</div>
+        <p class="feat-desc">HMAC-signed click and install events pushed to your server</p>
+      </div>
+      <div class="feat reveal">
+        <div class="feat-icon"><span class="material-icons">code</span></div>
+        <div class="feat-name">REST API</div>
+        <p class="feat-desc">Scoped API keys, batch creation, built-in rate limiting</p>
+      </div>
+      <div class="feat reveal">
+        <div class="feat-icon"><span class="material-icons">admin_panel_settings</span></div>
+        <div class="feat-name">Multi-Tenant</div>
+        <p class="feat-desc">Isolated orgs with four roles: viewer, editor, admin, super-admin</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ PRICING ════════ -->
+<section class="section" id="pricing">
+  <div class="container">
+    <div class="sh reveal">
+      <div class="sh-tag">Pricing</div>
+      <h2 class="sh-title">Start free. Unlock as you grow.</h2>
+      <p class="sh-desc">Every tier includes everything below it.</p>
+    </div>
+
+    <div class="plan-grid stagger">
+      <!-- Starter -->
+      <div class="plan reveal">
+        <div class="plan-name">Starter</div>
+        <div class="plan-price">$0 <span>/ mo</span></div>
+        <div class="plan-note">Free forever</div>
+        <div class="plan-divider"></div>
+        <ul class="plan-list">
+          <li>25 short links</li>
+          <li>Custom or auto-generated link codes</li>
+          <li>Auto-detect device and redirect to the right destination</li>
+          <li>See clicks, referrers, and devices in your dashboard</li>
+          <li>Set links to expire on a specific date</li>
+        </ul>
+        <a href="#connect" class="btn btn--ghost btn--sm btn--block plan-cta">Get Started</a>
+      </div>
+
+      <!-- Growth -->
+      <div class="plan plan--hl reveal">
+        <div class="plan-badge">Popular</div>
+        <div class="plan-name">Growth</div>
+        <div class="plan-price">$79 <span>/ mo</span></div>
+        <div class="plan-note">Billed monthly</div>
+        <div class="plan-divider"></div>
+        <div class="plan-includes">Everything in Starter, plus</div>
+        <ul class="plan-list">
+          <li>1,000 short links</li>
+          <li>Track which ad click led to each app install</li>
+          <li>Tag links with campaign, source, and medium data</li>
+          <li>10K API calls per month</li>
+        </ul>
+        <a href="#connect" class="btn btn--gold btn--sm btn--block plan-cta">Start Free Trial</a>
+      </div>
+
+      <!-- Scale -->
+      <div class="plan reveal">
+        <div class="plan-name">Scale</div>
+        <div class="plan-price">$249 <span>/ mo</span></div>
+        <div class="plan-note">Billed monthly</div>
+        <div class="plan-divider"></div>
+        <div class="plan-includes">Everything in Growth, plus</div>
+        <ul class="plan-list">
+          <li>5,000 short links</li>
+          <li>Separate workspaces for each team or client</li>
+          <li>Four permission levels per workspace</li>
+          <li>Generate personal API keys with custom permissions</li>
+          <li>Create up to 100 links in a single API call</li>
+          <li>50K API calls per month</li>
+        </ul>
+        <a href="#connect" class="btn btn--ghost btn--sm btn--block plan-cta">Contact Sales</a>
+      </div>
+
+      <!-- Enterprise -->
+      <div class="plan reveal">
+        <div class="plan-name">Enterprise</div>
+        <div class="plan-price">Custom</div>
+        <div class="plan-note">Annual billing available</div>
+        <div class="plan-divider"></div>
+        <div class="plan-includes">Everything in Scale, plus</div>
+        <ul class="plan-list">
+          <li>Unlimited links &amp; API calls</li>
+          <li>Uptime SLA</li>
+          <li>Dedicated onboarding</li>
+          <li>Direct engineering support</li>
+        </ul>
+        <a href="#connect" class="btn btn--ghost btn--sm btn--block plan-cta">Talk to Us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ CONNECT ════════ -->
+<section class="section section--alt" id="connect">
+  <div class="container">
+    <div class="sh reveal">
+      <div class="sh-tag">Get Started</div>
+      <h2 class="sh-title">Ready when you are.</h2>
+    </div>
+
+    <div class="connect-shell reveal">
+      <!-- LEFT — Inquiry -->
+      <div class="connect-panel">
+        <div class="panel-head">
+          <div class="panel-icon panel-icon--gold"><span class="material-icons">mail_outline</span></div>
+          <div>
+            <div class="panel-title">Get in Touch</div>
+            <div class="panel-sub">Tell us what you're building</div>
+          </div>
+        </div>
+
+        <form id="inquiry-form">
+          <div class="inq-row">
+            <div class="inq-field">
+              <label class="inq-label" for="inq-name">Name *</label>
+              <input class="inq-input" type="text" id="inq-name" required placeholder="Jane Smith">
+            </div>
+            <div class="inq-field">
+              <label class="inq-label" for="inq-email">Work Email *</label>
+              <input class="inq-input" type="email" id="inq-email" required placeholder="jane@company.com">
+            </div>
+          </div>
+          <div class="inq-row">
+            <div class="inq-field">
+              <label class="inq-label" for="inq-company">Company</label>
+              <input class="inq-input" type="text" id="inq-company" placeholder="Optional">
+            </div>
+            <div class="inq-field">
+              <label class="inq-label" for="inq-plan">Interested In</label>
+              <select class="inq-select" id="inq-plan">
+                <option value="General Inquiry">General Inquiry</option>
+                <option value="Growth Plan ($49/mo)">Growth — $49/mo</option>
+                <option value="Scale Plan ($149/mo)">Scale — $149/mo</option>
+                <option value="Enterprise (Custom)">Enterprise — Custom</option>
+              </select>
+            </div>
+          </div>
+          <div class="inq-field">
+            <label class="inq-label" for="inq-message">Message *</label>
+            <textarea class="inq-textarea" id="inq-message" required placeholder="What are you looking to do?"></textarea>
+          </div>
+          <div class="inq-cta">
+            <button type="submit" class="btn btn--gold btn--block">Send Inquiry</button>
+          </div>
+          <div id="inq-ok" class="inq-ok">
+            ✓ Email client will open with a pre-filled message to <strong>kortex@kaayko.com</strong>.
+          </div>
+        </form>
+      </div>
+
+      <!-- DIVIDER -->
+      <div class="connect-divider"></div>
+
+      <!-- RIGHT — Login -->
+      <div class="connect-panel" id="login">
+        <div class="panel-head">
+          <div class="panel-icon panel-icon--solid"><span class="material-icons">lock_open</span></div>
+          <div>
+            <div class="panel-title">Sign In</div>
+            <div class="panel-sub">Access your Kortex dashboard</div>
+          </div>
+        </div>
+
+        <div class="login-wrap">
+          <div style="margin-bottom:12px">
+            <span class="environment-badge" id="env-badge">Loading…</span>
+          </div>
+
+          <div id="alert" class="alert"></div>
+
+          <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p style="color:var(--text-3);font-family:'Josefin_Light',sans-serif;font-size:0.8rem">Authenticating…</p>
+          </div>
+
+          <form id="login-form">
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" required autocomplete="email" placeholder="you@company.com">
+            </div>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input type="password" id="password" required autocomplete="current-password" placeholder="••••••••">
+            </div>
+            <div class="form-group" id="tenant-selection-group" style="display:none">
+              <label for="tenant">Tenant</label>
+              <select id="tenant"><option value="">Loading…</option></select>
+            </div>
+            <button type="submit" id="login-btn" class="login-btn">Sign In</button>
+          </form>
+
+          <div class="login-foot">
+            <a href="#" id="forgot-password-link">Forgot password?</a>
+          </div>
+          <div class="login-divider">
+            <p>New organization?</p>
+            <a href="/admin/tenant-registration">Register a Tenant →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ FOOTER ════════ -->
+<footer class="foot">
+  <p>© 2026 <a href="/">Kaayko</a>. All rights reserved.</p>
+</footer>
+
+<!-- ════════ SCRIPTS ════════ -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+<script>
+  /* ─── CONFIG ─── */
+  const CONFIG = {
+    ENVIRONMENT: localStorage.getItem('kaayko_environment') || 'production',
+    LOCAL_API: 'http://127.0.0.1:5001/kaaykostore/us-central1/api',
+    PROD_API: 'https://api-vwcc5j4qda-uc.a.run.app',
+    get API_BASE() {
+      return this.ENVIRONMENT === 'production' ? this.PROD_API : this.LOCAL_API;
+    }
+  };
+
+  console.log(`🔧 Environment: ${CONFIG.ENVIRONMENT}`);
+  console.log(`📡 API: ${CONFIG.API_BASE}`);
+
+  /* ─── FIREBASE ─── */
+  const firebaseConfig = {
+    apiKey: "AIzaSyC59ECKLt3rowOoavF76hV_djb--W4jekA",
+    authDomain: "kaaykostore.firebaseapp.com",
+    projectId: "kaaykostore",
+    appId: "1:87383373015:web:ee1ce56d4f5192ec67ec92",
+    storageBucket: "kaaykostore.firebasestorage.app",
+    messagingSenderId: "87383373015"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  document.getElementById('env-badge').textContent =
+    CONFIG.ENVIRONMENT.charAt(0).toUpperCase() + CONFIG.ENVIRONMENT.slice(1);
+
+  /* ─── FORGOT PASSWORD ─── */
+  document.getElementById('forgot-password-link').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const email = prompt('Enter your email address:');
+    if (!email) return;
+    try {
+      await auth.sendPasswordResetEmail(email);
+      showAlert('success', `Password reset email sent to ${email}.`);
+    } catch (error) {
+      if (error.code === 'auth/user-not-found') {
+        showAlert('error', 'No account found with this email.');
+      } else {
+        showAlert('error', 'Failed to send reset email. Please try again.');
+      }
+    }
+  });
+
+  /* ─── STATE ─── */
+  let loginState = { user: null, idToken: null, role: null, tenants: [], step: 'credentials' };
+
+  /* ─── FORM ─── */
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (loginState.step === 'credentials') await handleCredentialsStep();
+    else if (loginState.step === 'tenant-selection') await handleTenantSelectionStep();
+  });
+
+  async function handleCredentialsStep() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const loginBtn = document.getElementById('login-btn');
+    const loading = document.getElementById('loading');
+    const form = document.getElementById('login-form');
+
+    try {
+      loginBtn.disabled = true;
+      form.style.display = 'none';
+      loading.classList.add('show');
+      hideAlert();
+
+      const cred = await auth.signInWithEmailAndPassword(email, password);
+      const user = cred.user;
+      const idToken = await user.getIdToken();
+      const role = (await user.getIdTokenResult()).claims.role;
+
+      if (!role || !['super-admin','admin','editor','viewer'].includes(role)) {
+        throw new Error('Access denied. Admin role required.');
+      }
+
+      loginState.user = user;
+      loginState.idToken = idToken;
+      loginState.role = role;
+
+      await fetchUserTenants(idToken, user.uid, role);
+      loginState.step = 'tenant-selection';
+      showTenantSelection();
+
+      loginBtn.disabled = false;
+      form.style.display = 'block';
+      loading.classList.remove('show');
+    } catch (error) {
+      let msg = 'Login failed. Please try again.';
+      if (error.code === 'auth/user-not-found') msg = 'No account found with this email.';
+      else if (error.code === 'auth/wrong-password') msg = 'Incorrect password.';
+      else if (error.code === 'auth/invalid-email') msg = 'Invalid email address.';
+      else if (error.code === 'auth/too-many-requests') msg = 'Too many attempts. Try again later.';
+      else if (error.message) msg = error.message;
+      showAlert('error', msg);
+      loginBtn.disabled = false;
+      form.style.display = 'block';
+      loading.classList.remove('show');
+    }
+  }
+
+  async function fetchUserTenants(idToken, uid, role) {
+    try {
+      const res = await fetch(`${CONFIG.API_BASE}/smartlinks/tenants`, {
+        headers: { 'Authorization': `Bearer ${idToken}` }
+      });
+      if (!res.ok) throw new Error('Failed to fetch tenants');
+      const data = await res.json();
+      loginState.tenants = (data.success && data.tenants?.length)
+        ? data.tenants
+        : [{ id: 'kaayko-default', name: 'Kaayko (Default)' }];
+    } catch {
+      loginState.tenants = [{ id: 'kaayko-default', name: 'Kaayko (Default)' }];
+    }
+  }
+
+  function showTenantSelection() {
+    document.getElementById('email').parentElement.style.display = 'none';
+    document.getElementById('password').parentElement.style.display = 'none';
+    document.getElementById('tenant-selection-group').style.display = 'block';
+
+    const sel = document.getElementById('tenant');
+    sel.innerHTML = '';
+    if (loginState.tenants.length <= 1) {
+      const t = loginState.tenants[0];
+      sel.innerHTML = `<option value="${t.id}" selected>${t.name}</option>`;
+    } else {
+      sel.innerHTML = '<option value="">Select a tenant</option>';
+      loginState.tenants.forEach(t => {
+        const o = document.createElement('option');
+        o.value = t.id; o.textContent = t.name; sel.appendChild(o);
+      });
+    }
+
+    document.getElementById('login-btn').textContent = 'Continue to Dashboard';
+    const label = loginState.role === 'super-admin' ? 'Super Admin' : loginState.role.charAt(0).toUpperCase() + loginState.role.slice(1);
+    showAlert('success', `Signed in as ${label}. Select your tenant.`);
+  }
+
+  async function handleTenantSelectionStep() {
+    const tenantId = document.getElementById('tenant').value;
+    if (!tenantId) { showAlert('error', 'Please select a tenant'); return; }
+
+    const loginBtn = document.getElementById('login-btn');
+    const loading = document.getElementById('loading');
+    const form = document.getElementById('login-form');
+
+    try {
+      loginBtn.disabled = true;
+      form.style.display = 'none';
+      loading.classList.add('show');
+      hideAlert();
+
+      const tenant = loginState.tenants.find(t => t.id === tenantId);
+      localStorage.setItem('kaayko_auth_token', loginState.idToken);
+      localStorage.setItem('kaayko_user', JSON.stringify({
+        uid: loginState.user.uid,
+        email: loginState.user.email,
+        displayName: loginState.user.displayName || loginState.user.email.split('@')[0],
+        role: loginState.role,
+        emailVerified: loginState.user.emailVerified,
+        tenantId, tenantName: tenant?.name || tenantId
+      }));
+      localStorage.setItem('kaayko_tenant_id', tenantId);
+      localStorage.setItem('kaayko_environment', CONFIG.ENVIRONMENT);
+
+      showAlert('success', `Redirecting to ${tenant?.name || tenantId}…`);
+      setTimeout(() => { window.location.href = '/admin/kortex'; }, 800);
+
+      setTimeout(() => {
+        if (document.getElementById('loading').classList.contains('show')) {
+          showAlert('error', 'Redirect timed out. Click below to continue.');
+          document.getElementById('loading').classList.remove('show');
+          form.style.display = 'block';
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'Go to Dashboard';
+          loginBtn.onclick = () => { window.location.href = '/admin/kortex'; };
+        }
+      }, 6000);
+    } catch {
+      showAlert('error', 'Something went wrong. Please try again.');
+      loginBtn.disabled = false;
+      form.style.display = 'block';
+      loading.classList.remove('show');
+    }
+  }
+
+  /* ─── HELPERS ─── */
+  function showAlert(type, message) {
+    const el = document.getElementById('alert');
+    el.className = `alert ${type} show`;
+    el.textContent = message;
+  }
+  function hideAlert() {
+    const el = document.getElementById('alert');
+    el.className = 'alert'; el.textContent = '';
+  }
+
+  /* ─── AUTH STATE ─── */
+  auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      const t = localStorage.getItem('kaayko_auth_token');
+      const n = localStorage.getItem('kaayko_tenant_id');
+      if (t && n) {
+        try {
+          localStorage.setItem('kaayko_auth_token', await user.getIdToken(true));
+          window.location.href = '/admin/kortex';
+          return;
+        } catch {
+          localStorage.removeItem('kaayko_auth_token');
+          localStorage.removeItem('kaayko_user');
+          localStorage.removeItem('kaayko_tenant_id');
+        }
+      }
+    }
+    document.getElementById('login-form').style.display = 'block';
+    document.getElementById('loading').classList.remove('show');
+    document.getElementById('login-btn').disabled = false;
+  });
+
+  /* ─── INQUIRY ─── */
+  document.getElementById('inquiry-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const name = document.getElementById('inq-name').value.trim();
+    const email = document.getElementById('inq-email').value.trim();
+    const company = document.getElementById('inq-company').value.trim();
+    const plan = document.getElementById('inq-plan').value;
+    const message = document.getElementById('inq-message').value.trim();
+
+    const subject = encodeURIComponent('Kortex Inquiry — ' + plan + (company ? ' (' + company + ')' : ''));
+    const body = encodeURIComponent(
+      'Name: ' + name + '\nEmail: ' + email +
+      (company ? '\nCompany: ' + company : '') +
+      '\nPlan: ' + plan + '\n\n' + message
+    );
+    window.location.href = 'mailto:kortex@kaayko.com?subject=' + subject + '&body=' + body;
+    document.getElementById('inq-ok').classList.add('show');
+    setTimeout(() => { this.reset(); }, 500);
+  });
+
+  /* ─── SCROLL REVEAL ─── */
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        revealObserver.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+</script>
+</body>
+</html>

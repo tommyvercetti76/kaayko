@@ -2,7 +2,7 @@ import { getAllProducts } from "./kaayko_apiClient.js";
 
 // 1) Image‐proxy base (reuse your existing Cloud Function)
 const IMAGE_PROXY_BASE =
-  "https://us-central1-kaayko-api-dev.cloudfunctions.net/api/images";
+  "https://api-vwcc5j4qda-uc.a.run.app/images";
 
 // 2) Your 20 fake reviews
 const fakeTestimonials = [

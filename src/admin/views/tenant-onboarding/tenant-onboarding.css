@@ -734,6 +734,8 @@
   
   .wizard-steps {
     flex-wrap: wrap;
+    gap: var(--space-sm);
+    justify-content: center;
   }
   
   .wizard-step-line {
@@ -764,9 +766,22 @@
   
   .wizard-actions {
     padding: var(--space-md);
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .wizard-actions button {
+    width: 100%;
+    justify-content: center;
   }
   
   .input-group {
     flex-direction: column;
+  }
+
+  .step-circle {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
   }
 }
