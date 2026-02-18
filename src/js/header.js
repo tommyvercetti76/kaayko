@@ -32,6 +32,7 @@ function populateMenu() {
     { name: "Store", url: "store.html", subtitle: "Made for the Wild" },
     { name: "Reads", url: "reads.html", subtitle: "Thoughts. Perspectives. Stories." },
     { name: "About", url: "about.html", subtitle: "Water. Maps. Intelligence." },
+    { name: "Karma", url: "karma.html", subtitle: "Giving Back" },
     { name: "Kreator", url: "kreator/apply.html", subtitle: "Creator Program" },
     { name: "Kortex", url: "admin/kortex.html", subtitle: "Intelligent Link Routing" }
   ];

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns#">
+<head>
+  <script src="/js/prod-config.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <!-- Primary Meta Tags -->
+  <title>Karma - Community Projects | Kaayko</title>
+  <meta name="description" content="Kaayko Karma - Giving back through technology. Explore community projects modernizing schools and organizations." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://kaayko.com/karma" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://kaayko.com/karma">
+  <meta property="og:title" content="Karma - Community Projects | Kaayko">
+  <meta property="og:description" content="Giving back through technology. Community projects by Kaayko.">
+  <meta property="og:site_name" content="Kaayko">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Karma - Community Projects | Kaayko">
+  <meta name="twitter:description" content="Giving back through technology. Community projects by Kaayko.">
+
+  <!-- Security -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <meta name="theme-color" content="#d4af37">
+
+  <!-- Shared Styles -->
+  <link rel="stylesheet" href="/css/storestyle.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+  <!-- Page-specific styles -->
+  <style>
+    /* ── Karma Page ──────────────────────────────────────────────── */
+
+    .karma-hero {
+      text-align: center;
+      padding: 60px 20px 20px;
+    }
+    .karma-hero h2 {
+      font-family: 'Josefin_Bold', Arial, sans-serif;
+      font-size: 2.4rem;
+      color: var(--color-text-base);
+      margin-bottom: 8px;
+    }
+    .karma-hero p {
+      font-family: 'Josefin_Light', Arial, sans-serif;
+      font-size: 1.1rem;
+      color: var(--color-text-subtle);
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ── Tile Grid ───────────────────────────────────────────────── */
+    .karma-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 28px;
+      padding: 40px 24px 80px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* ── Individual Tile ─────────────────────────────────────────── */
+    .karma-tile {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--color-card-bg);
+      border-radius: 16px;
+      padding: 48px 32px;
+      text-decoration: none;
+      color: var(--color-text-base);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      cursor: pointer;
+      overflow: hidden;
+      min-height: 220px;
+    }
+    .karma-tile:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.14);
+    }
+
+    .karma-tile .tile-icon {
+      font-size: 48px;
+      color: var(--color-accent);
+      margin-bottom: 16px;
+      transition: transform 0.3s ease;
+    }
+    .karma-tile:hover .tile-icon {
+      transform: scale(1.1);
+    }
+
+    .karma-tile .tile-title {
+      font-family: 'Josefin_Bold', Arial, sans-serif;
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+    }
+    .karma-tile .tile-desc {
+      font-family: 'Josefin_Light', Arial, sans-serif;
+      font-size: 0.95rem;
+      color: var(--color-text-subtle);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .karma-tile .tile-arrow {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      font-size: 20px;
+      color: var(--color-text-subtle);
+      opacity: 0;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .karma-tile:hover .tile-arrow {
+      opacity: 1;
+      transform: translate(2px, -2px);
+    }
+
+    /* ── Dark Mode ───────────────────────────────────────────────── */
+    .dark-theme .karma-tile {
+      background: #1e1e1e;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    .dark-theme .karma-tile:hover {
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+    }
+    .dark-theme .karma-hero h2 {
+      color: #f0f0f0;
+    }
+    .dark-theme .karma-hero p,
+    .dark-theme .karma-tile .tile-desc {
+      color: #aaa;
+    }
+    .dark-theme .karma-tile .tile-title {
+      color: #f0f0f0;
+    }
+
+    /* ── Responsive ──────────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .karma-hero { padding: 40px 16px 12px; }
+      .karma-hero h2 { font-size: 1.8rem; }
+      .karma-grid { padding: 24px 16px 60px; gap: 20px; }
+      .karma-tile { padding: 36px 24px; min-height: 180px; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- HEADER (shared across all pages) -->
+  <header class="header">
+    <div class="header-top">
+      <div class="header-brand">
+        <h1 class="header-title">Kaayko</h1>
+        <p class="header-subtitle">Giving Back</p>
+      </div>
+
+      <!-- Desktop nav (populated by header.js) -->
+      <nav class="top-menu"><ul></ul></nav>
+
+      <!-- Controls -->
+      <div class="header-controls">
+        <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode"></button>
+        <button class="fab-menu material-icons mobile-only" aria-label="Open Menu">menu</button>
+      </div>
+    </div>
+
+    <!-- Mobile overlay menu -->
+    <div class="mobile-menu-overlay">
+      <ul></ul>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    <section class="karma-hero">
+      <h2>Karma</h2>
+      <p>Pro-bono projects giving back to communities through technology.</p>
+    </section>
+
+    <section class="karma-grid">
+      <!-- Modernizing Schools Tile -->
+      <a class="karma-tile" href="/karma/schools/somalwar" target="_blank" rel="noopener noreferrer">
+        <span class="material-icons tile-icon">school</span>
+        <span class="tile-title">Modernizing Schools</span>
+        <span class="tile-desc">Building modern digital experiences for educational institutions.</span>
+        <span class="material-icons tile-arrow">open_in_new</span>
+      </a>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
+  </footer>
+
+  <!-- SCRIPTS -->
+  <script src="js/header.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("year").textContent = new Date().getFullYear();
+    });
+  </script>
+</body>
+</html>
