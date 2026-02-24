@@ -424,7 +424,7 @@
       border-color: rgba(16,185,129,0.4);
       color: #fff;
     }
-    .grade-circle {
+    .answer-check {
       flex-shrink: 0;
       width: 28px;
       height: 28px;
@@ -432,17 +432,14 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.72rem;
-      font-family: 'JetBrains Mono', monospace;
-      font-weight: 700;
       background: var(--dim);
-      color: var(--muted);
     }
-    .answer-pill.selected .grade-circle {
+    .answer-check svg { width: 12px; height: 12px; opacity: 0; transition: opacity 0.15s; }
+    .answer-pill.selected .answer-check {
       background: rgba(16,185,129,0.2);
-      color: var(--green);
       border: 1px solid rgba(16,185,129,0.35);
     }
+    .answer-pill.selected .answer-check svg { opacity: 1; }
     .answer-text { line-height: 1.5; padding-top: 2px; font-size: 0.82rem }
 
     /* ── Progress Ring ───────────────────────────── */
@@ -1349,8 +1346,8 @@
           const info = json.data;
           document.getElementById('invite-title-display').textContent = info.title || 'ROOTS Assessment';
           document.getElementById('invite-school-display').textContent = info.schoolName
-            ? `${info.schoolName} · ${info.assessmentType} assessment`
-            : `${info.assessmentType} assessment`;
+            ? `${info.schoolName} · ${info.assessmentType || 'general'} assessment`
+            : `${info.assessmentType || 'general'} assessment`;
           // Auto-select assessment type from invite
           if (info.assessmentType === 'teacher' || info.assessmentType === 'parent') {
             window.selectInviteType(info.assessmentType);
@@ -1761,7 +1758,7 @@
         sessionHistory.unshift({
           sessionId: currentSession,
           startedAt: new Date().toISOString(),
-          childAge,
+          ...(childAge != null && { childAge }),
           schoolId,
           status: 'active',
         });
@@ -1786,7 +1783,7 @@
 
       document.getElementById('q-progress').textContent = `QUESTION ${questionNumber} OF ${totalQuestions}`;
       document.getElementById('q-domain').textContent = (q.domain || '').replace(/_/g, ' ');
-      document.getElementById('q-text').textContent = q.text;
+      document.getElementById('q-text').textContent = q.text || '';
 
       // Progress ring (r=20, circumference = 2*PI*20 = 125.66)
       const completed = questionNumber - 1;
@@ -1794,15 +1791,15 @@
       const offset = circumference * (1 - completed / totalQuestions);
       document.getElementById('progress-arc').setAttribute('stroke-dashoffset', offset.toString());
 
-      document.getElementById('q-info').textContent = `${currentSession?.slice(0,8)}… · Q${q.id || ''} · ${new Date().toLocaleTimeString()}`;
+      document.getElementById('q-info').textContent = `${currentSession?.slice(0,8) ?? '—'}… · Q${q.id || ''} · ${new Date().toLocaleTimeString()}`;
 
       // Answers — API returns: { index, text } (grade deliberately withheld)
       const answersEl = document.getElementById('q-answers');
-      answersEl.innerHTML = q.answers.map((a) => {
+      answersEl.innerHTML = (q.answers || []).map((a) => {
         return `
           <button class="answer-pill" data-index="${a.index}" onclick="selectAnswer(${a.index})">
             <span class="answer-check"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-            <span class="answer-text">${a.text}</span>
+            <span class="answer-text">${a.text || ''}</span>
           </button>
         `;
       }).join('');
@@ -1972,7 +1969,7 @@
         if (data.scoreArtifact) {
           const sa = data.scoreArtifact;
           html += `<div style="text-align:center;margin-bottom:20px;padding:16px;border-radius:6px;background:rgba(99,179,237,0.05);border:1px solid rgba(99,179,237,0.1)">`;
-          html += `<div style="font-size:2rem;font-weight:700;color:var(--accent);font-family:'JetBrains Mono',monospace">${Math.round(sa.overallScore)}</div>`;
+          html += `<div style="font-size:2rem;font-weight:700;color:var(--accent);font-family:'JetBrains Mono',monospace">${Math.round(sa.overallScore ?? 0)}</div>`;
           html += `<div style="font-size:0.6rem;color:var(--muted);margin-top:2px">Deterministic Score · Confidence: ${Math.round((sa.overallConfidence || 0) * 100)}%</div>`;
           if (sa.flags && sa.flags.length > 0) {
             html += `<div style="margin-top:6px">${sa.flags.map(f => '<span style="display:inline-block;padding:1px 6px;border-radius:2px;font-size:0.55rem;background:rgba(245,158,11,0.12);color:#f59e0b;margin:2px">' + f + '</span>').join('')}</div>`;
@@ -1983,8 +1980,8 @@
           if (sa.domainScores && sa.domainScores.length > 0) {
             html += `<div style="font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Deterministic Domain Scores</div>`;
             sa.domainScores.forEach(ds => {
-              const cfg = DOMAIN_CFG[ds.domain] || { label: ds.domain.replace(/_/g, ' '), color: '#63b3ed' };
-              const pct = Math.round(ds.score);
+              const cfg = DOMAIN_CFG[ds.domain] || { label: (ds.domain || 'unknown').replace(/_/g, ' '), color: '#63b3ed' };
+              const pct = Math.round(ds.score ?? 0);
               html += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:0.75rem">`;
               html += `<span style="width:140px;color:var(--text-dim);font-size:0.7rem">${cfg.label}</span>`;
               html += `<div style="flex:1;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;position:relative">`;
@@ -2015,7 +2012,7 @@
               const divColor = Math.abs(d.divergence) > 15 ? '#ef4444' : Math.abs(d.divergence) > 8 ? '#f59e0b' : '#10b981';
               html += `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.72rem">`;
               html += `<span style="color:var(--text-dim)">${(d.domain || '').replace(/_/g, ' ')}</span>`;
-              html += `<span style="font-family:'JetBrains Mono',monospace;color:${divColor}">${d.divergence > 0 ? '+' : ''}${d.divergence?.toFixed?.(1) || d.divergence}</span>`;
+              html += `<span style="font-family:'JetBrains Mono',monospace;color:${divColor}">${d.divergence > 0 ? '+' : ''}${d.divergence?.toFixed?.(1) ?? d.divergence ?? '—'}</span>`;
               html += `</div>`;
             });
             html += `</div>`;
@@ -2088,7 +2085,7 @@
           const color = typeColors[ev.type] || '#63b3ed';
           evHtml += `<div style="display:flex;gap:8px;align-items:flex-start;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:0.68rem">`;
           evHtml += `<span style="font-family:'JetBrains Mono',monospace;color:var(--muted);min-width:20px;text-align:right">${ev.sequence ?? i}</span>`;
-          evHtml += `<span style="display:inline-block;padding:1px 6px;border-radius:2px;font-size:0.55rem;background:${color}18;color:${color};min-width:100px;text-align:center">${ev.type}</span>`;
+          evHtml += `<span style="display:inline-block;padding:1px 6px;border-radius:2px;font-size:0.55rem;background:${color}18;color:${color};min-width:100px;text-align:center">${ev.type || 'unknown'}</span>`;
           evHtml += `<span style="color:var(--text-dim);flex:1;font-size:0.62rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${JSON.stringify(ev.payload || {}).slice(0, 120)}</span>`;
           evHtml += `</div>`;
         });
@@ -2127,7 +2124,7 @@
             </div>
             <span class="improve-priority" style="background:${priorityBg};color:${priorityColor}">${priorityLabel}</span>
           </div>
-          <ul class="improve-list"><li>${s.text}</li></ul>
+          <ul class="improve-list"><li>${s.text || 'No details available'}</li></ul>
           ${s.rationale ? '<div class="improve-note"><strong style="color:var(--accent);font-style:normal">Engine rationale:</strong> ' + s.rationale + '</div>' : ''}
           <div style="margin-top:8px;display:flex;gap:6px">
             <button onclick="rateSuggestion('${s.suggestionId}','VeryHelpful')" class="btn feedback-btn" data-label="Very Helpful" style="font-size:0.55rem;padding:2px 8px;background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.2);border-radius:3px;cursor:pointer" title="Very Helpful">👍 Very Helpful</button>
@@ -2221,7 +2218,9 @@
         communication_quality: '#ec4899', aspiration_alignment: '#8b5cf6',
       };
 
-      document.getElementById('heatmap').innerHTML = domains.map(([domain, { mean, confidence }]) => {
+      document.getElementById('heatmap').innerHTML = domains.map(([domain, data]) => {
+        const mean = data?.mean ?? 0;
+        const confidence = data?.confidence ?? 0;
         const color = colors[domain] || '#63b3ed';
         const opacity = 0.15 + confidence * 0.35;
         const bg = `rgba(${hexToRgb(color)},${opacity})`;
@@ -2289,7 +2288,7 @@
           <div class="domain-bar-row">
             <span class="domain-bar-label">${label}</span>
             <div class="domain-bar-track">
-              ${ci ? `<div style="position:absolute;left:${ci.p10}%;width:${ci.p90 - ci.p10}%;background:${domColor};opacity:0.15;height:100%;border-radius:3px"></div>` : ''}
+              ${ci ? `<div style="position:absolute;left:${ci.p10 ?? 0}%;width:${(ci.p90 ?? 0) - (ci.p10 ?? 0)}%;background:${domColor};opacity:0.15;height:100%;border-radius:3px"></div>` : ''}
               <div class="domain-bar-fill" style="width:${score}%;background:${domColor}"></div>
             </div>
             <span class="domain-bar-value" style="color:${domColor}">${Math.round(score)}</span>
@@ -2992,10 +2991,10 @@
             <span style="color:${cfg.color};margin-left:6px">${cfg.icon || ''}</span>
             ${j.responseTimeMs ? `<span style="margin-left:8px;opacity:0.5">${(j.responseTimeMs / 1000).toFixed(1)}s</span>` : ''}
           </div>
-          <div class="journey-q-text">${j.question.text}</div>
+          <div class="journey-q-text">${j.question.text || ''}</div>
           <div class="journey-answer">
             <span class="journey-grade" style="background:${qualityColor}20;color:${qualityColor};border:1px solid ${qualityColor}40">${qualitySymbol} ${mainDelta > 0 ? '+' : ''}${mainDelta}%</span>
-            <span class="journey-answer-text">${j.answer.text}</span>
+            <span class="journey-answer-text">${j.answer.text || ''}</span>
           </div>
           ${deltas.length > 0 ? `<div class="journey-deltas">
             ${deltas.map(d => `<span class="journey-delta" style="background:${d.delta > 0 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'};color:${d.delta > 0 ? '#10b981' : '#ef4444'}">${d.label} ${d.delta > 0 ? '+' : ''}${d.delta}%</span>`).join('')}
@@ -3042,7 +3041,7 @@
              onmouseenter="this.style.borderColor='rgba(99,179,237,0.25)'" onmouseleave="this.style.borderColor=''">
           <div>
             <div style="font-size:0.78rem;font-weight:600;font-family:'JetBrains Mono',monospace;color:#fff">${s.sessionId.slice(0,12)}…</div>
-            <div style="font-size:0.65rem;color:var(--muted)">${new Date(s.startedAt).toLocaleString()} · Age ${s.childAge}</div>
+            <div style="font-size:0.65rem;color:var(--muted)">${new Date(s.startedAt).toLocaleString()}${s.childAge != null ? ' · Age ' + s.childAge : ''}</div>
           </div>
           <div>
             <span style="font-size:0.58rem;padding:3px 10px;border-radius:3px;font-weight:600;font-family:'JetBrains Mono',monospace;letter-spacing:0.08em;
