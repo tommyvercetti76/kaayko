@@ -1167,6 +1167,18 @@
               <div id="model-strengths"></div>
               <div style="font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);margin:20px 0 14px">Model-Predicted Improvements</div>
               <div id="improvements" class="improvements-grid"></div>
+
+              <!-- Learning Suggestions Opt-In (D-002) -->
+              <div id="learning-optin-section" style="margin-top:28px;display:none">
+                <div style="text-align:center;padding:16px 12px;border:1px dashed rgba(212,175,55,0.25);border-radius:8px;background:rgba(212,175,55,0.04)">
+                  <div style="font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Personalised Learning · Beta</div>
+                  <p style="font-size:0.72rem;color:var(--text-dim);margin-bottom:12px;max-width:400px;margin-left:auto;margin-right:auto">Enable AI-driven learning suggestions tailored to your assessment results. Your feedback helps improve future recommendations.</p>
+                  <button id="btn-learning-optin" class="btn btn-gold btn-sm" onclick="activateLearning()" style="font-size:0.68rem;padding:6px 20px">
+                    ✦ Enable Learning Suggestions (Beta)
+                  </button>
+                </div>
+              </div>
+              <div id="learning-suggestions" style="margin-top:20px;display:none"></div>
             </div>
             <!-- Report (Prototype Engine) -->
             <div id="rtab-report" class="card-body hidden">
@@ -1180,6 +1192,7 @@
               <div id="report-suggestions" style="margin-top:24px"></div>
               <div id="report-events" style="margin-top:24px"></div>
               <div id="report-meta" style="margin-top:16px;font-size:0.6rem;color:var(--muted);text-align:center;font-family:'JetBrains Mono',monospace"></div>
+              <div id="report-engine-version" style="margin-top:8px;font-size:0.52rem;color:var(--muted);text-align:center;font-family:'JetBrains Mono',monospace;opacity:0.6"></div>
             </div>
             <!-- Decision Tree -->
             <div id="rtab-tree" class="card-body hidden">
@@ -1910,9 +1923,17 @@
         prototypeData = result.data || result;
         addLog('success', `Prototype data loaded: artifact=${!!prototypeData.scoreArtifact}, report=${!!prototypeData.report}, events=${(prototypeData.events||[]).length}, suggestions=${(prototypeData.suggestions||[]).length}`);
         renderPrototypeReport(prototypeData, profile);
-        // If has API-driven suggestions, refresh improvements
+        // Show engine_version in report footer (Task 3)
+        if (prototypeData.scoreArtifact?.engine_version) {
+          const vEl = document.getElementById('report-engine-version');
+          if (vEl) vEl.textContent = `engine_version: ${prototypeData.scoreArtifact.engine_version}`;
+        }
+        // Store suggestions for opt-in — do NOT auto-render (D-002 compliance)
         if (prototypeData.suggestions && prototypeData.suggestions.length > 0) {
-          renderApiSuggestions(prototypeData.suggestions, profile);
+          window._pendingSuggestions = prototypeData.suggestions;
+          window._pendingProfile = profile;
+          const optinEl = document.getElementById('learning-optin-section');
+          if (optinEl) optinEl.style.display = '';
         }
       } catch (e) {
         console.warn('[Prototype] fetch failed (attempt ' + (retryCount+1) + '):', e.message);
@@ -2078,7 +2099,7 @@
 
     // ── API-Driven Suggestions (replace hardcoded) ────────────
     function renderApiSuggestions(suggestions, profile) {
-      const el = document.getElementById('improvements');
+      const el = document.getElementById('learning-suggestions');
       if (!el || !suggestions || suggestions.length === 0) return;
 
       el.innerHTML = suggestions.map(s => {
@@ -2105,8 +2126,9 @@
           <ul class="improve-list"><li>${s.text}</li></ul>
           ${s.rationale ? '<div class="improve-note"><strong style="color:var(--accent);font-style:normal">Engine rationale:</strong> ' + s.rationale + '</div>' : ''}
           <div style="margin-top:8px;display:flex;gap:6px">
-            <button onclick="rateSuggestion('${s.suggestionId}','VeryHelpful')" class="btn" style="font-size:0.55rem;padding:2px 8px;background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.2);border-radius:3px;cursor:pointer" title="Very Helpful">👍 Helpful</button>
-            <button onclick="rateSuggestion('${s.suggestionId}','NotHelpful')" class="btn" style="font-size:0.55rem;padding:2px 8px;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.2);border-radius:3px;cursor:pointer" title="Not Helpful">👎 Not helpful</button>
+            <button onclick="rateSuggestion('${s.suggestionId}','VeryHelpful')" class="btn feedback-btn" data-label="Very Helpful" style="font-size:0.55rem;padding:2px 8px;background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.2);border-radius:3px;cursor:pointer" title="Very Helpful">👍 Very Helpful</button>
+            <button onclick="rateSuggestion('${s.suggestionId}','SomewhatHelpful')" class="btn feedback-btn" data-label="Somewhat" style="font-size:0.55rem;padding:2px 8px;background:rgba(245,158,11,0.1);color:#f59e0b;border:1px solid rgba(245,158,11,0.2);border-radius:3px;cursor:pointer" title="Somewhat Helpful">🤔 Somewhat</button>
+            <button onclick="rateSuggestion('${s.suggestionId}','NotHelpful')" class="btn feedback-btn" data-label="Not Helpful" style="font-size:0.55rem;padding:2px 8px;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.2);border-radius:3px;cursor:pointer" title="Not Helpful">👎 Not Helpful</button>
           </div>
         </div>`;
       }).join('');
@@ -2118,6 +2140,40 @@
       }
     }
 
+    // ── Learning Suggestions Opt-In (D-002) ───────────────────
+    window.activateLearning = async function() {
+      const btn = document.getElementById('btn-learning-optin');
+      if (btn) { btn.disabled = true; btn.textContent = 'Activating…'; }
+      try {
+        await rootsAPI('POST', '/prototype-learning/activate', {
+          sessionId: currentSession,
+          participantId: currentSession, // session doubles as participant
+          optIn: true,
+        });
+        addLog('success', 'Learning suggestions activated');
+        // Render the suggestions now
+        if (window._pendingSuggestions && window._pendingProfile) {
+          renderApiSuggestions(window._pendingSuggestions, window._pendingProfile);
+        }
+        // Hide opt-in, show suggestions
+        const optinEl = document.getElementById('learning-optin-section');
+        if (optinEl) optinEl.style.display = 'none';
+        const sugEl = document.getElementById('learning-suggestions');
+        if (sugEl) sugEl.style.display = '';
+      } catch (e) {
+        console.warn('Learning activation failed:', e.message);
+        if (btn) { btn.disabled = false; btn.textContent = '✦ Enable Learning Suggestions (Beta)'; }
+        // Still render suggestions (graceful degradation)
+        if (window._pendingSuggestions && window._pendingProfile) {
+          renderApiSuggestions(window._pendingSuggestions, window._pendingProfile);
+          const optinEl = document.getElementById('learning-optin-section');
+          if (optinEl) optinEl.style.display = 'none';
+          const sugEl = document.getElementById('learning-suggestions');
+          if (sugEl) sugEl.style.display = '';
+        }
+      }
+    };
+
     // ── Rate Suggestion (feedback to API) ─────────────────────
     window.rateSuggestion = async function(suggestionId, rating) {
       try {
@@ -2126,10 +2182,17 @@
           sessionId: currentSession,
           rating,
         });
-        // Visual feedback
-        event.target.style.opacity = '0.4';
-        event.target.textContent = '✓ Sent';
-        event.target.disabled = true;
+        // Grey out ALL feedback buttons for this suggestion, highlight chosen
+        const card = event.target.closest('.improve-card');
+        if (card) {
+          card.querySelectorAll('.feedback-btn').forEach(b => {
+            b.disabled = true;
+            b.style.opacity = '0.3';
+            b.style.cursor = 'default';
+          });
+          event.target.style.opacity = '1';
+          event.target.textContent = '✓ ' + event.target.dataset.label;
+        }
         addLog('success', `Feedback sent: ${rating}`);
       } catch (e) {
         console.warn('Feedback failed:', e.message);
