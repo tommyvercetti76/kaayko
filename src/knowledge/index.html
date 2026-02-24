@@ -1783,13 +1783,12 @@
 
       document.getElementById('q-info').textContent = `${currentSession?.slice(0,8)}… · Q${q.id || ''} · ${new Date().toLocaleTimeString()}`;
 
-      // Answers — API returns: { index, text, grade }
+      // Answers — API returns: { index, text } (grade deliberately withheld)
       const answersEl = document.getElementById('q-answers');
       answersEl.innerHTML = q.answers.map((a) => {
-        const safeGrade = (a.grade || '').replace(/'/g, "\\'");
         return `
-          <button class="answer-pill" data-grade="${a.grade}" data-index="${a.index}" onclick="selectAnswer('${safeGrade}', ${a.index})">
-            <span class="grade-circle">${a.grade}</span>
+          <button class="answer-pill" data-index="${a.index}" onclick="selectAnswer(${a.index})">
+            <span class="answer-check"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
             <span class="answer-text">${a.text}</span>
           </button>
         `;
@@ -1802,8 +1801,7 @@
     }
 
     // ── Select Answer ─────────────────────────────────────────
-    window.selectAnswer = (grade, index) => {
-      selectedGrade = grade;
+    window.selectAnswer = (index) => {
       selectedIndex = index;
       document.querySelectorAll('.answer-pill').forEach(p => p.classList.remove('selected'));
       const target = document.querySelector(`.answer-pill[data-index="${index}"]`);
@@ -1813,7 +1811,7 @@
 
     // ── Submit Answer ─────────────────────────────────────────
     window.submitAnswer = async () => {
-      if (selectedGrade === null || !currentQuestion) return;
+      if (selectedIndex === null || !currentQuestion) return;
 
       const btn = document.getElementById('btn-submit-answer');
       btn.disabled = true;
@@ -1841,7 +1839,7 @@
         sessionJourney.push({
           questionNumber,
           question: { domain: currentQuestion.domain, text: currentQuestion.text, id: currentQuestion.id || currentQuestion.index },
-          answer: { grade: selectedGrade, text: answerData?.text || '', index: selectedIndex },
+          answer: { text: answerData?.text || '', index: selectedIndex },
           posteriorSnapshot: JSON.parse(JSON.stringify(posteriors)),
           responseTimeMs: Date.now() - questionStartTime,
         });
