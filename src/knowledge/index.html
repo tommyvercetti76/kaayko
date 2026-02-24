@@ -257,6 +257,7 @@
       min-height: calc(100vh - 56px);
       text-align: center;
       padding: 40px 20px;
+      position: relative;
     }
     .signin-icon {
       width: 80px;
@@ -271,6 +272,31 @@
       font-size: 32px;
       margin-bottom: 28px;
       box-shadow: 0 0 40px rgba(99,179,237,0.08);
+    }
+
+    /* ── Silhouette Hero Background ───────────────── */
+    .invite-hero-bg {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 900px;
+      height: 260px;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.06) 60%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.06) 60%, transparent 100%);
+    }
+    .invite-hero-bg svg {
+      width: 100%;
+      height: 100%;
+      opacity: 0.12;
+    }
+    .invite-content {
+      position: relative;
+      z-index: 1;
     }
     .signin-title {
       font-family: 'Instrument Serif', serif;
@@ -869,8 +895,56 @@
     <div id="screen-signin" class="signin-screen">
       <!-- Invite Onboarding Flow (shown when ?invite= param present) -->
       <div id="invite-onboard" class="hidden" style="width:100%;max-width:480px">
-        <div class="signin-icon" style="background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(99,179,237,0.15));border-color:rgba(16,185,129,0.3)">◈</div>
-        <h1 class="signin-title" style="font-size:1.9rem">You've Been Invited</h1>
+        <!-- Silhouette hero background -->
+        <div class="invite-hero-bg">
+          <svg viewBox="0 0 900 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Children reading -->
+            <circle cx="150" cy="210" r="28" fill="var(--accent)"/>
+            <rect x="136" y="180" width="28" height="36" rx="14" fill="var(--accent)"/>
+            <rect x="130" y="216" width="12" height="30" rx="4" fill="var(--accent)"/>
+            <rect x="158" y="216" width="12" height="30" rx="4" fill="var(--accent)"/>
+            <rect x="118" y="195" width="24" height="6" rx="2" fill="var(--accent)" transform="rotate(-30 118 195)"/>
+            <!-- Book -->
+            <rect x="108" y="192" width="18" height="14" rx="2" fill="var(--green)" transform="rotate(-15 108 194)"/>
+            <!-- Child 2 -->
+            <circle cx="350" cy="200" r="24" fill="var(--accent)"/>
+            <rect x="338" y="174" width="24" height="32" rx="12" fill="var(--accent)"/>
+            <rect x="332" y="206" width="10" height="26" rx="3" fill="var(--accent)"/>
+            <rect x="358" y="206" width="10" height="26" rx="3" fill="var(--accent)"/>
+            <!-- Backpack -->
+            <rect x="362" y="180" width="14" height="18" rx="4" fill="var(--green)"/>
+            <!-- Tree -->
+            <circle cx="530" cy="160" r="42" fill="var(--green)"/>
+            <rect x="525" y="198" width="10" height="48" rx="3" fill="var(--green)"/>
+            <!-- Child 3 jumping -->
+            <circle cx="680" cy="190" r="22" fill="var(--accent)"/>
+            <rect x="669" y="166" width="22" height="28" rx="11" fill="var(--accent)"/>
+            <rect x="663" y="196" width="10" height="24" rx="3" fill="var(--accent)" transform="rotate(8 663 196)"/>
+            <rect x="689" y="196" width="10" height="24" rx="3" fill="var(--accent)" transform="rotate(-8 689 196)"/>
+            <rect x="658" y="172" width="18" height="5" rx="2" fill="var(--accent)" transform="rotate(-40 658 172)"/>
+            <rect x="686" y="172" width="18" height="5" rx="2" fill="var(--accent)" transform="rotate(40 686 172)"/>
+            <!-- School building -->
+            <rect x="780" y="142" width="80" height="100" rx="4" fill="var(--accent)"/>
+            <rect x="808" y="130" width="24" height="16" rx="2" fill="var(--green)"/>
+            <rect x="817" y="118" width="6" height="16" rx="1" fill="var(--green)"/>
+            <rect x="792" y="160" width="16" height="18" rx="2" fill="var(--bg)"/>
+            <rect x="832" y="160" width="16" height="18" rx="2" fill="var(--bg)"/>
+            <rect x="810" y="200" width="20" height="42" rx="3" fill="var(--bg)"/>
+            <!-- Stars -->
+            <circle cx="80" cy="80" r="2" fill="var(--accent)"/>
+            <circle cx="250" cy="60" r="1.5" fill="var(--green)"/>
+            <circle cx="440" cy="90" r="2" fill="var(--accent)"/>
+            <circle cx="620" cy="70" r="1.5" fill="var(--green)"/>
+            <circle cx="780" cy="55" r="2" fill="var(--accent)"/>
+            <circle cx="170" cy="100" r="1" fill="var(--muted)"/>
+            <circle cx="500" cy="50" r="1" fill="var(--muted)"/>
+            <circle cx="720" cy="100" r="1.5" fill="var(--muted)"/>
+            <!-- Ground line -->
+            <rect x="0" y="244" width="900" height="2" rx="1" fill="var(--border2)"/>
+          </svg>
+        </div>
+        <div class="invite-content">
+        <h1 class="signin-title" style="font-size:1.9rem;margin-top:8px">You've Been Invited</h1>
         <div id="invite-info" style="margin:12px auto 24px;max-width:380px;text-align:center">
           <div id="invite-title-display" style="font-size:0.82rem;color:var(--text);font-weight:500;margin-bottom:6px"></div>
           <div id="invite-school-display" style="font-size:0.68rem;color:var(--muted);font-family:'JetBrains Mono',monospace"></div>
@@ -881,6 +955,11 @@
             <button class="btn btn-primary btn-sm invite-type-btn active" data-type="parent" onclick="selectInviteType('parent')" style="flex:1;max-width:180px;padding:10px 16px;font-size:0.75rem">Parent Assessment</button>
             <button class="btn btn-outline btn-sm invite-type-btn" data-type="teacher" onclick="selectInviteType('teacher')" style="flex:1;max-width:180px;padding:10px 16px;font-size:0.75rem">Teacher Assessment</button>
           </div>
+        </div>
+        <div id="invite-child-age-row" style="width:100%;margin-bottom:16px">
+          <label class="form-label" style="text-align:center;display:block">Child's Age</label>
+          <input type="number" id="invite-child-age" class="form-input" placeholder="Age (3–18)" min="3" max="18" value="8"
+            style="text-align:center;max-width:160px;margin:0 auto;display:block">
         </div>
         <div style="width:100%;margin-bottom:16px">
           <label class="form-label" style="text-align:center;display:block">Invite Code</label>
@@ -899,13 +978,8 @@
         <button class="btn btn-primary btn-block" onclick="beginWithInvite()" id="btn-invite-begin" style="padding:14px 32px;font-size:0.9rem;border-radius:6px">
           ▶ Begin Assessment
         </button>
-        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);text-align:center">
-          <span style="font-size:0.65rem;color:var(--muted)">Or sign in with your account</span>
-          <button class="btn btn-outline btn-sm" onclick="showDirectSignin()" style="margin-left:8px;font-size:0.6rem">
-            Google Sign In →
-          </button>
-        </div>
-        <p class="signin-meta" style="margin-top:14px">Powered by ROOTS Knowledge Engine · Kaayko</p>
+        <p class="signin-meta" style="margin-top:20px">Powered by ROOTS Knowledge Engine · Kaayko</p>
+        </div><!-- /.invite-content -->
       </div>
 
       <!-- Direct Sign-in (shown when no invite param or user clicks "Google Sign In") -->
@@ -1392,7 +1466,8 @@
 
       // Use assessment type from invite data or user selection
       if (inviteData?.assessmentType) currentAssessmentType = inviteData.assessmentType;
-      const childAge = inviteData?.childAge || 8;
+      const inviteChildAgeInput = document.getElementById('invite-child-age');
+      const childAge = (inviteChildAgeInput ? parseInt(inviteChildAgeInput.value) : 0) || inviteData?.childAge || 8;
       document.getElementById('child-age').value = childAge;
       if (inviteData?.schoolId) document.getElementById('school-id').value = inviteData.schoolId;
 
@@ -1403,6 +1478,9 @@
           result = await rootsAPI('POST', '/teacher-assessment/sessions', {
             teacherId: currentUser.uid,
             schoolId: inviteData?.schoolId || 'invite-assessment',
+            inviteCode: inviteCode || undefined,
+            inviteName: document.getElementById('invite-name-input')?.value?.trim() || undefined,
+            inviteEmail: inviteEmail || undefined,
           });
         } else {
           result = await rootsAPI('POST', '/parent-assessment/sessions', {
@@ -1410,6 +1488,9 @@
             childId: `invite-${inviteCode}-${Date.now()}`,
             childAge,
             schoolId: inviteData?.schoolId || 'invite-assessment',
+            inviteCode: inviteCode || undefined,
+            inviteName: document.getElementById('invite-name-input')?.value?.trim() || undefined,
+            inviteEmail: inviteEmail || undefined,
           });
         }
 
