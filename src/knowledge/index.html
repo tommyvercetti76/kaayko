@@ -1920,7 +1920,11 @@
       try {
         addLog('api', 'Fetching prototype engine data…');
         const result = await rootsAPI('GET', `/prototype/session-results/${sessionId}`);
-        prototypeData = result.data || result;
+        // rootsAPI already unwraps .data — but guard against double-wrap
+        prototypeData = result;
+        if (!prototypeData.scoreArtifact && !prototypeData.report && result.data) {
+          prototypeData = result.data;
+        }
         addLog('success', `Prototype data loaded: artifact=${!!prototypeData.scoreArtifact}, report=${!!prototypeData.report}, events=${(prototypeData.events||[]).length}, suggestions=${(prototypeData.suggestions||[]).length}`);
         renderPrototypeReport(prototypeData, profile);
         // Show engine_version in report footer (Task 3)
@@ -1937,9 +1941,9 @@
         }
       } catch (e) {
         console.warn('[Prototype] fetch failed (attempt ' + (retryCount+1) + '):', e.message);
-        // Retry up to 3 times with 2s delay (fire-and-forget backend may still be running)
-        if (retryCount < 3) {
-          setTimeout(() => fetchPrototypeResults(sessionId, profile, retryCount + 1), 2000);
+        // Retry up to 5 times with 3s delay (fire-and-forget backend may still be running)
+        if (retryCount < 5) {
+          setTimeout(() => fetchPrototypeResults(sessionId, profile, retryCount + 1), 3000);
         } else {
           document.getElementById('report-loading').innerHTML =
             '<div style="color:var(--muted)">Prototype report unavailable. Assessment data saved — report will be generated on next load.</div>';
@@ -2352,10 +2356,6 @@
       cultural_exposure:       { label: 'Cultural Exposure',       short: 'Cultural',   icon: '◎', color: '#a78bfa' },
       communication_quality:   { label: 'Communication Quality',   short: 'Comms',      icon: '✦', color: '#ec4899' },
       aspiration_alignment:    { label: 'Aspiration Alignment',    short: 'Aspire',     icon: '★', color: '#8b5cf6' },
-    };
-
-    const GRADE_COLORS = {
-      'S': '#10b981', 'A': '#3b82f6', 'B': '#06b6d4', 'C': '#f59e0b', 'D': '#ef4444', 'F': '#991b1b'
     };
 
     // ═══════════════════════════════════════════════════════
@@ -2837,7 +2837,17 @@
 
         qs.forEach((journey, qi) => {
           const qy = qStartY + qi * qSpacing;
-          const gradeColor = GRADE_COLORS[journey.answer.grade] || '#64748b';
+
+          // Derive quality from posterior delta (no grade available client-side)
+          const posterior = journey.posteriorSnapshot?.[domain];
+          const prevPost = qi > 0 ? qs[qi - 1].posteriorSnapshot?.[domain] : null;
+          let delta = 0;
+          if (posterior && prevPost) {
+            delta = Math.round((posterior.mean - prevPost.mean) * 100);
+          } else if (posterior) {
+            delta = Math.round(posterior.mean * 100) - 50; // vs 50% baseline
+          }
+          const nodeColor = delta > 3 ? '#10b981' : delta < -3 ? '#ef4444' : '#f59e0b';
 
           // Question box
           roundRect(cx - laneW/2 + 6, qy, laneW - 12, 56, 4, 'rgba(0,0,0,0.35)', cfg.color + '25');
@@ -2848,32 +2858,24 @@
           ctx.textAlign = 'center';
           ctx.fillText(`Q${journey.questionNumber}`, cx, qy + 11);
 
-          // Grade badge
-          roundRect(cx - 11, qy + 16, 22, 16, 3, gradeColor + '20', gradeColor + '55');
-          ctx.fillStyle = gradeColor;
+          // Quality indicator (colored circle with delta arrow)
+          roundRect(cx - 11, qy + 16, 22, 16, 3, nodeColor + '20', nodeColor + '55');
+          ctx.fillStyle = nodeColor;
           ctx.font = '700 9px "JetBrains Mono"';
-          ctx.fillText(journey.answer.grade, cx, qy + 28);
+          ctx.fillText(delta > 0 ? '▲' : delta < 0 ? '▼' : '●', cx, qy + 28);
 
           // Posterior
-          const posterior = journey.posteriorSnapshot?.[domain];
           if (posterior) {
             const pct = Math.round(posterior.mean * 100);
             ctx.fillStyle = cfg.color + '90';
             ctx.font = '400 7px "JetBrains Mono"';
             ctx.fillText(`→${pct}%`, cx, qy + 45);
 
-            // Delta indicator
-            const prevIdx = qi > 0 ? qi - 1 : -1;
-            if (prevIdx >= 0) {
-              const prevPost = qs[prevIdx].posteriorSnapshot?.[domain];
-              if (prevPost) {
-                const delta = Math.round((posterior.mean - prevPost.mean) * 100);
-                if (delta !== 0) {
-                  ctx.fillStyle = delta > 0 ? '#10b981' : '#ef4444';
-                  ctx.font = '600 6px "JetBrains Mono"';
-                  ctx.fillText(`${delta > 0 ? '+' : ''}${delta}`, cx, qy + 53);
-                }
-              }
+            // Delta text
+            if (delta !== 0) {
+              ctx.fillStyle = delta > 0 ? '#10b981' : '#ef4444';
+              ctx.font = '600 6px "JetBrains Mono"';
+              ctx.fillText(`${delta > 0 ? '+' : ''}${delta}`, cx, qy + 53);
             }
           }
 
@@ -2923,9 +2925,11 @@
       // ── LEGEND ──
       const legendEl = document.getElementById('tree-legend');
       if (legendEl) {
-        legendEl.innerHTML = Object.entries(GRADE_COLORS).map(([g, c]) =>
-          `<span style="font-size:0.55rem;font-family:'JetBrains Mono',monospace;color:${c};background:${c}15;padding:2px 8px;border-radius:3px;border:1px solid ${c}30">${g}</span>`
-        ).join('') + `<span style="font-size:0.52rem;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-left:6px">Grade scale: S (best) → F (lowest)</span>`;
+        legendEl.innerHTML = [
+          { symbol: '▲', color: '#10b981', label: 'Positive shift' },
+          { symbol: '●', color: '#f59e0b', label: 'Neutral' },
+          { symbol: '▼', color: '#ef4444', label: 'Negative shift' }
+        ].map(l => `<span style="font-size:0.55rem;font-family:'JetBrains Mono',monospace;color:${l.color};background:${l.color}15;padding:2px 8px;border-radius:3px;border:1px solid ${l.color}30">${l.symbol} ${l.label}</span>`).join('');
       }
     }
 
@@ -2952,7 +2956,18 @@
       // Question nodes
       sessionJourney.forEach((j, idx) => {
         const cfg = DOMAIN_CFG[j.question.domain] || {};
-        const gc = GRADE_COLORS[j.answer.grade] || '#64748b';
+
+        // Derive quality from posterior delta (grade not available client-side)
+        let mainDelta = 0;
+        const mainPost = j.posteriorSnapshot?.[j.question.domain];
+        const prevMainPost = idx > 0 ? sessionJourney[idx - 1].posteriorSnapshot?.[j.question.domain] : null;
+        if (mainPost && prevMainPost) {
+          mainDelta = Math.round((mainPost.mean - prevMainPost.mean) * 100);
+        } else if (mainPost) {
+          mainDelta = Math.round(mainPost.mean * 100) - 50;
+        }
+        const qualityColor = mainDelta > 3 ? '#10b981' : mainDelta < -3 ? '#ef4444' : '#f59e0b';
+        const qualitySymbol = mainDelta > 3 ? '▲' : mainDelta < -3 ? '▼' : '●';
 
         // Calculate deltas from previous
         let deltas = [];
@@ -2979,7 +2994,7 @@
           </div>
           <div class="journey-q-text">${j.question.text}</div>
           <div class="journey-answer">
-            <span class="journey-grade" style="background:${gc}20;color:${gc};border:1px solid ${gc}40">${j.answer.grade}</span>
+            <span class="journey-grade" style="background:${qualityColor}20;color:${qualityColor};border:1px solid ${qualityColor}40">${qualitySymbol} ${mainDelta > 0 ? '+' : ''}${mainDelta}%</span>
             <span class="journey-answer-text">${j.answer.text}</span>
           </div>
           ${deltas.length > 0 ? `<div class="journey-deltas">
