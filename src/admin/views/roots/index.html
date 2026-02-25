@@ -217,7 +217,7 @@
       // Get token and verify admin role
       const tokenResult = await user.getIdTokenResult(true);
       const role = tokenResult.claims.rootsRole || tokenResult.claims.role;
-      if (!['system', 'admin', 'superadmin', 'school_admin', 'enterprise'].includes(role)) {
+      if (!['system', 'admin', 'superadmin'].includes(role)) {
         statusEl.textContent = `Access denied — role: ${role || 'none'}`;
         statusEl.style.color = '#ef4444';
         return;
@@ -277,24 +277,23 @@
     // ── Health + Learning Metrics ──
     async function loadMetrics() {
       try {
-        const data = await api('GET', '/prototype-admin/metrics');
-        const m = data.metrics || data;
+        const raw = await api('GET', '/prototype-admin/metrics');
+        const m = raw.data || raw;  // API wraps in { data: ... }
 
         // Health
-        document.getElementById('stat-version').textContent = m.engine_version || m.engineVersion || '—';
-        document.getElementById('stat-total').textContent = fmt(m.totalSessions ?? m.sessions?.total ?? 0);
-        document.getElementById('stat-completed').textContent = fmt(m.completedSessions ?? m.sessions?.completed ?? 0);
-        document.getElementById('stat-active').textContent = fmt(m.activeSessions ?? m.sessions?.active ?? 0);
+        document.getElementById('stat-version').textContent = m.currentEngineVersion || m.engine_version || m.engineVersion || '—';
+        document.getElementById('stat-total').textContent = fmt(m.totalSessions ?? 0);
+        document.getElementById('stat-completed').textContent = fmt(m.completedSessions ?? 0);
+        document.getElementById('stat-active').textContent = fmt(m.activeSessions ?? 0);
 
-        // Learning loop
-        const learning = m.learning || m.learningLoop || {};
-        const fb = learning.feedback || {};
+        // Learning loop — fields are at top level of the metrics object
+        const fb = m.helpfulnessBreakdown || {};
         const total = (fb.VeryHelpful || 0) + (fb.SomewhatHelpful || 0) + (fb.NotHelpful || 0);
-        document.getElementById('stat-optin-rate').textContent = (learning.optInRate != null) ? Math.round(learning.optInRate * 100) + '%' : (learning.optInPercent ?? '—') + (learning.optInPercent != null ? '%' : '');
+        document.getElementById('stat-optin-rate').textContent = (m.learningOptInRate != null) ? m.learningOptInRate + '%' : '—';
         document.getElementById('stat-very-helpful').textContent = fmt(fb.VeryHelpful || 0);
         document.getElementById('stat-somewhat').textContent = fmt(fb.SomewhatHelpful || 0);
         document.getElementById('stat-not-helpful').textContent = fmt(fb.NotHelpful || 0);
-        document.getElementById('stat-total-feedback').textContent = fmt(learning.totalFeedback ?? total);
+        document.getElementById('stat-total-feedback').textContent = fmt(m.feedbackCount ?? total);
       } catch (e) {
         console.warn('Metrics load failed:', e.message);
         document.getElementById('health-stats').innerHTML = `<div style="color:var(--error);font-size:13px">Failed to load metrics: ${e.message}</div>`;
@@ -304,8 +303,8 @@
     // ── Proposals ──
     async function loadProposals() {
       try {
-        const data = await api('GET', '/prototype-learning/proposals');
-        const proposals = data.proposals || data || [];
+        const raw = await api('GET', '/prototype-learning/proposals');
+        const proposals = raw.data || raw.proposals || [];
 
         if (!proposals.length) {
           document.getElementById('proposals-content').innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:16px">No pending proposals.</div>';
@@ -363,8 +362,8 @@
     // ── Version Registry ──
     async function loadRegistry() {
       try {
-        const data = await api('GET', '/prototype-admin/registry/history');
-        const versions = data.versions || data.history || data || [];
+        const raw = await api('GET', '/prototype-admin/registry/history');
+        const versions = raw.data || raw.versions || raw.history || [];
 
         if (!versions.length) {
           document.getElementById('registry-content').innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:16px">No versions registered.</div>';
@@ -404,7 +403,13 @@
       const btn = document.getElementById('btn-register');
       btn.disabled = true; btn.textContent = 'Registering…';
       try {
-        await api('POST', '/prototype-admin/registry/register', { version, changelog });
+        const user = fbAuth.currentUser;
+        await api('POST', '/prototype-admin/registry/register', {
+          version,
+          description: changelog || 'No description provided',
+          registeredBy: user?.email || 'admin',
+          changes: changelog ? [changelog] : [],
+        });
         showToast(`Version ${version} registered`);
         document.getElementById('reg-version').value = '';
         document.getElementById('reg-changelog').value = '';
