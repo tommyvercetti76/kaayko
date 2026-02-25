@@ -815,7 +815,7 @@ async function runApiAudit(){
     {name:'PROFILES',icon:'\u25c9',endpoints:[{m:'GET',p:'/profiles/demo-test/trajectory'}]},
     {name:'PARENT ASSESSMENT',icon:'\u2665',endpoints:[{m:'GET',p:'/parent-assessment/sessions/demo/state',expect404:true}]},
     {name:'TEACHER ASSESSMENT',icon:'\u2731',endpoints:[{m:'GET',p:'/teacher-assessment/sessions/demo/state',expect404:true}]},
-    {name:'ENGINE INTERNALS',icon:'\u2699',endpoints:[{m:'POST',p:'/engine/prior/initialise',body:{childId:'probe',ageBand:'6-8',domains:['curiosity']}},{m:'POST',p:'/engine/eig/calculate',body:{sessionId:'probe',posteriors:{curiosity:{alpha:1,beta:1}},candidateQuestionIds:['Q1']}}]},
+    {name:'ENGINE INTERNALS',icon:'\u2699',endpoints:[{m:'POST',p:'/engine/prior/initialise',body:{ageBand:'7-11'}},{m:'POST',p:'/engine/eig/calculate',body:{questions:[{id:'Q1',domain:'curiosity',difficulty:0.5}],posteriors:{curiosity:{alpha:1,beta:1}},answeredIds:[]}}]},
     {name:'LEARNING LOOP',icon:'\u221e',endpoints:[{m:'GET',p:'/learning/question-health'},{m:'GET',p:'/prototype-learning/proposals'},{m:'GET',p:'/prototype-learning/feedback/stats'}]},
     {name:'PSYCHOMETRICS',icon:'\u03c8',endpoints:[{m:'GET',p:'/psychometrics/cronbach-alpha'},{m:'GET',p:'/psychometrics/item-total-correlations'},{m:'GET',p:'/psychometrics/domain-correlation-matrix'}]},
     {name:'ADMIN',icon:'\u2606',endpoints:[{m:'GET',p:'/prototype-admin/metrics'},{m:'GET',p:'/prototype-admin/health'},{m:'GET',p:'/prototype-admin/registry/current'},{m:'GET',p:'/prototype-admin/registry/history'}]},
@@ -1143,47 +1143,48 @@ async function loadExportData(){
   try{
     var raw=await api('GET','/export/pilot-bundle?schoolId=somalwar-ramdaspeth');
     var d=raw.data||raw;
+    /* pilot-bundle returns { datasets: { sessions:{csv,rowCount}, profiles:{csv,rowCount}, outcomes:{csv,rowCount}, triads:{csv,rowCount} }, summary:{totalRows,datasetsExported,anyWarnings} } */
+    var ds=d.datasets||{};
+    var summary=d.summary||{};
+    var sessCount=(ds.sessions&&ds.sessions.rowCount)||0;
+    var profCount=(ds.profiles&&ds.profiles.rowCount)||0;
+    var outCount=(ds.outcomes&&ds.outcomes.rowCount)||0;
+    var triadCount=(ds.triads&&ds.triads.rowCount)||0;
     var html='<div class="findings-grid">';
     /* Sessions summary */
-    var sess=d.sessions||[];
-    var profs=d.profiles||[];
-    var outcomes=d.outcomes||[];
-    var predictions=d.predictions||d.growthPredictions||[];
-    var triads=d.triads||[];
-    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-gold">\u25c8 SESSIONS</span></div><div class="finding-title">'+sess.length+' Sessions Exported</div><div class="finding-body">';
-    if(sess.length){
-      var completed=sess.filter(function(s){return s.status==='completed'}).length;
-      var roles={};sess.forEach(function(s){var r=s.role||s.assessmentType||'unknown';roles[r]=(roles[r]||0)+1});
-      html+='Completed: <code>'+completed+'</code> / '+sess.length+'<br>';
-      html+='Roles: '+Object.entries(roles).map(function(e){return '<code>'+e[0]+': '+e[1]+'</code>'}).join(' \u00b7 ')+'<br>';
-      if(sess[0]&&sess[0].createdAt)html+='Earliest: <code>'+new Date(sess[0].createdAt).toLocaleDateString('en-IN')+'</code>';
-    }else{html+='No sessions in export bundle';}
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-gold">\u25c8 SESSIONS</span></div><div class="finding-title">'+sessCount+' Sessions Exported</div><div class="finding-body">';
+    if(sessCount>0){
+      html+='Rows: <code>'+sessCount+'</code><br>';
+      if(ds.sessions.warnings)html+='Warnings: <code>'+ds.sessions.warnings+'</code><br>';
+      if(ds.sessions.csv){var csvLines=ds.sessions.csv.split('\n');html+='CSV columns: <code>'+csvLines[0]+'</code><br>';html+='Preview: <pre style="white-space:pre-wrap;font-size:9px;max-height:100px;overflow-y:auto">'+csvLines.slice(0,4).join('\n')+'</pre>';}
+    }else{html+='No sessions in export bundle (k-anonymity: min 30 rows required)';}
     html+='</div></div>';
     /* Profiles summary */
-    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-cyan">\u25ce PROFILES</span></div><div class="finding-title">'+profs.length+' Profiles Exported</div><div class="finding-body">';
-    if(profs.length){
-      var avgScore=profs.reduce(function(a,p){return a+(p.overallScore||0)},0)/profs.length;
-      html+='Avg overall score: <code>'+fmtDec(avgScore*100,1)+'%</code><br>';
-      var domains={};profs.forEach(function(p){if(p.domainScores)p.domainScores.forEach(function(ds){var d=ds.domain;domains[d]=(domains[d]||0)+1})});
-      if(Object.keys(domains).length)html+='Domain coverage: '+Object.keys(domains).map(function(d){return '<code>'+d+'</code>'}).join(', ');
-    }else{html+='No profiles in export bundle';}
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-cyan">\u25ce PROFILES</span></div><div class="finding-title">'+profCount+' Profiles Exported</div><div class="finding-body">';
+    if(profCount>0){
+      html+='Rows: <code>'+profCount+'</code><br>';
+      if(ds.profiles.csv){var pLines=ds.profiles.csv.split('\n');html+='CSV columns: <code>'+pLines[0]+'</code>';}
+    }else{html+='No profiles in export bundle (k-anonymity: min 30 rows required)';}
     html+='</div></div>';
     /* Outcomes */
-    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-success">\u25c8 OUTCOMES</span></div><div class="finding-title">'+outcomes.length+' Outcomes</div><div class="finding-body">'+(outcomes.length?'Learning outcomes recorded for analysis':'No outcomes yet \u2014 populate via /learning/outcomes/ingest')+'</div></div>';
-    /* Growth predictions */
-    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">\u25b3 PREDICTIONS</span></div><div class="finding-title">'+(predictions.length||triads.length)+' Growth Predictions / Triads</div><div class="finding-body">';
-    if(predictions.length){
-      html+='<pre style="white-space:pre-wrap;font-size:9px;max-height:150px;overflow-y:auto">'+JSON.stringify(predictions.slice(0,3),null,2)+'</pre>';
-    }else if(triads.length){
-      html+='<pre style="white-space:pre-wrap;font-size:9px;max-height:150px;overflow-y:auto">'+JSON.stringify(triads.slice(0,3),null,2)+'</pre>';
-    }else{html+='No triad predictions yet \u2014 run /growth-prediction/compute'}
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-success">\u25c8 OUTCOMES</span></div><div class="finding-title">'+outCount+' Outcomes</div><div class="finding-body">'+(outCount>0?'Rows: <code>'+outCount+'</code>':'No outcomes yet \u2014 populate via /learning/outcomes/ingest')+'</div></div>';
+    /* Triads / Growth predictions */
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">\u25b3 TRIADS</span></div><div class="finding-title">'+triadCount+' Triads</div><div class="finding-body">';
+    if(triadCount>0){
+      html+='Rows: <code>'+triadCount+'</code><br>';
+      if(ds.triads.csv){var tLines=ds.triads.csv.split('\n');html+='CSV columns: <code>'+tLines[0]+'</code>';}
+    }else{html+='No triad predictions yet \u2014 run /growth-prediction/compute';}
     html+='</div></div>';
-    /* Raw data size */
+    /* Raw data size & summary */
     var rawJson=JSON.stringify(d);
-    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-action">\u25c6 BUNDLE</span></div><div class="finding-title">Pilot Bundle Size</div><div class="finding-body">';
-    html+='Total size: <code>'+(rawJson.length/1024).toFixed(1)+' KB</code><br>';
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-action">\u25c6 BUNDLE</span></div><div class="finding-title">Pilot Bundle Summary</div><div class="finding-body">';
+    html+='Total rows: <code>'+(summary.totalRows||0)+'</code><br>';
+    html+='Datasets exported: <code>'+(summary.datasetsExported||0)+'</code><br>';
+    html+='Bundle size: <code>'+(rawJson.length/1024).toFixed(1)+' KB</code><br>';
+    html+='School: <code>'+(d.schoolId||'\u2014')+'</code><br>';
+    if(summary.anyWarnings)html+='<span style="color:var(--warn)">\u26a0 Warnings present</span><br>';
     html+='Keys: <code>'+Object.keys(d).join(', ')+'</code><br>';
-    html+='Format: JSON \u00b7 Ready for R/Python analysis';
+    html+='Format: CSV datasets \u00b7 Ready for R/Python analysis';
     html+='</div></div>';
     html+='</div>';
     el.innerHTML=html;
@@ -1200,7 +1201,7 @@ async function loadCollections(){
     {name:'roots_sessions',probe:'/prototype-admin/metrics',field:'totalSessions',desc:'CAT assessment sessions'},
     {name:'roots_events',probe:null,desc:'Immutable event log (QuestionRendered, AnswerSelected, etc.)'},
     {name:'roots_questions',probe:'/questions',countField:'data',desc:'Question bank (Pancha-Kosha domains)'},
-    {name:'roots_profiles',probe:'/export/profiles',desc:'Computed student profiles'},
+    {name:'roots_profiles',probe:'/export/pilot-bundle?schoolId=somalwar-ramdaspeth',field:'datasets',extractFn:function(raw){var d=(raw&&raw.data)||raw;return(d&&d.datasets&&d.datasets.profiles)?d.datasets.profiles.rowCount:null;},desc:'Computed student profiles'},
     {name:'roots_score_artifacts',probe:null,desc:'Scoring outputs (domainScores, overall, flags)'},
     {name:'roots_reports',probe:null,desc:'Generated 2-page narrative reports'},
     {name:'roots_parent_sessions',probe:null,desc:'Parent assessment sessions (invite-based)'},
@@ -1225,7 +1226,9 @@ async function loadCollections(){
         return apiSafe('GET',col.probe).then(function(raw){
           col._count=null;
           if(raw){
-            if(col.field&&raw.data&&typeof raw.data[col.field]==='number'){
+            if(col.extractFn){
+              col._count=col.extractFn(raw);
+            }else if(col.field&&raw.data&&typeof raw.data[col.field]==='number'){
               col._count=raw.data[col.field];
             }else if(col.countField&&raw[col.countField]){
               var arr=raw[col.countField];
