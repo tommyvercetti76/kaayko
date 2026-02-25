@@ -352,7 +352,7 @@
 
 <!-- SECTION: VERSION REGISTRY -->
 <div class="section" id="section-registry">
-  <div class="section-title"><span class="section-icon">&cog;</span> Version Registry</div>
+  <div class="section-title"><span class="section-icon">&#9881;</span> Version Registry</div>
   <div class="section-desc">Engine version lifecycle &middot; Register new versions, activate for production deployment</div>
   <div id="registry-content"><div class="loading">Loading version history&hellip;</div></div>
   <div style="margin-top:18px;padding:16px;background:var(--bg2);border:1px solid var(--border);border-radius:8px">
@@ -446,9 +446,10 @@ async function api(method,path,body){
 async function apiSafe(method,path,body){
   try{return await api(method,path,body)}catch(e){console.warn('apiSafe:',path,e.message);return null;}
 }
-async function timedFetch(method,path){
+async function timedFetch(method,path,body){
   var start=Date.now();
   var opts={method:method,headers:{'Content-Type':'application/json','Authorization':'Bearer '+rootsToken}};
+  if(body)opts.body=JSON.stringify(body);
   try{var res=await fetch(API_BASE+path,opts);var ms=Date.now()-start;return{status:res.status,ms:ms,ok:res.ok}}
   catch(e){return{status:0,ms:Date.now()-start,ok:false,error:e.message}}
 }
@@ -714,7 +715,7 @@ async function loadDomainCorrelations(){
     }
     html+='</tbody></table></div>';
     if(data.flaggedPairs&&data.flaggedPairs.length){
-      html+='<div class="note" style="margin-top:10px">\u26a0 Flagged pairs: '+data.flaggedPairs.map(function(p){return p.join(' \u2194 ')}).join(', ')+'</div>';
+      html+='<div class="note" style="margin-top:10px">\u26a0 Flagged pairs: '+data.flaggedPairs.map(function(p){return Array.isArray(p)?p.join(' \u2194 '):(p.domain1+' \u2194 '+p.domain2)}).join(', ')+'</div>';
     }
     document.getElementById('domain-corr-detail').innerHTML=html;
   }catch(e){
@@ -751,7 +752,7 @@ async function loadFeedbackStats(){
 async function loadInvites(){
   try{
     var raw=await api('GET','/invites');
-    var invites=raw.data||raw.invites||[];
+    var invites=(raw.data&&raw.data.invites)||raw.data||raw.invites||[];
     if(!Array.isArray(invites)){invites=[];}
     document.getElementById('card-invites').textContent=fmt(invites.length);
     if(!invites.length){document.getElementById('invites-content').innerHTML='<div class="empty-state">No smart link invites found.</div>';return}
@@ -812,14 +813,14 @@ async function runApiAudit(){
     {name:'HEALTH',icon:'\u25c8',endpoints:[{m:'GET',p:'/health'}]},
     {name:'QUESTION BANK',icon:'\u25c7',endpoints:[{m:'GET',p:'/questions'},{m:'GET',p:'/questions/coverage-matrix'},{m:'GET',p:'/questions/consistency-pairs'}]},
     {name:'PROFILES',icon:'\u25c9',endpoints:[{m:'GET',p:'/profiles/demo-test/trajectory'}]},
-    {name:'PARENT ASSESSMENT',icon:'\u2665',endpoints:[{m:'GET',p:'/parent-assessment/sessions/demo/state'}]},
-    {name:'TEACHER ASSESSMENT',icon:'\u2731',endpoints:[{m:'GET',p:'/teacher-assessment/sessions/demo/state'}]},
-    {name:'ENGINE INTERNALS',icon:'\u2699',endpoints:[{m:'POST',p:'/engine/prior/initialise'},{m:'POST',p:'/engine/eig/calculate'}]},
+    {name:'PARENT ASSESSMENT',icon:'\u2665',endpoints:[{m:'GET',p:'/parent-assessment/sessions/demo/state',expect404:true}]},
+    {name:'TEACHER ASSESSMENT',icon:'\u2731',endpoints:[{m:'GET',p:'/teacher-assessment/sessions/demo/state',expect404:true}]},
+    {name:'ENGINE INTERNALS',icon:'\u2699',endpoints:[{m:'POST',p:'/engine/prior/initialise',body:{childId:'probe',ageBand:'6-8',domains:['curiosity']}},{m:'POST',p:'/engine/eig/calculate',body:{sessionId:'probe',posteriors:{curiosity:{alpha:1,beta:1}},candidateQuestionIds:['Q1']}}]},
     {name:'LEARNING LOOP',icon:'\u221e',endpoints:[{m:'GET',p:'/learning/question-health'},{m:'GET',p:'/prototype-learning/proposals'},{m:'GET',p:'/prototype-learning/feedback/stats'}]},
     {name:'PSYCHOMETRICS',icon:'\u03c8',endpoints:[{m:'GET',p:'/psychometrics/cronbach-alpha'},{m:'GET',p:'/psychometrics/item-total-correlations'},{m:'GET',p:'/psychometrics/domain-correlation-matrix'}]},
     {name:'ADMIN',icon:'\u2606',endpoints:[{m:'GET',p:'/prototype-admin/metrics'},{m:'GET',p:'/prototype-admin/health'},{m:'GET',p:'/prototype-admin/registry/current'},{m:'GET',p:'/prototype-admin/registry/history'}]},
     {name:'INVITES',icon:'\u2197',endpoints:[{m:'GET',p:'/invites'}]},
-    {name:'EXPORT',icon:'\u21e9',endpoints:[{m:'GET',p:'/export/pilot-bundle'}]},
+    {name:'EXPORT',icon:'\u21e9',endpoints:[{m:'GET',p:'/export/pilot-bundle?schoolId=somalwar-ramdaspeth'}]},
     {name:'ALUMNI',icon:'\u25ce',endpoints:[{m:'GET',p:'/alumni/directory'}]},
     {name:'GROWTH PREDICTION',icon:'\u25b3',endpoints:[{m:'GET',p:'/growth-prediction/by-child/demo'}]},
     {name:'INTELLIGENCE',icon:'\u25c8',endpoints:[{m:'GET',p:'/intelligence/available-dimensions'}]}
@@ -830,9 +831,9 @@ async function runApiAudit(){
     var mod=modules[mi];mod.results=[];
     for(var ei=0;ei<mod.endpoints.length;ei++){
       var ep=mod.endpoints[ei];
-      var r=await timedFetch(ep.m,ep.p);
-      r.method=ep.m;r.path=ep.p;mod.results.push(r);totalTested++;
-      if(r.status>=200&&r.status<300)statusCounts.s200++;
+      var r=await timedFetch(ep.m,ep.p,ep.body||null);
+      r.method=ep.m;r.path=ep.p;r.expect404=!!ep.expect404;mod.results.push(r);totalTested++;
+      if((r.status>=200&&r.status<300)||(r.status===404&&ep.expect404))statusCounts.s200++;
       else if(r.status===403)statusCounts.s403++;
       else if(r.status===404)statusCounts.s404++;
       else if(r.status===429)statusCounts.s429++;
@@ -840,7 +841,7 @@ async function runApiAudit(){
       else statusCounts.other++;
       latencyLabels.push(ep.p.replace('/api/v1/roots','').split('/').filter(Boolean).pop()||ep.p);
       latencyData.push(r.ms);
-      latencyColors.push(r.status>=200&&r.status<300?COLORS.green:r.status===403?COLORS.orange:r.status===429?COLORS.purple:COLORS.crimson);
+      latencyColors.push((r.status>=200&&r.status<300)||(r.status===404&&r.expect404)?COLORS.green:r.status===403?COLORS.orange:r.status===429?COLORS.purple:COLORS.crimson);
     }
     results.push(mod);
   }
@@ -858,7 +859,7 @@ async function runApiAudit(){
     var mod=results[mi];
     var counts={};
     for(var ri=0;ri<mod.results.length;ri++){
-      var s=mod.results[ri].status;var key=s>=200&&s<300?'200':(s===403?'403':(s===429?'429':(s===404?'404':'err')));
+      var s=mod.results[ri].status;var e404=mod.results[ri].expect404;var key=(s>=200&&s<300)||(s===404&&e404)?'200':(s===403?'403':(s===429?'429':(s===404?'404':'err')));
       counts[key]=(counts[key]||0)+1;
     }
     html+='<div class="module-card"><div class="module-header"><span class="module-name">'+mod.icon+' MODULE '+mi+' \u2014 '+mod.name+'</span><div class="module-stats">';
@@ -869,8 +870,8 @@ async function runApiAudit(){
     if(counts['err'])html+='<span class="stat-pill pill-err">'+counts['err']+'\u00d7ERR</span>';
     html+='</div></div>';
     for(var ri=0;ri<mod.results.length;ri++){
-      var r=mod.results[ri];var sc=r.status>=200&&r.status<300?'s200':(r.status===403?'s403':(r.status===429?'s429':(r.status===404?'s404':'s500')));
-      var sym=r.status>=200&&r.status<300?'\u2713 '+r.status:(r.status===403?'\u2298 403':(r.status===429?'\u229b 429':(r.status===404?'\u26a0 404':'\u2717 '+r.status)));
+      var r=mod.results[ri];var isPass=(r.status>=200&&r.status<300)||(r.status===404&&r.expect404);var sc=isPass?'s200':(r.status===403?'s403':(r.status===429?'s429':(r.status===404?'s404':'s500')));
+      var sym=isPass?'\u2713 '+(r.status===404?'404 (expected)':r.status):(r.status===403?'\u2298 403':(r.status===429?'\u229b 429':(r.status===404?'\u26a0 404':'\u2717 '+r.status)));
       html+='<div class="endpoint-row"><span class="ep-status '+sc+'">'+sym+'</span><span class="ep-method">'+r.method+'</span><span class="ep-path">'+r.path+'</span><span class="ep-time">'+r.ms+'ms</span></div>';
     }
     html+='</div>';
@@ -1140,7 +1141,7 @@ async function drillSession(sid){
 async function loadExportData(){
   var el=document.getElementById('export-content');
   try{
-    var raw=await api('GET','/export/pilot-bundle');
+    var raw=await api('GET','/export/pilot-bundle?schoolId=somalwar-ramdaspeth');
     var d=raw.data||raw;
     var html='<div class="findings-grid">';
     /* Sessions summary */
