@@ -381,14 +381,15 @@
 <!-- SECTION: PRAI REFERENCE -->
 <div class="section" id="section-prai" data-tab="psychometrics">
   <div class="section-title"><span class="section-icon">&#129518;</span> PRAI (Pancha-Rooted Authenticity Index) Reference</div>
-  <div class="section-desc">PRAI = 1 &minus; 0.40 &times; sigmoid(streak &minus; threshold) &middot; Applied as final score multiplier &middot; Threshold = 6</div>
+  <div class="section-desc">PRAI = 1 &minus; (0.40&middot;streakP + 0.35&middot;cvP + 0.25&middot;timeP) &middot; Session quality metadata &mdash; does <strong>NOT</strong> modify domain scores &middot; Streak threshold = 6</div>
   <div class="chart-grid" style="margin-bottom:16px">
-    <div class="chart-box"><div class="chart-title">PRAI Multiplier vs Streak Length</div><div class="chart-sub">threshold=6 &middot; sigmoid shape &middot; full penalty at streak &ge; 10</div><canvas id="praiCurveChart"></canvas></div>
-    <div class="chart-box"><div class="chart-title">Beta(1,1): Score Range After N Questions</div><div class="chart-sub">All-S vs All-F posterior mean &mdash; theoretical ceiling &amp; floor</div><canvas id="betaRangeChart"></canvas></div>
+    <div class="chart-box"><div class="chart-title">PRAI Score vs Streak Length</div><div class="chart-sub">Streak component only (w=0.40) &middot; threshold=6 &middot; sigmoid shape &middot; Other signals (CV, timing) add further reduction</div><canvas id="praiCurveChart"></canvas></div>
+    <div class="chart-box"><div class="chart-title">Beta(1,1): Score Range After N Questions</div><div class="chart-sub">All-S vs All-F posterior mean &mdash; theoretical ceiling &amp; floor &middot; Scores are <strong>independent</strong> of PRAI</div><canvas id="betaRangeChart"></canvas></div>
   </div>
+  <div style="padding:8px 12px;background:rgba(78,201,224,0.08);border:1px solid rgba(78,201,224,0.2);border-radius:6px;margin-bottom:14px;font-size:10px;color:var(--text-dim)"><strong style="color:var(--cyan)">&#9432; Architecture Note:</strong> PRAI is a <strong>session quality indicator</strong> (anum&#257;na / inference). It does <strong>not</strong> multiply or alter domain scores (praty&#257;k&#7779;a / direct measurement). Domain scores reflect what the Bayesian engine measured; PRAI flags whether the evidence is trustworthy. Admissions counsellors see PRAI as metadata for informed decisions.</div>
   <div class="table-wrap">
     <table class="prai-table">
-      <thead><tr><th>N questions</th><th>All-S raw</th><th>All-F raw</th><th>Raw range</th><th>PRAI (streak=N)</th><th>All-S final</th><th>All-F final</th><th>Inversion?</th></tr></thead>
+      <thead><tr><th>N questions</th><th>All-S raw</th><th>All-F raw</th><th>Raw range</th><th>PRAI (streak=N)</th><th>Interpretation</th></tr></thead>
       <tbody id="prai-table-body"></tbody>
     </table>
   </div>
@@ -949,8 +950,8 @@ function buildPraiReference(){
   var streaks=[];for(var i=0;i<=15;i++)streaks.push(i);
   new Chart(document.getElementById('praiCurveChart'),{
     type:'line',data:{labels:streaks,datasets:[
-      {label:'PRAI multiplier (threshold=6)',data:streaks.map(function(s){return praiFn(s,6)*100}),borderColor:COLORS.gold,backgroundColor:'rgba(245,200,66,0.06)',borderWidth:2,fill:true,tension:0.3,pointRadius:4},
-      {label:'Old PRAI (threshold=3)',data:streaks.map(function(s){return praiFn(s,3)*100}),borderColor:COLORS.crimson,backgroundColor:'transparent',borderWidth:1.5,borderDash:[4,4],tension:0.3,pointRadius:2}
+      {label:'PRAI streak component (threshold=6)',data:streaks.map(function(s){return praiFn(s,6)*100}),borderColor:COLORS.gold,backgroundColor:'rgba(245,200,66,0.06)',borderWidth:2,fill:true,tension:0.3,pointRadius:4},
+      {label:'Old threshold=3 (deprecated)',data:streaks.map(function(s){return praiFn(s,3)*100}),borderColor:COLORS.crimson,backgroundColor:'transparent',borderWidth:1.5,borderDash:[4,4],tension:0.3,pointRadius:2}
     ]},options:{scales:{y:{min:55,max:105,grid:{color:COLORS.dim},ticks:{callback:function(v){return v+'%'}}},x:{title:{display:true,text:'Consecutive S answers (streak)',color:'#8b949e',font:{size:10}},grid:{color:COLORS.dim}}},plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:8,font:{size:10}}}}}
   });
   var Ns=[1,2,3,5,6,7,10];
@@ -963,20 +964,21 @@ function buildPraiReference(){
     ]},options:{scales:{y:{min:0,max:100,grid:{color:COLORS.dim},ticks:{callback:function(v){return v+'%'}}},x:{title:{display:true,text:'N questions answered',color:'#8b949e',font:{size:10}},grid:{color:COLORS.dim}}},plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:8,font:{size:10}}}}}
   });
   var tbody=document.getElementById('prai-table-body');
-  var rows=[
-    {n:1,sR:60.0,fR:40.0,range:20.0,prai:100.0,sF:60.0,fF:40.0,inv:'No'},
-    {n:2,sR:66.7,fR:33.3,range:33.3,prai:100.0,sF:66.7,fF:33.3,inv:'No'},
-    {n:3,sR:71.4,fR:28.6,range:42.9,prai:100.0,sF:71.4,fF:28.6,inv:'No'},
-    {n:5,sR:77.8,fR:22.2,range:55.6,prai:100.0,sF:77.8,fF:22.2,inv:'No'},
-    {n:6,sR:80.0,fR:20.0,range:60.0,prai:98.2,sF:78.6,fF:20.0,inv:'No'},
-    {n:7,sR:81.8,fR:18.2,range:63.6,prai:93.1,sF:76.1,fF:18.2,inv:'No'},
-    {n:10,sR:85.7,fR:14.3,range:71.4,prai:60.1,sF:51.5,fF:14.3,inv:'No \u2713'}
-  ];
+  var Nvals=[1,2,3,5,6,7,10];
   var html='';
-  for(var i=0;i<rows.length;i++){
-    var r=rows[i];
-    var nLabel=r.n===6?'N='+r.n+' <span style="color:var(--gold);font-size:9px">\u2190 threshold</span>':'N='+r.n;
-    html+='<tr><td>'+nLabel+'</td><td>'+r.sR.toFixed(1)+'%</td><td>'+r.fR.toFixed(1)+'%</td><td>'+r.range.toFixed(1)+'pp</td><td>'+r.prai.toFixed(1)+'%</td><td class="'+(r.prai<100?'danger':'highlight')+'">'+r.sF.toFixed(1)+'%</td><td>'+r.fF.toFixed(1)+'%</td><td style="color:var(--pass)">'+r.inv+'</td></tr>';
+  for(var i=0;i<Nvals.length;i++){
+    var n=Nvals[i];
+    var sR=(1+n)/(2+n)*100;
+    var fR=1/(2+n)*100;
+    var range=sR-fR;
+    var prai=praiFn(n,6)*100;
+    var nLabel=n===6?'N='+n+' <span style="color:var(--gold);font-size:9px">\u2190 threshold</span>':'N='+n;
+    var interp;
+    if(prai>=100)interp='<span style="color:var(--pass)">\u2713 Below threshold \u2014 no streak signal</span>';
+    else if(prai>=70)interp='<span style="color:var(--warn)">Moderate streak \u2014 review recommended</span>';
+    else interp='<span style="color:var(--fail)">Strong streak signal \u2014 likely performed pattern</span>';
+    var praiClass=prai<100?(prai<70?'danger':''):'highlight';
+    html+='<tr><td>'+nLabel+'</td><td>'+sR.toFixed(1)+'%</td><td>'+fR.toFixed(1)+'%</td><td>'+range.toFixed(1)+'pp</td><td class="'+praiClass+'">'+prai.toFixed(1)+'%</td><td>'+interp+'</td></tr>';
   }
   tbody.innerHTML=html;
 }
@@ -1227,14 +1229,19 @@ async function drillSession(sid){
       }
       /* ── Domain Radar Chart canvas ── */
       html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-cyan">◎ RADAR</span></div><div class="finding-title">Domain Profile</div><div class="finding-body"><canvas id="drillRadarChart" width="280" height="280"></canvas></div></div>';
+    }else{
+      html+='<div class="finding-card" style="grid-column:1/-1"><div class="finding-badge"><span class="badge badge-gold">◈ SCORES</span></div><div class="finding-title">No Score Artifact</div><div class="finding-body" style="color:var(--text-muted)"><div style="font-size:11px">Deterministic score artifact not available for this session.</div>';
+      if(sessSummary.status!=='completed')html+='<div style="font-size:9px;margin-top:6px">Session is <strong>'+(sessSummary.status||'unknown')+'</strong> — scores are computed upon completion.</div>';
+      else html+='<div style="font-size:9px;margin-top:6px">Session was completed but the scoring engine may have encountered an error. The on-the-fly computation was attempted. Check API logs for details.</div>';
+      html+='</div></div>';
     }
 
     html+='</div></div>';
     html+='<div class="drill-panel" data-drill="prai"><div class="findings-grid">';
     /* ── 2. PRAI ANALYSIS ── */
-    var prai=d.scoreArtifact?.prai || sessSummary.prai || null;
-    var valenceFlags=sessSummary.valenceFlags||d.scoreArtifact?.flags||[];
-    var consistencyFlags=sessSummary.consistencyFlags||[];
+    var prai=d.prai||d.scoreArtifact?.prai||sessSummary.prai||null;
+    var valenceFlags=d.valenceFlags||sessSummary.valenceFlags||d.scoreArtifact?.flags||[];
+    var consistencyFlags=d.consistencyFlags||sessSummary.consistencyFlags||[];
     html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-warn">श PRAI ANALYSIS</span></div><div class="finding-title">Pareekshā Response Authenticity Index</div><div class="finding-body">';
     if(prai&&prai.score!=null){
       var praiPct=(prai.score*100).toFixed(1);
@@ -1385,6 +1392,8 @@ async function drillSession(sid){
         }
       }
       html+='</div></div>';
+    }else{
+      html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">◎ REPORT</span></div><div class="finding-title">No Report Generated</div><div class="finding-body" style="color:var(--text-muted)"><div style="font-size:11px">Narrative report not available for this session.</div><div style="font-size:9px;margin-top:6px">Reports are auto-generated when a session completes via the prototype engine. For sessions completed before the prototype integration, the report is generated on-the-fly when you expand the session.</div></div></div>';
     }
 
     html+='</div></div>';
@@ -1514,7 +1523,7 @@ function interpretTimeUniformity(p){
 }
 function interpretValenceFlag(flag){
   var interps={
-    'PERFORMED_PATTERN':'A combination of psychometric signals (streak + CV + timing) exceeds the performed-response threshold. The overall response profile is statistically inconsistent with genuine, reflective engagement. PRAI multiplicative correction has been applied to all domain scores.',
+    'PERFORMED_PATTERN':'A combination of psychometric signals (streak + CV + timing) exceeds the performed-response threshold. The overall response profile is statistically inconsistent with genuine, reflective engagement. This session is flagged for human review \u2014 domain scores are preserved but PRAI indicates low evidence reliability.',
     'ALL_S_STREAK':'Every answered question received the highest possible rating (S-grade equivalent). Probability of this occurring genuinely drops exponentially with question count: P = (1/4)^n for n questions. With >8 questions, P < 0.00002 — effectively impossible without coaching.',
     'AVG_GRADE_HIGH':'The mean grade across all responses is abnormally high (>90th percentile of the population distribution). While high scores are possible, this combined with other signals suggests social desirability bias or coached responses.',
     'PARENT_CHILD_FRICTION_RISK':'Parent assessment shows expectation_calibration < 40% AND aspiration_alignment < 40%. This combination indicates a significant gap between parent expectations and child capability, which research associates with anxiety-driven underperformance.',
