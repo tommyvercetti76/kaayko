@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>ROOTS Engine Admin &#8212; Kaayko</title>
+<title>ROOTS Engine Admin — Kaayko</title>
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <meta name="theme-color" content="#f5c842">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -15,6 +15,7 @@
     --purple: #a97ad4; --orange: #e8884a;
     --bg: #0d1117; --bg2: #161b22; --bg3: #21262d;
     --border: #30363d; --text: #e6edf3; --text-dim: #8b949e; --text-muted: #656d76;
+    --pass: #3dd68c; --fail: #e54545; --warn: #e8884a; --rate: #a97ad4;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -44,12 +45,15 @@
   .badge-error { background: rgba(229,69,69,0.12); color: var(--crimson); border: 1px solid rgba(229,69,69,0.25); }
   .badge-info { background: rgba(78,201,224,0.12); color: var(--cyan); border: 1px solid rgba(78,201,224,0.25); }
   .badge-success { background: rgba(61,214,140,0.15); color: var(--green); border: 1px solid rgba(61,214,140,0.25); }
+  .badge-ok { background: rgba(61,214,140,0.15); color: var(--pass); border: 1px solid rgba(61,214,140,0.25); }
+  .badge-action { background: rgba(245,200,66,0.12); color: var(--gold); border: 1px solid rgba(245,200,66,0.25); }
+  .badge-issue { background: rgba(229,69,69,0.12); color: var(--crimson); border: 1px solid rgba(229,69,69,0.25); }
   .header-subtitle { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); display: flex; gap: 28px; flex-wrap: wrap; }
   .meta-item { display: flex; flex-direction: column; gap: 2px; }
   .meta-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
   .meta-value { font-size: 12px; color: var(--cyan); }
-  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; padding: 22px 40px; border-bottom: 1px solid var(--border); }
-  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; position: relative; overflow: hidden; transition: border-color 0.2s; }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); gap: 12px; padding: 22px 40px; border-bottom: 1px solid var(--border); }
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; position: relative; overflow: hidden; transition: border-color 0.2s; }
   .card:hover { border-color: rgba(255,255,255,0.12); }
   .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; border-radius: 8px 8px 0 0; }
   .card-green::before { background: var(--green); }
@@ -59,28 +63,63 @@
   .card-crimson::before { background: var(--crimson); }
   .card-purple::before { background: var(--purple); }
   .card-blue::before { background: var(--blue); }
-  .card-number { font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+  .card-pass::before { background: var(--pass); }
+  .card-number { font-size: 30px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
   .card-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.6px; }
-  .card-sub { font-size: 10px; color: var(--text-muted); margin-top: 6px; }
+  .card-sub { font-size: 10px; color: var(--text-muted); margin-top: 5px; }
   .section { padding: 24px 40px; border-bottom: 1px solid var(--border); }
   .section-title { font-size: 14px; font-weight: 700; color: var(--gold); margin-bottom: 5px; display: flex; align-items: center; gap: 10px; }
   .section-icon { font-size: 16px; }
   .section-desc { font-size: 10px; color: var(--text-muted); margin-bottom: 18px; }
-  .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; }
+  .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 14px; }
   .chart-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 18px; }
   .chart-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
   .chart-sub { font-size: 10px; color: var(--text-muted); margin-bottom: 14px; }
   canvas { max-height: 260px; }
+  .module-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 10px; }
+  .module-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .module-header { padding: 8px 14px; background: var(--bg3); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 600; }
+  .module-name { color: var(--cyan); }
+  .module-stats { display: flex; gap: 5px; }
+  .stat-pill { padding: 1px 6px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+  .pill-pass { background: rgba(61,214,140,0.15); color: var(--pass); }
+  .pill-403 { background: rgba(232,136,74,0.12); color: var(--warn); }
+  .pill-429 { background: rgba(169,122,212,0.15); color: var(--purple); }
+  .pill-404 { background: rgba(229,69,69,0.12); color: var(--crimson); }
+  .pill-err { background: rgba(229,69,69,0.12); color: var(--crimson); }
+  .endpoint-row { display: flex; align-items: center; gap: 8px; padding: 6px 14px; border-bottom: 1px solid rgba(48,54,61,0.5); font-size: 11px; }
+  .endpoint-row:last-child { border-bottom: none; }
+  .ep-status { width: 36px; flex-shrink: 0; font-weight: 700; font-size: 10px; }
+  .ep-method { width: 32px; flex-shrink: 0; font-size: 10px; color: var(--text-muted); }
+  .ep-path { flex: 1; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; }
+  .ep-time { flex-shrink: 0; font-size: 10px; color: var(--text-muted); width: 45px; text-align: right; }
+  .s200 { color: var(--pass); } .s401 { color: var(--blue); } .s403 { color: var(--warn); }
+  .s404 { color: var(--crimson); } .s429 { color: var(--purple); } .s500 { color: var(--crimson); }
   .score-bar-wrap { display: flex; flex-direction: column; gap: 8px; }
-  .score-row { display: grid; grid-template-columns: 90px 1fr 50px; gap: 10px; align-items: center; }
+  .score-row { display: grid; grid-template-columns: 100px 1fr 50px; gap: 10px; align-items: center; }
   .score-domain { font-size: 11px; color: var(--text-dim); text-transform: capitalize; }
   .bar-track { background: var(--bg3); border-radius: 3px; height: 8px; overflow: hidden; position: relative; }
   .bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+  .bar-raw { background: var(--cyan); opacity: 0.35; height: 100%; border-radius: 3px; position: absolute; top: 0; left: 0; }
+  .bar-final { background: var(--cyan); height: 100%; border-radius: 3px; position: absolute; top: 0; left: 0; }
   .score-pct { font-size: 11px; color: var(--text); text-align: right; font-variant-numeric: tabular-nums; }
   .data-table { width: 100%; border-collapse: collapse; font-size: 11px; }
   .data-table th { padding: 8px 12px; text-align: left; font-size: 9px; letter-spacing: 0.6px; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border); background: var(--bg3); font-weight: 600; white-space: nowrap; }
   .data-table td { padding: 7px 12px; border-bottom: 1px solid rgba(48,54,61,0.4); color: var(--text-dim); font-variant-numeric: tabular-nums; }
   .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .table-wrap { overflow-x: auto; }
+  .prai-table { border-collapse: collapse; font-size: 11px; width: 100%; }
+  .prai-table th { padding: 8px 12px; text-align: right; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); border-bottom: 1px solid var(--border); background: var(--bg3); }
+  .prai-table th:first-child { text-align: left; }
+  .prai-table td { padding: 7px 12px; border-bottom: 1px solid rgba(48,54,61,0.4); text-align: right; font-variant-numeric: tabular-nums; }
+  .prai-table td:first-child { text-align: left; color: var(--text-dim); }
+  .highlight { color: var(--gold); font-weight: 600; }
+  .danger { color: var(--crimson); font-weight: 600; }
+  .heat-table { border-collapse: collapse; font-size: 10px; width: 100%; }
+  .heat-table th { padding: 6px 8px; text-align: center; font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); border-bottom: 1px solid var(--border); background: var(--bg3); }
+  .heat-table th:first-child { text-align: left; }
+  .heat-table td { padding: 5px 8px; text-align: center; border-bottom: 1px solid rgba(48,54,61,0.3); font-variant-numeric: tabular-nums; }
+  .heat-table td:first-child { text-align: left; color: var(--text-dim); font-size: 9px; }
   .sessions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
   .session-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; }
   .session-title { font-size: 11px; font-weight: 700; margin-bottom: 3px; }
@@ -91,6 +130,14 @@
   .finding-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
   .finding-body { font-size: 11px; color: var(--text-dim); line-height: 1.7; }
   .finding-body code { background: var(--bg3); padding: 1px 5px; border-radius: 3px; font-size: 10px; color: var(--gold); }
+  .qbank-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .qbank-domain { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+  .qbank-name { font-size: 11px; font-weight: 600; color: var(--cyan); margin-bottom: 8px; text-transform: capitalize; }
+  .qbank-bar-track { background: var(--bg3); border-radius: 4px; height: 6px; overflow: hidden; }
+  .qbank-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--cyan), var(--blue)); }
+  .qbank-nums { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+  .qid-list { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 8px; }
+  .qid-pill { padding: 1px 5px; border-radius: 3px; font-size: 9px; background: var(--bg3); color: var(--text-dim); border: 1px solid var(--border); }
   .btn-sm { font-size: 10px; padding: 4px 10px; border-radius: 3px; cursor: pointer; border: none; font-family: inherit; transition: all 0.15s; letter-spacing: 0.3px; }
   .btn-approve { background: rgba(61,214,140,0.12); color: var(--green); border: 1px solid rgba(61,214,140,0.25); }
   .btn-approve:hover { background: rgba(61,214,140,0.25); }
@@ -109,102 +156,205 @@
   .toast.visible { opacity: 1; transform: translateY(0); }
   .toast-success { background: rgba(61,214,140,0.9); }
   .toast-error { background: rgba(229,69,69,0.9); }
+  .empty-state { padding: 20px; text-align: center; color: var(--text-muted); font-size: 12px; border: 1px dashed var(--border); border-radius: 6px; }
+  .note { font-size: 10px; color: var(--text-muted); font-style: italic; margin-top: 8px; }
+  .section-loading { text-align: center; padding: 24px; color: var(--text-muted); font-size: 11px; }
+  .refresh-btn { position: fixed; bottom: 20px; left: 20px; z-index: 9998; background: var(--bg3); border: 1px solid var(--gold); color: var(--gold); padding: 8px 14px; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 11px; transition: all 0.2s; }
+  .refresh-btn:hover { background: rgba(245,200,66,0.15); }
   .report-footer { padding: 18px 40px; text-align: center; font-size: 10px; color: var(--text-muted); border-top: 1px solid var(--border); background: var(--bg2); }
   .footer-grid { display: flex; justify-content: center; gap: 36px; flex-wrap: wrap; }
   .footer-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
   .footer-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.6px; }
   .footer-value { font-size: 11px; color: var(--text-dim); }
-  .empty-state { padding: 20px; text-align: center; color: var(--text-muted); font-size: 12px; border: 1px dashed var(--border); border-radius: 6px; }
   @media (max-width: 700px) {
     .report-header, .summary-grid, .section, .report-footer { padding-left: 16px; padding-right: 16px; }
     .header-top { flex-direction: column; }
-    .sessions-grid, .chart-grid { grid-template-columns: 1fr; }
+    .sessions-grid, .chart-grid, .module-grid, .qbank-grid, .findings-grid { grid-template-columns: 1fr; }
     .ascii-logo { font-size: 6px; }
-    .card-number { font-size: 24px; }
+    .card-number { font-size: 22px; }
   }
 </style>
 </head>
 <body>
 
+<!-- HEADER -->
 <div class="report-header">
   <div class="header-top">
     <div class="header-left">
-      <a href="../../kortex.html" class="back-link">&#8592; Kortex Dashboard</a>
+      <a href="../../kortex.html" class="back-link">&larr; Kortex Dashboard</a>
       <pre class="ascii-logo"> ____   ___   ___  _____ ____
 |  _ \ / _ \ / _ \|_   _/ ___|
 | |_) | | | | | | | | | \___ \
 |  _ &lt;| |_| | |_| | | |  ___) |
 |_| \_\\___/ \___/  |_| |____/</pre>
-      <div style="font-size:10px;color:var(--text-muted);margin-top:2px">ADMIN DASHBOARD &#183; LIVE ENGINE METRICS</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:2px">ADMIN DASHBOARD &middot; LIVE ENGINE METRICS &middot; COMPREHENSIVE VIEW</div>
     </div>
     <div class="header-right">
-      <div id="auth-status" style="color:var(--text-muted)">Authenticating&#8230;</div>
+      <div id="auth-status" style="color:var(--text-muted)">Authenticating&hellip;</div>
       <a href="#" id="sign-out-link" style="display:none;font-size:10px;color:var(--text-muted);text-decoration:underline;cursor:pointer" onclick="fbAuth.signOut();return false;">Sign out</a>
       <div style="margin-top:6px"><span class="badge badge-live" id="badge-status">&#10227; LOADING</span></div>
-      <div style="margin-top:6px;color:var(--text-muted);font-size:10px" id="header-time">&#8212;</div>
+      <div style="margin-top:6px;color:var(--text-muted);font-size:10px" id="header-time">&mdash;</div>
     </div>
   </div>
   <div class="header-subtitle">
-    <div class="meta-item"><div class="meta-label">Engine</div><div class="meta-value" id="meta-engine">&#8212;</div></div>
-    <div class="meta-item"><div class="meta-label">API Target</div><div class="meta-value">cool-schools-api &#183; Cloud Run</div></div>
+    <div class="meta-item"><div class="meta-label">Engine</div><div class="meta-value" id="meta-engine">&mdash;</div></div>
+    <div class="meta-item"><div class="meta-label">API Target</div><div class="meta-value">cool-schools-api &middot; Cloud Run</div></div>
     <div class="meta-item"><div class="meta-label">Region</div><div class="meta-value">us-central1</div></div>
+    <div class="meta-item"><div class="meta-label">Q-Bank</div><div class="meta-value" id="meta-qbank">&mdash;</div></div>
     <div class="meta-item"><div class="meta-label">School</div><div class="meta-value">Somalwar Ramdaspeth</div></div>
-    <div class="meta-item"><div class="meta-label">Pending Proposals</div><div class="meta-value" id="meta-pending">&#8212;</div></div>
+    <div class="meta-item"><div class="meta-label">Pending Proposals</div><div class="meta-value" id="meta-pending">&mdash;</div></div>
+    <div class="meta-item"><div class="meta-label">Endpoints Audited</div><div class="meta-value" id="meta-endpoints">&mdash;</div></div>
   </div>
 </div>
 
+<!-- SUMMARY CARDS (12 cards) -->
 <div class="summary-grid" id="summary-grid">
-  <div class="card card-gold"><div class="card-number" style="color:var(--gold)" id="card-version">&#8212;</div><div class="card-label">Engine Version</div><div class="card-sub" id="card-version-sub">ROOTS Knowledge Engine</div></div>
-  <div class="card card-cyan"><div class="card-number" style="color:var(--cyan)" id="card-total">&#8212;</div><div class="card-label">Total Sessions</div><div class="card-sub" id="card-total-sub">All time</div></div>
-  <div class="card card-green"><div class="card-number" style="color:var(--green)" id="card-completed">&#8212;</div><div class="card-label">Completed</div><div class="card-sub" id="card-completed-sub">&#8212;</div></div>
-  <div class="card card-orange"><div class="card-number" style="color:var(--orange)" id="card-active">&#8212;</div><div class="card-label">Active Now</div><div class="card-sub">In-progress sessions</div></div>
-  <div class="card card-purple"><div class="card-number" style="color:var(--purple)" id="card-optin">&#8212;</div><div class="card-label">Learning Opt-In</div><div class="card-sub" id="card-optin-sub">&#8212;</div></div>
-  <div class="card card-green"><div class="card-number" style="color:var(--green)" id="card-helpful">&#8212;</div><div class="card-label">Helpfulness %</div><div class="card-sub" id="card-helpful-sub">&#8212;</div></div>
-  <div class="card card-blue"><div class="card-number" style="color:var(--blue)" id="card-feedback">&#8212;</div><div class="card-label">Total Feedback</div><div class="card-sub">Responses collected</div></div>
-  <div class="card card-crimson"><div class="card-number" style="color:var(--crimson)" id="card-proposals">&#8212;</div><div class="card-label">Pending Proposals</div><div class="card-sub">Awaiting review</div></div>
+  <div class="card card-gold"><div class="card-number" style="color:var(--gold)" id="card-version">&mdash;</div><div class="card-label">Engine Version</div><div class="card-sub" id="card-version-sub">ROOTS Knowledge Engine</div></div>
+  <div class="card card-cyan"><div class="card-number" style="color:var(--cyan)" id="card-total">&mdash;</div><div class="card-label">Total Sessions</div><div class="card-sub" id="card-total-sub">All time</div></div>
+  <div class="card card-green"><div class="card-number" style="color:var(--green)" id="card-completed">&mdash;</div><div class="card-label">Completed</div><div class="card-sub" id="card-completed-sub">&mdash;</div></div>
+  <div class="card card-orange"><div class="card-number" style="color:var(--orange)" id="card-active">&mdash;</div><div class="card-label">Active Now</div><div class="card-sub">In-progress sessions</div></div>
+  <div class="card card-purple"><div class="card-number" style="color:var(--purple)" id="card-optin">&mdash;</div><div class="card-label">Learning Opt-In</div><div class="card-sub" id="card-optin-sub">&mdash;</div></div>
+  <div class="card card-green"><div class="card-number" style="color:var(--green)" id="card-helpful">&mdash;</div><div class="card-label">Helpfulness %</div><div class="card-sub" id="card-helpful-sub">&mdash;</div></div>
+  <div class="card card-blue"><div class="card-number" style="color:var(--blue)" id="card-feedback">&mdash;</div><div class="card-label">Total Feedback</div><div class="card-sub">Responses collected</div></div>
+  <div class="card card-crimson"><div class="card-number" style="color:var(--crimson)" id="card-proposals">&mdash;</div><div class="card-label">Pending Proposals</div><div class="card-sub">Awaiting review</div></div>
+  <div class="card card-pass"><div class="card-number" style="color:var(--pass)" id="card-questions">&mdash;</div><div class="card-label">Q-Bank Questions</div><div class="card-sub" id="card-questions-sub">Active in Firestore</div></div>
+  <div class="card card-cyan"><div class="card-number" style="color:var(--cyan)" id="card-domains">&mdash;</div><div class="card-label">Domains Covered</div><div class="card-sub">Pancha-Kosha axes</div></div>
+  <div class="card card-gold"><div class="card-number" style="color:var(--gold)" id="card-cronbach">&mdash;</div><div class="card-label">Avg Cronbach &alpha;</div><div class="card-sub" id="card-cronbach-sub">Internal consistency</div></div>
+  <div class="card card-blue"><div class="card-number" style="color:var(--blue)" id="card-invites">&mdash;</div><div class="card-label">Smart Links</div><div class="card-sub">Active invites</div></div>
 </div>
 
+<!-- SECTION: ENGINE ANALYTICS (4 charts) -->
 <div class="section" id="section-charts">
   <div class="section-title"><span class="section-icon">&#128202;</span> Engine Analytics</div>
-  <div class="section-desc">Live metrics from ROOTS Knowledge Engine &#183; Session distribution &amp; feedback quality</div>
+  <div class="section-desc">Live metrics from ROOTS Knowledge Engine &middot; Session distribution, feedback quality, domain reliability &amp; API latency</div>
   <div class="chart-grid">
-    <div class="chart-box"><div class="chart-title">Session Status Distribution</div><div class="chart-sub" id="chart-sessions-sub">&#8212;</div><canvas id="sessionDonut"></canvas></div>
-    <div class="chart-box"><div class="chart-title">Feedback Quality Breakdown</div><div class="chart-sub" id="chart-feedback-sub">&#8212;</div><canvas id="feedbackDonut"></canvas></div>
+    <div class="chart-box"><div class="chart-title">Session Status Distribution</div><div class="chart-sub" id="chart-sessions-sub">&mdash;</div><canvas id="sessionDonut"></canvas></div>
+    <div class="chart-box"><div class="chart-title">Feedback Quality Breakdown</div><div class="chart-sub" id="chart-feedback-sub">&mdash;</div><canvas id="feedbackDonut"></canvas></div>
+    <div class="chart-box"><div class="chart-title">Cronbach &alpha; by Domain</div><div class="chart-sub">Internal consistency reliability &middot; &alpha; &ge; 0.70 = acceptable</div><canvas id="cronbachChart"></canvas></div>
+    <div class="chart-box"><div class="chart-title">API Endpoint Response Times</div><div class="chart-sub" id="chart-latency-sub">Live audit of all reachable endpoints</div><canvas id="latencyChart"></canvas></div>
   </div>
 </div>
 
+<!-- SECTION: FEEDBACK DEEP DIVE -->
 <div class="section" id="section-feedback">
-  <div class="section-title"><span class="section-icon">&#8734;</span> Learning Loop &#8212; Feedback Detail</div>
-  <div class="section-desc">Helpfulness ratings from parents who opted into the learning loop &#183; Real-time breakdown</div>
+  <div class="section-title"><span class="section-icon">&infin;</span> Learning Loop &mdash; Feedback Deep Dive</div>
+  <div class="section-desc">Helpfulness ratings from parents who opted into the learning loop &middot; Real-time breakdown &amp; aggregate stats</div>
   <div class="sessions-grid" id="feedback-cards">
     <div class="session-box">
-      <div class="session-title" style="color:var(--green)">&#10003; Very Helpful</div>
-      <div class="session-sub" id="fb-very-helpful-detail">&#8212;</div>
-      <div class="score-bar-wrap"><div class="score-row"><div class="score-domain">proportion</div><div class="bar-track"><div class="bar-fill" id="fb-very-bar" style="width:0%;background:var(--green)"></div></div><div class="score-pct" id="fb-very-pct" style="color:var(--green)">&#8212;</div></div></div>
+      <div class="session-title" style="color:var(--green)">&check; Very Helpful</div>
+      <div class="session-sub" id="fb-very-helpful-detail">&mdash;</div>
+      <div class="score-bar-wrap"><div class="score-row"><div class="score-domain">proportion</div><div class="bar-track"><div class="bar-fill" id="fb-very-bar" style="width:0%;background:var(--green)"></div></div><div class="score-pct" id="fb-very-pct" style="color:var(--green)">&mdash;</div></div></div>
     </div>
     <div class="session-box">
-      <div class="session-title" style="color:var(--gold)">&#9670; Somewhat Helpful</div>
-      <div class="session-sub" id="fb-somewhat-detail">&#8212;</div>
-      <div class="score-bar-wrap"><div class="score-row"><div class="score-domain">proportion</div><div class="bar-track"><div class="bar-fill" id="fb-somewhat-bar" style="width:0%;background:var(--gold)"></div></div><div class="score-pct" id="fb-somewhat-pct" style="color:var(--gold)">&#8212;</div></div></div>
+      <div class="session-title" style="color:var(--gold)">&diams; Somewhat Helpful</div>
+      <div class="session-sub" id="fb-somewhat-detail">&mdash;</div>
+      <div class="score-bar-wrap"><div class="score-row"><div class="score-domain">proportion</div><div class="bar-track"><div class="bar-fill" id="fb-somewhat-bar" style="width:0%;background:var(--gold)"></div></div><div class="score-pct" id="fb-somewhat-pct" style="color:var(--gold)">&mdash;</div></div></div>
     </div>
     <div class="session-box">
-      <div class="session-title" style="color:var(--crimson)">&#10007; Not Helpful</div>
-      <div class="session-sub" id="fb-not-helpful-detail">&#8212;</div>
-      <div class="score-bar-wrap"><div class="score-row"><div class="score-domain">proportion</div><div class="bar-track"><div class="bar-fill" id="fb-not-bar" style="width:0%;background:var(--crimson)"></div></div><div class="score-pct" id="fb-not-pct" style="color:var(--crimson)">&#8212;</div></div></div>
+      <div class="session-title" style="color:var(--crimson)">&cross; Not Helpful</div>
+      <div class="session-sub" id="fb-not-helpful-detail">&mdash;</div>
+      <div class="score-bar-wrap"><div class="score-row"><div class="score-domain">proportion</div><div class="bar-track"><div class="bar-fill" id="fb-not-bar" style="width:0%;background:var(--crimson)"></div></div><div class="score-pct" id="fb-not-pct" style="color:var(--crimson)">&mdash;</div></div></div>
     </div>
+  </div>
+  <div style="margin-top:16px" id="feedback-stats-extra"><div class="section-loading">Loading aggregate feedback stats&hellip;</div></div>
+</div>
+
+<!-- SECTION: Q-BANK COVERAGE -->
+<div class="section" id="section-qbank">
+  <div class="section-title"><span class="section-icon">&#128218;</span> Question Bank Coverage</div>
+  <div class="section-desc">Live Firestore question distribution by domain &middot; Coverage bars &amp; question IDs</div>
+  <div id="qbank-content"><div class="section-loading">Loading question bank&hellip;</div></div>
+</div>
+
+<!-- SECTION: COVERAGE MATRIX -->
+<div class="section" id="section-coverage-matrix">
+  <div class="section-title"><span class="section-icon">&#127919;</span> Coverage Matrix &mdash; Axis-to-Question Mapping</div>
+  <div class="section-desc">Gap analysis per domain &middot; Ensures every assessment axis has adequate question coverage</div>
+  <div id="coverage-matrix-content"><div class="section-loading">Loading coverage matrix&hellip;</div></div>
+</div>
+
+<!-- SECTION: QUESTION HEALTH -->
+<div class="section" id="section-question-health">
+  <div class="section-title"><span class="section-icon">&#129657;</span> Question Health Monitor</div>
+  <div class="section-desc">Per-question Information Gain, drift flags, response times &middot; From learning loop analysis</div>
+  <div id="question-health-content"><div class="section-loading">Loading question health&hellip;</div></div>
+</div>
+
+<!-- SECTION: PSYCHOMETRICS -->
+<div class="section" id="section-psychometrics">
+  <div class="section-title"><span class="section-icon">&#129518;</span> Psychometric Reliability Panel</div>
+  <div class="section-desc">Cronbach &alpha;, item-total correlations, &amp; inter-domain correlation matrix &middot; Statistical validity indicators</div>
+  <div class="chart-grid" style="margin-bottom:16px">
+    <div class="chart-box" id="cronbach-detail"><div class="section-loading">Loading Cronbach &alpha;&hellip;</div></div>
+    <div class="chart-box" id="domain-corr-detail"><div class="section-loading">Loading domain correlations&hellip;</div></div>
+  </div>
+  <div id="item-corr-content"><div class="section-loading">Loading item-total correlations&hellip;</div></div>
+</div>
+
+<!-- SECTION: SMART LINK INVITES -->
+<div class="section" id="section-invites">
+  <div class="section-title"><span class="section-icon">&#128279;</span> Smart Link Invites &mdash; Per-Invite Analytics</div>
+  <div class="section-desc">Active invite codes &middot; Assessment type, usage, status &middot; Click-through &amp; session drill-down</div>
+  <div id="invites-content"><div class="section-loading">Loading invites&hellip;</div></div>
+  <div id="invite-drilldown" style="margin-top:16px"></div>
+</div>
+
+<!-- SECTION: SESSION RESULTS EXPLORER -->
+<div class="section" id="section-sessions-explorer">
+  <div class="section-title"><span class="section-icon">&#128200;</span> Session Results Explorer</div>
+  <div class="section-desc">Score artifacts, reports &amp; event logs from completed sessions &middot; Data from roots_score_artifacts, roots_reports, roots_events</div>
+  <div id="sessions-explorer-content"><div class="section-loading">Loading session results&hellip;</div></div>
+</div>
+
+<!-- SECTION: EXPORT DATA PREVIEW -->
+<div class="section" id="section-export">
+  <div class="section-title"><span class="section-icon">&#128230;</span> Export &amp; Pilot Data Bundle</div>
+  <div class="section-desc">All exportable datasets &middot; Sessions, profiles, outcomes, triads &middot; From /export/pilot-bundle</div>
+  <div id="export-content"><div class="section-loading">Loading export data&hellip;</div></div>
+</div>
+
+<!-- SECTION: FIRESTORE COLLECTIONS -->
+<div class="section" id="section-collections">
+  <div class="section-title"><span class="section-icon">&#128451;</span> Firestore Collections &mdash; Live Data Inventory</div>
+  <div class="section-desc">All 10+ ROOTS collections in coolschools-72426 &middot; Document counts, last write timestamps &middot; No data left undisplayed</div>
+  <div id="collections-content"><div class="section-loading">Enumerating collections&hellip;</div></div>
+</div>
+
+<!-- SECTION: API ENDPOINT AUDIT -->
+<div class="section" id="section-api-audit">
+  <div class="section-title"><span class="section-icon">&#128269;</span> API Endpoint Audit &mdash; Live Reachability</div>
+  <div class="section-desc">Real-time status check of all ROOTS API endpoints &middot; Module-by-module breakdown with response times</div>
+  <div id="api-audit-content"><div class="section-loading">Running API audit&hellip;</div></div>
+</div>
+
+<!-- SECTION: PRAI REFERENCE -->
+<div class="section" id="section-prai">
+  <div class="section-title"><span class="section-icon">&#129518;</span> PRAI (Pancha-Rooted Authenticity Index) Reference</div>
+  <div class="section-desc">PRAI = 1 &minus; 0.40 &times; sigmoid(streak &minus; threshold) &middot; Applied as final score multiplier &middot; Threshold = 6</div>
+  <div class="chart-grid" style="margin-bottom:16px">
+    <div class="chart-box"><div class="chart-title">PRAI Multiplier vs Streak Length</div><div class="chart-sub">threshold=6 &middot; sigmoid shape &middot; full penalty at streak &ge; 10</div><canvas id="praiCurveChart"></canvas></div>
+    <div class="chart-box"><div class="chart-title">Beta(1,1): Score Range After N Questions</div><div class="chart-sub">All-S vs All-F posterior mean &mdash; theoretical ceiling &amp; floor</div><canvas id="betaRangeChart"></canvas></div>
+  </div>
+  <div class="table-wrap">
+    <table class="prai-table">
+      <thead><tr><th>N questions</th><th>All-S raw</th><th>All-F raw</th><th>Raw range</th><th>PRAI (streak=N)</th><th>All-S final</th><th>All-F final</th><th>Inversion?</th></tr></thead>
+      <tbody id="prai-table-body"></tbody>
+    </table>
   </div>
 </div>
 
+<!-- SECTION: PROPOSALS -->
 <div class="section" id="section-proposals">
   <div class="section-title"><span class="section-icon">&#129516;</span> Learning Proposals</div>
-  <div class="section-desc">AI-generated improvement suggestions from the feedback loop &#183; Approve to deploy, reject to discard</div>
-  <div id="proposals-content"><div class="loading">Loading proposals&#8230;</div></div>
+  <div class="section-desc">AI-generated improvement suggestions from the feedback loop &middot; Approve to deploy, reject to discard</div>
+  <div id="proposals-content"><div class="loading">Loading proposals&hellip;</div></div>
 </div>
 
+<!-- SECTION: VERSION REGISTRY -->
 <div class="section" id="section-registry">
-  <div class="section-title"><span class="section-icon">&#9881;</span> Version Registry</div>
-  <div class="section-desc">Engine version lifecycle &#183; Register new versions, activate for production deployment</div>
-  <div id="registry-content"><div class="loading">Loading version history&#8230;</div></div>
+  <div class="section-title"><span class="section-icon">&cog;</span> Version Registry</div>
+  <div class="section-desc">Engine version lifecycle &middot; Register new versions, activate for production deployment</div>
+  <div id="registry-content"><div class="loading">Loading version history&hellip;</div></div>
   <div style="margin-top:18px;padding:16px;background:var(--bg2);border:1px solid var(--border);border-radius:8px">
     <div style="font-size:10px;letter-spacing:0.6px;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px">Register New Version</div>
     <div class="form-row">
@@ -216,268 +366,890 @@
   </div>
 </div>
 
+<!-- SECTION: SYSTEM HEALTH -->
 <div class="section" id="section-status">
   <div class="section-title"><span class="section-icon">&#128269;</span> System Health Check</div>
-  <div class="section-desc">Real-time API health &#183; Endpoint reachability test</div>
-  <div id="health-content"><div class="loading">Checking health&#8230;</div></div>
+  <div class="section-desc">Real-time API health &middot; Endpoint reachability &amp; infrastructure status</div>
+  <div id="health-content"><div class="loading">Checking health&hellip;</div></div>
 </div>
 
+<!-- FOOTER -->
 <div class="report-footer">
   <div class="footer-grid">
     <div class="footer-item"><div class="footer-label">Engine</div><div class="footer-value" id="footer-engine">ROOTS v4.0</div></div>
-    <div class="footer-item"><div class="footer-label">API</div><div class="footer-value">cool-schools-api &#183; Cloud Run</div></div>
-    <div class="footer-item"><div class="footer-label">Dashboard</div><div class="footer-value" id="footer-time">&#8212;</div></div>
-    <div class="footer-item"><div class="footer-label">Auth</div><div class="footer-value" id="footer-auth">&#8212;</div></div>
+    <div class="footer-item"><div class="footer-label">API</div><div class="footer-value">cool-schools-api &middot; Cloud Run</div></div>
+    <div class="footer-item"><div class="footer-label">Dashboard</div><div class="footer-value" id="footer-time">&mdash;</div></div>
+    <div class="footer-item"><div class="footer-label">Auth</div><div class="footer-value" id="footer-auth">&mdash;</div></div>
+    <div class="footer-item"><div class="footer-label">Endpoints</div><div class="footer-value" id="footer-endpoints">&mdash;</div></div>
     <div class="footer-item"><div class="footer-label">School</div><div class="footer-value">Somalwar Ramdaspeth</div></div>
   </div>
-  <div style="margin-top:10px;color:var(--text-muted)">CoolSchools Platform &#183; ROOTS Knowledge Engine &#183; Pancha-Kosha Assessment Framework</div>
+  <div style="margin-top:10px;color:var(--text-muted)">CoolSchools Platform &middot; ROOTS Knowledge Engine &middot; Pancha-Kosha Assessment Framework</div>
 </div>
 
+<button class="refresh-btn" onclick="location.reload()">&#8635; Refresh Dashboard</button>
 <div id="toast" class="toast"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
 <script>
-var COLORS = {green:'#3dd68c',crimson:'#e54545',orange:'#e8884a',blue:'#5b9bd5',cyan:'#4ec9e0',gold:'#f5c842',purple:'#a97ad4'};
-Chart.defaults.color = '#8b949e';
-Chart.defaults.borderColor = '#30363d';
-Chart.defaults.font.family = "'SF Mono','Cascadia Code',Consolas,monospace";
-Chart.defaults.font.size = 11;
+/* === GLOBALS === */
+var COLORS={green:'#3dd68c',crimson:'#e54545',orange:'#e8884a',blue:'#5b9bd5',cyan:'#4ec9e0',gold:'#f5c842',purple:'#a97ad4',dim:'rgba(255,255,255,0.08)'};
+Chart.defaults.color='#8b949e';
+Chart.defaults.borderColor='#30363d';
+Chart.defaults.font.family="'SF Mono','Cascadia Code',Consolas,monospace";
+Chart.defaults.font.size=11;
 
-var firebaseConfig = {apiKey:'AIzaSyC1JxbMdlXXLiMQQ4xhcjHRzgFbg12mMcA',authDomain:'coolschools-72426.firebaseapp.com',projectId:'coolschools-72426'};
+var firebaseConfig={apiKey:'AIzaSyC1JxbMdlXXLiMQQ4xhcjHRzgFbg12mMcA',authDomain:'coolschools-72426.firebaseapp.com',projectId:'coolschools-72426'};
 firebase.initializeApp(firebaseConfig);
-var fbAuth = firebase.auth();
-var API_BASE = 'https://cool-schools-api-420407869747.us-central1.run.app/api/v1/roots';
-var rootsToken = null;
+var fbAuth=firebase.auth();
+var API_BASE='https://cool-schools-api-420407869747.us-central1.run.app/api/v1/roots';
+var rootsToken=null;
 
-fbAuth.onAuthStateChanged(async function(user) {
-  var statusEl = document.getElementById('auth-status');
-  if (!user) {
-    statusEl.textContent = 'Signing in\u2026';
-    statusEl.style.color = '#f59e0b';
-    try { await fbAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
-    catch(e) {
-      statusEl.textContent = 'Sign-in failed \u2014 click to retry';
-      statusEl.style.color = '#ef4444'; statusEl.style.cursor = 'pointer';
-      statusEl.onclick = function() { fbAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); };
-      document.getElementById('badge-status').textContent = '\u2717 AUTH FAILED';
-      document.getElementById('badge-status').className = 'badge badge-error';
-    }
+/* === AUTH === */
+fbAuth.onAuthStateChanged(async function(user){
+  var s=document.getElementById('auth-status');
+  if(!user){
+    s.textContent='Signing in\u2026'; s.style.color='#f59e0b';
+    try{await fbAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider())}
+    catch(e){s.textContent='Sign-in failed \u2014 click to retry';s.style.color='#ef4444';s.style.cursor='pointer';
+      s.onclick=function(){fbAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider())};
+      document.getElementById('badge-status').textContent='\u2717 AUTH FAILED';
+      document.getElementById('badge-status').className='badge badge-error';}
     return;
   }
-  var tokenResult = await user.getIdTokenResult(true);
-  var role = tokenResult.claims.rootsRole || tokenResult.claims.role;
-  if (!['system','admin','superadmin'].includes(role)) {
-    statusEl.textContent = 'Access denied \u2014 role: ' + (role || 'none');
-    statusEl.style.color = '#ef4444';
-    document.getElementById('badge-status').textContent = '\u2298 UNAUTHORIZED';
-    document.getElementById('badge-status').className = 'badge badge-error';
-    return;
+  var tr=await user.getIdTokenResult(true);
+  var role=tr.claims.rootsRole||tr.claims.role;
+  if(!['system','admin','superadmin'].includes(role)){
+    s.textContent='Access denied \u2014 role: '+(role||'none');s.style.color='#ef4444';
+    document.getElementById('badge-status').textContent='\u2298 UNAUTHORIZED';
+    document.getElementById('badge-status').className='badge badge-error';return;
   }
-  rootsToken = tokenResult.token;
-  statusEl.textContent = user.email + ' \u00b7 ' + role;
-  statusEl.style.color = '#3dd68c';
-  document.getElementById('sign-out-link').style.display = 'inline';
-  document.getElementById('footer-auth').textContent = user.email + ' \u00b7 ' + role;
-  setInterval(async function() { rootsToken = await user.getIdToken(true); }, 50*60*1000);
+  rootsToken=tr.token;
+  s.textContent=user.email+' \u00b7 '+role;s.style.color='#3dd68c';
+  document.getElementById('sign-out-link').style.display='inline';
+  document.getElementById('footer-auth').textContent=user.email+' \u00b7 '+role;
+  setInterval(async function(){rootsToken=await user.getIdToken(true)},50*60*1000);
   init();
 });
 
-async function api(method, path, body) {
-  var opts = {method:method, headers:{'Content-Type':'application/json','Authorization':'Bearer '+rootsToken}};
-  if (body) opts.body = JSON.stringify(body);
-  var res = await fetch(API_BASE + path, opts);
-  if (res.status === 401 || res.status === 403) { await fbAuth.signOut(); throw new Error('Unauthorized'); }
-  var data = await res.json();
-  if (!res.ok) throw new Error((data.error && data.error.message) || data.message || 'HTTP '+res.status);
+/* === API HELPERS === */
+async function api(method,path,body){
+  var opts={method:method,headers:{'Content-Type':'application/json','Authorization':'Bearer '+rootsToken}};
+  if(body)opts.body=JSON.stringify(body);
+  var res=await fetch(API_BASE+path,opts);
+  if(res.status===401||res.status===403){throw new Error('Unauthorized ('+res.status+')');}
+  var data=await res.json();
+  if(!res.ok)throw new Error((data.error&&data.error.message)||data.message||'HTTP '+res.status);
   return data;
 }
-
-function showToast(msg, type) {
-  var el = document.getElementById('toast');
-  el.textContent = msg; el.className = 'toast toast-'+(type||'success')+' visible';
-  setTimeout(function(){el.classList.remove('visible');}, 3500);
+async function apiSafe(method,path,body){
+  try{return await api(method,path,body)}catch(e){console.warn('apiSafe:',path,e.message);return null;}
 }
-function fmt(n) { return typeof n==='number' ? n.toLocaleString() : (n!=null?n:'\u2014'); }
-function pct(n) { return typeof n==='number' ? n.toFixed(1)+'%' : '\u2014'; }
+async function timedFetch(method,path){
+  var start=Date.now();
+  var opts={method:method,headers:{'Content-Type':'application/json','Authorization':'Bearer '+rootsToken}};
+  try{var res=await fetch(API_BASE+path,opts);var ms=Date.now()-start;return{status:res.status,ms:ms,ok:res.ok}}
+  catch(e){return{status:0,ms:Date.now()-start,ok:false,error:e.message}}
+}
+function showToast(msg,type){var el=document.getElementById('toast');el.textContent=msg;el.className='toast toast-'+(type||'success')+' visible';setTimeout(function(){el.classList.remove('visible')},3500)}
+function fmt(n){return typeof n==='number'?n.toLocaleString():(n!=null?n:'\u2014')}
+function pct(n){return typeof n==='number'?n.toFixed(1)+'%':'\u2014'}
+function fmtDec(n,d){return typeof n==='number'?n.toFixed(d||2):'\u2014'}
 
-var sessionChart=null, feedbackChart=null;
+var sessionChart=null,feedbackChart=null,cronbachChart=null,latencyChart=null;
 
-async function init() {
-  var now = new Date();
-  document.getElementById('header-time').textContent = now.toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'});
-  document.getElementById('footer-time').textContent = now.toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'});
-  await Promise.allSettled([loadMetrics(), loadProposals(), loadRegistry(), loadHealth()]);
+/* === INIT === */
+async function init(){
+  var now=new Date();
+  document.getElementById('header-time').textContent=now.toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'});
+  document.getElementById('footer-time').textContent=now.toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'});
+  await Promise.allSettled([
+    loadMetrics(),loadProposals(),loadRegistry(),loadHealth(),
+    loadQuestions(),loadCoverageMatrix(),loadQuestionHealth(),
+    loadCronbachAlpha(),loadItemCorrelations(),loadDomainCorrelations(),
+    loadInvites(),loadFeedbackStats(),loadAdminHealth(),
+    loadSessionResults(),loadExportData(),loadCollections(),
+    runApiAudit()
+  ]);
+  buildPraiReference();
 }
 
-async function loadMetrics() {
-  try {
-    var raw = await api('GET','/prototype-admin/metrics');
-    var m = raw.data || raw;
-    var ver = m.currentEngineVersion||m.engineVersion||m.engine_version||'\u2014';
-    document.getElementById('meta-engine').textContent = 'ROOTS v'+ver;
-    document.getElementById('footer-engine').textContent = 'ROOTS v'+ver;
-    document.getElementById('meta-pending').textContent = fmt(m.pendingProposals||0);
-    var total=m.totalSessions||0, completed=m.completedSessions||0, active=m.activeSessions||0;
+/* === 1. METRICS === */
+async function loadMetrics(){
+  try{
+    var raw=await api('GET','/prototype-admin/metrics');
+    var m=raw.data||raw;
+    var ver=m.currentEngineVersion||m.engineVersion||m.engine_version||'\u2014';
+    document.getElementById('meta-engine').textContent='ROOTS v'+ver;
+    document.getElementById('footer-engine').textContent='ROOTS v'+ver;
+    document.getElementById('meta-pending').textContent=fmt(m.pendingProposals||0);
+    var total=m.totalSessions||0,completed=m.completedSessions||0,active=m.activeSessions||0;
     var fb=m.helpfulnessBreakdown||{};
-    var veryH=fb.VeryHelpful||0, somewhat=fb.SomewhatHelpful||0, notH=fb.NotHelpful||0;
+    var veryH=fb.VeryHelpful||0,somewhat=fb.SomewhatHelpful||0,notH=fb.NotHelpful||0;
     var totalFb=m.feedbackCount||(veryH+somewhat+notH);
-    var optInRate=m.learningOptInRate||0, optInN=m.learningOptInCount||0;
+    var optInRate=m.learningOptInRate||0,optInN=m.learningOptInCount||0;
     var helpPct=m.helpfulnessPercent||(totalFb>0?((veryH+somewhat)/totalFb*100):0);
     var pending=m.pendingProposals||0;
     var compRate=total>0?(completed/total*100).toFixed(1):'0';
-    document.getElementById('card-version').textContent = 'v'+ver;
-    document.getElementById('card-total').textContent = fmt(total);
-    document.getElementById('card-completed').textContent = fmt(completed);
-    document.getElementById('card-completed-sub').textContent = compRate+'% completion rate';
-    document.getElementById('card-active').textContent = fmt(active);
-    document.getElementById('card-optin').textContent = pct(optInRate);
-    document.getElementById('card-optin-sub').textContent = fmt(optInN)+' of '+fmt(total)+' sessions';
-    document.getElementById('card-helpful').textContent = pct(helpPct);
-    document.getElementById('card-helpful-sub').textContent = fmt(veryH+somewhat)+' positive of '+fmt(totalFb);
-    document.getElementById('card-feedback').textContent = fmt(totalFb);
-    document.getElementById('card-proposals').textContent = fmt(pending);
-    var badge = document.getElementById('badge-status');
-    if (total>0) { badge.textContent='\u2713 LIVE'; badge.className='badge badge-live'; }
-    else { badge.textContent='\u25CB NO DATA'; badge.className='badge badge-warn'; }
+    document.getElementById('card-version').textContent='v'+ver;
+    document.getElementById('card-total').textContent=fmt(total);
+    document.getElementById('card-completed').textContent=fmt(completed);
+    document.getElementById('card-completed-sub').textContent=compRate+'% completion rate';
+    document.getElementById('card-active').textContent=fmt(active);
+    document.getElementById('card-optin').textContent=pct(optInRate);
+    document.getElementById('card-optin-sub').textContent=fmt(optInN)+' of '+fmt(total)+' sessions';
+    document.getElementById('card-helpful').textContent=pct(helpPct);
+    document.getElementById('card-helpful-sub').textContent=fmt(veryH+somewhat)+' positive of '+fmt(totalFb);
+    document.getElementById('card-feedback').textContent=fmt(totalFb);
+    document.getElementById('card-proposals').textContent=fmt(pending);
+    var badge=document.getElementById('badge-status');
+    if(total>0){badge.textContent='\u2713 LIVE';badge.className='badge badge-live'}
+    else{badge.textContent='\u25CB NO DATA';badge.className='badge badge-warn'}
     var dropped=Math.max(0,total-completed-active);
-    document.getElementById('chart-sessions-sub').textContent = fmt(total)+' total sessions tracked';
-    if (sessionChart) sessionChart.destroy();
-    sessionChart = new Chart(document.getElementById('sessionDonut'),{
-      type:'doughnut',
-      data:{labels:['\u2713 Completed','\u25CE Active','\u2717 Dropped/Other'],datasets:[{data:[completed,active,dropped],backgroundColor:[COLORS.green,COLORS.cyan,COLORS.orange],borderColor:'#0d1117',borderWidth:3,hoverOffset:6}]},
-      options:{cutout:'62%',plugins:{legend:{position:'bottom',labels:{padding:10,boxWidth:12,font:{size:10}}},tooltip:{callbacks:{label:function(ctx){return ' '+ctx.label+': '+ctx.raw+' sessions';}}}}}
+    document.getElementById('chart-sessions-sub').textContent=fmt(total)+' total sessions tracked';
+    if(sessionChart)sessionChart.destroy();
+    sessionChart=new Chart(document.getElementById('sessionDonut'),{
+      type:'doughnut',data:{labels:['\u2713 Completed','\u25CE Active','\u2717 Dropped/Other'],datasets:[{data:[completed,active,dropped],backgroundColor:[COLORS.green,COLORS.cyan,COLORS.orange],borderColor:'#0d1117',borderWidth:3,hoverOffset:6}]},
+      options:{cutout:'62%',plugins:{legend:{position:'bottom',labels:{padding:10,boxWidth:12,font:{size:10}}},tooltip:{callbacks:{label:function(ctx){return ' '+ctx.label+': '+ctx.raw+' sessions'}}}}}
     });
-    document.getElementById('chart-feedback-sub').textContent = fmt(totalFb)+' feedback responses \u00b7 '+pct(helpPct)+' positive';
-    if (feedbackChart) feedbackChart.destroy();
-    feedbackChart = new Chart(document.getElementById('feedbackDonut'),{
-      type:'doughnut',
-      data:{labels:['Very Helpful','Somewhat Helpful','Not Helpful'],datasets:[{data:[veryH,somewhat,notH],backgroundColor:[COLORS.green,COLORS.gold,COLORS.crimson],borderColor:'#0d1117',borderWidth:3,hoverOffset:6}]},
-      options:{cutout:'62%',plugins:{legend:{position:'bottom',labels:{padding:10,boxWidth:12,font:{size:10}}},tooltip:{callbacks:{label:function(ctx){return ' '+ctx.label+': '+ctx.raw+' responses';}}}}}
+    document.getElementById('chart-feedback-sub').textContent=fmt(totalFb)+' feedback responses \u00b7 '+pct(helpPct)+' positive';
+    if(feedbackChart)feedbackChart.destroy();
+    feedbackChart=new Chart(document.getElementById('feedbackDonut'),{
+      type:'doughnut',data:{labels:['Very Helpful','Somewhat Helpful','Not Helpful'],datasets:[{data:[veryH,somewhat,notH],backgroundColor:[COLORS.green,COLORS.gold,COLORS.crimson],borderColor:'#0d1117',borderWidth:3,hoverOffset:6}]},
+      options:{cutout:'62%',plugins:{legend:{position:'bottom',labels:{padding:10,boxWidth:12,font:{size:10}}},tooltip:{callbacks:{label:function(ctx){return ' '+ctx.label+': '+ctx.raw+' responses'}}}}}
     });
     var fbT=veryH+somewhat+notH||1;
-    document.getElementById('fb-very-helpful-detail').textContent = fmt(veryH)+' responses';
-    document.getElementById('fb-somewhat-detail').textContent = fmt(somewhat)+' responses';
-    document.getElementById('fb-not-helpful-detail').textContent = fmt(notH)+' responses';
-    document.getElementById('fb-very-bar').style.width = (veryH/fbT*100)+'%';
-    document.getElementById('fb-very-pct').textContent = pct(veryH/fbT*100);
-    document.getElementById('fb-somewhat-bar').style.width = (somewhat/fbT*100)+'%';
-    document.getElementById('fb-somewhat-pct').textContent = pct(somewhat/fbT*100);
-    document.getElementById('fb-not-bar').style.width = (notH/fbT*100)+'%';
-    document.getElementById('fb-not-pct').textContent = pct(notH/fbT*100);
-  } catch(e) {
+    document.getElementById('fb-very-helpful-detail').textContent=fmt(veryH)+' responses';
+    document.getElementById('fb-somewhat-detail').textContent=fmt(somewhat)+' responses';
+    document.getElementById('fb-not-helpful-detail').textContent=fmt(notH)+' responses';
+    document.getElementById('fb-very-bar').style.width=(veryH/fbT*100)+'%';
+    document.getElementById('fb-very-pct').textContent=pct(veryH/fbT*100);
+    document.getElementById('fb-somewhat-bar').style.width=(somewhat/fbT*100)+'%';
+    document.getElementById('fb-somewhat-pct').textContent=pct(somewhat/fbT*100);
+    document.getElementById('fb-not-bar').style.width=(notH/fbT*100)+'%';
+    document.getElementById('fb-not-pct').textContent=pct(notH/fbT*100);
+  }catch(e){
     console.warn('Metrics failed:',e.message);
     document.getElementById('badge-status').textContent='\u2717 METRICS ERROR';
     document.getElementById('badge-status').className='badge badge-error';
-    document.getElementById('summary-grid').innerHTML='<div class="card card-crimson" style="grid-column:1/-1"><div class="card-number" style="color:var(--crimson);font-size:14px">Failed to load metrics</div><div class="card-sub">'+e.message+'</div></div>';
   }
 }
 
-async function loadProposals() {
-  try {
-    var raw = await api('GET','/prototype-learning/proposals');
-    var proposals = raw.data || [];
-    if (!Array.isArray(proposals)) throw new Error('Unexpected proposals format');
-    if (!proposals.length) { document.getElementById('proposals-content').innerHTML='<div class="empty-state">No learning proposals at this time.</div>'; return; }
-    var html='<table class="data-table"><thead><tr><th>ID</th><th>Type</th><th>Domain</th><th>Status</th><th>Confidence</th><th>Created</th><th>Actions</th></tr></thead><tbody>';
-    for (var i=0;i<proposals.length;i++) {
-      var p=proposals[i], id=p.proposalId||p.id||'\u2014', shortId=typeof id==='string'?id.slice(0,10):id;
+/* === 2. QUESTIONS (Q-BANK) === */
+async function loadQuestions(){
+  try{
+    var raw=await api('GET','/questions');
+    var questions=raw.data||raw.questions||[];
+    if(!Array.isArray(questions)){questions=[];}
+    var domainMap={};var totalQ=questions.length;
+    for(var i=0;i<questions.length;i++){
+      var q=questions[i];var d=(q.domain||q.primaryDomain||'unknown').toLowerCase();
+      if(!domainMap[d])domainMap[d]={count:0,ids:[],active:0};
+      domainMap[d].count++;
+      domainMap[d].ids.push(q.questionId||q.id||('Q'+(i+1)));
+      if(q.active!==false&&q.status!=='DEPRECATED')domainMap[d].active++;
+    }
+    var domains=Object.keys(domainMap).sort();
+    document.getElementById('card-questions').textContent=fmt(totalQ);
+    document.getElementById('card-questions-sub').textContent=domains.length+' domains active';
+    document.getElementById('card-domains').textContent=fmt(domains.length);
+    document.getElementById('meta-qbank').textContent=totalQ+' questions \u00b7 '+domains.length+' domains';
+    var maxCount=Math.max.apply(null,domains.map(function(d){return domainMap[d].count}))||1;
+    var html='<div class="qbank-grid">';
+    for(var i=0;i<domains.length;i++){
+      var d=domains[i];var info=domainMap[d];
+      var pctW=(info.count/maxCount*100).toFixed(0);
+      html+='<div class="qbank-domain"><div class="qbank-name">'+d+' ('+info.count+')</div>';
+      html+='<div class="qbank-bar-track"><div class="qbank-bar-fill" style="width:'+pctW+'%"></div></div>';
+      html+='<div class="qbank-nums"><span>'+info.active+' active</span><span>'+info.count+' total</span></div>';
+      html+='<div class="qid-list">';
+      for(var j=0;j<info.ids.length;j++){html+='<span class="qid-pill">'+info.ids[j]+'</span>';}
+      html+='</div></div>';
+    }
+    html+='</div>';
+    document.getElementById('qbank-content').innerHTML=html;
+  }catch(e){
+    document.getElementById('qbank-content').innerHTML='<div class="empty-state">Could not load questions: '+e.message+'</div>';
+  }
+}
+
+/* === 3. COVERAGE MATRIX === */
+async function loadCoverageMatrix(){
+  try{
+    var raw=await api('GET','/questions/coverage-matrix');
+    var data=raw.data||raw;
+    if(!data||typeof data!=='object'){throw new Error('Unexpected format');}
+    var html='';
+    if(data.matrix&&typeof data.matrix==='object'){
+      html+='<div class="table-wrap"><table class="data-table"><thead><tr><th>Domain/Axis</th><th>Questions</th><th>Coverage</th><th>Gaps</th></tr></thead><tbody>';
+      var keys=Object.keys(data.matrix);
+      for(var i=0;i<keys.length;i++){
+        var k=keys[i];var entry=data.matrix[k];
+        var qCount=entry.questionCount||entry.count||0;
+        var coverage=entry.coverage||(qCount>0?'adequate':'gap');
+        var gaps=entry.gaps||[];
+        var covBadge=coverage==='gap'||qCount<3?'<span class="badge badge-warn">GAP</span>':'<span class="badge badge-ok">\u2713</span>';
+        html+='<tr><td style="text-transform:capitalize;color:var(--cyan)">'+k+'</td><td>'+qCount+'</td><td>'+covBadge+'</td><td style="font-size:10px">'+(gaps.length?gaps.join(', '):'\u2014')+'</td></tr>';
+      }
+      html+='</tbody></table></div>';
+    }else{
+      html+='<div class="finding-card"><div class="finding-body"><pre style="white-space:pre-wrap;font-size:10px;color:var(--text-dim)">'+JSON.stringify(data,null,2)+'</pre></div></div>';
+    }
+    document.getElementById('coverage-matrix-content').innerHTML=html||'<div class="empty-state">No coverage matrix data</div>';
+  }catch(e){
+    document.getElementById('coverage-matrix-content').innerHTML='<div class="empty-state">Coverage matrix unavailable: '+e.message+'</div>';
+  }
+}
+
+/* === 4. QUESTION HEALTH === */
+async function loadQuestionHealth(){
+  try{
+    var raw=await api('GET','/learning/question-health');
+    var items=raw.data||raw.questions||raw;
+    if(!Array.isArray(items)){
+      if(items&&typeof items==='object'){items=Object.values(items)}else{throw new Error('Unexpected format')}
+    }
+    if(!items.length){document.getElementById('question-health-content').innerHTML='<div class="empty-state">No question health data available yet. Data populates after learning loop analysis runs.</div>';return}
+    var html='<div class="table-wrap"><table class="data-table"><thead><tr><th>Question ID</th><th>Domain</th><th>IG Score</th><th>Drift</th><th>Avg Response</th><th>Low IG</th><th>Status</th></tr></thead><tbody>';
+    for(var i=0;i<items.length;i++){
+      var q=items[i];
+      var ig=q.ig||q.informationGain||q.expectedIG;
+      var drift=q.driftFlag||q.drift||false;
+      var avgTime=q.avgResponseTime||q.avg_response_time;
+      var lowIg=q.lowIgFlag||q.low_ig_flag||false;
+      var status=drift?'<span class="badge badge-warn">DRIFT</span>':(lowIg?'<span class="badge badge-issue">LOW IG</span>':'<span class="badge badge-ok">\u2713</span>');
+      html+='<tr><td style="color:var(--cyan)">'+(q.questionId||q.id||'\u2014')+'</td><td style="text-transform:capitalize">'+(q.domain||'\u2014')+'</td><td>'+fmtDec(ig,3)+'</td><td>'+(drift?'<span style="color:var(--orange)">Yes</span>':'No')+'</td><td>'+(avgTime?avgTime+'ms':'\u2014')+'</td><td>'+(lowIg?'<span style="color:var(--crimson)">Yes</span>':'No')+'</td><td>'+status+'</td></tr>';
+    }
+    html+='</tbody></table></div>';
+    document.getElementById('question-health-content').innerHTML=html;
+  }catch(e){
+    document.getElementById('question-health-content').innerHTML='<div class="empty-state">Question health unavailable: '+e.message+'</div>';
+  }
+}
+
+/* === 5. CRONBACH ALPHA === */
+async function loadCronbachAlpha(){
+  try{
+    var raw=await api('GET','/psychometrics/cronbach-alpha');
+    var items=raw.data||raw;
+    if(!Array.isArray(items)){if(items&&typeof items==='object'&&items.domains){items=items.domains}else{items=[]}}
+    if(!items.length){
+      document.getElementById('cronbach-detail').innerHTML='<div class="chart-title">Cronbach \u03b1 by Domain</div><div class="empty-state" style="margin-top:12px">No Cronbach \u03b1 data yet. Requires sufficient sessions.</div>';
+      return;
+    }
+    var labels=[],values=[],bgColors=[];var sum=0;
+    for(var i=0;i<items.length;i++){
+      var it=items[i];labels.push(it.domain||'?');
+      var a=it.alpha||it.cronbachAlpha||0;values.push(a);sum+=a;
+      bgColors.push(a>=0.8?COLORS.green:a>=0.7?COLORS.gold:a>=0.5?COLORS.orange:COLORS.crimson);
+    }
+    var avg=sum/items.length;
+    document.getElementById('card-cronbach').textContent=fmtDec(avg,2);
+    document.getElementById('card-cronbach-sub').textContent=items.length+' domains measured';
+    var html='<div class="chart-title">Cronbach \u03b1 Detail</div><div class="chart-sub">Per-domain internal consistency</div>';
+    html+='<table class="data-table" style="margin-top:10px"><thead><tr><th>Domain</th><th>\u03b1</th><th>N Items</th><th>N Sessions</th><th>Interpretation</th></tr></thead><tbody>';
+    for(var i=0;i<items.length;i++){
+      var it=items[i];var a=it.alpha||it.cronbachAlpha||0;
+      var interp=it.interpretation||(a>=0.9?'Excellent':a>=0.8?'Good':a>=0.7?'Acceptable':a>=0.6?'Questionable':a>=0.5?'Poor':'Unacceptable');
+      var interpColor=a>=0.7?'var(--green)':a>=0.5?'var(--orange)':'var(--crimson)';
+      html+='<tr><td style="text-transform:capitalize;color:var(--cyan)">'+(it.domain||'\u2014')+'</td><td style="font-weight:700;color:'+interpColor+'">'+fmtDec(a,3)+'</td><td>'+(it.nItems||'\u2014')+'</td><td>'+(it.nSessions||'\u2014')+'</td><td style="color:'+interpColor+'">'+interp+'</td></tr>';
+    }
+    html+='</tbody></table>';
+    document.getElementById('cronbach-detail').innerHTML=html;
+    if(cronbachChart)cronbachChart.destroy();
+    cronbachChart=new Chart(document.getElementById('cronbachChart'),{
+      type:'bar',data:{labels:labels,datasets:[{label:'Cronbach \u03b1',data:values,backgroundColor:bgColors,borderRadius:4}]},
+      options:{indexAxis:'y',scales:{x:{min:0,max:1,grid:{color:COLORS.dim},ticks:{callback:function(v){return v.toFixed(1)}}},y:{grid:{display:false},ticks:{font:{size:9}}}},plugins:{legend:{display:false}}}
+    });
+  }catch(e){
+    document.getElementById('cronbach-detail').innerHTML='<div class="chart-title">Cronbach \u03b1</div><div class="empty-state" style="margin-top:12px">Unavailable: '+e.message+'</div>';
+  }
+}
+
+/* === 6. ITEM-TOTAL CORRELATIONS === */
+async function loadItemCorrelations(){
+  try{
+    var raw=await api('GET','/psychometrics/item-total-correlations');
+    var items=raw.data||raw;
+    if(!Array.isArray(items)){if(items&&typeof items==='object'){items=Object.values(items)}else{items=[]}}
+    if(!items.length){document.getElementById('item-corr-content').innerHTML='<div class="empty-state">No item-total correlation data available yet.</div>';return}
+    var html='<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px">Item-Total Correlations (r<sub>it</sub>)</div>';
+    html+='<div class="table-wrap"><table class="data-table"><thead><tr><th>Question</th><th>Domain</th><th>r<sub>it</sub></th><th>Flag</th><th>Sample</th></tr></thead><tbody>';
+    for(var i=0;i<items.length;i++){
+      var it=items[i];var rit=it.r_it||it.rit||it.correlation||0;
+      var flag=it.flag||(rit<0.2?'LOW':'OK');
+      var flagBadge=flag==='LOW'||flag==='low'?'<span class="badge badge-warn">LOW</span>':'<span class="badge badge-ok">\u2713</span>';
+      html+='<tr><td style="color:var(--cyan)">'+(it.questionId||it.id||'\u2014')+'</td><td style="text-transform:capitalize">'+(it.domain||'\u2014')+'</td><td style="font-weight:600;color:'+(rit>=0.3?'var(--green)':rit>=0.2?'var(--gold)':'var(--crimson)')+'">'+fmtDec(rit,3)+'</td><td>'+flagBadge+'</td><td>'+(it.sampleSize||it.n||'\u2014')+'</td></tr>';
+    }
+    html+='</tbody></table></div>';
+    document.getElementById('item-corr-content').innerHTML=html;
+  }catch(e){
+    document.getElementById('item-corr-content').innerHTML='<div class="empty-state">Item correlations unavailable: '+e.message+'</div>';
+  }
+}
+
+/* === 7. DOMAIN CORRELATION MATRIX === */
+async function loadDomainCorrelations(){
+  try{
+    var raw=await api('GET','/psychometrics/domain-correlation-matrix');
+    var data=raw.data||raw;
+    if(!data||!data.matrix){throw new Error('No matrix data')}
+    var domains=data.domains||Object.keys(data.matrix);
+    var matrix=data.matrix;
+    var html='<div class="chart-title">Inter-Domain Correlation Matrix</div><div class="chart-sub">Empirical Pearson r \u00b7 n='+(data.sampleSize||'\u2014')+'</div>';
+    html+='<div class="table-wrap" style="margin-top:10px"><table class="heat-table"><thead><tr><th></th>';
+    for(var i=0;i<domains.length;i++){html+='<th>'+domains[i].substring(0,4).toUpperCase()+'</th>';}
+    html+='</tr></thead><tbody>';
+    for(var i=0;i<domains.length;i++){
+      html+='<tr><td style="font-weight:600">'+domains[i].substring(0,4).toUpperCase()+'</td>';
+      var row=matrix[domains[i]]||matrix[i]||{};
+      for(var j=0;j<domains.length;j++){
+        var val=i===j?1.00:(typeof row[domains[j]]==='number'?row[domains[j]]:(row[j]||0));
+        var intensity=Math.abs(val);
+        var bg=i===j?'rgba(245,200,66,0.15)':val>0.5?'rgba(61,214,140,'+(0.1+intensity*0.3)+')':val>0.3?'rgba(78,201,224,'+(0.1+intensity*0.2)+')':val<-0.2?'rgba(229,69,69,'+(0.1+intensity*0.3)+')':'transparent';
+        html+='<td style="background:'+bg+';color:var(--text-dim)">'+fmtDec(val,2)+'</td>';
+      }
+      html+='</tr>';
+    }
+    html+='</tbody></table></div>';
+    if(data.flaggedPairs&&data.flaggedPairs.length){
+      html+='<div class="note" style="margin-top:10px">\u26a0 Flagged pairs: '+data.flaggedPairs.map(function(p){return p.join(' \u2194 ')}).join(', ')+'</div>';
+    }
+    document.getElementById('domain-corr-detail').innerHTML=html;
+  }catch(e){
+    document.getElementById('domain-corr-detail').innerHTML='<div class="chart-title">Domain Correlation Matrix</div><div class="empty-state" style="margin-top:12px">Unavailable: '+e.message+'</div>';
+  }
+}
+
+/* === 8. FEEDBACK STATS === */
+async function loadFeedbackStats(){
+  try{
+    var raw=await api('GET','/prototype-learning/feedback/stats');
+    var data=raw.data||raw;
+    if(!data||typeof data!=='object'){throw new Error('Unexpected format')}
+    var html='<div class="findings-grid">';
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">\u2261 AGGREGATE</span></div><div class="finding-title">Feedback Statistics</div><div class="finding-body">';
+    html+='Total responses: <code>'+fmt(data.totalFeedback||data.total||0)+'</code><br>';
+    html+='Helpfulness rate: <code>'+pct(data.helpfulnessRate||data.helpfulnessPercent||0)+'</code><br>';
+    if(data.avgRating)html+='Average rating: <code>'+fmtDec(data.avgRating,2)+'</code><br>';
+    if(data.freeTextCount)html+='Free text comments: <code>'+fmt(data.freeTextCount)+'</code><br>';
+    if(data.lastFeedbackAt)html+='Last feedback: <code>'+new Date(data.lastFeedbackAt).toLocaleDateString('en-IN')+'</code>';
+    html+='</div></div>';
+    if(data.bySession||data.perSession){
+      var ps=data.bySession||data.perSession;
+      html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-gold">\u25be PER-SESSION</span></div><div class="finding-title">Per-Session Breakdown</div><div class="finding-body"><pre style="white-space:pre-wrap;font-size:10px">'+JSON.stringify(ps,null,2)+'</pre></div></div>';
+    }
+    html+='</div>';
+    document.getElementById('feedback-stats-extra').innerHTML=html;
+  }catch(e){
+    document.getElementById('feedback-stats-extra').innerHTML='<div class="empty-state">Aggregate feedback stats unavailable: '+e.message+'</div>';
+  }
+}
+
+/* === 9. INVITES === */
+async function loadInvites(){
+  try{
+    var raw=await api('GET','/invites');
+    var invites=raw.data||raw.invites||[];
+    if(!Array.isArray(invites)){invites=[];}
+    document.getElementById('card-invites').textContent=fmt(invites.length);
+    if(!invites.length){document.getElementById('invites-content').innerHTML='<div class="empty-state">No smart link invites found.</div>';return}
+    var html='<div class="table-wrap"><table class="data-table"><thead><tr><th>Code</th><th>Type</th><th>School</th><th>Status</th><th>Uses</th><th>Max Uses</th><th>Created</th><th>Drill-Down</th></tr></thead><tbody>';
+    for(var i=0;i<invites.length;i++){
+      var inv=invites[i];
+      var code=inv.code||inv.inviteCode||'\u2014';
+      var type=inv.assessmentType||inv.type||'\u2014';
+      var school=inv.schoolName||inv.schoolId||'\u2014';
+      var enabled=inv.enabled!==false&&!inv.disabled;
+      var expired=inv.expired||false;
+      var uses=inv.useCount||inv.uses||0;
+      var maxUses=inv.maxUses||'\u221e';
+      var created=inv.createdAt?new Date(inv.createdAt).toLocaleDateString('en-IN'):'\u2014';
+      var statusBadge=expired?'<span class="badge badge-error">expired</span>':(enabled?'<span class="badge badge-success">active</span>':'<span class="badge badge-warn">disabled</span>');
+      html+='<tr><td style="font-size:10px;color:var(--cyan);font-weight:600">'+code+'</td><td>'+type+'</td><td style="font-size:10px">'+school+'</td><td>'+statusBadge+'</td><td>'+uses+'</td><td>'+maxUses+'</td><td>'+created+'</td>';
+      html+='<td><button class="btn-sm btn-gold" onclick="drillInvite(\''+code+'\')">Metrics</button></td>';
+      html+='</tr>';
+    }
+    html+='</tbody></table></div>';
+    document.getElementById('invites-content').innerHTML=html;
+  }catch(e){
+    document.getElementById('invites-content').innerHTML='<div class="empty-state">Could not load invites: '+e.message+'</div>';
+  }
+}
+async function drillInvite(code){
+  var el=document.getElementById('invite-drilldown');
+  el.innerHTML='<div class="section-loading">Loading metrics for '+code+'&hellip;</div>';
+  try{
+    var raw=await api('GET','/invites/'+code+'/metrics');
+    var m=raw.data||raw;
+    var html='<div class="findings-grid">';
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-gold">\u2197 '+code+'</span></div><div class="finding-title">Invite Metrics</div><div class="finding-body">';
+    html+='Total clicks: <code>'+fmt(m.totalClicks||m.clicks||0)+'</code><br>';
+    html+='Unique visitors: <code>'+fmt(m.uniqueVisitors||m.unique||0)+'</code><br>';
+    html+='Sessions started: <code>'+fmt(m.sessionsStarted||m.sessions||0)+'</code><br>';
+    html+='Sessions completed: <code>'+fmt(m.sessionsCompleted||m.completed||0)+'</code><br>';
+    html+='Completion rate: <code>'+pct(m.completionRate||m.completion_rate||0)+'</code><br>';
+    if(m.lastClickAt)html+='Last click: <code>'+new Date(m.lastClickAt).toLocaleDateString('en-IN')+'</code><br>';
+    if(m.avgTimeToComplete)html+='Avg completion time: <code>'+Math.round(m.avgTimeToComplete/1000)+'s</code>';
+    html+='</div></div>';
+    if(m.clickTimeline&&m.clickTimeline.length){
+      html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">\u25c8 TIMELINE</span></div><div class="finding-title">Click Timeline</div><div class="finding-body"><pre style="white-space:pre-wrap;font-size:10px">'+JSON.stringify(m.clickTimeline,null,2)+'</pre></div></div>';
+    }
+    if(m.sessions&&Array.isArray(m.sessions)){
+      html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-success">\u25ce SESSIONS</span></div><div class="finding-title">Associated Sessions</div><div class="finding-body"><pre style="white-space:pre-wrap;font-size:10px">'+JSON.stringify(m.sessions.slice(0,10),null,2)+'</pre></div></div>';
+    }
+    html+='</div>';
+    el.innerHTML=html;
+  }catch(e){
+    el.innerHTML='<div class="empty-state">Invite metrics unavailable: '+e.message+'</div>';
+  }
+}
+
+/* === 10. API ENDPOINT AUDIT === */
+async function runApiAudit(){
+  var modules=[
+    {name:'HEALTH',icon:'\u25c8',endpoints:[{m:'GET',p:'/health'}]},
+    {name:'QUESTION BANK',icon:'\u25c7',endpoints:[{m:'GET',p:'/questions'},{m:'GET',p:'/questions/coverage-matrix'},{m:'GET',p:'/questions/consistency-pairs'}]},
+    {name:'PROFILES',icon:'\u25c9',endpoints:[{m:'GET',p:'/profiles/demo-test/trajectory'}]},
+    {name:'PARENT ASSESSMENT',icon:'\u2665',endpoints:[{m:'GET',p:'/parent-assessment/sessions/demo/state'}]},
+    {name:'TEACHER ASSESSMENT',icon:'\u2731',endpoints:[{m:'GET',p:'/teacher-assessment/sessions/demo/state'}]},
+    {name:'ENGINE INTERNALS',icon:'\u2699',endpoints:[{m:'POST',p:'/engine/prior/initialise'},{m:'POST',p:'/engine/eig/calculate'}]},
+    {name:'LEARNING LOOP',icon:'\u221e',endpoints:[{m:'GET',p:'/learning/question-health'},{m:'GET',p:'/prototype-learning/proposals'},{m:'GET',p:'/prototype-learning/feedback/stats'}]},
+    {name:'PSYCHOMETRICS',icon:'\u03c8',endpoints:[{m:'GET',p:'/psychometrics/cronbach-alpha'},{m:'GET',p:'/psychometrics/item-total-correlations'},{m:'GET',p:'/psychometrics/domain-correlation-matrix'}]},
+    {name:'ADMIN',icon:'\u2606',endpoints:[{m:'GET',p:'/prototype-admin/metrics'},{m:'GET',p:'/prototype-admin/health'},{m:'GET',p:'/prototype-admin/registry/current'},{m:'GET',p:'/prototype-admin/registry/history'}]},
+    {name:'INVITES',icon:'\u2197',endpoints:[{m:'GET',p:'/invites'}]},
+    {name:'EXPORT',icon:'\u21e9',endpoints:[{m:'GET',p:'/export/pilot-bundle'}]},
+    {name:'ALUMNI',icon:'\u25ce',endpoints:[{m:'GET',p:'/alumni/directory'}]},
+    {name:'GROWTH PREDICTION',icon:'\u25b3',endpoints:[{m:'GET',p:'/growth-prediction/by-child/demo'}]},
+    {name:'INTELLIGENCE',icon:'\u25c8',endpoints:[{m:'GET',p:'/intelligence/available-dimensions'}]}
+  ];
+  var results=[];var totalTested=0;var statusCounts={s200:0,s403:0,s404:0,s429:0,s500:0,other:0};
+  var latencyLabels=[],latencyData=[],latencyColors=[];
+  for(var mi=0;mi<modules.length;mi++){
+    var mod=modules[mi];mod.results=[];
+    for(var ei=0;ei<mod.endpoints.length;ei++){
+      var ep=mod.endpoints[ei];
+      var r=await timedFetch(ep.m,ep.p);
+      r.method=ep.m;r.path=ep.p;mod.results.push(r);totalTested++;
+      if(r.status>=200&&r.status<300)statusCounts.s200++;
+      else if(r.status===403)statusCounts.s403++;
+      else if(r.status===404)statusCounts.s404++;
+      else if(r.status===429)statusCounts.s429++;
+      else if(r.status>=500)statusCounts.s500++;
+      else statusCounts.other++;
+      latencyLabels.push(ep.p.replace('/api/v1/roots','').split('/').filter(Boolean).pop()||ep.p);
+      latencyData.push(r.ms);
+      latencyColors.push(r.status>=200&&r.status<300?COLORS.green:r.status===403?COLORS.orange:r.status===429?COLORS.purple:COLORS.crimson);
+    }
+    results.push(mod);
+  }
+  document.getElementById('meta-endpoints').textContent=totalTested+' tested';
+  document.getElementById('footer-endpoints').textContent=totalTested+' endpoints audited';
+  document.getElementById('chart-latency-sub').textContent=totalTested+' endpoints \u00b7 avg '+Math.round(latencyData.reduce(function(a,b){return a+b},0)/latencyData.length)+'ms';
+  if(latencyChart)latencyChart.destroy();
+  latencyChart=new Chart(document.getElementById('latencyChart'),{
+    type:'bar',data:{labels:latencyLabels.slice(0,20),datasets:[{label:'Response time (ms)',data:latencyData.slice(0,20),backgroundColor:latencyColors.slice(0,20),borderRadius:3}]},
+    options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:COLORS.dim},ticks:{callback:function(v){return v+'ms'}}},y:{grid:{display:false},ticks:{font:{size:8}}}}}
+  });
+  var html='<div class="chart-grid" style="margin-bottom:16px"><div class="chart-box"><div class="chart-title">Endpoint Status Distribution</div><div class="chart-sub">'+totalTested+' endpoints tested across '+modules.length+' modules</div><canvas id="auditStatusChart"></canvas></div></div>';
+  html+='<div class="module-grid">';
+  for(var mi=0;mi<results.length;mi++){
+    var mod=results[mi];
+    var counts={};
+    for(var ri=0;ri<mod.results.length;ri++){
+      var s=mod.results[ri].status;var key=s>=200&&s<300?'200':(s===403?'403':(s===429?'429':(s===404?'404':'err')));
+      counts[key]=(counts[key]||0)+1;
+    }
+    html+='<div class="module-card"><div class="module-header"><span class="module-name">'+mod.icon+' MODULE '+mi+' \u2014 '+mod.name+'</span><div class="module-stats">';
+    if(counts['200'])html+='<span class="stat-pill pill-pass">'+counts['200']+'\u00d7200</span>';
+    if(counts['403'])html+='<span class="stat-pill pill-403">'+counts['403']+'\u00d7403</span>';
+    if(counts['429'])html+='<span class="stat-pill pill-429">'+counts['429']+'\u00d7429</span>';
+    if(counts['404'])html+='<span class="stat-pill pill-404">'+counts['404']+'\u00d7404</span>';
+    if(counts['err'])html+='<span class="stat-pill pill-err">'+counts['err']+'\u00d7ERR</span>';
+    html+='</div></div>';
+    for(var ri=0;ri<mod.results.length;ri++){
+      var r=mod.results[ri];var sc=r.status>=200&&r.status<300?'s200':(r.status===403?'s403':(r.status===429?'s429':(r.status===404?'s404':'s500')));
+      var sym=r.status>=200&&r.status<300?'\u2713 '+r.status:(r.status===403?'\u2298 403':(r.status===429?'\u229b 429':(r.status===404?'\u26a0 404':'\u2717 '+r.status)));
+      html+='<div class="endpoint-row"><span class="ep-status '+sc+'">'+sym+'</span><span class="ep-method">'+r.method+'</span><span class="ep-path">'+r.path+'</span><span class="ep-time">'+r.ms+'ms</span></div>';
+    }
+    html+='</div>';
+  }
+  html+='</div>';
+  html+='<p class="note" style="margin-top:12px">\u2298 403 = expected role restriction \u00b7 \u229b 429 = rate limit hit \u00b7 \u2713 0 server errors (5xx) indicates healthy API</p>';
+  document.getElementById('api-audit-content').innerHTML=html;
+  setTimeout(function(){
+    var ctx=document.getElementById('auditStatusChart');
+    if(ctx){new Chart(ctx,{
+      type:'doughnut',data:{labels:['\u2713 200 OK','\u2298 403 Role-gated','\u229b 429 Rate-limited','\u26a0 404 Not Found','\u2717 5xx/Error'],datasets:[{data:[statusCounts.s200,statusCounts.s403,statusCounts.s429,statusCounts.s404,statusCounts.s500+statusCounts.other],backgroundColor:[COLORS.green,COLORS.orange,COLORS.purple,COLORS.crimson,'#444'],borderColor:'#0d1117',borderWidth:3,hoverOffset:6}]},
+      options:{cutout:'62%',plugins:{legend:{position:'bottom',labels:{padding:10,boxWidth:12,font:{size:10}}},tooltip:{callbacks:{label:function(ctx){return ' '+ctx.label+': '+ctx.raw+' endpoints'}}}}}
+    })}
+  },100);
+}
+
+/* === 11. PRAI REFERENCE === */
+function buildPraiReference(){
+  function praiFn(streak,threshold){
+    if(streak<threshold)return 1.0;
+    var penalty=1/(1+Math.exp(-(streak-threshold)));
+    return Math.max(0,1-0.4*penalty);
+  }
+  var streaks=[];for(var i=0;i<=15;i++)streaks.push(i);
+  new Chart(document.getElementById('praiCurveChart'),{
+    type:'line',data:{labels:streaks,datasets:[
+      {label:'PRAI multiplier (threshold=6)',data:streaks.map(function(s){return praiFn(s,6)*100}),borderColor:COLORS.gold,backgroundColor:'rgba(245,200,66,0.06)',borderWidth:2,fill:true,tension:0.3,pointRadius:4},
+      {label:'Old PRAI (threshold=3)',data:streaks.map(function(s){return praiFn(s,3)*100}),borderColor:COLORS.crimson,backgroundColor:'transparent',borderWidth:1.5,borderDash:[4,4],tension:0.3,pointRadius:2}
+    ]},options:{scales:{y:{min:55,max:105,grid:{color:COLORS.dim},ticks:{callback:function(v){return v+'%'}}},x:{title:{display:true,text:'Consecutive S answers (streak)',color:'#8b949e',font:{size:10}},grid:{color:COLORS.dim}}},plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:8,font:{size:10}}}}}
+  });
+  var Ns=[1,2,3,5,6,7,10];
+  var allSraw=Ns.map(function(n){return(1+n)/(2+n)*100});
+  var allFraw=Ns.map(function(n){return 1/(2+n)*100});
+  new Chart(document.getElementById('betaRangeChart'),{
+    type:'line',data:{labels:Ns,datasets:[
+      {label:'All-S raw (Beta ceiling)',data:allSraw,borderColor:COLORS.green,backgroundColor:'rgba(61,214,140,0.06)',fill:'+1',borderWidth:2,tension:0.3,pointRadius:4},
+      {label:'All-F raw (Beta floor)',data:allFraw,borderColor:COLORS.crimson,backgroundColor:'rgba(229,69,69,0.04)',borderWidth:2,tension:0.3,pointRadius:4}
+    ]},options:{scales:{y:{min:0,max:100,grid:{color:COLORS.dim},ticks:{callback:function(v){return v+'%'}}},x:{title:{display:true,text:'N questions answered',color:'#8b949e',font:{size:10}},grid:{color:COLORS.dim}}},plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:8,font:{size:10}}}}}
+  });
+  var tbody=document.getElementById('prai-table-body');
+  var rows=[
+    {n:1,sR:60.0,fR:40.0,range:20.0,prai:100.0,sF:60.0,fF:40.0,inv:'No'},
+    {n:2,sR:66.7,fR:33.3,range:33.3,prai:100.0,sF:66.7,fF:33.3,inv:'No'},
+    {n:3,sR:71.4,fR:28.6,range:42.9,prai:100.0,sF:71.4,fF:28.6,inv:'No'},
+    {n:5,sR:77.8,fR:22.2,range:55.6,prai:100.0,sF:77.8,fF:22.2,inv:'No'},
+    {n:6,sR:80.0,fR:20.0,range:60.0,prai:98.2,sF:78.6,fF:20.0,inv:'No'},
+    {n:7,sR:81.8,fR:18.2,range:63.6,prai:93.1,sF:76.1,fF:18.2,inv:'No'},
+    {n:10,sR:85.7,fR:14.3,range:71.4,prai:60.1,sF:51.5,fF:14.3,inv:'No \u2713'}
+  ];
+  var html='';
+  for(var i=0;i<rows.length;i++){
+    var r=rows[i];
+    var nLabel=r.n===6?'N='+r.n+' <span style="color:var(--gold);font-size:9px">\u2190 threshold</span>':'N='+r.n;
+    html+='<tr><td>'+nLabel+'</td><td>'+r.sR.toFixed(1)+'%</td><td>'+r.fR.toFixed(1)+'%</td><td>'+r.range.toFixed(1)+'pp</td><td>'+r.prai.toFixed(1)+'%</td><td class="'+(r.prai<100?'danger':'highlight')+'">'+r.sF.toFixed(1)+'%</td><td>'+r.fF.toFixed(1)+'%</td><td style="color:var(--pass)">'+r.inv+'</td></tr>';
+  }
+  tbody.innerHTML=html;
+}
+
+/* === 12. PROPOSALS === */
+async function loadProposals(){
+  try{
+    var raw=await api('GET','/prototype-learning/proposals');
+    var proposals=raw.data||[];
+    if(!Array.isArray(proposals))throw new Error('Unexpected format');
+    if(!proposals.length){document.getElementById('proposals-content').innerHTML='<div class="empty-state">No learning proposals at this time.</div>';return}
+    var html='<div class="table-wrap"><table class="data-table"><thead><tr><th>ID</th><th>Type</th><th>Domain</th><th>Status</th><th>Confidence</th><th>Description</th><th>Created</th><th>Actions</th></tr></thead><tbody>';
+    for(var i=0;i<proposals.length;i++){
+      var p=proposals[i],id=p.proposalId||p.id||'\u2014',shortId=typeof id==='string'?id.slice(0,12):id;
       var status=p.status||'pending';
       var statusBadge=status==='approved'?'<span class="badge badge-success">approved</span>':status==='rejected'?'<span class="badge badge-error">rejected</span>':'<span class="badge badge-warn">pending</span>';
       var created=p.createdAt?new Date(p.createdAt).toLocaleDateString('en-IN'):'\u2014';
       var conf=p.confidence?pct(p.confidence*100):'\u2014';
+      var desc=p.description||p.rationale||'\u2014';
       var isPending=status==='pending'||status==='pending_review';
-      html+='<tr><td style="font-size:10px;color:var(--cyan)">'+shortId+'</td><td>'+(p.type||p.proposalType||'\u2014')+'</td><td style="text-transform:capitalize">'+(p.domain||'\u2014')+'</td><td>'+statusBadge+'</td><td>'+conf+'</td><td>'+created+'</td><td>';
-      if (isPending) html+='<button class="btn-sm btn-approve" onclick="approveProposal(\''+id+'\')">Approve</button> <button class="btn-sm btn-reject" onclick="rejectProposal(\''+id+'\')">Reject</button>';
+      html+='<tr><td style="font-size:10px;color:var(--cyan)">'+shortId+'</td><td>'+(p.type||p.proposalType||'\u2014')+'</td><td style="text-transform:capitalize">'+(p.domain||'\u2014')+'</td><td>'+statusBadge+'</td><td>'+conf+'</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+desc+'">'+desc+'</td><td>'+created+'</td><td>';
+      if(isPending)html+='<button class="btn-sm btn-approve" onclick="approveProposal(\''+id+'\')">Approve</button> <button class="btn-sm btn-reject" onclick="rejectProposal(\''+id+'\')">Reject</button>';
       else html+='<span style="color:var(--text-muted)">\u2014</span>';
       html+='</td></tr>';
     }
-    html+='</tbody></table>';
+    html+='</tbody></table></div>';
     document.getElementById('proposals-content').innerHTML=html;
-  } catch(e) {
-    document.getElementById('proposals-content').innerHTML='<div class="empty-state">Could not load proposals: '+e.message+'</div>';
-  }
+  }catch(e){document.getElementById('proposals-content').innerHTML='<div class="empty-state">Could not load proposals: '+e.message+'</div>'}
 }
+async function approveProposal(id){try{await api('POST','/prototype-admin/proposals/'+id+'/approve');showToast('Proposal approved');loadProposals();loadMetrics()}catch(e){showToast('Failed: '+e.message,'error')}}
+async function rejectProposal(id){try{await api('POST','/prototype-admin/proposals/'+id+'/reject');showToast('Proposal rejected');loadProposals()}catch(e){showToast('Failed: '+e.message,'error')}}
 
-async function approveProposal(id) {
-  try { await api('POST','/prototype-admin/proposals/'+id+'/approve'); showToast('Proposal approved'); loadProposals(); loadMetrics(); }
-  catch(e) { showToast('Failed: '+e.message,'error'); }
-}
-async function rejectProposal(id) {
-  try { await api('POST','/prototype-admin/proposals/'+id+'/reject'); showToast('Proposal rejected'); loadProposals(); }
-  catch(e) { showToast('Failed: '+e.message,'error'); }
-}
-
-async function loadRegistry() {
-  try {
-    var raw = await api('GET','/prototype-admin/registry/history');
-    var versions = raw.data || [];
-    if (!Array.isArray(versions)) throw new Error('Unexpected registry format');
-    if (!versions.length) { document.getElementById('registry-content').innerHTML='<div class="empty-state">No versions registered yet.</div>'; return; }
-    var html='<table class="data-table"><thead><tr><th>Version</th><th>Status</th><th>Registered</th><th>Registered By</th><th>Description</th><th>Actions</th></tr></thead><tbody>';
-    for (var i=0;i<versions.length;i++) {
-      var v=versions[i], ver=v.version||v.engineVersion||'\u2014';
+/* === 13. VERSION REGISTRY === */
+async function loadRegistry(){
+  try{
+    var raw=await api('GET','/prototype-admin/registry/history');
+    var versions=raw.data||[];
+    if(!Array.isArray(versions))throw new Error('Unexpected format');
+    if(!versions.length){document.getElementById('registry-content').innerHTML='<div class="empty-state">No versions registered yet.</div>';return}
+    var html='<div class="table-wrap"><table class="data-table"><thead><tr><th>Version</th><th>Status</th><th>Registered</th><th>By</th><th>Description</th><th>Changes</th><th>Actions</th></tr></thead><tbody>';
+    for(var i=0;i<versions.length;i++){
+      var v=versions[i],ver=v.version||v.engineVersion||'\u2014';
       var isActive=v.active||v.status==='active';
-      var statusBadge=isActive?'<span class="badge badge-live">\u25CF active</span>':v.status==='deprecated'?'<span class="badge badge-error">deprecated</span>':'<span class="badge badge-info">pending</span>';
+      var statusBadge=isActive?'<span class="badge badge-live">\u25cf active</span>':v.status==='deprecated'?'<span class="badge badge-error">deprecated</span>':'<span class="badge badge-info">pending</span>';
       var registered=(v.registeredAt||v.createdAt)?new Date(v.registeredAt||v.createdAt).toLocaleDateString('en-IN'):'\u2014';
-      var by=v.registeredBy||'\u2014', desc=v.description||v.changelog||'\u2014';
+      var by=v.registeredBy||'\u2014',desc=v.description||'\u2014';
+      var changes=v.changes&&v.changes.length?v.changes.join('; '):'\u2014';
       var vId=v.id||v.versionId||ver;
-      html+='<tr><td style="font-weight:700;color:'+(isActive?'var(--green)':'var(--text)')+'">'+ver+'</td><td>'+statusBadge+'</td><td>'+registered+'</td><td style="font-size:10px;color:var(--text-muted)">'+by+'</td><td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+desc+'">'+desc+'</td><td>';
-      if (!isActive && v.status!=='deprecated') html+='<button class="btn-sm btn-gold" onclick="activateVersion(\''+vId+'\')">Activate</button>';
+      html+='<tr><td style="font-weight:700;color:'+(isActive?'var(--green)':'var(--text)')+'">'+ver+'</td><td>'+statusBadge+'</td><td>'+registered+'</td><td style="font-size:10px;color:var(--text-muted)">'+by+'</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+desc+'">'+desc+'</td><td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px" title="'+changes+'">'+changes+'</td><td>';
+      if(!isActive&&v.status!=='deprecated')html+='<button class="btn-sm btn-gold" onclick="activateVersion(\''+vId+'\')">Activate</button>';
       else html+='<span style="color:var(--text-muted)">\u2014</span>';
       html+='</td></tr>';
     }
-    html+='</tbody></table>';
+    html+='</tbody></table></div>';
     document.getElementById('registry-content').innerHTML=html;
-  } catch(e) {
-    document.getElementById('registry-content').innerHTML='<div class="empty-state">Could not load versions: '+e.message+'</div>';
-  }
+  }catch(e){document.getElementById('registry-content').innerHTML='<div class="empty-state">Could not load versions: '+e.message+'</div>'}
 }
-
-async function registerVersion() {
+async function registerVersion(){
   var version=document.getElementById('reg-version').value.trim();
   var description=document.getElementById('reg-description').value.trim();
   var changelog=document.getElementById('reg-changelog').value.trim();
-  if (!version) { showToast('Version is required (e.g. 4.2.0)','error'); return; }
-  if (!description) { showToast('Description is required','error'); return; }
-  var btn=document.getElementById('btn-register');
-  btn.disabled=true; btn.textContent='Registering\u2026';
-  try {
+  if(!version){showToast('Version required','error');return}
+  if(!description){showToast('Description required','error');return}
+  var btn=document.getElementById('btn-register');btn.disabled=true;btn.textContent='Registering\u2026';
+  try{
     var user=fbAuth.currentUser;
     await api('POST','/prototype-admin/registry/register',{version:version,description:description,changes:changelog?[changelog]:[],registeredBy:user?user.email:'admin'});
     showToast('Version '+version+' registered \u2713');
-    document.getElementById('reg-version').value='';
-    document.getElementById('reg-description').value='';
-    document.getElementById('reg-changelog').value='';
+    document.getElementById('reg-version').value='';document.getElementById('reg-description').value='';document.getElementById('reg-changelog').value='';
     loadRegistry();
-  } catch(e) { showToast('Failed: '+e.message,'error'); }
-  finally { btn.disabled=false; btn.textContent='Register'; }
+  }catch(e){showToast('Failed: '+e.message,'error')}
+  finally{btn.disabled=false;btn.textContent='Register'}
 }
+async function activateVersion(id){try{await api('POST','/prototype-admin/registry/activate/'+id);showToast('Version activated \u2713');loadRegistry();loadMetrics()}catch(e){showToast('Failed: '+e.message,'error')}}
 
-async function activateVersion(id) {
-  try { await api('POST','/prototype-admin/registry/activate/'+id); showToast('Version activated \u2713'); loadRegistry(); loadMetrics(); }
-  catch(e) { showToast('Failed: '+e.message,'error'); }
-}
-
-async function loadHealth() {
+/* === 14. HEALTH CHECK === */
+async function loadHealth(){
   var el=document.getElementById('health-content');
-  try {
-    var start=Date.now();
-    var res=await fetch(API_BASE+'/health');
-    var latency=Date.now()-start;
-    var d=await res.json();
-    var eng=d.data||d;
+  try{
+    var start=Date.now();var res=await fetch(API_BASE+'/health');var latency=Date.now()-start;
+    var d=await res.json();var eng=d.data||d;
     var html='<div class="findings-grid">';
     html+='<div class="finding-card"><div class="finding-badge"><span class="badge '+(res.ok?'badge-success':'badge-error')+'">'+(res.ok?'\u2713 ONLINE':'\u2717 DOWN')+'</span></div><div class="finding-title">API Status</div><div class="finding-body">Endpoint: <code>'+API_BASE+'/health</code><br>Status: <strong>'+res.status+'</strong> \u00b7 Latency: <strong>'+latency+'ms</strong><br>Engine: <code>'+(eng.engine_version||eng.engineVersion||'\u2014')+'</code></div></div>';
-    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-gold">\u2699 ENGINE</span></div><div class="finding-title">Engine Details</div><div class="finding-body">Version: <code>'+(eng.engine_version||eng.engineVersion||'\u2014')+'</code><br>Status: <code>'+(eng.status||'\u2014')+'</code><br>Uptime: <code>'+(eng.uptime||'\u2014')+'</code></div></div>';
-    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">\u25BF FIRESTORE</span></div><div class="finding-title">Data Store</div><div class="finding-body">Project: <code>coolschools-72426</code><br>Collections: <code>roots_sessions, roots_events, roots_reports, roots_questions</code><br>Region: <code>us-central1</code></div></div>';
-    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-success">\u25CE AUTH</span></div><div class="finding-title">Authentication</div><div class="finding-body">Provider: Firebase Auth (coolschools-72426)<br>Method: Google Sign-In popup<br>Roles: <code>system \u00b7 admin \u00b7 superadmin</code><br>Token refresh: every 50 min</div></div>';
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-gold">\u2699 ENGINE</span></div><div class="finding-title">Engine Details</div><div class="finding-body">Version: <code>'+(eng.engine_version||eng.engineVersion||'\u2014')+'</code><br>Status: <code>'+(eng.status||'\u2014')+'</code><br>Uptime: <code>'+(eng.uptime||'\u2014')+'</code><br>Module: <code>'+(eng.module||'roots')+'</code></div></div>';
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">\u25bf FIRESTORE</span></div><div class="finding-title">Data Store</div><div class="finding-body">Project: <code>coolschools-72426</code><br>Collections: <code>roots_sessions, roots_events, roots_reports, roots_questions, roots_score_artifacts, roots_learning_suggestions, roots_parent_sessions, roots_profiles, roots_invites, roots_invite_clicks</code><br>Region: <code>us-central1</code></div></div>';
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-success">\u25ce AUTH</span></div><div class="finding-title">Authentication</div><div class="finding-body">Provider: Firebase Auth (coolschools-72426)<br>Method: Google Sign-In popup<br>Roles: <code>system \u00b7 admin \u00b7 superadmin</code><br>Token refresh: every 50 min</div></div>';
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-action">\u26a1 INFRASTRUCTURE</span></div><div class="finding-title">Deployment</div><div class="finding-body">Platform: <code>Google Cloud Run</code><br>Region: <code>us-central1</code><br>Domain: <code>cool-schools-api-420407869747.us-central1.run.app</code><br>Frontend: <code>kaaykostore.web.app</code> (Firebase Hosting)</div></div>';
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">\u03c8 FRAMEWORK</span></div><div class="finding-title">Assessment Framework</div><div class="finding-body">Model: <code>Pancha-Kosha (5 sheaths)</code><br>Domains: <code>curiosity, resilience, empathy, systems, character, music, physical, spiritual</code><br>Engine: <code>Bayesian Beta-Binomial CAT</code><br>Prior: <code>Beta(1,1) uniform</code></div></div>';
     html+='</div>';
     el.innerHTML=html;
-  } catch(e) {
+  }catch(e){
     el.innerHTML='<div class="finding-card"><div class="finding-badge"><span class="badge badge-error">\u2717 ERROR</span></div><div class="finding-title">Health Check Failed</div><div class="finding-body">'+e.message+'</div></div>';
   }
+}
+
+/* === 15. ADMIN HEALTH (sessionsToday + lightweight polling) === */
+async function loadAdminHealth(){
+  try{
+    var raw=await api('GET','/prototype-admin/health');
+    var h=raw.data||raw;
+    var meta=raw.meta||{};
+    /* Update header with sessionsToday if available */
+    if(typeof h.sessionsToday==='number'){
+      var sub=document.querySelector('#card-active .card-sub');
+      if(sub)sub.textContent=h.sessionsToday+' sessions today';
+    }
+    if(h.engineVersion||h.engine_version){
+      document.getElementById('meta-engine').textContent='ROOTS v'+(h.engineVersion||h.engine_version);
+    }
+    if(meta.engine_version){
+      document.getElementById('meta-engine').textContent='ROOTS v'+meta.engine_version;
+    }
+  }catch(e){console.warn('Admin health:',e.message)}
+}
+
+/* === 16. SESSION RESULTS EXPLORER === */
+async function loadSessionResults(){
+  var el=document.getElementById('sessions-explorer-content');
+  try{
+    /* Try to get sessions list from metrics, then fetch some results */
+    var metricsRaw=await apiSafe('GET','/prototype-admin/metrics');
+    var totalSessions=(metricsRaw&&metricsRaw.data)?metricsRaw.data.totalSessions||0:0;
+    /* If we have sessions, try to get export data for session IDs */
+    var exportRaw=await apiSafe('GET','/export/sessions?format=json&limit=10');
+    var sessions=(exportRaw&&exportRaw.data)?exportRaw.data:[];
+    if(!Array.isArray(sessions))sessions=[];
+    if(!sessions.length){
+      /* Fallback: try pilot-bundle */
+      var bundle=await apiSafe('GET','/export/pilot-bundle');
+      if(bundle&&bundle.data&&bundle.data.sessions){sessions=bundle.data.sessions.slice(0,10)}
+    }
+    if(!sessions.length){
+      el.innerHTML='<div class="empty-state">No completed sessions to display yet. Sessions populate after assessments complete.<br><span style="font-size:10px;color:var(--text-muted)">Checked: /export/sessions, /export/pilot-bundle</span></div>';
+      return;
+    }
+    var html='<div class="table-wrap"><table class="data-table"><thead><tr><th>Session ID</th><th>Status</th><th>Role</th><th>Questions</th><th>Score</th><th>Created</th><th>Actions</th></tr></thead><tbody>';
+    for(var i=0;i<sessions.length;i++){
+      var s=sessions[i];
+      var sid=s.sessionId||s.id||'\u2014';var shortSid=typeof sid==='string'?sid.slice(0,16)+'…':sid;
+      var status=s.status||'unknown';
+      var statusBadge=status==='completed'?'<span class="badge badge-success">completed</span>':(status==='active'?'<span class="badge badge-warn">active</span>':'<span class="badge badge-info">'+status+'</span>');
+      var role=s.role||s.assessmentType||'\u2014';
+      var qCount=s.answeredCount||s.questionsAnswered||(s.answers?s.answers.length:'\u2014');
+      var score=s.overallScore||s.score;
+      var scoreStr=typeof score==='number'?fmtDec(score*100,1)+'%':'\u2014';
+      var created=s.createdAt?new Date(s.createdAt).toLocaleDateString('en-IN'):'\u2014';
+      html+='<tr><td style="font-size:9px;color:var(--cyan)" title="'+sid+'">'+shortSid+'</td><td>'+statusBadge+'</td><td>'+role+'</td><td>'+qCount+'</td><td style="font-weight:600;color:var(--gold)">'+scoreStr+'</td><td>'+created+'</td>';
+      html+='<td><button class="btn-sm btn-gold" onclick="drillSession(\''+sid+'\')">Details</button></td></tr>';
+    }
+    html+='</tbody></table></div>';
+    html+='<div id="session-drilldown" style="margin-top:16px"></div>';
+    el.innerHTML=html;
+  }catch(e){
+    el.innerHTML='<div class="empty-state">Session results unavailable: '+e.message+'</div>';
+  }
+}
+async function drillSession(sid){
+  var el=document.getElementById('session-drilldown');
+  if(!el)return;
+  el.innerHTML='<div class="section-loading">Loading session '+sid.slice(0,16)+'&hellip;</div>';
+  try{
+    var raw=await api('GET','/prototype/session-results/'+sid);
+    var d=raw.data||raw;
+    var html='<div class="findings-grid">';
+    if(d.scoreArtifact){
+      var sa=d.scoreArtifact;
+      html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-gold">\u25c8 SCORE ARTIFACT</span></div><div class="finding-title">Session '+sid.slice(0,12)+'</div><div class="finding-body">';
+      html+='Overall: <code>'+fmtDec((sa.overallScore||0)*100,1)+'%</code> \u00b7 Confidence: <code>'+fmtDec((sa.overallConfidence||0)*100,1)+'%</code><br>';
+      html+='Engine: <code>'+(sa.engine_version||'\u2014')+'</code> \u00b7 Role: <code>'+(sa.role||'\u2014')+'</code><br>';
+      if(sa.domainScores&&sa.domainScores.length){
+        html+='<div style="margin-top:10px"><div class="score-bar-wrap">';
+        for(var i=0;i<sa.domainScores.length;i++){
+          var ds=sa.domainScores[i];
+          var sPct=((ds.score||0)*100).toFixed(1);
+          html+='<div class="score-row"><div class="score-domain">'+(ds.domain||'?')+'</div><div class="bar-track"><div class="bar-fill" style="width:'+sPct+'%;background:var(--cyan)"></div></div><div class="score-pct">'+sPct+'%</div></div>';
+        }
+        html+='</div></div>';
+      }
+      if(sa.flags&&sa.flags.length)html+='Flags: <code>'+sa.flags.join(', ')+'</code>';
+      html+='</div></div>';
+    }
+    if(d.report){
+      html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-success">\u25ce REPORT</span></div><div class="finding-title">Generated Report</div><div class="finding-body"><pre style="white-space:pre-wrap;font-size:9px;max-height:200px;overflow-y:auto">'+JSON.stringify(d.report,null,2)+'</pre></div></div>';
+    }
+    if(d.events&&d.events.length){
+      html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">\u25a6 '+d.events.length+' EVENTS</span></div><div class="finding-title">Event Log</div><div class="finding-body">';
+      html+='<table class="data-table" style="font-size:9px"><thead><tr><th>#</th><th>Type</th><th>Time</th></tr></thead><tbody>';
+      for(var i=0;i<Math.min(d.events.length,20);i++){
+        var ev=d.events[i];
+        html+='<tr><td>'+(ev.sequence||i+1)+'</td><td style="color:var(--cyan)">'+(ev.type||'\u2014')+'</td><td>'+(ev.timestamp?new Date(ev.timestamp).toLocaleTimeString('en-IN'):'\u2014')+'</td></tr>';
+      }
+      if(d.events.length>20)html+='<tr><td colspan="3" style="color:var(--text-muted)">+'+(d.events.length-20)+' more events</td></tr>';
+      html+='</tbody></table></div></div>';
+    }
+    if(d.suggestions&&d.suggestions.length){
+      html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-warn">\u2261 '+d.suggestions.length+' SUGGESTIONS</span></div><div class="finding-title">Learning Suggestions</div><div class="finding-body">';
+      for(var i=0;i<d.suggestions.length;i++){
+        var sg=d.suggestions[i];
+        html+='<div style="margin-bottom:6px;padding:4px 8px;background:var(--bg3);border-radius:4px;font-size:10px">';
+        html+='<span style="color:var(--cyan)">'+(sg.domain||'?')+'</span>: '+(sg.text||sg.suggestion||sg.description||'\u2014');
+        html+='</div>';
+      }
+      html+='</div></div>';
+    }
+    html+='</div>';
+    el.innerHTML=html;
+  }catch(e){
+    el.innerHTML='<div class="empty-state">Session details unavailable: '+e.message+'</div>';
+  }
+}
+
+/* === 17. EXPORT DATA PREVIEW === */
+async function loadExportData(){
+  var el=document.getElementById('export-content');
+  try{
+    var raw=await api('GET','/export/pilot-bundle');
+    var d=raw.data||raw;
+    var html='<div class="findings-grid">';
+    /* Sessions summary */
+    var sess=d.sessions||[];
+    var profs=d.profiles||[];
+    var outcomes=d.outcomes||[];
+    var predictions=d.predictions||d.growthPredictions||[];
+    var triads=d.triads||[];
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-gold">\u25c8 SESSIONS</span></div><div class="finding-title">'+sess.length+' Sessions Exported</div><div class="finding-body">';
+    if(sess.length){
+      var completed=sess.filter(function(s){return s.status==='completed'}).length;
+      var roles={};sess.forEach(function(s){var r=s.role||s.assessmentType||'unknown';roles[r]=(roles[r]||0)+1});
+      html+='Completed: <code>'+completed+'</code> / '+sess.length+'<br>';
+      html+='Roles: '+Object.entries(roles).map(function(e){return '<code>'+e[0]+': '+e[1]+'</code>'}).join(' \u00b7 ')+'<br>';
+      if(sess[0]&&sess[0].createdAt)html+='Earliest: <code>'+new Date(sess[0].createdAt).toLocaleDateString('en-IN')+'</code>';
+    }else{html+='No sessions in export bundle';}
+    html+='</div></div>';
+    /* Profiles summary */
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-cyan">\u25ce PROFILES</span></div><div class="finding-title">'+profs.length+' Profiles Exported</div><div class="finding-body">';
+    if(profs.length){
+      var avgScore=profs.reduce(function(a,p){return a+(p.overallScore||0)},0)/profs.length;
+      html+='Avg overall score: <code>'+fmtDec(avgScore*100,1)+'%</code><br>';
+      var domains={};profs.forEach(function(p){if(p.domainScores)p.domainScores.forEach(function(ds){var d=ds.domain;domains[d]=(domains[d]||0)+1})});
+      if(Object.keys(domains).length)html+='Domain coverage: '+Object.keys(domains).map(function(d){return '<code>'+d+'</code>'}).join(', ');
+    }else{html+='No profiles in export bundle';}
+    html+='</div></div>';
+    /* Outcomes */
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-success">\u25c8 OUTCOMES</span></div><div class="finding-title">'+outcomes.length+' Outcomes</div><div class="finding-body">'+(outcomes.length?'Learning outcomes recorded for analysis':'No outcomes yet \u2014 populate via /learning/outcomes/ingest')+'</div></div>';
+    /* Growth predictions */
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">\u25b3 PREDICTIONS</span></div><div class="finding-title">'+(predictions.length||triads.length)+' Growth Predictions / Triads</div><div class="finding-body">';
+    if(predictions.length){
+      html+='<pre style="white-space:pre-wrap;font-size:9px;max-height:150px;overflow-y:auto">'+JSON.stringify(predictions.slice(0,3),null,2)+'</pre>';
+    }else if(triads.length){
+      html+='<pre style="white-space:pre-wrap;font-size:9px;max-height:150px;overflow-y:auto">'+JSON.stringify(triads.slice(0,3),null,2)+'</pre>';
+    }else{html+='No triad predictions yet \u2014 run /growth-prediction/compute'}
+    html+='</div></div>';
+    /* Raw data size */
+    var rawJson=JSON.stringify(d);
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-action">\u25c6 BUNDLE</span></div><div class="finding-title">Pilot Bundle Size</div><div class="finding-body">';
+    html+='Total size: <code>'+(rawJson.length/1024).toFixed(1)+' KB</code><br>';
+    html+='Keys: <code>'+Object.keys(d).join(', ')+'</code><br>';
+    html+='Format: JSON \u00b7 Ready for R/Python analysis';
+    html+='</div></div>';
+    html+='</div>';
+    el.innerHTML=html;
+  }catch(e){
+    el.innerHTML='<div class="empty-state">Export data unavailable: '+e.message+'<br><span style="font-size:10px;color:var(--text-muted)">Requires system role. Endpoint: /export/pilot-bundle</span></div>';
+  }
+}
+
+/* === 18. FIRESTORE COLLECTIONS EXPLORER === */
+async function loadCollections(){
+  var el=document.getElementById('collections-content');
+  /* We probe known collections via existing endpoints to build a live inventory */
+  var collections=[
+    {name:'roots_sessions',probe:'/prototype-admin/metrics',field:'totalSessions',desc:'CAT assessment sessions'},
+    {name:'roots_events',probe:null,desc:'Immutable event log (QuestionRendered, AnswerSelected, etc.)'},
+    {name:'roots_questions',probe:'/questions',countField:'data',desc:'Question bank (Pancha-Kosha domains)'},
+    {name:'roots_profiles',probe:'/export/profiles',desc:'Computed student profiles'},
+    {name:'roots_score_artifacts',probe:null,desc:'Scoring outputs (domainScores, overall, flags)'},
+    {name:'roots_reports',probe:null,desc:'Generated 2-page narrative reports'},
+    {name:'roots_parent_sessions',probe:null,desc:'Parent assessment sessions (invite-based)'},
+    {name:'roots_parent_profiles',probe:null,desc:'Parent ROOTS profiles'},
+    {name:'roots_invites',probe:'/invites',countField:'data',desc:'Smart link invite codes'},
+    {name:'roots_invite_clicks',probe:null,desc:'Click tracking for invite links'},
+    {name:'roots_learning_suggestions',probe:null,desc:'AI-generated learning suggestions'},
+    {name:'roots_learning_feedback',probe:'/prototype-learning/feedback/stats',field:'total',desc:'Helpfulness feedback on suggestions'},
+    {name:'roots_proposals',probe:'/prototype-learning/proposals',countField:'data',desc:'Learning improvement proposals'},
+    {name:'roots_engine_versions',probe:'/prototype-admin/registry/history',countField:'data',desc:'Engine version registry'},
+    {name:'roots_growth_predictions',probe:null,desc:'Triangulated growth predictions (child\u00d7parent\u00d7teacher)'},
+    {name:'roots_outcomes',probe:null,desc:'Learning outcomes for loop analysis'},
+    {name:'roots_teacher_genomes',probe:null,desc:'Teacher genome profiles'},
+    {name:'roots_alumni_identities',probe:null,desc:'Alumni identity claims'}
+  ];
+  var html='<div class="module-grid">';
+  var probePromises=[];
+  for(var i=0;i<collections.length;i++){
+    var c=collections[i];
+    if(c.probe){
+      probePromises.push((function(col,idx){
+        return apiSafe('GET',col.probe).then(function(raw){
+          col._count=null;
+          if(raw){
+            if(col.field&&raw.data&&typeof raw.data[col.field]==='number'){
+              col._count=raw.data[col.field];
+            }else if(col.countField&&raw[col.countField]){
+              var arr=raw[col.countField];
+              if(Array.isArray(arr))col._count=arr.length;
+              else if(raw.meta&&typeof raw.meta.count==='number')col._count=raw.meta.count;
+            }else if(raw.data&&typeof raw.data==='number'){
+              col._count=raw.data;
+            }
+          }
+        });
+      })(c,i));
+    }
+  }
+  await Promise.allSettled(probePromises);
+  for(var i=0;i<collections.length;i++){
+    var c=collections[i];
+    var countStr=c._count!=null?fmt(c._count)+' docs':'<span style="color:var(--text-muted)">\u2014</span>';
+    var statusPill=c._count!=null?(c._count>0?'<span class="stat-pill pill-pass">'+c._count+'</span>':'<span class="stat-pill" style="background:rgba(255,255,255,0.05);color:var(--text-muted)">empty</span>'):'<span class="stat-pill" style="background:rgba(255,255,255,0.05);color:var(--text-muted)">?</span>';
+    html+='<div class="module-card"><div class="module-header"><span class="module-name">'+c.name+'</span><div class="module-stats">'+statusPill+'</div></div>';
+    html+='<div class="endpoint-row"><span style="flex:1;font-size:10px;color:var(--text-dim)">'+c.desc+'</span></div>';
+    html+='</div>';
+  }
+  html+='</div>';
+  html+='<p class="note" style="margin-top:10px">'+collections.length+' collections tracked \u00b7 Counts from probed API endpoints \u00b7 ? = not probed directly (no system-level collection list endpoint)</p>';
+  el.innerHTML=html;
 }
 </script>
 </body>
