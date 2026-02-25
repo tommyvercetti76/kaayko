@@ -176,6 +176,34 @@
     .ascii-logo { font-size: 6px; }
     .card-number { font-size: 22px; }
   }
+
+  /* TAB NAVIGATION */
+  .tab-nav { display:flex; gap:0; padding:0 40px; background:var(--bg2); border-bottom:2px solid var(--border); position:sticky; top:0; z-index:100; overflow-x:auto; }
+  .tab-btn { padding:10px 18px; font-size:11px; font-weight:600; letter-spacing:0.4px; color:var(--text-muted); background:transparent; border:none; border-bottom:2px solid transparent; cursor:pointer; font-family:inherit; white-space:nowrap; transition:all 0.2s; margin-bottom:-2px; }
+  .tab-btn:hover { color:var(--text-dim); background:rgba(255,255,255,0.03); }
+  .tab-btn.tab-active { color:var(--gold); border-bottom-color:var(--gold); background:rgba(245,200,66,0.05); }
+  .section[data-tab] { display:none; }
+  .section[data-tab].tab-visible { display:block; }
+  /* DRILL-DOWN SUB-TABS */
+  .drill-tabs { display:flex; gap:0; background:var(--bg3); border-radius:6px 6px 0 0; overflow:hidden; margin-bottom:0; border:1px solid var(--border); border-bottom:none; }
+  .drill-tab { padding:8px 14px; font-size:10px; font-weight:600; color:var(--text-muted); background:transparent; border:none; cursor:pointer; font-family:inherit; transition:all 0.15s; border-bottom:2px solid transparent; }
+  .drill-tab:hover { color:var(--text-dim); background:rgba(255,255,255,0.03); }
+  .drill-tab.drill-active { color:var(--gold); border-bottom-color:var(--gold); background:rgba(245,200,66,0.06); }
+  .drill-panel { display:none; border:1px solid var(--border); border-top:none; border-radius:0 0 6px 6px; padding:16px; background:var(--bg2); }
+  .drill-panel.drill-visible { display:block; }
+  /* DOMAIN CARDS */
+  .domain-card { background:var(--bg3); padding:12px 14px; border-radius:8px; border-left:4px solid var(--cyan); transition:all 0.2s; }
+  .domain-card:hover { border-color:var(--gold); }
+  .domain-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; }
+  .domain-name { font-size:12px; font-weight:700; color:var(--cyan); }
+  .domain-score-big { font-size:20px; font-weight:700; line-height:1; }
+  .domain-desc { font-size:9px; color:var(--text-muted); margin-bottom:8px; line-height:1.5; }
+  .domain-verdict { font-size:10px; font-weight:600; margin-bottom:4px; }
+  .domain-interp { font-size:9px; color:var(--text-dim); line-height:1.5; }
+  .domain-raw { margin-top:8px; }
+  .domain-raw summary { font-size:9px; color:var(--text-muted); cursor:pointer; }
+  .domain-raw-inner { font-size:9px; color:var(--text-dim); padding:6px 8px; background:var(--bg); border-radius:4px; margin-top:4px; font-family:monospace; }
+
 </style>
 </head>
 <body>
@@ -226,8 +254,19 @@
   <div class="card card-blue"><div class="card-number" style="color:var(--blue)" id="card-invites">&mdash;</div><div class="card-label">Smart Links</div><div class="card-sub">Active invites</div></div>
 </div>
 
+
+<!-- TAB NAVIGATION -->
+<div class="tab-nav" id="tab-nav">
+  <button class="tab-btn tab-active" onclick="switchTab(this,'overview')">Overview</button>
+  <button class="tab-btn" onclick="switchTab(this,'sessions')">Sessions</button>
+  <button class="tab-btn" onclick="switchTab(this,'psychometrics')">Psychometrics</button>
+  <button class="tab-btn" onclick="switchTab(this,'qbank')">Q-Bank</button>
+  <button class="tab-btn" onclick="switchTab(this,'operations')">Operations</button>
+  <button class="tab-btn" onclick="switchTab(this,'management')">Management</button>
+</div>
+
 <!-- SECTION: ENGINE ANALYTICS (4 charts) -->
-<div class="section" id="section-charts">
+<div class="section tab-visible" id="section-charts" data-tab="overview">
   <div class="section-title"><span class="section-icon">&#128202;</span> Engine Analytics</div>
   <div class="section-desc">Live metrics from ROOTS Knowledge Engine &middot; Session distribution, feedback quality, domain reliability &amp; API latency</div>
   <div class="chart-grid">
@@ -239,7 +278,7 @@
 </div>
 
 <!-- SECTION: FEEDBACK DEEP DIVE -->
-<div class="section" id="section-feedback">
+<div class="section tab-visible" id="section-feedback" data-tab="overview">
   <div class="section-title"><span class="section-icon">&infin;</span> Learning Loop &mdash; Feedback Deep Dive</div>
   <div class="section-desc">Helpfulness ratings from parents who opted into the learning loop &middot; Real-time breakdown &amp; aggregate stats</div>
   <div class="sessions-grid" id="feedback-cards">
@@ -263,28 +302,28 @@
 </div>
 
 <!-- SECTION: Q-BANK COVERAGE -->
-<div class="section" id="section-qbank">
+<div class="section" id="section-qbank" data-tab="qbank">
   <div class="section-title"><span class="section-icon">&#128218;</span> Question Bank Coverage</div>
   <div class="section-desc">Live Firestore question distribution by domain &middot; Coverage bars &amp; question IDs</div>
   <div id="qbank-content"><div class="section-loading">Loading question bank&hellip;</div></div>
 </div>
 
 <!-- SECTION: COVERAGE MATRIX -->
-<div class="section" id="section-coverage-matrix">
+<div class="section" id="section-coverage-matrix" data-tab="qbank">
   <div class="section-title"><span class="section-icon">&#127919;</span> Coverage Matrix &mdash; Axis-to-Question Mapping</div>
   <div class="section-desc">Gap analysis per domain &middot; Ensures every assessment axis has adequate question coverage</div>
   <div id="coverage-matrix-content"><div class="section-loading">Loading coverage matrix&hellip;</div></div>
 </div>
 
 <!-- SECTION: QUESTION HEALTH -->
-<div class="section" id="section-question-health">
+<div class="section" id="section-question-health" data-tab="qbank">
   <div class="section-title"><span class="section-icon">&#129657;</span> Question Health Monitor</div>
   <div class="section-desc">Per-question Information Gain, drift flags, response times &middot; From learning loop analysis</div>
   <div id="question-health-content"><div class="section-loading">Loading question health&hellip;</div></div>
 </div>
 
 <!-- SECTION: PSYCHOMETRICS -->
-<div class="section" id="section-psychometrics">
+<div class="section" id="section-psychometrics" data-tab="psychometrics">
   <div class="section-title"><span class="section-icon">&#129518;</span> Psychometric Reliability Panel</div>
   <div class="section-desc">Cronbach &alpha;, item-total correlations, &amp; inter-domain correlation matrix &middot; Statistical validity indicators</div>
   <div class="chart-grid" style="margin-bottom:16px">
@@ -295,7 +334,7 @@
 </div>
 
 <!-- SECTION: SMART LINK INVITES -->
-<div class="section" id="section-invites">
+<div class="section" id="section-invites" data-tab="management">
   <div class="section-title"><span class="section-icon">&#128279;</span> Smart Link Invites &mdash; Per-Invite Analytics</div>
   <div class="section-desc">Active invite codes &middot; Assessment type, usage, status &middot; Click-through &amp; session drill-down</div>
   <div id="invites-content"><div class="section-loading">Loading invites&hellip;</div></div>
@@ -303,7 +342,7 @@
 </div>
 
 <!-- SECTION: SESSION RESULTS EXPLORER -->
-<div class="section" id="section-sessions-explorer">
+<div class="section" id="section-sessions-explorer" data-tab="sessions">
   <div class="section-title"><span class="section-icon">&#128200;</span> Session Results Explorer &mdash; All Assessments</div>
   <div class="section-desc">Every session across child, parent &amp; teacher roles &middot; Click any row for full PRAI analysis, domain scores, event timeline &amp; flag interpretation</div>
   <div id="sessions-explorer-filters" style="display:none;gap:8px;flex-wrap:wrap;margin-bottom:12px">
@@ -319,28 +358,28 @@
 </div>
 
 <!-- SECTION: EXPORT DATA PREVIEW -->
-<div class="section" id="section-export">
+<div class="section" id="section-export" data-tab="operations">
   <div class="section-title"><span class="section-icon">&#128230;</span> Export &amp; Pilot Data Bundle</div>
   <div class="section-desc">All exportable datasets &middot; Sessions, profiles, outcomes, triads &middot; From /export/pilot-bundle</div>
   <div id="export-content"><div class="section-loading">Loading export data&hellip;</div></div>
 </div>
 
 <!-- SECTION: FIRESTORE COLLECTIONS -->
-<div class="section" id="section-collections">
+<div class="section" id="section-collections" data-tab="operations">
   <div class="section-title"><span class="section-icon">&#128451;</span> Firestore Collections &mdash; Live Data Inventory</div>
   <div class="section-desc">All 10+ ROOTS collections in coolschools-72426 &middot; Document counts, last write timestamps &middot; No data left undisplayed</div>
   <div id="collections-content"><div class="section-loading">Enumerating collections&hellip;</div></div>
 </div>
 
 <!-- SECTION: API ENDPOINT AUDIT -->
-<div class="section" id="section-api-audit">
+<div class="section" id="section-api-audit" data-tab="operations">
   <div class="section-title"><span class="section-icon">&#128269;</span> API Endpoint Audit &mdash; Live Reachability</div>
   <div class="section-desc">Real-time status check of all ROOTS API endpoints &middot; Module-by-module breakdown with response times</div>
   <div id="api-audit-content"><div class="section-loading">Running API audit&hellip;</div></div>
 </div>
 
 <!-- SECTION: PRAI REFERENCE -->
-<div class="section" id="section-prai">
+<div class="section" id="section-prai" data-tab="psychometrics">
   <div class="section-title"><span class="section-icon">&#129518;</span> PRAI (Pancha-Rooted Authenticity Index) Reference</div>
   <div class="section-desc">PRAI = 1 &minus; 0.40 &times; sigmoid(streak &minus; threshold) &middot; Applied as final score multiplier &middot; Threshold = 6</div>
   <div class="chart-grid" style="margin-bottom:16px">
@@ -356,14 +395,14 @@
 </div>
 
 <!-- SECTION: PROPOSALS -->
-<div class="section" id="section-proposals">
+<div class="section" id="section-proposals" data-tab="management">
   <div class="section-title"><span class="section-icon">&#129516;</span> Learning Proposals</div>
   <div class="section-desc">AI-generated improvement suggestions from the feedback loop &middot; Approve to deploy, reject to discard</div>
   <div id="proposals-content"><div class="loading">Loading proposals&hellip;</div></div>
 </div>
 
 <!-- SECTION: VERSION REGISTRY -->
-<div class="section" id="section-registry">
+<div class="section" id="section-registry" data-tab="management">
   <div class="section-title"><span class="section-icon">&#9881;</span> Version Registry</div>
   <div class="section-desc">Engine version lifecycle &middot; Register new versions, activate for production deployment</div>
   <div id="registry-content"><div class="loading">Loading version history&hellip;</div></div>
@@ -379,7 +418,7 @@
 </div>
 
 <!-- SECTION: SYSTEM HEALTH -->
-<div class="section" id="section-status">
+<div class="section" id="section-status" data-tab="operations">
   <div class="section-title"><span class="section-icon">&#128269;</span> System Health Check</div>
   <div class="section-desc">Real-time API health &middot; Endpoint reachability &amp; infrastructure status</div>
   <div id="health-content"><div class="loading">Checking health&hellip;</div></div>
@@ -1111,7 +1150,7 @@ function renderSessionTable(filter){
     }
     var domCount=Array.isArray(s.domainsCovered)?s.domainsCovered.length:0;
     var flagCount=(s.valenceFlags?s.valenceFlags.length:0)+(s.consistencyFlags?s.consistencyFlags.filter(function(f){return f.label==='PERFORMED'||f.label==='VARIABLE'}).length:0);
-    var flagBadge=flagCount>0?'<span class="badge badge-error">'+flagCount+'</span>':'<span style="color:var(--green)">\\u2713</span>';
+    var flagBadge=flagCount>0?'<span class="badge badge-error">'+flagCount+'</span>':'<span style="color:var(--green)">✓</span>';
     var started=s.startedAt?new Date(s.startedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit'}):'\u2014';
     var termReason=s.terminationReason?' title="Termination: '+s.terminationReason+'"':'';
     html+='<tr style="cursor:pointer" onclick="drillSession(\''+sid+'\')"'+termReason+'>';
@@ -1144,63 +1183,82 @@ async function drillSession(sid){
     /* Also find session summary from our cached list */
     var sessSummary=_allSessions.find(function(s){return s.sessionId===sid})||{};
     var html='<div style="border:1px solid var(--gold);border-radius:8px;padding:16px;margin-bottom:16px;background:var(--bg2)">';
-    html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="color:var(--gold);font-size:14px;margin:0">Session: '+sid.slice(0,20)+'</h3><button class="btn-sm" onclick="document.getElementById(\'session-drilldown\').innerHTML=\'\'" style="background:var(--bg3);color:var(--text-dim);border:1px solid var(--border)">Close \\u2715</button></div>';
-    html+='<div class="findings-grid">';
+    html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="color:var(--gold);font-size:14px;margin:0">Session: '+sid.slice(0,20)+'</h3><button class="btn-sm" onclick="document.getElementById(\'session-drilldown\').innerHTML=\'\'" style="background:var(--bg3);color:var(--text-dim);border:1px solid var(--border)">Close ✕</button></div>';
+    html+='<div class="drill-tabs">';
+    html+='<button class="drill-tab drill-active" onclick="switchDrillTab(this,\'scores\')">\u25c8 Scores</button>';
+    html+='<button class="drill-tab" onclick="switchDrillTab(this,\'prai\')">\u0936 Authenticity</button>';
+    html+='<button class="drill-tab" onclick="switchDrillTab(this,\'flags\')">\u26a0 Flags</button>';
+    html+='<button class="drill-tab" onclick="switchDrillTab(this,\'events\')">\u25b6 Q&A Log</button>';
+    html+='<button class="drill-tab" onclick="switchDrillTab(this,\'report\')">\u25ce Report</button>';
+    html+='<button class="drill-tab" onclick="switchDrillTab(this,\'learning\')">\u2261 Learning</button>';
+    html+='<button class="drill-tab" onclick="switchDrillTab(this,\'meta\')">\u2139 Meta</button>';
+    html+='</div>';
+    html+='<div class="drill-panel drill-visible" data-drill="scores"><div class="findings-grid">';
 
     /* ── 1. SCORE ARTIFACT ── */
     if(d.scoreArtifact){
       var sa=d.scoreArtifact;
-      html+='<div class="finding-card" style="grid-column:1/-1"><div class="finding-badge"><span class="badge badge-gold">\\u25c8 DOMAIN SCORES</span></div><div class="finding-title">Overall: '+fmtDec(sa.overallScore||0,1)+'% \\u00b7 Confidence: '+fmtDec((sa.overallConfidence||0)*100,1)+'%</div><div class="finding-body">';
-      html+='<div style="font-size:10px;color:var(--text-dim);margin-bottom:8px">Engine: <code>'+(sa.engine_version||'\u2014')+'</code> \\u00b7 Role: <code>'+(sa.role||sessSummary.role||'\u2014')+'</code> \\u00b7 Computed: <code>'+(sa.computedAt?new Date(sa.computedAt).toLocaleString('en-IN'):'\u2014')+'</code>'+(meta.generatedOnFly?' \\u00b7 <span class="badge badge-warn">computed on-fly</span>':'')+'</div>';
+      html+='<div class="finding-card" style="grid-column:1/-1"><div class="finding-badge"><span class="badge badge-gold">◈ DOMAIN SCORES</span></div><div class="finding-title">Overall: '+fmtDec(sa.overallScore||0,1)+'% · Confidence: '+fmtDec((sa.overallConfidence||0)*100,1)+'%</div><div class="finding-body">';
+      html+='<div style="font-size:10px;color:var(--text-dim);margin-bottom:8px">Engine: <code>'+(sa.engine_version||'\u2014')+'</code> · Role: <code>'+(sa.role||sessSummary.role||'\u2014')+'</code> · Computed: <code>'+(sa.computedAt?new Date(sa.computedAt).toLocaleString('en-IN'):'\u2014')+'</code>'+(meta.generatedOnFly?' · <span class="badge badge-warn">computed on-fly</span>':'')+'</div>';
       if(sa.domainScores&&sa.domainScores.length){
-        html+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px">';
+        html+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px">';
         for(var i=0;i<sa.domainScores.length;i++){
           var ds=sa.domainScores[i];
           var sPct=(ds.score||0).toFixed(1);
           var meanPct=((ds.mean||0)*100).toFixed(1);
           var conf=((ds.confidence||0)*100).toFixed(1);
           var barColor=ds.score>=70?'var(--green)':(ds.score>=40?'var(--gold)':'var(--crimson)');
-          html+='<div style="background:var(--bg3);padding:8px 10px;border-radius:6px;border-left:3px solid '+barColor+'">';
-          html+='<div style="display:flex;justify-content:space-between"><span style="color:var(--cyan);font-weight:600;text-transform:capitalize">'+(ds.domain||'?')+'</span><span style="color:'+barColor+';font-weight:700">'+sPct+'%</span></div>';
-          html+='<div class="bar-track" style="margin:4px 0;height:6px"><div class="bar-fill" style="width:'+sPct+'%;background:'+barColor+'"></div></div>';
-          html+='<div style="font-size:9px;color:var(--text-dim)">\\u03b1='+fmtDec(ds.alpha,2)+' \\u03b2='+fmtDec(ds.beta,2)+' \\u00b7 \\u03bc='+meanPct+'% \\u00b7 CI: '+conf+'%</div>';
-          html+='<div style="font-size:9px;color:var(--text-muted)">'+interpretBeta(ds.alpha,ds.beta,ds.domain)+'</div>';
+          var verd=scoreVerdict(ds.score);
+          var confLbl=confidenceLabel(conf);
+          html+='<div class="domain-card" style="border-left-color:'+barColor+'">';
+          html+='<div class="domain-header"><div><div class="domain-name">'+domainLabel(ds.domain)+'</div>';
+          html+='<div class="domain-desc">'+domainDescription(ds.domain)+'</div></div>';
+          html+='<div class="domain-score-big" style="color:'+barColor+'">'+sPct+'%</div></div>';
+          html+='<div class="bar-track" style="margin:0 0 8px;height:6px"><div class="bar-fill" style="width:'+sPct+'%;background:'+barColor+'"></div></div>';
+          html+='<div class="domain-verdict" style="color:'+verd.color+'">'+verd.text+' \u00b7 Confidence: <span style="color:'+confLbl.color+'">'+confLbl.text+' ('+conf+'%)</span></div>';
+          html+='<div class="domain-interp">'+interpretBeta(ds.alpha,ds.beta,ds.domain)+'</div>';
+          html+='<details class="domain-raw"><summary>Raw Parameters (\u03b1/\u03b2/\u03bc)</summary>';
+          html+='<div class="domain-raw-inner">\u03b1 (alpha) = '+fmtDec(ds.alpha,2)+' &nbsp; \u03b2 (beta) = '+fmtDec(ds.beta,2)+' &nbsp; \u03bc (mean) = '+meanPct+'% &nbsp; CI = '+conf+'%<br>';
+          html+='n(eff) = '+fmtDec((ds.alpha||1)+(ds.beta||1)-2,0)+' observations &nbsp; Prior: Beta(1,1) uniform</div>';
+          html+='</details>';
           html+='</div>';
         }
         html+='</div>';
       }
-      html+='</div></div>';
-
       /* ── Domain Radar Chart canvas ── */
-      html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-cyan">\\u25ce RADAR</span></div><div class="finding-title">Domain Profile</div><div class="finding-body"><canvas id="drillRadarChart" width="280" height="280"></canvas></div></div>';
+      html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-cyan">◎ RADAR</span></div><div class="finding-title">Domain Profile</div><div class="finding-body"><canvas id="drillRadarChart" width="280" height="280"></canvas></div></div>';
     }
 
+    html+='</div></div>';
+    html+='<div class="drill-panel" data-drill="prai"><div class="findings-grid">';
     /* ── 2. PRAI ANALYSIS ── */
     var prai=d.scoreArtifact?.prai || sessSummary.prai || null;
     var valenceFlags=sessSummary.valenceFlags||d.scoreArtifact?.flags||[];
     var consistencyFlags=sessSummary.consistencyFlags||[];
-    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-warn">\\u0936 PRAI ANALYSIS</span></div><div class="finding-title">Pareeksh\\u0101 Response Authenticity Index</div><div class="finding-body">';
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-warn">श PRAI ANALYSIS</span></div><div class="finding-title">Pareekshā Response Authenticity Index</div><div class="finding-body">';
     if(prai&&prai.score!=null){
       var praiPct=(prai.score*100).toFixed(1);
       var prClr=prai.score>=0.8?'var(--green)':(prai.score>=0.5?'var(--orange)':'var(--crimson)');
-      html+='<div style="text-align:center;margin-bottom:12px"><span style="font-size:28px;font-weight:700;color:'+prClr+'">'+praiPct+'%</span><br><span style="font-size:10px;color:var(--text-dim)">1.0 = fully authentic \\u00b7 0.0 = entirely performed</span></div>';
+      html+='<div style="text-align:center;margin-bottom:12px"><span style="font-size:28px;font-weight:700;color:'+prClr+'">'+praiPct+'%</span><br><span style="font-size:10px;color:var(--text-dim)">1.0 = fully authentic · 0.0 = entirely performed</span></div>';
       html+='<canvas id="drillPraiChart" width="300" height="180" style="margin:8px auto;display:block"></canvas>';
       html+='<table class="data-table" style="font-size:10px;margin-top:10px"><thead><tr><th>Signal</th><th>Sanskrit</th><th>Penalty</th><th>Mathematical Interpretation</th></tr></thead><tbody>';
-      html+='<tr><td style="color:var(--cyan)">Streak Penalty</td><td style="color:var(--text-dim)">Dharmop\\u0101dh\\u0101</td><td style="font-weight:600;color:'+(prai.streakPenalty>0.3?'var(--crimson)':'var(--green)')+'">'+fmtDec(prai.streakPenalty,3)+'</td>';
+      html+='<tr><td style="color:var(--cyan)">Streak Penalty</td><td style="color:var(--text-dim)">Dharmopādhā</td><td style="font-weight:600;color:'+(prai.streakPenalty>0.3?'var(--crimson)':'var(--green)')+'">'+fmtDec(prai.streakPenalty,3)+'</td>';
       html+='<td style="font-size:9px">'+interpretStreak(prai.streakPenalty)+'</td></tr>';
-      html+='<tr><td style="color:var(--cyan)">CV Penalty</td><td style="color:var(--text-dim)">Arthop\\u0101dh\\u0101</td><td style="font-weight:600;color:'+(prai.cvPenalty>0.3?'var(--crimson)':'var(--green)')+'">'+fmtDec(prai.cvPenalty,3)+'</td>';
+      html+='<tr><td style="color:var(--cyan)">CV Penalty</td><td style="color:var(--text-dim)">Arthopādhā</td><td style="font-weight:600;color:'+(prai.cvPenalty>0.3?'var(--crimson)':'var(--green)')+'">'+fmtDec(prai.cvPenalty,3)+'</td>';
       html+='<td style="font-size:9px">'+interpretCV(prai.cvPenalty)+'</td></tr>';
-      html+='<tr><td style="color:var(--cyan)">Time Uniformity</td><td style="color:var(--text-dim)">Bhayop\\u0101dh\\u0101</td><td style="font-weight:600;color:'+(prai.timeUniformityPenalty>0.3?'var(--crimson)':'var(--green)')+'">'+fmtDec(prai.timeUniformityPenalty,3)+'</td>';
+      html+='<tr><td style="color:var(--cyan)">Time Uniformity</td><td style="color:var(--text-dim)">Bhayopādhā</td><td style="font-weight:600;color:'+(prai.timeUniformityPenalty>0.3?'var(--crimson)':'var(--green)')+'">'+fmtDec(prai.timeUniformityPenalty,3)+'</td>';
       html+='<td style="font-size:9px">'+interpretTimeUniformity(prai.timeUniformityPenalty)+'</td></tr>';
       html+='</tbody></table>';
-      html+='<div style="margin-top:8px;padding:6px 8px;background:var(--bg3);border-radius:4px;font-size:9px;color:var(--text-dim)"><strong>Composite formula:</strong> PRAI = 1 \\u2212 w\\u2081\\u00b7streakP \\u2212 w\\u2082\\u00b7cvP \\u2212 w\\u2083\\u00b7timeP. Applied as multiplicative correction to domain scores: adjusted = raw \\u00d7 PRAI. A PRAI below 0.5 indicates statistically significant response pattern anomalies warranting re-assessment.</div>';
+      html+='<div style="margin-top:8px;padding:6px 8px;background:var(--bg3);border-radius:4px;font-size:9px;color:var(--text-dim)"><strong>Composite formula:</strong> PRAI = 1 − w₁·streakP − w₂·cvP − w₃·timeP. Applied as multiplicative correction to domain scores: adjusted = raw × PRAI. A PRAI below 0.5 indicates statistically significant response pattern anomalies warranting re-assessment.</div>';
     }else{
       html+='<div style="color:var(--text-muted)">PRAI not computed for this session'+(sessSummary.status!=='completed'?' (session not yet completed)':'')+'</div>';
     }
     html+='</div></div>';
 
+    html+='</div></div>';
+    html+='<div class="drill-panel" data-drill="flags"><div class="findings-grid">';
     /* ── 3. FLAGS & CONSISTENCY (Mathematical Interpretation) ── */
-    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-error">\\u26a0 FLAGS &amp; CONSISTENCY</span></div><div class="finding-title">Psychometric Flags</div><div class="finding-body">';
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-error">⚠ FLAGS &amp; CONSISTENCY</span></div><div class="finding-title">Psychometric Flags</div><div class="finding-body">';
     if(valenceFlags.length){
       html+='<div style="margin-bottom:8px;font-size:10px;color:var(--text-dim)"><strong>Valence Flags ('+valenceFlags.length+'):</strong></div>';
       for(var i=0;i<valenceFlags.length;i++){
@@ -1210,7 +1268,7 @@ async function drillSession(sid){
         html+='</div>';
       }
     }else{
-      html+='<div style="color:var(--green);font-size:10px">\\u2713 No valence flags \\u2014 response pattern appears authentic</div>';
+      html+='<div style="color:var(--green);font-size:10px">✓ No valence flags — response pattern appears authentic</div>';
     }
     if(consistencyFlags.length){
       html+='<div style="margin-top:10px;margin-bottom:8px;font-size:10px;color:var(--text-dim)"><strong>Consistency Groups ('+consistencyFlags.length+'):</strong></div>';
@@ -1223,23 +1281,25 @@ async function drillSession(sid){
         html+='<td>'+cf.axis+'</td>';
         html+='<td style="font-weight:600;color:'+cvClr+'">'+fmtDec(cf.cv,3)+'</td>';
         html+='<td><span class="badge" style="background:rgba(255,255,255,0.05);color:'+cvClr+';border:1px solid '+cvClr+'">'+cf.label+'</span></td>';
-        html+='<td>'+(cf.modifier!=null?fmtDec(cf.modifier,2)+'\\u00d7':'\u2014')+'</td>';
+        html+='<td>'+(cf.modifier!=null?fmtDec(cf.modifier,2)+'×':'\u2014')+'</td>';
         html+='<td style="font-size:8px;color:var(--text-dim)">'+interpretConsistency(cf)+'</td>';
         html+='</tr>';
       }
       html+='</tbody></table>';
-      html+='<div style="margin-top:6px;padding:4px 8px;background:var(--bg3);border-radius:4px;font-size:8px;color:var(--text-muted)">CV = coefficient of variation across paired questions in the same construct group. GENUINE (CV&lt;0.15): highly consistent. STABLE (0.15\\u22640.30): normal variation. VARIABLE (0.30\\u22640.50): notable inconsistency \\u2014 may indicate confusion or context-sensitivity. PERFORMED (CV\\u22650.50): suspiciously inconsistent \\u2014 potential gaming, modifier applied as score multiplier.</div>';
+      html+='<div style="margin-top:6px;padding:4px 8px;background:var(--bg3);border-radius:4px;font-size:8px;color:var(--text-muted)">CV = coefficient of variation across paired questions in the same construct group. GENUINE (CV&lt;0.15): highly consistent. STABLE (0.15≤0.30): normal variation. VARIABLE (0.30≤0.50): notable inconsistency — may indicate confusion or context-sensitivity. PERFORMED (CV≥0.50): suspiciously inconsistent — potential gaming, modifier applied as score multiplier.</div>';
     }
     if(!valenceFlags.length&&!consistencyFlags.length){
-      html+='<div style="color:var(--green);margin-top:6px">\\u2713 No flags or consistency warnings \\u2014 session response pattern is clean</div>';
+      html+='<div style="color:var(--green);margin-top:6px">✓ No flags or consistency warnings — session response pattern is clean</div>';
     }
     html+='</div></div>';
 
+    html+='</div></div>';
+    html+='<div class="drill-panel" data-drill="events"><div class="findings-grid">';
     /* ── 4. EVENTS (Question-level detail) ── */
     if(d.events&&d.events.length){
       var qEvents=d.events.filter(function(e){return e.type==='QuestionRendered'||e.type==='AnswerSelected'});
       var otherEvents=d.events.filter(function(e){return e.type!=='QuestionRendered'&&e.type!=='AnswerSelected'});
-      html+='<div class="finding-card" style="grid-column:1/-1"><div class="finding-badge"><span class="badge badge-info">'+d.events.length+' EVENTS \\u00b7 '+qEvents.length+' Q&amp;A</span></div><div class="finding-title">Event Timeline &amp; Question Log</div><div class="finding-body">';
+      html+='<div class="finding-card" style="grid-column:1/-1"><div class="finding-badge"><span class="badge badge-info">'+d.events.length+' EVENTS · '+qEvents.length+' Q&amp;A</span></div><div class="finding-title">Event Timeline &amp; Question Log</div><div class="finding-body">';
       /* Group Q&A pairs */
       var qaPairs=[];var currentQ=null;
       for(var i=0;i<d.events.length;i++){
@@ -1260,21 +1320,21 @@ async function drillSession(sid){
           var ap=qa.answer?qa.answer.payload||{}:{};
           var domain=qp.domain||ap.domain||'\u2014';
           var qText=qp.questionText||qp.text||qp.questionId||'\u2014';
-          if(qText.length>60)qText=qText.slice(0,57)+'\\u2026';
-          var ansTxt=ap.answerText||ap.text||ap.answerId||(qa.answer?'selected':('<span style="color:var(--crimson)">\\u2718 unanswered</span>'));
+          if(qText.length>60)qText=qText.slice(0,57)+'…';
+          var ansTxt=ap.answerText||ap.text||ap.answerId||(qa.answer?'selected':('<span style="color:var(--crimson)">✘ unanswered</span>'));
           var qTime=qa.question.timestamp?new Date(qa.question.timestamp).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'\u2014';
           var rt='\u2014';
           if(qa.question.timestamp&&qa.answer&&qa.answer.timestamp){
             var ms=new Date(qa.answer.timestamp)-new Date(qa.question.timestamp);
             rt=(ms/1000).toFixed(1)+'s';
-            if(ms<2000)rt='<span style="color:var(--crimson)" title="Very fast response (<2s) may indicate pre-decided answer">'+rt+' \\u26a1</span>';
+            if(ms<2000)rt='<span style="color:var(--crimson)" title="Very fast response (<2s) may indicate pre-decided answer">'+rt+' ⚡</span>';
           }
           html+='<tr><td>'+(i+1)+'</td><td style="color:var(--cyan)">'+domain+'</td><td>'+qText+'</td><td>'+ansTxt+'</td><td style="color:var(--text-dim)">'+qTime+'</td><td>'+rt+'</td></tr>';
         }
         /* Unanswered (incomplete session) */
         var unansweredQ=qaPairs.filter(function(qa){return !qa.answer});
         if(unansweredQ.length){
-          html+='<tr><td colspan="6" style="color:var(--orange);font-size:10px;padding-top:8px">\\u26a0 '+unansweredQ.length+' question(s) rendered but not answered \\u2014 session may have been abandoned at this point</td></tr>';
+          html+='<tr><td colspan="6" style="color:var(--orange);font-size:10px;padding-top:8px">⚠ '+unansweredQ.length+' question(s) rendered but not answered — session may have been abandoned at this point</td></tr>';
         }
         html+='</tbody></table>';
       }
@@ -1291,12 +1351,14 @@ async function drillSession(sid){
       }
       html+='</div></div>';
     }else{
-      html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">\\u25a6 EVENTS</span></div><div class="finding-title">No Events Recorded</div><div class="finding-body" style="color:var(--text-muted)">Event log is empty for this session. Events are recorded as QuestionRendered, AnswerSelected, ShuffleApplied etc.</div></div>';
+      html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">▦ EVENTS</span></div><div class="finding-title">No Events Recorded</div><div class="finding-body" style="color:var(--text-muted)">Event log is empty for this session. Events are recorded as QuestionRendered, AnswerSelected, ShuffleApplied etc.</div></div>';
     }
 
+    html+='</div></div>';
+    html+='<div class="drill-panel" data-drill="report"><div class="findings-grid">';
     /* ── 5. REPORT (if generated) ── */
     if(d.report){
-      html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-success">\\u25ce NARRATIVE REPORT</span></div><div class="finding-title">2-Page Report</div><div class="finding-body">';
+      html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-success">◎ NARRATIVE REPORT</span></div><div class="finding-title">2-Page Report</div><div class="finding-body">';
       var rp=d.report;
       if(rp.page1){
         if(rp.page1.summaryBullets&&rp.page1.summaryBullets.length){
@@ -1325,34 +1387,43 @@ async function drillSession(sid){
       html+='</div></div>';
     }
 
+    html+='</div></div>';
+    html+='<div class="drill-panel" data-drill="learning"><div class="findings-grid">';
     /* ── 6. LEARNING SUGGESTIONS ── */
     if(d.suggestions&&d.suggestions.length){
-      html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-gold">\\u2261 '+d.suggestions.length+' SUGGESTIONS</span></div><div class="finding-title">Learning Suggestions</div><div class="finding-body">';
+      html+='<div class="finding-card" style="grid-column:1/-1"><div class="finding-badge"><span class="badge badge-gold">\u2261 '+d.suggestions.length+' LEARNING SUGGESTIONS</span></div><div class="finding-title">Personalised Guidance (PR-6)</div><div class="finding-body">';
+      html+='<div style="font-size:10px;color:var(--text-dim);margin-bottom:10px">Rule-based suggestions generated from domain scores and role-specific templates. Priority 1 = most impactful.</div>';
       for(var i=0;i<d.suggestions.length;i++){
         var sg=d.suggestions[i];
-        html+='<div style="margin-bottom:6px;padding:6px 8px;background:var(--bg3);border-radius:4px;border-left:2px solid var(--cyan)">';
-        html+='<div style="display:flex;justify-content:space-between;font-size:10px"><span style="color:var(--cyan);font-weight:600">'+(sg.domain||'?')+'</span><span style="color:var(--text-muted)">Priority '+(sg.priority||'\u2014')+' \\u00b7 '+(sg.status||'pending')+'</span></div>';
-        html+='<div style="font-size:10px;margin-top:2px">'+(sg.text||sg.suggestion||sg.description||'\u2014')+'</div>';
-        if(sg.rationale)html+='<div style="font-size:8px;color:var(--text-muted);margin-top:2px;font-style:italic">Rationale: '+sg.rationale+'</div>';
+        var sgColor=sg.priority<=2?'var(--crimson)':(sg.priority<=3?'var(--gold)':'var(--cyan)');
+        html+='<div style="margin-bottom:8px;padding:8px 10px;background:var(--bg3);border-radius:6px;border-left:3px solid '+sgColor+'">';
+        html+='<div style="display:flex;justify-content:space-between;align-items:center;font-size:10px"><span style="color:'+sgColor+';font-weight:600">'+domainLabel(sg.domain)+'</span><span style="color:var(--text-muted)">Priority '+(sg.priority||'\u2014')+' \u00b7 <span class="badge badge-'+(sg.status==='pending'?'warn':(sg.status==='shown'?'info':'success'))+'">'+((sg.status||'pending'))+'</span></span></div>';
+        html+='<div style="font-size:11px;margin-top:4px;line-height:1.5">'+(sg.text||sg.suggestion||sg.description||'\u2014')+'</div>';
+        if(sg.rationale)html+='<div style="font-size:9px;color:var(--text-muted);margin-top:4px;font-style:italic;border-top:1px solid var(--border);padding-top:4px">\ud83d\udca1 '+sg.rationale+'</div>';
         if(sg.feedback)html+='<div style="font-size:9px;margin-top:2px">Feedback: <span class="badge badge-'+(sg.feedback==='VeryHelpful'?'success':(sg.feedback==='NotHelpful'?'error':'info'))+'">'+sg.feedback+'</span></div>';
         html+='</div>';
       }
       html+='</div></div>';
+    }else{
+      html+='<div class="finding-card" style="grid-column:1/-1"><div class="finding-badge"><span class="badge badge-gold">\u2261 LEARNING</span></div><div class="finding-title">No Suggestions Generated</div><div class="finding-body" style="color:var(--text-muted)"><div style="font-size:11px">No learning suggestions available for this session.</div><div style="font-size:9px;margin-top:6px">Suggestions are auto-generated when a session completes. For pre-existing sessions, click "Expand" on the session row to trigger on-the-fly generation.</div></div></div>';
     }
 
+    html+='</div></div>';
+    html+='<div class="drill-panel" data-drill="meta"><div class="findings-grid">';
     /* ── 7. SESSION META ── */
-    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">\\u2139 META</span></div><div class="finding-title">Session Metadata</div><div class="finding-body" style="font-size:10px">';
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">ℹ META</span></div><div class="finding-title">Session Metadata</div><div class="finding-body" style="font-size:10px">';
     html+='Session ID: <code>'+sid+'</code><br>';
-    html+='Role: <code>'+(sessSummary.role||'\u2014')+'</code> \\u00b7 Age band: <code>'+(sessSummary.ageBand||'\u2014')+'</code><br>';
-    html+='School: <code>'+(sessSummary.schoolId||'\u2014')+'</code> \\u00b7 ROOTS ID: <code>'+(sessSummary.rootsId||'\u2014')+'</code><br>';
+    html+='Role: <code>'+(sessSummary.role||'\u2014')+'</code> · Age band: <code>'+(sessSummary.ageBand||'\u2014')+'</code><br>';
+    html+='School: <code>'+(sessSummary.schoolId||'\u2014')+'</code> · ROOTS ID: <code>'+(sessSummary.rootsId||'\u2014')+'</code><br>';
     html+='Started: <code>'+(sessSummary.startedAt?new Date(sessSummary.startedAt).toLocaleString('en-IN'):'\u2014')+'</code><br>';
     html+='Completed: <code>'+(sessSummary.completedAt?new Date(sessSummary.completedAt).toLocaleString('en-IN'):'\u2014')+'</code><br>';
     html+='Termination: <code>'+(sessSummary.terminationReason||'N/A')+'</code><br>';
     html+='Learning mode: <code>'+(sessSummary.learningModeActive?'active':'inactive')+'</code><br>';
     html+='Profile: <code>'+(sessSummary.finalProfileId||'not generated')+'</code><br>';
-    if(meta.eventsCount!=null)html+='Events: <code>'+meta.eventsCount+'</code> \\u00b7 Suggestions: <code>'+(meta.suggestionsCount||0)+'</code><br>';
+    if(meta.eventsCount!=null)html+='Events: <code>'+meta.eventsCount+'</code> · Suggestions: <code>'+(meta.suggestionsCount||0)+'</code><br>';
     html+='</div></div>';
 
+    html+='</div></div>';
     html+='</div></div>';
     el.innerHTML=html;
 
@@ -1419,51 +1490,51 @@ function interpretBeta(alpha,beta,domain){
   if(alpha==null||beta==null)return '';
   var n=alpha+beta-2;/* effective observations */
   var mean=alpha/(alpha+beta);
-  if(n<3)return 'Low data ('+fmtDec(n,0)+' effective obs) \\u2014 prior-dominated, score highly uncertain';
-  if(n<8)return 'Moderate data ('+fmtDec(n,0)+' obs) \\u2014 estimate stabilising but still sensitive to new answers';
-  return 'Strong data ('+fmtDec(n,0)+' obs) \\u2014 posterior well-converged, additional questions unlikely to shift score significantly';
+  if(n<3)return 'Low data ('+fmtDec(n,0)+' effective obs) — prior-dominated, score highly uncertain';
+  if(n<8)return 'Moderate data ('+fmtDec(n,0)+' obs) — estimate stabilising but still sensitive to new answers';
+  return 'Strong data ('+fmtDec(n,0)+' obs) — posterior well-converged, additional questions unlikely to shift score significantly';
 }
 function interpretStreak(p){
-  if(p<0.05)return 'No significant streaks detected. Response sequence shows natural variation in answer quality \\u2014 consistent with genuine engagement.';
+  if(p<0.05)return 'No significant streaks detected. Response sequence shows natural variation in answer quality — consistent with genuine engagement.';
   if(p<0.15)return 'Minor streak signal. Short runs of ideal answers detected but within normal bounds. Could reflect genuine strength in those domains.';
   if(p<0.3)return 'Moderate streak signal. Extended runs of consistently high answers suggest possible coaching or rehearsed responses. The child may have been prepared for specific question types.';
-  return 'Strong streak signal (penalty='+fmtDec(p,3)+'). Statistically improbable runs of ideal answers detected \\u2014 P(natural)<0.05. Strongly suggests coached, scripted, or performed responses. Domain scores are multiplicatively corrected downward.';
+  return 'Strong streak signal (penalty='+fmtDec(p,3)+'). Statistically improbable runs of ideal answers detected — P(natural)<0.05. Strongly suggests coached, scripted, or performed responses. Domain scores are multiplicatively corrected downward.';
 }
 function interpretCV(p){
-  if(p<0.05)return 'Normal within-group score variation. Different questions probing the same construct yield appropriately varied responses \\u2014 consistent with genuine reflection.';
+  if(p<0.05)return 'Normal within-group score variation. Different questions probing the same construct yield appropriately varied responses — consistent with genuine reflection.';
   if(p<0.15)return 'Slightly low variation. Answers to related questions are unusually similar, but within acceptable bounds.';
   if(p<0.3)return 'Suspiciously uniform responses within consistency groups. The coefficient of variation across paired questions is abnormally low (CV < expected), suggesting the child may be giving identical responses regardless of question nuance.';
-  return 'Critically uniform responses (penalty='+fmtDec(p,3)+'). Near-identical answers across all questions in the same construct \\u2014 statistically incompatible with genuine item-level discrimination. Strong indicator of response set bias or external coaching.';
+  return 'Critically uniform responses (penalty='+fmtDec(p,3)+'). Near-identical answers across all questions in the same construct — statistically incompatible with genuine item-level discrimination. Strong indicator of response set bias or external coaching.';
 }
 function interpretTimeUniformity(p){
-  if(p<0.05)return 'Natural timing variation. Response times show expected variance across question difficulty levels \\u2014 faster for easy items, slower for harder ones.';
+  if(p<0.05)return 'Natural timing variation. Response times show expected variance across question difficulty levels — faster for easy items, slower for harder ones.';
   if(p<0.15)return 'Slightly uniform timing. Response times are more consistent than expected, but could reflect a deliberate, steady approach.';
-  if(p<0.3)return 'Notably uniform timing pattern. Response time standard deviation is abnormally low \\u2014 genuine responders typically show 2-3x variation between easy/hard items. May indicate pre-decided answers.';
-  return 'Scripted timing detected (penalty='+fmtDec(p,3)+'). Response times are effectively constant (\\u03c3 < threshold), a statistical signature of pre-decided answers entered at a rehearsed pace. Combined with streak/CV signals, this is a strong performed-response indicator.';
+  if(p<0.3)return 'Notably uniform timing pattern. Response time standard deviation is abnormally low — genuine responders typically show 2-3x variation between easy/hard items. May indicate pre-decided answers.';
+  return 'Scripted timing detected (penalty='+fmtDec(p,3)+'). Response times are effectively constant (σ < threshold), a statistical signature of pre-decided answers entered at a rehearsed pace. Combined with streak/CV signals, this is a strong performed-response indicator.';
 }
 function interpretValenceFlag(flag){
   var interps={
     'PERFORMED_PATTERN':'A combination of psychometric signals (streak + CV + timing) exceeds the performed-response threshold. The overall response profile is statistically inconsistent with genuine, reflective engagement. PRAI multiplicative correction has been applied to all domain scores.',
-    'ALL_S_STREAK':'Every answered question received the highest possible rating (S-grade equivalent). Probability of this occurring genuinely drops exponentially with question count: P = (1/4)^n for n questions. With >8 questions, P < 0.00002 \\u2014 effectively impossible without coaching.',
+    'ALL_S_STREAK':'Every answered question received the highest possible rating (S-grade equivalent). Probability of this occurring genuinely drops exponentially with question count: P = (1/4)^n for n questions. With >8 questions, P < 0.00002 — effectively impossible without coaching.',
     'AVG_GRADE_HIGH':'The mean grade across all responses is abnormally high (>90th percentile of the population distribution). While high scores are possible, this combined with other signals suggests social desirability bias or coached responses.',
     'PARENT_CHILD_FRICTION_RISK':'Parent assessment shows expectation_calibration < 40% AND aspiration_alignment < 40%. This combination indicates a significant gap between parent expectations and child capability, which research associates with anxiety-driven underperformance.',
-    'HOME_AMPLIFIER':'Parent assessment shows home_environment > 70% AND emotional_availability > 70%. This positive signal suggests a nurturing home context that amplifies the child\\u2019s innate strengths.',
+    'HOME_AMPLIFIER':'Parent assessment shows home_environment > 70% AND emotional_availability > 70%. This positive signal suggests a nurturing home context that amplifies the child’s innate strengths.',
     'TEACHER_RISK':'Teacher assessment shows resilience_modeling < 40% AND character_consistency < 40%. This flags classroom environments where the teacher may not be providing adequate socio-emotional scaffolding.',
     'HIGH_IMPACT_TEACHER':'Teacher assessment shows meaning_transfer > 75% AND student_empathy > 75%. This identifies teachers whose pedagogical approach significantly amplifies student growth trajectories.',
     'INNOVATION_ANCHOR':'Teacher assessment shows creative_intelligence > 75% AND pedagogical_curiosity > 75%. This flags teachers who serve as innovation catalysts in the school ecosystem.'
   };
   if(flag.startsWith('LOW_CONFIDENCE_')){
     var dom=flag.replace('LOW_CONFIDENCE_','').toLowerCase();
-    return 'Posterior confidence for '+dom+' is below 30% (\\u03b1+\\u03b2 < threshold). This means fewer questions have been answered in this domain than needed for reliable estimation. The Beta distribution is still wide/flat \\u2014 the score could shift significantly with additional questions.';
+    return 'Posterior confidence for '+dom+' is below 30% (α+β < threshold). This means fewer questions have been answered in this domain than needed for reliable estimation. The Beta distribution is still wide/flat — the score could shift significantly with additional questions.';
   }
   return interps[flag]||'Psychometric flag: '+flag+'. Indicates a detected pattern in the response data that warrants attention.';
 }
 function interpretConsistency(cf){
   var cvPct=(cf.cv*100).toFixed(1);
   if(cf.label==='GENUINE')return 'CV='+cvPct+'% (<15%). Paired questions in '+cf.group+' yielded highly consistent answers. The child discriminates between question nuances while maintaining construct-level coherence.';
-  if(cf.label==='STABLE')return 'CV='+cvPct+'% (15-30%). Normal variation in '+cf.group+'. Answers reflect genuine engagement with slight natural inconsistency \\u2014 expected in authentic assessment.';
+  if(cf.label==='STABLE')return 'CV='+cvPct+'% (15-30%). Normal variation in '+cf.group+'. Answers reflect genuine engagement with slight natural inconsistency — expected in authentic assessment.';
   if(cf.label==='VARIABLE')return 'CV='+cvPct+'% (30-50%). Notable inconsistency in '+cf.group+'. The child gave markedly different answers to questions measuring the same construct. This may indicate confusion, context-sensitivity, or rapid development.';
-  return 'CV='+cvPct+'% (\\u226550%). Suspiciously inconsistent responses in '+cf.group+'. Score modifier '+fmtDec(cf.modifier,2)+'\\u00d7 applied. Such high variation within a construct is statistically anomalous and may indicate gaming or disengagement.';
+  return 'CV='+cvPct+'% (≥50%). Suspiciously inconsistent responses in '+cf.group+'. Score modifier '+fmtDec(cf.modifier,2)+'× applied. Such high variation within a construct is statistically anomalous and may indicate gaming or disengagement.';
 }
 
 /* === 17. EXPORT DATA PREVIEW === */
@@ -1584,6 +1655,89 @@ async function loadCollections(){
   html+='<p class="note" style="margin-top:10px">'+collections.length+' collections tracked \u00b7 Counts from probed API endpoints \u00b7 ? = not probed directly (no system-level collection list endpoint)</p>';
   el.innerHTML=html;
 }
+
+/* TAB SWITCHING */
+function switchTab(btn, tabName) {
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('tab-active')});
+  btn.classList.add('tab-active');
+  document.querySelectorAll('.section[data-tab]').forEach(function(s){
+    s.classList.toggle('tab-visible', s.getAttribute('data-tab') === tabName);
+  });
+}
+
+/* DRILL-DOWN SUB-TAB SWITCHING */
+function switchDrillTab(btn, panelId) {
+  var parent = btn.closest('.drill-tabs') || btn.parentElement;
+  parent.querySelectorAll('.drill-tab').forEach(function(b){b.classList.remove('drill-active')});
+  btn.classList.add('drill-active');
+  var container = parent.parentElement;
+  container.querySelectorAll('.drill-panel').forEach(function(p){p.classList.remove('drill-visible')});
+  var target = container.querySelector('[data-drill="'+panelId+'"]');
+  if(target) target.classList.add('drill-visible');
+}
+
+/* PSYCHOMETRIC LABEL HELPERS */
+function domainLabel(d) {
+  var labels = {
+    'curiosity': 'Intellectual Curiosity (Jij\u00f1\u0101s\u0101)',
+    'resilience': 'Emotional Resilience (Dh\u1e5bti)',
+    'empathy': 'Social Empathy (Karu\u1e47\u0101)',
+    'systems': 'Systems Thinking (Yukti)',
+    'character': 'Character Strength (\u015a\u012bla)',
+    'music': 'Aesthetic Intelligence (Sa\u1e45g\u012bta)',
+    'physical': 'Kinesthetic Vitality (\u015aar\u012bra)',
+    'spiritual': 'Contemplative Awareness (Adhy\u0101tma)',
+    'expectation_calibration': 'Expectation Calibration',
+    'aspiration_alignment': 'Aspiration Alignment',
+    'emotional_availability': 'Emotional Availability',
+    'home_environment': 'Home Learning Environment',
+    'growth_mindset_modeling': 'Growth Mindset Modeling',
+    'autonomy_support': 'Autonomy Support',
+    'pedagogical_curiosity': 'Pedagogical Curiosity',
+    'resilience_modeling': 'Resilience Modeling',
+    'student_empathy': 'Student Empathy',
+    'systems_design': 'Systems Design',
+    'character_consistency': 'Character Consistency',
+    'creative_intelligence': 'Creative Intelligence',
+    'meaning_transfer': 'Meaning Transfer',
+    'mindful_presence': 'Mindful Presence'
+  };
+  return labels[(d||'').toLowerCase()] || (d||'').replace(/_/g,' ').replace(/\b\w/g, function(l){return l.toUpperCase()});
+}
+
+function domainDescription(d) {
+  var descs = {
+    'curiosity': 'Measures intrinsic motivation to explore, question, and seek understanding across domains.',
+    'resilience': 'Assesses emotional regulation, stress recovery, and capacity to persist through challenges.',
+    'empathy': 'Evaluates perspective-taking, prosocial behavior, and emotional attunement with peers.',
+    'systems': 'Gauges ability to recognize patterns, understand cause-effect chains, and think in frameworks.',
+    'character': 'Measures moral reasoning, integrity, responsibility, and values-driven behavior.',
+    'music': 'Assesses aesthetic sensitivity, creative expression, and engagement with artistic experiences.',
+    'physical': 'Evaluates body awareness, motor coordination, physical confidence, and active engagement.',
+    'spiritual': 'Measures capacity for reflection, meaning-making, mindfulness, and inner awareness.'
+  };
+  return descs[(d||'').toLowerCase()] || 'Domain assessment within the Pancha-Kosha framework.';
+}
+
+function confidenceLabel(confPct) {
+  var cv = parseFloat(confPct);
+  if(isNaN(cv)) return {text:'Unknown', color:'var(--text-muted)'};
+  if(cv >= 80) return {text:'Very High', color:'var(--green)'};
+  if(cv >= 60) return {text:'High', color:'var(--cyan)'};
+  if(cv >= 40) return {text:'Moderate', color:'var(--gold)'};
+  if(cv >= 20) return {text:'Low', color:'var(--orange)'};
+  return {text:'Very Low', color:'var(--crimson)'};
+}
+
+function scoreVerdict(score) {
+  if(score == null) return {text:'No Data', color:'var(--text-muted)'};
+  if(score >= 80) return {text:'Exceptional', color:'var(--green)'};
+  if(score >= 65) return {text:'Strong', color:'var(--cyan)'};
+  if(score >= 50) return {text:'Developing', color:'var(--gold)'};
+  if(score >= 35) return {text:'Emerging', color:'var(--orange)'};
+  return {text:'Needs Support', color:'var(--crimson)'};
+}
+
 </script>
 </body>
 </html>
