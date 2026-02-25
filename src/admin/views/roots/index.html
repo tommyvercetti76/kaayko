@@ -121,6 +121,7 @@
       </div>
       <div class="meta">
         <span id="auth-status" style="color:var(--text-muted)">Authenticating…</span>
+        <a href="#" id="sign-out-link" style="display:none;font-size:11px;color:var(--text-muted);margin-left:12px;text-decoration:underline;cursor:pointer" onclick="fbAuth.signOut();return false;">Sign out</a>
       </div>
     </div>
 
@@ -178,21 +179,62 @@
   <!-- Toast container -->
   <div id="toast" class="toast"></div>
 
+  <!-- Firebase Auth SDK (same project as ROOTS knowledge engine) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+
   <script>
+    // ── Firebase Auth (coolschools-72426 — same as knowledge engine) ──
+    const firebaseConfig = {
+      apiKey: 'AIzaSyC1JxbMdlXXLiMQQ4xhcjHRzgFbg12mMcA',
+      authDomain: 'coolschools-72426.firebaseapp.com',
+      projectId: 'coolschools-72426',
+    };
+    firebase.initializeApp(firebaseConfig);
+    const fbAuth = firebase.auth();
+
     // ── Config ──
     const API_BASE = 'https://cool-schools-api-420407869747.us-central1.run.app/api/v1/roots';
-    let rootsToken = localStorage.getItem('roots_token');
+    let rootsToken = null;
 
-    // ── Auth gate ──
-    (function checkAuth() {
-      if (!rootsToken) {
-        window.location.href = '/admin/login.html';
+    // ── Auth gate — use Firebase Auth, not manual localStorage token ──
+    fbAuth.onAuthStateChanged(async (user) => {
+      const statusEl = document.getElementById('auth-status');
+      if (!user) {
+        statusEl.textContent = 'Signing in…';
+        statusEl.style.color = '#f59e0b';
+        try {
+          await fbAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+        } catch (e) {
+          statusEl.textContent = 'Sign-in failed — click to retry';
+          statusEl.style.color = '#ef4444';
+          statusEl.style.cursor = 'pointer';
+          statusEl.onclick = () => fbAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+        }
         return;
       }
-      document.getElementById('auth-status').textContent = 'Authenticated ✓';
-      document.getElementById('auth-status').style.color = '#10b981';
+
+      // Get token and verify admin role
+      const tokenResult = await user.getIdTokenResult(true);
+      const role = tokenResult.claims.rootsRole || tokenResult.claims.role;
+      if (!['system', 'admin', 'superadmin', 'school_admin', 'enterprise'].includes(role)) {
+        statusEl.textContent = `Access denied — role: ${role || 'none'}`;
+        statusEl.style.color = '#ef4444';
+        return;
+      }
+
+      rootsToken = tokenResult.token;
+      statusEl.textContent = `${user.email} · ${role} ✓`;
+      statusEl.style.color = '#10b981';
+      document.getElementById('sign-out-link').style.display = 'inline';
+
+      // Refresh token every 50 min (Firebase tokens expire at 60 min)
+      setInterval(async () => {
+        rootsToken = await user.getIdToken(true);
+      }, 50 * 60 * 1000);
+
       init();
-    })();
+    });
 
     // ── API helper ──
     async function api(method, path, body) {
@@ -206,9 +248,9 @@
       if (body) opts.body = JSON.stringify(body);
       const res = await fetch(`${API_BASE}${path}`, opts);
       if (res.status === 401 || res.status === 403) {
-        localStorage.removeItem('roots_token');
-        window.location.href = '/admin/login.html';
-        throw new Error('Unauthorized');
+        // Token expired or role revoked — sign out and re-auth
+        await fbAuth.signOut();
+        throw new Error('Unauthorized — signed out, please refresh');
       }
       const data = await res.json();
       if (!res.ok) throw new Error(data.error?.message || data.message || `HTTP ${res.status}`);
