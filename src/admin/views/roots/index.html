@@ -69,7 +69,7 @@
   .card-sub { font-size: 10px; color: var(--text-muted); margin-top: 5px; }
   .section { padding: 24px 40px; border-bottom: 1px solid var(--border); }
   .section-title { font-size: 14px; font-weight: 700; color: var(--gold); margin-bottom: 5px; display: flex; align-items: center; gap: 10px; }
-  .section-icon { font-size: 16px; }
+  .section-icon { font-size: 13px; color: var(--gold); font-weight: 700; }
   .section-desc { font-size: 10px; color: var(--text-muted); margin-bottom: 18px; }
   .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 14px; }
   .chart-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 18px; }
@@ -173,6 +173,7 @@
     .report-header, .summary-grid, .section, .report-footer { padding-left: 16px; padding-right: 16px; }
     .header-top { flex-direction: column; }
     .sessions-grid, .chart-grid, .module-grid, .qbank-grid, .findings-grid { grid-template-columns: 1fr; }
+    #domain-cards-grid { grid-template-columns: repeat(2, 1fr) !important; }
     .ascii-logo { font-size: 6px; }
     .card-number { font-size: 22px; }
   }
@@ -204,6 +205,34 @@
   .domain-raw summary { font-size:9px; color:var(--text-muted); cursor:pointer; }
   .domain-raw-inner { font-size:9px; color:var(--text-dim); padding:6px 8px; background:var(--bg); border-radius:4px; margin-top:4px; font-family:monospace; }
 
+  /* KPI CARDS */
+  .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; padding:18px 40px; border-bottom:1px solid var(--border); }
+  .kpi-card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:20px; text-align:center; position:relative; transition:border-color 0.2s; overflow:hidden; }
+  .kpi-card:hover { border-color:rgba(255,255,255,0.12); }
+  .kpi-big { font-size:34px; font-weight:800; line-height:1; margin-bottom:6px; }
+  .kpi-title { font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:4px; }
+  .kpi-sub { font-size:10px; color:var(--text-muted); }
+  .kpi-spark { font-size:10px; color:var(--text-dim); margin-top:8px; display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; }
+  .kpi-mini-bar { height:4px; flex:1; max-width:80px; background:var(--bg3); border-radius:2px; overflow:hidden; }
+  .kpi-mini-fill { height:100%; border-radius:2px; transition:width 0.8s ease; }
+  /* COLLAPSIBLE SECTIONS */
+  .section-title.collapsible { cursor:pointer; user-select:none; display:flex; align-items:center; }
+  .section-title.collapsible:hover { opacity:0.85; }
+  .collapse-arrow { margin-left:auto; font-size:11px; transition:transform 0.2s; color:var(--text-muted); padding-left:10px; }
+  .collapse-arrow.is-collapsed { transform:rotate(-90deg); }
+  /* STATUS RIBBON */
+  .status-ribbon { display:flex; gap:28px; flex-wrap:wrap; padding-top:14px; margin-top:14px; border-top:1px solid var(--border); align-items:flex-end; }
+  .ribbon-item { display:flex; flex-direction:column; gap:2px; }
+  .ribbon-label { font-size:9px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px; }
+  .ribbon-value { font-size:12px; color:var(--cyan); display:flex; align-items:center; gap:5px; }
+  .ribbon-dot { width:7px; height:7px; border-radius:50%; display:inline-block; flex-shrink:0; }
+  .ribbon-dot-ok { background:var(--green); box-shadow:0 0 6px rgba(61,214,140,0.6); }
+  .ribbon-dot-err { background:var(--crimson); box-shadow:0 0 6px rgba(229,69,69,0.6); }
+  /* SESSION COLLAPSE */
+  .sessions-collapse-btn { background:var(--bg3); border:1px solid var(--border); color:var(--text-dim); padding:5px 14px; border-radius:4px; font-size:10px; cursor:pointer; font-family:inherit; transition:all 0.2s; }
+  .sessions-collapse-btn:hover { border-color:var(--gold); color:var(--gold); }
+  @media (max-width: 700px) { .kpi-row { grid-template-columns:repeat(2,1fr); } }
+
 </style>
 </head>
 <body>
@@ -222,36 +251,58 @@
     </div>
     <div class="header-right">
       <div id="auth-status" style="color:var(--text-muted)">Authenticating&hellip;</div>
-      <a href="#" id="sign-out-link" style="display:none;font-size:10px;color:var(--text-muted);text-decoration:underline;cursor:pointer" onclick="fbAuth.signOut();return false;">Sign out</a>
+      <div id="login-form" style="display:none;margin-top:6px">
+        <input id="login-email" type="email" placeholder="Email" style="background:#1a1a2e;border:1px solid #333;color:#e0e0e0;padding:4px 8px;border-radius:4px;font-size:11px;width:180px;margin-bottom:4px;display:block;font-family:inherit">
+        <input id="login-password" type="password" placeholder="Password" style="background:#1a1a2e;border:1px solid #333;color:#e0e0e0;padding:4px 8px;border-radius:4px;font-size:11px;width:180px;margin-bottom:4px;display:block;font-family:inherit">
+        <button onclick="emailLogin()" style="background:var(--green);color:#000;border:none;padding:4px 12px;border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit;margin-right:4px">Sign In</button>
+        <button onclick="googleLogin()" style="background:#4285f4;color:#fff;border:none;padding:4px 12px;border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit">Google</button>
+        <div id="login-error" style="color:#ef4444;font-size:10px;margin-top:4px"></div>
+      </div>
+      <a href="#" id="sign-out-link" style="display:none;font-size:10px;color:var(--text-muted);text-decoration:underline;cursor:pointer" onclick="fbAuth.signOut();location.reload();return false;">Sign out</a>
       <div style="margin-top:6px"><span class="badge badge-live" id="badge-status">&#10227; LOADING</span></div>
       <div style="margin-top:6px;color:var(--text-muted);font-size:10px" id="header-time">&mdash;</div>
     </div>
   </div>
-  <div class="header-subtitle">
-    <div class="meta-item"><div class="meta-label">Engine</div><div class="meta-value" id="meta-engine">&mdash;</div></div>
-    <div class="meta-item"><div class="meta-label">API Target</div><div class="meta-value">cool-schools-api &middot; Cloud Run</div></div>
-    <div class="meta-item"><div class="meta-label">Region</div><div class="meta-value">us-central1</div></div>
-    <div class="meta-item"><div class="meta-label">Q-Bank</div><div class="meta-value" id="meta-qbank">&mdash;</div></div>
-    <div class="meta-item"><div class="meta-label">School</div><div class="meta-value">Somalwar Ramdaspeth</div></div>
-    <div class="meta-item"><div class="meta-label">Pending Proposals</div><div class="meta-value" id="meta-pending">&mdash;</div></div>
-    <div class="meta-item"><div class="meta-label">Endpoints Audited</div><div class="meta-value" id="meta-endpoints">&mdash;</div></div>
+  <div class="status-ribbon">
+    <div class="ribbon-item"><span class="ribbon-label">Engine</span><span class="ribbon-value" id="meta-engine">&mdash;</span></div>
+    <div class="ribbon-item"><span class="ribbon-label">API</span><span class="ribbon-value"><span class="ribbon-dot ribbon-dot-ok" id="api-dot"></span> cool-schools-api &middot; Cloud Run</span></div>
+    <div class="ribbon-item"><span class="ribbon-label">Region</span><span class="ribbon-value">us-central1</span></div>
+    <div class="ribbon-item"><span class="ribbon-label">Q-Bank</span><span class="ribbon-value" id="meta-qbank">&mdash;</span></div>
+    <div class="ribbon-item"><span class="ribbon-label">School</span><span class="ribbon-value">Somalwar Ramdaspeth</span></div>
+    <div class="ribbon-item"><span class="ribbon-label">Pending</span><span class="ribbon-value" id="meta-pending">&mdash;</span></div>
+    <div class="ribbon-item"><span class="ribbon-label">Endpoints</span><span class="ribbon-value" id="meta-endpoints">&mdash;</span></div>
   </div>
 </div>
 
-<!-- SUMMARY CARDS (12 cards) -->
-<div class="summary-grid" id="summary-grid">
-  <div class="card card-gold"><div class="card-number" style="color:var(--gold)" id="card-version">&mdash;</div><div class="card-label">Engine Version</div><div class="card-sub" id="card-version-sub">ROOTS Knowledge Engine</div></div>
-  <div class="card card-cyan"><div class="card-number" style="color:var(--cyan)" id="card-total">&mdash;</div><div class="card-label">Total Sessions</div><div class="card-sub" id="card-total-sub">All time</div></div>
-  <div class="card card-green"><div class="card-number" style="color:var(--green)" id="card-completed">&mdash;</div><div class="card-label">Completed</div><div class="card-sub" id="card-completed-sub">&mdash;</div></div>
-  <div class="card card-orange"><div class="card-number" style="color:var(--orange)" id="card-active">&mdash;</div><div class="card-label">Active Now</div><div class="card-sub">In-progress sessions</div></div>
-  <div class="card card-purple"><div class="card-number" style="color:var(--purple)" id="card-optin">&mdash;</div><div class="card-label">Learning Opt-In</div><div class="card-sub" id="card-optin-sub">&mdash;</div></div>
-  <div class="card card-green"><div class="card-number" style="color:var(--green)" id="card-helpful">&mdash;</div><div class="card-label">Helpfulness %</div><div class="card-sub" id="card-helpful-sub">&mdash;</div></div>
-  <div class="card card-blue"><div class="card-number" style="color:var(--blue)" id="card-feedback">&mdash;</div><div class="card-label">Total Feedback</div><div class="card-sub">Responses collected</div></div>
-  <div class="card card-crimson"><div class="card-number" style="color:var(--crimson)" id="card-proposals">&mdash;</div><div class="card-label">Pending Proposals</div><div class="card-sub">Awaiting review</div></div>
-  <div class="card card-pass"><div class="card-number" style="color:var(--pass)" id="card-questions">&mdash;</div><div class="card-label">Q-Bank Questions</div><div class="card-sub" id="card-questions-sub">Active in Firestore</div></div>
-  <div class="card card-cyan"><div class="card-number" style="color:var(--cyan)" id="card-domains">&mdash;</div><div class="card-label">Domains Covered</div><div class="card-sub">Pancha-Kosha axes</div></div>
-  <div class="card card-gold"><div class="card-number" style="color:var(--gold)" id="card-cronbach">&mdash;</div><div class="card-label">Avg Cronbach &alpha;</div><div class="card-sub" id="card-cronbach-sub">Internal consistency</div></div>
-  <div class="card card-blue"><div class="card-number" style="color:var(--blue)" id="card-invites">&mdash;</div><div class="card-label">Smart Links</div><div class="card-sub">Active invites</div></div>
+<!-- KPI CARDS (4 focused) -->
+<div class="kpi-row" id="summary-grid">
+  <div class="kpi-card" style="border-top:3px solid var(--cyan)">
+    <div class="kpi-big" style="color:var(--cyan)" id="card-total">&mdash;</div>
+    <div class="kpi-title">Sessions</div>
+    <div class="kpi-sub" id="card-total-sub">All time</div>
+    <div class="kpi-spark"><span style="color:var(--green);font-weight:700" id="card-completed">&mdash;</span> completed &middot; <span style="color:var(--orange);font-weight:700" id="card-active">&mdash;</span> active</div>
+    <div class="kpi-sub" id="card-completed-sub" style="margin-top:4px">&mdash;</div>
+  </div>
+  <div class="kpi-card" style="border-top:3px solid var(--green)">
+    <div class="kpi-big" style="color:var(--green)" id="card-helpful">&mdash;</div>
+    <div class="kpi-title">Assessment Quality</div>
+    <div class="kpi-sub" id="card-helpful-sub">&mdash;</div>
+    <div class="kpi-spark"><span style="color:var(--purple)" id="card-optin">&mdash;</span> opt-in &middot; <span style="color:var(--blue)" id="card-feedback">&mdash;</span> responses</div>
+    <div class="kpi-sub" id="card-optin-sub" style="margin-top:4px">&mdash;</div>
+  </div>
+  <div class="kpi-card" style="border-top:3px solid var(--gold)">
+    <div class="kpi-big" style="color:var(--gold)" id="card-questions">&mdash;</div>
+    <div class="kpi-title">Q-Bank</div>
+    <div class="kpi-sub" id="card-questions-sub">Active in Firestore</div>
+    <div class="kpi-spark"><span style="color:var(--cyan)" id="card-domains">&mdash;</span> domains &middot; &alpha; <span id="card-cronbach" style="color:var(--gold)">&mdash;</span></div>
+    <div class="kpi-sub" id="card-cronbach-sub" style="margin-top:4px">Internal consistency</div>
+  </div>
+  <div class="kpi-card" style="border-top:3px solid var(--purple)">
+    <div class="kpi-big" style="color:var(--gold);font-size:24px" id="card-version">&mdash;</div>
+    <div class="kpi-title">Engine</div>
+    <div class="kpi-sub" id="card-version-sub">ROOTS Knowledge Engine</div>
+    <div class="kpi-spark"><span style="color:var(--crimson)" id="card-proposals">&mdash;</span> proposals &middot; <span style="color:var(--blue)" id="card-invites">&mdash;</span> links</div>
+  </div>
 </div>
 
 
@@ -259,27 +310,40 @@
 <div class="tab-nav" id="tab-nav">
   <button class="tab-btn tab-active" onclick="switchTab(this,'overview')">Overview</button>
   <button class="tab-btn" onclick="switchTab(this,'sessions')">Sessions</button>
-  <button class="tab-btn" onclick="switchTab(this,'psychometrics')">Psychometrics</button>
-  <button class="tab-btn" onclick="switchTab(this,'qbank')">Q-Bank</button>
-  <button class="tab-btn" onclick="switchTab(this,'operations')">Operations</button>
-  <button class="tab-btn" onclick="switchTab(this,'management')">Management</button>
+  <button class="tab-btn" onclick="switchTab(this,'learning')">Learning</button>
 </div>
 
-<!-- SECTION: ENGINE ANALYTICS (4 charts) -->
+<!-- SECTION: ENGINE ANALYTICS (v3-inspired) -->
 <div class="section tab-visible" id="section-charts" data-tab="overview">
-  <div class="section-title"><span class="section-icon">&#128202;</span> Engine Analytics</div>
-  <div class="section-desc">Live metrics from ROOTS Knowledge Engine &middot; Session distribution, feedback quality, domain reliability &amp; API latency</div>
-  <div class="chart-grid">
-    <div class="chart-box"><div class="chart-title">Session Status Distribution</div><div class="chart-sub" id="chart-sessions-sub">&mdash;</div><canvas id="sessionDonut"></canvas></div>
-    <div class="chart-box"><div class="chart-title">Feedback Quality Breakdown</div><div class="chart-sub" id="chart-feedback-sub">&mdash;</div><canvas id="feedbackDonut"></canvas></div>
-    <div class="chart-box"><div class="chart-title">Cronbach &alpha; by Domain</div><div class="chart-sub">Internal consistency reliability &middot; &alpha; &ge; 0.70 = acceptable</div><canvas id="cronbachChart"></canvas></div>
-    <div class="chart-box"><div class="chart-title">API Endpoint Response Times</div><div class="chart-sub" id="chart-latency-sub">Live audit of all reachable endpoints</div><canvas id="latencyChart"></canvas></div>
+  <div class="section-title"><span class="section-icon">&loz;</span> Engine Analytics</div>
+  <div class="section-desc">ROOTS Knowledge Engine &middot; Bayesian domain posteriors &middot; Assessment intelligence &middot; API health</div>
+
+  <!-- DOMAIN POSTERIOR OVERVIEW (v3 cards) -->
+  <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:14px">
+    <span style="font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px">&#9670; Domain Posterior Overview</span>
+    <span style="font-size:10px;color:var(--text-muted)" id="domain-cards-sub">Loading&hellip;</span>
+  </div>
+  <div id="domain-cards-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px"></div>
+  <div id="domain-badges" style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap"></div>
+
+  <!-- BOTTOM ROW: Assessment Intel + API Latency -->
+  <div class="chart-grid" style="grid-template-columns:1fr 1fr;margin-top:18px">
+    <div class="chart-box">
+      <div class="chart-title">Assessment Intelligence</div>
+      <div class="chart-sub">Session quality &middot; PRAI distribution &middot; Coverage &middot; Engine transparency</div>
+      <div id="assessment-intel-content" style="padding:4px 0"><div class="section-loading">Waiting for session data&hellip;</div></div>
+    </div>
+    <div class="chart-box" style="min-height:320px">
+      <div class="chart-title">API Endpoint Response Times</div>
+      <div class="chart-sub" id="chart-latency-sub">Live audit of all reachable endpoints</div>
+      <canvas id="latencyChart" style="min-height:260px"></canvas>
+    </div>
   </div>
 </div>
 
 <!-- SECTION: FEEDBACK DEEP DIVE -->
-<div class="section tab-visible" id="section-feedback" data-tab="overview">
-  <div class="section-title"><span class="section-icon">&infin;</span> Learning Loop &mdash; Feedback Deep Dive</div>
+<div class="section tab-visible" id="section-feedback" data-tab="overview" style="display:none">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&infin;</span> Learning Loop &mdash; Feedback Deep Dive<span class="collapse-arrow">&triangledown;</span></div>
   <div class="section-desc">Helpfulness ratings from parents who opted into the learning loop &middot; Real-time breakdown &amp; aggregate stats</div>
   <div class="sessions-grid" id="feedback-cards">
     <div class="session-box">
@@ -301,30 +365,38 @@
   <div style="margin-top:16px" id="feedback-stats-extra"><div class="section-loading">Loading aggregate feedback stats&hellip;</div></div>
 </div>
 
+<!-- SECTION: ENGINE-GENERATED Q REVIEW QUEUE -->
+<div class="section" id="section-genq-review" data-tab="learning">
+  <div class="section-title"><span class="section-icon">&Delta;</span> Engine-Generated Question Review Queue</div>
+  <div class="section-desc">AI-engine generated follow-up questions awaiting admin review &middot; Approve to add to question pool with tag <strong>Created by engine</strong></div>
+  <div style="margin:10px 0"><button class="btn-sm btn-gold" onclick="retroactiveGenerate()" id="btn-retro-gen" style="font-size:11px;padding:6px 14px;cursor:pointer">&orarr; Retroactively Generate for All Completed Sessions</button><span id="retro-gen-status" style="font-size:10px;color:var(--text-muted);margin-left:12px"></span></div>
+  <div id="genq-review-content"><div class="section-loading">Loading generated questions&hellip;</div></div>
+</div>
+
 <!-- SECTION: Q-BANK COVERAGE -->
-<div class="section" id="section-qbank" data-tab="qbank">
-  <div class="section-title"><span class="section-icon">&#128218;</span> Question Bank Coverage</div>
+<div class="section" id="section-qbank" data-tab="learning">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&equiv;</span> Question Bank Coverage<span class="collapse-arrow">&triangledown;</span></div>
   <div class="section-desc">Live Firestore question distribution by domain &middot; Coverage bars &amp; question IDs</div>
   <div id="qbank-content"><div class="section-loading">Loading question bank&hellip;</div></div>
 </div>
 
 <!-- SECTION: COVERAGE MATRIX -->
-<div class="section" id="section-coverage-matrix" data-tab="qbank">
-  <div class="section-title"><span class="section-icon">&#127919;</span> Coverage Matrix &mdash; Axis-to-Question Mapping</div>
+<div class="section" id="section-coverage-matrix" data-tab="learning">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&oplus;</span> Coverage Matrix &mdash; Axis-to-Question Mapping<span class="collapse-arrow">&triangledown;</span></div>
   <div class="section-desc">Gap analysis per domain &middot; Ensures every assessment axis has adequate question coverage</div>
   <div id="coverage-matrix-content"><div class="section-loading">Loading coverage matrix&hellip;</div></div>
 </div>
 
 <!-- SECTION: QUESTION HEALTH -->
-<div class="section" id="section-question-health" data-tab="qbank">
-  <div class="section-title"><span class="section-icon">&#129657;</span> Question Health Monitor</div>
+<div class="section" id="section-question-health" data-tab="learning">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&hearts;</span> Question Health Monitor<span class="collapse-arrow">&triangledown;</span></div>
   <div class="section-desc">Per-question Information Gain, drift flags, response times &middot; From learning loop analysis</div>
   <div id="question-health-content"><div class="section-loading">Loading question health&hellip;</div></div>
 </div>
 
 <!-- SECTION: PSYCHOMETRICS -->
-<div class="section" id="section-psychometrics" data-tab="psychometrics">
-  <div class="section-title"><span class="section-icon">&#129518;</span> Psychometric Reliability Panel</div>
+<div class="section" id="section-psychometrics" data-tab="overview">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&sigma;</span> Psychometric Reliability Panel<span class="collapse-arrow">&triangledown;</span></div>
   <div class="section-desc">Cronbach &alpha;, item-total correlations, &amp; inter-domain correlation matrix &middot; Statistical validity indicators</div>
   <div class="chart-grid" style="margin-bottom:16px">
     <div class="chart-box" id="cronbach-detail"><div class="section-loading">Loading Cronbach &alpha;&hellip;</div></div>
@@ -333,78 +405,87 @@
   <div id="item-corr-content"><div class="section-loading">Loading item-total correlations&hellip;</div></div>
 </div>
 
-<!-- SECTION: SMART LINK INVITES -->
-<div class="section" id="section-invites" data-tab="management">
-  <div class="section-title"><span class="section-icon">&#128279;</span> Smart Link Invites &mdash; Per-Invite Analytics</div>
-  <div class="section-desc">Active invite codes &middot; Assessment type, usage, status &middot; Click-through &amp; session drill-down</div>
-  <div id="invites-content"><div class="section-loading">Loading invites&hellip;</div></div>
-  <div id="invite-drilldown" style="margin-top:16px"></div>
-</div>
-
 <!-- SECTION: SESSION RESULTS EXPLORER -->
 <div class="section" id="section-sessions-explorer" data-tab="sessions">
-  <div class="section-title"><span class="section-icon">&#128200;</span> Session Results Explorer &mdash; All Assessments</div>
-  <div class="section-desc">Every session across child, parent &amp; teacher roles &middot; Click any row for full PRAI analysis, domain scores, event timeline &amp; flag interpretation</div>
-  <div id="sessions-explorer-filters" style="display:none;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+  <div class="section-title"><span class="section-icon">&equiv;</span> Session Results Explorer &mdash; All Assessments</div>
+  <div class="section-desc">Every session across child, parent, teacher &amp; anonymous (v2) roles &middot; Click any row for full PRAI analysis, domain scores, event timeline &amp; flag interpretation</div>
+  <div id="sessions-explorer-filters" style="display:none;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
     <button class="btn-sm btn-gold session-filter active" data-filter="all">All</button>
     <button class="btn-sm session-filter" data-filter="completed">Completed</button>
     <button class="btn-sm session-filter" data-filter="active">Active</button>
     <button class="btn-sm session-filter" data-filter="paused">Paused</button>
     <button class="btn-sm session-filter" data-filter="expired">Expired</button>
+    <button class="btn-sm session-filter" data-filter="anonymous">Anonymous (v2)</button>
     <span style="margin-left:auto;font-size:10px;color:var(--text-muted)" id="session-count-badge"></span>
+    <button class="sessions-collapse-btn" id="sessions-collapse-btn" onclick="toggleSessionList()">&triangledown; Collapse List</button>
   </div>
   <div id="sessions-explorer-content"><div class="section-loading">Loading sessions from all collections&hellip;</div></div>
   <div id="session-drilldown" style="margin-top:16px"></div>
 </div>
 
+<!-- SECTION: SMART LINK INVITES -->
+<div class="section" id="section-invites" data-tab="sessions">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&rarr;</span> Smart Link Invites &mdash; Per-Invite Analytics<span class="collapse-arrow">&triangledown;</span></div>
+  <div class="section-desc">Active invite codes &middot; Assessment type, usage, status &middot; Click-through &amp; session drill-down</div>
+  <div id="invites-content"><div class="section-loading">Loading invites&hellip;</div></div>
+  <div id="invite-drilldown" style="margin-top:16px"></div>
+</div>
+
+<!-- SECTION: CONSENT ANALYTICS -->
+<div class="section" id="section-consent" data-tab="sessions">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&Lambda;</span> Consent Form Analytics &mdash; Acceptance &amp; Abandonment<span class="collapse-arrow">&triangledown;</span></div>
+  <div class="section-desc">Consent form v1.0 &middot; Shown / Accepted / Declined events &middot; Conversion &amp; abandonment rates</div>
+  <div id="consent-content"><div class="section-loading">Loading consent metrics&hellip;</div></div>
+</div>
+
 <!-- SECTION: EXPORT DATA PREVIEW -->
-<div class="section" id="section-export" data-tab="operations">
-  <div class="section-title"><span class="section-icon">&#128230;</span> Export &amp; Pilot Data Bundle</div>
+<div class="section" id="section-export" data-tab="overview">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&darr;</span> Export &amp; Pilot Data Bundle<span class="collapse-arrow">&triangledown;</span></div>
   <div class="section-desc">All exportable datasets &middot; Sessions, profiles, outcomes, triads &middot; From /export/pilot-bundle</div>
   <div id="export-content"><div class="section-loading">Loading export data&hellip;</div></div>
 </div>
 
 <!-- SECTION: FIRESTORE COLLECTIONS -->
-<div class="section" id="section-collections" data-tab="operations">
-  <div class="section-title"><span class="section-icon">&#128451;</span> Firestore Collections &mdash; Live Data Inventory</div>
+<div class="section" id="section-collections" data-tab="overview">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&Xi;</span> Firestore Collections &mdash; Live Data Inventory<span class="collapse-arrow">&triangledown;</span></div>
   <div class="section-desc">All 10+ ROOTS collections in coolschools-72426 &middot; Document counts, last write timestamps &middot; No data left undisplayed</div>
   <div id="collections-content"><div class="section-loading">Enumerating collections&hellip;</div></div>
 </div>
 
 <!-- SECTION: API ENDPOINT AUDIT -->
-<div class="section" id="section-api-audit" data-tab="operations">
-  <div class="section-title"><span class="section-icon">&#128269;</span> API Endpoint Audit &mdash; Live Reachability</div>
+<div class="section" id="section-api-audit" data-tab="overview">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&mu;</span> API Endpoint Audit &mdash; Live Reachability<span class="collapse-arrow">&triangledown;</span></div>
   <div class="section-desc">Real-time status check of all ROOTS API endpoints &middot; Module-by-module breakdown with response times</div>
   <div id="api-audit-content"><div class="section-loading">Running API audit&hellip;</div></div>
 </div>
 
 <!-- SECTION: PRAI REFERENCE -->
-<div class="section" id="section-prai" data-tab="psychometrics">
-  <div class="section-title"><span class="section-icon">&#129518;</span> PRAI (Pancha-Rooted Authenticity Index) Reference</div>
+<div class="section" id="section-prai" data-tab="overview">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&Psi;</span> PRAI (Pancha-Rooted Authenticity Index) Reference<span class="collapse-arrow">&triangledown;</span></div>
   <div class="section-desc">PRAI = 1 &minus; (0.40&middot;streakP + 0.35&middot;cvP + 0.25&middot;timeP) &middot; Session quality metadata &mdash; does <strong>NOT</strong> modify domain scores &middot; Streak threshold = 6</div>
   <div class="chart-grid" style="margin-bottom:16px">
-    <div class="chart-box"><div class="chart-title">PRAI Score vs Streak Length</div><div class="chart-sub">Streak component only (w=0.40) &middot; threshold=6 &middot; sigmoid shape &middot; Other signals (CV, timing) add further reduction</div><canvas id="praiCurveChart"></canvas></div>
+    <div class="chart-box"><div class="chart-title">Streak Component Effect on PRAI (CV=0, Time=0)</div><div class="chart-sub">Shows streak signal only (w=0.40) &middot; threshold=6 &middot; Actual PRAI is lower when CV and timing penalties are non-zero</div><canvas id="praiCurveChart"></canvas></div>
     <div class="chart-box"><div class="chart-title">Beta(1,1): Score Range After N Questions</div><div class="chart-sub">All-S vs All-F posterior mean &mdash; theoretical ceiling &amp; floor &middot; Scores are <strong>independent</strong> of PRAI</div><canvas id="betaRangeChart"></canvas></div>
   </div>
   <div style="padding:8px 12px;background:rgba(78,201,224,0.08);border:1px solid rgba(78,201,224,0.2);border-radius:6px;margin-bottom:14px;font-size:10px;color:var(--text-dim)"><strong style="color:var(--cyan)">&#9432; Architecture Note:</strong> PRAI is a <strong>session quality indicator</strong> (anum&#257;na / inference). It does <strong>not</strong> multiply or alter domain scores (praty&#257;k&#7779;a / direct measurement). Domain scores reflect what the Bayesian engine measured; PRAI flags whether the evidence is trustworthy. Admissions counsellors see PRAI as metadata for informed decisions.</div>
   <div class="table-wrap">
     <table class="prai-table">
-      <thead><tr><th>N questions</th><th>All-S raw</th><th>All-F raw</th><th>Raw range</th><th>PRAI (streak=N)</th><th>Interpretation</th></tr></thead>
+      <thead><tr><th>N questions</th><th>All-S raw</th><th>All-F raw</th><th>Raw range</th><th>PRAI (streak-only, best case)</th><th>Interpretation</th></tr></thead>
       <tbody id="prai-table-body"></tbody>
     </table>
   </div>
 </div>
 
 <!-- SECTION: PROPOSALS -->
-<div class="section" id="section-proposals" data-tab="management">
-  <div class="section-title"><span class="section-icon">&#129516;</span> Learning Proposals</div>
+<div class="section" id="section-proposals" data-tab="learning">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&lambda;</span> Learning Proposals<span class="collapse-arrow">&triangledown;</span></div>
   <div class="section-desc">AI-generated improvement suggestions from the feedback loop &middot; Approve to deploy, reject to discard</div>
   <div id="proposals-content"><div class="loading">Loading proposals&hellip;</div></div>
 </div>
 
 <!-- SECTION: VERSION REGISTRY -->
-<div class="section" id="section-registry" data-tab="management">
-  <div class="section-title"><span class="section-icon">&#9881;</span> Version Registry</div>
+<div class="section" id="section-registry" data-tab="learning">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&#9881;</span> Version Registry<span class="collapse-arrow">&triangledown;</span></div>
   <div class="section-desc">Engine version lifecycle &middot; Register new versions, activate for production deployment</div>
   <div id="registry-content"><div class="loading">Loading version history&hellip;</div></div>
   <div style="margin-top:18px;padding:16px;background:var(--bg2);border:1px solid var(--border);border-radius:8px">
@@ -419,8 +500,8 @@
 </div>
 
 <!-- SECTION: SYSTEM HEALTH -->
-<div class="section" id="section-status" data-tab="operations">
-  <div class="section-title"><span class="section-icon">&#128269;</span> System Health Check</div>
+<div class="section" id="section-status" data-tab="overview">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&nabla;</span> System Health Check<span class="collapse-arrow">&triangledown;</span></div>
   <div class="section-desc">Real-time API health &middot; Endpoint reachability &amp; infrastructure status</div>
   <div id="health-content"><div class="loading">Checking health&hellip;</div></div>
 </div>
@@ -447,6 +528,8 @@
 <script>
 /* === GLOBALS === */
 var COLORS={green:'#3dd68c',crimson:'#e54545',orange:'#e8884a',blue:'#5b9bd5',cyan:'#4ec9e0',gold:'#f5c842',purple:'#a97ad4',dim:'rgba(255,255,255,0.08)'};
+var DOMAIN_COLORS={curiosity:'#f59e0b',resilience:'#10b981',empathy:'#3b82f6',systems:'#8b5cf6',character:'#ef4444',music:'#ec4899',physical:'#06b6d4',spiritual:'#a78bfa'};
+var DOMAIN_ORDER=['curiosity','resilience','empathy','systems','character','music','physical','spiritual'];
 Chart.defaults.color='#8b949e';
 Chart.defaults.borderColor='#30363d';
 Chart.defaults.font.family="'SF Mono','Cascadia Code',Consolas,monospace";
@@ -459,17 +542,25 @@ var API_BASE='https://cool-schools-api-420407869747.us-central1.run.app/api/v1/r
 var rootsToken=null;
 
 /* === AUTH === */
+function googleLogin(){fbAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(function(e){document.getElementById('login-error').textContent=e.message})}
+function emailLogin(){
+  var em=document.getElementById('login-email').value.trim();
+  var pw=document.getElementById('login-password').value;
+  if(!em||!pw){document.getElementById('login-error').textContent='Enter email and password';return;}
+  document.getElementById('login-error').textContent='Signing in\u2026';
+  fbAuth.signInWithEmailAndPassword(em,pw).catch(function(e){document.getElementById('login-error').textContent=e.message});
+}
+document.addEventListener('keydown',function(e){if(e.key==='Enter'&&document.activeElement&&(document.activeElement.id==='login-email'||document.activeElement.id==='login-password'))emailLogin()});
 fbAuth.onAuthStateChanged(async function(user){
   var s=document.getElementById('auth-status');
   if(!user){
-    s.textContent='Signing in\u2026'; s.style.color='#f59e0b';
-    try{await fbAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider())}
-    catch(e){s.textContent='Sign-in failed \u2014 click to retry';s.style.color='#ef4444';s.style.cursor='pointer';
-      s.onclick=function(){fbAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider())};
-      document.getElementById('badge-status').textContent='\u2717 AUTH FAILED';
-      document.getElementById('badge-status').className='badge badge-error';}
+    s.textContent='Sign in to continue'; s.style.color='#f59e0b';
+    document.getElementById('login-form').style.display='block';
+    document.getElementById('badge-status').textContent='\u25cb NOT SIGNED IN';
+    document.getElementById('badge-status').className='badge badge-warn';
     return;
   }
+  document.getElementById('login-form').style.display='none';
   var tr=await user.getIdTokenResult(true);
   var role=tr.claims.rootsRole||tr.claims.role;
   if(!['system','admin','superadmin'].includes(role)){
@@ -510,7 +601,7 @@ function fmt(n){return typeof n==='number'?n.toLocaleString():(n!=null?n:'\u2014
 function pct(n){return typeof n==='number'?n.toFixed(1)+'%':'\u2014'}
 function fmtDec(n,d){return typeof n==='number'?n.toFixed(d||2):'\u2014'}
 
-var sessionChart=null,feedbackChart=null,cronbachChart=null,latencyChart=null;
+var latencyChart=null;
 
 /* === INIT === */
 async function init(){
@@ -519,10 +610,11 @@ async function init(){
   document.getElementById('footer-time').textContent=now.toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'});
   await Promise.allSettled([
     loadMetrics(),loadProposals(),loadRegistry(),loadHealth(),
-    loadQuestions(),loadCoverageMatrix(),loadQuestionHealth(),
+    loadQuestions(),loadCoverageMatrix(),loadQuestionHealth(),loadGenQReview(),
     loadCronbachAlpha(),loadItemCorrelations(),loadDomainCorrelations(),
     loadInvites(),loadFeedbackStats(),loadAdminHealth(),
     loadSessionResults(),loadExportData(),loadCollections(),
+    loadConsentMetrics(),
     runApiAudit()
   ]);
   buildPraiReference();
@@ -550,38 +642,37 @@ async function loadMetrics(){
     document.getElementById('card-completed').textContent=fmt(completed);
     document.getElementById('card-completed-sub').textContent=compRate+'% completion rate';
     document.getElementById('card-active').textContent=fmt(active);
-    document.getElementById('card-optin').textContent=pct(optInRate);
-    document.getElementById('card-optin-sub').textContent=fmt(optInN)+' of '+fmt(total)+' sessions';
-    document.getElementById('card-helpful').textContent=pct(helpPct);
-    document.getElementById('card-helpful-sub').textContent=fmt(veryH+somewhat)+' positive of '+fmt(totalFb);
-    document.getElementById('card-feedback').textContent=fmt(totalFb);
+    if(totalFb>0){
+      document.getElementById('card-helpful').textContent=pct(helpPct);
+      document.getElementById('card-helpful-sub').textContent=fmt(veryH+somewhat)+' positive of '+fmt(totalFb);
+      document.getElementById('card-optin').textContent=pct(optInRate);
+      document.getElementById('card-feedback').textContent=fmt(totalFb);
+    }else{
+      document.getElementById('card-helpful').textContent=pct(compRate);
+      document.getElementById('card-helpful-sub').textContent=fmt(completed)+' of '+fmt(total)+' completed';
+      document.getElementById('card-optin').textContent=fmt(active);
+      document.getElementById('card-feedback').textContent=fmt(completed);
+    }
+    document.getElementById('card-optin-sub').textContent=totalFb>0?(fmt(optInN)+' of '+fmt(total)+' sessions'):(fmt(active)+' active \u00b7 '+fmt(completed)+' completed');
     document.getElementById('card-proposals').textContent=fmt(pending);
     var badge=document.getElementById('badge-status');
     if(total>0){badge.textContent='\u2713 LIVE';badge.className='badge badge-live'}
     else{badge.textContent='\u25CB NO DATA';badge.className='badge badge-warn'}
     var dropped=Math.max(0,total-completed-active);
-    document.getElementById('chart-sessions-sub').textContent=fmt(total)+' total sessions tracked';
-    if(sessionChart)sessionChart.destroy();
-    sessionChart=new Chart(document.getElementById('sessionDonut'),{
-      type:'doughnut',data:{labels:['\u2713 Completed','\u25CE Active','\u2717 Dropped/Other'],datasets:[{data:[completed,active,dropped],backgroundColor:[COLORS.green,COLORS.cyan,COLORS.orange],borderColor:'#0d1117',borderWidth:3,hoverOffset:6}]},
-      options:{cutout:'62%',plugins:{legend:{position:'bottom',labels:{padding:10,boxWidth:12,font:{size:10}}},tooltip:{callbacks:{label:function(ctx){return ' '+ctx.label+': '+ctx.raw+' sessions'}}}}}
-    });
-    document.getElementById('chart-feedback-sub').textContent=fmt(totalFb)+' feedback responses \u00b7 '+pct(helpPct)+' positive';
-    if(feedbackChart)feedbackChart.destroy();
-    feedbackChart=new Chart(document.getElementById('feedbackDonut'),{
-      type:'doughnut',data:{labels:['Very Helpful','Somewhat Helpful','Not Helpful'],datasets:[{data:[veryH,somewhat,notH],backgroundColor:[COLORS.green,COLORS.gold,COLORS.crimson],borderColor:'#0d1117',borderWidth:3,hoverOffset:6}]},
-      options:{cutout:'62%',plugins:{legend:{position:'bottom',labels:{padding:10,boxWidth:12,font:{size:10}}},tooltip:{callbacks:{label:function(ctx){return ' '+ctx.label+': '+ctx.raw+' responses'}}}}}
-    });
+    /* Session donut + feedback donut removed — replaced by v3-style domain cards */
     var fbT=veryH+somewhat+notH||1;
-    document.getElementById('fb-very-helpful-detail').textContent=fmt(veryH)+' responses';
-    document.getElementById('fb-somewhat-detail').textContent=fmt(somewhat)+' responses';
-    document.getElementById('fb-not-helpful-detail').textContent=fmt(notH)+' responses';
-    document.getElementById('fb-very-bar').style.width=(veryH/fbT*100)+'%';
-    document.getElementById('fb-very-pct').textContent=pct(veryH/fbT*100);
-    document.getElementById('fb-somewhat-bar').style.width=(somewhat/fbT*100)+'%';
-    document.getElementById('fb-somewhat-pct').textContent=pct(somewhat/fbT*100);
-    document.getElementById('fb-not-bar').style.width=(notH/fbT*100)+'%';
-    document.getElementById('fb-not-pct').textContent=pct(notH/fbT*100);
+    if(veryH+somewhat+notH>0){
+      document.getElementById('section-feedback').style.display='';
+      document.getElementById('fb-very-helpful-detail').textContent=fmt(veryH)+' responses';
+      document.getElementById('fb-somewhat-detail').textContent=fmt(somewhat)+' responses';
+      document.getElementById('fb-not-helpful-detail').textContent=fmt(notH)+' responses';
+      document.getElementById('fb-very-bar').style.width=(veryH/fbT*100)+'%';
+      document.getElementById('fb-very-pct').textContent=pct(veryH/fbT*100);
+      document.getElementById('fb-somewhat-bar').style.width=(somewhat/fbT*100)+'%';
+      document.getElementById('fb-somewhat-pct').textContent=pct(somewhat/fbT*100);
+      document.getElementById('fb-not-bar').style.width=(notH/fbT*100)+'%';
+      document.getElementById('fb-not-pct').textContent=pct(notH/fbT*100);
+    }
   }catch(e){
     console.warn('Metrics failed:',e.message);
     document.getElementById('badge-status').textContent='\u2717 METRICS ERROR';
@@ -592,38 +683,210 @@ async function loadMetrics(){
 /* === 2. QUESTIONS (Q-BANK) === */
 async function loadQuestions(){
   try{
-    var raw=await api('GET','/questions');
-    var questions=raw.data||raw.questions||[];
-    if(!Array.isArray(questions)){questions=[];}
-    var domainMap={};var totalQ=questions.length;
-    for(var i=0;i<questions.length;i++){
-      var q=questions[i];var d=(q.domain||q.primaryDomain||'unknown').toLowerCase();
-      if(!domainMap[d])domainMap[d]={count:0,ids:[],active:0};
-      domainMap[d].count++;
-      domainMap[d].ids.push(q.questionId||q.id||('Q'+(i+1)));
-      if(q.active!==false&&q.status!=='DEPRECATED')domainMap[d].active++;
+    var raw=await api('GET','/prototype-admin/question-pools');
+    var pools=raw.data||raw;
+    var child=pools.child||{total:0,domains:{},domainCount:0};
+    var parent=pools.parent||{total:0,domains:{},domainCount:0};
+    var teacher=pools.teacher||{total:0,domains:{},domainCount:0};
+    var grandTotal=pools.grandTotal||(child.total+parent.total+teacher.total);
+    document.getElementById('card-questions').textContent=fmt(grandTotal);
+    document.getElementById('card-questions-sub').textContent='Child '+child.total+' \u00b7 Parent '+parent.total+' \u00b7 Teacher '+teacher.total;
+    document.getElementById('card-domains').textContent=fmt(child.domainCount+parent.domainCount+teacher.domainCount);
+    document.getElementById('meta-qbank').textContent=grandTotal+' questions \u00b7 3 pools';
+    function renderPool(label,icon,pool,barColor){
+      var domains=Object.keys(pool.domains||{}).sort();
+      if(!domains.length)return '<div class="empty-state">No questions in '+label+' pool</div>';
+      var maxCount=Math.max.apply(null,domains.map(function(d){return pool.domains[d].count}))||1;
+      var h='<div style="margin-bottom:6px;font-size:10px;color:var(--text-muted)">'+pool.source+'</div>';
+      h+='<div class="qbank-grid">';
+      for(var i=0;i<domains.length;i++){
+        var d=domains[i];var info=pool.domains[d];
+        var pctW=(info.count/maxCount*100).toFixed(0);
+        h+='<div class="qbank-domain"><div class="qbank-name" style="color:'+barColor+'">'+d.replace(/_/g,' ')+' ('+info.count+')</div>';
+        h+='<div class="qbank-bar-track"><div class="qbank-bar-fill" style="width:'+pctW+'%;background:linear-gradient(90deg,'+barColor+','+barColor+'88)"></div></div>';
+        h+='<div class="qbank-nums"><span>'+info.active+' active</span><span>'+info.count+' total</span></div>';
+        h+='<div class="qid-list">';
+        for(var j=0;j<Math.min(info.ids.length,20);j++){h+='<span class="qid-pill">'+info.ids[j]+'</span>';}
+        if(info.ids.length>20)h+='<span class="qid-pill" style="color:var(--text-muted)">+'+(info.ids.length-20)+' more</span>';
+        h+='</div></div>';
+      }
+      h+='</div>';return h;
     }
-    var domains=Object.keys(domainMap).sort();
-    document.getElementById('card-questions').textContent=fmt(totalQ);
-    document.getElementById('card-questions-sub').textContent=domains.length+' domains active';
-    document.getElementById('card-domains').textContent=fmt(domains.length);
-    document.getElementById('meta-qbank').textContent=totalQ+' questions \u00b7 '+domains.length+' domains';
-    var maxCount=Math.max.apply(null,domains.map(function(d){return domainMap[d].count}))||1;
-    var html='<div class="qbank-grid">';
-    for(var i=0;i<domains.length;i++){
-      var d=domains[i];var info=domainMap[d];
-      var pctW=(info.count/maxCount*100).toFixed(0);
-      html+='<div class="qbank-domain"><div class="qbank-name">'+d+' ('+info.count+')</div>';
-      html+='<div class="qbank-bar-track"><div class="qbank-bar-fill" style="width:'+pctW+'%"></div></div>';
-      html+='<div class="qbank-nums"><span>'+info.active+' active</span><span>'+info.count+' total</span></div>';
-      html+='<div class="qid-list">';
-      for(var j=0;j<info.ids.length;j++){html+='<span class="qid-pill">'+info.ids[j]+'</span>';}
-      html+='</div></div>';
-    }
+    var html='';
+    html+='<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">';
+    html+='<span class="badge badge-info" style="font-size:11px;padding:4px 10px">\u25c7 Child CAT: '+child.total+'</span>';
+    html+='<span class="badge badge-success" style="font-size:11px;padding:4px 10px">\u2665 Parent: '+parent.total+'</span>';
+    html+='<span class="badge badge-warn" style="font-size:11px;padding:4px 10px">\u2731 Teacher: '+teacher.total+'</span>';
+    html+='<span style="font-size:11px;padding:4px 10px;color:var(--text-muted)">Grand Total: <strong style="color:var(--gold)">'+grandTotal+'</strong></span>';
     html+='</div>';
+    html+='<details open style="margin-bottom:14px"><summary style="cursor:pointer;font-size:12px;font-weight:600;color:var(--cyan);margin-bottom:8px">\u25c7 Child CAT Pool ('+child.total+' questions \u00b7 '+child.domainCount+' domains)</summary>';
+    html+=renderPool('Child','\u25c7',child,'var(--cyan)');
+    html+='</details>';
+    html+='<details style="margin-bottom:14px"><summary style="cursor:pointer;font-size:12px;font-weight:600;color:var(--green);margin-bottom:8px">\u2665 Parent Pool ('+parent.total+' questions \u00b7 '+parent.domainCount+' domains)</summary>';
+    html+=renderPool('Parent','\u2665',parent,'var(--green)');
+    html+='</details>';
+    html+='<details style="margin-bottom:14px"><summary style="cursor:pointer;font-size:12px;font-weight:600;color:var(--gold);margin-bottom:8px">\u2731 Teacher Pool ('+teacher.total+' questions \u00b7 '+teacher.domainCount+' domains)</summary>';
+    html+=renderPool('Teacher','\u2731',teacher,'var(--gold)');
+    html+='</details>';
     document.getElementById('qbank-content').innerHTML=html;
   }catch(e){
     document.getElementById('qbank-content').innerHTML='<div class="empty-state">Could not load questions: '+e.message+'</div>';
+  }
+}
+
+/* === 2B. ENGINE-GENERATED Q REVIEW QUEUE === */
+function renderSimilarityBadge(sim){
+  if(!sim)return '<span class="badge badge-info" style="font-size:8px">No pool data</span>';
+  var bc=sim.bandColor||'#888';
+  return '<span style="display:inline-flex;align-items:center;gap:4px;background:'+bc+'22;border:1px solid '+bc+';color:'+bc+';padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700" title="Similarity to existing question pool">'+sim.similarityIndex.toFixed(0)+'% '+sim.band+'</span>';
+}
+function renderSimilarityPanel(sim,cardId){
+  if(!sim||!sim.topMatches||!sim.topMatches.length)return '';
+  var h='<div id="sim-panel-'+cardId+'" style="display:none;margin-top:10px;padding:10px 12px;background:var(--bg1);border:1px solid var(--border);border-radius:6px">';
+  h+='<div style="font-size:10px;font-weight:600;color:var(--cyan);margin-bottom:8px">▸ Similarity Analysis — Top '+sim.topMatches.length+' Related Pool Questions</div>';
+  /* Similarity meter */
+  var meterColor=sim.bandColor||'#888';
+  h+='<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-muted);margin-bottom:3px"><span>Novelty</span><span>Duplicate</span></div>';
+  h+='<div style="background:var(--bg3);border-radius:4px;height:8px;position:relative;overflow:hidden">';
+  h+='<div style="position:absolute;left:0;top:0;height:100%;width:'+sim.similarityIndex+'%;background:'+meterColor+';border-radius:4px;transition:width 0.3s"></div></div>';
+  h+='<div style="text-align:center;font-size:9px;color:'+meterColor+';margin-top:2px;font-weight:600">'+sim.similarityIndex.toFixed(1)+'% composite similarity</div></div>';
+  /* Warnings */
+  if(sim.warnings&&sim.warnings.length){
+    for(var w=0;w<sim.warnings.length;w++){
+      h+='<div style="background:#ef444422;border:1px solid #ef4444;color:#ef4444;padding:4px 8px;border-radius:4px;font-size:9px;margin-bottom:6px">⚠ '+sim.warnings[w]+'</div>';
+    }
+  }
+  /* Each match */
+  for(var mi=0;mi<sim.topMatches.length;mi++){
+    var m=sim.topMatches[mi];
+    var matchId=cardId+'_m'+mi;
+    var compColor=m.compositeScore>=65?'var(--crimson)':(m.compositeScore>=40?'var(--gold)':'var(--green)');
+    h+='<div style="margin-bottom:8px;padding:8px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;border-left:3px solid '+compColor+'">';
+    /* Header row */
+    h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">';
+    h+='<div style="font-size:10px"><span style="color:var(--cyan);font-weight:600">'+m.poolQuestionId+'</span> <span style="color:var(--text-muted)">· '+domainLabel(m.poolQuestionDomain)+'</span></div>';
+    h+='<div style="display:flex;gap:6px;align-items:center"><span style="color:'+compColor+';font-weight:700;font-size:11px">'+m.compositeScore.toFixed(0)+'%</span>';
+    h+='<button onclick="document.getElementById(\'sim-detail-'+matchId+'\').style.display=document.getElementById(\'sim-detail-'+matchId+'\').style.display===\'none\'?\'block\':\'none\'" style="background:var(--bg3);border:1px solid var(--border);color:var(--text-muted);padding:2px 8px;border-radius:4px;font-size:9px;cursor:pointer">expand</button></div></div>';
+    /* Signal pills */
+    if(m.signals&&m.signals.length){
+      h+='<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px">';
+      for(var si=0;si<m.signals.length;si++){
+        h+='<span style="background:var(--bg3);color:var(--text-dim);padding:1px 6px;border-radius:3px;font-size:8px">'+m.signals[si]+'</span>';
+      }
+      h+='</div>';
+    }
+    /* Pool question stem */
+    h+='<div style="font-size:10px;color:var(--text-dim);line-height:1.5">'+m.poolQuestionText+'</div>';
+    /* Expandable detail: breakdown + full answer options */
+    h+='<div id="sim-detail-'+matchId+'" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:8px">';
+    /* Signal breakdown */
+    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-bottom:8px;font-size:9px">';
+    h+='<div><span style="color:var(--text-muted)">Stem cosine:</span> <span style="color:var(--cyan);font-weight:600">'+(m.stemSimilarity*100).toFixed(1)+'%</span></div>';
+    h+='<div><span style="color:var(--text-muted)">Answer Jaccard:</span> <span style="color:var(--gold);font-weight:600">'+(m.answerJaccard*100).toFixed(1)+'%</span></div>';
+    h+='<div><span style="color:var(--text-muted)">Domain match:</span> <span style="color:'+(m.domainMatch?'var(--green)':'var(--text-muted)')+'">'+( m.domainMatch?'✓ Yes':'✗ No')+'</span></div>';
+    h+='<div><span style="color:var(--text-muted)">Composite:</span> <span style="color:'+compColor+';font-weight:600">'+m.compositeScore.toFixed(1)+'%</span></div>';
+    h+='</div>';
+    /* Pool question answer options */
+    if(m.poolAnswers&&m.poolAnswers.length){
+      h+='<div style="font-size:9px;font-weight:600;color:var(--text-muted);margin-bottom:4px">Pool Question Answer Options:</div>';
+      for(var pai=0;pai<m.poolAnswers.length;pai++){
+        var pa=m.poolAnswers[pai];
+        var paGradeColor=pa.grade==='S'?'var(--gold)':(pa.grade==='A'?'var(--cyan)':(pa.grade==='B'?'var(--pass)':(pa.grade==='C'?'var(--text-muted)':'var(--crimson)')));
+        h+='<div style="font-size:9px;padding:2px 6px;margin:1px 0;display:flex;gap:6px;align-items:baseline"><span style="color:'+paGradeColor+';font-weight:700;min-width:12px">'+pa.grade+'</span><span style="color:var(--text-dim)">'+pa.text+'</span></div>';
+      }
+    }
+    h+='</div></div>';
+  }
+  h+='</div>';
+  return h;
+}
+async function loadGenQReview(){
+  try{
+    var raw=await api('GET','/prototype-admin/generated-questions');
+    var questions=raw.data||[];var meta=raw.meta||{};
+    if(!Array.isArray(questions))questions=[];
+    var html='';
+    html+='<div style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap">';
+    html+='<div style="background:var(--bg3);padding:8px 14px;border-radius:6px;font-size:11px"><span style="color:var(--gold);font-weight:600">'+(meta.pending||0)+'</span> <span style="color:var(--text-muted)">pending review</span></div>';
+    html+='<div style="background:var(--bg3);padding:8px 14px;border-radius:6px;font-size:11px"><span style="color:var(--green);font-weight:600">'+(meta.approved||0)+'</span> <span style="color:var(--text-muted)">approved</span></div>';
+    html+='<div style="background:var(--bg3);padding:8px 14px;border-radius:6px;font-size:11px"><span style="color:var(--crimson);font-weight:600">'+(meta.rejected||0)+'</span> <span style="color:var(--text-muted)">rejected</span></div>';
+    html+='<div style="background:var(--bg3);padding:8px 14px;border-radius:6px;font-size:11px"><span style="color:var(--cyan);font-weight:600">'+(meta.total||0)+'</span> <span style="color:var(--text-muted)">total generated</span></div>';
+    html+='</div>';
+    if(!questions.length){
+      html+='<div class="empty-state">No questions pending review. Generate by expanding completed sessions in the Sessions tab.</div>';
+      document.getElementById('genq-review-content').innerHTML=html;return;
+    }
+    for(var i=0;i<questions.length;i++){
+      var gq=questions[i];
+      var bandColor=gq.scoreBand==='low'?'var(--crimson)':(gq.scoreBand==='mid'?'var(--gold)':'var(--cyan)');
+      var sim=gq.similarity||null;
+      html+='<div style="margin-bottom:12px;padding:14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;border-left:4px solid '+bandColor+'" id="genq-card-'+gq.id+'">';
+      html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
+      html+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="color:'+bandColor+';font-weight:600;font-size:12px">'+domainLabel(gq.domain)+'</span>';
+      html+=' <span class="badge badge-'+(gq.scoreBand==='low'?'warn':(gq.scoreBand==='mid'?'info':'success'))+'">'+gq.scoreBand+' ('+((gq.sourceScore||0).toFixed(1))+'%)</span>';
+      html+=' <span class="badge badge-info" style="font-size:8px">Created by engine</span>';
+      html+=' '+renderSimilarityBadge(sim);
+      if(sim&&sim.topMatches&&sim.topMatches.length){html+=' <button onclick="document.getElementById(\'sim-panel-rq-'+gq.id+'\').style.display=document.getElementById(\'sim-panel-rq-'+gq.id+'\').style.display===\'none\'?\'block\':\'none\'" style="background:var(--bg3);border:1px solid var(--border);color:var(--cyan);padding:2px 8px;border-radius:4px;font-size:9px;cursor:pointer">\u25B8 Compare</button>';}
+      html+='</div>';
+      html+='<div style="display:flex;gap:6px">';
+      html+='<button class="btn-sm" style="background:var(--green);color:#000;border:none;cursor:pointer;font-size:10px;padding:4px 10px;border-radius:4px" onclick="approveGenQ(\''+gq.id+'\')">✓ Approve</button>';
+      html+='<button class="btn-sm" style="background:var(--crimson);color:#fff;border:none;cursor:pointer;font-size:10px;padding:4px 10px;border-radius:4px" onclick="rejectGenQ(\''+gq.id+'\')">✗ Reject</button>';
+      html+='</div></div>';
+      html+='<div style="font-size:13px;font-weight:500;line-height:1.5;margin-bottom:8px;color:var(--text-primary)">◈ '+gq.text+'</div>';
+      if(gq.answers&&gq.answers.length){
+        for(var ai=0;ai<gq.answers.length;ai++){
+          var ans=gq.answers[ai];
+          var gradeColor=ans.grade==='S'?'var(--gold)':(ans.grade==='A'?'var(--cyan)':(ans.grade==='B'?'var(--pass)':(ans.grade==='C'?'var(--text-muted)':'var(--crimson)')));
+          html+='<div style="font-size:10px;padding:3px 8px;margin:2px 0;display:flex;gap:8px;align-items:baseline"><span style="color:'+gradeColor+';font-weight:700;min-width:14px">'+ans.grade+'</span><span style="color:var(--text-dim)">'+ans.text+'</span>';
+          if(ans.axes){var axKeys=Object.keys(ans.axes);for(var ak=0;ak<axKeys.length;ak++){html+=' <span style="color:var(--text-muted);font-size:8px">['+axKeys[ak]+':'+ans.axes[axKeys[ak]]+']</span>';}}
+          html+='</div>';
+        }
+      }
+      /* Similarity panel (collapsed by default) */
+      html+=renderSimilarityPanel(sim,'rq-'+gq.id);
+      if(gq.rationale)html+='<div style="font-size:9px;color:var(--text-muted);margin-top:8px;font-style:italic;border-top:1px solid var(--border);padding-top:6px">▸ '+gq.rationale+'</div>';
+      html+='<div style="font-size:9px;color:var(--text-muted);margin-top:4px">Session: <code>'+gq.sessionId.slice(0,20)+'…</code> · ID: <code>'+gq.id+'</code> · Engine: <code>'+(gq.engine_version||'—')+'</code></div>';
+      html+='</div>';
+    }
+    document.getElementById('genq-review-content').innerHTML=html;
+  }catch(e){
+    document.getElementById('genq-review-content').innerHTML='<div class="empty-state">Could not load generated questions: '+e.message+'</div>';
+  }
+}
+async function approveGenQ(qid){
+  if(!confirm('Approve this question and add to question pool?'))return;
+  try{
+    await api('POST','/prototype-admin/generated-questions/'+qid+'/approve');
+    var card=document.getElementById('genq-card-'+qid);
+    if(card){card.style.opacity='0.4';card.style.borderLeftColor='var(--green)';card.querySelector('div').innerHTML='<span class="badge badge-ok">✓ APPROVED — added to question pool</span>';}
+    setTimeout(loadGenQReview,1500);
+  }catch(e){alert('Approve failed: '+e.message);}
+}
+async function rejectGenQ(qid){
+  var reason=prompt('Reject reason (optional):','');
+  if(reason===null)return;
+  try{
+    await api('POST','/prototype-admin/generated-questions/'+qid+'/reject',{reason:reason});
+    var card=document.getElementById('genq-card-'+qid);
+    if(card){card.style.opacity='0.4';card.style.borderLeftColor='var(--crimson)';card.querySelector('div').innerHTML='<span class="badge badge-warn">✗ REJECTED</span>';}
+    setTimeout(loadGenQReview,1500);
+  }catch(e){alert('Reject failed: '+e.message);}
+}
+async function retroactiveGenerate(){
+  var btn=document.getElementById('btn-retro-gen');
+  var stat=document.getElementById('retro-gen-status');
+  if(!confirm('Generate follow-up questions for ALL completed sessions that don\'t have them yet?'))return;
+  btn.disabled=true;btn.style.opacity='0.5';
+  stat.textContent='Generating… this may take a minute.';
+  try{
+    var raw=await api('POST','/prototype-admin/generated-questions/retroactive');
+    var d=raw.data||{};
+    stat.innerHTML='<span style="color:var(--green)">✓ Done!</span> '+d.processed+' sessions processed · '+d.generated+' questions generated · '+d.skipped+' skipped';
+    setTimeout(loadGenQReview,1500);
+  }catch(e){
+    stat.innerHTML='<span style="color:var(--crimson)">Error: '+e.message+'</span>';
+  }finally{
+    btn.disabled=false;btn.style.opacity='1';
   }
 }
 
@@ -688,7 +951,9 @@ async function loadCronbachAlpha(){
     var items=raw.data||raw;
     if(!Array.isArray(items)){if(items&&typeof items==='object'&&items.domains){items=items.domains}else{items=[]}}
     if(!items.length){
-      document.getElementById('cronbach-detail').innerHTML='<div class="chart-title">Cronbach \u03b1 by Domain</div><div class="empty-state" style="margin-top:12px">No Cronbach \u03b1 data yet. Requires sufficient sessions.</div>';
+      document.getElementById('cronbach-detail').innerHTML='<div class="chart-title">Cronbach \u03b1 by Domain</div><div class="empty-state" style="margin-top:12px">No Cronbach \u03b1 data yet. Requires sufficient completed sessions per domain.</div>';
+      document.getElementById('card-cronbach').textContent='\u2014';
+      document.getElementById('card-cronbach-sub').textContent='Needs more sessions';
       return;
     }
     var labels=[],values=[],bgColors=[];var sum=0;
@@ -710,11 +975,7 @@ async function loadCronbachAlpha(){
     }
     html+='</tbody></table>';
     document.getElementById('cronbach-detail').innerHTML=html;
-    if(cronbachChart)cronbachChart.destroy();
-    cronbachChart=new Chart(document.getElementById('cronbachChart'),{
-      type:'bar',data:{labels:labels,datasets:[{label:'Cronbach \u03b1',data:values,backgroundColor:bgColors,borderRadius:4}]},
-      options:{indexAxis:'y',scales:{x:{min:0,max:1,grid:{color:COLORS.dim},ticks:{callback:function(v){return v.toFixed(1)}}},y:{grid:{display:false},ticks:{font:{size:9}}}},plugins:{legend:{display:false}}}
-    });
+    /* Cronbach chart canvas removed from Engine Analytics — data shown in table only */
   }catch(e){
     document.getElementById('cronbach-detail').innerHTML='<div class="chart-title">Cronbach \u03b1</div><div class="empty-state" style="margin-top:12px">Unavailable: '+e.message+'</div>';
   }
@@ -781,6 +1042,9 @@ async function loadFeedbackStats(){
     var raw=await api('GET','/prototype-learning/feedback/stats');
     var data=raw.data||raw;
     if(!data||typeof data!=='object'){throw new Error('Unexpected format')}
+    var totalFb=data.totalFeedback||data.total||0;
+    if(totalFb===0){document.getElementById('feedback-stats-extra').innerHTML='';return;}
+    document.getElementById('section-feedback').style.display='';
     var html='<div class="findings-grid">';
     html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">\u2261 AGGREGATE</span></div><div class="finding-title">Feedback Statistics</div><div class="finding-body">';
     html+='Total responses: <code>'+fmt(data.totalFeedback||data.total||0)+'</code><br>';
@@ -816,9 +1080,17 @@ async function loadInvites(){
       var school=inv.schoolName||inv.schoolId||'\u2014';
       var enabled=inv.enabled!==false&&!inv.disabled;
       var expired=inv.expired||false;
-      var uses=inv.useCount||inv.uses||0;
+      var uses=inv.usedCount||inv.useCount||inv.uses||0;
       var maxUses=inv.maxUses||'\u221e';
-      var created=inv.createdAt?new Date(inv.createdAt).toLocaleDateString('en-IN'):'\u2014';
+      var created='\u2014';
+      if(inv.createdAt){
+        var cd=inv.createdAt;
+        if(typeof cd==='string')created=new Date(cd).toLocaleDateString('en-IN');
+        else if(cd._seconds)created=new Date(cd._seconds*1000).toLocaleDateString('en-IN');
+        else if(cd.seconds)created=new Date(cd.seconds*1000).toLocaleDateString('en-IN');
+        else if(typeof cd==='number')created=new Date(cd).toLocaleDateString('en-IN');
+        else{var d2=new Date(cd);if(!isNaN(d2.getTime()))created=d2.toLocaleDateString('en-IN');}
+      }
       var statusBadge=expired?'<span class="badge badge-error">expired</span>':(enabled?'<span class="badge badge-success">active</span>':'<span class="badge badge-warn">disabled</span>');
       html+='<tr><td style="font-size:10px;color:var(--cyan);font-weight:600">'+code+'</td><td>'+type+'</td><td style="font-size:10px">'+school+'</td><td>'+statusBadge+'</td><td>'+uses+'</td><td>'+maxUses+'</td><td>'+created+'</td>';
       html+='<td><button class="btn-sm btn-gold" onclick="drillInvite(\''+code+'\')">Metrics</button></td>';
@@ -856,6 +1128,60 @@ async function drillInvite(code){
     el.innerHTML=html;
   }catch(e){
     el.innerHTML='<div class="empty-state">Invite metrics unavailable: '+e.message+'</div>';
+  }
+}
+
+/* === 9b. CONSENT METRICS === */
+async function loadConsentMetrics(){
+  var el=document.getElementById('consent-content');
+  try{
+    var raw=await api('GET','/prototype-admin/consent-metrics');
+    var d=raw.data||raw;
+    var t=d.totals||{shown:0,accepted:0,declined:0};
+    var html='<div class="chart-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:18px">';
+    html+='<div class="stat-card"><div class="stat-val" style="color:var(--accent)">'+fmt(t.shown)+'</div><div class="stat-label">Forms Shown</div></div>';
+    html+='<div class="stat-card"><div class="stat-val" style="color:var(--green)">'+fmt(t.accepted)+'</div><div class="stat-label">Accepted</div></div>';
+    html+='<div class="stat-card"><div class="stat-val" style="color:var(--crimson)">'+fmt(t.declined)+'</div><div class="stat-label">Declined</div></div>';
+    html+='<div class="stat-card"><div class="stat-val" style="color:var(--green)">'+(d.conversionRate||'0%')+'</div><div class="stat-label">Conversion</div></div>';
+    html+='<div class="stat-card"><div class="stat-val" style="color:var(--crimson)">'+(d.abandonmentRate||'0%')+'</div><div class="stat-label">Abandonment</div></div>';
+    html+='</div>';
+
+    // Per-invite breakdown
+    var byInvite=d.byInvite||{};
+    var codes=Object.keys(byInvite);
+    if(codes.length>0){
+      html+='<div class="section-title" style="font-size:10px;margin:12px 0 8px"><span class="section-icon">&rarr;</span> Per-Invite Consent Breakdown</div>';
+      html+='<div class="table-wrap"><table class="data-table"><thead><tr><th>Invite Code</th><th>Shown</th><th>Accepted</th><th>Declined</th><th>Conversion</th></tr></thead><tbody>';
+      for(var c of codes.sort()){
+        var inv=byInvite[c];
+        var cvr=inv.shown>0?((inv.accepted/inv.shown)*100).toFixed(0)+'%':'0%';
+        html+='<tr><td><code style="color:var(--accent)">'+c+'</code></td>';
+        html+='<td>'+fmt(inv.shown)+'</td>';
+        html+='<td style="color:var(--green)">'+fmt(inv.accepted)+'</td>';
+        html+='<td style="color:var(--crimson)">'+fmt(inv.declined)+'</td>';
+        html+='<td>'+cvr+'</td></tr>';
+      }
+      html+='</tbody></table></div>';
+    }
+
+    // Timeline
+    var timeline=d.timeline||[];
+    if(timeline.length>0){
+      html+='<div class="section-title" style="font-size:10px;margin:16px 0 8px"><span class="section-icon">&Xi;</span> Daily Timeline</div>';
+      html+='<div class="table-wrap"><table class="data-table"><thead><tr><th>Date</th><th>Shown</th><th>Accepted</th><th>Declined</th></tr></thead><tbody>';
+      for(var row of timeline){
+        html+='<tr><td>'+row.date+'</td><td>'+fmt(row.shown)+'</td><td style="color:var(--green)">'+fmt(row.accepted)+'</td><td style="color:var(--crimson)">'+fmt(row.declined)+'</td></tr>';
+      }
+      html+='</tbody></table></div>';
+    }
+
+    if(t.shown===0){
+      html+='<div class="empty-state">No consent events recorded yet. Events will appear once respondents interact with the consent form.</div>';
+    }
+
+    el.innerHTML=html;
+  }catch(e){
+    el.innerHTML='<div class="empty-state">Consent metrics unavailable: '+e.message+'</div>';
   }
 }
 
@@ -1117,18 +1443,223 @@ async function loadSessionResults(){
       };
     }
     renderSessionTable('all');
+    renderDomainAnalytics();
   }catch(e){
     el.innerHTML='<div class="empty-state">Session list unavailable: '+e.message+'<br><span style="font-size:10px;color:var(--text-muted)">Endpoint: /prototype-admin/sessions</span></div>';
   }
 }
+
+/* === 16c. DOMAIN CARDS + ASSESSMENT INTELLIGENCE (v3-style) === */
+function renderDomainAnalytics(){
+  if(!_allSessions||!_allSessions.length){
+    document.getElementById('domain-cards-sub').textContent='No sessions loaded';
+    document.getElementById('domain-cards-grid').innerHTML='<div class="empty-state" style="grid-column:1/-1">No session data available yet.</div>';
+    return;
+  }
+  /* Aggregate domain scores from ALL completed sessions.
+     Priority: posteriorScores (from Bayesian posteriors) > scoreArtifact.axisScores > scoreArtifact.domainScores */
+  var domainAgg={};
+  for(var i=0;i<DOMAIN_ORDER.length;i++){domainAgg[DOMAIN_ORDER[i]]={sum:0,count:0,scores:[],alphaSum:0,betaSum:0};}
+  var completedWithScores=0;
+  /* Also compute coverage counts */
+  var covCounts={};
+  for(var i=0;i<DOMAIN_ORDER.length;i++){covCounts[DOMAIN_ORDER[i]]=0;}
+  /* PRAI stats */
+  var praiScores=[],totalCompleted=0,totalQs=0;
+  for(var i=0;i<_allSessions.length;i++){
+    var s=_allSessions[i];
+    /* Coverage */
+    var dc=s.domainsCovered||[];
+    for(var j=0;j<dc.length;j++){var dn=dc[j].toLowerCase();if(covCounts[dn]!=null)covCounts[dn]++;}
+    /* Questions */
+    totalQs+=(s.questionsAnswered||0);
+    if(s.status==='completed')totalCompleted++;
+    if(s.praiScore!=null)praiScores.push(s.praiScore);
+    if(s.status!=='completed')continue;
+    /* === SOURCE 1: posteriorScores (most reliable — direct from Bayesian engine) === */
+    var ps=s.posteriorScores;
+    if(ps&&typeof ps==='object'){
+      var psKeys=Object.keys(ps);
+      var found=false;
+      for(var k=0;k<psKeys.length;k++){
+        var dKey=psKeys[k].toLowerCase();
+        if(domainAgg[dKey]&&ps[psKeys[k]]&&typeof ps[psKeys[k]].mean==='number'){
+          var score=ps[psKeys[k]].mean;
+          domainAgg[dKey].sum+=score;
+          domainAgg[dKey].count++;
+          domainAgg[dKey].scores.push(score);
+          domainAgg[dKey].alphaSum+=(ps[psKeys[k]].alpha||2);
+          domainAgg[dKey].betaSum+=(ps[psKeys[k]].beta||2);
+          found=true;
+        }
+      }
+      if(found){completedWithScores++;continue;}
+    }
+    /* === SOURCE 2: scoreArtifact (anonymous sessions) === */
+    var sa=s.scoreArtifact;
+    if(!sa)continue;
+    completedWithScores++;
+    var axS=sa.axisScores||null;
+    if(axS&&typeof axS==='object'&&!Array.isArray(axS)){
+      var axKeys=Object.keys(axS);
+      for(var k=0;k<axKeys.length;k++){
+        var dKey=axKeys[k].toLowerCase();
+        if(domainAgg[dKey]&&typeof axS[axKeys[k]]==='number'){
+          domainAgg[dKey].sum+=axS[axKeys[k]];
+          domainAgg[dKey].count++;
+          domainAgg[dKey].scores.push(axS[axKeys[k]]);
+        }
+      }
+    } else {
+      var ds=sa.domainScores||sa.domains||[];
+      if(Array.isArray(ds)){
+        for(var j=0;j<ds.length;j++){
+          var dd=ds[j];
+          var dName=(dd.domain||dd.name||'').toLowerCase();
+          if(domainAgg[dName]){
+            var score=dd.score!=null?dd.score:(dd.mean!=null?dd.mean*100:null);
+            if(score!=null){
+              domainAgg[dName].sum+=score;
+              domainAgg[dName].count++;
+              domainAgg[dName].scores.push(score);
+            }
+          }
+        }
+      }
+    }
+  }
+  /* Build domain cards HTML */
+  var DOMAIN_LABELS={curiosity:'Curiosity & Wonder',resilience:'Resilience & Grit',empathy:'Empathy & Compassion',systems:'Systems Thinking',character:'Character & Ethics',music:'Musical Intelligence',physical:'Physical Intelligence',spiritual:'Spiritual Awareness'};
+  var DOMAIN_SHORT={curiosity:'CUR',resilience:'RES',empathy:'EMP',systems:'SYS',character:'CHA',music:'MUS',physical:'PHY',spiritual:'SPI'};
+  var html='',bestDomain=null,bestScore=-1,weakDomain=null,weakScore=101;
+  for(var i=0;i<DOMAIN_ORDER.length;i++){
+    var d=DOMAIN_ORDER[i];
+    var agg=domainAgg[d];
+    var color=DOMAIN_COLORS[d];
+    var mean=agg.count>0?(agg.sum/agg.count):null;
+    var cov=covCounts[d]||0;
+    /* Track best/weakest */
+    if(mean!=null&&mean>bestScore){bestScore=mean;bestDomain=d;}
+    if(mean!=null&&mean<weakScore){weakScore=mean;weakDomain=d;}
+    /* Score display */
+    var scoreDisplay=mean!=null?mean.toFixed(1):'\u2014';
+    var barWidth=mean!=null?Math.max(2,mean)+'%':'0%';
+    /* Alpha/beta: use real posterior values if available, else estimate */
+    var alphaVal=agg.alphaSum>0?(agg.alphaSum/agg.count).toFixed(1):(agg.count>0?(2+agg.sum/100*agg.count).toFixed(1):'2.0');
+    var betaVal=agg.betaSum>0?(agg.betaSum/agg.count).toFixed(1):(agg.count>0?(2+(1-agg.sum/100/agg.count)*agg.count).toFixed(1):'2.0');
+    var statsLine=agg.count>0?'n='+agg.count+' \u00b7 \u03b1'+alphaVal+' \u03b2'+betaVal:(cov>0?cov+' sessions probed':'No data');
+    html+='<div style="background:var(--bg3);padding:12px 14px;border-radius:8px;border-left:4px solid '+color+';transition:border-color 0.2s">';
+    html+='<div style="font-size:10px;font-weight:700;color:'+color+';text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px">'+DOMAIN_SHORT[d]+'</div>';
+    html+='<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:6px">';
+    html+='<span style="font-size:10px;color:var(--text-dim)">'+DOMAIN_LABELS[d]+'</span>';
+    html+='</div>';
+    /* Score bar */
+    html+='<div style="background:var(--bg);border-radius:3px;height:6px;overflow:hidden;margin-bottom:6px">';
+    html+='<div style="height:100%;width:'+barWidth+';background:'+color+';border-radius:3px;transition:width 0.8s"></div>';
+    html+='</div>';
+    /* Score value + stats */
+    html+='<div style="display:flex;justify-content:space-between;align-items:baseline">';
+    html+='<span style="font-size:18px;font-weight:700;color:'+color+';font-variant-numeric:tabular-nums">'+scoreDisplay+'</span>';
+    html+='<span style="font-size:9px;color:var(--text-muted);font-variant-numeric:tabular-nums">'+statsLine+'</span>';
+    html+='</div>';
+    html+='</div>';
+  }
+  document.getElementById('domain-cards-grid').innerHTML=html;
+  document.getElementById('domain-cards-sub').textContent=completedWithScores+' scored sessions \u00b7 '+_allSessions.length+' total \u00b7 Beta posterior means';
+  /* Strength / Explore badges (like v3 results) */
+  var badgesHtml='';
+  if(bestDomain&&bestScore>0){
+    badgesHtml+='<div style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;background:rgba(61,214,140,0.1);border:1px solid rgba(61,214,140,0.3)">';
+    badgesHtml+='<span style="color:var(--green);font-weight:700;font-size:11px">\u2605 STRENGTH:</span>';
+    badgesHtml+='<span style="color:var(--green);font-size:11px">'+bestDomain.charAt(0).toUpperCase()+bestDomain.slice(1)+' ('+bestScore.toFixed(1)+'%)</span>';
+    badgesHtml+='</div>';
+  }
+  if(weakDomain&&weakScore<100&&weakDomain!==bestDomain){
+    badgesHtml+='<div style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;background:rgba(78,201,224,0.1);border:1px solid rgba(78,201,224,0.3)">';
+    badgesHtml+='<span style="color:var(--cyan);font-weight:700;font-size:11px">\u25CF EXPLORE:</span>';
+    badgesHtml+='<span style="color:var(--cyan);font-size:11px">'+weakDomain.charAt(0).toUpperCase()+weakDomain.slice(1)+' ('+weakScore.toFixed(1)+'%)</span>';
+    badgesHtml+='</div>';
+  }
+  document.getElementById('domain-badges').innerHTML=badgesHtml;
+
+  /* === ASSESSMENT INTELLIGENCE PANEL === */
+  var total=_allSessions.length;
+  var compRate=total>0?(totalCompleted/total*100).toFixed(1):'0';
+  var avgQs=total>0?(totalQs/total).toFixed(1):'0';
+  /* PRAI distribution */
+  var praiGreen=0,praiAmber=0,praiRed=0;
+  for(var i=0;i<praiScores.length;i++){
+    if(praiScores[i]>=0.8)praiGreen++;
+    else if(praiScores[i]>=0.5)praiAmber++;
+    else praiRed++;
+  }
+  var avgPrai=praiScores.length>0?(praiScores.reduce(function(a,b){return a+b},0)/praiScores.length):null;
+  /* Domain coverage */
+  var fullCoverage=0;
+  for(var i=0;i<_allSessions.length;i++){
+    if((_allSessions[i].domainsCovered||[]).length>=8)fullCoverage++;
+  }
+  var ih='';
+  /* Row 1: Key metrics */
+  ih+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">';
+  ih+='<div style="background:var(--bg3);padding:10px 12px;border-radius:6px;text-align:center">';
+  ih+='<div style="font-size:22px;font-weight:700;color:var(--green)">'+compRate+'%</div>';
+  ih+='<div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Completion Rate</div>';
+  ih+='<div style="font-size:9px;color:var(--text-dim)">'+totalCompleted+' of '+total+'</div>';
+  ih+='</div>';
+  ih+='<div style="background:var(--bg3);padding:10px 12px;border-radius:6px;text-align:center">';
+  ih+='<div style="font-size:22px;font-weight:700;color:var(--cyan)">'+avgQs+'</div>';
+  ih+='<div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Avg Questions</div>';
+  ih+='<div style="font-size:9px;color:var(--text-dim)">per session</div>';
+  ih+='</div>';
+  ih+='<div style="background:var(--bg3);padding:10px 12px;border-radius:6px;text-align:center">';
+  ih+='<div style="font-size:22px;font-weight:700;color:'+(avgPrai!=null?(avgPrai>=0.8?'var(--green)':avgPrai>=0.5?'var(--orange)':'var(--crimson)'):'var(--text-dim)')+'">'+(avgPrai!=null?(avgPrai*100).toFixed(0)+'%':'\u2014')+'</div>';
+  ih+='<div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Avg PRAI</div>';
+  ih+='<div style="font-size:9px;color:var(--text-dim)">'+praiScores.length+' scored</div>';
+  ih+='</div>';
+  ih+='</div>';
+  /* Row 2: PRAI distribution bar */
+  if(praiScores.length>0){
+    var pTotal=praiGreen+praiAmber+praiRed;
+    ih+='<div style="margin-bottom:12px">';
+    ih+='<div style="font-size:9px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px">PRAI Quality Distribution</div>';
+    ih+='<div style="display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--bg3)">';
+    if(praiGreen)ih+='<div style="width:'+(praiGreen/pTotal*100)+'%;background:var(--green)" title="Good: '+praiGreen+'"></div>';
+    if(praiAmber)ih+='<div style="width:'+(praiAmber/pTotal*100)+'%;background:var(--orange)" title="Moderate: '+praiAmber+'"></div>';
+    if(praiRed)ih+='<div style="width:'+(praiRed/pTotal*100)+'%;background:var(--crimson)" title="Low: '+praiRed+'"></div>';
+    ih+='</div>';
+    ih+='<div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-muted);margin-top:4px">';
+    ih+='<span style="color:var(--green)">\u25CF '+praiGreen+' good (\u226580%)</span>';
+    ih+='<span style="color:var(--orange)">\u25CF '+praiAmber+' moderate</span>';
+    ih+='<span style="color:var(--crimson)">\u25CF '+praiRed+' low (<50%)</span>';
+    ih+='</div></div>';
+  }
+  /* Row 3: Engine transparency (inspired by v3) */
+  ih+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 14px">';
+  ih+='<div style="font-size:9px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">Engine Transparency</div>';
+  var flaggedSessions=0,valenceFlagCount=0;
+  for(var i=0;i<_allSessions.length;i++){
+    var vf=_allSessions[i].valenceFlags;
+    if(vf&&vf.length>0){flaggedSessions++;valenceFlagCount+=vf.length;}
+  }
+  ih+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:10px">';
+  ih+='<div><span style="color:var(--text-muted)">Answer shuffling:</span> <span style="color:var(--green)">\u2713 Fisher-Yates</span></div>';
+  ih+='<div><span style="color:var(--text-muted)">Position bias:</span> <span style="color:var(--green)">\u2713 Eliminated</span></div>';
+  ih+='<div><span style="color:var(--text-muted)">Valence flags:</span> <span style="color:'+(valenceFlagCount>0?'var(--orange)':'var(--green)')+'">'+(valenceFlagCount>0?valenceFlagCount+' across '+flaggedSessions+' sessions':'clean')+'</span></div>';
+  ih+='<div><span style="color:var(--text-muted)">Full coverage:</span> <span style="color:var(--cyan)">'+fullCoverage+'/'+total+' (8/8 domains)</span></div>';
+  ih+='<div><span style="color:var(--text-muted)">Bayesian engine:</span> <span style="color:var(--cyan)">Beta(2,2) priors</span></div>';
+  ih+='<div><span style="color:var(--text-muted)">Scored sessions:</span> <span style="color:var(--gold)">'+completedWithScores+'</span></div>';
+  ih+='</div></div>';
+  document.getElementById('assessment-intel-content').innerHTML=ih;
+}
 function renderSessionTable(filter){
   var el=document.getElementById('sessions-explorer-content');
-  var sessions=filter==='all'?_allSessions:_allSessions.filter(function(s){return s.status===filter});
+  var sessions=filter==='all'?_allSessions:(filter==='anonymous'?_allSessions.filter(function(s){return s.collection==='anonymous_sessions'}):_allSessions.filter(function(s){return s.status===filter}));
   var m=_sessionsMeta;
   var badge=document.getElementById('session-count-badge');
   if(badge){
     var parts=[];
-    if(m.byRole){parts.push(m.byRole.child+' child, '+m.byRole.parent+' parent, '+m.byRole.teacher+' teacher');}
+    if(m.byRole){parts.push(m.byRole.child+' child, '+m.byRole.parent+' parent, '+m.byRole.teacher+' teacher'+(m.byRole.anonymous?', '+m.byRole.anonymous+' anonymous':''));}
     badge.textContent=m.total+' total \u00b7 '+parts.join(' \u00b7 ');
   }
   if(!sessions.length){
@@ -1142,7 +1673,7 @@ function renderSessionTable(filter){
     var s=sessions[i];
     var sid=s.sessionId||'\u2014';
     var shortSid=typeof sid==='string'?(sid.length>14?sid.slice(0,14)+'\u2026':sid):sid;
-    var roleBadge=s.role==='child'?'<span class="badge badge-gold">child</span>':(s.role==='parent'?'<span class="badge badge-info">parent</span>':'<span class="badge" style="background:rgba(169,122,212,0.15);color:var(--purple);border:1px solid rgba(169,122,212,0.3)">teacher</span>');
+    var roleBadge=s.role==='child'?'<span class="badge badge-gold">child</span>':(s.role==='parent'?'<span class="badge badge-info">parent</span>':(s.role==='teacher'?'<span class="badge" style="background:rgba(169,122,212,0.15);color:var(--purple);border:1px solid rgba(169,122,212,0.3)">teacher</span>':'<span class="badge" style="background:rgba(16,185,129,0.15);color:var(--green);border:1px solid rgba(16,185,129,0.3)">'+(s.role||'anon')+'</span>'));
     var statusBadge=s.status==='completed'?'<span class="badge badge-success">completed</span>':(s.status==='active'?'<span class="badge badge-warn">active</span>':(s.status==='paused'?'<span class="badge badge-info">paused</span>':'<span class="badge badge-error">'+(s.status||'unknown')+'</span>'));
     var praiStr='\u2014';
     if(s.praiScore!=null){
@@ -1155,7 +1686,7 @@ function renderSessionTable(filter){
     var flagBadge=flagCount>0?'<span class="badge badge-error">'+flagCount+'</span>':'<span style="color:var(--green)">✓</span>';
     var started=s.startedAt?new Date(s.startedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit'}):'\u2014';
     var termReason=s.terminationReason?' title="Termination: '+s.terminationReason+'"':'';
-    html+='<tr style="cursor:pointer" onclick="drillSession(\''+sid+'\')"'+termReason+'>';
+    html+='<tr style="cursor:pointer" data-sid="'+sid+'" onclick="drillSession(\''+sid+'\')"'+termReason+'>';
     html+='<td style="font-size:9px;color:var(--cyan)" title="'+sid+'">'+shortSid+'</td>';
     html+='<td>'+roleBadge+'</td>';
     html+='<td>'+statusBadge+'</td>';
@@ -1174,10 +1705,28 @@ function renderSessionTable(filter){
 
 /* === 16b. SESSION DRILL-DOWN (PRAI, Scores, Flags, Q&A) === */
 async function drillSession(sid){
-  var el=document.getElementById('session-drilldown');
-  if(!el)return;
-  el.innerHTML='<div class="section-loading">Loading full analysis for '+sid.slice(0,14)+'&hellip;</div>';
-  el.scrollIntoView({behavior:'smooth',block:'start'});
+  /* Remove any existing inline detail row — toggle closed if same session */
+  var existing=document.getElementById('drill-detail-row');
+  if(existing){
+    var wasSame=existing.dataset.drillSid===sid;
+    existing.remove();
+    if(wasSame)return;
+  }
+  /* Find the clicked row and insert a detail <tr> directly after it */
+  var sourceRow=document.querySelector('tr[data-sid="'+sid+'"]');
+  var detailTr=document.createElement('tr');
+  detailTr.id='drill-detail-row';
+  detailTr.dataset.drillSid=sid;
+  detailTr.innerHTML='<td colspan="10" style="padding:0"><div style="padding:12px" class="section-loading">Loading full analysis for '+sid.slice(0,14)+'\u2026</div></td>';
+  if(sourceRow&&sourceRow.parentNode){
+    sourceRow.parentNode.insertBefore(detailTr,sourceRow.nextSibling);
+    detailTr.scrollIntoView({behavior:'smooth',block:'nearest'});
+  } else {
+    /* fallback: old bottom div */
+    var fb=document.getElementById('session-drilldown');
+    if(fb){fb.innerHTML='<div class="section-loading">Loading&hellip;</div>';}
+  }
+  var el=detailTr.querySelector('td');
   try{
     var raw=await api('GET','/prototype/session-results/'+sid);
     var d=raw.data||raw;
@@ -1185,7 +1734,7 @@ async function drillSession(sid){
     /* Also find session summary from our cached list */
     var sessSummary=_allSessions.find(function(s){return s.sessionId===sid})||{};
     var html='<div style="border:1px solid var(--gold);border-radius:8px;padding:16px;margin-bottom:16px;background:var(--bg2)">';
-    html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="color:var(--gold);font-size:14px;margin:0">Session: '+sid.slice(0,20)+'</h3><button class="btn-sm" onclick="document.getElementById(\'session-drilldown\').innerHTML=\'\'" style="background:var(--bg3);color:var(--text-dim);border:1px solid var(--border)">Close ✕</button></div>';
+    html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="color:var(--gold);font-size:14px;margin:0">Session: '+sid.slice(0,20)+'</h3><button class="btn-sm" onclick="var dr=document.getElementById(\'drill-detail-row\');if(dr)dr.remove();" style="background:var(--bg3);color:var(--text-dim);border:1px solid var(--border)">Close ✕</button></div>';
     html+='<div class="drill-tabs">';
     html+='<button class="drill-tab drill-active" onclick="switchDrillTab(this,\'scores\')">\u25c8 Scores</button>';
     html+='<button class="drill-tab" onclick="switchDrillTab(this,\'prai\')">\u0936 Authenticity</button>';
@@ -1195,6 +1744,18 @@ async function drillSession(sid){
     html+='<button class="drill-tab" onclick="switchDrillTab(this,\'learning\')">\u2261 Learning</button>';
     html+='<button class="drill-tab" onclick="switchDrillTab(this,\'meta\')">\u2139 Meta</button>';
     html+='</div>';
+
+    /* ── Status-aware banner for non-completed sessions ── */
+    var sessStatus=sessSummary.status||d.status||'unknown';
+    if(sessStatus==='active'||sessStatus==='paused'){
+      html+='<div style="padding:10px 14px;margin-bottom:12px;background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.3);border-radius:6px;font-size:11px;color:var(--gold)"><strong>\u23f3 Session '+sessStatus+'</strong> \u2014 Scores, PRAI, and learning suggestions are computed at completion. Data shown below may be empty or partial.</div>';
+    }else if(sessStatus==='expired'){
+      html+='<div style="padding:10px 14px;margin-bottom:12px;background:rgba(229,69,69,0.08);border:1px solid rgba(229,69,69,0.2);border-radius:6px;font-size:11px;color:var(--crimson)"><strong>\u23f0 Session expired</strong> \u2014 This session timed out before completion. No scoring artifacts were generated.</div>';
+    }else if(sessStatus==='completed'&&!d.scoreArtifact&&!(d.prai&&d.prai.score!=null)){
+      var errMsg=sessSummary.scoringError||d.scoringError||'';
+      html+='<div style="padding:10px 14px;margin-bottom:12px;background:rgba(229,69,69,0.08);border:1px solid rgba(229,69,69,0.2);border-radius:6px;font-size:11px;color:var(--crimson)"><strong>\u26a0 Scoring error</strong> \u2014 This session completed but no score artifact was generated. '+(errMsg?'Error: <code>'+errMsg+'</code>':'Check API logs for details.')+'</div>';
+    }
+
     html+='<div class="drill-panel drill-visible" data-drill="scores"><div class="findings-grid">';
 
     /* ── 1. SCORE ARTIFACT ── */
@@ -1229,6 +1790,7 @@ async function drillSession(sid){
       }
       /* ── Domain Radar Chart canvas ── */
       html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-cyan">◎ RADAR</span></div><div class="finding-title">Domain Profile</div><div class="finding-body"><canvas id="drillRadarChart" width="280" height="280"></canvas></div></div>';
+      html+='</div></div>'; /* close finding-body + finding-card (DOMAIN SCORES) */
     }else{
       html+='<div class="finding-card" style="grid-column:1/-1"><div class="finding-badge"><span class="badge badge-gold">◈ SCORES</span></div><div class="finding-title">No Score Artifact</div><div class="finding-body" style="color:var(--text-muted)"><div style="font-size:11px">Deterministic score artifact not available for this session.</div>';
       if(sessSummary.status!=='completed')html+='<div style="font-size:9px;margin-top:6px">Session is <strong>'+(sessSummary.status||'unknown')+'</strong> — scores are computed upon completion.</div>';
@@ -1247,7 +1809,10 @@ async function drillSession(sid){
       var praiPct=(prai.score*100).toFixed(1);
       var prClr=prai.score>=0.8?'var(--green)':(prai.score>=0.5?'var(--orange)':'var(--crimson)');
       html+='<div style="text-align:center;margin-bottom:12px"><span style="font-size:28px;font-weight:700;color:'+prClr+'">'+praiPct+'%</span><br><span style="font-size:10px;color:var(--text-dim)">1.0 = fully authentic · 0.0 = entirely performed</span></div>';
-      html+='<canvas id="drillPraiChart" width="300" height="180" style="margin:8px auto;display:block"></canvas>';
+      html+='<canvas id="drillPraiChart" width="300" height="100" style="margin:8px auto;display:block"></canvas>';
+      html+='<div style="font-size:9px;color:var(--text-dim);text-align:center;margin:4px 0 8px 0">Authenticity Score (higher = better)</div>';
+      html+='<canvas id="drillPenaltyChart" width="300" height="140" style="margin:8px auto;display:block"></canvas>';
+      html+='<div style="font-size:9px;color:var(--text-dim);text-align:center;margin:4px 0 8px 0">\u2190 Inauthenticity Signals (lower = better)</div>';
       html+='<table class="data-table" style="font-size:10px;margin-top:10px"><thead><tr><th>Signal</th><th>Sanskrit</th><th>Penalty</th><th>Mathematical Interpretation</th></tr></thead><tbody>';
       html+='<tr><td style="color:var(--cyan)">Streak Penalty</td><td style="color:var(--text-dim)">Dharmopādhā</td><td style="font-weight:600;color:'+(prai.streakPenalty>0.3?'var(--crimson)':'var(--green)')+'">'+fmtDec(prai.streakPenalty,3)+'</td>';
       html+='<td style="font-size:9px">'+interpretStreak(prai.streakPenalty)+'</td></tr>';
@@ -1296,7 +1861,11 @@ async function drillSession(sid){
       html+='<div style="margin-top:6px;padding:4px 8px;background:var(--bg3);border-radius:4px;font-size:8px;color:var(--text-muted)">CV = coefficient of variation across paired questions in the same construct group. GENUINE (CV&lt;0.15): highly consistent. STABLE (0.15≤0.30): normal variation. VARIABLE (0.30≤0.50): notable inconsistency — may indicate confusion or context-sensitivity. PERFORMED (CV≥0.50): suspiciously inconsistent — potential gaming, modifier applied as score multiplier.</div>';
     }
     if(!valenceFlags.length&&!consistencyFlags.length){
-      html+='<div style="color:var(--green);margin-top:6px">✓ No flags or consistency warnings — session response pattern is clean</div>';
+      if(sessStatus!=='completed'){
+        html+='<div style="color:var(--gold);margin-top:6px">\u23f3 Session not yet complete \u2014 flags are computed at completion.</div>';
+      }else{
+        html+='<div style="color:var(--green);margin-top:6px">\u2713 No flags or consistency warnings \u2014 session response pattern is clean</div>';
+      }
     }
     html+='</div></div>';
 
@@ -1331,10 +1900,19 @@ async function drillSession(sid){
           var ansTxt=ap.answerText||ap.text||ap.answerId||(qa.answer?'selected':('<span style="color:var(--crimson)">✘ unanswered</span>'));
           var qTime=qa.question.timestamp?new Date(qa.question.timestamp).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'\u2014';
           var rt='\u2014';
-          if(qa.question.timestamp&&qa.answer&&qa.answer.timestamp){
-            var ms=new Date(qa.answer.timestamp)-new Date(qa.question.timestamp);
-            rt=(ms/1000).toFixed(1)+'s';
-            if(ms<2000)rt='<span style="color:var(--crimson)" title="Very fast response (<2s) may indicate pre-decided answer">'+rt+' ⚡</span>';
+          var rtMs=0;
+          /* Priority 1: responseTimeMs from answer payload (always accurate when present) */
+          if(ap.responseTimeMs&&ap.responseTimeMs>0){
+            rtMs=ap.responseTimeMs;
+          /* Priority 2: timestamp diff (only if timestamps are distinct) */
+          }else if(qa.question.timestamp&&qa.answer&&qa.answer.timestamp){
+            var diff=new Date(qa.answer.timestamp)-new Date(qa.question.timestamp);
+            if(diff>0)rtMs=diff;
+          }
+          if(rtMs>0){
+            rt=(rtMs/1000).toFixed(1)+'s';
+            if(rtMs<2000)rt='<span style="color:var(--crimson)" title="Very fast response (<2s) may indicate pre-decided answer">'+rt+' \u26a1</span>';
+            else if(rtMs>30000)rt='<span style="color:var(--orange)" title="Slow response (>30s)">'+rt+' \u23f3</span>';
           }
           html+='<tr><td>'+(i+1)+'</td><td style="color:var(--cyan)">'+domain+'</td><td>'+qText+'</td><td>'+ansTxt+'</td><td style="color:var(--text-dim)">'+qTime+'</td><td>'+rt+'</td></tr>';
         }
@@ -1363,37 +1941,70 @@ async function drillSession(sid){
 
     html+='</div></div>';
     html+='<div class="drill-panel" data-drill="report"><div class="findings-grid">';
-    /* ── 5. REPORT (if generated) ── */
+    /* ── 5. REPORT (structured 2-page renderer) ── */
     if(d.report){
-      html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-success">◎ NARRATIVE REPORT</span></div><div class="finding-title">2-Page Report</div><div class="finding-body">';
       var rp=d.report;
+      /* ── PAGE 1 ── */
+      html+='<div class="finding-card" style="grid-column:1/-1"><div class="finding-badge"><span class="badge badge-success">\u25ce PAGE 1 \u2014 Assessment Overview</span></div><div class="finding-title">Quantitative Summary</div><div class="finding-body">';
       if(rp.page1){
+        /* Summary Bullets */
         if(rp.page1.summaryBullets&&rp.page1.summaryBullets.length){
-          html+='<div style="margin-bottom:8px"><strong style="font-size:10px;color:var(--text-dim)">Summary:</strong><ul style="margin:4px 0 0 16px;font-size:10px">';
+          html+='<div style="margin-bottom:12px"><div style="font-size:10px;font-weight:600;color:var(--cyan);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">\u25b8 Key Findings</div>';
+          html+='<ul style="margin:0 0 0 16px;font-size:10px;line-height:1.7">';
           for(var i=0;i<rp.page1.summaryBullets.length;i++){html+='<li>'+rp.page1.summaryBullets[i]+'</li>';}
           html+='</ul></div>';
         }
+        /* Radar Data Summary */
+        if(rp.page1.radarData&&rp.page1.radarData.length){
+          html+='<div style="margin-bottom:12px"><div style="font-size:10px;font-weight:600;color:var(--cyan);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">\u25b8 Domain Scores</div>';
+          html+='<div style="display:flex;flex-wrap:wrap;gap:6px">';
+          for(var i=0;i<rp.page1.radarData.length;i++){
+            var rd=rp.page1.radarData[i];
+            var rdClr=rd.score>=70?'var(--green)':(rd.score>=40?'var(--gold)':'var(--crimson)');
+            html+='<span style="padding:3px 8px;background:var(--bg3);border:1px solid '+rdClr+';border-radius:4px;font-size:9px"><span style="color:var(--text-dim)">'+domainLabel(rd.domain)+'</span> <strong style="color:'+rdClr+'">'+fmtDec(rd.score,1)+'%</strong></span>';
+          }
+          html+='</div></div>';
+        }
+        /* Divergence Table */
         if(rp.page1.divergenceTable&&rp.page1.divergenceTable.length){
-          html+='<div style="margin-bottom:8px"><strong style="font-size:10px;color:var(--text-dim)">Divergence Table:</strong>';
+          html+='<div style="margin-bottom:8px"><div style="font-size:10px;font-weight:600;color:var(--cyan);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">\u25b8 Multi-Vertex Divergence</div>';
           html+='<table class="data-table" style="font-size:9px;margin-top:4px"><thead><tr><th>Domain</th><th>Child</th><th>Parent</th><th>Teacher</th><th>Divergence</th><th>Direction</th></tr></thead><tbody>';
           for(var i=0;i<rp.page1.divergenceTable.length;i++){
             var dv=rp.page1.divergenceTable[i];
-            html+='<tr><td style="color:var(--cyan)">'+dv.domain+'</td><td>'+(dv.childScore!=null?fmtDec(dv.childScore,1):'\u2014')+'</td><td>'+(dv.parentScore!=null?fmtDec(dv.parentScore,1):'\u2014')+'</td><td>'+(dv.teacherScore!=null?fmtDec(dv.teacherScore,1):'\u2014')+'</td><td style="font-weight:600;color:'+(dv.divergence>20?'var(--crimson)':'var(--green)')+'">'+fmtDec(dv.divergence,1)+'</td><td>'+(dv.direction||'\u2014')+'</td></tr>';
+            html+='<tr><td style="color:var(--cyan)">'+domainLabel(dv.domain)+'</td><td>'+(dv.childScore!=null?fmtDec(dv.childScore,1):'\u2014')+'</td><td>'+(dv.parentScore!=null?fmtDec(dv.parentScore,1):'\u2014')+'</td><td>'+(dv.teacherScore!=null?fmtDec(dv.teacherScore,1):'\u2014')+'</td><td style="font-weight:600;color:'+(dv.divergence>20?'var(--crimson)':'var(--green)')+'">'+fmtDec(dv.divergence,1)+'</td><td>'+(dv.direction||'\u2014')+'</td></tr>';
           }
           html+='</tbody></table></div>';
         }
       }
+      html+='</div></div>';
+
+      /* ── PAGE 2 ── */
+      html+='<div class="finding-card" style="grid-column:1/-1"><div class="finding-badge"><span class="badge badge-success">\u25ce PAGE 2 \u2014 Qualitative Analysis</span></div><div class="finding-title">Narrative &amp; Growth Guidance</div><div class="finding-body">';
       if(rp.page2){
-        if(rp.page2.observationalSummary)html+='<div style="margin-bottom:6px"><strong style="font-size:10px;color:var(--text-dim)">Observational:</strong> <span style="font-size:10px">'+rp.page2.observationalSummary+'</span></div>';
+        /* Observational Summary */
+        if(rp.page2.observationalSummary){
+          html+='<div style="margin-bottom:12px"><div style="font-size:10px;font-weight:600;color:var(--cyan);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">\u25b8 Observational Summary</div>';
+          html+='<div style="font-size:10px;line-height:1.6;padding:8px 10px;background:var(--bg3);border-radius:6px;border-left:3px solid var(--cyan)">'+rp.page2.observationalSummary+'</div></div>';
+        }
+        /* Contextual Explanation */
+        if(rp.page2.contextualExplanation){
+          html+='<div style="margin-bottom:12px"><div style="font-size:10px;font-weight:600;color:var(--cyan);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">\u25b8 Contextual Explanation</div>';
+          html+='<div style="font-size:10px;line-height:1.6;padding:8px 10px;background:var(--bg3);border-radius:6px;border-left:3px solid var(--gold)">'+rp.page2.contextualExplanation+'</div></div>';
+        }
+        /* Growth Directions */
         if(rp.page2.growthDirections&&rp.page2.growthDirections.length){
-          html+='<div><strong style="font-size:10px;color:var(--text-dim)">Growth Directions:</strong><ul style="margin:4px 0 0 16px;font-size:10px">';
-          for(var i=0;i<rp.page2.growthDirections.length;i++){html+='<li>'+rp.page2.growthDirections[i]+'</li>';}
+          html+='<div style="margin-bottom:8px"><div style="font-size:10px;font-weight:600;color:var(--cyan);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">\u25b8 Growth Directions</div>';
+          html+='<ul style="margin:0 0 0 16px;font-size:10px;line-height:1.7">';
+          for(var i=0;i<rp.page2.growthDirections.length;i++){
+            html+='<li style="margin-bottom:4px">'+rp.page2.growthDirections[i]+'</li>';
+          }
           html+='</ul></div>';
         }
       }
+      html+='<div style="margin-top:8px;padding:4px 8px;background:var(--bg3);border-radius:4px;font-size:8px;color:var(--text-muted)">Engine: '+(rp.engine_version||'\u2014')+' \u00b7 Generated: '+(rp.generatedAt?new Date(rp.generatedAt).toLocaleString('en-IN'):'\u2014')+' \u00b7 Report ID: '+(rp.reportId||'\u2014').slice(0,14)+'</div>';
       html+='</div></div>';
     }else{
-      html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">◎ REPORT</span></div><div class="finding-title">No Report Generated</div><div class="finding-body" style="color:var(--text-muted)"><div style="font-size:11px">Narrative report not available for this session.</div><div style="font-size:9px;margin-top:6px">Reports are auto-generated when a session completes via the prototype engine. For sessions completed before the prototype integration, the report is generated on-the-fly when you expand the session.</div></div></div>';
+      html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">\u25ce REPORT</span></div><div class="finding-title">No Report Generated</div><div class="finding-body" style="color:var(--text-muted)"><div style="font-size:11px">'+(sessStatus!=='completed'?'Session not yet complete \u2014 reports are generated at completion.':'Narrative report not available for this session.')+'</div><div style="font-size:9px;margin-top:6px">Reports are auto-generated when a session completes via the prototype engine. For sessions completed before the prototype integration, the report is generated on-the-fly when you expand the session.</div></div></div>';
     }
 
     html+='</div></div>';
@@ -1418,8 +2029,119 @@ async function drillSession(sid){
     }
 
     html+='</div></div>';
+    html+='<div class="drill-panel" data-drill="genqs"><div class="findings-grid">';
+    /* ── 7B. GENERATED FOLLOW-UP QUESTIONS ── */
+    if(d.generatedQuestions&&d.generatedQuestions.length){
+      html+='<div class="finding-card" style="grid-column:1/-1"><div class="finding-badge"><span class="badge badge-info">◈ '+d.generatedQuestions.length+' GENERATED QUESTIONS</span></div><div class="finding-title">Engine-Generated Follow-Up Probes</div><div class="finding-body">';
+      html+='<div style="font-size:10px;color:var(--text-dim);margin-bottom:10px">Rule-based questions generated from domain score analysis. Targets domains with highest posterior uncertainty. Tag: <span class="badge badge-info" style="font-size:8px">Created by engine</span></div>';
+      for(var gqi=0;gqi<d.generatedQuestions.length;gqi++){
+        var gq=d.generatedQuestions[gqi];
+        var bandColor=gq.scoreBand==='low'?'var(--crimson)':(gq.scoreBand==='mid'?'var(--gold)':'var(--cyan)');
+        var sim=gq.similarity||null;
+        html+='<div style="margin-bottom:10px;padding:10px 12px;background:var(--bg3);border-radius:6px;border-left:3px solid '+bandColor+'">';
+        html+='<div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;margin-bottom:6px;flex-wrap:wrap;gap:6px">';
+        html+='<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span style="color:'+bandColor+';font-weight:600">'+domainLabel(gq.domain)+'</span> '+renderSimilarityBadge(sim);
+        if(sim&&sim.topMatches&&sim.topMatches.length){html+=' <button onclick="document.getElementById(\'sim-panel-drill-'+gq.id+'\').style.display=document.getElementById(\'sim-panel-drill-'+gq.id+'\').style.display===\'none\'?\'block\':\'none\'" style="background:var(--bg1);border:1px solid var(--border);color:var(--cyan);padding:2px 8px;border-radius:4px;font-size:9px;cursor:pointer">▸ Compare</button>';}
+        html+='</div>';
+        html+='<span style="color:var(--text-muted)">Score: '+(gq.sourceScore!=null?gq.sourceScore.toFixed(1)+'%':'\u2014')+' \u00b7 Band: <span class="badge badge-'+(gq.scoreBand==='low'?'warn':(gq.scoreBand==='mid'?'info':'success'))+'">'+gq.scoreBand+'</span> \u00b7 <span class="badge badge-warn">'+gq.status+'</span></span></div>';
+        html+='<div style="font-size:12px;font-weight:500;color:var(--text-primary);line-height:1.5;margin-bottom:8px">\u2753 '+gq.text+'</div>';
+        if(gq.answers&&gq.answers.length){
+          html+='<div style="font-size:10px;color:var(--text-muted);margin-bottom:4px">Answer options:</div>';
+          for(var ai=0;ai<gq.answers.length;ai++){
+            var ans=gq.answers[ai];
+            var gradeColor=ans.grade==='S'?'var(--gold)':(ans.grade==='A'?'var(--cyan)':(ans.grade==='B'?'var(--pass)':(ans.grade==='C'?'var(--text-muted)':'var(--crimson)')));
+            html+='<div style="font-size:10px;padding:3px 6px;margin:2px 0;display:flex;gap:8px;align-items:baseline"><span style="color:'+gradeColor+';font-weight:600;min-width:14px">'+ans.grade+'</span><span style="color:var(--text-dim)">'+ans.text+'</span></div>';
+          }
+        }
+        /* Similarity panel (collapsed by default) */
+        html+=renderSimilarityPanel(sim,'drill-'+gq.id);
+        if(gq.rationale)html+='<div style="font-size:9px;color:var(--text-muted);margin-top:6px;font-style:italic;border-top:1px solid var(--border);padding-top:4px">\ud83d\udca1 '+gq.rationale+'</div>';
+        html+='<div style="display:flex;gap:8px;margin-top:8px;justify-content:flex-end" id="drill-genq-actions-'+gq.id+'">';
+        if(gq.status==='engine_review'){
+          html+='<button class="btn-sm" style="background:var(--green);color:#000;border:none;cursor:pointer;font-size:10px;padding:4px 10px;border-radius:4px" onclick="approveGenQ(\''+gq.id+'\')">✓ Approve</button>';
+          html+='<button class="btn-sm" style="background:var(--crimson);color:#fff;border:none;cursor:pointer;font-size:10px;padding:4px 10px;border-radius:4px" onclick="rejectGenQ(\''+gq.id+'\')">✗ Reject</button>';
+        }else{
+          html+='<span class="badge badge-'+(gq.status==='approved'?'ok':'warn')+'">'+gq.status+'</span>';
+        }
+        html+='</div>';
+        html+='</div>';
+      }
+      html+='</div></div>';
+    }else{
+      html+='<div class="finding-card" style="grid-column:1/-1"><div class="finding-badge"><span class="badge badge-info">◈ GENERATED Qs</span></div><div class="finding-title">No Follow-Up Questions Generated</div><div class="finding-body" style="color:var(--text-muted)"><div style="font-size:11px">No engine-generated follow-up questions for this session.</div><div style="font-size:9px;margin-top:6px">Questions are generated from sessions with score artifacts. Re-expand to trigger generation.</div></div></div>';
+    }
+    html+='</div></div>';
+    html+='<div class="drill-panel" data-drill="attribution"><div class="findings-grid">';
+    /* ── 7C. SCORE ATTRIBUTION (paper-cited evidence chain) ── */
+    var attrib=d.attribution;
+    if(attrib&&attrib.domains&&attrib.domains.length){
+      html+='<div class="finding-card" style="grid-column:1/-1"><div class="finding-badge"><span class="badge badge-gold">◈ SCORE ATTRIBUTION</span></div><div class="finding-title">Why These Scores Were Achieved</div><div class="finding-body">';
+      /* Methodology Overview */
+      html+='<div style="margin-bottom:14px;padding:12px;background:var(--bg3);border-radius:6px;border-left:3px solid var(--cyan)">';
+      html+='<div style="font-size:11px;font-weight:600;color:var(--cyan);margin-bottom:6px">▸ Scoring Methodology</div>';
+      html+='<div style="font-size:10px;color:var(--text-dim);line-height:1.6">'+attrib.methodology.description+'</div>';
+      html+='</div>';
+      /* Overall */
+      html+='<div style="margin-bottom:14px;padding:12px;background:var(--bg3);border-radius:6px;border-left:3px solid var(--gold)">';
+      html+='<div style="font-size:11px;font-weight:600;color:var(--gold);margin-bottom:6px">∑ Overall: '+fmtDec(attrib.overallScore,1)+'%</div>';
+      html+='<div style="font-size:10px;color:var(--text-dim);line-height:1.6">'+attrib.overallExplanation+'</div>';
+      html+='</div>';
+      /* Per-Domain Attribution */
+      for(var adi=0;adi<attrib.domains.length;adi++){
+        var da=attrib.domains[adi];
+        var dColor=da.score>=70?'var(--green)':(da.score>=40?'var(--gold)':'var(--crimson)');
+        html+='<div style="margin-bottom:14px;padding:12px 14px;background:var(--bg3);border-radius:8px;border-left:4px solid '+dColor+'">';
+        html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
+        html+='<div style="font-size:12px;font-weight:600;color:'+dColor+'">'+domainLabel(da.domain)+' — '+da.score.toFixed(1)+'%</div>';
+        html+='<span style="font-size:9px;color:var(--text-muted)">Confidence: '+(da.confidence*100).toFixed(1)+'%</span></div>';
+        /* Prior */
+        html+='<div style="font-size:9px;color:var(--text-dim);margin-bottom:6px;padding:6px 8px;background:var(--bg2);border-radius:4px"><strong>Prior:</strong> '+da.prior.description+' <span style="color:var(--text-muted)">['+da.prior.citation+']</span></div>';
+        /* Evidence chain */
+        if(da.evidenceChain&&da.evidenceChain.length){
+          html+='<div style="margin-bottom:6px"><div style="font-size:10px;font-weight:600;color:var(--text-primary);margin-bottom:4px">Evidence Chain ('+da.evidenceChain.length+' observations):</div>';
+          for(var eci=0;eci<da.evidenceChain.length;eci++){
+            var ev=da.evidenceChain[eci];
+            var shiftColor=ev.shift>0?'var(--green)':(ev.shift<-0.5?'var(--crimson)':'var(--text-muted)');
+            var gradeColor2=ev.grade==='S'?'var(--gold)':(ev.grade==='A'?'var(--cyan)':(ev.grade==='B'?'var(--pass)':(ev.grade==='C'?'var(--text-muted)':'var(--crimson)')));
+            html+='<div style="font-size:9px;padding:4px 8px;margin:2px 0;background:var(--bg2);border-radius:3px;display:flex;gap:8px;align-items:center">';
+            html+='<span style="color:'+gradeColor2+';font-weight:700;min-width:22px">'+ev.grade+'</span>';
+            html+='<span style="color:var(--text-dim);min-width:50px">'+ev.questionId+'</span>';
+            html+='<span style="color:'+shiftColor+';font-weight:600;min-width:60px">'+(ev.shift>0?'+':'')+ev.shift.toFixed(1)+'pp</span>';
+            html+='<span style="color:var(--text-dim);flex:1;font-size:8px">α: '+(ev.alphaBefore).toFixed(1)+' → '+(ev.alphaAfter).toFixed(1)+' | β: '+(ev.betaBefore).toFixed(1)+' → '+(ev.betaAfter).toFixed(1)+' | μ: '+(ev.meanBefore*100).toFixed(1)+'% → '+(ev.meanAfter*100).toFixed(1)+'%</span>';
+            html+='</div>';
+          }
+          html+='</div>';
+        }else{
+          html+='<div style="font-size:9px;color:var(--text-muted);margin-bottom:6px">⚠ No direct observations for this domain — score reflects uninformative prior.</div>';
+        }
+        /* Posterior explanation */
+        html+='<div style="font-size:9px;color:var(--text-dim);margin-bottom:6px;padding:6px 8px;background:var(--bg2);border-radius:4px"><strong>Posterior:</strong> '+da.posterior.description+'</div>';
+        /* Confidence */
+        html+='<div style="font-size:9px;color:var(--text-dim);margin-bottom:6px;padding:6px 8px;background:var(--bg2);border-radius:4px"><strong>Confidence:</strong> '+da.confidenceExplanation+'</div>';
+        /* Domain research citation */
+        if(da.domainCitation){
+          html+='<div style="font-size:8px;color:var(--cyan);padding:4px 8px;background:rgba(78,201,224,0.05);border-radius:4px;border-left:2px solid var(--cyan)">';
+          html+='<strong>▸ Domain Research:</strong> '+da.domainCitation.text+'<br><em>'+da.domainCitation.relevance+'</em></div>';
+        }
+        html+='</div>';
+      }
+      /* Full reference list */
+      html+='<details style="margin-top:14px"><summary style="font-size:11px;color:var(--cyan);cursor:pointer;font-weight:600">▸ Full Reference List ('+attrib.methodology.citations.length+' papers)</summary>';
+      html+='<div style="font-size:9px;color:var(--text-dim);padding:10px;background:var(--bg3);border-radius:6px;margin-top:6px">';
+      for(var ri=0;ri<attrib.methodology.citations.length;ri++){
+        var cit=attrib.methodology.citations[ri];
+        html+='<div style="margin-bottom:6px;padding-left:8px;border-left:2px solid var(--border)">';
+        html+='<div>'+cit.text+'</div>';
+        html+='<div style="color:var(--text-muted);font-style:italic">→ '+cit.relevance+'</div></div>';
+      }
+      html+='</div></details>';
+      html+='</div></div>';
+    }else{
+      html+='<div class="finding-card" style="grid-column:1/-1"><div class="finding-badge"><span class="badge badge-gold">◈ ATTRIBUTION</span></div><div class="finding-title">Score Attribution Unavailable</div><div class="finding-body" style="color:var(--text-muted)"><div style="font-size:11px">Attribution requires a score artifact and session answer data. Expand a completed session to generate.</div></div></div>';
+    }
+    html+='</div></div>';
     html+='<div class="drill-panel" data-drill="meta"><div class="findings-grid">';
-    /* ── 7. SESSION META ── */
+    /* ── 8. SESSION META ── */
     html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">ℹ META</span></div><div class="finding-title">Session Metadata</div><div class="finding-body" style="font-size:10px">';
     html+='Session ID: <code>'+sid+'</code><br>';
     html+='Role: <code>'+(sessSummary.role||'\u2014')+'</code> · Age band: <code>'+(sessSummary.ageBand||'\u2014')+'</code><br>';
@@ -1432,8 +2154,16 @@ async function drillSession(sid){
     if(meta.eventsCount!=null)html+='Events: <code>'+meta.eventsCount+'</code> · Suggestions: <code>'+(meta.suggestionsCount||0)+'</code><br>';
     html+='</div></div>';
 
+    /* ── 8b. CONSENT STATUS ── */
+    var cGiven=sessSummary.consentGiven||d.consentGiven;
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge '+(cGiven?'badge-live':'badge-warn')+'">&Lambda; CONSENT</span></div><div class="finding-title">Consent Status</div><div class="finding-body" style="font-size:10px">';
+    html+='Consent given: <code style="color:'+(cGiven?'var(--green)':'var(--crimson)')+'">'+( cGiven?'YES':'NO / PRE-CONSENT')+'</code><br>';
+    html+='Consent version: <code>'+(sessSummary.consentVersion||d.consentVersion||'\u2014')+'</code><br>';
+    html+='Consent timestamp: <code>'+(sessSummary.consentTimestamp||d.consentTimestamp?new Date(sessSummary.consentTimestamp||d.consentTimestamp).toLocaleString('en-IN'):'\u2014')+'</code><br>';
     html+='</div></div>';
+
     html+='</div></div>';
+    html+='</div>'; /* close outer gold-border container */
     el.innerHTML=html;
 
     /* ── Render Charts ── */
@@ -1445,7 +2175,7 @@ async function drillSession(sid){
         new Chart(radarEl,{
           type:'radar',
           data:{
-            labels:ds.map(function(d){return d.domain}),
+            labels:ds.map(function(d){return domainLabel(d.domain)}),
             datasets:[{
               label:'Score',
               data:ds.map(function(d){return d.score}),
@@ -1462,18 +2192,39 @@ async function drillSession(sid){
         });
       }
     }
-    /* PRAI bar chart */
+    /* PRAI bar chart — split into Authenticity + Inauthenticity */
     if(prai&&prai.score!=null){
       var praiEl=document.getElementById('drillPraiChart');
       if(praiEl){
         new Chart(praiEl,{
           type:'bar',
           data:{
-            labels:['PRAI Score','Streak (Dharmop.)','CV (Arthop.)','Time (Bhayop.)'],
+            labels:['PRAI Score'],
             datasets:[{
-              data:[prai.score,prai.streakPenalty||0,prai.cvPenalty||0,prai.timeUniformityPenalty||0],
+              data:[prai.score],
               backgroundColor:[
-                prai.score>=0.8?COLORS.green:(prai.score>=0.5?COLORS.gold:COLORS.crimson),
+                prai.score>=0.8?COLORS.green:(prai.score>=0.5?COLORS.gold:COLORS.crimson)
+              ],
+              borderRadius:3
+            }]
+          },
+          options:{
+            indexAxis:'y',
+            scales:{x:{min:0,max:1,title:{display:true,text:'Authenticity Score (higher = better)',color:'#8b949e',font:{size:9}},grid:{color:'rgba(255,255,255,0.06)'},ticks:{callback:function(v){return (v*100)+'%'},font:{size:8}}},y:{grid:{display:false},ticks:{font:{size:9}}}},
+            plugins:{legend:{display:false}}
+          }
+        });
+      }
+      /* Separate penalty chart */
+      var penaltyEl=document.getElementById('drillPenaltyChart');
+      if(penaltyEl){
+        new Chart(penaltyEl,{
+          type:'bar',
+          data:{
+            labels:['Streak (Dharmop.)','CV (Arthop.)','Time (Bhayop.)'],
+            datasets:[{
+              data:[prai.streakPenalty||0,prai.cvPenalty||0,prai.timeUniformityPenalty||0],
+              backgroundColor:[
                 (prai.streakPenalty||0)>0.3?COLORS.crimson:COLORS.green,
                 (prai.cvPenalty||0)>0.3?COLORS.crimson:COLORS.green,
                 (prai.timeUniformityPenalty||0)>0.3?COLORS.crimson:COLORS.green
@@ -1483,7 +2234,7 @@ async function drillSession(sid){
           },
           options:{
             indexAxis:'y',
-            scales:{x:{min:0,max:1,grid:{color:'rgba(255,255,255,0.06)'},ticks:{callback:function(v){return (v*100)+'%'},font:{size:8}}},y:{grid:{display:false},ticks:{font:{size:9}}}},
+            scales:{x:{min:0,max:1,title:{display:true,text:'\u2190 Inauthenticity Signals (lower = better)',color:'#8b949e',font:{size:9}},grid:{color:'rgba(255,255,255,0.06)'},ticks:{callback:function(v){return (v*100)+'%'},font:{size:8}}},y:{grid:{display:false},ticks:{font:{size:9}}}},
             plugins:{legend:{display:false}}
           }
         });
@@ -1624,6 +2375,7 @@ async function loadCollections(){
     {name:'roots_growth_predictions',probe:null,desc:'Triangulated growth predictions (child\u00d7parent\u00d7teacher)'},
     {name:'roots_outcomes',probe:null,desc:'Learning outcomes for loop analysis'},
     {name:'roots_teacher_genomes',probe:null,desc:'Teacher genome profiles'},
+    {name:'anonymous_sessions',probe:null,desc:'v2 anonymous assessment sessions (no login)'},
     {name:'roots_alumni_identities',probe:null,desc:'Alumni identity claims'}
   ];
   var html='<div class="module-grid">';
@@ -1672,6 +2424,44 @@ function switchTab(btn, tabName) {
   document.querySelectorAll('.section[data-tab]').forEach(function(s){
     s.classList.toggle('tab-visible', s.getAttribute('data-tab') === tabName);
   });
+}
+
+/* COLLAPSIBLE SECTIONS */
+function toggleCollapse(titleEl) {
+  var section = titleEl.closest('.section');
+  var arrow = titleEl.querySelector('.collapse-arrow');
+  var isCollapsed = arrow.classList.toggle('is-collapsed');
+  var children = section.querySelectorAll(':scope > *');
+  for (var i = 0; i < children.length; i++) {
+    if (children[i].classList.contains('section-title') || children[i].classList.contains('section-desc')) continue;
+    children[i].style.display = isCollapsed ? 'none' : '';
+  }
+}
+
+/* AUTO-COLLAPSE non-primary sections on load */
+function autoCollapseSecondary() {
+  var ids = ['section-feedback','section-psychometrics','section-prai','section-status','section-api-audit','section-collections','section-export','section-qbank','section-coverage-matrix','section-question-health','section-proposals','section-registry'];
+  for (var i = 0; i < ids.length; i++) {
+    var section = document.getElementById(ids[i]);
+    if (!section) continue;
+    var title = section.querySelector('.section-title.collapsible');
+    if (title) toggleCollapse(title);
+  }
+}
+setTimeout(autoCollapseSecondary, 100);
+
+/* SESSION LIST COLLAPSE */
+function toggleSessionList() {
+  var el = document.getElementById('sessions-explorer-content');
+  var btn = document.getElementById('sessions-collapse-btn');
+  if (!el) return;
+  if (el.style.display === 'none') {
+    el.style.display = '';
+    btn.innerHTML = '&triangledown; Collapse List';
+  } else {
+    el.style.display = 'none';
+    btn.innerHTML = '&triangleright; Expand List';
+  }
 }
 
 /* DRILL-DOWN SUB-TAB SWITCHING */
