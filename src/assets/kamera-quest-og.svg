@@ -1,0 +1,32 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Kamera Quest by Kaayko</title>
+  <desc id="desc">Camera settings, lens guidance, and photography session playbooks for modern camera systems.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#080B10"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(900 140) rotate(133.421) scale(447.868 661.643)">
+      <stop stop-color="#D3A24D" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#D3A24D" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <rect x="72" y="72" width="1056" height="486" rx="32" fill="rgba(18,22,30,0.88)" stroke="rgba(255,255,255,0.1)"/>
+  <g opacity="0.92">
+    <rect x="766" y="176" width="248" height="170" rx="26" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)"/>
+    <rect x="726" y="212" width="342" height="206" rx="38" fill="#151A22" stroke="rgba(255,255,255,0.12)"/>
+    <circle cx="897" cy="315" r="82" fill="#0A0D12" stroke="rgba(255,255,255,0.12)"/>
+    <circle cx="897" cy="315" r="54" fill="none" stroke="#D3A24D" stroke-width="6"/>
+    <circle cx="897" cy="315" r="18" fill="#D3A24D"/>
+    <rect x="792" y="186" width="92" height="38" rx="18" fill="#151A22" stroke="rgba(255,255,255,0.12)"/>
+    <rect x="986" y="250" width="36" height="22" rx="8" fill="#D3A24D"/>
+  </g>
+  <text x="120" y="166" fill="#D3A24D" font-size="26" font-family="DM Sans, Arial, sans-serif" font-weight="700" letter-spacing="6">KAAYKO PHOTOGRAPHY</text>
+  <text x="120" y="266" fill="#F5F2EA" font-size="78" font-family="Playfair Display, Georgia, serif" font-weight="700">Kamera Quest</text>
+  <text x="120" y="336" fill="rgba(245,242,234,0.76)" font-size="30" font-family="DM Sans, Arial, sans-serif">Camera settings, lens fit guidance, and</text>
+  <text x="120" y="378" fill="rgba(245,242,234,0.76)" font-size="30" font-family="DM Sans, Arial, sans-serif">session playbooks for modern camera systems.</text>
+  <text x="120" y="472" fill="#57C4BC" font-size="24" font-family="DM Sans, Arial, sans-serif" font-weight="600">Canon • Sony • Nikon • Fujifilm • Panasonic Lumix • OM System • Leica</text>
+  <text x="120" y="522" fill="rgba(245,242,234,0.62)" font-size="22" font-family="DM Mono, monospace">Scene-aware settings • Lens guidance • Structured shoot briefs</text>
+</svg>
