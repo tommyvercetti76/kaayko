@@ -37,6 +37,34 @@ docs/learnings/<product>/latest.json
 
 This is how the guards "talk" to each other without being coupled to one implementation.
 
+## Conflict-avoidance rules
+
+Every automation must also obey these operating rules:
+
+1. Only write inside its own learnings directory unless it is `Learnings of Kaayko`.
+2. Never overwrite another guard's markdown note for the same day. Create a new dated note instead.
+3. Only update its own `latest.json`.
+4. If a guard depends on another guard's output and the upstream output is stale or missing, it must report that condition instead of guessing.
+5. Frontend improvement work must preserve existing route behavior and product-specific mechanisms unless a documented fix requires otherwise.
+6. Guards may read all product learnings outputs, but they may only mutate code and docs inside their owned scope.
+7. Any code changes must be accompanied by validation notes and explicit residual risks.
+
+## Interval cadence
+
+To keep the portfolio active without collisions:
+
+- Each automation runs every 8 hours.
+- Automations are split across alternating day groups.
+- Group A runs on Monday, Wednesday, Friday, and Sunday.
+- Group B runs on Tuesday, Thursday, and Saturday.
+- `Learnings of Kaayko` runs after the product guards so it aggregates completed outputs instead of racing them.
+
+Recommended day groups:
+
+- Group A: Kamera Research Guard, Kamera Evidence Guard, KORTEX Platform Guard, Paddling Out Reliability Guard
+- Group B: Kamera Catalog Sync Guard, KORTEX Research and Benchmark Guard, Commerce + Kreator Guard, Shared Frontend Craft Guard
+- Learnings of Kaayko: daily aggregation window after the other guards have had time to complete
+
 ## Recommended automation set
 
 | Automation | Purpose | Why it exists |
