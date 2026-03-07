@@ -27,13 +27,27 @@
       {
         "source": "/assets/**",
         "headers": [{ "key":"Cache-Control","value":"public,max-age=31536000,immutable"}]
+      },
+      {
+        "source": "/karma/schools/somalwar/**",
+        "headers": [{ "key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]
+      },
+      {
+        "source": "/karma/schools/somalwar",
+        "headers": [{ "key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]
       }
+    ],
+    "redirects": [
+      { "source": "/admin/login", "destination": "/kortex", "type": 301 },
+      { "source": "/admin/login.html", "destination": "/kortex", "type": 301 }
     ],
     "rewrites": [
       { "source": "/api/**", "function": "api" },
       { "source": "/l/**", "function": "api" },
       { "source": "/resolve", "function": "api" },
       { "source": "/health", "function": "api" },
+      { "source": "/karma/schools/somalwar", "run": { "serviceId": "cool-schools", "region": "us-central1" } },
+      { "source": "/karma/schools/somalwar/**", "run": { "serviceId": "cool-schools", "region": "us-central1" } },
       { "source": "**", "destination": "/index.html" }
     ]
   }

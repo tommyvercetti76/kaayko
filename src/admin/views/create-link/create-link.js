@@ -3,7 +3,7 @@
  * Handles link creation and editing form
  */
 
-import { STATE, CONFIG, AUTH, utils, ui } from '../../js/smartlinks-core.js';
+import { STATE, CONFIG, AUTH, utils, ui } from '../../js/kortex-core.js';
 import { apiFetch } from '../../js/config.js';
 
 /**
@@ -160,6 +160,29 @@ function placeTooltip(icon, tip) {
   tip.style.visibility = '';
 }
 
+// ── ROOTS sync goes through Kaayko API proxy (key stays server-side) ──
+const KAAYKO_API_BASE = window.location.hostname === 'localhost'
+  ? 'http://localhost:5001/kaaykostore/us-central1/api'
+  : 'https://us-central1-kaaykostore.cloudfunctions.net/api';
+
+/**
+ * Check if the destination URL points to the ROOTS Knowledge Engine.
+ * Shows/hides the ROOTS assessment configuration section accordingly.
+ */
+function checkROOTSDestination() {
+  const dest = (document.getElementById('webDestination')?.value || '').toLowerCase();
+  const rootsSection = document.getElementById('roots-assessment-section');
+  if (!rootsSection) return;
+  const isKnowledge = dest.includes('/knowledge');
+  rootsSection.style.display = isKnowledge ? '' : 'none';
+  // Toggle child-age visibility based on assessment type
+  const typeSelect = document.getElementById('rootsAssessmentType');
+  const childAgeGroup = document.getElementById('roots-child-age-group');
+  if (typeSelect && childAgeGroup) {
+    childAgeGroup.style.display = typeSelect.value === 'parent' ? '' : 'none';
+  }
+}
+
 /**
  * Initialize create form
  */
@@ -170,6 +193,24 @@ function initCreateForm() {
   // Remove existing listeners
   form.removeEventListener('submit', handleCreateLink);
   form.addEventListener('submit', handleCreateLink);
+
+  // Auto-detect ROOTS links when destination URL changes
+  const destInput = document.getElementById('webDestination');
+  if (destInput) {
+    destInput.removeEventListener('input', checkROOTSDestination);
+    destInput.addEventListener('input', checkROOTSDestination);
+    // Check initial value
+    checkROOTSDestination();
+  }
+
+  // Toggle child-age field when assessment type changes
+  const typeSelect = document.getElementById('rootsAssessmentType');
+  if (typeSelect) {
+    typeSelect.addEventListener('change', () => {
+      const childAgeGroup = document.getElementById('roots-child-age-group');
+      if (childAgeGroup) childAgeGroup.style.display = typeSelect.value === 'parent' ? '' : 'none';
+    });
+  }
 }
 
 /**
@@ -211,16 +252,28 @@ async function handleCreateLink(e) {
     
     const generateQR = document.getElementById('generateQR')?.checked;
     
+    // ── ROOTS dual-write: create matching invite in ROOTS API ──
+    if (!isEditing && isROOTSLink(formData.webDestination)) {
+      try {
+        await syncROOTSInvite(linkCode, formData);
+        console.log('[CreateLink] ROOTS invite synced:', linkCode);
+      } catch (syncErr) {
+        console.warn('[CreateLink] ROOTS sync failed (link still created):', syncErr.message);
+        utils.showToast(`⚠️ Link created but ROOTS invite sync failed: ${syncErr.message}`, 'warning', 5000);
+      }
+    }
+
     if (isEditing) {
       // Edit success
       utils.showToast(`✅ Link "${linkCode}" updated successfully!`, 'success', 5000);
     } else {
       // Create success
+      const rootsNote = isROOTSLink(formData.webDestination) ? ' + ROOTS invite created' : '';
       if (generateQR && data.link) {
-        utils.showToast(`🎉 Link created! Your short URL: ${shortUrl}`, 'success', 6000);
+        utils.showToast(`🎉 Link created${rootsNote}! Your short URL: ${shortUrl}`, 'success', 6000);
         setTimeout(() => ui.showQRCodeModal(data.link), 500);
       } else {
-        utils.showToast(`🎉 Link created! Your short URL: ${shortUrl}`, 'success', 6000);
+        utils.showToast(`🎉 Link created${rootsNote}! Your short URL: ${shortUrl}`, 'success', 6000);
         // Copy short URL to clipboard
         navigator.clipboard.writeText(`https://${shortUrl}`).then(() => {
           setTimeout(() => utils.showToast('📋 Short URL copied to clipboard!', 'info', 3000), 500);
@@ -299,6 +352,76 @@ function resetCreateForm() {
   if (submitBtn) submitBtn.innerHTML = '✨ Create Link';
   
   STATE.editingCode = null;
+
+  // Reset ROOTS section
+  const rootsSection = document.getElementById('roots-assessment-section');
+  if (rootsSection) rootsSection.style.display = 'none';
+  const rootsType = document.getElementById('rootsAssessmentType');
+  if (rootsType) rootsType.value = 'parent';
+  const rootsChildAge = document.getElementById('rootsChildAge');
+  if (rootsChildAge) rootsChildAge.value = '';
+  const rootsSchool = document.getElementById('rootsSchoolId');
+  if (rootsSchool) rootsSchool.value = '';
+  const rootsSchoolName = document.getElementById('rootsSchoolName');
+  if (rootsSchoolName) rootsSchoolName.value = '';
+  const rootsMaxUses = document.getElementById('rootsMaxUses');
+  if (rootsMaxUses) rootsMaxUses.value = '0';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  ROOTS KNOWLEDGE ENGINE — Dual-Write Bridge
+// ═══════════════════════════════════════════════════════════════
+
+/** Check if a URL points to the ROOTS Knowledge Engine */
+function isROOTSLink(url) {
+  return (url || '').toLowerCase().includes('/knowledge');
+}
+
+/**
+ * Create a matching invite in the ROOTS API via Kaayko server-side proxy.
+ * The sync key never touches the browser — it lives in Cloud Functions env.
+ */
+async function syncROOTSInvite(code, formData) {
+  const assessmentType = document.getElementById('rootsAssessmentType')?.value || 'parent';
+  const childAgeVal = document.getElementById('rootsChildAge')?.value;
+  const schoolId = document.getElementById('rootsSchoolId')?.value?.trim() || undefined;
+  const schoolName = document.getElementById('rootsSchoolName')?.value?.trim() || undefined;
+  const maxUsesVal = document.getElementById('rootsMaxUses')?.value;
+
+  const body = {
+    code,
+    assessmentType,
+    title: formData.title || `ROOTS ${assessmentType} invite`,
+    createdBy: formData.createdBy || 'kortex-admin',
+    schoolId,
+    schoolName,
+    childAge: childAgeVal ? parseInt(childAgeVal, 10) : undefined,
+    maxUses: maxUsesVal ? parseInt(maxUsesVal, 10) : 0,
+    utm: formData.utm,
+    expiresAt: formData.expiresAt,
+    metadata: { source: 'kortex', kortexCode: code },
+  };
+
+  // Get Firebase Auth token for admin auth on the proxy route
+  const { getAuth } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+  const user = getAuth().currentUser;
+  const idToken = user ? await user.getIdToken() : '';
+
+  const res = await fetch(`${KAAYKO_API_BASE}/smartlinks/roots-sync`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${idToken}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `ROOTS sync HTTP ${res.status}`);
+  }
+
+  return res.json();
 }
 
 /**
@@ -371,6 +494,9 @@ async function loadLinkForEditing(code) {
     
     const submitBtn = document.querySelector('#create-view .btn-primary[type="submit"]');
     if (submitBtn) submitBtn.innerHTML = '💾 Update Link';
+
+    // Show ROOTS section if this link points to /knowledge
+    checkROOTSDestination();
     
   } catch (err) {
     console.error('[CreateLink] Error loading link for editing:', err);
@@ -381,5 +507,5 @@ async function loadLinkForEditing(code) {
 // Export edit function to be called from other modules
 export function editLink(code) {
   STATE.editingCode = code;
-  // View will be switched by smartlinks-core
+  // View will be switched by kortex-core
 }

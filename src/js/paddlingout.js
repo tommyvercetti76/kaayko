@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ? window.PRODUCTION_API_BASE  // Force production mode
       : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? `${window.location.origin}/api`  // Local Firebase emulator
-        : "https://us-central1-kaaykostore.cloudfunctions.net/api";  // CORRECT Production URL
+        : "https://api-vwcc5j4qda-uc.a.run.app";  // Production Functions v2 URL
     
     const currentMode = window.FORCE_PRODUCTION_MODE ? 'production' : (window.apiClient?.getMode() || 'local');
     
@@ -86,7 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ? window.PRODUCTION_API_BASE  // Force production mode
       : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? `${window.location.origin}/api`  // Local Firebase emulator
-        : "https://us-central1-kaaykostore.cloudfunctions.net/api";  // CORRECT Production URL
+        : "https://api-vwcc5j4qda-uc.a.run.app";  // Production Functions v2 URL
     
     const currentMode = window.FORCE_PRODUCTION_MODE ? 'production' : (window.apiClient?.getMode() || 'local');
     

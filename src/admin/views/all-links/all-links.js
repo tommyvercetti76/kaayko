@@ -3,7 +3,7 @@
  * Displays and manages all smart links
  */
 
-import { STATE, utils, ui, switchView } from '../../js/smartlinks-core.js';
+import { STATE, utils, ui, switchView } from '../../js/kortex-core.js';
 import { apiFetch } from '../../js/config.js';
 
 /**

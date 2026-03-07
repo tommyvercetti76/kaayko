@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Messages from the Sea 💌</title>
+    
+    <!-- OG Tags for Smart Link Preview -->
+    <meta property="og:title" content="A Message in a Bottle 💌">
+    <meta property="og:description" content="Someone sent you a special message from the sea...">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://kaayko.com/assets/valentine-og.png">
+    
+    <!-- Pixel Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/valentine.css">
+</head>
+<body>
+
+<!-- ============================================================
+     WELCOME SCREEN
+     ============================================================ -->
+<div class="welcome-screen" id="welcome">
+    <div class="welcome__bottle"></div>
+    <div class="welcome__title">Message in the Bottle</div>
+    <div class="welcome__sub">💕 Can you Sea it? 💕</div>
+    <div class="welcome__hint">
+        Each day, a message washes ashore<br>
+        waiting just for you...
+    </div>
+    <button class="welcome__start" id="startBtn">💌 Begin 💌</button>
+</div>
+
+<!-- ============================================================
+     MAIN SCENE
+     ============================================================ -->
+<div class="scene" id="scene">
+
+    <!-- SKY -->
+    <div class="sky">
+        <!-- Sun, clouds, seagulls rendered by JS into here -->
+    </div>
+
+    <!-- OCEAN -->
+    <div class="ocean">
+        <div class="ocean__horizon-shimmer"></div>
+        <div class="ocean__depth ocean__depth--1"></div>
+        <div class="ocean__depth ocean__depth--2"></div>
+        <div class="ocean__depth ocean__depth--3"></div>
+        <div class="ocean__depth ocean__depth--4"></div>
+        <div class="ocean__depth ocean__depth--5"></div>
+
+        <div id="shimmers"></div>
+
+        <!-- Bottles floating in the ocean (not yet washed ashore) -->
+        <div id="oceanBottles" class="ocean__bottles"></div>
+
+        <div id="waveCrestLayer" class="ocean__wave-crests"></div>
+
+        <div class="ocean__boat-track">
+            <div class="ocean__boat">
+                <!-- Pixel boat rendered by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- BEACH -->
+    <div class="beach">
+        <!-- Sand layers — smooth gradient zones -->
+        <div class="beach__sand-base"></div>
+
+        <!-- === OCEAN ↔ SAND TRANSITION ZONE === -->
+        <!-- Water bleed — translucent ocean color feathering down onto sand -->
+        <div class="beach__water-bleed"></div>
+        <!-- Tide wash — animated water that washes up and retreats -->
+        <div class="beach__tide-wash beach__tide-wash--a"></div>
+        <div class="beach__tide-wash beach__tide-wash--b"></div>
+        <!-- Foam — organic layered froth at waterline -->
+        <div class="beach__foam-edge"></div>
+
+        <!-- Wet sand shimmer near waterline -->
+        <div class="beach__wet-sheen"></div>
+        <!-- Tide-darkened wet sand band -->
+        <div class="beach__tide-wet"></div>
+        <!-- Dithered grain textures at two scales -->
+        <div class="beach__grain beach__grain--fine"></div>
+        <div class="beach__grain beach__grain--coarse"></div>
+        <!-- Sand highlight streaks (wind-blown) -->
+        <div class="beach__wind-streaks"></div>
+        <!-- Sand sparkle glints -->
+        <div class="beach__sparkles" id="sandSparkles"></div>
+        <!-- Tide line — subtle organic debris marks -->
+        <div class="beach__tideline"></div>
+        <!-- Shore waves -->
+        <!-- Pixel shells & starfish rendered by JS -->
+    </div>
+
+    <!-- PALM TREES -->
+    <div class="palm palm--left"></div>
+    <div class="palm palm--right"></div>
+
+    <!-- BOTTLE AREA -->
+    <div class="bottle-area" id="bottleArea"></div>
+
+    <!-- HUD — progress tracker only -->
+    <div class="hud hud--progress" id="hudProgress">
+        <div class="hud__day-label" id="dayLabel">Day 1 of 7</div>
+        <div class="hud__hearts" id="hearts"></div>
+    </div>
+
+    <button class="sound-btn" id="sndBtn" aria-label="Toggle sound">🔊</button>
+</div>
+
+<!-- ============================================================
+     MESSAGE MODAL
+     ============================================================ -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal__scroll-wrap">
+        <div class="parchment">
+            <div class="parchment__corner parchment__corner--tl"></div>
+            <div class="parchment__corner parchment__corner--tr"></div>
+            <div class="parchment__corner parchment__corner--bl"></div>
+            <div class="parchment__corner parchment__corner--br"></div>
+
+            <div class="parchment__seal">💕</div>
+
+            <div class="msg__header">
+                <div class="msg__day" id="msgDay">Day 1 of 7</div>
+                <div class="msg__title" id="msgTitle">💕 Title 💕</div>
+            </div>
+            <div class="msg__body" id="msgBody">Content...</div>
+            <div class="msg__signature" id="msgSig">With love 💕</div>
+
+            <button class="modal__close" id="closeBtn" aria-label="Close">✕</button>
+        </div>
+    </div>
+</div>
+
+<!-- Logic -->
+<script src="js/valentine.js"></script>
+
+</body>
+</html>

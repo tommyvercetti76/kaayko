@@ -20,8 +20,8 @@ All files have been created and integrated:
 ✅ /frontend/src/admin/views/tenant-onboarding/tenant-onboarding.html
 ✅ /frontend/src/admin/views/tenant-onboarding/tenant-onboarding.css
 ✅ /frontend/src/admin/views/tenant-onboarding/tenant-onboarding.js
-✅ /frontend/src/admin/smartlinks.html (updated)
-✅ /frontend/src/admin/js/smartlinks-core.js (updated)
+✅ /frontend/src/admin/kortex.html (updated)
+✅ /frontend/src/admin/js/kortex-core.js (updated)
 ✅ /frontend/src/admin/js/utils.js (updated)
 ```
 
@@ -30,13 +30,13 @@ All files have been created and integrated:
 ## Access the Wizard
 
 ### Method 1: Click Sidebar Navigation
-1. Open admin portal: `https://your-domain.com/admin/smartlinks.html`
+1. Open admin portal: `https://your-domain.com/admin/kortex.html`
 2. Look for **"Tenant Onboarding"** in the sidebar (👥 icon)
 3. Click to launch wizard
 
 ### Method 2: Direct URL
 ```
-https://your-domain.com/admin/smartlinks.html?view=tenant-onboarding
+https://your-domain.com/admin/kortex.html?view=tenant-onboarding
 ```
 
 ---
@@ -181,7 +181,7 @@ cd local-dev/scripts
 
 ### 2. Open Admin Portal
 ```bash
-open http://localhost:5000/admin/smartlinks.html
+open http://localhost:5000/admin/kortex.html
 ```
 
 ### 3. Navigate to Tenant Onboarding
@@ -249,7 +249,7 @@ console.log(VIEW_CONFIGS['tenant-onboarding']);
 ```bash
 # Clear browser cache
 # Check CSS file loaded in Network tab
-# Verify CSS variables defined in smartlinks-base.css
+# Verify CSS variables defined in kortex-base.css
 ```
 
 ### Issue: "Navigation not working"
@@ -298,8 +298,8 @@ cd api/deployment
 |------|---------|
 | `tenant-onboarding.js` | Main logic, API calls, state management |
 | `tenant-onboarding.css` | Styles matching Kaayko dark theme |
-| `tenant-onboarding.html` | View structure (embedded in smartlinks.html) |
-| `smartlinks-core.js` | View registration |
+| `tenant-onboarding.html` | View structure (embedded in kortex.html) |
+| `kortex-core.js` | View registration |
 | `utils.js` | Helper functions (copyToClipboard added) |
 
 ### Key Functions

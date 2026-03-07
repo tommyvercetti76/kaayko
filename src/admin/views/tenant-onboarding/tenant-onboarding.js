@@ -3,7 +3,7 @@
  * Multi-step wizard for onboarding new external clients/tenants to Smart Links Platform
  */
 
-import { CONFIG, AUTH, STATE, switchView } from '../../js/smartlinks-core.js';
+import { CONFIG, AUTH, STATE, switchView } from '../../js/kortex-core.js';
 import { apiFetch } from '../../js/config.js';
 import * as utils from '../../js/utils.js';
 

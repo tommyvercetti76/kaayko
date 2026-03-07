@@ -1,0 +1,2542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>ROOTS Engine Admin — Kaayko</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<meta name="theme-color" content="#f5c842">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --gold: #f5c842; --gold-dim: #b8941e; --crimson: #e54545;
+    --green: #3dd68c; --cyan: #4ec9e0; --blue: #5b9bd5;
+    --purple: #a97ad4; --orange: #e8884a;
+    --bg: #0d1117; --bg2: #161b22; --bg3: #21262d;
+    --border: #30363d; --text: #e6edf3; --text-dim: #8b949e; --text-muted: #656d76;
+    --pass: #3dd68c; --fail: #e54545; --warn: #e8884a; --rate: #a97ad4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'SF Mono','Cascadia Code','Fira Code','JetBrains Mono',Consolas,monospace;
+    background: var(--bg); color: var(--text); font-size: 13px; line-height: 1.6;
+  }
+  .report-header {
+    background: linear-gradient(135deg, #0d1117 0%, #161b22 40%, #1a2332 100%);
+    border-bottom: 2px solid var(--gold); padding: 28px 40px 24px;
+    position: relative; overflow: hidden;
+  }
+  .report-header::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 70% 50%, rgba(245,200,66,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+  .header-left { display: flex; flex-direction: column; gap: 6px; }
+  .back-link { font-size: 11px; color: var(--text-dim); text-decoration: none; opacity: 0.7; transition: opacity 0.2s; }
+  .back-link:hover { opacity: 1; color: var(--gold); }
+  .ascii-logo { font-size: 9px; line-height: 1.15; color: var(--gold); white-space: pre; letter-spacing: 0.5px; }
+  .header-right { text-align: right; font-size: 11px; color: var(--text-dim); line-height: 1.8; flex-shrink: 0; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; }
+  .badge-live { background: rgba(61,214,140,0.15); color: var(--green); border: 1px solid rgba(61,214,140,0.3); }
+  .badge-gold { background: rgba(245,200,66,0.12); color: var(--gold); border: 1px solid rgba(245,200,66,0.3); }
+  .badge-warn { background: rgba(232,136,74,0.15); color: var(--orange); border: 1px solid rgba(232,136,74,0.3); }
+  .badge-error { background: rgba(229,69,69,0.12); color: var(--crimson); border: 1px solid rgba(229,69,69,0.25); }
+  .badge-info { background: rgba(78,201,224,0.12); color: var(--cyan); border: 1px solid rgba(78,201,224,0.25); }
+  .badge-success { background: rgba(61,214,140,0.15); color: var(--green); border: 1px solid rgba(61,214,140,0.25); }
+  .badge-ok { background: rgba(61,214,140,0.15); color: var(--pass); border: 1px solid rgba(61,214,140,0.25); }
+  .badge-action { background: rgba(245,200,66,0.12); color: var(--gold); border: 1px solid rgba(245,200,66,0.25); }
+  .badge-issue { background: rgba(229,69,69,0.12); color: var(--crimson); border: 1px solid rgba(229,69,69,0.25); }
+  .header-subtitle { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); display: flex; gap: 28px; flex-wrap: wrap; }
+  .meta-item { display: flex; flex-direction: column; gap: 2px; }
+  .meta-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+  .meta-value { font-size: 12px; color: var(--cyan); }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); gap: 12px; padding: 22px 40px; border-bottom: 1px solid var(--border); }
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; position: relative; overflow: hidden; transition: border-color 0.2s; }
+  .card:hover { border-color: rgba(255,255,255,0.12); }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; border-radius: 8px 8px 0 0; }
+  .card-green::before { background: var(--green); }
+  .card-gold::before { background: var(--gold); }
+  .card-cyan::before { background: var(--cyan); }
+  .card-orange::before { background: var(--orange); }
+  .card-crimson::before { background: var(--crimson); }
+  .card-purple::before { background: var(--purple); }
+  .card-blue::before { background: var(--blue); }
+  .card-pass::before { background: var(--pass); }
+  .card-number { font-size: 30px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+  .card-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.6px; }
+  .card-sub { font-size: 10px; color: var(--text-muted); margin-top: 5px; }
+  .section { padding: 24px 40px; border-bottom: 1px solid var(--border); }
+  .section-title { font-size: 14px; font-weight: 700; color: var(--gold); margin-bottom: 5px; display: flex; align-items: center; gap: 10px; }
+  .section-icon { font-size: 13px; color: var(--gold); font-weight: 700; }
+  .section-desc { font-size: 10px; color: var(--text-muted); margin-bottom: 18px; }
+  .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 14px; }
+  .chart-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 18px; }
+  .chart-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .chart-sub { font-size: 10px; color: var(--text-muted); margin-bottom: 14px; }
+  canvas { max-height: 260px; }
+  .module-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 10px; }
+  .module-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .module-header { padding: 8px 14px; background: var(--bg3); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 600; }
+  .module-name { color: var(--cyan); }
+  .module-stats { display: flex; gap: 5px; }
+  .stat-pill { padding: 1px 6px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+  .pill-pass { background: rgba(61,214,140,0.15); color: var(--pass); }
+  .pill-403 { background: rgba(232,136,74,0.12); color: var(--warn); }
+  .pill-429 { background: rgba(169,122,212,0.15); color: var(--purple); }
+  .pill-404 { background: rgba(229,69,69,0.12); color: var(--crimson); }
+  .pill-err { background: rgba(229,69,69,0.12); color: var(--crimson); }
+  .endpoint-row { display: flex; align-items: center; gap: 8px; padding: 6px 14px; border-bottom: 1px solid rgba(48,54,61,0.5); font-size: 11px; }
+  .endpoint-row:last-child { border-bottom: none; }
+  .ep-status { width: 36px; flex-shrink: 0; font-weight: 700; font-size: 10px; }
+  .ep-method { width: 32px; flex-shrink: 0; font-size: 10px; color: var(--text-muted); }
+  .ep-path { flex: 1; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; }
+  .ep-time { flex-shrink: 0; font-size: 10px; color: var(--text-muted); width: 45px; text-align: right; }
+  .s200 { color: var(--pass); } .s401 { color: var(--blue); } .s403 { color: var(--warn); }
+  .s404 { color: var(--crimson); } .s429 { color: var(--purple); } .s500 { color: var(--crimson); }
+  .score-bar-wrap { display: flex; flex-direction: column; gap: 8px; }
+  .score-row { display: grid; grid-template-columns: 100px 1fr 50px; gap: 10px; align-items: center; }
+  .score-domain { font-size: 11px; color: var(--text-dim); text-transform: capitalize; }
+  .bar-track { background: var(--bg3); border-radius: 3px; height: 8px; overflow: hidden; position: relative; }
+  .bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+  .bar-raw { background: var(--cyan); opacity: 0.35; height: 100%; border-radius: 3px; position: absolute; top: 0; left: 0; }
+  .bar-final { background: var(--cyan); height: 100%; border-radius: 3px; position: absolute; top: 0; left: 0; }
+  .score-pct { font-size: 11px; color: var(--text); text-align: right; font-variant-numeric: tabular-nums; }
+  .data-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .data-table th { padding: 8px 12px; text-align: left; font-size: 9px; letter-spacing: 0.6px; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border); background: var(--bg3); font-weight: 600; white-space: nowrap; }
+  .data-table td { padding: 7px 12px; border-bottom: 1px solid rgba(48,54,61,0.4); color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .table-wrap { overflow-x: auto; }
+  .prai-table { border-collapse: collapse; font-size: 11px; width: 100%; }
+  .prai-table th { padding: 8px 12px; text-align: right; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); border-bottom: 1px solid var(--border); background: var(--bg3); }
+  .prai-table th:first-child { text-align: left; }
+  .prai-table td { padding: 7px 12px; border-bottom: 1px solid rgba(48,54,61,0.4); text-align: right; font-variant-numeric: tabular-nums; }
+  .prai-table td:first-child { text-align: left; color: var(--text-dim); }
+  .highlight { color: var(--gold); font-weight: 600; }
+  .danger { color: var(--crimson); font-weight: 600; }
+  .heat-table { border-collapse: collapse; font-size: 10px; width: 100%; }
+  .heat-table th { padding: 6px 8px; text-align: center; font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); border-bottom: 1px solid var(--border); background: var(--bg3); }
+  .heat-table th:first-child { text-align: left; }
+  .heat-table td { padding: 5px 8px; text-align: center; border-bottom: 1px solid rgba(48,54,61,0.3); font-variant-numeric: tabular-nums; }
+  .heat-table td:first-child { text-align: left; color: var(--text-dim); font-size: 9px; }
+  .sessions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+  .session-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; }
+  .session-title { font-size: 11px; font-weight: 700; margin-bottom: 3px; }
+  .session-sub { font-size: 10px; color: var(--text-muted); margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .findings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+  .finding-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+  .finding-badge { margin-bottom: 8px; }
+  .finding-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .finding-body { font-size: 11px; color: var(--text-dim); line-height: 1.7; }
+  .finding-body code { background: var(--bg3); padding: 1px 5px; border-radius: 3px; font-size: 10px; color: var(--gold); }
+  .qbank-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .qbank-domain { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+  .qbank-name { font-size: 11px; font-weight: 600; color: var(--cyan); margin-bottom: 8px; text-transform: capitalize; }
+  .qbank-bar-track { background: var(--bg3); border-radius: 4px; height: 6px; overflow: hidden; }
+  .qbank-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--cyan), var(--blue)); }
+  .qbank-nums { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+  .qid-list { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 8px; }
+  .qid-pill { padding: 1px 5px; border-radius: 3px; font-size: 9px; background: var(--bg3); color: var(--text-dim); border: 1px solid var(--border); }
+  .btn-sm { font-size: 10px; padding: 4px 10px; border-radius: 3px; cursor: pointer; border: none; font-family: inherit; transition: all 0.15s; letter-spacing: 0.3px; }
+  .btn-approve { background: rgba(61,214,140,0.12); color: var(--green); border: 1px solid rgba(61,214,140,0.25); }
+  .btn-approve:hover { background: rgba(61,214,140,0.25); }
+  .btn-reject { background: rgba(229,69,69,0.1); color: var(--crimson); border: 1px solid rgba(229,69,69,0.2); }
+  .btn-reject:hover { background: rgba(229,69,69,0.2); }
+  .btn-gold { background: rgba(245,200,66,0.1); color: var(--gold); border: 1px solid rgba(245,200,66,0.2); }
+  .btn-gold:hover { background: rgba(245,200,66,0.2); }
+  .btn-sm:disabled { opacity: 0.3; cursor: not-allowed; }
+  .session-filter { background: var(--bg3); color: var(--text-dim); border: 1px solid var(--border); }
+  .session-filter:hover { border-color: var(--gold); color: var(--text); }
+  .session-filter.active { background: rgba(245,200,66,0.15); color: var(--gold); border-color: var(--gold); }
+  .form-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; margin-top: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 3px; }
+  .form-group label { font-size: 9px; letter-spacing: 0.6px; text-transform: uppercase; color: var(--text-muted); }
+  .form-group input, .form-group textarea { background: var(--bg3); border: 1px solid var(--border); border-radius: 3px; padding: 6px 10px; color: var(--text); font-size: 12px; font-family: inherit; }
+  .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--gold); }
+  .loading { text-align: center; padding: 32px; color: var(--text-muted); font-size: 12px; }
+  .toast { position: fixed; bottom: 20px; right: 20px; padding: 10px 18px; border-radius: 6px; font-size: 12px; color: #fff; z-index: 9999; opacity: 0; transform: translateY(10px); transition: all 0.3s; }
+  .toast.visible { opacity: 1; transform: translateY(0); }
+  .toast-success { background: rgba(61,214,140,0.9); }
+  .toast-error { background: rgba(229,69,69,0.9); }
+  .empty-state { padding: 20px; text-align: center; color: var(--text-muted); font-size: 12px; border: 1px dashed var(--border); border-radius: 6px; }
+  .note { font-size: 10px; color: var(--text-muted); font-style: italic; margin-top: 8px; }
+  .section-loading { text-align: center; padding: 24px; color: var(--text-muted); font-size: 11px; }
+  .refresh-btn { position: fixed; bottom: 20px; left: 20px; z-index: 9998; background: var(--bg3); border: 1px solid var(--gold); color: var(--gold); padding: 8px 14px; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 11px; transition: all 0.2s; }
+  .refresh-btn:hover { background: rgba(245,200,66,0.15); }
+  .report-footer { padding: 18px 40px; text-align: center; font-size: 10px; color: var(--text-muted); border-top: 1px solid var(--border); background: var(--bg2); }
+  .footer-grid { display: flex; justify-content: center; gap: 36px; flex-wrap: wrap; }
+  .footer-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .footer-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.6px; }
+  .footer-value { font-size: 11px; color: var(--text-dim); }
+  @media (max-width: 700px) {
+    .report-header, .summary-grid, .section, .report-footer { padding-left: 16px; padding-right: 16px; }
+    .header-top { flex-direction: column; }
+    .sessions-grid, .chart-grid, .module-grid, .qbank-grid, .findings-grid { grid-template-columns: 1fr; }
+    #domain-cards-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .ascii-logo { font-size: 6px; }
+    .card-number { font-size: 22px; }
+  }
+
+  /* TAB NAVIGATION */
+  .tab-nav { display:flex; gap:0; padding:0 40px; background:var(--bg2); border-bottom:2px solid var(--border); position:sticky; top:0; z-index:100; overflow-x:auto; }
+  .tab-btn { padding:10px 18px; font-size:11px; font-weight:600; letter-spacing:0.4px; color:var(--text-muted); background:transparent; border:none; border-bottom:2px solid transparent; cursor:pointer; font-family:inherit; white-space:nowrap; transition:all 0.2s; margin-bottom:-2px; }
+  .tab-btn:hover { color:var(--text-dim); background:rgba(255,255,255,0.03); }
+  .tab-btn.tab-active { color:var(--gold); border-bottom-color:var(--gold); background:rgba(245,200,66,0.05); }
+  .section[data-tab] { display:none; }
+  .section[data-tab].tab-visible { display:block; }
+  /* DRILL-DOWN SUB-TABS */
+  .drill-tabs { display:flex; gap:0; background:var(--bg3); border-radius:6px 6px 0 0; overflow:hidden; margin-bottom:0; border:1px solid var(--border); border-bottom:none; }
+  .drill-tab { padding:8px 14px; font-size:10px; font-weight:600; color:var(--text-muted); background:transparent; border:none; cursor:pointer; font-family:inherit; transition:all 0.15s; border-bottom:2px solid transparent; }
+  .drill-tab:hover { color:var(--text-dim); background:rgba(255,255,255,0.03); }
+  .drill-tab.drill-active { color:var(--gold); border-bottom-color:var(--gold); background:rgba(245,200,66,0.06); }
+  .drill-panel { display:none; border:1px solid var(--border); border-top:none; border-radius:0 0 6px 6px; padding:16px; background:var(--bg2); }
+  .drill-panel.drill-visible { display:block; }
+  /* DOMAIN CARDS */
+  .domain-card { background:var(--bg3); padding:12px 14px; border-radius:8px; border-left:4px solid var(--cyan); transition:all 0.2s; }
+  .domain-card:hover { border-color:var(--gold); }
+  .domain-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; }
+  .domain-name { font-size:12px; font-weight:700; color:var(--cyan); }
+  .domain-score-big { font-size:20px; font-weight:700; line-height:1; }
+  .domain-desc { font-size:9px; color:var(--text-muted); margin-bottom:8px; line-height:1.5; }
+  .domain-verdict { font-size:10px; font-weight:600; margin-bottom:4px; }
+  .domain-interp { font-size:9px; color:var(--text-dim); line-height:1.5; }
+  .domain-raw { margin-top:8px; }
+  .domain-raw summary { font-size:9px; color:var(--text-muted); cursor:pointer; }
+  .domain-raw-inner { font-size:9px; color:var(--text-dim); padding:6px 8px; background:var(--bg); border-radius:4px; margin-top:4px; font-family:monospace; }
+
+  /* KPI CARDS */
+  .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; padding:18px 40px; border-bottom:1px solid var(--border); }
+  .kpi-card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:20px; text-align:center; position:relative; transition:border-color 0.2s; overflow:hidden; }
+  .kpi-card:hover { border-color:rgba(255,255,255,0.12); }
+  .kpi-big { font-size:34px; font-weight:800; line-height:1; margin-bottom:6px; }
+  .kpi-title { font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:4px; }
+  .kpi-sub { font-size:10px; color:var(--text-muted); }
+  .kpi-spark { font-size:10px; color:var(--text-dim); margin-top:8px; display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; }
+  .kpi-mini-bar { height:4px; flex:1; max-width:80px; background:var(--bg3); border-radius:2px; overflow:hidden; }
+  .kpi-mini-fill { height:100%; border-radius:2px; transition:width 0.8s ease; }
+  /* COLLAPSIBLE SECTIONS */
+  .section-title.collapsible { cursor:pointer; user-select:none; display:flex; align-items:center; }
+  .section-title.collapsible:hover { opacity:0.85; }
+  .collapse-arrow { margin-left:auto; font-size:11px; transition:transform 0.2s; color:var(--text-muted); padding-left:10px; }
+  .collapse-arrow.is-collapsed { transform:rotate(-90deg); }
+  /* STATUS RIBBON */
+  .status-ribbon { display:flex; gap:28px; flex-wrap:wrap; padding-top:14px; margin-top:14px; border-top:1px solid var(--border); align-items:flex-end; }
+  .ribbon-item { display:flex; flex-direction:column; gap:2px; }
+  .ribbon-label { font-size:9px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px; }
+  .ribbon-value { font-size:12px; color:var(--cyan); display:flex; align-items:center; gap:5px; }
+  .ribbon-dot { width:7px; height:7px; border-radius:50%; display:inline-block; flex-shrink:0; }
+  .ribbon-dot-ok { background:var(--green); box-shadow:0 0 6px rgba(61,214,140,0.6); }
+  .ribbon-dot-err { background:var(--crimson); box-shadow:0 0 6px rgba(229,69,69,0.6); }
+  /* SESSION COLLAPSE */
+  .sessions-collapse-btn { background:var(--bg3); border:1px solid var(--border); color:var(--text-dim); padding:5px 14px; border-radius:4px; font-size:10px; cursor:pointer; font-family:inherit; transition:all 0.2s; }
+  .sessions-collapse-btn:hover { border-color:var(--gold); color:var(--gold); }
+  @media (max-width: 700px) { .kpi-row { grid-template-columns:repeat(2,1fr); } }
+
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="report-header">
+  <div class="header-top">
+    <div class="header-left">
+      <a href="../../kortex.html" class="back-link">&larr; Kortex Dashboard</a>
+      <pre class="ascii-logo"> ____   ___   ___  _____ ____
+|  _ \ / _ \ / _ \|_   _/ ___|
+| |_) | | | | | | | | | \___ \
+|  _ &lt;| |_| | |_| | | |  ___) |
+|_| \_\\___/ \___/  |_| |____/</pre>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:2px">ADMIN DASHBOARD &middot; LIVE ENGINE METRICS &middot; COMPREHENSIVE VIEW</div>
+    </div>
+    <div class="header-right">
+      <div id="auth-status" style="color:var(--text-muted)">Authenticating&hellip;</div>
+      <div id="login-form" style="display:none;margin-top:6px">
+        <input id="login-email" type="email" placeholder="Email" style="background:#1a1a2e;border:1px solid #333;color:#e0e0e0;padding:4px 8px;border-radius:4px;font-size:11px;width:180px;margin-bottom:4px;display:block;font-family:inherit">
+        <input id="login-password" type="password" placeholder="Password" style="background:#1a1a2e;border:1px solid #333;color:#e0e0e0;padding:4px 8px;border-radius:4px;font-size:11px;width:180px;margin-bottom:4px;display:block;font-family:inherit">
+        <button onclick="emailLogin()" style="background:var(--green);color:#000;border:none;padding:4px 12px;border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit;margin-right:4px">Sign In</button>
+        <button onclick="googleLogin()" style="background:#4285f4;color:#fff;border:none;padding:4px 12px;border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit">Google</button>
+        <div id="login-error" style="color:#ef4444;font-size:10px;margin-top:4px"></div>
+      </div>
+      <a href="#" id="sign-out-link" style="display:none;font-size:10px;color:var(--text-muted);text-decoration:underline;cursor:pointer" onclick="fbAuth.signOut();location.reload();return false;">Sign out</a>
+      <div style="margin-top:6px"><span class="badge badge-live" id="badge-status">&#10227; LOADING</span></div>
+      <div style="margin-top:6px;color:var(--text-muted);font-size:10px" id="header-time">&mdash;</div>
+    </div>
+  </div>
+  <div class="status-ribbon">
+    <div class="ribbon-item"><span class="ribbon-label">Engine</span><span class="ribbon-value" id="meta-engine">&mdash;</span></div>
+    <div class="ribbon-item"><span class="ribbon-label">API</span><span class="ribbon-value"><span class="ribbon-dot ribbon-dot-ok" id="api-dot"></span> cool-schools-api &middot; Cloud Run</span></div>
+    <div class="ribbon-item"><span class="ribbon-label">Region</span><span class="ribbon-value">us-central1</span></div>
+    <div class="ribbon-item"><span class="ribbon-label">Q-Bank</span><span class="ribbon-value" id="meta-qbank">&mdash;</span></div>
+    <div class="ribbon-item"><span class="ribbon-label">School</span><span class="ribbon-value">Somalwar Ramdaspeth</span></div>
+    <div class="ribbon-item"><span class="ribbon-label">Pending</span><span class="ribbon-value" id="meta-pending">&mdash;</span></div>
+    <div class="ribbon-item"><span class="ribbon-label">Endpoints</span><span class="ribbon-value" id="meta-endpoints">&mdash;</span></div>
+  </div>
+</div>
+
+<!-- KPI CARDS (4 focused) -->
+<div class="kpi-row" id="summary-grid">
+  <div class="kpi-card" style="border-top:3px solid var(--cyan)">
+    <div class="kpi-big" style="color:var(--cyan)" id="card-total">&mdash;</div>
+    <div class="kpi-title">Sessions</div>
+    <div class="kpi-sub" id="card-total-sub">All time</div>
+    <div class="kpi-spark"><span style="color:var(--green);font-weight:700" id="card-completed">&mdash;</span> completed &middot; <span style="color:var(--orange);font-weight:700" id="card-active">&mdash;</span> active</div>
+    <div class="kpi-sub" id="card-completed-sub" style="margin-top:4px">&mdash;</div>
+  </div>
+  <div class="kpi-card" style="border-top:3px solid var(--green)">
+    <div class="kpi-big" style="color:var(--green)" id="card-helpful">&mdash;</div>
+    <div class="kpi-title">Assessment Quality</div>
+    <div class="kpi-sub" id="card-helpful-sub">&mdash;</div>
+    <div class="kpi-spark"><span style="color:var(--purple)" id="card-optin">&mdash;</span> opt-in &middot; <span style="color:var(--blue)" id="card-feedback">&mdash;</span> responses</div>
+    <div class="kpi-sub" id="card-optin-sub" style="margin-top:4px">&mdash;</div>
+  </div>
+  <div class="kpi-card" style="border-top:3px solid var(--gold)">
+    <div class="kpi-big" style="color:var(--gold)" id="card-questions">&mdash;</div>
+    <div class="kpi-title">Q-Bank</div>
+    <div class="kpi-sub" id="card-questions-sub">Active in Firestore</div>
+    <div class="kpi-spark"><span style="color:var(--cyan)" id="card-domains">&mdash;</span> domains &middot; &alpha; <span id="card-cronbach" style="color:var(--gold)">&mdash;</span></div>
+    <div class="kpi-sub" id="card-cronbach-sub" style="margin-top:4px">Internal consistency</div>
+  </div>
+  <div class="kpi-card" style="border-top:3px solid var(--purple)">
+    <div class="kpi-big" style="color:var(--gold);font-size:24px" id="card-version">&mdash;</div>
+    <div class="kpi-title">Engine</div>
+    <div class="kpi-sub" id="card-version-sub">ROOTS Knowledge Engine</div>
+    <div class="kpi-spark"><span style="color:var(--crimson)" id="card-proposals">&mdash;</span> proposals &middot; <span style="color:var(--blue)" id="card-invites">&mdash;</span> links</div>
+  </div>
+</div>
+
+
+<!-- TAB NAVIGATION -->
+<div class="tab-nav" id="tab-nav">
+  <button class="tab-btn tab-active" onclick="switchTab(this,'overview')">Overview</button>
+  <button class="tab-btn" onclick="switchTab(this,'sessions')">Sessions</button>
+  <button class="tab-btn" onclick="switchTab(this,'learning')">Learning</button>
+</div>
+
+<!-- SECTION: ENGINE ANALYTICS (v3-inspired) -->
+<div class="section tab-visible" id="section-charts" data-tab="overview">
+  <div class="section-title"><span class="section-icon">&loz;</span> Engine Analytics</div>
+  <div class="section-desc">ROOTS Knowledge Engine &middot; Bayesian domain posteriors &middot; Assessment intelligence &middot; API health</div>
+
+  <!-- DOMAIN POSTERIOR OVERVIEW (v3 cards) -->
+  <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:14px">
+    <span style="font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px">&#9670; Domain Posterior Overview</span>
+    <span style="font-size:10px;color:var(--text-muted)" id="domain-cards-sub">Loading&hellip;</span>
+  </div>
+  <div id="domain-cards-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px"></div>
+  <div id="domain-badges" style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap"></div>
+
+  <!-- BOTTOM ROW: Assessment Intel + API Latency -->
+  <div class="chart-grid" style="grid-template-columns:1fr 1fr;margin-top:18px">
+    <div class="chart-box">
+      <div class="chart-title">Assessment Intelligence</div>
+      <div class="chart-sub">Session quality &middot; PRAI distribution &middot; Coverage &middot; Engine transparency</div>
+      <div id="assessment-intel-content" style="padding:4px 0"><div class="section-loading">Waiting for session data&hellip;</div></div>
+    </div>
+    <div class="chart-box" style="min-height:320px">
+      <div class="chart-title">API Endpoint Response Times</div>
+      <div class="chart-sub" id="chart-latency-sub">Live audit of all reachable endpoints</div>
+      <canvas id="latencyChart" style="min-height:260px"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION: FEEDBACK DEEP DIVE -->
+<div class="section tab-visible" id="section-feedback" data-tab="overview" style="display:none">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&infin;</span> Learning Loop &mdash; Feedback Deep Dive<span class="collapse-arrow">&triangledown;</span></div>
+  <div class="section-desc">Helpfulness ratings from parents who opted into the learning loop &middot; Real-time breakdown &amp; aggregate stats</div>
+  <div class="sessions-grid" id="feedback-cards">
+    <div class="session-box">
+      <div class="session-title" style="color:var(--green)">&check; Very Helpful</div>
+      <div class="session-sub" id="fb-very-helpful-detail">&mdash;</div>
+      <div class="score-bar-wrap"><div class="score-row"><div class="score-domain">proportion</div><div class="bar-track"><div class="bar-fill" id="fb-very-bar" style="width:0%;background:var(--green)"></div></div><div class="score-pct" id="fb-very-pct" style="color:var(--green)">&mdash;</div></div></div>
+    </div>
+    <div class="session-box">
+      <div class="session-title" style="color:var(--gold)">&diams; Somewhat Helpful</div>
+      <div class="session-sub" id="fb-somewhat-detail">&mdash;</div>
+      <div class="score-bar-wrap"><div class="score-row"><div class="score-domain">proportion</div><div class="bar-track"><div class="bar-fill" id="fb-somewhat-bar" style="width:0%;background:var(--gold)"></div></div><div class="score-pct" id="fb-somewhat-pct" style="color:var(--gold)">&mdash;</div></div></div>
+    </div>
+    <div class="session-box">
+      <div class="session-title" style="color:var(--crimson)">&cross; Not Helpful</div>
+      <div class="session-sub" id="fb-not-helpful-detail">&mdash;</div>
+      <div class="score-bar-wrap"><div class="score-row"><div class="score-domain">proportion</div><div class="bar-track"><div class="bar-fill" id="fb-not-bar" style="width:0%;background:var(--crimson)"></div></div><div class="score-pct" id="fb-not-pct" style="color:var(--crimson)">&mdash;</div></div></div>
+    </div>
+  </div>
+  <div style="margin-top:16px" id="feedback-stats-extra"><div class="section-loading">Loading aggregate feedback stats&hellip;</div></div>
+</div>
+
+<!-- SECTION: ENGINE-GENERATED Q REVIEW QUEUE -->
+<div class="section" id="section-genq-review" data-tab="learning">
+  <div class="section-title"><span class="section-icon">&Delta;</span> Engine-Generated Question Review Queue</div>
+  <div class="section-desc">AI-engine generated follow-up questions awaiting admin review &middot; Approve to add to question pool with tag <strong>Created by engine</strong></div>
+  <div style="margin:10px 0"><button class="btn-sm btn-gold" onclick="retroactiveGenerate()" id="btn-retro-gen" style="font-size:11px;padding:6px 14px;cursor:pointer">&orarr; Retroactively Generate for All Completed Sessions</button><span id="retro-gen-status" style="font-size:10px;color:var(--text-muted);margin-left:12px"></span></div>
+  <div id="genq-review-content"><div class="section-loading">Loading generated questions&hellip;</div></div>
+</div>
+
+<!-- SECTION: Q-BANK COVERAGE -->
+<div class="section" id="section-qbank" data-tab="learning">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&equiv;</span> Question Bank Coverage<span class="collapse-arrow">&triangledown;</span></div>
+  <div class="section-desc">Live Firestore question distribution by domain &middot; Coverage bars &amp; question IDs</div>
+  <div id="qbank-content"><div class="section-loading">Loading question bank&hellip;</div></div>
+</div>
+
+<!-- SECTION: COVERAGE MATRIX -->
+<div class="section" id="section-coverage-matrix" data-tab="learning">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&oplus;</span> Coverage Matrix &mdash; Axis-to-Question Mapping<span class="collapse-arrow">&triangledown;</span></div>
+  <div class="section-desc">Gap analysis per domain &middot; Ensures every assessment axis has adequate question coverage</div>
+  <div id="coverage-matrix-content"><div class="section-loading">Loading coverage matrix&hellip;</div></div>
+</div>
+
+<!-- SECTION: QUESTION HEALTH -->
+<div class="section" id="section-question-health" data-tab="learning">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&hearts;</span> Question Health Monitor<span class="collapse-arrow">&triangledown;</span></div>
+  <div class="section-desc">Per-question Information Gain, drift flags, response times &middot; From learning loop analysis</div>
+  <div id="question-health-content"><div class="section-loading">Loading question health&hellip;</div></div>
+</div>
+
+<!-- SECTION: PSYCHOMETRICS -->
+<div class="section" id="section-psychometrics" data-tab="overview">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&sigma;</span> Psychometric Reliability Panel<span class="collapse-arrow">&triangledown;</span></div>
+  <div class="section-desc">Cronbach &alpha;, item-total correlations, &amp; inter-domain correlation matrix &middot; Statistical validity indicators</div>
+  <div class="chart-grid" style="margin-bottom:16px">
+    <div class="chart-box" id="cronbach-detail"><div class="section-loading">Loading Cronbach &alpha;&hellip;</div></div>
+    <div class="chart-box" id="domain-corr-detail"><div class="section-loading">Loading domain correlations&hellip;</div></div>
+  </div>
+  <div id="item-corr-content"><div class="section-loading">Loading item-total correlations&hellip;</div></div>
+</div>
+
+<!-- SECTION: SESSION RESULTS EXPLORER -->
+<div class="section" id="section-sessions-explorer" data-tab="sessions">
+  <div class="section-title"><span class="section-icon">&equiv;</span> Session Results Explorer &mdash; All Assessments</div>
+  <div class="section-desc">Every session across child, parent, teacher &amp; anonymous (v2) roles &middot; Click any row for full PRAI analysis, domain scores, event timeline &amp; flag interpretation</div>
+  <div id="sessions-explorer-filters" style="display:none;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
+    <button class="btn-sm btn-gold session-filter active" data-filter="all">All</button>
+    <button class="btn-sm session-filter" data-filter="completed">Completed</button>
+    <button class="btn-sm session-filter" data-filter="active">Active</button>
+    <button class="btn-sm session-filter" data-filter="paused">Paused</button>
+    <button class="btn-sm session-filter" data-filter="expired">Expired</button>
+    <button class="btn-sm session-filter" data-filter="anonymous">Anonymous (v2)</button>
+    <span style="margin-left:auto;font-size:10px;color:var(--text-muted)" id="session-count-badge"></span>
+    <button class="sessions-collapse-btn" id="sessions-collapse-btn" onclick="toggleSessionList()">&triangledown; Collapse List</button>
+  </div>
+  <div id="sessions-explorer-content"><div class="section-loading">Loading sessions from all collections&hellip;</div></div>
+  <div id="session-drilldown" style="margin-top:16px"></div>
+</div>
+
+<!-- SECTION: SMART LINK INVITES -->
+<div class="section" id="section-invites" data-tab="sessions">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&rarr;</span> Smart Link Invites &mdash; Per-Invite Analytics<span class="collapse-arrow">&triangledown;</span></div>
+  <div class="section-desc">Active invite codes &middot; Assessment type, usage, status &middot; Click-through &amp; session drill-down</div>
+  <div id="invites-content"><div class="section-loading">Loading invites&hellip;</div></div>
+  <div id="invite-drilldown" style="margin-top:16px"></div>
+</div>
+
+<!-- SECTION: CONSENT ANALYTICS -->
+<div class="section" id="section-consent" data-tab="sessions">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&Lambda;</span> Consent Form Analytics &mdash; Acceptance &amp; Abandonment<span class="collapse-arrow">&triangledown;</span></div>
+  <div class="section-desc">Consent form v1.0 &middot; Shown / Accepted / Declined events &middot; Conversion &amp; abandonment rates</div>
+  <div id="consent-content"><div class="section-loading">Loading consent metrics&hellip;</div></div>
+</div>
+
+<!-- SECTION: EXPORT DATA PREVIEW -->
+<div class="section" id="section-export" data-tab="overview">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&darr;</span> Export &amp; Pilot Data Bundle<span class="collapse-arrow">&triangledown;</span></div>
+  <div class="section-desc">All exportable datasets &middot; Sessions, profiles, outcomes, triads &middot; From /export/pilot-bundle</div>
+  <div id="export-content"><div class="section-loading">Loading export data&hellip;</div></div>
+</div>
+
+<!-- SECTION: FIRESTORE COLLECTIONS -->
+<div class="section" id="section-collections" data-tab="overview">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&Xi;</span> Firestore Collections &mdash; Live Data Inventory<span class="collapse-arrow">&triangledown;</span></div>
+  <div class="section-desc">All 10+ ROOTS collections in coolschools-72426 &middot; Document counts, last write timestamps &middot; No data left undisplayed</div>
+  <div id="collections-content"><div class="section-loading">Enumerating collections&hellip;</div></div>
+</div>
+
+<!-- SECTION: API ENDPOINT AUDIT -->
+<div class="section" id="section-api-audit" data-tab="overview">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&mu;</span> API Endpoint Audit &mdash; Live Reachability<span class="collapse-arrow">&triangledown;</span></div>
+  <div class="section-desc">Real-time status check of all ROOTS API endpoints &middot; Module-by-module breakdown with response times</div>
+  <div id="api-audit-content"><div class="section-loading">Running API audit&hellip;</div></div>
+</div>
+
+<!-- SECTION: PRAI REFERENCE -->
+<div class="section" id="section-prai" data-tab="overview">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&Psi;</span> PRAI (Pancha-Rooted Authenticity Index) Reference<span class="collapse-arrow">&triangledown;</span></div>
+  <div class="section-desc">PRAI = 1 &minus; (0.40&middot;streakP + 0.35&middot;cvP + 0.25&middot;timeP) &middot; Session quality metadata &mdash; does <strong>NOT</strong> modify domain scores &middot; Streak threshold = 6</div>
+  <div class="chart-grid" style="margin-bottom:16px">
+    <div class="chart-box"><div class="chart-title">Streak Component Effect on PRAI (CV=0, Time=0)</div><div class="chart-sub">Shows streak signal only (w=0.40) &middot; threshold=6 &middot; Actual PRAI is lower when CV and timing penalties are non-zero</div><canvas id="praiCurveChart"></canvas></div>
+    <div class="chart-box"><div class="chart-title">Beta(1,1): Score Range After N Questions</div><div class="chart-sub">All-S vs All-F posterior mean &mdash; theoretical ceiling &amp; floor &middot; Scores are <strong>independent</strong> of PRAI</div><canvas id="betaRangeChart"></canvas></div>
+  </div>
+  <div style="padding:8px 12px;background:rgba(78,201,224,0.08);border:1px solid rgba(78,201,224,0.2);border-radius:6px;margin-bottom:14px;font-size:10px;color:var(--text-dim)"><strong style="color:var(--cyan)">&#9432; Architecture Note:</strong> PRAI is a <strong>session quality indicator</strong> (anum&#257;na / inference). It does <strong>not</strong> multiply or alter domain scores (praty&#257;k&#7779;a / direct measurement). Domain scores reflect what the Bayesian engine measured; PRAI flags whether the evidence is trustworthy. Admissions counsellors see PRAI as metadata for informed decisions.</div>
+  <div class="table-wrap">
+    <table class="prai-table">
+      <thead><tr><th>N questions</th><th>All-S raw</th><th>All-F raw</th><th>Raw range</th><th>PRAI (streak-only, best case)</th><th>Interpretation</th></tr></thead>
+      <tbody id="prai-table-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SECTION: PROPOSALS -->
+<div class="section" id="section-proposals" data-tab="learning">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&lambda;</span> Learning Proposals<span class="collapse-arrow">&triangledown;</span></div>
+  <div class="section-desc">AI-generated improvement suggestions from the feedback loop &middot; Approve to deploy, reject to discard</div>
+  <div id="proposals-content"><div class="loading">Loading proposals&hellip;</div></div>
+</div>
+
+<!-- SECTION: VERSION REGISTRY -->
+<div class="section" id="section-registry" data-tab="learning">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&#9881;</span> Version Registry<span class="collapse-arrow">&triangledown;</span></div>
+  <div class="section-desc">Engine version lifecycle &middot; Register new versions, activate for production deployment</div>
+  <div id="registry-content"><div class="loading">Loading version history&hellip;</div></div>
+  <div style="margin-top:18px;padding:16px;background:var(--bg2);border:1px solid var(--border);border-radius:8px">
+    <div style="font-size:10px;letter-spacing:0.6px;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px">Register New Version</div>
+    <div class="form-row">
+      <div class="form-group"><label>Version</label><input type="text" id="reg-version" placeholder="e.g. 4.2.0" style="width:120px"></div>
+      <div class="form-group" style="flex:1"><label>Description</label><input type="text" id="reg-description" placeholder="Brief description of changes"></div>
+      <div class="form-group" style="flex:1"><label>Changelog Entry</label><input type="text" id="reg-changelog" placeholder="e.g. Fixed PRAI threshold"></div>
+      <button class="btn-sm btn-gold" onclick="registerVersion()" id="btn-register">Register</button>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION: SYSTEM HEALTH -->
+<div class="section" id="section-status" data-tab="overview">
+  <div class="section-title collapsible" onclick="toggleCollapse(this)"><span class="section-icon">&nabla;</span> System Health Check<span class="collapse-arrow">&triangledown;</span></div>
+  <div class="section-desc">Real-time API health &middot; Endpoint reachability &amp; infrastructure status</div>
+  <div id="health-content"><div class="loading">Checking health&hellip;</div></div>
+</div>
+
+<!-- FOOTER -->
+<div class="report-footer">
+  <div class="footer-grid">
+    <div class="footer-item"><div class="footer-label">Engine</div><div class="footer-value" id="footer-engine">ROOTS v4.0</div></div>
+    <div class="footer-item"><div class="footer-label">API</div><div class="footer-value">cool-schools-api &middot; Cloud Run</div></div>
+    <div class="footer-item"><div class="footer-label">Dashboard</div><div class="footer-value" id="footer-time">&mdash;</div></div>
+    <div class="footer-item"><div class="footer-label">Auth</div><div class="footer-value" id="footer-auth">&mdash;</div></div>
+    <div class="footer-item"><div class="footer-label">Endpoints</div><div class="footer-value" id="footer-endpoints">&mdash;</div></div>
+    <div class="footer-item"><div class="footer-label">School</div><div class="footer-value">Somalwar Ramdaspeth</div></div>
+  </div>
+  <div style="margin-top:10px;color:var(--text-muted)">CoolSchools Platform &middot; ROOTS Knowledge Engine &middot; Pancha-Kosha Assessment Framework</div>
+</div>
+
+<button class="refresh-btn" onclick="location.reload()">&#8635; Refresh Dashboard</button>
+<div id="toast" class="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+
+<script>
+/* === GLOBALS === */
+var COLORS={green:'#3dd68c',crimson:'#e54545',orange:'#e8884a',blue:'#5b9bd5',cyan:'#4ec9e0',gold:'#f5c842',purple:'#a97ad4',dim:'rgba(255,255,255,0.08)'};
+var DOMAIN_COLORS={curiosity:'#f59e0b',resilience:'#10b981',empathy:'#3b82f6',systems:'#8b5cf6',character:'#ef4444',music:'#ec4899',physical:'#06b6d4',spiritual:'#a78bfa'};
+var DOMAIN_ORDER=['curiosity','resilience','empathy','systems','character','music','physical','spiritual'];
+Chart.defaults.color='#8b949e';
+Chart.defaults.borderColor='#30363d';
+Chart.defaults.font.family="'SF Mono','Cascadia Code',Consolas,monospace";
+Chart.defaults.font.size=11;
+
+var firebaseConfig={apiKey:'AIzaSyC1JxbMdlXXLiMQQ4xhcjHRzgFbg12mMcA',authDomain:'coolschools-72426.firebaseapp.com',projectId:'coolschools-72426'};
+firebase.initializeApp(firebaseConfig);
+var fbAuth=firebase.auth();
+var API_BASE='https://cool-schools-api-420407869747.us-central1.run.app/api/v1/roots';
+var rootsToken=null;
+
+/* === AUTH === */
+function googleLogin(){fbAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(function(e){document.getElementById('login-error').textContent=e.message})}
+function emailLogin(){
+  var em=document.getElementById('login-email').value.trim();
+  var pw=document.getElementById('login-password').value;
+  if(!em||!pw){document.getElementById('login-error').textContent='Enter email and password';return;}
+  document.getElementById('login-error').textContent='Signing in\u2026';
+  fbAuth.signInWithEmailAndPassword(em,pw).catch(function(e){document.getElementById('login-error').textContent=e.message});
+}
+document.addEventListener('keydown',function(e){if(e.key==='Enter'&&document.activeElement&&(document.activeElement.id==='login-email'||document.activeElement.id==='login-password'))emailLogin()});
+fbAuth.onAuthStateChanged(async function(user){
+  var s=document.getElementById('auth-status');
+  if(!user){
+    s.textContent='Sign in to continue'; s.style.color='#f59e0b';
+    document.getElementById('login-form').style.display='block';
+    document.getElementById('badge-status').textContent='\u25cb NOT SIGNED IN';
+    document.getElementById('badge-status').className='badge badge-warn';
+    return;
+  }
+  document.getElementById('login-form').style.display='none';
+  var tr=await user.getIdTokenResult(true);
+  var role=tr.claims.rootsRole||tr.claims.role;
+  if(!['system','admin','superadmin'].includes(role)){
+    s.textContent='Access denied \u2014 role: '+(role||'none');s.style.color='#ef4444';
+    document.getElementById('badge-status').textContent='\u2298 UNAUTHORIZED';
+    document.getElementById('badge-status').className='badge badge-error';return;
+  }
+  rootsToken=tr.token;
+  s.textContent=user.email+' \u00b7 '+role;s.style.color='#3dd68c';
+  document.getElementById('sign-out-link').style.display='inline';
+  document.getElementById('footer-auth').textContent=user.email+' \u00b7 '+role;
+  setInterval(async function(){rootsToken=await user.getIdToken(true)},50*60*1000);
+  init();
+});
+
+/* === API HELPERS === */
+async function api(method,path,body){
+  var opts={method:method,headers:{'Content-Type':'application/json','Authorization':'Bearer '+rootsToken}};
+  if(body)opts.body=JSON.stringify(body);
+  var res=await fetch(API_BASE+path,opts);
+  if(res.status===401||res.status===403){throw new Error('Unauthorized ('+res.status+')');}
+  var data=await res.json();
+  if(!res.ok)throw new Error((data.error&&data.error.message)||data.message||'HTTP '+res.status);
+  return data;
+}
+async function apiSafe(method,path,body){
+  try{return await api(method,path,body)}catch(e){console.warn('apiSafe:',path,e.message);return null;}
+}
+async function timedFetch(method,path,body){
+  var start=Date.now();
+  var opts={method:method,headers:{'Content-Type':'application/json','Authorization':'Bearer '+rootsToken}};
+  if(body)opts.body=JSON.stringify(body);
+  try{var res=await fetch(API_BASE+path,opts);var ms=Date.now()-start;return{status:res.status,ms:ms,ok:res.ok}}
+  catch(e){return{status:0,ms:Date.now()-start,ok:false,error:e.message}}
+}
+function showToast(msg,type){var el=document.getElementById('toast');el.textContent=msg;el.className='toast toast-'+(type||'success')+' visible';setTimeout(function(){el.classList.remove('visible')},3500)}
+function fmt(n){return typeof n==='number'?n.toLocaleString():(n!=null?n:'\u2014')}
+function pct(n){return typeof n==='number'?n.toFixed(1)+'%':'\u2014'}
+function fmtDec(n,d){return typeof n==='number'?n.toFixed(d||2):'\u2014'}
+
+var latencyChart=null;
+
+/* === INIT === */
+async function init(){
+  var now=new Date();
+  document.getElementById('header-time').textContent=now.toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'});
+  document.getElementById('footer-time').textContent=now.toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'});
+  await Promise.allSettled([
+    loadMetrics(),loadProposals(),loadRegistry(),loadHealth(),
+    loadQuestions(),loadCoverageMatrix(),loadQuestionHealth(),loadGenQReview(),
+    loadCronbachAlpha(),loadItemCorrelations(),loadDomainCorrelations(),
+    loadInvites(),loadFeedbackStats(),loadAdminHealth(),
+    loadSessionResults(),loadExportData(),loadCollections(),
+    loadConsentMetrics(),
+    runApiAudit()
+  ]);
+  buildPraiReference();
+}
+
+/* === 1. METRICS === */
+async function loadMetrics(){
+  try{
+    var raw=await api('GET','/prototype-admin/metrics');
+    var m=raw.data||raw;
+    var ver=m.currentEngineVersion||m.engineVersion||m.engine_version||'\u2014';
+    document.getElementById('meta-engine').textContent='ROOTS v'+ver;
+    document.getElementById('footer-engine').textContent='ROOTS v'+ver;
+    document.getElementById('meta-pending').textContent=fmt(m.pendingProposals||0);
+    var total=m.totalSessions||0,completed=m.completedSessions||0,active=m.activeSessions||0;
+    var fb=m.helpfulnessBreakdown||{};
+    var veryH=fb.VeryHelpful||0,somewhat=fb.SomewhatHelpful||0,notH=fb.NotHelpful||0;
+    var totalFb=m.feedbackCount||(veryH+somewhat+notH);
+    var optInRate=m.learningOptInRate||0,optInN=m.learningOptInCount||0;
+    var helpPct=m.helpfulnessPercent||(totalFb>0?((veryH+somewhat)/totalFb*100):0);
+    var pending=m.pendingProposals||0;
+    var compRate=total>0?(completed/total*100).toFixed(1):'0';
+    document.getElementById('card-version').textContent='v'+ver;
+    document.getElementById('card-total').textContent=fmt(total);
+    document.getElementById('card-completed').textContent=fmt(completed);
+    document.getElementById('card-completed-sub').textContent=compRate+'% completion rate';
+    document.getElementById('card-active').textContent=fmt(active);
+    if(totalFb>0){
+      document.getElementById('card-helpful').textContent=pct(helpPct);
+      document.getElementById('card-helpful-sub').textContent=fmt(veryH+somewhat)+' positive of '+fmt(totalFb);
+      document.getElementById('card-optin').textContent=pct(optInRate);
+      document.getElementById('card-feedback').textContent=fmt(totalFb);
+    }else{
+      document.getElementById('card-helpful').textContent=pct(compRate);
+      document.getElementById('card-helpful-sub').textContent=fmt(completed)+' of '+fmt(total)+' completed';
+      document.getElementById('card-optin').textContent=fmt(active);
+      document.getElementById('card-feedback').textContent=fmt(completed);
+    }
+    document.getElementById('card-optin-sub').textContent=totalFb>0?(fmt(optInN)+' of '+fmt(total)+' sessions'):(fmt(active)+' active \u00b7 '+fmt(completed)+' completed');
+    document.getElementById('card-proposals').textContent=fmt(pending);
+    var badge=document.getElementById('badge-status');
+    if(total>0){badge.textContent='\u2713 LIVE';badge.className='badge badge-live'}
+    else{badge.textContent='\u25CB NO DATA';badge.className='badge badge-warn'}
+    var dropped=Math.max(0,total-completed-active);
+    /* Session donut + feedback donut removed — replaced by v3-style domain cards */
+    var fbT=veryH+somewhat+notH||1;
+    if(veryH+somewhat+notH>0){
+      document.getElementById('section-feedback').style.display='';
+      document.getElementById('fb-very-helpful-detail').textContent=fmt(veryH)+' responses';
+      document.getElementById('fb-somewhat-detail').textContent=fmt(somewhat)+' responses';
+      document.getElementById('fb-not-helpful-detail').textContent=fmt(notH)+' responses';
+      document.getElementById('fb-very-bar').style.width=(veryH/fbT*100)+'%';
+      document.getElementById('fb-very-pct').textContent=pct(veryH/fbT*100);
+      document.getElementById('fb-somewhat-bar').style.width=(somewhat/fbT*100)+'%';
+      document.getElementById('fb-somewhat-pct').textContent=pct(somewhat/fbT*100);
+      document.getElementById('fb-not-bar').style.width=(notH/fbT*100)+'%';
+      document.getElementById('fb-not-pct').textContent=pct(notH/fbT*100);
+    }
+  }catch(e){
+    console.warn('Metrics failed:',e.message);
+    document.getElementById('badge-status').textContent='\u2717 METRICS ERROR';
+    document.getElementById('badge-status').className='badge badge-error';
+  }
+}
+
+/* === 2. QUESTIONS (Q-BANK) === */
+async function loadQuestions(){
+  try{
+    var raw=await api('GET','/prototype-admin/question-pools');
+    var pools=raw.data||raw;
+    var child=pools.child||{total:0,domains:{},domainCount:0};
+    var parent=pools.parent||{total:0,domains:{},domainCount:0};
+    var teacher=pools.teacher||{total:0,domains:{},domainCount:0};
+    var grandTotal=pools.grandTotal||(child.total+parent.total+teacher.total);
+    document.getElementById('card-questions').textContent=fmt(grandTotal);
+    document.getElementById('card-questions-sub').textContent='Child '+child.total+' \u00b7 Parent '+parent.total+' \u00b7 Teacher '+teacher.total;
+    document.getElementById('card-domains').textContent=fmt(child.domainCount+parent.domainCount+teacher.domainCount);
+    document.getElementById('meta-qbank').textContent=grandTotal+' questions \u00b7 3 pools';
+    function renderPool(label,icon,pool,barColor){
+      var domains=Object.keys(pool.domains||{}).sort();
+      if(!domains.length)return '<div class="empty-state">No questions in '+label+' pool</div>';
+      var maxCount=Math.max.apply(null,domains.map(function(d){return pool.domains[d].count}))||1;
+      var h='<div style="margin-bottom:6px;font-size:10px;color:var(--text-muted)">'+pool.source+'</div>';
+      h+='<div class="qbank-grid">';
+      for(var i=0;i<domains.length;i++){
+        var d=domains[i];var info=pool.domains[d];
+        var pctW=(info.count/maxCount*100).toFixed(0);
+        h+='<div class="qbank-domain"><div class="qbank-name" style="color:'+barColor+'">'+d.replace(/_/g,' ')+' ('+info.count+')</div>';
+        h+='<div class="qbank-bar-track"><div class="qbank-bar-fill" style="width:'+pctW+'%;background:linear-gradient(90deg,'+barColor+','+barColor+'88)"></div></div>';
+        h+='<div class="qbank-nums"><span>'+info.active+' active</span><span>'+info.count+' total</span></div>';
+        h+='<div class="qid-list">';
+        for(var j=0;j<Math.min(info.ids.length,20);j++){h+='<span class="qid-pill">'+info.ids[j]+'</span>';}
+        if(info.ids.length>20)h+='<span class="qid-pill" style="color:var(--text-muted)">+'+(info.ids.length-20)+' more</span>';
+        h+='</div></div>';
+      }
+      h+='</div>';return h;
+    }
+    var html='';
+    html+='<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">';
+    html+='<span class="badge badge-info" style="font-size:11px;padding:4px 10px">\u25c7 Child CAT: '+child.total+'</span>';
+    html+='<span class="badge badge-success" style="font-size:11px;padding:4px 10px">\u2665 Parent: '+parent.total+'</span>';
+    html+='<span class="badge badge-warn" style="font-size:11px;padding:4px 10px">\u2731 Teacher: '+teacher.total+'</span>';
+    html+='<span style="font-size:11px;padding:4px 10px;color:var(--text-muted)">Grand Total: <strong style="color:var(--gold)">'+grandTotal+'</strong></span>';
+    html+='</div>';
+    html+='<details open style="margin-bottom:14px"><summary style="cursor:pointer;font-size:12px;font-weight:600;color:var(--cyan);margin-bottom:8px">\u25c7 Child CAT Pool ('+child.total+' questions \u00b7 '+child.domainCount+' domains)</summary>';
+    html+=renderPool('Child','\u25c7',child,'var(--cyan)');
+    html+='</details>';
+    html+='<details style="margin-bottom:14px"><summary style="cursor:pointer;font-size:12px;font-weight:600;color:var(--green);margin-bottom:8px">\u2665 Parent Pool ('+parent.total+' questions \u00b7 '+parent.domainCount+' domains)</summary>';
+    html+=renderPool('Parent','\u2665',parent,'var(--green)');
+    html+='</details>';
+    html+='<details style="margin-bottom:14px"><summary style="cursor:pointer;font-size:12px;font-weight:600;color:var(--gold);margin-bottom:8px">\u2731 Teacher Pool ('+teacher.total+' questions \u00b7 '+teacher.domainCount+' domains)</summary>';
+    html+=renderPool('Teacher','\u2731',teacher,'var(--gold)');
+    html+='</details>';
+    document.getElementById('qbank-content').innerHTML=html;
+  }catch(e){
+    document.getElementById('qbank-content').innerHTML='<div class="empty-state">Could not load questions: '+e.message+'</div>';
+  }
+}
+
+/* === 2B. ENGINE-GENERATED Q REVIEW QUEUE === */
+function renderSimilarityBadge(sim){
+  if(!sim)return '<span class="badge badge-info" style="font-size:8px">No pool data</span>';
+  var bc=sim.bandColor||'#888';
+  return '<span style="display:inline-flex;align-items:center;gap:4px;background:'+bc+'22;border:1px solid '+bc+';color:'+bc+';padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700" title="Similarity to existing question pool">'+sim.similarityIndex.toFixed(0)+'% '+sim.band+'</span>';
+}
+function renderSimilarityPanel(sim,cardId){
+  if(!sim||!sim.topMatches||!sim.topMatches.length)return '';
+  var h='<div id="sim-panel-'+cardId+'" style="display:none;margin-top:10px;padding:10px 12px;background:var(--bg1);border:1px solid var(--border);border-radius:6px">';
+  h+='<div style="font-size:10px;font-weight:600;color:var(--cyan);margin-bottom:8px">▸ Similarity Analysis — Top '+sim.topMatches.length+' Related Pool Questions</div>';
+  /* Similarity meter */
+  var meterColor=sim.bandColor||'#888';
+  h+='<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-muted);margin-bottom:3px"><span>Novelty</span><span>Duplicate</span></div>';
+  h+='<div style="background:var(--bg3);border-radius:4px;height:8px;position:relative;overflow:hidden">';
+  h+='<div style="position:absolute;left:0;top:0;height:100%;width:'+sim.similarityIndex+'%;background:'+meterColor+';border-radius:4px;transition:width 0.3s"></div></div>';
+  h+='<div style="text-align:center;font-size:9px;color:'+meterColor+';margin-top:2px;font-weight:600">'+sim.similarityIndex.toFixed(1)+'% composite similarity</div></div>';
+  /* Warnings */
+  if(sim.warnings&&sim.warnings.length){
+    for(var w=0;w<sim.warnings.length;w++){
+      h+='<div style="background:#ef444422;border:1px solid #ef4444;color:#ef4444;padding:4px 8px;border-radius:4px;font-size:9px;margin-bottom:6px">⚠ '+sim.warnings[w]+'</div>';
+    }
+  }
+  /* Each match */
+  for(var mi=0;mi<sim.topMatches.length;mi++){
+    var m=sim.topMatches[mi];
+    var matchId=cardId+'_m'+mi;
+    var compColor=m.compositeScore>=65?'var(--crimson)':(m.compositeScore>=40?'var(--gold)':'var(--green)');
+    h+='<div style="margin-bottom:8px;padding:8px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;border-left:3px solid '+compColor+'">';
+    /* Header row */
+    h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">';
+    h+='<div style="font-size:10px"><span style="color:var(--cyan);font-weight:600">'+m.poolQuestionId+'</span> <span style="color:var(--text-muted)">· '+domainLabel(m.poolQuestionDomain)+'</span></div>';
+    h+='<div style="display:flex;gap:6px;align-items:center"><span style="color:'+compColor+';font-weight:700;font-size:11px">'+m.compositeScore.toFixed(0)+'%</span>';
+    h+='<button onclick="document.getElementById(\'sim-detail-'+matchId+'\').style.display=document.getElementById(\'sim-detail-'+matchId+'\').style.display===\'none\'?\'block\':\'none\'" style="background:var(--bg3);border:1px solid var(--border);color:var(--text-muted);padding:2px 8px;border-radius:4px;font-size:9px;cursor:pointer">expand</button></div></div>';
+    /* Signal pills */
+    if(m.signals&&m.signals.length){
+      h+='<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px">';
+      for(var si=0;si<m.signals.length;si++){
+        h+='<span style="background:var(--bg3);color:var(--text-dim);padding:1px 6px;border-radius:3px;font-size:8px">'+m.signals[si]+'</span>';
+      }
+      h+='</div>';
+    }
+    /* Pool question stem */
+    h+='<div style="font-size:10px;color:var(--text-dim);line-height:1.5">'+m.poolQuestionText+'</div>';
+    /* Expandable detail: breakdown + full answer options */
+    h+='<div id="sim-detail-'+matchId+'" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:8px">';
+    /* Signal breakdown */
+    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-bottom:8px;font-size:9px">';
+    h+='<div><span style="color:var(--text-muted)">Stem cosine:</span> <span style="color:var(--cyan);font-weight:600">'+(m.stemSimilarity*100).toFixed(1)+'%</span></div>';
+    h+='<div><span style="color:var(--text-muted)">Answer Jaccard:</span> <span style="color:var(--gold);font-weight:600">'+(m.answerJaccard*100).toFixed(1)+'%</span></div>';
+    h+='<div><span style="color:var(--text-muted)">Domain match:</span> <span style="color:'+(m.domainMatch?'var(--green)':'var(--text-muted)')+'">'+( m.domainMatch?'✓ Yes':'✗ No')+'</span></div>';
+    h+='<div><span style="color:var(--text-muted)">Composite:</span> <span style="color:'+compColor+';font-weight:600">'+m.compositeScore.toFixed(1)+'%</span></div>';
+    h+='</div>';
+    /* Pool question answer options */
+    if(m.poolAnswers&&m.poolAnswers.length){
+      h+='<div style="font-size:9px;font-weight:600;color:var(--text-muted);margin-bottom:4px">Pool Question Answer Options:</div>';
+      for(var pai=0;pai<m.poolAnswers.length;pai++){
+        var pa=m.poolAnswers[pai];
+        var paGradeColor=pa.grade==='S'?'var(--gold)':(pa.grade==='A'?'var(--cyan)':(pa.grade==='B'?'var(--pass)':(pa.grade==='C'?'var(--text-muted)':'var(--crimson)')));
+        h+='<div style="font-size:9px;padding:2px 6px;margin:1px 0;display:flex;gap:6px;align-items:baseline"><span style="color:'+paGradeColor+';font-weight:700;min-width:12px">'+pa.grade+'</span><span style="color:var(--text-dim)">'+pa.text+'</span></div>';
+      }
+    }
+    h+='</div></div>';
+  }
+  h+='</div>';
+  return h;
+}
+async function loadGenQReview(){
+  try{
+    var raw=await api('GET','/prototype-admin/generated-questions');
+    var questions=raw.data||[];var meta=raw.meta||{};
+    if(!Array.isArray(questions))questions=[];
+    var html='';
+    html+='<div style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap">';
+    html+='<div style="background:var(--bg3);padding:8px 14px;border-radius:6px;font-size:11px"><span style="color:var(--gold);font-weight:600">'+(meta.pending||0)+'</span> <span style="color:var(--text-muted)">pending review</span></div>';
+    html+='<div style="background:var(--bg3);padding:8px 14px;border-radius:6px;font-size:11px"><span style="color:var(--green);font-weight:600">'+(meta.approved||0)+'</span> <span style="color:var(--text-muted)">approved</span></div>';
+    html+='<div style="background:var(--bg3);padding:8px 14px;border-radius:6px;font-size:11px"><span style="color:var(--crimson);font-weight:600">'+(meta.rejected||0)+'</span> <span style="color:var(--text-muted)">rejected</span></div>';
+    html+='<div style="background:var(--bg3);padding:8px 14px;border-radius:6px;font-size:11px"><span style="color:var(--cyan);font-weight:600">'+(meta.total||0)+'</span> <span style="color:var(--text-muted)">total generated</span></div>';
+    html+='</div>';
+    if(!questions.length){
+      html+='<div class="empty-state">No questions pending review. Generate by expanding completed sessions in the Sessions tab.</div>';
+      document.getElementById('genq-review-content').innerHTML=html;return;
+    }
+    for(var i=0;i<questions.length;i++){
+      var gq=questions[i];
+      var bandColor=gq.scoreBand==='low'?'var(--crimson)':(gq.scoreBand==='mid'?'var(--gold)':'var(--cyan)');
+      var sim=gq.similarity||null;
+      html+='<div style="margin-bottom:12px;padding:14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;border-left:4px solid '+bandColor+'" id="genq-card-'+gq.id+'">';
+      html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
+      html+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="color:'+bandColor+';font-weight:600;font-size:12px">'+domainLabel(gq.domain)+'</span>';
+      html+=' <span class="badge badge-'+(gq.scoreBand==='low'?'warn':(gq.scoreBand==='mid'?'info':'success'))+'">'+gq.scoreBand+' ('+((gq.sourceScore||0).toFixed(1))+'%)</span>';
+      html+=' <span class="badge badge-info" style="font-size:8px">Created by engine</span>';
+      html+=' '+renderSimilarityBadge(sim);
+      if(sim&&sim.topMatches&&sim.topMatches.length){html+=' <button onclick="document.getElementById(\'sim-panel-rq-'+gq.id+'\').style.display=document.getElementById(\'sim-panel-rq-'+gq.id+'\').style.display===\'none\'?\'block\':\'none\'" style="background:var(--bg3);border:1px solid var(--border);color:var(--cyan);padding:2px 8px;border-radius:4px;font-size:9px;cursor:pointer">\u25B8 Compare</button>';}
+      html+='</div>';
+      html+='<div style="display:flex;gap:6px">';
+      html+='<button class="btn-sm" style="background:var(--green);color:#000;border:none;cursor:pointer;font-size:10px;padding:4px 10px;border-radius:4px" onclick="approveGenQ(\''+gq.id+'\')">✓ Approve</button>';
+      html+='<button class="btn-sm" style="background:var(--crimson);color:#fff;border:none;cursor:pointer;font-size:10px;padding:4px 10px;border-radius:4px" onclick="rejectGenQ(\''+gq.id+'\')">✗ Reject</button>';
+      html+='</div></div>';
+      html+='<div style="font-size:13px;font-weight:500;line-height:1.5;margin-bottom:8px;color:var(--text-primary)">◈ '+gq.text+'</div>';
+      if(gq.answers&&gq.answers.length){
+        for(var ai=0;ai<gq.answers.length;ai++){
+          var ans=gq.answers[ai];
+          var gradeColor=ans.grade==='S'?'var(--gold)':(ans.grade==='A'?'var(--cyan)':(ans.grade==='B'?'var(--pass)':(ans.grade==='C'?'var(--text-muted)':'var(--crimson)')));
+          html+='<div style="font-size:10px;padding:3px 8px;margin:2px 0;display:flex;gap:8px;align-items:baseline"><span style="color:'+gradeColor+';font-weight:700;min-width:14px">'+ans.grade+'</span><span style="color:var(--text-dim)">'+ans.text+'</span>';
+          if(ans.axes){var axKeys=Object.keys(ans.axes);for(var ak=0;ak<axKeys.length;ak++){html+=' <span style="color:var(--text-muted);font-size:8px">['+axKeys[ak]+':'+ans.axes[axKeys[ak]]+']</span>';}}
+          html+='</div>';
+        }
+      }
+      /* Similarity panel (collapsed by default) */
+      html+=renderSimilarityPanel(sim,'rq-'+gq.id);
+      if(gq.rationale)html+='<div style="font-size:9px;color:var(--text-muted);margin-top:8px;font-style:italic;border-top:1px solid var(--border);padding-top:6px">▸ '+gq.rationale+'</div>';
+      html+='<div style="font-size:9px;color:var(--text-muted);margin-top:4px">Session: <code>'+gq.sessionId.slice(0,20)+'…</code> · ID: <code>'+gq.id+'</code> · Engine: <code>'+(gq.engine_version||'—')+'</code></div>';
+      html+='</div>';
+    }
+    document.getElementById('genq-review-content').innerHTML=html;
+  }catch(e){
+    document.getElementById('genq-review-content').innerHTML='<div class="empty-state">Could not load generated questions: '+e.message+'</div>';
+  }
+}
+async function approveGenQ(qid){
+  if(!confirm('Approve this question and add to question pool?'))return;
+  try{
+    await api('POST','/prototype-admin/generated-questions/'+qid+'/approve');
+    var card=document.getElementById('genq-card-'+qid);
+    if(card){card.style.opacity='0.4';card.style.borderLeftColor='var(--green)';card.querySelector('div').innerHTML='<span class="badge badge-ok">✓ APPROVED — added to question pool</span>';}
+    setTimeout(loadGenQReview,1500);
+  }catch(e){alert('Approve failed: '+e.message);}
+}
+async function rejectGenQ(qid){
+  var reason=prompt('Reject reason (optional):','');
+  if(reason===null)return;
+  try{
+    await api('POST','/prototype-admin/generated-questions/'+qid+'/reject',{reason:reason});
+    var card=document.getElementById('genq-card-'+qid);
+    if(card){card.style.opacity='0.4';card.style.borderLeftColor='var(--crimson)';card.querySelector('div').innerHTML='<span class="badge badge-warn">✗ REJECTED</span>';}
+    setTimeout(loadGenQReview,1500);
+  }catch(e){alert('Reject failed: '+e.message);}
+}
+async function retroactiveGenerate(){
+  var btn=document.getElementById('btn-retro-gen');
+  var stat=document.getElementById('retro-gen-status');
+  if(!confirm('Generate follow-up questions for ALL completed sessions that don\'t have them yet?'))return;
+  btn.disabled=true;btn.style.opacity='0.5';
+  stat.textContent='Generating… this may take a minute.';
+  try{
+    var raw=await api('POST','/prototype-admin/generated-questions/retroactive');
+    var d=raw.data||{};
+    stat.innerHTML='<span style="color:var(--green)">✓ Done!</span> '+d.processed+' sessions processed · '+d.generated+' questions generated · '+d.skipped+' skipped';
+    setTimeout(loadGenQReview,1500);
+  }catch(e){
+    stat.innerHTML='<span style="color:var(--crimson)">Error: '+e.message+'</span>';
+  }finally{
+    btn.disabled=false;btn.style.opacity='1';
+  }
+}
+
+/* === 3. COVERAGE MATRIX === */
+async function loadCoverageMatrix(){
+  try{
+    var raw=await api('GET','/questions/coverage-matrix');
+    var data=raw.data||raw;
+    if(!data||typeof data!=='object'){throw new Error('Unexpected format');}
+    var html='';
+    if(data.matrix&&typeof data.matrix==='object'){
+      html+='<div class="table-wrap"><table class="data-table"><thead><tr><th>Domain/Axis</th><th>Questions</th><th>Coverage</th><th>Gaps</th></tr></thead><tbody>';
+      var keys=Object.keys(data.matrix);
+      for(var i=0;i<keys.length;i++){
+        var k=keys[i];var entry=data.matrix[k];
+        var qCount=entry.questionCount||entry.count||0;
+        var coverage=entry.coverage||(qCount>0?'adequate':'gap');
+        var gaps=entry.gaps||[];
+        var covBadge=coverage==='gap'||qCount<3?'<span class="badge badge-warn">GAP</span>':'<span class="badge badge-ok">\u2713</span>';
+        html+='<tr><td style="text-transform:capitalize;color:var(--cyan)">'+k+'</td><td>'+qCount+'</td><td>'+covBadge+'</td><td style="font-size:10px">'+(gaps.length?gaps.join(', '):'\u2014')+'</td></tr>';
+      }
+      html+='</tbody></table></div>';
+    }else{
+      html+='<div class="finding-card"><div class="finding-body"><pre style="white-space:pre-wrap;font-size:10px;color:var(--text-dim)">'+JSON.stringify(data,null,2)+'</pre></div></div>';
+    }
+    document.getElementById('coverage-matrix-content').innerHTML=html||'<div class="empty-state">No coverage matrix data</div>';
+  }catch(e){
+    document.getElementById('coverage-matrix-content').innerHTML='<div class="empty-state">Coverage matrix unavailable: '+e.message+'</div>';
+  }
+}
+
+/* === 4. QUESTION HEALTH === */
+async function loadQuestionHealth(){
+  try{
+    var raw=await api('GET','/learning/question-health');
+    var items=raw.data||raw.questions||raw;
+    if(!Array.isArray(items)){
+      if(items&&typeof items==='object'){items=Object.values(items)}else{throw new Error('Unexpected format')}
+    }
+    if(!items.length){document.getElementById('question-health-content').innerHTML='<div class="empty-state">No question health data available yet. Data populates after learning loop analysis runs.</div>';return}
+    var html='<div class="table-wrap"><table class="data-table"><thead><tr><th>Question ID</th><th>Domain</th><th>IG Score</th><th>Drift</th><th>Avg Response</th><th>Low IG</th><th>Status</th></tr></thead><tbody>';
+    for(var i=0;i<items.length;i++){
+      var q=items[i];
+      var ig=q.ig||q.informationGain||q.expectedIG;
+      var drift=q.driftFlag||q.drift||false;
+      var avgTime=q.avgResponseTime||q.avg_response_time;
+      var lowIg=q.lowIgFlag||q.low_ig_flag||false;
+      var status=drift?'<span class="badge badge-warn">DRIFT</span>':(lowIg?'<span class="badge badge-issue">LOW IG</span>':'<span class="badge badge-ok">\u2713</span>');
+      html+='<tr><td style="color:var(--cyan)">'+(q.questionId||q.id||'\u2014')+'</td><td style="text-transform:capitalize">'+(q.domain||'\u2014')+'</td><td>'+fmtDec(ig,3)+'</td><td>'+(drift?'<span style="color:var(--orange)">Yes</span>':'No')+'</td><td>'+(avgTime?avgTime+'ms':'\u2014')+'</td><td>'+(lowIg?'<span style="color:var(--crimson)">Yes</span>':'No')+'</td><td>'+status+'</td></tr>';
+    }
+    html+='</tbody></table></div>';
+    document.getElementById('question-health-content').innerHTML=html;
+  }catch(e){
+    document.getElementById('question-health-content').innerHTML='<div class="empty-state">Question health unavailable: '+e.message+'</div>';
+  }
+}
+
+/* === 5. CRONBACH ALPHA === */
+async function loadCronbachAlpha(){
+  try{
+    var raw=await api('GET','/psychometrics/cronbach-alpha');
+    var items=raw.data||raw;
+    if(!Array.isArray(items)){if(items&&typeof items==='object'&&items.domains){items=items.domains}else{items=[]}}
+    if(!items.length){
+      document.getElementById('cronbach-detail').innerHTML='<div class="chart-title">Cronbach \u03b1 by Domain</div><div class="empty-state" style="margin-top:12px">No Cronbach \u03b1 data yet. Requires sufficient completed sessions per domain.</div>';
+      document.getElementById('card-cronbach').textContent='\u2014';
+      document.getElementById('card-cronbach-sub').textContent='Needs more sessions';
+      return;
+    }
+    var labels=[],values=[],bgColors=[];var sum=0;
+    for(var i=0;i<items.length;i++){
+      var it=items[i];labels.push(it.domain||'?');
+      var a=it.alpha||it.cronbachAlpha||0;values.push(a);sum+=a;
+      bgColors.push(a>=0.8?COLORS.green:a>=0.7?COLORS.gold:a>=0.5?COLORS.orange:COLORS.crimson);
+    }
+    var avg=sum/items.length;
+    document.getElementById('card-cronbach').textContent=fmtDec(avg,2);
+    document.getElementById('card-cronbach-sub').textContent=items.length+' domains measured';
+    var html='<div class="chart-title">Cronbach \u03b1 Detail</div><div class="chart-sub">Per-domain internal consistency</div>';
+    html+='<table class="data-table" style="margin-top:10px"><thead><tr><th>Domain</th><th>\u03b1</th><th>N Items</th><th>N Sessions</th><th>Interpretation</th></tr></thead><tbody>';
+    for(var i=0;i<items.length;i++){
+      var it=items[i];var a=it.alpha||it.cronbachAlpha||0;
+      var interp=it.interpretation||(a>=0.9?'Excellent':a>=0.8?'Good':a>=0.7?'Acceptable':a>=0.6?'Questionable':a>=0.5?'Poor':'Unacceptable');
+      var interpColor=a>=0.7?'var(--green)':a>=0.5?'var(--orange)':'var(--crimson)';
+      html+='<tr><td style="text-transform:capitalize;color:var(--cyan)">'+(it.domain||'\u2014')+'</td><td style="font-weight:700;color:'+interpColor+'">'+fmtDec(a,3)+'</td><td>'+(it.nItems||'\u2014')+'</td><td>'+(it.nSessions||'\u2014')+'</td><td style="color:'+interpColor+'">'+interp+'</td></tr>';
+    }
+    html+='</tbody></table>';
+    document.getElementById('cronbach-detail').innerHTML=html;
+    /* Cronbach chart canvas removed from Engine Analytics — data shown in table only */
+  }catch(e){
+    document.getElementById('cronbach-detail').innerHTML='<div class="chart-title">Cronbach \u03b1</div><div class="empty-state" style="margin-top:12px">Unavailable: '+e.message+'</div>';
+  }
+}
+
+/* === 6. ITEM-TOTAL CORRELATIONS === */
+async function loadItemCorrelations(){
+  try{
+    var raw=await api('GET','/psychometrics/item-total-correlations');
+    var items=raw.data||raw;
+    if(!Array.isArray(items)){if(items&&typeof items==='object'){items=Object.values(items)}else{items=[]}}
+    if(!items.length){document.getElementById('item-corr-content').innerHTML='<div class="empty-state">No item-total correlation data available yet.</div>';return}
+    var html='<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px">Item-Total Correlations (r<sub>it</sub>)</div>';
+    html+='<div class="table-wrap"><table class="data-table"><thead><tr><th>Question</th><th>Domain</th><th>r<sub>it</sub></th><th>Flag</th><th>Sample</th></tr></thead><tbody>';
+    for(var i=0;i<items.length;i++){
+      var it=items[i];var rit=it.r_it||it.rit||it.correlation||0;
+      var flag=it.flag||(rit<0.2?'LOW':'OK');
+      var flagBadge=flag==='LOW'||flag==='low'?'<span class="badge badge-warn">LOW</span>':'<span class="badge badge-ok">\u2713</span>';
+      html+='<tr><td style="color:var(--cyan)">'+(it.questionId||it.id||'\u2014')+'</td><td style="text-transform:capitalize">'+(it.domain||'\u2014')+'</td><td style="font-weight:600;color:'+(rit>=0.3?'var(--green)':rit>=0.2?'var(--gold)':'var(--crimson)')+'">'+fmtDec(rit,3)+'</td><td>'+flagBadge+'</td><td>'+(it.sampleSize||it.n||'\u2014')+'</td></tr>';
+    }
+    html+='</tbody></table></div>';
+    document.getElementById('item-corr-content').innerHTML=html;
+  }catch(e){
+    document.getElementById('item-corr-content').innerHTML='<div class="empty-state">Item correlations unavailable: '+e.message+'</div>';
+  }
+}
+
+/* === 7. DOMAIN CORRELATION MATRIX === */
+async function loadDomainCorrelations(){
+  try{
+    var raw=await api('GET','/psychometrics/domain-correlation-matrix');
+    var data=raw.data||raw;
+    if(!data||!data.matrix){throw new Error('No matrix data')}
+    var domains=data.domains||Object.keys(data.matrix);
+    var matrix=data.matrix;
+    var html='<div class="chart-title">Inter-Domain Correlation Matrix</div><div class="chart-sub">Empirical Pearson r \u00b7 n='+(data.sampleSize||'\u2014')+'</div>';
+    html+='<div class="table-wrap" style="margin-top:10px"><table class="heat-table"><thead><tr><th></th>';
+    for(var i=0;i<domains.length;i++){html+='<th>'+domains[i].substring(0,4).toUpperCase()+'</th>';}
+    html+='</tr></thead><tbody>';
+    for(var i=0;i<domains.length;i++){
+      html+='<tr><td style="font-weight:600">'+domains[i].substring(0,4).toUpperCase()+'</td>';
+      var row=matrix[domains[i]]||matrix[i]||{};
+      for(var j=0;j<domains.length;j++){
+        var val=i===j?1.00:(typeof row[domains[j]]==='number'?row[domains[j]]:(row[j]||0));
+        var intensity=Math.abs(val);
+        var bg=i===j?'rgba(245,200,66,0.15)':val>0.5?'rgba(61,214,140,'+(0.1+intensity*0.3)+')':val>0.3?'rgba(78,201,224,'+(0.1+intensity*0.2)+')':val<-0.2?'rgba(229,69,69,'+(0.1+intensity*0.3)+')':'transparent';
+        html+='<td style="background:'+bg+';color:var(--text-dim)">'+fmtDec(val,2)+'</td>';
+      }
+      html+='</tr>';
+    }
+    html+='</tbody></table></div>';
+    if(data.flaggedPairs&&data.flaggedPairs.length){
+      html+='<div class="note" style="margin-top:10px">\u26a0 Flagged pairs: '+data.flaggedPairs.map(function(p){return Array.isArray(p)?p.join(' \u2194 '):(p.domain1+' \u2194 '+p.domain2)}).join(', ')+'</div>';
+    }
+    document.getElementById('domain-corr-detail').innerHTML=html;
+  }catch(e){
+    document.getElementById('domain-corr-detail').innerHTML='<div class="chart-title">Domain Correlation Matrix</div><div class="empty-state" style="margin-top:12px">Unavailable: '+e.message+'</div>';
+  }
+}
+
+/* === 8. FEEDBACK STATS === */
+async function loadFeedbackStats(){
+  try{
+    var raw=await api('GET','/prototype-learning/feedback/stats');
+    var data=raw.data||raw;
+    if(!data||typeof data!=='object'){throw new Error('Unexpected format')}
+    var totalFb=data.totalFeedback||data.total||0;
+    if(totalFb===0){document.getElementById('feedback-stats-extra').innerHTML='';return;}
+    document.getElementById('section-feedback').style.display='';
+    var html='<div class="findings-grid">';
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">\u2261 AGGREGATE</span></div><div class="finding-title">Feedback Statistics</div><div class="finding-body">';
+    html+='Total responses: <code>'+fmt(data.totalFeedback||data.total||0)+'</code><br>';
+    html+='Helpfulness rate: <code>'+pct(data.helpfulnessRate||data.helpfulnessPercent||0)+'</code><br>';
+    if(data.avgRating)html+='Average rating: <code>'+fmtDec(data.avgRating,2)+'</code><br>';
+    if(data.freeTextCount)html+='Free text comments: <code>'+fmt(data.freeTextCount)+'</code><br>';
+    if(data.lastFeedbackAt)html+='Last feedback: <code>'+new Date(data.lastFeedbackAt).toLocaleDateString('en-IN')+'</code>';
+    html+='</div></div>';
+    if(data.bySession||data.perSession){
+      var ps=data.bySession||data.perSession;
+      html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-gold">\u25be PER-SESSION</span></div><div class="finding-title">Per-Session Breakdown</div><div class="finding-body"><pre style="white-space:pre-wrap;font-size:10px">'+JSON.stringify(ps,null,2)+'</pre></div></div>';
+    }
+    html+='</div>';
+    document.getElementById('feedback-stats-extra').innerHTML=html;
+  }catch(e){
+    document.getElementById('feedback-stats-extra').innerHTML='<div class="empty-state">Aggregate feedback stats unavailable: '+e.message+'</div>';
+  }
+}
+
+/* === 9. INVITES === */
+async function loadInvites(){
+  try{
+    var raw=await api('GET','/invites');
+    var invites=(raw.data&&raw.data.invites)||raw.data||raw.invites||[];
+    if(!Array.isArray(invites)){invites=[];}
+    document.getElementById('card-invites').textContent=fmt(invites.length);
+    if(!invites.length){document.getElementById('invites-content').innerHTML='<div class="empty-state">No smart link invites found.</div>';return}
+    var html='<div class="table-wrap"><table class="data-table"><thead><tr><th>Code</th><th>Type</th><th>School</th><th>Status</th><th>Uses</th><th>Max Uses</th><th>Created</th><th>Drill-Down</th></tr></thead><tbody>';
+    for(var i=0;i<invites.length;i++){
+      var inv=invites[i];
+      var code=inv.code||inv.inviteCode||'\u2014';
+      var type=inv.assessmentType||inv.type||'\u2014';
+      var school=inv.schoolName||inv.schoolId||'\u2014';
+      var enabled=inv.enabled!==false&&!inv.disabled;
+      var expired=inv.expired||false;
+      var uses=inv.usedCount||inv.useCount||inv.uses||0;
+      var maxUses=inv.maxUses||'\u221e';
+      var created='\u2014';
+      if(inv.createdAt){
+        var cd=inv.createdAt;
+        if(typeof cd==='string')created=new Date(cd).toLocaleDateString('en-IN');
+        else if(cd._seconds)created=new Date(cd._seconds*1000).toLocaleDateString('en-IN');
+        else if(cd.seconds)created=new Date(cd.seconds*1000).toLocaleDateString('en-IN');
+        else if(typeof cd==='number')created=new Date(cd).toLocaleDateString('en-IN');
+        else{var d2=new Date(cd);if(!isNaN(d2.getTime()))created=d2.toLocaleDateString('en-IN');}
+      }
+      var statusBadge=expired?'<span class="badge badge-error">expired</span>':(enabled?'<span class="badge badge-success">active</span>':'<span class="badge badge-warn">disabled</span>');
+      html+='<tr><td style="font-size:10px;color:var(--cyan);font-weight:600">'+code+'</td><td>'+type+'</td><td style="font-size:10px">'+school+'</td><td>'+statusBadge+'</td><td>'+uses+'</td><td>'+maxUses+'</td><td>'+created+'</td>';
+      html+='<td><button class="btn-sm btn-gold" onclick="drillInvite(\''+code+'\')">Metrics</button></td>';
+      html+='</tr>';
+    }
+    html+='</tbody></table></div>';
+    document.getElementById('invites-content').innerHTML=html;
+  }catch(e){
+    document.getElementById('invites-content').innerHTML='<div class="empty-state">Could not load invites: '+e.message+'</div>';
+  }
+}
+async function drillInvite(code){
+  var el=document.getElementById('invite-drilldown');
+  el.innerHTML='<div class="section-loading">Loading metrics for '+code+'&hellip;</div>';
+  try{
+    var raw=await api('GET','/invites/'+code+'/metrics');
+    var m=raw.data||raw;
+    var html='<div class="findings-grid">';
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-gold">\u2197 '+code+'</span></div><div class="finding-title">Invite Metrics</div><div class="finding-body">';
+    html+='Total clicks: <code>'+fmt(m.totalClicks||m.clicks||0)+'</code><br>';
+    html+='Unique visitors: <code>'+fmt(m.uniqueVisitors||m.unique||0)+'</code><br>';
+    html+='Sessions started: <code>'+fmt(m.sessionsStarted||m.sessions||0)+'</code><br>';
+    html+='Sessions completed: <code>'+fmt(m.sessionsCompleted||m.completed||0)+'</code><br>';
+    html+='Completion rate: <code>'+pct(m.completionRate||m.completion_rate||0)+'</code><br>';
+    if(m.lastClickAt)html+='Last click: <code>'+new Date(m.lastClickAt).toLocaleDateString('en-IN')+'</code><br>';
+    if(m.avgTimeToComplete)html+='Avg completion time: <code>'+Math.round(m.avgTimeToComplete/1000)+'s</code>';
+    html+='</div></div>';
+    if(m.clickTimeline&&m.clickTimeline.length){
+      html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">\u25c8 TIMELINE</span></div><div class="finding-title">Click Timeline</div><div class="finding-body"><pre style="white-space:pre-wrap;font-size:10px">'+JSON.stringify(m.clickTimeline,null,2)+'</pre></div></div>';
+    }
+    if(m.sessions&&Array.isArray(m.sessions)){
+      html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-success">\u25ce SESSIONS</span></div><div class="finding-title">Associated Sessions</div><div class="finding-body"><pre style="white-space:pre-wrap;font-size:10px">'+JSON.stringify(m.sessions.slice(0,10),null,2)+'</pre></div></div>';
+    }
+    html+='</div>';
+    el.innerHTML=html;
+  }catch(e){
+    el.innerHTML='<div class="empty-state">Invite metrics unavailable: '+e.message+'</div>';
+  }
+}
+
+/* === 9b. CONSENT METRICS === */
+async function loadConsentMetrics(){
+  var el=document.getElementById('consent-content');
+  try{
+    var raw=await api('GET','/prototype-admin/consent-metrics');
+    var d=raw.data||raw;
+    var t=d.totals||{shown:0,accepted:0,declined:0};
+    var html='<div class="chart-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:18px">';
+    html+='<div class="stat-card"><div class="stat-val" style="color:var(--accent)">'+fmt(t.shown)+'</div><div class="stat-label">Forms Shown</div></div>';
+    html+='<div class="stat-card"><div class="stat-val" style="color:var(--green)">'+fmt(t.accepted)+'</div><div class="stat-label">Accepted</div></div>';
+    html+='<div class="stat-card"><div class="stat-val" style="color:var(--crimson)">'+fmt(t.declined)+'</div><div class="stat-label">Declined</div></div>';
+    html+='<div class="stat-card"><div class="stat-val" style="color:var(--green)">'+(d.conversionRate||'0%')+'</div><div class="stat-label">Conversion</div></div>';
+    html+='<div class="stat-card"><div class="stat-val" style="color:var(--crimson)">'+(d.abandonmentRate||'0%')+'</div><div class="stat-label">Abandonment</div></div>';
+    html+='</div>';
+
+    // Per-invite breakdown
+    var byInvite=d.byInvite||{};
+    var codes=Object.keys(byInvite);
+    if(codes.length>0){
+      html+='<div class="section-title" style="font-size:10px;margin:12px 0 8px"><span class="section-icon">&rarr;</span> Per-Invite Consent Breakdown</div>';
+      html+='<div class="table-wrap"><table class="data-table"><thead><tr><th>Invite Code</th><th>Shown</th><th>Accepted</th><th>Declined</th><th>Conversion</th></tr></thead><tbody>';
+      for(var c of codes.sort()){
+        var inv=byInvite[c];
+        var cvr=inv.shown>0?((inv.accepted/inv.shown)*100).toFixed(0)+'%':'0%';
+        html+='<tr><td><code style="color:var(--accent)">'+c+'</code></td>';
+        html+='<td>'+fmt(inv.shown)+'</td>';
+        html+='<td style="color:var(--green)">'+fmt(inv.accepted)+'</td>';
+        html+='<td style="color:var(--crimson)">'+fmt(inv.declined)+'</td>';
+        html+='<td>'+cvr+'</td></tr>';
+      }
+      html+='</tbody></table></div>';
+    }
+
+    // Timeline
+    var timeline=d.timeline||[];
+    if(timeline.length>0){
+      html+='<div class="section-title" style="font-size:10px;margin:16px 0 8px"><span class="section-icon">&Xi;</span> Daily Timeline</div>';
+      html+='<div class="table-wrap"><table class="data-table"><thead><tr><th>Date</th><th>Shown</th><th>Accepted</th><th>Declined</th></tr></thead><tbody>';
+      for(var row of timeline){
+        html+='<tr><td>'+row.date+'</td><td>'+fmt(row.shown)+'</td><td style="color:var(--green)">'+fmt(row.accepted)+'</td><td style="color:var(--crimson)">'+fmt(row.declined)+'</td></tr>';
+      }
+      html+='</tbody></table></div>';
+    }
+
+    if(t.shown===0){
+      html+='<div class="empty-state">No consent events recorded yet. Events will appear once respondents interact with the consent form.</div>';
+    }
+
+    el.innerHTML=html;
+  }catch(e){
+    el.innerHTML='<div class="empty-state">Consent metrics unavailable: '+e.message+'</div>';
+  }
+}
+
+/* === 10. API ENDPOINT AUDIT === */
+async function runApiAudit(){
+  var modules=[
+    {name:'HEALTH',icon:'\u25c8',endpoints:[{m:'GET',p:'/health'}]},
+    {name:'QUESTION BANK',icon:'\u25c7',endpoints:[{m:'GET',p:'/questions'},{m:'GET',p:'/questions/coverage-matrix'},{m:'GET',p:'/questions/consistency-pairs'}]},
+    {name:'PROFILES',icon:'\u25c9',endpoints:[{m:'GET',p:'/profiles/demo-test/trajectory'}]},
+    {name:'PARENT ASSESSMENT',icon:'\u2665',endpoints:[{m:'GET',p:'/parent-assessment/sessions/demo/state',expect404:true}]},
+    {name:'TEACHER ASSESSMENT',icon:'\u2731',endpoints:[{m:'GET',p:'/teacher-assessment/sessions/demo/state',expect404:true}]},
+    {name:'ENGINE INTERNALS',icon:'\u2699',endpoints:[{m:'POST',p:'/engine/prior/initialise',body:{ageBand:'7-11'}},{m:'POST',p:'/engine/eig/calculate',body:{questions:[{id:'Q1',domain:'curiosity',difficulty:0.5}],posteriors:{curiosity:{alpha:1,beta:1}},answeredIds:[]}}]},
+    {name:'LEARNING LOOP',icon:'\u221e',endpoints:[{m:'GET',p:'/learning/question-health'},{m:'GET',p:'/prototype-learning/proposals'},{m:'GET',p:'/prototype-learning/feedback/stats'}]},
+    {name:'PSYCHOMETRICS',icon:'\u03c8',endpoints:[{m:'GET',p:'/psychometrics/cronbach-alpha'},{m:'GET',p:'/psychometrics/item-total-correlations'},{m:'GET',p:'/psychometrics/domain-correlation-matrix'}]},
+    {name:'ADMIN',icon:'\u2606',endpoints:[{m:'GET',p:'/prototype-admin/metrics'},{m:'GET',p:'/prototype-admin/health'},{m:'GET',p:'/prototype-admin/sessions?limit=5'},{m:'GET',p:'/prototype-admin/registry/current'},{m:'GET',p:'/prototype-admin/registry/history'}]},
+    {name:'INVITES',icon:'\u2197',endpoints:[{m:'GET',p:'/invites'}]},
+    {name:'EXPORT',icon:'\u21e9',endpoints:[{m:'GET',p:'/export/pilot-bundle?schoolId=somalwar-ramdaspeth'}]},
+    {name:'ALUMNI',icon:'\u25ce',endpoints:[{m:'GET',p:'/alumni/directory'}]},
+    {name:'GROWTH PREDICTION',icon:'\u25b3',endpoints:[{m:'GET',p:'/growth-prediction/by-child/demo'}]},
+    {name:'INTELLIGENCE',icon:'\u25c8',endpoints:[{m:'GET',p:'/intelligence/available-dimensions'}]}
+  ];
+  var results=[];var totalTested=0;var statusCounts={s200:0,s403:0,s404:0,s429:0,s500:0,other:0};
+  var latencyLabels=[],latencyData=[],latencyColors=[];
+  for(var mi=0;mi<modules.length;mi++){
+    var mod=modules[mi];mod.results=[];
+    for(var ei=0;ei<mod.endpoints.length;ei++){
+      var ep=mod.endpoints[ei];
+      var r=await timedFetch(ep.m,ep.p,ep.body||null);
+      r.method=ep.m;r.path=ep.p;r.expect404=!!ep.expect404;mod.results.push(r);totalTested++;
+      if((r.status>=200&&r.status<300)||(r.status===404&&ep.expect404))statusCounts.s200++;
+      else if(r.status===403)statusCounts.s403++;
+      else if(r.status===404)statusCounts.s404++;
+      else if(r.status===429)statusCounts.s429++;
+      else if(r.status>=500)statusCounts.s500++;
+      else statusCounts.other++;
+      latencyLabels.push(ep.p.replace('/api/v1/roots','').split('/').filter(Boolean).pop()||ep.p);
+      latencyData.push(r.ms);
+      latencyColors.push((r.status>=200&&r.status<300)||(r.status===404&&r.expect404)?COLORS.green:r.status===403?COLORS.orange:r.status===429?COLORS.purple:COLORS.crimson);
+    }
+    results.push(mod);
+  }
+  document.getElementById('meta-endpoints').textContent=totalTested+' tested';
+  document.getElementById('footer-endpoints').textContent=totalTested+' endpoints audited';
+  document.getElementById('chart-latency-sub').textContent=totalTested+' endpoints \u00b7 avg '+Math.round(latencyData.reduce(function(a,b){return a+b},0)/latencyData.length)+'ms';
+  if(latencyChart)latencyChart.destroy();
+  latencyChart=new Chart(document.getElementById('latencyChart'),{
+    type:'bar',data:{labels:latencyLabels.slice(0,20),datasets:[{label:'Response time (ms)',data:latencyData.slice(0,20),backgroundColor:latencyColors.slice(0,20),borderRadius:3}]},
+    options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:COLORS.dim},ticks:{callback:function(v){return v+'ms'}}},y:{grid:{display:false},ticks:{font:{size:8}}}}}
+  });
+  var html='<div class="chart-grid" style="margin-bottom:16px"><div class="chart-box"><div class="chart-title">Endpoint Status Distribution</div><div class="chart-sub">'+totalTested+' endpoints tested across '+modules.length+' modules</div><canvas id="auditStatusChart"></canvas></div></div>';
+  html+='<div class="module-grid">';
+  for(var mi=0;mi<results.length;mi++){
+    var mod=results[mi];
+    var counts={};
+    for(var ri=0;ri<mod.results.length;ri++){
+      var s=mod.results[ri].status;var e404=mod.results[ri].expect404;var key=(s>=200&&s<300)||(s===404&&e404)?'200':(s===403?'403':(s===429?'429':(s===404?'404':'err')));
+      counts[key]=(counts[key]||0)+1;
+    }
+    html+='<div class="module-card"><div class="module-header"><span class="module-name">'+mod.icon+' MODULE '+mi+' \u2014 '+mod.name+'</span><div class="module-stats">';
+    if(counts['200'])html+='<span class="stat-pill pill-pass">'+counts['200']+'\u00d7200</span>';
+    if(counts['403'])html+='<span class="stat-pill pill-403">'+counts['403']+'\u00d7403</span>';
+    if(counts['429'])html+='<span class="stat-pill pill-429">'+counts['429']+'\u00d7429</span>';
+    if(counts['404'])html+='<span class="stat-pill pill-404">'+counts['404']+'\u00d7404</span>';
+    if(counts['err'])html+='<span class="stat-pill pill-err">'+counts['err']+'\u00d7ERR</span>';
+    html+='</div></div>';
+    for(var ri=0;ri<mod.results.length;ri++){
+      var r=mod.results[ri];var isPass=(r.status>=200&&r.status<300)||(r.status===404&&r.expect404);var sc=isPass?'s200':(r.status===403?'s403':(r.status===429?'s429':(r.status===404?'s404':'s500')));
+      var sym=isPass?'\u2713 '+(r.status===404?'404 (expected)':r.status):(r.status===403?'\u2298 403':(r.status===429?'\u229b 429':(r.status===404?'\u26a0 404':'\u2717 '+r.status)));
+      html+='<div class="endpoint-row"><span class="ep-status '+sc+'">'+sym+'</span><span class="ep-method">'+r.method+'</span><span class="ep-path">'+r.path+'</span><span class="ep-time">'+r.ms+'ms</span></div>';
+    }
+    html+='</div>';
+  }
+  html+='</div>';
+  html+='<p class="note" style="margin-top:12px">\u2298 403 = expected role restriction \u00b7 \u229b 429 = rate limit hit \u00b7 \u2713 0 server errors (5xx) indicates healthy API</p>';
+  document.getElementById('api-audit-content').innerHTML=html;
+  setTimeout(function(){
+    var ctx=document.getElementById('auditStatusChart');
+    if(ctx){new Chart(ctx,{
+      type:'doughnut',data:{labels:['\u2713 200 OK','\u2298 403 Role-gated','\u229b 429 Rate-limited','\u26a0 404 Not Found','\u2717 5xx/Error'],datasets:[{data:[statusCounts.s200,statusCounts.s403,statusCounts.s429,statusCounts.s404,statusCounts.s500+statusCounts.other],backgroundColor:[COLORS.green,COLORS.orange,COLORS.purple,COLORS.crimson,'#444'],borderColor:'#0d1117',borderWidth:3,hoverOffset:6}]},
+      options:{cutout:'62%',plugins:{legend:{position:'bottom',labels:{padding:10,boxWidth:12,font:{size:10}}},tooltip:{callbacks:{label:function(ctx){return ' '+ctx.label+': '+ctx.raw+' endpoints'}}}}}
+    })}
+  },100);
+}
+
+/* === 11. PRAI REFERENCE === */
+function buildPraiReference(){
+  function praiFn(streak,threshold){
+    if(streak<threshold)return 1.0;
+    var penalty=1/(1+Math.exp(-(streak-threshold)));
+    return Math.max(0,1-0.4*penalty);
+  }
+  var streaks=[];for(var i=0;i<=15;i++)streaks.push(i);
+  new Chart(document.getElementById('praiCurveChart'),{
+    type:'line',data:{labels:streaks,datasets:[
+      {label:'PRAI streak component (threshold=6)',data:streaks.map(function(s){return praiFn(s,6)*100}),borderColor:COLORS.gold,backgroundColor:'rgba(245,200,66,0.06)',borderWidth:2,fill:true,tension:0.3,pointRadius:4},
+      {label:'Old threshold=3 (deprecated)',data:streaks.map(function(s){return praiFn(s,3)*100}),borderColor:COLORS.crimson,backgroundColor:'transparent',borderWidth:1.5,borderDash:[4,4],tension:0.3,pointRadius:2}
+    ]},options:{scales:{y:{min:55,max:105,grid:{color:COLORS.dim},ticks:{callback:function(v){return v+'%'}}},x:{title:{display:true,text:'Consecutive S answers (streak)',color:'#8b949e',font:{size:10}},grid:{color:COLORS.dim}}},plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:8,font:{size:10}}}}}
+  });
+  var Ns=[1,2,3,5,6,7,10];
+  var allSraw=Ns.map(function(n){return(1+n)/(2+n)*100});
+  var allFraw=Ns.map(function(n){return 1/(2+n)*100});
+  new Chart(document.getElementById('betaRangeChart'),{
+    type:'line',data:{labels:Ns,datasets:[
+      {label:'All-S raw (Beta ceiling)',data:allSraw,borderColor:COLORS.green,backgroundColor:'rgba(61,214,140,0.06)',fill:'+1',borderWidth:2,tension:0.3,pointRadius:4},
+      {label:'All-F raw (Beta floor)',data:allFraw,borderColor:COLORS.crimson,backgroundColor:'rgba(229,69,69,0.04)',borderWidth:2,tension:0.3,pointRadius:4}
+    ]},options:{scales:{y:{min:0,max:100,grid:{color:COLORS.dim},ticks:{callback:function(v){return v+'%'}}},x:{title:{display:true,text:'N questions answered',color:'#8b949e',font:{size:10}},grid:{color:COLORS.dim}}},plugins:{legend:{position:'bottom',labels:{boxWidth:12,padding:8,font:{size:10}}}}}
+  });
+  var tbody=document.getElementById('prai-table-body');
+  var Nvals=[1,2,3,5,6,7,10];
+  var html='';
+  for(var i=0;i<Nvals.length;i++){
+    var n=Nvals[i];
+    var sR=(1+n)/(2+n)*100;
+    var fR=1/(2+n)*100;
+    var range=sR-fR;
+    var prai=praiFn(n,6)*100;
+    var nLabel=n===6?'N='+n+' <span style="color:var(--gold);font-size:9px">\u2190 threshold</span>':'N='+n;
+    var interp;
+    if(prai>=100)interp='<span style="color:var(--pass)">\u2713 Below threshold \u2014 no streak signal</span>';
+    else if(prai>=70)interp='<span style="color:var(--warn)">Moderate streak \u2014 review recommended</span>';
+    else interp='<span style="color:var(--fail)">Strong streak signal \u2014 likely performed pattern</span>';
+    var praiClass=prai<100?(prai<70?'danger':''):'highlight';
+    html+='<tr><td>'+nLabel+'</td><td>'+sR.toFixed(1)+'%</td><td>'+fR.toFixed(1)+'%</td><td>'+range.toFixed(1)+'pp</td><td class="'+praiClass+'">'+prai.toFixed(1)+'%</td><td>'+interp+'</td></tr>';
+  }
+  tbody.innerHTML=html;
+}
+
+/* === 12. PROPOSALS === */
+async function loadProposals(){
+  try{
+    var raw=await api('GET','/prototype-learning/proposals');
+    var proposals=raw.data||[];
+    if(!Array.isArray(proposals))throw new Error('Unexpected format');
+    if(!proposals.length){document.getElementById('proposals-content').innerHTML='<div class="empty-state">No learning proposals at this time.</div>';return}
+    var html='<div class="table-wrap"><table class="data-table"><thead><tr><th>ID</th><th>Type</th><th>Domain</th><th>Status</th><th>Confidence</th><th>Description</th><th>Created</th><th>Actions</th></tr></thead><tbody>';
+    for(var i=0;i<proposals.length;i++){
+      var p=proposals[i],id=p.proposalId||p.id||'\u2014',shortId=typeof id==='string'?id.slice(0,12):id;
+      var status=p.status||'pending';
+      var statusBadge=status==='approved'?'<span class="badge badge-success">approved</span>':status==='rejected'?'<span class="badge badge-error">rejected</span>':'<span class="badge badge-warn">pending</span>';
+      var created=p.createdAt?new Date(p.createdAt).toLocaleDateString('en-IN'):'\u2014';
+      var conf=p.confidence?pct(p.confidence*100):'\u2014';
+      var desc=p.description||p.rationale||'\u2014';
+      var isPending=status==='pending'||status==='pending_review';
+      html+='<tr><td style="font-size:10px;color:var(--cyan)">'+shortId+'</td><td>'+(p.type||p.proposalType||'\u2014')+'</td><td style="text-transform:capitalize">'+(p.domain||'\u2014')+'</td><td>'+statusBadge+'</td><td>'+conf+'</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+desc+'">'+desc+'</td><td>'+created+'</td><td>';
+      if(isPending)html+='<button class="btn-sm btn-approve" onclick="approveProposal(\''+id+'\')">Approve</button> <button class="btn-sm btn-reject" onclick="rejectProposal(\''+id+'\')">Reject</button>';
+      else html+='<span style="color:var(--text-muted)">\u2014</span>';
+      html+='</td></tr>';
+    }
+    html+='</tbody></table></div>';
+    document.getElementById('proposals-content').innerHTML=html;
+  }catch(e){document.getElementById('proposals-content').innerHTML='<div class="empty-state">Could not load proposals: '+e.message+'</div>'}
+}
+async function approveProposal(id){try{await api('POST','/prototype-admin/proposals/'+id+'/approve');showToast('Proposal approved');loadProposals();loadMetrics()}catch(e){showToast('Failed: '+e.message,'error')}}
+async function rejectProposal(id){try{await api('POST','/prototype-admin/proposals/'+id+'/reject');showToast('Proposal rejected');loadProposals()}catch(e){showToast('Failed: '+e.message,'error')}}
+
+/* === 13. VERSION REGISTRY === */
+async function loadRegistry(){
+  try{
+    var raw=await api('GET','/prototype-admin/registry/history');
+    var versions=raw.data||[];
+    if(!Array.isArray(versions))throw new Error('Unexpected format');
+    if(!versions.length){document.getElementById('registry-content').innerHTML='<div class="empty-state">No versions registered yet.</div>';return}
+    var html='<div class="table-wrap"><table class="data-table"><thead><tr><th>Version</th><th>Status</th><th>Registered</th><th>By</th><th>Description</th><th>Changes</th><th>Actions</th></tr></thead><tbody>';
+    for(var i=0;i<versions.length;i++){
+      var v=versions[i],ver=v.version||v.engineVersion||'\u2014';
+      var isActive=v.active||v.status==='active';
+      var statusBadge=isActive?'<span class="badge badge-live">\u25cf active</span>':v.status==='deprecated'?'<span class="badge badge-error">deprecated</span>':'<span class="badge badge-info">pending</span>';
+      var registered=(v.registeredAt||v.createdAt)?new Date(v.registeredAt||v.createdAt).toLocaleDateString('en-IN'):'\u2014';
+      var by=v.registeredBy||'\u2014',desc=v.description||'\u2014';
+      var changes=v.changes&&v.changes.length?v.changes.join('; '):'\u2014';
+      var vId=v.id||v.versionId||ver;
+      html+='<tr><td style="font-weight:700;color:'+(isActive?'var(--green)':'var(--text)')+'">'+ver+'</td><td>'+statusBadge+'</td><td>'+registered+'</td><td style="font-size:10px;color:var(--text-muted)">'+by+'</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+desc+'">'+desc+'</td><td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px" title="'+changes+'">'+changes+'</td><td>';
+      if(!isActive&&v.status!=='deprecated')html+='<button class="btn-sm btn-gold" onclick="activateVersion(\''+vId+'\')">Activate</button>';
+      else html+='<span style="color:var(--text-muted)">\u2014</span>';
+      html+='</td></tr>';
+    }
+    html+='</tbody></table></div>';
+    document.getElementById('registry-content').innerHTML=html;
+  }catch(e){document.getElementById('registry-content').innerHTML='<div class="empty-state">Could not load versions: '+e.message+'</div>'}
+}
+async function registerVersion(){
+  var version=document.getElementById('reg-version').value.trim();
+  var description=document.getElementById('reg-description').value.trim();
+  var changelog=document.getElementById('reg-changelog').value.trim();
+  if(!version){showToast('Version required','error');return}
+  if(!description){showToast('Description required','error');return}
+  var btn=document.getElementById('btn-register');btn.disabled=true;btn.textContent='Registering\u2026';
+  try{
+    var user=fbAuth.currentUser;
+    await api('POST','/prototype-admin/registry/register',{version:version,description:description,changes:changelog?[changelog]:[],registeredBy:user?user.email:'admin'});
+    showToast('Version '+version+' registered \u2713');
+    document.getElementById('reg-version').value='';document.getElementById('reg-description').value='';document.getElementById('reg-changelog').value='';
+    loadRegistry();
+  }catch(e){showToast('Failed: '+e.message,'error')}
+  finally{btn.disabled=false;btn.textContent='Register'}
+}
+async function activateVersion(id){try{await api('POST','/prototype-admin/registry/activate/'+id);showToast('Version activated \u2713');loadRegistry();loadMetrics()}catch(e){showToast('Failed: '+e.message,'error')}}
+
+/* === 14. HEALTH CHECK === */
+async function loadHealth(){
+  var el=document.getElementById('health-content');
+  try{
+    var start=Date.now();var res=await fetch(API_BASE+'/health');var latency=Date.now()-start;
+    var d=await res.json();var eng=d.data||d;
+    var html='<div class="findings-grid">';
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge '+(res.ok?'badge-success':'badge-error')+'">'+(res.ok?'\u2713 ONLINE':'\u2717 DOWN')+'</span></div><div class="finding-title">API Status</div><div class="finding-body">Endpoint: <code>'+API_BASE+'/health</code><br>Status: <strong>'+res.status+'</strong> \u00b7 Latency: <strong>'+latency+'ms</strong><br>Engine: <code>'+(eng.engine_version||eng.engineVersion||'\u2014')+'</code></div></div>';
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-gold">\u2699 ENGINE</span></div><div class="finding-title">Engine Details</div><div class="finding-body">Version: <code>'+(eng.engine_version||eng.engineVersion||'\u2014')+'</code><br>Status: <code>'+(eng.status||'\u2014')+'</code><br>Uptime: <code>'+(eng.uptime||'\u2014')+'</code><br>Module: <code>'+(eng.module||'roots')+'</code></div></div>';
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">\u25bf FIRESTORE</span></div><div class="finding-title">Data Store</div><div class="finding-body">Project: <code>coolschools-72426</code><br>Collections: <code>roots_sessions, roots_events, roots_reports, roots_questions, roots_score_artifacts, roots_learning_suggestions, roots_parent_sessions, roots_profiles, roots_invites, roots_invite_clicks</code><br>Region: <code>us-central1</code></div></div>';
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-success">\u25ce AUTH</span></div><div class="finding-title">Authentication</div><div class="finding-body">Provider: Firebase Auth (coolschools-72426)<br>Method: Google Sign-In popup<br>Roles: <code>system \u00b7 admin \u00b7 superadmin</code><br>Token refresh: every 50 min</div></div>';
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-action">\u26a1 INFRASTRUCTURE</span></div><div class="finding-title">Deployment</div><div class="finding-body">Platform: <code>Google Cloud Run</code><br>Region: <code>us-central1</code><br>Domain: <code>cool-schools-api-420407869747.us-central1.run.app</code><br>Frontend: <code>kaaykostore.web.app</code> (Firebase Hosting)</div></div>';
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">\u03c8 FRAMEWORK</span></div><div class="finding-title">Assessment Framework</div><div class="finding-body">Model: <code>Pancha-Kosha (5 sheaths)</code><br>Domains: <code>curiosity, resilience, empathy, systems, character, music, physical, spiritual</code><br>Engine: <code>Bayesian Beta-Binomial CAT</code><br>Prior: <code>Beta(1,1) uniform</code></div></div>';
+    html+='</div>';
+    el.innerHTML=html;
+  }catch(e){
+    el.innerHTML='<div class="finding-card"><div class="finding-badge"><span class="badge badge-error">\u2717 ERROR</span></div><div class="finding-title">Health Check Failed</div><div class="finding-body">'+e.message+'</div></div>';
+  }
+}
+
+/* === 15. ADMIN HEALTH (sessionsToday + lightweight polling) === */
+async function loadAdminHealth(){
+  try{
+    var raw=await api('GET','/prototype-admin/health');
+    var h=raw.data||raw;
+    var meta=raw.meta||{};
+    /* Update header with sessionsToday if available */
+    if(typeof h.sessionsToday==='number'){
+      var sub=document.querySelector('#card-active .card-sub');
+      if(sub)sub.textContent=h.sessionsToday+' sessions today';
+    }
+    if(h.engineVersion||h.engine_version){
+      document.getElementById('meta-engine').textContent='ROOTS v'+(h.engineVersion||h.engine_version);
+    }
+    if(meta.engine_version){
+      document.getElementById('meta-engine').textContent='ROOTS v'+meta.engine_version;
+    }
+  }catch(e){console.warn('Admin health:',e.message)}
+}
+
+/* === 16. SESSION RESULTS EXPLORER (Full Rewrite) === */
+var _allSessions=[];
+var _sessionsMeta={};
+async function loadSessionResults(){
+  var el=document.getElementById('sessions-explorer-content');
+  try{
+    var raw=await api('GET','/prototype-admin/sessions?limit=500');
+    var sessions=(raw.data||[]);
+    _sessionsMeta=raw.meta||{};
+    _allSessions=sessions;
+    /* Show filters */
+    var filterBar=document.getElementById('sessions-explorer-filters');
+    if(filterBar)filterBar.style.display='flex';
+    /* Attach filter listeners */
+    var btns=document.querySelectorAll('.session-filter');
+    for(var i=0;i<btns.length;i++){
+      btns[i].onclick=function(){
+        document.querySelectorAll('.session-filter').forEach(function(b){b.classList.remove('active')});
+        this.classList.add('active');
+        renderSessionTable(this.getAttribute('data-filter'));
+      };
+    }
+    renderSessionTable('all');
+    renderDomainAnalytics();
+  }catch(e){
+    el.innerHTML='<div class="empty-state">Session list unavailable: '+e.message+'<br><span style="font-size:10px;color:var(--text-muted)">Endpoint: /prototype-admin/sessions</span></div>';
+  }
+}
+
+/* === 16c. DOMAIN CARDS + ASSESSMENT INTELLIGENCE (v3-style) === */
+function renderDomainAnalytics(){
+  if(!_allSessions||!_allSessions.length){
+    document.getElementById('domain-cards-sub').textContent='No sessions loaded';
+    document.getElementById('domain-cards-grid').innerHTML='<div class="empty-state" style="grid-column:1/-1">No session data available yet.</div>';
+    return;
+  }
+  /* Aggregate domain scores from ALL completed sessions.
+     Priority: posteriorScores (from Bayesian posteriors) > scoreArtifact.axisScores > scoreArtifact.domainScores */
+  var domainAgg={};
+  for(var i=0;i<DOMAIN_ORDER.length;i++){domainAgg[DOMAIN_ORDER[i]]={sum:0,count:0,scores:[],alphaSum:0,betaSum:0};}
+  var completedWithScores=0;
+  /* Also compute coverage counts */
+  var covCounts={};
+  for(var i=0;i<DOMAIN_ORDER.length;i++){covCounts[DOMAIN_ORDER[i]]=0;}
+  /* PRAI stats */
+  var praiScores=[],totalCompleted=0,totalQs=0;
+  for(var i=0;i<_allSessions.length;i++){
+    var s=_allSessions[i];
+    /* Coverage */
+    var dc=s.domainsCovered||[];
+    for(var j=0;j<dc.length;j++){var dn=dc[j].toLowerCase();if(covCounts[dn]!=null)covCounts[dn]++;}
+    /* Questions */
+    totalQs+=(s.questionsAnswered||0);
+    if(s.status==='completed')totalCompleted++;
+    if(s.praiScore!=null)praiScores.push(s.praiScore);
+    if(s.status!=='completed')continue;
+    /* === SOURCE 1: posteriorScores (most reliable — direct from Bayesian engine) === */
+    var ps=s.posteriorScores;
+    if(ps&&typeof ps==='object'){
+      var psKeys=Object.keys(ps);
+      var found=false;
+      for(var k=0;k<psKeys.length;k++){
+        var dKey=psKeys[k].toLowerCase();
+        if(domainAgg[dKey]&&ps[psKeys[k]]&&typeof ps[psKeys[k]].mean==='number'){
+          var score=ps[psKeys[k]].mean;
+          domainAgg[dKey].sum+=score;
+          domainAgg[dKey].count++;
+          domainAgg[dKey].scores.push(score);
+          domainAgg[dKey].alphaSum+=(ps[psKeys[k]].alpha||2);
+          domainAgg[dKey].betaSum+=(ps[psKeys[k]].beta||2);
+          found=true;
+        }
+      }
+      if(found){completedWithScores++;continue;}
+    }
+    /* === SOURCE 2: scoreArtifact (anonymous sessions) === */
+    var sa=s.scoreArtifact;
+    if(!sa)continue;
+    completedWithScores++;
+    var axS=sa.axisScores||null;
+    if(axS&&typeof axS==='object'&&!Array.isArray(axS)){
+      var axKeys=Object.keys(axS);
+      for(var k=0;k<axKeys.length;k++){
+        var dKey=axKeys[k].toLowerCase();
+        if(domainAgg[dKey]&&typeof axS[axKeys[k]]==='number'){
+          domainAgg[dKey].sum+=axS[axKeys[k]];
+          domainAgg[dKey].count++;
+          domainAgg[dKey].scores.push(axS[axKeys[k]]);
+        }
+      }
+    } else {
+      var ds=sa.domainScores||sa.domains||[];
+      if(Array.isArray(ds)){
+        for(var j=0;j<ds.length;j++){
+          var dd=ds[j];
+          var dName=(dd.domain||dd.name||'').toLowerCase();
+          if(domainAgg[dName]){
+            var score=dd.score!=null?dd.score:(dd.mean!=null?dd.mean*100:null);
+            if(score!=null){
+              domainAgg[dName].sum+=score;
+              domainAgg[dName].count++;
+              domainAgg[dName].scores.push(score);
+            }
+          }
+        }
+      }
+    }
+  }
+  /* Build domain cards HTML */
+  var DOMAIN_LABELS={curiosity:'Curiosity & Wonder',resilience:'Resilience & Grit',empathy:'Empathy & Compassion',systems:'Systems Thinking',character:'Character & Ethics',music:'Musical Intelligence',physical:'Physical Intelligence',spiritual:'Spiritual Awareness'};
+  var DOMAIN_SHORT={curiosity:'CUR',resilience:'RES',empathy:'EMP',systems:'SYS',character:'CHA',music:'MUS',physical:'PHY',spiritual:'SPI'};
+  var html='',bestDomain=null,bestScore=-1,weakDomain=null,weakScore=101;
+  for(var i=0;i<DOMAIN_ORDER.length;i++){
+    var d=DOMAIN_ORDER[i];
+    var agg=domainAgg[d];
+    var color=DOMAIN_COLORS[d];
+    var mean=agg.count>0?(agg.sum/agg.count):null;
+    var cov=covCounts[d]||0;
+    /* Track best/weakest */
+    if(mean!=null&&mean>bestScore){bestScore=mean;bestDomain=d;}
+    if(mean!=null&&mean<weakScore){weakScore=mean;weakDomain=d;}
+    /* Score display */
+    var scoreDisplay=mean!=null?mean.toFixed(1):'\u2014';
+    var barWidth=mean!=null?Math.max(2,mean)+'%':'0%';
+    /* Alpha/beta: use real posterior values if available, else estimate */
+    var alphaVal=agg.alphaSum>0?(agg.alphaSum/agg.count).toFixed(1):(agg.count>0?(2+agg.sum/100*agg.count).toFixed(1):'2.0');
+    var betaVal=agg.betaSum>0?(agg.betaSum/agg.count).toFixed(1):(agg.count>0?(2+(1-agg.sum/100/agg.count)*agg.count).toFixed(1):'2.0');
+    var statsLine=agg.count>0?'n='+agg.count+' \u00b7 \u03b1'+alphaVal+' \u03b2'+betaVal:(cov>0?cov+' sessions probed':'No data');
+    html+='<div style="background:var(--bg3);padding:12px 14px;border-radius:8px;border-left:4px solid '+color+';transition:border-color 0.2s">';
+    html+='<div style="font-size:10px;font-weight:700;color:'+color+';text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px">'+DOMAIN_SHORT[d]+'</div>';
+    html+='<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:6px">';
+    html+='<span style="font-size:10px;color:var(--text-dim)">'+DOMAIN_LABELS[d]+'</span>';
+    html+='</div>';
+    /* Score bar */
+    html+='<div style="background:var(--bg);border-radius:3px;height:6px;overflow:hidden;margin-bottom:6px">';
+    html+='<div style="height:100%;width:'+barWidth+';background:'+color+';border-radius:3px;transition:width 0.8s"></div>';
+    html+='</div>';
+    /* Score value + stats */
+    html+='<div style="display:flex;justify-content:space-between;align-items:baseline">';
+    html+='<span style="font-size:18px;font-weight:700;color:'+color+';font-variant-numeric:tabular-nums">'+scoreDisplay+'</span>';
+    html+='<span style="font-size:9px;color:var(--text-muted);font-variant-numeric:tabular-nums">'+statsLine+'</span>';
+    html+='</div>';
+    html+='</div>';
+  }
+  document.getElementById('domain-cards-grid').innerHTML=html;
+  document.getElementById('domain-cards-sub').textContent=completedWithScores+' scored sessions \u00b7 '+_allSessions.length+' total \u00b7 Beta posterior means';
+  /* Strength / Explore badges (like v3 results) */
+  var badgesHtml='';
+  if(bestDomain&&bestScore>0){
+    badgesHtml+='<div style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;background:rgba(61,214,140,0.1);border:1px solid rgba(61,214,140,0.3)">';
+    badgesHtml+='<span style="color:var(--green);font-weight:700;font-size:11px">\u2605 STRENGTH:</span>';
+    badgesHtml+='<span style="color:var(--green);font-size:11px">'+bestDomain.charAt(0).toUpperCase()+bestDomain.slice(1)+' ('+bestScore.toFixed(1)+'%)</span>';
+    badgesHtml+='</div>';
+  }
+  if(weakDomain&&weakScore<100&&weakDomain!==bestDomain){
+    badgesHtml+='<div style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;background:rgba(78,201,224,0.1);border:1px solid rgba(78,201,224,0.3)">';
+    badgesHtml+='<span style="color:var(--cyan);font-weight:700;font-size:11px">\u25CF EXPLORE:</span>';
+    badgesHtml+='<span style="color:var(--cyan);font-size:11px">'+weakDomain.charAt(0).toUpperCase()+weakDomain.slice(1)+' ('+weakScore.toFixed(1)+'%)</span>';
+    badgesHtml+='</div>';
+  }
+  document.getElementById('domain-badges').innerHTML=badgesHtml;
+
+  /* === ASSESSMENT INTELLIGENCE PANEL === */
+  var total=_allSessions.length;
+  var compRate=total>0?(totalCompleted/total*100).toFixed(1):'0';
+  var avgQs=total>0?(totalQs/total).toFixed(1):'0';
+  /* PRAI distribution */
+  var praiGreen=0,praiAmber=0,praiRed=0;
+  for(var i=0;i<praiScores.length;i++){
+    if(praiScores[i]>=0.8)praiGreen++;
+    else if(praiScores[i]>=0.5)praiAmber++;
+    else praiRed++;
+  }
+  var avgPrai=praiScores.length>0?(praiScores.reduce(function(a,b){return a+b},0)/praiScores.length):null;
+  /* Domain coverage */
+  var fullCoverage=0;
+  for(var i=0;i<_allSessions.length;i++){
+    if((_allSessions[i].domainsCovered||[]).length>=8)fullCoverage++;
+  }
+  var ih='';
+  /* Row 1: Key metrics */
+  ih+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">';
+  ih+='<div style="background:var(--bg3);padding:10px 12px;border-radius:6px;text-align:center">';
+  ih+='<div style="font-size:22px;font-weight:700;color:var(--green)">'+compRate+'%</div>';
+  ih+='<div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Completion Rate</div>';
+  ih+='<div style="font-size:9px;color:var(--text-dim)">'+totalCompleted+' of '+total+'</div>';
+  ih+='</div>';
+  ih+='<div style="background:var(--bg3);padding:10px 12px;border-radius:6px;text-align:center">';
+  ih+='<div style="font-size:22px;font-weight:700;color:var(--cyan)">'+avgQs+'</div>';
+  ih+='<div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Avg Questions</div>';
+  ih+='<div style="font-size:9px;color:var(--text-dim)">per session</div>';
+  ih+='</div>';
+  ih+='<div style="background:var(--bg3);padding:10px 12px;border-radius:6px;text-align:center">';
+  ih+='<div style="font-size:22px;font-weight:700;color:'+(avgPrai!=null?(avgPrai>=0.8?'var(--green)':avgPrai>=0.5?'var(--orange)':'var(--crimson)'):'var(--text-dim)')+'">'+(avgPrai!=null?(avgPrai*100).toFixed(0)+'%':'\u2014')+'</div>';
+  ih+='<div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Avg PRAI</div>';
+  ih+='<div style="font-size:9px;color:var(--text-dim)">'+praiScores.length+' scored</div>';
+  ih+='</div>';
+  ih+='</div>';
+  /* Row 2: PRAI distribution bar */
+  if(praiScores.length>0){
+    var pTotal=praiGreen+praiAmber+praiRed;
+    ih+='<div style="margin-bottom:12px">';
+    ih+='<div style="font-size:9px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px">PRAI Quality Distribution</div>';
+    ih+='<div style="display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--bg3)">';
+    if(praiGreen)ih+='<div style="width:'+(praiGreen/pTotal*100)+'%;background:var(--green)" title="Good: '+praiGreen+'"></div>';
+    if(praiAmber)ih+='<div style="width:'+(praiAmber/pTotal*100)+'%;background:var(--orange)" title="Moderate: '+praiAmber+'"></div>';
+    if(praiRed)ih+='<div style="width:'+(praiRed/pTotal*100)+'%;background:var(--crimson)" title="Low: '+praiRed+'"></div>';
+    ih+='</div>';
+    ih+='<div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-muted);margin-top:4px">';
+    ih+='<span style="color:var(--green)">\u25CF '+praiGreen+' good (\u226580%)</span>';
+    ih+='<span style="color:var(--orange)">\u25CF '+praiAmber+' moderate</span>';
+    ih+='<span style="color:var(--crimson)">\u25CF '+praiRed+' low (<50%)</span>';
+    ih+='</div></div>';
+  }
+  /* Row 3: Engine transparency (inspired by v3) */
+  ih+='<div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 14px">';
+  ih+='<div style="font-size:9px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px">Engine Transparency</div>';
+  var flaggedSessions=0,valenceFlagCount=0;
+  for(var i=0;i<_allSessions.length;i++){
+    var vf=_allSessions[i].valenceFlags;
+    if(vf&&vf.length>0){flaggedSessions++;valenceFlagCount+=vf.length;}
+  }
+  ih+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:10px">';
+  ih+='<div><span style="color:var(--text-muted)">Answer shuffling:</span> <span style="color:var(--green)">\u2713 Fisher-Yates</span></div>';
+  ih+='<div><span style="color:var(--text-muted)">Position bias:</span> <span style="color:var(--green)">\u2713 Eliminated</span></div>';
+  ih+='<div><span style="color:var(--text-muted)">Valence flags:</span> <span style="color:'+(valenceFlagCount>0?'var(--orange)':'var(--green)')+'">'+(valenceFlagCount>0?valenceFlagCount+' across '+flaggedSessions+' sessions':'clean')+'</span></div>';
+  ih+='<div><span style="color:var(--text-muted)">Full coverage:</span> <span style="color:var(--cyan)">'+fullCoverage+'/'+total+' (8/8 domains)</span></div>';
+  ih+='<div><span style="color:var(--text-muted)">Bayesian engine:</span> <span style="color:var(--cyan)">Beta(2,2) priors</span></div>';
+  ih+='<div><span style="color:var(--text-muted)">Scored sessions:</span> <span style="color:var(--gold)">'+completedWithScores+'</span></div>';
+  ih+='</div></div>';
+  document.getElementById('assessment-intel-content').innerHTML=ih;
+}
+function renderSessionTable(filter){
+  var el=document.getElementById('sessions-explorer-content');
+  var sessions=filter==='all'?_allSessions:(filter==='anonymous'?_allSessions.filter(function(s){return s.collection==='anonymous_sessions'}):_allSessions.filter(function(s){return s.status===filter}));
+  var m=_sessionsMeta;
+  var badge=document.getElementById('session-count-badge');
+  if(badge){
+    var parts=[];
+    if(m.byRole){parts.push(m.byRole.child+' child, '+m.byRole.parent+' parent, '+m.byRole.teacher+' teacher'+(m.byRole.anonymous?', '+m.byRole.anonymous+' anonymous':''));}
+    badge.textContent=m.total+' total \u00b7 '+parts.join(' \u00b7 ');
+  }
+  if(!sessions.length){
+    el.innerHTML='<div class="empty-state">No '+(filter==='all'?'sessions':filter+' sessions')+' found. Assessments populate here once started.</div>';
+    return;
+  }
+  var html='<div class="table-wrap"><table class="data-table"><thead><tr>';
+  html+='<th>Session</th><th>Role</th><th>Status</th><th>Age</th><th>Qs</th><th>Domains</th><th>PRAI</th><th>Flags</th><th>Started</th><th>Details</th>';
+  html+='</tr></thead><tbody>';
+  for(var i=0;i<sessions.length;i++){
+    var s=sessions[i];
+    var sid=s.sessionId||'\u2014';
+    var shortSid=typeof sid==='string'?(sid.length>14?sid.slice(0,14)+'\u2026':sid):sid;
+    var roleBadge=s.role==='child'?'<span class="badge badge-gold">child</span>':(s.role==='parent'?'<span class="badge badge-info">parent</span>':(s.role==='teacher'?'<span class="badge" style="background:rgba(169,122,212,0.15);color:var(--purple);border:1px solid rgba(169,122,212,0.3)">teacher</span>':'<span class="badge" style="background:rgba(16,185,129,0.15);color:var(--green);border:1px solid rgba(16,185,129,0.3)">'+(s.role||'anon')+'</span>'));
+    var statusBadge=s.status==='completed'?'<span class="badge badge-success">completed</span>':(s.status==='active'?'<span class="badge badge-warn">active</span>':(s.status==='paused'?'<span class="badge badge-info">paused</span>':'<span class="badge badge-error">'+(s.status||'unknown')+'</span>'));
+    var praiStr='\u2014';
+    if(s.praiScore!=null){
+      var pPct=(s.praiScore*100).toFixed(1);
+      var pColor=s.praiScore>=0.8?'var(--green)':(s.praiScore>=0.5?'var(--orange)':'var(--crimson)');
+      praiStr='<span style="color:'+pColor+';font-weight:600">'+pPct+'%</span>';
+    }
+    var domCount=Array.isArray(s.domainsCovered)?s.domainsCovered.length:0;
+    var flagCount=(s.valenceFlags?s.valenceFlags.length:0)+(s.consistencyFlags?s.consistencyFlags.filter(function(f){return f.label==='PERFORMED'||f.label==='VARIABLE'}).length:0);
+    var flagBadge=flagCount>0?'<span class="badge badge-error">'+flagCount+'</span>':'<span style="color:var(--green)">✓</span>';
+    var started=s.startedAt?new Date(s.startedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit'}):'\u2014';
+    var termReason=s.terminationReason?' title="Termination: '+s.terminationReason+'"':'';
+    html+='<tr style="cursor:pointer" data-sid="'+sid+'" onclick="drillSession(\''+sid+'\')"'+termReason+'>';
+    html+='<td style="font-size:9px;color:var(--cyan)" title="'+sid+'">'+shortSid+'</td>';
+    html+='<td>'+roleBadge+'</td>';
+    html+='<td>'+statusBadge+'</td>';
+    html+='<td style="color:var(--text-dim)">'+(s.ageBand||'\u2014')+'</td>';
+    html+='<td style="font-weight:600">'+(s.questionsAnswered||0)+'</td>';
+    html+='<td>'+domCount+'/8</td>';
+    html+='<td>'+praiStr+'</td>';
+    html+='<td style="text-align:center">'+flagBadge+'</td>';
+    html+='<td style="font-size:10px;color:var(--text-dim)">'+started+'</td>';
+    html+='<td><button class="btn-sm btn-gold" onclick="event.stopPropagation();drillSession(\''+sid+'\')">Expand</button></td>';
+    html+='</tr>';
+  }
+  html+='</tbody></table></div>';
+  el.innerHTML=html;
+}
+
+/* === 16b. SESSION DRILL-DOWN (PRAI, Scores, Flags, Q&A) === */
+async function drillSession(sid){
+  /* Remove any existing inline detail row — toggle closed if same session */
+  var existing=document.getElementById('drill-detail-row');
+  if(existing){
+    var wasSame=existing.dataset.drillSid===sid;
+    existing.remove();
+    if(wasSame)return;
+  }
+  /* Find the clicked row and insert a detail <tr> directly after it */
+  var sourceRow=document.querySelector('tr[data-sid="'+sid+'"]');
+  var detailTr=document.createElement('tr');
+  detailTr.id='drill-detail-row';
+  detailTr.dataset.drillSid=sid;
+  detailTr.innerHTML='<td colspan="10" style="padding:0"><div style="padding:12px" class="section-loading">Loading full analysis for '+sid.slice(0,14)+'\u2026</div></td>';
+  if(sourceRow&&sourceRow.parentNode){
+    sourceRow.parentNode.insertBefore(detailTr,sourceRow.nextSibling);
+    detailTr.scrollIntoView({behavior:'smooth',block:'nearest'});
+  } else {
+    /* fallback: old bottom div */
+    var fb=document.getElementById('session-drilldown');
+    if(fb){fb.innerHTML='<div class="section-loading">Loading&hellip;</div>';}
+  }
+  var el=detailTr.querySelector('td');
+  try{
+    var raw=await api('GET','/prototype/session-results/'+sid);
+    var d=raw.data||raw;
+    var meta=raw.meta||{};
+    /* Also find session summary from our cached list */
+    var sessSummary=_allSessions.find(function(s){return s.sessionId===sid})||{};
+    var html='<div style="border:1px solid var(--gold);border-radius:8px;padding:16px;margin-bottom:16px;background:var(--bg2)">';
+    html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="color:var(--gold);font-size:14px;margin:0">Session: '+sid.slice(0,20)+'</h3><button class="btn-sm" onclick="var dr=document.getElementById(\'drill-detail-row\');if(dr)dr.remove();" style="background:var(--bg3);color:var(--text-dim);border:1px solid var(--border)">Close ✕</button></div>';
+    html+='<div class="drill-tabs">';
+    html+='<button class="drill-tab drill-active" onclick="switchDrillTab(this,\'scores\')">\u25c8 Scores</button>';
+    html+='<button class="drill-tab" onclick="switchDrillTab(this,\'prai\')">\u0936 Authenticity</button>';
+    html+='<button class="drill-tab" onclick="switchDrillTab(this,\'flags\')">\u26a0 Flags</button>';
+    html+='<button class="drill-tab" onclick="switchDrillTab(this,\'events\')">\u25b6 Q&A Log</button>';
+    html+='<button class="drill-tab" onclick="switchDrillTab(this,\'report\')">\u25ce Report</button>';
+    html+='<button class="drill-tab" onclick="switchDrillTab(this,\'learning\')">\u2261 Learning</button>';
+    html+='<button class="drill-tab" onclick="switchDrillTab(this,\'meta\')">\u2139 Meta</button>';
+    html+='</div>';
+
+    /* ── Status-aware banner for non-completed sessions ── */
+    var sessStatus=sessSummary.status||d.status||'unknown';
+    if(sessStatus==='active'||sessStatus==='paused'){
+      html+='<div style="padding:10px 14px;margin-bottom:12px;background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.3);border-radius:6px;font-size:11px;color:var(--gold)"><strong>\u23f3 Session '+sessStatus+'</strong> \u2014 Scores, PRAI, and learning suggestions are computed at completion. Data shown below may be empty or partial.</div>';
+    }else if(sessStatus==='expired'){
+      html+='<div style="padding:10px 14px;margin-bottom:12px;background:rgba(229,69,69,0.08);border:1px solid rgba(229,69,69,0.2);border-radius:6px;font-size:11px;color:var(--crimson)"><strong>\u23f0 Session expired</strong> \u2014 This session timed out before completion. No scoring artifacts were generated.</div>';
+    }else if(sessStatus==='completed'&&!d.scoreArtifact&&!(d.prai&&d.prai.score!=null)){
+      var errMsg=sessSummary.scoringError||d.scoringError||'';
+      html+='<div style="padding:10px 14px;margin-bottom:12px;background:rgba(229,69,69,0.08);border:1px solid rgba(229,69,69,0.2);border-radius:6px;font-size:11px;color:var(--crimson)"><strong>\u26a0 Scoring error</strong> \u2014 This session completed but no score artifact was generated. '+(errMsg?'Error: <code>'+errMsg+'</code>':'Check API logs for details.')+'</div>';
+    }
+
+    html+='<div class="drill-panel drill-visible" data-drill="scores"><div class="findings-grid">';
+
+    /* ── 1. SCORE ARTIFACT ── */
+    if(d.scoreArtifact){
+      var sa=d.scoreArtifact;
+      html+='<div class="finding-card" style="grid-column:1/-1"><div class="finding-badge"><span class="badge badge-gold">◈ DOMAIN SCORES</span></div><div class="finding-title">Overall: '+fmtDec(sa.overallScore||0,1)+'% · Confidence: '+fmtDec((sa.overallConfidence||0)*100,1)+'%</div><div class="finding-body">';
+      html+='<div style="font-size:10px;color:var(--text-dim);margin-bottom:8px">Engine: <code>'+(sa.engine_version||'\u2014')+'</code> · Role: <code>'+(sa.role||sessSummary.role||'\u2014')+'</code> · Computed: <code>'+(sa.computedAt?new Date(sa.computedAt).toLocaleString('en-IN'):'\u2014')+'</code>'+(meta.generatedOnFly?' · <span class="badge badge-warn">computed on-fly</span>':'')+'</div>';
+      if(sa.domainScores&&sa.domainScores.length){
+        html+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px">';
+        for(var i=0;i<sa.domainScores.length;i++){
+          var ds=sa.domainScores[i];
+          var sPct=(ds.score||0).toFixed(1);
+          var meanPct=((ds.mean||0)*100).toFixed(1);
+          var conf=((ds.confidence||0)*100).toFixed(1);
+          var barColor=ds.score>=70?'var(--green)':(ds.score>=40?'var(--gold)':'var(--crimson)');
+          var verd=scoreVerdict(ds.score);
+          var confLbl=confidenceLabel(conf);
+          html+='<div class="domain-card" style="border-left-color:'+barColor+'">';
+          html+='<div class="domain-header"><div><div class="domain-name">'+domainLabel(ds.domain)+'</div>';
+          html+='<div class="domain-desc">'+domainDescription(ds.domain)+'</div></div>';
+          html+='<div class="domain-score-big" style="color:'+barColor+'">'+sPct+'%</div></div>';
+          html+='<div class="bar-track" style="margin:0 0 8px;height:6px"><div class="bar-fill" style="width:'+sPct+'%;background:'+barColor+'"></div></div>';
+          html+='<div class="domain-verdict" style="color:'+verd.color+'">'+verd.text+' \u00b7 Confidence: <span style="color:'+confLbl.color+'">'+confLbl.text+' ('+conf+'%)</span></div>';
+          html+='<div class="domain-interp">'+interpretBeta(ds.alpha,ds.beta,ds.domain)+'</div>';
+          html+='<details class="domain-raw"><summary>Raw Parameters (\u03b1/\u03b2/\u03bc)</summary>';
+          html+='<div class="domain-raw-inner">\u03b1 (alpha) = '+fmtDec(ds.alpha,2)+' &nbsp; \u03b2 (beta) = '+fmtDec(ds.beta,2)+' &nbsp; \u03bc (mean) = '+meanPct+'% &nbsp; CI = '+conf+'%<br>';
+          html+='n(eff) = '+fmtDec((ds.alpha||1)+(ds.beta||1)-2,0)+' observations &nbsp; Prior: Beta(1,1) uniform</div>';
+          html+='</details>';
+          html+='</div>';
+        }
+        html+='</div>';
+      }
+      /* ── Domain Radar Chart canvas ── */
+      html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-cyan">◎ RADAR</span></div><div class="finding-title">Domain Profile</div><div class="finding-body"><canvas id="drillRadarChart" width="280" height="280"></canvas></div></div>';
+      html+='</div></div>'; /* close finding-body + finding-card (DOMAIN SCORES) */
+    }else{
+      html+='<div class="finding-card" style="grid-column:1/-1"><div class="finding-badge"><span class="badge badge-gold">◈ SCORES</span></div><div class="finding-title">No Score Artifact</div><div class="finding-body" style="color:var(--text-muted)"><div style="font-size:11px">Deterministic score artifact not available for this session.</div>';
+      if(sessSummary.status!=='completed')html+='<div style="font-size:9px;margin-top:6px">Session is <strong>'+(sessSummary.status||'unknown')+'</strong> — scores are computed upon completion.</div>';
+      else html+='<div style="font-size:9px;margin-top:6px">Session was completed but the scoring engine may have encountered an error. The on-the-fly computation was attempted. Check API logs for details.</div>';
+      html+='</div></div>';
+    }
+
+    html+='</div></div>';
+    html+='<div class="drill-panel" data-drill="prai"><div class="findings-grid">';
+    /* ── 2. PRAI ANALYSIS ── */
+    var prai=d.prai||d.scoreArtifact?.prai||sessSummary.prai||null;
+    var valenceFlags=d.valenceFlags||sessSummary.valenceFlags||d.scoreArtifact?.flags||[];
+    var consistencyFlags=d.consistencyFlags||sessSummary.consistencyFlags||[];
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-warn">श PRAI ANALYSIS</span></div><div class="finding-title">Pareekshā Response Authenticity Index</div><div class="finding-body">';
+    if(prai&&prai.score!=null){
+      var praiPct=(prai.score*100).toFixed(1);
+      var prClr=prai.score>=0.8?'var(--green)':(prai.score>=0.5?'var(--orange)':'var(--crimson)');
+      html+='<div style="text-align:center;margin-bottom:12px"><span style="font-size:28px;font-weight:700;color:'+prClr+'">'+praiPct+'%</span><br><span style="font-size:10px;color:var(--text-dim)">1.0 = fully authentic · 0.0 = entirely performed</span></div>';
+      html+='<canvas id="drillPraiChart" width="300" height="100" style="margin:8px auto;display:block"></canvas>';
+      html+='<div style="font-size:9px;color:var(--text-dim);text-align:center;margin:4px 0 8px 0">Authenticity Score (higher = better)</div>';
+      html+='<canvas id="drillPenaltyChart" width="300" height="140" style="margin:8px auto;display:block"></canvas>';
+      html+='<div style="font-size:9px;color:var(--text-dim);text-align:center;margin:4px 0 8px 0">\u2190 Inauthenticity Signals (lower = better)</div>';
+      html+='<table class="data-table" style="font-size:10px;margin-top:10px"><thead><tr><th>Signal</th><th>Sanskrit</th><th>Penalty</th><th>Mathematical Interpretation</th></tr></thead><tbody>';
+      html+='<tr><td style="color:var(--cyan)">Streak Penalty</td><td style="color:var(--text-dim)">Dharmopādhā</td><td style="font-weight:600;color:'+(prai.streakPenalty>0.3?'var(--crimson)':'var(--green)')+'">'+fmtDec(prai.streakPenalty,3)+'</td>';
+      html+='<td style="font-size:9px">'+interpretStreak(prai.streakPenalty)+'</td></tr>';
+      html+='<tr><td style="color:var(--cyan)">CV Penalty</td><td style="color:var(--text-dim)">Arthopādhā</td><td style="font-weight:600;color:'+(prai.cvPenalty>0.3?'var(--crimson)':'var(--green)')+'">'+fmtDec(prai.cvPenalty,3)+'</td>';
+      html+='<td style="font-size:9px">'+interpretCV(prai.cvPenalty)+'</td></tr>';
+      html+='<tr><td style="color:var(--cyan)">Time Uniformity</td><td style="color:var(--text-dim)">Bhayopādhā</td><td style="font-weight:600;color:'+(prai.timeUniformityPenalty>0.3?'var(--crimson)':'var(--green)')+'">'+fmtDec(prai.timeUniformityPenalty,3)+'</td>';
+      html+='<td style="font-size:9px">'+interpretTimeUniformity(prai.timeUniformityPenalty)+'</td></tr>';
+      html+='</tbody></table>';
+      html+='<div style="margin-top:8px;padding:6px 8px;background:var(--bg3);border-radius:4px;font-size:9px;color:var(--text-dim)"><strong>Composite formula:</strong> PRAI = 1 − w₁·streakP − w₂·cvP − w₃·timeP. Applied as multiplicative correction to domain scores: adjusted = raw × PRAI. A PRAI below 0.5 indicates statistically significant response pattern anomalies warranting re-assessment.</div>';
+    }else{
+      html+='<div style="color:var(--text-muted)">PRAI not computed for this session'+(sessSummary.status!=='completed'?' (session not yet completed)':'')+'</div>';
+    }
+    html+='</div></div>';
+
+    html+='</div></div>';
+    html+='<div class="drill-panel" data-drill="flags"><div class="findings-grid">';
+    /* ── 3. FLAGS & CONSISTENCY (Mathematical Interpretation) ── */
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-error">⚠ FLAGS &amp; CONSISTENCY</span></div><div class="finding-title">Psychometric Flags</div><div class="finding-body">';
+    if(valenceFlags.length){
+      html+='<div style="margin-bottom:8px;font-size:10px;color:var(--text-dim)"><strong>Valence Flags ('+valenceFlags.length+'):</strong></div>';
+      for(var i=0;i<valenceFlags.length;i++){
+        html+='<div style="margin-bottom:6px;padding:6px 8px;background:rgba(229,69,69,0.08);border:1px solid rgba(229,69,69,0.2);border-radius:4px">';
+        html+='<span style="color:var(--crimson);font-weight:600;font-size:10px">'+valenceFlags[i]+'</span>';
+        html+='<div style="font-size:9px;color:var(--text-dim);margin-top:2px">'+interpretValenceFlag(valenceFlags[i])+'</div>';
+        html+='</div>';
+      }
+    }else{
+      html+='<div style="color:var(--green);font-size:10px">✓ No valence flags — response pattern appears authentic</div>';
+    }
+    if(consistencyFlags.length){
+      html+='<div style="margin-top:10px;margin-bottom:8px;font-size:10px;color:var(--text-dim)"><strong>Consistency Groups ('+consistencyFlags.length+'):</strong></div>';
+      html+='<table class="data-table" style="font-size:9px"><thead><tr><th>Group</th><th>Axis</th><th>CV</th><th>Label</th><th>Modifier</th><th>Interpretation</th></tr></thead><tbody>';
+      for(var i=0;i<consistencyFlags.length;i++){
+        var cf=consistencyFlags[i];
+        var cvClr=cf.label==='GENUINE'?'var(--green)':(cf.label==='STABLE'?'var(--cyan)':(cf.label==='VARIABLE'?'var(--orange)':'var(--crimson)'));
+        html+='<tr>';
+        html+='<td style="color:var(--cyan)">'+cf.group+'</td>';
+        html+='<td>'+cf.axis+'</td>';
+        html+='<td style="font-weight:600;color:'+cvClr+'">'+fmtDec(cf.cv,3)+'</td>';
+        html+='<td><span class="badge" style="background:rgba(255,255,255,0.05);color:'+cvClr+';border:1px solid '+cvClr+'">'+cf.label+'</span></td>';
+        html+='<td>'+(cf.modifier!=null?fmtDec(cf.modifier,2)+'×':'\u2014')+'</td>';
+        html+='<td style="font-size:8px;color:var(--text-dim)">'+interpretConsistency(cf)+'</td>';
+        html+='</tr>';
+      }
+      html+='</tbody></table>';
+      html+='<div style="margin-top:6px;padding:4px 8px;background:var(--bg3);border-radius:4px;font-size:8px;color:var(--text-muted)">CV = coefficient of variation across paired questions in the same construct group. GENUINE (CV&lt;0.15): highly consistent. STABLE (0.15≤0.30): normal variation. VARIABLE (0.30≤0.50): notable inconsistency — may indicate confusion or context-sensitivity. PERFORMED (CV≥0.50): suspiciously inconsistent — potential gaming, modifier applied as score multiplier.</div>';
+    }
+    if(!valenceFlags.length&&!consistencyFlags.length){
+      if(sessStatus!=='completed'){
+        html+='<div style="color:var(--gold);margin-top:6px">\u23f3 Session not yet complete \u2014 flags are computed at completion.</div>';
+      }else{
+        html+='<div style="color:var(--green);margin-top:6px">\u2713 No flags or consistency warnings \u2014 session response pattern is clean</div>';
+      }
+    }
+    html+='</div></div>';
+
+    html+='</div></div>';
+    html+='<div class="drill-panel" data-drill="events"><div class="findings-grid">';
+    /* ── 4. EVENTS (Question-level detail) ── */
+    if(d.events&&d.events.length){
+      var qEvents=d.events.filter(function(e){return e.type==='QuestionRendered'||e.type==='AnswerSelected'});
+      var otherEvents=d.events.filter(function(e){return e.type!=='QuestionRendered'&&e.type!=='AnswerSelected'});
+      html+='<div class="finding-card" style="grid-column:1/-1"><div class="finding-badge"><span class="badge badge-info">'+d.events.length+' EVENTS · '+qEvents.length+' Q&amp;A</span></div><div class="finding-title">Event Timeline &amp; Question Log</div><div class="finding-body">';
+      /* Group Q&A pairs */
+      var qaPairs=[];var currentQ=null;
+      for(var i=0;i<d.events.length;i++){
+        var ev=d.events[i];
+        if(ev.type==='QuestionRendered'){
+          currentQ={question:ev,answer:null};
+          qaPairs.push(currentQ);
+        }else if(ev.type==='AnswerSelected'&&currentQ){
+          currentQ.answer=ev;
+          currentQ=null;
+        }
+      }
+      if(qaPairs.length){
+        html+='<table class="data-table" style="font-size:9px"><thead><tr><th>#</th><th>Domain</th><th>Question</th><th>Answer</th><th>Time</th><th>RT</th></tr></thead><tbody>';
+        for(var i=0;i<qaPairs.length;i++){
+          var qa=qaPairs[i];
+          var qp=qa.question.payload||{};
+          var ap=qa.answer?qa.answer.payload||{}:{};
+          var domain=qp.domain||ap.domain||'\u2014';
+          var qText=qp.questionText||qp.text||qp.questionId||'\u2014';
+          if(qText.length>60)qText=qText.slice(0,57)+'…';
+          var ansTxt=ap.answerText||ap.text||ap.answerId||(qa.answer?'selected':('<span style="color:var(--crimson)">✘ unanswered</span>'));
+          var qTime=qa.question.timestamp?new Date(qa.question.timestamp).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'\u2014';
+          var rt='\u2014';
+          var rtMs=0;
+          /* Priority 1: responseTimeMs from answer payload (always accurate when present) */
+          if(ap.responseTimeMs&&ap.responseTimeMs>0){
+            rtMs=ap.responseTimeMs;
+          /* Priority 2: timestamp diff (only if timestamps are distinct) */
+          }else if(qa.question.timestamp&&qa.answer&&qa.answer.timestamp){
+            var diff=new Date(qa.answer.timestamp)-new Date(qa.question.timestamp);
+            if(diff>0)rtMs=diff;
+          }
+          if(rtMs>0){
+            rt=(rtMs/1000).toFixed(1)+'s';
+            if(rtMs<2000)rt='<span style="color:var(--crimson)" title="Very fast response (<2s) may indicate pre-decided answer">'+rt+' \u26a1</span>';
+            else if(rtMs>30000)rt='<span style="color:var(--orange)" title="Slow response (>30s)">'+rt+' \u23f3</span>';
+          }
+          html+='<tr><td>'+(i+1)+'</td><td style="color:var(--cyan)">'+domain+'</td><td>'+qText+'</td><td>'+ansTxt+'</td><td style="color:var(--text-dim)">'+qTime+'</td><td>'+rt+'</td></tr>';
+        }
+        /* Unanswered (incomplete session) */
+        var unansweredQ=qaPairs.filter(function(qa){return !qa.answer});
+        if(unansweredQ.length){
+          html+='<tr><td colspan="6" style="color:var(--orange);font-size:10px;padding-top:8px">⚠ '+unansweredQ.length+' question(s) rendered but not answered — session may have been abandoned at this point</td></tr>';
+        }
+        html+='</tbody></table>';
+      }
+      if(otherEvents.length){
+        html+='<details style="margin-top:10px"><summary style="cursor:pointer;font-size:10px;color:var(--text-dim)">'+otherEvents.length+' other events (ShuffleApplied, system events, etc.)</summary>';
+        html+='<table class="data-table" style="font-size:8px;margin-top:6px"><thead><tr><th>#</th><th>Type</th><th>Time</th><th>Payload</th></tr></thead><tbody>';
+        for(var i=0;i<Math.min(otherEvents.length,30);i++){
+          var ev=otherEvents[i];
+          html+='<tr><td>'+(ev.sequence||i+1)+'</td><td style="color:var(--purple)">'+(ev.type||'\u2014')+'</td>';
+          html+='<td style="color:var(--text-dim)">'+(ev.timestamp?new Date(ev.timestamp).toLocaleTimeString('en-IN'):'\u2014')+'</td>';
+          html+='<td style="font-size:8px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(ev.payload?JSON.stringify(ev.payload).slice(0,80):'\u2014')+'</td></tr>';
+        }
+        html+='</tbody></table></details>';
+      }
+      html+='</div></div>';
+    }else{
+      html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">▦ EVENTS</span></div><div class="finding-title">No Events Recorded</div><div class="finding-body" style="color:var(--text-muted)">Event log is empty for this session. Events are recorded as QuestionRendered, AnswerSelected, ShuffleApplied etc.</div></div>';
+    }
+
+    html+='</div></div>';
+    html+='<div class="drill-panel" data-drill="report"><div class="findings-grid">';
+    /* ── 5. REPORT (structured 2-page renderer) ── */
+    if(d.report){
+      var rp=d.report;
+      /* ── PAGE 1 ── */
+      html+='<div class="finding-card" style="grid-column:1/-1"><div class="finding-badge"><span class="badge badge-success">\u25ce PAGE 1 \u2014 Assessment Overview</span></div><div class="finding-title">Quantitative Summary</div><div class="finding-body">';
+      if(rp.page1){
+        /* Summary Bullets */
+        if(rp.page1.summaryBullets&&rp.page1.summaryBullets.length){
+          html+='<div style="margin-bottom:12px"><div style="font-size:10px;font-weight:600;color:var(--cyan);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">\u25b8 Key Findings</div>';
+          html+='<ul style="margin:0 0 0 16px;font-size:10px;line-height:1.7">';
+          for(var i=0;i<rp.page1.summaryBullets.length;i++){html+='<li>'+rp.page1.summaryBullets[i]+'</li>';}
+          html+='</ul></div>';
+        }
+        /* Radar Data Summary */
+        if(rp.page1.radarData&&rp.page1.radarData.length){
+          html+='<div style="margin-bottom:12px"><div style="font-size:10px;font-weight:600;color:var(--cyan);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">\u25b8 Domain Scores</div>';
+          html+='<div style="display:flex;flex-wrap:wrap;gap:6px">';
+          for(var i=0;i<rp.page1.radarData.length;i++){
+            var rd=rp.page1.radarData[i];
+            var rdClr=rd.score>=70?'var(--green)':(rd.score>=40?'var(--gold)':'var(--crimson)');
+            html+='<span style="padding:3px 8px;background:var(--bg3);border:1px solid '+rdClr+';border-radius:4px;font-size:9px"><span style="color:var(--text-dim)">'+domainLabel(rd.domain)+'</span> <strong style="color:'+rdClr+'">'+fmtDec(rd.score,1)+'%</strong></span>';
+          }
+          html+='</div></div>';
+        }
+        /* Divergence Table */
+        if(rp.page1.divergenceTable&&rp.page1.divergenceTable.length){
+          html+='<div style="margin-bottom:8px"><div style="font-size:10px;font-weight:600;color:var(--cyan);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">\u25b8 Multi-Vertex Divergence</div>';
+          html+='<table class="data-table" style="font-size:9px;margin-top:4px"><thead><tr><th>Domain</th><th>Child</th><th>Parent</th><th>Teacher</th><th>Divergence</th><th>Direction</th></tr></thead><tbody>';
+          for(var i=0;i<rp.page1.divergenceTable.length;i++){
+            var dv=rp.page1.divergenceTable[i];
+            html+='<tr><td style="color:var(--cyan)">'+domainLabel(dv.domain)+'</td><td>'+(dv.childScore!=null?fmtDec(dv.childScore,1):'\u2014')+'</td><td>'+(dv.parentScore!=null?fmtDec(dv.parentScore,1):'\u2014')+'</td><td>'+(dv.teacherScore!=null?fmtDec(dv.teacherScore,1):'\u2014')+'</td><td style="font-weight:600;color:'+(dv.divergence>20?'var(--crimson)':'var(--green)')+'">'+fmtDec(dv.divergence,1)+'</td><td>'+(dv.direction||'\u2014')+'</td></tr>';
+          }
+          html+='</tbody></table></div>';
+        }
+      }
+      html+='</div></div>';
+
+      /* ── PAGE 2 ── */
+      html+='<div class="finding-card" style="grid-column:1/-1"><div class="finding-badge"><span class="badge badge-success">\u25ce PAGE 2 \u2014 Qualitative Analysis</span></div><div class="finding-title">Narrative &amp; Growth Guidance</div><div class="finding-body">';
+      if(rp.page2){
+        /* Observational Summary */
+        if(rp.page2.observationalSummary){
+          html+='<div style="margin-bottom:12px"><div style="font-size:10px;font-weight:600;color:var(--cyan);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">\u25b8 Observational Summary</div>';
+          html+='<div style="font-size:10px;line-height:1.6;padding:8px 10px;background:var(--bg3);border-radius:6px;border-left:3px solid var(--cyan)">'+rp.page2.observationalSummary+'</div></div>';
+        }
+        /* Contextual Explanation */
+        if(rp.page2.contextualExplanation){
+          html+='<div style="margin-bottom:12px"><div style="font-size:10px;font-weight:600;color:var(--cyan);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">\u25b8 Contextual Explanation</div>';
+          html+='<div style="font-size:10px;line-height:1.6;padding:8px 10px;background:var(--bg3);border-radius:6px;border-left:3px solid var(--gold)">'+rp.page2.contextualExplanation+'</div></div>';
+        }
+        /* Growth Directions */
+        if(rp.page2.growthDirections&&rp.page2.growthDirections.length){
+          html+='<div style="margin-bottom:8px"><div style="font-size:10px;font-weight:600;color:var(--cyan);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">\u25b8 Growth Directions</div>';
+          html+='<ul style="margin:0 0 0 16px;font-size:10px;line-height:1.7">';
+          for(var i=0;i<rp.page2.growthDirections.length;i++){
+            html+='<li style="margin-bottom:4px">'+rp.page2.growthDirections[i]+'</li>';
+          }
+          html+='</ul></div>';
+        }
+      }
+      html+='<div style="margin-top:8px;padding:4px 8px;background:var(--bg3);border-radius:4px;font-size:8px;color:var(--text-muted)">Engine: '+(rp.engine_version||'\u2014')+' \u00b7 Generated: '+(rp.generatedAt?new Date(rp.generatedAt).toLocaleString('en-IN'):'\u2014')+' \u00b7 Report ID: '+(rp.reportId||'\u2014').slice(0,14)+'</div>';
+      html+='</div></div>';
+    }else{
+      html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">\u25ce REPORT</span></div><div class="finding-title">No Report Generated</div><div class="finding-body" style="color:var(--text-muted)"><div style="font-size:11px">'+(sessStatus!=='completed'?'Session not yet complete \u2014 reports are generated at completion.':'Narrative report not available for this session.')+'</div><div style="font-size:9px;margin-top:6px">Reports are auto-generated when a session completes via the prototype engine. For sessions completed before the prototype integration, the report is generated on-the-fly when you expand the session.</div></div></div>';
+    }
+
+    html+='</div></div>';
+    html+='<div class="drill-panel" data-drill="learning"><div class="findings-grid">';
+    /* ── 6. LEARNING SUGGESTIONS ── */
+    if(d.suggestions&&d.suggestions.length){
+      html+='<div class="finding-card" style="grid-column:1/-1"><div class="finding-badge"><span class="badge badge-gold">\u2261 '+d.suggestions.length+' LEARNING SUGGESTIONS</span></div><div class="finding-title">Personalised Guidance (PR-6)</div><div class="finding-body">';
+      html+='<div style="font-size:10px;color:var(--text-dim);margin-bottom:10px">Rule-based suggestions generated from domain scores and role-specific templates. Priority 1 = most impactful.</div>';
+      for(var i=0;i<d.suggestions.length;i++){
+        var sg=d.suggestions[i];
+        var sgColor=sg.priority<=2?'var(--crimson)':(sg.priority<=3?'var(--gold)':'var(--cyan)');
+        html+='<div style="margin-bottom:8px;padding:8px 10px;background:var(--bg3);border-radius:6px;border-left:3px solid '+sgColor+'">';
+        html+='<div style="display:flex;justify-content:space-between;align-items:center;font-size:10px"><span style="color:'+sgColor+';font-weight:600">'+domainLabel(sg.domain)+'</span><span style="color:var(--text-muted)">Priority '+(sg.priority||'\u2014')+' \u00b7 <span class="badge badge-'+(sg.status==='pending'?'warn':(sg.status==='shown'?'info':'success'))+'">'+((sg.status||'pending'))+'</span></span></div>';
+        html+='<div style="font-size:11px;margin-top:4px;line-height:1.5">'+(sg.text||sg.suggestion||sg.description||'\u2014')+'</div>';
+        if(sg.rationale)html+='<div style="font-size:9px;color:var(--text-muted);margin-top:4px;font-style:italic;border-top:1px solid var(--border);padding-top:4px">\ud83d\udca1 '+sg.rationale+'</div>';
+        if(sg.feedback)html+='<div style="font-size:9px;margin-top:2px">Feedback: <span class="badge badge-'+(sg.feedback==='VeryHelpful'?'success':(sg.feedback==='NotHelpful'?'error':'info'))+'">'+sg.feedback+'</span></div>';
+        html+='</div>';
+      }
+      html+='</div></div>';
+    }else{
+      html+='<div class="finding-card" style="grid-column:1/-1"><div class="finding-badge"><span class="badge badge-gold">\u2261 LEARNING</span></div><div class="finding-title">No Suggestions Generated</div><div class="finding-body" style="color:var(--text-muted)"><div style="font-size:11px">No learning suggestions available for this session.</div><div style="font-size:9px;margin-top:6px">Suggestions are auto-generated when a session completes. For pre-existing sessions, click "Expand" on the session row to trigger on-the-fly generation.</div></div></div>';
+    }
+
+    html+='</div></div>';
+    html+='<div class="drill-panel" data-drill="genqs"><div class="findings-grid">';
+    /* ── 7B. GENERATED FOLLOW-UP QUESTIONS ── */
+    if(d.generatedQuestions&&d.generatedQuestions.length){
+      html+='<div class="finding-card" style="grid-column:1/-1"><div class="finding-badge"><span class="badge badge-info">◈ '+d.generatedQuestions.length+' GENERATED QUESTIONS</span></div><div class="finding-title">Engine-Generated Follow-Up Probes</div><div class="finding-body">';
+      html+='<div style="font-size:10px;color:var(--text-dim);margin-bottom:10px">Rule-based questions generated from domain score analysis. Targets domains with highest posterior uncertainty. Tag: <span class="badge badge-info" style="font-size:8px">Created by engine</span></div>';
+      for(var gqi=0;gqi<d.generatedQuestions.length;gqi++){
+        var gq=d.generatedQuestions[gqi];
+        var bandColor=gq.scoreBand==='low'?'var(--crimson)':(gq.scoreBand==='mid'?'var(--gold)':'var(--cyan)');
+        var sim=gq.similarity||null;
+        html+='<div style="margin-bottom:10px;padding:10px 12px;background:var(--bg3);border-radius:6px;border-left:3px solid '+bandColor+'">';
+        html+='<div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;margin-bottom:6px;flex-wrap:wrap;gap:6px">';
+        html+='<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span style="color:'+bandColor+';font-weight:600">'+domainLabel(gq.domain)+'</span> '+renderSimilarityBadge(sim);
+        if(sim&&sim.topMatches&&sim.topMatches.length){html+=' <button onclick="document.getElementById(\'sim-panel-drill-'+gq.id+'\').style.display=document.getElementById(\'sim-panel-drill-'+gq.id+'\').style.display===\'none\'?\'block\':\'none\'" style="background:var(--bg1);border:1px solid var(--border);color:var(--cyan);padding:2px 8px;border-radius:4px;font-size:9px;cursor:pointer">▸ Compare</button>';}
+        html+='</div>';
+        html+='<span style="color:var(--text-muted)">Score: '+(gq.sourceScore!=null?gq.sourceScore.toFixed(1)+'%':'\u2014')+' \u00b7 Band: <span class="badge badge-'+(gq.scoreBand==='low'?'warn':(gq.scoreBand==='mid'?'info':'success'))+'">'+gq.scoreBand+'</span> \u00b7 <span class="badge badge-warn">'+gq.status+'</span></span></div>';
+        html+='<div style="font-size:12px;font-weight:500;color:var(--text-primary);line-height:1.5;margin-bottom:8px">\u2753 '+gq.text+'</div>';
+        if(gq.answers&&gq.answers.length){
+          html+='<div style="font-size:10px;color:var(--text-muted);margin-bottom:4px">Answer options:</div>';
+          for(var ai=0;ai<gq.answers.length;ai++){
+            var ans=gq.answers[ai];
+            var gradeColor=ans.grade==='S'?'var(--gold)':(ans.grade==='A'?'var(--cyan)':(ans.grade==='B'?'var(--pass)':(ans.grade==='C'?'var(--text-muted)':'var(--crimson)')));
+            html+='<div style="font-size:10px;padding:3px 6px;margin:2px 0;display:flex;gap:8px;align-items:baseline"><span style="color:'+gradeColor+';font-weight:600;min-width:14px">'+ans.grade+'</span><span style="color:var(--text-dim)">'+ans.text+'</span></div>';
+          }
+        }
+        /* Similarity panel (collapsed by default) */
+        html+=renderSimilarityPanel(sim,'drill-'+gq.id);
+        if(gq.rationale)html+='<div style="font-size:9px;color:var(--text-muted);margin-top:6px;font-style:italic;border-top:1px solid var(--border);padding-top:4px">\ud83d\udca1 '+gq.rationale+'</div>';
+        html+='<div style="display:flex;gap:8px;margin-top:8px;justify-content:flex-end" id="drill-genq-actions-'+gq.id+'">';
+        if(gq.status==='engine_review'){
+          html+='<button class="btn-sm" style="background:var(--green);color:#000;border:none;cursor:pointer;font-size:10px;padding:4px 10px;border-radius:4px" onclick="approveGenQ(\''+gq.id+'\')">✓ Approve</button>';
+          html+='<button class="btn-sm" style="background:var(--crimson);color:#fff;border:none;cursor:pointer;font-size:10px;padding:4px 10px;border-radius:4px" onclick="rejectGenQ(\''+gq.id+'\')">✗ Reject</button>';
+        }else{
+          html+='<span class="badge badge-'+(gq.status==='approved'?'ok':'warn')+'">'+gq.status+'</span>';
+        }
+        html+='</div>';
+        html+='</div>';
+      }
+      html+='</div></div>';
+    }else{
+      html+='<div class="finding-card" style="grid-column:1/-1"><div class="finding-badge"><span class="badge badge-info">◈ GENERATED Qs</span></div><div class="finding-title">No Follow-Up Questions Generated</div><div class="finding-body" style="color:var(--text-muted)"><div style="font-size:11px">No engine-generated follow-up questions for this session.</div><div style="font-size:9px;margin-top:6px">Questions are generated from sessions with score artifacts. Re-expand to trigger generation.</div></div></div>';
+    }
+    html+='</div></div>';
+    html+='<div class="drill-panel" data-drill="attribution"><div class="findings-grid">';
+    /* ── 7C. SCORE ATTRIBUTION (paper-cited evidence chain) ── */
+    var attrib=d.attribution;
+    if(attrib&&attrib.domains&&attrib.domains.length){
+      html+='<div class="finding-card" style="grid-column:1/-1"><div class="finding-badge"><span class="badge badge-gold">◈ SCORE ATTRIBUTION</span></div><div class="finding-title">Why These Scores Were Achieved</div><div class="finding-body">';
+      /* Methodology Overview */
+      html+='<div style="margin-bottom:14px;padding:12px;background:var(--bg3);border-radius:6px;border-left:3px solid var(--cyan)">';
+      html+='<div style="font-size:11px;font-weight:600;color:var(--cyan);margin-bottom:6px">▸ Scoring Methodology</div>';
+      html+='<div style="font-size:10px;color:var(--text-dim);line-height:1.6">'+attrib.methodology.description+'</div>';
+      html+='</div>';
+      /* Overall */
+      html+='<div style="margin-bottom:14px;padding:12px;background:var(--bg3);border-radius:6px;border-left:3px solid var(--gold)">';
+      html+='<div style="font-size:11px;font-weight:600;color:var(--gold);margin-bottom:6px">∑ Overall: '+fmtDec(attrib.overallScore,1)+'%</div>';
+      html+='<div style="font-size:10px;color:var(--text-dim);line-height:1.6">'+attrib.overallExplanation+'</div>';
+      html+='</div>';
+      /* Per-Domain Attribution */
+      for(var adi=0;adi<attrib.domains.length;adi++){
+        var da=attrib.domains[adi];
+        var dColor=da.score>=70?'var(--green)':(da.score>=40?'var(--gold)':'var(--crimson)');
+        html+='<div style="margin-bottom:14px;padding:12px 14px;background:var(--bg3);border-radius:8px;border-left:4px solid '+dColor+'">';
+        html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
+        html+='<div style="font-size:12px;font-weight:600;color:'+dColor+'">'+domainLabel(da.domain)+' — '+da.score.toFixed(1)+'%</div>';
+        html+='<span style="font-size:9px;color:var(--text-muted)">Confidence: '+(da.confidence*100).toFixed(1)+'%</span></div>';
+        /* Prior */
+        html+='<div style="font-size:9px;color:var(--text-dim);margin-bottom:6px;padding:6px 8px;background:var(--bg2);border-radius:4px"><strong>Prior:</strong> '+da.prior.description+' <span style="color:var(--text-muted)">['+da.prior.citation+']</span></div>';
+        /* Evidence chain */
+        if(da.evidenceChain&&da.evidenceChain.length){
+          html+='<div style="margin-bottom:6px"><div style="font-size:10px;font-weight:600;color:var(--text-primary);margin-bottom:4px">Evidence Chain ('+da.evidenceChain.length+' observations):</div>';
+          for(var eci=0;eci<da.evidenceChain.length;eci++){
+            var ev=da.evidenceChain[eci];
+            var shiftColor=ev.shift>0?'var(--green)':(ev.shift<-0.5?'var(--crimson)':'var(--text-muted)');
+            var gradeColor2=ev.grade==='S'?'var(--gold)':(ev.grade==='A'?'var(--cyan)':(ev.grade==='B'?'var(--pass)':(ev.grade==='C'?'var(--text-muted)':'var(--crimson)')));
+            html+='<div style="font-size:9px;padding:4px 8px;margin:2px 0;background:var(--bg2);border-radius:3px;display:flex;gap:8px;align-items:center">';
+            html+='<span style="color:'+gradeColor2+';font-weight:700;min-width:22px">'+ev.grade+'</span>';
+            html+='<span style="color:var(--text-dim);min-width:50px">'+ev.questionId+'</span>';
+            html+='<span style="color:'+shiftColor+';font-weight:600;min-width:60px">'+(ev.shift>0?'+':'')+ev.shift.toFixed(1)+'pp</span>';
+            html+='<span style="color:var(--text-dim);flex:1;font-size:8px">α: '+(ev.alphaBefore).toFixed(1)+' → '+(ev.alphaAfter).toFixed(1)+' | β: '+(ev.betaBefore).toFixed(1)+' → '+(ev.betaAfter).toFixed(1)+' | μ: '+(ev.meanBefore*100).toFixed(1)+'% → '+(ev.meanAfter*100).toFixed(1)+'%</span>';
+            html+='</div>';
+          }
+          html+='</div>';
+        }else{
+          html+='<div style="font-size:9px;color:var(--text-muted);margin-bottom:6px">⚠ No direct observations for this domain — score reflects uninformative prior.</div>';
+        }
+        /* Posterior explanation */
+        html+='<div style="font-size:9px;color:var(--text-dim);margin-bottom:6px;padding:6px 8px;background:var(--bg2);border-radius:4px"><strong>Posterior:</strong> '+da.posterior.description+'</div>';
+        /* Confidence */
+        html+='<div style="font-size:9px;color:var(--text-dim);margin-bottom:6px;padding:6px 8px;background:var(--bg2);border-radius:4px"><strong>Confidence:</strong> '+da.confidenceExplanation+'</div>';
+        /* Domain research citation */
+        if(da.domainCitation){
+          html+='<div style="font-size:8px;color:var(--cyan);padding:4px 8px;background:rgba(78,201,224,0.05);border-radius:4px;border-left:2px solid var(--cyan)">';
+          html+='<strong>▸ Domain Research:</strong> '+da.domainCitation.text+'<br><em>'+da.domainCitation.relevance+'</em></div>';
+        }
+        html+='</div>';
+      }
+      /* Full reference list */
+      html+='<details style="margin-top:14px"><summary style="font-size:11px;color:var(--cyan);cursor:pointer;font-weight:600">▸ Full Reference List ('+attrib.methodology.citations.length+' papers)</summary>';
+      html+='<div style="font-size:9px;color:var(--text-dim);padding:10px;background:var(--bg3);border-radius:6px;margin-top:6px">';
+      for(var ri=0;ri<attrib.methodology.citations.length;ri++){
+        var cit=attrib.methodology.citations[ri];
+        html+='<div style="margin-bottom:6px;padding-left:8px;border-left:2px solid var(--border)">';
+        html+='<div>'+cit.text+'</div>';
+        html+='<div style="color:var(--text-muted);font-style:italic">→ '+cit.relevance+'</div></div>';
+      }
+      html+='</div></details>';
+      html+='</div></div>';
+    }else{
+      html+='<div class="finding-card" style="grid-column:1/-1"><div class="finding-badge"><span class="badge badge-gold">◈ ATTRIBUTION</span></div><div class="finding-title">Score Attribution Unavailable</div><div class="finding-body" style="color:var(--text-muted)"><div style="font-size:11px">Attribution requires a score artifact and session answer data. Expand a completed session to generate.</div></div></div>';
+    }
+    html+='</div></div>';
+    html+='<div class="drill-panel" data-drill="meta"><div class="findings-grid">';
+    /* ── 8. SESSION META ── */
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">ℹ META</span></div><div class="finding-title">Session Metadata</div><div class="finding-body" style="font-size:10px">';
+    html+='Session ID: <code>'+sid+'</code><br>';
+    html+='Role: <code>'+(sessSummary.role||'\u2014')+'</code> · Age band: <code>'+(sessSummary.ageBand||'\u2014')+'</code><br>';
+    html+='School: <code>'+(sessSummary.schoolId||'\u2014')+'</code> · ROOTS ID: <code>'+(sessSummary.rootsId||'\u2014')+'</code><br>';
+    html+='Started: <code>'+(sessSummary.startedAt?new Date(sessSummary.startedAt).toLocaleString('en-IN'):'\u2014')+'</code><br>';
+    html+='Completed: <code>'+(sessSummary.completedAt?new Date(sessSummary.completedAt).toLocaleString('en-IN'):'\u2014')+'</code><br>';
+    html+='Termination: <code>'+(sessSummary.terminationReason||'N/A')+'</code><br>';
+    html+='Learning mode: <code>'+(sessSummary.learningModeActive?'active':'inactive')+'</code><br>';
+    html+='Profile: <code>'+(sessSummary.finalProfileId||'not generated')+'</code><br>';
+    if(meta.eventsCount!=null)html+='Events: <code>'+meta.eventsCount+'</code> · Suggestions: <code>'+(meta.suggestionsCount||0)+'</code><br>';
+    html+='</div></div>';
+
+    /* ── 8b. CONSENT STATUS ── */
+    var cGiven=sessSummary.consentGiven||d.consentGiven;
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge '+(cGiven?'badge-live':'badge-warn')+'">&Lambda; CONSENT</span></div><div class="finding-title">Consent Status</div><div class="finding-body" style="font-size:10px">';
+    html+='Consent given: <code style="color:'+(cGiven?'var(--green)':'var(--crimson)')+'">'+( cGiven?'YES':'NO / PRE-CONSENT')+'</code><br>';
+    html+='Consent version: <code>'+(sessSummary.consentVersion||d.consentVersion||'\u2014')+'</code><br>';
+    html+='Consent timestamp: <code>'+(sessSummary.consentTimestamp||d.consentTimestamp?new Date(sessSummary.consentTimestamp||d.consentTimestamp).toLocaleString('en-IN'):'\u2014')+'</code><br>';
+    html+='</div></div>';
+
+    html+='</div></div>';
+    html+='</div>'; /* close outer gold-border container */
+    el.innerHTML=html;
+
+    /* ── Render Charts ── */
+    if(d.scoreArtifact&&d.scoreArtifact.domainScores){
+      var ds=d.scoreArtifact.domainScores;
+      /* Radar */
+      var radarEl=document.getElementById('drillRadarChart');
+      if(radarEl){
+        new Chart(radarEl,{
+          type:'radar',
+          data:{
+            labels:ds.map(function(d){return domainLabel(d.domain)}),
+            datasets:[{
+              label:'Score',
+              data:ds.map(function(d){return d.score}),
+              backgroundColor:'rgba(78,201,224,0.15)',
+              borderColor:'rgba(78,201,224,0.8)',
+              pointBackgroundColor:ds.map(function(d){return d.score>=70?COLORS.green:(d.score>=40?COLORS.gold:COLORS.crimson)}),
+              pointRadius:4,borderWidth:2
+            }]
+          },
+          options:{
+            scales:{r:{min:0,max:100,ticks:{stepSize:20,font:{size:8},backdropColor:'transparent',color:'#656d76'},grid:{color:'rgba(255,255,255,0.06)'},pointLabels:{font:{size:9},color:'#e6edf3'}}},
+            plugins:{legend:{display:false}}
+          }
+        });
+      }
+    }
+    /* PRAI bar chart — split into Authenticity + Inauthenticity */
+    if(prai&&prai.score!=null){
+      var praiEl=document.getElementById('drillPraiChart');
+      if(praiEl){
+        new Chart(praiEl,{
+          type:'bar',
+          data:{
+            labels:['PRAI Score'],
+            datasets:[{
+              data:[prai.score],
+              backgroundColor:[
+                prai.score>=0.8?COLORS.green:(prai.score>=0.5?COLORS.gold:COLORS.crimson)
+              ],
+              borderRadius:3
+            }]
+          },
+          options:{
+            indexAxis:'y',
+            scales:{x:{min:0,max:1,title:{display:true,text:'Authenticity Score (higher = better)',color:'#8b949e',font:{size:9}},grid:{color:'rgba(255,255,255,0.06)'},ticks:{callback:function(v){return (v*100)+'%'},font:{size:8}}},y:{grid:{display:false},ticks:{font:{size:9}}}},
+            plugins:{legend:{display:false}}
+          }
+        });
+      }
+      /* Separate penalty chart */
+      var penaltyEl=document.getElementById('drillPenaltyChart');
+      if(penaltyEl){
+        new Chart(penaltyEl,{
+          type:'bar',
+          data:{
+            labels:['Streak (Dharmop.)','CV (Arthop.)','Time (Bhayop.)'],
+            datasets:[{
+              data:[prai.streakPenalty||0,prai.cvPenalty||0,prai.timeUniformityPenalty||0],
+              backgroundColor:[
+                (prai.streakPenalty||0)>0.3?COLORS.crimson:COLORS.green,
+                (prai.cvPenalty||0)>0.3?COLORS.crimson:COLORS.green,
+                (prai.timeUniformityPenalty||0)>0.3?COLORS.crimson:COLORS.green
+              ],
+              borderRadius:3
+            }]
+          },
+          options:{
+            indexAxis:'y',
+            scales:{x:{min:0,max:1,title:{display:true,text:'\u2190 Inauthenticity Signals (lower = better)',color:'#8b949e',font:{size:9}},grid:{color:'rgba(255,255,255,0.06)'},ticks:{callback:function(v){return (v*100)+'%'},font:{size:8}}},y:{grid:{display:false},ticks:{font:{size:9}}}},
+            plugins:{legend:{display:false}}
+          }
+        });
+      }
+    }
+  }catch(e){
+    el.innerHTML='<div class="empty-state" style="border:1px solid var(--crimson);border-radius:8px;padding:16px">Session details unavailable for '+sid.slice(0,14)+': '+e.message+'<br><span style="font-size:10px;color:var(--text-muted)">The /prototype/session-results/:sessionId endpoint may have failed. This can happen for incomplete sessions without score artifacts.</span></div>';
+  }
+}
+
+/* ── Mathematical Interpretation Helpers ── */
+function interpretBeta(alpha,beta,domain){
+  if(alpha==null||beta==null)return '';
+  var n=alpha+beta-2;/* effective observations */
+  var mean=alpha/(alpha+beta);
+  if(n<3)return 'Low data ('+fmtDec(n,0)+' effective obs) — prior-dominated, score highly uncertain';
+  if(n<8)return 'Moderate data ('+fmtDec(n,0)+' obs) — estimate stabilising but still sensitive to new answers';
+  return 'Strong data ('+fmtDec(n,0)+' obs) — posterior well-converged, additional questions unlikely to shift score significantly';
+}
+function interpretStreak(p){
+  if(p<0.05)return 'No significant streaks detected. Response sequence shows natural variation in answer quality — consistent with genuine engagement.';
+  if(p<0.15)return 'Minor streak signal. Short runs of ideal answers detected but within normal bounds. Could reflect genuine strength in those domains.';
+  if(p<0.3)return 'Moderate streak signal. Extended runs of consistently high answers suggest possible coaching or rehearsed responses. The child may have been prepared for specific question types.';
+  return 'Strong streak signal (penalty='+fmtDec(p,3)+'). Statistically improbable runs of ideal answers detected — P(natural)<0.05. Strongly suggests coached, scripted, or performed responses. Domain scores are multiplicatively corrected downward.';
+}
+function interpretCV(p){
+  if(p<0.05)return 'Normal within-group score variation. Different questions probing the same construct yield appropriately varied responses — consistent with genuine reflection.';
+  if(p<0.15)return 'Slightly low variation. Answers to related questions are unusually similar, but within acceptable bounds.';
+  if(p<0.3)return 'Suspiciously uniform responses within consistency groups. The coefficient of variation across paired questions is abnormally low (CV < expected), suggesting the child may be giving identical responses regardless of question nuance.';
+  return 'Critically uniform responses (penalty='+fmtDec(p,3)+'). Near-identical answers across all questions in the same construct — statistically incompatible with genuine item-level discrimination. Strong indicator of response set bias or external coaching.';
+}
+function interpretTimeUniformity(p){
+  if(p<0.05)return 'Natural timing variation. Response times show expected variance across question difficulty levels — faster for easy items, slower for harder ones.';
+  if(p<0.15)return 'Slightly uniform timing. Response times are more consistent than expected, but could reflect a deliberate, steady approach.';
+  if(p<0.3)return 'Notably uniform timing pattern. Response time standard deviation is abnormally low — genuine responders typically show 2-3x variation between easy/hard items. May indicate pre-decided answers.';
+  return 'Scripted timing detected (penalty='+fmtDec(p,3)+'). Response times are effectively constant (σ < threshold), a statistical signature of pre-decided answers entered at a rehearsed pace. Combined with streak/CV signals, this is a strong performed-response indicator.';
+}
+function interpretValenceFlag(flag){
+  var interps={
+    'PERFORMED_PATTERN':'A combination of psychometric signals (streak + CV + timing) exceeds the performed-response threshold. The overall response profile is statistically inconsistent with genuine, reflective engagement. This session is flagged for human review \u2014 domain scores are preserved but PRAI indicates low evidence reliability.',
+    'ALL_S_STREAK':'Every answered question received the highest possible rating (S-grade equivalent). Probability of this occurring genuinely drops exponentially with question count: P = (1/4)^n for n questions. With >8 questions, P < 0.00002 — effectively impossible without coaching.',
+    'AVG_GRADE_HIGH':'The mean grade across all responses is abnormally high (>90th percentile of the population distribution). While high scores are possible, this combined with other signals suggests social desirability bias or coached responses.',
+    'PARENT_CHILD_FRICTION_RISK':'Parent assessment shows expectation_calibration < 40% AND aspiration_alignment < 40%. This combination indicates a significant gap between parent expectations and child capability, which research associates with anxiety-driven underperformance.',
+    'HOME_AMPLIFIER':'Parent assessment shows home_environment > 70% AND emotional_availability > 70%. This positive signal suggests a nurturing home context that amplifies the child’s innate strengths.',
+    'TEACHER_RISK':'Teacher assessment shows resilience_modeling < 40% AND character_consistency < 40%. This flags classroom environments where the teacher may not be providing adequate socio-emotional scaffolding.',
+    'HIGH_IMPACT_TEACHER':'Teacher assessment shows meaning_transfer > 75% AND student_empathy > 75%. This identifies teachers whose pedagogical approach significantly amplifies student growth trajectories.',
+    'INNOVATION_ANCHOR':'Teacher assessment shows creative_intelligence > 75% AND pedagogical_curiosity > 75%. This flags teachers who serve as innovation catalysts in the school ecosystem.'
+  };
+  if(flag.startsWith('LOW_CONFIDENCE_')){
+    var dom=flag.replace('LOW_CONFIDENCE_','').toLowerCase();
+    return 'Posterior confidence for '+dom+' is below 30% (α+β < threshold). This means fewer questions have been answered in this domain than needed for reliable estimation. The Beta distribution is still wide/flat — the score could shift significantly with additional questions.';
+  }
+  return interps[flag]||'Psychometric flag: '+flag+'. Indicates a detected pattern in the response data that warrants attention.';
+}
+function interpretConsistency(cf){
+  var cvPct=(cf.cv*100).toFixed(1);
+  if(cf.label==='GENUINE')return 'CV='+cvPct+'% (<15%). Paired questions in '+cf.group+' yielded highly consistent answers. The child discriminates between question nuances while maintaining construct-level coherence.';
+  if(cf.label==='STABLE')return 'CV='+cvPct+'% (15-30%). Normal variation in '+cf.group+'. Answers reflect genuine engagement with slight natural inconsistency — expected in authentic assessment.';
+  if(cf.label==='VARIABLE')return 'CV='+cvPct+'% (30-50%). Notable inconsistency in '+cf.group+'. The child gave markedly different answers to questions measuring the same construct. This may indicate confusion, context-sensitivity, or rapid development.';
+  return 'CV='+cvPct+'% (≥50%). Suspiciously inconsistent responses in '+cf.group+'. Score modifier '+fmtDec(cf.modifier,2)+'× applied. Such high variation within a construct is statistically anomalous and may indicate gaming or disengagement.';
+}
+
+/* === 17. EXPORT DATA PREVIEW === */
+async function loadExportData(){
+  var el=document.getElementById('export-content');
+  try{
+    var raw=await api('GET','/export/pilot-bundle?schoolId=somalwar-ramdaspeth');
+    var d=raw.data||raw;
+    /* pilot-bundle returns { datasets: { sessions:{csv,rowCount}, profiles:{csv,rowCount}, outcomes:{csv,rowCount}, triads:{csv,rowCount} }, summary:{totalRows,datasetsExported,anyWarnings} } */
+    var ds=d.datasets||{};
+    var summary=d.summary||{};
+    var sessCount=(ds.sessions&&ds.sessions.rowCount)||0;
+    var profCount=(ds.profiles&&ds.profiles.rowCount)||0;
+    var outCount=(ds.outcomes&&ds.outcomes.rowCount)||0;
+    var triadCount=(ds.triads&&ds.triads.rowCount)||0;
+    var html='<div class="findings-grid">';
+    /* Sessions summary */
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-gold">\u25c8 SESSIONS</span></div><div class="finding-title">'+sessCount+' Sessions Exported</div><div class="finding-body">';
+    if(sessCount>0){
+      html+='Rows: <code>'+sessCount+'</code><br>';
+      if(ds.sessions.warnings)html+='Warnings: <code>'+ds.sessions.warnings+'</code><br>';
+      if(ds.sessions.csv){var csvLines=ds.sessions.csv.split('\n');html+='CSV columns: <code>'+csvLines[0]+'</code><br>';html+='Preview: <pre style="white-space:pre-wrap;font-size:9px;max-height:100px;overflow-y:auto">'+csvLines.slice(0,4).join('\n')+'</pre>';}
+    }else{html+='No sessions in export bundle (k-anonymity: min 30 rows required)';}
+    html+='</div></div>';
+    /* Profiles summary */
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-cyan">\u25ce PROFILES</span></div><div class="finding-title">'+profCount+' Profiles Exported</div><div class="finding-body">';
+    if(profCount>0){
+      html+='Rows: <code>'+profCount+'</code><br>';
+      if(ds.profiles.csv){var pLines=ds.profiles.csv.split('\n');html+='CSV columns: <code>'+pLines[0]+'</code>';}
+    }else{html+='No profiles in export bundle (k-anonymity: min 30 rows required)';}
+    html+='</div></div>';
+    /* Outcomes */
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-success">\u25c8 OUTCOMES</span></div><div class="finding-title">'+outCount+' Outcomes</div><div class="finding-body">'+(outCount>0?'Rows: <code>'+outCount+'</code>':'No outcomes yet \u2014 populate via /learning/outcomes/ingest')+'</div></div>';
+    /* Triads / Growth predictions */
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-info">\u25b3 TRIADS</span></div><div class="finding-title">'+triadCount+' Triads</div><div class="finding-body">';
+    if(triadCount>0){
+      html+='Rows: <code>'+triadCount+'</code><br>';
+      if(ds.triads.csv){var tLines=ds.triads.csv.split('\n');html+='CSV columns: <code>'+tLines[0]+'</code>';}
+    }else{html+='No triad predictions yet \u2014 run /growth-prediction/compute';}
+    html+='</div></div>';
+    /* Raw data size & summary */
+    var rawJson=JSON.stringify(d);
+    html+='<div class="finding-card"><div class="finding-badge"><span class="badge badge-action">\u25c6 BUNDLE</span></div><div class="finding-title">Pilot Bundle Summary</div><div class="finding-body">';
+    html+='Total rows: <code>'+(summary.totalRows||0)+'</code><br>';
+    html+='Datasets exported: <code>'+(summary.datasetsExported||0)+'</code><br>';
+    html+='Bundle size: <code>'+(rawJson.length/1024).toFixed(1)+' KB</code><br>';
+    html+='School: <code>'+(d.schoolId||'\u2014')+'</code><br>';
+    if(summary.anyWarnings)html+='<span style="color:var(--warn)">\u26a0 Warnings present</span><br>';
+    html+='Keys: <code>'+Object.keys(d).join(', ')+'</code><br>';
+    html+='Format: CSV datasets \u00b7 Ready for R/Python analysis';
+    html+='</div></div>';
+    html+='</div>';
+    el.innerHTML=html;
+  }catch(e){
+    el.innerHTML='<div class="empty-state">Export data unavailable: '+e.message+'<br><span style="font-size:10px;color:var(--text-muted)">Requires system role. Endpoint: /export/pilot-bundle</span></div>';
+  }
+}
+
+/* === 18. FIRESTORE COLLECTIONS EXPLORER === */
+async function loadCollections(){
+  var el=document.getElementById('collections-content');
+  /* We probe known collections via existing endpoints to build a live inventory */
+  var collections=[
+    {name:'roots_sessions',probe:'/prototype-admin/metrics',field:'totalSessions',desc:'CAT assessment sessions'},
+    {name:'roots_events',probe:null,desc:'Immutable event log (QuestionRendered, AnswerSelected, etc.)'},
+    {name:'roots_questions',probe:'/questions',countField:'data',desc:'Question bank (Pancha-Kosha domains)'},
+    {name:'roots_profiles',probe:'/export/pilot-bundle?schoolId=somalwar-ramdaspeth',field:'datasets',extractFn:function(raw){var d=(raw&&raw.data)||raw;return(d&&d.datasets&&d.datasets.profiles)?d.datasets.profiles.rowCount:null;},desc:'Computed student profiles'},
+    {name:'roots_score_artifacts',probe:null,desc:'Scoring outputs (domainScores, overall, flags)'},
+    {name:'roots_reports',probe:null,desc:'Generated 2-page narrative reports'},
+    {name:'roots_parent_sessions',probe:null,desc:'Parent assessment sessions (invite-based)'},
+    {name:'roots_parent_profiles',probe:null,desc:'Parent ROOTS profiles'},
+    {name:'roots_invites',probe:'/invites',countField:'data',desc:'Smart link invite codes'},
+    {name:'roots_invite_clicks',probe:null,desc:'Click tracking for invite links'},
+    {name:'roots_learning_suggestions',probe:null,desc:'AI-generated learning suggestions'},
+    {name:'roots_learning_feedback',probe:'/prototype-learning/feedback/stats',field:'total',desc:'Helpfulness feedback on suggestions'},
+    {name:'roots_proposals',probe:'/prototype-learning/proposals',countField:'data',desc:'Learning improvement proposals'},
+    {name:'roots_engine_versions',probe:'/prototype-admin/registry/history',countField:'data',desc:'Engine version registry'},
+    {name:'roots_growth_predictions',probe:null,desc:'Triangulated growth predictions (child\u00d7parent\u00d7teacher)'},
+    {name:'roots_outcomes',probe:null,desc:'Learning outcomes for loop analysis'},
+    {name:'roots_teacher_genomes',probe:null,desc:'Teacher genome profiles'},
+    {name:'anonymous_sessions',probe:null,desc:'v2 anonymous assessment sessions (no login)'},
+    {name:'roots_alumni_identities',probe:null,desc:'Alumni identity claims'}
+  ];
+  var html='<div class="module-grid">';
+  var probePromises=[];
+  for(var i=0;i<collections.length;i++){
+    var c=collections[i];
+    if(c.probe){
+      probePromises.push((function(col,idx){
+        return apiSafe('GET',col.probe).then(function(raw){
+          col._count=null;
+          if(raw){
+            if(col.extractFn){
+              col._count=col.extractFn(raw);
+            }else if(col.field&&raw.data&&typeof raw.data[col.field]==='number'){
+              col._count=raw.data[col.field];
+            }else if(col.countField&&raw[col.countField]){
+              var arr=raw[col.countField];
+              if(Array.isArray(arr))col._count=arr.length;
+              else if(raw.meta&&typeof raw.meta.count==='number')col._count=raw.meta.count;
+            }else if(raw.data&&typeof raw.data==='number'){
+              col._count=raw.data;
+            }
+          }
+        });
+      })(c,i));
+    }
+  }
+  await Promise.allSettled(probePromises);
+  for(var i=0;i<collections.length;i++){
+    var c=collections[i];
+    var countStr=c._count!=null?fmt(c._count)+' docs':'<span style="color:var(--text-muted)">\u2014</span>';
+    var statusPill=c._count!=null?(c._count>0?'<span class="stat-pill pill-pass">'+c._count+'</span>':'<span class="stat-pill" style="background:rgba(255,255,255,0.05);color:var(--text-muted)">empty</span>'):'<span class="stat-pill" style="background:rgba(255,255,255,0.05);color:var(--text-muted)">?</span>';
+    html+='<div class="module-card"><div class="module-header"><span class="module-name">'+c.name+'</span><div class="module-stats">'+statusPill+'</div></div>';
+    html+='<div class="endpoint-row"><span style="flex:1;font-size:10px;color:var(--text-dim)">'+c.desc+'</span></div>';
+    html+='</div>';
+  }
+  html+='</div>';
+  html+='<p class="note" style="margin-top:10px">'+collections.length+' collections tracked \u00b7 Counts from probed API endpoints \u00b7 ? = not probed directly (no system-level collection list endpoint)</p>';
+  el.innerHTML=html;
+}
+
+/* TAB SWITCHING */
+function switchTab(btn, tabName) {
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('tab-active')});
+  btn.classList.add('tab-active');
+  document.querySelectorAll('.section[data-tab]').forEach(function(s){
+    s.classList.toggle('tab-visible', s.getAttribute('data-tab') === tabName);
+  });
+}
+
+/* COLLAPSIBLE SECTIONS */
+function toggleCollapse(titleEl) {
+  var section = titleEl.closest('.section');
+  var arrow = titleEl.querySelector('.collapse-arrow');
+  var isCollapsed = arrow.classList.toggle('is-collapsed');
+  var children = section.querySelectorAll(':scope > *');
+  for (var i = 0; i < children.length; i++) {
+    if (children[i].classList.contains('section-title') || children[i].classList.contains('section-desc')) continue;
+    children[i].style.display = isCollapsed ? 'none' : '';
+  }
+}
+
+/* AUTO-COLLAPSE non-primary sections on load */
+function autoCollapseSecondary() {
+  var ids = ['section-feedback','section-psychometrics','section-prai','section-status','section-api-audit','section-collections','section-export','section-qbank','section-coverage-matrix','section-question-health','section-proposals','section-registry'];
+  for (var i = 0; i < ids.length; i++) {
+    var section = document.getElementById(ids[i]);
+    if (!section) continue;
+    var title = section.querySelector('.section-title.collapsible');
+    if (title) toggleCollapse(title);
+  }
+}
+setTimeout(autoCollapseSecondary, 100);
+
+/* SESSION LIST COLLAPSE */
+function toggleSessionList() {
+  var el = document.getElementById('sessions-explorer-content');
+  var btn = document.getElementById('sessions-collapse-btn');
+  if (!el) return;
+  if (el.style.display === 'none') {
+    el.style.display = '';
+    btn.innerHTML = '&triangledown; Collapse List';
+  } else {
+    el.style.display = 'none';
+    btn.innerHTML = '&triangleright; Expand List';
+  }
+}
+
+/* DRILL-DOWN SUB-TAB SWITCHING */
+function switchDrillTab(btn, panelId) {
+  var parent = btn.closest('.drill-tabs') || btn.parentElement;
+  parent.querySelectorAll('.drill-tab').forEach(function(b){b.classList.remove('drill-active')});
+  btn.classList.add('drill-active');
+  var container = parent.parentElement;
+  container.querySelectorAll('.drill-panel').forEach(function(p){p.classList.remove('drill-visible')});
+  var target = container.querySelector('[data-drill="'+panelId+'"]');
+  if(target) target.classList.add('drill-visible');
+}
+
+/* PSYCHOMETRIC LABEL HELPERS */
+function domainLabel(d) {
+  var labels = {
+    'curiosity': 'Intellectual Curiosity (Jij\u00f1\u0101s\u0101)',
+    'resilience': 'Emotional Resilience (Dh\u1e5bti)',
+    'empathy': 'Social Empathy (Karu\u1e47\u0101)',
+    'systems': 'Systems Thinking (Yukti)',
+    'character': 'Character Strength (\u015a\u012bla)',
+    'music': 'Aesthetic Intelligence (Sa\u1e45g\u012bta)',
+    'physical': 'Kinesthetic Vitality (\u015aar\u012bra)',
+    'spiritual': 'Contemplative Awareness (Adhy\u0101tma)',
+    'expectation_calibration': 'Expectation Calibration',
+    'aspiration_alignment': 'Aspiration Alignment',
+    'emotional_availability': 'Emotional Availability',
+    'home_environment': 'Home Learning Environment',
+    'growth_mindset_modeling': 'Growth Mindset Modeling',
+    'autonomy_support': 'Autonomy Support',
+    'pedagogical_curiosity': 'Pedagogical Curiosity',
+    'resilience_modeling': 'Resilience Modeling',
+    'student_empathy': 'Student Empathy',
+    'systems_design': 'Systems Design',
+    'character_consistency': 'Character Consistency',
+    'creative_intelligence': 'Creative Intelligence',
+    'meaning_transfer': 'Meaning Transfer',
+    'mindful_presence': 'Mindful Presence'
+  };
+  return labels[(d||'').toLowerCase()] || (d||'').replace(/_/g,' ').replace(/\b\w/g, function(l){return l.toUpperCase()});
+}
+
+function domainDescription(d) {
+  var descs = {
+    'curiosity': 'Measures intrinsic motivation to explore, question, and seek understanding across domains.',
+    'resilience': 'Assesses emotional regulation, stress recovery, and capacity to persist through challenges.',
+    'empathy': 'Evaluates perspective-taking, prosocial behavior, and emotional attunement with peers.',
+    'systems': 'Gauges ability to recognize patterns, understand cause-effect chains, and think in frameworks.',
+    'character': 'Measures moral reasoning, integrity, responsibility, and values-driven behavior.',
+    'music': 'Assesses aesthetic sensitivity, creative expression, and engagement with artistic experiences.',
+    'physical': 'Evaluates body awareness, motor coordination, physical confidence, and active engagement.',
+    'spiritual': 'Measures capacity for reflection, meaning-making, mindfulness, and inner awareness.'
+  };
+  return descs[(d||'').toLowerCase()] || 'Domain assessment within the Pancha-Kosha framework.';
+}
+
+function confidenceLabel(confPct) {
+  var cv = parseFloat(confPct);
+  if(isNaN(cv)) return {text:'Unknown', color:'var(--text-muted)'};
+  if(cv >= 80) return {text:'Very High', color:'var(--green)'};
+  if(cv >= 60) return {text:'High', color:'var(--cyan)'};
+  if(cv >= 40) return {text:'Moderate', color:'var(--gold)'};
+  if(cv >= 20) return {text:'Low', color:'var(--orange)'};
+  return {text:'Very Low', color:'var(--crimson)'};
+}
+
+function scoreVerdict(score) {
+  if(score == null) return {text:'No Data', color:'var(--text-muted)'};
+  if(score >= 80) return {text:'Exceptional', color:'var(--green)'};
+  if(score >= 65) return {text:'Strong', color:'var(--cyan)'};
+  if(score >= 50) return {text:'Developing', color:'var(--gold)'};
+  if(score >= 35) return {text:'Emerging', color:'var(--orange)'};
+  return {text:'Needs Support', color:'var(--crimson)'};
+}
+
+</script>
+</body>
+</html>

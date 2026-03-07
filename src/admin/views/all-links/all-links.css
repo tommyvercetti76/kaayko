@@ -4,7 +4,7 @@
  */
 
 /* Links table styling is in base CSS */
-/* This file is a placeholder for view-specific overrides */
+/* View-specific overrides and responsive card layout */
 
 .links-view .card {
   padding: 0;
@@ -12,4 +12,153 @@
 
 .table-container {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ============================================================================
+   RESPONSIVE — TABLET (≤1024px)
+   Tighter table, scroll hints
+   ============================================================================ */
+
+@media (max-width: 1024px) {
+  .links-view .card {
+    border-radius: var(--radius-sm);
+  }
+
+  /* Scroll shadow hints */
+  .table-container {
+    position: relative;
+    background:
+      linear-gradient(90deg, var(--bg-card) 30%, transparent),
+      linear-gradient(90deg, transparent, var(--bg-card) 70%),
+      linear-gradient(90deg, rgba(0,0,0,0.15), transparent 20px),
+      linear-gradient(270deg, rgba(0,0,0,0.15), transparent 20px);
+    background-position: left center, right center, left center, right center;
+    background-repeat: no-repeat;
+    background-size: 40px 100%, 40px 100%, 20px 100%, 20px 100%;
+    background-attachment: local, local, scroll, scroll;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE — MOBILE (≤768px)
+   Card-based layout replaces table rows
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  /* Hide the table header on mobile */
+  .table-container thead {
+    display: none;
+  }
+
+  .table-container table,
+  .table-container tbody,
+  .table-container tr,
+  .table-container td {
+    display: block;
+    width: 100%;
+  }
+
+  .table-container tbody tr {
+    padding: var(--space-md);
+    margin-bottom: var(--space-sm);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    position: relative;
+  }
+
+  .table-container tbody tr:hover {
+    border-color: var(--border-medium);
+  }
+
+  .table-container tbody tr:last-child {
+    margin-bottom: 0;
+  }
+
+  .table-container tbody td {
+    padding: 4px 0;
+    border: none;
+    font-size: 13px;
+  }
+
+  /* Add data-labels from th content */
+  .table-container tbody td::before {
+    content: attr(data-label);
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-right: var(--space-sm);
+    min-width: 70px;
+  }
+
+  /* Title cell: full width, prominent */
+  .table-container tbody td:first-child {
+    font-weight: 600;
+    font-size: 14px;
+    padding-bottom: var(--space-sm);
+    margin-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .table-container tbody td:first-child::before {
+    display: none;
+  }
+
+  /* Actions cell: flex row at bottom */
+  .table-container tbody td:last-child {
+    padding-top: var(--space-sm);
+    margin-top: var(--space-sm);
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-sm);
+  }
+
+  .table-container tbody td:last-child::before {
+    display: none;
+  }
+
+  .link-actions {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .title-cell .link-url {
+    word-break: break-all;
+    font-size: 10px;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE — SMALL MOBILE (≤480px)
+   Even more compact
+   ============================================================================ */
+
+@media (max-width: 480px) {
+  .table-container tbody tr {
+    padding: var(--space-sm);
+  }
+
+  .table-container tbody td {
+    font-size: 12px;
+  }
+
+  .table-container tbody td::before {
+    min-width: 60px;
+    font-size: 9px;
+  }
+
+  .action-btn-labeled {
+    padding: 4px 6px;
+    font-size: 8px;
+  }
+
+  .action-btn-icon {
+    width: 26px;
+    height: 26px;
+  }
 }

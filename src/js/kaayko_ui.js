@@ -13,7 +13,7 @@ import { voteOnProduct } from "./kaayko_apiClient.js";
 // Cloud Function image proxy base - auto-detect environment
 const IMAGE_PROXY_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? `${window.location.origin}/api/images`  // Local Firebase emulator
-  : "https://us-central1-kaayko-api-dev.cloudfunctions.net/api/images";  // Production
+  : "https://api-vwcc5j4qda-uc.a.run.app/images";  // Production
 
 /* ==========================================================================
    1) Carousel Rendering & Swipe
@@ -1035,7 +1035,7 @@ async function initializeStripePayment(item, size, gender, modal) {
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const apiBaseUrl = isLocalhost 
       ? 'http://127.0.0.1:5001/kaaykostore/us-central1/api'
-      : 'https://us-central1-kaaykostore.cloudfunctions.net/api';
+      : 'https://api-vwcc5j4qda-uc.a.run.app';
     
     const requestBody = {
       productId: item.id || item.title || 'unknown',

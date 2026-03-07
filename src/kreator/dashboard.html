@@ -1338,6 +1338,11 @@
 
   <script type="module">
     import { AUTH, getProfile, updateProfile } from './js/kreator-api.js';
+
+    const _isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    const API_BASE = _isLocal
+      ? 'http://127.0.0.1:5001/kaaykostore/us-central1/api'
+      : 'https://api-vwcc5j4qda-uc.a.run.app';
     
     // Initialize auth - use stored data, don't redirect
     if (!AUTH.init()) {
@@ -1367,7 +1372,7 @@
     async function loadUserData() {
       try {
         // Direct API call without requireAuth redirect
-        const response = await fetch('https://api-vwcc5j4qda-uc.a.run.app/kreators/me', {
+        const response = await fetch(`${API_BASE}/kreators/me`, {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${AUTH.token}`
@@ -1484,7 +1489,7 @@
     // Load products for the products view
     async function loadProducts() {
       try {
-        const response = await fetch('https://api-vwcc5j4qda-uc.a.run.app/kreators/products', {
+        const response = await fetch(`${API_BASE}/kreators/products`, {
           headers: {
             'Authorization': `Bearer ${AUTH.token}`
           }
@@ -1601,7 +1606,7 @@
       }
       
       try {
-        const response = await fetch('https://api-vwcc5j4qda-uc.a.run.app/kreators/auth/google/disconnect', {
+        const response = await fetch(`${API_BASE}/kreators/auth/google/disconnect`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1632,7 +1637,7 @@
       }
       
       try {
-        const response = await fetch('https://api-vwcc5j4qda-uc.a.run.app/kreators/me', {
+        const response = await fetch(`${API_BASE}/kreators/me`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',

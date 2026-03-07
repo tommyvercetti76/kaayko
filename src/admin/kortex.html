@@ -12,7 +12,7 @@
   <meta name="keywords" content="link dashboard, URL management, link analytics, campaign tracking, branded links, enterprise URL shortener, multi-tenant platform, link routing, marketing automation, attribution tracking, kortex dashboard, kaayko">
   <meta name="author" content="Kaayko">
   <meta name="robots" content="noindex, nofollow">
-  <link rel="canonical" href="https://kaayko.com/admin/smartlinks.html">
+  <link rel="canonical" href="https://kaayko.com/admin/kortex.html">
   
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
@@ -30,7 +30,7 @@
   <meta name="twitter:image" content="https://kaayko.com/assets/kortex-dashboard-twitter.png">
   
   <!-- Security Headers -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com https://cdn.jsdelivr.net https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.cloudfunctions.net https://*.googleapis.com https://api.qrserver.com https://api.stripe.com; frame-src https://js.stripe.com https://hooks.stripe.com;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com https://cdn.jsdelivr.net https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.cloudfunctions.net https://*.run.app https://*.googleapis.com https://api.qrserver.com https://api.stripe.com; frame-src https://js.stripe.com https://hooks.stripe.com;">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta http-equiv="X-Frame-Options" content="DENY">
   <meta http-equiv="X-XSS-Protection" content="1; mode=block">
@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://www.gstatic.com">
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="preconnect" href="https://js.stripe.com">
-  <link rel="dns-prefetch" href="https://us-central1-kaaykostore.cloudfunctions.net">
+  <link rel="dns-prefetch" href="https://api-vwcc5j4qda-uc.a.run.app">
   <link rel="dns-prefetch" href="https://api.qrserver.com">
   <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
   
@@ -52,7 +52,7 @@
   <meta name="theme-color" content="#d4af37">
   
   <!-- Stylesheets - Modular Architecture v6.0 -->
-    <link rel="stylesheet" href="css/smartlinks-base.css?v=6.3.3">
+    <link rel="stylesheet" href="css/kortex-base.css?v=6.3.3">
     <link rel="stylesheet" href="views/create-link/create-link.css?v=1.5">
 </head>
 <body>
@@ -96,6 +96,10 @@
         <span class="nav-icon">👥</span>
         <span>Tenant Onboarding</span>
       </a>
+      <a href="views/roots/" class="nav-item" style="border-top:1px solid rgba(255,255,255,0.06);margin-top:8px;padding-top:12px">
+        <span class="nav-icon">◎</span>
+        <span>ROOTS Engine</span>
+      </a>
     </nav>
     
     <div class="sidebar-footer">
@@ -132,11 +136,17 @@
     </div>
   </aside>
   
+  <!-- Sidebar Overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  
   <!-- Main Content -->
   <main class="main-content">
     
     <!-- Top Bar -->
     <div class="top-bar">
+      <button class="hamburger" id="hamburger-btn" aria-label="Toggle sidebar">
+        <span></span><span></span><span></span>
+      </button>
       <div class="api-status">
         <span class="status-dot"></span>
         <span>API Connected</span>
@@ -263,7 +273,67 @@
               </label>
               <input type="url" id="webDestination" class="form-input" required placeholder="https://kaayko.com/summer-sale">
             </div>
-            
+
+            <!-- ROOTS Assessment Configuration (appears when destination is /knowledge) -->
+            <div id="roots-assessment-section" style="display:none; margin: 20px 0; padding: 20px; border: 2px solid rgba(76,175,80,0.4); border-radius: 12px; background: rgba(76,175,80,0.06);">
+              <h4 style="color:#4caf50; margin-bottom:8px;">🧠 ROOTS Assessment Settings</h4>
+              <p class="help-text" style="color:#4caf50; margin-bottom:16px;">This link goes to the ROOTS Knowledge Engine. Configure the assessment invite that will be auto-created.</p>
+
+              <div class="form-group">
+                <label for="rootsAssessmentType">
+                  Assessment Type <span class="required">*</span>
+                  <button type="button" class="info-icon" aria-label="More information">
+                    i
+                    <span class="tooltip" role="tooltip">Parent assessment evaluates home learning environment. Teacher assessment evaluates pedagogical fit.</span>
+                  </button>
+                </label>
+                <select id="rootsAssessmentType" class="form-input">
+                  <option value="parent">👪 Parent Assessment</option>
+                  <option value="teacher">🎓 Teacher Assessment</option>
+                </select>
+              </div>
+
+              <div class="form-group" id="roots-child-age-group">
+                <label for="rootsChildAge">
+                  Child Age (for parent assessments)
+                  <button type="button" class="info-icon" aria-label="More information">
+                    i
+                    <span class="tooltip" role="tooltip">Pre-fills the child's age for age-band-appropriate questions. Leave empty to ask during assessment.</span>
+                  </button>
+                </label>
+                <input type="number" id="rootsChildAge" class="form-input" min="3" max="18" placeholder="e.g. 8">
+              </div>
+
+              <div class="form-group">
+                <label for="rootsSchoolId">
+                  School ID (optional)
+                  <button type="button" class="info-icon" aria-label="More information">
+                    i
+                    <span class="tooltip" role="tooltip">Links the assessment to a specific school for reporting. Leave empty for general assessments.</span>
+                  </button>
+                </label>
+                <input type="text" id="rootsSchoolId" class="form-input" placeholder="e.g. somalwar-ramdaspeth">
+              </div>
+
+              <div class="form-group">
+                <label for="rootsSchoolName">
+                  School Name (optional)
+                </label>
+                <input type="text" id="rootsSchoolName" class="form-input" placeholder="e.g. Somalwar Academy">
+              </div>
+
+              <div class="form-group">
+                <label for="rootsMaxUses">
+                  Max Uses (0 = unlimited)
+                  <button type="button" class="info-icon" aria-label="More information">
+                    i
+                    <span class="tooltip" role="tooltip">Limit how many times this invite can be used. Set 0 for unlimited.</span>
+                  </button>
+                </label>
+                <input type="number" id="rootsMaxUses" class="form-input" min="0" value="0" placeholder="0">
+              </div>
+            </div>
+
             <div class="form-group">
               <label for="createdBy">
                 Who's creating this? <span class="required">*</span>
@@ -473,7 +543,7 @@
               </div>
             </div>
           </div>
-          
+
           <!-- Submit -->
           <div class="form-actions">
             <button type="submit" class="btn btn-primary">✨ Create Link</button>
@@ -677,12 +747,39 @@
   
   </div> <!-- .app-container -->
   
+  <!-- Responsive Sidebar Toggle -->
+  <script>
+    (function(){
+      const btn = document.getElementById('hamburger-btn');
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      if(!btn||!sidebar||!overlay) return;
+      function toggle(){
+        const open = sidebar.classList.toggle('open');
+        overlay.classList.toggle('open', open);
+        btn.classList.toggle('active', open);
+        document.body.style.overflow = open ? 'hidden' : '';
+      }
+      function close(){
+        sidebar.classList.remove('open');
+        overlay.classList.remove('open');
+        btn.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+      btn.addEventListener('click', toggle);
+      overlay.addEventListener('click', close);
+      // Close sidebar when nav item clicked on mobile
+      sidebar.querySelectorAll('.nav-item').forEach(function(item){
+        item.addEventListener('click', function(){
+          if(window.innerWidth <= 1024) close();
+        });
+      });
+    })();
+  </script>
+
   <!-- Scripts - Modular Architecture v6.0 -->
     <!-- App Script -->
           <!-- Core JS Module -->
-    <script type="module" src="js/smartlinks-core.js?v=6.5.4"></script>
-</body>
-</html>
-  
+    <script type="module" src="js/kortex-core.js?v=6.5.4"></script>
 </body>
 </html>

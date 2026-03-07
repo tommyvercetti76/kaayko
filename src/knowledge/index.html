@@ -1,0 +1,3059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ROOTS · Knowledge Engine — Kaayko</title>
+  <link rel="icon" href="/assets/images/K5.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ── Reset ───────────────────────────────────── */
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+    :root {
+      --bg: #060810;
+      --bg2: #0b0f1a;
+      --bg3: #111827;
+      --panel: #141c2e;
+      --panel2: #1a2438;
+      --border: rgba(99,179,237,0.12);
+      --border2: rgba(99,179,237,0.25);
+      --border3: rgba(99,179,237,0.40);
+      --text: #e2e8f0;
+      --text-dim: #94a3b8;
+      --muted: #64748b;
+      --dim: rgba(226,232,240,0.08);
+      --accent: #63b3ed;
+      --accent2: #3b82f6;
+      --green: #10b981;
+      --green-dim: rgba(16,185,129,0.12);
+      --gold: #f59e0b;
+      --gold-dim: rgba(245,158,11,0.12);
+      --crimson: #ef4444;
+      --crimson-dim: rgba(239,68,68,0.10);
+      --purple: #a78bfa;
+      --cyan: #06b6d4;
+      --rose: #f472b6;
+    }
+
+    html { scroll-behavior: smooth }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+    /* Scanline overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.02) 2px,rgba(0,0,0,0.02) 4px);
+      pointer-events: none;
+      z-index: 1000;
+    }
+    a { color: var(--accent); text-decoration: none }
+    button { cursor: pointer; font-family: 'Outfit', sans-serif }
+
+    /* ── Header ──────────────────────────────────── */
+    .app-header {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-name {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.35rem;
+      font-style: italic;
+      color: #fff;
+      letter-spacing: 0.02em;
+    }
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.58rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--green);
+      border: 1px solid rgba(16,185,129,0.3);
+      padding: 2px 10px;
+      border-radius: 2rem;
+      font-weight: 600;
+    }
+    .brand-sub {
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-left: 12px;
+    }
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 0.78rem;
+      color: var(--text-dim);
+    }
+    .user-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 2px solid var(--border2);
+    }
+    .user-email {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+    .btn-signout {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 5px 14px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      font-family: 'Outfit', sans-serif;
+    }
+    .btn-signout:hover { border-color: var(--crimson); color: var(--crimson) }
+
+    /* ── Layout ──────────────────────────────────── */
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    /* ── Cards ────────────────────────────────────── */
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: var(--border2) }
+    .card-body { padding: 24px 28px }
+    .card-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.5rem;
+      font-weight: 400;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    .card-subtitle {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ── Buttons ──────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 24px;
+      border-radius: 5px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      border: 1px solid;
+      transition: all 0.2s;
+      font-family: 'Outfit', sans-serif;
+      letter-spacing: 0.02em;
+    }
+    .btn-primary {
+      background: rgba(16,185,129,0.12);
+      border-color: rgba(16,185,129,0.35);
+      color: var(--green);
+    }
+    .btn-primary:hover { background: rgba(16,185,129,0.2); border-color: rgba(16,185,129,0.5) }
+    .btn-primary:disabled { opacity: 0.35; cursor: not-allowed }
+    .btn-accent {
+      background: rgba(99,179,237,0.1);
+      border-color: rgba(99,179,237,0.3);
+      color: var(--accent);
+    }
+    .btn-accent:hover { background: rgba(99,179,237,0.18); border-color: rgba(99,179,237,0.5) }
+    .btn-gold {
+      background: var(--gold-dim);
+      border-color: rgba(245,158,11,0.35);
+      color: var(--gold);
+    }
+    .btn-gold:hover { background: rgba(245,158,11,0.2); border-color: rgba(245,158,11,0.5) }
+    .btn-outline {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--muted);
+    }
+    .btn-outline:hover { border-color: var(--border2); color: var(--text) }
+    .btn-google {
+      background: var(--panel);
+      border: 1px solid var(--border2);
+      color: #fff;
+      padding: 14px 32px;
+      font-size: 0.88rem;
+      border-radius: 6px;
+      gap: 12px;
+    }
+    .btn-google:hover { background: var(--panel2); border-color: var(--accent) }
+    .btn-sm { padding: 6px 14px; font-size: 0.7rem }
+    .btn-block { width: 100% }
+
+    /* ── Forms ────────────────────────────────────── */
+    .form-group { margin-bottom: 14px }
+    .form-label {
+      display: block;
+      font-size: 0.58rem;
+      font-weight: 500;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .form-input, .form-select {
+      width: 100%;
+      padding: 9px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .form-input:focus, .form-select:focus { border-color: rgba(16,185,129,0.4) }
+    .form-select { appearance: none; cursor: pointer }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    /* ── Sign-in Screen ──────────────────────────── */
+    .signin-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100vh - 56px);
+      text-align: center;
+      padding: 40px 20px;
+      position: relative;
+    }
+    .signin-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--panel2), var(--bg3));
+      border: 1px solid var(--border2);
+      color: var(--accent);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin-bottom: 28px;
+      box-shadow: 0 0 40px rgba(99,179,237,0.08);
+    }
+
+    /* ── Silhouette Hero Background ───────────────── */
+    .invite-hero-bg {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 900px;
+      height: 260px;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.06) 60%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.06) 60%, transparent 100%);
+    }
+    .invite-hero-bg svg {
+      width: 100%;
+      height: 100%;
+      opacity: 0.12;
+    }
+    .invite-content {
+      position: relative;
+      z-index: 1;
+    }
+    .signin-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 2.2rem;
+      font-weight: 400;
+      color: #fff;
+      margin-bottom: 8px;
+      font-style: italic;
+    }
+    .signin-subtitle {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 36px;
+      max-width: 440px;
+      line-height: 1.7;
+    }
+    .signin-meta {
+      margin-top: 20px;
+      font-size: 0.62rem;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Status Banner ───────────────────────────── */
+    .status-banner {
+      padding: 10px 16px;
+      border-radius: 5px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid;
+    }
+    .status-banner.warning { background: var(--gold-dim); color: var(--gold); border-color: rgba(245,158,11,0.25) }
+    .status-banner.success { background: var(--green-dim); color: var(--green); border-color: rgba(16,185,129,0.25) }
+    .status-banner.info { background: rgba(99,179,237,0.08); color: var(--accent); border-color: rgba(99,179,237,0.2) }
+    .status-banner.error { background: var(--crimson-dim); color: var(--crimson); border-color: rgba(239,68,68,0.25) }
+
+    /* ── Tabs ─────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0;
+    }
+    .tab {
+      padding: 10px 20px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--muted);
+      border: none;
+      background: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.2s;
+      letter-spacing: 0.03em;
+    }
+    .tab:hover { color: var(--text) }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent) }
+
+    /* ── Question Flow ───────────────────────────── */
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .question-badge {
+      font-size: 0.62rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .domain-badge {
+      font-size: 0.58rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      background: rgba(167,139,250,0.1);
+      color: var(--purple);
+      border: 1px solid rgba(167,139,250,0.25);
+      padding: 3px 12px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+    .question-text {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.55rem;
+      font-weight: 400;
+      line-height: 1.5;
+      color: #fff;
+      margin-bottom: 28px;
+    }
+
+    /* ── Answer Pills ────────────────────────────── */
+    .answer-pill {
+      width: 100%;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 18px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: rgba(255,255,255,0.015);
+      text-align: left;
+      font-size: 0.82rem;
+      color: var(--text);
+      transition: all 0.15s;
+      margin-bottom: 8px;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+    }
+    .answer-pill:hover {
+      border-color: var(--border2);
+      background: rgba(99,179,237,0.04);
+    }
+    .answer-pill.selected {
+      background: rgba(16,185,129,0.08);
+      border-color: rgba(16,185,129,0.4);
+      color: #fff;
+    }
+    .answer-check {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--dim);
+    }
+    .answer-check svg { width: 12px; height: 12px; opacity: 0; transition: opacity 0.15s; }
+    .answer-pill.selected .answer-check {
+      background: rgba(16,185,129,0.2);
+      border: 1px solid rgba(16,185,129,0.35);
+    }
+    .answer-pill.selected .answer-check svg { opacity: 1; }
+    .answer-text { line-height: 1.5; padding-top: 2px; font-size: 0.82rem }
+
+    /* ── Progress Ring ───────────────────────────── */
+    .progress-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .progress-info {
+      font-size: 0.68rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--muted);
+    }
+
+    /* ── Heatmap ─────────────────────────────────── */
+    .heatmap {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 16px 0;
+    }
+    .heatmap-cell {
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 12px 8px;
+      font-size: 11px;
+      color: #fff;
+      font-weight: 500;
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(4px);
+    }
+    .heatmap-icon { font-size: 18px }
+    .heatmap-label { font-size: 0.55rem; opacity: 0.8; text-align: center; line-height: 1.2; text-transform: uppercase; letter-spacing: 0.08em }
+
+    /* ── Results ──────────────────────────────────── */
+    .result-header {
+      background: linear-gradient(135deg, rgba(16,185,129,0.06), rgba(99,179,237,0.06));
+      border-bottom: 1px solid var(--border);
+      padding: 28px;
+      text-align: center;
+    }
+    .rpi-number {
+      font-family: 'Instrument Serif', serif;
+      font-size: 3.5rem;
+      font-style: italic;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .rpi-label {
+      font-size: 0.55rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .domain-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .domain-bar-label {
+      width: 140px;
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      flex-shrink: 0;
+      font-weight: 400;
+    }
+    .domain-bar-track {
+      flex: 1;
+      height: 5px;
+      background: var(--dim);
+      border-radius: 3px;
+      overflow: hidden;
+      position: relative;
+    }
+    .domain-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.8s ease;
+    }
+    .domain-bar-value {
+      width: 32px;
+      text-align: right;
+      font-size: 0.68rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--muted);
+    }
+    .flags-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 14px;
+      border-radius: 3px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.05em;
+    }
+    .flags-badge.good { background: var(--green-dim); color: var(--green); border: 1px solid rgba(16,185,129,0.25) }
+    .flags-badge.warning { background: var(--gold-dim); color: var(--gold); border: 1px solid rgba(245,158,11,0.25) }
+    .flags-badge.low { background: var(--crimson-dim); color: var(--crimson); border: 1px solid rgba(239,68,68,0.25) }
+
+    /* ── Session Log ─────────────────────────────── */
+    .log-entry {
+      padding: 8px 14px;
+      border-left: 2px solid var(--border);
+      margin-bottom: 4px;
+      font-size: 0.68rem;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(0,0,0,0.2);
+      border-radius: 0 4px 4px 0;
+      word-break: break-all;
+      line-height: 1.6;
+    }
+    .log-entry.api { border-left-color: var(--accent) }
+    .log-entry.success { border-left-color: var(--green) }
+    .log-entry.error { border-left-color: var(--crimson) }
+
+    /* ── Scrollbar ───────────────────────────────── */
+    ::-webkit-scrollbar { width: 4px; height: 4px }
+    ::-webkit-scrollbar-track { background: var(--bg) }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px }
+
+    /* ── Responsive ──────────────────────────────── */
+    @media (max-width: 640px) {
+      .form-row { grid-template-columns: 1fr }
+      .container { padding: 16px 12px }
+      .card-body { padding: 18px }
+      .question-text { font-size: 1.2rem }
+      .app-header { padding: 10px 16px }
+      .brand-sub { display: none }
+      .heatmap { grid-template-columns: repeat(2, 1fr) }
+    }
+
+    /* ── Animations ──────────────────────────────── */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: translateY(0) } }
+    .animate-in { animation: fadeIn 0.3s ease forwards }
+    @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.5 } }
+    .animate-pulse { animation: pulse 1.5s ease infinite }
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg) } }
+
+    .hidden { display: none !important }
+
+    /* ── Result Sub-Tabs ─────────────────────────── */
+    .result-tabs {
+      display: flex;
+      gap: 2px;
+      padding: 0 28px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,0.15);
+    }
+    .result-tab {
+      padding: 12px 16px;
+      font-size: 0.62rem;
+      font-weight: 500;
+      color: var(--muted);
+      border: none;
+      background: none;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.2s;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .result-tab:hover { color: var(--text) }
+    .result-tab.active { color: var(--green); border-bottom-color: var(--green) }
+
+    /* ── Radar Chart ─────────────────────────────── */
+    .radar-wrap {
+      display: flex;
+      justify-content: center;
+      padding: 20px 0 28px;
+    }
+
+    /* ── Tree Canvas ─────────────────────────────── */
+    .tree-canvas-wrap {
+      overflow-x: auto;
+      padding: 16px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    /* ── Improvement Cards ───────────────────────── */
+    .improvements-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .improve-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      transition: border-color 0.2s;
+    }
+    .improve-card:hover { border-color: var(--border2) }
+    .improve-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .improve-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .improve-meta { flex: 1 }
+    .improve-domain {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #fff;
+    }
+    .improve-score {
+      font-size: 0.58rem;
+      font-family: 'JetBrains Mono', monospace;
+      margin-top: 1px;
+    }
+    .improve-priority {
+      padding: 2px 10px;
+      border-radius: 3px;
+      font-size: 0.5rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .improve-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .improve-list li {
+      position: relative;
+      padding: 6px 0 6px 18px;
+      font-size: 0.76rem;
+      color: var(--text-dim);
+      line-height: 1.65;
+      border-bottom: 1px solid rgba(99,179,237,0.04);
+    }
+    .improve-list li:last-child { border-bottom: none }
+    .improve-list li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      font-weight: 600;
+      opacity: 0.5;
+    }
+    .improve-note {
+      margin-top: 12px;
+      padding: 8px 14px;
+      background: rgba(99,179,237,0.04);
+      border-left: 2px solid var(--border2);
+      border-radius: 0 4px 4px 0;
+      font-size: 0.62rem;
+      color: var(--muted);
+      font-style: italic;
+      line-height: 1.6;
+    }
+
+    /* ── Journey Timeline ────────────────────────── */
+    .journey {
+      position: relative;
+      padding-left: 32px;
+    }
+    .journey::before {
+      content: '';
+      position: absolute;
+      left: 11px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+    .journey-node {
+      position: relative;
+      margin-bottom: 14px;
+      padding: 14px 18px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      transition: border-color 0.2s;
+    }
+    .journey-node:hover { border-color: var(--border2) }
+    .journey-dot {
+      position: absolute;
+      left: -27px;
+      top: 18px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 2px solid;
+      background: var(--bg);
+    }
+    .journey-q-num {
+      font-size: 0.52rem;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .journey-q-text {
+      font-size: 0.82rem;
+      color: #fff;
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+    .journey-answer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .journey-grade {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      font-size: 0.58rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+    }
+    .journey-answer-text {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+    .journey-deltas {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .journey-delta {
+      font-size: 0.52rem;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-weight: 500;
+    }
+    .journey-start, .journey-end {
+      position: relative;
+      margin-bottom: 14px;
+      padding: 10px 16px;
+      border-radius: 6px;
+      border: 1px solid;
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.06em;
+    }
+    .journey-start .journey-dot, .journey-end .journey-dot { top: 12px }
+
+    /* ── Model Insight Banners ───────────────────── */
+    .model-banner {
+      padding: 16px 20px;
+      background: rgba(99,179,237,0.04);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-bottom: 16px;
+    }
+    .model-banner-title {
+      font-size: 0.55rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .model-banner-text {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+    .strength-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      background: rgba(16,185,129,0.06);
+      border: 1px solid rgba(16,185,129,0.2);
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+    .strength-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .strength-text {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+    .strength-label {
+      font-size: 0.62rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    @media (max-width: 640px) {
+      .result-tabs { padding: 0 14px; gap: 0 }
+      .result-tab { padding: 10px 10px; font-size: 0.55rem }
+      .tree-canvas-wrap { padding: 8px }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ────── Header ────── -->
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-name">ROOTS.</span>
+      <span class="brand-badge">▲ Knowledge Engine</span>
+      <span class="brand-sub">Assessment Engine · Live API</span>
+    </div>
+    <div class="user-info" id="user-info" style="display:none">
+      <span class="user-email" id="user-email"></span>
+      <img id="user-avatar" class="user-avatar" src="" alt="" style="display:none">
+      <button class="btn-signout" onclick="signOut()">Sign Out</button>
+    </div>
+  </header>
+
+  <!-- ────── Main Content ────── -->
+  <div class="container">
+
+    <!-- SIGN-IN SCREEN -->
+    <div id="screen-signin" class="signin-screen">
+      <!-- Invite Onboarding Flow (shown when ?invite= param present) -->
+      <div id="invite-onboard" class="hidden" style="width:100%;max-width:480px">
+        <!-- Silhouette hero background -->
+        <div class="invite-hero-bg">
+          <svg viewBox="0 0 900 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Children reading -->
+            <circle cx="150" cy="210" r="28" fill="var(--accent)"/>
+            <rect x="136" y="180" width="28" height="36" rx="14" fill="var(--accent)"/>
+            <rect x="130" y="216" width="12" height="30" rx="4" fill="var(--accent)"/>
+            <rect x="158" y="216" width="12" height="30" rx="4" fill="var(--accent)"/>
+            <rect x="118" y="195" width="24" height="6" rx="2" fill="var(--accent)" transform="rotate(-30 118 195)"/>
+            <!-- Book -->
+            <rect x="108" y="192" width="18" height="14" rx="2" fill="var(--green)" transform="rotate(-15 108 194)"/>
+            <!-- Child 2 -->
+            <circle cx="350" cy="200" r="24" fill="var(--accent)"/>
+            <rect x="338" y="174" width="24" height="32" rx="12" fill="var(--accent)"/>
+            <rect x="332" y="206" width="10" height="26" rx="3" fill="var(--accent)"/>
+            <rect x="358" y="206" width="10" height="26" rx="3" fill="var(--accent)"/>
+            <!-- Backpack -->
+            <rect x="362" y="180" width="14" height="18" rx="4" fill="var(--green)"/>
+            <!-- Tree -->
+            <circle cx="530" cy="160" r="42" fill="var(--green)"/>
+            <rect x="525" y="198" width="10" height="48" rx="3" fill="var(--green)"/>
+            <!-- Child 3 jumping -->
+            <circle cx="680" cy="190" r="22" fill="var(--accent)"/>
+            <rect x="669" y="166" width="22" height="28" rx="11" fill="var(--accent)"/>
+            <rect x="663" y="196" width="10" height="24" rx="3" fill="var(--accent)" transform="rotate(8 663 196)"/>
+            <rect x="689" y="196" width="10" height="24" rx="3" fill="var(--accent)" transform="rotate(-8 689 196)"/>
+            <rect x="658" y="172" width="18" height="5" rx="2" fill="var(--accent)" transform="rotate(-40 658 172)"/>
+            <rect x="686" y="172" width="18" height="5" rx="2" fill="var(--accent)" transform="rotate(40 686 172)"/>
+            <!-- School building -->
+            <rect x="780" y="142" width="80" height="100" rx="4" fill="var(--accent)"/>
+            <rect x="808" y="130" width="24" height="16" rx="2" fill="var(--green)"/>
+            <rect x="817" y="118" width="6" height="16" rx="1" fill="var(--green)"/>
+            <rect x="792" y="160" width="16" height="18" rx="2" fill="var(--bg)"/>
+            <rect x="832" y="160" width="16" height="18" rx="2" fill="var(--bg)"/>
+            <rect x="810" y="200" width="20" height="42" rx="3" fill="var(--bg)"/>
+            <!-- Stars -->
+            <circle cx="80" cy="80" r="2" fill="var(--accent)"/>
+            <circle cx="250" cy="60" r="1.5" fill="var(--green)"/>
+            <circle cx="440" cy="90" r="2" fill="var(--accent)"/>
+            <circle cx="620" cy="70" r="1.5" fill="var(--green)"/>
+            <circle cx="780" cy="55" r="2" fill="var(--accent)"/>
+            <circle cx="170" cy="100" r="1" fill="var(--muted)"/>
+            <circle cx="500" cy="50" r="1" fill="var(--muted)"/>
+            <circle cx="720" cy="100" r="1.5" fill="var(--muted)"/>
+            <!-- Ground line -->
+            <rect x="0" y="244" width="900" height="2" rx="1" fill="var(--border2)"/>
+          </svg>
+        </div>
+        <div class="invite-content">
+        <h1 class="signin-title" style="font-size:1.9rem;margin-top:8px">You've Been Invited</h1>
+        <div id="invite-info" style="margin:12px auto 24px;max-width:380px;text-align:center">
+          <div id="invite-title-display" style="font-size:0.82rem;color:var(--text);font-weight:500;margin-bottom:6px"></div>
+          <div id="invite-school-display" style="font-size:0.68rem;color:var(--muted);font-family:'JetBrains Mono',monospace"></div>
+        </div>
+        <div style="width:100%;margin-bottom:16px">
+          <label class="form-label" style="text-align:center;display:block">Assessment Type</label>
+          <div id="invite-type-selector" style="display:flex;gap:8px;justify-content:center">
+            <button class="btn btn-primary btn-sm invite-type-btn active" data-type="parent" onclick="selectInviteType('parent')" style="flex:1;max-width:180px;padding:10px 16px;font-size:0.75rem">Parent Assessment</button>
+            <button class="btn btn-outline btn-sm invite-type-btn" data-type="teacher" onclick="selectInviteType('teacher')" style="flex:1;max-width:180px;padding:10px 16px;font-size:0.75rem">Teacher Assessment</button>
+          </div>
+        </div>
+        <div id="invite-child-age-row" style="width:100%;margin-bottom:16px">
+          <label class="form-label" style="text-align:center;display:block">Child's Age</label>
+          <input type="number" id="invite-child-age" class="form-input" placeholder="Age (3–18)" min="3" max="18" value="8"
+            style="text-align:center;max-width:160px;margin:0 auto;display:block">
+        </div>
+        <div style="width:100%;margin-bottom:16px">
+          <label class="form-label" style="text-align:center;display:block">Invite Code</label>
+          <input type="text" id="invite-code-input" class="form-input" placeholder="Enter invite code…" 
+            style="text-align:center;font-size:1rem;padding:12px;letter-spacing:0.1em;text-transform:uppercase;border-color:rgba(16,185,129,0.3)">
+        </div>
+        <div style="width:100%;margin-bottom:16px">
+          <label class="form-label" style="text-align:center;display:block">Your Name <span style="opacity:0.5">(optional)</span></label>
+          <input type="text" id="invite-name-input" class="form-input" placeholder="How should we address you?" style="text-align:center">
+        </div>
+        <div style="width:100%;margin-bottom:20px">
+          <label class="form-label" style="text-align:center;display:block">Email for Results <span style="opacity:0.5">(optional)</span></label>
+          <input type="email" id="invite-email-input" class="form-input" placeholder="We'll send your results here" style="text-align:center">
+        </div>
+        <div id="invite-status" style="margin-bottom:12px"></div>
+        <button class="btn btn-primary btn-block" onclick="beginWithInvite()" id="btn-invite-begin" style="padding:14px 32px;font-size:0.9rem;border-radius:6px">
+          ▶ Begin Assessment
+        </button>
+        <p class="signin-meta" style="margin-top:20px">Powered by ROOTS Knowledge Engine · Kaayko</p>
+        </div><!-- /.invite-content -->
+      </div>
+
+      <!-- Direct Sign-in (shown when no invite param or user clicks "Google Sign In") -->
+      <div id="direct-signin">
+        <div class="signin-icon">◈</div>
+        <h1 class="signin-title">ROOTS Knowledge Engine</h1>
+        <p class="signin-subtitle">
+          Real-time testing dashboard for the ROOTS assessment engine (parent & teacher).
+          Sign in to create sessions, test Bayesian scoring, and verify results against production.
+        </p>
+        <div style="display:flex;flex-direction:column;gap:10px;align-items:center;width:100%;max-width:360px">
+          <button class="btn btn-google" onclick="signInWithGoogle()" style="width:100%">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            Sign in with Google
+          </button>
+          <div style="display:flex;align-items:center;gap:12px;width:100%;margin:4px 0">
+            <div style="flex:1;height:1px;background:var(--border)"></div>
+            <span style="font-size:0.6rem;color:var(--muted);letter-spacing:0.1em">OR HAVE AN INVITE?</span>
+            <div style="flex:1;height:1px;background:var(--border)"></div>
+          </div>
+          <div style="width:100%;display:flex;gap:8px">
+            <input type="text" id="manual-invite-code" class="form-input" placeholder="Enter invite code…" style="flex:1;text-align:center;text-transform:uppercase;letter-spacing:0.08em">
+            <button class="btn btn-primary btn-sm" onclick="manualInviteEntry()" style="white-space:nowrap">Go →</button>
+          </div>
+        </div>
+        <p class="signin-meta">Firebase Auth · coolschools-72426 · v5.0</p>
+      </div>
+    </div>
+
+    <!-- ROLE SETUP SCREEN -->
+    <div id="screen-setup" class="hidden">
+      <div class="card animate-in">
+        <div class="card-body">
+          <div class="status-banner warning">
+            ⚠ No ROOTS role detected on this account. Activate admin access below.
+          </div>
+          <h2 class="card-title">Admin Bootstrap</h2>
+          <p class="card-subtitle" style="margin-bottom:18px">
+            One-time setup. Enter the admin key to activate your system role.
+          </p>
+          <div class="form-group">
+            <label class="form-label">Admin Key</label>
+            <input type="password" id="admin-key" class="form-input" placeholder="Enter key…">
+          </div>
+          <button class="btn btn-primary" onclick="bootstrapRole()">Activate Access</button>
+          <div id="setup-status" style="margin-top:12px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="screen-dashboard" class="hidden">
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab active" data-tab="assess" onclick="switchTab('assess')">Assessment</button>
+        <button class="tab" data-tab="history" onclick="switchTab('history')">History</button>
+        <button class="tab" data-tab="log" onclick="switchTab('log')">API Log</button>
+      </div>
+
+      <!-- TAB: Assessment -->
+      <div id="tab-assess">
+
+        <!-- Session Setup -->
+        <div id="panel-setup-session" class="card animate-in">
+          <div class="card-body">
+            <h2 class="card-title">New Session</h2>
+            <p class="card-subtitle" style="margin-bottom:18px">
+              Create a parent or teacher assessment session. All data persists to Firestore.
+            </p>
+            <div class="form-group" style="margin-bottom:16px">
+              <label class="form-label">Assessment Type</label>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-primary btn-sm setup-type-btn active" data-type="parent" onclick="selectSetupType('parent')" style="flex:1;padding:8px 12px;font-size:0.72rem">Parent</button>
+                <button class="btn btn-outline btn-sm setup-type-btn" data-type="teacher" onclick="selectSetupType('teacher')" style="flex:1;padding:8px 12px;font-size:0.72rem">Teacher</button>
+              </div>
+            </div>
+            <div id="parent-fields">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Child Age</label>
+                <input type="number" id="child-age" class="form-input" value="8" min="3" max="18">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Age Band</label>
+                <select id="age-band" class="form-select">
+                  <option value="3-6">3–6 years</option>
+                  <option value="7-10" selected>7–10 years</option>
+                  <option value="11-14">11–14 years</option>
+                  <option value="15-18">15–18 years</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">School ID</label>
+                <input type="text" id="school-id" class="form-input" value="somalwar-ramdaspeth">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Child ID</label>
+                <input type="text" id="child-id" class="form-input" value="" placeholder="Auto-generated">
+              </div>
+            </div>
+            </div><!-- /parent-fields -->
+            <div id="teacher-fields" class="hidden">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">School ID</label>
+                <input type="text" id="teacher-school-id" class="form-input" value="somalwar-ramdaspeth">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Teacher ID</label>
+                <input type="text" id="teacher-id" class="form-input" value="" placeholder="Auto-generated">
+              </div>
+            </div>
+            </div><!-- /teacher-fields -->
+            <button class="btn btn-primary btn-block" onclick="startSession()" id="btn-start-session">
+              ▶ Begin Assessment
+            </button>
+          </div>
+        </div>
+
+        <!-- Active Session: Question -->
+        <div id="panel-question" class="hidden">
+          <div class="card animate-in">
+            <div class="card-body">
+              <div class="question-header">
+                <span class="question-badge" id="q-progress">QUESTION 1 OF 20</span>
+                <span class="domain-badge" id="q-domain"></span>
+              </div>
+              <div class="progress-container" style="margin-bottom:24px">
+                <svg width="48" height="48" style="transform:rotate(-90deg)">
+                  <circle cx="24" cy="24" r="20" fill="none" stroke="var(--dim)" stroke-width="3"/>
+                  <circle id="progress-arc" cx="24" cy="24" r="20" fill="none" stroke="var(--green)" stroke-width="3"
+                    stroke-dasharray="125.66" stroke-dashoffset="125.66" stroke-linecap="round"
+                    style="transition: stroke-dashoffset 0.4s ease; filter: drop-shadow(0 0 4px rgba(16,185,129,0.3))"/>
+                </svg>
+                <div class="progress-info" id="q-info"></div>
+              </div>
+              <h2 class="question-text" id="q-text"></h2>
+              <div id="q-answers"></div>
+              <button class="btn btn-primary btn-block" id="btn-submit-answer" onclick="submitAnswer()" disabled style="margin-top:20px">
+                Continue →
+              </button>
+            </div>
+          </div>
+
+          <!-- Live Heatmap -->
+          <div class="card" id="panel-heatmap" style="display:none">
+            <div class="card-body">
+              <div style="font-size:0.58rem; letter-spacing:0.25em; text-transform:uppercase; color:var(--muted); margin-bottom:14px; text-align:center">
+                Live Bayesian Posteriors
+              </div>
+              <div class="heatmap" id="heatmap"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Results -->
+        <div id="panel-results" class="hidden">
+          <div class="card animate-in">
+            <div class="result-header">
+              <div style="display:inline-flex;padding:2px 10px;border-radius:3px;font-size:0.58rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;background:var(--green-dim);color:var(--green);border:1px solid rgba(16,185,129,0.3);margin-bottom:12px">
+                Assessment Complete
+              </div>
+              <div id="rpi-score-display"></div>
+              <div id="prai-badge-display" style="margin-top:12px"></div>
+            </div>
+            <div class="result-tabs">
+              <button class="result-tab active" data-rtab="overview" onclick="switchResultTab('overview')">Overview</button>
+              <button class="result-tab" data-rtab="insights" onclick="switchResultTab('insights')">Insights</button>
+              <button class="result-tab" data-rtab="report" onclick="switchResultTab('report')">Report</button>
+              <button class="result-tab" data-rtab="tree" onclick="switchResultTab('tree')">Decision Tree</button>
+              <button class="result-tab" data-rtab="journey" onclick="switchResultTab('journey')">Journey</button>
+            </div>
+            <!-- Overview (default) -->
+            <div id="rtab-overview" class="card-body">
+              <div id="domain-bars"></div>
+              <div id="review-focus" style="margin-top:24px"></div>
+            </div>
+            <!-- Insights: Radar + Improvements -->
+            <div id="rtab-insights" class="card-body hidden">
+              <div style="font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);text-align:center;margin-bottom:4px">Domain Profile · Radar</div>
+              <div class="radar-wrap"><canvas id="radarCanvas" width="320" height="320" style="width:320px;height:320px"></canvas></div>
+              <div id="model-strengths"></div>
+              <div style="font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);margin:20px 0 14px">Model-Predicted Improvements</div>
+              <div id="improvements" class="improvements-grid"></div>
+
+              <!-- Learning Suggestions Opt-In (D-002) -->
+              <div id="learning-optin-section" style="margin-top:28px;display:none">
+                <div style="text-align:center;padding:16px 12px;border:1px dashed rgba(212,175,55,0.25);border-radius:8px;background:rgba(212,175,55,0.04)">
+                  <div style="font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Personalised Learning · Beta</div>
+                  <p style="font-size:0.72rem;color:var(--text-dim);margin-bottom:12px;max-width:400px;margin-left:auto;margin-right:auto">Enable AI-driven learning suggestions tailored to your assessment results. Your feedback helps improve future recommendations.</p>
+                  <button id="btn-learning-optin" class="btn btn-gold btn-sm" onclick="activateLearning()" style="font-size:0.68rem;padding:6px 20px">
+                    ✦ Enable Learning Suggestions (Beta)
+                  </button>
+                </div>
+              </div>
+              <div id="learning-suggestions" style="margin-top:20px;display:none"></div>
+            </div>
+            <!-- Report (Prototype Engine) -->
+            <div id="rtab-report" class="card-body hidden">
+              <div style="font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);text-align:center;margin-bottom:16px">Deterministic Engine Report · 2-Page Summary</div>
+              <div id="report-content" style="font-size:0.82rem;color:var(--text-dim);line-height:1.65">
+                <div id="report-loading" style="text-align:center;padding:40px;color:var(--muted)">
+                  <div style="font-size:1.4rem;margin-bottom:8px">⟳</div>
+                  Loading prototype report…
+                </div>
+              </div>
+              <div id="report-suggestions" style="margin-top:24px"></div>
+              <div id="report-events" style="margin-top:24px"></div>
+              <div id="report-meta" style="margin-top:16px;font-size:0.6rem;color:var(--muted);text-align:center;font-family:'JetBrains Mono',monospace"></div>
+              <div id="report-engine-version" style="margin-top:8px;font-size:0.52rem;color:var(--muted);text-align:center;font-family:'JetBrains Mono',monospace;opacity:0.6"></div>
+            </div>
+            <!-- Decision Tree -->
+            <div id="rtab-tree" class="card-body hidden">
+              <div style="font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);text-align:center;margin-bottom:12px">Assessment Decision Tree · How the Engine Scored You</div>
+              <div class="tree-canvas-wrap"><canvas id="treeCanvas" width="900" height="600" style="width:100%;height:auto"></canvas></div>
+              <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center" id="tree-legend"></div>
+            </div>
+            <!-- Journey Timeline -->
+            <div id="rtab-journey" class="card-body hidden">
+              <div style="font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);margin-bottom:16px">Assessment Journey · Question by Question</div>
+              <div id="journey-timeline"></div>
+            </div>
+          </div>
+          <div style="text-align:center; margin-top:16px">
+            <button class="btn btn-accent" onclick="resetAssessment()">
+              ↻ New Assessment
+            </button>
+          </div>
+
+          <!-- Email Results Panel -->
+          <div id="panel-email-results" class="card animate-in" style="margin-top:16px">
+            <div class="card-body" style="text-align:center">
+              <div style="font-size:0.58rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Send Results to Email</div>
+              <div style="display:flex;gap:8px;max-width:400px;margin:0 auto">
+                <input type="email" id="results-email" class="form-input" placeholder="your@email.com" style="flex:1;text-align:center">
+                <button class="btn btn-gold btn-sm" onclick="sendResultsEmail()" id="btn-send-email">
+                  ✉ Send
+                </button>
+              </div>
+              <div id="email-status" style="margin-top:8px;font-size:0.68rem"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: History -->
+      <div id="tab-history" class="hidden">
+        <div class="card">
+          <div class="card-body">
+            <h2 class="card-title">Session History</h2>
+            <p class="card-subtitle" style="margin-bottom:16px">Previous sessions from this browser</p>
+            <div id="session-history"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: API Log -->
+      <div id="tab-log" class="hidden">
+        <div class="card">
+          <div class="card-body">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px">
+              <div>
+                <h2 class="card-title">API Log</h2>
+                <p class="card-subtitle">Real-time trace of all ROOTS API calls</p>
+              </div>
+              <button class="btn btn-outline btn-sm" onclick="clearLog()">Clear</button>
+            </div>
+            <div id="api-log" style="max-height:500px; overflow-y:auto"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ────── Firebase SDK ────── -->
+  <script type="module">
+    // ── Firebase imports (v10 CDN) ────────────────────────────
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import {
+      getAuth, signInWithPopup, signInAnonymously, GoogleAuthProvider, signOut as fbSignOut, onAuthStateChanged
+    } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+
+    // ── Firebase Config (coolschools-72426) ───────────────────
+    const firebaseConfig = {
+      apiKey: "AIzaSyC1JxbMdlXXLiMQQ4xhcjHRzgFbg12mMcA",
+      authDomain: "coolschools-72426.firebaseapp.com",
+      projectId: "coolschools-72426",
+      storageBucket: "coolschools-72426.firebasestorage.app",
+      messagingSenderId: "420407869747",
+      appId: "1:420407869747:web:0f1aec186a0c0f27d0be46"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    // ── API Config ────────────────────────────────────────────
+    const API_BASE = 'https://cool-schools-api-420407869747.us-central1.run.app/api/v1/roots';
+    const TOTAL_QUESTIONS = 20;
+
+    // ── State ─────────────────────────────────────────────────
+    let currentUser = null;
+    let idToken = null;
+    let inviteAccessToken = null;  // Kortex invite token
+    let inviteCode = null;         // Active invite code
+    let inviteData = null;         // Invite metadata from API
+    let inviteEmail = null;        // Email for results delivery
+    let currentAssessmentType = 'parent';  // 'parent' or 'teacher'
+    let currentSession = null;
+    let currentQuestion = null;
+    let selectedGrade = null;
+    let selectedIndex = null;
+    let questionStartTime = Date.now();
+    let posteriors = {};
+    let sessionJourney = [];
+    let questionNumber = 0;
+    let totalQuestions = TOTAL_QUESTIONS;
+    let apiLogs = [];
+    let sessionHistory = JSON.parse(localStorage.getItem('roots_session_history') || '[]');
+
+    /** Get the current assessment API base path */
+    function assessmentPath() {
+      return currentAssessmentType === 'teacher' ? '/teacher-assessment' : '/parent-assessment';
+    }
+
+    // ── Expose to window for onclick handlers ─────────────────
+    window.signInWithGoogle = async () => {
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (e) {
+        console.error('Sign-in error:', e);
+        alert('Sign-in failed: ' + e.message);
+      }
+    };
+
+    window.signOut = async () => {
+      await fbSignOut(auth);
+      currentUser = null;
+      idToken = null;
+      inviteAccessToken = null;
+      inviteCode = null;
+      inviteData = null;
+      showScreen('signin');
+    };
+
+    // ── Invite Detection (URL ?invite=CODE) ───────────────────
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlInviteCode = urlParams.get('invite');
+
+    if (urlInviteCode) {
+      // Show invite onboarding flow
+      document.getElementById('invite-onboard').classList.remove('hidden');
+      document.getElementById('direct-signin').classList.add('hidden');
+      document.getElementById('invite-code-input').value = urlInviteCode.toUpperCase();
+      // Lookup invite info
+      lookupInvite(urlInviteCode);
+    }
+
+    async function lookupInvite(code) {
+      try {
+        const res = await fetch(`${API_BASE}/invites/${encodeURIComponent(code)}`);
+        if (res.ok) {
+          const json = await res.json();
+          const info = json.data;
+          document.getElementById('invite-title-display').textContent = info.title || 'ROOTS Assessment';
+          document.getElementById('invite-school-display').textContent = info.schoolName
+            ? `${info.schoolName} · ${info.assessmentType || 'general'} assessment`
+            : `${info.assessmentType || 'general'} assessment`;
+          // Auto-select assessment type from invite
+          if (info.assessmentType === 'teacher' || info.assessmentType === 'parent') {
+            window.selectInviteType(info.assessmentType);
+          }
+          if (!info.canUse) {
+            document.getElementById('invite-status').innerHTML =
+              `<div class="status-banner error">${info.expired ? 'This invite has expired' : info.usageLimitReached ? 'This invite has reached its usage limit' : 'This invite is no longer active'}</div>`;
+            document.getElementById('btn-invite-begin').disabled = true;
+          }
+        }
+      } catch (e) {
+        console.warn('Invite lookup failed:', e);
+      }
+    }
+
+    window.beginWithInvite = async () => {
+      const code = document.getElementById('invite-code-input').value.trim();
+      const statusEl = document.getElementById('invite-status');
+      const btn = document.getElementById('btn-invite-begin');
+
+      if (!code) {
+        statusEl.innerHTML = '<div class="status-banner error">Please enter an invite code</div>';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner" style="width:16px;height:16px;margin:0 auto"></div>';
+      statusEl.innerHTML = '<div class="status-banner info animate-pulse">Validating invite…</div>';
+
+      try {
+        // Sign in anonymously if possible (lightweight — no Google required)
+        // Falls back to a client-generated UID if anonymous auth is disabled
+        let uid;
+        if (auth.currentUser) {
+          uid = auth.currentUser.uid;
+        } else {
+          try {
+            const anonResult = await signInAnonymously(auth);
+            uid = anonResult.user.uid;
+          } catch (anonErr) {
+            console.warn('Anonymous sign-in unavailable, using client UID:', anonErr.code);
+            uid = `client_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+          }
+        }
+        currentUser = auth.currentUser || { uid, isAnonymous: true, getIdToken: () => Promise.resolve(null) };
+
+        // Validate invite with API
+        const res = await fetch(`${API_BASE}/invites/validate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error?.message || 'Invalid invite code');
+        }
+
+        const json = await res.json();
+        const data = json.data;
+
+        // Store invite context
+        inviteAccessToken = data.accessToken;
+        inviteCode = code;
+        inviteData = data.invite;
+        inviteEmail = document.getElementById('invite-email-input').value.trim();
+        if (auth.currentUser) currentUser = auth.currentUser;
+
+        // Try to get Firebase token for dual-auth
+        try {
+          idToken = currentUser.getIdToken ? await currentUser.getIdToken(true) : null;
+        } catch {
+          idToken = null; // OK — invite token is sufficient
+        }
+
+        statusEl.innerHTML = '<div class="status-banner success">✓ Invite verified — starting assessment</div>';
+
+        // Update UI
+        const userName = document.getElementById('invite-name-input').value.trim();
+        document.getElementById('user-info').style.display = 'flex';
+        document.getElementById('user-email').textContent = userName || inviteData.title || 'Invited User';
+        document.getElementById('user-avatar').style.display = 'none';
+
+        // Pre-fill email in results panel
+        if (inviteEmail) {
+          const emailInput = document.getElementById('results-email');
+          if (emailInput) emailInput.value = inviteEmail;
+        }
+
+        // Auto-start session with invite context
+        setTimeout(() => autoStartInviteSession(), 600);
+      } catch (e) {
+        statusEl.innerHTML = `<div class="status-banner error">✗ ${e.message}</div>`;
+        btn.disabled = false;
+        btn.innerHTML = '▶ Begin Assessment';
+      }
+    };
+
+    window.showDirectSignin = () => {
+      document.getElementById('invite-onboard').classList.add('hidden');
+      document.getElementById('direct-signin').classList.remove('hidden');
+    };
+
+    window.manualInviteEntry = () => {
+      const code = document.getElementById('manual-invite-code').value.trim();
+      if (!code) return;
+      // Redirect to invite flow
+      window.location.href = `${window.location.pathname}?invite=${encodeURIComponent(code)}`;
+    };
+
+    window.selectInviteType = (type) => {
+      currentAssessmentType = type;
+      document.querySelectorAll('.invite-type-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.type === type);
+        b.classList.toggle('btn-primary', b.dataset.type === type);
+        b.classList.toggle('btn-outline', b.dataset.type !== type);
+      });
+      // Show/hide child age field — only relevant for parent assessments
+      const childAgeField = document.getElementById('invite-child-age-row');
+      if (childAgeField) childAgeField.style.display = type === 'parent' ? 'block' : 'none';
+    };
+
+    async function autoStartInviteSession() {
+      showScreen('dashboard');
+      document.getElementById('panel-setup-session').classList.add('hidden');
+
+      // Use assessment type from invite data or user selection
+      if (inviteData?.assessmentType) currentAssessmentType = inviteData.assessmentType;
+      const inviteChildAgeInput = document.getElementById('invite-child-age');
+      const childAge = (inviteChildAgeInput ? parseInt(inviteChildAgeInput.value) : 0) || inviteData?.childAge || 8;
+      document.getElementById('child-age').value = childAge;
+      if (inviteData?.schoolId) document.getElementById('school-id').value = inviteData.schoolId;
+
+      // Auto-start the session
+      try {
+        let result;
+        if (currentAssessmentType === 'teacher') {
+          result = await rootsAPI('POST', '/teacher-assessment/sessions', {
+            teacherId: currentUser.uid,
+            schoolId: inviteData?.schoolId || 'invite-assessment',
+            inviteCode: inviteCode || undefined,
+            inviteName: document.getElementById('invite-name-input')?.value?.trim() || undefined,
+            inviteEmail: inviteEmail || undefined,
+          });
+        } else {
+          result = await rootsAPI('POST', '/parent-assessment/sessions', {
+            parentId: currentUser.uid,
+            childId: `invite-${inviteCode}-${Date.now()}`,
+            childAge,
+            schoolId: inviteData?.schoolId || 'invite-assessment',
+            inviteCode: inviteCode || undefined,
+            inviteName: document.getElementById('invite-name-input')?.value?.trim() || undefined,
+            inviteEmail: inviteEmail || undefined,
+          });
+        }
+
+        currentSession = result.sessionId;
+        currentQuestion = result.firstQuestion;
+        totalQuestions = result.totalQuestions || TOTAL_QUESTIONS;
+        questionNumber = 1;
+        posteriors = {};
+        questionStartTime = Date.now();
+
+        addLog('success', `Invite session: ${currentSession} · Code: ${inviteCode}`);
+
+        sessionHistory.unshift({
+          sessionId: currentSession,
+          startedAt: new Date().toISOString(),
+          childAge,
+          schoolId: inviteData?.schoolId || 'invite-assessment',
+          status: 'active',
+          inviteCode,
+        });
+        localStorage.setItem('roots_session_history', JSON.stringify(sessionHistory));
+
+        document.getElementById('panel-question').classList.remove('hidden');
+        document.getElementById('panel-results').classList.add('hidden');
+        renderQuestion();
+      } catch (e) {
+        alert('Failed to start session: ' + e.message);
+        showScreen('signin');
+      }
+    }
+
+    // ── Send Results Email ─────────────────────────────────────
+    window.sendResultsEmail = async () => {
+      const email = document.getElementById('results-email').value.trim();
+      const statusEl = document.getElementById('email-status');
+      const btn = document.getElementById('btn-send-email');
+
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        statusEl.innerHTML = '<span style="color:var(--crimson)">Please enter a valid email</span>';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+
+      try {
+        const res = await fetch(`${API_BASE}/invites/email-results`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: currentSession,
+            email,
+            profileData: window._lastProfileData || {},
+          }),
+        });
+
+        if (!res.ok) throw new Error('Email send failed');
+        statusEl.innerHTML = '<span style="color:var(--green)">✓ Results queued for delivery to ' + email + '</span>';
+      } catch (e) {
+        statusEl.innerHTML = '<span style="color:var(--crimson)">✗ ' + e.message + '</span>';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '✉ Send';
+      }
+    };
+
+    // ── Auth State ────────────────────────────────────────────
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+
+        // If invite flow is active, don't interfere
+        if (inviteAccessToken) return;
+
+        const tokenResult = await user.getIdTokenResult(true);
+        idToken = tokenResult.token;
+
+        // Anonymous users without invite should stay on signin
+        if (user.isAnonymous && !inviteAccessToken) {
+          return; // Don't redirect — wait for invite validation
+        }
+
+        document.getElementById('user-info').style.display = 'flex';
+        document.getElementById('user-email').textContent = user.email || 'Anonymous';
+        if (user.photoURL) {
+          const avatar = document.getElementById('user-avatar');
+          avatar.src = user.photoURL;
+          avatar.style.display = 'block';
+        }
+
+        const role = tokenResult.claims.rootsRole || tokenResult.claims.role;
+        if (role && ['parent', 'school_admin', 'system', 'enterprise', 'superadmin', 'admin'].includes(role)) {
+          showScreen('dashboard');
+        } else {
+          showScreen('setup');
+        }
+      } else {
+        showScreen('signin');
+        document.getElementById('user-info').style.display = 'none';
+      }
+    });
+
+    // ── Screen Management ─────────────────────────────────────
+    function showScreen(screen) {
+      document.getElementById('screen-signin').classList.toggle('hidden', screen !== 'signin');
+      document.getElementById('screen-setup').classList.toggle('hidden', screen !== 'setup');
+      document.getElementById('screen-dashboard').classList.toggle('hidden', screen !== 'dashboard');
+      // In invite flow, hide the setup/bootstrap screen entirely
+      if (inviteAccessToken && screen === 'setup') {
+        showScreen('dashboard');
+      }
+    }
+
+    window.switchTab = (tabName) => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+      document.getElementById('tab-assess').classList.toggle('hidden', tabName !== 'assess');
+      document.getElementById('tab-history').classList.toggle('hidden', tabName !== 'history');
+      document.getElementById('tab-log').classList.toggle('hidden', tabName !== 'log');
+      if (tabName === 'history') renderHistory();
+    };
+
+    // ── API Helper ────────────────────────────────────────────
+    async function rootsAPI(method, path, body = null) {
+      const url = `${API_BASE}${path}`;
+      const start = Date.now();
+
+      addLog('api', `${method} ${path}${body ? ' ' + JSON.stringify(body).slice(0,80) : ''}`);
+
+      try {
+        const opts = {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        };
+        // Add auth: prefer Firebase token, fallback to invite token
+        if (idToken) {
+          opts.headers['Authorization'] = `Bearer ${idToken}`;
+        }
+        if (inviteAccessToken) {
+          opts.headers['X-Invite-Token'] = inviteAccessToken;
+        }
+        if (body) opts.body = JSON.stringify(body);
+
+        const res = await fetch(url, opts);
+        const elapsed = Date.now() - start;
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ message: res.statusText }));
+          const msg = err.error?.message || err.message || `HTTP ${res.status}`;
+          addLog('error', `✗ ${res.status} ${msg} (${elapsed}ms)`);
+          throw new Error(msg);
+        }
+
+        const json = await res.json();
+        const data = json.data ?? json;
+        addLog('success', `✓ ${res.status} (${elapsed}ms) ${JSON.stringify(data).slice(0,120)}`);
+        return data;
+      } catch (e) {
+        if (!e.message.includes('HTTP')) {
+          addLog('error', `✗ Network error: ${e.message}`);
+        }
+        throw e;
+      }
+    }
+
+    function addLog(type, msg) {
+      const now = new Date().toLocaleTimeString();
+      apiLogs.unshift({ type, msg, time: now });
+      renderLog();
+    }
+
+    function renderLog() {
+      const el = document.getElementById('api-log');
+      if (!el) return;
+      el.innerHTML = apiLogs.slice(0, 200).map(l =>
+        `<div class="log-entry ${l.type}"><span style="color:var(--muted)">${l.time}</span> ${l.msg}</div>`
+      ).join('');
+    }
+
+    window.clearLog = () => { apiLogs = []; renderLog(); };
+
+    // ── Bootstrap Role ────────────────────────────────────────
+    window.bootstrapRole = async () => {
+      const key = document.getElementById('admin-key').value;
+      const statusEl = document.getElementById('setup-status');
+
+      if (!key) {
+        statusEl.innerHTML = '<div class="status-banner error">Enter the admin key</div>';
+        return;
+      }
+
+      try {
+        statusEl.innerHTML = '<div class="status-banner info animate-pulse">Activating…</div>';
+        await rootsAPI('POST', '/admin/bootstrap', { adminKey: key });
+
+        const tokenResult = await currentUser.getIdTokenResult(true);
+        idToken = tokenResult.token;
+
+        statusEl.innerHTML = '<div class="status-banner success">✓ Admin access activated</div>';
+        setTimeout(() => showScreen('dashboard'), 800);
+      } catch (e) {
+        statusEl.innerHTML = `<div class="status-banner error">✗ ${e.message}</div>`;
+      }
+    };
+
+    // ── Start Session ─────────────────────────────────────────
+    window.selectSetupType = (type) => {
+      currentAssessmentType = type;
+      document.querySelectorAll('.setup-type-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.type === type);
+        b.classList.toggle('btn-primary', b.dataset.type === type);
+        b.classList.toggle('btn-outline', b.dataset.type !== type);
+      });
+      document.getElementById('parent-fields').classList.toggle('hidden', type !== 'parent');
+      document.getElementById('teacher-fields').classList.toggle('hidden', type !== 'teacher');
+    };
+
+    window.startSession = async () => {
+      const btn = document.getElementById('btn-start-session');
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner" style="width:16px;height:16px;margin:0 auto"></div>';
+
+      try {
+        let result, childAge, schoolId;
+        if (currentAssessmentType === 'teacher') {
+          schoolId = document.getElementById('teacher-school-id').value || 'somalwar-ramdaspeth';
+          const teacherId = document.getElementById('teacher-id').value || currentUser.uid;
+          result = await rootsAPI('POST', `${assessmentPath()}/sessions`, {
+            teacherId,
+            schoolId,
+          });
+        } else {
+          childAge = parseInt(document.getElementById('child-age').value);
+          schoolId = document.getElementById('school-id').value;
+          const childId = document.getElementById('child-id').value || `test-child-${Date.now()}`;
+          result = await rootsAPI('POST', `${assessmentPath()}/sessions`, {
+            parentId: currentUser.uid,
+            childId,
+            childAge,
+            schoolId,
+          });
+        }
+
+        currentSession = result.sessionId;
+        currentQuestion = result.firstQuestion;
+        totalQuestions = result.totalQuestions || TOTAL_QUESTIONS;
+        questionNumber = 1;
+        posteriors = {};
+        questionStartTime = Date.now();
+
+        addLog('success', `Session: ${currentSession} · Band: ${result.childAgeBand} · ${totalQuestions}q`);
+
+        sessionHistory.unshift({
+          sessionId: currentSession,
+          startedAt: new Date().toISOString(),
+          ...(childAge != null && { childAge }),
+          schoolId,
+          status: 'active',
+        });
+        localStorage.setItem('roots_session_history', JSON.stringify(sessionHistory));
+
+        document.getElementById('panel-setup-session').classList.add('hidden');
+        document.getElementById('panel-question').classList.remove('hidden');
+        document.getElementById('panel-results').classList.add('hidden');
+        renderQuestion();
+      } catch (e) {
+        alert('Failed to start session: ' + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '▶ Begin Assessment';
+      }
+    };
+
+    // ── Render Question ───────────────────────────────────────
+    function renderQuestion() {
+      if (!currentQuestion) return;
+      const q = currentQuestion;
+
+      document.getElementById('q-progress').textContent = `QUESTION ${questionNumber} OF ${totalQuestions}`;
+      document.getElementById('q-domain').textContent = (q.domain || '').replace(/_/g, ' ');
+      document.getElementById('q-text').textContent = q.text || '';
+
+      // Progress ring (r=20, circumference = 2*PI*20 = 125.66)
+      const completed = questionNumber - 1;
+      const circumference = 2 * Math.PI * 20;
+      const offset = circumference * (1 - completed / totalQuestions);
+      document.getElementById('progress-arc').setAttribute('stroke-dashoffset', offset.toString());
+
+      document.getElementById('q-info').textContent = `${currentSession?.slice(0,8) ?? '—'}… · Q${q.id || ''} · ${new Date().toLocaleTimeString()}`;
+
+      // Answers — API returns: { index, text } (grade deliberately withheld)
+      const answersEl = document.getElementById('q-answers');
+      answersEl.innerHTML = (q.answers || []).map((a) => {
+        return `
+          <button class="answer-pill" data-index="${a.index}" onclick="selectAnswer(${a.index})">
+            <span class="answer-check"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="answer-text">${a.text || ''}</span>
+          </button>
+        `;
+      }).join('');
+
+      selectedGrade = null;
+      selectedIndex = null;
+      document.getElementById('btn-submit-answer').disabled = true;
+      questionStartTime = Date.now();
+    }
+
+    // ── Select Answer ─────────────────────────────────────────
+    window.selectAnswer = (index) => {
+      selectedIndex = index;
+      document.querySelectorAll('.answer-pill').forEach(p => p.classList.remove('selected'));
+      const target = document.querySelector(`.answer-pill[data-index="${index}"]`);
+      if (target) target.classList.add('selected');
+      document.getElementById('btn-submit-answer').disabled = false;
+    };
+
+    // ── Submit Answer ─────────────────────────────────────────
+    window.submitAnswer = async () => {
+      if (selectedIndex === null || !currentQuestion) return;
+
+      const btn = document.getElementById('btn-submit-answer');
+      btn.disabled = true;
+      btn.textContent = 'Saving…';
+
+      try {
+        const responseTimeMs = Date.now() - questionStartTime;
+        const questionIndex = currentQuestion.index;
+
+        const response = await rootsAPI('POST', `${assessmentPath()}/sessions/${currentSession}/answer`, {
+          questionIndex,
+          answerIndex: selectedIndex,
+          responseTimeMs,
+        });
+
+        if (response.posteriorUpdate) {
+          for (const [domain, data] of Object.entries(response.posteriorUpdate)) {
+            posteriors[domain] = { mean: data.mean, confidence: data.confidence };
+          }
+          renderHeatmap();
+        }
+
+        // Track journey for decision tree + timeline
+        const answerData = currentQuestion.answers.find(a => a.index === selectedIndex);
+        sessionJourney.push({
+          questionNumber,
+          question: { domain: currentQuestion.domain, text: currentQuestion.text, id: currentQuestion.id || currentQuestion.index },
+          answer: { text: answerData?.text || '', index: selectedIndex },
+          posteriorSnapshot: JSON.parse(JSON.stringify(posteriors)),
+          responseTimeMs: Date.now() - questionStartTime,
+        });
+
+        if (response.sessionComplete) {
+          await completeAssessment();
+        } else {
+          questionNumber++;
+          const next = await rootsAPI('GET', `${assessmentPath()}/sessions/${currentSession}/next`);
+          if (next.complete) {
+            await completeAssessment();
+          } else {
+            currentQuestion = next.question;
+            renderQuestion();
+          }
+        }
+      } catch (e) {
+        alert('Error submitting answer: ' + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Continue →';
+      }
+    };
+
+    // ── Complete Assessment ────────────────────────────────────
+    async function completeAssessment() {
+      try {
+        addLog('api', 'Completing assessment…');
+        const result = await rootsAPI('POST', `${assessmentPath()}/sessions/${currentSession}/complete`);
+        const profile = result.profile || result;
+
+        const histEntry = sessionHistory.find(h => h.sessionId === currentSession);
+        if (histEntry) {
+          histEntry.status = 'completed';
+          histEntry.completedAt = new Date().toISOString();
+          histEntry.profileId = profile.profileId;
+          localStorage.setItem('roots_session_history', JSON.stringify(sessionHistory));
+        }
+
+        renderResults(profile);
+        document.getElementById('panel-question').classList.add('hidden');
+        document.getElementById('panel-results').classList.remove('hidden');
+
+        // Store profile for email results
+        window._lastProfileData = profile;
+
+        // If invite email was provided, auto-send results
+        if (inviteEmail) {
+          const emailInput = document.getElementById('results-email');
+          if (emailInput) emailInput.value = inviteEmail;
+          setTimeout(() => window.sendResultsEmail(), 1000);
+        }
+
+        // ── Fetch prototype engine data (fire-and-forget with retry) ──
+        fetchPrototypeResults(currentSession, profile);
+      } catch (e) {
+        alert('Failed to complete: ' + e.message);
+      }
+    }
+
+    // ── Prototype Engine Results ───────────────────────────────
+    let prototypeData = null;
+
+    async function fetchPrototypeResults(sessionId, profile, retryCount = 0) {
+      try {
+        addLog('api', 'Fetching prototype engine data…');
+        const result = await rootsAPI('GET', `/prototype/session-results/${sessionId}`);
+        // rootsAPI already unwraps .data — but guard against double-wrap
+        prototypeData = result;
+        if (!prototypeData.scoreArtifact && !prototypeData.report && result.data) {
+          prototypeData = result.data;
+        }
+        addLog('success', `Prototype data loaded: artifact=${!!prototypeData.scoreArtifact}, report=${!!prototypeData.report}, events=${(prototypeData.events||[]).length}, suggestions=${(prototypeData.suggestions||[]).length}`);
+        renderPrototypeReport(prototypeData, profile);
+        // Show engine_version in report footer (Task 3)
+        if (prototypeData.scoreArtifact?.engine_version) {
+          const vEl = document.getElementById('report-engine-version');
+          if (vEl) vEl.textContent = `engine_version: ${prototypeData.scoreArtifact.engine_version}`;
+        }
+        // Store suggestions for opt-in — do NOT auto-render (D-002 compliance)
+        if (prototypeData.suggestions && prototypeData.suggestions.length > 0) {
+          window._pendingSuggestions = prototypeData.suggestions;
+          window._pendingProfile = profile;
+          const optinEl = document.getElementById('learning-optin-section');
+          if (optinEl) optinEl.style.display = '';
+        }
+      } catch (e) {
+        console.warn('[Prototype] fetch failed (attempt ' + (retryCount+1) + '):', e.message);
+        // Retry up to 5 times with 3s delay (fire-and-forget backend may still be running)
+        if (retryCount < 5) {
+          setTimeout(() => fetchPrototypeResults(sessionId, profile, retryCount + 1), 3000);
+        } else {
+          document.getElementById('report-loading').innerHTML =
+            '<div style="color:var(--muted)">Prototype report unavailable. Assessment data saved — report will be generated on next load.</div>';
+        }
+      }
+    }
+
+    function renderPrototypeReport(data, profile) {
+      const contentEl = document.getElementById('report-content');
+      const metaEl = document.getElementById('report-meta');
+      const suggestionsEl = document.getElementById('report-suggestions');
+      const eventsEl = document.getElementById('report-events');
+
+      // ── Render 2-page report ──────────────────────────────
+      if (data.report) {
+        const r = data.report;
+        let html = '';
+
+        // Report header
+        html += `<div style="text-align:center;margin-bottom:20px">`;
+        html += `<div style="font-size:0.68rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:4px">ROOTS Engine Report</div>`;
+        html += `<div style="font-size:0.6rem;color:var(--muted)">Engine v${r.engine_version || 'unknown'} · ${r.reportId ? 'ID: ' + r.reportId.slice(0,8) : ''}</div>`;
+        html += `</div>`;
+
+        // Overall score from artifact
+        if (data.scoreArtifact) {
+          const sa = data.scoreArtifact;
+          html += `<div style="text-align:center;margin-bottom:20px;padding:16px;border-radius:6px;background:rgba(99,179,237,0.05);border:1px solid rgba(99,179,237,0.1)">`;
+          html += `<div style="font-size:2rem;font-weight:700;color:var(--accent);font-family:'JetBrains Mono',monospace">${Math.round(sa.overallScore ?? 0)}</div>`;
+          html += `<div style="font-size:0.6rem;color:var(--muted);margin-top:2px">Deterministic Score · Confidence: ${Math.round((sa.overallConfidence || 0) * 100)}%</div>`;
+          if (sa.flags && sa.flags.length > 0) {
+            html += `<div style="margin-top:6px">${sa.flags.map(f => '<span style="display:inline-block;padding:1px 6px;border-radius:2px;font-size:0.55rem;background:rgba(245,158,11,0.12);color:#f59e0b;margin:2px">' + f + '</span>').join('')}</div>`;
+          }
+          html += `</div>`;
+
+          // Domain breakdown from artifact
+          if (sa.domainScores && sa.domainScores.length > 0) {
+            html += `<div style="font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Deterministic Domain Scores</div>`;
+            sa.domainScores.forEach(ds => {
+              const cfg = DOMAIN_CFG[ds.domain] || { label: (ds.domain || 'unknown').replace(/_/g, ' '), color: '#63b3ed' };
+              const pct = Math.round(ds.score ?? 0);
+              html += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:0.75rem">`;
+              html += `<span style="width:140px;color:var(--text-dim);font-size:0.7rem">${cfg.label}</span>`;
+              html += `<div style="flex:1;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;position:relative">`;
+              html += `<div style="width:${pct}%;height:100%;background:${cfg.color};border-radius:2px"></div></div>`;
+              html += `<span style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:${cfg.color};min-width:28px;text-align:right">${pct}</span>`;
+              html += `</div>`;
+            });
+          }
+        }
+
+        // Sections from report — page1 + page2 structure
+        if (r.page1) {
+          // Summary bullets
+          if (r.page1.summaryBullets && r.page1.summaryBullets.length > 0) {
+            html += `<div style="margin-top:20px">`;
+            html += `<div style="font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:8px">Key Findings</div>`;
+            html += `<ul style="list-style:none;padding:0">`;
+            r.page1.summaryBullets.forEach(b => {
+              html += `<li style="margin-bottom:8px;padding-left:14px;position:relative;font-size:0.78rem;color:var(--text-dim);line-height:1.6"><span style="position:absolute;left:0;color:var(--gold)">›</span>${b}</li>`;
+            });
+            html += `</ul></div>`;
+          }
+          // Divergence table
+          if (r.page1.divergenceTable && r.page1.divergenceTable.length > 0) {
+            html += `<div style="margin-top:16px">`;
+            html += `<div style="font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Cross-Instrument Divergence</div>`;
+            r.page1.divergenceTable.forEach(d => {
+              const divColor = Math.abs(d.divergence) > 15 ? '#ef4444' : Math.abs(d.divergence) > 8 ? '#f59e0b' : '#10b981';
+              html += `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.72rem">`;
+              html += `<span style="color:var(--text-dim)">${(d.domain || '').replace(/_/g, ' ')}</span>`;
+              html += `<span style="font-family:'JetBrains Mono',monospace;color:${divColor}">${d.divergence > 0 ? '+' : ''}${d.divergence?.toFixed?.(1) ?? d.divergence ?? '—'}</span>`;
+              html += `</div>`;
+            });
+            html += `</div>`;
+          }
+        }
+
+        if (r.page2) {
+          // Observational summary
+          if (r.page2.observationalSummary) {
+            html += `<div style="margin-top:20px;padding:14px;border-radius:6px;background:rgba(99,179,237,0.04);border:1px solid rgba(99,179,237,0.08)">`;
+            html += `<div style="font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">Observational Summary</div>`;
+            html += `<div style="font-size:0.78rem;color:var(--text-dim);line-height:1.7">${r.page2.observationalSummary}</div>`;
+            html += `</div>`;
+          }
+          // Contextual explanation
+          if (r.page2.contextualExplanation) {
+            html += `<div style="margin-top:14px;padding:14px;border-radius:6px;background:rgba(167,139,250,0.04);border:1px solid rgba(167,139,250,0.08)">`;
+            html += `<div style="font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Contextual Analysis</div>`;
+            html += `<div style="font-size:0.78rem;color:var(--text-dim);line-height:1.7">${r.page2.contextualExplanation}</div>`;
+            html += `</div>`;
+          }
+          // Growth directions
+          if (r.page2.growthDirections && r.page2.growthDirections.length > 0) {
+            html += `<div style="margin-top:16px">`;
+            html += `<div style="font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--green);margin-bottom:8px">Growth Directions</div>`;
+            html += `<ul style="list-style:none;padding:0">`;
+            r.page2.growthDirections.forEach(g => {
+              html += `<li style="margin-bottom:8px;padding-left:14px;position:relative;font-size:0.78rem;color:var(--text-dim);line-height:1.6"><span style="position:absolute;left:0;color:var(--green)">↑</span>${g}</li>`;
+            });
+            html += `</ul></div>`;
+          }
+        }
+
+        // Fallback: sections format (generic)
+        if (r.sections) {
+          html += `<div style="margin-top:20px">`;
+          (Array.isArray(r.sections) ? r.sections : Object.entries(r.sections)).forEach(sec => {
+            const title = sec.title || sec[0] || '';
+            const body = sec.body || sec.content || sec[1] || '';
+            html += `<div style="margin-bottom:16px">`;
+            html += `<div style="font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">${title}</div>`;
+            html += `<div style="font-size:0.78rem;color:var(--text-dim);line-height:1.7">${body}</div>`;
+            html += `</div>`;
+          });
+          html += `</div>`;
+        }
+
+        // Narrative / summary
+        if (r.narrative || r.summary) {
+          html += `<div style="margin-top:16px;padding:12px;border-radius:6px;background:rgba(99,179,237,0.04);border:1px solid rgba(99,179,237,0.08)">`;
+          html += `<div style="font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Summary</div>`;
+          html += `<div style="font-size:0.78rem;color:var(--text-dim);line-height:1.7">${r.narrative || r.summary}</div>`;
+          html += `</div>`;
+        }
+
+        contentEl.innerHTML = html;
+      } else {
+        contentEl.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px">No report generated yet. Retry or take another assessment.</div>';
+      }
+
+      // ── Render events audit trail ────────────────────────────
+      if (data.events && data.events.length > 0) {
+        let evHtml = '<div style="font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Event Audit Trail · ' + data.events.length + ' events</div>';
+        evHtml += '<div style="max-height:300px;overflow-y:auto;border:1px solid rgba(255,255,255,0.06);border-radius:6px;padding:8px">';
+        data.events.forEach((ev, i) => {
+          const typeColors = {
+            SessionStarted: '#10b981', ShuffleApplied: '#a78bfa', QuestionRendered: '#3b82f6',
+            AnswerSelected: '#f59e0b', ScoreComputed: '#ec4899', SessionCompleted: '#8b5cf6',
+          };
+          const color = typeColors[ev.type] || '#63b3ed';
+          evHtml += `<div style="display:flex;gap:8px;align-items:flex-start;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:0.68rem">`;
+          evHtml += `<span style="font-family:'JetBrains Mono',monospace;color:var(--muted);min-width:20px;text-align:right">${ev.sequence ?? i}</span>`;
+          evHtml += `<span style="display:inline-block;padding:1px 6px;border-radius:2px;font-size:0.55rem;background:${color}18;color:${color};min-width:100px;text-align:center">${ev.type || 'unknown'}</span>`;
+          evHtml += `<span style="color:var(--text-dim);flex:1;font-size:0.62rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${JSON.stringify(ev.payload || {}).slice(0, 120)}</span>`;
+          evHtml += `</div>`;
+        });
+        evHtml += '</div>';
+        eventsEl.innerHTML = evHtml;
+      }
+
+      // ── Meta ────────────────────────────────────────────────
+      const meta = data.scoreArtifact ? `artifact: ${data.scoreArtifact.artifactId?.slice(0,8) || '—'} · engine: ${data.scoreArtifact.engine_version || '—'}` : '';
+      metaEl.textContent = meta;
+    }
+
+    // ── API-Driven Suggestions (replace hardcoded) ────────────
+    function renderApiSuggestions(suggestions, profile) {
+      const el = document.getElementById('learning-suggestions');
+      if (!el || !suggestions || suggestions.length === 0) return;
+
+      el.innerHTML = suggestions.map(s => {
+        const cfg = DOMAIN_CFG[s.domain] || { label: s.domain?.replace(/_/g, ' ') || 'General', color: '#63b3ed' };
+        const score = profile.axisScores?.[s.domain] ?? 50;
+        let priorityLabel, priorityBg, priorityColor;
+        if (s.priority <= 2 || score < 35) {
+          priorityLabel = 'HIGH PRIORITY'; priorityBg = 'rgba(239,68,68,0.12)'; priorityColor = '#ef4444';
+        } else if (s.priority <= 4 || score < 60) {
+          priorityLabel = 'MODERATE'; priorityBg = 'rgba(245,158,11,0.12)'; priorityColor = '#f59e0b';
+        } else {
+          priorityLabel = 'SUGGESTION'; priorityBg = 'rgba(16,185,129,0.12)'; priorityColor = '#10b981';
+        }
+
+        return `<div class="improve-card" style="border-left:3px solid ${cfg.color}">
+          <div class="improve-header">
+            <div class="improve-icon" style="background:${cfg.color}18;color:${cfg.color}">${cfg.icon || '●'}</div>
+            <div class="improve-meta">
+              <div class="improve-domain">${cfg.label}</div>
+              <div class="improve-score" style="color:${cfg.color}">Score: ${Math.round(score)} / 100</div>
+            </div>
+            <span class="improve-priority" style="background:${priorityBg};color:${priorityColor}">${priorityLabel}</span>
+          </div>
+          <ul class="improve-list"><li>${s.text || 'No details available'}</li></ul>
+          ${s.rationale ? '<div class="improve-note"><strong style="color:var(--accent);font-style:normal">Engine rationale:</strong> ' + s.rationale + '</div>' : ''}
+          <div style="margin-top:8px;display:flex;gap:6px">
+            <button onclick="rateSuggestion('${s.suggestionId}','VeryHelpful')" class="btn feedback-btn" data-label="Very Helpful" style="font-size:0.55rem;padding:2px 8px;background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.2);border-radius:3px;cursor:pointer" title="Very Helpful">👍 Very Helpful</button>
+            <button onclick="rateSuggestion('${s.suggestionId}','SomewhatHelpful')" class="btn feedback-btn" data-label="Somewhat" style="font-size:0.55rem;padding:2px 8px;background:rgba(245,158,11,0.1);color:#f59e0b;border:1px solid rgba(245,158,11,0.2);border-radius:3px;cursor:pointer" title="Somewhat Helpful">🤔 Somewhat</button>
+            <button onclick="rateSuggestion('${s.suggestionId}','NotHelpful')" class="btn feedback-btn" data-label="Not Helpful" style="font-size:0.55rem;padding:2px 8px;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.2);border-radius:3px;cursor:pointer" title="Not Helpful">👎 Not Helpful</button>
+          </div>
+        </div>`;
+      }).join('');
+
+      // Update section title to indicate API-driven
+      const titleEl = el.previousElementSibling;
+      if (titleEl && titleEl.textContent.includes('Improvements')) {
+        titleEl.textContent = 'Engine-Driven Improvement Suggestions';
+      }
+    }
+
+    // ── Learning Suggestions Opt-In (D-002) ───────────────────
+    window.activateLearning = async function() {
+      const btn = document.getElementById('btn-learning-optin');
+      if (btn) { btn.disabled = true; btn.textContent = 'Activating…'; }
+      try {
+        await rootsAPI('POST', '/prototype-learning/activate', {
+          sessionId: currentSession,
+          participantId: currentSession, // session doubles as participant
+          optIn: true,
+        });
+        addLog('success', 'Learning suggestions activated');
+        // Render the suggestions now
+        if (window._pendingSuggestions && window._pendingProfile) {
+          renderApiSuggestions(window._pendingSuggestions, window._pendingProfile);
+        }
+        // Hide opt-in, show suggestions
+        const optinEl = document.getElementById('learning-optin-section');
+        if (optinEl) optinEl.style.display = 'none';
+        const sugEl = document.getElementById('learning-suggestions');
+        if (sugEl) sugEl.style.display = '';
+      } catch (e) {
+        console.warn('Learning activation failed:', e.message);
+        if (btn) { btn.disabled = false; btn.textContent = '✦ Enable Learning Suggestions (Beta)'; }
+        // Still render suggestions (graceful degradation)
+        if (window._pendingSuggestions && window._pendingProfile) {
+          renderApiSuggestions(window._pendingSuggestions, window._pendingProfile);
+          const optinEl = document.getElementById('learning-optin-section');
+          if (optinEl) optinEl.style.display = 'none';
+          const sugEl = document.getElementById('learning-suggestions');
+          if (sugEl) sugEl.style.display = '';
+        }
+      }
+    };
+
+    // ── Rate Suggestion (feedback to API) ─────────────────────
+    window.rateSuggestion = async function(suggestionId, rating) {
+      try {
+        await rootsAPI('POST', '/prototype-learning/feedback', {
+          suggestionId,
+          sessionId: currentSession,
+          rating,
+        });
+        // Grey out ALL feedback buttons for this suggestion, highlight chosen
+        const card = event.target.closest('.improve-card');
+        if (card) {
+          card.querySelectorAll('.feedback-btn').forEach(b => {
+            b.disabled = true;
+            b.style.opacity = '0.3';
+            b.style.cursor = 'default';
+          });
+          event.target.style.opacity = '1';
+          event.target.textContent = '✓ ' + event.target.dataset.label;
+        }
+        addLog('success', `Feedback sent: ${rating}`);
+      } catch (e) {
+        console.warn('Feedback failed:', e.message);
+      }
+    };
+
+    // ── Render Heatmap ────────────────────────────────────────
+    function renderHeatmap() {
+      const domains = Object.entries(posteriors);
+      if (domains.length === 0) return;
+
+      document.getElementById('panel-heatmap').style.display = 'block';
+
+      const icons = {
+        home_environment: '⌂', emotional_availability: '♥', expectation_calibration: '⚖',
+        growth_orientation: '↑', resilience_modeling: '◆', cultural_exposure: '◎',
+        communication_quality: '✦', aspiration_alignment: '★',
+      };
+      const colors = {
+        home_environment: '#3b82f6', emotional_availability: '#ef4444', expectation_calibration: '#f59e0b',
+        growth_orientation: '#10b981', resilience_modeling: '#06b6d4', cultural_exposure: '#a78bfa',
+        communication_quality: '#ec4899', aspiration_alignment: '#8b5cf6',
+      };
+
+      document.getElementById('heatmap').innerHTML = domains.map(([domain, data]) => {
+        const mean = data?.mean ?? 0;
+        const confidence = data?.confidence ?? 0;
+        const color = colors[domain] || '#63b3ed';
+        const opacity = 0.15 + confidence * 0.35;
+        const bg = `rgba(${hexToRgb(color)},${opacity})`;
+        const borderColor = `rgba(${hexToRgb(color)},${0.25 + confidence * 0.3})`;
+        const label = domain.replace(/_/g, ' ');
+        const shortLabel = label.split(' ')[0];
+        const pct = Math.round(mean * 100);
+        return `<div class="heatmap-cell" style="background:${bg};border-color:${borderColor}" title="${label}: ${pct}% (${Math.round(confidence*100)}% confidence)">
+          <span class="heatmap-icon">${icons[domain] || '●'}</span>
+          <span class="heatmap-label">${shortLabel}</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:${color}">${pct}%</span>
+        </div>`;
+      }).join('');
+    }
+
+    function hexToRgb(hex) {
+      const c = hex.replace('#','');
+      return [parseInt(c.slice(0,2),16), parseInt(c.slice(2,4),16), parseInt(c.slice(4,6),16)].join(',');
+    }
+
+    // ── Render Results ────────────────────────────────────────
+    function renderResults(profile) {
+      const scoreColor = (s) => s >= 70 ? '#10b981' : s >= 45 ? '#f59e0b' : '#ef4444';
+
+      const fitScore = profile.parentFitPct ?? 0;
+      const color = scoreColor(fitScore);
+      document.getElementById('rpi-score-display').innerHTML = `
+        <div class="rpi-number" style="color:${color}">${Math.round(fitScore)}</div>
+        <div class="rpi-label">Parent Fit Score · /100</div>
+      `;
+
+      // Flags badge
+      const flags = profile.flags || profile.valenceFlags || [];
+      let flagBadge;
+      if (flags.length === 0) flagBadge = { label: '✓ Authentic responses', cls: 'good' };
+      else if (flags.includes('ALL_S_STREAK')) flagBadge = { label: '⚠ S-streak detected', cls: 'warning' };
+      else flagBadge = { label: flags.join(', '), cls: 'warning' };
+      document.getElementById('prai-badge-display').innerHTML =
+        `<span class="flags-badge ${flagBadge.cls}">${flagBadge.label}</span>`;
+
+      // Domain bars
+      const DOMAIN_LABELS = {
+        home_environment: 'Home Environment',
+        emotional_availability: 'Emotional Availability',
+        expectation_calibration: 'Expectation Calibration',
+        growth_orientation: 'Growth Orientation',
+        resilience_modeling: 'Resilience Modeling',
+        cultural_exposure: 'Cultural Exposure',
+        communication_quality: 'Communication Quality',
+        aspiration_alignment: 'Aspiration Alignment',
+      };
+      const DOMAIN_COLORS = {
+        home_environment: '#3b82f6', emotional_availability: '#ef4444', expectation_calibration: '#f59e0b',
+        growth_orientation: '#10b981', resilience_modeling: '#06b6d4', cultural_exposure: '#a78bfa',
+        communication_quality: '#ec4899', aspiration_alignment: '#8b5cf6',
+      };
+
+      const bars = document.getElementById('domain-bars');
+      bars.innerHTML = '<div style="font-size:0.58rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);margin-bottom:16px">Domain Breakdown</div>';
+      for (const [domain, score] of Object.entries(profile.axisScores || {})) {
+        const ci = (profile.confidenceIntervals || {})[domain];
+        const label = DOMAIN_LABELS[domain] || domain.replace(/_/g, ' ');
+        const domColor = DOMAIN_COLORS[domain] || '#63b3ed';
+        bars.innerHTML += `
+          <div class="domain-bar-row">
+            <span class="domain-bar-label">${label}</span>
+            <div class="domain-bar-track">
+              ${ci ? `<div style="position:absolute;left:${ci.p10 ?? 0}%;width:${(ci.p90 ?? 0) - (ci.p10 ?? 0)}%;background:${domColor};opacity:0.15;height:100%;border-radius:3px"></div>` : ''}
+              <div class="domain-bar-fill" style="width:${score}%;background:${domColor}"></div>
+            </div>
+            <span class="domain-bar-value" style="color:${domColor}">${Math.round(score)}</span>
+          </div>
+        `;
+      }
+
+      // Review focus
+      const focus = profile.reviewFocus || [];
+      if (focus.length > 0) {
+        document.getElementById('review-focus').innerHTML = `
+          <div style="border-left:2px solid var(--gold);padding-left:16px;margin-top:20px">
+            <div style="font-size:0.58rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Areas to Explore</div>
+            <ul style="list-style:none;padding:0;font-size:0.78rem;color:var(--text-dim)">
+              ${focus.map(f => `<li style="margin-bottom:6px;padding-left:12px;position:relative"><span style="position:absolute;left:0;color:var(--gold)">›</span> ${f}</li>`).join('')}
+            </ul>
+          </div>
+        `;
+      } else {
+        document.getElementById('review-focus').innerHTML = '';
+      }
+
+      if (profile.profileId) {
+        document.getElementById('review-focus').innerHTML += `
+          <p style="margin-top:20px;font-size:0.6rem;color:var(--muted);text-align:center;font-family:'JetBrains Mono',monospace">
+            profile: ${profile.profileId}
+          </p>
+        `;
+      }
+
+      // ── Render all new visualizations ──
+      setTimeout(() => {
+        drawRadarChart(profile);
+        renderStrengths(profile);
+        renderImprovements(profile);
+        drawDecisionTree(profile);
+        renderJourney(profile);
+      }, 100);
+    }
+
+    // ── Switch Result Tabs ────────────────────────────────────
+    window.switchResultTab = (tabName) => {
+      document.querySelectorAll('.result-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`.result-tab[data-rtab="${tabName}"]`).classList.add('active');
+      ['overview', 'insights', 'report', 'tree', 'journey'].forEach(t => {
+        document.getElementById(`rtab-${t}`).classList.toggle('hidden', t !== tabName);
+      });
+      // Redraw canvases when switching to their tab (size may have changed)
+      if (tabName === 'tree') {
+        const canvas = document.getElementById('treeCanvas');
+        if (canvas && canvas._profile) drawDecisionTree(canvas._profile);
+      }
+    };
+
+    // ═══════════════════════════════════════════════════════
+    // DOMAIN CONFIG (shared by all renderers)
+    // ═══════════════════════════════════════════════════════
+    const DOMAIN_CFG = {
+      home_environment:        { label: 'Home Environment',        short: 'Home Env',   icon: '⌂', color: '#3b82f6' },
+      emotional_availability:  { label: 'Emotional Availability',  short: 'Emotional',  icon: '♥', color: '#ef4444' },
+      expectation_calibration: { label: 'Expectation Calibration', short: 'Expect',     icon: '⚖', color: '#f59e0b' },
+      growth_orientation:      { label: 'Growth Orientation',      short: 'Growth',     icon: '↑', color: '#10b981' },
+      resilience_modeling:     { label: 'Resilience Modeling',     short: 'Resilience', icon: '◆', color: '#06b6d4' },
+      cultural_exposure:       { label: 'Cultural Exposure',       short: 'Cultural',   icon: '◎', color: '#a78bfa' },
+      communication_quality:   { label: 'Communication Quality',   short: 'Comms',      icon: '✦', color: '#ec4899' },
+      aspiration_alignment:    { label: 'Aspiration Alignment',    short: 'Aspire',     icon: '★', color: '#8b5cf6' },
+    };
+
+    // ═══════════════════════════════════════════════════════
+    // RADAR CHART (Canvas)
+    // ═══════════════════════════════════════════════════════
+    function drawRadarChart(profile) {
+      const canvas = document.getElementById('radarCanvas');
+      if (!canvas) return;
+      const W = 320, H = 320, cx = W/2, cy = H/2, r = 115;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      canvas.style.width = W + 'px';
+      canvas.style.height = H + 'px';
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+
+      const axes = Object.keys(profile.axisScores || {});
+      const n = axes.length;
+      if (n === 0) return;
+
+      // Grid rings
+      for (let ring = 0.25; ring <= 1; ring += 0.25) {
+        ctx.beginPath();
+        for (let i = 0; i <= n; i++) {
+          const a = (Math.PI * 2 / n) * i - Math.PI / 2;
+          const px = cx + Math.cos(a) * r * ring;
+          const py = cy + Math.sin(a) * r * ring;
+          i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+        }
+        ctx.strokeStyle = 'rgba(99,179,237,0.08)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        // Ring label
+        if (ring < 1) {
+          ctx.fillStyle = 'rgba(100,116,139,0.4)';
+          ctx.font = '400 7px "JetBrains Mono"';
+          ctx.textAlign = 'center';
+          ctx.fillText(Math.round(ring * 100), cx, cy - r * ring + 10);
+        }
+      }
+
+      // Spoke lines + labels
+      for (let i = 0; i < n; i++) {
+        const a = (Math.PI * 2 / n) * i - Math.PI / 2;
+        const cfg = DOMAIN_CFG[axes[i]] || {};
+
+        // Spoke
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+        ctx.strokeStyle = 'rgba(99,179,237,0.1)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Label
+        ctx.fillStyle = cfg.color || '#63b3ed';
+        ctx.font = '500 8px "Outfit"';
+        ctx.textAlign = 'center';
+        const lx = cx + Math.cos(a) * (r + 18);
+        const ly = cy + Math.sin(a) * (r + 18);
+        ctx.fillText((cfg.short || axes[i]).toUpperCase(), lx, ly + 3);
+      }
+
+      // Data polygon
+      ctx.beginPath();
+      for (let i = 0; i <= n; i++) {
+        const idx = i % n;
+        const a = (Math.PI * 2 / n) * idx - Math.PI / 2;
+        const v = (profile.axisScores[axes[idx]] || 0) / 100;
+        const px = cx + Math.cos(a) * r * v;
+        const py = cy + Math.sin(a) * r * v;
+        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.fillStyle = 'rgba(16,185,129,0.12)';
+      ctx.fill();
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // CI range polygon (lighter)
+      if (profile.confidenceIntervals) {
+        ctx.beginPath();
+        for (let i = 0; i <= n; i++) {
+          const idx = i % n;
+          const a = (Math.PI * 2 / n) * idx - Math.PI / 2;
+          const ci = profile.confidenceIntervals[axes[idx]];
+          const v = ci ? ci.p90 / 100 : (profile.axisScores[axes[idx]] || 0) / 100;
+          const px = cx + Math.cos(a) * r * v;
+          const py = cy + Math.sin(a) * r * v;
+          i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+        }
+        ctx.strokeStyle = 'rgba(16,185,129,0.15)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Data points
+      for (let i = 0; i < n; i++) {
+        const a = (Math.PI * 2 / n) * i - Math.PI / 2;
+        const v = (profile.axisScores[axes[i]] || 0) / 100;
+        const px = cx + Math.cos(a) * r * v;
+        const py = cy + Math.sin(a) * r * v;
+        const cfg = DOMAIN_CFG[axes[i]] || {};
+
+        ctx.beginPath();
+        ctx.arc(px, py, 4, 0, Math.PI * 2);
+        ctx.fillStyle = cfg.color || '#10b981';
+        ctx.fill();
+
+        // Score value
+        ctx.fillStyle = cfg.color || '#10b981';
+        ctx.font = '700 8px "JetBrains Mono"';
+        ctx.textAlign = 'center';
+        ctx.fillText(Math.round(profile.axisScores[axes[i]] || 0), px, py - 8);
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // STRENGTHS + MODEL INSIGHTS
+    // ═══════════════════════════════════════════════════════
+    function renderStrengths(profile) {
+      const el = document.getElementById('model-strengths');
+      if (!el) return;
+
+      const scores = Object.entries(profile.axisScores || {});
+      if (scores.length === 0) { el.innerHTML = ''; return; }
+
+      const sorted = [...scores].sort((a, b) => b[1] - a[1]);
+      const strongest = sorted[0];
+      const weakest = sorted[sorted.length - 1];
+
+      let h = '';
+
+      // Top strength
+      const sCfg = DOMAIN_CFG[strongest[0]] || {};
+      h += `<div class="strength-card">
+        <span class="strength-icon">${sCfg.icon || '★'}</span>
+        <div>
+          <div class="strength-label" style="color:${sCfg.color || '#10b981'}">★ Primary Strength: ${sCfg.label || strongest[0]}</div>
+          <div class="strength-text">Scored <strong style="color:${sCfg.color}">${Math.round(strongest[1])}</strong> — this is a genuine asset. The model predicts strong alignment with environments that value ${(sCfg.label || '').toLowerCase()}.</div>
+        </div>
+      </div>`;
+
+      // Growth area
+      const wCfg = DOMAIN_CFG[weakest[0]] || {};
+      h += `<div class="strength-card" style="background:rgba(99,179,237,0.04);border-color:rgba(99,179,237,0.15)">
+        <span class="strength-icon">${wCfg.icon || '◉'}</span>
+        <div>
+          <div class="strength-label" style="color:${wCfg.color || '#63b3ed'}">◉ Growth Area: ${wCfg.label || weakest[0]}</div>
+          <div class="strength-text">Scored <strong style="color:${wCfg.color}">${Math.round(weakest[1])}</strong> — the model identifies this as the highest-leverage area for improvement. See targeted suggestions below.</div>
+        </div>
+      </div>`;
+
+      // Model confidence banner
+      const avgConfidence = Object.values(profile.confidenceIntervals || {}).reduce((s, ci) => s + (ci.mean || 0), 0);
+      const domainCount = Object.keys(profile.confidenceIntervals || {}).length || 1;
+      h += `<div class="model-banner" style="margin-top:12px">
+        <div class="model-banner-title">Model Confidence</div>
+        <div class="model-banner-text">
+          Based on ${sessionJourney.length || totalQuestions} adaptive questions using Bayesian posterior estimation.
+          The engine selected questions to maximize information gain across all 8 domains.
+          ${profile.flags?.length ? '<br><span style="color:var(--gold)">⚠ Valence flags detected — some scores may be inflated by social desirability.</span>' : ''}
+        </div>
+      </div>`;
+
+      el.innerHTML = h;
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // IMPROVEMENT SUGGESTIONS (Model-Predicted)
+    // ═══════════════════════════════════════════════════════
+    const PARENT_IMPROVEMENTS = {
+      home_environment: {
+        icon: '⌂', color: '#3b82f6',
+        suggestions: {
+          low: [
+            'Create a dedicated, distraction-free learning corner with proper lighting and organized supplies.',
+            'Establish consistent daily routines: homework time, reading time, and creative play.',
+            'Add age-appropriate books, puzzles, and educational materials within easy reach.',
+            'Reduce screen distractions during learning hours — model focused behavior yourself.',
+          ],
+          moderate: [
+            'Rotate learning materials regularly to maintain novelty and engagement.',
+            'Create a visual schedule together so your child takes ownership of their routine.',
+            'Designate a "curiosity shelf" for objects and books your child can explore freely.',
+          ],
+          strength: ['Your home environment is a genuine asset. The model sees this as a foundation for sustained learning.']
+        },
+        modelNote: 'Home environment scores correlate strongly with sustained academic engagement (r=0.72). Even small improvements here produce outsized effects on all other domains.'
+      },
+      emotional_availability: {
+        icon: '♥', color: '#ef4444',
+        suggestions: {
+          low: [
+            'Practice "emotion labeling" — when your child is upset, name the emotion before trying to fix it.',
+            'Schedule 15 minutes of undivided, device-free attention daily. Let your child lead the activity.',
+            'Avoid dismissing emotions ("Don\'t cry"). Validate first, redirect second.',
+            'Share your own emotions appropriately — "I felt frustrated when…" models emotional literacy.',
+          ],
+          moderate: [
+            'Practice reflective listening: repeat back what your child said before responding.',
+            'Create a "feelings check-in" ritual at dinner or bedtime.',
+          ],
+          strength: ['Exceptional emotional availability — the strongest predictor of secure attachment.']
+        },
+        modelNote: 'Emotional availability is the #1 predictor of a child\'s emotional regulation capacity. The model weights this domain heavily (1.4×) for children under 10.'
+      },
+      expectation_calibration: {
+        icon: '⚖', color: '#f59e0b',
+        suggestions: {
+          low: [
+            'Learn your child\'s current developmental stage — expectations beyond it create anxiety, not growth.',
+            'Replace outcome expectations ("Get an A") with effort expectations ("Try your best for 30 minutes").',
+            'Notice and celebrate small improvements, not just final results.',
+            'Ask your child what they think is a fair goal — calibrate together.',
+          ],
+          moderate: [
+            'Periodically reassess goals as your child grows — what was challenging last year may be easy now.',
+            'Balance academic expectations with social and emotional milestones.',
+          ],
+          strength: ['Well-calibrated expectations. Your child likely feels both challenged and supported.']
+        },
+        modelNote: 'Miscalibrated expectations correlate with anxiety (r=0.68) and learned helplessness (r=0.54). Optimal zone: "just beyond comfortable."'
+      },
+      growth_orientation: {
+        icon: '↑', color: '#10b981',
+        suggestions: {
+          low: [
+            'Praise process ("You worked really hard") rather than traits ("You\'re so smart").',
+            'When your child fails, ask "What did you learn?" instead of expressing disappointment.',
+            'Share stories of your own failures and what you learned from them.',
+            'Replace "I can\'t" language with "I can\'t yet" — model this yourself.',
+          ],
+          moderate: [
+            'Introduce biographies of people who succeeded through persistence.',
+            'Create a "failure wall" where the family celebrates attempts, not just successes.',
+          ],
+          strength: ['Strong growth mindset modeling. Your child is likely to view challenges as opportunities.']
+        },
+        modelNote: 'Growth orientation in parents transfers to children with 82% fidelity. This is one of the highest-transfer domains in our longitudinal model.'
+      },
+      resilience_modeling: {
+        icon: '◆', color: '#06b6d4',
+        suggestions: {
+          low: [
+            'Let your child see you handle setbacks — narrate your coping process aloud.',
+            'Resist rescuing your child from every difficulty. Allow age-appropriate struggle.',
+            'Teach specific coping strategies: deep breathing, breaking problems into steps, asking for help.',
+            'Create a family motto for tough times: "We figure things out."',
+          ],
+          moderate: [
+            'Gradually increase the complexity of challenges your child faces independently.',
+            'Discuss how characters in books or movies handle adversity.',
+          ],
+          strength: ['Excellent resilience modeling. Your child has a strong template for handling adversity.']
+        },
+        modelNote: 'Children learn resilience primarily through observation (Bandura). Parental modeling is 2.3× more predictive than direct teaching.'
+      },
+      cultural_exposure: {
+        icon: '◎', color: '#a78bfa',
+        suggestions: {
+          low: [
+            'Visit museums, cultural festivals, or community events together monthly.',
+            'Cook meals from different cultures — involve your child in preparation.',
+            'Introduce diverse books, music, and art into your home.',
+            'Have conversations about different perspectives and ways of life.',
+          ],
+          moderate: [
+            'Encourage friendships with children from different backgrounds.',
+            'Explore neighborhoods and communities different from your own.',
+          ],
+          strength: ['Rich cultural exposure. Your child is developing cognitive flexibility through diversity.']
+        },
+        modelNote: 'Cultural exposure correlates with cognitive flexibility (r=0.61) and perspective-taking (r=0.58). Effect strongest ages 5–12.'
+      },
+      communication_quality: {
+        icon: '✦', color: '#ec4899',
+        suggestions: {
+          low: [
+            'Ask open-ended questions ("What was interesting today?") instead of yes/no questions.',
+            'Practice the 5-second rule: after asking, wait 5 full seconds before speaking again.',
+            'Reduce directive language ("Do this") and increase collaborative language ("What should we…").',
+            'Have at least one extended conversation (10+ minutes) with your child daily.',
+          ],
+          moderate: [
+            'Engage in "think-alouds" — verbalize your reasoning process when solving problems.',
+            'Encourage your child to explain their thinking, not just their answers.',
+          ],
+          strength: ['Exceptional communication patterns. Your child likely has advanced verbal reasoning.']
+        },
+        modelNote: 'Communication quality predicts vocabulary growth (r=0.78) and metacognitive development. Highest-leverage intervention domain in the model.'
+      },
+      aspiration_alignment: {
+        icon: '★', color: '#8b5cf6',
+        suggestions: {
+          low: [
+            'Ask your child about THEIR dreams and interests — listen without correcting or redirecting.',
+            'Find the overlap between what you want for them and what they want for themselves.',
+            'Support one activity chosen entirely by your child, even if it\'s not your preference.',
+            'Separate your aspirations from theirs — write them down and compare.',
+          ],
+          moderate: [
+            'Revisit aspiration conversations quarterly as interests evolve.',
+            'Expose your child to diverse career paths and life possibilities.',
+          ],
+          strength: ['Strong alignment between your aspirations and your child\'s interests. Predicts intrinsic motivation.']
+        },
+        modelNote: 'Aspiration misalignment is the strongest predictor of adolescent disengagement (r=−0.74). Alignment means mutual understanding, not agreement.'
+      },
+    };
+
+    function renderImprovements(profile) {
+      const el = document.getElementById('improvements');
+      if (!el) return;
+
+      const scores = Object.entries(profile.axisScores || {});
+      if (scores.length === 0) { el.innerHTML = '<p style="color:var(--muted)">No data</p>'; return; }
+
+      // Sort: lowest scores first (highest priority for improvement)
+      const sorted = [...scores].sort((a, b) => a[1] - b[1]);
+
+      el.innerHTML = sorted.map(([domain, score]) => {
+        const imp = PARENT_IMPROVEMENTS[domain];
+        if (!imp) return '';
+        const cfg = DOMAIN_CFG[domain] || {};
+
+        let level, priority, priorityBg, priorityColor, suggestions;
+        if (score < 35) {
+          level = 'low'; priority = 'HIGH PRIORITY';
+          priorityBg = 'rgba(239,68,68,0.12)'; priorityColor = '#ef4444';
+          suggestions = imp.suggestions.low;
+        } else if (score < 60) {
+          level = 'moderate'; priority = 'MODERATE';
+          priorityBg = 'rgba(245,158,11,0.12)'; priorityColor = '#f59e0b';
+          suggestions = imp.suggestions.moderate;
+        } else {
+          level = 'strength'; priority = 'STRENGTH';
+          priorityBg = 'rgba(16,185,129,0.12)'; priorityColor = '#10b981';
+          suggestions = imp.suggestions.strength;
+        }
+
+        return `<div class="improve-card" style="border-left:3px solid ${cfg.color || '#63b3ed'}">
+          <div class="improve-header">
+            <div class="improve-icon" style="background:${cfg.color}18;color:${cfg.color}">${imp.icon}</div>
+            <div class="improve-meta">
+              <div class="improve-domain">${cfg.label || domain}</div>
+              <div class="improve-score" style="color:${cfg.color}">Score: ${Math.round(score)} / 100</div>
+            </div>
+            <span class="improve-priority" style="background:${priorityBg};color:${priorityColor}">${priority}</span>
+          </div>
+          <ul class="improve-list">
+            ${suggestions.map(s => `<li>${s}</li>`).join('')}
+          </ul>
+          <div class="improve-note">
+            <strong style="color:var(--accent);font-style:normal">Model insight:</strong> ${imp.modelNote}
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // DECISION TREE (Canvas)
+    // ═══════════════════════════════════════════════════════
+    function drawDecisionTree(profile) {
+      const canvas = document.getElementById('treeCanvas');
+      if (!canvas) return;
+      canvas._profile = profile; // store for redraw
+
+      // Group journey by domain
+      const domainQs = {};
+      sessionJourney.forEach(j => {
+        const d = j.question.domain;
+        if (!domainQs[d]) domainQs[d] = [];
+        domainQs[d].push(j);
+      });
+
+      const activeDomains = Object.keys(DOMAIN_CFG).filter(d =>
+        domainQs[d] || (profile.axisScores && profile.axisScores[d] !== undefined)
+      );
+      const numDomains = activeDomains.length || 1;
+      const maxQsPerDomain = Math.max(1, ...Object.values(domainQs).map(q => q.length));
+
+      const W = Math.max(700, numDomains * 108 + 60);
+      const H = Math.max(420, 170 + maxQsPerDomain * 85 + 120);
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      canvas.style.width = W + 'px';
+      canvas.style.height = 'auto';
+      canvas.style.aspectRatio = `${W} / ${H}`;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+
+      // Background
+      ctx.fillStyle = '#060810';
+      ctx.fillRect(0, 0, W, H);
+
+      // Subtle grid
+      ctx.strokeStyle = 'rgba(99,179,237,0.03)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < W; x += 50) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+      for (let y = 0; y < H; y += 50) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+      // Helpers
+      function roundRect(x, y, w, h, rad, fill, stroke, lw) {
+        ctx.beginPath();
+        ctx.moveTo(x + rad, y);
+        ctx.lineTo(x + w - rad, y); ctx.quadraticCurveTo(x + w, y, x + w, y + rad);
+        ctx.lineTo(x + w, y + h - rad); ctx.quadraticCurveTo(x + w, y + h, x + w - rad, y + h);
+        ctx.lineTo(x + rad, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - rad);
+        ctx.lineTo(x, y + rad); ctx.quadraticCurveTo(x, y, x + rad, y);
+        ctx.closePath();
+        if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+        if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw || 1; ctx.stroke(); }
+      }
+
+      function drawCurve(x1, y1, x2, y2, color, alpha) {
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.bezierCurveTo(x1, y1 + (y2 - y1) * 0.4, x2, y1 + (y2 - y1) * 0.6, x2, y2);
+        ctx.globalAlpha = alpha || 0.4;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+
+      const laneW = Math.min(105, (W - 40) / numDomains);
+      const startX = (W - numDomains * laneW) / 2;
+      const engineY = 35;
+      const laneTop = 90;
+      const bayesY = H - 95;
+      const profileY = H - 42;
+
+      // ── ENGINE NODE ──
+      roundRect(W/2 - 90, engineY - 16, 180, 32, 6, 'rgba(16,185,129,0.1)', 'rgba(16,185,129,0.35)');
+      ctx.fillStyle = '#10b981';
+      ctx.font = '700 9px "JetBrains Mono"';
+      ctx.textAlign = 'center';
+      ctx.fillText('ADAPTIVE CAT ENGINE', W/2, engineY);
+      ctx.font = '400 7px "JetBrains Mono"';
+      ctx.fillStyle = '#64748b';
+      ctx.fillText(`${sessionJourney.length} questions · Beta(1,1) priors`, W/2, engineY + 12);
+
+      // ── DOMAIN LANES ──
+      activeDomains.forEach((domain, i) => {
+        const cfg = DOMAIN_CFG[domain];
+        const cx = startX + i * laneW + laneW / 2;
+
+        // Faint lane background
+        ctx.fillStyle = cfg.color + '05';
+        ctx.fillRect(startX + i * laneW + 2, laneTop - 6, laneW - 4, bayesY - laneTop + 6);
+
+        // Domain header
+        roundRect(cx - laneW/2 + 4, laneTop - 4, laneW - 8, 30, 4, cfg.color + '15', cfg.color + '35');
+        ctx.fillStyle = cfg.color;
+        ctx.font = '600 7.5px "JetBrains Mono"';
+        ctx.textAlign = 'center';
+        ctx.fillText(cfg.short.toUpperCase(), cx, laneTop + 10);
+
+        // Domain score
+        const score = profile.axisScores?.[domain];
+        if (score !== undefined) {
+          ctx.fillStyle = cfg.color;
+          ctx.font = '700 10px "JetBrains Mono"';
+          ctx.fillText(Math.round(score), cx, laneTop + 24);
+        }
+
+        // Curve from engine to domain
+        drawCurve(W/2, engineY + 16, cx, laneTop - 4, cfg.color, 0.25);
+
+        // ── QUESTION NODES ──
+        const qs = domainQs[domain] || [];
+        const qStartY = laneTop + 40;
+        const qSpacing = qs.length > 0 ? Math.min(80, (bayesY - qStartY - 10) / Math.max(1, qs.length)) : 80;
+
+        qs.forEach((journey, qi) => {
+          const qy = qStartY + qi * qSpacing;
+
+          // Derive quality from posterior delta (no grade available client-side)
+          const posterior = journey.posteriorSnapshot?.[domain];
+          const prevPost = qi > 0 ? qs[qi - 1].posteriorSnapshot?.[domain] : null;
+          let delta = 0;
+          if (posterior && prevPost) {
+            delta = Math.round((posterior.mean - prevPost.mean) * 100);
+          } else if (posterior) {
+            delta = Math.round(posterior.mean * 100) - 50; // vs 50% baseline
+          }
+          const nodeColor = delta > 3 ? '#10b981' : delta < -3 ? '#ef4444' : '#f59e0b';
+
+          // Question box
+          roundRect(cx - laneW/2 + 6, qy, laneW - 12, 56, 4, 'rgba(0,0,0,0.35)', cfg.color + '25');
+
+          // Q number
+          ctx.fillStyle = '#64748b';
+          ctx.font = '500 6.5px "JetBrains Mono"';
+          ctx.textAlign = 'center';
+          ctx.fillText(`Q${journey.questionNumber}`, cx, qy + 11);
+
+          // Quality indicator (colored circle with delta arrow)
+          roundRect(cx - 11, qy + 16, 22, 16, 3, nodeColor + '20', nodeColor + '55');
+          ctx.fillStyle = nodeColor;
+          ctx.font = '700 9px "JetBrains Mono"';
+          ctx.fillText(delta > 0 ? '▲' : delta < 0 ? '▼' : '●', cx, qy + 28);
+
+          // Posterior
+          if (posterior) {
+            const pct = Math.round(posterior.mean * 100);
+            ctx.fillStyle = cfg.color + '90';
+            ctx.font = '400 7px "JetBrains Mono"';
+            ctx.fillText(`→${pct}%`, cx, qy + 45);
+
+            // Delta text
+            if (delta !== 0) {
+              ctx.fillStyle = delta > 0 ? '#10b981' : '#ef4444';
+              ctx.font = '600 6px "JetBrains Mono"';
+              ctx.fillText(`${delta > 0 ? '+' : ''}${delta}`, cx, qy + 53);
+            }
+          }
+
+          // Vertical connector
+          if (qi > 0) {
+            const prevY = qStartY + (qi - 1) * qSpacing + 56;
+            ctx.beginPath();
+            ctx.moveTo(cx, prevY);
+            ctx.lineTo(cx, qy);
+            ctx.strokeStyle = cfg.color + '18';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        });
+
+        // Curve from last question / domain header to Bayesian
+        const lastQy = qs.length > 0 ? qStartY + (qs.length - 1) * qSpacing + 56 : laneTop + 30;
+        drawCurve(cx, lastQy, W/2, bayesY, cfg.color, 0.15);
+      });
+
+      // ── BAYESIAN UPDATER NODE ──
+      roundRect(W/2 - 80, bayesY, 160, 26, 5, 'rgba(167,139,250,0.1)', 'rgba(167,139,250,0.35)');
+      ctx.fillStyle = '#a78bfa';
+      ctx.font = '600 8.5px "JetBrains Mono"';
+      ctx.textAlign = 'center';
+      ctx.fillText('BAYESIAN POSTERIOR UPDATE', W/2, bayesY + 15);
+
+      // ── PROFILE NODE ──
+      const fitScore = profile.parentFitPct ?? 0;
+      const sc = fitScore >= 70 ? '#10b981' : fitScore >= 45 ? '#f59e0b' : '#ef4444';
+      roundRect(W/2 - 70, profileY - 10, 140, 30, 6, sc + '12', sc + '45');
+      ctx.fillStyle = sc;
+      ctx.font = '700 11px "JetBrains Mono"';
+      ctx.fillText(`SCORE: ${Math.round(fitScore)}`, W/2, profileY + 7);
+      ctx.font = '400 6.5px "JetBrains Mono"';
+      ctx.fillStyle = '#64748b';
+      ctx.fillText('Parent Fit Index', W/2, profileY + 17);
+
+      // Connector
+      ctx.beginPath();
+      ctx.moveTo(W/2, bayesY + 26);
+      ctx.lineTo(W/2, profileY - 10);
+      ctx.strokeStyle = 'rgba(167,139,250,0.25)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // ── LEGEND ──
+      const legendEl = document.getElementById('tree-legend');
+      if (legendEl) {
+        legendEl.innerHTML = [
+          { symbol: '▲', color: '#10b981', label: 'Positive shift' },
+          { symbol: '●', color: '#f59e0b', label: 'Neutral' },
+          { symbol: '▼', color: '#ef4444', label: 'Negative shift' }
+        ].map(l => `<span style="font-size:0.55rem;font-family:'JetBrains Mono',monospace;color:${l.color};background:${l.color}15;padding:2px 8px;border-radius:3px;border:1px solid ${l.color}30">${l.symbol} ${l.label}</span>`).join('');
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // JOURNEY TIMELINE
+    // ═══════════════════════════════════════════════════════
+    function renderJourney(profile) {
+      const el = document.getElementById('journey-timeline');
+      if (!el) return;
+
+      if (sessionJourney.length === 0) {
+        el.innerHTML = '<p style="color:var(--muted);font-size:0.78rem;text-align:center;padding:20px">No journey data — complete an assessment to see the timeline.</p>';
+        return;
+      }
+
+      let h = '<div class="journey">';
+
+      // Start node
+      h += `<div class="journey-start" style="background:rgba(16,185,129,0.06);border-color:rgba(16,185,129,0.25);color:var(--green)">
+        <div class="journey-dot" style="border-color:var(--green);background:var(--green)"></div>
+        ▶ Assessment Started · ${sessionJourney.length} adaptive questions
+      </div>`;
+
+      // Question nodes
+      sessionJourney.forEach((j, idx) => {
+        const cfg = DOMAIN_CFG[j.question.domain] || {};
+
+        // Derive quality from posterior delta (grade not available client-side)
+        let mainDelta = 0;
+        const mainPost = j.posteriorSnapshot?.[j.question.domain];
+        const prevMainPost = idx > 0 ? sessionJourney[idx - 1].posteriorSnapshot?.[j.question.domain] : null;
+        if (mainPost && prevMainPost) {
+          mainDelta = Math.round((mainPost.mean - prevMainPost.mean) * 100);
+        } else if (mainPost) {
+          mainDelta = Math.round(mainPost.mean * 100) - 50;
+        }
+        const qualityColor = mainDelta > 3 ? '#10b981' : mainDelta < -3 ? '#ef4444' : '#f59e0b';
+        const qualitySymbol = mainDelta > 3 ? '▲' : mainDelta < -3 ? '▼' : '●';
+
+        // Calculate deltas from previous
+        let deltas = [];
+        if (j.posteriorSnapshot) {
+          const prev = idx > 0 ? sessionJourney[idx - 1].posteriorSnapshot : null;
+          for (const [domain, data] of Object.entries(j.posteriorSnapshot)) {
+            const prevMean = prev?.[domain]?.mean;
+            if (prevMean !== undefined) {
+              const delta = Math.round((data.mean - prevMean) * 100);
+              if (delta !== 0) {
+                const dCfg = DOMAIN_CFG[domain] || {};
+                deltas.push({ domain, delta, color: dCfg.color || '#63b3ed', label: dCfg.short || domain });
+              }
+            }
+          }
+        }
+
+        h += `<div class="journey-node">
+          <div class="journey-dot" style="border-color:${cfg.color || '#63b3ed'}"></div>
+          <div class="journey-q-num">
+            Q${j.questionNumber} · ${(cfg.short || j.question.domain || '').toUpperCase()}
+            <span style="color:${cfg.color};margin-left:6px">${cfg.icon || ''}</span>
+            ${j.responseTimeMs ? `<span style="margin-left:8px;opacity:0.5">${(j.responseTimeMs / 1000).toFixed(1)}s</span>` : ''}
+          </div>
+          <div class="journey-q-text">${j.question.text || ''}</div>
+          <div class="journey-answer">
+            <span class="journey-grade" style="background:${qualityColor}20;color:${qualityColor};border:1px solid ${qualityColor}40">${qualitySymbol} ${mainDelta > 0 ? '+' : ''}${mainDelta}%</span>
+            <span class="journey-answer-text">${j.answer.text || ''}</span>
+          </div>
+          ${deltas.length > 0 ? `<div class="journey-deltas">
+            ${deltas.map(d => `<span class="journey-delta" style="background:${d.delta > 0 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'};color:${d.delta > 0 ? '#10b981' : '#ef4444'}">${d.label} ${d.delta > 0 ? '+' : ''}${d.delta}%</span>`).join('')}
+          </div>` : ''}
+        </div>`;
+      });
+
+      // End node
+      const fitScore = profile.parentFitPct ?? 0;
+      const sc = fitScore >= 70 ? '#10b981' : fitScore >= 45 ? '#f59e0b' : '#ef4444';
+      h += `<div class="journey-end" style="background:${sc}08;border-color:${sc}30;color:${sc}">
+        <div class="journey-dot" style="border-color:${sc};background:${sc}"></div>
+        ✓ Profile Generated · Score: ${Math.round(fitScore)}
+      </div>`;
+
+      h += '</div>';
+      el.innerHTML = h;
+    }
+
+    // ── Reset Assessment ──────────────────────────────────────
+    window.resetAssessment = () => {
+      currentSession = null;
+      currentQuestion = null;
+      posteriors = {};
+      sessionJourney = [];
+      questionNumber = 0;
+      selectedGrade = null;
+      selectedIndex = null;
+      document.getElementById('panel-setup-session').classList.remove('hidden');
+      document.getElementById('panel-question').classList.add('hidden');
+      document.getElementById('panel-results').classList.add('hidden');
+      document.getElementById('panel-heatmap').style.display = 'none';
+    };
+
+    // ── Render History ────────────────────────────────────────
+    function renderHistory() {
+      const el = document.getElementById('session-history');
+      if (sessionHistory.length === 0) {
+        el.innerHTML = '<p style="color:var(--muted);font-size:0.78rem;text-align:center;padding:32px">No sessions yet.</p>';
+        return;
+      }
+      el.innerHTML = sessionHistory.map(s => `
+        <div style="padding:12px 16px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;transition:border-color 0.15s"
+             onmouseenter="this.style.borderColor='rgba(99,179,237,0.25)'" onmouseleave="this.style.borderColor=''">
+          <div>
+            <div style="font-size:0.78rem;font-weight:600;font-family:'JetBrains Mono',monospace;color:#fff">${s.sessionId.slice(0,12)}…</div>
+            <div style="font-size:0.65rem;color:var(--muted)">${new Date(s.startedAt).toLocaleString()}${s.childAge != null ? ' · Age ' + s.childAge : ''}</div>
+          </div>
+          <div>
+            <span style="font-size:0.58rem;padding:3px 10px;border-radius:3px;font-weight:600;font-family:'JetBrains Mono',monospace;letter-spacing:0.08em;
+              ${s.status === 'completed'
+                ? 'background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.25)'
+                : 'background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.25)'}">
+              ${s.status.toUpperCase()}
+            </span>
+          </div>
+        </div>
+      `).join('');
+    }
+  </script>
+</body>
+</html>

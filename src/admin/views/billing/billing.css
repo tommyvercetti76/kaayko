@@ -443,12 +443,18 @@
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .billing-header {
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
   }
-  
+
+  .plans-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
   .plans-grid {
     grid-template-columns: 1fr;
   }
