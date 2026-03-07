@@ -16,19 +16,19 @@ docs/learnings/
 
 ## Recommended file naming
 
-Use one markdown note per product update:
+Use one markdown note per guard update:
 
 ```text
-docs/learnings/<product>/<YYYY-MM-DD>-summary.md
+docs/learnings/<product>/<guard-slug>/<YYYY-MM-DD>-summary.md
 ```
 
-Each product directory should also maintain:
+Each guard should also maintain:
 
 ```text
-docs/learnings/<product>/latest.json
+docs/learnings/<product>/<guard-slug>/latest.json
 ```
 
-This file is the machine-readable handoff between product guards and the learnings aggregator.
+These files are the machine-readable and human-readable handoff between product guards and the learnings aggregator.
 
 ## Minimum note contents
 

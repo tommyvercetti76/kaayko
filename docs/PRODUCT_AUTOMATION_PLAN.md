@@ -17,8 +17,8 @@ Every automation must:
 Each automation should write both:
 
 ```text
-docs/learnings/<product>/<YYYY-MM-DD>-summary.md
-docs/learnings/<product>/latest.json
+docs/learnings/<product>/<guard-slug>/<YYYY-MM-DD>-summary.md
+docs/learnings/<product>/<guard-slug>/latest.json
 ```
 
 `latest.json` should contain at least:
@@ -41,7 +41,7 @@ This is how the guards "talk" to each other without being coupled to one impleme
 
 Every automation must also obey these operating rules:
 
-1. Only write inside its own learnings directory unless it is `Learnings of Kaayko`.
+1. Only write inside its own learnings subdirectory unless it is `Learnings of Kaayko`.
 2. Never overwrite another guard's markdown note for the same day. Create a new dated note instead.
 3. Only update its own `latest.json`.
 4. If a guard depends on another guard's output and the upstream output is stale or missing, it must report that condition instead of guessing.
@@ -57,13 +57,13 @@ To keep the portfolio active without collisions:
 - Automations are split across alternating day groups.
 - Group A runs on Monday, Wednesday, Friday, and Sunday.
 - Group B runs on Tuesday, Thursday, and Saturday.
-- `Learnings of Kaayko` runs after the product guards so it aggregates completed outputs instead of racing them.
+- `Learnings of Kaayko` runs on the alternate-day cadence too, but it must aggregate only the most recent completed outputs and never assume same-window freshness.
 
 Recommended day groups:
 
 - Group A: Kamera Research Guard, Kamera Evidence Guard, KORTEX Platform Guard, Paddling Out Reliability Guard
 - Group B: Kamera Catalog Sync Guard, KORTEX Research and Benchmark Guard, Commerce + Kreator Guard, Shared Frontend Craft Guard
-- Learnings of Kaayko: daily aggregation window after the other guards have had time to complete
+- Learnings of Kaayko: Group B, aggregating the newest completed outputs from all guards
 
 ## Recommended automation set
 
@@ -214,7 +214,7 @@ Expected outputs:
 
 Scope:
 
-- Read every product guard's markdown note and `latest.json`.
+- Read every product guard's markdown note and per-guard `latest.json`.
 - Produce per-product learnings plus a portfolio-level synthesis.
 - Track whether repeated findings are shrinking or compounding.
 - Recommend the next highest-leverage actions for each product.
