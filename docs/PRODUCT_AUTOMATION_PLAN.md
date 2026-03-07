@@ -1,27 +1,202 @@
 # Product Automation Plan
 
-This is the recommended automation split for Kaayko as of `main`. Each automation should treat backend and frontend as one paired surface, not as isolated repos.
+This is the revised automation architecture for Kaayko. The earlier one-guard-per-product model is too shallow for the current portfolio. The right model is a coordinated set of guards that share evidence, emit structured outputs, and feed a central learnings loop.
 
-## Product-by-product automations
+## Design rules
 
-| Automation | Repos / workspaces | Primary checks | Output |
-| --- | --- | --- | --- |
-| Store Guard | `kaayko-api`, `kaayko` | Product catalog fetch, image fetch, cart flow, payment-intent creation, admin order authz | Issue list, fixed regressions, deploy readiness note |
-| Paddling Out Guard | `kaayko-api`, `kaayko` | Spot list, spot detail, nearby water lookup, paddle score, fast forecast, forecast modal rendering | Reliability note, latency/regression summary |
-| KORTEX Guard | `kaayko-api`, `kaayko` | Auth, tenant context, link CRUD, stats, redirect, billing config, billing usage | Security findings, product health note |
-| Kreator Guard | `kaayko-api`, `kaayko` | Application flow, status flow, onboarding, login, dashboard, admin review; separately detect `/kreators/products` mismatch | Contract-drift report, prioritized fixes |
-| Kamera Quest Guard | `kaayko-api`, `kaayko` | Catalog scripts, camera API smoke tests, `/presets/meta`, classic and smart preset shapes for multiple skill levels, UI contract rendering | Accuracy and UX delta report |
-| Learnings of Kaayko | `kaayko-api`, `kaayko` | Summarize what changed, what remains weak, and what should be built next per product | Markdown learning notes under `docs/learnings/` |
+Every automation must:
 
-## Cross-product quality gates
+1. Treat backend and frontend as one paired product surface.
+2. Pull the latest `main` state in both repos before evaluating.
+3. Preserve current mechanisms unless there is a clear reason to refactor.
+4. Emit both a human-readable markdown note and a machine-readable summary.
+5. Hand its output to `Learnings of Kaayko`, which aggregates cross-product findings and next actions.
 
-Every product automation should, at minimum:
+## Shared artifact contract
 
-1. Pull the latest `main` state in both repos before evaluating.
-2. Run the product-specific backend checks that already exist.
-3. Validate the frontend entrypoints that consume those routes.
-4. Report security drift, test debt, and contract mismatches separately.
-5. Refuse to claim green status if the paired frontend and backend are out of sync.
+Each automation should write both:
+
+```text
+docs/learnings/<product>/<YYYY-MM-DD>-summary.md
+docs/learnings/<product>/latest.json
+```
+
+`latest.json` should contain at least:
+
+- `automation`
+- `timestamp`
+- `status`
+- `files_changed`
+- `backend_routes_checked`
+- `frontend_surfaces_checked`
+- `tests_run`
+- `security_findings`
+- `debt_findings`
+- `ux_findings`
+- `next_actions`
+
+This is how the guards "talk" to each other without being coupled to one implementation.
+
+## Recommended automation set
+
+| Automation | Purpose | Why it exists |
+| --- | --- | --- |
+| Kamera Research Guard | Research official camera and lens catalogs for major brands, 2016 onward | Coverage and accuracy for Kamera Quest cannot rely on ad hoc manual updates |
+| Kamera Catalog Sync Guard | Normalize validated camera/lens data and sync it into Firebase and source-controlled catalogs | Research is useless unless it becomes trustworthy product data |
+| Kamera Evidence Guard | Mature the recommendation engine using research-backed rules and output validation | The recommendation layer needs evidence, not only more records |
+| KORTEX Platform Guard | Test smart links, multi-tenancy, billing, authz, analytics, and redirect correctness | KORTEX is the highest-risk product for security and contract drift |
+| Commerce + Kreator Guard | Validate creator onboarding, product publishing, store exposure, checkout, and ops | Kreator and Store share the monetization funnel and must be maintained together |
+| Paddling Out Reliability Guard | Verify weather/location APIs, cache health, UI reliability, and performance | This product is data-heavy and operationally sensitive |
+| Shared Frontend Craft Guard | Improve design quality, reduce debt, and maximize reuse across shared frontend assets | Product guards should not silently diverge the frontend architecture |
+| Learnings of Kaayko | Aggregate all guard outputs into product-specific and portfolio-level learnings | Continuous improvement requires memory, not just repeated checks |
+
+## Detailed guard scopes
+
+## Kamera Research Guard
+
+Scope:
+
+- Cover major camera companies with 2016+ models only.
+- Research cameras, lenses, mounts, capabilities, and official product status.
+- Prioritize official manufacturer sources first, then reputable secondary sources only for gap analysis.
+- Maintain a verified list of supported brands, models, and lens families.
+
+Minimum brand set:
+
+- Canon
+- Sony
+- Nikon
+- Fujifilm
+- Panasonic Lumix
+- OM System / Olympus
+- Leica
+
+Expected outputs:
+
+- Coverage delta
+- New or retired models
+- Missing capability fields
+- Source provenance table
+
+## Kamera Catalog Sync Guard
+
+Scope:
+
+- Convert verified research into normalized camera and lens records.
+- Sync those records into source-controlled catalog files and Firebase collections.
+- Preserve provenance, verification tier, and update timestamps.
+- Refuse to promote unverified or contradictory records.
+
+Expected outputs:
+
+- Records added or updated
+- Firebase sync result
+- Validation failures
+- Schema drift warnings
+
+## Kamera Evidence Guard
+
+Scope:
+
+- Review academic papers, official technical references, and validated field notes.
+- Convert evidence into recommendation rules only when the evidence quality is explicit.
+- Re-run catalog audits, smoke tests, and representative preset samples across skill levels.
+- Track whether the engine is becoming more useful, more concise, and more truthful.
+
+Expected outputs:
+
+- Rules added, updated, or retired
+- Accuracy and confidence notes
+- Output-shape changes by skill level
+- Frontend rendering impacts
+
+## KORTEX Platform Guard
+
+Scope:
+
+- Exercise the full smart-link lifecycle: create, read, update, delete, redirect, analytics, QR, and billing surfaces.
+- Verify multi-tenant isolation, authn, authz, token handling, webhook safety, and public-vs-admin boundary correctness.
+- Research competitive parity against products like Branch and short-link SaaS platforms where helpful.
+- Maintain or generate performance and reliability dashboard artifacts for key operations.
+
+Minimum checks:
+
+- Tenant registration
+- Tenant-scoped admin access
+- Link CRUD
+- Redirect matrix
+- Event tracking
+- Billing config, usage, and downgrade flows
+- Unauthorized and cross-tenant access attempts
+
+Expected outputs:
+
+- Security findings
+- Tenant isolation findings
+- Performance metrics
+- Dashboard or scoreboard update
+
+## Commerce + Kreator Guard
+
+Scope:
+
+- Treat Kreator onboarding and Store monetization as one funnel.
+- Verify application, onboarding, login, profile, product publishing, product surfacing, cart flow, checkout, and order follow-through.
+- Reduce friction for new Kreators while preserving auth and approval controls.
+- Flag contract mismatches immediately, especially around `/kreators/products`.
+
+Expected outputs:
+
+- Funnel blockers
+- Onboarding friction notes
+- Contract mismatch notes
+- Store-to-Kreator integration health
+
+## Paddling Out Reliability Guard
+
+Scope:
+
+- Check spot browsing, spot details, nearby water, paddle score, cached forecast, and full forecast flows.
+- Monitor cache-health behavior, input normalization, and UI reliability.
+- Track latency and failure patterns, not only correctness.
+
+Expected outputs:
+
+- Reliability note
+- Latency changes
+- Cache health summary
+- UX regression summary
+
+## Shared Frontend Craft Guard
+
+Scope:
+
+- Own only shared frontend quality: design refinement, debt reduction, reuse improvements, and consistency across products.
+- Preserve live mechanisms and route behavior while removing duplication and shallow UI decisions.
+- Improve desktop and mobile UX quality without destabilizing product logic.
+
+Expected outputs:
+
+- Reuse opportunities
+- Debt reduction summary
+- Visual/UX delta summary
+- Paths that should migrate into shared utilities
+
+## Learnings of Kaayko
+
+Scope:
+
+- Read every product guard's markdown note and `latest.json`.
+- Produce per-product learnings plus a portfolio-level synthesis.
+- Track whether repeated findings are shrinking or compounding.
+- Recommend the next highest-leverage actions for each product.
+
+Expected outputs:
+
+- Product learnings notes
+- Portfolio summary
+- Recurring-problem scoreboard
+- Ranked next-action list
 
 ## Current debt that automation should watch explicitly
 
@@ -29,20 +204,5 @@ Every product automation should, at minimum:
 - Backend automated coverage on `main` is strongest for Kamera Quest and weak elsewhere.
 - Production API base URLs are hardcoded in many frontend files.
 - Kreator product-management pages depend on backend routes that are not mounted on `main`.
-- KORTEX docs in the frontend still reference some historical paths that are not mounted now.
-
-## Learnings note convention
-
-The `Learnings of Kaayko` automation should write product-specific notes under:
-
-```text
-docs/learnings/<product>/<YYYY-MM-DD>-summary.md
-```
-
-Each note should include:
-
-1. What changed
-2. What was validated
-3. What failed or remains weak
-4. Security or debt observations
-5. Recommended next moves
+- KORTEX frontend materials still reference some historical or unmounted paths.
+- Dashboarding for performance and product health is not standardized across the portfolio.
