@@ -300,6 +300,14 @@
     document.documentElement.classList.remove(HTML_CLASSES.home, HTML_CLASSES.shoot, HTML_CLASSES.result);
   }
 
+  function applyStandaloneShell(root) {
+    if (!root) return;
+    root.classList.add('kamera-route-root');
+    if (document.body) {
+      document.body.classList.add('kamera-route-body');
+    }
+  }
+
   function prepareRouteState(activeRoute) {
     const nextClass = activeRoute ? HTML_CLASSES[activeRoute] : null;
 
@@ -1523,8 +1531,8 @@
   }
 
   async function mountHome(root, token) {
-    const page = root.querySelector(SELECTORS.homePage);
-    if (!page) return false;
+    const page = root.querySelector(SELECTORS.homePage) || root;
+    applyStandaloneShell(root);
 
     document.documentElement.classList.add(HTML_CLASSES.home);
     const container = upsertContainer(page, IDS.home, 'section');
@@ -1552,8 +1560,8 @@
   }
 
   async function mountShoot(root, token) {
-    const inner = root.querySelector(SELECTORS.shootInner);
-    if (!inner) return false;
+    const inner = root.querySelector(SELECTORS.shootInner) || root;
+    applyStandaloneShell(root);
 
     document.documentElement.classList.add(HTML_CLASSES.shoot);
     const container = upsertContainer(inner, IDS.shoot, 'section');
@@ -1572,8 +1580,8 @@
   }
 
   async function mountResult(root, token) {
-    const inner = root.querySelector(SELECTORS.resultInner);
-    if (!inner) return false;
+    const inner = root.querySelector(SELECTORS.resultInner) || root;
+    applyStandaloneShell(root);
 
     document.documentElement.classList.add(HTML_CLASSES.result);
     const container = upsertContainer(inner, IDS.result, 'section');
