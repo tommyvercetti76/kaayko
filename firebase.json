@@ -46,6 +46,7 @@
       { "source": "/l/**", "function": "api" },
       { "source": "/resolve", "function": "api" },
       { "source": "/health", "function": "api" },
+      { "source": "/karma/kameras/**", "destination": "/karma/kameras/index.html" },
       { "source": "/karma/schools/somalwar", "run": { "serviceId": "cool-schools", "region": "us-central1" } },
       { "source": "/karma/schools/somalwar/**", "run": { "serviceId": "cool-schools", "region": "us-central1" } },
       { "source": "**", "destination": "/index.html" }
