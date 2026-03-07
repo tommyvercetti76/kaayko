@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Kamera Quest – Instant camera settings for every shooting scenario." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <title>Kamera Quest</title>
+    <script>
+      (function () {
+        const LIVE_API_BASE = 'https://api-vwcc5j4qda-uc.a.run.app';
+        const LEGACY_API_BASE = 'https://us-central1-kaaykostore.cloudfunctions.net/api';
+        const PRESET_STORAGE_KEY = 'kameraQuest:lastClassicPreset';
+        const BUILDER_KEY = 'kameraQuest:builderState';
+        const SCENE_KEY = 'kameraQuest:sceneState';
+
+        window.__KAMERA_QUEST_API_BASE__ = LIVE_API_BASE;
+
+        function safeParse(value) {
+          try {
+            return JSON.parse(value);
+          } catch (error) {
+            return null;
+          }
+        }
+
+        function normalizePath(value) {
+          return String(value || '').replace(/\/+$/, '') || '/';
+        }
+
+        function hydrateRouteState() {
+          const path = normalizePath(window.location.pathname);
+          const currentState = window.history.state || {};
+          if (currentState.usr) return;
+
+          const builder = safeParse(sessionStorage.getItem(BUILDER_KEY));
+          const scene = safeParse(sessionStorage.getItem(SCENE_KEY));
+          const storedPreset = safeParse(sessionStorage.getItem(PRESET_STORAGE_KEY));
+          let usr = null;
+
+          if (path === '/karma/kameras/shoot' && builder && builder.brand && builder.cameraModel && builder.lensName) {
+            usr = {
+              brand: builder.brand,
+              camera: { modelName: builder.cameraModel },
+              lens: { lensName: builder.lensName },
+              mode: builder.mode || 'enthusiast',
+            };
+          }
+
+          if (path === '/karma/kameras/result' && storedPreset && storedPreset.response && storedPreset.response.preset) {
+            usr = {
+              preset: storedPreset.response.preset,
+              gear: {
+                brand: storedPreset.request && storedPreset.request.brand ? storedPreset.request.brand : (builder && builder.brand ? builder.brand : ''),
+                camera: storedPreset.request && storedPreset.request.cameraModel ? { modelName: storedPreset.request.cameraModel } : (builder && builder.cameraModel ? { modelName: builder.cameraModel } : null),
+                lens: storedPreset.request && storedPreset.request.lensName ? { lensName: storedPreset.request.lensName } : (builder && builder.lensName ? { lensName: builder.lensName } : null),
+                mode: storedPreset.request && storedPreset.request.mode ? storedPreset.request.mode : (builder && builder.mode ? builder.mode : 'enthusiast'),
+              },
+              genre: storedPreset.request && storedPreset.request.genre ? storedPreset.request.genre : (scene && scene.genre ? scene.genre : ''),
+              condition: storedPreset.request && storedPreset.request.condition ? storedPreset.request.condition : (scene && scene.condition ? scene.condition : ''),
+            };
+          }
+
+          if (!usr) return;
+
+          window.history.replaceState(Object.assign({}, currentState, {
+            usr,
+            key: currentState.key || `kamera-${Date.now()}`,
+            idx: typeof currentState.idx === 'number' ? currentState.idx : 0,
+          }), '', window.location.href);
+        }
+
+        hydrateRouteState();
+
+        const originalFetch = window.fetch ? window.fetch.bind(window) : null;
+        if (!originalFetch) return;
+
+        function rewriteUrl(url) {
+          return typeof url === 'string' && url.startsWith(LEGACY_API_BASE)
+            ? `${LIVE_API_BASE}${url.slice(LEGACY_API_BASE.length)}`
+            : url;
+        }
+
+        function stashClassicPreset(url, init, response) {
+          if (typeof url !== 'string' || !url.includes('/presets/classic')) return;
+          if (!response || !response.ok || typeof response.clone !== 'function') return;
+
+          const requestBody = init && typeof init.body === 'string'
+            ? init.body
+            : null;
+
+          response.clone().json().then((payload) => {
+            if (!payload || !payload.preset) return;
+
+            try {
+              sessionStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify({
+                requestedAt: new Date().toISOString(),
+                request: requestBody ? JSON.parse(requestBody) : null,
+                response: payload,
+              }));
+            } catch (error) {
+              return;
+            }
+
+            window.dispatchEvent(new CustomEvent('kameraquest:preset-updated', {
+              detail: payload,
+            }));
+          }).catch(() => {});
+        }
+
+        window.fetch = function patchedFetch(input, init) {
+          const originalUrl = typeof input === 'string'
+            ? input
+            : (input && typeof input.url === 'string' ? input.url : String(input));
+          const rewrittenUrl = rewriteUrl(originalUrl);
+
+          let nextInput = input;
+          if (rewrittenUrl !== originalUrl) {
+            if (typeof input === 'string') {
+              nextInput = rewrittenUrl;
+            } else if (input instanceof Request) {
+              nextInput = new Request(rewrittenUrl, input);
+            }
+          }
+
+          return originalFetch(nextInput, init).then((response) => {
+            stashClassicPreset(rewrittenUrl, init, response);
+            return response;
+          });
+        };
+      })();
+    </script>
+    <script type="module" crossorigin src="/karma/kameras/assets/index-BOFkrFIH.js"></script>
+    <link rel="stylesheet" crossorigin href="/karma/kameras/assets/index-BxN9PnLM.css">
+    <link rel="stylesheet" crossorigin href="/karma/kameras/assets/kamera-enhancer.css?v=20260307-4">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script defer src="/karma/kameras/assets/kamera-enhancer.js?v=20260307-4"></script>
+  </body>
+</html>
