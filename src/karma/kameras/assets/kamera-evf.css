@@ -1,0 +1,1281 @@
+/* =========================================================
+   KAMERA QUEST — EVF (Electronic Viewfinder) UI
+   Full-bleed camera viewfinder experience
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:ital,wght@0,300;0,400;1,300;1,400&display=swap');
+
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: #060608;
+}
+
+body.evf-active {
+  margin: 0;
+  font-family: 'Barlow', sans-serif;
+  color: rgba(245,242,234,0.9);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── Root container ── */
+#root.evf-root {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* ── Background canvas ── */
+#evf-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+}
+
+/* ── CRT scanlines ── */
+.evf-scanlines {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba(0,0,0,0.07) 2px,
+    rgba(0,0,0,0.07) 3px
+  );
+}
+
+/* ── Vignette ── */
+.evf-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.88) 100%);
+}
+
+/* ── Corner brackets ── */
+.evf-corners {
+  position: absolute;
+  inset: 18px;
+  z-index: 3;
+  pointer-events: none;
+}
+.evf-corner {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-color: rgba(255,255,255,0.28);
+  border-style: solid;
+}
+.evf-corner--tl { top: 0; left: 0; border-width: 1px 0 0 1px; }
+.evf-corner--tr { top: 0; right: 0; border-width: 1px 1px 0 0; }
+.evf-corner--bl { bottom: 0; left: 0; border-width: 0 0 1px 1px; }
+.evf-corner--br { bottom: 0; right: 0; border-width: 0 1px 1px 0; }
+
+/* ── AF Reticle ── */
+.evf-reticle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -55%);
+  z-index: 3;
+  pointer-events: none;
+  width: 76px;
+  height: 58px;
+}
+.evf-reticle__frame {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(255,255,255,0.55);
+}
+/* No internal lines — clean AF rectangle, not a grid */
+.evf-reticle__h, .evf-reticle__v { display: none; }
+
+/* ── HUD overlay ── */
+.evf-hud {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+
+/* ── HUD top row ── */
+.evf-hud-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  /* right padding clears the floating gear pill */
+  /* HUD top — normal padding, no pill to clear in corner */
+  padding: 18px 22px 0 22px;
+  pointer-events: none;
+}
+
+.evf-hud-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.evf-hud-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.evf-rec-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #3dba6f;
+  animation: evf-rec 2.4s infinite;
+  flex-shrink: 0;
+}
+@keyframes evf-rec {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.18; }
+}
+
+.evf-hud-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(245,242,234,0.55);
+  text-shadow: 0 0 8px rgba(0,0,0,1);
+}
+
+.evf-hud-lens {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  color: rgba(255,255,255,0.22);
+  text-shadow: 0 0 8px rgba(0,0,0,1);
+  padding-left: 14px;
+}
+
+.evf-hud-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.evf-hud-scene {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.38);
+  text-shadow: 0 0 8px rgba(0,0,0,1);
+}
+
+.evf-hud-mode {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: rgba(240,168,40,0.9);
+  text-shadow: 0 0 8px rgba(0,0,0,1);
+}
+
+/* ── HUD spacer / action zone ── */
+.evf-hud-mid {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* ── Centered action bar ── */
+.evf-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: auto;
+  /* subtle frosted backing so bar reads against any canvas colour */
+  background: rgba(0,0,0,0.28);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 4px;
+  padding: 10px 14px;
+}
+.evf-action-arrow {
+  color: rgba(255,255,255,0.2);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 20px;
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* ── HUD bottom block ── */
+.evf-hud-bottom {
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+}
+
+/* ── Implication bar ── */
+.evf-implication {
+  padding: 0 22px 10px;
+  background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 100%);
+  font-family: 'Barlow', sans-serif;
+  font-style: italic;
+  font-size: 11.5px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.5);
+  text-shadow: 0 0 8px rgba(0,0,0,1);
+  line-height: 1.5;
+  min-height: 36px;
+  display: flex;
+  align-items: flex-end;
+}
+.evf-implication b {
+  color: rgba(240,168,40,0.88);
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* ── Tape-dial strip ── */
+.evf-tape-strip {
+  height: 56px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  background: rgba(0,0,0,0.45);
+  border-top: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  overflow: hidden;
+  position: relative;
+}
+
+.evf-dial-zone {
+  position: relative;
+  overflow: hidden;
+  cursor: ew-resize;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+}
+.evf-dial-zone + .evf-dial-zone {
+  border-left: 1px solid rgba(255,255,255,0.07);
+}
+.evf-dial-zone.is-active {
+  background: rgba(240,168,40,0.04);
+}
+
+/* Needle */
+.evf-dial-needle {
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: rgba(240,168,40,0.9);
+  box-shadow: 0 0 6px rgba(240,168,40,0.55);
+  z-index: 2;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+/* Edge fade */
+.evf-dial-fade {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(0,0,0,0.88) 0%,
+    transparent 28%,
+    transparent 72%,
+    rgba(0,0,0,0.88) 100%
+  );
+}
+
+/* Tape inner ── scrollable */
+.evf-dial-tape {
+  position: absolute;
+  top: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  will-change: transform;
+  /* js sets transform: translateX */
+}
+
+.evf-dial-stop {
+  width: 38px;
+  height: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 7px;
+  flex-shrink: 0;
+}
+
+.evf-dial-tick {
+  height: 8px;
+  width: 1px;
+  background: rgba(255,255,255,0.18);
+  margin-bottom: 3px;
+}
+.evf-dial-stop--major .evf-dial-tick {
+  height: 16px;
+  background: rgba(255,255,255,0.28);
+}
+.evf-dial-stop--active .evf-dial-tick {
+  height: 26px;
+  width: 2px;
+  background: rgba(240,168,40,0.9);
+  box-shadow: 0 0 5px rgba(240,168,40,0.6);
+}
+
+.evf-dial-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  color: rgba(255,255,255,0.22);
+  line-height: 1;
+  white-space: nowrap;
+}
+.evf-dial-stop--active .evf-dial-label {
+  font-size: 9px;
+  color: rgba(240,168,40,0.9);
+}
+
+/* ── Readout strip ── */
+.evf-readout-strip {
+  height: 82px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  background: rgba(0,0,0,0.82);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.evf-readout-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 6px 4px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s ease;
+  position: relative;
+  border-right: 1px solid rgba(255,255,255,0.04);
+}
+.evf-readout-cell:last-child { border-right: none; }
+
+.evf-readout-cell.is-active {
+  background: rgba(240,168,40,0.055);
+}
+.evf-readout-cell.is-active::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(240,168,40,0.7), transparent);
+}
+
+.evf-readout-head {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.28);
+  line-height: 1;
+}
+
+.evf-readout-value {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 24px;
+  line-height: 1;
+  color: rgba(245,242,234,0.9);
+  text-shadow: 0 0 8px rgba(0,0,0,1);
+}
+.evf-readout-value--amber { color: rgba(240,168,40,0.92); }
+.evf-readout-value--green { color: rgba(80,210,130,0.9); }
+.evf-readout-value--warn  { color: rgba(255,72,72,0.9); }
+
+.evf-readout-sub {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 9px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.28);
+  text-align: center;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+}
+
+/* EV meter (5th cell) */
+.evf-ev-meter {
+  width: 68px;
+  height: 4px;
+  position: relative;
+  background: rgba(255,255,255,0.07);
+  border-radius: 0;
+  overflow: visible;
+}
+.evf-ev-center {
+  position: absolute;
+  top: -3px; bottom: -3px;
+  left: 50%;
+  width: 1px;
+  background: rgba(255,255,255,0.4);
+  transform: translateX(-50%);
+}
+.evf-ev-fill {
+  position: absolute;
+  top: 0; height: 100%;
+  background: rgba(240,168,40,0.8);
+  transition: left 0.2s ease, width 0.2s ease;
+  border-radius: 0;
+}
+
+/* ── Action buttons ── */
+.evf-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 16px;
+  height: 40px;
+  background: rgba(0,0,0,0.42);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 3px;
+  color: rgba(255,255,255,0.68);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.18s, color 0.18s, background 0.18s, box-shadow 0.18s;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+.evf-pill:hover {
+  border-color: rgba(255,255,255,0.26);
+  color: rgba(255,255,255,0.95);
+  background: rgba(0,0,0,0.6);
+}
+.evf-pill.lit {
+  border-color: rgba(240,168,40,0.65);
+  color: rgba(240,168,40,0.95);
+}
+.evf-pill.go {
+  background: rgba(240,168,40,0.14);
+  border-color: rgba(240,168,40,0.45);
+  color: rgba(240,168,40,0.88);
+  font-size: 12.5px;
+}
+.evf-pill.go:hover {
+  background: rgba(240,168,40,0.24);
+  border-color: rgba(240,168,40,0.75);
+  color: rgba(240,168,40,1);
+  box-shadow: 0 0 28px rgba(240,168,40,0.22);
+}
+.evf-pill.go:disabled,
+.evf-pill[disabled] {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* Pills live inside evf-action-bar — no absolute positioning needed */
+.evf-pill--gear  {}
+.evf-pill--scene {}
+.evf-pill--gen   {}
+
+.evf-pill-icon {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+/* ── Overlays ── */
+.evf-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.evf-overlay-backdrop.open {
+  pointer-events: auto;
+  opacity: 1;
+}
+
+/* Dimming behind overlay */
+.evf-overlay-dim {
+  flex: 1;
+  cursor: pointer;
+  background: rgba(0,0,0,0);
+  transition: background 0.25s ease;
+}
+.evf-overlay-backdrop.open .evf-overlay-dim {
+  background: rgba(0,0,0,0.45);
+}
+
+/* Scene overlay — slides up from bottom */
+.evf-scene-panel {
+  background: rgba(5,5,7,0.96);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border-top: 1px solid rgba(255,255,255,0.065);
+  border-radius: 0;
+  max-height: 72vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transform: translateY(100%);
+  transition: transform 0.28s cubic-bezier(0.32,0,0.15,1);
+  padding: 18px 18px calc(env(safe-area-inset-bottom, 0px) + 18px);
+}
+.evf-overlay-backdrop.open .evf-scene-panel {
+  transform: translateY(0);
+}
+
+/* Gear overlay — slides from right */
+.evf-gear-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.evf-gear-backdrop.open {
+  pointer-events: auto;
+  opacity: 1;
+}
+.evf-gear-dim {
+  flex: 1;
+  cursor: pointer;
+  background: rgba(0,0,0,0);
+  transition: background 0.25s ease;
+}
+.evf-gear-backdrop.open .evf-gear-dim { background: rgba(0,0,0,0.5); }
+
+.evf-gear-panel {
+  width: 318px;
+  max-width: 90vw;
+  background: rgba(5,5,7,0.96);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-left: 1px solid rgba(255,255,255,0.065);
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.32,0,0.15,1);
+  padding: 18px 16px calc(env(safe-area-inset-bottom, 0px) + 18px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.evf-gear-backdrop.open .evf-gear-panel {
+  transform: translateX(0);
+}
+
+/* Brief overlay — slides up from bottom */
+.evf-brief-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.evf-brief-backdrop.open {
+  pointer-events: auto;
+  opacity: 1;
+}
+.evf-brief-dim {
+  flex: 1;
+  cursor: pointer;
+  background: rgba(0,0,0,0);
+  transition: background 0.25s ease;
+}
+.evf-brief-backdrop.open .evf-brief-dim { background: rgba(0,0,0,0.5); }
+
+.evf-brief-panel {
+  background: rgba(5,5,7,0.97);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border-top: 2px solid rgba(240,168,40,0.75);
+  max-height: 74vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transform: translateY(100%);
+  transition: transform 0.28s cubic-bezier(0.32,0,0.15,1);
+  padding: 20px 18px calc(env(safe-area-inset-bottom, 0px) + 20px);
+}
+.evf-brief-backdrop.open .evf-brief-panel {
+  transform: translateY(0);
+}
+
+/* ── Overlay section labels ── */
+.evf-ov-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.evf-ov-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+}
+.evf-ov-close {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 0;
+}
+.evf-ov-close:hover { color: rgba(255,255,255,0.6); }
+
+/* ── Genre chip grid ── */
+.evf-genre-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+.evf-genre-chip {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 2px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.evf-genre-chip:hover {
+  border-color: rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.85);
+}
+.evf-genre-chip.is-active {
+  border-color: rgba(240,168,40,0.65);
+  color: rgba(240,168,40,0.9);
+  background: rgba(240,168,40,0.06);
+}
+
+/* ── Condition chips ── */
+.evf-condition-section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.evf-condition-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(255,255,255,0.25);
+  margin-bottom: 8px;
+}
+.evf-condition-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.evf-condition-chip {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  color: rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.055);
+  border-radius: 2px;
+  padding: 5px 9px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.evf-condition-chip:hover {
+  border-color: rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.8);
+}
+.evf-condition-chip.is-active {
+  border-color: rgba(255,255,255,0.32);
+  color: rgba(255,255,255,0.75);
+  background: rgba(255,255,255,0.05);
+}
+
+/* ── Gear overlay internals ── */
+.evf-brand-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.evf-brand-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.evf-brand-tile:hover {
+  border-color: rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.04);
+}
+.evf-brand-tile.is-active {
+  border-color: rgba(240,168,40,0.55);
+  background: rgba(240,168,40,0.045);
+}
+.evf-brand-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(245,242,234,0.88);
+}
+.evf-brand-mount {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7.5px;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.evf-gear-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.evf-gear-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+}
+.evf-gear-select {
+  width: 100%;
+  height: 38px;
+  padding: 0 36px 0 10px;
+  background: rgba(255,255,255,0.025) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,0.3)'/%3E%3C/svg%3E") no-repeat right 12px center;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 2px;
+  color: rgba(245,242,234,0.8);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.evf-gear-select:focus {
+  outline: none;
+  border-color: rgba(240,168,40,0.5);
+  background-color: rgba(240,168,40,0.03);
+}
+.evf-gear-select:disabled { opacity: 0.35; cursor: not-allowed; }
+.evf-gear-select option { background: #0a0b0e; }
+.evf-gear-spec {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8.5px;
+  color: rgba(255,255,255,0.2);
+  line-height: 1.5;
+  min-height: 1.5em;
+}
+
+/* Skill level */
+.evf-skill-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+.evf-skill-btn {
+  height: 30px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 2px;
+  color: rgba(255,255,255,0.45);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.evf-skill-btn:hover {
+  border-color: rgba(255,255,255,0.16);
+  color: rgba(255,255,255,0.7);
+}
+.evf-skill-btn.is-active {
+  border-color: rgba(240,168,40,0.55);
+  color: rgba(240,168,40,0.88);
+  background: rgba(240,168,40,0.07);
+}
+
+/* Gear confirm */
+.evf-gear-confirm {
+  width: 100%;
+  height: 40px;
+  background: rgba(240,168,40,0.12);
+  border: 1px solid rgba(240,168,40,0.35);
+  border-radius: 2px;
+  color: rgba(240,168,40,0.88);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, box-shadow 0.18s;
+  margin-top: 4px;
+  -webkit-tap-highlight-color: transparent;
+}
+.evf-gear-confirm:hover {
+  background: rgba(240,168,40,0.22);
+  border-color: rgba(240,168,40,0.6);
+  box-shadow: 0 0 18px rgba(240,168,40,0.14);
+}
+.evf-gear-confirm:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ── Brief panel ── */
+.evf-brief-grid {
+  display: grid;
+  grid-template-columns: 200px 1fr 244px;
+  gap: 20px;
+  min-height: 0;
+}
+
+.evf-brief-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.evf-brief-setting-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.evf-brief-setting-row:last-of-type { border-bottom: none; }
+.evf-brief-setting-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.2);
+}
+.evf-brief-setting-value {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 30px;
+  line-height: 1;
+  color: rgba(245,242,234,0.88);
+}
+.evf-brief-setting-value--ap { color: rgba(240,168,40,0.92); }
+
+.evf-confidence-bar-wrap {
+  margin-top: 8px;
+}
+.evf-confidence-bar-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.22);
+  margin-bottom: 4px;
+}
+.evf-confidence-track {
+  height: 2px;
+  background: rgba(255,255,255,0.06);
+  position: relative;
+  overflow: hidden;
+}
+.evf-confidence-fill {
+  height: 100%;
+  background: rgba(240,168,40,0.82);
+  width: 0%;
+  transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Brief center column */
+.evf-brief-main { display: flex; flex-direction: column; gap: 12px; }
+.evf-brief-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  color: rgba(245,242,234,0.92);
+  line-height: 1.1;
+}
+.evf-brief-subtitle {
+  font-family: 'Barlow', sans-serif;
+  font-style: italic;
+  font-size: 12px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.55);
+}
+.evf-brief-coach {
+  font-family: 'Barlow', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.65;
+}
+.evf-brief-steps { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.evf-brief-step {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.evf-brief-step-num {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8.5px;
+  color: rgba(240,168,40,0.75);
+  flex-shrink: 0;
+  padding-top: 1px;
+  letter-spacing: 0.06em;
+}
+.evf-brief-step-text {
+  font-family: 'Barlow', sans-serif;
+  font-size: 11px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.36);
+  line-height: 1.55;
+}
+
+/* Brief technical column */
+.evf-brief-tech { display: flex; flex-direction: column; gap: 10px; }
+.evf-brief-tech-block {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.evf-brief-tech-block:last-child { border-bottom: none; }
+.evf-brief-tech-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.2);
+  margin-bottom: 3px;
+}
+.evf-brief-tech-text {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.6;
+}
+
+/* Watch for risks */
+.evf-brief-risks { display: flex; flex-direction: column; gap: 6px; margin-top: 2px; }
+.evf-brief-risk {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.evf-risk-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(255,72,72,0.8);
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+.evf-risk-text {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8.5px;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.55;
+}
+
+/* ── Loading & error states ── */
+.evf-state-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: #060608;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.evf-state-screen.visible { opacity: 1; pointer-events: auto; }
+
+.evf-state-icon {
+  font-size: 28px;
+  opacity: 0.4;
+}
+.evf-state-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+}
+.evf-state-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  color: rgba(255,255,255,0.22);
+  text-align: center;
+  max-width: 260px;
+  line-height: 1.6;
+}
+.evf-state-spinner {
+  width: 20px; height: 20px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-top-color: rgba(240,168,40,0.6);
+  border-radius: 50%;
+  animation: evf-spin 0.9s linear infinite;
+}
+@keyframes evf-spin { to { transform: rotate(360deg); } }
+
+.evf-state-retry {
+  margin-top: 4px;
+  height: 34px;
+  padding: 0 14px;
+  background: rgba(240,168,40,0.12);
+  border: 1px solid rgba(240,168,40,0.35);
+  border-radius: 2px;
+  color: rgba(240,168,40,0.88);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.evf-state-retry:hover { background: rgba(240,168,40,0.22); }
+
+/* ── Inline error toast ── */
+.evf-toast {
+  position: fixed;
+  bottom: 140px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  z-index: 40;
+  background: rgba(255,72,72,0.12);
+  border: 1px solid rgba(255,72,72,0.35);
+  border-radius: 2px;
+  padding: 8px 14px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  color: rgba(255,150,150,0.9);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+}
+.evf-toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ── Generating overlay ── */
+.evf-generating {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(6,6,8,0.88);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.evf-generating.visible { opacity: 1; pointer-events: auto; }
+.evf-generating-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(240,168,40,0.6);
+}
+
+/* ── Onboarding instruction (centre of EVF) ── */
+.evf-instruction {
+  position: absolute;
+  left: 50%;
+  /* Instruction moves to 38% so it sits above the action bar */
+  top: 38%;
+  transform: translateX(-50%);
+  z-index: 6;
+  pointer-events: none;
+  text-align: center;
+  transition: opacity 0.45s ease;
+  white-space: nowrap;
+}
+.evf-instruction-text {
+  display: inline-block;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.32);
+  text-shadow: 0 0 14px rgba(0,0,0,1);
+  background: rgba(0,0,0,0.38);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 7px 16px;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 2px;
+}
+.evf-instruction-text b {
+  color: rgba(240,168,40,0.8);
+  font-weight: 700;
+}
+
+/* ─────────────────────────────────────────────
+   MOBILE — RESPONSIVE ADJUSTMENTS
+   ───────────────────────────────────────────── */
+
+/* Tablets and smaller desktops */
+@media (max-width: 900px) {
+  .evf-brief-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+  }
+  .evf-brief-settings { grid-column: 1; }
+  .evf-brief-main    { grid-column: 2; }
+  .evf-brief-tech    { grid-column: 1 / -1; }
+}
+
+/* Mobile portrait */
+@media (max-width: 600px) {
+  .evf-hud-top { padding: 12px 14px 0; }
+  .evf-action-bar { gap: 6px; padding: 8px 10px; }
+  .evf-pill { height: 34px; font-size: 10px; padding: 0 11px; }
+  .evf-pill.go { font-size: 11px; }
+
+  .evf-hud-title { font-size: 10px; }
+  .evf-hud-scene { font-size: 9px; }
+  .evf-hud-mode  { font-size: 9px; }
+
+  .evf-implication { font-size: 10.5px; padding: 0 14px 8px; }
+
+  .evf-readout-value { font-size: 19px; }
+  .evf-readout-head  { font-size: 8px; letter-spacing: 0.16em; }
+  .evf-readout-sub   { font-size: 8px; }
+  .evf-readout-cell  { padding: 5px 3px; }
+
+  .evf-tape-strip { height: 46px; }
+  .evf-dial-stop  { width: 30px; height: 46px; }
+
+  .evf-readout-strip { height: 72px; }
+  .evf-ev-meter { width: 52px; }
+
+  .evf-corners { inset: 12px; }
+  .evf-corner { width: 16px; height: 16px; }
+
+  .evf-reticle { width: 60px; height: 46px; }
+
+  /* Brief: single column on mobile */
+  .evf-brief-grid {
+    grid-template-columns: 1fr;
+  }
+  .evf-brief-settings, .evf-brief-main, .evf-brief-tech {
+    grid-column: 1;
+  }
+  .evf-brief-setting-value { font-size: 22px; }
+  .evf-brief-title { font-size: 16px; }
+
+  /* Scene panel full height on mobile */
+  .evf-scene-panel { max-height: 80vh; padding: 14px 14px calc(env(safe-area-inset-bottom, 0px) + 14px); }
+  .evf-gear-panel  { width: 100%; max-width: 100%; border-left: none; border-top: 1px solid rgba(255,255,255,0.065); }
+
+  .evf-gear-backdrop {
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  .evf-gear-dim { flex: 1; }
+  .evf-gear-panel {
+    transform: translateY(100%);
+    transition: transform 0.28s cubic-bezier(0.32,0,0.15,1);
+    max-height: 80vh;
+    height: auto;
+    overflow-y: auto;
+  }
+  .evf-gear-backdrop.open .evf-gear-panel { transform: translateY(0); }
+}
+
+/* Very small phones */
+@media (max-width: 380px) {
+  .evf-readout-value { font-size: 13px; }
+  .evf-readout-strip { grid-template-columns: repeat(5, 1fr); }
+  .evf-dial-stop { width: 26px; }
+  .evf-brief-setting-value { font-size: 18px; }
+  .evf-skill-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Landscape orientation on phones */
+@media (max-height: 500px) and (orientation: landscape) {
+  .evf-hud-top { padding: 8px 14px 0 14px; }
+  .evf-implication { font-size: 10px; min-height: 28px; padding-bottom: 6px; }
+  .evf-tape-strip { height: 40px; }
+  .evf-readout-strip { height: 60px; }
+  .evf-readout-value { font-size: 16px; }
+  .evf-action-bar { gap: 5px; padding: 7px 8px; }
+  .evf-pill { height: 30px; font-size: 9.5px; padding: 0 9px; }
+  .evf-pill.go { font-size: 10px; }
+  .evf-brief-panel { max-height: 88vh; }
+  .evf-scene-panel { max-height: 88vh; }
+}
+
+/* Safe area bottom (iPhone notch / home bar) */
+.evf-readout-strip {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.evf-hud-bottom {
+  padding-bottom: 0;
+}

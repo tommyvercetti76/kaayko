@@ -28,12 +28,14 @@
     <meta name="twitter:title" content="Kamera Quest | Camera Settings and Lens Guidance by Kaayko" />
     <meta name="twitter:description" content="Find scene-aware camera settings, lens guidance, and photography session playbooks for modern cameras." />
     <meta name="twitter:image" content="https://kaayko.com/assets/kamera-quest-og.svg" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:ital,wght@0,300;0,400;1,300;1,400&display=swap"
       rel="stylesheet"
     />
+
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -62,176 +64,29 @@
         ]
       }
     </script>
+
     <script>
       (function () {
-        const META_BY_ROUTE = {
-          home: {
-            title: 'Kamera Quest | Camera Settings and Lens Guidance by Kaayko',
-            description: 'Kamera Quest by Kaayko helps photographers choose camera settings, lens pairings, and scene-aware shooting guidance for Canon, Sony, Nikon, Fujifilm, Panasonic Lumix, OM System, and Leica bodies from 2016 onward.',
-            url: 'https://kaayko.com/karma/kameras',
-          },
-          shoot: {
-            title: 'Kamera Quest Shoot Planner | Scene-Aware Camera Settings by Kaayko',
-            description: 'Build a scene-aware photography setup with camera, lens, genre, and condition guidance before you shoot.',
-            url: 'https://kaayko.com/karma/kameras/shoot',
-          },
-          result: {
-            title: 'Kamera Quest Recommended Camera Settings | Session Playbook by Kaayko',
-            description: 'Review recommended camera settings, exposure guidance, and a structured photography session playbook for your selected setup.',
-            url: 'https://kaayko.com/karma/kameras/result',
-          },
-        };
-
-        const LIVE_API_BASE = 'https://api-vwcc5j4qda-uc.a.run.app';
+        const LIVE_API_BASE   = 'https://api-vwcc5j4qda-uc.a.run.app';
         const LEGACY_API_BASE = 'https://us-central1-kaaykostore.cloudfunctions.net/api';
-        const PRESET_STORAGE_KEY = 'kameraQuest:lastClassicPreset';
-        const BUILDER_KEY = 'kameraQuest:builderState';
-        const SCENE_KEY = 'kameraQuest:sceneState';
-
         window.__KAMERA_QUEST_API_BASE__ = LIVE_API_BASE;
-
-        function safeParse(value) {
-          try {
-            return JSON.parse(value);
-          } catch (error) {
-            return null;
+        // Transparently rewrite legacy API calls to the live endpoint
+        var _fetch = window.fetch ? window.fetch.bind(window) : null;
+        if (!_fetch) return;
+        window.fetch = function(input, init) {
+          if (typeof input === 'string' && input.startsWith(LEGACY_API_BASE)) {
+            input = LIVE_API_BASE + input.slice(LEGACY_API_BASE.length);
+          } else if (input instanceof Request && input.url.startsWith(LEGACY_API_BASE)) {
+            input = new Request(LIVE_API_BASE + input.url.slice(LEGACY_API_BASE.length), input);
           }
-        }
-
-        function normalizePath(value) {
-          return String(value || '').replace(/\/+$/, '') || '/';
-        }
-
-        function setMeta(selector, value, attributeName) {
-          const node = document.querySelector(selector);
-          if (!node) return;
-          node.setAttribute(attributeName || 'content', value);
-        }
-
-        function setRouteMeta(path) {
-          const route = path === '/karma/kameras/shoot'
-            ? META_BY_ROUTE.shoot
-            : path === '/karma/kameras/result'
-              ? META_BY_ROUTE.result
-              : META_BY_ROUTE.home;
-
-          document.title = route.title;
-          setMeta('meta[name="description"]', route.description);
-          setMeta('meta[property="og:title"]', route.title);
-          setMeta('meta[property="og:description"]', route.description);
-          setMeta('meta[property="og:url"]', route.url);
-          setMeta('meta[name="twitter:title"]', route.title);
-          setMeta('meta[name="twitter:description"]', route.description);
-          setMeta('link[rel="canonical"]', route.url, 'href');
-        }
-
-        function hydrateRouteState() {
-          const path = normalizePath(window.location.pathname);
-          setRouteMeta(path);
-          const currentState = window.history.state || {};
-          if (currentState.usr) return;
-
-          const builder = safeParse(sessionStorage.getItem(BUILDER_KEY));
-          const scene = safeParse(sessionStorage.getItem(SCENE_KEY));
-          const storedPreset = safeParse(sessionStorage.getItem(PRESET_STORAGE_KEY));
-          let usr = null;
-
-          if (path === '/karma/kameras/shoot' && builder && builder.brand && builder.cameraModel && builder.lensName) {
-            usr = {
-              brand: builder.brand,
-              camera: { modelName: builder.cameraModel },
-              lens: { lensName: builder.lensName },
-              mode: builder.mode || 'enthusiast',
-            };
-          }
-
-          if (path === '/karma/kameras/result' && storedPreset && storedPreset.response && storedPreset.response.preset) {
-            usr = {
-              preset: storedPreset.response.preset,
-              gear: {
-                brand: storedPreset.request && storedPreset.request.brand ? storedPreset.request.brand : (builder && builder.brand ? builder.brand : ''),
-                camera: storedPreset.request && storedPreset.request.cameraModel ? { modelName: storedPreset.request.cameraModel } : (builder && builder.cameraModel ? { modelName: builder.cameraModel } : null),
-                lens: storedPreset.request && storedPreset.request.lensName ? { lensName: storedPreset.request.lensName } : (builder && builder.lensName ? { lensName: builder.lensName } : null),
-                mode: storedPreset.request && storedPreset.request.mode ? storedPreset.request.mode : (builder && builder.mode ? builder.mode : 'enthusiast'),
-              },
-              genre: storedPreset.request && storedPreset.request.genre ? storedPreset.request.genre : (scene && scene.genre ? scene.genre : ''),
-              condition: storedPreset.request && storedPreset.request.condition ? storedPreset.request.condition : (scene && scene.condition ? scene.condition : ''),
-            };
-          }
-
-          if (!usr) return;
-
-          window.history.replaceState(Object.assign({}, currentState, {
-            usr,
-            key: currentState.key || `kamera-${Date.now()}`,
-            idx: typeof currentState.idx === 'number' ? currentState.idx : 0,
-          }), '', window.location.href);
-        }
-
-        hydrateRouteState();
-
-        const originalFetch = window.fetch ? window.fetch.bind(window) : null;
-        if (!originalFetch) return;
-
-        function rewriteUrl(url) {
-          return typeof url === 'string' && url.startsWith(LEGACY_API_BASE)
-            ? `${LIVE_API_BASE}${url.slice(LEGACY_API_BASE.length)}`
-            : url;
-        }
-
-        function stashClassicPreset(url, init, response) {
-          if (typeof url !== 'string' || !url.includes('/presets/classic')) return;
-          if (!response || !response.ok || typeof response.clone !== 'function') return;
-
-          const requestBody = init && typeof init.body === 'string'
-            ? init.body
-            : null;
-
-          response.clone().json().then((payload) => {
-            if (!payload || !payload.preset) return;
-
-            try {
-              sessionStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify({
-                requestedAt: new Date().toISOString(),
-                request: requestBody ? JSON.parse(requestBody) : null,
-                response: payload,
-              }));
-            } catch (error) {
-              return;
-            }
-
-            window.dispatchEvent(new CustomEvent('kameraquest:preset-updated', {
-              detail: payload,
-            }));
-          }).catch(() => {});
-        }
-
-        window.fetch = function patchedFetch(input, init) {
-          const originalUrl = typeof input === 'string'
-            ? input
-            : (input && typeof input.url === 'string' ? input.url : String(input));
-          const rewrittenUrl = rewriteUrl(originalUrl);
-
-          let nextInput = input;
-          if (rewrittenUrl !== originalUrl) {
-            if (typeof input === 'string') {
-              nextInput = rewrittenUrl;
-            } else if (input instanceof Request) {
-              nextInput = new Request(rewrittenUrl, input);
-            }
-          }
-
-          return originalFetch(nextInput, init).then((response) => {
-            stashClassicPreset(rewrittenUrl, init, response);
-            return response;
-          });
+          return _fetch(input, init);
         };
       })();
     </script>
-    <link rel="stylesheet" crossorigin href="/karma/kameras/assets/kamera-enhancer.css?v=20260307-4">
+    <link rel="stylesheet" href="/karma/kameras/assets/kamera-evf.css?v=20260308-2">
   </head>
   <body>
     <div id="root"></div>
-    <script defer src="/karma/kameras/assets/kamera-enhancer.js?v=20260307-4"></script>
+    <script src="/karma/kameras/assets/kamera-evf.js?v=20260308-2"></script>
   </body>
 </html>
