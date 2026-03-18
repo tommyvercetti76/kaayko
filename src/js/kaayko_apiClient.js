@@ -27,7 +27,9 @@ export async function getAllProducts() {
   if (!res.ok) {
     throw new Error(`getAllProducts failed: ${res.status} ${res.statusText}`);
   }
-  return res.json();
+  const data = await res.json();
+  // API returns { success: true, products: [...] }
+  return Array.isArray(data) ? data : (data.products ?? data);
 }
 
 /**
@@ -50,7 +52,9 @@ export async function getProductByID(productId) {
   if (!res.ok) {
     throw new Error(`getProductByID failed: ${res.status} ${res.statusText}`);
   }
-  return res.json();
+  const data = await res.json();
+  // API returns { success: true, product: {...} }
+  return data.product ?? data;
 }
 
 /**
