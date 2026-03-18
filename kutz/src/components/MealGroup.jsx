@@ -1,9 +1,35 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronRight, Sparkles, Trash2, Pencil, Plus } from 'lucide-react';
 import { MEAL_COLORS, COLORS } from '../lib/constants';
 
+const STORAGE_KEY = 'kutz_meal_open';
+
+function getStoredOpen() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+  catch { return {}; }
+}
+function setStoredOpen(meal, value) {
+  try {
+    const all = getStoredOpen();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...all, [meal]: value }));
+  } catch {}
+}
+
+/** Source badge shown next to food name */
+function SourceBadge({ source }) {
+  if (source === 'voice')   return <Sparkles size={11} style={{ color: COLORS.green, flexShrink: 0 }} />;
+  if (source === 'barcode') return (
+    <span className="text-xs px-1 rounded" style={{ background: COLORS.purple + '22', color: COLORS.purple, fontSize: 9 }}>
+      scan
+    </span>
+  );
+  return null;
+}
+
 export default function MealGroup({ meal, foods, onDelete, onEdit, onAddClick, locked }) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(() => getStoredOpen()[meal] ?? true);
+
+  useEffect(() => { setStoredOpen(meal, open); }, [meal, open]);
 
   const mealFoods = foods.filter(f => f.meal === meal);
   const subtotal  = mealFoods.reduce((s, f) => s + (Number(f.calories) || 0), 0);
@@ -50,30 +76,21 @@ export default function MealGroup({ meal, foods, onDelete, onEdit, onAddClick, l
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      {food.source === 'voice' && (
-                        <Sparkles size={11} style={{ color: COLORS.green, flexShrink: 0 }} />
-                      )}
-                      {food.source === 'barcode' && (
-                        <span className="text-xs px-1 rounded" style={{ background: COLORS.purple + '22', color: COLORS.purple, fontSize: 9 }}>
-                          scan
-                        </span>
-                      )}
+                      <SourceBadge source={food.source} />
                       <span className="text-sm truncate" style={{ color: COLORS.textPrimary }}>
                         {food.name}
                       </span>
                     </div>
-                    <div className="flex gap-2 mt-0.5 text-xs tabular" style={{ color: COLORS.textSecondary }}>
+                    <div className="flex flex-wrap gap-x-2 gap-y-0 mt-0.5 text-xs tabular" style={{ color: COLORS.textSecondary }}>
                       <span>{food.quantity}</span>
-                      <span>·</span>
-                      <span style={{ color: COLORS.amber }}>{food.calories} kcal</span>
-                      <span>·</span>
-                      <span style={{ color: COLORS.green }}>{food.protein}g</span>
-                      <span>·</span>
-                      <span style={{ color: COLORS.blue }}>{food.fiber}g</span>
+                      <span style={{ color: COLORS.amber }}>{food.calories}kcal</span>
+                      <span style={{ color: COLORS.green }}>{food.protein}P</span>
+                      {food.carbs  > 0 && <span style={{ color: COLORS.blue   }}>{food.carbs}C</span>}
+                      {food.fat    > 0 && <span style={{ color: COLORS.orange }}>{food.fat}F</span>}
+                      {food.fiber  > 0 && <span style={{ color: COLORS.purple }}>{food.fiber}fb</span>}
                     </div>
                   </div>
 
-                  {/* Edit + Delete (hidden for auto entries and locked days) */}
                   {!locked && !food.auto && (
                     <div className="flex items-center gap-0.5 ml-2 flex-shrink-0">
                       <button

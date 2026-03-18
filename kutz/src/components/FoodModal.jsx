@@ -3,12 +3,9 @@ import { X, Loader2 } from 'lucide-react';
 import { MEALS, MEAL_COLORS, COLORS } from '../lib/constants';
 
 /**
- * Add or Edit food modal.
- *
+ * Add or Edit food modal — includes carbs + fat fields.
  * Add mode  (no `food` prop):  calls onAdd(foodData) then closes.
  * Edit mode (`food` prop set): calls onUpdate(foodId, foodData) then closes.
- *
- * Awaits the callback before closing so errors surface via the parent toast.
  */
 export default function FoodModal({ defaultMeal = 'snacks', food = null, onAdd, onUpdate, onClose }) {
   const isEdit = Boolean(food);
@@ -18,6 +15,8 @@ export default function FoodModal({ defaultMeal = 'snacks', food = null, onAdd, 
     quantity: food?.quantity ?? '1 serving',
     calories: food?.calories != null ? String(food.calories) : '',
     protein:  food?.protein  != null ? String(food.protein)  : '',
+    carbs:    food?.carbs    != null ? String(food.carbs)    : '',
+    fat:      food?.fat      != null ? String(food.fat)      : '',
     fiber:    food?.fiber    != null ? String(food.fiber)    : '',
     meal:     food?.meal     ?? defaultMeal,
   });
@@ -37,10 +36,11 @@ export default function FoodModal({ defaultMeal = 'snacks', food = null, onAdd, 
         quantity: form.quantity || '1 serving',
         calories: Math.round(Number(form.calories) || 0),
         protein:  Math.round(Number(form.protein)  || 0),
-        fiber:    Math.round(Number(form.fiber)    || 0),
+        carbs:    Math.round(Number(form.carbs)     || 0),
+        fat:      Math.round(Number(form.fat)       || 0),
+        fiber:    Math.round(Number(form.fiber)     || 0),
         meal:     form.meal,
       };
-
       if (isEdit) {
         await onUpdate(food.id, payload);
       } else {
@@ -48,12 +48,19 @@ export default function FoodModal({ defaultMeal = 'snacks', food = null, onAdd, 
       }
       onClose();
     } catch {
-      // Error shown via parent toast — keep modal open so user doesn't lose data
       setSaving(false);
     }
   }
 
   const canSubmit = form.name.trim() && form.calories && !saving;
+
+  const macroFields = [
+    { key: 'calories', label: 'Calories *', color: COLORS.amber,  placeholder: '300' },
+    { key: 'protein',  label: 'Protein g',  color: COLORS.green,  placeholder: '20'  },
+    { key: 'carbs',    label: 'Carbs g',    color: COLORS.blue,   placeholder: '40'  },
+    { key: 'fat',      label: 'Fat g',      color: COLORS.orange, placeholder: '10'  },
+    { key: 'fiber',    label: 'Fiber g',    color: COLORS.purple, placeholder: '3'   },
+  ];
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: 'rgba(0,0,0,0.7)' }}>
@@ -87,21 +94,27 @@ export default function FoodModal({ defaultMeal = 'snacks', food = null, onAdd, 
             style={{ background: '#020617', border: '1px solid #1e293b', color: '#e2e8f0' }}
           />
 
-          {/* Macro inputs */}
+          {/* Macro inputs — 3 + 2 layout */}
           <div className="flex gap-2">
-            {[
-              { key: 'calories', label: 'Calories *', color: COLORS.amber, placeholder: 'e.g. 300' },
-              { key: 'protein',  label: 'Protein (g)', color: COLORS.green, placeholder: 'e.g. 20'  },
-              { key: 'fiber',    label: 'Fiber (g)',   color: COLORS.blue,  placeholder: 'e.g. 3'   },
-            ].map(({ key, label, color, placeholder }) => (
+            {macroFields.slice(0, 3).map(({ key, label, color, placeholder }) => (
               <div key={key} className="flex-1">
                 <label className="text-xs block mb-1" style={{ color }}>{label}</label>
                 <input
-                  type="number"
-                  inputMode="numeric"
-                  placeholder={placeholder}
-                  value={form[key]}
-                  onChange={e => set(key, e.target.value)}
+                  type="number" inputMode="numeric" placeholder={placeholder}
+                  value={form[key]} onChange={e => set(key, e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none tabular"
+                  style={{ background: '#020617', border: '1px solid #1e293b', color }}
+                />
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            {macroFields.slice(3).map(({ key, label, color, placeholder }) => (
+              <div key={key} className="flex-1">
+                <label className="text-xs block mb-1" style={{ color }}>{label}</label>
+                <input
+                  type="number" inputMode="numeric" placeholder={placeholder}
+                  value={form[key]} onChange={e => set(key, e.target.value)}
                   className="w-full px-3 py-2.5 rounded-xl text-sm outline-none tabular"
                   style={{ background: '#020617', border: '1px solid #1e293b', color }}
                 />
@@ -113,9 +126,7 @@ export default function FoodModal({ defaultMeal = 'snacks', food = null, onAdd, 
           <div className="flex gap-2 flex-wrap">
             {MEALS.map(m => (
               <button
-                key={m}
-                type="button"
-                onClick={() => set('meal', m)}
+                key={m} type="button" onClick={() => set('meal', m)}
                 className="px-3 py-1.5 rounded-full text-xs font-medium"
                 style={{
                   background: form.meal === m ? MEAL_COLORS[m] + '33' : '#020617',
@@ -129,8 +140,7 @@ export default function FoodModal({ defaultMeal = 'snacks', food = null, onAdd, 
           </div>
 
           <button
-            type="submit"
-            disabled={!canSubmit}
+            type="submit" disabled={!canSubmit}
             className="w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2"
             style={{ background: '#34d399', color: '#020617', opacity: canSubmit ? 1 : 0.4 }}
           >

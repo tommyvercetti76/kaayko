@@ -1,22 +1,32 @@
 /**
  * KaleKutz calculation utilities
- * All formulas from SKILL.md — do not modify without testing.
  */
 
 /**
- * Mifflin-St Jeor BMR for female
+ * Mifflin-St Jeor BMR
  * @param {number} weight kg
  * @param {number} height cm
- * @param {number} age years
+ * @param {number} age    years
+ * @param {'female'|'male'} gender
  */
-export function calcBMR(weight, height, age) {
+export function calcBMR(weight, height, age, gender = 'female') {
   if (!weight || !height || !age) return null;
-  return Math.round(10 * weight + 6.25 * height - 5 * age - 161);
+  const base = 10 * weight + 6.25 * height - 5 * age;
+  return Math.round(gender === 'male' ? base + 5 : base - 161);
+}
+
+/**
+ * TDEE = BMR x activity multiplier
+ * @param {number|null} bmr
+ * @param {number} activityFactor  e.g. 1.375
+ */
+export function calcTDEE(bmr, activityFactor = 1.2) {
+  if (!bmr) return null;
+  return Math.round(bmr * activityFactor);
 }
 
 /**
  * Calories burned from steps (rough estimate)
- * @param {number} steps
  */
 export function stepBurn(steps) {
   return Math.round((steps / 10000) * 400);
@@ -24,8 +34,6 @@ export function stepBurn(steps) {
 
 /**
  * Corrected Fitbit calories with step-based factor
- * @param {number} fitbitCalories
- * @param {number} steps
  */
 export function correctedFitbit(fitbitCalories, steps) {
   if (!fitbitCalories) return null;
@@ -37,49 +45,43 @@ export function correctedFitbit(fitbitCalories, steps) {
 
 /**
  * Total estimated burn for the day
- * @param {{ bmr: number, steps: number, fitbitCalories: number|null }} day
  */
 export function totalBurn(day) {
   const { bmr = 1450, steps = 0, fitbitCalories } = day;
-  if (fitbitCalories) {
-    return correctedFitbit(fitbitCalories, steps);
-  }
+  if (fitbitCalories) return correctedFitbit(fitbitCalories, steps);
   return (bmr || 1450) + stepBurn(steps);
 }
 
 /**
- * Aggregate totals from a foods array
- * @param {Array} foods
+ * Aggregate totals from a foods array (includes carbs + fat)
  */
 export function computeTotals(foods = []) {
   return foods.reduce(
     (acc, f) => ({
       calories: acc.calories + (Number(f.calories) || 0),
-      protein: acc.protein + (Number(f.protein) || 0),
-      fiber: acc.fiber + (Number(f.fiber) || 0),
+      protein:  acc.protein  + (Number(f.protein)  || 0),
+      carbs:    acc.carbs    + (Number(f.carbs)     || 0),
+      fat:      acc.fat      + (Number(f.fat)       || 0),
+      fiber:    acc.fiber    + (Number(f.fiber)     || 0),
     }),
-    { calories: 0, protein: 0, fiber: 0 }
+    { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }
   );
 }
 
 /**
- * 7-day rolling average calories from an array of day objects (newest first)
- * @param {Array<{ calories: number }>} days
+ * 7-day rolling average calories (input array oldest-first)
  */
 export function rollingAvg7(days) {
-  const result = [];
-  for (let i = 0; i < days.length; i++) {
+  return days.map((d, i) => {
     const slice = days.slice(Math.max(0, i - 6), i + 1);
-    const avg = slice.reduce((s, d) => s + d.calories, 0) / slice.length;
-    result.push({ ...days[i], rollingAvg: Math.round(avg) });
-  }
-  return result;
+    const avg   = slice.reduce((s, x) => s + x.calories, 0) / slice.length;
+    return { ...d, rollingAvg: Math.round(avg) };
+  });
 }
 
 /**
  * Cumulative deficit over days (oldest first)
  * deficit = burn - intake (positive = deficit)
- * @param {Array<{ calories: number, burn: number }>} days
  */
 export function cumulativeDeficit(days) {
   let cum = 0;

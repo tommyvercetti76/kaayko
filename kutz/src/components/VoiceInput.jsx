@@ -1,9 +1,10 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Mic, MicOff, Loader2, Send, X, Sparkles, ScanBarcode } from 'lucide-react';
 import { useVoice } from '../hooks/useVoice';
 import { parseFoods } from '../lib/claude';
 import { lookupBarcode } from '../lib/openFoodFacts';
 import { COLORS, MEAL_COLORS } from '../lib/constants';
+import { useProfile } from '../context/ProfileContext';
 import BarcodeScanner from './BarcodeScanner';
 
 /**
@@ -16,6 +17,7 @@ import BarcodeScanner from './BarcodeScanner';
  *  4. Preview cards show up → tap × to remove items → "Add All"
  */
 export default function VoiceInput({ onAdd, disabled }) {
+  const { dietType } = useProfile();
   const [text, setText] = useState('');
   const [parsing, setParsing] = useState(false);
   const [preview, setPreview] = useState(null);
@@ -23,6 +25,22 @@ export default function VoiceInput({ onAdd, disabled }) {
   const [showScanner, setShowScanner] = useState(false);
   const [barcodeLoading, setBarcodeLoading] = useState(false);
   const autoParseTimer = useRef(null);
+
+  // Listen for suggestion pre-fill from SuggestPanel
+  useEffect(() => {
+    function onSuggest(e) {
+      const suggestion = e.detail;
+      if (!suggestion) return;
+      setText(suggestion);
+      setError('');
+      setPreview(null);
+      clearTimeout(autoParseTimer.current);
+      // Scroll into view and auto-parse after a moment
+      autoParseTimer.current = setTimeout(() => doParse(suggestion), 600);
+    }
+    window.addEventListener('kutz:suggest', onSuggest);
+    return () => window.removeEventListener('kutz:suggest', onSuggest);
+  }, []);
 
   // When speech recognition finishes, put the result in the text field
   // and auto-parse after a short delay (user can still edit/cancel)
@@ -52,7 +70,7 @@ export default function VoiceInput({ onAdd, disabled }) {
     setError('');
     setPreview(null);
     try {
-      const { foods } = await parseFoods(trimmed);
+      const { foods } = await parseFoods(trimmed, dietType);
       setPreview(foods);
     } catch (e) {
       setError(e.message || 'Parse failed. Try again.');
@@ -258,7 +276,9 @@ export default function VoiceInput({ onAdd, disabled }) {
                   <span>{item.quantity}</span>
                   <span style={{ color: COLORS.amber }}>{item.calories} kcal</span>
                   <span style={{ color: COLORS.green }}>{item.protein}g prot</span>
-                  <span style={{ color: COLORS.blue }}>{item.fiber}g fiber</span>
+                  {item.carbs > 0 && <span style={{ color: COLORS.blue }}>{item.carbs}g carbs</span>}
+                  {item.fat   > 0 && <span style={{ color: COLORS.orange }}>{item.fat}g fat</span>}
+                  {item.fiber > 0 && <span style={{ color: '#a78bfa' }}>{item.fiber}g fiber</span>}
                 </div>
                 <span
                   className="inline-block mt-1.5 text-xs px-2 py-0.5 rounded-full"

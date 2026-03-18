@@ -2,18 +2,14 @@ import Ring from './ui/Ring';
 import { COLORS } from '../lib/constants';
 import { useProfile } from '../context/ProfileContext';
 
-/**
- * Daily dashboard — center ring shows remaining calories, three smaller rings for eaten, protein, fiber.
- * Uses dynamic targets from ProfileContext so user changes in Settings reflect immediately.
- */
 export default function Cockpit({ totals }) {
   const { targets } = useProfile();
-  const { calories = 0, protein = 0, fiber = 0 } = totals;
+  const { calories = 0, protein = 0, carbs = 0, fat = 0, fiber = 0 } = totals;
   const remaining = targets.calories - calories;
-  const isOver = remaining < 0;
+  const isOver    = remaining < 0;
 
   return (
-    <div className="flex flex-col items-center gap-6 py-6">
+    <div className="flex flex-col items-center gap-4 py-6">
       {/* Center ring — remaining calories */}
       <Ring
         value={Math.abs(remaining)}
@@ -33,33 +29,39 @@ export default function Cockpit({ totals }) {
         </span>
       </Ring>
 
-      {/* Three smaller rings */}
+      {/* Three macro rings */}
       <div className="flex gap-8 justify-center">
         <Ring value={calories} max={targets.calories} size={80} strokeWidth={7} color={COLORS.amber} label="eaten">
-          <span className="tabular font-semibold text-sm" style={{ color: COLORS.textPrimary }}>
-            {calories}
-          </span>
-          <span className="text-xs" style={{ color: COLORS.textSecondary }}>
-            kcal
-          </span>
+          <span className="tabular font-semibold text-sm" style={{ color: COLORS.textPrimary }}>{calories}</span>
+          <span className="text-xs" style={{ color: COLORS.textSecondary }}>kcal</span>
         </Ring>
 
         <Ring value={protein} max={targets.protein} size={80} strokeWidth={7} color={COLORS.green} label="protein">
-          <span className="tabular font-semibold text-sm" style={{ color: COLORS.textPrimary }}>
-            {protein}g
-          </span>
+          <span className="tabular font-semibold text-sm" style={{ color: COLORS.textPrimary }}>{protein}g</span>
         </Ring>
 
-        <Ring value={fiber} max={targets.fiber} size={80} strokeWidth={7} color={COLORS.blue} label="fiber">
-          <span className="tabular font-semibold text-sm" style={{ color: COLORS.textPrimary }}>
-            {fiber}g
-          </span>
+        <Ring value={fiber} max={targets.fiber} size={80} strokeWidth={7} color={COLORS.purple} label="fiber">
+          <span className="tabular font-semibold text-sm" style={{ color: COLORS.textPrimary }}>{fiber}g</span>
         </Ring>
+      </div>
+
+      {/* Carbs + Fat compact row */}
+      <div className="flex items-center gap-4 text-xs tabular">
+        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg" style={{ background: '#0a0f1a', border: '1px solid #1e293b' }}>
+          <span style={{ color: COLORS.textMuted }}>Carbs</span>
+          <span style={{ color: COLORS.blue }}>{carbs}g</span>
+          <span style={{ color: COLORS.textMuted }}>/ {targets.carbs}g</span>
+        </div>
+        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg" style={{ background: '#0a0f1a', border: '1px solid #1e293b' }}>
+          <span style={{ color: COLORS.textMuted }}>Fat</span>
+          <span style={{ color: COLORS.orange }}>{fat}g</span>
+          <span style={{ color: COLORS.textMuted }}>/ {targets.fat}g</span>
+        </div>
       </div>
 
       {/* Target hint */}
       <div className="flex gap-4 text-xs" style={{ color: COLORS.textMuted }}>
-        <span>{targets.calories} kcal target</span>
+        <span>{targets.calories} kcal</span>
         <span>·</span>
         <span>{targets.protein}g protein</span>
         <span>·</span>

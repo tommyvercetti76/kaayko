@@ -1,13 +1,11 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { getProfile, saveProfile } from '../lib/firestore';
-import { TARGETS as DEFAULT_TARGETS } from '../lib/constants';
+import { TARGETS as DEFAULT_TARGETS, DIET_TYPES } from '../lib/constants';
+
+const DEFAULT_DIET = DIET_TYPES[0].value; // 'lacto-ovo-vegetarian'
 
 const ProfileContext = createContext(null);
 
-/**
- * Wraps the authenticated app. Loads profile once, exposes dynamic targets app-wide.
- * Components call useProfile() instead of importing TARGETS from constants.
- */
 export function ProfileProvider({ uid, children }) {
   const [profile, setProfile] = useState(null);
 
@@ -18,10 +16,11 @@ export function ProfileProvider({ uid, children }) {
 
   useEffect(load, [load]);
 
-  // Merge saved targets with defaults (so missing keys fall back gracefully)
   const targets = {
     calories: profile?.targets?.calories ?? DEFAULT_TARGETS.calories,
     protein:  profile?.targets?.protein  ?? DEFAULT_TARGETS.protein,
+    carbs:    profile?.targets?.carbs    ?? DEFAULT_TARGETS.carbs,
+    fat:      profile?.targets?.fat      ?? DEFAULT_TARGETS.fat,
     fiber:    profile?.targets?.fiber    ?? DEFAULT_TARGETS.fiber,
   };
 
@@ -31,8 +30,10 @@ export function ProfileProvider({ uid, children }) {
     return bmr;
   }
 
+  const dietType = profile?.dietType ?? DEFAULT_DIET;
+
   return (
-    <ProfileContext.Provider value={{ profile, targets, updateProfile }}>
+    <ProfileContext.Provider value={{ profile, targets, dietType, updateProfile }}>
       {children}
     </ProfileContext.Provider>
   );
@@ -40,6 +41,5 @@ export function ProfileProvider({ uid, children }) {
 
 export function useProfile() {
   const ctx = useContext(ProfileContext);
-  // Safety-net for components accidentally rendered outside provider
-  return ctx ?? { profile: null, targets: DEFAULT_TARGETS, updateProfile: async () => {} };
+  return ctx ?? { profile: null, targets: DEFAULT_TARGETS, dietType: DEFAULT_DIET, updateProfile: async () => {} };
 }

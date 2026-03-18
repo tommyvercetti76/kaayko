@@ -1,11 +1,14 @@
+import { useState, useEffect } from 'react';
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ReferenceLine, ResponsiveContainer, BarChart, Bar, Cell,
 } from 'recharts';
 import { useAllDays } from '../hooks/useAllDays';
 import { rollingAvg7, cumulativeDeficit, totalBurn } from '../lib/calculations';
 import { COLORS } from '../lib/constants';
 import { useProfile } from '../context/ProfileContext';
+import { getWeightHistory } from '../lib/firestore';
+import { auth } from '../lib/firebase';
 import { Loader2 } from 'lucide-react';
 
 function fmt(dateStr) {
@@ -16,7 +19,14 @@ function fmt(dateStr) {
 
 export default function TrendsView({ uid }) {
   const { days, loading } = useAllDays(uid, 30);
-  const { targets } = useProfile();
+  const { targets }       = useProfile();
+  const [weightData, setWeightData] = useState([]);
+
+  useEffect(() => {
+    const u = auth.currentUser?.uid;
+    if (!u) return;
+    getWeightHistory(u, 30).then(setWeightData);
+  }, []);
 
   if (loading) return (
     <div className="flex justify-center py-16">
@@ -28,14 +38,11 @@ export default function TrendsView({ uid }) {
   );
 
   const withRolling = rollingAvg7(days.map(d => ({ ...d, calories: Math.round(d.calories || 0) })));
-
-  const withDeficit = cumulativeDeficit(
-    days.map(d => ({
-      ...d,
-      calories: Math.round(d.calories || 0),
-      burn:     totalBurn(d),
-    }))
-  );
+  const withDeficit = cumulativeDeficit(days.map(d => ({
+    ...d,
+    calories: Math.round(d.calories || 0),
+    burn:     totalBurn(d),
+  })));
 
   const totalCumDeficit = withDeficit[withDeficit.length - 1]?.cumDeficit || 0;
   const totalLbs        = withDeficit[withDeficit.length - 1]?.lbs        || 0;
@@ -82,6 +89,25 @@ export default function TrendsView({ uid }) {
           </AreaChart>
         </ResponsiveContainer>
       </div>
+
+      {/* Weight chart (only if data exists) */}
+      {weightData.length > 1 && (
+        <div>
+          <p className="text-xs mb-3" style={{ color: COLORS.textMuted }}>Body weight (kg)</p>
+          <ResponsiveContainer width="100%" height={160}>
+            <LineChart data={weightData.map(w => ({ date: fmt(w.date), weight: w.weight }))} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+              <XAxis dataKey="date" tick={{ fill: COLORS.textMuted, fontSize: 10 }} />
+              <YAxis
+                tick={{ fill: COLORS.textMuted, fontSize: 10 }}
+                domain={['auto', 'auto']}
+              />
+              <Tooltip contentStyle={{ background: '#0a0f1a', border: '1px solid #1e293b', borderRadius: 12, fontSize: 11 }} />
+              <Line dataKey="weight" name="Weight" stroke={COLORS.pink} strokeWidth={2} dot={{ fill: COLORS.pink, r: 3 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
 
       {/* Cumulative deficit */}
       <div>

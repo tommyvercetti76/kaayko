@@ -1,28 +1,24 @@
 import { useState, useEffect } from 'react';
-import { RotateCcw } from 'lucide-react';
-import { onFoodsSnapshot, copyMeal } from '../lib/firestore';
+import { RotateCcw, CopyCheck } from 'lucide-react';
+import { onFoodsSnapshot, copyMeal, copyDay } from '../lib/firestore';
 import { MEALS, MEAL_COLORS, COLORS } from '../lib/constants';
 
-/**
- * Shows yesterday's meals as one-tap copy buttons.
- * Only appears if yesterday has non-auto entries.
- */
 export default function RepeatMeal({ uid, todayKey, yesterdayKey }) {
   const [yesterdayFoods, setYesterdayFoods] = useState([]);
-  const [copying, setCopying] = useState(null);
-  const [copied, setCopied] = useState({});
+  const [copying, setCopying]  = useState(null); // meal name | 'all'
+  const [copied, setCopied]    = useState({});
 
   useEffect(() => {
     if (!uid || !yesterdayKey) return;
     return onFoodsSnapshot(uid, yesterdayKey, setYesterdayFoods);
   }, [uid, yesterdayKey]);
 
-  const nonAutoFoods = yesterdayFoods.filter(f => !f.auto);
-  const mealsWithFood = MEALS.filter(m => nonAutoFoods.some(f => f.meal === m));
+  const nonAutoFoods   = yesterdayFoods.filter(f => !f.auto);
+  const mealsWithFood  = MEALS.filter(m => nonAutoFoods.some(f => f.meal === m));
 
   if (mealsWithFood.length === 0) return null;
 
-  async function handleCopy(meal) {
+  async function handleCopyMeal(meal) {
     setCopying(meal);
     try {
       await copyMeal(uid, yesterdayKey, todayKey, meal);
@@ -32,18 +28,33 @@ export default function RepeatMeal({ uid, todayKey, yesterdayKey }) {
     }
   }
 
+  async function handleCopyAll() {
+    setCopying('all');
+    try {
+      await copyDay(uid, yesterdayKey, todayKey);
+      const allCopied = {};
+      mealsWithFood.forEach(m => { allCopied[m] = true; });
+      allCopied['all'] = true;
+      setCopied(allCopied);
+    } finally {
+      setCopying(null);
+    }
+  }
+
+  const allDone = mealsWithFood.every(m => copied[m]);
+
   return (
     <div className="px-4">
       <p className="text-xs mb-2" style={{ color: COLORS.textMuted }}>Repeat from yesterday</p>
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-2 flex-wrap items-center">
         {mealsWithFood.map(meal => {
           const count = nonAutoFoods.filter(f => f.meal === meal).length;
           const color = MEAL_COLORS[meal];
-          const done = copied[meal];
+          const done  = copied[meal];
           return (
             <button
               key={meal}
-              onClick={() => handleCopy(meal)}
+              onClick={() => handleCopyMeal(meal)}
               disabled={copying === meal || done}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-opacity"
               style={{
@@ -58,6 +69,24 @@ export default function RepeatMeal({ uid, todayKey, yesterdayKey }) {
             </button>
           );
         })}
+
+        {/* Copy all button */}
+        {mealsWithFood.length > 1 && !allDone && (
+          <button
+            onClick={handleCopyAll}
+            disabled={!!copying || copied['all']}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium"
+            style={{
+              background: '#0a0f1a',
+              border: `1px solid ${COLORS.green}55`,
+              color: COLORS.green,
+              opacity: copying === 'all' ? 0.6 : 1,
+            }}
+          >
+            <CopyCheck size={11} />
+            Copy all day
+          </button>
+        )}
       </div>
     </div>
   );
