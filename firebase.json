@@ -13,7 +13,7 @@
           { "key": "X-Content-Type-Options", "value": "nosniff" },
           { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains" },
           { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-          { "key": "Permissions-Policy", "value": "geolocation=(), microphone=(), camera=()" }
+          { "key": "Permissions-Policy", "value": "geolocation=(), camera=()" }
         ]
       },
       {
@@ -50,6 +50,8 @@
       { "source": "/karma/schools/somalwar", "run": { "serviceId": "cool-schools", "region": "us-central1" } },
       { "source": "/karma/schools/somalwar/**", "run": { "serviceId": "cool-schools", "region": "us-central1" } },
       { "source": "/karma/mp3/**", "destination": "/karma/mp3/index.html" },
+      { "source": "/kutz", "destination": "/kutz/index.html" },
+      { "source": "/kutz/**", "destination": "/kutz/index.html" },
       { "source": "**", "destination": "/index.html" }
     ]
   }
