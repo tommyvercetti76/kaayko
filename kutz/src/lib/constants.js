@@ -32,4 +32,5 @@ export const COLORS = {
   pink: '#f472b6',
   textPrimary: '#e2e8f0',
   textSecondary: '#64748b',
+  textMuted: '#475569',
 };
