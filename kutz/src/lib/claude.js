@@ -1,5 +1,9 @@
 import { auth } from './firebase';
 
+// In dev, Vite proxy handles /api/** → emulator (stripping /api/).
+// In prod, call the Cloud Run URL directly (same pattern as the rest of kaayko).
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
+
 /**
  * Parse a food description via KaleKutz backend → Claude API
  * @param {string} transcript
@@ -11,7 +15,7 @@ export async function parseFoods(transcript) {
 
   const token = await user.getIdToken();
 
-  const resp = await fetch('/api/kutz/parseFoods', {
+  const resp = await fetch(`${API_BASE}/kutz/parseFoods`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -39,7 +43,7 @@ export async function getWeeklyReport() {
 
   const token = await user.getIdToken();
 
-  const resp = await fetch('/api/kutz/weeklyReport', {
+  const resp = await fetch(`${API_BASE}/kutz/weeklyReport`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
