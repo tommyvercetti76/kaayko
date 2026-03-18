@@ -342,6 +342,11 @@ async function trackFrequentFood(uid, food) {
       carbs:           food.carbs           || 0,
       fat:             food.fat             || 0,
       fiber:           food.fiber           || 0,
+      // Micronutrients — persist when available (0 when absent)
+      iron:            food.iron            || 0,
+      calcium:         food.calcium         || 0,
+      b12:             food.b12             || 0,
+      zinc:            food.zinc            || 0,
       defaultQuantity: food.quantity        || '1 serving',
       useCount:        1,
     });

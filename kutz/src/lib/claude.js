@@ -34,6 +34,20 @@ export async function parseFoods(transcript, dietType = 'lacto-ovo-vegetarian') 
   return data; // { foods: [...] }
 }
 
+/**
+ * Parse a food photo via Claude vision.
+ * @param {string} imageBase64  — base64-encoded image data (no data: prefix)
+ * @param {string} mimeType     — 'image/jpeg' | 'image/png' | 'image/webp'
+ * @param {string} [dietType]   — from ProfileContext.dietType
+ */
+export async function parsePhoto(imageBase64, mimeType, dietType = 'lacto-ovo-vegetarian') {
+  const { data } = await authFetch('/kutz/parsePhoto', {
+    method: 'POST',
+    body:   JSON.stringify({ imageBase64, mimeType, dietType }),
+  });
+  return data; // { foods: [...] }
+}
+
 /** Weekly nutrition report */
 export async function getWeeklyReport() {
   const { data } = await authFetch('/kutz/weeklyReport', { method: 'POST' });

@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Mic, MicOff, Loader2, Send, X, Sparkles, ScanBarcode } from 'lucide-react';
+import { Mic, MicOff, Loader2, Send, X, Sparkles, ScanBarcode, Camera } from 'lucide-react';
 import { useVoice } from '../hooks/useVoice';
-import { parseFoods } from '../lib/claude';
+import { parseFoods, parsePhoto } from '../lib/claude';
 import { lookupBarcode } from '../lib/openFoodFacts';
 import { COLORS, MEAL_COLORS } from '../lib/constants';
 import { useProfile } from '../context/ProfileContext';
@@ -15,16 +15,23 @@ import BarcodeScanner from './BarcodeScanner';
  *  2. Stop speaking → transcript locks into text field (editable)
  *  3. Auto-parse fires after 800ms (or tap ➤ to parse immediately)
  *  4. Preview cards show up → tap × to remove items → "Add All"
+ *
+ * Camera flow (4th button):
+ *  1. Tap camera → hidden file input opens (capture="environment" on mobile)
+ *  2. User picks/takes photo → FileReader → base64 → parsePhoto API
+ *  3. Same preview card flow as voice
  */
 export default function VoiceInput({ onAdd, disabled }) {
   const { dietType } = useProfile();
   const [text, setText] = useState('');
   const [parsing, setParsing] = useState(false);
+  const [photoLoading, setPhotoLoading] = useState(false);
   const [preview, setPreview] = useState(null);
   const [error, setError] = useState('');
   const [showScanner, setShowScanner] = useState(false);
   const [barcodeLoading, setBarcodeLoading] = useState(false);
   const autoParseTimer = useRef(null);
+  const photoInputRef = useRef(null);
 
   // Listen for suggestion pre-fill from SuggestPanel
   useEffect(() => {
@@ -97,7 +104,7 @@ export default function VoiceInput({ onAdd, disabled }) {
 
   async function confirmAdd() {
     if (!preview?.length) return;
-    await onAdd(preview.map(f => ({ ...f, source: 'voice' })));
+    await onAdd(preview.map(f => ({ ...f, source: f.source || 'voice' })));
     setPreview(null);
     setText('');
   }
@@ -127,8 +134,41 @@ export default function VoiceInput({ onAdd, disabled }) {
     }
   }
 
-  const micColor = listening ? '#f87171' : '#34d399';
-  const canSend = displayText.trim() && !parsing && !listening;
+  // ── Camera / photo logging ─────────────────────────────────────────────────
+  async function handlePhotoChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    // Reset input so the same file can be selected again
+    e.target.value = '';
+
+    setPhotoLoading(true);
+    setError('');
+    setPreview(null);
+
+    try {
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload  = () => {
+          // reader.result is "data:image/jpeg;base64,XXXX..." — strip the prefix
+          const b64 = reader.result.split(',')[1];
+          resolve(b64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const { foods } = await parsePhoto(base64, file.type || 'image/jpeg', dietType);
+      setPreview(foods);
+    } catch (e) {
+      setError(e.message || 'Could not read photo. Please try again.');
+    } finally {
+      setPhotoLoading(false);
+    }
+  }
+
+  const micColor    = listening ? '#f87171' : '#34d399';
+  const canSend     = displayText.trim() && !parsing && !listening;
+  const anyLoading  = parsing || photoLoading || barcodeLoading;
 
   return (
     <div className="px-4 space-y-4">
@@ -140,13 +180,23 @@ export default function VoiceInput({ onAdd, disabled }) {
         />
       )}
 
+      {/* Hidden photo file input */}
+      <input
+        ref={photoInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        style={{ display: 'none' }}
+        onChange={handlePhotoChange}
+      />
+
       {/* Mic + text row */}
       <div className="flex gap-3 items-start">
         {/* Mic button */}
         {supported && (
           <button
             onClick={handleMicToggle}
-            disabled={disabled || parsing}
+            disabled={disabled || anyLoading}
             className="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-transform active:scale-95"
             style={{ background: micColor, opacity: disabled ? 0.5 : 1 }}
           >
@@ -177,7 +227,7 @@ export default function VoiceInput({ onAdd, disabled }) {
               }}
               placeholder={listening ? '' : 'Speak or type what you ate…'}
               readOnly={listening}
-              disabled={disabled || parsing}
+              disabled={disabled || anyLoading}
               className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none leading-snug"
               style={{
                 background: '#0a0f1a',
@@ -196,49 +246,80 @@ export default function VoiceInput({ onAdd, disabled }) {
             )}
           </div>
 
-          {/* Send button */}
-          <button
-            onClick={() => doParse()}
-            disabled={!canSend || disabled}
-            className="flex-shrink-0 w-12 h-14 rounded-xl flex items-center justify-center"
-            style={{
-              background: '#34d399',
-              opacity: canSend && !disabled ? 1 : 0.3,
-              transition: 'opacity 0.2s',
-            }}
-          >
-            {parsing
-              ? <Loader2 size={16} color="#020617" className="animate-spin" />
-              : <Send size={16} color="#020617" />
-            }
-          </button>
+          {/* Button column */}
+          <div className="flex flex-col gap-1.5">
+            {/* Send button */}
+            <button
+              onClick={() => doParse()}
+              disabled={!canSend || disabled}
+              className="flex-shrink-0 w-12 h-6 rounded-xl flex items-center justify-center flex-1"
+              style={{
+                background: '#34d399',
+                opacity: canSend && !disabled ? 1 : 0.3,
+                transition: 'opacity 0.2s',
+                minHeight: '2.75rem',
+              }}
+            >
+              {parsing
+                ? <Loader2 size={16} color="#020617" className="animate-spin" />
+                : <Send size={16} color="#020617" />
+              }
+            </button>
 
-          {/* Barcode scan button */}
-          <button
-            onClick={() => setShowScanner(true)}
-            disabled={disabled || parsing || listening || barcodeLoading}
-            className="flex-shrink-0 w-12 h-14 rounded-xl flex items-center justify-center"
-            style={{
-              background: '#1e293b',
-              border: '1px solid #334155',
-              opacity: disabled || barcodeLoading ? 0.4 : 1,
-              transition: 'opacity 0.2s',
-            }}
-            title="Scan barcode"
-          >
-            {barcodeLoading
-              ? <Loader2 size={16} style={{ color: '#a78bfa' }} className="animate-spin" />
-              : <ScanBarcode size={16} style={{ color: '#a78bfa' }} />
-            }
-          </button>
+            {/* Barcode scan button */}
+            <button
+              onClick={() => setShowScanner(true)}
+              disabled={disabled || anyLoading || listening}
+              className="flex-shrink-0 w-12 rounded-xl flex items-center justify-center"
+              style={{
+                background: '#1e293b',
+                border: '1px solid #334155',
+                opacity: disabled || barcodeLoading ? 0.4 : 1,
+                transition: 'opacity 0.2s',
+                minHeight: '2.75rem',
+              }}
+              title="Scan barcode"
+            >
+              {barcodeLoading
+                ? <Loader2 size={16} style={{ color: '#a78bfa' }} className="animate-spin" />
+                : <ScanBarcode size={16} style={{ color: '#a78bfa' }} />
+              }
+            </button>
+
+            {/* Camera / photo button */}
+            <button
+              onClick={() => photoInputRef.current?.click()}
+              disabled={disabled || anyLoading || listening}
+              className="flex-shrink-0 w-12 rounded-xl flex items-center justify-center"
+              style={{
+                background: '#1e293b',
+                border: '1px solid #334155',
+                opacity: disabled || photoLoading ? 0.4 : 1,
+                transition: 'opacity 0.2s',
+                minHeight: '2.75rem',
+              }}
+              title="Log from photo"
+            >
+              {photoLoading
+                ? <Loader2 size={16} style={{ color: '#38bdf8' }} className="animate-spin" />
+                : <Camera size={16} style={{ color: '#38bdf8' }} />
+              }
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Parsing state */}
+      {/* Loading states */}
       {parsing && (
         <div className="flex items-center gap-2 text-sm" style={{ color: COLORS.textSecondary }}>
           <Loader2 size={13} className="animate-spin" />
           Understanding what you ate…
+        </div>
+      )}
+      {photoLoading && (
+        <div className="flex items-center gap-2 text-sm" style={{ color: COLORS.textSecondary }}>
+          <Loader2 size={13} className="animate-spin" />
+          Analysing your photo…
         </div>
       )}
 
@@ -271,6 +352,9 @@ export default function VoiceInput({ onAdd, disabled }) {
                   <span className="text-sm font-medium truncate" style={{ color: COLORS.textPrimary }}>
                     {item.name}
                   </span>
+                  {item.source === 'photo' && (
+                    <Camera size={10} style={{ color: '#38bdf8', flexShrink: 0 }} />
+                  )}
                 </div>
                 <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-xs tabular" style={{ color: COLORS.textSecondary }}>
                   <span>{item.quantity}</span>
@@ -280,6 +364,15 @@ export default function VoiceInput({ onAdd, disabled }) {
                   {item.fat   > 0 && <span style={{ color: COLORS.orange }}>{item.fat}g fat</span>}
                   {item.fiber > 0 && <span style={{ color: '#a78bfa' }}>{item.fiber}g fiber</span>}
                 </div>
+                {/* Micronutrients row — only shown when any value > 0 */}
+                {(item.iron > 0 || item.calcium > 0 || item.b12 > 0 || item.zinc > 0) && (
+                  <div className="flex flex-wrap gap-x-3 mt-0.5 text-xs tabular" style={{ color: '#475569' }}>
+                    {item.iron    > 0 && <span>Fe {item.iron}mg</span>}
+                    {item.calcium > 0 && <span>Ca {item.calcium}mg</span>}
+                    {item.b12     > 0 && <span>B12 {item.b12}mcg</span>}
+                    {item.zinc    > 0 && <span>Zn {item.zinc}mg</span>}
+                  </div>
+                )}
                 <span
                   className="inline-block mt-1.5 text-xs px-2 py-0.5 rounded-full"
                   style={{ background: MEAL_COLORS[item.meal] + '22', color: MEAL_COLORS[item.meal] }}
