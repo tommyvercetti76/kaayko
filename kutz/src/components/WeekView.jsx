@@ -1,21 +1,14 @@
 import { useState } from 'react';
 import {
-  ComposedChart,
-  Bar,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ReferenceLine,
-  ResponsiveContainer,
-  BarChart,
+  ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  ReferenceLine, ResponsiveContainer, BarChart,
 } from 'recharts';
 import { useAllDays } from '../hooks/useAllDays';
 import { totalBurn } from '../lib/calculations';
-import { TARGETS, COLORS } from '../lib/constants';
-import { getWeeklyReport } from '../lib/claude';
-import { Loader2 } from 'lucide-react';
+import { COLORS } from '../lib/constants';
+import { useProfile } from '../context/ProfileContext';
+import { getWeeklyReport, getSuggestions } from '../lib/claude';
+import { Loader2, Sparkles } from 'lucide-react';
 
 function fmt(dateStr) {
   if (!dateStr) return '';
@@ -39,15 +32,20 @@ function CustomTooltip({ active, payload, label }) {
 
 export default function WeekView({ uid }) {
   const { days, loading } = useAllDays(uid, 7);
-  const [report, setReport] = useState('');
-  const [loadingReport, setLoadingReport] = useState(false);
-  const [reportErr, setReportErr] = useState('');
+  const { targets } = useProfile();
+
+  const [report,         setReport]         = useState('');
+  const [loadingReport,  setLoadingReport]  = useState(false);
+  const [reportErr,      setReportErr]      = useState('');
+  const [suggestions,    setSuggestions]    = useState(null);
+  const [loadingSuggest, setLoadingSuggest] = useState(false);
+  const [suggestErr,     setSuggestErr]     = useState('');
 
   const chartData = days.map(d => ({
-    date: fmt(d.date),
-    Intake: Math.round(d.calories || 0),
-    Burn: Math.round(totalBurn(d)),
-    Protein: Math.round(d.protein || 0),
+    date:    fmt(d.date),
+    Intake:  Math.round(d.calories || 0),
+    Burn:    Math.round(totalBurn(d)),
+    Protein: Math.round(d.protein  || 0),
   }));
 
   const avg = (key) => days.length
@@ -67,7 +65,24 @@ export default function WeekView({ uid }) {
     }
   }
 
-  if (loading) return <div className="flex justify-center py-16"><Loader2 size={24} className="animate-spin" style={{ color: COLORS.textMuted }} /></div>;
+  async function fetchSuggestions() {
+    setLoadingSuggest(true);
+    setSuggestErr('');
+    try {
+      const data = await getSuggestions();
+      setSuggestions(data);
+    } catch (e) {
+      setSuggestErr(e.message);
+    } finally {
+      setLoadingSuggest(false);
+    }
+  }
+
+  if (loading) return (
+    <div className="flex justify-center py-16">
+      <Loader2 size={24} className="animate-spin" style={{ color: COLORS.textMuted }} />
+    </div>
+  );
 
   return (
     <div className="px-4 space-y-6 pb-8">
@@ -75,8 +90,8 @@ export default function WeekView({ uid }) {
       <div className="grid grid-cols-3 gap-3 pt-4">
         {[
           { label: 'Avg Calories', value: avg('calories'), color: COLORS.amber, unit: 'kcal' },
-          { label: 'Avg Protein', value: avg('protein'), color: COLORS.green, unit: 'g' },
-          { label: 'Avg Fiber', value: avg('fiber'), color: COLORS.blue, unit: 'g' },
+          { label: 'Avg Protein',  value: avg('protein'),  color: COLORS.green, unit: 'g'    },
+          { label: 'Avg Fiber',    value: avg('fiber'),    color: COLORS.blue,  unit: 'g'    },
         ].map(({ label, value, color, unit }) => (
           <div key={label} className="rounded-xl px-3 py-3 text-center" style={{ background: '#0a0f1a', border: '1px solid #1e293b' }}>
             <p className="tabular text-xl font-bold" style={{ color }}>{value}<span className="text-xs ml-0.5">{unit}</span></p>
@@ -85,7 +100,7 @@ export default function WeekView({ uid }) {
         ))}
       </div>
 
-      {/* Intake vs Burn chart */}
+      {/* Intake vs Burn */}
       <div>
         <p className="text-xs mb-3" style={{ color: COLORS.textMuted }}>Intake vs Burn</p>
         <ResponsiveContainer width="100%" height={200}>
@@ -94,7 +109,7 @@ export default function WeekView({ uid }) {
             <XAxis dataKey="date" tick={{ fill: COLORS.textMuted, fontSize: 11 }} />
             <YAxis tick={{ fill: COLORS.textMuted, fontSize: 11 }} />
             <Tooltip content={<CustomTooltip />} />
-            <ReferenceLine y={TARGETS.calories} stroke={COLORS.amber} strokeDasharray="4 2" strokeOpacity={0.5} />
+            <ReferenceLine y={targets.calories} stroke={COLORS.amber} strokeDasharray="4 2" strokeOpacity={0.5} />
             <Bar dataKey="Intake" fill={COLORS.amber} fillOpacity={0.7} radius={[4, 4, 0, 0]} />
             <Line dataKey="Burn" stroke={COLORS.green} strokeWidth={2} dot={false} />
           </ComposedChart>
@@ -110,7 +125,7 @@ export default function WeekView({ uid }) {
             <XAxis dataKey="date" tick={{ fill: COLORS.textMuted, fontSize: 11 }} />
             <YAxis tick={{ fill: COLORS.textMuted, fontSize: 11 }} />
             <Tooltip content={<CustomTooltip />} />
-            <ReferenceLine y={TARGETS.protein} stroke={COLORS.green} strokeDasharray="4 2" strokeOpacity={0.5} />
+            <ReferenceLine y={targets.protein} stroke={COLORS.green} strokeDasharray="4 2" strokeOpacity={0.5} />
             <Bar dataKey="Protein" fill={COLORS.green} fillOpacity={0.8} radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
@@ -131,15 +146,72 @@ export default function WeekView({ uid }) {
               <tr key={d.date} style={{ borderTop: '1px solid #1e293b' }}>
                 <td className="px-3 py-2 tabular" style={{ color: COLORS.textSecondary }}>{fmt(d.date)}</td>
                 <td className="px-3 py-2 tabular" style={{ color: COLORS.amber }}>{Math.round(d.calories || 0)}</td>
-                <td className="px-3 py-2 tabular" style={{ color: COLORS.green }}>{Math.round(d.protein || 0)}g</td>
-                <td className="px-3 py-2 tabular" style={{ color: COLORS.blue }}>{Math.round(d.fiber || 0)}g</td>
+                <td className="px-3 py-2 tabular" style={{ color: COLORS.green }}>{Math.round(d.protein  || 0)}g</td>
+                <td className="px-3 py-2 tabular" style={{ color: COLORS.blue  }}>{Math.round(d.fiber    || 0)}g</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      {/* Weekly report */}
+      {/* ── AI Suggest ─────────────────────────────────────────── */}
+      <div className="space-y-3">
+        {!suggestions && !loadingSuggest && (
+          <button
+            onClick={fetchSuggestions}
+            className="w-full py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2"
+            style={{ background: '#0a0f1a', border: `1px solid ${COLORS.purple}44`, color: COLORS.purple }}
+          >
+            <Sparkles size={14} />
+            Get Tomorrow&apos;s Suggestions
+          </button>
+        )}
+        {loadingSuggest && (
+          <div className="flex items-center gap-2 justify-center text-sm" style={{ color: COLORS.textSecondary }}>
+            <Loader2 size={14} className="animate-spin" />
+            Analysing your patterns…
+          </div>
+        )}
+        {suggestErr && <p className="text-sm" style={{ color: COLORS.red }}>{suggestErr}</p>}
+        {suggestions && (
+          <div className="rounded-xl px-4 py-4 space-y-3" style={{ background: '#0a0f1a', border: `1px solid ${COLORS.purple}44` }}>
+            <p className="text-xs font-medium" style={{ color: COLORS.purple }}>Tomorrow&apos;s Plan</p>
+
+            {suggestions.insights?.length > 0 && (
+              <ul className="space-y-1">
+                {suggestions.insights.map((insight, i) => (
+                  <li key={i} className="text-xs" style={{ color: COLORS.textSecondary }}>· {insight}</li>
+                ))}
+              </ul>
+            )}
+
+            {suggestions.suggestions?.map((s, i) => (
+              <div
+                key={i}
+                className="rounded-lg px-3 py-2.5"
+                style={{ background: '#020617', border: '1px solid #1e293b' }}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-medium capitalize" style={{ color: COLORS.textPrimary }}>{s.meal}</span>
+                  <span className="text-xs tabular" style={{ color: COLORS.amber }}>{s.calories} kcal · {s.protein}g protein</span>
+                </div>
+                <p className="text-xs" style={{ color: COLORS.textPrimary }}>{s.foods}</p>
+                <p className="text-xs mt-1" style={{ color: COLORS.textMuted }}>{s.reason}</p>
+              </div>
+            ))}
+
+            <button
+              onClick={() => setSuggestions(null)}
+              className="text-xs"
+              style={{ color: COLORS.textMuted }}
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ── Weekly Report ──────────────────────────────────────── */}
       <div>
         {!report && !loadingReport && (
           <button

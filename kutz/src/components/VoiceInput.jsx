@@ -1,8 +1,10 @@
 import { useState, useCallback, useRef } from 'react';
-import { Mic, MicOff, Loader2, Send, X, Sparkles } from 'lucide-react';
+import { Mic, MicOff, Loader2, Send, X, Sparkles, ScanBarcode } from 'lucide-react';
 import { useVoice } from '../hooks/useVoice';
 import { parseFoods } from '../lib/claude';
+import { lookupBarcode } from '../lib/openFoodFacts';
 import { COLORS, MEAL_COLORS } from '../lib/constants';
+import BarcodeScanner from './BarcodeScanner';
 
 /**
  * Voice input component.
@@ -18,6 +20,8 @@ export default function VoiceInput({ onAdd, disabled }) {
   const [parsing, setParsing] = useState(false);
   const [preview, setPreview] = useState(null);
   const [error, setError] = useState('');
+  const [showScanner, setShowScanner] = useState(false);
+  const [barcodeLoading, setBarcodeLoading] = useState(false);
   const autoParseTimer = useRef(null);
 
   // When speech recognition finishes, put the result in the text field
@@ -87,11 +91,37 @@ export default function VoiceInput({ onAdd, disabled }) {
     setError('');
   }
 
+  async function handleBarcodeResult(barcode) {
+    setShowScanner(false);
+    setBarcodeLoading(true);
+    setError('');
+    try {
+      const food = await lookupBarcode(barcode);
+      if (!food) {
+        setError(`Barcode ${barcode} not found in Open Food Facts. Try typing the name.`);
+      } else {
+        setPreview([food]);
+      }
+    } catch (e) {
+      setError('Barcode lookup failed. Check your connection.');
+    } finally {
+      setBarcodeLoading(false);
+    }
+  }
+
   const micColor = listening ? '#f87171' : '#34d399';
   const canSend = displayText.trim() && !parsing && !listening;
 
   return (
     <div className="px-4 space-y-4">
+      {/* Barcode scanner overlay */}
+      {showScanner && (
+        <BarcodeScanner
+          onResult={handleBarcodeResult}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
+
       {/* Mic + text row */}
       <div className="flex gap-3 items-start">
         {/* Mic button */}
@@ -162,6 +192,25 @@ export default function VoiceInput({ onAdd, disabled }) {
             {parsing
               ? <Loader2 size={16} color="#020617" className="animate-spin" />
               : <Send size={16} color="#020617" />
+            }
+          </button>
+
+          {/* Barcode scan button */}
+          <button
+            onClick={() => setShowScanner(true)}
+            disabled={disabled || parsing || listening || barcodeLoading}
+            className="flex-shrink-0 w-12 h-14 rounded-xl flex items-center justify-center"
+            style={{
+              background: '#1e293b',
+              border: '1px solid #334155',
+              opacity: disabled || barcodeLoading ? 0.4 : 1,
+              transition: 'opacity 0.2s',
+            }}
+            title="Scan barcode"
+          >
+            {barcodeLoading
+              ? <Loader2 size={16} style={{ color: '#a78bfa' }} className="animate-spin" />
+              : <ScanBarcode size={16} style={{ color: '#a78bfa' }} />
             }
           </button>
         </div>

@@ -1,14 +1,14 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, Sparkles, Trash2, Plus } from 'lucide-react';
+import { ChevronDown, ChevronRight, Sparkles, Trash2, Pencil, Plus } from 'lucide-react';
 import { MEAL_COLORS, COLORS } from '../lib/constants';
 
-export default function MealGroup({ meal, foods, onDelete, onAddClick, locked }) {
+export default function MealGroup({ meal, foods, onDelete, onEdit, onAddClick, locked }) {
   const [open, setOpen] = useState(true);
 
   const mealFoods = foods.filter(f => f.meal === meal);
-  const subtotal = mealFoods.reduce((s, f) => s + (Number(f.calories) || 0), 0);
-  const color = MEAL_COLORS[meal];
-  const label = meal.charAt(0).toUpperCase() + meal.slice(1);
+  const subtotal  = mealFoods.reduce((s, f) => s + (Number(f.calories) || 0), 0);
+  const color     = MEAL_COLORS[meal];
+  const label     = meal.charAt(0).toUpperCase() + meal.slice(1);
 
   return (
     <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #1e293b' }}>
@@ -29,16 +29,17 @@ export default function MealGroup({ meal, foods, onDelete, onAddClick, locked })
           <span className="tabular text-sm font-semibold" style={{ color: COLORS.amber }}>
             {subtotal} kcal
           </span>
-          {open ? <ChevronDown size={14} style={{ color: COLORS.textMuted }} /> : <ChevronRight size={14} style={{ color: COLORS.textMuted }} />}
+          {open
+            ? <ChevronDown  size={14} style={{ color: COLORS.textMuted }} />
+            : <ChevronRight size={14} style={{ color: COLORS.textMuted }} />
+          }
         </div>
       </button>
 
       {open && (
         <div style={{ background: '#020617' }}>
           {mealFoods.length === 0 ? (
-            <p className="px-4 py-3 text-sm" style={{ color: COLORS.textMuted }}>
-              Nothing logged yet
-            </p>
+            <p className="px-4 py-3 text-sm" style={{ color: COLORS.textMuted }}>Nothing logged yet</p>
           ) : (
             <ul>
               {mealFoods.map(food => (
@@ -51,6 +52,11 @@ export default function MealGroup({ meal, foods, onDelete, onAddClick, locked })
                     <div className="flex items-center gap-1.5">
                       {food.source === 'voice' && (
                         <Sparkles size={11} style={{ color: COLORS.green, flexShrink: 0 }} />
+                      )}
+                      {food.source === 'barcode' && (
+                        <span className="text-xs px-1 rounded" style={{ background: COLORS.purple + '22', color: COLORS.purple, fontSize: 9 }}>
+                          scan
+                        </span>
                       )}
                       <span className="text-sm truncate" style={{ color: COLORS.textPrimary }}>
                         {food.name}
@@ -66,13 +72,25 @@ export default function MealGroup({ meal, foods, onDelete, onAddClick, locked })
                       <span style={{ color: COLORS.blue }}>{food.fiber}g</span>
                     </div>
                   </div>
+
+                  {/* Edit + Delete (hidden for auto entries and locked days) */}
                   {!locked && !food.auto && (
-                    <button
-                      onClick={() => onDelete(food.id)}
-                      className="ml-2 p-1 flex-shrink-0 rounded opacity-40 hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 size={13} style={{ color: COLORS.red }} />
-                    </button>
+                    <div className="flex items-center gap-0.5 ml-2 flex-shrink-0">
+                      <button
+                        onClick={() => onEdit && onEdit(food)}
+                        className="p-1.5 rounded opacity-40 hover:opacity-100 transition-opacity"
+                        title="Edit"
+                      >
+                        <Pencil size={12} style={{ color: COLORS.textSecondary }} />
+                      </button>
+                      <button
+                        onClick={() => onDelete(food.id)}
+                        className="p-1.5 rounded opacity-40 hover:opacity-100 transition-opacity"
+                        title="Delete"
+                      >
+                        <Trash2 size={12} style={{ color: COLORS.red }} />
+                      </button>
+                    </div>
                   )}
                 </li>
               ))}
@@ -83,7 +101,7 @@ export default function MealGroup({ meal, foods, onDelete, onAddClick, locked })
             <button
               onClick={() => onAddClick(meal)}
               className="flex items-center gap-2 w-full px-4 py-2.5 text-sm border-t transition-opacity hover:opacity-80"
-              style={{ color: color, borderColor: '#1e293b' }}
+              style={{ color, borderColor: '#1e293b' }}
             >
               <Plus size={14} />
               Add to {label}

@@ -59,3 +59,30 @@ export async function getWeeklyReport() {
   const { data } = await resp.json();
   return data; // { report, weekData }
 }
+
+/**
+ * Get AI-powered meal suggestions based on 30-day history
+ * @returns {Promise<{ insights: string[], suggestions: Array }>}
+ */
+export async function getSuggestions() {
+  const user = auth.currentUser;
+  if (!user) throw new Error('Not authenticated');
+
+  const token = await user.getIdToken();
+
+  const resp = await fetch(`${API_BASE}/kutz/suggest`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.message || 'Failed to get suggestions');
+  }
+
+  const { data } = await resp.json();
+  return data; // { insights, suggestions }
+}

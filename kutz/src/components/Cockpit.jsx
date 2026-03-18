@@ -1,12 +1,15 @@
 import Ring from './ui/Ring';
-import { TARGETS, COLORS } from '../lib/constants';
+import { COLORS } from '../lib/constants';
+import { useProfile } from '../context/ProfileContext';
 
 /**
  * Daily dashboard — center ring shows remaining calories, three smaller rings for eaten, protein, fiber.
+ * Uses dynamic targets from ProfileContext so user changes in Settings reflect immediately.
  */
-export default function Cockpit({ totals, day }) {
+export default function Cockpit({ totals }) {
+  const { targets } = useProfile();
   const { calories = 0, protein = 0, fiber = 0 } = totals;
-  const remaining = TARGETS.calories - calories;
+  const remaining = targets.calories - calories;
   const isOver = remaining < 0;
 
   return (
@@ -14,7 +17,7 @@ export default function Cockpit({ totals, day }) {
       {/* Center ring — remaining calories */}
       <Ring
         value={Math.abs(remaining)}
-        max={TARGETS.calories}
+        max={targets.calories}
         size={160}
         strokeWidth={14}
         color={isOver ? COLORS.red : COLORS.amber}
@@ -32,7 +35,7 @@ export default function Cockpit({ totals, day }) {
 
       {/* Three smaller rings */}
       <div className="flex gap-8 justify-center">
-        <Ring value={calories} max={TARGETS.calories} size={80} strokeWidth={7} color={COLORS.amber} label="eaten">
+        <Ring value={calories} max={targets.calories} size={80} strokeWidth={7} color={COLORS.amber} label="eaten">
           <span className="tabular font-semibold text-sm" style={{ color: COLORS.textPrimary }}>
             {calories}
           </span>
@@ -41,13 +44,13 @@ export default function Cockpit({ totals, day }) {
           </span>
         </Ring>
 
-        <Ring value={protein} max={TARGETS.protein} size={80} strokeWidth={7} color={COLORS.green} label="protein">
+        <Ring value={protein} max={targets.protein} size={80} strokeWidth={7} color={COLORS.green} label="protein">
           <span className="tabular font-semibold text-sm" style={{ color: COLORS.textPrimary }}>
             {protein}g
           </span>
         </Ring>
 
-        <Ring value={fiber} max={TARGETS.fiber} size={80} strokeWidth={7} color={COLORS.blue} label="fiber">
+        <Ring value={fiber} max={targets.fiber} size={80} strokeWidth={7} color={COLORS.blue} label="fiber">
           <span className="tabular font-semibold text-sm" style={{ color: COLORS.textPrimary }}>
             {fiber}g
           </span>
@@ -56,11 +59,11 @@ export default function Cockpit({ totals, day }) {
 
       {/* Target hint */}
       <div className="flex gap-4 text-xs" style={{ color: COLORS.textMuted }}>
-        <span>{TARGETS.calories} kcal target</span>
+        <span>{targets.calories} kcal target</span>
         <span>·</span>
-        <span>{TARGETS.protein}g protein</span>
+        <span>{targets.protein}g protein</span>
         <span>·</span>
-        <span>{TARGETS.fiber}g fiber</span>
+        <span>{targets.fiber}g fiber</span>
       </div>
     </div>
   );
