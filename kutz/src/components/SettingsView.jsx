@@ -36,7 +36,8 @@ export default function SettingsView({ onLogout }) {
   // Profile form
   const [form, setForm] = useState({ weight: '', height: '', age: '', gender: 'female', activity: 1.375 });
   const [dietType, setDietType] = useState('lacto-ovo-vegetarian');
-  const [targetForm, setTargetForm] = useState({ calories: 1650, protein: 110, carbs: 200, fat: 55, fiber: 25 });
+  const [targetForm,  setTargetForm]  = useState({ calories: 1650, protein: 110, carbs: 200, fat: 55, fiber: 25 });
+  const [waterTarget, setWaterTarget] = useState(2500);
   const [bmr, setBmr] = useState(null);
   const [saved, setSaved] = useState(false);
 
@@ -77,6 +78,7 @@ export default function SettingsView({ onLogout }) {
     });
     setAutoEntries(profile.autoEntries ?? DEFAULT_AUTO_ENTRIES);
     setDietType(profile.dietType ?? 'lacto-ovo-vegetarian');
+    setWaterTarget(profile.waterTarget ?? 2500);
   }, [profile]);
 
   // Load weight history
@@ -114,6 +116,7 @@ export default function SettingsView({ onLogout }) {
       },
       autoEntries,
       dietType,
+      waterTarget: Number(waterTarget) || 2500,
     });
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
@@ -331,6 +334,18 @@ export default function SettingsView({ onLogout }) {
             />
           </div>
         ))}
+        {/* Water target */}
+        <div className="flex items-center justify-between gap-4">
+          <span className="text-sm flex-1" style={{ color: COLORS.textSecondary }}>💧 Water (ml/day)</span>
+          <input
+            type="number" inputMode="numeric"
+            value={waterTarget}
+            onChange={e => setWaterTarget(e.target.value)}
+            placeholder="2500"
+            className="w-20 px-3 py-1.5 rounded-lg text-sm tabular text-right outline-none"
+            style={{ background: '#0a0f1a', border: '1px solid #38bdf844', color: '#38bdf8' }}
+          />
+        </div>
         <p className="text-xs" style={{ color: COLORS.textMuted }}>Targets update live after saving.</p>
       </Section>
 

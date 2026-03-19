@@ -10,15 +10,15 @@ import { MEALS, COLORS } from './lib/constants';
 import { ProfileProvider } from './context/ProfileContext';
 import ErrorBoundary from './components/ErrorBoundary';
 
-import Cockpit       from './components/Cockpit';
-import VoiceInput    from './components/VoiceInput';
-import MealGroup     from './components/MealGroup';
-import QuickBar      from './components/QuickBar';
-import RepeatMeal    from './components/RepeatMeal';
-import EnergySection from './components/EnergySection';
-import Streak        from './components/Streak';
-import FoodModal     from './components/FoodModal';
-import SuggestPanel  from './components/SuggestPanel';
+import Cockpit         from './components/Cockpit';
+import VoiceInput      from './components/VoiceInput';
+import MealGroup       from './components/MealGroup';
+import QuickBar        from './components/QuickBar';
+import WaterTracker    from './components/WaterTracker';
+import RepeatMeal      from './components/RepeatMeal';
+import EnergySection   from './components/EnergySection';
+import FoodModal       from './components/FoodModal';
+import OnboardingTour, { useOnboarding } from './components/OnboardingTour';
 
 const WeekView     = lazy(() => import('./components/WeekView'));
 const TrendsView   = lazy(() => import('./components/TrendsView'));
@@ -156,8 +156,9 @@ function InstallBanner({ onInstall, onDismiss }) {
 function TodayView({ uid, dateKey, prevDateKey, onDateChange }) {
   const { day, loading: dayLoading } = useDay(uid, dateKey);
   const { foods } = useFoods(uid, dateKey);
-  const [foodModal, setFoodModal] = useState(null);
-  const [writeError, setWriteError] = useState('');
+  const [foodModal,   setFoodModal]   = useState(null);
+  const [writeError,  setWriteError]  = useState('');
+  const [repeatOpen,  setRepeatOpen]  = useState(false);
   const energyTimer = useRef(null);
   const { toast, show: showToast } = useToast();
 
@@ -206,6 +207,17 @@ function TodayView({ uid, dateKey, prevDateKey, onDateChange }) {
       throw e;
     }
   }, [uid, dateKey]);
+
+  // Fix #4 — listen for kutz:addFoods events dispatched by WeekView's SuggestPanel
+  useEffect(() => {
+    function onAddFoods(e) {
+      const foods = e.detail;
+      if (!Array.isArray(foods) || !foods.length) return;
+      handleAddFoods(foods);
+    }
+    window.addEventListener('kutz:addFoods', onAddFoods);
+    return () => window.removeEventListener('kutz:addFoods', onAddFoods);
+  }, [handleAddFoods]);
 
   const handleEnergyUpdate = useCallback((data) => {
     clearTimeout(energyTimer.current);
@@ -260,25 +272,33 @@ function TodayView({ uid, dateKey, prevDateKey, onDateChange }) {
         </div>
       </div>
 
-      <Cockpit totals={totals} />
+      <Cockpit totals={totals} water={day?.water || 0} />
 
-      {/* Suggest panel — knows today's remaining macros via the backend */}
-      <div className="px-4">
-        <SuggestPanel
-          onAddSuggestion={(s) => {
-            // Pre-fill VoiceInput text with the suggestion description
-            // by dispatching a custom event the VoiceInput can listen for
-            window.dispatchEvent(new CustomEvent('kutz:suggest', { detail: s.foods }));
-          }}
-        />
-      </div>
+      <WaterTracker uid={uid} dateKey={dateKey} water={day?.water || 0} />
 
       <VoiceInput onAdd={handleAddFoods} disabled={locked} />
 
       {writeError && <p className="px-4 text-xs" style={{ color: COLORS.red }}>{writeError}</p>}
 
-      <QuickBar uid={uid} onAdd={handleAddSingle} disabled={locked} />
-      <RepeatMeal uid={uid} todayKey={dateKey} yesterdayKey={prevDateKey} />
+      <div className="px-4 space-y-2">
+        <QuickBar uid={uid} onAdd={handleAddSingle} disabled={locked} />
+        {/* Compact repeat-from-yesterday link */}
+        <button
+          onClick={() => setRepeatOpen(o => !o)}
+          className="text-xs"
+          style={{ color: COLORS.textMuted }}
+        >
+          ↩ {isToday ? 'Copy from yesterday' : `Copy from ${prevDateKey}`}
+        </button>
+        {repeatOpen && (
+          <RepeatMeal
+            uid={uid}
+            todayKey={dateKey}
+            yesterdayKey={prevDateKey}
+            sourceLabel={isToday ? 'yesterday' : prevDateKey}
+          />
+        )}
+      </div>
 
       <div className="px-4 space-y-3">
         {MEALS.map(meal => (
@@ -300,8 +320,6 @@ function TodayView({ uid, dateKey, prevDateKey, onDateChange }) {
           />
         </div>
       )}
-
-      <Streak uid={uid} />
 
       {foodModal?.mode === 'add' && (
         <FoodModal defaultMeal={foodModal.meal} onAdd={handleAddSingle} onClose={() => setFoodModal(null)} />
@@ -330,6 +348,7 @@ export default function App() {
   const [dateKey, setDateKey] = useState(toDateKey(new Date()));
   const [installPrompt, setInstallPrompt] = useState(null);
   const [showInstall, setShowInstall]     = useState(false);
+  const { show: showOnboarding, dismiss: dismissOnboarding } = useOnboarding();
 
   const today       = toDateKey(new Date());
   const prevDateKey = addDays(dateKey, -1);
@@ -374,7 +393,10 @@ export default function App() {
 
   function navigateDate(delta) {
     const next = addDays(dateKey, delta);
-    if (next <= today) setDateKey(next);
+    if (next <= today) {
+      setDateKey(next);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
   if (loading) {
@@ -391,6 +413,9 @@ export default function App() {
   return (
     <ErrorBoundary>
       <ProfileProvider uid={user.uid}>
+        {/* Onboarding tour — full-screen, shown once on first launch */}
+        {showOnboarding && <OnboardingTour onDone={dismissOnboarding} />}
+
         <div className="min-h-screen" style={{ background: COLORS.bg }}>
           <div className="max-w-md mx-auto" style={{ paddingBottom: '96px' }}>
 

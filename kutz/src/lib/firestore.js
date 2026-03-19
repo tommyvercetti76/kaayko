@@ -353,6 +353,19 @@ async function trackFrequentFood(uid, food) {
   }
 }
 
+// ─── Water log ────────────────────────────────────────────────────────────────
+
+/**
+ * Increment (or decrement) water intake for a day.
+ * @param {string} uid
+ * @param {string} dateKey  YYYY-MM-DD
+ * @param {number} ml       positive to add, negative to subtract (clamped on display)
+ */
+export async function logWater(uid, dateKey, ml) {
+  const ref = doc(db, 'users', uid, 'kutzDays', dateKey);
+  await updateDoc(ref, { water: increment(ml), updatedAt: serverTimestamp() });
+}
+
 // ─── Weight log ───────────────────────────────────────────────────────────────
 
 export async function logWeight(uid, weight) {

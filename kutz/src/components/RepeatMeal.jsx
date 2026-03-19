@@ -3,18 +3,21 @@ import { RotateCcw, CopyCheck } from 'lucide-react';
 import { onFoodsSnapshot, copyMeal, copyDay } from '../lib/firestore';
 import { MEALS, MEAL_COLORS, COLORS } from '../lib/constants';
 
-export default function RepeatMeal({ uid, todayKey, yesterdayKey }) {
+export default function RepeatMeal({ uid, todayKey, yesterdayKey, sourceLabel = 'yesterday' }) {
   const [yesterdayFoods, setYesterdayFoods] = useState([]);
-  const [copying, setCopying]  = useState(null); // meal name | 'all'
-  const [copied, setCopied]    = useState({});
+  const [copying, setCopying] = useState(null);
+  const [copied,  setCopied]  = useState({});
 
   useEffect(() => {
     if (!uid || !yesterdayKey) return;
     return onFoodsSnapshot(uid, yesterdayKey, setYesterdayFoods);
   }, [uid, yesterdayKey]);
 
-  const nonAutoFoods   = yesterdayFoods.filter(f => !f.auto);
-  const mealsWithFood  = MEALS.filter(m => nonAutoFoods.some(f => f.meal === m));
+  // Fix #12 — reset copied badges when source date changes
+  useEffect(() => { setCopied({}); }, [yesterdayKey]);
+
+  const nonAutoFoods  = yesterdayFoods.filter(f => !f.auto);
+  const mealsWithFood = MEALS.filter(m => nonAutoFoods.some(f => f.meal === m));
 
   if (mealsWithFood.length === 0) return null;
 
@@ -44,8 +47,9 @@ export default function RepeatMeal({ uid, todayKey, yesterdayKey }) {
   const allDone = mealsWithFood.every(m => copied[m]);
 
   return (
-    <div className="px-4">
-      <p className="text-xs mb-2" style={{ color: COLORS.textMuted }}>Repeat from yesterday</p>
+    <div>
+      {/* Fix #12 — dynamic label based on what date is being viewed */}
+      <p className="text-xs mb-2" style={{ color: COLORS.textMuted }}>Repeat from {sourceLabel}</p>
       <div className="flex gap-2 flex-wrap items-center">
         {mealsWithFood.map(meal => {
           const count = nonAutoFoods.filter(f => f.meal === meal).length;
@@ -56,12 +60,12 @@ export default function RepeatMeal({ uid, todayKey, yesterdayKey }) {
               key={meal}
               onClick={() => handleCopyMeal(meal)}
               disabled={copying === meal || done}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-opacity"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium"
               style={{
                 background: color + '22',
-                border: `1px solid ${color}55`,
-                color: done ? COLORS.textMuted : color,
-                opacity: (copying === meal) ? 0.6 : 1,
+                border:     `1px solid ${color}55`,
+                color:      done ? COLORS.textMuted : color,
+                opacity:    copying === meal ? 0.6 : 1,
               }}
             >
               <RotateCcw size={11} />
@@ -70,7 +74,6 @@ export default function RepeatMeal({ uid, todayKey, yesterdayKey }) {
           );
         })}
 
-        {/* Copy all button */}
         {mealsWithFood.length > 1 && !allDone && (
           <button
             onClick={handleCopyAll}
@@ -78,9 +81,9 @@ export default function RepeatMeal({ uid, todayKey, yesterdayKey }) {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium"
             style={{
               background: '#0a0f1a',
-              border: `1px solid ${COLORS.green}55`,
-              color: COLORS.green,
-              opacity: copying === 'all' ? 0.6 : 1,
+              border:     `1px solid ${COLORS.green}55`,
+              color:      COLORS.green,
+              opacity:    copying === 'all' ? 0.6 : 1,
             }}
           >
             <CopyCheck size={11} />

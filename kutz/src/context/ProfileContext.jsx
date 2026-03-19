@@ -30,10 +30,11 @@ export function ProfileProvider({ uid, children }) {
     return bmr;
   }
 
-  const dietType = profile?.dietType ?? DEFAULT_DIET;
+  const dietType    = profile?.dietType    ?? DEFAULT_DIET;
+  const waterTarget = profile?.waterTarget ?? 2500;
 
   return (
-    <ProfileContext.Provider value={{ profile, targets, dietType, updateProfile }}>
+    <ProfileContext.Provider value={{ profile, targets, dietType, waterTarget, updateProfile }}>
       {children}
     </ProfileContext.Provider>
   );
@@ -41,5 +42,5 @@ export function ProfileProvider({ uid, children }) {
 
 export function useProfile() {
   const ctx = useContext(ProfileContext);
-  return ctx ?? { profile: null, targets: DEFAULT_TARGETS, dietType: DEFAULT_DIET, updateProfile: async () => {} };
+  return ctx ?? { profile: null, targets: DEFAULT_TARGETS, dietType: DEFAULT_DIET, waterTarget: 2500, updateProfile: async () => {} };
 }

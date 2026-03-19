@@ -7,8 +7,9 @@ import { useAllDays } from '../hooks/useAllDays';
 import { totalBurn } from '../lib/calculations';
 import { COLORS } from '../lib/constants';
 import { useProfile } from '../context/ProfileContext';
-import { getWeeklyReport, getSuggestions } from '../lib/claude';
-import { Loader2, Sparkles } from 'lucide-react';
+import { getWeeklyReport } from '../lib/claude';
+import { Loader2 } from 'lucide-react';
+import SuggestPanel from './SuggestPanel';
 
 function fmt(dateStr) {
   if (!dateStr) return '';
@@ -22,9 +23,7 @@ function CustomTooltip({ active, payload, label }) {
     <div className="rounded-xl px-3 py-2 text-xs" style={{ background: '#0a0f1a', border: '1px solid #1e293b' }}>
       <p className="font-medium mb-1" style={{ color: COLORS.textPrimary }}>{label}</p>
       {payload.map(p => (
-        <p key={p.dataKey} style={{ color: p.color }}>
-          {p.name}: {Math.round(p.value)}
-        </p>
+        <p key={p.dataKey} style={{ color: p.color }}>{p.name}: {Math.round(p.value)}</p>
       ))}
     </div>
   );
@@ -34,12 +33,9 @@ export default function WeekView({ uid }) {
   const { days, loading } = useAllDays(uid, 7);
   const { targets }       = useProfile();
 
-  const [report,         setReport]         = useState('');
-  const [loadingReport,  setLoadingReport]  = useState(false);
-  const [reportErr,      setReportErr]      = useState('');
-  const [suggestions,    setSuggestions]    = useState(null);
-  const [loadingSuggest, setLoadingSuggest] = useState(false);
-  const [suggestErr,     setSuggestErr]     = useState('');
+  const [report,        setReport]        = useState('');
+  const [loadingReport, setLoadingReport] = useState(false);
+  const [reportErr,     setReportErr]     = useState('');
 
   const chartData = days.map(d => ({
     date:    fmt(d.date),
@@ -49,7 +45,7 @@ export default function WeekView({ uid }) {
     Carbs:   Math.round(d.carbs    || 0),
   }));
 
-  const avg = (key) => days.length
+  const avg = key => days.length
     ? Math.round(days.reduce((s, d) => s + (Number(d[key]) || 0), 0) / days.length)
     : 0;
 
@@ -60,13 +56,6 @@ export default function WeekView({ uid }) {
     finally { setLoadingReport(false); }
   }
 
-  async function fetchSuggestions() {
-    setLoadingSuggest(true); setSuggestErr('');
-    try { const data = await getSuggestions(); setSuggestions(data); }
-    catch (e) { setSuggestErr(e.message); }
-    finally { setLoadingSuggest(false); }
-  }
-
   if (loading) return (
     <div className="flex justify-center py-16">
       <Loader2 size={24} className="animate-spin" style={{ color: COLORS.textMuted }} />
@@ -75,13 +64,35 @@ export default function WeekView({ uid }) {
 
   return (
     <div className="px-4 space-y-6 pb-8">
+      {/* AI Suggestions */}
+      <div className="pt-4">
+        <SuggestPanel
+          onAddSuggestion={(s) => {
+            // Fix #4 — dispatch food objects directly; no re-parse via Claude
+            const food = {
+              name:     s.label,
+              quantity: s.foods || '1 serving',
+              calories: Number(s.calories) || 0,
+              protein:  Number(s.protein)  || 0,
+              carbs:    Number(s.carbs)    || 0,
+              fat:      Number(s.fat)      || 0,
+              fiber:    Number(s.fiber)    || 0,
+              iron: 0, calcium: 0, b12: 0, zinc: 0,
+              meal:   s.meal || 'snacks',
+              source: 'suggestion',
+            };
+            window.dispatchEvent(new CustomEvent('kutz:addFoods', { detail: [food] }));
+          }}
+        />
+      </div>
+
       {/* Averages */}
-      <div className="grid grid-cols-4 gap-2 pt-4">
+      <div className="grid grid-cols-4 gap-2">
         {[
           { label: 'Calories', value: avg('calories'), color: COLORS.amber,  unit: 'kcal' },
           { label: 'Protein',  value: avg('protein'),  color: COLORS.green,  unit: 'g'    },
-          { label: 'Carbs',    value: avg('carbs'),    color: COLORS.blue,   unit: 'g'    },
-          { label: 'Fat',      value: avg('fat'),      color: COLORS.orange, unit: 'g'    },
+          { label: 'Carbs',    value: avg('carbs'),    color: COLORS.textSecondary, unit: 'g' },
+          { label: 'Fat',      value: avg('fat'),      color: COLORS.textSecondary, unit: 'g' },
         ].map(({ label, value, color, unit }) => (
           <div key={label} className="rounded-xl px-2 py-3 text-center" style={{ background: '#0a0f1a', border: '1px solid #1e293b' }}>
             <p className="tabular text-lg font-bold" style={{ color }}>
@@ -131,8 +142,8 @@ export default function WeekView({ uid }) {
               <XAxis dataKey="date" tick={{ fill: COLORS.textMuted, fontSize: 9 }} />
               <YAxis tick={{ fill: COLORS.textMuted, fontSize: 9 }} />
               <Tooltip content={<CustomTooltip />} />
-              <ReferenceLine y={targets.carbs} stroke={COLORS.blue} strokeDasharray="4 2" strokeOpacity={0.5} />
-              <Bar dataKey="Carbs" fill={COLORS.blue} fillOpacity={0.8} radius={[3, 3, 0, 0]} />
+              <ReferenceLine y={targets.carbs} stroke={COLORS.textSecondary} strokeDasharray="4 2" strokeOpacity={0.4} />
+              <Bar dataKey="Carbs" fill={COLORS.textSecondary} fillOpacity={0.5} radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -152,59 +163,15 @@ export default function WeekView({ uid }) {
             {[...days].reverse().map(d => (
               <tr key={d.date} style={{ borderTop: '1px solid #1e293b' }}>
                 <td className="px-2 py-2 tabular" style={{ color: COLORS.textSecondary }}>{fmt(d.date)}</td>
-                <td className="px-2 py-2 tabular" style={{ color: COLORS.amber  }}>{Math.round(d.calories || 0)}</td>
-                <td className="px-2 py-2 tabular" style={{ color: COLORS.green  }}>{Math.round(d.protein  || 0)}g</td>
-                <td className="px-2 py-2 tabular" style={{ color: COLORS.blue   }}>{Math.round(d.carbs    || 0)}g</td>
-                <td className="px-2 py-2 tabular" style={{ color: COLORS.orange }}>{Math.round(d.fat      || 0)}g</td>
-                <td className="px-2 py-2 tabular" style={{ color: COLORS.purple }}>{Math.round(d.fiber    || 0)}g</td>
+                <td className="px-2 py-2 tabular" style={{ color: COLORS.amber }}>{Math.round(d.calories || 0)}</td>
+                <td className="px-2 py-2 tabular" style={{ color: COLORS.green }}>{Math.round(d.protein  || 0)}g</td>
+                <td className="px-2 py-2 tabular" style={{ color: COLORS.textSecondary }}>{Math.round(d.carbs || 0)}g</td>
+                <td className="px-2 py-2 tabular" style={{ color: COLORS.textSecondary }}>{Math.round(d.fat  || 0)}g</td>
+                <td className="px-2 py-2 tabular" style={{ color: COLORS.textSecondary }}>{Math.round(d.fiber || 0)}g</td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
-
-      {/* AI Suggest */}
-      <div className="space-y-3">
-        {!suggestions && !loadingSuggest && (
-          <button
-            onClick={fetchSuggestions}
-            className="w-full py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2"
-            style={{ background: '#0a0f1a', border: `1px solid ${COLORS.purple}44`, color: COLORS.purple }}
-          >
-            <Sparkles size={14} /> Get Tomorrow&apos;s Suggestions
-          </button>
-        )}
-        {loadingSuggest && (
-          <div className="flex items-center gap-2 justify-center text-sm" style={{ color: COLORS.textSecondary }}>
-            <Loader2 size={14} className="animate-spin" /> Analysing your patterns…
-          </div>
-        )}
-        {suggestErr && <p className="text-sm" style={{ color: COLORS.red }}>{suggestErr}</p>}
-        {suggestions && (
-          <div className="rounded-xl px-4 py-4 space-y-3" style={{ background: '#0a0f1a', border: `1px solid ${COLORS.purple}44` }}>
-            <p className="text-xs font-medium" style={{ color: COLORS.purple }}>Tomorrow&apos;s Plan</p>
-            {suggestions.insights?.length > 0 && (
-              <ul className="space-y-1">
-                {suggestions.insights.map((ins, i) => (
-                  <li key={i} className="text-xs" style={{ color: COLORS.textSecondary }}>· {ins}</li>
-                ))}
-              </ul>
-            )}
-            {suggestions.suggestions?.map((s, i) => (
-              <div key={i} className="rounded-lg px-3 py-2.5" style={{ background: '#020617', border: '1px solid #1e293b' }}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-medium capitalize" style={{ color: COLORS.textPrimary }}>{s.meal}</span>
-                  <span className="text-xs tabular" style={{ color: COLORS.amber }}>{s.calories} kcal · {s.protein}g P</span>
-                </div>
-                <p className="text-xs" style={{ color: COLORS.textPrimary }}>{s.foods}</p>
-                <p className="text-xs mt-1" style={{ color: COLORS.textMuted }}>{s.reason}</p>
-              </div>
-            ))}
-            <button onClick={() => setSuggestions(null)} className="text-xs" style={{ color: COLORS.textMuted }}>
-              Dismiss
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Weekly Report */}

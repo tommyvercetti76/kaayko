@@ -53,9 +53,10 @@ export function totalBurn(day) {
 }
 
 /**
- * Aggregate totals from a foods array (includes carbs + fat)
+ * Aggregate totals from a foods array (includes carbs + fat + micronutrients)
  */
 export function computeTotals(foods = []) {
+  const r10 = x => Math.round(x * 10) / 10;
   return foods.reduce(
     (acc, f) => ({
       calories: acc.calories + (Number(f.calories) || 0),
@@ -63,8 +64,12 @@ export function computeTotals(foods = []) {
       carbs:    acc.carbs    + (Number(f.carbs)     || 0),
       fat:      acc.fat      + (Number(f.fat)       || 0),
       fiber:    acc.fiber    + (Number(f.fiber)     || 0),
+      iron:     r10(acc.iron    + (Number(f.iron)    || 0)),
+      calcium:  r10(acc.calcium + (Number(f.calcium) || 0)),
+      b12:      r10(acc.b12     + (Number(f.b12)     || 0)),
+      zinc:     r10(acc.zinc    + (Number(f.zinc)    || 0)),
     }),
-    { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 }
+    { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, iron: 0, calcium: 0, b12: 0, zinc: 0 }
   );
 }
 

@@ -21,43 +21,44 @@ async function authFetch(path, options = {}) {
   return resp.json();
 }
 
-/**
- * Parse a food description via Claude.
- * @param {string} transcript
- * @param {string} [dietType] — from ProfileContext.dietType
- */
+/** Parse a food description via Claude. */
 export async function parseFoods(transcript, dietType = 'lacto-ovo-vegetarian') {
   const { data } = await authFetch('/kutz/parseFoods', {
     method: 'POST',
     body:   JSON.stringify({ text: transcript, dietType }),
   });
-  return data; // { foods: [...] }
+  return data;
 }
 
-/**
- * Parse a food photo via Claude vision.
- * @param {string} imageBase64  — base64-encoded image data (no data: prefix)
- * @param {string} mimeType     — 'image/jpeg' | 'image/png' | 'image/webp'
- * @param {string} [dietType]   — from ProfileContext.dietType
- */
+/** Parse a food photo via Claude vision. */
 export async function parsePhoto(imageBase64, mimeType, dietType = 'lacto-ovo-vegetarian') {
   const { data } = await authFetch('/kutz/parsePhoto', {
     method: 'POST',
     body:   JSON.stringify({ imageBase64, mimeType, dietType }),
   });
-  return data; // { foods: [...] }
+  return data;
+}
+
+/** Search Open Food Facts via backend proxy (avoids CORS). */
+export async function searchFoods(query) {
+  if (!query || query.trim().length < 2) return [];
+  const { data } = await authFetch(
+    `/kutz/searchFoods?q=${encodeURIComponent(query.trim())}`,
+    { method: 'GET' }
+  );
+  return data.foods || [];
 }
 
 /** Weekly nutrition report */
 export async function getWeeklyReport() {
   const { data } = await authFetch('/kutz/weeklyReport', { method: 'POST' });
-  return data; // { report, weekData }
+  return data;
 }
 
 /** Today-aware meal suggestions based on eating history */
 export async function getSuggestions() {
   const { data } = await authFetch('/kutz/suggest', { method: 'POST' });
-  return data; // { insights, suggestions }
+  return data;
 }
 
 // ── Fitbit ────────────────────────────────────────────────────────────────────
@@ -65,26 +66,26 @@ export async function getSuggestions() {
 /** Check whether Fitbit is connected for this user */
 export async function getFitbitStatus() {
   const { data } = await authFetch('/kutz/fitbit/status', { method: 'GET' });
-  return data; // { connected, tokenExpired?, connectedAt? }
+  return data;
 }
 
 /**
- * Redirect the browser to Fitbit OAuth.
- * The backend returns the auth URL; we navigate the page there.
+ * Fix #20 — return the auth URL so the caller can open a popup instead of
+ * navigating the whole page away (losing app state).
  */
-export async function connectFitbit() {
+export async function getFitbitAuthUrl() {
   const { data } = await authFetch('/kutz/fitbit/initiate', { method: 'GET' });
-  if (data?.authUrl) {
-    window.location.href = data.authUrl;
-  } else {
-    throw new Error('Could not get Fitbit auth URL');
-  }
+  return data?.authUrl || null;
 }
 
-/**
- * Sync today's Fitbit data (steps, calories, active minutes).
- * Returns { steps, fitbitCalories, activeMinutes, date }
- */
+/** @deprecated Use getFitbitAuthUrl() and open a popup instead */
+export async function connectFitbit() {
+  const url = await getFitbitAuthUrl();
+  if (url) window.location.href = url;
+  else throw new Error('Could not get Fitbit auth URL');
+}
+
+/** Sync today's Fitbit data. Returns { steps, fitbitCalories, activeMinutes, date } */
 export async function syncFitbit() {
   const { data } = await authFetch('/kutz/fitbit/sync', { method: 'POST' });
   return data;
