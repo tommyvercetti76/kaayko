@@ -20,11 +20,12 @@ export default function Streak({ uid }) {
     });
   }, [uid]);
 
-  const today  = new Date();
-  const days   = Array.from({ length: 28 }, (_, i) => {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
-    return d.toISOString().split('T')[0];
+  // UTC-safe date arithmetic — avoids DST off-by-one
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const days = Array.from({ length: 28 }, (_, i) => {
+    const d = new Date(todayStr + 'T00:00:00Z');
+    d.setUTCDate(d.getUTCDate() - i);
+    return d.toISOString().slice(0, 10);
   });
 
   let streak = 0;
@@ -33,7 +34,7 @@ export default function Streak({ uid }) {
     else break;
   }
 
-  const todayStr = today.toISOString().split('T')[0];
+  // todayStr already defined above
 
   return (
     <div className="px-4 space-y-2">

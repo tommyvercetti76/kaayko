@@ -75,10 +75,17 @@ export async function saveProfile(uid, data) {
 
 // ─── Days ─────────────────────────────────────────────────────────────────────
 
+/** UTC-safe today key — used as the only auto-creatable date */
+function todayKey() { return new Date().toISOString().slice(0, 10); }
+
 export async function getOrCreateDay(uid, dateKey) {
   const dayRef = doc(db, 'users', uid, 'kutzDays', dateKey);
   const snap   = await getDoc(dayRef);
   if (snap.exists()) return { id: snap.id, ...snap.data() };
+
+  // Guard: only today's document can be auto-created. Past/future dates
+  // must already exist (via copy or manual entry) to prevent phantom data.
+  if (dateKey !== todayKey()) return null;
 
   const profile    = await getProfile(uid);
   const bmr        = profile?.bmr || 1450;
@@ -249,14 +256,22 @@ export async function copyDay(uid, fromDateKey, toDateKey) {
 
 // ─── Real-time listeners ──────────────────────────────────────────────────────
 
-export function onDaySnapshot(uid, dateKey, callback) {
+export function onDaySnapshot(uid, dateKey, callback, onError) {
   const ref = doc(db, 'users', uid, 'kutzDays', dateKey);
-  return onSnapshot(ref, snap => callback(snap.exists() ? { id: snap.id, ...snap.data() } : null));
+  return onSnapshot(
+    ref,
+    snap => callback(snap.exists() ? { id: snap.id, ...snap.data() } : null),
+    err => { console.error('[onDaySnapshot]', err.message); onError?.(err); }
+  );
 }
 
-export function onFoodsSnapshot(uid, dateKey, callback) {
+export function onFoodsSnapshot(uid, dateKey, callback, onError) {
   const ref = collection(db, 'users', uid, 'kutzDays', dateKey, 'foods');
-  return onSnapshot(ref, snap => callback(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+  return onSnapshot(
+    ref,
+    snap => callback(snap.docs.map(d => ({ id: d.id, ...d.data() }))),
+    err => { console.error('[onFoodsSnapshot]', err.message); onError?.(err); }
+  );
 }
 
 export function onFrequentFoodsSnapshot(uid, callback) {

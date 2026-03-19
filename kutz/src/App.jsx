@@ -19,6 +19,7 @@ import RepeatMeal      from './components/RepeatMeal';
 import EnergySection   from './components/EnergySection';
 import FoodModal       from './components/FoodModal';
 import OnboardingTour, { useOnboarding } from './components/OnboardingTour';
+import Achievements    from './components/Achievements';
 
 const WeekView     = lazy(() => import('./components/WeekView'));
 const TrendsView   = lazy(() => import('./components/TrendsView'));
@@ -28,10 +29,11 @@ const SettingsView = lazy(() => import('./components/SettingsView'));
 
 function toDateKey(date) { return date.toISOString().split('T')[0]; }
 
+/** Timezone-safe date arithmetic — works across DST boundaries */
 function addDays(dateKey, n) {
-  const d = new Date(dateKey + 'T12:00:00');
-  d.setDate(d.getDate() + n);
-  return toDateKey(d);
+  const d = new Date(dateKey + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
 }
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
@@ -167,6 +169,7 @@ function TodayView({ uid, dateKey, prevDateKey, onDateChange }) {
   const today   = toDateKey(new Date());
   const isToday = dateKey === today;
 
+  // ensureDay only works for today; for past dates it's a no-op (returns null)
   async function ensureDay() { await getOrCreateDay(uid, dateKey); }
 
   const handleAddFoods = useCallback(async (items) => {
@@ -275,6 +278,8 @@ function TodayView({ uid, dateKey, prevDateKey, onDateChange }) {
       <Cockpit totals={totals} water={day?.water || 0} />
 
       <WaterTracker uid={uid} dateKey={dateKey} water={day?.water || 0} />
+
+      <Achievements totals={totals} water={day?.water || 0} />
 
       <VoiceInput onAdd={handleAddFoods} disabled={locked} />
 

@@ -3,31 +3,30 @@ import { getOrCreateDay, onDaySnapshot } from '../lib/firestore';
 
 /**
  * Real-time listener for a day document.
- * Auto-creates the day (with fish oil entry) on first access.
+ * Auto-creates today's day (with default entries) on first access;
+ * past dates are read-only (no phantom creation).
  */
 export function useDay(uid, dateKey) {
   const [day, setDay] = useState(null);
   const [loading, setLoading] = useState(true);
-  const initialized = useRef(false);
 
   useEffect(() => {
     if (!uid || !dateKey) return;
-
-    initialized.current = false;
     setLoading(true);
+    let unsub = () => {};
 
-    // Ensure the day doc exists before subscribing
-    getOrCreateDay(uid, dateKey).then(() => {
-      initialized.current = true;
-    });
+    // Await creation before subscribing (fixes race condition)
+    getOrCreateDay(uid, dateKey)
+      .then(() => {
+        unsub = onDaySnapshot(uid, dateKey, (dayData) => {
+          setDay(dayData);
+          setLoading(false);
+        });
+      })
+      .catch(() => setLoading(false));
 
-    const unsub = onDaySnapshot(uid, dateKey, (dayData) => {
-      setDay(dayData);
-      if (initialized.current) setLoading(false);
-    });
-
-    // Fallback: stop loading after 3s even if no snapshot
-    const timer = setTimeout(() => setLoading(false), 3000);
+    // Fallback: stop loading after 4s if Firestore is slow
+    const timer = setTimeout(() => setLoading(false), 4000);
 
     return () => {
       unsub();
