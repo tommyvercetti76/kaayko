@@ -285,6 +285,20 @@ export function onFrequentFoodsSnapshot(uid, callback) {
 
 // ─── Charts data ──────────────────────────────────────────────────────────────
 
+/** A day counts as "real" if it has manual food entries beyond auto-entries */
+function isRealDay(day) {
+  // If they locked it, they intentionally used it
+  if (day.locked) return true;
+  // If water was logged, they interacted
+  if ((day.water || 0) > 0) return true;
+  // If totals exceed auto-entry baseline (fish oil = 70 kcal), real food was added
+  const cal = day.totals?.calories || 0;
+  if (cal > 100) return true;
+  // If steps or fitbit data were synced, it's a real day
+  if ((day.steps || 0) > 0 || day.fitbitCalories) return true;
+  return false;
+}
+
 export async function getRecentDays(uid, count = 30) {
   const ref  = query(
     collection(db, 'users', uid, 'kutzDays'),
@@ -323,7 +337,8 @@ export async function getRecentDays(uid, count = 30) {
       days.push({ id: dayDoc.id, ...day, ...totals });
     }
   }
-  return days;
+  // Filter out phantom days (auto-created but never used)
+  return days.filter(isRealDay);
 }
 
 export async function getStreakDays(uid, count = 28) {
