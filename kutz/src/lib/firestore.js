@@ -67,16 +67,24 @@ export async function getProfile(uid) {
 }
 
 export async function saveProfile(uid, data) {
-  const ref = doc(db, 'users', uid, 'kutzProfile', 'data');
-  const bmr = calcBMR(data.weight, data.height, data.age, data.gender || 'female');
-  await setDoc(ref, { ...data, bmr, updatedAt: serverTimestamp() }, { merge: true });
+  const ref  = doc(db, 'users', uid, 'kutzProfile', 'data');
+  const bmr  = calcBMR(data.weight, data.height, data.age, data.gender || 'female');
+  const snap = await getDoc(ref);
+  // profileStartDate is set once on first save — never overwritten — acts as data-start boundary
+  const profileStartDate = snap.exists()
+    ? (snap.data().profileStartDate || todayKey())
+    : todayKey();
+  await setDoc(ref, { ...data, bmr, profileStartDate, updatedAt: serverTimestamp() }, { merge: true });
   return bmr;
 }
 
 // ─── Days ─────────────────────────────────────────────────────────────────────
 
-/** UTC-safe today key — used as the only auto-creatable date */
-function todayKey() { return new Date().toISOString().slice(0, 10); }
+/** Local-timezone today key — matches the user's calendar date, not UTC */
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 
 export async function getOrCreateDay(uid, dateKey) {
   const dayRef = doc(db, 'users', uid, 'kutzDays', dateKey);
@@ -337,8 +345,10 @@ export async function getRecentDays(uid, count = 30) {
       days.push({ id: dayDoc.id, ...day, ...totals });
     }
   }
-  // Filter out phantom days (auto-created but never used)
-  return days.filter(isRealDay);
+  const today = todayKey();
+  // Never show future-date docs (can appear due to timezone edge cases or dev testing)
+  // Then filter phantom days (auto-created but never used)
+  return days.filter(d => d.date <= today).filter(isRealDay);
 }
 
 export async function getStreakDays(uid, count = 28) {
@@ -476,6 +486,80 @@ export function onExercisesSnapshot(uid, dateKey, callback) {
   const ref = query(
     collection(db, 'users', uid, 'kutzDays', dateKey, 'exercises'),
     orderBy('createdAt', 'asc')
+  );
+  return onSnapshot(ref, snap =>
+    callback(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+  );
+}
+
+// ─── Recipes ──────────────────────────────────────────────────────────────────
+//
+// Collection: users/{uid}/kutzRecipes/{recipeId}
+// Each doc: { name, servings, ingredients[], macrosPerServing{}, createdAt, updatedAt }
+
+function calcMacrosPerServing(ingredients, servings) {
+  const s = Math.max(1, servings);
+  const sum = ingredients.reduce(
+    (acc, f) => ({
+      calories: acc.calories + (Number(f.calories) || 0),
+      protein:  acc.protein  + (Number(f.protein)  || 0),
+      carbs:    acc.carbs    + (Number(f.carbs)     || 0),
+      fat:      acc.fat      + (Number(f.fat)       || 0),
+      fiber:    acc.fiber    + (Number(f.fiber)     || 0),
+      iron:     acc.iron     + (Number(f.iron)      || 0),
+      calcium:  acc.calcium  + (Number(f.calcium)   || 0),
+      b12:      acc.b12      + (Number(f.b12)       || 0),
+      zinc:     acc.zinc     + (Number(f.zinc)      || 0),
+    }),
+    { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, iron: 0, calcium: 0, b12: 0, zinc: 0 }
+  );
+  return {
+    calories: Math.round(sum.calories / s),
+    protein:  Math.round(sum.protein  / s * 10) / 10,
+    carbs:    Math.round(sum.carbs    / s * 10) / 10,
+    fat:      Math.round(sum.fat      / s * 10) / 10,
+    fiber:    Math.round(sum.fiber    / s * 10) / 10,
+    iron:     Math.round(sum.iron     / s * 10) / 10,
+    calcium:  Math.round(sum.calcium  / s * 10) / 10,
+    b12:      Math.round(sum.b12      / s * 10) / 10,
+    zinc:     Math.round(sum.zinc     / s * 10) / 10,
+  };
+}
+
+export async function addRecipe(uid, { name, servings, ingredients }) {
+  const ref              = collection(db, 'users', uid, 'kutzRecipes');
+  const macrosPerServing = calcMacrosPerServing(ingredients, servings);
+  await addDoc(ref, {
+    name,
+    servings: Math.max(1, servings),
+    ingredients,
+    macrosPerServing,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function updateRecipe(uid, recipeId, { name, servings, ingredients }) {
+  const ref              = doc(db, 'users', uid, 'kutzRecipes', recipeId);
+  const macrosPerServing = calcMacrosPerServing(ingredients, servings);
+  await updateDoc(ref, {
+    name,
+    servings: Math.max(1, servings),
+    ingredients,
+    macrosPerServing,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function deleteRecipe(uid, recipeId) {
+  const ref = doc(db, 'users', uid, 'kutzRecipes', recipeId);
+  await deleteDoc(ref);
+}
+
+export function onRecipesSnapshot(uid, callback) {
+  const ref = query(
+    collection(db, 'users', uid, 'kutzRecipes'),
+    orderBy('createdAt', 'desc')
   );
   return onSnapshot(ref, snap =>
     callback(snap.docs.map(d => ({ id: d.id, ...d.data() })))

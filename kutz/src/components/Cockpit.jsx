@@ -13,7 +13,7 @@ import { useProfile } from '../context/ProfileContext';
  * Data colours (amber for calories, green for protein) are functional
  * semantic labels — not UI chrome — so they're intentional and controlled.
  */
-export default function Cockpit({ totals, water = 0 }) {
+export default function Cockpit({ totals, water = 0, streak = 0 }) {
   const { targets } = useProfile();
   const {
     calories = 0, protein = 0, carbs = 0, fat = 0, fiber = 0,
@@ -27,6 +27,7 @@ export default function Cockpit({ totals, water = 0 }) {
   return (
     <div className="flex flex-col items-center gap-3 py-3">
       {/* Calorie ring — amber = energy (semantic), red = over-budget (semantic) */}
+      <div className="relative inline-block">
       <Ring
         value={Math.abs(remaining)}
         max={targets.calories}
@@ -44,6 +45,15 @@ export default function Cockpit({ totals, water = 0 }) {
           {isOver ? 'over' : 'remaining'}
         </span>
       </Ring>
+      {streak >= 2 && (
+        <div
+          className="absolute -top-1 -right-1 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs font-bold"
+          style={{ background: '#f9731622', border: '1px solid #f9731655', color: '#f97316' }}
+        >
+          🔥{streak}
+        </div>
+      )}
+      </div>
 
       {/* Macro summary — textPrimary values, textMuted labels (30% role) */}
       <div className="flex items-center gap-2 text-xs tabular flex-wrap justify-center">

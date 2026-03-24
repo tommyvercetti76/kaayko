@@ -30,8 +30,8 @@ function CustomTooltip({ active, payload, label }) {
 }
 
 export default function WeekView({ uid }) {
-  const { days, loading } = useAllDays(uid, 7);
-  const { targets }       = useProfile();
+  const { targets, profileStartDate } = useProfile();
+  const { days, loading }             = useAllDays(uid, 7, profileStartDate);
 
   const [report,        setReport]        = useState('');
   const [loadingReport, setLoadingReport] = useState(false);

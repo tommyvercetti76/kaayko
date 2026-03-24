@@ -1,6 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useRef, useEffect, useCallback } from 'react';
 import { COLORS } from '../lib/constants';
 import { useProfile } from '../context/ProfileContext';
+
+const POP_STYLE = `@keyframes kutzPop{0%{transform:scale(.8);opacity:0}60%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}`;
 
 /**
  * Achievements — real-time badges and macro warnings for today's data.
@@ -117,22 +119,53 @@ export default function Achievements({ totals, water = 0 }) {
     [totals, targets, water, waterTarget]
   );
 
+  // Track which badges are "new" so we can animate them
+  const prevBadgeLabels  = useRef(new Set());
+  const newBadgeLabels   = useRef(new Set());
+
+  const fireAchievement = useCallback((badge) => {
+    window.dispatchEvent(new CustomEvent('kutz:achievement', { detail: badge }));
+  }, []);
+
+  useEffect(() => {
+    const prev    = prevBadgeLabels.current;
+    const newOnes = new Set();
+    badges.forEach(b => {
+      if (!prev.has(b.label)) {
+        newOnes.add(b.label);
+        fireAchievement(b);
+      }
+    });
+    newBadgeLabels.current  = newOnes;
+    prevBadgeLabels.current = new Set(badges.map(b => b.label));
+  }, [badges, fireAchievement]);
+
   if (badges.length === 0 && warnings.length === 0) return null;
 
   return (
     <div className="px-4 space-y-2">
+      <style>{POP_STYLE}</style>
+
       {/* Badges */}
       {badges.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
-          {badges.map((b, i) => (
-            <span
-              key={i}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium"
-              style={{ background: b.color + '18', border: `1px solid ${b.color}44`, color: b.color }}
-            >
-              {b.emoji} {b.label}
-            </span>
-          ))}
+          {badges.map((b, i) => {
+            const isNew = newBadgeLabels.current.has(b.label);
+            return (
+              <span
+                key={i}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium"
+                style={{
+                  background:  b.color + '18',
+                  border:      `1px solid ${b.color}44`,
+                  color:       b.color,
+                  animation:   isNew ? 'kutzPop 0.35s ease-out' : undefined,
+                }}
+              >
+                {b.emoji} {b.label}
+              </span>
+            );
+          })}
         </div>
       )}
 

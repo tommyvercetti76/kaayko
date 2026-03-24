@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Mic, MicOff, Loader2, Send, X, Sparkles, ScanBarcode, Camera, Search } from 'lucide-react';
+import { Mic, MicOff, Loader2, Send, X, Sparkles, ScanBarcode, Camera, Search, ChefHat } from 'lucide-react';
 import { useVoice } from '../hooks/useVoice';
 import { parseFoods, parsePhoto } from '../lib/claude';
 import { lookupBarcode } from '../lib/openFoodFacts';
@@ -7,14 +7,16 @@ import { COLORS, MEAL_COLORS } from '../lib/constants';
 import { useProfile } from '../context/ProfileContext';
 import BarcodeScanner from './BarcodeScanner';
 import FoodSearch from './FoodSearch';
+import RecipeList from './RecipeList';
 
-export default function VoiceInput({ onAdd, disabled }) {
+export default function VoiceInput({ onAdd, disabled, uid }) {
   const { dietType } = useProfile();
 
   // Fix #15 — searchKey increment unmounts/remounts FoodSearch on each open,
   // giving it a clean slate (query, results, errors all reset)
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchKey,  setSearchKey]  = useState(0);
+  const [searchOpen,  setSearchOpen]  = useState(false);
+  const [searchKey,   setSearchKey]   = useState(0);
+  const [recipeOpen,  setRecipeOpen]  = useState(false);
 
   const [text,         setText]         = useState('');
   const [parsing,      setParsing]      = useState(false);
@@ -71,11 +73,16 @@ export default function VoiceInput({ onAdd, disabled }) {
     if (searchOpen) {
       setSearchOpen(false);
     } else {
-      // Fix #15 — increment key to force fresh FoodSearch mount
       setSearchKey(k => k + 1);
       setSearchOpen(true);
+      setRecipeOpen(false);
       cancel();
     }
+  }
+
+  function toggleRecipes() {
+    setRecipeOpen(o => !o);
+    if (!recipeOpen) { setSearchOpen(false); cancel(); }
   }
 
   function removePreviewItem(idx) {
@@ -258,12 +265,27 @@ export default function VoiceInput({ onAdd, disabled }) {
                 : <Camera  size={16} style={{ color: COLORS.textSecondary }} />
               }
             </button>
+
+            {/* Recipes */}
+            <button
+              onClick={toggleRecipes}
+              disabled={disabled || listening}
+              className="flex-shrink-0 w-12 rounded-xl flex items-center justify-center"
+              style={{ ...iconBtnStyle(recipeOpen), minHeight: '2.75rem' }}
+              title="My recipes"
+            >
+              <ChefHat size={16} style={{ color: recipeOpen ? COLORS.green : COLORS.textSecondary }} />
+            </button>
           </div>
         </div>
       </div>
 
       {/* Fix #2, #15 — key forces fresh mount each time search opens */}
       {searchOpen && <FoodSearch key={searchKey} onAdd={onAdd} disabled={disabled} />}
+
+      {recipeOpen && (
+        <RecipeList uid={uid} onAdd={onAdd} onClose={() => setRecipeOpen(false)} />
+      )}
 
       {parsing && (
         <div className="flex items-center gap-2 text-xs" style={{ color: COLORS.textSecondary }}>

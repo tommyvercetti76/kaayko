@@ -3,6 +3,7 @@ import { Utensils, BarChart2, TrendingUp, Settings, Lock, Unlock, ChevronLeft, C
 
 import { useAuth } from './hooks/useAuth';
 import { useDay } from './hooks/useDay';
+import { useStreak } from './hooks/useStreak';
 import { useFoods } from './hooks/useFoods';
 import { addFood, addFoods, deleteFood, updateFood, updateDay, getOrCreateDay } from './lib/firestore';
 import { computeTotals } from './lib/calculations';
@@ -27,13 +28,16 @@ const SettingsView = lazy(() => import('./components/SettingsView'));
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function toDateKey(date) { return date.toISOString().split('T')[0]; }
+/** Local-timezone date key — matches the user's calendar, not UTC */
+function toDateKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
 
-/** Timezone-safe date arithmetic — works across DST boundaries */
+/** Local-timezone date arithmetic — uses noon to avoid DST boundary issues */
 function addDays(dateKey, n) {
-  const d = new Date(dateKey + 'T00:00:00Z');
-  d.setUTCDate(d.getUTCDate() + n);
-  return d.toISOString().slice(0, 10);
+  const d = new Date(dateKey + 'T12:00:00');
+  d.setDate(d.getDate() + n);
+  return toDateKey(d);
 }
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
@@ -155,7 +159,7 @@ function InstallBanner({ onInstall, onDismiss }) {
 
 // ─── Today view ───────────────────────────────────────────────────────────────
 
-function TodayView({ uid, dateKey, prevDateKey, onDateChange }) {
+function TodayView({ uid, dateKey, prevDateKey, onDateChange, streak = 0 }) {
   const { day, loading: dayLoading } = useDay(uid, dateKey);
   const { foods } = useFoods(uid, dateKey);
   const [foodModal,   setFoodModal]   = useState(null);
@@ -222,6 +226,16 @@ function TodayView({ uid, dateKey, prevDateKey, onDateChange }) {
     return () => window.removeEventListener('kutz:addFoods', onAddFoods);
   }, [handleAddFoods]);
 
+  // Listen for achievement badges earned in Achievements component
+  useEffect(() => {
+    function onAchieve(e) {
+      const b = e.detail;
+      showToast(`${b.emoji} ${b.label}`, 'success', 3500);
+    }
+    window.addEventListener('kutz:achievement', onAchieve);
+    return () => window.removeEventListener('kutz:achievement', onAchieve);
+  }, [showToast]);
+
   const handleEnergyUpdate = useCallback((data) => {
     clearTimeout(energyTimer.current);
     energyTimer.current = setTimeout(() => {
@@ -275,13 +289,13 @@ function TodayView({ uid, dateKey, prevDateKey, onDateChange }) {
         </div>
       </div>
 
-      <Cockpit totals={totals} water={day?.water || 0} />
+      <Cockpit totals={totals} water={day?.water || 0} streak={streak} />
 
       <WaterTracker uid={uid} dateKey={dateKey} water={day?.water || 0} />
 
       <Achievements totals={totals} water={day?.water || 0} />
 
-      <VoiceInput onAdd={handleAddFoods} disabled={locked} />
+      <VoiceInput onAdd={handleAddFoods} disabled={locked} uid={uid} />
 
       {writeError && <p className="px-4 text-xs" style={{ color: COLORS.red }}>{writeError}</p>}
 
@@ -357,6 +371,7 @@ export default function App() {
 
   const today       = toDateKey(new Date());
   const prevDateKey = addDays(dateKey, -1);
+  const streak      = useStreak(user?.uid);
 
   // Capture PWA install prompt
   useEffect(() => {
@@ -425,7 +440,7 @@ export default function App() {
           <div className="max-w-md mx-auto" style={{ paddingBottom: '96px' }}>
 
             {tab === 'today' && (
-              <TodayView uid={user.uid} dateKey={dateKey} prevDateKey={prevDateKey} onDateChange={navigateDate} />
+              <TodayView uid={user.uid} dateKey={dateKey} prevDateKey={prevDateKey} onDateChange={navigateDate} streak={streak} />
             )}
             {tab === 'week' && (
               <Suspense fallback={<TabSpinner />}>
