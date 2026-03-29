@@ -1,8 +1,8 @@
-You are working on the **Core module** of Kaayko (`/Users/Rohan/Kaayko_v6`).
+You are working on the **Core module** of Kaayko (`/Users/Rohan/Kaayko_v6/kaayko`).
 
 Core covers the paddle forecast app and static marketing pages.
 
-## Scope — pages
+## Pages
 | URL | File |
 |-----|------|
 | `/paddlingout` | `kaayko/src/paddlingout.html` — main paddle forecast (ML-scored conditions) |
@@ -10,55 +10,57 @@ Core covers the paddle forecast app and static marketing pages.
 | `/reads` | `kaayko/src/reads.html` — blog/articles |
 | `/testimonials` | `kaayko/src/testimonials.html` — static |
 | `/privacy` | `kaayko/src/privacy.html` — static |
-| `/valentine` | `kaayko/src/valentine.html` — campaign/seasonal |
+| `/valentine` | `kaayko/src/valentine.html` — seasonal campaign (uses `/api/valentine` endpoint) |
+| `/redirect` | `kaayko/src/redirect.html` — redirect loader (spinner UI, used by smart link flow) |
+| `/` | `kaayko/src/index.html` — redirects → /paddlingout |
+| `/404` | `kaayko/src/404.html` — Firebase default error page |
 
-## Scope — JS files (paddlingout only)
+## JS files (paddlingout)
 - `kaayko/src/js/paddlingout.js` — main logic, card rendering, carousel
-- `kaayko/src/js/services/apiClient.js` — fetch wrapper
+- `kaayko/src/js/services/apiClient.js` — fetch wrapper with fallback generation + caching
 - `kaayko/src/js/components/RatingHero.js` — paddle score display
 - `kaayko/src/js/components/WeatherStats.js` — weather data
 - `kaayko/src/js/components/SafetyWarnings.js` — safety alerts
 - `kaayko/src/js/customLocation.js` — custom location search
 - `kaayko/src/js/advancedModal.js` — spot detail modal
+- `kaayko/src/js/header.js` — shared header (used across all pages)
+- `kaayko/src/js/main.js` — main bootstrap
+- `kaayko/src/js/kaayko-main.js` — main app init
 
-## Scope — API files
-- `kaayko-api/functions/api/paddlingout.js`
-- `kaayko-api/functions/api/weather.js`
-- `kaayko-api/functions/api/paddleScore.js` — ML model
+## API files (correct paths — note `weather/` subdirectory)
+- `kaayko-api/functions/api/weather/paddlingout.js` — paddle spots route
+- `kaayko-api/functions/api/weather/paddleScore.js` — ML scoring model
+- `kaayko-api/functions/api/weather/fastForecast.js` — cached weather
+- `kaayko-api/functions/api/weather/forecast.js` — premium on-demand
+- `kaayko-api/functions/api/weather/nearbyWater.js` — nearby water search
+- `kaayko-api/functions/api/core/` — health check, docs endpoints
 
 ## APIs used
 ```
 # Paddle forecast (public, no auth)
-GET  /api/paddlingOut                         → all spots with ML scores + weather
-GET  /api/paddlingOut/{id}                   → single spot detail
-GET  /api/paddleScore?location={lat},{lon}   → ML score for custom location
-GET  /api/fastForecast?location=...          → cached weather (free tier)
-GET  /api/forecast?location=...             → premium on-demand weather
-GET  /api/nearbyWater?lat=&lon=             → find nearby water bodies
-```
+GET  /api/paddlingOut                          → all spots with ML scores + weather
+GET  /api/paddlingOut/{id}                    → single spot detail
+GET  /api/paddleScore?location={lat},{lon}    → ML score for custom location
+GET  /api/fastForecast?location=...           → cached weather (free)
+GET  /api/forecast?location=...              → premium on-demand weather
+GET  /api/nearbyWater?lat=&lon=              → nearby water bodies
 
-## Paddle spot data shape
-```js
-{
-  id, title, subtitle, text,
-  location: { latitude, longitude },
-  imgSrc: [...],
-  parkingAvl: boolean, restroomsAvl: boolean,
-  youtubeURL,
-  paddleScore: { rating: 0-5 },
-  // ...weather data appended at runtime
-}
+# Health / docs
+GET  /api/health                              → API health check
+GET  /api/docs                                → API spec (spec.yaml / spec.json)
 ```
 
 ## Firestore collections
-- `paddlingSpots` — spot definitions (cached, enriched with live weather at request time)
+- `paddlingSpots` — spot definitions (location, imgSrc, parkingAvl, restroomsAvl, paddleScore)
+- `forecast_cache` — cached weather data (TTL-based)
+- `current_conditions_cache` — cached current conditions
 
 ## External services
 - **Open-Meteo API** (free, no auth) — weather data
-- **Marine API** — wave/marine conditions (where available)
+- **Marine API** — wave/marine conditions
 
-## Auth pattern
-All pages and API endpoints are public, no auth required.
+## Auth
+All public. No auth required.
 
 ## Task
 $ARGUMENTS

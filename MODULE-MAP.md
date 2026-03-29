@@ -18,9 +18,30 @@
 | Storage | Firebase Cloud Storage |
 
 **Key shared files:**
-- `kaayko/src/js/services/apiClient.js` — base API client (fetch wrapper)
+- `kaayko/src/js/services/apiClient.js` — base API client (fetch wrapper with caching + fallback)
+- `kaayko/src/js/kaayko_apiClient.js` — store/product API client (separate from apiClient.js)
+- `kaayko/src/js/header.js` — shared header component (used across all pages)
+- `kaayko/src/js/main.js` — main bootstrap
+- `kaayko/src/js/kaayko-main.js` — main app init
 - `kaayko-api/functions/api/index.js` — Express app root
 - `kaayko/firebase.json` — hosting rewrites (all `/api/**` → function)
+
+⚠️ **Note:** There are 3 separate API clients (`apiClient.js`, `kaayko_apiClient.js`, `kreator-api.js`) with inconsistent error handling patterns.
+
+---
+
+## ⚠️ Security Notes
+
+**MEDIUM:**
+1. Fitbit OAuth (`/api/kutz/fitbit/initiate` → `/callback`) — no CSRF state validation visible
+2. `cameras` vs `Kameras` Firestore collection name inconsistency in karma module — verify actual Firestore name before querying
+3. `short_links` (actual Firestore name in code) vs `smartlinks` (old docs) — always use `short_links`
+
+**Notes on previously flagged items (resolved/non-issues):**
+- `testRoutes.js` — gated by `FUNCTIONS_EMULATOR === 'true'` both at mount (`kreatorRoutes.js:53`) and inside each handler; not live in production
+- Magic link expiry — already implemented in `kreatorService.js`; `expiresAt` is stored and checked on every validation
+- `tooltip-test.html` — deleted
+- `reset-environment.html` — only sets visitor's own `localStorage` to `'production'`; no cross-user effect
 
 ---
 
@@ -36,31 +57,41 @@
 | `/reads` | `kaayko/src/reads.html` |
 | `/testimonials` | `kaayko/src/testimonials.html` |
 | `/privacy` | `kaayko/src/privacy.html` |
+| `/valentine` | `kaayko/src/valentine.html` (seasonal campaign) |
+| `/redirect` | `kaayko/src/redirect.html` (spinner UI for smart link flow) |
+| `/404` | `kaayko/src/404.html` |
 
 **JS files (paddlingout):**
-- `kaayko/src/js/paddlingout.js` — main logic, card rendering
+- `kaayko/src/js/paddlingout.js` — main logic, card rendering, carousel
+- `kaayko/src/js/services/apiClient.js` — fetch wrapper with fallback generation + caching
 - `kaayko/src/js/components/RatingHero.js` — paddle score display
 - `kaayko/src/js/components/WeatherStats.js` — weather data
 - `kaayko/src/js/components/SafetyWarnings.js` — safety alerts
-- `kaayko/src/js/customLocation.js` — location search
+- `kaayko/src/js/customLocation.js` — custom location search
 - `kaayko/src/js/advancedModal.js` — spot detail modal
 
 **APIs used:**
 ```
-GET  /api/paddlingOut                   → all paddle spots with ML scores + weather
-GET  /api/paddlingOut/{id}             → single spot detail
-GET  /api/paddleScore?location={lat},{lon}  → ML score for custom location
-GET  /api/fastForecast?location=...    → cached weather (free)
-GET  /api/forecast?location=...        → premium on-demand weather
-GET  /api/nearbyWater?lat=&lon=        → find nearby lakes/rivers
+GET  /api/paddlingOut                          → all paddle spots with ML scores + weather
+GET  /api/paddlingOut/{id}                    → single spot detail
+GET  /api/paddleScore?location={lat},{lon}    → ML score for custom location
+GET  /api/fastForecast?location=...           → cached weather (free)
+GET  /api/forecast?location=...               → premium on-demand weather
+GET  /api/nearbyWater?lat=&lon=               → find nearby lakes/rivers
+GET  /api/valentine                            → valentine campaign data
+GET  /api/health                               → API health check
+GET  /api/docs                                 → API spec (spec.yaml / spec.json)
 ```
 
-**API files:**
-- `kaayko-api/functions/api/paddlingout.js`
-- `kaayko-api/functions/api/weather.js`
-- `kaayko-api/functions/api/paddleScore.js` — ML model
+**API files (all under `kaayko-api/functions/api/weather/`):**
+- `kaayko-api/functions/api/weather/paddlingout.js` — paddle spots route
+- `kaayko-api/functions/api/weather/paddleScore.js` — ML scoring model
+- `kaayko-api/functions/api/weather/fastForecast.js` — cached weather
+- `kaayko-api/functions/api/weather/forecast.js` — premium on-demand
+- `kaayko-api/functions/api/weather/nearbyWater.js` — nearby water search
+- `kaayko-api/functions/api/core/` — health check, docs endpoints
 
-**Firestore collections:** `paddlingSpots`
+**Firestore collections:** `paddlingSpots`, `forecast_cache`, `current_conditions_cache`
 **External services:** Open-Meteo API (free, no auth), Marine API
 **Auth required:** No
 
@@ -85,7 +116,7 @@ GET  /api/nearbyWater?lat=&lon=        → find nearby lakes/rivers
 **APIs used:**
 ```
 # Products
-GET  /api/products                     → all products (reads kaaykoproducts Firestore)
+GET  /api/products                     → all products
 GET  /api/products/{id}               → single product
 POST /api/products/{id}/vote          → vote  body: { voteChange: 1 | -1 }
 GET  /api/images                       → product images from Storage
@@ -102,7 +133,7 @@ POST /api/createPaymentIntent/webhook  → Stripe webhook (no auth, raw body)
 - `kaayko-api/functions/api/products.js`
 - `kaayko-api/functions/api/checkout.js`
 
-**Firestore collections:** `kaaykoproducts`, `orders`
+**Firestore collections:** `kaaykoproducts`, `orders`, `payment_intents`
 **Firebase Storage:** `kaaykoStoreTShirtImages/{productID}/`
 **External services:** Stripe
 **Auth required:** No (browsing + checkout); admin order ops require auth
@@ -128,52 +159,74 @@ POST /api/createPaymentIntent/webhook  → Stripe webhook (no auth, raw body)
 | `/admin/views/tenant-onboarding` | `kaayko/src/admin/views/tenant-onboarding/tenant-onboarding.html` |
 | `/admin/views/roots` | `kaayko/src/admin/views/roots/index.html` |
 | `/create-kortex-link` | `kaayko/src/create-kortex-link.html` |
+| ~~`/admin/reset-environment`~~ | `kaayko/src/admin/reset-environment.html` ⚠️ NO AUTH |
+| ~~`/admin/views/create-link/tooltip-test`~~ | `kaayko/src/admin/views/create-link/tooltip-test.html` ⚠️ test artifact |
 
 **APIs used:**
 ```
-# Smart links
-POST   /api/smartlinks               → create link
-GET    /api/smartlinks               → list links
-GET    /api/smartlinks/{id}          → get link
-PUT    /api/smartlinks/{id}          → update link (routing rules, A/B tests)
-DELETE /api/smartlinks/{id}          → delete link
-GET    /api/smartlinks/{id}/stats    → click analytics
-POST   /api/smartlinks/{id}/click   → record click + redirect
-GET    /api/smartlinks/redirect/{slug} → follow link (device routing)
+# Smart links — admin (Firebase auth required)
+POST   /api/smartlinks                         → create link
+GET    /api/smartlinks                         → list all links
+GET    /api/smartlinks/{id}                   → get link
+PUT    /api/smartlinks/{id}                   → update (routing, A/B tests, webhooks)
+DELETE /api/smartlinks/{id}                   → delete
+GET    /api/smartlinks/{id}/stats             → click analytics
+GET    /api/smartlinks/tenants                → list tenants
+GET    /api/smartlinks/stats                  → global analytics
+POST   /api/smartlinks/tenant-registration    → new tenant setup (rate-limited)
+GET    /api/smartlinks/migrate                → migration endpoint (admin only)
+
+# Smart links — public
+GET    /api/smartlinks/r/{code}              → device-aware redirect
+GET    /api/smartlinks/{id}/attribution      → attribution report (API key)
+POST   /api/smartlinks/batch                 → batch create (API key)
+POST   /api/smartlinks/{id}/click           → record click event
 
 # Admin orders
-GET  /api/admin/getOrder?id={id}    → fetch order (admin auth)
-GET  /api/admin/listOrders          → list all orders (admin auth)
-POST /api/admin/updateOrderStatus   → update order status (admin auth)
-     body: { orderId, status, notes }
+GET  /api/admin/getOrder?id={id}
+GET  /api/admin/listOrders
+POST /api/admin/updateOrderStatus   body: { orderId, status, notes }
 
 # Billing
-GET    /api/billing/subscriptions
-POST   /api/billing/subscriptions
-GET    /api/billing/subscriptions/{id}
-PUT    /api/billing/subscriptions/{id}
-DELETE /api/billing/subscriptions/{id}
+GET/POST/PUT/DELETE /api/billing/subscriptions
 ```
 
-**API files:**
-- `kaayko-api/functions/api/smartlinks.js`
-- `kaayko-api/functions/api/admin.js`
-- `kaayko-api/functions/api/billing.js`
+**API files (all under `kaayko-api/functions/api/smartLinks/`):**
+- `kaayko-api/functions/api/smartLinks/smartLinks.js` — main admin/tenant routes
+- `kaayko-api/functions/api/smartLinks/publicRouter.js` — public redirect + click tracking
+- `kaayko-api/functions/api/smartLinks/publicApiRouter.js` — public API (API key auth)
+- `kaayko-api/functions/api/smartLinks/redirectHandler.js` — device-aware redirect logic
+- `kaayko-api/functions/api/smartLinks/clickTracking.js` — click event recording
+- `kaayko-api/functions/api/admin/` — order management
+- `kaayko-api/functions/api/billing/` — subscriptions
 
 **Smart link data shape:**
 ```js
 {
   slug, title, destination,
   routes: [{ device: 'iOS'|'Android'|'web', destination }],
-  abTests: [{ variant, destination, weight }],
+  abTests: [{ variant, destination, weight: 50 }],
   webhooks: [urls],
   analytics: { totalClicks, byDevice, conversions }
 }
 ```
 
-**Firestore collections:** `smartlinks`, `smartLinkClicks`, `orders`, `subscriptions`
+**Firestore collections:**
+- `short_links` — smart link definitions (⚠️ actual name in code; old docs say `smartlinks`)
+- `link_analytics` — analytics events
+- `click_events` — click records
+- `install_events` — app install tracking
+- `custom_events` — custom event logging
+- `webhook_subscriptions` — webhook config
+- `webhook_deliveries` — delivery log
+- `pending_tenant_registrations` — tenant signup queue
+- `admin_users` — admin profiles (shared with kreator module)
+- `admin_audit_logs` — admin activity log
+- `orders` — e-commerce orders
+- `subscriptions` — billing
+
 **External services:** None
-**Auth required:** Yes — Firebase token with `admin` custom claim
+**Auth required:** Admin ops: Firebase `admin` custom claim. Public API: `requireApiKey(['create:links'])`. Redirect + click: public.
 
 ---
 
@@ -186,23 +239,24 @@ DELETE /api/billing/subscriptions/{id}
 | `/kreator` | `kaayko/src/kreator/index.html` |
 | `/kreator/kreator-login` | `kaayko/src/kreator/kreator-login.html` |
 | `/kreator/apply` | `kaayko/src/kreator/apply.html` |
-| `/kreator/apply-old-social` | `kaayko/src/kreator/apply-old-social.html` (legacy) |
 | `/kreator/check-status` | `kaayko/src/kreator/check-status.html` |
 | `/kreator/onboarding` | `kaayko/src/kreator/onboarding.html` |
 | `/kreator/dashboard` | `kaayko/src/kreator/dashboard.html` |
-| `/kreator/dashboard-old-influencer` | `kaayko/src/kreator/dashboard-old-influencer.html` (legacy) |
 | `/kreator/add-product` | `kaayko/src/kreator/add-product.html` |
 | `/kreator/forgot-password` | `kaayko/src/kreator/forgot-password.html` |
 | `/kreator/admin` | `kaayko/src/kreator/admin/index.html` |
+| ~~`/kreator/apply-old-social`~~ | `kaayko/src/kreator/apply-old-social.html` (legacy) |
+| ~~`/kreator/dashboard-old-influencer`~~ | `kaayko/src/kreator/dashboard-old-influencer.html` (legacy) |
 
 **APIs used:**
 ```
-# Public (no auth)
+# Public (rate: 5/hr/IP for apply, 10/min for status)
 POST /api/kreators/apply                           → submit application
-     body: { name, email, bio, socialLinks, reason }
 GET  /api/kreators/applications/{id}              → check application status
+POST /api/kreators/auth/google/signin             → Google OAuth signin
+GET  /api/kreators/health
 
-# Onboarding (magic link)
+# Magic link onboarding (rate: 20/min)
 POST /api/kreators/onboarding/verify              → verify magic link token
 POST /api/kreators/onboarding/complete            → set password, activate account
 
@@ -211,22 +265,25 @@ GET  /api/kreators/me                             → get own profile
 PUT  /api/kreators/me                             → update bio, links, stats
 POST /api/kreators/auth/google/connect            → link Google account
 POST /api/kreators/auth/google/disconnect         → unlink Google
+GET  /api/kreators/debug                          → debug (optionalKreatorAuth)
 
 # Admin
 GET  /api/kreators/admin/applications             → list all applications
 GET  /api/kreators/admin/applications/{id}        → get application
 PUT  /api/kreators/admin/applications/{id}/approve
 PUT  /api/kreators/admin/applications/{id}/reject
+POST /api/kreators/admin/{uid}/resend-link
 GET  /api/kreators/admin/list                     → list all kreators
 GET  /api/kreators/admin/stats                    → overall stats
 ```
 
 **API files:**
-- `kaayko-api/functions/api/kreators.js`
+- `kaayko-api/functions/api/kreators/kreatorRoutes.js` — main routes
+- `kaayko-api/functions/api/kreators/testRoutes.js` — ⚠️ CRITICAL: test routes mounted in production, NO auth
 
-**Firestore collections:** `kreatorApplications`, `kreators`, `kreatorProducts`
+**Firestore collections:** `kreatorApplications`, `kreators`, `kreatorProducts`, `admin_users`, `admin_audit_logs`
 **External services:** Google OAuth
-**Auth required:** Public: apply, check-status. Kreator token: dashboard, add-product. Admin: /kreator/admin
+**Auth required:** Public: apply, check-status. Magic link: onboarding. `kreator` claim: dashboard, add-product. `admin` claim: /kreator/admin
 
 ---
 
@@ -316,9 +373,27 @@ POST /api/presets                      → create preset (auth required)
 - `kaayko-api/functions/api/lenses.js`
 - `kaayko-api/functions/api/presets.js`
 
-**Firestore collections:** `cameras`, `lenses`, `presets`
+**Firestore collections:** `cameras` (⚠️ may be `Kameras` — casing inconsistency in code), `lenses`, `presets`
 **External services:** None
 **Auth required:** No (read); Firebase token (create presets)
+
+---
+
+## Module: `knowledge`
+> B2C-facing knowledge engine — appears to be ROOTS-adjacent. In progress / recently added.
+
+**Pages:**
+| URL | File |
+|-----|------|
+| `/knowledge` | `kaayko/src/knowledge/index.html` — knowledge engine landing (dark-mode UI) |
+| `/knowledge/about` | `kaayko/src/knowledge/about.html` |
+| `/knowledge/request` | `kaayko/src/knowledge/request.html` — request access form |
+
+**APIs used:** Unknown — likely `/api/v1/roots/*` or `/api/knowledge/*`. Read the HTML files to investigate before working on this module.
+
+**API files:** Unknown — needs investigation.
+
+**Notes:** Not yet in MODULE-MAP. Dark-mode design suggests a separate brand/product surface distinct from CoolSchools ROOTS deployment.
 
 ---
 
@@ -328,15 +403,26 @@ POST /api/presets                      → create preset (auth required)
 |------------|--------|-------------|
 | `kaaykoproducts` | store | Product catalog |
 | `orders` | store, kortex | Checkout orders |
+| `payment_intents` | store | Stripe payment intents |
 | `paddlingSpots` | core | Paddle forecast spots |
-| `smartlinks` | kortex | Smart link definitions |
-| `smartLinkClicks` | kortex | Click event log |
+| `forecast_cache` | core | Cached weather data (TTL-based) |
+| `current_conditions_cache` | core | Cached current conditions |
+| `short_links` | kortex | Smart link definitions (code uses `short_links`, NOT `smartlinks`) |
+| `link_analytics` | kortex | Analytics events |
+| `click_events` | kortex | Click records |
+| `install_events` | kortex | App install tracking |
+| `custom_events` | kortex | Custom event logging |
+| `webhook_subscriptions` | kortex | Webhook config |
+| `webhook_deliveries` | kortex | Delivery log |
+| `pending_tenant_registrations` | kortex | Tenant signup queue |
 | `subscriptions` | kortex | Kortex billing |
 | `kreatorApplications` | kreator | Pending applications |
 | `kreators` | kreator | Active creators |
 | `kreatorProducts` | kreator | Creator-submitted products |
+| `admin_users` | kortex, kreator | Admin profiles (shared) |
+| `admin_audit_logs` | kortex, kreator | Admin activity log (shared) |
 | `users/{uid}/kutz*` | kutz | All nutrition data |
-| `cameras` | karma | Camera reference |
+| `cameras` | karma | Camera reference (⚠️ may be `Kameras`) |
 | `lenses` | karma | Lens reference |
 | `presets` | karma | Photography presets |
 
@@ -352,9 +438,9 @@ VITE_FIREBASE_PROJECT_ID
 VITE_FIREBASE_STORAGE_BUCKET
 
 # External APIs (server/functions)
-ANTHROPIC_API_KEY        # Claude — food parsing, meal suggestions
-STRIPE_SECRET_KEY        # Stripe payments
-STRIPE_WEBHOOK_SECRET    # Stripe webhook verification
-FITBIT_CLIENT_ID
-FITBIT_CLIENT_SECRET
+ANTHROPIC_API_KEY        # Claude — food parsing, meal suggestions (kutz)
+STRIPE_SECRET_KEY        # Stripe payments (store)
+STRIPE_WEBHOOK_SECRET    # Stripe webhook verification (store)
+FITBIT_CLIENT_ID         # Fitbit OAuth (kutz)
+FITBIT_CLIENT_SECRET     # Fitbit OAuth (kutz)
 ```
