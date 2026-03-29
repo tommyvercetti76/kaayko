@@ -379,24 +379,6 @@ POST /api/presets                      → create preset (auth required)
 
 ---
 
-## Module: `knowledge`
-> B2C-facing knowledge engine — appears to be ROOTS-adjacent. In progress / recently added.
-
-**Pages:**
-| URL | File |
-|-----|------|
-| `/knowledge` | `kaayko/src/knowledge/index.html` — knowledge engine landing (dark-mode UI) |
-| `/knowledge/about` | `kaayko/src/knowledge/about.html` |
-| `/knowledge/request` | `kaayko/src/knowledge/request.html` — request access form |
-
-**APIs used:** Unknown — likely `/api/v1/roots/*` or `/api/knowledge/*`. Read the HTML files to investigate before working on this module.
-
-**API files:** Unknown — needs investigation.
-
-**Notes:** Not yet in MODULE-MAP. Dark-mode design suggests a separate brand/product surface distinct from CoolSchools ROOTS deployment.
-
----
-
 ## Firestore Collections Quick Reference
 
 | Collection | Module | Description |

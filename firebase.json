@@ -39,7 +39,10 @@
     ],
     "redirects": [
       { "source": "/admin/login", "destination": "/kortex", "type": 301 },
-      { "source": "/admin/login.html", "destination": "/kortex", "type": 301 }
+      { "source": "/admin/login.html", "destination": "/kortex", "type": 301 },
+      { "source": "/knowledge", "destination": "https://coolschools.kaayko.com/en/roots", "type": 301 },
+      { "source": "/knowledge/about", "destination": "https://coolschools.kaayko.com/en/roots/about", "type": 301 },
+      { "source": "/knowledge/request", "destination": "https://coolschools.kaayko.com/en/roots/request", "type": 301 }
     ],
     "rewrites": [
       { "source": "/api/**", "function": "api" },
