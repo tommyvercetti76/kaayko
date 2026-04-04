@@ -235,52 +235,37 @@ class Heatmap {
   addHoverEffects(strip) {
     const tooltip = strip.querySelector('.hover-tooltip');
     const hourlyData = JSON.parse(strip.dataset.hours || '[]');
-    
-    // Add haptic feedback support
-    const supportsHaptic = 'vibrate' in navigator;
-    
+
+    let rafPending = false;
+    let lastHourIndex = -1;
+
     strip.addEventListener('mousemove', (e) => {
-      const rect = strip.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const percentage = x / rect.width;
-      
-      // Calculate which hour we're hovering over (18 hours total)
-      const hourIndex = Math.floor(percentage * 18);
-      const hourData = hourlyData[hourIndex];
-      
-      if (hourData) {
-        // Show tooltip
-        tooltip.innerHTML = `
-          <div class="tooltip-content">
-            <div class="tooltip-time">${hourData.time}</div>
-            <div class="tooltip-rating">Score: ${hourData.rating}/5.0</div>
-          </div>
-        `;
-        tooltip.style.left = `${x}px`;
-        tooltip.style.display = 'block';
-        
-        // Add haptic feedback on desktop (if supported)
-        if (supportsHaptic && e.type === 'mousemove') {
-          // Light haptic feedback every time we move to a new hour
-          const currentHour = strip.dataset.currentHour;
-          if (currentHour !== hourData.hour) {
-            navigator.vibrate(10); // Very light 10ms vibration
-            strip.dataset.currentHour = hourData.hour;
+      if (rafPending) return;
+      rafPending = true;
+
+      requestAnimationFrame(() => {
+        rafPending = false;
+        const rect = strip.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const percentage = Math.max(0, Math.min(1, x / rect.width));
+        const hourIndex = Math.min(Math.floor(percentage * 18), 17);
+        const hourData = hourlyData[hourIndex];
+
+        if (hourData) {
+          if (hourIndex !== lastHourIndex) {
+            tooltip.innerHTML = `<div class="tooltip-content"><div class="tooltip-time">${hourData.time}</div><div class="tooltip-rating">Score: ${hourData.rating}/5.0</div></div>`;
+            lastHourIndex = hourIndex;
           }
+          // Use transform to avoid layout reflow
+          tooltip.style.transform = `translateX(${Math.min(x, strip.offsetWidth - 120)}px)`;
+          tooltip.style.display = 'block';
         }
-      }
+      });
     });
-    
+
     strip.addEventListener('mouseleave', () => {
       tooltip.style.display = 'none';
-      strip.dataset.currentHour = '';
-    });
-    
-    strip.addEventListener('mouseenter', () => {
-      // Light haptic feedback when entering the strip
-      if (supportsHaptic) {
-        navigator.vibrate(15);
-      }
+      lastHourIndex = -1;
     });
   }
 

@@ -94,7 +94,8 @@ html.dark-theme .heatmap-subtitle {
 .hover-tooltip {
   position: absolute;
   top: -60px;
-  transform: translateX(-50%);
+  left: 0;
+  /* JS uses transform: translateX(px) for reflow-free positioning */
   background: rgba(0, 0, 0, 0.9);
   color: white;
   padding: 8px 12px;
@@ -108,6 +109,7 @@ html.dark-theme .heatmap-subtitle {
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  will-change: transform;
 }
 
 .hover-tooltip::after {

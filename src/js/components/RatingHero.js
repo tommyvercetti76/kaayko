@@ -55,8 +55,11 @@ class RatingHero {
     const uvIndex = weather?.uvIndex || '--';
     const cloudCover = weather?.cloudCover || '--';
     
-    // Calculate water temperature estimate (air temp - 3°C for lakes)
-    const waterTemp = (temp !== '--' && !isNaN(parseFloat(temp))) ? (parseFloat(temp) - 3) : '--';
+    // Use real water temp from API conditions if available, otherwise estimate (air - 3°C)
+    const rawWaterTemp = weather?.waterTemp;
+    const waterTemp = (rawWaterTemp !== undefined && rawWaterTemp !== null && !isNaN(parseFloat(rawWaterTemp)))
+      ? parseFloat(rawWaterTemp)
+      : (temp !== '--' && !isNaN(parseFloat(temp))) ? (parseFloat(temp) - 3) : '--';
 
     console.log('🏆 RatingHero extracted values:', {
       temp, wind, windDirection, visibility, humidity, uvIndex, cloudCover, waterTemp
@@ -65,7 +68,7 @@ class RatingHero {
     // Store raw values for unit conversion
     this.rawValues = {
       temp: (temp !== '--' && !isNaN(parseFloat(temp))) ? parseFloat(temp) : null,
-      waterTemp: (waterTemp !== '--' && !isNaN(parseFloat(waterTemp))) ? parseFloat(waterTemp) : null,
+      waterTemp: (waterTemp !== '--' && waterTemp !== null && !isNaN(parseFloat(waterTemp))) ? parseFloat(waterTemp) : null,
       wind: (wind !== '--' && !isNaN(parseFloat(wind))) ? parseFloat(wind) : null,
       windDirection,
       uvIndex: (uvIndex !== '--' && !isNaN(parseFloat(uvIndex))) ? parseFloat(uvIndex) : null,

@@ -237,12 +237,19 @@ class AdvancedLakeModal {
       };
       
       // Merge conditions with penalty information for safety analysis
+      const penaltiesApplied = currentData.paddleScore.penaltiesApplied || [];
       const weather = {
         ...currentData.conditions,
-        penalties: currentData.paddleScore.penalties || [],
-        originalRating: currentData.paddleScore.originalRating || rating,
-        totalPenalty: currentData.paddleScore.totalPenalty || 0,
-        hasPenalties: currentData.paddleScore.penalties && currentData.paddleScore.penalties.length > 0
+        penalties: penaltiesApplied,
+        originalRating: currentData.paddleScore.originalMLRating || rating,
+        totalPenalty: penaltiesApplied.length > 0
+          ? penaltiesApplied.reduce((sum, p) => {
+              const m = typeof p === 'string' ? p.match(/([-+]\d+\.?\d*)/) : null;
+              return sum + (m ? parseFloat(m[1]) : 0);
+            }, 0)
+          : 0,
+        hasPenalties: penaltiesApplied.length > 0,
+        isGoldStandard: currentData.paddleScore.isGoldStandard
       };
       
       console.log('🏆 RatingHero data prepared:', { rating, interpretation, weather, forecastData });

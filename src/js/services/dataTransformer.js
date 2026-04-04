@@ -9,21 +9,36 @@ class DataTransformer {
       console.error('❌ No forecast data available');
       return null;
     }
-    
-    // Get current time period (8=morning, 12=noon, 18=evening)
+
+    const hourly = forecastData.forecast[0].hourly;
     const currentHour = new Date().getHours();
-    let timeKey = '8'; // Default to morning
-    if (currentHour >= 16) timeKey = '18';
-    else if (currentHour >= 11) timeKey = '12';
-    
-    const currentConditions = forecastData.forecast[0].hourly[timeKey];
-    if (!currentConditions) {
-      console.error(`❌ No data for time period: ${timeKey}`);
-      return null;
+
+    // Try current hour first, then scan nearby hours (within ±3h), then fallback to 8/12/18
+    const candidates = [
+      currentHour,
+      currentHour - 1, currentHour + 1,
+      currentHour - 2, currentHour + 2,
+      currentHour - 3, currentHour + 3,
+      8, 12, 18
+    ];
+
+    for (const h of candidates) {
+      const key = String(h);
+      if (hourly[key]) {
+        console.log(`✅ Current conditions for hour ${key} (requested ${currentHour}):`, hourly[key]);
+        return hourly[key];
+      }
     }
-    
-    console.log(`✅ Current conditions for hour ${timeKey}:`, currentConditions);
-    return currentConditions;
+
+    // Last resort: first available hour
+    const firstKey = Object.keys(hourly).sort((a, b) => +a - +b)[0];
+    if (firstKey) {
+      console.warn(`⚠️ Using first available hour ${firstKey} (wanted ${currentHour})`);
+      return hourly[firstKey];
+    }
+
+    console.error('❌ No hourly data found');
+    return null;
   }
 
   // Prepare data for heatmap component (expanded hourly structure)
