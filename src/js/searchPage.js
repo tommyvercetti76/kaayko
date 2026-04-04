@@ -1,252 +1,254 @@
 /**
- * searchPage.js — full-page water body discovery
- * Handles /paddlingout/search.html
+ * searchPage.js — Discover Paddle Spots
+ * /paddlingout/search.html
+ *
+ * Data flow:
+ *  - Popular chip tap OR GPS → runSearch(lat, lng, label)
+ *  - Text input → Nominatim geocode → runSearch
+ *  - runSearch → /nearbyWater (HydroLAKES + USGS NHD, Firestore-cached)
+ *  - Cards render instantly; score rings fill reactively per-card
  */
 
-const SEARCH_API_BASE = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+const API_BASE = ['localhost', '127.0.0.1'].includes(window.location.hostname)
   ? 'http://127.0.0.1:5001/kaaykostore/us-central1/api'
   : 'https://api-vwcc5j4qda-uc.a.run.app';
 
-// ── Score colors (matches heatmap / homepage ring scale) ──────────────────
-function scoreColor(score) {
-  const s = parseFloat(score);
-  if (s >= 4.5) return '#22C55E';
-  if (s >= 4.0) return '#4ADE80';
-  if (s >= 3.5) return '#CD853F';
-  if (s >= 3.0) return '#E36414';
-  if (s >= 2.5) return '#C0392B';
-  if (s >= 2.0) return '#A01010';
-  if (s >= 1.5) return '#8B1212';
-  return '#6B0000';
+// ── Score helpers ─────────────────────────────────────────────────────────
+function scoreColor(s) {
+  const v = parseFloat(s);
+  if (v >= 4.5) return '#22C55E'; // vivid green
+  if (v >= 4.0) return '#4ADE80'; // light green
+  if (v >= 3.5) return '#D97706'; // amber
+  if (v >= 3.0) return '#F97316'; // orange
+  if (v >= 2.5) return '#EF4444'; // vivid red
+  if (v >= 2.0) return '#DC2626'; // medium red
+  if (v >= 1.5) return '#EF4444'; // vivid red — max visibility for dangerous scores
+  return '#FF2D20';               // alarm red
 }
 
-function scoreLabel(score) {
-  const s = parseFloat(score);
-  if (s >= 4.5) return 'Excellent';
-  if (s >= 4.0) return 'Great';
-  if (s >= 3.5) return 'Good';
-  if (s >= 3.0) return 'Fair';
-  if (s >= 2.5) return 'Risky';
-  if (s >= 2.0) return 'Poor';
-  if (s >= 1.5) return 'Danger';
-  return 'Critical';
-}
-
-// ── Build mini SVG donut ring ─────────────────────────────────────────────
-function buildScoreRing(score) {
-  if (!score) {
-    return `<div class="water-score-loading">◌</div>`;
-  }
-  const r = 20, cx = 26, cy = 26;
-  const circ  = +(2 * Math.PI * r).toFixed(1);
-  const pct   = Math.max(0, Math.min(1, parseFloat(score) / 5));
-  const fill  = +(pct * circ).toFixed(1);
-  const offset = +(-circ / 4).toFixed(1);
-  const color  = scoreColor(score);
-
+function buildRing(score) {
+  const r    = 18, cx = 24, cy = 24;
+  const circ = 2 * Math.PI * r;
+  const pct  = Math.max(0, Math.min(1, parseFloat(score) / 5));
+  const fill = (pct * circ).toFixed(2);
+  const gap  = ((1 - pct) * circ).toFixed(2);
+  const color = scoreColor(score);
+  // rotate(-90) starts the arc at 12 o'clock — no dashoffset needed
   return `
-    <div class="water-score-wrap">
-      <svg class="water-score-svg" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
-        <circle class="water-score-track" cx="${cx}" cy="${cy}" r="${r}"/>
-        <circle class="water-score-fill"
-          cx="${cx}" cy="${cy}" r="${r}"
+    <div class="score-ring-wrap">
+      <svg class="score-ring-svg" viewBox="0 0 48 48">
+        <circle class="score-track" cx="${cx}" cy="${cy}" r="${r}"/>
+        <circle class="score-fill" cx="${cx}" cy="${cy}" r="${r}"
           stroke="${color}"
-          stroke-dasharray="${fill} ${circ}"
-          stroke-dashoffset="${offset}"/>
+          stroke-dasharray="${fill} ${gap}"
+          transform="rotate(-90 ${cx} ${cy})"/>
       </svg>
-      <div class="water-score-label" style="color:${color}">${score}</div>
-    </div>
-  `;
+      <div class="score-label" style="color:#fff">${score}</div>
+    </div>`;
+}
+
+// ── Nominatim geocode ─────────────────────────────────────────────────────
+async function geocode(query) {
+  try {
+    const ctrl = new AbortController();
+    const tid  = setTimeout(() => ctrl.abort(), 8000);
+    const res  = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`,
+      { signal: ctrl.signal, headers: { 'User-Agent': 'Kaayko/1.0', 'Accept-Language': 'en' } }
+    );
+    clearTimeout(tid);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data.length) return null;
+    return {
+      lat: parseFloat(data[0].lat),
+      lng: parseFloat(data[0].lon),
+      label: data[0].display_name.split(',').slice(0, 2).join(', ')
+    };
+  } catch { return null; }
 }
 
 // ── DOM refs ──────────────────────────────────────────────────────────────
-const btnLocation  = document.getElementById('btn-use-location');
-const btnSearch    = document.getElementById('btn-search');
-const inpLat       = document.getElementById('inp-lat');
-const inpLng       = document.getElementById('inp-lng');
-const errorEl      = document.getElementById('search-error');
-const loadingEl    = document.getElementById('search-loading');
-const loadingBar   = document.getElementById('loading-bar');
-const resultsSec   = document.getElementById('results-section');
-const resultsList  = document.getElementById('results-list');
-const resultsCount = document.getElementById('results-count');
-const resultsLoc   = document.getElementById('results-location');
+const inputEl        = document.getElementById('search-input');
+const clearBtn       = document.getElementById('search-clear');
+const gpsBtn         = document.getElementById('btn-gps');
+const statusEl       = document.getElementById('search-status');
+const popularSection = document.getElementById('popular-section');
+const resultsHeader  = document.getElementById('results-header');
+const resultsCount   = document.getElementById('results-count');
+const resultsHint    = document.getElementById('results-hint');
+const resultsList    = document.getElementById('results-list');
 
-let isSearching    = false;
-let scoreGeneration = 0;
+let isSearching = false;
+let scoreGen    = 0;
 
-// ── UI helpers ────────────────────────────────────────────────────────────
-function showError(msg) {
-  errorEl.textContent = msg;
-  errorEl.style.display = 'block';
-}
-function hideError() { errorEl.style.display = 'none'; }
+// ── Search input interactions ─────────────────────────────────────────────
+inputEl.addEventListener('input', () => {
+  clearBtn.classList.toggle('visible', inputEl.value.length > 0);
+});
+clearBtn.addEventListener('click', () => {
+  inputEl.value = '';
+  clearBtn.classList.remove('visible');
+  inputEl.focus();
+});
+inputEl.addEventListener('keydown', e => {
+  if (e.key === 'Enter') triggerTextSearch();
+});
 
-function setLoading(on) {
-  loadingEl.style.display = on ? 'block' : 'none';
-  loadingBar.style.width  = on ? '60%' : '100%';
-  btnSearch.disabled = on;
-  btnLocation.disabled = on;
-  if (!on) setTimeout(() => { loadingBar.style.width = '0%'; loadingEl.style.display = 'none'; }, 400);
-}
+// ── GPS button ────────────────────────────────────────────────────────────
+gpsBtn.addEventListener('click', requestGPS);
 
-// ── Use current location ──────────────────────────────────────────────────
-btnLocation.addEventListener('click', () => {
-  if (!navigator.geolocation) return showError('Geolocation not supported by this browser.');
-  hideError();
-  setLoading(true);
+function requestGPS() {
+  if (!navigator.geolocation) return setStatus('Geolocation not supported.', 'error');
+  gpsBtn.classList.add('loading');
+  setStatus('Locating you…', 'loading');
   navigator.geolocation.getCurrentPosition(
     pos => {
-      inpLat.value = pos.coords.latitude.toFixed(6);
-      inpLng.value = pos.coords.longitude.toFixed(6);
-      setLoading(false);
-      runSearch(pos.coords.latitude, pos.coords.longitude);
+      gpsBtn.classList.remove('loading');
+      const { latitude: lat, longitude: lng } = pos.coords;
+      inputEl.value = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+      clearBtn.classList.add('visible');
+      runSearch(lat, lng, 'your location');
     },
     err => {
-      setLoading(false);
-      showError('Could not get your location. Enter coordinates manually.');
+      gpsBtn.classList.remove('loading');
+      setStatus(
+        err.code === 1 ? 'Location denied — try a place name below.' : 'Could not get location.',
+        'error'
+      );
     },
-    { timeout: 8000 }
+    { timeout: 10000, maximumAge: 60000 }
   );
+}
+
+// ── Popular spot chips ────────────────────────────────────────────────────
+document.querySelectorAll('.popular-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    const lat   = parseFloat(chip.dataset.lat);
+    const lng   = parseFloat(chip.dataset.lng);
+    const label = chip.textContent.trim();
+    inputEl.value = label;
+    clearBtn.classList.add('visible');
+    runSearch(lat, lng, label);
+  });
 });
 
-// ── Manual search ─────────────────────────────────────────────────────────
-btnSearch.addEventListener('click', () => {
-  const lat = parseFloat(inpLat.value);
-  const lng = parseFloat(inpLng.value);
-  if (isNaN(lat) || lat < -90 || lat > 90) return showError('Latitude must be between −90 and 90.');
-  if (isNaN(lng) || lng < -180 || lng > 180) return showError('Longitude must be between −180 and 180.');
-  hideError();
-  runSearch(lat, lng);
-});
-
-// Enter key in coord fields
-[inpLat, inpLng].forEach(el => el.addEventListener('keydown', e => {
-  if (e.key === 'Enter') btnSearch.click();
-}));
+// ── Text search ───────────────────────────────────────────────────────────
+async function triggerTextSearch() {
+  const query = inputEl.value.trim();
+  if (!query) { setStatus('Enter a lake, city, or place name.', 'error'); return; }
+  setStatus('Finding location…', 'loading');
+  const geo = await geocode(query);
+  if (!geo) {
+    setStatus(`Couldn't find "${query}". Try a more specific name.`, 'error');
+    return;
+  }
+  runSearch(geo.lat, geo.lng, geo.label);
+}
 
 // ── Core search ───────────────────────────────────────────────────────────
-async function runSearch(lat, lng) {
+async function runSearch(lat, lng, label = 'this location') {
   if (isSearching) return;
   isSearching = true;
-  setLoading(true);
-  hideError();
-  resultsSec.classList.remove('visible');
+  setStatus(`Searching near ${label}…`, 'loading');
+  resultsHeader.classList.remove('visible');
+  resultsList.innerHTML = '';
+  popularSection.style.display = 'none';
+  showSkeletons(6);
 
   try {
-    const url = `${SEARCH_API_BASE}/nearbyWater?lat=${lat}&lng=${lng}&radius=50&nocache=1`;
-    const res  = await fetch(url, { signal: AbortSignal.timeout(30000) });
-    if (!res.ok) throw new Error(`API error ${res.status}`);
+    const q   = encodeURIComponent(inputEl.value.trim());
+    const res = await fetch(`${API_BASE}/nearbyWater?lat=${lat}&lng=${lng}&radius=30&q=${q}`);
+    if (!res.ok) throw new Error(`API ${res.status}`);
     const data = await res.json();
 
     if (!data.success || !data.waterBodies?.length) {
-      showError('No water bodies found nearby. Try a different location or check back shortly.');
+      resultsList.innerHTML = '';
+      popularSection.style.display = '';
+      showEmpty(label);
+      setStatus('', '');
       return;
     }
 
-    renderResults(data.waterBodies, lat, lng);
+    renderResults(data.waterBodies, label, data.cached);
+
   } catch (err) {
-    if (err.name === 'TimeoutError') {
-      showError('Search timed out. The water body database can be slow — please try again.');
-    } else {
-      showError('Search failed. Check your connection and try again.');
-    }
+    resultsList.innerHTML = '';
+    popularSection.style.display = '';
+    setStatus('Search failed — check connection and try again.', 'error');
     console.error('Search error:', err);
   } finally {
     isSearching = false;
-    setLoading(false);
+    setStatus('', '');
   }
 }
 
 // ── Render results ────────────────────────────────────────────────────────
-function renderResults(bodies, searchLat, searchLng) {
-  // Filter & sort
-  const filtered = bodies
-    .filter(b => {
-      if (b.distanceMiles > 30 && (!b.relevancy || b.relevancy < 60)) return false;
-      if (b.type === 'Pond' && b.distanceMiles > 8 && (!b.relevancy || b.relevancy < 50)) return false;
-      if (b.access === 'private' || b.access === 'no') return false;
-      return true;
-    })
-    .sort((a, b) => {
-      if (a.relevancy && b.relevancy) return b.relevancy - a.relevancy;
-      return a.distanceMiles - b.distanceMiles;
-    })
-    .slice(0, 15);
-
-  const gen = ++scoreGeneration;
-
+function renderResults(bodies, label, cached) {
+  const gen = ++scoreGen;
   resultsList.innerHTML = '';
-  resultsCount.textContent = `${filtered.length} paddle spot${filtered.length !== 1 ? 's' : ''} found`;
-  resultsLoc.textContent   = `near ${searchLat.toFixed(3)}, ${searchLng.toFixed(3)}`;
-  resultsSec.classList.add('visible');
 
-  filtered.forEach((body, idx) => {
-    const card = document.createElement('div');
+  const items = bodies.slice(0, 15);
+
+  resultsCount.textContent = `${items.length} spot${items.length !== 1 ? 's' : ''} near ${label}`;
+  resultsHint.textContent  = cached ? '· cached' : '· live';
+  resultsHeader.classList.add('visible');
+
+  items.forEach((body, idx) => {
+    const card   = document.createElement('div');
     card.className = 'water-card';
+    card.style.animationDelay = `${idx * 35}ms`;
 
-    const features = body.paddlingFeatures || {};
-    const badges   = [];
-    if (features.boatLaunch)                            badges.push('Launch');
-    if (features.boatRental)                            badges.push('Rental');
-    if (features.canoeAccess || features.kayakAccess)  badges.push('Paddle Access');
-    if (features.publicAccess || body.access === 'public') badges.push('Public');
-    if (body.publicLand)                                badges.push(body.publicLand.name);
+    const scoreId = `sc-${gen}-${idx}`;
+    const areaStr = body.areaKm2 ? ` · ${body.areaKm2} km²` : '';
 
-    let meta = `${body.type} · ${body.distanceMiles} mi`;
-    if (body.areaKm2 > 1) meta += ` · ${body.areaKm2} km²`;
-
-    const scoreId = `ws-${gen}-${idx}`;
     card.innerHTML = `
       <div class="water-card-info">
-        <h3>${body.name}</h3>
-        <div class="water-card-meta">${meta}</div>
-        ${badges.length ? `<div class="water-card-badges">${badges.map(b => `<span class="badge">${b}</span>`).join('')}</div>` : ''}
+        <div class="water-card-name">${body.name}</div>
+        <div class="water-card-meta">
+          <span class="type-chip">${body.type}</span>
+          <span>${body.distanceMiles} mi${areaStr}</span>
+        </div>
       </div>
-      <div id="${scoreId}"><div class="water-score-loading">◌</div></div>
-      <button class="btn-map-action" title="Open in Maps">
-        <span class="material-icons" style="font-size:18px">place</span>
-      </button>
+      <div id="${scoreId}"><div class="score-spinner"></div></div>
+      <button class="btn-map material-icons" title="Open in Maps">place</button>
     `;
 
-    card.querySelector('.btn-map-action').addEventListener('click', e => {
+    card.querySelector('.btn-map').addEventListener('click', e => {
       e.stopPropagation();
       window.open(`https://www.google.com/maps/search/?api=1&query=${body.lat},${body.lng}`, '_blank');
     });
-
     card.addEventListener('click', () => openForecast(body));
     resultsList.appendChild(card);
 
     // Fetch score reactively
     fetchScore(body.lat, body.lng).then(score => {
-      if (scoreGeneration !== gen) return;
+      if (scoreGen !== gen) return;
       const el = document.getElementById(scoreId);
       if (!el) return;
-      el.innerHTML = buildScoreRing(score);
-      body.score = score;
+      el.innerHTML = score
+        ? buildRing(score)
+        : `<div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:#444;font-size:10px;font-family:'Josefin_Light',Arial,sans-serif">N/A</div>`;
     });
   });
 }
 
-// ── Fetch single score with real timeout ──────────────────────────────────
+// ── Fetch paddle score ────────────────────────────────────────────────────
 async function fetchScore(lat, lng) {
-  const controller = new AbortController();
-  const tid = setTimeout(() => controller.abort(), 5000);
+  const ctrl = new AbortController();
+  const tid  = setTimeout(() => ctrl.abort(), 7000);
   try {
-    const res  = await fetch(`${SEARCH_API_BASE}/paddleScore?lat=${lat}&lng=${lng}`, { signal: controller.signal });
+    const res  = await fetch(`${API_BASE}/paddleScore?lat=${lat}&lng=${lng}`, { signal: ctrl.signal });
     clearTimeout(tid);
     if (!res.ok) return null;
-    const data  = await res.json();
-    const score = data.paddleScore?.rating ?? data.paddleScore ?? data.data?.paddleScore?.rating ?? data.score;
-    if (score == null || isNaN(score)) return null;
-    return Number(score).toFixed(1);
-  } catch {
-    clearTimeout(tid);
-    return null;
-  }
+    const data = await res.json();
+    const s = data.paddleScore?.rating ?? data.paddleScore ?? data.data?.paddleScore?.rating ?? data.score;
+    if (s == null || isNaN(s)) return null;
+    return Number(s).toFixed(1);
+  } catch { clearTimeout(tid); return null; }
 }
 
-// ── Open full forecast modal ──────────────────────────────────────────────
+// ── Open forecast modal ───────────────────────────────────────────────────
 function openForecast(body) {
   if (!window.advancedModal) return;
   window.advancedModal.open({
@@ -257,14 +259,66 @@ function openForecast(body) {
   });
 }
 
-// ── Pre-fill from URL params (/paddlingout/search?lat=33.1&lng=-96.7) ─────
+// ── Skeletons ─────────────────────────────────────────────────────────────
+function showSkeletons(n) {
+  resultsList.innerHTML = '';
+  for (let i = 0; i < n; i++) {
+    const el = document.createElement('div');
+    el.className = 'water-card skeleton';
+    el.style.animationDelay = `${i * 40}ms`;
+    el.innerHTML = `
+      <div class="water-card-info">
+        <div class="skel" style="width:${50 + Math.random() * 30}%;margin-bottom:8px"></div>
+        <div class="skel" style="width:${30 + Math.random() * 20}%"></div>
+      </div>
+      <div class="score-spinner"></div>`;
+    resultsList.appendChild(el);
+  }
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────
+function showEmpty(label) {
+  resultsList.innerHTML = `
+    <div class="empty-state">
+      <div class="mat material-icons">water_off</div>
+      <h3>No spots found near ${label}</h3>
+      <p>Try a larger lake name or a nearby city.</p>
+    </div>`;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function setStatus(msg, type = '') {
+  statusEl.textContent = msg;
+  statusEl.className   = 'search-status' + (type ? ` ${type}` : '');
+}
+
+// ── URL params: ?lat=33.1&lng=-96.7 ──────────────────────────────────────
 (function checkUrlParams() {
   const p   = new URLSearchParams(window.location.search);
   const lat = parseFloat(p.get('lat'));
   const lng = parseFloat(p.get('lng'));
   if (!isNaN(lat) && !isNaN(lng)) {
-    inpLat.value = lat;
-    inpLng.value = lng;
-    runSearch(lat, lng);
+    inputEl.value = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    clearBtn.classList.add('visible');
+    runSearch(lat, lng, `${lat.toFixed(3)}, ${lng.toFixed(3)}`);
   }
 })();
+
+// ── Auto-detect on load (silent — don't prompt if already searching) ──────
+window.addEventListener('DOMContentLoaded', () => {
+  const p = new URLSearchParams(window.location.search);
+  if (!p.has('lat') && !p.has('lng') && navigator.geolocation) {
+    // Try silently — won't show prompt unless browser has prior permission
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        if (isSearching) return; // user already clicked something
+        const { latitude: lat, longitude: lng } = pos.coords;
+        inputEl.value = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        clearBtn.classList.add('visible');
+        runSearch(lat, lng, 'your location');
+      },
+      () => { /* permission denied silently — user sees popular chips */ },
+      { timeout: 3000, maximumAge: 300000 }
+    );
+  }
+});

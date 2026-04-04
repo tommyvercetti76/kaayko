@@ -214,15 +214,15 @@ body {
   display: block;
 }
 
-/* Track: adapts to light vs dark background */
+/* Track: clear groove visible in both themes */
 .mini-ring-track {
   fill: none;
-  stroke: rgba(0, 0, 0, 0.15);
+  stroke: rgba(0, 0, 0, 0.12);  /* light mode */
   stroke-width: 3.5;
 }
 
 html.dark-theme .mini-ring-track {
-  stroke: rgba(255, 255, 255, 0.2);
+  stroke: rgba(255, 255, 255, 0.18);  /* dark mode */
 }
 
 .mini-ring-fill {
@@ -239,11 +239,20 @@ html.dark-theme .mini-ring-track {
   font-family: 'Josefin_Bold', Arial, sans-serif;
   font-size: 11px;
   font-weight: 700;
-  /* color set via inline style to match ring stroke */
+  /* color set via inline style — vibrant stroke color, readable on any bg */
   pointer-events: none;
   line-height: 1;
   white-space: nowrap;
-  text-shadow: 0 0 4px rgba(255, 255, 255, 0.6); /* ensure readability on any bg */
+  text-shadow: none;
+}
+
+/* N/A state — dashed ring, muted label that works in both themes */
+.mini-ring-label-na {
+  font-size: 14px;
+  color: rgba(120, 120, 120, 0.7);
+}
+html.dark-theme .mini-ring-label-na {
+  color: rgba(255, 255, 255, 0.3);
 }
 
 /* Tooltip */

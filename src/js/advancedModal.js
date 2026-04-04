@@ -60,15 +60,11 @@ class AdvancedLakeModal {
     this.modal = document.createElement('div');
     this.modal.className = 'advanced-modal';
     
-    // Check if this was opened from custom location search
-    const hasSearchContext = spot.searchContext;
-    
     this.modal.innerHTML = `
       <div class="advanced-overlay">
         <div class="advanced-container">
           <div class="advanced-header">
             <div class="advanced-title">
-              ${hasSearchContext ? '<button class="advanced-back" aria-label="Back to search results">←</button>' : ''}
               <div class="title-content">
                 <h2>${spot.title}</h2>
                 <p class="advanced-subtitle">${spot.subtitle || ''}</p>
@@ -96,13 +92,6 @@ class AdvancedLakeModal {
       }
     });
 
-    // Add back button listener if it exists
-    const backBtn = this.modal.querySelector('.advanced-back');
-    if (backBtn && hasSearchContext) {
-      backBtn.addEventListener('click', () => {
-        this.handleBackToSearch(spot.searchContext);
-      });
-    }
   }
 
   // Add modal to DOM
@@ -448,19 +437,6 @@ class AdvancedLakeModal {
       this.modal = null;
       this.currentSpot = null;
       this.isLoading = false;
-    }
-  }
-
-  // Handle back to search functionality
-  handleBackToSearch(searchContext) {
-    console.log('🔙 Navigating back to search results:', searchContext);
-    
-    // Close this modal first
-    this.close();
-    
-    // Restore search results in custom location modal
-    if (window.customLocationModal && searchContext) {
-      window.customLocationModal.restoreSearchResults(searchContext);
     }
   }
 

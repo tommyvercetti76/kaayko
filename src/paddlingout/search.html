@@ -18,278 +18,212 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
 
   <style>
-    /* ── Search page layout ───────────────────────────── */
     .search-page {
       min-height: 100vh;
-      padding: 24px 16px 48px;
-      max-width: 900px;
+      padding: 16px 16px 60px;
+      max-width: 680px;
       margin: 0 auto;
     }
 
-    /* Hero search card */
-    .search-hero {
-      background: linear-gradient(135deg, rgba(212,175,55,0.12), rgba(212,175,55,0.04));
-      border: 1px solid rgba(212,175,55,0.3);
-      border-radius: 16px;
-      padding: 32px 28px 28px;
-      margin-bottom: 28px;
-      text-align: center;
-    }
-    .search-hero-icon {
-      width: 64px; height: 64px;
-      background: #d4af37;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 16px;
-      font-size: 30px;
-      box-shadow: 0 0 24px rgba(212,175,55,0.4);
-    }
-    .search-hero h1 {
-      font-family: 'Josefin_Bold', Arial, sans-serif;
-      font-size: 26px;
-      color: #d4af37;
-      margin: 0 0 6px;
-    }
-    .search-hero p {
-      font-family: 'Josefin_Light', Arial, sans-serif;
-      color: #aaa;
-      font-size: 14px;
-      margin: 0 0 24px;
-    }
-
-    /* Location button */
-    .btn-location {
-      width: 100%;
-      padding: 14px 20px;
-      background: linear-gradient(135deg, #d4af37, #b8922a);
-      border: none;
-      border-radius: 10px;
-      color: #000;
-      font-family: 'Josefin_Bold', Arial, sans-serif;
-      font-size: 15px;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 10px;
-      transition: all 0.2s ease;
-      margin-bottom: 20px;
-    }
-    .btn-location:hover { filter: brightness(1.1); transform: translateY(-1px); }
-    .btn-location:active { transform: translateY(0); }
-
-    /* Divider */
-    .search-divider {
-      display: flex; align-items: center; gap: 12px;
-      color: #555; font-size: 12px;
-      font-family: 'Josefin_Bold', Arial, sans-serif;
-      letter-spacing: 1px;
-      margin-bottom: 20px;
-    }
-    .search-divider::before, .search-divider::after {
-      content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.1);
-    }
-
-    /* Coord inputs */
-    .coord-row {
+    /* ── Search bar ── */
+    .search-bar-row {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 16px;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      margin-bottom: 12px;
     }
-    .coord-field label {
-      display: flex; align-items: center; gap: 6px;
-      font-family: 'Josefin_Bold', Arial, sans-serif;
-      font-size: 12px;
-      color: #d4af37;
-      margin-bottom: 6px;
-      letter-spacing: 0.5px;
-    }
-    .coord-field input {
+    .search-bar-wrap { position: relative; }
+    .search-input {
       width: 100%;
-      padding: 11px 14px;
+      padding: 14px 44px 14px 44px;
       background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 8px;
+      border: 1.5px solid rgba(212,175,55,0.3);
+      border-radius: 12px;
       color: #fff;
       font-family: 'Josefin_Light', Arial, sans-serif;
       font-size: 15px;
       outline: none;
       box-sizing: border-box;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .coord-field input:focus { border-color: #d4af37; }
-    html:not(.dark-theme) .coord-field input { color: #111; background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.15); }
+    html:not(.dark-theme) .search-input { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.15); color: #111; }
+    .search-input:focus { border-color: #d4af37; box-shadow: 0 0 0 3px rgba(212,175,55,0.1); }
+    .search-input::placeholder { color: #555; }
+    html:not(.dark-theme) .search-input::placeholder { color: #999; }
 
-    /* Search button */
-    .btn-search {
-      width: 100%;
-      padding: 14px;
-      background: rgba(212,175,55,0.15);
-      border: 1px solid #d4af37;
-      border-radius: 10px;
-      color: #d4af37;
-      font-family: 'Josefin_Bold', Arial, sans-serif;
-      font-size: 15px;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      transition: all 0.2s ease;
+    .search-icon-left {
+      position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+      color: #d4af37; font-size: 20px; pointer-events: none;
     }
-    .btn-search:hover { background: rgba(212,175,55,0.25); transform: translateY(-1px); }
-    .btn-search:disabled { opacity: 0.5; cursor: default; transform: none; }
+    .search-clear-btn {
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: #555; cursor: pointer;
+      font-size: 18px; padding: 4px; display: none;
+    }
+    .search-clear-btn.visible { display: block; }
 
-    /* Error */
-    .search-error {
-      display: none;
-      background: rgba(220,38,38,0.1);
-      border: 1px solid rgba(220,38,38,0.3);
-      border-radius: 8px;
-      color: #f87171;
-      font-family: 'Josefin_Light', Arial, sans-serif;
-      font-size: 13px;
-      padding: 10px 14px;
-      margin-top: 12px;
-    }
-
-    /* Loading bar */
-    .search-loading {
-      display: none;
-      margin-top: 14px;
-      height: 4px;
-      background: rgba(255,255,255,0.08);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-    .search-loading-bar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #d4af37, #f5d976);
-      border-radius: 2px;
-      transition: width 0.4s ease;
-    }
-
-    /* Results section */
-    .results-section { display: none; }
-    .results-section.visible { display: block; }
-
-    .results-header-bar {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 16px;
-    }
-    .results-count {
-      font-family: 'Josefin_Bold', Arial, sans-serif;
-      font-size: 14px;
-      color: #d4af37;
-    }
-    .results-location {
-      font-family: 'Josefin_Light', Arial, sans-serif;
-      font-size: 12px;
-      color: #888;
-    }
-
-    /* Water body card */
-    .water-card {
-      display: grid;
-      grid-template-columns: 1fr auto auto;
-      align-items: center;
-      gap: 12px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
+    .btn-gps {
+      padding: 0 16px;
+      background: rgba(212,175,55,0.1);
+      border: 1.5px solid rgba(212,175,55,0.3);
       border-radius: 12px;
-      padding: 14px 16px;
-      margin-bottom: 10px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    html:not(.dark-theme) .water-card {
-      background: rgba(0,0,0,0.03);
-      border-color: rgba(0,0,0,0.08);
-    }
-    .water-card:hover {
-      border-color: rgba(212,175,55,0.3);
-      background: rgba(212,175,55,0.05);
-      transform: translateY(-1px);
-    }
-
-    .water-card-info h3 {
-      font-family: 'Josefin_Bold', Arial, sans-serif;
-      font-size: 15px;
-      color: var(--modal-text, #fff);
-      margin: 0 0 3px;
-    }
-    html:not(.dark-theme) .water-card-info h3 { color: #111; }
-
-    .water-card-meta {
-      font-family: 'Josefin_Light', Arial, sans-serif;
-      font-size: 12px;
-      color: #888;
-    }
-
-    .water-card-badges {
-      display: flex; flex-wrap: wrap; gap: 4px;
-      margin-top: 6px;
-    }
-    .badge {
-      font-family: 'Josefin_Bold', Arial, sans-serif;
-      font-size: 10px;
-      padding: 2px 7px;
-      border-radius: 10px;
-      background: rgba(212,175,55,0.12);
       color: #d4af37;
-      border: 1px solid rgba(212,175,55,0.2);
-    }
-
-    /* Score ring in card */
-    .water-score-wrap {
-      position: relative;
-      width: 52px; height: 52px;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
       flex-shrink: 0;
     }
-    .water-score-svg { width: 52px; height: 52px; display: block; }
-    .water-score-track { fill: none; stroke: rgba(0,0,0,0.12); stroke-width: 4; }
-    html.dark-theme .water-score-track { stroke: rgba(255,255,255,0.15); }
-    .water-score-fill  { fill: none; stroke-width: 4; stroke-linecap: round; }
-    .water-score-label {
+    .btn-gps:hover { background: rgba(212,175,55,0.2); }
+    .btn-gps.loading { animation: gps-pulse 1s ease-in-out infinite; }
+    @keyframes gps-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    /* ── Status ── */
+    .search-status {
+      font-family: 'Josefin_Light', Arial, sans-serif;
+      font-size: 12px; color: #666;
+      padding: 0 2px 10px;
+      min-height: 20px;
+    }
+    .search-status.error   { color: #f87171; }
+    .search-status.loading { color: #d4af37; }
+
+    /* ── Popular spots ── */
+    .popular-section { margin-bottom: 20px; }
+    .popular-label {
+      font-family: 'Josefin_Bold', Arial, sans-serif;
+      font-size: 11px; color: #555;
+      letter-spacing: 1px; text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .popular-chips {
+      display: flex; flex-wrap: wrap; gap: 8px;
+    }
+    .popular-chip {
+      font-family: 'Josefin_Light', Arial, sans-serif;
+      font-size: 13px;
+      padding: 7px 13px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      color: #ccc;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    html:not(.dark-theme) .popular-chip { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.1); color: #444; }
+    .popular-chip:hover {
+      border-color: rgba(212,175,55,0.4);
+      background: rgba(212,175,55,0.06);
+      color: #d4af37;
+    }
+    .popular-chip .chip-icon { font-size: 14px; opacity: 0.6; }
+
+    /* ── Results header ── */
+    .results-header {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: 10px;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .results-header.visible { opacity: 1; }
+    .results-count { font-family: 'Josefin_Bold', Arial, sans-serif; font-size: 13px; color: #d4af37; }
+    .results-hint  { font-family: 'Josefin_Light', Arial, sans-serif; font-size: 11px; color: #555; }
+
+    /* ── Water card ── */
+    .water-card {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 13px 14px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+      opacity: 0; transform: translateY(6px);
+      animation: card-in 0.25s ease forwards;
+    }
+    html:not(.dark-theme) .water-card { background: rgba(0,0,0,0.025); border-color: rgba(0,0,0,0.07); }
+    .water-card:hover { border-color: rgba(212,175,55,0.3); background: rgba(212,175,55,0.04); transform: translateY(-1px); }
+    @keyframes card-in { to { opacity: 1; transform: translateY(0); } }
+
+    /* Skeleton */
+    .water-card.skeleton { cursor: default; pointer-events: none; }
+    .water-card.skeleton:hover { transform: none; border-color: rgba(255,255,255,0.07); }
+    .skel {
+      height: 11px; border-radius: 5px;
+      background: rgba(255,255,255,0.06);
+      animation: skel-pulse 1.4s ease-in-out infinite;
+    }
+    html:not(.dark-theme) .skel { background: rgba(0,0,0,0.06); }
+    @keyframes skel-pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 0.9; } }
+
+    .water-card-info { flex: 1; min-width: 0; }
+    .water-card-name {
+      font-family: 'Josefin_Bold', Arial, sans-serif; font-size: 15px;
+      color: #fff; margin: 0 0 5px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    html:not(.dark-theme) .water-card-name { color: #111; }
+    .water-card-meta {
+      font-family: 'Josefin_Light', Arial, sans-serif; font-size: 12px; color: #777;
+      display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+    }
+    .type-chip {
+      font-family: 'Josefin_Bold', Arial, sans-serif; font-size: 10px;
+      padding: 2px 6px; border-radius: 8px;
+      background: rgba(212,175,55,0.1); color: #d4af37;
+      border: 1px solid rgba(212,175,55,0.15);
+    }
+
+    /* Score ring */
+    .score-ring-wrap { position: relative; width: 48px; height: 48px; flex-shrink: 0; }
+    .score-ring-svg  { width: 48px; height: 48px; display: block; }
+    .score-track { fill: none; stroke: rgba(255,255,255,0.15); stroke-width: 4; }  /* dark */
+    html:not(.dark-theme) .score-track { stroke: rgba(0,0,0,0.12); }              /* light */
+    .score-fill  { fill: none; stroke-width: 4; stroke-linecap: round; }
+    .score-label {
       position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       font-family: 'Josefin_Bold', Arial, sans-serif;
-      font-size: 12px; font-weight: 700;
-      pointer-events: none; line-height: 1;
+      font-size: 11px; font-weight: 700; pointer-events: none;
     }
-    .water-score-loading {
-      display: flex; align-items: center; justify-content: center;
-      width: 52px; height: 52px;
-      font-size: 18px;
-      animation: score-spin 1.4s linear infinite;
-      color: rgba(212,175,55,0.5);
-    }
-    @keyframes score-spin { to { transform: rotate(360deg); } }
-
-    /* Map action button */
-    .btn-map-action {
-      background: none;
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 8px;
-      color: #888;
-      width: 36px; height: 36px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
+    .score-spinner {
+      width: 48px; height: 48px;
+      border: 3px solid rgba(212,175,55,0.1);
+      border-top-color: rgba(212,175,55,0.4);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
       flex-shrink: 0;
-      transition: all 0.2s;
-      font-size: 18px;
     }
-    .btn-map-action:hover { border-color: #d4af37; color: #d4af37; }
-    html:not(.dark-theme) .btn-map-action { border-color: rgba(0,0,0,0.12); color: #555; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Map button */
+    .btn-map {
+      width: 34px; height: 34px; background: none;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px; color: #666;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0; font-size: 18px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-map:hover { border-color: #d4af37; color: #d4af37; }
+    html:not(.dark-theme) .btn-map { border-color: rgba(0,0,0,0.1); color: #888; }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center; padding: 32px 24px;
+      opacity: 0; animation: card-in 0.3s 0.1s ease forwards;
+    }
+    .empty-state .mat { font-size: 40px; color: #444; margin-bottom: 10px; }
+    .empty-state h3 { font-family: 'Josefin_Bold', Arial,sans-serif; font-size: 17px; color: #d4af37; margin: 0 0 6px; }
+    .empty-state p  { font-family: 'Josefin_Light', Arial,sans-serif; font-size: 13px; color: #666; margin: 0; }
 
     @media (max-width: 480px) {
-      .search-hero { padding: 24px 16px 20px; }
-      .search-hero h1 { font-size: 22px; }
-      .coord-row { grid-template-columns: 1fr; }
-      .water-card { grid-template-columns: 1fr auto; }
-      .btn-map-action { display: none; }
+      .btn-map { display: none; }
     }
   </style>
 </head>
-
 <body>
-  <!-- Header (same as paddlingout.html) -->
   <header class="header">
     <div class="header-top">
       <div class="header-brand">
@@ -308,55 +242,48 @@
   </header>
 
   <main class="search-page">
-    <!-- Hero search card -->
-    <div class="search-hero">
-      <div class="search-hero-icon">🧭</div>
-      <h1>Discover Paddle Spots</h1>
-      <p>Find lakes, rivers, and reservoirs near any location with live ML scores</p>
 
-      <button class="btn-location" id="btn-use-location">
-        <span class="material-icons" style="font-size:20px">my_location</span>
-        Use My Current Location
-      </button>
-
-      <div class="search-divider">OR ENTER COORDINATES</div>
-
-      <div class="coord-row">
-        <div class="coord-field">
-          <label>↑ Latitude</label>
-          <input type="number" id="inp-lat" placeholder="e.g. 33.1488" step="any"/>
-        </div>
-        <div class="coord-field">
-          <label>→ Longitude</label>
-          <input type="number" id="inp-lng" placeholder="e.g. -96.7003" step="any"/>
-        </div>
+    <!-- Search bar + GPS -->
+    <div class="search-bar-row">
+      <div class="search-bar-wrap" style="width:100%">
+        <span class="material-icons search-icon-left">water</span>
+        <input type="text" id="search-input" class="search-input"
+          placeholder="Lake, river, city…"
+          autocomplete="off" autocorrect="off" spellcheck="false"/>
+        <button class="search-clear-btn material-icons" id="search-clear" aria-label="Clear">close</button>
       </div>
+      <button class="btn-gps material-icons" id="btn-gps" title="Use my location" aria-label="Use my location">my_location</button>
+    </div>
 
-      <button class="btn-search" id="btn-search">
-        <span class="material-icons" style="font-size:18px">search</span>
-        Search Nearby Water Bodies
-      </button>
+    <!-- Status -->
+    <div class="search-status" id="search-status"></div>
 
-      <div class="search-error" id="search-error"></div>
-      <div class="search-loading" id="search-loading">
-        <div class="search-loading-bar" id="loading-bar"></div>
+    <!-- Popular spots (hidden once results show) -->
+    <div class="popular-section" id="popular-section">
+      <div class="popular-label">Popular paddle regions</div>
+      <div class="popular-chips">
+        <button class="popular-chip" data-lat="33.0815" data-lng="-96.4775"><span class="chip-icon material-icons">water</span>Lavon Lake, TX</button>
+        <button class="popular-chip" data-lat="33.1439" data-lng="-96.9759"><span class="chip-icon material-icons">water</span>Lewisville Lake, TX</button>
+        <button class="popular-chip" data-lat="47.6553" data-lng="-122.2571"><span class="chip-icon material-icons">water</span>Lake Washington, WA</button>
+        <button class="popular-chip" data-lat="39.0931" data-lng="-120.0325"><span class="chip-icon material-icons">water</span>Lake Tahoe, CA</button>
+        <button class="popular-chip" data-lat="44.4759" data-lng="-110.5886"><span class="chip-icon material-icons">water</span>Yellowstone Lake, WY</button>
+        <button class="popular-chip" data-lat="43.9520" data-lng="-76.1743"><span class="chip-icon material-icons">water</span>Lake Ontario, NY</button>
+        <button class="popular-chip" data-lat="51.5085" data-lng="-0.1257"><span class="chip-icon material-icons">water</span>London, UK</button>
+        <button class="popular-chip" data-lat="-33.8688" data-lng="151.2093"><span class="chip-icon material-icons">water</span>Sydney, AU</button>
       </div>
     </div>
 
     <!-- Results -->
-    <section class="results-section" id="results-section">
-      <div class="results-header-bar">
-        <span class="results-count" id="results-count"></span>
-        <span class="results-location" id="results-location"></span>
-      </div>
-      <div id="results-list"></div>
-    </section>
+    <div id="results-header" class="results-header">
+      <span class="results-count" id="results-count"></span>
+      <span class="results-hint"  id="results-hint"></span>
+    </div>
+    <div id="results-list"></div>
+
   </main>
 
-  <!-- Shared scripts -->
   <script src="/js/header.js"></script>
-  <script src="/js/darkMode.js"></script>
-  <script src="/js/apiClient.js"></script>
+  <script src="/js/services/apiClient.js"></script>
   <script src="/js/services/dataTransformer.js"></script>
   <script src="/js/components/RatingHero.js"></script>
   <script src="/js/components/SafetyWarnings.js"></script>

@@ -139,9 +139,7 @@ class RatingHero {
     requestAnimationFrame(() => {
       const ring = this.element?.querySelector('.ring-progress');
       if (ring) {
-        const fill  = ring.dataset.fill;
-        const total = ring.dataset.total;
-        ring.style.strokeDasharray = `${fill} ${total}`;
+        ring.style.strokeDasharray = `${ring.dataset.fill} ${ring.dataset.gap}`;
       }
     });
 
@@ -153,13 +151,13 @@ class RatingHero {
   // ── SVG Donut Ring ────────────────────────────────────────────────────────
 
   buildScoreRing(rating) {
-    const r   = 46, cx = 60, cy = 60;
-    const circ = +(2 * Math.PI * r).toFixed(1); // ~289.0
+    const r    = 46, cx = 60, cy = 60;
+    const circ = 2 * Math.PI * r;
     const pct  = Math.max(0, Math.min(1, parseFloat(rating) / 5));
-    const fill = +(pct * circ).toFixed(1);
-    const offset = +(-circ / 4).toFixed(1); // start at 12 o'clock
-    const color  = this.getRingColor(rating);
-    const label  = this.getScoreLabel(rating);
+    const fill = (pct * circ).toFixed(2);
+    const gap  = ((1 - pct) * circ).toFixed(2);
+    const color = this.getRingColor(rating);
+    const label = this.getScoreLabel(rating);
     const pctStr = Math.round(pct * 100) + '%';
 
     return `
@@ -169,10 +167,10 @@ class RatingHero {
           <circle class="ring-progress"
             cx="${cx}" cy="${cy}" r="${r}"
             stroke="${color}"
-            stroke-dasharray="0 ${circ}"
-            stroke-dashoffset="${offset}"
+            stroke-dasharray="0 ${circ.toFixed(2)}"
+            transform="rotate(-90 ${cx} ${cy})"
             data-fill="${fill}"
-            data-total="${circ}"/>
+            data-gap="${gap}"/>
         </svg>
         <div class="ring-overlay">
           <div class="ring-number">${rating}</div>
@@ -185,14 +183,14 @@ class RatingHero {
 
   getRingColor(rating) {
     const r = parseFloat(rating);
-    if (r >= 4.5) return '#22C55E';
-    if (r >= 4.0) return '#4ADE80';
-    if (r >= 3.5) return '#CD853F';
-    if (r >= 3.0) return '#E36414';
-    if (r >= 2.5) return '#C0392B';
-    if (r >= 2.0) return '#A01010';
-    if (r >= 1.5) return '#8B1212';
-    return '#A82020';          // visible burgundy even at 20%
+    if (r >= 4.5) return '#22C55E'; // vivid green
+    if (r >= 4.0) return '#4ADE80'; // light green
+    if (r >= 3.5) return '#D97706'; // amber
+    if (r >= 3.0) return '#F97316'; // orange
+    if (r >= 2.5) return '#EF4444'; // vivid red
+    if (r >= 2.0) return '#DC2626'; // medium red
+    if (r >= 1.5) return '#EF4444'; // vivid red — low scores need max visibility
+    return '#FF2D20';               // alarm red
   }
 
   getScoreLabel(rating) {

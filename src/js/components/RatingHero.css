@@ -137,8 +137,8 @@ html.dark-theme .now-indicator {
 }
 
 html:not(.dark-theme) .now-indicator {
-  color: black;
-  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.7);
+  color: #fff;
+  text-shadow: none;
 }
 
 .paddle-score-label {
@@ -158,8 +158,8 @@ html.dark-theme .paddle-score-label {
 }
 
 html:not(.dark-theme) .paddle-score-label {
-  color: black;
-  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.7);
+  color: #fff;
+  text-shadow: none;
 }
 
 .skill-info {
@@ -1165,15 +1165,15 @@ html.dark-theme .feedback-thanks {
   transform: none; /* offset handled by stroke-dashoffset in JS */
 }
 
-/* Track — background circle */
+/* Track — background circle, clear groove in both themes */
 .ring-track {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.12);
+  stroke: rgba(255, 255, 255, 0.15);  /* dark mode default */
   stroke-width: 10;
 }
 
 html:not(.dark-theme) .ring-track {
-  stroke: rgba(0, 0, 0, 0.1);
+  stroke: rgba(0, 0, 0, 0.12);  /* light mode */
 }
 
 /* Progress — animated fill */
@@ -1203,15 +1203,7 @@ html:not(.dark-theme) .ring-track {
   font-size: 26px;
   font-weight: 700;
   line-height: 1;
-  color: var(--modal-text, #111);
-}
-
-html.dark-theme .ring-number {
-  color: ivory;
-}
-
-html:not(.dark-theme) .ring-number {
-  color: #111;
+  color: #fff;
 }
 
 .ring-denom {
@@ -1223,12 +1215,10 @@ html:not(.dark-theme) .ring-number {
   color: var(--modal-text, #333);
 }
 
-html.dark-theme .ring-denom {
-  color: rgba(255, 250, 240, 0.6);
-}
-
+/* always white — ring sits on its own colored background context */
+html.dark-theme .ring-denom,
 html:not(.dark-theme) .ring-denom {
-  color: rgba(0, 0, 0, 0.5);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .ring-pct {

@@ -221,32 +221,6 @@ function initializeApiModeToggle() {
   document.addEventListener('apiModeChanged', updateToggleUI);
 }
 
-/** ───────────────────────────────────────────────────────────────────────────
- * 5) Custom Location Button - Use Professional Modal
- *    Delegates to the CustomLocationModal for proper UI/UX
- *───────────────────────────────────────────────────────────────────────────*/
-function initializeCustomLocationButtons() {
-  const customLocationBtn = document.querySelector('.custom-location-btn');
-  const customLocationBtnMobile = document.querySelector('.custom-location-btn-mobile');
-  
-  function handleCustomLocationClick() {
-    console.log('🗺️ Custom location button clicked');
-    
-    // Use the professional CustomLocationModal instead of ugly prompt()
-    if (window.customLocationModal) {
-      window.customLocationModal.open();
-    } else {
-      console.warn('⚠️ CustomLocationModal not available yet');
-    }
-  }
-  
-  if (customLocationBtn) {
-    customLocationBtn.addEventListener('click', handleCustomLocationClick);
-  }
-  if (customLocationBtnMobile) {
-    customLocationBtnMobile.addEventListener('click', handleCustomLocationClick);
-  }
-}
 
 /** ───────────────────────────────────────────────────────────────────────────
  * 6) Home Navigation
@@ -275,6 +249,5 @@ document.addEventListener("DOMContentLoaded", () => {
   populateMenu();
   setupMobileMenu();
   initializeApiModeToggle();
-  initializeCustomLocationButtons();
   initializeHomeNavigation();
 });

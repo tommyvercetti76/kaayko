@@ -214,38 +214,56 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (spot.paddleScore && typeof spot.paddleScore.rating === 'number') {
       const score = spot.paddleScore.rating;
-      const { backgroundColor, description } = getPaddleScoreDisplay(score);
+      const { description } = getPaddleScoreDisplay(score);
+      const strokeColor = getRingStrokeColor(score);
       wrap.title = `${description} — Score ${score} (click for details)`;
 
-      // Mini SVG ring
-      const r     = 16, cx = 20, cy = 20;
-      const circ  = +(2 * Math.PI * r).toFixed(1);  // ~100.5
-      const pct   = Math.max(0, Math.min(1, score / 5));
-      const fill  = +(pct * circ).toFixed(1);
-      const offset = +(-circ / 4).toFixed(1); // start at 12 o'clock
+      // Mini SVG ring — rotate(-90) starts arc at 12 o'clock, no dashoffset bug
+      const r    = 16, cx = 20, cy = 20;
+      const circ = 2 * Math.PI * r;
+      const pct  = Math.max(0, Math.min(1, score / 5));
+      const fill = (pct * circ).toFixed(2);
+      const gap  = ((1 - pct) * circ).toFixed(2);
 
       wrap.innerHTML = `
         <svg class="mini-ring-svg" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
           <circle class="mini-ring-track" cx="${cx}" cy="${cy}" r="${r}"/>
           <circle class="mini-ring-fill"
             cx="${cx}" cy="${cy}" r="${r}"
-            stroke="${backgroundColor}"
-            stroke-dasharray="${fill} ${circ}"
-            stroke-dashoffset="${offset}"/>
+            stroke="${strokeColor}"
+            stroke-dasharray="${fill} ${gap}"
+            transform="rotate(-90 ${cx} ${cy})"/>
         </svg>
-        <div class="mini-ring-label" style="color:${backgroundColor}">${score}</div>
+        <div class="mini-ring-label" style="color:#fff">${score}</div>
       `;
     } else {
       wrap.title = "Score unavailable — click for details";
       wrap.innerHTML = `
         <svg class="mini-ring-svg" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-          <circle class="mini-ring-track" cx="20" cy="20" r="16"/>
+          <circle class="mini-ring-track" cx="20" cy="20" r="16"
+            stroke-dasharray="4 6" stroke-linecap="round"/>
         </svg>
-        <div class="mini-ring-label" style="color:#9ca3af">?</div>
+        <div class="mini-ring-label mini-ring-label-na">–</div>
       `;
     }
 
     return wrap;
+  }
+
+  /**
+   * Vibrant SVG stroke colors — visible on BOTH dark and light card backgrounds.
+   * Separate from getPaddleScoreDisplay() which uses dark solid-circle colors.
+   */
+  function getRingStrokeColor(score) {
+    const s = parseFloat(score);
+    if (s >= 4.5) return '#22C55E'; // vivid green
+    if (s >= 4.0) return '#4ADE80'; // light green
+    if (s >= 3.5) return '#D97706'; // amber
+    if (s >= 3.0) return '#F97316'; // orange
+    if (s >= 2.5) return '#EF4444'; // vivid red
+    if (s >= 2.0) return '#DC2626'; // medium red
+    if (s >= 1.5) return '#EF4444'; // vivid red (matches 2.5 — low scores need maximum visibility)
+    return '#FF2D20';               // alarm red
   }
 
   /**
