@@ -248,7 +248,8 @@ class AdvancedLakeModal {
       console.log('🏆 RatingHero data prepared:', { rating, interpretation, weather, forecastData });
       console.log('⚠️ SAFETY CHECK - Penalties:', weather.penalties);
       
-      const element = ratingHero.render(rating, interpretation, weather, forecastData);
+      const spotId = this.currentSpot?.id || this.currentSpot?.spotId || null;
+      const element = ratingHero.render(rating, interpretation, weather, forecastData, spotId);
       container.appendChild(element);
       console.log('✅ RatingHero rendered with paddleScore rating:', rating);
     } catch (error) {

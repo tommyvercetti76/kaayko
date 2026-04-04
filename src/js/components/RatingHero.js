@@ -11,11 +11,19 @@ class RatingHero {
     this.lastRenderData = null;
     // Store raw values for unit conversion
     this.rawValues = {};
+    // Feedback state
+    this._feedbackSpotId = null;
+    this._feedbackPredictedScore = null;
+    this._feedbackSubmitted = false;
   }
 
-  render(rating, interpretation, weather = {}, forecastData = null) {
+  render(rating, interpretation, weather = {}, forecastData = null, spotId = null) {
     // Store render data for unit switching
     this.lastRenderData = { rating, interpretation, weather };
+    // Store feedback context
+    this._feedbackSpotId = spotId;
+    this._feedbackPredictedScore = rating;
+    this._feedbackSubmitted = false;
     
     console.log('🏆 RatingHero render called with:', { rating, weather, interpretation });
     
@@ -158,12 +166,23 @@ class RatingHero {
           </div>
         </div>
       </div>
+      <div class="paddle-feedback" data-submitted="false">
+        <span class="feedback-prompt">Was this score accurate?</span>
+        <div class="feedback-buttons">
+          <button class="feedback-btn" data-vote="5"   title="Way better than predicted">👍👍</button>
+          <button class="feedback-btn" data-vote="up"  title="Better than predicted">👍</button>
+          <button class="feedback-btn" data-vote="ok"  title="About right">👌</button>
+          <button class="feedback-btn" data-vote="down" title="Worse than predicted">👎</button>
+          <button class="feedback-btn" data-vote="1"   title="Way worse than predicted">👎👎</button>
+        </div>
+        <span class="feedback-thanks" style="display:none">Thanks for the feedback!</span>
+      </div>
     `;
-    
+
     const container = document.createElement('div');
     container.innerHTML = heroHTML;
     this.element = container.firstElementChild;
-    
+
     // Set rating circle color based on score
     const ratingCircle = this.element.querySelector('.rating-circle');
     if (ratingCircle) {
@@ -184,8 +203,51 @@ class RatingHero {
     
     // Add event listeners for unit toggle
     this.setupUnitToggle();
-    
+    // Add feedback listeners
+    this.setupFeedback();
+
     return this.element;
+  }
+
+  setupFeedback() {
+    if (!this.element) return;
+    const feedbackEl = this.element.querySelector('.paddle-feedback');
+    if (!feedbackEl) return;
+
+    feedbackEl.querySelectorAll('.feedback-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        if (this._feedbackSubmitted) return;
+        this._feedbackSubmitted = true;
+
+        const vote = e.currentTarget.dataset.vote;
+        const predicted = parseFloat(this._feedbackPredictedScore) || 3;
+
+        // Map vote tokens to actual scores
+        const actualScore = {
+          '5':    Math.min(5, predicted + 1.5),
+          'up':   Math.min(5, predicted + 0.5),
+          'ok':   predicted,
+          'down': Math.max(1, predicted - 0.5),
+          '1':    Math.max(1, predicted - 1.5),
+        }[vote] ?? predicted;
+
+        // Visual feedback immediately
+        feedbackEl.setAttribute('data-submitted', 'true');
+        feedbackEl.querySelector('.feedback-buttons').style.display = 'none';
+        feedbackEl.querySelector('.feedback-prompt').style.display = 'none';
+        feedbackEl.querySelector('.feedback-thanks').style.display = 'inline';
+
+        // Fire-and-forget API call
+        if (window.apiClient && this._feedbackSpotId) {
+          window.apiClient.submitFeedback(
+            this._feedbackSpotId,
+            predicted,
+            actualScore,
+            { ...(this.rawValues || {}) }
+          ).catch(() => {}); // swallow network errors silently
+        }
+      });
+    });
   }
 
   setupUnitToggle() {

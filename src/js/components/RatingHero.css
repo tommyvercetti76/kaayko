@@ -1071,3 +1071,79 @@ html:not(.dark-theme) .skill-details {
     padding: 8px 10px;
   }
 }
+
+/* ── Paddle Feedback Widget ─────────────────────────────────────────── */
+.paddle-feedback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 12px 6px;
+  margin-top: 8px;
+  border-top: 1px solid var(--modal-border, #e0e0e0);
+  flex-wrap: wrap;
+}
+
+.paddle-feedback[data-submitted="true"] {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.feedback-prompt {
+  font-size: 12px;
+  color: var(--modal-text, #666);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.feedback-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.feedback-btn {
+  background: none;
+  border: 1px solid var(--modal-border, #ddd);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  line-height: 1;
+}
+
+.feedback-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+  transform: scale(1.15);
+}
+
+.feedback-btn:active {
+  transform: scale(0.95);
+}
+
+.feedback-thanks {
+  font-size: 12px;
+  color: #2D5A32;
+  font-weight: 600;
+}
+
+html.dark-theme .paddle-feedback {
+  border-top-color: #555;
+}
+
+html.dark-theme .feedback-prompt {
+  color: #bbb;
+}
+
+html.dark-theme .feedback-btn {
+  border-color: #555;
+  color: #eee;
+}
+
+html.dark-theme .feedback-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+html.dark-theme .feedback-thanks {
+  color: #6abf7b;
+}

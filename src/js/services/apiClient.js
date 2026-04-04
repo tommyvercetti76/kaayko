@@ -470,6 +470,33 @@ class ApiClient {
     return results;
   }
 
+  // Submit user feedback on a paddle score prediction
+  async submitFeedback(spotId, predictedScore, actualScore, conditions = {}) {
+    const url = `${this.baseUrl}/paddleScore/feedback`;
+    const body = {
+      spotId,
+      predictedScore: parseFloat(predictedScore),
+      actualScore: parseFloat(actualScore),
+      conditions,
+      sessionDate: new Date().toISOString().split('T')[0],
+    };
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      console.log('✅ Feedback submitted:', data);
+      return data;
+    } catch (error) {
+      console.error('❌ Feedback submission failed:', error);
+      throw error;
+    }
+  }
+
   // Compare two forecast datasets for accuracy
   compareForecastData(cached, realtime) {
     try {
