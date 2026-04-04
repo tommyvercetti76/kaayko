@@ -186,8 +186,49 @@ body {
 .icon.paddle-score-icon:hover {
   transform: translateY(-2px) scale(1.05);
   filter: drop-shadow(0 6px 16px rgba(0,0,0,0.3));
-  border-color: rgba(255,255,255,0.3) !important;
-  box-shadow: 0 0 0 2px rgba(255,255,255,0.1), 0 4px 20px rgba(0,0,0,0.3) !important;
+}
+
+/* Mini ring wrapper — replaces plain solid circle */
+.mini-ring-wrap {
+  position: relative !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 0 !important;
+}
+
+.mini-ring-svg {
+  width: 44px;
+  height: 44px;
+  display: block;
+}
+
+.mini-ring-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.15);
+  stroke-width: 4;
+}
+
+.mini-ring-fill {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.mini-ring-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Josefin_Bold', Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  pointer-events: none;
+  line-height: 1;
 }
 
 /* Tooltip */

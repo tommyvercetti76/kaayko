@@ -204,41 +204,48 @@ document.addEventListener("DOMContentLoaded", () => {
    * Create a color-coded paddle score icon that shows the included score
    */
   async function createPaddleScoreIcon(spot) {
-    const scoreIcon = document.createElement("span");
-    scoreIcon.className = "icon paddle-score-icon";
-    scoreIcon.style.setProperty('font-family', "'Josefin_Light', Arial, sans-serif", 'important');
-    
-    // Still clickable to open modal
-    scoreIcon.addEventListener("click", e => {
+    const wrap = document.createElement("div");
+    wrap.className = "icon paddle-score-icon mini-ring-wrap";
+
+    wrap.addEventListener("click", e => {
       e.stopPropagation();
-      console.log('🏄 Paddle score icon clicked for:', spot.title);
-      if (window.advancedModal) {
-        advancedModal.open(spot);
-      }
+      if (window.advancedModal) advancedModal.open(spot);
     });
-    
-    // Use the paddle score that's already included in the spot data
+
     if (spot.paddleScore && typeof spot.paddleScore.rating === 'number') {
       const score = spot.paddleScore.rating;
-      console.log(`🏄 Using included paddle score for ${spot.title}: ${score}`);
-      
-      const { icon, backgroundColor, textColor, boxShadow, description } = getPaddleScoreDisplay(score);
-      
-      scoreIcon.textContent = icon;
-      scoreIcon.style.setProperty('background-color', backgroundColor, 'important');
-      scoreIcon.style.setProperty('color', textColor, 'important');
-      scoreIcon.style.setProperty('box-shadow', boxShadow, 'important');
-      scoreIcon.style.setProperty('border', '2px solid rgba(255,255,255,0.1)', 'important');
-      scoreIcon.title = `${description} (Click for details)`;
+      const { backgroundColor, description } = getPaddleScoreDisplay(score);
+      wrap.title = `${description} — Score ${score} (click for details)`;
+
+      // Mini SVG ring
+      const r     = 16, cx = 20, cy = 20;
+      const circ  = +(2 * Math.PI * r).toFixed(1);  // ~100.5
+      const pct   = Math.max(0, Math.min(1, score / 5));
+      const fill  = +(pct * circ).toFixed(1);
+      const offset = +(-circ / 4).toFixed(1); // start at 12 o'clock
+
+      wrap.innerHTML = `
+        <svg class="mini-ring-svg" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+          <circle class="mini-ring-track" cx="${cx}" cy="${cy}" r="${r}"/>
+          <circle class="mini-ring-fill"
+            cx="${cx}" cy="${cy}" r="${r}"
+            stroke="${backgroundColor}"
+            stroke-dasharray="${fill} ${circ}"
+            stroke-dashoffset="${offset}"/>
+        </svg>
+        <div class="mini-ring-label">${score}</div>
+      `;
     } else {
-      // Fallback if no paddle score is available
-      scoreIcon.textContent = "?";
-      scoreIcon.style.setProperty('background-color', '#6b7280', 'important');
-      scoreIcon.style.setProperty('color', '#ffffff', 'important');
-      scoreIcon.title = "Score unavailable - click for details";
+      wrap.title = "Score unavailable — click for details";
+      wrap.innerHTML = `
+        <svg class="mini-ring-svg" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+          <circle class="mini-ring-track" cx="20" cy="20" r="16"/>
+        </svg>
+        <div class="mini-ring-label" style="color:#9ca3af">?</div>
+      `;
     }
-    
-    return scoreIcon;
+
+    return wrap;
   }
 
   /**

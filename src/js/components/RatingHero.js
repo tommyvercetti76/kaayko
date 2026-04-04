@@ -177,7 +177,6 @@ class RatingHero {
         <div class="ring-overlay">
           <div class="ring-number">${rating}</div>
           <div class="ring-denom">/ 5</div>
-          <div class="ring-pct" style="color:${color}">${pctStr}</div>
         </div>
       </div>
       <div class="ring-label" style="color:${color}">${label}</div>
@@ -212,7 +211,7 @@ class RatingHero {
 
   buildPaddlerBriefing(rating, weather, forecastData) {
     const verdict    = this.getVerdict(rating);
-    const conditions = this.analyzeConditions(weather);
+    const conditions = this.analyzeConditions(weather, rating);
     const suggestion = this.getForecastSuggestion(rating, forecastData);
 
     return `
@@ -263,91 +262,121 @@ class RatingHero {
     return              { icon: '⛔', title: 'Dangerous Conditions',     subtitle: 'Not recommended for any skill level — stay off the water',           className: 'verdict-danger'   };
   }
 
-  analyzeConditions(weather) {
+  analyzeConditions(weather, rating) {
     const items = [];
-    const w = weather || {};
+    const w     = weather || {};
+    const r     = parseFloat(rating) || 3;
 
-    // 1. Wind (windSpeed is KPH from enriched conditions)
+    // ── Phase 1: Applied penalties explain WHY score was reduced ─────────────
+    // These are the actual reasons the ML pipeline docked points.
+    const penaltyStrings = (w.penalties || []).filter(p => typeof p === 'string');
+    let penaltyTotal = 0;
+    penaltyStrings.forEach(p => {
+      const m = p.match(/^(.+?):\s*([-+]?\d+\.?\d*)/);
+      if (!m) return;
+      const amount = parseFloat(m[2]);
+      if (amount > -0.1) return;
+      penaltyTotal += amount;
+      const abs = Math.abs(amount);
+      const sev = abs >= 1.5 ? 'severe' : abs >= 1.0 ? 'danger' : abs >= 0.5 ? 'warning' : 'caution';
+      const icon = sev === 'severe' ? '⛔' : sev === 'danger' ? '⚠️' : '▲';
+      items.push({
+        icon,
+        label: m[1].trim(),
+        detail: `Score impact: ${amount.toFixed(1)} pts`,
+        severity: sev,
+        priority: abs >= 1.5 ? 0 : abs >= 1.0 ? 1 : abs >= 0.5 ? 3 : 5
+      });
+    });
+
+    // ── Phase 2: Observable hazard conditions ────────────────────────────────
     const windKph = parseFloat(w.windSpeed);
     if (!isNaN(windKph)) {
       const dir     = w.windDirection ? ` ${w.windDirection}` : '';
-      const gustKph = parseFloat(w.gustSpeed) || windKph * 1.3;
-      const gustStr = gustKph > windKph * 1.15 ? ` · gusts ${gustKph.toFixed(0)} km/h` : '';
+      const gustKph = parseFloat(w.gustSpeed) || 0;
+      const gustStr = gustKph > windKph * 1.2 ? ` · gusts ${gustKph.toFixed(0)} km/h` : '';
       const B       = this.getBeaufortFromKph(windKph);
-
       if (windKph >= 50) {
-        items.push({ icon: '🌪️', label: `Storm-force Wind — ${windKph.toFixed(0)} km/h${dir} (B${B})${gustStr}`,   detail: 'Extremely dangerous · No paddling under any circumstances',    severity: 'severe', priority: 0 });
+        items.push({ icon: '🌪️', label: `Storm-force Wind — ${windKph.toFixed(0)} km/h${dir} (B${B})${gustStr}`, detail: 'No paddling under any circumstances', severity: 'severe', priority: 0 });
       } else if (windKph >= 39) {
-        items.push({ icon: '⛔',  label: `Gale Wind — ${windKph.toFixed(0)} km/h${dir} (B${B})${gustStr}`,          detail: 'Impossible to paddle against · Capsize very likely',           severity: 'severe', priority: 0 });
+        items.push({ icon: '⛔',  label: `Gale Wind — ${windKph.toFixed(0)} km/h${dir} (B${B})${gustStr}`,        detail: 'Impossible to paddle — capsize very likely', severity: 'severe', priority: 0 });
       } else if (windKph >= 29) {
-        items.push({ icon: '💨',  label: `Strong Wind — ${windKph.toFixed(0)} km/h${dir} (B${B})${gustStr}`,        detail: 'Whitecaps forming · Expert paddlers only — high resistance',  severity: 'danger', priority: 1 });
+        items.push({ icon: '💨',  label: `Strong Wind — ${windKph.toFixed(0)} km/h${dir} (B${B})${gustStr}`,      detail: 'Whitecaps forming — expert paddlers only', severity: 'danger', priority: 1 });
       } else if (windKph >= 20) {
-        items.push({ icon: '🌬️', label: `Moderate Wind — ${windKph.toFixed(0)} km/h${dir} (B${B})${gustStr}`,      detail: 'Increased effort required · Manageable for experienced paddlers', severity: 'warning', priority: 4 });
-      } else if (windKph >= 10) {
-        items.push({ icon: '🍃',  label: `Light Wind — ${windKph.toFixed(0)} km/h${dir} (B${B})`,                  detail: 'Comfortable paddling · Slight resistance in open water',       severity: 'caution', priority: 7 });
-      } else {
-        items.push({ icon: '🏄',  label: `Calm — ${windKph.toFixed(0)} km/h`,                                       detail: 'Ideal conditions · Glassy water possible',                    severity: 'good',   priority: 9 });
+        items.push({ icon: '🌬️', label: `Moderate Wind — ${windKph.toFixed(0)} km/h${dir} (B${B})${gustStr}`,    detail: 'Increased resistance — experienced paddlers', severity: 'warning', priority: 4 });
       }
+      // calm/light wind only shown if score is good (Phase 3)
     }
 
-    // 2. Water temperature (°C)
     const wt = parseFloat(w.waterTemp);
     if (!isNaN(wt)) {
       if (wt < 10) {
-        items.push({ icon: '🧊', label: `Very Cold Water — ${wt.toFixed(1)}°C`,    detail: 'Hypothermia within minutes · Drysuit + PFD essential · Never paddle alone',  severity: 'severe',  priority: 1 });
+        items.push({ icon: '🧊', label: `Extreme Cold Water — ${wt.toFixed(1)}°C`, detail: 'Hypothermia within minutes — drysuit + PFD essential', severity: 'severe', priority: 1 });
       } else if (wt < 15) {
-        items.push({ icon: '❄️', label: `Cold Water — ${wt.toFixed(1)}°C`,         detail: 'Cold shock risk on immersion · Wetsuit mandatory',                           severity: 'danger',  priority: 2 });
-      } else if (wt < 20) {
-        items.push({ icon: '🌊', label: `Cool Water — ${wt.toFixed(1)}°C`,         detail: 'Wetsuit recommended · Extended immersion can be risky',                      severity: 'caution', priority: 6 });
-      } else if (wt < 27) {
-        items.push({ icon: '💧', label: `Comfortable Water — ${wt.toFixed(1)}°C`,  detail: 'Ideal paddling and swimming temperature',                                    severity: 'good',    priority: 9 });
-      } else {
-        items.push({ icon: '🌡️', label: `Warm Water — ${wt.toFixed(1)}°C`,         detail: 'Stay hydrated · Blue-green algae possible in summer',                        severity: 'caution', priority: 7 });
+        items.push({ icon: '❄️', label: `Cold Water — ${wt.toFixed(1)}°C`,         detail: 'Cold shock risk on immersion — wetsuit mandatory', severity: 'danger', priority: 2 });
       }
+      // comfortable/warm water only shown if score is good (Phase 3)
     }
 
-    // 3. Precipitation (mm)
     const precip = parseFloat(w.precipMm);
-    if (!isNaN(precip) && precip > 0.1) {
+    if (!isNaN(precip) && precip >= 0.1) {
       if (precip >= 5) {
-        items.push({ icon: '🌧️', label: `Heavy Rain — ${precip.toFixed(1)} mm`,  detail: 'Visibility severely reduced · Lightning hazard · Seek shelter immediately', severity: 'severe',  priority: 0 });
+        items.push({ icon: '🌧️', label: `Heavy Rain — ${precip.toFixed(1)} mm`,  detail: 'Lightning hazard — seek shelter immediately', severity: 'severe', priority: 0 });
       } else if (precip >= 1) {
-        items.push({ icon: '🌦️', label: `Rain — ${precip.toFixed(1)} mm`,        detail: 'Slippery gear · Reduced visibility · Monitor storm development',            severity: 'danger',  priority: 2 });
+        items.push({ icon: '🌦️', label: `Rain — ${precip.toFixed(1)} mm`,        detail: 'Reduced visibility — monitor storm development', severity: 'danger', priority: 2 });
       } else {
-        items.push({ icon: '🌂', label: `Light Rain — ${precip.toFixed(1)} mm`,  detail: 'Minor impact · Watch for developing storms',                                severity: 'warning', priority: 5 });
+        items.push({ icon: '🌂', label: `Light Rain — ${precip.toFixed(1)} mm`,  detail: 'Watch for developing storms', severity: 'warning', priority: 5 });
       }
     }
 
-    // 4. Visibility (km)
     const vis = parseFloat(w.visibility);
-    if (!isNaN(vis)) {
+    if (!isNaN(vis) && vis < 9) {
       if (vis < 3) {
-        items.push({ icon: '🌫️', label: `Very Poor Visibility — ${vis.toFixed(1)} km`, detail: 'Navigation hazard · Stay near shore · Use signal lights',       severity: 'severe',  priority: 1 });
+        items.push({ icon: '🌫️', label: `Very Poor Visibility — ${vis.toFixed(1)} km`, detail: 'Navigation hazard — stay near shore', severity: 'severe', priority: 1 });
       } else if (vis < 6) {
-        items.push({ icon: '👁️', label: `Poor Visibility — ${vis.toFixed(1)} km`,      detail: 'Stay aware of other watercraft · Mark your position',            severity: 'danger',  priority: 3 });
-      } else if (vis < 9) {
-        items.push({ icon: '🌁', label: `Reduced Visibility — ${vis.toFixed(1)} km`,   detail: 'Be visible · Limit distance from shore',                         severity: 'warning', priority: 6 });
+        items.push({ icon: '🌫️', label: `Poor Visibility — ${vis.toFixed(1)} km`,      detail: 'Mark your position — stay aware of other vessels', severity: 'danger', priority: 3 });
+      } else {
+        items.push({ icon: '🌁', label: `Reduced Visibility — ${vis.toFixed(1)} km`,   detail: 'Limit distance from shore', severity: 'warning', priority: 6 });
       }
-      // ≥9 km: good visibility — skip (not worth mentioning)
     }
 
-    // 5. Cloud cover (%)
     const cloud = parseFloat(w.cloudCover);
     if (!isNaN(cloud) && cloud >= 90) {
-      items.push({ icon: '☁️', label: `Overcast — ${cloud.toFixed(0)}% cloud cover`, detail: 'Active storm system likely · Monitor for lightning', severity: 'warning', priority: 6 });
+      items.push({ icon: '☁️', label: `Overcast — ${cloud.toFixed(0)}%`, detail: 'Active storm system possible — monitor for lightning', severity: 'warning', priority: 6 });
     }
 
-    // 6. UV Index
     const uv = parseFloat(w.uvIndex);
     if (!isNaN(uv) && uv >= 6) {
       const sev = uv >= 10 ? 'danger' : uv >= 8 ? 'warning' : 'caution';
       const tag = uv >= 10 ? 'Extreme' : uv >= 8 ? 'Very High' : 'High';
-      items.push({ icon: '☀️', label: `${tag} UV — Index ${uv.toFixed(0)}`, detail: 'SPF 50+ sunscreen · Hat · Reapply every 90 min', severity: sev, priority: 8 });
+      items.push({ icon: '☀️', label: `${tag} UV — Index ${uv.toFixed(0)}`, detail: 'SPF 50+ sunscreen — reapply every 90 min', severity: sev, priority: 8 });
     }
 
-    // Fallback: all clear
+    // ── Phase 3: Score is good — show favorable conditions as context ─────────
+    if (r >= 3.0 && items.filter(i => i.severity !== 'good').length === 0) {
+      if (!isNaN(windKph) && windKph < 20) {
+        const dir   = w.windDirection ? ` ${w.windDirection}` : '';
+        const label = windKph < 2 ? 'Glassy Calm' : windKph < 12 ? 'Light Breeze' : 'Gentle Breeze';
+        items.push({ icon: '≈', label: `${label} — ${windKph.toFixed(0)} km/h${dir} (B${this.getBeaufortFromKph(windKph)})`, detail: 'Ideal paddling conditions', severity: 'good', priority: 9 });
+      }
+      if (!isNaN(wt)) {
+        if (wt >= 20 && wt < 27) {
+          items.push({ icon: '💧', label: `Comfortable Water — ${wt.toFixed(1)}°C`,  detail: 'Ideal paddling and swimming temperature', severity: 'good', priority: 9 });
+        } else if (wt >= 15 && wt < 20) {
+          items.push({ icon: '🌊', label: `Cool Water — ${wt.toFixed(1)}°C`,         detail: 'Wetsuit recommended for extended sessions', severity: 'caution', priority: 7 });
+        } else if (wt >= 27) {
+          items.push({ icon: '🌡️', label: `Warm Water — ${wt.toFixed(1)}°C`,         detail: 'Stay hydrated — algae possible in summer', severity: 'caution', priority: 8 });
+        }
+      }
+    }
+
+    // ── Phase 4: Score is poor but nothing specific explains it ──────────────
+    if (r < 3.0 && items.length === 0) {
+      items.push({ icon: '📊', label: 'Adverse conditions detected', detail: 'ML model identified unfavorable multi-factor pattern', severity: 'warning', priority: 0 });
+    }
+
     if (items.length === 0) {
-      items.push({ icon: '✅', label: 'Conditions look favorable', detail: 'No significant hazards detected', severity: 'good', priority: 10 });
+      items.push({ icon: '✓', label: 'Conditions look favorable', detail: 'No significant hazards detected', severity: 'good', priority: 10 });
     }
 
     return items.sort((a, b) => a.priority - b.priority).slice(0, 4);
