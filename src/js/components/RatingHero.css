@@ -1147,3 +1147,381 @@ html.dark-theme .feedback-btn:hover {
 html.dark-theme .feedback-thanks {
   color: #6abf7b;
 }
+
+/* ── Score Ring (SVG Donut) ────────────────────────────────────────────── */
+
+.score-ring-wrapper {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+}
+
+.score-ring {
+  width: 120px;
+  height: 120px;
+  display: block;
+  transform: rotate(-90deg); /* start arc at 12 o'clock via JS offset instead */
+  transform: none; /* offset handled by stroke-dashoffset in JS */
+}
+
+/* Track — background circle */
+.ring-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-width: 10;
+}
+
+html:not(.dark-theme) .ring-track {
+  stroke: rgba(0, 0, 0, 0.1);
+}
+
+/* Progress — animated fill */
+.ring-progress {
+  fill: none;
+  stroke-width: 10;
+  stroke-linecap: round;
+  transition: stroke-dasharray 1.1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Center overlay */
+.ring-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.ring-number {
+  font-family: 'Josefin_Bold', Arial, sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--modal-text, #111);
+}
+
+html.dark-theme .ring-number {
+  color: ivory;
+}
+
+html:not(.dark-theme) .ring-number {
+  color: #111;
+}
+
+.ring-denom {
+  font-family: 'Josefin_Light', Arial, sans-serif;
+  font-size: 11px;
+  opacity: 0.6;
+  line-height: 1;
+  margin-top: 1px;
+  color: var(--modal-text, #333);
+}
+
+html.dark-theme .ring-denom {
+  color: rgba(255, 250, 240, 0.6);
+}
+
+html:not(.dark-theme) .ring-denom {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.ring-pct {
+  font-family: 'Josefin_Bold', Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  margin-top: 3px;
+  line-height: 1;
+}
+
+/* Label below ring */
+.ring-label {
+  font-family: 'Josefin_Bold', Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-align: center;
+  margin-top: 4px;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .score-ring-wrapper {
+    width: 100px;
+    height: 100px;
+  }
+  .score-ring {
+    width: 100px;
+    height: 100px;
+  }
+  .ring-number {
+    font-size: 22px;
+  }
+}
+
+/* ── Paddler's Briefing ─────────────────────────────────────────────────── */
+
+.paddler-briefing {
+  border-radius: 12px;
+  padding: 14px;
+  margin-top: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+html:not(.dark-theme) .paddler-briefing {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Verdict variants — tint the briefing card */
+.paddler-briefing.verdict-excellent {
+  border-left: 4px solid #22C55E;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(34, 197, 94, 0.04));
+}
+.paddler-briefing.verdict-great {
+  border-left: 4px solid #4ADE80;
+  background: linear-gradient(135deg, rgba(74, 222, 128, 0.10), rgba(74, 222, 128, 0.03));
+}
+.paddler-briefing.verdict-good {
+  border-left: 4px solid #CD853F;
+  background: linear-gradient(135deg, rgba(205, 133, 63, 0.12), rgba(205, 133, 63, 0.04));
+}
+.paddler-briefing.verdict-fair {
+  border-left: 4px solid #E36414;
+  background: linear-gradient(135deg, rgba(227, 100, 20, 0.12), rgba(227, 100, 20, 0.04));
+}
+.paddler-briefing.verdict-risky {
+  border-left: 4px solid #C0392B;
+  background: linear-gradient(135deg, rgba(192, 57, 43, 0.15), rgba(192, 57, 43, 0.05));
+}
+.paddler-briefing.verdict-poor {
+  border-left: 4px solid #A01010;
+  background: linear-gradient(135deg, rgba(160, 16, 16, 0.18), rgba(160, 16, 16, 0.06));
+}
+.paddler-briefing.verdict-danger {
+  border-left: 4px solid #8B0000;
+  background: linear-gradient(135deg, rgba(139, 0, 0, 0.22), rgba(139, 0, 0, 0.08));
+  animation: pulse-danger-bg 3s ease-in-out infinite;
+}
+
+@keyframes pulse-danger-bg {
+  0%, 100% { background: linear-gradient(135deg, rgba(139, 0, 0, 0.22), rgba(139, 0, 0, 0.08)); }
+  50%       { background: linear-gradient(135deg, rgba(139, 0, 0, 0.28), rgba(139, 0, 0, 0.12)); }
+}
+
+/* Verdict header */
+.briefing-verdict {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.verdict-icon {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.verdict-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.verdict-title {
+  font-family: 'Josefin_Bold', Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: var(--modal-text, #111);
+  line-height: 1.2;
+}
+
+html.dark-theme .verdict-title {
+  color: ivory;
+}
+html:not(.dark-theme) .verdict-title {
+  color: #111;
+}
+
+.verdict-subtitle {
+  font-family: 'Josefin_Light', Arial, sans-serif;
+  font-size: 13px;
+  opacity: 0.8;
+  line-height: 1.3;
+}
+
+html.dark-theme .verdict-subtitle {
+  color: rgba(255, 250, 240, 0.8);
+}
+html:not(.dark-theme) .verdict-subtitle {
+  color: rgba(0, 0, 0, 0.65);
+}
+
+/* Condition rows */
+.briefing-conditions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.condition-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border-left: 3px solid transparent;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+html:not(.dark-theme) .condition-row {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* Severity left-border colors */
+.condition-row.row-severe  { border-left-color: #DC2626; background: rgba(220, 38, 38, 0.12);  }
+.condition-row.row-danger  { border-left-color: #EA580C; background: rgba(234, 88, 12, 0.10);  }
+.condition-row.row-warning { border-left-color: #D97706; background: rgba(217, 119, 6, 0.09);  }
+.condition-row.row-caution { border-left-color: #CA8A04; background: rgba(202, 138, 4, 0.08);  }
+.condition-row.row-good    { border-left-color: #16A34A; background: rgba(22, 163, 74, 0.08);  }
+
+html:not(.dark-theme) .condition-row.row-severe  { background: rgba(220, 38, 38, 0.08);  }
+html:not(.dark-theme) .condition-row.row-danger  { background: rgba(234, 88, 12, 0.07);  }
+html:not(.dark-theme) .condition-row.row-warning { background: rgba(217, 119, 6, 0.07);  }
+html:not(.dark-theme) .condition-row.row-caution { background: rgba(202, 138, 4, 0.06);  }
+html:not(.dark-theme) .condition-row.row-good    { background: rgba(22, 163, 74, 0.06);  }
+
+.cr-icon {
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.cr-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.cr-label {
+  font-family: 'Josefin_Bold', Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--modal-text, #111);
+}
+
+html.dark-theme .cr-label {
+  color: rgba(255, 250, 240, 0.95);
+}
+html:not(.dark-theme) .cr-label {
+  color: #111;
+}
+
+.cr-detail {
+  font-family: 'Josefin_Light', Arial, sans-serif;
+  font-size: 12px;
+  line-height: 1.3;
+  opacity: 0.75;
+}
+
+html.dark-theme .cr-detail {
+  color: rgba(255, 250, 240, 0.75);
+}
+html:not(.dark-theme) .cr-detail {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/* Forecast suggestion */
+.briefing-suggestion {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+html:not(.dark-theme) .briefing-suggestion {
+  background: rgba(59, 130, 246, 0.07);
+  border-color: rgba(59, 130, 246, 0.15);
+}
+
+.suggestion-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+.suggestion-text {
+  font-family: 'Josefin_Light', Arial, sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+  flex: 1;
+  color: #60A5FA;
+}
+
+html:not(.dark-theme) .suggestion-text {
+  color: #2563EB;
+}
+
+.suggestion-text strong {
+  font-family: 'Josefin_Bold', Arial, sans-serif;
+  font-weight: 700;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .paddler-briefing {
+    padding: 12px;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .verdict-title {
+    font-size: 15px;
+  }
+  .verdict-subtitle {
+    font-size: 12px;
+  }
+  .condition-row {
+    padding: 6px 8px;
+  }
+  .cr-label {
+    font-size: 12px;
+  }
+  .cr-detail {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .paddler-briefing {
+    padding: 10px;
+    border-radius: 8px;
+  }
+  .verdict-icon {
+    font-size: 18px;
+  }
+  .verdict-title {
+    font-size: 14px;
+  }
+}

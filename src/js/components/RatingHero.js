@@ -1,112 +1,79 @@
 /**
  * Rating Hero Component
- * Displays the main paddle score and description
+ * Displays a donut-ring score + paddler's briefing with real condition analysis
  */
 class RatingHero {
   constructor() {
     this.element = null;
-    // Get saved unit preference or default to metric
     this.useMetric = localStorage.getItem('kaayko_units') !== 'imperial';
-    // Store the last render data for unit switching
     this.lastRenderData = null;
-    // Store raw values for unit conversion
     this.rawValues = {};
-    // Feedback state
     this._feedbackSpotId = null;
     this._feedbackPredictedScore = null;
     this._feedbackSubmitted = false;
   }
 
   render(rating, interpretation, weather = {}, forecastData = null, spotId = null) {
-    // Store render data for unit switching
     this.lastRenderData = { rating, interpretation, weather };
-    // Store feedback context
     this._feedbackSpotId = spotId;
     this._feedbackPredictedScore = rating;
     this._feedbackSubmitted = false;
-    
-    console.log('🏆 RatingHero render called with:', { rating, weather, interpretation });
-    
-    // Extract skill level information with more meaningful defaults
-    const skillLevel = interpretation.skillLevel || 'EXPERIENCED ONLY';
-    const skillRecommendation = interpretation.recommendation || 'Assess conditions carefully before paddling';
-    const skillDetails = interpretation.skillDetails || interpretation.details || 'Weather conditions require careful evaluation';
-    
-    // Extract penalty information for transparency (GOLD STANDARD compatibility)
-    const penalties = weather?.penaltiesApplied || interpretation?.penalties || [];
-    const originalRating = weather?.originalRating || interpretation?.originalRating || rating;
-    const totalPenalty = weather?.totalPenalty || interpretation?.totalPenalty || 0;
-    
-    // GOLD STANDARD v3 ML model provides direct ratings without additional penalties
-    const isGoldStandard = weather?.isGoldStandard || weather?.v3ModelUsed;
-    if (isGoldStandard) {
-      console.log('🏆 Using GOLD STANDARD v3 ML model rating - no additional penalties applied');
-    }
-    
-    // Get professional skill level information based on rating
-    const skillInfo = this.getSkillInfo(rating, weather, forecastData);
-    
-    // Extract weather data from API structure - direct from forecast endpoint
-    const temp = weather?.temperature || '--';
-    const wind = weather?.windSpeed || '--';
-    const windDirection = weather?.windDirection || 'N'; // Use actual wind direction from API
-    const visibility = weather?.visibility || '--';
-    const humidity = weather?.humidity || '--';
-    const uvIndex = weather?.uvIndex || '--';
-    const cloudCover = weather?.cloudCover || '--';
-    
-    // Use real water temp from API conditions if available, otherwise estimate (air - 3°C)
-    const rawWaterTemp = weather?.waterTemp;
-    const waterTemp = (rawWaterTemp !== undefined && rawWaterTemp !== null && !isNaN(parseFloat(rawWaterTemp)))
-      ? parseFloat(rawWaterTemp)
-      : (temp !== '--' && !isNaN(parseFloat(temp))) ? (parseFloat(temp) - 3) : '--';
 
-    console.log('🏆 RatingHero extracted values:', {
-      temp, wind, windDirection, visibility, humidity, uvIndex, cloudCover, waterTemp
-    });
+    // Extract weather values
+    const temp          = weather?.temperature ?? '--';
+    const wind          = weather?.windSpeed   ?? '--';
+    const windDirection = weather?.windDirection || 'N';
+    const uvIndex       = weather?.uvIndex     !== undefined ? weather.uvIndex   : '--';
+    const cloudCover    = weather?.cloudCover  !== undefined ? weather.cloudCover : '--';
 
-    // Store raw values for unit conversion
+    // Real water temp from API; fallback: air - 3°C
+    const rawWt = weather?.waterTemp;
+    const waterTemp = (rawWt !== undefined && rawWt !== null && !isNaN(parseFloat(rawWt)))
+      ? parseFloat(rawWt)
+      : (temp !== '--' ? parseFloat(temp) - 3 : '--');
+
+    // Store raw values for unit switching
     this.rawValues = {
-      temp: (temp !== '--' && !isNaN(parseFloat(temp))) ? parseFloat(temp) : null,
-      waterTemp: (waterTemp !== '--' && waterTemp !== null && !isNaN(parseFloat(waterTemp))) ? parseFloat(waterTemp) : null,
-      wind: (wind !== '--' && !isNaN(parseFloat(wind))) ? parseFloat(wind) : null,
+      temp:      temp !== '--' ? parseFloat(temp)  : null,
+      waterTemp: waterTemp !== '--' ? parseFloat(waterTemp) : null,
+      wind:      wind !== '--' ? parseFloat(wind)  : null,
       windDirection,
-      uvIndex: (uvIndex !== '--' && !isNaN(parseFloat(uvIndex))) ? parseFloat(uvIndex) : null,
-      cloudCover: (cloudCover !== '--' && !isNaN(parseFloat(cloudCover))) ? parseFloat(cloudCover) : null
+      uvIndex:   uvIndex !== '--' ? parseFloat(uvIndex)     : null,
+      cloudCover: cloudCover !== '--' ? parseFloat(cloudCover) : null
     };
 
-    // Convert units based on user preference
-    const displayTemp = this.useMetric ? temp : this.celsiusToFahrenheit(temp);
-    const tempUnit = this.useMetric ? '°C' : '°F';
-    
-    const displayWaterTemp = this.useMetric ? waterTemp : this.celsiusToFahrenheit(waterTemp);
-    
-    const displayWind = this.useMetric ? wind : this.kphToMph(wind);
-    const windUnit = this.useMetric ? 'km/h' : 'mph';
-    
+    // Unit conversion
+    const tempUnit  = this.useMetric ? '°C' : '°F';
+    const windUnit  = this.useMetric ? 'km/h' : 'mph';
+    const dispTemp      = this.useMetric ? temp      : this.celsiusToFahrenheit(temp);
+    const dispWaterTemp = this.useMetric ? waterTemp : this.celsiusToFahrenheit(waterTemp);
+    const dispWind      = this.useMetric ? wind      : this.kphToMph(wind);
+
     const heroHTML = `
       <div class="skill-level-section">
         <div class="header-content">
+
+          <!-- ── Score Ring ── -->
           <div class="rating-section">
             <div class="paddle-score-label">Paddle Score</div>
-            <div class="rating-circle" data-rating="${rating}">
-              <div class="rating-number">${rating}</div>
-            </div>
+            ${this.buildScoreRing(rating)}
             <div class="now-indicator">NOW</div>
           </div>
+
+          <!-- ── Weather stats + unit toggle ── -->
           <div class="skill-info">
             <div class="core-weather-inline">
               <div class="weather-stat">
                 <div class="weather-icon">🌡️</div>
                 <div class="weather-data">
-                  <span class="weather-value">${displayTemp}${tempUnit}</span>
+                  <span class="weather-value">${dispTemp}${tempUnit}</span>
                   <span class="weather-label">Air Temp</span>
                 </div>
               </div>
               <div class="weather-stat">
                 <div class="weather-icon">💨</div>
                 <div class="weather-data">
-                  <span class="weather-value">${displayWind} ${windUnit}</span>
+                  <span class="weather-value">${dispWind} ${windUnit}</span>
                   <span class="weather-label">Wind Speed</span>
                 </div>
               </div>
@@ -120,7 +87,7 @@ class RatingHero {
               <div class="weather-stat">
                 <div class="weather-icon">🌊</div>
                 <div class="weather-data">
-                  <span class="weather-value">${typeof displayWaterTemp === 'number' ? displayWaterTemp.toFixed(1) : displayWaterTemp}${tempUnit}</span>
+                  <span class="weather-value">${typeof dispWaterTemp === 'number' ? dispWaterTemp.toFixed(1) : dispWaterTemp}${tempUnit}</span>
                   <span class="weather-label">Water Temp</span>
                 </div>
               </div>
@@ -145,38 +112,20 @@ class RatingHero {
             </div>
           </div>
         </div>
-        <div class="skill-recommendation-modern ${skillInfo.className}">
-          <div class="skill-level-display">
-            <div class="skill-level-header">
-              <span class="skill-icon">${skillInfo.icon}</span>
-              <div class="skill-level-text">
-                <div class="skill-level-badge-modern ${skillInfo.className}">${skillInfo.level}</div>
-              </div>
-            </div>
-            <div class="skill-description">
-              <div class="conditions-list">
-                ${skillInfo.description.map(condition => {
-                  const isDangerous = condition.includes('DANGEROUS') || 
-                                    condition.includes('LIFE THREATENING') || 
-                                    condition.includes('HYPOTHERMIA') || 
-                                    condition.includes('EXTREME') || 
-                                    condition.includes('MULTIPLE HAZARDS');
-                  const dangerClass = isDangerous ? ' dangerous-condition' : '';
-                  return `<div class="condition-item${dangerClass}">${condition}</div>`;
-                }).join('')}
-              </div>
-            </div>
-          </div>
-        </div>
+
+        <!-- ── Paddler's Briefing ── -->
+        ${this.buildPaddlerBriefing(rating, weather, forecastData)}
       </div>
+
+      <!-- ── Feedback widget ── -->
       <div class="paddle-feedback" data-submitted="false">
         <span class="feedback-prompt">Was this score accurate?</span>
         <div class="feedback-buttons">
-          <button class="feedback-btn" data-vote="5"   title="Way better than predicted">👍👍</button>
-          <button class="feedback-btn" data-vote="up"  title="Better than predicted">👍</button>
-          <button class="feedback-btn" data-vote="ok"  title="About right">👌</button>
+          <button class="feedback-btn" data-vote="5"    title="Way better than predicted">👍👍</button>
+          <button class="feedback-btn" data-vote="up"   title="Better than predicted">👍</button>
+          <button class="feedback-btn" data-vote="ok"   title="About right">👌</button>
           <button class="feedback-btn" data-vote="down" title="Worse than predicted">👎</button>
-          <button class="feedback-btn" data-vote="1"   title="Way worse than predicted">👎👎</button>
+          <button class="feedback-btn" data-vote="1"    title="Way worse than predicted">👎👎</button>
         </div>
         <span class="feedback-thanks" style="display:none">Thanks for the feedback!</span>
       </div>
@@ -186,31 +135,312 @@ class RatingHero {
     container.innerHTML = heroHTML;
     this.element = container.firstElementChild;
 
-    // Set rating circle color based on score
-    const ratingCircle = this.element.querySelector('.rating-circle');
-    if (ratingCircle) {
-      const colors = this.getRatingColors(rating);
-      ratingCircle.style.setProperty('background-color', colors.backgroundColor, 'important');
-      ratingCircle.style.setProperty('border-color', colors.borderColor, 'important');
-      ratingCircle.style.setProperty('color', colors.textColor, 'important');
-      ratingCircle.style.setProperty('background', colors.backgroundColor, 'important'); // Override gradients
-      
-      // Also set the rating number text color
-      const ratingNumber = ratingCircle.querySelector('.rating-number');
-      if (ratingNumber) {
-        ratingNumber.style.setProperty('color', colors.textColor, 'important');
+    // Animate the ring after a tick (CSS transition from 0 → target)
+    requestAnimationFrame(() => {
+      const ring = this.element?.querySelector('.ring-progress');
+      if (ring) {
+        const fill  = ring.dataset.fill;
+        const total = ring.dataset.total;
+        ring.style.strokeDasharray = `${fill} ${total}`;
       }
-      
-      console.log(`🎨 Rating circle colored for ${rating}:`, colors);
-    }
-    
-    // Add event listeners for unit toggle
-    this.setupUnitToggle();
-    // Add feedback listeners
-    this.setupFeedback();
+    });
 
+    this.setupUnitToggle();
+    this.setupFeedback();
     return this.element;
   }
+
+  // ── SVG Donut Ring ────────────────────────────────────────────────────────
+
+  buildScoreRing(rating) {
+    const r   = 46, cx = 60, cy = 60;
+    const circ = +(2 * Math.PI * r).toFixed(1); // ~289.0
+    const pct  = Math.max(0, Math.min(1, parseFloat(rating) / 5));
+    const fill = +(pct * circ).toFixed(1);
+    const offset = +(-circ / 4).toFixed(1); // start at 12 o'clock
+    const color  = this.getRingColor(rating);
+    const label  = this.getScoreLabel(rating);
+    const pctStr = Math.round(pct * 100) + '%';
+
+    return `
+      <div class="score-ring-wrapper">
+        <svg class="score-ring" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <circle class="ring-track" cx="${cx}" cy="${cy}" r="${r}"/>
+          <circle class="ring-progress"
+            cx="${cx}" cy="${cy}" r="${r}"
+            stroke="${color}"
+            stroke-dasharray="0 ${circ}"
+            stroke-dashoffset="${offset}"
+            data-fill="${fill}"
+            data-total="${circ}"/>
+        </svg>
+        <div class="ring-overlay">
+          <div class="ring-number">${rating}</div>
+          <div class="ring-denom">/ 5</div>
+          <div class="ring-pct" style="color:${color}">${pctStr}</div>
+        </div>
+      </div>
+      <div class="ring-label" style="color:${color}">${label}</div>
+    `;
+  }
+
+  getRingColor(rating) {
+    const r = parseFloat(rating);
+    if (r >= 4.5) return '#22C55E';
+    if (r >= 4.0) return '#4ADE80';
+    if (r >= 3.5) return '#CD853F';
+    if (r >= 3.0) return '#E36414';
+    if (r >= 2.5) return '#C0392B';
+    if (r >= 2.0) return '#A01010';
+    if (r >= 1.5) return '#8B1212';
+    return '#A82020';          // visible burgundy even at 20%
+  }
+
+  getScoreLabel(rating) {
+    const r = parseFloat(rating);
+    if (r >= 4.5) return 'EXCELLENT';
+    if (r >= 4.0) return 'GREAT';
+    if (r >= 3.5) return 'GOOD';
+    if (r >= 3.0) return 'FAIR';
+    if (r >= 2.5) return 'RISKY';
+    if (r >= 2.0) return 'POOR';
+    if (r >= 1.5) return 'DANGER';
+    return 'CRITICAL';
+  }
+
+  // ── Paddler's Briefing ────────────────────────────────────────────────────
+
+  buildPaddlerBriefing(rating, weather, forecastData) {
+    const verdict    = this.getVerdict(rating);
+    const conditions = this.analyzeConditions(weather);
+    const suggestion = this.getForecastSuggestion(rating, forecastData);
+
+    return `
+      <div class="paddler-briefing ${verdict.className}">
+
+        <!-- Verdict header -->
+        <div class="briefing-verdict">
+          <div class="verdict-icon">${verdict.icon}</div>
+          <div class="verdict-text">
+            <div class="verdict-title">${verdict.title}</div>
+            <div class="verdict-subtitle">${verdict.subtitle}</div>
+          </div>
+        </div>
+
+        <!-- Condition rows -->
+        ${conditions.length ? `
+        <div class="briefing-conditions">
+          ${conditions.map(item => `
+            <div class="condition-row row-${item.severity}">
+              <span class="cr-icon">${item.icon}</span>
+              <div class="cr-body">
+                <div class="cr-label">${item.label}</div>
+                <div class="cr-detail">${item.detail}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>` : ''}
+
+        <!-- Forecast suggestion -->
+        ${suggestion ? `
+        <div class="briefing-suggestion">
+          <span class="suggestion-icon">📅</span>
+          <div class="suggestion-text">${suggestion}</div>
+        </div>` : ''}
+
+      </div>
+    `;
+  }
+
+  getVerdict(rating) {
+    const r = parseFloat(rating);
+    if (r >= 4.5) return { icon: '🎯', title: 'Excellent Conditions',    subtitle: 'Perfect for all skill levels — go paddle!',                         className: 'verdict-excellent' };
+    if (r >= 4.0) return { icon: '✅', title: 'Great Conditions',        subtitle: 'Recommended for most paddlers',                                      className: 'verdict-great'    };
+    if (r >= 3.5) return { icon: '👍', title: 'Good Conditions',         subtitle: 'Intermediate paddlers and above',                                    className: 'verdict-good'     };
+    if (r >= 3.0) return { icon: '⚠️', title: 'Fair Conditions',         subtitle: 'Experienced paddlers — assess carefully before going',               className: 'verdict-fair'     };
+    if (r >= 2.5) return { icon: '🔶', title: 'Challenging Conditions',  subtitle: 'Expert paddlers only — serious difficulty',                          className: 'verdict-risky'    };
+    if (r >= 2.0) return { icon: '🚫', title: 'Poor Conditions',         subtitle: 'Not recommended — multiple risk factors present',                    className: 'verdict-poor'     };
+    return              { icon: '⛔', title: 'Dangerous Conditions',     subtitle: 'Not recommended for any skill level — stay off the water',           className: 'verdict-danger'   };
+  }
+
+  analyzeConditions(weather) {
+    const items = [];
+    const w = weather || {};
+
+    // 1. Wind (windSpeed is KPH from enriched conditions)
+    const windKph = parseFloat(w.windSpeed);
+    if (!isNaN(windKph)) {
+      const dir     = w.windDirection ? ` ${w.windDirection}` : '';
+      const gustKph = parseFloat(w.gustSpeed) || windKph * 1.3;
+      const gustStr = gustKph > windKph * 1.15 ? ` · gusts ${gustKph.toFixed(0)} km/h` : '';
+      const B       = this.getBeaufortFromKph(windKph);
+
+      if (windKph >= 50) {
+        items.push({ icon: '🌪️', label: `Storm-force Wind — ${windKph.toFixed(0)} km/h${dir} (B${B})${gustStr}`,   detail: 'Extremely dangerous · No paddling under any circumstances',    severity: 'severe', priority: 0 });
+      } else if (windKph >= 39) {
+        items.push({ icon: '⛔',  label: `Gale Wind — ${windKph.toFixed(0)} km/h${dir} (B${B})${gustStr}`,          detail: 'Impossible to paddle against · Capsize very likely',           severity: 'severe', priority: 0 });
+      } else if (windKph >= 29) {
+        items.push({ icon: '💨',  label: `Strong Wind — ${windKph.toFixed(0)} km/h${dir} (B${B})${gustStr}`,        detail: 'Whitecaps forming · Expert paddlers only — high resistance',  severity: 'danger', priority: 1 });
+      } else if (windKph >= 20) {
+        items.push({ icon: '🌬️', label: `Moderate Wind — ${windKph.toFixed(0)} km/h${dir} (B${B})${gustStr}`,      detail: 'Increased effort required · Manageable for experienced paddlers', severity: 'warning', priority: 4 });
+      } else if (windKph >= 10) {
+        items.push({ icon: '🍃',  label: `Light Wind — ${windKph.toFixed(0)} km/h${dir} (B${B})`,                  detail: 'Comfortable paddling · Slight resistance in open water',       severity: 'caution', priority: 7 });
+      } else {
+        items.push({ icon: '🏄',  label: `Calm — ${windKph.toFixed(0)} km/h`,                                       detail: 'Ideal conditions · Glassy water possible',                    severity: 'good',   priority: 9 });
+      }
+    }
+
+    // 2. Water temperature (°C)
+    const wt = parseFloat(w.waterTemp);
+    if (!isNaN(wt)) {
+      if (wt < 10) {
+        items.push({ icon: '🧊', label: `Very Cold Water — ${wt.toFixed(1)}°C`,    detail: 'Hypothermia within minutes · Drysuit + PFD essential · Never paddle alone',  severity: 'severe',  priority: 1 });
+      } else if (wt < 15) {
+        items.push({ icon: '❄️', label: `Cold Water — ${wt.toFixed(1)}°C`,         detail: 'Cold shock risk on immersion · Wetsuit mandatory',                           severity: 'danger',  priority: 2 });
+      } else if (wt < 20) {
+        items.push({ icon: '🌊', label: `Cool Water — ${wt.toFixed(1)}°C`,         detail: 'Wetsuit recommended · Extended immersion can be risky',                      severity: 'caution', priority: 6 });
+      } else if (wt < 27) {
+        items.push({ icon: '💧', label: `Comfortable Water — ${wt.toFixed(1)}°C`,  detail: 'Ideal paddling and swimming temperature',                                    severity: 'good',    priority: 9 });
+      } else {
+        items.push({ icon: '🌡️', label: `Warm Water — ${wt.toFixed(1)}°C`,         detail: 'Stay hydrated · Blue-green algae possible in summer',                        severity: 'caution', priority: 7 });
+      }
+    }
+
+    // 3. Precipitation (mm)
+    const precip = parseFloat(w.precipMm);
+    if (!isNaN(precip) && precip > 0.1) {
+      if (precip >= 5) {
+        items.push({ icon: '🌧️', label: `Heavy Rain — ${precip.toFixed(1)} mm`,  detail: 'Visibility severely reduced · Lightning hazard · Seek shelter immediately', severity: 'severe',  priority: 0 });
+      } else if (precip >= 1) {
+        items.push({ icon: '🌦️', label: `Rain — ${precip.toFixed(1)} mm`,        detail: 'Slippery gear · Reduced visibility · Monitor storm development',            severity: 'danger',  priority: 2 });
+      } else {
+        items.push({ icon: '🌂', label: `Light Rain — ${precip.toFixed(1)} mm`,  detail: 'Minor impact · Watch for developing storms',                                severity: 'warning', priority: 5 });
+      }
+    }
+
+    // 4. Visibility (km)
+    const vis = parseFloat(w.visibility);
+    if (!isNaN(vis)) {
+      if (vis < 3) {
+        items.push({ icon: '🌫️', label: `Very Poor Visibility — ${vis.toFixed(1)} km`, detail: 'Navigation hazard · Stay near shore · Use signal lights',       severity: 'severe',  priority: 1 });
+      } else if (vis < 6) {
+        items.push({ icon: '👁️', label: `Poor Visibility — ${vis.toFixed(1)} km`,      detail: 'Stay aware of other watercraft · Mark your position',            severity: 'danger',  priority: 3 });
+      } else if (vis < 9) {
+        items.push({ icon: '🌁', label: `Reduced Visibility — ${vis.toFixed(1)} km`,   detail: 'Be visible · Limit distance from shore',                         severity: 'warning', priority: 6 });
+      }
+      // ≥9 km: good visibility — skip (not worth mentioning)
+    }
+
+    // 5. Cloud cover (%)
+    const cloud = parseFloat(w.cloudCover);
+    if (!isNaN(cloud) && cloud >= 90) {
+      items.push({ icon: '☁️', label: `Overcast — ${cloud.toFixed(0)}% cloud cover`, detail: 'Active storm system likely · Monitor for lightning', severity: 'warning', priority: 6 });
+    }
+
+    // 6. UV Index
+    const uv = parseFloat(w.uvIndex);
+    if (!isNaN(uv) && uv >= 6) {
+      const sev = uv >= 10 ? 'danger' : uv >= 8 ? 'warning' : 'caution';
+      const tag = uv >= 10 ? 'Extreme' : uv >= 8 ? 'Very High' : 'High';
+      items.push({ icon: '☀️', label: `${tag} UV — Index ${uv.toFixed(0)}`, detail: 'SPF 50+ sunscreen · Hat · Reapply every 90 min', severity: sev, priority: 8 });
+    }
+
+    // Fallback: all clear
+    if (items.length === 0) {
+      items.push({ icon: '✅', label: 'Conditions look favorable', detail: 'No significant hazards detected', severity: 'good', priority: 10 });
+    }
+
+    return items.sort((a, b) => a.priority - b.priority).slice(0, 4);
+  }
+
+  getForecastSuggestion(currentRating, forecastData) {
+    try {
+      const forecast = forecastData?.forecast;
+      if (!Array.isArray(forecast)) return null;
+
+      const current = parseFloat(currentRating);
+      const currentHour = new Date().getHours();
+
+      for (let dayIdx = 0; dayIdx < forecast.length; dayIdx++) {
+        const hourly = forecast[dayIdx]?.hourly || {};
+        const hours  = Object.keys(hourly).map(Number).sort((a, b) => a - b);
+
+        for (const h of hours) {
+          if (dayIdx === 0 && h <= currentHour) continue;
+          const hData = hourly[h];
+          const r = parseFloat(hData?.rating ?? hData?.prediction?.rating);
+          if (!isNaN(r) && r >= current + 1.0 && r >= 3.0) {
+            const dayLabel = dayIdx === 0 ? 'Later today' : dayIdx === 1 ? 'Tomorrow' : (forecast[dayIdx].date?.slice(5) || 'Day 3');
+            return `Better window: <strong>${dayLabel} at ${this.formatHourDisplay(h)}</strong> — Score ${r.toFixed(1)} (${this.getScoreLabel(r)})`;
+          }
+        }
+      }
+    } catch { /* non-fatal */ }
+    return null;
+  }
+
+  formatHourDisplay(hour) {
+    const h = parseInt(hour);
+    if (h === 0)  return '12:00 AM';
+    if (h < 12)   return `${h}:00 AM`;
+    if (h === 12) return '12:00 PM';
+    return `${h - 12}:00 PM`;
+  }
+
+  getBeaufortFromKph(kph) {
+    const k = parseFloat(kph);
+    if (k < 2)   return 0;
+    if (k < 6)   return 1;
+    if (k < 12)  return 2;
+    if (k < 20)  return 3;
+    if (k < 29)  return 4;
+    if (k < 39)  return 5;
+    if (k < 50)  return 6;
+    if (k < 62)  return 7;
+    if (k < 75)  return 8;
+    if (k < 89)  return 9;
+    if (k < 103) return 10;
+    if (k < 118) return 11;
+    return 12;
+  }
+
+  // ── Unit toggle ───────────────────────────────────────────────────────────
+
+  setupUnitToggle() {
+    const buttons = this.element.querySelectorAll('.units-btn');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const unit = e.target.dataset.unit;
+        this.useMetric = unit === 'metric';
+        localStorage.setItem('kaayko_units', unit);
+        buttons.forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        this.updateDisplayUnits();
+      });
+    });
+  }
+
+  updateDisplayUnits() {
+    if (!this.element) return;
+    const stats   = this.element.querySelectorAll('.weather-stat');
+    const tempUnit = this.useMetric ? '°C' : '°F';
+    const windUnit = this.useMetric ? 'km/h' : 'mph';
+
+    if (stats[0] && this.rawValues.temp !== null) {
+      const v = this.useMetric ? this.rawValues.temp.toFixed(1) : this.celsiusToFahrenheit(this.rawValues.temp);
+      stats[0].querySelector('.weather-value').textContent = `${v}${tempUnit}`;
+    }
+    if (stats[1] && this.rawValues.wind !== null) {
+      const v = this.useMetric ? this.rawValues.wind.toFixed(1) : this.kphToMph(this.rawValues.wind);
+      stats[1].querySelector('.weather-value').textContent = `${v} ${windUnit}`;
+    }
+    if (stats[3] && this.rawValues.waterTemp !== null) {
+      const v = this.useMetric ? this.rawValues.waterTemp.toFixed(1) : this.celsiusToFahrenheit(this.rawValues.waterTemp);
+      stats[3].querySelector('.weather-value').textContent = `${v}${tempUnit}`;
+    }
+  }
+
+  // ── Feedback ──────────────────────────────────────────────────────────────
 
   setupFeedback() {
     if (!this.element) return;
@@ -222,469 +452,36 @@ class RatingHero {
         if (this._feedbackSubmitted) return;
         this._feedbackSubmitted = true;
 
-        const vote = e.currentTarget.dataset.vote;
+        const vote      = e.currentTarget.dataset.vote;
         const predicted = parseFloat(this._feedbackPredictedScore) || 3;
-
-        // Map vote tokens to actual scores
         const actualScore = {
           '5':    Math.min(5, predicted + 1.5),
           'up':   Math.min(5, predicted + 0.5),
           'ok':   predicted,
           'down': Math.max(1, predicted - 0.5),
-          '1':    Math.max(1, predicted - 1.5),
+          '1':    Math.max(1, predicted - 1.5)
         }[vote] ?? predicted;
 
-        // Visual feedback immediately
         feedbackEl.setAttribute('data-submitted', 'true');
         feedbackEl.querySelector('.feedback-buttons').style.display = 'none';
-        feedbackEl.querySelector('.feedback-prompt').style.display = 'none';
-        feedbackEl.querySelector('.feedback-thanks').style.display = 'inline';
+        feedbackEl.querySelector('.feedback-prompt').style.display  = 'none';
+        feedbackEl.querySelector('.feedback-thanks').style.display  = 'inline';
 
-        // Fire-and-forget API call
         if (window.apiClient && this._feedbackSpotId) {
           window.apiClient.submitFeedback(
-            this._feedbackSpotId,
-            predicted,
-            actualScore,
+            this._feedbackSpotId, predicted, actualScore,
             { ...(this.rawValues || {}) }
-          ).catch(() => {}); // swallow network errors silently
+          ).catch(() => {});
         }
       });
     });
   }
 
-  setupUnitToggle() {
-    const unitButtons = this.element.querySelectorAll('.units-btn');
-    unitButtons.forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const unit = e.target.dataset.unit;
-        this.useMetric = unit === 'metric';
-        
-        // Save preference
-        localStorage.setItem('kaayko_units', unit);
-        
-        // Update button states
-        unitButtons.forEach(b => b.classList.remove('active'));
-        e.target.classList.add('active');
-        
-        // Re-render with new units
-        this.updateDisplayUnits();
-      });
-    });
-  }
+  // ── Conversions ───────────────────────────────────────────────────────────
 
-  updateDisplayUnits() {
-    // Update weather values directly without re-rendering
-    if (!this.element) return;
-    
-    const weatherStats = this.element.querySelectorAll('.weather-stat');
-    const tempUnit = this.useMetric ? '°C' : '°F';
-    const windUnit = this.useMetric ? 'km/h' : 'mph';
-    
-    // Update Air Temperature (stat 0)
-    if (weatherStats[0] && this.rawValues.temp !== null) {
-      const tempValue = this.useMetric ? 
-        this.rawValues.temp.toFixed(1) : 
-        this.celsiusToFahrenheit(this.rawValues.temp);
-      weatherStats[0].querySelector('.weather-value').textContent = `${tempValue}${tempUnit}`;
-    }
-    
-    // Update Wind Speed (stat 1)
-    if (weatherStats[1] && this.rawValues.wind !== null) {
-      const windValue = this.useMetric ? 
-        this.rawValues.wind.toFixed(1) : 
-        this.kphToMph(this.rawValues.wind);
-      weatherStats[1].querySelector('.weather-value').textContent = `${windValue} ${windUnit}`;
-    }
-    
-    // Update Water Temperature (stat 3)
-    if (weatherStats[3] && this.rawValues.waterTemp !== null) {
-      const waterTempValue = this.useMetric ? 
-        this.rawValues.waterTemp.toFixed(1) : 
-        this.celsiusToFahrenheit(this.rawValues.waterTemp);
-      weatherStats[3].querySelector('.weather-value').textContent = `${waterTempValue}${tempUnit}`;
-    }
-    
-    console.log('Units updated successfully!', { 
-      useMetric: this.useMetric, 
-      rawValues: this.rawValues 
-    });
-  }
-
-  getSkillLevelClass(skillLevel) {
-    if (skillLevel.includes('BEGINNERS')) return 'skill-beginner';
-    if (skillLevel.includes('MODERATE')) return 'skill-moderate';
-    if (skillLevel.includes('EXPERIENCED')) return 'skill-experienced';
-    if (skillLevel.includes('EXPERT')) return 'skill-expert';
-    if (skillLevel.includes('NOT RECOMMENDED')) return 'skill-danger';
-    return 'skill-experienced'; // Default to experienced for safety
-  }
-
-  getSkillDisplayName(skillLevel) {
-    if (skillLevel.includes('BEGINNERS')) return 'Beginner Friendly';
-    if (skillLevel.includes('MODERATE')) return 'Intermediate+';
-    if (skillLevel.includes('EXPERIENCED')) return 'Experienced';
-    if (skillLevel.includes('EXPERT')) return 'Expert Level';
-    if (skillLevel.includes('NOT RECOMMENDED')) return 'Not Recommended';
-    return 'Experienced';
-  }
-
-  renderPenaltyInfo(penalties, originalRating, totalPenalty, finalRating, isGoldStandard = false) {
-    if (isGoldStandard) {
-      return '<div class="penalty-info-gold"><span class="penalty-icon">🏆</span> GOLD STANDARD v3 ML Model - Pure rating without additional penalties</div>';
-    }
-    
-    if (!penalties || penalties.length === 0 || totalPenalty === 0) {
-      return '<div class="penalty-info-none"><span class="penalty-icon">✨</span> No paddle penalties - ideal conditions!</div>';
-    }
-
-    const penaltyHTML = `
-      <div class="penalty-info">
-        <div class="penalty-header">
-          <span class="penalty-icon">⚖️</span>
-          <span class="penalty-title">Paddle Penalties Applied</span>
-          <span class="penalty-impact">-${totalPenalty} points</span>
-        </div>
-        <div class="penalty-calculation">
-          <span class="original-score">${originalRating}</span>
-          <span class="penalty-arrow">→</span>
-          <span class="final-score">${finalRating}</span>
-        </div>
-        <div class="penalty-list">
-          ${penalties.map(penalty => `<div class="penalty-item">• ${penalty}</div>`).join('')}
-        </div>
-      </div>
-    `;
-
-    return penaltyHTML;
-  }
-
-  getSkillInfo(rating, conditions = null, forecastData = null) {
-    const numRating = parseFloat(rating);
-    
-    // Analyze forecast for improvement suggestions
-    const getForecastSuggestion = () => {
-      if (!forecastData || !forecastData.forecastHours) return '';
-      
-      const currentRating = numRating;
-      const hours = forecastData.forecastHours;
-      
-      // Look for better conditions in next 48 hours
-      for (let i = 1; i < Math.min(hours.length, 48); i++) {
-        const futureHour = hours[i];
-        if (futureHour.rating > currentRating + 0.5) {
-          const hoursAhead = i;
-          if (hoursAhead <= 6) {
-            return `⏰ Conditions improve in ${hoursAhead}h`;
-          } else if (hoursAhead <= 24) {
-            const hoursFromNow = hoursAhead;
-            const futureTime = new Date(Date.now() + hoursFromNow * 60 * 60 * 1000);
-            const timeString = futureTime.getHours().toString().padStart(2, '0') + ':00';
-            return `⏰ Better conditions at ${timeString}`;
-          } else {
-            return `⏰ Conditions improve tomorrow`;
-          }
-        }
-      }
-      
-      // Check if conditions are deteriorating
-      let betterEarlier = false;
-      for (let i = 1; i < Math.min(hours.length, 12); i++) {
-        if (hours[i].rating < currentRating - 0.5) {
-          betterEarlier = true;
-          break;
-        }
-      }
-      
-      if (betterEarlier) {
-        return `⚡ Best window is now`;
-      }
-      
-      return '';
-    };
-    
-    // Generate dynamic description based on actual conditions
-    const getConditionDetails = () => {
-      if (!conditions) return ['Conditions analysis unavailable'];
-      
-      const details = [];
-      
-      // GOLD STANDARD v3 model handling
-      if (conditions.isGoldStandard || conditions.v3ModelUsed) {
-        console.log('🏆 GOLD STANDARD conditions - using v3 ML model analysis');
-        details.push('🏆 GOLD STANDARD v3 ML Model rating');
-        details.push('✨ Advanced 57-feature analysis applied');
-        details.push('🧠 Real-time weather & marine data integrated');
-        
-        // Add standard condition analysis for GOLD STANDARD
-        if (conditions.beaufortScale !== undefined) {
-          const beaufortDescriptions = {
-            0: "🏄 Calm waters (B0)",
-            1: "🍃 Light air (B1)", 
-            2: "💨 Light breeze (B2)",
-            3: "🌬️ Gentle breeze (B3)",
-            4: "💨 Moderate breeze (B4)",
-            5: "🌪️ Fresh breeze (B5)",
-            6: "⚠️ Strong breeze (B6)",
-            7: "🚨 High winds (B7)",
-            8: "⛈️ Gale force (B8)"
-          };
-          details.push(beaufortDescriptions[conditions.beaufortScale] || `⚠️ B${conditions.beaufortScale} winds`);
-        }
-        
-        return details;
-      }
-      
-      // LEGACY penalty system handling (for backward compatibility)
-      // SAFETY FIRST: If penalties exist, show them ALL clearly
-      if (conditions.hasPenalties && conditions.penalties && conditions.penalties.length > 0) {
-        console.log('🚨 SAFETY ANALYSIS - Processing penalties:', conditions.penalties);
-        
-        conditions.penalties.forEach(penalty => {
-          console.log('🔍 Analyzing penalty:', penalty);
-          
-          // Parse penalty strings with comprehensive analysis
-          const penaltyLower = penalty.toLowerCase();
-          
-          if (penaltyLower.includes('strong winds') || penaltyLower.includes('high winds')) {
-            const windMatch = penalty.match(/(\d+\.?\d*)\s*mph/);
-            const beaufortMatch = penalty.match(/b(\d+)/i);
-            const windSpeed = windMatch ? windMatch[1] : 'high';
-            const beaufort = beaufortMatch ? beaufortMatch[1] : '';
-            details.push(`⚠️ STRONG WINDS ${windSpeed} mph (B${beaufort}) - DANGEROUS`);
-          } else if (penaltyLower.includes('light winds')) {
-            const windMatch = penalty.match(/(\d+\.?\d*)\s*mph/);
-            const windSpeed = windMatch ? windMatch[1] : '';
-            details.push(`💨 Light winds ${windSpeed} mph - Reduced paddling efficiency`);
-          } else if (penaltyLower.includes('moderate winds')) {
-            const windMatch = penalty.match(/(\d+\.?\d*)\s*mph/);
-            const windSpeed = windMatch ? windMatch[1] : '';
-            details.push(`🌬️ Moderate winds ${windSpeed} mph - Increased difficulty`);
-          }
-          
-          else if (penaltyLower.includes('moderate waves')) {
-            const waveMatch = penalty.match(/(\d+\.?\d*)\s*m/);
-            const waveHeight = waveMatch ? waveMatch[1] : '';
-            details.push(`🌊 MODERATE WAVES ${waveHeight}m - Challenging conditions`);
-          } else if (penaltyLower.includes('large waves') || penaltyLower.includes('high waves')) {
-            const waveMatch = penalty.match(/(\d+\.?\d*)\s*m/);
-            const waveHeight = waveMatch ? waveMatch[1] : '';
-            details.push(`⚠️ LARGE WAVES ${waveHeight}m - VERY DANGEROUS`);
-          } else if (penaltyLower.includes('wave')) {
-            details.push(`🌊 Wave conditions - Exercise caution`);
-          }
-          
-          else if (penaltyLower.includes('cool water') || penaltyLower.includes('cold water')) {
-            const tempMatch = penalty.match(/(\d+\.?\d*)°?c/i);
-            const temp = tempMatch ? tempMatch[1] : '';
-            if (temp && parseFloat(temp) < 15) {
-              details.push(`🧊 HYPOTHERMIA RISK ${temp}°C - LIFE THREATENING`);
-            } else {
-              details.push(`❄️ Cool water ${temp}°C - Wetsuit recommended`);
-            }
-          } else if (penaltyLower.includes('warm water') || penaltyLower.includes('hot water')) {
-            const tempMatch = penalty.match(/(\d+\.?\d*)°?c/i);
-            const temp = tempMatch ? tempMatch[1] : '';
-            details.push(`🌡️ Warm water ${temp}°C - Dehydration risk`);
-          }
-          
-          else if (penaltyLower.includes('extreme heat')) {
-            details.push(`🔥 EXTREME HEAT - Heat stroke risk`);
-          } else if (penaltyLower.includes('high heat')) {
-            details.push(`🌡️ High heat index - Stay hydrated`);
-          }
-          
-          else if (penaltyLower.includes('poor visibility')) {
-            details.push(`🌫️ POOR VISIBILITY - Navigation hazard`);
-          } else if (penaltyLower.includes('reduced visibility')) {
-            details.push(`👁️ Reduced visibility - Use caution`);
-          }
-          
-          else if (penaltyLower.includes('uv') || penaltyLower.includes('sun')) {
-            details.push(`☀️ High UV exposure - Sun protection needed`);
-          }
-          
-          else {
-            // Fallback for unrecognized penalties - still show them!
-            details.push(`⚠️ ${penalty.split(':')[0]} - Safety concern`);
-          }
-        });
-        
-        // Add critical safety summary for severe conditions
-        const totalPenalty = conditions.totalPenalty || 0;
-        if (totalPenalty >= 2.0) {
-          details.push(`🚨 MULTIPLE HAZARDS PRESENT - EXTREME CAUTION REQUIRED`);
-        }
-        
-      } else {
-        // Standard condition analysis when no penalties
-        if (conditions.beaufortScale !== undefined) {
-          const beaufortDescriptions = {
-            0: "🏄 Calm waters (B0)",
-            1: "🍃 Light air (B1)",
-            2: "💨 Light breeze (B2)", 
-            3: "🌬️ Gentle breeze (B3)",
-            4: "💨 Moderate breeze (B4)",
-            5: "🌪️ Fresh breeze (B5)",
-            6: "⚠️ Strong breeze (B6)",
-            7: "🚨 High winds (B7)",
-            8: "⛈️ Gale force (B8)"
-          };
-          details.push(beaufortDescriptions[conditions.beaufortScale] || `⚠️ B${conditions.beaufortScale} winds`);
-        }
-        
-        if (conditions.marine?.rawMarineHour?.heatindex_c) {
-          const heatIndex = conditions.marine.rawMarineHour.heatindex_c;
-          if (heatIndex > 40) details.push("🔥 Extreme heat");
-          else if (heatIndex > 32) details.push("🌡️ High heat index");
-          else if (heatIndex < 15) details.push("🧊 Cold conditions");
-        }
-        
-        if (conditions.visibility !== undefined) {
-          if (conditions.visibility < 2) details.push("🌫️ Poor visibility");
-          else if (conditions.visibility < 5) details.push("👁️ Reduced visibility");
-          else if (conditions.visibility > 15) details.push("✨ Excellent visibility");
-        }
-        
-        if (conditions.waveHeight !== undefined) {
-          if (conditions.waveHeight > 2) details.push("🌊 Large waves");
-          else if (conditions.waveHeight > 1) details.push("〰️ Moderate waves");
-          else if (conditions.waveHeight < 0.3) details.push("🏄 Calm waters");
-        }
-      }
-      
-      // Add forecast improvement timing
-      const forecastSuggestion = getForecastSuggestion();
-      if (forecastSuggestion) {
-        details.push(forecastSuggestion);
-      }
-      
-      console.log('🔍 Final condition details:', details);
-      return details;
-    };
-    
-    if (numRating >= 4.5) {
-      return {
-        level: 'Beginner Friendly',
-        icon: '🔰',
-        description: getConditionDetails(),
-        className: 'skill-beginner'
-      };
-    } else if (numRating >= 3.5) {
-      return {
-        level: 'Intermediate+',
-        icon: '⚓',
-        description: getConditionDetails(),
-        className: 'skill-intermediate'
-      };
-    } else if (numRating >= 2.5) {
-      return {
-        level: 'Experienced',
-        icon: '🌊',
-        description: getConditionDetails(),
-        className: 'skill-experienced'
-      };
-    } else if (numRating >= 1.5) {
-      return {
-        level: 'Expert Level',
-        icon: '⚡',
-        description: getConditionDetails(),
-        className: 'skill-expert'
-      };
-    } else {
-      return {
-        level: 'Not Recommended', 
-        icon: '⚠️',
-        description: getConditionDetails(),
-        className: 'skill-danger'
-      };
-    }
-  }
-
-  getRatingClass(rating) {
-    const numRating = parseFloat(rating);
-    if (numRating >= 4.0) return 'excellent';
-    if (numRating >= 3.0) return 'good';
-    if (numRating >= 2.0) return 'fair';
-    return 'poor';
-  }
-
-  getRatingColors(rating) {
-    const numRating = parseFloat(rating);
-    
-    // Unified gradient-based color scheme used across ALL components
-    if (numRating >= 4.5) {
-      return {
-        backgroundColor: '#1B4332', // 0% - Excellent
-        textColor: '#FFFFFF',
-        borderColor: '#1B4332'
-      };
-    } else if (numRating >= 4.0) {
-      return {
-        backgroundColor: '#2D5A32', // 15% - Good
-        textColor: '#FFFFFF',
-        borderColor: '#2D5A32'
-      };
-    } else if (numRating >= 3.5) {
-      return {
-        backgroundColor: '#CD853F', // 30% - Fair
-        textColor: '#FFFFFF',
-        borderColor: '#CD853F'
-      };
-    } else if (numRating >= 3.0) {
-      return {
-        backgroundColor: '#E36414', // 45% - Caution
-        textColor: '#FFFFFF',
-        borderColor: '#E36414'
-      };
-    } else if (numRating >= 2.5) {
-      return {
-        backgroundColor: '#C0392B', // 60% - Risky
-        textColor: '#FFFFFF',
-        borderColor: '#C0392B'
-      };
-    } else if (numRating >= 2.0) {
-      return {
-        backgroundColor: '#8E0E00', // 75% - Poor
-        textColor: '#FFFFFF',
-        borderColor: '#8E0E00'
-      };
-    } else if (numRating >= 1.5) {
-      return {
-        backgroundColor: '#5B0000', // 85% - Dangerous
-        textColor: '#FFFFFF',
-        borderColor: '#5B0000'
-      };
-    } else if (numRating >= 1.0) {
-      return {
-        backgroundColor: '#2B1815', // 95% - Critical
-        textColor: '#FFFFFF',
-        borderColor: '#2B1815'
-      };
-    } else {
-      return {
-        backgroundColor: '#000000', // 100% - Extreme
-        textColor: '#FFFFFF',
-        borderColor: '#000000'
-      };
-    }
-  }
-
-  calculateBuoyancy(tempCelsius) {
-    const waterDensity = 1000 - (tempCelsius - 4) * 0.2;
-    const buoyancyForce = waterDensity / 1000;
-    
-    if (buoyancyForce > 0.999) return { rating: 'Excellent', description: 'Optimal density' };
-    if (buoyancyForce > 0.995) return { rating: 'Very Good', description: 'High density' };
-    if (buoyancyForce > 0.990) return { rating: 'Good', description: 'Normal density' };
-    if (buoyancyForce > 0.985) return { rating: 'Fair', description: 'Lower density' };
-    return { rating: 'Poor', description: 'Low density' };
-  }
-
-  // Unit conversion methods
-  celsiusToFahrenheit(celsius) {
-    if (celsius === '--' || celsius === undefined || celsius === null || isNaN(parseFloat(celsius))) return '--';
-    return ((parseFloat(celsius) * 9/5) + 32).toFixed(1);
+  celsiusToFahrenheit(c) {
+    if (c === '--' || c === undefined || c === null || isNaN(parseFloat(c))) return '--';
+    return ((parseFloat(c) * 9 / 5) + 32).toFixed(1);
   }
 
   kphToMph(kph) {
@@ -692,11 +489,17 @@ class RatingHero {
     return (parseFloat(kph) * 0.621371).toFixed(1);
   }
 
-  metersToFeet(meters) {
-    if (meters === '--' || meters === undefined || meters === null || isNaN(parseFloat(meters))) return '--';
-    return (parseFloat(meters) * 3.28084).toFixed(1);
+  metersToFeet(m) {
+    if (m === '--' || m === undefined || m === null || isNaN(parseFloat(m))) return '--';
+    return (parseFloat(m) * 3.28084).toFixed(1);
+  }
+
+  // kept for backward compat
+  getRatingColors(rating) {
+    const r = parseFloat(rating);
+    const color = this.getRingColor(rating);
+    return { backgroundColor: color, textColor: '#FFFFFF', borderColor: color };
   }
 }
 
-// Export for use in main modal
 window.RatingHero = RatingHero;
