@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/prod-config.js"></script>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Discover Paddle Spots | Kaayko</title>
+  <meta name="description" content="Find paddle-worthy lakes, rivers, and reservoirs near any location with live ML-powered condition scores.">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <meta name="theme-color" content="#d4af37">
+
+  <link rel="stylesheet" href="/css/storestyle.css"/>
+  <link rel="stylesheet" href="/css/header.css"/>
+  <link rel="stylesheet" href="/css/advancedModal.css"/>
+  <link rel="stylesheet" href="/js/components/RatingHero.css"/>
+  <link rel="stylesheet" href="/js/components/SafetyWarnings.css"/>
+  <link rel="stylesheet" href="/js/components/Heatmap.css"/>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+
+  <style>
+    /* ── Search page layout ───────────────────────────── */
+    .search-page {
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* Hero search card */
+    .search-hero {
+      background: linear-gradient(135deg, rgba(212,175,55,0.12), rgba(212,175,55,0.04));
+      border: 1px solid rgba(212,175,55,0.3);
+      border-radius: 16px;
+      padding: 32px 28px 28px;
+      margin-bottom: 28px;
+      text-align: center;
+    }
+    .search-hero-icon {
+      width: 64px; height: 64px;
+      background: #d4af37;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 30px;
+      box-shadow: 0 0 24px rgba(212,175,55,0.4);
+    }
+    .search-hero h1 {
+      font-family: 'Josefin_Bold', Arial, sans-serif;
+      font-size: 26px;
+      color: #d4af37;
+      margin: 0 0 6px;
+    }
+    .search-hero p {
+      font-family: 'Josefin_Light', Arial, sans-serif;
+      color: #aaa;
+      font-size: 14px;
+      margin: 0 0 24px;
+    }
+
+    /* Location button */
+    .btn-location {
+      width: 100%;
+      padding: 14px 20px;
+      background: linear-gradient(135deg, #d4af37, #b8922a);
+      border: none;
+      border-radius: 10px;
+      color: #000;
+      font-family: 'Josefin_Bold', Arial, sans-serif;
+      font-size: 15px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      transition: all 0.2s ease;
+      margin-bottom: 20px;
+    }
+    .btn-location:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    .btn-location:active { transform: translateY(0); }
+
+    /* Divider */
+    .search-divider {
+      display: flex; align-items: center; gap: 12px;
+      color: #555; font-size: 12px;
+      font-family: 'Josefin_Bold', Arial, sans-serif;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+    }
+    .search-divider::before, .search-divider::after {
+      content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.1);
+    }
+
+    /* Coord inputs */
+    .coord-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .coord-field label {
+      display: flex; align-items: center; gap: 6px;
+      font-family: 'Josefin_Bold', Arial, sans-serif;
+      font-size: 12px;
+      color: #d4af37;
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+    .coord-field input {
+      width: 100%;
+      padding: 11px 14px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      color: #fff;
+      font-family: 'Josefin_Light', Arial, sans-serif;
+      font-size: 15px;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+    .coord-field input:focus { border-color: #d4af37; }
+    html:not(.dark-theme) .coord-field input { color: #111; background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.15); }
+
+    /* Search button */
+    .btn-search {
+      width: 100%;
+      padding: 14px;
+      background: rgba(212,175,55,0.15);
+      border: 1px solid #d4af37;
+      border-radius: 10px;
+      color: #d4af37;
+      font-family: 'Josefin_Bold', Arial, sans-serif;
+      font-size: 15px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .btn-search:hover { background: rgba(212,175,55,0.25); transform: translateY(-1px); }
+    .btn-search:disabled { opacity: 0.5; cursor: default; transform: none; }
+
+    /* Error */
+    .search-error {
+      display: none;
+      background: rgba(220,38,38,0.1);
+      border: 1px solid rgba(220,38,38,0.3);
+      border-radius: 8px;
+      color: #f87171;
+      font-family: 'Josefin_Light', Arial, sans-serif;
+      font-size: 13px;
+      padding: 10px 14px;
+      margin-top: 12px;
+    }
+
+    /* Loading bar */
+    .search-loading {
+      display: none;
+      margin-top: 14px;
+      height: 4px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .search-loading-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #d4af37, #f5d976);
+      border-radius: 2px;
+      transition: width 0.4s ease;
+    }
+
+    /* Results section */
+    .results-section { display: none; }
+    .results-section.visible { display: block; }
+
+    .results-header-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .results-count {
+      font-family: 'Josefin_Bold', Arial, sans-serif;
+      font-size: 14px;
+      color: #d4af37;
+    }
+    .results-location {
+      font-family: 'Josefin_Light', Arial, sans-serif;
+      font-size: 12px;
+      color: #888;
+    }
+
+    /* Water body card */
+    .water-card {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    html:not(.dark-theme) .water-card {
+      background: rgba(0,0,0,0.03);
+      border-color: rgba(0,0,0,0.08);
+    }
+    .water-card:hover {
+      border-color: rgba(212,175,55,0.3);
+      background: rgba(212,175,55,0.05);
+      transform: translateY(-1px);
+    }
+
+    .water-card-info h3 {
+      font-family: 'Josefin_Bold', Arial, sans-serif;
+      font-size: 15px;
+      color: var(--modal-text, #fff);
+      margin: 0 0 3px;
+    }
+    html:not(.dark-theme) .water-card-info h3 { color: #111; }
+
+    .water-card-meta {
+      font-family: 'Josefin_Light', Arial, sans-serif;
+      font-size: 12px;
+      color: #888;
+    }
+
+    .water-card-badges {
+      display: flex; flex-wrap: wrap; gap: 4px;
+      margin-top: 6px;
+    }
+    .badge {
+      font-family: 'Josefin_Bold', Arial, sans-serif;
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      background: rgba(212,175,55,0.12);
+      color: #d4af37;
+      border: 1px solid rgba(212,175,55,0.2);
+    }
+
+    /* Score ring in card */
+    .water-score-wrap {
+      position: relative;
+      width: 52px; height: 52px;
+      flex-shrink: 0;
+    }
+    .water-score-svg { width: 52px; height: 52px; display: block; }
+    .water-score-track { fill: none; stroke: rgba(0,0,0,0.12); stroke-width: 4; }
+    html.dark-theme .water-score-track { stroke: rgba(255,255,255,0.15); }
+    .water-score-fill  { fill: none; stroke-width: 4; stroke-linecap: round; }
+    .water-score-label {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Josefin_Bold', Arial, sans-serif;
+      font-size: 12px; font-weight: 700;
+      pointer-events: none; line-height: 1;
+    }
+    .water-score-loading {
+      display: flex; align-items: center; justify-content: center;
+      width: 52px; height: 52px;
+      font-size: 18px;
+      animation: score-spin 1.4s linear infinite;
+      color: rgba(212,175,55,0.5);
+    }
+    @keyframes score-spin { to { transform: rotate(360deg); } }
+
+    /* Map action button */
+    .btn-map-action {
+      background: none;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      color: #888;
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s;
+      font-size: 18px;
+    }
+    .btn-map-action:hover { border-color: #d4af37; color: #d4af37; }
+    html:not(.dark-theme) .btn-map-action { border-color: rgba(0,0,0,0.12); color: #555; }
+
+    @media (max-width: 480px) {
+      .search-hero { padding: 24px 16px 20px; }
+      .search-hero h1 { font-size: 22px; }
+      .coord-row { grid-template-columns: 1fr; }
+      .water-card { grid-template-columns: 1fr auto; }
+      .btn-map-action { display: none; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header (same as paddlingout.html) -->
+  <header class="header">
+    <div class="header-top">
+      <div class="header-brand">
+        <a href="/paddlingout.html" style="text-decoration:none">
+          <h1 class="header-title">Kaayko</h1>
+          <p class="header-subtitle">Know Before You Go</p>
+        </a>
+      </div>
+      <nav class="top-menu"><ul></ul></nav>
+      <div class="header-controls">
+        <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode"></button>
+        <button class="fab-menu material-icons mobile-only" aria-label="Open Menu">menu</button>
+      </div>
+    </div>
+    <div class="mobile-menu-overlay"><ul></ul></div>
+  </header>
+
+  <main class="search-page">
+    <!-- Hero search card -->
+    <div class="search-hero">
+      <div class="search-hero-icon">🧭</div>
+      <h1>Discover Paddle Spots</h1>
+      <p>Find lakes, rivers, and reservoirs near any location with live ML scores</p>
+
+      <button class="btn-location" id="btn-use-location">
+        <span class="material-icons" style="font-size:20px">my_location</span>
+        Use My Current Location
+      </button>
+
+      <div class="search-divider">OR ENTER COORDINATES</div>
+
+      <div class="coord-row">
+        <div class="coord-field">
+          <label>↑ Latitude</label>
+          <input type="number" id="inp-lat" placeholder="e.g. 33.1488" step="any"/>
+        </div>
+        <div class="coord-field">
+          <label>→ Longitude</label>
+          <input type="number" id="inp-lng" placeholder="e.g. -96.7003" step="any"/>
+        </div>
+      </div>
+
+      <button class="btn-search" id="btn-search">
+        <span class="material-icons" style="font-size:18px">search</span>
+        Search Nearby Water Bodies
+      </button>
+
+      <div class="search-error" id="search-error"></div>
+      <div class="search-loading" id="search-loading">
+        <div class="search-loading-bar" id="loading-bar"></div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <section class="results-section" id="results-section">
+      <div class="results-header-bar">
+        <span class="results-count" id="results-count"></span>
+        <span class="results-location" id="results-location"></span>
+      </div>
+      <div id="results-list"></div>
+    </section>
+  </main>
+
+  <!-- Shared scripts -->
+  <script src="/js/header.js"></script>
+  <script src="/js/darkMode.js"></script>
+  <script src="/js/apiClient.js"></script>
+  <script src="/js/services/dataTransformer.js"></script>
+  <script src="/js/components/RatingHero.js"></script>
+  <script src="/js/components/SafetyWarnings.js"></script>
+  <script src="/js/components/Heatmap.js"></script>
+  <script src="/js/advancedModal.js"></script>
+  <script src="/js/searchPage.js"></script>
+</body>
+</html>

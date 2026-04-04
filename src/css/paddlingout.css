@@ -189,17 +189,23 @@ body {
 }
 
 /* Mini ring wrapper — replaces plain solid circle */
-/* Use high-specificity selector to override .icon base styles */
+/* Three-class specificity beats .icon (one class) and .icon.paddle-score-icon (two classes) */
 .icon.paddle-score-icon.mini-ring-wrap {
   position: relative !important;
-  background: transparent !important;
-  border-color: transparent !important;
+  background: none !important;
+  border: none !important;        /* fully remove border, not just recolor */
   box-shadow: none !important;
   padding: 0 !important;
   width: 44px !important;
   height: 44px !important;
-  border-radius: 0 !important;
+  border-radius: 50% !important;  /* keep circular clip so SVG fits cleanly */
   overflow: visible !important;
+}
+
+.icon.paddle-score-icon.mini-ring-wrap:hover {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .mini-ring-svg {
@@ -208,16 +214,20 @@ body {
   display: block;
 }
 
-/* Track: visible on the light card footer background */
+/* Track: adapts to light vs dark background */
 .mini-ring-track {
   fill: none;
-  stroke: rgba(0, 0, 0, 0.12);
-  stroke-width: 4;
+  stroke: rgba(0, 0, 0, 0.15);
+  stroke-width: 3.5;
+}
+
+html.dark-theme .mini-ring-track {
+  stroke: rgba(255, 255, 255, 0.2);
 }
 
 .mini-ring-fill {
   fill: none;
-  stroke-width: 4;
+  stroke-width: 3.5;
   stroke-linecap: round;
 }
 
@@ -233,6 +243,7 @@ body {
   pointer-events: none;
   line-height: 1;
   white-space: nowrap;
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.6); /* ensure readability on any bg */
 }
 
 /* Tooltip */
