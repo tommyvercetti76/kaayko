@@ -463,6 +463,16 @@
 .score-ok { background: rgba(255, 200, 80, 0.15); color: #ffc850; }
 .score-bad { background: rgba(255, 80, 80, 0.15); color: #ff5050; }
 .score-unknown { background: rgba(128, 128, 128, 0.15); color: #888; }
+.score-loading {
+  background: rgba(128, 128, 128, 0.1);
+  color: #666;
+  letter-spacing: 2px;
+  animation: score-pulse 1.2s ease-in-out infinite;
+}
+@keyframes score-pulse {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 1; }
+}
 
 /* Actions */
 .actions {

@@ -273,133 +273,106 @@ class CustomLocationModal {
   }
 
   async displayResults(bodies, searchLat, searchLng) {
-    // Smart filtering - prioritize quality results
+    // Smart filtering
     const filtered = bodies.filter(body => {
-      // Remove very distant results unless high relevancy
       if (body.distanceMiles > 30 && (!body.relevancy || body.relevancy < 60)) return false;
-      
-      // Remove ponds unless close or high relevancy
       if (body.type === 'Pond' && body.distanceMiles > 8 && (!body.relevancy || body.relevancy < 50)) return false;
-      
-      // Remove private access spots
       if (body.access === 'private' || body.access === 'no') return false;
-      
       return true;
     });
-    
-    // Sort by relevancy if available, otherwise by distance
+
     filtered.sort((a, b) => {
-      if (a.relevancy && b.relevancy) {
-        return b.relevancy - a.relevancy;
-      }
+      if (a.relevancy && b.relevancy) return b.relevancy - a.relevancy;
       return a.distanceMiles - b.distanceMiles;
     });
-    
+
+    const topBodies = filtered.slice(0, 12);
     const results = this.modal.querySelector('#results');
+
+    // ── Render all cards immediately with "···" score placeholders ──
     results.innerHTML = `
       <div class="results-header">
         <span class="material-icons">water</span>
         Found ${filtered.length} paddle-worthy water bodies
       </div>
     `;
-    
-    // Get paddle scores in parallel for top 12
-    const withScores = await Promise.all(
-      filtered.slice(0, 12).map(async (body) => {
-        const score = await this.getPaddleScore(body.lat, body.lng);
-        return { ...body, score };
-      })
-    );
-    
-    // Store search results for back navigation
-    this.lastSearchResults = {
-      bodies: withScores,
-      searchLat,
-      searchLng
-    };
-    
-    withScores.forEach(body => {
+
+    // Store results reference (scores fill in progressively)
+    this.lastSearchResults = { bodies: topBodies, searchLat, searchLng };
+
+    // Assign a generation ID so stale async callbacks don't write to replaced DOM
+    const generation = Date.now();
+    this._scoreGeneration = generation;
+
+    topBodies.forEach((body, idx) => {
       const card = document.createElement('div');
       card.className = 'water-body-card';
-      
-      // Build paddling features badges
+
       const features = body.paddlingFeatures || {};
       const badges = [];
       if (features.boatLaunch) badges.push('<span class="badge badge-launch">🚤 Launch</span>');
       if (features.boatRental) badges.push('<span class="badge badge-rental">🛶 Rental</span>');
-      if (features.canoeAccess || features.kayakAccess) badges.push('<span class="badge badge-paddle">🏄 Paddle</span>');
+      if (features.canoeAccess || features.kayakAccess) badges.push('<span class="badge badge-paddle">🛶 Paddle</span>');
       if (features.publicAccess || body.access === 'public') badges.push('<span class="badge badge-public">✓ Public</span>');
-      if (body.publicLand) badges.push(`<span class="badge badge-park">⛰️ ${body.publicLand.name}</span>`);
-      
-      // Build subtitle with useful info
-      let subtitle = `${body.type} • ${body.distanceMiles} mi`;
-      if (body.areaKm2 > 1) {
-        subtitle += ` • ${body.areaKm2} km²`;
-      }
-      
+      if (body.publicLand) badges.push(`<span class="badge badge-park">◆ ${body.publicLand.name}</span>`);
+
+      let subtitle = `${body.type} · ${body.distanceMiles} mi`;
+      if (body.areaKm2 > 1) subtitle += ` · ${body.areaKm2} km²`;
+
       card.innerHTML = `
         <div class="body-info">
           <h3>${body.name}</h3>
           <p>${subtitle}</p>
           ${badges.length > 0 ? `<div class="body-badges">${badges.join('')}</div>` : ''}
         </div>
-        <div class="body-score ${this.getScoreClass(body.score)}" title="Paddle Score (1-5)">
-          ${body.score || '—'}
-        </div>
+        <div class="body-score score-loading" id="score-${generation}-${idx}" title="Paddle Score (1–5)">···</div>
         <div class="body-actions">
-          <button class="btn-icon btn-map" data-lat="${body.lat}" data-lng="${body.lng}" title="Open in Maps">
-            <span class="material-icons">place</span>
-          </button>
-          <button class="btn-icon btn-forecast" data-lat="${body.lat}" data-lng="${body.lng}" title="View Forecast">
-            <span class="material-icons">visibility</span>
-          </button>
+          <button class="btn-icon btn-map" title="Open in Maps"><span class="material-icons">place</span></button>
+          <button class="btn-icon btn-forecast" title="View Forecast"><span class="material-icons">visibility</span></button>
         </div>
       `;
-      
-      // Map button - open in Google Maps
+
       card.querySelector('.btn-map').onclick = (e) => {
         e.stopPropagation();
         window.open(`https://www.google.com/maps/search/?api=1&query=${body.lat},${body.lng}`, '_blank');
       };
-      
-      // Forecast button
       card.querySelector('.btn-forecast').onclick = (e) => {
         e.stopPropagation();
         this.openForecast(body);
       };
-      
-      // Click anywhere on card to open forecast
       card.onclick = () => this.openForecast(body);
-      
+
       results.appendChild(card);
+
+      // ── Fetch score in background — update card reactively ──
+      this.getPaddleScore(body.lat, body.lng).then(score => {
+        // Guard: only update if same search generation still active
+        if (this._scoreGeneration !== generation) return;
+        const el = document.getElementById(`score-${generation}-${idx}`);
+        if (!el) return;
+        el.textContent = score || '—';
+        el.className   = `body-score ${this.getScoreClass(score)}`;
+        body.score     = score;
+      });
     });
   }
 
   async getPaddleScore(lat, lng) {
+    const controller = new AbortController();
+    const tid = setTimeout(() => controller.abort(), 4000);
     try {
       const res = await fetch(
         `${CUSTOM_LOC_API_BASE}/paddleScore?lat=${lat}&lng=${lng}`,
-        { timeout: 5000 }
+        { signal: controller.signal }
       );
-      if (!res.ok) {
-        console.warn(`Paddle score API returned ${res.status} for ${lat},${lng}`);
-        return null;
-      }
-      const data = await res.json();
-      
-      // Extract score from the correct path
-      const score = data.paddleScore?.rating || data.paddleScore || data.data?.paddleScore?.rating || data.score;
-      
-      if (score === null || score === undefined || isNaN(score)) {
-        console.warn(`❌ No valid score for ${lat},${lng}`);
-        return null;
-      }
-      
-      const numScore = Number(score);
-      console.log(`✅ Paddle score for ${lat},${lng}: ${numScore.toFixed(1)}`);
-      return numScore.toFixed(1);
+      clearTimeout(tid);
+      if (!res.ok) return null;
+      const data  = await res.json();
+      const score = data.paddleScore?.rating ?? data.paddleScore ?? data.data?.paddleScore?.rating ?? data.score;
+      if (score === null || score === undefined || isNaN(score)) return null;
+      return Number(score).toFixed(1);
     } catch (err) {
-      console.warn(`Failed to get paddle score for ${lat},${lng}:`, err.message);
+      clearTimeout(tid);
       return null;
     }
   }

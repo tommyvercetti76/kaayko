@@ -189,15 +189,17 @@ body {
 }
 
 /* Mini ring wrapper — replaces plain solid circle */
-.mini-ring-wrap {
+/* Use high-specificity selector to override .icon base styles */
+.icon.paddle-score-icon.mini-ring-wrap {
   position: relative !important;
   background: transparent !important;
-  border: none !important;
+  border-color: transparent !important;
   box-shadow: none !important;
   padding: 0 !important;
   width: 44px !important;
   height: 44px !important;
   border-radius: 0 !important;
+  overflow: visible !important;
 }
 
 .mini-ring-svg {
@@ -206,9 +208,10 @@ body {
   display: block;
 }
 
+/* Track: visible on the light card footer background */
 .mini-ring-track {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.15);
+  stroke: rgba(0, 0, 0, 0.12);
   stroke-width: 4;
 }
 
@@ -224,11 +227,12 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   font-family: 'Josefin_Bold', Arial, sans-serif;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  color: #ffffff;
+  /* color set via inline style to match ring stroke */
   pointer-events: none;
   line-height: 1;
+  white-space: nowrap;
 }
 
 /* Tooltip */

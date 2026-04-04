@@ -260,10 +260,13 @@ html.dark-theme .theme-toggle-icon::before {
   content: "place";
   font-family: 'Material Icons';
   font-feature-settings: 'liga';
-  font-size: 24px;
+  font-size: 20px;
   line-height: 1;
   color: #d4af37;
-  display: inline-block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   transition: all 0.3s ease;
   filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.4));
 }
@@ -276,7 +279,7 @@ html.dark-theme .theme-toggle-icon::before {
 }
 
 .custom-location-btn:hover::before {
-  transform: scale(1.15);
+  transform: translate(-50%, -50%) scale(1.15);
   filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.6));
 }
 

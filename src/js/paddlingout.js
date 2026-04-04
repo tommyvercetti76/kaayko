@@ -233,7 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
             stroke-dasharray="${fill} ${circ}"
             stroke-dashoffset="${offset}"/>
         </svg>
-        <div class="mini-ring-label">${score}</div>
+        <div class="mini-ring-label" style="color:${backgroundColor}">${score}</div>
       `;
     } else {
       wrap.title = "Score unavailable — click for details";
