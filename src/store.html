@@ -129,11 +129,17 @@
 
   <!-- MAIN CONTENT: Product carousel -->
   <main>
-    <section id="carousel" class="carousel" aria-live="polite"></section>
+    <section id="carousel" class="carousel" aria-live="polite">
+      <!-- Skeleton loading cards (replaced when products load) -->
+      <div class="carousel-item skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text skeleton-title"></div><div class="skeleton-text skeleton-desc"></div><div class="skeleton-text skeleton-desc" style="width:80%"></div><div class="skeleton-text skeleton-price"></div></div>
+      <div class="carousel-item skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text skeleton-title"></div><div class="skeleton-text skeleton-desc"></div><div class="skeleton-text skeleton-desc" style="width:80%"></div><div class="skeleton-text skeleton-price"></div></div>
+      <div class="carousel-item skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text skeleton-title"></div><div class="skeleton-text skeleton-desc"></div><div class="skeleton-text skeleton-desc" style="width:80%"></div><div class="skeleton-text skeleton-price"></div></div>
+      <div class="carousel-item skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text skeleton-title"></div><div class="skeleton-text skeleton-desc"></div><div class="skeleton-text skeleton-desc" style="width:80%"></div><div class="skeleton-text skeleton-price"></div></div>
+    </section>
   </main>
 
   <!-- IMAGE MODAL -->
-  <div id="modal" class="modal" role="dialog" aria-modal="true">
+  <div id="modal" class="modal" role="dialog" aria-modal="true" aria-label="Product image gallery">
     <div class="modal-content">
       <button id="close-modal-button" class="modal-close material-icons" aria-label="Close">close</button>
       <button class="modal-nav modal-nav-left material-icons" aria-label="Previous">chevron_left</button>

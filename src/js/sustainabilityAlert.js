@@ -55,10 +55,12 @@ export function showSustainabilityAlert() {
   
   function hideAlert() {
     modal.classList.remove('active');
+    document.body.style.overflow = '';
   }
-  
+
   // Show modal
   modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
 }
 
 // Make globally available

@@ -241,6 +241,34 @@
     
     .cart-back-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4); }
     
+    /* Shared Form Styles (desktop + mobile) */
+    .cart-form-group { margin-bottom: 20px; }
+    .cart-form-label { display: block; color: #ccc; font-size: 13px; margin-bottom: 6px; font-family: 'Josefin_Medium', Arial, sans-serif; }
+    .cart-form-required { color: #ffd700; }
+    .cart-form-optional { color: #999; }
+    .cart-form-input {
+      width: 100%; padding: 12px; background: #1a1a1a;
+      border: 2px solid #333; border-radius: 6px;
+      color: #fff; font-size: 14px;
+      font-family: 'Josefin_Light', Arial, sans-serif;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+    .cart-form-input:focus { outline: none; border-color: #ffd700; }
+    .cart-form-error { display: none; color: #ef4444; font-size: 12px; margin-top: 4px; }
+    .cart-consent-box {
+      margin-bottom: 20px; padding: 12px;
+      background: rgba(255, 215, 0, 0.05); border-radius: 6px;
+      border: 1px solid rgba(255, 215, 0, 0.2);
+    }
+    .cart-consent-label {
+      display: flex; align-items: start; cursor: pointer;
+      font-family: 'Josefin_Light', Arial, sans-serif;
+    }
+    .cart-consent-label input { margin-right: 10px; margin-top: 2px; cursor: pointer; }
+    .cart-consent-text { color: #ccc; font-size: 12px; line-height: 1.5; }
+    .cart-consent-text a { color: #ffd700; text-decoration: underline; }
+
     /* Hide mobile elements on desktop */
     .mobile-checkout-notch, .mobile-bottom-sheet-overlay, .mobile-bottom-sheet { display: none; }
     
@@ -323,10 +351,11 @@
         z-index: 1001;
         opacity: 0;
         visibility: hidden;
+        pointer-events: none;
         transition: opacity 0.3s ease, visibility 0.3s ease;
       }
       
-      .mobile-bottom-sheet-overlay.active { display: block; opacity: 1; visibility: visible; }
+      .mobile-bottom-sheet-overlay.active { opacity: 1; visibility: visible; pointer-events: auto; }
       
       /* BOTTOM SHEET */
       .mobile-bottom-sheet {
@@ -434,21 +463,21 @@
       </div>
       
       <div class="mobile-sheet-content">
-        <div style="margin-bottom: 20px;">
-          <label style="display: block; color: #ccc; font-size: 13px; margin-bottom: 6px; font-family: 'Josefin_Medium', Arial, sans-serif;">Email <span style="color: #ffd700;">*</span></label>
-          <input type="email" id="mobile-customer-email" placeholder="you@example.com" required style="width: 100%; padding: 12px; background: #1a1a1a; border: 2px solid #333; border-radius: 6px; color: #fff; font-size: 14px; font-family: 'Josefin_Light', Arial, sans-serif;" />
-          <div id="mobile-email-error" style="display: none; color: #ff4444; font-size: 12px; margin-top: 4px;"></div>
+        <div class="cart-form-group">
+          <label class="cart-form-label">Email <span class="cart-form-required">*</span></label>
+          <input type="email" id="mobile-customer-email" placeholder="you@example.com" required class="cart-form-input" />
+          <div id="mobile-email-error" class="cart-form-error"></div>
         </div>
-        <div style="margin-bottom: 20px;">
-          <label style="display: block; color: #ccc; font-size: 13px; margin-bottom: 6px; font-family: 'Josefin_Medium', Arial, sans-serif;">Phone <span style="color: #999;">(optional)</span></label>
-          <input type="tel" id="mobile-customer-phone" placeholder="+1 (555) 123-4567" style="width: 100%; padding: 12px; background: #1a1a1a; border: 2px solid #333; border-radius: 6px; color: #fff; font-size: 14px; font-family: 'Josefin_Light', Arial, sans-serif;" />
+        <div class="cart-form-group">
+          <label class="cart-form-label">Phone <span class="cart-form-optional">(optional)</span></label>
+          <input type="tel" id="mobile-customer-phone" placeholder="+1 (555) 123-4567" class="cart-form-input" />
         </div>
-        
-        <div style="margin-bottom: 20px; padding: 12px; background: rgba(255, 215, 0, 0.05); border-radius: 6px; border: 1px solid rgba(255, 215, 0, 0.2);">
-          <label style="display: flex; align-items: start; cursor: pointer; font-family: 'Josefin_Light', Arial, sans-serif;">
-            <input type="checkbox" id="mobile-data-consent" checked style="margin-right: 10px; margin-top: 2px; cursor: pointer;" />
-            <span style="color: #ccc; font-size: 12px; line-height: 1.5;">
-              Save my shipping info for order fulfillment. You can opt out anytime. <a href="/privacy" style="color: #ffd700; text-decoration: underline;">Privacy Policy</a>
+
+        <div class="cart-consent-box">
+          <label class="cart-consent-label">
+            <input type="checkbox" id="mobile-data-consent" checked />
+            <span class="cart-consent-text">
+              Save my shipping info for order fulfillment. You can opt out anytime. <a href="/privacy">Privacy Policy</a>
             </span>
           </label>
         </div>
@@ -540,21 +569,21 @@
       html += `</div>
           <div class="cart-summary-panel">
             <div class="cart-summary-title">Contact Information</div>
-            <div style="margin-bottom: 20px;">
-              <label style="display: block; color: #ccc; font-size: 13px; margin-bottom: 6px; font-family: 'Josefin_Medium', Arial, sans-serif;">Email <span style="color: #ffd700;">*</span></label>
-              <input type="email" id="cart-customer-email" placeholder="you@example.com" required style="width: 100%; padding: 10px; background: #1a1a1a; border: 2px solid #333; border-radius: 6px; color: #fff; font-size: 14px; font-family: 'Josefin_Light', Arial, sans-serif;" />
-              <div id="cart-email-error" style="display: none; color: #ff4444; font-size: 12px; margin-top: 4px;"></div>
+            <div class="cart-form-group">
+              <label class="cart-form-label">Email <span class="cart-form-required">*</span></label>
+              <input type="email" id="cart-customer-email" placeholder="you@example.com" required class="cart-form-input" />
+              <div id="cart-email-error" class="cart-form-error"></div>
             </div>
-            <div style="margin-bottom: 20px;">
-              <label style="display: block; color: #ccc; font-size: 13px; margin-bottom: 6px; font-family: 'Josefin_Medium', Arial, sans-serif;">Phone <span style="color: #999;">(optional)</span></label>
-              <input type="tel" id="cart-customer-phone" placeholder="+1 (555) 123-4567" style="width: 100%; padding: 10px; background: #1a1a1a; border: 2px solid #333; border-radius: 6px; color: #fff; font-size: 14px; font-family: 'Josefin_Light', Arial, sans-serif;" />
+            <div class="cart-form-group">
+              <label class="cart-form-label">Phone <span class="cart-form-optional">(optional)</span></label>
+              <input type="tel" id="cart-customer-phone" placeholder="+1 (555) 123-4567" class="cart-form-input" />
             </div>
-            
-            <div style="margin-bottom: 20px; padding: 12px; background: rgba(255, 215, 0, 0.05); border-radius: 6px; border: 1px solid rgba(255, 215, 0, 0.2);">
-              <label style="display: flex; align-items: start; cursor: pointer; font-family: 'Josefin_Light', Arial, sans-serif;">
-                <input type="checkbox" id="cart-data-consent" checked style="margin-right: 10px; margin-top: 2px; cursor: pointer;" />
-                <span style="color: #ccc; font-size: 12px; line-height: 1.5;">
-                  Save my shipping info for order fulfillment. You can opt out anytime. <a href="/privacy" style="color: #ffd700; text-decoration: underline;">Privacy Policy</a>
+
+            <div class="cart-consent-box">
+              <label class="cart-consent-label">
+                <input type="checkbox" id="cart-data-consent" checked />
+                <span class="cart-consent-text">
+                  Save my shipping info for order fulfillment. You can opt out anytime. <a href="/privacy">Privacy Policy</a>
                 </span>
               </label>
             </div>
@@ -773,7 +802,21 @@
             console.error(`${mode} payment error:`, error);
           }
         });
-      } catch (error) { console.error(`${mode} payment init error:`, error); }
+      } catch (error) {
+        console.error(`${mode} payment init error:`, error);
+        const container = document.getElementById(`${prefix}payment-element`);
+        container.innerHTML = `
+          <div style="padding: 20px; text-align: center;">
+            <span class="material-icons" style="font-size: 40px; display: block; margin-bottom: 12px; color: #ef4444;">error_outline</span>
+            <p style="font-family: 'Josefin_Medium', Arial, sans-serif; font-size: 14px; margin-bottom: 16px; color: #ef4444;">
+              Unable to load payment form. Please check your connection and try again.
+            </p>
+            <button onclick="location.reload()" style="background: #ffd700; color: #1a1a1a; border: none; padding: 10px 20px; border-radius: 6px; font-family: 'Josefin_Bold'; cursor: pointer;">
+              Retry
+            </button>
+          </div>
+        `;
+      }
     }
     
     // MOBILE BOTTOM SHEET
@@ -840,7 +883,11 @@
     cartManager.subscribe(renderCart);
     renderCart();
     document.getElementById('year').textContent = new Date().getFullYear();
-    window.addEventListener('resize', () => renderCart());
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => renderCart(), 300);
+    });
   </script>
   
   <!-- Hide non-Store menu items on cart page -->

@@ -5,7 +5,7 @@
    ========================================================================== */
 
 :root {
-  --color-accent: #FFD700;
+  --color-brand-gold: #FFD700;
   --color-bright-ivory: #fffff0;
 }
 
@@ -52,7 +52,7 @@
   font-family: 'Josefin_Light', Arial, sans-serif;
   font-size: 0.95rem;
   margin: 4px 0 0;
-  color: var(--color-accent);
+  color: var(--color-brand-gold);
   opacity: 0.9;
   transition: opacity 0.3s ease;
   letter-spacing: 0.02em;
@@ -155,7 +155,7 @@
 }
 
 html.dark-theme .cart-nav-button {
-  color: var(--color-accent);
+  color: var(--color-brand-gold);
 }
 
 /* ─── Filter Toggle Icon ─────────────────────────────────────────────────── */
@@ -181,7 +181,7 @@ html.dark-theme .cart-nav-button {
 }
 /* when any filters are active */
 #filter-toggle.active {
-  color: var(--color-accent);
+  color: var(--color-brand-gold);
 }
 
 /* make sure your existing .header-controls has enough room: */
@@ -192,7 +192,7 @@ html.dark-theme .cart-nav-button {
 }
 
 html.dark-theme #filter-toggle {
-  color: var(--color-accent);
+  color: var(--color-brand-gold);
 }
 
 /* ─── Theme Toggle ────────────────────────────────────────────────────────── */
@@ -220,7 +220,7 @@ html.dark-theme #filter-toggle {
   text-align: center;
 }
 html.dark-theme .theme-toggle-icon {
-  color: var(--color-accent);
+  color: var(--color-brand-gold);
 }
 html.dark-theme .theme-toggle-icon::before {
   content: "lightbulb";
@@ -388,7 +388,7 @@ html.dark-theme .custom-location-btn:hover {
   transition: color 0.3s;
 }
 .mobile-menu-overlay a:hover {
-  color: var(--color-accent);
+  color: var(--color-brand-gold);
 }
 .mobile-menu-overlay a.active {
   color: #ffd700;
@@ -486,13 +486,13 @@ html.dark-theme .header-title {
   color: #fff;
 }
 html.dark-theme .header-subtitle {
-  color: var(--color-accent);
+  color: var(--color-brand-gold);
 }
 html.dark-theme .top-menu a {
   color: #fff;
 }
 html.dark-theme .top-menu a:hover {
-  color: var(--color-accent);
+  color: var(--color-brand-gold);
 }
 html.dark-theme .mobile-menu-overlay {
   background-color: var(--color-modal-overlay);
@@ -501,10 +501,10 @@ html.dark-theme .mobile-menu-overlay a {
   color: var(--color-bright-ivory);
 }
 html.dark-theme .mobile-menu-overlay a:hover {
-  color: var(--color-accent);
+  color: var(--color-brand-gold);
 }
 html.dark-theme .fab-menu::before {
-  color: var(--color-accent);
+  color: var(--color-brand-gold);
   filter: drop-shadow(0 0 2px rgba(255,215,0,0.5));
 }
 html.dark-theme footer {
@@ -515,12 +515,9 @@ html.dark-theme .footer-elements {
   background: #222;
   border-top: 1px solid #444;
 }
-html.dark-theme .modal-content {
-  background: #333;
-}
 html.dark-theme .price,
 html.dark-theme .likes-count {
-  color: var(--color-accent);
+  color: var(--color-brand-gold);
 }
 html.dark-theme .about-text,
 html.dark-theme .testimonials-heading,
@@ -556,13 +553,13 @@ html.dark-theme .indicator-dot {
   background: rgba(255,255,255,0.2);
 }
 html.dark-theme .indicator-dot.active {
-  background: var(--color-accent);
+  background: var(--color-brand-gold);
 }
 ::selection {
-  background-color: var(--color-accent);
+  background-color: var(--color-brand-gold);
   color: #fff;
 }
 html.dark-theme ::selection {
-  background-color: var(--color-accent);
+  background-color: var(--color-brand-gold);
   color: #111;
 }
