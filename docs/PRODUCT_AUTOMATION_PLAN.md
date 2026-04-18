@@ -2,6 +2,8 @@
 
 This is the revised automation architecture for Kaayko. The earlier one-guard-per-product model is too shallow for the current portfolio. The right model is a coordinated set of guards that share evidence, emit structured outputs, and feed a central learnings loop.
 
+Implementation note: the local execution loop for coding, review, and training-data capture now lives in [`../automation/README.md`](../automation/README.md).
+
 ## Design rules
 
 Every automation must:

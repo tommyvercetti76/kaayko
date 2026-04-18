@@ -79,4 +79,5 @@ Use the emulator when you need Hosting rewrites and header behavior. Opening fil
 
 - Product index: [`docs/products/README.md`](./docs/products/README.md)
 - Automation blueprint: [`docs/PRODUCT_AUTOMATION_PLAN.md`](./docs/PRODUCT_AUTOMATION_PLAN.md)
+- Local coding/review/training loop: [`automation/README.md`](./automation/README.md)
 - Learnings convention: [`docs/learnings/README.md`](./docs/learnings/README.md)

@@ -1,0 +1,4625 @@
+{
+  "schema_version": "knowledge.v1",
+  "generated_at": "2026-04-18T00:36:14.810Z",
+  "portfolio": {
+    "name": "Kaayko",
+    "overview": "Kaayko is a static Firebase-hosted frontend portfolio with multiple product lines sharing browser JavaScript, HTML pages, and backend routes mounted from kaayko-api. Safe agent work must preserve live route behavior, avoid inventing backend contracts, and prefer small, context-aware improvements over generic refactors.",
+    "repos": [
+      {
+        "key": "kaayko",
+        "path": ".",
+        "role": "frontend"
+      },
+      {
+        "key": "kaayko-api",
+        "path": "../kaayko-api",
+        "role": "backend"
+      }
+    ],
+    "architecture": {
+      "frontend": "Static Firebase-hosted HTML pages with vanilla JavaScript",
+      "backend": "Express API mounted on Firebase Cloud Functions",
+      "hosting": "Firebase Hosting with static file serving",
+      "database": "Firestore document database",
+      "auth": "Firebase Auth with custom tenant isolation"
+    }
+  },
+  "products": {
+    "shared": {
+      "id": "shared",
+      "name": "Shared Frontend Craft",
+      "purpose": "Own shared frontend quality, reuse, consistency, and debt reduction without destabilizing live product logic.",
+      "keywords": [
+        "frontend",
+        "shared",
+        "duplication",
+        "drift",
+        "refactor",
+        "ui",
+        "header",
+        "styles"
+      ],
+      "frontend_files": [
+        "kaayko:src/js/about-dynamic.js",
+        "kaayko:src/js/advancedModal.js",
+        "kaayko:src/js/cartManager.js",
+        "kaayko:src/js/components/Heatmap.css",
+        "kaayko:src/js/components/Heatmap.js",
+        "kaayko:src/js/components/RatingHero.css",
+        "kaayko:src/js/components/RatingHero.js",
+        "kaayko:src/js/components/SafetyWarnings.css",
+        "kaayko:src/js/components/SafetyWarnings.js",
+        "kaayko:src/js/header.js",
+        "kaayko:src/js/kaayko-main.js",
+        "kaayko:src/js/kaaykoFilterModal.js",
+        "kaayko:src/js/kaayko_apiClient.js",
+        "kaayko:src/js/kaayko_ui.js",
+        "kaayko:src/js/main.js",
+        "kaayko:src/js/paddlingout.js",
+        "kaayko:src/js/prod-config.js",
+        "kaayko:src/js/searchPage.js",
+        "kaayko:src/js/secretStore.js",
+        "kaayko:src/js/services/apiClient.js",
+        "kaayko:src/js/services/dataTransformer.js",
+        "kaayko:src/js/sustainabilityAlert.js",
+        "kaayko:src/js/testimonials.js",
+        "kaayko:src/css/about.css",
+        "kaayko:src/css/advancedModal.css",
+        "kaayko:src/css/header.css",
+        "kaayko:src/css/kaaykoFilterModal.css",
+        "kaayko:src/css/paddlingout.css",
+        "kaayko:src/css/secretStore.css",
+        "kaayko:src/css/storestyle.css",
+        "kaayko:src/css/valentine.css",
+        "kaayko:src/admin/clear-cache.html",
+        "kaayko:src/admin/css/kortex-base.css",
+        "kaayko:src/admin/js/config.js",
+        "kaayko:src/admin/js/kortex-core.js",
+        "kaayko:src/admin/js/ui.js",
+        "kaayko:src/admin/js/utils.js",
+        "kaayko:src/admin/kortex.html",
+        "kaayko:src/admin/login.html",
+        "kaayko:src/admin/reset-environment.html",
+        "kaayko:src/admin/tenant-registration.html",
+        "kaayko:src/admin/views/all-links/all-links.css",
+        "kaayko:src/admin/views/all-links/all-links.html",
+        "kaayko:src/admin/views/all-links/all-links.js",
+        "kaayko:src/admin/views/analytics/analytics.css",
+        "kaayko:src/admin/views/analytics/analytics.html",
+        "kaayko:src/admin/views/analytics/analytics.js",
+        "kaayko:src/admin/views/billing/billing.css",
+        "kaayko:src/admin/views/billing/billing.html",
+        "kaayko:src/admin/views/billing/billing.js",
+        "kaayko:src/admin/views/create-link/create-link.css",
+        "kaayko:src/admin/views/create-link/create-link.html",
+        "kaayko:src/admin/views/create-link/create-link.js",
+        "kaayko:src/admin/views/dashboard/dashboard.css",
+        "kaayko:src/admin/views/dashboard/dashboard.html",
+        "kaayko:src/admin/views/dashboard/dashboard.js",
+        "kaayko:src/admin/views/qr-codes/qr-codes.css",
+        "kaayko:src/admin/views/qr-codes/qr-codes.html",
+        "kaayko:src/admin/views/qr-codes/qr-codes.js",
+        "kaayko:src/admin/views/tenant-onboarding/tenant-onboarding.css",
+        "kaayko:src/admin/views/tenant-onboarding/tenant-onboarding.html",
+        "kaayko:src/admin/views/tenant-onboarding/tenant-onboarding.js",
+        "kaayko:src/kreator/add-product.html",
+        "kaayko:src/kreator/admin/index.html",
+        "kaayko:src/kreator/apply-old-social.html",
+        "kaayko:src/kreator/apply.html",
+        "kaayko:src/kreator/check-status.html",
+        "kaayko:src/kreator/css/kreator-base.css",
+        "kaayko:src/kreator/dashboard-old-influencer.html",
+        "kaayko:src/kreator/dashboard.html",
+        "kaayko:src/kreator/forgot-password.html",
+        "kaayko:src/kreator/index.html",
+        "kaayko:src/kreator/js/kreator-api.js",
+        "kaayko:src/kreator/kreator-login.html",
+        "kaayko:src/kreator/onboarding.html",
+        "kaayko:src/paddlingout.html",
+        "kaayko:src/store.html",
+        "kaayko:src/kortex.html",
+        "kaayko:src/karma.html"
+      ],
+      "backend_files": [],
+      "entry_points": {
+        "paddlingout": "kaayko:src/paddlingout.html",
+        "store": "kaayko:src/store.html",
+        "kortex": "kaayko:src/kortex.html",
+        "karma": "kaayko:src/karma.html"
+      },
+      "routes": [
+        {
+          "definition": "/api/**",
+          "product": "shared"
+        },
+        {
+          "definition": "/l/**",
+          "product": "shared"
+        },
+        {
+          "definition": "/resolve",
+          "product": "shared"
+        },
+        {
+          "definition": "/health",
+          "product": "shared"
+        }
+      ],
+      "validation_focus": [
+        "Preserve existing route behavior and page entrypoints.",
+        "Do not invent a build system or new packaging assumptions.",
+        "Prefer extracting repeated literals or helper logic over broad rewrites."
+      ],
+      "risk_focus": [
+        "Hardcoded production API URLs drift across pages.",
+        "There is no frontend test runner in this repository.",
+        "Shared improvements must not erase product-specific behavior."
+      ],
+      "source_docs": [
+        "README.md",
+        "docs/PRODUCT_AUTOMATION_PLAN.md"
+      ],
+      "test_commands": [
+        {
+          "id": "frontend-static-assets",
+          "label": "Frontend static asset refs",
+          "command": "node scripts/check-static-asset-refs.js",
+          "repo": "kaayko",
+          "cwd": "."
+        },
+        {
+          "id": "backend-smoke-tests",
+          "label": "Backend smoke tests",
+          "command": "npm run test:smoke",
+          "repo": "kaayko-api",
+          "cwd": "functions"
+        }
+      ],
+      "features": [
+        {
+          "id": "clear-cache",
+          "name": "clear cache",
+          "type": "page",
+          "entry": "kaayko:src/admin/clear-cache.html",
+          "related_js": [],
+          "routes": [
+            "/l/**"
+          ]
+        },
+        {
+          "id": "kortex",
+          "name": "kortex",
+          "type": "page",
+          "entry": "kaayko:src/admin/kortex.html",
+          "related_js": [
+            "kaayko:src/admin/js/kortex-core.js"
+          ],
+          "routes": []
+        },
+        {
+          "id": "login",
+          "name": "login",
+          "type": "page",
+          "entry": "kaayko:src/admin/login.html",
+          "related_js": [],
+          "routes": [
+            "/l/**"
+          ]
+        },
+        {
+          "id": "reset-environment",
+          "name": "reset environment",
+          "type": "page",
+          "entry": "kaayko:src/admin/reset-environment.html",
+          "related_js": [],
+          "routes": []
+        },
+        {
+          "id": "tenant-registration",
+          "name": "tenant registration",
+          "type": "page",
+          "entry": "kaayko:src/admin/tenant-registration.html",
+          "related_js": [],
+          "routes": []
+        },
+        {
+          "id": "all-links",
+          "name": "all links",
+          "type": "page",
+          "entry": "kaayko:src/admin/views/all-links/all-links.html",
+          "related_js": [
+            "kaayko:src/admin/views/all-links/all-links.js"
+          ],
+          "routes": [
+            "/l/**"
+          ]
+        },
+        {
+          "id": "analytics",
+          "name": "analytics",
+          "type": "page",
+          "entry": "kaayko:src/admin/views/analytics/analytics.html",
+          "related_js": [
+            "kaayko:src/admin/views/analytics/analytics.js"
+          ],
+          "routes": [
+            "/l/**"
+          ]
+        },
+        {
+          "id": "billing",
+          "name": "billing",
+          "type": "page",
+          "entry": "kaayko:src/admin/views/billing/billing.html",
+          "related_js": [
+            "kaayko:src/admin/views/billing/billing.js"
+          ],
+          "routes": [
+            "/l/**"
+          ]
+        },
+        {
+          "id": "create-link",
+          "name": "create link",
+          "type": "page",
+          "entry": "kaayko:src/admin/views/create-link/create-link.html",
+          "related_js": [
+            "kaayko:src/admin/views/create-link/create-link.js"
+          ],
+          "routes": [
+            "/l/**"
+          ]
+        },
+        {
+          "id": "dashboard",
+          "name": "dashboard",
+          "type": "page",
+          "entry": "kaayko:src/admin/views/dashboard/dashboard.html",
+          "related_js": [
+            "kaayko:src/admin/views/dashboard/dashboard.js"
+          ],
+          "routes": []
+        },
+        {
+          "id": "qr-codes",
+          "name": "qr codes",
+          "type": "page",
+          "entry": "kaayko:src/admin/views/qr-codes/qr-codes.html",
+          "related_js": [
+            "kaayko:src/admin/views/qr-codes/qr-codes.js"
+          ],
+          "routes": []
+        },
+        {
+          "id": "tenant-onboarding",
+          "name": "tenant onboarding",
+          "type": "page",
+          "entry": "kaayko:src/admin/views/tenant-onboarding/tenant-onboarding.html",
+          "related_js": [
+            "kaayko:src/admin/views/tenant-onboarding/tenant-onboarding.js"
+          ],
+          "routes": []
+        },
+        {
+          "id": "add-product",
+          "name": "add product",
+          "type": "page",
+          "entry": "kaayko:src/kreator/add-product.html",
+          "related_js": [],
+          "routes": []
+        },
+        {
+          "id": "index",
+          "name": "index",
+          "type": "page",
+          "entry": "kaayko:src/kreator/admin/index.html",
+          "related_js": [],
+          "routes": []
+        },
+        {
+          "id": "apply-old-social",
+          "name": "apply old social",
+          "type": "page",
+          "entry": "kaayko:src/kreator/apply-old-social.html",
+          "related_js": [],
+          "routes": [
+            "/l/**"
+          ]
+        },
+        {
+          "id": "apply",
+          "name": "apply",
+          "type": "page",
+          "entry": "kaayko:src/kreator/apply.html",
+          "related_js": [],
+          "routes": [
+            "/l/**"
+          ]
+        },
+        {
+          "id": "check-status",
+          "name": "check status",
+          "type": "page",
+          "entry": "kaayko:src/kreator/check-status.html",
+          "related_js": [],
+          "routes": []
+        },
+        {
+          "id": "dashboard-old-influencer",
+          "name": "dashboard old influencer",
+          "type": "page",
+          "entry": "kaayko:src/kreator/dashboard-old-influencer.html",
+          "related_js": [
+            "kaayko:src/admin/views/dashboard/dashboard.js"
+          ],
+          "routes": [
+            "/l/**"
+          ]
+        },
+        {
+          "id": "dashboard",
+          "name": "dashboard",
+          "type": "page",
+          "entry": "kaayko:src/kreator/dashboard.html",
+          "related_js": [
+            "kaayko:src/admin/views/dashboard/dashboard.js"
+          ],
+          "routes": []
+        },
+        {
+          "id": "forgot-password",
+          "name": "forgot password",
+          "type": "page",
+          "entry": "kaayko:src/kreator/forgot-password.html",
+          "related_js": [],
+          "routes": []
+        },
+        {
+          "id": "index",
+          "name": "index",
+          "type": "page",
+          "entry": "kaayko:src/kreator/index.html",
+          "related_js": [],
+          "routes": []
+        },
+        {
+          "id": "kreator-login",
+          "name": "kreator login",
+          "type": "page",
+          "entry": "kaayko:src/kreator/kreator-login.html",
+          "related_js": [],
+          "routes": [
+            "/l/**"
+          ]
+        },
+        {
+          "id": "onboarding",
+          "name": "onboarding",
+          "type": "page",
+          "entry": "kaayko:src/kreator/onboarding.html",
+          "related_js": [
+            "kaayko:src/admin/views/tenant-onboarding/tenant-onboarding.js"
+          ],
+          "routes": []
+        },
+        {
+          "id": "paddlingout",
+          "name": "paddlingout",
+          "type": "page",
+          "entry": "kaayko:src/paddlingout.html",
+          "related_js": [
+            "kaayko:src/js/paddlingout.js"
+          ],
+          "routes": [
+            "/l/**"
+          ]
+        },
+        {
+          "id": "store",
+          "name": "store",
+          "type": "page",
+          "entry": "kaayko:src/store.html",
+          "related_js": [
+            "kaayko:src/js/secretStore.js"
+          ],
+          "routes": []
+        },
+        {
+          "id": "kortex",
+          "name": "kortex",
+          "type": "page",
+          "entry": "kaayko:src/kortex.html",
+          "related_js": [
+            "kaayko:src/admin/js/kortex-core.js"
+          ],
+          "routes": []
+        },
+        {
+          "id": "karma",
+          "name": "karma",
+          "type": "page",
+          "entry": "kaayko:src/karma.html",
+          "related_js": [],
+          "routes": []
+        }
+      ]
+    },
+    "store": {
+      "id": "store",
+      "name": "Store / Commerce",
+      "purpose": "Protect the browsing, cart, checkout, and order-success funnel as one paired frontend/backend flow.",
+      "keywords": [
+        "store",
+        "commerce",
+        "checkout",
+        "cart",
+        "payment",
+        "stripe",
+        "product",
+        "order"
+      ],
+      "frontend_files": [
+        "kaayko:src/index.html",
+        "kaayko:src/store.html",
+        "kaayko:src/cart.html",
+        "kaayko:src/order-success.html",
+        "kaayko:src/js/kaayko_apiClient.js",
+        "kaayko:src/js/kaayko_ui.js",
+        "kaayko:src/js/cartManager.js",
+        "kaayko:src/js/main.js",
+        "kaayko:src/js/header.js",
+        "kaayko:src/css/storestyle.css",
+        "kaayko:src/css/secretStore.css"
+      ],
+      "backend_files": [
+        "kaayko-api:functions/api/products/images.js",
+        "kaayko-api:functions/api/products/products.js",
+        "kaayko-api:functions/api/products/images.js",
+        "kaayko-api:functions/api/products/products.js",
+        "kaayko-api:functions/api/products/images.js",
+        "kaayko-api:functions/api/products/products.js"
+      ],
+      "entry_points": {
+        "index": "kaayko:src/index.html",
+        "store": "kaayko:src/store.html",
+        "cart": "kaayko:src/cart.html",
+        "order-success": "kaayko:src/order-success.html"
+      },
+      "routes": [
+        {
+          "definition": "GET /products",
+          "product": "store"
+        },
+        {
+          "definition": "GET /products/:id",
+          "product": "store"
+        },
+        {
+          "definition": "POST /products/:id/vote",
+          "product": "store"
+        },
+        {
+          "definition": "GET /images/:productId/:fileName",
+          "product": "store"
+        },
+        {
+          "definition": "POST /createPaymentIntent",
+          "product": "store"
+        },
+        {
+          "definition": "POST /createPaymentIntent/updateEmail",
+          "product": "store"
+        }
+      ],
+      "validation_focus": [
+        "Validate product fetch, image load, cart mutation, and checkout intent as one flow.",
+        "Keep cart and order-success behavior aligned with Stripe redirect assumptions.",
+        "Treat inline scripts and shared JS clients as one contract surface."
+      ],
+      "risk_focus": [
+        "Commerce logic is split between page-inline scripts and shared JS files.",
+        "Checkout does not have a browser test suite in this repo.",
+        "Do not break image or payment-intent routes while deduplicating client code."
+      ],
+      "source_docs": [
+        "README.md",
+        "docs/products/STORE.md"
+      ],
+      "test_commands": [
+        {
+          "id": "frontend-static-assets",
+          "label": "Frontend static asset refs",
+          "command": "node scripts/check-static-asset-refs.js",
+          "repo": "kaayko",
+          "cwd": "."
+        },
+        {
+          "id": "store-api-tests",
+          "label": "Store API tests",
+          "command": "npm run test:store",
+          "repo": "kaayko-api",
+          "cwd": "functions"
+        }
+      ],
+      "features": [
+        {
+          "id": "index",
+          "name": "index",
+          "type": "page",
+          "entry": "kaayko:src/index.html",
+          "related_js": [],
+          "routes": []
+        },
+        {
+          "id": "store",
+          "name": "store",
+          "type": "page",
+          "entry": "kaayko:src/store.html",
+          "related_js": [],
+          "routes": []
+        },
+        {
+          "id": "cart",
+          "name": "cart",
+          "type": "page",
+          "entry": "kaayko:src/cart.html",
+          "related_js": [
+            "kaayko:src/js/cartManager.js"
+          ],
+          "routes": []
+        },
+        {
+          "id": "order-success",
+          "name": "order success",
+          "type": "page",
+          "entry": "kaayko:src/order-success.html",
+          "related_js": [],
+          "routes": []
+        }
+      ]
+    },
+    "paddling-out": {
+      "id": "paddling-out",
+      "name": "Paddling Out",
+      "purpose": "Maintain the weather-first experience for spot browsing, current conditions, forecast modal flows, and custom location discovery.",
+      "keywords": [
+        "paddling",
+        "paddle",
+        "forecast",
+        "weather",
+        "spot",
+        "surf",
+        "safety",
+        "heatmap"
+      ],
+      "frontend_files": [
+        "kaayko:src/paddlingout.html",
+        "kaayko:src/js/paddlingout.js",
+        "kaayko:src/js/about-dynamic.js",
+        "kaayko:src/js/advancedModal.js",
+        "kaayko:src/js/components/SafetyWarnings.js",
+        "kaayko:src/js/components/Heatmap.js",
+        "kaayko:src/js/components/RatingHero.js",
+        "kaayko:src/css/paddlingout.css",
+        "kaayko:src/css/advancedModal.css"
+      ],
+      "backend_files": [],
+      "entry_points": {
+        "paddlingout": "kaayko:src/paddlingout.html"
+      },
+      "routes": [
+        {
+          "definition": "GET /paddlingOut",
+          "product": "paddling-out"
+        },
+        {
+          "definition": "GET /paddlingOut/:id",
+          "product": "paddling-out"
+        },
+        {
+          "definition": "GET /paddleScore",
+          "product": "paddling-out"
+        },
+        {
+          "definition": "GET /fastForecast",
+          "product": "paddling-out"
+        },
+        {
+          "definition": "GET /forecast",
+          "product": "paddling-out"
+        },
+        {
+          "definition": "GET /nearbyWater",
+          "product": "paddling-out"
+        }
+      ],
+      "validation_focus": [
+        "Verify spot list, spot detail, score rendering, forecast modal, and custom-location search together.",
+        "Preserve production versus emulator mode selection behavior.",
+        "Maintain weather component rendering for real backend response shapes."
+      ],
+      "risk_focus": [
+        "Weather logic mixes shared and page-specific fetch paths.",
+        "Forecast and safety components are visually rich and easy to break with broad rewrites.",
+        "Reliability matters as much as correctness for this product."
+      ],
+      "source_docs": [
+        "README.md",
+        "docs/products/PADDLING_OUT.md"
+      ],
+      "test_commands": [
+        {
+          "id": "frontend-static-assets",
+          "label": "Frontend static asset refs",
+          "command": "node scripts/check-static-asset-refs.js",
+          "repo": "kaayko",
+          "cwd": "."
+        },
+        {
+          "id": "paddling-out-weather-tests",
+          "label": "Paddling Out weather tests",
+          "command": "node ./node_modules/jest/bin/jest.js --runInBand __tests__/weather-paddle-score.test.js --forceExit --detectOpenHandles",
+          "repo": "kaayko-api",
+          "cwd": "functions"
+        }
+      ],
+      "features": [
+        {
+          "id": "paddlingout",
+          "name": "paddlingout",
+          "type": "page",
+          "entry": "kaayko:src/paddlingout.html",
+          "related_js": [
+            "kaayko:src/js/paddlingout.js"
+          ],
+          "routes": [
+            "GET /paddlingOut",
+            "GET /paddlingOut/:id"
+          ]
+        }
+      ]
+    },
+    "kortex": {
+      "id": "kortex",
+      "name": "KORTEX Platform",
+      "purpose": "Protect smart-link creation, admin workflows, redirect handling, analytics, QR flows, and billing visibility as a single platform surface.",
+      "keywords": [
+        "kortex",
+        "smartlink",
+        "redirect",
+        "analytics",
+        "billing",
+        "tenant",
+        "auth",
+        "qr",
+        "admin"
+      ],
+      "frontend_files": [
+        "kaayko:src/kortex.html",
+        "kaayko:src/create-kortex-link.html",
+        "kaayko:src/redirect.html",
+        "kaayko:src/admin/kortex.html",
+        "kaayko:src/admin/login.html",
+        "kaayko:src/admin/tenant-registration.html",
+        "kaayko:src/admin/js/config.js",
+        "kaayko:src/admin/js/kortex-core.js",
+        "kaayko:src/admin/js/ui.js",
+        "kaayko:src/admin/js/utils.js",
+        "kaayko:src/admin/views/all-links/all-links.css",
+        "kaayko:src/admin/views/all-links/all-links.html",
+        "kaayko:src/admin/views/all-links/all-links.js",
+        "kaayko:src/admin/views/analytics/analytics.css",
+        "kaayko:src/admin/views/analytics/analytics.html",
+        "kaayko:src/admin/views/analytics/analytics.js",
+        "kaayko:src/admin/views/billing/billing.css",
+        "kaayko:src/admin/views/billing/billing.html",
+        "kaayko:src/admin/views/billing/billing.js",
+        "kaayko:src/admin/views/create-link/create-link.css",
+        "kaayko:src/admin/views/create-link/create-link.html",
+        "kaayko:src/admin/views/create-link/create-link.js",
+        "kaayko:src/admin/views/dashboard/dashboard.css",
+        "kaayko:src/admin/views/dashboard/dashboard.html",
+        "kaayko:src/admin/views/dashboard/dashboard.js",
+        "kaayko:src/admin/views/qr-codes/qr-codes.css",
+        "kaayko:src/admin/views/qr-codes/qr-codes.html",
+        "kaayko:src/admin/views/qr-codes/qr-codes.js",
+        "kaayko:src/admin/views/tenant-onboarding/tenant-onboarding.css",
+        "kaayko:src/admin/views/tenant-onboarding/tenant-onboarding.html",
+        "kaayko:src/admin/views/tenant-onboarding/tenant-onboarding.js"
+      ],
+      "backend_files": [
+        "kaayko-api:functions/api/smartlinks/attributionService.js",
+        "kaayko-api:functions/api/smartlinks/clickTracking.js",
+        "kaayko-api:functions/api/smartlinks/publicApiRouter.js",
+        "kaayko-api:functions/api/smartlinks/publicRouter.js",
+        "kaayko-api:functions/api/smartlinks/rateLimitService.js",
+        "kaayko-api:functions/api/smartlinks/redirectHandler.js",
+        "kaayko-api:functions/api/smartlinks/smartLinkDefaults.js",
+        "kaayko-api:functions/api/smartlinks/smartLinkEnrichment.js",
+        "kaayko-api:functions/api/smartlinks/smartLinkService.js",
+        "kaayko-api:functions/api/smartlinks/smartLinkValidation.js",
+        "kaayko-api:functions/api/smartlinks/smartLinks.js",
+        "kaayko-api:functions/api/smartlinks/tenantContext.js",
+        "kaayko-api:functions/api/smartlinks/webhookService.js",
+        "kaayko-api:functions/api/auth/authRoutes.js",
+        "kaayko-api:functions/api/billing/router.js"
+      ],
+      "entry_points": {
+        "kortex": "kaayko:src/admin/kortex.html",
+        "create-kortex-link": "kaayko:src/create-kortex-link.html",
+        "redirect": "kaayko:src/redirect.html",
+        "login": "kaayko:src/admin/login.html",
+        "tenant-registration": "kaayko:src/admin/tenant-registration.html"
+      },
+      "routes": [
+        {
+          "definition": "/smartlinks/*",
+          "product": "kortex"
+        },
+        {
+          "definition": "/auth/*",
+          "product": "kortex"
+        },
+        {
+          "definition": "/billing/*",
+          "product": "kortex"
+        },
+        {
+          "definition": "/l/:id",
+          "product": "kortex"
+        },
+        {
+          "definition": "/resolve",
+          "product": "kortex"
+        }
+      ],
+      "validation_focus": [
+        "Validate login, tenant discovery, link CRUD, redirect behavior, analytics visibility, and billing screen availability together.",
+        "Keep public KORTEX pages separate from admin-only workflows.",
+        "Treat old markdown references to unmounted paths as history, not live contract."
+      ],
+      "risk_focus": [
+        "KORTEX is the highest-risk surface for tenant isolation and auth drift.",
+        "Admin config/auth code is separate from public pages.",
+        "Redirect and billing behavior must remain correct while refactoring UI logic."
+      ],
+      "source_docs": [
+        "README.md",
+        "docs/products/KORTEX.md",
+        "src/admin/KORTEX_SYSTEM_ANALYSIS.md"
+      ],
+      "test_commands": [
+        {
+          "id": "frontend-static-assets",
+          "label": "Frontend static asset refs",
+          "command": "node scripts/check-static-asset-refs.js",
+          "repo": "kaayko",
+          "cwd": "."
+        },
+        {
+          "id": "kortex-api-tests",
+          "label": "KORTEX API tests",
+          "command": "npm run test:kortex",
+          "repo": "kaayko-api",
+          "cwd": "functions"
+        }
+      ],
+      "features": [
+        {
+          "id": "kortex",
+          "name": "kortex",
+          "type": "page",
+          "entry": "kaayko:src/kortex.html",
+          "related_js": [
+            "kaayko:src/admin/js/kortex-core.js"
+          ],
+          "routes": []
+        },
+        {
+          "id": "create-kortex-link",
+          "name": "create kortex link",
+          "type": "page",
+          "entry": "kaayko:src/create-kortex-link.html",
+          "related_js": [],
+          "routes": [
+            "/l/:id"
+          ]
+        },
+        {
+          "id": "redirect",
+          "name": "redirect",
+          "type": "page",
+          "entry": "kaayko:src/redirect.html",
+          "related_js": [],
+          "routes": []
+        },
+        {
+          "id": "kortex",
+          "name": "kortex",
+          "type": "page",
+          "entry": "kaayko:src/admin/kortex.html",
+          "related_js": [
+            "kaayko:src/admin/js/kortex-core.js"
+          ],
+          "routes": []
+        },
+        {
+          "id": "login",
+          "name": "login",
+          "type": "page",
+          "entry": "kaayko:src/admin/login.html",
+          "related_js": [],
+          "routes": [
+            "/l/:id"
+          ]
+        },
+        {
+          "id": "tenant-registration",
+          "name": "tenant registration",
+          "type": "page",
+          "entry": "kaayko:src/admin/tenant-registration.html",
+          "related_js": [],
+          "routes": []
+        },
+        {
+          "id": "all-links",
+          "name": "all links",
+          "type": "page",
+          "entry": "kaayko:src/admin/views/all-links/all-links.html",
+          "related_js": [
+            "kaayko:src/admin/views/all-links/all-links.js"
+          ],
+          "routes": [
+            "/l/:id"
+          ]
+        },
+        {
+          "id": "analytics",
+          "name": "analytics",
+          "type": "page",
+          "entry": "kaayko:src/admin/views/analytics/analytics.html",
+          "related_js": [
+            "kaayko:src/admin/views/analytics/analytics.js"
+          ],
+          "routes": [
+            "/l/:id"
+          ]
+        },
+        {
+          "id": "billing",
+          "name": "billing",
+          "type": "page",
+          "entry": "kaayko:src/admin/views/billing/billing.html",
+          "related_js": [
+            "kaayko:src/admin/views/billing/billing.js"
+          ],
+          "routes": [
+            "/billing/*",
+            "/l/:id"
+          ]
+        },
+        {
+          "id": "create-link",
+          "name": "create link",
+          "type": "page",
+          "entry": "kaayko:src/admin/views/create-link/create-link.html",
+          "related_js": [
+            "kaayko:src/admin/views/create-link/create-link.js"
+          ],
+          "routes": [
+            "/l/:id"
+          ]
+        },
+        {
+          "id": "dashboard",
+          "name": "dashboard",
+          "type": "page",
+          "entry": "kaayko:src/admin/views/dashboard/dashboard.html",
+          "related_js": [
+            "kaayko:src/admin/views/dashboard/dashboard.js"
+          ],
+          "routes": []
+        },
+        {
+          "id": "qr-codes",
+          "name": "qr codes",
+          "type": "page",
+          "entry": "kaayko:src/admin/views/qr-codes/qr-codes.html",
+          "related_js": [
+            "kaayko:src/admin/views/qr-codes/qr-codes.js"
+          ],
+          "routes": []
+        },
+        {
+          "id": "tenant-onboarding",
+          "name": "tenant onboarding",
+          "type": "page",
+          "entry": "kaayko:src/admin/views/tenant-onboarding/tenant-onboarding.html",
+          "related_js": [
+            "kaayko:src/admin/views/tenant-onboarding/tenant-onboarding.js"
+          ],
+          "routes": []
+        }
+      ]
+    },
+    "kreator": {
+      "id": "kreator",
+      "name": "Kreator",
+      "purpose": "Maintain creator application, onboarding, login, dashboard, and admin review flows without assuming unmounted backend product APIs are live.",
+      "keywords": [
+        "kreator",
+        "creator",
+        "onboarding",
+        "dashboard",
+        "apply",
+        "application",
+        "review"
+      ],
+      "frontend_files": [
+        "kaayko:src/kreator/index.html",
+        "kaayko:src/kreator/apply.html",
+        "kaayko:src/kreator/check-status.html",
+        "kaayko:src/kreator/onboarding.html",
+        "kaayko:src/kreator/kreator-login.html",
+        "kaayko:src/kreator/dashboard.html",
+        "kaayko:src/kreator/add-product.html",
+        "kaayko:src/kreator/admin/index.html",
+        "kaayko:src/kreator/js/kreator-api.js"
+      ],
+      "backend_files": [
+        "kaayko-api:functions/api/kreators/kreatorProductRoutes.js",
+        "kaayko-api:functions/api/kreators/kreatorRoutes.js",
+        "kaayko-api:functions/api/kreators/testRoutes.js",
+        "kaayko-api:functions/api/kreators/kreatorProductRoutes.js",
+        "kaayko-api:functions/api/kreators/kreatorRoutes.js",
+        "kaayko-api:functions/api/kreators/testRoutes.js",
+        "kaayko-api:functions/api/kreators/kreatorProductRoutes.js",
+        "kaayko-api:functions/api/kreators/kreatorRoutes.js",
+        "kaayko-api:functions/api/kreators/testRoutes.js",
+        "kaayko-api:functions/api/kreators/kreatorProductRoutes.js",
+        "kaayko-api:functions/api/kreators/kreatorRoutes.js",
+        "kaayko-api:functions/api/kreators/testRoutes.js",
+        "kaayko-api:functions/api/kreators/kreatorProductRoutes.js",
+        "kaayko-api:functions/api/kreators/kreatorRoutes.js",
+        "kaayko-api:functions/api/kreators/testRoutes.js",
+        "kaayko-api:functions/api/kreators/kreatorProductRoutes.js",
+        "kaayko-api:functions/api/kreators/kreatorRoutes.js",
+        "kaayko-api:functions/api/kreators/testRoutes.js",
+        "kaayko-api:functions/api/kreators/kreatorProductRoutes.js",
+        "kaayko-api:functions/api/kreators/kreatorRoutes.js",
+        "kaayko-api:functions/api/kreators/testRoutes.js",
+        "kaayko-api:functions/api/kreators/kreatorProductRoutes.js",
+        "kaayko-api:functions/api/kreators/kreatorRoutes.js",
+        "kaayko-api:functions/api/kreators/testRoutes.js"
+      ],
+      "entry_points": {
+        "index": "kaayko:src/kreator/index.html",
+        "apply": "kaayko:src/kreator/apply.html",
+        "check-status": "kaayko:src/kreator/check-status.html",
+        "onboarding": "kaayko:src/kreator/onboarding.html",
+        "kreator-login": "kaayko:src/kreator/kreator-login.html",
+        "dashboard": "kaayko:src/kreator/dashboard.html",
+        "add-product": "kaayko:src/kreator/add-product.html"
+      },
+      "routes": [
+        {
+          "definition": "/kreators/apply",
+          "product": "kreator"
+        },
+        {
+          "definition": "/kreators/applications/:id/status",
+          "product": "kreator"
+        },
+        {
+          "definition": "/kreators/onboarding/verify",
+          "product": "kreator"
+        },
+        {
+          "definition": "/kreators/onboarding/complete",
+          "product": "kreator"
+        },
+        {
+          "definition": "/kreators/auth/google/*",
+          "product": "kreator"
+        },
+        {
+          "definition": "/kreators/me",
+          "product": "kreator"
+        },
+        {
+          "definition": "/kreators/admin/*",
+          "product": "kreator"
+        },
+        {
+          "definition": "/kreators/products",
+          "product": "kreator"
+        }
+      ],
+      "validation_focus": [
+        "Treat dashboard/account flows separately from product-management flows.",
+        "Flag `/kreators/products` as a likely contract mismatch unless the backend mount is confirmed.",
+        "Protect onboarding friction and account-state messaging."
+      ],
+      "risk_focus": [
+        "The product-management UI is ahead of the deployed backend contract on `main`.",
+        "Store and Kreator share the monetization funnel.",
+        "Do not present unmounted backend routes as stable product behavior."
+      ],
+      "source_docs": [
+        "README.md",
+        "docs/products/KREATOR.md"
+      ],
+      "test_commands": [
+        {
+          "id": "frontend-static-assets",
+          "label": "Frontend static asset refs",
+          "command": "node scripts/check-static-asset-refs.js",
+          "repo": "kaayko",
+          "cwd": "."
+        },
+        {
+          "id": "kreator-api-tests",
+          "label": "Kreator API tests",
+          "command": "npm run test:kreator",
+          "repo": "kaayko-api",
+          "cwd": "functions"
+        }
+      ],
+      "features": [
+        {
+          "id": "index",
+          "name": "index",
+          "type": "page",
+          "entry": "kaayko:src/kreator/index.html",
+          "related_js": [],
+          "routes": []
+        },
+        {
+          "id": "apply",
+          "name": "apply",
+          "type": "page",
+          "entry": "kaayko:src/kreator/apply.html",
+          "related_js": [],
+          "routes": []
+        },
+        {
+          "id": "check-status",
+          "name": "check status",
+          "type": "page",
+          "entry": "kaayko:src/kreator/check-status.html",
+          "related_js": [],
+          "routes": []
+        },
+        {
+          "id": "onboarding",
+          "name": "onboarding",
+          "type": "page",
+          "entry": "kaayko:src/kreator/onboarding.html",
+          "related_js": [],
+          "routes": []
+        },
+        {
+          "id": "kreator-login",
+          "name": "kreator login",
+          "type": "page",
+          "entry": "kaayko:src/kreator/kreator-login.html",
+          "related_js": [],
+          "routes": []
+        },
+        {
+          "id": "dashboard",
+          "name": "dashboard",
+          "type": "page",
+          "entry": "kaayko:src/kreator/dashboard.html",
+          "related_js": [],
+          "routes": []
+        },
+        {
+          "id": "add-product",
+          "name": "add product",
+          "type": "page",
+          "entry": "kaayko:src/kreator/add-product.html",
+          "related_js": [],
+          "routes": []
+        },
+        {
+          "id": "index",
+          "name": "index",
+          "type": "page",
+          "entry": "kaayko:src/kreator/admin/index.html",
+          "related_js": [],
+          "routes": []
+        }
+      ]
+    },
+    "kamera-quest": {
+      "id": "kamera-quest",
+      "name": "Kamera Quest",
+      "purpose": "Keep camera selection, preset generation, and skill-level-aware rendering aligned with the structured backend output.",
+      "keywords": [
+        "kamera",
+        "camera",
+        "preset",
+        "lens",
+        "brand",
+        "model",
+        "skill"
+      ],
+      "frontend_files": [
+        "kaayko:src/karma.html",
+        "kaayko:src/karma/kameras/assets/kamera-enhancer.css",
+        "kaayko:src/karma/kameras/assets/kamera-enhancer.js",
+        "kaayko:src/karma/kameras/assets/kamera-evf.css",
+        "kaayko:src/karma/kameras/assets/kamera-evf.js",
+        "kaayko:src/karma/kameras/index.html",
+        "kaayko:src/assets/kamera-quest-og.svg"
+      ],
+      "backend_files": [
+        "kaayko-api:functions/api/cameras/audit/capabilitySchema.js",
+        "kaayko-api:functions/api/cameras/audit/officialBodies.js",
+        "kaayko-api:functions/api/cameras/camerasRoutes.js",
+        "kaayko-api:functions/api/cameras/data_cameras/canon.json",
+        "kaayko-api:functions/api/cameras/data_cameras/sony.json",
+        "kaayko-api:functions/api/cameras/data_lenses/canon.json",
+        "kaayko-api:functions/api/cameras/data_lenses/sony.json",
+        "kaayko-api:functions/api/cameras/data_presets/architecture.json",
+        "kaayko-api:functions/api/cameras/data_presets/astro.json",
+        "kaayko-api:functions/api/cameras/data_presets/automotive.json",
+        "kaayko-api:functions/api/cameras/data_presets/concert.json",
+        "kaayko-api:functions/api/cameras/data_presets/drone.json",
+        "kaayko-api:functions/api/cameras/data_presets/event.json",
+        "kaayko-api:functions/api/cameras/data_presets/fashion.json",
+        "kaayko-api:functions/api/cameras/data_presets/food.json",
+        "kaayko-api:functions/api/cameras/data_presets/goldenhour.json",
+        "kaayko-api:functions/api/cameras/data_presets/index.js",
+        "kaayko-api:functions/api/cameras/data_presets/indoorlowlight.json",
+        "kaayko-api:functions/api/cameras/data_presets/landscape.json",
+        "kaayko-api:functions/api/cameras/data_presets/macro.json",
+        "kaayko-api:functions/api/cameras/data_presets/newborn.json",
+        "kaayko-api:functions/api/cameras/data_presets/portrait.json",
+        "kaayko-api:functions/api/cameras/data_presets/product.json",
+        "kaayko-api:functions/api/cameras/data_presets/realestate.json",
+        "kaayko-api:functions/api/cameras/data_presets/sports.json",
+        "kaayko-api:functions/api/cameras/data_presets/street.json",
+        "kaayko-api:functions/api/cameras/data_presets/travel.json",
+        "kaayko-api:functions/api/cameras/data_presets/underwater.json",
+        "kaayko-api:functions/api/cameras/data_presets/wildlife.json",
+        "kaayko-api:functions/api/cameras/engine/evCalc.js",
+        "kaayko-api:functions/api/cameras/engine/presetEngine.js",
+        "kaayko-api:functions/api/cameras/engine/sessionAdvisor.js",
+        "kaayko-api:functions/api/cameras/lensesRoutes.js",
+        "kaayko-api:functions/api/cameras/presetsRoutes.js",
+        "kaayko-api:functions/api/cameras/smartRoutes.js",
+        "kaayko-api:functions/api/cameras/validate.js",
+        "kaayko-api:functions/api/cameras/audit/capabilitySchema.js",
+        "kaayko-api:functions/api/cameras/audit/officialBodies.js",
+        "kaayko-api:functions/api/cameras/camerasRoutes.js",
+        "kaayko-api:functions/api/cameras/data_cameras/canon.json",
+        "kaayko-api:functions/api/cameras/data_cameras/sony.json",
+        "kaayko-api:functions/api/cameras/data_lenses/canon.json",
+        "kaayko-api:functions/api/cameras/data_lenses/sony.json",
+        "kaayko-api:functions/api/cameras/data_presets/architecture.json",
+        "kaayko-api:functions/api/cameras/data_presets/astro.json",
+        "kaayko-api:functions/api/cameras/data_presets/automotive.json",
+        "kaayko-api:functions/api/cameras/data_presets/concert.json",
+        "kaayko-api:functions/api/cameras/data_presets/drone.json",
+        "kaayko-api:functions/api/cameras/data_presets/event.json",
+        "kaayko-api:functions/api/cameras/data_presets/fashion.json",
+        "kaayko-api:functions/api/cameras/data_presets/food.json",
+        "kaayko-api:functions/api/cameras/data_presets/goldenhour.json",
+        "kaayko-api:functions/api/cameras/data_presets/index.js",
+        "kaayko-api:functions/api/cameras/data_presets/indoorlowlight.json",
+        "kaayko-api:functions/api/cameras/data_presets/landscape.json",
+        "kaayko-api:functions/api/cameras/data_presets/macro.json",
+        "kaayko-api:functions/api/cameras/data_presets/newborn.json",
+        "kaayko-api:functions/api/cameras/data_presets/portrait.json",
+        "kaayko-api:functions/api/cameras/data_presets/product.json",
+        "kaayko-api:functions/api/cameras/data_presets/realestate.json",
+        "kaayko-api:functions/api/cameras/data_presets/sports.json",
+        "kaayko-api:functions/api/cameras/data_presets/street.json",
+        "kaayko-api:functions/api/cameras/data_presets/travel.json",
+        "kaayko-api:functions/api/cameras/data_presets/underwater.json",
+        "kaayko-api:functions/api/cameras/data_presets/wildlife.json",
+        "kaayko-api:functions/api/cameras/engine/evCalc.js",
+        "kaayko-api:functions/api/cameras/engine/presetEngine.js",
+        "kaayko-api:functions/api/cameras/engine/sessionAdvisor.js",
+        "kaayko-api:functions/api/cameras/lensesRoutes.js",
+        "kaayko-api:functions/api/cameras/presetsRoutes.js",
+        "kaayko-api:functions/api/cameras/smartRoutes.js",
+        "kaayko-api:functions/api/cameras/validate.js"
+      ],
+      "entry_points": {
+        "karma": "kaayko:src/karma.html"
+      },
+      "routes": [
+        {
+          "definition": "GET /presets/meta",
+          "product": "kamera-quest"
+        },
+        {
+          "definition": "GET /cameras/:brand",
+          "product": "kamera-quest"
+        },
+        {
+          "definition": "GET /cameras/:brand/:modelName/lenses",
+          "product": "kamera-quest"
+        },
+        {
+          "definition": "POST /presets/classic",
+          "product": "kamera-quest"
+        },
+        {
+          "definition": "POST /presets/smart",
+          "product": "kamera-quest"
+        }
+      ],
+      "validation_focus": [
+        "Check apprentice, enthusiast, and professional result shapes before claiming a safe UI change.",
+        "Preserve result rendering clarity and metadata contracts.",
+        "Treat this surface as contract-driven rather than purely visual."
+      ],
+      "risk_focus": [
+        "Frontend output depends heavily on structured backend payloads by skill level.",
+        "This is a good candidate for snapshots, but only if output shape remains stable.",
+        "Do not simplify result rendering in ways that erase skill-level nuance."
+      ],
+      "source_docs": [
+        "README.md",
+        "docs/products/KAMERA_QUEST.md"
+      ],
+      "test_commands": [
+        {
+          "id": "frontend-static-assets",
+          "label": "Frontend static asset refs",
+          "command": "node scripts/check-static-asset-refs.js",
+          "repo": "kaayko",
+          "cwd": "."
+        },
+        {
+          "id": "kamera-predeploy-check",
+          "label": "Kamera predeploy check",
+          "command": "npm run predeploy:check",
+          "repo": "kaayko-api",
+          "cwd": "functions"
+        }
+      ],
+      "features": [
+        {
+          "id": "karma",
+          "name": "karma",
+          "type": "page",
+          "entry": "kaayko:src/karma.html",
+          "related_js": [],
+          "routes": []
+        },
+        {
+          "id": "index",
+          "name": "index",
+          "type": "page",
+          "entry": "kaayko:src/karma/kameras/index.html",
+          "related_js": [],
+          "routes": []
+        }
+      ]
+    }
+  },
+  "files": {
+    "kaayko:src/js/about-dynamic.js": {
+      "path": "kaayko:src/js/about-dynamic.js",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "paddling-out"
+      ],
+      "size_bytes": 6189,
+      "line_count": 189,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/js/advancedModal.js": {
+      "path": "kaayko:src/js/advancedModal.js",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "paddling-out"
+      ],
+      "size_bytes": 15024,
+      "line_count": 459,
+      "type": ".js",
+      "exports": [
+        "advancedModal"
+      ],
+      "classes": [
+        "AdvancedLakeModal"
+      ],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/js/cartManager.js": {
+      "path": "kaayko:src/js/cartManager.js",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "store"
+      ],
+      "size_bytes": 3304,
+      "line_count": 145,
+      "type": ".js",
+      "exports": [],
+      "classes": [
+        "CartManager"
+      ],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/js/components/Heatmap.css": {
+      "path": "kaayko:src/js/components/Heatmap.css",
+      "role": "frontend",
+      "products": [
+        "shared"
+      ],
+      "size_bytes": 4806,
+      "line_count": 267,
+      "type": ".css",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/js/components/Heatmap.js": {
+      "path": "kaayko:src/js/components/Heatmap.js",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "paddling-out"
+      ],
+      "size_bytes": 9676,
+      "line_count": 286,
+      "type": ".js",
+      "exports": [
+        "Heatmap"
+      ],
+      "classes": [
+        "Heatmap"
+      ],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/js/components/RatingHero.css": {
+      "path": "kaayko:src/js/components/RatingHero.css",
+      "role": "frontend",
+      "products": [
+        "shared"
+      ],
+      "size_bytes": 30976,
+      "line_count": 1518,
+      "type": ".css",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/js/components/RatingHero.js": {
+      "path": "kaayko:src/js/components/RatingHero.js",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "paddling-out"
+      ],
+      "size_bytes": 24576,
+      "line_count": 533,
+      "type": ".js",
+      "exports": [
+        "RatingHero"
+      ],
+      "classes": [
+        "RatingHero"
+      ],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/js/components/SafetyWarnings.css": {
+      "path": "kaayko:src/js/components/SafetyWarnings.css",
+      "role": "frontend",
+      "products": [
+        "shared"
+      ],
+      "size_bytes": 6513,
+      "line_count": 331,
+      "type": ".css",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/js/components/SafetyWarnings.js": {
+      "path": "kaayko:src/js/components/SafetyWarnings.js",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "paddling-out"
+      ],
+      "size_bytes": 2886,
+      "line_count": 88,
+      "type": ".js",
+      "exports": [
+        "SafetyWarnings"
+      ],
+      "classes": [
+        "SafetyWarnings"
+      ],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/js/header.js": {
+      "path": "kaayko:src/js/header.js",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "store"
+      ],
+      "size_bytes": 11025,
+      "line_count": 254,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/js/kaayko-main.js": {
+      "path": "kaayko:src/js/kaayko-main.js",
+      "role": "frontend",
+      "products": [
+        "shared"
+      ],
+      "size_bytes": 3547,
+      "line_count": 98,
+      "type": ".js",
+      "exports": [
+        "populateCarousel"
+      ],
+      "classes": [],
+      "imports": [
+        "./kaayko_apiClient.js"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/js/kaaykoFilterModal.js": {
+      "path": "kaayko:src/js/kaaykoFilterModal.js",
+      "role": "frontend",
+      "products": [
+        "shared"
+      ],
+      "size_bytes": 7618,
+      "line_count": 265,
+      "type": ".js",
+      "exports": [
+        "storeOriginalProducts",
+        "applyFilters",
+        "clearFiltersAndShowAll"
+      ],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/js/kaayko_apiClient.js": {
+      "path": "kaayko:src/js/kaayko_apiClient.js",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "store"
+      ],
+      "size_bytes": 3150,
+      "line_count": 95,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/js/kaayko_ui.js": {
+      "path": "kaayko:src/js/kaayko_ui.js",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "store"
+      ],
+      "size_bytes": 22031,
+      "line_count": 651,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "./kaayko_apiClient.js"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/js/main.js": {
+      "path": "kaayko:src/js/main.js",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "store"
+      ],
+      "size_bytes": 1950,
+      "line_count": 66,
+      "type": ".js",
+      "exports": [
+        "lakeModal"
+      ],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/js/paddlingout.js": {
+      "path": "kaayko:src/js/paddlingout.js",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "paddling-out"
+      ],
+      "size_bytes": 23510,
+      "line_count": 533,
+      "type": ".js",
+      "exports": [
+        "openYoutube",
+        "openLocation"
+      ],
+      "classes": [
+        "for"
+      ],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/js/prod-config.js": {
+      "path": "kaayko:src/js/prod-config.js",
+      "role": "frontend",
+      "products": [
+        "shared"
+      ],
+      "size_bytes": 398,
+      "line_count": 13,
+      "type": ".js",
+      "exports": [
+        "FORCE_PRODUCTION_MODE",
+        "PRODUCTION_API_BASE"
+      ],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/js/searchPage.js": {
+      "path": "kaayko:src/js/searchPage.js",
+      "role": "frontend",
+      "products": [
+        "shared"
+      ],
+      "size_bytes": 13776,
+      "line_count": 325,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/js/secretStore.js": {
+      "path": "kaayko:src/js/secretStore.js",
+      "role": "frontend",
+      "products": [
+        "shared"
+      ],
+      "size_bytes": 15156,
+      "line_count": 455,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/js/services/apiClient.js": {
+      "path": "kaayko:src/js/services/apiClient.js",
+      "role": "frontend",
+      "products": [
+        "shared"
+      ],
+      "size_bytes": 17728,
+      "line_count": 552,
+      "type": ".js",
+      "exports": [
+        "apiClient"
+      ],
+      "classes": [
+        "ApiClient"
+      ],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/js/services/dataTransformer.js": {
+      "path": "kaayko:src/js/services/dataTransformer.js",
+      "role": "frontend",
+      "products": [
+        "shared"
+      ],
+      "size_bytes": 2745,
+      "line_count": 91,
+      "type": ".js",
+      "exports": [
+        "dataTransformer"
+      ],
+      "classes": [
+        "DataTransformer"
+      ],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/js/sustainabilityAlert.js": {
+      "path": "kaayko:src/js/sustainabilityAlert.js",
+      "role": "frontend",
+      "products": [
+        "shared"
+      ],
+      "size_bytes": 2150,
+      "line_count": 68,
+      "type": ".js",
+      "exports": [
+        "showSustainabilityAlert"
+      ],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/js/testimonials.js": {
+      "path": "kaayko:src/js/testimonials.js",
+      "role": "frontend",
+      "products": [
+        "shared"
+      ],
+      "size_bytes": 6646,
+      "line_count": 148,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "./kaayko_apiClient.js"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/css/about.css": {
+      "path": "kaayko:src/css/about.css",
+      "role": "frontend",
+      "products": [
+        "shared"
+      ],
+      "size_bytes": 13700,
+      "line_count": 657,
+      "type": ".css",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/css/advancedModal.css": {
+      "path": "kaayko:src/css/advancedModal.css",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "paddling-out"
+      ],
+      "size_bytes": 8789,
+      "line_count": 456,
+      "type": ".css",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/css/header.css": {
+      "path": "kaayko:src/css/header.css",
+      "role": "frontend",
+      "products": [
+        "shared"
+      ],
+      "size_bytes": 15782,
+      "line_count": 565,
+      "type": ".css",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/css/kaaykoFilterModal.css": {
+      "path": "kaayko:src/css/kaaykoFilterModal.css",
+      "role": "frontend",
+      "products": [
+        "shared"
+      ],
+      "size_bytes": 9281,
+      "line_count": 211,
+      "type": ".css",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/css/paddlingout.css": {
+      "path": "kaayko:src/css/paddlingout.css",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "paddling-out"
+      ],
+      "size_bytes": 23061,
+      "line_count": 848,
+      "type": ".css",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/css/secretStore.css": {
+      "path": "kaayko:src/css/secretStore.css",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "store"
+      ],
+      "size_bytes": 4154,
+      "line_count": 146,
+      "type": ".css",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/css/storestyle.css": {
+      "path": "kaayko:src/css/storestyle.css",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "store"
+      ],
+      "size_bytes": 21212,
+      "line_count": 904,
+      "type": ".css",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/css/valentine.css": {
+      "path": "kaayko:src/css/valentine.css",
+      "role": "frontend",
+      "products": [
+        "shared"
+      ],
+      "size_bytes": 88565,
+      "line_count": 2555,
+      "type": ".css",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/clear-cache.html": {
+      "path": "kaayko:src/admin/clear-cache.html",
+      "role": "frontend",
+      "products": [
+        "shared"
+      ],
+      "size_bytes": 689,
+      "line_count": 28,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": "Clear Cache | Kaayko Kortex"
+    },
+    "kaayko:src/admin/css/kortex-base.css": {
+      "path": "kaayko:src/admin/css/kortex-base.css",
+      "role": "frontend",
+      "products": [
+        "shared"
+      ],
+      "size_bytes": 38313,
+      "line_count": 1888,
+      "type": ".css",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/js/config.js": {
+      "path": "kaayko:src/admin/js/config.js",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 4205,
+      "line_count": 154,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/js/kortex-core.js": {
+      "path": "kaayko:src/admin/js/kortex-core.js",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 15509,
+      "line_count": 482,
+      "type": ".js",
+      "exports": [
+        "syncToProduction"
+      ],
+      "classes": [
+        "removed"
+      ],
+      "imports": [
+        "./config.js",
+        "./utils.js",
+        "./ui.js"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/js/ui.js": {
+      "path": "kaayko:src/admin/js/ui.js",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 6155,
+      "line_count": 162,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "./utils.js"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/js/utils.js": {
+      "path": "kaayko:src/admin/js/utils.js",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 4313,
+      "line_count": 135,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/kortex.html": {
+      "path": "kaayko:src/admin/kortex.html",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 33925,
+      "line_count": 786,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [
+        "js/kortex-core.js?v=6.5.4"
+      ],
+      "title": "Kortex Dashboard - Enterprise Link Management | Kaayko"
+    },
+    "kaayko:src/admin/login.html": {
+      "path": "kaayko:src/admin/login.html",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 317,
+      "line_count": 13,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": "Redirecting to Kortex…"
+    },
+    "kaayko:src/admin/reset-environment.html": {
+      "path": "kaayko:src/admin/reset-environment.html",
+      "role": "frontend",
+      "products": [
+        "shared"
+      ],
+      "size_bytes": 1034,
+      "line_count": 30,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": "Reset Environment | Kaayko Kortex"
+    },
+    "kaayko:src/admin/tenant-registration.html": {
+      "path": "kaayko:src/admin/tenant-registration.html",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 15040,
+      "line_count": 512,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": "Kortex Tenant Registration - Enterprise Link Management | Kaayko"
+    },
+    "kaayko:src/admin/views/all-links/all-links.css": {
+      "path": "kaayko:src/admin/views/all-links/all-links.css",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 3954,
+      "line_count": 165,
+      "type": ".css",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/views/all-links/all-links.html": {
+      "path": "kaayko:src/admin/views/all-links/all-links.html",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 161,
+      "line_count": 4,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/views/all-links/all-links.js": {
+      "path": "kaayko:src/admin/views/all-links/all-links.js",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 4389,
+      "line_count": 174,
+      "type": ".js",
+      "exports": [
+        "toggleLink",
+        "editLink",
+        "copyLink",
+        "deleteLink",
+        "showQRSidebar"
+      ],
+      "classes": [],
+      "imports": [
+        "../../js/kortex-core.js",
+        "../../js/config.js"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/views/analytics/analytics.css": {
+      "path": "kaayko:src/admin/views/analytics/analytics.css",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 36213,
+      "line_count": 1964,
+      "type": ".css",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/views/analytics/analytics.html": {
+      "path": "kaayko:src/admin/views/analytics/analytics.html",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 2181,
+      "line_count": 65,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/views/analytics/analytics.js": {
+      "path": "kaayko:src/admin/views/analytics/analytics.js",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 30752,
+      "line_count": 849,
+      "type": ".js",
+      "exports": [
+        "exportAnalyticsCSV"
+      ],
+      "classes": [],
+      "imports": [
+        "../../js/kortex-core.js",
+        "../../js/config.js"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/views/billing/billing.css": {
+      "path": "kaayko:src/admin/views/billing/billing.css",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 8644,
+      "line_count": 470,
+      "type": ".css",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/views/billing/billing.html": {
+      "path": "kaayko:src/admin/views/billing/billing.html",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 7734,
+      "line_count": 208,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/views/billing/billing.js": {
+      "path": "kaayko:src/admin/views/billing/billing.js",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 16144,
+      "line_count": 549,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "../../js/kortex-core.js",
+        "../../js/config.js"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/views/create-link/create-link.css": {
+      "path": "kaayko:src/admin/views/create-link/create-link.css",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 15784,
+      "line_count": 780,
+      "type": ".css",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/views/create-link/create-link.html": {
+      "path": "kaayko:src/admin/views/create-link/create-link.html",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 161,
+      "line_count": 4,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/views/create-link/create-link.js": {
+      "path": "kaayko:src/admin/views/create-link/create-link.js",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 17846,
+      "line_count": 512,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "../../js/kortex-core.js",
+        "../../js/config.js"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/views/dashboard/dashboard.css": {
+      "path": "kaayko:src/admin/views/dashboard/dashboard.css",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 6168,
+      "line_count": 351,
+      "type": ".css",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/views/dashboard/dashboard.html": {
+      "path": "kaayko:src/admin/views/dashboard/dashboard.html",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 2938,
+      "line_count": 88,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/views/dashboard/dashboard.js": {
+      "path": "kaayko:src/admin/views/dashboard/dashboard.js",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 13862,
+      "line_count": 452,
+      "type": ".js",
+      "exports": [
+        "toggleLink",
+        "editLink",
+        "copyLink",
+        "deleteLink",
+        "showQRSidebar"
+      ],
+      "classes": [],
+      "imports": [
+        "../../js/kortex-core.js",
+        "../../js/config.js",
+        "../../js/utils.js"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/views/qr-codes/qr-codes.css": {
+      "path": "kaayko:src/admin/views/qr-codes/qr-codes.css",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 5397,
+      "line_count": 285,
+      "type": ".css",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/views/qr-codes/qr-codes.html": {
+      "path": "kaayko:src/admin/views/qr-codes/qr-codes.html",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 162,
+      "line_count": 4,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/views/qr-codes/qr-codes.js": {
+      "path": "kaayko:src/admin/views/qr-codes/qr-codes.js",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 6853,
+      "line_count": 218,
+      "type": ".js",
+      "exports": [
+        "showQRSidebar",
+        "closeQRSidebar",
+        "downloadQRCode",
+        "copyLink"
+      ],
+      "classes": [],
+      "imports": [
+        "../../js/kortex-core.js",
+        "../../js/config.js"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/views/tenant-onboarding/tenant-onboarding.css": {
+      "path": "kaayko:src/admin/views/tenant-onboarding/tenant-onboarding.css",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 16282,
+      "line_count": 788,
+      "type": ".css",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/views/tenant-onboarding/tenant-onboarding.html": {
+      "path": "kaayko:src/admin/views/tenant-onboarding/tenant-onboarding.html",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 1918,
+      "line_count": 61,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/admin/views/tenant-onboarding/tenant-onboarding.js": {
+      "path": "kaayko:src/admin/views/tenant-onboarding/tenant-onboarding.js",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 46485,
+      "line_count": 1437,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "../../js/kortex-core.js",
+        "../../js/config.js",
+        "../../js/utils.js"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/kreator/add-product.html": {
+      "path": "kaayko:src/kreator/add-product.html",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kreator"
+      ],
+      "size_bytes": 18982,
+      "line_count": 608,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": "Add Product - Kaayko Kreator"
+    },
+    "kaayko:src/kreator/admin/index.html": {
+      "path": "kaayko:src/kreator/admin/index.html",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kreator"
+      ],
+      "size_bytes": 28673,
+      "line_count": 1001,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": "Kreator Admin - Application Management"
+    },
+    "kaayko:src/kreator/apply-old-social.html": {
+      "path": "kaayko:src/kreator/apply-old-social.html",
+      "role": "frontend",
+      "products": [
+        "shared"
+      ],
+      "size_bytes": 28127,
+      "line_count": 878,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": "Become a Kreator - Join the Kaayko Creator Program"
+    },
+    "kaayko:src/kreator/apply.html": {
+      "path": "kaayko:src/kreator/apply.html",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kreator"
+      ],
+      "size_bytes": 46316,
+      "line_count": 1295,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": "Sell on Kaayko - Join the Kreator Marketplace"
+    },
+    "kaayko:src/kreator/check-status.html": {
+      "path": "kaayko:src/kreator/check-status.html",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kreator"
+      ],
+      "size_bytes": 13225,
+      "line_count": 431,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": "Check Application Status - Kaayko Kreator"
+    },
+    "kaayko:src/kreator/css/kreator-base.css": {
+      "path": "kaayko:src/kreator/css/kreator-base.css",
+      "role": "frontend",
+      "products": [
+        "shared"
+      ],
+      "size_bytes": 24976,
+      "line_count": 1195,
+      "type": ".css",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/kreator/dashboard-old-influencer.html": {
+      "path": "kaayko:src/kreator/dashboard-old-influencer.html",
+      "role": "frontend",
+      "products": [
+        "shared"
+      ],
+      "size_bytes": 31099,
+      "line_count": 987,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": "Kreator Dashboard - Kaayko"
+    },
+    "kaayko:src/kreator/dashboard.html": {
+      "path": "kaayko:src/kreator/dashboard.html",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kreator"
+      ],
+      "size_bytes": 54276,
+      "line_count": 1670,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": "Seller Dashboard - Kaayko Kreator"
+    },
+    "kaayko:src/kreator/forgot-password.html": {
+      "path": "kaayko:src/kreator/forgot-password.html",
+      "role": "frontend",
+      "products": [
+        "shared"
+      ],
+      "size_bytes": 7377,
+      "line_count": 275,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": "Forgot Password - Kaayko Kreator"
+    },
+    "kaayko:src/kreator/index.html": {
+      "path": "kaayko:src/kreator/index.html",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kreator"
+      ],
+      "size_bytes": 19222,
+      "line_count": 737,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": "Kaayko Kreator - Sell Your Products on Kaayko Store"
+    },
+    "kaayko:src/kreator/js/kreator-api.js": {
+      "path": "kaayko:src/kreator/js/kreator-api.js",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kreator"
+      ],
+      "size_bytes": 11573,
+      "line_count": 468,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/kreator/kreator-login.html": {
+      "path": "kaayko:src/kreator/kreator-login.html",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kreator"
+      ],
+      "size_bytes": 19140,
+      "line_count": 655,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [
+        "https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js",
+        "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"
+      ],
+      "title": "Kreator Login - Kaayko Seller Platform"
+    },
+    "kaayko:src/kreator/onboarding.html": {
+      "path": "kaayko:src/kreator/onboarding.html",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kreator"
+      ],
+      "size_bytes": 21092,
+      "line_count": 690,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": "Complete Your Kreator Account - Kaayko"
+    },
+    "kaayko:src/paddlingout.html": {
+      "path": "kaayko:src/paddlingout.html",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "paddling-out"
+      ],
+      "size_bytes": 10424,
+      "line_count": 250,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [
+        "/js/prod-config.js",
+        "js/main.js",
+        "js/header.js",
+        "js/secretStore.js",
+        "js/kaayko_ui.js",
+        "js/components/RatingHero.js",
+        "js/components/SafetyWarnings.js",
+        "js/components/Heatmap.js",
+        "js/services/apiClient.js",
+        "js/services/dataTransformer.js",
+        "js/advancedModal.js",
+        "js/paddlingout.js"
+      ],
+      "title": "Paddling Out - ML-Powered Paddle Conditions & Lake Forecast | Kaayko"
+    },
+    "kaayko:src/store.html": {
+      "path": "kaayko:src/store.html",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "store"
+      ],
+      "size_bytes": 9986,
+      "line_count": 221,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [
+        "/js/prod-config.js",
+        "https://js.stripe.com/v3/",
+        "js/secretStore.js",
+        "js/header.js",
+        "js/cartManager.js",
+        "js/sustainabilityAlert.js",
+        "js/kaayko_apiClient.js",
+        "js/kaayko-main.js",
+        "js/kaaykoFilterModal.js",
+        "js/kaayko_ui.js"
+      ],
+      "title": "Kaayko Store - Unique Outdoor Apparel, Paddling Gear & Adventure T-Shirts"
+    },
+    "kaayko:src/kortex.html": {
+      "path": "kaayko:src/kortex.html",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kortex"
+      ],
+      "size_bytes": 42241,
+      "line_count": 816,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [
+        "https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js",
+        "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"
+      ],
+      "title": "Kortex — Smart Link Infrastructure | Kaayko"
+    },
+    "kaayko:src/karma.html": {
+      "path": "kaayko:src/karma.html",
+      "role": "frontend",
+      "products": [
+        "shared",
+        "kamera-quest"
+      ],
+      "size_bytes": 7742,
+      "line_count": 227,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [
+        "/js/prod-config.js",
+        "js/header.js"
+      ],
+      "title": "Karma - Community Projects | Kaayko"
+    },
+    "kaayko:src/index.html": {
+      "path": "kaayko:src/index.html",
+      "role": "frontend",
+      "products": [
+        "store"
+      ],
+      "size_bytes": 2779,
+      "line_count": 62,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [
+        "/js/prod-config.js"
+      ],
+      "title": "Kaayko - ML-Powered Paddle Forecasts, Outdoor Gear & Paddling Community"
+    },
+    "kaayko:src/cart.html": {
+      "path": "kaayko:src/cart.html",
+      "role": "frontend",
+      "products": [
+        "store"
+      ],
+      "size_bytes": 35080,
+      "line_count": 907,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [
+        "/js/prod-config.js",
+        "js/header.js",
+        "https://js.stripe.com/v3/"
+      ],
+      "title": "Shopping Cart - Review Your Outdoor Gear | Kaayko Store"
+    },
+    "kaayko:src/order-success.html": {
+      "path": "kaayko:src/order-success.html",
+      "role": "frontend",
+      "products": [
+        "store"
+      ],
+      "size_bytes": 11354,
+      "line_count": 351,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [
+        "https://js.stripe.com/v3/"
+      ],
+      "title": "Order Confirmed - Thank You for Your Purchase | Kaayko Store"
+    },
+    "kaayko-api:functions/api/products/images.js": {
+      "path": "kaayko-api:functions/api/products/images.js",
+      "role": "backend",
+      "products": [
+        "store"
+      ],
+      "size_bytes": 2695,
+      "line_count": 96,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "express",
+        "firebase-admin"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/products/products.js": {
+      "path": "kaayko-api:functions/api/products/products.js",
+      "role": "backend",
+      "products": [
+        "store"
+      ],
+      "size_bytes": 6190,
+      "line_count": 171,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "express",
+        "firebase-admin"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/create-kortex-link.html": {
+      "path": "kaayko:src/create-kortex-link.html",
+      "role": "frontend",
+      "products": [
+        "kortex"
+      ],
+      "size_bytes": 22640,
+      "line_count": 721,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": "Create Smart Link - Kaayko Kortex Link Management"
+    },
+    "kaayko:src/redirect.html": {
+      "path": "kaayko:src/redirect.html",
+      "role": "frontend",
+      "products": [
+        "kortex"
+      ],
+      "size_bytes": 3189,
+      "line_count": 119,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": "Redirecting... | Kaayko"
+    },
+    "kaayko-api:functions/api/smartlinks/attributionService.js": {
+      "path": "kaayko-api:functions/api/smartlinks/attributionService.js",
+      "role": "backend",
+      "products": [
+        "kortex"
+      ],
+      "size_bytes": 8142,
+      "line_count": 303,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "firebase-admin",
+        "./clickTracking"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/smartlinks/clickTracking.js": {
+      "path": "kaayko-api:functions/api/smartlinks/clickTracking.js",
+      "role": "backend",
+      "products": [
+        "kortex"
+      ],
+      "size_bytes": 12307,
+      "line_count": 457,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "firebase-admin",
+        "crypto",
+        "firebase-admin/firestore",
+        "./webhookService"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/smartlinks/publicApiRouter.js": {
+      "path": "kaayko-api:functions/api/smartlinks/publicApiRouter.js",
+      "role": "backend",
+      "products": [
+        "kortex"
+      ],
+      "size_bytes": 10208,
+      "line_count": 396,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "./api/smartLinks/publicApiRouter",
+        "express",
+        "firebase-admin",
+        "./smartLinkService",
+        "../../middleware/apiKeyMiddleware",
+        "./clickTracking",
+        "./attributionService",
+        "./rateLimitService"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/smartlinks/publicRouter.js": {
+      "path": "kaayko-api:functions/api/smartlinks/publicRouter.js",
+      "role": "backend",
+      "products": [
+        "kortex"
+      ],
+      "size_bytes": 7274,
+      "line_count": 214,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "express",
+        "firebase-admin",
+        "./redirectHandler",
+        "./attributionService",
+        "./rateLimitService"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/smartlinks/rateLimitService.js": {
+      "path": "kaayko-api:functions/api/smartlinks/rateLimitService.js",
+      "role": "backend",
+      "products": [
+        "kortex"
+      ],
+      "size_bytes": 8778,
+      "line_count": 314,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "firebase-admin"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/smartlinks/redirectHandler.js": {
+      "path": "kaayko-api:functions/api/smartlinks/redirectHandler.js",
+      "role": "backend",
+      "products": [
+        "kortex"
+      ],
+      "size_bytes": 12403,
+      "line_count": 401,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "firebase-admin",
+        "firebase-admin/firestore",
+        "./clickTracking"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/smartlinks/smartLinkDefaults.js": {
+      "path": "kaayko-api:functions/api/smartlinks/smartLinkDefaults.js",
+      "role": "backend",
+      "products": [
+        "kortex"
+      ],
+      "size_bytes": 3519,
+      "line_count": 108,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/smartlinks/smartLinkEnrichment.js": {
+      "path": "kaayko-api:functions/api/smartlinks/smartLinkEnrichment.js",
+      "role": "backend",
+      "products": [
+        "kortex"
+      ],
+      "size_bytes": 4500,
+      "line_count": 163,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "firebase-admin"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/smartlinks/smartLinkService.js": {
+      "path": "kaayko-api:functions/api/smartlinks/smartLinkService.js",
+      "role": "backend",
+      "products": [
+        "kortex"
+      ],
+      "size_bytes": 7563,
+      "line_count": 284,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "firebase-admin",
+        "firebase-admin/firestore",
+        "./smartLinkValidation",
+        "./tenantContext"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/smartlinks/smartLinkValidation.js": {
+      "path": "kaayko-api:functions/api/smartlinks/smartLinkValidation.js",
+      "role": "backend",
+      "products": [
+        "kortex"
+      ],
+      "size_bytes": 2108,
+      "line_count": 84,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/smartlinks/smartLinks.js": {
+      "path": "kaayko-api:functions/api/smartlinks/smartLinks.js",
+      "role": "backend",
+      "products": [
+        "kortex"
+      ],
+      "size_bytes": 15657,
+      "line_count": 498,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "express",
+        "firebase-admin",
+        "firebase-admin/firestore",
+        "./redirectHandler",
+        "./smartLinkService",
+        "../../middleware/authMiddleware",
+        "./tenantContext",
+        "../../services/emailNotificationService",
+        "./webhookService",
+        "../../middleware/securityMiddleware"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/smartlinks/tenantContext.js": {
+      "path": "kaayko-api:functions/api/smartlinks/tenantContext.js",
+      "role": "backend",
+      "products": [
+        "kortex"
+      ],
+      "size_bytes": 7720,
+      "line_count": 265,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "firebase-admin"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/smartlinks/webhookService.js": {
+      "path": "kaayko-api:functions/api/smartlinks/webhookService.js",
+      "role": "backend",
+      "products": [
+        "kortex"
+      ],
+      "size_bytes": 10144,
+      "line_count": 393,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "firebase-admin",
+        "crypto"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/auth/authRoutes.js": {
+      "path": "kaayko-api:functions/api/auth/authRoutes.js",
+      "role": "backend",
+      "products": [
+        "kortex"
+      ],
+      "size_bytes": 2788,
+      "line_count": 109,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "express",
+        "firebase-admin",
+        "../../middleware/authMiddleware"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/billing/router.js": {
+      "path": "kaayko-api:functions/api/billing/router.js",
+      "role": "backend",
+      "products": [
+        "kortex"
+      ],
+      "size_bytes": 12669,
+      "line_count": 433,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "express",
+        "firebase-admin",
+        "../../middleware/authMiddleware",
+        "stripe"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/kreators/kreatorProductRoutes.js": {
+      "path": "kaayko-api:functions/api/kreators/kreatorProductRoutes.js",
+      "role": "backend",
+      "products": [
+        "kreator"
+      ],
+      "size_bytes": 12296,
+      "line_count": 428,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "express",
+        "firebase-admin",
+        "uuid",
+        "multer",
+        "../../middleware/kreatorAuthMiddleware"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/kreators/kreatorRoutes.js": {
+      "path": "kaayko-api:functions/api/kreators/kreatorRoutes.js",
+      "role": "backend",
+      "products": [
+        "kreator"
+      ],
+      "size_bytes": 28658,
+      "line_count": 1040,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "express",
+        "../../services/kreatorApplicationService",
+        "../../services/kreatorService",
+        "../../middleware/authMiddleware",
+        "../../middleware/kreatorAuthMiddleware",
+        "./testRoutes",
+        "./kreatorProductRoutes",
+        "firebase-admin",
+        "firebase-admin/firestore"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/kreators/testRoutes.js": {
+      "path": "kaayko-api:functions/api/kreators/testRoutes.js",
+      "role": "backend",
+      "products": [
+        "kreator"
+      ],
+      "size_bytes": 8744,
+      "line_count": 321,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "express",
+        "firebase-admin",
+        "firebase-admin/firestore",
+        "../../services/kreatorApplicationService",
+        "firebase/auth"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/karma/kameras/assets/kamera-enhancer.css": {
+      "path": "kaayko:src/karma/kameras/assets/kamera-enhancer.css",
+      "role": "frontend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 18340,
+      "line_count": 953,
+      "type": ".css",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/karma/kameras/assets/kamera-enhancer.js": {
+      "path": "kaayko:src/karma/kameras/assets/kamera-enhancer.js",
+      "role": "frontend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 64738,
+      "line_count": 1701,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/karma/kameras/assets/kamera-evf.css": {
+      "path": "kaayko:src/karma/kameras/assets/kamera-evf.css",
+      "role": "frontend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 31146,
+      "line_count": 1282,
+      "type": ".css",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/karma/kameras/assets/kamera-evf.js": {
+      "path": "kaayko:src/karma/kameras/assets/kamera-evf.js",
+      "role": "frontend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 59487,
+      "line_count": 1496,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko:src/karma/kameras/index.html": {
+      "path": "kaayko:src/karma/kameras/index.html",
+      "role": "frontend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 1836,
+      "line_count": 40,
+      "type": ".html",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [
+        "/karma/kameras/assets/kamera-evf.js?v=20260308-2"
+      ],
+      "title": "Kamera Quest"
+    },
+    "kaayko:src/assets/kamera-quest-og.svg": {
+      "path": "kaayko:src/assets/kamera-quest-og.svg",
+      "role": "frontend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 2712,
+      "line_count": 33,
+      "type": ".svg",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/audit/capabilitySchema.js": {
+      "path": "kaayko-api:functions/api/cameras/audit/capabilitySchema.js",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 2217,
+      "line_count": 127,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/audit/officialBodies.js": {
+      "path": "kaayko-api:functions/api/cameras/audit/officialBodies.js",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 7673,
+      "line_count": 127,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/camerasRoutes.js": {
+      "path": "kaayko-api:functions/api/cameras/camerasRoutes.js",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 2532,
+      "line_count": 62,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "express",
+        "firebase-admin"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_cameras/canon.json": {
+      "path": "kaayko-api:functions/api/cameras/data_cameras/canon.json",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 36599,
+      "line_count": 1054,
+      "type": ".json",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_cameras/sony.json": {
+      "path": "kaayko-api:functions/api/cameras/data_cameras/sony.json",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 31582,
+      "line_count": 870,
+      "type": ".json",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_lenses/canon.json": {
+      "path": "kaayko-api:functions/api/cameras/data_lenses/canon.json",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 66452,
+      "line_count": 2251,
+      "type": ".json",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_lenses/sony.json": {
+      "path": "kaayko-api:functions/api/cameras/data_lenses/sony.json",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 60067,
+      "line_count": 1998,
+      "type": ".json",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_presets/architecture.json": {
+      "path": "kaayko-api:functions/api/cameras/data_presets/architecture.json",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 14204,
+      "line_count": 382,
+      "type": ".json",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_presets/astro.json": {
+      "path": "kaayko-api:functions/api/cameras/data_presets/astro.json",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 17417,
+      "line_count": 458,
+      "type": ".json",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_presets/automotive.json": {
+      "path": "kaayko-api:functions/api/cameras/data_presets/automotive.json",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 6945,
+      "line_count": 163,
+      "type": ".json",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_presets/concert.json": {
+      "path": "kaayko-api:functions/api/cameras/data_presets/concert.json",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 7147,
+      "line_count": 163,
+      "type": ".json",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_presets/drone.json": {
+      "path": "kaayko-api:functions/api/cameras/data_presets/drone.json",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 6992,
+      "line_count": 165,
+      "type": ".json",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_presets/event.json": {
+      "path": "kaayko-api:functions/api/cameras/data_presets/event.json",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 13959,
+      "line_count": 382,
+      "type": ".json",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_presets/fashion.json": {
+      "path": "kaayko-api:functions/api/cameras/data_presets/fashion.json",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 7144,
+      "line_count": 163,
+      "type": ".json",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_presets/food.json": {
+      "path": "kaayko-api:functions/api/cameras/data_presets/food.json",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 6848,
+      "line_count": 164,
+      "type": ".json",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_presets/goldenhour.json": {
+      "path": "kaayko-api:functions/api/cameras/data_presets/goldenhour.json",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 13866,
+      "line_count": 382,
+      "type": ".json",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_presets/index.js": {
+      "path": "kaayko-api:functions/api/cameras/data_presets/index.js",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 981,
+      "line_count": 24,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "./portrait.json",
+        "./landscape.json",
+        "./astro.json",
+        "./wildlife.json",
+        "./sports.json",
+        "./macro.json",
+        "./indoorlowlight.json",
+        "./goldenhour.json",
+        "./street.json",
+        "./architecture.json",
+        "./event.json",
+        "./travel.json",
+        "./food.json",
+        "./realestate.json",
+        "./automotive.json",
+        "./product.json",
+        "./concert.json",
+        "./underwater.json",
+        "./drone.json",
+        "./newborn.json",
+        "./fashion.json"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_presets/indoorlowlight.json": {
+      "path": "kaayko-api:functions/api/cameras/data_presets/indoorlowlight.json",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 13867,
+      "line_count": 382,
+      "type": ".json",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_presets/landscape.json": {
+      "path": "kaayko-api:functions/api/cameras/data_presets/landscape.json",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 20476,
+      "line_count": 559,
+      "type": ".json",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_presets/macro.json": {
+      "path": "kaayko-api:functions/api/cameras/data_presets/macro.json",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 16807,
+      "line_count": 434,
+      "type": ".json",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_presets/newborn.json": {
+      "path": "kaayko-api:functions/api/cameras/data_presets/newborn.json",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 7127,
+      "line_count": 164,
+      "type": ".json",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_presets/portrait.json": {
+      "path": "kaayko-api:functions/api/cameras/data_presets/portrait.json",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 18718,
+      "line_count": 510,
+      "type": ".json",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_presets/product.json": {
+      "path": "kaayko-api:functions/api/cameras/data_presets/product.json",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 6947,
+      "line_count": 163,
+      "type": ".json",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_presets/realestate.json": {
+      "path": "kaayko-api:functions/api/cameras/data_presets/realestate.json",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 6952,
+      "line_count": 163,
+      "type": ".json",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_presets/sports.json": {
+      "path": "kaayko-api:functions/api/cameras/data_presets/sports.json",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 14136,
+      "line_count": 362,
+      "type": ".json",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_presets/street.json": {
+      "path": "kaayko-api:functions/api/cameras/data_presets/street.json",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 14031,
+      "line_count": 382,
+      "type": ".json",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_presets/travel.json": {
+      "path": "kaayko-api:functions/api/cameras/data_presets/travel.json",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 14081,
+      "line_count": 382,
+      "type": ".json",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_presets/underwater.json": {
+      "path": "kaayko-api:functions/api/cameras/data_presets/underwater.json",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 7012,
+      "line_count": 163,
+      "type": ".json",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/data_presets/wildlife.json": {
+      "path": "kaayko-api:functions/api/cameras/data_presets/wildlife.json",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 13966,
+      "line_count": 361,
+      "type": ".json",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/engine/evCalc.js": {
+      "path": "kaayko-api:functions/api/cameras/engine/evCalc.js",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 1765,
+      "line_count": 56,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/engine/presetEngine.js": {
+      "path": "kaayko-api:functions/api/cameras/engine/presetEngine.js",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 5245,
+      "line_count": 123,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "../data_presets/index",
+        "./evCalc",
+        "./sessionAdvisor"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/engine/sessionAdvisor.js": {
+      "path": "kaayko-api:functions/api/cameras/engine/sessionAdvisor.js",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 42977,
+      "line_count": 929,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "./evCalc"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/lensesRoutes.js": {
+      "path": "kaayko-api:functions/api/cameras/lensesRoutes.js",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 1622,
+      "line_count": 44,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "express",
+        "firebase-admin"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/presetsRoutes.js": {
+      "path": "kaayko-api:functions/api/cameras/presetsRoutes.js",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 2629,
+      "line_count": 84,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "express",
+        "path",
+        "./validate",
+        "./engine/presetEngine",
+        "./data_presets/index"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/smartRoutes.js": {
+      "path": "kaayko-api:functions/api/cameras/smartRoutes.js",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 4901,
+      "line_count": 139,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [
+        "express",
+        "path",
+        "./validate",
+        "./engine/presetEngine",
+        "./data_presets/index"
+      ],
+      "script_sources": [],
+      "title": null
+    },
+    "kaayko-api:functions/api/cameras/validate.js": {
+      "path": "kaayko-api:functions/api/cameras/validate.js",
+      "role": "backend",
+      "products": [
+        "kamera-quest"
+      ],
+      "size_bytes": 3915,
+      "line_count": 107,
+      "type": ".js",
+      "exports": [],
+      "classes": [],
+      "imports": [],
+      "script_sources": [],
+      "title": null
+    }
+  },
+  "routes": {
+    "/api/**": {
+      "product": "shared",
+      "product_name": "Shared Frontend Craft",
+      "definition": "/api/**"
+    },
+    "/l/**": {
+      "product": "shared",
+      "product_name": "Shared Frontend Craft",
+      "definition": "/l/**"
+    },
+    "/resolve": {
+      "product": "kortex",
+      "product_name": "KORTEX Platform",
+      "definition": "/resolve"
+    },
+    "/health": {
+      "product": "shared",
+      "product_name": "Shared Frontend Craft",
+      "definition": "/health"
+    },
+    "GET /products": {
+      "product": "store",
+      "product_name": "Store / Commerce",
+      "definition": "GET /products"
+    },
+    "GET /products/:id": {
+      "product": "store",
+      "product_name": "Store / Commerce",
+      "definition": "GET /products/:id"
+    },
+    "POST /products/:id/vote": {
+      "product": "store",
+      "product_name": "Store / Commerce",
+      "definition": "POST /products/:id/vote"
+    },
+    "GET /images/:productId/:fileName": {
+      "product": "store",
+      "product_name": "Store / Commerce",
+      "definition": "GET /images/:productId/:fileName"
+    },
+    "POST /createPaymentIntent": {
+      "product": "store",
+      "product_name": "Store / Commerce",
+      "definition": "POST /createPaymentIntent"
+    },
+    "POST /createPaymentIntent/updateEmail": {
+      "product": "store",
+      "product_name": "Store / Commerce",
+      "definition": "POST /createPaymentIntent/updateEmail"
+    },
+    "GET /paddlingOut": {
+      "product": "paddling-out",
+      "product_name": "Paddling Out",
+      "definition": "GET /paddlingOut"
+    },
+    "GET /paddlingOut/:id": {
+      "product": "paddling-out",
+      "product_name": "Paddling Out",
+      "definition": "GET /paddlingOut/:id"
+    },
+    "GET /paddleScore": {
+      "product": "paddling-out",
+      "product_name": "Paddling Out",
+      "definition": "GET /paddleScore"
+    },
+    "GET /fastForecast": {
+      "product": "paddling-out",
+      "product_name": "Paddling Out",
+      "definition": "GET /fastForecast"
+    },
+    "GET /forecast": {
+      "product": "paddling-out",
+      "product_name": "Paddling Out",
+      "definition": "GET /forecast"
+    },
+    "GET /nearbyWater": {
+      "product": "paddling-out",
+      "product_name": "Paddling Out",
+      "definition": "GET /nearbyWater"
+    },
+    "/smartlinks/*": {
+      "product": "kortex",
+      "product_name": "KORTEX Platform",
+      "definition": "/smartlinks/*"
+    },
+    "/auth/*": {
+      "product": "kortex",
+      "product_name": "KORTEX Platform",
+      "definition": "/auth/*"
+    },
+    "/billing/*": {
+      "product": "kortex",
+      "product_name": "KORTEX Platform",
+      "definition": "/billing/*"
+    },
+    "/l/:id": {
+      "product": "kortex",
+      "product_name": "KORTEX Platform",
+      "definition": "/l/:id"
+    },
+    "/kreators/apply": {
+      "product": "kreator",
+      "product_name": "Kreator",
+      "definition": "/kreators/apply"
+    },
+    "/kreators/applications/:id/status": {
+      "product": "kreator",
+      "product_name": "Kreator",
+      "definition": "/kreators/applications/:id/status"
+    },
+    "/kreators/onboarding/verify": {
+      "product": "kreator",
+      "product_name": "Kreator",
+      "definition": "/kreators/onboarding/verify"
+    },
+    "/kreators/onboarding/complete": {
+      "product": "kreator",
+      "product_name": "Kreator",
+      "definition": "/kreators/onboarding/complete"
+    },
+    "/kreators/auth/google/*": {
+      "product": "kreator",
+      "product_name": "Kreator",
+      "definition": "/kreators/auth/google/*"
+    },
+    "/kreators/me": {
+      "product": "kreator",
+      "product_name": "Kreator",
+      "definition": "/kreators/me"
+    },
+    "/kreators/admin/*": {
+      "product": "kreator",
+      "product_name": "Kreator",
+      "definition": "/kreators/admin/*"
+    },
+    "/kreators/products": {
+      "product": "kreator",
+      "product_name": "Kreator",
+      "definition": "/kreators/products"
+    },
+    "GET /presets/meta": {
+      "product": "kamera-quest",
+      "product_name": "Kamera Quest",
+      "definition": "GET /presets/meta"
+    },
+    "GET /cameras/:brand": {
+      "product": "kamera-quest",
+      "product_name": "Kamera Quest",
+      "definition": "GET /cameras/:brand"
+    },
+    "GET /cameras/:brand/:modelName/lenses": {
+      "product": "kamera-quest",
+      "product_name": "Kamera Quest",
+      "definition": "GET /cameras/:brand/:modelName/lenses"
+    },
+    "POST /presets/classic": {
+      "product": "kamera-quest",
+      "product_name": "Kamera Quest",
+      "definition": "POST /presets/classic"
+    },
+    "POST /presets/smart": {
+      "product": "kamera-quest",
+      "product_name": "Kamera Quest",
+      "definition": "POST /presets/smart"
+    }
+  },
+  "shared_modules": {
+    "kaayko:src/js/about-dynamic.js": {
+      "used_by_products": [
+        "shared",
+        "paddling-out"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 189
+    },
+    "kaayko:src/js/advancedModal.js": {
+      "used_by_products": [
+        "shared",
+        "paddling-out"
+      ],
+      "exports": [
+        "advancedModal"
+      ],
+      "classes": [
+        "AdvancedLakeModal"
+      ],
+      "role": "frontend",
+      "line_count": 459
+    },
+    "kaayko:src/js/cartManager.js": {
+      "used_by_products": [
+        "shared",
+        "store"
+      ],
+      "exports": [],
+      "classes": [
+        "CartManager"
+      ],
+      "role": "frontend",
+      "line_count": 145
+    },
+    "kaayko:src/js/components/Heatmap.js": {
+      "used_by_products": [
+        "shared",
+        "paddling-out"
+      ],
+      "exports": [
+        "Heatmap"
+      ],
+      "classes": [
+        "Heatmap"
+      ],
+      "role": "frontend",
+      "line_count": 286
+    },
+    "kaayko:src/js/components/RatingHero.js": {
+      "used_by_products": [
+        "shared",
+        "paddling-out"
+      ],
+      "exports": [
+        "RatingHero"
+      ],
+      "classes": [
+        "RatingHero"
+      ],
+      "role": "frontend",
+      "line_count": 533
+    },
+    "kaayko:src/js/components/SafetyWarnings.js": {
+      "used_by_products": [
+        "shared",
+        "paddling-out"
+      ],
+      "exports": [
+        "SafetyWarnings"
+      ],
+      "classes": [
+        "SafetyWarnings"
+      ],
+      "role": "frontend",
+      "line_count": 88
+    },
+    "kaayko:src/js/header.js": {
+      "used_by_products": [
+        "shared",
+        "store"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 254
+    },
+    "kaayko:src/js/kaayko_apiClient.js": {
+      "used_by_products": [
+        "shared",
+        "store"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 95
+    },
+    "kaayko:src/js/kaayko_ui.js": {
+      "used_by_products": [
+        "shared",
+        "store"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 651
+    },
+    "kaayko:src/js/main.js": {
+      "used_by_products": [
+        "shared",
+        "store"
+      ],
+      "exports": [
+        "lakeModal"
+      ],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 66
+    },
+    "kaayko:src/js/paddlingout.js": {
+      "used_by_products": [
+        "shared",
+        "paddling-out"
+      ],
+      "exports": [
+        "openYoutube",
+        "openLocation"
+      ],
+      "classes": [
+        "for"
+      ],
+      "role": "frontend",
+      "line_count": 533
+    },
+    "kaayko:src/css/advancedModal.css": {
+      "used_by_products": [
+        "shared",
+        "paddling-out"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 456
+    },
+    "kaayko:src/css/paddlingout.css": {
+      "used_by_products": [
+        "shared",
+        "paddling-out"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 848
+    },
+    "kaayko:src/css/secretStore.css": {
+      "used_by_products": [
+        "shared",
+        "store"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 146
+    },
+    "kaayko:src/css/storestyle.css": {
+      "used_by_products": [
+        "shared",
+        "store"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 904
+    },
+    "kaayko:src/admin/js/config.js": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 154
+    },
+    "kaayko:src/admin/js/kortex-core.js": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [
+        "syncToProduction"
+      ],
+      "classes": [
+        "removed"
+      ],
+      "role": "frontend",
+      "line_count": 482
+    },
+    "kaayko:src/admin/js/ui.js": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 162
+    },
+    "kaayko:src/admin/js/utils.js": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 135
+    },
+    "kaayko:src/admin/kortex.html": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 786
+    },
+    "kaayko:src/admin/login.html": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 13
+    },
+    "kaayko:src/admin/tenant-registration.html": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 512
+    },
+    "kaayko:src/admin/views/all-links/all-links.css": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 165
+    },
+    "kaayko:src/admin/views/all-links/all-links.html": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 4
+    },
+    "kaayko:src/admin/views/all-links/all-links.js": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [
+        "toggleLink",
+        "editLink",
+        "copyLink",
+        "deleteLink",
+        "showQRSidebar"
+      ],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 174
+    },
+    "kaayko:src/admin/views/analytics/analytics.css": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 1964
+    },
+    "kaayko:src/admin/views/analytics/analytics.html": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 65
+    },
+    "kaayko:src/admin/views/analytics/analytics.js": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [
+        "exportAnalyticsCSV"
+      ],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 849
+    },
+    "kaayko:src/admin/views/billing/billing.css": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 470
+    },
+    "kaayko:src/admin/views/billing/billing.html": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 208
+    },
+    "kaayko:src/admin/views/billing/billing.js": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 549
+    },
+    "kaayko:src/admin/views/create-link/create-link.css": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 780
+    },
+    "kaayko:src/admin/views/create-link/create-link.html": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 4
+    },
+    "kaayko:src/admin/views/create-link/create-link.js": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 512
+    },
+    "kaayko:src/admin/views/dashboard/dashboard.css": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 351
+    },
+    "kaayko:src/admin/views/dashboard/dashboard.html": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 88
+    },
+    "kaayko:src/admin/views/dashboard/dashboard.js": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [
+        "toggleLink",
+        "editLink",
+        "copyLink",
+        "deleteLink",
+        "showQRSidebar"
+      ],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 452
+    },
+    "kaayko:src/admin/views/qr-codes/qr-codes.css": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 285
+    },
+    "kaayko:src/admin/views/qr-codes/qr-codes.html": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 4
+    },
+    "kaayko:src/admin/views/qr-codes/qr-codes.js": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [
+        "showQRSidebar",
+        "closeQRSidebar",
+        "downloadQRCode",
+        "copyLink"
+      ],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 218
+    },
+    "kaayko:src/admin/views/tenant-onboarding/tenant-onboarding.css": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 788
+    },
+    "kaayko:src/admin/views/tenant-onboarding/tenant-onboarding.html": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 61
+    },
+    "kaayko:src/admin/views/tenant-onboarding/tenant-onboarding.js": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 1437
+    },
+    "kaayko:src/kreator/add-product.html": {
+      "used_by_products": [
+        "shared",
+        "kreator"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 608
+    },
+    "kaayko:src/kreator/admin/index.html": {
+      "used_by_products": [
+        "shared",
+        "kreator"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 1001
+    },
+    "kaayko:src/kreator/apply.html": {
+      "used_by_products": [
+        "shared",
+        "kreator"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 1295
+    },
+    "kaayko:src/kreator/check-status.html": {
+      "used_by_products": [
+        "shared",
+        "kreator"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 431
+    },
+    "kaayko:src/kreator/dashboard.html": {
+      "used_by_products": [
+        "shared",
+        "kreator"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 1670
+    },
+    "kaayko:src/kreator/index.html": {
+      "used_by_products": [
+        "shared",
+        "kreator"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 737
+    },
+    "kaayko:src/kreator/js/kreator-api.js": {
+      "used_by_products": [
+        "shared",
+        "kreator"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 468
+    },
+    "kaayko:src/kreator/kreator-login.html": {
+      "used_by_products": [
+        "shared",
+        "kreator"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 655
+    },
+    "kaayko:src/kreator/onboarding.html": {
+      "used_by_products": [
+        "shared",
+        "kreator"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 690
+    },
+    "kaayko:src/paddlingout.html": {
+      "used_by_products": [
+        "shared",
+        "paddling-out"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 250
+    },
+    "kaayko:src/store.html": {
+      "used_by_products": [
+        "shared",
+        "store"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 221
+    },
+    "kaayko:src/kortex.html": {
+      "used_by_products": [
+        "shared",
+        "kortex"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 816
+    },
+    "kaayko:src/karma.html": {
+      "used_by_products": [
+        "shared",
+        "kamera-quest"
+      ],
+      "exports": [],
+      "classes": [],
+      "role": "frontend",
+      "line_count": 227
+    }
+  },
+  "conventions": [
+    "Static HTML pages — no frontend build system or bundler",
+    "Shared JS in src/js/ is loaded via <script> tags, not ES module imports",
+    "Backend routes are mounted in functions/index.js",
+    "All persistent state lives in Firestore collections",
+    "Assets served from src/ via Firebase Hosting",
+    "No frontend test runner — quality gates use backend tests and static analysis",
+    "Tenant isolation is enforced in backend middleware, not frontend",
+    "Product-specific CSS lives alongside product HTML pages",
+    "Window exports (window.X = ...) are the public API for shared JS modules",
+    "API client in kaayko_apiClient.js is the single entry point for all backend calls"
+  ]
+}

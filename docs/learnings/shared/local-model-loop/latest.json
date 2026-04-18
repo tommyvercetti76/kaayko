@@ -1,0 +1,58 @@
+{
+  "automation": "local-model-loop",
+  "timestamp": "2026-04-17T22:19:42.813Z",
+  "run_id": "20260417-221603z-shared-analyse-frontend-reduce-duplication-and-a",
+  "track": "shared",
+  "status": "changes_requested",
+  "learnings_published_at": "2026-04-17T22:19:42.813Z",
+  "files_changed": [
+    "kaayko-api:firebase-debug.log",
+    "kaayko:README.md",
+    "kaayko:automation/",
+    "kaayko:docs/PRODUCT_AUTOMATION_PLAN.md",
+    "kaayko:docs/learnings/shared/local-model-loop/"
+  ],
+  "backend_routes_checked": [],
+  "frontend_surfaces_checked": [],
+  "tests_run": [
+    "Frontend static asset refs (node scripts/check-static-asset-refs.js)",
+    "Backend smoke tests (npm run test:smoke)",
+    "Local model analysis inspected 4 files and applied 0 safe edit(s)."
+  ],
+  "security_findings": [],
+  "debt_findings": [
+    {
+      "severity": "low",
+      "status": "open",
+      "title": "Potential for Code Duplication in Safety Warnings Component",
+      "detail": "The `SafetyWarnings` component has a method `getSeverityClass` which is used to determine the class based on warning severity. This logic could be extracted and reused in other components where similar functionality is needed.",
+      "category": "duplication"
+    },
+    {
+      "severity": "low",
+      "status": "open",
+      "title": "Potential for Code Duplication in Heatmap Component",
+      "detail": "The `Heatmap` component has a method `getRatingColor` which assigns colors based on a rating scale. This logic could be reused to ensure consistency across different visual representations of ratings.",
+      "category": "duplication"
+    },
+    {
+      "severity": "low",
+      "status": "open",
+      "title": "Potential for Code Duplication in Header Script",
+      "detail": "The `initializeDarkMode`, `populateMenu`, and other functions across different parts of the application like `header.js` could benefit from extracting common logic to improve maintainability.",
+      "category": "duplication"
+    },
+    {
+      "severity": "medium",
+      "status": "open",
+      "title": "Agent edit proposals rejected by guardrails",
+      "detail": "kaayko:src/js/components/SafetyWarnings.js: Suggested rewrite removes too much of the original file. | kaayko:src/js/components/Heatmap.js: Suggested rewrite removes too much of the original file.",
+      "category": "maintainability"
+    }
+  ],
+  "ux_findings": [],
+  "next_actions": [
+    "Capture real product-scope code changes before treating this run as an improvement or gold training example.",
+    "Further analysis is recommended to identify any additional areas where code duplication exists."
+  ]
+}
