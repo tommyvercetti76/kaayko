@@ -1,0 +1,209 @@
+{
+  "schema_version": "local-model-loop.v1",
+  "training_policy": {
+    "minimum_accuracy_score": 90,
+    "minimum_maintainability_score": 85,
+    "require_quality_gates_passed": true,
+    "disqualifying_open_severities": [
+      "critical",
+      "high"
+    ]
+  },
+  "auto_review_policy": {
+    "base_accuracy_score": 96,
+    "base_maintainability_score": 93,
+    "base_confidence_score": 88,
+    "minimum_confidence_for_auto_approval": 80,
+    "auto_training_approval_if_clean": true,
+    "large_change_changed_files_threshold": 18,
+    "large_change_churn_threshold": 500,
+    "gold_changed_files_threshold": 24,
+    "gold_churn_threshold": 700
+  },
+  "repos": {
+    "kaayko": {
+      "path": ".",
+      "role": "frontend"
+    },
+    "kaayko-api": {
+      "path": "../kaayko-api",
+      "role": "backend"
+    }
+  },
+  "tracks": {
+    "store": {
+      "description": "Store and checkout work across the static frontend and API.",
+      "learnings_slug": "store",
+      "repos": [
+        "kaayko",
+        "kaayko-api"
+      ],
+      "quality_gates": [
+        {
+          "id": "frontend-static-assets",
+          "label": "Frontend static asset refs",
+          "repo": "kaayko",
+          "cwd": ".",
+          "command": "node scripts/check-static-asset-refs.js"
+        },
+        {
+          "id": "store-api-tests",
+          "label": "Store API tests",
+          "repo": "kaayko-api",
+          "cwd": "functions",
+          "command": "npm run test:store"
+        }
+      ],
+      "risk_checks": [
+        "Checkout flow still matches the mounted backend contract.",
+        "Cart and order-success pages do not assume unmounted routes.",
+        "No hardcoded production-only assumptions were added without a note."
+      ]
+    },
+    "paddling-out": {
+      "description": "Weather, nearby water, paddle score, and reliability work.",
+      "learnings_slug": "paddling-out",
+      "repos": [
+        "kaayko",
+        "kaayko-api"
+      ],
+      "quality_gates": [
+        {
+          "id": "frontend-static-assets",
+          "label": "Frontend static asset refs",
+          "repo": "kaayko",
+          "cwd": ".",
+          "command": "node scripts/check-static-asset-refs.js"
+        },
+        {
+          "id": "paddling-out-weather-tests",
+          "label": "Paddling Out weather tests",
+          "repo": "kaayko-api",
+          "cwd": "functions",
+          "command": "node ./node_modules/jest/bin/jest.js --runInBand __tests__/weather-paddle-score.test.js --forceExit --detectOpenHandles"
+        }
+      ],
+      "risk_checks": [
+        "Cache behavior remains correct on both warm and cold paths.",
+        "Input normalization changes do not silently shift score outputs.",
+        "Frontend messaging stays aligned with backend data confidence."
+      ]
+    },
+    "kortex": {
+      "description": "Smart links, redirects, billing, analytics, and tenant-facing admin work.",
+      "learnings_slug": "kortex",
+      "repos": [
+        "kaayko",
+        "kaayko-api"
+      ],
+      "quality_gates": [
+        {
+          "id": "frontend-static-assets",
+          "label": "Frontend static asset refs",
+          "repo": "kaayko",
+          "cwd": ".",
+          "command": "node scripts/check-static-asset-refs.js"
+        },
+        {
+          "id": "kortex-api-tests",
+          "label": "KORTEX API tests",
+          "repo": "kaayko-api",
+          "cwd": "functions",
+          "command": "npm run test:kortex"
+        }
+      ],
+      "risk_checks": [
+        "Tenant isolation is preserved across all changed paths.",
+        "Public redirect flows stay separate from admin-only mutations.",
+        "Billing and analytics behavior is captured in the review notes."
+      ]
+    },
+    "kreator": {
+      "description": "Creator onboarding, dashboard, publishing, and admin review work.",
+      "learnings_slug": "kreator",
+      "repos": [
+        "kaayko",
+        "kaayko-api"
+      ],
+      "quality_gates": [
+        {
+          "id": "frontend-static-assets",
+          "label": "Frontend static asset refs",
+          "repo": "kaayko",
+          "cwd": ".",
+          "command": "node scripts/check-static-asset-refs.js"
+        },
+        {
+          "id": "kreator-api-tests",
+          "label": "Kreator API tests",
+          "repo": "kaayko-api",
+          "cwd": "functions",
+          "command": "npm run test:kreator"
+        }
+      ],
+      "risk_checks": [
+        "Onboarding friction is documented, not just code-level correctness.",
+        "Mounted routes in functions/index.js still match frontend expectations.",
+        "Auth and approval controls remain explicit in the review."
+      ]
+    },
+    "kamera-quest": {
+      "description": "Camera catalog, evidence, presets, and session-advice work.",
+      "learnings_slug": "kamera-quest",
+      "repos": [
+        "kaayko",
+        "kaayko-api"
+      ],
+      "quality_gates": [
+        {
+          "id": "frontend-static-assets",
+          "label": "Frontend static asset refs",
+          "repo": "kaayko",
+          "cwd": ".",
+          "command": "node scripts/check-static-asset-refs.js"
+        },
+        {
+          "id": "kamera-predeploy-check",
+          "label": "Kamera predeploy check",
+          "repo": "kaayko-api",
+          "cwd": "functions",
+          "command": "npm run predeploy:check"
+        }
+      ],
+      "risk_checks": [
+        "Catalog changes preserve provenance and verification quality.",
+        "Recommendation logic changes are backed by explicit evidence notes.",
+        "Representative presets were checked before training approval."
+      ]
+    },
+    "shared": {
+      "description": "Cross-product frontend quality, shared utilities, and portfolio debt reduction.",
+      "learnings_slug": "shared",
+      "repos": [
+        "kaayko",
+        "kaayko-api"
+      ],
+      "quality_gates": [
+        {
+          "id": "frontend-static-assets",
+          "label": "Frontend static asset refs",
+          "repo": "kaayko",
+          "cwd": ".",
+          "command": "node scripts/check-static-asset-refs.js"
+        },
+        {
+          "id": "backend-smoke-tests",
+          "label": "Backend smoke tests",
+          "repo": "kaayko-api",
+          "cwd": "functions",
+          "command": "npm run test:smoke"
+        }
+      ],
+      "risk_checks": [
+        "Shared code does not erase product-specific behavior.",
+        "Debt reduction work is paired with validation evidence.",
+        "Training data only includes reviewed and context-rich runs."
+      ]
+    }
+  }
+}

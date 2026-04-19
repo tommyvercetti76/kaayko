@@ -68,3 +68,12 @@ node_modules/
 # Backup files
 *.backup
 v5-backup/
+
+# Claude / AI assistant local settings
+.claude/
+
+# Automation — ephemeral run output, generated dashboard, queue state, datasets
+automation/runs/
+automation/dashboard/
+automation/datasets/
+automation/queue/

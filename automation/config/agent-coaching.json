@@ -1,0 +1,273 @@
+{
+  "portfolio_overview": "Kaayko is a static Firebase-hosted frontend portfolio with multiple product lines sharing browser JavaScript, HTML pages, and backend routes mounted from kaayko-api. Safe agent work must preserve live route behavior, avoid inventing backend contracts, and prefer small, context-aware improvements over generic refactors.",
+  "track_profiles": {
+    "store": ["shared", "store", "kreator"],
+    "paddling-out": ["shared", "paddling-out"],
+    "kortex": ["shared", "kortex"],
+    "kreator": ["shared", "kreator", "store"],
+    "kamera-quest": ["shared", "kamera-quest"],
+    "kutz": ["shared", "kutz"],
+    "shared": ["shared", "store", "paddling-out", "kortex", "kreator", "kamera-quest", "kutz"]
+  },
+  "profiles": {
+    "shared": {
+      "name": "Shared Frontend Craft",
+      "purpose": "Own shared frontend quality, reuse, consistency, and debt reduction without destabilizing live product logic.",
+      "keywords": ["frontend", "shared", "duplication", "drift", "refactor", "ui", "header", "styles"],
+      "source_docs": [
+        "README.md",
+        "docs/PRODUCT_AUTOMATION_PLAN.md"
+      ],
+      "frontend_paths": [
+        "kaayko:src/js/",
+        "kaayko:src/css/",
+        "kaayko:src/admin/",
+        "kaayko:src/kreator/",
+        "kaayko:src/paddlingout.html",
+        "kaayko:src/store.html",
+        "kaayko:src/kortex.html",
+        "kaayko:src/karma.html"
+      ],
+      "backend_routes": [
+        "/api/**",
+        "/l/**",
+        "/resolve",
+        "/health"
+      ],
+      "validation_focus": [
+        "Preserve existing route behavior and page entrypoints.",
+        "Do not invent a build system or new packaging assumptions.",
+        "Prefer extracting repeated literals or helper logic over broad rewrites."
+      ],
+      "risk_focus": [
+        "Hardcoded production API URLs drift across pages.",
+        "There is no frontend test runner in this repository.",
+        "Shared improvements must not erase product-specific behavior."
+      ]
+    },
+    "store": {
+      "name": "Store / Commerce",
+      "purpose": "Protect the browsing, cart, checkout, and order-success funnel as one paired frontend/backend flow.",
+      "keywords": ["store", "commerce", "checkout", "cart", "payment", "stripe", "product", "order"],
+      "source_docs": [
+        "README.md",
+        "docs/products/STORE.md"
+      ],
+      "frontend_paths": [
+        "kaayko:src/index.html",
+        "kaayko:src/store.html",
+        "kaayko:src/cart.html",
+        "kaayko:src/order-success.html",
+        "kaayko:src/js/kaayko_apiClient.js",
+        "kaayko:src/js/kaayko_ui.js",
+        "kaayko:src/js/cartManager.js",
+        "kaayko:src/js/main.js",
+        "kaayko:src/js/header.js",
+        "kaayko:src/css/storestyle.css",
+        "kaayko:src/css/secretStore.css"
+      ],
+      "backend_routes": [
+        "GET /products",
+        "GET /products/:id",
+        "POST /products/:id/vote",
+        "GET /images/:productId/:fileName",
+        "POST /createPaymentIntent",
+        "POST /createPaymentIntent/updateEmail"
+      ],
+      "validation_focus": [
+        "Validate product fetch, image load, cart mutation, and checkout intent as one flow.",
+        "Keep cart and order-success behavior aligned with Stripe redirect assumptions.",
+        "Treat inline scripts and shared JS clients as one contract surface."
+      ],
+      "risk_focus": [
+        "Commerce logic is split between page-inline scripts and shared JS files.",
+        "Checkout does not have a browser test suite in this repo.",
+        "Do not break image or payment-intent routes while deduplicating client code."
+      ]
+    },
+    "paddling-out": {
+      "name": "Paddling Out",
+      "purpose": "Maintain the weather-first experience for spot browsing, current conditions, forecast modal flows, and custom location discovery.",
+      "keywords": ["paddling", "paddle", "forecast", "weather", "spot", "surf", "safety", "heatmap"],
+      "source_docs": [
+        "README.md",
+        "docs/products/PADDLING_OUT.md"
+      ],
+      "frontend_paths": [
+        "kaayko:src/paddlingout.html",
+        "kaayko:src/js/paddlingout.js",
+        "kaayko:src/js/about-dynamic.js",
+        "kaayko:src/js/advancedModal.js",
+        "kaayko:src/js/components/SafetyWarnings.js",
+        "kaayko:src/js/components/Heatmap.js",
+        "kaayko:src/js/components/RatingHero.js",
+        "kaayko:src/css/paddlingout.css",
+        "kaayko:src/css/advancedModal.css"
+      ],
+      "backend_routes": [
+        "GET /paddlingOut",
+        "GET /paddlingOut/:id",
+        "GET /paddleScore",
+        "GET /fastForecast",
+        "GET /forecast",
+        "GET /nearbyWater"
+      ],
+      "validation_focus": [
+        "Verify spot list, spot detail, score rendering, forecast modal, and custom-location search together.",
+        "Preserve production versus emulator mode selection behavior.",
+        "Maintain weather component rendering for real backend response shapes."
+      ],
+      "risk_focus": [
+        "Weather logic mixes shared and page-specific fetch paths.",
+        "Forecast and safety components are visually rich and easy to break with broad rewrites.",
+        "Reliability matters as much as correctness for this product."
+      ]
+    },
+    "kortex": {
+      "name": "KORTEX Platform",
+      "purpose": "Protect smart-link creation, admin workflows, redirect handling, analytics, QR flows, and billing visibility as a single platform surface.",
+      "keywords": ["kortex", "smartlink", "redirect", "analytics", "billing", "tenant", "auth", "qr", "admin"],
+      "source_docs": [
+        "README.md",
+        "docs/products/KORTEX.md",
+        "src/admin/KORTEX_SYSTEM_ANALYSIS.md"
+      ],
+      "frontend_paths": [
+        "kaayko:src/kortex.html",
+        "kaayko:src/create-kortex-link.html",
+        "kaayko:src/redirect.html",
+        "kaayko:src/admin/kortex.html",
+        "kaayko:src/admin/login.html",
+        "kaayko:src/admin/tenant-registration.html",
+        "kaayko:src/admin/js/",
+        "kaayko:src/admin/views/"
+      ],
+      "backend_routes": [
+        "/smartlinks/*",
+        "/auth/*",
+        "/billing/*",
+        "/l/:id",
+        "/resolve"
+      ],
+      "validation_focus": [
+        "Validate login, tenant discovery, link CRUD, redirect behavior, analytics visibility, and billing screen availability together.",
+        "Keep public KORTEX pages separate from admin-only workflows.",
+        "Treat old markdown references to unmounted paths as history, not live contract."
+      ],
+      "risk_focus": [
+        "KORTEX is the highest-risk surface for tenant isolation and auth drift.",
+        "Admin config/auth code is separate from public pages.",
+        "Redirect and billing behavior must remain correct while refactoring UI logic."
+      ]
+    },
+    "kreator": {
+      "name": "Kreator",
+      "purpose": "Maintain creator application, onboarding, login, dashboard, and admin review flows without assuming unmounted backend product APIs are live.",
+      "keywords": ["kreator", "creator", "onboarding", "dashboard", "apply", "application", "review"],
+      "source_docs": [
+        "README.md",
+        "docs/products/KREATOR.md"
+      ],
+      "frontend_paths": [
+        "kaayko:src/kreator/index.html",
+        "kaayko:src/kreator/apply.html",
+        "kaayko:src/kreator/check-status.html",
+        "kaayko:src/kreator/onboarding.html",
+        "kaayko:src/kreator/kreator-login.html",
+        "kaayko:src/kreator/dashboard.html",
+        "kaayko:src/kreator/add-product.html",
+        "kaayko:src/kreator/admin/",
+        "kaayko:src/kreator/js/kreator-api.js"
+      ],
+      "backend_routes": [
+        "/kreators/apply",
+        "/kreators/applications/:id/status",
+        "/kreators/onboarding/verify",
+        "/kreators/onboarding/complete",
+        "/kreators/auth/google/*",
+        "/kreators/me",
+        "/kreators/admin/*",
+        "/kreators/products"
+      ],
+      "validation_focus": [
+        "Treat dashboard/account flows separately from product-management flows.",
+        "Flag `/kreators/products` as a likely contract mismatch unless the backend mount is confirmed.",
+        "Protect onboarding friction and account-state messaging."
+      ],
+      "risk_focus": [
+        "The product-management UI is ahead of the deployed backend contract on `main`.",
+        "Store and Kreator share the monetization funnel.",
+        "Do not present unmounted backend routes as stable product behavior."
+      ]
+    },
+    "kamera-quest": {
+      "name": "Kamera Quest",
+      "purpose": "Keep camera selection, preset generation, and skill-level-aware rendering aligned with the structured backend output.",
+      "keywords": ["kamera", "camera", "preset", "lens", "brand", "model", "skill"],
+      "source_docs": [
+        "README.md",
+        "docs/products/KAMERA_QUEST.md"
+      ],
+      "frontend_paths": [
+        "kaayko:src/karma.html",
+        "kaayko:src/karma/kameras/",
+        "kaayko:src/assets/kamera-quest-og.svg"
+      ],
+      "backend_routes": [
+        "GET /presets/meta",
+        "GET /cameras/:brand",
+        "GET /cameras/:brand/:modelName/lenses",
+        "POST /presets/classic",
+        "POST /presets/smart"
+      ],
+      "validation_focus": [
+        "Check apprentice, enthusiast, and professional result shapes before claiming a safe UI change.",
+        "Preserve result rendering clarity and metadata contracts.",
+        "Treat this surface as contract-driven rather than purely visual."
+      ],
+      "risk_focus": [
+        "Frontend output depends heavily on structured backend payloads by skill level.",
+        "This is a good candidate for snapshots, but only if output shape remains stable.",
+        "Do not simplify result rendering in ways that erase skill-level nuance."
+      ]
+    },
+    "kutz": {
+      "name": "Kutz Nutrition",
+      "purpose": "Maintain the React-based nutrition tracking app including food search, meal logging, barcode scanning, Fitbit integration, recipe building, and daily macro dashboards.",
+      "keywords": ["kutz", "nutrition", "food", "meal", "fitbit", "recipe", "macro", "barcode", "voice", "tracker"],
+      "source_docs": [
+        "README.md",
+        "kutz/README.md"
+      ],
+      "frontend_paths": [
+        "kaayko:kutz/src/App.jsx",
+        "kaayko:kutz/src/main.jsx",
+        "kaayko:kutz/src/components/",
+        "kaayko:kutz/src/context/",
+        "kaayko:kutz/src/hooks/",
+        "kaayko:kutz/src/lib/",
+        "kaayko:kutz/src/index.css"
+      ],
+      "backend_routes": [
+        "GET /kutz/foods/search",
+        "POST /kutz/meals",
+        "GET /kutz/meals",
+        "GET /kutz/fitbit/auth",
+        "GET /kutz/fitbit/callback",
+        "POST /kutz/fitbit/refresh"
+      ],
+      "validation_focus": [
+        "Preserve React component hierarchy and context/hook patterns.",
+        "Keep Fitbit OAuth and food API integrations working after UI changes.",
+        "Treat nutrition calculation logic in lib/calculations.js as business-critical.",
+        "Verify barcode scanning and voice input remain functional."
+      ],
+      "risk_focus": [
+        "Kutz is a Vite/React app — different build system from the rest of the portfolio.",
+        "Food parsing and macro calculations must handle null/missing nutritional data.",
+        "Fitbit OAuth tokens are sensitive credentials stored in Firestore.",
+        "Claude AI integration in lib/claude.js must not leak API keys client-side."
+      ]
+    }
+  }
+}
