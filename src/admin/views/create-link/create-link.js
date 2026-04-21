@@ -6,6 +6,8 @@
 import { STATE, CONFIG, AUTH, utils, ui } from '../../js/kortex-core.js';
 import { apiFetch } from '../../js/config.js';
 
+let CURRENT_EDIT_LINK = null;
+
 /**
  * Initialize Create Link view
  */
@@ -358,11 +360,18 @@ async function handleCreateLink(e) {
  * UPDATED: Matches backend API v2.1.0 schema
  */
 function extractFormData() {
-  // Backend expects: { source, medium, campaign, term, content } (no utm_ prefix)
+  // Canonical KORTEX shape uses utm_* keys. Backend still accepts shorthand.
   const utm = {};
-  ['Source', 'Medium', 'Campaign', 'Term', 'Content'].forEach(field => {
+  const utmFieldMap = {
+    Source: 'utm_source',
+    Medium: 'utm_medium',
+    Campaign: 'utm_campaign',
+    Term: 'utm_term',
+    Content: 'utm_content'
+  };
+  Object.entries(utmFieldMap).forEach(([field, key]) => {
     const value = document.getElementById(`utm${field}`).value.trim();
-    if (value) utm[field.toLowerCase()] = value;  // Changed from utm_${field} to just ${field}
+    if (value) utm[key] = value;
   });
   
   const expiresAtInput = document.getElementById('expiresAt').value;
@@ -370,6 +379,13 @@ function extractFormData() {
   
   // Backend API v2.1.0 schema
   const isAdmin = document.getElementById('isAdminLink')?.checked || false;
+  const isAlumniDestination = isAlumniLink(document.getElementById('webDestination').value);
+  const existingAlumniMetadata = isAlumniDestination ? (CURRENT_EDIT_LINK?.metadata || {}) : {};
+  const alumniCampaignId = document.getElementById('alumniCampaignId')?.value.trim() || undefined;
+
+  if (alumniCampaignId && !utm.utm_campaign) {
+    utm.utm_campaign = alumniCampaignId;
+  }
 
   return {
     // REQUIRED FIELDS
@@ -386,14 +402,15 @@ function extractFormData() {
     enabled: document.getElementById('enabled').checked,
     appStoreDefault: document.getElementById('appStoreDefault')?.checked || false,
     // Alumni campaign metadata (included only when destination is /alumni)
-    ...isAlumniLink(document.getElementById('webDestination').value) ? {
+    ...isAlumniDestination ? {
       metadata: {
+        ...existingAlumniMetadata,
         campaign:        'alumni',
         sourceGroup:     document.getElementById('alumniSourceGroup')?.value.trim() || '',
         sourceBatch:     document.getElementById('alumniSourceBatch')?.value.trim() || '',
         schoolName:      document.getElementById('alumniSchoolName')?.value.trim() || undefined,
         schoolId:        document.getElementById('alumniSchoolId')?.value.trim() || undefined,
-        campaignId:      document.getElementById('alumniCampaignId')?.value.trim() || undefined,
+        campaignId:      alumniCampaignId,
         channel:         document.getElementById('alumniChannel')?.value.trim() || undefined,
         chapterOrRegion: document.getElementById('alumniChapterOrRegion')?.value.trim() || undefined,
         audienceType:    document.getElementById('alumniAudienceType')?.value.trim() || undefined,
@@ -401,7 +418,7 @@ function extractFormData() {
         messageTemplateId: document.getElementById('alumniMessageTemplateId')?.value.trim() || undefined,
         sender:          document.getElementById('alumniSender')?.value.trim() || null,
         maxUses:         parseInt(document.getElementById('alumniMaxUses')?.value || '50', 10),
-        votingDeadline:  new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        votingDeadline:  existingAlumniMetadata.votingDeadline || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         isAdmin,
       }
     } : (isAdmin ? { metadata: { isAdmin: true } } : {})
@@ -427,6 +444,7 @@ function resetCreateForm() {
   if (submitBtn) submitBtn.innerHTML = '✨ Create Link';
   
   STATE.editingCode = null;
+  CURRENT_EDIT_LINK = null;
 
   // Reset Alumni section
   const alumniSection = document.getElementById('alumni-campaign-section');
@@ -558,6 +576,7 @@ async function loadLinkForEditing(code) {
     
     // Store editing code in STATE
     STATE.editingCode = actualCode;
+    CURRENT_EDIT_LINK = link;
     
     // Populate form with link data (robust field handling)
     const utm = link.utm || {};
@@ -575,10 +594,12 @@ async function loadLinkForEditing(code) {
     document.getElementById('iosDestination').value = iosDest;
     document.getElementById('androidDestination').value = androidDest;
     
-    // Backend UTM format: { source, medium, campaign } (no utm_ prefix)
+    // Accept both legacy shorthand and canonical utm_* keys while editing.
     ['Source', 'Medium', 'Campaign', 'Term', 'Content'].forEach(field => {
       const el = document.getElementById(`utm${field}`);
-      if (el) el.value = utm[field.toLowerCase()] || '';
+      const shortKey = field.toLowerCase();
+      const canonicalKey = `utm_${shortKey}`;
+      if (el) el.value = utm[canonicalKey] || utm[shortKey] || '';
     });
     
     const expiresAt = document.getElementById('expiresAt');
@@ -617,6 +638,9 @@ async function loadLinkForEditing(code) {
       setVal('alumniCampaignId',      m.campaignId       || '');
       setVal('alumniChannel',         m.channel          || '');
       setVal('alumniChapterOrRegion', m.chapterOrRegion  || '');
+      setVal('alumniAudienceType',    m.audienceType     || '');
+      setVal('alumniOrganizerRole',   m.organizerRole    || '');
+      setVal('alumniMessageTemplateId', m.messageTemplateId || '');
       setVal('alumniSender',          m.sender           || '');
       if (m.maxUses != null) setVal('alumniMaxUses', m.maxUses);
       const isAdminEl = document.getElementById('isAdminLink');

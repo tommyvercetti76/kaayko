@@ -76,6 +76,41 @@ export function renderLinksTable(links) {
   `;
 }
 
+function renderMetadataBadges(link) {
+  const m = link.metadata || {};
+  const parts = [];
+  const pushMeta = (label, value) => {
+    if (!value && value !== 0) return;
+    parts.push(`<span style="font-size:11px;color:var(--text-muted);">${label}: ${escapeHtml(String(value))}</span>`);
+  };
+
+  if (m.campaign === 'alumni') {
+    parts.push(`<span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:rgba(212,168,75,.12);border:1px solid rgba(212,168,75,.3);color:#d4a84b;border-radius:4px;padding:2px 6px;">ALUMNI</span>`);
+    pushMeta('Campaign', m.campaignId || link.utm?.utm_campaign);
+    pushMeta('School', m.schoolName || m.schoolId);
+    pushMeta('Group', m.sourceGroup);
+    pushMeta('Batch', m.sourceBatch);
+    pushMeta('Channel', m.channel);
+    if (m.maxUses) pushMeta('Max', m.maxUses);
+  }
+  if (m.campaign === 'roots' || link.webDestination?.includes('/knowledge')) {
+    parts.push(`<span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);color:#4caf50;border-radius:4px;padding:2px 6px;">ROOTS</span>`);
+    pushMeta('Campaign', m.campaignId || link.utm?.utm_campaign);
+    pushMeta('Assessment', m.assessmentType);
+    pushMeta('School', m.schoolName || m.schoolId);
+  }
+  if (m.isAdmin) {
+    parts.push(`<span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);color:#aaa;border-radius:4px;padding:2px 6px;">ADMIN</span>`);
+  }
+  if (m.campaign !== 'alumni' && m.campaign !== 'roots') {
+    pushMeta('Campaign', m.campaignId || link.utm?.utm_campaign || m.campaign);
+  }
+
+  return parts.length
+    ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:5px;align-items:center;">${parts.join('')}</div>`
+    : '';
+}
+
 function renderLinkRow(link) {
   // ROBUST: Handle multiple code field formats from legacy data
   const code = link.code || link.shortCode || link.id;
@@ -96,8 +131,10 @@ function renderLinkRow(link) {
   // CONSISTENT: Always show full https URL format
   const shortUrl = link.shortUrl || `https://kaayko.com/l/${code}`;
   
-  // Display clicks - handle all formats
-  const displayClicks = link.clickCount !== undefined ? link.clickCount : '-';
+  // Alumni links use uniqueVisitCount; standard links use clickCount
+  const displayClicks = link.metadata?.campaign === 'alumni'
+    ? (link.uniqueVisitCount !== undefined ? link.uniqueVisitCount : (link.clickCount !== undefined ? link.clickCount : '-'))
+    : (link.clickCount !== undefined ? link.clickCount : '-');
   
   return `
     <tr class="${rowClass}">
@@ -119,6 +156,7 @@ function renderLinkRow(link) {
             </svg>
           </button>
           <div class="link-url">${shortUrl}</div>
+          ${renderMetadataBadges(link)}
         </div>
       </td>
       <td style="color:var(--text-secondary);font-size:13px;">${escapeHtml(link.createdBy || 'system')}</td>
