@@ -213,7 +213,7 @@
       <div class="sec-h"><span class="sec-t">Responses <span id="lead-count-label" style="font-weight:400;text-transform:none;letter-spacing:0"></span></span></div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Batch</th><th>Location</th><th>Intent</th><th>Quality</th><th>Date</th></tr></thead>
+          <thead><tr><th>Name</th><th>Batch</th><th>Location</th><th>Intent</th><th>Quality</th><th>Date</th></tr></thead>
           <tbody id="leads-tbody"></tbody>
         </table>
       </div>
@@ -449,8 +449,9 @@
       var bl=b==='verified'?'Verified':(b==='medium_confidence'?'Medium':(b==='flagged'?'Flagged':'Low'));
       var ints=(lead.interestType||[]).map(function(t){var m=IM[t];return '<span class="intent-tag">'+(m?m.label:t)+'</span>'}).join('');
       var loc=[lead.city,lead.country].filter(Boolean).join(', ')||'\u2014';
+      var nameHtml=lead.name?'<div style="font-weight:600;font-size:12px">'+esc(lead.name)+'</div>'+(lead.comment&&lead.comment.length>0?'<div style="font-size:10px;color:var(--dim);margin-top:2px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(lead.comment)+'">&#8220;'+esc(lead.comment)+'&#8221;</div>':''):'<span style="color:var(--dim)">\u2014</span>';
       var tr=document.createElement('tr');
-      tr.innerHTML='<td>'+(esc(lead.batch)||'\u2014')+'</td><td>'+esc(loc)+'</td><td>'+(ints||'\u2014')+'</td><td><span class="bucket-dot '+dc+'"></span>'+bl+'</td><td>'+fmtDate(lead.createdAt)+'</td>';
+      tr.innerHTML='<td>'+nameHtml+'</td><td>'+(esc(lead.batch)||'\u2014')+'</td><td>'+esc(loc)+'</td><td>'+(ints||'\u2014')+'</td><td><span class="bucket-dot '+dc+'"></span>'+bl+'</td><td>'+fmtDate(lead.createdAt)+'</td>';
       tb.appendChild(tr);
     });
     el('lead-count-label').textContent='('+tb.rows.length+(hasMore?'+':'')+')';
