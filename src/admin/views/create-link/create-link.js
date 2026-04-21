@@ -166,6 +166,17 @@ const KAAYKO_API_BASE = window.location.hostname === 'localhost'
   : 'https://us-central1-kaaykostore.cloudfunctions.net/api';
 
 /**
+ * Check if the destination URL points to the Alumni interest survey.
+ * Shows/hides the Alumni campaign configuration section accordingly.
+ */
+function checkAlumniDestination() {
+  const dest = document.getElementById('webDestination')?.value || '';
+  const alumniSection = document.getElementById('alumni-campaign-section');
+  if (!alumniSection) return;
+  alumniSection.style.display = isAlumniLink(dest) ? '' : 'none';
+}
+
+/**
  * Check if the destination URL points to the ROOTS Knowledge Engine.
  * Shows/hides the ROOTS assessment configuration section accordingly.
  */
@@ -194,13 +205,16 @@ function initCreateForm() {
   form.removeEventListener('submit', handleCreateLink);
   form.addEventListener('submit', handleCreateLink);
 
-  // Auto-detect ROOTS links when destination URL changes
+  // Auto-detect ROOTS / Alumni links when destination URL changes
   const destInput = document.getElementById('webDestination');
   if (destInput) {
     destInput.removeEventListener('input', checkROOTSDestination);
     destInput.addEventListener('input', checkROOTSDestination);
+    destInput.removeEventListener('input', checkAlumniDestination);
+    destInput.addEventListener('input', checkAlumniDestination);
     // Check initial value
     checkROOTSDestination();
+    checkAlumniDestination();
   }
 
   // Toggle child-age field when assessment type changes
@@ -266,20 +280,57 @@ async function handleCreateLink(e) {
     if (isEditing) {
       // Edit success
       utils.showToast(`✅ Link "${linkCode}" updated successfully!`, 'success', 5000);
+    } else if (!isEditing && (isAlumniLink(formData.webDestination) || formData.metadata?.isAdmin)) {
+      // Alumni campaign OR admin-toggled — generate report key and show both URLs in a modal
+      let reportUrl = '';
+      if (isAlumniLink(formData.webDestination)) {
+        try {
+          const rkRes = await apiFetch('/alumni/report-key', {
+            method: 'POST',
+            body: JSON.stringify({ linkCode })
+          });
+          const rkData = await rkRes.json();
+          reportUrl = rkData.reportUrl || '';
+        } catch (e) {
+          console.warn('[CreateLink] report-key generation failed:', e.message);
+        }
+      }
+
+      const campaignUrl = `https://kaayko.com/l/${linkCode}`;
+      const reportLine = reportUrl
+        ? `<div style="margin-top:16px;">
+            <div style="font-size:11px;color:var(--kaayko-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Your report dashboard</div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <code style="flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:8px 10px;font-size:12px;word-break:break-all;">${utils.escapeHtml(reportUrl)}</code>
+              <button class="btn btn-secondary" style="flex-shrink:0;" onclick="navigator.clipboard.writeText('${reportUrl}').then(()=>this.textContent='Copied!').catch(()=>{})">Copy</button>
+              <a class="btn btn-secondary" style="flex-shrink:0;" href="${reportUrl}" target="_blank" rel="noopener">Open</a>
+            </div>
+            <p style="font-size:11px;color:var(--kaayko-muted);margin-top:6px;">Bookmark this — share with school management. No login needed.</p>
+          </div>`
+        : `<p style="font-size:12px;color:var(--kaayko-muted);margin-top:12px;">Report link could not be generated — visit /admin/alumni to create one.</p>`;
+
+      ui.showModal('Alumni campaign link created', `
+        <div>
+          <div style="font-size:11px;color:var(--kaayko-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Share this link</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <code style="flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:8px 10px;font-size:13px;">${campaignUrl}</code>
+            <button class="btn btn-primary" style="flex-shrink:0;" onclick="navigator.clipboard.writeText('${campaignUrl}').then(()=>this.textContent='Copied!').catch(()=>{})">Copy</button>
+          </div>
+          <p style="font-size:11px;color:var(--kaayko-muted);margin-top:6px;">Send via WhatsApp. Each click is single-use — no gaming.</p>
+          ${reportLine}
+        </div>
+      `);
     } else {
-      // Create success
+      // Standard create success
       const rootsNote = isROOTSLink(formData.webDestination) ? ' + ROOTS invite created' : '';
       if (generateQR && data.link) {
-        utils.showToast(`🎉 Link created${rootsNote}! Your short URL: ${shortUrl}`, 'success', 6000);
+        utils.showToast(`Link created${rootsNote}! Your short URL: ${shortUrl}`, 'success', 6000);
         setTimeout(() => ui.showQRCodeModal(data.link), 500);
       } else {
-        utils.showToast(`🎉 Link created${rootsNote}! Your short URL: ${shortUrl}`, 'success', 6000);
-        // Copy short URL to clipboard
+        utils.showToast(`Link created${rootsNote}! Your short URL: ${shortUrl}`, 'success', 6000);
         navigator.clipboard.writeText(`https://${shortUrl}`).then(() => {
-          setTimeout(() => utils.showToast('📋 Short URL copied to clipboard!', 'info', 3000), 500);
-        }).catch(() => {
-          console.log('Clipboard write failed');
-        });
+          setTimeout(() => utils.showToast('Short URL copied to clipboard', 'info', 3000), 500);
+        }).catch(() => {});
       }
     }
     
@@ -318,6 +369,8 @@ function extractFormData() {
   const shortCodeInput = document.getElementById('short-code').value.trim();
   
   // Backend API v2.1.0 schema
+  const isAdmin = document.getElementById('isAdminLink')?.checked || false;
+
   return {
     // REQUIRED FIELDS
     webDestination: document.getElementById('webDestination').value.trim(),
@@ -331,7 +384,27 @@ function extractFormData() {
     utm: Object.keys(utm).length ? utm : undefined,
     expiresAt: expiresAtInput ? new Date(expiresAtInput).toISOString() : undefined,
     enabled: document.getElementById('enabled').checked,
-    appStoreDefault: document.getElementById('appStoreDefault')?.checked || false
+    appStoreDefault: document.getElementById('appStoreDefault')?.checked || false,
+    // Alumni campaign metadata (included only when destination is /alumni)
+    ...isAlumniLink(document.getElementById('webDestination').value) ? {
+      metadata: {
+        campaign:        'alumni',
+        sourceGroup:     document.getElementById('alumniSourceGroup')?.value.trim() || '',
+        sourceBatch:     document.getElementById('alumniSourceBatch')?.value.trim() || '',
+        schoolName:      document.getElementById('alumniSchoolName')?.value.trim() || undefined,
+        schoolId:        document.getElementById('alumniSchoolId')?.value.trim() || undefined,
+        campaignId:      document.getElementById('alumniCampaignId')?.value.trim() || undefined,
+        channel:         document.getElementById('alumniChannel')?.value.trim() || undefined,
+        chapterOrRegion: document.getElementById('alumniChapterOrRegion')?.value.trim() || undefined,
+        audienceType:    document.getElementById('alumniAudienceType')?.value.trim() || undefined,
+        organizerRole:   document.getElementById('alumniOrganizerRole')?.value.trim() || undefined,
+        messageTemplateId: document.getElementById('alumniMessageTemplateId')?.value.trim() || undefined,
+        sender:          document.getElementById('alumniSender')?.value.trim() || null,
+        maxUses:         parseInt(document.getElementById('alumniMaxUses')?.value || '50', 10),
+        votingDeadline:  new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        isAdmin,
+      }
+    } : (isAdmin ? { metadata: { isAdmin: true } } : {})
   };
 }
 
@@ -344,6 +417,8 @@ function resetCreateForm() {
   
   document.getElementById('enabled').checked = true;
   document.getElementById('short-code').readOnly = false;
+  const isAdminEl = document.getElementById('isAdminLink');
+  if (isAdminEl) isAdminEl.checked = false;
   
   const formHeader = document.querySelector('#create-view .view-header h1');
   if (formHeader) formHeader.textContent = 'Create New Link';
@@ -352,6 +427,18 @@ function resetCreateForm() {
   if (submitBtn) submitBtn.innerHTML = '✨ Create Link';
   
   STATE.editingCode = null;
+
+  // Reset Alumni section
+  const alumniSection = document.getElementById('alumni-campaign-section');
+  if (alumniSection) alumniSection.style.display = 'none';
+  ['alumniSourceGroup','alumniSourceBatch','alumniSchoolName','alumniSchoolId','alumniCampaignId','alumniChapterOrRegion','alumniMessageTemplateId','alumniSender'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  ['alumniChannel','alumniAudienceType','alumniOrganizerRole'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const alumniMaxUses = document.getElementById('alumniMaxUses');
+  if (alumniMaxUses) alumniMaxUses.value = '50';
 
   // Reset ROOTS section
   const rootsSection = document.getElementById('roots-assessment-section');
@@ -371,6 +458,27 @@ function resetCreateForm() {
 // ═══════════════════════════════════════════════════════════════
 //  ROOTS KNOWLEDGE ENGINE — Dual-Write Bridge
 // ═══════════════════════════════════════════════════════════════
+
+/** Check if a URL points to the ROOTS Knowledge Engine */
+/** Check if a URL points to the Alumni interest survey */
+function isAlumniLink(url) {
+  const raw = (url || '').trim().toLowerCase();
+  if (!raw) return false;
+
+  // Supports full URLs, relative paths, and in-progress typing like "/alumni"
+  let path = raw;
+  try {
+    const normalized = raw.startsWith('http://') || raw.startsWith('https://')
+      ? new URL(raw)
+      : new URL(raw.startsWith('/') ? raw : `/${raw}`, 'https://kaayko.com');
+    path = (normalized.pathname || '').toLowerCase();
+  } catch (_) {
+    // Fallback to raw input when URL parsing fails during partial typing
+    path = raw;
+  }
+
+  return path === '/alumni' || path.startsWith('/alumni/');
+}
 
 /** Check if a URL points to the ROOTS Knowledge Engine */
 function isROOTSLink(url) {
@@ -494,6 +602,9 @@ async function loadLinkForEditing(code) {
     
     const submitBtn = document.querySelector('#create-view .btn-primary[type="submit"]');
     if (submitBtn) submitBtn.innerHTML = '💾 Update Link';
+
+    // Keep destination-based conditional sections in sync for edited links
+    checkAlumniDestination();
 
     // Show ROOTS section if this link points to /knowledge
     checkROOTSDestination();

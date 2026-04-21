@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Alumni survey share card">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#080808" />
+      <stop offset="100%" stop-color="#121212" />
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#D4A84B" />
+      <stop offset="100%" stop-color="#E4BC5D" />
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="1080" cy="86" r="156" fill="#ffffff" fill-opacity="0.03"/>
+  <circle cx="90" cy="560" r="220" fill="#ffffff" fill-opacity="0.02"/>
+
+  <rect x="86" y="70" width="1028" height="490" rx="38" fill="#101010" stroke="#1f1f1f" stroke-width="2"/>
+
+  <text x="600" y="190" text-anchor="middle" fill="#d8d8d8" font-family="'Avenir Next', 'Montserrat', 'Segoe UI', sans-serif" font-size="28" font-weight="700" letter-spacing="6">
+    ALUMNI SURVEY
+  </text>
+
+  <text x="600" y="314" text-anchor="middle" fill="url(#gold)" font-family="'Avenir Next', 'Montserrat', 'Segoe UI', sans-serif" font-size="84" font-weight="700" letter-spacing="-1.4">
+    Closes soon
+  </text>
+
+  <text x="600" y="396" text-anchor="middle" fill="#d1d1d1" font-family="'Avenir Next', 'Montserrat', 'Segoe UI', sans-serif" font-size="34" font-weight="500">
+    One tap. Anonymous. No signup.
+  </text>
+</svg>

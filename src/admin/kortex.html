@@ -334,6 +334,120 @@
               </div>
             </div>
 
+            <!-- Alumni Campaign Configuration (appears when destination is /alumni) -->
+            <div id="alumni-campaign-section" style="display:none; margin: 20px 0; padding: 20px; border: 2px solid rgba(212,175,55,0.4); border-radius: 12px; background: rgba(212,175,55,0.06);">
+              <h4 style="color:#d4af37; margin-bottom:8px;">🎓 Alumni Campaign Settings</h4>
+              <p class="help-text" style="color:#d4af37; margin-bottom:16px;">This link points to the alumni interest survey. Each click issues a one-time token — voters can only vote once per click.</p>
+
+              <div class="form-group">
+                <label for="alumniSourceGroup">
+                  WhatsApp Group / Source <span class="required">*</span>
+                  <button type="button" class="info-icon" aria-label="More information">
+                    i
+                    <span class="tooltip" role="tooltip">Name of the group or channel you're sharing to, e.g. "Batch 2005 Alumni WA"</span>
+                  </button>
+                </label>
+                <input type="text" id="alumniSourceGroup" class="form-input" placeholder="e.g. Batch 2005 Alumni WhatsApp">
+              </div>
+
+              <div class="form-group">
+                <label for="alumniSourceBatch">
+                  Batch / Graduation Year
+                  <button type="button" class="info-icon" aria-label="More information">
+                    i
+                    <span class="tooltip" role="tooltip">Graduation year of this group, e.g. 2005</span>
+                  </button>
+                </label>
+                <input type="number" id="alumniSourceBatch" class="form-input" placeholder="2005" min="1950" max="2030">
+              </div>
+
+              <div class="form-group">
+                <label for="alumniSchoolName">School Name</label>
+                <input type="text" id="alumniSchoolName" class="form-input" placeholder="e.g. Somalwar Ramdaspeth">
+              </div>
+
+              <div class="form-group">
+                <label for="alumniSchoolId">School ID (Canonical)</label>
+                <input type="text" id="alumniSchoolId" class="form-input" placeholder="e.g. somalwar-ramdaspeth">
+              </div>
+
+              <div class="form-group">
+                <label for="alumniCampaignId">Campaign ID</label>
+                <input type="text" id="alumniCampaignId" class="form-input" placeholder="e.g. alumni-2026-q2">
+              </div>
+
+              <div class="form-group">
+                <label for="alumniChannel">Channel</label>
+                <select id="alumniChannel" class="form-input">
+                  <option value="">Select channel</option>
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="email">Email</option>
+                  <option value="sms">SMS</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="alumniChapterOrRegion">Chapter / Region</label>
+                <input type="text" id="alumniChapterOrRegion" class="form-input" placeholder="e.g. Nagpur / Mumbai / Overseas">
+              </div>
+
+              <div class="form-group">
+                <label for="alumniAudienceType">Audience Type</label>
+                <select id="alumniAudienceType" class="form-input">
+                  <option value="">Select audience type</option>
+                  <option value="alumni">Alumni</option>
+                  <option value="parent">Parent</option>
+                  <option value="teacher">Teacher</option>
+                  <option value="mixed">Mixed</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="alumniOrganizerRole">Organizer Role</label>
+                <select id="alumniOrganizerRole" class="form-input">
+                  <option value="">Select organizer role</option>
+                  <option value="board_member">Board Member</option>
+                  <option value="volunteer_lead">Volunteer Lead</option>
+                  <option value="admin">Admin</option>
+                  <option value="teacher">Teacher</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="alumniMessageTemplateId">Message Template ID</label>
+                <input type="text" id="alumniMessageTemplateId" class="form-input" placeholder="e.g. wa-v3-soft-launch">
+              </div>
+
+              <div class="form-group">
+                <label for="alumniSender">
+                  Sender Name (Optional)
+                  <button type="button" class="info-icon" aria-label="More information">
+                    i
+                    <span class="tooltip" role="tooltip">Your name or "Anonymous" — visible in admin stats only, never shown to voters</span>
+                  </button>
+                </label>
+                <input type="text" id="alumniSender" class="form-input" placeholder="Your name or 'Anonymous'">
+              </div>
+
+              <div class="form-group">
+                <label for="alumniMaxUses">
+                  Max Unique Visits
+                  <button type="button" class="info-icon" aria-label="More information">
+                    i
+                    <span class="tooltip" role="tooltip">Link stops working after this many clicks. Default 50. Prevents mass sharing.</span>
+                  </button>
+                </label>
+                <input type="number" id="alumniMaxUses" class="form-input" min="1" max="500" value="50" placeholder="50">
+              </div>
+
+              <div style="background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.2);border-radius:8px;padding:12px;font-size:0.85rem;color:#a89060;line-height:1.6;">
+                🔒 <strong>Anti-gaming:</strong> Voting deadline auto-set to 7 days from now. Each click is a single-use signed token — cannot be reused or forwarded.
+              </div>
+            </div>
+
             <div class="form-group">
               <label for="createdBy">
                 Who's creating this? <span class="required">*</span>
@@ -507,6 +621,23 @@
                   </label>
                 </div>
                 
+                <div class="toggle-option">
+                  <div class="toggle-option-info">
+                    <div class="toggle-option-label">
+                      <strong>Admin link</strong>
+                      <button type="button" class="info-icon" aria-label="More information">
+                        i
+                        <span class="tooltip" role="tooltip">After creation, generates a shareable read-only report URL for this link's traffic and metadata</span>
+                      </button>
+                    </div>
+                    <p class="toggle-option-desc">Show report dashboard URL in the success modal</p>
+                  </div>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="isAdminLink">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+
                 <div class="toggle-option">
                   <div class="toggle-option-info">
                     <div class="toggle-option-label">

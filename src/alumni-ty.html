@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>You're in — Alumni Network</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#0a0a0a">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:     #080808;
+      --card:   #111;
+      --border: #1e1e1e;
+      --gold:   #D4A84B;
+      --gold2:  #C4983B;
+      --text:   #f0f0f0;
+      --muted:  #666;
+      --error:  #e05252;
+      --success:#4caf50;
+    }
+    body {
+      font-family: 'Josefin Sans', -apple-system, sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; flex-direction: column;
+    }
+    a { color: var(--gold); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Nav */
+    nav {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(8,8,8,0.92); backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px; display: flex; align-items: center; justify-content: center;
+    }
+    .nav-logo { font-size: 1rem; font-weight: 700; color: var(--gold); letter-spacing: 0.14em; }
+
+    .page { max-width: 540px; width: 100%; margin: 0 auto; padding: 32px 20px; flex: 1; }
+
+    /* ── Headline ───────────────────────────────────────────────────── */
+    .headline { text-align: center; margin-bottom: 32px; }
+    .headline .check {
+      font-size: 48px; margin-bottom: 16px;
+    }
+    .headline h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+    .headline p  { color: var(--muted); font-size: 16px; line-height: 1.6; }
+
+    /* ── Bucket badge ───────────────────────────────────────────────── */
+    .bucket-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 600; padding: 6px 14px;
+      border-radius: 40px; margin-bottom: 28px;
+    }
+    .bucket-verified     { background: rgba(76,175,80,.12); border: 1px solid rgba(76,175,80,.3); color: #4caf50; }
+    .bucket-medium       { background: rgba(212,168,75,.12); border: 1px solid rgba(212,168,75,.3); color: var(--gold); }
+    .bucket-low          { background: rgba(136,136,136,.12); border: 1px solid rgba(136,136,136,.3); color: var(--muted); }
+
+    /* ── Cards ──────────────────────────────────────────────────────── */
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 24px 24px; margin-bottom: 16px;
+    }
+    .card h2 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+    .card p, .card li { font-size: 14px; color: var(--muted); line-height: 1.6; }
+    .card ul { padding-left: 20px; }
+    .card ul li { margin-bottom: 4px; }
+
+    /* ── Email verification ─────────────────────────────────────────── */
+    #email-verify-card .card-body { display: flex; flex-direction: column; gap: 14px; }
+    .input-row { display: flex; gap: 10px; }
+    .otp-input {
+      flex: 1;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px 14px;
+      color: var(--text); font-family: inherit; font-size: 16px;
+      letter-spacing: 6px; text-align: center;
+      outline: none; transition: border-color .18s;
+    }
+    .otp-input:focus { border-color: var(--gold); }
+    .btn-gold {
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold2) 100%);
+      color: var(--bg); font-family: inherit; font-size: 14px; font-weight: 700;
+      padding: 12px 22px; border-radius: 8px; border: none; cursor: pointer;
+      transition: opacity .18s; white-space: nowrap; letter-spacing: .03em;
+    }
+    .btn-gold:hover { opacity: .88; }
+    .btn-gold:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-text {
+      background: none; border: none; color: var(--gold);
+      font-family: inherit; font-size: 13px; cursor: pointer; padding: 0;
+    }
+    .btn-text:hover { text-decoration: underline; }
+    .verify-note { font-size: 12px; color: var(--muted); }
+    .verify-success { color: var(--success); font-size: 14px; font-weight: 600; }
+    .verify-error   { color: var(--error); font-size: 13px; }
+
+    /* ── Update form ────────────────────────────────────────────────── */
+    #update-section { display: none; }
+    .form-label {
+      display: block; font-size: 12px; font-weight: 600;
+      letter-spacing: .05em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 6px;
+    }
+    .form-input, .form-textarea {
+      width: 100%;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 12px;
+      color: var(--text); font-family: inherit; font-size: 14px;
+      outline: none; transition: border-color .18s;
+    }
+    .form-input:focus, .form-textarea:focus { border-color: var(--gold); }
+    .form-textarea { min-height: 80px; resize: vertical; }
+    .update-msg { font-size: 13px; color: var(--success); margin-top: 8px; display: none; }
+
+    /* ── Footer ─────────────────────────────────────────────────────── */
+    .site-footer {
+      border-top: 1px solid var(--border); padding: 18px 20px;
+    }
+    .footer-inner { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
+    .footer-brand { font-size: 0.85rem; font-weight: 700; color: var(--gold); letter-spacing: 0.12em; }
+    .footer-sep { color: var(--border); }
+    .footer-link { font-size: 0.72rem; color: var(--muted); text-decoration: none; transition: color .15s; }
+    .footer-link:hover { color: var(--gold); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-logo">KAAYKO ALUMNI</span>
+</nav>
+
+<div class="page">
+
+  <!-- Main confirmation -->
+  <div class="headline">
+    <div class="check">✅</div>
+    <h1>You're in the record.</h1>
+    <p id="ty-sub">Thank you for registering your interest.<br>We'll reach out when things move forward.</p>
+  </div>
+
+  <!-- Trust badge -->
+  <div style="text-align:center; margin-bottom: 24px;">
+    <span class="bucket-badge bucket-medium" id="bucket-badge">
+      <span>●</span> <span id="bucket-label">Interest Recorded</span>
+    </span>
+  </div>
+
+  <!-- Optional email verify note -->
+  <div class="card" id="email-verify-card" style="display:none;">
+    <h2>Want to boost your trust score?</h2>
+    <p style="margin-bottom:14px;">Add your email via the update form below to receive a verification code.</p>
+  </div>
+
+  <!-- Update your response -->
+  <div class="card" id="update-toggle-card">
+    <h2>Need to change something?</h2>
+    <p>You can update your phone, city, interest type, or comment at any time.</p>
+    <button class="btn-text" id="show-update-btn" style="margin-top:10px;" type="button">Update my response →</button>
+  </div>
+
+  <div class="card" id="update-section">
+    <h2>Update your response</h2>
+    <div style="display:flex; flex-direction:column; gap:14px; margin-top:12px;">
+      <div>
+        <label class="form-label" for="upd-batch">Graduation Year</label>
+        <input class="form-input" type="number" id="upd-batch" placeholder="e.g. 2005" min="1950" max="2030">
+      </div>
+      <div>
+        <label class="form-label" for="upd-city">City / Country</label>
+        <input class="form-input" type="text" id="upd-city" placeholder="Where you live now">
+      </div>
+      <div>
+        <label class="form-label" for="upd-comment">Updated thoughts</label>
+        <textarea class="form-textarea" id="upd-comment" placeholder="Anything you'd like to add?"></textarea>
+      </div>
+      <div>
+        <button class="btn-gold" id="save-update-btn" type="button">Save changes</button>
+        <p class="update-msg" id="update-msg">&#x2713; Changes saved.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- What happens next -->
+  <div class="card">
+    <h2>What happens next</h2>
+    <ul>
+      <li>We're collecting genuine interest — no bots, no public tallies.</li>
+      <li>Once we have enough verified responses, we'll share the next steps.</li>
+      <li>If you offered to support school initiatives, we'll reach out to you first.</li>
+      <li>You'll never get spam — only real updates about this initiative.</li>
+    </ul>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span class="footer-brand">KAAYKO</span>
+      <span class="footer-sep">&middot;</span>
+      <a href="mailto:rohan@kaayko.com" class="footer-link">rohan@kaayko.com</a>
+    </div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const API_BASE = 'https://api-vwcc5j4qda-uc.a.run.app';
+
+  const params    = new URLSearchParams(window.location.search);
+  const editToken = params.get('et');
+  const bucket    = params.get('bucket');
+
+  // Bucket display
+  const badgeEl  = document.getElementById('bucket-badge');
+  const labelEl  = document.getElementById('bucket-label');
+  if (bucket === 'verified') {
+    badgeEl.className  = 'bucket-badge bucket-verified';
+    labelEl.textContent = 'Verified Response';
+  } else if (bucket === 'medium_confidence') {
+    badgeEl.className  = 'bucket-badge bucket-medium';
+    labelEl.textContent = 'Interest Recorded';
+  } else {
+    badgeEl.className  = 'bucket-badge bucket-low';
+    labelEl.textContent = 'Interest Recorded';
+  }
+
+  // ── OTP send ─────────────────────────────────────────────────────────
+  // (OTP verification available if user adds email via update form)
+  // Stubs kept for forward compat — card is hidden by default.
+  var sendOtpBtn = document.getElementById('send-otp-btn');
+  if (sendOtpBtn) sendOtpBtn.addEventListener('click', function() {});
+
+  // Show update form
+  document.getElementById('show-update-btn').addEventListener('click', function () {
+    document.getElementById('update-section').style.display = 'block';
+    document.getElementById('update-section').scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('update-toggle-card').style.display = 'none';
+  });
+
+  // Save update
+  document.getElementById('save-update-btn').addEventListener('click', async function () {
+    if (!editToken) return;
+    const batch   = document.getElementById('upd-batch').value.trim();
+    const city    = document.getElementById('upd-city').value.trim();
+    const comment = document.getElementById('upd-comment').value.trim();
+    const updates = {};
+    if (batch)   updates.batch   = batch;
+    if (city)    updates.city    = city;
+    if (comment) updates.comment = comment;
+    if (!Object.keys(updates).length) return;
+
+    this.disabled = true; this.textContent = 'Saving…';
+    try {
+      const res  = await fetch(API_BASE + '/alumni/interest/' + encodeURIComponent(editToken), {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(updates),
+      });
+      const data = await res.json();
+      const msgEl = document.getElementById('update-msg');
+      if (data.success) {
+        msgEl.style.display = 'block';
+        this.textContent = 'Saved ✓';
+      } else {
+        msgEl.textContent = 'Could not save. Please try again.';
+        msgEl.style.color = 'var(--error)';
+        msgEl.style.display = 'block';
+        this.disabled = false; this.textContent = 'Save changes';
+      }
+    } catch (e) {
+      this.disabled = false; this.textContent = 'Save changes';
+    }
+  });
+
+})();
+</script>
+</body>
+</html>

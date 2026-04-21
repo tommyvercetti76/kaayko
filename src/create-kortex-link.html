@@ -331,8 +331,8 @@
 
     <div class="card">
       <div class="tab-group">
-        <div class="tab active" onclick="switchTab('simple')">🎯 Simple Mode</div>
-        <div class="tab" onclick="switchTab('advanced')">⚙️ Advanced Mode</div>
+        <div class="tab active" onclick="switchTab('simple')">&#127919; Simple Mode</div>
+        <div class="tab" onclick="switchTab('advanced')">&#9881;&#65039; Advanced Mode</div>
       </div>
 
       <!-- Simple Mode Panel -->
@@ -342,13 +342,14 @@
             <label for="content-type">Content Type</label>
             <select id="content-type" required onchange="updateSimpleForm()">
               <option value="">Select content type...</option>
-              <option value="lake">🏞️ Paddling Location (Lake/River)</option>
-              <option value="product">👕 Store Product</option>
-              <option value="category">📂 Product Category</option>
-              <option value="store">🏪 Entire Store</option>
-              <option value="reads">📖 Blog Article (Future)</option>
-              <option value="qr">📱 QR Code Link</option>
-              <option value="promo">🎯 Marketing Campaign</option>
+              <option value="lake">&#127966;&#65039; Paddling Location (Lake/River)</option>
+              <option value="product">&#128085;&#65039; Store Product</option>
+              <option value="category">&#128194; Product Category</option>
+              <option value="store">&#127978;&#65039; Entire Store</option>
+              <option value="reads">&#128214; Blog Article (Future)</option>
+              <option value="qr">&#128241; QR Code Link</option>
+              <option value="promo">&#127919; Marketing Campaign</option>
+              <option value="alumni">&#127891; Alumni Campaign</option>
             </select>
           </div>
 
@@ -375,6 +376,105 @@
             <label for="bypass-secret">🔓 Bypass store secret keyword check (allow direct access)</label>
           </div>
 
+          <!-- Alumni campaign metadata — shown only when type = alumni -->
+          <div id="alumni-meta-group" style="display:none;">
+            <div style="background:rgba(212,175,55,0.06);border:1px solid rgba(212,175,55,0.2);border-radius:12px;padding:20px;margin-bottom:20px;">
+              <div style="font-size:0.8rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;">&#127891; Alumni Campaign Settings</div>
+
+              <div class="form-group">
+                <label for="al-group">WhatsApp Group / Source</label>
+                <input type="text" id="al-group" placeholder="e.g. Batch 2005 Alumni WhatsApp">
+                <small style="color:var(--gray);display:block;margin-top:6px;">Name of the group or channel you're sharing to</small>
+              </div>
+
+              <div class="form-group">
+                <label for="al-batch">Batch / Graduation Year</label>
+                <input type="number" id="al-batch" placeholder="2005" min="1950" max="2030">
+              </div>
+
+              <div class="form-group">
+                <label for="al-school-name">School Name</label>
+                <input type="text" id="al-school-name" placeholder="e.g. Somalwar Ramdaspeth">
+              </div>
+
+              <div class="form-group">
+                <label for="al-school-id">School ID (Canonical)</label>
+                <input type="text" id="al-school-id" placeholder="e.g. somalwar-ramdaspeth">
+              </div>
+
+              <div class="form-group">
+                <label for="al-campaign-id">Campaign ID</label>
+                <input type="text" id="al-campaign-id" placeholder="e.g. alumni-2026-q2">
+              </div>
+
+              <div class="form-group">
+                <label for="al-channel">Channel</label>
+                <select id="al-channel">
+                  <option value="">Select channel</option>
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="email">Email</option>
+                  <option value="sms">SMS</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="al-region">Chapter / Region</label>
+                <input type="text" id="al-region" placeholder="e.g. Nagpur / Mumbai / Overseas">
+              </div>
+
+              <div class="form-group">
+                <label for="al-audience-type">Audience Type</label>
+                <select id="al-audience-type">
+                  <option value="">Select audience type</option>
+                  <option value="alumni">Alumni</option>
+                  <option value="parent">Parent</option>
+                  <option value="teacher">Teacher</option>
+                  <option value="mixed">Mixed</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="al-organizer-role">Organizer Role</label>
+                <select id="al-organizer-role">
+                  <option value="">Select organizer role</option>
+                  <option value="board_member">Board Member</option>
+                  <option value="volunteer_lead">Volunteer Lead</option>
+                  <option value="admin">Admin</option>
+                  <option value="teacher">Teacher</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="al-template-id">Message Template ID</label>
+                <input type="text" id="al-template-id" placeholder="e.g. wa-v3-soft-launch">
+              </div>
+
+              <div class="form-group">
+                <label for="al-sender">Sender Name (Optional)</label>
+                <input type="text" id="al-sender" placeholder="Your name or 'Anonymous'">
+                <small style="color:var(--gray);display:block;margin-top:6px;">Shown in admin stats only — not visible to voters</small>
+              </div>
+
+              <div class="form-group">
+                <label for="al-maxuses">Max Unique Visits</label>
+                <input type="number" id="al-maxuses" value="50" min="1" max="500">
+                <small style="color:var(--gray);display:block;margin-top:6px;">Link stops working after this many clicks (default: 50). Prevents mass sharing.</small>
+              </div>
+
+              <div style="background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.25);border-radius:10px;padding:14px;margin-bottom:16px;font-size:0.88rem;color:var(--gray);line-height:1.6;">
+                <strong style="color:var(--gold);">&#128274; Anti-gaming built in</strong><br>
+                Each click issues a <em>single-use cryptographic token</em>. One vote per click. Voting deadline is auto-set to <strong style="color:var(--gold);">7 days</strong> from now — after that the link expires and a read-only report link is generated automatically.
+              </div>
+
+              <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:12px 16px;font-size:0.9rem;">
+                Voting deadline: <span id="al-deadline-text" style="color:var(--gold);font-weight:700;"></span>
+              </div>
+            </div>
+          </div>
+
           <div class="form-group">
             <label for="utm-source">UTM Source (Optional)</label>
             <input type="text" id="utm-source" placeholder="e.g., instagram, twitter, email">
@@ -389,6 +489,10 @@
 
       <!-- Advanced Mode Panel -->
       <div id="advanced-panel" class="panel">
+        <div style="background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.3);border-radius:10px;padding:12px 16px;margin-bottom:20px;font-size:0.88rem;color:var(--gray);">
+          🎓 <strong style="color:var(--gold);">Creating an Alumni Campaign link?</strong>
+          Switch to <a href="#" onclick="switchTab('simple');return false;" style="color:var(--gold);text-decoration:underline;">Simple Mode</a> and choose <em>Alumni Campaign</em> from the content type dropdown.
+        </div>
         <form id="advanced-form" onsubmit="createAdvancedLink(event)">
           <div class="form-group">
             <label for="adv-space">Space</label>
@@ -499,6 +603,25 @@
             <button class="copy-btn" onclick="copyToClipboard('web-url', this)">Copy</button>
           </div>
         </div>
+
+        <!-- Alumni campaign: auto-generated report link -->
+        <div class="link-item" id="report-link-item" style="display:none;border-top:1px solid rgba(212,175,55,0.2);padding-top:16px;margin-top:4px;">
+          <label style="color:var(--gold);">&#128202; View-Only Report Dashboard</label>
+          <div style="font-size:12px;color:var(--gray);margin-bottom:8px;">
+            Share this with school admins — no login required. Opens a live read-only analytics view.
+          </div>
+          <div class="link-value">
+            <span class="link-text" id="report-url"></span>
+            <button class="copy-btn" onclick="copyToClipboard('report-url', this)">Copy</button>
+          </div>
+          <div style="margin-top:8px;">
+            <a id="report-open-btn" href="#" target="_blank" style="font-size:12px;color:var(--gold);text-decoration:none;">
+              &#x2197; Preview report &rarr;
+            </a>
+            &nbsp;&#183;&nbsp;
+            <span style="font-size:12px;color:var(--gray);">Scoped to <strong id="report-scope-label" style="color:var(--text);"></strong></span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -509,41 +632,48 @@
       : 'https://api-vwcc5j4qda-uc.a.run.app';
 
     function switchTab(tab) {
-      const tabs = document.querySelectorAll('.tab');
+      const tabs   = document.querySelectorAll('.tab');
       const panels = document.querySelectorAll('.panel');
-      
-      tabs.forEach(t => t.classList.remove('active'));
+
+      tabs.forEach(t   => t.classList.remove('active'));
       panels.forEach(p => p.classList.remove('active'));
-      
+
       if (tab === 'simple') {
         tabs[0].classList.add('active');
-        panels[0].classList.add('active');
-      } else {
+        document.getElementById('simple-panel').classList.add('active');
+      } else if (tab === 'advanced') {
         tabs[1].classList.add('active');
-        panels[1].classList.add('active');
+        document.getElementById('advanced-panel').classList.add('active');
       }
-      
+
       hideResult();
     }
 
     function updateSimpleForm() {
-      const contentType = document.getElementById('content-type').value;
-      const idGroup = document.getElementById('content-id-group');
-      const bypassGroup = document.getElementById('bypass-secret-group');
+      const contentType    = document.getElementById('content-type').value;
+      const idGroup        = document.getElementById('content-id-group');
+      const bypassGroup    = document.getElementById('bypass-secret-group');
+      const alumniGroup    = document.getElementById('alumni-meta-group');
       const contentIdInput = document.getElementById('content-id');
-      
-      if (contentType === 'store') {
-        idGroup.style.display = 'none';
-        contentIdInput.required = false;
+
+      // Reset all conditional groups
+      idGroup.style.display     = 'none';
+      bypassGroup.style.display = 'none';
+      alumniGroup.style.display = 'none';
+      contentIdInput.required   = false;
+
+      if (contentType === 'alumni') {
+        alumniGroup.style.display = 'block';
+        // Refresh deadline text on every selection
+        const d  = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+        const el = document.getElementById('al-deadline-text');
+        if (el) el.textContent = d.toLocaleDateString(undefined, { weekday:'short', year:'numeric', month:'short', day:'numeric' });
+      } else if (contentType === 'store') {
         bypassGroup.style.display = 'flex';
       } else if (contentType) {
-        idGroup.style.display = 'block';
+        idGroup.style.display   = 'block';
         contentIdInput.required = true;
-        bypassGroup.style.display = contentType.includes('product') || contentType === 'category' ? 'flex' : 'none';
-      } else {
-        idGroup.style.display = 'none';
-        bypassGroup.style.display = 'none';
-        contentIdInput.required = false;
+        bypassGroup.style.display = (contentType.includes('product') || contentType === 'category') ? 'flex' : 'none';
       }
     }
 
@@ -551,8 +681,82 @@
       e.preventDefault();
       
       const contentType = document.getElementById('content-type').value;
-      const contentId = document.getElementById('content-id').value || 'home';
-      const utmSource = document.getElementById('utm-source').value;
+
+      // ── Alumni Campaign ──────────────────────────────────────────────
+      if (contentType === 'alumni') {
+        const sourceGroup    = document.getElementById('al-group').value.trim();
+        const sourceBatch    = document.getElementById('al-batch').value.trim();
+        const schoolName     = document.getElementById('al-school-name').value.trim() || null;
+        const schoolId       = document.getElementById('al-school-id').value.trim() || null;
+        const campaignId     = document.getElementById('al-campaign-id').value.trim() || null;
+        const channel        = document.getElementById('al-channel').value.trim() || null;
+        const chapterOrRegion= document.getElementById('al-region').value.trim() || null;
+        const audienceType   = document.getElementById('al-audience-type').value.trim() || null;
+        const organizerRole  = document.getElementById('al-organizer-role').value.trim() || null;
+        const messageTemplateId = document.getElementById('al-template-id').value.trim() || null;
+        const sender         = document.getElementById('al-sender').value.trim() || null;
+        const maxUses        = parseInt(document.getElementById('al-maxuses').value, 10) || 50;
+        const votingDeadline = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+        const title          = `Alumni Campaign — ${sourceGroup || ('Batch ' + sourceBatch)}`;
+
+        if (!sourceGroup && !sourceBatch) {
+          alert('Please enter the WhatsApp group name and / or graduation year.');
+          return;
+        }
+
+        const payload = {
+          webDestination: 'https://kaayko.com/alumni',
+          title,
+          description: `Alumni interest campaign${sourceBatch ? ' for batch ' + sourceBatch : ''}. Voting closes ${new Date(votingDeadline).toDateString()}.`,
+          createdBy: 'admin@kaayko.com',
+          expiresAt: votingDeadline,
+          metadata: {
+            campaign: 'alumni',
+            maxUses,
+            sourceGroup,
+            sourceBatch,
+            schoolName,
+            schoolId,
+            campaignId,
+            channel,
+            chapterOrRegion,
+            audienceType,
+            organizerRole,
+            messageTemplateId,
+            sender,
+            votingDeadline
+          },
+        };
+
+        await createLink(payload);
+
+        // Auto-generate companion read-only report key
+        try {
+          const shortUrl    = document.getElementById('short-url').textContent || '';
+          const codeMatch   = shortUrl.match(/\/l\/([a-zA-Z0-9_-]+)/);
+          const linkCode    = codeMatch ? codeMatch[1] : '';
+          if (linkCode) {
+            const rkRes  = await fetch(API_BASE + '/alumni/report-key', {
+              method:  'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body:    JSON.stringify({ linkCode, label: title }),
+            });
+            const rkData = await rkRes.json();
+            if (rkData.success && rkData.reportUrl) {
+              document.getElementById('report-url').textContent  = rkData.reportUrl;
+              document.getElementById('report-open-btn').href    = rkData.reportUrl;
+              document.getElementById('report-scope-label').textContent =
+                [sourceGroup, sourceBatch ? 'Batch ' + sourceBatch : ''].filter(Boolean).join(' · ');
+              document.getElementById('report-link-item').style.display = 'block';
+            }
+          }
+        } catch (_) { /* non-critical */ }
+        return;
+      }
+
+      // ── All other content types ──────────────────────────────────────
+      const contentId  = document.getElementById('content-id').value || 'home';
+      const utmSource  = document.getElementById('utm-source').value;
       
       // Build web destination based on content type
       let webDestination;
@@ -715,6 +919,11 @@
         }, 2000);
       });
     }
+
+    // Initialise conditional form sections on load
+    document.addEventListener('DOMContentLoaded', () => {
+      updateSimpleForm();
+    });
   </script>
 </body>
 </html>
