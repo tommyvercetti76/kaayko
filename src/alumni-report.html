@@ -266,14 +266,15 @@
 
     // Stats
     el('s-total').textContent=s.total;
-    el('s-total-sub').textContent='from '+(d.links?d.links.length:0)+' links';
+    var activeLinks=d.links?d.links.filter(function(l){return (l.submissions||0)>0}).length:0;
+    el('s-total-sub').textContent='from '+activeLinks+' link'+(activeLinks===1?'':'s');
     el('s-verified').textContent=bk.verified;
     var vPct=s.total>0?Math.round(bk.verified/s.total*100):0;
     el('s-verified-sub').textContent=vPct+'% of total';
     var nBatches=Object.keys(s.batchDist||{}).length;
     el('s-batches').textContent=nBatches;
     el('s-batches-sub').textContent=nBatches>0?Object.keys(s.batchDist).sort().reverse().slice(0,3).join(', '):'none yet';
-    var active=(b.volunteer||0)+(b.donate_later||0)+(b.advisory||0);
+    var active=s.actionReadyCount!=null?s.actionReadyCount:(b.mentor||0)+(b.volunteer||0)+(b.donate_later||0)+(b.advisory||0);
     el('s-active').textContent=active;
     var aPct=s.total>0?Math.round(active/s.total*100):0;
     el('s-active-sub').textContent=aPct+'% action-ready';
