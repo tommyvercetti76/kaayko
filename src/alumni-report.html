@@ -271,13 +271,6 @@
     el('s-total').textContent=s.total;
     var activeLinks=d.links?d.links.filter(function(l){return (l.submissions||0)>0}).length:0;
     el('s-total-sub').textContent='from '+activeLinks+' active link'+(activeLinks===1?'':'s');
-    // Derive school name from links metadata
-    var schoolName=null;
-    if(d.links&&d.links.length>0){
-      for(var li=0;li<d.links.length;li++){if(d.links[li].schoolName){schoolName=d.links[li].schoolName;break;}}
-    }
-    if(schoolName){el('rh-title').textContent=schoolName+' \u2014 Alumni Network';document.title=schoolName+' Alumni \u2014 Kaayko';}
-
     // Responses sub: list active source groups (strip "Alumni X Link" → "X")
     var activeLinks=d.links?d.links.filter(function(l){return (l.submissions||0)>0}):[];
     var groupNames=activeLinks.map(function(l){
