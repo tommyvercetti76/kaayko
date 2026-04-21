@@ -606,6 +606,23 @@ async function loadLinkForEditing(code) {
     // Keep destination-based conditional sections in sync for edited links
     checkAlumniDestination();
 
+    // Repopulate alumni metadata fields (prevents accidental wipe on re-save)
+    if (isAlumniLink(webDest) && link.metadata) {
+      const m = link.metadata;
+      const setVal = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
+      setVal('alumniSourceGroup',     m.sourceGroup      || '');
+      setVal('alumniSourceBatch',     m.sourceBatch      || '');
+      setVal('alumniSchoolName',      m.schoolName       || '');
+      setVal('alumniSchoolId',        m.schoolId         || '');
+      setVal('alumniCampaignId',      m.campaignId       || '');
+      setVal('alumniChannel',         m.channel          || '');
+      setVal('alumniChapterOrRegion', m.chapterOrRegion  || '');
+      setVal('alumniSender',          m.sender           || '');
+      if (m.maxUses != null) setVal('alumniMaxUses', m.maxUses);
+      const isAdminEl = document.getElementById('isAdminLink');
+      if (isAdminEl) isAdminEl.checked = !!m.isAdmin;
+    }
+
     // Show ROOTS section if this link points to /knowledge
     checkROOTSDestination();
     
