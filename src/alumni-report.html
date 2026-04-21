@@ -332,9 +332,7 @@
     var c=el('interest-chart');c.innerHTML='';
     var max=Math.max(1,Math.max.apply(null,IK.map(function(k){return breakdown[k]||0})));
     IK.forEach(function(key){
-      var m=IM[key],count=breakdown[key]||0;
-      if(count===0)return;
-      var pct=Math.round(count/max*100);
+      var m=IM[key],count=breakdown[key]||0,pct=count===0?0:Math.round(count/max*100);
       var row=document.createElement('div');row.className='bc-row';
       row.innerHTML='<div class="bc-label">'+m.label+'</div>'+
         '<div class="bc-track"><div class="bc-fill" data-pct="'+pct+'" style="width:0;background:'+m.color+'"></div></div>'+
@@ -433,11 +431,10 @@
           setTimeout(function(){btn.classList.remove('copied');btn.innerHTML='<svg viewBox="0 0 16 16"><path d="M4 4v-2a1 1 0 011-1h7a1 1 0 011 1v8a1 1 0 01-1 1h-2v2a1 1 0 01-1 1H3a1 1 0 01-1-1V5a1 1 0 011-1h1zm1 0h4a1 1 0 011 1v5h1V2H5v2z"/></svg>Copy'},1500);
         });
       });
-      // Expand handler
-      row.querySelector('.btn-detail').addEventListener('click',function(e){
-        e.stopPropagation();
-        row.classList.toggle('open');
-      });
+      // Expand on row click or chevron button
+      var toggleExpand=function(e){if(e.target.closest('.btn-copy'))return;row.classList.toggle('open');};
+      row.addEventListener('click',toggleExpand);
+      row.style.cursor='pointer';
       c.appendChild(row);
     });
   }
