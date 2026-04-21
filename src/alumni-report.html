@@ -168,17 +168,17 @@
       </div>
       <div class="st st-green">
         <div class="st-val" id="s-verified" style="color:var(--green)">&#8212;</div>
-        <div class="st-lbl">High Signal</div>
+        <div class="st-lbl">Quality Responses</div>
         <div class="st-sub" id="s-verified-sub"></div>
       </div>
       <div class="st st-blue">
         <div class="st-val" id="s-batches" style="color:var(--blue)">&#8212;</div>
-        <div class="st-lbl">Grad Years</div>
+        <div class="st-lbl" id="s-batches-lbl">Grad Year</div>
         <div class="st-sub" id="s-batches-sub"></div>
       </div>
       <div class="st st-purple">
         <div class="st-val" id="s-active" style="color:var(--purple)">&#8212;</div>
-        <div class="st-lbl">Action-ready</div>
+        <div class="st-lbl">Ready to Engage</div>
         <div class="st-sub" id="s-active-sub"></div>
       </div>
     </div>
@@ -268,18 +268,32 @@
     el('s-total').textContent=s.total;
     var activeLinks=d.links?d.links.filter(function(l){return (l.submissions||0)>0}).length:0;
     el('s-total-sub').textContent='from '+activeLinks+' active link'+(activeLinks===1?'':'s');
+    // Derive school name from links metadata
+    var schoolName=null;
+    if(d.links&&d.links.length>0){
+      for(var li=0;li<d.links.length;li++){if(d.links[li].schoolName){schoolName=d.links[li].schoolName;break;}}
+    }
+    if(schoolName){el('rh-title').textContent=schoolName+' \u2014 Alumni Network';document.title=schoolName+' Alumni \u2014 Kaayko';}
+
+    // Responses sub: list active source groups
+    var activeLinks=d.links?d.links.filter(function(l){return (l.submissions||0)>0}):[];
+    var groupNames=activeLinks.map(function(l){return l.sourceGroup||l.title}).filter(Boolean);
+    var uniqueGroups=groupNames.filter(function(v,i,a){return a.indexOf(v)===i});
+    el('s-total-sub').textContent=uniqueGroups.length?'via '+uniqueGroups.join(' \u00b7 '):'from '+activeLinks.length+' active link'+(activeLinks.length===1?'':'s');
+
     var highSignal=(bk.verified||0)+(bk.medium||0);
     el('s-verified').textContent=highSignal;
     var hsPct=s.total>0?Math.round(highSignal/s.total*100):0;
-    el('s-verified-sub').textContent=hsPct+'% of responses';
+    el('s-verified-sub').textContent=hsPct+'% detailed & intentional';
     var nBatches=Object.keys(s.batchDist||{}).length;
     el('s-batches').textContent=nBatches;
+    el('s-batches-lbl').textContent=nBatches===1?'Grad Year':'Grad Years';
     var bYears=Object.keys(s.batchDist||{}).sort().reverse();
     el('s-batches-sub').textContent=nBatches===0?'none provided yet':nBatches===1?'Class of '+bYears[0]:'Classes '+bYears[bYears.length-1]+'\u2013'+bYears[0];
     var active=s.actionReadyCount!=null?s.actionReadyCount:(b.mentor||0)+(b.volunteer||0)+(b.donate_later||0)+(b.advisory||0);
     el('s-active').textContent=active;
     var aPct=s.total>0?Math.round(active/s.total*100):0;
-    el('s-active-sub').textContent=aPct+'% action-ready';
+    el('s-active-sub').textContent=aPct+'% \u2014 mentor \u00b7 volunteer \u00b7 give back';
 
     // Interest bar chart
     renderBarChart(b);
@@ -312,7 +326,9 @@
     var c=el('interest-chart');c.innerHTML='';
     var max=Math.max(1,Math.max.apply(null,IK.map(function(k){return breakdown[k]||0})));
     IK.forEach(function(key){
-      var m=IM[key],count=breakdown[key]||0,pct=Math.round(count/max*100);
+      var m=IM[key],count=breakdown[key]||0;
+      if(count===0)return;
+      var pct=Math.round(count/max*100);
       var row=document.createElement('div');row.className='bc-row';
       row.innerHTML='<div class="bc-label">'+m.label+'</div>'+
         '<div class="bc-track"><div class="bc-fill" data-pct="'+pct+'" style="width:0;background:'+m.color+'"></div></div>'+
@@ -382,12 +398,17 @@
       var fullUrl='https://kaayko.com/l/'+lk.code;
       var badge=lk.enabled?'<span class="lk-badge lk-on">ON</span>':'<span class="lk-badge lk-off">OFF</span>';
       var cap='<span class="lk-badge lk-cap">'+(lk.maxUses!=null?submissions+'/'+lk.maxUses:'\u221e')+'</span>';
+      var metaBadges='';
+      if(lk.sourceGroup) metaBadges+='<span class="lk-badge lk-cap" style="color:var(--blue);border-color:rgba(59,130,246,.25)">'+esc(lk.sourceGroup)+'</span>';
+      if(lk.sourceBatch) metaBadges+='<span class="lk-badge lk-cap">Batch '+esc(lk.sourceBatch)+'</span>';
+      if(lk.channel)     metaBadges+='<span class="lk-badge lk-cap" style="color:var(--green);border-color:rgba(34,197,94,.2)">'+esc(lk.channel)+'</span>';
+      if(lk.chapterOrRegion) metaBadges+='<span class="lk-badge lk-cap">'+esc(lk.chapterOrRegion)+'</span>';
 
       // Build expandable pie chart
       var expandHtml=buildLinkPie(lk);
 
       var row=document.createElement('div');row.className='lk';
-      row.innerHTML='<div class="lk-info"><div class="lk-name">'+esc(lk.title)+'</div><div class="lk-row2"><span class="lk-code">/l/'+esc(lk.code)+'</span>'+badge+cap+'</div></div>'+
+      row.innerHTML='<div class="lk-info"><div class="lk-name">'+esc(lk.title)+'</div><div class="lk-row2"><span class="lk-code">/l/'+esc(lk.code)+'</span>'+badge+cap+metaBadges+'</div></div>'+
         '<div><div class="lk-num" style="color:var(--sub)">'+consumedClicks+'</div></div>'+
         '<div><div class="lk-num" style="color:var(--gold)">'+submissions+'</div></div>'+
         '<div class="lk-conv"><div class="lk-conv-track"><div class="lk-conv-fill" style="width:'+cw+'%"></div></div><span class="lk-conv-pct">'+lk.conversionPct+'%</span></div>'+
