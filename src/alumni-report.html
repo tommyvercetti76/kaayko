@@ -183,6 +183,9 @@
       </div>
     </div>
 
+    <!-- Insight callout -->
+    <div id="insight-callout" style="display:none;background:rgba(212,168,75,.06);border:1px solid rgba(212,168,75,.15);border-radius:8px;padding:13px 18px;margin-bottom:14px;font-size:12px;font-weight:500;color:var(--sub);line-height:1.6"></div>
+
     <!-- Interest bars + Quality donut -->
     <div class="cols">
       <div class="sec" style="margin-bottom:0">
@@ -275,9 +278,11 @@
     }
     if(schoolName){el('rh-title').textContent=schoolName+' \u2014 Alumni Network';document.title=schoolName+' Alumni \u2014 Kaayko';}
 
-    // Responses sub: list active source groups
+    // Responses sub: list active source groups (strip "Alumni X Link" → "X")
     var activeLinks=d.links?d.links.filter(function(l){return (l.submissions||0)>0}):[];
-    var groupNames=activeLinks.map(function(l){return l.sourceGroup||l.title}).filter(Boolean);
+    var groupNames=activeLinks.map(function(l){
+      return l.sourceGroup||(l.title||'').replace(/^alumni\s+/i,'').replace(/\s+link$/i,'').trim();
+    }).filter(Boolean);
     var uniqueGroups=groupNames.filter(function(v,i,a){return a.indexOf(v)===i});
     el('s-total-sub').textContent=uniqueGroups.length?'via '+uniqueGroups.join(' \u00b7 '):'from '+activeLinks.length+' active link'+(activeLinks.length===1?'':'s');
 
@@ -294,6 +299,14 @@
     el('s-active').textContent=active;
     var aPct=s.total>0?Math.round(active/s.total*100):0;
     el('s-active-sub').textContent=aPct+'% \u2014 mentor \u00b7 volunteer \u00b7 give back';
+
+    // Insight callout
+    var insightParts=[];
+    if(active>0&&s.total>0) insightParts.push(active+' of '+s.total+' alumni ready to mentor, volunteer, or give back');
+    if(s.signals&&s.signals.fromTrustedLink===s.total&&s.total>0) insightParts.push('all reached via personal outreach\u2014not a public form');
+    else if(s.signals&&s.signals.fromTrustedLink>0) insightParts.push(s.signals.fromTrustedLink+' reached via personal batch outreach');
+    var ic=el('insight-callout');
+    if(insightParts.length){ic.textContent=insightParts.join(' \u00b7 ');ic.style.display='block';}
 
     // Interest bar chart
     renderBarChart(b);
@@ -343,8 +356,8 @@
     if(!total){c.innerHTML='<p style="color:var(--dim);font-size:12px;text-align:center;padding:20px 0">No responses yet</p>';return;}
     var tiers=[
       {key:'verified',label:'Confirmed',desc:'Email address verified via one-time code',color:'#22c55e',val:bk.verified||0},
-      {key:'medium',  label:'Strong',   desc:'Came from a trusted batch link with clear intent',color:'#d4a84b',val:bk.medium||0},
-      {key:'low',     label:'Basic',    desc:'Form submitted — additional data pending',color:'#52525b',val:bk.low||0},
+      {key:'medium',  label:'Strong',   desc:'Responded to personal outreach and expressed a specific commitment — mentoring, volunteering, or showing up',color:'#d4a84b',val:bk.medium||0},
+      {key:'low',     label:'Basic',    desc:'Responded to outreach with general interest — ready for a follow-up to clarify their role',color:'#52525b',val:bk.low||0},
       {key:'flagged', label:'Flagged',  desc:'Unusual activity detected — excluded from totals',color:'#ef4444',val:bk.flagged||0}
     ];
     var html='<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">';
