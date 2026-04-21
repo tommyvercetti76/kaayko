@@ -168,12 +168,12 @@
       </div>
       <div class="st st-green">
         <div class="st-val" id="s-verified" style="color:var(--green)">&#8212;</div>
-        <div class="st-lbl">Verified</div>
+        <div class="st-lbl">High Signal</div>
         <div class="st-sub" id="s-verified-sub"></div>
       </div>
       <div class="st st-blue">
         <div class="st-val" id="s-batches" style="color:var(--blue)">&#8212;</div>
-        <div class="st-lbl">Batches</div>
+        <div class="st-lbl">Grad Years</div>
         <div class="st-sub" id="s-batches-sub"></div>
       </div>
       <div class="st st-purple">
@@ -186,11 +186,11 @@
     <!-- Interest bars + Quality donut -->
     <div class="cols">
       <div class="sec" style="margin-bottom:0">
-        <div class="sec-h"><span class="sec-t">Interest breakdown</span><span class="sec-note">by selection count</span></div>
+        <div class="sec-h"><span class="sec-t">Interest breakdown</span><span class="sec-note">alumni may select multiple</span></div>
         <div class="bar-chart" id="interest-chart"></div>
       </div>
       <div class="sec" style="margin-bottom:0">
-        <div class="sec-h"><span class="sec-t">Response quality</span></div>
+        <div class="sec-h"><span class="sec-t">Response quality</span><span class="sec-note">data completeness &amp; verification</span></div>
         <div class="donut-wrap" id="quality-chart"></div>
       </div>
     </div>
@@ -238,7 +238,7 @@
     stay_updated:{label:'Get founding-member updates',color:'#71717a'}
   };
   var IK=Object.keys(IM);
-  var QM={verified:{label:'Verified',color:'#22c55e'},medium:{label:'Medium',color:'#d4a84b'},low:{label:'Low',color:'#52525b'},flagged:{label:'Flagged',color:'#ef4444'}};
+  var QM={verified:{label:'Confirmed',color:'#22c55e'},medium:{label:'Strong',color:'#d4a84b'},low:{label:'Basic',color:'#52525b'},flagged:{label:'Flagged',color:'#ef4444'}};
 
   if(!rk){showError('No report key provided.');return}
 
@@ -262,18 +262,20 @@
     el('rh-group').textContent=k.sourceGroup||'All groups';
     el('rh-batch').textContent=k.sourceBatch?'Batch '+k.sourceBatch:'All batches';
     el('rh-updated').textContent=fmtTime(d.generatedAt);
-    el('rh-views').textContent=(k.viewCount||0)+' report opens';
+    el('rh-views').textContent='';
 
     // Stats
     el('s-total').textContent=s.total;
     var activeLinks=d.links?d.links.filter(function(l){return (l.submissions||0)>0}).length:0;
-    el('s-total-sub').textContent='from '+activeLinks+' link'+(activeLinks===1?'':'s');
-    el('s-verified').textContent=bk.verified;
-    var vPct=s.total>0?Math.round(bk.verified/s.total*100):0;
-    el('s-verified-sub').textContent=vPct+'% of total';
+    el('s-total-sub').textContent='from '+activeLinks+' active link'+(activeLinks===1?'':'s');
+    var highSignal=(bk.verified||0)+(bk.medium||0);
+    el('s-verified').textContent=highSignal;
+    var hsPct=s.total>0?Math.round(highSignal/s.total*100):0;
+    el('s-verified-sub').textContent=hsPct+'% of responses';
     var nBatches=Object.keys(s.batchDist||{}).length;
     el('s-batches').textContent=nBatches;
-    el('s-batches-sub').textContent=nBatches>0?Object.keys(s.batchDist).sort().reverse().slice(0,3).join(', '):'none yet';
+    var bYears=Object.keys(s.batchDist||{}).sort().reverse();
+    el('s-batches-sub').textContent=nBatches===0?'none provided yet':nBatches===1?'Class of '+bYears[0]:'Classes '+bYears[bYears.length-1]+'\u2013'+bYears[0];
     var active=s.actionReadyCount!=null?s.actionReadyCount:(b.mentor||0)+(b.volunteer||0)+(b.donate_later||0)+(b.advisory||0);
     el('s-active').textContent=active;
     var aPct=s.total>0?Math.round(active/s.total*100):0;
@@ -446,7 +448,7 @@
     leads.forEach(function(lead){
       var b=lead.bucket||'low_confidence';
       var dc=b==='verified'?'dot-v':(b==='medium_confidence'?'dot-m':(b==='flagged'?'dot-f':'dot-l'));
-      var bl=b==='verified'?'Verified':(b==='medium_confidence'?'Medium':(b==='flagged'?'Flagged':'Low'));
+      var bl=b==='verified'?'Confirmed':(b==='medium_confidence'?'Strong':(b==='flagged'?'Flagged':'Basic'));
       var ints=(lead.interestType||[]).map(function(t){var m=IM[t];return '<span class="intent-tag">'+(m?m.label:t)+'</span>'}).join('');
       var loc=[lead.city,lead.country].filter(Boolean).join(', ')||'\u2014';
       var nameHtml=lead.name?'<div style="font-weight:600;font-size:12px">'+esc(lead.name)+'</div>'+(lead.comment&&lead.comment.length>0?'<div style="font-size:10px;color:var(--dim);margin-top:2px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(lead.comment)+'">&#8220;'+esc(lead.comment)+'&#8221;</div>':''):'<span style="color:var(--dim)">\u2014</span>';
