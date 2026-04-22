@@ -319,7 +319,7 @@ function renderGroups(container, groups) {
   container.querySelectorAll('[data-action="view-group"]').forEach(button => {
     button.addEventListener('click', event => {
       event.stopPropagation();
-      focusGroup(button.dataset.groupKey || '');
+      toggleGroup(button.dataset.groupKey || '');
     });
   });
 
@@ -372,14 +372,14 @@ function renderGroups(container, groups) {
 
   container.querySelectorAll('.campaign-row').forEach(row => {
     row.addEventListener('click', event => {
-      if (event.target.closest('button, a, input, label, details, summary')) return;
-      focusGroup(row.dataset.groupKey || '');
+      if (event.target.closest('button, a, input, label, details, summary, .campaign-accordion')) return;
+      toggleGroup(row.dataset.groupKey || '');
     });
 
     row.addEventListener('keydown', event => {
-      if ((event.key === 'Enter' || event.key === ' ') && !event.target.closest('button, a, input, label, details, summary')) {
+      if ((event.key === 'Enter' || event.key === ' ') && !event.target.closest('button, a, input, label, details, summary, .campaign-accordion')) {
         event.preventDefault();
-        focusGroup(row.dataset.groupKey || '');
+        toggleGroup(row.dataset.groupKey || '');
       }
     });
   });
@@ -415,6 +415,13 @@ function renderGroups(container, groups) {
 
 function renderTable(container, links) {
   const selectedGroup = currentGroups.find(group => group.key === FILTER_STATE.groupKey);
+
+  container.classList.toggle('hidden', Boolean(selectedGroup));
+
+  if (selectedGroup) {
+    container.innerHTML = '';
+    return;
+  }
 
   if (!links.length) {
     container.innerHTML = `
@@ -512,36 +519,68 @@ function CampaignRow(group) {
 
   return `
     <article class="campaign-row ${selected ? 'is-focused' : ''} ${group.isUnassigned ? 'is-unassigned' : ''} ${isChecked ? 'is-selected' : ''}" role="listitem" tabindex="0" data-group-key="${utils.escapeHtml(group.key)}">
-      <div class="campaign-row-select">
-        <input
-          type="checkbox"
-          class="campaign-select-input"
-          value="${utils.escapeHtml(group.key)}"
-          aria-label="Select ${utils.escapeHtml(group.label)}"
-          ${isChecked ? 'checked' : ''}
-        >
-      </div>
-
-      <div class="campaign-row-main">
-        <div class="campaign-row-titleline">
-          <div class="campaign-status ${status.tone}">
-            <span class="campaign-status-dot"></span>
-            <span class="campaign-status-label">${utils.escapeHtml(status.label)}</span>
-          </div>
-          <h4>${utils.escapeHtml(group.label)}</h4>
-          ${group.needsCampaignId ? `<button type="button" class="campaign-inline-link" data-action="assign-campaign" data-group-key="${utils.escapeHtml(group.key)}">Assign Campaign ID</button>` : ''}
+      <div class="campaign-row-shell">
+        <div class="campaign-row-select">
+          <input
+            type="checkbox"
+            class="campaign-select-input"
+            value="${utils.escapeHtml(group.key)}"
+            aria-label="Select ${utils.escapeHtml(group.label)}"
+            ${isChecked ? 'checked' : ''}
+          >
         </div>
-        <div class="campaign-row-subtext">${utils.escapeHtml(subtext)}</div>
-        ${signalMarkup}
-      </div>
 
-      ${MetricsInline(group)}
+        <div class="campaign-row-main">
+          <div class="campaign-row-titleline">
+            <div class="campaign-status ${status.tone}">
+              <span class="campaign-status-dot"></span>
+              <span class="campaign-status-label">${utils.escapeHtml(status.label)}</span>
+            </div>
+            <h4>${utils.escapeHtml(group.label)}</h4>
+            ${group.needsCampaignId ? `<button type="button" class="campaign-inline-link" data-action="assign-campaign" data-group-key="${utils.escapeHtml(group.key)}">Assign Campaign ID</button>` : ''}
+          </div>
+          <div class="campaign-row-subtext">${utils.escapeHtml(subtext)}</div>
+          ${signalMarkup}
+        </div>
 
-      <div class="campaign-row-actions">
-        <button type="button" class="btn btn-secondary campaign-row-view" data-action="view-group" data-group-key="${utils.escapeHtml(group.key)}">View</button>
-        ${OverflowMenu(group)}
+        ${MetricsInline(group)}
+
+        <div class="campaign-row-actions">
+          <button
+            type="button"
+            class="campaign-row-toggle"
+            data-action="view-group"
+            data-group-key="${utils.escapeHtml(group.key)}"
+            aria-expanded="${selected ? 'true' : 'false'}"
+            aria-label="${selected ? `Collapse ${group.label}` : `Expand ${group.label}`}"
+            title="${selected ? 'Collapse' : 'Expand'}"
+          >
+            <span class="campaign-row-toggle-line campaign-row-toggle-line-horizontal"></span>
+            <span class="campaign-row-toggle-line campaign-row-toggle-line-vertical"></span>
+          </button>
+          ${OverflowMenu(group)}
+        </div>
       </div>
+      ${selected ? CampaignAccordion(group) : ''}
     </article>
+  `;
+}
+
+function CampaignAccordion(group) {
+  return `
+    <div class="campaign-accordion" data-group-key="${utils.escapeHtml(group.key)}">
+      <div class="campaign-accordion-head">
+        <div>
+          <h5>${group.linkCount} link${group.linkCount === 1 ? '' : 's'} in ${utils.escapeHtml(group.label)}</h5>
+          <p>Edit, open QR, enable or disable, and remove individual links without leaving this campaign row.</p>
+        </div>
+        ${group.needsCampaignId ? `<button type="button" class="btn btn-secondary campaign-accordion-assign" data-action="assign-campaign" data-group-key="${utils.escapeHtml(group.key)}">Assign Campaign ID</button>` : ''}
+      </div>
+      ${group.warning ? `<div class="campaign-accordion-note">${utils.escapeHtml(group.warning)}</div>` : ''}
+      <div class="campaign-accordion-table">
+        ${ui.renderLinksTable(group.links)}
+      </div>
+    </div>
   `;
 }
 
@@ -915,7 +954,7 @@ function getGroupByKey(groupKey) {
   return currentGroups.find(group => group.key === groupKey) || null;
 }
 
-function focusGroup(groupKey, { scrollToTable = false } = {}) {
+function focusGroup(groupKey, { scrollToAccordion = false } = {}) {
   if (!groupKey) return;
 
   FILTER_STATE.groupKey = groupKey;
@@ -923,15 +962,28 @@ function focusGroup(groupKey, { scrollToTable = false } = {}) {
   setFilterPanelOpen(false);
   renderLinksView();
 
-  if (scrollToTable) {
+  if (scrollToAccordion) {
     window.requestAnimationFrame(() => {
-      document.getElementById('links-table')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.querySelector(`.campaign-accordion[data-group-key="${groupKey}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     });
   }
 }
 
+function toggleGroup(groupKey) {
+  if (!groupKey) return;
+
+  if (FILTER_STATE.groupKey === groupKey) {
+    FILTER_STATE.groupKey = '';
+    syncControls();
+    renderLinksView();
+    return;
+  }
+
+  focusGroup(groupKey);
+}
+
 function openGroupLinks(groupKey) {
-  focusGroup(groupKey, { scrollToTable: true });
+  focusGroup(groupKey, { scrollToAccordion: true });
 }
 
 function assignCampaignId(groupKey) {
