@@ -1,327 +1,591 @@
 /**
  * Analytics View Module
- * Executive summary analytics with Chart.js visualizations
+ * Portfolio-level analytics rendered from real Smart Links data only.
  */
 
 import { STATE, utils } from '../../js/kortex-core.js';
 import { apiFetch } from '../../js/config.js';
 
-// Chart instances for cleanup
-let clicksTrendChart = null;
-let platformChart = null;
-let performanceChart = null;
-let chartJSLoaded = false;
+const LINK_LIMIT = 250;
 
-/**
- * Initialize analytics view
- */
-export async function init(state) {
-  console.log('📊 Loading Analytics...');
-  
-  // Try to load Chart.js but don't block on failure
-  try {
-    await loadChartJS();
-    chartJSLoaded = true;
-    console.log('✅ Chart.js loaded successfully');
-  } catch (err) {
-    console.warn('⚠️ Chart.js failed to load, continuing without charts:', err.message);
-    chartJSLoaded = false;
-  }
-  
-  // Initialize date range picker
-  initDateRangePicker();
-  
-  // Load and render analytics (always runs, with or without charts)
+export async function init() {
   await loadAnalytics();
 }
 
-/**
- * Dynamically load Chart.js
- */
-async function loadChartJS() {
-  if (window.Chart) {
-    chartJSLoaded = true;
-    return;
-  }
-  
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
-    script.onload = () => {
-      chartJSLoaded = true;
-      resolve();
-    };
-    script.onerror = () => {
-      chartJSLoaded = false;
-      reject(new Error('Failed to load Chart.js'));
-    };
-    document.head.appendChild(script);
-  });
-}
-
-/**
- * Initialize date range picker
- */
-function initDateRangePicker() {
-  const buttons = document.querySelectorAll('.range-btn');
-  buttons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      buttons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      // Reload with new range (future enhancement)
-      console.log('Date range:', btn.dataset.range);
-    });
-  });
-}
-
-/**
- * Load and render analytics dashboard
- */
 async function loadAnalytics() {
   const container = document.getElementById('analytics-content');
   if (!container) return;
-  
+
   container.innerHTML = '<div class="loading">Loading analytics...</div>';
-  
-  // Load links if not already loaded
-  if (STATE.links.length === 0) {
-    try {
-      const res = await apiFetch('/smartlinks');
-      const data = await res.json();
-      
-      console.log('📊 Analytics API Response:', JSON.stringify(data, null, 2));
-      
-      if (data.success) {
-        if (data.links) {
-          STATE.links = data.links;
-        } else if (data.short || data.structured) {
-          STATE.links = [...(data.structured || []), ...(data.short || [])];
-        }
-      }
-      
-      console.log('📊 Processed Links:', STATE.links.length);
-      STATE.links.forEach(link => {
-        console.log(`   → ${link.code || link.shortCode}: ${link.clickCount || 0} clicks | "${link.title || 'Untitled'}" | ${link.enabled !== false ? 'enabled' : 'disabled'}`);
-      });
-      
-    } catch (err) {
-      console.error('Failed to load links:', err);
-      container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><p>Failed to load analytics</p></div>';
+
+  try {
+    const links = await fetchLinks();
+    STATE.links = links;
+
+    if (!links.length) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">📊</div>
+          <h3>No Analytics Yet</h3>
+          <p>Create some links to see portfolio analytics.</p>
+        </div>
+      `;
       return;
     }
-  }
-  
-  if (STATE.links.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><h3>No Analytics Yet</h3><p>Create some links to see analytics data</p></div>';
-    return;
-  }
-  
-  // Calculate all metrics
-  const metrics = calculateMetrics(STATE.links);
-  console.log('📊 Calculated Metrics:', metrics);
-  
-  // Render charts only if Chart.js loaded successfully
-  if (chartJSLoaded && window.Chart) {
-    renderCharts(metrics);
-  } else {
-    // Hide chart containers if charts unavailable
-    hideChartContainers();
-  }
-  
-  // Render the dashboard tables (always renders)
-  const html = renderAnalyticsDashboard(metrics);
-  container.innerHTML = html;
-  console.log('📊 Analytics dashboard rendered successfully');
-}
 
-/**
- * Hide chart containers when Chart.js is unavailable
- */
-function hideChartContainers() {
-  const chartSection = document.querySelector('.charts-section');
-  if (chartSection) {
-    chartSection.innerHTML = `
-      <div class="chart-unavailable">
-        <div class="chart-unavailable-icon">📊</div>
-        <p>Charts temporarily unavailable</p>
-        <small>Analytics data is shown below</small>
+    const metrics = calculateMetrics(links);
+    container.innerHTML = renderAnalyticsDashboard(metrics);
+  } catch (err) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">⚠️</div>
+        <h3>Analytics Unavailable</h3>
+        <p>${utils.escapeHtml(err.message)}</p>
       </div>
     `;
   }
 }
 
-/**
- * Render Chart.js visualizations
- */
-function renderCharts(metrics) {
-  if (!window.Chart) {
-    console.warn('Chart.js not available, skipping chart render');
-    return;
+async function fetchLinks() {
+  const res = await apiFetch(`/smartlinks?limit=${LINK_LIMIT}`);
+  if (!res) throw new Error('Authentication failed');
+
+  const data = await res.json();
+  if (!data.success) throw new Error(data.error || 'Failed to load analytics');
+
+  if (Array.isArray(data.links)) return data.links;
+  if (Array.isArray(data.short) || Array.isArray(data.structured)) {
+    return [...(data.structured || []), ...(data.short || [])];
   }
-  
-  // Destroy existing charts
-  if (clicksTrendChart) clicksTrendChart.destroy();
-  if (platformChart) platformChart.destroy();
-  if (performanceChart) performanceChart.destroy();
-  
-  // Generate mock time series data (in real app, this would come from API)
-  const last7Days = generateTimeSeriesData(metrics.totalClicks, 7);
-  
-  // 1. Clicks Trend Chart (Line)
-  const clicksCtx = document.getElementById('clicks-trend-chart');
-  if (clicksCtx) {
-    clicksTrendChart = new Chart(clicksCtx, {
-      type: 'line',
-      data: {
-        labels: last7Days.labels,
-        datasets: [{
-          label: 'Clicks',
-          data: last7Days.data,
-          borderColor: '#D4AF37',
-          backgroundColor: 'rgba(212, 175, 55, 0.1)',
-          borderWidth: 3,
-          fill: true,
-          tension: 0.4,
-          pointBackgroundColor: '#D4AF37',
-          pointBorderColor: '#1a1a1a',
-          pointBorderWidth: 2,
-          pointRadius: 5,
-          pointHoverRadius: 8
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#1a1a1a',
-            titleColor: '#fff',
-            bodyColor: '#D4AF37',
-            borderColor: '#D4AF37',
-            borderWidth: 1,
-            padding: 12,
-            displayColors: false
-          }
-        },
-        scales: {
-          x: {
-            grid: { color: 'rgba(255,255,255,0.05)' },
-            ticks: { color: '#888' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(255,255,255,0.05)' },
-            ticks: { color: '#888' }
-          }
-        }
-      }
-    });
-  }
-  
-  // 2. Platform Distribution Chart (Doughnut)
-  const platformCtx = document.getElementById('platform-chart');
-  if (platformCtx) {
-    platformChart = new Chart(platformCtx, {
-      type: 'doughnut',
-      data: {
-        labels: ['iOS', 'Android', 'Web Only'],
-        datasets: [{
-          data: [metrics.linksWithIOS, metrics.linksWithAndroid, metrics.webOnlyLinks],
-          backgroundColor: ['#007AFF', '#3DDC84', '#D4AF37'],
-          borderColor: '#1a1a1a',
-          borderWidth: 3
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: { color: '#ccc', padding: 15, usePointStyle: true }
-          }
-        },
-        cutout: '65%'
-      }
-    });
-  }
-  
-  // 3. Performance Breakdown Chart (Bar)
-  const perfCtx = document.getElementById('performance-chart');
-  if (perfCtx) {
-    performanceChart = new Chart(perfCtx, {
-      type: 'bar',
-      data: {
-        labels: ['High (8+)', 'Medium (3-7)', 'Low (<3)'],
-        datasets: [{
-          label: 'Links',
-          data: [metrics.highPerformers, metrics.mediumPerformers, metrics.lowPerformers],
-          backgroundColor: ['#4ade80', '#fbbf24', '#f87171'],
-          borderRadius: 8,
-          borderSkipped: false
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { color: '#888' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(255,255,255,0.05)' },
-            ticks: { color: '#888', stepSize: 1 }
-          }
-        }
-      }
-    });
-  }
+
+  return [];
 }
 
-/**
- * Generate time series data for chart
- */
-function generateTimeSeriesData(totalClicks, days) {
-  const labels = [];
-  const data = [];
-  const avgPerDay = Math.ceil(totalClicks / days);
-  
-  for (let i = days - 1; i >= 0; i--) {
-    const date = new Date();
-    date.setDate(date.getDate() - i);
-    labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-    
-    // Generate realistic-looking data with some variance
-    const variance = Math.random() * 0.6 - 0.3; // -30% to +30%
-    const dayClicks = Math.max(0, Math.round(avgPerDay * (1 + variance)));
-    data.push(dayClicks);
+function calculateMetrics(links) {
+  const normalizedLinks = links.map(link => normalizeLink(link));
+  const totalLinks = normalizedLinks.length;
+  const totalClicks = normalizedLinks.reduce((sum, link) => sum + link.clicks, 0);
+  const activeLinks = normalizedLinks.filter(link => link.enabled).length;
+  const disabledLinks = totalLinks - activeLinks;
+  const avgClicksPerLink = totalLinks ? totalClicks / totalLinks : 0;
+  const zeroClickLinks = normalizedLinks.filter(link => link.clicks === 0).length;
+  const recentlyActive = normalizedLinks.filter(link => {
+    if (!link.lastClickedAt) return false;
+    return Date.now() - link.lastClickedAt.getTime() < 24 * 60 * 60 * 1000;
+  }).length;
+
+  const linksWithUTM = normalizedLinks.filter(link => link.hasUTM).length;
+  const utmCampaigns = new Set(
+    normalizedLinks
+      .map(link => link.utmCampaign)
+      .filter(Boolean)
+  ).size;
+
+  const performanceBuckets = [
+    {
+      key: 'high',
+      label: 'High',
+      detail: '8+ clicks',
+      count: normalizedLinks.filter(link => link.clicks >= 8).length,
+      tone: 'good'
+    },
+    {
+      key: 'medium',
+      label: 'Medium',
+      detail: '3-7 clicks',
+      count: normalizedLinks.filter(link => link.clicks >= 3 && link.clicks < 8).length,
+      tone: 'warm'
+    },
+    {
+      key: 'low',
+      label: 'Low',
+      detail: '1-2 clicks',
+      count: normalizedLinks.filter(link => link.clicks > 0 && link.clicks < 3).length,
+      tone: 'muted'
+    },
+    {
+      key: 'zero',
+      label: 'Dormant',
+      detail: '0 clicks',
+      count: zeroClickLinks,
+      tone: 'quiet'
+    }
+  ];
+
+  const platformProfiles = {
+    webOnly: 0,
+    iosOnly: 0,
+    androidOnly: 0,
+    multiPlatform: 0,
+    unconfigured: 0
+  };
+
+  normalizedLinks.forEach(link => {
+    platformProfiles[link.platformProfile] += 1;
+  });
+
+  const platformRows = [
+    { key: 'webOnly', label: 'Web only', count: platformProfiles.webOnly, tone: 'gold' },
+    { key: 'iosOnly', label: 'iOS only', count: platformProfiles.iosOnly, tone: 'blue' },
+    { key: 'androidOnly', label: 'Android only', count: platformProfiles.androidOnly, tone: 'green' },
+    { key: 'multiPlatform', label: 'Multi-platform', count: platformProfiles.multiPlatform, tone: 'white' }
+  ].filter(row => row.count > 0 || totalLinks === 0);
+
+  if (platformProfiles.unconfigured > 0) {
+    platformRows.push({
+      key: 'unconfigured',
+      label: 'No destination',
+      count: platformProfiles.unconfigured,
+      tone: 'muted'
+    });
   }
-  
-  return { labels, data };
+
+  const creatorMap = new Map();
+  normalizedLinks.forEach(link => {
+    if (!creatorMap.has(link.creator)) {
+      creatorMap.set(link.creator, {
+        name: link.creator,
+        links: 0,
+        clicks: 0,
+        live: 0
+      });
+    }
+
+    const row = creatorMap.get(link.creator);
+    row.links += 1;
+    row.clicks += link.clicks;
+    row.live += link.enabled ? 1 : 0;
+  });
+
+  const creators = Array.from(creatorMap.values())
+    .map(creator => ({
+      ...creator,
+      avgClicks: creator.links ? creator.clicks / creator.links : 0,
+      sharePct: totalClicks ? (creator.clicks / totalClicks) * 100 : 0
+    }))
+    .sort((a, b) => {
+      if (b.clicks !== a.clicks) return b.clicks - a.clicks;
+      return a.name.localeCompare(b.name);
+    });
+
+  const topLinks = [...normalizedLinks]
+    .sort((a, b) => {
+      if (b.clicks !== a.clicks) return b.clicks - a.clicks;
+      return a.title.localeCompare(b.title);
+    })
+    .slice(0, 8);
+
+  const topLink = topLinks[0] || null;
+  const topCreator = creators[0] || null;
+  const activeRate = totalLinks ? (activeLinks / totalLinks) * 100 : 0;
+
+  return {
+    normalizedLinks,
+    totalLinks,
+    totalClicks,
+    activeLinks,
+    disabledLinks,
+    avgClicksPerLink,
+    zeroClickLinks,
+    recentlyActive,
+    linksWithUTM,
+    utmCampaigns,
+    activeRate,
+    performanceBuckets,
+    platformRows,
+    creators,
+    topLinks,
+    topLink,
+    topCreator
+  };
 }
 
-/**
- * Export analytics to CSV
- */
-window.exportAnalyticsCSV = function() {
-  const headers = ['Code', 'Title', 'Clicks', 'Created', 'Status', 'Creator', 'Platforms'];
-  const rows = STATE.links.map(l => [
-    l.code || l.shortCode || l.id,
-    `"${(l.title || 'Untitled').replace(/"/g, '""')}"`,
-    l.clickCount || 0,
-    l.createdAt?._seconds ? new Date(l.createdAt._seconds * 1000).toISOString() : '',
-    l.enabled !== false ? 'Active' : 'Disabled',
-    l.createdBy || 'Unknown',
-    [l.destinations?.ios ? 'iOS' : '', l.destinations?.android ? 'Android' : '', l.destinations?.web ? 'Web' : ''].filter(Boolean).join('+')
-  ]);
-  
-  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+function normalizeLink(link) {
+  const title = link.title || link.metadata?.title || 'Untitled';
+  const code = link.code || link.shortCode || link.id || 'unknown';
+  const clicks = getLinkClicks(link);
+  const createdAt = parseTimestamp(link.createdAt);
+  const lastClickedAt = parseTimestamp(link.lastClickedAt);
+  const creator = link.createdBy || 'Unknown';
+  const enabled = link.enabled !== false;
+  const hasUTM = Boolean(link.utm && Object.keys(link.utm).length);
+  const utmCampaign = link.utm?.utm_campaign || link.metadata?.campaignId || '';
+  const family = getLinkFamily(link);
+  const platforms = getLinkPlatforms(link);
+
+  return {
+    raw: link,
+    title,
+    shortTitle: truncate(title, 42),
+    code,
+    clicks,
+    createdAt,
+    createdLabel: createdAt ? formatDate(createdAt) : 'Unknown',
+    lastClickedAt,
+    creator,
+    enabled,
+    hasUTM,
+    utmCampaign,
+    family,
+    platforms,
+    platformProfile: getPlatformProfile(platforms)
+  };
+}
+
+function getLinkClicks(link) {
+  if (link.metadata?.campaign === 'alumni') {
+    return Number(link.uniqueVisitCount ?? link.clickCount ?? 0);
+  }
+
+  return Number(link.clickCount ?? 0);
+}
+
+function getLinkFamily(link) {
+  const metadata = link.metadata || {};
+  const webDestination = (link.destinations?.web || link.webDestination || '').toLowerCase();
+
+  if (metadata.campaign === 'alumni') return 'Alumni';
+  if (metadata.campaign === 'roots' || webDestination.includes('/knowledge')) return 'ROOTS';
+  if (metadata.isAdmin) return 'Admin';
+  if (link.utm?.utm_campaign) return 'Marketing';
+  return 'General';
+}
+
+function getLinkPlatforms(link) {
+  const platforms = [];
+  if (link.destinations?.web || link.webDestination) platforms.push('Web');
+  if (link.destinations?.ios || link.iosDestination) platforms.push('iOS');
+  if (link.destinations?.android || link.androidDestination) platforms.push('Android');
+  return platforms;
+}
+
+function getPlatformProfile(platforms) {
+  if (platforms.length >= 2) return 'multiPlatform';
+  if (platforms.includes('iOS')) return 'iosOnly';
+  if (platforms.includes('Android')) return 'androidOnly';
+  if (platforms.includes('Web')) return 'webOnly';
+  return 'unconfigured';
+}
+
+function parseTimestamp(value) {
+  if (!value) return null;
+  if (value instanceof Date) return value;
+  if (typeof value === 'string' || typeof value === 'number') {
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+  if (typeof value === 'object' && typeof value._seconds === 'number') {
+    return new Date(value._seconds * 1000);
+  }
+  return null;
+}
+
+function formatDate(date) {
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function formatNumber(value) {
+  return Number(value || 0).toLocaleString('en-US');
+}
+
+function formatPercent(value) {
+  return `${Math.round(Number(value || 0))}%`;
+}
+
+function truncate(value, limit) {
+  const text = String(value || '');
+  if (text.length <= limit) return text;
+  return `${text.slice(0, limit - 1)}…`;
+}
+
+function getHeadline(metrics) {
+  if (!metrics.totalLinks) {
+    return {
+      title: 'No active link portfolio yet',
+      detail: 'Create links to start building portfolio analytics.'
+    };
+  }
+
+  const topLinkShare = metrics.totalClicks
+    ? Math.round((metrics.topLink?.clicks || 0) / metrics.totalClicks * 100)
+    : 0;
+
+  const title = metrics.topLink
+    ? `${metrics.topLink.shortTitle} leads the portfolio with ${formatNumber(metrics.topLink.clicks)} clicks`
+    : `${formatNumber(metrics.totalClicks)} total clicks across ${formatNumber(metrics.totalLinks)} links`;
+
+  const detail = metrics.topCreator
+    ? `${metrics.topCreator.name} owns the most traffic, while ${formatPercent(metrics.activeRate)} of links are currently live. ${topLinkShare}% of all clicks are concentrated in the top link.`
+    : `${formatPercent(metrics.activeRate)} of links are live, with ${formatNumber(metrics.zeroClickLinks)} dormant links ready for cleanup or redistribution.`;
+
+  return { title, detail };
+}
+
+function renderAnalyticsDashboard(metrics) {
+  const headline = getHeadline(metrics);
+
+  return `
+    <section class="analytics-overview-card">
+      <div class="analytics-overview-copy">
+        <span class="analytics-kicker">Portfolio Overview</span>
+        <h2>${utils.escapeHtml(headline.title)}</h2>
+        <p>${utils.escapeHtml(headline.detail)}</p>
+      </div>
+
+      <div class="analytics-metric-strip">
+        ${renderMetricStripItem('Clicks', formatNumber(metrics.totalClicks), `${formatNumber(metrics.totalLinks)} links`)}
+        ${renderMetricStripItem('Live', formatNumber(metrics.activeLinks), `${formatPercent(metrics.activeRate)} active rate`)}
+        ${renderMetricStripItem('Average', metrics.avgClicksPerLink.toFixed(1), 'clicks per link')}
+        ${renderMetricStripItem('UTM', formatNumber(metrics.linksWithUTM), `${formatNumber(metrics.utmCampaigns)} campaigns tagged`)}
+        ${renderMetricStripItem('Dormant', formatNumber(metrics.zeroClickLinks), 'links with zero clicks')}
+        ${renderMetricStripItem('Recent', formatNumber(metrics.recentlyActive), 'clicked in the last 24h')}
+      </div>
+    </section>
+
+    <section class="analytics-panel-grid">
+      <article class="analytics-panel analytics-panel-wide">
+        <div class="analytics-panel-header">
+          <div>
+            <h3>Top Links</h3>
+            <p>Where portfolio attention is concentrating right now.</p>
+          </div>
+        </div>
+        <div class="signal-list">
+          ${renderTopLinkRows(metrics)}
+        </div>
+      </article>
+
+      <article class="analytics-panel">
+        <div class="analytics-panel-header">
+          <div>
+            <h3>Platform Mix</h3>
+            <p>How destinations are distributed across the portfolio.</p>
+          </div>
+        </div>
+        ${renderPlatformMix(metrics)}
+      </article>
+
+      <article class="analytics-panel">
+        <div class="analytics-panel-header">
+          <div>
+            <h3>Performance Buckets</h3>
+            <p>How many links are driving traction versus sitting idle.</p>
+          </div>
+        </div>
+        ${renderPerformanceBuckets(metrics)}
+      </article>
+
+      <article class="analytics-panel">
+        <div class="analytics-panel-header">
+          <div>
+            <h3>Creator Output</h3>
+            <p>Which creators are producing the most clicks.</p>
+          </div>
+        </div>
+        ${renderCreatorRows(metrics)}
+      </article>
+    </section>
+
+    <section class="analytics-table-grid">
+      <article class="analytics-panel">
+        <div class="analytics-panel-header">
+          <div>
+            <h3>Top Link Details</h3>
+            <p>The most clicked links in the current portfolio snapshot.</p>
+          </div>
+        </div>
+        ${renderTopLinksTable(metrics)}
+      </article>
+
+      <article class="analytics-panel">
+        <div class="analytics-panel-header">
+          <div>
+            <h3>Creator Breakdown</h3>
+            <p>Link count, click volume, and output quality by creator.</p>
+          </div>
+        </div>
+        ${renderCreatorTable(metrics)}
+      </article>
+    </section>
+  `;
+}
+
+function renderMetricStripItem(label, value, detail) {
+  return `
+    <div class="analytics-metric-item">
+      <span class="analytics-metric-label">${utils.escapeHtml(label)}</span>
+      <strong class="analytics-metric-value">${utils.escapeHtml(value)}</strong>
+      <span class="analytics-metric-detail">${utils.escapeHtml(detail)}</span>
+    </div>
+  `;
+}
+
+function renderTopLinkRows(metrics) {
+  const maxClicks = Math.max(...metrics.topLinks.map(link => link.clicks), 1);
+
+  return metrics.topLinks.slice(0, 5).map((link, index) => `
+    <div class="signal-row">
+      <div class="signal-rank">${index + 1}</div>
+      <div class="signal-copy">
+        <div class="signal-title">${utils.escapeHtml(link.title)}</div>
+        <div class="signal-meta">
+          <span>${utils.escapeHtml(link.family)}</span>
+          <span>${utils.escapeHtml(link.creator)}</span>
+          <span>${utils.escapeHtml(link.code)}</span>
+        </div>
+      </div>
+      <div class="signal-bar-wrap">
+        <div class="signal-bar">
+          <div class="signal-bar-fill" style="width:${Math.max(8, (link.clicks / maxClicks) * 100)}%"></div>
+        </div>
+      </div>
+      <div class="signal-value">${formatNumber(link.clicks)}</div>
+    </div>
+  `).join('');
+}
+
+function renderPlatformMix(metrics) {
+  const total = Math.max(metrics.totalLinks, 1);
+
+  return `
+    <div class="mix-stack">
+      ${metrics.platformRows.map(row => `
+        <div
+          class="mix-segment tone-${row.tone}"
+          style="width:${(row.count / total) * 100}%"
+          title="${utils.escapeHtml(row.label)} · ${formatNumber(row.count)}"
+        ></div>
+      `).join('')}
+    </div>
+
+    <div class="mix-legend">
+      ${metrics.platformRows.map(row => `
+        <div class="mix-legend-row">
+          <div class="mix-legend-label">
+            <span class="mix-dot tone-${row.tone}"></span>
+            <span>${utils.escapeHtml(row.label)}</span>
+          </div>
+          <div class="mix-legend-value">${formatNumber(row.count)} <span>${formatPercent((row.count / total) * 100)}</span></div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderPerformanceBuckets(metrics) {
+  const maxCount = Math.max(...metrics.performanceBuckets.map(bucket => bucket.count), 1);
+
+  return `
+    <div class="bucket-list">
+      ${metrics.performanceBuckets.map(bucket => `
+        <div class="bucket-row">
+          <div class="bucket-copy">
+            <span class="bucket-label">${utils.escapeHtml(bucket.label)}</span>
+            <span class="bucket-detail">${utils.escapeHtml(bucket.detail)}</span>
+          </div>
+          <div class="bucket-bar">
+            <div class="bucket-bar-fill tone-${bucket.tone}" style="width:${Math.max(bucket.count ? 10 : 0, (bucket.count / maxCount) * 100)}%"></div>
+          </div>
+          <div class="bucket-value">${formatNumber(bucket.count)}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderCreatorRows(metrics) {
+  const maxClicks = Math.max(...metrics.creators.map(creator => creator.clicks), 1);
+
+  return `
+    <div class="creator-list">
+      ${metrics.creators.slice(0, 5).map(creator => `
+        <div class="creator-row">
+          <div class="creator-name-block">
+            <div class="creator-name">${utils.escapeHtml(creator.name)}</div>
+            <div class="creator-subtext">${formatNumber(creator.links)} link${creator.links === 1 ? '' : 's'} · ${creator.live} live</div>
+          </div>
+          <div class="creator-bar">
+            <div class="creator-bar-fill" style="width:${Math.max(8, (creator.clicks / maxClicks) * 100)}%"></div>
+          </div>
+          <div class="creator-value">${formatNumber(creator.clicks)}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderTopLinksTable(metrics) {
+  return `
+    <div class="analytics-table">
+      <div class="analytics-table-head analytics-table-links">
+        <span>Link</span>
+        <span>Creator</span>
+        <span>Platforms</span>
+        <span>Clicks</span>
+        <span>Status</span>
+      </div>
+      ${metrics.topLinks.map(link => `
+        <div class="analytics-table-row analytics-table-links">
+          <div class="analytics-link-cell" data-label="Link">
+            <strong>${utils.escapeHtml(link.title)}</strong>
+            <span>${utils.escapeHtml(link.code)} · ${utils.escapeHtml(link.createdLabel)}</span>
+          </div>
+          <div data-label="Creator">${utils.escapeHtml(link.creator)}</div>
+          <div data-label="Platforms">${utils.escapeHtml(link.platforms.join(' / ') || 'No destination')}</div>
+          <div class="mono-cell" data-label="Clicks">${formatNumber(link.clicks)}</div>
+          <div data-label="Status">
+            <span class="analytics-status ${link.enabled ? 'is-live' : 'is-paused'}">${link.enabled ? 'Live' : 'Paused'}</span>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderCreatorTable(metrics) {
+  return `
+    <div class="analytics-table">
+      <div class="analytics-table-head analytics-table-creators">
+        <span>Creator</span>
+        <span>Links</span>
+        <span>Clicks</span>
+        <span>Average</span>
+        <span>Share</span>
+      </div>
+      ${metrics.creators.slice(0, 8).map(creator => `
+        <div class="analytics-table-row analytics-table-creators">
+          <div class="analytics-link-cell" data-label="Creator">
+            <strong>${utils.escapeHtml(creator.name)}</strong>
+            <span>${creator.live} live · ${creator.links - creator.live} paused</span>
+          </div>
+          <div class="mono-cell" data-label="Links">${formatNumber(creator.links)}</div>
+          <div class="mono-cell" data-label="Clicks">${formatNumber(creator.clicks)}</div>
+          <div class="mono-cell" data-label="Average">${creator.avgClicks.toFixed(1)}</div>
+          <div class="mono-cell" data-label="Share">${formatPercent(creator.sharePct)}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function exportAnalyticsCSV() {
+  const headers = ['Code', 'Title', 'Clicks', 'Created', 'Status', 'Creator', 'Family', 'Platforms', 'UTM Campaign'];
+  const rows = STATE.links.map(link => {
+    const normalized = normalizeLink(link);
+    return [
+      normalized.code,
+      `"${normalized.title.replace(/"/g, '""')}"`,
+      normalized.clicks,
+      normalized.createdAt ? normalized.createdAt.toISOString() : '',
+      normalized.enabled ? 'Live' : 'Paused',
+      `"${normalized.creator.replace(/"/g, '""')}"`,
+      normalized.family,
+      normalized.platforms.join('+'),
+      `"${String(normalized.utmCampaign || '').replace(/"/g, '""')}"`
+    ];
+  });
+
+  const csv = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -329,520 +593,8 @@ window.exportAnalyticsCSV = function() {
   a.download = `kortex-analytics-${new Date().toISOString().split('T')[0]}.csv`;
   a.click();
   URL.revokeObjectURL(url);
-};
-
-
-/**
- * Calculate comprehensive metrics from links data
- */
-function calculateMetrics(links) {
-  const totalLinks = links.length;
-  const totalClicks = links.reduce((sum, l) => sum + (l.clickCount || 0), 0);
-  const activeLinks = links.filter(l => l.enabled !== false).length;
-  const disabledLinks = totalLinks - activeLinks;
-  const avgClicksPerLink = totalLinks > 0 ? (totalClicks / totalLinks).toFixed(1) : 0;
-  
-  // Platform distribution
-  const linksWithIOS = links.filter(l => l.destinations?.ios).length;
-  const linksWithAndroid = links.filter(l => l.destinations?.android).length;
-  const webOnlyLinks = links.filter(l => l.destinations?.web && !l.destinations?.ios && !l.destinations?.android).length;
-  const multiPlatform = links.filter(l => 
-    (l.destinations?.ios && l.destinations?.android) || 
-    (l.destinations?.ios && l.destinations?.web) || 
-    (l.destinations?.android && l.destinations?.web)
-  ).length;
-  
-  // Performance distribution
-  const highPerformers = links.filter(l => (l.clickCount || 0) >= 8).length;
-  const mediumPerformers = links.filter(l => (l.clickCount || 0) >= 3 && (l.clickCount || 0) < 8).length;
-  const lowPerformers = links.filter(l => (l.clickCount || 0) < 3).length;
-  
-  // Creator analysis
-  const creators = [...new Set(links.map(l => l.createdBy || 'Unknown'))];
-  const creatorStats = creators.map(creator => ({
-    name: creator,
-    count: links.filter(l => (l.createdBy || 'Unknown') === creator).length,
-    clicks: links.filter(l => (l.createdBy || 'Unknown') === creator).reduce((sum, l) => sum + (l.clickCount || 0), 0)
-  })).sort((a, b) => b.clicks - a.clicks);
-  
-  // UTM tracking
-  const linksWithUTM = links.filter(l => l.utm && Object.keys(l.utm).length > 0).length;
-  const utmCampaigns = [...new Set(links.filter(l => l.utm?.utm_campaign).map(l => l.utm.utm_campaign))];
-  
-  // Top performers with full data
-  const topLinks = [...links]
-    .sort((a, b) => (b.clickCount || 0) - (a.clickCount || 0))
-    .slice(0, 10)
-    .map(l => ({
-      code: l.code || l.shortCode || l.id,
-      title: l.title || l.metadata?.title || 'Untitled',
-      clicks: l.clickCount || 0,
-      creator: l.createdBy || 'Unknown',
-      enabled: l.enabled !== false,
-      hasUTM: l.utm && Object.keys(l.utm).length > 0,
-      platforms: [
-        l.destinations?.ios ? 'iOS' : null,
-        l.destinations?.android ? 'Android' : null,
-        l.destinations?.web ? 'Web' : null
-      ].filter(Boolean)
-    }));
-  
-  // Time analysis
-  const linksWithLastClick = links.filter(l => l.lastClickedAt);
-  const recentlyActive = linksWithLastClick.filter(l => {
-    const lastClick = l.lastClickedAt?._seconds ? new Date(l.lastClickedAt._seconds * 1000) : null;
-    const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
-    return lastClick && lastClick.getTime() > dayAgo;
-  }).length;
-  
-  // Top and bottom performers
-  const topPerformerClicks = topLinks[0]?.clicks || 0;
-  const topPerformerShare = totalClicks > 0 ? ((topPerformerClicks / totalClicks) * 100).toFixed(1) : 0;
-  const activeRate = totalLinks > 0 ? ((activeLinks / totalLinks) * 100).toFixed(0) : 100;
-  
-  // Engagement velocity (clicks per day since creation)
-  const velocityData = links.map(l => {
-    const created = l.createdAt?._seconds ? new Date(l.createdAt._seconds * 1000) : new Date();
-    const daysSinceCreation = Math.max(1, Math.floor((Date.now() - created.getTime()) / (24 * 60 * 60 * 1000)));
-    return {
-      code: l.code || l.shortCode || l.id,
-      velocity: ((l.clickCount || 0) / daysSinceCreation).toFixed(2)
-    };
-  }).sort((a, b) => b.velocity - a.velocity);
-  
-  return {
-    totalLinks,
-    totalClicks,
-    activeLinks,
-    disabledLinks,
-    avgClicksPerLink,
-    linksWithIOS,
-    linksWithAndroid,
-    webOnlyLinks,
-    multiPlatform,
-    highPerformers,
-    mediumPerformers,
-    lowPerformers,
-    topLinks,
-    topPerformerClicks,
-    topPerformerShare,
-    activeRate,
-    creators: creatorStats,
-    linksWithUTM,
-    utmCampaigns: utmCampaigns.length,
-    recentlyActive,
-    topVelocity: velocityData[0]
-  };
 }
 
-/**
- * Generate AI-powered strategic insights
- */
-function generateInsights(m) {
-  const insights = [];
-  
-  if (m.highPerformers === 0 && m.totalLinks > 0 && m.totalClicks > 0) {
-    insights.push({
-      type: 'warning',
-      icon: '⚠️',
-      text: `No high-performing links yet. Your best link has ${m.topPerformerClicks} clicks. Consider boosting distribution or optimizing content to reach the 10+ click threshold.`
-    });
-  }
-  
-  if (m.mediumPerformers > m.highPerformers * 1.5 && m.mediumPerformers > 1) {
-    insights.push({
-      type: 'opportunity',
-      icon: '🚀',
-      text: `${m.mediumPerformers} medium-performing links (5-10 clicks) show potential. Small optimizations—better CTAs, improved targeting, or increased promotion—could elevate these to high-performer status.`
-    });
-  }
-  
-  if (insights.length === 0 && m.totalLinks > 0) {
-    insights.push({
-      type: 'success',
-      icon: '✅',
-      text: 'Portfolio health is solid. All links are active and performing within expected parameters.'
-    });
-  }
-  
-  return insights;
-}
-
-/**
- * Render complete analytics dashboard HTML
- */
-function renderAnalyticsDashboard(m) {
-  return `
-    ${renderQuickStats(m)}
-    ${renderPlatformBreakdown(m)}
-    ${renderPerformanceTables(m)}
-  `;
-}
-
-function renderQuickStats(m) {
-  const topCreator = m.creators[0];
-  const topLink = m.topLinks[0];
-  
-  const gold = m.topLinks[0];
-  const silver = m.topLinks[1];
-  const bronze = m.topLinks[2];
-  
-  return `
-    <div class="podium-container">
-      <div class="podium-winners">
-        <div class="podium-position position-silver">
-          <div class="winner-card">
-            <div class="medal-icon">🥈</div>
-            <div class="winner-rank">#2</div>
-            <div class="winner-name">${silver?.title || 'No Data'}</div>
-            <div class="winner-code">${silver?.code || '—'}</div>
-            <div class="winner-score">${silver?.clicks || 0} clicks</div>
-            <div class="winner-meta">${silver?.creator || 'Unknown'}</div>
-          </div>
-          <div class="podium-block podium-silver"><div class="block-height">2nd</div></div>
-        </div>
-        <div class="podium-position position-gold">
-          <div class="winner-card">
-            <div class="medal-icon">🥇</div>
-            <div class="winner-rank">#1</div>
-            <div class="winner-name">${gold?.title || 'No Data'}</div>
-            <div class="winner-code">${gold?.code || '—'}</div>
-            <div class="winner-score">${gold?.clicks || 0} clicks</div>
-            <div class="winner-meta">${gold?.creator || 'Unknown'} · ${((gold?.clicks || 0) / m.totalClicks * 100).toFixed(0)}%</div>
-          </div>
-          <div class="podium-block podium-gold"><div class="block-height">1st</div></div>
-        </div>
-        <div class="podium-position position-bronze">
-          <div class="winner-card">
-            <div class="medal-icon">🥉</div>
-            <div class="winner-rank">#3</div>
-            <div class="winner-name">${bronze?.title || 'No Data'}</div>
-            <div class="winner-code">${bronze?.code || '—'}</div>
-            <div class="winner-score">${bronze?.clicks || 0} clicks</div>
-            <div class="winner-meta">${bronze?.creator || 'Unknown'}</div>
-          </div>
-          <div class="podium-block podium-bronze"><div class="block-height">3rd</div></div>
-        </div>
-      </div>
-    </div>
-    <div class="quick-stats-grid" style="display:none">
-      <div class="stat-pod">
-        <div class="stat-icon">🎯</div>
-        <div class="stat-content">
-          <div class="stat-number">${m.highPerformers}</div>
-          <div class="stat-label">TOP PERFORMERS</div>
-          <div class="stat-detail">${topLink?.title || 'N/A'} leads with ${topLink?.clicks || 0}</div>
-        </div>
-      </div>
-      <div class="stat-pod">
-        <div class="stat-icon">⚡</div>
-        <div class="stat-content">
-          <div class="stat-number">${m.topVelocity?.velocity || '0.0'}</div>
-          <div class="stat-label">DAILY VELOCITY</div>
-          <div class="stat-detail">${m.topVelocity?.code || 'N/A'}</div>
-        </div>
-      </div>
-      <div class="stat-pod">
-        <div class="stat-icon">�</div>
-        <div class="stat-content">
-          <div class="stat-number">${m.linksWithUTM}/${m.totalLinks}</div>
-          <div class="stat-label">UTM TRACKING</div>
-          <div class="stat-detail">${m.utmCampaigns} active campaign${m.utmCampaigns !== 1 ? 's' : ''}</div>
-        </div>
-      </div>
-      <div class="stat-pod">
-        <div class="stat-icon">�</div>
-        <div class="stat-content">
-          <div class="stat-number">${topCreator?.clicks || 0}</div>
-          <div class="stat-label">TOP CREATOR</div>
-          <div class="stat-detail">${topCreator?.name || 'N/A'} (${topCreator?.count || 0} links)</div>
-        </div>
-      </div>
-      <div class="stat-pod">
-        <div class="stat-icon">�</div>
-        <div class="stat-content">
-          <div class="stat-number">${m.linksWithIOS + m.linksWithAndroid}</div>
-          <div class="stat-label">MOBILE READY</div>
-          <div class="stat-detail">${m.linksWithIOS} iOS · ${m.linksWithAndroid} Android</div>
-        </div>
-      </div>
-      <div class="stat-pod">
-        <div class="stat-icon">✨</div>
-        <div class="stat-content">
-          <div class="stat-number">${m.multiPlatform}</div>
-          <div class="stat-label">CROSS-PLATFORM</div>
-          <div class="stat-detail">${((m.multiPlatform/m.totalLinks)*100).toFixed(0)}% of portfolio</div>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function renderPlatformBreakdown(m) {
-  const maxPlatform = Math.max(m.linksWithIOS, m.linksWithAndroid, m.webOnlyLinks);
-  
-  return `
-    <div class="platform-section">
-      <h3>📱 Platform Distribution</h3>
-      <div class="platform-bars">
-        <div class="platform-bar-item">
-          <div class="platform-bar-header">
-            <span class="platform-name">🍎 iOS Links</span>
-            <span class="platform-count">${m.linksWithIOS}</span>
-          </div>
-          <div class="platform-bar-track">
-            <div class="platform-bar-fill ios-fill" style="width: ${(m.linksWithIOS / maxPlatform * 100)}%"></div>
-          </div>
-          <div class="platform-percentage">${(m.linksWithIOS / m.totalLinks * 100).toFixed(0)}% of portfolio</div>
-        </div>
-        <div class="platform-bar-item">
-          <div class="platform-bar-header">
-            <span class="platform-name">🤖 Android Links</span>
-            <span class="platform-count">${m.linksWithAndroid}</span>
-          </div>
-          <div class="platform-bar-track">
-            <div class="platform-bar-fill android-fill" style="width: ${(m.linksWithAndroid / maxPlatform * 100)}%"></div>
-          </div>
-          <div class="platform-percentage">${(m.linksWithAndroid / m.totalLinks * 100).toFixed(0)}% of portfolio</div>
-        </div>
-        <div class="platform-bar-item">
-          <div class="platform-bar-header">
-            <span class="platform-name">🌐 Web Only</span>
-            <span class="platform-count">${m.webOnlyLinks}</span>
-          </div>
-          <div class="platform-bar-track">
-            <div class="platform-bar-fill web-fill" style="width: ${(m.webOnlyLinks / maxPlatform * 100)}%"></div>
-          </div>
-          <div class="platform-percentage">${(m.webOnlyLinks / m.totalLinks * 100).toFixed(0)}% of portfolio</div>
-        </div>
-        <div class="platform-bar-item highlight">
-          <div class="platform-bar-header">
-            <span class="platform-name">✨ Multi-Platform</span>
-            <span class="platform-count">${m.multiPlatform}</span>
-          </div>
-          <div class="platform-bar-track">
-            <div class="platform-bar-fill multi-fill" style="width: ${(m.multiPlatform / maxPlatform * 100)}%"></div>
-          </div>
-          <div class="platform-percentage">${(m.multiPlatform / m.totalLinks * 100).toFixed(0)}% of portfolio</div>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function renderKPICards(m) {
-  return `
-    <div class="analytics-metrics-grid">
-      <div class="metric-card primary">
-        <div class="metric-header">
-          <div class="metric-icon">🖱</div>
-          <div class="metric-trend ${m.totalClicks > 20 ? 'neutral' : 'building'}">
-            ${m.totalClicks > 20 ? '→ Growing' : '↘ Early'}
-          </div>
-        </div>
-        <div class="metric-value">${m.totalClicks.toLocaleString()}</div>
-        <div class="metric-label">Total Clicks</div>
-        <div class="metric-detail">
-          ${m.totalClicks > 50 ? 'Good traction—optimize top performers' : 'Building audience—increase distribution'}
-        </div>
-      </div>
-      
-      <div class="metric-card">
-        <div class="metric-header">
-          <div class="metric-icon">�</div>
-          <div class="metric-badge success">Healthy</div>
-        </div>
-        <div class="metric-value">${m.totalLinks}</div>
-        <div class="metric-label">Active Portfolio</div>
-        <div class="metric-detail">${m.activeLinks} enabled · ${m.disabledLinks} disabled</div>
-      </div>
-      
-      <div class="metric-card">
-        <div class="metric-header">
-          <div class="metric-icon">⭐</div>
-          <div class="metric-badge performance">${m.topPerformerShare}% share</div>
-        </div>
-        <div class="metric-value">${m.topPerformerClicks.toLocaleString()}</div>
-        <div class="metric-label">Best Campaign</div>
-        <div class="metric-detail">
-          ${m.topLinks[0] ? `"${(m.topLinks[0].title || m.topLinks[0].code).substring(0, 24)}"` : 'No data'}
-        </div>
-      </div>
-      
-      <div class="metric-card">
-        <div class="metric-header">
-          <div class="metric-icon">🎯</div>
-          <div class="metric-badge ${m.highPerformers > 0 ? 'good' : 'building'}">
-            ${m.highPerformers > 0 ? 'Good' : 'Growing'}
-          </div>
-        </div>
-        <div class="metric-value">${m.highPerformers}</div>
-        <div class="metric-label">High Performers</div>
-        <div class="metric-detail">>10 clicks each · ${Math.round((m.highPerformers/m.totalLinks)*100)}% of portfolio</div>
-      </div>
-    </div>
-  `;
-}
-
-function renderDistributionCharts(m) {
-  return `
-    <div class="analytics-distribution">
-      <div class="distribution-card">
-        <h3>Link Status</h3>
-        <div class="distribution-bars">
-          <div class="distribution-item">
-            <div class="distribution-label">
-              <span class="status-dot active"></span>
-              <span>Active</span>
-            </div>
-            <div class="distribution-bar-container">
-              <div class="distribution-bar active" style="width: ${(m.activeLinks / m.totalLinks * 100)}%"></div>
-            </div>
-            <div class="distribution-value">${m.activeLinks}</div>
-          </div>
-          <div class="distribution-item">
-            <div class="distribution-label">
-              <span class="status-dot disabled"></span>
-              <span>Disabled</span>
-            </div>
-            <div class="distribution-bar-container">
-              <div class="distribution-bar disabled" style="width: ${(m.disabledLinks / m.totalLinks * 100)}%"></div>
-            </div>
-            <div class="distribution-value">${m.disabledLinks}</div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="distribution-card">
-        <h3>Performance</h3>
-        <div class="distribution-bars">
-          <div class="distribution-item">
-            <div class="distribution-label">
-              <span class="perf-dot high"></span>
-              <span>High (>10)</span>
-            </div>
-            <div class="distribution-bar-container">
-              <div class="distribution-bar high" style="width: ${(m.highPerformers / m.totalLinks * 100)}%"></div>
-            </div>
-            <div class="distribution-value">${m.highPerformers}</div>
-          </div>
-          <div class="distribution-item">
-            <div class="distribution-label">
-              <span class="perf-dot medium"></span>
-              <span>Medium (5-10)</span>
-            </div>
-            <div class="distribution-bar-container">
-              <div class="distribution-bar medium" style="width: ${(m.mediumPerformers / m.totalLinks * 100)}%"></div>
-            </div>
-            <div class="distribution-value">${m.mediumPerformers}</div>
-          </div>
-          <div class="distribution-item">
-            <div class="distribution-label">
-              <span class="perf-dot low"></span>
-              <span>Low (<5)</span>
-            </div>
-            <div class="distribution-bar-container">
-              <div class="distribution-bar low" style="width: ${(m.lowPerformers / m.totalLinks * 100)}%"></div>
-            </div>
-            <div class="distribution-value">${m.lowPerformers}</div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="distribution-card">
-        <h3>Platform Distribution</h3>
-        <div class="distribution-bars">
-          <div class="distribution-item">
-            <div class="distribution-label">
-              <span class="platform-icon">🌐</span>
-              <span>Web Only</span>
-            </div>
-            <div class="distribution-bar-container">
-              <div class="distribution-bar web" style="width: ${(m.webOnlyLinks / m.totalLinks * 100)}%"></div>
-            </div>
-            <div class="distribution-value">${m.webOnlyLinks}</div>
-          </div>
-          <div class="distribution-item">
-            <div class="distribution-label">
-              <span class="platform-icon">📱</span>
-              <span>iOS Links</span>
-            </div>
-            <div class="distribution-bar-container">
-              <div class="distribution-bar ios" style="width: ${(m.linksWithIOS / m.totalLinks * 100)}%"></div>
-            </div>
-            <div class="distribution-value">${m.linksWithIOS}</div>
-          </div>
-          <div class="distribution-item">
-            <div class="distribution-label">
-              <span class="platform-icon">🤖</span>
-              <span>Android Links</span>
-            </div>
-            <div class="distribution-bar-container">
-              <div class="distribution-bar android" style="width: ${(m.linksWithAndroid / m.totalLinks * 100)}%"></div>
-            </div>
-            <div class="distribution-value">${m.linksWithAndroid}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function renderPerformanceTables(m) {
-  return `
-    <div class="analytics-tables-grid">
-      <div class="analytics-card">
-        <div class="analytics-card-header">
-          <h3>🏆 Top Performers</h3>
-          <span class="card-subtitle">Most engaged campaigns</span>
-        </div>
-        <div class="performance-table">
-          <div class="table-header-row">
-            <div class="th-rank">#</div>
-            <div class="th-link">Link</div>
-            <div class="th-creator">Creator</div>
-            <div class="th-platforms">Platforms</div>
-            <div class="th-clicks">Clicks</div>
-            <div class="th-status">Status</div>
-          </div>
-          ${m.topLinks.map((link, i) => `
-            <div class="table-data-row ${i < 3 ? 'row-podium' : ''}">
-              <div class="td-rank">
-                <div class="rank-badge ${i === 0 ? 'rank-gold' : i === 1 ? 'rank-silver' : i === 2 ? 'rank-bronze' : 'rank-default'}">
-                  ${i + 1}
-                </div>
-              </div>
-              <div class="td-link">
-                <div class="link-title">${link.title}</div>
-                <div class="link-code">${link.code}</div>
-              </div>
-              <div class="td-creator">
-                <div class="creator-chip">${link.creator}</div>
-              </div>
-              <div class="td-platforms">
-                <div class="platform-tags">
-                  ${link.platforms.map(p => `<span class="platform-tag platform-${p.toLowerCase()}">${p}</span>`).join('')}
-                </div>
-              </div>
-              <div class="td-clicks">
-                <div class="clicks-number">${link.clicks}</div>
-                <div class="clicks-bar">
-                  <div class="clicks-bar-fill" style="width: ${(link.clicks / m.topLinks[0].clicks * 100)}%"></div>
-                </div>
-              </div>
-              <div class="td-status">
-                ${link.enabled ? 
-                  '<span class="status-badge status-active">Active</span>' : 
-                  '<span class="status-badge status-disabled">Disabled</span>'
-                }
-                ${link.hasUTM ? '<span class="utm-indicator">📊 UTM</span>' : ''}
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    </div>
-  `;
-}
+window.exportAnalyticsCSV = exportAnalyticsCSV;
 
 export { loadAnalytics };
