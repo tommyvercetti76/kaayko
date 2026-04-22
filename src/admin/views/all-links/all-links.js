@@ -180,29 +180,41 @@ function renderSummary(container, groups, eligibleLinks, visibleLinks) {
   const totalClicks = visibleLinks.reduce((sum, link) => sum + getDisplayClicks(link), 0);
   const liveLinks = visibleLinks.filter(link => link.enabled !== false).length;
   const selectedGroup = groups.find(group => group.key === FILTER_STATE.groupKey);
+  const heading = selectedGroup ? selectedGroup.label : 'Campaign Workspace';
+  const subheading = selectedGroup
+    ? `${selectedGroup.linkCount} related link${selectedGroup.linkCount === 1 ? '' : 's'} in focus. Bulk actions here affect only this campaign group.`
+    : 'Search every smart link, isolate a campaign group, and manage related outreach from one surface.';
+  const warning = selectedGroup?.warning
+    ? `<div class="links-summary-alert">${utils.escapeHtml(selectedGroup.warning)}</div>`
+    : '';
 
   container.innerHTML = `
-    <div class="links-summary-pill">
-      <span class="links-summary-value">${groups.length}</span>
-      <span class="links-summary-label">campaign groups</span>
-    </div>
-    <div class="links-summary-pill">
-      <span class="links-summary-value">${visibleLinks.length}</span>
-      <span class="links-summary-label">links shown</span>
-    </div>
-    <div class="links-summary-pill">
-      <span class="links-summary-value">${totalClicks}</span>
-      <span class="links-summary-label">clicks</span>
-    </div>
-    <div class="links-summary-pill">
-      <span class="links-summary-value">${liveLinks}</span>
-      <span class="links-summary-label">live links</span>
-    </div>
-    <div class="links-summary-note">
-      ${selectedGroup
-        ? `Managing <strong>${utils.escapeHtml(selectedGroup.label)}</strong>${selectedGroup.warning ? ` · ${utils.escapeHtml(selectedGroup.warning)}` : ''}`
-        : `${eligibleLinks.length} matching link${eligibleLinks.length === 1 ? '' : 's'} across KORTEX`
-      }
+    <div class="links-summary-shell">
+      <div class="links-summary-copy">
+        <span class="links-summary-kicker">${selectedGroup ? 'Focused campaign group' : 'Campaign operations'}</span>
+        <h3>${utils.escapeHtml(heading)}</h3>
+        <p>${utils.escapeHtml(subheading)}</p>
+        ${warning}
+      </div>
+      <div class="links-summary-stats">
+        <div class="links-summary-stat">
+          <span class="links-summary-label">Campaign Groups</span>
+          <strong class="links-summary-value">${groups.length}</strong>
+        </div>
+        <div class="links-summary-stat">
+          <span class="links-summary-label">Links Shown</span>
+          <strong class="links-summary-value">${visibleLinks.length}</strong>
+        </div>
+        <div class="links-summary-stat">
+          <span class="links-summary-label">Clicks</span>
+          <strong class="links-summary-value">${totalClicks}</strong>
+        </div>
+        <div class="links-summary-stat">
+          <span class="links-summary-label">Live Links</span>
+          <strong class="links-summary-value">${liveLinks}</strong>
+          <span class="links-summary-caption">${eligibleLinks.length} matching total</span>
+        </div>
+      </div>
     </div>
   `;
   container.classList.remove('hidden');
@@ -219,8 +231,9 @@ function renderGroups(container, groups) {
     <div class="campaign-groups-header">
       <div>
         <h3>Campaign Groups</h3>
-        <p>Use the same Campaign ID across related links to manage them together from one place.</p>
+        <p>Each row clusters related links so you can inspect, filter, and bulk-manage a campaign without losing the full table below.</p>
       </div>
+      <div class="campaign-groups-count">${groups.length} group${groups.length === 1 ? '' : 's'}</div>
     </div>
     <div class="campaign-groups-grid">
       ${groups.map(renderGroupCard).join('')}
@@ -320,7 +333,7 @@ function buildCampaignGroups(links) {
   return Array.from(map.values())
     .map(group => ({
       ...group,
-      preview: Array.from(group.previewBits).slice(0, 4).join(' · '),
+      previewList: Array.from(group.previewBits).slice(0, 4),
       disabledLinks: group.linkCount - group.liveLinks
     }))
     .sort((a, b) => {
@@ -333,43 +346,76 @@ function buildCampaignGroups(links) {
 
 function renderGroupCard(group) {
   const selected = FILTER_STATE.groupKey === group.key;
-  const manageLabel = selected ? 'Viewing This Group' : `View ${group.linkCount} Link${group.linkCount === 1 ? '' : 's'}`;
+  const manageLabel = selected ? 'Showing Links' : `Open ${group.linkCount} Link${group.linkCount === 1 ? '' : 's'}`;
+  const detailBits = String(group.detail || '')
+    .split(' · ')
+    .map(bit => bit.trim())
+    .filter(Boolean)
+    .slice(0, 4);
+  const previewBits = Array.isArray(group.previewList) ? group.previewList : [];
+  const liveState = group.disabledLinks === 0
+    ? '<span class="campaign-state-chip campaign-state-live">All live</span>'
+    : `<span class="campaign-state-chip campaign-state-muted">${group.disabledLinks} paused</span>`;
+  const focusState = selected
+    ? '<span class="campaign-state-chip campaign-state-focus">Focused</span>'
+    : '';
 
   return `
     <article class="campaign-card ${selected ? 'active' : ''}">
-      <div class="campaign-card-head">
+      <div class="campaign-card-main">
         <div class="campaign-card-copy">
-          <span class="campaign-kind">${utils.escapeHtml(group.kindLabel)}</span>
-          <h4>${utils.escapeHtml(group.label)}</h4>
-          <p>${utils.escapeHtml(group.subtitle)}</p>
-          ${group.detail ? `<div class="campaign-detail">${utils.escapeHtml(group.detail)}</div>` : ''}
+          <div class="campaign-card-kicker">
+            <span class="campaign-kind">${utils.escapeHtml(group.kindLabel)}</span>
+            ${liveState}
+            ${focusState}
+          </div>
+          <div class="campaign-card-title-row">
+            <div class="campaign-card-title-copy">
+              <h4>${utils.escapeHtml(group.label)}</h4>
+              <p>${utils.escapeHtml(group.subtitle)}</p>
+            </div>
+            <div class="campaign-card-stats">
+              <div class="campaign-stat">
+                <span>Links</span>
+                <strong>${group.linkCount}</strong>
+              </div>
+              <div class="campaign-stat">
+                <span>Clicks</span>
+                <strong>${group.totalClicks}</strong>
+              </div>
+              <div class="campaign-stat">
+                <span>Live</span>
+                <strong>${group.liveLinks}</strong>
+              </div>
+            </div>
+          </div>
+          ${detailBits.length ? `<div class="campaign-meta-chips">${renderChipList(detailBits, 'campaign-meta-chip')}</div>` : ''}
           ${group.warning ? `<div class="campaign-warning">${utils.escapeHtml(group.warning)}</div>` : ''}
-        </div>
-        <div class="campaign-card-stats">
-          <div class="campaign-stat">
-            <strong>${group.linkCount}</strong>
-            <span>links</span>
-          </div>
-          <div class="campaign-stat">
-            <strong>${group.totalClicks}</strong>
-            <span>clicks</span>
-          </div>
-          <div class="campaign-stat">
-            <strong>${group.liveLinks}</strong>
-            <span>live</span>
+          <div class="campaign-preview-block">
+            <span class="campaign-preview-label">Signals</span>
+            <div class="campaign-preview-chips">
+              ${previewBits.length
+                ? renderChipList(previewBits, 'campaign-preview-chip')
+                : '<span class="campaign-preview-empty">No campaign details yet</span>'
+              }
+            </div>
           </div>
         </div>
-      </div>
-      <div class="campaign-card-foot">
-        <div class="campaign-preview">${utils.escapeHtml(group.preview || 'No campaign details yet')}</div>
         <div class="campaign-card-actions">
           <button type="button" class="btn ${selected ? 'btn-primary' : 'btn-secondary'} campaign-card-button" data-action="focus-group" data-group-key="${utils.escapeHtml(group.key)}">${manageLabel}</button>
-          <button type="button" class="btn btn-secondary campaign-card-button" data-action="enable-group" data-group-key="${utils.escapeHtml(group.key)}">Enable All</button>
-          <button type="button" class="btn btn-secondary campaign-card-button" data-action="disable-group" data-group-key="${utils.escapeHtml(group.key)}">Disable All</button>
+          <button type="button" class="btn btn-secondary campaign-card-button campaign-card-button-muted" data-action="enable-group" data-group-key="${utils.escapeHtml(group.key)}">Enable All</button>
+          <button type="button" class="btn btn-secondary campaign-card-button campaign-card-button-muted" data-action="disable-group" data-group-key="${utils.escapeHtml(group.key)}">Disable All</button>
         </div>
       </div>
     </article>
   `;
+}
+
+function renderChipList(values, className) {
+  return values
+    .filter(Boolean)
+    .map(value => `<span class="${className}">${utils.escapeHtml(String(value))}</span>`)
+    .join('');
 }
 
 function matchesKind(link) {
