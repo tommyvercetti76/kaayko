@@ -473,6 +473,8 @@ function resetCreateForm() {
   if (rootsMaxUses) rootsMaxUses.value = '0';
 }
 
+window.resetCreateForm = resetCreateForm;
+
 // ═══════════════════════════════════════════════════════════════
 //  ROOTS KNOWLEDGE ENGINE — Dual-Write Bridge
 // ═══════════════════════════════════════════════════════════════

@@ -14,8 +14,13 @@ const FILTER_STATE = {
   groupKey: ''
 };
 
+const SELECTED_GROUP_KEYS = new Set();
+
 let controlsInitialized = false;
 let searchTimer = null;
+let filterPanelOpen = false;
+let currentGroups = [];
+let documentEventsBound = false;
 
 /**
  * Initialize All Links view
@@ -34,6 +39,8 @@ function initControls() {
   const kindSelect = document.getElementById('links-kind-filter');
   const groupSelect = document.getElementById('links-campaign-filter');
   const clearBtn = document.getElementById('links-clear-filters');
+  const filterToggle = document.getElementById('links-filter-toggle');
+  const newLinkBtn = document.getElementById('links-new-link');
 
   if (searchInput) {
     searchInput.addEventListener('input', () => {
@@ -60,12 +67,25 @@ function initControls() {
 
   if (clearBtn) {
     clearBtn.addEventListener('click', () => {
-      FILTER_STATE.search = '';
-      FILTER_STATE.kind = 'all';
-      FILTER_STATE.groupKey = '';
-      syncControls();
-      renderLinksView();
+      clearLinkFilters({ includeSearch: true });
     });
+  }
+
+  if (filterToggle) {
+    filterToggle.addEventListener('click', event => {
+      event.stopPropagation();
+      setFilterPanelOpen(!filterPanelOpen);
+    });
+  }
+
+  if (newLinkBtn) {
+    newLinkBtn.addEventListener('click', () => openCreateLink());
+  }
+
+  if (!documentEventsBound) {
+    document.addEventListener('click', handleDocumentClick);
+    document.addEventListener('keydown', handleDocumentKeydown);
+    documentEventsBound = true;
   }
 
   controlsInitialized = true;
@@ -78,7 +98,75 @@ function syncControls() {
 
   if (searchInput) searchInput.value = FILTER_STATE.search;
   if (kindSelect) kindSelect.value = FILTER_STATE.kind;
-  if (groupSelect && FILTER_STATE.groupKey) groupSelect.value = FILTER_STATE.groupKey;
+  if (groupSelect) {
+    groupSelect.value = FILTER_STATE.groupKey || '';
+  }
+
+  updateFilterToggleState();
+}
+
+function clearLinkFilters({ includeSearch = false } = {}) {
+  if (includeSearch) FILTER_STATE.search = '';
+  FILTER_STATE.kind = 'all';
+  FILTER_STATE.groupKey = '';
+  SELECTED_GROUP_KEYS.clear();
+  syncControls();
+  renderLinksView();
+}
+
+function setFilterPanelOpen(nextState) {
+  filterPanelOpen = !!nextState;
+
+  const panel = document.getElementById('links-filter-panel');
+  if (panel) panel.classList.toggle('hidden', !filterPanelOpen);
+
+  updateFilterToggleState();
+}
+
+function updateFilterToggleState() {
+  const filterToggle = document.getElementById('links-filter-toggle');
+  if (!filterToggle) return;
+
+  const activeCount = Number(FILTER_STATE.kind !== 'all') + Number(Boolean(FILTER_STATE.groupKey));
+  filterToggle.setAttribute('aria-expanded', String(filterPanelOpen));
+  filterToggle.classList.toggle('is-active', filterPanelOpen || activeCount > 0);
+
+  if (activeCount > 0) {
+    filterToggle.dataset.count = String(activeCount);
+  } else {
+    delete filterToggle.dataset.count;
+  }
+}
+
+function handleDocumentClick(event) {
+  if (!filterPanelOpen) return;
+
+  const panel = document.getElementById('links-filter-panel');
+  const toggle = document.getElementById('links-filter-toggle');
+  const target = event.target;
+
+  if (panel?.contains(target) || toggle?.contains(target)) {
+    return;
+  }
+
+  setFilterPanelOpen(false);
+}
+
+function handleDocumentKeydown(event) {
+  if (event.key === 'Escape') {
+    setFilterPanelOpen(false);
+    document.querySelectorAll('.campaign-menu[open]').forEach(menu => menu.removeAttribute('open'));
+  }
+}
+
+function openCreateLink() {
+  if (typeof window.resetCreateForm === 'function') {
+    window.resetCreateForm();
+  } else {
+    STATE.editingCode = null;
+  }
+
+  switchView('create');
 }
 
 /**
@@ -161,6 +249,9 @@ function renderLinksView() {
   });
 
   const groups = buildCampaignGroups(eligibleLinks);
+  currentGroups = groups;
+  pruneSelectedGroups(groups);
+
   const selectedGroup = groups.find(group => group.key === FILTER_STATE.groupKey);
   if (!selectedGroup) FILTER_STATE.groupKey = '';
 
@@ -177,43 +268,26 @@ function renderLinksView() {
 }
 
 function renderSummary(container, groups, eligibleLinks, visibleLinks) {
+  const selectedGroup = groups.find(group => group.key === FILTER_STATE.groupKey);
   const totalClicks = visibleLinks.reduce((sum, link) => sum + getDisplayClicks(link), 0);
   const liveLinks = visibleLinks.filter(link => link.enabled !== false).length;
-  const selectedGroup = groups.find(group => group.key === FILTER_STATE.groupKey);
-  const heading = selectedGroup ? selectedGroup.label : 'Campaign Workspace';
-  const subheading = selectedGroup
-    ? `${selectedGroup.linkCount} related link${selectedGroup.linkCount === 1 ? '' : 's'} in focus. Bulk actions here affect only this campaign group.`
-    : 'Search every smart link, isolate a campaign group, and manage related outreach from one surface.';
-  const warning = selectedGroup?.warning
-    ? `<div class="links-summary-alert">${utils.escapeHtml(selectedGroup.warning)}</div>`
-    : '';
+  const context = selectedGroup
+    ? `Viewing ${selectedGroup.label}`
+    : FILTER_STATE.search
+      ? `Search: “${FILTER_STATE.search.trim()}”`
+      : `${eligibleLinks.length} matching link${eligibleLinks.length === 1 ? '' : 's'}`;
 
   container.innerHTML = `
-    <div class="links-summary-shell">
-      <div class="links-summary-copy">
-        <span class="links-summary-kicker">${selectedGroup ? 'Focused campaign group' : 'Campaign operations'}</span>
-        <h3>${utils.escapeHtml(heading)}</h3>
-        <p>${utils.escapeHtml(subheading)}</p>
-        ${warning}
+    <div class="links-summary-bar">
+      <div class="links-summary-metrics">
+        ${SummaryMetric('Campaigns', groups.length)}
+        ${SummaryMetric('Links', visibleLinks.length)}
+        ${SummaryMetric('Clicks', totalClicks)}
+        ${SummaryMetric('Live', liveLinks)}
       </div>
-      <div class="links-summary-stats">
-        <div class="links-summary-stat">
-          <span class="links-summary-label">Campaign Groups</span>
-          <strong class="links-summary-value">${groups.length}</strong>
-        </div>
-        <div class="links-summary-stat">
-          <span class="links-summary-label">Links Shown</span>
-          <strong class="links-summary-value">${visibleLinks.length}</strong>
-        </div>
-        <div class="links-summary-stat">
-          <span class="links-summary-label">Clicks</span>
-          <strong class="links-summary-value">${totalClicks}</strong>
-        </div>
-        <div class="links-summary-stat">
-          <span class="links-summary-label">Live Links</span>
-          <strong class="links-summary-value">${liveLinks}</strong>
-          <span class="links-summary-caption">${eligibleLinks.length} matching total</span>
-        </div>
+      <div class="links-summary-context">
+        <span class="links-summary-context-label">${selectedGroup ? 'Focused Campaign' : 'Workspace'}</span>
+        <span class="links-summary-context-value">${utils.escapeHtml(context)}</span>
       </div>
     </div>
   `;
@@ -228,39 +302,120 @@ function renderGroups(container, groups) {
   }
 
   container.innerHTML = `
-    <div class="campaign-groups-header">
-      <div>
+    <div class="campaign-section-header">
+      <div class="campaign-section-copy">
         <h3>Campaign Groups</h3>
-        <p>Each row clusters related links so you can inspect, filter, and bulk-manage a campaign without losing the full table below.</p>
+        <p>Scan status, jump into a campaign, and keep bulk actions out of the way until you need them.</p>
       </div>
-      <div class="campaign-groups-count">${groups.length} group${groups.length === 1 ? '' : 's'}</div>
+      <div class="campaign-section-meta">${groups.length} campaign${groups.length === 1 ? '' : 's'}</div>
     </div>
-    <div class="campaign-groups-grid">
-      ${groups.map(renderGroupCard).join('')}
+    ${renderBulkSelectionBar(groups)}
+    <div class="campaign-list" role="list">
+      ${groups.map(CampaignRow).join('')}
     </div>
   `;
   container.classList.remove('hidden');
 
-  container.querySelectorAll('[data-action="focus-group"]').forEach(button => {
-    button.addEventListener('click', () => {
-      const groupKey = button.dataset.groupKey || '';
-      FILTER_STATE.groupKey = FILTER_STATE.groupKey === groupKey ? '' : groupKey;
-      const groupSelect = document.getElementById('links-campaign-filter');
-      if (groupSelect) groupSelect.value = FILTER_STATE.groupKey;
-      renderLinksView();
+  container.querySelectorAll('[data-action="view-group"]').forEach(button => {
+    button.addEventListener('click', event => {
+      event.stopPropagation();
+      focusGroup(button.dataset.groupKey || '');
+    });
+  });
+
+  container.querySelectorAll('[data-action="open-links"]').forEach(button => {
+    button.addEventListener('click', event => {
+      event.stopPropagation();
+      closeOverflowMenu(button);
+      openGroupLinks(button.dataset.groupKey || '');
     });
   });
 
   container.querySelectorAll('[data-action="enable-group"]').forEach(button => {
-    button.addEventListener('click', () => bulkSetGroupEnabled(button.dataset.groupKey, true));
+    button.addEventListener('click', event => {
+      event.stopPropagation();
+      closeOverflowMenu(button);
+      bulkSetGroupEnabled(button.dataset.groupKey || '', true);
+    });
   });
 
   container.querySelectorAll('[data-action="disable-group"]').forEach(button => {
-    button.addEventListener('click', () => bulkSetGroupEnabled(button.dataset.groupKey, false));
+    button.addEventListener('click', event => {
+      event.stopPropagation();
+      closeOverflowMenu(button);
+      bulkSetGroupEnabled(button.dataset.groupKey || '', false);
+    });
+  });
+
+  container.querySelectorAll('[data-action="assign-campaign"]').forEach(button => {
+    button.addEventListener('click', event => {
+      event.stopPropagation();
+      assignCampaignId(button.dataset.groupKey || '');
+    });
+  });
+
+  container.querySelectorAll('[data-action="edit-group"]').forEach(button => {
+    button.addEventListener('click', event => {
+      event.stopPropagation();
+      closeOverflowMenu(button);
+      editGroup(button.dataset.groupKey || '');
+    });
+  });
+
+  container.querySelectorAll('[data-action="delete-group"]').forEach(button => {
+    button.addEventListener('click', event => {
+      event.stopPropagation();
+      closeOverflowMenu(button);
+      deleteGroupEntry(button.dataset.groupKey || '');
+    });
+  });
+
+  container.querySelectorAll('.campaign-row').forEach(row => {
+    row.addEventListener('click', event => {
+      if (event.target.closest('button, a, input, label, details, summary')) return;
+      focusGroup(row.dataset.groupKey || '');
+    });
+
+    row.addEventListener('keydown', event => {
+      if ((event.key === 'Enter' || event.key === ' ') && !event.target.closest('button, a, input, label, details, summary')) {
+        event.preventDefault();
+        focusGroup(row.dataset.groupKey || '');
+      }
+    });
+  });
+
+  container.querySelectorAll('.campaign-select-input').forEach(input => {
+    input.addEventListener('change', event => {
+      event.stopPropagation();
+      updateGroupSelection(input.value, input.checked);
+    });
+  });
+
+  container.querySelectorAll('[data-action="bulk-enable"]').forEach(button => {
+    button.addEventListener('click', () => bulkSetSelectedGroupsEnabled(true));
+  });
+
+  container.querySelectorAll('[data-action="bulk-disable"]').forEach(button => {
+    button.addEventListener('click', () => bulkSetSelectedGroupsEnabled(false));
+  });
+
+  container.querySelectorAll('[data-action="bulk-clear"]').forEach(button => {
+    button.addEventListener('click', () => {
+      SELECTED_GROUP_KEYS.clear();
+      renderLinksView();
+    });
+  });
+
+  container.querySelectorAll('.campaign-menu > summary').forEach(summary => {
+    summary.addEventListener('click', event => {
+      event.stopPropagation();
+    });
   });
 }
 
 function renderTable(container, links) {
+  const selectedGroup = currentGroups.find(group => group.key === FILTER_STATE.groupKey);
+
   if (!links.length) {
     container.innerHTML = `
       <div class="empty-state links-empty-state">
@@ -272,18 +427,22 @@ function renderTable(container, links) {
     `;
     const resetBtn = document.getElementById('links-empty-reset');
     if (resetBtn) {
-      resetBtn.addEventListener('click', () => {
-        FILTER_STATE.search = '';
-        FILTER_STATE.kind = 'all';
-        FILTER_STATE.groupKey = '';
-        syncControls();
-        renderLinksView();
-      });
+      resetBtn.addEventListener('click', () => clearLinkFilters({ includeSearch: true }));
     }
     return;
   }
 
-  container.innerHTML = ui.renderLinksTable(links);
+  container.innerHTML = `
+    <div class="links-table-shell">
+      <div class="links-table-header">
+        <div>
+          <h3>${utils.escapeHtml(selectedGroup ? `Links in ${selectedGroup.label}` : 'Matching Links')}</h3>
+          <p>${utils.escapeHtml(selectedGroup ? 'Edit, open QR, or delete individual links in this campaign.' : 'All links that match your current search and filters.')}</p>
+        </div>
+      </div>
+      ${ui.renderLinksTable(links)}
+    </div>
+  `;
 }
 
 function populateGroupFilter(groups) {
@@ -344,78 +503,184 @@ function buildCampaignGroups(links) {
     });
 }
 
-function renderGroupCard(group) {
+function CampaignRow(group) {
   const selected = FILTER_STATE.groupKey === group.key;
-  const manageLabel = selected ? 'Showing Links' : `Open ${group.linkCount} Link${group.linkCount === 1 ? '' : 's'}`;
-  const detailBits = String(group.detail || '')
-    .split(' · ')
-    .map(bit => bit.trim())
-    .filter(Boolean)
-    .slice(0, 4);
-  const previewBits = Array.isArray(group.previewList) ? group.previewList : [];
-  const liveState = group.disabledLinks === 0
-    ? '<span class="campaign-state-chip campaign-state-live">All live</span>'
-    : `<span class="campaign-state-chip campaign-state-muted">${group.disabledLinks} paused</span>`;
-  const focusState = selected
-    ? '<span class="campaign-state-chip campaign-state-focus">Focused</span>'
-    : '';
+  const status = getGroupStatus(group);
+  const subtext = getGroupSubtext(group);
+  const signalMarkup = renderSignalChips(group);
+  const isChecked = SELECTED_GROUP_KEYS.has(group.key);
 
   return `
-    <article class="campaign-card ${selected ? 'active' : ''}">
-      <div class="campaign-card-main">
-        <div class="campaign-card-copy">
-          <div class="campaign-card-kicker">
-            <span class="campaign-kind">${utils.escapeHtml(group.kindLabel)}</span>
-            ${liveState}
-            ${focusState}
+    <article class="campaign-row ${selected ? 'is-focused' : ''} ${group.isUnassigned ? 'is-unassigned' : ''} ${isChecked ? 'is-selected' : ''}" role="listitem" tabindex="0" data-group-key="${utils.escapeHtml(group.key)}">
+      <div class="campaign-row-select">
+        <input
+          type="checkbox"
+          class="campaign-select-input"
+          value="${utils.escapeHtml(group.key)}"
+          aria-label="Select ${utils.escapeHtml(group.label)}"
+          ${isChecked ? 'checked' : ''}
+        >
+      </div>
+
+      <div class="campaign-row-main">
+        <div class="campaign-row-titleline">
+          <div class="campaign-status ${status.tone}">
+            <span class="campaign-status-dot"></span>
+            <span class="campaign-status-label">${utils.escapeHtml(status.label)}</span>
           </div>
-          <div class="campaign-card-title-row">
-            <div class="campaign-card-title-copy">
-              <h4>${utils.escapeHtml(group.label)}</h4>
-              <p>${utils.escapeHtml(group.subtitle)}</p>
-            </div>
-            <div class="campaign-card-stats">
-              <div class="campaign-stat">
-                <span>Links</span>
-                <strong>${group.linkCount}</strong>
-              </div>
-              <div class="campaign-stat">
-                <span>Clicks</span>
-                <strong>${group.totalClicks}</strong>
-              </div>
-              <div class="campaign-stat">
-                <span>Live</span>
-                <strong>${group.liveLinks}</strong>
-              </div>
-            </div>
-          </div>
-          ${detailBits.length ? `<div class="campaign-meta-chips">${renderChipList(detailBits, 'campaign-meta-chip')}</div>` : ''}
-          ${group.warning ? `<div class="campaign-warning">${utils.escapeHtml(group.warning)}</div>` : ''}
-          <div class="campaign-preview-block">
-            <span class="campaign-preview-label">Signals</span>
-            <div class="campaign-preview-chips">
-              ${previewBits.length
-                ? renderChipList(previewBits, 'campaign-preview-chip')
-                : '<span class="campaign-preview-empty">No campaign details yet</span>'
-              }
-            </div>
-          </div>
+          <h4>${utils.escapeHtml(group.label)}</h4>
+          ${group.needsCampaignId ? `<button type="button" class="campaign-inline-link" data-action="assign-campaign" data-group-key="${utils.escapeHtml(group.key)}">Assign Campaign ID</button>` : ''}
         </div>
-        <div class="campaign-card-actions">
-          <button type="button" class="btn ${selected ? 'btn-primary' : 'btn-secondary'} campaign-card-button" data-action="focus-group" data-group-key="${utils.escapeHtml(group.key)}">${manageLabel}</button>
-          <button type="button" class="btn btn-secondary campaign-card-button campaign-card-button-muted" data-action="enable-group" data-group-key="${utils.escapeHtml(group.key)}">Enable All</button>
-          <button type="button" class="btn btn-secondary campaign-card-button campaign-card-button-muted" data-action="disable-group" data-group-key="${utils.escapeHtml(group.key)}">Disable All</button>
-        </div>
+        <div class="campaign-row-subtext">${utils.escapeHtml(subtext)}</div>
+        ${signalMarkup}
+      </div>
+
+      ${MetricsInline(group)}
+
+      <div class="campaign-row-actions">
+        <button type="button" class="btn btn-secondary campaign-row-view" data-action="view-group" data-group-key="${utils.escapeHtml(group.key)}">View</button>
+        ${OverflowMenu(group)}
       </div>
     </article>
   `;
 }
 
-function renderChipList(values, className) {
-  return values
+function MetricsInline(group) {
+  return `
+    <div class="campaign-row-metrics" aria-label="Campaign metrics">
+      ${MetricPill('Links', group.linkCount)}
+      ${MetricPill('Clicks', group.totalClicks)}
+      ${MetricPill('Live', group.liveLinks)}
+    </div>
+  `;
+}
+
+function OverflowMenu(group) {
+  const singleLink = group.links.length === 1;
+  const editState = singleLink ? '' : 'is-disabled';
+  const deleteState = singleLink ? 'is-danger' : 'is-disabled';
+
+  return `
+    <details class="campaign-menu">
+      <summary class="campaign-menu-trigger" aria-label="More actions for ${utils.escapeHtml(group.label)}">
+        <span></span><span></span><span></span>
+      </summary>
+      <div class="campaign-menu-popover" role="menu">
+        <button type="button" class="campaign-menu-item" data-action="open-links" data-group-key="${utils.escapeHtml(group.key)}" role="menuitem">Open Links</button>
+        <button type="button" class="campaign-menu-item" data-action="enable-group" data-group-key="${utils.escapeHtml(group.key)}" role="menuitem">Enable All</button>
+        <button type="button" class="campaign-menu-item" data-action="disable-group" data-group-key="${utils.escapeHtml(group.key)}" role="menuitem">Disable All</button>
+        <button type="button" class="campaign-menu-item ${editState}" data-action="edit-group" data-group-key="${utils.escapeHtml(group.key)}" role="menuitem" ${singleLink ? '' : 'disabled title="Use View to edit an individual link in this campaign"'}>Edit</button>
+        <button type="button" class="campaign-menu-item ${deleteState}" data-action="delete-group" data-group-key="${utils.escapeHtml(group.key)}" role="menuitem" ${singleLink ? '' : 'disabled title="Use View to delete an individual link in this campaign"'}>Delete</button>
+      </div>
+    </details>
+  `;
+}
+
+function SummaryMetric(label, value) {
+  return `
+    <div class="links-summary-item">
+      <span class="links-summary-item-label">${label}</span>
+      <strong class="links-summary-item-value">${value}</strong>
+    </div>
+  `;
+}
+
+function MetricPill(label, value) {
+  return `
+    <div class="metric-inline">
+      <span class="metric-inline-label">${label}</span>
+      <strong class="metric-inline-value">${value}</strong>
+    </div>
+  `;
+}
+
+function renderBulkSelectionBar(groups) {
+  if (!SELECTED_GROUP_KEYS.size) return '';
+
+  const selectedGroups = groups.filter(group => SELECTED_GROUP_KEYS.has(group.key));
+  const totalLinks = selectedGroups.reduce((sum, group) => sum + group.linkCount, 0);
+
+  return `
+    <div class="campaign-bulk-bar">
+      <div class="campaign-bulk-copy">
+        <strong>${selectedGroups.length}</strong>
+        <span>campaign${selectedGroups.length === 1 ? '' : 's'} selected · ${totalLinks} link${totalLinks === 1 ? '' : 's'}</span>
+      </div>
+      <div class="campaign-bulk-actions">
+        <button type="button" class="btn btn-secondary campaign-bulk-btn" data-action="bulk-enable">Enable Selected</button>
+        <button type="button" class="btn btn-secondary campaign-bulk-btn" data-action="bulk-disable">Disable Selected</button>
+        <button type="button" class="btn btn-secondary campaign-bulk-btn" data-action="bulk-clear">Clear</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderSignalChips(group) {
+  const previewBits = Array.isArray(group.previewList) ? group.previewList.filter(Boolean) : [];
+  if (!previewBits.length) return '';
+
+  const visible = previewBits.slice(0, 2);
+  const hidden = previewBits.slice(2);
+
+  return `
+    <div class="campaign-signals">
+      ${visible.map(signal => `<span class="campaign-signal-chip" title="${utils.escapeHtml(String(signal))}">${utils.escapeHtml(String(signal))}</span>`).join('')}
+      ${hidden.length ? `<span class="campaign-signal-chip campaign-signal-more" title="${utils.escapeHtml(hidden.join(' • '))}">+${hidden.length} more</span>` : ''}
+    </div>
+  `;
+}
+
+function getGroupStatus(group) {
+  if (group.liveLinks === 0) {
+    return { tone: 'paused', label: 'Paused' };
+  }
+
+  if (group.liveLinks === group.linkCount) {
+    return { tone: 'live', label: 'Live' };
+  }
+
+  return { tone: 'partial', label: 'Partial' };
+}
+
+function getGroupSubtext(group) {
+  const detailBits = String(group.detail || '')
+    .split(' · ')
+    .map(bit => bit.trim())
     .filter(Boolean)
-    .map(value => `<span class="${className}">${utils.escapeHtml(String(value))}</span>`)
-    .join('');
+    .slice(0, 2);
+
+  const parts = [group.kindLabel];
+  if (detailBits.length) {
+    parts.push(...detailBits);
+  } else if (group.subtitle) {
+    parts.push(group.subtitle);
+  }
+
+  return parts.join(' • ');
+}
+
+function closeOverflowMenu(source) {
+  const menu = source?.closest('.campaign-menu');
+  if (menu) menu.removeAttribute('open');
+}
+
+function pruneSelectedGroups(groups) {
+  const available = new Set(groups.map(group => group.key));
+  Array.from(SELECTED_GROUP_KEYS).forEach(groupKey => {
+    if (!available.has(groupKey)) SELECTED_GROUP_KEYS.delete(groupKey);
+  });
+}
+
+function updateGroupSelection(groupKey, selected) {
+  if (!groupKey) return;
+
+  if (selected) {
+    SELECTED_GROUP_KEYS.add(groupKey);
+  } else {
+    SELECTED_GROUP_KEYS.delete(groupKey);
+  }
+
+  renderLinksView();
 }
 
 function matchesKind(link) {
@@ -484,7 +749,9 @@ function getCampaignDescriptor(link) {
         detail: [sourceGroup, batch, channel].filter(Boolean).join(' · '),
         kindLabel: 'Alumni',
         kindRank: 1,
-        warning: ''
+        warning: '',
+        needsCampaignId: false,
+        isUnassigned: false
       };
     }
 
@@ -496,7 +763,9 @@ function getCampaignDescriptor(link) {
         detail: [sourceGroup, batch, channel].filter(Boolean).join(' · '),
         kindLabel: 'Alumni',
         kindRank: 1,
-        warning: 'Add a Campaign ID to separate multiple school campaigns cleanly.'
+        warning: 'Add a Campaign ID to separate multiple school campaigns cleanly.',
+        needsCampaignId: true,
+        isUnassigned: false
       };
     }
 
@@ -508,7 +777,9 @@ function getCampaignDescriptor(link) {
         detail: [batch, channel].filter(Boolean).join(' · '),
         kindLabel: 'Alumni',
         kindRank: 1,
-        warning: 'Use a Campaign ID if this group belongs to a larger campaign.'
+        warning: 'Use a Campaign ID if this group belongs to a larger campaign.',
+        needsCampaignId: true,
+        isUnassigned: false
       };
     }
 
@@ -519,7 +790,9 @@ function getCampaignDescriptor(link) {
       detail: batch || channel || '',
       kindLabel: 'Alumni',
       kindRank: 1,
-      warning: 'Set School Name and Campaign ID to manage these links separately.'
+      warning: 'Set School Name and Campaign ID to manage these links separately.',
+      needsCampaignId: true,
+      isUnassigned: true
     };
   }
 
@@ -532,7 +805,9 @@ function getCampaignDescriptor(link) {
       detail: [metadata.assessmentType, channel].filter(Boolean).join(' · '),
       kindLabel: 'ROOTS',
       kindRank: 2,
-      warning: ''
+      warning: '',
+      needsCampaignId: false,
+      isUnassigned: false
     };
   }
 
@@ -545,7 +820,9 @@ function getCampaignDescriptor(link) {
       detail: [sourceGroup, batch].filter(Boolean).join(' · '),
       kindLabel: 'Admin',
       kindRank: 4,
-      warning: ''
+      warning: '',
+      needsCampaignId: false,
+      isUnassigned: false
     };
   }
 
@@ -558,7 +835,9 @@ function getCampaignDescriptor(link) {
       detail: [link.utm?.utm_source, link.utm?.utm_medium].filter(Boolean).join(' · '),
       kindLabel: 'Marketing',
       kindRank: 3,
-      warning: ''
+      warning: '',
+      needsCampaignId: false,
+      isUnassigned: false
     };
   }
 
@@ -570,7 +849,9 @@ function getCampaignDescriptor(link) {
     detail: [school, channel].filter(Boolean).join(' · '),
     kindLabel: 'General',
     kindRank: 5,
-    warning: campaignId ? '' : 'Add a Campaign ID to manage related general links together.'
+    warning: campaignId ? '' : 'Add a Campaign ID to manage related general links together.',
+    needsCampaignId: false,
+    isUnassigned: false
   };
 }
 
@@ -630,15 +911,97 @@ async function setLinkEnabled(code, enabled) {
   }
 }
 
+function getGroupByKey(groupKey) {
+  return currentGroups.find(group => group.key === groupKey) || null;
+}
+
+function focusGroup(groupKey, { scrollToTable = false } = {}) {
+  if (!groupKey) return;
+
+  FILTER_STATE.groupKey = groupKey;
+  syncControls();
+  setFilterPanelOpen(false);
+  renderLinksView();
+
+  if (scrollToTable) {
+    window.requestAnimationFrame(() => {
+      document.getElementById('links-table')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+}
+
+function openGroupLinks(groupKey) {
+  focusGroup(groupKey, { scrollToTable: true });
+}
+
+function assignCampaignId(groupKey) {
+  const group = getGroupByKey(groupKey);
+  if (!group) return;
+
+  if (group.links.length === 1) {
+    editLink(getLinkCode(group.links[0]));
+    return;
+  }
+
+  openGroupLinks(groupKey);
+  utils.showInfo('Filtered to this campaign group. Edit any link below to assign a Campaign ID.');
+}
+
+function editGroup(groupKey) {
+  const group = getGroupByKey(groupKey);
+  if (!group) return;
+
+  if (group.links.length === 1) {
+    editLink(getLinkCode(group.links[0]));
+    return;
+  }
+
+  openGroupLinks(groupKey);
+  utils.showInfo('This campaign has multiple links. Use the filtered table below to edit an individual link.');
+}
+
+function deleteGroupEntry(groupKey) {
+  const group = getGroupByKey(groupKey);
+  if (!group) return;
+
+  if (group.links.length === 1) {
+    deleteLink(getLinkCode(group.links[0]));
+    return;
+  }
+
+  openGroupLinks(groupKey);
+  utils.showInfo('This campaign has multiple links. Use the filtered table below to delete an individual link.');
+}
+
+function buildEnabledTargets(groupKeys, enabled) {
+  const seen = new Set();
+  const groups = groupKeys
+    .map(getGroupByKey)
+    .filter(Boolean);
+
+  const targets = [];
+  groups.forEach(group => {
+    group.links.forEach(link => {
+      const code = getLinkCode(link);
+      if (!code || seen.has(code)) return;
+      if ((link.enabled !== false) === enabled) return;
+      seen.add(code);
+      targets.push(link);
+    });
+  });
+
+  return { groups, targets };
+}
+
 async function bulkSetGroupEnabled(groupKey, enabled) {
-  const groups = buildCampaignGroups(STATE.links);
-  const group = groups.find(item => item.key === groupKey);
+  const { groups, targets } = buildEnabledTargets([groupKey], enabled);
+  const group = groups[0];
+
   if (!group) {
     utils.showError('Campaign group not found');
     return;
   }
 
-  const targets = group.links.filter(link => (link.enabled !== false) !== enabled);
   if (!targets.length) {
     utils.showInfo(`${group.label} is already ${enabled ? 'enabled' : 'disabled'}`);
     return;
@@ -660,6 +1023,42 @@ async function bulkSetGroupEnabled(groupKey, enabled) {
       utils.showToast(`${successCount} link${successCount === 1 ? '' : 's'} updated, ${failureCount} failed`, 'warning', 5000);
     } else {
       utils.showSuccess(`${group.label} ${enabled ? 'enabled' : 'disabled'} successfully`);
+    }
+
+    await loadLinks();
+  } catch (err) {
+    utils.showError(err.message);
+  }
+}
+
+async function bulkSetSelectedGroupsEnabled(enabled) {
+  const selectedKeys = Array.from(SELECTED_GROUP_KEYS);
+  if (!selectedKeys.length) return;
+
+  const { groups, targets } = buildEnabledTargets(selectedKeys, enabled);
+  if (!targets.length) {
+    utils.showInfo(`Selected campaigns are already ${enabled ? 'enabled' : 'disabled'}`);
+    return;
+  }
+
+  const action = enabled ? 'enable' : 'disable';
+  const confirmed = confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} ${targets.length} link${targets.length === 1 ? '' : 's'} across ${groups.length} campaign${groups.length === 1 ? '' : 's'}?`);
+  if (!confirmed) return;
+
+  try {
+    const results = await Promise.allSettled(
+      targets.map(link => setLinkEnabled(getLinkCode(link), enabled))
+    );
+
+    const successCount = results.filter(result => result.status === 'fulfilled').length;
+    const failureCount = results.length - successCount;
+
+    SELECTED_GROUP_KEYS.clear();
+
+    if (failureCount > 0) {
+      utils.showToast(`${successCount} link${successCount === 1 ? '' : 's'} updated, ${failureCount} failed`, 'warning', 5000);
+    } else {
+      utils.showSuccess(`${groups.length} campaign${groups.length === 1 ? '' : 's'} ${enabled ? 'enabled' : 'disabled'} successfully`);
     }
 
     await loadLinks();

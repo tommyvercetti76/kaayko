@@ -688,18 +688,43 @@
     
     <!-- All Links View -->
     <div id="links-view" class="view hidden">
-      <header class="view-header">
-        <h1>All Smart Links</h1>
-        <p>Group campaigns, filter links, and operate batches from one place</p>
+      <header class="view-header links-page-header">
+        <div class="links-page-title">
+          <h1>Smart Links</h1>
+          <p>Campaign management built for fast scanning, bulk actions, and clean link operations.</p>
+        </div>
+        <div class="links-header-actions">
+          <label class="links-search-shell" for="links-search">
+            <svg class="links-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input type="search" id="links-search" class="form-input links-search-input" placeholder="Search links, campaigns, schools, or source groups">
+          </label>
+
+          <button
+            type="button"
+            class="links-header-icon"
+            id="links-filter-toggle"
+            aria-label="Open filters"
+            aria-controls="links-filter-panel"
+            aria-expanded="false"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M22 3H2"></path>
+              <path d="M18 8H6"></path>
+              <path d="M14 13H10"></path>
+              <path d="M10 18h4"></path>
+            </svg>
+          </button>
+
+          <button type="button" class="btn btn-primary links-new-link-btn" id="links-new-link">+ New Link</button>
+        </div>
       </header>
       
-      <div class="card">
+      <div class="card links-workspace-card">
         <div class="links-toolbar-shell">
-          <div class="links-toolbar">
-            <div class="links-filter-field links-filter-search">
-              <label for="links-search">Search</label>
-              <input type="search" id="links-search" class="form-input" placeholder="Search code, title, school, source group, or campaign">
-            </div>
+          <div id="links-filter-panel" class="links-filter-panel hidden">
             <div class="links-filter-field">
               <label for="links-kind-filter">Type</label>
               <select id="links-kind-filter" class="form-input">
@@ -718,7 +743,7 @@
               </select>
             </div>
             <div class="links-filter-actions">
-              <button type="button" class="btn btn-secondary" id="links-clear-filters">Clear Filters</button>
+              <button type="button" class="btn btn-secondary" id="links-clear-filters">Reset Filters</button>
             </div>
           </div>
           <div id="links-summary" class="links-summary hidden"></div>
