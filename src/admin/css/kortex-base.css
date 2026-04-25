@@ -149,7 +149,7 @@ h4 { font-size: 16px; font-weight: 600; }
   position: fixed;
   height: 100vh;
   z-index: 100;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .sidebar::-webkit-scrollbar {
@@ -223,6 +223,7 @@ h4 { font-size: 16px; font-weight: 600; }
 .sidebar-nav {
   flex: 1;
   padding: var(--space-md) var(--space-sm);
+  overflow-y: auto;
 }
 
 .nav-item {
@@ -269,6 +270,7 @@ h4 { font-size: 16px; font-weight: 600; }
 .sidebar-footer {
   padding: var(--space-md);
   border-top: 1px solid var(--border-subtle);
+  flex-shrink: 0;
 }
 
 .user-info {

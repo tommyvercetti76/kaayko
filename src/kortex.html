@@ -7,7 +7,7 @@
 
   <title>Kortex — Smart Link Infrastructure | Kaayko</title>
   <meta name="title" content="Kortex — Smart Link Infrastructure by Kaayko">
-  <meta name="description" content="Create short links, route by device, A/B test destinations, and track every click in real time. Developer API, webhooks, multi-tenant architecture. Start free.">
+  <meta name="description" content="Kortex is Kaayko's smart link infrastructure in private beta. Create short links, route by device, A/B test destinations, and track every click in real time. Register your interest for early access.">
   <meta name="keywords" content="smart links, link management, URL shortener, link analytics, attribution tracking, A/B testing links, short link API, webhook link events, multi-tenant links, developer link API, kaayko kortex, platform routing">
   <meta name="author" content="Kaayko">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
@@ -36,7 +36,7 @@
     "applicationCategory": "BusinessApplication",
     "operatingSystem": "Web",
     "description": "Smart link infrastructure with platform routing, click analytics, attribution tracking, webhooks, and a developer API.",
-    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "offers": { "@type": "Offer", "availability": "https://schema.org/PreOrder", "description": "Private beta — register interest for early access" },
     "provider": { "@type": "Organization", "name": "Kaayko", "url": "https://kaayko.com" },
     "featureList": [
       "Branded short links with custom slugs",
@@ -281,9 +281,8 @@ a{color:inherit;text-decoration:none}ul{list-style:none}
     </a>
     <div class="nav-links">
       <a href="#features" class="nav-link">Features</a>
-      <a href="#pricing" class="nav-link">Pricing</a>
-      <a href="#connect" class="nav-link">Contact</a>
-      <a href="#connect" class="nav-link nav-cta">Sign In</a>
+      <a href="#connect" class="nav-link">Register Interest</a>
+      <a id="nav-auth-link" href="#connect" class="nav-link nav-cta">Sign In</a>
     </div>
   </div>
 </nav>
@@ -293,10 +292,10 @@ a{color:inherit;text-decoration:none}ul{list-style:none}
   <div class="hero-inner">
     <div class="hero-badge hero-enter">by Kaayko</div>
     <h1 class="hero-title hero-enter">KORTEX</h1>
-    <p class="hero-sub hero-enter">One link. Every device. Full&nbsp;picture.</p>
+    <p class="hero-sub hero-enter">Smart link infrastructure in private beta.&nbsp;Register your interest.</p>
     <div class="hero-actions hero-enter">
-      <a href="#pricing" class="btn btn--gold">See Plans</a>
-      <a href="#connect" class="btn btn--ghost">Sign In</a>
+      <a href="#connect" class="btn btn--gold">Register Interest</a>
+      <a id="hero-auth-btn" href="#connect" class="btn btn--ghost">Sign In</a>
     </div>
     <div class="hero-scroll hero-enter">↓</div>
   </div>
@@ -355,102 +354,25 @@ a{color:inherit;text-decoration:none}ul{list-style:none}
   </div>
 </section>
 
-<!-- ════════ PRICING ════════ -->
-<section class="section" id="pricing">
-  <div class="container">
-    <div class="sh reveal">
-      <div class="sh-tag">Pricing</div>
-      <h2 class="sh-title">Start free. Unlock as you grow.</h2>
-      <p class="sh-desc">Every tier includes everything below it.</p>
-    </div>
 
-    <div class="plan-grid stagger">
-      <!-- Starter -->
-      <div class="plan reveal">
-        <div class="plan-name">Starter</div>
-        <div class="plan-price">$0 <span>/ mo</span></div>
-        <div class="plan-note">Free forever</div>
-        <div class="plan-divider"></div>
-        <ul class="plan-list">
-          <li>25 short links</li>
-          <li>Custom or auto-generated link codes</li>
-          <li>Auto-detect device and redirect to the right destination</li>
-          <li>See clicks, referrers, and devices in your dashboard</li>
-          <li>Set links to expire on a specific date</li>
-        </ul>
-        <a href="#connect" class="btn btn--ghost btn--sm btn--block plan-cta">Get Started</a>
-      </div>
 
-      <!-- Growth -->
-      <div class="plan plan--hl reveal">
-        <div class="plan-badge">Popular</div>
-        <div class="plan-name">Growth</div>
-        <div class="plan-price">$79 <span>/ mo</span></div>
-        <div class="plan-note">Billed monthly</div>
-        <div class="plan-divider"></div>
-        <div class="plan-includes">Everything in Starter, plus</div>
-        <ul class="plan-list">
-          <li>1,000 short links</li>
-          <li>Track which ad click led to each app install</li>
-          <li>Tag links with campaign, source, and medium data</li>
-          <li>10K API calls per month</li>
-        </ul>
-        <a href="#connect" class="btn btn--gold btn--sm btn--block plan-cta">Start Free Trial</a>
-      </div>
-
-      <!-- Scale -->
-      <div class="plan reveal">
-        <div class="plan-name">Scale</div>
-        <div class="plan-price">$249 <span>/ mo</span></div>
-        <div class="plan-note">Billed monthly</div>
-        <div class="plan-divider"></div>
-        <div class="plan-includes">Everything in Growth, plus</div>
-        <ul class="plan-list">
-          <li>5,000 short links</li>
-          <li>Separate workspaces for each team or client</li>
-          <li>Four permission levels per workspace</li>
-          <li>Generate personal API keys with custom permissions</li>
-          <li>Create up to 100 links in a single API call</li>
-          <li>50K API calls per month</li>
-        </ul>
-        <a href="#connect" class="btn btn--ghost btn--sm btn--block plan-cta">Contact Sales</a>
-      </div>
-
-      <!-- Enterprise -->
-      <div class="plan reveal">
-        <div class="plan-name">Enterprise</div>
-        <div class="plan-price">Custom</div>
-        <div class="plan-note">Annual billing available</div>
-        <div class="plan-divider"></div>
-        <div class="plan-includes">Everything in Scale, plus</div>
-        <ul class="plan-list">
-          <li>Unlimited links &amp; API calls</li>
-          <li>Uptime SLA</li>
-          <li>Dedicated onboarding</li>
-          <li>Direct engineering support</li>
-        </ul>
-        <a href="#connect" class="btn btn--ghost btn--sm btn--block plan-cta">Talk to Us</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ════════ CONNECT ════════ -->
+<!-- ════════ EARLY ACCESS ════════ -->
 <section class="section section--alt" id="connect">
   <div class="container">
     <div class="sh reveal">
-      <div class="sh-tag">Get Started</div>
-      <h2 class="sh-title">Ready when you are.</h2>
+      <div class="sh-tag">Early Access</div>
+      <h2 class="sh-title">Kortex is in private&nbsp;beta.</h2>
+      <p class="sh-desc">We're onboarding a small group of teams. Register your interest and we'll reach out when your spot is ready.</p>
     </div>
 
     <div class="connect-shell reveal">
-      <!-- LEFT — Inquiry -->
+      <!-- LEFT — Register Interest -->
       <div class="connect-panel">
         <div class="panel-head">
-          <div class="panel-icon panel-icon--gold"><span class="material-icons">mail_outline</span></div>
+          <div class="panel-icon panel-icon--gold"><span class="material-icons">person_add</span></div>
           <div>
-            <div class="panel-title">Get in Touch</div>
-            <div class="panel-sub">Tell us what you're building</div>
+            <div class="panel-title">Register Interest</div>
+            <div class="panel-sub">We'll contact you when your spot opens</div>
           </div>
         </div>
 
@@ -471,24 +393,25 @@ a{color:inherit;text-decoration:none}ul{list-style:none}
               <input class="inq-input" type="text" id="inq-company" placeholder="Optional">
             </div>
             <div class="inq-field">
-              <label class="inq-label" for="inq-plan">Interested In</label>
-              <select class="inq-select" id="inq-plan">
-                <option value="General Inquiry">General Inquiry</option>
-                <option value="Growth Plan ($49/mo)">Growth — $49/mo</option>
-                <option value="Scale Plan ($149/mo)">Scale — $149/mo</option>
-                <option value="Enterprise (Custom)">Enterprise — Custom</option>
+              <label class="inq-label" for="inq-use-case">Primary Use Case</label>
+              <select class="inq-select" id="inq-use-case">
+                <option value="Mobile App Deep Links">Mobile App Deep Links</option>
+                <option value="Marketing Campaign Tracking">Marketing Campaign Tracking</option>
+                <option value="Attribution &amp; Analytics">Attribution &amp; Analytics</option>
+                <option value="API / Developer Integration">API / Developer Integration</option>
+                <option value="Other">Other</option>
               </select>
             </div>
           </div>
           <div class="inq-field">
-            <label class="inq-label" for="inq-message">Message *</label>
-            <textarea class="inq-textarea" id="inq-message" required placeholder="What are you looking to do?"></textarea>
+            <label class="inq-label" for="inq-message">Tell us about your use case</label>
+            <textarea class="inq-textarea" id="inq-message" placeholder="What are you building? How many links per month?"></textarea>
           </div>
           <div class="inq-cta">
-            <button type="submit" class="btn btn--gold btn--block">Send Inquiry</button>
+            <button type="submit" class="btn btn--gold btn--block">Register Interest</button>
           </div>
           <div id="inq-ok" class="inq-ok">
-            ✓ Email client will open with a pre-filled message to <strong>kortex@kaayko.com</strong>.
+            ✓ Thanks — we'll be in touch at <strong id="inq-ok-email"></strong>.
           </div>
         </form>
       </div>
@@ -536,10 +459,6 @@ a{color:inherit;text-decoration:none}ul{list-style:none}
 
           <div class="login-foot">
             <a href="#" id="forgot-password-link">Forgot password?</a>
-          </div>
-          <div class="login-divider">
-            <p>New organization?</p>
-            <a href="/admin/tenant-registration">Register a Tenant →</a>
           </div>
         </div>
       </div>
@@ -765,7 +684,15 @@ a{color:inherit;text-decoration:none}ul{list-style:none}
       if (t && n) {
         try {
           localStorage.setItem('kaayko_auth_token', await user.getIdToken(true));
-          window.location.href = '/admin/kortex';
+          // Logged in: update nav + hide login panel, but don't redirect
+          const authLink = document.getElementById('nav-auth-link');
+          if (authLink) { authLink.textContent = 'Dashboard'; authLink.href = '/admin/kortex'; }
+          const heroBtn = document.getElementById('hero-auth-btn');
+          if (heroBtn) { heroBtn.textContent = 'Go to Dashboard'; heroBtn.href = '/admin/kortex'; }
+          const loginPanel = document.getElementById('login');
+          if (loginPanel) loginPanel.style.display = 'none';
+          const divider = document.querySelector('.connect-divider');
+          if (divider) divider.style.display = 'none';
           return;
         } catch {
           localStorage.removeItem('kaayko_auth_token');
@@ -779,22 +706,24 @@ a{color:inherit;text-decoration:none}ul{list-style:none}
     document.getElementById('login-btn').disabled = false;
   });
 
-  /* ─── INQUIRY ─── */
+  /* ─── REGISTER INTEREST ─── */
   document.getElementById('inquiry-form').addEventListener('submit', function(e) {
     e.preventDefault();
     const name = document.getElementById('inq-name').value.trim();
     const email = document.getElementById('inq-email').value.trim();
     const company = document.getElementById('inq-company').value.trim();
-    const plan = document.getElementById('inq-plan').value;
+    const useCase = document.getElementById('inq-use-case').value;
     const message = document.getElementById('inq-message').value.trim();
 
-    const subject = encodeURIComponent('Kortex Inquiry — ' + plan + (company ? ' (' + company + ')' : ''));
+    const subject = encodeURIComponent('Kortex Early Access — ' + useCase + (company ? ' (' + company + ')' : ''));
     const body = encodeURIComponent(
       'Name: ' + name + '\nEmail: ' + email +
       (company ? '\nCompany: ' + company : '') +
-      '\nPlan: ' + plan + '\n\n' + message
+      '\nUse Case: ' + useCase +
+      (message ? '\n\n' + message : '')
     );
     window.location.href = 'mailto:kortex@kaayko.com?subject=' + subject + '&body=' + body;
+    document.getElementById('inq-ok-email').textContent = email;
     document.getElementById('inq-ok').classList.add('show');
     setTimeout(() => { this.reset(); }, 500);
   });
