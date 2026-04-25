@@ -52,6 +52,10 @@
     "redirects": [
       { "source": "/admin/login", "destination": "/kortex", "type": 301 },
       { "source": "/admin/login.html", "destination": "/kortex", "type": 301 },
+      { "source": "/alumni", "destination": "https://alumni.kaayko.com", "type": 301 },
+      { "source": "/alumni.html", "destination": "https://alumni.kaayko.com", "type": 301 },
+      { "source": "/karma", "destination": "https://alumni.kaayko.com", "type": 301 },
+      { "source": "/karma.html", "destination": "https://alumni.kaayko.com", "type": 301 },
       { "source": "/knowledge", "destination": "https://coolschools.kaayko.com/en/roots", "type": 301 },
       { "source": "/knowledge/about", "destination": "https://coolschools.kaayko.com/en/roots/about", "type": 301 },
       { "source": "/knowledge/request", "destination": "https://coolschools.kaayko.com/en/roots/request", "type": 301 }
