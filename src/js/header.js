@@ -29,9 +29,7 @@ function populateMenu() {
   // Fixed navigation tabs
   const tabs = [
     { name: "Store", url: "store.html", subtitle: "Made for the Wild" },
-    { name: "About", url: "about.html", subtitle: "Water. Maps. Intelligence." },
-    { name: "Karma", url: "karma.html", subtitle: "Giving Back" },
-    { name: "Kortex", url: "admin/kortex.html", subtitle: "Intelligent Link Routing" }
+    { name: "Karma", url: "karma.html", subtitle: "Giving Back" }
   ];
   
   const currentPath = window.location.pathname;
