@@ -72,6 +72,10 @@
         <span class="nav-icon">◆</span>
         <span>Dashboard</span>
       </a>
+      <a href="#" class="nav-item" data-view="campaigns">
+        <span class="nav-icon">◈</span>
+        <span>Campaigns</span>
+      </a>
       <a href="#" class="nav-item" data-view="create">
         <span class="nav-icon">+</span>
         <span>Create Link</span>
@@ -89,11 +93,11 @@
         <span>Analytics</span>
       </a>
       <a href="#" class="nav-item" data-view="billing">
-        <span class="nav-icon">💳</span>
+        <span class="nav-icon">$</span>
         <span>Billing</span>
       </a>
       <a href="#" class="nav-item" data-view="tenant-onboarding">
-        <span class="nav-icon">👥</span>
+        <span class="nav-icon">⇄</span>
         <span>Tenant Onboarding</span>
       </a>
       <a href="views/roots/" class="nav-item" style="border-top:1px solid rgba(255,255,255,0.06);margin-top:8px;padding-top:12px">
@@ -163,50 +167,37 @@
     <div id="dashboard-view" class="view">
       <header class="view-header">
         <h1>Dashboard</h1>
-        <p>Real-time overview of your smart links performance</p>
+        <p>Admin control center with direct campaign access</p>
       </header>
-      
-      <!-- Stats Cards -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon">🔗</div>
-          <div class="stat-label">Total Links</div>
-          <div class="stat-value" id="stat-totalLinks">0</div>
-          <div class="stat-change">+0 this week</div>
-        </div>
-        
-        <div class="stat-card">
-          <div class="stat-icon">📊</div>
-          <div class="stat-label">Total Clicks</div>
-          <div class="stat-value" id="stat-totalClicks">0</div>
-          <div class="stat-change">+0 this week</div>
-        </div>
-        
-        <div class="stat-card">
-          <div class="stat-icon">✓</div>
-          <div class="stat-label">Active Links</div>
-          <div class="stat-value" id="stat-activeLinks">0</div>
-          <div class="stat-change">All operational</div>
-        </div>
-        
-        <div class="stat-card">
-          <div class="stat-icon">⚡</div>
-          <div class="stat-label">Conversion Rate</div>
-          <div class="stat-value" id="stat-conversionRate">0%</div>
-          <div class="stat-change">Performance metric</div>
-        </div>
-      </div>
-      
-      <!-- Recent Links -->
-      <div class="card">
+
+      <!-- Campaign Shortcuts -->
+      <div class="card campaign-shortcuts-card">
         <div class="card-header">
-          <h3 class="card-title">Recent Links</h3>
-          <a href="#" class="btn-secondary" data-view="links">View All</a>
+          <h3 class="card-title">All Campaigns</h3>
+          <a href="#" class="btn-secondary" data-view="campaigns">Manage Campaigns</a>
         </div>
-        <div id="recent-links">
-          <div class="loading">Loading recent links...</div>
+        <div id="dashboard-campaign-shortcuts" class="campaign-shortcuts-list">
+          <div class="loading">Loading campaign shortcuts...</div>
         </div>
       </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <button class="quick-action-btn" data-view="campaigns">
+          <span class="btn-icon">◈</span>
+          <span>Campaigns</span>
+        </button>
+        <button class="quick-action-btn" data-view="create">
+          <span class="btn-icon">+</span>
+          <span>Create Link</span>
+        </button>
+        <button class="quick-action-btn" data-view="links">
+          <span class="btn-icon">≡</span>
+          <span>All Links</span>
+        </button>
+      </div>
+      
+
     </div>
     
     <!-- Create Link View -->
@@ -276,7 +267,7 @@
 
             <!-- ROOTS Assessment Configuration (appears when destination is /knowledge) -->
             <div id="roots-assessment-section" style="display:none; margin: 20px 0; padding: 20px; border: 2px solid rgba(76,175,80,0.4); border-radius: 12px; background: rgba(76,175,80,0.06);">
-              <h4 style="color:#4caf50; margin-bottom:8px;">🧠 ROOTS Assessment Settings</h4>
+              <h4 style="color:#4caf50; margin-bottom:8px;">ROOTS Assessment Settings</h4>
               <p class="help-text" style="color:#4caf50; margin-bottom:16px;">This link goes to the ROOTS Knowledge Engine. Configure the assessment invite that will be auto-created.</p>
 
               <div class="form-group">
@@ -288,8 +279,8 @@
                   </button>
                 </label>
                 <select id="rootsAssessmentType" class="form-input">
-                  <option value="parent">👪 Parent Assessment</option>
-                  <option value="teacher">🎓 Teacher Assessment</option>
+                  <option value="parent">Parent Assessment</option>
+                  <option value="teacher">Teacher Assessment</option>
                 </select>
               </div>
 
@@ -336,7 +327,7 @@
 
             <!-- Alumni Campaign Configuration (appears when destination is /alumni) -->
             <div id="alumni-campaign-section" style="display:none; margin: 20px 0; padding: 20px; border: 2px solid rgba(212,175,55,0.4); border-radius: 12px; background: rgba(212,175,55,0.06);">
-              <h4 style="color:#d4af37; margin-bottom:8px;">🎓 Alumni Campaign Settings</h4>
+              <h4 style="color:#d4af37; margin-bottom:8px;">Alumni Campaign Settings</h4>
               <p class="help-text" style="color:#d4af37; margin-bottom:16px;">This link points to the alumni interest survey. Each click issues a one-time token — voters can only vote once per click.</p>
 
               <div class="form-group">
@@ -445,7 +436,7 @@
               </div>
 
               <div style="background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.2);border-radius:8px;padding:12px;font-size:0.85rem;color:#a89060;line-height:1.6;">
-                🔒 <strong>Anti-gaming:</strong> Voting deadline auto-set to 7 days from now. Each click is a single-use signed token — cannot be reused or forwarded.
+                <strong>Anti-gaming:</strong> Voting deadline auto-set to 7 days from now. Each click is a single-use signed token and cannot be reused or forwarded.
               </div>
             </div>
 
@@ -469,7 +460,7 @@
                 </button>
               </label>
               <input type="text" id="short-code" name="short-code" class="form-input" required placeholder="summer-sale" pattern="[a-zA-Z0-9_-]+" minlength="3">
-              <span class="form-hint">💡 Letters, numbers, hyphens, and underscores only • Minimum 3 characters</span>
+              <span class="form-hint">Letters, numbers, hyphens, and underscores only. Minimum 3 characters.</span>
             </div>
           </div>
           
@@ -678,7 +669,7 @@
 
           <!-- Submit -->
           <div class="form-actions">
-            <button type="submit" class="btn btn-primary">✨ Create Link</button>
+            <button type="submit" class="btn btn-primary">Create Link</button>
             <button type="reset" class="btn btn-secondary" onclick="resetCreateForm()">Clear Form</button>
           </div>
           
@@ -759,6 +750,158 @@
       </div>
     </div>
     
+    <!-- Campaigns View -->
+    <div id="campaigns-view" class="view hidden">
+          <!-- Campaign Management View -->
+          <header class="view-header">
+            <h1>Campaigns</h1>
+            <p>Create and manage link campaigns with tenant ownership and role-based access</p>
+            <button id="create-campaign-btn" class="btn-primary">
+              <span>+ New Campaign</span>
+            </button>
+          </header>
+
+          <!-- Campaign List -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">All Campaigns</h3>
+              <div class="filter-controls">
+                <select id="campaign-filter-status" class="filter-select">
+                  <option value="">All Statuses</option>
+                  <option value="new">New (last 14 days)</option>
+                  <option value="old">Old (more than 14 days)</option>
+                  <option value="active">Active</option>
+                  <option value="paused">Paused</option>
+                  <option value="archived">Archived</option>
+                  <option value="draft">Draft</option>
+                </select>
+              </div>
+            </div>
+            <div id="campaigns-list" class="campaigns-table">
+              <div class="loading">Loading campaigns...</div>
+            </div>
+          </div>
+
+          <!-- Create/Edit Campaign Modal -->
+          <div id="campaign-modal" class="modal" style="display: none;">
+            <div class="modal-overlay"></div>
+            <div class="modal-content">
+              <div class="modal-header">
+                <h2 id="campaign-modal-title">New Campaign</h2>
+                <button class="modal-close-btn">&times;</button>
+              </div>
+              <div class="modal-body">
+                <form id="campaign-form">
+                  <div class="form-group">
+                    <label for="campaign-name">Campaign Name *</label>
+                    <input type="text" id="campaign-name" name="name" placeholder="e.g., Alumni 2026" required>
+                    <small>Friendly name for your team</small>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="campaign-slug">Campaign Slug *</label>
+                      <input type="text" id="campaign-slug" name="slug" placeholder="e.g., alumni-2026" pattern="^[a-z0-9\-]+$" required>
+                      <small>URL-safe identifier (a-z, 0-9, hyphens). Used in public URLs: kaayko.com/[slug]/code</small>
+                    </div>
+                    <div class="form-group">
+                      <label for="campaign-type">Campaign Type *</label>
+                      <select id="campaign-type" name="type" required>
+                        <option value="">Select Type</option>
+                        <option value="alumni">Alumni</option>
+                        <option value="brand">Brand</option>
+                        <option value="campus">Campus</option>
+                        <option value="custom">Custom</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <fieldset class="form-section">
+                    <legend>Campaign Settings</legend>
+              
+                    <div class="form-group">
+                      <label for="campaign-maxuses">Max Uses Per Link</label>
+                      <input type="number" id="campaign-maxuses" name="maxUsesPerLink" min="0" value="0" placeholder="0 = unlimited">
+                      <small>Leave as 0 for unlimited uses. Links will return HTTP 410 when limit is reached.</small>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="campaign-expiry">Expiry Date (Optional)</label>
+                      <input type="datetime-local" id="campaign-expiry" name="expiresAt">
+                      <small>Campaign links will return HTTP 410 after this date</small>
+                    </div>
+
+                    <div class="form-group">
+                      <label>
+                        <input type="checkbox" id="campaign-public-stats" name="allowPublicStats">
+                        Allow public stats (anonymous analytics visible without auth)
+                      </label>
+                    </div>
+                  </fieldset>
+
+                  <fieldset class="form-section" style="display: none;" id="campaign-notes-section">
+                    <legend>Internal Notes</legend>
+                    <textarea id="campaign-notes" name="notes" placeholder="Internal notes for your team (not visible to public)" rows="3"></textarea>
+                  </fieldset>
+
+                  <div class="modal-footer">
+                    <button type="button" class="btn-secondary" id="campaign-modal-cancel">Cancel</button>
+                    <button type="submit" class="btn-primary">Create Campaign</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Campaign Members Modal -->
+          <div id="members-modal" class="modal" style="display: none;">
+            <div class="modal-overlay"></div>
+            <div class="modal-content modal-lg">
+              <div class="modal-header">
+                <h2>Manage Campaign Members</h2>
+                <button class="modal-close-btn">&times;</button>
+              </div>
+              <div class="modal-body">
+                <div id="members-content">
+                  <div class="loading">Loading members...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Campaign Links Modal -->
+          <div id="campaign-links-modal" class="modal" style="display: none;">
+            <div class="modal-overlay"></div>
+            <div class="modal-content modal-lg">
+              <div class="modal-header">
+                <h2>Campaign Links</h2>
+                <button class="modal-close-btn">&times;</button>
+              </div>
+              <div class="modal-body">
+                <div id="campaign-links-content">
+                  <div class="loading">Loading links...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Audit Log Modal -->
+          <div id="audit-log-modal" class="modal" style="display: none;">
+            <div class="modal-overlay"></div>
+            <div class="modal-content modal-lg">
+              <div class="modal-header">
+                <h2>Campaign Audit Log</h2>
+                <button class="modal-close-btn">&times;</button>
+              </div>
+              <div class="modal-body">
+                <div id="audit-log-content">
+                  <div class="loading">Loading audit logs...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+    </div>
+
     <!-- QR Codes View -->
     <div id="qrcodes-view" class="view hidden">
       <header class="view-header">

@@ -192,7 +192,13 @@ async function loadLinks() {
   }
 
   try {
-    const res = await apiFetch(`/smartlinks?limit=${LINK_LIMIT}`);
+    let res;
+    try {
+      res = await apiFetch(`/smartlinks?limit=${LINK_LIMIT}`);
+    } catch (primaryError) {
+      console.warn('[AllLinks] Primary load failed, retrying without limit query:', primaryError);
+      res = await apiFetch('/smartlinks');
+    }
     if (!res) return;
     const data = await res.json();
 

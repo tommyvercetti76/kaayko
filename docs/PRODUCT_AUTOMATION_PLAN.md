@@ -151,9 +151,11 @@ Minimum checks:
 
 - Tenant registration
 - Tenant-scoped admin access
+- Campaign CRUD and campaign-focused dashboard navigation
 - Link CRUD
 - Redirect matrix
 - Event tracking
+- Campaign and portfolio trend analytics rendering (`7d`, `30d`, `90d`, `all`)
 - Billing config, usage, and downgrade flows
 - Unauthorized and cross-tenant access attempts
 

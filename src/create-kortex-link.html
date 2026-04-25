@@ -783,7 +783,11 @@
         androidDestination: iosDestination,
         title: `${contentType.charAt(0).toUpperCase() + contentType.slice(1)}: ${contentId}`,
         createdBy: 'admin@kaayko.com',
-        utm: utmSource ? { source: utmSource, medium: 'social', campaign: 'kaayko' } : undefined
+        utm: utmSource ? {
+          utm_source: utmSource,
+          utm_medium: 'social',
+          utm_campaign: 'kaayko'
+        } : undefined
       };
       
       // Remove undefined values

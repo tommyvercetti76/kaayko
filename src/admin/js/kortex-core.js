@@ -46,6 +46,11 @@ const VIEW_CONFIGS = {
     css: 'views/qr-codes/qr-codes.css',
     container: '#qrcodes-view'
   },
+  campaigns: {
+    module: '../views/campaigns/campaigns.js',
+    css: 'views/campaigns/campaigns.css',
+    container: '#campaigns-view'
+  },
   analytics: {
     module: '../views/analytics/analytics.js',
     css: 'views/analytics/analytics.css',
@@ -160,8 +165,12 @@ function initNavigation() {
   // Handle sidebar nav items
   document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', (e) => {
-      e.preventDefault();
       const view = item.dataset.view;
+      if (!view || !VIEW_CONFIGS[view]) {
+        // Allow normal navigation for items like ROOTS Engine that use href.
+        return;
+      }
+      e.preventDefault();
       switchView(view);
     });
   });

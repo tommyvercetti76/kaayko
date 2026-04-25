@@ -3,6 +3,51 @@
  * Clean portfolio analytics for the KORTEX admin surface.
  */
 
+.analytics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.date-range-picker {
+  display: inline-flex;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid #1f1f22;
+  border-radius: 10px;
+  background: #101012;
+}
+
+.range-btn {
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.range-btn:hover {
+  color: var(--text-primary);
+  background: #17171a;
+}
+
+.range-btn.active {
+  color: #111;
+  background: var(--gold-primary);
+}
+
 .analytics-page-header {
   display: flex;
   justify-content: space-between;
@@ -176,6 +221,151 @@
 
 .analytics-table-grid .analytics-panel {
   grid-column: span 6;
+}
+
+.analytics-empty-inline {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.trend-snapshot-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.trend-card {
+  border: 1px solid #1f1f22;
+  border-radius: 10px;
+  background: #111114;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.trend-card-label {
+  color: var(--text-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.trend-card-value {
+  color: var(--text-primary);
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+  font-size: 20px;
+}
+
+.trend-card-detail {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.creation-trend-chart {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16px, 1fr));
+  gap: 6px;
+  align-items: end;
+  min-height: 160px;
+  padding-top: 10px;
+}
+
+.creation-bar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.creation-bar {
+  width: 100%;
+  min-height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #f1d15d, #d4af37);
+}
+
+.creation-bar-label {
+  color: var(--text-muted);
+  font-size: 10px;
+  white-space: nowrap;
+  transform: rotate(-45deg);
+  transform-origin: center;
+}
+
+.engagement-window-list,
+.campaign-momentum-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.engagement-window-row,
+.campaign-momentum-row {
+  display: grid;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid #1f1f22;
+  padding-bottom: 10px;
+}
+
+.engagement-window-row:last-child,
+.campaign-momentum-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.engagement-window-row {
+  grid-template-columns: 90px minmax(0, 1fr) 44px;
+}
+
+.engagement-window-row span,
+.campaign-momentum-meta {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.engagement-window-bar,
+.campaign-momentum-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: #16161a;
+  overflow: hidden;
+}
+
+.engagement-window-fill,
+.campaign-momentum-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #d4af37, #f1d15d);
+}
+
+.campaign-momentum-row {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 56px;
+}
+
+.campaign-momentum-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.campaign-momentum-name {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.campaign-momentum-value {
+  text-align: right;
+  color: var(--text-primary);
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+  font-size: 13px;
 }
 
 .analytics-panel-header {
@@ -434,6 +624,84 @@
   border-bottom: 1px solid #1f1f22;
 }
 
+.campaign-performance-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.campaign-performance-row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1.8fr) minmax(160px, 1fr) minmax(110px, auto);
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid #1f1f22;
+}
+
+.campaign-performance-row:last-child {
+  border-bottom: none;
+}
+
+.campaign-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: #131316;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.campaign-copy {
+  min-width: 0;
+}
+
+.campaign-name {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.campaign-meta {
+  margin-top: 5px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.campaign-bar {
+  position: relative;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #16161a;
+}
+
+.campaign-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #d4af37, #f1d15d);
+}
+
+.campaign-value {
+  color: var(--text-primary);
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.campaign-value span {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-left: 8px;
+}
+
 .analytics-table-head,
 .analytics-table-row {
   display: grid;
@@ -515,11 +783,21 @@
 }
 
 @media (max-width: 900px) {
+  .analytics-header,
   .analytics-page-header,
   .analytics-page-actions,
   .analytics-panel-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .header-right {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .trend-snapshot-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .analytics-page-actions {
@@ -538,13 +816,18 @@
 
   .signal-row,
   .creator-row,
-  .bucket-row {
+  .bucket-row,
+  .campaign-performance-row,
+  .engagement-window-row,
+  .campaign-momentum-row {
     grid-template-columns: 1fr;
   }
 
   .signal-value,
   .creator-value,
-  .bucket-value {
+  .bucket-value,
+  .campaign-value,
+  .campaign-momentum-value {
     text-align: left;
   }
 
@@ -623,5 +906,14 @@
 
   .signal-meta span:not(:last-child)::after {
     display: none;
+  }
+
+  .trend-snapshot-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .date-range-picker {
+    width: 100%;
+    justify-content: space-between;
   }
 }

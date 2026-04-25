@@ -7,9 +7,39 @@ import { STATE, utils } from '../../js/kortex-core.js';
 import { apiFetch } from '../../js/config.js';
 
 const LINK_LIMIT = 250;
+const RANGE_TO_DAYS = {
+  '7d': 7,
+  '30d': 30,
+  '90d': 90,
+  all: null
+};
+
+let activeRange = '7d';
 
 export async function init() {
+  setupRangeControls();
   await loadAnalytics();
+}
+
+function setupRangeControls() {
+  const buttons = document.querySelectorAll('.range-btn');
+  if (!buttons.length) return;
+
+  buttons.forEach(button => {
+    button.classList.toggle('active', button.dataset.range === activeRange);
+
+    button.addEventListener('click', async () => {
+      const selectedRange = button.dataset.range;
+      if (!selectedRange || selectedRange === activeRange) return;
+
+      activeRange = selectedRange;
+      buttons.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.range === activeRange);
+      });
+
+      await loadAnalytics();
+    });
+  });
 }
 
 async function loadAnalytics() {
@@ -33,7 +63,7 @@ async function loadAnalytics() {
       return;
     }
 
-    const metrics = calculateMetrics(links);
+    const metrics = calculateMetrics(links, activeRange);
     container.innerHTML = renderAnalyticsDashboard(metrics);
   } catch (err) {
     container.innerHTML = `
@@ -61,7 +91,7 @@ async function fetchLinks() {
   return [];
 }
 
-function calculateMetrics(links) {
+function calculateMetrics(links, rangeKey = '7d') {
   const normalizedLinks = links.map(link => normalizeLink(link));
   const totalLinks = normalizedLinks.length;
   const totalClicks = normalizedLinks.reduce((sum, link) => sum + link.clicks, 0);
@@ -168,6 +198,36 @@ function calculateMetrics(links) {
       return a.name.localeCompare(b.name);
     });
 
+  const campaignMap = new Map();
+  normalizedLinks.forEach(link => {
+    const campaignKey = link.campaign || 'Unassigned';
+
+    if (!campaignMap.has(campaignKey)) {
+      campaignMap.set(campaignKey, {
+        name: campaignKey,
+        links: 0,
+        clicks: 0,
+        live: 0
+      });
+    }
+
+    const row = campaignMap.get(campaignKey);
+    row.links += 1;
+    row.clicks += link.clicks;
+    row.live += link.enabled ? 1 : 0;
+  });
+
+  const campaigns = Array.from(campaignMap.values())
+    .map(campaign => ({
+      ...campaign,
+      avgClicks: campaign.links ? campaign.clicks / campaign.links : 0,
+      sharePct: totalClicks ? (campaign.clicks / totalClicks) * 100 : 0
+    }))
+    .sort((a, b) => {
+      if (b.clicks !== a.clicks) return b.clicks - a.clicks;
+      return a.name.localeCompare(b.name);
+    });
+
   const topLinks = [...normalizedLinks]
     .sort((a, b) => {
       if (b.clicks !== a.clicks) return b.clicks - a.clicks;
@@ -178,6 +238,7 @@ function calculateMetrics(links) {
   const topLink = topLinks[0] || null;
   const topCreator = creators[0] || null;
   const activeRate = totalLinks ? (activeLinks / totalLinks) * 100 : 0;
+  const trend = buildTrendMetrics(normalizedLinks, rangeKey);
 
   return {
     normalizedLinks,
@@ -194,9 +255,140 @@ function calculateMetrics(links) {
     performanceBuckets,
     platformRows,
     creators,
+    campaigns,
     topLinks,
     topLink,
-    topCreator
+    topCreator,
+    trend
+  };
+}
+
+function buildTrendMetrics(links, rangeKey) {
+  const now = Date.now();
+  const rangeDays = Object.prototype.hasOwnProperty.call(RANGE_TO_DAYS, rangeKey)
+    ? RANGE_TO_DAYS[rangeKey]
+    : 7;
+  const rangeMs = rangeDays ? rangeDays * 24 * 60 * 60 * 1000 : null;
+  const prevStart = rangeMs ? now - (rangeMs * 2) : null;
+  const currentStart = rangeMs ? now - rangeMs : null;
+
+  const isCurrentRange = (date) => {
+    if (!date) return false;
+    if (!rangeMs) return true;
+    const t = date.getTime();
+    return t >= currentStart && t <= now;
+  };
+
+  const isPreviousRange = (date) => {
+    if (!date || !rangeMs) return false;
+    const t = date.getTime();
+    return t >= prevStart && t < currentStart;
+  };
+
+  const newLinksCurrent = links.filter(link => isCurrentRange(link.createdAt)).length;
+  const newLinksPrevious = links.filter(link => isPreviousRange(link.createdAt)).length;
+  const engagedCurrent = links.filter(link => isCurrentRange(link.lastClickedAt)).length;
+  const engagedPrevious = links.filter(link => isPreviousRange(link.lastClickedAt)).length;
+
+  const currentCampaigns = new Set(
+    links.filter(link => isCurrentRange(link.lastClickedAt)).map(link => link.campaign)
+  );
+  const previousCampaigns = new Set(
+    links.filter(link => isPreviousRange(link.lastClickedAt)).map(link => link.campaign)
+  );
+
+  const currentCohort = links.filter(link => isCurrentRange(link.createdAt));
+  const previousCohort = links.filter(link => isPreviousRange(link.createdAt));
+  const currentDormantRate = currentCohort.length
+    ? (currentCohort.filter(link => link.clicks === 0).length / currentCohort.length) * 100
+    : 0;
+  const previousDormantRate = previousCohort.length
+    ? (previousCohort.filter(link => link.clicks === 0).length / previousCohort.length) * 100
+    : 0;
+
+  const engagementWindows = {
+    day: links.filter(link => link.lastClickedAt && (now - link.lastClickedAt.getTime()) <= 24 * 60 * 60 * 1000).length,
+    week: links.filter(link => link.lastClickedAt && (now - link.lastClickedAt.getTime()) <= 7 * 24 * 60 * 60 * 1000).length,
+    month: links.filter(link => link.lastClickedAt && (now - link.lastClickedAt.getTime()) <= 30 * 24 * 60 * 60 * 1000).length
+  };
+
+  const chartDays = rangeDays || 30;
+  const dayBuckets = Array.from({ length: chartDays }, (_, index) => {
+    const day = new Date(now - ((chartDays - 1 - index) * 24 * 60 * 60 * 1000));
+    const key = day.toISOString().slice(0, 10);
+    return {
+      key,
+      label: day.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      count: 0
+    };
+  });
+
+  const bucketLookup = new Map(dayBuckets.map(bucket => [bucket.key, bucket]));
+  links.forEach(link => {
+    if (!link.createdAt) return;
+    const key = link.createdAt.toISOString().slice(0, 10);
+    const bucket = bucketLookup.get(key);
+    if (bucket) bucket.count += 1;
+  });
+
+  const campaignMap = new Map();
+  links.forEach(link => {
+    const key = link.campaign || 'Unassigned';
+    if (!campaignMap.has(key)) {
+      campaignMap.set(key, {
+        name: key,
+        links: 0,
+        clicks: 0,
+        live: 0,
+        engagedCurrent: 0,
+        engagedPrevious: 0,
+        newCurrent: 0,
+        newPrevious: 0
+      });
+    }
+
+    const row = campaignMap.get(key);
+    row.links += 1;
+    row.clicks += link.clicks;
+    row.live += link.enabled ? 1 : 0;
+    if (isCurrentRange(link.lastClickedAt)) row.engagedCurrent += 1;
+    if (isPreviousRange(link.lastClickedAt)) row.engagedPrevious += 1;
+    if (isCurrentRange(link.createdAt)) row.newCurrent += 1;
+    if (isPreviousRange(link.createdAt)) row.newPrevious += 1;
+  });
+
+  const campaignMomentum = Array.from(campaignMap.values())
+    .map(campaign => {
+      const momentum = (campaign.engagedCurrent * 4) + (campaign.newCurrent * 2) + (campaign.clicks / 25);
+      return {
+        ...campaign,
+        momentum,
+        engagementDelta: campaign.engagedCurrent - campaign.engagedPrevious,
+        creationDelta: campaign.newCurrent - campaign.newPrevious
+      };
+    })
+    .sort((a, b) => {
+      if (b.momentum !== a.momentum) return b.momentum - a.momentum;
+      if (b.clicks !== a.clicks) return b.clicks - a.clicks;
+      return a.name.localeCompare(b.name);
+    });
+
+  return {
+    rangeKey,
+    rangeLabel: rangeDays ? `Last ${rangeDays} days` : 'All time',
+    summary: {
+      newLinksCurrent,
+      newLinksPrevious,
+      engagedCurrent,
+      engagedPrevious,
+      activeCampaignsCurrent: currentCampaigns.size,
+      activeCampaignsPrevious: previousCampaigns.size,
+      currentDormantRate,
+      previousDormantRate
+    },
+    engagementWindows,
+    creationSeries: dayBuckets,
+    campaignMomentum
   };
 }
 
@@ -211,6 +403,7 @@ function normalizeLink(link) {
   const hasUTM = Boolean(link.utm && Object.keys(link.utm).length);
   const utmCampaign = link.utm?.utm_campaign || link.metadata?.campaignId || '';
   const family = getLinkFamily(link);
+  const campaign = getCampaignName(link, family);
   const platforms = getLinkPlatforms(link);
 
   return {
@@ -227,9 +420,29 @@ function normalizeLink(link) {
     hasUTM,
     utmCampaign,
     family,
+    campaign,
     platforms,
     platformProfile: getPlatformProfile(platforms)
   };
+}
+
+function getCampaignName(link, family) {
+  const metadata = link.metadata || {};
+
+  const candidates = [
+    metadata.campaignId,
+    metadata.campaignName,
+    metadata.schoolName,
+    link.utm?.utm_campaign,
+    link.utmCampaign,
+    link.campaignId
+  ];
+
+  const resolved = candidates
+    .map(value => String(value || '').trim())
+    .find(Boolean);
+
+  return resolved || `${family} (Unassigned)`;
 }
 
 function getLinkClicks(link) {
@@ -346,6 +559,16 @@ function renderAnalyticsDashboard(metrics) {
       <article class="analytics-panel analytics-panel-wide">
         <div class="analytics-panel-header">
           <div>
+            <h3>Campaign Performance</h3>
+            <p>Which campaigns are driving traffic right now.</p>
+          </div>
+        </div>
+        ${renderCampaignPerformance(metrics)}
+      </article>
+
+      <article class="analytics-panel analytics-panel-wide">
+        <div class="analytics-panel-header">
+          <div>
             <h3>Top Links</h3>
             <p>Where portfolio attention is concentrating right now.</p>
           </div>
@@ -407,6 +630,35 @@ function renderAnalyticsDashboard(metrics) {
         ${renderCreatorTable(metrics)}
       </article>
     </section>
+  `;
+}
+
+function renderCampaignPerformance(metrics) {
+  if (!metrics.campaigns.length) {
+    return '<p class="analytics-empty-inline">No campaign-tagged links yet.</p>';
+  }
+
+  const visibleCampaigns = metrics.campaigns.slice(0, 8);
+  const maxClicks = Math.max(...visibleCampaigns.map(campaign => campaign.clicks), 1);
+
+  return `
+    <div class="campaign-performance-list">
+      ${visibleCampaigns.map((campaign, index) => `
+        <div class="campaign-performance-row">
+          <div class="campaign-rank">${index + 1}</div>
+          <div class="campaign-copy">
+            <div class="campaign-name">${utils.escapeHtml(campaign.name)}</div>
+            <div class="campaign-meta">${formatNumber(campaign.links)} link${campaign.links === 1 ? '' : 's'} · ${campaign.live} live · ${campaign.avgClicks.toFixed(1)} avg</div>
+          </div>
+          <div class="campaign-bar-wrap">
+            <div class="campaign-bar">
+              <div class="campaign-bar-fill" style="width:${Math.max(campaign.clicks ? 10 : 0, (campaign.clicks / maxClicks) * 100)}%"></div>
+            </div>
+          </div>
+          <div class="campaign-value">${formatNumber(campaign.clicks)} <span>${formatPercent(campaign.sharePct)}</span></div>
+        </div>
+      `).join('')}
+    </div>
   `;
 }
 
@@ -569,7 +821,7 @@ function renderCreatorTable(metrics) {
 }
 
 function exportAnalyticsCSV() {
-  const headers = ['Code', 'Title', 'Clicks', 'Created', 'Status', 'Creator', 'Family', 'Platforms', 'UTM Campaign'];
+  const headers = ['Code', 'Title', 'Clicks', 'Created', 'Status', 'Creator', 'Family', 'Campaign', 'Platforms', 'UTM Campaign'];
   const rows = STATE.links.map(link => {
     const normalized = normalizeLink(link);
     return [
@@ -580,6 +832,7 @@ function exportAnalyticsCSV() {
       normalized.enabled ? 'Live' : 'Paused',
       `"${normalized.creator.replace(/"/g, '""')}"`,
       normalized.family,
+      `"${String(normalized.campaign || '').replace(/"/g, '""')}"`,
       normalized.platforms.join('+'),
       `"${String(normalized.utmCampaign || '').replace(/"/g, '""')}"`
     ];
