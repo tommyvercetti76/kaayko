@@ -111,7 +111,10 @@ export const AUTH = {
 
 // API Wrapper with Authentication
 export async function apiFetch(endpoint, options = {}) {
-  const url = `${CONFIG.API_BASE}${endpoint}`;
+  const normalizedEndpoint = endpoint.startsWith('/smartlinks')
+    ? endpoint.replace('/smartlinks', '/kortex')
+    : endpoint;
+  const url = `${CONFIG.API_BASE}${normalizedEndpoint}`;
   
   console.log(`🌐 API Request: ${url}`);
   console.log('   Method:', options.method || 'GET');

@@ -315,7 +315,7 @@ function slugify(value) {
 
 async function loadDerivedCampaignsFromLinks() {
   try {
-    const response = await apiFetch('/smartlinks?limit=500', { method: 'GET' });
+    const response = await apiFetch('/kortex?limit=500', { method: 'GET' });
     if (!response || !response.ok) return [];
     const data = await response.json();
     const links = data.links || [];

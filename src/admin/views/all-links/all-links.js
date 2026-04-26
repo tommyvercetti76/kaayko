@@ -194,10 +194,10 @@ async function loadLinks() {
   try {
     let res;
     try {
-      res = await apiFetch(`/smartlinks?limit=${LINK_LIMIT}`);
+      res = await apiFetch(`/kortex?limit=${LINK_LIMIT}`);
     } catch (primaryError) {
       console.warn('[AllLinks] Primary load failed, retrying without limit query:', primaryError);
-      res = await apiFetch('/smartlinks');
+      res = await apiFetch('/kortex');
     }
     if (!res) return;
     const data = await res.json();
@@ -943,7 +943,7 @@ function slugify(value) {
 }
 
 async function setLinkEnabled(code, enabled) {
-  const res = await apiFetch(`/smartlinks/${code}`, {
+  const res = await apiFetch(`/kortex/${code}`, {
     method: 'PUT',
     body: JSON.stringify({ enabled })
   });
@@ -1177,7 +1177,7 @@ export async function deleteLink(code) {
   }
 
   try {
-    const res = await apiFetch(`/smartlinks/${code}`, {
+    const res = await apiFetch(`/kortex/${code}`, {
       method: 'DELETE'
     });
 

@@ -321,8 +321,8 @@ function initUserMenu() {
 
 async function initTenantSwitcher(tenantSelect) {
   try {
-    // Fetch all tenants - use the correct smartlinks/tenants endpoint
-    const response = await fetch(`${CONFIG.API_BASE}/smartlinks/tenants`, {
+    // Fetch all tenants through the canonical Kortex namespace.
+    const response = await fetch(`${CONFIG.API_BASE}/kortex/tenants`, {
       headers: { 'Authorization': `Bearer ${AUTH.token}` }
     });
     
@@ -385,7 +385,7 @@ async function initTenantSwitcher(tenantSelect) {
 
 async function checkHealth() {
   try {
-    const res = await fetch(`${CONFIG.API_BASE}/smartlinks/health`, {
+    const res = await fetch(`${CONFIG.API_BASE}/kortex/health`, {
       headers: { 'Authorization': `Bearer ${AUTH.token}` }
     });
     const data = await res.json();

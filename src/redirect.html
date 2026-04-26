@@ -90,7 +90,7 @@
         const API_BASE = isLocal
           ? 'http://127.0.0.1:5001/kaaykostore/us-central1/api'
           : 'https://api-vwcc5j4qda-uc.a.run.app';
-        const response = await fetch(`${API_BASE}/smartlinks/r/${code}`);
+        const response = await fetch(`${API_BASE}/kortex/r/${code}`);
         
         if (!response.ok) {
           throw new Error('Link not found or disabled');

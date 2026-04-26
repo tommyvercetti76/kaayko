@@ -833,7 +833,7 @@
       metadataPreview.classList.remove('show');
       
       try {
-        const response = await fetch(`${API_BASE}/smartlinks`, {
+        const response = await fetch(`${API_BASE}/kortex`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)

@@ -241,7 +241,7 @@ async function handleCreateLink(e) {
     const isEditing = !!STATE.editingCode;
     const code = STATE.editingCode || formData.code;
     
-    const endpoint = isEditing ? `/smartlinks/${code}` : '/smartlinks';
+    const endpoint = isEditing ? `/kortex/${code}` : '/kortex';
     const method = isEditing ? 'PUT' : 'POST';
     
     // For editing, remove code from payload (it's in the URL path)
@@ -535,7 +535,7 @@ async function syncROOTSInvite(code, formData) {
   const user = getAuth().currentUser;
   const idToken = user ? await user.getIdToken() : '';
 
-  const res = await fetch(`${KAAYKO_API_BASE}/smartlinks/roots-sync`, {
+  const res = await fetch(`${KAAYKO_API_BASE}/kortex/roots-sync`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -559,7 +559,7 @@ async function syncROOTSInvite(code, formData) {
 async function loadLinkForEditing(code) {
   try {
     // Load all links to find the one to edit
-    const res = await apiFetch('/smartlinks');
+    const res = await apiFetch('/kortex');
     const data = await res.json();
     
     if (!data.success) throw new Error('Failed to load links');

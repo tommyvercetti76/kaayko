@@ -4,7 +4,6 @@
  */
 
 import { CONFIG, AUTH, STATE, switchView } from '../../js/kortex-core.js';
-import { apiFetch } from '../../js/config.js';
 import * as utils from '../../js/utils.js';
 
 // ============================================================================
@@ -309,41 +308,23 @@ async function processStep1CreateTenant() {
   if (wizardState.tenant) return true;
   
   const { tenantName, tenantId, domain, pathPrefix, brandingColor, brandingLogoUrl } = wizardState.formData;
-  
-  try {
-    utils.showInfo('Creating tenant...');
-    
-    const response = await apiFetch('/tenants', {
-      method: 'POST',
-      body: JSON.stringify({
-        id: tenantId,
-        name: tenantName,
-        domain: domain,
-        pathPrefix: pathPrefix,
-        settings: {
-          branding: {
-            primaryColor: brandingColor || undefined,
-            logo: brandingLogoUrl || undefined
-          }
-        }
-      })
-    });
-    
-    const data = await response.json();
-    
-    if (data.success) {
-      wizardState.tenant = data.tenant;
-      utils.showSuccess('Tenant created successfully!');
-      return true;
-    } else {
-      showError(data.error || 'Failed to create tenant');
-      return false;
+
+  wizardState.tenant = {
+    id: tenantId,
+    name: tenantName,
+    domain,
+    pathPrefix,
+    status: 'pending-provisioning',
+    settings: {
+      branding: {
+        primaryColor: brandingColor || undefined,
+        logo: brandingLogoUrl || undefined
+      }
     }
-  } catch (error) {
-    console.error('Failed to create tenant:', error);
-    showError('Network error: Unable to create tenant');
-    return false;
-  }
+  };
+
+  utils.showInfo('Tenant provisioning is pending backend admin API support.');
+  return true;
 }
 
 async function processStep2CreateAdminUser() {
@@ -351,35 +332,17 @@ async function processStep2CreateAdminUser() {
   if (!wizardState.formData.createAdminUser || wizardState.adminUser) return true;
   
   const { adminEmail, adminDisplayName } = wizardState.formData;
-  
-  try {
-    utils.showInfo('Creating admin user...');
-    
-    const response = await apiFetch('/admin-users', {
-      method: 'POST',
-      body: JSON.stringify({
-        email: adminEmail,
-        displayName: adminDisplayName || adminEmail.split('@')[0],
-        tenantId: wizardState.tenant.id,
-        role: 'admin'
-      })
-    });
-    
-    const data = await response.json();
-    
-    if (data.success) {
-      wizardState.adminUser = data.user;
-      utils.showSuccess('Admin user created successfully!');
-      return true;
-    } else {
-      showError(data.error || 'Failed to create admin user');
-      return false;
-    }
-  } catch (error) {
-    console.error('Failed to create admin user:', error);
-    showError('Network error: Unable to create admin user');
-    return false;
-  }
+
+  wizardState.adminUser = {
+    email: adminEmail,
+    displayName: adminDisplayName || adminEmail.split('@')[0],
+    tenantId: wizardState.tenant.id,
+    role: 'admin',
+    status: 'pending-provisioning'
+  };
+
+  utils.showInfo('Admin user provisioning is pending backend admin API support.');
+  return true;
 }
 
 async function processStep4CreateApiKeys() {
@@ -388,61 +351,29 @@ async function processStep4CreateApiKeys() {
     return true;
   }
   
-  try {
-    const keysToCreate = [];
-    
-    if (wizardState.formData.createProductionKey) {
-      keysToCreate.push({
-        name: 'Production',
-        scopes: ['create:links', 'read:links', 'update:links', 'delete:links', 'read:stats'],
-        rateLimitPerMinute: 120
-      });
-    }
-    
-    if (wizardState.formData.createAnalyticsKey) {
-      keysToCreate.push({
-        name: 'Analytics',
-        scopes: ['read:links', 'read:stats'],
-        rateLimitPerMinute: 300
-      });
-    }
-    
-    utils.showInfo(`Creating ${keysToCreate.length} API key(s)...`);
-    
-    for (const keyConfig of keysToCreate) {
-      const response = await apiFetch('/api-keys', {
-        method: 'POST',
-        body: JSON.stringify({
-          tenantId: wizardState.tenant.id,
-          name: keyConfig.name,
-          scopes: keyConfig.scopes,
-          rateLimitPerMinute: keyConfig.rateLimitPerMinute
-        })
-      });
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        wizardState.apiKeys.push({
-          name: keyConfig.name,
-          apiKey: data.apiKey,
-          keyId: data.keyId,
-          scopes: keyConfig.scopes,
-          rateLimitPerMinute: keyConfig.rateLimitPerMinute
-        });
-      } else {
-        showError(`Failed to create ${keyConfig.name} API key: ${data.error}`);
-        return false;
-      }
-    }
-    
-    utils.showSuccess('API keys created successfully!');
-    return true;
-  } catch (error) {
-    console.error('Failed to create API keys:', error);
-    showError('Network error: Unable to create API keys');
-    return false;
+  const keysToCreate = [];
+
+  if (wizardState.formData.createProductionKey) {
+    keysToCreate.push({
+      name: 'Production',
+      scopes: ['create:links', 'read:links', 'update:links', 'delete:links', 'read:stats'],
+      rateLimitPerMinute: 120,
+      status: 'pending-provisioning'
+    });
   }
+
+  if (wizardState.formData.createAnalyticsKey) {
+    keysToCreate.push({
+      name: 'Analytics',
+      scopes: ['read:links', 'read:stats'],
+      rateLimitPerMinute: 300,
+      status: 'pending-provisioning'
+    });
+  }
+
+  wizardState.apiKeys = keysToCreate;
+  utils.showInfo('API key provisioning is pending backend admin API support.');
+  return true;
 }
 
 async function processStep5CreateWebhook() {
@@ -458,39 +389,14 @@ async function processStep5CreateWebhook() {
     return false;
   }
   
-  try {
-    utils.showInfo('Creating webhook subscription...');
-    
-    const response = await apiFetch('/webhooks', {
-      method: 'POST',
-      body: JSON.stringify({
-        tenantId: wizardState.tenant.id,
-        targetUrl: webhookUrl,
-        secret: webhookSecret,
-        events: webhookEvents,
-        description: `${wizardState.tenant.name} Webhook`
-      })
-    });
-    
-    const data = await response.json();
-    
-    if (data.success) {
-      wizardState.webhooks.push({
-        subscriptionId: data.subscriptionId,
-        targetUrl: webhookUrl,
-        events: webhookEvents
-      });
-      utils.showSuccess('Webhook created successfully!');
-      return true;
-    } else {
-      showError(data.error || 'Failed to create webhook');
-      return false;
-    }
-  } catch (error) {
-    console.error('Failed to create webhook:', error);
-    showError('Network error: Unable to create webhook');
-    return false;
-  }
+  wizardState.webhooks.push({
+    targetUrl: webhookUrl,
+    events: webhookEvents,
+    status: 'pending-provisioning'
+  });
+
+  utils.showInfo('Webhook provisioning is pending backend admin API support.');
+  return true;
 }
 
 // ============================================================================
@@ -885,31 +791,10 @@ function attachStep3Listeners() {
         utils.showError('Tenant not created yet');
         return;
       }
-      
-      try {
-        utils.showInfo('Checking DNS status...');
-        
-        const response = await apiFetch(`/tenants/${wizardState.tenant.id}/dns-status`);
-        const data = await response.json();
-        
-        if (data.success) {
-          wizardState.dnsStatus = data.status;
-          renderCurrentStep();
-          
-          if (data.status === 'verified') {
-            utils.showSuccess('DNS verified successfully!');
-          } else if (data.status === 'pending') {
-            utils.showInfo('DNS records found, waiting for propagation...');
-          } else {
-            utils.showInfo('DNS records not found yet');
-          }
-        } else {
-          utils.showError('Failed to check DNS status');
-        }
-      } catch (error) {
-        console.error('DNS check failed:', error);
-        utils.showError('Network error: Unable to check DNS status');
-      }
+
+      wizardState.dnsStatus = 'pending';
+      renderCurrentStep();
+      utils.showInfo('DNS verification is pending backend admin API support.');
     });
   }
 }
@@ -1200,7 +1085,7 @@ function renderStep6Summary() {
             </div>
             <div class="summary-item">
               <div class="summary-item-label">Portal Access</div>
-              <div class="summary-item-value">Enabled</div>
+              <div class="summary-item-value">Pending provisioning</div>
             </div>
           </div>
         ` : ''}
@@ -1215,7 +1100,7 @@ function renderStep6Summary() {
               </div>
             `).join('')}
             <div style="margin-top: 12px; padding: 12px; background: var(--warning-bg); border-radius: 6px; font-size: 12px; color: var(--text-secondary);">
-              ⚠ API keys were shown earlier and cannot be retrieved again
+              API key creation is pending backend admin API support.
             </div>
           </div>
         ` : ''}
@@ -1310,19 +1195,21 @@ function copyClientInstructions() {
 
 **Base URL:** ${CONFIG.API_BASE}
 **Tenant ID:** ${tenant.id}
+**Provisioning Status:** Pending backend admin API support
 
 ## Authentication
 
-Use your API key in the request header:
+API key issuance is pending. Once provisioned, use the key in the request header:
 \`\`\`
 X-API-Key: your-api-key-here
 \`\`\`
 
-## Creating a Short Link
+## Canonical Kortex Endpoint
 
 \`\`\`bash
-curl -X POST ${CONFIG.API_BASE}/public/smartlinks \\
-  -H "X-API-Key: YOUR_API_KEY" \\
+curl -X POST ${CONFIG.API_BASE}/kortex \\
+  -H "Authorization: Bearer YOUR_FIREBASE_ID_TOKEN" \\
+  -H "X-Kaayko-Tenant-Id: ${tenant.id}" \\
   -H "Content-Type: application/json" \\
   -d '{
     "webDestination": "https://example.com",
@@ -1338,7 +1225,7 @@ curl -X POST ${CONFIG.API_BASE}/public/smartlinks \\
 
 ## Short Link Domain
 
-Your short links will be available at:
+Once provisioned, short links will be available at:
 **${tenant.domain}${tenant.pathPrefix}/[code]**
 
 Example: ${tenant.domain}${tenant.pathPrefix}/abc123
@@ -1358,11 +1245,11 @@ Add these DNS records to your domain provider:
 - Value: kaayko-site-verification=${tenant.id}
 
 ${apiKeys.length > 0 ? `
-## API Keys Generated
+## API Keys Requested
 
 ${apiKeys.map(key => `- ${key.name}: ${key.scopes.join(', ')}`).join('\n')}
 
-⚠️ Store your API keys securely - they cannot be retrieved later.
+These keys have not been created yet.
 ` : ''}
 
 ## Support
@@ -1382,7 +1269,7 @@ For questions or support, contact: support@kaayko.com
 // ============================================================================
 
 function finishWizard() {
-  utils.showSuccess('Tenant onboarding complete!');
+  utils.showInfo('Tenant onboarding request captured. Provisioning is pending backend admin API support.');
   // Could redirect to tenant management view
   // For now, stay on summary
 }

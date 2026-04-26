@@ -26,7 +26,7 @@ async function loadQRCodes() {
   // Load links if not already loaded
   if (STATE.links.length === 0) {
     try {
-      const res = await apiFetch('/smartlinks');
+      const res = await apiFetch('/kortex');
       const data = await res.json();
       
       if (data.success) {

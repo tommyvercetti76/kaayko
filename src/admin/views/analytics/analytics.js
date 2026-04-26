@@ -77,7 +77,7 @@ async function loadAnalytics() {
 }
 
 async function fetchLinks() {
-  const res = await apiFetch(`/smartlinks?limit=${LINK_LIMIT}`);
+  const res = await apiFetch(`/kortex?limit=${LINK_LIMIT}`);
   if (!res) throw new Error('Authentication failed');
 
   const data = await res.json();

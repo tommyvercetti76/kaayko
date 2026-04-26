@@ -57,7 +57,7 @@ async function loadCampaignShortcuts() {
 
 async function deriveCampaignsFromLinks() {
   try {
-    const res = await apiFetch('/smartlinks?limit=300');
+    const res = await apiFetch('/kortex?limit=300');
     if (!res || !res.ok) return [];
 
     const data = await res.json();
