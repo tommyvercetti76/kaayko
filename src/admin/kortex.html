@@ -262,7 +262,85 @@
                   <span class="tooltip" role="tooltip">The web page people will see when they click your link</span>
                 </button>
               </label>
-              <input type="url" id="webDestination" class="form-input" required placeholder="https://kaayko.com/summer-sale">
+              <input type="url" id="webDestination" class="form-input" placeholder="https://kaayko.com/summer-sale">
+            </div>
+
+            <div class="form-group">
+              <label for="destinationType">KORTEX Destination Type</label>
+              <select id="destinationType" class="form-input">
+                <option value="external_url">External URL</option>
+                <option value="tenant_admin_login">Tenant Admin Login</option>
+                <option value="tenant_alumni_login">Tenant Alumni Login</option>
+                <option value="tenant_registration">Tenant Registration</option>
+                <option value="tenant_public_page">Tenant Public Page</option>
+                <option value="tenant_dashboard">Tenant Dashboard</option>
+                <option value="campaign_landing">Campaign Landing</option>
+                <option value="campaign_member_view">Campaign Member View</option>
+                <option value="philanthropy_campaign">Philanthropy Campaign</option>
+                <option value="donation_checkout">Donation Checkout</option>
+                <option value="campaign_report">Campaign Report</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="linkNamespace">Public Namespace</label>
+                <input type="text" id="linkNamespace" class="form-input" maxlength="32" placeholder="a">
+                <p class="help-text">Use this with a custom code to create links like kaayko.com/a/adminP12.</p>
+              </div>
+              <div class="form-group">
+                <label for="tenantSlug">Tenant Slug</label>
+                <input type="text" id="tenantSlug" class="form-input" maxlength="64" placeholder="parishram">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="alumniDomain">Alumni Domain</label>
+                <input type="text" id="alumniDomain" class="form-input" placeholder="parishram.alumni.kaayko.com">
+              </div>
+              <div class="form-group">
+                <label for="linkAudience">Audience</label>
+                <select id="linkAudience" class="form-input">
+                  <option value="public">Public</option>
+                  <option value="admin">Admin</option>
+                  <option value="alumni">Alumni</option>
+                  <option value="donor">Donor</option>
+                  <option value="invited">Invited</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="linkIntent">Intent</label>
+                <select id="linkIntent" class="form-input">
+                  <option value="view">View</option>
+                  <option value="login">Login</option>
+                  <option value="register">Register</option>
+                  <option value="donate">Donate</option>
+                  <option value="report">Report</option>
+                  <option value="share">Share</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="linkSource">Source</label>
+                <select id="linkSource" class="form-input">
+                  <option value="manual">Manual</option>
+                  <option value="qr">QR</option>
+                  <option value="email">Email</option>
+                  <option value="sms">SMS</option>
+                  <option value="social">Social</option>
+                  <option value="print">Print</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group checkbox-group">
+              <label>
+                <input type="checkbox" id="requiresAuth">
+                Require tenant login before continuing
+              </label>
             </div>
 
             <!-- ROOTS Assessment Configuration (appears when destination is /knowledge) -->

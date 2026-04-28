@@ -101,11 +101,16 @@ Agents: identify the page here, then look up the module in MODULE-MAP.md for ful
 | `/order-success` | `src/order-success.html` |
 | `/404` | `src/404.html` |
 
-### Kortex Admin Portal (12)
+### Kortex Admin And Tenant Portal (16)
 
 | URL | File |
 |-----|------|
 | `/kortex` | `src/admin/kortex.html` |
+| `/login` | `src/tenant.html` |
+| `/a/:code` | `src/tenant.html` |
+| `/a/:tenantSlug/admin` | `src/tenant.html` |
+| `/a/:tenantSlug/register` | `src/tenant.html` |
+| `/a/:tenantSlug/campaigns/:campaignSlug` | `src/tenant.html` |
 | `/admin/login` | `src/admin/login.html` (redirects → /kortex) |
 | `/admin/clear-cache` | `src/admin/clear-cache.html` |
 | `/admin/tenant-registration` | `src/admin/tenant-registration.html` |

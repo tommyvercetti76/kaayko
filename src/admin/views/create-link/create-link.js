@@ -238,10 +238,15 @@ async function handleCreateLink(e) {
   try {
     // Extract form data (minimal client-side validation)
     const formData = extractFormData();
+    if (formData.destinationType === 'external_url' && !formData.webDestination) {
+      throw new Error('Web destination is required for external URL links');
+    }
     const isEditing = !!STATE.editingCode;
     const code = STATE.editingCode || formData.code;
     
-    const endpoint = isEditing ? `/kortex/${code}` : '/kortex';
+    const endpoint = isEditing
+      ? `/kortex/${code}`
+      : (formData.namespace ? '/kortex/tenant-links' : '/kortex');
     const method = isEditing ? 'PUT' : 'POST';
     
     // For editing, remove code from payload (it's in the URL path)
@@ -264,7 +269,9 @@ async function handleCreateLink(e) {
     
     // Show success notification (email sent by backend automatically)
     const linkCode = data.link?.code || data.link?.shortCode || code;
-    const shortUrl = `kaayko.com/l/${linkCode}`;
+    const shortUrl = data.link?.shortUrl
+      ? data.link.shortUrl.replace(/^https?:\/\//, '')
+      : `kaayko.com/l/${linkCode}`;
     
     const generateQR = document.getElementById('generateQR')?.checked;
     
@@ -298,7 +305,7 @@ async function handleCreateLink(e) {
         }
       }
 
-      const campaignUrl = `https://kaayko.com/l/${linkCode}`;
+      const campaignUrl = data.link?.shortUrl || `https://kaayko.com/l/${linkCode}`;
       const reportLine = reportUrl
         ? `<div style="margin-top:16px;">
             <div style="font-size:11px;color:var(--kaayko-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Your report dashboard</div>
@@ -330,7 +337,7 @@ async function handleCreateLink(e) {
         setTimeout(() => ui.showQRCodeModal(data.link), 500);
       } else {
         utils.showToast(`Link created${rootsNote}! Your short URL: ${shortUrl}`, 'success', 6000);
-        navigator.clipboard.writeText(`https://${shortUrl}`).then(() => {
+        navigator.clipboard.writeText(data.link?.shortUrl || `https://${shortUrl}`).then(() => {
           setTimeout(() => utils.showToast('Short URL copied to clipboard', 'info', 3000), 500);
         }).catch(() => {});
       }
@@ -382,6 +389,14 @@ function extractFormData() {
   const isAlumniDestination = isAlumniLink(document.getElementById('webDestination').value);
   const existingAlumniMetadata = isAlumniDestination ? (CURRENT_EDIT_LINK?.metadata || {}) : {};
   const alumniCampaignId = document.getElementById('alumniCampaignId')?.value.trim() || undefined;
+  const destinationType = document.getElementById('destinationType')?.value || 'external_url';
+  const namespace = document.getElementById('linkNamespace')?.value.trim().toLowerCase() || undefined;
+  const tenantSlug = document.getElementById('tenantSlug')?.value.trim().toLowerCase() || undefined;
+  const alumniDomain = document.getElementById('alumniDomain')?.value.trim().toLowerCase() || undefined;
+  const audience = document.getElementById('linkAudience')?.value || 'public';
+  const intent = document.getElementById('linkIntent')?.value || 'view';
+  const source = document.getElementById('linkSource')?.value || 'manual';
+  const requiresAuth = document.getElementById('requiresAuth')?.checked || false;
 
   if (alumniCampaignId && !utm.utm_campaign) {
     utm.utm_campaign = alumniCampaignId;
@@ -395,6 +410,15 @@ function extractFormData() {
     
     // OPTIONAL FIELDS
     code: shortCodeInput || undefined, // Custom short code (backend auto-generates if not provided)
+    destinationType,
+    namespace,
+    tenantSlug,
+    alumniDomain,
+    audience,
+    intent,
+    source,
+    requiresAuth,
+    conversionGoal: intent === 'donate' ? 'donation_completed' : intent === 'register' ? 'registration_submitted' : undefined,
     iosDestination: document.getElementById('iosDestination').value.trim() || undefined,
     androidDestination: document.getElementById('androidDestination').value.trim() || undefined,
     utm: Object.keys(utm).length ? utm : undefined,
@@ -420,8 +444,13 @@ function extractFormData() {
         maxUses:         parseInt(document.getElementById('alumniMaxUses')?.value || '50', 10),
         votingDeadline:  existingAlumniMetadata.votingDeadline || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         isAdmin,
+        destinationType,
+        audience,
+        intent,
+        source,
+        requiresAuth,
       }
-    } : (isAdmin ? { metadata: { isAdmin: true } } : {})
+    } : (isAdmin ? { metadata: { isAdmin: true, destinationType, audience, intent, source, requiresAuth } } : {})
   };
 }
 
@@ -436,6 +465,23 @@ function resetCreateForm() {
   document.getElementById('short-code').readOnly = false;
   const isAdminEl = document.getElementById('isAdminLink');
   if (isAdminEl) isAdminEl.checked = false;
+  const resetSelect = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.value = value;
+  };
+  const resetInput = (id) => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  };
+  resetSelect('destinationType', 'external_url');
+  resetSelect('linkAudience', 'public');
+  resetSelect('linkIntent', 'view');
+  resetSelect('linkSource', 'manual');
+  resetInput('linkNamespace');
+  resetInput('tenantSlug');
+  resetInput('alumniDomain');
+  const requiresAuthEl = document.getElementById('requiresAuth');
+  if (requiresAuthEl) requiresAuthEl.checked = false;
   
   const formHeader = document.querySelector('#create-view .view-header h1');
   if (formHeader) formHeader.textContent = 'Create New Link';
@@ -595,6 +641,23 @@ async function loadLinkForEditing(code) {
     document.getElementById('createdBy').value = link.createdBy || '';
     document.getElementById('iosDestination').value = iosDest;
     document.getElementById('androidDestination').value = androidDest;
+    const metadata = link.metadata || {};
+    const setVal = (id, val) => {
+      const field = document.getElementById(id);
+      if (field && val !== undefined && val !== null) field.value = val;
+    };
+    const setChecked = (id, val) => {
+      const field = document.getElementById(id);
+      if (field) field.checked = !!val;
+    };
+    setVal('destinationType', link.destinationType || metadata.destinationType || 'external_url');
+    setVal('linkNamespace', metadata.namespace || '');
+    setVal('tenantSlug', link.tenantSlug || metadata.tenantSlug || link.tenantId || '');
+    setVal('alumniDomain', metadata.alumniDomain || '');
+    setVal('linkAudience', link.audience || metadata.audience || 'public');
+    setVal('linkIntent', link.intent || metadata.intent || 'view');
+    setVal('linkSource', link.source || metadata.source || 'manual');
+    setChecked('requiresAuth', link.requiresAuth || metadata.requiresAuth);
     
     // Accept both legacy shorthand and canonical utm_* keys while editing.
     ['Source', 'Medium', 'Campaign', 'Term', 'Content'].forEach(field => {
@@ -632,7 +695,6 @@ async function loadLinkForEditing(code) {
     // Repopulate alumni metadata fields (prevents accidental wipe on re-save)
     if (isAlumniLink(webDest) && link.metadata) {
       const m = link.metadata;
-      const setVal = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
       setVal('alumniSourceGroup',     m.sourceGroup      || '');
       setVal('alumniSourceBatch',     m.sourceBatch      || '');
       setVal('alumniSchoolName',      m.schoolName       || '');

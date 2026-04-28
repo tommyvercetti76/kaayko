@@ -12,7 +12,7 @@
 | Frontend | Static HTML + vanilla JS (`kaayko/src/`) |
 | React app | Vite + React (`kaayko/kutz/src/`) — Kutz only |
 | Backend | Firebase Cloud Functions — Express.js (`kaayko-api/functions/api/`) |
-| Hosting | Firebase Hosting — all `/api/**` → Cloud Function `api` |
+| Hosting | Firebase Hosting — `/api/**`, `/l/**`, `/resolve`, `/health` → Cloud Function `api`; `/a/**` and `/login` → KORTEX tenant shell |
 | Database | Firestore |
 | Auth | Firebase Auth (Google OAuth, email/password) |
 | Storage | Firebase Cloud Storage |
@@ -141,12 +141,19 @@ POST /api/createPaymentIntent/webhook  → Stripe webhook (no auth, raw body)
 ---
 
 ## Module: `kortex`
-> Multi-tenant smart link manager + admin portal.
+> Multi-tenant smart link manager, tenant alias router, campaign links, and admin portal.
+
+Canonical architecture doc: `kaayko/docs/products/KORTEX_TENANT_ARCHITECTURE_PLAN.md`
 
 **Pages:**
 | URL | File |
 |-----|------|
 | `/kortex` | `kaayko/src/admin/kortex.html` |
+| `/login` | `kaayko/src/tenant.html` |
+| `/a/:code` | `kaayko/src/tenant.html` |
+| `/a/:tenantSlug/admin` | `kaayko/src/tenant.html` |
+| `/a/:tenantSlug/register` | `kaayko/src/tenant.html` |
+| `/a/:tenantSlug/campaigns/:campaignSlug` | `kaayko/src/tenant.html` |
 | `/admin/login` | `kaayko/src/admin/login.html` (→ /kortex) |
 | `/admin/clear-cache` | `kaayko/src/admin/clear-cache.html` |
 | `/admin/tenant-registration` | `kaayko/src/admin/tenant-registration.html` |
@@ -164,23 +171,31 @@ POST /api/createPaymentIntent/webhook  → Stripe webhook (no auth, raw body)
 
 **APIs used:**
 ```
-# Smart links — admin (Firebase auth required)
-POST   /api/smartlinks                         → create link
-GET    /api/smartlinks                         → list all links
-GET    /api/smartlinks/{id}                   → get link
-PUT    /api/smartlinks/{id}                   → update (routing, A/B tests, webhooks)
-DELETE /api/smartlinks/{id}                   → delete
-GET    /api/smartlinks/{id}/stats             → click analytics
-GET    /api/smartlinks/tenants                → list tenants
-GET    /api/smartlinks/stats                  → global analytics
-POST   /api/smartlinks/tenant-registration    → new tenant setup (rate-limited)
-GET    /api/smartlinks/migrate                → migration endpoint (admin only)
+# KORTEX — canonical
+GET    /api/kortex/health
+GET    /api/kortex/tenants/resolve
+GET    /api/kortex/tenants/:tenantSlug/bootstrap
+GET    /api/kortex/links/:code/resolve
+POST   /api/kortex/events
+POST   /api/kortex/tenant-links
+GET    /api/kortex/tenants/:tenantId/analytics
+POST   /api/kortex/tenant-registration
+POST   /api/kortex
+GET    /api/kortex
+GET    /api/kortex/:code
+PUT    /api/kortex/:code
+DELETE /api/kortex/:code
+GET    /api/kortex/r/:code
 
-# Smart links — public
-GET    /api/smartlinks/r/{code}              → device-aware redirect
-GET    /api/smartlinks/{id}/attribution      → attribution report (API key)
-POST   /api/smartlinks/batch                 → batch create (API key)
-POST   /api/smartlinks/{id}/click           → record click event
+# KORTEX compatibility
+/api/smartlinks/* → same router as /api/kortex/*
+
+# Campaigns
+GET/POST/PUT/DELETE /api/campaigns...
+GET    /:campaignSlug/:code                  → public campaign namespace resolver
+
+# Public short links
+GET    /l/:id                                → universal short link redirect
 
 # Admin orders
 GET  /api/admin/getOrder?id={id}
@@ -191,23 +206,36 @@ POST /api/admin/updateOrderStatus   body: { orderId, status, notes }
 GET/POST/PUT/DELETE /api/billing/subscriptions
 ```
 
-**API files (all under `kaayko-api/functions/api/smartLinks/`):**
-- `kaayko-api/functions/api/smartLinks/smartLinks.js` — main admin/tenant routes
-- `kaayko-api/functions/api/smartLinks/publicRouter.js` — public redirect + click tracking
-- `kaayko-api/functions/api/smartLinks/publicApiRouter.js` — public API (API key auth)
-- `kaayko-api/functions/api/smartLinks/redirectHandler.js` — device-aware redirect logic
-- `kaayko-api/functions/api/smartLinks/clickTracking.js` — click event recording
+**API files:**
+- `kaayko-api/functions/api/kortex/smartLinks.js` — canonical KORTEX router
+- `kaayko-api/functions/api/kortex/v2LinkIntents.js` — tenant aliases, destination types, event ledger, tenant bootstrap
+- `kaayko-api/functions/api/kortex/smartLinkService.js` — short link CRUD and V2 field storage
+- `kaayko-api/functions/api/kortex/redirectHandler.js` — device-aware and intent-aware redirect logic
+- `kaayko-api/functions/api/kortex/clickTracking.js` — click event recording
+- `kaayko-api/functions/api/campaigns/*` — campaign management and public namespace resolver
+- `kaayko-api/functions/api/deepLinks/deeplinkRoutes.js` — `/l/:id` and legacy universal link handling
 - `kaayko-api/functions/api/admin/` — order management
 - `kaayko-api/functions/api/billing/` — subscriptions
 
 **Smart link data shape:**
 ```js
 {
-  slug, title, destination,
-  routes: [{ device: 'iOS'|'Android'|'web', destination }],
-  abTests: [{ variant, destination, weight: 50 }],
-  webhooks: [urls],
-  analytics: { totalClicks, byDevice, conversions }
+  code,
+  publicCode,
+  shortUrl,
+  tenantId,
+  campaignId,
+  destinationType,
+  requiresAuth,
+  audience,
+  source,
+  intent,
+  conversionGoal,
+  destinations: { web, ios, android },
+  metadata,
+  utm,
+  clickCount,
+  enabled
 }
 ```
 
@@ -220,6 +248,7 @@ GET/POST/PUT/DELETE /api/billing/subscriptions
 - `webhook_subscriptions` — webhook config
 - `webhook_deliveries` — delivery log
 - `pending_tenant_registrations` — tenant signup queue
+- `kortex_events` — V2 event ledger for tenant links, registration, campaigns, and philanthropy
 - `admin_users` — admin profiles (shared with kreator module)
 - `admin_audit_logs` — admin activity log
 - `orders` — e-commerce orders

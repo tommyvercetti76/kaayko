@@ -4,6 +4,8 @@
 
 KORTEX is the smart-link product surface, spanning public creation flows, authenticated admin workflows, billing, analytics, and redirect handling.
 
+Canonical tenant architecture and next-level `kortex.kaayko.com` plan: [`KORTEX_TENANT_ARCHITECTURE_PLAN.md`](./KORTEX_TENANT_ARCHITECTURE_PLAN.md).
+
 ## Primary entrypoints
 
 Public and operator surfaces:
@@ -11,6 +13,7 @@ Public and operator surfaces:
 - `src/kortex.html`
 - `src/create-kortex-link.html`
 - `src/redirect.html`
+- `src/tenant.html`
 - `src/admin/kortex.html`
 - `src/admin/login.html`
 - `src/admin/tenant-registration.html`
@@ -27,10 +30,13 @@ Admin implementation files:
 - `src/admin/views/billing/*`
 - `src/admin/views/tenant-onboarding/*`
 - `src/admin/views/qr-codes/*`
+- `src/js/tenant-portal.js`
 
 ## Backend routes consumed
 
-- `/smartlinks/*`
+- `/kortex/*` (canonical)
+- `/smartlinks/*` (backend compatibility only)
+- `/campaigns/*`
 - `/auth/*`
 - `/billing/*`
 - `/l/:id`
@@ -43,6 +49,8 @@ Admin implementation files:
 - Analytics and QR code operations
 - Billing visibility for subscription-backed flows
 - Redirect resolution
+- Tenant alias routing for `/a/:code`
+- Tenant path routing for `/a/:tenantSlug/...`
 
 ## Current admin UX baseline (April 2026)
 
@@ -59,6 +67,23 @@ Analytics now includes admin-oriented trend visibility:
 - Trend snapshot cards for new links, engaged links, active campaigns, and dormancy movement.
 - Link creation trend bars, engagement window summaries (`24h`, `7d`, `30d`), and campaign momentum scoring.
 - CSV export now includes campaign assignment.
+
+## KORTEX V2 tenant-link baseline
+
+The frontend now supports KORTEX V2 link intent fields in the admin create-link screen:
+
+- destination type
+- namespace
+- tenant slug
+- alumni domain
+- audience
+- intent
+- source
+- auth requirement
+
+If a namespace is supplied, create-link calls `/kortex/tenant-links` and can produce clean public aliases like `https://kaayko.com/a/adminP12`. Normal links continue to use `/kortex` and public URLs like `https://kaayko.com/l/:code`.
+
+The path-based tenant shell is implemented by `src/tenant.html` and `src/js/tenant-portal.js`. Firebase Hosting sends `/a/**` and `/login` to that shell. The shell resolves compact aliases through `/kortex/links/:code/resolve`, bootstraps tenant paths through `/kortex/tenants/:tenantSlug/bootstrap`, and records V2 events through `/kortex/events`.
 
 ## Quality notes
 
