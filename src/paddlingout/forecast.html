@@ -347,12 +347,17 @@
           if (dirText && dirText !== '--') {
             // Relabel to "Wind"
             if (labelEl) labelEl.textContent = 'Wind';
-            // Inject compass arrow into Wind Speed cell (before label)
-            const deg     = COMPASS[dirText.toUpperCase()] ?? 0;
-            const compass = document.createElement('div');
+            // Inject compass arrow into .weather-data, between value and label
+            const deg        = COMPASS[dirText.toUpperCase()] ?? 0;
+            const compass    = document.createElement('div');
             compass.className = 'stat-compass';
             compass.innerHTML = `<span class="stat-compass-arrow" style="transform:rotate(${deg}deg)">↑</span>`;
-            windSpeedStat.insertBefore(compass, labelEl);
+            const weatherData = windSpeedStat.querySelector('.weather-data');
+            if (weatherData && labelEl) {
+              weatherData.insertBefore(compass, labelEl);
+            } else {
+              windSpeedStat.appendChild(compass);
+            }
           }
           windDirStat.classList.add('stat-hidden');
         }
