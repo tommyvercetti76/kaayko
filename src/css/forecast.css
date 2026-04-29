@@ -987,3 +987,26 @@ footer {
   color: rgba(237,232,223,0.44) !important;
   background: rgba(255,255,255,0.035);
 }
+
+/* ── 21. Desktop 2-column layout: hero | heatmap ────────────────────────── */
+.forecast-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@media (min-width: 900px) {
+  .forecast-body {
+    display: grid;
+    grid-template-columns: 5fr 7fr;
+    gap: 2.5rem;
+    align-items: start;
+  }
+}
+
+.forecast-col-left,
+.forecast-col-right {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}

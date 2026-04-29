@@ -71,22 +71,25 @@
     <!-- Main content (hidden until data loads) -->
     <div class="forecast-content" id="forecastContent" style="display:none">
 
-      <!-- Rating hero (full width) -->
-      <div id="ratingHeroContainer"></div>
+      <!-- ── Two-column desktop grid ───────────────────────────────────── -->
+      <div class="forecast-body">
 
-      <!-- Compact warning drawer -->
-      <div class="forecast-alert-drawer" id="forecastAlertDrawer"></div>
+        <!-- LEFT: Hero + alerts -->
+        <div class="forecast-col-left">
+          <div id="ratingHeroContainer"></div>
+          <div class="forecast-alert-drawer" id="forecastAlertDrawer"></div>
+          <!-- Legacy warnings mount (compatibility) -->
+          <div id="safetyWarningsContainer" class="forecast-warnings-row"></div>
+        </div>
 
-      <!-- Legacy warnings mount. Kept for compatibility; visible alerts render above. -->
-      <div id="safetyWarningsContainer" class="forecast-warnings-row"></div>
+        <!-- RIGHT: Heatmap -->
+        <div class="forecast-col-right">
+          <div id="heatmapContainer"></div>
+        </div>
 
-      <!-- Heatmap -->
-      <div id="heatmapContainer"></div>
-
-      <!-- Location metadata -->
+      </div>
+      <!-- ── Full-width bottom ──────────────────────────────────────────── -->
       <div class="forecast-location-info" id="locationInfo"></div>
-
-      <!-- API status footer -->
       <div class="forecast-api-status" id="apiStatus"></div>
 
     </div>
