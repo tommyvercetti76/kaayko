@@ -448,7 +448,59 @@ footer {
   }
 }
 
-/* ── 19. Heatmap best-chip: override blue → brand gold ─────────────────── */
+/* ── 19. Heatmap layout: dates above bars (full-width bars) ─────────────── */
+/*
+   Default Heatmap.css uses a 2-col grid (90px label | 1fr bar).
+   We override to a 1-col stacked layout so bars get 100% width.
+   Day label becomes a compact one-line header above each bar.
+*/
+.heatmap-day {
+  grid-template-columns: 1fr !important;
+  gap: 0.28rem !important;
+  align-items: stretch !important;
+}
+
+.day-label {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: baseline !important;
+  gap: 0.55rem !important;
+  min-height: unset !important;
+  border-left: none !important;
+  padding-left: 0 !important;
+}
+
+.day-label strong {
+  font-size: 0.7rem !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  color: rgba(237,232,223,0.92) !important;
+}
+
+.day-label span {
+  font-size: 0.62rem !important;
+  margin-top: 0 !important;
+  color: rgba(237,232,223,0.46) !important;
+  letter-spacing: 0.1em !important;
+}
+
+/* Time axis: remove the left offset that compensated for the label column */
+.heatmap-time-axis {
+  margin-left: 0 !important;
+}
+
+/* ── 19b. Suppress hover-preview popovers (show only on click) ──────────── */
+/*
+   Heatmap.js adds .is-previewing on mouseenter; .has-selection on click.
+   We only want the popover visible when the user explicitly clicked.
+*/
+.heatmap-day.is-previewing:not(.has-selection) .heatmap-popover {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* ── 20. Heatmap best-chip: override blue → brand gold ─────────────────── */
 .heatmap-best-chip {
   background: linear-gradient(135deg, rgba(24, 18, 6, 0.90), rgba(14, 11, 4, 0.84)) !important;
   border: 1px solid rgba(181, 147, 90, 0.38) !important;
