@@ -141,7 +141,7 @@ footer {
   z-index: 1;
   max-width: 1440px;
   margin: 0 auto;
-  padding: 1.25rem 1.25rem 4rem;
+  padding: 0 0 4rem;   /* hero bleeds edge-to-edge; body gets its own padding */
   display: flex;
   flex-direction: column;
 }
@@ -151,17 +151,17 @@ footer {
 /* Hide shared header — this page has its own brand treatment */
 .header { display: none !important; }
 
-/* Hero container — image fills it, text sits at the bottom */
+/* Hero container — full bleed, no rounding, cinematic */
 .forecast-page-header {
   position: relative;
   overflow: hidden;
-  border-radius: 10px;
-  min-height: 280px;
+  border-radius: 0;
+  min-height: 300px;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 1.5rem 1.75rem;
-  margin-bottom: 2rem;
+  padding: 1.5rem 2rem;
+  margin-bottom: 0;
   background: var(--surface); /* fallback while image loads */
 }
 
@@ -634,11 +634,13 @@ footer {
 
 /* ── 18. Responsive ──────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
-  .forecast-main { padding: 0.75rem 0.75rem 3rem; }
+  .forecast-main { padding: 0 0 3rem; }
+  .forecast-body { padding: 1.5rem 1.25rem 0; }
 }
 @media (max-width: 600px) {
-  .forecast-main { padding: 0.5rem 0.5rem 2.5rem; }
-  .forecast-page-header { min-height: 200px; margin-bottom: 1.25rem; }
+  .forecast-main { padding: 0 0 2.5rem; }
+  .forecast-body { padding: 1.25rem 1rem 0; }
+  .forecast-page-header { min-height: 220px; }
   .alert-summary { padding-right: 3rem; }
   .alert-details { padding-left: 1rem; }
   .loc-row {
@@ -1018,6 +1020,7 @@ footer {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  padding: 2rem 2rem 0;  /* side padding lives here, not on forecast-main */
 }
 
 @media (min-width: 900px) {
