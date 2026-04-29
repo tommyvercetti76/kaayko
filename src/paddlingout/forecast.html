@@ -35,29 +35,18 @@
 </head>
 
 <body>
-  <!-- HEADER -->
-  <header class="header">
-    <div class="header-top">
-      <div class="header-brand">
-        <h1 class="header-title">Kaayko</h1>
-        <p class="header-subtitle">Know Before You Go</p>
-      </div>
-      <nav class="top-menu"><ul></ul></nav>
-      <div class="header-controls">
-        <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode"></button>
-        <button class="fab-menu material-icons mobile-only" aria-label="Open Menu">menu</button>
-      </div>
-    </div>
-    <div class="mobile-menu-overlay">
-      <ul></ul>
-    </div>
-  </header>
+  <!-- shared header removed — brand lives in .forecast-page-header -->
 
   <!-- FORECAST PAGE CONTENT -->
   <main class="forecast-main">
 
-    <!-- Page header: lake name -->
+    <!-- Page header: brand + lake name -->
     <div class="forecast-page-header">
+      <div class="forecast-brand-row">
+        <span class="forecast-brand-eyebrow">Kaayko</span>
+        <span class="forecast-brand-divider">·</span>
+        <span class="forecast-brand-sub">Forecast</span>
+      </div>
       <a class="forecast-back-btn" href="/paddlingout">← Lakes</a>
       <div class="forecast-page-title" id="forecastPageTitle">
         <h2 id="forecastLakeName">Loading…</h2>

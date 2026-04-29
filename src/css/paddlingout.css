@@ -602,15 +602,76 @@ footer {
   .lake-name { font-size: 1.2rem; }
 }
 
-/* ── 14. Page-specific header overrides ─────────────────────────────────── */
+/* ── 14. In-page brand bar (replaces shared sticky header) ─────────────── */
 
-/* Remove hamburger + mobile overlay — nav handled by cards/links */
-.fab-menu,
-.mobile-menu-overlay {
-  display: none !important;
+/* Hide the shared header entirely on this page */
+.header { display: none !important; }
+
+.po-page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 2rem 2rem 1.25rem;
+  border-bottom: 1px solid rgba(181,147,90,0.18);
 }
 
-/* Theme toggle also not needed on this always-dark page */
-.theme-toggle-icon {
-  display: none !important;
+.po-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.po-eyebrow {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 0.78rem;
+  font-style: italic;
+  letter-spacing: 0.28em;
+  color: var(--gold, #b5935a);
+  opacity: 0.82;
+  text-transform: lowercase;
+}
+
+.po-title {
+  font-family: 'Josefin Sans', 'Josefin_Bold', Arial, sans-serif;
+  font-size: clamp(1.55rem, 4vw, 2.1rem);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold-bright, #d9bd7b);
+  margin: 0;
+  line-height: 1;
+}
+
+.po-location-btn {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(181,147,90,0.36);
+  border-radius: 50%;
+  background: rgba(181,147,90,0.08);
+  color: var(--gold, #b5935a);
+  font-family: 'Material Icons';
+  font-feature-settings: 'liga';
+  font-size: 20px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  margin-bottom: 0.15rem;
+}
+
+.po-location-btn:hover {
+  background: rgba(181,147,90,0.18);
+  border-color: var(--gold, #b5935a);
+}
+
+@media (max-width: 600px) {
+  .po-page-header {
+    padding: 1.4rem 1.1rem 1rem;
+  }
+  .po-title {
+    font-size: 1.4rem;
+  }
 }

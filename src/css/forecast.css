@@ -163,11 +163,45 @@ footer {
 }
 .forecast-back-btn:hover { opacity: 1; }
 
+/* Hide shared header — this page has its own brand treatment */
+.header { display: none !important; }
+
 .forecast-page-header {
   display: block;
   margin-bottom: 1.15rem;
   padding-bottom: 1.25rem;
   border-bottom: 1px solid var(--line-gold);
+}
+
+/* Kaayko · Forecast brand row above lake name */
+.forecast-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-bottom: 0.65rem;
+}
+
+.forecast-brand-eyebrow {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 0.82rem;
+  font-style: italic;
+  letter-spacing: 0.26em;
+  color: var(--gold);
+  opacity: 0.78;
+}
+
+.forecast-brand-divider {
+  color: rgba(181,147,90,0.4);
+  font-size: 0.75rem;
+}
+
+.forecast-brand-sub {
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: 0.56;
 }
 .forecast-page-title { flex: 1; }
 .forecast-page-title h2 {

@@ -101,37 +101,16 @@
 </head>
 
 <body>
-  <!-- HEADER: Brand / nav / dark-mode toggle / mobile menu -->
-  <header class="header">
-    <div class="header-top">
-      <div class="header-brand">
-        <h1 class="header-title">Kaayko</h1>
-        <p class="header-subtitle">Know Before You Go</p>
-      </div>
 
-      <!-- Desktop nav (populated by header.js) -->
-      <nav class="top-menu"><ul></ul></nav>
-
-      <!-- Controls: Only theme toggle visible on mobile, others hidden on mobile -->
-      <div class="header-controls">
-        <button class="custom-location-btn material-icons desktop-only" aria-label="Discover Spots" title="Discover Paddle Spots" onclick="window.location.href='/paddlingout/search.html'">place</button>
-        <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode"></button>
-        <button class="fab-menu material-icons mobile-only" aria-label="Open Menu">menu</button>
-      </div>
+  <!-- IN-PAGE BRAND BAR (replaces shared header) -->
+  <div class="po-page-header">
+    <div class="po-brand">
+      <span class="po-eyebrow">Kaayko</span>
+      <h1 class="po-title">Paddling Out</h1>
     </div>
-
-    <!-- Mobile overlay menu -->
-    <div class="mobile-menu-overlay">
-      <ul></ul>
-      <!-- Mobile-only controls inside hamburger menu -->
-      <div class="mobile-controls">
-        <button class="custom-location-btn-mobile material-icons" aria-label="Discover Spots" title="Discover Paddle Spots" onclick="window.location.href='/paddlingout/search.html'">
-          <span class="material-icons">search</span>
-          <span>Discover Spots</span>
-        </button>
-      </div>
-    </div>
-  </header>
+    <button class="po-location-btn material-icons" aria-label="Discover Spots"
+            onclick="window.location.href='/paddlingout/search.html'">place</button>
+  </div>
 
   <!-- VIEW TOGGLE -->
   <div class="view-toggle-bar">
