@@ -1051,15 +1051,10 @@ main.forecast-main {
   gap: 1.25rem;
 }
 
-/* ── 22. Heatmap heading — remove to reclaim vertical space ─────────────── */
-.heatmap-header,
-.heatmap-new-container .heatmap-header {
+/* ── 22. Heatmap heading — keep eyebrow, remove title ───────────────────── */
+.heatmap-title,
+.heatmap-new-container .heatmap-title {
   display: none !important;
-  visibility: hidden !important;
-  height: 0 !important;
-  overflow: hidden !important;
-  margin: 0 !important;
-  padding: 0 !important;
 }
 
 /* ── 23. Regional info placement ───────────────────────────────────────────
