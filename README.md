@@ -6,7 +6,7 @@ Static frontend for the Kaayko product portfolio. The `main` branch hosts commer
 
 | Product | Primary entrypoints | Backend dependency | Product guide |
 | --- | --- | --- | --- |
-| Store / Commerce | `src/index.html`, `src/store.html`, `src/cart.html`, `src/order-success.html` | `kaayko-api` commerce routes | [`docs/products/STORE.md`](./docs/products/STORE.md) |
+| Store / Commerce | `src/store.html`, `src/cart.html`, `src/order-success.html` | `kaayko-api` commerce routes | [`docs/products/STORE.md`](./docs/products/STORE.md) |
 | Paddling Out | `src/paddlingout.html` | `kaayko-api` weather and location routes | [`docs/products/PADDLING_OUT.md`](./docs/products/PADDLING_OUT.md) |
 | KORTEX | `src/kortex.html`, `src/create-kortex-link.html`, `src/admin/*`, `src/tenant.html`, `src/redirect.html` | `kaayko-api` KORTEX links, campaigns, deep links, billing, auth | [`docs/products/KORTEX.md`](./docs/products/KORTEX.md), [`docs/products/KORTEX_TENANT_ARCHITECTURE_PLAN.md`](./docs/products/KORTEX_TENANT_ARCHITECTURE_PLAN.md), [`docs/products/KORTEX_DELIVERY_PLAN_AND_DOD.md`](./docs/products/KORTEX_DELIVERY_PLAN_AND_DOD.md) |
 | Kreator | `src/kreator/*` | `kaayko-api` kreator routes | [`docs/products/KREATOR.md`](./docs/products/KREATOR.md) |

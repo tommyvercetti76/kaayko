@@ -51,7 +51,7 @@
 **Pages:**
 | URL | File |
 |-----|------|
-| `/` | `kaayko/src/index.html` (redirects → /paddlingout) |
+| `/` | `kaayko/src/index.html` (split Kaayko landing: Karma / Store, then Paddle Out / Alumni OS) |
 | `/paddlingout` | `kaayko/src/paddlingout.html` |
 | `/about` | `kaayko/src/about.html` |
 | `/reads` | `kaayko/src/reads.html` |

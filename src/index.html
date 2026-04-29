@@ -1,62 +1,513 @@
 <!DOCTYPE html>
 <html lang="en" prefix="og: http://ogp.me/ns#">
 <head>
-    <script src="/js/prod-config.js"></script>  
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <script src="/js/prod-config.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-  <!-- Primary Meta Tags -->
-  <title>Kaayko - ML-Powered Paddle Forecasts, Outdoor Gear & Paddling Community</title>
-  <meta name="description" content="Kaayko delivers ML-powered paddle conditions, kayaking weather forecasts, outdoor apparel, and a thriving paddling community. 99.98% R² accuracy on 13.6M samples. Know before you paddle!" />
-  <meta name="keywords" content="kaayko, paddle forecast, kayak weather, ML paddling conditions, kayak safety, water conditions, outdoor gear, paddling community, kayak app, konfidence rating" />
+  <title>Kaayko - Karma, Store, Paddle Out, and Alumni OS</title>
+  <meta name="description" content="Kaayko is a portfolio of useful systems: Karma, Store, Paddle Out, and Alumni OS." />
+  <meta name="keywords" content="kaayko, karma, kaayko store, paddle out, paddling forecast, alumni os, alumni network" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
   <link rel="canonical" href="https://kaayko.com/" />
-  
-  <!-- Open Graph -->
+
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://kaayko.com/">
-  <meta property="og:title" content="Kaayko - ML-Powered Paddle Forecasts">
-  <meta property="og:description" content="AI-powered paddle conditions with 99.98% accuracy. Outdoor gear, community, and smart forecasts.">
-  <meta property="og:image" content="https://kaayko.com/assets/kaayko-og.png">
-  
-  <!-- Twitter -->
+  <meta property="og:title" content="Kaayko">
+  <meta property="og:description" content="Karma, Store, Paddle Out, and Alumni OS." />
+  <meta property="og:image" content="https://kaayko.com/kaayko-logo-512.png">
+  <meta property="og:site_name" content="Kaayko">
+
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Kaayko - Smart Paddle Forecasts">
-  <meta name="twitter:description" content="ML-powered paddling conditions, gear, and community.">
-  
-  <!-- Schema.org -->
+  <meta name="twitter:title" content="Kaayko">
+  <meta name="twitter:description" content="Karma, Store, Paddle Out, and Alumni OS." />
+
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "Kaayko",
     "url": "https://kaayko.com",
-    "logo": "https://kaayko.com/assets/logo.png",
-    "description": "ML-powered paddle forecasting platform"
+    "logo": "https://kaayko.com/kaayko-logo-512.png",
+    "description": "Kaayko builds Karma, Store, Paddle Out, and Alumni OS."
   }
   </script>
-  
-  <!-- Security -->
+
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="/favicon-32x32.png">
-  <meta name="theme-color" content="#d4af37">
-  
-  <!-- Immediate redirect to paddlingout.html -->
-  <script>
-    // Redirect to paddlingout.html immediately
-    window.location.replace('/paddlingout.html');
-  </script>
-  
-  <!-- Fallback for users with JavaScript disabled -->
-  <meta http-equiv="refresh" content="0; url=/paddlingout.html">
+  <meta name="theme-color" content="#080808">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #080808;
+      --panel-a: #0d0c0a;
+      --panel-b: #111315;
+      --panel-c: #10110d;
+      --panel-d: #0c1012;
+      --fg: #ede8df;
+      --muted: rgba(237, 232, 223, 0.58);
+      --line: rgba(181, 147, 90, 0.74);
+      --gold: #b5935a;
+      --gold-bright: #d9bd7b;
+      --ease: cubic-bezier(0.76, 0, 0.24, 1);
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--fg);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow: hidden;
+      font-family: "Cormorant Garamond", Georgia, serif;
+    }
+
+    .shell {
+      position: relative;
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .brand-ghost {
+      position: fixed;
+      inset: 50% auto auto 50%;
+      width: min(38vw, 340px);
+      min-width: 180px;
+      opacity: 0.035;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .page {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 360ms ease;
+    }
+
+    .page.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .choice {
+      position: relative;
+      flex: 1 1 50%;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      appearance: none;
+      background: var(--panel-a);
+      color: inherit;
+      cursor: pointer;
+      overflow: hidden;
+      text-decoration: none;
+      transition: flex 560ms var(--ease), filter 320ms ease;
+    }
+
+    .choice.secondary {
+      background: var(--panel-b);
+    }
+
+    #pg-karma .choice.primary {
+      background: var(--panel-c);
+    }
+
+    #pg-karma .choice.secondary {
+      background: var(--panel-d);
+    }
+
+    .choice::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 50% 42%, rgba(217, 189, 123, 0.11), transparent 34%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.035), transparent 42%);
+      opacity: 0;
+      transition: opacity 360ms ease;
+    }
+
+    .choice::after {
+      content: attr(data-kicker);
+      position: absolute;
+      left: 50%;
+      bottom: clamp(4.5rem, 9vh, 6.5rem);
+      max-width: min(78vw, 360px);
+      transform: translateX(-50%) translateY(10px);
+      color: var(--muted);
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: clamp(0.78rem, 1.6vw, 0.96rem);
+      font-style: italic;
+      letter-spacing: 0.12em;
+      line-height: 1.45;
+      opacity: 0;
+      text-align: center;
+      transition: opacity 320ms ease, transform 320ms var(--ease);
+    }
+
+    .choice-label {
+      position: relative;
+      z-index: 1;
+      font-family: "Bebas Neue", Impact, sans-serif;
+      font-size: clamp(3.3rem, 13vw, 8.6rem);
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      line-height: 0.9;
+      text-transform: uppercase;
+      white-space: nowrap;
+      transition: color 260ms ease, letter-spacing 460ms var(--ease), transform 460ms var(--ease);
+    }
+
+    .choice-label .ch {
+      display: inline-block;
+      min-width: 0.38em;
+      transition: color 80ms ease;
+    }
+
+    .choice-label .space {
+      min-width: 0.28em;
+    }
+
+    .choice-label .live {
+      color: var(--gold-bright);
+    }
+
+    .seam {
+      position: absolute;
+      left: 7%;
+      right: 7%;
+      top: 50%;
+      z-index: 3;
+      height: 1px;
+      background: var(--line);
+      pointer-events: none;
+      transform: scaleX(0);
+      transform-origin: center;
+      transition: transform 760ms cubic-bezier(0.16, 1, 0.3, 1) 120ms;
+    }
+
+    .page.active .seam {
+      transform: scaleX(1);
+    }
+
+    .mark {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      z-index: 4;
+      transform: translate(-50%, -50%);
+      color: var(--gold);
+      font-size: clamp(0.52rem, 1.65vw, 0.72rem);
+      font-style: italic;
+      letter-spacing: 0.62em;
+      opacity: 0;
+      pointer-events: none;
+      text-transform: lowercase;
+      transition: opacity 300ms ease 420ms;
+      white-space: nowrap;
+    }
+
+    .page.active .mark {
+      opacity: 0.86;
+    }
+
+    .footer {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: max(1rem, env(safe-area-inset-bottom));
+      z-index: 8;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0 clamp(1.15rem, 5vw, 3.2rem);
+      pointer-events: none;
+    }
+
+    .footer a,
+    .back {
+      color: rgba(181, 147, 90, 0.48);
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: clamp(0.7rem, 1.55vw, 0.84rem);
+      font-style: italic;
+      letter-spacing: 0.24em;
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: color 220ms ease, transform 300ms var(--ease);
+      pointer-events: auto;
+      white-space: nowrap;
+    }
+
+    .footer a:hover,
+    .footer a:focus-visible,
+    .back:hover,
+    .back:focus-visible {
+      color: var(--gold-bright);
+    }
+
+    .back {
+      position: fixed;
+      left: clamp(1.15rem, 5vw, 3.2rem);
+      top: max(1rem, env(safe-area-inset-top));
+      z-index: 9;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .back.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .back:hover,
+    .back:focus-visible {
+      transform: translateX(-5px);
+    }
+
+    .choice:focus-visible,
+    .back:focus-visible,
+    .footer a:focus-visible {
+      outline: 1px solid var(--gold-bright);
+      outline-offset: 8px;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .page:has(.choice.primary:hover) .choice.primary,
+      .page:has(.choice.primary:focus-visible) .choice.primary {
+        flex: 1.25;
+      }
+
+      .page:has(.choice.primary:hover) .choice.secondary,
+      .page:has(.choice.primary:focus-visible) .choice.secondary {
+        flex: 0.75;
+      }
+
+      .page:has(.choice.secondary:hover) .choice.secondary,
+      .page:has(.choice.secondary:focus-visible) .choice.secondary {
+        flex: 1.25;
+      }
+
+      .page:has(.choice.secondary:hover) .choice.primary,
+      .page:has(.choice.secondary:focus-visible) .choice.primary {
+        flex: 0.75;
+      }
+
+      .choice:hover::before,
+      .choice:focus-visible::before,
+      .choice:hover::after,
+      .choice:focus-visible::after {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+
+      .choice:hover .choice-label,
+      .choice:focus-visible .choice-label {
+        color: var(--gold-bright);
+        letter-spacing: 0.28em;
+        transform: translateY(-8px);
+      }
+    }
+
+    @media (min-width: 720px) {
+      .page {
+        flex-direction: row;
+      }
+
+      .seam {
+        top: 7%;
+        bottom: 7%;
+        left: 50%;
+        right: auto;
+        width: 1px;
+        height: auto;
+        transform: scaleY(0);
+      }
+
+      .page.active .seam {
+        transform: scaleY(1);
+      }
+
+      .mark {
+        writing-mode: vertical-rl;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .choice-label {
+        font-size: clamp(3.1rem, 18vw, 5.6rem);
+        letter-spacing: 0.12em;
+      }
+
+      .choice::after {
+        bottom: clamp(3.8rem, 8vh, 4.6rem);
+        font-size: 0.76rem;
+        letter-spacing: 0.08em;
+      }
+
+      .footer {
+        padding-inline: 1rem;
+      }
+
+      .footer a,
+      .back {
+        font-size: 0.66rem;
+        letter-spacing: 0.18em;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+      }
+    }
+  </style>
 </head>
 <body>
-  <!-- Fallback content -->
-  <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
-    <h1>Kaayko | Paddling Out</h1>
-    <p>Redirecting to paddle conditions...</p>
-    <p><a href="/paddlingout.html">Click here if you are not redirected automatically</a></p>
-  </div>
+  <main class="shell" aria-label="Kaayko landing">
+    <img class="brand-ghost" src="/kaayko-logo-512.png" alt="" aria-hidden="true">
+
+    <section class="page active" id="pg-home" aria-label="Kaayko">
+      <div class="seam"></div>
+      <div class="mark">kaayko</div>
+      <button class="choice primary" id="go-karma" type="button" data-kicker="Signals, schools, water, memory">
+        <span class="choice-label" data-text="Karma">Karma</span>
+      </button>
+      <a class="choice secondary" href="/store" data-kicker="Small runs, sharp artifacts">
+        <span class="choice-label" data-text="Store">Store</span>
+      </a>
+    </section>
+
+    <section class="page" id="pg-karma" aria-label="Karma">
+      <div class="seam"></div>
+      <div class="mark">karma</div>
+      <a class="choice primary" href="/paddlingout" data-kicker="Know before you paddle">
+        <span class="choice-label" data-text="Paddle Out">Paddle Out</span>
+      </a>
+      <a class="choice secondary" href="https://alumni.kaayko.com" data-kicker="A private operating system for alumni communities">
+        <span class="choice-label" data-text="Alumni OS">Alumni OS</span>
+      </a>
+    </section>
+
+    <button class="back" id="back" type="button" aria-label="Return to Kaayko">Kaayko</button>
+
+    <footer class="footer" aria-label="Footer">
+      <a href="https://www.instagram.com/kaayko" rel="noopener noreferrer">Instagram</a>
+      <a href="mailto:rohan@kaayko.com">Contact</a>
+    </footer>
+  </main>
+
+  <script>
+    const POOL = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const home = document.getElementById("pg-home");
+    const karma = document.getElementById("pg-karma");
+    const back = document.getElementById("back");
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let current = home;
+    let busy = false;
+
+    function wrapLabel(label) {
+      const text = label.dataset.text || label.textContent.trim();
+      const choice = label.closest(".choice");
+
+      if (choice) {
+        choice.setAttribute("aria-label", text);
+      }
+
+      label.innerHTML = Array.from(text).map((char) => {
+        if (char === " ") {
+          return '<span class="ch space" aria-hidden="true">&nbsp;</span>';
+        }
+
+        return `<span class="ch" data-target="${char}" aria-hidden="true">${char}</span>`;
+      }).join("");
+      label.setAttribute("aria-hidden", "true");
+    }
+
+    function scramble(page) {
+      if (prefersReducedMotion) return;
+
+      page.querySelectorAll(".choice-label").forEach((label, wordIndex) => {
+        const chars = Array.from(label.querySelectorAll(".ch[data-target]"));
+        chars.forEach((span, charIndex) => {
+          const target = span.dataset.target;
+          const delay = wordIndex * 70 + charIndex * 36;
+          const flips = 5 + charIndex;
+          let count = 0;
+
+          window.setTimeout(() => {
+            span.classList.add("live");
+            const interval = window.setInterval(() => {
+              if (count < flips) {
+                span.textContent = POOL[Math.floor(Math.random() * POOL.length)];
+                count += 1;
+                return;
+              }
+
+              window.clearInterval(interval);
+              span.textContent = target;
+              span.classList.remove("live");
+            }, 36);
+          }, delay);
+        });
+      });
+    }
+
+    function show(page) {
+      if (busy || page === current) return;
+
+      busy = true;
+      current.classList.remove("active");
+      current = page;
+      current.classList.add("active");
+      back.classList.toggle("show", current !== home);
+      scramble(current);
+
+      window.setTimeout(() => {
+        busy = false;
+      }, 420);
+    }
+
+    document.querySelectorAll(".choice-label").forEach(wrapLabel);
+    document.getElementById("go-karma").addEventListener("click", () => show(karma));
+    back.addEventListener("click", () => show(home));
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") show(home);
+    });
+
+    scramble(home);
+  </script>
 </body>
 </html>

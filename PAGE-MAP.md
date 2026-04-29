@@ -89,7 +89,7 @@ Agents: identify the page here, then look up the module in MODULE-MAP.md for ful
 
 | URL | File |
 |-----|------|
-| `/` | `src/index.html` (redirects → /paddlingout) |
+| `/` | `src/index.html` (split Kaayko landing: Karma / Store, then Paddle Out / Alumni OS) |
 | `/paddlingout` | `src/paddlingout.html` |
 | `/about` | `src/about.html` |
 | `/store` | `src/store.html` |
