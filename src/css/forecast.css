@@ -467,7 +467,289 @@ footer {
   }
 }
 
-/* ── 19. Heatmap layout: dates above bars (full-width bars) ─────────────── */
+/* ── 19. Custom hourly heatmap (khm-*) ─────────────────────────────────── */
+#heatmapContainer { min-height: unset; }
+
+.khm-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.khm-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.khm-eyebrow {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-family: var(--font-sans);
+  font-size: 0.64rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.khm-title {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg);
+  line-height: 1.05;
+}
+
+.khm-legend {
+  display: flex;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  font-family: var(--font-sans);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(237,232,223,0.60);
+}
+
+.khm-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.khm-dot {
+  display: inline-block;
+  width: 0.52rem;
+  height: 0.52rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Day row */
+.khm-day {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+
+.khm-day-label {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.khm-day-label strong {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(237,232,223,0.90);
+}
+
+.khm-day-label span {
+  font-family: var(--font-sans);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  color: rgba(237,232,223,0.42);
+}
+
+/* Tile row */
+.khm-row {
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  background: #140c08;
+  border: 1px solid rgba(217,189,123,0.18);
+  border-radius: 8px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 28px rgba(0,0,0,0.22);
+  padding: 2px;
+}
+
+.khm-row::-webkit-scrollbar { display: none; }
+
+/* Individual hour tile */
+.khm-tile {
+  flex: 1 0 44px;
+  min-height: 76px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 2px 8px;
+  border: none;
+  border-radius: 6px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,255,255,0.16) 0%, transparent 60%),
+    var(--tc, #555);
+  cursor: pointer;
+  position: relative;
+  transition: filter 0.14s ease, transform 0.14s ease, box-shadow 0.14s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.khm-tile:first-child { border-top-left-radius: 6px; border-bottom-left-radius: 6px; }
+.khm-tile:last-child  { border-top-right-radius: 6px; border-bottom-right-radius: 6px; }
+
+.khm-tile--empty {
+  background: rgba(255,255,255,0.02);
+  cursor: default;
+  pointer-events: none;
+}
+
+.khm-tile.is-active {
+  box-shadow: 0 0 0 2px rgba(217,189,123,0.75), 0 6px 20px rgba(0,0,0,0.38);
+  filter: brightness(1.12);
+  transform: translateY(-2px);
+  z-index: 2;
+}
+
+/* Hour label at top of tile */
+.khm-tile-hour {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-sans);
+  font-size: 0.55rem;
+  letter-spacing: 0.04em;
+  color: rgba(255,255,255,0.58);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Score at bottom of tile */
+.khm-tile-score {
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.88);
+  pointer-events: none;
+}
+
+/* Best-window pip */
+.khm-best-pip {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--gold-bright);
+  box-shadow: 0 0 4px rgba(217,189,123,0.8);
+}
+
+/* Time axis */
+.khm-axis {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 1px;
+  font-family: var(--font-sans);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  color: rgba(237,232,223,0.48);
+}
+
+/* Detail panel */
+.khm-detail {
+  animation: khmFadeIn 0.16s ease-out;
+}
+
+@keyframes khmFadeIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.khm-detail-inner {
+  background: rgba(20,12,8,0.97);
+  border: 1px solid rgba(217,189,123,0.24);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.34);
+}
+
+.khm-detail-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: 0.65rem;
+  padding-bottom: 0.65rem;
+  margin-bottom: 0.7rem;
+  border-left: 3px solid;
+  border-bottom: 1px solid rgba(217,189,123,0.14);
+}
+
+.khm-detail-time {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(237,232,223,0.68);
+}
+
+.khm-detail-badge {
+  font-family: var(--font-sans);
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.22rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid;
+  font-weight: 600;
+}
+
+/* Macro grid */
+.khm-macros {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.55rem 0.8rem;
+}
+
+.khm-macro {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.khm-macro-icon {
+  font-size: 1rem;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.khm-macro-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+}
+
+.khm-macro-label {
+  font-family: var(--font-sans);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.khm-macro-value {
+  font-family: var(--font-serif);
+  font-size: 0.96rem;
+  color: var(--fg);
+  line-height: 1.1;
+}
+
+@media (max-width: 600px) {
+  .khm-tile { flex: 1 0 38px; min-height: 68px; }
+  .khm-macros { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+}
+
+/* ── 19b. (old Heatmap overrides — kept harmless, no longer apply) ──────── */
 /*
    Default Heatmap.css uses a 2-col grid (90px label | 1fr bar).
    We override to a 1-col stacked layout so bars get 100% width.
@@ -508,18 +790,7 @@ footer {
   margin-left: 0 !important;
 }
 
-/* ── 19b. Suppress hover-preview popovers (show only on click) ──────────── */
-/*
-   Heatmap.js adds .is-previewing on mouseenter; .has-selection on click.
-   We only want the popover visible when the user explicitly clicked.
-*/
-.heatmap-day.is-previewing:not(.has-selection) .heatmap-popover {
-  opacity: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-}
-
-/* ── 20. Heatmap best-chip: override blue → brand gold ─────────────────── */
+/* ── 20. (old Heatmap.js component overrides — no longer active) ─────────── */
 .heatmap-best-chip {
   background: linear-gradient(135deg, rgba(24, 18, 6, 0.90), rgba(14, 11, 4, 0.84)) !important;
   border: 1px solid rgba(181, 147, 90, 0.38) !important;

@@ -367,109 +367,174 @@
       container.hidden = true;
     }
 
-    // Segment windows mirror Heatmap.js — kept in sync manually
-    const SEGMENT_WINDOWS = [
-      { start: 6, end: 8 }, { start: 8, end: 10 }, { start: 10, end: 12 },
-      { start: 12, end: 14 }, { start: 14, end: 16 }, { start: 16, end: 18 },
-      { start: 18, end: 20 }
-    ];
+    // ── Custom hourly heatmap ───────────────────────────────────────────────
+    const KHM_HOURS = [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];
 
-    function renderHeatmap(forecastData) {
-      const heatmapData = window.dataTransformer?.prepareHeatmapData?.(forecastData.forecast);
-      if (!heatmapData?.length) return;
+    function khmSeverity(score) {
+      const r = Math.round(parseFloat(score));
+      if (r <= 2) return 'critical';
+      if (r <= 3) return 'moderate';
+      return 'good';
+    }
+
+    function khmColor(severity) {
+      if (severity === 'good')     return '#4CAF50';
+      if (severity === 'moderate') return '#FFA500';
+      return '#FF2D20';
+    }
+
+    function khmHourLabel(h) {
+      if (h === 0)  return '12A';
+      if (h < 12)   return `${h}A`;
+      if (h === 12) return '12P';
+      return `${h - 12}P`;
+    }
+
+    function khmRating(hourData) {
+      const raw = parseFloat(
+        hourData?.mlPrediction?.rating ?? hourData?.prediction?.rating ?? hourData?.rating
+      );
+      return isNaN(raw) ? null : Math.round(raw);
+    }
+
+    function khmMacros(hourData) {
+      const wind   = parseFloat(hourData?.windSpeed);
+      const dir    = parseFloat(hourData?.windDirection);
+      const water  = parseFloat(hourData?.waterTemp);
+      const air    = parseFloat(hourData?.airTemp ?? hourData?.temperature);
+      const uv     = parseFloat(hourData?.uvIndex ?? hourData?.uv);
+      const humid  = parseFloat(hourData?.humidity);
+      const vis    = parseFloat(hourData?.visibility);
+      const wave   = parseFloat(hourData?.waveHeight ?? hourData?.swellHeight);
+
+      const dirs   = ['N','NE','E','SE','S','SW','W','NW'];
+      const dirLbl = !isNaN(dir) ? ' ' + dirs[Math.round(dir / 45) % 8] : '';
+
+      const list = [];
+      if (!isNaN(wind))  list.push({ icon: 'air',               label: 'Wind',      value: `${Math.round(wind * 0.621371)} mph${dirLbl}` });
+      if (!isNaN(uv))    list.push({ icon: 'wb_sunny',          label: 'UV Index',  value: uv.toFixed(1) });
+      if (!isNaN(water)) list.push({ icon: 'water',             label: 'Water',     value: `${Math.round(water * 9/5 + 32)}°F` });
+      if (!isNaN(air))   list.push({ icon: 'device_thermostat', label: 'Air',       value: `${Math.round(air * 9/5 + 32)}°F` });
+      if (!isNaN(wave))  list.push({ icon: 'waves',             label: 'Wave Ht',   value: `${wave.toFixed(1)} ft` });
+      if (!isNaN(humid)) list.push({ icon: 'water_drop',        label: 'Humidity',  value: `${Math.round(humid)}%` });
+      if (!isNaN(vis))   list.push({ icon: 'visibility',        label: 'Visibility',value: `${vis} mi` });
+      return list;
+    }
+
+    function renderHourlyHeatmap(forecastData) {
       const container = document.getElementById('heatmapContainer');
       if (!container) return;
-      try {
-        const heatmap = new window.Heatmap();
-        container.innerHTML = '';
-        const el = heatmap.render(heatmapData, forecastData.location, {
-          bestWindow: findBestWindow(window.__kaaykoCurrentData, forecastData)
-        });
-        container.appendChild(el);
+      const forecast = forecastData?.forecast;
+      if (!Array.isArray(forecast) || !forecast.length) return;
 
-        // Post-process: round all displayed segment scores to integers
-        container.querySelectorAll('.segment-score').forEach(scoreEl => {
-          const val = parseFloat(scoreEl.textContent);
-          if (!isNaN(val)) scoreEl.textContent = String(Math.round(val));
-        });
-        container.querySelectorAll('.heatmap-segment[data-score]').forEach(seg => {
-          const val = parseFloat(seg.dataset.score);
-          if (!isNaN(val)) seg.dataset.score = String(Math.round(val));
-        });
-        container.querySelectorAll('.heatmap-best-chip em').forEach(chipEl => {
-          const val = parseFloat(chipEl.textContent);
-          if (!isNaN(val)) chipEl.textContent = `${Math.round(val)} / 5`;
-        });
+      const best = findBestWindow(window.__kaaykoCurrentData, forecastData);
 
-        // Track pre-click selected state to support toggle-to-collapse
-        const preClickMap = new WeakMap();
+      // ── Build HTML ────────────────────────────────────────────────────────
+      const daysHTML = forecast.slice(0, 3).map((day, di) => {
+        const { primary, secondary } = (() => {
+          const d = new Date(); d.setDate(d.getDate() + di);
+          return {
+            primary:   di === 0 ? 'Today' : di === 1 ? 'Tomorrow' : d.toLocaleDateString('en-US', { weekday: 'short' }),
+            secondary: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+          };
+        })();
 
-        container.querySelectorAll('.heatmap-segment').forEach(seg => {
-          // Capture selected state BEFORE Heatmap's own click handler fires
-          seg.addEventListener('mousedown', () => {
-            preClickMap.set(seg, seg.classList.contains('is-selected'));
-          }, { passive: true });
+        const tilesHTML = KHM_HOURS.map(h => {
+          const hourData = day.hourly?.[String(h)] ?? day.hourly?.[h];
+          if (!hourData) return `<div class="khm-tile khm-tile--empty" aria-hidden="true"><span class="khm-tile-hour">${khmHourLabel(h)}</span></div>`;
+          const score = khmRating(hourData);
+          const sev   = score !== null ? khmSeverity(score) : 'critical';
+          const col   = khmColor(sev);
+          const isBest = best && best.dayIndex === di && best.hour === h;
+          return `<button class="khm-tile${isBest ? ' khm-tile--best' : ''}"
+            data-day="${di}" data-hour="${h}"
+            style="--tc:${col}"
+            aria-label="${primary} ${formatHourDisplay(h)}, score ${score ?? 'N/A'} out of 5">
+            <span class="khm-tile-hour">${khmHourLabel(h)}</span>
+            <span class="khm-tile-score">${score ?? '—'}</span>
+            ${isBest ? '<span class="khm-best-pip" aria-label="Best window"></span>' : ''}
+          </button>`;
+        }).join('');
 
-          seg.addEventListener('click', () => {
-            const dayIndex = parseInt(seg.dataset.day, 10);
-            const wasSelected = preClickMap.get(seg) ?? false;
+        return `<div class="khm-day" data-day="${di}">
+          <div class="khm-day-label">
+            <strong>${primary}</strong><span>${secondary}</span>
+          </div>
+          <div class="khm-row">${tilesHTML}</div>
+          <div class="khm-detail" id="khm-d${di}" hidden></div>
+        </div>`;
+      }).join('');
 
-            // ── Close every OTHER day (only one open at a time) ─────────────
-            container.querySelectorAll('.heatmap-day').forEach(day => {
-              if (parseInt(day.dataset.day, 10) === dayIndex) return;
-              day.classList.remove('is-previewing', 'has-selection');
-              day.querySelectorAll('.heatmap-segment').forEach(s => s.classList.remove('is-selected'));
-              day.querySelector('.heatmap-popover')?.querySelector('.popover-hourly')?.remove();
-            });
+      container.innerHTML = `
+        <div class="khm-wrap">
+          <div class="khm-head">
+            <div>
+              <span class="khm-eyebrow">3-day outlook</span>
+              <h3 class="khm-title">Kaayko™ Konditions</h3>
+            </div>
+            <div class="khm-legend">
+              <span><i class="khm-dot" style="background:#FF2D20"></i>Hard pass</span>
+              <span><i class="khm-dot" style="background:#FFA500"></i>Careful</span>
+              <span><i class="khm-dot" style="background:#4CAF50"></i>Worth it</span>
+            </div>
+          </div>
+          ${daysHTML}
+          <div class="khm-axis" aria-hidden="true">
+            <span>6 AM</span><span>9 AM</span><span>12 PM</span><span>3 PM</span><span>6 PM</span><span>8 PM</span>
+          </div>
+        </div>`;
 
-            // ── Toggle: clicking the already-open segment collapses it ───────
-            if (wasSelected) {
-              seg.classList.remove('is-selected');
-              const parentDay = seg.closest('.heatmap-day');
-              parentDay?.classList.remove('has-selection', 'is-previewing');
-              seg.closest('.heatmap-bar')?.querySelector('.heatmap-popover')
-                ?.querySelector('.popover-hourly')?.remove();
-              return;
-            }
+      // ── Interactions ──────────────────────────────────────────────────────
+      container.querySelectorAll('.khm-tile:not(.khm-tile--empty)').forEach(tile => {
+        tile.addEventListener('click', () => {
+          const di    = parseInt(tile.dataset.day, 10);
+          const hour  = parseInt(tile.dataset.hour, 10);
+          const detail = document.getElementById(`khm-d${di}`);
+          const wasActive = tile.classList.contains('is-active');
 
-            // ── Hourly breakdown ─────────────────────────────────────────────
-            const segStart = parseInt(seg.dataset.hour, 10);
-            const dayData = forecastData.forecast?.[dayIndex];
-            if (!dayData?.hourly) return;
-
-            const bar = seg.closest('.heatmap-bar');
-            const popover = bar?.querySelector('.heatmap-popover');
-            if (!popover) return;
-
-            popover.querySelector('.popover-hourly')?.remove();
-
-            const win = SEGMENT_WINDOWS.find(w => w.start === segStart);
-            const endHour = win ? win.end : segStart + 2;
-
-            const rows = [];
-            for (let h = segStart; h < endHour; h++) {
-              const hourData = dayData.hourly[String(h)] ?? dayData.hourly[h];
-              if (!hourData) continue;
-              const raw = parseFloat(
-                hourData?.mlPrediction?.rating ?? hourData?.prediction?.rating ?? hourData?.rating
-              );
-              if (isNaN(raw)) continue;
-              rows.push(`<div class="popover-hour-row">
-                <span>${formatHourDisplay(h)}</span>
-                <strong>${Math.round(raw)} / 5</strong>
-              </div>`);
-            }
-
-            if (rows.length) {
-              const hourlyDiv = document.createElement('div');
-              hourlyDiv.className = 'popover-hourly';
-              hourlyDiv.innerHTML = rows.join('');
-              popover.appendChild(hourlyDiv);
-            }
+          // Close all other days
+          forecast.forEach((_, idx) => {
+            if (idx === di) return;
+            container.querySelectorAll(`.khm-tile[data-day="${idx}"]`).forEach(t => t.classList.remove('is-active'));
+            const otherDetail = document.getElementById(`khm-d${idx}`);
+            if (otherDetail) otherDetail.hidden = true;
           });
-        });
 
-      } catch (err) { console.error('Heatmap error:', err); }
+          // Toggle off
+          container.querySelectorAll(`.khm-tile[data-day="${di}"]`).forEach(t => t.classList.remove('is-active'));
+          if (wasActive) { if (detail) detail.hidden = true; return; }
+
+          tile.classList.add('is-active');
+
+          const hourData = forecast[di]?.hourly?.[String(hour)] ?? forecast[di]?.hourly?.[hour];
+          if (!hourData || !detail) return;
+
+          const score   = khmRating(hourData);
+          const sev     = score !== null ? khmSeverity(score) : 'critical';
+          const col     = khmColor(sev);
+          const macros  = khmMacros(hourData);
+          const sevLabel = sev === 'good' ? 'WORTH IT' : sev === 'moderate' ? 'CAREFUL' : 'HARD PASS';
+
+          detail.hidden = false;
+          detail.innerHTML = `
+            <div class="khm-detail-inner">
+              <div class="khm-detail-hdr" style="border-left-color:${col}">
+                <span class="khm-detail-time">${formatHourDisplay(hour)}</span>
+                <span class="khm-detail-badge" style="background:${col}22;color:${col};border-color:${col}66">${sevLabel} &nbsp;·&nbsp; ${score ?? '—'} / 5</span>
+              </div>
+              <div class="khm-macros">
+                ${macros.map(m => `
+                  <div class="khm-macro">
+                    <span class="material-icons khm-macro-icon">${m.icon}</span>
+                    <div class="khm-macro-body">
+                      <span class="khm-macro-label">${m.label}</span>
+                      <span class="khm-macro-value">${m.value}</span>
+                    </div>
+                  </div>`).join('')}
+              </div>
+            </div>`;
+        });
+      });
     }
 
     function getAmenityItems(spot) {
@@ -577,7 +642,7 @@
         if (currentData) renderHero(currentData, forecastData, spot);
         renderTripBriefing(currentData, forecastData);
         if (forecastData) renderSafetyWarnings(forecastData);
-        if (forecastData) renderHeatmap(forecastData);
+        if (forecastData) renderHourlyHeatmap(forecastData);
         if (forecastData?.location) renderLocationInfo(forecastData.location, spot);
         if (forecastData) renderApiStatus(forecastData);
 
@@ -609,16 +674,11 @@
         }
       }
 
-      // Clear heatmap selection / popover when clicking outside heatmap
+      // Clear hourly heatmap selection when clicking outside
       const heatmapContainer = document.getElementById('heatmapContainer');
       if (heatmapContainer && !heatmapContainer.contains(e.target)) {
-        heatmapContainer.querySelectorAll('.heatmap-day').forEach(day => {
-          day.classList.remove('is-previewing', 'has-selection');
-          day.querySelectorAll('.heatmap-segment').forEach(seg => {
-            seg.classList.remove('is-selected', 'is-highlighted');
-          });
-          day.querySelector('.heatmap-popover')?.querySelector('.popover-hourly')?.remove();
-        });
+        heatmapContainer.querySelectorAll('.khm-tile').forEach(t => t.classList.remove('is-active'));
+        heatmapContainer.querySelectorAll('.khm-detail').forEach(d => { d.hidden = true; });
       }
     });
 
