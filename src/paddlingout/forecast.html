@@ -35,19 +35,18 @@
 </head>
 
 <body>
-  <!-- shared header removed — brand lives in .forecast-page-header -->
+
+  <!-- HERO: full-viewport-width, lives outside <main> max-width container -->
+  <div class="forecast-page-header">
+    <a class="forecast-back-btn" href="/paddlingout" aria-label="Back">←</a>
+    <div class="forecast-page-title" id="forecastPageTitle">
+      <h2 id="forecastLakeName">Loading…</h2>
+      <p id="forecastLakeLocation"></p>
+    </div>
+  </div>
 
   <!-- FORECAST PAGE CONTENT -->
   <main class="forecast-main">
-
-    <!-- Page header: brand + lake name -->
-    <div class="forecast-page-header">
-      <a class="forecast-back-btn" href="/paddlingout" aria-label="Back">←</a>
-      <div class="forecast-page-title" id="forecastPageTitle">
-        <h2 id="forecastLakeName">Loading…</h2>
-        <p id="forecastLakeLocation"></p>
-      </div>
-    </div>
 
     <!-- Loading state -->
     <div class="forecast-loading" id="forecastLoading">
