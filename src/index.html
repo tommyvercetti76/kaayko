@@ -114,7 +114,7 @@
 
     .choice {
       position: relative;
-      flex: 1 1 50%;
+      flex: 1;
       min-height: 0;
       display: flex;
       align-items: center;
@@ -159,7 +159,7 @@
       width: clamp(220px, 34vw, 520px);
       aspect-ratio: 1;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(217, 189, 123, 0.24), rgba(217, 189, 123, 0.085) 34%, transparent 68%);
+      background: radial-gradient(circle, rgba(217, 189, 123, 0.46), rgba(217, 189, 123, 0.18) 34%, transparent 68%);
       opacity: 0;
       pointer-events: none;
       transform: translate3d(-50%, -50%, 0);
@@ -209,11 +209,18 @@
       top: 50%;
       z-index: 3;
       height: 1px;
-      background: var(--line);
+      /* Gap in the middle so the mark text never sits on the line */
+      background: linear-gradient(
+        to right,
+        var(--line) 40%,
+        transparent 40%,
+        transparent 60%,
+        var(--line) 60%
+      );
       pointer-events: none;
       transform: scaleX(0);
       transform-origin: center;
-      transition: transform 760ms cubic-bezier(0.16, 1, 0.3, 1) 120ms;
+      transition: transform 760ms cubic-bezier(0.16, 1, 0.3, 1) 120ms, top 440ms var(--ease), left 440ms var(--ease);
     }
 
     .page.active .seam {
@@ -227,13 +234,13 @@
       z-index: 4;
       transform: translate(-50%, -50%);
       color: var(--gold);
-      font-size: clamp(0.52rem, 1.65vw, 0.72rem);
+      font-size: clamp(0.82rem, 2.2vw, 1.1rem);
       font-style: italic;
       letter-spacing: 0.62em;
       opacity: 0;
       pointer-events: none;
       text-transform: lowercase;
-      transition: opacity 300ms ease 420ms;
+      transition: opacity 300ms ease 420ms, top 440ms var(--ease), left 440ms var(--ease);
       white-space: nowrap;
     }
 
@@ -334,6 +341,13 @@
       transform: translateY(-5px);
     }
 
+    /* Show subtitle and overlay on touch (pointerenter fires on touch too) */
+    .choice.is-hot::before,
+    .choice.is-hot::after {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
     @media (min-width: 720px) {
       .page {
         flex-direction: row;
@@ -355,6 +369,17 @@
 
       .mark {
         writing-mode: vertical-rl;
+      }
+
+      .seam {
+        /* Gap in the middle so the mark text never sits on the line */
+        background: linear-gradient(
+          to bottom,
+          var(--line) 40%,
+          transparent 40%,
+          transparent 60%,
+          var(--line) 60%
+        );
       }
     }
 
@@ -392,6 +417,143 @@
         animation-duration: 0.01ms !important;
       }
     }
+
+    /* ── Store choice panels (same .choice base, tap-to-reveal input) ── */
+
+    .store-choice {
+      flex-direction: column;
+      cursor: pointer;
+    }
+
+    /* Mobile only: expand Code panel — seam/mark position driven by JS */
+    @media (max-width: 719px) {
+      #pg-store .choice {
+        transition: filter 320ms ease, flex 440ms var(--ease);
+      }
+
+      .store-choice--open {
+        flex: 1.8;
+      }
+    }
+
+    /* Panel-count font scaling — set via JS on data-panels attribute */
+    [data-panels="3"] .choice-label {
+      font-size: clamp(2.4rem, 5vw, 5rem);
+      letter-spacing: 0.06em;
+    }
+
+    [data-panels="4"] .choice-label {
+      font-size: clamp(1.8rem, 3.5vw, 3.5rem);
+      letter-spacing: 0.04em;
+    }
+
+    /* Field group: in flow, collapsed by default so label stays centred */
+    .store-field-group {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: min(260px, 76%);
+      max-height: 0;
+      margin-top: 0;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transition: max-height 420ms var(--ease),
+                  margin-top 420ms var(--ease),
+                  opacity 280ms ease 100ms;
+    }
+
+    /* Tap: field group expands below label — flex recentres the whole block */
+    .store-choice--open .store-field-group {
+      max-height: 100px;
+      margin-top: 1.6rem;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Keep kicker visible while hovering or while input has focus */
+    .store-choice:focus-within::after {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .store-field-wrap {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      border-bottom: 1px solid rgba(181, 147, 90, 0.22);
+      padding-bottom: 2px;
+      transition: border-color 280ms ease;
+    }
+
+    .store-field-wrap:focus-within { border-bottom-color: var(--gold); }
+    .store-field-wrap.error        { border-bottom-color: rgba(255, 80, 80, 0.55); }
+    .store-field-wrap.ok           { border-bottom-color: rgba(130, 190, 80, 0.55); }
+
+    .store-input {
+      flex: 1;
+      min-width: 0;
+      background: none;
+      border: none;
+      outline: none;
+      color: rgba(237, 232, 223, 0.88);
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: clamp(0.92rem, 1.7vw, 1.05rem);
+      letter-spacing: 0.14em;
+      padding: 0.6em 0;
+      text-align: center;
+      caret-color: var(--gold);
+    }
+
+    .store-input::placeholder {
+      color: rgba(255, 255, 255, 0.16);
+      letter-spacing: 0.07em;
+    }
+
+    .store-input:disabled { opacity: 0.35; }
+
+    .store-arrow {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: rgba(181, 147, 90, 0.28);
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: 1.35em;
+      line-height: 1;
+      padding: 0.3em 0 0.3em 0.5em;
+      flex-shrink: 0;
+      transition: color 200ms ease, transform 200ms ease;
+    }
+
+    .store-arrow:hover,
+    .store-arrow:focus-visible {
+      color: var(--gold-bright);
+      transform: translateX(4px);
+    }
+
+    .store-arrow:disabled {
+      cursor: default;
+      color: rgba(181, 147, 90, 0.1);
+      transform: none;
+    }
+
+    .store-hint {
+      margin-top: 0.65em;
+      min-height: 1.2em;
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: clamp(0.72rem, 1.2vw, 0.8rem);
+      font-style: italic;
+      letter-spacing: 0.04em;
+      color: rgba(255, 80, 80, 0.7);
+      text-align: center;
+      opacity: 0;
+      transition: opacity 260ms ease, color 260ms ease;
+    }
+
+    .store-hint.visible { opacity: 1; }
+    .store-hint.ok      { color: rgba(140, 195, 80, 0.8); }
   </style>
 </head>
 <body>
@@ -401,12 +563,44 @@
     <section class="page active" id="pg-home" aria-label="Kaayko">
       <div class="seam"></div>
       <div class="mark">kaayko</div>
-      <button class="choice primary" id="go-karma" type="button" data-kicker="Signals, schools, water, memory">
+      <button class="choice primary" id="go-karma" type="button" data-kicker="Paddle Out · Alumni OS">
         <span class="choice-label" data-text="Karma">Karma</span>
       </button>
-      <a class="choice secondary" href="/store" target="_blank" rel="noopener noreferrer" data-kicker="Small runs, sharp artifacts">
+      <button class="choice secondary" id="go-store" type="button" data-kicker="Enter code or request access">
         <span class="choice-label" data-text="Store">Store</span>
-      </a>
+      </button>
+    </section>
+
+    <section class="page" id="pg-store" aria-label="Store Access">
+      <div class="seam"></div>
+      <div class="mark">store</div>
+
+      <div class="choice primary store-choice" id="panel-code" data-kicker="Enter your alphanumeric invite code">
+        <span class="choice-label" data-text="Code">Code</span>
+        <div class="store-field-group">
+          <div class="store-field-wrap" id="code-wrap">
+            <input
+              class="store-input"
+              id="code-input"
+              type="text"
+              inputmode="text"
+              placeholder="A1B2C3D4"
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="characters"
+              spellcheck="false"
+              maxlength="20"
+              aria-label="Invite code"
+            >
+            <button class="store-arrow" id="code-submit" type="button" aria-label="Submit code">→</button>
+          </div>
+          <p class="store-hint" id="code-hint" aria-live="polite"></p>
+        </div>
+      </div>
+
+      <button class="choice secondary" id="panel-grovel" type="button" data-kicker="No code? Beg us why you are worthy">
+        <span class="choice-label" data-text="Grovel">Grovel</span>
+      </button>
     </section>
 
     <section class="page" id="pg-karma" aria-label="Karma">
@@ -415,71 +609,203 @@
       <a class="choice primary" href="/paddlingout" target="_blank" rel="noopener noreferrer" data-kicker="Know before you paddle">
         <span class="choice-label" data-text="Paddle Out">Paddle Out</span>
       </a>
-      <a class="choice secondary" href="https://alumni.kaayko.com" data-kicker="A private operating system for alumni communities">
+      <a class="choice secondary" href="https://alumni.kaayko.com" target="_blank" rel="noopener noreferrer" data-kicker="A private operating system for alumni communities">
         <span class="choice-label" data-text="Alumni OS">Alumni OS</span>
       </a>
     </section>
 
-    <button class="back" id="back" type="button" aria-label="Return to Kaayko">Kaayko</button>
+    <button class="back" id="back" type="button" aria-label="Back to Kaayko home">← Kaayko</button>
 
     <footer class="footer" aria-label="Footer">
-      <a href="https://www.instagram.com/kaayko" rel="noopener noreferrer">Instagram</a>
+      <a href="https://www.instagram.com/heykaayko" rel="noopener noreferrer">Instagram</a>
       <a href="mailto:rohan@kaayko.com">Contact</a>
     </footer>
   </main>
 
   <script>
     const POOL = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const home = document.getElementById("pg-home");
+    const home  = document.getElementById("pg-home");
+    const store = document.getElementById("pg-store");
     const karma = document.getElementById("pg-karma");
-    const back = document.getElementById("back");
+    const back  = document.getElementById("back");
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let current = home;
     let busy = false;
     let currentLayer = "home";
+    let storeCodeFailures = 0;
 
+    // ── N-panel seam engine ───────────────────────────────────────────────
+    // Each panel has flex weight 1; an expanded panel gets PANEL_EXPAND_WEIGHT.
+    // Seam positions are derived mathematically so N panels (up to 4) always
+    // produce symmetric, proportional splits regardless of which panel opens.
+    const PANEL_EXPAND_WEIGHT = 1.8;
+
+    function getSeamPositions(weights) {
+      const total = weights.reduce((a, b) => a + b, 0);
+      const positions = [];
+      let cum = 0;
+      for (let i = 0; i < weights.length - 1; i++) {
+        cum += weights[i];
+        positions.push((cum / total) * 100);
+      }
+      return positions;
+    }
+
+    function updateSeam(page, expandedIndex) {
+      const isDesktop = window.innerWidth >= 720;
+      // Panel expansion only shifts seams on mobile (column flow)
+      const effective = isDesktop ? -1 : expandedIndex;
+
+      const panels = Array.from(page.querySelectorAll(":scope > .choice"));
+      const n = panels.length;
+      if (n < 2) return;
+
+      const seams = Array.from(page.querySelectorAll(":scope > .seam"));
+      const marks = Array.from(page.querySelectorAll(":scope > .mark"));
+
+      const weights = panels.map((_, i) => i === effective ? PANEL_EXPAND_WEIGHT : 1);
+      const positions = getSeamPositions(weights);
+
+      const axis  = isDesktop ? "left" : "top";
+      const reset = isDesktop ? "top"  : "left";
+
+      seams.forEach((seam, i) => {
+        seam.style[axis]  = (positions[i] ?? (i + 1) / n * 100) + "%";
+        seam.style[reset] = "";
+      });
+
+      marks.forEach(mark => {
+        mark.style[axis]  = (positions[0] ?? 50) + "%";
+        mark.style[reset] = "";
+      });
+    }
+
+    function initPages() {
+      document.querySelectorAll(".page").forEach(page => {
+        const panels = Array.from(page.querySelectorAll(":scope > .choice"));
+        const n = panels.length;
+        page.dataset.panels = n;
+
+        // Auto-generate missing seam dividers for pages with >2 panels
+        const existing = page.querySelectorAll(":scope > .seam").length;
+        for (let i = existing; i < n - 1; i++) {
+          const seam = document.createElement("div");
+          seam.className = "seam";
+          page.insertBefore(seam, panels[0]);
+        }
+
+        updateSeam(page, -1);
+      });
+    }
+
+    window.addEventListener("resize", () => {
+      document.querySelectorAll(".page").forEach(page => {
+        const expanded = page.querySelector(".store-choice--open");
+        const panels   = Array.from(page.querySelectorAll(":scope > .choice"));
+        updateSeam(page, expanded ? panels.indexOf(expanded) : -1);
+      });
+    });
+
+    // ── Store code validation (same keys as secretStore.js) ──────────────
+    function checkStoreCode(v) {
+      const decoys = ["admin","password","secret","unlock","kaayko"];
+      if (decoys.includes(v.toLowerCase())) return false;
+      const keys = [
+        () => String.fromCharCode(0x4d,0x61,0x61,0x75),
+        () => window.atob("Q2hhcml6YXJk"),
+        () => [78,97,103,112,117,114].map(c => String.fromCharCode(c)).join("")
+      ];
+      return keys.some(fn => fn() === v);
+    }
+
+    function storeSarcasm() {
+      const lines = [
+        "Wrong, dumbass. Try again.",
+        "Oh my God, you suck at this.",
+        "That's not it, genius.",
+        "Dude, seriously? That's your guess?",
+        "This is pretty sad to watch.",
+        "Are you actually stupid or just pretending?",
+        "Holy crap, you're terrible at this.",
+        "I've seen rocks with better problem-solving skills.",
+        "Just give up. This isn't for you.",
+        "Even Butters could do better.",
+        "I'm actually impressed by how bad you are at this."
+      ];
+      return lines[Math.min(storeCodeFailures - 1, lines.length - 1)];
+    }
+
+    // ── hint helper ───────────────────────────────────────────────────────
+    function setHint(wrap, hint, msg, state /* "error" | "ok" | null */) {
+      wrap.classList.remove("error", "ok");
+      hint.classList.remove("error", "ok", "visible");
+      hint.textContent = msg;
+      if (state) {
+        wrap.classList.add(state);
+        hint.classList.add(state, "visible");
+      }
+    }
+
+    function resetStoreForm() {
+      storeCodeFailures = 0;
+      const panel    = document.getElementById("panel-code");
+      const codeInput = document.getElementById("code-input");
+      const codeWrap  = document.getElementById("code-wrap");
+      const codeHint  = document.getElementById("code-hint");
+      const codeSub   = document.getElementById("code-submit");
+
+      panel.classList.remove("store-choice--open");
+      updateSeam(store, -1);
+      codeInput.value    = "";
+      codeInput.disabled = false;
+      codeSub.disabled   = false;
+      codeWrap.classList.remove("error", "ok");
+      codeHint.textContent = "";
+      codeHint.classList.remove("error", "ok", "visible");
+    }
+
+    // ── scramble ──────────────────────────────────────────────────────────
     function wrapLabel(label) {
       const text = label.dataset.text || label.textContent.trim();
       const choice = label.closest(".choice");
-
-      if (choice) {
-        choice.setAttribute("aria-label", text);
-      }
-
+      if (choice) choice.setAttribute("aria-label", text);
       label.dataset.text = text;
-      label.textContent = text;
+      label.textContent  = text;
     }
 
     function scramble(page) {
       if (prefersReducedMotion) return;
 
-      page.querySelectorAll(".choice-label").forEach((label, wordIndex) => {
+      const TICK = 38;
+      const NOISE_TICKS = 5;
+      const LOCK_STEP   = 42;
+
+      page.querySelectorAll(".choice-label").forEach((label) => {
         const target = label.dataset.text || label.textContent.trim();
-        const chars = Array.from(target);
-        const maxTicks = 11;
-        let tick = 0;
+        const chars  = Array.from(target);
+        const locked = chars.map(c => c === " ");
 
-        window.setTimeout(() => {
-          const interval = window.setInterval(() => {
-            label.textContent = chars.map((char, index) => {
-              if (char === " ") return " ";
-              if (tick > maxTicks - Math.min(index, 5)) return char;
-              return POOL[Math.floor(Math.random() * POOL.length)];
-            }).join("");
+        chars.forEach((char, i) => {
+          if (char === " ") return;
+          window.setTimeout(() => { locked[i] = true; }, NOISE_TICKS * TICK + i * LOCK_STEP);
+        });
 
-            tick += 1;
+        const interval = window.setInterval(() => {
+          label.textContent = chars.map((char, i) =>
+            locked[i] ? char : POOL[Math.floor(Math.random() * POOL.length)]
+          ).join("");
 
-            if (tick > maxTicks + 2) {
-              window.clearInterval(interval);
-              label.textContent = target;
-            }
-          }, 38);
-        }, wordIndex * 90);
+          if (locked.every(Boolean)) {
+            window.clearInterval(interval);
+            label.textContent = target;
+          }
+        }, TICK);
       });
     }
 
+    // ── cursor glow ───────────────────────────────────────────────────────
     function attachCursorGlow(choice) {
-      const glow = document.createElement("span");
+      const glow  = document.createElement("span");
       const state = { x: 0, y: 0, tx: 0, ty: 0, frame: 0 };
       glow.className = "choice-glow";
       glow.setAttribute("aria-hidden", "true");
@@ -489,38 +815,31 @@
         state.x += (state.tx - state.x) * 0.18;
         state.y += (state.ty - state.y) * 0.18;
         glow.style.transform = `translate3d(${state.x}px, ${state.y}px, 0) translate(-50%, -50%)`;
-
         if (choice.classList.contains("is-hot")) {
           state.frame = window.requestAnimationFrame(render);
           return;
         }
-
         state.frame = 0;
       };
 
-      const updateTarget = (event) => {
-        const rect = choice.getBoundingClientRect();
-        state.tx = event.clientX - rect.left;
-        state.ty = event.clientY - rect.top;
+      const updateTarget = (e) => {
+        const r = choice.getBoundingClientRect();
+        state.tx = e.clientX - r.left;
+        state.ty = e.clientY - r.top;
       };
 
-      choice.addEventListener("pointerenter", (event) => {
-        updateTarget(event);
+      choice.addEventListener("pointerenter", (e) => {
+        updateTarget(e);
         state.x = state.tx;
         state.y = state.ty;
         choice.classList.add("is-hot");
-
-        if (!state.frame) {
-          state.frame = window.requestAnimationFrame(render);
-        }
+        if (!state.frame) state.frame = window.requestAnimationFrame(render);
       });
-
       choice.addEventListener("pointermove", updateTarget);
-      choice.addEventListener("pointerleave", () => {
-        choice.classList.remove("is-hot");
-      });
+      choice.addEventListener("pointerleave", () => choice.classList.remove("is-hot"));
     }
 
+    // ── page transitions ──────────────────────────────────────────────────
     function show(page, options = {}) {
       if (busy || page === current) return;
 
@@ -529,46 +848,154 @@
       current = page;
       current.classList.add("active");
       back.classList.toggle("show", current !== home);
-      currentLayer = current === home ? "home" : "karma";
-      scramble(current);
 
-      if (options.pushState && currentLayer === "karma") {
-        window.history.pushState({ layer: "karma" }, "", "#karma");
+      if (current === home) {
+        currentLayer = "home";
+        document.title = "Kaayko - Karma, Store, Paddle Out, and Alumni OS";
+      } else if (current === store) {
+        currentLayer = "store";
+        document.title = "Store – Kaayko";
+        resetStoreForm();
+      } else if (current === karma) {
+        currentLayer = "karma";
+        document.title = "Karma – Kaayko";
       }
 
-      window.setTimeout(() => {
-        busy = false;
-      }, 420);
+      scramble(current);
+
+      if (options.pushState) {
+        if (currentLayer === "karma") window.history.pushState({ layer: "karma" }, "", "#karma");
+        if (currentLayer === "store") window.history.pushState({ layer: "store" }, "", "#store");
+      }
+
+      window.setTimeout(() => { busy = false; }, 420);
     }
 
-    document.querySelectorAll(".choice-label").forEach(wrapLabel);
-    document.querySelectorAll(".choice").forEach(attachCursorGlow);
-    window.history.replaceState({ layer: "home" }, "", window.location.href.split("#")[0]);
-    document.getElementById("go-karma").addEventListener("click", () => show(karma, { pushState: true }));
-    back.addEventListener("click", () => {
-      if (currentLayer === "karma" && window.location.hash === "#karma") {
-        window.history.back();
+    // ── store form logic ──────────────────────────────────────────────────
+    function submitCode() {
+      const input  = document.getElementById("code-input");
+      const wrap   = document.getElementById("code-wrap");
+      const hint   = document.getElementById("code-hint");
+      const submit = document.getElementById("code-submit");
+      const val    = input.value.trim();
+
+      if (!val) {
+        setHint(wrap, hint, "Enter your invite code.", "error");
+        return;
+      }
+      if (!/^[a-zA-Z0-9]+$/.test(val)) {
+        setHint(wrap, hint, "Letters and numbers only — no spaces or symbols.", "error");
+        return;
+      }
+      if (val.length < 4) {
+        setHint(wrap, hint, "Code must be at least 4 characters.", "error");
         return;
       }
 
+      if (checkStoreCode(val)) {
+        localStorage.setItem(atob("a2FheWtvU3RvcmVBY2Nlc3M="), atob("Z3JhbnRlZA=="));
+
+        // Haptic confirmation (gentle double-pulse)
+        if (navigator.vibrate) navigator.vibrate([30, 60, 30]);
+
+        // Open tab NOW — must be synchronous within the user gesture or
+        // the browser treats it as a blocked popup
+        window.open("/store", "_blank", "noopener,noreferrer");
+
+        setHint(wrap, hint, "Access granted. Opening store.", "ok");
+        input.disabled  = true;
+        submit.disabled = true;
+        window.setTimeout(() => show(home), 1200);
+      } else {
+        storeCodeFailures++;
+        setHint(wrap, hint, storeSarcasm(), "error");
+        input.value = "";
+        input.focus();
+      }
+    }
+
+    // ── wire up ───────────────────────────────────────────────────────────
+    document.querySelectorAll(".choice-label").forEach(wrapLabel);
+    document.querySelectorAll(".choice").forEach(attachCursorGlow);
+
+    // Read hash before replaceState strips it
+    const initialHash = window.location.hash;
+    window.history.replaceState({ layer: "home" }, "", window.location.href.split("#")[0]);
+
+    document.getElementById("go-karma").addEventListener("click", () => show(karma, { pushState: true }));
+    document.getElementById("go-store").addEventListener("click", () => show(store, { pushState: true }));
+
+    const codePanel = document.getElementById("panel-code");
+
+    // Tap panel → expand and focus input
+    codePanel.addEventListener("click", () => {
+      if (codePanel.classList.contains("store-choice--open")) return;
+      codePanel.classList.add("store-choice--open");
+      updateSeam(store, 0);
+      window.setTimeout(() => document.getElementById("code-input").focus(), 360);
+    });
+
+    // Focus leaves panel entirely → collapse back to equal split
+    codePanel.addEventListener("focusout", (e) => {
+      if (!codePanel.contains(e.relatedTarget)) {
+        codePanel.classList.remove("store-choice--open");
+        updateSeam(store, -1);
+      }
+    });
+
+    // Tap anywhere outside panel → collapse immediately (covers touch before focus lands)
+    document.addEventListener("pointerdown", (e) => {
+      if (currentLayer !== "store") return;
+      if (!codePanel.contains(e.target)) {
+        codePanel.classList.remove("store-choice--open");
+        updateSeam(store, -1);
+      }
+    });
+
+    document.getElementById("code-submit").addEventListener("click", submitCode);
+    document.getElementById("code-input").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") submitCode();
+    });
+
+    document.getElementById("panel-grovel").addEventListener("click", () => {
+      const subject = encodeURIComponent("Store Access Request");
+      const body    = encodeURIComponent("Hi,\n\nI am not worthy but neither are you. Send me code.");
+      window.location.href = "mailto:rohan@kaayko.com?subject=" + subject + "&body=" + body;
+    });
+
+    back.addEventListener("click", () => {
+      if ((currentLayer === "karma" && window.location.hash === "#karma") ||
+          (currentLayer === "store" && window.location.hash === "#store")) {
+        window.history.back();
+        return;
+      }
       show(home);
     });
+
     window.addEventListener("popstate", (event) => {
       const layer = event.state && event.state.layer;
-      show(layer === "karma" ? karma : home);
+      if (layer === "karma") show(karma);
+      else if (layer === "store") show(store);
+      else show(home);
     });
+
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
-        if (currentLayer === "karma" && window.location.hash === "#karma") {
+        if ((currentLayer === "karma" && window.location.hash === "#karma") ||
+            (currentLayer === "store" && window.location.hash === "#store")) {
           window.history.back();
           return;
         }
-
         show(home);
       }
     });
 
+    initPages();
     scramble(home);
+
+    // Deep-link: /store redirects here as /#store — open the panel immediately
+    if (initialHash === "#store") show(store, { pushState: true });
+    else if (initialHash === "#karma") show(karma, { pushState: true });
   </script>
 </body>
 </html>

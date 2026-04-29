@@ -365,7 +365,7 @@ function createLikeButton(item) {
       console.error("Vote error:", err);
       liked = !liked;
       refresh();
-      alert("Oops—couldn't update vote.");
+      console.warn("Vote update failed — UI rolled back.");
     }
   });
 

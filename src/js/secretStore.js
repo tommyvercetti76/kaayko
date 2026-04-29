@@ -83,13 +83,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const hasAccess = localStorage.getItem(accessKey) === atob('Z3JhbnRlZA==');
   
   if (!hasAccess) {
-    // Add history state to handle back button properly
-    history.pushState({ modal: 'secret-store' }, '', window.location.href);
-    
-    // Add a slight delay to prevent immediate back button interference
-    setTimeout(() => {
-      showSecretModal();
-    }, 100);
+    // Route to the homepage store panel — showSecretModal() kept below as fallback
+    window.location.replace('https://kaayko.com/#store');
   }
 });
 

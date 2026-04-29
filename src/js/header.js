@@ -26,65 +26,14 @@ function initializeDarkMode() {
  *    Fixed nav tabs with dynamic subtitle system.
  *───────────────────────────────────────────────────────────────────────────*/
 function populateMenu() {
-  // Fixed navigation tabs
-  const tabs = [
-    { name: "Store", url: "store.html", subtitle: "Made for the Wild" },
-    { name: "Karma", url: "karma.html", subtitle: "Giving Back" }
-  ];
-  
-  const currentPath = window.location.pathname;
-  const currentPage = currentPath.split("/").pop() || "index.html";
-  const isStorePage = currentPage === "store.html" || currentPage === "cart.html";
-  const isAdminPage = currentPath.includes("/admin/");
-  const isKreatorPage = currentPath.includes("/kreator/");
-  
+  // Each product page is self-contained — no cross-product nav tabs.
+  // In-page navigation (cart, filters, location pin, etc.) is wired up
+  // directly in each page's own HTML/scripts.
   const desktopUl = document.querySelector(".top-menu ul");
   const mobileUl  = document.querySelector(".mobile-menu-overlay ul");
-  const subtitleEl = document.querySelector(".header-subtitle");
-  
   if (!desktopUl || !mobileUl) return;
-
   desktopUl.innerHTML = "";
   mobileUl.innerHTML  = "";
-
-  tabs.forEach(tab => {
-    // Determine if this tab is active - match against href or path
-    const isActive = currentPath.includes(tab.url.replace('.html', '')) || 
-                     currentPage === tab.url ||
-                     (tab.url === "store.html" && isStorePage) ||
-                     (tab.url === "admin/kortex.html" && isAdminPage) ||
-                     (tab.url === "kreator/apply.html" && isKreatorPage);
-    
-    // Desktop tab
-    const li = document.createElement("li");
-    const a  = document.createElement("a");
-    a.href        = tab.url;
-    a.textContent = tab.name;
-    
-    if (isActive) {
-      a.classList.add('active');
-      // Update subtitle for active tab
-      if (subtitleEl) {
-        subtitleEl.textContent = tab.subtitle;
-      }
-    }
-    
-    // Add special handling for Store links
-    if (tab.url === 'store.html') {
-      a.addEventListener('click', handleStoreNavigation);
-    }
-    
-    li.appendChild(a);
-    desktopUl.appendChild(li);
-    
-    // Mobile tab
-    const mobileLi = li.cloneNode(true);
-    const mobileA = mobileLi.querySelector('a');
-    if (tab.url === 'store.html') {
-      mobileA.addEventListener('click', handleStoreNavigation);
-    }
-    mobileUl.appendChild(mobileLi);
-  });
 }
 
 /** ───────────────────────────────────────────────────────────────────────────
@@ -222,21 +171,21 @@ function initializeApiModeToggle() {
 
 /** ───────────────────────────────────────────────────────────────────────────
  * 6) Home Navigation
- *    Adds click handler to header brand/title for navigation back to home
+ *    Store and Paddle Out always open in a new tab from kaayko.com, so
+ *    window.opener will be set — kaayko.com is already in the background tab
+ *    and a redundant home link would be stray navigation. Only wire it up for
+ *    direct visits (bookmarks, shared links) where opener is null.
  *───────────────────────────────────────────────────────────────────────────*/
 function initializeHomeNavigation() {
-  const headerBrand = document.querySelector('.header-brand');
-  const headerTitle = document.querySelector('.header-title');
-  
-  // Add click handler to either brand container or title
-  const homeElement = headerBrand || headerTitle;
-  if (homeElement) {
-    homeElement.style.cursor = 'pointer';
-    homeElement.addEventListener('click', () => {
-      // Navigate to home (paddlingout.html)
-      window.location.href = '/paddlingout.html';
-    });
-  }
+  if (window.opener !== null) return;
+
+  const homeElement = document.querySelector('.header-brand') || document.querySelector('.header-title');
+  if (!homeElement) return;
+
+  homeElement.style.cursor = 'pointer';
+  homeElement.addEventListener('click', () => {
+    window.location.href = 'https://kaayko.com';
+  });
 }
 
 /** ───────────────────────────────────────────────────────────────────────────

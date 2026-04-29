@@ -93,6 +93,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   } catch (err) {
     console.error("Failed to load products:", err);
-    alert("Sorry—couldn't load products. Please try again later.");
+    const carousel = document.getElementById("carousel");
+    if (carousel) {
+      carousel.innerHTML = `
+        <div style="
+          display:flex;flex-direction:column;align-items:center;justify-content:center;
+          min-height:60vh;gap:1rem;color:rgba(237,232,223,0.5);
+          font-family:'Josefin Sans',Arial,sans-serif;text-align:center;padding:2rem;
+        ">
+          <span style="font-size:2rem;opacity:0.4;">⚠</span>
+          <p style="font-size:0.9rem;letter-spacing:0.1em;text-transform:uppercase;">
+            Couldn't load products
+          </p>
+          <button onclick="window.location.reload()" style="
+            margin-top:0.5rem;background:none;border:1px solid rgba(212,175,55,0.3);
+            color:rgba(212,175,55,0.7);padding:0.5em 1.4em;border-radius:2px;
+            font-size:0.8rem;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;
+          ">Try again</button>
+        </div>`;
+    }
   }
 });
