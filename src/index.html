@@ -146,10 +146,25 @@
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(circle at 50% 42%, rgba(217, 189, 123, 0.11), transparent 34%),
         linear-gradient(135deg, rgba(255, 255, 255, 0.035), transparent 42%);
       opacity: 0;
-      transition: opacity 360ms ease;
+      transition: opacity 220ms ease;
+    }
+
+    .choice-glow {
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 0;
+      width: clamp(220px, 34vw, 520px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(217, 189, 123, 0.24), rgba(217, 189, 123, 0.085) 34%, transparent 68%);
+      opacity: 0;
+      pointer-events: none;
+      transform: translate3d(-50%, -50%, 0);
+      transition: opacity 260ms ease;
+      will-change: transform, opacity;
     }
 
     .choice::after {
@@ -306,6 +321,19 @@
       }
     }
 
+    .choice.is-hot::before {
+      opacity: 1;
+    }
+
+    .choice.is-hot .choice-glow {
+      opacity: 1;
+    }
+
+    .choice.is-hot .choice-label {
+      color: var(--gold-bright);
+      transform: translateY(-5px);
+    }
+
     @media (min-width: 720px) {
       .page {
         flex-direction: row;
@@ -376,7 +404,7 @@
       <button class="choice primary" id="go-karma" type="button" data-kicker="Signals, schools, water, memory">
         <span class="choice-label" data-text="Karma">Karma</span>
       </button>
-      <a class="choice secondary" href="/store" data-kicker="Small runs, sharp artifacts">
+      <a class="choice secondary" href="/store" target="_blank" rel="noopener noreferrer" data-kicker="Small runs, sharp artifacts">
         <span class="choice-label" data-text="Store">Store</span>
       </a>
     </section>
@@ -384,7 +412,7 @@
     <section class="page" id="pg-karma" aria-label="Karma">
       <div class="seam"></div>
       <div class="mark">karma</div>
-      <a class="choice primary" href="/paddlingout" data-kicker="Know before you paddle">
+      <a class="choice primary" href="/paddlingout" target="_blank" rel="noopener noreferrer" data-kicker="Know before you paddle">
         <span class="choice-label" data-text="Paddle Out">Paddle Out</span>
       </a>
       <a class="choice secondary" href="https://alumni.kaayko.com" data-kicker="A private operating system for alumni communities">
@@ -408,6 +436,7 @@
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let current = home;
     let busy = false;
+    let currentLayer = "home";
 
     function wrapLabel(label) {
       const text = label.dataset.text || label.textContent.trim();
@@ -449,7 +478,50 @@
       });
     }
 
-    function show(page) {
+    function attachCursorGlow(choice) {
+      const glow = document.createElement("span");
+      const state = { x: 0, y: 0, tx: 0, ty: 0, frame: 0 };
+      glow.className = "choice-glow";
+      glow.setAttribute("aria-hidden", "true");
+      choice.prepend(glow);
+
+      const render = () => {
+        state.x += (state.tx - state.x) * 0.18;
+        state.y += (state.ty - state.y) * 0.18;
+        glow.style.transform = `translate3d(${state.x}px, ${state.y}px, 0) translate(-50%, -50%)`;
+
+        if (choice.classList.contains("is-hot")) {
+          state.frame = window.requestAnimationFrame(render);
+          return;
+        }
+
+        state.frame = 0;
+      };
+
+      const updateTarget = (event) => {
+        const rect = choice.getBoundingClientRect();
+        state.tx = event.clientX - rect.left;
+        state.ty = event.clientY - rect.top;
+      };
+
+      choice.addEventListener("pointerenter", (event) => {
+        updateTarget(event);
+        state.x = state.tx;
+        state.y = state.ty;
+        choice.classList.add("is-hot");
+
+        if (!state.frame) {
+          state.frame = window.requestAnimationFrame(render);
+        }
+      });
+
+      choice.addEventListener("pointermove", updateTarget);
+      choice.addEventListener("pointerleave", () => {
+        choice.classList.remove("is-hot");
+      });
+    }
+
+    function show(page, options = {}) {
       if (busy || page === current) return;
 
       busy = true;
@@ -457,7 +529,12 @@
       current = page;
       current.classList.add("active");
       back.classList.toggle("show", current !== home);
+      currentLayer = current === home ? "home" : "karma";
       scramble(current);
+
+      if (options.pushState && currentLayer === "karma") {
+        window.history.pushState({ layer: "karma" }, "", "#karma");
+      }
 
       window.setTimeout(() => {
         busy = false;
@@ -465,10 +542,30 @@
     }
 
     document.querySelectorAll(".choice-label").forEach(wrapLabel);
-    document.getElementById("go-karma").addEventListener("click", () => show(karma));
-    back.addEventListener("click", () => show(home));
+    document.querySelectorAll(".choice").forEach(attachCursorGlow);
+    window.history.replaceState({ layer: "home" }, "", window.location.href.split("#")[0]);
+    document.getElementById("go-karma").addEventListener("click", () => show(karma, { pushState: true }));
+    back.addEventListener("click", () => {
+      if (currentLayer === "karma" && window.location.hash === "#karma") {
+        window.history.back();
+        return;
+      }
+
+      show(home);
+    });
+    window.addEventListener("popstate", (event) => {
+      const layer = event.state && event.state.layer;
+      show(layer === "karma" ? karma : home);
+    });
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") show(home);
+      if (event.key === "Escape") {
+        if (currentLayer === "karma" && window.location.hash === "#karma") {
+          window.history.back();
+          return;
+        }
+
+        show(home);
+      }
     });
 
     scramble(home);
