@@ -64,42 +64,42 @@ class RatingHero {
           <div class="skill-info">
             <div class="core-weather-inline">
               <div class="weather-stat">
-                <div class="weather-icon">🌡️</div>
+                <div class="weather-icon">AIR</div>
                 <div class="weather-data">
                   <span class="weather-value">${dispTemp}${tempUnit}</span>
                   <span class="weather-label">Air Temp</span>
                 </div>
               </div>
               <div class="weather-stat">
-                <div class="weather-icon">💨</div>
+                <div class="weather-icon">WND</div>
                 <div class="weather-data">
                   <span class="weather-value">${dispWind} ${windUnit}</span>
                   <span class="weather-label">Wind Speed</span>
                 </div>
               </div>
               <div class="weather-stat">
-                <div class="weather-icon">🧭</div>
+                <div class="weather-icon">DIR</div>
                 <div class="weather-data">
                   <span class="weather-value">${windDirection}</span>
                   <span class="weather-label">Wind Dir</span>
                 </div>
               </div>
               <div class="weather-stat">
-                <div class="weather-icon">🌊</div>
+                <div class="weather-icon">H2O</div>
                 <div class="weather-data">
                   <span class="weather-value">${typeof dispWaterTemp === 'number' ? dispWaterTemp.toFixed(1) : dispWaterTemp}${tempUnit}</span>
                   <span class="weather-label">Water Temp</span>
                 </div>
               </div>
               <div class="weather-stat">
-                <div class="weather-icon">☀️</div>
+                <div class="weather-icon">UV</div>
                 <div class="weather-data">
                   <span class="weather-value">${uvIndex}</span>
                   <span class="weather-label">UV Index</span>
                 </div>
               </div>
               <div class="weather-stat">
-                <div class="weather-icon">☁️</div>
+                <div class="weather-icon">SKY</div>
                 <div class="weather-data">
                   <span class="weather-value">${cloudCover}%</span>
                   <span class="weather-label">Cloud Cover</span>
@@ -113,8 +113,6 @@ class RatingHero {
           </div>
         </div>
 
-        <!-- ── Paddler's Briefing ── -->
-        ${this.buildPaddlerBriefing(rating, weather, forecastData)}
       </div>
 
       <!-- ── Feedback widget ── -->
@@ -210,7 +208,6 @@ class RatingHero {
   buildPaddlerBriefing(rating, weather, forecastData) {
     const verdict    = this.getVerdict(rating);
     const conditions = this.analyzeConditions(weather, rating);
-    const suggestion = this.getForecastSuggestion(rating, forecastData);
 
     return `
       <div class="paddler-briefing ${verdict.className}">
@@ -236,13 +233,6 @@ class RatingHero {
               </div>
             </div>
           `).join('')}
-        </div>` : ''}
-
-        <!-- Forecast suggestion -->
-        ${suggestion ? `
-        <div class="briefing-suggestion">
-          <span class="suggestion-icon">📅</span>
-          <div class="suggestion-text">${suggestion}</div>
         </div>` : ''}
 
       </div>

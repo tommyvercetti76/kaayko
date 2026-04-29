@@ -1148,6 +1148,213 @@ html.dark-theme .feedback-thanks {
   color: #6abf7b;
 }
 
+/* Forecast detail premium layout override */
+#ratingHeroContainer .rating-hero {
+  margin: 0;
+}
+
+#ratingHeroContainer .skill-level-section {
+  gap: 1rem;
+}
+
+#ratingHeroContainer .header-content {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1.28fr);
+  gap: clamp(1rem, 3vw, 2rem);
+  align-items: center;
+}
+
+#ratingHeroContainer .rating-section {
+  width: 100%;
+  min-height: 210px;
+  margin: 0;
+  justify-content: center;
+  border-right: 1px solid rgba(217,189,123,0.18);
+}
+
+#ratingHeroContainer .paddle-score-label {
+  margin-bottom: 0.6rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+}
+
+#ratingHeroContainer .score-ring-wrapper {
+  width: 152px;
+  height: 152px;
+}
+
+#ratingHeroContainer .score-ring {
+  width: 152px;
+  height: 152px;
+}
+
+#ratingHeroContainer .ring-number {
+  font-size: 2.3rem;
+}
+
+#ratingHeroContainer .ring-denom {
+  font-size: 1rem;
+}
+
+#ratingHeroContainer .ring-label {
+  margin-top: 0.55rem;
+  font-size: 0.9rem;
+}
+
+#ratingHeroContainer .now-indicator {
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
+}
+
+#ratingHeroContainer .skill-info {
+  width: 100%;
+}
+
+#ratingHeroContainer .core-weather-inline {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  padding: 0;
+  margin: 0;
+  border: 1px solid rgba(217,189,123,0.16);
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.025);
+}
+
+#ratingHeroContainer .weather-stat {
+  min-height: 68px;
+  padding: 0.78rem 0.9rem;
+  border: 0;
+  border-right: 1px solid rgba(217,189,123,0.12);
+  border-bottom: 1px solid rgba(217,189,123,0.12);
+  border-radius: 0;
+  background: transparent;
+}
+
+#ratingHeroContainer .weather-stat:hover {
+  background: rgba(217,189,123,0.055);
+}
+
+#ratingHeroContainer .weather-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(217,189,123,0.2);
+  border-radius: 50%;
+  font-family: 'Josefin_Bold', Arial, sans-serif;
+  font-size: 0.52rem;
+  letter-spacing: 0.08em;
+  color: var(--gold, #b5935a);
+  background: rgba(181,147,90,0.07);
+}
+
+#ratingHeroContainer .weather-value {
+  font-size: 1.05rem;
+  line-height: 1.1;
+  color: ivory !important;
+}
+
+#ratingHeroContainer .weather-label {
+  margin-top: 0.2rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.11em;
+  color: rgba(237,232,223,0.6) !important;
+}
+
+#ratingHeroContainer .units-toggle {
+  justify-content: flex-start;
+  margin-top: 0.95rem;
+}
+
+#ratingHeroContainer .units-btn {
+  border-radius: 999px;
+  min-width: 98px;
+}
+
+#ratingHeroContainer .units-btn.active {
+  background: rgba(181,147,90,0.2);
+  border-color: rgba(217,189,123,0.56);
+  box-shadow: 0 0 18px rgba(181,147,90,0.16);
+}
+
+#ratingHeroContainer .paddler-briefing {
+  margin-top: 0;
+}
+
+#ratingHeroContainer .verdict-title,
+#ratingHeroContainer .cr-label {
+  color: ivory !important;
+}
+
+#ratingHeroContainer .verdict-subtitle,
+#ratingHeroContainer .cr-detail {
+  color: rgba(237,232,223,0.72) !important;
+}
+
+#ratingHeroContainer .paddle-feedback {
+  padding-top: 0.95rem;
+}
+
+@media (max-width: 780px) {
+  #ratingHeroContainer .header-content {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  #ratingHeroContainer .rating-section {
+    min-height: 176px;
+    border-right: 0;
+    border-bottom: 1px solid rgba(217,189,123,0.18);
+    padding-bottom: 1rem;
+  }
+
+  #ratingHeroContainer .core-weather-inline {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  #ratingHeroContainer .weather-stat {
+    flex-direction: row;
+    text-align: left;
+    align-items: center;
+    min-height: 62px;
+  }
+
+  #ratingHeroContainer .weather-stat .weather-data {
+    align-items: flex-start;
+  }
+
+  #ratingHeroContainer .units-toggle {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 430px) {
+  #ratingHeroContainer .score-ring-wrapper,
+  #ratingHeroContainer .score-ring {
+    width: 128px;
+    height: 128px;
+  }
+
+  #ratingHeroContainer .ring-number {
+    font-size: 1.95rem;
+  }
+
+  #ratingHeroContainer .weather-stat {
+    padding: 0.68rem 0.58rem;
+  }
+
+  #ratingHeroContainer .weather-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 0.48rem;
+  }
+
+  #ratingHeroContainer .weather-value {
+    font-size: 0.88rem;
+  }
+}
+
 /* ── Score Ring (SVG Donut) ────────────────────────────────────────────── */
 
 .score-ring-wrapper {

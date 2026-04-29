@@ -1,272 +1,265 @@
 /* -------------------------------------------
- * Clean Heatmap Component - Seamless Blended Visualization
- * Simple 3-day forecast with horizontal gradient strips
+ * Kaayko Konditions
+ * Fixed 3-day condition bands with tappable time windows.
  * ------------------------------------------- */
 class Heatmap {
   constructor() {
     this.element = null;
+    this.toastTimer = null;
+    this.segmentWindows = [
+      { start: 6, end: 8, label: '6-8 AM' },
+      { start: 8, end: 10, label: '8-10 AM' },
+      { start: 10, end: 12, label: '10-Noon' },
+      { start: 12, end: 14, label: 'Noon-2 PM' },
+      { start: 14, end: 16, label: '2-4 PM' },
+      { start: 16, end: 18, label: '4-6 PM' },
+      { start: 18, end: 20, label: '6-8 PM' }
+    ];
   }
 
-  render(forecastData, locationData = null) {
+  render(forecastData, locationData = null, options = {}) {
     if (!forecastData || !Array.isArray(forecastData) || forecastData.length === 0) {
       return this.renderError();
     }
 
-    // Store location data for timezone calculations
     this.locationData = locationData;
+    this.bestWindow = options.bestWindow || null;
+    const rows = forecastData.slice(0, 3).map((dayData, day) => this.buildDay(dayData, day));
+    const globalBest = rows.reduce((best, row) => {
+      if (!best || row.bestSegment.score > best.segment.score) {
+        return { row, segment: row.bestSegment };
+      }
+      return best;
+    }, null);
 
     const heatmapHTML = `
-      <div class="heatmap-new-container">
+      <section class="heatmap-new-container" aria-label="Three day paddling forecast">
         <div class="heatmap-header">
-          <h3 class="heatmap-title">Kaayko™ Konditions</h3>
-          <p class="heatmap-subtitle">3-day paddle forecast with seamless condition blending</p>
+          <div>
+            <span class="heatmap-eyebrow">3-day outlook</span>
+            <h3 class="heatmap-title">Kaayko™ Konditions</h3>
+          </div>
+          ${globalBest ? `
+            <button class="heatmap-best-chip" type="button" data-day="${globalBest.row.dayIndex}" data-hour="${globalBest.segment.start}">
+              <span>Best window</span>
+              <strong>${globalBest.row.label.primary} ${globalBest.segment.label}</strong>
+              <em>${globalBest.segment.score.toFixed(1)} / 5</em>
+            </button>
+          ` : ''}
+        </div>
+        <div class="heatmap-legend" aria-hidden="true">
+          <span><i class="legend-dot poor"></i>Hard pass</span>
+          <span><i class="legend-dot fair"></i>Careful</span>
+          <span><i class="legend-dot good"></i>Worth it</span>
         </div>
         <div class="heatmap-grid">
-          ${this.generateHeatmapRows(forecastData)}
-          <div class="heatmap-column-headers">
-            <div class="column-spacer"></div>
-            <div class="time-period-headers">
-              <span class="time-period-header">Morning</span>
-              <span class="time-period-header">Noon</span>
-              <span class="time-period-header">Evening</span>
-            </div>
+          ${rows.map(row => this.renderRow(row)).join('')}
+          <div class="heatmap-time-axis" aria-hidden="true">
+            <span>6 AM</span><span>10 AM</span><span>2 PM</span><span>6 PM</span><span>8 PM</span>
           </div>
         </div>
-      </div>
+      </section>
     `;
 
     const wrapper = document.createElement('div');
     wrapper.innerHTML = heatmapHTML;
     this.element = wrapper.firstElementChild;
-
-    // Add click handlers
-    this.addClickHandlers();
-
+    this.addInteractions();
     return this.element;
   }
 
-  generateHeatmapRows(forecastData) {
-    let rowsHTML = '';
-    
-    for (let day = 0; day < 3; day++) {
-      const dayData = forecastData[day] || {};
-      const dateLabel = this.getDateLabel(day);
-      const gradientStrip = this.createDayGradient(dayData, day);
-      
-      rowsHTML += `
-        <div class="heatmap-row" data-day="${day}">
-          <div class="day-label">${dateLabel}</div>
-          <div class="gradient-strip ${day === 0 ? 'current-day' : ''}" 
-               style="background: ${gradientStrip.gradient}"
-               data-day="${day}"
-               data-hours='${JSON.stringify(gradientStrip.hourlyData)}'>
-            ${day === 0 ? this.getCurrentHourIndicator() : ''}
-            <div class="hover-tooltip" id="tooltip-${day}"></div>
-          </div>
-        </div>
-      `;
-    }
-    
-    return rowsHTML;
-  }
-
-  createDayGradient(dayData, day) {
-    // Get all hours from 6 AM to 11 PM (18 hours total)
-    const hours = ['6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'];
-    
-    // Extract colors and store hourly data for tooltips
-    const colors = [];
-    const hourlyData = [];
-    
-    hours.forEach(hour => {
-      const hourData = dayData.hourly?.[hour];
-      if (hourData) {
-        const rating = hourData?.mlPrediction?.rating || hourData?.rating || 2.5;
-        colors.push(this.getRatingColor(rating));
-        hourlyData.push({
-          hour: hour,
-          rating: rating.toFixed(1),
-          time: this.formatHour(hour)
-        });
-      } else {
-        colors.push('#666666'); // Gray for missing data
-        hourlyData.push({
-          hour: hour,
-          rating: '2.5',
-          time: this.formatHour(hour)
-        });
+  buildDay(dayData, dayIndex) {
+    const segments = this.segmentWindows.map((windowDef) => {
+      const samples = [];
+      for (let hour = windowDef.start; hour < windowDef.end; hour++) {
+        const hourData = this.getHourData(dayData, hour);
+        if (hourData) samples.push(hourData);
       }
+
+      const ratings = samples
+        .map(sample => parseFloat(sample?.mlPrediction?.rating ?? sample?.prediction?.rating ?? sample?.rating))
+        .filter(value => !isNaN(value));
+      const score = ratings.length ? ratings.reduce((sum, value) => sum + value, 0) / ratings.length : 2.5;
+
+      return {
+        ...windowDef,
+        score,
+        band: this.getBand(score),
+        color: this.getRatingColor(score),
+        summary: this.describeSegment(samples, score)
+      };
     });
-    
-    // Create seamless horizontal gradient
-    const gradient = `linear-gradient(to right, ${colors.join(', ')})`;
-    
-    return { gradient, colors, hourlyData };
+
+    const bestSegment = segments.reduce((best, segment) => segment.score > best.score ? segment : best, segments[0]);
+
+    return {
+      dayIndex,
+      label: this.getDateLabel(dayIndex),
+      bestSegment,
+      segments
+    };
   }
 
-  getCurrentHourIndicator() {
-    // Get current time in the target location's timezone
-    const currentHour = this.getCurrentHourInLocationTimezone();
-    
-    // Only show indicator if within our forecast range (6 AM to 11 PM)
-    if (currentHour < 6 || currentHour > 23) {
-      return '';
-    }
-    
-    // Calculate position as percentage across the 18-hour range (6 AM to 11 PM)
-    const hourIndex = currentHour - 6; // 0-17 index
-    const position = ((hourIndex + 0.5) / 18) * 100; // Center the dot on the hour
-    
-    return `<div class="current-hour-indicator" style="left: ${position}%"></div>`;
+  renderRow(row) {
+    return `
+      <article class="heatmap-day" data-day="${row.dayIndex}">
+        <div class="day-label">
+          <strong>${row.label.primary}</strong>
+          <span>${row.label.secondary}</span>
+        </div>
+        <div class="heatmap-bar" role="list" aria-label="${row.label.primary} ${row.label.secondary} paddling scores">
+          ${row.segments.map(segment => `
+            <button class="heatmap-segment band-${segment.band}" type="button" role="listitem"
+              style="--segment-color:${segment.color}"
+              data-day="${row.dayIndex}"
+              data-hour="${segment.start}"
+              data-label="${segment.label}"
+              data-score="${segment.score.toFixed(1)}"
+              data-summary="${segment.summary}"
+              aria-label="${row.label.primary}, ${segment.label}, score ${segment.score.toFixed(1)} out of 5. ${segment.summary}">
+              <span class="segment-fill"></span>
+              <span class="segment-score">${segment.score.toFixed(1)}</span>
+            </button>
+          `).join('')}
+          <div class="heatmap-popover" role="status" aria-live="polite"></div>
+        </div>
+      </article>
+    `;
   }
 
-  /**
-   * Get current hour in the target location's timezone
-   * Uses geographic coordinates to estimate timezone
-   */
-  getCurrentHourInLocationTimezone() {
-    const now = new Date();
-    
-    // If no location data, fall back to browser timezone
-    if (!this.locationData?.coordinates) {
-      console.warn('⚠️ No location data for timezone calculation, using browser timezone');
-      return now.getHours();
-    }
-    
-    const { latitude, longitude } = this.locationData.coordinates;
-    
-    // Calculate rough timezone offset from longitude
-    // Each 15 degrees of longitude ≈ 1 hour of time difference from GMT
-    const roughTimezoneOffset = Math.round(longitude / 15);
-    
-    // Apply known timezone adjustments for major regions
-    let actualOffset = roughTimezoneOffset;
-    
-    // India (IST): UTC+5:30
-    if (latitude >= 6 && latitude <= 37 && longitude >= 68 && longitude <= 97) {
-      actualOffset = 5.5; // IST is UTC+5:30
-    }
-    // China: UTC+8
-    else if (latitude >= 18 && latitude <= 54 && longitude >= 73 && longitude <= 135) {
-      actualOffset = 8;
-    }
-    // European regions
-    else if (latitude >= 35 && latitude <= 71 && longitude >= -10 && longitude <= 40) {
-      actualOffset = longitude > 7.5 ? 2 : 1; // CET/CEST
-    }
-    // US regions
-    else if (latitude >= 25 && latitude <= 49 && longitude >= -125 && longitude <= -66) {
-      if (longitude >= -90) actualOffset = -5; // EST
-      else if (longitude >= -105) actualOffset = -6; // CST  
-      else if (longitude >= -120) actualOffset = -7; // MST
-      else actualOffset = -8; // PST
-    }
-    
-    // Get UTC time and add offset
-    const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
-    const localTime = new Date(utcTime + (actualOffset * 3600000));
-    
-    console.log(`🌍 Timezone calculation: Lon ${longitude} → Offset UTC${actualOffset >= 0 ? '+' : ''}${actualOffset} → Local hour: ${localTime.getHours()}`);
-    
-    return localTime.getHours();
+  getHourData(dayData, hour) {
+    return dayData?.hourly?.[String(hour)] || dayData?.hourly?.[hour] || null;
   }
 
-  formatHour(hour) {
-    const hourNum = parseInt(hour);
-    if (hourNum === 0) return '12:00 AM';
-    if (hourNum < 12) return `${hourNum}:00 AM`;
-    if (hourNum === 12) return '12:00 PM';
-    return `${hourNum - 12}:00 PM`;
+  describeSegment(samples, score) {
+    const wind = samples
+      .map(sample => parseFloat(sample?.windSpeed))
+      .filter(value => !isNaN(value));
+    const water = samples
+      .map(sample => parseFloat(sample?.waterTemp))
+      .filter(value => !isNaN(value));
+    const avgWind = wind.length ? wind.reduce((sum, value) => sum + value, 0) / wind.length : null;
+    const avgWater = water.length ? water.reduce((sum, value) => sum + value, 0) / water.length : null;
+    const mood = score >= 4 ? 'Best conditions' : score >= 3 ? 'Usable conditions' : 'Caution conditions';
+    const detail = [];
+    if (avgWind !== null) detail.push(`${Math.round(avgWind * 0.621371)} mph wind`);
+    if (avgWater !== null) detail.push(`${Math.round((avgWater * 9 / 5) + 32)}°F water`);
+    return detail.length ? `${mood}, ${detail.join(', ')}` : mood;
+  }
+
+  addInteractions() {
+    if (!this.element) return;
+
+    this.element.querySelectorAll('.heatmap-segment').forEach(segment => {
+      segment.addEventListener('mouseenter', () => this.previewSegment(segment));
+      segment.addEventListener('focus', () => this.previewSegment(segment));
+      segment.addEventListener('click', () => this.selectSegment(segment));
+    });
+
+    const bestChip = this.element.querySelector('.heatmap-best-chip');
+    bestChip?.addEventListener('click', () => {
+      this.highlightWindow(Number(bestChip.dataset.day), Number(bestChip.dataset.hour));
+    });
+
+    window.addEventListener('kaayko:highlightForecastWindow', event => {
+      const { day, hour } = event.detail || {};
+      this.highlightWindow(day, hour);
+    });
+  }
+
+  showTooltip(segment) {
+    this.previewSegment(segment);
+  }
+
+  hideTooltip(segment) {
+    if (!segment.classList.contains('is-selected')) {
+      segment.closest('.heatmap-day')?.classList.remove('is-previewing');
+    }
+  }
+
+  previewSegment(segment) {
+    const day = segment.closest('.heatmap-day');
+    if (!day || day.classList.contains('has-selection')) return;
+    this.positionPopover(segment, false);
+  }
+
+  selectSegment(segment) {
+    const day = segment.closest('.heatmap-day');
+    if (!day) return;
+    day.querySelectorAll('.heatmap-segment').forEach(item => item.classList.remove('is-selected'));
+    segment.classList.add('is-selected');
+    day.classList.add('has-selection');
+    this.positionPopover(segment, true);
+  }
+
+  positionPopover(segment, persist) {
+    const day = segment.closest('.heatmap-day');
+    const bar = segment.closest('.heatmap-bar');
+    const popover = bar?.querySelector('.heatmap-popover');
+    if (!day || !bar || !popover) return;
+
+    const label = segment.dataset.label;
+    const score = segment.dataset.score;
+    const summary = segment.dataset.summary;
+    const rawLeftPct = ((parseInt(segment.dataset.hour, 10) - 6 + 1) / 14) * 100;
+    const barRect = bar.getBoundingClientRect();
+    const mobileCenter = barRect.width
+      ? ((window.innerWidth / 2) - barRect.left) / barRect.width * 100
+      : 50;
+    const leftPct = window.matchMedia('(max-width: 720px)').matches
+      ? Math.max(18, Math.min(82, mobileCenter))
+      : Math.max(18, Math.min(82, rawLeftPct));
+
+    popover.innerHTML = `
+      <span>${label}</span>
+      <strong>${score} / 5</strong>
+      <em>${summary}</em>
+    `;
+    popover.style.left = `${leftPct}%`;
+    day.classList.add('is-previewing');
+    day.classList.toggle('has-selection', persist);
+  }
+
+  highlightWindow(day, hour) {
+    if (day === undefined || hour === undefined || !this.element) return;
+    const matchingWindow = this.segmentWindows.find(windowDef => hour >= windowDef.start && hour < windowDef.end);
+    const segmentHour = matchingWindow ? matchingWindow.start : hour;
+    const segment = this.element.querySelector(`.heatmap-segment[data-day="${day}"][data-hour="${segmentHour}"]`);
+    if (!segment) return;
+    segment.classList.add('is-highlighted');
+    segment.focus({ preventScroll: true });
+    this.selectSegment(segment);
+    setTimeout(() => segment.classList.remove('is-highlighted'), 2200);
+  }
+
+  getBand(score) {
+    const r = parseFloat(score);
+    if (r >= 3.7) return 'good';
+    if (r >= 2.7) return 'fair';
+    return 'poor';
   }
 
   getRatingColor(rating) {
-    const numRating = parseFloat(rating);
-    
-    // Unified gradient-based color scheme used across ALL components
-    if (numRating >= 4.5) {
-      return '#1B4332'; // 0% - Excellent
-    } else if (numRating >= 4.0) {
-      return '#2D5A32'; // 15% - Good
-    } else if (numRating >= 3.5) {
-      return '#CD853F'; // 30% - Fair
-    } else if (numRating >= 3.0) {
-      return '#E36414'; // 45% - Caution
-    } else if (numRating >= 2.5) {
-      return '#C0392B'; // 60% - Risky
-    } else if (numRating >= 2.0) {
-      return '#8E0E00'; // 75% - Poor
-    } else if (numRating >= 1.5) {
-      return '#5B0000'; // 85% - Dangerous
-    } else if (numRating >= 1.0) {
-      return '#2B1815'; // 95% - Critical
-    } else {
-      return '#000000'; // 100% - Extreme
-    }
+    const r = parseFloat(rating);
+    if (r >= 4.5) return '#255a3a';
+    if (r >= 4.0) return '#316d43';
+    if (r >= 3.5) return '#c59a61';
+    if (r >= 3.0) return '#eb8127';
+    if (r >= 2.5) return '#bd3b2b';
+    if (r >= 2.0) return '#86170f';
+    return '#4a0a08';
   }
 
   getDateLabel(dayOffset) {
     const date = new Date();
     date.setDate(date.getDate() + dayOffset);
-    
-    if (dayOffset === 0) {
-      return `Today\n${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-    } else if (dayOffset === 1) {
-      return `Tomorrow\n${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-    } else {
-      return `${date.toLocaleDateString('en-US', { weekday: 'short' })}\n${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-    }
-  }
-
-  addClickHandlers() {
-    if (!this.element) return;
-    
-    const strips = this.element.querySelectorAll('.gradient-strip');
-    strips.forEach((strip) => {
-      this.addHoverEffects(strip);
-      
-      strip.addEventListener('click', () => {
-        const day = strip.dataset.day;
-        console.log(`Clicked on day ${day} heatmap strip`);
-        // Add modal or detail view here if needed
-      });
-    });
-  }
-
-  addHoverEffects(strip) {
-    const tooltip = strip.querySelector('.hover-tooltip');
-    const hourlyData = JSON.parse(strip.dataset.hours || '[]');
-
-    let rafPending = false;
-    let lastHourIndex = -1;
-
-    strip.addEventListener('mousemove', (e) => {
-      if (rafPending) return;
-      rafPending = true;
-
-      requestAnimationFrame(() => {
-        rafPending = false;
-        const rect = strip.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const percentage = Math.max(0, Math.min(1, x / rect.width));
-        const hourIndex = Math.min(Math.floor(percentage * 18), 17);
-        const hourData = hourlyData[hourIndex];
-
-        if (hourData) {
-          if (hourIndex !== lastHourIndex) {
-            tooltip.innerHTML = `<div class="tooltip-content"><div class="tooltip-time">${hourData.time}</div><div class="tooltip-rating">Score: ${hourData.rating}/5.0</div></div>`;
-            lastHourIndex = hourIndex;
-          }
-          // Use transform to avoid layout reflow
-          tooltip.style.transform = `translateX(${Math.min(x, strip.offsetWidth - 120)}px)`;
-          tooltip.style.display = 'block';
-        }
-      });
-    });
-
-    strip.addEventListener('mouseleave', () => {
-      tooltip.style.display = 'none';
-      lastHourIndex = -1;
-    });
+    const secondary = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const primary = dayOffset === 0
+      ? 'Today'
+      : dayOffset === 1
+        ? 'Tomorrow'
+        : date.toLocaleDateString('en-US', { weekday: 'short' });
+    return { primary, secondary };
   }
 
   renderError() {
@@ -274,12 +267,11 @@ class Heatmap {
     errorDiv.className = 'heatmap-error';
     errorDiv.innerHTML = `
       <div class="error-message">
-        <span>⚠️ No forecast data available</span>
+        <span>Forecast timing is unavailable right now.</span>
       </div>
     `;
     return errorDiv;
   }
 }
 
-// Export for use
 window.Heatmap = Heatmap;

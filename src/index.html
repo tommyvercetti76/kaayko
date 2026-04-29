@@ -209,14 +209,8 @@
       top: 50%;
       z-index: 3;
       height: 1px;
-      /* Wide gap so the seam lines never reach the mark text */
-      background: linear-gradient(
-        to right,
-        var(--line) 22%,
-        transparent 22%,
-        transparent 78%,
-        var(--line) 78%
-      );
+      /* Full solid line — mark sits above it on mobile, gap handled on desktop */
+      background: var(--line);
       pointer-events: none;
       transform: scaleX(0);
       transform-origin: center;
@@ -232,7 +226,8 @@
       left: 50%;
       top: 50%;
       z-index: 4;
-      transform: translate(-50%, -50%);
+      /* Float text just above the line — line reads as a baseline rule */
+      transform: translate(-50%, calc(-100% - 5px));
       color: var(--gold);
       font-size: clamp(0.82rem, 2.2vw, 1.1rem);
       font-style: italic;
@@ -242,9 +237,6 @@
       text-transform: lowercase;
       transition: opacity 480ms ease-out 300ms, top 440ms var(--ease), left 440ms var(--ease);
       white-space: nowrap;
-      /* No background — seam gap is widened to clear the text naturally */
-      background: none;
-      padding: 0;
     }
 
     .page.active .mark {
@@ -372,6 +364,8 @@
 
       .mark {
         writing-mode: vertical-rl;
+        /* On desktop restore centred position — vertical seam gap handles the line */
+        transform: translate(-50%, -50%);
         background: none;
         padding: 0;
       }
