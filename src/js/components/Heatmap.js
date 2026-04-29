@@ -37,7 +37,6 @@ class Heatmap {
         <div class="heatmap-header">
           <div>
             <span class="heatmap-eyebrow">3-day outlook</span>
-            <h3 class="heatmap-title">Kaayko™ Konditions</h3>
           </div>
           ${globalBest ? `
             <button class="heatmap-best-chip" type="button" data-day="${globalBest.row.dayIndex}" data-hour="${globalBest.segment.start}">
