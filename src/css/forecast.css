@@ -139,9 +139,9 @@ footer {
 .forecast-main {
   position: relative;
   z-index: 1;
-  max-width: 1040px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 3.5rem 2rem 4rem;
+  padding: 3.5rem 3rem 4rem;
   display: flex;
   flex-direction: column;
 }
