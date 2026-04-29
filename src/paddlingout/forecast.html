@@ -233,6 +233,34 @@
       };
     }
 
+    // Map warning text → Material Icon name + tint colour
+    function getWarningMeta(text) {
+      const t = text.toLowerCase();
+      if (t.includes('cold') || t.includes('hypotherm') || t.includes('freeze') || t.includes('frost'))
+        return { icon: 'ac_unit',               color: '#7dd3fc' };
+      if (t.includes('uv') || t.includes('sunburn') || t.includes('solar'))
+        return { icon: 'wb_sunny',              color: '#fbbf24' };
+      if (t.includes('sun') || t.includes('heat') || t.includes('hot'))
+        return { icon: 'light_mode',            color: '#fbbf24' };
+      if (t.includes('wind') || t.includes('gust') || t.includes('breeze'))
+        return { icon: 'air',                   color: '#a5f3fc' };
+      if (t.includes('storm') || t.includes('thunder') || t.includes('lightning'))
+        return { icon: 'thunderstorm',          color: '#f59e0b' };
+      if (t.includes('wave') || t.includes('swell') || t.includes('chop'))
+        return { icon: 'waves',                 color: '#67e8f9' };
+      if (t.includes('rain') || t.includes('precipit') || t.includes('shower'))
+        return { icon: 'rainy',                 color: '#93c5fd' };
+      if (t.includes('fog') || t.includes('mist') || t.includes('visib'))
+        return { icon: 'foggy',                 color: '#d1d5db' };
+      if (t.includes('water') || t.includes('current') || t.includes('flow') || t.includes('tide'))
+        return { icon: 'water',                 color: '#38bdf8' };
+      if (t.includes('danger') || t.includes('hazard') || t.includes('extreme'))
+        return { icon: 'report',                color: '#f87171' };
+      if (t.includes('caution') || t.includes('warning') || t.includes('risk'))
+        return { icon: 'warning_amber',         color: '#fbbf24' };
+      return   { icon: 'info_outline',          color: '#b5935a' };
+    }
+
     function renderTripBriefing(currentData, forecastData) {
       const container = document.getElementById('forecastAlertDrawer');
       if (!container) return;
@@ -256,6 +284,15 @@
         return;
       }
 
+      const itemsHTML = warningItems.map(warning => {
+        const { icon, color } = getWarningMeta(warning);
+        return `
+          <div class="alert-item">
+            <span class="material-icons alert-item-icon" style="color:${color}" aria-hidden="true">${icon}</span>
+            <span class="alert-item-text">${String(warning)}</span>
+          </div>`;
+      }).join('');
+
       container.hidden = false;
       container.innerHTML = `
         <section class="forecast-alert-banner is-closed" role="region" aria-label="Paddling alerts">
@@ -268,7 +305,7 @@
           </button>
           <button class="alert-dismiss" type="button" aria-label="Dismiss lake alerts">×</button>
           <div class="alert-details" hidden>
-            ${warningItems.map(warning => `<p>${String(warning)}</p>`).join('')}
+            <div class="alert-items">${itemsHTML}</div>
           </div>
         </section>
       `;

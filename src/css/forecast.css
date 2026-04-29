@@ -343,15 +343,34 @@ footer {
 }
 
 .alert-details {
-  padding: 0 1rem 0.95rem 3.95rem;
+  padding: 0.1rem 1rem 1rem 1rem;
 }
 
-.alert-details p {
-  margin: 0.3rem 0 0;
+.alert-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding-top: 0.2rem;
+}
+
+.alert-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+}
+
+.alert-item-icon {
+  font-size: 1.05rem;
+  line-height: 1.55;
+  flex-shrink: 0;
+}
+
+.alert-item-text {
   font-family: var(--font-serif);
-  font-size: 1rem;
-  line-height: 1.35;
-  color: rgba(237,232,223,0.82);
+  font-size: 0.97rem;
+  line-height: 1.38;
+  color: rgba(237,232,223,0.84);
+  padding-top: 0.12rem;
 }
 
 /* ── 12. RatingHero card ─────────────────────────────────────────────────── */
