@@ -8,7 +8,7 @@ Static frontend for the Kaayko product portfolio. The `main` branch hosts commer
 | --- | --- | --- | --- |
 | Store / Commerce | `src/index.html`, `src/store.html`, `src/cart.html`, `src/order-success.html` | `kaayko-api` commerce routes | [`docs/products/STORE.md`](./docs/products/STORE.md) |
 | Paddling Out | `src/paddlingout.html` | `kaayko-api` weather and location routes | [`docs/products/PADDLING_OUT.md`](./docs/products/PADDLING_OUT.md) |
-| KORTEX | `src/kortex.html`, `src/create-kortex-link.html`, `src/admin/*`, `src/tenant.html`, `src/redirect.html` | `kaayko-api` KORTEX links, campaigns, deep links, billing, auth | [`docs/products/KORTEX.md`](./docs/products/KORTEX.md), [`docs/products/KORTEX_TENANT_ARCHITECTURE_PLAN.md`](./docs/products/KORTEX_TENANT_ARCHITECTURE_PLAN.md) |
+| KORTEX | `src/kortex.html`, `src/create-kortex-link.html`, `src/admin/*`, `src/tenant.html`, `src/redirect.html` | `kaayko-api` KORTEX links, campaigns, deep links, billing, auth | [`docs/products/KORTEX.md`](./docs/products/KORTEX.md), [`docs/products/KORTEX_TENANT_ARCHITECTURE_PLAN.md`](./docs/products/KORTEX_TENANT_ARCHITECTURE_PLAN.md), [`docs/products/KORTEX_DELIVERY_PLAN_AND_DOD.md`](./docs/products/KORTEX_DELIVERY_PLAN_AND_DOD.md) |
 | Kreator | `src/kreator/*` | `kaayko-api` kreator routes | [`docs/products/KREATOR.md`](./docs/products/KREATOR.md) |
 | Kamera Quest | `src/karma.html`, `src/karma/kameras/*` | `kaayko-api` cameras, lenses, presets | [`docs/products/KAMERA_QUEST.md`](./docs/products/KAMERA_QUEST.md) |
 | Knowledge / External surfaces | `src/knowledge/index.html`, `src/admin/views/roots/index.html`, `src/reads.html` | External `cool-schools` API and content surfaces | [`docs/products/KNOWLEDGE_EXTERNALS.md`](./docs/products/KNOWLEDGE_EXTERNALS.md) |
@@ -80,5 +80,6 @@ Use the emulator when you need Hosting rewrites and header behavior. Opening fil
 
 - Product index: [`docs/products/README.md`](./docs/products/README.md)
 - KORTEX tenant architecture: [`docs/products/KORTEX_TENANT_ARCHITECTURE_PLAN.md`](./docs/products/KORTEX_TENANT_ARCHITECTURE_PLAN.md)
+- KORTEX delivery plan and definition of done: [`docs/products/KORTEX_DELIVERY_PLAN_AND_DOD.md`](./docs/products/KORTEX_DELIVERY_PLAN_AND_DOD.md)
 - Automation blueprint: [`docs/PRODUCT_AUTOMATION_PLAN.md`](./docs/PRODUCT_AUTOMATION_PLAN.md)
 - Learnings convention: [`docs/learnings/README.md`](./docs/learnings/README.md)

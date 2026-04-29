@@ -144,6 +144,7 @@ POST /api/createPaymentIntent/webhook  → Stripe webhook (no auth, raw body)
 > Multi-tenant smart link manager, tenant alias router, campaign links, and admin portal.
 
 Canonical architecture doc: `kaayko/docs/products/KORTEX_TENANT_ARCHITECTURE_PLAN.md`
+Delivery plan and DoD: `kaayko/docs/products/KORTEX_DELIVERY_PLAN_AND_DOD.md`
 
 **Pages:**
 | URL | File |

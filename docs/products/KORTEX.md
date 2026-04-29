@@ -6,6 +6,8 @@ KORTEX is the smart-link product surface, spanning public creation flows, authen
 
 Canonical tenant architecture and next-level `kortex.kaayko.com` plan: [`KORTEX_TENANT_ARCHITECTURE_PLAN.md`](./KORTEX_TENANT_ARCHITECTURE_PLAN.md).
 
+Execution plan and definition of done for the button-only delivery workflow: [`KORTEX_DELIVERY_PLAN_AND_DOD.md`](./KORTEX_DELIVERY_PLAN_AND_DOD.md).
+
 ## Primary entrypoints
 
 Public and operator surfaces:
