@@ -209,13 +209,13 @@
       top: 50%;
       z-index: 3;
       height: 1px;
-      /* Gap in the middle so the mark text never sits on the line */
+      /* Wide gap so the seam lines never reach the mark text */
       background: linear-gradient(
         to right,
-        var(--line) 40%,
-        transparent 40%,
-        transparent 60%,
-        var(--line) 60%
+        var(--line) 22%,
+        transparent 22%,
+        transparent 78%,
+        var(--line) 78%
       );
       pointer-events: none;
       transform: scaleX(0);
@@ -240,17 +240,11 @@
       opacity: 0;
       pointer-events: none;
       text-transform: lowercase;
-      transition: opacity 300ms ease 420ms, top 440ms var(--ease), left 440ms var(--ease);
+      transition: opacity 480ms ease-out 300ms, top 440ms var(--ease), left 440ms var(--ease);
       white-space: nowrap;
-      /* Paint over the seam line — feathered so it blends into the page glow */
-      background: linear-gradient(
-        to right,
-        transparent,
-        var(--bg) 1.4em,
-        var(--bg) calc(100% - 1.4em),
-        transparent
-      );
-      padding: 0 2em;
+      /* No background — seam gap is widened to clear the text naturally */
+      background: none;
+      padding: 0;
     }
 
     .page.active .mark {
@@ -378,15 +372,8 @@
 
       .mark {
         writing-mode: vertical-rl;
-        /* Feathered vertical fade for the vertical seam */
-        background: linear-gradient(
-          to bottom,
-          transparent,
-          var(--bg) 1.4em,
-          var(--bg) calc(100% - 1.4em),
-          transparent
-        );
-        padding: 2em 0;
+        background: none;
+        padding: 0;
       }
 
       .seam {
