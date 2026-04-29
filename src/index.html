@@ -126,7 +126,7 @@
       cursor: pointer;
       overflow: hidden;
       text-decoration: none;
-      transition: flex 560ms var(--ease), filter 320ms ease;
+      transition: filter 320ms ease;
     }
 
     .choice.secondary {
@@ -174,27 +174,17 @@
       position: relative;
       z-index: 1;
       font-family: "Bebas Neue", Impact, sans-serif;
-      font-size: clamp(3.3rem, 13vw, 8.6rem);
+      width: min(78%, 10.5em);
+      max-width: calc(100% - clamp(2rem, 8vw, 7rem));
+      overflow: hidden;
+      font-size: clamp(3.2rem, 7.2vw, 7rem);
       font-weight: 400;
-      letter-spacing: 0.18em;
-      line-height: 0.9;
+      letter-spacing: 0.08em;
+      line-height: 0.92;
+      text-align: center;
       text-transform: uppercase;
       white-space: nowrap;
-      transition: color 260ms ease, letter-spacing 460ms var(--ease), transform 460ms var(--ease);
-    }
-
-    .choice-label .ch {
-      display: inline-block;
-      min-width: 0.38em;
-      transition: color 80ms ease;
-    }
-
-    .choice-label .space {
-      min-width: 0.28em;
-    }
-
-    .choice-label .live {
-      color: var(--gold-bright);
+      transition: color 260ms ease, transform 360ms var(--ease);
     }
 
     .seam {
@@ -301,26 +291,6 @@
     }
 
     @media (hover: hover) and (pointer: fine) {
-      .page:has(.choice.primary:hover) .choice.primary,
-      .page:has(.choice.primary:focus-visible) .choice.primary {
-        flex: 1.25;
-      }
-
-      .page:has(.choice.primary:hover) .choice.secondary,
-      .page:has(.choice.primary:focus-visible) .choice.secondary {
-        flex: 0.75;
-      }
-
-      .page:has(.choice.secondary:hover) .choice.secondary,
-      .page:has(.choice.secondary:focus-visible) .choice.secondary {
-        flex: 1.25;
-      }
-
-      .page:has(.choice.secondary:hover) .choice.primary,
-      .page:has(.choice.secondary:focus-visible) .choice.primary {
-        flex: 0.75;
-      }
-
       .choice:hover::before,
       .choice:focus-visible::before,
       .choice:hover::after,
@@ -332,8 +302,7 @@
       .choice:hover .choice-label,
       .choice:focus-visible .choice-label {
         color: var(--gold-bright);
-        letter-spacing: 0.28em;
-        transform: translateY(-8px);
+        transform: translateY(-5px);
       }
     }
 
@@ -363,8 +332,10 @@
 
     @media (max-width: 520px) {
       .choice-label {
-        font-size: clamp(3.1rem, 18vw, 5.6rem);
-        letter-spacing: 0.12em;
+        width: min(84%, 9.6em);
+        max-width: calc(100% - 1.5rem);
+        font-size: clamp(3rem, 15vw, 5.2rem);
+        letter-spacing: 0.055em;
       }
 
       .choice::after {
@@ -446,42 +417,35 @@
         choice.setAttribute("aria-label", text);
       }
 
-      label.innerHTML = Array.from(text).map((char) => {
-        if (char === " ") {
-          return '<span class="ch space" aria-hidden="true">&nbsp;</span>';
-        }
-
-        return `<span class="ch" data-target="${char}" aria-hidden="true">${char}</span>`;
-      }).join("");
-      label.setAttribute("aria-hidden", "true");
+      label.dataset.text = text;
+      label.textContent = text;
     }
 
     function scramble(page) {
       if (prefersReducedMotion) return;
 
       page.querySelectorAll(".choice-label").forEach((label, wordIndex) => {
-        const chars = Array.from(label.querySelectorAll(".ch[data-target]"));
-        chars.forEach((span, charIndex) => {
-          const target = span.dataset.target;
-          const delay = wordIndex * 70 + charIndex * 36;
-          const flips = 5 + charIndex;
-          let count = 0;
+        const target = label.dataset.text || label.textContent.trim();
+        const chars = Array.from(target);
+        const maxTicks = 11;
+        let tick = 0;
 
-          window.setTimeout(() => {
-            span.classList.add("live");
-            const interval = window.setInterval(() => {
-              if (count < flips) {
-                span.textContent = POOL[Math.floor(Math.random() * POOL.length)];
-                count += 1;
-                return;
-              }
+        window.setTimeout(() => {
+          const interval = window.setInterval(() => {
+            label.textContent = chars.map((char, index) => {
+              if (char === " ") return " ";
+              if (tick > maxTicks - Math.min(index, 5)) return char;
+              return POOL[Math.floor(Math.random() * POOL.length)];
+            }).join("");
 
+            tick += 1;
+
+            if (tick > maxTicks + 2) {
               window.clearInterval(interval);
-              span.textContent = target;
-              span.classList.remove("live");
-            }, 36);
-          }, delay);
-        });
+              label.textContent = target;
+            }
+          }, 38);
+        }, wordIndex * 90);
       });
     }
 
