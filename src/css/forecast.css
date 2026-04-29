@@ -111,7 +111,34 @@ footer {
 }
 
 /* ── 6. Main layout ──────────────────────────────────────────────────────── */
+
+/* Lake background — injected by JS after spot data loads */
+.forecast-lake-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  filter: blur(72px) brightness(0.11) saturate(0.18);
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity, transform;
+  animation:
+    lakeBgReveal 2.8s 0.4s ease-out forwards,
+    lakeBgDrift  120s 3.2s linear infinite alternate;
+}
+@keyframes lakeBgReveal {
+  to { opacity: 1; }
+}
+@keyframes lakeBgDrift {
+  from { transform: scale(1.0) translate(0, 0); }
+  to   { transform: scale(1.07) translate(-1%, -0.6%); }
+}
+
 .forecast-main {
+  position: relative;
+  z-index: 1;
   max-width: 1040px;
   margin: 0 auto;
   padding: 3.5rem 2rem 4rem;
@@ -421,7 +448,25 @@ footer {
   }
 }
 
-/* ── 19. Heatmap popover hourly breakdown ──────────────────────────────── */
+/* ── 19. Heatmap best-chip: override blue → brand gold ─────────────────── */
+.heatmap-best-chip {
+  background: linear-gradient(135deg, rgba(24, 18, 6, 0.90), rgba(14, 11, 4, 0.84)) !important;
+  border: 1px solid rgba(181, 147, 90, 0.38) !important;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.heatmap-best-chip:hover {
+  border-color: rgba(181, 147, 90, 0.70) !important;
+  box-shadow: 0 0 0 1px rgba(181,147,90,0.18);
+}
+.heatmap-best-chip strong {
+  color: var(--gold-bright) !important;
+}
+.heatmap-best-chip span,
+.heatmap-best-chip em {
+  color: var(--gold) !important;
+}
+
+/* ── 20. Heatmap popover hourly breakdown ──────────────────────────────── */
 .popover-hourly {
   margin-top: 0.45rem;
   padding-top: 0.4rem;

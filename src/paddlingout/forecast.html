@@ -364,10 +364,38 @@
           if (!isNaN(val)) chipEl.textContent = `${Math.round(val)} / 5`;
         });
 
-        // Augment popover with per-hour breakdown when a segment is clicked
+        // Track pre-click selected state to support toggle-to-collapse
+        const preClickMap = new WeakMap();
+
         container.querySelectorAll('.heatmap-segment').forEach(seg => {
+          // Capture selected state BEFORE Heatmap's own click handler fires
+          seg.addEventListener('mousedown', () => {
+            preClickMap.set(seg, seg.classList.contains('is-selected'));
+          }, { passive: true });
+
           seg.addEventListener('click', () => {
             const dayIndex = parseInt(seg.dataset.day, 10);
+            const wasSelected = preClickMap.get(seg) ?? false;
+
+            // ── Close every OTHER day (only one open at a time) ─────────────
+            container.querySelectorAll('.heatmap-day').forEach(day => {
+              if (parseInt(day.dataset.day, 10) === dayIndex) return;
+              day.classList.remove('is-previewing', 'has-selection');
+              day.querySelectorAll('.heatmap-segment').forEach(s => s.classList.remove('is-selected'));
+              day.querySelector('.heatmap-popover')?.querySelector('.popover-hourly')?.remove();
+            });
+
+            // ── Toggle: clicking the already-open segment collapses it ───────
+            if (wasSelected) {
+              seg.classList.remove('is-selected');
+              const parentDay = seg.closest('.heatmap-day');
+              parentDay?.classList.remove('has-selection', 'is-previewing');
+              seg.closest('.heatmap-bar')?.querySelector('.heatmap-popover')
+                ?.querySelector('.popover-hourly')?.remove();
+              return;
+            }
+
+            // ── Hourly breakdown ─────────────────────────────────────────────
             const segStart = parseInt(seg.dataset.hour, 10);
             const dayData = forecastData.forecast?.[dayIndex];
             if (!dayData?.hourly) return;
@@ -376,7 +404,6 @@
             const popover = bar?.querySelector('.heatmap-popover');
             if (!popover) return;
 
-            // Remove any stale hourly rows from a prior click
             popover.querySelector('.popover-hourly')?.remove();
 
             const win = SEGMENT_WINDOWS.find(w => w.start === segStart);
@@ -481,6 +508,16 @@
         document.getElementById('forecastLakeName').textContent = spot.title;
         document.getElementById('forecastLakeLocation').textContent = spot.subtitle || '';
         document.title = `${spot.title} Forecast | Kaayko`;
+
+        // Faint lake background — use first available image, fade in behind page
+        const bgSrc = (spot.imgSrc?.[0]) || spot.headerImage || spot.coverImage || null;
+        if (bgSrc) {
+          document.querySelector('.forecast-lake-bg')?.remove();
+          const bgEl = document.createElement('div');
+          bgEl.className = 'forecast-lake-bg';
+          bgEl.style.backgroundImage = `url(${bgSrc})`;
+          document.body.prepend(bgEl);
+        }
 
         // 2. Fetch conditions + forecast in parallel — each wrapped so one
         //    failure doesn't kill the other
