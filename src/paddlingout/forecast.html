@@ -367,8 +367,9 @@
       container.hidden = true;
     }
 
-    // ── Custom hourly heatmap ───────────────────────────────────────────────
-    const KHM_HOURS = [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];
+    // ── Custom blended hourly heatmap ──────────────────────────────────────
+    const KHM_HOURS  = [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];
+    const KHM_SPAN   = KHM_HOURS[KHM_HOURS.length - 1] - KHM_HOURS[0]; // 14
 
     function khmSeverity(score) {
       const r = Math.round(parseFloat(score));
@@ -376,49 +377,36 @@
       if (r <= 3) return 'moderate';
       return 'good';
     }
-
-    function khmColor(severity) {
-      if (severity === 'good')     return '#4CAF50';
-      if (severity === 'moderate') return '#FFA500';
-      return '#FF2D20';
+    function khmColor(sev) {
+      return sev === 'good' ? '#4CAF50' : sev === 'moderate' ? '#FFA500' : '#FF2D20';
     }
-
-    function khmHourLabel(h) {
-      if (h === 0)  return '12A';
-      if (h < 12)   return `${h}A`;
-      if (h === 12) return '12P';
-      return `${h - 12}P`;
+    function khmRating(h) {
+      const r = parseFloat(h?.mlPrediction?.rating ?? h?.prediction?.rating ?? h?.rating);
+      return isNaN(r) ? null : Math.round(r);
     }
-
-    function khmRating(hourData) {
-      const raw = parseFloat(
-        hourData?.mlPrediction?.rating ?? hourData?.prediction?.rating ?? hourData?.rating
-      );
-      return isNaN(raw) ? null : Math.round(raw);
+    function khmPct(hour) {
+      return ((hour - KHM_HOURS[0]) / KHM_SPAN * 100).toFixed(2);
     }
-
-    function khmMacros(hourData) {
-      const wind   = parseFloat(hourData?.windSpeed);
-      const dir    = parseFloat(hourData?.windDirection);
-      const water  = parseFloat(hourData?.waterTemp);
-      const air    = parseFloat(hourData?.airTemp ?? hourData?.temperature);
-      const uv     = parseFloat(hourData?.uvIndex ?? hourData?.uv);
-      const humid  = parseFloat(hourData?.humidity);
-      const vis    = parseFloat(hourData?.visibility);
-      const wave   = parseFloat(hourData?.waveHeight ?? hourData?.swellHeight);
-
-      const dirs   = ['N','NE','E','SE','S','SW','W','NW'];
-      const dirLbl = !isNaN(dir) ? ' ' + dirs[Math.round(dir / 45) % 8] : '';
-
-      const list = [];
-      if (!isNaN(wind))  list.push({ icon: 'air',               label: 'Wind',      value: `${Math.round(wind * 0.621371)} mph${dirLbl}` });
-      if (!isNaN(uv))    list.push({ icon: 'wb_sunny',          label: 'UV Index',  value: uv.toFixed(1) });
-      if (!isNaN(water)) list.push({ icon: 'water',             label: 'Water',     value: `${Math.round(water * 9/5 + 32)}°F` });
-      if (!isNaN(air))   list.push({ icon: 'device_thermostat', label: 'Air',       value: `${Math.round(air * 9/5 + 32)}°F` });
-      if (!isNaN(wave))  list.push({ icon: 'waves',             label: 'Wave Ht',   value: `${wave.toFixed(1)} ft` });
-      if (!isNaN(humid)) list.push({ icon: 'water_drop',        label: 'Humidity',  value: `${Math.round(humid)}%` });
-      if (!isNaN(vis))   list.push({ icon: 'visibility',        label: 'Visibility',value: `${vis} mi` });
-      return list;
+    function khmMacros(hd) {
+      const wind  = parseFloat(hd?.windSpeed);
+      const dir   = parseFloat(hd?.windDirection);
+      const water = parseFloat(hd?.waterTemp);
+      const air   = parseFloat(hd?.airTemp ?? hd?.temperature);
+      const uv    = parseFloat(hd?.uvIndex ?? hd?.uv);
+      const humid = parseFloat(hd?.humidity);
+      const vis   = parseFloat(hd?.visibility);
+      const wave  = parseFloat(hd?.waveHeight ?? hd?.swellHeight);
+      const dirs  = ['N','NE','E','SE','S','SW','W','NW'];
+      const dl    = !isNaN(dir) ? ' ' + dirs[Math.round(dir/45)%8] : '';
+      const out   = [];
+      if (!isNaN(wind))  out.push({ icon:'air',               label:'Wind',       value:`${Math.round(wind*0.621371)} mph${dl}` });
+      if (!isNaN(uv))    out.push({ icon:'wb_sunny',          label:'UV Index',   value:uv.toFixed(1) });
+      if (!isNaN(water)) out.push({ icon:'water',             label:'Water Temp', value:`${Math.round(water*9/5+32)}°F` });
+      if (!isNaN(air))   out.push({ icon:'device_thermostat', label:'Air Temp',   value:`${Math.round(air*9/5+32)}°F` });
+      if (!isNaN(wave))  out.push({ icon:'waves',             label:'Wave Ht',    value:`${wave.toFixed(1)} ft` });
+      if (!isNaN(humid)) out.push({ icon:'water_drop',        label:'Humidity',   value:`${Math.round(humid)}%` });
+      if (!isNaN(vis))   out.push({ icon:'visibility',        label:'Visibility', value:`${vis} mi` });
+      return out;
     }
 
     function renderHourlyHeatmap(forecastData) {
@@ -427,42 +415,72 @@
       const forecast = forecastData?.forecast;
       if (!Array.isArray(forecast) || !forecast.length) return;
 
-      const best = findBestWindow(window.__kaaykoCurrentData, forecastData);
+      const best       = findBestWindow(window.__kaaykoCurrentData, forecastData);
+      const currentHour = new Date().getHours();
 
-      // ── Build HTML ────────────────────────────────────────────────────────
+      // Build a CSS linear-gradient string from hourly scores
+      function buildGradient(day) {
+        const stops = KHM_HOURS.map(h => {
+          const hd    = day.hourly?.[String(h)] ?? day.hourly?.[h];
+          const score = hd ? khmRating(hd) : null;
+          const col   = score !== null ? khmColor(khmSeverity(score)) : '#1e150a';
+          return `${col} ${khmPct(h)}%`;
+        });
+        return `linear-gradient(to right, ${stops.join(', ')})`;
+      }
+
+      // Tick marks at fixed hours
+      const TICKS = [6,9,12,15,18,20];
+      const TICK_LABELS = { 6:'6 AM', 9:'9 AM', 12:'12 PM', 15:'3 PM', 18:'6 PM', 20:'8 PM' };
+
       const daysHTML = forecast.slice(0, 3).map((day, di) => {
-        const { primary, secondary } = (() => {
-          const d = new Date(); d.setDate(d.getDate() + di);
-          return {
-            primary:   di === 0 ? 'Today' : di === 1 ? 'Tomorrow' : d.toLocaleDateString('en-US', { weekday: 'short' }),
-            secondary: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-          };
-        })();
+        const d = new Date(); d.setDate(d.getDate() + di);
+        const primary   = di === 0 ? 'Today' : di === 1 ? 'Tomorrow' : d.toLocaleDateString('en-US',{weekday:'short'});
+        const secondary = d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+        const gradient  = buildGradient(day);
 
-        const tilesHTML = KHM_HOURS.map(h => {
-          const hourData = day.hourly?.[String(h)] ?? day.hourly?.[h];
-          if (!hourData) return `<div class="khm-tile khm-tile--empty" aria-hidden="true"><span class="khm-tile-hour">${khmHourLabel(h)}</span></div>`;
-          const score = khmRating(hourData);
-          const sev   = score !== null ? khmSeverity(score) : 'critical';
-          const col   = khmColor(sev);
-          const isBest = best && best.dayIndex === di && best.hour === h;
-          return `<button class="khm-tile${isBest ? ' khm-tile--best' : ''}"
-            data-day="${di}" data-hour="${h}"
-            style="--tc:${col}"
-            aria-label="${primary} ${formatHourDisplay(h)}, score ${score ?? 'N/A'} out of 5">
-            <span class="khm-tile-hour">${khmHourLabel(h)}</span>
-            <span class="khm-tile-score">${score ?? '—'}</span>
-            ${isBest ? '<span class="khm-best-pip" aria-label="Best window"></span>' : ''}
-          </button>`;
+        // Best-window flag for this day
+        const bestHour = (best?.dayIndex === di) ? best.hour : null;
+        const bestPct  = bestHour !== null ? khmPct(bestHour) : null;
+
+        // "Now" marker — only today, only within range
+        const nowPct = (di === 0 && currentHour >= KHM_HOURS[0] && currentHour <= KHM_HOURS[KHM_HOURS.length-1])
+          ? khmPct(currentHour) : null;
+
+        // Invisible hit-zones, one per hour
+        const hits = KHM_HOURS.map(h => {
+          const hd  = day.hourly?.[String(h)] ?? day.hourly?.[h];
+          const w   = (1 / KHM_SPAN * 100).toFixed(2);
+          const l   = Math.max(0, parseFloat(khmPct(h)) - parseFloat(w)/2).toFixed(2);
+          return `<button class="khm-hit" data-day="${di}" data-hour="${h}"
+            style="left:${l}%;width:${w}%"
+            aria-label="${formatHourDisplay(h)}"${!hd?' disabled':''}></button>`;
         }).join('');
 
-        return `<div class="khm-day" data-day="${di}">
-          <div class="khm-day-label">
-            <strong>${primary}</strong><span>${secondary}</span>
-          </div>
-          <div class="khm-row">${tilesHTML}</div>
-          <div class="khm-detail" id="khm-d${di}" hidden></div>
-        </div>`;
+        const ticksHTML = TICKS.map(h => {
+          const isFirst = h === TICKS[0], isLast = h === TICKS[TICKS.length-1];
+          return `<span class="khm-tick${isFirst?' khm-tick--first':isLast?' khm-tick--last':''}"
+            style="left:${khmPct(h)}%">${TICK_LABELS[h]}</span>`;
+        }).join('');
+
+        return `
+          <div class="khm-day" data-day="${di}">
+            <div class="khm-day-label">
+              <strong>${primary}</strong><span>${secondary}</span>
+              ${bestPct !== null ? `<span class="khm-best-tag" style="left:${bestPct}%">★ Best</span>` : ''}
+            </div>
+            <div class="khm-bar-shell">
+              <div class="khm-bar" data-day="${di}" style="background:${gradient}">
+                <div class="khm-gloss" aria-hidden="true"></div>
+                ${nowPct !== null ? `<div class="khm-now" style="left:${nowPct}%" aria-label="Now"><span>NOW</span></div>` : ''}
+                ${bestPct !== null ? `<div class="khm-best-line" style="left:${bestPct}%" aria-hidden="true"></div>` : ''}
+                <div class="khm-cursor" aria-hidden="true"></div>
+                ${hits}
+              </div>
+              <div class="khm-ticks" aria-hidden="true">${ticksHTML}</div>
+            </div>
+            <div class="khm-panel" id="khm-p${di}" hidden></div>
+          </div>`;
       }).join('');
 
       container.innerHTML = `
@@ -479,53 +497,71 @@
             </div>
           </div>
           ${daysHTML}
-          <div class="khm-axis" aria-hidden="true">
-            <span>6 AM</span><span>9 AM</span><span>12 PM</span><span>3 PM</span><span>6 PM</span><span>8 PM</span>
-          </div>
         </div>`;
 
-      // ── Interactions ──────────────────────────────────────────────────────
-      container.querySelectorAll('.khm-tile:not(.khm-tile--empty)').forEach(tile => {
-        tile.addEventListener('click', () => {
-          const di    = parseInt(tile.dataset.day, 10);
-          const hour  = parseInt(tile.dataset.hour, 10);
-          const detail = document.getElementById(`khm-d${di}`);
-          const wasActive = tile.classList.contains('is-active');
+      // ── Interactions ────────────────────────────────────────────────────
+      container.querySelectorAll('.khm-hit:not([disabled])').forEach(hit => {
+        hit.addEventListener('click', () => {
+          const di    = parseInt(hit.dataset.day, 10);
+          const hour  = parseInt(hit.dataset.hour, 10);
+          const bar   = container.querySelector(`.khm-bar[data-day="${di}"]`);
+          const cursor = bar?.querySelector('.khm-cursor');
+          const panel = document.getElementById(`khm-p${di}`);
+          const wasActive = hit.classList.contains('is-active');
 
-          // Close all other days
+          // Close other days
           forecast.forEach((_, idx) => {
             if (idx === di) return;
-            container.querySelectorAll(`.khm-tile[data-day="${idx}"]`).forEach(t => t.classList.remove('is-active'));
-            const otherDetail = document.getElementById(`khm-d${idx}`);
-            if (otherDetail) otherDetail.hidden = true;
+            container.querySelectorAll(`.khm-hit[data-day="${idx}"]`).forEach(h => h.classList.remove('is-active'));
+            const ob = container.querySelector(`.khm-bar[data-day="${idx}"]`);
+            if (ob) ob.classList.remove('has-sel');
+            ob?.querySelector('.khm-cursor')?.classList.remove('visible');
+            const op = document.getElementById(`khm-p${idx}`);
+            if (op) op.hidden = true;
           });
 
-          // Toggle off
-          container.querySelectorAll(`.khm-tile[data-day="${di}"]`).forEach(t => t.classList.remove('is-active'));
-          if (wasActive) { if (detail) detail.hidden = true; return; }
+          // Clear this day's hits
+          container.querySelectorAll(`.khm-hit[data-day="${di}"]`).forEach(h => h.classList.remove('is-active'));
 
-          tile.classList.add('is-active');
+          if (wasActive) {
+            bar?.classList.remove('has-sel');
+            cursor?.classList.remove('visible');
+            if (panel) panel.hidden = true;
+            return;
+          }
 
-          const hourData = forecast[di]?.hourly?.[String(hour)] ?? forecast[di]?.hourly?.[hour];
-          if (!hourData || !detail) return;
+          hit.classList.add('is-active');
+          bar?.classList.add('has-sel');
 
-          const score   = khmRating(hourData);
-          const sev     = score !== null ? khmSeverity(score) : 'critical';
-          const col     = khmColor(sev);
-          const macros  = khmMacros(hourData);
-          const sevLabel = sev === 'good' ? 'WORTH IT' : sev === 'moderate' ? 'CAREFUL' : 'HARD PASS';
+          // Snap cursor
+          if (cursor) {
+            cursor.style.left = `${khmPct(hour)}%`;
+            cursor.classList.add('visible');
+          }
 
-          detail.hidden = false;
-          detail.innerHTML = `
-            <div class="khm-detail-inner">
-              <div class="khm-detail-hdr" style="border-left-color:${col}">
-                <span class="khm-detail-time">${formatHourDisplay(hour)}</span>
-                <span class="khm-detail-badge" style="background:${col}22;color:${col};border-color:${col}66">${sevLabel} &nbsp;·&nbsp; ${score ?? '—'} / 5</span>
+          // Build panel
+          const hd    = forecast[di]?.hourly?.[String(hour)] ?? forecast[di]?.hourly?.[hour];
+          if (!hd || !panel) return;
+          const score  = khmRating(hd);
+          const sev    = score !== null ? khmSeverity(score) : 'critical';
+          const col    = khmColor(sev);
+          const label  = { good:'WORTH IT', moderate:'CAREFUL', critical:'HARD PASS' }[sev];
+          const macros = khmMacros(hd);
+
+          panel.hidden = false;
+          panel.innerHTML = `
+            <div class="khm-panel-inner" style="--pc:${col}">
+              <div class="khm-panel-hdr">
+                <div class="khm-panel-left">
+                  <span class="khm-panel-time">${formatHourDisplay(hour)}</span>
+                  <span class="khm-panel-verdict" style="color:${col}">${label}</span>
+                </div>
+                <div class="khm-panel-score" style="color:${col}">${score ?? '—'}<sub>/5</sub></div>
               </div>
               <div class="khm-macros">
-                ${macros.map(m => `
+                ${macros.map(m=>`
                   <div class="khm-macro">
-                    <span class="material-icons khm-macro-icon">${m.icon}</span>
+                    <span class="material-icons khm-macro-icon" style="color:${col}">${m.icon}</span>
                     <div class="khm-macro-body">
                       <span class="khm-macro-label">${m.label}</span>
                       <span class="khm-macro-value">${m.value}</span>
@@ -674,11 +710,13 @@
         }
       }
 
-      // Clear hourly heatmap selection when clicking outside
+      // Clear blended heatmap when clicking outside
       const heatmapContainer = document.getElementById('heatmapContainer');
       if (heatmapContainer && !heatmapContainer.contains(e.target)) {
-        heatmapContainer.querySelectorAll('.khm-tile').forEach(t => t.classList.remove('is-active'));
-        heatmapContainer.querySelectorAll('.khm-detail').forEach(d => { d.hidden = true; });
+        heatmapContainer.querySelectorAll('.khm-hit').forEach(h => h.classList.remove('is-active'));
+        heatmapContainer.querySelectorAll('.khm-bar').forEach(b => b.classList.remove('has-sel'));
+        heatmapContainer.querySelectorAll('.khm-cursor').forEach(c => c.classList.remove('visible'));
+        heatmapContainer.querySelectorAll('.khm-panel').forEach(p => { p.hidden = true; });
       }
     });
 
