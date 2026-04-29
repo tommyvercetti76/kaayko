@@ -744,14 +744,26 @@
         document.getElementById('forecastLakeLocation').textContent = spot.subtitle || '';
         document.title = `${spot.title} Forecast | Kaayko`;
 
-        // Faint lake background — use first available image, fade in behind page
-        const bgSrc = (spot.imgSrc?.[0]) || spot.headerImage || spot.coverImage || null;
-        if (bgSrc) {
+        // Pick a random image from the spot's gallery for the hero + page bg
+        const imgs = Array.isArray(spot.imgSrc) && spot.imgSrc.length ? spot.imgSrc : [];
+        const heroSrc = imgs.length
+          ? imgs[Math.floor(Math.random() * imgs.length)]
+          : (spot.headerImage || spot.coverImage || null);
+
+        if (heroSrc) {
+          // Full-page ultra-faint ambient background
           document.querySelector('.forecast-lake-bg')?.remove();
           const bgEl = document.createElement('div');
           bgEl.className = 'forecast-lake-bg';
-          bgEl.style.backgroundImage = `url(${bgSrc})`;
+          bgEl.style.backgroundImage = `url(${heroSrc})`;
           document.body.prepend(bgEl);
+
+          // Hero image inside the page header
+          document.querySelector('.forecast-hero-bg')?.remove();
+          const heroEl = document.createElement('div');
+          heroEl.className = 'forecast-hero-bg';
+          heroEl.style.backgroundImage = `url(${heroSrc})`;
+          document.querySelector('.forecast-page-header')?.prepend(heroEl);
         }
 
         // 2. Fetch conditions + forecast in parallel — each wrapped so one
