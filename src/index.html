@@ -242,6 +242,9 @@
       text-transform: lowercase;
       transition: opacity 300ms ease 420ms, top 440ms var(--ease), left 440ms var(--ease);
       white-space: nowrap;
+      /* Paint over the seam line so it never cuts through letters */
+      background: var(--bg);
+      padding: 0 1em;
     }
 
     .page.active .mark {
@@ -369,6 +372,7 @@
 
       .mark {
         writing-mode: vertical-rl;
+        padding: 1em 0; /* vertical mode: gap is top/bottom of the text */
       }
 
       .seam {
