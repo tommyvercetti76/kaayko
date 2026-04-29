@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en" class="dark-theme">
+<head>
+  <script src="/js/prod-config.js"></script>
+  <script>document.documentElement.classList.add('dark-theme');</script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>Forecast | Kaayko</title>
+  <meta name="robots" content="noindex">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <meta name="theme-color" content="#d4af37">
+
+  <!-- Shared store CSS -->
+  <link rel="stylesheet" href="/css/storestyle.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+
+  <!-- Page CSS (defines @font-face + --modal-* vars + brand layout) -->
+  <link rel="stylesheet" href="/css/forecast.css" />
+
+  <!-- Component CSS (unmodified) -->
+  <link rel="stylesheet" href="/js/components/RatingHero.css" />
+  <link rel="stylesheet" href="/js/components/SafetyWarnings.css" />
+  <link rel="stylesheet" href="/js/components/Heatmap.css" />
+
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+</head>
+
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-top">
+      <div class="header-brand">
+        <h1 class="header-title">Kaayko</h1>
+        <p class="header-subtitle">Know Before You Go</p>
+      </div>
+      <nav class="top-menu"><ul></ul></nav>
+      <div class="header-controls">
+        <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode"></button>
+        <button class="fab-menu material-icons mobile-only" aria-label="Open Menu">menu</button>
+      </div>
+    </div>
+    <div class="mobile-menu-overlay">
+      <ul></ul>
+    </div>
+  </header>
+
+  <!-- FORECAST PAGE CONTENT -->
+  <main class="forecast-main">
+
+    <!-- Page header: back + lake name -->
+    <div class="forecast-page-header">
+      <button class="forecast-back-btn" id="backBtn" aria-label="Back to Paddling Out">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        <span>Back</span>
+      </button>
+      <div class="forecast-page-title" id="forecastPageTitle">
+        <h2 id="forecastLakeName">Loading…</h2>
+        <p id="forecastLakeLocation"></p>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <div class="forecast-loading" id="forecastLoading">
+      <div class="forecast-spinner"></div>
+      <p>Loading conditions…</p>
+    </div>
+
+    <!-- Error state -->
+    <div class="forecast-error" id="forecastError" style="display:none">
+      <div class="forecast-error-icon">⚠</div>
+      <h3>Unable to Load Conditions</h3>
+      <p>We couldn't fetch the latest data for this location.</p>
+      <button class="forecast-retry-btn" id="retryBtn">Try Again</button>
+    </div>
+
+    <!-- Main content (hidden until data loads) -->
+    <div class="forecast-content" id="forecastContent" style="display:none">
+
+      <!-- Rating hero (full width) -->
+      <div id="ratingHeroContainer"></div>
+
+      <!-- Safety warnings (separate row — not overlapping the rating hero) -->
+      <div id="safetyWarningsContainer" class="forecast-warnings-row"></div>
+
+      <!-- Heatmap -->
+      <div id="heatmapContainer"></div>
+
+      <!-- Location metadata -->
+      <div class="forecast-location-info" id="locationInfo"></div>
+
+      <!-- API status footer -->
+      <div class="forecast-api-status" id="apiStatus"></div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="/js/header.js"></script>
+  <script src="/js/components/RatingHero.js"></script>
+  <script src="/js/components/SafetyWarnings.js"></script>
+  <script src="/js/components/Heatmap.js"></script>
+  <script src="/js/services/apiClient.js"></script>
+  <script src="/js/services/dataTransformer.js"></script>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // ── API endpoint helper (mirrors paddlingout.js logic) ──────────────────
+    function getApiBase() {
+      if (window.FORCE_PRODUCTION_MODE) return window.PRODUCTION_API_BASE;
+      const h = window.location.hostname;
+      if (h === 'localhost' || h === '127.0.0.1') return `${window.location.origin}/api`;
+      return 'https://api-vwcc5j4qda-uc.a.run.app';
+    }
+
+    // Sync apiClient with prod-config.js if production is forced
+    if (window.FORCE_PRODUCTION_MODE && window.apiClient) {
+      window.apiClient.setMode('production');
+    }
+
+    // ── Severity helpers ────────────────────────────────────────────────────
+    function getScoreSeverity(score) {
+      if (score <= 2.0) return 'critical';
+      if (score <= 3.5) return 'moderate';
+      return 'good';
+    }
+
+    function getSkillLevelFromRating(rating) {
+      if (rating >= 4.5) return 'BEGINNERS WELCOME';
+      if (rating >= 4.0) return 'BEGINNERS WITH GUIDANCE';
+      if (rating >= 3.5) return 'MODERATE SKILL REQUIRED';
+      if (rating >= 3.0) return 'EXPERIENCED ONLY';
+      if (rating >= 2.5) return 'EXPERT LEVEL';
+      return 'NOT RECOMMENDED';
+    }
+
+    // ── Timezone helpers (copied from advancedModal.js) ─────────────────────
+    function estimateTimezone(lat, lng) {
+      if (lat >= 25 && lat <= 49 && lng >= -125 && lng <= -66) {
+        if (lng <= -114) return 'America/Los_Angeles';
+        if (lng <= -104) return 'America/Denver';
+        if (lng <= -87)  return 'America/Chicago';
+        return 'America/New_York';
+      }
+      if (lat >= 37 && lat <= 42 && lng >= -114 && lng <= -109) return 'America/Denver';
+      const off = Math.round(lng / 15);
+      if (off >= -12 && off <= 12) return `Etc/GMT${off <= 0 ? '+' : '-'}${Math.abs(off)}`;
+      return null;
+    }
+
+    function formatLocalTime(location, spot) {
+      try {
+        let tz = location.timeZone || location.timezone;
+        const lat = location.coordinates?.latitude || spot?.location?.latitude;
+        const lng = location.coordinates?.longitude || spot?.location?.longitude;
+        if (!tz && lat && lng) tz = estimateTimezone(lat, lng);
+        if (tz && location.localTime) {
+          const t = new Date(location.localTime);
+          if (!isNaN(t.getTime()))
+            return t.toLocaleString('en-US', { timeZone: tz, weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+        }
+        if (tz)
+          return new Date().toLocaleString('en-US', { timeZone: tz, weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+        return 'Local time unavailable';
+      } catch { return 'Local time unavailable'; }
+    }
+
+    function formatCoordinates(location, spot) {
+      const lat = location.coordinates?.latitude ?? spot.location.latitude;
+      const lng = location.coordinates?.longitude ?? spot.location.longitude;
+      return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    }
+
+    // ── Component renderers ─────────────────────────────────────────────────
+    function renderHero(currentData, forecastData, spot) {
+      if (!currentData?.paddleScore) return;
+      const container = document.getElementById('ratingHeroContainer');
+      if (!container) return;
+      try {
+        const ratingHero = new window.RatingHero();
+        container.innerHTML = '';
+        const rating = currentData.paddleScore.rating;
+        const interpretation = {
+          skillLevel: getSkillLevelFromRating(rating),
+          recommendation: currentData.paddleScore.interpretation,
+          details: `Confidence: ${currentData.paddleScore.confidence} | ML Model: ${currentData.paddleScore.mlModelUsed}`,
+          penalties: currentData.paddleScore.penalties || [],
+          originalRating: currentData.paddleScore.originalRating || rating,
+          totalPenalty: currentData.paddleScore.totalPenalty || 0
+        };
+        const penaltiesApplied = currentData.paddleScore.penaltiesApplied || [];
+        const weather = {
+          ...currentData.conditions,
+          penalties: penaltiesApplied,
+          originalRating: currentData.paddleScore.originalMLRating || rating,
+          totalPenalty: penaltiesApplied.length > 0
+            ? penaltiesApplied.reduce((s, p) => {
+                const m = typeof p === 'string' ? p.match(/([-+]\d+\.?\d*)/) : null;
+                return s + (m ? parseFloat(m[1]) : 0);
+              }, 0)
+            : 0,
+          hasPenalties: penaltiesApplied.length > 0,
+          isGoldStandard: currentData.paddleScore.isGoldStandard
+        };
+        const element = ratingHero.render(rating, interpretation, weather, forecastData, spot?.id || null);
+        container.appendChild(element);
+      } catch (err) { console.error('RatingHero error:', err); }
+    }
+
+    function renderSafetyWarnings(forecastData) {
+      const warnings = window.dataTransformer?.prepareWarningsData?.(forecastData) || [];
+      if (!warnings.length) return;
+      const container = document.getElementById('safetyWarningsContainer');
+      if (!container) return;
+      try {
+        const sw = new window.SafetyWarnings();
+        container.innerHTML = '';
+        const el = sw.render(warnings);
+        if (el) container.appendChild(el);
+      } catch (err) { console.error('SafetyWarnings error:', err); }
+    }
+
+    function renderHeatmap(forecastData) {
+      const heatmapData = window.dataTransformer?.prepareHeatmapData?.(forecastData.forecast);
+      if (!heatmapData?.length) return;
+      const container = document.getElementById('heatmapContainer');
+      if (!container) return;
+      try {
+        const heatmap = new window.Heatmap();
+        container.innerHTML = '';
+        const el = heatmap.render(heatmapData, forecastData.location);
+        container.appendChild(el);
+      } catch (err) { console.error('Heatmap error:', err); }
+    }
+
+    function renderLocationInfo(location, spot) {
+      if (!location) return;
+      document.getElementById('locationInfo').innerHTML = `
+        <div class="loc-row"><span class="loc-label">Region</span><span>${location.region || '—'}, ${location.country || '—'}</span></div>
+        <div class="loc-row"><span class="loc-label">Local Time</span><span>${formatLocalTime(location, spot)}</span></div>
+        <div class="loc-row"><span class="loc-label">Coordinates</span><span>${formatCoordinates(location, spot)}</span></div>
+      `;
+    }
+
+    function renderApiStatus(forecastData) {
+      const mlIcon = window.dataTransformer?.getMLStatusIcon?.(forecastData) || '🤖';
+      const version = forecastData.mlVersion || 'v2.0';
+      const responseTime = forecastData.metadata?.responseTime || 'N/A';
+      document.getElementById('apiStatus').innerHTML =
+        `${mlIcon} Powered by Kaayko ML ${version} &nbsp;|&nbsp; Response: ${responseTime}`;
+    }
+
+    // ── Main load logic ─────────────────────────────────────────────────────
+    const params = new URLSearchParams(window.location.search);
+    const spotId = params.get('id');
+    let currentSpot = null;
+
+    function showError() {
+      document.getElementById('forecastLoading').style.display = 'none';
+      document.getElementById('forecastError').style.display = 'flex';
+    }
+
+    async function loadForecast() {
+      document.getElementById('forecastLoading').style.display = 'flex';
+      document.getElementById('forecastError').style.display = 'none';
+      document.getElementById('forecastContent').style.display = 'none';
+
+      if (!spotId) { showError(); return; }
+
+      const apiBase = getApiBase();
+
+      try {
+        // 1. Fetch spot metadata
+        const spotRes = await fetch(`${apiBase}/paddlingOut/${encodeURIComponent(spotId)}`);
+        if (!spotRes.ok) throw new Error('Spot not found');
+        const spot = await spotRes.json();
+        currentSpot = spot;
+
+        // Update title immediately
+        document.getElementById('forecastLakeName').textContent = spot.title;
+        document.getElementById('forecastLakeLocation').textContent = spot.subtitle || '';
+        document.title = `${spot.title} Forecast | Kaayko`;
+
+        // 2. Fetch conditions + forecast in parallel — each wrapped so one
+        //    failure doesn't kill the other
+        const [currentData, forecastData] = await Promise.all([
+          window.apiClient.getCurrentData(spot.location.latitude, spot.location.longitude)
+            .catch(e => { console.warn('getCurrentData failed:', e); return null; }),
+          window.apiClient.getFastForecast(spot.location.latitude, spot.location.longitude)
+            .catch(e => { console.warn('getFastForecast failed:', e); return null; })
+        ]);
+
+        if (!currentData && !forecastData) throw new Error('Both API calls failed');
+
+        // 3. Update title from API location if custom
+        if (forecastData?.location?.name && spot.isCustom) {
+          document.getElementById('forecastLakeName').textContent = forecastData.location.name;
+        }
+
+        // 4. Render what we have
+        if (currentData) renderHero(currentData, forecastData, spot);
+        if (forecastData) renderSafetyWarnings(forecastData);
+        if (forecastData) renderHeatmap(forecastData);
+        if (forecastData?.location) renderLocationInfo(forecastData.location, spot);
+        if (forecastData) renderApiStatus(forecastData);
+
+        // 5. Show content
+        document.getElementById('forecastLoading').style.display = 'none';
+        document.getElementById('forecastContent').style.display = 'flex';
+
+      } catch (err) {
+        console.error('Forecast page error:', err);
+        showError();
+      }
+    }
+
+    // Back navigation
+    document.getElementById('backBtn').addEventListener('click', () => {
+      if (document.referrer && document.referrer.includes(window.location.hostname)) {
+        history.back();
+      } else {
+        window.location.href = '/paddlingout.html';
+      }
+    });
+
+    // Retry
+    document.getElementById('retryBtn').addEventListener('click', loadForecast);
+
+    // Boot
+    loadForecast();
+  </script>
+
+  <!-- Header scroll hide/show -->
+  <script>
+    (function () {
+      const header = document.querySelector('.header');
+      if (!header) return;
+      let lastY = 0, ticking = false;
+      window.addEventListener('scroll', function () {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(function () {
+          const y = window.scrollY;
+          if (y > 90 && y > lastY) header.classList.add('header-hidden');
+          else header.classList.remove('header-hidden');
+          lastY = y;
+          ticking = false;
+        });
+      }, { passive: true });
+    })();
+  </script>
+</body>
+</html>

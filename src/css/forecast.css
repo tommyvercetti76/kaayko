@@ -1,0 +1,322 @@
+/* ════════════════════════════════════════════════════════════════════════════
+   forecast.css
+   Self-contained styles for /paddlingout/forecast page.
+   Does NOT depend on advancedModal.css — includes everything it needs.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── 0. Josefin font-face (same files as advancedModal.css) ─────────────── */
+@font-face {
+  font-family: 'Josefin_Medium';
+  src: url('/fonts/JosefinSans-Medium.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Josefin_Bold';
+  src: url('/fonts/JosefinSans-Bold.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Josefin_Light';
+  src: url('/fonts/JosefinSans-Light.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Josefin_Regular';
+  src: url('/fonts/JosefinSans-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Josefin_SemiBold';
+  src: url('/fonts/JosefinSans-SemiBold.ttf') format('truetype');
+  font-display: swap;
+}
+
+/* ── 1. Brand tokens ─────────────────────────────────────────────────────── */
+:root {
+  --bg:           #080808;
+  --surface:      #18160f;   /* warm dark card — clearly visible on #080808  */
+  --surface-b:    #1e1c12;   /* slightly lighter warm card                   */
+  --fg:           #ede8df;
+  --muted:        rgba(237,232,223,0.55);
+  --gold:         #b5935a;
+  --gold-bright:  #d9bd7b;
+  --line:         rgba(181,147,90,0.20);
+  --line-gold:    rgba(181,147,90,0.52);
+  --critical:     #FF2D20;
+  --moderate:     #FFA500;
+  --good:         #4CAF50;
+  --ease:         cubic-bezier(0.76, 0, 0.24, 1);
+  --font-serif:   'Cormorant Garamond', Georgia, serif;
+  --font-sans:    'Josefin Sans', 'Josefin_Bold', Arial, sans-serif;
+}
+
+/* ── 2. --modal-* variables (components depend on these) ────────────────── */
+/*
+   RatingHero, SafetyWarnings use --modal-bg-dark for card backgrounds and
+   --modal-text for text colour. We set brand-appropriate warm dark surfaces
+   so the card is visually distinct from the #080808 page.
+*/
+:root,
+html.dark-theme {
+  --modal-bg:           #2a2518;
+  --modal-bg-light:     #312d1e;
+  --modal-bg-dark:      #2a2518;
+  --modal-text:         #ede8df;
+  --modal-text-light:   rgba(237,232,223,0.75);
+  --modal-text-subtle:  rgba(237,232,223,0.45);
+  --modal-accent:       #b5935a;
+  --modal-border:       rgba(181,147,90,0.35);
+  --modal-success:      #4CAF50;
+  --modal-warning:      #FFA500;
+  --modal-danger:       #FF2D20;
+  --modal-info:         #b5935a;
+}
+
+/* ── 3. Page base ────────────────────────────────────────────────────────── */
+html, body {
+  background: var(--bg) !important;
+  color: var(--fg);
+  margin: 0;
+  min-height: 100vh;
+}
+.theme-toggle-icon { display: none !important; }
+
+/* ── 4. Header ───────────────────────────────────────────────────────────── */
+.header {
+  background: rgba(8,8,8,0.94) !important;
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line-gold) !important;
+  transition: transform 0.38s var(--ease), opacity 0.38s ease;
+}
+.header-hidden {
+  transform: translateY(-100%) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+.header-title    { font-family: var(--font-sans) !important; color: var(--gold-bright) !important; }
+.header-subtitle { font-family: var(--font-sans) !important; color: var(--muted) !important; }
+
+/* ── 5. Footer ───────────────────────────────────────────────────────────── */
+footer {
+  display: block !important;
+  visibility: visible !important;
+  background: transparent !important;
+  border-top: 1px solid var(--line);
+  padding: 1.5rem;
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+/* ── 6. Main layout ──────────────────────────────────────────────────────── */
+.forecast-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 6rem 2rem 4rem;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── 7. Page header (back + lake name) ───────────────────────────────────── */
+.forecast-page-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--line-gold);
+}
+.forecast-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: none;
+  border: none;
+  padding: 0.3rem 0.5rem 0.3rem 0;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: color 0.3s ease;
+  flex-shrink: 0;
+  margin-top: 0.45rem;
+}
+.forecast-back-btn svg { stroke: currentColor; }
+.forecast-back-btn:hover { color: var(--gold); }
+.forecast-page-title { flex: 1; }
+.forecast-page-title h2 {
+  margin: 0 0 0.2rem;
+  font-family: var(--font-sans);
+  font-size: clamp(1.35rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold-bright);
+  line-height: 1.1;
+}
+#forecastLakeLocation {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--muted);
+}
+
+/* ── 8. Loading ──────────────────────────────────────────────────────────── */
+.forecast-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 5rem 2rem;
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.forecast-spinner {
+  width: 30px; height: 30px;
+  border: 2px solid var(--line);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: fcast-spin 0.9s linear infinite;
+}
+@keyframes fcast-spin { to { transform: rotate(360deg); } }
+
+/* ── 9. Error ────────────────────────────────────────────────────────────── */
+.forecast-error {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  padding: 5rem 2rem;
+  text-align: center;
+}
+.forecast-error-icon { font-size: 2.5rem; color: var(--critical); }
+.forecast-error h3 {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg);
+}
+.forecast-error p {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  color: var(--muted);
+}
+.forecast-retry-btn {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1.4rem;
+  background: none;
+  border: 1px solid var(--gold);
+  border-radius: 3px;
+  color: var(--gold);
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s;
+}
+.forecast-retry-btn:hover { background: var(--gold); color: var(--bg); }
+
+/* ── 10. Content wrapper ─────────────────────────────────────────────────── */
+.forecast-content { flex-direction: column; }
+
+/* ── 11. RatingHero card ─────────────────────────────────────────────────── */
+#ratingHeroContainer {
+  margin-bottom: 1.5rem;
+}
+/* Hard-code the card surface — no variables, no ambiguity.
+   #2a2518 = warm dark brown, clearly distinct from #080808 page. */
+#ratingHeroContainer .rating-hero {
+  background: #2a2518 !important;
+  border: 1px solid rgba(181,147,90,0.55) !important;
+  border-radius: 10px !important;
+  color: #ede8df !important;
+  box-shadow:
+    0 4px 32px rgba(0,0,0,0.7),
+    inset 0 1px 0 rgba(217,189,123,0.10) !important;
+}
+
+/* ── 12. Safety warnings row ─────────────────────────────────────────────── */
+.forecast-warnings-row {
+  margin-bottom: 1.5rem;
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 0.5rem;
+}
+
+/* ── 13. Heatmap ─────────────────────────────────────────────────────────── */
+#heatmapContainer {
+  margin-bottom: 1.75rem;
+  min-height: 260px;
+}
+
+/* ── 14. Location info ───────────────────────────────────────────────────── */
+.forecast-location-info {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 1.1rem 1.5rem;
+  margin-bottom: 1rem;
+}
+.loc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.loc-row:last-child { border-bottom: none; }
+.loc-label {
+  font-family: var(--font-sans);
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+  min-width: 120px;
+}
+.loc-row span:last-child {
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  color: var(--fg);
+  text-align: right;
+}
+
+/* ── 15. API status ──────────────────────────────────────────────────────── */
+.forecast-api-status {
+  text-align: center;
+  padding: 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.63rem;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 2.5rem;
+}
+
+/* ── 16. Patch hardcoded light colours that leak from component CSS ────────
+   Only touch elements that are definitely wrong on dark backgrounds;
+   never touch heatmap, rating ring, or score colours.              */
+.warning-content          { color: var(--fg) !important; }
+.feedback-thanks          { color: #6abf7b !important; }
+
+/* ── 17. Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .forecast-main { padding: 5.5rem 1.25rem 3rem; }
+}
+@media (max-width: 600px) {
+  .forecast-main { padding: 5rem 0.875rem 2.5rem; }
+  .forecast-page-header { flex-direction: column; gap: 0.4rem; }
+  .forecast-back-btn { margin-top: 0; }
+}

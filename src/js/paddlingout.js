@@ -6,7 +6,7 @@
  *   2) Autoplay a random hero video once on list pages
  *   3) Fetch and render paddling spots (list & detail views)
  *   4) Build cards with in‐card image carousel (dots + swipe)
- *   5) Attach footer icons (parking, restrooms, YouTube, location)
+ *   5) Inject conditions badge + forecast button
  *   6) Expose global helpers for YouTube & map links
  *   7) Insert the current year into the footer
  */
@@ -112,21 +112,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const clone = tpl.content.cloneNode(true);
     const card  = clone.querySelector(".card");
     const imgs  = card.querySelector(".img-container");
-    const dots  = card.querySelector(".image-indicator");
-    const foot  = card.querySelector(".card-footer");
+    const dots  = card.querySelector(".carousel-dots");
 
-    // 5a) Populate images & indicator dots
+    // 5a) Populate images & carousel dots
     spot.imgSrc.forEach((url, i) => {
-      // Image
       const img = document.createElement("img");
       img.src = url;
       img.className = `carousel-image${i===0 ? " active" : ""}`;
       img.dataset.index = i;
       imgs.appendChild(img);
 
-      // Dot
       const dot = document.createElement("span");
-      dot.className = `indicator-dot${i===0 ? " active" : ""}`;
+      dot.className = `carousel-dot${i===0 ? " active" : ""}`;
       dot.dataset.index = i;
       dot.addEventListener("click", e => {
         e.stopPropagation();
@@ -136,32 +133,27 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // 5a-2) Wire up carousel arrows
-    const prevBtn = imgs.querySelector('.carousel-prev');
-    const nextBtn = imgs.querySelector('.carousel-next');
-    
+    const prevBtn = imgs.querySelector('.prev');
+    const nextBtn = imgs.querySelector('.next');
+
     if (prevBtn && nextBtn) {
       const getActiveIndex = () => {
         const activeImg = card.querySelector('.carousel-image.active');
         return activeImg ? parseInt(activeImg.dataset.index, 10) : 0;
       };
-      
+
       prevBtn.addEventListener('click', e => {
         e.stopPropagation();
-        const totalImages = spot.imgSrc.length;
-        const currentIdx = getActiveIndex();
-        const prevIdx = (currentIdx - 1 + totalImages) % totalImages;
-        showImage(card, prevIdx);
+        const total = spot.imgSrc.length;
+        showImage(card, (getActiveIndex() - 1 + total) % total);
       });
-      
+
       nextBtn.addEventListener('click', e => {
         e.stopPropagation();
-        const totalImages = spot.imgSrc.length;
-        const currentIdx = getActiveIndex();
-        const nextIdx = (currentIdx + 1) % totalImages;
-        showImage(card, nextIdx);
+        const total = spot.imgSrc.length;
+        showImage(card, (getActiveIndex() + 1) % total);
       });
-      
-      // Hide arrows if only one image
+
       if (spot.imgSrc.length <= 1) {
         prevBtn.style.display = 'none';
         nextBtn.style.display = 'none';
@@ -169,24 +161,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 5b) Populate text fields
-    card.querySelector(".card-title").textContent       = spot.title;
-    card.querySelector(".card-subtitle").textContent    = spot.subtitle;
-    card.querySelector(".card-description").textContent = spot.text;
+    card.querySelector(".lake-name").textContent  = spot.title;
+    card.querySelector(".location").textContent   = spot.subtitle;
+    card.querySelector(".description").textContent = spot.text;
 
-    // 5c) Footer icons
-    if (spot.parkingAvl)   foot.append(icon("parking-icon",   "Parking Available"));
-    if (spot.restroomsAvl) foot.append(icon("toilet-icon",    "Restrooms Available"));
-    if (spot.youtubeURL)   foot.append(icon("youtube-icon",   "Video", () => openYoutube(spot.youtubeURL)));
-    
-    // Use smart paddle score icon instead of generic robot
-    const paddleScoreIcon = await createPaddleScoreIcon(spot);
-    foot.append(paddleScoreIcon);
-    
-    foot.append(icon("location-icon", "Take me there", () =>
-      openLocation(spot.location.latitude, spot.location.longitude)
-    ));
+    // 5c) Conditions badge — inject into img-container
+    const badge = createConditionsBadge(spot);
+    imgs.appendChild(badge);
 
-    // 5d) Card click → ALWAYS navigate to detail page
+    // Score class on card drives colored left border in list view
+    if (spot.paddleScore?.rating != null) {
+      card.classList.add(`score-${getScoreSeverity(spot.paddleScore.rating)}`);
+    }
+
+    // 5d) Forecast button → navigate to forecast page
+    const forecastBtn = card.querySelector(".forecast-button");
+    forecastBtn.addEventListener("click", e => {
+      e.stopPropagation();
+      window.location.href = `/paddlingout/forecast?id=${encodeURIComponent(spot.id)}`;
+    });
+
+    // 5e) Card click → navigate to detail page
     card.addEventListener("click", () => {
       window.location.href = `paddlingout.html?id=${spot.id}`;
     });
@@ -194,167 +189,41 @@ document.addEventListener("DOMContentLoaded", () => {
     return card;
   }
 
-  /**
-   * Helper: create a footer icon element
-   * @param {string} cls    CSS class for the icon
-   * @param {string} title  Tooltip text
-   * @param {Function} [onClick] Optional click handler
-   */
-  /**
-   * Create a color-coded paddle score icon that shows the included score
-   */
-  async function createPaddleScoreIcon(spot) {
-    const wrap = document.createElement("div");
-    wrap.className = "icon paddle-score-icon mini-ring-wrap";
+  function getScoreSeverity(score) {
+    if (score <= 2.0) return 'critical';
+    if (score <= 3.5) return 'moderate';
+    return 'good';
+  }
 
-    wrap.addEventListener("click", e => {
-      e.stopPropagation();
-      if (window.advancedModal) advancedModal.open(spot);
-    });
+  function createConditionsBadge(spot) {
+    const badge = document.createElement("div");
+    badge.classList.add("conditions-badge");
 
-    if (spot.paddleScore && typeof spot.paddleScore.rating === 'number') {
-      const score = spot.paddleScore.rating;
-      const { description } = getPaddleScoreDisplay(score);
-      const strokeColor = getRingStrokeColor(score);
-      wrap.title = `${description} — Score ${score} (click for details)`;
-
-      // Mini SVG ring — rotate(-90) starts arc at 12 o'clock, no dashoffset bug
-      const r    = 16, cx = 20, cy = 20;
-      const circ = 2 * Math.PI * r;
-      const pct  = Math.max(0, Math.min(1, score / 5));
-      const fill = (pct * circ).toFixed(2);
-      const gap  = ((1 - pct) * circ).toFixed(2);
-
-      wrap.innerHTML = `
-        <svg class="mini-ring-svg" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-          <circle class="mini-ring-track" cx="${cx}" cy="${cy}" r="${r}"/>
-          <circle class="mini-ring-fill"
-            cx="${cx}" cy="${cy}" r="${r}"
-            stroke="${strokeColor}"
-            stroke-dasharray="${fill} ${gap}"
-            transform="rotate(-90 ${cx} ${cy})"/>
-        </svg>
-        <div class="mini-ring-label" style="color:#fff">${score}</div>
+    if (spot.paddleScore?.rating != null) {
+      const score    = spot.paddleScore.rating;
+      const severity = getScoreSeverity(score);
+      const label    = severity === 'critical' ? 'Critical'
+                     : severity === 'moderate' ? 'Fair' : 'Good';
+      if (severity !== 'good') badge.classList.add(severity);
+      badge.innerHTML = `
+        <span class="badge-dot"></span>
+        <span class="badge-score">${score}</span>
+        <span class="badge-status">${label}</span>
       `;
     } else {
-      wrap.title = "Score unavailable — click for details";
-      wrap.innerHTML = `
-        <svg class="mini-ring-svg" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-          <circle class="mini-ring-track" cx="20" cy="20" r="16"
-            stroke-dasharray="4 6" stroke-linecap="round"/>
-        </svg>
-        <div class="mini-ring-label mini-ring-label-na">–</div>
+      badge.innerHTML = `
+        <span class="badge-dot"></span>
+        <span class="badge-score">—</span>
+        <span class="badge-status">N/A</span>
       `;
     }
 
-    return wrap;
-  }
-
-  /**
-   * Vibrant SVG stroke colors — visible on BOTH dark and light card backgrounds.
-   * Separate from getPaddleScoreDisplay() which uses dark solid-circle colors.
-   */
-  function getRingStrokeColor(score) {
-    const s = parseFloat(score);
-    if (s >= 4.5) return '#22C55E'; // vivid green
-    if (s >= 4.0) return '#4ADE80'; // light green
-    if (s >= 3.5) return '#D97706'; // amber
-    if (s >= 3.0) return '#F97316'; // orange
-    if (s >= 2.5) return '#EF4444'; // vivid red
-    if (s >= 2.0) return '#DC2626'; // medium red
-    if (s >= 1.5) return '#EF4444'; // vivid red (matches 2.5 — low scores need maximum visibility)
-    return '#FF2D20';               // alarm red
-  }
-
-  /**
-   * Get display properties for paddle score using ADA-compliant color system
-   * with high contrast ratios and attractive shadows
-   */
-  function getPaddleScoreDisplay(score) {
-    // Score is already properly formatted by API (rounded to 0.5 increments)
-    
-    // ADA-COMPLIANT color grading with proper contrast ratios (4.5:1 minimum)
-    let backgroundColor, textColor, boxShadow;
-    
-    if (score >= 4.5) {
-      // Excellent+ - 0% gradient position
-      backgroundColor = "#1B4332";
-      textColor = "#FFFFFF";
-      boxShadow = "0 4px 12px rgba(27, 67, 50, 0.4), 0 2px 4px rgba(0,0,0,0.3)";
-    } else if (score >= 4.0) {
-      // Excellent - 15% gradient position
-      backgroundColor = "#2D5A32";
-      textColor = "#FFFFFF";
-      boxShadow = "0 4px 12px rgba(45, 90, 50, 0.4), 0 2px 4px rgba(0,0,0,0.3)";
-    } else if (score >= 3.5) {
-      // Good - 30% gradient position
-      backgroundColor = "#CD853F";
-      textColor = "#FFFFFF";
-      boxShadow = "0 4px 12px rgba(205, 133, 63, 0.4), 0 2px 4px rgba(0,0,0,0.3)";
-    } else if (score >= 3.0) {
-      // Fair - 45% gradient position
-      backgroundColor = "#E36414";
-      textColor = "#FFFFFF";
-      boxShadow = "0 4px 12px rgba(227, 100, 20, 0.4), 0 2px 4px rgba(0,0,0,0.3)";
-    } else if (score >= 2.5) {
-      // Poor - 60% gradient position
-      backgroundColor = "#C0392B";
-      textColor = "#FFFFFF";
-      boxShadow = "0 4px 12px rgba(192, 57, 43, 0.4), 0 2px 4px rgba(0,0,0,0.3)";
-    } else if (score >= 2.0) {
-      // Dangerous - 75% gradient position
-      backgroundColor = "#8E0E00";
-      textColor = "#FFFFFF";
-      boxShadow = "0 4px 12px rgba(142, 14, 0, 0.5), 0 2px 4px rgba(0,0,0,0.4)";
-    } else if (score >= 1.5) {
-      // Very Dangerous - 85% gradient position
-      backgroundColor = "#5B0000";
-      textColor = "#FFFFFF";
-      boxShadow = "0 4px 12px rgba(91, 0, 0, 0.6), 0 2px 4px rgba(0,0,0,0.4)";
-    } else if (score >= 1.0) {
-      // Critical - 95% gradient position
-      backgroundColor = "#2B1815";
-      textColor = "#FFFFFF";
-      boxShadow = "0 4px 12px rgba(43, 24, 21, 0.7), 0 2px 4px rgba(0,0,0,0.5)";
-    } else {
-      // Extremely Critical - 100% gradient position
-      backgroundColor = "#000000";
-      textColor = "#FFFFFF";
-      boxShadow = "0 4px 12px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(255, 0, 0, 0.3)";
-    }
-    
-    // Get description based on user-specified score ranges
-    let description;
-    if (score >= 4.5) {
-      description = "Excellent conditions";
-    } else if (score >= 4.0) {
-      description = "Good conditions";
-    } else if (score >= 3.5) {
-      description = "Good conditions - Heat caution advised";
-    } else if (score >= 3.0) {
-      description = "Challenging conditions";
-    } else {
-      description = "Difficult conditions";
-    }
-    
-    return {
-      icon: score,
-      backgroundColor,
-      textColor,
-      boxShadow,
-      description
-    };
-  }
-
-  function icon(cls, title, onClick) {
-    const el = document.createElement("span");
-    el.className = `icon ${cls}`;
-    el.title = title;
-    el.addEventListener("click", e => {
+    badge.addEventListener("click", e => {
       e.stopPropagation();
-      onClick?.();
+      window.location.href = `/paddlingout/forecast?id=${encodeURIComponent(spot.id)}`;
     });
-    return el;
+
+    return badge;
   }
 
   //──────────────────────────────────────────────────────────────────────────────
@@ -362,7 +231,7 @@ document.addEventListener("DOMContentLoaded", () => {
   //──────────────────────────────────────────────────────────────────────────────
   function showImage(card, idx) {
     const images = card.querySelectorAll(".carousel-image");
-    const dots   = card.querySelectorAll(".indicator-dot");
+    const dots   = card.querySelectorAll(".carousel-dot");
     const next   = (idx + images.length) % images.length;
 
     images.forEach((img, i) => img.classList.toggle("active", i === next));

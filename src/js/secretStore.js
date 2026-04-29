@@ -280,10 +280,7 @@ function showSecretModal() {
   
   // Handle browser back button to close modal gracefully
   popstateHandler = function(e) {
-    console.log('🔙 Back button pressed, closing modal and navigating away');
     closeModal();
-    // Navigate away from store page
-    window.location.href = 'paddlingout.html';
   };
   
   // Add popstate listener for back button
@@ -368,13 +365,11 @@ function showSecretModal() {
     }
   });
   
-  // Handle escape key to go back to home
+  // Handle escape key to close modal
   document.addEventListener('keydown', function escapeHandler(e) {
     if (e.key === 'Escape' && isModalActive) {
-      console.log('⌨️ Escape pressed, closing modal and navigating away');
       document.removeEventListener('keydown', escapeHandler);
       closeModal();
-      window.location.href = 'paddlingout.html';
     }
   });
   

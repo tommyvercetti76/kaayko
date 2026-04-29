@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" prefix="og: http://ogp.me/ns#">
+<html lang="en" prefix="og: http://ogp.me/ns#" class="dark-theme">
 <head>
     <script src="/js/prod-config.js"></script>
+    <!-- Force dark mode — this page is dark-only -->
+    <script>document.documentElement.classList.add('dark-theme');</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -69,6 +71,8 @@
   
   <!-- Performance -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
   <link rel="dns-prefetch" href="https://api-vwcc5j4qda-uc.a.run.app">
   
   <!-- Favicon -->
@@ -167,16 +171,22 @@
   <template id="card-template">
     <div class="card">
       <div class="img-container">
-        <button class="carousel-arrow carousel-prev" aria-label="Previous image">‹</button>
-        <button class="carousel-arrow carousel-next" aria-label="Next image">›</button>
+        <button class="carousel-nav prev" aria-label="Previous image">‹</button>
+        <button class="carousel-nav next" aria-label="Next image">›</button>
+        <!-- .conditions-badge injected by JS -->
+        <div class="carousel-dots">
+          <!-- .carousel-dot spans injected by JS -->
+        </div>
       </div>
-      <div class="image-indicator"></div>
       <div class="card-content">
-        <h2 class="card-title"></h2>
-        <p class="card-subtitle"></p>
-        <p class="card-description"></p>
+        <h2 class="lake-name"></h2>
+        <p class="location"></p>
+        <p class="description"></p>
+        <button class="forecast-button">
+          <span>Forecast</span>
+          <span>→</span>
+        </button>
       </div>
-      <div class="card-footer"></div>
     </div>
   </template>
 
@@ -245,6 +255,30 @@
         container.classList.toggle("list-view", view === "list");
       }
     });
+  </script>
+
+  <!-- Header hide-on-scroll-down, show-on-scroll-up -->
+  <script>
+    (function () {
+      const header = document.querySelector('.header');
+      if (!header) return;
+      let lastY = 0;
+      let ticking = false;
+      window.addEventListener('scroll', function () {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(function () {
+          const y = window.scrollY;
+          if (y > 90 && y > lastY) {
+            header.classList.add('header-hidden');
+          } else {
+            header.classList.remove('header-hidden');
+          }
+          lastY = y;
+          ticking = false;
+        });
+      }, { passive: true });
+    })();
   </script>
 </body>
 </html>
