@@ -435,14 +435,26 @@ footer {
   opacity: 1 !important;
 }
 
-/* Lighten the grid borders to hairlines */
+/* 2-column grid — Wind Dir merged in, only 4 visible cells → clean 2×2 */
 #ratingHeroContainer .core-weather-inline {
   background: rgba(255,255,255,0.012) !important;
   border: 1px solid rgba(181,147,90,0.16) !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  grid-template-rows: unset !important;
 }
 #ratingHeroContainer .weather-stat {
   border-right-color:  rgba(181,147,90,0.10) !important;
   border-bottom-color: rgba(181,147,90,0.10) !important;
+}
+
+/* Hidden stat cells — removed from grid flow */
+#ratingHeroContainer .stat-hidden {
+  display: none !important;
+}
+
+/* Cloud cover (5th cell when shown) spans full row */
+#ratingHeroContainer .stat-full-width {
+  grid-column: span 2 !important;
 }
 
 /* Unit toggle: match brand */
@@ -485,19 +497,18 @@ footer {
   transition: width 0.85s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Wind direction compass arrow */
+/* Compass arrow — sits between value and label inside Wind cell */
 .stat-compass {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 0.15rem;
-  padding-bottom: 0.55rem;
   flex-shrink: 0;
+  line-height: 1;
 }
 
 .stat-compass-arrow {
   display: inline-block;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   line-height: 1;
   color: var(--gold);
   transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);

@@ -334,77 +334,91 @@
       const COMPASS = {N:0,NNE:22,NE:45,ENE:67,E:90,ESE:112,SE:135,SSE:157,
                        S:180,SSW:202,SW:225,WSW:247,W:270,WNW:292,NW:315,NNW:337};
 
-      function parseBar(label, valueText) {
-        label = label.toLowerCase();
-        const num = parseFloat(valueText);
-        if (isNaN(num)) return null;
+      // ── Step 1: Remove recalculable elements; keep structural changes ──────
+      container.querySelectorAll('.stat-bar-track').forEach(el => el.remove());
 
-        if (label.includes('wind dir')) {
-          const deg = COMPASS[valueText.trim().toUpperCase()] ?? 0;
-          return { type: 'compass', deg };
+      // ── Step 2: Merge Wind Dir into Wind Speed (once per page load) ────────
+      if (!container.dataset.windMerged) {
+        const windSpeedStat = stats[1];  // index 1 = Wind Speed
+        const windDirStat   = stats[2];  // index 2 = Wind Dir
+        if (windSpeedStat && windDirStat) {
+          const dirText = windDirStat.querySelector('.weather-value')?.textContent?.trim() || '';
+          const labelEl = windSpeedStat.querySelector('.weather-label');
+          if (dirText && dirText !== '--') {
+            // Relabel to "Wind"
+            if (labelEl) labelEl.textContent = 'Wind';
+            // Inject compass arrow into Wind Speed cell (before label)
+            const deg     = COMPASS[dirText.toUpperCase()] ?? 0;
+            const compass = document.createElement('div');
+            compass.className = 'stat-compass';
+            compass.innerHTML = `<span class="stat-compass-arrow" style="transform:rotate(${deg}deg)">↑</span>`;
+            windSpeedStat.insertBefore(compass, labelEl);
+          }
+          windDirStat.classList.add('stat-hidden');
         }
-        if (label.includes('wind')) {
-          // normalize to km/h
-          const v = valueText.includes('mph') ? num * 1.60934 : num;
-          return { type: 'bar', pct: Math.min(100, (v / 40) * 100),
-            color: v <= 15 ? '#4CAF50' : v <= 25 ? '#FFA500' : '#FF2D20' };
-        }
-        if (label.includes('uv')) {
-          return { type: 'bar', pct: Math.min(100, (num / 11) * 100),
-            color: num <= 3 ? '#4CAF50' : num <= 6 ? '#FFA500' : '#FF2D20' };
-        }
-        if (label.includes('water') || label.includes('air')) {
-          const c = valueText.includes('°F') ? (num - 32) * 5/9 : num;
-          const pct = Math.min(100, Math.max(0, ((c + 10) / 50) * 100));
-          const isWater = label.includes('water');
-          const color = isWater
-            ? (c >= 18 && c <= 28 ? '#4CAF50' : c >= 12 ? '#FFA500' : '#FF2D20')
-            : (c >= 15 && c <= 30 ? '#4CAF50' : c >= 8  ? '#FFA500' : '#FF2D20');
-          return { type: 'bar', pct, color };
-        }
-        if (label.includes('cloud')) {
-          return { type: 'bar', pct: Math.min(100, num),
-            color: num <= 30 ? '#4CAF50' : num <= 70 ? '#FFA500' : '#b5935a' };
-        }
-        if (label.includes('humidity')) {
-          return { type: 'bar', pct: Math.min(100, num),
-            color: num >= 30 && num <= 70 ? '#4CAF50' : '#FFA500' };
-        }
-        if (label.includes('wave')) {
-          const ft = valueText.toLowerCase().includes(' m') ? num * 3.28 : num;
-          return { type: 'bar', pct: Math.min(100, (ft / 6) * 100),
-            color: ft <= 1 ? '#4CAF50' : ft <= 2.5 ? '#FFA500' : '#FF2D20' };
-        }
-        return null;
+        container.dataset.windMerged = '1';
       }
 
-      stats.forEach((stat, i) => {
+      // ── Step 3: Hide Cloud Cover when absent or zero ──────────────────────
+      const cloudStat  = stats[5];
+      const cloudValue = cloudStat?.querySelector('.weather-value')?.textContent?.trim() || '';
+      if (cloudStat) {
+        const isAbsent = ['0%', '--', '', '--%', '0'].includes(cloudValue);
+        cloudStat.classList.toggle('stat-hidden', isAbsent);
+        if (!isAbsent) cloudStat.classList.add('stat-full-width');
+        else            cloudStat.classList.remove('stat-full-width');
+      }
+
+      // ── Step 4: Add animated bars to visible stats ────────────────────────
+      let barIdx = 0;
+      stats.forEach(stat => {
+        if (stat.classList.contains('stat-hidden')) return;
         const labelEl = stat.querySelector('.weather-label');
         const valueEl = stat.querySelector('.weather-value');
         if (!labelEl || !valueEl) return;
 
-        stat.querySelector('.stat-bar-track')?.remove();
-        stat.querySelector('.stat-compass')?.remove();
+        const label     = labelEl.textContent.trim().toLowerCase();
+        const valueText = valueEl.textContent.trim();
+        const num       = parseFloat(valueText);
+        if (isNaN(num)) { barIdx++; return; }
 
-        const result = parseBar(labelEl.textContent.trim(), valueEl.textContent.trim());
-        if (!result) return;
+        let pct = 0, color = '#4CAF50';
 
-        if (result.type === 'compass') {
-          const el = document.createElement('div');
-          el.className = 'stat-compass';
-          el.innerHTML = `<span class="stat-compass-arrow" style="transform:rotate(${result.deg}deg)">↑</span>`;
-          stat.appendChild(el);
-        } else {
-          const track = document.createElement('div');
-          track.className = 'stat-bar-track';
-          const fill = document.createElement('div');
-          fill.className = 'stat-bar-fill';
-          fill.style.cssText = `width:0;background:${result.color};box-shadow:0 0 8px ${result.color}90`;
-          track.appendChild(fill);
-          stat.appendChild(track);
-          // Staggered animate-in
-          setTimeout(() => { fill.style.width = result.pct + '%'; }, 120 + i * 70);
-        }
+        if (label === 'wind' || label.includes('wind speed')) {
+          const v = valueText.includes('mph') ? num * 1.60934 : num;
+          pct   = Math.min(100, (v / 40) * 100);
+          color = v <= 15 ? '#4CAF50' : v <= 25 ? '#FFA500' : '#FF2D20';
+        } else if (label.includes('uv')) {
+          pct   = Math.min(100, (num / 11) * 100);
+          color = num <= 3 ? '#4CAF50' : num <= 6 ? '#FFA500' : '#FF2D20';
+        } else if (label.includes('water') || label.includes('air')) {
+          const c = valueText.includes('°F') ? (num - 32) * 5/9 : num;
+          pct   = Math.min(100, Math.max(0, ((c + 10) / 50) * 100));
+          color = label.includes('water')
+            ? (c >= 18 && c <= 28 ? '#4CAF50' : c >= 12 ? '#FFA500' : '#FF2D20')
+            : (c >= 15 && c <= 30 ? '#4CAF50' : c >= 8  ? '#FFA500' : '#FF2D20');
+        } else if (label.includes('cloud')) {
+          pct   = Math.min(100, num);
+          color = num <= 30 ? '#4CAF50' : num <= 70 ? '#FFA500' : '#b5935a';
+        } else if (label.includes('humidity')) {
+          pct   = Math.min(100, num);
+          color = num >= 30 && num <= 70 ? '#4CAF50' : '#FFA500';
+        } else if (label.includes('wave')) {
+          const ft = valueText.toLowerCase().includes(' m') ? num * 3.28 : num;
+          pct   = Math.min(100, (ft / 6) * 100);
+          color = ft <= 1 ? '#4CAF50' : ft <= 2.5 ? '#FFA500' : '#FF2D20';
+        } else { barIdx++; return; }
+
+        const track = document.createElement('div');
+        track.className = 'stat-bar-track';
+        const fill = document.createElement('div');
+        fill.className = 'stat-bar-fill';
+        fill.style.cssText = `width:0;background:${color};box-shadow:0 0 8px ${color}90`;
+        track.appendChild(fill);
+        stat.appendChild(track);
+        const delay = 120 + barIdx * 70;
+        setTimeout(() => { fill.style.width = pct + '%'; }, delay);
+        barIdx++;
       });
     }
 
