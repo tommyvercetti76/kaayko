@@ -56,14 +56,9 @@
   <!-- FORECAST PAGE CONTENT -->
   <main class="forecast-main">
 
-    <!-- Page header: back + lake name -->
+    <!-- Page header: lake name -->
     <div class="forecast-page-header">
-      <button class="forecast-back-btn" id="backBtn" aria-label="Back to Paddling Out">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="15 18 9 12 15 6"/>
-        </svg>
-        <span>Back</span>
-      </button>
+      <a class="forecast-back-btn" href="/paddlingout">← Lakes</a>
       <div class="forecast-page-title" id="forecastPageTitle">
         <h2 id="forecastLakeName">Loading…</h2>
         <p id="forecastLakeLocation"></p>
@@ -90,7 +85,10 @@
       <!-- Rating hero (full width) -->
       <div id="ratingHeroContainer"></div>
 
-      <!-- Safety warnings (separate row — not overlapping the rating hero) -->
+      <!-- Compact warning drawer -->
+      <div class="forecast-alert-drawer" id="forecastAlertDrawer"></div>
+
+      <!-- Legacy warnings mount. Kept for compatibility; visible alerts render above. -->
       <div id="safetyWarningsContainer" class="forecast-warnings-row"></div>
 
       <!-- Heatmap -->
@@ -142,11 +140,11 @@
     }
 
     function getSkillLevelFromRating(rating) {
-      if (rating >= 4.5) return 'BEGINNERS WELCOME';
-      if (rating >= 4.0) return 'BEGINNERS WITH GUIDANCE';
-      if (rating >= 3.5) return 'MODERATE SKILL REQUIRED';
-      if (rating >= 3.0) return 'EXPERIENCED ONLY';
-      if (rating >= 2.5) return 'EXPERT LEVEL';
+      const r = Math.round(parseFloat(rating));
+      if (r >= 5) return 'BEGINNERS WELCOME';
+      if (r >= 4) return 'BEGINNERS WITH GUIDANCE';
+      if (r >= 3) return 'MODERATE SKILL REQUIRED';
+      if (r >= 2) return 'EXPERIENCED ONLY';
       return 'NOT RECOMMENDED';
     }
 
@@ -187,6 +185,108 @@
       return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
     }
 
+    function scoreLabel(score) {
+      const r = Math.round(parseFloat(score));
+      if (r >= 5) return 'EXCELLENT';
+      if (r >= 4) return 'GREAT';
+      if (r >= 3) return 'GOOD';
+      if (r >= 2) return 'FAIR';
+      return 'DANGER';
+    }
+
+    function formatHourDisplay(hour) {
+      const h = parseInt(hour, 10);
+      if (h === 0) return '12:00 AM';
+      if (h < 12) return `${h}:00 AM`;
+      if (h === 12) return '12:00 PM';
+      return `${h - 12}:00 PM`;
+    }
+
+    function findBestWindow(currentData, forecastData) {
+      const forecast = forecastData?.forecast;
+      if (!Array.isArray(forecast)) return null;
+
+      const currentRating = parseFloat(currentData?.paddleScore?.rating ?? 0);
+      const currentHour = new Date().getHours();
+      let best = null;
+
+      forecast.slice(0, 3).forEach((day, dayIndex) => {
+        const hourly = day?.hourly || {};
+        Object.keys(hourly).map(Number).sort((a, b) => a - b).forEach(hour => {
+          if (dayIndex === 0 && hour <= currentHour) return;
+          const hourData = hourly[String(hour)] || hourly[hour];
+          const rating = parseFloat(hourData?.mlPrediction?.rating ?? hourData?.prediction?.rating ?? hourData?.rating);
+          if (isNaN(rating)) return;
+          if (!best || rating > best.score) {
+            best = { dayIndex, hour, score: rating, date: day?.date || null };
+          }
+        });
+      });
+
+      if (!best || (best.score < 3 && best.score < currentRating + 0.5)) return null;
+      const dayLabel = best.dayIndex === 0 ? 'Later today' : best.dayIndex === 1 ? 'Tomorrow' : 'Day 3';
+      return {
+        ...best,
+        dayLabel,
+        timeLabel: `${dayLabel} at ${formatHourDisplay(best.hour)}`,
+        label: scoreLabel(best.score)
+      };
+    }
+
+    function renderTripBriefing(currentData, forecastData) {
+      const container = document.getElementById('forecastAlertDrawer');
+      if (!container) return;
+
+      const warnings = window.dataTransformer?.prepareWarningsData?.(forecastData) || [];
+      const warningItems = Array.isArray(warnings) ? warnings.map(String) : [warnings].filter(Boolean).map(String);
+      const penalties = currentData?.paddleScore?.penaltiesApplied || currentData?.paddleScore?.penalties || [];
+      penalties
+        .filter(Boolean)
+        .map(String)
+        .forEach(item => {
+          const clean = item.replace(/:\s*[-+]?\d+\.?\d*\s*(pts?)?$/i, '').trim();
+          if (clean && !warningItems.some(existing => existing.toLowerCase() === clean.toLowerCase())) {
+            warningItems.push(clean);
+          }
+        });
+
+      if (!warningItems.length) {
+        container.innerHTML = '';
+        container.hidden = true;
+        return;
+      }
+
+      container.hidden = false;
+      container.innerHTML = `
+        <section class="forecast-alert-banner is-closed" role="region" aria-label="Paddling alerts">
+          <button class="alert-summary" type="button" aria-expanded="false">
+            <span class="alert-mark">${warningItems.length}</span>
+            <span class="alert-summary-copy">
+              <span class="briefing-kicker">Lake alerts</span>
+              <span class="alert-summary-title">${warningItems.length} condition${warningItems.length === 1 ? '' : 's'} to review</span>
+            </span>
+          </button>
+          <button class="alert-dismiss" type="button" aria-label="Dismiss lake alerts">×</button>
+          <div class="alert-details" hidden>
+            ${warningItems.map(warning => `<p>${String(warning)}</p>`).join('')}
+          </div>
+        </section>
+      `;
+
+      const banner = container.querySelector('.forecast-alert-banner');
+      const summary = container.querySelector('.alert-summary');
+      const details = container.querySelector('.alert-details');
+      summary?.addEventListener('click', () => {
+        const isOpen = banner.classList.toggle('is-open');
+        banner.classList.toggle('is-closed', !isOpen);
+        summary.setAttribute('aria-expanded', String(isOpen));
+        details.hidden = !isOpen;
+      });
+      container.querySelector('.alert-dismiss')?.addEventListener('click', () => {
+        container.hidden = true;
+      });
+    }
+
     // ── Component renderers ─────────────────────────────────────────────────
     function renderHero(currentData, forecastData, spot) {
       if (!currentData?.paddleScore) return;
@@ -224,17 +324,18 @@
     }
 
     function renderSafetyWarnings(forecastData) {
-      const warnings = window.dataTransformer?.prepareWarningsData?.(forecastData) || [];
-      if (!warnings.length) return;
       const container = document.getElementById('safetyWarningsContainer');
       if (!container) return;
-      try {
-        const sw = new window.SafetyWarnings();
-        container.innerHTML = '';
-        const el = sw.render(warnings);
-        if (el) container.appendChild(el);
-      } catch (err) { console.error('SafetyWarnings error:', err); }
+      container.innerHTML = '';
+      container.hidden = true;
     }
+
+    // Segment windows mirror Heatmap.js — kept in sync manually
+    const SEGMENT_WINDOWS = [
+      { start: 6, end: 8 }, { start: 8, end: 10 }, { start: 10, end: 12 },
+      { start: 12, end: 14 }, { start: 14, end: 16 }, { start: 16, end: 18 },
+      { start: 18, end: 20 }
+    ];
 
     function renderHeatmap(forecastData) {
       const heatmapData = window.dataTransformer?.prepareHeatmapData?.(forecastData.forecast);
@@ -244,26 +345,110 @@
       try {
         const heatmap = new window.Heatmap();
         container.innerHTML = '';
-        const el = heatmap.render(heatmapData, forecastData.location);
+        const el = heatmap.render(heatmapData, forecastData.location, {
+          bestWindow: findBestWindow(window.__kaaykoCurrentData, forecastData)
+        });
         container.appendChild(el);
+
+        // Post-process: round all displayed segment scores to integers
+        container.querySelectorAll('.segment-score').forEach(scoreEl => {
+          const val = parseFloat(scoreEl.textContent);
+          if (!isNaN(val)) scoreEl.textContent = String(Math.round(val));
+        });
+        container.querySelectorAll('.heatmap-segment[data-score]').forEach(seg => {
+          const val = parseFloat(seg.dataset.score);
+          if (!isNaN(val)) seg.dataset.score = String(Math.round(val));
+        });
+        container.querySelectorAll('.heatmap-best-chip em').forEach(chipEl => {
+          const val = parseFloat(chipEl.textContent);
+          if (!isNaN(val)) chipEl.textContent = `${Math.round(val)} / 5`;
+        });
+
+        // Augment popover with per-hour breakdown when a segment is clicked
+        container.querySelectorAll('.heatmap-segment').forEach(seg => {
+          seg.addEventListener('click', () => {
+            const dayIndex = parseInt(seg.dataset.day, 10);
+            const segStart = parseInt(seg.dataset.hour, 10);
+            const dayData = forecastData.forecast?.[dayIndex];
+            if (!dayData?.hourly) return;
+
+            const bar = seg.closest('.heatmap-bar');
+            const popover = bar?.querySelector('.heatmap-popover');
+            if (!popover) return;
+
+            // Remove any stale hourly rows from a prior click
+            popover.querySelector('.popover-hourly')?.remove();
+
+            const win = SEGMENT_WINDOWS.find(w => w.start === segStart);
+            const endHour = win ? win.end : segStart + 2;
+
+            const rows = [];
+            for (let h = segStart; h < endHour; h++) {
+              const hourData = dayData.hourly[String(h)] ?? dayData.hourly[h];
+              if (!hourData) continue;
+              const raw = parseFloat(
+                hourData?.mlPrediction?.rating ?? hourData?.prediction?.rating ?? hourData?.rating
+              );
+              if (isNaN(raw)) continue;
+              rows.push(`<div class="popover-hour-row">
+                <span>${formatHourDisplay(h)}</span>
+                <strong>${Math.round(raw)} / 5</strong>
+              </div>`);
+            }
+
+            if (rows.length) {
+              const hourlyDiv = document.createElement('div');
+              hourlyDiv.className = 'popover-hourly';
+              hourlyDiv.innerHTML = rows.join('');
+              popover.appendChild(hourlyDiv);
+            }
+          });
+        });
+
       } catch (err) { console.error('Heatmap error:', err); }
+    }
+
+    function getAmenityItems(spot) {
+      const yn = value => value === true || String(value).toUpperCase() === 'Y';
+      const items = [
+        { label: 'Parking', available: yn(spot?.parkingAvl) },
+        { label: 'Restrooms', available: yn(spot?.restroomsAvl) }
+      ];
+      const extra = spot?.amenities;
+      if (extra && typeof extra === 'object') {
+        Object.keys(extra).forEach(key => {
+          if (['parking', 'restrooms'].includes(key)) return;
+          items.push({
+            label: key.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase()),
+            available: yn(extra[key])
+          });
+        });
+      }
+      return items;
     }
 
     function renderLocationInfo(location, spot) {
       if (!location) return;
+      const amenities = getAmenityItems(spot);
       document.getElementById('locationInfo').innerHTML = `
         <div class="loc-row"><span class="loc-label">Region</span><span>${location.region || '—'}, ${location.country || '—'}</span></div>
         <div class="loc-row"><span class="loc-label">Local Time</span><span>${formatLocalTime(location, spot)}</span></div>
         <div class="loc-row"><span class="loc-label">Coordinates</span><span>${formatCoordinates(location, spot)}</span></div>
+        <div class="loc-row loc-amenities"><span class="loc-label">Amenities</span><span class="amenities-list">
+          ${amenities.map(item => `<span class="amenity-pill ${item.available ? 'available' : 'unavailable'}">${item.available ? '✓' : '—'} ${item.label}</span>`).join('')}
+        </span></div>
       `;
     }
 
     function renderApiStatus(forecastData) {
       const mlIcon = window.dataTransformer?.getMLStatusIcon?.(forecastData) || '🤖';
-      const version = forecastData.mlVersion || 'v2.0';
       const responseTime = forecastData.metadata?.responseTime || 'N/A';
+      const current = window.dataTransformer?.extractCurrentConditions?.(forecastData);
+      const source = current?.mlModelUsed === true || current?.predictionSource === 'ml-model'
+        ? 'ML forecast'
+        : 'Estimated forecast';
       document.getElementById('apiStatus').innerHTML =
-        `${mlIcon} Powered by Kaayko ML ${version} &nbsp;|&nbsp; Response: ${responseTime}`;
+        `${mlIcon} ${source} &nbsp;|&nbsp; ${responseTime}`;
     }
 
     // ── Main load logic ─────────────────────────────────────────────────────
@@ -314,7 +499,9 @@
         }
 
         // 4. Render what we have
+        window.__kaaykoCurrentData = currentData;
         if (currentData) renderHero(currentData, forecastData, spot);
+        renderTripBriefing(currentData, forecastData);
         if (forecastData) renderSafetyWarnings(forecastData);
         if (forecastData) renderHeatmap(forecastData);
         if (forecastData?.location) renderLocationInfo(forecastData.location, spot);
@@ -330,17 +517,36 @@
       }
     }
 
-    // Back navigation
-    document.getElementById('backBtn').addEventListener('click', () => {
-      if (document.referrer && document.referrer.includes(window.location.hostname)) {
-        history.back();
-      } else {
-        window.location.href = '/paddlingout.html';
-      }
-    });
-
     // Retry
     document.getElementById('retryBtn').addEventListener('click', loadForecast);
+
+    // Dismiss drawers / popovers when clicking outside them
+    document.addEventListener('click', function (e) {
+      // Close alert drawer expand if open and click is outside
+      const alertDrawer = document.getElementById('forecastAlertDrawer');
+      if (alertDrawer && !alertDrawer.hidden && !alertDrawer.contains(e.target)) {
+        const banner = alertDrawer.querySelector('.forecast-alert-banner.is-open');
+        if (banner) {
+          banner.classList.remove('is-open');
+          banner.classList.add('is-closed');
+          banner.querySelector('.alert-summary')?.setAttribute('aria-expanded', 'false');
+          const details = banner.querySelector('.alert-details');
+          if (details) details.hidden = true;
+        }
+      }
+
+      // Clear heatmap selection / popover when clicking outside heatmap
+      const heatmapContainer = document.getElementById('heatmapContainer');
+      if (heatmapContainer && !heatmapContainer.contains(e.target)) {
+        heatmapContainer.querySelectorAll('.heatmap-day').forEach(day => {
+          day.classList.remove('is-previewing', 'has-selection');
+          day.querySelectorAll('.heatmap-segment').forEach(seg => {
+            seg.classList.remove('is-selected', 'is-highlighted');
+          });
+          day.querySelector('.heatmap-popover')?.querySelector('.popover-hourly')?.remove();
+        });
+      }
+    });
 
     // Boot
     loadForecast();
