@@ -492,8 +492,13 @@ footer {
   font-family:var(--font-sans); font-size:0.65rem;
   letter-spacing:0.08em; text-transform:uppercase; color:rgba(237,232,223,0.56);
 }
-.khm-legend span { display:inline-flex; align-items:center; gap:0.3rem; }
-.khm-dot { display:inline-block; width:0.5rem; height:0.5rem; border-radius:50%; flex-shrink:0; }
+.khm-legend span { display:inline-flex; align-items:center; gap:0.35rem; }
+.khm-dot {
+  display: inline-block !important;
+  width: 0.52rem; height: 0.52rem;
+  border-radius: 50%; flex-shrink: 0;
+  font-style: normal; /* <i> reset */
+}
 
 /* Day container */
 .khm-day { display:flex; flex-direction:column; gap:0.3rem; }
@@ -513,16 +518,17 @@ footer {
   letter-spacing:0.1em; color:rgba(237,232,223,0.40);
 }
 
-/* "★ Best" floating above the bar, positioned via JS left% */
+/* "★ Best" — positioned relative to the bar-shell, not the label row */
 .khm-best-tag {
-  position:absolute;
-  bottom:0; /* sits on the label baseline */
-  transform:translateX(-50%);
-  font-family:var(--font-sans); font-size:0.56rem;
-  letter-spacing:0.1em; text-transform:uppercase;
-  color:var(--gold-bright);
-  white-space:nowrap;
-  pointer-events:none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-left: auto;         /* push to far right of the label flex row */
+  font-family: var(--font-sans); font-size: 0.6rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--gold-bright);
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 /* Bar shell: holds the bar + tick axis */
@@ -611,13 +617,23 @@ footer {
 /* Invisible hit zones, one per hour */
 .khm-hit {
   position:absolute; top:0; bottom:0;
-  background:transparent; border:none;
-  cursor:pointer; z-index:6;
-  transition:background 0.12s ease;
-  -webkit-tap-highlight-color:transparent;
+  /* Reset ALL browser button defaults — critical for Safari */
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  outline: none;
+  cursor: pointer;
+  z-index: 6;
+  transition: background 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 .khm-hit:hover:not([disabled]) { background:rgba(255,255,255,0.07); }
-.khm-hit.is-active             { background:rgba(255,255,255,0.10); }
+.khm-hit.is-active             { background:rgba(255,255,255,0.11); }
+.khm-hit[disabled]             { cursor:default; pointer-events:none; }
 
 /* Tick labels below bar */
 .khm-ticks {
