@@ -463,15 +463,17 @@ html.dark-theme .custom-location-btn:hover {
  6) Dark-Mode Overrides (applied when <html class="dark-theme">)
 ─────────────────────────────────────────────────────────────────────────────*/
 html.dark-theme {
-  --color-body-bg:        #111;
-  --color-header-bg:      #111;
-  --color-modal-overlay:  rgba(0,0,0,0.8);
-  --color-text-base:      #ccc;
+  --color-body-bg:        #080808;
+  --color-header-bg:      #080808;
+  --color-modal-overlay:  rgba(0,0,0,0.88);
+  --color-text-base:      #ede8df;
   --color-text-subtle:    #999;
-  --color-text-secondary:#777;
-  --color-bright-ivory:   #fffff0;
-  --color-accent:         #FFD700;
-  --color-card-bg:        #1c1c1c;
+  --color-text-secondary: #777;
+  --color-bright-ivory:   #ede8df;
+  --color-accent:         #b5935a;
+  --color-card-bg:        #10110d;
+  /* Kaayko brand gold — replaces FFD700 in dark mode */
+  --color-brand-gold:     #b5935a;
 }
 html.dark-theme,
 html.dark-theme body {
@@ -479,14 +481,15 @@ html.dark-theme body {
   color: var(--color-text-base);
 }
 html.dark-theme .header {
-  background: linear-gradient(135deg, #1f1f1f 0%, #111 100%);
-  color: #fff;
+  background: #080808;
+  border-bottom: 1px solid rgba(181,147,90,0.14);
+  color: #ede8df;
 }
 html.dark-theme .header-title {
-  color: #fff;
+  color: #ede8df;
 }
 html.dark-theme .header-subtitle {
-  color: var(--color-brand-gold);
+  color: #b5935a;
 }
 html.dark-theme .top-menu a {
   color: #fff;

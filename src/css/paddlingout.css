@@ -601,3 +601,16 @@ footer {
 
   .lake-name { font-size: 1.2rem; }
 }
+
+/* ── 14. Page-specific header overrides ─────────────────────────────────── */
+
+/* Remove hamburger + mobile overlay — nav handled by cards/links */
+.fab-menu,
+.mobile-menu-overlay {
+  display: none !important;
+}
+
+/* Theme toggle also not needed on this always-dark page */
+.theme-toggle-icon {
+  display: none !important;
+}
