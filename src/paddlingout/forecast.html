@@ -324,6 +324,90 @@
       });
     }
 
+    // ── Weather stats graphical bars ────────────────────────────────────────
+    function enhanceWeatherStats() {
+      const container = document.getElementById('ratingHeroContainer');
+      if (!container) return;
+      const stats = container.querySelectorAll('.weather-stat');
+      if (!stats.length) return;
+
+      const COMPASS = {N:0,NNE:22,NE:45,ENE:67,E:90,ESE:112,SE:135,SSE:157,
+                       S:180,SSW:202,SW:225,WSW:247,W:270,WNW:292,NW:315,NNW:337};
+
+      function parseBar(label, valueText) {
+        label = label.toLowerCase();
+        const num = parseFloat(valueText);
+        if (isNaN(num)) return null;
+
+        if (label.includes('wind dir')) {
+          const deg = COMPASS[valueText.trim().toUpperCase()] ?? 0;
+          return { type: 'compass', deg };
+        }
+        if (label.includes('wind')) {
+          // normalize to km/h
+          const v = valueText.includes('mph') ? num * 1.60934 : num;
+          return { type: 'bar', pct: Math.min(100, (v / 40) * 100),
+            color: v <= 15 ? '#4CAF50' : v <= 25 ? '#FFA500' : '#FF2D20' };
+        }
+        if (label.includes('uv')) {
+          return { type: 'bar', pct: Math.min(100, (num / 11) * 100),
+            color: num <= 3 ? '#4CAF50' : num <= 6 ? '#FFA500' : '#FF2D20' };
+        }
+        if (label.includes('water') || label.includes('air')) {
+          const c = valueText.includes('°F') ? (num - 32) * 5/9 : num;
+          const pct = Math.min(100, Math.max(0, ((c + 10) / 50) * 100));
+          const isWater = label.includes('water');
+          const color = isWater
+            ? (c >= 18 && c <= 28 ? '#4CAF50' : c >= 12 ? '#FFA500' : '#FF2D20')
+            : (c >= 15 && c <= 30 ? '#4CAF50' : c >= 8  ? '#FFA500' : '#FF2D20');
+          return { type: 'bar', pct, color };
+        }
+        if (label.includes('cloud')) {
+          return { type: 'bar', pct: Math.min(100, num),
+            color: num <= 30 ? '#4CAF50' : num <= 70 ? '#FFA500' : '#b5935a' };
+        }
+        if (label.includes('humidity')) {
+          return { type: 'bar', pct: Math.min(100, num),
+            color: num >= 30 && num <= 70 ? '#4CAF50' : '#FFA500' };
+        }
+        if (label.includes('wave')) {
+          const ft = valueText.toLowerCase().includes(' m') ? num * 3.28 : num;
+          return { type: 'bar', pct: Math.min(100, (ft / 6) * 100),
+            color: ft <= 1 ? '#4CAF50' : ft <= 2.5 ? '#FFA500' : '#FF2D20' };
+        }
+        return null;
+      }
+
+      stats.forEach((stat, i) => {
+        const labelEl = stat.querySelector('.weather-label');
+        const valueEl = stat.querySelector('.weather-value');
+        if (!labelEl || !valueEl) return;
+
+        stat.querySelector('.stat-bar-track')?.remove();
+        stat.querySelector('.stat-compass')?.remove();
+
+        const result = parseBar(labelEl.textContent.trim(), valueEl.textContent.trim());
+        if (!result) return;
+
+        if (result.type === 'compass') {
+          const el = document.createElement('div');
+          el.className = 'stat-compass';
+          el.innerHTML = `<span class="stat-compass-arrow" style="transform:rotate(${result.deg}deg)">↑</span>`;
+          stat.appendChild(el);
+        } else {
+          const track = document.createElement('div');
+          track.className = 'stat-bar-track';
+          const fill = document.createElement('div');
+          fill.className = 'stat-bar-fill';
+          fill.style.cssText = `width:0;background:${result.color};box-shadow:0 0 8px ${result.color}90`;
+          track.appendChild(fill);
+          stat.appendChild(track);
+          // Staggered animate-in
+          setTimeout(() => { fill.style.width = result.pct + '%'; }, 120 + i * 70);
+        }
+      });
+    }
+
     // ── Component renderers ─────────────────────────────────────────────────
     function renderHero(currentData, forecastData, spot) {
       if (!currentData?.paddleScore) return;
@@ -357,6 +441,14 @@
         };
         const element = ratingHero.render(rating, interpretation, weather, forecastData, spot?.id || null);
         container.appendChild(element);
+        // Inject graphical bars after render
+        requestAnimationFrame(() => {
+          enhanceWeatherStats();
+          // Re-run when unit toggle fires (°C↔°F switch)
+          container.querySelectorAll('.units-btn').forEach(btn => {
+            btn.addEventListener('click', () => setTimeout(enhanceWeatherStats, 60));
+          });
+        });
       } catch (err) { console.error('RatingHero error:', err); }
     }
 
@@ -467,13 +559,11 @@
           <div class="khm-day" data-day="${di}">
             <div class="khm-day-label">
               <strong>${primary}</strong><span>${secondary}</span>
-              ${bestPct !== null ? `<span class="khm-best-tag">★ Best window</span>` : ''}
             </div>
             <div class="khm-bar-shell">
               <div class="khm-bar" data-day="${di}" style="background:${gradient}">
                 <div class="khm-gloss" aria-hidden="true"></div>
                 ${nowPct !== null ? `<div class="khm-now" style="left:${nowPct}%" aria-label="Now"><span>NOW</span></div>` : ''}
-                ${bestPct !== null ? `<div class="khm-best-line" style="left:${bestPct}%" aria-hidden="true"></div>` : ''}
                 <div class="khm-cursor" aria-hidden="true"></div>
                 ${hits}
               </div>
