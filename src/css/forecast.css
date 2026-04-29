@@ -1024,9 +1024,15 @@ footer {
   .forecast-body {
     display: grid;
     grid-template-columns: 5fr 7fr;
-    gap: 3rem;
+    grid-template-rows: auto auto;
+    gap: 3rem 3rem;
     align-items: start;
   }
+  /* Explicit placement: left col + regional info stack in col 1;
+     heatmap spans both rows in col 2 */
+  .forecast-col-left  { grid-column: 1; grid-row: 1; }
+  .forecast-col-right { grid-column: 2; grid-row: 1 / 3; }
+  #locationInfo        { grid-column: 1; grid-row: 2; }
 }
 
 .forecast-col-left,
@@ -1047,13 +1053,7 @@ footer {
   padding: 0 !important;
 }
 
-/* ── 23. Regional info — full-width on mobile, left-col on desktop ──────── */
-/* On mobile the columns stack (left → right). #locationInfo sits at the    */
-/* bottom of the left col, naturally above the heatmap col. That's fine.    */
-/* On desktop it's pinned to the bottom of the left flex column.            */
-@media (max-width: 899px) {
-  /* Pull it out of the left-col gap flow so it sits flush below warnings   */
-  #locationInfo {
-    margin-top: 0;
-  }
-}
+/* ── 23. Regional info placement ───────────────────────────────────────────
+   #locationInfo is a direct child of .forecast-body.
+   Desktop: grid-placed bottom-left (col 1, row 2) — see section 21 grid.
+   Mobile:  flex stack — naturally last, below both columns (heatmap above). */
