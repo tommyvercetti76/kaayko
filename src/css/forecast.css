@@ -390,6 +390,83 @@ footer {
     inset 0 1px 0 rgba(217,189,123,0.10) !important;
 }
 
+/* ── 12b. RatingHero weather stat refinement ────────────────────────────── */
+/*
+   Drop the circular text badges (AIR/WND etc.) — they read as clipart.
+   Replace with: large Cormorant Garamond values, gold micro-labels, clean dividers.
+*/
+
+/* Hide the circular abbreviation badges entirely */
+#ratingHeroContainer .weather-icon {
+  display: none !important;
+}
+
+/* Each stat cell: column-centred, no border-radius noise */
+#ratingHeroContainer .weather-stat {
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  gap: 0.22rem !important;
+  padding: 0.85rem 0.5rem !important;
+  border-radius: 0 !important;
+  min-height: 72px !important;
+}
+
+/* Elegant serif value — big, readable, confident */
+#ratingHeroContainer .weather-value {
+  font-family: 'Cormorant Garamond', Georgia, serif !important;
+  font-size: 1.3rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
+  line-height: 1 !important;
+  color: var(--fg) !important;
+}
+
+/* Gold micro-label — whisper, not shout */
+#ratingHeroContainer .weather-label {
+  font-family: var(--font-sans) !important;
+  font-size: 0.56rem !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase !important;
+  color: var(--gold) !important;
+  opacity: 1 !important;
+}
+
+/* Lighten the grid borders to hairlines */
+#ratingHeroContainer .core-weather-inline {
+  background: rgba(255,255,255,0.012) !important;
+  border: 1px solid rgba(181,147,90,0.16) !important;
+}
+#ratingHeroContainer .weather-stat {
+  border-right-color:  rgba(181,147,90,0.10) !important;
+  border-bottom-color: rgba(181,147,90,0.10) !important;
+}
+
+/* Unit toggle: match brand */
+#ratingHeroContainer .units-btn.active {
+  background: rgba(181,147,90,0.18) !important;
+  border-color: rgba(217,189,123,0.52) !important;
+  color: var(--gold-bright) !important;
+}
+
+/* Mobile: keep 2-col but same style */
+@media (max-width: 780px) {
+  #ratingHeroContainer .weather-stat {
+    min-height: 62px !important;
+    flex-direction: row !important;
+    text-align: left !important;
+    align-items: center !important;
+    padding: 0.65rem 0.75rem !important;
+  }
+  #ratingHeroContainer .weather-value {
+    font-size: 1.15rem !important;
+  }
+  #ratingHeroContainer .weather-label {
+    font-size: 0.52rem !important;
+  }
+}
+
 /* ── 13. Safety warnings row ─────────────────────────────────────────────── */
 .forecast-warnings-row {
   display: none;
