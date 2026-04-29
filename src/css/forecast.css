@@ -174,35 +174,7 @@ footer {
 }
 
 /* Kaayko · Forecast brand row above lake name */
-.forecast-brand-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
-  margin-bottom: 0.65rem;
-}
-
-.forecast-brand-eyebrow {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 0.82rem;
-  font-style: italic;
-  letter-spacing: 0.26em;
-  color: var(--gold);
-  opacity: 0.78;
-}
-
-.forecast-brand-divider {
-  color: rgba(181,147,90,0.4);
-  font-size: 0.75rem;
-}
-
-.forecast-brand-sub {
-  font-family: var(--font-sans);
-  font-size: 0.65rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--gold);
-  opacity: 0.56;
-}
+/* .forecast-brand-row removed — header now shows lake name + back arrow only */
 .forecast-page-title { flex: 1; }
 .forecast-page-title h2 {
   margin: 0 0 0.2rem;
@@ -1012,8 +984,14 @@ footer {
 }
 
 /* ── 22. Heatmap heading — remove to reclaim vertical space ─────────────── */
-.heatmap-header {
+.heatmap-header,
+.heatmap-new-container .heatmap-header {
   display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 /* ── 23. Regional info — full-width on mobile, left-col on desktop ──────── */
