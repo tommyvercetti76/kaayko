@@ -1010,3 +1010,19 @@ footer {
   flex-direction: column;
   gap: 1.25rem;
 }
+
+/* ── 22. Heatmap heading — remove to reclaim vertical space ─────────────── */
+.heatmap-header {
+  display: none !important;
+}
+
+/* ── 23. Regional info — full-width on mobile, left-col on desktop ──────── */
+/* On mobile the columns stack (left → right). #locationInfo sits at the    */
+/* bottom of the left col, naturally above the heatmap col. That's fine.    */
+/* On desktop it's pinned to the bottom of the left flex column.            */
+@media (max-width: 899px) {
+  /* Pull it out of the left-col gap flow so it sits flush below warnings   */
+  #locationInfo {
+    margin-top: 0;
+  }
+}
