@@ -241,8 +241,8 @@
       opacity: 0;
       pointer-events: none;
       text-transform: lowercase;
-      /* Delay matches seam finish (~880ms) so both arrive together */
-      transition: opacity 480ms ease-out 680ms, top 440ms var(--ease), left 440ms var(--ease);
+      /* Fire exactly when seam completes: 120ms delay + 760ms draw = 880ms */
+      transition: opacity 300ms ease-out 880ms, top 440ms var(--ease), left 440ms var(--ease);
       white-space: nowrap;
     }
 
