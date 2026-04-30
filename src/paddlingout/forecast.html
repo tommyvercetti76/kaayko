@@ -67,7 +67,7 @@
 
   <!-- HERO: full-viewport-width, lives outside <main> max-width container -->
   <div class="forecast-page-header">
-    <a class="forecast-back-btn" href="/paddlingout" aria-label="Back">←</a>
+    <a class="forecast-back-btn" href="/paddlingout" aria-label="Back" id="forecastBackBtn">←</a>
     <div class="forecast-page-title" id="forecastPageTitle">
       <h2 id="forecastLakeName">Loading…</h2>
       <p id="forecastLakeLocation"></p>
@@ -877,6 +877,25 @@
 
     // Boot
     loadForecast();
+  </script>
+
+  <!-- Smart back navigation: returns to wherever user came from -->
+  <script>
+    (function () {
+      const btn = document.getElementById('forecastBackBtn');
+      if (!btn) return;
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        // If there's real history to go back to (user navigated here from within the site),
+        // use browser back so search results, main grid, etc. are preserved.
+        // Fall back to /paddlingout for direct links / bookmarks.
+        if (window.history.length > 1 && document.referrer && document.referrer.includes(window.location.hostname)) {
+          window.history.back();
+        } else {
+          window.location.href = '/paddlingout';
+        }
+      });
+    })();
   </script>
 
   <!-- Header scroll hide/show -->
