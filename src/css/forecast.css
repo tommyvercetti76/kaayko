@@ -126,13 +126,13 @@ footer {
 /* storestyle.css gives <main> side padding — kill it for this page */
 main.forecast-main {
   padding: 0 0 4rem !important;
+  width: 100% !important;
 }
 
 .forecast-main {
   position: relative;
   z-index: 1;
-  max-width: 1440px;
-  margin: 0 auto;
+  width: 100%;
   padding: 0 0 4rem;
   display: flex;
   flex-direction: column;
