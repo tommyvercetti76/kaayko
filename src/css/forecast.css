@@ -965,11 +965,7 @@ main.forecast-main {
   gap: 1.25rem;
 }
 
-/* ── 22. Heatmap heading — keep eyebrow, remove title ───────────────────── */
-.heatmap-title,
-.heatmap-new-container .heatmap-title {
-  display: none !important;
-}
+
 
 /* ── 23. Regional info placement ───────────────────────────────────────────
    #locationInfo is a direct child of .forecast-body.
