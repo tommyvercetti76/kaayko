@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html lang="en" prefix="og: http://ogp.me/ns#">
+<html lang="en" prefix="og: http://ogp.me/ns#" class="dark-theme">
 <head>
   <script src="/js/prod-config.js"></script>
+  <script>document.documentElement.classList.add('dark-theme');</script>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -98,18 +99,90 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="dns-prefetch" href="https://api-vwcc5j4qda-uc.a.run.app">
 
-  <link rel="stylesheet" href="/css/storestyle.css"/>
-  <link rel="stylesheet" href="/css/header.css"/>
-  <link rel="stylesheet" href="/css/advancedModal.css"/>
-  <link rel="stylesheet" href="/js/components/RatingHero.css"/>
-  <link rel="stylesheet" href="/js/components/SafetyWarnings.css"/>
-  <link rel="stylesheet" href="/js/components/Heatmap.css"/>
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
 
   <style>
-    .search-page {
+    /* ── Brand tokens (mirrors paddlingout.css) ── */
+    :root {
+      --bg:          #080808;
+      --panel-a:     #0d0c0a;
+      --fg:          #ede8df;
+      --muted:       rgba(237,232,223,0.58);
+      --gold:        #b5935a;
+      --gold-bright: #d9bd7b;
+      --line:        rgba(181,147,90,0.74);
+      --font-serif:  'Cormorant Garamond', Georgia, serif;
+      --font-sans:   'Josefin Sans', Arial, sans-serif;
+      --ease:        cubic-bezier(0.76, 0, 0.24, 1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-serif);
       min-height: 100vh;
-      padding: 16px 16px 60px;
+    }
+
+    /* Hide generic shared header — we use po-page-header */
+    .header { display: none !important; }
+    .theme-toggle-icon { display: none !important; }
+
+    /* ── In-page brand bar (mirrors paddlingout.css) ── */
+    .po-page-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 2rem 2rem 1.25rem;
+      border-bottom: 1px solid rgba(181,147,90,0.18);
+    }
+    .po-brand { display: flex; flex-direction: column; gap: 0.2rem; }
+    .po-eyebrow {
+      font-family: var(--font-serif);
+      font-size: 0.78rem;
+      font-style: italic;
+      letter-spacing: 0.28em;
+      color: var(--gold);
+      opacity: 0.82;
+      text-transform: lowercase;
+    }
+    .po-title {
+      font-family: var(--font-sans);
+      font-size: clamp(1.55rem, 4vw, 2.1rem);
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold-bright);
+      line-height: 1;
+    }
+    .po-back-btn {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      border: 1px solid rgba(181,147,90,0.36);
+      border-radius: 50%;
+      background: rgba(181,147,90,0.08);
+      color: var(--gold);
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s ease, border-color 0.2s ease;
+      margin-bottom: 0.15rem;
+    }
+    .po-back-btn:hover {
+      background: rgba(181,147,90,0.18);
+      border-color: var(--gold);
+    }
+
+    /* ── Search page layout ── */
+    main.search-page {
+      padding: 2rem 2rem 4rem;
       max-width: 680px;
       margin: 0 auto;
     }
@@ -121,165 +194,192 @@
       gap: 8px;
       margin-bottom: 12px;
     }
-    .search-bar-wrap { position: relative; }
+    .search-bar-wrap { position: relative; width: 100%; }
     .search-input {
       width: 100%;
       padding: 14px 44px 14px 44px;
-      background: rgba(255,255,255,0.06);
-      border: 1.5px solid rgba(212,175,55,0.3);
+      background: rgba(181,147,90,0.06);
+      border: 1.5px solid rgba(181,147,90,0.28);
       border-radius: 12px;
-      color: #fff;
-      font-family: 'Josefin_Light', Arial, sans-serif;
+      color: var(--fg);
+      font-family: var(--font-sans);
       font-size: 15px;
       outline: none;
-      box-sizing: border-box;
       transition: border-color 0.2s, box-shadow 0.2s;
     }
-    html:not(.dark-theme) .search-input { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.15); color: #111; }
-    .search-input:focus { border-color: #d4af37; box-shadow: 0 0 0 3px rgba(212,175,55,0.1); }
-    .search-input::placeholder { color: #555; }
-    html:not(.dark-theme) .search-input::placeholder { color: #999; }
+    .search-input:focus {
+      border-color: var(--gold-bright);
+      box-shadow: 0 0 0 3px rgba(181,147,90,0.12);
+    }
+    .search-input::placeholder { color: rgba(237,232,223,0.3); }
 
     .search-icon-left {
       position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
-      color: #d4af37; font-size: 20px; pointer-events: none;
+      color: var(--gold); font-size: 20px; pointer-events: none;
     }
     .search-clear-btn {
       position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-      background: none; border: none; color: #555; cursor: pointer;
+      background: none; border: none; color: var(--muted); cursor: pointer;
       font-size: 18px; padding: 4px; display: none;
     }
     .search-clear-btn.visible { display: block; }
 
     .btn-gps {
       padding: 0 16px;
-      background: rgba(212,175,55,0.1);
-      border: 1.5px solid rgba(212,175,55,0.3);
+      background: rgba(181,147,90,0.08);
+      border: 1.5px solid rgba(181,147,90,0.28);
       border-radius: 12px;
-      color: #d4af37;
+      color: var(--gold);
       font-size: 20px;
       cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       transition: background 0.2s;
       flex-shrink: 0;
     }
-    .btn-gps:hover { background: rgba(212,175,55,0.2); }
+    .btn-gps:hover { background: rgba(181,147,90,0.18); border-color: var(--gold); }
     .btn-gps.loading { animation: gps-pulse 1s ease-in-out infinite; }
     @keyframes gps-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
 
     /* ── Status ── */
     .search-status {
-      font-family: 'Josefin_Light', Arial, sans-serif;
-      font-size: 12px; color: #666;
+      font-family: var(--font-sans);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      color: var(--muted);
       padding: 0 2px 10px;
       min-height: 20px;
     }
     .search-status.error   { color: #f87171; }
-    .search-status.loading { color: #d4af37; }
+    .search-status.loading { color: var(--gold); }
 
-    /* ── Popular spots ── */
-    .popular-section { margin-bottom: 20px; }
+    /* ── Popular chips ── */
+    .popular-section { margin-bottom: 24px; }
     .popular-label {
-      font-family: 'Josefin_Bold', Arial, sans-serif;
-      font-size: 11px; color: #555;
-      letter-spacing: 1px; text-transform: uppercase;
-      margin-bottom: 10px;
+      font-family: var(--font-sans);
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
     }
-    .popular-chips {
-      display: flex; flex-wrap: wrap; gap: 8px;
-    }
+    .popular-chips { display: flex; flex-wrap: wrap; gap: 8px; }
     .popular-chip {
-      font-family: 'Josefin_Light', Arial, sans-serif;
-      font-size: 13px;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      letter-spacing: 0.04em;
       padding: 7px 13px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 20px;
-      color: #ccc;
+      background: rgba(181,147,90,0.06);
+      border: 1px solid rgba(181,147,90,0.2);
+      border-radius: 50px;
+      color: var(--muted);
       cursor: pointer;
-      transition: all 0.15s;
+      transition: all 0.2s var(--ease);
       display: flex; align-items: center; gap: 6px;
     }
-    html:not(.dark-theme) .popular-chip { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.1); color: #444; }
     .popular-chip:hover {
-      border-color: rgba(212,175,55,0.4);
-      background: rgba(212,175,55,0.06);
-      color: #d4af37;
+      border-color: var(--gold);
+      background: rgba(181,147,90,0.12);
+      color: var(--gold-bright);
     }
-    .popular-chip .chip-icon { font-size: 14px; opacity: 0.6; }
+    .popular-chip .chip-icon { font-size: 14px; opacity: 0.7; }
 
     /* ── Results header ── */
     .results-header {
       display: flex; align-items: baseline; justify-content: space-between;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       opacity: 0; transition: opacity 0.3s;
     }
     .results-header.visible { opacity: 1; }
-    .results-count { font-family: 'Josefin_Bold', Arial, sans-serif; font-size: 13px; color: #d4af37; }
-    .results-hint  { font-family: 'Josefin_Light', Arial, sans-serif; font-size: 11px; color: #555; }
+    .results-count {
+      font-family: var(--font-sans);
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .results-hint {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
 
     /* ── Water card ── */
     .water-card {
       display: flex; align-items: center; gap: 12px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.07);
+      background: linear-gradient(135deg, rgba(13,12,10,0.9), rgba(16,17,13,0.9));
+      border: 1px solid rgba(181,147,90,0.16);
       border-radius: 12px;
       padding: 13px 14px;
       margin-bottom: 8px;
       cursor: pointer;
-      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+      transition: border-color 0.25s, background 0.25s, transform 0.2s var(--ease);
       opacity: 0; transform: translateY(6px);
       animation: card-in 0.25s ease forwards;
     }
-    html:not(.dark-theme) .water-card { background: rgba(0,0,0,0.025); border-color: rgba(0,0,0,0.07); }
-    .water-card:hover { border-color: rgba(212,175,55,0.3); background: rgba(212,175,55,0.04); transform: translateY(-1px); }
+    .water-card:hover {
+      border-color: var(--gold);
+      background: linear-gradient(135deg, rgba(181,147,90,0.06), rgba(181,147,90,0.03));
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 40px rgba(181,147,90,0.06);
+    }
     @keyframes card-in { to { opacity: 1; transform: translateY(0); } }
 
     /* Skeleton */
     .water-card.skeleton { cursor: default; pointer-events: none; }
-    .water-card.skeleton:hover { transform: none; border-color: rgba(255,255,255,0.07); }
+    .water-card.skeleton:hover { transform: none; border-color: rgba(181,147,90,0.16); box-shadow: none; }
     .skel {
       height: 11px; border-radius: 5px;
-      background: rgba(255,255,255,0.06);
+      background: rgba(181,147,90,0.08);
       animation: skel-pulse 1.4s ease-in-out infinite;
     }
-    html:not(.dark-theme) .skel { background: rgba(0,0,0,0.06); }
     @keyframes skel-pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 0.9; } }
 
     .water-card-info { flex: 1; min-width: 0; }
     .water-card-name {
-      font-family: 'Josefin_Bold', Arial, sans-serif; font-size: 15px;
-      color: #fff; margin: 0 0 5px;
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      color: var(--gold-bright);
+      margin: 0 0 5px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    html:not(.dark-theme) .water-card-name { color: #111; }
     .water-card-meta {
-      font-family: 'Josefin_Light', Arial, sans-serif; font-size: 12px; color: #777;
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 0.85rem;
+      color: var(--muted);
       display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
     }
     .type-chip {
-      font-family: 'Josefin_Bold', Arial, sans-serif; font-size: 10px;
-      padding: 2px 6px; border-radius: 8px;
-      background: rgba(212,175,55,0.1); color: #d4af37;
-      border: 1px solid rgba(212,175,55,0.15);
+      font-family: var(--font-sans);
+      font-style: normal;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 2px 7px; border-radius: 50px;
+      background: rgba(181,147,90,0.1);
+      color: var(--gold);
+      border: 1px solid rgba(181,147,90,0.2);
     }
 
     /* Score ring */
     .score-ring-wrap { position: relative; width: 48px; height: 48px; flex-shrink: 0; }
     .score-ring-svg  { width: 48px; height: 48px; display: block; }
-    .score-track { fill: none; stroke: rgba(255,255,255,0.15); stroke-width: 4; }  /* dark */
-    html:not(.dark-theme) .score-track { stroke: rgba(0,0,0,0.12); }              /* light */
+    .score-track { fill: none; stroke: rgba(181,147,90,0.12); stroke-width: 4; }
     .score-fill  { fill: none; stroke-width: 4; stroke-linecap: round; }
     .score-label {
       position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      font-family: 'Josefin_Bold', Arial, sans-serif;
+      font-family: var(--font-sans);
       font-size: 11px; font-weight: 700; pointer-events: none;
+      color: var(--fg);
     }
     .score-spinner {
       width: 48px; height: 48px;
-      border: 3px solid rgba(212,175,55,0.1);
-      border-top-color: rgba(212,175,55,0.4);
+      border: 3px solid rgba(181,147,90,0.1);
+      border-top-color: rgba(181,147,90,0.5);
       border-radius: 50%;
       animation: spin 0.9s linear infinite;
       flex-shrink: 0;
@@ -289,46 +389,61 @@
     /* Map button */
     .btn-map {
       width: 34px; height: 34px; background: none;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 8px; color: #666;
+      border: 1px solid rgba(181,147,90,0.18);
+      border-radius: 8px; color: var(--muted);
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; flex-shrink: 0; font-size: 18px;
-      transition: border-color 0.15s, color 0.15s;
+      transition: border-color 0.2s, color 0.2s;
     }
-    .btn-map:hover { border-color: #d4af37; color: #d4af37; }
-    html:not(.dark-theme) .btn-map { border-color: rgba(0,0,0,0.1); color: #888; }
+    .btn-map:hover { border-color: var(--gold); color: var(--gold-bright); }
 
     /* Empty state */
     .empty-state {
-      text-align: center; padding: 32px 24px;
+      text-align: center; padding: 40px 24px;
       opacity: 0; animation: card-in 0.3s 0.1s ease forwards;
     }
-    .empty-state .mat { font-size: 40px; color: #444; margin-bottom: 10px; }
-    .empty-state h3 { font-family: 'Josefin_Bold', Arial,sans-serif; font-size: 17px; color: #d4af37; margin: 0 0 6px; }
-    .empty-state p  { font-family: 'Josefin_Light', Arial,sans-serif; font-size: 13px; color: #666; margin: 0; }
+    .empty-state .mat { font-size: 40px; color: rgba(181,147,90,0.3); margin-bottom: 12px; }
+    .empty-state h3 {
+      font-family: var(--font-sans); font-size: 1rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--gold); margin: 0 0 8px;
+    }
+    .empty-state p {
+      font-family: var(--font-serif); font-style: italic;
+      font-size: 0.95rem; color: var(--muted); margin: 0;
+    }
 
-    @media (max-width: 480px) {
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 2rem 2rem;
+      color: var(--muted);
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 0.82rem;
+      letter-spacing: 0.04em;
+      border-top: 1px solid rgba(181,147,90,0.12);
+      margin-top: 2rem;
+    }
+
+    @media (max-width: 600px) {
+      .po-page-header { padding: 1.4rem 1.1rem 1rem; }
+      .po-title { font-size: 1.4rem; }
+      main.search-page { padding: 1.5rem 1rem 4rem; }
       .btn-map { display: none; }
     }
   </style>
 </head>
 <body>
-  <header class="header">
-    <div class="header-top">
-      <div class="header-brand">
-        <a href="/paddlingout.html" style="text-decoration:none">
-          <h1 class="header-title">Kaayko</h1>
-          <p class="header-subtitle">Know Before You Go</p>
-        </a>
-      </div>
-      <nav class="top-menu"><ul></ul></nav>
-      <div class="header-controls">
-        <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode"></button>
-        <button class="fab-menu material-icons mobile-only" aria-label="Open Menu">menu</button>
-      </div>
+
+  <!-- IN-PAGE BRAND BAR (matches paddlingout.html) -->
+  <div class="po-page-header">
+    <div class="po-brand">
+      <span class="po-eyebrow">Paddling Out</span>
+      <h1 class="po-title">Search</h1>
     </div>
-    <div class="mobile-menu-overlay"><ul></ul></div>
-  </header>
+    <a class="po-back-btn" href="/paddlingout" aria-label="Back to Paddling Out">←</a>
+  </div>
 
   <main class="search-page">
 
@@ -371,7 +486,10 @@
 
   </main>
 
-  <script src="/js/header.js"></script>
+  <footer>
+    <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
+  </footer>
+
   <script src="/js/services/apiClient.js"></script>
   <script src="/js/services/dataTransformer.js"></script>
   <script src="/js/components/RatingHero.js"></script>
@@ -379,5 +497,11 @@
   <script src="/js/components/Heatmap.js"></script>
   <script src="/js/advancedModal.js"></script>
   <script src="/js/searchPage.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const y = document.getElementById('year');
+      if (y) y.textContent = new Date().getFullYear();
+    });
+  </script>
 </body>
 </html>
