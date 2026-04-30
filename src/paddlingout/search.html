@@ -438,11 +438,11 @@
 
   <!-- IN-PAGE BRAND BAR (matches paddlingout.html) -->
   <div class="po-page-header">
-    <div class="po-brand">
+    <a class="po-back-btn" href="/paddlingout" aria-label="Back to Paddling Out">←</a>
+    <div class="po-brand" style="text-align:right">
       <span class="po-eyebrow">Paddling Out</span>
       <h1 class="po-title">Search</h1>
     </div>
-    <a class="po-back-btn" href="/paddlingout" aria-label="Back to Paddling Out">←</a>
   </div>
 
   <main class="search-page">
@@ -492,10 +492,6 @@
 
   <script src="/js/services/apiClient.js"></script>
   <script src="/js/services/dataTransformer.js"></script>
-  <script src="/js/components/RatingHero.js"></script>
-  <script src="/js/components/SafetyWarnings.js"></script>
-  <script src="/js/components/Heatmap.js"></script>
-  <script src="/js/advancedModal.js"></script>
   <script src="/js/searchPage.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {

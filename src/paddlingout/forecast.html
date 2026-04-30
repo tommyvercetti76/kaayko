@@ -733,7 +733,9 @@
 
     // ── Main load logic ─────────────────────────────────────────────────────
     const params = new URLSearchParams(window.location.search);
-    const spotId = params.get('id');
+    const spotId    = params.get('id');
+    const customLat = params.get('lat');
+    const customLng = params.get('lng');
     let currentSpot = null;
 
     function showError() {
@@ -746,15 +748,32 @@
       document.getElementById('forecastError').style.display = 'none';
       document.getElementById('forecastContent').style.display = 'none';
 
-      if (!spotId) { showError(); return; }
+      if (!spotId && !(customLat && customLng)) { showError(); return; }
 
       const apiBase = getApiBase();
 
       try {
-        // 1. Fetch spot metadata
-        const spotRes = await fetch(`${apiBase}/paddlingOut/${encodeURIComponent(spotId)}`);
-        if (!spotRes.ok) throw new Error('Spot not found');
-        const spot = await spotRes.json();
+        let spot;
+
+        if (customLat && customLng) {
+          // ── Custom location from search page (no DB entry) ──────────────
+          const name = params.get('name') || 'Custom Location';
+          const type = params.get('type') || '';
+          spot = {
+            id: `custom_${customLat}_${customLng}`,
+            title: name,
+            subtitle: type,
+            isCustom: true,
+            location: { latitude: parseFloat(customLat), longitude: parseFloat(customLng) },
+            imgSrc: []
+          };
+        } else {
+          // ── Known spot from paddling-out DB ─────────────────────────────
+          const spotRes = await fetch(`${apiBase}/paddlingOut/${encodeURIComponent(spotId)}`);
+          if (!spotRes.ok) throw new Error('Spot not found');
+          spot = await spotRes.json();
+        }
+
         currentSpot = spot;
 
         // Update title + OG tags immediately so shares reflect the actual lake

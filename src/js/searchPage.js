@@ -248,15 +248,11 @@ async function fetchScore(lat, lng) {
   } catch { clearTimeout(tid); return null; }
 }
 
-// ── Open forecast modal ───────────────────────────────────────────────────
+// ── Navigate to forecast page ─────────────────────────────────────────────
 function openForecast(body) {
-  if (!window.advancedModal) return;
-  window.advancedModal.open({
-    title: body.name,
-    subtitle: `${body.type} · ${body.distanceMiles} mi away`,
-    isCustom: true,
-    location: { latitude: body.lat, longitude: body.lng }
-  });
+  const p = new URLSearchParams({ lat: body.lat, lng: body.lng, name: body.name });
+  if (body.type) p.set('type', body.type);
+  window.location.href = `/paddlingout/forecast?${p.toString()}`;
 }
 
 // ── Skeletons ─────────────────────────────────────────────────────────────
