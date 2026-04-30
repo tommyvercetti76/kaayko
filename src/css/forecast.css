@@ -81,20 +81,7 @@ html, body {
 }
 .theme-toggle-icon { display: none !important; }
 
-/* ── 4. Header ───────────────────────────────────────────────────────────── */
-.header {
-  background: rgba(8,8,8,0.94) !important;
-  backdrop-filter: blur(14px);
-  border-bottom: 1px solid var(--line-gold) !important;
-  transition: transform 0.38s var(--ease), opacity 0.38s ease;
-}
-.header-hidden {
-  transform: translateY(-100%) !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-}
-.header-title    { font-family: var(--font-sans) !important; color: var(--gold-bright) !important; }
-.header-subtitle { font-family: var(--font-sans) !important; color: var(--muted) !important; }
+/* ── 4. Header hidden — this page has its own hero ──────────────────────── */
 
 /* ── 5. Footer ───────────────────────────────────────────────────────────── */
 footer {

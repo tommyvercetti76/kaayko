@@ -14,8 +14,6 @@
 // API Configuration - Dynamic based on API client mode
 // const API_BASE = "https://api-vwcc5j4qda-uc.a.run.app"; // Production Functions URL
 // Now using dynamic API client instead
-const VIDEOS_DIR = "/assets";
-const HERO_VIDEOS = ["paddle2.mp4"];
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -24,27 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
   //──────────────────────────────────────────────────────────────────────────────
   const params     = new URLSearchParams(window.location.search);
   const spotId     = params.get("id");                         // if present → detail
-  const heroVideo  = document.getElementById("previewVideo");  // <video> element
-  const heroBanner = document.querySelector(".hero-banner");   // video wrapper
-  const container  = document.getElementById("cardsContainer");// cards container
-
-  //──────────────────────────────────────────────────────────────────────────────
-  // Section 2: Hide Hero Banner on Detail Pages
-  //──────────────────────────────────────────────────────────────────────────────
-  if (spotId && heroBanner) {
-    heroBanner.style.display = "none";
-  }
-
-  //──────────────────────────────────────────────────────────────────────────────
-  // Section 3: Autoplay Random Hero Video (List View Only)
-  //──────────────────────────────────────────────────────────────────────────────
-  if (!spotId && heroVideo) {
-    const choice = HERO_VIDEOS[Math.floor(Math.random() * HERO_VIDEOS.length)];
-    heroVideo.src = `${VIDEOS_DIR}/${choice}`;
-    heroVideo.play().catch(() => {
-      // Autoplay blocked by browser → user can manually click play
-    });
-  }
+  const container  = document.getElementById("cardsContainer");
 
   //──────────────────────────────────────────────────────────────────────────────
   // Section 4: Fetch & Render Spots (List vs Detail)
@@ -385,16 +363,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   //──────────────────────────────────────────────────────────────────────────────
-  // Section 9: Global Helpers → window.openYoutube & window.openLocation
-  //──────────────────────────────────────────────────────────────────────────────
-  window.openYoutube  = url => window.open(url, "_blank");
-  window.openLocation = (lat, lon) =>
-    window.open(`https://maps.google.com?q=${lat},${lon}`, "_blank");
-
-
-
-  //──────────────────────────────────────────────────────────────────────────────
-  // Section 10: Insert Current Year into Footer
+  // Section 9: Insert Current Year into Footer
   //──────────────────────────────────────────────────────────────────────────────
   const yEl = document.getElementById("year");
   if (yEl) yEl.textContent = new Date().getFullYear();
