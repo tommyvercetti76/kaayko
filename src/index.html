@@ -209,8 +209,14 @@
       top: 50%;
       z-index: 3;
       height: 1px;
-      /* Full solid line — mark sits above it on mobile, gap handled on desktop */
-      background: var(--line);
+      /* Gap in the centre so mark text sits ON the line, not crossed by it */
+      background: linear-gradient(
+        to right,
+        var(--line) 38%,
+        transparent 38%,
+        transparent 62%,
+        var(--line) 62%
+      );
       pointer-events: none;
       transform: scaleX(0);
       transform-origin: center;
@@ -226,8 +232,8 @@
       left: 50%;
       top: 50%;
       z-index: 4;
-      /* Float text just above the line — line reads as a baseline rule */
-      transform: translate(-50%, calc(-100% - 5px));
+      /* Centred on the seam — the gap in the line keeps it clean */
+      transform: translate(-50%, -50%);
       color: var(--gold);
       font-size: clamp(0.82rem, 2.2vw, 1.1rem);
       font-style: italic;
@@ -235,7 +241,8 @@
       opacity: 0;
       pointer-events: none;
       text-transform: lowercase;
-      transition: opacity 480ms ease-out 300ms, top 440ms var(--ease), left 440ms var(--ease);
+      /* Delay matches seam finish (~880ms) so both arrive together */
+      transition: opacity 480ms ease-out 680ms, top 440ms var(--ease), left 440ms var(--ease);
       white-space: nowrap;
     }
 
