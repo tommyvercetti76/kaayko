@@ -68,11 +68,10 @@
       <!-- ── Two-column desktop grid ───────────────────────────────────── -->
       <div class="forecast-body">
 
-        <!-- LEFT: Hero + alerts + warnings -->
+        <!-- LEFT: Hero + alerts -->
         <div class="forecast-col-left">
           <div id="ratingHeroContainer"></div>
           <div class="forecast-alert-drawer" id="forecastAlertDrawer"></div>
-          <div id="safetyWarningsContainer" class="forecast-warnings-row"></div>
         </div>
 
         <!-- RIGHT: Heatmap -->
@@ -98,7 +97,6 @@
   <!-- Scripts -->
   <script src="/js/header.js"></script>
   <script src="/js/components/RatingHero.js"></script>
-  <script src="/js/components/SafetyWarnings.js"></script>
   <script src="/js/components/Heatmap.js"></script>
   <script src="/js/services/apiClient.js"></script>
   <script src="/js/services/dataTransformer.js"></script>
@@ -458,13 +456,6 @@
       } catch (err) { console.error('RatingHero error:', err); }
     }
 
-    function renderSafetyWarnings(forecastData) {
-      const container = document.getElementById('safetyWarningsContainer');
-      if (!container) return;
-      container.innerHTML = '';
-      container.hidden = true;
-    }
-
     // ── Custom blended hourly heatmap ──────────────────────────────────────
     const KHM_HOURS  = [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];
     const KHM_SPAN   = KHM_HOURS[KHM_HOURS.length - 1] - KHM_HOURS[0]; // 14
@@ -784,7 +775,6 @@
         window.__kaaykoCurrentData = currentData;
         if (currentData) renderHero(currentData, forecastData, spot);
         renderTripBriefing(currentData, forecastData);
-        if (forecastData) renderSafetyWarnings(forecastData);
         if (forecastData) renderHourlyHeatmap(forecastData);
         if (forecastData?.location) renderLocationInfo(forecastData.location, spot);
         if (forecastData) renderApiStatus(forecastData);

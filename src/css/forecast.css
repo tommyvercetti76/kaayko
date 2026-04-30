@@ -323,8 +323,7 @@ main.forecast-main {
 }
 
 /* ── 11. Alert drawer ────────────────────────────────────────────────────── */
-.forecast-alert-drawer[hidden],
-.forecast-warnings-row[hidden] {
+.forecast-alert-drawer[hidden] {
   display: none !important;
 }
 
@@ -579,10 +578,6 @@ main.forecast-main {
   transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* ── 13. Safety warnings row ─────────────────────────────────────────────── */
-.forecast-warnings-row {
-  display: none;
-}
 
 /* ── 14. Heatmap ─────────────────────────────────────────────────────────── */
 #heatmapContainer {
@@ -909,87 +904,6 @@ main.forecast-main {
   .khm-panel-score { font-size:1.6rem; }
 }
 
-/* ── 19b. (old Heatmap.js component overrides — no longer active) ────────── */
-/*
-   Default Heatmap.css uses a 2-col grid (90px label | 1fr bar).
-   We override to a 1-col stacked layout so bars get 100% width.
-   Day label becomes a compact one-line header above each bar.
-*/
-.heatmap-day {
-  grid-template-columns: 1fr !important;
-  gap: 0.28rem !important;
-  align-items: stretch !important;
-}
-
-.day-label {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: baseline !important;
-  gap: 0.55rem !important;
-  min-height: unset !important;
-  border-left: none !important;
-  padding-left: 0 !important;
-}
-
-.day-label strong {
-  font-size: 0.7rem !important;
-  letter-spacing: 0.12em !important;
-  text-transform: uppercase !important;
-  color: rgba(237,232,223,0.92) !important;
-}
-
-.day-label span {
-  font-size: 0.62rem !important;
-  margin-top: 0 !important;
-  color: rgba(237,232,223,0.46) !important;
-  letter-spacing: 0.1em !important;
-}
-
-/* Time axis: remove the left offset that compensated for the label column */
-.heatmap-time-axis {
-  margin-left: 0 !important;
-}
-
-/* ── 20. (old Heatmap.js component overrides — no longer active) ─────────── */
-.heatmap-best-chip {
-  background: linear-gradient(135deg, rgba(24, 18, 6, 0.90), rgba(14, 11, 4, 0.84)) !important;
-  border: 1px solid rgba(181, 147, 90, 0.38) !important;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-.heatmap-best-chip:hover {
-  border-color: rgba(181, 147, 90, 0.70) !important;
-  box-shadow: 0 0 0 1px rgba(181,147,90,0.18);
-}
-.heatmap-best-chip strong {
-  color: var(--gold-bright) !important;
-}
-.heatmap-best-chip span,
-.heatmap-best-chip em {
-  color: var(--gold) !important;
-}
-
-/* ── 20. Heatmap popover hourly breakdown ──────────────────────────────── */
-.popover-hourly {
-  margin-top: 0.45rem;
-  padding-top: 0.4rem;
-  border-top: 1px solid rgba(181,147,90,0.22);
-  display: flex;
-  flex-direction: column;
-  gap: 0.18rem;
-}
-.popover-hour-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-family: var(--font-sans, 'Josefin Sans', sans-serif);
-  font-size: 0.67rem;
-  letter-spacing: 0.06em;
-  color: rgba(237,232,223,0.78);
-}
-.popover-hour-row strong {
-  color: var(--gold-bright, #d9bd7b);
-  font-weight: 600;
-}
 
 .amenities-list {
   display: flex;
