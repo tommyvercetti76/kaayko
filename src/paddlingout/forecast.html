@@ -1,22 +1,51 @@
 <!DOCTYPE html>
-<html lang="en" class="dark-theme">
+<html lang="en" prefix="og: http://ogp.me/ns#" class="dark-theme">
 <head>
   <script src="/js/prod-config.js"></script>
   <script>document.documentElement.classList.add('dark-theme');</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-  <title>Forecast | Kaayko</title>
-  <meta name="robots" content="noindex">
+  <!-- Title & robots: updated dynamically by JS when lake data loads -->
+  <title>Paddle Forecast | Kaayko Paddling Out</title>
+  <!-- noindex: parameterized page — content varies per ?id=; prevent duplicate indexing -->
+  <meta name="robots" content="noindex, follow">
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Open Graph: static fallbacks — JS overwrites these once lake data loads -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://kaayko.com/paddlingout/forecast">
+  <meta property="og:title" content="Paddle Forecast | Kaayko Paddling Out">
+  <meta property="og:description" content="Real-time AI paddle conditions — wind speed, water temperature, UV index, and a 3-day hourly heatmap. Know before you go.">
+  <meta property="og:image" content="https://kaayko.com/assets/paddlingout-og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Kaayko Paddling Out — lake paddle forecast">
+  <meta property="og:site_name" content="Kaayko">
+  <meta property="og:locale" content="en_US">
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@kaayko">
+  <meta name="twitter:title" content="Paddle Forecast | Kaayko">
+  <meta name="twitter:description" content="Live AI paddle conditions — wind, water temp, UV, 3-day forecast. Know before you paddle.">
+  <meta name="twitter:image" content="https://kaayko.com/assets/paddlingout-og.png">
+  <meta name="twitter:image:alt" content="Kaayko Paddling Out lake forecast">
+
+  <!-- Security Headers -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <meta name="theme-color" content="#d4af37">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://api-vwcc5j4qda-uc.a.run.app">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
 
   <!-- Shared store CSS -->
   <link rel="stylesheet" href="/css/storestyle.css" />
@@ -728,10 +757,20 @@
         const spot = await spotRes.json();
         currentSpot = spot;
 
-        // Update title immediately
+        // Update title + OG tags immediately so shares reflect the actual lake
         document.getElementById('forecastLakeName').textContent = spot.title;
         document.getElementById('forecastLakeLocation').textContent = spot.subtitle || '';
-        document.title = `${spot.title} Forecast | Kaayko`;
+        document.title = `${spot.title} Paddle Forecast | Kaayko`;
+        // Update Open Graph / Twitter meta for social sharing
+        const _ogTitle    = `${spot.title} Paddle Conditions | Kaayko`;
+        const _ogDesc     = `Live AI paddle score for ${spot.title}${spot.subtitle ? ', ' + spot.subtitle : ''}. Wind, water temp, UV index, and 3-day hourly forecast.`;
+        const _canonUrl   = `https://kaayko.com/paddlingout/forecast?id=${encodeURIComponent(spot.id)}`;
+        const _setMeta    = (sel, val) => { const el = document.querySelector(sel); if (el) el.setAttribute('content', val); };
+        _setMeta('meta[property="og:title"]',         _ogTitle);
+        _setMeta('meta[property="og:description"]',   _ogDesc);
+        _setMeta('meta[property="og:url"]',           _canonUrl);
+        _setMeta('meta[name="twitter:title"]',        _ogTitle);
+        _setMeta('meta[name="twitter:description"]',  _ogDesc);
 
         // Pick a random image from the spot's gallery for the hero + page bg
         const imgs = Array.isArray(spot.imgSrc) && spot.imgSrc.length ? spot.imgSrc : [];

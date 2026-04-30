@@ -7,29 +7,28 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  
+
   <!-- Primary Meta Tags -->
-  <title>Paddling Out - ML-Powered Paddle Conditions & Lake Forecast | Kaayko</title>
-  <meta name="title" content="Paddling Out - Intelligent Paddle Conditions with ML Forecasts">
-  <meta name="description" content="AI-powered paddle condition forecasts with real-time weather, wind, and safety ratings. Discover 100+ kayaking and paddling destinations with ML-based Konfidence scores. Know before you go paddling.">
-  <meta name="keywords" content="paddle conditions, kayak forecast, paddling weather, lake conditions, kayaking forecast, paddle safety, water conditions, ML weather prediction, kayak weather, paddleboarding conditions, canoe weather, kayak lakes, water sports forecast, paddle spots, kayaking destinations, kaayko paddling out">
+  <title>Kayak & Paddle Conditions for 100+ Lakes | Kaayko Paddling Out</title>
+  <meta name="description" content="Free AI-powered paddle condition scores for 100+ kayaking, canoeing, and paddleboarding lakes. Real-time wind speed, water temperature, UV index, and 3-day hourly forecasts. Know before you go.">
+  <meta name="keywords" content="paddle conditions, kayak forecast, kayaking conditions today, paddleboarding forecast, canoe weather, lake conditions, water sports forecast, kayak safety rating, wind speed for paddling, best time to kayak, paddle score, kayak weather app, paddling out, kaayko paddling, lake forecast">
   <meta name="author" content="Kaayko">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
   <link rel="canonical" href="https://kaayko.com/paddlingout.html">
-  
+
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://kaayko.com/paddlingout.html">
-  <meta property="og:title" content="Paddling Out — AI Paddle Conditions for 100+ Lakes | Kaayko">
-  <meta property="og:description" content="Real-time kayaking and paddleboarding conditions with AI-powered safety ratings. Wind, water temp, UV, cloud cover — all in one paddle score. Know before you go.">
+  <meta property="og:title" content="Kayak & Paddle Conditions for 100+ Lakes | Kaayko">
+  <meta property="og:description" content="Real-time AI paddle scores for kayaking, canoeing, and paddleboarding. Wind, water temp, UV — one number. Know before you go.">
   <meta property="og:image" content="https://kaayko.com/assets/paddlingout-og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Kaayko Paddling Out — lake conditions forecast map">
+  <meta property="og:image:alt" content="Kaayko Paddling Out — live lake conditions grid">
   <meta property="og:site_name" content="Kaayko">
   <meta property="og:locale" content="en_US">
 
-  <!-- Twitter -->
+  <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@kaayko">
   <meta name="twitter:creator" content="@kaayko">
@@ -37,9 +36,9 @@
   <meta name="twitter:title" content="Paddling Out — Real-Time Kayak & Paddle Conditions">
   <meta name="twitter:description" content="AI-powered paddle safety ratings for 100+ lakes. Wind, water temp, UV — one score. Know before you paddle.">
   <meta name="twitter:image" content="https://kaayko.com/assets/paddlingout-og.png">
-  <meta name="twitter:image:alt" content="Kaayko Paddling Out lake conditions forecast">
+  <meta name="twitter:image:alt" content="Kaayko Paddling Out live lake conditions">
 
-  <!-- Schema.org: WebApplication + FAQPage -->
+  <!-- Schema.org: WebApplication + FAQPage + BreadcrumbList -->
   <script type="application/ld+json">
   [
     {
@@ -48,30 +47,38 @@
       "name": "Kaayko Paddling Out",
       "url": "https://kaayko.com/paddlingout.html",
       "applicationCategory": "SportsApplication",
-      "operatingSystem": "Web, iOS",
-      "description": "AI-powered paddle condition forecasts with real-time weather, wind speed, water temperature, UV index, and safety ratings for 100+ kayaking, canoeing, and paddleboarding destinations.",
+      "operatingSystem": "Web",
+      "description": "Free AI-powered paddle condition forecasts with real-time wind speed, water temperature, UV index, and safety ratings for 100+ kayaking, canoeing, and paddleboarding destinations across the United States.",
       "featureList": [
         "Real-time paddle score (1–5)",
         "Wind speed and direction",
         "Water temperature",
         "UV index",
-        "Cloud cover",
+        "Cloud cover percentage",
+        "Precipitation probability",
         "3-day hourly heatmap forecast",
-        "Lake safety alerts"
+        "Lake safety alerts",
+        "100+ kayaking and paddleboarding destinations"
       ],
       "offers": {
         "@type": "Offer",
         "price": "0",
-        "priceCurrency": "USD"
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
       },
+      "screenshot": "https://kaayko.com/assets/paddlingout-og.png",
       "provider": {
         "@type": "Organization",
         "name": "Kaayko",
         "url": "https://kaayko.com",
-        "logo": "https://kaayko.com/kaayko-logo-512.png"
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://kaayko.com/kaayko-logo-512.png",
+          "width": 512,
+          "height": 512
+        }
       },
-      "downloadUrl": "https://apps.apple.com/app/id6747012577",
-      "screenshot": "https://kaayko.com/assets/paddlingout-og.png"
+      "dateModified": "2026-04-29"
     },
     {
       "@context": "https://schema.org",
@@ -82,7 +89,7 @@
           "name": "What is Kaayko Paddling Out?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Kaayko Paddling Out is a free AI-powered paddle conditions app that gives real-time safety scores for 100+ kayaking, canoeing, and paddleboarding lakes. It combines wind speed, water temperature, UV index, and weather data into a single Paddle Score from 1–5."
+            "text": "Kaayko Paddling Out is a free AI-powered paddle conditions tool that gives real-time safety scores for 100+ kayaking, canoeing, and paddleboarding lakes across the US. It combines wind speed, water temperature, UV index, cloud cover, and precipitation data into a single Paddle Score from 1 (Danger) to 5 (Excellent)."
           }
         },
         {
@@ -90,7 +97,15 @@
           "name": "How is the paddle score calculated?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "The Paddle Score (1–5) is generated by a machine learning model trained on historical paddle conditions. It weighs wind speed, water temperature, air temperature, UV index, cloud cover, and precipitation probability to rate conditions from Danger (1) to Excellent (5)."
+            "text": "The Paddle Score (1–5) is generated by a machine learning model trained on historical paddle conditions. It weighs wind speed, water temperature, air temperature, UV index, cloud cover, and precipitation probability. A score of 5 means excellent conditions; 1 means dangerous — not recommended for paddling."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What wind speed is safe for kayaking?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Generally, wind speeds under 10 mph (9 knots) are considered safe for recreational kayaking. Winds above 15 mph can create challenging conditions for beginners. Kaayko's paddle score automatically factors wind speed into the overall safety rating — any score below 2 indicates winds or conditions that could be dangerous."
           }
         },
         {
@@ -98,7 +113,15 @@
           "name": "Which lakes and rivers are covered?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Kaayko covers 100+ kayaking and paddleboarding destinations across the United States, including lakes, reservoirs, and rivers. New locations are added regularly."
+            "text": "Kaayko covers 100+ kayaking and paddleboarding destinations across the United States, including lakes, reservoirs, and rivers. You can browse all spots on the main Paddling Out page or use the search to find spots near any city or zip code."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How often is the paddle forecast updated?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Paddle conditions and scores are updated in real time using live weather data. The 3-day hourly heatmap refreshes each time you load the forecast so you always see the most current conditions."
           }
         },
         {
@@ -106,17 +129,32 @@
           "name": "Is Kaayko Paddling Out free?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes — Kaayko Paddling Out is completely free to use on web and iOS with no account required."
+            "text": "Yes — Kaayko Paddling Out is completely free to use on the web with no account or sign-up required."
           }
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Kaayko",
+          "item": "https://kaayko.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Paddling Out",
+          "item": "https://kaayko.com/paddlingout.html"
         }
       ]
     }
   ]
   </script>
-  
-  <!-- Smart App Banner -->
-  <meta name="apple-itunes-app" content="app-id=6747012577, app-clip-bundle-id=com.rohan.store.kaayko.app.Clip, app-argument=https://kaayko.com/paddlingout.html">
-  
+
   <!-- Security Headers -->
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
