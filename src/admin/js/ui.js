@@ -81,91 +81,109 @@ export function renderLinkAccordion(code) {
     <tr class="link-accordion-row" id="accordion-${escapeHtml(code)}">
       <td colspan="10">
         <div class="link-accordion">
-          <div class="link-accordion-loading">Loading analytics...</div>
+          <div class="link-accordion-loading">
+            <div class="acc-loader"></div>Loading analytics...
+          </div>
         </div>
       </td>
     </tr>
   `;
 }
 
-export function renderLinkAccordionContent(data) {
+export function renderLinkAccordionContent(data, link) {
   const { code, totalClicks, breakdown, daily, clicks } = data;
   const health = getLinkHealth(data);
+  const shortUrl = link?.shortUrl || `https://kaayko.com/l/${code}`;
+  const qrUrl = generateQRCodeURL(shortUrl, 140);
+  const isEnabled = link ? link.enabled !== false : true;
 
   const dailyEntries = Object.entries(daily || {}).sort((a, b) => a[0].localeCompare(b[0]));
   const last7 = dailyEntries.slice(-7);
   const maxDaily = Math.max(...last7.map(e => e[1]), 1);
 
+  const topPlatform = getTopKey(breakdown?.platforms);
+  const topSource = getTopKey(breakdown?.utmSources);
+  const topBrowser = getTopKey(breakdown?.browsers);
+  const topDevice = getTopKey(breakdown?.devices);
+
   return `
-    <div class="link-accordion-content">
-      <div class="link-accordion-grid">
-        <div class="accordion-stat-card">
-          <span class="accordion-stat-label">Total Clicks</span>
-          <strong class="accordion-stat-value">${totalClicks}</strong>
+    <div class="acc-panel">
+      <div class="acc-top">
+        <div class="acc-qr">
+          <img src="${qrUrl}" alt="QR" width="80" height="80" />
         </div>
-        <div class="accordion-stat-card">
-          <span class="accordion-stat-label">Health</span>
-          <strong class="accordion-stat-value accordion-health-${health.key}">${health.label}</strong>
+        <div class="acc-header">
+          <div class="acc-title-row">
+            <span class="acc-url">${escapeHtml(shortUrl)}</span>
+            <span class="acc-health acc-health-${health.key}">${health.label}</span>
+          </div>
+          <div class="acc-actions">
+            <button class="acc-btn acc-btn-copy" onclick="event.stopPropagation();window.copyLink('${code}')" title="Copy URL">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              Copy
+            </button>
+            <button class="acc-btn" onclick="event.stopPropagation();window.editLink('${code}')" title="Edit link">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Edit
+            </button>
+            <button class="acc-btn" onclick="event.stopPropagation();window.showQRSidebar('${code}')" title="QR codes">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              QR
+            </button>
+            <button class="acc-btn acc-btn-toggle ${isEnabled ? 'acc-btn-on' : 'acc-btn-off'}" onclick="event.stopPropagation();window.toggleLink('${code}')" title="${isEnabled ? 'Disable' : 'Enable'}">
+              ${isEnabled ? 'Enabled' : 'Disabled'}
+            </button>
+            <button class="acc-btn acc-btn-danger" onclick="event.stopPropagation();window.deleteLink('${code}')" title="Delete">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+            </button>
+          </div>
         </div>
-        <div class="accordion-stat-card">
-          <span class="accordion-stat-label">Top Platform</span>
-          <strong class="accordion-stat-value">${getTopKey(breakdown?.platforms)}</strong>
-        </div>
-        <div class="accordion-stat-card">
-          <span class="accordion-stat-label">Top Source</span>
-          <strong class="accordion-stat-value">${getTopKey(breakdown?.utmSources)}</strong>
+        <div class="acc-kpis">
+          <div class="acc-kpi"><strong>${totalClicks}</strong><span>clicks</span></div>
+          <div class="acc-kpi"><strong>${topPlatform}</strong><span>platform</span></div>
+          <div class="acc-kpi"><strong>${topBrowser}</strong><span>browser</span></div>
+          <div class="acc-kpi"><strong>${topDevice}</strong><span>device</span></div>
+          <div class="acc-kpi"><strong>${topSource}</strong><span>source</span></div>
         </div>
       </div>
 
-      ${last7.length ? `
-      <div class="accordion-section">
-        <h5>Last 7 Days</h5>
-        <div class="accordion-sparkline">
-          ${last7.map(([day, count]) => `
-            <div class="spark-bar-wrap" title="${day}: ${count} clicks">
-              <div class="spark-bar" style="height:${Math.max((count / maxDaily) * 100, 4)}%"></div>
-              <span class="spark-label">${day.slice(5)}</span>
-            </div>
-          `).join('')}
-        </div>
-      </div>` : ''}
+      <div class="acc-bottom">
+        ${last7.length ? `
+        <div class="acc-chart">
+          <div class="acc-chart-bars">
+            ${last7.map(([day, count]) => `
+              <div class="acc-bar-col" title="${day}: ${count}">
+                <div class="acc-bar" style="height:${Math.max((count / maxDaily) * 100, 6)}%">
+                  <span class="acc-bar-val">${count}</span>
+                </div>
+                <span class="acc-bar-day">${day.slice(5)}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>` : '<div class="acc-chart-empty">No click data yet</div>'}
 
-      <div class="accordion-breakdown-row">
-        ${renderBreakdownBlock('Platforms', breakdown?.platforms)}
-        ${renderBreakdownBlock('Browsers', breakdown?.browsers)}
-        ${renderBreakdownBlock('Devices', breakdown?.devices)}
-        ${renderBreakdownBlock('Sources', breakdown?.utmSources)}
+        <div class="acc-breakdowns">
+          ${renderBreakdownMini('Platforms', breakdown?.platforms)}
+          ${renderBreakdownMini('Browsers', breakdown?.browsers)}
+          ${renderBreakdownMini('Devices', breakdown?.devices)}
+        </div>
       </div>
-
-      ${clicks && clicks.length ? `
-      <div class="accordion-section">
-        <h5>Recent Clicks</h5>
-        <div class="accordion-recent-clicks">
-          ${clicks.slice(0, 5).map(c => `
-            <div class="recent-click-item">
-              <span class="rc-platform rc-${c.platform}">${c.platform}</span>
-              <span class="rc-device">${c.deviceInfo?.browser || '?'} / ${c.deviceInfo?.os || '?'}</span>
-              <span class="rc-time">${c.timestamp ? new Date(c.timestamp).toLocaleString() : '—'}</span>
-            </div>
-          `).join('')}
-        </div>
-      </div>` : ''}
     </div>
   `;
 }
 
-function renderBreakdownBlock(title, obj) {
+function renderBreakdownMini(title, obj) {
   if (!obj || !Object.keys(obj).length) return '';
-  const sorted = Object.entries(obj).sort((a, b) => b[1] - a[1]).slice(0, 4);
+  const sorted = Object.entries(obj).sort((a, b) => b[1] - a[1]).slice(0, 3);
   const total = sorted.reduce((s, e) => s + e[1], 0);
   return `
-    <div class="accordion-breakdown-block">
-      <h6>${title}</h6>
+    <div class="acc-bd">
+      <span class="acc-bd-title">${title}</span>
       ${sorted.map(([key, count]) => `
-        <div class="breakdown-item">
-          <span class="breakdown-key">${escapeHtml(key)}</span>
-          <div class="breakdown-bar-bg"><div class="breakdown-bar-fill" style="width:${(count / total) * 100}%"></div></div>
-          <span class="breakdown-count">${count}</span>
+        <div class="acc-bd-row">
+          <span class="acc-bd-key">${escapeHtml(key)}</span>
+          <div class="acc-bd-bar"><div class="acc-bd-fill" style="width:${(count / total) * 100}%"></div></div>
+          <span class="acc-bd-ct">${count}</span>
         </div>
       `).join('')}
     </div>

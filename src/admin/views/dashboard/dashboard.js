@@ -9,6 +9,7 @@ import { escapeHtml } from '../../js/utils.js';
 import { renderLinkAccordion, renderLinkAccordionContent } from '../../js/ui.js';
 
 const dashAccordionCache = new Map();
+const dashLinksMap = new Map();
 
 /**
  * Initialize dashboard view
@@ -189,6 +190,8 @@ async function loadRecentLinks() {
     }
 
     const recent = links.slice(0, 10);
+    dashLinksMap.clear();
+    recent.forEach(l => dashLinksMap.set(l.code || l.id || '', l));
     container.innerHTML = `
       <table class="dash-links-table">
         <thead>
@@ -250,8 +253,10 @@ async function toggleDashAccordion(code) {
   const inner = document.getElementById(`accordion-${code}`)?.querySelector('.link-accordion');
   if (!inner) return;
 
+  const link = dashLinksMap.get(code) || null;
+
   if (dashAccordionCache.has(code)) {
-    inner.innerHTML = renderLinkAccordionContent(dashAccordionCache.get(code));
+    inner.innerHTML = renderLinkAccordionContent(dashAccordionCache.get(code), link);
     return;
   }
 
@@ -261,7 +266,7 @@ async function toggleDashAccordion(code) {
     const data = await res.json();
     if (!data.success) throw new Error(data.error || 'Failed');
     dashAccordionCache.set(code, data);
-    inner.innerHTML = renderLinkAccordionContent(data);
+    inner.innerHTML = renderLinkAccordionContent(data, link);
   } catch (err) {
     inner.innerHTML = `<div class="link-accordion-error">Could not load analytics: ${escapeHtml(err.message)}</div>`;
   }

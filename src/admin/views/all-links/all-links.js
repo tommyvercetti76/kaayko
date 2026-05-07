@@ -1231,8 +1231,10 @@ async function toggleLinkAccordion(code) {
   const inner = accordionEl?.querySelector('.link-accordion');
   if (!inner) return;
 
+  const link = STATE.links.find(l => (l.code || l.shortCode || l.id) === code) || null;
+
   if (accordionCache.has(code)) {
-    inner.innerHTML = ui.renderLinkAccordionContent(accordionCache.get(code));
+    inner.innerHTML = ui.renderLinkAccordionContent(accordionCache.get(code), link);
     return;
   }
 
@@ -1242,7 +1244,7 @@ async function toggleLinkAccordion(code) {
     const data = await res.json();
     if (!data.success) throw new Error(data.error || 'Failed');
     accordionCache.set(code, data);
-    inner.innerHTML = ui.renderLinkAccordionContent(data);
+    inner.innerHTML = ui.renderLinkAccordionContent(data, link);
   } catch (err) {
     inner.innerHTML = `<div class="link-accordion-error">Could not load analytics: ${utils.escapeHtml(err.message)}</div>`;
   }
