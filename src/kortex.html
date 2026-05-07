@@ -601,8 +601,8 @@ a{color:inherit;text-decoration:none}ul{list-style:none}
 
     const sel = document.getElementById('tenant');
     sel.innerHTML = '';
-    if (loginState.tenants.length === 1) {
-      // Single tenant — auto-proceed, no selection needed
+    if (loginState.tenants.length === 1 && loginState.role !== 'super-admin') {
+      // Single tenant (non-super-admin) — auto-proceed
       const t = loginState.tenants[0];
       sel.innerHTML = `<option value="${t.id}" selected>${t.name}</option>`;
       showAlert('success', `Signing in to ${t.name}…`);
