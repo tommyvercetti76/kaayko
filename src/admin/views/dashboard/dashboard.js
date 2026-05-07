@@ -6,6 +6,9 @@
 import { switchView } from '../../js/kortex-core.js';
 import { apiFetch } from '../../js/config.js';
 import { escapeHtml } from '../../js/utils.js';
+import { renderLinkAccordion, renderLinkAccordionContent } from '../../js/ui.js';
+
+const dashAccordionCache = new Map();
 
 /**
  * Initialize dashboard view
@@ -187,38 +190,80 @@ async function loadRecentLinks() {
 
     const recent = links.slice(0, 10);
     container.innerHTML = `
-      <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <table class="dash-links-table">
         <thead>
-          <tr style="text-align:left;color:#888;border-bottom:1px solid #222">
-            <th style="padding:8px 10px">Title</th>
-            <th style="padding:8px 10px">Code</th>
-            <th style="padding:8px 10px">Clicks</th>
-            <th style="padding:8px 10px">Status</th>
-            <th style="padding:8px 10px">Tenant</th>
+          <tr>
+            <th>Title</th>
+            <th>Code</th>
+            <th>Clicks</th>
+            <th>Status</th>
+            <th>Tenant</th>
           </tr>
         </thead>
         <tbody>
           ${recent.map(link => {
+            const code = escapeHtml(link.code || link.id || '');
             const enabled = link.enabled !== false;
             const status = enabled ? '<span style="color:#4CAF50">Active</span>' : '<span style="color:#f44336">Disabled</span>';
             const tenant = escapeHtml(link.tenantId || 'kaayko');
-            return `<tr style="border-bottom:1px solid #1a1a1a;cursor:pointer" data-view="links">
-              <td style="padding:8px 10px;color:#f0f0f0">${escapeHtml(link.title || link.code || '—')}</td>
-              <td style="padding:8px 10px;font-family:monospace;color:#D4A84B">${escapeHtml(link.code || link.id || '')}</td>
-              <td style="padding:8px 10px">${link.clickCount || 0}</td>
-              <td style="padding:8px 10px">${status}</td>
-              <td style="padding:8px 10px;color:#666">${tenant}</td>
+            return `<tr class="dash-link-row" data-link-code="${code}">
+              <td style="color:#f0f0f0">${escapeHtml(link.title || link.code || '—')}</td>
+              <td style="font-family:monospace;color:#D4A84B">${code}</td>
+              <td>${link.clickCount || 0}</td>
+              <td>${status}</td>
+              <td style="color:#666">${tenant}</td>
             </tr>`;
           }).join('')}
         </tbody>
       </table>
       <div style="text-align:center;padding:12px;color:#666;font-size:12px">
-        Showing ${recent.length} of ${links.length} links
+        Showing ${recent.length} of ${links.length} links — click any row for analytics
       </div>
     `;
+
+    container.querySelectorAll('.dash-link-row').forEach(row => {
+      row.addEventListener('click', () => {
+        const code = row.dataset.linkCode;
+        if (code) toggleDashAccordion(code);
+      });
+    });
   } catch (error) {
     console.error('[Dashboard] Failed to load recent links:', error);
     container.innerHTML = '<div class="campaign-shortcuts-empty">Failed to load links.</div>';
+  }
+}
+
+async function toggleDashAccordion(code) {
+  const existing = document.getElementById(`accordion-${code}`);
+  if (existing) {
+    existing.remove();
+    document.querySelector(`.dash-link-row[data-link-code="${code}"]`)?.classList.remove('is-expanded');
+    return;
+  }
+
+  const row = document.querySelector(`.dash-link-row[data-link-code="${code}"]`);
+  if (!row) return;
+
+  row.classList.add('is-expanded');
+  row.insertAdjacentHTML('afterend', renderLinkAccordion(code));
+
+  const inner = document.getElementById(`accordion-${code}`)?.querySelector('.link-accordion');
+  if (!inner) return;
+
+  if (dashAccordionCache.has(code)) {
+    inner.innerHTML = renderLinkAccordionContent(dashAccordionCache.get(code));
+    return;
+  }
+
+  try {
+    const res = await apiFetch(`/kortex/${code}/clicks?limit=100`);
+    if (!res || !res.ok) throw new Error('Failed');
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Failed');
+    dashAccordionCache.set(code, data);
+    inner.innerHTML = renderLinkAccordionContent(data);
+  } catch (err) {
+    inner.innerHTML = `<div class="link-accordion-error">Could not load analytics: ${escapeHtml(err.message)}</div>`;
   }
 }
 

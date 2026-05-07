@@ -197,3 +197,209 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* Dashboard Links Table */
+.dash-links-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.dash-links-table th {
+  text-align: left;
+  color: #888;
+  padding: 8px 10px;
+  border-bottom: 1px solid #222;
+}
+
+.dash-links-table td {
+  padding: 8px 10px;
+}
+
+.dash-link-row {
+  border-bottom: 1px solid #1a1a1a;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.dash-link-row:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.dash-link-row.is-expanded {
+  background: rgba(212, 168, 75, 0.04);
+  border-left: 2px solid #D4A84B;
+}
+
+/* Accordion (shared with All Links view) */
+.link-accordion-row td {
+  padding: 0 !important;
+  border: none !important;
+  background: #0c0c0e;
+}
+
+.link-accordion {
+  padding: 20px 24px;
+  border-bottom: 1px solid #1a1a1e;
+  animation: dashAccordionIn 0.2s ease-out;
+}
+
+@keyframes dashAccordionIn {
+  from { opacity: 0; max-height: 0; padding: 0 24px; }
+  to { opacity: 1; max-height: 600px; padding: 20px 24px; }
+}
+
+.link-accordion-loading { color: #666; font-size: 13px; padding: 12px 0; }
+.link-accordion-error { color: #e57373; font-size: 13px; padding: 12px 0; }
+.link-accordion-content { display: flex; flex-direction: column; gap: 18px; }
+
+.link-accordion-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.accordion-stat-card {
+  background: #121215;
+  border: 1px solid #1f1f22;
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.accordion-stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #666;
+}
+
+.accordion-stat-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #f0f0f0;
+}
+
+.accordion-health-hot { color: #ff5722 !important; }
+.accordion-health-active { color: #4caf50 !important; }
+.accordion-health-dormant { color: #666 !important; }
+
+.accordion-section h5 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.accordion-sparkline {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 60px;
+  padding: 4px 0;
+}
+
+.spark-bar-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.spark-bar {
+  width: 100%;
+  max-width: 36px;
+  background: linear-gradient(to top, rgba(212, 168, 75, 0.6), rgba(212, 168, 75, 0.25));
+  border-radius: 3px 3px 0 0;
+  min-height: 3px;
+}
+
+.spark-label { font-size: 9px; color: #555; }
+
+.accordion-breakdown-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.accordion-breakdown-block h6 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.breakdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+.breakdown-key {
+  width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #bbb;
+}
+
+.breakdown-bar-bg {
+  flex: 1;
+  height: 4px;
+  background: #1a1a1e;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.breakdown-bar-fill {
+  height: 100%;
+  background: #D4A84B;
+  border-radius: 2px;
+}
+
+.breakdown-count { font-size: 11px; color: #888; min-width: 20px; text-align: right; }
+
+.accordion-recent-clicks { display: flex; flex-direction: column; gap: 6px; }
+
+.recent-click-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 10px;
+  background: #121215;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.rc-platform {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.05);
+  color: #aaa;
+}
+
+.rc-web { color: #90caf9; background: rgba(144,202,249,0.1); }
+.rc-ios { color: #a5d6a7; background: rgba(165,214,167,0.1); }
+.rc-android { color: #ce93d8; background: rgba(206,147,216,0.1); }
+.rc-device { color: #999; flex: 1; }
+.rc-time { color: #666; font-size: 11px; }
+
+@media (max-width: 900px) {
+  .link-accordion-grid,
+  .accordion-breakdown-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
