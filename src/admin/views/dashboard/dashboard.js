@@ -12,7 +12,7 @@ import { escapeHtml } from '../../js/utils.js';
  */
 export async function init() {
   setupQuickActions();
-  await loadCampaignShortcuts();
+  await Promise.all([loadCampaignShortcuts(), loadRecentLinks()]);
 }
 
 /**
@@ -135,6 +135,59 @@ function renderCampaignShortcuts(campaigns, container) {
       }
     });
   });
+}
+
+async function loadRecentLinks() {
+  const container = document.getElementById('dashboard-recent-links');
+  if (!container) return;
+
+  try {
+    const res = await apiFetch('/kortex?limit=50');
+    if (!res || !res.ok) throw new Error('Failed to load links');
+
+    const data = await res.json();
+    const links = data.links || [];
+
+    if (links.length === 0) {
+      container.innerHTML = '<div class="campaign-shortcuts-empty">No links yet.</div>';
+      return;
+    }
+
+    const recent = links.slice(0, 10);
+    container.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead>
+          <tr style="text-align:left;color:#888;border-bottom:1px solid #222">
+            <th style="padding:8px 10px">Title</th>
+            <th style="padding:8px 10px">Code</th>
+            <th style="padding:8px 10px">Clicks</th>
+            <th style="padding:8px 10px">Status</th>
+            <th style="padding:8px 10px">Tenant</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${recent.map(link => {
+            const enabled = link.enabled !== false;
+            const status = enabled ? '<span style="color:#4CAF50">Active</span>' : '<span style="color:#f44336">Disabled</span>';
+            const tenant = escapeHtml(link.tenantId || 'kaayko');
+            return `<tr style="border-bottom:1px solid #1a1a1a;cursor:pointer" data-view="links">
+              <td style="padding:8px 10px;color:#f0f0f0">${escapeHtml(link.title || link.code || '—')}</td>
+              <td style="padding:8px 10px;font-family:monospace;color:#D4A84B">${escapeHtml(link.code || link.id || '')}</td>
+              <td style="padding:8px 10px">${link.clickCount || 0}</td>
+              <td style="padding:8px 10px">${status}</td>
+              <td style="padding:8px 10px;color:#666">${tenant}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+      <div style="text-align:center;padding:12px;color:#666;font-size:12px">
+        Showing ${recent.length} of ${links.length} links
+      </div>
+    `;
+  } catch (error) {
+    console.error('[Dashboard] Failed to load recent links:', error);
+    container.innerHTML = '<div class="campaign-shortcuts-empty">Failed to load links.</div>';
+  }
 }
 
 function slugify(value) {
