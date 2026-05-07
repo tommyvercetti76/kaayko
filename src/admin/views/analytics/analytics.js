@@ -14,9 +14,34 @@ const RANGE_TO_DAYS = {
   all: null
 };
 
+const RANGE_TIER_MINIMUM = {
+  '7d': 'starter',
+  '30d': 'pro',
+  '90d': 'pro',
+  all: 'business'
+};
+
+const TIER_RANK = { starter: 0, pro: 1, business: 2, enterprise: 3 };
+
 let activeRange = '7d';
+let currentTier = 'starter';
+
+async function fetchTier() {
+  try {
+    const res = await apiFetch('/billing/subscription');
+    if (!res) return 'starter';
+    const data = await res.json();
+    return data.subscription?.plan || 'starter';
+  } catch { return 'starter'; }
+}
+
+function canAccessRange(range) {
+  const required = RANGE_TIER_MINIMUM[range] || 'starter';
+  return (TIER_RANK[currentTier] || 0) >= (TIER_RANK[required] || 0);
+}
 
 export async function init() {
+  currentTier = await fetchTier();
   setupRangeControls();
   await loadAnalytics();
 }
@@ -26,11 +51,26 @@ function setupRangeControls() {
   if (!buttons.length) return;
 
   buttons.forEach(button => {
-    button.classList.toggle('active', button.dataset.range === activeRange);
+    const range = button.dataset.range;
+    button.classList.toggle('active', range === activeRange);
+
+    if (!canAccessRange(range)) {
+      button.classList.add('locked');
+      button.title = `Upgrade to ${RANGE_TIER_MINIMUM[range]} for ${range} analytics`;
+      button.innerHTML = `${button.textContent} <span style="font-size:10px;opacity:0.6">🔒</span>`;
+    }
 
     button.addEventListener('click', async () => {
       const selectedRange = button.dataset.range;
       if (!selectedRange || selectedRange === activeRange) return;
+
+      if (!canAccessRange(selectedRange)) {
+        const upgrade = RANGE_TIER_MINIMUM[selectedRange];
+        if (confirm(`${selectedRange} analytics requires the ${upgrade} plan. View upgrade options?`)) {
+          window.dispatchEvent(new CustomEvent('kortex-navigate', { detail: { view: 'billing' } }));
+        }
+        return;
+      }
 
       activeRange = selectedRange;
       buttons.forEach(btn => {

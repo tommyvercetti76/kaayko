@@ -477,7 +477,8 @@ async function handleSaveCampaign(e) {
       const error = await response.json();
       throw new Error(error.error || 'Failed to save campaign');
     }
-    
+
+    if (!CURRENT_EDIT_CAMPAIGN && window.phTrack) phTrack('campaign_created', { type });
     closeCampaignModal();
     await loadCampaigns();
   } catch (error) {

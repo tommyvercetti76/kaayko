@@ -986,7 +986,16 @@
         <h1>QR Code Gallery</h1>
         <p>Generate, download, and manage QR codes for your links</p>
       </header>
-      
+
+      <!-- Branded QR Controls (Pro+ only) -->
+      <div id="qr-branded-controls" style="display:none;gap:12px;align-items:center;margin-bottom:16px;padding:12px 16px;background:rgba(255,215,0,0.04);border:1px solid rgba(255,215,0,0.15);border-radius:8px;">
+        <label style="font-size:12px;color:var(--text-muted);white-space:nowrap;">Brand Color:</label>
+        <input type="color" id="qr-brand-color" value="#000000" style="width:32px;height:28px;border:none;cursor:pointer;background:transparent;">
+        <label style="font-size:12px;color:var(--text-muted);white-space:nowrap;">Background:</label>
+        <input type="color" id="qr-brand-bg" value="#ffffff" style="width:32px;height:28px;border:none;cursor:pointer;background:transparent;">
+        <span style="font-size:11px;color:var(--gold-primary);margin-left:auto;">Pro feature</span>
+      </div>
+
       <div id="qr-gallery" class="qr-gallery">
         <!-- QR codes will be loaded here -->
       </div>
@@ -1151,5 +1160,7 @@
     <!-- App Script -->
           <!-- Core JS Module -->
     <script type="module" src="js/kortex-core.js?v=6.5.4"></script>
+    <!-- Product Analytics -->
+    <script src="js/posthog.js"></script>
 </body>
 </html>

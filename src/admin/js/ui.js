@@ -76,6 +76,24 @@ export function renderLinksTable(links) {
   `;
 }
 
+function renderIntentBadge(link) {
+  const intent = link.intent || link.metadata?.intent;
+  if (!intent || intent === 'view') return '';
+
+  const INTENT_COLORS = {
+    donate: { bg: 'rgba(76,175,80,.1)', border: 'rgba(76,175,80,.3)', text: '#4caf50' },
+    register: { bg: 'rgba(33,150,243,.1)', border: 'rgba(33,150,243,.3)', text: '#2196f3' },
+    apply: { bg: 'rgba(156,39,176,.1)', border: 'rgba(156,39,176,.3)', text: '#9c27b0' },
+    purchase: { bg: 'rgba(255,152,0,.1)', border: 'rgba(255,152,0,.3)', text: '#ff9800' },
+    attend: { bg: 'rgba(0,188,212,.1)', border: 'rgba(0,188,212,.3)', text: '#00bcd4' },
+    download: { bg: 'rgba(96,125,139,.1)', border: 'rgba(96,125,139,.3)', text: '#607d8b' },
+    survey: { bg: 'rgba(255,87,34,.1)', border: 'rgba(255,87,34,.3)', text: '#ff5722' }
+  };
+
+  const c = INTENT_COLORS[intent] || { bg: 'rgba(255,215,0,.08)', border: 'rgba(255,215,0,.25)', text: '#d4a84b' };
+  return `<span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:${c.bg};border:1px solid ${c.border};color:${c.text};border-radius:4px;padding:2px 6px;">${escapeHtml(intent)}</span>`;
+}
+
 function renderMetadataBadges(link) {
   const m = link.metadata || {};
   const parts = [];
@@ -83,6 +101,10 @@ function renderMetadataBadges(link) {
     if (!value && value !== 0) return;
     parts.push(`<span style="font-size:11px;color:var(--text-muted);">${label}: ${escapeHtml(String(value))}</span>`);
   };
+
+  // Intent badge (highest priority — this is the differentiator)
+  const intentBadge = renderIntentBadge(link);
+  if (intentBadge) parts.push(intentBadge);
 
   if (m.campaign === 'alumni') {
     parts.push(`<span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:rgba(212,168,75,.12);border:1px solid rgba(212,168,75,.3);color:#d4a84b;border-radius:4px;padding:2px 6px;">ALUMNI</span>`);
@@ -104,6 +126,12 @@ function renderMetadataBadges(link) {
   }
   if (m.campaign !== 'alumni' && m.campaign !== 'roots') {
     pushMeta('Campaign', m.campaignId || link.utm?.utm_campaign || m.campaign);
+  }
+
+  // Attribution conversion goal
+  const goal = link.conversionGoal || m.conversionGoal;
+  if (goal) {
+    pushMeta('Goal', goal.replace(/_/g, ' '));
   }
 
   return parts.length

@@ -442,6 +442,43 @@ window.syncToProduction = syncToProduction;
 // INITIALIZATION
 // ============================================================================
 
+// ============================================================================
+// ROLE-BASED VISIBILITY
+// ============================================================================
+
+function applyRoleVisibility() {
+  const role = AUTH.user?.role || 'user';
+  const isSuperAdmin = role === 'super-admin';
+
+  // Hide super-admin-only nav items for tenant admins
+  const tenantOnboardingNav = document.querySelector('[data-view="tenant-onboarding"]');
+  if (tenantOnboardingNav && !isSuperAdmin) {
+    tenantOnboardingNav.style.display = 'none';
+  }
+
+  // Hide environment switcher for non-super-admins (production-only for tenants)
+  const envSwitch = document.querySelector('.env-switch');
+  if (envSwitch && !isSuperAdmin) {
+    envSwitch.style.display = 'none';
+  }
+
+  // Hide ROOTS Engine link for non-super-admins
+  const rootsNav = document.querySelector('a[href="views/roots/"]');
+  if (rootsNav && !isSuperAdmin) {
+    rootsNav.style.display = 'none';
+  }
+
+  // Show tenant name prominently for tenant admins
+  if (!isSuperAdmin) {
+    const tenantEl = document.getElementById('user-tenant');
+    if (tenantEl) {
+      tenantEl.style.fontSize = '12px';
+      tenantEl.style.color = 'var(--gold-primary, #ffd700)';
+      tenantEl.style.fontWeight = '600';
+    }
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   console.log(`🚀 Kaayko Smart Links v6.0 (Modular)`);
   console.log(`🌍 Environment: ${CONFIG.ENVIRONMENT.toUpperCase()}`);
@@ -478,8 +515,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   initCollapsibles();
   initEnvironmentSwitcher();
   initUserMenu();
+  applyRoleVisibility();
   checkHealth();
-  
+
   // Load initial view (dashboard)
   console.log('📱 Loading dashboard view...');
   await switchView('dashboard');

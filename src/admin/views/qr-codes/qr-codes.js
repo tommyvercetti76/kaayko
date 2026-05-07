@@ -1,17 +1,42 @@
 /**
  * QR Codes View Module
  * Displays QR codes for all links in a gallery view
+ * Supports branded QR (custom colors, logo) for Pro+ tenants
  */
 
-import { STATE, CONFIG, utils } from '../../js/kortex-core.js';
+import { STATE, CONFIG, AUTH, utils } from '../../js/kortex-core.js';
 import { apiFetch } from '../../js/config.js';
+
+let brandedQREnabled = false;
 
 /**
  * Initialize QR Codes view
  */
 export async function init(state) {
   console.log('[QRCodes] Initializing view');
+  brandedQREnabled = await checkBrandedQRAccess();
+  initBrandedControls();
   await loadQRCodes();
+}
+
+async function checkBrandedQRAccess() {
+  try {
+    const res = await apiFetch('/billing/subscription');
+    if (!res || !res.ok) return false;
+    const data = await res.json();
+    const plan = data.subscription?.plan || 'starter';
+    return ['pro', 'business', 'enterprise'].includes(plan);
+  } catch { return false; }
+}
+
+function initBrandedControls() {
+  const controls = document.getElementById('qr-branded-controls');
+  if (!controls) return;
+  if (brandedQREnabled) {
+    controls.style.display = 'flex';
+  } else {
+    controls.style.display = 'none';
+  }
 }
 
 /**

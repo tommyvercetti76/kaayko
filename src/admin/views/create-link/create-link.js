@@ -13,12 +13,15 @@ let CURRENT_EDIT_LINK = null;
  */
 export async function init(state) {
   console.log('[CreateLink] Initializing view');
-  
+
   // Initialize form handler
   initCreateForm();
-  
+
   // Initialize tooltip positioning
   initTooltips();
+
+  // Show allowed domains hint for tenant admins
+  showDomainHint();
   
   // Listen for editLink events from other views
   document.addEventListener('editLink', async (e) => {
@@ -160,6 +163,26 @@ function placeTooltip(icon, tip) {
   // Make visible (CSS transition will handle fade)
   tip.style.opacity = '';
   tip.style.visibility = '';
+}
+
+/**
+ * Show allowed domains hint for tenant admins (non-super-admin)
+ */
+function showDomainHint() {
+  const user = JSON.parse(localStorage.getItem('kaayko_user') || '{}');
+  if (user.role === 'super-admin') return;
+
+  const destInput = document.getElementById('webDestination');
+  if (!destInput) return;
+
+  const tenantName = user.tenantName || localStorage.getItem('kaayko_tenant_id') || '';
+  if (!tenantName || tenantName === 'Kaayko' || tenantName === 'kaayko-default') return;
+
+  const hint = document.createElement('p');
+  hint.className = 'help-text';
+  hint.style.cssText = 'margin-top:4px;font-size:11px;color:var(--gold-primary,#ffd700);';
+  hint.textContent = `Links must point to ${tenantName} domains. Other destinations will be rejected.`;
+  destInput.parentNode.appendChild(hint);
 }
 
 // ── ROOTS sync goes through Kaayko API proxy (key stays server-side) ──
@@ -341,6 +364,7 @@ async function handleCreateLink(e) {
           setTimeout(() => utils.showToast('Short URL copied to clipboard', 'info', 3000), 500);
         }).catch(() => {});
       }
+      if (window.phTrack) phTrack('link_created', { intent: formData.intentType || 'generic' });
     }
     
     resetCreateForm();
