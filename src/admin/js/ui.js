@@ -76,6 +76,125 @@ export function renderLinksTable(links) {
   `;
 }
 
+export function renderLinkAccordion(code) {
+  return `
+    <tr class="link-accordion-row" id="accordion-${escapeHtml(code)}">
+      <td colspan="10">
+        <div class="link-accordion">
+          <div class="link-accordion-loading">Loading analytics...</div>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
+export function renderLinkAccordionContent(data) {
+  const { code, totalClicks, breakdown, daily, clicks } = data;
+  const health = getLinkHealth(data);
+
+  const dailyEntries = Object.entries(daily || {}).sort((a, b) => a[0].localeCompare(b[0]));
+  const last7 = dailyEntries.slice(-7);
+  const maxDaily = Math.max(...last7.map(e => e[1]), 1);
+
+  return `
+    <div class="link-accordion-content">
+      <div class="link-accordion-grid">
+        <div class="accordion-stat-card">
+          <span class="accordion-stat-label">Total Clicks</span>
+          <strong class="accordion-stat-value">${totalClicks}</strong>
+        </div>
+        <div class="accordion-stat-card">
+          <span class="accordion-stat-label">Health</span>
+          <strong class="accordion-stat-value accordion-health-${health.key}">${health.label}</strong>
+        </div>
+        <div class="accordion-stat-card">
+          <span class="accordion-stat-label">Top Platform</span>
+          <strong class="accordion-stat-value">${getTopKey(breakdown?.platforms)}</strong>
+        </div>
+        <div class="accordion-stat-card">
+          <span class="accordion-stat-label">Top Source</span>
+          <strong class="accordion-stat-value">${getTopKey(breakdown?.utmSources)}</strong>
+        </div>
+      </div>
+
+      ${last7.length ? `
+      <div class="accordion-section">
+        <h5>Last 7 Days</h5>
+        <div class="accordion-sparkline">
+          ${last7.map(([day, count]) => `
+            <div class="spark-bar-wrap" title="${day}: ${count} clicks">
+              <div class="spark-bar" style="height:${Math.max((count / maxDaily) * 100, 4)}%"></div>
+              <span class="spark-label">${day.slice(5)}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>` : ''}
+
+      <div class="accordion-breakdown-row">
+        ${renderBreakdownBlock('Platforms', breakdown?.platforms)}
+        ${renderBreakdownBlock('Browsers', breakdown?.browsers)}
+        ${renderBreakdownBlock('Devices', breakdown?.devices)}
+        ${renderBreakdownBlock('Sources', breakdown?.utmSources)}
+      </div>
+
+      ${clicks && clicks.length ? `
+      <div class="accordion-section">
+        <h5>Recent Clicks</h5>
+        <div class="accordion-recent-clicks">
+          ${clicks.slice(0, 5).map(c => `
+            <div class="recent-click-item">
+              <span class="rc-platform rc-${c.platform}">${c.platform}</span>
+              <span class="rc-device">${c.deviceInfo?.browser || '?'} / ${c.deviceInfo?.os || '?'}</span>
+              <span class="rc-time">${c.timestamp ? new Date(c.timestamp).toLocaleString() : '—'}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>` : ''}
+    </div>
+  `;
+}
+
+function renderBreakdownBlock(title, obj) {
+  if (!obj || !Object.keys(obj).length) return '';
+  const sorted = Object.entries(obj).sort((a, b) => b[1] - a[1]).slice(0, 4);
+  const total = sorted.reduce((s, e) => s + e[1], 0);
+  return `
+    <div class="accordion-breakdown-block">
+      <h6>${title}</h6>
+      ${sorted.map(([key, count]) => `
+        <div class="breakdown-item">
+          <span class="breakdown-key">${escapeHtml(key)}</span>
+          <div class="breakdown-bar-bg"><div class="breakdown-bar-fill" style="width:${(count / total) * 100}%"></div></div>
+          <span class="breakdown-count">${count}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function getLinkHealth(data) {
+  const total = data.totalClicks || 0;
+  const daily = data.daily || {};
+  const days = Object.keys(daily);
+  if (!days.length || total === 0) return { key: 'dormant', label: 'Dormant' };
+
+  const today = new Date().toISOString().slice(0, 10);
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  const recentDays = days.filter(d => d >= yesterday);
+  if (recentDays.length && (daily[today] || 0) + (daily[yesterday] || 0) >= 5) {
+    return { key: 'hot', label: 'Hot' };
+  }
+  const lastDay = days.sort().pop();
+  const daysSince = Math.floor((Date.now() - new Date(lastDay).getTime()) / 86400000);
+  if (daysSince > 14) return { key: 'dormant', label: 'Dormant' };
+  return { key: 'active', label: 'Active' };
+}
+
+function getTopKey(obj) {
+  if (!obj || !Object.keys(obj).length) return '—';
+  return Object.entries(obj).sort((a, b) => b[1] - a[1])[0][0];
+}
+
 function renderIntentBadge(link) {
   const intent = link.intent || link.metadata?.intent;
   if (!intent || intent === 'view') return '';
@@ -102,9 +221,18 @@ function renderMetadataBadges(link) {
     parts.push(`<span style="font-size:11px;color:var(--text-muted);">${label}: ${escapeHtml(String(value))}</span>`);
   };
 
-  // Intent badge (highest priority — this is the differentiator)
+  // Health badge
+  const healthBadge = renderHealthBadge(link);
+  if (healthBadge) parts.push(healthBadge);
+
+  // Intent badge
   const intentBadge = renderIntentBadge(link);
   if (intentBadge) parts.push(intentBadge);
+
+  // Tenant context badge
+  if (link.tenantId && link.tenantId !== 'kaayko-default') {
+    parts.push(`<span style="display:inline-block;font-size:10px;font-weight:600;letter-spacing:.04em;background:rgba(100,181,246,.08);border:1px solid rgba(100,181,246,.25);color:#64b5f6;border-radius:4px;padding:2px 6px;">${escapeHtml(link.tenantName || link.tenantId)}</span>`);
+  }
 
   if (m.campaign === 'alumni') {
     parts.push(`<span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:rgba(212,168,75,.12);border:1px solid rgba(212,168,75,.3);color:#d4a84b;border-radius:4px;padding:2px 6px;">ALUMNI</span>`);
@@ -128,7 +256,6 @@ function renderMetadataBadges(link) {
     pushMeta('Campaign', m.campaignId || link.utm?.utm_campaign || m.campaign);
   }
 
-  // Attribution conversion goal
   const goal = link.conversionGoal || m.conversionGoal;
   if (goal) {
     pushMeta('Goal', goal.replace(/_/g, ' '));
@@ -139,35 +266,59 @@ function renderMetadataBadges(link) {
     : '';
 }
 
-function renderLinkRow(link) {
-  // ROBUST: Handle multiple code field formats from legacy data
-  const code = link.code || link.shortCode || link.id;
-  
-  // Skip rendering if no code available
-  if (!code) {
-    console.warn('Link missing code field:', link);
-    return ''; // Skip this row entirely
+function renderHealthBadge(link) {
+  const clicks = link.clickCount || 0;
+  const now = Date.now();
+
+  if (link.expiresAt) {
+    const exp = link.expiresAt._seconds ? link.expiresAt._seconds * 1000 : new Date(link.expiresAt).getTime();
+    if (exp < now) {
+      return `<span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:rgba(244,67,54,.1);border:1px solid rgba(244,67,54,.3);color:#f44336;border-radius:4px;padding:2px 6px;">EXPIRED</span>`;
+    }
+    if (exp - now < 7 * 24 * 60 * 60 * 1000) {
+      return `<span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:rgba(255,152,0,.1);border:1px solid rgba(255,152,0,.3);color:#ff9800;border-radius:4px;padding:2px 6px;">EXPIRING</span>`;
+    }
   }
-  
+
+  if (link.enabled === false) return '';
+
+  const lastClick = link.lastClickAt;
+  if (lastClick) {
+    const lastClickMs = lastClick._seconds ? lastClick._seconds * 1000 : new Date(lastClick).getTime();
+    const hoursSinceClick = (now - lastClickMs) / (1000 * 60 * 60);
+    if (hoursSinceClick < 24 && clicks >= 3) {
+      return `<span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:rgba(255,87,34,.1);border:1px solid rgba(255,87,34,.3);color:#ff5722;border-radius:4px;padding:2px 6px;">HOT</span>`;
+    }
+    if (hoursSinceClick > 14 * 24) {
+      return `<span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:rgba(120,120,120,.1);border:1px solid rgba(120,120,120,.3);color:#777;border-radius:4px;padding:2px 6px;">DORMANT</span>`;
+    }
+  } else if (clicks === 0) {
+    return `<span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:rgba(120,120,120,.1);border:1px solid rgba(120,120,120,.3);color:#777;border-radius:4px;padding:2px 6px;">DORMANT</span>`;
+  }
+
+  return '';
+}
+
+function renderLinkRow(link) {
+  const code = link.code || link.shortCode || link.id;
+  if (!code) return '';
+
   const rowClass = getRowClass(link);
   const created = formatDate(link.createdAt);
   const expires = link.expiresAt ? formatDate(link.expiresAt) : '∞ Never';
   const isEnabled = link.enabled !== false;
   const toggleClass = isEnabled ? 'toggle-active' : 'toggle-inactive';
   const toggleTitle = isEnabled ? 'Click to disable' : 'Click to enable';
-  
-  // CONSISTENT: Always show full https URL format
   const shortUrl = link.shortUrl || `https://kaayko.com/l/${code}`;
-  
-  // Alumni links use uniqueVisitCount; standard links use clickCount
+
   const displayClicks = link.metadata?.campaign === 'alumni'
     ? (link.uniqueVisitCount !== undefined ? link.uniqueVisitCount : (link.clickCount !== undefined ? link.clickCount : '-'))
     : (link.clickCount !== undefined ? link.clickCount : '-');
-  
+
   return `
-    <tr class="${rowClass}">
+    <tr class="${rowClass} link-row-expandable" data-link-code="${escapeHtml(code)}">
       <td style="text-align:center;">
-        <button class="btn-toggle ${toggleClass}" onclick="window.toggleLink('${code}')" title="${toggleTitle}">
+        <button class="btn-toggle ${toggleClass}" onclick="event.stopPropagation();window.toggleLink('${code}')" title="${toggleTitle}">
           <span class="toggle-track"></span>
         </button>
       </td>
@@ -177,7 +328,7 @@ function renderLinkRow(link) {
       <td>
         <div class="title-cell">
           <strong>${escapeHtml(link.title || 'Untitled')}</strong>
-          <button class="copy-inline" onclick="window.copyLink('${code}')" title="Copy link">
+          <button class="copy-inline" onclick="event.stopPropagation();window.copyLink('${code}')" title="Copy link">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -192,7 +343,7 @@ function renderLinkRow(link) {
       <td style="font-size:11px;color:var(--text-muted);">${created}</td>
       <td style="font-size:11px;color:var(--text-muted);">${expires}</td>
       <td style="text-align:center;">
-        <button class="action-btn-labeled action-edit" onclick="window.editLink('${code}')">
+        <button class="action-btn-labeled action-edit" onclick="event.stopPropagation();window.editLink('${code}')">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -201,7 +352,7 @@ function renderLinkRow(link) {
         </button>
       </td>
       <td style="text-align:center;">
-        <button class="action-btn-labeled action-qr" onclick="window.showQRSidebar('${code}')">
+        <button class="action-btn-labeled action-qr" onclick="event.stopPropagation();window.showQRSidebar('${code}')">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="3" width="7" height="7"></rect>
             <rect x="14" y="3" width="7" height="7"></rect>
@@ -212,7 +363,7 @@ function renderLinkRow(link) {
         </button>
       </td>
       <td style="text-align:center;">
-        <button class="action-btn-icon action-delete" onclick="window.deleteLink('${code}')" title="Delete">
+        <button class="action-btn-icon action-delete" onclick="event.stopPropagation();window.deleteLink('${code}')" title="Delete">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="3 6 5 6 21 6"></polyline>
             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>

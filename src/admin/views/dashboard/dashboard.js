@@ -12,7 +12,7 @@ import { escapeHtml } from '../../js/utils.js';
  */
 export async function init() {
   setupQuickActions();
-  await Promise.all([loadCampaignShortcuts(), loadRecentLinks()]);
+  await Promise.all([loadKPIs(), loadCampaignShortcuts(), loadRecentLinks()]);
 }
 
 /**
@@ -26,6 +26,38 @@ function setupQuickActions() {
       if (view) switchView(view);
     });
   });
+}
+
+async function loadKPIs() {
+  try {
+    const res = await apiFetch('/kortex?limit=300');
+    if (!res || !res.ok) return;
+    const data = await res.json();
+    const links = data.links || [];
+
+    const totalClicks = links.reduce((sum, l) => sum + (l.clickCount || 0), 0);
+    const activeLinks = links.filter(l => l.enabled !== false).length;
+
+    let topPerformer = '—';
+    if (links.length) {
+      const sorted = links.slice().sort((a, b) => (b.clickCount || 0) - (a.clickCount || 0));
+      topPerformer = sorted[0].title || sorted[0].code || sorted[0].id || '—';
+    }
+
+    const now = Date.now();
+    const sevenDays = 7 * 24 * 60 * 60 * 1000;
+    const expiringSoon = links.filter(l => {
+      if (!l.expiresAt) return false;
+      const exp = l.expiresAt._seconds ? l.expiresAt._seconds * 1000 : new Date(l.expiresAt).getTime();
+      return exp > now && exp - now < sevenDays;
+    }).length;
+
+    const el = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+    el('kpi-total-clicks', totalClicks.toLocaleString());
+    el('kpi-active-links', activeLinks);
+    el('kpi-top-performer', topPerformer.length > 18 ? topPerformer.slice(0, 18) + '...' : topPerformer);
+    el('kpi-expiring-soon', expiringSoon);
+  } catch (_) {}
 }
 
 async function loadCampaignShortcuts() {

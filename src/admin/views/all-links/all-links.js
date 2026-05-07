@@ -21,6 +21,8 @@ let searchTimer = null;
 let filterPanelOpen = false;
 let currentGroups = [];
 let documentEventsBound = false;
+const expandedAccordions = new Set();
+const accordionCache = new Map();
 
 /**
  * Initialize All Links view
@@ -417,6 +419,8 @@ function renderGroups(container, groups) {
       event.stopPropagation();
     });
   });
+
+  bindAccordionHandlers(container);
 }
 
 function renderTable(container, links) {
@@ -450,12 +454,14 @@ function renderTable(container, links) {
       <div class="links-table-header">
         <div>
           <h3>${utils.escapeHtml(selectedGroup ? `Links in ${selectedGroup.label}` : 'Matching Links')}</h3>
-          <p>${utils.escapeHtml(selectedGroup ? 'Edit, open QR, or delete individual links in this campaign.' : 'All links that match your current search and filters.')}</p>
+          <p>${utils.escapeHtml(selectedGroup ? 'Edit, open QR, or delete individual links in this campaign.' : 'Click any row to drill down into its analytics.')}</p>
         </div>
       </div>
       ${ui.renderLinksTable(links)}
     </div>
   `;
+
+  bindAccordionHandlers(container);
 }
 
 function populateGroupFilter(groups) {
@@ -1203,8 +1209,59 @@ export function showQRSidebar(code) {
   utils.showToast(`📱 Opening QR code for: ${code}`, 'info', 2000);
 }
 
+async function toggleLinkAccordion(code) {
+  const existingRow = document.getElementById(`accordion-${code}`);
+  if (existingRow) {
+    existingRow.remove();
+    expandedAccordions.delete(code);
+    document.querySelector(`tr[data-link-code="${code}"]`)?.classList.remove('is-expanded');
+    return;
+  }
+
+  const triggerRow = document.querySelector(`tr[data-link-code="${code}"]`);
+  if (!triggerRow) return;
+
+  triggerRow.classList.add('is-expanded');
+  expandedAccordions.add(code);
+
+  const accordionHtml = ui.renderLinkAccordion(code);
+  triggerRow.insertAdjacentHTML('afterend', accordionHtml);
+
+  const accordionEl = document.getElementById(`accordion-${code}`);
+  const inner = accordionEl?.querySelector('.link-accordion');
+  if (!inner) return;
+
+  if (accordionCache.has(code)) {
+    inner.innerHTML = ui.renderLinkAccordionContent(accordionCache.get(code));
+    return;
+  }
+
+  try {
+    const res = await apiFetch(`/kortex/${code}/clicks?limit=100`);
+    if (!res || !res.ok) throw new Error('Failed');
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Failed');
+    accordionCache.set(code, data);
+    inner.innerHTML = ui.renderLinkAccordionContent(data);
+  } catch (err) {
+    inner.innerHTML = `<div class="link-accordion-error">Could not load analytics: ${utils.escapeHtml(err.message)}</div>`;
+  }
+}
+
+function bindAccordionHandlers(container) {
+  if (!container) return;
+  container.querySelectorAll('.link-row-expandable').forEach(row => {
+    row.addEventListener('click', (e) => {
+      if (e.target.closest('button, a, input, label')) return;
+      const code = row.dataset.linkCode;
+      if (code) toggleLinkAccordion(code);
+    });
+  });
+}
+
 window.toggleLink = toggleLink;
 window.editLink = editLink;
 window.copyLink = copyLink;
 window.deleteLink = deleteLink;
 window.showQRSidebar = showQRSidebar;
+window.toggleLinkAccordion = toggleLinkAccordion;
