@@ -14,10 +14,10 @@ let SELECTED_PAGE = null;
 // ── Destination Registry — whitelisted Kaayko destinations ──
 // Only real, deployed domains: kaayko.com, coolschools.kaayko.com, alumni.kaayko.com, blog.kaayko.com
 const DEST_GROUPS = [
-  { id: 'kaayko', label: 'Kaayko' },
+  { id: 'kaayko', label: 'Kaayko', defaultTenantOnly: true },
   { id: 'alumni', label: 'Alumni' },
   { id: 'coolschools', label: 'CoolSchools' },
-  { id: 'kreator', label: 'Kreator' },
+  { id: 'kreator', label: 'Kreator', defaultTenantOnly: true },
   { id: 'custom', label: 'Custom URL', superAdminOnly: true },
 ];
 
@@ -95,6 +95,11 @@ function getUserRole() {
 
 function isSuperAdmin() {
   return getUserRole() === 'super-admin';
+}
+
+function isDefaultTenant() {
+  const tid = localStorage.getItem('kaayko_tenant_id') || 'kaayko-default';
+  return tid === 'kaayko-default';
 }
 
 /**
@@ -251,9 +256,11 @@ function initDestinationPicker() {
 
   pillsWrap.innerHTML = '';
   const superAdmin = isSuperAdmin();
+  const defaultTenant = isDefaultTenant();
 
   DEST_GROUPS.forEach(g => {
     if (g.superAdminOnly && !superAdmin) return;
+    if (g.defaultTenantOnly && !defaultTenant) return;
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'dest-pill';
