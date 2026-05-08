@@ -410,8 +410,91 @@ function restorePickerFromUrl(url) {
 }
 
 // ============================================================================
+// INLINE VALIDATION
+// ============================================================================
+
+function showFieldError(fieldId, errId, msg) {
+  const field = document.getElementById(fieldId);
+  const err = document.getElementById(errId);
+  if (field) field.classList.add('input-error');
+  if (err) { err.textContent = msg; err.classList.add('visible'); }
+}
+
+function clearFieldError(fieldId, errId) {
+  const field = document.getElementById(fieldId);
+  const err = document.getElementById(errId);
+  if (field) field.classList.remove('input-error');
+  if (err) { err.textContent = ''; err.classList.remove('visible'); }
+}
+
+function clearAllErrors() {
+  document.querySelectorAll('#create-view .field-error').forEach(el => {
+    el.textContent = ''; el.classList.remove('visible');
+  });
+  document.querySelectorAll('#create-view .input-error').forEach(el => {
+    el.classList.remove('input-error');
+  });
+}
+
+function isValidUrl(str) {
+  if (!str) return false;
+  try {
+    const u = new URL(str);
+    return u.protocol === 'https:' || u.protocol === 'http:';
+  } catch { return false; }
+}
+
+/** Validate form fields before submit. Returns array of error messages (empty = valid). */
+function validateForm(isEditing) {
+  clearAllErrors();
+  const errors = [];
+
+  // Title
+  const title = document.getElementById('title')?.value?.trim();
+  if (!title) {
+    showFieldError('title', 'err-title', 'Link title is required');
+    errors.push('title');
+  } else if (title.length > 200) {
+    showFieldError('title', 'err-title', 'Title must be under 200 characters');
+    errors.push('title');
+  }
+
+  // Destination URL
+  const webDest = document.getElementById('webDestination')?.value?.trim();
+  if (!webDest) {
+    showFieldError('webDestination', 'err-destination', 'Pick a destination or enter a URL');
+    errors.push('destination');
+  } else if (!isValidUrl(webDest)) {
+    showFieldError('webDestination', 'err-destination', 'Enter a valid URL starting with https://');
+    // Make sure input is visible so user can see the error
+    const destInput = document.getElementById('webDestination');
+    if (destInput) destInput.style.display = '';
+    errors.push('destination');
+  }
+
+  // iOS/Android URLs — validate format only if provided
+  const iosDest = document.getElementById('iosDestination')?.value?.trim();
+  if (iosDest && !isValidUrl(iosDest)) {
+    const el = document.getElementById('iosDestination');
+    if (el) el.classList.add('input-error');
+    errors.push('ios');
+  }
+  const androidDest = document.getElementById('androidDestination')?.value?.trim();
+  if (androidDest && !isValidUrl(androidDest)) {
+    const el = document.getElementById('androidDestination');
+    if (el) el.classList.add('input-error');
+    errors.push('android');
+  }
+
+  return errors;
+}
+
+// ============================================================================
 // FORM SETUP
 // ============================================================================
+
+// Stable reference for event listener cleanup
+function _onDestChange() { checkROOTSDestination(); checkAlumniDestination(); }
 
 function initCreateForm() {
   const form = document.getElementById('create-form');
@@ -423,14 +506,18 @@ function initCreateForm() {
   // Init destination picker
   initDestinationPicker();
 
-  // Destination URL watcher — auto-detect ROOTS / Alumni
+  // Destination URL watcher — stable reference so removeEventListener works
   const destInput = document.getElementById('webDestination');
   if (destInput) {
-    const onDestChange = () => { checkROOTSDestination(); checkAlumniDestination(); };
-    destInput.removeEventListener('input', onDestChange);
-    destInput.addEventListener('input', onDestChange);
-    onDestChange(); // Check initial value
+    destInput.removeEventListener('input', _onDestChange);
+    destInput.addEventListener('input', _onDestChange);
+    _onDestChange();
   }
+
+  // Clear inline errors on input
+  const title = document.getElementById('title');
+  if (title) title.addEventListener('input', () => clearFieldError('title', 'err-title'));
+  if (destInput) destInput.addEventListener('input', () => clearFieldError('webDestination', 'err-destination'));
 
   // ROOTS child-age toggle
   const typeSelect = document.getElementById('rootsAssessmentType');
@@ -453,19 +540,24 @@ async function handleCreateLink(e) {
   const originalText = submitBtn?.innerHTML;
 
   try {
+    const isEditing = !!STATE.editingCode;
+
+    // Client-side validation
+    const validationErrors = validateForm(isEditing);
+    if (validationErrors.length > 0) {
+      // Scroll to first error
+      const firstErr = document.querySelector('#create-view .input-error');
+      if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
     // Disable button and show loading state
     if (submitBtn) {
       submitBtn.disabled = true;
       submitBtn.innerHTML = '<span class="btn-spinner"></span> Saving...';
     }
 
-    const isEditing = !!STATE.editingCode;
     const formData = isEditing ? extractUpdatePayload() : extractCreatePayload();
-
-    // Client validation
-    if (!isEditing && formData.destinationType === 'external_url' && !formData.webDestination) {
-      throw new Error('Destination URL is required');
-    }
 
     const code = STATE.editingCode || formData.code;
     const endpoint = isEditing
@@ -481,9 +573,24 @@ async function handleCreateLink(e) {
       body: JSON.stringify(formData)
     });
 
+    // apiFetch returns null on 401 (session expired)
+    if (!res) {
+      throw new Error('Session expired. Please log in again.');
+    }
+
     const data = await res.json();
 
     if (!data.success) {
+      // Surface specific backend errors as inline field errors
+      if (data.code === 'DOMAIN_NOT_WHITELISTED') {
+        showFieldError('webDestination', 'err-destination', data.error);
+        document.getElementById('webDestination')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        throw new Error(data.error);
+      }
+      if (data.code === 'ALREADY_EXISTS') {
+        showFieldError('short-code', 'err-title', 'This short code is already taken');
+        throw new Error('Short code already exists — try a different one');
+      }
       throw new Error(data.error || `Failed to ${isEditing ? 'update' : 'create'} link`);
     }
 
@@ -536,7 +643,10 @@ async function handleCreateLink(e) {
 
   } catch (err) {
     console.error('[CreateLink] Submit error:', err);
-    utils.showError(err.message);
+    const msg = err instanceof TypeError && err.message.includes('fetch')
+      ? 'Network error — check your connection and try again'
+      : err.message;
+    utils.showError(msg);
   } finally {
     if (submitBtn) {
       submitBtn.disabled = false;
@@ -827,12 +937,12 @@ async function syncROOTSInvite(code, formData) {
 
 async function loadLinkForEditing(code) {
   try {
-    const res = await apiFetch('/kortex');
+    const res = await apiFetch(`/kortex/${encodeURIComponent(code)}`);
+    if (!res) { utils.showError('Session expired. Please log in again.'); return; }
     const data = await res.json();
-    if (!data.success) throw new Error('Failed to load links');
+    if (!data.success) throw new Error(data.error || 'Failed to load link');
 
-    const links = data.links || [];
-    const link = links.find(l => (l.code || l.shortCode || l.id) === code);
+    const link = data.link;
     if (!link) { utils.showError('Link not found'); return; }
 
     const actualCode = link.code || link.shortCode || link.id;
@@ -949,6 +1059,9 @@ function setChecked(id, val) {
 function resetCreateForm() {
   const form = document.getElementById('create-form');
   if (form) form.reset();
+
+  // Clear all inline validation errors
+  clearAllErrors();
 
   // Re-apply defaults that form.reset() doesn't handle
   setChecked('enabled', true);

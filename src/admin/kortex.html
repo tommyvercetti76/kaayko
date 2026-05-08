@@ -255,7 +255,8 @@
                   <span class="tooltip" role="tooltip">A memorable name to identify this link in your dashboard</span>
                 </button>
               </label>
-              <input type="text" id="title" class="form-input" required placeholder="e.g. Summer Sale 2026, Alumni Nagpur Batch">
+              <input type="text" id="title" class="form-input" required maxlength="200" placeholder="e.g. Summer Sale 2026, Alumni Nagpur Batch">
+              <span class="field-error" id="err-title"></span>
             </div>
 
             <div class="form-group">
@@ -286,11 +287,12 @@
               </div>
 
               <div id="dest-preview" class="dest-preview" style="display:none">
-                <code id="dest-preview-url"></code>
+                <span id="dest-preview-url" class="dest-preview-label"></span>
                 <button type="button" id="dest-clear-btn" class="dest-clear-btn" title="Change destination">&times;</button>
               </div>
 
               <input type="url" id="webDestination" class="form-input" style="display:none" placeholder="https://example.com/page">
+              <span class="field-error" id="err-destination"></span>
 
               <input type="hidden" id="destinationCategory" value="">
               <input type="hidden" id="destinationTemplate" value="">
