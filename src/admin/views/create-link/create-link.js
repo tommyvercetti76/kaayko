@@ -45,13 +45,23 @@ const DEST_PAGES = [
   { id: 'kreator_apply', group: 'kreator', label: 'Apply as Kreator', url: 'https://kaayko.com/kreator/apply' },
 ];
 
-/** Reverse-map a URL back to a registry entry (for edit mode) */
+/** Reverse-map a URL back to a registry entry (for edit mode).
+ *  Matches exact URLs first, then falls back to base-path matching
+ *  so that URLs with query params or extra segments still resolve. */
 function reverseMapUrl(url) {
   if (!url) return null;
   const norm = url.toLowerCase().replace(/\/+$/, '').replace(/^https?:\/\/www\./, 'https://');
-  return DEST_PAGES.find(d => {
-    const dNorm = d.url.toLowerCase().replace(/\/+$/, '');
-    return norm === dNorm;
+
+  // Exact match first
+  const exact = DEST_PAGES.find(d => norm === d.url.toLowerCase().replace(/\/+$/, ''));
+  if (exact) return exact;
+
+  // Base-path match — URL starts with a registry entry's URL (covers query params, sub-paths)
+  // Sort by longest URL first so /paddlingout/forecast matches before /paddlingout
+  const sorted = [...DEST_PAGES].sort((a, b) => b.url.length - a.url.length);
+  return sorted.find(d => {
+    const base = d.url.toLowerCase().replace(/\/+$/, '');
+    return norm.startsWith(base + '?') || norm.startsWith(base + '/') || norm.startsWith(base + '#');
   }) || null;
 }
 
@@ -341,15 +351,18 @@ function selectDestination(destId) {
   const previewUrl = document.getElementById('dest-preview-url');
   const pageWrap = document.getElementById('dest-page-wrap');
 
-  // Set webDestination value and fire input event for alumni/ROOTS detection
+  // Pre-fill base URL into editable input — user can append query params, sub-paths, etc.
   if (destInput) {
     destInput.value = entry.url;
+    destInput.style.display = '';
+    destInput.placeholder = entry.url;
+    destInput.focus();
     destInput.dispatchEvent(new Event('input', { bubbles: true }));
   }
   if (tplInput) tplInput.value = entry.id;
 
-  // Show preview, hide dropdown
-  if (previewUrl) previewUrl.textContent = entry.url;
+  // Show base hint in preview, keep input editable below it
+  if (previewUrl) previewUrl.textContent = entry.label + ' — edit URL below';
   if (preview) preview.style.display = '';
   if (pageWrap) pageWrap.style.display = 'none';
 }
@@ -370,7 +383,7 @@ function clearDestinationPicker() {
   if (pageWrap) pageWrap.style.display = 'none';
   if (pageSelect) pageSelect.innerHTML = '';
   if (preview) preview.style.display = 'none';
-  if (destInput) { destInput.style.display = 'none'; destInput.value = ''; destInput.dispatchEvent(new Event('input', { bubbles: true })); }
+  if (destInput) { destInput.style.display = 'none'; destInput.value = ''; destInput.placeholder = ''; destInput.dispatchEvent(new Event('input', { bubbles: true })); }
   if (catInput) catInput.value = '';
   if (tplInput) tplInput.value = '';
 }
@@ -381,7 +394,9 @@ function restorePickerFromUrl(url) {
   if (match) {
     selectGroup(match.group);
     selectDestination(match.id);
-    // Also set the dropdown to reflect the selection
+    // Restore the full original URL (may include query params, sub-paths)
+    const destInput = document.getElementById('webDestination');
+    if (destInput && url !== match.url) destInput.value = url;
     const pageSelect = document.getElementById('dest-page');
     if (pageSelect) pageSelect.value = match.id;
   } else if (url && isSuperAdmin()) {
