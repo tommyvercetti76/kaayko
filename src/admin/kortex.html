@@ -236,17 +236,17 @@
       <header class="view-header">
         <div>
           <h1>Create New Link</h1>
-          <p>Create a short link that works everywhere - track clicks, customize destinations, and generate QR codes</p>
+          <p class="view-subtitle">Build smart links with device routing, campaign attribution, and real-time analytics</p>
         </div>
       </header>
-      
+
       <!-- Quick Guide -->
       <div class="form-guide">
         <div class="guide-step">
           <div class="guide-number">1</div>
           <div class="guide-text">
-            <strong>Basic Info</strong>
-            <span>Name your link and set the destination</span>
+            <strong>Essentials</strong>
+            <span>Name, destination, and short code</span>
           </div>
         </div>
         <div class="guide-separator">→</div>
@@ -254,7 +254,7 @@
           <div class="guide-number">2</div>
           <div class="guide-text">
             <strong>Customize</strong>
-            <span>Add platforms and UTM parameters</span>
+            <span>Platforms, UTM, and options</span>
           </div>
         </div>
         <div class="guide-separator">→</div>
@@ -262,221 +262,166 @@
           <div class="guide-number">3</div>
           <div class="guide-text">
             <strong>Launch</strong>
-            <span>Review and create your link</span>
+            <span>Create and share your link</span>
           </div>
         </div>
       </div>
-      
+
       <div class="card">
         <form id="create-form">
-          
-          <!-- Core Fields (Always Visible) -->
+
+          <!-- Section 1: Essential Details (Always Visible) -->
           <div class="form-section">
             <h3>Essential Details</h3>
-            
+
             <div class="form-group">
               <label for="title">
-                What's this link for? <span class="required">*</span>
+                Link Title <span class="required">*</span>
                 <button type="button" class="info-icon" aria-label="More information">
                   i
-                  <span class="tooltip" role="tooltip">Give your link a memorable name so you can find it later</span>
+                  <span class="tooltip" role="tooltip">A memorable name to identify this link in your dashboard</span>
                 </button>
               </label>
-              <input type="text" id="title" class="form-input" required placeholder="Summer Sale 2024">
-            </div>
-            
-                        <div class="form-group">
-              <label for="webDestination">
-                Where should it go? <span class="required">*</span>
-                <button type="button" class="info-icon" aria-label="More information">
-                  i
-                  <span class="tooltip" role="tooltip">The web page people will see when they click your link</span>
-                </button>
-              </label>
-              <input type="url" id="webDestination" class="form-input" placeholder="https://kaayko.com/summer-sale">
+              <input type="text" id="title" class="form-input" required placeholder="e.g. Summer Sale 2026, Alumni Nagpur Batch">
             </div>
 
             <div class="form-group">
-              <label for="destinationType">KORTEX Destination Type</label>
-              <select id="destinationType" class="form-input">
-                <option value="external_url">External URL</option>
-                <option value="tenant_admin_login">Tenant Admin Login</option>
-                <option value="tenant_alumni_login">Tenant Alumni Login</option>
-                <option value="tenant_registration">Tenant Registration</option>
-                <option value="tenant_public_page">Tenant Public Page</option>
-                <option value="tenant_dashboard">Tenant Dashboard</option>
-                <option value="campaign_landing">Campaign Landing</option>
-                <option value="campaign_member_view">Campaign Member View</option>
-                <option value="philanthropy_campaign">Philanthropy Campaign</option>
-                <option value="donation_checkout">Donation Checkout</option>
-                <option value="campaign_report">Campaign Report</option>
+              <label for="description">
+                Description
+                <button type="button" class="info-icon" aria-label="More information">
+                  i
+                  <span class="tooltip" role="tooltip">Internal notes about this link's purpose, target audience, or campaign context</span>
+                </button>
+              </label>
+              <textarea id="description" class="form-input form-textarea" rows="2" placeholder="Optional notes about this link..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="webDestination">
+                Destination URL <span class="required">*</span>
+                <button type="button" class="info-icon" aria-label="More information">
+                  i
+                  <span class="tooltip" role="tooltip">The web page visitors will land on when they click your link</span>
+                </button>
+              </label>
+              <input type="url" id="webDestination" class="form-input" placeholder="https://example.com/landing-page">
+            </div>
+
+            <div class="form-group">
+              <label for="short-code">
+                Custom Short Code
+                <button type="button" class="info-icon" aria-label="More information">
+                  i
+                  <span class="tooltip" role="tooltip">Leave blank to auto-generate a unique code, or pick your own vanity slug</span>
+                </button>
+              </label>
+              <input type="text" id="short-code" name="short-code" class="form-input" placeholder="leave blank to auto-generate" pattern="[a-zA-Z0-9_-]+" minlength="3">
+              <span class="form-hint">Letters, numbers, hyphens, underscores. Min 3 chars. Creates: kaayko.com/l/your-code</span>
+            </div>
+          </div>
+
+          <!-- ROOTS Assessment Configuration (appears when destination is ROOTS) -->
+          <div id="roots-assessment-section" class="conditional-section conditional-section--roots">
+            <div class="conditional-section-header">
+              <span class="conditional-badge conditional-badge--roots">ROOTS</span>
+              <div>
+                <h4>ROOTS Assessment Settings</h4>
+                <p>This link points to ROOTS. Configure the assessment invite that will be auto-created.</p>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="rootsAssessmentType">
+                Assessment Type <span class="required">*</span>
+                <button type="button" class="info-icon" aria-label="More information">
+                  i
+                  <span class="tooltip" role="tooltip">Parent assessment evaluates home learning environment. Teacher assessment evaluates pedagogical fit.</span>
+                </button>
+              </label>
+              <select id="rootsAssessmentType" class="form-input">
+                <option value="parent">Parent Assessment</option>
+                <option value="teacher">Teacher Assessment</option>
               </select>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label for="linkNamespace">Public Namespace</label>
-                <input type="text" id="linkNamespace" class="form-input" maxlength="32" placeholder="a">
-                <p class="help-text">Use this with a custom code to create links like kaayko.com/a/adminP12.</p>
-              </div>
-              <div class="form-group">
-                <label for="tenantSlug">Tenant Slug</label>
-                <input type="text" id="tenantSlug" class="form-input" maxlength="64" placeholder="parishram">
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="alumniDomain">Alumni Domain</label>
-                <input type="text" id="alumniDomain" class="form-input" placeholder="parishram.alumni.kaayko.com">
-              </div>
-              <div class="form-group">
-                <label for="linkAudience">Audience</label>
-                <select id="linkAudience" class="form-input">
-                  <option value="public">Public</option>
-                  <option value="admin">Admin</option>
-                  <option value="alumni">Alumni</option>
-                  <option value="donor">Donor</option>
-                  <option value="invited">Invited</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="linkIntent">Intent</label>
-                <select id="linkIntent" class="form-input">
-                  <option value="view">View</option>
-                  <option value="login">Login</option>
-                  <option value="register">Register</option>
-                  <option value="donate">Donate</option>
-                  <option value="report">Report</option>
-                  <option value="share">Share</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="linkSource">Source</label>
-                <select id="linkSource" class="form-input">
-                  <option value="manual">Manual</option>
-                  <option value="qr">QR</option>
-                  <option value="email">Email</option>
-                  <option value="sms">SMS</option>
-                  <option value="social">Social</option>
-                  <option value="print">Print</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-group checkbox-group">
-              <label>
-                <input type="checkbox" id="requiresAuth">
-                Require tenant login before continuing
+            <div class="form-group" id="roots-child-age-group">
+              <label for="rootsChildAge">
+                Child Age
+                <button type="button" class="info-icon" aria-label="More information">
+                  i
+                  <span class="tooltip" role="tooltip">Pre-fills the child's age for age-appropriate questions. Leave empty to ask during assessment.</span>
+                </button>
               </label>
+              <input type="number" id="rootsChildAge" class="form-input" min="3" max="18" placeholder="e.g. 8">
             </div>
 
-            <!-- ROOTS Assessment Configuration (appears when destination is /knowledge) -->
-            <div id="roots-assessment-section" style="display:none; margin: 20px 0; padding: 20px; border: 2px solid rgba(76,175,80,0.4); border-radius: 12px; background: rgba(76,175,80,0.06);">
-              <h4 style="color:#4caf50; margin-bottom:8px;">ROOTS Assessment Settings</h4>
-              <p class="help-text" style="color:#4caf50; margin-bottom:16px;">This link goes to the ROOTS Knowledge Engine. Configure the assessment invite that will be auto-created.</p>
-
+            <div class="form-row">
               <div class="form-group">
-                <label for="rootsAssessmentType">
-                  Assessment Type <span class="required">*</span>
-                  <button type="button" class="info-icon" aria-label="More information">
-                    i
-                    <span class="tooltip" role="tooltip">Parent assessment evaluates home learning environment. Teacher assessment evaluates pedagogical fit.</span>
-                  </button>
-                </label>
-                <select id="rootsAssessmentType" class="form-input">
-                  <option value="parent">Parent Assessment</option>
-                  <option value="teacher">Teacher Assessment</option>
-                </select>
-              </div>
-
-              <div class="form-group" id="roots-child-age-group">
-                <label for="rootsChildAge">
-                  Child Age (for parent assessments)
-                  <button type="button" class="info-icon" aria-label="More information">
-                    i
-                    <span class="tooltip" role="tooltip">Pre-fills the child's age for age-band-appropriate questions. Leave empty to ask during assessment.</span>
-                  </button>
-                </label>
-                <input type="number" id="rootsChildAge" class="form-input" min="3" max="18" placeholder="e.g. 8">
-              </div>
-
-              <div class="form-group">
-                <label for="rootsSchoolId">
-                  School ID (optional)
-                  <button type="button" class="info-icon" aria-label="More information">
-                    i
-                    <span class="tooltip" role="tooltip">Links the assessment to a specific school for reporting. Leave empty for general assessments.</span>
-                  </button>
-                </label>
+                <label for="rootsSchoolId">School ID</label>
                 <input type="text" id="rootsSchoolId" class="form-input" placeholder="e.g. somalwar-ramdaspeth">
               </div>
-
               <div class="form-group">
-                <label for="rootsSchoolName">
-                  School Name (optional)
-                </label>
+                <label for="rootsSchoolName">School Name</label>
                 <input type="text" id="rootsSchoolName" class="form-input" placeholder="e.g. Somalwar Academy">
-              </div>
-
-              <div class="form-group">
-                <label for="rootsMaxUses">
-                  Max Uses (0 = unlimited)
-                  <button type="button" class="info-icon" aria-label="More information">
-                    i
-                    <span class="tooltip" role="tooltip">Limit how many times this invite can be used. Set 0 for unlimited.</span>
-                  </button>
-                </label>
-                <input type="number" id="rootsMaxUses" class="form-input" min="0" value="0" placeholder="0">
               </div>
             </div>
 
-            <!-- Alumni Campaign Configuration (appears when destination is /alumni) -->
-            <div id="alumni-campaign-section" style="display:none; margin: 20px 0; padding: 20px; border: 2px solid rgba(212,175,55,0.4); border-radius: 12px; background: rgba(212,175,55,0.06);">
-              <h4 style="color:#d4af37; margin-bottom:8px;">Alumni Campaign Settings</h4>
-              <p class="help-text" style="color:#d4af37; margin-bottom:16px;">This link points to the alumni interest survey. Each click issues a one-time token — voters can only vote once per click.</p>
+            <div class="form-group">
+              <label for="rootsMaxUses">
+                Max Uses (0 = unlimited)
+                <button type="button" class="info-icon" aria-label="More information">
+                  i
+                  <span class="tooltip" role="tooltip">Limit how many times this invite can be used. Set 0 for unlimited.</span>
+                </button>
+              </label>
+              <input type="number" id="rootsMaxUses" class="form-input" min="0" value="0" placeholder="0">
+            </div>
+          </div>
 
+          <!-- Alumni Campaign Configuration (appears when destination is /alumni) -->
+          <div id="alumni-campaign-section" class="conditional-section conditional-section--alumni">
+            <div class="conditional-section-header">
+              <span class="conditional-badge conditional-badge--alumni">ALUMNI</span>
+              <div>
+                <h4>Alumni Campaign Settings</h4>
+                <p>This link points to the alumni interest survey. Each click issues a one-time signed token.</p>
+              </div>
+            </div>
+
+            <div class="form-row">
               <div class="form-group">
                 <label for="alumniSourceGroup">
                   WhatsApp Group / Source <span class="required">*</span>
                   <button type="button" class="info-icon" aria-label="More information">
                     i
-                    <span class="tooltip" role="tooltip">Name of the group or channel you're sharing to, e.g. "Batch 2005 Alumni WA"</span>
+                    <span class="tooltip" role="tooltip">Name of the group or channel you're sharing to</span>
                   </button>
                 </label>
-                <input type="text" id="alumniSourceGroup" class="form-input" placeholder="e.g. Batch 2005 Alumni WhatsApp">
+                <input type="text" id="alumniSourceGroup" class="form-input" placeholder="e.g. Batch 2005 Alumni WA">
               </div>
-
               <div class="form-group">
-                <label for="alumniSourceBatch">
-                  Batch / Graduation Year
-                  <button type="button" class="info-icon" aria-label="More information">
-                    i
-                    <span class="tooltip" role="tooltip">Graduation year of this group, e.g. 2005</span>
-                  </button>
-                </label>
+                <label for="alumniSourceBatch">Batch / Graduation Year</label>
                 <input type="number" id="alumniSourceBatch" class="form-input" placeholder="2005" min="1950" max="2030">
               </div>
+            </div>
 
+            <div class="form-row">
               <div class="form-group">
                 <label for="alumniSchoolName">School Name</label>
                 <input type="text" id="alumniSchoolName" class="form-input" placeholder="e.g. Somalwar Ramdaspeth">
               </div>
-
               <div class="form-group">
                 <label for="alumniSchoolId">School ID (Canonical)</label>
                 <input type="text" id="alumniSchoolId" class="form-input" placeholder="e.g. somalwar-ramdaspeth">
               </div>
+            </div>
 
+            <div class="form-row">
               <div class="form-group">
                 <label for="alumniCampaignId">Campaign ID</label>
                 <input type="text" id="alumniCampaignId" class="form-input" placeholder="e.g. somalwar-2026-soft-launch">
-                <p class="help-text">Use the same Campaign ID across related links so KORTEX can group and manage that campaign together.</p>
+                <span class="form-hint">Same Campaign ID groups related links for unified management.</span>
               </div>
-
               <div class="form-group">
                 <label for="alumniChannel">Channel</label>
                 <select id="alumniChannel" class="form-input">
@@ -488,27 +433,30 @@
                   <option value="other">Other</option>
                 </select>
               </div>
+            </div>
 
+            <div class="form-row">
               <div class="form-group">
                 <label for="alumniChapterOrRegion">Chapter / Region</label>
                 <input type="text" id="alumniChapterOrRegion" class="form-input" placeholder="e.g. Nagpur / Mumbai / Overseas">
               </div>
-
               <div class="form-group">
                 <label for="alumniAudienceType">Audience Type</label>
                 <select id="alumniAudienceType" class="form-input">
-                  <option value="">Select audience type</option>
+                  <option value="">Select type</option>
                   <option value="alumni">Alumni</option>
                   <option value="parent">Parent</option>
                   <option value="teacher">Teacher</option>
                   <option value="mixed">Mixed</option>
                 </select>
               </div>
+            </div>
 
+            <div class="form-row">
               <div class="form-group">
                 <label for="alumniOrganizerRole">Organizer Role</label>
                 <select id="alumniOrganizerRole" class="form-input">
-                  <option value="">Select organizer role</option>
+                  <option value="">Select role</option>
                   <option value="board_member">Board Member</option>
                   <option value="volunteer_lead">Volunteer Lead</option>
                   <option value="admin">Admin</option>
@@ -516,219 +464,155 @@
                   <option value="other">Other</option>
                 </select>
               </div>
-
               <div class="form-group">
                 <label for="alumniMessageTemplateId">Message Template ID</label>
                 <input type="text" id="alumniMessageTemplateId" class="form-input" placeholder="e.g. wa-v3-soft-launch">
               </div>
+            </div>
 
+            <div class="form-row">
               <div class="form-group">
-                <label for="alumniSender">
-                  Sender Name (Optional)
-                  <button type="button" class="info-icon" aria-label="More information">
-                    i
-                    <span class="tooltip" role="tooltip">Your name or "Anonymous" — visible in admin stats only, never shown to voters</span>
-                  </button>
-                </label>
+                <label for="alumniSender">Sender Name</label>
                 <input type="text" id="alumniSender" class="form-input" placeholder="Your name or 'Anonymous'">
+                <span class="form-hint">Visible in admin stats only, never shown to voters.</span>
               </div>
-
               <div class="form-group">
                 <label for="alumniMaxUses">
                   Max Unique Visits
                   <button type="button" class="info-icon" aria-label="More information">
                     i
-                    <span class="tooltip" role="tooltip">Link stops working after this many clicks. Default 50. Prevents mass sharing.</span>
+                    <span class="tooltip" role="tooltip">Link auto-disables after this many clicks. Default 50.</span>
                   </button>
                 </label>
-                <input type="number" id="alumniMaxUses" class="form-input" min="1" max="500" value="50" placeholder="50">
-              </div>
-
-              <div style="background:rgba(212,175,55,0.08);border:1px solid rgba(212,175,55,0.2);border-radius:8px;padding:12px;font-size:0.85rem;color:#a89060;line-height:1.6;">
-                <strong>Anti-gaming:</strong> Voting deadline auto-set to 7 days from now. Each click is a single-use signed token and cannot be reused or forwarded.
+                <input type="number" id="alumniMaxUses" class="form-input" min="1" max="500" value="50">
               </div>
             </div>
 
-            <div class="form-group">
-              <label for="createdBy">
-                Who's creating this? <span class="required">*</span>
-                <button type="button" class="info-icon" aria-label="More information">
-                  i
-                  <span class="tooltip" role="tooltip">Your name or team name for tracking purposes</span>
-                </button>
-              </label>
-              <input type="text" id="createdBy" class="form-input" required placeholder="marketing-team">
-            </div>
-            
-            <div class="form-group">
-              <label for="short-code">
-                Choose your short code <span class="required">*</span>
-                <button type="button" class="info-icon" aria-label="More information">
-                  i
-                  <span class="tooltip" role="tooltip">This creates your short link: kaayko.com/l/your-code-here</span>
-                </button>
-              </label>
-              <input type="text" id="short-code" name="short-code" class="form-input" required placeholder="summer-sale" pattern="[a-zA-Z0-9_-]+" minlength="3">
-              <span class="form-hint">Letters, numbers, hyphens, and underscores only. Minimum 3 characters.</span>
+            <div class="conditional-section-note">
+              <strong>Anti-gaming:</strong> Voting deadline auto-set to 7 days. Each click is a single-use signed token.
             </div>
           </div>
-          
-          <!-- Platform Destinations (Collapsible) -->
+
+          <!-- Section 2: Mobile App Links (Collapsible) -->
           <div class="collapsible">
             <div class="collapsible-header">
-              <span class="collapsible-title">
-                <span class="collapsible-icon">📱</span>
-                Mobile App Links (Optional)
-              </span>
+              <span class="collapsible-title">Mobile App Links</span>
               <span class="collapsible-toggle">▼</span>
             </div>
             <div class="collapsible-content">
               <div class="collapsible-body">
-                <p class="help-text">Have a mobile app? Set different destinations for iPhone and Android users. Otherwise, they'll see your web page.</p>
-                
-                <div class="form-group">
-                  <label for="iosDestination">
-                    iPhone/iPad Link
-                    <button type="button" class="info-icon" aria-label="More information">
-                      i
-                      <span class="tooltip" role="tooltip">Where iOS users go (leave blank to use web link)</span>
-                    </button>
-                  </label>
-                  <input type="text" id="iosDestination" class="form-input" placeholder="kaayko://spot/beach-123">
-                </div>
-                
-                <div class="form-group">
-                  <label for="androidDestination">
-                    Android Link
-                    <button type="button" class="info-icon" aria-label="More information">
-                      i
-                      <span class="tooltip" role="tooltip">Where Android users go (leave blank to use web link)</span>
-                    </button>
-                  </label>
-                  <input type="text" id="androidDestination" class="form-input" placeholder="kaayko://spot/beach-123">
+                <p class="help-text">Set different destinations for iOS and Android users. They'll fall back to the web URL if left blank.</p>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="iosDestination">
+                      iOS Destination
+                      <button type="button" class="info-icon" aria-label="More information">
+                        i
+                        <span class="tooltip" role="tooltip">Deep link or App Store URL for iPhone/iPad users</span>
+                      </button>
+                    </label>
+                    <input type="text" id="iosDestination" class="form-input" placeholder="https://apps.apple.com/... or app://deep-link">
+                  </div>
+                  <div class="form-group">
+                    <label for="androidDestination">
+                      Android Destination
+                      <button type="button" class="info-icon" aria-label="More information">
+                        i
+                        <span class="tooltip" role="tooltip">Deep link or Play Store URL for Android users</span>
+                      </button>
+                    </label>
+                    <input type="text" id="androidDestination" class="form-input" placeholder="https://play.google.com/... or app://deep-link">
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          
-          <!-- UTM Parameters (Collapsible) -->
+
+          <!-- Section 3: UTM Parameters (Collapsible) -->
           <div class="collapsible">
             <div class="collapsible-header">
-              <span class="collapsible-title">
-                <span class="collapsible-icon">UTM</span>
-                UTM Tracking Parameters
-              </span>
+              <span class="collapsible-title">UTM Tracking Parameters</span>
               <span class="collapsible-toggle">▼</span>
             </div>
             <div class="collapsible-content">
               <div class="collapsible-body">
-                <p class="help-text">Add UTM parameters for detailed campaign tracking in Google Analytics.</p>
-                
-                <div class="form-group">
-                  <label for="utmSource">
-                    UTM Source
-                    <button type="button" class="info-icon" aria-label="More information">
-                      i
-                      <span class="tooltip" role="tooltip">Identifies which site sent the traffic (e.g., newsletter, facebook, google)</span>
-                    </button>
-                  </label>
-                  <input type="text" id="utmSource" class="form-input" placeholder="newsletter">
+                <p class="help-text">Auto-appended to your destination URL for campaign tracking in Google Analytics.</p>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="utmSource">Source</label>
+                    <input type="text" id="utmSource" class="form-input" placeholder="e.g. newsletter">
+                  </div>
+                  <div class="form-group">
+                    <label for="utmMedium">Medium</label>
+                    <input type="text" id="utmMedium" class="form-input" placeholder="e.g. email">
+                  </div>
                 </div>
-                
+
                 <div class="form-group">
-                  <label for="utmMedium">
-                    UTM Medium
-                    <button type="button" class="info-icon" aria-label="More information">
-                      i
-                      <span class="tooltip" role="tooltip">Identifies what type of link was used (e.g., email, cpc, social)</span>
-                    </button>
-                  </label>
-                  <input type="text" id="utmMedium" class="form-input" placeholder="email">
+                  <label for="utmCampaign">Campaign</label>
+                  <input type="text" id="utmCampaign" class="form-input" placeholder="e.g. summer_sale_2026">
                 </div>
-                
-                <div class="form-group">
-                  <label for="utmCampaign">
-                    UTM Campaign
-                    <button type="button" class="info-icon" aria-label="More information">
-                      i
-                      <span class="tooltip" role="tooltip">Identifies a specific product promotion or campaign (e.g., summer_sale)</span>
-                    </button>
-                  </label>
-                  <input type="text" id="utmCampaign" class="form-input" placeholder="summer_sale_2024">
-                </div>
-                
-                <div class="form-group">
-                  <label for="utmTerm">
-                    UTM Term
-                    <button type="button" class="info-icon" aria-label="More information">
-                      i
-                      <span class="tooltip" role="tooltip">Identifies paid search keywords. Rarely used for organic campaigns.</span>
-                    </button>
-                  </label>
-                  <input type="text" id="utmTerm" class="form-input" placeholder="paddle+kayak">
-                </div>
-                
-                <div class="form-group">
-                  <label for="utmContent">
-                    UTM Content
-                    <button type="button" class="info-icon" aria-label="More information">
-                      i
-                      <span class="tooltip" role="tooltip">Differentiates similar content or links within the same ad (e.g., header-link, footer-link)</span>
-                    </button>
-                  </label>
-                  <input type="text" id="utmContent" class="form-input" placeholder="hero-cta">
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="utmTerm">Term</label>
+                    <input type="text" id="utmTerm" class="form-input" placeholder="e.g. paddle+kayak">
+                  </div>
+                  <div class="form-group">
+                    <label for="utmContent">Content</label>
+                    <input type="text" id="utmContent" class="form-input" placeholder="e.g. hero-cta">
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          
-          <!-- Advanced Options (Collapsible) -->
+
+          <!-- Section 4: Link Settings (Collapsible) -->
           <div class="collapsible">
             <div class="collapsible-header">
-              <span class="collapsible-title">
-                <span class="collapsible-icon">Options</span>
-                Advanced Options
-              </span>
+              <span class="collapsible-title">Link Settings</span>
               <span class="collapsible-toggle">▼</span>
             </div>
             <div class="collapsible-content">
               <div class="collapsible-body">
-                
+
                 <div class="form-group">
                   <label for="expiresAt">
                     Expiration Date
                     <button type="button" class="info-icon" aria-label="More information">
                       i
-                      <span class="tooltip" role="tooltip">Optional: Set a date when this link should stop working. Leave empty for no expiration.</span>
+                      <span class="tooltip" role="tooltip">Link auto-disables after this date. Leave empty for no expiration.</span>
                     </button>
                   </label>
                   <input type="datetime-local" id="expiresAt" class="form-input">
                 </div>
-                
+
                 <div class="toggle-option">
                   <div class="toggle-option-info">
                     <div class="toggle-option-label">
                       <strong>Link Enabled</strong>
                       <button type="button" class="info-icon" aria-label="More information">
                         i
-                        <span class="tooltip" role="tooltip">Uncheck to create a disabled link. Disabled links show an inactive error page.</span>
+                        <span class="tooltip" role="tooltip">Disabled links show an error page. Re-enable anytime without losing data.</span>
                       </button>
                     </div>
-                    <p class="toggle-option-desc">When disabled, this link will stop working until re-enabled</p>
+                    <p class="toggle-option-desc">Visitors see this link when enabled</p>
                   </div>
                   <label class="toggle-switch">
                     <input type="checkbox" id="enabled" checked>
                     <span class="toggle-slider"></span>
                   </label>
                 </div>
-                
+
                 <div class="toggle-option">
                   <div class="toggle-option-info">
                     <div class="toggle-option-label">
-                      <strong>Admin link</strong>
+                      <strong>Admin Report Link</strong>
                       <button type="button" class="info-icon" aria-label="More information">
                         i
-                        <span class="tooltip" role="tooltip">After creation, generates a shareable read-only report URL for this link's traffic and metadata</span>
+                        <span class="tooltip" role="tooltip">Generates a shareable read-only report URL after creation</span>
                       </button>
                     </div>
                     <p class="toggle-option-desc">Show report dashboard URL in the success modal</p>
@@ -745,30 +629,13 @@
                       <strong>Generate QR Code</strong>
                       <button type="button" class="info-icon" aria-label="More information">
                         i
-                        <span class="tooltip" role="tooltip">Display QR code modal immediately after creating the link</span>
+                        <span class="tooltip" role="tooltip">Shows a branded QR code modal immediately after creation</span>
                       </button>
                     </div>
-                    <p class="toggle-option-desc">Show QR code after link creation for easy download</p>
+                    <p class="toggle-option-desc">Download or share QR code right away</p>
                   </div>
                   <label class="toggle-switch">
                     <input type="checkbox" id="generateQR">
-                    <span class="toggle-slider"></span>
-                  </label>
-                </div>
-                
-                <div class="toggle-option">
-                  <div class="toggle-option-info">
-                    <div class="toggle-option-label">
-                      <strong>App Store Default</strong>
-                      <button type="button" class="info-icon" aria-label="More information">
-                        i
-                        <span class="tooltip" role="tooltip">Send mobile users to App Store, desktop users to web version</span>
-                      </button>
-                    </div>
-                    <p class="toggle-option-desc">Redirect mobile browsers to App Store instead of web</p>
-                  </div>
-                  <label class="toggle-switch">
-                    <input type="checkbox" id="appStoreDefault">
                     <span class="toggle-slider"></span>
                   </label>
                 </div>
@@ -776,12 +643,104 @@
             </div>
           </div>
 
+          <!-- Section 5: Advanced Routing (Super-Admin Only — JS controls visibility) -->
+          <div class="collapsible" id="advanced-routing-section" style="display:none;">
+            <div class="collapsible-header">
+              <span class="collapsible-title">Advanced Routing (V2 Intent System)</span>
+              <span class="collapsible-toggle">▼</span>
+            </div>
+            <div class="collapsible-content">
+              <div class="collapsible-body">
+                <p class="help-text">V2 intent-based routing. One link adapts behavior based on audience, intent, and source channel.</p>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="destinationType">Destination Type</label>
+                    <select id="destinationType" class="form-input">
+                      <option value="external_url">External URL</option>
+                      <option value="tenant_admin_login">Tenant Admin Login</option>
+                      <option value="tenant_alumni_login">Tenant Alumni Login</option>
+                      <option value="tenant_registration">Tenant Registration</option>
+                      <option value="tenant_public_page">Tenant Public Page</option>
+                      <option value="tenant_dashboard">Tenant Dashboard</option>
+                      <option value="campaign_landing">Campaign Landing</option>
+                      <option value="campaign_member_view">Campaign Member View</option>
+                      <option value="philanthropy_campaign">Philanthropy Campaign</option>
+                      <option value="donation_checkout">Donation Checkout</option>
+                      <option value="campaign_report">Campaign Report</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="linkNamespace">Namespace</label>
+                    <input type="text" id="linkNamespace" class="form-input" maxlength="32" placeholder="e.g. a">
+                    <span class="form-hint">Creates links like kaayko.com/a/your-code</span>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="linkAudience">Audience</label>
+                    <select id="linkAudience" class="form-input">
+                      <option value="public">Public</option>
+                      <option value="admin">Admin</option>
+                      <option value="alumni">Alumni</option>
+                      <option value="donor">Donor</option>
+                      <option value="invited">Invited</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="linkIntent">Intent</label>
+                    <select id="linkIntent" class="form-input">
+                      <option value="view">View</option>
+                      <option value="login">Login</option>
+                      <option value="register">Register</option>
+                      <option value="donate">Donate</option>
+                      <option value="report">Report</option>
+                      <option value="share">Share</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="linkSource">Source</label>
+                    <select id="linkSource" class="form-input">
+                      <option value="manual">Manual</option>
+                      <option value="qr">QR Code</option>
+                      <option value="email">Email</option>
+                      <option value="sms">SMS</option>
+                      <option value="social">Social</option>
+                      <option value="print">Print</option>
+                    </select>
+                  </div>
+                  <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:4px;">
+                    <div class="toggle-option" style="margin:0;width:100%;">
+                      <div class="toggle-option-info">
+                        <div class="toggle-option-label">
+                          <strong>Require Auth</strong>
+                          <button type="button" class="info-icon" aria-label="More information">
+                            i
+                            <span class="tooltip" role="tooltip">Force tenant login before the destination loads</span>
+                          </button>
+                        </div>
+                      </div>
+                      <label class="toggle-switch">
+                        <input type="checkbox" id="requiresAuth">
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Submit -->
           <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Create Link</button>
-            <button type="reset" class="btn btn-secondary" onclick="resetCreateForm()">Clear Form</button>
+            <button type="button" class="btn btn-secondary" onclick="resetCreateForm()">Clear Form</button>
+            <button type="submit" class="btn btn-primary" id="create-submit-btn">Create Link</button>
           </div>
-          
+
         </form>
       </div>
     </div>

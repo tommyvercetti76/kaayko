@@ -91,98 +91,106 @@ export function renderLinkAccordion(code) {
 }
 
 export function renderLinkAccordionContent(data, link) {
-  const { code, totalClicks, breakdown, daily, clicks } = data;
+  const { code, breakdown, daily } = data;
+  const clicks = link?.clickCount ?? data.totalClicks ?? 0;
   const health = getLinkHealth(data);
-  const shortUrl = link?.shortUrl || `https://kaayko.com/l/${code}`;
-  const qrUrl = generateQRCodeURL(shortUrl, 140);
-  const isEnabled = link ? link.enabled !== false : true;
 
-  const dailyEntries = Object.entries(daily || {}).sort((a, b) => a[0].localeCompare(b[0]));
-  const last7 = dailyEntries.slice(-7);
+  const last7 = buildLast7Days(daily || {});
   const maxDaily = Math.max(...last7.map(e => e[1]), 1);
-
-  const topPlatform = getTopKey(breakdown?.platforms);
-  const topSource = getTopKey(breakdown?.utmSources);
-  const topBrowser = getTopKey(breakdown?.browsers);
-  const topDevice = getTopKey(breakdown?.devices);
+  const hasChart = last7.some(e => e[1] > 0);
+  const hasBd = Object.keys(breakdown?.platforms || {}).length > 0;
 
   return `
     <div class="acc-panel">
-      <div class="acc-top">
-        <div class="acc-qr">
-          <img src="${qrUrl}" alt="QR" width="80" height="80" />
+      <div class="acc-header">
+        <div class="acc-stat acc-stat-primary">
+          <span class="acc-stat-value">${clicks.toLocaleString()}</span>
+          <span class="acc-stat-label">Total Clicks</span>
         </div>
-        <div class="acc-header">
-          <div class="acc-title-row">
-            <span class="acc-url">${escapeHtml(shortUrl)}</span>
-            <span class="acc-health acc-health-${health.key}">${health.label}</span>
-          </div>
-          <div class="acc-actions">
-            <button class="acc-btn acc-btn-copy" onclick="event.stopPropagation();window.copyLink('${code}')" title="Copy URL">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-              Copy
-            </button>
-            <button class="acc-btn" onclick="event.stopPropagation();window.editLink('${code}')" title="Edit link">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              Edit
-            </button>
-            <button class="acc-btn" onclick="event.stopPropagation();window.showQRSidebar('${code}')" title="QR codes">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-              QR
-            </button>
-            <button class="acc-btn acc-btn-toggle ${isEnabled ? 'acc-btn-on' : 'acc-btn-off'}" onclick="event.stopPropagation();window.toggleLink('${code}')" title="${isEnabled ? 'Disable' : 'Enable'}">
-              ${isEnabled ? 'Enabled' : 'Disabled'}
-            </button>
-            <button class="acc-btn acc-btn-danger" onclick="event.stopPropagation();window.deleteLink('${code}')" title="Delete">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-            </button>
-          </div>
+        <div class="acc-stat">
+          <span class="acc-stat-value">${prettifyName(getTopKey(breakdown?.platforms))}</span>
+          <span class="acc-stat-label">Top Platform</span>
         </div>
-        <div class="acc-kpis">
-          <div class="acc-kpi"><strong>${totalClicks}</strong><span>clicks</span></div>
-          <div class="acc-kpi"><strong>${topPlatform}</strong><span>platform</span></div>
-          <div class="acc-kpi"><strong>${topBrowser}</strong><span>browser</span></div>
-          <div class="acc-kpi"><strong>${topDevice}</strong><span>device</span></div>
-          <div class="acc-kpi"><strong>${topSource}</strong><span>source</span></div>
+        <div class="acc-stat">
+          <span class="acc-stat-value">${prettifyName(getTopKey(breakdown?.browsers))}</span>
+          <span class="acc-stat-label">Top Browser</span>
+        </div>
+        <div class="acc-stat">
+          <span class="acc-stat-value">${prettifyName(getTopKey(breakdown?.devices))}</span>
+          <span class="acc-stat-label">Top Device</span>
+        </div>
+        <div class="acc-stat">
+          <span class="acc-health acc-health-${health.key}">${health.label}</span>
+          <span class="acc-stat-label">Status</span>
         </div>
       </div>
-
-      <div class="acc-bottom">
-        ${last7.length ? `
+      ${hasChart || hasBd ? `
+      <div class="acc-body">
+        ${hasChart ? `
         <div class="acc-chart">
+          <span class="acc-section-title">7-Day Trend</span>
           <div class="acc-chart-bars">
-            ${last7.map(([day, count]) => `
-              <div class="acc-bar-col" title="${day}: ${count}">
-                <div class="acc-bar" style="height:${Math.max((count / maxDaily) * 100, 6)}%">
-                  <span class="acc-bar-val">${count}</span>
-                </div>
-                <span class="acc-bar-day">${day.slice(5)}</span>
-              </div>
-            `).join('')}
+            ${last7.map(([day, count]) => {
+              const pct = count === 0 ? 0 : Math.max((count / maxDaily) * 100, 8);
+              const dayLabel = new Date(day + 'T00:00:00').toLocaleDateString('en', { weekday: 'short' }).slice(0, 2);
+              return `<div class="acc-bar-col" title="${day}: ${count} clicks">
+                <span class="acc-bar-val">${count || ''}</span>
+                <div class="acc-bar${count === 0 ? ' acc-bar-zero' : ''}" style="height:${pct || 2}%"></div>
+                <span class="acc-bar-day">${dayLabel}</span>
+              </div>`;
+            }).join('')}
           </div>
-        </div>` : '<div class="acc-chart-empty">No click data yet</div>'}
-
+        </div>` : ''}
         <div class="acc-breakdowns">
-          ${renderBreakdownMini('Platforms', breakdown?.platforms)}
-          ${renderBreakdownMini('Browsers', breakdown?.browsers)}
-          ${renderBreakdownMini('Devices', breakdown?.devices)}
+          ${renderBreakdownMini('Platform', breakdown?.platforms)}
+          ${renderBreakdownMini('Browser', breakdown?.browsers)}
+          ${renderBreakdownMini('Device', breakdown?.devices)}
         </div>
-      </div>
+      </div>` : ''}
     </div>
   `;
 }
 
+function buildLast7Days(daily) {
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    days.push([d, daily[d] || 0]);
+  }
+  if (days.some(e => e[1] > 0)) return days;
+  const sorted = Object.entries(daily).sort((a, b) => a[0].localeCompare(b[0]));
+  if (!sorted.length) return days;
+  const last = sorted[sorted.length - 1][0];
+  const lastDate = new Date(last + 'T00:00:00');
+  const historic = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(lastDate.getTime() - i * 86400000).toISOString().slice(0, 10);
+    historic.push([d, daily[d] || 0]);
+  }
+  return historic;
+}
+
+function prettifyName(name) {
+  if (!name || name === '—') return '—';
+  const map = { ios: 'iOS', android: 'Android', macos: 'macOS', windows: 'Windows', linux: 'Linux', web: 'Web', mobile: 'Mobile', desktop: 'Desktop', tablet: 'Tablet', chrome: 'Chrome', safari: 'Safari', firefox: 'Firefox', edge: 'Edge', unknown: 'Other' };
+  return map[name.toLowerCase()] || name.charAt(0).toUpperCase() + name.slice(1);
+}
+
 function renderBreakdownMini(title, obj) {
   if (!obj || !Object.keys(obj).length) return '';
-  const sorted = Object.entries(obj).sort((a, b) => b[1] - a[1]).slice(0, 3);
-  const total = sorted.reduce((s, e) => s + e[1], 0);
+  const sorted = Object.entries(obj)
+    .filter(([k, v]) => v > 0 && k.toLowerCase() !== 'unknown')
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3);
+  if (!sorted.length) return '';
+  const max = sorted[0][1];
   return `
     <div class="acc-bd">
       <span class="acc-bd-title">${title}</span>
       ${sorted.map(([key, count]) => `
         <div class="acc-bd-row">
-          <span class="acc-bd-key">${escapeHtml(key)}</span>
-          <div class="acc-bd-bar"><div class="acc-bd-fill" style="width:${(count / total) * 100}%"></div></div>
+          <span class="acc-bd-key">${escapeHtml(prettifyName(key))}</span>
+          <div class="acc-bd-bar"><div class="acc-bd-fill" style="width:${Math.max((count / max) * 100, 8)}%"></div></div>
           <span class="acc-bd-ct">${count}</span>
         </div>
       `).join('')}
