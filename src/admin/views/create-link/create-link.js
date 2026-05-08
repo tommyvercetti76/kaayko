@@ -14,10 +14,10 @@ let SELECTED_PAGE = null;
 // ── Destination Registry — whitelisted Kaayko destinations ──
 // Only real, deployed domains: kaayko.com, coolschools.kaayko.com, alumni.kaayko.com, blog.kaayko.com
 const DEST_GROUPS = [
-  { id: 'kaayko', label: 'Kaayko', defaultTenantOnly: true },
-  { id: 'alumni', label: 'Alumni' },
-  { id: 'coolschools', label: 'CoolSchools' },
-  { id: 'kreator', label: 'Kreator', defaultTenantOnly: true },
+  { id: 'kaayko', label: 'Kaayko', baseUrl: 'https://kaayko.com/', defaultTenantOnly: true },
+  { id: 'alumni', label: 'Alumni', baseUrl: 'https://kaayko.com/alumni' },
+  { id: 'coolschools', label: 'CoolSchools', baseUrl: 'https://coolschools.kaayko.com/' },
+  { id: 'kreator', label: 'Kreator', baseUrl: 'https://kaayko.com/kreator', defaultTenantOnly: true },
   { id: 'custom', label: 'Custom URL', superAdminOnly: true },
 ];
 
@@ -320,10 +320,11 @@ function selectGroup(groupId) {
     return;
   }
 
-  // Registry group — populate dropdown
+  // Registry group — populate dropdown with known pages + freeform option
   if (destInput) destInput.style.display = 'none';
   if (preview) preview.style.display = 'none';
 
+  const group = DEST_GROUPS.find(g => g.id === groupId);
   const pages = DEST_PAGES.filter(p => p.group === groupId);
   if (pageSelect) {
     pageSelect.innerHTML = '<option value="">Select a page…</option>';
@@ -333,11 +334,48 @@ function selectGroup(groupId) {
       opt.textContent = p.label;
       pageSelect.appendChild(opt);
     });
+    // Freeform option — lets user type any path on this domain
+    if (group?.baseUrl) {
+      const freeOpt = document.createElement('option');
+      freeOpt.value = '__freeform';
+      freeOpt.textContent = 'Other — enter URL';
+      pageSelect.appendChild(freeOpt);
+    }
     pageSelect.onchange = () => {
-      if (pageSelect.value) selectDestination(pageSelect.value);
+      if (pageSelect.value === '__freeform') {
+        selectFreeform(groupId);
+      } else if (pageSelect.value) {
+        selectDestination(pageSelect.value);
+      }
     };
   }
   if (pageWrap) pageWrap.style.display = '';
+}
+
+function selectFreeform(groupId) {
+  const group = DEST_GROUPS.find(g => g.id === groupId);
+  if (!group?.baseUrl) return;
+
+  SELECTED_PAGE = null;
+  const destInput = document.getElementById('webDestination');
+  const tplInput = document.getElementById('destinationTemplate');
+  const preview = document.getElementById('dest-preview');
+  const previewUrl = document.getElementById('dest-preview-url');
+  const pageWrap = document.getElementById('dest-page-wrap');
+
+  if (destInput) {
+    destInput.value = group.baseUrl;
+    destInput.style.display = '';
+    destInput.placeholder = group.baseUrl + '...';
+    destInput.focus();
+    // Place cursor at end so user can type the path
+    destInput.setSelectionRange(destInput.value.length, destInput.value.length);
+    destInput.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  if (tplInput) tplInput.value = groupId + '_freeform';
+  if (previewUrl) previewUrl.textContent = group.label + ' — type any path';
+  if (preview) preview.style.display = '';
+  if (pageWrap) pageWrap.style.display = 'none';
 }
 
 function selectDestination(destId) {
@@ -388,19 +426,45 @@ function clearDestinationPicker() {
   if (tplInput) tplInput.value = '';
 }
 
+/** Detect which group a URL belongs to by domain match */
+function detectGroupFromUrl(url) {
+  if (!url) return null;
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, '').toLowerCase();
+    return DEST_GROUPS.find(g => {
+      if (!g.baseUrl) return false;
+      const gHost = new URL(g.baseUrl).hostname.replace(/^www\./, '').toLowerCase();
+      return host === gHost;
+    }) || null;
+  } catch { return null; }
+}
+
 /** Pre-select picker state from a URL (edit mode) */
 function restorePickerFromUrl(url) {
+  // 1. Try exact/prefix match against registry pages
   const match = reverseMapUrl(url);
   if (match) {
     selectGroup(match.group);
     selectDestination(match.id);
-    // Restore the full original URL (may include query params, sub-paths)
     const destInput = document.getElementById('webDestination');
     if (destInput && url !== match.url) destInput.value = url;
     const pageSelect = document.getElementById('dest-page');
     if (pageSelect) pageSelect.value = match.id;
-  } else if (url && isSuperAdmin()) {
-    // URL not in registry — treat as custom
+    return;
+  }
+
+  // 2. Try domain match → freeform within that group
+  const group = detectGroupFromUrl(url);
+  if (group) {
+    selectGroup(group.id);
+    selectFreeform(group.id);
+    const destInput = document.getElementById('webDestination');
+    if (destInput) destInput.value = url;
+    return;
+  }
+
+  // 3. Unrecognized domain — super-admin custom
+  if (url && isSuperAdmin()) {
     selectGroup('custom');
     const destInput = document.getElementById('webDestination');
     if (destInput) destInput.value = url;
