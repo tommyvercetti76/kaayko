@@ -738,7 +738,7 @@ function resetCreateForm() {
   if (formHeader) formHeader.textContent = 'Create New Link';
 
   const subtitle = document.querySelector('#create-view .view-subtitle');
-  if (subtitle) subtitle.textContent = 'Build smart links with device routing, campaign attribution, and real-time analytics';
+  if (subtitle) subtitle.textContent = 'Create a short link with device routing, UTM tracking, and QR codes';
 
   const submitBtn = document.getElementById('create-submit-btn');
   if (submitBtn) submitBtn.textContent = 'Create Link';
