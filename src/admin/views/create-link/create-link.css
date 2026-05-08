@@ -608,6 +608,94 @@
   margin-top: 4px;
 }
 
+/* ─── Destination Picker ─── */
+.dest-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.dest-pill {
+  padding: 8px 16px;
+  background: var(--bg-input);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Josefin Sans', sans-serif;
+  cursor: pointer;
+  transition: all 150ms ease;
+  user-select: none;
+  white-space: nowrap;
+}
+.dest-pill:hover {
+  border-color: var(--border-medium);
+  color: var(--text-primary);
+  background: var(--bg-card-hover);
+}
+.dest-pill.active {
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+  background: var(--gold-subtle);
+}
+.dest-pill.dest-pill--muted {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+#dest-page-wrap {
+  margin-top: 10px;
+  animation: cl-reveal 0.15s ease-out;
+}
+
+.dest-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: var(--bg-input);
+  border: 1.5px solid rgba(212, 175, 55, 0.2);
+  border-radius: var(--radius-sm);
+  animation: cl-reveal 0.15s ease-out;
+}
+.dest-preview code {
+  flex: 1;
+  font-size: 13px;
+  color: var(--gold-primary);
+  font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dest-clear-btn {
+  background: none;
+  border: 1px solid var(--border-medium);
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-size: 14px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 150ms ease;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.dest-clear-btn:hover {
+  border-color: var(--error);
+  color: var(--error);
+  background: var(--error-bg);
+}
+
+#destination-picker-group #webDestination {
+  margin-top: 10px;
+  animation: cl-reveal 0.15s ease-out;
+}
+
 /* ─── Responsive ─── */
 @media (max-width: 968px) {
   #create-view > .card { padding: 24px; }

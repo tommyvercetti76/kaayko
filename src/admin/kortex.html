@@ -269,15 +269,31 @@
               <textarea id="description" class="form-input form-textarea" rows="2" placeholder="Optional notes about this link..."></textarea>
             </div>
 
-            <div class="form-group">
-              <label for="webDestination">
-                Destination URL <span class="required">*</span>
+            <!-- Destination Picker -->
+            <div class="form-group" id="destination-picker-group">
+              <label>
+                Destination <span class="required">*</span>
                 <button type="button" class="info-icon" aria-label="More information">
                   i
-                  <span class="tooltip" role="tooltip">The web page visitors will land on when they click your link</span>
+                  <span class="tooltip" role="tooltip">Pick a Kaayko destination or enter a custom URL (admin only)</span>
                 </button>
               </label>
-              <input type="url" id="webDestination" class="form-input" placeholder="https://example.com/landing-page">
+
+              <div class="dest-pills" id="dest-pills"></div>
+
+              <div id="dest-page-wrap" style="display:none">
+                <select id="dest-page" class="form-input"></select>
+              </div>
+
+              <div id="dest-preview" class="dest-preview" style="display:none">
+                <code id="dest-preview-url"></code>
+                <button type="button" id="dest-clear-btn" class="dest-clear-btn" title="Change destination">&times;</button>
+              </div>
+
+              <input type="url" id="webDestination" class="form-input" style="display:none" placeholder="https://example.com/page">
+
+              <input type="hidden" id="destinationCategory" value="">
+              <input type="hidden" id="destinationTemplate" value="">
             </div>
 
             <div class="form-group">

@@ -8,6 +8,50 @@ import { STATE, CONFIG, AUTH, utils, ui } from '../../js/kortex-core.js';
 import { apiFetch } from '../../js/config.js';
 
 let CURRENT_EDIT_LINK = null;
+let SELECTED_CATEGORY = null;
+let SELECTED_PAGE = null;
+
+// ── Destination Registry — whitelisted Kaayko destinations ──
+const DEST_GROUPS = [
+  { id: 'kaayko', label: 'Kaayko' },
+  { id: 'alumni', label: 'Alumni' },
+  { id: 'roots', label: 'ROOTS' },
+  { id: 'coolschools', label: 'CoolSchools' },
+  { id: 'kreator', label: 'Kreator' },
+  { id: 'custom', label: 'Custom URL', superAdminOnly: true },
+];
+
+const DEST_PAGES = [
+  { id: 'kaayko_home', group: 'kaayko', label: 'Homepage', url: 'https://kaayko.com/' },
+  { id: 'kaayko_store', group: 'kaayko', label: 'Store', url: 'https://kaayko.com/store' },
+  { id: 'kaayko_paddling', group: 'kaayko', label: 'Paddling Out', url: 'https://kaayko.com/paddlingout' },
+  { id: 'kaayko_about', group: 'kaayko', label: 'About', url: 'https://kaayko.com/about' },
+  { id: 'kaayko_reads', group: 'kaayko', label: 'Reads', url: 'https://kaayko.com/reads' },
+  { id: 'kaayko_testimonials', group: 'kaayko', label: 'Testimonials', url: 'https://kaayko.com/testimonials' },
+
+  { id: 'alumni_survey', group: 'alumni', label: 'Alumni Interest Survey', url: 'https://kaayko.com/alumni' },
+
+  { id: 'roots_parent', group: 'roots', label: 'Parent Assessment', url: 'https://roots.kaayko.com/parent-assessment' },
+  { id: 'roots_teacher', group: 'roots', label: 'Teacher Assessment', url: 'https://roots.kaayko.com/teacher-assessment' },
+
+  { id: 'cs_portal', group: 'coolschools', label: 'CoolSchools Home', url: 'https://coolschools.kaayko.com/' },
+  { id: 'cs_alumni', group: 'coolschools', label: 'Alumni Portal', url: 'https://coolschools.kaayko.com/en/alumni' },
+  { id: 'cs_donations', group: 'coolschools', label: 'Donations', url: 'https://coolschools.kaayko.com/en/alumni/donations' },
+  { id: 'cs_roots', group: 'coolschools', label: 'ROOTS Portal', url: 'https://coolschools.kaayko.com/en/roots' },
+
+  { id: 'kreator_portal', group: 'kreator', label: 'Kreator Portal', url: 'https://kaayko.com/kreator' },
+  { id: 'kreator_apply', group: 'kreator', label: 'Apply as Kreator', url: 'https://kaayko.com/kreator/apply' },
+];
+
+/** Reverse-map a URL back to a registry entry (for edit mode) */
+function reverseMapUrl(url) {
+  if (!url) return null;
+  const norm = url.toLowerCase().replace(/\/+$/, '').replace(/^https?:\/\/www\./, 'https://');
+  return DEST_PAGES.find(d => {
+    const dNorm = d.url.toLowerCase().replace(/\/+$/, '');
+    return norm === dNorm;
+  }) || null;
+}
 
 // ── Kaayko API base (ROOTS sync proxy) ──
 const KAAYKO_API_BASE = window.location.hostname === 'localhost'
@@ -196,6 +240,152 @@ function checkROOTSDestination() {
 }
 
 // ============================================================================
+// DESTINATION PICKER
+// ============================================================================
+
+function initDestinationPicker() {
+  const pillsWrap = document.getElementById('dest-pills');
+  if (!pillsWrap) return;
+
+  pillsWrap.innerHTML = '';
+  const superAdmin = isSuperAdmin();
+
+  DEST_GROUPS.forEach(g => {
+    if (g.superAdminOnly && !superAdmin) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'dest-pill';
+    btn.dataset.group = g.id;
+    btn.textContent = g.label;
+    btn.addEventListener('click', () => selectGroup(g.id));
+    pillsWrap.appendChild(btn);
+  });
+
+  // Wire clear button
+  const clearBtn = document.getElementById('dest-clear-btn');
+  if (clearBtn) {
+    clearBtn.removeEventListener('click', clearDestinationPicker);
+    clearBtn.addEventListener('click', clearDestinationPicker);
+  }
+}
+
+function selectGroup(groupId) {
+  SELECTED_CATEGORY = groupId;
+  SELECTED_PAGE = null;
+
+  // Highlight active pill
+  document.querySelectorAll('#dest-pills .dest-pill').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.group === groupId);
+  });
+
+  const pageWrap = document.getElementById('dest-page-wrap');
+  const pageSelect = document.getElementById('dest-page');
+  const preview = document.getElementById('dest-preview');
+  const destInput = document.getElementById('webDestination');
+  const catInput = document.getElementById('destinationCategory');
+  const tplInput = document.getElementById('destinationTemplate');
+
+  if (catInput) catInput.value = groupId;
+
+  // Custom URL — show free-text input
+  if (groupId === 'custom') {
+    if (pageWrap) pageWrap.style.display = 'none';
+    if (preview) preview.style.display = 'none';
+    if (destInput) {
+      destInput.style.display = '';
+      destInput.value = '';
+      destInput.placeholder = 'https://example.com/page';
+      destInput.focus();
+    }
+    if (tplInput) tplInput.value = 'custom';
+    return;
+  }
+
+  // Registry group — populate dropdown
+  if (destInput) destInput.style.display = 'none';
+  if (preview) preview.style.display = 'none';
+
+  const pages = DEST_PAGES.filter(p => p.group === groupId);
+  if (pageSelect) {
+    pageSelect.innerHTML = '<option value="">Select a page…</option>';
+    pages.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.label;
+      pageSelect.appendChild(opt);
+    });
+    pageSelect.onchange = () => {
+      if (pageSelect.value) selectDestination(pageSelect.value);
+    };
+  }
+  if (pageWrap) pageWrap.style.display = '';
+}
+
+function selectDestination(destId) {
+  const entry = DEST_PAGES.find(p => p.id === destId);
+  if (!entry) return;
+
+  SELECTED_PAGE = entry;
+  const destInput = document.getElementById('webDestination');
+  const tplInput = document.getElementById('destinationTemplate');
+  const preview = document.getElementById('dest-preview');
+  const previewUrl = document.getElementById('dest-preview-url');
+  const pageWrap = document.getElementById('dest-page-wrap');
+
+  // Set webDestination value and fire input event for alumni/ROOTS detection
+  if (destInput) {
+    destInput.value = entry.url;
+    destInput.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  if (tplInput) tplInput.value = entry.id;
+
+  // Show preview, hide dropdown
+  if (previewUrl) previewUrl.textContent = entry.url;
+  if (preview) preview.style.display = '';
+  if (pageWrap) pageWrap.style.display = 'none';
+}
+
+function clearDestinationPicker() {
+  SELECTED_CATEGORY = null;
+  SELECTED_PAGE = null;
+
+  document.querySelectorAll('#dest-pills .dest-pill').forEach(btn => btn.classList.remove('active'));
+
+  const pageWrap = document.getElementById('dest-page-wrap');
+  const pageSelect = document.getElementById('dest-page');
+  const preview = document.getElementById('dest-preview');
+  const destInput = document.getElementById('webDestination');
+  const catInput = document.getElementById('destinationCategory');
+  const tplInput = document.getElementById('destinationTemplate');
+
+  if (pageWrap) pageWrap.style.display = 'none';
+  if (pageSelect) pageSelect.innerHTML = '';
+  if (preview) preview.style.display = 'none';
+  if (destInput) { destInput.style.display = 'none'; destInput.value = ''; destInput.dispatchEvent(new Event('input', { bubbles: true })); }
+  if (catInput) catInput.value = '';
+  if (tplInput) tplInput.value = '';
+}
+
+/** Pre-select picker state from a URL (edit mode) */
+function restorePickerFromUrl(url) {
+  const match = reverseMapUrl(url);
+  if (match) {
+    selectGroup(match.group);
+    selectDestination(match.id);
+    // Also set the dropdown to reflect the selection
+    const pageSelect = document.getElementById('dest-page');
+    if (pageSelect) pageSelect.value = match.id;
+  } else if (url && isSuperAdmin()) {
+    // URL not in registry — treat as custom
+    selectGroup('custom');
+    const destInput = document.getElementById('webDestination');
+    if (destInput) destInput.value = url;
+    const tplInput = document.getElementById('destinationTemplate');
+    if (tplInput) tplInput.value = 'custom';
+  }
+}
+
+// ============================================================================
 // FORM SETUP
 // ============================================================================
 
@@ -205,6 +395,9 @@ function initCreateForm() {
 
   form.removeEventListener('submit', handleCreateLink);
   form.addEventListener('submit', handleCreateLink);
+
+  // Init destination picker
+  initDestinationPicker();
 
   // Destination URL watcher — auto-detect ROOTS / Alumni
   const destInput = document.getElementById('webDestination');
@@ -357,6 +550,10 @@ function extractCreatePayload() {
     utm.utm_campaign = alumniCampaignId;
   }
 
+  // Analytics vector fields from destination picker
+  const destinationCategory = document.getElementById('destinationCategory')?.value || undefined;
+  const destinationTemplate = document.getElementById('destinationTemplate')?.value || undefined;
+
   const payload = {
     // Required
     webDestination: webDest,
@@ -371,6 +568,8 @@ function extractCreatePayload() {
     intent,
     source,
     requiresAuth,
+    destinationCategory,
+    destinationTemplate,
     conversionGoal: intent === 'donate' ? 'donation_completed'
       : intent === 'register' ? 'registration_submitted' : undefined,
     iosDestination: document.getElementById('iosDestination').value.trim() || undefined,
@@ -435,6 +634,10 @@ function extractUpdatePayload() {
     utm.utm_campaign = alumniCampaignId;
   }
 
+  // Analytics vector fields from destination picker
+  const destinationCategory = document.getElementById('destinationCategory')?.value || undefined;
+  const destinationTemplate = document.getElementById('destinationTemplate')?.value || undefined;
+
   const payload = {
     title: document.getElementById('title').value.trim(),
     description: document.getElementById('description')?.value.trim() || undefined,
@@ -448,6 +651,8 @@ function extractUpdatePayload() {
     intent,
     source,
     requiresAuth,
+    destinationCategory,
+    destinationTemplate,
     conversionGoal: intent === 'donate' ? 'donation_completed'
       : intent === 'register' ? 'registration_submitted' : undefined,
     utm: Object.keys(utm).length ? utm : undefined,
@@ -626,6 +831,9 @@ async function loadLinkForEditing(code) {
     setField('iosDestination', iosDest);
     setField('androidDestination', androidDest);
 
+    // Restore destination picker state from URL
+    if (webDest) restorePickerFromUrl(webDest);
+
     // V2 intent fields
     setField('destinationType', link.destinationType || metadata.destinationType || 'external_url');
     setField('linkNamespace', metadata.namespace || '');
@@ -745,6 +953,9 @@ function resetCreateForm() {
 
   STATE.editingCode = null;
   CURRENT_EDIT_LINK = null;
+
+  // Reset destination picker
+  clearDestinationPicker();
 
   // Reset Alumni section
   const alumniSection = document.getElementById('alumni-campaign-section');
