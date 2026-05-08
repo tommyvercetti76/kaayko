@@ -241,7 +241,7 @@
       </header>
 
       <div class="card">
-        <form id="create-form">
+        <form id="create-form" novalidate>
 
           <!-- Section 1: Essential Details (Always Visible) -->
           <div class="form-section">
@@ -306,8 +306,9 @@
                   <span class="tooltip" role="tooltip">Leave blank to auto-generate a unique code, or pick your own vanity slug</span>
                 </button>
               </label>
-              <input type="text" id="short-code" name="short-code" class="form-input" placeholder="leave blank to auto-generate" pattern="[a-zA-Z0-9_-]+" minlength="3">
-              <span class="form-hint">Letters, numbers, hyphens, underscores. Min 3 chars. Creates: kaayko.com/l/your-code</span>
+              <input type="text" id="short-code" name="short-code" class="form-input" placeholder="leave blank to auto-generate">
+              <span class="field-error" id="err-shortcode"></span>
+              <span class="form-hint">Just the code — e.g. <strong>antero</strong> → kaayko.com/l/antero</span>
             </div>
           </div>
 

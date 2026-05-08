@@ -523,6 +523,21 @@ function validateForm(isEditing) {
     errors.push('title');
   }
 
+  // Short code (optional, but if provided must be valid)
+  const shortCode = document.getElementById('short-code')?.value?.trim();
+  if (shortCode && !isEditing) {
+    if (/[:\/\?#]/.test(shortCode)) {
+      showFieldError('short-code', 'err-shortcode', 'Just the code, not a URL — e.g. "antero"');
+      errors.push('shortcode');
+    } else if (shortCode.length < 3) {
+      showFieldError('short-code', 'err-shortcode', 'Must be at least 3 characters');
+      errors.push('shortcode');
+    } else if (!/^[a-zA-Z0-9_-]+$/.test(shortCode)) {
+      showFieldError('short-code', 'err-shortcode', 'Only letters, numbers, hyphens, underscores');
+      errors.push('shortcode');
+    }
+  }
+
   // Destination URL
   const webDest = document.getElementById('webDestination')?.value?.trim();
   if (!webDest) {
@@ -582,6 +597,8 @@ function initCreateForm() {
   const title = document.getElementById('title');
   if (title) title.addEventListener('input', () => clearFieldError('title', 'err-title'));
   if (destInput) destInput.addEventListener('input', () => clearFieldError('webDestination', 'err-destination'));
+  const codeInput = document.getElementById('short-code');
+  if (codeInput) codeInput.addEventListener('input', () => clearFieldError('short-code', 'err-shortcode'));
 
   // ROOTS child-age toggle
   const typeSelect = document.getElementById('rootsAssessmentType');
