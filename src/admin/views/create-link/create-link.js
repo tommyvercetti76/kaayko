@@ -12,33 +12,35 @@ let SELECTED_CATEGORY = null;
 let SELECTED_PAGE = null;
 
 // ── Destination Registry — whitelisted Kaayko destinations ──
+// Only real, deployed domains: kaayko.com, coolschools.kaayko.com, alumni.kaayko.com, blog.kaayko.com
 const DEST_GROUPS = [
   { id: 'kaayko', label: 'Kaayko' },
   { id: 'alumni', label: 'Alumni' },
-  { id: 'roots', label: 'ROOTS' },
   { id: 'coolschools', label: 'CoolSchools' },
   { id: 'kreator', label: 'Kreator' },
   { id: 'custom', label: 'Custom URL', superAdminOnly: true },
 ];
 
 const DEST_PAGES = [
+  // kaayko.com — main site
   { id: 'kaayko_home', group: 'kaayko', label: 'Homepage', url: 'https://kaayko.com/' },
   { id: 'kaayko_store', group: 'kaayko', label: 'Store', url: 'https://kaayko.com/store' },
   { id: 'kaayko_paddling', group: 'kaayko', label: 'Paddling Out', url: 'https://kaayko.com/paddlingout' },
+  { id: 'kaayko_paddling_forecast', group: 'kaayko', label: 'Forecast', url: 'https://kaayko.com/paddlingout/forecast' },
   { id: 'kaayko_about', group: 'kaayko', label: 'About', url: 'https://kaayko.com/about' },
   { id: 'kaayko_reads', group: 'kaayko', label: 'Reads', url: 'https://kaayko.com/reads' },
   { id: 'kaayko_testimonials', group: 'kaayko', label: 'Testimonials', url: 'https://kaayko.com/testimonials' },
 
+  // Alumni — kaayko.com/alumni + alumni.kaayko.com
   { id: 'alumni_survey', group: 'alumni', label: 'Alumni Interest Survey', url: 'https://kaayko.com/alumni' },
 
-  { id: 'roots_parent', group: 'roots', label: 'Parent Assessment', url: 'https://roots.kaayko.com/parent-assessment' },
-  { id: 'roots_teacher', group: 'roots', label: 'Teacher Assessment', url: 'https://roots.kaayko.com/teacher-assessment' },
-
+  // CoolSchools — coolschools.kaayko.com
   { id: 'cs_portal', group: 'coolschools', label: 'CoolSchools Home', url: 'https://coolschools.kaayko.com/' },
   { id: 'cs_alumni', group: 'coolschools', label: 'Alumni Portal', url: 'https://coolschools.kaayko.com/en/alumni' },
   { id: 'cs_donations', group: 'coolschools', label: 'Donations', url: 'https://coolschools.kaayko.com/en/alumni/donations' },
-  { id: 'cs_roots', group: 'coolschools', label: 'ROOTS Portal', url: 'https://coolschools.kaayko.com/en/roots' },
+  { id: 'cs_roots', group: 'coolschools', label: 'ROOTS', url: 'https://coolschools.kaayko.com/en/roots' },
 
+  // Kreator — kaayko.com/kreator
   { id: 'kreator_portal', group: 'kreator', label: 'Kreator Portal', url: 'https://kaayko.com/kreator' },
   { id: 'kreator_apply', group: 'kreator', label: 'Apply as Kreator', url: 'https://kaayko.com/kreator/apply' },
 ];
