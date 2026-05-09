@@ -4,9 +4,8 @@
 
 KORTEX is the smart-link product surface, spanning public creation flows, authenticated admin workflows, billing, analytics, and redirect handling.
 
-Canonical tenant architecture and next-level `kortex.kaayko.com` plan: [`KORTEX_TENANT_ARCHITECTURE_PLAN.md`](./KORTEX_TENANT_ARCHITECTURE_PLAN.md).
-
-Execution plan and definition of done for the button-only delivery workflow: [`KORTEX_DELIVERY_PLAN_AND_DOD.md`](./KORTEX_DELIVERY_PLAN_AND_DOD.md).
+Comprehensive agent command (file map, routes, collections, change patterns): `/.claude/commands/kortex.md`
+Product strategy probe: [`KORTEX_PRODUCT_PROBE.md`](./KORTEX_PRODUCT_PROBE.md)
 
 ## Primary entrypoints
 
@@ -70,22 +69,41 @@ Analytics now includes admin-oriented trend visibility:
 - Link creation trend bars, engagement window summaries (`24h`, `7d`, `30d`), and campaign momentum scoring.
 - CSV export now includes campaign assignment.
 
+## Destination picker (May 2026)
+
+The create-link form uses a **destination picker** system instead of raw URL entry:
+
+- **Category pills** — Kaayko, Alumni, CoolSchools, Kreator, Custom URL
+- **Page dropdown** — pre-defined pages within each category (e.g. paddlingout, store, alumni login)
+- **"Other — enter URL"** — freeform option per category, pre-fills base domain
+- **Editable URLs** — destination is editable after picker selection (for query params like `?id=antero`)
+- **Tenant scoping** — non-default tenants only see Alumni + CoolSchools pills (`defaultTenantOnly` flag)
+- **Analytics fields** — `destinationCategory` and `destinationTemplate` tracked per link in Firestore
+- **Domain whitelist** — backend enforces `KAAYKO_DOMAIN_WHITELIST` on all create/update ops; super-admins with `destinationCategory=custom` bypass
+
+Key functions: `initDestinationPicker()`, `selectGroup()`, `selectDestination()`, `selectFreeform()`, `restorePickerFromUrl()`, `detectGroupFromUrl()`, `isDefaultTenant()`
+
 ## KORTEX V2 tenant-link baseline
 
-The frontend now supports KORTEX V2 link intent fields in the admin create-link screen:
+The frontend supports KORTEX V2 link intent fields (super-admin only) in the admin create-link screen:
 
-- destination type
-- namespace
-- tenant slug
-- alumni domain
-- audience
-- intent
-- source
-- auth requirement
+- destination type, namespace, tenant slug, alumni domain
+- audience, intent, source, auth requirement
 
-If a namespace is supplied, create-link calls `/kortex/tenant-links` and can produce clean public aliases like `https://kaayko.com/a/adminP12`. Normal links continue to use `/kortex` and public URLs like `https://kaayko.com/l/:code`.
+If a namespace is supplied, create-link calls `/kortex/tenant-links` and produces clean public aliases like `https://kaayko.com/a/adminP12`. Normal links use `/kortex` and public URLs like `https://kaayko.com/l/:code`.
 
-The path-based tenant shell is implemented by `src/tenant.html` and `src/js/tenant-portal.js`. Firebase Hosting sends `/a/**` and `/login` to that shell. The shell resolves compact aliases through `/kortex/links/:code/resolve`, bootstraps tenant paths through `/kortex/tenants/:tenantSlug/bootstrap`, and records V2 events through `/kortex/events`.
+The path-based tenant shell is implemented by `src/tenant.html` and `src/js/tenant-portal.js`. Firebase Hosting sends `/a/**` and `/login` to that shell.
+
+## Form validation (May 2026)
+
+Comprehensive client-side validation via `validateForm()`:
+
+- Title: required, max 200 chars
+- Destination URL: required, valid URL format, whitelisted domain
+- Short code: 3-50 chars, alphanumeric + hyphens/underscores, no leading/trailing hyphens
+- Form uses `novalidate` — all validation is JS-based with inline error display
+- Backend returns error codes: `INVALID_URL`, `VALIDATION_ERROR`, `INVALID_CODE`, `DUPLICATE_CODE`
+- Inline errors: `showFieldError(id, msg)` / `clearFieldError(id)` with `.field-error.visible` CSS
 
 ## Quality notes
 

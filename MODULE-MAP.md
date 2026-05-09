@@ -143,8 +143,9 @@ POST /api/createPaymentIntent/webhook  → Stripe webhook (no auth, raw body)
 ## Module: `kortex`
 > Multi-tenant smart link manager, tenant alias router, campaign links, and admin portal.
 
-Canonical architecture doc: `kaayko/docs/products/KORTEX_TENANT_ARCHITECTURE_PLAN.md`
-Delivery plan and DoD: `kaayko/docs/products/KORTEX_DELIVERY_PLAN_AND_DOD.md`
+Agent command (full file map, routes, collections, change patterns): `.claude/commands/kortex.md`
+Product strategy probe: `kaayko/docs/products/KORTEX_PRODUCT_PROBE.md`
+Product brief (marketing feature inventory): `kaayko-api/functions/docs/KORTEX_PRODUCT_BRIEF.md`
 
 **Pages:**
 | URL | File |
@@ -166,6 +167,7 @@ Delivery plan and DoD: `kaayko/docs/products/KORTEX_DELIVERY_PLAN_AND_DOD.md`
 | `/admin/views/billing` | `kaayko/src/admin/views/billing/billing.html` |
 | `/admin/views/tenant-onboarding` | `kaayko/src/admin/views/tenant-onboarding/tenant-onboarding.html` |
 | `/admin/views/roots` | `kaayko/src/admin/views/roots/index.html` |
+| `/admin/views/roots-v2` | `kaayko/src/admin/views/roots-v2/index.html` |
 | `/create-kortex-link` | `kaayko/src/create-kortex-link.html` |
 | ~~`/admin/reset-environment`~~ | `kaayko/src/admin/reset-environment.html` ⚠️ NO AUTH |
 | ~~`/admin/views/create-link/tooltip-test`~~ | `kaayko/src/admin/views/create-link/tooltip-test.html` ⚠️ test artifact |
@@ -214,7 +216,7 @@ GET/POST/PUT/DELETE /api/billing/subscriptions
 - `kaayko-api/functions/api/kortex/redirectHandler.js` — device-aware and intent-aware redirect logic
 - `kaayko-api/functions/api/kortex/clickTracking.js` — click event recording
 - `kaayko-api/functions/api/campaigns/*` — campaign management and public namespace resolver
-- `kaayko-api/functions/api/deepLinks/deeplinkRoutes.js` — `/l/:id` and legacy universal link handling
+- `kaayko-api/functions/api/kortex/deeplinkRoutes.js` — `/l/:id` and legacy universal link handling
 - `kaayko-api/functions/api/admin/` — order management
 - `kaayko-api/functions/api/billing/` — subscriptions
 
