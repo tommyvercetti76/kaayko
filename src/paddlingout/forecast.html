@@ -192,8 +192,8 @@
     }
 
     function formatCoordinates(location, spot) {
-      const lat = location.coordinates?.latitude ?? spot.location.latitude;
-      const lng = location.coordinates?.longitude ?? spot.location.longitude;
+      const lat = spot?.location?.latitude ?? location.coordinates?.latitude;
+      const lng = spot?.location?.longitude ?? location.coordinates?.longitude;
       return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
     }
 
@@ -827,12 +827,7 @@
 
         if (!currentData && !forecastData) throw new Error('Both API calls failed');
 
-        // 3. Update title from API location if custom
-        if (forecastData?.location?.name && spot.isCustom) {
-          document.getElementById('forecastLakeName').textContent = forecastData.location.name;
-        }
-
-        // 4. Render what we have
+        // 3. Render what we have
         window.__kaaykoCurrentData = currentData;
         if (currentData) renderHero(currentData, forecastData, spot);
         renderTripBriefing(currentData, forecastData);
@@ -840,7 +835,7 @@
         if (forecastData?.location) renderLocationInfo(forecastData.location, spot);
         if (forecastData) renderApiStatus(forecastData);
 
-        // 5. Show content
+        // 4. Show content
         document.getElementById('forecastLoading').style.display = 'none';
         document.getElementById('forecastContent').style.display = 'flex';
 

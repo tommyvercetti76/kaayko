@@ -47,7 +47,19 @@ function buildRing(score) {
 }
 
 // ── Nominatim geocode cache ───────────────────────────────────────────────
-const geocodeCache = new Map(); // query -> { lat, lng, label }
+const geocodeCache = new Map(); // query -> { lat, lng, label, radiusKm }
+const suggestionCache = new Map(); // query -> [suggestions]
+
+function inferSearchRadiusKm(item) {
+  const placeClass = (item.class || '').toLowerCase();
+  const placeType = (item.type || '').toLowerCase();
+  const cityLikeTypes = new Set([
+    'city', 'town', 'village', 'municipality',
+    'administrative', 'state', 'county', 'province', 'region'
+  ]);
+  const isCityLike = placeClass === 'boundary' || cityLikeTypes.has(placeType);
+  return isCityLike ? 60 : 30;
+}
 
 async function geocode(query) {
   const cacheKey = query.toLowerCase().trim();
@@ -61,7 +73,7 @@ async function geocode(query) {
     const ctrl = new AbortController();
     const tid  = setTimeout(() => ctrl.abort(), 8000);
     const res  = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`,
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=1`,
       { signal: ctrl.signal, headers: { 'User-Agent': 'Kaayko/1.0', 'Accept-Language': 'en' } }
     );
     clearTimeout(tid);
@@ -71,12 +83,51 @@ async function geocode(query) {
     const result = {
       lat: parseFloat(data[0].lat),
       lng: parseFloat(data[0].lon),
-      label: data[0].display_name.split(',').slice(0, 2).join(', ')
+      label: data[0].display_name.split(',').slice(0, 2).join(', '),
+      radiusKm: inferSearchRadiusKm(data[0])
     };
     // Cache the result
     geocodeCache.set(cacheKey, result);
     return result;
   } catch { return null; }
+}
+
+async function fetchGeocodeSuggestions(query) {
+  const q = query.toLowerCase().trim();
+  if (q.length < 3) return [];
+  if (suggestionCache.has(q)) return suggestionCache.get(q);
+
+  try {
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 4000);
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5`,
+      { signal: ctrl.signal, headers: { 'User-Agent': 'Kaayko/1.0', 'Accept-Language': 'en' } }
+    );
+    clearTimeout(tid);
+    if (!res.ok) return [];
+
+    const data = await res.json();
+    const suggestions = (data || []).map(item => ({
+      value: item.display_name.split(',').slice(0, 3).join(', '),
+      lat: parseFloat(item.lat),
+      lng: parseFloat(item.lon),
+      radiusKm: inferSearchRadiusKm(item)
+    }));
+
+    suggestionCache.set(q, suggestions);
+    return suggestions;
+  } catch {
+    return [];
+  }
+}
+
+function debounce(fn, wait) {
+  let t;
+  return (...args) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn(...args), wait);
+  };
 }
 
 // ── DOM refs ──────────────────────────────────────────────────────────────
@@ -90,18 +141,36 @@ const resultsHeader  = document.getElementById('results-header');
 const resultsCount   = document.getElementById('results-count');
 const resultsHint    = document.getElementById('results-hint');
 const resultsList    = document.getElementById('results-list');
+const suggestionsEl  = document.getElementById('search-suggestions');
 
 let isSearching = false;
 let scoreGen    = 0;
 let lastSearchParams = null;  // Track last search for refresh
 
+const updateSuggestions = debounce(async () => {
+  const query = inputEl.value.trim();
+  if (!suggestionsEl) return;
+
+  if (query.length < 3) {
+    suggestionsEl.innerHTML = '';
+    return;
+  }
+
+  const suggestions = await fetchGeocodeSuggestions(query);
+  suggestionsEl.innerHTML = suggestions
+    .map(s => `<option value="${s.value.replace(/"/g, '&quot;')}"></option>`)
+    .join('');
+}, 220);
+
 // ── Search input interactions ─────────────────────────────────────────────
 inputEl.addEventListener('input', () => {
   clearBtn.classList.toggle('visible', inputEl.value.length > 0);
+  updateSuggestions();
 });
 clearBtn.addEventListener('click', () => {
   inputEl.value = '';
   clearBtn.classList.remove('visible');
+  if (suggestionsEl) suggestionsEl.innerHTML = '';
   inputEl.focus();
 });
 inputEl.addEventListener('keydown', e => {
@@ -115,8 +184,8 @@ inputEl.addEventListener('keydown', e => {
 // ── Refresh button ──────────────────────────────────────────────────────────
 refreshBtn.addEventListener('click', () => {
   if (lastSearchParams) {
-    const { lat, lng, label } = lastSearchParams;
-    runSearch(lat, lng, label, true);  // Force refresh
+    const { lat, lng, label, radiusKm } = lastSearchParams;
+    runSearch(lat, lng, label, true, radiusKm);  // Force refresh
   }
 });
 
@@ -163,19 +232,30 @@ async function triggerTextSearch() {
   const query = inputEl.value.trim();
   if (!query) { setStatus('Enter a lake, city, or place name.', 'error'); return; }
   setStatus('Finding location…', 'loading');
+
+  // If user picked a suggested option, use that exact lat/lng instead of re-geocoding.
+  const cachedSuggestions = suggestionCache.get(query.toLowerCase());
+  if (cachedSuggestions?.length) {
+    const exact = cachedSuggestions.find(s => s.value.toLowerCase() === query.toLowerCase());
+    if (exact) {
+      runSearch(exact.lat, exact.lng, exact.value, false, exact.radiusKm || 30);
+      return;
+    }
+  }
+
   const geo = await geocode(query);
   if (!geo) {
     setStatus(`Couldn't find "${query}". Try a more specific name.`, 'error');
     return;
   }
-  runSearch(geo.lat, geo.lng, geo.label);
+  runSearch(geo.lat, geo.lng, geo.label, false, geo.radiusKm || 30);
 }
 
 // ── Core search ───────────────────────────────────────────────────────────
-async function runSearch(lat, lng, label = 'this location', forceRefresh = false) {
+async function runSearch(lat, lng, label = 'this location', forceRefresh = false, radiusKm = 30) {
   if (isSearching) return;
   isSearching = true;
-  lastSearchParams = { lat, lng, label };  // Track for refresh button
+  lastSearchParams = { lat, lng, label, radiusKm };  // Track for refresh button
   
   setStatus(`Searching near ${label}…`, 'loading');
   resultsHeader.classList.remove('visible');
@@ -187,7 +267,8 @@ async function runSearch(lat, lng, label = 'this location', forceRefresh = false
   try {
     const q   = encodeURIComponent(inputEl.value.trim());
     const refreshParam = forceRefresh ? '&refresh=1' : '';
-    const res = await fetch(`${API_BASE}/nearbyWater?lat=${lat}&lng=${lng}&radius=30&q=${q}${refreshParam}`);
+    const radius = Math.max(10, Math.min(60, parseInt(radiusKm, 10) || 30));
+    const res = await fetch(`${API_BASE}/nearbyWater?lat=${lat}&lng=${lng}&radius=${radius}&q=${q}${refreshParam}`);
     if (!res.ok) throw new Error(`API ${res.status}`);
     const data = await res.json();
 
