@@ -49,6 +49,7 @@ function buildRing(score) {
 // ── Nominatim geocode cache ───────────────────────────────────────────────
 const geocodeCache = new Map(); // query -> { lat, lng, label, radiusKm }
 const suggestionCache = new Map(); // query -> [suggestions]
+const suggestionChoiceCache = new Map(); // label -> { lat, lng, radiusKm }
 
 function inferSearchRadiusKm(item) {
   const placeClass = (item.class || '').toLowerCase();
@@ -92,6 +93,29 @@ async function geocode(query) {
   } catch { return null; }
 }
 
+function scoreSuggestion(item, query) {
+  const q = query.toLowerCase();
+  const text = `${item.display_name || ''} ${(item.class || '')} ${(item.type || '')}`.toLowerCase();
+  const type = (item.type || '').toLowerCase();
+  const cls = (item.class || '').toLowerCase();
+
+  let score = Number(item.importance || 0) * 40;
+
+  if (['water', 'lake', 'reservoir', 'river', 'bay', 'canal'].includes(type)) score += 40;
+  if (cls === 'natural' || cls === 'waterway') score += 30;
+  if (text.includes('lake') || text.includes('reservoir') || text.includes('river')) score += 25;
+
+  if (['city', 'town', 'village', 'administrative'].includes(type)) score += 18;
+
+  if (['road', 'house', 'residential', 'postcode'].includes(type)) score -= 35;
+
+  const qTokens = q.split(/\s+/).filter(t => t.length > 2);
+  const tokenMatches = qTokens.filter(t => text.includes(t)).length;
+  score += tokenMatches * 8;
+
+  return score;
+}
+
 async function fetchGeocodeSuggestions(query) {
   const q = query.toLowerCase().trim();
   if (q.length < 3) return [];
@@ -101,19 +125,24 @@ async function fetchGeocodeSuggestions(query) {
     const ctrl = new AbortController();
     const tid = setTimeout(() => ctrl.abort(), 4000);
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5`,
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=10`,
       { signal: ctrl.signal, headers: { 'User-Agent': 'Kaayko/1.0', 'Accept-Language': 'en' } }
     );
     clearTimeout(tid);
     if (!res.ok) return [];
 
     const data = await res.json();
-    const suggestions = (data || []).map(item => ({
-      value: item.display_name.split(',').slice(0, 3).join(', '),
-      lat: parseFloat(item.lat),
-      lng: parseFloat(item.lon),
-      radiusKm: inferSearchRadiusKm(item)
-    }));
+    const suggestions = (data || [])
+      .map(item => ({
+        value: item.display_name.split(',').slice(0, 3).join(', '),
+        lat: parseFloat(item.lat),
+        lng: parseFloat(item.lon),
+        radiusKm: inferSearchRadiusKm(item),
+        _rank: scoreSuggestion(item, query)
+      }))
+      .sort((a, b) => b._rank - a._rank)
+      .slice(0, 6)
+      .map(({ _rank, ...rest }) => rest);
 
     suggestionCache.set(q, suggestions);
     return suggestions;
@@ -157,6 +186,15 @@ const updateSuggestions = debounce(async () => {
   }
 
   const suggestions = await fetchGeocodeSuggestions(query);
+  suggestionChoiceCache.clear();
+  suggestions.forEach(s => {
+    suggestionChoiceCache.set(s.value.toLowerCase(), {
+      lat: s.lat,
+      lng: s.lng,
+      radiusKm: s.radiusKm || 30
+    });
+  });
+
   suggestionsEl.innerHTML = suggestions
     .map(s => `<option value="${s.value.replace(/"/g, '&quot;')}"></option>`)
     .join('');
@@ -234,13 +272,10 @@ async function triggerTextSearch() {
   setStatus('Finding location…', 'loading');
 
   // If user picked a suggested option, use that exact lat/lng instead of re-geocoding.
-  const cachedSuggestions = suggestionCache.get(query.toLowerCase());
-  if (cachedSuggestions?.length) {
-    const exact = cachedSuggestions.find(s => s.value.toLowerCase() === query.toLowerCase());
-    if (exact) {
-      runSearch(exact.lat, exact.lng, exact.value, false, exact.radiusKm || 30);
-      return;
-    }
+  const exact = suggestionChoiceCache.get(query.toLowerCase());
+  if (exact) {
+    runSearch(exact.lat, exact.lng, query, false, exact.radiusKm || 30);
+    return;
   }
 
   const geo = await geocode(query);
