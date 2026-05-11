@@ -123,9 +123,9 @@ async function fetchGeocodeSuggestions(query) {
 
   try {
     const ctrl = new AbortController();
-    const tid = setTimeout(() => ctrl.abort(), 4000);
+    const tid = setTimeout(() => ctrl.abort(), 2000);
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=10`,
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5`,
       { signal: ctrl.signal, headers: { 'User-Agent': 'Kaayko/1.0', 'Accept-Language': 'en' } }
     );
     clearTimeout(tid);
@@ -198,7 +198,7 @@ const updateSuggestions = debounce(async () => {
   suggestionsEl.innerHTML = suggestions
     .map(s => `<option value="${s.value.replace(/"/g, '&quot;')}"></option>`)
     .join('');
-}, 220);
+}, 500);
 
 // ── Search input interactions ─────────────────────────────────────────────
 inputEl.addEventListener('input', () => {
