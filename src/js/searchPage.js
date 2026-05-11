@@ -282,20 +282,76 @@ function renderResults(bodies, label, cached, sources) {
     });
     
     resultsList.appendChild(card);
+  });
 
-    // Fetch score reactively
-    fetchScore(body.lat, body.lng).then(score => {
-      if (scoreGen !== gen) return;
+  // Fetch all scores in batch, then fill in cards
+  fetchBatchScores(items).then(scoreMap => {
+    if (scoreGen !== gen || !scoreMap) {
+      // Batch failed — fall back to individual fetches
+      items.forEach((body, idx) => {
+        const scoreId = `sc-${gen}-${idx}`;
+        fetchScore(body.lat, body.lng).then(score => {
+          if (scoreGen !== gen) return;
+          const el = document.getElementById(scoreId);
+          if (!el) return;
+          el.innerHTML = score
+            ? buildRing(score)
+            : `<div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:#444;font-size:10px;font-family:'Josefin_Light',Arial,sans-serif">N/A</div>`;
+        });
+      });
+      return;
+    }
+
+    // Batch succeeded — fill in all scores
+    items.forEach((body, idx) => {
+      const scoreId = `sc-${gen}-${idx}`;
+      const key = `${body.lat.toFixed(6)},${body.lng.toFixed(6)}`;
+      const score = scoreMap.get(key);
+      
       const el = document.getElementById(scoreId);
       if (!el) return;
+      
       el.innerHTML = score
-        ? buildRing(score)
+        ? buildRing(Number(score).toFixed(1))
         : `<div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:#444;font-size:10px;font-family:'Josefin_Light',Arial,sans-serif">N/A</div>`;
     });
   });
 }
 
-// ── Fetch paddle score ────────────────────────────────────────────────────
+// ── Fetch paddle scores (batch) ───────────────────────────────────────────
+// Solves N+1 problem: 15 locations → 1 batch request instead of 15 individual calls
+async function fetchBatchScores(bodies) {
+  const ctrl = new AbortController();
+  const tid  = setTimeout(() => ctrl.abort(), 10000);
+  try {
+    const res = await fetch(
+      `${API_BASE}/paddleScores/batch`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          locations: bodies.map(b => ({ lat: b.lat, lng: b.lng }))
+        }),
+        signal: ctrl.signal
+      }
+    );
+    clearTimeout(tid);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data.success) return null;
+    
+    // Map scores by lat,lng for quick lookup
+    const scoreMap = new Map();
+    data.scores.forEach(s => {
+      const key = `${s.lat.toFixed(6)},${s.lng.toFixed(6)}`;
+      scoreMap.set(key, s.rating ?? s.score ?? null);
+    });
+    return scoreMap;
+  } catch { clearTimeout(tid); return null; }
+}
+
+// ── Fetch single score (fallback) ───────────────────────────────────────────
+// Used only if batch fails or for individual spot detail pages
 async function fetchScore(lat, lng) {
   const ctrl = new AbortController();
   const tid  = setTimeout(() => ctrl.abort(), 7000);
