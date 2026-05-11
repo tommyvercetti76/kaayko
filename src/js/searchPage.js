@@ -16,14 +16,13 @@ const API_BASE = ['localhost', '127.0.0.1'].includes(window.location.hostname)
 // ── Score helpers ─────────────────────────────────────────────────────────
 function scoreColor(s) {
   const v = parseFloat(s);
-  if (v >= 4.5) return '#22C55E'; // vivid green
-  if (v >= 4.0) return '#4ADE80'; // light green
-  if (v >= 3.5) return '#D97706'; // amber
-  if (v >= 3.0) return '#F97316'; // orange
-  if (v >= 2.5) return '#EF4444'; // vivid red
-  if (v >= 2.0) return '#DC2626'; // medium red
-  if (v >= 1.5) return '#EF4444'; // vivid red — max visibility for dangerous scores
-  return '#FF2D20';               // alarm red
+  if (v >= 4.5) return '#255a3a';
+  if (v >= 4.0) return '#316d43';
+  if (v >= 3.5) return '#c59a61';
+  if (v >= 3.0) return '#eb8127';
+  if (v >= 2.5) return '#bd3b2b';
+  if (v >= 2.0) return '#86170f';
+  return '#4a0a08';
 }
 
 function buildRing(score) {

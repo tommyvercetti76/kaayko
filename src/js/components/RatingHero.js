@@ -181,26 +181,20 @@ class RatingHero {
 
   getRingColor(rating) {
     const r = parseFloat(rating);
-    if (r >= 4.5) return '#22C55E'; // vivid green
-    if (r >= 4.0) return '#4ADE80'; // light green
-    if (r >= 3.5) return '#D97706'; // amber
-    if (r >= 3.0) return '#F97316'; // orange
-    if (r >= 2.5) return '#EF4444'; // vivid red
-    if (r >= 2.0) return '#DC2626'; // medium red
-    if (r >= 1.5) return '#EF4444'; // vivid red — low scores need max visibility
-    return '#FF2D20';               // alarm red
+    if (r >= 4.5) return '#255a3a';
+    if (r >= 4.0) return '#316d43';
+    if (r >= 3.5) return '#c59a61';
+    if (r >= 3.0) return '#eb8127';
+    if (r >= 2.5) return '#bd3b2b';
+    if (r >= 2.0) return '#86170f';
+    return '#4a0a08';
   }
 
   getScoreLabel(rating) {
     const r = parseFloat(rating);
-    if (r >= 4.5) return 'EXCELLENT';
-    if (r >= 4.0) return 'GREAT';
-    if (r >= 3.5) return 'GOOD';
-    if (r >= 3.0) return 'FAIR';
-    if (r >= 2.5) return 'RISKY';
-    if (r >= 2.0) return 'POOR';
-    if (r >= 1.5) return 'DANGER';
-    return 'CRITICAL';
+    if (r >= 3.7) return 'WORTH IT';
+    if (r >= 2.7) return 'CAREFUL';
+    return 'HARD PASS';
   }
 
   // ── Paddler's Briefing ────────────────────────────────────────────────────
@@ -241,13 +235,9 @@ class RatingHero {
 
   getVerdict(rating) {
     const r = parseFloat(rating);
-    if (r >= 4.5) return { icon: '🎯', title: 'Excellent Conditions',    subtitle: 'Perfect for all skill levels — go paddle!',                         className: 'verdict-excellent' };
-    if (r >= 4.0) return { icon: '✅', title: 'Great Conditions',        subtitle: 'Recommended for most paddlers',                                      className: 'verdict-great'    };
-    if (r >= 3.5) return { icon: '👍', title: 'Good Conditions',         subtitle: 'Intermediate paddlers and above',                                    className: 'verdict-good'     };
-    if (r >= 3.0) return { icon: '⚠️', title: 'Fair Conditions',         subtitle: 'Experienced paddlers — assess carefully before going',               className: 'verdict-fair'     };
-    if (r >= 2.5) return { icon: '🔶', title: 'Challenging Conditions',  subtitle: 'Expert paddlers only — serious difficulty',                          className: 'verdict-risky'    };
-    if (r >= 2.0) return { icon: '🚫', title: 'Poor Conditions',         subtitle: 'Not recommended — multiple risk factors present',                    className: 'verdict-poor'     };
-    return              { icon: '⛔', title: 'Dangerous Conditions',     subtitle: 'Not recommended for any skill level — stay off the water',           className: 'verdict-danger'   };
+    if (r >= 3.7) return { icon: '✅', title: 'Worth It',   subtitle: 'Conditions look good — go paddle!',                       className: 'verdict-worthit'  };
+    if (r >= 2.7) return { icon: '⚠️', title: 'Careful',     subtitle: 'Assess conditions carefully before heading out',           className: 'verdict-careful'  };
+    return              { icon: '⛔', title: 'Hard Pass',   subtitle: 'Not recommended — consider postponing or sheltered water', className: 'verdict-hardpass' };
   }
 
   analyzeConditions(weather, rating) {

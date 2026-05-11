@@ -1,316 +1,242 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark-theme">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    
-    <!-- Primary Meta Tags -->
-    <title>Privacy Policy - Data Protection & User Privacy | Kaayko</title>
-    <meta name="description" content="Kaayko's privacy policy explains how we collect, use, and protect your personal data. Learn about our commitment to user privacy, data security, and GDPR compliance.">
-    <meta name="keywords" content="kaayko privacy policy, data protection, user privacy, GDPR compliance, data security, privacy terms">
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://kaayko.com/privacy.html">
-    
-    <!-- Security -->
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <link rel="icon" type="image/png" href="/favicon-32x32.png">
-    <meta name="theme-color" content="#d4af37">
-    
-    <!-- Kaayko Fonts & Styles -->
-    <link rel="stylesheet" href="/fonts/fonts.css" />
-    <link rel="stylesheet" href="/css/storestyle.css" />
-    <link rel="stylesheet" href="/css/header.css" />
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-    
-    <style>
-        body {
-            font-family: 'Josefin_Light', Arial, sans-serif;
-            max-width: 900px;
-            margin: 80px auto 40px;
-            padding: 20px;
-            line-height: 1.7;
-        }
-        .container {
-            background: var(--card-bg);
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        }
-        h1 {
-            font-family: 'Josefin_Bold', Arial, sans-serif;
-            color: #ffd700;
-            border-bottom: 3px solid #ffd700;
-            padding-bottom: 15px;
-            margin-bottom: 10px;
-            font-size: 2.5rem;
-        }
-        h2 {
-            font-family: 'Josefin_Bold', Arial, sans-serif;
-            color: #ffd700;
-            margin-top: 35px;
-            border-left: 4px solid #ffd700;
-            padding-left: 15px;
-            font-size: 1.6rem;
-        }
-        h3 {
-            font-family: 'Josefin_Medium', Arial, sans-serif;
-            color: var(--text-color);
-            margin-top: 25px;
-            font-size: 1.2rem;
-        }
-        p, li {
-            font-family: 'Josefin_Light', Arial, sans-serif;
-            color: var(--text-color);
-        }
-        .last-updated {
-            font-family: 'Josefin_Light', Arial, sans-serif;
-            color: rgba(255, 255, 255, 0.6);
-            font-style: italic;
-            margin-bottom: 30px;
-            font-size: 0.95rem;
-        }
-        ul {
-            margin: 15px 0;
-            padding-left: 25px;
-        }
-        li {
-            margin: 10px 0;
-        }
-        strong {
-            font-family: 'Josefin_Medium', Arial, sans-serif;
-            color: #ffd700;
-        }
-        .important {
-            background: rgba(255, 215, 0, 0.1);
-            border-left: 4px solid #ffd700;
-            padding: 20px;
-            margin: 25px 0;
-            border-radius: 8px;
-        }
-        a {
-            color: #ffd700;
-            text-decoration: none;
-            transition: opacity 0.2s;
-        }
-        a:hover {
-            opacity: 0.7;
-        }
-        hr {
-            margin: 40px 0;
-            border: none;
-            border-top: 1px solid rgba(255, 215, 0, 0.2);
-        }
-        .footer-text {
-            text-align: center;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.9rem;
-            font-family: 'Josefin_Light', Arial, sans-serif;
-        }
-    </style>
+  <script>document.documentElement.classList.add('dark-theme');</script>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Privacy Policy | Kaayko</title>
+  <meta name="description" content="How Kaayko collects, uses, and protects your data across Paddling Out, the Store, and Karma.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://kaayko.com/privacy.html">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <meta name="theme-color" content="#d4af37">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/storestyle.css">
+  <link rel="stylesheet" href="/css/header.css">
+<style>
+:root {
+  --bg: #080808;
+  --surface: #18160f;
+  --fg: #ede8df;
+  --muted: rgba(237,232,223,0.55);
+  --gold: #b5935a;
+  --gold-bright: #d9bd7b;
+  --line: rgba(181,147,90,0.20);
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'Josefin Sans', Arial, sans-serif;
+}
+html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+.theme-toggle-icon { display: none !important; }
+
+.pp-wrap { max-width: 680px; margin: 0 auto; padding: 0 1.5rem 2rem; }
+
+.pp-back {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  margin: 1.5rem 0 0.5rem; font: 400 0.78rem var(--font-sans);
+  color: var(--gold); text-decoration: none; letter-spacing: 0.12em; text-transform: uppercase;
+}
+.pp-back:hover { color: var(--gold-bright); }
+.pp-back svg { width: 16px; height: 16px; }
+
+.pp-header { text-align: center; padding: 1.5rem 0 2rem; }
+.pp-eyebrow { font: 400 0.7rem var(--font-sans); letter-spacing: 0.28em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.3rem; }
+.pp-title { font: 600 clamp(1.4rem, 4vw, 2rem) var(--font-sans); color: var(--fg); margin: 0; text-transform: uppercase; }
+.pp-subtitle { font: 400 italic clamp(0.85rem, 2vw, 0.95rem) var(--font-serif); color: var(--muted); margin-top: 0.4rem; }
+
+.pp-section { margin-bottom: 2.2rem; }
+.pp-section h2 {
+  font: 600 0.75rem var(--font-sans); letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--gold); margin: 0 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--line);
+}
+.pp-section h3 {
+  font: 600 0.9rem var(--font-sans); color: var(--gold-bright); margin: 1.2rem 0 0.5rem;
+}
+.pp-section p, .pp-section li {
+  font: 400 1rem var(--font-serif); color: var(--fg); line-height: 1.7; margin: 0 0 0.7rem;
+}
+.pp-section ul { padding-left: 1.2rem; margin: 0 0 1rem; }
+.pp-section li { margin-bottom: 0.4rem; }
+.pp-section strong { color: var(--gold-bright); font-weight: 600; }
+.pp-section a { color: var(--gold); }
+.pp-section a:hover { color: var(--gold-bright); }
+.pp-callout {
+  background: rgba(181,147,90,0.06); border-left: 3px solid var(--gold);
+  padding: 1rem 1.2rem; margin: 1rem 0; border-radius: 4px;
+}
+.pp-callout p { margin: 0; }
+
+.site-footer {
+  text-align: center; padding: 2.5rem 2rem;
+  font: 400 0.7rem var(--font-sans); letter-spacing: 0.12em; color: var(--muted);
+  background: var(--surface); border-top: 1px solid var(--line); margin-top: 2rem;
+}
+.site-footer nav { display: flex; justify-content: center; gap: 1.2rem; margin-bottom: 0.8rem; }
+.site-footer a { color: var(--gold); text-decoration: none; font: 400 0.7rem var(--font-sans); letter-spacing: 0.12em; }
+.site-footer a:hover { color: var(--gold-bright); }
+.site-footer p { margin: 0.2rem 0 0; }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>Privacy Policy</h1>
-        <p class="last-updated">Last updated: December 6, 2025</p>
-        <p class="last-updated">Effective Date: December 6, 2025</p>
 
-        <h2>1. Introduction</h2>
-        <p>Kaayko ("we," "our," or "us") operates kaayko.com and kaaykostore.web.app (the "Services"), which include:</p>
-        <ul>
-            <li><strong>Kaayko Store:</strong> E-commerce platform for apparel and merchandise</li>
-            <li><strong>Paddle Bot:</strong> AI-powered paddle condition forecasting service</li>
-            <li><strong>Paddling Out:</strong> Water location discovery and weather intelligence</li>
-        </ul>
-        <p>This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our Services. By using our Services, you consent to the data practices described in this policy.</p>
+<div class="pp-wrap">
 
-        <div class="important">
-            <strong>Key Point:</strong> We are committed to transparency. You have control over your data and can opt out of data retention at any time.
-        </div>
+  <a class="pp-back" href="/paddlingout">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+    Paddling Out
+  </a>
 
-        <h2>2. Information We Collect</h2>
-        
-        <h3>2.1 Information You Provide Directly</h3>
-        <ul>
-            <li><strong>Purchase Information:</strong> When you make a purchase, we collect your email address, phone number (optional), and shipping address through Stripe's secure payment processing.</li>
-            <li><strong>Order Fulfillment Data:</strong> If you consent, we retain your shipping information for order tracking and future order fulfillment convenience.</li>
-            <li><strong>Location Queries:</strong> When using Paddle Bot or Paddling Out, you may provide location coordinates or lake/river names.</li>
-            <li><strong>Communications:</strong> If you contact us, we may retain your email address and message content.</li>
-        </ul>
+  <div class="pp-header">
+    <div class="pp-eyebrow">Kaayko</div>
+    <h1 class="pp-title">Privacy Policy</h1>
+    <p class="pp-subtitle">Last updated: May 2026</p>
+  </div>
 
-        <h3>2.2 Automatically Collected Information</h3>
-        <ul>
-            <li><strong>Usage Data:</strong> Browser type, device information, pages visited, time spent on pages, referring URLs.</li>
-            <li><strong>Cookies and Analytics:</strong> We use cookies for session management, preferences (dark mode), and analytics through Firebase and Google Cloud Platform.</li>
-            <li><strong>IP Addresses:</strong> Collected for fraud prevention, rate limiting, and geographic analysis (not linked to personal identity).</li>
-        </ul>
-
-        <h3>2.3 Payment Information</h3>
-        <p><strong>We do not store credit card information.</strong> All payment processing is handled securely by Stripe, Inc. Your payment card details are transmitted directly to Stripe and are subject to Stripe's Privacy Policy.</p>
-
-        <h2>3. How We Use Your Information</h2>
-        <p>We use collected information for the following purposes:</p>
-        <ul>
-            <li><strong>Order Fulfillment:</strong> Processing purchases, shipping products, and providing order tracking.</li>
-            <li><strong>Customer Support:</strong> Responding to inquiries and resolving issues.</li>
-            <li><strong>Service Improvement:</strong> Analyzing usage patterns to enhance user experience and ML model accuracy.</li>
-            <li><strong>Marketing (with consent):</strong> Sending promotional emails about new products or features (you may opt out at any time).</li>
-            <li><strong>Legal Compliance:</strong> Complying with applicable laws, regulations, and legal processes.</li>
-            <li><strong>Fraud Prevention:</strong> Detecting and preventing fraudulent transactions and abuse.</li>
-        </ul>
-
-        <h2>4. Data Retention and Storage</h2>
-        
-        <h3>4.1 Order Data</h3>
-        <ul>
-            <li><strong>With Consent:</strong> If you check the "Save my shipping info" box, we store your email, phone (if provided), and shipping address in Firebase Firestore for order fulfillment purposes.</li>
-            <li><strong>Without Consent:</strong> Order data is processed through Stripe and not permanently retained by Kaayko beyond order confirmation emails.</li>
-            <li><strong>Retention Period:</strong> Order fulfillment data is retained for up to 2 years or until you request deletion.</li>
-        </ul>
-
-        <h3>4.2 Paddle Bot and Weather Data</h3>
-        <ul>
-            <li><strong>Location Queries:</strong> Processed in real-time and cached temporarily (3.5 hours) for performance optimization. Not linked to personal identifiers.</li>
-            <li><strong>Conversation History:</strong> If using Paddle Bot through ChatGPT, conversation retention is governed by OpenAI's Privacy Policy.</li>
-        </ul>
-
-        <h3>4.3 Analytics and Logs</h3>
-        <ul>
-            <li><strong>Firebase Analytics:</strong> Usage patterns, page views, and app interactions are stored for up to 14 months.</li>
-            <li><strong>Server Logs:</strong> API request logs are retained for 30 days for security and debugging purposes.</li>
-        </ul>
-
-        <h2>5. Data Sharing and Third-Party Services</h2>
-        <p>We do not sell your personal information. We may share data with third parties only in the following circumstances:</p>
-
-        <h3>5.1 Service Providers</h3>
-        <ul>
-            <li><strong>Stripe:</strong> Payment processing (<a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer">Stripe Privacy Policy</a>)</li>
-            <li><strong>Google Cloud Platform (Firebase):</strong> Hosting, database, analytics (<a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener noreferrer">Firebase Privacy</a>)</li>
-            <li><strong>WeatherAPI.com:</strong> Real-time weather data (<a href="https://www.weatherapi.com/privacy.aspx" target="_blank" rel="noopener noreferrer">WeatherAPI Privacy</a>)</li>
-            <li><strong>OpenAI:</strong> Paddle Bot AI processing (<a href="https://openai.com/policies/privacy-policy" target="_blank" rel="noopener noreferrer">OpenAI Privacy Policy</a>)</li>
-        </ul>
-
-        <h3>5.2 Legal Requirements</h3>
-        <p>We may disclose your information if required by law, court order, or government regulation, or to protect our rights, property, or safety.</p>
-
-        <h3>5.3 Business Transfers</h3>
-        <p>In the event of a merger, acquisition, or sale of assets, your information may be transferred to the acquiring entity.</p>
-
-        <h2>6. Your Data Rights</h2>
-        <p>You have the following rights regarding your personal data:</p>
-        <ul>
-            <li><strong>Access:</strong> Request a copy of the personal data we hold about you.</li>
-            <li><strong>Correction:</strong> Request correction of inaccurate or incomplete data.</li>
-            <li><strong>Deletion:</strong> Request deletion of your data by emailing privacy@kaayko.com.</li>
-            <li><strong>Opt-Out:</strong> Unsubscribe from marketing emails via the unsubscribe link or by contacting us.</li>
-            <li><strong>Data Portability:</strong> Request your data in a machine-readable format.</li>
-            <li><strong>Withdraw Consent:</strong> If processing is based on consent, you may withdraw it at any time.</li>
-        </ul>
-        <p><strong>To exercise your rights, contact us at:</strong> privacy@kaayko.com</p>
-
-        <h2>7. Cookies and Tracking Technologies</h2>
-        <p>We use cookies and similar technologies for:</p>
-        <ul>
-            <li><strong>Essential Cookies:</strong> Session management, authentication, shopping cart functionality.</li>
-            <li><strong>Preference Cookies:</strong> Remembering settings like dark mode.</li>
-            <li><strong>Analytics Cookies:</strong> Firebase Analytics for understanding user behavior.</li>
-        </ul>
-        <p><strong>You can control cookies</strong> through your browser settings. Note that disabling cookies may limit functionality.</p>
-
-        <h2>8. Data Security</h2>
-        <p>We implement industry-standard security measures to protect your information:</p>
-        <ul>
-            <li>HTTPS encryption for all data transmission</li>
-            <li>Firebase security rules restricting database access</li>
-            <li>Stripe PCI-DSS compliant payment processing</li>
-            <li>Regular security audits and monitoring</li>
-            <li>Rate limiting and fraud detection systems</li>
-        </ul>
-        <p><strong>However, no method of transmission over the internet is 100% secure.</strong> While we strive to protect your data, we cannot guarantee absolute security.</p>
-
-        <h2>9. Children's Privacy</h2>
-        <p>Our Services are not intended for individuals under 13 years of age. We do not knowingly collect personal information from children. If we become aware that we have collected data from a child under 13, we will delete it promptly. Parents or guardians who believe we may have collected information from a child should contact us immediately.</p>
-
-        <h2>10. International Data Transfers</h2>
-        <p>Your information may be transferred to and processed in the United States or other countries where our service providers operate. By using our Services, you consent to such transfers. We ensure adequate safeguards are in place for international data transfers in compliance with applicable laws.</p>
-
-        <h2>11. California Privacy Rights (CCPA)</h2>
-        <p>If you are a California resident, you have additional rights under the California Consumer Privacy Act (CCPA):</p>
-        <ul>
-            <li><strong>Right to Know:</strong> Request details about the personal information we collect, use, and disclose.</li>
-            <li><strong>Right to Delete:</strong> Request deletion of your personal information.</li>
-            <li><strong>Right to Opt-Out:</strong> Opt out of the sale of personal information (we do not sell personal information).</li>
-            <li><strong>Non-Discrimination:</strong> We will not discriminate against you for exercising your CCPA rights.</li>
-        </ul>
-        <p>To exercise CCPA rights, email privacy@kaayko.com with "CCPA Request" in the subject line.</p>
-
-        <h2>12. European Union (GDPR) Rights</h2>
-        <p>If you are in the European Economic Area (EEA), you have rights under the General Data Protection Regulation (GDPR), including:</p>
-        <ul>
-            <li>Right to access, rectification, erasure, restriction, and data portability</li>
-            <li>Right to object to processing</li>
-            <li>Right to withdraw consent</li>
-            <li>Right to lodge a complaint with a supervisory authority</li>
-        </ul>
-        <p><strong>Legal Basis for Processing:</strong> We process data based on consent, contract performance, legitimate interests, and legal obligations.</p>
-
-        <h2>13. Changes to This Privacy Policy</h2>
-        <p>We may update this Privacy Policy from time to time. When we make material changes, we will:</p>
-        <ul>
-            <li>Update the "Last updated" date at the top of this page</li>
-            <li>Notify users via email (if we have your email address)</li>
-            <li>Display a prominent notice on our website</li>
-        </ul>
-        <p>Your continued use of the Services after changes constitute acceptance of the updated policy.</p>
-
-        <h2>14. Third-Party Links</h2>
-        <p>Our Services may contain links to third-party websites (e.g., social media, partner sites). We are not responsible for the privacy practices of these external sites. We encourage you to review their privacy policies.</p>
-
-        <h2>15. Contact Information</h2>
-        <p>For questions, concerns, or requests regarding this Privacy Policy or your personal data, please contact us:</p>
-        <ul>
-            <li><strong>Email:</strong> privacy@kaayko.com</li>
-            <li><strong>Website:</strong> <a href="https://kaaykostore.web.app">kaaykostore.web.app</a></li>
-            <li><strong>Mailing Address:</strong> Kaayko, [Your Business Address - To Be Updated]</li>
-        </ul>
-        <p><strong>Data Protection Officer:</strong> For EU inquiries, contact dpo@kaayko.com</p>
-
-        <h2>16. Consent</h2>
-        <p>By using our Services, you acknowledge that you have read and understood this Privacy Policy and agree to its terms.</p>
-
-        <hr>
-        <p class="footer-text">
-            &copy; 2025 Kaayko. All rights reserved. | <a href="/terms">Terms of Service</a>
-        </p>
+  <div class="pp-section">
+    <h2>Introduction</h2>
+    <p>Kaayko ("we," "our," or "us") operates kaayko.com (the "Services"), which include:</p>
+    <ul>
+      <li><strong>Paddling Out:</strong> AI-powered paddle condition forecasts and water location discovery</li>
+      <li><strong>Kaayko Store:</strong> E-commerce platform for apparel and merchandise</li>
+      <li><strong>Karma:</strong> Alumni platform for schools</li>
+    </ul>
+    <p>This Privacy Policy explains how we collect, use, disclose, and safeguard your information. By using our Services, you consent to the data practices described here.</p>
+    <div class="pp-callout">
+      <p><strong>Key Point:</strong> We are committed to transparency. You have control over your data and can opt out of data retention at any time.</p>
     </div>
+  </div>
 
-    <!-- Header with theme toggle -->
-    <header class="header">
-        <div class="header-top">
-            <div class="header-brand">
-                <h1 class="header-title">Kaayko</h1>
-                <p class="header-subtitle">Made for the Wild</p>
-            </div>
-            <nav class="top-menu"><ul></ul></nav>
-            <div class="header-controls">
-                <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode"></button>
-                <button class="fab-menu material-icons mobile-only" aria-label="Open Menu">menu</button>
-            </div>
-        </div>
-        <div class="mobile-menu-overlay"><ul></ul></div>
-    </header>
+  <div class="pp-section">
+    <h2>Information We Collect</h2>
+    <h3>Information You Provide</h3>
+    <ul>
+      <li><strong>Purchase Information:</strong> Email address, phone number (optional), and shipping address through Stripe's secure payment processing.</li>
+      <li><strong>Order Fulfillment Data:</strong> If you consent, we retain shipping info for future order convenience.</li>
+      <li><strong>Location Queries:</strong> When using Paddling Out, you may provide location coordinates or lake names.</li>
+      <li><strong>Paddle Ratings:</strong> Anonymous condition ratings submitted through the Paddle Trainer. We store a device fingerprint to prevent duplicates, not to identify you.</li>
+      <li><strong>Communications:</strong> If you contact us, we may retain your email address and message content.</li>
+    </ul>
+    <h3>Automatically Collected</h3>
+    <ul>
+      <li><strong>Usage Data:</strong> Browser type, device info, pages visited, time spent, referring URLs.</li>
+      <li><strong>Cookies:</strong> Session management, preferences (dark mode), and Firebase Analytics.</li>
+      <li><strong>IP Addresses:</strong> Collected for fraud prevention and rate limiting. Not linked to personal identity.</li>
+    </ul>
+    <h3>Payment Information</h3>
+    <p><strong>We do not store credit card information.</strong> All payment processing is handled by Stripe, Inc. Card details are transmitted directly to Stripe under their privacy policy.</p>
+  </div>
 
-    <script type="module" src="js/header.js"></script>
-    <script type="module">
-        // Hide non-relevant menu items on privacy page
-        setTimeout(() => {
-            document.querySelectorAll('.top-menu a, .mobile-menu-overlay a').forEach(link => {
-                if (!link.textContent.includes('Store') && !link.textContent.includes('About')) {
-                    link.parentElement.style.display = 'none';
-                }
-            });
-        }, 0);
-    </script>
+  <div class="pp-section">
+    <h2>How We Use Your Information</h2>
+    <ul>
+      <li><strong>Order Fulfillment:</strong> Processing purchases, shipping, and order tracking.</li>
+      <li><strong>Service Improvement:</strong> Analyzing usage to enhance user experience and ML model accuracy.</li>
+      <li><strong>Paddle Score Calibration:</strong> Anonymous ratings are used to improve forecast accuracy per location.</li>
+      <li><strong>Customer Support:</strong> Responding to inquiries.</li>
+      <li><strong>Legal Compliance:</strong> Complying with applicable laws and regulations.</li>
+      <li><strong>Fraud Prevention:</strong> Detecting and preventing fraudulent transactions.</li>
+    </ul>
+  </div>
+
+  <div class="pp-section">
+    <h2>Data Retention</h2>
+    <h3>Order Data</h3>
+    <ul>
+      <li><strong>With Consent:</strong> If you opt in, we store shipping info in Firebase Firestore for up to 2 years or until you request deletion.</li>
+      <li><strong>Without Consent:</strong> Order data is processed through Stripe and not permanently retained by Kaayko.</li>
+    </ul>
+    <h3>Paddle and Weather Data</h3>
+    <ul>
+      <li><strong>Location Queries:</strong> Processed in real-time and cached temporarily (up to 3.5 hours). Not linked to personal identifiers.</li>
+      <li><strong>User Ratings:</strong> Stored indefinitely as anonymous training data. No account or personal info is attached.</li>
+    </ul>
+    <h3>Analytics</h3>
+    <ul>
+      <li><strong>Firebase Analytics:</strong> Usage patterns stored for up to 14 months.</li>
+      <li><strong>Server Logs:</strong> API request logs retained for 30 days.</li>
+    </ul>
+  </div>
+
+  <div class="pp-section">
+    <h2>Third-Party Services</h2>
+    <p>We do not sell your personal information. We share data with third parties only as needed to operate:</p>
+    <ul>
+      <li><strong>Stripe:</strong> Payment processing</li>
+      <li><strong>Google Cloud Platform (Firebase):</strong> Hosting, database, analytics</li>
+      <li><strong>WeatherAPI.com:</strong> Real-time weather data for Paddling Out</li>
+    </ul>
+    <p>We may also disclose information if required by law, court order, or to protect our rights and safety.</p>
+  </div>
+
+  <div class="pp-section">
+    <h2>Your Rights</h2>
+    <p>You have the right to:</p>
+    <ul>
+      <li><strong>Access:</strong> Request a copy of the personal data we hold.</li>
+      <li><strong>Correction:</strong> Request correction of inaccurate data.</li>
+      <li><strong>Deletion:</strong> Request deletion of your data.</li>
+      <li><strong>Opt-Out:</strong> Unsubscribe from marketing emails at any time.</li>
+      <li><strong>Data Portability:</strong> Request your data in a machine-readable format.</li>
+    </ul>
+    <p>To exercise any of these rights, contact <strong>privacy@kaayko.com</strong>.</p>
+  </div>
+
+  <div class="pp-section">
+    <h2>Cookies &amp; Local Storage</h2>
+    <p>We use browser storage as follows:</p>
+    <ul>
+      <li><strong>Local Storage:</strong> Remembering preferences like dark mode. This data stays on your device and is never transmitted to our servers.</li>
+      <li><strong>Firebase Auth Tokens:</strong> Authentication state is managed by Firebase Auth using IndexedDB, not traditional cookies.</li>
+      <li><strong>Cookies:</strong> Used in limited contexts for link attribution and session continuity within Kortex (smart links). Paddling Out does not set cookies.</li>
+    </ul>
+    <p>You can clear browser storage through your browser settings. Clearing local storage will reset your preferences.</p>
+  </div>
+
+  <div class="pp-section">
+    <h2>Security</h2>
+    <p>We implement industry-standard security measures:</p>
+    <ul>
+      <li>HTTPS encryption for all data transmission</li>
+      <li>Firebase security rules restricting database access</li>
+      <li>Stripe PCI-DSS compliant payment processing</li>
+      <li>Rate limiting and fraud detection</li>
+    </ul>
+    <p>No method of transmission over the internet is 100% secure. We cannot guarantee absolute security.</p>
+  </div>
+
+  <div class="pp-section">
+    <h2>Children's Privacy</h2>
+    <p>Our Services are not intended for individuals under 13. We do not knowingly collect personal information from children. If we become aware we have, we will delete it promptly.</p>
+  </div>
+
+  <div class="pp-section">
+    <h2>California (CCPA) &amp; EU (GDPR)</h2>
+    <p>California residents and EU individuals have additional rights under CCPA and GDPR respectively, including the right to know, delete, and opt out. We do not sell personal information.</p>
+    <p>To exercise these rights, email <strong>privacy@kaayko.com</strong> with "Privacy Request" in the subject line.</p>
+  </div>
+
+  <div class="pp-section">
+    <h2>Changes to This Policy</h2>
+    <p>We may update this policy from time to time. Material changes will be reflected in the "Last updated" date at the top of this page. Continued use of the Services constitutes acceptance of the updated policy.</p>
+  </div>
+
+  <div class="pp-section">
+    <h2>Contact</h2>
+    <p>For questions about this policy or your data:</p>
+    <ul>
+      <li><strong>Email:</strong> privacy@kaayko.com</li>
+      <li><strong>Website:</strong> kaayko.com</li>
+    </ul>
+  </div>
+
+</div>
+
+<footer class="site-footer">
+  <nav><a href="/paddlingout">Paddling Out</a><a href="/about">About</a><a href="/paddlingout/methodology">Methodology</a><a href="/privacy">Privacy</a></nav>
+  <p>&copy; 2026 Kaayko. All rights reserved.</p>
+</footer>
+
 </body>
 </html>

@@ -164,6 +164,10 @@
   .section-loading { text-align: center; padding: 24px; color: var(--text-muted); font-size: 11px; }
   .refresh-btn { position: fixed; bottom: 20px; left: 20px; z-index: 9998; background: var(--bg3); border: 1px solid var(--gold); color: var(--gold); padding: 8px 14px; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 11px; transition: all 0.2s; }
   .refresh-btn:hover { background: rgba(245,200,66,0.15); }
+  .ui-version-switch { position: fixed; top: 14px; right: 14px; z-index: 10000; display: flex; gap: 4px; padding: 4px; border-radius: 7px; background: rgba(13,17,23,0.88); border: 1px solid var(--border); box-shadow: 0 8px 28px rgba(0,0,0,0.28); }
+  .ui-version-switch a { padding: 5px 9px; border-radius: 5px; color: var(--text-dim); font-size: 10px; font-weight: 700; letter-spacing: 0.4px; text-decoration: none; }
+  .ui-version-switch a:hover { color: var(--gold); background: rgba(245,200,66,0.08); }
+  .ui-version-switch .active { background: rgba(245,200,66,0.14); color: var(--gold); }
   .report-footer { padding: 18px 40px; text-align: center; font-size: 10px; color: var(--text-muted); border-top: 1px solid var(--border); background: var(--bg2); }
   .footer-grid { display: flex; justify-content: center; gap: 36px; flex-wrap: wrap; }
   .footer-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
@@ -224,6 +228,11 @@
 </style>
 </head>
 <body>
+
+<nav class="ui-version-switch" aria-label="ROOTS admin UI version">
+  <a class="active" href="./">Classic</a>
+  <a href="../roots-v2/">V2</a>
+</nav>
 
 <!-- HEADER -->
 <div class="report-header">

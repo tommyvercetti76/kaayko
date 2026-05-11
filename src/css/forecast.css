@@ -42,9 +42,9 @@
   --gold-bright:  #d9bd7b;
   --line:         rgba(181,147,90,0.20);
   --line-gold:    rgba(181,147,90,0.52);
-  --critical:     #FF2D20;
-  --moderate:     #FFA500;
-  --good:         #4CAF50;
+  --critical:     #bd3b2b;
+  --moderate:     #eb8127;
+  --good:         #316d43;
   --ease:         cubic-bezier(0.76, 0, 0.24, 1);
   --font-serif:   'Cormorant Garamond', Georgia, serif;
   --font-sans:    'Josefin Sans', 'Josefin_Bold', Arial, sans-serif;
@@ -66,9 +66,9 @@ html.dark-theme {
   --modal-text-subtle:  rgba(237,232,223,0.45);
   --modal-accent:       #b5935a;
   --modal-border:       rgba(181,147,90,0.35);
-  --modal-success:      #4CAF50;
-  --modal-warning:      #FFA500;
-  --modal-danger:       #FF2D20;
+  --modal-success:      #316d43;
+  --modal-warning:      #eb8127;
+  --modal-danger:       #bd3b2b;
   --modal-info:         #b5935a;
 }
 

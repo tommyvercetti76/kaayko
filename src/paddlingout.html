@@ -178,8 +178,8 @@
 
   <!-- 2) Page-specific CSS (cards, carousel, etc.) -->
   <link rel="stylesheet" href="/css/paddlingout.css" />
-
-  <!-- 4) Component CSS -->
+  
+  <!-- 3) Component CSS -->
   <link rel="stylesheet" href="/js/components/RatingHero.css" />
   <link rel="stylesheet" href="/js/components/SafetyWarnings.css" />
   <link rel="stylesheet" href="/js/components/Heatmap.css" />
@@ -192,25 +192,53 @@
 
   <!-- IN-PAGE BRAND BAR (replaces shared header) -->
   <div class="po-page-header">
-    <div class="po-brand">
+    <a href="/" class="po-brand" style="text-decoration:none;color:inherit">
       <span class="po-eyebrow">Kaayko</span>
       <h1 class="po-title">Paddling Out</h1>
-    </div>
+    </a>
     <button class="po-search-btn" aria-label="Search Spots"
             onclick="window.location.href='/paddlingout/search.html'">
-      <span class="material-icons">place</span>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
       <span class="po-search-label">Search</span>
     </button>
   </div>
 
 
-  <!-- MAIN: Cards injected by paddlingout.js -->
+  <!-- MAIN: Cards injected by paddlingout.js (replaces static grid below) -->
   <main>
-    <section class="container" id="cardsContainer"></section>
+    <section class="container" id="cardsContainer">
+      <!-- Static lake grid for SEO / no-JS / screen readers. JS replaces this on load. -->
+      <noscript><style>.seo-grid{display:grid!important}</style></noscript>
+      <div class="seo-grid" id="seoGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;padding:1rem 1.5rem">
+        <a href="/paddlingout/forecast?id=ambazari" class="seo-lake"><h2>Ambazari Lake</h2><p>Nagpur, Maharashtra</p></a>
+        <a href="/paddlingout/forecast?id=antero" class="seo-lake"><h2>Antero Reservoir</h2><p>Fairplay, Colorado</p></a>
+        <a href="/paddlingout/forecast?id=colorado" class="seo-lake"><h2>Colorado River</h2><p>Moab, Utah</p></a>
+        <a href="/paddlingout/forecast?id=cottonwood" class="seo-lake"><h2>Cottonwood Lake</h2><p>Buena Vista, Colorado</p></a>
+        <a href="/paddlingout/forecast?id=crescent" class="seo-lake"><h2>Lake Crescent</h2><p>Olympic National Park, Washington</p></a>
+        <a href="/paddlingout/forecast?id=diablo" class="seo-lake"><h2>Diablo Lake</h2><p>North Cascades National Park, Washington</p></a>
+        <a href="/paddlingout/forecast?id=jackson" class="seo-lake"><h2>Jackson Lake</h2><p>Grand Teton National Park, Wyoming</p></a>
+        <a href="/paddlingout/forecast?id=jenny" class="seo-lake"><h2>Jenny Lake</h2><p>Grand Teton National Park, Wyoming</p></a>
+        <a href="/paddlingout/forecast?id=kens" class="seo-lake"><h2>Kens Lake</h2><p>Spanish Valley, Utah</p></a>
+        <a href="/paddlingout/forecast?id=lewisville" class="seo-lake"><h2>Lewisville Lake</h2><p>Lewisville, Texas</p></a>
+        <a href="/paddlingout/forecast?id=mcdonald" class="seo-lake"><h2>Lake McDonald</h2><p>West Glacier, Montana</p></a>
+        <a href="/paddlingout/forecast?id=merrimack" class="seo-lake"><h2>Merrimack River</h2><p>Merrimack, New Hampshire</p></a>
+        <a href="/paddlingout/forecast?id=powell" class="seo-lake"><h2>Lake Powell</h2><p>Big Water, Utah</p></a>
+        <a href="/paddlingout/forecast?id=taylorpark" class="seo-lake"><h2>Taylor Park Reservoir</h2><p>Almont, Colorado</p></a>
+        <a href="/paddlingout/forecast?id=trinity" class="seo-lake"><h2>Trinity River</h2><p>Irving, Texas</p></a>
+        <a href="/paddlingout/forecast?id=union" class="seo-lake"><h2>Lake Union</h2><p>Seattle, Washington</p></a>
+        <a href="/paddlingout/forecast?id=whiterock" class="seo-lake"><h2>White Rock Lake</h2><p>Dallas, Texas</p></a>
+      </div>
+    </section>
   </main>
 
   <!-- FOOTER -->
   <footer>
+    <nav class="footer-links">
+      <a href="/paddlingout">Paddling Out</a>
+      <a href="/about">About</a>
+      <a href="/paddlingout/methodology">Methodology</a>
+      <a href="/privacy">Privacy</a>
+    </nav>
     <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
   </footer>
 
@@ -229,10 +257,15 @@
         <h2 class="lake-name"></h2>
         <p class="location"></p>
         <p class="description"></p>
-        <button class="forecast-button">
-          <span>Forecast</span>
-          <span>→</span>
-        </button>
+        <div class="card-actions">
+          <button class="forecast-button">
+            <span>Forecast</span>
+            <span>→</span>
+          </button>
+          <button class="rate-button">
+            <span>Rate</span>
+          </button>
+        </div>
       </div>
     </div>
   </template>
@@ -257,8 +290,8 @@
   <!-- 5) Service layer -->
   <script src="js/services/apiClient.js"></script>
   <script src="js/services/dataTransformer.js"></script>
-
-  <!-- 7) Page logic: fetch & render paddling spots -->
+  
+  <!-- 6) Page logic: fetch & render paddling spots -->
   <script type="module" src="js/paddlingout.js"></script>
 
   <!-- Set current year in footer -->

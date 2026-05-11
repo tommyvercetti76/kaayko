@@ -1,0 +1,1853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kortex — Revenue Backlog</title>
+<style>
+:root {
+  --bg: #0a0e17;
+  --surface: #111827;
+  --surface2: #1a2236;
+  --surface3: #222d42;
+  --border: #2a3550;
+  --text: #e2e8f0;
+  --text2: #94a3b8;
+  --text3: #64748b;
+  --accent: #3b82f6;
+  --accent2: #60a5fa;
+  --green: #22c55e;
+  --green-bg: rgba(34,197,94,.1);
+  --green-border: rgba(34,197,94,.25);
+  --red: #ef4444;
+  --red-bg: rgba(239,68,68,.08);
+  --red-border: rgba(239,68,68,.2);
+  --orange: #f59e0b;
+  --orange-bg: rgba(245,158,11,.08);
+  --orange-border: rgba(245,158,11,.2);
+  --purple: #a78bfa;
+  --purple-bg: rgba(167,139,250,.08);
+  --purple-border: rgba(167,139,250,.2);
+  --blue-bg: rgba(59,130,246,.08);
+  --blue-border: rgba(59,130,246,.2);
+  --gold: #eab308;
+  --radius: 10px;
+  --radius-sm: 6px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; background:var(--bg); color:var(--text); line-height:1.6; }
+a { color:var(--accent2); text-decoration:none; }
+a:hover { text-decoration:underline; }
+
+/* ── Topbar ─────────────────────────────────────────── */
+.topbar {
+  position:sticky; top:0; z-index:100;
+  background:rgba(10,14,23,.92); backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  padding:12px 32px;
+  display:flex; align-items:center; gap:16px;
+}
+.topbar h1 { font-size:18px; font-weight:700; letter-spacing:-.3px; white-space:nowrap; }
+.topbar h1 span { color:var(--accent2); }
+.topbar .stats { display:flex; gap:12px; margin-left:auto; }
+.stat-chip {
+  display:flex; align-items:center; gap:6px;
+  padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600;
+}
+.stat-chip.green { background:var(--green-bg); color:var(--green); border:1px solid var(--green-border); }
+.stat-chip.orange { background:var(--orange-bg); color:var(--orange); border:1px solid var(--orange-border); }
+.stat-chip.red { background:var(--red-bg); color:var(--red); border:1px solid var(--red-border); }
+.stat-chip.blue { background:var(--blue-bg); color:var(--accent2); border:1px solid var(--blue-border); }
+
+/* ── Tabs ───────────────────────────────────────────── */
+.tab-bar {
+  display:flex; gap:0; background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:0 32px; overflow-x:auto;
+}
+.tab {
+  padding:12px 20px; font-size:13px; font-weight:600; color:var(--text3);
+  cursor:pointer; border-bottom:2px solid transparent; transition:.2s;
+  white-space:nowrap; user-select:none;
+}
+.tab:hover { color:var(--text2); }
+.tab.active { color:var(--accent2); border-bottom-color:var(--accent2); }
+
+/* ── Filters ────────────────────────────────────────── */
+.filter-bar {
+  display:flex; gap:8px; padding:16px 32px; flex-wrap:wrap; align-items:center;
+}
+.filter-btn {
+  padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600;
+  cursor:pointer; border:1px solid var(--border); background:var(--surface);
+  color:var(--text2); transition:.15s;
+}
+.filter-btn:hover { border-color:var(--text3); color:var(--text); }
+.filter-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+.filter-btn.active.green-f { background:var(--green); border-color:var(--green); }
+.filter-btn.active.red-f { background:var(--red); border-color:var(--red); }
+.filter-btn.active.orange-f { background:var(--orange); border-color:var(--orange); }
+.filter-btn.active.purple-f { background:var(--purple); border-color:var(--purple); }
+.search-box {
+  margin-left:auto; padding:7px 14px; border-radius:8px; border:1px solid var(--border);
+  background:var(--surface2); color:var(--text); font-size:13px; width:240px;
+}
+.search-box:focus { outline:none; border-color:var(--accent); }
+.search-box::placeholder { color:var(--text3); }
+
+/* ── Content ────────────────────────────────────────── */
+.content { max-width:1400px; margin:0 auto; padding:0 32px 80px; }
+.section { display:none; }
+.section.active { display:block; }
+
+/* ── Backlog cards ──────────────────────────────────── */
+.epic-header {
+  margin:28px 0 12px; padding:12px 20px; border-radius:var(--radius);
+  background:var(--surface2); border-left:4px solid var(--accent);
+  display:flex; align-items:center; gap:12px;
+}
+.epic-header h2 { font-size:15px; font-weight:700; }
+.epic-header .epic-count { font-size:12px; color:var(--text3); }
+
+.card {
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  margin:8px 0; overflow:hidden; transition:.15s;
+}
+.card:hover { border-color:var(--text3); }
+.card-header {
+  display:grid; grid-template-columns:36px 1fr 100px 80px 70px 70px 50px 56px;
+  align-items:center; padding:14px 20px; cursor:pointer; gap:12px;
+}
+.tech-dot {
+  width:10px; height:10px; border-radius:50%; margin:0 auto;
+}
+.tech-dot.t-ready { background:var(--green); box-shadow:0 0 6px rgba(34,197,94,.4); }
+.tech-dot.t-infra { background:var(--orange); box-shadow:0 0 6px rgba(245,158,11,.4); }
+.tech-dot.t-new-dep { background:var(--purple); box-shadow:0 0 6px rgba(167,139,250,.4); }
+.card-num {
+  width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:700; background:var(--surface3); color:var(--text2);
+}
+.card-title { font-size:14px; font-weight:600; }
+.card-type {
+  font-size:11px; font-weight:700; text-transform:uppercase; padding:3px 10px;
+  border-radius:4px; text-align:center; letter-spacing:.3px;
+}
+.card-type.revenue-unlock { background:var(--green-bg); color:var(--green); border:1px solid var(--green-border); }
+.card-type.table-stakes { background:var(--red-bg); color:var(--red); border:1px solid var(--red-border); }
+.card-type.moat { background:var(--purple-bg); color:var(--purple); border:1px solid var(--purple-border); }
+.card-type.growth { background:var(--orange-bg); color:var(--orange); border:1px solid var(--orange-border); }
+.card-effort { font-size:12px; color:var(--text3); text-align:center; }
+.card-impact { font-size:13px; font-weight:700; text-align:center; }
+.card-impact.high { color:var(--green); }
+.card-impact.med { color:var(--orange); }
+.card-impact.low { color:var(--text3); }
+.card-score {
+  width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:800; color:#fff; margin:0 auto;
+}
+.card-score.s-high { background:var(--green); }
+.card-score.s-med { background:var(--orange); }
+.card-score.s-low { background:var(--text3); }
+.card-expand { display:none; padding:0 20px 20px; border-top:1px solid var(--border); }
+.card.open .card-expand { display:block; }
+.card-expand-inner { display:grid; grid-template-columns:1fr 1fr; gap:20px; padding-top:16px; }
+.detail-block h4 { font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--text3); margin-bottom:8px; }
+.detail-block p, .detail-block li { font-size:13px; color:var(--text2); line-height:1.7; }
+.detail-block ul { padding-left:18px; }
+.detail-block li { margin:4px 0; }
+.agent-block {
+  margin-top:16px; padding:14px 18px; border-radius:var(--radius-sm);
+  background:var(--surface2); border:1px solid var(--border);
+}
+.agent-block h4 { color:var(--accent2); font-size:12px; margin-bottom:6px; }
+.agent-block pre {
+  font-family:'SF Mono','Fira Code',monospace; font-size:12px; color:var(--text2);
+  white-space:pre-wrap; word-break:break-word; line-height:1.6;
+}
+
+/* ── Competitive matrix ─────────────────────────────── */
+.matrix-table {
+  width:100%; border-collapse:collapse; margin-top:16px; font-size:13px;
+}
+.matrix-table th {
+  padding:10px 14px; text-align:left; font-size:11px; text-transform:uppercase;
+  letter-spacing:.5px; color:var(--text3); background:var(--surface2);
+  border-bottom:2px solid var(--border); position:sticky; top:88px; z-index:10;
+}
+.matrix-table td {
+  padding:10px 14px; border-bottom:1px solid var(--border); vertical-align:middle;
+}
+.matrix-table tr:hover td { background:var(--surface2); }
+.matrix-table .section-row td {
+  background:var(--surface3); font-weight:700; font-size:12px; text-transform:uppercase;
+  letter-spacing:.5px; color:var(--accent2); border-bottom:1px solid var(--accent);
+  padding:14px;
+}
+.verdict { font-weight:700; font-size:12px; padding:3px 10px; border-radius:4px; white-space:nowrap; }
+.verdict.gap { background:var(--red-bg); color:var(--red); }
+.verdict.critical { background:var(--red); color:#fff; }
+.verdict.parity { background:var(--surface3); color:var(--text2); }
+.verdict.ahead { background:var(--green-bg); color:var(--green); }
+.verdict.unique { background:var(--purple-bg); color:var(--purple); }
+.verdict.opp { background:var(--orange-bg); color:var(--orange); }
+.cell-yes { color:var(--green); font-weight:600; }
+.cell-no { color:var(--red); opacity:.5; }
+.cell-partial { color:var(--orange); font-weight:600; }
+
+/* ── Sprint plan ────────────────────────────────────── */
+.week-header {
+  margin:32px 0 12px; padding:16px 24px; border-radius:var(--radius);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.week-header.w1 { background:linear-gradient(135deg,rgba(34,197,94,.15),rgba(34,197,94,.05)); border:1px solid var(--green-border); }
+.week-header.w2 { background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(245,158,11,.05)); border:1px solid var(--orange-border); }
+.week-header.w34 { background:linear-gradient(135deg,rgba(167,139,250,.15),rgba(167,139,250,.05)); border:1px solid var(--purple-border); }
+.week-header h2 { font-size:16px; }
+.week-header .week-goal { font-size:12px; color:var(--text2); }
+.sprint-card {
+  display:grid; grid-template-columns:70px 1fr 1fr 80px;
+  gap:16px; padding:16px 20px; background:var(--surface);
+  border:1px solid var(--border); border-radius:var(--radius-sm); margin:6px 0;
+  align-items:start;
+}
+.sprint-day { font-size:12px; font-weight:700; color:var(--accent2); padding-top:2px; }
+.sprint-task { font-size:13px; font-weight:600; }
+.sprint-deliverable { font-size:12px; color:var(--text2); }
+.sprint-gate { font-size:11px; font-weight:700; text-align:center; padding:4px 8px; border-radius:4px; }
+.sprint-gate.yes { background:var(--red-bg); color:var(--red); border:1px solid var(--red-border); }
+.sprint-gate.driver { background:var(--orange-bg); color:var(--orange); border:1px solid var(--orange-border); }
+.sprint-gate.table { background:var(--blue-bg); color:var(--accent2); border:1px solid var(--blue-border); }
+.sprint-gate.moat-g { background:var(--purple-bg); color:var(--purple); border:1px solid var(--purple-border); }
+
+.success-criteria {
+  margin:32px 0; padding:24px; border-radius:var(--radius);
+  background:linear-gradient(135deg,rgba(234,179,8,.1),rgba(234,179,8,.02));
+  border:1px solid rgba(234,179,8,.25);
+}
+.success-criteria h3 { font-size:15px; color:var(--gold); margin-bottom:16px; }
+.criteria-item {
+  display:flex; gap:12px; padding:8px 0; border-bottom:1px solid rgba(234,179,8,.1);
+  font-size:13px;
+}
+.criteria-item:last-child { border:none; }
+.criteria-check { color:var(--gold); font-size:16px; }
+
+/* ── Status overview ────────────────────────────────── */
+.overview-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:16px; margin-top:20px; }
+.ov-card {
+  padding:24px; border-radius:var(--radius); background:var(--surface);
+  border:1px solid var(--border);
+}
+.ov-card h3 { font-size:13px; text-transform:uppercase; letter-spacing:.5px; color:var(--text3); margin-bottom:12px; }
+.ov-big { font-size:48px; font-weight:800; line-height:1; }
+.ov-big.green { color:var(--green); }
+.ov-big.orange { color:var(--orange); }
+.ov-big.red { color:var(--red); }
+.ov-big.blue { color:var(--accent2); }
+.ov-sub { font-size:13px; color:var(--text2); margin-top:6px; }
+.bar-track { height:8px; background:var(--surface3); border-radius:4px; margin-top:12px; overflow:hidden; }
+.bar-fill { height:100%; border-radius:4px; transition:.5s; }
+
+.built-list { margin-top:20px; }
+.built-item {
+  display:flex; align-items:center; gap:10px; padding:8px 16px;
+  border-bottom:1px solid var(--border); font-size:13px;
+}
+.built-item:hover { background:var(--surface2); }
+.built-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.built-dot.done { background:var(--green); }
+.built-dot.partial { background:var(--orange); }
+.built-dot.todo { background:var(--red); }
+.built-file { font-size:11px; color:var(--text3); margin-left:auto; font-family:monospace; }
+
+/* ── Responsive ─────────────────────────────────────── */
+@media (max-width:900px) {
+  .card-header { grid-template-columns:36px 1fr 80px 50px; }
+  .card-header > :nth-child(4),
+  .card-header > :nth-child(5),
+  .card-header > :nth-child(8) { display:none; }
+  .card-expand-inner { grid-template-columns:1fr; }
+  .sprint-card { grid-template-columns:60px 1fr; }
+  .sprint-deliverable, .sprint-gate { display:none; }
+  .topbar .stats { display:none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════
+     TOPBAR
+     ═══════════════════════════════════════════════════ -->
+<div class="topbar">
+  <h1>KORTEX <span>Revenue Backlog</span></h1>
+  <div class="stats" id="topStats">
+    <div class="stat-chip green"><span id="statDone">43</span> built</div>
+    <div class="stat-chip orange"><span id="statPartial">8</span> partial</div>
+    <div class="stat-chip red"><span id="statTodo">25</span> gaps</div>
+    <div class="stat-chip blue"><span id="statBacklog">45</span> backlog items</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     TAB BAR
+     ═══════════════════════════════════════════════════ -->
+<div class="tab-bar">
+  <div class="tab active" data-tab="overview">Overview</div>
+  <div class="tab" data-tab="backlog">Backlog</div>
+  <div class="tab" data-tab="competitive">Competitive Matrix</div>
+  <div class="tab" data-tab="sprint">30-Day Sprint</div>
+  <div class="tab" data-tab="built">What's Built</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     OVERVIEW
+     ═══════════════════════════════════════════════════ -->
+<div class="content">
+<div class="section active" id="overview">
+  <div class="overview-grid" style="margin-top:28px;">
+    <div class="ov-card">
+      <h3>Build Completion</h3>
+      <div class="ov-big orange">73%</div>
+      <div class="ov-sub">43 built + 8 partial out of 70 features verified in codebase. Backend core is solid. Self-serve infrastructure is the gap.</div>
+      <div class="bar-track"><div class="bar-fill" style="width:73%;background:var(--orange)"></div></div>
+    </div>
+    <div class="ov-card">
+      <h3>Self-Serve Status</h3>
+      <div class="ov-big red">BLOCKED</div>
+      <div class="ov-sub">Signup creates a pending registration, not a real tenant. No email system. Onboarding wizard is 100% stub. Stripe IDs are placeholders. No vendor can self-serve today.</div>
+    </div>
+    <div class="ov-card">
+      <h3>Competitive Gaps</h3>
+      <div class="ov-big orange">17</div>
+      <div class="ov-sub">Features competitors ship that we don't. 7 are critical deal-losers. Self-serve signup, email system, custom domains, and external URLs are the biggest.</div>
+    </div>
+    <div class="ov-card">
+      <h3>Unique Moats</h3>
+      <div class="ov-big blue">18</div>
+      <div class="ov-sub">Features no competitor has: campaign lifecycle, 6-layer security, multi-tenant, education intents, link decay, venue analytics, compliance trails.</div>
+    </div>
+  </div>
+
+  <!-- Target Clients -->
+  <div style="margin-top:32px; padding:24px; background:var(--surface); border:1px solid var(--accent); border-radius:var(--radius);">
+    <h3 style="font-size:15px; margin-bottom:16px; color:var(--accent2);">Target Clients</h3>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">
+      <div style="padding:14px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);">
+        <div style="font-size:20px;margin-bottom:4px;">🎓</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);">Universities &amp; Education</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">Alumni campaigns, admissions funnels, campus link-in-bio, 11 intent types</div>
+      </div>
+      <div style="padding:14px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);">
+        <div style="font-size:20px;margin-bottom:4px;">🦁</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);">Zoos &amp; Museums</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">Exhibit QR engagement, foot traffic attribution, merch link tracking, membership analytics</div>
+      </div>
+      <div style="padding:14px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);">
+        <div style="font-size:20px;margin-bottom:4px;">⚽</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);">Sports Clubs</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">Game-day QR merch, season campaigns, jumbotron vanity links, post-game lifecycle</div>
+      </div>
+      <div style="padding:14px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);">
+        <div style="font-size:20px;margin-bottom:4px;">🎤</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);">Concerts &amp; Festivals</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">Event merch attribution, typeable vanity links, graceful post-event decay, anti-scalping</div>
+      </div>
+      <div style="padding:14px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);">
+        <div style="font-size:20px;margin-bottom:4px;">📚</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);">Libraries &amp; Publishers</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">Patron-scoped access, lending-period links, concurrent user caps, compliance audit trails</div>
+      </div>
+      <div style="padding:14px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);">
+        <div style="font-size:20px;margin-bottom:4px;">🏛️</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);">Conferences &amp; Events</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">Session links, attendee-domain gating, speaker QR codes, post-event recording redirects</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Honest Vendor Journey -->
+  <div style="margin-top:24px; padding:24px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);">
+    <h3 style="font-size:15px; margin-bottom:16px; color:var(--accent2);">Vendor Self-Serve Journey — Honest Status</h3>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:8px; font-size:12px;">
+      <div style="padding:10px;border-radius:var(--radius-sm);background:var(--green-bg);border:1px solid var(--green-border);text-align:center;">
+        <div style="font-weight:700;color:var(--green);">LANDING PAGE</div>
+        <div style="color:var(--text2);margin-top:4px;">778 lines, polished</div>
+        <div style="color:var(--green);font-weight:700;margin-top:4px;">DONE</div>
+      </div>
+      <div style="padding:10px;border-radius:var(--radius-sm);background:var(--red-bg);border:1px solid var(--red-border);text-align:center;">
+        <div style="font-weight:700;color:var(--red);">SIGNUP</div>
+        <div style="color:var(--text2);margin-top:4px;">Creates pending reg, not real tenant</div>
+        <div style="color:var(--red);font-weight:700;margin-top:4px;">BROKEN</div>
+      </div>
+      <div style="padding:10px;border-radius:var(--radius-sm);background:var(--red-bg);border:1px solid var(--red-border);text-align:center;">
+        <div style="font-weight:700;color:var(--red);">WELCOME EMAIL</div>
+        <div style="color:var(--text2);margin-top:4px;">No email system exists</div>
+        <div style="color:var(--red);font-weight:700;margin-top:4px;">MISSING</div>
+      </div>
+      <div style="padding:10px;border-radius:var(--radius-sm);background:var(--red-bg);border:1px solid var(--red-border);text-align:center;">
+        <div style="font-weight:700;color:var(--red);">ONBOARDING</div>
+        <div style="color:var(--text2);margin-top:4px;">6-step wizard, 0 API calls</div>
+        <div style="color:var(--red);font-weight:700;margin-top:4px;">STUB</div>
+      </div>
+      <div style="padding:10px;border-radius:var(--radius-sm);background:var(--orange-bg);border:1px solid var(--orange-border);text-align:center;">
+        <div style="font-weight:700;color:var(--orange);">CREATE LINKS</div>
+        <div style="color:var(--text2);margin-top:4px;">Works but external URLs blocked for tenants</div>
+        <div style="color:var(--orange);font-weight:700;margin-top:4px;">PARTIAL</div>
+      </div>
+      <div style="padding:10px;border-radius:var(--radius-sm);background:var(--green-bg);border:1px solid var(--green-border);text-align:center;">
+        <div style="font-weight:700;color:var(--green);">DASHBOARD</div>
+        <div style="color:var(--text2);margin-top:4px;">KPIs, campaigns, recent links</div>
+        <div style="color:var(--green);font-weight:700;margin-top:4px;">WORKS</div>
+      </div>
+      <div style="padding:10px;border-radius:var(--radius-sm);background:var(--green-bg);border:1px solid var(--green-border);text-align:center;">
+        <div style="font-weight:700;color:var(--green);">ANALYTICS</div>
+        <div style="color:var(--text2);margin-top:4px;">Portfolio view + CSV export</div>
+        <div style="color:var(--green);font-weight:700;margin-top:4px;">WORKS</div>
+      </div>
+      <div style="padding:10px;border-radius:var(--radius-sm);background:var(--red-bg);border:1px solid var(--red-border);text-align:center;">
+        <div style="font-weight:700;color:var(--red);">BILLING</div>
+        <div style="color:var(--text2);margin-top:4px;">Full UI, placeholder Stripe IDs</div>
+        <div style="color:var(--red);font-weight:700;margin-top:4px;">STUB</div>
+      </div>
+    </div>
+    <p style="font-size:13px;color:var(--text2);margin-top:16px;line-height:1.7;">
+      <strong style="color:var(--red);">The vendor journey dies at step 2.</strong> A zoo, sports club, or conference org clicks "Get Started Free" and gets a success message promising an email that never arrives. No tenant is created, no auth user exists, no login is possible. Everything behind the login wall (dashboard, analytics, campaigns, QR codes) works — but nobody can get there.
+    </p>
+  </div>
+
+  <!-- What's Built vs What's Broken -->
+  <div style="margin-top:16px; display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+    <div style="padding:20px; background:var(--surface2); border:1px solid var(--green-border); border-radius:var(--radius);">
+      <h4 style="font-size:13px; color:var(--green); margin-bottom:12px;">What Works (behind the login wall)</h4>
+      <div style="font-size:12px; color:var(--text2); line-height:1.8;">
+        <div>&#x2022; Admin SPA with 8 views (dashboard, create, all links, analytics, campaigns, QR, billing, onboarding)</div>
+        <div>&#x2022; Smart link CRUD + platform-aware redirect + A/B routing</div>
+        <div>&#x2022; Campaign management with lifecycle (active/paused/archived)</div>
+        <div>&#x2022; Click analytics with device/browser/UTM/referrer breakdown</div>
+        <div>&#x2022; QR code generation + download</div>
+        <div>&#x2022; Multi-tenant architecture with role-based access</div>
+        <div>&#x2022; 6-layer security (HMAC, velocity profiling, honeypots, bot detection)</div>
+        <div>&#x2022; Public API + HMAC-signed webhooks + batch operations</div>
+      </div>
+    </div>
+    <div style="padding:20px; background:var(--surface2); border:1px solid var(--red-border); border-radius:var(--radius);">
+      <h4 style="font-size:13px; color:var(--red); margin-bottom:12px;">What's Broken (self-serve blockers)</h4>
+      <div style="font-size:12px; color:var(--text2); line-height:1.8;">
+        <div>&#x2022; <strong style="color:var(--red);">Signup → pending review</strong>, not auto-provisioned tenant + auth user</div>
+        <div>&#x2022; <strong style="color:var(--red);">No email system</strong> — no welcome email, no alerts, no reports</div>
+        <div>&#x2022; <strong style="color:var(--red);">Onboarding wizard</strong> — all 6 steps save to local JS state, zero API calls</div>
+        <div>&#x2022; <strong style="color:var(--red);">Stripe placeholder IDs</strong> — "price_pro_monthly" not real Stripe products</div>
+        <div>&#x2022; <strong style="color:var(--orange);">External URLs blocked</strong> — tenant admins can't point links to their own domains</div>
+        <div>&#x2022; <strong style="color:var(--orange);">No guided empty state</strong> — new tenants see blank dashboard with no guidance</div>
+        <div>&#x2022; <strong style="color:var(--orange);">Weekly digest logic exists</strong> but no scheduler wired, no email sender</div>
+        <div>&#x2022; <strong style="color:var(--orange);">Landing page</strong> says "Universities" — no venue/sports/entertainment use cases</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:24px; display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+    <div class="ov-card">
+      <h3>Pricing (needs decision)</h3>
+      <table style="width:100%;font-size:13px;margin-top:8px;">
+        <tr style="color:var(--text3);"><td>Platform</td><td>Free</td><td>Pro</td><td>Business</td></tr>
+        <tr><td style="font-weight:700;color:var(--accent2);">Kortex</td><td>$0 (25)</td><td style="color:var(--orange);font-weight:700;">$29/mo</td><td>$99/mo</td></tr>
+        <tr style="color:var(--text2);"><td>Bitly</td><td>$0 (10)</td><td>$35/mo</td><td>$300/mo</td></tr>
+        <tr style="color:var(--text2);"><td>Dub.co</td><td>$0 (25)</td><td>$24/mo</td><td>$59/mo</td></tr>
+        <tr style="color:var(--text2);"><td>Rebrandly</td><td>$0 (25)</td><td>$13/mo</td><td>$32/mo</td></tr>
+      </table>
+      <p style="font-size:12px;color:var(--orange);margin-top:12px;">billing.js uses $29/$99. Earlier plans said $79/$199. Align before Stripe product creation.</p>
+    </div>
+    <div class="ov-card">
+      <h3>Critical Path to First Vendor</h3>
+      <div style="margin-top:8px;">
+        <div style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;">
+          <span style="color:var(--red);font-size:14px;font-weight:700;">1</span>
+          <span>Auto-provision tenant + Firebase Auth on signup</span>
+          <span style="margin-left:auto;font-size:11px;color:var(--text3);">2-3 days</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;">
+          <span style="color:var(--red);font-size:14px;font-weight:700;">2</span>
+          <span>Email system (SendGrid) — welcome + password reset</span>
+          <span style="margin-left:auto;font-size:11px;color:var(--text3);">1-2 days</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;">
+          <span style="color:var(--red);font-size:14px;font-weight:700;">3</span>
+          <span>Unlock external destination URLs for tenant admins</span>
+          <span style="margin-left:auto;font-size:11px;color:var(--green);">2 hours</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;">
+          <span style="color:var(--orange);font-size:14px;font-weight:700;">4</span>
+          <span>3-step onboarding (org → first campaign → first link)</span>
+          <span style="margin-left:auto;font-size:11px;color:var(--text3);">3-4 days</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;">
+          <span style="color:var(--orange);font-size:14px;font-weight:700;">5</span>
+          <span>Stripe products + swap placeholder IDs</span>
+          <span style="margin-left:auto;font-size:11px;color:var(--green);">1-2 hours</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;">
+          <span style="color:var(--accent2);font-size:14px;font-weight:700;">6</span>
+          <span>Landing page: add venue/sports use cases + pricing table</span>
+          <span style="margin-left:auto;font-size:11px;color:var(--text3);">1-2 days</span>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--orange);margin-top:12px;font-weight:600;">~8-10 days to first vendor being able to self-serve signup → create links → see analytics.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     BACKLOG
+     ═══════════════════════════════════════════════════ -->
+<div class="section" id="backlog">
+  <div class="filter-bar">
+    <div class="filter-btn active" data-filter="all">All (45)</div>
+    <div class="filter-btn green-f" data-filter="revenue-unlock">Revenue Unlock (6)</div>
+    <div class="filter-btn red-f" data-filter="table-stakes">Table Stakes (11)</div>
+    <div class="filter-btn purple-f" data-filter="moat">Moat (12)</div>
+    <div class="filter-btn orange-f" data-filter="growth">Growth (16)</div>
+    <input type="text" class="search-box" placeholder="Search backlog..." id="backlogSearch">
+  </div>
+  <div id="backlogList"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     COMPETITIVE MATRIX
+     ═══════════════════════════════════════════════════ -->
+<div class="section" id="competitive">
+  <div class="filter-bar">
+    <div class="filter-btn active" data-matrix="all">All</div>
+    <div class="filter-btn red-f" data-matrix="gap">Gaps Only</div>
+    <div class="filter-btn green-f" data-matrix="ahead">Where We Win</div>
+  </div>
+  <table class="matrix-table" id="matrixTable">
+    <thead>
+      <tr>
+        <th style="width:26%">Feature</th>
+        <th style="width:10%">Kortex</th>
+        <th style="width:10%">Bitly</th>
+        <th style="width:10%">Dub.co</th>
+        <th style="width:10%">Branch</th>
+        <th style="width:10%">Rebrandly</th>
+        <th style="width:24%">Verdict</th>
+      </tr>
+    </thead>
+    <tbody id="matrixBody"></tbody>
+  </table>
+
+  <div style="margin-top:32px;padding:24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);">
+    <h3 style="font-size:15px;margin-bottom:16px;">Competitive Summary</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:13px;">
+      <div>
+        <h4 style="color:var(--red);font-size:12px;margin-bottom:8px;">CRITICAL GAPS (will lose deals)</h4>
+        <p style="color:var(--text2);">Self-serve signup (instant tenant — blocks ALL revenue), transactional emails (zero emails sent), custom domains, external URLs for tenants, CSV import, editable social previews, Zapier, retargeting pixels</p>
+      </div>
+      <div>
+        <h4 style="color:var(--green);font-size:12px;margin-bottom:8px;">WHERE WE'RE AHEAD</h4>
+        <p style="color:var(--text2);">Platform-aware redirect, A/B testing, deep linking, 6-layer security, HMAC webhooks, education intents, multi-tenant</p>
+      </div>
+      <div>
+        <h4 style="color:var(--purple);font-size:12px;margin-bottom:8px;">UNIQUE MOATS (nobody else has)</h4>
+        <p style="color:var(--text2);">11 education intent types, campaign management, honeypot canaries, click velocity profiling, tenant self-registration, graceful link decay, venue analytics, patron-scoped access, compliance audit trails</p>
+      </div>
+      <div>
+        <h4 style="color:var(--orange);font-size:12px;margin-bottom:8px;">FIRST-MOVER OPPORTUNITIES</h4>
+        <p style="color:var(--text2);">India DPDP compliance, campus link-in-bio, click-to-outcome attribution, venue/zoo/museum verticals, library patron links, controlled distribution for healthcare/government</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SPRINT PLAN
+     ═══════════════════════════════════════════════════ -->
+<div class="section" id="sprint">
+  <div id="sprintPlan"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     WHAT'S BUILT
+     ═══════════════════════════════════════════════════ -->
+<div class="section" id="built">
+  <div class="filter-bar">
+    <div class="filter-btn active" data-built="all">All (76)</div>
+    <div class="filter-btn green-f" data-built="done">Done (43)</div>
+    <div class="filter-btn orange-f" data-built="partial">Partial (8)</div>
+    <div class="filter-btn red-f" data-built="todo">Not Built (25)</div>
+  </div>
+  <div class="built-list" id="builtList"></div>
+</div>
+
+</div><!-- /content -->
+
+<script>
+// ═══════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════
+
+const BACKLOG = [
+  {
+    epic: 'REVENUE UNLOCK',
+    epicDesc: 'Remove barriers to first dollar — cannot charge anyone without these',
+    items: [
+      {
+        id: 1, title: 'Go-live Stripe billing (production price IDs)',
+        why: 'Billing view, checkout redirect, and Stripe.js loading all exist in the frontend (views/billing/billing.js, 548 lines). Backend has create-checkout, webhook, downgrade endpoints. But PRICE_IDS are placeholder strings ("price_pro_monthly"). Create real Stripe products and swap the IDs — this is a 1-hour config task, not a build.',
+        type: 'revenue-unlock', effort: 'XS (1-2hr)', impact: '$$$', urgency: 'NOW', score: 10,
+        criteria: [
+          'Create pro ($79) and business ($199) products + prices in Stripe Dashboard',
+          'Set STRIPE_PRICE_PRO and STRIPE_PRICE_BUSINESS env vars in Firebase functions config',
+          'Set STRIPE_PUBLISHABLE_KEY env for frontend (billing view fetches from /billing/config)',
+          'Verify checkout → subscription → webhook flow end-to-end in prod',
+          'Downgrade flow cancels at period end correctly',
+          'Billing usage endpoint returns accurate limits per plan'
+        ],
+        agentHint: 'MOSTLY WIRED. Backend: functions/api/billing/router.js — PRICE_IDS object at line ~22 uses env vars with fallback to placeholder strings. PLAN_LIMITS at line ~26 are already correct (starter:25, pro:500, business:2500). GET /billing/config returns publishable key. POST /billing/create-checkout creates Stripe session. POST /billing/webhook handles subscription events. Frontend: src/admin/views/billing/billing.js — line 330 initializeStripe() loads Stripe.js, line 355 fetches publishable key, line 414 calls create-checkout, line 426 redirects to Stripe. WHAT TO DO: create 2 Stripe products + prices, set 3 env vars, test.',
+        files: ['functions/api/billing/router.js', 'src/admin/views/billing/billing.js'],
+        deps: []
+      },
+      {
+        id: 2, title: 'Auto-provision Starter tenant on signup (close the last-mile gap)',
+        why: 'The signup form, landing page, and onboarding wizard ALL exist. But the "Get Started Free" form (kortex.html line 714) calls POST /kortex/tenants/register which creates a PENDING registration with "24-48 hours review." The fix: make that endpoint (or a new one) auto-create a tenants/ doc + admin_users/ doc + Firebase Auth account with role claim, then redirect to dashboard. This is backend wiring, not a new feature.',
+        type: 'revenue-unlock', effort: 'S (2-3d)', impact: '$$$', urgency: 'NOW', score: 9.5,
+        criteria: [
+          'POST /kortex/tenants/register auto-creates: (a) Firebase Auth user with email/password, (b) tenants/{id} doc with plan:"starter", (c) admin_users/{uid} doc with role:"admin"',
+          'Set custom claim role:"admin" on the Firebase Auth user',
+          'Return auth credentials (or magic link) so user can immediately sign in',
+          'Landing page form (kortex.html inquiry-form) shows "Account created! Sign in below" and pre-fills email in login panel',
+          'Dashboard loads with guided empty state',
+          'Existing tenant-registration.html form still works for enterprise/custom requests',
+          'Rate limit: 3 auto-provisions per hour per IP (existing rateLimiter already configured)'
+        ],
+        agentHint: 'MOST OF THE PLUMBING EXISTS. Frontend: kortex.html has a dual-panel "Get Started Free" form (left, line 379) and "Sign In" panel (right, line 423). The inquiry form calls POST /kortex/tenants/register (line 728). Backend: smartLinks.js line 418 handles /tenants/register — currently just writes to pending_tenant_registrations. CHANGE THIS to: (1) admin.auth().createUser({email, password: generated}), (2) admin.auth().setCustomUserClaims(uid, {role:"admin"}), (3) db.collection("tenants").doc(tenantId).set({...starterDefaults}), (4) db.collection("admin_users").doc(uid).set({role:"admin", tenantId}), (5) send welcome email with temp password or magic link. Tenant defaults: see tenantContext.js DEFAULT_TENANT_ID pattern. Plan limits: billing/router.js PLAN_LIMITS.starter. The 6-step onboarding wizard (views/tenant-onboarding/, 1323 lines) already collects all needed data but says "pending backend admin API support" — this backend work enables it.',
+        files: ['functions/api/kortex/smartLinks.js', 'functions/api/kortex/tenantContext.js', 'src/kortex.html', 'src/admin/views/tenant-onboarding/tenant-onboarding.js'],
+        deps: []
+      },
+      {
+        id: 3, title: 'Enhance landing page with pricing table + social proof',
+        why: 'kaayko.com/kortex ALREADY EXISTS as a polished landing page (778 lines) with hero, 8-feature grid, dual-panel signup/login, Josefin Sans branding, scroll reveal animations, and SEO meta tags. What\'s missing: an explicit pricing comparison table (Starter/Pro/Business/Enterprise) and social proof section. These are the conversion drivers.',
+        type: 'revenue-unlock', effort: 'S (1-2d)', impact: '$$', urgency: 'NOW', score: 8.5,
+        criteria: [
+          'Add pricing section between features and connect sections on kortex.html',
+          'Pricing cards: Starter ($0, 25 links, 3 campaigns, 7-day analytics), Pro ($79, 500 links, 25 campaigns, 90-day), Business ($199, 2500 links, unlimited, forever), Enterprise (custom)',
+          'Feature comparison grid showing what\'s included per tier',
+          '"Start Free" CTA on each card scrolls to the signup form',
+          'Social proof section: "Trusted by X organizations" — placeholder count OK for v1',
+          'Use case badges: Universities, Alumni Offices, Marketing Teams, Ed-Tech'
+        ],
+        agentHint: 'LANDING PAGE ALREADY EXISTS at src/kortex.html (778 lines). It has: hero section (line 291), feature grid with 8 cards (line 305), "Get Started" connect section with signup + login panels (line 360), footer, Firebase Auth, PostHog, scroll reveal animations, full SEO (JSON-LD, OG tags, meta description). Design system: Josefin Sans font family, --gold (#d4af37) accent, dark bg (#0a0a0a). INSERT a new <section class="section" id="pricing"> between the features section (ends line 355) and connect section (starts line 360). Match existing .feat-grid styling. Plan limits from billing/router.js PLAN_LIMITS object.',
+        files: ['src/kortex.html'],
+        deps: []
+      },
+      {
+        id: 4, title: 'Pricing page with competitor comparison',
+        why: 'Justifies $79 Pro when Bitly is $35. Shows education-specific value. Converts researchers into buyers.',
+        type: 'revenue-unlock', effort: 'S (2-3d)', impact: '$$', urgency: 'NOW', score: 8.5,
+        criteria: [
+          'Side-by-side: Kortex vs Bitly vs Dub vs Branch vs Rebrandly',
+          'Highlight differentiators: 11 intent types, multi-tenant, campaigns, deep linking, 6-layer security',
+          'Education-specific value narrative: "Built for universities, not marketers"',
+          'Link to free signup for each plan tier',
+          'FAQ section addressing price objections'
+        ],
+        agentHint: 'Can be a section within the landing page (item #3) or a standalone /pricing page. Competitive data: see the Competitive Matrix tab in this report for accurate feature-by-feature comparison. Use data from BACKLOG competitive matrix in this same file.',
+        files: [],
+        deps: [3]
+      },
+      {
+        id: 32, title: 'Self-serve 3-step onboarding (replace 6-step wizard)',
+        why: 'The existing 6-step onboarding wizard (1323 lines) is entirely client-side — all 6 steps say "pending backend admin API support." Every vendor who signs up hits this wall and bounces. Replace with a 3-step API-backed flow: (1) Org profile + use case, (2) First campaign from template, (3) First link. Completion = dashboard with real data, not an empty shell.',
+        type: 'revenue-unlock', effort: 'M (3-4d)', impact: '$$$', urgency: 'NOW', score: 9,
+        criteria: [
+          'Step 1: Org name, logo upload, use case selection (zoo, sports, concert, university, library, conference) → PATCH tenants/{id}',
+          'Step 2: First campaign creation → POST /campaigns with pre-filled template based on use case',
+          'Step 3: First link creation → POST /kortex with campaign attached, destination = vendor\'s own URL',
+          'Skip button on steps 2-3 (can do later from dashboard)',
+          'Progress bar visible on all steps',
+          'Dashboard renders with real data after completion (not empty state)',
+          'Delete existing 6-step wizard files after 3-step is live'
+        ],
+        agentHint: 'EXISTING WIZARD: src/admin/views/tenant-onboarding/tenant-onboarding.js (1323 lines, 6 steps). ALL steps write to local wizardState only — processStep1CreateTenant() at line 306, processStep2CreateAdminUser() at line 330. REPLACE with 3 API-backed steps. Step 1: PATCH /tenants/:id with org details. Step 2: POST /campaigns. Step 3: POST /kortex. Use case selection should set tenants/{id}.useCase field that drives default campaign templates. Template map: zoo → "Exhibit Engagement", sports → "Game Day", concert → "Event Merch", university → "Alumni Campaign", library → "Collection Access", conference → "Session Links".',
+        files: ['src/admin/views/tenant-onboarding/tenant-onboarding.js', 'functions/api/kortex/smartLinks.js'],
+        deps: [2]
+      },
+      {
+        id: 33, title: 'Transactional email system (SendGrid)',
+        why: 'Zero emails are sent today. Signup success message says "check your email" — nothing arrives. Welcome email, password reset, weekly digest, limit warnings, campaign reports — all require a sender. analyticsAlertService.js has full weekly digest logic (runWeeklyDigest at line 160) that writes to pending_emails collection, but no processor reads it. This blocks vendor trust and activation.',
+        type: 'revenue-unlock', effort: 'S (2-3d)', impact: '$$$', urgency: 'NOW', score: 9,
+        criteria: [
+          'SendGrid integration: API key in Firebase config, verified sender domain',
+          'Welcome email on signup: org name, login link, 3-step getting-started guide',
+          'Password reset email (Firebase Auth handles this if configured correctly)',
+          'Weekly digest: wire analyticsAlertService.js runWeeklyDigest() to Cloud Function scheduler',
+          'Process pending_emails collection: Cloud Function onCreate trigger → send via SendGrid',
+          'Limit warning email at 80% usage: "You have used 20 of 25 links"',
+          'Email templates: HTML with Kortex branding, unsubscribe link, CAN-SPAM footer'
+        ],
+        agentHint: 'analyticsAlertService.js line 160 has complete runWeeklyDigest() logic — builds the digest, computes metrics, writes to pending_emails collection. MISSING: (1) Cloud Function scheduled trigger to call runWeeklyDigest() weekly, (2) Cloud Function onWrite trigger on pending_emails to send via SendGrid. Setup: npm install @sendgrid/mail in functions/, set SENDGRID_API_KEY in Firebase config. Create functions/api/email/emailSender.js. Welcome email trigger: add to auto-provision flow (item #2) after tenant + auth user creation. The existing functions/api/email/ directory exists but is minimal.',
+        files: ['functions/api/kortex/analyticsAlertService.js', 'functions/api/email/'],
+        deps: [2]
+      }
+    ]
+  },
+  {
+    epic: 'TABLE STAKES',
+    epicDesc: 'Features every competitor ships — we lose deals without them',
+    items: [
+      {
+        id: 5, title: 'Custom domains per tenant',
+        why: 'Every paid link platform offers custom domains. "links.stanford.edu" instead of "kaayko.com/l/abc". #1 reason enterprises buy. Justifies Pro/Business pricing.',
+        type: 'table-stakes', effort: 'L (1-2w)', impact: '$$$', urgency: 'HIGH', score: 8,
+        criteria: [
+          'Tenant settings UI: add custom domain (e.g., links.myschool.edu)',
+          'DNS verification flow: add CNAME record → verify → activate',
+          'SSL auto-provisioning (Let\'s Encrypt via Cloudflare or Firebase)',
+          'Redirect handler resolves links from custom domain to correct tenant',
+          'Short URLs use tenant domain: links.myschool.edu/abc123',
+          'Pro tier: 1 custom domain. Business: unlimited.',
+          'Fallback to kaayko.com/l/ if custom domain not configured'
+        ],
+        agentHint: 'No custom domain code exists today. Tenant data model: tenants/{tenantId} has domain and pathPrefix fields (see tenantContext.js). Redirect handler: functions/api/kortex/redirectHandler.js. The redirect flow checks req.hostname — extend this to look up tenant by custom domain. DNS verification: store pending domains in Firestore, verify CNAME via DNS lookup. SSL: if using Cloudflare proxy, SSL is automatic. Plan gating: check PLAN_LIMITS in billing/router.js.',
+        files: ['functions/api/kortex/tenantContext.js', 'functions/api/kortex/redirectHandler.js', 'functions/api/billing/router.js'],
+        deps: [1]
+      },
+      {
+        id: 6, title: 'Link tags, folders, and search',
+        why: 'At 100+ links, users can\'t find anything. Tags/search is table stakes for retention. Users who organize links churn 40% less.',
+        type: 'table-stakes', effort: 'S (3-4d)', impact: '$$', urgency: 'HIGH', score: 7.5,
+        criteria: [
+          'Add tags[] array field to short_links document schema',
+          'Tag CRUD in admin SPA: create tag, assign to link, remove tag, color-code tags',
+          'Filter links by tag in All Links view',
+          'Full-text search on link title, description, destination URL',
+          'Bulk tag assignment: select multiple links → apply tag',
+          'Tag-based analytics rollup: clicks per tag'
+        ],
+        agentHint: 'Link document: functions/api/kortex/smartLinkService.js createShortLink() (line ~125). Add tags:[] to document shape. List function: listLinks() (line ~345) — add tag filter with Firestore where(\'tags\', \'array-contains\', tag). Frontend: src/admin/views/all-links/ for the list view. Search: Firestore doesn\'t support full-text — consider client-side filtering on the list response, or add a searchable_text field (lowercase title+description concatenated) and use >= / <= range query.',
+        files: ['functions/api/kortex/smartLinkService.js', 'functions/api/kortex/smartLinks.js', 'src/admin/views/all-links/'],
+        deps: []
+      },
+      {
+        id: 7, title: 'Editable social previews (OG overrides)',
+        why: 'When links are shared on Slack/LinkedIn/Twitter, the preview card matters. Competitors let you customize title, description, image per link.',
+        type: 'table-stakes', effort: 'S (2-3d)', impact: '$$', urgency: 'MED', score: 6.5,
+        criteria: [
+          'Add og_title, og_description, og_image fields to short_links document',
+          'Override default OG tags in redirectHandler.js social crawler HTML response',
+          'Preview card UI in create-link and edit-link views',
+          'Image upload to Firebase Storage for custom OG images',
+          'Fallback to auto-enriched metadata if no override set'
+        ],
+        agentHint: 'Social crawler detection: redirectHandler.js isSocialCrawler() function. OG HTML template: redirectHandler.js around line 220-230 (og:title, og:description, og:image meta tags). Currently uses link\'s title/description. Add og_* override fields to createShortLink() in smartLinkService.js. Image upload: use Firebase Storage bucket (already configured for products). Frontend: src/admin/views/create-link/',
+        files: ['functions/api/kortex/redirectHandler.js', 'functions/api/kortex/smartLinkService.js', 'src/admin/views/create-link/'],
+        deps: []
+      },
+      {
+        id: 8, title: 'Password-protected links',
+        why: 'Gated content, embargoed releases, private campus resources. Enterprise buyers expect this. Dub.co has it.',
+        type: 'table-stakes', effort: 'S (2-3d)', impact: '$$', urgency: 'MED', score: 6,
+        criteria: [
+          'Add password_hash field to short_links document (bcrypt hashed)',
+          'Redirect handler: if link has password, show password gate page instead of redirecting',
+          'Clean password entry UI: mobile-friendly, branded, shows link title',
+          'After correct password, set session cookie and redirect',
+          'Pro+ feature gate — Starter links cannot have passwords'
+        ],
+        agentHint: 'Extend redirectHandler.js handleRedirect() function. Before the redirect logic (~line 600+), check if link doc has password_hash. If yes, render a password entry HTML page (similar to the expired-link HTML around line 250). On POST with password, bcrypt.compare() → set signed cookie → redirect. Cookie prevents re-prompting for same session. Plan gate: check tenant plan via tenantContext or billing PLAN_LIMITS.',
+        files: ['functions/api/kortex/redirectHandler.js', 'functions/api/kortex/smartLinkService.js'],
+        deps: []
+      },
+      {
+        id: 9, title: 'Geo-targeted redirects',
+        why: 'India-focused universities need region routing. Different landing pages for Indian vs US vs UK students. Differentiator for education vertical.',
+        type: 'table-stakes', effort: 'M (4-5d)', impact: '$$', urgency: 'MED', score: 6,
+        criteria: [
+          'Add geo_rules[] to link document: [{country:"IN", destination:"https://..."}, ...]',
+          'IP→country lookup in redirect handler (MaxMind GeoLite2 or ip-api.com)',
+          'Fallback to default platform destination if no geo match',
+          'Admin UI: add/edit/remove geo rules per link',
+          'Business+ feature gate',
+          'Cache geo lookups (5-min TTL) to avoid rate limits'
+        ],
+        agentHint: 'Extend redirectHandler.js. After platform detection (iOS/Android/Web around line 625-640), add geo check before final destination selection. Use req.ip or x-forwarded-for header. Free geo API: ip-api.com (45 req/min) or MaxMind GeoLite2 (download DB, use mmdb-lib npm). Firestore link doc extension in smartLinkService.js createShortLink(). Frontend: add geo rules section to create-link view.',
+        files: ['functions/api/kortex/redirectHandler.js', 'functions/api/kortex/smartLinkService.js'],
+        deps: []
+      },
+      {
+        id: 34, title: 'Unlock external destination URLs for tenant admins',
+        why: 'Tenant admins currently cannot point links to their own domains. The create-link destination picker (create-link.js lines 17-46) is hardcoded to Kaayko domains — "Custom URL" requires super-admin role (line 120). A zoo admin cannot create a link pointing to dallaszoo.com/tickets. This makes Kortex useless for any external client.',
+        type: 'table-stakes', effort: 'XS (2hr)', impact: '$$$', urgency: 'NOW', score: 9,
+        criteria: [
+          'Remove super-admin gate from "Custom URL" destination option in create-link.js',
+          'Allow tenant admins to enter any URL as destination (validate format, not domain)',
+          'Keep domain allowlist as optional tenant setting, not a hard block',
+          'Backend: smartLinkValidation.js should accept any valid URL for tenant admins',
+          'Malicious URL check: basic blocklist (phishing, malware domains) via Google Safe Browsing API or simple regex',
+          'Update destination picker UI: show "Your URL" as default option, not buried under super-admin toggle'
+        ],
+        agentHint: 'TINY FIX, MASSIVE IMPACT. Frontend: src/admin/views/create-link/create-link.js — destination picker at lines 17-46 lists only Kaayko internal destinations. Line 120 checks if user is super-admin for custom URL. REMOVE this check for admin role users. Backend: functions/api/kortex/smartLinkValidation.js — validateDestinations() currently accepts any URL format. The block is purely frontend. Change line 120 from requireSuperAdmin to requireAdmin (or just requireAuth). Add a URL format validation (starts with https://) and optional Safe Browsing lookup.',
+        files: ['src/admin/views/create-link/create-link.js', 'functions/api/kortex/smartLinkValidation.js'],
+        deps: []
+      }
+    ]
+  },
+  {
+    epic: 'COMPETITIVE MOAT',
+    epicDesc: 'Lock-in features that make switching to Bitly/Dub painful',
+    items: [
+      {
+        id: 10, title: 'Retargeting pixel injection',
+        why: 'Marketing teams embed FB/Google pixels in redirect pages. Without this, every marketer who evaluates Kortex disqualifies it.',
+        type: 'moat', effort: 'S (2-3d)', impact: '$$', urgency: 'HIGH', score: 7,
+        criteria: [
+          'Tenant settings: pixel IDs for Facebook, Google Analytics, LinkedIn, custom JS',
+          'Inject pixel scripts into redirect page HTML before 302 (brief interstitial with redirect)',
+          'Pixel fires on redirect page load — not on 302 response',
+          'Per-link pixel override option',
+          'Pro+ feature gate'
+        ],
+        agentHint: 'Modify redirectHandler.js redirect flow. Currently some links use a JS-based redirect (window.location.href in a script tag, ~line 264). Extend this interstitial HTML to inject tenant pixel scripts. Pixel IDs stored in tenants/{tenantId}.settings.pixels = {fb:"...", ga:"...", linkedin:"...", custom:"<script>..."}. Read tenant doc in redirect handler (tenant lookup already happens via tenantContext). Per-link override: add pixels{} field to short_links doc.',
+        files: ['functions/api/kortex/redirectHandler.js', 'functions/api/kortex/tenantContext.js'],
+        deps: []
+      },
+      {
+        id: 11, title: 'Zapier / Make.com integration',
+        why: 'Automation is how teams adopt tools permanently. Once workflows depend on Kortex, switching cost explodes.',
+        type: 'moat', effort: 'M (5-7d)', impact: '$$', urgency: 'MED', score: 6.5,
+        criteria: [
+          'Zapier app with triggers: new_link_created, link_clicked (threshold), campaign_created',
+          'Zapier actions: create_link, update_link, delete_link',
+          'OAuth2 auth flow for Zapier using Firebase Auth',
+          'Webhook format compatible with Zapier/Make requirements',
+          'Published on Zapier marketplace (beta OK)'
+        ],
+        agentHint: 'Existing webhook system: functions/api/kortex/webhookService.js (HMAC-signed outbound webhooks). Zapier requires a specific webhook format and OAuth2 flow. Start with Zapier developer platform (developer.zapier.com). The public API (publicApiRouter.js) already provides API-key authenticated CRUD — wire Zapier actions to these endpoints. For triggers, extend webhookService to push to Zapier subscription URLs.',
+        files: ['functions/api/kortex/webhookService.js', 'functions/api/kortex/publicApiRouter.js'],
+        deps: []
+      },
+      {
+        id: 12, title: 'Embeddable analytics widget',
+        why: 'Let customers embed click stats in their own dashboards. Creates visibility lock-in — once embedded, never removed.',
+        type: 'moat', effort: 'M (4-5d)', impact: '$$', urgency: 'MED', score: 6,
+        criteria: [
+          'Embed code generator: <script src="kortex-embed.js?link=CODE&key=API_KEY">',
+          'Widget renders: click count, 7-day trend sparkline, QR code',
+          'Customizable colors/size to match host site',
+          'CORS-safe, lightweight (<20KB gzipped)',
+          'Business+ feature gate'
+        ],
+        agentHint: 'New deliverable: a small JS widget + a public API endpoint that returns link stats (click count, daily trend). The publicApiRouter.js already has stats endpoints. Widget: a self-contained JS file that fetches data and renders a mini dashboard into a target div. Host widget JS on Firebase Hosting. CORS: add widget origin to allowed origins in API.',
+        files: ['functions/api/kortex/publicApiRouter.js'],
+        deps: []
+      },
+      {
+        id: 13, title: 'Click-to-outcome attribution chain',
+        why: 'THE killer differentiator for education. Track: link click → app open → application started → enrolled. No competitor does this for education. Universities will pay enterprise pricing.',
+        type: 'moat', effort: 'L (1-2w)', impact: '$$$', urgency: 'HIGH', score: 8,
+        criteria: [
+          'Extend attributionService: click → install → custom_event chain',
+          'Define outcome events: apply, register, enroll, donate, attend, complete_assessment',
+          'Attribution window: 30-day lookback from click to outcome',
+          'Dashboard: funnel visualization (impressions → clicks → outcomes)',
+          'Export attribution report as CSV/PDF',
+          'Enterprise feature'
+        ],
+        agentHint: 'Existing: functions/api/kortex/attributionService.js handles click-to-install mapping. Extend to support arbitrary outcome events. The V2 intent system (v2LinkIntents.js) defines 11 education-specific destination types (apply, register, assessment, etc.) — these map directly to outcome events. Create a new collection: link_outcomes/{id} = {linkCode, clickId, outcomeType, timestamp, metadata}. Dashboard: add funnel chart to src/admin/views/analytics/. Use the existing click_events and link_analytics collections as the start of the funnel.',
+        files: ['functions/api/kortex/attributionService.js', 'functions/api/kortex/v2LinkIntents.js', 'functions/api/kortex/clickTracking.js'],
+        deps: []
+      },
+      {
+        id: 14, title: 'India data residency / DPDP compliance',
+        why: 'Indian universities legally cannot use US-only SaaS for student data under DPDP Act 2023. Compliance = entire India education market. No link platform competitor offers this.',
+        type: 'moat', effort: 'L (2-3w)', impact: '$$$', urgency: 'HIGH', score: 7.5,
+        criteria: [
+          'Firestore in asia-south1 (Mumbai) for Indian tenants',
+          'Tenant flag: dataResidency: "in" → routes all reads/writes to India region',
+          'Data isolation: Indian tenant data never leaves India region',
+          'DPDP consent banner on redirect pages for Indian IPs',
+          'Data deletion API: right to erasure endpoint per DPDP',
+          'Privacy policy generator for tenants (template)',
+          'Compliance documentation / audit trail in Firestore'
+        ],
+        agentHint: 'Major infrastructure change. Firebase allows multi-region Firestore but a single project uses one region. Options: (1) separate Firebase project for India (kaaykostore-in), (2) use Firestore named databases (preview feature) with asia-south1, (3) Cloud Run in asia-south1 with regional Firestore. The tenant resolution (tenantContext.js) would need to route to the correct DB based on tenant.dataResidency. Start with option 2 (named databases) as it keeps one project. Consent: extend redirect handler to show DPDP notice for Indian IPs (use geo from item #9).',
+        files: ['functions/api/kortex/tenantContext.js', 'functions/api/kortex/redirectHandler.js'],
+        deps: [9]
+      }
+    ]
+  },
+  {
+    epic: 'GROWTH ENGINE',
+    epicDesc: 'Drive adoption, virality, and expansion revenue',
+    items: [
+      {
+        id: 15, title: '"Powered by Kortex" on Starter redirects',
+        why: 'Free viral loop. Every Starter-tier redirect shows a brand badge. 1000 redirects/day × 2% CTR = 20 free signups/day.',
+        type: 'growth', effort: 'S (1d)', impact: '$$', urgency: 'HIGH', score: 8,
+        criteria: [
+          'Add "⚡ Powered by Kortex — Free smart links" footer to redirect interstitial page',
+          'Badge links to signup/landing page with utm_source=powered_by&utm_medium=redirect',
+          'Pro+ tiers: badge removed (upgrade incentive)',
+          'Non-intrusive: small footer text, does not block or delay redirect',
+          'Track badge impressions and click-throughs as conversion metric'
+        ],
+        agentHint: 'Modify the redirect HTML in redirectHandler.js. The JS redirect interstitial (around line 260-270) already renders an HTML page with a script redirect. Add a footer div before </body> with the badge. Conditional: check link\'s tenant plan (available via tenant doc or pass through redirect context). If plan === "starter", show badge. Track badge clicks as a special analytics event type in clickTracking.js.',
+        files: ['functions/api/kortex/redirectHandler.js', 'functions/api/kortex/clickTracking.js'],
+        deps: []
+      },
+      {
+        id: 16, title: 'Freemium usage nudges & upgrade prompts',
+        why: 'Starter users hit 25-link limit → upgrade prompt. Standard SaaS conversion playbook. Direct path from free to $79/mo.',
+        type: 'growth', effort: 'S (2-3d)', impact: '$$', urgency: 'HIGH', score: 7.5,
+        criteria: [
+          'Dashboard banner at 80% link limit: "You\'ve used 20/25 links"',
+          'At 100%: modal with "Upgrade to Pro for 500 links" + 1-click checkout',
+          'Gate blocked features with upgrade prompt (campaigns beyond 3, analytics beyond 7 days)',
+          'In-app upgrade prompts at natural gate points',
+          'Weekly email: "Your links got X clicks. Unlock more with Pro."'
+        ],
+        agentHint: 'Frontend: src/admin/views/dashboard/dashboard.js and src/admin/js/kortex-core.js. Usage data: GET /billing/usage returns current link count and plan limits. Show banner when linkCount/linkLimit > 0.8. Modal: create upgrade modal component in dashboard view that links to /billing/create-checkout. Email: use Firebase Cloud Functions scheduled function (pub/sub) to send weekly digest via SendGrid or Firebase Extensions.',
+        files: ['src/admin/views/dashboard/', 'src/admin/views/billing/', 'functions/api/billing/router.js'],
+        deps: [1, 2]
+      },
+      {
+        id: 17, title: 'Interactive API docs (Swagger refresh)',
+        why: 'Developers evaluate link APIs by the docs. Good docs = enterprise adoption. Our Swagger exists but needs all current endpoints.',
+        type: 'growth', effort: 'S (2-3d)', impact: '$$', urgency: 'MED', score: 6.5,
+        criteria: [
+          'Update /docs Swagger UI with all current endpoints (kortex, campaigns, billing, auth)',
+          'Request/response examples for every endpoint',
+          'Authentication guide: API key setup, Bearer token, Admin key',
+          'Rate limit documentation per endpoint',
+          'At minimum: curl + Node.js examples for each endpoint',
+          '"Try it" works against sandbox or prod with test API key'
+        ],
+        agentHint: 'Existing: functions/api/core/ contains Swagger setup. OpenAPI spec: check docs/ for kaayko-paddling-api-swagger.yaml. This needs updating with all kortex endpoints from smartLinks.js router, campaignRoutes.js, billing/router.js, auth/authRoutes.js, publicApiRouter.js. Use the endpoint tables in functions/api/kortex/SKILL.md as the source of truth for routes, methods, and auth requirements.',
+        files: ['functions/api/core/', 'functions/api/kortex/SKILL.md'],
+        deps: []
+      },
+      {
+        id: 18, title: 'Link-in-bio page (education edition)',
+        why: 'Linktree makes $170M/year. "Campus link-in-bio" for departments. Each link is a Kortex short link with analytics. Land-and-expand play.',
+        type: 'growth', effort: 'M (5-7d)', impact: '$$', urgency: 'MED', score: 6,
+        criteria: [
+          'Tenant-level bio page at: links.myschool.edu/bio or kaayko.com/a/{tenant}/bio',
+          'Configurable: logo, banner image, bio text, link list, social icons',
+          'Each link is a Kortex short link (full analytics tracking)',
+          'Templates: admissions, alumni office, athletics, department',
+          'Mobile-optimized',
+          'Pro+ feature gate'
+        ],
+        agentHint: 'New feature. Tenant link resolver (tenantLinkResolver.js) already handles /a/:slug. Extend to support /a/:slug/bio as a special bio page route. Bio config: store in tenants/{tenantId}.bioPage = {title, description, links:[], logo, banner, socialLinks:{}, template}. Render server-side HTML with tenant branding. Each link in the bio list should be a Kortex short link code that goes through the normal redirect handler for analytics tracking.',
+        files: ['functions/api/kortex/tenantLinkResolver.js', 'functions/api/kortex/tenantContext.js'],
+        deps: [5]
+      },
+      {
+        id: 19, title: 'Bulk import (CSV / Bitly export)',
+        why: 'Migration from competitors = hundreds of links. Without bulk import, switching friction is too high. Directly wins migration deals.',
+        type: 'growth', effort: 'S (3-4d)', impact: '$$', urgency: 'MED', score: 6.5,
+        criteria: [
+          'CSV upload endpoint: columns for destination_url, title, tags, utm_source, utm_medium',
+          'Bitly export format auto-detection (Bitly CSV has specific column names)',
+          'Validation pass: preview all links before import, show error report for invalid rows',
+          'Progress indicator for large batches (>100 links)',
+          'Import history with undo (bulk delete) option',
+          'Admin UI + API endpoint'
+        ],
+        agentHint: 'Extend publicApiRouter.js or smartLinks.js with POST /kortex/import endpoint. Accept multipart/form-data with CSV file. Parse CSV (use csv-parse npm). For each row, call createShortLink() from smartLinkService.js. Batch write to Firestore for performance (max 500 per batch). Validation: use existing validators in smartLinkValidation.js. Frontend: add import button to All Links view, file picker, preview table, confirm button. Bitly CSV columns: "Link", "Title", "Created", "Tags".',
+        files: ['functions/api/kortex/smartLinks.js', 'functions/api/kortex/smartLinkService.js', 'functions/api/kortex/smartLinkValidation.js'],
+        deps: []
+      },
+      {
+        id: 20, title: 'CDN edge caching for redirects',
+        why: 'Redirect latency: 50ms (Bitly) vs 250ms (us). CDN drops P95 to <80ms globally. Users notice the difference.',
+        type: 'growth', effort: 'M (4-5d)', impact: '$', urgency: 'MED', score: 5.5,
+        criteria: [
+          'Cloudflare or Firebase CDN in front of redirect handler',
+          'Cache resolved destinations with 5-min TTL',
+          'Cache invalidation on link update/delete (purge API)',
+          'P95 redirect latency < 80ms globally',
+          'Monitor cache hit ratio (target > 90%)'
+        ],
+        agentHint: 'Options: (1) Cloudflare proxy in front of redirect endpoints — configure cache rules for /l/* and /kortex/r/* paths, cache-control headers in redirect response. (2) Firebase Hosting CDN — already serves static content; for dynamic redirects, use Cloud Functions caching headers (Cache-Control: public, max-age=300). (3) In-memory cache in redirectHandler.js using node-cache (already used in some weather modules). Start with option 3 (simplest, no infra change) then move to Cloudflare for global edge.',
+        files: ['functions/api/kortex/redirectHandler.js', 'kaayko/firebase.json'],
+        deps: []
+      },
+      {
+        id: 21, title: 'Email/Slack notifications for link events',
+        why: 'Teams want to know when their links go viral. Engagement driver that makes Kortex feel alive and indispensable.',
+        type: 'growth', effort: 'S (2-3d)', impact: '$', urgency: 'LOW', score: 4.5,
+        criteria: [
+          'Configurable alerts: click milestones (100, 500, 1K, 5K)',
+          'Channel options: email, Slack webhook URL, in-app notification',
+          'Campaign completion / expiration alerts',
+          'Weekly summary digest per tenant',
+          'Unsubscribe per alert type'
+        ],
+        agentHint: 'Existing: analyticsAlertService.js has alert threshold logic. Extend with delivery channels. For email: SendGrid or Firebase Extension. For Slack: store webhook URL in tenant settings, POST to it. For in-app: create notifications collection in Firestore, poll from dashboard. Weekly digest: Firebase Cloud Functions scheduled (pubsub.schedule).',
+        files: ['functions/api/kortex/analyticsAlertService.js', 'functions/api/kortex/webhookService.js'],
+        deps: []
+      },
+      {
+        id: 22, title: 'Activate PostHog (swap placeholder key)',
+        why: 'PostHog SDK is ALREADY loaded in posthog.js (80+ lines). Tracks signup_attempted, identifies users, captures pageviews. But key is "phc_kortex_placeholder". Create a free PostHog Cloud project and swap the key. 30-minute task.',
+        type: 'growth', effort: 'XS (30min)', impact: '$', urgency: 'HIGH', score: 6,
+        criteria: [
+          'Create PostHog Cloud project (free: 1M events/mo)',
+          'Replace "phc_kortex_placeholder" in src/admin/js/posthog.js with real key',
+          'Verify pageview events flowing in PostHog dashboard',
+          'Add posthog.capture() calls for: link_created, campaign_created, upgrade_clicked',
+          'Set up signup → first_link → upgrade funnel in PostHog'
+        ],
+        agentHint: 'ALREADY INTEGRATED. File: src/admin/js/posthog.js — full PostHog SDK with person_profiles, pageview capture, user identification from localStorage. Landing page (kortex.html line 771) loads it and tracks signup_attempted. Just swap POSTHOG_KEY constant and deploy. Then add capture() calls in view JS files.',
+        files: ['src/admin/js/posthog.js', 'src/kortex.html'],
+        deps: []
+      }
+    ]
+  },
+  {
+    epic: 'LINK LIFECYCLE & ANTI-GAMING',
+    epicDesc: 'Links die gracefully, resist abuse, and give creators control over distribution — the cross-cutting infrastructure that powers every vertical',
+    items: [
+      {
+        id: 23, title: 'Graceful link decay (not hard 410)',
+        why: 'A zoo\'s summer exhibit link shouldn\'t hard-die on September 1. It should say "This exhibit has ended — see what\'s coming this fall." Every expired link is a redirect opportunity, not a dead end. This turns link death into a funnel.',
+        type: 'moat', effort: 'S (2-3d)', impact: '$$', urgency: 'HIGH', score: 7.5,
+        criteria: [
+          'New field: expirationBehavior on short_links doc — options: "hard_410" (current), "redirect_to", "countdown", "decay"',
+          'redirect_to: when expired, 302 to a fallback URL (next event, homepage, "what\'s next" page)',
+          'countdown: show a branded countdown page before expiration ("This link expires in 3 days")',
+          'decay: link serves a "winding down" interstitial page with the original destination + tenant messaging',
+          'All modes track the post-expiration click as an analytics event (expired_click)',
+          'Admin UI: expiration behavior picker when setting expiresAt on a link'
+        ],
+        agentHint: 'Existing: redirectHandler.js line 472-479 checks expiresAt and returns a hard 410 errorPage. EXTEND: before the 410, check linkData.expirationBehavior. If "redirect_to", 302 to linkData.expirationRedirect. If "countdown", render a countdown HTML page. If "decay", render an interstitial with tenant branding + "this experience has ended" messaging + CTA. Track expired clicks in clickTracking.js with a new event type "expired_click". Frontend: add expirationBehavior dropdown to create-link view when expiresAt is set.',
+        files: ['functions/api/kortex/redirectHandler.js', 'functions/api/kortex/smartLinkService.js', 'src/admin/views/create-link/'],
+        deps: []
+      },
+      {
+        id: 24, title: 'Click caps & single-use links',
+        why: 'Museum passes, event tickets, promo codes — links that should work exactly N times then stop. We already have maxUses for alumni campaigns (redirectHandler.js line 530). Generalize it to all links. No competitor offers per-link click budgets.',
+        type: 'moat', effort: 'S (2-3d)', impact: '$$', urgency: 'HIGH', score: 7.5,
+        criteria: [
+          'New fields on short_links: maxClicks (total cap), maxUniqueVisitors (unique user cap)',
+          'Redirect handler enforces both caps before redirecting',
+          'At cap: show graceful limit-reached page (not raw 410) with tenant branding + optional fallback URL',
+          'Single-use mode: maxClicks=1 + unique visitor enforcement via cookie/fingerprint',
+          'Admin UI: click budget controls in create-link and edit-link views',
+          'Analytics: track cap utilization (45/50 used) in dashboard',
+          'Pro+ feature gate'
+        ],
+        agentHint: 'PARTIALLY BUILT. redirectHandler.js line 493-540 already implements maxUses for alumni campaign links with uniqueVisitCount tracking. GENERALIZE: move the maxUses check from the alumni-specific Case 4 block to the main redirect flow (before platform detection around line 600). Check linkData.maxClicks against linkData.clickCount, and linkData.maxUniqueVisitors against linkData.uniqueUsers.length. uniqueUsers[] already exists on the doc (smartLinkService.js line 290). For single-use: set maxClicks=1 and use the existing fingerprint-based dedup from tenantLinkResolver.js isDuplicateClick().',
+        files: ['functions/api/kortex/redirectHandler.js', 'functions/api/kortex/smartLinkService.js', 'functions/api/kortex/tenantLinkResolver.js'],
+        deps: []
+      },
+      {
+        id: 25, title: 'Distribution controls (who can access, from where)',
+        why: 'A library\'s digital resource link should only work for patrons in their service area. A conference ticket link should only work from the registration email domain. This is the "secure distribution" layer no link platform offers.',
+        type: 'moat', effort: 'M (5-7d)', impact: '$$$', urgency: 'MED', score: 7,
+        criteria: [
+          'New field: accessRules{} on short_links doc',
+          'Rule types: geo_fence (lat/lng + radius), domain_whitelist (only @university.edu emails), ip_range (CIDR blocks), referrer_required (must come from specific site), time_window (only 9am-5pm in timezone)',
+          'Redirect handler evaluates rules before redirect — show branded "access restricted" page on failure',
+          'Composable: multiple rules are AND-ed',
+          'Admin UI: access rules builder in create-link (visual, not code)',
+          'Business+ feature gate'
+        ],
+        agentHint: 'Extend redirectHandler.js — add an evaluateAccessRules(linkData, req) function before the redirect. Check req.ip against geo (use ip-api or MaxMind from geo-targeting item #9), req.headers.referer for referrer rules, request time for time_window. Link doc: add accessRules:{geoFence:{lat,lng,radiusKm}, domainWhitelist:["edu","university.edu"], ipRanges:["10.0.0.0/8"], referrerRequired:"university.edu", timeWindow:{start:"09:00",end:"17:00",tz:"America/New_York"}}. Restriction page: similar to expired page HTML but with "This link is restricted" messaging.',
+        files: ['functions/api/kortex/redirectHandler.js', 'functions/api/kortex/smartLinkService.js', 'functions/api/kortex/linkSecurityService.js'],
+        deps: [9]
+      },
+      {
+        id: 26, title: 'Progressive anti-gaming (algorithmic throttle, not binary block)',
+        why: 'Current security is binary: bot or not bot. Real abuse is subtler — a ticket scalper shares a link 200 times. A student shares a single-use exam link. We need graduated responses: slow down → captcha challenge → soft-block → hard-block. The 6-layer security system already detects anomalies — this adds graduated response.',
+        type: 'moat', effort: 'M (5-7d)', impact: '$$', urgency: 'MED', score: 6.5,
+        criteria: [
+          'Threat score 0-100 computed from existing signals (velocity, bot detection, geo anomaly, referer)',
+          'Score 0-30: normal redirect (no delay)',
+          'Score 31-60: add 2-second interstitial ("verifying link...") to throttle automated access',
+          'Score 61-80: show captcha/challenge page before redirect',
+          'Score 81-100: block with "suspicious activity detected" page + alert to tenant admin',
+          'Tenant dashboard: real-time abuse score per link, alert when threshold crossed',
+          'Per-link sensitivity setting: low (permissive) / default / high (strict) / paranoid'
+        ],
+        agentHint: 'FOUNDATION EXISTS. linkSecurityService.js already computes bot scores (detectBot function, line 185) with weighted signals. detectVelocityAnomaly (line 68) returns anomaly details. EXTEND: create a computeThreatScore(req, linkData) function that combines: bot score (0-50 from detectBot), velocity score (0-30 from detectVelocityAnomaly), geo anomaly score (0-20). In redirectHandler.js, call computeThreatScore before redirect and branch on score ranges. Interstitial HTML for 31-60 range: timer page with "Verifying your link..." that auto-redirects after 2s. Captcha for 61-80: simple math challenge or honeypot form. linkData.sensitivityLevel overrides thresholds.',
+        files: ['functions/api/kortex/linkSecurityService.js', 'functions/api/kortex/redirectHandler.js'],
+        deps: []
+      }
+    ]
+  },
+  {
+    epic: 'VERTICAL: LIVE EXPERIENCES & VENUES',
+    epicDesc: 'Zoos, museums, theme parks, concerts, festivals, conferences — timed links for physical experiences with anti-scalping and post-event lifecycle',
+    items: [
+      {
+        id: 27, title: 'Event link templates (zoo exhibit, museum tour, concert, conference)',
+        why: 'A zoo creating a "Summer Safari" campaign link should get pre-configured expiration, geo-fence to venue, branded QR, and post-event redirect — not configure 8 fields manually. Templates = 10x faster adoption for venue customers.',
+        type: 'growth', effort: 'S (3-4d)', impact: '$$', urgency: 'MED', score: 6.5,
+        criteria: [
+          'Template system: intent templates with pre-configured defaults',
+          'Zoo template: expiresAt=exhibit end date, geoFence=venue location, expirationBehavior="redirect_to" (next exhibit), QR auto-generated',
+          'Museum template: time_window=opening hours, maxUniqueVisitors=daily capacity, branded interstitial with exhibit info',
+          'Concert/Festival template: maxClicks=ticket count, single-use enforcement, anti-scalping sensitivity=high',
+          'Conference template: time_window=event dates, domain_whitelist=attendee email domains, post-event redirect to recordings',
+          'Admin UI: "Choose a template" step in create-link wizard',
+          'Templates are tenant-customizable (save custom templates per org)'
+        ],
+        agentHint: 'Extend the existing intent/destination type system. v2LinkIntents.js has 11 education intent types. ADD venue-specific intents: "exhibit", "event_ticket", "venue_tour", "festival_pass", "conference_session". Create a new file functions/api/kortex/linkTemplates.js that exports template objects with default field values for each intent. Frontend: add template selector to create-link view that pre-fills form fields. Existing smartLinkDefaults.js already handles defaults per content space — extend this pattern.',
+        files: ['functions/api/kortex/v2LinkIntents.js', 'functions/api/kortex/smartLinkDefaults.js', 'src/admin/views/create-link/'],
+        deps: [23, 24, 25]
+      },
+      {
+        id: 28, title: 'Venue analytics dashboard (foot traffic attribution)',
+        why: 'A zoo runs 5 ad campaigns. Which one actually brought people through the gate? Link click → QR scan at entrance → ticket validated. This is the "foot traffic attribution" story that justifies $199/mo for every venue.',
+        type: 'moat', effort: 'M (5-7d)', impact: '$$$', urgency: 'MED', score: 6.5,
+        criteria: [
+          'Venue funnel: ad impression → link click → QR scan at gate → check-in event',
+          'Extend attribution service: click → physical_checkin event chain',
+          'QR codes at venue entrance POST check-in events to Kortex API',
+          'Dashboard: per-campaign conversion funnel (clicks → actual visits)',
+          'Date-range comparisons: "Summer Safari" vs "Winter Wonderland" campaigns',
+          'Export: venue performance CSV for board reporting'
+        ],
+        agentHint: 'Extend attributionService.js. Current: click → install attribution. ADD: click → physical_checkin. The QR code at venue entrance would be scanned by venue staff app or self-service kiosk → POST /kortex/events with type "checkin" and linkCode. Match checkin to original click via cookie/fingerprint/linkCode. Dashboard: add venue analytics view to admin SPA or extend existing analytics view with a "venue" filter.',
+        files: ['functions/api/kortex/attributionService.js', 'functions/api/kortex/clickTracking.js', 'src/admin/views/analytics/'],
+        deps: [13]
+      }
+    ]
+  },
+  {
+    epic: 'VERTICAL: CONTROLLED DISTRIBUTION',
+    epicDesc: 'Libraries, publishers, government, healthcare, membership orgs — access-controlled links with audit trails, geographic restrictions, and compliance',
+    items: [
+      {
+        id: 29, title: 'Patron-scoped access links (library/membership model)',
+        why: 'A library shares a link to a digital resource. It should work for patrons (IP range or email domain), expire after lending period, and limit to N simultaneous users. No link platform offers "lending period" links. Libraries/membership orgs are a $2B market.',
+        type: 'moat', effort: 'M (5-7d)', impact: '$$$', urgency: 'MED', score: 7,
+        criteria: [
+          'Lending period: link active for N days from FIRST click (not from creation) — dynamic expiration',
+          'Concurrent user cap: max N users accessing simultaneously (not just total clicks)',
+          'Patron verification: email domain check, IP range, or library card number in URL token',
+          'Graceful expiration: "Your access period has ended. Visit your library to renew." with tenant-branded page',
+          'Renewal mechanism: expired link shows "Request renewal" button → creates new pending access',
+          'Audit trail: who accessed, when, from where — compliance-ready export',
+          'Access dashboard: per-link active sessions, remaining lending time, patron list'
+        ],
+        agentHint: 'New link behavior mode. Extend smartLinkService.js createShortLink() with: activationType:"first_click" (expiresAt is computed on first redirect, not creation), concurrentUserCap:5, patronVerification:{type:"email_domain", value:"@library.edu"}. In redirectHandler.js: on first click, set activatedAt + compute expiresAt (activatedAt + lendingPeriodDays). For concurrent cap: track active sessions in a subcollection short_links/{code}/sessions with TTL. Audit: write to link_analytics with enriched patron info. Graceful expiration: use expirationBehavior from item #23.',
+        files: ['functions/api/kortex/redirectHandler.js', 'functions/api/kortex/smartLinkService.js'],
+        deps: [23, 24, 25]
+      },
+      {
+        id: 30, title: 'Compliance audit trail & access reports',
+        why: 'Government links, healthcare resources, FERPA-protected education content — all need "who accessed what, when, from where" audit trails. Compliance reporting = enterprise pricing justification.',
+        type: 'moat', effort: 'S (3-4d)', impact: '$$', urgency: 'MED', score: 6,
+        criteria: [
+          'Immutable audit log per link: timestamp, IP, geo, user-agent, access result (granted/denied/expired)',
+          'Export: CSV and PDF audit reports per link or per campaign',
+          'Retention policy: configurable log retention (30/90/365 days) per tenant',
+          'Access denied logging: capture WHY access was denied (geo, domain, cap, expired)',
+          'Dashboard: timeline view of all access events per link',
+          'Enterprise feature gate'
+        ],
+        agentHint: 'Extend clickTracking.js. Currently writes to link_analytics collection with click details. ADD: accessResult field ("granted", "denied_geo", "denied_domain", "denied_cap", "denied_expired") and denialReason. Write to audit subcollection: link_audits/{linkCode}/events/{eventId}. For export: create a GET /kortex/:code/audit endpoint that returns paginated audit events, with ?format=csv for CSV export. Dashboard: add audit timeline tab to link detail view in admin SPA.',
+        files: ['functions/api/kortex/clickTracking.js', 'functions/api/kortex/smartLinks.js', 'src/admin/views/analytics/'],
+        deps: [25]
+      }
+    ]
+  },
+  {
+    epic: 'PLATFORM POLISH',
+    epicDesc: 'UX quality, accessibility, and polish that signals production maturity',
+    items: [
+      {
+        id: 31, title: 'Accessibility controls (contrast, font size, reduced motion)',
+        why: 'Bitly uses UserWay ($49-$149/mo overlay). We can do better natively with 3 CSS toggles — it\'s more legitimate in the a11y community than an overlay, costs nothing, and signals production maturity to enterprise buyers evaluating our platform.',
+        type: 'growth', effort: 'XS (2-3hr)', impact: '$', urgency: 'LOW', score: 4,
+        criteria: [
+          'Floating accessibility button (♿ icon) in bottom-left of admin SPA and landing page',
+          'Panel with 3 toggles: High Contrast mode, Font Size (A/A+/A++), Reduce Motion',
+          'High Contrast: adds .high-contrast class to body — darker backgrounds, higher text contrast, thicker borders',
+          'Font Size: CSS custom property --font-scale (1 / 1.15 / 1.3) applied to root font-size',
+          'Reduce Motion: adds .reduce-motion class — disables all CSS animations/transitions',
+          'Preferences saved in localStorage — persist across sessions',
+          'Also respect prefers-contrast and prefers-reduced-motion OS-level settings as defaults',
+          'ARIA labels on all controls'
+        ],
+        agentHint: 'Pure CSS + tiny JS toggle. Add a <div class="a11y-fab"> floating button to kortex.html and admin/kortex.html. On click, show a small panel with 3 toggles. JS: toggle classes on document.body (.high-contrast, .large-font, .reduce-motion) and save to localStorage. CSS: add @media (prefers-reduced-motion: reduce) {} and @media (prefers-contrast: more) {} as defaults, then override with manual class toggles. High contrast: increase --text to #fff, --bg to #000, --border to #fff, add 2px outlines to interactive elements. Large font: html { font-size: calc(16px * var(--font-scale, 1)); }. Reduce motion: * { animation-duration: 0s !important; transition-duration: 0s !important; }.',
+        files: ['src/kortex.html', 'src/admin/kortex.html'],
+        deps: []
+      }
+    ]
+  },
+  {
+    epic: 'VENDOR ENABLEMENT',
+    epicDesc: 'Features that make Kortex usable for zoos, sports clubs, concerts, libraries, conferences — not just universities',
+    items: [
+      {
+        id: 35, title: 'Batch QR download as ZIP + print layouts',
+        why: 'A zoo with 40 exhibit QR codes needs to download all at once and print them on signage. A sports club needs 20 QR codes for game-day merch stations. Current QR view only supports single download. Batch = vendor adoption for physical venues.',
+        type: 'growth', effort: 'S (2-3d)', impact: '$$', urgency: 'HIGH', score: 7.5,
+        criteria: [
+          'Select multiple QR codes → "Download ZIP" button',
+          'ZIP contains individual PNG files named by link title or code',
+          'Print layout option: 4-up, 6-up, or single per page as PDF',
+          'Include link title and short URL text below each QR code in print layout',
+          'Campaign-scoped batch: download all QR codes for a campaign',
+          'Pro+ feature gate (Starter limited to single download)'
+        ],
+        agentHint: 'EXISTING QR VIEW: src/admin/views/qr-codes/qr-codes.js — single download at line 213 uses canvas.toBlob(). For batch: collect all selected QR canvases, use JSZip (CDN: cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js) to create ZIP. For print layouts: create a hidden iframe, render QR codes in CSS grid (2x2 or 2x3), call window.print(). Campaign filter: the view already fetches links — add a campaign dropdown filter. Plan gate: check window.__tenantPlan or fetch from /billing/subscription.',
+        files: ['src/admin/views/qr-codes/qr-codes.js'],
+        deps: []
+      },
+      {
+        id: 36, title: 'Scheduled weekly email reports (wire analyticsAlertService)',
+        why: 'analyticsAlertService.js has 200+ lines of complete weekly digest logic — metrics computation, trend analysis, alert thresholds. It writes to pending_emails but nothing sends them. Wiring this to a Cloud Function scheduler + SendGrid turns dead code into a retention feature that keeps vendors engaged weekly.',
+        type: 'growth', effort: 'S (1-2d)', impact: '$$', urgency: 'HIGH', score: 7,
+        criteria: [
+          'Cloud Function scheduled trigger: every Monday 9am UTC → call runWeeklyDigest()',
+          'Digest covers: total clicks, top 5 links, trend vs previous week, campaign performance',
+          'Email template: HTML with charts (inline SVG or static bar charts), Kortex branding',
+          'Unsubscribe link per tenant (store email preferences in tenants/{id}.emailPrefs)',
+          'Admin SPA settings: toggle weekly digest on/off, set recipient email(s)',
+          'First email includes "Your first week on Kortex" onboarding content'
+        ],
+        agentHint: 'THE LOGIC IS DONE. analyticsAlertService.js runWeeklyDigest() at line 160: queries link_analytics for the past 7 days, computes click totals, identifies top links, calculates week-over-week trends, writes digest object to pending_emails collection. WHAT IS MISSING: (1) In functions/index.js, add exports.weeklyDigest = functions.pubsub.schedule("every monday 09:00").onRun(() => runWeeklyDigest()), (2) In functions/index.js or a new file, add exports.processEmail = functions.firestore.document("pending_emails/{id}").onCreate(async (snap) => { /* send via SendGrid */ }). Depends on item #33 for SendGrid being configured.',
+        files: ['functions/api/kortex/analyticsAlertService.js', 'functions/index.js'],
+        deps: [33]
+      },
+      {
+        id: 37, title: 'Shareable read-only dashboard links',
+        why: 'A zoo marketing director wants to share campaign performance with their board. A sports club GM wants to show sponsors their QR engagement data. Today the only option is CSV export. A shareable read-only dashboard URL (no login required, time-limited) lets vendors prove Kortex ROI to stakeholders.',
+        type: 'growth', effort: 'S (3-4d)', impact: '$$', urgency: 'MED', score: 6.5,
+        criteria: [
+          'Generate shareable link: GET /kortex/dashboards/:token → read-only analytics view',
+          'Token is a signed JWT with tenantId, campaignId (optional), expiry (7/30/90 days)',
+          'Read-only view: same analytics charts but no edit controls, no navigation to other views',
+          'Revoke link: tenant admin can invalidate any shared dashboard link',
+          'Branded: show tenant name and logo on shared dashboard',
+          'Pro+ feature gate'
+        ],
+        agentHint: 'New endpoint: add GET /kortex/dashboards/:token to smartLinks.js. Token = JWT signed with a dashboard secret (DASHBOARD_SIGNING_KEY env var). Payload: { tenantId, campaignId?, exp }. Generate token: POST /kortex/dashboards (requireAuth, requireAdmin) → returns shareable URL. Read-only view: create a lightweight HTML page (similar to the redirect handler HTML) that fetches analytics data via a special unauthenticated endpoint (validates JWT token instead of Firebase auth). Revoke: store issued tokens in dashboardTokens subcollection, check revocation on access.',
+        files: ['functions/api/kortex/smartLinks.js'],
+        deps: []
+      },
+      {
+        id: 38, title: 'Venue and vertical use cases on landing page',
+        why: 'The landing page (kortex.html) currently says "Universities" everywhere. A zoo, sports club, or concert venue visiting kaayko.com/kortex sees zero indication that Kortex works for them. Adding 6 vertical use case sections with specific examples (exhibit QR, game-day merch, event links) expands the addressable market from 4,000 universities to 50,000+ venues.',
+        type: 'growth', effort: 'S (1-2d)', impact: '$$', urgency: 'HIGH', score: 7.5,
+        criteria: [
+          'Replace education-only hero text with inclusive messaging: "Smart links for organizations that connect with people in person"',
+          'Add use case tabs or carousel: Universities, Zoos and Museums, Sports Clubs, Concerts, Libraries, Conferences',
+          'Each use case: 3-4 specific scenarios with icons (e.g., Zoo: exhibit QR, gift shop links, membership renewal, foot traffic reports)',
+          'Update use case dropdown in signup form: add all 6 verticals (currently only university options)',
+          'Update JSON-LD schema and meta description to include venue keywords',
+          'Social proof placeholder: "Trusted by universities, zoos, and sports organizations"'
+        ],
+        agentHint: 'LANDING PAGE: src/kortex.html (778 lines). Hero section at line 291 — update h1 and h2 text. Feature grid at line 305 — generic enough to keep. ADD a new use-case section between features and connect sections. Design: tabs that switch between vertical-specific content. Each tab shows: icon, 3-4 bullet scenarios, example QR code or link. Signup form at line 379: the select dropdown currently has university-specific options — add zoo, sports, concert, library, conference. Update meta description (line ~8) and JSON-LD (line ~15) with venue keywords for SEO.',
+        files: ['src/kortex.html'],
+        deps: []
+      },
+      {
+        id: 39, title: 'Guided empty state for new tenants',
+        why: 'A new vendor who completes signup lands on an empty dashboard — zero links, zero campaigns, zero analytics. No guidance on what to do next. They leave. A guided empty state with "Create your first link" CTA, use-case-specific templates, and a checklist increases Day 1 activation from ~10% to ~60% (industry benchmark for guided onboarding).',
+        type: 'growth', effort: 'S (1-2d)', impact: '$$', urgency: 'HIGH', score: 7,
+        criteria: [
+          'Dashboard empty state: illustration + "Welcome to Kortex" + "Create your first link in 30 seconds" CTA',
+          'Checklist widget (persistent until all done): Create first link, Create first campaign, Generate first QR code, View first analytics',
+          'Use-case-specific templates: based on tenants/{id}.useCase, suggest link templates (zoo: "Exhibit Link", sports: "Game Day Link")',
+          'Dismiss checklist after completion or manual close',
+          'Re-accessible from a "Getting Started" menu item',
+          'Track completion via tenants/{id}.onboardingComplete boolean'
+        ],
+        agentHint: 'DASHBOARD: src/admin/views/dashboard/dashboard.js — renders KPI cards and recent links. Add a conditional check at render time: if tenant has 0 links (response from GET /kortex returns empty), show empty state UI instead of KPIs. Empty state: centered card with illustration (use an SVG or emoji), welcome text, and a primary CTA button that navigates to create-link view. Checklist: small floating card in bottom-right that tracks 4 milestones. Store progress in localStorage AND tenants/{id}.onboarding.completedSteps[] in Firestore. Template suggestions: maintain a TEMPLATES map keyed by useCase (set during onboarding step 1, item #32).',
+        files: ['src/admin/views/dashboard/dashboard.js'],
+        deps: [32]
+      }
+    ]
+  },
+  {
+    epic: 'INFRASTRUCTURE — SCALE & PERFORMANCE',
+    epicDesc: 'Systems fixes required before 1000+ concurrent users at a venue. Current redirect: 5 blocking Firestore ops, 150ms+ latency, 3-6s cold starts.',
+    items: [
+      {
+        id: 40, title: 'Split redirect into dedicated Cloud Function',
+        why: 'The entire API is one monolithic Cloud Function — 24 routers, 392 npm packages including Anthropic SDK, OpenAI SDK, Stripe SDK. A QR scan at a zoo loads all of it. Cold start: 3-6 seconds. Splitting the redirect into its own function (express + firebase-admin + crypto only) cuts cold start to under 800ms.',
+        type: 'table-stakes', effort: 'S (1-2d)', impact: '$$$', urgency: 'NOW', score: 10,
+        criteria: [
+          'New Cloud Function export: exports.redirect — handles /l/:id, /r/:code, tenant slug redirects only',
+          'Minimal dependencies: express, firebase-admin, crypto. No Stripe/OpenAI/Anthropic.',
+          'Firebase Hosting rewrite: /l/** and /r/** route to redirect function, everything else to api function',
+          'Set memory: 256MiB (redirect needs no heavy processing)',
+          'Set minInstances: 1 (always-warm for first scan)',
+          'Set maxInstances: 100 (cap cost during viral spikes)',
+          'Cold start target: under 800ms. Measure with Cloud Trace.'
+        ],
+        agentHint: 'CURRENT: functions/index.js line 100 exports.api = onRequest({...}, apiApp). ALL 24 routers mount on this one function. CREATE: functions/redirect.js — new Express app that only mounts deeplinkRoutes.js, tenantLinkResolver.js, and campaignPublicResolver.js. Import only redirectHandler.js, clickTracking.js, linkSecurityService.js. In firebase.json hosting.rewrites: change /l/** and /r/** to point to the new redirect function. Keep /api/** on the monolith. Test: curl -w "%{time_total}" to measure before/after.',
+        files: ['functions/index.js', 'functions/redirect.js (new)', 'firebase.json'],
+        deps: []
+      },
+      {
+        id: 41, title: 'In-memory TTL cache for redirect hot path',
+        why: 'ZERO caching exists. Every redirect does 3 Firestore reads: link doc (read TWICE — checkLinkExists then handleRedirect reads same doc again), plus tenant doc (isStarterLink). At a 5000-person concert, that is 15,000 Firestore reads just for redirects. A simple Map with 60s TTL eliminates 2 of 3 reads per request and removes the duplicate read entirely.',
+        type: 'table-stakes', effort: 'XS (3-4hr)', impact: '$$$', urgency: 'NOW', score: 10,
+        criteria: [
+          'LinkCache: Map with 60s TTL for short_links docs. Key: link code. Invalidate on PUT/DELETE.',
+          'TenantCache: Map with 300s TTL for tenants docs (plan rarely changes mid-event).',
+          'Remove duplicate read: deeplinkRoutes.js line 187 checkLinkExists() reads doc, then handleRedirect at line 434 reads it again. Pass the doc from checkLinkExists to handleRedirect.',
+          'Cache hit rate target: 95%+ during sustained traffic (same links scanned repeatedly at venue)',
+          'Memory ceiling: cap cache at 1000 entries (LRU eviction). Each short_links doc is ~1KB = 1MB max.',
+          'Cache is per-instance (acceptable for serverless — each instance handles 80 concurrent requests on same docs)'
+        ],
+        agentHint: 'CREATE: functions/api/kortex/linkCache.js — simple module: const cache = new Map(); function getCachedLink(code) { const entry = cache.get(code); if (entry && Date.now() - entry.ts < 60000) return entry.doc; return null; } function setCachedLink(code, doc) { if (cache.size > 1000) { /* evict oldest */ } cache.set(code, {doc, ts: Date.now()}); } Same pattern for tenantCache. APPLY: in redirectHandler.js handleRedirect() at line 434: check cache first, only hit Firestore on miss. In deeplinkRoutes.js: remove separate checkLinkExists call at line 187, pass the link data directly. In isStarterLink() at line 243: cache tenant plan lookup.',
+        files: ['functions/api/kortex/linkCache.js (new)', 'functions/api/kortex/redirectHandler.js', 'functions/api/kortex/deeplinkRoutes.js'],
+        deps: []
+      },
+      {
+        id: 42, title: 'Fire-and-forget analytics on redirect path',
+        why: 'trackClick() and updateClickRedirect() are both awaited sequentially in redirectHandler.js lines 646-663. That is 2 blocking Firestore writes (40-100ms) before the user sees the redirect. The alumni path already does fire-and-forget (line 552). Apply the same pattern to the standard path. User gets instant redirect, analytics writes happen async.',
+        type: 'table-stakes', effort: 'XS (1hr)', impact: '$$$', urgency: 'NOW', score: 10,
+        criteria: [
+          'Change redirectHandler.js line 646: remove await from trackClick() — fire-and-forget with .catch()',
+          'Change redirectHandler.js line 663: remove await from updateClickRedirect() — fire-and-forget',
+          'Move res.redirect() BEFORE analytics writes (send response first, write after)',
+          'Add error logging for failed analytics writes (structured log, not console.error)',
+          'Verify: analytics data still accurate after change (eventual consistency is fine)',
+          'Latency target: redirect response in under 50ms (single Firestore read for link doc)'
+        ],
+        agentHint: 'TINY CHANGE, MASSIVE IMPACT. In redirectHandler.js, the redirect currently happens AFTER analytics: trackClick (line 646, await) → updateClickRedirect (line 663, await) → res.redirect (line ~720). REORDER: res.redirect FIRST, then fire-and-forget analytics. The alumni path at line 552-567 already does this: trackClick({...}).catch(err => logger.warn(...)). Copy that pattern. Change lines 646-663 from await to .catch(). Move res.redirect() to just after destination resolution (~line 640). Cloud Functions keeps the instance alive for pending promises even after response is sent.',
+        files: ['functions/api/kortex/redirectHandler.js'],
+        deps: []
+      },
+      {
+        id: 43, title: 'Cloud Function instance config (minInstances + maxInstances)',
+        why: 'Current config: minInstances=0, maxInstances=unlimited. This means: (a) guaranteed cold starts after 15min idle (3-6s delay on first scan), (b) unlimited scaling = unbounded cost during a bot attack or viral spike. Setting minInstances=1 keeps one instance warm. Setting maxInstances=100 caps cost at ~$200/day even under attack.',
+        type: 'table-stakes', effort: 'XS (30min)', impact: '$$', urgency: 'NOW', score: 9,
+        criteria: [
+          'Redirect function (after item #40 split): minInstances=1, maxInstances=100, memory=256MiB, concurrency=80',
+          'API monolith function: minInstances=0 (cold starts acceptable for dashboard), maxInstances=50',
+          'Set in index.js onRequest() options or firebase.json functions config',
+          'Cost estimate: minInstances=1 on 256MiB function ≈ $8/month (always-on)',
+          'Add Cloud Monitoring alert: instance count > 50 = email notification',
+          'Test: verify cold start eliminated with minInstances=1 using Cloud Trace'
+        ],
+        agentHint: 'In functions/index.js line 100: exports.api = onRequest({ timeoutSeconds:300, memory:"512MiB" }, apiApp). ADD: minInstances:0, maxInstances:50. For the redirect function (item #40): exports.redirect = onRequest({ memory:"256MiB", minInstances:1, maxInstances:100, concurrency:80 }, redirectApp). Also REMOVE timeoutSeconds:300 from redirect — a redirect should timeout at 10s, not 300s. The 300s timeout is for the monolith (which handles AI/weather calls).',
+        files: ['functions/index.js'],
+        deps: [40]
+      },
+      {
+        id: 44, title: 'Distributed counter for click tracking (fix write contention)',
+        why: 'clickCount on short_links/{code} is incremented with FieldValue.increment(1) on every click (redirectHandler.js line 670-676). Firestore single-document write limit is ~1 write/second. At a concert with 500 people scanning the same merch QR code simultaneously, Firestore throws ABORTED/DEADLINE_EXCEEDED contention errors. Distributed counters split writes across N shards.',
+        type: 'growth', effort: 'S (1d)', impact: '$$', urgency: 'HIGH', score: 8,
+        criteria: [
+          'Create click_counters/{linkCode}/shards/{0..9} subcollection — 10 shards per link',
+          'On click: increment random shard instead of the parent doc',
+          'On read (dashboard, analytics): SUM across all shards',
+          'Lazy shard creation: first click creates shard 0, subsequent clicks distribute across 0-9',
+          'Throughput: 10 shards × 1 write/sec = 10 concurrent clicks/sec per link (sufficient for any venue)',
+          'Background job: periodically merge shard totals back to parent doc for fast reads'
+        ],
+        agentHint: 'Firestore distributed counter pattern: https://firebase.google.com/docs/firestore/solutions/counters. CREATE: functions/api/kortex/distributedCounter.js — incrementCounter(linkCode): picks random shard 0-9, increments click_counters/{linkCode}/shards/{N}.count. getCount(linkCode): queries all shards, sums .count values. APPLY: replace the direct FieldValue.increment at redirectHandler.js line 670-676 with incrementCounter(). For dashboard reads: either read shards on demand (10 reads) or maintain a rolled-up total via Cloud Function onWrite trigger that sums shards back to short_links/{code}.clickCount periodically.',
+        files: ['functions/api/kortex/distributedCounter.js (new)', 'functions/api/kortex/redirectHandler.js'],
+        deps: []
+      },
+      {
+        id: 45, title: 'Replace Firestore rate limiter with in-memory on redirect path',
+        why: 'rateLimitService.js uses Firestore transactions for rate limiting — 1 read + 1 write per check. At 1000 QPS, that is 2000 Firestore ops/sec just for rate limiting. The redirect path already has an in-memory rate limiter from sharedWeatherUtils (deeplinkRoutes.js line 34), but the publicRouter and other paths use the Firestore-backed one. Use in-memory for the hot path, keep Firestore-backed for mutation endpoints (create/update/delete) where cross-instance accuracy matters.',
+        type: 'table-stakes', effort: 'XS (2hr)', impact: '$$', urgency: 'HIGH', score: 8,
+        criteria: [
+          'Redirect path (/l/:id, /r/:code): in-memory Map rate limiter (already exists, verify it is applied)',
+          'Public API mutations (POST/PUT/DELETE): keep Firestore-backed rate limiter (accuracy matters)',
+          'In-memory limiter: 100 req/min per IP, sliding window',
+          'Accept trade-off: in-memory is per-instance, so actual limit is 100×N instances. This is fine — over-limiting redirects is worse than under-limiting.',
+          'Remove Firestore rate limit check from publicRouter.js for GET /l/:id path',
+          'Log rate limit hits to structured logging (not Firestore) for monitoring'
+        ],
+        agentHint: 'IN-MEMORY RATE LIMITER ALREADY EXISTS: sharedWeatherUtils.createRateLimitMiddleware() is used in deeplinkRoutes.js line 34 with limit 30. Increase to 100 for redirect. FIRESTORE RATE LIMITER: rateLimitService.js checkRateLimit() uses db.runTransaction() — keep this for POST /kortex, POST /tenants/register, etc. In publicRouter.js line 33: ipRateLimit calls checkRateLimit with Firestore transaction. For the GET /l/:id path in publicRouter.js line 69: switch to in-memory. The key insight: redirect is read-heavy, rate limiting accuracy at ±50% is acceptable. For write endpoints (link creation), accuracy matters — keep Firestore.',
+        files: ['functions/api/kortex/rateLimitService.js', 'functions/api/kortex/deeplinkRoutes.js', 'functions/api/kortex/publicRouter.js'],
+        deps: []
+      }
+    ]
+  }
+];
+
+// ═══════════════════════════════════════════════════════
+// TECH LINE OF SIGHT — per-item infrastructure assessment
+// status: 'ready' = build now | 'infra' = needs infra item first | 'new-dep' = needs external service
+// ═══════════════════════════════════════════════════════
+const TECH = {
+  1:  ['ready',   'Config-only. 3 Stripe env vars in Firebase config. billing/router.js reads from env with fallback. Stripe handles payment load. Zero code changes, zero scale concern.'],
+  2:  ['infra',   'Firebase Admin createUser() + setCustomUserClaims() + Firestore batch write. Check Firebase Auth daily account creation quotas on Blaze plan. After creation, tenant doc is read on every redirect (isStarterLink) — must add tenant cache (item #41) to avoid N+1 read amplification.'],
+  3:  ['ready',   'Pure frontend HTML/CSS insert into kortex.html. Served from Firebase Hosting CDN. No backend, no Firestore, no scale concern.'],
+  4:  ['ready',   'Frontend page or section. Competitive data from this file. Static content — CDN-served.'],
+  5:  ['new-dep', 'Needs: Cloudflare proxy (auto-SSL) or Firebase Hosting custom domain config. DNS verification via Node dns module (built-in). Add Firestore index on tenants.domain field. MUST cache domain→tenant lookup in-memory with 60s TTL (item #41) — otherwise every redirect on custom domain adds 1 Firestore query.'],
+  6:  ['ready',   'Add tags[] to short_links schema. Firestore array-contains for tag filter. Client-side search (Firestore has no full-text). No new infra. Tags are read-path only — no burst write concern.'],
+  7:  ['ready',   'Add og_* fields to short_links. Extend social crawler HTML in redirectHandler.js. Image upload to Firebase Storage (existing bucket). Social crawlers are less than 1% of redirect traffic — no scale concern.'],
+  8:  ['ready',   'bcrypt hash in link doc. Password gate HTML page in redirectHandler.js. Session cookie. Password-protected links are inherently low-volume. No scale concern.'],
+  9:  ['new-dep', 'IP→country: MaxMind GeoLite2 DB (free, local, no API rate limit) or ip-api.com (free but 45 req/min — breaks at load). Must use local DB for venue scale. GeoLite2 adds ~30MB to function — requires split function (item #40) to avoid bloating redirect cold start.'],
+  10: ['ready',   'Pixel JS injected client-side in redirect interstitial HTML. Pixels fire in user browser, not server. Zero server load. Works at any scale.'],
+  11: ['ready',   'Client-side CSV parsing (PapaParse). Batch create via existing POST /api/public/smartlinks/batch. Firestore batch write, max 500 docs/batch. 5000 links = 10 batches ≈ 2s. Import is not a hot path.'],
+  12: ['new-dep', 'Needs Zapier developer account. Triggers via existing HMAC webhooks (webhookService.js). Actions via public API (publicApiRouter.js). Zapier polls — no push load on our infra.'],
+  13: ['infra',   'maxUses field + Firestore transaction for atomic decrement. At burst (single-use ticket link at concert with 1000 scans), same single-doc contention as clickCount. Needs distributed counter (item #44) for high-traffic single-use links.'],
+  14: ['ready',   'Add linkScheduler Cloud Function cron. Check short_links where publishAt <= now AND enabled=false. Flip enabled=true. Run every minute. Low-frequency batch operation — no scale concern.'],
+  15: ['ready',   'Simple HTML + JS page. No backend. Links to PostHog dashboard or iframe. CDN-served static page.'],
+  16: ['ready',   'PostHog JS SDK already loaded (posthog.js exists with placeholder key). Swap to real project key. PostHog handles data ingestion — their infra, not ours.'],
+  17: ['ready',   'Extend createShortLink() to accept vanityCode. Firestore doc ID = vanityCode. Collision check: doc.exists. No perf difference from auto-generated codes — same single-doc read.'],
+  18: ['infra',   'Link grouping and visualization is frontend-only. But if links are nested (parent→child), need Firestore subcollection or parentId field. Query depth: at 250 link limit per GET /kortex, flat query is fine. No burst concern — this is admin UI.'],
+  19: ['ready',   'Extend link doc with decayConfig: {type, redirectTo, message}. In redirectHandler.js, check expiresAt and decayConfig before redirect. Pure read-path logic — no additional writes. Scales naturally.'],
+  20: ['ready',   'Extend smartLinkService.js for clonable links. POST /kortex with sourceCode parameter → copy all fields, generate new code. Single Firestore write. Admin operation — no burst concern.'],
+  21: ['infra',   'Add domain_rules[] to link doc. In redirectHandler.js, check req.headers.referer or req.headers.origin against rules before redirect. Pure CPU check. BUT: referer header is unreliable (stripped by HTTPS→HTTPS, absent on direct navigation). Document the limitation honestly.'],
+  22: ['ready',   'Extend clickTracking.js to write install attribution events. Firestore write on install ping from app. Deferred deep linking already exists (deeplinkRoutes.js /resolve). Low volume — installs are 100x less frequent than clicks.'],
+  23: ['new-dep', 'Needs Slack app + OAuth. Create functions/api/kortex/slackIntegration.js. On link events, POST to Slack webhook. Use existing webhook infrastructure (webhookService.js). Slack API handles delivery — minimal load on our side.'],
+  24: ['ready',   'Extend campaignService.js with fundraisingGoal field. Frontend progress bar reads goal vs actual from campaign analytics. Pure read aggregation — no new hot path.'],
+  25: ['infra',   'domain_rules[] and cap_rules{} on link doc. In redirectHandler.js, check before redirect. Domain check is CPU-only (req.headers.referer). IP range check: req.ip comparison. Geo check: needs MaxMind (see item #9). Concurrent user cap: needs Redis or Firestore counter — single-doc contention risk at burst (see item #44).'],
+  26: ['infra',   'Individual link analytics are done. Portfolio-level cross-link queries need Firestore composite indexes. At 2500 links (Business tier), querying all link analytics in-browser works (existing limit=250 pagination). Beyond that, need server-side aggregation or BigQuery export for historical data.'],
+  27: ['ready',   'Campaign templates per use case (zoo, sports, concert). Template = pre-filled campaign config stored in Firestore or as static JSON. POST /campaigns with template parameter. No new infrastructure.'],
+  28: ['infra',   'Foot traffic attribution = QR scan volume by physical location over time. Data already exists in click_events (IP, timestamp, linkCode). New analytics query: GROUP BY linkCode, time_bucket. At 50K events/day, Firestore aggregation queries work. Beyond that: export to BigQuery (Cloud Function daily export).'],
+  29: ['new-dep', 'Patron-scoped access needs auth per link consumer (not just link creator). Options: (a) email-gated links (enter email → check against patron list → redirect), (b) SSO integration with library ILD. Email-gated: Firestore read of patron list per click — MUST cache patron list. SSO: complex, Phase 2.'],
+  30: ['ready',   'Extend clickTracking.js with accessResult field. Write to audit subcollection. Immutable — append-only Firestore writes. Export: new GET /kortex/:code/audit endpoint with ?format=csv. Audit reads are admin-only — no burst concern.'],
+  31: ['ready',   'Pure CSS + 20 lines of JS. classList toggles on body element. localStorage persistence. prefers-reduced-motion and prefers-contrast media queries as defaults. Zero backend. CDN-served.'],
+  32: ['infra',   'Replaces 1323-line client-only wizard with 3 API-backed steps. Each step = 1 existing API call (PATCH /tenants, POST /campaigns, POST /kortex). Use case selection drives campaign template. Frontend-heavy change. Backend endpoints already exist. Depends on auto-provision (#2) being live.'],
+  33: ['new-dep', 'Needs SendGrid account + API key + verified sender domain. npm install @sendgrid/mail. Cloud Function onCreate trigger on pending_emails collection. Cloud Function cron for weekly digest. Email sending is async — no impact on redirect hot path. SendGrid free tier: 100 emails/day.'],
+  34: ['ready',   '2-HOUR FIX. Remove role check at create-link.js line 120 (super-admin → admin). Backend smartLinkValidation.js already accepts any valid URL. Optional: add Google Safe Browsing API lookup for malicious URL detection. Zero scale concern — this is admin UI.'],
+  35: ['ready',   'Client-side ZIP creation using JSZip (CDN library). No backend change. QR codes already rendered as canvas elements. Batch = collect canvases → JSZip → saveAs(). Print layout: CSS grid in hidden iframe → window.print(). All client-side. Scales to any number of QR codes.'],
+  36: ['infra',   'analyticsAlertService.js has complete digest logic. MISSING: Cloud Function cron trigger (1 line in index.js) and email sender (depends on #33). Wire Cloud Scheduler → runWeeklyDigest(). Low frequency — runs once/week per tenant. No scale concern.'],
+  37: ['ready',   'JWT-signed dashboard token. New endpoint: GET /kortex/dashboards/:token. Verify JWT, render read-only analytics. Token generation: POST /kortex/dashboards (admin-only). Revocation: store in Firestore subcollection, check on access. Read-only view = no writes. Scales naturally.'],
+  38: ['ready',   'Pure frontend. Add use case tabs/sections to kortex.html. Update signup form dropdown. Update meta tags for SEO. Static HTML — CDN-served. Zero backend changes.'],
+  39: ['ready',   'Frontend conditional render in dashboard.js. If tenant has 0 links, show empty state instead of KPIs. Checklist in localStorage + tenants/{id}.onboarding. No new endpoints — uses existing GET /kortex count. No scale concern.'],
+  40: ['ready',   'New functions/redirect.js — Express app with 3 routers (deeplink, tenant resolver, campaign resolver). Firebase Hosting rewrite /l/** to new function. Minimal deps: express + firebase-admin + crypto. Target cold start: under 800ms. Deploy and measure with Cloud Trace.'],
+  41: ['ready',   'Simple Map() with TTL check. ~30 lines of code. Per-instance cache is perfect for serverless: 80 concurrent requests on same instance all share the cache. Popular links (same QR code scanned 500 times) hit Firestore once, cache 499 times. LRU eviction at 1000 entries = ~1MB ceiling.'],
+  42: ['ready',   'SMALLEST CHANGE, BIGGEST IMPACT. Remove 2 await keywords in redirectHandler.js (lines 646, 663). Add .catch() for error logging. Move res.redirect() before analytics writes. Cloud Functions keeps instance alive for pending promises. Alumni path already does this (line 552). Copy that pattern.'],
+  43: ['ready',   'Config-only. Add minInstances:1 and maxInstances:100 to onRequest() options in index.js. Cost: ~$8/month for always-warm instance. Eliminates cold start for first user of the day. 30-second change.'],
+  44: ['ready',   'Firestore distributed counter pattern (documented by Google). 10 shards per link. Random shard selection on write. SUM on read. ~50 lines of code. Throughput: 10 writes/sec per link vs current 1 write/sec. Sufficient for any single-venue burst.'],
+  45: ['ready',   'In-memory rate limiter already exists (sharedWeatherUtils.createRateLimitMiddleware). Apply to redirect paths that currently use Firestore-backed rateLimitService.js. Accept per-instance inaccuracy (100×N instances) — over-limiting redirects is worse than under-limiting.'],
+};
+
+const COMPETITIVE = [
+  { section: 'CORE LINK MANAGEMENT' },
+  { f:'Link CRUD', k:'✅', b:'✅', d:'✅', br:'✅', r:'✅', v:'PARITY', vt:'parity' },
+  { f:'Custom short codes (aliases)', k:'✅', b:'✅ paid', d:'✅', br:'❌', r:'✅', v:'PARITY', vt:'parity' },
+  { f:'Bulk link creation (API)', k:'✅', b:'✅', d:'✅', br:'✅', r:'✅', v:'PARITY', vt:'parity' },
+  { f:'CSV / bulk import', k:'❌', b:'✅', d:'✅', br:'✅', r:'✅', v:'GAP — blocks migration', vt:'critical' },
+  { f:'Link tags / folders', k:'❌', b:'✅', d:'✅', br:'❌', r:'✅', v:'GAP — retention risk', vt:'gap' },
+  { f:'Link search', k:'❌', b:'✅', d:'✅', br:'❌', r:'✅', v:'GAP — usability', vt:'gap' },
+  { f:'Link expiration', k:'✅', b:'❌', d:'✅', br:'❌', r:'✅', v:'AHEAD', vt:'ahead' },
+  { f:'Link scheduling (future publish)', k:'❌', b:'❌', d:'✅', br:'❌', r:'❌', v:'MINOR GAP', vt:'opp' },
+
+  { section: 'REDIRECT & ROUTING' },
+  { f:'Platform-aware redirect (iOS/Android/Web)', k:'✅', b:'❌', d:'❌', br:'✅', r:'❌', v:'AHEAD vs Bitly/Dub', vt:'ahead' },
+  { f:'A/B split testing (weighted)', k:'✅', b:'❌', d:'❌', br:'✅', r:'❌', v:'AHEAD', vt:'ahead' },
+  { f:'Geo-targeted redirects', k:'❌', b:'✅ ent', d:'✅', br:'✅', r:'❌', v:'GAP — enterprise', vt:'gap' },
+  { f:'Custom domains', k:'❌', b:'✅', d:'✅', br:'✅', r:'✅', v:'CRITICAL GAP', vt:'critical' },
+  { f:'Deep linking (iOS Universal Links)', k:'✅', b:'❌', d:'❌', br:'✅', r:'❌', v:'AHEAD vs most', vt:'ahead' },
+  { f:'Password protection', k:'❌', b:'❌', d:'✅', br:'❌', r:'❌', v:'MINOR GAP', vt:'opp' },
+
+  { section: 'ANALYTICS' },
+  { f:'Click analytics (device, browser, OS)', k:'✅', b:'✅', d:'✅', br:'✅', r:'✅', v:'PARITY', vt:'parity' },
+  { f:'UTM tracking', k:'✅', b:'✅', d:'✅', br:'✅', r:'✅', v:'PARITY', vt:'parity' },
+  { f:'Referrer tracking', k:'✅', b:'✅', d:'✅', br:'✅', r:'✅', v:'PARITY', vt:'parity' },
+  { f:'Real-time analytics', k:'❌', b:'✅', d:'✅', br:'✅', r:'❌', v:'GAP', vt:'gap' },
+  { f:'Click-to-outcome attribution', k:'🔧', b:'❌', d:'❌', br:'✅', r:'❌', v:'POTENTIAL MOAT', vt:'unique' },
+  { f:'Embeddable analytics widget', k:'❌', b:'❌', d:'❌', br:'✅', r:'❌', v:'MOAT OPPORTUNITY', vt:'opp' },
+
+  { section: 'QR CODES' },
+  { f:'QR code generation', k:'✅', b:'✅', d:'✅', br:'✅', r:'✅', v:'PARITY', vt:'parity' },
+  { f:'Branded QR (logo, colors)', k:'🔧', b:'✅', d:'✅', br:'❌', r:'✅', v:'GAP — partial', vt:'gap' },
+  { f:'Dynamic QR (edit destination)', k:'✅', b:'✅', d:'✅', br:'❌', r:'✅', v:'PARITY', vt:'parity' },
+
+  { section: 'SOCIAL & MARKETING' },
+  { f:'OG metadata on redirects', k:'✅', b:'✅', d:'✅', br:'✅', r:'✅', v:'PARITY', vt:'parity' },
+  { f:'Editable social previews', k:'❌', b:'✅', d:'✅', br:'✅', r:'✅', v:'GAP — marketers need this', vt:'gap' },
+  { f:'Retargeting pixels (FB/GA)', k:'❌', b:'❌', d:'✅', br:'✅', r:'✅', v:'GAP', vt:'gap' },
+
+  { section: 'INTEGRATIONS' },
+  { f:'REST API (public)', k:'✅', b:'✅', d:'✅', br:'✅', r:'✅', v:'PARITY', vt:'parity' },
+  { f:'Webhooks', k:'✅ HMAC', b:'✅', d:'✅', br:'✅', r:'✅', v:'AHEAD (signed)', vt:'ahead' },
+  { f:'Zapier / Make.com', k:'❌', b:'✅', d:'✅', br:'✅', r:'✅', v:'GAP — automation', vt:'gap' },
+
+  { section: 'EDUCATION-SPECIFIC (our vertical)' },
+  { f:'Multi-tenant isolation', k:'✅', b:'❌', d:'❌', br:'✅ ent', r:'❌', v:'AHEAD', vt:'ahead' },
+  { f:'Education intent types (11 types)', k:'✅', b:'❌', d:'❌', br:'❌', r:'❌', v:'UNIQUE — nobody else', vt:'unique' },
+  { f:'Campaign management + lifecycle', k:'✅', b:'❌', d:'❌', br:'❌', r:'❌', v:'UNIQUE', vt:'unique' },
+  { f:'Tenant self-registration', k:'✅', b:'❌', d:'❌', br:'❌', r:'❌', v:'UNIQUE', vt:'unique' },
+  { f:'India data residency (DPDP)', k:'❌', b:'❌', d:'❌', br:'❌', r:'❌', v:'FIRST MOVER — nobody has', vt:'unique' },
+  { f:'Campus link-in-bio', k:'❌', b:'❌', d:'❌', br:'❌', r:'❌', v:'OPPORTUNITY', vt:'opp' },
+
+  { section: 'BILLING & SECURITY' },
+  { f:'Free tier', k:'✅ 25', b:'✅ 10', d:'✅ 25', br:'❌', r:'✅ 25', v:'PARITY', vt:'parity' },
+  { f:'Self-serve upgrade', k:'🔧', b:'✅', d:'✅', br:'❌', r:'✅', v:'GAP — billing view exists, needs live Stripe IDs', vt:'gap' },
+  { f:'Bot protection', k:'✅ 6-layer', b:'✅', d:'✅', br:'✅', r:'✅', v:'AHEAD', vt:'ahead' },
+  { f:'HMAC link signing', k:'✅', b:'❌', d:'❌', br:'❌', r:'❌', v:'UNIQUE', vt:'unique' },
+  { f:'Honeypot canary links', k:'✅', b:'❌', d:'❌', br:'❌', r:'❌', v:'UNIQUE', vt:'unique' },
+
+  { section: 'SELF-SERVE & ONBOARDING' },
+  { f:'Self-serve signup (instant tenant)', k:'❌', b:'✅', d:'✅', br:'✅', r:'✅', v:'CRITICAL GAP — blocks all revenue', vt:'critical' },
+  { f:'Transactional emails (welcome, alerts)', k:'❌', b:'✅', d:'✅', br:'✅', r:'✅', v:'CRITICAL GAP — no emails sent', vt:'critical' },
+  { f:'Guided onboarding wizard', k:'🔧', b:'✅', d:'✅', br:'✅', r:'❌', v:'GAP — wizard exists, zero API calls', vt:'gap' },
+  { f:'External destination URLs', k:'🔧', b:'✅', d:'✅', br:'✅', r:'✅', v:'GAP — blocked for tenant admins', vt:'gap' },
+  { f:'Weekly email reports', k:'🔧', b:'✅', d:'❌', br:'✅', r:'❌', v:'GAP — logic done, no scheduler/sender', vt:'gap' },
+  { f:'Shareable read-only dashboards', k:'❌', b:'❌', d:'❌', br:'✅', r:'❌', v:'OPPORTUNITY', vt:'opp' },
+  { f:'Guided empty state', k:'❌', b:'❌', d:'✅', br:'❌', r:'❌', v:'GAP — new vendors see blank dashboard', vt:'gap' },
+
+  { section: 'LINK LIFECYCLE & ANTI-GAMING' },
+  { f:'Graceful link decay (countdown, archive)', k:'🔧', b:'❌', d:'❌', br:'❌', r:'❌', v:'UNIQUE — nobody does this', vt:'unique' },
+  { f:'Click caps / single-use links', k:'🔧', b:'❌', d:'🔧', br:'❌', r:'❌', v:'AHEAD — existing maxUses', vt:'ahead' },
+  { f:'Distribution controls (geo, domain, IP)', k:'❌', b:'❌', d:'❌', br:'❌', r:'❌', v:'UNIQUE — nobody has', vt:'unique' },
+  { f:'Progressive anti-gaming (threat scoring)', k:'🔧', b:'❌', d:'❌', br:'❌', r:'❌', v:'UNIQUE — 6-layer base exists', vt:'unique' },
+  { f:'Click velocity profiling', k:'✅', b:'❌', d:'❌', br:'❌', r:'❌', v:'UNIQUE', vt:'unique' },
+
+  { section: 'VENUE & LIVE EXPERIENCES' },
+  { f:'Event link templates (zoo, museum, concert)', k:'❌', b:'❌', d:'❌', br:'❌', r:'❌', v:'GREENFIELD — no competitor', vt:'unique' },
+  { f:'Venue analytics (foot traffic attribution)', k:'❌', b:'❌', d:'❌', br:'❌', r:'❌', v:'GREENFIELD — no competitor', vt:'unique' },
+  { f:'Time-windowed links (event duration)', k:'🔧', b:'❌', d:'❌', br:'❌', r:'❌', v:'UNIQUE — expiresAt exists', vt:'ahead' },
+  { f:'QR + NFC for physical spaces', k:'🔧', b:'❌', d:'❌', br:'❌', r:'❌', v:'AHEAD — QR done, NFC planned', vt:'ahead' },
+
+  { section: 'CONTROLLED DISTRIBUTION' },
+  { f:'Patron-scoped access (library model)', k:'❌', b:'❌', d:'❌', br:'❌', r:'❌', v:'GREENFIELD — no competitor', vt:'unique' },
+  { f:'Concurrent user caps', k:'❌', b:'❌', d:'❌', br:'❌', r:'❌', v:'GREENFIELD', vt:'unique' },
+  { f:'Compliance audit trail', k:'🔧', b:'❌', d:'❌', br:'❌', r:'❌', v:'UNIQUE — security_logs exists', vt:'ahead' },
+  { f:'Access reports (CSV/PDF export)', k:'❌', b:'❌', d:'❌', br:'❌', r:'❌', v:'GREENFIELD', vt:'unique' },
+  { f:'Retention policies (auto-purge)', k:'❌', b:'❌', d:'❌', br:'❌', r:'❌', v:'GREENFIELD — no competitor', vt:'unique' },
+];
+
+const SPRINT = {
+  weeks: [
+    {
+      id: 'w1', label: 'WEEK 1', theme: '"Unblock vendor self-serve"',
+      goal: 'Make it possible for a zoo, sports club, or conference org to sign up, create a link to their own domain, and see analytics. Zero revenue without this.',
+      tasks: [
+        { day:'Day 1', task:'Auto-provision tenant + Firebase Auth on signup (item #2)', deliverable:'POST /tenants/register → creates tenant doc + auth user + custom claims instantly', gate:'REVENUE GATE', gt:'yes' },
+        { day:'Day 1', task:'Unlock external URLs for tenant admins (item #34)', deliverable:'Remove super-admin gate from create-link.js line 120. 2-hour fix.', gate:'REVENUE GATE', gt:'yes' },
+        { day:'Day 2', task:'SendGrid integration — welcome email + password reset (item #33)', deliverable:'npm install @sendgrid/mail, verified sender, welcome template, password reset configured in Firebase Auth', gate:'REVENUE GATE', gt:'yes' },
+        { day:'Day 2-3', task:'3-step onboarding wizard (item #32) — replace 6-step stub', deliverable:'Org profile → first campaign → first link. All 3 steps call real APIs.', gate:'ACTIVATION', gt:'yes' },
+        { day:'Day 3', task:'Guided empty state for new tenants (item #39)', deliverable:'Dashboard shows welcome + checklist instead of blank state for tenants with 0 links', gate:'ACTIVATION', gt:'driver' },
+        { day:'Day 4', task:'Venue use cases on landing page (item #38)', deliverable:'6 vertical tabs: University, Zoo, Sports, Concert, Library, Conference. Updated signup dropdown.', gate:'MARKET EXPANSION', gt:'driver' },
+        { day:'Day 4-5', task:'Stripe products + swap placeholder IDs (item #1)', deliverable:'Real price IDs in Firebase config. Full checkout flow tested end-to-end.', gate:'REVENUE GATE', gt:'yes' },
+        { day:'Day 5 AM', task:'Fire-and-forget analytics + remove duplicate read (items #42, #41)', deliverable:'Redirect latency drops from 150ms to under 50ms. 2 await removals + pass link data to handler.', gate:'PERF GATE', gt:'yes' },
+        { day:'Day 5 PM', task:'Test full vendor journey end-to-end (signup → create → analytics)', deliverable:'Record screencast: new vendor signs up → creates link → scans QR → sees analytics. Under 2 minutes.', gate:'SHIP GATE', gt:'yes' },
+      ]
+    },
+    {
+      id: 'w2', label: 'WEEK 2', theme: '"Retention + table stakes"',
+      goal: 'Features that prevent churn after first-week activation. Weekly reports, link organization, batch QR for physical venues.',
+      tasks: [
+        { day:'Day 8', task:'Wire weekly digest scheduler (item #36)', deliverable:'Cloud Function cron → runWeeklyDigest() → pending_emails → SendGrid', gate:'RETENTION', gt:'driver' },
+        { day:'Day 8-9', task:'Link tags + search in admin SPA (item #6)', deliverable:'Tags on links, filter by tag, full-text search', gate:'TABLE STAKES', gt:'table' },
+        { day:'Day 9-10', task:'Batch QR download as ZIP + print layouts (item #35)', deliverable:'Select multiple → download ZIP. Print layout: 4-up per page as PDF', gate:'VENUE ENABLER', gt:'driver' },
+        { day:'Day 10-11', task:'Pricing table + competitor comparison on landing page (items #3, #4)', deliverable:'Starter/Pro/Business/Enterprise cards. Side-by-side vs Bitly/Dub.', gate:'CONVERSION', gt:'driver' },
+        { day:'Day 11-12', task:'Editable social previews — OG overrides (item #7)', deliverable:'Custom title/desc/image per link for Slack/LinkedIn/Twitter cards', gate:'TABLE STAKES', gt:'table' },
+        { day:'Day 12', task:'Split redirect into dedicated Cloud Function (item #40)', deliverable:'Separate function with minimal deps. Cold start under 800ms. minInstances=1.', gate:'PERF GATE', gt:'yes' },
+        { day:'Day 13', task:'Set minInstances + maxInstances on both functions (item #43)', deliverable:'Redirect: min=1, max=100. API: min=0, max=50. Always-warm redirect.', gate:'PERF GATE', gt:'yes' },
+        { day:'Day 13-14', task:'Usage nudges + limit warnings + upgrade modal', deliverable:'Banner at 80% usage, modal at 100% → billing checkout redirect', gate:'CONVERSION', gt:'driver' },
+      ]
+    },
+    {
+      id: 'w34', label: 'WEEKS 3-4', theme: '"Enterprise + vertical depth"',
+      goal: 'Custom domains, shareable dashboards, compliance trails. Land the first paying venue client.',
+      tasks: [
+        { day:'Day 15-19', task:'Custom domains per tenant (item #5)', deliverable:'CNAME verification → SSL auto-provision → links.customer.com redirects', gate:'ENTERPRISE', gt:'moat-g' },
+        { day:'Day 16-17', task:'Shareable read-only dashboard links (item #37)', deliverable:'JWT-signed URL → read-only analytics view, no login required', gate:'VENUE ENABLER', gt:'driver' },
+        { day:'Day 18-19', task:'Retargeting pixel injection (item #10)', deliverable:'FB/Google pixels fire on redirect interstitial page', gate:'MARKETER', gt:'moat-g' },
+        { day:'Day 19-20', task:'Bulk CSV import — Bitly migration path (item #11)', deliverable:'Upload CSV → preview → batch create. Import existing Bitly links.', gate:'MIGRATION', gt:'table' },
+        { day:'Day 20-22', task:'Password-protected links (item #8)', deliverable:'Gated content behind password entry. Pro+ feature.', gate:'ENTERPRISE', gt:'moat-g' },
+        { day:'Day 22-25', task:'Compliance audit trail + access reports (item #30)', deliverable:'Immutable access log per link. CSV/PDF export. Enterprise feature.', gate:'ENTERPRISE', gt:'moat-g' },
+        { day:'Day 25-28', task:'Geo-targeted redirects (item #9)', deliverable:'Region-aware routing per link. Business+ feature.', gate:'ENTERPRISE', gt:'moat-g' },
+        { day:'Day 28-30', task:'Outreach: 5 zoos + 5 sports clubs + 5 universities with free trial', deliverable:'15 personalized demo links sent. Each shows their venue as use case.', gate:'PIPELINE', gt:'driver' },
+      ]
+    }
+  ],
+  success: [
+    { check:'Vendor self-serve works end-to-end', metric:'New user signup → create link → scan QR → see analytics in under 2 minutes. Tested with 3 external people.' },
+    { check:'Email system operational', metric:'Welcome email arrives within 30 seconds of signup. Weekly digest sends on schedule.' },
+    { check:'External URLs work for all tenant admins', metric:'A tenant admin can point a Kortex link to dallaszoo.com/tickets or fcdallas.com/merch' },
+    { check:'Stripe billing live + tested', metric:'Checkout → subscription → webhook → plan upgrade works in production' },
+    { check:'Landing page shows 6 verticals', metric:'Zoo, sports, concert, university, library, conference — each with specific use cases' },
+    { check:'At least 1 paying client (any vertical)', metric:'The only metric that matters — one venue paying $29/mo proves the model' },
+    { check:'5 free Starter accounts from non-university verticals', metric:'At least 1 zoo, 1 sports org, 1 event/conference. Proves multi-vertical demand.' },
+    { check:'Batch QR download works for 20+ codes', metric:'A venue can download 20 exhibit/station QR codes as a ZIP in one click' },
+    { check:'Redirect latency under 50ms (p95)', metric:'Measured with Cloud Trace. Fire-and-forget analytics, in-memory cache, no duplicate reads.' },
+    { check:'Cold start under 800ms on redirect function', metric:'Split function loads only redirect deps. minInstances=1 eliminates most cold starts.' },
+  ]
+};
+
+const BUILT = [
+  { name:'Smart Link CRUD', status:'done', file:'smartLinkService.js', cat:'Core' },
+  { name:'Platform-Aware Redirect (iOS/Android/Web)', status:'done', file:'redirectHandler.js', cat:'Core' },
+  { name:'Short Code Generation (lk + 4 alphanum)', status:'done', file:'smartLinkValidation.js', cat:'Core' },
+  { name:'Click Analytics & Event Tracking', status:'done', file:'clickTracking.js', cat:'Core' },
+  { name:'Link Expiration (expiresAt + 410)', status:'done', file:'redirectHandler.js', cat:'Core' },
+  { name:'Link Enable/Disable Toggle', status:'done', file:'smartLinkService.js', cat:'Core' },
+  { name:'UTM Parameter Management', status:'done', file:'smartLinkValidation.js', cat:'Core' },
+  { name:'Universal Deep Links (/l/:id)', status:'done', file:'deeplinkRoutes.js', cat:'Core' },
+  { name:'Social Crawler / OG Metadata', status:'done', file:'redirectHandler.js', cat:'Core' },
+  { name:'QR Code Generation', status:'done', file:'qrService.js', cat:'Core' },
+  { name:'A/B Routing (Weighted Variants)', status:'done', file:'redirectHandler.js', cat:'Core' },
+  { name:'Branded QR Codes (Pro)', status:'partial', file:'qrService.js', cat:'Core' },
+  { name:'Campaign CRUD & Lifecycle', status:'done', file:'campaignService.js', cat:'Campaigns' },
+  { name:'Campaign Link Management', status:'done', file:'campaignLinkService.js', cat:'Campaigns' },
+  { name:'Campaign Namespace Resolver', status:'done', file:'campaignPublicResolver.js', cat:'Campaigns' },
+  { name:'Campaign Permissions & Roles', status:'done', file:'campaignPermissions.js', cat:'Campaigns' },
+  { name:'V2 Tenant Links (11 Intent Types)', status:'done', file:'v2LinkIntents.js', cat:'Tenants' },
+  { name:'Multi-Tenant Architecture', status:'done', file:'tenantContext.js', cat:'Tenants' },
+  { name:'Tenant Self-Registration (pending only — no auto-provision)', status:'partial', file:'smartLinks.js', cat:'Tenants' },
+  { name:'Tenant Alias URLs (/a/:slug)', status:'done', file:'tenantLinkResolver.js', cat:'Tenants' },
+  { name:'Tenant Portal Shell + Events', status:'done', file:'smartLinks.js', cat:'Tenants' },
+  { name:'Tenant Onboarding Wizard (6-step, 1323 lines)', status:'partial', file:'views/tenant-onboarding/', cat:'Tenants' },
+  { name:'Tenant Registration Form (detailed)', status:'done', file:'tenant-registration.html', cat:'Tenants' },
+  { name:'Custom Domains per Tenant', status:'todo', file:'—', cat:'Tenants' },
+  { name:'Public Developer API', status:'done', file:'publicApiRouter.js', cat:'API' },
+  { name:'HMAC-Signed Webhooks', status:'done', file:'webhookService.js', cat:'API' },
+  { name:'Dead Letter Queue (Retry)', status:'done', file:'webhookService.js', cat:'API' },
+  { name:'Batch Link Operations', status:'done', file:'batchLinkRequest.js', cat:'API' },
+  { name:'Click-to-Install Attribution', status:'done', file:'attributionService.js', cat:'API' },
+  { name:'Zapier / Make Integration', status:'todo', file:'—', cat:'API' },
+  { name:'Bot Protection & Secure Headers', status:'done', file:'securityMiddleware.js', cat:'Security' },
+  { name:'Rate Limiting (Firestore-backed)', status:'done', file:'rateLimitService.js', cat:'Security' },
+  { name:'Link Security (6-layer)', status:'done', file:'linkSecurityService.js', cat:'Security' },
+  { name:'Subscription Billing (Stripe)', status:'done', file:'billing/router.js', cat:'Billing' },
+  { name:'Plan-Gated Features (3-tier)', status:'done', file:'billing/router.js', cat:'Billing' },
+  { name:'Churn/Offboarding', status:'done', file:'billing/router.js', cat:'Billing' },
+  { name:'Stripe Price Points (Production)', status:'partial', file:'billing/router.js', cat:'Billing' },
+  { name:'Billing Management View (Stripe checkout)', status:'done', file:'views/billing/billing.js (548 lines)', cat:'Billing' },
+  { name:'"Powered by Kortex" (Starter)', status:'partial', file:'redirectHandler.js', cat:'Billing' },
+  { name:'Admin Auth (Firebase)', status:'done', file:'authRoutes.js', cat:'Auth' },
+  { name:'Firebase Auth Login + Tenant Selection', status:'done', file:'kortex.html (lines 444-670)', cat:'Auth' },
+  { name:'Forgot Password Flow', status:'done', file:'kortex.html (line 509)', cat:'Auth' },
+  { name:'Portfolio Analytics Dashboard', status:'done', file:'views/dashboard/', cat:'Analytics' },
+  { name:'Analytics View', status:'done', file:'views/analytics/', cat:'Analytics' },
+  { name:'Analytics Alerts (Weekly Digest — logic done, no scheduler/sender)', status:'partial', file:'analyticsAlertService.js', cat:'Analytics' },
+  { name:'PostHog SDK Integration', status:'partial', file:'posthog.js (placeholder key)', cat:'Analytics' },
+
+  { name:'Public Landing Page (kaayko.com/kortex)', status:'done', file:'kortex.html (778 lines)', cat:'Frontend' },
+  { name:'Admin SPA Shell + 8 Views', status:'done', file:'admin/kortex.html + views/*', cat:'Frontend' },
+  { name:'Create Link View', status:'done', file:'views/create-link/', cat:'Frontend' },
+  { name:'All Links View', status:'done', file:'views/all-links/', cat:'Frontend' },
+  { name:'Campaigns View', status:'done', file:'views/campaigns/', cat:'Frontend' },
+  { name:'QR Codes View', status:'done', file:'views/qr-codes/', cat:'Frontend' },
+  { name:'Self-Registration Endpoint (creates pending reg, not real tenant)', status:'partial', file:'smartLinks.js (line 418)', cat:'Frontend' },
+  { name:'Real-time Dashboard (WebSocket)', status:'todo', file:'—', cat:'Analytics' },
+  { name:'CDN Edge Caching', status:'todo', file:'—', cat:'Infra' },
+  { name:'Fundraising Edition', status:'todo', file:'—', cat:'Campaigns' },
+  { name:'Comparison Landing Page', status:'todo', file:'—', cat:'Marketing' },
+  { name:'Case Study Templates', status:'todo', file:'—', cat:'Marketing' },
+  { name:'University Outreach Tools', status:'todo', file:'—', cat:'Marketing' },
+  { name:'ProductHunt Launch Assets', status:'todo', file:'—', cat:'Marketing' },
+  { name:'Link Scheduling (Future Publish)', status:'todo', file:'—', cat:'Core' },
+  { name:'Multi-language Redirect Pages', status:'todo', file:'—', cat:'Core' },
+
+  { name:'Transactional Email System (SendGrid)', status:'todo', file:'—', cat:'Email' },
+  { name:'Scheduled Weekly Digest (Cloud Function)', status:'todo', file:'—', cat:'Email' },
+  { name:'External URL Support for Tenant Admins', status:'todo', file:'create-link.js (line 120)', cat:'Tenants' },
+  { name:'Guided Empty State for New Tenants', status:'todo', file:'—', cat:'Frontend' },
+  { name:'3-Step Onboarding Wizard (API-backed)', status:'todo', file:'—', cat:'Tenants' },
+  { name:'Batch QR Download (ZIP + Print Layouts)', status:'todo', file:'—', cat:'Frontend' },
+  { name:'Shareable Read-only Dashboard Links', status:'todo', file:'—', cat:'Analytics' },
+  { name:'Venue Use Cases on Landing Page', status:'todo', file:'—', cat:'Marketing' },
+
+  { name:'Dedicated Redirect Cloud Function (split from monolith)', status:'todo', file:'—', cat:'Infra' },
+  { name:'In-Memory Link/Tenant Cache (TTL)', status:'todo', file:'—', cat:'Infra' },
+  { name:'Fire-and-Forget Analytics on Redirect', status:'todo', file:'—', cat:'Infra' },
+  { name:'minInstances + maxInstances Config', status:'todo', file:'—', cat:'Infra' },
+  { name:'Distributed Click Counter (fix write contention)', status:'todo', file:'—', cat:'Infra' },
+  { name:'In-Memory Rate Limiter on Redirect Path', status:'todo', file:'—', cat:'Infra' },
+];
+
+// ═══════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════
+
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function renderBacklog(filter='all', search='') {
+  const el = document.getElementById('backlogList');
+  let html = '';
+  const q = search.toLowerCase();
+
+  BACKLOG.forEach(epic => {
+    const filtered = epic.items.filter(i => {
+      const matchType = filter === 'all' || i.type === filter;
+      const matchSearch = !q || i.title.toLowerCase().includes(q) || i.why.toLowerCase().includes(q);
+      return matchType && matchSearch;
+    });
+    if (!filtered.length) return;
+
+    html += `<div class="epic-header"><h2>${esc(epic.epic)}</h2><span class="epic-count">${esc(epic.epicDesc)}</span></div>`;
+
+    filtered.forEach(item => {
+      const impactClass = item.impact === '$$$' ? 'high' : item.impact === '$$' ? 'med' : 'low';
+      const scoreClass = item.score >= 8 ? 's-high' : item.score >= 6 ? 's-med' : 's-low';
+      const typeLabel = item.type.replace(/-/g,' ');
+
+      html += `<div class="card" data-id="${item.id}">
+        <div class="card-header" onclick="this.parentElement.classList.toggle('open')">
+          <div class="card-num">${item.id}</div>
+          <div class="card-title">${item.title}</div>
+          <div class="card-type ${item.type}">${typeLabel}</div>
+          <div class="card-effort">${item.effort}</div>
+          <div class="card-impact ${impactClass}">${item.impact}</div>
+          <div style="font-size:12px;color:${item.urgency==='NOW'?'var(--red)':item.urgency==='HIGH'?'var(--orange)':'var(--text3)'};text-align:center;font-weight:600">${item.urgency}</div>
+          <div class="card-score ${scoreClass}">${item.score}</div>
+          <div title="${TECH[item.id]?TECH[item.id][0]==='ready'?'Ready to build':'Needs infra/dep':'?'}">${TECH[item.id]?`<div class="tech-dot t-${TECH[item.id][0]}"></div>`:''}</div>
+        </div>
+        <div class="card-expand">
+          <div class="card-expand-inner">
+            <div class="detail-block">
+              <h4>💰 Why This Makes Money</h4>
+              <p>${esc(item.why)}</p>
+            </div>
+            <div class="detail-block">
+              <h4>✅ Acceptance Criteria</h4>
+              <ul>${item.criteria.map(c => `<li>${esc(c)}</li>`).join('')}</ul>
+            </div>
+          </div>
+          ${item.deps.length ? `<div style="margin-top:12px;font-size:12px;color:var(--text3);">⛓️ <strong>Depends on:</strong> ${item.deps.map(d => `#${d}`).join(', ')}</div>` : ''}
+          ${item.files.length ? `<div style="margin-top:6px;font-size:12px;color:var(--text3);">📂 <strong>Key files:</strong> <code>${item.files.join('</code>, <code>')}</code></div>` : ''}
+          ${TECH[item.id] ? `<div class="agent-block" style="border-color:${TECH[item.id][0]==='ready'?'var(--green-border)':TECH[item.id][0]==='infra'?'var(--orange-border)':'var(--purple-border)'};background:${TECH[item.id][0]==='ready'?'rgba(34,197,94,.05)':TECH[item.id][0]==='infra'?'rgba(245,158,11,.05)':'rgba(167,139,250,.05)'};">
+            <h4 style="color:${TECH[item.id][0]==='ready'?'var(--green)':TECH[item.id][0]==='infra'?'var(--orange)':'var(--purple)'};">⚡ TECH LINE OF SIGHT — ${TECH[item.id][0]==='ready'?'READY TO BUILD':TECH[item.id][0]==='infra'?'NEEDS INFRA FIRST':'NEEDS NEW DEPENDENCY'}</h4>
+            <pre>${esc(TECH[item.id][1])}</pre>
+          </div>` : ''}
+          <div class="agent-block">
+            <h4>🤖 AGENT CONTEXT (copy this when starting work)</h4>
+            <pre>${esc(item.agentHint)}</pre>
+          </div>
+        </div>
+      </div>`;
+    });
+  });
+
+  el.innerHTML = html || '<p style="padding:40px;text-align:center;color:var(--text3);">No items match your filters.</p>';
+}
+
+function renderMatrix(filter='all') {
+  const tbody = document.getElementById('matrixBody');
+  let html = '';
+
+  COMPETITIVE.forEach(row => {
+    if (row.section) {
+      html += `<tr class="section-row"><td colspan="7">${row.section}</td></tr>`;
+      return;
+    }
+    if (filter === 'gap' && !['gap','critical'].includes(row.vt)) return;
+    if (filter === 'ahead' && !['ahead','unique'].includes(row.vt)) return;
+
+    const cls = v => v === '✅' || v.startsWith('✅') ? 'cell-yes' : v === '❌' ? 'cell-no' : v === '🔧' ? 'cell-partial' : '';
+
+    html += `<tr>
+      <td style="font-weight:600">${row.f}</td>
+      <td class="${cls(row.k)}">${row.k}</td>
+      <td class="${cls(row.b)}">${row.b}</td>
+      <td class="${cls(row.d)}">${row.d}</td>
+      <td class="${cls(row.br)}">${row.br}</td>
+      <td class="${cls(row.r)}">${row.r}</td>
+      <td><span class="verdict ${row.vt}">${row.v}</span></td>
+    </tr>`;
+  });
+
+  tbody.innerHTML = html;
+}
+
+function renderSprint() {
+  const el = document.getElementById('sprintPlan');
+  let html = '';
+
+  SPRINT.weeks.forEach(week => {
+    html += `<div class="week-header ${week.id}">
+      <div><h2>${week.label} — ${week.theme}</h2></div>
+      <div class="week-goal">${week.goal}</div>
+    </div>`;
+
+    week.tasks.forEach(t => {
+      html += `<div class="sprint-card">
+        <div class="sprint-day">${t.day}</div>
+        <div class="sprint-task">${t.task}</div>
+        <div class="sprint-deliverable">${t.deliverable}</div>
+        <div class="sprint-gate ${t.gt}">${t.gate}</div>
+      </div>`;
+    });
+  });
+
+  html += `<div class="success-criteria">
+    <h3>🎯 30-Day Success Criteria</h3>
+    ${SPRINT.success.map(s => `<div class="criteria-item"><span class="criteria-check">◎</span><div><strong>${s.check}</strong><br><span style="font-size:12px;color:var(--text3)">${s.metric}</span></div></div>`).join('')}
+  </div>`;
+
+  el.innerHTML = html;
+}
+
+function renderBuilt(filter='all') {
+  const el = document.getElementById('builtList');
+  const filtered = filter === 'all' ? BUILT : BUILT.filter(b => b.status === filter);
+
+  let html = '';
+  let lastCat = '';
+  filtered.forEach(b => {
+    if (b.cat !== lastCat) {
+      lastCat = b.cat;
+      html += `<div style="padding:12px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--accent2);background:var(--surface2);border-bottom:1px solid var(--border);">${b.cat}</div>`;
+    }
+    html += `<div class="built-item">
+      <div class="built-dot ${b.status}"></div>
+      <span>${b.name}</span>
+      <span style="font-size:11px;padding:2px 8px;border-radius:3px;background:var(--surface2);color:${b.status==='done'?'var(--green)':b.status==='partial'?'var(--orange)':'var(--red)'};font-weight:600;">${b.status === 'done' ? 'DONE' : b.status === 'partial' ? 'PARTIAL' : 'NOT BUILT'}</span>
+      <span class="built-file">${b.file}</span>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════
+// EVENT HANDLERS
+// ═══════════════════════════════════════════════════════
+
+// Tabs
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.tab).classList.add('active');
+  });
+});
+
+// Backlog filters
+document.querySelectorAll('[data-filter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderBacklog(btn.dataset.filter, document.getElementById('backlogSearch').value);
+  });
+});
+
+// Backlog search
+document.getElementById('backlogSearch').addEventListener('input', e => {
+  const activeFilter = document.querySelector('[data-filter].active')?.dataset.filter || 'all';
+  renderBacklog(activeFilter, e.target.value);
+});
+
+// Matrix filters
+document.querySelectorAll('[data-matrix]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-matrix]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderMatrix(btn.dataset.matrix);
+  });
+});
+
+// Built filters
+document.querySelectorAll('[data-built]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-built]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderBuilt(btn.dataset.built);
+  });
+});
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+renderBacklog();
+renderMatrix();
+renderSprint();
+renderBuilt();
+</script>
+</body>
+</html>

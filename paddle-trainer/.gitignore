@@ -1,0 +1,4 @@
+node_modules/
+scripts/.fetch-progress.json
+admin-lake-prefs.json
+*.log

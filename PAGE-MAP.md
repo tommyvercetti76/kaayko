@@ -122,6 +122,7 @@ Agents: identify the page here, then look up the module in MODULE-MAP.md for ful
 | `/admin/views/billing` | `src/admin/views/billing/billing.html` |
 | `/admin/views/tenant-onboarding` | `src/admin/views/tenant-onboarding/tenant-onboarding.html` |
 | `/admin/views/roots` | `src/admin/views/roots/index.html` |
+| `/admin/views/roots-v2` | `src/admin/views/roots-v2/index.html` |
 
 ### Kreator Platform (11)
 

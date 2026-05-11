@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns#" class="dark-theme">
+<head>
+  <script src="/js/prod-config.js"></script>
+  <script>document.documentElement.classList.add('dark-theme');</script>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>Rate Your Paddle | Kaayko Paddling Out</title>
+  <meta name="robots" content="noindex, follow">
+  <meta name="description" content="Rate your paddling experience and help train the world's first crowd-sourced paddle intelligence model.">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Rate Your Paddle | Kaayko Paddling Out">
+  <meta property="og:description" content="Rate your paddling experience — help paddlers everywhere know before they go.">
+  <meta property="og:image" content="https://kaayko.com/assets/paddlingout-og.png">
+  <meta property="og:site_name" content="Kaayko">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Rate Your Paddle | Kaayko">
+
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <meta name="theme-color" content="#d4af37">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/css/storestyle.css">
+  <link rel="stylesheet" href="/css/header.css">
+
+<style>
+/* ── Tokens (matching forecast.css exactly) ─────────────────────────────── */
+:root {
+  --bg:          #080808;
+  --surface:     #18160f;
+  --surface-b:   #1e1c12;
+  --fg:          #ede8df;
+  --muted:       rgba(237,232,223,0.55);
+  --gold:        #b5935a;
+  --gold-bright: #d9bd7b;
+  --line:        rgba(181,147,90,0.20);
+  --line-gold:   rgba(181,147,90,0.52);
+  --critical:    #bd3b2b;
+  --moderate:    #eb8127;
+  --good:        #316d43;
+  --ease:        cubic-bezier(0.76, 0, 0.24, 1);
+  --font-serif:  'Cormorant Garamond', Georgia, serif;
+  --font-sans:   'Josefin Sans', Arial, sans-serif;
+}
+
+html, body {
+  background: var(--bg) !important;
+  color: var(--fg);
+  margin: 0;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+.theme-toggle-icon { display: none !important; }
+
+/* ── Layout ──────────────────────────────────────────────────────────────── */
+.rate-wrap {
+  max-width: 540px;
+  margin: 0 auto;
+  padding: 0 1.25rem 3rem;
+}
+
+/* ── Back link ───────────────────────────────────────────────────────────── */
+.rate-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 1rem 0 0.5rem;
+  font: 400 0.78rem var(--font-sans);
+  color: var(--gold);
+  text-decoration: none;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: color 0.3s var(--ease);
+}
+.rate-back:hover { color: var(--gold-bright); }
+.rate-back svg { width: 16px; height: 16px; }
+
+/* ── Lake header ─────────────────────────────────────────────────────────── */
+.lake-header {
+  text-align: center;
+  padding: 1.2rem 0 1.6rem;
+}
+.lake-eyebrow {
+  font: 400 0.7rem var(--font-sans);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.3rem;
+}
+.lake-name {
+  font: 600 clamp(1.6rem, 5vw, 2.4rem) var(--font-sans);
+  color: var(--fg);
+  margin: 0;
+  text-transform: uppercase;
+}
+.lake-sub {
+  font: 400 italic clamp(0.95rem, 2vw, 1.1rem) var(--font-serif);
+  color: var(--muted);
+  margin-top: 0.35rem;
+}
+.gps-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.7rem;
+  font: 400 0.72rem var(--font-sans);
+  letter-spacing: 0.06em;
+  padding: 0.28rem 0.75rem;
+  border-radius: 50px;
+  background: rgba(181,147,90,0.06);
+  border: 1px solid var(--line);
+}
+.gps-badge.verified { border-color: var(--good); color: var(--good); }
+.gps-badge.unverified { border-color: var(--line); color: var(--muted); }
+.gps-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.gps-badge.verified .gps-dot { background: var(--good); }
+.gps-badge.unverified .gps-dot { background: var(--muted); }
+
+/* ── Cards ────────────────────────────────────────────────────────────────── */
+.rate-card {
+  background: linear-gradient(135deg, #0d0c0a, #10110d);
+  border: 1px solid var(--line-gold);
+  border-radius: 12px;
+  padding: 1.4rem 1.5rem;
+  margin-bottom: 1rem;
+}
+.rate-card-label {
+  font: 400 0.65rem var(--font-sans);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.8rem;
+}
+
+/* ── Weather row ─────────────────────────────────────────────────────────── */
+.wx-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+  gap: 0.5rem;
+}
+.wx-cell {
+  text-align: center;
+  padding: 0.6rem 0.3rem;
+  background: var(--surface);
+  border-radius: 8px;
+}
+.wx-val {
+  font: 600 1.1rem var(--font-sans);
+  color: var(--fg);
+}
+.wx-val small { font-weight: 400; font-size: 0.7rem; color: var(--muted); }
+.wx-lbl {
+  font: 400 0.55rem var(--font-sans);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 0.2rem;
+}
+
+/* ── Profile selectors ───────────────────────────────────────────────────── */
+.profile-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.8rem;
+}
+.profile-row-label {
+  width: 100%;
+  font: 400 0.72rem var(--font-sans);
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  margin-bottom: 0.15rem;
+}
+.pill {
+  padding: 0.45rem 0.9rem;
+  border-radius: 50px;
+  border: 1px solid var(--line-gold);
+  background: rgba(181,147,90,0.04);
+  font: 400 0.82rem var(--font-sans);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.25s var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.pill:hover { border-color: var(--gold); color: var(--fg); }
+.pill.active {
+  background: rgba(181,147,90,0.15);
+  border-color: var(--gold-bright);
+  color: var(--gold-bright);
+}
+
+/* ── Rating buttons ──────────────────────────────────────────────────────── */
+.rating-section { text-align: center; }
+.rating-question {
+  font: 600 italic clamp(1.1rem, 3vw, 1.35rem) var(--font-serif);
+  color: var(--fg);
+  margin-bottom: 1rem;
+}
+.rating-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.5rem;
+}
+.rate-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 0.3rem;
+  border-radius: 10px;
+  border: 1.5px solid var(--line-gold);
+  background: linear-gradient(135deg, #0d0c0a, #10110d);
+  cursor: pointer;
+  transition: all 0.3s var(--ease);
+  -webkit-tap-highlight-color: transparent;
+  min-height: 80px;
+}
+.rate-btn:hover { border-color: var(--gold); transform: translateY(-2px); }
+.rate-btn.selected {
+  border-color: var(--gold-bright);
+  background: rgba(181,147,90,0.12);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 20px rgba(181,147,90,0.08);
+}
+.rate-num { font: 700 1.5rem var(--font-sans); }
+.rate-label { font: 400 0.6rem var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 0.15rem; }
+.rate-btn[data-val="1"] .rate-num { color: #4a0a08; }
+.rate-btn[data-val="2"] .rate-num { color: #bd3b2b; }
+.rate-btn[data-val="3"] .rate-num { color: #eb8127; }
+.rate-btn[data-val="4"] .rate-num { color: #316d43; }
+.rate-btn[data-val="5"] .rate-num { color: #255a3a; }
+.rate-btn.selected .rate-label { color: var(--gold-bright); }
+
+/* ── Smart chips ─────────────────────────────────────────────────────────── */
+.chips-section {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.5s var(--ease), opacity 0.4s var(--ease), margin 0.4s var(--ease);
+  margin-top: 0;
+}
+.chips-section.visible {
+  max-height: 300px;
+  opacity: 1;
+  margin-top: 1rem;
+}
+.chips-prompt {
+  font: 600 0.82rem var(--font-sans);
+  color: var(--fg);
+  margin-bottom: 0.6rem;
+}
+.chips-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.chip {
+  padding: 0.5rem 0.95rem;
+  border-radius: 50px;
+  font: 500 0.78rem var(--font-sans);
+  cursor: pointer;
+  transition: all 0.25s var(--ease);
+  -webkit-tap-highlight-color: transparent;
+  border: 1.5px solid transparent;
+}
+.chip.weather {
+  background: rgba(181,147,90,0.1);
+  border-color: rgba(181,147,90,0.35);
+  color: var(--gold-bright);
+}
+.chip.context {
+  background: rgba(237,232,223,0.05);
+  border-color: rgba(237,232,223,0.12);
+  color: var(--muted);
+}
+.chip:hover { transform: scale(1.04); }
+.chip.selected {
+  transform: scale(1.06);
+}
+.chip.weather.selected {
+  background: rgba(181,147,90,0.22);
+  border-color: var(--gold-bright);
+  box-shadow: 0 0 12px rgba(181,147,90,0.15);
+}
+.chip.context.selected {
+  background: rgba(237,232,223,0.1);
+  border-color: rgba(237,232,223,0.3);
+  color: var(--fg);
+}
+.chips-count {
+  font: 400 0.65rem var(--font-sans);
+  color: var(--muted);
+  margin-top: 0.5rem;
+  letter-spacing: 0.04em;
+}
+
+/* ── Notes ────────────────────────────────────────────────────────────────── */
+.notes-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font: 400 0.88rem var(--font-serif);
+  color: var(--fg);
+  resize: none;
+  outline: none;
+  transition: border-color 0.3s var(--ease);
+}
+.notes-input::placeholder { color: var(--muted); font-style: italic; }
+.notes-input:focus { border-color: var(--gold); }
+.notes-count {
+  text-align: right;
+  font: 400 0.6rem var(--font-sans);
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+
+/* ── Felt selectors (wind/wave) ──────────────────────────────────────────── */
+.felt-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.felt-label {
+  font: 400 0.72rem var(--font-sans);
+  color: var(--muted);
+  min-width: 60px;
+  letter-spacing: 0.04em;
+}
+.felt-pills { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+
+/* ── Submit ───────────────────────────────────────────────────────────────── */
+.submit-btn {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  margin-top: 1.2rem;
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  background: none;
+  font: 600 0.85rem var(--font-sans);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  cursor: pointer;
+  transition: all 0.35s var(--ease);
+}
+.submit-btn:hover:not(:disabled) {
+  background: var(--gold);
+  color: var(--bg);
+  box-shadow: 0 0 20px rgba(181,147,90,0.25);
+}
+.submit-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ── Thank you state ─────────────────────────────────────────────────────── */
+.thank-you {
+  text-align: center;
+  padding: 2rem 0;
+  animation: fadeUp 0.6s var(--ease) forwards;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.thank-check {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid var(--good);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+.thank-check svg { color: var(--good); }
+.thank-title {
+  font: 600 1.3rem var(--font-sans);
+  color: var(--fg);
+  margin-bottom: 0.5rem;
+}
+.thank-sub {
+  font: 400 italic 0.95rem var(--font-serif);
+  color: var(--muted);
+  max-width: 360px;
+  margin: 0 auto 1.2rem;
+}
+.thank-prediction {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1rem 1.4rem;
+  display: inline-flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+.thank-pred-item { text-align: center; }
+.thank-pred-label { font: 400 0.6rem var(--font-sans); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.thank-pred-val { font: 700 1.6rem var(--font-sans); }
+.thank-pred-vs { font: 400 0.65rem var(--font-sans); color: var(--muted); }
+.thank-update-hint {
+  margin-top: 1.2rem;
+  font: 400 0.72rem var(--font-sans);
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+.thank-update-btn {
+  margin-top: 0.6rem;
+  padding: 0.5rem 1.2rem;
+  border: 1px solid var(--line-gold);
+  border-radius: 50px;
+  background: none;
+  font: 400 0.72rem var(--font-sans);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  cursor: pointer;
+  transition: all 0.3s var(--ease);
+}
+.thank-update-btn:hover { border-color: var(--gold-bright); color: var(--gold-bright); }
+
+/* ── Onboarding overlay ──────────────────────────────────────────────────── */
+.onboard-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(8,8,8,0.92);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: fadeIn 0.4s var(--ease);
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.onboard-overlay.hiding {
+  animation: fadeOut 0.3s var(--ease) forwards;
+}
+@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+.onboard-box {
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+}
+.onboard-title {
+  font: 600 clamp(1.4rem, 4vw, 1.8rem) var(--font-sans);
+  color: var(--gold-bright);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.onboard-subtitle {
+  font: 400 italic 1rem var(--font-serif);
+  color: var(--muted);
+  margin-bottom: 2rem;
+}
+.onboard-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  text-align: left;
+  margin-bottom: 2rem;
+}
+.onboard-step {
+  display: flex;
+  gap: 0.9rem;
+  align-items: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+}
+.onboard-step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 600 0.75rem var(--font-sans);
+  color: var(--gold);
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+.onboard-step-text {
+  font: 400 0.88rem var(--font-serif);
+  color: var(--fg);
+  line-height: 1.5;
+}
+.onboard-step-text strong { color: var(--gold-bright); font-weight: 600; }
+.onboard-go {
+  padding: 0.9rem 2.5rem;
+  border: 1px solid var(--gold);
+  border-radius: 6px;
+  background: none;
+  font: 600 0.8rem var(--font-sans);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  cursor: pointer;
+  transition: all 0.35s var(--ease);
+}
+.onboard-go:hover {
+  background: var(--gold);
+  color: var(--bg);
+  box-shadow: 0 0 24px rgba(181,147,90,0.2);
+}
+
+/* ── Help icon (re-shows onboarding) ─────────────────────────────────────── */
+.help-btn {
+  position: fixed;
+  bottom: 1.2rem;
+  right: 1.2rem;
+  z-index: 50;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--line-gold);
+  background: rgba(13,12,10,0.9);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font: 500 0.85rem var(--font-sans);
+  color: var(--gold);
+  transition: all 0.3s var(--ease);
+}
+.help-btn:hover { border-color: var(--gold-bright); color: var(--gold-bright); transform: scale(1.08); }
+
+/* ── Loading state ───────────────────────────────────────────────────────── */
+.rate-loading {
+  text-align: center;
+  padding: 4rem 1rem;
+}
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--line);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 1rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.rate-loading-text {
+  font: 400 italic 0.9rem var(--font-serif);
+  color: var(--muted);
+}
+
+/* ── Error state ─────────────────────────────────────────────────────────── */
+.rate-error {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+.rate-error-title {
+  font: 600 1.2rem var(--font-sans);
+  color: var(--fg);
+  margin-bottom: 0.5rem;
+}
+.rate-error-msg {
+  font: 400 italic 0.9rem var(--font-serif);
+  color: var(--muted);
+  margin-bottom: 1.5rem;
+}
+.rate-error-link {
+  color: var(--gold);
+  text-decoration: none;
+  font: 400 0.8rem var(--font-sans);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-bottom: 1px solid transparent;
+  transition: all 0.3s var(--ease);
+}
+.rate-error-link:hover { border-bottom-color: var(--gold-bright); color: var(--gold-bright); }
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+.rate-footer {
+  border-top: 1px solid var(--line);
+  padding: 1.5rem;
+  text-align: center;
+  font: 400 0.7rem var(--font-sans);
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-top: 2rem;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .rate-wrap { padding: 0 1rem 2rem; }
+  .rate-card { padding: 1.1rem 1.15rem; }
+  .rate-btn { min-height: 70px; padding: 0.7rem 0.2rem; }
+  .rate-num { font-size: 1.3rem; }
+  .wx-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ── Already-rated banner ────────────────────────────────────────────────── */
+.update-banner {
+  background: rgba(181,147,90,0.08);
+  border: 1px solid var(--line-gold);
+  border-radius: 10px;
+  padding: 0.9rem 1.2rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font: 400 0.82rem var(--font-serif);
+  color: var(--fg);
+}
+.update-banner-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.update-time {
+  font: 400 0.65rem var(--font-sans);
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ Onboarding overlay (shown once) ═══ -->
+<div class="onboard-overlay" id="onboard" style="display:none">
+  <div class="onboard-box">
+    <div class="onboard-title">Rate Your Paddle</div>
+    <div class="onboard-subtitle">Help paddlers everywhere know before they go</div>
+    <div class="onboard-steps">
+      <div class="onboard-step">
+        <div class="onboard-step-num">1</div>
+        <div class="onboard-step-text"><strong>Tell us who you are.</strong> Your skill level and craft type help us understand how different paddlers experience the same conditions.</div>
+      </div>
+      <div class="onboard-step">
+        <div class="onboard-step-num">2</div>
+        <div class="onboard-step-text"><strong>Rate your experience.</strong> One tap, 1 to 5. Was it a great day on the water or would you have stayed home?</div>
+      </div>
+      <div class="onboard-step">
+        <div class="onboard-step-num">3</div>
+        <div class="onboard-step-text"><strong>Tell us what stood out.</strong> We show you tags based on real conditions right now. Pick what mattered most.</div>
+      </div>
+    </div>
+    <button class="onboard-go" onclick="dismissOnboard()">Start Rating</button>
+  </div>
+</div>
+
+<!-- ═══ Help button (re-shows onboarding) ═══ -->
+<button class="help-btn" id="helpBtn" onclick="showOnboard()" title="How does rating work?">?</button>
+
+<!-- ═══ Main content ═══ -->
+<div class="rate-wrap" id="rateWrap">
+
+  <!-- Back link -->
+  <a class="rate-back" href="/paddlingout">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+    Paddling Out
+  </a>
+
+  <!-- Loading state -->
+  <div id="loadingState" class="rate-loading">
+    <div class="spinner"></div>
+    <div class="rate-loading-text">Loading lake conditions...</div>
+  </div>
+
+  <!-- Error state (hidden by default) -->
+  <div id="errorState" style="display:none" class="rate-error">
+    <div class="rate-error-title">Lake not available</div>
+    <div class="rate-error-msg" id="errorMsg">This lake isn't set up for ratings yet.</div>
+    <a class="rate-error-link" href="/paddlingout">Browse all lakes</a>
+  </div>
+
+  <!-- ═══ Form (hidden until loaded) ═══ -->
+  <div id="formState" style="display:none">
+
+    <!-- Lake header -->
+    <div class="lake-header">
+      <div class="lake-eyebrow">Rate your paddle</div>
+      <h1 class="lake-name" id="lakeName"></h1>
+      <div class="lake-sub" id="lakeSub"></div>
+      <div class="gps-badge unverified" id="gpsBadge">
+        <span class="gps-dot"></span>
+        <span id="gpsText">Checking location...</span>
+      </div>
+    </div>
+
+    <!-- Update banner (shown if already rated today) -->
+    <div class="update-banner" id="updateBanner" style="display:none">
+      <span class="update-banner-icon">&#9998;</span>
+      <div>
+        <div>You rated this lake today. You can update within 2 hours.</div>
+        <div class="update-time" id="updateTime"></div>
+      </div>
+    </div>
+
+    <!-- Weather -->
+    <div class="rate-card">
+      <div class="rate-card-label">Current conditions</div>
+      <div class="wx-grid" id="wxGrid"></div>
+    </div>
+
+    <!-- Profile -->
+    <div class="rate-card">
+      <div class="rate-card-label">About you</div>
+      <div class="profile-row">
+        <div class="profile-row-label">Skill level</div>
+        <div class="pill active" data-group="skill" data-val="beginner">Beginner</div>
+        <div class="pill" data-group="skill" data-val="intermediate">Intermediate</div>
+        <div class="pill" data-group="skill" data-val="advanced">Advanced</div>
+        <div class="pill" data-group="skill" data-val="expert">Expert</div>
+      </div>
+      <div class="profile-row">
+        <div class="profile-row-label">Craft</div>
+        <div class="pill active" data-group="craft" data-val="kayak">Kayak</div>
+        <div class="pill" data-group="craft" data-val="sup">SUP</div>
+        <div class="pill" data-group="craft" data-val="canoe">Canoe</div>
+        <div class="pill" data-group="craft" data-val="row">Row</div>
+      </div>
+      <div class="profile-row">
+        <div class="profile-row-label">Paddling with</div>
+        <div class="pill active" data-group="group" data-val="solo">Solo</div>
+        <div class="pill" data-group="group" data-val="partner">Partner</div>
+        <div class="pill" data-group="group" data-val="group">Group</div>
+        <div class="pill" data-group="group" data-val="with dogs">With dogs</div>
+      </div>
+    </div>
+
+    <!-- Rating -->
+    <div class="rate-card">
+      <div class="rating-section">
+        <div class="rating-question">How was your paddle?</div>
+        <div class="rating-grid">
+          <div class="rate-btn" data-val="1"><div class="rate-num">1</div><div class="rate-label">Bad</div></div>
+          <div class="rate-btn" data-val="2"><div class="rate-num">2</div><div class="rate-label">Rough</div></div>
+          <div class="rate-btn" data-val="3"><div class="rate-num">3</div><div class="rate-label">OK</div></div>
+          <div class="rate-btn" data-val="4"><div class="rate-num">4</div><div class="rate-label">Good</div></div>
+          <div class="rate-btn" data-val="5"><div class="rate-num">5</div><div class="rate-label">Great</div></div>
+        </div>
+
+        <!-- Smart chips (revealed after rating) -->
+        <div class="chips-section" id="chipsSection">
+          <div class="chips-prompt" id="chipsPrompt"></div>
+          <div class="chips-wrap" id="chipsWrap"></div>
+          <div class="chips-count" id="chipsCount"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Felt conditions + notes -->
+    <div class="rate-card" id="detailCard" style="display:none">
+      <div class="rate-card-label">Optional details</div>
+      <div class="felt-row">
+        <div class="felt-label">Wind felt</div>
+        <div class="felt-pills">
+          <div class="pill" data-group="windFelt" data-val="calm">Calm</div>
+          <div class="pill" data-group="windFelt" data-val="light">Light</div>
+          <div class="pill" data-group="windFelt" data-val="moderate">Moderate</div>
+          <div class="pill" data-group="windFelt" data-val="strong">Strong</div>
+        </div>
+      </div>
+      <div class="felt-row">
+        <div class="felt-label">Water felt</div>
+        <div class="felt-pills">
+          <div class="pill" data-group="waterFelt" data-val="flat">Flat</div>
+          <div class="pill" data-group="waterFelt" data-val="ripple">Ripple</div>
+          <div class="pill" data-group="waterFelt" data-val="chop">Chop</div>
+          <div class="pill" data-group="waterFelt" data-val="whitecaps">Whitecaps</div>
+        </div>
+      </div>
+      <textarea class="notes-input" id="notesInput" rows="2" maxlength="280" placeholder="Anything else worth noting?"></textarea>
+      <div class="notes-count"><span id="notesLen">0</span>/280</div>
+    </div>
+
+    <!-- Submit -->
+    <button class="submit-btn" id="submitBtn" disabled onclick="submitRating()">Rate This Paddle</button>
+  </div>
+
+  <!-- ═══ Thank you (hidden until submitted) ═══ -->
+  <div id="thankState" style="display:none">
+    <div class="lake-header">
+      <div class="lake-eyebrow">Rate your paddle</div>
+      <h1 class="lake-name" id="thankLake"></h1>
+    </div>
+    <div class="thank-you">
+      <div class="thank-check">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+      </div>
+      <div class="thank-title">Thanks, paddler.</div>
+      <div class="thank-sub">Your rating helps build the world's first crowd-sourced paddle intelligence model.</div>
+      <div class="thank-prediction" id="thankPred">
+        <div class="thank-pred-item">
+          <div class="thank-pred-label">You said</div>
+          <div class="thank-pred-val" id="thankYouSaid" style="color:var(--gold-bright)"></div>
+        </div>
+        <div class="thank-pred-item">
+          <div class="thank-pred-label">Model predicted</div>
+          <div class="thank-pred-val" id="thankModelSaid" style="color:var(--muted)"></div>
+        </div>
+        <div class="thank-pred-item">
+          <div class="thank-pred-label">Delta</div>
+          <div class="thank-pred-val" id="thankDelta"></div>
+        </div>
+      </div>
+      <div class="thank-update-hint" id="thankHint">You can update your rating within 2 hours.</div>
+      <button class="thank-update-btn" id="thankUpdateBtn" onclick="enableUpdate()">Update Rating</button>
+    </div>
+  </div>
+
+</div>
+
+<footer class="rate-footer">Kaayko Paddling Out</footer>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   Rate My Paddle — Client Logic
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+const API_BASE = window.KAAYKO_API_BASE || '/api';
+const STORAGE_PREFIX = 'kaayko_rate_';
+const UPDATE_WINDOW_MS = 2 * 60 * 60 * 1000;
+
+/* ── State ────────────────────────────────────────────────────────────────── */
+let spotId = null;
+let lakeData = null;
+let weatherData = null;
+let predictedScore = null;
+let selectedRating = null;
+let selectedChips = new Set();
+let profileState = { skill: 'beginner', craft: 'kayak', group: 'solo' };
+let gpsCoords = null;
+let gpsVerified = false;
+let existingRating = null;
+let deviceFp = null;
+
+/* ── Device fingerprint (stable per device) ──────────────────────────────── */
+function generateFingerprint() {
+  const parts = [
+    screen.width, screen.height, screen.colorDepth,
+    navigator.language,
+    Intl.DateTimeFormat().resolvedOptions().timeZone,
+    navigator.maxTouchPoints || 0,
+    navigator.hardwareConcurrency || 0,
+  ];
+  let hash = 0;
+  const str = parts.join('|');
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
+  }
+  return 'fp_' + Math.abs(hash).toString(36);
+}
+
+/* ── Init ─────────────────────────────────────────────────────────────────── */
+async function init() {
+  deviceFp = generateFingerprint();
+  const params = new URLSearchParams(window.location.search);
+  spotId = params.get('id');
+  if (!spotId || !/^[a-zA-Z0-9_-]+$/.test(spotId)) {
+    showError('No lake specified. Use a link from Paddling Out or scan a QR code at the lake.');
+    return;
+  }
+
+  checkExistingRating();
+  requestGPS();
+  if (!localStorage.getItem('kaayko_rate_onboarded')) showOnboard();
+
+  try {
+    const [spotRes, scoreRes] = await Promise.allSettled([
+      fetch(API_BASE + '/paddlingOut/' + encodeURIComponent(spotId)),
+      fetch(API_BASE + '/paddleScore?spotId=' + encodeURIComponent(spotId)),
+    ]);
+
+    let spot = null;
+    if (spotRes.status === 'fulfilled' && spotRes.value.ok) {
+      spot = await spotRes.value.json();
+    }
+
+    if (!spot) {
+      showError('This lake isn\'t available for rating yet. It may not be in our system.');
+      return;
+    }
+
+    lakeData = spot;
+
+    if (scoreRes.status === 'fulfilled' && scoreRes.value.ok) {
+      const scoreData = await scoreRes.value.json();
+      weatherData = scoreData.conditions || scoreData;
+      predictedScore = scoreData.rating || scoreData.paddleScore?.rating;
+    }
+
+    renderForm();
+  } catch (err) {
+    showError('Could not load lake data. Check your connection and try again.');
+  }
+}
+
+/* ── Check existing rating ────────────────────────────────────────────────── */
+function checkExistingRating() {
+  const today = new Date().toISOString().split('T')[0];
+  const key = STORAGE_PREFIX + spotId + '_' + today;
+  const saved = localStorage.getItem(key);
+  if (saved) {
+    try {
+      existingRating = JSON.parse(saved);
+      const elapsed = Date.now() - existingRating.timestamp;
+      if (elapsed > UPDATE_WINDOW_MS) {
+        existingRating.locked = true;
+      }
+    } catch (e) { existingRating = null; }
+  }
+}
+
+/* ── GPS ──────────────────────────────────────────────────────────────────── */
+function requestGPS() {
+  if (!navigator.geolocation) {
+    setGPS(false, 'GPS not available');
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      gpsCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      if (lakeData) checkGPSDistance();
+    },
+    () => setGPS(false, 'Location not shared'),
+    { timeout: 8000, maximumAge: 60000 }
+  );
+}
+
+function checkGPSDistance() {
+  if (!gpsCoords || !lakeData?.location) return;
+  const dist = haversine(
+    gpsCoords.lat, gpsCoords.lng,
+    lakeData.location.latitude, lakeData.location.longitude
+  );
+  if (dist <= 5) {
+    gpsVerified = true;
+    setGPS(true, 'At ' + (lakeData.title || lakeData.lakeName || spotId.replace(/_/g, ' ')));
+  } else if (dist <= 30) {
+    setGPS(false, Math.round(dist) + ' km away');
+  } else {
+    setGPS(false, 'Rating remotely');
+  }
+}
+
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function setGPS(verified, text) {
+  const badge = document.getElementById('gpsBadge');
+  badge.className = 'gps-badge ' + (verified ? 'verified' : 'unverified');
+  document.getElementById('gpsText').textContent = text;
+}
+
+/* ── Render form ─────────────────────────────────────────────────────────── */
+function renderForm() {
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('formState').style.display = 'block';
+
+  const displayName = lakeData.title || lakeData.lakeName || spotId.replace(/_/g, ' ');
+  document.getElementById('lakeName').textContent = displayName;
+  document.getElementById('lakeSub').textContent =
+    lakeData.subtitle || lakeData.location?.region || '';
+
+  if (gpsCoords && lakeData.location) checkGPSDistance();
+
+  renderWeather();
+
+  if (existingRating && !existingRating.locked) {
+    document.getElementById('updateBanner').style.display = 'flex';
+    const remaining = UPDATE_WINDOW_MS - (Date.now() - existingRating.timestamp);
+    const mins = Math.max(0, Math.ceil(remaining / 60000));
+    document.getElementById('updateTime').textContent = mins + ' minutes remaining to update';
+    selectedRating = existingRating.rating;
+    profileState = { ...profileState, ...existingRating.profile };
+    restoreProfile();
+    restoreRating();
+  } else if (existingRating && existingRating.locked) {
+    showThankYou(true);
+    return;
+  }
+
+  bindPills();
+  bindRatingButtons();
+  bindNotes();
+}
+
+function renderWeather() {
+  const w = weatherData || {};
+  const cells = [
+    { v: fmt(w.temperature || w.temp_c), u: '°', l: 'Air' },
+    { v: fmt(w.windSpeed || w.wind_kph), u: '', l: 'Wind' },
+    { v: fmt(w.gustSpeed || w.gust_kph), u: '', l: 'Gust' },
+    { v: fmt(w.waterTemp || w.water_temp_c), u: '°', l: 'Water' },
+    { v: fmt(w.waveHeight || w.wave_height_m, 2), u: 'm', l: 'Waves' },
+    { v: w.humidity != null ? Math.round(w.humidity) : '--', u: '%', l: 'Humid' },
+  ];
+  document.getElementById('wxGrid').innerHTML = cells.map(c =>
+    `<div class="wx-cell"><div class="wx-val">${c.v}<small>${c.u}</small></div><div class="wx-lbl">${c.l}</div></div>`
+  ).join('');
+}
+
+function fmt(v, d = 1) {
+  const n = parseFloat(v);
+  return isNaN(n) ? '--' : n.toFixed(d).replace(/\.0+$/, '');
+}
+
+/* ── Profile pills ────────────────────────────────────────────────────────── */
+function bindPills() {
+  document.querySelectorAll('.pill[data-group]').forEach(pill => {
+    pill.addEventListener('click', () => {
+      const group = pill.dataset.group;
+      if (['skill', 'craft', 'group'].includes(group)) {
+        document.querySelectorAll(`.pill[data-group="${group}"]`).forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        profileState[group] = pill.dataset.val;
+      } else {
+        pill.classList.toggle('active');
+      }
+    });
+  });
+}
+
+function restoreProfile() {
+  Object.entries(profileState).forEach(([group, val]) => {
+    document.querySelectorAll(`.pill[data-group="${group}"]`).forEach(p => {
+      p.classList.toggle('active', p.dataset.val === val);
+    });
+  });
+}
+
+/* ── Rating buttons ──────────────────────────────────────────────────────── */
+function bindRatingButtons() {
+  document.querySelectorAll('.rate-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedRating = parseInt(btn.dataset.val);
+      selectedChips.clear();
+      document.querySelectorAll('.rate-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      renderChips();
+      document.getElementById('detailCard').style.display = 'block';
+      document.getElementById('submitBtn').disabled = false;
+    });
+  });
+}
+
+function restoreRating() {
+  if (!selectedRating) return;
+  const btn = document.querySelector(`.rate-btn[data-val="${selectedRating}"]`);
+  if (btn) {
+    btn.classList.add('selected');
+    renderChips();
+    document.getElementById('detailCard').style.display = 'block';
+    document.getElementById('submitBtn').disabled = false;
+  }
+}
+
+/* ── Smart chips engine ──────────────────────────────────────────────────── */
+function getEligibleChips() {
+  const w = weatherData || {};
+  const wind = parseFloat(w.windSpeed || w.wind_kph) || 0;
+  const gust = parseFloat(w.gustSpeed || w.gust_kph) || 0;
+  const temp = parseFloat(w.temperature || w.temp_c) || 15;
+  const water = parseFloat(w.waterTemp || w.water_temp_c) || 15;
+  const wave = parseFloat(w.waveHeight || w.wave_height_m) || 0;
+  const rain = parseFloat(w.precipitation || w.precip_mm || w.precipMm) || 0;
+  const vis = parseFloat(w.visibility || w.vis_km) || 15;
+  const isNeg = selectedRating <= 2;
+  const isPos = selectedRating >= 4;
+  const chips = [];
+
+  if (isNeg || selectedRating === 3) {
+    if (wind > 20) chips.push({ label: 'Strong wind', type: 'weather', s: wind });
+    if (gust > 0 && wind > 0 && gust / wind > 2) chips.push({ label: 'Gusty', type: 'weather', s: gust });
+    if (water < 12) chips.push({ label: 'Cold water', type: 'weather', s: 15 - water });
+    if (rain > 0.5) chips.push({ label: 'Rain / storm', type: 'weather', s: rain * 5 });
+    if (wave > 0.25) chips.push({ label: 'Rough waves', type: 'weather', s: wave * 20 });
+    if (vis < 5) chips.push({ label: 'Poor visibility', type: 'weather', s: 10 - vis });
+    if (temp > 32) chips.push({ label: 'Too hot', type: 'weather', s: temp - 28 });
+    if (temp < 5) chips.push({ label: 'Too cold', type: 'weather', s: 8 - temp });
+    chips.push({ label: 'Crowded', type: 'context', s: 0 });
+    chips.push({ label: 'Hard launch', type: 'context', s: 0 });
+    chips.push({ label: 'Felt unsafe', type: 'context', s: 0 });
+  } else if (isPos) {
+    if (wind < 12) chips.push({ label: 'Perfect wind', type: 'weather', s: 5 });
+    if (water > 18) chips.push({ label: 'Warm water', type: 'weather', s: 4 });
+    if (wave < 0.1 && wind < 15) chips.push({ label: 'Glassy water', type: 'weather', s: 5 });
+    if (vis > 10) chips.push({ label: 'Great visibility', type: 'weather', s: 3 });
+    if (temp > 15 && temp < 30) chips.push({ label: 'Comfortable temp', type: 'weather', s: 4 });
+    chips.push({ label: 'Easy launch', type: 'context', s: 0 });
+    chips.push({ label: 'Uncrowded', type: 'context', s: 0 });
+  }
+
+  chips.sort((a, b) => b.s - a.s);
+  return chips.slice(0, 4);
+}
+
+function renderChips() {
+  const section = document.getElementById('chipsSection');
+  const wrap = document.getElementById('chipsWrap');
+  const chips = getEligibleChips();
+
+  if (chips.length === 0) { section.classList.remove('visible'); return; }
+
+  const isNeg = selectedRating <= 2;
+  const isPos = selectedRating >= 4;
+  document.getElementById('chipsPrompt').textContent =
+    isNeg ? 'What made it bad?' : isPos ? 'What made it great?' : 'What held it back?';
+
+  wrap.innerHTML = chips.map(c =>
+    `<div class="chip ${c.type} ${selectedChips.has(c.label) ? 'selected' : ''}" onclick="toggleChip('${c.label}')">${c.label}</div>`
+  ).join('');
+
+  const wxCount = chips.filter(c => c.type === 'weather').length;
+  document.getElementById('chipsCount').textContent =
+    wxCount + ' verified from conditions · select up to 4';
+
+  section.classList.add('visible');
+}
+
+function toggleChip(label) {
+  if (selectedChips.has(label)) selectedChips.delete(label);
+  else if (selectedChips.size < 4) selectedChips.add(label);
+  renderChips();
+}
+
+/* ── Notes ────────────────────────────────────────────────────────────────── */
+function bindNotes() {
+  const input = document.getElementById('notesInput');
+  input.addEventListener('input', () => {
+    document.getElementById('notesLen').textContent = input.value.length;
+  });
+}
+
+/* ── Submit ───────────────────────────────────────────────────────────────── */
+async function submitRating() {
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  const payload = {
+    spotId,
+    rating: selectedRating,
+    chips: [...selectedChips],
+    profile: { skill: profileState.skill, craft: profileState.craft, group: profileState.group },
+    windFelt: getActive('windFelt'),
+    waterFelt: getActive('waterFelt'),
+    notes: sanitize(document.getElementById('notesInput').value),
+    gps: gpsCoords ? { lat: gpsCoords.lat, lng: gpsCoords.lng } : null,
+    fingerprint: deviceFp,
+    predictedScore: predictedScore || null,
+    weather: weatherData || null,
+  };
+
+  const today = new Date().toISOString().split('T')[0];
+  const storageKey = STORAGE_PREFIX + spotId + '_' + today;
+  const saved = {
+    ...payload,
+    timestamp: Date.now(),
+    profile: { skill: profileState.skill, craft: profileState.craft, group: profileState.group },
+  };
+
+  try {
+    const res = await fetch(API_BASE + '/paddleScore/publicRating', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      saved.serverId = data.id;
+    }
+  } catch (e) {
+    // API not built yet or offline — save locally, sync later
+  }
+
+  localStorage.setItem(storageKey, JSON.stringify(saved));
+  existingRating = saved;
+  showThankYou(false);
+}
+
+function getActive(group) {
+  const el = document.querySelector(`.pill[data-group="${group}"].active`);
+  return el?.dataset.val || null;
+}
+
+function sanitize(str) {
+  return str.replace(/<[^>]*>/g, '').replace(/[<>"']/g, '').slice(0, 280).trim();
+}
+
+/* ── Thank you ───────────────────────────────────────────────────────────── */
+function showThankYou(locked) {
+  document.getElementById('formState').style.display = 'none';
+  document.getElementById('thankState').style.display = 'block';
+  document.getElementById('thankLake').textContent =
+    document.getElementById('lakeName').textContent;
+
+  const r = existingRating?.rating || selectedRating;
+  document.getElementById('thankYouSaid').textContent = r + '/5';
+
+  const p = predictedScore ? parseFloat(predictedScore).toFixed(1) : '--';
+  document.getElementById('thankModelSaid').textContent = p === '--' ? '--' : p + '/5';
+
+  if (p !== '--') {
+    const delta = (r - parseFloat(p)).toFixed(1);
+    const sign = delta > 0 ? '+' : '';
+    document.getElementById('thankDelta').textContent = sign + delta;
+    document.getElementById('thankDelta').style.color =
+      Math.abs(delta) <= 0.5 ? 'var(--good)' : 'var(--moderate)';
+  } else {
+    document.getElementById('thankDelta').textContent = '--';
+    document.getElementById('thankDelta').style.color = 'var(--muted)';
+  }
+
+  if (locked) {
+    document.getElementById('thankHint').textContent = 'Your rating has been locked. Thanks for contributing!';
+    document.getElementById('thankUpdateBtn').style.display = 'none';
+  } else {
+    const remaining = UPDATE_WINDOW_MS - (Date.now() - (existingRating?.timestamp || Date.now()));
+    const mins = Math.max(0, Math.ceil(remaining / 60000));
+    document.getElementById('thankHint').textContent =
+      'You can update your rating for ' + mins + ' more minutes.';
+  }
+}
+
+function enableUpdate() {
+  document.getElementById('thankState').style.display = 'none';
+  document.getElementById('formState').style.display = 'block';
+  document.getElementById('submitBtn').textContent = 'Update Rating';
+  document.getElementById('submitBtn').disabled = false;
+}
+
+/* ── Error / loading ─────────────────────────────────────────────────────── */
+function showError(msg) {
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('errorState').style.display = 'block';
+  document.getElementById('errorMsg').textContent = msg;
+}
+
+/* ── Onboarding ──────────────────────────────────────────────────────────── */
+function showOnboard() {
+  document.getElementById('onboard').style.display = 'flex';
+  document.getElementById('onboard').classList.remove('hiding');
+}
+
+function dismissOnboard() {
+  const el = document.getElementById('onboard');
+  el.classList.add('hiding');
+  setTimeout(() => { el.style.display = 'none'; }, 300);
+  localStorage.setItem('kaayko_rate_onboarded', '1');
+}
+
+/* ── Boot ─────────────────────────────────────────────────────────────────── */
+init();
+</script>
+</body>
+</html>

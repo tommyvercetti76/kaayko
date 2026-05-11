@@ -30,9 +30,9 @@
   --gold:          #b5935a;
   --gold-bright:   #d9bd7b;
   --line:          rgba(181, 147, 90, 0.74);
-  --score-critical: #FF2D20;
-  --score-moderate: #FFA500;
-  --score-good:     #4CAF50;
+  --score-critical: #bd3b2b;
+  --score-moderate: #eb8127;
+  --score-good:     #316d43;
   --font-serif: 'Cormorant Garamond', Georgia, serif;
   --font-sans:  'Josefin Sans', 'Josefin_Bold', Arial, sans-serif;
   --ease: cubic-bezier(0.76, 0, 0.24, 1);
@@ -71,16 +71,53 @@ footer {
   text-align: center;
   padding: 2.5rem 2rem;
   color: var(--muted);
-  font-family: var(--font-serif);
-  font-size: 0.85rem;
-  letter-spacing: 0.04em;
-  border-top: 1px solid rgba(181, 147, 90, 0.15);
+  font: 400 0.7rem var(--font-sans);
+  letter-spacing: 0.12em;
+  border-top: 1px solid var(--line);
   margin-top: 2rem;
-  /* Override any storestyle.css that might hide or restyle it */
+  background: var(--surface);
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
-  background: transparent !important;
+}
+footer nav, .footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 1.2rem;
+  margin-bottom: 0.8rem;
+}
+footer a, .footer-links a {
+  color: var(--gold);
+  text-decoration: none;
+  font: 400 0.7rem var(--font-sans);
+  letter-spacing: 0.12em;
+}
+footer a:hover, .footer-links a:hover { color: var(--gold-bright); }
+footer p { margin: 0.2rem 0 0; }
+
+/* SEO prerendered lake grid — visible until JS replaces */
+.seo-lake {
+  display: block;
+  padding: 1.2rem 1.4rem;
+  background: rgba(20, 18, 12, 0.6);
+  border: 1px solid rgba(181, 147, 90, 0.2);
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.3s;
+}
+.seo-lake:hover { border-color: var(--gold); }
+.seo-lake h2 {
+  font: 600 1rem var(--font-sans);
+  color: var(--fg);
+  margin: 0 0 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.seo-lake p {
+  font: 400 italic 0.85rem var(--font-serif);
+  color: var(--muted);
+  margin: 0;
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
@@ -332,13 +369,23 @@ footer {
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
- 9) Forecast — underline + glow, both animate in/out together
+ 8b) Card actions row
 ─────────────────────────────────────────────────────────────────────────────*/
-.forecast-button {
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: auto;
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+ 9) Forecast & Rate — underline + glow, both animate in/out together
+─────────────────────────────────────────────────────────────────────────────*/
+.forecast-button,
+.rate-button {
   background: none;
   border: none;
   padding: 0.15rem 0;
-  margin-top: auto;
   width: fit-content;
   font-family: var(--font-sans);
   font-size: 0.75rem;
@@ -356,7 +403,8 @@ footer {
 .forecast-button span:last-child { display: none; }
 
 /* Underline — draws in on hover, shrinks away on leave */
-.forecast-button::after {
+.forecast-button::after,
+.rate-button::after {
   content: '';
   position: absolute;
   bottom: -1px;
@@ -370,7 +418,9 @@ footer {
 }
 
 .forecast-button:hover,
-.forecast-button:active {
+.forecast-button:active,
+.rate-button:hover,
+.rate-button:active {
   color: var(--gold-bright);
   text-shadow:
     0 0 8px  rgba(217, 189, 123, 0.9),
@@ -379,7 +429,9 @@ footer {
 }
 
 .forecast-button:hover::after,
-.forecast-button:active::after {
+.forecast-button:active::after,
+.rate-button:hover::after,
+.rate-button:active::after {
   transform: scaleX(1);
 }
 

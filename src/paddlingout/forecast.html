@@ -154,12 +154,10 @@
     }
 
     function getSkillLevelFromRating(rating) {
-      const r = Math.round(parseFloat(rating));
-      if (r >= 5) return 'BEGINNERS WELCOME';
-      if (r >= 4) return 'BEGINNERS WITH GUIDANCE';
-      if (r >= 3) return 'MODERATE SKILL REQUIRED';
-      if (r >= 2) return 'EXPERIENCED ONLY';
-      return 'NOT RECOMMENDED';
+      const r = parseFloat(rating);
+      if (r >= 3.7) return 'WORTH IT';
+      if (r >= 2.7) return 'CAREFUL';
+      return 'HARD PASS';
     }
 
     // ── Timezone helpers (copied from advancedModal.js) ─────────────────────
@@ -200,12 +198,10 @@
     }
 
     function scoreLabel(score) {
-      const r = Math.round(parseFloat(score));
-      if (r >= 5) return 'EXCELLENT';
-      if (r >= 4) return 'GREAT';
-      if (r >= 3) return 'GOOD';
-      if (r >= 2) return 'FAIR';
-      return 'DANGER';
+      const r = parseFloat(score);
+      if (r >= 3.7) return 'WORTH IT';
+      if (r >= 2.7) return 'CAREFUL';
+      return 'HARD PASS';
     }
 
     function formatHourDisplay(hour) {
@@ -401,31 +397,31 @@
         const num       = parseFloat(valueText);
         if (isNaN(num)) { barIdx++; return; }
 
-        let pct = 0, color = '#4CAF50';
+        let pct = 0, color = '#316d43';
 
         if (label === 'wind' || label.includes('wind speed')) {
           const v = valueText.includes('mph') ? num * 1.60934 : num;
           pct   = Math.min(100, (v / 40) * 100);
-          color = v <= 15 ? '#4CAF50' : v <= 25 ? '#FFA500' : '#FF2D20';
+          color = v <= 15 ? '#316d43' : v <= 25 ? '#eb8127' : '#bd3b2b';
         } else if (label.includes('uv')) {
           pct   = Math.min(100, (num / 11) * 100);
-          color = num <= 3 ? '#4CAF50' : num <= 6 ? '#FFA500' : '#FF2D20';
+          color = num <= 3 ? '#316d43' : num <= 6 ? '#eb8127' : '#bd3b2b';
         } else if (label.includes('water') || label.includes('air')) {
           const c = valueText.includes('°F') ? (num - 32) * 5/9 : num;
           pct   = Math.min(100, Math.max(0, ((c + 10) / 50) * 100));
           color = label.includes('water')
-            ? (c >= 18 && c <= 28 ? '#4CAF50' : c >= 12 ? '#FFA500' : '#FF2D20')
-            : (c >= 15 && c <= 30 ? '#4CAF50' : c >= 8  ? '#FFA500' : '#FF2D20');
+            ? (c >= 18 && c <= 28 ? '#316d43' : c >= 12 ? '#eb8127' : '#bd3b2b')
+            : (c >= 15 && c <= 30 ? '#316d43' : c >= 8  ? '#eb8127' : '#bd3b2b');
         } else if (label.includes('cloud')) {
           pct   = Math.min(100, num);
-          color = num <= 30 ? '#4CAF50' : num <= 70 ? '#FFA500' : '#b5935a';
+          color = num <= 30 ? '#316d43' : num <= 70 ? '#eb8127' : '#c59a61';
         } else if (label.includes('humidity')) {
           pct   = Math.min(100, num);
-          color = num >= 30 && num <= 70 ? '#4CAF50' : '#FFA500';
+          color = num >= 30 && num <= 70 ? '#316d43' : '#eb8127';
         } else if (label.includes('wave')) {
           const ft = valueText.toLowerCase().includes(' m') ? num * 3.28 : num;
           pct   = Math.min(100, (ft / 6) * 100);
-          color = ft <= 1 ? '#4CAF50' : ft <= 2.5 ? '#FFA500' : '#FF2D20';
+          color = ft <= 1 ? '#316d43' : ft <= 2.5 ? '#eb8127' : '#bd3b2b';
         } else { barIdx++; return; }
 
         const track = document.createElement('div');
@@ -479,7 +475,13 @@
           enhanceWeatherStats();
           // Re-run when unit toggle fires (°C↔°F switch)
           container.querySelectorAll('.units-btn').forEach(btn => {
-            btn.addEventListener('click', () => setTimeout(enhanceWeatherStats, 60));
+            btn.addEventListener('click', () => {
+              setTimeout(enhanceWeatherStats, 60);
+              setTimeout(() => {
+                const active = document.querySelector('.khm-hit.is-active');
+                if (active) { active.classList.remove('is-active'); active.click(); }
+              }, 80);
+            });
           });
         });
       } catch (err) { console.error('RatingHero error:', err); }
@@ -490,13 +492,13 @@
     const KHM_SPAN   = KHM_HOURS[KHM_HOURS.length - 1] - KHM_HOURS[0]; // 14
 
     function khmSeverity(score) {
-      const r = Math.round(parseFloat(score));
-      if (r <= 2) return 'critical';
-      if (r <= 3) return 'moderate';
-      return 'good';
+      const r = parseFloat(score);
+      if (r >= 3.7) return 'good';
+      if (r >= 2.7) return 'moderate';
+      return 'critical';
     }
     function khmColor(sev) {
-      return sev === 'good' ? '#4CAF50' : sev === 'moderate' ? '#FFA500' : '#FF2D20';
+      return sev === 'good' ? '#316d43' : sev === 'moderate' ? '#eb8127' : '#bd3b2b';
     }
     function khmRating(h) {
       const r = parseFloat(h?.mlPrediction?.rating ?? h?.prediction?.rating ?? h?.rating);
@@ -506,6 +508,7 @@
       return ((hour - KHM_HOURS[0]) / KHM_SPAN * 100).toFixed(2);
     }
     function khmMacros(hd) {
+      const metric = localStorage.getItem('kaayko_units') !== 'imperial';
       const wind  = parseFloat(hd?.windSpeed);
       const dir   = parseFloat(hd?.windDirection);
       const water = parseFloat(hd?.waterTemp);
@@ -517,13 +520,13 @@
       const dirs  = ['N','NE','E','SE','S','SW','W','NW'];
       const dl    = !isNaN(dir) ? ' ' + dirs[Math.round(dir/45)%8] : '';
       const out   = [];
-      if (!isNaN(wind))  out.push({ icon:'air',               label:'Wind',       value:`${Math.round(wind*0.621371)} mph${dl}` });
+      if (!isNaN(wind))  out.push({ icon:'air',               label:'Wind',       value: metric ? `${Math.round(wind)} km/h${dl}` : `${Math.round(wind*0.621371)} mph${dl}` });
       if (!isNaN(uv))    out.push({ icon:'wb_sunny',          label:'UV Index',   value:uv.toFixed(1) });
-      if (!isNaN(water)) out.push({ icon:'water',             label:'Water Temp', value:`${Math.round(water*9/5+32)}°F` });
-      if (!isNaN(air))   out.push({ icon:'device_thermostat', label:'Air Temp',   value:`${Math.round(air*9/5+32)}°F` });
-      if (!isNaN(wave))  out.push({ icon:'waves',             label:'Wave Ht',    value:`${wave.toFixed(1)} ft` });
+      if (!isNaN(water)) out.push({ icon:'water',             label:'Water Temp', value: metric ? `${Math.round(water)}°C` : `${Math.round(water*9/5+32)}°F` });
+      if (!isNaN(air))   out.push({ icon:'device_thermostat', label:'Air Temp',   value: metric ? `${Math.round(air)}°C` : `${Math.round(air*9/5+32)}°F` });
+      if (!isNaN(wave))  out.push({ icon:'waves',             label:'Wave Ht',    value: metric ? `${wave.toFixed(1)} m` : `${(wave*3.28084).toFixed(1)} ft` });
       if (!isNaN(humid)) out.push({ icon:'water_drop',        label:'Humidity',   value:`${Math.round(humid)}%` });
-      if (!isNaN(vis))   out.push({ icon:'visibility',        label:'Visibility', value:`${vis} mi` });
+      if (!isNaN(vis))   out.push({ icon:'visibility',        label:'Visibility', value: metric ? `${vis} km` : `${(vis*0.621371).toFixed(1)} mi` });
       return out;
     }
 
@@ -606,9 +609,9 @@
               <span class="khm-eyebrow">3-day outlook</span>
             </div>
             <div class="khm-legend">
-              <span><i class="khm-dot" style="background:#FF2D20"></i>Hard pass</span>
-              <span><i class="khm-dot" style="background:#FFA500"></i>Careful</span>
-              <span><i class="khm-dot" style="background:#4CAF50"></i>Worth it</span>
+              <span><i class="khm-dot" style="background:#bd3b2b"></i>Hard pass</span>
+              <span><i class="khm-dot" style="background:#eb8127"></i>Careful</span>
+              <span><i class="khm-dot" style="background:#316d43"></i>Worth it</span>
             </div>
           </div>
           ${daysHTML}

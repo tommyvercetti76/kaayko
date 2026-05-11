@@ -159,6 +159,13 @@ document.addEventListener("DOMContentLoaded", () => {
       window.location.href = `/paddlingout/forecast?id=${encodeURIComponent(spot.id)}`;
     });
 
+    // 5d-2) Rate button → deep-link to paddle trainer with spot pre-selected
+    const rateBtn = card.querySelector(".rate-button");
+    rateBtn.addEventListener("click", e => {
+      e.stopPropagation();
+      window.location.href = `/paddlingout/trainer?lake=${encodeURIComponent(spot.id)}`;
+    });
+
     // 5e) Card click → navigate to detail page
     card.addEventListener("click", () => {
       window.location.href = `paddlingout.html?id=${spot.id}`;
@@ -168,9 +175,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function getScoreSeverity(score) {
-    if (score <= 2.0) return 'critical';
-    if (score <= 3.5) return 'moderate';
-    return 'good';
+    if (score >= 3.7) return 'good';
+    if (score >= 2.7) return 'moderate';
+    return 'critical';
   }
 
   function createConditionsBadge(spot) {
@@ -180,8 +187,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (spot.paddleScore?.rating != null) {
       const score    = spot.paddleScore.rating;
       const severity = getScoreSeverity(score);
-      const label    = severity === 'critical' ? 'Critical'
-                     : severity === 'moderate' ? 'Fair' : 'Good';
+      const label    = severity === 'good' ? 'Worth it'
+                     : severity === 'moderate' ? 'Careful' : 'Hard pass';
       if (severity !== 'good') badge.classList.add(severity);
       badge.innerHTML = `
         <span class="badge-dot"></span>

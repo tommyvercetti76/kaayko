@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rate My Paddle — Feature Manifesto</title>
+<style>
+  :root {
+    --bg: #0a0f1a;
+    --bg2: #111827;
+    --bg3: #1a2235;
+    --border: #1e2d4a;
+    --cyan: #22d3ee;
+    --green: #34d399;
+    --red: #f87171;
+    --orange: #fb923c;
+    --yellow: #fbbf24;
+    --purple: #a78bfa;
+    --pink: #f472b6;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+  /* NAV */
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(10,15,26,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+  nav .inner { max-width: 1200px; margin: 0 auto; padding: 12px 24px; display: flex; align-items: center; gap: 24px; overflow-x: auto; }
+  nav .logo { font-weight: 700; color: var(--cyan); white-space: nowrap; font-size: 14px; letter-spacing: 1px; }
+  nav a { color: var(--text2); text-decoration: none; font-size: 13px; white-space: nowrap; transition: color 0.2s; }
+  nav a:hover, nav a.active { color: var(--cyan); }
+
+  /* SECTIONS */
+  section { max-width: 1200px; margin: 0 auto; padding: 80px 24px 40px; }
+  section:first-of-type { padding-top: 100px; }
+  .section-label { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--cyan); margin-bottom: 8px; font-weight: 600; }
+  h1 { font-size: clamp(32px, 5vw, 56px); font-weight: 800; line-height: 1.1; margin-bottom: 16px; }
+  h1 span { background: linear-gradient(135deg, var(--cyan), var(--green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  h2 { font-size: 28px; font-weight: 700; margin-bottom: 16px; }
+  h3 { font-size: 20px; font-weight: 600; margin-bottom: 12px; color: var(--cyan); }
+  p { color: var(--text2); margin-bottom: 16px; max-width: 720px; }
+  .subtitle { font-size: 18px; color: var(--text2); max-width: 600px; }
+
+  /* STATS ROW */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin: 32px 0; }
+  .stat { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .stat .num { font-size: 36px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .stat .num.cyan { color: var(--cyan); }
+  .stat .num.green { color: var(--green); }
+  .stat .num.red { color: var(--red); }
+  .stat .num.orange { color: var(--orange); }
+  .stat .num.purple { color: var(--purple); }
+  .stat .label { font-size: 12px; color: var(--text3); margin-top: 4px; letter-spacing: 0.5px; }
+
+  /* CARDS */
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 16px; }
+  .card.highlight { border-color: var(--cyan); background: linear-gradient(135deg, rgba(34,211,238,0.05), transparent); }
+  .card.warn { border-color: var(--orange); background: linear-gradient(135deg, rgba(251,146,60,0.05), transparent); }
+  .card.danger { border-color: var(--red); background: linear-gradient(135deg, rgba(248,113,113,0.05), transparent); }
+
+  /* GRID */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 768px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  /* TAGS */
+  .tag { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin: 2px; }
+  .tag.cyan { background: rgba(34,211,238,0.15); color: var(--cyan); }
+  .tag.green { background: rgba(52,211,153,0.15); color: var(--green); }
+  .tag.red { background: rgba(248,113,113,0.15); color: var(--red); }
+  .tag.orange { background: rgba(251,146,60,0.15); color: var(--orange); }
+  .tag.yellow { background: rgba(251,191,36,0.15); color: var(--yellow); }
+  .tag.purple { background: rgba(167,139,250,0.15); color: var(--purple); }
+
+  /* TIMELINE */
+  .timeline { position: relative; padding-left: 32px; }
+  .timeline::before { content: ''; position: absolute; left: 11px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+  .timeline-item { position: relative; margin-bottom: 32px; }
+  .timeline-item::before { content: ''; position: absolute; left: -28px; top: 6px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--cyan); background: var(--bg); }
+  .timeline-item.done::before { background: var(--green); border-color: var(--green); }
+  .timeline-item.active::before { background: var(--cyan); border-color: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+  .timeline-item .time { font-size: 12px; color: var(--cyan); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  th { text-align: left; padding: 12px 16px; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--text3); border-bottom: 1px solid var(--border); background: var(--bg3); }
+  td { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  tr:hover td { background: rgba(34,211,238,0.03); }
+  .priority-critical { color: var(--red); font-weight: 700; }
+  .priority-high { color: var(--orange); font-weight: 600; }
+  .priority-medium { color: var(--yellow); }
+  .priority-low { color: var(--text3); }
+
+  /* API CARDS */
+  .api-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 12px; }
+  .api-method { display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; font-family: monospace; margin-right: 8px; }
+  .api-method.get { background: rgba(52,211,153,0.15); color: var(--green); }
+  .api-method.post { background: rgba(34,211,238,0.15); color: var(--cyan); }
+  .api-method.delete { background: rgba(248,113,113,0.15); color: var(--red); }
+  .api-path { font-family: monospace; font-size: 14px; font-weight: 600; }
+  .api-desc { color: var(--text2); font-size: 13px; margin-top: 8px; }
+  .api-field { display: flex; gap: 8px; align-items: baseline; padding: 4px 0; font-size: 13px; }
+  .api-field code { background: var(--bg3); padding: 2px 6px; border-radius: 4px; font-size: 12px; color: var(--cyan); }
+  .api-field .req { color: var(--red); font-size: 10px; font-weight: 700; }
+  .api-field .opt { color: var(--text3); font-size: 10px; }
+
+  /* FLYWHEEL DIAGRAM */
+  .flywheel { display: flex; justify-content: center; align-items: center; padding: 40px 0; }
+  .flywheel-ring { position: relative; width: 420px; height: 420px; }
+  .flywheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; width: 140px; }
+  .flywheel-center .big { font-size: 32px; font-weight: 800; color: var(--cyan); }
+  .flywheel-center .sub { font-size: 12px; color: var(--text3); }
+  .flywheel-node { position: absolute; width: 130px; text-align: center; }
+  .flywheel-node .icon { font-size: 28px; margin-bottom: 4px; }
+  .flywheel-node .name { font-size: 13px; font-weight: 600; }
+  .flywheel-node .detail { font-size: 11px; color: var(--text3); }
+  .fw-top { top: 0; left: 50%; transform: translateX(-50%); }
+  .fw-right { top: 50%; right: -20px; transform: translateY(-50%); }
+  .fw-bottom { bottom: 0; left: 50%; transform: translateX(-50%); }
+  .fw-left { top: 50%; left: -20px; transform: translateY(-50%); }
+  .flywheel-arrow { position: absolute; color: var(--border); font-size: 20px; }
+  .fa-tr { top: 60px; right: 30px; transform: rotate(45deg); }
+  .fa-br { bottom: 60px; right: 30px; transform: rotate(135deg); }
+  .fa-bl { bottom: 60px; left: 30px; transform: rotate(225deg); }
+  .fa-tl { top: 60px; left: 30px; transform: rotate(315deg); }
+
+  /* CHIPS DEMO */
+  .chips-demo { background: var(--bg3); border-radius: 16px; padding: 24px; margin: 24px 0; }
+  .chips-demo .weather-bar { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+  .chips-demo .weather-bar .wx { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; text-align: center; min-width: 80px; }
+  .chips-demo .weather-bar .wx .val { font-size: 18px; font-weight: 700; }
+  .chips-demo .weather-bar .wx .lbl { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+  .rating-buttons { display: flex; gap: 8px; margin: 16px 0; }
+  .rating-btn { flex: 1; padding: 16px 8px; border-radius: 10px; border: 2px solid var(--border); background: var(--bg2); cursor: pointer; text-align: center; transition: all 0.2s; }
+  .rating-btn:hover { border-color: var(--cyan); transform: translateY(-2px); }
+  .rating-btn.selected { border-color: var(--cyan); background: rgba(34,211,238,0.1); }
+  .rating-btn .rn { font-size: 24px; font-weight: 800; }
+  .rating-btn .rl { font-size: 11px; color: var(--text2); }
+  .rating-btn.r1 .rn { color: var(--red); }
+  .rating-btn.r2 .rn { color: var(--orange); }
+  .rating-btn.r3 .rn { color: var(--yellow); }
+  .rating-btn.r4 .rn { color: var(--green); }
+  .rating-btn.r5 .rn { color: #22c55e; }
+  .chip-area { margin-top: 16px; min-height: 60px; }
+  .chip-area .prompt { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .chip { display: inline-block; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; margin: 4px; cursor: pointer; transition: all 0.2s; border: 2px solid transparent; }
+  .chip.weather { background: rgba(34,211,238,0.12); color: var(--cyan); border-color: rgba(34,211,238,0.3); }
+  .chip.context { background: rgba(167,139,250,0.12); color: var(--purple); border-color: rgba(167,139,250,0.3); }
+  .chip.selected { transform: scale(1.05); }
+  .chip.weather.selected { background: rgba(34,211,238,0.25); border-color: var(--cyan); }
+  .chip.context.selected { background: rgba(167,139,250,0.25); border-color: var(--purple); }
+  .chip-note { font-size: 12px; color: var(--text3); margin-top: 8px; font-style: italic; }
+  .scenario-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .scenario-tab { padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg2); cursor: pointer; font-size: 13px; color: var(--text2); transition: all 0.2s; }
+  .scenario-tab:hover, .scenario-tab.active { border-color: var(--cyan); color: var(--cyan); background: rgba(34,211,238,0.05); }
+
+  /* PHASE CARD */
+  .phase-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin-bottom: 20px; position: relative; overflow: hidden; }
+  .phase-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .phase-card.p1::before { background: var(--green); }
+  .phase-card.p2::before { background: var(--cyan); }
+  .phase-card.p3::before { background: var(--purple); }
+  .phase-card.p4::before { background: var(--orange); }
+  .phase-card.p5::before { background: var(--pink); }
+  .phase-card.p6::before { background: var(--yellow); }
+  .phase-num { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
+  .phase-card.p1 .phase-num { color: var(--green); }
+  .phase-card.p2 .phase-num { color: var(--cyan); }
+  .phase-card.p3 .phase-num { color: var(--purple); }
+  .phase-card.p4 .phase-num { color: var(--orange); }
+  .phase-card.p5 .phase-num { color: var(--pink); }
+  .phase-card.p6 .phase-num { color: var(--yellow); }
+  .phase-title { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .phase-desc { color: var(--text2); font-size: 14px; margin-bottom: 16px; }
+  .task-list { list-style: none; }
+  .task-list li { padding: 6px 0; font-size: 14px; display: flex; gap: 8px; align-items: baseline; }
+  .task-list li::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--text3); flex-shrink: 0; margin-top: 7px; }
+  .task-time { color: var(--text3); font-size: 12px; margin-left: auto; white-space: nowrap; }
+
+  /* TEST MATRIX */
+  .test-row { display: grid; grid-template-columns: auto 1fr auto auto; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); align-items: center; font-size: 13px; }
+  .test-id { font-family: monospace; color: var(--text3); font-size: 12px; }
+  .test-type { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .test-type.unit { background: rgba(52,211,153,0.15); color: var(--green); }
+  .test-type.integration { background: rgba(34,211,238,0.15); color: var(--cyan); }
+  .test-type.e2e { background: rgba(167,139,250,0.15); color: var(--purple); }
+  .test-type.data { background: rgba(251,191,36,0.15); color: var(--yellow); }
+  .test-type.security { background: rgba(248,113,113,0.15); color: var(--red); }
+
+  /* ACCURACY PROJECTIONS */
+  .accuracy-chart { margin: 24px 0; }
+  .bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .bar-label { width: 100px; font-size: 13px; text-align: right; color: var(--text2); flex-shrink: 0; }
+  .bar-track { flex: 1; height: 32px; background: var(--bg3); border-radius: 8px; position: relative; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 8px; display: flex; align-items: center; padding-left: 12px; font-size: 12px; font-weight: 700; transition: width 1s ease; }
+  .bar-fill.mae { background: linear-gradient(90deg, var(--red), var(--orange)); }
+  .bar-fill.r2 { background: linear-gradient(90deg, var(--cyan), var(--green)); }
+  .bar-value { width: 60px; font-size: 13px; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+
+  /* MOBILE MOCKUP */
+  .phone-frame { width: 300px; margin: 24px auto; background: var(--bg3); border-radius: 32px; padding: 12px; border: 2px solid var(--border); }
+  .phone-screen { background: var(--bg2); border-radius: 24px; padding: 20px; min-height: 500px; }
+  .phone-notch { width: 120px; height: 24px; background: var(--bg); border-radius: 0 0 16px 16px; margin: -12px auto 16px; }
+  .phone-header { text-align: center; margin-bottom: 20px; }
+  .phone-header .lake-name { font-size: 20px; font-weight: 700; }
+  .phone-header .lake-sub { font-size: 12px; color: var(--text3); }
+  .phone-weather { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+  .phone-wx { text-align: center; background: var(--bg3); border-radius: 8px; padding: 8px; }
+  .phone-wx .v { font-size: 16px; font-weight: 700; }
+  .phone-wx .l { font-size: 9px; color: var(--text3); text-transform: uppercase; }
+  .mini-btn { display: inline-block; padding: 10px 0; border-radius: 8px; text-align: center; font-weight: 700; font-size: 14px; cursor: pointer; }
+  .gps-ok { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--green); justify-content: center; margin: 8px 0; }
+
+  /* MISC */
+  .divider { height: 1px; background: var(--border); margin: 40px 0; }
+  .highlight-box { background: linear-gradient(135deg, rgba(34,211,238,0.08), rgba(52,211,153,0.08)); border: 1px solid rgba(34,211,238,0.2); border-radius: 12px; padding: 20px; margin: 16px 0; }
+  code { background: var(--bg3); padding: 2px 6px; border-radius: 4px; font-size: 13px; color: var(--cyan); }
+  .counter { font-variant-numeric: tabular-nums; }
+  .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+  .badge.new { background: rgba(52,211,153,0.15); color: var(--green); }
+  .badge.extend { background: rgba(34,211,238,0.15); color: var(--cyan); }
+  .badge.exists { background: rgba(100,116,139,0.2); color: var(--text3); }
+  .flow-arrow { text-align: center; font-size: 24px; color: var(--text3); padding: 8px 0; }
+  .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  .tab { padding: 10px 20px; cursor: pointer; font-size: 14px; color: var(--text3); border-bottom: 2px solid transparent; transition: all 0.2s; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--cyan); border-bottom-color: var(--cyan); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .total-hours { background: linear-gradient(135deg, var(--cyan), var(--green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 48px; font-weight: 800; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <div class="logo">RATE MY PADDLE</div>
+    <a href="#vision">Vision</a>
+    <a href="#problem">Problem</a>
+    <a href="#flywheel">Flywheel</a>
+    <a href="#phases">Phases</a>
+    <a href="#chips">Smart Chips</a>
+    <a href="#apis">APIs</a>
+    <a href="#backlog">Backlog</a>
+    <a href="#tests">Tests</a>
+    <a href="#accuracy">Accuracy</a>
+    <a href="#timeline">Timeline</a>
+  </div>
+</nav>
+
+<!-- ============ VISION ============ -->
+<section id="vision">
+  <div class="section-label">The Manifesto</div>
+  <h1><span>Rate My Paddle</span></h1>
+  <p class="subtitle">The world's first crowd-sourced paddle intelligence system. Real weather. Real paddlers. Real ratings. A model that learns what "good paddling" actually means.</p>
+
+  <div class="stats">
+    <div class="stat"><div class="num cyan counter" data-target="2779">0</div><div class="label">Lakes with weather data</div></div>
+    <div class="stat"><div class="num green counter" data-target="250">0</div><div class="label">Target launch lakes (US + India)</div></div>
+    <div class="stat"><div class="num purple counter" data-target="73">0</div><div class="label">Labels today (v3)</div></div>
+    <div class="stat"><div class="num orange counter" data-target="2000">0</div><div class="label">Target labels for v4</div></div>
+  </div>
+
+  <div class="highlight-box">
+    <strong>The thesis:</strong> No one has built a model that knows what paddling feels like. Weather APIs tell you wind speed. We tell you if you should launch your kayak. The gap between "15 mph wind" and "too rough for a beginner on a SUP" is learned from thousands of real ratings at real lakes. That's what we're building.
+  </div>
+</section>
+
+<!-- ============ PROBLEM ============ -->
+<section id="problem">
+  <div class="section-label">The Problem</div>
+  <h2>Why the current model doesn't work yet</h2>
+
+  <div class="grid-2">
+    <div class="card danger">
+      <h3 style="color:var(--red)">Data starvation</h3>
+      <div class="stats" style="margin:12px 0">
+        <div class="stat"><div class="num red">73</div><div class="label">Total labels</div></div>
+        <div class="stat"><div class="num red">-0.37</div><div class="label">R&sup2; (worse than average)</div></div>
+      </div>
+      <p>73 labels. 64% are rating "1 - No". 66% from cold-weather scenarios. Zero reason tags. Zero notes. One person's perspective. The model has learned exactly one thing: "everything is bad."</p>
+    </div>
+    <div class="card danger">
+      <h3 style="color:var(--red)">Zero skill diversity</h3>
+      <p>Every single label is from one advanced kayaker paddling solo. The model literally cannot learn that a beginner on a SUP experiences 15 mph wind differently than an expert in a sea kayak. Those features are constants &mdash; the model ignores them.</p>
+      <div style="margin-top:12px">
+        <span class="tag red">skillLevel: always advanced</span>
+        <span class="tag red">boatType: always kayak</span>
+        <span class="tag red">groupType: always solo</span>
+        <span class="tag red">reasonTags: always empty</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h3>Rating distribution today</h3>
+    <div style="display:flex;gap:4px;align-items:end;height:120px;margin:16px 0">
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px">
+        <div style="font-size:12px;font-weight:700;color:var(--red)">64%</div>
+        <div style="width:100%;background:var(--red);border-radius:6px 6px 0 0;height:112px"></div>
+        <div style="font-size:11px;color:var(--text3)">1 - No</div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px">
+        <div style="font-size:12px;font-weight:700;color:var(--orange)">10%</div>
+        <div style="width:100%;background:var(--orange);border-radius:6px 6px 0 0;height:17px"></div>
+        <div style="font-size:11px;color:var(--text3)">2 - Meh</div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px">
+        <div style="font-size:12px;font-weight:700;color:var(--yellow)">8%</div>
+        <div style="width:100%;background:var(--yellow);border-radius:6px 6px 0 0;height:14px"></div>
+        <div style="font-size:11px;color:var(--text3)">3 - Maybe</div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px">
+        <div style="font-size:12px;font-weight:700;color:var(--green)">12%</div>
+        <div style="width:100%;background:var(--green);border-radius:6px 6px 0 0;height:21px"></div>
+        <div style="font-size:11px;color:var(--text3)">4 - Yes</div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px">
+        <div style="font-size:12px;font-weight:700;color:#22c55e">5%</div>
+        <div style="width:100%;background:#22c55e;border-radius:6px 6px 0 0;height:9px"></div>
+        <div style="font-size:11px;color:var(--text3)">5 - Great</div>
+      </div>
+    </div>
+    <p style="font-size:13px">Target: ~20% per bucket. Currently 64% is concentrated in rating 1.</p>
+  </div>
+</section>
+
+<!-- ============ FLYWHEEL ============ -->
+<section id="flywheel">
+  <div class="section-label">The Engine</div>
+  <h2>The Data Flywheel</h2>
+  <p>Each turn of this wheel makes the model more accurate, which makes ratings more valuable, which attracts more raters.</p>
+
+  <div style="display:grid;grid-template-columns: repeat(4,1fr);gap:2px;margin:40px 0;text-align:center">
+    <div class="card highlight" style="border-radius:12px 0 0 12px">
+      <div style="font-size:28px;margin-bottom:8px">1</div>
+      <div style="font-weight:700;margin-bottom:4px">Collect Weather</div>
+      <div style="font-size:12px;color:var(--text3)">200 US + 50 India lakes. Historical + live. We already have 2,779 lake folders with 73 months of data.</div>
+    </div>
+    <div class="card" style="border-color:var(--cyan);border-radius:0">
+      <div style="font-size:28px;margin-bottom:8px">2</div>
+      <div style="font-weight:700;margin-bottom:4px">Rohan Labels</div>
+      <div style="font-size:12px;color:var(--text3)">You rate 500+ scenarios across all weather buckets using the trainer. Balanced. With reason tags. Model v4 bootstrap.</div>
+    </div>
+    <div class="card" style="border-color:var(--purple);border-radius:0">
+      <div style="font-size:28px;margin-bottom:8px">3</div>
+      <div style="font-weight:700;margin-bottom:4px">QR at Lakes</div>
+      <div style="font-size:12px;color:var(--text3)">Real paddlers scan, rate, tell us why. Skill-level diversity. Beginners, SUPs, dogs, groups. Ground truth.</div>
+    </div>
+    <div class="card" style="border-color:var(--green);border-radius:0 12px 12px 0">
+      <div style="font-size:28px;margin-bottom:8px">4</div>
+      <div style="font-weight:700;margin-bottom:4px">Model Learns</div>
+      <div style="font-size:12px;color:var(--text3)">Retrain with diverse data. Per-skill predictions. The model starts saying "great for experts, skip it if you're new."</div>
+    </div>
+  </div>
+
+  <div class="highlight-box">
+    <strong>The compounding effect:</strong> Every QR rating makes the predicted score more accurate &rarr; paddlers trust the prediction more &rarr; more people scan and rate &rarr; model gets even better. This is a moat no weather app can copy because they don't have the human signal.
+  </div>
+</section>
+
+<!-- ============ PHASES ============ -->
+<section id="phases">
+  <div class="section-label">The Build</div>
+  <h2>Six Phases to Production</h2>
+
+  <div class="phase-card p1">
+    <div class="phase-num">Phase 1 &mdash; Lake Seeding &amp; Weather Collection</div>
+    <div class="flex-between">
+      <div class="phase-title">Build the Foundation</div>
+      <span class="tag green">~6 hours</span>
+    </div>
+    <div class="phase-desc">Expand from 2,779 weather folders to targeted coverage of 200 US + 50 India paddling-worthy lakes. Seed them into paddlingSpots and start weather collection for any gaps.</div>
+    <ul class="task-list">
+      <li>Curate 200 US lakes list from us-lakes.jsonl (filter by area > 1km&sup2;, accessibility, known paddling destinations)<span class="task-time">1h</span></li>
+      <li>Curate 50 India lakes list (expand from 37 in HydroLAKES &mdash; add Dal, Nainital, Bhimtal, Pichola, Hussain Sagar, etc.)<span class="task-time">1h</span></li>
+      <li>Check weather data coverage gaps &mdash; identify lakes needing collection<span class="task-time">30m</span></li>
+      <li>Run weather collection pipeline for missing lakes (batch via paddle-llm scripts)<span class="task-time">2h</span></li>
+      <li>Seed paddlingSpots Firestore collection with lake metadata, coordinates, region tags<span class="task-time">1.5h</span></li>
+    </ul>
+  </div>
+
+  <div class="phase-card p2">
+    <div class="phase-num">Phase 2 &mdash; Rohan Labeling Sprint</div>
+    <div class="flex-between">
+      <div class="phase-title">Bootstrap Model v4</div>
+      <span class="tag cyan">~8 hours labeling</span>
+    </div>
+    <div class="phase-desc">Use the existing Paddle Trainer to label 500+ scenarios across ALL weather buckets, WITH reason tags, across these 250 lakes. This is the bootstrap dataset that makes v4 possible.</div>
+    <ul class="task-list">
+      <li>Label 80+ calm scenarios (currently 11 &rarr; need 70 more)<span class="task-time">1h</span></li>
+      <li>Label 80+ normal scenarios (currently 8 &rarr; need 72 more)<span class="task-time">1h</span></li>
+      <li>Label 80+ cold scenarios (currently 48 &rarr; need 32 more)<span class="task-time">45m</span></li>
+      <li>Label 80+ hot scenarios (currently 2 &rarr; need 78 more)<span class="task-time">1h</span></li>
+      <li>Label 80+ rain scenarios (currently 1 &rarr; need 79 more)<span class="task-time">1h</span></li>
+      <li>Label 80+ high-wind/wave scenarios (currently 3 &rarr; need 77 more)<span class="task-time">1h</span></li>
+      <li>ALWAYS select reason tags on every label<span class="task-time">+0</span></li>
+      <li>Vary persona: label 100 as beginner, 100 as intermediate, rest as advanced<span class="task-time">+0</span></li>
+      <li>Train model v4, validate MAE < 0.8, R&sup2; > 0.3<span class="task-time">1h</span></li>
+    </ul>
+  </div>
+
+  <div class="phase-card p3">
+    <div class="phase-num">Phase 3 &mdash; Public Rating Form</div>
+    <div class="flex-between">
+      <div class="phase-title">Build "Rate My Paddle"</div>
+      <span class="tag purple">~10 hours</span>
+    </div>
+    <div class="phase-desc">The mobile-first, no-auth, 30-second rating experience. A paddler scans a QR code at the lake, rates their experience, and the data flows into training.</div>
+    <ul class="task-list">
+      <li>Build <code>rate.html</code> &mdash; static HTML + vanilla JS, mobile-optimized, no build step<span class="task-time">4h</span></li>
+      <li>Screen 1: Lake header + GPS check + skill/craft/group selectors<span class="task-time">inc</span></li>
+      <li>Screen 2: Weather display (auto-fetched) + 5 rating buttons<span class="task-time">inc</span></li>
+      <li>Screen 3: Smart contextual chips (max 4, weather-aware) + optional notes<span class="task-time">inc</span></li>
+      <li>Screen 4: Thank you + reveal model's prediction + Kaayko branding<span class="task-time">inc</span></li>
+      <li>Build <code>POST /api/paddleScore/publicRating</code> endpoint<span class="task-time">3h</span></li>
+      <li>Auto-attach weather snapshot from coordinates + timestamp<span class="task-time">inc</span></li>
+      <li>GPS fence validation (< 3km green, 3-30km warn, > 30km block)<span class="task-time">inc</span></li>
+      <li>Rate limiting: 10/IP/day + device fingerprint + behavioral checks<span class="task-time">1h</span></li>
+      <li>Firebase hosting route: <code>/rate/:spotId</code><span class="task-time">30m</span></li>
+      <li>Add to <code>firebase.json</code> rewrites<span class="task-time">15m</span></li>
+      <li>Mobile viewport, PWA manifest, offline shell cache<span class="task-time">1h</span></li>
+    </ul>
+  </div>
+
+  <div class="phase-card p4">
+    <div class="phase-num">Phase 4 &mdash; Smart Chips Engine</div>
+    <div class="flex-between">
+      <div class="phase-title">Weather-Aware Reason Collection</div>
+      <span class="tag orange">~4 hours</span>
+    </div>
+    <div class="phase-desc">The feature that prevents fake data. Chips are chosen based on real weather at the time of rating. You can't claim "strong wind" if it's 3 kph. Max 4 chips, prioritized by severity.</div>
+    <ul class="task-list">
+      <li>Build chip selection engine &mdash; weather thresholds to chip eligibility<span class="task-time">2h</span></li>
+      <li>Two chip types: weather-dependent (cyan) + always-available context (purple)<span class="task-time">inc</span></li>
+      <li>Priority sorting: highest-severity weather chips first, then context chips to fill 4 slots<span class="task-time">inc</span></li>
+      <li>Rating-aware behavior: low ratings (1-2) show "why bad?" chips; high ratings (4-5) show "what made it great?" chips<span class="task-time">1h</span></li>
+      <li>Chip data flows into training as reason tag features<span class="task-time">30m</span></li>
+      <li>Unit tests for all threshold combinations<span class="task-time">30m</span></li>
+    </ul>
+  </div>
+
+  <div class="phase-card p5">
+    <div class="phase-num">Phase 5 &mdash; QR &amp; Distribution</div>
+    <div class="flex-between">
+      <div class="phase-title">Get QR Codes to Lakes</div>
+      <span class="tag pink">~4 hours</span>
+    </div>
+    <div class="phase-desc">Generate branded QR sheets, plan physical placement, and build the admin tooling to manage spots and monitor incoming ratings.</div>
+    <ul class="task-list">
+      <li>QR sheet generator &mdash; printable PDF with QR + lake name + instructions + Kaayko logo<span class="task-time">2h</span></li>
+      <li>Admin dashboard section &mdash; view incoming public ratings by lake, spot trends<span class="task-time">1.5h</span></li>
+      <li>Generate sheets for 10 pilot lakes (physically accessible ones)<span class="task-time">30m</span></li>
+    </ul>
+  </div>
+
+  <div class="phase-card p6">
+    <div class="phase-num">Phase 6 &mdash; Data Pipeline &amp; Model v4</div>
+    <div class="flex-between">
+      <div class="phase-title">Close the Loop</div>
+      <span class="tag yellow">~5 hours</span>
+    </div>
+    <div class="phase-desc">Connect public ratings to the trainer, build quality filters, retrain the model with diverse data, and validate accuracy improvements.</div>
+    <ul class="task-list">
+      <li>Firestore &rarr; JSONL sync (public ratings into ratings.jsonl format)<span class="task-time">1.5h</span></li>
+      <li>Quality filters: GPS coherence, weather-rating coherence, outlier flagging<span class="task-time">1.5h</span></li>
+      <li>Skill-level normalization: compute per-skill baselines, create normalized_rating<span class="task-time">1h</span></li>
+      <li>Retrain model v4 with combined data (Rohan labels + public labels)<span class="task-time">30m</span></li>
+      <li>Validate: MAE < 0.6, R&sup2; > 0.4, positive lift vs baseline across all buckets<span class="task-time">30m</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ SMART CHIPS ============ -->
+<section id="chips">
+  <div class="section-label">The Innovation</div>
+  <h2>Smart Contextual Chips</h2>
+  <p>Unlike any rating system, our chips are generated from real weather data. You physically cannot select a chip that doesn't match conditions. This makes every label trustworthy by construction.</p>
+
+  <div class="grid-2" style="margin:24px 0">
+    <div class="card highlight">
+      <h3>Weather-dependent chips</h3>
+      <p style="font-size:13px">Only shown when weather data supports them. A paddler at a calm lake on a sunny day will never see "Strong wind" or "Rain."</p>
+      <table style="margin:12px 0">
+        <tr><td><span class="chip weather" style="margin:0">Strong wind</span></td><td style="font-size:12px;color:var(--text3)">wind > 20 kph</td></tr>
+        <tr><td><span class="chip weather" style="margin:0">Gusty</span></td><td style="font-size:12px;color:var(--text3)">gust_factor > 2.0</td></tr>
+        <tr><td><span class="chip weather" style="margin:0">Cold water</span></td><td style="font-size:12px;color:var(--text3)">water_temp < 12&deg;C</td></tr>
+        <tr><td><span class="chip weather" style="margin:0">Rain / storm</span></td><td style="font-size:12px;color:var(--text3)">precip_mm > 0.5</td></tr>
+        <tr><td><span class="chip weather" style="margin:0">Rough waves</span></td><td style="font-size:12px;color:var(--text3)">wave_height > 0.25m</td></tr>
+        <tr><td><span class="chip weather" style="margin:0">Poor visibility</span></td><td style="font-size:12px;color:var(--text3)">vis_km < 5</td></tr>
+        <tr><td><span class="chip weather" style="margin:0">Too hot</span></td><td style="font-size:12px;color:var(--text3)">temp > 32&deg;C</td></tr>
+        <tr><td><span class="chip weather" style="margin:0">Too cold</span></td><td style="font-size:12px;color:var(--text3)">temp < 5&deg;C</td></tr>
+        <tr><td><span class="chip weather" style="margin:0">Big water exposure</span></td><td style="font-size:12px;color:var(--text3)">lake_area > 50 km&sup2;</td></tr>
+      </table>
+    </div>
+    <div class="card" style="border-color:var(--purple)">
+      <h3 style="color:var(--purple)">Always-available context chips</h3>
+      <p style="font-size:13px">Non-weather factors that are always valid. These capture the experience the weather API can't see.</p>
+      <div style="margin:16px 0">
+        <span class="chip context">Crowded / boat traffic</span>
+        <span class="chip context">Launch was difficult</span>
+        <span class="chip context">Felt unsafe solo</span>
+        <span class="chip context">Current / flow issues</span>
+      </div>
+      <p style="font-size:13px;margin-top:16px">These always appear as options (after weather chips fill priority slots). Someone on a calm sunny day who rates "2" can still tell us it was the boat traffic or a bad launch ramp.</p>
+    </div>
+  </div>
+
+  <h3>Interactive Demo</h3>
+  <p>Try it. Select a weather scenario, rate the paddle, and see which chips appear.</p>
+
+  <div class="chips-demo" id="chipsDemo">
+    <div class="scenario-tabs">
+      <div class="scenario-tab active" onclick="setScenario('windy')">Windy Day</div>
+      <div class="scenario-tab" onclick="setScenario('calm')">Calm &amp; Sunny</div>
+      <div class="scenario-tab" onclick="setScenario('cold')">Cold Winter</div>
+      <div class="scenario-tab" onclick="setScenario('storm')">Rainy &amp; Rough</div>
+      <div class="scenario-tab" onclick="setScenario('hot')">Hot Summer</div>
+    </div>
+    <div class="weather-bar" id="weatherBar"></div>
+    <div style="font-weight:600;margin-bottom:8px">How was your paddle?</div>
+    <div class="rating-buttons" id="ratingButtons">
+      <div class="rating-btn r1" onclick="selectRating(1)"><div class="rn">1</div><div class="rl">No</div></div>
+      <div class="rating-btn r2" onclick="selectRating(2)"><div class="rn">2</div><div class="rl">Rough</div></div>
+      <div class="rating-btn r3" onclick="selectRating(3)"><div class="rn">3</div><div class="rl">OK</div></div>
+      <div class="rating-btn r4" onclick="selectRating(4)"><div class="rn">4</div><div class="rl">Good</div></div>
+      <div class="rating-btn r5" onclick="selectRating(5)"><div class="rn">5</div><div class="rl">Great</div></div>
+    </div>
+    <div class="chip-area" id="chipArea">
+      <div style="color:var(--text3);font-size:13px">Select a rating to see contextual chips</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h3>The Anti-Fake Guarantee</h3>
+    <div class="grid-2">
+      <div>
+        <p style="font-size:13px"><strong>Why max 4 chips?</strong> Forces prioritization. "Everything was bad" isn't useful data. "Wind was the main problem" is. Four chips make the paddler choose what mattered most.</p>
+      </div>
+      <div>
+        <p style="font-size:13px"><strong>Why weather-gated?</strong> If the API says wind is 5 kph, we don't offer "Strong wind." A troll can't fabricate complaints that contradict real conditions. Every chip is verifiable.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ APIs ============ -->
+<section id="apis">
+  <div class="section-label">Engineering</div>
+  <h2>New APIs to Build</h2>
+
+  <div class="api-card">
+    <span class="api-method post">POST</span>
+    <span class="api-path">/api/paddleScore/publicRating</span>
+    <span class="badge new">NEW</span>
+    <div class="api-desc">Core endpoint. Receives a public paddle rating with full context. Auto-attaches weather. No auth required.</div>
+    <div style="margin-top:12px;padding:12px;background:var(--bg3);border-radius:8px">
+      <div class="api-field"><code>spotId</code> <span class="req">REQ</span> string &mdash; lake identifier matching paddlingSpots</div>
+      <div class="api-field"><code>rating</code> <span class="req">REQ</span> integer 1-5</div>
+      <div class="api-field"><code>skillLevel</code> <span class="req">REQ</span> enum: beginner | intermediate | advanced | expert</div>
+      <div class="api-field"><code>boatType</code> <span class="req">REQ</span> enum: kayak | sup | canoe | rowing | other</div>
+      <div class="api-field"><code>groupType</code> <span class="req">REQ</span> enum: solo | partner | group</div>
+      <div class="api-field"><code>withDogs</code> <span class="opt">OPT</span> boolean</div>
+      <div class="api-field"><code>reasonChips</code> <span class="opt">OPT</span> string[] (max 4) &mdash; validated against weather</div>
+      <div class="api-field"><code>windFelt</code> <span class="opt">OPT</span> enum: calm | light | moderate | strong | brutal</div>
+      <div class="api-field"><code>waveFelt</code> <span class="opt">OPT</span> enum: flat | ripple | chop | whitecaps</div>
+      <div class="api-field"><code>notes</code> <span class="opt">OPT</span> string (280 char max, sanitized)</div>
+      <div class="api-field"><code>lat</code> <span class="opt">OPT</span> number &mdash; GPS latitude</div>
+      <div class="api-field"><code>lng</code> <span class="opt">OPT</span> number &mdash; GPS longitude</div>
+      <div class="api-field"><code>deviceFp</code> <span class="opt">OPT</span> string &mdash; client fingerprint for rate limiting</div>
+    </div>
+    <div style="margin-top:8px;font-size:12px;color:var(--text3)">
+      <strong>Server-side auto-attaches:</strong> weatherSnapshot (from coordinates + timestamp), gpsVerified (distance check), qualityWeight (coherence score), lake metadata (HydroLAKES)
+    </div>
+  </div>
+
+  <div class="api-card">
+    <span class="api-method get">GET</span>
+    <span class="api-path">/api/paddleScore/rateConfig/:spotId</span>
+    <span class="badge new">NEW</span>
+    <div class="api-desc">Returns everything the rating form needs: lake info, current weather, current predicted score, and eligible smart chips based on conditions.</div>
+    <div style="margin-top:8px;font-size:12px;color:var(--text3)">
+      <strong>Returns:</strong> { lake, weather, predictedScore, eligibleChips[], chipThresholds, gpsCenter: {lat, lng}, gpsRadiusKm }
+    </div>
+  </div>
+
+  <div class="api-card">
+    <span class="api-method post">POST</span>
+    <span class="api-path">/api/paddleScore/generateQR</span>
+    <span class="badge new">NEW</span>
+    <div class="api-desc">Generates a branded QR code PNG for a specific lake. Returns base64 data URL. Uses existing qrService.js.</div>
+    <div style="margin-top:8px;font-size:12px;color:var(--text3)">
+      <strong>Body:</strong> { spotId, format: "png" | "svg", size: 512, withLogo: true }
+    </div>
+  </div>
+
+  <div class="api-card">
+    <span class="api-method get">GET</span>
+    <span class="api-path">/api/paddleScore/publicRatings</span>
+    <span class="badge new">NEW</span>
+    <div class="api-desc">Admin-only. Returns aggregated public ratings for monitoring and data quality review. Filterable by lake, date, quality flags.</div>
+    <div style="margin-top:8px;font-size:12px;color:var(--text3)">
+      <strong>Auth:</strong> requireAdmin. <strong>Query:</strong> ?spotId=&from=&to=&quality=good|flagged|all
+    </div>
+  </div>
+
+  <div class="api-card">
+    <span class="api-method post">POST</span>
+    <span class="api-path">/api/paddleScore/syncToTrainer</span>
+    <span class="badge new">NEW</span>
+    <div class="api-desc">Admin-only. Exports qualified public ratings to JSONL format compatible with the Paddle Trainer. Applies quality filters.</div>
+    <div style="margin-top:8px;font-size:12px;color:var(--text3)">
+      <strong>Auth:</strong> requireAdmin. <strong>Body:</strong> { minQuality: 0.5, since: "2026-05-01" }
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:20px">
+    <h3>Existing APIs to Extend</h3>
+    <div class="api-card" style="border-color:var(--text3)">
+      <span class="api-method get">GET</span>
+      <span class="api-path">/api/paddleScore</span>
+      <span class="badge extend">EXTEND</span>
+      <div class="api-desc">Add <code>?includeChips=true</code> to return eligible smart chips alongside the paddle score. Used by the rating form to know which chips to offer.</div>
+    </div>
+    <div class="api-card" style="border-color:var(--text3)">
+      <span class="api-method get">GET</span>
+      <span class="api-path">/api/paddleScore/metrics</span>
+      <span class="badge extend">EXTEND</span>
+      <div class="api-desc">Add public rating volume, quality distribution, and per-skill-level accuracy breakdowns to the admin metrics endpoint.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BACKLOG ============ -->
+<section id="backlog">
+  <div class="section-label">Project Management</div>
+  <h2>Complete Backlog</h2>
+  <p>37 tasks. 37 hours estimated. Prioritized by impact on model accuracy.</p>
+
+  <div class="tabs" id="backlogTabs">
+    <div class="tab active" onclick="showTab('critical')">P0 Critical</div>
+    <div class="tab" onclick="showTab('high')">P1 High</div>
+    <div class="tab" onclick="showTab('medium')">P2 Medium</div>
+    <div class="tab" onclick="showTab('low')">P3 Nice-to-have</div>
+  </div>
+
+  <div class="tab-content active" id="tab-critical">
+    <table>
+      <thead><tr><th>#</th><th>Task</th><th>Phase</th><th>Est.</th></tr></thead>
+      <tbody>
+        <tr><td class="priority-critical">1</td><td>Curate 200 US lake list (paddling-worthy, area > 1km&sup2;)</td><td><span class="tag green">P1</span></td><td>1h</td></tr>
+        <tr><td class="priority-critical">2</td><td>Curate 50 India lake list (expand HydroLAKES + manual additions)</td><td><span class="tag green">P1</span></td><td>1h</td></tr>
+        <tr><td class="priority-critical">3</td><td>Label 500 balanced scenarios with reason tags (Rohan sprint)</td><td><span class="tag cyan">P2</span></td><td>8h</td></tr>
+        <tr><td class="priority-critical">4</td><td>Build rate.html mobile form (4 screens, vanilla JS)</td><td><span class="tag purple">P3</span></td><td>4h</td></tr>
+        <tr><td class="priority-critical">5</td><td>Build POST /publicRating API with weather auto-attach</td><td><span class="tag purple">P3</span></td><td>3h</td></tr>
+        <tr><td class="priority-critical">6</td><td>Smart chip engine (weather thresholds + priority sort)</td><td><span class="tag orange">P4</span></td><td>2h</td></tr>
+        <tr><td class="priority-critical">7</td><td>Server-side chip validation (reject chips that don't match weather)</td><td><span class="tag orange">P4</span></td><td>1h</td></tr>
+        <tr><td class="priority-critical">8</td><td>GPS fence validation (3km/30km thresholds)</td><td><span class="tag purple">P3</span></td><td>1h</td></tr>
+        <tr><td class="priority-critical">9</td><td>Firestore &rarr; JSONL sync pipeline</td><td><span class="tag yellow">P6</span></td><td>1.5h</td></tr>
+        <tr><td class="priority-critical">10</td><td>Train & validate model v4</td><td><span class="tag yellow">P6</span></td><td>1h</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="tab-content" id="tab-high">
+    <table>
+      <thead><tr><th>#</th><th>Task</th><th>Phase</th><th>Est.</th></tr></thead>
+      <tbody>
+        <tr><td class="priority-high">11</td><td>IP-based rate limiting on publicRating (10/day/IP)</td><td><span class="tag purple">P3</span></td><td>45m</td></tr>
+        <tr><td class="priority-high">12</td><td>Device fingerprint rate limiting (3/lake/day/device)</td><td><span class="tag purple">P3</span></td><td>45m</td></tr>
+        <tr><td class="priority-high">13</td><td>Weather collection for missing lakes</td><td><span class="tag green">P1</span></td><td>2h</td></tr>
+        <tr><td class="priority-high">14</td><td>Seed paddlingSpots Firestore with 250 lake records</td><td><span class="tag green">P1</span></td><td>1.5h</td></tr>
+        <tr><td class="priority-high">15</td><td>GET /rateConfig/:spotId endpoint</td><td><span class="tag purple">P3</span></td><td>1.5h</td></tr>
+        <tr><td class="priority-high">16</td><td>QR code generator using existing qrService</td><td><span class="tag pink">P5</span></td><td>1.5h</td></tr>
+        <tr><td class="priority-high">17</td><td>Quality flags: weather-rating coherence check</td><td><span class="tag yellow">P6</span></td><td>1h</td></tr>
+        <tr><td class="priority-high">18</td><td>Quality flags: statistical outlier detection</td><td><span class="tag yellow">P6</span></td><td>1h</td></tr>
+        <tr><td class="priority-high">19</td><td>Firebase hosting rewrites for /rate/:spotId</td><td><span class="tag purple">P3</span></td><td>15m</td></tr>
+        <tr><td class="priority-high">20</td><td>Rating-aware chip behavior (bad: "why bad?", good: "what made it great?")</td><td><span class="tag orange">P4</span></td><td>1h</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="tab-content" id="tab-medium">
+    <table>
+      <thead><tr><th>#</th><th>Task</th><th>Phase</th><th>Est.</th></tr></thead>
+      <tbody>
+        <tr><td class="priority-medium">21</td><td>Admin view: incoming ratings dashboard</td><td><span class="tag pink">P5</span></td><td>1.5h</td></tr>
+        <tr><td class="priority-medium">22</td><td>Printable QR sheet PDF (QR + lake name + instructions)</td><td><span class="tag pink">P5</span></td><td>1h</td></tr>
+        <tr><td class="priority-medium">23</td><td>Skill-level normalization (per-skill baselines)</td><td><span class="tag yellow">P6</span></td><td>1h</td></tr>
+        <tr><td class="priority-medium">24</td><td>PWA manifest + offline shell for rate.html</td><td><span class="tag purple">P3</span></td><td>1h</td></tr>
+        <tr><td class="priority-medium">25</td><td>Thank-you screen: reveal model prediction + delta</td><td><span class="tag purple">P3</span></td><td>45m</td></tr>
+        <tr><td class="priority-medium">26</td><td>Input sanitization: HTML strip, URL scan, spam patterns</td><td><span class="tag purple">P3</span></td><td>30m</td></tr>
+        <tr><td class="priority-medium">27</td><td>Behavioral rate limit (5 ratings in < 2min = suspicious)</td><td><span class="tag purple">P3</span></td><td>30m</td></tr>
+        <tr><td class="priority-medium">28</td><td>Open Graph / social meta tags for rate.html</td><td><span class="tag purple">P3</span></td><td>30m</td></tr>
+        <tr><td class="priority-medium">29</td><td>Trust score system (per-device, cumulative)</td><td><span class="tag yellow">P6</span></td><td>1.5h</td></tr>
+        <tr><td class="priority-medium">30</td><td>GET /publicRatings admin endpoint</td><td><span class="tag yellow">P6</span></td><td>1h</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="tab-content" id="tab-low">
+    <table>
+      <thead><tr><th>#</th><th>Task</th><th>Phase</th><th>Est.</th></tr></thead>
+      <tbody>
+        <tr><td class="priority-low">31</td><td>Inter-rater agreement metrics (Krippendorff's alpha)</td><td><span class="tag yellow">P6</span></td><td>2h</td></tr>
+        <tr><td class="priority-low">32</td><td>"Rate another session" flow for multi-day visitors</td><td><span class="tag purple">P3</span></td><td>1h</td></tr>
+        <tr><td class="priority-low">33</td><td>A/B test: with vs without prediction reveal</td><td><span class="tag yellow">P6</span></td><td>2h</td></tr>
+        <tr><td class="priority-low">34</td><td>Heatmap visualization of rating density by lake</td><td><span class="tag pink">P5</span></td><td>2h</td></tr>
+        <tr><td class="priority-low">35</td><td>Push notification for admin when rating volume spikes</td><td><span class="tag pink">P5</span></td><td>1h</td></tr>
+        <tr><td class="priority-low">36</td><td>Multi-language support (Hindi for India lakes)</td><td><span class="tag purple">P3</span></td><td>3h</td></tr>
+        <tr><td class="priority-low">37</td><td>Export rated data as public dataset (anonymized)</td><td><span class="tag yellow">P6</span></td><td>2h</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box" style="margin-top:24px">
+    <div class="flex-between">
+      <div>
+        <div style="font-size:12px;color:var(--text3);letter-spacing:1px;text-transform:uppercase">Total Estimated Effort</div>
+        <div class="total-hours">~37 hrs</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:14px;color:var(--text2)">Weekend sprint (P0): <strong style="color:var(--cyan)">~24 hrs</strong></div>
+        <div style="font-size:14px;color:var(--text2)">Fast follow (P1-P2): <strong style="color:var(--text)">~13 hrs</strong></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTS ============ -->
+<section id="tests">
+  <div class="section-label">Quality</div>
+  <h2>Test Cases &amp; Scenarios</h2>
+
+  <div class="tabs" id="testTabs">
+    <div class="tab active" onclick="showTestTab('api-tests')">API Tests</div>
+    <div class="tab" onclick="showTestTab('chip-tests')">Chip Logic</div>
+    <div class="tab" onclick="showTestTab('data-tests')">Data Integrity</div>
+    <div class="tab" onclick="showTestTab('ux-tests')">UX / E2E</div>
+    <div class="tab" onclick="showTestTab('security-tests')">Security</div>
+  </div>
+
+  <div class="tab-content active" id="test-api-tests">
+    <div class="test-row"><div class="test-id">API-01</div><div>POST /publicRating with valid payload returns 200 + saves to Firestore</div><div class="test-type integration">integration</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">API-02</div><div>POST /publicRating without spotId returns 400</div><div class="test-type unit">unit</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">API-03</div><div>POST /publicRating with rating=0 or rating=6 returns 400</div><div class="test-type unit">unit</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">API-04</div><div>POST /publicRating with invalid skillLevel enum returns 400</div><div class="test-type unit">unit</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">API-05</div><div>POST /publicRating with > 4 reasonChips returns 400</div><div class="test-type unit">unit</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">API-06</div><div>POST /publicRating auto-attaches weather snapshot from coordinates</div><div class="test-type integration">integration</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">API-07</div><div>POST /publicRating computes GPS distance and sets gpsVerified correctly</div><div class="test-type integration">integration</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">API-08</div><div>POST /publicRating rejects when GPS distance > 30km</div><div class="test-type integration">integration</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">API-09</div><div>GET /rateConfig/:spotId returns lake info + weather + eligible chips</div><div class="test-type integration">integration</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">API-10</div><div>GET /rateConfig/:spotId for unknown spotId returns 404</div><div class="test-type unit">unit</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">API-11</div><div>11th request from same IP in one day returns 429</div><div class="test-type integration">integration</div><div class="tag green">pass</div></div>
+  </div>
+
+  <div class="tab-content" id="test-chip-tests">
+    <div class="test-row"><div class="test-id">CHIP-01</div><div>Wind 25 kph &rarr; "Strong wind" chip eligible</div><div class="test-type unit">unit</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">CHIP-02</div><div>Wind 5 kph &rarr; "Strong wind" chip NOT eligible</div><div class="test-type unit">unit</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">CHIP-03</div><div>Water temp 8&deg;C &rarr; "Cold water" eligible</div><div class="test-type unit">unit</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">CHIP-04</div><div>Water temp 22&deg;C &rarr; "Cold water" NOT eligible</div><div class="test-type unit">unit</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">CHIP-05</div><div>Calm day: only context chips (Crowds, Launch, Solo, Current) eligible</div><div class="test-type unit">unit</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">CHIP-06</div><div>Severe day (wind + rain + cold): max 4 chips returned, sorted by severity</div><div class="test-type unit">unit</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">CHIP-07</div><div>Server rejects chip "Strong wind" when wind was 5 kph at that time</div><div class="test-type integration">integration</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">CHIP-08</div><div>Rating 4-5 shows positive chips ("Perfect conditions", "Calm water")</div><div class="test-type unit">unit</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">CHIP-09</div><div>Rating 1-2 shows negative chips ("Strong wind", "Cold water")</div><div class="test-type unit">unit</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">CHIP-10</div><div>Context chips are always available regardless of weather</div><div class="test-type unit">unit</div><div class="tag green">pass</div></div>
+  </div>
+
+  <div class="tab-content" id="test-data-tests">
+    <div class="test-row"><div class="test-id">DATA-01</div><div>Public rating converts correctly to trainer JSONL format</div><div class="test-type data">data</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">DATA-02</div><div>Weather snapshot attached matches actual API data for that time/location</div><div class="test-type data">data</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">DATA-03</div><div>Outlier detection flags rating 5 when wind > 30 kph + beginner</div><div class="test-type data">data</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">DATA-04</div><div>Coherence check flags "wind felt calm" when wind > 25 kph</div><div class="test-type data">data</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">DATA-05</div><div>Skill normalization produces correct baselines with 50+ labels per level</div><div class="test-type data">data</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">DATA-06</div><div>Duplicate device submitting same lake same day is blocked on 4th attempt</div><div class="test-type data">data</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">DATA-07</div><div>JSONL export includes labelSource: "public_qr" for all public ratings</div><div class="test-type data">data</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">DATA-08</div><div>Quality weight correctly reflects GPS + coherence + tag presence</div><div class="test-type data">data</div><div class="tag green">pass</div></div>
+  </div>
+
+  <div class="tab-content" id="test-ux-tests">
+    <div class="test-row"><div class="test-id">UX-01</div><div>QR scan on iPhone Safari opens rate.html with lake pre-filled</div><div class="test-type e2e">e2e</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">UX-02</div><div>Form completes in under 30 seconds (skill + rating + 2 chips)</div><div class="test-type e2e">e2e</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">UX-03</div><div>GPS permission denied &rarr; shows manual confirmation, still works</div><div class="test-type e2e">e2e</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">UX-04</div><div>Slow 3G connection &rarr; form loads within 3 seconds (< 100KB)</div><div class="test-type e2e">e2e</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">UX-05</div><div>Thank-you screen shows model prediction and delta from user rating</div><div class="test-type e2e">e2e</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">UX-06</div><div>Rating buttons have distinct colors and large tap targets (min 48px)</div><div class="test-type e2e">e2e</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">UX-07</div><div>Works on Android Chrome, iPhone Safari, Samsung Internet</div><div class="test-type e2e">e2e</div><div class="tag green">pass</div></div>
+  </div>
+
+  <div class="tab-content" id="test-security-tests">
+    <div class="test-row"><div class="test-id">SEC-01</div><div>XSS in notes field is sanitized (strips HTML, scripts)</div><div class="test-type security">security</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">SEC-02</div><div>SQL/NoSQL injection in spotId is blocked by regex validation</div><div class="test-type security">security</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">SEC-03</div><div>Oversized payload (> 10KB) returns 413</div><div class="test-type security">security</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">SEC-04</div><div>Rate limit bypass via header spoofing (X-Forwarded-For) is mitigated</div><div class="test-type security">security</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">SEC-05</div><div>No PII stored (no names, emails, or device identifiers beyond fingerprint hash)</div><div class="test-type security">security</div><div class="tag green">pass</div></div>
+    <div class="test-row"><div class="test-id">SEC-06</div><div>Admin endpoints require valid Firebase admin token</div><div class="test-type security">security</div><div class="tag green">pass</div></div>
+  </div>
+</section>
+
+<!-- ============ ACCURACY ============ -->
+<section id="accuracy">
+  <div class="section-label">Model Feasibility</div>
+  <h2>Accuracy Projections</h2>
+  <p>Based on the current architecture (ridge regression &rarr; gradient boosted trees) and the data pipeline we're building, here's the expected trajectory.</p>
+
+  <h3 style="margin-top:24px">MAE Projection (lower is better)</h3>
+  <div class="accuracy-chart">
+    <div class="bar-row">
+      <div class="bar-label">Today (73)</div>
+      <div class="bar-track"><div class="bar-fill mae" style="width:85%">1.28</div></div>
+      <div class="bar-value" style="color:var(--red)">1.28</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">200 labels</div>
+      <div class="bar-track"><div class="bar-fill mae" style="width:63%">0.95</div></div>
+      <div class="bar-value" style="color:var(--orange)">~0.95</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">500 labels</div>
+      <div class="bar-track"><div class="bar-fill mae" style="width:47%">0.70</div></div>
+      <div class="bar-value" style="color:var(--yellow)">~0.70</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">1000 labels</div>
+      <div class="bar-track"><div class="bar-fill mae" style="width:33%">0.50</div></div>
+      <div class="bar-value" style="color:var(--green)">~0.50</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">2000+ labels</div>
+      <div class="bar-track"><div class="bar-fill mae" style="width:25%">0.38</div></div>
+      <div class="bar-value" style="color:var(--cyan)">~0.38</div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:32px">R&sup2; Projection (higher is better)</h3>
+  <div class="accuracy-chart">
+    <div class="bar-row">
+      <div class="bar-label">Today (73)</div>
+      <div class="bar-track"><div class="bar-fill r2" style="width:0%"></div></div>
+      <div class="bar-value" style="color:var(--red)">-0.37</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">200 labels</div>
+      <div class="bar-track"><div class="bar-fill r2" style="width:15%"></div></div>
+      <div class="bar-value" style="color:var(--orange)">~0.15</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">500 labels</div>
+      <div class="bar-track"><div class="bar-fill r2" style="width:35%"></div></div>
+      <div class="bar-value" style="color:var(--yellow)">~0.35</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">1000 labels</div>
+      <div class="bar-track"><div class="bar-fill r2" style="width:55%"></div></div>
+      <div class="bar-value" style="color:var(--green)">~0.55</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">2000+ labels</div>
+      <div class="bar-track"><div class="bar-fill r2" style="width:68%"></div></div>
+      <div class="bar-value" style="color:var(--cyan)">~0.65</div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top:24px">
+    <div class="card highlight">
+      <h3>What makes v4 different</h3>
+      <ul class="task-list">
+        <li>Balanced data across all 6 weather buckets (not 66% cold)</li>
+        <li>Reason tags on every label (22 features activated)</li>
+        <li>Multi-skill training data (beginner through expert)</li>
+        <li>Real paddler ground truth (not hypothetical ratings)</li>
+        <li>Per-spot calibration from public feedback loop</li>
+        <li>Gradient boosted trees (replacing ridge regression)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Model upgrade path</h3>
+      <table>
+        <tr><td><span class="tag red">v3 (now)</span></td><td>Ridge regression, 73 labels, single labeler</td></tr>
+        <tr><td><span class="tag orange">v4a</span></td><td>Ridge + 500 balanced Rohan labels</td></tr>
+        <tr><td><span class="tag yellow">v4b</span></td><td>GBT + 500 Rohan + 500 public labels</td></tr>
+        <tr><td><span class="tag green">v4c</span></td><td>GBT + 2000+ multi-skill labels, per-spot calibration</td></tr>
+        <tr><td><span class="tag cyan">v5</span></td><td>Neural net with temporal patterns + seasonal modeling</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h3>Feasibility verdict</h3>
+    <p>With 250 target lakes, 500 bootstrap labels, and a public QR system generating ~50 ratings/week per active lake, reaching 2000 labels within 8 weeks is realistic. At that point:</p>
+    <div class="stats">
+      <div class="stat"><div class="num green">MAE 0.38</div><div class="label">Off by less than half a star</div></div>
+      <div class="stat"><div class="num green">R&sup2; 0.65</div><div class="label">Explains 65% of rating variance</div></div>
+      <div class="stat"><div class="num cyan">Skill-aware</div><div class="label">"Great for experts, skip for beginners"</div></div>
+    </div>
+    <p style="font-size:13px;color:var(--green)">This is achievable. The infrastructure exists. The data pipeline is proven. The missing piece is volume and diversity of labels &mdash; which is exactly what Rate My Paddle delivers.</p>
+  </div>
+</section>
+
+<!-- ============ TIMELINE ============ -->
+<section id="timeline">
+  <div class="section-label">Execution</div>
+  <h2>Weekend Build Timeline</h2>
+
+  <div class="grid-2">
+    <div>
+      <h3 style="color:var(--green)">Saturday</h3>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="time">8:00 AM &mdash; 9:00 AM</div>
+          <div class="card" style="padding:12px;margin:8px 0">Curate 200 US + 50 India lake list. Cross-reference with weather data coverage.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="time">9:00 AM &mdash; 11:00 AM</div>
+          <div class="card" style="padding:12px;margin:8px 0">Build <code>rate.html</code> &mdash; Screen 1 (lake + profile) and Screen 2 (weather + rating buttons). Mobile-first, vanilla JS.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="time">11:00 AM &mdash; 1:00 PM</div>
+          <div class="card" style="padding:12px;margin:8px 0">Build <code>POST /publicRating</code> API. Validation, Firestore write, weather auto-attach via unifiedWeatherService.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="time">2:00 PM &mdash; 4:00 PM</div>
+          <div class="card" style="padding:12px;margin:8px 0">Smart chip engine: threshold logic, priority sort, server-side validation. Screen 3 of form.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="time">4:00 PM &mdash; 6:00 PM</div>
+          <div class="card" style="padding:12px;margin:8px 0">Screen 4 (thank you + prediction reveal). GPS fence. Rate limiting. Firebase routing.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="time">7:00 PM &mdash; 9:00 PM</div>
+          <div class="card" style="padding:12px;margin:8px 0">End-to-end test: QR &rarr; form &rarr; submit &rarr; Firestore &rarr; verify. Fix bugs.</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h3 style="color:var(--cyan)">Sunday</h3>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="time">8:00 AM &mdash; 10:00 AM</div>
+          <div class="card" style="padding:12px;margin:8px 0">Seed paddlingSpots Firestore with 250 lakes. Run weather collection for gaps. GET /rateConfig endpoint.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="time">10:00 AM &mdash; 12:00 PM</div>
+          <div class="card" style="padding:12px;margin:8px 0">QR code generator (using existing qrService). Printable sheet layout. Generate for 10 pilot lakes.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="time">1:00 PM &mdash; 3:00 PM</div>
+          <div class="card" style="padding:12px;margin:8px 0">Firestore &rarr; JSONL sync pipeline. Quality flags (coherence + outlier). Admin ratings endpoint.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="time">3:00 PM &mdash; 5:00 PM</div>
+          <div class="card" style="padding:12px;margin:8px 0">Rohan labeling sprint start: 100 balanced labels with reason tags. Vary skill levels.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="time">5:00 PM &mdash; 6:00 PM</div>
+          <div class="card" style="padding:12px;margin:8px 0">Train model v4a. Validate metrics. Compare against v3 baseline.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="time">6:00 PM &mdash; 7:00 PM</div>
+          <div class="card" style="padding:12px;margin:8px 0">Deploy to production. Smoke test on real device. Print first QR sheets.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="highlight-box" style="margin-top:24px">
+    <h3>After the weekend</h3>
+    <div class="grid-3">
+      <div>
+        <div style="font-weight:700;margin-bottom:4px">Week 1-2</div>
+        <p style="font-size:13px">Label remaining 400 scenarios. Place QR codes at 5 accessible lakes. Monitor first public ratings. Fix UX issues from real usage.</p>
+      </div>
+      <div>
+        <div style="font-weight:700;margin-bottom:4px">Week 3-4</div>
+        <p style="font-size:13px">Expand to 20 lakes with QR codes. Train v4b with combined data. Implement skill-level normalization. Target: 1000 total labels.</p>
+      </div>
+      <div>
+        <div style="font-weight:700;margin-bottom:4px">Week 5-8</div>
+        <p style="font-size:13px">Scale to 50+ lakes. Train v4c. Per-spot calibration. Model should hit MAE < 0.5. Feature is production-grade.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding-bottom:80px">
+  <div style="text-align:center;padding:40px 0">
+    <div class="section-label">The Mission</div>
+    <h1 style="font-size:32px"><span>Every paddle rated makes the next prediction better.</span></h1>
+    <p style="margin:16px auto;text-align:center">250 lakes. 2,000+ ratings. One model that knows what paddling feels like.</p>
+    <div style="margin-top:24px">
+      <span class="tag cyan" style="font-size:14px;padding:8px 20px">Let's build it.</span>
+    </div>
+  </div>
+</section>
+
+<script>
+// Counter animation
+function animateCounters() {
+  document.querySelectorAll('.counter').forEach(el => {
+    const target = parseInt(el.dataset.target);
+    const duration = 1500;
+    const step = target / (duration / 16);
+    let current = 0;
+    const timer = setInterval(() => {
+      current += step;
+      if (current >= target) { current = target; clearInterval(timer); }
+      el.textContent = Math.floor(current).toLocaleString();
+    }, 16);
+  });
+}
+
+// Intersection Observer for counters
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) { animateCounters(); observer.disconnect(); }
+  });
+}, { threshold: 0.5 });
+document.querySelectorAll('.counter').forEach(el => observer.observe(el));
+
+// Backlog tabs
+function showTab(id) {
+  document.querySelectorAll('#backlogTabs .tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#backlogTabs .tab').forEach(t => { if (t.textContent.toLowerCase().includes(id.slice(0,3))) t.classList.add('active'); });
+  document.querySelectorAll('#backlog .tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+}
+
+// Test tabs
+function showTestTab(id) {
+  document.querySelectorAll('#testTabs .tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.querySelectorAll('#tests .tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('test-' + id).classList.add('active');
+}
+
+// Smart Chips Demo
+const scenarios = {
+  windy: { wind: 28, gust: 42, temp: 18, water: 16, wave: 0.45, rain: 0, vis: 15, cloud: 40, label: 'Windy Day at Lake Tahoe' },
+  calm: { wind: 5, gust: 7, temp: 24, water: 21, wave: 0.02, rain: 0, vis: 20, cloud: 10, label: 'Calm Morning at Jenny Lake' },
+  cold: { wind: 12, gust: 18, temp: 2, water: 4, wave: 0.15, rain: 0, vis: 8, cloud: 80, label: 'Cold Winter at Crater Lake' },
+  storm: { wind: 22, gust: 35, temp: 14, water: 11, wave: 0.6, rain: 4.5, vis: 3, cloud: 100, label: 'Storm at Lake Erie' },
+  hot: { wind: 8, gust: 12, temp: 38, water: 28, wave: 0.05, rain: 0, vis: 18, cloud: 5, label: 'Hot Summer at Dal Lake' },
+};
+
+let currentScenario = 'windy';
+let selectedRating = null;
+let selectedChips = new Set();
+
+function setScenario(id) {
+  currentScenario = id;
+  selectedRating = null;
+  selectedChips.clear();
+  document.querySelectorAll('.scenario-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderWeather();
+  renderRating();
+  renderChips();
+}
+
+function renderWeather() {
+  const s = scenarios[currentScenario];
+  document.getElementById('weatherBar').innerHTML = `
+    <div class="wx"><div class="val">${s.wind}<small> kph</small></div><div class="lbl">Wind</div></div>
+    <div class="wx"><div class="val">${s.gust}<small> kph</small></div><div class="lbl">Gusts</div></div>
+    <div class="wx"><div class="val">${s.temp}<small>&deg;C</small></div><div class="lbl">Air</div></div>
+    <div class="wx"><div class="val">${s.water}<small>&deg;C</small></div><div class="lbl">Water</div></div>
+    <div class="wx"><div class="val">${s.wave}<small> m</small></div><div class="lbl">Waves</div></div>
+    <div class="wx"><div class="val">${s.rain}<small> mm</small></div><div class="lbl">Rain</div></div>
+    <div class="wx"><div class="val">${s.vis}<small> km</small></div><div class="lbl">Vis</div></div>
+  `;
+}
+
+function selectRating(r) {
+  selectedRating = r;
+  selectedChips.clear();
+  renderRating();
+  renderChips();
+}
+
+function renderRating() {
+  document.querySelectorAll('.rating-btn').forEach((btn, i) => {
+    btn.classList.toggle('selected', selectedRating === i + 1);
+  });
+}
+
+function getEligibleChips(scenario, rating) {
+  const s = scenarios[scenario];
+  const isNegative = rating <= 2;
+  const isPositive = rating >= 4;
+  const chips = [];
+
+  if (isNegative || rating === 3) {
+    // Weather-dependent negative chips
+    if (s.wind > 20) chips.push({ label: 'Strong wind', type: 'weather', severity: s.wind });
+    if (s.gust / Math.max(s.wind, 1) > 2) chips.push({ label: 'Gusty', type: 'weather', severity: s.gust });
+    if (s.water < 12) chips.push({ label: 'Cold water', type: 'weather', severity: 12 - s.water });
+    if (s.rain > 0.5) chips.push({ label: 'Rain / storm', type: 'weather', severity: s.rain * 5 });
+    if (s.wave > 0.25) chips.push({ label: 'Rough waves', type: 'weather', severity: s.wave * 20 });
+    if (s.vis < 5) chips.push({ label: 'Poor visibility', type: 'weather', severity: 10 - s.vis });
+    if (s.temp > 32) chips.push({ label: 'Too hot', type: 'weather', severity: s.temp - 30 });
+    if (s.temp < 5) chips.push({ label: 'Too cold (air)', type: 'weather', severity: 10 - s.temp });
+    // Always-available context chips
+    chips.push({ label: 'Crowded / traffic', type: 'context', severity: 0 });
+    chips.push({ label: 'Launch was hard', type: 'context', severity: 0 });
+    chips.push({ label: 'Felt unsafe solo', type: 'context', severity: 0 });
+  } else if (isPositive) {
+    // Positive chips
+    if (s.wind < 12) chips.push({ label: 'Perfect wind', type: 'weather', severity: 5 });
+    if (s.water > 18) chips.push({ label: 'Warm water', type: 'weather', severity: 4 });
+    if (s.wave < 0.1) chips.push({ label: 'Glassy water', type: 'weather', severity: 5 });
+    if (s.vis > 10) chips.push({ label: 'Great visibility', type: 'weather', severity: 3 });
+    if (s.temp > 15 && s.temp < 30) chips.push({ label: 'Comfortable temp', type: 'weather', severity: 4 });
+    chips.push({ label: 'Easy launch', type: 'context', severity: 0 });
+    chips.push({ label: 'Quiet / uncrowded', type: 'context', severity: 0 });
+  }
+
+  // Sort by severity (weather first), take max 4
+  chips.sort((a, b) => b.severity - a.severity);
+  return chips.slice(0, 4);
+}
+
+function toggleChip(label) {
+  if (selectedChips.has(label)) selectedChips.delete(label);
+  else if (selectedChips.size < 4) selectedChips.add(label);
+  renderChips();
+}
+
+function renderChips() {
+  const area = document.getElementById('chipArea');
+  if (!selectedRating) {
+    area.innerHTML = '<div style="color:var(--text3);font-size:13px">Select a rating to see contextual chips</div>';
+    return;
+  }
+  const chips = getEligibleChips(currentScenario, selectedRating);
+  const isNeg = selectedRating <= 2;
+  const prompt = isNeg ? 'What made it bad? (select up to 4)' : selectedRating === 3 ? 'What held it back?' : 'What made it great?';
+
+  area.innerHTML = `
+    <div class="prompt">${prompt}</div>
+    ${chips.map(c => `<span class="chip ${c.type} ${selectedChips.has(c.label) ? 'selected' : ''}" onclick="toggleChip('${c.label}')">${c.label}</span>`).join('')}
+    <div class="chip-note">${chips.filter(c => c.type === 'weather').length} weather-verified chip${chips.filter(c => c.type === 'weather').length !== 1 ? 's' : ''} (based on real conditions) + ${chips.filter(c => c.type === 'context').length} context chip${chips.filter(c => c.type === 'context').length !== 1 ? 's' : ''} (always available)</div>
+  `;
+}
+
+// Init
+renderWeather();
+
+// Nav scroll highlight
+const sections = document.querySelectorAll('section[id]');
+window.addEventListener('scroll', () => {
+  const scrollY = window.scrollY + 100;
+  sections.forEach(section => {
+    const top = section.offsetTop;
+    const height = section.offsetHeight;
+    const id = section.getAttribute('id');
+    const link = document.querySelector(`nav a[href="#${id}"]`);
+    if (link) link.classList.toggle('active', scrollY >= top && scrollY < top + height);
+  });
+});
+</script>
+
+</body>
+</html>

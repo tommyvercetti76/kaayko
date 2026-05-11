@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>ROOTS Translation Pipeline — Kaayko</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<meta name="theme-color" content="#f5c842">
+<style>
+  :root {
+    --gold:#f5c842;--crimson:#e54545;--green:#3dd68c;--cyan:#4ec9e0;
+    --blue:#5b9bd5;--purple:#a97ad4;--orange:#e8884a;
+    --bg:#0d1117;--bg2:#161b22;--bg3:#21262d;
+    --border:#30363d;--text:#e6edf3;--text-dim:#8b949e;--text-muted:#656d76;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'SF Mono','Cascadia Code','Fira Code',Consolas,monospace;background:var(--bg);color:var(--text);font-size:13px;line-height:1.6;height:100vh;display:flex;flex-direction:column}
+
+  .report-header{background:linear-gradient(135deg,#0d1117 0%,#161b22 40%,#1a2332 100%);border-bottom:2px solid var(--gold);padding:20px 32px 16px;position:relative;overflow:hidden;flex-shrink:0}
+  .report-header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 50%,rgba(245,200,66,0.06) 0%,transparent 60%);pointer-events:none}
+  .header-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+  .back-link{font-size:11px;color:var(--text-dim);text-decoration:none;opacity:0.7}
+  .back-link:hover{opacity:1;color:var(--gold)}
+  .ascii-logo{font-size:9px;line-height:1.15;color:var(--gold);white-space:pre;letter-spacing:0.5px}
+  .header-right{text-align:right;font-size:11px;color:var(--text-dim);line-height:1.8;flex-shrink:0}
+  .badge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:600;letter-spacing:0.5px}
+  .badge-ok{background:rgba(61,214,140,0.15);color:var(--green);border:1px solid rgba(61,214,140,0.3)}
+  .badge-warn{background:rgba(232,136,74,0.15);color:var(--orange);border:1px solid rgba(232,136,74,0.3)}
+  .badge-error{background:rgba(229,69,69,0.12);color:var(--crimson);border:1px solid rgba(229,69,69,0.25)}
+  .badge-gold{background:rgba(245,200,66,0.12);color:var(--gold);border:1px solid rgba(245,200,66,0.3)}
+
+  .toolbar{display:flex;align-items:center;gap:10px;padding:10px 32px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
+  .toolbar label{font-size:9px;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);margin-right:-6px}
+  .toolbar select,.toolbar input{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:5px 10px;color:var(--text);font-size:12px;font-family:inherit}
+  .toolbar select:focus,.toolbar input:focus{outline:none;border-color:var(--gold)}
+
+  .workspace{display:grid;grid-template-columns:260px 1fr;flex:1;overflow:hidden;min-height:0}
+  .col{display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border)}
+  .col:last-child{border-right:none}
+  .col-header{padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--border);font-size:9px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--gold);flex-shrink:0;display:flex;justify-content:space-between;align-items:center}
+  .col-body{flex:1;overflow-y:auto;padding:0}
+
+  .q-list-item{padding:10px 14px;border-bottom:1px solid rgba(48,54,61,0.5);cursor:pointer;transition:background 0.15s;display:flex;flex-direction:column;gap:3px}
+  .q-list-item:hover{background:rgba(255,255,255,0.03)}
+  .q-list-item.selected{background:rgba(245,200,66,0.07);border-left:2px solid var(--gold)}
+  .q-list-item.selected .qid{color:var(--gold)}
+  .qid{font-size:10px;color:var(--cyan);font-weight:700}
+  .qtext{font-size:11px;color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px}
+  .qdomain{font-size:9px;color:var(--text-muted);text-transform:capitalize}
+  .q-trans-badges{display:flex;gap:3px;flex-wrap:wrap;margin-top:2px}
+  .trans-badge{font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700}
+  .trans-machine_translated{background:rgba(168,130,255,0.15);color:var(--purple)}
+  .trans-draft{background:rgba(232,136,74,0.15);color:var(--orange)}
+  .trans-reviewed{background:rgba(78,201,224,0.12);color:var(--cyan)}
+  .trans-approved{background:rgba(61,214,140,0.15);color:var(--green)}
+  .trans-none{background:var(--bg3);color:var(--text-muted)}
+
+  .src-panel{padding:14px}
+  .src-panel .block-label{font-size:9px;letter-spacing:0.6px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px}
+  .src-q-text{font-size:12px;color:var(--text);margin-bottom:10px;line-height:1.6}
+  .compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+  .compare-card{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px}
+  .compare-title{font-size:10px;letter-spacing:0.6px;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+  .compare-empty{font-size:11px;color:var(--text-muted);padding:10px 0}
+  .ans-row{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid rgba(48,54,61,0.4);font-size:11px}
+  .ans-row:last-child{border-bottom:none}
+  .ans-grade{font-size:10px;font-weight:700;min-width:36px;color:var(--cyan)}
+  .ans-text{color:var(--text-dim);flex:1}
+  .tag-list{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+  .tag-pill{padding:2px 7px;border-radius:10px;font-size:10px;background:var(--bg3);color:var(--text-dim);border:1px solid var(--border)}
+  .meta-row{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:10px;color:var(--text-muted)}
+  .meta-row span{color:var(--text-dim)}
+
+  .edit-panel{padding:14px}
+  .field-wrap{margin-bottom:10px}
+  .field-wrap label{display:block;font-size:9px;letter-spacing:0.6px;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px}
+  .field-wrap input,.field-wrap textarea,.field-wrap select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:7px 10px;color:var(--text);font-size:12px;font-family:inherit}
+  .field-wrap input:focus,.field-wrap textarea:focus,.field-wrap select:focus{outline:none;border-color:var(--gold)}
+  .field-wrap textarea{resize:vertical;min-height:52px}
+  .ans-edit-row{display:grid;grid-template-columns:38px 1fr;gap:8px;margin-bottom:8px;align-items:start}
+  .ans-edit-row textarea{width:100%;resize:vertical;min-height:52px}
+  .grade-label{font-size:11px;font-weight:700;color:var(--cyan);text-align:center;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:10px 4px;font-family:inherit;line-height:1}
+
+  .btn{font-size:11px;padding:6px 14px;border-radius:4px;cursor:pointer;border:none;font-family:inherit;transition:all 0.15s;letter-spacing:0.3px;font-weight:600}
+  .btn-gold{background:rgba(245,200,66,0.1);color:var(--gold);border:1px solid rgba(245,200,66,0.3)}
+  .btn-gold:hover:not(:disabled){background:rgba(245,200,66,0.2)}
+  .btn-cyan{background:rgba(78,201,224,0.1);color:var(--cyan);border:1px solid rgba(78,201,224,0.25)}
+  .btn-cyan:hover:not(:disabled){background:rgba(78,201,224,0.2)}
+  .btn-green{background:rgba(61,214,140,0.1);color:var(--green);border:1px solid rgba(61,214,140,0.25)}
+  .btn-green:hover:not(:disabled){background:rgba(61,214,140,0.2)}
+  .btn:disabled{opacity:0.35;cursor:not-allowed}
+  .btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+
+  .status-machine_translated{color:var(--purple)}
+  .status-draft{color:var(--orange)}
+  .status-reviewed{color:var(--cyan)}
+  .status-approved{color:var(--green)}
+  .status-queued,.status-pending{color:var(--text-muted)}
+  .status-processing{color:var(--gold)}
+  .status-completed{color:var(--green)}
+  .status-failed{color:var(--crimson)}
+
+  .batch-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:28px 32px}
+  .card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px 18px}
+  .card-title{font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:12px}
+  .notice{font-size:11px;color:var(--text-muted);background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:9px 12px;margin-bottom:10px}
+  .data-table{width:100%;border-collapse:collapse;font-size:11px}
+  .data-table th{padding:7px 10px;text-align:left;font-size:9px;letter-spacing:0.6px;text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border);background:var(--bg3);font-weight:600;white-space:nowrap}
+  .data-table td{padding:7px 10px;border-bottom:1px solid rgba(48,54,61,0.4);color:var(--text-dim);font-variant-numeric:tabular-nums;vertical-align:top}
+  .data-table tr:hover td{background:rgba(255,255,255,0.02)}
+  .table-wrap{overflow-x:auto;border-radius:6px;border:1px solid var(--border)}
+
+  .batch-list-wrap{max-height:420px;overflow-y:auto;border:1px solid var(--border);border-radius:6px}
+  .batch-check-item{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid rgba(48,54,61,0.4);cursor:pointer;transition:background 0.12s;font-size:11px}
+  .batch-check-item:hover{background:rgba(255,255,255,0.02)}
+  .batch-check-item.checked{background:rgba(245,200,66,0.05)}
+  .batch-check-item input[type=checkbox]{accent-color:var(--gold);width:14px;height:14px;cursor:pointer;flex-shrink:0}
+  .batch-check-qid{color:var(--cyan);font-weight:700;min-width:90px}
+  .batch-check-text{color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+  .batch-check-domain{color:var(--text-muted);font-size:10px;min-width:80px;text-align:right}
+  .sel-count{font-size:11px;color:var(--text-dim);margin:8px 0 10px}
+  .sel-count .over{color:var(--crimson);font-weight:700}
+
+  .toast{position:fixed;bottom:20px;right:20px;padding:10px 18px;border-radius:6px;font-size:12px;color:#fff;z-index:9999;opacity:0;transform:translateY(10px);transition:all 0.3s}
+  .toast.visible{opacity:1;transform:translateY(0)}
+  .toast-success{background:rgba(61,214,140,0.9)}
+  .toast-error{background:rgba(229,69,69,0.9)}
+
+  .state-msg{padding:28px;text-align:center;color:var(--text-muted);font-size:11px}
+  .err-msg{font-size:10px;color:var(--crimson);margin-top:4px}
+
+  .review-layout{padding:28px 32px}
+  .form-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px}
+  .form-group{display:flex;flex-direction:column;gap:3px}
+  .form-group label{font-size:9px;letter-spacing:0.6px;text-transform:uppercase;color:var(--text-muted)}
+  .form-group select,.form-group input{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:6px 10px;color:var(--text);font-size:12px;font-family:inherit}
+  .form-group select:focus,.form-group input:focus{outline:none;border-color:var(--gold)}
+
+  .progress-bar-wrap{display:flex;gap:4px;height:18px;border-radius:4px;overflow:hidden;border:1px solid var(--border);background:var(--bg3)}
+  .progress-seg{height:100%;transition:width 0.3s;min-width:0}
+  .progress-seg.seg-approved{background:var(--green)}
+  .progress-seg.seg-reviewed{background:var(--cyan)}
+  .progress-seg.seg-machine_translated{background:var(--orange)}
+  .progress-seg.seg-draft{background:var(--purple)}
+  .progress-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:10px;color:var(--text-dim);margin-top:6px}
+  .progress-legend-dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px;vertical-align:middle}
+
+  .quality-badge{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:700;min-width:28px;text-align:center}
+  .quality-high{background:rgba(61,214,140,0.15);color:var(--green)}
+  .quality-mid{background:rgba(245,200,66,0.12);color:var(--gold)}
+  .quality-low{background:rgba(229,69,69,0.12);color:var(--crimson)}
+
+  .bulk-bar{display:flex;gap:8px;align-items:center;padding:10px 0;flex-wrap:wrap}
+  .bulk-bar .count{font-size:11px;color:var(--text-dim)}
+
+  .main-content{padding:20px 24px 40px}
+  .section-title{font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--gold);margin:24px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+  .section-title:first-child{margin-top:0}
+  .qid-header{font-size:13px;color:var(--cyan);font-weight:700}
+  .domain-header{font-size:10px;color:var(--text-muted);text-transform:capitalize;margin-bottom:6px}
+
+  .ans-compare-table{border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-top:12px}
+  .ans-compare-head{display:grid;grid-template-columns:1fr 1fr;background:var(--bg3);padding:6px 10px;font-size:9px;letter-spacing:0.6px;text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border)}
+  .ans-compare-row{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid rgba(48,54,61,0.4)}
+  .ans-compare-row:last-child{border-bottom:none}
+  .ans-compare-cell{display:flex;gap:8px;padding:7px 10px;font-size:11px}
+  .ans-compare-cell:first-child{border-right:1px solid var(--border)}
+
+  .ans-edit-compare{display:grid;grid-template-columns:38px 1fr 1fr;gap:10px;margin-bottom:6px;align-items:start}
+  .ans-edit-src{font-size:11px;color:var(--text-muted);padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:4px;min-height:52px;line-height:1.5}
+
+  .action-bar{display:flex;gap:10px;align-items:center;padding:14px 0;border-top:1px solid var(--border);margin-top:14px;flex-wrap:wrap}
+
+  .quality-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-top:10px}
+  .quality-flag-card{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px 12px}
+  .quality-flag-card.pass{border-left:3px solid var(--green)}
+  .quality-flag-card.fail{border-left:3px solid var(--crimson)}
+  .flag-name{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
+  .flag-name.pass{color:var(--green)}
+  .flag-name.fail{color:var(--crimson)}
+  .flag-detail{font-size:10px;color:var(--text-dim)}
+
+  .backtrans-box{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:12px;margin-top:10px}
+  .backtrans-compare{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+  .backtrans-label{font-size:9px;letter-spacing:0.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px}
+  .backtrans-text{font-size:11px;color:var(--text-dim);line-height:1.6}
+
+  .llm-review-box{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:12px;margin-top:10px}
+  .dim-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(48,54,61,0.3)}
+  .dim-row:last-child{border-bottom:none}
+  .dim-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;min-width:130px;color:var(--text-dim)}
+  .dim-score-bar{display:flex;gap:3px}
+  .dim-pip{width:18px;height:7px;border-radius:2px;background:var(--bg3);border:1px solid var(--border)}
+  .dim-pip.filled{background:var(--gold);border-color:var(--gold)}
+  .dim-pip.filled.high{background:var(--green);border-color:var(--green)}
+  .dim-pip.filled.low{background:var(--crimson);border-color:var(--crimson)}
+  .dim-note{font-size:10px;color:var(--text-dim);flex:1}
+  .issues-list{margin-top:8px;padding-left:16px}
+  .issues-list li{font-size:10px;color:var(--orange);margin-bottom:4px;line-height:1.5}
+
+  .quality-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+  .suggest-panel{background:var(--bg2);border:1px solid rgba(245,200,66,0.3);border-radius:6px;padding:14px;margin-top:14px}
+  .suggest-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .suggest-title{font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.5px}
+  .suggest-diff{border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:8px}
+  .suggest-diff-head{display:grid;grid-template-columns:100px 1fr 1fr 60px;background:var(--bg3);padding:6px 10px;font-size:9px;letter-spacing:0.5px;text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border)}
+  .suggest-diff-row{display:grid;grid-template-columns:100px 1fr 1fr 60px;border-bottom:1px solid rgba(48,54,61,0.4);font-size:11px;align-items:start}
+  .suggest-diff-row:last-child{border-bottom:none}
+  .suggest-diff-row>div{padding:8px 10px}
+  .suggest-field{font-size:10px;font-weight:700;color:var(--cyan);text-transform:uppercase}
+  .suggest-current{color:var(--text-muted);background:rgba(229,69,69,0.04)}
+  .suggest-new{color:var(--text);background:rgba(61,214,140,0.04)}
+  .suggest-accept{text-align:center}
+
+  @media(max-width:1100px){.workspace{grid-template-columns:220px 1fr}.batch-layout{grid-template-columns:1fr}}
+  @media(max-width:800px){.workspace{grid-template-columns:1fr;height:auto;flex-direction:column}}
+</style>
+</head>
+<body>
+
+<div class="report-header">
+  <div class="header-top">
+    <div style="display:flex;flex-direction:column;gap:5px">
+      <a href="../" class="back-link">&larr; ROOTS Admin</a>
+      <pre class="ascii-logo"> ____   ___   ___  _____ ____
+|  _ \ / _ \ / _ \|_   _/ ___|
+| |_) | | | | | | | | | \___ \
+|  _ &lt;| |_| | |_| | | |  ___) |
+|_| \_\\___/ \___/  |_| |____/</pre>
+      <div style="font-size:10px;color:var(--text-muted)">TRANSLATION PIPELINE &middot; LOCAL MACHINE TRANSLATION &middot; REVIEW &amp; APPROVE</div>
+    </div>
+    <div class="header-right">
+      <div id="auth-status" style="color:var(--text-muted)">Authenticating&hellip;</div>
+      <div id="login-form" style="display:none;margin-top:6px">
+        <input id="login-email" type="email" placeholder="Email" style="background:#1a1a2e;border:1px solid #333;color:#e0e0e0;padding:4px 8px;border-radius:4px;font-size:11px;width:180px;margin-bottom:4px;display:block;font-family:inherit">
+        <input id="login-password" type="password" placeholder="Password" style="background:#1a1a2e;border:1px solid #333;color:#e0e0e0;padding:4px 8px;border-radius:4px;font-size:11px;width:180px;margin-bottom:4px;display:block;font-family:inherit">
+        <button onclick="emailLogin()" style="background:var(--green);color:#000;border:none;padding:4px 12px;border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit;margin-right:4px">Sign In</button>
+        <button onclick="googleLogin()" style="background:#4285f4;color:#fff;border:none;padding:4px 12px;border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit">Google</button>
+        <div id="login-error" style="color:#ef4444;font-size:10px;margin-top:4px"></div>
+      </div>
+      <a href="#" id="sign-out-link" style="display:none;font-size:10px;color:var(--text-muted);text-decoration:underline;cursor:pointer" onclick="fbAuth.signOut();location.reload();return false;">Sign out</a>
+      <div style="margin-top:6px"><span class="badge badge-gold" id="badge-status">&#10227; LOADING</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div style="display:flex;align-items:center;gap:6px">
+    <label>Source</label>
+    <select id="g-source" onchange="onSourceChange()">
+      <option value="parent">Parent</option>
+      <option value="teacher">Teacher</option>
+      <option value="child">Child</option>
+      <option value="generated">Generated</option>
+    </select>
+  </div>
+  <div style="display:flex;align-items:center;gap:6px">
+    <label>Locale</label>
+    <select id="g-locale" onchange="onLocaleChange()">
+      <option value="hi">Hindi (hi)</option>
+      <option value="mr">Marathi (mr)</option>
+    </select>
+  </div>
+  <button class="btn btn-gold" onclick="loadBank()" id="btn-load-bank">Load All</button>
+  <div id="bank-status" style="font-size:10px;color:var(--text-muted)"></div>
+  <div style="margin-left:auto;display:flex;gap:6px">
+    <button class="btn btn-cyan" onclick="showTab('individual')" id="tab-ind-btn" style="border-bottom:2px solid var(--cyan)">Individual</button>
+    <button class="btn" onclick="showTab('batch')" id="tab-batch-btn" style="border:1px solid var(--border);color:var(--text-muted)">Batch</button>
+    <button class="btn" onclick="showTab('review')" id="tab-review-btn" style="border:1px solid var(--border);color:var(--text-muted)">Review Queue</button>
+  </div>
+</div>
+
+<div id="tab-individual" style="flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0">
+  <div class="workspace">
+    <div class="col">
+      <div class="col-header">
+        <span>Questions <span id="q-list-count" style="color:var(--text-muted);font-weight:400"></span></span>
+        <input id="q-search" type="text" placeholder="Search..." oninput="filterList()" style="width:100px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:3px 7px;color:var(--text);font-size:11px;font-family:inherit">
+      </div>
+      <div class="col-body" id="q-list">
+        <div class="state-msg">Select source &amp; locale, then click Load All</div>
+      </div>
+    </div>
+
+    <div class="col" style="border-right:none">
+      <div class="col-header">
+        <span>Translate &amp; Validate</span>
+        <span id="edit-locale-label" style="color:var(--cyan);font-weight:400"></span>
+      </div>
+      <div class="col-body" style="overflow-y:auto">
+        <div id="main-panel">
+          <div class="state-msg">Select a question from the list</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="tab-batch" style="display:none;overflow-y:auto;flex:1">
+  <div class="batch-layout">
+    <div class="card">
+      <div class="card-title">Select Questions (max 25)</div>
+      <div class="notice">Check up to 25 questions from the loaded source. Source &amp; locale are controlled by the toolbar above.</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+        <button class="btn btn-cyan" onclick="selectAllBatch()" style="font-size:10px;padding:4px 10px">Select All Visible</button>
+        <button class="btn" onclick="clearBatchSel()" style="font-size:10px;padding:4px 10px;border:1px solid var(--border);color:var(--text-muted)">Clear</button>
+        <input id="batch-search" type="text" placeholder="Filter..." oninput="filterBatchList()" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:4px 9px;color:var(--text);font-size:11px;font-family:inherit;flex:1;min-width:80px">
+      </div>
+      <div class="sel-count" id="batch-sel-count">0 selected</div>
+      <div id="batch-err" class="err-msg" style="margin-bottom:8px"></div>
+      <div class="batch-list-wrap" id="batch-list">
+        <div class="state-msg">Load questions via toolbar first</div>
+      </div>
+      <div style="margin-top:12px">
+        <button class="btn btn-gold" onclick="runBatch()" id="btn-run-batch">Run Batch Translation</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Recent Batches</div>
+      <button class="btn btn-cyan" onclick="loadBatches()" style="margin-bottom:12px;font-size:10px;padding:4px 10px">Refresh</button>
+      <div id="batches-wrap"><div class="state-msg">Sign in to load</div></div>
+    </div>
+  </div>
+</div>
+
+<div id="tab-review" style="display:none;overflow-y:auto;flex:1">
+  <div class="review-layout">
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Translation Progress</div>
+      <div id="progress-stats" style="margin-bottom:8px"><div class="state-msg" style="padding:8px 0">Click Load to see progress</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Translation Review Queue</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Source</label>
+          <select id="rv-source"><option value="">All</option><option value="parent">Parent</option><option value="teacher">Teacher</option><option value="child">Child</option><option value="generated">Generated</option></select>
+        </div>
+        <div class="form-group">
+          <label>Locale</label>
+          <select id="rv-locale"><option value="">All</option><option value="hi">Hindi</option><option value="mr">Marathi</option></select>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="rv-status"><option value="">All</option><option value="machine_translated">Machine Translated</option><option value="draft">Draft</option><option value="reviewed">Reviewed</option><option value="approved">Approved</option></select>
+        </div>
+        <div class="form-group"><label>Limit</label><input id="rv-limit" type="number" value="50" style="width:70px"></div>
+        <button class="btn btn-gold" onclick="loadReviewQueue()" style="margin-top:16px">Load</button>
+        <button class="btn btn-green" onclick="approveAllVisible()" style="margin-top:16px;font-size:10px">Approve Visible</button>
+        <button class="btn btn-cyan" onclick="publishApprovedVisible()" style="margin-top:16px;font-size:10px">Push All Approved -> Assessment</button>
+        <button class="btn" onclick="loadAssessmentPack()" style="margin-top:16px;border:1px solid var(--border);color:var(--text-muted);font-size:10px">See Assessment Pack</button>
+        <button class="btn btn-cyan" onclick="scoreAllVisible()" id="btn-score-all" style="margin-top:16px;font-size:10px">Score All</button>
+      </div>
+      <div class="bulk-bar" id="bulk-bar" style="display:none">
+        <span class="count" id="rv-sel-count">0 selected</span>
+        <button class="btn btn-green" onclick="bulkApprove()" style="font-size:10px;padding:4px 10px">Bulk Approve</button>
+        <button class="btn btn-cyan" onclick="bulkReview()" style="font-size:10px;padding:4px 10px">Bulk Mark Reviewed</button>
+        <button class="btn" onclick="clearReviewSel()" style="font-size:10px;padding:4px 10px;border:1px solid var(--border);color:var(--text-muted)">Clear</button>
+      </div>
+      <div id="review-wrap"><div class="state-msg">Click Load</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script>
+var firebaseConfig={apiKey:'AIzaSyC1JxbMdlXXLiMQQ4xhcjHRzgFbg12mMcA',authDomain:'coolschools-72426.firebaseapp.com',projectId:'coolschools-72426'};
+firebase.initializeApp(firebaseConfig);
+var fbAuth=firebase.auth();
+var _qs=new URLSearchParams(location.search);
+var _apiParam=(_qs.get('api')||'').replace(/\/+$/,'');
+var _apiBase=(_apiParam||'https://cool-schools-api-420407869747.us-central1.run.app')+'/api/v1/roots/prototype-admin';
+var API_BANK=_apiBase;
+var API_TR=_apiBase;
+var DEV_MODE=_qs.get('dev')==='1';
+var rootsToken=DEV_MODE?'dev':null;
+var allBankQuestions=[];
+var translationMap={};
+var filteredQuestions=[];
+var selectedQid=null;
+var currentBundle=null;
+var batchSelected=new Set();
+
+function googleLogin(){fbAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(function(e){document.getElementById('login-error').textContent=e.message})}
+function emailLogin(){
+  var em=document.getElementById('login-email').value.trim();
+  var pw=document.getElementById('login-password').value;
+  if(!em||!pw){document.getElementById('login-error').textContent='Enter email and password';return;}
+  document.getElementById('login-error').textContent='Signing in...';
+  fbAuth.signInWithEmailAndPassword(em,pw).catch(function(e){document.getElementById('login-error').textContent=e.message});
+}
+document.addEventListener('keydown',function(e){if(e.key==='Enter'&&document.activeElement&&(document.activeElement.id==='login-email'||document.activeElement.id==='login-password'))emailLogin()});
+if(DEV_MODE){
+  var s=document.getElementById('auth-status');
+  s.textContent='DEV MODE (local)';s.style.color='#f59e0b';
+  document.getElementById('login-form').style.display='none';
+  document.getElementById('badge-status').textContent='● READY';document.getElementById('badge-status').className='badge badge-ok';
+  loadBatches();
+}
+fbAuth.onAuthStateChanged(async function(user){
+  if(DEV_MODE)return;
+  var s=document.getElementById('auth-status');
+  if(!user){
+    s.textContent='Sign in to continue';s.style.color='#f59e0b';
+    document.getElementById('login-form').style.display='block';
+    document.getElementById('badge-status').textContent='○ NOT SIGNED IN';
+    document.getElementById('badge-status').className='badge badge-warn';
+    return;
+  }
+  document.getElementById('login-form').style.display='none';
+  var tr=await user.getIdTokenResult(true);
+  var role=tr.claims.rootsRole||tr.claims.role;
+  var allowed=['system','admin','superadmin','school_admin','organization_admin'];
+  if(!role||!allowed.includes(role)){
+    s.textContent='Access denied - role: '+(role||'none');s.style.color='#ef4444';
+    document.getElementById('badge-status').textContent='⊘ UNAUTHORIZED';
+    document.getElementById('badge-status').className='badge badge-error';return;
+  }
+  rootsToken=tr.token;
+  s.textContent=user.email+' · '+role;s.style.color='#3dd68c';
+  document.getElementById('sign-out-link').style.display='inline';
+  document.getElementById('badge-status').textContent='● READY';
+  document.getElementById('badge-status').className='badge badge-ok';
+  setInterval(async function(){rootsToken=await user.getIdToken(true)},50*60*1000);
+  loadBatches();
+});
+
+async function api(method,path,body,baseUrl){
+  async function ensureToken(forceRefresh){
+    if(rootsToken && !forceRefresh) return rootsToken;
+    var user=fbAuth.currentUser;
+    if(!user) return null;
+    rootsToken=await user.getIdToken(!!forceRefresh);
+    return rootsToken;
+  }
+
+  var token=await ensureToken(false);
+  if(!token) throw new Error('Not authenticated. Please sign in again.');
+
+  var base=baseUrl||API_TR;
+  var opts={method:method,headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}};
+  if(body)opts.body=JSON.stringify(body);
+  var res=await fetch(base+path,opts);
+  if(res.status===401){
+    token=await ensureToken(true);
+    if(!token) throw new Error('Session expired. Please sign in again.');
+    opts.headers.Authorization='Bearer '+token;
+    res=await fetch(base+path,opts);
+  }
+
+  var data;
+  try{data=await res.json();}
+  catch(_){data={};}
+
+  if(res.status===401||res.status===403)throw new Error('Unauthorized ('+res.status+')');
+  if(!res.ok)throw new Error((data.error&&data.error.message)||data.message||data.error||('HTTP '+res.status));
+  return data;
+}
+function showToast(msg,type){var el=document.getElementById('toast');el.textContent=msg;el.className='toast toast-'+(type||'success')+' visible';setTimeout(function(){el.classList.remove('visible')},3500)}
+function statusClass(s){return s?'status-'+(s+'').toLowerCase():''}
+function escHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function unwrapData(payload){return payload&&payload.data!==undefined?payload.data:payload}
+function showProcessLog(text){
+  var log=document.getElementById('process-log');
+  if(log){log.style.display='block';log.textContent=text;}
+}
+function appendProcessLog(text){
+  var log=document.getElementById('process-log');
+  if(!log)return;
+  log.style.display='block';
+  log.textContent+=(log.textContent?'\n':'')+text;
+}
+function summarizeRuntime(runtime){
+  if(!runtime)return 'Runtime diagnostics unavailable';
+  var lines=[];
+  lines.push('Environment: '+runtime.environment);
+  lines.push('Model: '+runtime.model);
+  lines.push('Base URL: '+runtime.baseUrl);
+  lines.push('Ready: '+(runtime.ready?'yes':'no'));
+  if(Array.isArray(runtime.checks)){
+    runtime.checks.forEach(function(check){
+      lines.push(' - ['+(check.ok?'OK':'FAIL')+'] '+check.step+' :: '+check.detail+(typeof check.elapsedMs==='number'?' ('+check.elapsedMs+'ms)':''));
+    });
+  }
+  if(Array.isArray(runtime.availableModels)&&runtime.availableModels.length){
+    lines.push('Available models: '+runtime.availableModels.join(', '));
+  }
+  return lines.join('\n');
+}
+
+function showTab(name){
+  ['individual','batch','review'].forEach(function(t){document.getElementById('tab-'+t).style.display='none'});
+  document.getElementById('tab-'+name).style.display='flex';
+  if(name==='batch')document.getElementById('tab-'+name).style.display='block';
+  if(name==='review')document.getElementById('tab-'+name).style.display='block';
+  ['ind','batch','review'].forEach(function(t){
+    var btn=document.getElementById('tab-'+t+'-btn');
+    btn.style.borderBottom='';btn.style.color='var(--text-muted)';btn.style.border='1px solid var(--border)';
+  });
+  var active=document.getElementById('tab-'+(name==='individual'?'ind':name)+'-btn');
+  active.style.border='1px solid var(--cyan)';active.style.color='var(--cyan)';
+}
+
+function onSourceChange(){
+  allBankQuestions=[];
+  filteredQuestions=[];
+  selectedQid=null;
+  currentBundle=null;
+  document.getElementById('q-list').innerHTML='<div class="state-msg">Click Load All to fetch questions</div>';
+  document.getElementById('main-panel').innerHTML='<div class="state-msg">Select a question from the list</div>';
+}
+function onLocaleChange(){
+  var locale=document.getElementById('g-locale').value;
+  document.getElementById('edit-locale-label').textContent=locale.toUpperCase();
+  if(allBankQuestions.length)renderList(filteredQuestions);
+  if(currentBundle)renderMainPanel(currentBundle,locale);
+}
+
+async function loadBank(){
+  if(!rootsToken){showToast('Sign in first','error');return;}
+  var source=document.getElementById('g-source').value;
+  var locale=document.getElementById('g-locale').value;
+  var btn=document.getElementById('btn-load-bank');
+  var status=document.getElementById('bank-status');
+  btn.disabled=true;
+  status.textContent='Loading bank...';
+  document.getElementById('q-list').innerHTML='<div class="state-msg">Loading...</div>';
+  try{
+    var results=await Promise.all([
+      api('GET','/question-bank-full',null,API_BANK),
+      api('GET','/translations?source='+source+'&locale='+locale+'&limit=200')
+    ]);
+    var bankData=unwrapData(results[0]);
+    var trData=unwrapData(results[1]);
+    translationMap={};
+    var trList=Array.isArray(trData)?trData:[];
+    trList.forEach(function(t){
+      if(!translationMap[t.questionId])translationMap[t.questionId]={};
+      translationMap[t.questionId][t.locale]=t;
+    });
+    var bank=bankData||{};
+    allBankQuestions=Object.keys(bank).map(function(id){return Object.assign({id:id},bank[id])})
+      .filter(function(q){return q.role===source})
+      .sort(function(a,b){
+        var an=parseInt(a.id.replace(/\D+/g,''),10)||0;
+        var bn=parseInt(b.id.replace(/\D+/g,''),10)||0;
+        return an-bn||a.id.localeCompare(b.id);
+      });
+    filteredQuestions=allBankQuestions.slice();
+    renderList(filteredQuestions);
+    renderBatchList(filteredQuestions);
+    status.textContent=allBankQuestions.length+' questions loaded';
+    document.getElementById('q-list-count').textContent='('+allBankQuestions.length+')';
+  }catch(e){
+    document.getElementById('q-list').innerHTML='<div class="state-msg" style="color:var(--crimson)">Error: '+e.message+'</div>';
+    status.textContent='Error';
+    showToast(e.message,'error');
+  }
+  btn.disabled=false;
+}
+
+function filterList(){
+  var q=document.getElementById('q-search').value.toLowerCase();
+  filteredQuestions=q?allBankQuestions.filter(function(item){return item.id.toLowerCase().includes(q)||(item.text||'').toLowerCase().includes(q)||(item.domain||'').toLowerCase().includes(q)}):allBankQuestions.slice();
+  renderList(filteredQuestions);
+  document.getElementById('q-list-count').textContent='('+filteredQuestions.length+(q?' / '+allBankQuestions.length:'')+')';
+}
+
+function renderList(items){
+  var locale=document.getElementById('g-locale').value;
+  var html='';
+  items.forEach(function(q){
+    var tMap=translationMap[q.id]||{};
+    var tLocale=tMap[locale];
+    var qsBadge=tLocale&&tLocale.qualityScore?' '+qualityBadgeHtml(tLocale.qualityScore.overall):'';
+    var badgeHtml=tLocale
+      ? '<div class="q-trans-badges"><span class="trans-badge trans-'+tLocale.status+'">'+locale.toUpperCase()+' • '+tLocale.status+'</span>'+qsBadge+'</div>'
+      : '<div class="q-trans-badges"><span class="trans-badge trans-none">'+locale.toUpperCase()+' • none</span></div>';
+    var textPreview=(q.text||'').substring(0,60)+(q.text&&q.text.length>60?'...':'');
+    var sel=selectedQid===q.id?' selected':'';
+    html+='<div class="q-list-item'+sel+'" onclick="selectQuestion(\''+q.id+'\')"><span class="qid">'+q.id+'</span><span class="qtext">'+escHtml(textPreview)+'</span><span class="qdomain">'+escHtml(q.domain||'')+'</span>'+badgeHtml+'</div>';
+  });
+  document.getElementById('q-list').innerHTML=html||'<div class="state-msg">No questions match</div>';
+}
+
+async function selectQuestion(qid){
+  selectedQid=qid;
+  renderList(filteredQuestions);
+  var source=document.getElementById('g-source').value;
+  var locale=document.getElementById('g-locale').value;
+  document.getElementById('edit-locale-label').textContent=locale.toUpperCase();
+  document.getElementById('main-panel').innerHTML='<div class="state-msg">Loading...</div>';
+  try{
+    var response=await api('GET','/translations/questions/'+source+'/'+qid);
+    currentBundle=unwrapData(response);
+    renderMainPanel(currentBundle,locale);
+  }catch(e){
+    document.getElementById('main-panel').innerHTML='<div class="state-msg" style="color:var(--crimson)">'+e.message+'</div>';
+  }
+}
+
+function renderMainPanel(data,locale){
+  var q=data.sourceQuestion;
+  var existing=(data.translations||[]).find(function(entry){return entry.locale===locale&&entry.exists&&entry.data;});
+  var record=existing&&existing.data||null;
+  var t=record&&record.translation||null;
+  var status=record&&record.status||'none';
+
+  var html='<div class="main-content">';
+
+  // Header
+  html+='<div class="qid-header">'+(q.questionId||selectedQid)+' <span style="color:var(--text-muted);font-weight:400">&middot; '+escHtml(q.domain||'')+'</span></div>';
+  html+='<div class="domain-header">Status: <span class="'+statusClass(status)+'">'+status+'</span></div>';
+
+  // Side-by-side comparison
+  html+='<div class="section-title" style="margin-top:0">Source vs Translation</div>';
+  html+='<div class="compare-grid">';
+  html+='<div class="compare-card"><div class="compare-title">Source (English)</div>';
+  html+='<div class="src-q-text">'+escHtml(q.question||q.text||'')+'</div></div>';
+  html+='<div class="compare-card"><div class="compare-title">Translated ('+locale.toUpperCase()+')</div>';
+  if(t){html+='<div class="src-q-text">'+escHtml(t.question||'')+'</div>';}
+  else{html+='<div class="compare-empty">No translation yet</div>';}
+  html+='</div></div>';
+
+  // Answers side-by-side
+  if(q.answers&&q.answers.length){
+    html+='<div class="ans-compare-table">';
+    html+='<div class="ans-compare-head"><div>Source Answers</div><div>Translated Answers</div></div>';
+    q.answers.forEach(function(a,i){
+      var tt=t&&t.answers&&t.answers[i]?(t.answers[i].text||''):'—';
+      html+='<div class="ans-compare-row">';
+      html+='<div class="ans-compare-cell"><span class="ans-grade">'+(a.grade||'')+'</span><span class="ans-text">'+escHtml(a.text||'')+'</span></div>';
+      html+='<div class="ans-compare-cell"><span class="ans-grade">'+(a.grade||'')+'</span><span class="ans-text">'+escHtml(tt)+'</span></div>';
+      html+='</div>';
+    });
+    html+='</div>';
+  }
+
+  // Tags side-by-side
+  if(q.tags&&q.tags.length){
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">';
+    html+='<div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Source Tags</div><div class="tag-list">';
+    q.tags.forEach(function(tag){html+='<span class="tag-pill">'+escHtml(tag)+'</span>';});
+    html+='</div></div>';
+    html+='<div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Translated Tags</div><div class="tag-list">';
+    if(t&&t.tags){t.tags.forEach(function(tag){html+='<span class="tag-pill">'+escHtml(tag)+'</span>';});}
+    else{html+='<span style="font-size:10px;color:var(--text-muted)">—</span>';}
+    html+='</div></div></div>';
+  }
+
+  // Editor section
+  html+='<div class="section-title">Edit Translation</div>';
+  html+='<div class="field-wrap"><label>Question</label><textarea id="eq" rows="3" style="font-size:13px;line-height:1.6">'+escHtml(t&&t.question||'')+'</textarea></div>';
+
+  if(q.answers&&q.answers.length){
+    html+='<div class="field-wrap"><label>Answers ('+q.answers.length+') — source shown for reference</label>';
+    q.answers.forEach(function(a,i){
+      var tt=t&&t.answers&&t.answers[i]?(t.answers[i].text||''):'';
+      html+='<div class="ans-edit-compare">';
+      html+='<div class="grade-label">'+(a.grade||'')+'</div>';
+      html+='<div class="ans-edit-src">'+escHtml(a.text||'')+'</div>';
+      html+='<textarea id="ea-'+i+'" rows="2" placeholder="Translated answer">'+escHtml(tt)+'</textarea>';
+      html+='</div>';
+    });
+    html+='</div>';
+  }
+
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
+  html+='<div class="field-wrap"><label>Domain Label</label><input type="text" id="edl" value="'+escHtml(t&&t.domainLabel||'')+'"></div>';
+  html+='<div class="field-wrap"><label>Tags (comma-separated)</label><input type="text" id="etags" value="'+escHtml(t&&t.tags?t.tags.join(', '):'')+'"></div>';
+  html+='</div>';
+  html+='<div class="field-wrap"><label>Rationale</label><textarea id="erat" rows="2">'+escHtml(t&&t.rationale||'')+'</textarea></div>';
+
+  // Action bar
+  html+='<div class="action-bar">';
+  html+='<button class="btn btn-cyan" onclick="runTranslate()">&#9889; Translate</button>';
+  html+='<button class="btn btn-gold" onclick="runSuggestCorrections()">&#9998; Suggest Corrections</button>';
+  html+='<select id="estatus" style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:7px 10px;color:var(--text);font-size:12px;font-family:inherit">';
+  html+='<option value="draft"'+(status==='draft'?' selected':'')+'>Draft</option>';
+  html+='<option value="reviewed"'+(status==='reviewed'?' selected':'')+'>Reviewed</option>';
+  html+='<option value="approved"'+(status==='approved'?' selected':'')+'>Approved</option>';
+  html+='</select>';
+  html+='<button class="btn btn-green" onclick="saveTranslation()">Save</button>';
+  html+='<div id="edit-msg" class="err-msg" style="margin:0"></div>';
+  html+='</div>';
+  html+='<div id="suggest-panel"></div>';
+
+  // Quality Validation section
+  html+='<div class="section-title">Quality Validation</div>';
+  html+='<div class="quality-actions">';
+  html+='<button class="btn btn-gold" onclick="runQualityCheck()">Heuristic Check + Backtranslation</button>';
+  html+='<button class="btn btn-cyan" onclick="runLlmReview()">LLM Review</button>';
+  html+='<button class="btn" onclick="checkRuntimeStatus()" style="border:1px solid var(--border);color:var(--text-muted);font-size:10px;padding:5px 10px">Runtime Status</button>';
+  html+='</div>';
+  html+='<div id="quality-flags"></div>';
+  html+='<div id="backtrans-panel"></div>';
+  html+='<div id="llm-review-panel"></div>';
+  html+='<pre id="process-log" style="margin-top:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:8px 10px;color:var(--text-dim);font-size:10px;line-height:1.5;white-space:pre-wrap;max-height:120px;overflow-y:auto;display:none"></pre>';
+
+  html+='</div>';
+
+  document.getElementById('main-panel').innerHTML=html;
+  document.getElementById('main-panel').dataset.ansCount=(q.answers||[]).length;
+
+  // Render existing quality/review data if present
+  if(record&&record.qualityScore)renderQualityFlags(record.qualityScore);
+  if(record&&record.llmReview)renderLlmReview(record.llmReview);
+}
+
+async function checkRuntimeStatus(){
+  var msg=document.getElementById('edit-msg');
+  if(msg)msg.textContent='Checking runtime...';
+  showProcessLog('[1/2] Fetching runtime diagnostics...');
+  try{
+    var statusResponse=await api('GET','/translations/runtime-status');
+    var runtime=unwrapData(statusResponse);
+    appendProcessLog('[2/2] Runtime diagnostics received');
+    appendProcessLog(summarizeRuntime(runtime));
+    if(msg)msg.textContent='';
+    return runtime;
+  }catch(e){
+    appendProcessLog('Runtime check failed: '+(e&&e.message?e.message:e));
+    if(msg)msg.textContent=e.message||String(e);
+    throw e;
+  }
+}
+
+async function runTranslate(){
+  if(!currentBundle){showToast('Select a question first','error');return;}
+  var source=document.getElementById('g-source').value;
+  var locale=document.getElementById('g-locale').value;
+  var qid=selectedQid;
+  var msg=document.getElementById('edit-msg');
+  if(msg)msg.textContent='Starting translation pipeline...';
+  showProcessLog('[1/4] Checking runtime readiness...');
+  try{
+    var runtime=await checkRuntimeStatus();
+    if(!runtime.ready){
+      throw new Error('Runtime not ready. Check Process Log for model/base URL details.');
+    }
+
+    appendProcessLog('[2/4] Sending question to local model...');
+    var translateResponse=await api('POST','/translations/questions/'+source+'/'+qid+'/translate',{locale:locale});
+    var translateMeta=translateResponse&&translateResponse.meta?translateResponse.meta:{};
+    if(translateMeta.runtime){
+      appendProcessLog('[3/4] Backend runtime context:');
+      appendProcessLog(summarizeRuntime(translateMeta.runtime));
+    }
+
+    appendProcessLog('[4/4] Reloading saved translation...');
+    var bundleResponse=await api('GET','/translations/questions/'+source+'/'+qid);
+    var bundle=unwrapData(bundleResponse);
+    currentBundle=bundle;
+    renderMainPanel(bundle,locale);
+
+    var fresh=(bundle.translations||[]).find(function(entry){return entry.locale===locale&&entry.exists&&entry.data;});
+    if(fresh){if(!translationMap[qid])translationMap[qid]={};translationMap[qid][locale]=fresh.data;}
+    renderList(filteredQuestions);
+    showToast('Translation complete','success');
+  }catch(e){
+    var message=(e&&e.message)?e.message:String(e);
+    appendProcessLog('FAILED: '+message);
+    if(msg)msg.textContent=message;
+    showToast(message,'error');
+  }
+}
+
+async function saveTranslation(){
+  if(!currentBundle||!selectedQid){showToast('Select a question first','error');return;}
+  var source=document.getElementById('g-source').value;
+  var locale=document.getElementById('g-locale').value;
+  var qid=selectedQid;
+  var q=document.getElementById('eq');
+  var msg=document.getElementById('edit-msg');
+  if(!q||!q.value.trim()){if(msg)msg.textContent='Question text required';return;}
+  var ansCount=parseInt(document.getElementById('main-panel').dataset.ansCount||'0',10);
+  var answers=[];
+  for(var i=0;i<ansCount;i++){
+    var inp=document.getElementById('ea-'+i);
+    var srcQ=currentBundle.sourceQuestion;
+    if(inp)answers.push(inp.value.trim());
+  }
+  var tags=document.getElementById('etags').value.split(',').map(function(t){return t.trim()}).filter(Boolean);
+  var body={locale:locale,status:document.getElementById('estatus').value,translation:{question:q.value.trim(),answers:answers,domainLabel:document.getElementById('edl').value.trim(),tags:tags,rationale:document.getElementById('erat').value.trim()}};
+  if(msg)msg.textContent='Saving...';
+  try{
+    await api('POST','/translations/questions/'+source+'/'+qid+'/review',body);
+    if(!translationMap[qid])translationMap[qid]={};
+    translationMap[qid][locale]={status:body.status,translation:body.translation,locale:locale,questionId:qid,source:source};
+    renderList(filteredQuestions);
+    currentBundle.translations=(currentBundle.translations||[]).filter(function(entry){return entry.locale!==locale;});
+    currentBundle.translations.push({locale:locale,exists:true,data:{translation:body.translation,status:body.status,locale:locale}});
+    renderMainPanel(currentBundle,locale);
+    if(msg)msg.textContent='';
+    showToast('Saved','success');
+  }catch(e){if(msg)msg.textContent=e.message;showToast(e.message,'error')}
+}
+
+function renderBatchList(items){
+  var locale=document.getElementById('g-locale').value;
+  var html='';
+  var skipped=0;
+  items.forEach(function(q){
+    var tMap=translationMap[q.id]||{};
+    var tLocale=tMap[locale];
+    if(tLocale&&tLocale.status){skipped++;return;}
+    var chk=batchSelected.has(q.id)?' checked':'';
+    var dis=(!batchSelected.has(q.id)&&batchSelected.size>=25)?' disabled':'';
+    html+='<label class="batch-check-item'+(batchSelected.has(q.id)?' checked':'')+'"><input type="checkbox"'+chk+dis+' onchange="toggleBatch(\''+q.id+'\',this.checked)" id="bc-'+q.id+'"><span class="batch-check-qid">'+q.id+'</span><span class="batch-check-text">'+escHtml((q.text||'').substring(0,60))+'</span><span class="batch-check-domain">'+escHtml(q.domain||'')+'</span></label>';
+  });
+  var summary=skipped>0?'<div style="padding:6px 10px;font-size:10px;color:var(--text-muted)">'+skipped+' already translated (hidden)</div>':'';
+  document.getElementById('batch-list').innerHTML=summary+(html||'<div class="state-msg">All questions already translated for '+locale.toUpperCase()+'</div>');
+  updateBatchCount();
+}
+
+function filterBatchList(){
+  var q=document.getElementById('batch-search').value.toLowerCase();
+  var items=q?allBankQuestions.filter(function(item){return item.id.toLowerCase().includes(q)||(item.text||'').toLowerCase().includes(q)}):allBankQuestions.slice();
+  renderBatchList(items);
+}
+function toggleBatch(id,checked){if(checked){if(batchSelected.size<25)batchSelected.add(id);}else{batchSelected.delete(id);}filterBatchList();}
+function selectAllBatch(){var locale=document.getElementById('g-locale').value;var q=document.getElementById('batch-search').value.toLowerCase();var visible=q?allBankQuestions.filter(function(item){return item.id.toLowerCase().includes(q)||(item.text||'').toLowerCase().includes(q)}):allBankQuestions.slice();visible.forEach(function(item){var tMap=translationMap[item.id]||{};if(tMap[locale]&&tMap[locale].status)return;if(batchSelected.size<25)batchSelected.add(item.id)});filterBatchList();}
+function clearBatchSel(){batchSelected.clear();filterBatchList();}
+function updateBatchCount(){var n=batchSelected.size;var el=document.getElementById('batch-sel-count');if(n>25)el.innerHTML=n+' selected - <span class="over">max 25!</span>';else el.textContent=n+' selected';document.getElementById('btn-run-batch').disabled=(n===0||n>25);}
+
+async function runBatch(){
+  var source=document.getElementById('g-source').value;
+  var locale=document.getElementById('g-locale').value;
+  var ids=Array.from(batchSelected);
+  var errEl=document.getElementById('batch-err');
+  if(!ids.length){errEl.textContent='Select at least 1 question';return;}
+  if(ids.length>25){errEl.textContent='Max 25 questions';return;}
+  errEl.textContent='Creating batch...';
+  document.getElementById('btn-run-batch').disabled=true;
+  try{
+    var response=await api('POST','/translations/batches',{source:source,locale:locale,questionIds:ids});
+    var data=unwrapData(response);
+    errEl.textContent='';
+    batchSelected.clear();
+    filterBatchList();
+    showToast('Batch started! Translating '+ids.length+' questions…','success');
+    loadBatches();
+  }catch(e){errEl.textContent=e.message;showToast(e.message,'error');document.getElementById('btn-run-batch').disabled=false;}
+}
+
+var _batchPollTimer=null;
+
+async function loadBatches(){
+  if(!rootsToken)return;
+  var wrap=document.getElementById('batches-wrap');
+  wrap.innerHTML='<div class="state-msg">Loading...</div>';
+  try{
+    var response=await api('GET','/translations/batches?limit=20');
+    var batches=unwrapData(response)||[];
+    if(!batches.length){wrap.innerHTML='<div class="state-msg">No batches yet.</div>';return;}
+    var html='<div class="table-wrap"><table class="data-table"><thead><tr><th>Source</th><th>Locale</th><th>Status</th><th>Done/Total</th><th>Created</th><th></th></tr></thead><tbody>';
+    var hasProcessing=false;
+    batches.forEach(function(b){
+      var created=b.createdAt?new Date(b.createdAt._seconds?b.createdAt._seconds*1000:b.createdAt).toLocaleString():'-';
+      var done=(b.success||0);
+      var total=(b.total||b.questionIds&&b.questionIds.length||0);
+      var failBadge=b.failed?'<span style="color:var(--crimson);margin-left:4px">'+b.failed+' fail</span>':'';
+      var viewBtn=(b.status==='completed'||done>0)
+        ?'<button class="btn btn-cyan" style="font-size:10px;padding:3px 10px" onclick="viewBatchResults(\''+b.source+'\',\''+b.locale+'\')">View Results</button>'
+        :'';
+      if(b.status==='processing'||b.status==='queued')hasProcessing=true;
+      html+='<tr><td>'+b.source+'</td><td>'+b.locale+'</td><td class="'+statusClass(b.status)+'">'+b.status+'</td><td><span style="color:var(--green)">'+done+'</span>/'+total+failBadge+'</td><td style="font-size:10px">'+created+'</td><td>'+viewBtn+'</td></tr>';
+    });
+    html+='</tbody></table></div>';
+    wrap.innerHTML=html;
+    // Auto-poll while any batch is still processing
+    if(_batchPollTimer)clearTimeout(_batchPollTimer);
+    if(hasProcessing)_batchPollTimer=setTimeout(loadBatches,4000);
+  }catch(e){wrap.innerHTML='<div class="state-msg">Error: '+e.message+'</div>'}
+}
+
+function viewBatchResults(source,locale){
+  // Switch to Review Queue tab and load filtered by source+locale
+  document.getElementById('rv-source').value=source;
+  document.getElementById('rv-locale').value=locale;
+  document.getElementById('rv-status').value='machine_translated'; // now a valid option
+  showTab('review');
+  loadReviewQueue();
+}
+
+async function loadReviewQueue(){
+  if(!rootsToken){showToast('Sign in first','error');return;}
+  reviewSelected.clear();updateReviewSelCount();
+  loadProgress();
+  var wrap=document.getElementById('review-wrap');
+  wrap.innerHTML='<div class="state-msg">Loading...</div>';
+  var params=[];
+  var src=document.getElementById('rv-source').value;
+  var loc=document.getElementById('rv-locale').value;
+  var st=document.getElementById('rv-status').value;
+  var lim=document.getElementById('rv-limit').value||50;
+  if(src)params.push('source='+src);
+  if(loc)params.push('locale='+loc);
+  if(st)params.push('status='+st);
+  params.push('limit='+lim);
+  try{
+    var response=await api('GET','/translations?'+params.join('&'));
+    var items=unwrapData(response)||[];
+    lastReviewItems=items;
+    if(!items.length){wrap.innerHTML='<div class="state-msg">No translations found.</div>';return;}
+    var html='<div class="table-wrap"><table class="data-table"><thead><tr><th style="width:30px"><input type="checkbox" onchange="if(this.checked)selectAllReview();else clearReviewSel()" style="accent-color:var(--gold)"></th><th>ID</th><th>Source</th><th>Locale</th><th>Status</th><th>Quality</th><th>Question (translated)</th><th>Updated</th><th></th></tr></thead><tbody>';
+    items.forEach(function(t){
+      var updated=t.updatedAt?new Date(t.updatedAt._seconds?t.updatedAt._seconds*1000:t.updatedAt).toLocaleString():'-';
+      var q=(t.translation&&t.translation.question)||'-';
+      if(q.length>80)q=q.substring(0,80)+'...';
+      var docId=t.id||t.source+'__'+t.questionId+'__'+t.locale;
+      var qScore=t.qualityScore?t.qualityScore.overall:null;
+      html+='<tr><td><input type="checkbox" class="rv-check" data-docid="'+docId+'" onchange="toggleReviewCheck(\''+docId+'\',this.checked)" style="accent-color:var(--gold)"></td><td style="color:var(--cyan);font-weight:700">'+t.questionId+'</td><td>'+t.source+'</td><td>'+t.locale+'</td><td class="'+statusClass(t.status)+'">'+t.status+'</td><td>'+qualityBadgeHtml(qScore)+'</td><td style="max-width:220px;white-space:normal;font-size:11px">'+escHtml(q)+'</td><td style="font-size:10px">'+updated+'</td><td><button class="btn btn-cyan" style="font-size:10px;padding:3px 8px;white-space:nowrap" onclick="openInIndividual(\''+t.source+'\',\''+t.questionId+'\',\''+t.locale+'\')">Open</button></td></tr>';
+    });
+    html+='</tbody></table></div>';
+    wrap.innerHTML=html;
+  }catch(e){wrap.innerHTML='<div class="state-msg">Error: '+e.message+'</div>'}
+}
+
+function openInIndividual(source,qid,locale){
+  document.getElementById('g-source').value=source;
+  document.getElementById('g-locale').value=locale;
+  showTab('individual');
+  loadBank().then(function(){selectQuestion(qid)});
+}
+
+// ─── Suggest Corrections ────────────────────────────────────
+var lastSuggestions=null;
+
+async function runSuggestCorrections(){
+  if(!currentBundle||!selectedQid){showToast('Select a question first','error');return;}
+  var source=document.getElementById('g-source').value;
+  var locale=document.getElementById('g-locale').value;
+  showProcessLog('Requesting LLM correction suggestions (10-30s)...');
+  try{
+    var response=await api('POST','/translations/questions/'+source+'/'+selectedQid+'/suggest',{locale:locale});
+    var data=unwrapData(response);
+    lastSuggestions=data;
+    renderSuggestions(data);
+    appendProcessLog('Received '+data.changes.length+' suggested change(s)');
+    if(!data.changes.length)showToast('No changes suggested — translation looks good','success');
+    else showToast(data.changes.length+' correction(s) suggested','success');
+  }catch(e){
+    appendProcessLog('Suggestion failed: '+e.message);
+    showToast(e.message,'error');
+  }
+}
+
+function renderSuggestions(data){
+  var el=document.getElementById('suggest-panel');
+  if(!el)return;
+  if(!data.changes||!data.changes.length){
+    el.innerHTML='<div class="suggest-panel"><div class="suggest-title">No corrections suggested</div><div style="font-size:11px;color:var(--green);margin-top:6px">The LLM found no improvements needed. Model: '+escHtml(data.model||'')+'</div></div>';
+    return;
+  }
+  var html='<div class="suggest-panel">';
+  html+='<div class="suggest-header">';
+  html+='<div class="suggest-title">Suggested Corrections ('+data.changes.length+')</div>';
+  html+='<div style="display:flex;gap:8px;align-items:center">';
+  html+='<span style="font-size:10px;color:var(--text-muted)">'+escHtml(data.model||'')+'</span>';
+  html+='<button class="btn btn-green" onclick="acceptAllSuggestions()" style="font-size:10px;padding:4px 12px">Accept All</button>';
+  html+='<button class="btn" onclick="dismissSuggestions()" style="font-size:10px;padding:4px 10px;border:1px solid var(--border);color:var(--text-muted)">Dismiss</button>';
+  html+='</div></div>';
+  html+='<div class="suggest-diff">';
+  html+='<div class="suggest-diff-head"><div>Field</div><div>Current</div><div>Suggested</div><div>Action</div></div>';
+  data.changes.forEach(function(c,i){
+    var label=c.field==='answer'?'Answer '+(c.index!==undefined?String.fromCharCode(83+c.index):''): c.field.replace(/_/g,' ');
+    html+='<div class="suggest-diff-row">';
+    html+='<div class="suggest-field">'+escHtml(label)+'</div>';
+    html+='<div class="suggest-current">'+escHtml(c.current)+'</div>';
+    html+='<div class="suggest-new">'+escHtml(c.suggested)+'</div>';
+    html+='<div class="suggest-accept"><button class="btn btn-green" onclick="acceptSuggestion('+i+')" style="font-size:9px;padding:3px 8px">Accept</button></div>';
+    html+='</div>';
+  });
+  html+='</div></div>';
+  el.innerHTML=html;
+}
+
+function acceptSuggestion(idx){
+  if(!lastSuggestions||!lastSuggestions.changes[idx])return;
+  var c=lastSuggestions.changes[idx];
+  if(c.field==='question'){
+    var eq=document.getElementById('eq');if(eq)eq.value=c.suggested;
+  }else if(c.field==='answer'&&c.index!==undefined){
+    var ea=document.getElementById('ea-'+c.index);if(ea)ea.value=c.suggested;
+  }else if(c.field==='domainLabel'){
+    var edl=document.getElementById('edl');if(edl)edl.value=c.suggested;
+  }else if(c.field==='tags'){
+    var etags=document.getElementById('etags');if(etags)etags.value=c.suggested;
+  }else if(c.field==='rationale'){
+    var erat=document.getElementById('erat');if(erat)erat.value=c.suggested;
+  }
+  var row=document.querySelectorAll('.suggest-diff-row')[idx];
+  if(row)row.style.opacity='0.35';
+  showToast('Accepted: '+c.field,'success');
+}
+
+function acceptAllSuggestions(){
+  if(!lastSuggestions)return;
+  lastSuggestions.changes.forEach(function(_,i){acceptSuggestion(i)});
+  showToast('All '+lastSuggestions.changes.length+' suggestions accepted into editor','success');
+}
+
+function dismissSuggestions(){
+  var el=document.getElementById('suggest-panel');
+  if(el)el.innerHTML='';
+  lastSuggestions=null;
+}
+
+// ─── Quality Check ──────────────────────────────────────────
+async function runQualityCheck(){
+  if(!currentBundle||!selectedQid){showToast('Select a question first','error');return;}
+  var source=document.getElementById('g-source').value;
+  var locale=document.getElementById('g-locale').value;
+  showProcessLog('Running heuristic checks + backtranslation...');
+  try{
+    var response=await api('POST','/translations/questions/'+source+'/'+selectedQid+'/quality-check',{locale:locale,runBacktranslation:true});
+    var score=unwrapData(response);
+    renderQualityFlags(score);
+    appendProcessLog('Quality score: '+score.overall+'/100');
+    showToast('Quality: '+score.overall+'/100','success');
+  }catch(e){
+    appendProcessLog('Quality check failed: '+e.message);
+    showToast(e.message,'error');
+  }
+}
+
+function renderQualityFlags(score){
+  var html='<div style="display:flex;align-items:center;gap:10px;margin:10px 0 8px">';
+  html+='<span style="font-size:12px;font-weight:700;color:var(--text)">Overall Score:</span>';
+  html+=qualityBadgeHtml(score.overall);
+  html+='<span style="font-size:11px;color:var(--text-dim)">'+score.overall+' / 100</span>';
+  html+='</div>';
+  html+='<div class="quality-grid">';
+  (score.flags||[]).forEach(function(f){
+    var cls=f.pass?'pass':'fail';
+    html+='<div class="quality-flag-card '+cls+'">';
+    html+='<div class="flag-name '+cls+'">'+(f.pass?'&#10003;':'&#10007;')+' '+f.check.replace(/_/g,' ')+'</div>';
+    html+='<div class="flag-detail">'+escHtml(f.detail)+'</div>';
+    html+='<div style="font-size:9px;color:var(--text-muted);margin-top:2px">Weight: '+f.weight+'</div>';
+    html+='</div>';
+  });
+  html+='</div>';
+
+  if(score.backtranslation){
+    html+='<div class="backtrans-box">';
+    html+='<div style="font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Backtranslation Check</div>';
+    html+='<div class="backtrans-compare">';
+    html+='<div><div class="backtrans-label">Original English</div><div class="backtrans-text">'+escHtml(currentBundle.sourceQuestion.question)+'</div></div>';
+    html+='<div><div class="backtrans-label">Back-translated to English</div><div class="backtrans-text">'+escHtml(score.backtranslation.text)+'</div></div>';
+    html+='</div>';
+    html+='<div style="margin-top:8px;font-size:10px;color:var(--text-dim)">Word overlap similarity: '+qualityBadgeHtml(score.backtranslation.similarity)+' '+score.backtranslation.similarity+'%</div>';
+    html+='</div>';
+  }
+  var el=document.getElementById('quality-flags');
+  if(el)el.innerHTML=html;
+}
+
+// ─── LLM Review ─────────────────────────────────────────────
+async function runLlmReview(){
+  if(!currentBundle||!selectedQid){showToast('Select a question first','error');return;}
+  var source=document.getElementById('g-source').value;
+  var locale=document.getElementById('g-locale').value;
+  showProcessLog('Running LLM structured review (10-30s)...');
+  try{
+    var response=await api('POST','/translations/questions/'+source+'/'+selectedQid+'/llm-review',{locale:locale});
+    var review=unwrapData(response);
+    renderLlmReview(review);
+    appendProcessLog('LLM review complete: '+review.overall+'/5');
+    showToast('LLM Review: '+review.overall+'/5','success');
+  }catch(e){
+    appendProcessLog('LLM review failed: '+e.message);
+    showToast(e.message,'error');
+  }
+}
+
+function renderLlmReview(review){
+  var dims=['semantic_accuracy','naturalness','completeness'];
+  var html='<div class="llm-review-box">';
+  html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">';
+  html+='<div style="font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.5px">LLM Structured Review</div>';
+  html+='<div style="font-size:10px;color:var(--text-muted)">Overall: '+qualityBadgeHtml(review.overall*20)+' '+review.overall+'/5 &middot; '+escHtml(review.model||'')+'</div>';
+  html+='</div>';
+
+  dims.forEach(function(dim){
+    var d=review[dim]||{score:0,note:''};
+    var cls=d.score>=4?'high':d.score<=2?'low':'';
+    html+='<div class="dim-row">';
+    html+='<div class="dim-label">'+dim.replace(/_/g,' ')+'</div>';
+    html+='<div class="dim-score-bar">';
+    for(var i=1;i<=5;i++){
+      html+='<div class="dim-pip'+(i<=d.score?' filled '+cls:'')+'"></div>';
+    }
+    html+='</div>';
+    html+='<div class="dim-note">'+escHtml(d.note)+'</div>';
+    html+='</div>';
+  });
+
+  if(review.issues&&review.issues.length){
+    html+='<div style="margin-top:10px;font-size:10px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:0.5px">Issues Found</div>';
+    html+='<ul class="issues-list">';
+    review.issues.forEach(function(issue){
+      html+='<li>'+escHtml(issue)+'</li>';
+    });
+    html+='</ul>';
+  }else{
+    html+='<div style="margin-top:8px;font-size:10px;color:var(--green)">No issues found.</div>';
+  }
+
+  html+='</div>';
+  var el=document.getElementById('llm-review-panel');
+  if(el)el.innerHTML=html;
+}
+
+// ─── Progress Stats ─────────────────────────────────────────
+async function loadProgress(){
+  if(!rootsToken)return;
+  var wrap=document.getElementById('progress-stats');
+  wrap.innerHTML='<div class="state-msg" style="padding:4px 0">Loading...</div>';
+  try{
+    var params=[];
+    var src=document.getElementById('rv-source').value;
+    var loc=document.getElementById('rv-locale').value;
+    if(src)params.push('source='+src);
+    if(loc)params.push('locale='+loc);
+    var response=await api('GET','/translations/progress'+(params.length?'?'+params.join('&'):''));
+    var data=unwrapData(response);
+    var statuses=['approved','reviewed','machine_translated','draft'];
+    var colors={'approved':'var(--green)','reviewed':'var(--cyan)','machine_translated':'var(--orange)','draft':'var(--purple)'};
+    var total=data.total||0;
+    var barHtml='<div class="progress-bar-wrap">';
+    statuses.forEach(function(s){
+      var count=data.totals[s]||0;
+      var pct=total>0?(count/total*100):0;
+      if(pct>0)barHtml+='<div class="progress-seg seg-'+s+'" style="width:'+pct+'%" title="'+s+': '+count+'"></div>';
+    });
+    barHtml+='</div>';
+    var legendHtml='<div class="progress-legend">';
+    statuses.forEach(function(s){
+      var count=data.totals[s]||0;
+      legendHtml+='<span><span class="progress-legend-dot" style="background:'+colors[s]+'"></span>'+s.replace('_',' ')+': '+count+'</span>';
+    });
+    legendHtml+='<span style="color:var(--text-muted)">Total: '+total+'</span></div>';
+
+    var sourceHtml='';
+    if(data.bySource&&Object.keys(data.bySource).length>1){
+      sourceHtml='<div style="display:flex;gap:16px;margin-top:8px;font-size:10px;color:var(--text-dim);flex-wrap:wrap">';
+      Object.keys(data.bySource).forEach(function(src){
+        var counts=data.bySource[src];
+        var parts=[];
+        statuses.forEach(function(s){if(counts[s])parts.push(s.replace('_',' ')+':'+counts[s])});
+        sourceHtml+='<span><strong style="color:var(--cyan)">'+src+'</strong> — '+parts.join(', ')+'</span>';
+      });
+      sourceHtml+='</div>';
+    }
+    wrap.innerHTML=barHtml+legendHtml+sourceHtml;
+  }catch(e){wrap.innerHTML='<div class="state-msg" style="color:var(--crimson)">'+e.message+'</div>'}
+}
+
+// ─── Bulk Review Actions ────────────────────────────────────
+var reviewSelected=new Set();
+
+function toggleReviewCheck(docId,checked){
+  if(checked)reviewSelected.add(docId);else reviewSelected.delete(docId);
+  updateReviewSelCount();
+}
+
+function selectAllReview(){
+  document.querySelectorAll('.rv-check').forEach(function(cb){cb.checked=true;reviewSelected.add(cb.dataset.docid)});
+  updateReviewSelCount();
+}
+
+function clearReviewSel(){
+  reviewSelected.clear();
+  document.querySelectorAll('.rv-check').forEach(function(cb){cb.checked=false});
+  updateReviewSelCount();
+}
+
+function updateReviewSelCount(){
+  var n=reviewSelected.size;
+  document.getElementById('rv-sel-count').textContent=n+' selected';
+  document.getElementById('bulk-bar').style.display=n>0?'flex':'none';
+}
+
+async function bulkApprove(){await doBulkStatus('approved')}
+async function bulkReview(){await doBulkStatus('reviewed')}
+
+async function doBulkStatus(status){
+  var ids=Array.from(reviewSelected);
+  if(!ids.length){showToast('Select translations first','error');return;}
+  try{
+    var response=await api('POST','/translations/bulk-status',{docIds:ids,status:status});
+    var data=unwrapData(response);
+    showToast(data.success+' updated to '+status,'success');
+    reviewSelected.clear();
+    updateReviewSelCount();
+    loadReviewQueue();
+    loadProgress();
+  }catch(e){showToast(e.message,'error')}
+}
+
+var lastReviewItems=[];
+
+async function scoreAllVisible(){
+  if(!lastReviewItems.length){showToast('Load the review queue first','error');return;}
+  var btn=document.getElementById('btn-score-all');
+  if(btn)btn.disabled=true;
+  var scored=0;var failed=0;var total=lastReviewItems.length;
+  showToast('Scoring '+total+' translations...','success');
+  for(var i=0;i<lastReviewItems.length;i++){
+    var t=lastReviewItems[i];
+    try{
+      await api('POST','/translations/questions/'+t.source+'/'+t.questionId+'/quality-check',{locale:t.locale,runBacktranslation:false});
+      scored++;
+    }catch(e){failed++;}
+    if(btn)btn.textContent='Scoring '+(i+1)+'/'+total+'...';
+  }
+  if(btn){btn.disabled=false;btn.textContent='Score All';}
+  showToast('Scored '+scored+', failed '+failed,'success');
+  loadReviewQueue();
+}
+
+async function approveAllVisible(){
+  if(!lastReviewItems.length){showToast('Load the review queue first','error');return;}
+  var docIds=lastReviewItems.map(function(t){return t.id}).filter(Boolean);
+  if(!docIds.length){showToast('No rows to approve','error');return;}
+  try{
+    var response=await api('POST','/translations/bulk-status',{docIds:docIds,status:'approved'});
+    var data=unwrapData(response);
+    showToast('Approved '+data.success+' / '+data.total,'success');
+    loadReviewQueue();
+    loadProgress();
+  }catch(e){showToast(e.message,'error')}
+}
+
+async function publishApprovedVisible(){
+  var source=document.getElementById('rv-source').value || document.getElementById('g-source').value;
+  var locale=document.getElementById('rv-locale').value || document.getElementById('g-locale').value;
+  if(!source || !locale){showToast('Select source and locale before publish','error');return;}
+  try{
+    var response=await api('POST','/translations/publish-approved',{source:source,locale:locale});
+    var data=unwrapData(response);
+    showToast('Published '+data.published+' of '+data.considered+' approved translations','success');
+    loadAssessmentPack();
+    loadProgress();
+  }catch(e){showToast(e.message,'error')}
+}
+
+async function loadAssessmentPack(){
+  var source=document.getElementById('rv-source').value || document.getElementById('g-source').value;
+  var locale=document.getElementById('rv-locale').value || document.getElementById('g-locale').value;
+  try{
+    var response=await api('GET','/translations/assessment-pack?source='+source+'&locale='+locale+'&limit=200');
+    var items=unwrapData(response)||[];
+    if(!items.length){showToast('Assessment pack empty for '+source+'/'+locale,'error');return;}
+    var html='<div class="table-wrap" style="margin-top:10px"><table class="data-table"><thead><tr><th>Question ID</th><th>Question (Assessment Pack)</th><th>Answers</th></tr></thead><tbody>';
+    items.slice(0,50).forEach(function(item){
+      var ans=(item.answers||[]).map(function(a){return (a.grade||'')+': '+(a.text||'')}).join(' | ');
+      var q=item.question||'';
+      if(q.length>120)q=q.substring(0,120)+'...';
+      if(ans.length>140)ans=ans.substring(0,140)+'...';
+      html+='<tr><td style="color:var(--cyan);font-weight:700">'+escHtml(item.questionId||'')+'</td><td style="max-width:420px;white-space:normal">'+escHtml(q)+'</td><td style="max-width:420px;white-space:normal">'+escHtml(ans)+'</td></tr>';
+    });
+    html+='</tbody></table></div>';
+    document.getElementById('review-wrap').innerHTML=html;
+    showToast('Showing '+Math.min(items.length,50)+' packed rows','success');
+  }catch(e){showToast(e.message,'error')}
+}
+
+function qualityBadgeHtml(score){
+  if(score===undefined||score===null)return '<span class="quality-badge" style="background:var(--bg3);color:var(--text-muted)">—</span>';
+  var cls=score>=80?'quality-high':score>=50?'quality-mid':'quality-low';
+  return '<span class="quality-badge '+cls+'">'+score+'</span>';
+}
+
+document.getElementById('edit-locale-label').textContent=document.getElementById('g-locale').value.toUpperCase();
+</script>
+</body>
+</html>

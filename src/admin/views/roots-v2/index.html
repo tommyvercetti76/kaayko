@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>ROOTS Admin V2 — Kaayko</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<meta name="theme-color" content="#7b1e2d">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<style>
+  :root {
+    --ink:#171615; --muted:#665f57; --soft:#f6f5f1; --panel:#ffffff;
+    --line:rgba(23,22,21,.10); --line-strong:rgba(23,22,21,.18);
+    --crimson:#7b1e2d; --gold:#d4a843; --green:#047857; --red:#b91c1c;
+    --amber:#b45309; --blue:#4338ca;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color:var(--ink); background:linear-gradient(180deg, rgba(123,30,45,.07), transparent 280px), var(--soft); }
+  a { color:inherit; text-decoration:none; }
+  button, input, select { font:inherit; }
+  .shell { max-width:1240px; margin:0 auto; padding:28px 20px 72px; }
+  .topbar { display:flex; justify-content:space-between; gap:18px; align-items:flex-start; margin-bottom:18px; }
+  .eyebrow { color:var(--crimson); font-size:11px; font-weight:850; letter-spacing:.11em; text-transform:uppercase; }
+  h1 { margin:6px 0 8px; font-size:clamp(32px, 5vw, 50px); line-height:1; letter-spacing:0; font-weight:850; }
+  .sub { color:var(--muted); margin:0; max-width:720px; line-height:1.55; }
+  .switch { display:flex; align-items:center; gap:6px; padding:5px; border:1px solid var(--line); background:rgba(255,255,255,.75); border-radius:9px; }
+  .switch a { min-height:34px; display:inline-flex; align-items:center; padding:7px 11px; border-radius:7px; font-size:13px; font-weight:800; color:var(--muted); white-space:nowrap; }
+  .switch .active { background:var(--crimson); color:#fff; }
+  .auth, .panel, .metric { border:1px solid var(--line); background:rgba(255,255,255,.88); border-radius:8px; box-shadow:0 1px 2px rgba(23,22,21,.04); }
+  .auth { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px; margin-bottom:14px; }
+  .auth-status { display:flex; flex-wrap:wrap; align-items:center; gap:8px; color:var(--muted); font-size:13px; font-weight:750; }
+  .dot { width:9px; height:9px; border-radius:99px; background:var(--amber); display:inline-block; }
+  .dot.ok { background:var(--green); } .dot.bad { background:var(--red); }
+  .auth-form { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+  input, select { min-height:38px; padding:8px 10px; border:1px solid var(--line-strong); background:#fff; color:var(--ink); border-radius:6px; min-width:0; }
+  input:focus, select:focus { outline:2px solid rgba(123,30,45,.22); outline-offset:1px; border-color:rgba(123,30,45,.48); }
+  .btn { min-height:38px; border-radius:8px; border:1px solid var(--line-strong); background:#fff; color:var(--ink); padding:8px 12px; display:inline-flex; align-items:center; justify-content:center; gap:7px; cursor:pointer; font-weight:850; font-size:13px; white-space:nowrap; }
+  .btn.primary { background:var(--crimson); color:#fff; border-color:var(--crimson); }
+  .btn.gold { background:#fffbeb; color:#92400e; border-color:#fcd34d; }
+  .btn.danger { background:#fef2f2; color:var(--red); border-color:#fecaca; }
+  .btn:disabled { opacity:.55; cursor:not-allowed; }
+  .tabs { display:flex; overflow-x:auto; gap:8px; margin:14px 0; padding-bottom:3px; }
+  .tab { min-height:42px; padding:9px 13px; border:1px solid var(--line); border-radius:8px; background:rgba(255,255,255,.78); color:var(--muted); font-weight:850; cursor:pointer; white-space:nowrap; }
+  .tab.active { background:var(--crimson); border-color:var(--crimson); color:#fff; }
+  .grid { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; }
+  .metric { padding:16px; min-height:112px; display:flex; flex-direction:column; justify-content:space-between; }
+  .metric span, .metric small { color:var(--muted); font-size:12px; font-weight:750; }
+  .metric strong { font-size:36px; line-height:1; }
+  .layout { display:grid; grid-template-columns:minmax(320px,.78fr) minmax(0,1.22fr); gap:14px; align-items:start; }
+  .panel { padding:18px; }
+  .panel-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:14px; }
+  .panel h2 { margin:0 0 5px; font-size:20px; }
+  .panel p { margin:0; color:var(--muted); font-size:13px; line-height:1.45; }
+  .form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  label { display:flex; flex-direction:column; gap:6px; color:var(--muted); font-size:11px; font-weight:850; text-transform:uppercase; letter-spacing:.07em; }
+  .full { grid-column:1 / -1; }
+  .row-list { display:flex; flex-direction:column; gap:9px; }
+  .row { display:grid; grid-template-columns:minmax(0,1fr) auto auto; align-items:center; gap:12px; min-height:64px; padding:12px; border:1px solid var(--line); border-radius:8px; background:#fff; }
+  .row strong { display:block; font-size:14px; overflow-wrap:anywhere; }
+  .row small { display:block; color:var(--muted); margin-top:3px; overflow-wrap:anywhere; }
+  .meta { display:flex; align-items:center; justify-content:flex-end; gap:7px; flex-wrap:wrap; color:var(--muted); font-size:12px; }
+  .actions { display:flex; justify-content:flex-end; gap:7px; flex-wrap:wrap; }
+  .pill { display:inline-flex; align-items:center; min-height:24px; padding:4px 8px; border-radius:999px; background:#f1efeb; color:#504b45; font-size:11px; font-weight:900; text-transform:capitalize; white-space:nowrap; }
+  .pill.active, .pill.completed, .pill.delivered, .pill.report_sent { background:#ecfdf5; color:var(--green); }
+  .pill.in_progress, .pill.queued, .pill.sending, .pill.pilot { background:#fffbeb; color:var(--amber); }
+  .pill.failed, .pill.disabled, .pill.paused { background:#fef2f2; color:var(--red); }
+  .pill.retry_scheduled { background:#eef2ff; color:var(--blue); }
+  .toolbar { display:flex; flex-wrap:wrap; align-items:end; gap:8px; justify-content:flex-end; }
+  .notice { display:none; margin-bottom:14px; padding:10px 12px; border-radius:8px; border:1px solid rgba(21,128,61,.22); background:#f0fdf4; color:#166534; font-size:13px; font-weight:800; }
+  .notice.show { display:block; }
+  .notice.err { border-color:rgba(185,28,28,.2); background:#fef2f2; color:#991b1b; }
+  .empty { min-height:170px; display:flex; align-items:center; justify-content:center; text-align:center; color:var(--muted); border:1px dashed var(--line-strong); border-radius:8px; background:#fff; font-size:13px; }
+  .hidden { display:none !important; }
+  @media(max-width:980px){ .topbar, .auth { flex-direction:column; align-items:stretch; } .grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .layout { grid-template-columns:1fr; } .row { grid-template-columns:1fr; } .meta, .actions { justify-content:flex-start; } }
+  @media(max-width:620px){ .shell{padding:18px 12px 52px;} .grid,.form-grid{grid-template-columns:1fr;} .switch,.auth-form,.toolbar{width:100%;} .btn{width:100%;} }
+</style>
+</head>
+<body>
+<main class="shell">
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">ROOTS Admin V2</div>
+      <h1>Assessment Ops</h1>
+      <p class="sub">Create invite links, open the actual assessment flow, inspect anonymous completions, and manage report delivery without replacing the classic ROOTS engine dashboard.</p>
+    </div>
+    <nav class="switch" aria-label="ROOTS admin UI version">
+      <a href="../roots/">Classic</a>
+      <a class="active" href="./">V2</a>
+    </nav>
+  </header>
+
+  <section class="auth">
+    <div class="auth-status"><span id="auth-dot" class="dot"></span><span id="auth-status">Sign in to continue</span></div>
+    <div id="auth-form" class="auth-form">
+      <input id="login-email" type="email" placeholder="Email">
+      <input id="login-password" type="password" placeholder="Password">
+      <button class="btn" type="button" onclick="emailLogin()">Email</button>
+      <button class="btn primary" type="button" onclick="googleLogin()">Google</button>
+    </div>
+    <button id="sign-out" class="btn danger hidden" type="button" onclick="signOut()">Sign out</button>
+  </section>
+
+  <div id="notice" class="notice"></div>
+
+  <nav class="tabs" aria-label="ROOTS admin sections">
+    <button class="tab active" data-tab="overview" onclick="showTab('overview')">Overview</button>
+    <button class="tab" data-tab="invites" onclick="showTab('invites')">Invites</button>
+    <button class="tab" data-tab="sessions" onclick="showTab('sessions')">Sessions</button>
+    <button class="tab" data-tab="delivery" onclick="showTab('delivery')">Delivery</button>
+    <button class="tab" data-tab="settings" onclick="showTab('settings')">Settings</button>
+  </nav>
+
+  <section id="tab-overview" class="tab-panel">
+    <div class="grid">
+      <div class="metric"><span>Active invites</span><strong id="m-invites">—</strong><small id="m-invites-sub">loading</small></div>
+      <div class="metric"><span>Completed sessions</span><strong id="m-complete">—</strong><small id="m-progress">loading</small></div>
+      <div class="metric"><span>Delivery rows</span><strong id="m-delivery">—</strong><small id="m-delivery-sub">loading</small></div>
+      <div class="metric"><span>API</span><strong id="m-api">—</strong><small id="m-api-sub">cool-schools roots</small></div>
+    </div>
+  </section>
+
+  <section id="tab-invites" class="tab-panel hidden">
+    <div class="layout">
+      <form class="panel" onsubmit="createInvite(event)">
+        <div class="panel-head"><div><h2>Create Invite</h2><p>Creates the ROOTS invite, then opens the assessment with the code pre-filled.</p></div></div>
+        <div class="form-grid">
+          <label>Type<select id="invite-type"><option value="parent">Parent</option><option value="teacher">Teacher</option></select></label>
+          <label>Code<input id="invite-code" placeholder="Optional"></label>
+          <label class="full">Title<input id="invite-title" placeholder="ROOTS pilot invite"></label>
+          <label>School ID<input id="invite-school-id" placeholder="somalwar-ramdaspeth"></label>
+          <label>School Name<input id="invite-school-name" placeholder="School display name"></label>
+          <label>Organization ID<input id="invite-org-id" placeholder="school / college / university id"></label>
+          <label>Organization Type<select id="invite-org-type"><option value="school">School</option><option value="college">College</option><option value="university">University</option><option value="coaching_center">Coaching center</option><option value="other">Other</option></select></label>
+          <label>Max Uses<input id="invite-max" type="number" min="0" value="50"></label>
+          <label>Expires<input id="invite-expiry" type="date"></label>
+        </div>
+        <button class="btn primary" type="submit" style="margin-top:14px;width:100%">Create invite</button>
+      </form>
+      <div class="panel">
+        <div class="panel-head">
+          <div><h2>Invites</h2><p id="invite-caption">No data yet.</p></div>
+          <div class="toolbar">
+            <select id="invite-filter"><option value="">All</option><option value="parent">Parent</option><option value="teacher">Teacher</option></select>
+            <button class="btn" type="button" onclick="loadInvites()">Refresh</button>
+          </div>
+        </div>
+        <div id="invite-list" class="row-list"><div class="empty">Sign in, then load invites.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-sessions" class="tab-panel hidden">
+    <div class="panel">
+      <div class="panel-head">
+        <div><h2>Anonymous Sessions</h2><p id="session-caption">Uses the new anonymous session collection.</p></div>
+        <div class="toolbar">
+          <label>School ID<input id="session-school-id" placeholder="Required for system role"></label>
+          <button class="btn" type="button" onclick="loadSessions()">Load</button>
+        </div>
+      </div>
+      <div id="session-list" class="row-list"><div class="empty">Load sessions after sign-in.</div></div>
+    </div>
+  </section>
+
+  <section id="tab-delivery" class="tab-panel hidden">
+    <div class="panel">
+      <div class="panel-head">
+        <div><h2>Report Delivery</h2><p id="delivery-caption">Sanitized queue view. No raw report payloads or email addresses.</p></div>
+        <div class="toolbar">
+          <label>Status<select id="delivery-status"><option value="failed">Failed</option><option value="queued">Queued</option><option value="retry_scheduled">Retry scheduled</option><option value="sending">Sending</option><option value="delivered">Delivered</option><option value="scrubbed">Scrubbed</option></select></label>
+          <label>School<input id="delivery-school-id" placeholder="system filter"></label>
+          <label>Org<input id="delivery-org-id" placeholder="system filter"></label>
+          <button class="btn" type="button" onclick="loadDelivery()">Load</button>
+          <button class="btn gold" type="button" onclick="processDelivery()">Process</button>
+        </div>
+      </div>
+      <div id="delivery-list" class="row-list"><div class="empty">Load delivery queue after sign-in.</div></div>
+    </div>
+  </section>
+
+  <section id="tab-settings" class="tab-panel hidden">
+    <div class="panel">
+      <div class="panel-head"><div><h2>V2 Settings</h2><p>Override endpoints for local testing without changing production defaults.</p></div></div>
+      <div class="form-grid">
+        <label class="full">ROOTS API Base<input id="settings-api" placeholder="https://cool-schools-api.../api/v1/roots"></label>
+        <label class="full">Assessment Base<input id="settings-assessment" placeholder="https://roots.kaayko.com"></label>
+      </div>
+      <button class="btn primary" type="button" style="margin-top:14px" onclick="saveSettings()">Save settings</button>
+    </div>
+  </section>
+</main>
+
+<script>
+var firebaseConfig={apiKey:'AIzaSyC1JxbMdlXXLiMQQ4xhcjHRzgFbg12mMcA',authDomain:'coolschools-72426.firebaseapp.com',projectId:'coolschools-72426'};
+firebase.initializeApp(firebaseConfig);
+var fbAuth=firebase.auth();
+var rootsToken=null;
+var userClaims={};
+var API_BASE=localStorage.getItem('roots_v2_api_base')||'https://cool-schools-api-420407869747.us-central1.run.app/api/v1/roots';
+var ASSESSMENT_BASE=localStorage.getItem('roots_v2_assessment_base')||'https://roots.kaayko.com';
+var state={invites:[],sessions:[],delivery:[]};
+
+function el(id){return document.getElementById(id)}
+function escapeHtml(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}
+function showNotice(msg,type){var n=el('notice');n.textContent=msg;n.className='notice show'+(type==='error'?' err':'');setTimeout(function(){n.className='notice'},5000)}
+function role(){return userClaims.rootsRole||userClaims.role||'none'}
+function isSystem(){return role()==='system'||role()==='superadmin'}
+function statusPill(s){var safe=(s||'unknown').replace(/[^a-z0-9_]/gi,'_');return '<span class="pill '+safe+'">'+escapeHtml(s||'unknown')+'</span>'}
+function fmtDate(v){if(!v)return 'Not set';var d=new Date(v);return isNaN(d.getTime())?v:d.toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}
+function codeOf(i){return i.code||i.id||''}
+function assessmentUrl(invite){
+  var type=(invite.assessmentType||'parent')==='teacher'?'teacher':'parent';
+  var code=encodeURIComponent(codeOf(invite));
+  return ASSESSMENT_BASE.replace(/\/+$/,'')+'/'+type+'-assessment?invite='+code;
+}
+async function api(method,path,body){
+  if(!rootsToken)throw new Error('Sign in first.');
+  var opts={method:method,headers:{'Content-Type':'application/json','Authorization':'Bearer '+rootsToken}};
+  if(body)opts.body=JSON.stringify(body);
+  var res=await fetch(API_BASE.replace(/\/+$/,'')+path,opts);
+  var json=await res.json().catch(function(){return null});
+  if(!res.ok)throw new Error((json&&json.error&&json.error.message)||'HTTP '+res.status);
+  return json&&json.data!==undefined?json.data:json;
+}
+function showTab(name){
+  document.querySelectorAll('.tab').forEach(function(b){b.classList.toggle('active',b.dataset.tab===name)});
+  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.add('hidden')});
+  el('tab-'+name).classList.remove('hidden');
+}
+function googleLogin(){fbAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(function(e){showNotice(e.message,'error')})}
+function emailLogin(){
+  var em=el('login-email').value.trim(), pw=el('login-password').value;
+  if(!em||!pw){showNotice('Enter email and password.','error');return}
+  fbAuth.signInWithEmailAndPassword(em,pw).catch(function(e){showNotice(e.message,'error')});
+}
+function signOut(){fbAuth.signOut().then(function(){location.reload()})}
+fbAuth.onAuthStateChanged(async function(user){
+  if(!user){
+    el('auth-dot').className='dot';
+    el('auth-status').textContent='Sign in to continue';
+    el('auth-form').classList.remove('hidden');
+    el('sign-out').classList.add('hidden');
+    return;
+  }
+  var tr=await user.getIdTokenResult(true);
+  userClaims=tr.claims||{};
+  rootsToken=tr.token;
+  el('auth-dot').className='dot ok';
+  el('auth-status').textContent=(user.email||'signed in')+' · '+role();
+  el('auth-form').classList.add('hidden');
+  el('sign-out').classList.remove('hidden');
+  prefillScopes();
+  await refreshAll();
+});
+function prefillScopes(){
+  var school=userClaims.schoolId||'', org=userClaims.organizationId||school;
+  ['invite-school-id','session-school-id','delivery-school-id'].forEach(function(id){if(el(id)&&!el(id).value)el(id).value=school});
+  ['invite-org-id','delivery-org-id'].forEach(function(id){if(el(id)&&!el(id).value)el(id).value=org});
+}
+async function refreshAll(){
+  try{await api('GET','/health');el('m-api').textContent='OK'}catch(e){el('m-api').textContent='ERR';showNotice(e.message,'error')}
+  await Promise.allSettled([loadInvites(),loadSessions(),loadDelivery()]);
+}
+async function loadInvites(){
+  var filter=el('invite-filter').value;
+  var qs='?limit=100'+(filter?'&assessmentType='+encodeURIComponent(filter):'');
+  try{
+    var data=await api('GET','/invites'+qs);
+    state.invites=data.invites||[];
+    renderInvites();
+  }catch(e){el('invite-list').innerHTML='<div class="empty">'+escapeHtml(e.message)+'</div>';showNotice(e.message,'error')}
+}
+function renderInvites(){
+  el('m-invites').textContent=state.invites.filter(function(i){return i.enabled!==false}).length;
+  el('m-invites-sub').textContent=state.invites.length+' total';
+  el('invite-caption').textContent=state.invites.length+' visible invite links.';
+  if(!state.invites.length){el('invite-list').innerHTML='<div class="empty">No invites visible.</div>';return}
+  el('invite-list').innerHTML=state.invites.map(function(i){
+    var code=codeOf(i), url=assessmentUrl(i);
+    return '<article class="row"><div><strong>'+escapeHtml(i.title||code)+'</strong><small>'+escapeHtml(code)+' · '+escapeHtml(i.assessmentType||'unknown')+' · '+escapeHtml(i.organizationName||i.schoolName||i.organizationId||i.schoolId||'unscoped')+'</small></div><div class="meta">'+statusPill(i.enabled===false?'disabled':'active')+'<span>'+((i.usedCount||0)+' / '+(i.maxUses||'unlimited'))+'</span><span>'+(i.clickCount||0)+' clicks</span></div><div class="actions"><a class="btn primary" target="_blank" rel="noopener" href="'+escapeHtml(url)+'">Take test</a><button class="btn" onclick="copyText(\''+escapeHtml(url)+'\')">Copy</button>'+(i.enabled===false?'':'<button class="btn danger" onclick="disableInvite(\''+escapeHtml(code)+'\')">Disable</button>')+'</div></article>';
+  }).join('');
+}
+async function createInvite(ev){
+  ev.preventDefault();
+  var max=parseInt(el('invite-max').value,10);
+  var schoolId=el('invite-school-id').value.trim();
+  var orgId=el('invite-org-id').value.trim()||schoolId;
+  var body={assessmentType:el('invite-type').value,audienceType:el('invite-type').value,maxUses:isFinite(max)?Math.max(0,max):0,organizationId:orgId,organizationType:el('invite-org-type').value};
+  if(el('invite-code').value.trim())body.code=el('invite-code').value.trim();
+  if(el('invite-title').value.trim())body.title=el('invite-title').value.trim();
+  if(schoolId)body.schoolId=schoolId;
+  if(el('invite-school-name').value.trim())body.schoolName=el('invite-school-name').value.trim();
+  if(el('invite-expiry').value)body.expiresAt=new Date(el('invite-expiry').value+'T23:59:59').toISOString();
+  try{var created=await api('POST','/invites',body);showNotice('Invite '+codeOf(created)+' created.');await loadInvites();window.open(assessmentUrl(created),'_blank','noopener')}catch(e){showNotice(e.message,'error')}
+}
+async function disableInvite(code){
+  if(!confirm('Disable invite '+code+'?'))return;
+  try{await api('PUT','/invites/'+encodeURIComponent(code)+'/disable');showNotice('Invite disabled.');await loadInvites()}catch(e){showNotice(e.message,'error')}
+}
+async function loadSessions(){
+  var school=el('session-school-id').value.trim();
+  var qs='?limit=100'+(isSystem()&&school?'&schoolId='+encodeURIComponent(school):'');
+  try{
+    var data=await api('GET','/anonymous/sessions'+qs);
+    state.sessions=data.sessions||[];
+    renderSessions();
+  }catch(e){el('session-list').innerHTML='<div class="empty">'+escapeHtml(e.message)+'</div>'}
+}
+function renderSessions(){
+  var completed=state.sessions.filter(function(s){return s.status==='completed'||s.status==='report_sent'}).length;
+  el('m-complete').textContent=completed;
+  el('m-progress').textContent=state.sessions.filter(function(s){return s.status==='in_progress'}).length+' in progress';
+  el('session-caption').textContent=state.sessions.length+' respondent sessions visible.';
+  if(!state.sessions.length){el('session-list').innerHTML='<div class="empty">No sessions visible.</div>';return}
+  el('session-list').innerHTML=state.sessions.map(function(s){
+    return '<article class="row"><div><strong>'+escapeHtml(s.name||s.email||'Anonymous')+'</strong><small>'+escapeHtml((s.sessionId||'').slice(0,14))+' · '+escapeHtml(s.assessmentType||'unknown')+'</small></div><div class="meta">'+statusPill(s.status)+'<span>'+((s.questionsAnswered||0)+' / 12')+'</span></div><div class="meta"><span>'+fmtDate(s.startedAt)+'</span><span>'+fmtDate(s.completedAt)+'</span></div></article>';
+  }).join('');
+}
+async function loadDelivery(){
+  var status=el('delivery-status').value;
+  var qs='?limit=100&status='+encodeURIComponent(status);
+  if(isSystem()&&el('delivery-school-id').value.trim())qs+='&schoolId='+encodeURIComponent(el('delivery-school-id').value.trim());
+  if(isSystem()&&el('delivery-org-id').value.trim())qs+='&organizationId='+encodeURIComponent(el('delivery-org-id').value.trim());
+  try{
+    var data=await api('GET','/data/report-delivery'+qs);
+    state.delivery=data.items||[];
+    renderDelivery();
+  }catch(e){el('delivery-list').innerHTML='<div class="empty">'+escapeHtml(e.message)+'</div>'}
+}
+function renderDelivery(){
+  el('m-delivery').textContent=state.delivery.length;
+  el('m-delivery-sub').textContent=el('delivery-status').value;
+  el('delivery-caption').textContent=state.delivery.length+' queue rows visible.';
+  if(!state.delivery.length){el('delivery-list').innerHTML='<div class="empty">No delivery rows visible.</div>';return}
+  el('delivery-list').innerHTML=state.delivery.map(function(d){
+    var retry=(d.status==='failed'||d.status==='retry_scheduled');
+    return '<article class="row"><div><strong>'+escapeHtml(d.reportId||d.queueId)+'</strong><small>'+escapeHtml(d.maskedEmail||'masked')+' · '+escapeHtml(d.organizationName||d.organizationId||d.schoolId||'unscoped')+'</small></div><div class="meta">'+statusPill(d.status)+'<span>'+((d.attempts||0)+' / '+(d.maxAttempts||3))+'</span>'+(d.lastErrorCode?'<span>'+escapeHtml(d.lastErrorCode)+'</span>':'')+'</div><div class="actions">'+(retry?'<button class="btn gold" onclick="retryDelivery(\''+escapeHtml(d.queueId)+'\')">Retry</button>':'')+'</div></article>';
+  }).join('');
+}
+async function retryDelivery(id){try{await api('POST','/data/report-delivery/'+encodeURIComponent(id)+'/retry');showNotice('Delivery requeued.');await loadDelivery()}catch(e){showNotice(e.message,'error')}}
+async function processDelivery(){try{var r=await api('POST','/data/report-delivery/process',{limit:20});showNotice('Processed '+r.processed+'; delivered '+r.delivered+', failed '+r.failed+'.');await loadDelivery()}catch(e){showNotice(e.message,'error')}}
+function copyText(text){navigator.clipboard.writeText(text).then(function(){showNotice('Copied.')}).catch(function(){prompt('Copy URL',text)})}
+function saveSettings(){
+  API_BASE=el('settings-api').value.trim()||API_BASE;
+  ASSESSMENT_BASE=el('settings-assessment').value.trim()||ASSESSMENT_BASE;
+  localStorage.setItem('roots_v2_api_base',API_BASE);
+  localStorage.setItem('roots_v2_assessment_base',ASSESSMENT_BASE);
+  showNotice('V2 settings saved.');
+}
+el('settings-api').value=API_BASE;
+el('settings-assessment').value=ASSESSMENT_BASE;
+</script>
+</body>
+</html>

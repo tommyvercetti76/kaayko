@@ -91,7 +91,7 @@ GET  /api/docs                                 → API spec (spec.yaml / spec.js
 - `kaayko-api/functions/api/weather/nearbyWater.js` — nearby water search
 - `kaayko-api/functions/api/core/` — health check, docs endpoints
 
-**Firestore collections:** `paddlingSpots`, `forecast_cache`, `current_conditions_cache`
+**Firestore collections:** `paddlingSpots`, `forecast_cache`, `current_conditions_cache`, `public_paddle_ratings`, `rate_limits`
 **External services:** Open-Meteo API (free, no auth), Marine API
 **Auth required:** No
 
