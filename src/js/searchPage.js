@@ -191,7 +191,18 @@ async function runSearch(lat, lng, label = 'this location', forceRefresh = false
     if (!res.ok) throw new Error(`API ${res.status}`);
     const data = await res.json();
 
-    if (!data.success || !data.waterBodies?.length) {
+    // Distinguish between different response states
+    if (!data.success) {
+      // API error
+      resultsList.innerHTML = '';
+      popularSection.style.display = '';
+      refreshBtn.style.display = 'none';
+      setStatus('Search failed — check connection and try again.', 'error');
+      return;
+    }
+
+    if (data.status === 'no_results' || !data.waterBodies?.length) {
+      // No water bodies found in radius (but search succeeded)
       resultsList.innerHTML = '';
       popularSection.style.display = '';
       refreshBtn.style.display = 'none';
@@ -200,7 +211,17 @@ async function runSearch(lat, lng, label = 'this location', forceRefresh = false
       return;
     }
 
-    renderResults(data.waterBodies, label, data.cached, data.sources);
+    if (data.status === 'found') {
+      // Success — render results
+      renderResults(data.waterBodies, label, data.cached, data.sources);
+      return;
+    }
+
+    // Unknown status
+    resultsList.innerHTML = '';
+    popularSection.style.display = '';
+    refreshBtn.style.display = 'none';
+    setStatus('Search returned unexpected response.', 'error');
 
   } catch (err) {
     resultsList.innerHTML = '';
