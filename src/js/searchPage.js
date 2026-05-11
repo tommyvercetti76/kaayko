@@ -346,7 +346,7 @@ async function fetchBatchScores(bodies) {
   const tid  = setTimeout(() => ctrl.abort(), 10000);
   try {
     const res = await fetch(
-      `${API_BASE}/paddleScores/batch`,
+      `${API_BASE}/paddleScore/batch`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
