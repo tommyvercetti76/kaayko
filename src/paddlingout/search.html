@@ -303,6 +303,30 @@
       font-size: 0.85rem;
       color: var(--muted);
     }
+    
+    .btn-refresh {
+      background: none; border: none; color: var(--gold);
+      cursor: pointer; font-size: 18px; padding: 4px 8px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+    .btn-refresh:hover { background: rgba(181,147,90,0.1); }
+    .btn-refresh:active { transform: rotate(180deg); transition: transform 0.3s; }
+    
+    .source-badge {
+      display: inline-block;
+      font-family: var(--font-sans);
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 7px;
+      background: rgba(181,147,90,0.1);
+      color: var(--gold);
+      border-radius: 50px;
+      margin-right: 6px;
+      border: 1px solid rgba(181,147,90,0.2);
+    }
 
     /* ── Water card ── */
     .water-card {
@@ -480,9 +504,14 @@
     <!-- Results -->
     <div id="results-header" class="results-header">
       <span class="results-count" id="results-count"></span>
-      <span class="results-hint"  id="results-hint"></span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="results-hint"  id="results-hint"></span>
+        <button id="refresh-btn" class="btn-refresh" title="Force live search" aria-label="Refresh results" style="display:none">
+          <span class="material-icons">refresh</span>
+        </button>
+      </div>
     </div>
-    <div id="results-list"></div>
+    <div id="results-list" role="listbox"></div>
 
   </main>
 

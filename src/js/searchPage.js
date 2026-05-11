@@ -46,8 +46,17 @@ function buildRing(score) {
     </div>`;
 }
 
-// ── Nominatim geocode ─────────────────────────────────────────────────────
+// ── Nominatim geocode cache ───────────────────────────────────────────────
+const geocodeCache = new Map(); // query -> { lat, lng, label }
+
 async function geocode(query) {
+  const cacheKey = query.toLowerCase().trim();
+  
+  // Check cache first
+  if (geocodeCache.has(cacheKey)) {
+    return geocodeCache.get(cacheKey);
+  }
+  
   try {
     const ctrl = new AbortController();
     const tid  = setTimeout(() => ctrl.abort(), 8000);
@@ -59,11 +68,14 @@ async function geocode(query) {
     if (!res.ok) return null;
     const data = await res.json();
     if (!data.length) return null;
-    return {
+    const result = {
       lat: parseFloat(data[0].lat),
       lng: parseFloat(data[0].lon),
       label: data[0].display_name.split(',').slice(0, 2).join(', ')
     };
+    // Cache the result
+    geocodeCache.set(cacheKey, result);
+    return result;
   } catch { return null; }
 }
 
@@ -71,6 +83,7 @@ async function geocode(query) {
 const inputEl        = document.getElementById('search-input');
 const clearBtn       = document.getElementById('search-clear');
 const gpsBtn         = document.getElementById('btn-gps');
+const refreshBtn     = document.getElementById('refresh-btn');
 const statusEl       = document.getElementById('search-status');
 const popularSection = document.getElementById('popular-section');
 const resultsHeader  = document.getElementById('results-header');
@@ -80,6 +93,7 @@ const resultsList    = document.getElementById('results-list');
 
 let isSearching = false;
 let scoreGen    = 0;
+let lastSearchParams = null;  // Track last search for refresh
 
 // ── Search input interactions ─────────────────────────────────────────────
 inputEl.addEventListener('input', () => {
@@ -92,6 +106,18 @@ clearBtn.addEventListener('click', () => {
 });
 inputEl.addEventListener('keydown', e => {
   if (e.key === 'Enter') triggerTextSearch();
+  if (e.key === 'Escape') {
+    inputEl.value = '';
+    clearBtn.classList.remove('visible');
+  }
+});
+
+// ── Refresh button ──────────────────────────────────────────────────────────
+refreshBtn.addEventListener('click', () => {
+  if (lastSearchParams) {
+    const { lat, lng, label } = lastSearchParams;
+    runSearch(lat, lng, label, true);  // Force refresh
+  }
 });
 
 // ── GPS button ────────────────────────────────────────────────────────────
@@ -146,34 +172,40 @@ async function triggerTextSearch() {
 }
 
 // ── Core search ───────────────────────────────────────────────────────────
-async function runSearch(lat, lng, label = 'this location') {
+async function runSearch(lat, lng, label = 'this location', forceRefresh = false) {
   if (isSearching) return;
   isSearching = true;
+  lastSearchParams = { lat, lng, label };  // Track for refresh button
+  
   setStatus(`Searching near ${label}…`, 'loading');
   resultsHeader.classList.remove('visible');
   resultsList.innerHTML = '';
   popularSection.style.display = 'none';
+  refreshBtn.style.display = 'none';
   showSkeletons(6);
 
   try {
     const q   = encodeURIComponent(inputEl.value.trim());
-    const res = await fetch(`${API_BASE}/nearbyWater?lat=${lat}&lng=${lng}&radius=30&q=${q}`);
+    const refreshParam = forceRefresh ? '&refresh=1' : '';
+    const res = await fetch(`${API_BASE}/nearbyWater?lat=${lat}&lng=${lng}&radius=30&q=${q}${refreshParam}`);
     if (!res.ok) throw new Error(`API ${res.status}`);
     const data = await res.json();
 
     if (!data.success || !data.waterBodies?.length) {
       resultsList.innerHTML = '';
       popularSection.style.display = '';
+      refreshBtn.style.display = 'none';
       showEmpty(label);
       setStatus('', '');
       return;
     }
 
-    renderResults(data.waterBodies, label, data.cached);
+    renderResults(data.waterBodies, label, data.cached, data.sources);
 
   } catch (err) {
     resultsList.innerHTML = '';
     popularSection.style.display = '';
+    refreshBtn.style.display = 'none';
     setStatus('Search failed — check connection and try again.', 'error');
     console.error('Search error:', err);
   } finally {
@@ -183,20 +215,32 @@ async function runSearch(lat, lng, label = 'this location') {
 }
 
 // ── Render results ────────────────────────────────────────────────────────
-function renderResults(bodies, label, cached) {
+function renderResults(bodies, label, cached, sources) {
   const gen = ++scoreGen;
   resultsList.innerHTML = '';
 
   const items = bodies.slice(0, 15);
 
   resultsCount.textContent = `${items.length} spot${items.length !== 1 ? 's' : ''} near ${label}`;
-  resultsHint.textContent  = cached ? '· cached' : '· live';
+  
+  // Show source info + cache status
+  let sourceStr = '';
+  if (sources && Array.isArray(sources) && sources.length > 0) {
+    sourceStr = sources.map(s => s.toUpperCase()).join(' + ');
+  }
+  resultsHint.innerHTML = sourceStr ? 
+    `<span class="source-badge">${sourceStr}</span>${cached ? '· cached' : '· live'}` : 
+    (cached ? '· cached' : '· live');
+  
   resultsHeader.classList.add('visible');
+  refreshBtn.style.display = 'inline-flex';  // Show refresh button
 
   items.forEach((body, idx) => {
     const card   = document.createElement('div');
     card.className = 'water-card';
     card.style.animationDelay = `${idx * 35}ms`;
+    card.role = 'option';
+    card.tabIndex = 0;  // Keyboard accessible
 
     const scoreId = `sc-${gen}-${idx}`;
     const areaStr = body.areaKm2 ? ` · ${body.areaKm2} km²` : '';
@@ -217,7 +261,26 @@ function renderResults(bodies, label, cached) {
       e.stopPropagation();
       window.open(`https://www.google.com/maps/search/?api=1&query=${body.lat},${body.lng}`, '_blank');
     });
+    
     card.addEventListener('click', () => openForecast(body));
+    
+    // Keyboard navigation: Enter to open, arrow keys to move
+    card.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        openForecast(body);
+      } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        const next = card.nextElementSibling;
+        if (next) next.focus();
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const prev = card.previousElementSibling;
+        if (prev) prev.focus();
+      } else if (e.key === 'Escape') {
+        inputEl.focus();
+      }
+    });
+    
     resultsList.appendChild(card);
 
     // Fetch score reactively
