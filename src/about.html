@@ -22,14 +22,61 @@
   <meta name="twitter:image" content="https://kaayko.com/assets/kaayko-og.png">
 
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "AboutPage",
-    "name": "About Kaayko",
-    "url": "https://kaayko.com/about",
-    "description": "Paddling Out, Forge, and the Kaayko Store — what each one is, with live data and real numbers.",
-    "publisher": { "@type": "Organization", "name": "Kaayko", "url": "https://kaayko.com" }
-  }
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "AboutPage",
+      "@id": "https://kaayko.com/about#page",
+      "name": "About Kaayko",
+      "url": "https://kaayko.com/about",
+      "description": "Paddling Out, Forge, and the Kaayko Store \u2014 what each one is, with live data and real numbers.",
+      "mainEntity": {
+        "@id": "https://kaayko.com/about#founder"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Kaayko",
+        "url": "https://kaayko.com/"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@type": "Person",
+      "@id": "https://kaayko.com/about#founder",
+      "name": "Rohan",
+      "url": "https://kaayko.com/about",
+      "email": "rohan@kaayko.com",
+      "description": "Builds and maintains Kaayko \u2014 Paddling Out, Forge, and the store \u2014 solo.",
+      "worksFor": {
+        "@type": "Organization",
+        "name": "Kaayko",
+        "url": "https://kaayko.com/"
+      },
+      "sameAs": [
+        "https://github.com/tommyvercetti76/Forge",
+        "https://www.youtube.com/@travelingout"
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://kaayko.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "About",
+          "item": "https://kaayko.com/about"
+        }
+      ]
+    }
+  ]
+}
   </script>
 
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -392,6 +439,45 @@
       .stage { position: relative; height: 100vh; height: 100svh; }
       .chapter-body { margin-top: 0; }
     }
+
+    /* ── Static chapter fallback ────────────────────────────────────────
+       Real content in the initial HTML so the page is complete for
+       crawlers and with JavaScript disabled. The script below replaces
+       this with the animated version when it runs. */
+    .about-lede { max-width: 44rem; margin: 0 auto; padding: clamp(2.5rem,7vw,4.5rem) clamp(1.25rem,5vw,2rem) 0; }
+    .about-lede h1 {
+      font-family: var(--serif); font-weight: 500;
+      font-size: clamp(1.7rem, 4.6vw, 2.7rem); line-height: 1.2;
+      color: var(--fg); margin: 0 0 1rem; letter-spacing: -0.01em;
+    }
+    .about-lede > p {
+      font-family: var(--serif); font-size: clamp(1.12rem,2.5vw,1.32rem);
+      line-height: 1.65; color: var(--fg); margin: 0 0 1rem;
+    }
+    .about-static { max-width: 44rem; margin: 0 auto; padding: 0 clamp(1.25rem,5vw,2rem) 1rem; }
+    .about-static h1 {
+      font-family: var(--serif); font-weight: 500;
+      font-size: clamp(1.7rem, 4.6vw, 2.7rem); line-height: 1.2;
+      color: var(--fg); margin: 0 0 1rem; letter-spacing: -0.01em;
+    }
+    .about-static > p {
+      font-family: var(--serif); font-size: clamp(1.12rem,2.5vw,1.32rem);
+      line-height: 1.65; color: var(--fg); margin: 0 0 2.25rem;
+    }
+    .about-static h2 {
+      font-family: var(--display); font-size: 0.8rem; font-weight: 400;
+      letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold);
+      margin: 2.5rem 0 0.3rem; padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .about-static .kicker {
+      font-family: var(--serif); font-style: italic; font-size: 1rem;
+      color: var(--gold-bright); margin: 0.6rem 0 0.5rem;
+    }
+    .about-static p { font-family: var(--serif); font-size: 1.08rem; line-height: 1.68; color: var(--muted); margin: 0 0 0.9rem; }
+    .about-static .note { color: var(--faint); font-size: 0.98rem; }
+    .about-static a { color: var(--gold); text-decoration: none; border-bottom: 1px solid rgba(181,147,90,0.4); }
+    .about-static a:hover { color: var(--gold-bright); }
   </style>
 </head>
 <body>
@@ -402,7 +488,61 @@
     <span class="label" style="color: rgba(181,147,90,0.45); pointer-events:none;">About</span>
   </header>
 
-  <main id="chapters"></main>
+    <section class="about-lede">
+    <h1>Kaayko is three products, built by one person.</h1>
+    <p>
+        Paddling Out, Forge, and a small store. No team, no funding, no roadmap deck. The three
+        sentences below are the whole point of this page &mdash; everything else is detail.
+      </p>
+  </section>
+
+  <main id="chapters">
+    <div class="about-static">
+
+      <h2>Paddling Out</h2>
+      <div class="kicker">Know before you go</div>
+      <p>
+        Live paddle-condition scores for real lakes. Wind, water temperature, UV and rain fold into one
+        number from 1 to 5 &mdash; check it before you drive out.
+      </p>
+      <p class="note">
+        <strong>Guidance, not clearance.</strong> The model is trained on real paddler ratings, but it
+        cannot see your skill, your equipment, or the launch site. Wear a life jacket every time,
+        whatever the number says.
+      </p>
+      <p>
+        <a href="/paddlingout">Open Paddling Out</a> &nbsp;&middot;&nbsp;
+        <a href="/paddlingout/methodology">Methodology</a>
+      </p>
+
+      <h2>Forge</h2>
+      <div class="kicker">Local-first generative AI</div>
+      <p>
+        An open-source AI workstation that runs entirely on a Mac. Every image in this chapter was
+        rendered on-device &mdash; no cloud, no subscription, no upload.
+      </p>
+      <p class="note">
+        <strong>That last number is a failure.</strong> The ship threshold was written down before the
+        run and the result came in under it, so the verdict is published next to the methodology &mdash;
+        not left out. A benchmark you can only pass is not a benchmark.
+      </p>
+      <p>
+        <a href="/forge-gallery">See the gallery</a> &nbsp;&middot;&nbsp;
+        <a href="https://github.com/tommyvercetti76/Forge" rel="noopener noreferrer">Read the code</a>
+      </p>
+
+      <h2>Store</h2>
+      <div class="kicker">Invite-only goods</div>
+      <p>
+        A small run of printed shirts and totes. The store opens with an invite code, and vote counts
+        decide which designs get printed next.
+      </p>
+      <p class="note">
+        <strong>How to get in.</strong> Ask for a code &mdash; it is not exclusivity, it is just how
+        small this is. A human sends every invite.
+      </p>
+    </div>
+  </main>
 
   <section class="closing">
     <h2 class="reveal">Made with care</h2>
@@ -420,10 +560,11 @@
   </section>
 
   <footer class="foot">
-    <a href="/">Home</a>
     <a href="/paddlingout">Paddling Out</a>
-    <a href="/forge-gallery">Forge Gallery</a>
+    <a href="/about">About</a>
+    <a href="/paddlingout/methodology">Methodology</a>
     <a href="/privacy">Privacy</a>
+    <span>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</span>
   </footer>
 
   <script src="/js/storeAccess.js"></script>
@@ -761,6 +902,10 @@
       });
     }
 
+    // Drop the static fallback before painting the animated chapters,
+    // otherwise the same copy would appear twice.
+    main.innerHTML = "";
+
     var views = CHAPTERS.map(buildChapter);
 
     // First chapter paints immediately; the rest arm as they come near.
@@ -795,5 +940,12 @@
     }
   })();
   </script>
+  <script>
+    (function () {
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+    })();
+  </script>
+
 </body>
 </html>
