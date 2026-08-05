@@ -41,20 +41,8 @@ class DataTransformer {
     return null;
   }
 
-  // Prepare data for heatmap component (expanded hourly structure)
-  prepareHeatmapData(forecastDays) {
-    if (!Array.isArray(forecastDays)) {
-      return [];
-    }
-
-    return forecastDays.map(day => {
-      // Pass through the full hourly data structure from API
-      return {
-        date: day.date,
-        hourly: day.hourly || {} // Keep the original hour-keyed structure (e.g., "8", "12", "18")
-      };
-    });
-  }
+  // (heatmap data prep removed — KonditionsHeatmap consumes the API
+  // forecast shape directly)
 
   // Get ML status icon from forecast data
   getMLStatusIcon(forecastData) {

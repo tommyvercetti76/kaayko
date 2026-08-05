@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/prod-config.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Kaayko · Product</title>
+  <meta name="description" content="Kaayko product detail" />
+  <meta name="robots" content="index, follow" />
+
+  <link rel="icon" type="image/png" href="/favicon-32x32.png">
+  <meta name="theme-color" content="#d4af37">
+
+  <link rel="stylesheet" href="/css/storestyle.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/kaaykoFilterModal.css" />
+  <link rel="stylesheet" href="/css/animal.css" />
+  <link rel="stylesheet" href="/css/product.css" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+
+<body class="store-v2 product-v2">
+  <header class="header">
+    <div class="header-top">
+      <div class="header-brand">
+        <h1 class="header-title">Kaayko</h1>
+        <p class="header-subtitle">Made for the Wild</p>
+      </div>
+      <nav class="top-menu"><ul></ul></nav>
+      <div class="header-controls">
+        <button class="theme-toggle-icon" aria-label="Switch theme"></button>
+        <button class="fab-menu mobile-only" aria-label="Open menu">
+          <span class="header-icon-stack" aria-hidden="true"><span></span><span></span><span></span></span>
+        </button>
+      </div>
+    </div>
+    <div class="mobile-menu-overlay"><ul></ul></div>
+  </header>
+
+  <nav class="animal-breadcrumb">
+    <a href="/store">← All products</a>
+  </nav>
+
+  <main id="product-root" class="product-root">
+    <section class="product-shell skeleton" aria-hidden="true">
+      <div class="product-gallery-skeleton"></div>
+      <div class="product-info-skeleton">
+        <div class="sk-line sk-line-xxl"></div>
+        <div class="sk-line sk-line-md"></div>
+        <div class="sk-line sk-line-full"></div>
+        <div class="sk-line sk-line-full"></div>
+        <div class="sk-line sk-line-half"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="modal" class="modal" role="dialog" aria-modal="true" aria-label="Product image gallery">
+    <div class="modal-content">
+      <button id="close-modal-button" class="modal-close material-icons" aria-label="Close">close</button>
+      <button class="modal-nav modal-nav-left material-icons" aria-label="Previous">chevron_left</button>
+      <button class="modal-nav modal-nav-right material-icons" aria-label="Next">chevron_right</button>
+      <div id="modal-image-container" class="modal-image-container"></div>
+    </div>
+  </div>
+
+  <footer><p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p></footer>
+
+  <script src="/js/secretStore.js"></script>
+  <script src="/js/header.js"></script>
+  <script type="module" src="/js/cartManager.js"></script>
+  <script type="module" src="/js/sustainabilityAlert.js"></script>
+
+  <script type="module">
+    import { cartManager } from '/js/cartManager.js';
+    import { setupModalCloseHandlers, openModal } from '/js/kaayko_ui.js';
+    import { productPageInit } from '/js/product.js';
+    import '/js/sustainabilityAlert.js';
+
+    window.cartManager = cartManager;
+
+    const headerControls = document.querySelector('.header-controls');
+    if (headerControls) {
+      const cartBtn = document.createElement('a');
+      cartBtn.href = '/cart.html';
+      cartBtn.className = 'cart-nav-button';
+      cartBtn.innerHTML = `
+        <svg class="header-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="9" cy="19" r="1.8"></circle>
+          <circle cx="17" cy="19" r="1.8"></circle>
+          <path d="M4 5h2l2.1 8.2a1 1 0 0 0 1 .8h7.9a1 1 0 0 0 1-.75L20 8H8"></path>
+        </svg>
+        <span class="cart-badge">0</span>
+      `;
+      headerControls.insertBefore(cartBtn, headerControls.firstChild);
+      const updateBadge = () => {
+        const count = cartManager.getCount();
+        const badge = cartBtn.querySelector('.cart-badge');
+        badge.textContent = count;
+        badge.style.display = count > 0 ? 'flex' : 'none';
+      };
+      cartManager.subscribe(updateBadge);
+      updateBadge();
+    }
+
+    setupModalCloseHandlers();
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    const params = new URLSearchParams(window.location.search);
+    let productID = params.get('id') || '';
+    if (!productID) {
+      const segments = window.location.pathname.split('/').filter(Boolean);
+      const last = segments[segments.length - 1] || '';
+      productID = last === 'product.html' ? '' : last;
+    }
+    productPageInit(productID, { openModal });
+  </script>
+</body>
+</html>

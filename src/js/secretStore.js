@@ -83,8 +83,9 @@ document.addEventListener('DOMContentLoaded', function() {
   const hasAccess = localStorage.getItem(accessKey) === atob('Z3JhbnRlZA==');
   
   if (!hasAccess) {
-    // Route to the homepage store panel — showSecretModal() kept below as fallback
-    window.location.replace('https://kaayko.com/#store');
+    // Route to the homepage store panel on the current origin.
+    // This keeps local previews on localhost instead of bouncing to production.
+    window.location.replace('/#store');
   }
 });
 

@@ -131,8 +131,14 @@
   transform: translateY(-2px);
 }
 
-.cart-nav-button .material-icons {
-  font-size: 24px;
+.header-icon-svg {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
 }
 
 .cart-badge {
@@ -161,9 +167,6 @@ html.dark-theme .cart-nav-button {
 /* ─── Filter Toggle Icon ─────────────────────────────────────────────────── */
 /* ─── Filter Toggle Icon ─────────────────────────────────────────────────── */
 #filter-toggle {
-  font-family: 'Material Icons';
-  font-feature-settings: 'liga';
-  font-size: 24px;
   color: var(--color-bright-ivory);
   background: none;
   border: none;
@@ -178,6 +181,11 @@ html.dark-theme .cart-nav-button {
 }
 #filter-toggle:hover {
   opacity: 1;
+}
+
+#filter-toggle .header-icon-svg {
+  width: 20px;
+  height: 20px;
 }
 /* when any filters are active */
 #filter-toggle.active {
@@ -197,10 +205,6 @@ html.dark-theme #filter-toggle {
 
 /* ─── Theme Toggle ────────────────────────────────────────────────────────── */
 .theme-toggle-icon {
-  position: relative;
-  font-family: 'Material Icons';
-  font-feature-settings: 'liga';
-  font-size: 24px;
   color: var(--color-bright-ivory);  /* ivory in light mode */
   background: none;
   border: none;
@@ -211,20 +215,25 @@ html.dark-theme #filter-toggle {
   justify-content: center;
   width: 36px;
   height: 36px;
-  overflow: hidden;
+  opacity: 0.86;
+  transition: opacity 0.2s ease, color 0.2s ease;
 }
-.theme-toggle-icon::before {
-  content: "lightbulb_outline";
-  display: block;
-  width: 100%;
-  text-align: center;
+
+.theme-toggle-icon:hover {
+  opacity: 1;
 }
+
+.theme-toggle-icon .header-icon-svg {
+  width: 20px;
+  height: 20px;
+}
+
 html.dark-theme .theme-toggle-icon {
   color: var(--color-brand-gold);
 }
-html.dark-theme .theme-toggle-icon::before {
-  content: "lightbulb";
-  filter: drop-shadow(0 0 4px rgba(255,215,0,0.6));
+
+html.dark-theme .theme-toggle-icon .header-icon-svg {
+  filter: drop-shadow(0 0 4px rgba(255,215,0,0.45));
 }
 
 /* ─── Other Controls ──────────────────────────────────────────────────────── */
@@ -324,28 +333,35 @@ html.dark-theme .custom-location-btn:hover {
   border-radius: 50%;
   background: transparent;
   cursor: pointer;
-  color: transparent;         /* hide inner 'menu' text */
   overflow: hidden;
-  display: inline-flex;
   align-items: center;
   justify-content: center;
+}
 
-  /* prep for injected icon */
-  font-family: 'Material Icons';
-  font-feature-settings: 'liga';
-  font-size: 0;               /* inner text hidden; pseudo uses its own size */
+.header-icon-stack {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 20px;
 }
-.fab-menu::before {
-  content: "menu";
-  font-family: 'Material Icons';
-  font-feature-settings: 'liga';
-  font-size: 24px;
-  line-height: 1;
-  color: var(--color-bright-ivory);  /* ivory in light mode */
-  display: inline-block;
-  transition: color 0.3s ease, filter 0.3s ease, opacity 0.3s ease;
+
+.header-icon-stack span {
+  display: block;
+  height: 1.8px;
+  border-radius: 999px;
+  background: currentColor;
 }
-.fab-menu:hover::before {
+
+.header-icon-stack span:nth-child(1) { width: 20px; }
+.header-icon-stack span:nth-child(2) { width: 14px; }
+.header-icon-stack span:nth-child(3) { width: 20px; }
+
+.fab-menu {
+  color: var(--color-bright-ivory);
+  transition: color 0.3s ease, opacity 0.3s ease;
+}
+
+.fab-menu:hover {
   opacity: 0.85;
 }
 
@@ -448,15 +464,6 @@ html.dark-theme .custom-location-btn:hover {
 
 .mobile-controls button span {
   margin-right: 8px;
-}
-
-.mobile-controls .api-mode-toggle-mobile {
-  background: rgba(255, 215, 0, 0.2);
-  border-color: rgba(255, 215, 0, 0.3);
-}
-
-.mobile-controls .api-mode-toggle-mobile:hover {
-  background: rgba(255, 215, 0, 0.3);
 }
 
 /*─────────────────────────────────────────────────────────────────────────────

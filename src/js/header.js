@@ -2,6 +2,28 @@
 // LocalStorage key for dark-mode
 const DARK_KEY = "darkTheme";
 
+function updateThemeToggleIcon(btn, isDark) {
+  if (!btn) return;
+
+  btn.innerHTML = isDark
+    ? `<svg class="header-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+         <path d="M12 3v2.2" />
+         <path d="M12 18.8V21" />
+         <path d="M5.64 5.64l1.56 1.56" />
+         <path d="M16.8 16.8l1.56 1.56" />
+         <path d="M3 12h2.2" />
+         <path d="M18.8 12H21" />
+         <path d="M5.64 18.36l1.56-1.56" />
+         <path d="M16.8 7.2l1.56-1.56" />
+         <circle cx="12" cy="12" r="4.2" />
+       </svg>`
+    : `<svg class="header-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+         <path d="M20.2 14.8A8.6 8.6 0 1 1 9.2 3.8a7.2 7.2 0 0 0 11 11z" />
+       </svg>`;
+
+  btn.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
+}
+
 /** ───────────────────────────────────────────────────────────────────────────
  * 1) Dark-Mode Toggle
  *    Reads/stores preference, toggles .dark-theme on <html>,
@@ -15,9 +37,12 @@ function initializeDarkMode() {
   const btn = document.querySelector(".theme-toggle-icon");
   if (!btn) return;
 
+  updateThemeToggleIcon(btn, isDark);
+
   btn.addEventListener("click", () => {
     const nowEnabled = root.classList.toggle("dark-theme");
     localStorage.setItem(DARK_KEY, nowEnabled ? "enabled" : "disabled");
+    updateThemeToggleIcon(btn, nowEnabled);
   });
 }
 
@@ -37,21 +62,6 @@ function populateMenu() {
 }
 
 /** ───────────────────────────────────────────────────────────────────────────
- * 2.1) Handle Store Navigation - Check for Secret Access
- *      Prevents access to store without secret keyword
- *───────────────────────────────────────────────────────────────────────────*/
-function handleStoreNavigation(e) {
-  const hasAccess = localStorage.getItem('kaaykoStoreAccess') === 'granted';
-  if (!hasAccess) {
-    e.preventDefault();
-    console.log('🔐 Store access attempted without keyword');
-    
-    // Directly redirect to store page which will show the modal
-    window.location.href = 'store.html';
-  }
-}
-
-/** ───────────────────────────────────────────────────────────────────────────
  * 3) Mobile FAB & Overlay Toggle
  *    Shows/hides overlay menu at ≤768px.
  *───────────────────────────────────────────────────────────────────────────*/
@@ -59,6 +69,13 @@ function setupMobileMenu() {
   const fab     = document.querySelector(".fab-menu");
   const overlay = document.querySelector(".mobile-menu-overlay");
   if (!fab || !overlay) return;
+
+  const hasMenuItems = !!overlay.querySelector("li, a");
+  if (!hasMenuItems) {
+    fab.style.display = "none";
+    overlay.classList.remove("active");
+    return;
+  }
 
   const toggle = () => overlay.classList.toggle("active");
   const close  = e => {
@@ -83,91 +100,6 @@ function setupMobileMenu() {
   mql.addEventListener("change", onChange);
   onChange(mql);
 }
-
-/** ───────────────────────────────────────────────────────────────────────────
- * 4) API Mode Toggle (both desktop and mobile versions)
- *    Switches between cached (emulator) and real-time (production) data
- *───────────────────────────────────────────────────────────────────────────*/
-function initializeApiModeToggle() {
-  const toggleBtn = document.querySelector('.api-mode-toggle');
-  const toggleBtnMobile = document.querySelector('.api-mode-toggle-mobile');
-  
-  // Update UI for both desktop and mobile toggles
-  function updateToggleUI() {
-    const currentMode = window.apiClient?.getMode() || 'production';
-    
-    [toggleBtn, toggleBtnMobile].forEach(btn => {
-      if (!btn) return;
-      
-      const iconEl = btn.querySelector('.api-mode-icon');
-      const textEl = btn.querySelector('.api-mode-text');
-      
-      if (!iconEl || !textEl) return;
-      
-      // Remove existing state classes
-      btn.classList.remove('cached', 'realtime');
-      
-      if (currentMode === 'emulator') {
-        // Cached data mode
-        btn.classList.add('cached');
-        iconEl.textContent = '⚡';
-        textEl.textContent = 'Quick';
-        btn.title = 'Using cached data from Firebase. Click to switch to real-time.';
-      } else {
-        // Real-time data mode
-        btn.classList.add('realtime');
-        iconEl.textContent = '📡';
-        textEl.textContent = 'Slow';
-        btn.title = 'Using real-time data from API. Click to switch to cached.';
-      }
-    });
-  }
-
-  // Handle toggle click for both buttons
-  function handleToggleClick() {
-    if (!window.apiClient) {
-      console.warn('⚠️ API client not available');
-      return;
-    }
-
-    const currentMode = window.apiClient.getMode();
-    const newMode = currentMode === 'emulator' ? 'production' : 'emulator';
-    
-    // Switch the mode
-    window.apiClient.setMode(newMode);
-    
-    // Update UI
-    updateToggleUI();
-    
-    // Show feedback to user
-    const modeText = newMode === 'emulator' ? 'Cached Data' : 'Real-time Data';
-    console.log(`🔄 Switched to ${modeText} mode`);
-    
-    // Optionally trigger a refresh of current data
-    const event = new CustomEvent('apiModeChanged', { 
-      detail: { 
-        mode: newMode,
-        endpoint: window.apiClient.getCurrentEndpoint()
-      } 
-    });
-    document.dispatchEvent(event);
-  }
-
-  // Add event listeners
-  if (toggleBtn) {
-    toggleBtn.addEventListener('click', handleToggleClick);
-  }
-  if (toggleBtnMobile) {
-    toggleBtnMobile.addEventListener('click', handleToggleClick);
-  }
-
-  // Initialize UI on page load
-  updateToggleUI();
-  
-  // Listen for API client mode changes from other parts of the app
-  document.addEventListener('apiModeChanged', updateToggleUI);
-}
-
 
 /** ───────────────────────────────────────────────────────────────────────────
  * 6) Home Navigation
@@ -195,6 +127,5 @@ document.addEventListener("DOMContentLoaded", () => {
   initializeDarkMode();
   populateMenu();
   setupMobileMenu();
-  initializeApiModeToggle();
   initializeHomeNavigation();
 });

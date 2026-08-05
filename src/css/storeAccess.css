@@ -1,0 +1,262 @@
+/* Kaayko store access modal — shared by the landing page and /about.
+   Markup is injected by js/storeAccess.js; this file styles it. */
+
+:root {
+  --sa-fg: #ede8df;
+  --sa-muted: rgba(237, 232, 223, 0.58);
+  --sa-gold: #b5935a;
+  --sa-gold-bright: #d9bd7b;
+  --sa-ease: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+/* ── Store modal — one card for both Access and Request ───────────── */
+.modal {
+  position: fixed;
+  inset: 0;
+  /* Above every page chrome that hosts it — the landing panels and the
+     /about top bar both sit well below this. */
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1rem, 5vw, 2rem);
+}
+
+.modal[hidden] {
+  display: none;
+}
+
+.modal-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 4, 4, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.modal-card {
+  position: relative;
+  width: min(420px, 100%);
+  padding: clamp(2rem, 5vw, 2.75rem) clamp(1.5rem, 5vw, 2.5rem) clamp(1.75rem, 4vw, 2.25rem);
+  border: 1px solid rgba(181, 147, 90, 0.28);
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(181, 147, 90, 0.09), transparent 62%),
+    #0c0c0c;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+  text-align: center;
+  opacity: 0;
+  transform: translateY(14px) scale(0.985);
+  transition: opacity 320ms ease, transform 380ms var(--sa-ease);
+}
+
+.modal--open .modal-scrim {
+  opacity: 1;
+}
+
+.modal--open .modal-card {
+  opacity: 1;
+  transform: none;
+}
+
+.modal-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 0;
+  background: none;
+  color: rgba(181, 147, 90, 0.55);
+  cursor: pointer;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.6rem;
+  line-height: 1;
+  transition: color 200ms ease, transform 240ms var(--sa-ease);
+}
+
+.modal-close:hover,
+.modal-close:focus-visible {
+  color: var(--sa-gold-bright);
+  transform: rotate(90deg);
+  outline: none;
+}
+
+.modal-eyebrow {
+  color: rgba(181, 147, 90, 0.6);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 0.68rem;
+  font-style: italic;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+}
+
+.modal-title {
+  margin-top: 0.55rem;
+  color: var(--sa-fg);
+  font-family: "Bebas Neue", Impact, sans-serif;
+  font-size: clamp(2.1rem, 7vw, 2.9rem);
+  font-weight: 400;
+  letter-spacing: 0.09em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.modal-title::after {
+  content: "";
+  display: block;
+  width: 3.25rem;
+  height: 1px;
+  margin: 0.85rem auto 0;
+  background: linear-gradient(90deg, transparent, var(--sa-gold), transparent);
+}
+
+.modal-sub {
+  margin-top: 0.85rem;
+  color: var(--sa-muted);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(0.82rem, 2.6vw, 0.94rem);
+  font-style: italic;
+  letter-spacing: 0.09em;
+  line-height: 1.5;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: clamp(1.4rem, 4vw, 1.9rem);
+}
+
+.modal-body[hidden] {
+  display: none;
+}
+
+.modal-copy {
+  max-width: 30ch;
+  color: rgba(237, 232, 223, 0.66);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+  line-height: 1.6;
+}
+
+.modal-action {
+  margin-top: 1.35rem;
+  padding: 0.72em 1.9em;
+  border: 1px solid rgba(181, 147, 90, 0.45);
+  color: var(--sa-fg);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(0.72rem, 2.2vw, 0.82rem);
+  letter-spacing: 0.2em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: border-color 240ms ease, color 240ms ease, background 240ms ease;
+}
+
+.modal-action:hover,
+.modal-action:focus-visible {
+  border-color: var(--sa-gold-bright);
+  background: rgba(181, 147, 90, 0.1);
+  color: var(--sa-gold-bright);
+  outline: none;
+}
+
+.modal-fallback {
+  margin-top: 1.1rem;
+  color: rgba(237, 232, 223, 0.4);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 0.76rem;
+  font-style: italic;
+  letter-spacing: 0.06em;
+}
+
+.modal-fallback a {
+  color: rgba(181, 147, 90, 0.8);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(181, 147, 90, 0.3);
+}
+
+.modal-fallback a:hover {
+  color: var(--sa-gold-bright);
+}
+
+#modal-body-code {
+  width: min(260px, 100%);
+}
+
+.store-field-wrap {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border-bottom: 1px solid rgba(181, 147, 90, 0.22);
+  padding-bottom: 2px;
+  transition: border-color 280ms ease;
+}
+
+.store-field-wrap:focus-within { border-bottom-color: var(--sa-gold); }
+.store-field-wrap.error        { border-bottom-color: rgba(255, 80, 80, 0.55); }
+.store-field-wrap.ok           { border-bottom-color: rgba(130, 190, 80, 0.55); }
+
+.store-input {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  outline: none;
+  color: rgba(237, 232, 223, 0.88);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(0.92rem, 1.7vw, 1.05rem);
+  letter-spacing: 0.14em;
+  padding: 0.6em 0;
+  text-align: center;
+  caret-color: var(--sa-gold);
+}
+
+.store-input::placeholder {
+  color: rgba(255, 255, 255, 0.16);
+  letter-spacing: 0.07em;
+}
+
+.store-input:disabled { opacity: 0.35; }
+
+.store-arrow {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(181, 147, 90, 0.28);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.35em;
+  line-height: 1;
+  padding: 0.3em 0 0.3em 0.5em;
+  flex-shrink: 0;
+  transition: color 200ms ease, transform 200ms ease;
+}
+
+.store-arrow:hover,
+.store-arrow:focus-visible {
+  color: var(--sa-gold-bright);
+  transform: translateX(4px);
+}
+
+.store-arrow:disabled {
+  cursor: default;
+  color: rgba(181, 147, 90, 0.1);
+  transform: none;
+}
+
+.store-hint {
+  margin-top: 0.65em;
+  min-height: 1.2em;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(0.72rem, 1.2vw, 0.8rem);
+  font-style: italic;
+  letter-spacing: 0.04em;
+  color: rgba(255, 80, 80, 0.7);
+  text-align: center;
+  opacity: 0;
+  transition: opacity 260ms ease, color 260ms ease;
+}
+
+.store-hint.visible { opacity: 1; }
+.store-hint.ok      { color: rgba(140, 195, 80, 0.8); }

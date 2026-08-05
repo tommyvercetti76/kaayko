@@ -68,7 +68,7 @@
   <script src="https://js.stripe.com/v3/"></script>
 </head>
 
-<body>
+<body class="store-v2">
   <!-- HEADER (shared across all pages) -->
   <header class="header">
     <div class="header-top">
@@ -82,13 +82,23 @@
       <!-- Controls: Filter | Dark-mode | Mobile menu -->
       <div class="header-controls">
         <!-- Filter Toggle -->
-        <button id="filter-toggle" class="material-icons" aria-label="Open Filters">
-          filter_list
+        <button id="filter-toggle" aria-label="Open filters">
+          <svg class="header-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 7h16" />
+            <path d="M7 12h10" />
+            <path d="M10 17h4" />
+          </svg>
         </button>
-        <!-- Dark Mode Toggle -->
-        <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode"></button>
+        <!-- Universal Theme Toggle -->
+        <button class="theme-toggle-icon" aria-label="Switch theme"></button>
         <!-- Mobile FAB -->
-        <button class="fab-menu material-icons mobile-only" aria-label="Open Menu">menu</button>
+        <button class="fab-menu mobile-only" aria-label="Open menu">
+          <span class="header-icon-stack" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </button>
       </div>
     </div>
     
@@ -99,31 +109,33 @@
   </header>
 
   <!-- FILTER MODAL (hidden by default) -->
-  <div class="filter-overlay">
+  <div class="filter-overlay" role="dialog" aria-modal="true" aria-labelledby="filter-title">
     <div class="filter-panel">
-      <h2>Filter Products</h2>
+      <h2 id="filter-title">Filter Products</h2>
+      <button class="filter-close material-icons" id="filter-close" aria-label="Close Filters">close</button>
+      <div class="filter-section" id="type-section">
+        <strong>Type <span class="filter-section-count" data-section="type" data-count="0">0 selected</span></strong>
+        <div class="chip-group" id="type-chips"></div>
+      </div>
       <div class="filter-section" id="price-section">
-        <strong>Price:</strong>
+        <strong>Price <span class="filter-section-count" data-section="price" data-count="0">0 selected</span></strong>
         <div class="chip-group" id="price-chips"></div>
       </div>
       <div class="filter-section" id="tags-section">
-        <strong>Tags:</strong>
+        <strong>Tags <span class="filter-section-count" data-section="tag" data-count="0">0 selected</span></strong>
         <div class="chip-group" id="tag-chips"></div>
       </div>
       <div class="filter-section" id="votes-section">
         <div class="slider-label">
-          <span>Min Votes:</span>
+          <span>Min Votes</span>
           <span id="votes-value">0</span>
         </div>
-        <input type="range" id="votes-slider" min="0" max="0" value="0" />
+        <input type="range" id="votes-slider" min="0" max="25" value="0" />
       </div>
       <div class="filter-actions">
-        <button id="filter-reset">Reset</button>
-        <button id="filter-apply">Apply</button>
+        <button id="filter-reset" type="button">Reset</button>
+        <button id="filter-apply" type="button">Show all products</button>
       </div>
-      <button class="filter-close material-icons" id="filter-close" aria-label="Close Filters">
-        close
-      </button>
     </div>
   </div>
 
@@ -178,7 +190,11 @@
       cartBtn.href = 'cart.html';
       cartBtn.className = 'cart-nav-button';
       cartBtn.innerHTML = `
-        <span class="material-icons">shopping_cart</span>
+        <svg class="header-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="9" cy="19" r="1.8"></circle>
+          <circle cx="17" cy="19" r="1.8"></circle>
+          <path d="M4 5h2l2.1 8.2a1 1 0 0 0 1 .8h7.9a1 1 0 0 0 1-.75L20 8H8"></path>
+        </svg>
         <span class="cart-badge">0</span>
       `;
       
@@ -199,17 +215,23 @@
       // Also refresh all cart button states when cart changes
       cartManager.subscribe(() => {
         // Update all cart buttons on the page
-        document.querySelectorAll('.cart-button').forEach(btn => {
-          const productId = btn.dataset.productId;
+        document.querySelectorAll('.cart-button-container').forEach(container => {
+          const productId = container.dataset.productId || container.querySelector('.cart-link')?.dataset.productId;
           const isInCart = cartManager.hasProduct(productId);
-          const label = btn.querySelector('.cart-label');
+          const link = container.querySelector('.cart-link');
+          const label = container.querySelector('.cart-label');
+          const icon = container.querySelector('.cart-link-icon');
           
           if (isInCart) {
-            btn.classList.add('in-cart');
-            if (label) label.textContent = 'In Cart';
+            container.classList.add('in-cart');
+            if (link) link.classList.add('in-cart');
+            if (label) label.textContent = 'In bag';
+            if (icon) icon.style.display = 'inline-flex';
           } else {
-            btn.classList.remove('in-cart');
-            if (label) label.textContent = 'Buy';
+            container.classList.remove('in-cart');
+            if (link) link.classList.remove('in-cart');
+            if (label) label.textContent = 'Add to bag';
+            if (icon) icon.style.display = 'none';
           }
         });
       });

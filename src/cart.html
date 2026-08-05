@@ -25,483 +25,531 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
   
   <style>
-    html, body { 
-      overflow-x: hidden; 
-      max-width: 100vw; 
-      margin: 0; 
+    html, body {
+      margin: 0;
       padding: 0;
-      height: auto;
       min-height: 100vh;
+      background: #f7f5f1;
+      color: #1f1f1f;
+      overflow-x: hidden;
     }
-    
-    .cart-page-wrapper {
-      min-height: 100vh;
-      background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
-      padding: 20px 20px 60px;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    
-    .cart-page { max-width: 1200px; margin: 0 auto; width: 100%; }
-    .cart-header h1 { font-family: 'Josefin_Bold', Arial, sans-serif; font-size: 22px; color: #fff; margin: 0 0 20px 0; }
-    
-    /* Order Summary Bar - Premium Clean */
-    .cart-summary-bar {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      padding: 14px 24px;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 32px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-    }
-    
-    .cart-summary-bar-title { 
-      font-family: 'Josefin_Bold', Arial, sans-serif; 
-      font-size: 11px; 
-      color: rgba(255, 255, 255, 0.5);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      white-space: nowrap;
-    }
-    
-    .cart-summary-bar-details { 
-      display: flex; 
-      gap: 24px; 
-      font-family: 'Josefin_Medium', Arial, sans-serif; 
-      font-size: 12px; 
-      color: rgba(255, 255, 255, 0.7);
-      flex: 1;
-      letter-spacing: 0.3px;
-    }
-    
-    .cart-summary-bar-total {
-      display: flex;
+
+    .cart-topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: 56px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
       align-items: center;
       gap: 12px;
+      padding: 0 16px;
+      background: rgba(247, 245, 241, 0.96);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid #e3dfd6;
+    }
+
+    .cart-topbar-back {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      color: #3a3a3a;
+      text-decoration: none;
+    }
+
+    .cart-topbar-title {
+      font-family: 'Josefin_Medium', Arial, sans-serif;
+      font-size: 16px;
+      letter-spacing: 0.01em;
+      color: #262626;
+    }
+
+    .cart-topbar-brand {
       font-family: 'Josefin_Bold', Arial, sans-serif;
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.6);
-      white-space: nowrap;
-      letter-spacing: 0.5px;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #5f5f5f;
+      text-decoration: none;
+      margin-left: 8px;
     }
-    
-    .cart-summary-bar-total-value {
-      font-family: 'Josefin_Bold', Arial, sans-serif;
-      font-size: 20px;
-      color: #ffd700;
-      letter-spacing: 0.5px;
+
+    .cart-topbar-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
-    
-    /* Two Column Layout - Desktop */
-    .cart-content-wrapper { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; }
-    
-    /* Cart Items */
-    .cart-items-column {
-      background: transparent;
-      border: none;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+
+    .cart-page-wrapper {
+      min-height: calc(100vh - 56px);
+      background: #f7f5f1;
+      padding: 20px 16px 120px;
+      box-sizing: border-box;
     }
-    
+
+    .cart-page {
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    .cart-layout {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .cart-items-section {
+      border-top: 1px solid #ddd8cf;
+      border-bottom: 1px solid #ddd8cf;
+      background: #f7f5f1;
+    }
+
     .cart-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 16px;
-      padding: 14px 20px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: grid;
+      grid-template-columns: 80px 1fr auto;
+      gap: 14px;
+      align-items: start;
+      padding: 16px 0;
+      border-bottom: 1px solid #e7e1d7;
+    }
+
+    .cart-item:last-child {
+      border-bottom: none;
+    }
+
+    .cart-item-image {
+      width: 80px;
+      aspect-ratio: 4 / 5;
       border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-      transition: border-color 0.2s;
+      object-fit: cover;
+      background: #efede8;
     }
-    
-    .cart-item:hover { border-color: rgba(255, 255, 255, 0.15); }
-    
-    .cart-item-image { 
-      width: 90px; 
-      height: 90px; 
-      border-radius: 6px; 
-      object-fit: cover; 
-      flex-shrink: 0;
-      display: block;
-      background: rgba(255, 255, 255, 0.05);
-    }
-    
-    .cart-item-details { 
-      flex: 1; 
-      display: flex; 
-      flex-direction: column; 
-      gap: 4px;
-      min-width: 0;
-    }
-    
-    .cart-item-title { 
-      font-family: 'Josefin_Bold', Arial, sans-serif; 
-      font-size: 16px; 
-      color: #fff; 
-      margin: 0;
+
+    .cart-item-title {
+      margin: 0 0 5px;
+      font-family: 'Josefin_Medium', Arial, sans-serif;
+      font-size: 15px;
+      color: #1f1f1f;
       line-height: 1.3;
     }
-    
-    .cart-item-meta { 
-      font-family: 'Josefin_Medium', Arial, sans-serif;
-      font-size: 12px; 
-      color: rgba(255, 255, 255, 0.5); 
+
+    .cart-item-meta,
+    .cart-item-qty {
       margin: 0;
-      letter-spacing: 0.3px;
+      font-family: 'Josefin_Light', Arial, sans-serif;
+      font-size: 12px;
+      color: #6f6a61;
+      line-height: 1.45;
     }
-    
+
     .cart-item-price-remove {
+      text-align: right;
       display: flex;
       flex-direction: column;
-      align-items: flex-end;
       gap: 8px;
-      flex-shrink: 0;
+      align-items: flex-end;
     }
-    
-    .cart-item-price { 
-      font-family: 'Josefin_Bold', Arial, sans-serif; 
-      font-size: 18px; 
-      color: #ffd700; 
+
+    .cart-item-price {
       margin: 0;
-      white-space: nowrap;
+      font-family: 'Josefin_Medium', Arial, sans-serif;
+      font-size: 15px;
+      color: #1f1f1f;
     }
-    
+
     .cart-item-remove {
       background: none;
       border: none;
-      color: #ff4444;
       padding: 0;
+      font-family: 'Josefin_Light', Arial, sans-serif;
+      font-size: 12px;
+      color: #8b867e;
+      text-decoration: underline;
+      text-underline-offset: 2px;
       cursor: pointer;
+    }
+
+    .cart-summary-section {
+      border-top: 1px solid #ddd8cf;
+      border-bottom: 1px solid #ddd8cf;
+      padding: 14px 0 18px;
+      background: #f7f5f1;
+    }
+
+    .money-ladder {
+      border-bottom: 1px solid #e7e1d7;
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+    }
+
+    .money-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      font-family: 'Josefin_Light', Arial, sans-serif;
+      font-size: 13px;
+      color: #555047;
+    }
+
+    .money-row.total {
+      font-family: 'Josefin_Medium', Arial, sans-serif;
+      font-size: 15px;
+      color: #1f1f1f;
+      padding-top: 10px;
+      border-top: 1px solid #ece7de;
+      margin-top: 8px;
+    }
+
+    .promo-wrap {
+      margin-bottom: 16px;
+    }
+
+    .promo-input {
+      width: 100%;
+      height: 40px;
+      border: 1px solid #d8d2c8;
+      border-radius: 8px;
+      padding: 0 12px;
+      background: #fff;
+      color: #232323;
+      font-family: 'Josefin_Light', Arial, sans-serif;
+      font-size: 13px;
+    }
+
+    .cart-summary-title {
+      margin: 14px 0 10px;
+      font-family: 'Josefin_Medium', Arial, sans-serif;
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #4f4b45;
+    }
+
+    .payment-prompt {
+      margin: 8px 0 12px;
+      font-family: 'Josefin_Light', Arial, sans-serif;
+      font-size: 12px;
+      color: #7b756d;
+    }
+
+    .cart-form-group { margin-bottom: 12px; }
+    .cart-form-label {
+      display: block;
+      margin-bottom: 6px;
+      font-family: 'Josefin_Medium', Arial, sans-serif;
+      font-size: 12px;
+      color: #58524a;
+    }
+    .cart-form-required { color: #8d7040; }
+    .cart-form-optional { color: #8b867e; }
+
+    .cart-form-input {
+      width: 100%;
+      box-sizing: border-box;
+      height: 42px;
+      border: 1px solid #d8d2c8;
+      border-radius: 8px;
+      padding: 0 12px;
+      background: #fff;
+      color: #232323;
+      font-family: 'Josefin_Light', Arial, sans-serif;
+      font-size: 13px;
+    }
+
+    .cart-form-input:focus {
+      outline: none;
+      border-color: #8d7040;
+    }
+
+    .cart-form-error {
+      display: none;
+      margin-top: 4px;
       font-family: 'Josefin_Medium', Arial, sans-serif;
       font-size: 11px;
-      display: flex;
-      align-items: center;
-      gap: 3px;
-      transition: opacity 0.2s;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
+      color: #c44747;
     }
-    
-    .cart-item-remove:hover { opacity: 0.7; }
-    
-    /* Desktop Payment Panel - Aligned with Summary */
-    .cart-summary-panel {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+
+    .cart-consent-box {
+      margin: 12px 0;
+      padding: 10px;
+      border: 1px solid #dfd8cd;
       border-radius: 8px;
-      padding: 16px;
+      background: #fdfbf8;
     }
-    
-    .cart-summary-title { font-family: 'Josefin_Bold', Arial, sans-serif; font-size: 17px; color: #ffd700; margin: 0 0 12px 0; }
-    .payment-prompt { font-size: 11px; color: #888; margin: 0 0 12px 0; }
-    #cart-payment-element { margin-bottom: 12px; }
-    
+
+    .cart-consent-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .cart-consent-text {
+      font-family: 'Josefin_Light', Arial, sans-serif;
+      font-size: 11px;
+      color: #777168;
+      line-height: 1.45;
+    }
+
+    .cart-consent-text a {
+      color: #655028;
+      text-decoration: underline;
+    }
+
+    #cart-payment-element {
+      margin-bottom: 14px;
+    }
+
     .cart-checkout-btn {
       width: 100%;
-      padding: 14px;
-      background: linear-gradient(135deg, #4caf50, #45a049);
-      color: white;
+      height: 44px;
       border: none;
-      border-radius: 6px;
-      font-family: 'Josefin_Bold', Arial, sans-serif;
-      font-size: 15px;
+      border-radius: 999px;
+      background: #1e1e1e;
+      color: #fff;
+      font-family: 'Josefin_Medium', Arial, sans-serif;
+      font-size: 14px;
       cursor: pointer;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      transition: all 0.3s;
     }
-    
-    .cart-checkout-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4); }
-    .cart-checkout-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    
-    /* Empty Cart */
-    .cart-empty { text-align: center; padding: 60px 20px; color: #fff; }
-    .cart-empty-icon { font-size: 64px; color: rgba(255, 255, 255, 0.2); margin-bottom: 20px; }
-    .cart-empty h2 { font-family: 'Josefin_Bold', Arial, sans-serif; font-size: 24px; margin: 0 0 12px 0; }
-    .cart-empty p { font-size: 14px; color: #888; margin-bottom: 24px; }
-    
+
+    .cart-checkout-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .cart-empty {
+      text-align: center;
+      padding: 50px 10px;
+      color: #2b2b2b;
+    }
+
+    .cart-empty h2 {
+      margin: 0 0 8px;
+      font-family: 'Josefin_Medium', Arial, sans-serif;
+      font-size: 24px;
+    }
+
+    .cart-empty p {
+      margin: 0 0 20px;
+      font-family: 'Josefin_Light', Arial, sans-serif;
+      font-size: 14px;
+      color: #6e675d;
+    }
+
     .cart-back-btn {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 12px 24px;
-      background: #ffd700;
-      color: #1a1a1a;
+      gap: 6px;
+      padding: 11px 16px;
+      border-radius: 999px;
+      border: 1px solid #cfc7bc;
+      color: #3a362f;
       text-decoration: none;
-      border-radius: 6px;
-      font-family: 'Josefin_Bold', Arial, sans-serif;
-      transition: all 0.3s;
+      font-family: 'Josefin_Medium', Arial, sans-serif;
+      font-size: 13px;
     }
-    
-    .cart-back-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4); }
-    
-    /* Shared Form Styles (desktop + mobile) */
-    .cart-form-group { margin-bottom: 20px; }
-    .cart-form-label { display: block; color: #ccc; font-size: 13px; margin-bottom: 6px; font-family: 'Josefin_Medium', Arial, sans-serif; }
-    .cart-form-required { color: #ffd700; }
-    .cart-form-optional { color: #999; }
-    .cart-form-input {
-      width: 100%; padding: 12px; background: #1a1a1a;
-      border: 2px solid #333; border-radius: 6px;
-      color: #fff; font-size: 14px;
-      font-family: 'Josefin_Light', Arial, sans-serif;
-      transition: border-color 0.2s;
-      box-sizing: border-box;
-    }
-    .cart-form-input:focus { outline: none; border-color: #ffd700; }
-    .cart-form-error { display: none; color: #ef4444; font-size: 12px; margin-top: 4px; }
-    .cart-consent-box {
-      margin-bottom: 20px; padding: 12px;
-      background: rgba(255, 215, 0, 0.05); border-radius: 6px;
-      border: 1px solid rgba(255, 215, 0, 0.2);
-    }
-    .cart-consent-label {
-      display: flex; align-items: start; cursor: pointer;
-      font-family: 'Josefin_Light', Arial, sans-serif;
-    }
-    .cart-consent-label input { margin-right: 10px; margin-top: 2px; cursor: pointer; }
-    .cart-consent-text { color: #ccc; font-size: 12px; line-height: 1.5; }
-    .cart-consent-text a { color: #ffd700; text-decoration: underline; }
 
-    /* Hide mobile elements on desktop */
-    .mobile-checkout-notch, .mobile-bottom-sheet-overlay, .mobile-bottom-sheet { display: none; }
-    
-    /* ======== MOBILE BOTTOM SHEET ======== */
-    @media (max-width: 768px) {
-      .cart-page-wrapper { padding: 12px 12px 100px; }
-      .cart-header h1 { font-size: 16px; margin-bottom: 12px; }
-      
-      /* Compact Summary */
-      .cart-summary-bar { flex-wrap: wrap; padding: 12px 14px; gap: 12px; }
-      .cart-summary-bar-title { width: 100%; font-size: 14px; }
-      .cart-summary-bar-details { width: 100%; flex-wrap: wrap; gap: 12px 16px; font-size: 12px; }
-      .cart-summary-bar-total {
-        width: 100%;
-        margin-left: 0;
-        padding: 10px 0 0 0;
-        border-left: none;
-        border-top: 1px solid rgba(255, 215, 0, 0.25);
-        justify-content: space-between;
+    .checkout-sticky {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 110;
+      background: rgba(247, 245, 241, 0.96);
+      border-top: 1px solid #ddd8cf;
+      padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+      display: none;
+    }
+
+    .checkout-sticky.active {
+      display: block;
+    }
+
+    .checkout-sticky-btn {
+      width: 100%;
+      height: 44px;
+      border: none;
+      border-radius: 999px;
+      background: #1f1f1f;
+      color: #f7f5f1;
+      font-family: 'Josefin_Medium', Arial, sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .checkout-sticky-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .checkout-sticky-meta {
+      margin: 8px 0 0;
+      text-align: center;
+      font-family: 'Josefin_Light', Arial, sans-serif;
+      font-size: 11px;
+      color: #6f6a61;
+    }
+
+    footer {
+      margin-top: 0 !important;
+      background: #f7f5f1 !important;
+      border-top: 1px solid #e4dfd5;
+      color: #7a746b !important;
+    }
+
+    .dark-theme html,
+    .dark-theme body {
+      background: #0f100d;
+      color: #ede8df;
+    }
+
+    .dark-theme .cart-topbar {
+      background: rgba(15, 16, 13, 0.96);
+      border-bottom-color: rgba(181, 147, 90, 0.24);
+    }
+
+    .dark-theme .cart-topbar-back,
+    .dark-theme .cart-topbar-title,
+    .dark-theme .cart-topbar-brand {
+      color: #ede8df;
+    }
+
+    .dark-theme .cart-page-wrapper,
+    .dark-theme .cart-items-section,
+    .dark-theme .cart-summary-section {
+      background: #0f100d;
+      border-color: rgba(181, 147, 90, 0.24);
+    }
+
+    .dark-theme .cart-item,
+    .dark-theme .money-row.total,
+    .dark-theme .money-ladder {
+      border-color: rgba(181, 147, 90, 0.2);
+    }
+
+    .dark-theme .cart-item-title,
+    .dark-theme .cart-item-price,
+    .dark-theme .money-row.total {
+      color: #ede8df;
+    }
+
+    .dark-theme .cart-item-meta,
+    .dark-theme .cart-item-qty,
+    .dark-theme .money-row,
+    .dark-theme .payment-prompt,
+    .dark-theme .cart-form-label,
+    .dark-theme .cart-consent-text,
+    .dark-theme .checkout-sticky-meta,
+    .dark-theme .cart-empty p {
+      color: rgba(237, 232, 223, 0.72);
+    }
+
+    .dark-theme .cart-item-remove,
+    .dark-theme .cart-consent-text a {
+      color: #d4af7a;
+    }
+
+    .dark-theme .promo-input,
+    .dark-theme .cart-form-input,
+    .dark-theme .cart-consent-box {
+      background: #141511;
+      border-color: rgba(181, 147, 90, 0.34);
+      color: #ede8df;
+    }
+
+    .dark-theme .cart-checkout-btn,
+    .dark-theme .checkout-sticky {
+      background: #151612;
+      border-color: rgba(181, 147, 90, 0.26);
+      color: #ede8df;
+    }
+
+    .dark-theme .checkout-sticky-btn {
+      background: linear-gradient(135deg, #be9d66, #a6844f);
+      color: #111;
+    }
+
+    .dark-theme .cart-back-btn {
+      border-color: rgba(181, 147, 90, 0.34);
+      color: #ede8df;
+    }
+
+    .dark-theme .cart-empty h2 {
+      color: #ede8df;
+    }
+
+    .dark-theme footer {
+      background: #0f100d !important;
+      border-top-color: rgba(181, 147, 90, 0.2);
+      color: rgba(237, 232, 223, 0.66) !important;
+    }
+
+    @media (max-width: 980px) {
+      .cart-layout {
+        grid-template-columns: 1fr;
+        gap: 18px;
       }
-      .cart-summary-bar-total-value { font-size: 22px; }
-      
-      /* Single Column */
-      .cart-content-wrapper { grid-template-columns: 1fr; gap: 0; }
-      .cart-summary-panel { display: none !important; }
-      .cart-items-column { padding: 10px; max-height: none; margin-bottom: 20px; }
-      .cart-item { padding: 10px; max-height: 100px; }
-      
-      /* NOTCH BAR */
-      .mobile-checkout-notch {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: linear-gradient(135deg, rgba(255, 215, 0, 0.98), rgba(255, 140, 0, 0.95));
-        backdrop-filter: blur(10px);
-        padding: 12px 16px;
-        padding-bottom: max(12px, env(safe-area-inset-bottom));
-        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
-        z-index: 1000;
-        cursor: pointer;
+    }
+
+    @media (max-width: 640px) {
+      .cart-topbar {
+        padding: 0 12px;
       }
-      
-      .mobile-checkout-notch::before {
-        content: '';
-        position: absolute;
-        top: 6px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 40px;
-        height: 4px;
-        background: rgba(0, 0, 0, 0.3);
-        border-radius: 2px;
+
+      .cart-page-wrapper {
+        padding: 14px 12px 122px;
       }
-      
-      .mobile-notch-total { font-family: 'Josefin_Bold', Arial, sans-serif; font-size: 16px; color: #1a1a1a; }
-      .mobile-notch-button {
-        background: #1a1a1a;
-        color: #ffd700;
-        padding: 10px 20px;
-        border-radius: 20px;
-        font-family: 'Josefin_Bold', Arial, sans-serif;
+
+      .cart-item {
+        grid-template-columns: 72px 1fr auto;
+        gap: 10px;
+      }
+
+      .cart-item-image {
+        width: 72px;
+      }
+
+      .cart-item-title {
         font-size: 14px;
-        border: none;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-      
-      /* OVERLAY */
-      .mobile-bottom-sheet-overlay {
-        display: block;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.6);
-        z-index: 1001;
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-        transition: opacity 0.3s ease, visibility 0.3s ease;
       }
 
-      .mobile-bottom-sheet-overlay.active { opacity: 1; visibility: visible; pointer-events: auto; }
-      
-      /* BOTTOM SHEET */
-      .mobile-bottom-sheet {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: #1a1a1a;
-        border-radius: 20px 20px 0 0;
-        z-index: 1002;
-        transform: translateY(100%);
-        transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
-        max-height: 85vh;
-        display: flex;
-        flex-direction: column;
-        box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
-        overflow: hidden;
+      .cart-item-price {
+        font-size: 14px;
       }
-      
-      .mobile-bottom-sheet.active { display: flex; transform: translateY(0); }
-      
-      /* HANDLE */
-      .mobile-sheet-handle { width: 100%; padding: 12px 0; display: flex; justify-content: center; cursor: grab; touch-action: none; flex-shrink: 0; }
-      .mobile-sheet-handle:active { cursor: grabbing; }
-      .mobile-sheet-handle-bar { width: 40px; height: 4px; background: rgba(255, 255, 255, 0.3); border-radius: 2px; }
-      
-      /* HEADER */
-      .mobile-sheet-header { padding: 0 20px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); flex-shrink: 0; }
-      .mobile-sheet-title { font-family: 'Josefin_Bold', Arial, sans-serif; font-size: 20px; color: #ffd700; margin: 0 0 8px 0; }
-      .mobile-sheet-total { font-family: 'Josefin_Medium', Arial, sans-serif; font-size: 14px; color: #aaa; }
-      .mobile-sheet-total-value { font-family: 'Josefin_Bold', Arial, sans-serif; font-size: 18px; color: #ffd700; margin-left: 8px; }
-      
-      /* CONTENT - Scrollable */
-      .mobile-sheet-content { 
-        flex: 1; 
-        overflow-y: auto; 
-        overflow-x: hidden;
-        padding: 16px 20px; 
-        -webkit-overflow-scrolling: touch;
-        min-height: 0;
+
+      .cart-summary-section {
+        padding-bottom: 8px;
       }
-      
-      /* FOOTER - Always visible at bottom */
-      .mobile-sheet-footer {
-        padding: 14px 20px;
-        padding-bottom: max(14px, env(safe-area-inset-bottom));
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        background: #1a1a1a;
-        flex-shrink: 0;
-      }
-      
-      .mobile-sheet-content .payment-prompt { margin-bottom: 16px; }
-      .mobile-sheet-footer .cart-checkout-btn { width: 100%; }
     }
   </style>
 </head>
-<body>
-  <!-- HEADER (shared across all pages) -->
-  <header class="header">
-    <div class="header-top">
-      <!-- Brand -->
-      <div class="header-brand">
-        <h1 class="header-title">Kaayko</h1>
-        <p class="header-subtitle">Made for the Wild</p>
-      </div>
-      <!-- Desktop navigation -->
-      <nav class="top-menu"><ul></ul></nav>
-      <!-- Controls: Dark-mode | Mobile menu -->
-      <div class="header-controls">
-        <!-- Dark Mode Toggle -->
-        <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode"></button>
-        <!-- Mobile FAB -->
-        <button class="fab-menu material-icons mobile-only" aria-label="Open Menu">menu</button>
-      </div>
-    </div>
-    
-    <!-- Mobile overlay menu -->
-    <div class="mobile-menu-overlay">
-      <ul></ul>
+<body class="store-v2">
+  <header class="cart-topbar">
+    <a href="store.html" class="cart-topbar-back" aria-label="Back to store"><span class="material-icons">arrow_back</span></a>
+    <div class="cart-topbar-title">Bag <span id="cart-topbar-count">0</span></div>
+    <div class="cart-topbar-actions">
+      <button class="theme-toggle-icon" aria-label="Switch theme"></button>
+      <a href="/" class="cart-topbar-brand">Kaayko</a>
     </div>
   </header>
 
   <div class="cart-page-wrapper">
     <div class="cart-page">
-      <div class="cart-header"><h1>Your Cart</h1></div>
       <div id="cart-content"></div>
-    </div>
-
-    <!-- MOBILE BOTTOM SHEET -->
-    <div class="mobile-checkout-notch" id="mobileCheckoutNotch">
-      <span class="mobile-notch-total">Total: <span id="mobileNotchTotal">$0.00</span></span>
-      <button class="mobile-notch-button">Checkout</button>
-    </div>
-
-    <div class="mobile-bottom-sheet-overlay" id="mobileSheetOverlay"></div>
-    
-    <div class="mobile-bottom-sheet" id="mobileBottomSheet">
-      <div class="mobile-sheet-handle" id="mobileSheetHandle">
-        <div class="mobile-sheet-handle-bar"></div>
-      </div>
-      
-      <div class="mobile-sheet-header">
-        <h2 class="mobile-sheet-title">Complete Your Order</h2>
-        <div class="mobile-sheet-total">Total: <span class="mobile-sheet-total-value" id="mobileSheetTotal">$0.00</span></div>
-      </div>
-      
-      <div class="mobile-sheet-content">
-        <div class="cart-form-group">
-          <label class="cart-form-label">Email <span class="cart-form-required">*</span></label>
-          <input type="email" id="mobile-customer-email" placeholder="you@example.com" required class="cart-form-input" />
-          <div id="mobile-email-error" class="cart-form-error"></div>
-        </div>
-        <div class="cart-form-group">
-          <label class="cart-form-label">Phone <span class="cart-form-optional">(optional)</span></label>
-          <input type="tel" id="mobile-customer-phone" placeholder="+1 (555) 123-4567" class="cart-form-input" />
-        </div>
-
-        <div class="cart-consent-box">
-          <label class="cart-consent-label">
-            <input type="checkbox" id="mobile-data-consent" checked />
-            <span class="cart-consent-text">
-              Save my shipping info for order fulfillment. You can opt out anytime. <a href="/privacy">Privacy Policy</a>
-            </span>
-          </label>
-        </div>
-        
-        <p class="payment-prompt">Secure checkout powered by Stripe</p>
-        <div id="mobile-payment-element">
-          <div style="padding: 20px; text-align: center; color: rgba(255,255,255,0.5);">
-            <div style="height: 40px; background: rgba(255,255,255,0.05); border-radius: 4px; margin-bottom: 12px; animation: pulse 1.5s ease-in-out infinite;"></div>
-            <div style="height: 40px; background: rgba(255,255,255,0.05); border-radius: 4px; margin-bottom: 12px; animation: pulse 1.5s ease-in-out infinite; animation-delay: 0.2s;"></div>
-            <div style="height: 40px; background: rgba(255,255,255,0.05); border-radius: 4px; animation: pulse 1.5s ease-in-out infinite; animation-delay: 0.4s;"></div>
-            <p style="margin-top: 16px; font-size: 12px;">Loading payment form...</p>
-          </div>
-        </div>
-      </div>
-      
-      <div class="mobile-sheet-footer">
-        <button class="cart-checkout-btn" id="mobileCheckoutBtn" disabled>Complete Order</button>
-      </div>
     </div>
   </div>
 
-  <footer style="background: #0a0a0a; padding: 20px; text-align: center; color: #666; font-size: 12px; margin-top: 40px;">
-    <p style="margin: 0;">&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
+  <div class="checkout-sticky" id="cartStickyBar">
+    <button id="cart-sticky-checkout-btn" class="checkout-sticky-btn" disabled>Checkout · $0.00</button>
+    <p class="checkout-sticky-meta">Free shipping · 30-day returns</p>
+  </div>
+
+  <footer>
+    <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
   </footer>
 
   <script type="module" src="js/header.js"></script>
@@ -514,22 +562,25 @@
       ? 'http://127.0.0.1:5001/kaaykostore/us-central1/api'
       : 'https://api-vwcc5j4qda-uc.a.run.app';
     
-    let desktopStripe, mobileStripe;
+    let desktopStripe;
     
     function renderCart() {
       const container = document.getElementById('cart-content');
       const items = cartManager.getItems();
       
+      const countEl = document.getElementById('cart-topbar-count');
+      if (countEl) countEl.textContent = items.length;
+
       if (items.length === 0) {
         container.innerHTML = `
           <div class="cart-empty">
-            <div class="cart-empty-icon material-icons">shopping_cart</div>
-            <h2>Your cart is empty</h2>
-            <p>Pick up to 2 unique designs from our sustainable collection.</p>
+            <h2>Your bag is empty</h2>
+            <p>Browse the latest drops and add pieces you actually want to wear.</p>
             <a href="store.html" class="cart-back-btn"><span class="material-icons">arrow_back</span> Back to Store</a>
           </div>
         `;
-        document.getElementById('mobileCheckoutNotch').style.display = 'none';
+        const sticky = document.getElementById('cartStickyBar');
+        if (sticky) sticky.classList.remove('active');
         return;
       }
       
@@ -537,17 +588,8 @@
       const totalFormatted = total.toFixed(2);
       
       let html = `
-        <div class="cart-summary-bar">
-          <div class="cart-summary-bar-title">Order Summary</div>
-          <div class="cart-summary-bar-details">
-            <div>Items: ${items.length}</div>
-            <div>Designs: ${items.length} of 2 max</div>
-            <div>Shipping: Free</div>
-          </div>
-          <div class="cart-summary-bar-total"><span>Total:</span><span class="cart-summary-bar-total-value">$${totalFormatted}</span></div>
-        </div>
-        <div class="cart-content-wrapper">
-          <div class="cart-items-column">`;
+        <div class="cart-layout">
+          <section class="cart-items-section">`;
       
       items.forEach(item => {
         html += `
@@ -556,19 +598,28 @@
             <div class="cart-item-details">
               <h3 class="cart-item-title">${item.title}</h3>
               <div class="cart-item-meta">${item.gender} • Size ${item.size}</div>
+              <p class="cart-item-qty">Qty 1</p>
             </div>
             <div class="cart-item-price-remove">
               <div class="cart-item-price">${item.price}</div>
-              <button class="cart-item-remove" data-product-id="${item.productId}">
-                <span class="material-icons" style="font-size: 12px;">delete</span> Remove
-              </button>
+              <button class="cart-item-remove" data-product-id="${item.productId}">Remove</button>
             </div>
           </div>
         `;
       });
       
-      html += `</div>
-          <div class="cart-summary-panel">
+      html += `</section>
+          <aside class="cart-summary-section">
+            <div class="money-ladder">
+              <div class="money-row"><span>Subtotal</span><span>$${totalFormatted}</span></div>
+              <div class="money-row"><span>Shipping</span><span>Free</span></div>
+              <div class="money-row total"><span>Total</span><span>$${totalFormatted}</span></div>
+            </div>
+
+            <div class="promo-wrap">
+              <input class="promo-input" type="text" placeholder="Promo code" aria-label="Promo code" />
+            </div>
+
             <div class="cart-summary-title">Contact Information</div>
             <div class="cart-form-group">
               <label class="cart-form-label">Email <span class="cart-form-required">*</span></label>
@@ -589,18 +640,18 @@
               </label>
             </div>
             
-            <div class="cart-summary-title" style="margin-top: 24px;">Payment</div>
+            <div class="cart-summary-title">Payment</div>
             <p class="payment-prompt">Secure checkout powered by Stripe</p>
             <div id="cart-payment-element">
-              <div style="padding: 20px; text-align: center; color: rgba(255,255,255,0.5);">
-                <div style="height: 40px; background: rgba(255,255,255,0.05); border-radius: 4px; margin-bottom: 12px; animation: pulse 1.5s ease-in-out infinite;"></div>
-                <div style="height: 40px; background: rgba(255,255,255,0.05); border-radius: 4px; margin-bottom: 12px; animation: pulse 1.5s ease-in-out infinite; animation-delay: 0.2s;"></div>
-                <div style="height: 40px; background: rgba(255,255,255,0.05); border-radius: 4px; animation: pulse 1.5s ease-in-out infinite; animation-delay: 0.4s;"></div>
+              <div style="padding: 16px; text-align: center; color: rgba(95,95,95,0.8); border: 1px solid #ddd7cc; border-radius: 8px; background: #fff;">
+                <div style="height: 38px; background: #f2efe8; border-radius: 4px; margin-bottom: 10px; animation: pulse 1.5s ease-in-out infinite;"></div>
+                <div style="height: 38px; background: #f2efe8; border-radius: 4px; margin-bottom: 10px; animation: pulse 1.5s ease-in-out infinite; animation-delay: 0.2s;"></div>
+                <div style="height: 38px; background: #f2efe8; border-radius: 4px; animation: pulse 1.5s ease-in-out infinite; animation-delay: 0.4s;"></div>
                 <p style="margin-top: 16px; font-size: 12px;">Loading payment form...</p>
               </div>
             </div>
-            <button id="cart-complete-order-btn" class="cart-checkout-btn" disabled>Complete Order</button>
-          </div>
+            <button id="cart-complete-order-btn" class="cart-checkout-btn" disabled>Checkout · $${totalFormatted}</button>
+          </aside>
         </div>
         <style>
           @keyframes pulse {
@@ -618,18 +669,22 @@
         });
       });
       
-      if (window.innerWidth > 768) initPayment('desktop', items, total);
-      updateMobileUI(totalFormatted);
+      const sticky = document.getElementById('cartStickyBar');
+      const stickyBtn = document.getElementById('cart-sticky-checkout-btn');
+      if (sticky && stickyBtn) {
+        sticky.classList.add('active');
+        stickyBtn.textContent = `Checkout · $${totalFormatted}`;
+      }
+
+      initPayment(items, total);
     }
     
-    // UNIFIED PAYMENT FUNCTION - works for both mobile and desktop
-    async function initPayment(mode, items, total) {
-      const isMobile = mode === 'mobile';
-      const prefix = isMobile ? 'mobile-' : 'cart-';
+    async function initPayment(items, total) {
+      const prefix = 'cart-';
       
       try {
         const consentCheckbox = document.getElementById(`${prefix}data-consent`);
-        const phoneInputInitial = document.getElementById(`${prefix}phone`);
+        const phoneInputInitial = document.getElementById(`${prefix}customer-phone`);
         
         const requestBody = {
           items: items.map(i => {
@@ -651,7 +706,7 @@
           dataRetentionConsent: consentCheckbox?.checked || false
         };
         
-        console.log(`📤 ${mode} sending to API:`, requestBody);
+        console.log('Sending payment intent request:', requestBody);
         
         const response = await fetch(`${API_URL}/createPaymentIntent`, {
           method: 'POST',
@@ -659,9 +714,9 @@
           body: JSON.stringify(requestBody)
         });
         
-        console.log(`📥 ${mode} response status:`, response.status);
+        console.log('Payment intent response status:', response.status);
         const responseData = await response.json();
-        console.log(`📥 ${mode} response data:`, responseData);
+        console.log('Payment intent response data:', responseData);
         
         if (!response.ok) {
           throw new Error(JSON.stringify(responseData));
@@ -669,16 +724,16 @@
         
         const { clientSecret } = responseData;
         const stripe = Stripe(STRIPE_KEY);
-        if (isMobile) mobileStripe = stripe;
-        else desktopStripe = stripe;
+        desktopStripe = stripe;
+        const isDarkMode = document.documentElement.classList.contains('dark-theme');
         const elements = stripe.elements({
           clientSecret,
           appearance: {
-            theme: 'night',
+            theme: isDarkMode ? 'night' : 'stripe',
             variables: {
               colorPrimary: '#d4af37',
-              colorBackground: '#1a1a1a',
-              colorText: '#ffffff',
+              colorBackground: isDarkMode ? '#1a1a1a' : '#ffffff',
+              colorText: isDarkMode ? '#ffffff' : '#1f1f1f',
               colorDanger: '#ff4444',
               fontFamily: 'Josefin_Medium, Arial, sans-serif',
               spacingUnit: '4px',
@@ -686,15 +741,15 @@
             },
             rules: {
               '.Label': {
-                color: '#ffffff',
+                color: isDarkMode ? '#ffffff' : '#2b2b2b',
                 fontSize: '13px',
                 fontWeight: '500',
                 marginBottom: '8px'
               },
               '.Input': {
-                backgroundColor: '#0a0a0a',
-                border: '1px solid rgba(255,255,255,0.2)',
-                color: '#ffffff'
+                backgroundColor: isDarkMode ? '#0a0a0a' : '#ffffff',
+                border: isDarkMode ? '1px solid rgba(255,255,255,0.2)' : '1px solid #d8d2c8',
+                color: isDarkMode ? '#ffffff' : '#1f1f1f'
               },
               '.Input:focus': {
                 border: '1px solid #d4af37',
@@ -716,14 +771,15 @@
         const container = document.getElementById(`${prefix}payment-element`);
         container.innerHTML = '';
         const addressDiv = document.createElement('div');
-        addressDiv.style.marginBottom = isMobile ? '16px' : '20px';
+        addressDiv.style.marginBottom = '20px';
         const paymentDiv = document.createElement('div');
         container.appendChild(addressDiv);
         container.appendChild(paymentDiv);
         addressElement.mount(addressDiv);
         paymentElement.mount(paymentDiv);
         
-        const btn = document.getElementById(isMobile ? 'mobileCheckoutBtn' : 'cart-complete-order-btn');
+        const btn = document.getElementById('cart-complete-order-btn');
+        const stickyBtn = document.getElementById('cart-sticky-checkout-btn');
         const emailInput = document.getElementById(`${prefix}customer-email`);
         const phoneInput = document.getElementById(`${prefix}customer-phone`);
         const emailError = document.getElementById(`${prefix}email-error`);
@@ -753,7 +809,9 @@
         });
         
         const checkFormComplete = () => {
-          btn.disabled = !(addressComplete && paymentComplete && emailValid);
+          const ready = !!(addressComplete && paymentComplete && emailValid);
+          btn.disabled = !ready;
+          if (stickyBtn) stickyBtn.disabled = !ready;
         };
         
         addressElement.on('change', (event) => {
@@ -766,7 +824,7 @@
           checkFormComplete();
         });
         
-        btn.addEventListener('click', async () => {
+        const submitPayment = async () => {
           const customerEmail = emailInput.value.trim();
           const customerPhone = phoneInput.value.trim();
           
@@ -778,7 +836,9 @@
           }
           
           btn.disabled = true;
+          if (stickyBtn) stickyBtn.disabled = true;
           btn.innerHTML = '<span class="material-icons" style="font-size: 16px; animation: spin 1s linear infinite;">refresh</span> Processing...';
+          if (stickyBtn) stickyBtn.textContent = 'Processing...';
           
           const { error } = await stripe.confirmPayment({
             elements,
@@ -797,14 +857,25 @@
           if (error) {
             showErrorMessage(error.message);
             btn.disabled = false;
-            btn.innerHTML = 'Complete Order';
+            btn.innerHTML = `Checkout · $${total.toFixed(2)}`;
+            if (stickyBtn) {
+              stickyBtn.disabled = false;
+              stickyBtn.textContent = `Checkout · $${total.toFixed(2)}`;
+            }
             
-            // Log error for debugging
-            console.error(`${mode} payment error:`, error);
+            console.error('payment error:', error);
           }
-        });
+        };
+
+        btn.addEventListener('click', submitPayment);
+        if (stickyBtn) {
+          stickyBtn.addEventListener('click', () => {
+            document.getElementById('cart-payment-element')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            submitPayment();
+          });
+        }
       } catch (error) {
-        console.error(`${mode} payment init error:`, error);
+        console.error('payment init error:', error);
         const container = document.getElementById(`${prefix}payment-element`);
         container.innerHTML = `
           <div style="padding: 20px; text-align: center;">
@@ -812,62 +883,13 @@
             <p style="font-family: 'Josefin_Medium', Arial, sans-serif; font-size: 14px; margin-bottom: 16px; color: #ef4444;">
               Unable to load payment form. Please check your connection and try again.
             </p>
-            <button onclick="location.reload()" style="background: #ffd700; color: #1a1a1a; border: none; padding: 10px 20px; border-radius: 6px; font-family: 'Josefin_Bold'; cursor: pointer;">
+            <button onclick="location.reload()" style="background: #111; color: #fff; border: none; padding: 10px 20px; border-radius: 20px; font-family: 'Josefin_Bold'; cursor: pointer;">
               Retry
             </button>
           </div>
         `;
       }
     }
-    
-    // MOBILE BOTTOM SHEET
-    let sheetOpen = false, dragY = 0, startY = 0;
-    const notch = document.getElementById('mobileCheckoutNotch');
-    const overlay = document.getElementById('mobileSheetOverlay');
-    const sheet = document.getElementById('mobileBottomSheet');
-    const handle = document.getElementById('mobileSheetHandle');
-    const mobileBtn = document.getElementById('mobileCheckoutBtn');
-    
-    function updateMobileUI(total) {
-      if (window.innerWidth <= 768) {
-        notch.style.display = 'flex';
-        document.getElementById('mobileNotchTotal').textContent = `$${total}`;
-        document.getElementById('mobileSheetTotal').textContent = `$${total}`;
-      } else {
-        notch.style.display = 'none';
-      }
-    }
-    
-    function openSheet() {
-      if (window.innerWidth > 768) return;
-      sheetOpen = true;
-      overlay.classList.add('active');
-      sheet.classList.add('active');
-      document.body.style.overflow = 'hidden';
-      if (!mobileStripe) {
-        const items = cartManager.getItems();
-        const total = cartManager.getTotalPrice();
-        initPayment('mobile', items, total);
-      }
-    }
-    
-    function closeSheet() {
-      sheetOpen = false;
-      overlay.classList.remove('active');
-      sheet.classList.remove('active');
-      document.body.style.overflow = '';
-      sheet.style.transform = '';
-    }
-    
-    function handleStart(e) { startY = e.touches[0].clientY; sheet.style.transition = 'none'; }
-    function handleMove(e) { const touchY = e.touches[0].clientY; dragY = touchY - startY; if (dragY > 0) sheet.style.transform = `translateY(${dragY}px)`; }
-    function handleEnd() { sheet.style.transition = ''; if (dragY > 150) closeSheet(); else sheet.style.transform = ''; dragY = 0; }
-    
-    notch.addEventListener('click', openSheet);
-    overlay.addEventListener('click', closeSheet);
-    handle.addEventListener('touchstart', handleStart);
-    handle.addEventListener('touchmove', handleMove);
-    handle.addEventListener('touchend', handleEnd);
     
     function showErrorMessage(message) {
       const errorDiv = document.createElement('div');
@@ -891,16 +913,5 @@
     });
   </script>
   
-  <!-- Hide non-Store menu items on cart page -->
-  <script type="module">
-    // Wait for header.js to populate menu, then hide non-Store items
-    setTimeout(() => {
-      document.querySelectorAll('.top-menu a, .mobile-menu-overlay a').forEach(link => {
-        if (!link.textContent.includes('Store')) {
-          link.parentElement.style.display = 'none';
-        }
-      });
-    }, 0);
-  </script>
 </body>
 </html>

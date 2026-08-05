@@ -98,157 +98,239 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
+const TYPE_CHIP_OPTIONS = [
+  { value: 'tote',    label: 'Totes' },
+  { value: 'magnet',  label: 'Magnets' },
+  { value: 'tshirt',  label: 'T-Shirts' },
+  { value: 'print',   label: 'Prints' },
+  { value: 'poster',  label: 'Posters' },
+  { value: 'sticker', label: 'Stickers' },
+  { value: 'mug',     label: 'Mugs' },
+  { value: 'cap',     label: 'Caps' }
+];
+
+// How many tag chips to surface in the modal (top-N by frequency).
+const MAX_TAG_CHIPS = 8;
+
 function initializeFilterChips() {
-  // Initialize price chips
-  const priceChips = document.getElementById('price-chips');
-  if (priceChips) {
-    const priceOptions = ['$', '$$', '$$$', '$$$$'];
-    priceOptions.forEach(price => {
-      const chip = createChip(price, 'price');
-      priceChips.appendChild(chip);
+  // Type chips — always all the supported types (so the catalogue can grow).
+  const typeChips = document.getElementById('type-chips');
+  if (typeChips) {
+    typeChips.innerHTML = '';
+    TYPE_CHIP_OPTIONS.forEach(opt => {
+      const chip = createChip(opt.label, 'type');
+      chip.dataset.value = opt.value;
+      typeChips.appendChild(chip);
     });
   }
 
-  // Initialize tag chips
-  const tagChips = document.getElementById('tag-chips');
-  if (tagChips) {
-    const tagOptions = ['T-Shirt', 'Rebel', 'Heritage', 'Philosophy', 'Nostalgia', 'Originals'];
-    tagOptions.forEach(tag => {
-      const chip = createChip(tag, 'tag');
-      tagChips.appendChild(chip);
+  // Price chips — fixed symbol set.
+  const priceChips = document.getElementById('price-chips');
+  if (priceChips) {
+    priceChips.innerHTML = '';
+    ['$', '$$', '$$$', '$$$$'].forEach(price => {
+      priceChips.appendChild(createChip(price, 'price'));
     });
   }
+
+  // Tag chips are populated dynamically once products land.
 }
 
 function createChip(text, type) {
   const chip = document.createElement('button');
+  chip.type = 'button';
   chip.className = 'chip';
   chip.textContent = text;
   chip.dataset.type = type;
   chip.dataset.value = text;
-  
+  chip.setAttribute('aria-pressed', 'false');
+
   chip.addEventListener('click', function() {
-    chip.classList.toggle('selected');
-    console.log(`📝 ${type} filter ${chip.classList.contains('selected') ? 'selected' : 'deselected'}: ${text}`);
+    const nowSelected = !chip.classList.contains('selected');
+    chip.classList.toggle('selected', nowSelected);
+    chip.setAttribute('aria-pressed', String(nowSelected));
+    updateSectionCounts();
+    updateApplyButtonLabel();
   });
-  
+
   return chip;
+}
+
+function updateSectionCounts() {
+  document.querySelectorAll('.filter-section-count').forEach(el => {
+    const section = el.dataset.section;
+    const n = document.querySelectorAll(`.chip[data-type="${section}"].selected`).length;
+    el.dataset.count = String(n);
+    el.textContent = `${n} selected`;
+  });
+}
+
+function updateApplyButtonLabel() {
+  const btn = document.getElementById('filter-apply');
+  if (!btn) return;
+  // Apply current chip selections + slider against originalProducts to get the live count.
+  const previewFilters = getCurrentFilters();
+  const anyActive = previewFilters.types.length || previewFilters.prices.length || previewFilters.tags.length || previewFilters.minVotes > 0;
+  if (!anyActive) {
+    btn.textContent = `Show all products`;
+    return;
+  }
+  const count = matchCount(originalProducts, previewFilters);
+  btn.textContent = count === 1 ? `Show 1 product` : `Show ${count} products`;
+}
+
+function matchCount(products, filters) {
+  return products.filter(p => {
+    if (p.isAvailable === false) return false;
+    if (filters.types.length && !filters.types.includes((p.productType || '').toLowerCase())) return false;
+    if (filters.prices.length && !filters.prices.includes(p.price)) return false;
+    if (filters.tags.length) {
+      const ok = filters.tags.some(t => (p.tags || []).includes(t));
+      if (!ok) return false;
+    }
+    if ((p.votes || 0) < filters.minVotes) return false;
+    return true;
+  }).length;
 }
 
 function initializeSlider() {
   const slider = document.getElementById('votes-slider');
   const valueDisplay = document.getElementById('votes-value');
-  
-  if (slider && valueDisplay) {
-    // Set initial range (you might want to get this from your data)
-    slider.min = 0;
-    slider.max = 25;
-    slider.value = 0;
-    
-    slider.addEventListener('input', function() {
-      valueDisplay.textContent = slider.value;
-    });
-    
-    slider.addEventListener('change', function() {
-      console.log(`📊 Min votes filter: ${slider.value}`);
-    });
-  }
+  if (!slider || !valueDisplay) return;
+
+  slider.min = 0;
+  slider.max = slider.max || 25;
+  slider.value = 0;
+
+  const syncProgress = () => {
+    const max = parseFloat(slider.max) || 1;
+    const pct = Math.max(0, Math.min(100, (parseFloat(slider.value) / max) * 100));
+    slider.style.setProperty('--progress', `${pct}%`);
+    valueDisplay.textContent = slider.value;
+  };
+
+  slider.addEventListener('input', () => {
+    syncProgress();
+    updateApplyButtonLabel();
+  });
+  syncProgress();
 }
 
 function resetAllFilters() {
-  // Reset all chip selections
-  const selectedChips = document.querySelectorAll('.chip.selected');
-  selectedChips.forEach(chip => {
+  document.querySelectorAll('.chip.selected').forEach(chip => {
     chip.classList.remove('selected');
+    chip.setAttribute('aria-pressed', 'false');
   });
-  
-  // Reset slider
+
   const slider = document.getElementById('votes-slider');
   const valueDisplay = document.getElementById('votes-value');
   if (slider && valueDisplay) {
     slider.value = 0;
+    slider.style.setProperty('--progress', '0%');
     valueDisplay.textContent = '0';
   }
-  
-  console.log('🔄 All filters reset');
+
+  updateSectionCounts();
+  updateApplyButtonLabel();
 }
 
 // Store original products for filtering
 let originalProducts = [];
 
-// Function to store original products (called from kaayko-main.js)
+// Function to store original products (called from kaayko-main.js).
+// We use this moment to populate tag chips dynamically + size the slider.
 function storeOriginalProducts(products) {
   originalProducts = products;
   console.log('💾 Stored', originalProducts.length, 'original products for filtering');
+  hydrateDynamicFilters(products);
+}
+
+function hydrateDynamicFilters(products) {
+  const tagChips = document.getElementById('tag-chips');
+  if (tagChips) {
+    tagChips.innerHTML = '';
+    // Type-token tags are redundant with the Type filter; hide them here.
+    const typeTokens = new Set(['T-Shirt', 't-shirt', 'tote', 'magnet', 'print', 'poster', 'sticker', 'mug', 'cap']);
+    const counts = new Map();
+    for (const p of products) {
+      if (p.isAvailable === false) continue;
+      for (const tag of (p.tags || [])) {
+        if (!tag || typeTokens.has(tag)) continue;
+        counts.set(tag, (counts.get(tag) || 0) + 1);
+      }
+    }
+    const top = [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, MAX_TAG_CHIPS);
+    if (top.length === 0) {
+      const empty = document.createElement('p');
+      empty.className = 'filter-empty';
+      empty.textContent = 'No tags yet.';
+      tagChips.appendChild(empty);
+    } else {
+      top.forEach(([tag]) => tagChips.appendChild(createChip(tag, 'tag')));
+    }
+  }
+
+  const slider = document.getElementById('votes-slider');
+  const valueDisplay = document.getElementById('votes-value');
+  if (slider && valueDisplay) {
+    const maxVotes = products.reduce((m, p) => Math.max(m, p.votes || 0), 0);
+    slider.max = Math.max(1, maxVotes);
+    slider.value = 0;
+    slider.style.setProperty('--progress', '0%');
+    valueDisplay.textContent = '0';
+  }
+
+  updateSectionCounts();
+  updateApplyButtonLabel();
 }
 
 // Function to get current filter criteria
 function getCurrentFilters() {
   const filters = {
+    types: [],
     prices: [],
     tags: [],
     minVotes: 0
   };
-  
+
+  // Get selected type chips
+  const selectedTypeChips = document.querySelectorAll('.chip[data-type="type"].selected');
+  filters.types = Array.from(selectedTypeChips).map(chip => chip.dataset.value);
+
   // Get selected price chips
   const selectedPriceChips = document.querySelectorAll('.chip[data-type="price"].selected');
   filters.prices = Array.from(selectedPriceChips).map(chip => chip.dataset.value);
-  
+
   // Get selected tag chips
   const selectedTagChips = document.querySelectorAll('.chip[data-type="tag"].selected');
   filters.tags = Array.from(selectedTagChips).map(chip => chip.dataset.value);
-  
+
   // Get min votes
   const slider = document.getElementById('votes-slider');
   if (slider) {
     filters.minVotes = parseInt(slider.value) || 0;
   }
-  
+
   console.log('🎯 Current filters:', filters);
   return filters;
 }
 
-// Function to apply filters to products
 function applyFilters() {
+  if (originalProducts.length === 0) return;
   const filters = getCurrentFilters();
-  
-  if (originalProducts.length === 0) {
-    console.warn('⚠️ No original products stored. Cannot filter.');
-    return;
-  }
-  
-  let filteredProducts = originalProducts.filter(product => {
-    // Price filter
-    if (filters.prices.length > 0 && !filters.prices.includes(product.price)) {
-      return false;
+  const filteredProducts = originalProducts.filter(p => {
+    if (filters.types.length && !filters.types.includes((p.productType || '').toLowerCase())) return false;
+    if (filters.prices.length && !filters.prices.includes(p.price)) return false;
+    if (filters.tags.length) {
+      const ok = filters.tags.some(t => (p.tags || []).includes(t));
+      if (!ok) return false;
     }
-    
-    // Tags filter
-    if (filters.tags.length > 0) {
-      const hasMatchingTag = filters.tags.some(filterTag => 
-        product.tags && product.tags.includes(filterTag)
-      );
-      if (!hasMatchingTag) {
-        return false;
-      }
-    }
-    
-    // Min votes filter
-    if (product.votes < filters.minVotes) {
-      return false;
-    }
-    
+    if ((p.votes || 0) < filters.minVotes) return false;
     return true;
   });
-  
-  console.log(`🔍 Filtered ${originalProducts.length} products down to ${filteredProducts.length}`);
-  
-  // Re-populate carousel with filtered products
-  if (window.populateCarousel) {
-    window.populateCarousel(filteredProducts);
-  } else {
-    console.error('❌ populateCarousel function not available');
-  }
+  if (window.populateCarousel) window.populateCarousel(filteredProducts);
 }
 
 // Function to clear filters and show all products

@@ -1,0 +1,36 @@
+defaults:
+  tags: [kaayko-original, india, wildlife]
+  availableColors: []
+  maxQuantity: 50
+  isAvailable: true
+
+types:
+  tote:
+    price: 34.99
+    availableSizes: [One Size]
+    category: accessories
+  magnet:
+    price: 9.99
+    availableSizes: []
+    category: accessories
+
+products:
+  Blackbuck_Tote:
+    title: Blackbuck Tote
+    description: Hand-illustrated Blackbuck across an Indian grassland. Heavy-weight cotton, reinforced straps.
+    tags: [blackbuck, india, antelope, wildlife]
+
+  FishingCat_Tote:
+    title: Fishing Cat Tote
+    description: The elusive Fishing Cat of the Sundarbans, illustrated. Heavy-weight cotton, reinforced straps.
+    tags: [fishing-cat, sundarbans, india, wildlife]
+
+  Racoon_Tote:
+    title: Racoon Tote
+    description: A mischievous raccoon scene, hand-illustrated. Heavy-weight cotton, reinforced straps.
+    tags: [racoon, wildlife]
+
+  Gir_Magnet:
+    title: Gir Lion Magnet
+    description: The Asiatic Lion of Gir, illustrated. Premium ceramic magnet, ~3 inch.
+    tags: [gir, lion, india, wildlife]

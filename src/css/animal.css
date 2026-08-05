@@ -1,0 +1,440 @@
+/* ==========================================================================
+   Animal PDP — premium editorial layout (v2).
+   Section 1: Hero — image stacked above the identity block (centered).
+   Section 2: Story — two-column split, bio prose left, stat block right.
+   Section 3: Wear the X — variant cards in a row.
+   Scoped to body.animal-v2 (which also carries .store-v2 for token inheritance).
+   ========================================================================== */
+
+.animal-v2 main { padding: 32px 20px 80px; }
+
+/* --- Breadcrumb --- */
+.animal-v2 .animal-breadcrumb {
+  max-width: 1440px;
+  margin: 24px auto 0;
+  padding: 0 32px;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.animal-v2 .animal-breadcrumb a {
+  color: var(--v2-fg-muted);
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+.animal-v2 .animal-breadcrumb a:hover { color: var(--v2-fg); }
+
+/* --- Root --- */
+.animal-v2 .animal-root {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+/* ====== EDITORIAL SPREAD — hero LEFT, story RIGHT, hairline between ====== */
+.animal-v2 .animal-spread {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: stretch;
+  padding: 48px 0 64px;
+}
+
+/* The vertical divider between the two columns is a 1px border on the LEFT
+   side of the story column — keeps the divider exactly where the columns meet. */
+.animal-v2 .animal-spread > .animal-hero {
+  padding-right: 56px;
+}
+.animal-v2 .animal-spread > .animal-story {
+  padding-left: 56px;
+  /* Visible vertical separator between hero and story columns.
+     Uses the muted foreground colour so it shows in both light + dark. */
+  border-left: 1px solid var(--v2-fg-muted);
+  border-top: none;
+  border-bottom: none;
+}
+/* In dark mode, soften the separator slightly so it doesn't read as harsh white. */
+html.dark-theme .animal-v2 .animal-spread > .animal-story {
+  border-left-color: rgba(245, 239, 226, 0.28);
+}
+
+/* ====== HERO column — image → identity → stats ====== */
+.animal-v2 .animal-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 32px;
+}
+.animal-v2 .animal-hero .animal-stats {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.animal-v2 .animal-hero-art {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  aspect-ratio: 4 / 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Rich parchment / aged-paper backdrop — the illustrations were drawn for a
+     cream tote canvas. Showing them on a warm parchment in the hero makes them
+     read like a museum exhibition specimen card in BOTH themes. */
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 38%, #fbf2dc 0%, #f1e2bb 55%, #d9c393 100%),
+    linear-gradient(180deg, #f1e2bb, #d9c393);
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 0 rgba(255, 248, 224, 0.55) inset,
+    0 -1px 0 rgba(120, 90, 40, 0.18) inset,
+    0 22px 48px rgba(0, 0, 0, 0.28),
+    0 6px 16px rgba(0, 0, 0, 0.14);
+}
+/* Subtle paper-grain overlay for richness. */
+.animal-v2 .animal-hero-art::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 22%, rgba(255, 255, 255, 0.18), transparent 40%),
+    radial-gradient(circle at 82% 78%, rgba(120, 90, 40, 0.10), transparent 50%);
+  pointer-events: none;
+}
+.animal-v2 .animal-hero-art img {
+  position: relative;
+  z-index: 1;
+  width: 86%;
+  height: auto;
+  max-height: 94%;
+  object-fit: contain;
+  filter: drop-shadow(0 18px 28px rgba(60, 40, 20, 0.22));
+}
+/* Slightly deeper in dark mode so the cream card lifts cleanly off the page. */
+html.dark-theme .animal-v2 .animal-hero-art {
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 38%, #f7eccf 0%, #ecd9a8 55%, #cdb681 100%),
+    linear-gradient(180deg, #ecd9a8, #cdb681);
+  box-shadow:
+    0 1px 0 rgba(255, 248, 224, 0.5) inset,
+    0 -1px 0 rgba(120, 90, 40, 0.32) inset,
+    0 30px 60px rgba(0, 0, 0, 0.6),
+    0 8px 22px rgba(0, 0, 0, 0.4);
+}
+.animal-v2 .animal-hero-art.empty {
+  background: var(--v2-border);
+  box-shadow: none;
+}
+.animal-v2 .animal-hero-art.empty::after {
+  content: "transparent art will appear here";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Josefin_Light', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--v2-fg-muted);
+}
+
+.animal-v2 .animal-hero-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+  max-width: 560px;
+}
+.animal-v2 .animal-name {
+  margin: 0;
+  font-family: 'Josefin_Bold', 'Josefin Sans', Arial, sans-serif;
+  font-size: clamp(36px, 4.4vw, 56px);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+  color: var(--v2-fg);
+}
+.animal-v2 .animal-scientific {
+  margin: 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-style: italic;
+  font-size: 18px;
+  letter-spacing: 0.02em;
+  color: var(--v2-fg-muted);
+}
+.animal-v2 .animal-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid var(--v2-border);
+  border-radius: 999px;
+  font-family: 'Josefin_Bold', 'Josefin Sans', Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--v2-fg);
+  background: transparent;
+}
+.animal-v2 .animal-status-pill[data-severity="critical"],
+.animal-v2 .animal-status-pill[data-severity="endangered"] {
+  color: #b54848;
+  border-color: rgba(181, 72, 72, 0.45);
+}
+html.dark-theme .animal-v2 .animal-status-pill[data-severity="critical"],
+html.dark-theme .animal-v2 .animal-status-pill[data-severity="endangered"] {
+  color: #ffa3a3;
+  border-color: rgba(255, 163, 163, 0.45);
+}
+.animal-v2 .animal-status-pill[data-severity="vulnerable"] {
+  color: var(--v2-gold-bright);
+  border-color: var(--v2-gold-bright);
+}
+.animal-v2 .animal-park {
+  margin: 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  color: var(--v2-fg-muted);
+}
+.animal-v2 .animal-park strong {
+  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+  font-weight: 500;
+  color: var(--v2-fg);
+}
+
+/* ====== STORY column — bio prose + variant cards, stacked vertically ====== */
+.animal-v2 .animal-story {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  justify-content: flex-start;
+}
+.animal-v2 .animal-story-prose { min-width: 0; }
+
+.animal-v2 .animal-story h2,
+.animal-v2 .animal-buy h2 {
+  margin: 0 0 22px;
+  font-family: 'Josefin_Bold', 'Josefin Sans', Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--v2-fg-muted);
+}
+.animal-v2 .animal-bio {
+  margin: 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Georgia, serif;
+  font-size: 19px;
+  line-height: 1.7;
+  letter-spacing: 0.005em;
+  color: var(--v2-fg);
+}
+
+/* Stat block lives in the right column of the story split. */
+.animal-v2 .animal-stats {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+.animal-v2 .animal-stat {
+  padding: 16px 0;
+  border-top: 1px solid var(--v2-border);
+}
+.animal-v2 .animal-stat:first-child { border-top: none; padding-top: 4px; }
+.animal-v2 .animal-stat:last-child { padding-bottom: 4px; }
+.animal-v2 .animal-stat dt {
+  margin: 0 0 4px;
+  font-family: 'Josefin_Bold', 'Josefin Sans', Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--v2-fg-muted);
+}
+.animal-v2 .animal-stat dd {
+  margin: 0;
+  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--v2-fg);
+}
+
+/* --- Buy variants --- */
+/* In-column variant area — lives inside .animal-story, separated by a hairline. */
+.animal-v2 .animal-buy {
+  padding-top: 32px;
+  border-top: 1px solid var(--v2-border);
+}
+.animal-v2 .animal-variants {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 24px;
+  justify-content: flex-start;
+  margin-top: 4px;
+}
+.animal-v2 .variant-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  cursor: pointer;
+}
+.animal-v2 .variant-img {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  background: var(--v2-image-bg);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--v2-image-border);
+}
+.animal-v2 .variant-img img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 240ms ease;
+}
+.animal-v2 .variant-card:hover .variant-img img {
+  transform: scale(1.02);
+}
+.animal-v2 .variant-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+.animal-v2 .variant-title {
+  margin: 0;
+  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--v2-fg);
+}
+.animal-v2 .variant-price {
+  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+  font-size: 15px;
+  color: var(--v2-fg);
+}
+.animal-v2 .variant-description {
+  margin: 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--v2-fg-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.animal-v2 .variant-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 20px;
+  background: var(--v2-fg);
+  color: var(--v2-surface-elev);
+  border: 1px solid var(--v2-fg);
+  border-radius: 10px;
+  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+.animal-v2 .variant-cta:hover {
+  background: var(--v2-gold-bright);
+  border-color: var(--v2-gold-bright);
+}
+.animal-v2 .variant-cta.in-cart {
+  background: transparent;
+  color: var(--v2-fg);
+  border-color: var(--v2-fg);
+}
+.animal-v2 .variant-cta .material-icons { font-size: 16px; }
+
+/* --- Empty / 404 states --- */
+.animal-v2 .animal-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 12px;
+  text-align: center;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  color: var(--v2-fg-muted);
+}
+.animal-v2 .animal-empty h2 {
+  margin: 0;
+  font-family: 'Josefin_Bold', 'Josefin Sans', Arial, sans-serif;
+  font-size: 22px;
+  color: var(--v2-fg);
+}
+.animal-v2 .animal-empty a {
+  margin-top: 12px;
+  color: var(--v2-fg);
+  text-decoration: none;
+  border-bottom: 1px solid var(--v2-border);
+  padding-bottom: 2px;
+}
+
+/* --- Skeleton --- */
+.animal-v2 .animal-hero.skeleton .animal-hero-art-skeleton,
+.animal-v2 .animal-hero.skeleton .sk-line,
+.animal-v2 .animal-hero.skeleton .sk-pill {
+  background: var(--v2-border);
+  border-radius: 4px;
+  animation: animal-pulse 1.4s ease-in-out infinite;
+}
+.animal-v2 .animal-hero-art-skeleton { aspect-ratio: 1/1; border-radius: 24px; }
+.animal-v2 .animal-hero-text-skeleton { display: flex; flex-direction: column; gap: 14px; }
+.animal-v2 .sk-line-xxl { height: 48px; width: 70%; }
+.animal-v2 .sk-line-md  { height: 18px; width: 45%; }
+.animal-v2 .sk-line-full{ height: 14px; width: 100%; }
+.animal-v2 .sk-line-half{ height: 14px; width: 60%; }
+.animal-v2 .sk-pill     { height: 22px; width: 130px; border-radius: 999px; }
+@keyframes animal-pulse { 0%,100% { opacity: 0.5 } 50% { opacity: 1 } }
+
+/* --- Mobile + tablet: collapse spread to single column, separator becomes
+       a horizontal hairline between the two stacks. --- */
+@media (max-width: 1000px) {
+  .animal-v2 .animal-root { padding: 0 20px; }
+  .animal-v2 main { padding: 16px 16px 60px; }
+
+  .animal-v2 .animal-spread {
+    grid-template-columns: 1fr;
+    padding: 24px 0 40px;
+  }
+  .animal-v2 .animal-spread > .animal-hero {
+    padding-right: 0;
+    padding-bottom: 36px;
+  }
+  .animal-v2 .animal-spread > .animal-story {
+    padding-left: 0;
+    padding-top: 36px;
+    border-left: none;
+    border-top: 1px solid var(--v2-border);
+  }
+
+  .animal-v2 .animal-hero-art {
+    aspect-ratio: 4 / 3;
+    border-radius: 18px;
+    max-width: 100%;
+  }
+  .animal-v2 .animal-bio { font-size: 17px; }
+}
+@media (max-width: 480px) {
+  .animal-v2 .animal-name { font-size: 36px; }
+}

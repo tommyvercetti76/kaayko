@@ -41,7 +41,7 @@ async function waitForServices() {
       const hasApiClient = !!window.apiClient;
       const hasDataTransformer = !!window.dataTransformer;
       const hasLakeModal = !!window.LakeModal;
-      const hasComponents = !!(window.RatingHero && window.SafetyWarnings && window.WeatherStats && window.Heatmap);
+      const hasComponents = !!(window.RatingHero && window.SafetyWarnings && window.WeatherStats && window.KonditionsHeatmap);
       
       if (hasApiClient && hasDataTransformer && hasLakeModal && hasComponents) {
         console.log('✅ All services loaded successfully');

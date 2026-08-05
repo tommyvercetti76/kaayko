@@ -4,7 +4,10 @@
  * Shows when user tries to add more than 2 unique products
  */
 
-export function showSustainabilityAlert() {
+export function showSustainabilityAlert(context = {}) {
+  const attemptedProduct = context?.attemptedProduct || null;
+  const cartCount = context?.cartCount ?? 2;
+
   // Create modal if doesn't exist
   let modal = document.getElementById('sustainability-alert');
   
@@ -17,19 +20,21 @@ export function showSustainabilityAlert() {
       <div class="sustainability-alert-overlay"></div>
       <div class="sustainability-alert-content">
         <div class="sustainability-alert-icon">
-          <span class="material-icons">eco</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="sustainability-alert-leaf">
+            <path d="M20.2 3.9c-5.6-.5-9.9 1-12.7 3.8-3.2 3.2-3.9 7.7-1.9 11.2l3.1-3.1c.2-2.1 1.1-4.1 2.7-5.7 1.8-1.8 4.2-2.8 7.3-3-.2 3.1-1.2 5.5-3 7.3-1.6 1.6-3.6 2.5-5.7 2.7l-3.1 3.1c3.5 2 8 1.3 11.2-1.9 2.8-2.8 4.3-7.1 3.8-12.7-.1-.5-.5-.9-1-.9-.2 0-.4 0-.7.2z"/>
+          </svg>
         </div>
-        <h2>Sustainability First</h2>
-        <p>
-          We believe in mindful consumption. You can select up to <strong>2 unique designs</strong> per order.
+        <h2>2-design limit reached</h2>
+        <p class="sustainability-limit-copy">
+          Your bag currently has <strong>${cartCount} unique designs</strong>.
         </p>
+        <p class="sustainability-context-copy"></p>
         <p class="sustainability-reason">
-          This conscious choice reduces waste, minimizes environmental impact, and supports our 
-          commitment to sustainable print-on-demand practices.
+          We cap each order at two designs to reduce waste and keep print-on-demand production intentional.
         </p>
         <div class="sustainability-alert-actions">
-          <button class="alert-btn alert-btn-secondary" data-action="ok">OK</button>
-          <button class="alert-btn alert-btn-primary" data-action="checkout">Checkout Now</button>
+          <button class="alert-btn alert-btn-secondary" data-action="ok">Keep browsing</button>
+          <button class="alert-btn alert-btn-primary" data-action="checkout">Review bag</button>
         </div>
       </div>
     `;
@@ -51,6 +56,13 @@ export function showSustainabilityAlert() {
     modal.querySelector('.sustainability-alert-overlay').addEventListener('click', () => {
       hideAlert();
     });
+  }
+
+  const contextEl = modal.querySelector('.sustainability-context-copy');
+  if (contextEl) {
+    contextEl.textContent = attemptedProduct
+      ? `Add ${attemptedProduct} after removing one design from your current bag.`
+      : 'Remove one current design if you want to add another item.';
   }
   
   function hideAlert() {

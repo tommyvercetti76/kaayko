@@ -1,0 +1,4 @@
+Pillow>=10.2
+firebase-admin>=6.5
+PyYAML>=6.0
+python-dotenv>=1.0

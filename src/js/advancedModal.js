@@ -41,7 +41,7 @@ class AdvancedLakeModal {
     const cssFiles = [
       { id: 'rating-hero-css', href: '/js/components/RatingHero.css' },
       { id: 'safety-warnings-css', href: '/js/components/SafetyWarnings.css' },
-      { id: 'heatmap-css', href: '/js/components/Heatmap.css' }
+      { id: 'heatmap-css', href: '/js/components/KonditionsHeatmap.css' }
     ];
 
     cssFiles.forEach(({ id, href }) => {
@@ -192,7 +192,7 @@ class AdvancedLakeModal {
   renderComponents(forecastData, currentData) {
     this.renderHero(currentData, forecastData);
     this.renderSafetyWarnings(forecastData);
-    this.renderHeatmap(forecastData);
+    this.renderHeatmap(forecastData, currentData);
   }
 
     // Render Rating Hero component
@@ -285,23 +285,17 @@ class AdvancedLakeModal {
     }
   }
 
-  // Render Heatmap component
-  renderHeatmap(forecastData) {
-    const heatmapData = window.dataTransformer?.prepareHeatmapData?.(forecastData.forecast);
-    if (!heatmapData?.length) return;
-
+  // Render Heatmap component — the same blended hourly heatmap the
+  // forecast page renders (js/components/KonditionsHeatmap.js)
+  renderHeatmap(forecastData, currentData = null) {
     const container = document.getElementById('heatmapContainer');
     if (!container) return;
 
     try {
-      const heatmap = new window.Heatmap();
-      container.innerHTML = '';
-      // Pass location data for timezone calculations
-      const element = heatmap.render(heatmapData, forecastData.location);
-      container.appendChild(element);
-      console.log('✅ Heatmap rendered with location timezone support');
+      window.KonditionsHeatmap.render(container, forecastData, currentData);
+      console.log('✅ Konditions heatmap rendered');
     } catch (error) {
-      console.error('❌ Failed to render Heatmap:', error);
+      console.error('❌ Failed to render heatmap:', error);
     }
   }
 

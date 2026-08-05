@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns#">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Forge Gallery — Kaayko</title>
+  <meta name="description" content="Renders made on-device by Forge, a local-first generative-AI workstation for Apple Silicon. Pulled live from the project's gallery." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://kaayko.com/forge-gallery" />
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://kaayko.com/forge-gallery">
+  <meta property="og:title" content="Forge Gallery — Kaayko">
+  <meta property="og:description" content="Renders made on-device by Forge — local-first generative AI for Apple Silicon.">
+  <meta property="og:image" content="https://kaayko.com/assets/forge/voted_peacock.png">
+  <meta property="og:site_name" content="Kaayko">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Forge Gallery — Kaayko">
+  <meta name="twitter:description" content="Renders made on-device by Forge — local-first generative AI for Apple Silicon.">
+  <meta name="twitter:image" content="https://kaayko.com/assets/forge/voted_peacock.png">
+
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/favicon-32x32.png">
+  <meta name="theme-color" content="#080808">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #080808;
+      --fg: #ede8df;
+      --muted: rgba(237, 232, 223, 0.58);
+      --faint: rgba(237, 232, 223, 0.36);
+      --gold: #b5935a;
+      --gold-bright: #d9bd7b;
+      --line: rgba(181, 147, 90, 0.2);
+      --ease: cubic-bezier(0.76, 0, 0.24, 1);
+      --serif: "Cormorant Garamond", Georgia, serif;
+      --display: "Bebas Neue", Impact, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--serif);
+      font-size: clamp(1rem, 0.97rem + 0.15vw, 1.06rem);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    a { color: inherit; }
+    .label { font-size: 0.7rem; font-style: italic; letter-spacing: 0.24em; text-transform: uppercase; }
+
+    .skip { position: absolute; left: -9999px; top: 0; z-index: 70; padding: 0.8rem 1.2rem; background: #0d0c0a; color: var(--gold-bright); text-decoration: none; }
+    .skip:focus { left: 1rem; top: 1rem; }
+
+    /* ── Masthead ───────────────────────────────────────────────────── */
+    .top {
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      padding: clamp(1rem, 3vw, 1.5rem) clamp(1.15rem, 5vw, 3rem);
+    }
+    .top a { color: rgba(181, 147, 90, 0.6); text-decoration: none; white-space: nowrap; transition: color 220ms ease, transform 300ms var(--ease); }
+    .top a:hover, .top a:focus-visible { color: var(--gold-bright); }
+    .top .back:hover, .top .back:focus-visible { transform: translateX(-4px); }
+
+    .masthead {
+      max-width: 62rem; margin: 0 auto;
+      padding: clamp(1rem, 4vh, 3rem) clamp(1.15rem, 5vw, 3rem) clamp(1.5rem, 4vh, 2.5rem);
+      text-align: center;
+    }
+
+    .eyebrow { color: rgba(181, 147, 90, 0.62); font-size: 0.68rem; font-style: italic; letter-spacing: 0.36em; text-transform: uppercase; }
+
+    .masthead h1 {
+      margin-top: 0.6rem;
+      font-family: var(--display);
+      font-size: clamp(2.6rem, 9vw, 5.5rem);
+      font-weight: 400; letter-spacing: 0.05em; line-height: 0.95; text-transform: uppercase;
+    }
+
+    .rule { width: clamp(3rem, 8vw, 5rem); height: 1px; margin: clamp(0.9rem, 2.5vh, 1.3rem) auto 0; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+
+    .lede { max-width: 48ch; margin: clamp(0.9rem, 2.5vh, 1.3rem) auto 0; color: var(--muted); font-size: clamp(0.95rem, 2.2vw, 1.1rem); font-style: italic; }
+
+    .facts {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+      gap: 0.6rem clamp(1rem, 3vw, 2rem);
+      margin-top: clamp(1.1rem, 3vh, 1.6rem);
+      color: var(--faint); font-size: 0.74rem; font-style: italic; letter-spacing: 0.08em;
+    }
+    .facts b { color: var(--gold-bright); font-family: var(--display); font-size: 1.05rem; font-weight: 400; letter-spacing: 0.04em; }
+
+    .masthead-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: clamp(0.8rem, 2.5vw, 1.4rem); margin-top: clamp(1.3rem, 3.5vh, 1.9rem); }
+
+    .btn {
+      padding: 0.7em 1.8em; border: 1px solid rgba(181, 147, 90, 0.45);
+      background: none; color: var(--fg); cursor: pointer;
+      font-family: var(--serif); font-size: 0.74rem; letter-spacing: 0.2em;
+      text-decoration: none; text-transform: uppercase;
+      transition: border-color 240ms ease, background 240ms ease, color 240ms ease;
+    }
+    .btn:hover, .btn:focus-visible { border-color: var(--gold-bright); background: rgba(181, 147, 90, 0.1); color: var(--gold-bright); outline: none; }
+
+    .link { color: rgba(237, 232, 223, 0.72); font-size: 0.74rem; letter-spacing: 0.18em; text-decoration: none; text-transform: uppercase; transition: color 220ms ease; }
+    .link:hover, .link:focus-visible { color: var(--gold-bright); outline: none; }
+
+    /* ── Gallery ────────────────────────────────────────────────────── */
+    /* Multi-column masonry: every render keeps its own aspect ratio, so
+       nothing is cropped and no tile ends in dead space. */
+    .gallery {
+      column-count: 3; column-gap: clamp(0.6rem, 1.5vw, 1rem);
+      max-width: 84rem; margin: 0 auto;
+      padding: 0 clamp(0.75rem, 3vw, 2rem) clamp(3rem, 8vh, 5rem);
+    }
+    @media (max-width: 980px) { .gallery { column-count: 2; } }
+    @media (max-width: 560px) { .gallery { column-count: 1; } }
+
+    .tile {
+      break-inside: avoid; -webkit-column-break-inside: avoid;
+      margin-bottom: clamp(0.6rem, 1.5vw, 1rem);
+      border: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(181, 147, 90, 0.06), transparent 62%), #0f0f0e;
+      transition: border-color 300ms ease;
+    }
+    .tile:hover { border-color: rgba(181, 147, 90, 0.45); }
+
+    .tile-shot {
+      display: block; width: 100%; border: 0; padding: 0; background: none; cursor: zoom-in;
+      position: relative; overflow: hidden;
+    }
+    .tile-shot img { display: block; width: 100%; height: auto; opacity: 0; transition: opacity 500ms ease, transform 900ms var(--ease); }
+    .tile-shot img.is-loaded { opacity: 1; }
+    .tile-shot:hover img { transform: scale(1.03); }
+    .tile-shot:focus-visible { outline: 1px solid var(--gold-bright); outline-offset: -3px; }
+
+    .tile-badge {
+      position: absolute; left: 0.55rem; top: 0.55rem;
+      padding: 0.26rem 0.5rem;
+      background: rgba(8, 8, 8, 0.82); border: 1px solid rgba(181, 147, 90, 0.35);
+      color: rgba(217, 189, 123, 0.92);
+      font-size: 0.56rem; letter-spacing: 0.16em; text-transform: uppercase;
+    }
+
+    .tile-meta { padding: 0.85rem 1rem 1rem; border-top: 1px solid var(--line); }
+    .tile-title { font-family: var(--display); font-size: 1.2rem; letter-spacing: 0.05em; line-height: 1.1; text-transform: uppercase; }
+    .tile-tags { margin-top: 0.15rem; color: var(--faint); font-size: 0.7rem; font-style: italic; letter-spacing: 0.1em; }
+    .tile-snip { margin-top: 0.5rem; color: rgba(237, 232, 223, 0.72); font-size: 0.84rem; font-style: italic; line-height: 1.45; }
+
+    .status { padding: clamp(2rem, 8vh, 4rem) 1.5rem; text-align: center; color: var(--faint); font-style: italic; letter-spacing: 0.1em; }
+
+    /* ── Lightbox ───────────────────────────────────────────────────── */
+    .box { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; padding: clamp(1rem, 4vw, 2.5rem); }
+    .box[hidden] { display: none; }
+    .box-scrim { position: absolute; inset: 0; background: rgba(4, 4, 4, 0.9); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); opacity: 0; transition: opacity 300ms ease; }
+    .box--open .box-scrim { opacity: 1; }
+
+    .box-inner {
+      position: relative; display: flex; flex-direction: column; align-items: center; gap: 1rem;
+      max-width: min(72rem, 100%); max-height: 100%;
+      opacity: 0; transform: scale(0.985); transition: opacity 300ms ease, transform 380ms var(--ease);
+    }
+    .box--open .box-inner { opacity: 1; transform: none; }
+
+    .box-inner img { max-width: 100%; max-height: 74vh; width: auto; height: auto; object-fit: contain; border: 1px solid var(--line); }
+
+    .box-cap { max-width: 56ch; text-align: center; }
+    .box-title { font-family: var(--display); font-size: clamp(1.3rem, 4vw, 1.9rem); letter-spacing: 0.05em; text-transform: uppercase; }
+    .box-tags { color: var(--faint); font-size: 0.72rem; font-style: italic; letter-spacing: 0.12em; }
+    .box-snip { margin-top: 0.4rem; color: rgba(237, 232, 223, 0.75); font-size: 0.9rem; font-style: italic; }
+
+    .box-btn {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 2.6rem; height: 2.6rem;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(181, 147, 90, 0.3); background: rgba(8, 8, 8, 0.7); cursor: pointer;
+      color: rgba(181, 147, 90, 0.85); font-family: var(--serif); font-size: 1.2rem;
+      transition: color 200ms ease, border-color 200ms ease;
+    }
+    .box-btn:hover, .box-btn:focus-visible { color: var(--gold-bright); border-color: rgba(217, 189, 123, 0.6); outline: none; }
+    .box-prev { left: 0; }
+    .box-next { right: 0; }
+
+    .box-close {
+      position: fixed; top: clamp(0.75rem, 2vw, 1.25rem); right: clamp(0.75rem, 2vw, 1.25rem);
+      width: 2.4rem; height: 2.4rem; border: 0; background: none; cursor: pointer;
+      color: rgba(181, 147, 90, 0.7); font-family: var(--serif); font-size: 1.7rem; line-height: 1;
+      transition: color 200ms ease, transform 240ms var(--ease);
+    }
+    .box-close:hover, .box-close:focus-visible { color: var(--gold-bright); transform: rotate(90deg); outline: none; }
+
+    .foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: clamp(1rem, 4vw, 2.4rem); padding: 2.2rem clamp(1.15rem, 5vw, 3rem) 3rem; border-top: 1px solid rgba(181, 147, 90, 0.12); }
+    .foot a { color: rgba(181, 147, 90, 0.48); font-size: 0.72rem; font-style: italic; letter-spacing: 0.22em; text-decoration: none; text-transform: uppercase; transition: color 220ms ease; }
+    .foot a:hover, .foot a:focus-visible { color: var(--gold-bright); }
+
+    :focus-visible { outline: 1px solid var(--gold-bright); outline-offset: 5px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip label" href="#gallery">Skip to the renders</a>
+
+  <header class="top">
+    <a class="back label" href="/">&larr; Kaayko</a>
+    <a class="label" href="/about#forge">About Forge</a>
+  </header>
+
+  <section class="masthead">
+    <p class="eyebrow">Forge</p>
+    <h1>Gallery</h1>
+    <div class="rule"></div>
+    <p class="lede">
+      Every render here was made on-device by Forge — a local-first generative-AI
+      workstation for Apple Silicon. No cloud round trip, no rented GPU.
+    </p>
+    <div class="facts" id="facts">
+      <span><b>MIT</b> licensed · Python 3.11+</span>
+      <span><b>41</b> species in the Madhubani catalog</span>
+      <span><b>128</b> tests passing</span>
+      <span><b>&minus;60.8%</b> mflux multi-seed runtime</span>
+    </div>
+    <div class="masthead-actions">
+      <a class="btn" href="https://github.com/tommyvercetti76/Forge" rel="noopener noreferrer">Read the code</a>
+      <a class="link" href="https://github.com/tommyvercetti76/Forge/tree/main/docs/gallery" rel="noopener noreferrer">The gallery folder</a>
+    </div>
+  </section>
+
+  <main class="gallery" id="gallery" aria-label="Forge renders">
+    <p class="status" id="status">Reading the gallery folder…</p>
+  </main>
+
+  <div class="box" id="box" hidden>
+    <div class="box-scrim" data-close></div>
+    <button class="box-close" type="button" data-close aria-label="Close">&times;</button>
+    <div class="box-inner" role="dialog" aria-modal="true" aria-label="Render">
+      <button class="box-btn box-prev" type="button" data-step="-1" aria-label="Previous">&lsaquo;</button>
+      <img id="box-img" src="" alt="">
+      <div class="box-cap">
+        <p class="box-title" id="box-title"></p>
+        <p class="box-tags" id="box-tags"></p>
+        <p class="box-snip" id="box-snip"></p>
+      </div>
+      <button class="box-btn box-next" type="button" data-step="1" aria-label="Next">&rsaquo;</button>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <a href="/">Home</a>
+    <a href="/about">About</a>
+    <a href="https://github.com/tommyvercetti76/Forge" rel="noopener noreferrer">Forge on GitHub</a>
+  </footer>
+
+  <script>
+  (function () {
+    "use strict";
+
+    // The folder is the source of truth — whatever is committed there shows
+    // up here. Nothing is referenced by filename.
+    var LISTING = "https://api.github.com/repos/tommyvercetti76/Forge/contents/docs/gallery";
+    var IMAGE_RE = /\.(png|jpe?g|webp|gif|avif)$/i;
+
+    // Real notes about the project, cycled beneath the renders
+    var SNIPPETS = [
+      "Made on-device with FLUX.1-dev through mflux — no cloud round trip.",
+      "Forge runs image, text and audio locally; the core paths need no network.",
+      "MIT licensed and Python 3.11+, so this is reproducible on your own machine.",
+      "Scheduler work cut mflux multi-seed generation time by 60.8%.",
+      "One of a 41-species Madhubani folk-art catalog.",
+      "Candidates are screened by an auto-QC CLIP probe scoring F1 0.62 (LOOCV, N=16).",
+      "The v1 LoRA returned ITERATE — +0.0357 against a +0.05 ship threshold fixed before the run.",
+      "128 tests guard the engines that produced these.",
+      "v6 photo-init Kontext-img2img exists to fix prior collisions that prompt engineering could not.",
+      "Filenames carry their engine version; the maintainer's picks are marked."
+    ];
+
+    // Local copies, so the page still shows real work if GitHub is unreachable
+    var FALLBACK = [
+      "/assets/forge/voted_peacock.png",
+      "/assets/forge/voted_blackbuck.png",
+      "/assets/forge/voted_rhino.png",
+      "/assets/forge/voted_elephant.png"
+    ].map(function (src) { return { name: src.split("/").pop(), url: src }; });
+
+    var gallery = document.getElementById("gallery");
+    var status = document.getElementById("status");
+    var items = [];
+
+    function h(tag, props, kids) {
+      var node = document.createElement(tag);
+      Object.keys(props || {}).forEach(function (k) {
+        if (k === "class") node.className = props[k];
+        else if (k === "text") node.textContent = props[k];
+        else if (props[k] === true) node.setAttribute(k, "");
+        else if (props[k] != null && props[k] !== false) node.setAttribute(k, props[k]);
+      });
+      (kids || []).forEach(function (kid) { if (kid) node.appendChild(kid); });
+      return node;
+    }
+
+    // Read structure out of the filename rather than a lookup table, so a
+    // newly committed render is described correctly without a code change.
+    function describe(name) {
+      var base = name.replace(/\.[^.]+$/, "");
+      var tags = [];
+      var pick = false;
+
+      if (/^voted[_-]/i.test(base)) { pick = true; base = base.replace(/^voted[_-]/i, ""); }
+
+      var lead = base.match(/^v(\d+[a-z]?)[_-]/i);
+      var trail = base.match(/[_-]v(\d+[a-z]?)$/i);
+      if (lead) { tags.push("v" + lead[1]); base = base.replace(/^v\d+[a-z]?[_-]/i, ""); }
+      else if (trail) { tags.push("v" + trail[1]); base = base.replace(/[_-]v\d+[a-z]?$/i, ""); }
+
+      var title = base.replace(/[_-]+/g, " ").trim().replace(/\S+/g, function (w) {
+        return w.charAt(0).toUpperCase() + w.slice(1);
+      });
+
+      return { title: title || name, tags: tags, pick: pick };
+    }
+
+    // First screenful loads eagerly; the rest defer until scrolled near
+    function art(src, eager) {
+      var img = h("img", { src: src, alt: "", decoding: "async", loading: eager ? null : "lazy", fetchpriority: eager ? "high" : null });
+      if (img.complete && img.naturalWidth) img.classList.add("is-loaded");
+      else img.addEventListener("load", function () { img.classList.add("is-loaded"); });
+      return img;
+    }
+
+    // Headings and subheadings are authored in the repo itself —
+    // docs/gallery/captions.json, keyed by filename. Anything without an
+    // entry falls back to filename parsing, so a new commit always renders.
+    function render(list, captions) {
+      captions = captions || {};
+      items = list.map(function (entry, i) {
+        var d = describe(entry.name);
+        var cap = captions[entry.name] || {};
+        return {
+          url: entry.url,
+          title: cap.title || d.title,
+          tags: cap.sub || d.tags.concat(d.pick ? ["Maintainer's pick"] : []).join(" · "),
+          snip: SNIPPETS[i % SNIPPETS.length],
+          pick: d.pick
+        };
+      });
+
+      gallery.innerHTML = "";
+
+      items.forEach(function (item, i) {
+        var shot = h("button", {
+          class: "tile-shot", type: "button",
+          "aria-label": "Open " + item.title + " larger"
+        }, [
+          art(item.url, i < 6),
+          item.pick ? h("span", { class: "tile-badge", text: "Maintainer's pick" }) : null
+        ]);
+
+        shot.addEventListener("click", function () { openBox(i); });
+
+        gallery.appendChild(h("figure", { class: "tile" }, [
+          shot,
+          h("figcaption", { class: "tile-meta" }, [
+            h("p", { class: "tile-title", text: item.title }),
+            item.tags ? h("p", { class: "tile-tags", text: item.tags }) : null,
+            h("p", { class: "tile-snip", text: item.snip })
+          ])
+        ]));
+      });
+    }
+
+    /* ── Lightbox ─────────────────────────────────────────────────────── */
+    var box = document.getElementById("box");
+    var boxImg = document.getElementById("box-img");
+    var boxTitle = document.getElementById("box-title");
+    var boxTags = document.getElementById("box-tags");
+    var boxSnip = document.getElementById("box-snip");
+    var at = 0;
+    var lastFocus = null;
+
+    function paintBox() {
+      var item = items[at];
+      boxImg.src = item.url;
+      boxImg.alt = item.title + " — a Forge render";
+      boxTitle.textContent = item.title;
+      boxTags.textContent = item.tags;
+      boxSnip.textContent = item.snip;
+    }
+
+    function openBox(i) {
+      at = i;
+      lastFocus = document.activeElement;
+      paintBox();
+      box.hidden = false;
+      window.requestAnimationFrame(function () { box.classList.add("box--open"); });
+      document.body.style.overflow = "hidden";
+      box.querySelector(".box-close").focus();
+    }
+
+    function closeBox() {
+      if (box.hidden) return;
+      box.classList.remove("box--open");
+      window.setTimeout(function () { box.hidden = true; }, 300);
+      document.body.style.overflow = "";
+      if (lastFocus) { lastFocus.focus(); lastFocus = null; }
+    }
+
+    function step(by) {
+      if (!items.length) return;
+      at = (at + by + items.length) % items.length;
+      paintBox();
+    }
+
+    box.addEventListener("click", function (e) {
+      if (e.target.closest("[data-close]")) return closeBox();
+      var stepper = e.target.closest("[data-step]");
+      if (stepper) step(Number(stepper.getAttribute("data-step")));
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (box.hidden) return;
+      if (e.key === "Escape") closeBox();
+      else if (e.key === "ArrowRight") step(1);
+      else if (e.key === "ArrowLeft") step(-1);
+    });
+
+    /* ── Boot ─────────────────────────────────────────────────────────── */
+    var CAPTIONS_URL = "https://raw.githubusercontent.com/tommyvercetti76/Forge/main/docs/gallery/captions.json";
+
+    Promise.all([
+      fetch(LISTING, { headers: { Accept: "application/vnd.github+json" } })
+        .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); }),
+      // Captions are editorial, not structural — a miss must never block the wall
+      fetch(CAPTIONS_URL)
+        .then(function (r) { return r.ok ? r.json() : {}; })
+        .catch(function () { return {}; })
+    ])
+      .then(function (results) {
+        var data = results[0], captions = results[1];
+        if (!Array.isArray(data)) throw new Error("unexpected listing");
+        var files = data
+          .filter(function (e) { return e.type === "file" && IMAGE_RE.test(e.name) && e.name !== "captions.json"; })
+          .map(function (e) { return { name: e.name, url: e.download_url }; });
+        if (!files.length) throw new Error("no images");
+        render(files, captions);
+      })
+      .catch(function () {
+        render(FALLBACK);
+        gallery.insertBefore(
+          h("p", { class: "status", text: "Showing locally held renders — the live folder could not be reached." }),
+          gallery.firstChild
+        );
+      });
+  })();
+  </script>
+</body>
+</html>

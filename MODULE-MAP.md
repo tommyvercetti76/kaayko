@@ -51,7 +51,7 @@
 **Pages:**
 | URL | File |
 |-----|------|
-| `/` | `kaayko/src/index.html` (split Kaayko landing: Karma / Store, then Paddle Out / Alumni OS) |
+| `/` | `kaayko/src/index.html` (split Kaayko landing: Paddling Out / Forge / Store, then Store access layer) |
 | `/paddlingout` | `kaayko/src/paddlingout.html` |
 | `/about` | `kaayko/src/about.html` |
 | `/reads` | `kaayko/src/reads.html` |

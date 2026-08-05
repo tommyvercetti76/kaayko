@@ -6,9 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-  <title>Kaayko — Paddling Forecasts, Karma & Outdoor Gear Store</title>
-  <meta name="description" content="Kaayko delivers AI-powered paddle condition forecasts for 100+ lakes, a curated outdoor gear store, and the Karma community platform. Know before you paddle." />
-  <meta name="keywords" content="kaayko, paddling forecast, kayak conditions, kayaking weather, paddle conditions, lake forecast, outdoor gear, paddle score, kayak forecast app, kaayko paddling out, karma app" />
+  <title>Kaayko — Paddling Forecasts, Forge & Outdoor Gear Store</title>
+  <meta name="description" content="Kaayko delivers AI-powered paddle condition forecasts for 100+ lakes, Forge — an open-source local-first AI workstation — and a curated outdoor gear store. Know before you paddle." />
+  <meta name="keywords" content="kaayko, paddling forecast, kayak conditions, kayaking weather, paddle conditions, lake forecast, outdoor gear, paddle score, kayak forecast app, kaayko paddling out, kaayko forge" />
   <meta name="author" content="Kaayko">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
   <link rel="canonical" href="https://kaayko.com/" />
@@ -16,8 +16,8 @@
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://kaayko.com/">
-  <meta property="og:title" content="Kaayko — Paddling Forecasts, Karma & Outdoor Gear">
-  <meta property="og:description" content="AI-powered paddle condition forecasts for 100+ lakes. Curated outdoor gear. Community-driven Karma platform. Know before you go." />
+  <meta property="og:title" content="Kaayko — Paddling Forecasts, Forge & Outdoor Gear">
+  <meta property="og:description" content="AI-powered paddle condition forecasts for 100+ lakes. Forge, an open-source local-first AI workstation. Curated outdoor gear. Know before you go." />
   <meta property="og:image" content="https://kaayko.com/assets/kaayko-og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -48,7 +48,7 @@
         "width": 512,
         "height": 512
       },
-      "description": "Kaayko delivers AI-powered paddle condition forecasts, curated outdoor gear, and the Karma community platform.",
+      "description": "Kaayko delivers AI-powered paddle condition forecasts, Forge — an open-source local-first AI workstation — and a curated outdoor gear store.",
       "sameAs": [
         "https://kaayko.com"
       ],
@@ -63,7 +63,7 @@
       "@type": "WebSite",
       "name": "Kaayko",
       "url": "https://kaayko.com",
-      "description": "AI-powered paddle condition forecasts for 100+ lakes, curated outdoor gear store, and Karma community platform.",
+      "description": "AI-powered paddle condition forecasts for 100+ lakes, Forge open-source AI workstation, and a curated outdoor gear store.",
       "potentialAction": {
         "@type": "SearchAction",
         "target": {
@@ -81,6 +81,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="/favicon-32x32.png">
+  <link rel="stylesheet" href="/css/storeAccess.css">
   <meta name="theme-color" content="#080808">
 
   <style>
@@ -159,6 +160,7 @@
       flex: 1;
       min-height: 0;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       border: 0;
@@ -175,12 +177,17 @@
       background: var(--panel-b);
     }
 
-    #pg-karma .choice.primary {
+    /* Home: three panels — Paddling Out · Forge · Store */
+    #pg-home .choice.primary {
+      background: var(--panel-d);
+    }
+
+    #pg-home .choice.tertiary {
       background: var(--panel-c);
     }
 
-    #pg-karma .choice.secondary {
-      background: var(--panel-d);
+    #pg-home .choice.secondary {
+      background: var(--panel-b);
     }
 
     .choice::before {
@@ -209,21 +216,23 @@
       will-change: transform, opacity;
     }
 
-    .choice::after {
-      content: attr(data-kicker);
-      position: absolute;
-      left: 50%;
-      bottom: clamp(4.5rem, 9vh, 6.5rem);
-      max-width: min(78vw, 360px);
-      transform: translateX(-50%) translateY(10px);
+    /* Subheader sits directly under its headline — heading, then subheading,
+       then the CTA row. Its space is reserved at all times so revealing it
+       never nudges the block. */
+    .choice-sub {
+      position: relative;
+      z-index: 1;
+      margin-top: clamp(0.7rem, 1.6vh, 1.1rem);
+      max-width: min(78%, 30ch);
       color: var(--muted);
       font-family: "Cormorant Garamond", Georgia, serif;
-      font-size: clamp(0.78rem, 1.6vw, 0.96rem);
+      font-size: clamp(0.76rem, 1.5vw, 0.94rem);
       font-style: italic;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.11em;
       line-height: 1.45;
       opacity: 0;
       text-align: center;
+      transform: translateY(6px);
       transition: opacity 320ms ease, transform 320ms var(--ease);
     }
 
@@ -233,15 +242,17 @@
       font-family: "Bebas Neue", Impact, sans-serif;
       width: min(78%, 10.5em);
       max-width: calc(100% - clamp(2rem, 8vw, 7rem));
-      overflow: hidden;
       font-size: clamp(3.2rem, 7.2vw, 7rem);
       font-weight: 400;
       letter-spacing: 0.08em;
       line-height: 0.92;
       text-align: center;
       text-transform: uppercase;
-      white-space: nowrap;
-      transition: color 260ms ease, transform 360ms var(--ease);
+      /* Wraps rather than spills — a two-word headline in a squeezed panel
+         breaks at its space instead of running under the divider. Scramble
+         preserves spaces, so the break point never jitters. */
+      overflow-wrap: break-word;
+      transition: color 260ms ease, transform 360ms var(--ease), font-size 420ms var(--ease);
     }
 
     .seam {
@@ -251,13 +262,14 @@
       top: 50%;
       z-index: 3;
       height: 1px;
-      /* Gap in the centre so mark text sits ON the line, not crossed by it */
+      /* Every divider carries the wordmark, so every divider gets the same
+         gap cut into it — no line is ever left with an empty notch. */
       background: linear-gradient(
         to right,
-        var(--line) 28%,
-        transparent 28%,
-        transparent 72%,
-        var(--line) 72%
+        var(--line) 30%,
+        transparent 30%,
+        transparent 70%,
+        var(--line) 70%
       );
       pointer-events: none;
       transform: scaleX(0);
@@ -306,8 +318,7 @@
       pointer-events: none;
     }
 
-    .footer a,
-    .back {
+    .footer a {
       color: rgba(181, 147, 90, 0.48);
       font-family: "Cormorant Garamond", Georgia, serif;
       font-size: clamp(0.7rem, 1.55vw, 0.84rem);
@@ -321,36 +332,11 @@
     }
 
     .footer a:hover,
-    .footer a:focus-visible,
-    .back:hover,
-    .back:focus-visible {
+    .footer a:focus-visible {
       color: var(--gold-bright);
     }
 
-    .back {
-      position: fixed;
-      left: clamp(1.15rem, 5vw, 3.2rem);
-      top: max(1rem, env(safe-area-inset-top));
-      z-index: 9;
-      border: 0;
-      background: transparent;
-      cursor: pointer;
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .back.show {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .back:hover,
-    .back:focus-visible {
-      transform: translateX(-5px);
-    }
-
     .choice:focus-visible,
-    .back:focus-visible,
     .footer a:focus-visible {
       outline: 1px solid var(--gold-bright);
       outline-offset: 8px;
@@ -358,17 +344,19 @@
 
     @media (hover: hover) and (pointer: fine) {
       .choice:hover::before,
-      .choice:focus-visible::before,
-      .choice:hover::after,
-      .choice:focus-visible::after {
+      .choice:focus-visible::before {
         opacity: 1;
-        transform: translateX(-50%) translateY(0);
       }
 
       .choice:hover .choice-label,
       .choice:focus-visible .choice-label {
         color: var(--gold-bright);
-        transform: translateY(-5px);
+      }
+
+      .choice:hover .choice-sub,
+      .choice:focus-visible .choice-sub {
+        opacity: 1;
+        transform: translateY(0);
       }
     }
 
@@ -380,16 +368,18 @@
       opacity: 1;
     }
 
-    .choice.is-hot .choice-label {
+    /* Highlighted — by hover, by focus, or because the panel is open.
+       The headline warms and its subheader comes up; the underline belongs
+       to the CTAs alone. */
+    .choice.is-hot .choice-label,
+    .choice--wide .choice-label {
       color: var(--gold-bright);
-      transform: translateY(-5px);
     }
 
-    /* Show subtitle and overlay on touch (pointerenter fires on touch too) */
-    .choice.is-hot::before,
-    .choice.is-hot::after {
+    .choice.is-hot .choice-sub,
+    .choice--wide .choice-sub {
       opacity: 1;
-      transform: translateX(-50%) translateY(0);
+      transform: translateY(0);
     }
 
     @media (min-width: 720px) {
@@ -419,14 +409,14 @@
         padding: 0;
       }
 
+      /* Gap in the middle so the mark text never sits on the line */
       .seam {
-        /* Gap in the middle so the mark text never sits on the line */
         background: linear-gradient(
           to bottom,
-          var(--line) 34%,
-          transparent 34%,
-          transparent 66%,
-          var(--line) 66%
+          var(--line) 36%,
+          transparent 36%,
+          transparent 64%,
+          var(--line) 64%
         );
       }
     }
@@ -439,8 +429,7 @@
         letter-spacing: 0.055em;
       }
 
-      .choice::after {
-        bottom: clamp(3.8rem, 8vh, 4.6rem);
+      .choice-sub {
         font-size: 0.76rem;
         letter-spacing: 0.08em;
       }
@@ -449,8 +438,7 @@
         padding-inline: 1rem;
       }
 
-      .footer a,
-      .back {
+      .footer a {
         font-size: 0.66rem;
         letter-spacing: 0.18em;
       }
@@ -466,26 +454,30 @@
       }
     }
 
-    /* ── Store choice panels (same .choice base, tap-to-reveal input) ── */
+    /* ── Expandable panels (Forge, Store) ─────────────────────────────── */
 
-    .store-choice {
+    .panel-menu {
       flex-direction: column;
       cursor: pointer;
     }
 
-    /* Mobile only: expand Code panel — seam/mark position driven by JS */
-    @media (max-width: 719px) {
-      #pg-store .choice {
-        transition: filter 320ms ease, flex 440ms var(--ease);
-      }
-
-      .store-choice--open {
-        flex: 1.8;
-      }
+    /* Highlighting any section widens it to half the axis, leaving a quarter
+       each to the other two. Same rule for all three — the seams and
+       wordmarks are repositioned by JS to match, at every breakpoint. */
+    #pg-home .choice {
+      transition: filter 320ms ease, flex 520ms var(--ease);
     }
 
-    /* Panel-count font scaling — set via JS on data-panels attribute */
+    .choice--wide {
+      flex: 2;
+    }
+
+    /* Panel-count font scaling — set via JS on data-panels attribute.
+       Three panels are narrower, so the headline also gets more of its
+       panel to work with — "PADDLING OUT" holds one line at every width. */
     [data-panels="3"] .choice-label {
+      width: min(94%, 13em);
+      max-width: calc(100% - clamp(1rem, 2.4vw, 2rem));
       font-size: clamp(2.4rem, 5vw, 5rem);
       letter-spacing: 0.06em;
     }
@@ -495,14 +487,23 @@
       letter-spacing: 0.04em;
     }
 
-    /* Field group: in flow, collapsed by default so label stays centred */
-    .store-field-group {
+    /* While one section is wide the other two are down to a quarter — step
+       their headlines back so they stay clear of the dividers */
+    #pg-home:has(.choice--wide) .choice:not(.choice--wide) .choice-label {
+      font-size: clamp(1.6rem, 2.9vw, 3.1rem);
+      letter-spacing: 0.05em;
+    }
+
+    /* ── CTA row inside a panel ───────────────────────────────────────── */
+    /* Collapsed by default so the headline stays optically centred */
+    .cta-group {
       position: relative;
       z-index: 1;
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: min(260px, 76%);
+      align-items: flex-start;
+      justify-content: center;
+      gap: clamp(1.6rem, 3.2vw, 2.8rem);
+      max-width: 92%;
       max-height: 0;
       margin-top: 0;
       overflow: hidden;
@@ -513,95 +514,59 @@
                   opacity 280ms ease 100ms;
     }
 
-    /* Tap: field group expands below label — flex recentres the whole block */
-    .store-choice--open .store-field-group {
-      max-height: 100px;
-      margin-top: 1.6rem;
+    .panel--open .cta-group {
+      max-height: 4rem;
+      margin-top: clamp(1.3rem, 3vh, 2rem);
       opacity: 1;
       pointer-events: auto;
     }
 
-    /* Keep kicker visible while hovering or while input has focus */
-    .store-choice:focus-within::after {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-
-    .store-field-wrap {
+    .cta {
+      position: relative;
+      flex: 0 1 auto;
+      min-width: 0;
       display: flex;
       align-items: center;
-      width: 100%;
-      border-bottom: 1px solid rgba(181, 147, 90, 0.22);
-      padding-bottom: 2px;
-      transition: border-color 280ms ease;
-    }
-
-    .store-field-wrap:focus-within { border-bottom-color: var(--gold); }
-    .store-field-wrap.error        { border-bottom-color: rgba(255, 80, 80, 0.55); }
-    .store-field-wrap.ok           { border-bottom-color: rgba(130, 190, 80, 0.55); }
-
-    .store-input {
-      flex: 1;
-      min-width: 0;
+      justify-content: center;
+      appearance: none;
+      border: 0;
       background: none;
-      border: none;
-      outline: none;
-      color: rgba(237, 232, 223, 0.88);
-      font-family: "Cormorant Garamond", Georgia, serif;
-      font-size: clamp(0.92rem, 1.7vw, 1.05rem);
-      letter-spacing: 0.14em;
-      padding: 0.6em 0;
-      text-align: center;
-      caret-color: var(--gold);
-    }
-
-    .store-input::placeholder {
-      color: rgba(255, 255, 255, 0.16);
-      letter-spacing: 0.07em;
-    }
-
-    .store-input:disabled { opacity: 0.35; }
-
-    .store-arrow {
-      background: none;
-      border: none;
+      color: inherit;
       cursor: pointer;
-      color: rgba(181, 147, 90, 0.28);
+      padding: 0.1rem 0 0.2rem;
       font-family: "Cormorant Garamond", Georgia, serif;
-      font-size: 1.35em;
-      line-height: 1;
-      padding: 0.3em 0 0.3em 0.5em;
-      flex-shrink: 0;
-      transition: color 200ms ease, transform 200ms ease;
-    }
-
-    .store-arrow:hover,
-    .store-arrow:focus-visible {
-      color: var(--gold-bright);
-      transform: translateX(4px);
-    }
-
-    .store-arrow:disabled {
-      cursor: default;
-      color: rgba(181, 147, 90, 0.1);
-      transform: none;
-    }
-
-    .store-hint {
-      margin-top: 0.65em;
-      min-height: 1.2em;
-      font-family: "Cormorant Garamond", Georgia, serif;
-      font-size: clamp(0.72rem, 1.2vw, 0.8rem);
-      font-style: italic;
-      letter-spacing: 0.04em;
-      color: rgba(255, 80, 80, 0.7);
       text-align: center;
-      opacity: 0;
-      transition: opacity 260ms ease, color 260ms ease;
+      text-decoration: none;
     }
 
-    .store-hint.visible { opacity: 1; }
-    .store-hint.ok      { color: rgba(140, 195, 80, 0.8); }
+    .cta:focus-visible {
+      outline: none;
+    }
+
+    /* The label carries the whole affordance — no rule under it, no
+       explanatory line beneath it. */
+    .cta-label {
+      color: rgba(237, 232, 223, 0.92);
+      font-size: clamp(0.78rem, 1.35vw, 0.9rem);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      transition: color 220ms ease;
+    }
+
+    .cta:hover .cta-label,
+    .cta:focus-visible .cta-label,
+    .cta:active .cta-label {
+      color: var(--gold-bright);
+    }
+
+    /* Touch has no hover to lean on — every section states what it is */
+    @media (hover: none), (pointer: coarse) {
+      .choice-sub {
+        opacity: 1;
+        transform: none;
+      }
+    }
   </style>
 </head>
 <body>
@@ -610,7 +575,7 @@
   <noscript>
     <div style="padding:2rem;font-family:sans-serif;max-width:800px;margin:0 auto">
       <h1>Kaayko — Paddling Forecasts &amp; Outdoor Gear</h1>
-      <p>Kaayko is a platform delivering AI-powered paddle condition forecasts for 100+ kayaking, canoeing, and paddleboarding lakes across the United States, a curated outdoor gear store, and the Karma community platform.</p>
+      <p>Kaayko is a platform delivering AI-powered paddle condition forecasts for 100+ kayaking, canoeing, and paddleboarding lakes across the United States, Forge — an open-source local-first AI workstation — and a curated outdoor gear store.</p>
       <h2>Paddling Out — Know Before You Go</h2>
       <p>Get real-time paddle condition scores for lakes, rivers, and reservoirs. Our machine learning model weighs wind speed, water temperature, UV index, cloud cover, and precipitation to generate a single Paddle Score from 1 (Danger) to 5 (Excellent).</p>
       <ul>
@@ -628,82 +593,63 @@
     <section class="page active" id="pg-home" aria-label="Kaayko">
       <div class="seam"></div>
       <div class="mark">kaayko</div>
-      <button class="choice primary" id="go-karma" type="button" data-kicker="Paddle Out · Alumni OS">
-        <span class="choice-label" data-text="Karma">Karma</span>
-      </button>
-      <button class="choice secondary" id="go-store" type="button" data-kicker="Enter code or request access">
-        <span class="choice-label" data-text="Store">Store</span>
-      </button>
-    </section>
-
-    <section class="page" id="pg-store" aria-label="Store Access">
-      <div class="seam"></div>
-      <div class="mark">store</div>
-
-      <div class="choice primary store-choice" id="panel-code" data-kicker="Enter your alphanumeric invite code">
-        <span class="choice-label" data-text="Access">Access</span>
-        <div class="store-field-group">
-          <div class="store-field-wrap" id="code-wrap">
-            <input
-              class="store-input"
-              id="code-input"
-              type="text"
-              inputmode="text"
-              placeholder="A1B2C3D4"
-              autocomplete="off"
-              autocorrect="off"
-              autocapitalize="characters"
-              spellcheck="false"
-              maxlength="20"
-              aria-label="Invite code"
-            >
-            <button class="store-arrow" id="code-submit" type="button" aria-label="Submit code">→</button>
-          </div>
-          <p class="store-hint" id="code-hint" aria-live="polite"></p>
+      <a class="choice primary" href="/paddlingout" target="_blank" rel="noopener noreferrer">
+        <span class="choice-label" data-text="Paddling Out">Paddling Out</span>
+        <span class="choice-sub">Know before you paddle</span>
+      </a>
+      <section class="choice tertiary panel-menu" id="panel-forge" aria-label="Forge" tabindex="0">
+        <span class="choice-label" data-text="Forge">Forge</span>
+        <span class="choice-sub">Open-source local-first AI workstation</span>
+        <div class="cta-group" aria-label="Forge options">
+          <a class="cta" href="/forge-gallery">
+            <span class="cta-label">Gallery</span>
+          </a>
+          <a class="cta" href="https://github.com/tommyvercetti76/Forge" rel="noopener noreferrer">
+            <span class="cta-label">Code</span>
+          </a>
         </div>
-      </div>
+      </section>
 
-      <button class="choice secondary" id="panel-grovel" type="button" data-kicker="No code? Beg us why you are worthy">
-        <span class="choice-label" data-text="Grovel">Grovel</span>
-      </button>
+      <section class="choice secondary panel-menu" id="panel-store" aria-label="Store" tabindex="0">
+        <span class="choice-label" data-text="Store">Store</span>
+        <span class="choice-sub">Invite only — for now</span>
+        <div class="cta-group" aria-label="Store options">
+          <button class="cta" id="cta-access" type="button">
+            <span class="cta-label">Access</span>
+          </button>
+          <button class="cta" id="cta-request" type="button">
+            <span class="cta-label">Request</span>
+          </button>
+        </div>
+      </section>
     </section>
-
-    <section class="page" id="pg-karma" aria-label="Karma">
-      <div class="seam"></div>
-      <div class="mark">karma</div>
-      <a class="choice primary" href="/paddlingout" target="_blank" rel="noopener noreferrer" data-kicker="Know before you paddle">
-        <span class="choice-label" data-text="Paddle Out">Paddle Out</span>
-      </a>
-      <a class="choice secondary" href="https://alumni.kaayko.com" target="_blank" rel="noopener noreferrer" data-kicker="A private operating system for alumni communities">
-        <span class="choice-label" data-text="Alumni OS">Alumni OS</span>
-      </a>
-    </section>
-
-    <button class="back" id="back" type="button" aria-label="Back to Kaayko home">← Kaayko</button>
 
     <footer class="footer" aria-label="Footer">
-      <a href="https://www.instagram.com/heykaayko" rel="noopener noreferrer">Instagram</a>
-      <a href="mailto:rohan@kaayko.com">Contact</a>
+      <a href="https://www.youtube.com/@travelingout" rel="noopener noreferrer">YouTube</a>
+      <a href="/about">About</a>
     </footer>
   </main>
 
+  <script src="/js/storeAccess.js"></script>
   <script>
     const POOL = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const home  = document.getElementById("pg-home");
-    const store = document.getElementById("pg-store");
-    const karma = document.getElementById("pg-karma");
-    const back  = document.getElementById("back");
+    const home = document.getElementById("pg-home");
+    const forgePanel = document.getElementById("panel-forge");
+    const storePanel = document.getElementById("panel-store");
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let current = home;
-    let busy = false;
-    let currentLayer = "home";
-    let storeCodeFailures = 0;
+    const canHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    const menus = [forgePanel, storePanel];
+
+    // Access modal lives in js/storeAccess.js — shared with /about
+    const modalIsOpen = () => KaaykoStoreAccess.isOpen();
 
     // ── N-panel seam engine ───────────────────────────────────────────────
     // Each panel has flex weight 1; an expanded panel gets PANEL_EXPAND_WEIGHT.
     // Seam positions are derived mathematically so N panels (up to 4) always
     // produce symmetric, proportional splits regardless of which panel opens.
-    const PANEL_EXPAND_WEIGHT = 1.8;
+    // Weight 2 against 1 and 1 gives the highlighted section half the axis
+    // and a quarter to each of the others. Keep in sync with .choice--wide.
+    const PANEL_EXPAND_WEIGHT = 2;
 
     function getSeamPositions(weights) {
       const total = weights.reduce((a, b) => a + b, 0);
@@ -717,30 +663,28 @@
     }
 
     function updateSeam(page, expandedIndex) {
-      const isDesktop = window.innerWidth >= 720;
-      // Panel expansion only shifts seams on mobile (column flow)
-      const effective = isDesktop ? -1 : expandedIndex;
-
       const panels = Array.from(page.querySelectorAll(":scope > .choice"));
       const n = panels.length;
       if (n < 2) return;
 
+      const isDesktop = window.innerWidth >= 720;
       const seams = Array.from(page.querySelectorAll(":scope > .seam"));
       const marks = Array.from(page.querySelectorAll(":scope > .mark"));
 
-      const weights = panels.map((_, i) => i === effective ? PANEL_EXPAND_WEIGHT : 1);
+      const weights = panels.map((_, i) => i === expandedIndex ? PANEL_EXPAND_WEIGHT : 1);
       const positions = getSeamPositions(weights);
 
       const axis  = isDesktop ? "left" : "top";
       const reset = isDesktop ? "top"  : "left";
 
+      // Every divider gets a seam and a wordmark, and they ride together
       seams.forEach((seam, i) => {
         seam.style[axis]  = (positions[i] ?? (i + 1) / n * 100) + "%";
         seam.style[reset] = "";
       });
 
-      marks.forEach(mark => {
-        mark.style[axis]  = (positions[0] ?? 50) + "%";
+      marks.forEach((mark, i) => {
+        mark.style[axis]  = (positions[i] ?? 50) + "%";
         mark.style[reset] = "";
       });
     }
@@ -751,83 +695,52 @@
         const n = panels.length;
         page.dataset.panels = n;
 
-        // Auto-generate missing seam dividers for pages with >2 panels
-        const existing = page.querySelectorAll(":scope > .seam").length;
-        for (let i = existing; i < n - 1; i++) {
+        // Auto-generate a seam + wordmark per division, so a page with three
+        // panels reads the same on both dividers as a page with two
+        const template = page.querySelector(":scope > .mark");
+        for (let i = page.querySelectorAll(":scope > .seam").length; i < n - 1; i++) {
           const seam = document.createElement("div");
           seam.className = "seam";
           page.insertBefore(seam, panels[0]);
+        }
+        for (let i = page.querySelectorAll(":scope > .mark").length; i < n - 1; i++) {
+          page.insertBefore(template.cloneNode(true), panels[0]);
         }
 
         updateSeam(page, -1);
       });
     }
 
-    window.addEventListener("resize", () => {
-      document.querySelectorAll(".page").forEach(page => {
-        const expanded = page.querySelector(".store-choice--open");
-        const panels   = Array.from(page.querySelectorAll(":scope > .choice"));
-        updateSeam(page, expanded ? panels.indexOf(expanded) : -1);
-      });
-    });
+    // ── Section expand / collapse ─────────────────────────────────────────
+    // One rule for all three sections: highlighting one widens it to half the
+    // axis and squeezes the other two to a quarter each. Sections that carry
+    // a menu also reveal their CTA row.
+    const choices = Array.from(home.querySelectorAll(":scope > .choice"));
 
-    // ── Store code validation (same keys as secretStore.js) ──────────────
-    function checkStoreCode(v) {
-      const decoys = ["admin","password","secret","unlock","kaayko"];
-      if (decoys.includes(v.toLowerCase())) return false;
-      const keys = [
-        () => String.fromCharCode(0x4d,0x61,0x61,0x75),
-        () => window.atob("Q2hhcml6YXJk"),
-        () => [78,97,103,112,117,114].map(c => String.fromCharCode(c)).join("")
-      ];
-      return keys.some(fn => fn() === v);
+    function wideIndex() {
+      const wide = home.querySelector(".choice--wide");
+      return wide ? choices.indexOf(wide) : -1;
     }
 
-    function storeSarcasm() {
-      const lines = [
-        "Wrong, dumbass. Try again.",
-        "Oh my God, you suck at this.",
-        "That's not it, genius.",
-        "Dude, seriously? That's your guess?",
-        "This is pretty sad to watch.",
-        "Are you actually stupid or just pretending?",
-        "Holy crap, you're terrible at this.",
-        "I've seen rocks with better problem-solving skills.",
-        "Just give up. This isn't for you.",
-        "Even Butters could do better.",
-        "I'm actually impressed by how bad you are at this."
-      ];
-      return lines[Math.min(storeCodeFailures - 1, lines.length - 1)];
+    function collapse(choice) {
+      if (!choice.classList.contains("choice--wide")) return;
+      choice.classList.remove("choice--wide", "panel--open");
+      updateSeam(home, wideIndex());
     }
 
-    // ── hint helper ───────────────────────────────────────────────────────
-    function setHint(wrap, hint, msg, state /* "error" | "ok" | null */) {
-      wrap.classList.remove("error", "ok");
-      hint.classList.remove("error", "ok", "visible");
-      hint.textContent = msg;
-      if (state) {
-        wrap.classList.add(state);
-        hint.classList.add(state, "visible");
-      }
+    function expand(choice) {
+      choices.forEach(other => { if (other !== choice) collapse(other); });
+      if (choice.classList.contains("choice--wide")) return;
+      choice.classList.add("choice--wide");
+      updateSeam(home, choices.indexOf(choice));
     }
 
-    function resetStoreForm() {
-      storeCodeFailures = 0;
-      const panel    = document.getElementById("panel-code");
-      const codeInput = document.getElementById("code-input");
-      const codeWrap  = document.getElementById("code-wrap");
-      const codeHint  = document.getElementById("code-hint");
-      const codeSub   = document.getElementById("code-submit");
-
-      panel.classList.remove("store-choice--open");
-      updateSeam(store, -1);
-      codeInput.value    = "";
-      codeInput.disabled = false;
-      codeSub.disabled   = false;
-      codeWrap.classList.remove("error", "ok");
-      codeHint.textContent = "";
-      codeHint.classList.remove("error", "ok", "visible");
+    function openMenu(panel) {
+      expand(panel);
+      panel.classList.add("panel--open");
     }
+
+    window.addEventListener("resize", () => updateSeam(home, wideIndex()));
 
     // ── scramble ──────────────────────────────────────────────────────────
     function wrapLabel(label) {
@@ -904,163 +817,93 @@
       choice.addEventListener("pointerleave", () => choice.classList.remove("is-hot"));
     }
 
-    // ── page transitions ──────────────────────────────────────────────────
-    function show(page, options = {}) {
-      if (busy || page === current) return;
-
-      busy = true;
-      current.classList.remove("active");
-      current = page;
-      current.classList.add("active");
-      back.classList.toggle("show", current !== home);
-
-      if (current === home) {
-        currentLayer = "home";
-        document.title = "Kaayko - Karma, Store, Paddle Out, and Alumni OS";
-      } else if (current === store) {
-        currentLayer = "store";
-        document.title = "Store – Kaayko";
-        resetStoreForm();
-      } else if (current === karma) {
-        currentLayer = "karma";
-        document.title = "Karma – Kaayko";
-      }
-
-      scramble(current);
-
-      if (options.pushState) {
-        if (currentLayer === "karma") window.history.pushState({ layer: "karma" }, "", "#karma");
-        if (currentLayer === "store") window.history.pushState({ layer: "store" }, "", "#store");
-      }
-
-      window.setTimeout(() => { busy = false; }, 420);
-    }
-
-    // ── store form logic ──────────────────────────────────────────────────
-    function submitCode() {
-      const input  = document.getElementById("code-input");
-      const wrap   = document.getElementById("code-wrap");
-      const hint   = document.getElementById("code-hint");
-      const submit = document.getElementById("code-submit");
-      const val    = input.value.trim();
-
-      if (!val) {
-        setHint(wrap, hint, "Enter your invite code.", "error");
-        return;
-      }
-      if (!/^[a-zA-Z0-9]+$/.test(val)) {
-        setHint(wrap, hint, "Letters and numbers only — no spaces or symbols.", "error");
-        return;
-      }
-      if (val.length < 4) {
-        setHint(wrap, hint, "Code must be at least 4 characters.", "error");
-        return;
-      }
-
-      if (checkStoreCode(val)) {
-        localStorage.setItem(atob("a2FheWtvU3RvcmVBY2Nlc3M="), atob("Z3JhbnRlZA=="));
-
-        // Haptic confirmation (gentle double-pulse)
-        if (navigator.vibrate) navigator.vibrate([30, 60, 30]);
-
-        // Open tab NOW — must be synchronous within the user gesture or
-        // the browser treats it as a blocked popup
-        window.open("/store", "_blank", "noopener,noreferrer");
-
-        setHint(wrap, hint, "Access granted. Opening store.", "ok");
-        input.disabled  = true;
-        submit.disabled = true;
-        window.setTimeout(() => show(home), 1200);
-      } else {
-        storeCodeFailures++;
-        setHint(wrap, hint, storeSarcasm(), "error");
-        input.value = "";
-        input.focus();
-      }
-    }
-
     // ── wire up ───────────────────────────────────────────────────────────
     document.querySelectorAll(".choice-label").forEach(wrapLabel);
     document.querySelectorAll(".choice").forEach(attachCursorGlow);
 
-    // Read hash before replaceState strips it
+    // Read hash before it is stripped from the address bar
     const initialHash = window.location.hash;
-    window.history.replaceState({ layer: "home" }, "", window.location.href.split("#")[0]);
+    window.history.replaceState(null, "", window.location.href.split("#")[0]);
 
-    document.getElementById("go-karma").addEventListener("click", () => show(karma, { pushState: true }));
-    document.getElementById("go-store").addEventListener("click", () => show(store, { pushState: true }));
+    choices.forEach(choice => {
+      const hasMenu = menus.includes(choice);
+      const reveal = () => {
+        if (hasMenu) openMenu(choice);
+        else expand(choice);
+      };
 
-    const codePanel = document.getElementById("panel-code");
-
-    // Tap panel → expand and focus input
-    codePanel.addEventListener("click", () => {
-      if (codePanel.classList.contains("store-choice--open")) return;
-      codePanel.classList.add("store-choice--open");
-      updateSeam(store, 0);
-      window.setTimeout(() => document.getElementById("code-input").focus(), 360);
-    });
-
-    // Focus leaves panel entirely → collapse back to equal split
-    codePanel.addEventListener("focusout", (e) => {
-      if (!codePanel.contains(e.relatedTarget)) {
-        codePanel.classList.remove("store-choice--open");
-        updateSeam(store, -1);
+      // Hover is the primary affordance where it exists; a click would only
+      // fight the pointerenter that just opened the section.
+      if (canHover) {
+        choice.addEventListener("pointerenter", reveal);
+        choice.addEventListener("pointerleave", () => {
+          if (modalIsOpen()) return;
+          collapse(choice);
+        });
+      } else if (hasMenu) {
+        choice.addEventListener("click", (event) => {
+          if (event.target.closest(".cta")) return;          // CTAs speak for themselves
+          if (choice.classList.contains("panel--open")) collapse(choice);
+          else openMenu(choice);
+        });
       }
+
+      // Keyboard reaches the same states as the pointer
+      choice.addEventListener("focusin", reveal);
+
+      choice.addEventListener("keydown", (event) => {
+        if (event.target !== choice) return;
+        if (!hasMenu || (event.key !== "Enter" && event.key !== " ")) return;
+        event.preventDefault();
+        if (choice.classList.contains("panel--open")) collapse(choice);
+        else openMenu(choice);
+      });
+
+      choice.addEventListener("focusout", (event) => {
+        if (modalIsOpen()) return;
+        if (!choice.contains(event.relatedTarget)) collapse(choice);
+      });
     });
 
-    // Tap anywhere outside panel → collapse immediately (covers touch before focus lands)
-    document.addEventListener("pointerdown", (e) => {
-      if (currentLayer !== "store") return;
-      if (!codePanel.contains(e.target)) {
-        codePanel.classList.remove("store-choice--open");
-        updateSeam(store, -1);
-      }
+    // Tap/click outside a section → collapse it (covers touch before focus lands)
+    document.addEventListener("pointerdown", (event) => {
+      if (modalIsOpen()) return;
+      choices.forEach(choice => {
+        if (!choice.contains(event.target)) collapse(choice);
+      });
     });
 
-    document.getElementById("code-submit").addEventListener("click", submitCode);
-    document.getElementById("code-input").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") submitCode();
+    const accessCta  = document.getElementById("cta-access");
+    const requestCta = document.getElementById("cta-request");
+
+    accessCta.addEventListener("click", (event) => {
+      event.stopPropagation();
+      KaaykoStoreAccess.open("access", { returnFocus: accessCta });
     });
 
-    document.getElementById("panel-grovel").addEventListener("click", () => {
-      const subject = encodeURIComponent("Store Access Request");
-      const body    = encodeURIComponent("Hi,\n\nI am not worthy but neither are you. Send me code.");
-      window.location.href = "mailto:rohan@kaayko.com?subject=" + subject + "&body=" + body;
-    });
-
-    back.addEventListener("click", () => {
-      if ((currentLayer === "karma" && window.location.hash === "#karma") ||
-          (currentLayer === "store" && window.location.hash === "#store")) {
-        window.history.back();
-        return;
-      }
-      show(home);
-    });
-
-    window.addEventListener("popstate", (event) => {
-      const layer = event.state && event.state.layer;
-      if (layer === "karma") show(karma);
-      else if (layer === "store") show(store);
-      else show(home);
+    requestCta.addEventListener("click", (event) => {
+      event.stopPropagation();
+      KaaykoStoreAccess.open("request", { returnFocus: requestCta });
     });
 
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") {
-        if ((currentLayer === "karma" && window.location.hash === "#karma") ||
-            (currentLayer === "store" && window.location.hash === "#store")) {
-          window.history.back();
-          return;
-        }
-        show(home);
+      // storeAccess.js closes itself on Escape; leave the panels alone until it has
+      if (event.key !== "Escape" || modalIsOpen()) return;
+      choices.forEach(choice => collapse(choice));
+      if (document.activeElement && document.activeElement.blur) {
+        document.activeElement.blur();
       }
     });
 
     initPages();
     scramble(home);
 
-    // Deep-link: /store redirects here as /#store — open the panel immediately
-    if (initialHash === "#store") show(store, { pushState: true });
-    else if (initialHash === "#karma") show(karma, { pushState: true });
+    // Deep link: secretStore.js bounces uninvited visitors to /#store —
+    // land them straight on the invite-code card
+    if (initialHash === "#store") {
+      openMenu(storePanel);
+      KaaykoStoreAccess.open("access", { returnFocus: accessCta });
+    }
   </script>
 </body>
 </html>

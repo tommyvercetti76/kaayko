@@ -5,8 +5,9 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>How the Paddle Score Works | Kaayko Paddling Out</title>
-  <meta name="description" content="How Kaayko calculates the Paddle Score: data sources, ML model, penalty system, and crowd-sourced calibration explained.">
+  <meta name="description" content="The real Paddle Score pipeline: WeatherAPI data, a gradient-boosted model, calibration layers, the exact penalty table, and crowd-sourced per-lake offsets.">
   <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://kaayko.com/paddlingout/methodology">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <meta name="theme-color" content="#d4af37">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,6 +15,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/storestyle.css">
   <link rel="stylesheet" href="/css/header.css">
+  <link rel="stylesheet" href="/js/components/KonditionsHeatmap.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <style>
 :root {
   --bg: #080808;
@@ -29,7 +32,7 @@
 html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-height: 100vh; -webkit-font-smoothing: antialiased; }
 .theme-toggle-icon { display: none !important; }
 
-.meth-wrap { max-width: 680px; margin: 0 auto; padding: 0 1.5rem 4rem; }
+.meth-wrap { max-width: 720px; margin: 0 auto; padding: 0 1.5rem 4rem; }
 
 .meth-back {
   display: inline-flex; align-items: center; gap: 0.4rem;
@@ -44,7 +47,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
 .meth-title { font: 600 clamp(1.4rem, 4vw, 2rem) var(--font-sans); color: var(--fg); margin: 0; text-transform: uppercase; }
 .meth-subtitle { font: 400 italic clamp(0.95rem, 2vw, 1.1rem) var(--font-serif); color: var(--muted); margin-top: 0.4rem; }
 
-.meth-section { margin-bottom: 2.5rem; }
+.meth-section { margin-bottom: 2.6rem; }
 .meth-section h2 {
   font: 600 0.75rem var(--font-sans); letter-spacing: 0.2em; text-transform: uppercase;
   color: var(--gold); margin: 0 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--line);
@@ -52,14 +55,70 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
 .meth-section p, .meth-section li {
   font: 400 1rem var(--font-serif); color: var(--fg); line-height: 1.7; margin: 0 0 0.8rem;
 }
-.meth-section ul { padding-left: 1.2rem; margin: 0 0 1rem; }
+.meth-section ul, .meth-section ol { padding-left: 1.2rem; margin: 0 0 1rem; }
 .meth-section li { margin-bottom: 0.4rem; }
 .meth-section strong { color: var(--gold-bright); font-weight: 600; }
+.meth-section a { color: var(--gold); }
+.meth-section a:hover { color: var(--gold-bright); }
 
+.snap-caption {
+  font: 400 italic 0.78rem var(--font-serif); color: var(--muted);
+  letter-spacing: 0.06em; margin: 0.5rem 0 0; text-align: right;
+}
+
+/* ── Live verdict snapshot (RatingHero styling) ─────────────────────── */
+.verdict-card {
+  display: flex; align-items: center; gap: 1.1rem;
+  border: 1px solid var(--line); background: var(--surface);
+  padding: 1.1rem 1.25rem; margin: 1rem 0 0;
+}
+.verdict-score {
+  flex: 0 0 auto; width: 4.4rem; height: 4.4rem; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font: 600 1.5rem var(--font-sans); color: #fff;
+  background: #316d43; box-shadow: 0 0 24px rgba(49,109,67,0.35);
+  font-variant-numeric: tabular-nums;
+}
+.verdict-meta { min-width: 0; }
+.verdict-title { font: 600 1rem var(--font-sans); text-transform: uppercase; letter-spacing: 0.1em; margin: 0; }
+.verdict-spot { font: 400 italic 0.9rem var(--font-serif); color: var(--muted); margin: 0.15rem 0 0.45rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.verdict-rows { display: flex; flex-direction: column; gap: 0.2rem; }
+.verdict-row { font: 400 0.82rem var(--font-serif); color: rgba(237,232,223,0.75); }
+
+/* ── Score bands table ──────────────────────────────────────────────── */
 .score-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-family: var(--font-sans); font-size: 0.85rem; }
 .score-table th { font: 600 0.65rem var(--font-sans); letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); text-align: left; padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--line); }
 .score-table td { padding: 0.6rem 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.04); }
 .score-table .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.5rem; vertical-align: middle; }
+
+/* ── Colour ramp legend ─────────────────────────────────────────────── */
+.ramp { display: flex; margin: 0.8rem 0 0.2rem; border: 1px solid var(--line); }
+.ramp span { flex: 1; height: 1.7rem; display: flex; align-items: center; justify-content: center; font: 600 0.62rem var(--font-sans); color: rgba(255,255,255,0.85); letter-spacing: 0.04em; }
+
+/* ── Pipeline ───────────────────────────────────────────────────────── */
+.pipe { counter-reset: step; margin: 1rem 0; display: grid; gap: 0.55rem; }
+.pipe-step {
+  display: flex; gap: 0.85rem; align-items: baseline;
+  border: 1px solid var(--line); background: rgba(0,0,0,0.25); padding: 0.7rem 0.9rem;
+}
+.pipe-step::before {
+  counter-increment: step; content: counter(step, decimal-leading-zero);
+  font: 600 0.8rem var(--font-sans); color: var(--gold); flex: 0 0 auto;
+}
+.pipe-step b { font: 600 0.78rem var(--font-sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--fg); display: block; margin-bottom: 0.1rem; }
+.pipe-step span { font: 400 0.9rem var(--font-serif); color: rgba(237,232,223,0.75); line-height: 1.5; display: block; }
+
+/* ── Beta chip ──────────────────────────────────────────────────────── */
+.beta-chip {
+  display: inline-block; margin-left: 0.5rem; padding: 0.14rem 0.5rem;
+  border: 1px solid rgba(217,189,123,0.5); border-radius: 2px;
+  font: 600 0.58rem var(--font-sans); letter-spacing: 0.18em;
+  color: var(--gold-bright); vertical-align: middle;
+}
+
+/* ── Heatmap snapshot — the real component mounts here ──────────────── */
+#heatmapContainer { margin: 1rem 0 0; }
+.hm-pending { border: 1px solid var(--line); background: var(--surface); padding: 1rem 1.2rem; font: 400 italic 0.9rem var(--font-serif); color: var(--muted); margin: 1rem 0 0; }
 
 .site-footer {
   text-align: center; padding: 2.5rem 2rem;
@@ -84,60 +143,106 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
   <div class="meth-header">
     <div class="meth-eyebrow">Methodology</div>
     <h1 class="meth-title">How the Paddle Score Works</h1>
-    <p class="meth-subtitle">The science behind "Worth it," "Careful," and "Hard pass"</p>
+    <p class="meth-subtitle">The actual pipeline, the actual thresholds &mdash; nothing here is aspirational</p>
   </div>
 
   <div class="meth-section">
     <h2>The Score</h2>
-    <p>Every spot gets a single number from <strong>1</strong> to <strong>5</strong>, recalculated each time you load a forecast. The score answers one question: <em>how favorable are conditions for paddling right now?</em></p>
+    <p>Every spot gets a single number from <strong>1.0</strong> to <strong>5.0</strong>, computed fresh when you load a forecast. Scores snap to <strong>half-point steps</strong> (3.0, 3.5, 4.0&hellip;) and are clamped to the 1&ndash;5 range. One question is being answered: <em>how favorable are conditions for paddling right now?</em></p>
+
+    <div class="verdict-card" id="live-verdict">
+      <div class="verdict-score" id="lv-score">4.5</div>
+      <div class="verdict-meta">
+        <p class="verdict-title" id="lv-title">Worth it</p>
+        <p class="verdict-spot" id="lv-spot">Union &mdash; Seattle, Washington</p>
+        <div class="verdict-rows" id="lv-rows">
+          <span class="verdict-row">&#128168; Wind and gusts within limits</span>
+          <span class="verdict-row">&#127777;&#65039; Air and water in comfortable range</span>
+        </div>
+      </div>
+    </div>
+    <p class="snap-caption" id="lv-caption">Example card &mdash; production styling.</p>
+
     <table class="score-table">
-      <thead><tr><th></th><th>Range</th><th>Verdict</th><th>Meaning</th></tr></thead>
+      <thead><tr><th></th><th>Score</th><th>Verdict</th><th>Meaning</th></tr></thead>
       <tbody>
-        <tr><td><span class="dot" style="background:#316d43"></span></td><td>4 &ndash; 5</td><td>Worth it</td><td>Conditions are favorable for most paddlers.</td></tr>
-        <tr><td><span class="dot" style="background:#eb8127"></span></td><td>3 &ndash; 4</td><td>Careful</td><td>Mixed conditions. Check details before heading out.</td></tr>
-        <tr><td><span class="dot" style="background:#bd3b2b"></span></td><td>1 &ndash; 3</td><td>Hard pass</td><td>Conditions are poor. Postpone if possible.</td></tr>
+        <tr><td><span class="dot" style="background:#316d43"></span></td><td>4.0 and up</td><td>Worth it</td><td>Conditions are favorable for most paddlers.</td></tr>
+        <tr><td><span class="dot" style="background:#eb8127"></span></td><td>3.0 &ndash; 3.5</td><td>Careful</td><td>Mixed conditions. Check the details before heading out.</td></tr>
+        <tr><td><span class="dot" style="background:#bd3b2b"></span></td><td>Below 3.0</td><td>Hard pass</td><td>Conditions are poor. Postpone if possible.</td></tr>
       </tbody>
     </table>
-    <p>The score is a <strong>starting point</strong>, not a green light. A "Worth it" score does not mean conditions are safe for every paddler in every craft. Always apply your own judgment.</p>
+
+    <p>Displays shade continuously through seven bands rather than three flat colours &mdash; a 4.5 is visibly better than a 4.0:</p>
+    <div class="ramp" aria-label="Score colour ramp">
+      <span style="background:#4a0a08">&lt;2</span>
+      <span style="background:#86170f">2+</span>
+      <span style="background:#bd3b2b">2.5+</span>
+      <span style="background:#eb8127">3+</span>
+      <span style="background:#c59a61">3.5+</span>
+      <span style="background:#316d43">4+</span>
+      <span style="background:#255a3a">4.5+</span>
+    </div>
+    <p class="snap-caption">The exact colour stops the forecast pages use.</p>
+
+    <p>The score is a <strong>starting point</strong>, not a green light. A &ldquo;Worth it&rdquo; score does not mean conditions are safe for every paddler in every craft. Always apply your own judgment.</p>
+  </div>
+
+  <div class="meth-section">
+    <h2>The 3-Day Heatmap</h2>
+    <p>Forecast pages score <strong>every daylight hour</strong> (6&nbsp;AM to 8&nbsp;PM) for the next three days and blend them into one band per day, so you can pick your launch hour instead of just your day. This is not a mock-up &mdash; the component below is the forecast page&rsquo;s heatmap, rendering a live 3-day outlook. Tap a bar to open an hour:</p>
+    <div id="heatmapContainer"><p class="hm-pending">Fetching a live 3-day forecast&hellip;</p></div>
+    <p class="snap-caption" id="hm-caption">Rendered by the production Heatmap component.</p>
   </div>
 
   <div class="meth-section">
     <h2>Data Sources</h2>
-    <p>We pull live weather data and merge it into a unified feature set. Not every data point is available for every location — where a value is missing, we estimate conservatively or omit it from the calculation.</p>
+    <p>Weather comes from <strong>WeatherAPI.com</strong> &mdash; three feeds fetched in parallel for every score: current conditions, a 3-day hourly forecast with government weather alerts, and marine data (wave height, swell, water temperature) where the location has coverage.</p>
     <ul>
-      <li><strong>Wind speed and direction</strong> &mdash; sustained and gust, converted to Beaufort scale</li>
-      <li><strong>Air temperature</strong> &mdash; actual and feels-like</li>
-      <li><strong>Water temperature</strong> &mdash; from marine buoy data where available, estimated from air temp otherwise</li>
-      <li><strong>Wave height</strong> &mdash; significant wave height from marine forecasts</li>
-      <li><strong>UV index</strong> &mdash; real-time solar exposure</li>
-      <li><strong>Visibility</strong> &mdash; atmospheric visibility in kilometers</li>
-      <li><strong>Precipitation</strong> &mdash; current rainfall in millimeters and probability</li>
-      <li><strong>Humidity and cloud cover</strong> &mdash; atmospheric moisture and sky conditions</li>
+      <li><strong>Wind</strong> &mdash; sustained and gust speed, direction, mapped to the Beaufort scale</li>
+      <li><strong>Air temperature</strong> &mdash; actual and feels-like, &deg;C</li>
+      <li><strong>Water temperature</strong> &mdash; from marine data where available; estimated conservatively from air temperature otherwise</li>
+      <li><strong>Waves</strong> &mdash; significant height, swell period and direction (used for steepness and wind-against-swell checks)</li>
+      <li><strong>UV index, visibility, humidity, cloud cover</strong></li>
+      <li><strong>Precipitation</strong> &mdash; amount in mm and probability</li>
+      <li><strong>Official warnings</strong> &mdash; active weather alerts for the area</li>
     </ul>
-    <p>Weather data refreshes each time you load a forecast. The 3-day hourly heatmap recalculates on every page load so you always see current projections.</p>
+    <p>Where a value is missing it is estimated conservatively or omitted &mdash; never silently defaulted to a flattering number.</p>
   </div>
 
   <div class="meth-section">
-    <h2>The Model</h2>
-    <p>The Paddle Score is produced by a <strong>gradient-boosted regression model</strong> trained on crowd-sourced ratings paired with the weather conditions at the time of each paddle. The pipeline works in four stages:</p>
-    <ul>
-      <li><strong>Feature standardization</strong> &mdash; raw weather values are normalized into the units and ranges the model expects</li>
-      <li><strong>ML prediction</strong> &mdash; the trained model outputs a base score from the standardized features</li>
-      <li><strong>Calibration</strong> &mdash; seasonal, trend, and location-specific adjustments fine-tune the base prediction</li>
-      <li><strong>Penalty system</strong> &mdash; hard safety rules override the model for extreme conditions (gale-force wind, near-freezing water, heavy rain, poor visibility)</li>
-    </ul>
-    <p>If the ML model is temporarily unavailable, a rule-based fallback generates the score using the same weather inputs. The fallback is conservative &mdash; it errs on the side of lower scores.</p>
+    <h2>The Pipeline</h2>
+    <p>Each score passes through six stages, in this order:</p>
+    <div class="pipe">
+      <div class="pipe-step"><div><b>Standardize</b><span>Raw feeds are normalized into the model&rsquo;s units &mdash; MPH wind, &deg;C temperatures, km visibility &mdash; with real values passed through, not defaults.</span></div></div>
+      <div class="pipe-step"><div><b>Predict</b><span>A <strong>gradient-boosted regression model</strong> (scikit-learn GradientBoostingRegressor, served on Cloud Run) trained on paddler ratings paired with the weather at the time of each paddle produces the base score.</span></div></div>
+      <div class="pipe-step"><div><b>Calibrate</b><span>Bounded adjustments refine the base: water-temperature reality check, the next six forecast hours (improving or deteriorating trend), season, location profile, and wind-pattern analysis.</span></div></div>
+      <div class="pipe-step"><div><b>Penalize</b><span>Hard safety rules subtract points for conditions the model should never be allowed to talk its way around &mdash; the full table is below.</span></div></div>
+      <div class="pipe-step"><div><b>Apply the lake&rsquo;s offset</b><span>If your ratings show the model runs hot or cold on a specific lake, that lake&rsquo;s stored bias offset is added here.</span></div></div>
+      <div class="pipe-step"><div><b>Clamp &amp; snap</b><span>The result is clamped to 1&ndash;5 and rounded to the nearest half point.</span></div></div>
+    </div>
+    <p>If the model service is unreachable, a <strong>rule-based fallback</strong> produces the score from the same inputs &mdash; starting at 3.0, rewarding calm wind (+0.8 under 5&nbsp;mph) and comfortable temperatures (+0.3 for 18&ndash;30&deg;C), and subtracting for strong wind (&minus;1.2 over 20&nbsp;mph), active warnings (&minus;0.8), high UV and poor visibility. Fallback scores are marked with lower confidence.</p>
   </div>
 
   <div class="meth-section">
-    <h2>Crowd-Sourced Calibration</h2>
-    <p>Every rating submitted on the <a href="/paddlingout/rate.html" style="color:var(--gold)">Rate Your Paddle</a> page and the <a href="/paddlingout/trainer" style="color:var(--gold)">Paddle Trainer</a> feeds back into the system:</p>
+    <h2>Hard Limits</h2>
+    <p>After calibration, safety rules subtract points the model is never allowed to argue back. Most are small nudges for gusts, waves, heat, UV, visibility and rain &mdash; but a few are worth calling out, because they can sink an otherwise perfect day on their own:</p>
     <ul>
-      <li>User ratings are compared against the model's prediction at the time of the paddle</li>
-      <li>Persistent bias per lake (model consistently over- or under-scoring) generates a <strong>dynamic calibration offset</strong></li>
-      <li>The offset is applied on subsequent predictions so the score improves over time for each specific location</li>
+      <li><strong>Dangerous wind</strong> &mdash; above 25 mph (Beaufort 6), the score loses two full points. No model output survives that.</li>
+      <li><strong>Cold water</strong> &mdash; below 5&deg;C is an immersion hazard regardless of how sunny it looks, and is penalized hard.</li>
+      <li><strong>Active official warnings</strong> &mdash; any government weather alert for the area drags the score down, always.</li>
     </ul>
-    <p>Your ratings are anonymous. We store a device fingerprint to prevent duplicate submissions, not to identify you. No account is required.</p>
+  </div>
+
+  <div class="meth-section">
+    <h2>Crowd-Sourced Calibration <span class="beta-chip">Beta</span></h2>
+    <p><em>This loop is in beta &mdash; ratings are being collected and validated now, and per-lake offsets are applied conservatively while the sample grows.</em></p>
+    <p>The model&rsquo;s labels came from people, and its corrections do too. When paddlers rate a real session, that rating flows back into the system:</p>
+    <ul>
+      <li>Each rating is stored against the score the model had predicted for that spot at that time</li>
+      <li>Condition chips (chop, wind, crowding&hellip;) are <strong>validated server-side against the actual weather</strong> at submission time, and GPS proximity is recorded as a quality signal &mdash; ratings from people demonstrably at the lake weigh more</li>
+      <li>Persistent bias per lake &mdash; the model consistently over- or under-scoring &mdash; becomes that lake&rsquo;s stored <strong>calibration offset</strong>, applied as stage five of every future score</li>
+    </ul>
+    <p>Anti-abuse, concretely: <strong>one rating per device fingerprint per spot per day</strong>, with a two-hour window to revise your own submission, plus IP-based daily rate limits. The fingerprint exists to stop ballot-stuffing, not to identify you &mdash; no account, no name, no email.</p>
   </div>
 
   <div class="meth-section">
@@ -178,13 +283,105 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
     </ul>
   </div>
 
-
 </div>
 
 <footer class="site-footer">
   <nav><a href="/paddlingout">Paddling Out</a><a href="/about">About</a><a href="/paddlingout/methodology">Methodology</a><a href="/privacy">Privacy</a></nav>
   <p>&copy; 2026 Kaayko. All rights reserved.</p>
 </footer>
+
+<script src="/js/components/KonditionsHeatmap.js"></script>
+<script>
+(function () {
+  "use strict";
+  // Swap the example verdict card for a live one — same fields the
+  // forecast page renders. If the fetch fails, the example stands.
+  var RAMP = [
+    [4.5, '#255a3a'], [4.0, '#316d43'], [3.5, '#c59a61'],
+    [3.0, '#eb8127'], [2.5, '#bd3b2b'], [2.0, '#86170f'], [0, '#4a0a08']
+  ];
+  function colorFor(r) {
+    for (var i = 0; i < RAMP.length; i++) { if (r >= RAMP[i][0]) return RAMP[i][1]; }
+    return RAMP[RAMP.length - 1][1];
+  }
+  function verdictFor(r) {
+    if (r >= 4) return 'Worth it';
+    if (r >= 3) return 'Careful';
+    return 'Hard pass';
+  }
+
+  fetch('https://api-vwcc5j4qda-uc.a.run.app/paddlingOut', { headers: { Accept: 'application/json' } })
+    .then(function (res) { return res.ok ? res.json() : Promise.reject(res.status); })
+    .then(function (data) {
+      var rows = Array.isArray(data) ? data : (data.data || data.spots || []);
+      var scored = rows.filter(function (s) { return s && s.paddleScore && s.paddleScore.rating != null; });
+      if (!scored.length) return;
+      var spot = scored[Math.floor(Math.random() * scored.length)];
+      var r = Number(spot.paddleScore.rating);
+
+      var scoreEl = document.getElementById('lv-score');
+      scoreEl.textContent = r.toFixed(1);
+      scoreEl.style.background = colorFor(r);
+      scoreEl.style.boxShadow = '0 0 24px ' + colorFor(r) + '59';
+      document.getElementById('lv-title').textContent = verdictFor(r);
+      document.getElementById('lv-spot').textContent =
+        (spot.title || spot.lakeName || spot.id) + (spot.subtitle ? ' — ' + spot.subtitle : '');
+
+      var rowsEl = document.getElementById('lv-rows');
+      rowsEl.innerHTML = '';
+      if (spot.text) {
+        var q = document.createElement('span');
+        q.className = 'verdict-row';
+        q.textContent = '“' + spot.text + '”';
+        rowsEl.appendChild(q);
+      }
+      var link = document.createElement('span');
+      link.className = 'verdict-row';
+      var a = document.createElement('a');
+      a.href = '/paddlingout/forecast?id=' + encodeURIComponent(spot.id);
+      a.textContent = 'Open this forecast →';
+      link.appendChild(a);
+      rowsEl.appendChild(link);
+
+      document.getElementById('lv-caption').textContent =
+        'Live — scored by the production pipeline when you loaded this page.';
+
+      renderLiveHeatmap(spot);
+    })
+    .catch(function () {
+      heatmapUnavailable();
+    });
+
+  // The exact heatmap the forecast page renders — same component file, same
+  // stylesheet — fed the same spot's live fastForecast.
+  function renderLiveHeatmap(spot) {
+    var lat = spot.location && spot.location.latitude;
+    var lng = spot.location && spot.location.longitude;
+    if (lat == null || lng == null || !window.KonditionsHeatmap) return heatmapUnavailable();
+
+    fetch('https://api-vwcc5j4qda-uc.a.run.app/fastForecast?lat=' + lat + '&lng=' + lng,
+          { headers: { Accept: 'application/json' } })
+      .then(function (res) { return res.ok ? res.json() : Promise.reject(res.status); })
+      .then(function (data) {
+        if (!data || !Array.isArray(data.forecast) || !data.forecast.length) {
+          return heatmapUnavailable();
+        }
+        window.KonditionsHeatmap.render(document.getElementById('heatmapContainer'), data, null);
+        document.getElementById('hm-caption').textContent =
+          'Live — the forecast page’s heatmap component rendering the 3-day outlook for ' +
+          (spot.title || spot.lakeName || spot.id) + '. Tap a bar to open an hour.';
+      })
+      .catch(heatmapUnavailable);
+  }
+
+  function heatmapUnavailable() {
+    var container = document.getElementById('heatmapContainer');
+    if (container) container.innerHTML =
+      '<p class="hm-pending">Live forecast unavailable right now — open any spot on ' +
+      '<a href="/paddlingout" style="color:var(--gold)">Paddling Out</a> to see the heatmap.</p>';
+  }
+})();
+</script>
 
 </body>
 </html>

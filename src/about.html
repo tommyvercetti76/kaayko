@@ -1,274 +1,796 @@
 <!DOCTYPE html>
-<html lang="en" prefix="og: http://ogp.me/ns#" class="dark-theme">
+<html lang="en" prefix="og: http://ogp.me/ns#">
 <head>
-  <script>document.documentElement.classList.add('dark-theme');</script>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Paddling Out — Know Before You Go | Kaayko</title>
-  <meta name="description" content="AI-powered paddle condition scores for any lake. Wind, water temp, waves, UV — one number. Know before you go.">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://kaayko.com/about.html">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <meta name="theme-color" content="#d4af37">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>About — Kaayko</title>
+  <meta name="description" content="Three things Kaayko makes: Paddling Out, Forge, and the Store — what each one is, shown with live data and real renders." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://kaayko.com/about.html" />
 
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://kaayko.com/about.html">
-  <meta property="og:title" content="Paddling Out — Know Before You Go">
-  <meta property="og:description" content="AI-powered paddle condition scores for any lake. One number. Know before you go.">
-  <meta property="og:image" content="https://kaayko.com/assets/paddlingout-og.png">
+  <meta property="og:title" content="About — Kaayko">
+  <meta property="og:description" content="Paddling Out, Forge, Store — what each one is, shown with live data and real renders.">
+  <meta property="og:image" content="https://kaayko.com/assets/kaayko-og.png">
   <meta property="og:site_name" content="Kaayko">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="About — Kaayko">
+  <meta name="twitter:description" content="Paddling Out, Forge, Store — what each one is, shown with live data and real renders.">
+  <meta name="twitter:image" content="https://kaayko.com/assets/kaayko-og.png">
 
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "Paddling Out",
-    "url": "https://kaayko.com/paddlingout",
-    "description": "AI-powered paddle condition forecasts. One score for any lake — wind, water temp, waves, UV.",
-    "applicationCategory": "WeatherApplication",
-    "creator": {"@type":"Organization","name":"Kaayko","url":"https://kaayko.com"}
+    "@type": "AboutPage",
+    "name": "About Kaayko",
+    "url": "https://kaayko.com/about.html",
+    "description": "Paddling Out, Forge, and the Kaayko Store — what each one is, with live data and real numbers.",
+    "publisher": { "@type": "Organization", "name": "Kaayko", "url": "https://kaayko.com" }
   }
   </script>
 
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg: #080808;
-  --surface: #18160f;
-  --fg: #ede8df;
-  --muted: rgba(237,232,223,0.50);
-  --gold: #b5935a;
-  --gold-bright: #d9bd7b;
-  --line: rgba(181,147,90,0.18);
-  --font-serif: 'Cormorant Garamond', Georgia, serif;
-  --font-sans: 'Josefin Sans', Arial, sans-serif;
-}
-*, *::before, *::after { box-sizing: border-box; margin: 0; }
-html { scroll-behavior: smooth; }
-body { background: var(--bg); color: var(--fg); min-height: 100vh; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
-.theme-toggle-icon { display: none !important; }
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/favicon-32x32.png">
+  <link rel="stylesheet" href="/css/storeAccess.css">
+  <meta name="theme-color" content="#080808">
 
-/* ─ Hero ─ */
-.hero {
-  min-height: 100vh; min-height: 100dvh;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  text-align: center; padding: 2rem 1.5rem;
-  position: relative;
-}
-.hero::before {
-  content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: radial-gradient(ellipse 60% 50% at 50% 55%, rgba(181,147,90,0.05) 0%, transparent 100%);
-}
-.hero-eyebrow {
-  font: 400 0.65rem var(--font-sans); letter-spacing: 0.4em; text-transform: uppercase;
-  color: var(--muted); margin-bottom: 1.2rem;
-}
-.hero h1 {
-  font: 600 clamp(2rem, 5vw, 3rem) var(--font-sans);
-  text-transform: uppercase; letter-spacing: 0.12em; color: var(--fg);
-  line-height: 1.15;
-}
-.hero-sub {
-  font: 400 italic clamp(1rem, 2.5vw, 1.15rem) var(--font-serif);
-  color: var(--muted); margin-top: 0.8rem; max-width: 380px;
-}
-.scroll-hint {
-  position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
-  opacity: 0.3; animation: drift 2.4s ease-in-out infinite;
-}
-.scroll-hint svg { width: 20px; height: 20px; stroke: var(--gold); fill: none; stroke-width: 1.5; }
-@keyframes drift { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(6px); } }
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ─ Content spine ─ */
-.spine { max-width: 680px; margin: 0 auto; padding: 0 1.5rem; }
+    :root {
+      --bg: #080808;
+      --fg: #ede8df;
+      --muted: rgba(237, 232, 223, 0.6);
+      --faint: rgba(237, 232, 223, 0.38);
+      --gold: #b5935a;
+      --gold-bright: #d9bd7b;
+      --line: rgba(181, 147, 90, 0.2);
+      --ease: cubic-bezier(0.76, 0, 0.24, 1);
+      --serif: "Cormorant Garamond", Georgia, serif;
+      --display: "Bebas Neue", Impact, sans-serif;
+    }
 
-/* ─ Section rhythm ─ */
-.sect {
-  padding: 5rem 0;
-  opacity: 0; transform: translateY(24px);
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-}
-.sect.visible { opacity: 1; transform: translateY(0); }
-.sect-rule {
-  width: 40px; height: 1px; background: var(--gold); margin-bottom: 1.6rem;
-}
-.sect-label {
-  font: 600 0.65rem var(--font-sans); letter-spacing: 0.28em; text-transform: uppercase;
-  color: var(--gold); margin-bottom: 1rem;
-}
-.sect h2 {
-  font: 600 clamp(1.2rem, 3vw, 1.5rem) var(--font-sans);
-  text-transform: uppercase; letter-spacing: 0.08em;
-  color: var(--fg); margin-bottom: 1.2rem; line-height: 1.3;
-}
-.sect p {
-  font: 400 1.05rem/1.75 var(--font-serif); color: var(--fg); margin-bottom: 1rem;
-}
-.sect p:last-child { margin-bottom: 0; }
-.sect em { color: var(--muted); }
-.sect strong { color: var(--gold-bright); font-weight: 600; }
+    html { scroll-behavior: smooth; }
 
-/* ─ Feature list (no boxes) ─ */
-.features { padding: 4rem 0 2rem; }
-.feat {
-  padding: 2rem 0;
-  border-top: 1px solid var(--line);
-  opacity: 0; transform: translateY(16px);
-  transition: opacity 0.45s ease-out, transform 0.45s ease-out;
-}
-.feat.visible { opacity: 1; transform: translateY(0); }
-.feat:last-child { border-bottom: 1px solid var(--line); }
-.feat-header { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 0.7rem; }
-.feat-num {
-  font: 600 0.6rem var(--font-sans); letter-spacing: 0.15em;
-  color: var(--muted); flex-shrink: 0;
-}
-.feat-title {
-  font: 600 0.85rem var(--font-sans); letter-spacing: 0.12em; text-transform: uppercase;
-  color: var(--gold-bright);
-}
-.feat p {
-  font: 400 1rem/1.7 var(--font-serif); color: var(--fg); margin: 0;
-  padding-left: 0;
-}
+    /* overflow-x: clip, never hidden — hidden turns body into the scroll
+       container, window.scroll stops firing, and every scroll-linked effect
+       on the page goes dead. clip crops without creating a scroller. */
+    html, body { overflow-x: clip; }
 
-/* ─ Safety callout ─ */
-.safety {
-  border-left: 2px solid var(--gold);
-  padding: 1.5rem 1.5rem 1.5rem 1.8rem;
-  margin: 1rem 0;
-  background: rgba(181,147,90,0.04);
-  border-radius: 0 6px 6px 0;
-}
-.safety p {
-  font: 400 1rem/1.7 var(--font-serif); color: var(--fg); margin: 0;
-}
-.safety strong { color: var(--gold-bright); }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--serif);
+      font-size: clamp(1rem, 0.97rem + 0.15vw, 1.06rem);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-/* ─ CTA ─ */
-.cta-wrap {
-  text-align: center; padding: 4rem 0 5rem;
-  opacity: 0; transform: translateY(16px);
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-}
-.cta-wrap.visible { opacity: 1; transform: translateY(0); }
-.cta {
-  display: inline-block; text-decoration: none;
-  font: 600 0.75rem var(--font-sans); letter-spacing: 0.14em; text-transform: uppercase;
-  color: var(--gold-bright); border: 1.5px solid var(--gold);
-  padding: 0.9rem 2.4rem; border-radius: 100px;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-.cta:hover { background: var(--gold); color: var(--bg); }
+    a { color: inherit; }
+    .label { font-size: 0.7rem; font-style: italic; letter-spacing: 0.24em; text-transform: uppercase; }
 
-/* ─ Footer ─ */
-.site-footer {
-  text-align: center; padding: 2.5rem 2rem;
-  font: 400 0.7rem var(--font-sans); letter-spacing: 0.12em; color: var(--muted);
-  background: var(--surface); border-top: 1px solid var(--line); margin-top: 2rem;
-}
-.site-footer nav { display: flex; justify-content: center; gap: 1.2rem; margin-bottom: 0.8rem; }
-.site-footer a { color: var(--gold); text-decoration: none; font: 400 0.7rem var(--font-sans); letter-spacing: 0.12em; }
-.site-footer a:hover { color: var(--gold-bright); }
-.site-footer p { margin: 0.2rem 0 0; }
+    .skip { position: absolute; left: -9999px; top: 0; z-index: 70; padding: 0.8rem 1.2rem; background: #0d0c0a; color: var(--gold-bright); text-decoration: none; }
+    .skip:focus { left: 1rem; top: 1rem; }
 
-/* ─ Responsive ─ */
-@media (max-width: 480px) {
-  .sect { padding: 3.5rem 0; }
-  .feat-header { flex-direction: column; gap: 0.3rem; }
-}
-</style>
+    /* ── Top bar ────────────────────────────────────────────────────── */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 40;
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      padding: clamp(0.85rem, 2.4vw, 1.3rem) clamp(1.15rem, 5vw, 3.2rem);
+      background: linear-gradient(to bottom, rgba(8, 8, 8, 0.85), rgba(8, 8, 8, 0));
+      pointer-events: none;
+    }
+    .topbar a {
+      color: rgba(181, 147, 90, 0.65); text-decoration: none; white-space: nowrap;
+      pointer-events: auto;
+      transition: color 220ms ease, transform 300ms var(--ease);
+    }
+    .topbar a:hover, .topbar a:focus-visible { color: var(--gold-bright); }
+    .topbar-home:hover, .topbar-home:focus-visible { transform: translateX(-4px); }
+
+    /* ── Chapter ────────────────────────────────────────────────────── */
+    /* The Apple move: a full-height stage pins while the visitor scrolls
+       through the chapter; its art settles and its copy gives way, then the
+       body slides up over it. One engine drives every chapter. */
+    .chapter { position: relative; }
+
+    /* Shorter pins = less scroll-tax per chapter, especially on phones */
+    .pin { position: relative; height: 135vh; height: 135svh; }
+    @media (min-width: 900px) { .pin { height: 150vh; height: 150svh; } }
+
+    .stage {
+      position: sticky; top: 0;
+      height: 100vh; height: 100svh;
+      overflow: hidden;
+      display: flex; align-items: flex-end; justify-content: center;
+      isolation: isolate;
+    }
+
+    .stage-art { position: absolute; inset: 0; z-index: -2; }
+    .stage-art img {
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center;
+      opacity: 0; transition: opacity 700ms ease;
+    }
+    .stage-art img.is-loaded { opacity: 1; }
+
+    .stage-art--frame { display: flex; align-items: center; justify-content: center; background: #f2ecdd; }
+    .stage-art--frame img { object-fit: contain; padding: clamp(1rem, 6vw, 4rem); }
+
+    /* Legibility scrim — art stays the hero, words stay readable */
+    .stage-scrim {
+      position: absolute; inset: 0; z-index: -1;
+      background:
+        linear-gradient(to top, rgba(8, 8, 8, 0.94) 0%, rgba(8, 8, 8, 0.55) 34%, rgba(8, 8, 8, 0.12) 62%, rgba(8, 8, 8, 0.3) 100%);
+    }
+
+    .stage-copy {
+      position: relative;
+      width: 100%; max-width: 68rem;
+      margin: 0 auto;
+      padding: 0 clamp(1.25rem, 5vw, 3rem) clamp(4.5rem, 12vh, 7rem);
+      text-align: left;
+    }
+
+    .stage-kicker { color: var(--gold-bright); font-size: clamp(0.68rem, 1.6vw, 0.78rem); font-style: italic; letter-spacing: 0.3em; text-transform: uppercase; }
+
+    .stage-name {
+      margin-top: 0.35rem;
+      font-family: var(--display);
+      font-size: clamp(3.4rem, 14vw, 8.5rem);
+      font-weight: 400; letter-spacing: 0.04em; line-height: 0.92;
+      text-transform: uppercase;
+    }
+
+    /* The sentence that says what the thing IS — plainly */
+    .stage-def {
+      max-width: 34ch;
+      margin-top: clamp(0.8rem, 2.2vh, 1.2rem);
+      color: rgba(237, 232, 223, 0.88);
+      font-size: clamp(1.05rem, 2.9vw, 1.4rem);
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    .stage-hint {
+      display: inline-block;
+      margin-top: clamp(1rem, 2.6vh, 1.5rem);
+      color: rgba(181, 147, 90, 0.7);
+      font-size: 0.66rem; font-style: italic; letter-spacing: 0.26em; text-transform: uppercase;
+    }
+
+    /* ── Sticky chapter tab ─────────────────────────────────────────────
+       A compact "01 · Paddling Out" that pins under the top bar and stays
+       through the whole chapter — body included — handing off only when
+       the next chapter arrives. With scroll timelines it fades in exactly
+       as the big stage title gives way; without them it is simply there. */
+    .chapter-tab {
+      position: sticky; top: 0; z-index: 30;
+      height: 0; overflow: visible;
+      text-align: center; pointer-events: none;
+    }
+    .chapter-tab span {
+      display: inline-block;
+      margin-top: clamp(0.85rem, 2.3vw, 1.25rem);
+      padding: 0.32rem 0.95rem;
+      border: 1px solid var(--line);
+      background: rgba(8, 8, 8, 0.78);
+      color: rgba(217, 189, 123, 0.92);
+      font-size: 0.64rem; font-style: italic;
+      letter-spacing: 0.26em; text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    /* ── Scroll-linked motion ───────────────────────────────────────────
+       CSS scroll timelines: every scroll animation runs on the compositor,
+       no JavaScript executes during scroll, and each element owns an
+       independent timeline — so no animation can starve or fight another.
+       Browsers without support get the same page with a static pinned hero. */
+    @supports (animation-timeline: view()) {
+      .chapter { timeline-scope: --chapter; }
+      .pin { view-timeline: --chapter block; }
+
+      .chapter-tab span {
+        opacity: 0;
+        animation: tab-in both linear;
+        animation-timeline: --chapter;
+        animation-range: contain 35% contain 85%;
+      }
+
+      @keyframes tab-in {
+        from { opacity: 0; transform: translateY(-6px); }
+        to   { opacity: 1; transform: none; }
+      }
+
+      .stage-art {
+        animation: stage-settle both linear;
+        animation-timeline: --chapter;
+        animation-range: contain 0% contain 100%;
+      }
+
+      .stage-copy {
+        animation: copy-give both linear;
+        animation-timeline: --chapter;
+        animation-range: contain 30% contain 100%;
+      }
+
+      @keyframes stage-settle {
+        from { transform: scale(1.08); }
+        to   { transform: scale(1) translateY(4%); }
+      }
+
+      @keyframes copy-give {
+        from { opacity: 1; transform: none; }
+        to   { opacity: 0; transform: translateY(-40px); }
+      }
+    }
+
+    /* ── Chapter body: slides up over the pinned stage ──────────────── */
+    .chapter-body {
+      position: relative; z-index: 2;
+      margin-top: -30vh; margin-top: -30svh;
+      border-top: 1px solid var(--line);
+      padding: clamp(2rem, 5vw, 3.25rem) clamp(1.25rem, 5vw, 3rem) clamp(3rem, 7vw, 4.5rem);
+    }
+    .chapter[data-tone="a"] .chapter-body { background: #111315; }
+    .chapter[data-tone="b"] .chapter-body { background: #10110d; }
+    .chapter[data-tone="c"] .chapter-body { background: #0d0c0a; }
+
+    .body-inner { width: 100%; max-width: 68rem; margin: 0 auto; display: grid; gap: clamp(1.3rem, 3.5vw, 2rem); }
+
+    /* ── Live rail ──────────────────────────────────────────────────── */
+    .feed { border: 1px solid var(--line); background: rgba(0, 0, 0, 0.28); overflow: hidden; }
+
+    .feed-bar {
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      padding: 0.55rem clamp(0.8rem, 2vw, 1.1rem);
+      border-bottom: 1px solid var(--line); background: rgba(181, 147, 90, 0.05);
+    }
+    .feed-live { display: inline-flex; align-items: center; gap: 0.55rem; color: rgba(181, 147, 90, 0.85); }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold-bright); box-shadow: 0 0 8px rgba(217, 189, 123, 0.8); animation: pulse 2.4s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+    .feed-nav { display: flex; gap: 0.4rem; }
+    .feed-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 1.85rem; height: 1.85rem;
+      border: 1px solid rgba(181, 147, 90, 0.25); background: none; cursor: pointer;
+      color: rgba(181, 147, 90, 0.75); font-family: var(--serif); font-size: 0.95rem; line-height: 1;
+      transition: color 200ms ease, border-color 200ms ease, opacity 200ms ease;
+    }
+    .feed-btn:hover, .feed-btn:focus-visible { color: var(--gold-bright); border-color: rgba(217, 189, 123, 0.6); outline: none; }
+    .feed-btn[disabled] { opacity: 0.28; cursor: default; }
+
+    /* One snap carousel at every width — slides always peek the next one,
+       the track can never bleed past the feed's border, and the text lives
+       INSIDE the image, so a card is exactly as tall as its picture. */
+    .rail {
+      display: flex; gap: clamp(0.5rem, 1.2vw, 0.75rem);
+      overflow-x: auto; overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none; -ms-overflow-style: none;
+      padding: clamp(0.6rem, 1.5vw, 0.9rem);
+    }
+    .rail::-webkit-scrollbar { display: none; }
+    .rail > * { flex: 0 0 78%; min-width: 0; scroll-snap-align: start; }
+    @media (min-width: 640px)  { .rail > * { flex-basis: 44%; } }
+    @media (min-width: 900px)  { .rail > * { flex-basis: 31%; } }
+    @media (min-width: 1180px) { .rail > * { flex-basis: 23.8%; } }
+
+    .card {
+      /* width:100% is load-bearing — gated cards are <button>s, which
+         shrink-to-fit even as flex containers */
+      position: relative; display: block; width: 100%;
+      aspect-ratio: 4 / 5; overflow: hidden;
+      background: linear-gradient(135deg, rgba(181, 147, 90, 0.07), transparent 62%), #111110;
+      border: 0; padding: 0; color: inherit; font: inherit; text-align: left;
+      text-decoration: none; cursor: pointer;
+    }
+    .card:focus-visible { outline: none; box-shadow: inset 0 0 0 1px var(--gold-bright); }
+
+    .card img {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; opacity: 0;
+      transition: opacity 460ms ease, transform 800ms var(--ease);
+    }
+    .card img.is-loaded { opacity: 1; }
+    .card:hover img { transform: scale(1.05); }
+
+    /* Scrim keeps the type readable over any photograph */
+    .card-scrim {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(8, 8, 8, 0.92) 0%, rgba(8, 8, 8, 0.45) 34%, rgba(8, 8, 8, 0) 60%);
+    }
+
+    .card-lock {
+      position: absolute; right: 0.5rem; top: 0.5rem;
+      padding: 0.26rem 0.5rem;
+      background: rgba(8, 8, 8, 0.82); border: 1px solid rgba(181, 147, 90, 0.35);
+      color: rgba(217, 189, 123, 0.9); font-size: 0.58rem; letter-spacing: 0.16em;
+    }
+
+    .card-meta {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      display: flex; flex-direction: column; gap: 0.3rem;
+      padding: 0.8rem 0.9rem 0.85rem;
+    }
+    .card-title { font-family: var(--display); font-size: clamp(1.15rem, 2vw, 1.35rem); letter-spacing: 0.04em; line-height: 1.05; text-transform: uppercase; transition: color 220ms ease; }
+    .card:hover .card-title { color: var(--gold-bright); }
+    .card-sub { color: rgba(237, 232, 223, 0.62); font-size: 0.7rem; font-style: italic; letter-spacing: 0.08em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .card-stat { display: flex; align-items: baseline; gap: 0.45rem; margin-top: 0.15rem; }
+    .stat-value { color: var(--gold-bright); font-family: var(--display); font-size: 1.15rem; line-height: 1; font-variant-numeric: tabular-nums; }
+    .stat-label { color: var(--faint); font-size: 0.6rem; font-style: italic; letter-spacing: 0.14em; text-transform: uppercase; }
+
+    .feed-note { margin-top: 0.75rem; color: var(--faint); font-size: 0.72rem; font-style: italic; letter-spacing: 0.1em; line-height: 1.6; }
+
+    /* ── Note ───────────────────────────────────────────────────────── */
+    .note {
+      padding: clamp(0.85rem, 2.5vw, 1.2rem) clamp(1rem, 3vw, 1.4rem);
+      border-left: 2px solid var(--gold); background: rgba(181, 147, 90, 0.055);
+    }
+    .note-label { display: block; margin-bottom: 0.4rem; color: rgba(181, 147, 90, 0.8); font-size: 0.66rem; font-style: italic; letter-spacing: 0.22em; text-transform: uppercase; }
+    .note p { max-width: 62ch; color: rgba(237, 232, 223, 0.8); font-size: 0.95rem; }
+
+    /* ── Actions ────────────────────────────────────────────────────── */
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: clamp(0.8rem, 2.5vw, 1.4rem); }
+
+    .btn {
+      padding: 0.7em 1.8em; border: 1px solid rgba(181, 147, 90, 0.45);
+      background: none; color: var(--fg); cursor: pointer;
+      font-family: var(--serif); font-size: 0.74rem; letter-spacing: 0.2em;
+      text-decoration: none; text-transform: uppercase;
+      transition: border-color 240ms ease, background 240ms ease, color 240ms ease;
+    }
+    .btn:hover, .btn:focus-visible { border-color: var(--gold-bright); background: rgba(181, 147, 90, 0.1); color: var(--gold-bright); outline: none; }
+
+    .link {
+      background: none; border: 0; cursor: pointer;
+      color: rgba(237, 232, 223, 0.72);
+      font-family: var(--serif); font-size: 0.74rem; letter-spacing: 0.18em;
+      text-decoration: none; text-transform: uppercase;
+      transition: color 220ms ease;
+    }
+    .link:hover, .link:focus-visible { color: var(--gold-bright); outline: none; }
+
+    /* ── Closing ────────────────────────────────────────────────────── */
+    .closing {
+      position: relative; z-index: 2;
+      border-top: 1px solid var(--line);
+      background: var(--bg);
+      padding: clamp(3rem, 9vh, 5rem) clamp(1.25rem, 5vw, 3rem);
+      text-align: center;
+    }
+    .closing h2 { font-family: var(--display); font-size: clamp(1.7rem, 5.5vw, 2.8rem); font-weight: 400; letter-spacing: 0.05em; line-height: 1; text-transform: uppercase; }
+    .closing p { max-width: 46ch; margin: 1rem auto 0; color: var(--muted); font-style: italic; }
+    .closing .actions { justify-content: center; margin-top: clamp(1.2rem, 3vw, 1.7rem); }
+
+    .foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: clamp(1rem, 4vw, 2.4rem); padding: 2rem clamp(1.25rem, 5vw, 3rem) 3rem; background: var(--bg); }
+    .foot a { color: rgba(181, 147, 90, 0.48); font-size: 0.72rem; font-style: italic; letter-spacing: 0.22em; text-decoration: none; text-transform: uppercase; transition: color 220ms ease; }
+    .foot a:hover, .foot a:focus-visible { color: var(--gold-bright); }
+
+    :focus-visible { outline: 1px solid var(--gold-bright); outline-offset: 5px; }
+
+    /* ── Scroll reveal ──────────────────────────────────────────────── */
+    .reveal { opacity: 0; transform: translateY(22px); transition: opacity 640ms ease, transform 760ms var(--ease); }
+    .reveal.is-in { opacity: 1; transform: none; }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+      .reveal { opacity: 1; transform: none; }
+      .stage-art, .stage-copy { animation: none !important; }
+      .chapter-tab span { animation: none !important; opacity: 1 !important; transform: none !important; }
+      .pin { height: auto; }
+      .stage { position: relative; height: 100vh; height: 100svh; }
+      .chapter-body { margin-top: 0; }
+    }
+  </style>
 </head>
 <body>
+  <a class="skip label" href="#paddling-out">Skip to the products</a>
 
-  <section class="hero">
-    <div class="hero-eyebrow">Kaayko</div>
-    <h1>Paddling Out</h1>
-    <p class="hero-sub">One score for any lake. Know before you go.</p>
-    <div class="scroll-hint">
-      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+  <header class="topbar">
+    <a class="topbar-home label" href="/">&larr; Kaayko</a>
+    <span class="label" style="color: rgba(181,147,90,0.45); pointer-events:none;">About</span>
+  </header>
+
+  <main id="chapters"></main>
+
+  <section class="closing">
+    <h2 class="reveal">Built by one person</h2>
+    <p class="reveal">
+      Which is why the catalog is small and the failures are printed next to the results.
+      A bug, a store code, or a score that lied to you — write, a human reads it.
+    </p>
+    <div class="actions reveal">
+      <a class="btn" href="mailto:rohan@kaayko.com">rohan@kaayko.com</a>
+      <a class="link" href="https://www.youtube.com/@travelingout" rel="noopener noreferrer">YouTube</a>
     </div>
   </section>
 
-  <div class="spine">
-
-    <div class="sect">
-      <div class="sect-rule"></div>
-      <div class="sect-label">Why</div>
-      <p>"Looks fine" from the parking lot has ruined too many mornings. Paddling Out exists because checking conditions shouldn't require cross-referencing three weather apps and a marine forecast.</p>
-      <p>It gives you a single number &mdash; <strong>1 to 5</strong> &mdash; that tells you whether the water is worth it before you drag the kayak out of the garage.</p>
-    </div>
-
-    <div class="features">
-
-      <div class="feat">
-        <div class="feat-header">
-          <span class="feat-num">01</span>
-          <span class="feat-title">The Score</span>
-        </div>
-        <p>Every spot gets one number, recalculated each time you load a forecast. Wind, gusts, water temperature, wave height, UV, visibility, rain, cloud cover &mdash; collapsed into a single paddle-or-don't verdict.</p>
-      </div>
-
-      <div class="feat">
-        <div class="feat-header">
-          <span class="feat-num">02</span>
-          <span class="feat-title">The Model</span>
-        </div>
-        <p>A gradient-boosted regression model trained on real paddler ratings paired with weather at the time of each session. If the model is unavailable, a conservative rule-based fallback takes over.</p>
-      </div>
-
-      <div class="feat">
-        <div class="feat-header">
-          <span class="feat-num">03</span>
-          <span class="feat-title">Crowd Calibration</span>
-        </div>
-        <p>Every rating you submit feeds back into the system. Persistent bias per lake &mdash; the model consistently over- or under-scoring &mdash; generates a dynamic offset that corrects future predictions for that specific spot.</p>
-      </div>
-
-      <div class="feat">
-        <div class="feat-header">
-          <span class="feat-num">04</span>
-          <span class="feat-title">3-Day Heatmap</span>
-        </div>
-        <p>Hourly conditions for the next three days, visualized so you can pick the best window. The heatmap recalculates on every page load &mdash; always current projections, never stale.</p>
-      </div>
-
-    </div>
-
-    <div class="sect">
-      <div class="sect-rule"></div>
-      <div class="sect-label">Safety</div>
-      <div class="safety">
-        <p><strong>Wear a life jacket.</strong> Every time, every body of water, regardless of what the score says. The Paddle Score is guidance, not clearance &mdash; it cannot account for your skill level, your equipment, water currents, or hazards at your launch site.</p>
-      </div>
-    </div>
-
-    <div class="sect">
-      <div class="sect-rule"></div>
-      <div class="sect-label">About</div>
-      <p>Made by one person. Used by real people. Built because it needed to exist.</p>
-    </div>
-
-    <div class="cta-wrap">
-      <a href="/paddlingout" class="cta">Check Conditions</a>
-    </div>
-
-  </div>
-
-  <footer class="site-footer">
-    <nav><a href="/paddlingout">Paddling Out</a><a href="/about">About</a><a href="/paddlingout/methodology">Methodology</a><a href="/privacy">Privacy</a></nav>
-    <p>&copy; 2026 Kaayko. All rights reserved.</p>
+  <footer class="foot">
+    <a href="/">Home</a>
+    <a href="/paddlingout">Paddling Out</a>
+    <a href="/forge-gallery">Forge Gallery</a>
+    <a href="/privacy">Privacy</a>
   </footer>
 
+  <script src="/js/storeAccess.js"></script>
   <script>
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
-  }, { threshold: 0.15 });
-  document.querySelectorAll('.sect, .feat, .cta-wrap').forEach(el => io.observe(el));
-  </script>
+  (function () {
+    "use strict";
 
+    var API = "https://api-vwcc5j4qda-uc.a.run.app";
+    var SHOWN = 4;   // hard cap — a rail never displays more than this
+    var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    /* ──────────────────────────────────────────────────────────────────
+       Sources — fetched once, shared by the chapter's stage art and its
+       rail. Adding a feed is one entry; nothing else changes.
+    ────────────────────────────────────────────────────────────────── */
+    var SOURCES = {
+      lakes: {
+        path: "/paddlingOut",
+        rows: function (d) { return Array.isArray(d) ? d : (d.data || d.spots || []); },
+        valid: function (s) { return s && s.id; },
+        card: function (s) {
+          var rating = s.paddleScore && s.paddleScore.rating;
+          return {
+            url: "/paddlingout/forecast?id=" + encodeURIComponent(s.id),
+            title: s.lakeName || s.title || s.id,
+            sub: s.subtitle || s.location || "",
+            snip: s.text || "",
+            stat: rating == null ? "" : Number(rating).toFixed(1),
+            statLabel: "Paddle Score now",
+            img: (s.imgSrc && s.imgSrc[0]) || ""
+          };
+        },
+        live: "Live · Paddle Score",
+        note: function (n) { return "Four of " + n + " spots, drawn at random and scored right now. Every card is a real page."; },
+        fallback: [
+          { url: "/paddlingout/forecast?id=ambazari", title: "Ambazari Lake", sub: "Nagpur, Maharashtra", snip: "Paddle far enough and you'll be surrounded by birds.", stat: "3.0", statLabel: "Paddle Score", img: "" },
+          { url: "/paddlingout/forecast?id=antero", title: "Antero Reservoir", sub: "Fairplay, Colorado", snip: "", stat: "1.0", statLabel: "Paddle Score", img: "" },
+          { url: "/paddlingout/forecast?id=colorado", title: "Colorado River", sub: "Moab, Utah", snip: "Flows through the ancients, testing you.", stat: "1.0", statLabel: "Paddle Score", img: "" },
+          { url: "/paddlingout/forecast?id=cottonwood", title: "Cottonwood Lake", sub: "Buena Vista, Colorado", snip: "", stat: "1.5", statLabel: "Paddle Score", img: "" }
+        ]
+      },
+
+      products: {
+        path: "/products",
+        rows: function (d) { return d.products || (Array.isArray(d) ? d : []); },
+        valid: function (p) { return p && p.productID; },
+        card: function (p) {
+          return {
+            url: "/store/p/" + encodeURIComponent(p.productID),
+            title: p.title || p.productID,
+            sub: (p.tags || []).join(" · "),
+            snip: p.description || "",
+            stat: p.votes == null ? "" : String(p.votes),
+            statLabel: "Votes",
+            img: (p.imgSrc && p.imgSrc[0]) || ""
+          };
+        },
+        live: "Live · on the rack",
+        note: function (n) { return "Four of " + n + " designs, drawn at random. Vote counts decide the next print run."; },
+        fallback: [
+          { url: "/store/p/sabarmati", title: "Straight Outta Sabarmati", sub: "T-Shirt · Rebel", snip: "Watch out! He's got a national holiday!", stat: "25", statLabel: "Votes", img: "/assets/StraightOutta_1.png" },
+          { url: "/store/p/shutup", title: "Shut up, sit down, relax", sub: "T-Shirt · Nostalgia", snip: "", stat: "11", statLabel: "Votes", img: "/assets/ShutUp_1.png" },
+          { url: "/store/p/nagpur", title: "Nagpur", sub: "T-Shirt · Heritage", snip: "", stat: "7", statLabel: "Votes", img: "/assets/Nagpur_3.png" },
+          { url: "/store/p/lifeisopinion", title: "Life is Opinion", sub: "T-Shirt · Philosophy", snip: "", stat: "6", statLabel: "Votes", img: "/assets/Lifeisopinion_2.png" }
+        ]
+      },
+
+      gallery: {
+        live: "Rendered on-device",
+        note: function () { return "Four maintainer-voted renders from the Madhubani catalog — the full set is in the gallery."; },
+        cards: [
+          { url: "/forge-gallery", title: "Peacock", sub: "Madhubani · FLUX.1-dev", snip: "The national bird of India, by the minimalist-tshirt engine.", stat: "", statLabel: "", img: "/assets/forge/voted_peacock.png" },
+          { url: "/forge-gallery", title: "Blackbuck", sub: "Madhubani · FLUX.1-dev", snip: "One of the 41 species in the catalog.", stat: "", statLabel: "", img: "/assets/forge/voted_blackbuck.png" },
+          { url: "/forge-gallery", title: "One-horned Rhinoceros", sub: "Madhubani · FLUX.1-dev", snip: "Voted best of its run by the maintainer.", stat: "", statLabel: "", img: "/assets/forge/voted_rhino.png" },
+          { url: "/forge-gallery", title: "Indian Elephant", sub: "Madhubani · FLUX.1-dev", snip: "Part of the gold-standard auto-QC set.", stat: "", statLabel: "", img: "/assets/forge/voted_elephant.png" }
+        ]
+      }
+    };
+
+    var pending = {};
+    function loadSource(name) {
+      var src = SOURCES[name];
+      if (pending[name]) return pending[name];
+      pending[name] = src.cards
+        ? Promise.resolve(src.cards)
+        : fetch(API + src.path, { headers: { Accept: "application/json" } })
+            .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+            .then(function (data) {
+              var items = src.rows(data).filter(src.valid).map(src.card);
+              if (!items.length) throw new Error("empty");
+              return items;
+            })
+            .catch(function () { return src.fallback.slice(); });
+      return pending[name];
+    }
+
+    /* ──────────────────────────────────────────────────────────────────
+       The three chapters. `def` is the sentence that says what the thing
+       is — the whole page exists to deliver those three sentences.
+    ────────────────────────────────────────────────────────────────── */
+    var CHAPTERS = [
+      {
+        id: "paddling-out", tone: "a", name: "Paddling Out",
+        kicker: "Know before you go",
+        def: "Live paddle-condition scores for real lakes. Wind, water temperature, UV and rain fold into one number from 1 to 5 — check it before you drive out.",
+        source: "lakes",
+        note: {
+          label: "Guidance, not clearance",
+          text: "The model is trained on real paddler ratings, but it cannot see your skill, your equipment, or the launch site. Wear a life jacket every time, whatever the number says."
+        },
+        actions: [
+          { kind: "btn", href: "/paddlingout", label: "Open Paddling Out" },
+          { kind: "link", href: "/paddlingout/methodology", label: "Methodology" }
+        ]
+      },
+      {
+        id: "forge", tone: "b", name: "Forge",
+        kicker: "Local-first generative AI",
+        def: "An open-source AI workstation that runs entirely on a Mac. Every image in this chapter was rendered on-device — no cloud, no subscription, no upload.",
+        source: "gallery",
+        frame: true,
+        note: {
+          label: "That last number is a failure",
+          text: "The ship threshold was written down before the run and the result came in under it, so the verdict is published next to the methodology — not left out. A benchmark you can only pass is not a benchmark."
+        },
+        actions: [
+          { kind: "btn", href: "/forge-gallery", label: "See the gallery" },
+          { kind: "link", href: "https://github.com/tommyvercetti76/Forge", label: "Read the code", external: true }
+        ]
+      },
+      {
+        id: "store", tone: "c", name: "Store",
+        kicker: "Invite-only goods",
+        def: "A small run of printed shirts and totes. The store opens with an invite code, and vote counts decide which designs get printed next.",
+        source: "products", gated: true,
+        note: {
+          label: "How to get in",
+          text: "Ask for a code — it is not exclusivity, it is just how small this is. A human sends every invite."
+        },
+        actions: [
+          { kind: "gate", mode: "access", label: "I have a code" },
+          { kind: "gate", mode: "request", label: "Request one", link: true }
+        ]
+      }
+    ];
+
+    /* ── DOM helper ───────────────────────────────────────────────────── */
+    function h(tag, props, kids) {
+      var node = document.createElement(tag);
+      Object.keys(props || {}).forEach(function (k) {
+        if (k === "class") node.className = props[k];
+        else if (k === "text") node.textContent = props[k];
+        else if (props[k] === true) node.setAttribute(k, "");
+        else if (props[k] != null && props[k] !== false) node.setAttribute(k, props[k]);
+      });
+      (kids || []).forEach(function (kid) { if (kid) node.appendChild(kid); });
+      return node;
+    }
+
+    function shuffled(list) {
+      var a = list.slice();
+      for (var i = a.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = a[i]; a[i] = a[j]; a[j] = t;
+      }
+      return a;
+    }
+
+    function pick(pool, n) {
+      var withArt = pool.filter(function (i) { return i.img; });
+      var base = withArt.length >= n ? withArt : withArt.concat(pool.filter(function (i) { return !i.img; }));
+      return shuffled(base).slice(0, n);
+    }
+
+    // Only the first chapter's stage art loads eagerly — every other image
+    // waits for the browser's lazy threshold, so nothing competes with the
+    // first paint on a phone connection.
+    function art(src, eager) {
+      var img = h("img", {
+        src: src, alt: "", decoding: "async",
+        loading: eager ? null : "lazy",
+        fetchpriority: eager ? "high" : null
+      });
+      if (img.complete && img.naturalWidth) img.classList.add("is-loaded");
+      else img.addEventListener("load", function () { img.classList.add("is-loaded"); });
+      return img;
+    }
+
+    /* ── Card + rail (one component, all chapters) ────────────────────── */
+    // The card IS the image — everything textual sits inside it, over a
+    // scrim, so a card is never taller than its picture.
+    function cardNode(item, gated) {
+      var parts = [
+        item.img ? art(item.img) : null,
+        h("div", { class: "card-scrim" }),
+        gated ? h("span", { class: "card-lock", text: "Invite only" }) : null,
+        h("div", { class: "card-meta" }, [
+          h("span", { class: "card-title", text: item.title }),
+          item.sub ? h("span", { class: "card-sub", text: item.sub }) : null,
+          item.stat ? h("div", { class: "card-stat" }, [
+            h("span", { class: "stat-value", text: item.stat }),
+            h("span", { class: "stat-label", text: item.statLabel })
+          ]) : null
+        ])
+      ];
+
+      if (!gated) return h("a", { class: "card", href: item.url }, parts);
+
+      var button = h("button", {
+        class: "card", type: "button",
+        "aria-label": item.title + " — invite only, opens store access"
+      }, parts);
+      button.addEventListener("click", function () {
+        KaaykoStoreAccess.open("access", { returnFocus: button });
+      });
+      return button;
+    }
+
+    function feedNode(items, opts) {
+      var rail = h("div", { class: "rail", role: "list", "aria-label": opts.label });
+      pick(items, SHOWN).forEach(function (item) {
+        rail.appendChild(h("div", { role: "listitem" }, [cardNode(item, opts.gated)]));
+      });
+
+      var prev = h("button", { class: "feed-btn", type: "button", "aria-label": "Previous", text: "‹" });
+      var next = h("button", { class: "feed-btn", type: "button", "aria-label": "Next", text: "›" });
+
+      function step(dir) {
+        var first = rail.querySelector(".card");
+        var by = first ? first.getBoundingClientRect().width + 1 : rail.clientWidth * 0.82;
+        rail.scrollBy({ left: dir * by, behavior: "smooth" });
+      }
+      function sync() {
+        var max = rail.scrollWidth - rail.clientWidth - 2;
+        prev.disabled = rail.scrollLeft <= 2;
+        next.disabled = rail.scrollLeft >= max;
+      }
+      prev.addEventListener("click", function () { step(-1); });
+      next.addEventListener("click", function () { step(1); });
+      rail.addEventListener("scroll", sync, { passive: true });
+      window.requestAnimationFrame(sync);
+
+      return h("div", {}, [
+        h("div", { class: "feed" }, [
+          h("div", { class: "feed-bar" }, [
+            h("span", { class: "feed-live label" }, [h("i", { class: "dot" }), h("span", { text: opts.live })]),
+            h("span", { class: "feed-nav" }, [prev, next])
+          ]),
+          rail
+        ]),
+        h("p", { class: "feed-note", text: opts.note })
+      ]);
+    }
+
+    function actionNode(action) {
+      if (action.kind !== "gate") {
+        return h("a", {
+          class: action.kind === "btn" ? "btn" : "link",
+          href: action.href, text: action.label,
+          rel: action.external ? "noopener noreferrer" : null
+        });
+      }
+      var btn = h("button", { class: action.link ? "link" : "btn", type: "button", text: action.label });
+      btn.addEventListener("click", function () {
+        KaaykoStoreAccess.open(action.mode, { returnFocus: btn });
+      });
+      return btn;
+    }
+
+    /* ── Chapter builder — one function renders all three ─────────────── */
+    var main = document.getElementById("chapters");
+
+    function ordinal(i) { return String(i + 1).padStart(2, "0"); }
+
+    function buildChapter(def, index) {
+      var artWrap = h("div", { class: "stage-art" + (def.frame ? " stage-art--frame" : "")});
+
+      var copy = h("div", { class: "stage-copy"}, [
+        h("p", { class: "stage-kicker", text: ordinal(index) + " · " + def.kicker }),
+        h("h2", { class: "stage-name", text: def.name }),
+        h("p", { class: "stage-def", text: def.def }),
+        h("span", { class: "stage-hint", text: "Keep scrolling" })
+      ]);
+
+      var stage = h("div", { class: "stage" }, [
+        artWrap,
+        h("div", { class: "stage-scrim" }),
+        copy
+      ]);
+
+      var railSlot = h("div", { class: "reveal" }, [h("p", { class: "feed-note", text: "Loading live records…" })]);
+
+      var body = h("div", { class: "chapter-body" }, [
+        h("div", { class: "body-inner" }, [
+          railSlot,
+          def.note ? h("div", { class: "note reveal" }, [
+            h("span", { class: "note-label", text: def.note.label }),
+            h("p", { text: def.note.text })
+          ]) : null,
+          h("div", { class: "actions reveal" }, def.actions.map(actionNode))
+        ])
+      ]);
+
+      var section = h("section", { class: "chapter", id: def.id, "data-tone": def.tone, "aria-label": def.name }, [
+        h("div", { class: "chapter-tab", "aria-hidden": "true" }, [
+          h("span", { text: ordinal(index) + " · " + def.name })
+        ]),
+        h("div", { class: "pin" }, [stage]),
+        body
+      ]);
+
+      main.appendChild(section);
+
+      return { def: def, section: section, artWrap: artWrap, railSlot: railSlot, mounted: false };
+    }
+
+    // Media mounts in stages so a phone is never asked to fetch and decode
+    // every image at once: chapter one's art loads immediately; everything
+    // else waits until its chapter approaches the viewport.
+    function mountMedia(view, eager) {
+      if (view.mounted) return;
+      view.mounted = true;
+
+      var def = view.def;
+      var src = SOURCES[def.source];
+      loadSource(def.source).then(function (items) {
+        var lead = pick(items, 1)[0];
+        if (lead && lead.img) view.artWrap.appendChild(art(lead.img, eager));
+
+        view.railSlot.innerHTML = "";
+        view.railSlot.appendChild(feedNode(items, {
+          gated: def.gated, label: def.source, live: src.live, note: src.note(items.length)
+        }));
+        view.railSlot.classList.add("is-in");
+      });
+    }
+
+    var views = CHAPTERS.map(buildChapter);
+
+    // First chapter paints immediately; the rest arm as they come near.
+    mountMedia(views[0], true);
+    if ("IntersectionObserver" in window) {
+      var mediaIO = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          var view = views.find(function (v) { return v.section === entry.target; });
+          if (view) mountMedia(view, false);
+          mediaIO.unobserve(entry.target);
+        });
+      }, { rootMargin: "80% 0px" });
+      views.slice(1).forEach(function (view) { mediaIO.observe(view.section); });
+    } else {
+      views.slice(1).forEach(function (view) { mountMedia(view, false); });
+    }
+
+    /* ── Reveal on scroll ─────────────────────────────────────────────── */
+    var reveals = document.querySelectorAll(".reveal");
+    if (!("IntersectionObserver" in window) || reduced) {
+      Array.prototype.forEach.call(reveals, function (el) { el.classList.add("is-in"); });
+    } else {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-in");
+          io.unobserve(entry.target);
+        });
+      }, { rootMargin: "0px 0px -8% 0px", threshold: 0.06 });
+      Array.prototype.forEach.call(reveals, function (el) { io.observe(el); });
+    }
+  })();
+  </script>
 </body>
 </html>
