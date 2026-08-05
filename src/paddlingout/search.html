@@ -503,6 +503,16 @@
       .btn-map { display: none; }
       .btn-request-lake { padding: 0 9px; }
     }
+
+    /* Static intro — this page is in the sitemap, so it needs real content
+       rather than being a bare search box to a crawler. */
+    .search-intro { max-width: 44rem; margin: 0 0 1.75rem; }
+    .search-intro p {
+      font-family: var(--font-serif); font-size: 1.06rem; line-height: 1.68;
+      color: rgba(237,232,223,0.72); margin: 0 0 0.85rem;
+    }
+    .search-intro a { color: var(--gold); text-decoration: none; border-bottom: 1px solid rgba(181,147,90,0.4); }
+    .search-intro a:hover { color: var(--gold-bright); border-color: var(--gold-bright); }
   </style>
 </head>
 <body>
@@ -536,6 +546,22 @@
     <div class="search-status" id="search-status"></div>
 
     <!-- Popular spots (hidden once results show) -->
+    <section class="search-intro">
+      <p>
+        Search resolves any named lake, river or reservoir by city, state or postcode and returns a live
+        Paddle Score for it &mdash; wind speed and gusts, air and water temperature, UV index, cloud cover
+        and precipitation folded into one number from 1 (Danger) to 5 (Excellent), with fixed safety rules
+        applied on top.
+      </p>
+      <p>
+        Coverage is not the same as curation. Seventeen spots are hand-picked and written up in detail,
+        with notes on what drives the score at each one and what the model cannot see there. Everywhere
+        else returns a score from weather data alone.
+        <a href="/paddlingout">Browse the 17 curated spots</a>, or
+        <a href="/paddlingout/methodology">read how the Paddle Score is built</a>.
+      </p>
+    </section>
+
     <div class="popular-section" id="popular-section">
       <div class="popular-label">Popular paddle regions</div>
       <div class="popular-chips">
