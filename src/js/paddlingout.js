@@ -142,7 +142,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 5b) Populate text fields
-    card.querySelector(".lake-name").textContent  = spot.title;
+    // Lake name is a real anchor to the spot's static page. This is the crawl
+    // path: Googlebot executes JS, so the rendered DOM must contain these links
+    // or the static spot pages are only reachable via the sitemap.
+    const nameEl = card.querySelector(".lake-name");
+    const slug = (window.KAAYKO_SPOT_SLUGS || {})[spot.id];
+    if (slug) {
+      const nameLink = document.createElement("a");
+      nameLink.href = `/paddlingout/${slug}`;
+      nameLink.textContent = spot.title;
+      nameLink.className = "lake-name-link";
+      // Let the anchor win over the card's own click handler.
+      nameLink.addEventListener("click", e => e.stopPropagation());
+      nameEl.textContent = "";
+      nameEl.appendChild(nameLink);
+    } else {
+      nameEl.textContent = spot.title;
+    }
     card.querySelector(".location").textContent   = spot.subtitle;
     card.querySelector(".description").textContent = spot.text;
 
@@ -399,10 +415,19 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   //──────────────────────────────────────────────────────────────────────────────
-  // Section 8: showError(msg) → Displays a simple error message
+  // Section 8: showError(msg) → Shows an inline notice without destroying the page
   //──────────────────────────────────────────────────────────────────────────────
+  //
+  // This must not replace the whole container. The static spot list, intro copy
+  // and FAQ below it stay useful when the API is down, and a crawler that hits
+  // this path should still see a real page rather than an error state.
   function showError(msg) {
-    container.innerHTML = `<div class="error">${msg}</div>`;
+    container.innerHTML = "";
+    const notice = document.createElement("div");
+    notice.className = "error";
+    notice.setAttribute("role", "status");
+    notice.textContent = `${msg} Live scores are unavailable right now — the full spot list is below.`;
+    container.appendChild(notice);
   }
 
   //──────────────────────────────────────────────────────────────────────────────

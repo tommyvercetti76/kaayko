@@ -1,0 +1,88 @@
+/*─────────────────────────────────────────────────────────────────────────────
+  footer.css — THE site footer. One component, every public page.
+
+  Deliberately self-contained: literal colour and font values, no CSS custom
+  properties. Pages across this site define different token sets (forge.html
+  uses --gold #d1b073 and --ink; forge-gallery.html uses --gold #b5935a and
+  --fg), so a token-based footer would render a different colour per page.
+  That is exactly the drift this file exists to end.
+
+  Markup — identical on every page, only the links change:
+
+    <footer class="site-footer">
+      <nav aria-label="Footer">…contextual links…</nav>
+      <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
+    </footer>
+
+  Link sets are scoped to the section the page belongs to, so a paddler is not
+  offered the store and a shopper is not offered the methodology. See
+  scripts/footer-links.js for the definitive sets.
+
+  scripts/verify-seo.js enforces that every public page carries exactly this
+  structure. Do not fork it.
+─────────────────────────────────────────────────────────────────────────────*/
+
+.site-footer {
+  box-sizing: border-box;
+  margin: 0;
+  border-top: 1px solid rgba(181, 147, 90, 0.18);
+  background: transparent;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  color: rgba(237, 232, 223, 0.58);
+  font-family: "Josefin Sans", "Helvetica Neue", Arial, sans-serif;
+  font-size: 0.7rem;
+  font-style: normal;
+  letter-spacing: 0.12em;
+  line-height: 1.6;
+}
+
+.site-footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem 1.2rem;
+  margin-bottom: 0.8rem;
+}
+
+.site-footer a {
+  color: #b5935a;
+  text-decoration: none;
+  font-family: inherit;
+  font-size: inherit;
+  font-style: normal;
+  letter-spacing: inherit;
+  text-transform: none;
+  border-bottom: 1px solid transparent;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.site-footer a:hover,
+.site-footer a:focus-visible {
+  color: #d9bd7b;
+  border-bottom-color: rgba(181, 147, 90, 0.5);
+}
+
+.site-footer p {
+  margin: 0;
+  color: rgba(237, 232, 223, 0.45);
+  font-family: inherit;
+  font-size: inherit;
+  font-style: normal;
+  letter-spacing: inherit;
+}
+
+/* Light-background pages (reads, testimonials) — keep the same structure,
+   flip the ink so it stays legible. */
+.site-footer.is-light {
+  border-top-color: rgba(0, 0, 0, 0.12);
+  color: rgba(0, 0, 0, 0.55);
+}
+.site-footer.is-light p { color: rgba(0, 0, 0, 0.5); }
+.site-footer.is-light a { color: #8a6d3b; }
+.site-footer.is-light a:hover { color: #6d551f; }
+
+@media (max-width: 520px) {
+  .site-footer { padding: 2rem 1.25rem; }
+  .site-footer nav { gap: 0.5rem 1rem; }
+}

@@ -525,6 +525,7 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="/css/footer.css">
 </head>
 <body class="store-v2">
   <header class="cart-topbar">
@@ -547,7 +548,12 @@
     <p class="checkout-sticky-meta">Free shipping · 30-day returns</p>
   </div>
 
-  <footer>
+  <footer class="site-footer">
+    <nav aria-label="Footer">
+      <a href="/store">Store</a>
+      <a href="/about">About</a>
+      <a href="/privacy">Privacy</a>
+    </nav>
     <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
   </footer>
 
@@ -912,5 +918,13 @@
     });
   </script>
   
+  <script>
+    /* kaayko-footer-year */
+    (function () {
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+    })();
+  </script>
+
 </body>
 </html>

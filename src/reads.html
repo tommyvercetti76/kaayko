@@ -246,6 +246,7 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="/css/footer.css">
 </head>
 
 <body>
@@ -253,7 +254,7 @@
   <header class="header">
     <div class="header-top">
       <div class="header-brand">
-        <h1 class="header-title">Kaayko</h1>
+        <span class="header-title">Kaayko</span>
         <p class="header-subtitle">Thoughts. Perspectives. Stories.</p>
       </div>
 
@@ -300,7 +301,14 @@
   </main>
 
   <!-- Footer -->
-  <footer>
+  <footer class="site-footer is-light">
+    <nav aria-label="Footer">
+      <a href="/paddlingout">Paddling Out</a>
+      <a href="/forge">Forge</a>
+      <a href="/store">Store</a>
+      <a href="/about">About</a>
+      <a href="/privacy">Privacy</a>
+    </nav>
     <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
   </footer>
 
@@ -332,5 +340,13 @@
       console.log('📚 Kaayko Reads page initialized - Blog access ready');
     });
   </script>
+  <script>
+    /* kaayko-footer-year */
+    (function () {
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+    })();
+  </script>
+
 </body>
 </html>

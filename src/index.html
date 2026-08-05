@@ -7,7 +7,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
   <title>Kaayko — Paddling Forecasts, Forge & Outdoor Gear Store</title>
-  <meta name="description" content="Kaayko delivers AI-powered paddle condition forecasts for 100+ lakes, Forge — an open-source local-first AI workstation — and a curated outdoor gear store. Know before you paddle." />
+  <meta name="description" content="Kaayko delivers AI-powered paddle condition forecasts for 17 hand-picked spots, Forge — an open-source local-first AI workstation — and a curated outdoor gear store. Know before you paddle." />
   <meta name="author" content="Kaayko">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
   <link rel="canonical" href="https://kaayko.com/" />
@@ -16,7 +16,7 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://kaayko.com/">
   <meta property="og:title" content="Kaayko — Paddling Forecasts, Forge & Outdoor Gear">
-  <meta property="og:description" content="AI-powered paddle condition forecasts for 100+ lakes. Forge, an open-source local-first AI workstation. Curated outdoor gear. Know before you go." />
+  <meta property="og:description" content="AI-powered paddle condition forecasts for 17 hand-picked spots. Forge, an open-source local-first AI workstation. Curated outdoor gear. Know before you go." />
   <meta property="og:image" content="https://kaayko.com/assets/kaayko-og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -29,7 +29,7 @@
   <meta name="twitter:site" content="@kaayko">
   <meta name="twitter:creator" content="@kaayko">
   <meta name="twitter:title" content="Kaayko — Paddling Forecasts & Outdoor Gear">
-  <meta name="twitter:description" content="AI-powered paddle condition forecasts for 100+ lakes. Know before you paddle." />
+  <meta name="twitter:description" content="AI-powered paddle condition forecasts for 17 hand-picked spots. Know before you paddle." />
   <meta name="twitter:image" content="https://kaayko.com/assets/kaayko-og.png">
   <meta name="twitter:image:alt" content="Kaayko paddling forecast app">
 
@@ -62,7 +62,7 @@
       "@type": "WebSite",
       "name": "Kaayko",
       "url": "https://kaayko.com",
-      "description": "AI-powered paddle condition forecasts for 100+ lakes, Forge open-source AI workstation, and a curated outdoor gear store.",
+      "description": "AI-powered paddle condition forecasts for 17 hand-picked spots, Forge open-source AI workstation, and a curated outdoor gear store.",
       "potentialAction": {
         "@type": "SearchAction",
         "target": {
@@ -116,7 +116,6 @@
     body {
       min-height: 100vh;
       min-height: 100dvh;
-      overflow: hidden;
       font-family: "Cormorant Garamond", Georgia, serif;
     }
 
@@ -304,7 +303,7 @@
     }
 
     .footer {
-      position: fixed;
+      position: absolute;
       left: 0;
       right: 0;
       bottom: max(1rem, env(safe-area-inset-bottom));
@@ -566,25 +565,51 @@
         transform: none;
       }
     }
+
+    /* ── Below-the-fold content ─────────────────────────────────────────
+       The splash above is the first screen. This is the crawlable,
+       readable substance underneath it. It used to live in <noscript>,
+       where Googlebot never saw it because Googlebot renders JS. */
+    .home-content {
+      position: relative;
+      z-index: 9;
+      background: var(--bg);
+      border-top: 1px solid rgba(181, 147, 90, 0.18);
+      padding: clamp(3rem, 8vw, 5rem) clamp(1.15rem, 5vw, 3.2rem) 1rem;
+    }
+    .home-inner { max-width: 46rem; margin: 0 auto; }
+    .home-content h2 {
+      font-family: "Josefin Sans", Arial, sans-serif;
+      font-size: 0.74rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin: 2.75rem 0 0.85rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(181, 147, 90, 0.18);
+    }
+    .home-content h2:first-of-type { margin-top: 0; }
+    .home-content p {
+      font-size: clamp(1.06rem, 2.3vw, 1.2rem);
+      line-height: 1.7;
+      color: rgba(237, 232, 223, 0.78);
+      margin: 0 0 1rem;
+    }
+    .home-lede {
+      font-size: clamp(1.2rem, 2.8vw, 1.42rem) !important;
+      color: var(--fg) !important;
+      line-height: 1.58 !important;
+    }
+    .home-content a { color: var(--gold); text-decoration: none;
+      border-bottom: 1px solid rgba(181, 147, 90, 0.4); }
+    .home-content a:hover { color: var(--gold-bright); border-color: var(--gold-bright); }
+
   </style>
+  <link rel="stylesheet" href="/css/footer.css">
 </head>
 <body>
 
-  <!-- Crawlable brand content for search engines (hidden visually) -->
-  <noscript>
-    <div style="padding:2rem;font-family:sans-serif;max-width:800px;margin:0 auto">
-      <h1>Kaayko — Paddling Forecasts &amp; Outdoor Gear</h1>
-      <p>Kaayko is a platform delivering AI-powered paddle condition forecasts for 100+ kayaking, canoeing, and paddleboarding lakes across the United States, Forge — an open-source local-first AI workstation — and a curated outdoor gear store.</p>
-      <h2>Paddling Out — Know Before You Go</h2>
-      <p>Get real-time paddle condition scores for lakes, rivers, and reservoirs. Our machine learning model weighs wind speed, water temperature, UV index, cloud cover, and precipitation to generate a single Paddle Score from 1 (Danger) to 5 (Excellent).</p>
-      <ul>
-        <li><a href="/paddlingout">Browse all paddle spots</a></li>
-        <li><a href="/paddlingout/search">Find paddle spots near you</a></li>
-        <li><a href="/store">Outdoor Gear Store</a></li>
-        <li><a href="/about">About Kaayko</a></li>
-      </ul>
-    </div>
-  </noscript>
 
   <main class="shell" aria-label="Kaayko landing">
     <img class="brand-ghost" src="/kaayko-logo-512.png" alt="" aria-hidden="true">
@@ -623,11 +648,77 @@
       </section>
     </section>
 
-    <footer class="footer" aria-label="Footer">
+    <nav class="footer" aria-label="Splash links">
       <a href="https://www.youtube.com/@travelingout" rel="noopener noreferrer">YouTube</a>
       <a href="/about">About</a>
-    </footer>
+    </nav>
   </main>
+
+  <section class="home-content" aria-label="About Kaayko">
+    <div class="home-inner">
+      <h1 class="home-lede" style="font-weight:600;letter-spacing:-0.01em">Kaayko builds three things, and publishes the failures next to the results.</h1>
+
+      <p>
+        Everything here was made by one person. That is the constraint the whole site is built around:
+        small, honest, and specific rather than broad and vague. There is no team, no funding round, and
+        no roadmap deck &mdash; just three products that work, documented including where they don&rsquo;t.
+      </p>
+
+      <h2>Paddling Out</h2>
+      <p>
+        Live paddle-condition scores for 17 hand-picked lakes, rivers and reservoirs. Wind speed and gusts,
+        air and water temperature, UV index, cloud cover, precipitation and visibility fold into a single
+        Paddle Score from 1 (Danger) to 5 (Excellent), then fixed safety rules trim it further &mdash; wind
+        above 25&nbsp;mph costs two full points, and water below 5&deg;C is penalised hard no matter how good
+        the day looks.
+      </p>
+      <p>
+        The model behind it was trained on roughly 1.4 million hourly weather observations across 164 water
+        bodies in the United States and India. Every spot is added by hand, not scraped from a database.
+        The score is a decision aid, not clearance to go out: it cannot see your skill, your equipment,
+        currents, or the hazards at your launch site.
+        <a href="/paddlingout">Browse every spot</a>, or
+        <a href="/paddlingout/methodology">read how the score works, including its limits</a>.
+      </p>
+
+      <h2>Forge</h2>
+      <p>
+        An open-source, local-first AI workstation for Apple Silicon. It runs entirely on your own machine
+        &mdash; no cloud, no API keys, no subscription, and nothing uploaded. Every render in the gallery was
+        produced on-device. Where a benchmark came in under the threshold written down before the run, that
+        result is published too, next to the methodology. A benchmark you can only pass is not a benchmark.
+        <a href="/forge">See what Forge is</a> or
+        <a href="/forge-gallery">browse the render gallery</a>.
+      </p>
+
+      <h2>The Store</h2>
+      <p>
+        A small run of printed shirts and totes, opened with an invite code. Vote counts decide which
+        designs get printed next. It is invite-only because the run is genuinely small, not because it is
+        exclusive &mdash; a human sends every invite.
+      </p>
+
+      <h2>Why it&rsquo;s built this way</h2>
+      <p>
+        A forecast that hides its uncertainty is worse than no forecast, and a benchmark that only reports
+        wins is marketing. So the Paddle Score ships with a written list of what it cannot measure, and
+        Forge&rsquo;s numbers are published whether or not they cleared the bar.
+        <a href="/about">More about the three products and who built them</a>.
+      </p>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <nav aria-label="Footer">
+      <a href="/paddlingout">Paddling Out</a>
+      <a href="/forge">Forge</a>
+      <a href="/store">Store</a>
+      <a href="/about">About</a>
+      <a href="/privacy">Privacy</a>
+    </nav>
+    <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
+  </footer>
+
 
   <script src="/js/storeAccess.js"></script>
   <script>
@@ -904,5 +995,20 @@
       KaaykoStoreAccess.open("access", { returnFocus: accessCta });
     }
   </script>
+  <script>
+    (function () {
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+    })();
+  </script>
+
+  <script>
+    /* kaayko-footer-year */
+    (function () {
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+    })();
+  </script>
+
 </body>
 </html>

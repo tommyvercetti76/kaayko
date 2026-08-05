@@ -3,8 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Forge by Kaayko. Explore the gallery and source code." />
-  <title>Forge - Kaayko</title>
+  <meta name="description" content="Forge by Kaayko — local-first generative AI for Apple Silicon. MIT-licensed, runs entirely on your own machine. Browse the render gallery and the source." />
+  <title>Forge — Local-First Generative AI for Apple Silicon | Kaayko</title>
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+  <link rel="canonical" href="https://kaayko.com/forge" />
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://kaayko.com/forge">
+  <meta property="og:title" content="Forge — Local-First Generative AI for Apple Silicon">
+  <meta property="og:description" content="MIT-licensed generative AI that runs entirely on your own Apple Silicon machine. No cloud, no API keys, no telemetry.">
+  <meta property="og:image" content="https://kaayko.com/assets/kaayko-og.png">
+  <meta property="og:site_name" content="Kaayko">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Forge — Local-First Generative AI for Apple Silicon">
+  <meta name="twitter:description" content="MIT-licensed generative AI that runs entirely on your own Apple Silicon machine. No cloud, no API keys, no telemetry.">
+  <meta name="twitter:image" content="https://kaayko.com/assets/kaayko-og.png">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
@@ -232,6 +247,7 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="/css/footer.css">
 </head>
 <body>
   <main class="shell" aria-label="Forge options">
@@ -240,7 +256,7 @@
       <span>Forge</span>
     </div>
 
-    <div class="mark">forge</div>
+    <h1 class="mark">forge</h1>
 
     <section class="split">
       <a class="choice gallery" href="/forge-gallery" aria-label="Open Forge Gallery">
@@ -355,5 +371,23 @@
       document.querySelectorAll(".choice").forEach(attachCursorGlow);
     })();
   </script>
+  <footer class="site-footer">
+    <nav aria-label="Footer">
+      <a href="/forge-gallery">Gallery</a>
+      <a href="https://github.com/tommyvercetti76/Forge" rel="noopener noreferrer">Source</a>
+      <a href="/about">About</a>
+      <a href="/privacy">Privacy</a>
+    </nav>
+    <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
+  </footer>
+
+  <script>
+    /* kaayko-footer-year */
+    (function () {
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+    })();
+  </script>
+
 </body>
 </html>

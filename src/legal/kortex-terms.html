@@ -22,6 +22,7 @@
     a:hover { text-decoration: underline; }
     .highlight { background: #1a1a0a; border-left: 3px solid #D4A84B; padding: 12px 16px; margin: 16px 0; border-radius: 4px; }
   </style>
+  <link rel="stylesheet" href="/css/footer.css">
 </head>
 <body>
 <div class="container">
@@ -137,5 +138,22 @@
 <p>Questions about these Terms: <a href="mailto:rohan@kaayko.com">rohan@kaayko.com</a></p>
 
 </div>
+  <footer class="site-footer">
+    <nav aria-label="Footer">
+      <a href="/kortex">Kortex</a>
+      <a href="/privacy">Privacy</a>
+      <a href="mailto:rohan@kaayko.com">Contact</a>
+    </nav>
+    <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
+  </footer>
+
+  <script>
+    /* kaayko-footer-year */
+    (function () {
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+    })();
+  </script>
+
 </body>
 </html>

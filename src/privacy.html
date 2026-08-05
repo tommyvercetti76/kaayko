@@ -78,6 +78,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
 .site-footer a:hover { color: var(--gold-bright); }
 .site-footer p { margin: 0.2rem 0 0; }
 </style>
+  <link rel="stylesheet" href="/css/footer.css">
 </head>
 <body>
 
@@ -237,10 +238,23 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
 
 </div>
 
-<footer class="site-footer">
-  <nav><a href="/paddlingout">Paddling Out</a><a href="/about">About</a><a href="/paddlingout/methodology">Methodology</a><a href="/privacy">Privacy</a></nav>
-  <p>&copy; 2026 Kaayko. All rights reserved.</p>
-</footer>
+  <footer class="site-footer">
+    <nav aria-label="Footer">
+      <a href="/paddlingout">Paddling Out</a>
+      <a href="/forge">Forge</a>
+      <a href="/store">Store</a>
+      <a href="/about">About</a>
+    </nav>
+    <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
+  </footer>
+
+  <script>
+    /* kaayko-footer-year */
+    (function () {
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+    })();
+  </script>
 
 </body>
 </html>

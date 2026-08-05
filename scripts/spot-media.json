@@ -1,0 +1,222 @@
+{
+ "ambazari": {
+  "blurb": "Paddle far enough and you'll be surrounded by birds.",
+  "images": [
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fambazari1.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fambazari2.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fambazari3.webp?alt=media"
+  ],
+  "parking": true,
+  "restrooms": "N",
+  "subtitle": "Nagpur, Maharashtra",
+  "title": "Ambazari Lake",
+  "youtube": "https://www.youtube.com/watch?v=zNV3aLL0jDk&list=PLxxuC2dcJeMfnD2ySuhdJTKr1xU1izrZc"
+ },
+ "antero": {
+  "blurb": "Weather may change so carry a safety jacket.",
+  "images": [
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fantero1.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fantero2.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fantero3.webp?alt=media"
+  ],
+  "parking": true,
+  "restrooms": true,
+  "subtitle": "Fairplay, Colorado",
+  "title": "Antero Reservoir",
+  "youtube": "https://www.youtube.com/watch?v=FB5mYbdSKbA"
+ },
+ "colorado": {
+  "blurb": "Flows through the ancients, testing you.",
+  "images": [
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fcolorado1.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fcolorado2.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fcolorado3.webp?alt=media"
+  ],
+  "parking": true,
+  "restrooms": "N",
+  "subtitle": "Moab, Utah",
+  "title": "Colorado River",
+  "youtube": "https://youtu.be/iQabD5u-xUI?feature=shared"
+ },
+ "cottonwood": {
+  "blurb": "Nestled in the mountains of South Park.",
+  "images": [
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fcottonwood1.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fcottonwood2.webp?alt=media"
+  ],
+  "parking": true,
+  "restrooms": true,
+  "subtitle": "Buena Vista, Colorado",
+  "title": "Cottonwood Lake",
+  "youtube": "https://youtu.be/9rAJ1SufpF4?feature=shared"
+ },
+ "crescent": {
+  "blurb": "Download offline maps and remain hydarated.",
+  "images": [
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fcrescent1.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fcrescent3.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fcrescent4.webp?alt=media"
+  ],
+  "parking": true,
+  "restrooms": true,
+  "subtitle": "Olympic National Park, Washington",
+  "title": "Lake Crescent",
+  "youtube": "https://www.youtube.com/watch?v=TRgt6qB_Ly4"
+ },
+ "diablo": {
+  "blurb": "Hypothermia is a bitch. Stay warm.",
+  "images": [
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fdiablo1.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fdiablo2.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fdiablo3.webp?alt=media"
+  ],
+  "parking": true,
+  "restrooms": true,
+  "subtitle": "North Cascades National Park, Washington",
+  "title": "Diablo Lake",
+  "youtube": "https://youtu.be/1qFHVaLGsSg?si=ScIFssbRDefFLwS2"
+ },
+ "jackson": {
+  "blurb": "Avoid windy conditions. Watercraft inspection mandatory.",
+  "images": [
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fjackson1.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fjackson2.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fjackson3.webp?alt=media"
+  ],
+  "parking": true,
+  "restrooms": true,
+  "subtitle": "Grand Teton National Park, Wyoming",
+  "title": "Jackson Lake",
+  "youtube": "https://youtu.be/FTKzHZqZJ8A?si=0z2YaJOBAMncAxp5"
+ },
+ "jenny": {
+  "blurb": "Early bird eats this lake. Watercraft inspection mandatory.",
+  "images": [
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fjenny1.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fjenny2.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fjenny3.webp?alt=media"
+  ],
+  "parking": true,
+  "restrooms": "N",
+  "subtitle": "Grand Teton National Park, Wyoming",
+  "title": "Jenny Lake",
+  "youtube": "https://www.youtube.com/watch?v=YcnXiHK0sGY"
+ },
+ "kens": {
+  "blurb": "Easy paddle, dry heat.",
+  "images": [
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fkens1.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fkens2.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fkens3.webp?alt=media"
+  ],
+  "parking": true,
+  "restrooms": true,
+  "subtitle": "Spanish Valley, Utah",
+  "title": "Kens Lake",
+  "youtube": "https://www.youtube.com/watch?v=8C6CtlQLX9c"
+ },
+ "lewisville": {
+  "blurb": "Avoid heat, no shade. Stay hydrated.",
+  "images": [
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Flewisville1.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Flewisville2.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Flewisville3.webp?alt=media"
+  ],
+  "parking": true,
+  "restrooms": true,
+  "subtitle": "Lewisville, Texas",
+  "title": "Lewisville Lake",
+  "youtube": "https://www.youtube.com/watch?v=TVD4W1udC6c&list=PLxxuC2dcJeMezb_39oXv8m_vi4J287Zre&index=10"
+ },
+ "mcdonald": {
+  "blurb": "Stunning sunsets and sunrises.",
+  "images": [
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fmcdonald1.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fmcdonald2.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fmcdonald3.png?alt=media"
+  ],
+  "parking": true,
+  "restrooms": true,
+  "subtitle": "West Glacier, Montana",
+  "title": "Lake McDonald",
+  "youtube": "https://youtu.be/2min0c4mDqI?feature=shared"
+ },
+ "merrimack": {
+  "blurb": "Gentle river at times and very pretty in Fall.",
+  "images": [
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fmerrimack1.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fmerrimack2.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fmerrimack3.webp?alt=media"
+  ],
+  "parking": true,
+  "restrooms": "N",
+  "subtitle": "Merrimack, New Hampshire",
+  "title": "Merrimack River",
+  "youtube": null
+ },
+ "powell": {
+  "blurb": "Just get on with heat and treacherous road to the beach.",
+  "images": [
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fpowell1.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fpowell2.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fpowell3.webp?alt=media"
+  ],
+  "parking": true,
+  "restrooms": true,
+  "subtitle": "Big Water, Utah",
+  "title": "Lake Powell",
+  "youtube": "https://youtu.be/SElsN5UtYN4?feature=shared"
+ },
+ "taylorpark": {
+  "blurb": "Gorgeous lake midst mountains. Pray if windy.",
+  "images": [
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Ftaylorpark1.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Ftaylorpark2.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Ftaylorpark3.webp?alt=media"
+  ],
+  "parking": true,
+  "restrooms": "N",
+  "subtitle": "Almont, Colorado",
+  "title": "Taylor Park Reservoir",
+  "youtube": null
+ },
+ "trinity": {
+  "blurb": "Solitude, birds and a good workout.",
+  "images": [
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Ftrinity1.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Ftrinity2.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Ftrinity3.webp?alt=media"
+  ],
+  "parking": true,
+  "restrooms": true,
+  "subtitle": "Irving, Texas",
+  "title": "Trinity River",
+  "youtube": "https://youtu.be/MT0cyG2Qbp0?feature=shared"
+ },
+ "union": {
+  "blurb": "Morning paddles are serene. Chaos after noon.",
+  "images": [
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Funion1.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Funion2.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Funion3.webp?alt=media"
+  ],
+  "parking": "N",
+  "restrooms": "N",
+  "subtitle": "Seattle, Washington",
+  "title": "Lake Union",
+  "youtube": "https://www.youtube.com/watch?v=kE1i_6yc6Wg"
+ },
+ "whiterock": {
+  "blurb": "Bigger when you are on it. Stay hydrated.",
+  "images": [
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fwhiterock1.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fwhiterock2.webp?alt=media",
+   "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fwhiterock3.webp?alt=media"
+  ],
+  "parking": true,
+  "restrooms": true,
+  "subtitle": "Dallas, Texas",
+  "title": "White Rock Lake",
+  "youtube": "https://www.youtube.com/watch?v=gWM50GkhnRQ&t=879s"
+ }
+}

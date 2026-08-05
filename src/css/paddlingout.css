@@ -41,6 +41,12 @@
 /*─────────────────────────────────────────────────────────────────────────────
  1) Page base
 ─────────────────────────────────────────────────────────────────────────────*/
+
+/* Same reset as storestyle.css line 51. paddlingout.html loads storestyle.css
+   and gets it there; the spot pages and 404.html load this file on its own, so
+   it has to be self-sufficient or their max-width + padding overflows. */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
 body {
   margin: 0;
   padding: 0;
@@ -67,33 +73,9 @@ body {
   pointer-events: none !important;
 }
 
-footer {
-  text-align: center;
-  padding: 2.5rem 2rem;
-  color: var(--muted);
-  font: 400 0.7rem var(--font-sans);
-  letter-spacing: 0.12em;
-  border-top: 1px solid var(--line);
-  margin-top: 2rem;
-  background: var(--surface);
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-footer nav, .footer-links {
-  display: flex;
-  justify-content: center;
-  gap: 1.2rem;
-  margin-bottom: 0.8rem;
-}
-footer a, .footer-links a {
-  color: var(--gold);
-  text-decoration: none;
-  font: 400 0.7rem var(--font-sans);
-  letter-spacing: 0.12em;
-}
-footer a:hover, .footer-links a:hover { color: var(--gold-bright); }
-footer p { margin: 0.2rem 0 0; }
+/* The site footer lives in css/footer.css (.site-footer). Deliberately no
+   bare `footer` rules here — element selectors on <footer> are how six
+   different footer variants happened in the first place. */
 
 /* SEO prerendered lake grid — visible until JS replaces */
 .seo-lake {
@@ -625,4 +607,105 @@ footer p { margin: 0.2rem 0 0; }
   .po-title {
     font-size: 1.4rem;
   }
+}
+
+/*─────────────────────────────────────────────────────────────────────────────
+ 12) Editorial blocks — intro lede and FAQ
+     These carry the page's static, crawlable copy. They are deliberately
+     styled with the same tokens as the cards so they read as part of the
+     page rather than as an SEO appendage bolted to the bottom.
+─────────────────────────────────────────────────────────────────────────────*/
+.po-intro {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 2rem clamp(1.25rem, 4vw, 2rem) 0.5rem;
+}
+
+.po-intro p {
+  font-family: var(--font-serif);
+  font-size: clamp(1.08rem, 2.3vw, 1.24rem);
+  line-height: 1.68;
+  color: rgba(237, 232, 223, 0.78);
+  margin: 0 0 0.9rem;
+}
+
+.po-intro p:first-child {
+  font-size: clamp(1.18rem, 2.7vw, 1.4rem);
+  color: var(--fg);
+  line-height: 1.56;
+}
+
+.po-intro a {
+  color: var(--gold);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(181, 147, 90, 0.4);
+  transition: color 0.25s ease, border-color 0.25s ease;
+}
+.po-intro a:hover { color: var(--gold-bright); border-color: var(--gold-bright); }
+
+/* Small caps rule used above both editorial sections */
+.po-rule {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: 0.9;
+  margin: 0 0 1.1rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid rgba(181, 147, 90, 0.18);
+}
+
+.po-faq {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.5rem clamp(1.25rem, 4vw, 2rem) 3rem;
+}
+
+.po-faq-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem 2.25rem;
+}
+
+.po-faq-item {
+  padding: 1.15rem 1.35rem;
+  background: rgba(20, 18, 12, 0.5);
+  border: 1px solid rgba(181, 147, 90, 0.16);
+  border-radius: 10px;
+  transition: border-color 0.3s var(--ease);
+}
+.po-faq-item:hover { border-color: rgba(181, 147, 90, 0.45); }
+
+.po-faq-item h3 {
+  font-family: var(--font-sans);
+  font-size: 0.86rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gold-bright);
+  margin: 0 0 0.5rem;
+}
+
+.po-faq-item p {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  line-height: 1.62;
+  color: rgba(237, 232, 223, 0.7);
+  margin: 0;
+}
+
+/* Lake name doubles as the crawlable link to the spot's static page.
+   Visually identical to the plain heading it replaced. */
+.lake-name-link {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.25s var(--ease), color 0.25s var(--ease);
+}
+.lake-name-link:hover {
+  color: var(--gold-bright);
+  border-bottom-color: rgba(181, 147, 90, 0.5);
 }

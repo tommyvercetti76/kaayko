@@ -9,7 +9,7 @@
 
   <!-- Primary Meta Tags -->
   <title>Find Kayak & Paddle Spots Near You | Kaayko Paddling Out</title>
-  <meta name="description" content="Search 100+ kayaking, canoeing, and paddleboarding spots by city, state, or zip code. Get live AI-powered paddle condition scores before you head out.">
+  <meta name="description" content="Search 17 hand-picked kayaking, canoeing, and paddleboarding spots by city, state, or zip code. Get live AI-powered paddle condition scores before you head out.">
   <meta name="author" content="Kaayko">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
   <link rel="canonical" href="https://kaayko.com/paddlingout/search">
@@ -18,7 +18,7 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://kaayko.com/paddlingout/search">
   <meta property="og:title" content="Find Kayak & Paddle Spots Near You | Kaayko">
-  <meta property="og:description" content="Search 100+ paddling spots by location. Real-time AI paddle scores — wind, water temp, UV — before you head to the water.">
+  <meta property="og:description" content="Search 17 hand-picked paddling spots by location. Real-time AI paddle scores — wind, water temp, UV — before you head to the water.">
   <meta property="og:image" content="https://kaayko.com/assets/paddlingout-og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -30,7 +30,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@kaayko">
   <meta name="twitter:title" content="Find Kayak & Paddle Spots Near You | Kaayko">
-  <meta name="twitter:description" content="Search 100+ paddling destinations by location. Live AI paddle scores — wind, water temp, UV — before you go.">
+  <meta name="twitter:description" content="Search 17 hand-picked paddling destinations by location. Live AI paddle scores — wind, water temp, UV — before you go.">
   <meta name="twitter:image" content="https://kaayko.com/assets/paddlingout-og.png">
   <meta name="twitter:image:alt" content="Kaayko — find paddle spots near you">
 
@@ -42,7 +42,7 @@
       "@type": "WebPage",
       "name": "Find Kayak & Paddle Spots | Kaayko Paddling Out",
       "url": "https://kaayko.com/paddlingout/search",
-      "description": "Search 100+ kayaking, canoeing, and paddleboarding spots by location. Get live AI-powered paddle condition scores.",
+      "description": "Search 17 hand-picked kayaking, canoeing, and paddleboarding spots by location. Get live AI-powered paddle condition scores.",
       "isPartOf": {
         "@type": "WebApplication",
         "name": "Kaayko Paddling Out",
@@ -478,6 +478,7 @@
       margin-top: 2rem;
     }
 
+
     @media (max-width: 600px) {
       .po-page-header { padding: 1.4rem 1.1rem 1rem; }
       .po-title { font-size: 1.4rem; }
@@ -485,7 +486,18 @@
       .btn-map { display: none; }
       .btn-request-lake { padding: 0 9px; }
     }
+
+    /* Static intro — this page is in the sitemap, so it needs real content
+       rather than being a bare search box to a crawler. */
+    .search-intro { max-width: 44rem; margin: 0 0 1.75rem; }
+    .search-intro p {
+      font-family: var(--font-serif); font-size: 1.06rem; line-height: 1.68;
+      color: rgba(237,232,223,0.72); margin: 0 0 0.85rem;
+    }
+    .search-intro a { color: var(--gold); text-decoration: none; border-bottom: 1px solid rgba(181,147,90,0.4); }
+    .search-intro a:hover { color: var(--gold-bright); border-color: var(--gold-bright); }
   </style>
+  <link rel="stylesheet" href="/css/footer.css">
 </head>
 <body>
 
@@ -518,6 +530,22 @@
     <div class="search-status" id="search-status"></div>
 
     <!-- Popular spots (hidden once results show) -->
+    <section class="search-intro">
+      <p>
+        Search resolves any named lake, river or reservoir by city, state or postcode and returns a live
+        Paddle Score for it &mdash; wind speed and gusts, air and water temperature, UV index, cloud cover
+        and precipitation folded into one number from 1 (Danger) to 5 (Excellent), with fixed safety rules
+        applied on top.
+      </p>
+      <p>
+        Coverage is not the same as curation. Seventeen spots are hand-picked and written up in detail,
+        with notes on what drives the score at each one and what the model cannot see there. Everywhere
+        else returns a score from weather data alone.
+        <a href="/paddlingout">Browse the 17 curated spots</a>, or
+        <a href="/paddlingout/methodology">read how the Paddle Score is built</a>.
+      </p>
+    </section>
+
     <div class="popular-section" id="popular-section">
       <div class="popular-label">Popular paddle regions</div>
       <div class="popular-chips">
@@ -546,7 +574,13 @@
 
   </main>
 
-  <footer>
+  <footer class="site-footer">
+    <nav aria-label="Footer">
+      <a href="/paddlingout">Paddling Out</a>
+      <a href="/paddlingout/methodology">Methodology</a>
+      <a href="/about">About</a>
+      <a href="/privacy">Privacy</a>
+    </nav>
     <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
   </footer>
 
@@ -559,5 +593,13 @@
       if (y) y.textContent = new Date().getFullYear();
     });
   </script>
+  <script>
+    /* kaayko-footer-year */
+    (function () {
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+    })();
+  </script>
+
 </body>
 </html>

@@ -213,6 +213,7 @@
       .btn { width: 100%; justify-content: center; }
     }
   </style>
+  <link rel="stylesheet" href="/css/footer.css">
 </head>
 <body>
   <div class="success-container">
@@ -346,5 +347,22 @@
     cartManager.clear();
     console.log('✅ Cart cleared after successful payment');
   </script>
+  <footer class="site-footer">
+    <nav aria-label="Footer">
+      <a href="/store">Store</a>
+      <a href="/about">About</a>
+      <a href="/privacy">Privacy</a>
+    </nav>
+    <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
+  </footer>
+
+  <script>
+    /* kaayko-footer-year */
+    (function () {
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+    })();
+  </script>
+
 </body>
 </html>

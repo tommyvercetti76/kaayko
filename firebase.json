@@ -97,8 +97,7 @@
       { "source": "/kutz", "destination": "/kutz/index.html" },
       { "source": "/kutz/**", "destination": "/kutz/index.html" },
       { "source": "/animals/**", "destination": "/animal.html" },
-      { "source": "/store/p/**", "destination": "/product.html" },
-      { "source": "**", "destination": "/index.html" }
+      { "source": "/store/p/**", "destination": "/product.html" }
     ]
   }
 }
