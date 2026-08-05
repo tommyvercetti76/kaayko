@@ -4,13 +4,19 @@
 //
 // Emits one static HTML page per curated spot into src/paddlingout/<slug>.html.
 //
-// The output is committed plain static HTML — there is no build step at serve
-// time, per the repo rule in CLAUDE.md. Re-run this script after editing
-// scripts/spot-content.js, then commit the regenerated pages.
+// Design: these pages are part of Paddling Out, not a separate microsite. They
+// load /css/paddlingout.css for the design tokens and shared components
+// (.po-page-header, .seo-lake) and /css/spot.css for detail-page layout. No
+// page-specific colours or fonts are defined here — if it looks different from
+// the Paddling Out card grid, that is a bug.
 //
-// Every page is fully readable with JavaScript disabled. JS only hydrates the
-// live score on top of static content, and a failed fetch leaves the page
-// intact and shows a small inline notice.
+// Content comes from scripts/spot-content.js (hand-authored prose, verifiable
+// facts only) and scripts/spot-media.json (photography and subtitles cached
+// from the production API at build time, so the build is deterministic and
+// nothing is fetched from a third party at runtime).
+//
+// The output is committed plain static HTML — there is no build step at serve
+// time, per CLAUDE.md. Re-run after editing either data file, then commit.
 //
 //   node scripts/generate-spot-pages.js
 //   node scripts/generate-spot-pages.js --check   (verify only, non-zero on drift)
@@ -18,6 +24,7 @@
 const fs = require('fs');
 const path = require('path');
 const spots = require('./spot-content');
+const media = require('./spot-media.json');
 
 const repoRoot = path.resolve(__dirname, '..');
 const outDir = path.join(repoRoot, 'src', 'paddlingout');
@@ -37,34 +44,34 @@ function metaDescription(spot) {
   return `${spot.name} kayak and paddle conditions. Live Paddle Score from wind, water temperature and UV, plus a 3-day hourly forecast. ${region}.`;
 }
 
-function prose(spot) {
-  return [spot.intro, spot.scoring, spot.note];
-}
-
-function wordCount(spot) {
-  return prose(spot).join(' ').split(/\s+/).filter(Boolean).length;
-}
+const prose = (spot) => [spot.intro, spot.scoring, spot.note];
+const wordCount = (spot) => prose(spot).join(' ').split(/\s+/).filter(Boolean).length;
+const heroImage = (spot) => (media[spot.id] && media[spot.id].images && media[spot.id].images[0]) || null;
 
 function jsonLd(spot) {
   const url = `${ORIGIN}/paddlingout/${spot.slug}`;
+  const img = heroImage(spot);
+  const place = {
+    '@type': 'Place',
+    '@id': `${url}#place`,
+    name: spot.name,
+    description: spot.intro,
+    url,
+    geo: {
+      '@type': 'GeoCoordinates',
+      latitude: spot.lat,
+      longitude: spot.lon,
+      elevation: `${spot.elevationM} m`,
+    },
+    containedInPlace: { '@type': 'Place', name: spot.containedInPlace },
+  };
+  if (img) place.photo = { '@type': 'ImageObject', contentUrl: img };
+
   return JSON.stringify(
     {
       '@context': 'https://schema.org',
       '@graph': [
-        {
-          '@type': 'Place',
-          '@id': `${url}#place`,
-          name: spot.name,
-          description: spot.intro,
-          url,
-          geo: {
-            '@type': 'GeoCoordinates',
-            latitude: spot.lat,
-            longitude: spot.lon,
-            elevation: `${spot.elevationM} m`,
-          },
-          containedInPlace: { '@type': 'Place', name: spot.containedInPlace },
-        },
+        place,
         {
           '@type': 'WebPage',
           '@id': `${url}#webpage`,
@@ -74,6 +81,7 @@ function jsonLd(spot) {
           about: { '@id': `${url}#place` },
           isPartOf: { '@type': 'WebSite', name: 'Kaayko', url: `${ORIGIN}/` },
           inLanguage: 'en',
+          ...(img ? { primaryImageOfPage: { '@type': 'ImageObject', contentUrl: img } } : {}),
         },
         {
           '@type': 'BreadcrumbList',
@@ -90,39 +98,6 @@ function jsonLd(spot) {
   );
 }
 
-const CSS = `
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#080808;--fg:#ede8df;--muted:rgba(237,232,223,.62);--faint:rgba(237,232,223,.38);
---gold:#b5935a;--gold-bright:#d9bd7b;--line:rgba(181,147,90,.2);
---serif:"Cormorant Garamond",Georgia,serif;--display:"Bebas Neue",Impact,sans-serif}
-body{background:var(--bg);color:var(--fg);font-family:var(--serif);-webkit-font-smoothing:antialiased;line-height:1.6}
-a{color:inherit}
-.label{font-family:var(--display);letter-spacing:.14em;text-transform:uppercase;font-size:.8rem;color:var(--gold);text-decoration:none}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:1.25rem clamp(1.25rem,5vw,4rem);border-bottom:1px solid var(--line)}
-.wrap{max-width:52rem;margin:0 auto;padding:clamp(2rem,6vw,4rem) clamp(1.25rem,5vw,4rem)}
-nav.crumb{font-size:.92rem;color:var(--faint);margin-bottom:1.5rem}
-nav.crumb a{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent}
-nav.crumb a:hover{color:var(--gold-bright);border-color:var(--gold)}
-h1{font-weight:500;font-size:clamp(2rem,6vw,3.2rem);letter-spacing:-.015em;line-height:1.1}
-.sub{font-family:var(--display);letter-spacing:.12em;text-transform:uppercase;font-size:.82rem;color:var(--gold);margin-top:.6rem}
-.facts{display:flex;flex-wrap:wrap;gap:.5rem 2rem;margin:1.75rem 0;padding:1rem 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:.95rem;color:var(--muted)}
-.facts b{color:var(--fg);font-weight:600}
-.live{margin:1.75rem 0;padding:1rem 1.25rem;border:1px solid var(--line);border-radius:4px;font-size:1rem;color:var(--muted)}
-.live b{color:var(--gold-bright)}
-.note-inline{color:var(--faint);font-size:.9rem}
-h2{font-weight:500;font-size:clamp(1.3rem,3.4vw,1.8rem);margin:2.5rem 0 .75rem;letter-spacing:-.01em}
-p{font-size:clamp(1.04rem,2.2vw,1.18rem);color:var(--muted);margin-bottom:1rem}
-p strong{color:var(--fg);font-weight:600}
-ul.spots{list-style:none;display:flex;flex-wrap:wrap;gap:.6rem 1.5rem;margin-top:.5rem}
-ul.spots a{color:var(--fg);text-decoration:none;border-bottom:1px solid var(--line);padding-bottom:2px}
-ul.spots a:hover{color:var(--gold-bright);border-color:var(--gold)}
-.cta{display:inline-block;margin-top:1rem;font-family:var(--display);letter-spacing:.12em;text-transform:uppercase;font-size:.82rem;color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold);padding-bottom:3px}
-.cta:hover{color:var(--gold-bright)}
-footer{border-top:1px solid var(--line);padding:1.5rem clamp(1.25rem,5vw,4rem);color:var(--faint);font-size:.9rem;display:flex;flex-wrap:wrap;gap:.5rem 1.5rem;justify-content:space-between}
-footer a{color:var(--muted);text-decoration:none}
-footer a:hover{color:var(--gold-bright)}
-`.trim();
-
 function render(spot) {
   const url = `${ORIGIN}/paddlingout/${spot.slug}`;
   const title = `${spot.name} Kayak & Paddle Conditions — Live Forecast | Kaayko`;
@@ -130,9 +105,14 @@ function render(spot) {
   const [intro, scoring, note] = prose(spot);
   const near = spot.nearby.map((s) => bySlug.get(s)).filter(Boolean);
   const feet = Math.round(spot.elevationM * 3.28084).toLocaleString('en-US');
+  const m = media[spot.id] || {};
+  const hero = heroImage(spot);
+  const ogImage = hero || `${ORIGIN}/assets/kaayko-og.png`;
+  const alt = `${spot.name}, ${spot.region}`;
+  const typeLabel = spot.waterType.charAt(0).toUpperCase() + spot.waterType.slice(1);
 
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark-theme">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -145,105 +125,134 @@ function render(spot) {
 <meta property="og:url" content="${url}">
 <meta property="og:title" content="${esc(spot.h1)} — Kayak &amp; Paddle Conditions">
 <meta property="og:description" content="${esc(desc)}">
-<meta property="og:image" content="${ORIGIN}/assets/kaayko-og.png">
+<meta property="og:image" content="${esc(ogImage)}">
+<meta property="og:image:alt" content="${esc(alt)}">
 <meta property="og:site_name" content="Kaayko">
 
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${esc(spot.h1)} — Kayak &amp; Paddle Conditions">
 <meta name="twitter:description" content="${esc(desc)}">
-<meta name="twitter:image" content="${ORIGIN}/assets/kaayko-og.png">
+<meta name="twitter:image" content="${esc(ogImage)}">
+<meta name="twitter:image:alt" content="${esc(alt)}">
 
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://api-vwcc5j4qda-uc.a.run.app">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+${hero ? `<link rel="preload" as="image" href="${esc(hero)}" fetchpriority="high">\n` : ''}<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/paddlingout.css">
+<link rel="stylesheet" href="/css/spot.css">
 <meta name="theme-color" content="#080808">
 
 <script type="application/ld+json">
 ${jsonLd(spot)}
 </script>
-
-<style>${CSS}</style>
 </head>
 <body>
 
-<header class="topbar">
-  <a class="label" href="/paddlingout">&larr; Paddling Out</a>
-  <a class="label" href="/paddlingout/methodology">How the score works</a>
+<header class="po-page-header">
+  <a class="po-brand" href="/paddlingout" style="text-decoration:none;color:inherit">
+    <span class="po-eyebrow">kaayko</span>
+    <span class="po-title">Paddling Out</span>
+  </a>
+  <a class="spot-link" href="/paddlingout/methodology"><span class="lbl-long">How the score works</span><span class="lbl-short">Methodology</span></a>
 </header>
 
-<div class="wrap">
+<main>
 
-  <nav class="crumb" aria-label="Breadcrumb">
-    <a href="/">Home</a> &rsaquo; <a href="/paddlingout">Paddling Out</a> &rsaquo; <span>${esc(spot.h1)}</span>
-  </nav>
+  <section class="spot-hero">
+    ${hero
+      ? `<img src="${esc(hero)}" alt="${esc(alt)}" width="1600" height="900" fetchpriority="high" decoding="async">`
+      : ''}
+    <div class="spot-hero-inner">
+      <nav class="spot-crumb" aria-label="Breadcrumb">
+        <a href="/">Home</a> &rsaquo; <a href="/paddlingout">Paddling Out</a> &rsaquo;
+        <span aria-current="page">${esc(spot.h1)}</span>
+      </nav>
+      <h1 class="spot-title">${esc(spot.h1)}</h1>
+      <div class="spot-region">${esc(spot.region)}</div>
 
-  <h1>${esc(spot.h1)}</h1>
-  <div class="sub">${esc(spot.region)}</div>
+      <a class="spot-score" id="live-score" data-spot-id="${esc(spot.id)}"
+         href="/paddlingout/forecast?id=${encodeURIComponent(spot.id)}">
+        <span class="dot" id="live-dot"></span>
+        <span id="live-text">See live conditions</span>
+      </a>
+    </div>
+  </section>
 
-  <div class="facts">
-    <span>Type &nbsp;<b>${esc(spot.waterType)}</b></span>
-    <span>Elevation &nbsp;<b>${spot.elevationM.toLocaleString('en-US')} m</b> (${feet} ft)</span>
-    <span>Coordinates &nbsp;<b>${spot.lat}, ${spot.lon}</b></span>
-  </div>
+  <dl class="spot-facts">
+    <div class="spot-fact"><dt>Type</dt><dd>${esc(typeLabel)}</dd></div>
+    <div class="spot-fact"><dt>Elevation</dt><dd>${spot.elevationM.toLocaleString('en-US')} m &middot; ${feet} ft</dd></div>
+    <div class="spot-fact"><dt>Coordinates</dt><dd>${spot.lat}, ${spot.lon}</dd></div>
+    ${m.parking !== undefined ? `<div class="spot-fact"><dt>Parking</dt><dd>${m.parking ? 'Available' : 'Not listed'}</dd></div>` : ''}
+  </dl>
 
-  <div class="live" id="live-score" data-spot-id="${esc(spot.id)}">
-    <span id="live-text">Live Paddle Score loads here.
-      <a class="cta" style="margin:0" href="/paddlingout/forecast?id=${encodeURIComponent(spot.id)}">Open the live forecast &rarr;</a>
-    </span>
-  </div>
+  <article class="spot-body">
+    <p class="spot-lede">${esc(intro)}</p>
 
-  <p>${esc(intro)}</p>
+    <h2>What drives the score here</h2>
+    <p>${esc(scoring)}</p>
 
-  <h2>What drives the score here</h2>
-  <p>${esc(scoring)}</p>
+    <h2>What the Paddle Score measures</h2>
+    <p>
+      A single number from 1 (Danger) to 5 (Excellent), built from wind speed and gusts, air and water
+      temperature, UV index, cloud cover, precipitation and visibility &mdash; then constrained by fixed
+      safety rules the model is not allowed to override. Wind above 25&nbsp;mph costs two full points.
+      Water below 5&deg;C is penalised hard regardless of how good the day looks.
+    </p>
+    <p><a class="spot-link" href="/paddlingout/methodology">Read the full methodology</a></p>
 
-  <h2>What the Paddle Score measures</h2>
-  <p>
-    The Paddle Score is a single number from 1 (Danger) to 5 (Excellent). It combines wind speed and gusts,
-    air temperature, water temperature, UV index, cloud cover, precipitation and visibility into one value,
-    then applies fixed safety rules that the model is not allowed to override — wind above 25 mph costs two
-    full points, and water below 5&deg;C is penalised hard regardless of how good the day looks.
-  </p>
-  <p>
-    <a class="cta" href="/paddlingout/methodology">Read the full methodology, including its limits</a>
-  </p>
+    <h2>What the score can&rsquo;t see</h2>
+    <p>${esc(note)}</p>
 
-  <h2>What the score can&rsquo;t see</h2>
-  <p>${esc(note)}</p>
-  <p class="note-inline">
-    Wear a life jacket, every time. The Paddle Score is a decision aid, not clearance to go out —
-    it cannot account for your skill, your equipment, currents, traffic, or hazards at your launch site.
-  </p>
+    <div class="spot-safety">
+      <p>
+        Wear a life jacket, every time. The Paddle Score is a decision aid, not clearance to go out.
+        It cannot account for your skill, your equipment, currents, traffic, or hazards at your launch site.
+      </p>
+    </div>
+  </article>
 
-  <h2>Nearby and similar spots</h2>
-  <ul class="spots">
-    ${near.map((n) => `<li><a href="/paddlingout/${n.slug}">${esc(n.h1)}</a></li>`).join('\n    ')}
-    <li><a href="/paddlingout">All spots</a></li>
-  </ul>
+  <section class="spot-nearby">
+    <h2>Nearby and similar spots</h2>
+    <div class="spot-nearby-grid">
+      ${near
+        .map((n) => {
+          const nm = media[n.id] || {};
+          return `<a class="seo-lake" href="/paddlingout/${n.slug}">
+        <h2>${esc(n.name)}</h2>
+        <p>${esc(nm.subtitle || n.region)}</p>
+      </a>`;
+        })
+        .join('\n      ')}
+      <a class="seo-lake" href="/paddlingout">
+        <h2>All spots</h2>
+        <p>Every water body Kaayko covers</p>
+      </a>
+    </div>
+  </section>
 
-</div>
+</main>
 
-<footer>
+<footer class="spot-footer">
   <span>&copy; 2026 Kaayko</span>
-  <span>
-    <a href="/paddlingout">Paddling Out</a> &nbsp;
-    <a href="/paddlingout/methodology">Methodology</a> &nbsp;
-    <a href="/about">About</a> &nbsp;
+  <nav>
+    <a href="/paddlingout">Paddling Out</a>
+    <a href="/paddlingout/methodology">Methodology</a>
+    <a href="/about">About</a>
     <a href="/privacy">Privacy</a>
-  </span>
+  </nav>
 </footer>
 
 <script>
-// Progressive enhancement only. The page above is complete without this.
-// On any failure we leave the static content untouched and say so quietly.
+// Progressive enhancement only. Everything above is complete without this.
+// On any failure the static page is untouched and the pill keeps its static label.
 (function () {
   var box = document.getElementById('live-score');
   var el = document.getElementById('live-text');
+  var dot = document.getElementById('live-dot');
   if (!box || !el) return;
   var id = box.getAttribute('data-spot-id');
-  var link = '<a class="cta" style="margin:0" href="/paddlingout/forecast?id=' + encodeURIComponent(id) + '">Open the live forecast &rarr;</a>';
   var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
   var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 8000);
 
@@ -257,18 +266,12 @@ ${jsonLd(spot)}
       var ps = spot.paddleScore;
       var rating = ps && typeof ps === 'object' ? ps.rating : ps;
       var reading = ps && typeof ps === 'object' ? ps.interpretation : null;
-      if (typeof rating === 'number' && isFinite(rating)) {
-        el.innerHTML = 'Current Paddle Score: <b>' + rating + ' / 5</b>'
-          + (reading ? ' &mdash; ' + String(reading) : '')
-          + ' &nbsp; ' + link;
-      } else {
-        el.innerHTML = 'Live conditions are available for this spot. ' + link;
-      }
+      if (typeof rating !== 'number' || !isFinite(rating)) return;
+      if (dot) dot.className = 'dot ' + (rating < 2.5 ? 's-critical' : rating < 3.5 ? 's-moderate' : 's-good');
+      el.innerHTML = 'Paddle Score <b>' + rating + ' / 5</b>'
+        + (reading ? ' <span class="reading">' + String(reading) + '</span>' : '');
     })
-    .catch(function () {
-      clearTimeout(timer);
-      el.innerHTML = '<span class="note-inline">Live conditions are unavailable right now. Everything below still applies.</span> ' + link;
-    });
+    .catch(function () { clearTimeout(timer); /* keep the static label */ });
 })();
 </script>
 
@@ -287,34 +290,49 @@ for (const spot of spots) {
   const wc = wordCount(spot);
   const dlen = metaDescription(spot).length;
 
-  if (wc < 150) throw new Error(`${spot.slug}: prose is ${wc} words, spec requires 150-300.`);
-  if (wc > 320) throw new Error(`${spot.slug}: prose is ${wc} words, spec requires 150-300.`);
+  if (wc < 150 || wc > 320) {
+    throw new Error(`${spot.slug}: prose is ${wc} words, spec requires 150-300.`);
+  }
+  if (!heroImage(spot)) {
+    console.warn(`  warning: ${spot.slug} has no hero image in spot-media.json`);
+  }
 
   const existing = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null;
   if (existing !== html) {
     drift++;
     if (!checkOnly) fs.writeFileSync(file, html, 'utf8');
   }
-  report.push({ slug: spot.slug, words: wc, descLen: dlen });
+  report.push({ slug: spot.slug, words: wc, descLen: dlen, img: !!heroImage(spot) });
 }
 
-const warnDesc = report.filter((r) => r.descLen < 140 || r.descLen > 170);
+// Emit the id -> slug map the card grid uses to link each lake to its static
+// page. Generated from the same source of truth so it cannot drift.
+const slugMapPath = path.join(repoRoot, 'src', 'js', 'spot-slugs.js');
+const slugMap =
+  '// GENERATED by scripts/generate-spot-pages.js — do not edit by hand.\n' +
+  '// Maps production spot ids to their static page slugs.\n' +
+  'window.KAAYKO_SPOT_SLUGS = ' +
+  JSON.stringify(Object.fromEntries(spots.map((s) => [s.id, s.slug])), null, 2) +
+  ';\n';
+const slugExisting = fs.existsSync(slugMapPath) ? fs.readFileSync(slugMapPath, 'utf8') : null;
+if (slugExisting !== slugMap) {
+  drift++;
+  if (!checkOnly) fs.writeFileSync(slugMapPath, slugMap, 'utf8');
+}
 
 if (checkOnly) {
   if (drift) {
-    console.error(`${drift} spot page(s) out of date. Run: node scripts/generate-spot-pages.js`);
+    console.error(`${drift} generated file(s) out of date. Run: node scripts/generate-spot-pages.js`);
     process.exit(1);
   }
   console.log(`All ${spots.length} spot pages up to date.`);
 } else {
-  console.log(`Wrote ${drift} of ${spots.length} spot pages to src/paddlingout/.`);
+  console.log(`Wrote ${drift} generated file(s) to src/.`);
 }
 
-console.log('\nslug                                words  desc');
-for (const r of report) {
-  console.log(`  ${r.slug.padEnd(34)} ${String(r.words).padStart(4)}  ${String(r.descLen).padStart(4)}`);
-}
+const warnDesc = report.filter((r) => r.descLen < 140 || r.descLen > 170);
+const noImg = report.filter((r) => !r.img);
+console.log(`\n${report.length} pages · ${report.length - noImg.length} with hero photography`);
 if (warnDesc.length) {
-  console.log(`\nNote: ${warnDesc.length} description(s) outside the 140-170 char comfort band:`);
-  warnDesc.forEach((r) => console.log(`  ${r.slug} (${r.descLen})`));
+  console.log(`descriptions outside 140-170 chars: ${warnDesc.map((r) => r.slug + '(' + r.descLen + ')').join(', ')}`);
 }

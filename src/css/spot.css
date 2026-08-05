@@ -1,0 +1,273 @@
+/*─────────────────────────────────────────────────────────────────────────────
+  spot.css — individual spot detail pages (/paddlingout/<slug>)
+
+  Loaded AFTER /css/paddlingout.css, which supplies the design tokens
+  (--gold, --panel-a, --line, --font-serif/sans) and the shared components
+  this file deliberately reuses: .po-page-header, .po-brand, .po-eyebrow,
+  .po-title and .seo-lake.
+
+  Nothing here redefines a token. If a colour or font is needed, it comes
+  from paddlingout.css so the two pages cannot drift apart.
+─────────────────────────────────────────────────────────────────────────────*/
+
+/*── 1) Hero ────────────────────────────────────────────────────────────────*/
+.spot-hero {
+  position: relative;
+  width: 100%;
+  min-height: clamp(320px, 46vh, 520px);
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--panel-a), var(--panel-c));
+  border-bottom: 1px solid var(--line);
+}
+
+.spot-hero img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.62;
+  transform: scale(1.02);
+}
+
+/* Scrim so the title stays legible over any photograph. */
+.spot-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(8, 8, 8, 0.94) 0%,
+    rgba(8, 8, 8, 0.62) 38%,
+    rgba(8, 8, 8, 0.20) 72%,
+    rgba(8, 8, 8, 0.34) 100%
+  );
+}
+
+.spot-hero-inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem clamp(1.25rem, 4vw, 2.5rem) 2.25rem;
+}
+
+.spot-crumb {
+  font-family: var(--font-serif);
+  font-size: 0.9rem;
+  color: rgba(237, 232, 223, 0.62);
+  margin-bottom: 0.9rem;
+}
+.spot-crumb a { color: rgba(237, 232, 223, 0.78); text-decoration: none; }
+.spot-crumb a:hover { color: var(--gold-bright); }
+.spot-crumb span[aria-current] { color: var(--gold); }
+
+.spot-title {
+  font-family: var(--font-sans);
+  font-size: clamp(1.9rem, 5.6vw, 3.4rem);
+  font-weight: 700;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+  line-height: 1.02;
+  color: var(--fg);
+  margin: 0;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6);
+}
+
+.spot-region {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(1rem, 2.4vw, 1.22rem);
+  color: var(--gold-bright);
+  margin-top: 0.45rem;
+  letter-spacing: 0.02em;
+}
+
+/*── 2) Live score pill (sits on the hero) ──────────────────────────────────*/
+.spot-score {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 1.35rem;
+  padding: 0.55rem 1.15rem 0.55rem 0.9rem;
+  border: 1px solid rgba(181, 147, 90, 0.42);
+  border-radius: 50px;
+  background: rgba(12, 11, 8, 0.72);
+  backdrop-filter: blur(6px);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg);
+  text-decoration: none;
+  transition: border-color 0.25s ease, background 0.25s ease;
+}
+.spot-score:hover { border-color: var(--gold); background: rgba(20, 18, 12, 0.9); }
+.spot-score .dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 10px rgba(181, 147, 90, 0.8);
+  flex-shrink: 0;
+}
+.spot-score .dot.s-critical { background: var(--score-critical); box-shadow: 0 0 10px rgba(189,59,43,.8); }
+.spot-score .dot.s-moderate { background: var(--score-moderate); box-shadow: 0 0 10px rgba(235,129,39,.8); }
+.spot-score .dot.s-good     { background: var(--score-good);     box-shadow: 0 0 10px rgba(49,109,67,.85); }
+.spot-score b { font-weight: 700; color: var(--gold-bright); }
+.spot-score .reading {
+  font-family: var(--font-serif);
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.95rem;
+  color: rgba(237, 232, 223, 0.72);
+}
+
+/*── 3) Facts strip ─────────────────────────────────────────────────────────*/
+.spot-facts {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.15rem clamp(1.25rem, 4vw, 2.5rem);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 2.75rem;
+  border-bottom: 1px solid rgba(181, 147, 90, 0.18);
+}
+.spot-fact { display: flex; flex-direction: column; gap: 0.18rem; }
+.spot-fact dt {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: 0.85;
+}
+.spot-fact dd {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.02rem;
+  color: var(--fg);
+}
+
+/*── 4) Reading column ──────────────────────────────────────────────────────*/
+.spot-body {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 3.25rem) clamp(1.25rem, 4vw, 2.5rem) 1rem;
+}
+
+.spot-body h2 {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 2.75rem 0 0.9rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(181, 147, 90, 0.18);
+}
+.spot-body h2:first-child { margin-top: 0; }
+
+.spot-body p {
+  font-family: var(--font-serif);
+  font-size: clamp(1.1rem, 2.3vw, 1.24rem);
+  line-height: 1.72;
+  color: rgba(237, 232, 223, 0.82);
+  margin: 0 0 1.05rem;
+}
+
+.spot-lede {
+  font-size: clamp(1.2rem, 2.7vw, 1.42rem) !important;
+  color: var(--fg) !important;
+  line-height: 1.62 !important;
+}
+
+.spot-safety {
+  margin-top: 1.5rem;
+  padding: 1rem 1.25rem;
+  border-left: 2px solid var(--gold);
+  background: rgba(181, 147, 90, 0.05);
+  border-radius: 0 8px 8px 0;
+}
+.spot-safety p {
+  font-size: 1rem !important;
+  color: rgba(237, 232, 223, 0.7) !important;
+  margin: 0 !important;
+}
+
+.spot-link {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(181, 147, 90, 0.45);
+  padding-bottom: 3px;
+  transition: color 0.25s ease, border-color 0.25s ease;
+}
+.spot-link:hover { color: var(--gold-bright); border-color: var(--gold-bright); }
+
+/* Header link swaps to a shorter label on phones so the wordmark stays on one line. */
+.lbl-short { display: none; }
+
+/*── 5) Nearby spots — reuses .seo-lake from paddlingout.css ────────────────*/
+.spot-nearby {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem clamp(1.25rem, 4vw, 2.5rem) 3.5rem;
+}
+.spot-nearby h2 {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0 0 1.1rem;
+}
+.spot-nearby-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+/*── 6) Footer ──────────────────────────────────────────────────────────────*/
+.spot-footer {
+  border-top: 1px solid rgba(181, 147, 90, 0.18);
+  padding: 1.5rem clamp(1.25rem, 4vw, 2.5rem);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.6rem;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-serif);
+  font-size: 0.92rem;
+  color: rgba(237, 232, 223, 0.45);
+}
+.spot-footer nav { display: flex; flex-wrap: wrap; gap: 0.6rem 1.4rem; }
+.spot-footer a { color: rgba(237, 232, 223, 0.62); text-decoration: none; }
+.spot-footer a:hover { color: var(--gold-bright); }
+
+@media (max-width: 640px) {
+  .spot-facts { gap: 0.75rem 1.75rem; }
+  .spot-hero { min-height: 300px; }
+}
+
+/* Keep the header on one line on small phones — at the default Paddling Out
+   sizes both the wordmark and the methodology link wrap awkwardly at 375px. */
+@media (max-width: 540px) {
+  .po-page-header { padding: 1.25rem 1.25rem 0.9rem; gap: 1rem; }
+  .po-page-header .po-title { font-size: 1.3rem; letter-spacing: 0.07em; }
+  .po-page-header .spot-link { font-size: 0.68rem; letter-spacing: 0.1em; white-space: nowrap; }
+  .po-page-header .po-title { white-space: nowrap; }
+  .lbl-long { display: none; }
+  .lbl-short { display: inline; }
+  .spot-hero-inner { padding-bottom: 1.75rem; }
+  .spot-score { margin-top: 1.1rem; padding: 0.5rem 0.95rem 0.5rem 0.8rem; font-size: 0.74rem; }
+  .spot-score .reading { font-size: 0.85rem; }
+}

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark-theme">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,19 +12,24 @@
 <meta property="og:url" content="https://kaayko.com/paddlingout/white-rock-lake-dallas">
 <meta property="og:title" content="White Rock Lake, Dallas — Kayak &amp; Paddle Conditions">
 <meta property="og:description" content="White Rock Lake kayak and paddle conditions. Live Paddle Score from wind, water temperature and UV, plus a 3-day hourly forecast. Dallas, Texas.">
-<meta property="og:image" content="https://kaayko.com/assets/kaayko-og.png">
+<meta property="og:image" content="https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fwhiterock1.webp?alt=media">
+<meta property="og:image:alt" content="White Rock Lake, Dallas, Texas">
 <meta property="og:site_name" content="Kaayko">
 
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="White Rock Lake, Dallas — Kayak &amp; Paddle Conditions">
 <meta name="twitter:description" content="White Rock Lake kayak and paddle conditions. Live Paddle Score from wind, water temperature and UV, plus a 3-day hourly forecast. Dallas, Texas.">
-<meta name="twitter:image" content="https://kaayko.com/assets/kaayko-og.png">
+<meta name="twitter:image" content="https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fwhiterock1.webp?alt=media">
+<meta name="twitter:image:alt" content="White Rock Lake, Dallas, Texas">
 
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://api-vwcc5j4qda-uc.a.run.app">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fwhiterock1.webp?alt=media" fetchpriority="high">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/paddlingout.css">
+<link rel="stylesheet" href="/css/spot.css">
 <meta name="theme-color" content="#080808">
 
 <script type="application/ld+json">
@@ -46,6 +51,10 @@
       "containedInPlace": {
         "@type": "Place",
         "name": "Dallas, Texas"
+      },
+      "photo": {
+        "@type": "ImageObject",
+        "contentUrl": "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fwhiterock1.webp?alt=media"
       }
     },
     {
@@ -62,7 +71,11 @@
         "name": "Kaayko",
         "url": "https://kaayko.com/"
       },
-      "inLanguage": "en"
+      "inLanguage": "en",
+      "primaryImageOfPage": {
+        "@type": "ImageObject",
+        "contentUrl": "https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fwhiterock1.webp?alt=media"
+      }
     },
     {
       "@type": "BreadcrumbList",
@@ -90,118 +103,113 @@
   ]
 }
 </script>
-
-<style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#080808;--fg:#ede8df;--muted:rgba(237,232,223,.62);--faint:rgba(237,232,223,.38);
---gold:#b5935a;--gold-bright:#d9bd7b;--line:rgba(181,147,90,.2);
---serif:"Cormorant Garamond",Georgia,serif;--display:"Bebas Neue",Impact,sans-serif}
-body{background:var(--bg);color:var(--fg);font-family:var(--serif);-webkit-font-smoothing:antialiased;line-height:1.6}
-a{color:inherit}
-.label{font-family:var(--display);letter-spacing:.14em;text-transform:uppercase;font-size:.8rem;color:var(--gold);text-decoration:none}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:1.25rem clamp(1.25rem,5vw,4rem);border-bottom:1px solid var(--line)}
-.wrap{max-width:52rem;margin:0 auto;padding:clamp(2rem,6vw,4rem) clamp(1.25rem,5vw,4rem)}
-nav.crumb{font-size:.92rem;color:var(--faint);margin-bottom:1.5rem}
-nav.crumb a{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent}
-nav.crumb a:hover{color:var(--gold-bright);border-color:var(--gold)}
-h1{font-weight:500;font-size:clamp(2rem,6vw,3.2rem);letter-spacing:-.015em;line-height:1.1}
-.sub{font-family:var(--display);letter-spacing:.12em;text-transform:uppercase;font-size:.82rem;color:var(--gold);margin-top:.6rem}
-.facts{display:flex;flex-wrap:wrap;gap:.5rem 2rem;margin:1.75rem 0;padding:1rem 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:.95rem;color:var(--muted)}
-.facts b{color:var(--fg);font-weight:600}
-.live{margin:1.75rem 0;padding:1rem 1.25rem;border:1px solid var(--line);border-radius:4px;font-size:1rem;color:var(--muted)}
-.live b{color:var(--gold-bright)}
-.note-inline{color:var(--faint);font-size:.9rem}
-h2{font-weight:500;font-size:clamp(1.3rem,3.4vw,1.8rem);margin:2.5rem 0 .75rem;letter-spacing:-.01em}
-p{font-size:clamp(1.04rem,2.2vw,1.18rem);color:var(--muted);margin-bottom:1rem}
-p strong{color:var(--fg);font-weight:600}
-ul.spots{list-style:none;display:flex;flex-wrap:wrap;gap:.6rem 1.5rem;margin-top:.5rem}
-ul.spots a{color:var(--fg);text-decoration:none;border-bottom:1px solid var(--line);padding-bottom:2px}
-ul.spots a:hover{color:var(--gold-bright);border-color:var(--gold)}
-.cta{display:inline-block;margin-top:1rem;font-family:var(--display);letter-spacing:.12em;text-transform:uppercase;font-size:.82rem;color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold);padding-bottom:3px}
-.cta:hover{color:var(--gold-bright)}
-footer{border-top:1px solid var(--line);padding:1.5rem clamp(1.25rem,5vw,4rem);color:var(--faint);font-size:.9rem;display:flex;flex-wrap:wrap;gap:.5rem 1.5rem;justify-content:space-between}
-footer a{color:var(--muted);text-decoration:none}
-footer a:hover{color:var(--gold-bright)}</style>
 </head>
 <body>
 
-<header class="topbar">
-  <a class="label" href="/paddlingout">&larr; Paddling Out</a>
-  <a class="label" href="/paddlingout/methodology">How the score works</a>
+<header class="po-page-header">
+  <a class="po-brand" href="/paddlingout" style="text-decoration:none;color:inherit">
+    <span class="po-eyebrow">kaayko</span>
+    <span class="po-title">Paddling Out</span>
+  </a>
+  <a class="spot-link" href="/paddlingout/methodology"><span class="lbl-long">How the score works</span><span class="lbl-short">Methodology</span></a>
 </header>
 
-<div class="wrap">
+<main>
 
-  <nav class="crumb" aria-label="Breadcrumb">
-    <a href="/">Home</a> &rsaquo; <a href="/paddlingout">Paddling Out</a> &rsaquo; <span>White Rock Lake, Dallas</span>
-  </nav>
+  <section class="spot-hero">
+    <img src="https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fwhiterock1.webp?alt=media" alt="White Rock Lake, Dallas, Texas" width="1600" height="900" fetchpriority="high" decoding="async">
+    <div class="spot-hero-inner">
+      <nav class="spot-crumb" aria-label="Breadcrumb">
+        <a href="/">Home</a> &rsaquo; <a href="/paddlingout">Paddling Out</a> &rsaquo;
+        <span aria-current="page">White Rock Lake, Dallas</span>
+      </nav>
+      <h1 class="spot-title">White Rock Lake, Dallas</h1>
+      <div class="spot-region">Dallas, Texas</div>
 
-  <h1>White Rock Lake, Dallas</h1>
-  <div class="sub">Dallas, Texas</div>
+      <a class="spot-score" id="live-score" data-spot-id="whiterock"
+         href="/paddlingout/forecast?id=whiterock">
+        <span class="dot" id="live-dot"></span>
+        <span id="live-text">See live conditions</span>
+      </a>
+    </div>
+  </section>
 
-  <div class="facts">
-    <span>Type &nbsp;<b>lake</b></span>
-    <span>Elevation &nbsp;<b>138 m</b> (453 ft)</span>
-    <span>Coordinates &nbsp;<b>32.832, -96.722</b></span>
-  </div>
+  <dl class="spot-facts">
+    <div class="spot-fact"><dt>Type</dt><dd>Lake</dd></div>
+    <div class="spot-fact"><dt>Elevation</dt><dd>138 m &middot; 453 ft</dd></div>
+    <div class="spot-fact"><dt>Coordinates</dt><dd>32.832, -96.722</dd></div>
+    <div class="spot-fact"><dt>Parking</dt><dd>Available</dd></div>
+  </dl>
 
-  <div class="live" id="live-score" data-spot-id="whiterock">
-    <span id="live-text">Live Paddle Score loads here.
-      <a class="cta" style="margin:0" href="/paddlingout/forecast?id=whiterock">Open the live forecast &rarr;</a>
-    </span>
-  </div>
+  <article class="spot-body">
+    <p class="spot-lede">White Rock Lake is a city lake in Dallas, Texas, at 138 metres, held by a dam on White Rock Creek. It was built in 1911 as a municipal water supply and has long since become a recreation lake instead, used heavily for paddling and rowing inside the city.</p>
 
-  <p>White Rock Lake is a city lake in Dallas, Texas, at 138 metres, held by a dam on White Rock Creek. It was built in 1911 as a municipal water supply and has long since become a recreation lake instead, used heavily for paddling and rowing inside the city.</p>
+    <h2>What drives the score here</h2>
+    <p>White Rock is a heat and wind location. Water temperature is seldom what limits the score; through a Texas summer it is heat and UV, and across the rest of the year it is most often wind. The lake is small enough that wind does not get the fetch it gets at Lewisville forty kilometres north, which tends to make its scores less volatile than the larger reservoir — a useful thing to know if you are choosing between the two on a breezy day.</p>
 
-  <h2>What drives the score here</h2>
-  <p>White Rock is a heat and wind location. Water temperature is seldom what limits the score; through a Texas summer it is heat and UV, and across the rest of the year it is most often wind. The lake is small enough that wind does not get the fetch it gets at Lewisville forty kilometres north, which tends to make its scores less volatile than the larger reservoir — a useful thing to know if you are choosing between the two on a breezy day.</p>
+    <h2>What the Paddle Score measures</h2>
+    <p>
+      A single number from 1 (Danger) to 5 (Excellent), built from wind speed and gusts, air and water
+      temperature, UV index, cloud cover, precipitation and visibility &mdash; then constrained by fixed
+      safety rules the model is not allowed to override. Wind above 25&nbsp;mph costs two full points.
+      Water below 5&deg;C is penalised hard regardless of how good the day looks.
+    </p>
+    <p><a class="spot-link" href="/paddlingout/methodology">Read the full methodology</a></p>
 
-  <h2>What the Paddle Score measures</h2>
-  <p>
-    The Paddle Score is a single number from 1 (Danger) to 5 (Excellent). It combines wind speed and gusts,
-    air temperature, water temperature, UV index, cloud cover, precipitation and visibility into one value,
-    then applies fixed safety rules that the model is not allowed to override — wind above 25 mph costs two
-    full points, and water below 5&deg;C is penalised hard regardless of how good the day looks.
-  </p>
-  <p>
-    <a class="cta" href="/paddlingout/methodology">Read the full methodology, including its limits</a>
-  </p>
+    <h2>What the score can&rsquo;t see</h2>
+    <p>It is a city lake, so closures, organised events, and water-quality advisories are all real possibilities that a weather model cannot see. Check with Dallas Parks and Recreation for current status before relying on a good score.</p>
 
-  <h2>What the score can&rsquo;t see</h2>
-  <p>It is a city lake, so closures, organised events, and water-quality advisories are all real possibilities that a weather model cannot see. Check with Dallas Parks and Recreation for current status before relying on a good score.</p>
-  <p class="note-inline">
-    Wear a life jacket, every time. The Paddle Score is a decision aid, not clearance to go out —
-    it cannot account for your skill, your equipment, currents, traffic, or hazards at your launch site.
-  </p>
+    <div class="spot-safety">
+      <p>
+        Wear a life jacket, every time. The Paddle Score is a decision aid, not clearance to go out.
+        It cannot account for your skill, your equipment, currents, traffic, or hazards at your launch site.
+      </p>
+    </div>
+  </article>
 
-  <h2>Nearby and similar spots</h2>
-  <ul class="spots">
-    <li><a href="/paddlingout/lewisville-lake-texas">Lewisville Lake, Texas</a></li>
-    <li><a href="/paddlingout/trinity-river-irving-texas">Trinity River, Irving</a></li>
-    <li><a href="/paddlingout/lake-union-seattle">Lake Union, Seattle</a></li>
-    <li><a href="/paddlingout">All spots</a></li>
-  </ul>
+  <section class="spot-nearby">
+    <h2>Nearby and similar spots</h2>
+    <div class="spot-nearby-grid">
+      <a class="seo-lake" href="/paddlingout/lewisville-lake-texas">
+        <h2>Lewisville Lake</h2>
+        <p>Lewisville, Texas</p>
+      </a>
+      <a class="seo-lake" href="/paddlingout/trinity-river-irving-texas">
+        <h2>Trinity River at Irving</h2>
+        <p>Irving, Texas</p>
+      </a>
+      <a class="seo-lake" href="/paddlingout/lake-union-seattle">
+        <h2>Lake Union</h2>
+        <p>Seattle, Washington</p>
+      </a>
+      <a class="seo-lake" href="/paddlingout">
+        <h2>All spots</h2>
+        <p>Every water body Kaayko covers</p>
+      </a>
+    </div>
+  </section>
 
-</div>
+</main>
 
-<footer>
+<footer class="spot-footer">
   <span>&copy; 2026 Kaayko</span>
-  <span>
-    <a href="/paddlingout">Paddling Out</a> &nbsp;
-    <a href="/paddlingout/methodology">Methodology</a> &nbsp;
-    <a href="/about">About</a> &nbsp;
+  <nav>
+    <a href="/paddlingout">Paddling Out</a>
+    <a href="/paddlingout/methodology">Methodology</a>
+    <a href="/about">About</a>
     <a href="/privacy">Privacy</a>
-  </span>
+  </nav>
 </footer>
 
 <script>
-// Progressive enhancement only. The page above is complete without this.
-// On any failure we leave the static content untouched and say so quietly.
+// Progressive enhancement only. Everything above is complete without this.
+// On any failure the static page is untouched and the pill keeps its static label.
 (function () {
   var box = document.getElementById('live-score');
   var el = document.getElementById('live-text');
+  var dot = document.getElementById('live-dot');
   if (!box || !el) return;
   var id = box.getAttribute('data-spot-id');
-  var link = '<a class="cta" style="margin:0" href="/paddlingout/forecast?id=' + encodeURIComponent(id) + '">Open the live forecast &rarr;</a>';
   var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
   var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 8000);
 
@@ -215,18 +223,12 @@ footer a:hover{color:var(--gold-bright)}</style>
       var ps = spot.paddleScore;
       var rating = ps && typeof ps === 'object' ? ps.rating : ps;
       var reading = ps && typeof ps === 'object' ? ps.interpretation : null;
-      if (typeof rating === 'number' && isFinite(rating)) {
-        el.innerHTML = 'Current Paddle Score: <b>' + rating + ' / 5</b>'
-          + (reading ? ' &mdash; ' + String(reading) : '')
-          + ' &nbsp; ' + link;
-      } else {
-        el.innerHTML = 'Live conditions are available for this spot. ' + link;
-      }
+      if (typeof rating !== 'number' || !isFinite(rating)) return;
+      if (dot) dot.className = 'dot ' + (rating < 2.5 ? 's-critical' : rating < 3.5 ? 's-moderate' : 's-good');
+      el.innerHTML = 'Paddle Score <b>' + rating + ' / 5</b>'
+        + (reading ? ' <span class="reading">' + String(reading) + '</span>' : '');
     })
-    .catch(function () {
-      clearTimeout(timer);
-      el.innerHTML = '<span class="note-inline">Live conditions are unavailable right now. Everything below still applies.</span> ' + link;
-    });
+    .catch(function () { clearTimeout(timer); /* keep the static label */ });
 })();
 </script>
 
