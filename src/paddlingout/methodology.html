@@ -4,10 +4,61 @@
   <script>document.documentElement.classList.add('dark-theme');</script>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>How the Paddle Score Works | Kaayko Paddling Out</title>
+  <title>How the Kaayko Paddle Score Works — Data, Model &amp; Limits</title>
   <meta name="description" content="The real Paddle Score pipeline: WeatherAPI data, a gradient-boosted model, calibration layers, the exact penalty table, and crowd-sourced per-lake offsets.">
-  <meta name="robots" content="index, follow">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
   <link rel="canonical" href="https://kaayko.com/paddlingout/methodology">
+
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://kaayko.com/paddlingout/methodology">
+  <meta property="og:title" content="How the Kaayko Paddle Score Works — Data, Model &amp; Limits">
+  <meta property="og:description" content="The real pipeline: WeatherAPI feeds, a gradient-boosted model, calibration, the exact penalty table, and where the score stops being reliable.">
+  <meta property="og:image" content="https://kaayko.com/assets/kaayko-og.png">
+  <meta property="og:site_name" content="Kaayko">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="How the Kaayko Paddle Score Works — Data, Model &amp; Limits">
+  <meta name="twitter:description" content="WeatherAPI feeds, a gradient-boosted model, calibration, the exact penalty table, and the limits we publish openly.">
+  <meta name="twitter:image" content="https://kaayko.com/assets/kaayko-og.png">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "TechArticle",
+        "@id": "https://kaayko.com/paddlingout/methodology#article",
+        "headline": "How the Kaayko Paddle Score Works — Data, Model & Limits",
+        "description": "The Paddle Score pipeline: WeatherAPI data sources, a gradient-boosted model, calibration layers, hard safety limits, crowd-sourced per-lake offsets, and the score's stated limitations.",
+        "url": "https://kaayko.com/paddlingout/methodology",
+        "mainEntityOfPage": "https://kaayko.com/paddlingout/methodology",
+        "datePublished": "2026-08-04",
+        "dateModified": "2026-08-05",
+        "inLanguage": "en",
+        "author": { "@type": "Person", "name": "Rohan", "url": "https://kaayko.com/about" },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Kaayko",
+          "url": "https://kaayko.com/",
+          "logo": { "@type": "ImageObject", "url": "https://kaayko.com/kaayko-logo-512.png" }
+        },
+        "about": [
+          { "@type": "Thing", "name": "Kayaking safety" },
+          { "@type": "Thing", "name": "Paddlesports weather forecasting" }
+        ],
+        "proficiencyLevel": "Beginner"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://kaayko.com/" },
+          { "@type": "ListItem", "position": 2, "name": "Paddling Out", "item": "https://kaayko.com/paddlingout" },
+          { "@type": "ListItem", "position": 3, "name": "Methodology", "item": "https://kaayko.com/paddlingout/methodology" }
+        ]
+      }
+    ]
+  }
+  </script>
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <meta name="theme-color" content="#d4af37">
   <link rel="preconnect" href="https://fonts.googleapis.com">
