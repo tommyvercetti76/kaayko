@@ -39,7 +39,9 @@
 
   <!-- Schema.org: WebApplication + FAQPage + BreadcrumbList -->
   <script type="application/ld+json">
-  [
+{
+  "@context": "https://schema.org",
+  "@graph": [
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
@@ -150,9 +152,127 @@
           "item": "https://kaayko.com/paddlingout"
         }
       ]
+    },
+    {
+      "@type": "CollectionPage",
+      "@id": "https://kaayko.com/paddlingout#collection",
+      "name": "Paddling Out — all spots",
+      "description": "Every water body Kaayko currently covers, with live Paddle Scores.",
+      "url": "https://kaayko.com/paddlingout"
+    },
+    {
+      "@type": "ItemList",
+      "name": "Kaayko paddling spots",
+      "numberOfItems": 17,
+      "itemListOrder": "https://schema.org/ItemListUnordered",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Ambazari Lake, Nagpur",
+          "url": "https://kaayko.com/paddlingout/ambazari-lake-nagpur"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Antero Reservoir, Colorado",
+          "url": "https://kaayko.com/paddlingout/antero-reservoir-colorado"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Colorado River, Moab",
+          "url": "https://kaayko.com/paddlingout/colorado-river-moab-utah"
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "name": "Cottonwood Lake, Colorado",
+          "url": "https://kaayko.com/paddlingout/cottonwood-lake-colorado"
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "name": "Lake Crescent, Washington",
+          "url": "https://kaayko.com/paddlingout/lake-crescent-washington"
+        },
+        {
+          "@type": "ListItem",
+          "position": 6,
+          "name": "Diablo Lake, Washington",
+          "url": "https://kaayko.com/paddlingout/diablo-lake-washington"
+        },
+        {
+          "@type": "ListItem",
+          "position": 7,
+          "name": "Jackson Lake, Wyoming",
+          "url": "https://kaayko.com/paddlingout/jackson-lake-wyoming"
+        },
+        {
+          "@type": "ListItem",
+          "position": 8,
+          "name": "Jenny Lake, Wyoming",
+          "url": "https://kaayko.com/paddlingout/jenny-lake-wyoming"
+        },
+        {
+          "@type": "ListItem",
+          "position": 9,
+          "name": "Kens Lake, Utah",
+          "url": "https://kaayko.com/paddlingout/kens-lake-utah"
+        },
+        {
+          "@type": "ListItem",
+          "position": 10,
+          "name": "Lewisville Lake, Texas",
+          "url": "https://kaayko.com/paddlingout/lewisville-lake-texas"
+        },
+        {
+          "@type": "ListItem",
+          "position": 11,
+          "name": "Lake McDonald, Montana",
+          "url": "https://kaayko.com/paddlingout/lake-mcdonald-montana"
+        },
+        {
+          "@type": "ListItem",
+          "position": 12,
+          "name": "Merrimack River, New Hampshire",
+          "url": "https://kaayko.com/paddlingout/merrimack-river-new-hampshire"
+        },
+        {
+          "@type": "ListItem",
+          "position": 13,
+          "name": "Lake Powell, Utah",
+          "url": "https://kaayko.com/paddlingout/lake-powell-utah"
+        },
+        {
+          "@type": "ListItem",
+          "position": 14,
+          "name": "Taylor Park Reservoir, Colorado",
+          "url": "https://kaayko.com/paddlingout/taylor-park-reservoir-colorado"
+        },
+        {
+          "@type": "ListItem",
+          "position": 15,
+          "name": "Trinity River, Irving",
+          "url": "https://kaayko.com/paddlingout/trinity-river-irving-texas"
+        },
+        {
+          "@type": "ListItem",
+          "position": 16,
+          "name": "Lake Union, Seattle",
+          "url": "https://kaayko.com/paddlingout/lake-union-seattle"
+        },
+        {
+          "@type": "ListItem",
+          "position": 17,
+          "name": "White Rock Lake, Dallas",
+          "url": "https://kaayko.com/paddlingout/white-rock-lake-dallas"
+        }
+      ]
     }
   ]
-  </script>
+}
+</script>
 
   <!-- Security Headers -->
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -205,8 +325,29 @@
 
   <!-- MAIN: Cards injected by paddlingout.js (replaces static grid below) -->
   <main>
+      <section class="po-intro" style="max-width:60rem;margin:0 auto;padding:1.5rem 1.5rem 0.5rem">
+        <h2 style="font-size:1.5rem;margin-bottom:0.75rem">Paddle conditions for 17 hand-picked spots</h2>
+        <p style="opacity:0.75;line-height:1.65;margin-bottom:0.9rem">
+          Every spot here was added by hand, not scraped from a database. The Paddle Score is a single
+          number from 1 (Danger) to 5 (Excellent) built from wind speed and gusts, air and water
+          temperature, UV index, cloud cover, precipitation and visibility &mdash; then constrained by
+          fixed safety rules the model is not allowed to override.
+        </p>
+        <p style="opacity:0.75;line-height:1.65;margin-bottom:0.9rem">
+          The model behind it was trained on roughly 1.4 million hourly weather observations across 164
+          water bodies in the United States and India. The failures are published next to the results:
+          <a href="/paddlingout/methodology" style="color:#d4af37">read the full methodology, including
+          what the score cannot see</a>.
+        </p>
+      </section>
+
     <section class="container" id="cardsContainer">
       <!-- Static lake grid for SEO / no-JS / screen readers. JS replaces this on load. -->
+
+
+
+    </section>
+
       <noscript><style>.seo-grid{display:grid!important}</style></noscript>
       <div class="seo-grid" id="seoGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;padding:1rem 1.5rem">
         <a href="/paddlingout/ambazari-lake-nagpur" class="seo-lake"><h2>Ambazari Lake</h2><p>Nagpur, Maharashtra</p></a>
@@ -227,7 +368,36 @@
         <a href="/paddlingout/lake-union-seattle" class="seo-lake"><h2>Lake Union</h2><p>Seattle, Washington</p></a>
         <a href="/paddlingout/white-rock-lake-dallas" class="seo-lake"><h2>White Rock Lake</h2><p>Dallas, Texas</p></a>
       </div>
-    </section>
+
+      <section class="po-faq" style="max-width:60rem;margin:0 auto;padding:2rem 1.5rem">
+        <h2 style="font-size:1.5rem;margin-bottom:1rem">Common questions</h2>
+        <div>
+          <div class="po-faq-item" style="margin-bottom:1.25rem">
+            <h3 style="font-size:1.05rem;margin-bottom:0.35rem">What is Kaayko Paddling Out?</h3>
+            <p style="opacity:0.72;line-height:1.6">Kaayko Paddling Out is a free AI-powered paddle conditions tool that gives real-time safety scores for 17 hand-picked lakes, rivers, and reservoirs across the US. It combines wind speed, water temperature, UV index, cloud cover, and precipitation data into a single Paddle Score from 1 (Danger) to 5 (Excellent).</p>
+          </div>
+          <div class="po-faq-item" style="margin-bottom:1.25rem">
+            <h3 style="font-size:1.05rem;margin-bottom:0.35rem">How is the paddle score calculated?</h3>
+            <p style="opacity:0.72;line-height:1.6">The Paddle Score (1–5) is generated by a machine learning model trained on historical paddle conditions. It weighs wind speed, water temperature, air temperature, UV index, cloud cover, and precipitation probability. A score of 5 means excellent conditions; 1 means dangerous — not recommended for paddling.</p>
+          </div>
+          <div class="po-faq-item" style="margin-bottom:1.25rem">
+            <h3 style="font-size:1.05rem;margin-bottom:0.35rem">What wind speed is safe for kayaking?</h3>
+            <p style="opacity:0.72;line-height:1.6">Generally, wind speeds under 10 mph (9 knots) are considered safe for recreational kayaking. Winds above 15 mph can create challenging conditions for beginners. Kaayko's paddle score automatically factors wind speed into the overall safety rating — any score below 2 indicates winds or conditions that could be dangerous.</p>
+          </div>
+          <div class="po-faq-item" style="margin-bottom:1.25rem">
+            <h3 style="font-size:1.05rem;margin-bottom:0.35rem">Which lakes and rivers are covered?</h3>
+            <p style="opacity:0.72;line-height:1.6">Kaayko covers 17 hand-picked paddling destinations, including lakes, reservoirs, and rivers. You can browse all spots on the main Paddling Out page or use the search to find spots near any city or zip code.</p>
+          </div>
+          <div class="po-faq-item" style="margin-bottom:1.25rem">
+            <h3 style="font-size:1.05rem;margin-bottom:0.35rem">How often is the paddle forecast updated?</h3>
+            <p style="opacity:0.72;line-height:1.6">Paddle conditions and scores are updated in real time using live weather data. The 3-day hourly heatmap refreshes each time you load the forecast so you always see the most current conditions.</p>
+          </div>
+          <div class="po-faq-item" style="margin-bottom:1.25rem">
+            <h3 style="font-size:1.05rem;margin-bottom:0.35rem">Is Kaayko Paddling Out free?</h3>
+            <p style="opacity:0.72;line-height:1.6">Yes — Kaayko Paddling Out is completely free to use on the web with no account or sign-up required.</p>
+          </div>
+        </div>
+      </section>
   </main>
 
   <!-- FOOTER -->

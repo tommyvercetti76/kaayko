@@ -399,10 +399,19 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   //──────────────────────────────────────────────────────────────────────────────
-  // Section 8: showError(msg) → Displays a simple error message
+  // Section 8: showError(msg) → Shows an inline notice without destroying the page
   //──────────────────────────────────────────────────────────────────────────────
+  //
+  // This must not replace the whole container. The static spot list, intro copy
+  // and FAQ below it stay useful when the API is down, and a crawler that hits
+  // this path should still see a real page rather than an error state.
   function showError(msg) {
-    container.innerHTML = `<div class="error">${msg}</div>`;
+    container.innerHTML = "";
+    const notice = document.createElement("div");
+    notice.className = "error";
+    notice.setAttribute("role", "status");
+    notice.textContent = `${msg} Live scores are unavailable right now — the full spot list is below.`;
+    container.appendChild(notice);
   }
 
   //──────────────────────────────────────────────────────────────────────────────
