@@ -256,7 +256,7 @@ main { flex: 1; padding: 0 var(--spacing-medium); background: inherit; }
 .likes-count.updated { animation: votePop 0.4s ease; }
 @keyframes votePop { 0%{transform:scale(1)} 50%{transform:scale(1.3)} 100%{transform:scale(1)} }
 
-footer { text-align: center; background: #f1f1f1; padding: 20px; font-family: 'Josefin_Light'; font-size: 14px; }
+/* No bare `footer` rule — see css/footer.css. */
 
 /* Modal styles removed - using purchase-modal instead */
 
@@ -1844,20 +1844,7 @@ html.dark-theme .store-v2 .footer-elements {
 /* Filter-modal styling lives entirely in kaaykoFilterModal.css now —
    that file owns the .store-v2 .filter-* and .chip rules. */
 
-/* Store footer should always read as intentional and visible */
-.store-v2 footer {
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(8, 9, 7, 0.95) 22%, rgba(8, 9, 7, 1) 100%);
-  border-top: 1px solid rgba(181, 147, 90, 0.2);
-  color: rgba(237, 232, 223, 0.72);
-  font-family: 'Josefin_Medium', Arial, sans-serif;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 18px 20px;
-}
-
-.store-v2 footer p {
-  margin: 0;
-  color: inherit;
-  opacity: 0.9;
-}
+/* The site footer lives in css/footer.css (.site-footer, and .is-light for the
+   light store pages). There is deliberately no `.store-v2 footer` rule here:
+   it out-specified the shared component (0,1,1 beats 0,1,0) and repainted the
+   footer as a dark gradient with uppercase text on a cream page. */

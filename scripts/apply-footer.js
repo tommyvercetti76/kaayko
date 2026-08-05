@@ -49,7 +49,11 @@ for (const [rel, setName] of Object.entries(PAGES)) {
   // Map the source file to its public URL so the footer can drop its self-link.
   const self = '/' + rel.replace(/\.html$/, '').replace(/^index$/, '');
   const footer = render(setName, { light: LIGHT.has(rel), self: self === '/' ? '/' : self });
-  const all = [...s.matchAll(/(?:[ \t]*)<footer[\s\S]*?<\/footer>/gi)];
+  // Anchor to start-of-line so the literal text "<footer>" appearing inside a
+  // CSS/HTML comment cannot be mistaken for the opening tag — that would make
+  // the lazy match run on to the page's real </footer> and swallow everything
+  // in between. Emitted footers always begin a line.
+  const all = [...s.matchAll(/^[ \t]*<footer[\s\S]*?<\/footer>/gim)];
   if (all.length) {
     // Replace the last one in document order; drop any others.
     for (let i = all.length - 1; i >= 0; i--) {

@@ -84,18 +84,9 @@ html, body {
 /* ── 4. Header hidden — this page has its own hero ──────────────────────── */
 
 /* ── 5. Footer ───────────────────────────────────────────────────────────── */
-footer {
-  display: block !important;
-  visibility: visible !important;
-  background: transparent !important;
-  border-top: 1px solid var(--line);
-  padding: 1.5rem;
-  text-align: center;
-  font-family: var(--font-sans);
-  font-size: 0.7rem;
-  letter-spacing: 0.12em;
-  color: var(--muted);
-}
+/* No bare `footer` rule — the site footer is .site-footer in css/footer.css.
+   Element selectors on <footer> (with !important, no less) are how this site
+   ended up with six different footers. */
 
 /* ── 6. Main layout ──────────────────────────────────────────────────────── */
 

@@ -90,7 +90,13 @@ const PAGES = {
 };
 
 // Pages rendered on a light background need the light variant.
-const LIGHT = new Set(['reads.html', 'testimonials.html']);
+// Pages that render on a light background. store/cart/product are body.store-v2
+// (--v2-bg #f5f1e7). They also have a dark-mode toggle — footer.css reverts the
+// light variant under html.dark-theme so the footer follows the theme.
+const LIGHT = new Set([
+  'reads.html', 'testimonials.html',
+  'store.html', 'cart.html', 'product.html',
+]);
 
 // `self` is the page's own URL path (e.g. '/about'). A link to the page you
 // are already on is not a relevant option, so it is dropped.

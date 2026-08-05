@@ -393,12 +393,9 @@
       color: #6f6a61;
     }
 
-    footer {
-      margin-top: 0 !important;
-      background: #f7f5f1 !important;
-      border-top: 1px solid #e4dfd5;
-      color: #7a746b !important;
-    }
+    /* No `footer` rule — the site footer is .site-footer in css/footer.css,
+       which has a .is-light variant for these light store pages. This rule
+       used !important and silently overrode the shared component. */
 
     .dark-theme html,
     .dark-theme body {
@@ -481,11 +478,8 @@
       color: #ede8df;
     }
 
-    .dark-theme footer {
-      background: #0f100d !important;
-      border-top-color: rgba(181, 147, 90, 0.2);
-      color: rgba(237, 232, 223, 0.66) !important;
-    }
+    /* No `.dark-theme footer` rule — footer.css handles the dark toggle via
+       `html.dark-theme .site-footer.is-light`. */
 
     @media (max-width: 980px) {
       .cart-layout {
@@ -548,7 +542,7 @@
     <p class="checkout-sticky-meta">Free shipping · 30-day returns</p>
   </div>
 
-  <footer class="site-footer">
+  <footer class="site-footer is-light">
     <nav aria-label="Footer">
       <a href="/store">Store</a>
       <a href="/about">About</a>

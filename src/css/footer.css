@@ -82,6 +82,17 @@
 .site-footer.is-light a { color: #8a6d3b; }
 .site-footer.is-light a:hover { color: #6d551f; }
 
+/* The store pages carry a dark-mode toggle (html.dark-theme). When it is on,
+   the page is dark again, so the light variant has to revert or the footer
+   would be dark-on-dark. */
+html.dark-theme .site-footer.is-light {
+  border-top-color: rgba(181, 147, 90, 0.18);
+  color: rgba(237, 232, 223, 0.58);
+}
+html.dark-theme .site-footer.is-light p { color: rgba(237, 232, 223, 0.45); }
+html.dark-theme .site-footer.is-light a { color: #b5935a; }
+html.dark-theme .site-footer.is-light a:hover { color: #d9bd7b; }
+
 @media (max-width: 520px) {
   .site-footer { padding: 2rem 1.25rem; }
   .site-footer nav { gap: 0.5rem 1rem; }
