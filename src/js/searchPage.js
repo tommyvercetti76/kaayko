@@ -46,6 +46,15 @@ function buildRing(score) {
     </div>`;
 }
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // ── Nominatim geocode cache ───────────────────────────────────────────────
 const geocodeCache = new Map(); // query -> { lat, lng, label, radiusKm }
 const suggestionCache = new Map(); // query -> [suggestions]
@@ -381,18 +390,28 @@ function renderResults(bodies, label, cached, sources) {
 
     const scoreId = `sc-${gen}-${idx}`;
     const areaStr = body.areaKm2 ? ` · ${body.areaKm2} km²` : '';
+    const bodyName = escapeHtml(body.name);
+    const bodyType = escapeHtml(body.type);
+    const bodyDistance = escapeHtml(body.distanceMiles);
+    const bodyArea = escapeHtml(areaStr);
 
     card.innerHTML = `
       <div class="water-card-info">
-        <div class="water-card-name">${body.name}</div>
+        <div class="water-card-name">${bodyName}</div>
         <div class="water-card-meta">
-          <span class="type-chip">${body.type}</span>
-          <span>${body.distanceMiles} mi${areaStr}</span>
+          <span class="type-chip">${bodyType}</span>
+          <span>${bodyDistance} mi${bodyArea}</span>
         </div>
       </div>
       <div id="${scoreId}"><div class="score-spinner"></div></div>
+      <button class="btn-request-lake" type="button">Request</button>
       <button class="btn-map material-icons" title="Open in Maps">place</button>
     `;
+
+    card.querySelector('.btn-request-lake').addEventListener('click', e => {
+      e.stopPropagation();
+      openLakeRequestModal(body);
+    });
 
     card.querySelector('.btn-map').addEventListener('click', e => {
       e.stopPropagation();
@@ -453,6 +472,23 @@ function renderResults(bodies, label, cached, sources) {
         : `<div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:#444;font-size:10px;font-family:'Josefin_Light',Arial,sans-serif">N/A</div>`;
     });
   });
+}
+
+function openLakeRequestModal(body = null) {
+  const params = new URLSearchParams();
+  if (body) {
+    if (body.name) params.set('name', body.name);
+    if (body.type) params.set('type', body.type);
+    if (body.lat != null) params.set('lat', body.lat);
+    if (body.lng != null) params.set('lng', body.lng);
+  } else {
+    const query = inputEl.value.trim();
+    if (query) params.set('name', query);
+    if (lastSearchParams?.lat != null) params.set('lat', lastSearchParams.lat);
+    if (lastSearchParams?.lng != null) params.set('lng', lastSearchParams.lng);
+    if (lastSearchParams?.label) params.set('place', lastSearchParams.label);
+  }
+  window.location.href = `/paddlingout/submitentry${params.toString() ? '?' + params.toString() : ''}`;
 }
 
 // ── Fetch paddle scores (batch) ───────────────────────────────────────────
@@ -529,12 +565,15 @@ function showSkeletons(n) {
 
 // ── Empty state ───────────────────────────────────────────────────────────
 function showEmpty(label) {
+  const safeLabel = escapeHtml(label);
   resultsList.innerHTML = `
     <div class="empty-state">
       <div class="mat material-icons">water_off</div>
-      <h3>No spots found near ${label}</h3>
+      <h3>No spots found near ${safeLabel}</h3>
       <p>Try a larger lake name or a nearby city.</p>
+      <button class="btn-request-lake" id="empty-request-lake" type="button">Submit a lake</button>
     </div>`;
+  document.getElementById('empty-request-lake')?.addEventListener('click', () => openLakeRequestModal(null));
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────
@@ -548,10 +587,15 @@ function setStatus(msg, type = '') {
   const p   = new URLSearchParams(window.location.search);
   const lat = parseFloat(p.get('lat'));
   const lng = parseFloat(p.get('lng'));
+  const q   = (p.get('q') || '').trim();
   if (!isNaN(lat) && !isNaN(lng)) {
     inputEl.value = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
     clearBtn.classList.add('visible');
     runSearch(lat, lng, `${lat.toFixed(3)}, ${lng.toFixed(3)}`);
+  } else if (q) {
+    inputEl.value = q;
+    clearBtn.classList.add('visible');
+    triggerTextSearch();
   }
 })();
 

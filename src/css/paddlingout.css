@@ -155,6 +155,71 @@ footer p { margin: 0.2rem 0 0; }
     0 0 60px rgba(181, 147, 90, 0.12);
 }
 
+.submit-entry-card {
+  min-height: 100%;
+  justify-content: center;
+  gap: 1.2rem;
+  padding: 2rem;
+  border-style: dashed;
+  background:
+    linear-gradient(135deg, rgba(181,147,90,0.08), rgba(49,109,67,0.06)),
+    var(--panel-a);
+}
+
+.submit-entry-plus {
+  width: 74px;
+  height: 74px;
+  border: 1px solid rgba(181,147,90,0.42);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--gold-bright);
+  font-family: var(--font-sans);
+  font-size: 3.1rem;
+  font-weight: 300;
+  line-height: 1;
+  background: rgba(181,147,90,0.08);
+}
+
+.submit-entry-copy {
+  max-width: 26rem;
+}
+
+.submit-entry-kicker,
+.submit-entry-action {
+  display: block;
+  color: var(--gold);
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.submit-entry-copy h2 {
+  margin: 0.45rem 0 0.7rem;
+  color: var(--gold-bright);
+  font-family: var(--font-sans);
+  font-size: 1.45rem;
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+.submit-entry-copy p {
+  margin: 0 0 1.2rem;
+  color: var(--muted);
+  font-size: 1.02rem;
+  font-style: italic;
+  line-height: 1.45;
+}
+
+.submit-entry-action {
+  width: fit-content;
+  padding-bottom: 0.2rem;
+  border-bottom: 1px solid rgba(217,189,123,0.55);
+  color: var(--gold-bright);
+}
+
 /*─────────────────────────────────────────────────────────────────────────────
  4) Image container & carousel images
 ─────────────────────────────────────────────────────────────────────────────*/

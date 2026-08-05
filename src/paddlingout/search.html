@@ -421,6 +421,30 @@
     }
     .btn-map:hover { border-color: var(--gold); color: var(--gold-bright); }
 
+    .btn-request-lake {
+      height: 34px;
+      padding: 0 11px;
+      background: rgba(181,147,90,0.08);
+      border: 1px solid rgba(181,147,90,0.2);
+      border-radius: 8px;
+      color: var(--gold);
+      cursor: pointer;
+      flex-shrink: 0;
+      font-family: var(--font-sans);
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+    }
+    .btn-request-lake:hover,
+    .btn-request-lake:focus-visible {
+      background: rgba(181,147,90,0.15);
+      border-color: var(--gold);
+      color: var(--gold-bright);
+      outline: none;
+    }
+
     /* Empty state */
     .empty-state {
       text-align: center; padding: 40px 24px;
@@ -435,6 +459,11 @@
     .empty-state p {
       font-family: var(--font-serif); font-style: italic;
       font-size: 0.95rem; color: var(--muted); margin: 0;
+    }
+    .empty-state .btn-request-lake {
+      margin-top: 18px;
+      height: 38px;
+      padding: 0 16px;
     }
 
     /* Footer */
@@ -455,6 +484,7 @@
       .po-title { font-size: 1.4rem; }
       main.search-page { padding: 1.5rem 1rem 4rem; }
       .btn-map { display: none; }
+      .btn-request-lake { padding: 0 9px; }
     }
   </style>
 </head>

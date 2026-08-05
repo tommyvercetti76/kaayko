@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en" class="dark-theme">
+<head>
+  <script src="/js/prod-config.js"></script>
+  <script>document.documentElement.classList.add('dark-theme');</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Submit a Lake | Kaayko Paddling Out</title>
+  <meta name="description" content="Submit a lake or paddling water body to Kaayko Paddling Out. Anonymous submissions are welcome.">
+  <meta name="robots" content="noindex, follow">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#080808;
+      --panel:#0d0c0a;
+      --panel-soft:#10110d;
+      --fg:#ede8df;
+      --muted:rgba(237,232,223,0.58);
+      --gold:#b5935a;
+      --gold-bright:#d9bd7b;
+      --line:rgba(181,147,90,0.28);
+      --ok:#8fbc6a;
+      --bad:#f87171;
+      --font-serif:'Cormorant Garamond', Georgia, serif;
+      --font-sans:'Josefin Sans', Arial, sans-serif;
+      --ease:cubic-bezier(0.76,0,0.24,1);
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0;
+      min-height:100vh;
+      background:var(--bg);
+      color:var(--fg);
+      font-family:var(--font-serif);
+    }
+    .submit-shell {
+      width:min(100%, 980px);
+      margin:0 auto;
+      padding:2rem 1.4rem 4rem;
+    }
+    .submit-top {
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:1rem;
+      padding-bottom:1.2rem;
+      border-bottom:1px solid rgba(181,147,90,0.18);
+    }
+    .back-link {
+      color:var(--gold);
+      text-decoration:none;
+      font-family:var(--font-sans);
+      font-size:0.7rem;
+      letter-spacing:0.14em;
+      text-transform:uppercase;
+    }
+    .eyebrow {
+      display:block;
+      color:var(--gold);
+      font-size:0.82rem;
+      font-style:italic;
+      letter-spacing:0.24em;
+      text-transform:lowercase;
+    }
+    h1 {
+      margin:0.2rem 0 0;
+      color:var(--gold-bright);
+      font-family:var(--font-sans);
+      font-size:clamp(1.65rem, 4vw, 2.4rem);
+      letter-spacing:0.09em;
+      line-height:1;
+      text-transform:uppercase;
+    }
+    .launch-note {
+      max-width:56rem;
+      margin:1.3rem 0 1.5rem;
+      color:var(--muted);
+      font-size:1.05rem;
+      font-style:italic;
+      line-height:1.48;
+    }
+    .tour-strip {
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0,1fr));
+      gap:0.8rem;
+      margin-bottom:1.2rem;
+    }
+    .tour-step {
+      border:1px solid var(--line);
+      border-radius:10px;
+      background:linear-gradient(135deg, rgba(181,147,90,0.08), rgba(49,109,67,0.05));
+      padding:1rem;
+    }
+    .tour-step strong {
+      display:block;
+      color:var(--gold-bright);
+      font-family:var(--font-sans);
+      font-size:0.72rem;
+      letter-spacing:0.12em;
+      text-transform:uppercase;
+    }
+    .tour-step span {
+      display:block;
+      margin-top:0.45rem;
+      color:var(--muted);
+      font-size:0.92rem;
+      line-height:1.35;
+    }
+    .submit-card {
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:linear-gradient(135deg, var(--panel), var(--panel-soft));
+      padding:1.2rem;
+    }
+    form {
+      display:grid;
+      gap:1rem;
+    }
+    .grid-two {
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:1rem;
+    }
+    label, .field-group {
+      display:grid;
+      gap:0.45rem;
+    }
+    .label-text {
+      color:var(--gold);
+      font-family:var(--font-sans);
+      font-size:0.66rem;
+      letter-spacing:0.14em;
+      text-transform:uppercase;
+    }
+    input, textarea, select {
+      width:100%;
+      border:1px solid rgba(181,147,90,0.24);
+      border-radius:9px;
+      background:rgba(181,147,90,0.06);
+      color:var(--fg);
+      font:1rem var(--font-serif);
+      outline:none;
+      padding:0.78rem 0.85rem;
+    }
+    textarea {
+      min-height:96px;
+      resize:vertical;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color:var(--gold);
+      box-shadow:0 0 0 3px rgba(181,147,90,0.11);
+    }
+    .coord-row {
+      display:grid;
+      grid-template-columns:1fr 1fr auto auto;
+      gap:0.7rem;
+      align-items:end;
+    }
+    .mini-btn, .submit-btn, .ghost-btn {
+      border:1px solid rgba(181,147,90,0.32);
+      border-radius:9px;
+      background:rgba(181,147,90,0.1);
+      color:var(--gold-bright);
+      cursor:pointer;
+      font-family:var(--font-sans);
+      font-size:0.68rem;
+      font-weight:600;
+      letter-spacing:0.12em;
+      min-height:42px;
+      padding:0 0.9rem;
+      text-transform:uppercase;
+    }
+    .mini-btn:hover, .submit-btn:hover, .ghost-btn:hover {
+      border-color:var(--gold);
+      background:rgba(181,147,90,0.16);
+    }
+    .choice-row {
+      display:flex;
+      flex-wrap:wrap;
+      gap:0.65rem;
+    }
+    .choice {
+      display:flex;
+      align-items:center;
+      gap:0.45rem;
+      border:1px solid rgba(181,147,90,0.22);
+      border-radius:999px;
+      padding:0.62rem 0.85rem;
+      color:var(--muted);
+      cursor:pointer;
+      font-family:var(--font-sans);
+      font-size:0.72rem;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+    }
+    .choice input { width:auto; }
+    .email-wrap[hidden] { display:none; }
+    .form-status {
+      min-height:1.3rem;
+      color:var(--muted);
+      font-style:italic;
+    }
+    .form-status.error { color:var(--bad); }
+    .form-status.ok { color:var(--ok); }
+    .actions {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+      margin-top:0.2rem;
+    }
+    .submit-btn { min-width:154px; }
+    .submit-btn:disabled { cursor:default; opacity:0.5; }
+    .success-panel {
+      display:none;
+      border:1px solid rgba(143,188,106,0.32);
+      border-radius:12px;
+      background:rgba(49,109,67,0.12);
+      padding:1.2rem;
+    }
+    .success-panel.visible { display:block; }
+    .success-panel h2 {
+      margin:0 0 0.45rem;
+      color:var(--ok);
+      font-family:var(--font-sans);
+      font-size:1rem;
+      letter-spacing:0.1em;
+      text-transform:uppercase;
+    }
+    .success-panel p {
+      margin:0;
+      color:var(--muted);
+      line-height:1.45;
+    }
+    .tour-overlay {
+      position:fixed;
+      inset:0;
+      z-index:30;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:1.2rem;
+      background:rgba(4,4,4,0.76);
+      backdrop-filter:blur(8px);
+    }
+    .tour-overlay.visible { display:flex; }
+    .tour-modal {
+      width:min(100%, 460px);
+      border:1px solid rgba(181,147,90,0.34);
+      border-radius:12px;
+      background:#0d0c0a;
+      padding:1.4rem;
+      box-shadow:0 24px 80px rgba(0,0,0,0.55);
+    }
+    .tour-modal h2 {
+      margin:0 0 0.7rem;
+      color:var(--gold-bright);
+      font-family:var(--font-sans);
+      font-size:1.05rem;
+      letter-spacing:0.1em;
+      text-transform:uppercase;
+    }
+    .tour-modal p {
+      margin:0 0 1rem;
+      color:var(--muted);
+      font-size:1rem;
+      line-height:1.45;
+    }
+    @media (max-width: 760px) {
+      .tour-strip, .grid-two, .coord-row {
+        grid-template-columns:1fr;
+      }
+      .submit-top {
+        align-items:flex-start;
+        flex-direction:column-reverse;
+      }
+      .actions {
+        align-items:stretch;
+        flex-direction:column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="submit-shell">
+    <header class="submit-top">
+      <div>
+        <span class="eyebrow">Paddling Out</span>
+        <h1>Submit Entry</h1>
+      </div>
+      <a class="back-link" href="/paddlingout">Back to lakes</a>
+    </header>
+
+    <p class="launch-note">Add a lake, reservoir, river, or paddling water body. We keep entry simple: name, location, coordinates, access basics, and optional contact. Admin gets 2 days to validate; after that, complete entries go live automatically.</p>
+
+    <section class="tour-strip" aria-label="How submission works">
+      <div class="tour-step"><strong>1. Enter basics</strong><span>Name the water and where paddlers should look for it.</span></div>
+      <div class="tour-step"><strong>2. Confirm coordinates</strong><span>Use your location or let Kaayko infer coordinates from the name.</span></div>
+      <div class="tour-step"><strong>3. Goes live</strong><span>We validate within 2 days. If not, it still goes live after the window.</span></div>
+    </section>
+
+    <section class="submit-card" id="form-card">
+      <form id="submit-entry-form">
+        <label>
+          <span class="label-text">Lake or water body</span>
+          <input id="lakeName" name="lakeName" maxlength="120" required placeholder="White Rock Lake">
+        </label>
+
+        <div class="grid-two">
+          <label>
+            <span class="label-text">City or nearest town</span>
+            <input id="city" name="city" maxlength="80" required placeholder="Dallas">
+          </label>
+          <label>
+            <span class="label-text">State / region</span>
+            <input id="region" name="region" maxlength="80" required placeholder="Texas">
+          </label>
+        </div>
+
+        <label>
+          <span class="label-text">Country</span>
+          <input id="country" name="country" maxlength="80" value="United States">
+        </label>
+
+        <div class="field-group">
+          <span class="label-text">Coordinates</span>
+          <div class="coord-row">
+            <input id="lat" name="lat" inputmode="decimal" placeholder="Latitude" aria-label="Latitude">
+            <input id="lng" name="lng" inputmode="decimal" placeholder="Longitude" aria-label="Longitude">
+            <button class="mini-btn" id="find-coords" type="button">Find</button>
+            <button class="mini-btn" id="use-location" type="button">Use GPS</button>
+          </div>
+        </div>
+
+        <label>
+          <span class="label-text">Launch hint optional</span>
+          <input id="launchHint" name="launchHint" maxlength="160" placeholder="Main public boat ramp, north shore, park entrance">
+        </label>
+
+        <div class="grid-two">
+          <label>
+            <span class="label-text">Parking</span>
+            <select id="parkingAvl" name="parkingAvl">
+              <option value="Y">Available</option>
+              <option value="N">Not sure / not available</option>
+            </select>
+          </label>
+          <label>
+            <span class="label-text">Restrooms</span>
+            <select id="restroomsAvl" name="restroomsAvl">
+              <option value="N">Not sure / not available</option>
+              <option value="Y">Available</option>
+            </select>
+          </label>
+        </div>
+
+        <label>
+          <span class="label-text">Short note optional</span>
+          <textarea id="description" name="description" maxlength="360" placeholder="A useful thing paddlers should know before driving out."></textarea>
+        </label>
+
+        <div class="field-group">
+          <span class="label-text">Submit as</span>
+          <div class="choice-row">
+            <label class="choice"><input type="radio" name="contactPreference" value="anonymous" checked> Anonymous</label>
+            <label class="choice"><input type="radio" name="contactPreference" value="email"> Email me when validated</label>
+          </div>
+        </div>
+
+        <label class="email-wrap" id="email-wrap" hidden>
+          <span class="label-text">Email</span>
+          <input id="email" name="email" type="email" maxlength="254" placeholder="you@example.com">
+        </label>
+
+        <div class="actions">
+          <span class="form-status" id="form-status" aria-live="polite"></span>
+          <button class="submit-btn" id="submit-btn" type="submit">Submit entry</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="success-panel" id="success-panel">
+      <h2>Entry received</h2>
+      <p id="success-copy"></p>
+    </section>
+  </div>
+
+  <div class="tour-overlay" id="tour-overlay">
+    <div class="tour-modal">
+      <h2>Add a lake in under a minute</h2>
+      <p>Give us the water body, the nearest place, and coordinates. You can stay anonymous, or leave an email and we’ll notify you when admin validates it.</p>
+      <button class="ghost-btn" id="start-tour" type="button">Start entry</button>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const API_BASE = window.FORCE_PRODUCTION_MODE
+        ? window.PRODUCTION_API_BASE
+        : (['localhost', '127.0.0.1'].includes(window.location.hostname)
+          ? 'http://127.0.0.1:5001/kaaykostore/us-central1/api'
+          : 'https://api-vwcc5j4qda-uc.a.run.app');
+
+      const form = document.getElementById('submit-entry-form');
+      const statusEl = document.getElementById('form-status');
+      const submitBtn = document.getElementById('submit-btn');
+      const successPanel = document.getElementById('success-panel');
+      const successCopy = document.getElementById('success-copy');
+      const emailWrap = document.getElementById('email-wrap');
+      const emailInput = document.getElementById('email');
+      const tourOverlay = document.getElementById('tour-overlay');
+
+      function setStatus(message, type) {
+        statusEl.textContent = message || '';
+        statusEl.className = 'form-status' + (type ? ' ' + type : '');
+      }
+
+      function field(id) {
+        return document.getElementById(id);
+      }
+
+      function applyUrlPrefill() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('name')) field('lakeName').value = params.get('name');
+        if (params.get('lat')) field('lat').value = params.get('lat');
+        if (params.get('lng')) field('lng').value = params.get('lng');
+        if (params.get('place')) {
+          const parts = params.get('place').split(',').map(part => part.trim()).filter(Boolean);
+          if (parts[0]) field('city').value = parts[0];
+          if (parts[1]) field('region').value = parts[1];
+        }
+      }
+
+      function parseCoord(value) {
+        const n = Number(String(value || '').trim());
+        return Number.isFinite(n) ? n : null;
+      }
+
+      async function inferCoordinates() {
+        const query = [field('lakeName').value, field('city').value, field('region').value, field('country').value]
+          .map(v => v.trim())
+          .filter(Boolean)
+          .join(', ');
+        if (!query) {
+          setStatus('Add the lake name and place first.', 'error');
+          return false;
+        }
+
+        setStatus('Finding coordinates...', '');
+        try {
+          const res = await fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(query) + '&format=json&limit=1&addressdetails=0', {
+            headers: { 'Accept-Language': 'en' }
+          });
+          const data = await res.json();
+          if (!Array.isArray(data) || !data.length) {
+            setStatus('Could not infer coordinates. Add latitude and longitude manually.', 'error');
+            return false;
+          }
+          field('lat').value = Number(data[0].lat).toFixed(5);
+          field('lng').value = Number(data[0].lon).toFixed(5);
+          setStatus('Coordinates found. Check them before submitting.', 'ok');
+          return true;
+        } catch {
+          setStatus('Could not find coordinates right now.', 'error');
+          return false;
+        }
+      }
+
+      document.getElementById('find-coords').addEventListener('click', inferCoordinates);
+
+      document.getElementById('use-location').addEventListener('click', function () {
+        if (!navigator.geolocation) {
+          setStatus('Location is not supported in this browser.', 'error');
+          return;
+        }
+        setStatus('Waiting for GPS...', '');
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            field('lat').value = pos.coords.latitude.toFixed(5);
+            field('lng').value = pos.coords.longitude.toFixed(5);
+            setStatus('GPS coordinates added.', 'ok');
+          },
+          () => setStatus('GPS permission was not granted.', 'error'),
+          { timeout: 10000, maximumAge: 60000 }
+        );
+      });
+
+      form.addEventListener('change', function (event) {
+        if (event.target.name === 'contactPreference') {
+          const wantsEmail = event.target.value === 'email';
+          emailWrap.hidden = !wantsEmail;
+          emailInput.required = wantsEmail;
+          if (!wantsEmail) emailInput.value = '';
+        }
+      });
+
+      form.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        setStatus('', '');
+
+        let lat = parseCoord(field('lat').value);
+        let lng = parseCoord(field('lng').value);
+        if (lat === null || lng === null) {
+          const found = await inferCoordinates();
+          lat = parseCoord(field('lat').value);
+          lng = parseCoord(field('lng').value);
+          if (!found || lat === null || lng === null) return;
+        }
+
+        const preference = form.querySelector('input[name="contactPreference"]:checked')?.value || 'anonymous';
+        const payload = {
+          lakeName: field('lakeName').value.trim(),
+          city: field('city').value.trim(),
+          region: field('region').value.trim(),
+          country: field('country').value.trim(),
+          lat,
+          lng,
+          launchHint: field('launchHint').value.trim(),
+          description: field('description').value.trim(),
+          parkingAvl: field('parkingAvl').value,
+          restroomsAvl: field('restroomsAvl').value,
+          contactPreference: preference,
+          anonymous: preference !== 'email',
+          email: preference === 'email' ? emailInput.value.trim() : '',
+          pageUrl: window.location.href,
+          referrer: document.referrer,
+          source: 'paddlingout_submitentry'
+        };
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitting';
+        try {
+          const res = await fetch(API_BASE + '/paddlingOut/submitEntry', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok || !data.success) throw new Error(data.error || 'Submission failed');
+
+          form.closest('.submit-card').style.display = 'none';
+          successCopy.textContent = preference === 'email'
+            ? 'Thanks. We will notify you when admin validates the entry. It is scheduled to go live within 2 days.'
+            : 'Thanks. Your anonymous entry is scheduled to go live within 2 days after the validation window.';
+          successPanel.classList.add('visible');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } catch (err) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit entry';
+          setStatus(err.message || 'Could not submit entry.', 'error');
+        }
+      });
+
+      if (!localStorage.getItem('kaayko_submitentry_tour_seen')) {
+        tourOverlay.classList.add('visible');
+      }
+      document.getElementById('start-tour').addEventListener('click', function () {
+        localStorage.setItem('kaayko_submitentry_tour_seen', '1');
+        tourOverlay.classList.remove('visible');
+        field('lakeName').focus();
+      });
+      applyUrlPrefill();
+    }());
+  </script>
+</body>
+</html>

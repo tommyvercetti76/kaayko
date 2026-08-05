@@ -52,6 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const cardPromises = spots.map(spot => renderCard(spot));
         const cards = await Promise.all(cardPromises);
         cards.forEach(card => container.append(card));
+        container.append(renderSubmitEntryCard());
         
         wireUpCarousels();
       })
@@ -92,8 +93,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const imgs  = card.querySelector(".img-container");
     const dots  = card.querySelector(".carousel-dots");
 
+    const imageUrls = Array.isArray(spot.imgSrc) ? spot.imgSrc : [];
+
     // 5a) Populate images & carousel dots
-    spot.imgSrc.forEach((url, i) => {
+    imageUrls.forEach((url, i) => {
       const img = document.createElement("img");
       img.src = url;
       img.className = `carousel-image${i===0 ? " active" : ""}`;
@@ -122,17 +125,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
       prevBtn.addEventListener('click', e => {
         e.stopPropagation();
-        const total = spot.imgSrc.length;
+        const total = imageUrls.length;
         showImage(card, (getActiveIndex() - 1 + total) % total);
       });
 
       nextBtn.addEventListener('click', e => {
         e.stopPropagation();
-        const total = spot.imgSrc.length;
+        const total = imageUrls.length;
         showImage(card, (getActiveIndex() + 1) % total);
       });
 
-      if (spot.imgSrc.length <= 1) {
+      if (imageUrls.length <= 1) {
         prevBtn.style.display = 'none';
         nextBtn.style.display = 'none';
       }
@@ -169,6 +172,37 @@ document.addEventListener("DOMContentLoaded", () => {
     // 5e) Card click → navigate to detail page
     card.addEventListener("click", () => {
       window.location.href = `paddlingout.html?id=${spot.id}`;
+    });
+
+    return card;
+  }
+
+  function renderSubmitEntryCard() {
+    const card = document.createElement("article");
+    card.className = "card submit-entry-card";
+    card.tabIndex = 0;
+    card.setAttribute("role", "link");
+    card.setAttribute("aria-label", "Add a new lake to Paddling Out");
+    card.innerHTML = `
+      <div class="submit-entry-plus" aria-hidden="true">+</div>
+      <div class="submit-entry-copy">
+        <span class="submit-entry-kicker">Community entry</span>
+        <h2>Add a new lake</h2>
+        <p>Tell us the water, the launch hint, and a few basics. Anonymous is fine.</p>
+        <span class="submit-entry-action">Submit entry</span>
+      </div>
+    `;
+
+    function openSubmitPage() {
+      window.location.href = "/paddlingout/submitentry";
+    }
+
+    card.addEventListener("click", openSubmitPage);
+    card.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openSubmitPage();
+      }
     });
 
     return card;
@@ -228,10 +262,14 @@ document.addEventListener("DOMContentLoaded", () => {
   //──────────────────────────────────────────────────────────────────────────────
   function wireUpCarousels() {
     container.querySelectorAll(".card").forEach(card => {
+      const box = card.querySelector(".img-container");
+      if (!box) return;
+
       let startX = 0;
       let isDragging = false;
       let hasSwiped = false;
       const imgs = card.querySelectorAll(".carousel-image");
+      if (imgs.length <= 1) return;
 
       const onEnd = dx => {
         console.log(`🏞️ Paddling swipe detected: dx=${dx}, threshold=40`);
@@ -248,8 +286,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return true;
       };
 
-      const box = card.querySelector(".img-container");
-      
       // Add styling for better touch interaction
       box.style.touchAction = 'pan-y pinch-zoom';
       box.style.userSelect = 'none';
