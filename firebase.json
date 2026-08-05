@@ -71,6 +71,8 @@
     "redirects": [
       { "source": "/admin/login", "destination": "/kortex", "type": 301 },
       { "source": "/admin/login.html", "destination": "/kortex", "type": 301 },
+      { "source": "/paddlingout/trainer.html", "destination": "/paddlingout/trainer", "type": 301 },
+      { "source": "/paddlingout/trainer/index.html", "destination": "/paddlingout/trainer", "type": 301 },
       { "source": "/alumni", "destination": "https://alumni.kaayko.com", "type": 301 },
       { "source": "/alumni.html", "destination": "https://alumni.kaayko.com", "type": 301 },
       { "source": "/karma", "destination": "https://alumni.kaayko.com", "type": 301 },

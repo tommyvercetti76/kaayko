@@ -355,7 +355,7 @@ function createCarouselItem(item) {
   if (item.storeName && item.storeSlug) {
     const storeLink = document.createElement("a");
     storeLink.className = "product-store-link";
-    storeLink.href = `/store.html?store=${encodeURIComponent(item.storeSlug)}`;
+    storeLink.href = `/store?store=${encodeURIComponent(item.storeSlug)}`;
     storeLink.textContent = `by ${item.storeName}`;
     storeLink.addEventListener("click", (e) => e.stopPropagation());
     content.append(titleEl, storeLink, descEl);

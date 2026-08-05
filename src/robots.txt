@@ -1,13 +1,7 @@
 User-agent: *
 Allow: /
-Disallow: /admin/
-Disallow: /cart.html
-Disallow: /order-success.html
-Disallow: /redirect.html
-Disallow: /create-smart-link.html
 
-# Allow specific admin pages
-Allow: /admin/tenant-registration.html
+# Block query-string duplicates once static spot URLs exist
+Disallow: /paddlingout/forecast?
 
-# Sitemap
 Sitemap: https://kaayko.com/sitemap.xml

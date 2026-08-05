@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             <div class="store-banner-content">
               <h2 class="store-banner-name">${storeName}</h2>
               <p class="store-banner-count">${storeProducts.length} product${storeProducts.length !== 1 ? 's' : ''}</p>
-              <a href="/store.html" class="store-banner-link">← Browse All Products</a>
+              <a href="/store" class="store-banner-link">← Browse All Products</a>
             </div>
           `;
           carousel.parentNode.insertBefore(storeBanner, carousel);
@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             <div class="store-empty">
               <h2>No products found</h2>
               <p>This store doesn't have any products yet.</p>
-              <a href="/store.html" class="store-back-link">Browse All Products</a>
+              <a href="/store" class="store-back-link">Browse All Products</a>
             </div>
           `;
         }

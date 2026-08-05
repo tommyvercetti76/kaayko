@@ -845,7 +845,7 @@
             <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
               <span class="material-icons">dark_mode</span>
             </button>
-            <a href="./add-product.html" class="btn btn-kreator">
+            <a href="./add-product" class="btn btn-kreator">
               <span class="material-icons" style="font-size: 18px;">add</span>
               Add Product
             </a>
@@ -912,7 +912,7 @@
         
         <!-- Quick Actions -->
         <div class="quick-actions">
-          <a href="./add-product.html" class="quick-action-card">
+          <a href="./add-product" class="quick-action-card">
             <div class="quick-action-icon">
               <span class="material-icons">add_box</span>
             </div>
@@ -1004,7 +1004,7 @@
               <span class="material-icons">inventory_2</span>
               <h3>No products yet</h3>
               <p>Add your first product to start selling</p>
-              <a href="./add-product.html" class="btn btn-kreator">
+              <a href="./add-product" class="btn btn-kreator">
                 Add Product
               </a>
             </div>
@@ -1019,7 +1019,7 @@
             <h1>Products</h1>
             <p>Manage your product catalog</p>
           </div>
-          <a href="./add-product.html" class="btn btn-kreator">
+          <a href="./add-product" class="btn btn-kreator">
             <span class="material-icons" style="font-size: 18px;">add</span>
             Add Product
           </a>
@@ -1031,7 +1031,7 @@
               <span class="material-icons">inventory_2</span>
               <h3>No products yet</h3>
               <p>Add your first product to start selling on Kaayko</p>
-              <a href="./add-product.html" class="btn btn-kreator">
+              <a href="./add-product" class="btn btn-kreator">
                 Add Your First Product
               </a>
             </div>
@@ -1346,7 +1346,7 @@
     
     // Initialize auth - use stored data, don't redirect
     if (!AUTH.init()) {
-      window.location.href = './kreator-login.html';
+      window.location.href = './kreator-login';
       throw new Error('Not authenticated');
     }
     
@@ -1431,7 +1431,7 @@
       if (viewStoreLink && storedKreator) {
         const storeName = storedKreator.businessName || storedKreator.displayName || 'store';
         const storeSlug = generateStoreSlug(storeName);
-        viewStoreLink.href = `https://kaayko.com/store.html?store=${encodeURIComponent(storeSlug)}`;
+        viewStoreLink.href = `https://kaayko.com/store?store=${encodeURIComponent(storeSlug)}`;
       }
     }
     
@@ -1519,7 +1519,7 @@
             <span class="material-icons" style="font-size:48px;">inventory_2</span>
             <h3>No products yet</h3>
             <p>Add your first product to start selling on Kaayko</p>
-            <a href="./add-product.html" class="btn btn-kreator">Add Your First Product</a>
+            <a href="./add-product" class="btn btn-kreator">Add Your First Product</a>
           </div>
         `;
         return;

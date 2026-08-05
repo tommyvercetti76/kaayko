@@ -73,7 +73,7 @@ async function loadBillingHTML() {
   if (!container) return;
   
   try {
-    const response = await fetch('views/billing/billing.html');
+    const response = await fetch('views/billing/billing');
     if (response.ok) {
       const html = await response.text();
       container.innerHTML = html;

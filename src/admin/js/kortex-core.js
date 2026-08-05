@@ -503,7 +503,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Check authentication
   if (!AUTH.isAuthenticated()) {
     console.log('❌ Not authenticated, redirecting to login...');
-    window.location.href = './login.html';
+    window.location.href = './login';
     return;
   }
   

@@ -73,7 +73,7 @@ const AUTH = {
   
   requireAuth() {
     if (!this.isAuthenticated()) {
-      window.location.href = './kreator-login.html';
+      window.location.href = './kreator-login';
       return false;
     }
     return true;
@@ -81,7 +81,7 @@ const AUTH = {
   
   logout() {
     this.clear();
-    window.location.href = './kreator-login.html';
+    window.location.href = './kreator-login';
   }
 };
 

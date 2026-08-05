@@ -418,7 +418,7 @@
 </head>
 
 <body>
-  <a href="/paddlingout.html" class="back-link">
+  <a href="/paddlingout" class="back-link">
     Back to Kaayko
     <span class="material-icons" style="font-size: 18px;">arrow_forward</span>
   </a>
@@ -507,7 +507,7 @@
             <input type="checkbox" id="remember" name="remember">
             Remember me
           </label>
-          <a href="forgot-password.html" class="forgot-link">Forgot password?</a>
+          <a href="forgot-password" class="forgot-link">Forgot password?</a>
         </div>
         
         <button type="submit" class="login-btn" id="login-btn">
@@ -517,7 +517,7 @@
       </form>
       
       <footer class="login-footer">
-        <p>Want to sell on Kaayko? <a href="apply.html">Apply to become a seller</a></p>
+        <p>Want to sell on Kaayko? <a href="apply">Apply to become a seller</a></p>
       </footer>
     </div>
   </section>
@@ -528,7 +528,7 @@
     // Check if already logged in
     const authState = getAuthState();
     if (authState.isAuthenticated) {
-      window.location.href = 'dashboard.html';
+      window.location.href = 'dashboard';
     }
     
     // Password toggle
@@ -581,7 +581,7 @@
           console.log('[Login] ✅ Success! Redirecting NOW...');
           showAlert('Login successful! Redirecting...', 'success');
           // Redirect immediately, no delay
-          window.location.replace('./dashboard.html');
+          window.location.replace('./dashboard');
           return;
         } else {
           console.log('[Login] ❌ No token found after sign-in');
@@ -623,7 +623,7 @@
         if (result.success) {
           showAlert('Login successful! Redirecting...', 'success');
           setTimeout(() => {
-            window.location.href = 'dashboard.html';
+            window.location.href = 'dashboard';
           }, 500);
         } else {
           throw new Error(result.error || 'Login failed');

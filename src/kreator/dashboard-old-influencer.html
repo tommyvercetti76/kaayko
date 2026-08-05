@@ -502,7 +502,7 @@
             <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
               <span class="material-icons">dark_mode</span>
             </button>
-            <a href="create-link.html" class="btn btn-kreator">
+            <a href="create-link" class="btn btn-kreator">
               <span class="material-icons" style="font-size: 18px;">add</span>
               Create Link
             </a>
@@ -539,7 +539,7 @@
         
         <!-- Quick Actions -->
         <div class="quick-actions">
-          <a href="create-link.html" class="quick-action-card">
+          <a href="create-link" class="quick-action-card">
             <div class="quick-action-icon">
               <span class="material-icons">add_link</span>
             </div>
@@ -583,7 +583,7 @@
                 <span class="material-icons">link_off</span>
                 <h3>No links yet</h3>
                 <p>Create your first smart link to start earning</p>
-                <a href="create-link.html" class="btn btn-kreator">
+                <a href="create-link" class="btn btn-kreator">
                   Create Link
                 </a>
               </div>
@@ -625,7 +625,7 @@
               <span class="material-icons">link_off</span>
               <h3>No links yet</h3>
               <p>Create your first smart link to start earning</p>
-              <a href="create-link.html" class="btn btn-kreator">
+              <a href="create-link" class="btn btn-kreator">
                 Create Link
               </a>
             </div>
@@ -802,7 +802,7 @@
     // Check authentication
     const authState = getAuthState();
     if (!authState.isAuthenticated) {
-      window.location.href = 'kreator-login.html';
+      window.location.href = 'kreator-login';
     }
     
     let kreatorData = authState.kreator;

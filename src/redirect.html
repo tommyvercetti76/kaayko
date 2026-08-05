@@ -75,7 +75,7 @@
     (async function() {
       try {
         // Get the short code from URL path
-        // URL format: https://kaayko.com/redirect.html?code=lk1ngp
+        // URL format: https://kaayko.com/redirect?code=lk1ngp
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code') || window.location.hash.substring(1);
         

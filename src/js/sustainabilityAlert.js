@@ -49,7 +49,7 @@ export function showSustainabilityAlert(context = {}) {
     modal.querySelector('[data-action="checkout"]').addEventListener('click', () => {
       hideAlert();
       // Navigate to cart page
-      window.location.href = 'cart.html';
+      window.location.href = 'cart';
     });
     
     // Close on overlay click

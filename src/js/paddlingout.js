@@ -171,7 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 5e) Card click → navigate to detail page
     card.addEventListener("click", () => {
-      window.location.href = `paddlingout.html?id=${spot.id}`;
+      window.location.href = `paddlingout?id=${spot.id}`;
     });
 
     return card;

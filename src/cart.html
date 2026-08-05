@@ -10,7 +10,6 @@
   <title>Shopping Cart - Review Your Outdoor Gear | Kaayko Store</title>
   <meta name="title" content="Cart - Kaayko Store">
   <meta name="description" content="Review your Kaayko outdoor gear selection. Unique paddling apparel, water sports accessories, and adventure-ready products. Secure checkout with multiple payment options.">
-  <meta name="keywords" content="kaayko cart, shopping cart, outdoor gear checkout, paddling apparel, water sports products, kayak accessories">
   <meta name="robots" content="noindex, nofollow">
   
   <!-- Security - X-Frame-Options set via Firebase hosting headers -->
@@ -529,7 +528,7 @@
 </head>
 <body class="store-v2">
   <header class="cart-topbar">
-    <a href="store.html" class="cart-topbar-back" aria-label="Back to store"><span class="material-icons">arrow_back</span></a>
+    <a href="store" class="cart-topbar-back" aria-label="Back to store"><span class="material-icons">arrow_back</span></a>
     <div class="cart-topbar-title">Bag <span id="cart-topbar-count">0</span></div>
     <div class="cart-topbar-actions">
       <button class="theme-toggle-icon" aria-label="Switch theme"></button>
@@ -549,7 +548,7 @@
   </div>
 
   <footer>
-    <p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p>
+    <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
   </footer>
 
   <script type="module" src="js/header.js"></script>
@@ -576,7 +575,7 @@
           <div class="cart-empty">
             <h2>Your bag is empty</h2>
             <p>Browse the latest drops and add pieces you actually want to wear.</p>
-            <a href="store.html" class="cart-back-btn"><span class="material-icons">arrow_back</span> Back to Store</a>
+            <a href="store" class="cart-back-btn"><span class="material-icons">arrow_back</span> Back to Store</a>
           </div>
         `;
         const sticky = document.getElementById('cartStickyBar');
@@ -843,7 +842,7 @@
           const { error } = await stripe.confirmPayment({
             elements,
             confirmParams: {
-              return_url: window.location.origin + '/order-success.html?email=' + encodeURIComponent(customerEmail),
+              return_url: window.location.origin + '/order-success?email=' + encodeURIComponent(customerEmail),
               receipt_email: customerEmail,
               payment_method_data: {
                 billing_details: {

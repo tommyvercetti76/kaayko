@@ -54,8 +54,8 @@ const getSarcasticMessage = () => {
 
 document.addEventListener('DOMContentLoaded', function() {
   // Check if we're on the store page
-  const isStorePage = window.location.pathname.includes('store.html') || 
-                     window.location.pathname.endsWith('store');
+  const isStorePage = window.location.pathname === '/store' ||
+                     window.location.pathname === '/store.html';
   
   if (!isStorePage) return;
   
@@ -422,7 +422,8 @@ function shakeModal(modal) {
 document.addEventListener('click', function(e) {
   const target = e.target;
   const isStoreLink = target.tagName === 'A' && 
-                     (target.getAttribute('href') === 'store.html' || 
+                     (target.getAttribute('href') === 'store' || 
+                      target.getAttribute('href') === '/store' || 
                       target.textContent.trim() === 'Store');
   
   if (isStoreLink) {
@@ -432,7 +433,7 @@ document.addEventListener('click', function(e) {
       e.preventDefault();
       console.log('🔐 Store link clicked without access, redirecting to keyword entry');
       // Redirect to store page which will show the modal
-      window.location.href = 'store.html';
+      window.location.href = 'store';
     }
   }
 });

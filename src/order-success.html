@@ -254,11 +254,11 @@
     </div>
     
     <div class="action-buttons">
-      <a href="store.html" class="btn btn-primary">
+      <a href="store" class="btn btn-primary">
         <span class="material-icons" style="font-size: 18px;">storefront</span>
         Continue Shopping
       </a>
-      <a href="index.html" class="btn btn-secondary">
+      <a href="/" class="btn btn-secondary">
         <span class="material-icons" style="font-size: 18px;">home</span>
         Back to Home
       </a>
@@ -276,7 +276,7 @@
     
     // Redirect back button to store instead of cart
     window.addEventListener('popstate', () => {
-      window.location.href = '/store.html';
+      window.location.href = '/store';
     });
     
     // Get payment intent ID from URL
@@ -288,13 +288,13 @@
     // Handle error scenarios - redirect to cart with error message
     if (redirectStatus === 'failed') {
       alert('Payment failed. Please try again.');
-      window.location.href = '/cart.html';
+      window.location.href = '/cart';
       throw new Error('Payment failed');
     }
     
     if (!paymentIntentId || redirectStatus !== 'succeeded') {
       alert('Invalid payment confirmation. Redirecting to store.');
-      window.location.href = '/store.html';
+      window.location.href = '/store';
       throw new Error('Invalid payment confirmation');
     }
     

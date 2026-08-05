@@ -73,7 +73,7 @@
     </div>
   </div>
 
-  <footer><p>&copy; <span id="year"></span> Kaayko. All rights reserved.</p></footer>
+  <footer><p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p></footer>
 
   <!-- SCRIPTS -->
   <script src="/js/secretStore.js"></script>
@@ -93,7 +93,7 @@
     const headerControls = document.querySelector('.header-controls');
     if (headerControls) {
       const cartBtn = document.createElement('a');
-      cartBtn.href = '/cart.html';
+      cartBtn.href = '/cart';
       cartBtn.className = 'cart-nav-button';
       cartBtn.innerHTML = `
         <svg class="header-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
@@ -124,7 +124,7 @@
     if (!slug) {
       const segments = window.location.pathname.split('/').filter(Boolean);
       const last = segments[segments.length - 1] || '';
-      slug = last === 'animal.html' ? '' : last;
+      slug = last === 'animal' ? '' : last;
     }
     animalPageInit(slug, { openModal });
   </script>

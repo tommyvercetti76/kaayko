@@ -315,7 +315,7 @@
 <body>
   <div class="page-container">
     <header class="page-header">
-      <a href="./dashboard.html" class="back-btn">
+      <a href="./dashboard" class="back-btn">
         <span class="material-icons">arrow_back</span>
       </a>
       <div class="page-title">
@@ -429,7 +429,7 @@
         </div>
         
         <div class="form-actions">
-          <a href="./dashboard.html" class="btn btn-secondary">Cancel</a>
+          <a href="./dashboard" class="btn btn-secondary">Cancel</a>
           <button type="submit" class="btn btn-kreator" id="save-btn">
             <span class="material-icons" style="font-size: 18px;">save</span>
             Save Product
@@ -444,7 +444,7 @@
     
     // Check auth
     if (!AUTH.init()) {
-      window.location.href = './kreator-login.html';
+      window.location.href = './kreator-login';
     }
     
     const form = document.getElementById('product-form');
@@ -583,7 +583,7 @@
         if (result.success) {
           showStatus('Product created successfully! Redirecting...', 'success');
           setTimeout(() => {
-            window.location.href = './dashboard.html#products';
+            window.location.href = './dashboard#products';
           }, 1500);
         } else {
           showStatus(result.message || 'Failed to create product', 'error');

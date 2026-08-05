@@ -1,79 +1,107 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-
-  <!-- Homepage - Highest Priority -->
   <url>
     <loc>https://kaayko.com/</loc>
-    <lastmod>2026-04-29</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
-
-  <!-- Core Product Pages -->
-  <url>
-    <loc>https://kaayko.com/paddlingout.html</loc>
-    <lastmod>2026-04-29</lastmod>
+    <lastmod>2026-08-05</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
 
   <url>
-    <loc>https://kaayko.com/paddlingout/search.html</loc>
-    <lastmod>2026-04-29</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <url>
-    <loc>https://kaayko.com/paddlingout/forecast</loc>
-    <lastmod>2026-04-29</lastmod>
+    <loc>https://kaayko.com/paddlingout</loc>
+    <lastmod>2026-08-05</lastmod>
     <changefreq>daily</changefreq>
-    <priority>0.8</priority>
+    <priority>1.0</priority>
   </url>
 
   <url>
-    <loc>https://kaayko.com/store.html</loc>
-    <lastmod>2026-04-29</lastmod>
+    <loc>https://kaayko.com/paddlingout/search</loc>
+    <lastmod>2026-08-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
-  <!-- Company Pages -->
   <url>
-    <loc>https://kaayko.com/about.html</loc>
-    <lastmod>2026-04-29</lastmod>
+    <loc>https://kaayko.com/paddlingout/methodology</loc>
+    <lastmod>2026-08-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://kaayko.com/reads.html</loc>
-    <lastmod>2026-04-29</lastmod>
+    <loc>https://kaayko.com/store</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://kaayko.com/about</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://kaayko.com/reads</loc>
+    <lastmod>2026-08-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://kaayko.com/testimonials.html</loc>
-    <lastmod>2026-04-29</lastmod>
+    <loc>https://kaayko.com/testimonials</loc>
+    <lastmod>2026-08-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
 
-  <!-- Legal -->
   <url>
-    <loc>https://kaayko.com/privacy.html</loc>
-    <lastmod>2026-04-29</lastmod>
+    <loc>https://kaayko.com/privacy</loc>
+    <lastmod>2026-08-05</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
 
-  <!-- Kortex (public registration only) -->
   <url>
-    <loc>https://kaayko.com/admin/tenant-registration.html</loc>
-    <lastmod>2026-04-29</lastmod>
+    <loc>https://kaayko.com/forge</loc>
+    <lastmod>2026-08-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
 
+  <url>
+    <loc>https://kaayko.com/forge-gallery</loc>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://kaayko.com/kreator</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://kaayko.com/kreator/apply</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://kaayko.com/kortex</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://kaayko.com/admin/tenant-registration</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
 </urlset>

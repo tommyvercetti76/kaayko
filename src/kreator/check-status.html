@@ -296,12 +296,12 @@
       </div>
       
       <div class="footer-links">
-        <a href="apply.html">Apply Now</a>
-        <a href="kreator-login.html">Sign In</a>
+        <a href="apply">Apply Now</a>
+        <a href="kreator-login">Sign In</a>
       </div>
     </div>
     
-    <a href="/paddlingout.html" class="back-link">Back to Kaayko</a>
+    <a href="/paddlingout" class="back-link">Back to Kaayko</a>
   </div>
 
   <script type="module">
@@ -376,7 +376,7 @@
           statusTitle.textContent = 'Application Approved! 🎉';
           statusMessage.textContent = 'Congratulations! Check your email for instructions to complete your account setup.';
           actionButtons.innerHTML = `
-            <a href="kreator-login.html" class="btn btn-kreator" style="width: 100%;">
+            <a href="kreator-login" class="btn btn-kreator" style="width: 100%;">
               Go to Dashboard
             </a>
           `;
@@ -388,7 +388,7 @@
           statusTitle.textContent = 'Application Not Approved';
           statusMessage.textContent = data.rejectionReason || 'Unfortunately, your application was not approved at this time. You may reapply in the future.';
           actionButtons.innerHTML = `
-            <a href="apply.html" class="btn btn-secondary" style="width: 100%;">
+            <a href="apply" class="btn btn-secondary" style="width: 100%;">
               Apply Again
             </a>
           `;

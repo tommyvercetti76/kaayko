@@ -96,13 +96,13 @@ export const AUTH = {
     localStorage.removeItem('kaayko_tenant_id');
     
     // Redirect to login
-    window.location.href = './login.html';
+    window.location.href = './login';
   },
   
   // Require authentication (redirect if not logged in)
   requireAuth() {
     if (!this.isAuthenticated()) {
-      window.location.href = './login.html';
+      window.location.href = './login';
       return false;
     }
     return true;

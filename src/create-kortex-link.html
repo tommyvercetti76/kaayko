@@ -526,7 +526,7 @@
 
           <div class="form-group">
             <label for="adv-web">Web Destination (Optional)</label>
-            <input type="text" id="adv-web" placeholder="https://kaayko.com/paddlingout.html?id=trinity">
+            <input type="text" id="adv-web" placeholder="https://kaayko.com/paddlingout?id=trinity">
           </div>
 
           <div class="form-group">
@@ -763,11 +763,11 @@
       if (contentType === 'lake' || contentType === 'spot') {
         webDestination = `https://kaayko.com/paddlingout?id=${contentId}`;
       } else if (contentType === 'product') {
-        webDestination = `https://kaayko.com/store.html?product=${contentId}`;
+        webDestination = `https://kaayko.com/store?product=${contentId}`;
       } else if (contentType === 'category') {
-        webDestination = `https://kaayko.com/store.html?category=${contentId}`;
+        webDestination = `https://kaayko.com/store?category=${contentId}`;
       } else if (contentType === 'store') {
-        webDestination = `https://kaayko.com/store.html`;
+        webDestination = `https://kaayko.com/store`;
       } else {
         webDestination = `https://kaayko.com/${contentType}?id=${contentId}`;
       }
