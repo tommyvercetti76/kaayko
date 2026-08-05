@@ -211,10 +211,17 @@ footer a:hover{color:var(--gold-bright)}</style>
       clearTimeout(timer);
       var spot = Array.isArray(list) ? list.filter(function (s) { return s && s.id === id; })[0] : null;
       if (!spot) throw new Error('spot not in feed');
-      var score = spot.paddleScore != null ? spot.paddleScore : (spot.score != null ? spot.score : null);
-      el.innerHTML = score != null
-        ? 'Current Paddle Score: <b>' + score + ' / 5</b> &nbsp; ' + link
-        : 'Live conditions are available for this spot. ' + link;
+      // paddleScore is an object: { rating, interpretation, confidence, ... }
+      var ps = spot.paddleScore;
+      var rating = ps && typeof ps === 'object' ? ps.rating : ps;
+      var reading = ps && typeof ps === 'object' ? ps.interpretation : null;
+      if (typeof rating === 'number' && isFinite(rating)) {
+        el.innerHTML = 'Current Paddle Score: <b>' + rating + ' / 5</b>'
+          + (reading ? ' &mdash; ' + String(reading) : '')
+          + ' &nbsp; ' + link;
+      } else {
+        el.innerHTML = 'Live conditions are available for this spot. ' + link;
+      }
     })
     .catch(function () {
       clearTimeout(timer);
