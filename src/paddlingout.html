@@ -326,20 +326,6 @@
 
   <!-- MAIN: Cards injected by paddlingout.js (replaces static grid below) -->
   <main>
-      <section class="po-intro">
-        <p>
-          Every spot here was added by hand, not scraped from a database. The Paddle Score is a
-          single number from 1 (Danger) to 5 (Excellent), built from wind speed and gusts, air and
-          water temperature, UV index, cloud cover, precipitation and visibility &mdash; then
-          constrained by fixed safety rules the model is not allowed to override.
-        </p>
-        <p>
-          The model behind it was trained on roughly 1.4 million hourly weather observations across
-          164 water bodies in the United States and India. The failures are published next to the
-          results: <a href="/paddlingout/methodology">read the full methodology, including what the
-          score cannot see</a>.
-        </p>
-      </section>
 
     <section class="container" id="cardsContainer">
       <!-- Static lake grid for SEO / no-JS / screen readers. JS replaces this on load. -->
@@ -373,6 +359,21 @@
   
       </noscript>
 
+      <section class="po-intro">
+        <span class="po-rule">About the Paddle Score</span>
+        <p>
+          Every spot here was added by hand, not scraped from a database. The Paddle Score is a
+          single number from 1 (Danger) to 5 (Excellent), built from wind speed and gusts, air and
+          water temperature, UV index, cloud cover, precipitation and visibility &mdash; then
+          constrained by fixed safety rules the model is not allowed to override.
+        </p>
+        <p>
+          The model behind it was trained on roughly 1.4 million hourly weather observations across
+          164 water bodies in the United States and India. The failures are published next to the
+          results: <a href="/paddlingout/methodology">read the full methodology, including what the
+          score cannot see</a>.
+        </p>
+      </section>
       <section class="po-faq">
         <span class="po-rule">Common questions</span>
         <div class="po-faq-grid">

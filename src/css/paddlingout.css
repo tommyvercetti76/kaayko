@@ -616,23 +616,22 @@ body {
      page rather than as an SEO appendage bolted to the bottom.
 ─────────────────────────────────────────────────────────────────────────────*/
 .po-intro {
-  max-width: 46rem;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem clamp(1.25rem, 4vw, 2rem) 0.5rem;
+  padding: 2.5rem clamp(1.25rem, 4vw, 2rem) 0;
 }
 
 .po-intro p {
   font-family: var(--font-serif);
-  font-size: clamp(1.08rem, 2.3vw, 1.24rem);
-  line-height: 1.68;
+  font-size: 1.05rem;
+  line-height: 1.66;
+  max-width: 46rem;
   color: rgba(237, 232, 223, 0.78);
   margin: 0 0 0.9rem;
 }
 
-.po-intro p:first-child {
-  font-size: clamp(1.18rem, 2.7vw, 1.4rem);
+.po-intro p:first-of-type {
   color: var(--fg);
-  line-height: 1.56;
 }
 
 .po-intro a {
