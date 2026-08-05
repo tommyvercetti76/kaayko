@@ -478,6 +478,24 @@
       margin-top: 2rem;
     }
 
+    /* Same footer nav as /paddlingout — rule copied from css/paddlingout.css
+       so the Paddling Out pages share one footer. */
+    footer nav, .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.2rem;
+      margin-bottom: 0.8rem;
+    }
+    footer a, .footer-links a {
+      color: var(--gold);
+      text-decoration: none;
+      font: 400 0.7rem var(--font-sans);
+      letter-spacing: 0.12em;
+      font-style: normal;
+    }
+    footer a:hover, .footer-links a:hover { color: var(--gold-bright); }
+    footer p { margin: 0.2rem 0 0; }
+
     @media (max-width: 600px) {
       .po-page-header { padding: 1.4rem 1.1rem 1rem; }
       .po-title { font-size: 1.4rem; }
@@ -547,6 +565,12 @@
   </main>
 
   <footer>
+    <nav class="footer-links">
+      <a href="/paddlingout">Paddling Out</a>
+      <a href="/about">About</a>
+      <a href="/paddlingout/methodology">Methodology</a>
+      <a href="/privacy">Privacy</a>
+    </nav>
     <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
   </footer>
 

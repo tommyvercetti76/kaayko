@@ -234,14 +234,16 @@ ${jsonLd(spot)}
 
 </main>
 
-<footer class="spot-footer">
-  <span>&copy; 2026 Kaayko</span>
-  <nav>
+<!-- Same footer markup as /paddlingout. Styled by footer / .footer-links in
+     paddlingout.css, which this page already loads. Do not fork it. -->
+<footer>
+  <nav class="footer-links">
     <a href="/paddlingout">Paddling Out</a>
-    <a href="/paddlingout/methodology">Methodology</a>
     <a href="/about">About</a>
+    <a href="/paddlingout/methodology">Methodology</a>
     <a href="/privacy">Privacy</a>
   </nav>
+  <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
 </footer>
 
 <script>
@@ -272,6 +274,12 @@ ${jsonLd(spot)}
         + (reading ? ' <span class="reading">' + String(reading) + '</span>' : '');
     })
     .catch(function () { clearTimeout(timer); /* keep the static label */ });
+})();
+
+// Same year injection the other pages use (see paddlingout.js Section 9).
+(function () {
+  var y = document.getElementById("year");
+  if (y) y.textContent = new Date().getFullYear();
 })();
 </script>
 

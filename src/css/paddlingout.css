@@ -41,6 +41,12 @@
 /*─────────────────────────────────────────────────────────────────────────────
  1) Page base
 ─────────────────────────────────────────────────────────────────────────────*/
+
+/* Same reset as storestyle.css line 51. paddlingout.html loads storestyle.css
+   and gets it there; the spot pages and 404.html load this file on its own, so
+   it has to be self-sufficient or their max-width + padding overflows. */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
 body {
   margin: 0;
   padding: 0;

@@ -236,22 +236,6 @@
   gap: 1rem;
 }
 
-/*── 6) Footer ──────────────────────────────────────────────────────────────*/
-.spot-footer {
-  border-top: 1px solid rgba(181, 147, 90, 0.18);
-  padding: 1.5rem clamp(1.25rem, 4vw, 2.5rem);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem 1.6rem;
-  justify-content: space-between;
-  align-items: center;
-  font-family: var(--font-serif);
-  font-size: 0.92rem;
-  color: rgba(237, 232, 223, 0.45);
-}
-.spot-footer nav { display: flex; flex-wrap: wrap; gap: 0.6rem 1.4rem; }
-.spot-footer a { color: rgba(237, 232, 223, 0.62); text-decoration: none; }
-.spot-footer a:hover { color: var(--gold-bright); }
 
 @media (max-width: 640px) {
   .spot-facts { gap: 0.75rem 1.75rem; }
