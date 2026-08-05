@@ -25,6 +25,7 @@
       --line:rgba(181,147,90,0.28);
       --ok:#8fbc6a;
       --bad:#f87171;
+      --warn:#d9bd7b;
       --font-serif:'Cormorant Garamond', Georgia, serif;
       --font-sans:'Josefin Sans', Arial, sans-serif;
       --ease:cubic-bezier(0.76,0,0.24,1);
@@ -199,6 +200,99 @@
     }
     .choice input { width:auto; }
     .email-wrap[hidden] { display:none; }
+    .image-drop {
+      position:relative;
+      border:1px dashed rgba(181,147,90,0.38);
+      border-radius:12px;
+      background:rgba(181,147,90,0.06);
+      cursor:pointer;
+      padding:1rem;
+      transition:border-color 0.2s, background 0.2s;
+    }
+    .image-drop:hover,
+    .image-drop.dragging {
+      border-color:var(--gold);
+      background:rgba(181,147,90,0.11);
+    }
+    .image-drop input {
+      position:absolute;
+      width:1px;
+      height:1px;
+      opacity:0;
+      pointer-events:none;
+    }
+    .image-drop-main {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+    }
+    .image-drop-copy strong {
+      display:block;
+      color:var(--gold-bright);
+      font-family:var(--font-sans);
+      font-size:0.74rem;
+      letter-spacing:0.12em;
+      text-transform:uppercase;
+    }
+    .image-drop-copy span {
+      display:block;
+      margin-top:0.35rem;
+      color:var(--muted);
+      font-size:0.94rem;
+      font-style:italic;
+      line-height:1.35;
+    }
+    .image-count {
+      color:var(--gold);
+      flex-shrink:0;
+      font-family:var(--font-sans);
+      font-size:0.68rem;
+      letter-spacing:0.1em;
+      text-transform:uppercase;
+    }
+    .image-previews {
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:0.7rem;
+      margin-top:0.85rem;
+    }
+    .image-preview {
+      position:relative;
+      overflow:hidden;
+      border:1px solid rgba(181,147,90,0.24);
+      border-radius:10px;
+      aspect-ratio:4 / 3;
+      background:#050505;
+    }
+    .image-preview img {
+      width:100%;
+      height:100%;
+      display:block;
+      object-fit:cover;
+    }
+    .image-preview button {
+      position:absolute;
+      top:0.4rem;
+      right:0.4rem;
+      width:30px;
+      height:30px;
+      border:1px solid rgba(0,0,0,0.36);
+      border-radius:50%;
+      background:rgba(8,8,8,0.78);
+      color:var(--fg);
+      cursor:pointer;
+      font-size:1rem;
+      line-height:1;
+    }
+    .field-error {
+      min-height:1.1rem;
+      color:var(--bad);
+      font-family:var(--font-sans);
+      font-size:0.66rem;
+      letter-spacing:0.06em;
+      text-transform:uppercase;
+    }
     .form-status {
       min-height:1.3rem;
       color:var(--muted);
@@ -282,6 +376,13 @@
         align-items:stretch;
         flex-direction:column;
       }
+      .image-drop-main {
+        align-items:flex-start;
+        flex-direction:column;
+      }
+      .image-previews {
+        grid-template-columns:1fr;
+      }
     }
   </style>
 </head>
@@ -299,7 +400,7 @@
 
     <section class="tour-strip" aria-label="How submission works">
       <div class="tour-step"><strong>1. Enter basics</strong><span>Name the water and where paddlers should look for it.</span></div>
-      <div class="tour-step"><strong>2. Confirm coordinates</strong><span>Use your location or let Kaayko infer coordinates from the name.</span></div>
+      <div class="tour-step"><strong>2. Add images</strong><span>Upload at least one real lake photo so the entry can be reviewed.</span></div>
       <div class="tour-step"><strong>3. Goes live</strong><span>We validate within 2 days. If not, it still goes live after the window.</span></div>
     </section>
 
@@ -364,6 +465,22 @@
         </label>
 
         <div class="field-group">
+          <span class="label-text">Lake images required</span>
+          <label class="image-drop" id="image-drop" tabindex="0">
+            <input id="images" name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple required>
+            <span class="image-drop-main">
+              <span class="image-drop-copy">
+                <strong>Upload 1-3 images</strong>
+                <span>JPEG, PNG, or WebP. Each image must be 5 MB or smaller.</span>
+              </span>
+              <span class="image-count" id="image-count">0 selected</span>
+            </span>
+            <span class="image-previews" id="image-previews" aria-live="polite"></span>
+          </label>
+          <span class="field-error" id="image-error" aria-live="polite"></span>
+        </div>
+
+        <div class="field-group">
           <span class="label-text">Submit as</span>
           <div class="choice-row">
             <label class="choice"><input type="radio" name="contactPreference" value="anonymous" checked> Anonymous</label>
@@ -392,7 +509,7 @@
   <div class="tour-overlay" id="tour-overlay">
     <div class="tour-modal">
       <h2>Add a lake in under a minute</h2>
-      <p>Give us the water body, the nearest place, and coordinates. You can stay anonymous, or leave an email and we’ll notify you when admin validates it.</p>
+      <p>Give us the water body, the nearest place, coordinates, and at least one lake photo. You can stay anonymous, or leave an email and we’ll notify you when admin validates it.</p>
       <button class="ghost-btn" id="start-tour" type="button">Start entry</button>
     </div>
   </div>
@@ -413,6 +530,16 @@
       const emailWrap = document.getElementById('email-wrap');
       const emailInput = document.getElementById('email');
       const tourOverlay = document.getElementById('tour-overlay');
+      const imageInput = document.getElementById('images');
+      const imageDrop = document.getElementById('image-drop');
+      const imagePreviews = document.getElementById('image-previews');
+      const imageCount = document.getElementById('image-count');
+      const imageError = document.getElementById('image-error');
+      const MAX_IMAGES = 3;
+      const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+      const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+      let selectedImages = [];
+      let previewUrls = [];
 
       function setStatus(message, type) {
         statusEl.textContent = message || '';
@@ -421,6 +548,118 @@
 
       function field(id) {
         return document.getElementById(id);
+      }
+
+      function setImageError(message) {
+        imageError.textContent = message || '';
+      }
+
+      function validateImageFiles(files) {
+        const list = Array.from(files || []);
+        if (!list.length) return 'At least one lake image is required.';
+        if (list.length > MAX_IMAGES) return 'Upload 1-3 images.';
+        const invalidType = list.find(file => !ALLOWED_IMAGE_TYPES.has(file.type));
+        if (invalidType) return 'Images must be JPEG, PNG, or WebP.';
+        const oversized = list.find(file => file.size > MAX_IMAGE_BYTES);
+        if (oversized) return 'Each image must be 5 MB or smaller.';
+        return '';
+      }
+
+      function syncImageInput() {
+        try {
+          const transfer = new DataTransfer();
+          selectedImages.forEach(file => transfer.items.add(file));
+          imageInput.files = transfer.files;
+        } catch {
+          // selectedImages is the source of truth for submit.
+        }
+      }
+
+      function renderImagePreviews() {
+        previewUrls.forEach(url => URL.revokeObjectURL(url));
+        previewUrls = [];
+        imagePreviews.innerHTML = '';
+        selectedImages.forEach((file, index) => {
+          const url = URL.createObjectURL(file);
+          previewUrls.push(url);
+          const preview = document.createElement('span');
+          preview.className = 'image-preview';
+          preview.innerHTML = `
+            <img src="${url}" alt="Selected lake image ${index + 1}">
+            <button type="button" aria-label="Remove image ${index + 1}">x</button>
+          `;
+          preview.querySelector('button').addEventListener('click', event => {
+            event.preventDefault();
+            event.stopPropagation();
+            selectedImages.splice(index, 1);
+            syncImageInput();
+            renderImagePreviews();
+            setImageError(validateImageFiles(selectedImages));
+          });
+          imagePreviews.append(preview);
+        });
+        imageCount.textContent = selectedImages.length === 1
+          ? '1 selected'
+          : `${selectedImages.length} selected`;
+      }
+
+      function setImages(files) {
+        const list = Array.from(files || []);
+        const error = validateImageFiles(list);
+        if (error) {
+          selectedImages = [];
+          imageInput.value = '';
+          renderImagePreviews();
+          setImageError(error);
+          return false;
+        }
+        selectedImages = list;
+        syncImageInput();
+        renderImagePreviews();
+        setImageError('');
+        return true;
+      }
+
+      function requireTrimmed(id, message) {
+        const el = field(id);
+        if (!el.value.trim()) {
+          setStatus(message, 'error');
+          el.focus();
+          return false;
+        }
+        return true;
+      }
+
+      function validateBeforeSubmit(lat, lng, preference) {
+        if (!requireTrimmed('lakeName', 'Lake name is required.')) return false;
+        if (!requireTrimmed('city', 'City or nearest town is required.')) return false;
+        if (!requireTrimmed('region', 'State or region is required.')) return false;
+        if (!requireTrimmed('country', 'Country is required.')) return false;
+        if (lat === null || lat < -90 || lat > 90 || lng === null || lng < -180 || lng > 180) {
+          setStatus('Valid latitude and longitude are required.', 'error');
+          field('lat').focus();
+          return false;
+        }
+        const imageMessage = validateImageFiles(selectedImages);
+        if (imageMessage) {
+          setImageError(imageMessage);
+          setStatus(imageMessage, 'error');
+          imageDrop.focus();
+          return false;
+        }
+        if (preference === 'email') {
+          if (!emailInput.value.trim()) {
+            setStatus('Email is required for notifications.', 'error');
+            emailInput.focus();
+            return false;
+          }
+          if (!emailInput.checkValidity()) {
+            setStatus('Enter a valid email address.', 'error');
+            emailInput.focus();
+            return false;
+          }
+        }
+        return true;
       }
 
       function applyUrlPrefill() {
@@ -489,6 +728,23 @@
         );
       });
 
+      imageInput.addEventListener('change', function () {
+        setImages(imageInput.files);
+      });
+
+      imageDrop.addEventListener('dragover', function (event) {
+        event.preventDefault();
+        imageDrop.classList.add('dragging');
+      });
+      imageDrop.addEventListener('dragleave', function () {
+        imageDrop.classList.remove('dragging');
+      });
+      imageDrop.addEventListener('drop', function (event) {
+        event.preventDefault();
+        imageDrop.classList.remove('dragging');
+        setImages(event.dataTransfer.files);
+      });
+
       form.addEventListener('change', function (event) {
         if (event.target.name === 'contactPreference') {
           const wantsEmail = event.target.value === 'email';
@@ -504,6 +760,8 @@
 
         let lat = parseCoord(field('lat').value);
         let lng = parseCoord(field('lng').value);
+        const preference = form.querySelector('input[name="contactPreference"]:checked')?.value || 'anonymous';
+
         if (lat === null || lng === null) {
           const found = await inferCoordinates();
           lat = parseCoord(field('lat').value);
@@ -511,33 +769,33 @@
           if (!found || lat === null || lng === null) return;
         }
 
-        const preference = form.querySelector('input[name="contactPreference"]:checked')?.value || 'anonymous';
-        const payload = {
-          lakeName: field('lakeName').value.trim(),
-          city: field('city').value.trim(),
-          region: field('region').value.trim(),
-          country: field('country').value.trim(),
-          lat,
-          lng,
-          launchHint: field('launchHint').value.trim(),
-          description: field('description').value.trim(),
-          parkingAvl: field('parkingAvl').value,
-          restroomsAvl: field('restroomsAvl').value,
-          contactPreference: preference,
-          anonymous: preference !== 'email',
-          email: preference === 'email' ? emailInput.value.trim() : '',
-          pageUrl: window.location.href,
-          referrer: document.referrer,
-          source: 'paddlingout_submitentry'
-        };
+        if (!validateBeforeSubmit(lat, lng, preference)) return;
+
+        const payload = new FormData();
+        payload.append('lakeName', field('lakeName').value.trim());
+        payload.append('city', field('city').value.trim());
+        payload.append('region', field('region').value.trim());
+        payload.append('country', field('country').value.trim());
+        payload.append('lat', String(lat));
+        payload.append('lng', String(lng));
+        payload.append('launchHint', field('launchHint').value.trim());
+        payload.append('description', field('description').value.trim());
+        payload.append('parkingAvl', field('parkingAvl').value);
+        payload.append('restroomsAvl', field('restroomsAvl').value);
+        payload.append('contactPreference', preference);
+        payload.append('anonymous', preference !== 'email' ? 'true' : 'false');
+        payload.append('email', preference === 'email' ? emailInput.value.trim() : '');
+        payload.append('pageUrl', window.location.href);
+        payload.append('referrer', document.referrer);
+        payload.append('source', 'paddlingout_submitentry');
+        selectedImages.forEach(file => payload.append('images', file, file.name));
 
         submitBtn.disabled = true;
         submitBtn.textContent = 'Submitting';
         try {
           const res = await fetch(API_BASE + '/paddlingOut/submitEntry', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: payload
           });
           const data = await res.json().catch(() => ({}));
           if (!res.ok || !data.success) throw new Error(data.error || 'Submission failed');
