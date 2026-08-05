@@ -41,6 +41,40 @@ try {
 } catch (e) {
   note('Generated spot pages are stale. Run: node scripts/generate-spot-pages.js');
 }
+try {
+  execFileSync('node', ['scripts/apply-footer.js', '--check'], { cwd: root, stdio: 'pipe' });
+} catch (e) {
+  note('Footer is out of date on one or more pages. Run: node scripts/apply-footer.js');
+}
+
+// ── 1b. one footer, one shape, everywhere ──────────────────────────────────
+// The site shipped six different footer variants before this check existed.
+{
+  const { PAGES } = require('./footer-links');
+  const spotPages = fs
+    .readdirSync(path.join(root, 'src', 'paddlingout'))
+    .filter((f) => /^[a-z0-9-]+-[a-z0-9-]+\.html$/.test(f))
+    .map((f) => `paddlingout/${f}`);
+
+  for (const rel of [...Object.keys(PAGES), ...spotPages]) {
+    if (!exists(`src/${rel}`)) continue;
+    const html = read(`src/${rel}`);
+    const footers = html.match(/<footer[\s>]/gi) || [];
+    if (footers.length !== 1) {
+      note(`${rel}: expected exactly one <footer>, found ${footers.length}`);
+      continue;
+    }
+    if (!/<footer class="site-footer( is-light)?">/.test(html)) {
+      note(`${rel}: footer is not the shared .site-footer component`);
+    }
+    if (!html.includes('/css/footer.css')) note(`${rel}: does not load /css/footer.css`);
+    const body = html.match(/<footer[\s\S]*?<\/footer>/i)[0];
+    if (!/&copy;/.test(body)) note(`${rel}: footer has no copyright line`);
+    if (!/<nav aria-label="Footer">/.test(body)) note(`${rel}: footer has no nav`);
+    if (!/id="year"/.test(body)) note(`${rel}: footer year span missing`);
+    if (!html.includes('kaayko-footer-year')) note(`${rel}: footer year script missing`);
+  }
+}
 
 // ── resolve a URL path to a source file, mirroring firebase cleanUrls ───────
 const fb = JSON.parse(read('firebase.json')).hosting;

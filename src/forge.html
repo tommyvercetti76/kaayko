@@ -247,6 +247,7 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="/css/footer.css">
 </head>
 <body>
   <main class="shell" aria-label="Forge options">
@@ -370,5 +371,23 @@
       document.querySelectorAll(".choice").forEach(attachCursorGlow);
     })();
   </script>
+  <footer class="site-footer">
+    <nav aria-label="Footer">
+      <a href="/forge-gallery">Gallery</a>
+      <a href="https://github.com/tommyvercetti76/Forge" rel="noopener noreferrer">Source</a>
+      <a href="/about">About</a>
+      <a href="/privacy">Privacy</a>
+    </nav>
+    <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
+  </footer>
+
+  <script>
+    /* kaayko-footer-year */
+    (function () {
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+    })();
+  </script>
+
 </body>
 </html>

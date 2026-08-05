@@ -479,6 +479,7 @@
     .about-static a { color: var(--gold); text-decoration: none; border-bottom: 1px solid rgba(181,147,90,0.4); }
     .about-static a:hover { color: var(--gold-bright); }
   </style>
+  <link rel="stylesheet" href="/css/footer.css">
 </head>
 <body>
   <a class="skip label" href="#paddling-out">Skip to the products</a>
@@ -559,12 +560,14 @@
     </div>
   </section>
 
-  <footer class="foot">
-    <a href="/paddlingout">Paddling Out</a>
-    <a href="/about">About</a>
-    <a href="/paddlingout/methodology">Methodology</a>
-    <a href="/privacy">Privacy</a>
-    <span>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</span>
+  <footer class="site-footer">
+    <nav aria-label="Footer">
+      <a href="/paddlingout">Paddling Out</a>
+      <a href="/forge">Forge</a>
+      <a href="/store">Store</a>
+      <a href="/privacy">Privacy</a>
+    </nav>
+    <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
   </footer>
 
   <script src="/js/storeAccess.js"></script>
@@ -941,6 +944,14 @@
   })();
   </script>
   <script>
+    (function () {
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+    })();
+  </script>
+
+  <script>
+    /* kaayko-footer-year */
     (function () {
       var y = document.getElementById("year");
       if (y) y.textContent = new Date().getFullYear();

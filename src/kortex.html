@@ -622,6 +622,7 @@ a { color:inherit; text-decoration:none }
   .scroll-cue { animation:none!important; opacity:0.5!important }
 }
 </style>
+  <link rel="stylesheet" href="/css/footer.css">
 </head>
 
 <body>
@@ -788,11 +789,14 @@ click ·········· <span class="hl">registration</span></pre></div>
 </section>
 
 <!-- ═══ FOOTER ═══ -->
-<footer class="foot" aria-label="Footer">
-  <a href="https://www.instagram.com/heykaayko" rel="noopener noreferrer">Instagram</a>
-  <span>&copy; 2026 <a href="/">Kaayko</a></span>
-  <a href="mailto:rohan@kaayko.com">Contact</a>
-</footer>
+  <footer class="site-footer">
+    <nav aria-label="Footer">
+      <a href="/legal/kortex-terms">Terms</a>
+      <a href="/privacy">Privacy</a>
+      <a href="mailto:rohan@kaayko.com">Contact</a>
+    </nav>
+    <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
+  </footer>
 
 <!-- ═══ SCRIPTS ═══ -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -1078,5 +1082,13 @@ document.getElementById('inquiry-form').addEventListener('submit', function() {
   if (window.phTrack) phTrack('signup_attempted', { source: 'landing_page' });
 });
 </script>
+  <script>
+    /* kaayko-footer-year */
+    (function () {
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+    })();
+  </script>
+
 </body>
 </html>

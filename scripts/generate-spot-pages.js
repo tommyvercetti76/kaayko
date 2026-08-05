@@ -25,6 +25,7 @@ const fs = require('fs');
 const path = require('path');
 const spots = require('./spot-content');
 const media = require('./spot-media.json');
+const { render: renderFooter } = require('./footer-links');
 
 const repoRoot = path.resolve(__dirname, '..');
 const outDir = path.join(repoRoot, 'src', 'paddlingout');
@@ -142,6 +143,7 @@ function render(spot) {
 ${hero ? `<link rel="preload" as="image" href="${esc(hero)}" fetchpriority="high">\n` : ''}<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/paddlingout.css">
 <link rel="stylesheet" href="/css/spot.css">
+<link rel="stylesheet" href="/css/footer.css">
 <meta name="theme-color" content="#080808">
 
 <script type="application/ld+json">
@@ -234,17 +236,7 @@ ${jsonLd(spot)}
 
 </main>
 
-<!-- Same footer markup as /paddlingout. Styled by footer / .footer-links in
-     paddlingout.css, which this page already loads. Do not fork it. -->
-<footer>
-  <nav class="footer-links">
-    <a href="/paddlingout">Paddling Out</a>
-    <a href="/about">About</a>
-    <a href="/paddlingout/methodology">Methodology</a>
-    <a href="/privacy">Privacy</a>
-  </nav>
-  <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
-</footer>
+${renderFooter('paddling', { indent: '' })}
 
 <script>
 // Progressive enhancement only. Everything above is complete without this.
@@ -276,7 +268,7 @@ ${jsonLd(spot)}
     .catch(function () { clearTimeout(timer); /* keep the static label */ });
 })();
 
-// Same year injection the other pages use (see paddlingout.js Section 9).
+/* kaayko-footer-year */
 (function () {
   var y = document.getElementById("year");
   if (y) y.textContent = new Date().getFullYear();

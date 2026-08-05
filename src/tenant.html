@@ -41,6 +41,7 @@
     .hidden{display:none}
     @media(max-width:640px){header{align-items:flex-start;flex-direction:column}.panel{padding:22px}.grid{grid-template-columns:1fr}}
   </style>
+  <link rel="stylesheet" href="/css/footer.css">
 </head>
 <body>
   <div class="shell">
@@ -70,11 +71,24 @@
         <div id="status" class="status hidden"></div>
       </section>
     </main>
-    <footer>
-      <span>Tenant links, alumni pages, campaigns, and performance tracking</span>
-      <span>kortex v2</span>
-    </footer>
+  <footer class="site-footer">
+    <nav aria-label="Footer">
+      <a href="/kortex">Kortex</a>
+      <a href="/legal/kortex-terms">Terms</a>
+      <a href="/privacy">Privacy</a>
+      <a href="mailto:rohan@kaayko.com">Contact</a>
+    </nav>
+    <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
+  </footer>
   </div>
   <script src="/js/tenant-portal.js"></script>
+  <script>
+    /* kaayko-footer-year */
+    (function () {
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+    })();
+  </script>
+
 </body>
 </html>

@@ -65,6 +65,7 @@
   
   <!-- 4) Stripe.js -->
   <script src="https://js.stripe.com/v3/"></script>
+  <link rel="stylesheet" href="/css/footer.css">
 </head>
 
 <body class="store-v2">
@@ -160,7 +161,11 @@
   </div>
 
   <!-- FOOTER -->
-  <footer>
+  <footer class="site-footer">
+    <nav aria-label="Footer">
+      <a href="/about">About</a>
+      <a href="/privacy">Privacy</a>
+    </nav>
     <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
   </footer>
 
@@ -238,5 +243,13 @@
     
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>
+  <script>
+    /* kaayko-footer-year */
+    (function () {
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+    })();
+  </script>
+
 </body>
 </html>

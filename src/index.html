@@ -605,21 +605,8 @@
       border-bottom: 1px solid rgba(181, 147, 90, 0.4); }
     .home-content a:hover { color: var(--gold-bright); border-color: var(--gold-bright); }
 
-    /* Shared site footer — same markup and link set as /paddlingout. */
-    .site-foot {
-      border-top: 1px solid rgba(181, 147, 90, 0.18);
-      margin-top: 2rem;
-      text-align: center;
-      padding: 2.5rem 2rem;
-      color: var(--muted);
-      font: 400 0.7rem "Josefin Sans", Arial, sans-serif;
-      letter-spacing: 0.12em;
-    }
-    .site-foot nav { display: flex; justify-content: center; gap: 1.2rem; margin-bottom: 0.8rem; flex-wrap: wrap; }
-    .site-foot a { color: var(--gold); text-decoration: none; }
-    .site-foot a:hover { color: var(--gold-bright); }
-    .site-foot p { margin: 0.2rem 0 0; }
   </style>
+  <link rel="stylesheet" href="/css/footer.css">
 </head>
 <body>
 
@@ -721,11 +708,12 @@
     </div>
   </section>
 
-  <footer class="site-foot">
-    <nav>
+  <footer class="site-footer">
+    <nav aria-label="Footer">
       <a href="/paddlingout">Paddling Out</a>
+      <a href="/forge">Forge</a>
+      <a href="/store">Store</a>
       <a href="/about">About</a>
-      <a href="/paddlingout/methodology">Methodology</a>
       <a href="/privacy">Privacy</a>
     </nav>
     <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
@@ -1008,6 +996,14 @@
     }
   </script>
   <script>
+    (function () {
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+    })();
+  </script>
+
+  <script>
+    /* kaayko-footer-year */
     (function () {
       var y = document.getElementById("year");
       if (y) y.textContent = new Date().getFullYear();

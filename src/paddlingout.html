@@ -305,6 +305,7 @@
 
   <!-- Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/footer.css">
 </head>
 
 <body>
@@ -404,11 +405,10 @@
   </main>
 
   <!-- FOOTER -->
-  <footer>
-    <nav class="footer-links">
-      <a href="/paddlingout">Paddling Out</a>
-      <a href="/about">About</a>
+  <footer class="site-footer">
+    <nav aria-label="Footer">
       <a href="/paddlingout/methodology">Methodology</a>
+      <a href="/about">About</a>
       <a href="/privacy">Privacy</a>
     </nav>
     <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
@@ -497,5 +497,13 @@
       }, { passive: true });
     })();
   </script>
+  <script>
+    /* kaayko-footer-year */
+    (function () {
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+    })();
+  </script>
+
 </body>
 </html>

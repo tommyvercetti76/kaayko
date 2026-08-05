@@ -590,15 +590,6 @@ html, body {
 .rate-error-link:hover { border-bottom-color: var(--gold-bright); color: var(--gold-bright); }
 
 /* ── Footer ──────────────────────────────────────────────────────────────── */
-.rate-footer {
-  border-top: 1px solid var(--line);
-  padding: 1.5rem;
-  text-align: center;
-  font: 400 0.7rem var(--font-sans);
-  letter-spacing: 0.12em;
-  color: var(--muted);
-  margin-top: 2rem;
-}
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 480px) {
@@ -632,6 +623,7 @@ html, body {
   letter-spacing: 0.04em;
 }
 </style>
+  <link rel="stylesheet" href="/css/footer.css">
 </head>
 <body>
 
@@ -821,7 +813,15 @@ html, body {
 
 </div>
 
-<footer class="rate-footer">Kaayko Paddling Out</footer>
+  <footer class="site-footer">
+    <nav aria-label="Footer">
+      <a href="/paddlingout">Paddling Out</a>
+      <a href="/paddlingout/methodology">Methodology</a>
+      <a href="/about">About</a>
+      <a href="/privacy">Privacy</a>
+    </nav>
+    <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
+  </footer>
 
 <script>
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -1269,5 +1269,13 @@ function dismissOnboard() {
 /* ── Boot ─────────────────────────────────────────────────────────────────── */
 init();
 </script>
+  <script>
+    /* kaayko-footer-year */
+    (function () {
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+    })();
+  </script>
+
 </body>
 </html>

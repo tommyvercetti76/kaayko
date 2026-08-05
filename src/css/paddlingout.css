@@ -73,33 +73,9 @@ body {
   pointer-events: none !important;
 }
 
-footer {
-  text-align: center;
-  padding: 2.5rem 2rem;
-  color: var(--muted);
-  font: 400 0.7rem var(--font-sans);
-  letter-spacing: 0.12em;
-  border-top: 1px solid var(--line);
-  margin-top: 2rem;
-  background: var(--surface);
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-footer nav, .footer-links {
-  display: flex;
-  justify-content: center;
-  gap: 1.2rem;
-  margin-bottom: 0.8rem;
-}
-footer a, .footer-links a {
-  color: var(--gold);
-  text-decoration: none;
-  font: 400 0.7rem var(--font-sans);
-  letter-spacing: 0.12em;
-}
-footer a:hover, .footer-links a:hover { color: var(--gold-bright); }
-footer p { margin: 0.2rem 0 0; }
+/* The site footer lives in css/footer.css (.site-footer). Deliberately no
+   bare `footer` rules here — element selectors on <footer> are how six
+   different footer variants happened in the first place. */
 
 /* SEO prerendered lake grid — visible until JS replaces */
 .seo-lake {
