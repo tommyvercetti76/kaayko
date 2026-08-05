@@ -7,6 +7,11 @@ const { execFileSync } = require('child_process');
 const repoRoot = path.resolve(__dirname, '..');
 const outputPath = path.join(repoRoot, 'src', 'sitemap.xml');
 
+// --check verifies the committed sitemap matches what this script would emit.
+// lastmod is derived from `git log`, so regenerating BEFORE the content commit
+// lands captures the previous date and the sitemap silently lags by one commit.
+const checkOnly = process.argv.includes('--check');
+
 const routes = [
   { loc: '/', source: 'src/index.html', changefreq: 'daily', priority: '1.0' },
   { loc: '/paddlingout', source: 'src/paddlingout.html', changefreq: 'daily', priority: '1.0' },
@@ -102,5 +107,18 @@ const xml = [
   '',
 ].join('\n');
 
-fs.writeFileSync(outputPath, xml);
-console.log(`Generated ${path.relative(repoRoot, outputPath)} with ${routes.length} URLs.`);
+if (checkOnly) {
+  const current = fs.existsSync(outputPath) ? fs.readFileSync(outputPath, 'utf8') : null;
+  if (current !== xml) {
+    console.error(
+      'sitemap.xml is out of date (stale lastmod, or routes changed).\n' +
+      'Run: node scripts/generate-sitemap.js — and re-run it AFTER committing content,\n' +
+      'because lastmod comes from git log and otherwise lags by one commit.'
+    );
+    process.exit(1);
+  }
+  console.log(`sitemap.xml up to date — ${routes.length} URLs.`);
+} else {
+  fs.writeFileSync(outputPath, xml);
+  console.log(`Generated ${path.relative(repoRoot, outputPath)} with ${routes.length} URLs.`);
+}
