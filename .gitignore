@@ -90,3 +90,6 @@ docs/.DS_Store
 docs/ROOTS_TRANSLATION_AGENT_CONTEXT_BUNDLE.txt
 docs/ROOTS_TRANSLATION_PIPELINE_SYSTEM_MAP.md
 docs/learnings/
+
+# Security audit reports — findings + evidence, never publish (repo is public)
+audit/

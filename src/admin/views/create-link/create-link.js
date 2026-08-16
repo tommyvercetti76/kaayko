@@ -12,11 +12,12 @@ let SELECTED_CATEGORY = null;
 let SELECTED_PAGE = null;
 
 // ── Destination Registry — whitelisted Kaayko destinations ──
-// Only real, deployed domains: kaayko.com, coolschools.kaayko.com, alumni.kaayko.com, blog.kaayko.com
+// Only real, deployed domains: kaayko.com, roots.kaayko.com, alumni.kaayko.com
+// (coolschools.kaayko.com and blog.kaayko.com no longer resolve — do not add them back)
 const DEST_GROUPS = [
   { id: 'kaayko', label: 'Kaayko', baseUrl: 'https://kaayko.com/', defaultTenantOnly: true },
   { id: 'alumni', label: 'Alumni', baseUrl: 'https://kaayko.com/alumni' },
-  { id: 'coolschools', label: 'CoolSchools', baseUrl: 'https://coolschools.kaayko.com/' },
+  { id: 'coolschools', label: 'CoolSchools', baseUrl: 'https://roots.kaayko.com/' },
   { id: 'kreator', label: 'Kreator', baseUrl: 'https://kaayko.com/kreator', defaultTenantOnly: true },
   { id: 'custom', label: 'Custom URL', superAdminOnly: true },
 ];
@@ -34,11 +35,10 @@ const DEST_PAGES = [
   // Alumni — kaayko.com/alumni + alumni.kaayko.com
   { id: 'alumni_survey', group: 'alumni', label: 'Alumni Interest Survey', url: 'https://kaayko.com/alumni' },
 
-  // CoolSchools — coolschools.kaayko.com
-  { id: 'cs_portal', group: 'coolschools', label: 'CoolSchools Home', url: 'https://coolschools.kaayko.com/' },
-  { id: 'cs_alumni', group: 'coolschools', label: 'Alumni Portal', url: 'https://coolschools.kaayko.com/en/alumni' },
-  { id: 'cs_donations', group: 'coolschools', label: 'Donations', url: 'https://coolschools.kaayko.com/en/alumni/donations' },
-  { id: 'cs_roots', group: 'coolschools', label: 'ROOTS', url: 'https://coolschools.kaayko.com/en/roots' },
+  // CoolSchools — roots.kaayko.com (coolschools.kaayko.com no longer resolves)
+  { id: 'cs_portal', group: 'coolschools', label: 'CoolSchools Home', url: 'https://roots.kaayko.com/' },
+  { id: 'cs_alumni', group: 'coolschools', label: 'Alumni Portal', url: 'https://alumni.kaayko.com/' },
+  { id: 'cs_roots', group: 'coolschools', label: 'ROOTS Request', url: 'https://roots.kaayko.com/request' },
 
   // Kreator — kaayko.com/kreator
   { id: 'kreator_portal', group: 'kreator', label: 'Kreator Portal', url: 'https://kaayko.com/kreator' },
