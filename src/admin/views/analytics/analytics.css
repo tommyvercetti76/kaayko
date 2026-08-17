@@ -917,3 +917,17 @@
     justify-content: space-between;
   }
 }
+
+/* Link rows open the per-link view (#/links/<code>). */
+.analytics-table-row.is-drillable {
+  cursor: pointer;
+  transition: background var(--transition-fast, 0.15s ease);
+}
+.analytics-table-row.is-drillable:hover,
+.analytics-table-row.is-drillable:focus-visible {
+  background: #16161a;
+  outline: none;
+}
+.analytics-table-row.is-drillable:focus-visible {
+  box-shadow: inset 2px 0 0 var(--gold-primary, #d4af37);
+}

@@ -6,6 +6,7 @@
  */
 
 import { CONFIG, AUTH } from './config.js';
+import * as router from './router.js';
 import * as utils from './utils.js';
 import * as ui from './ui.js';
 
@@ -50,6 +51,11 @@ const VIEW_CONFIGS = {
     module: '../views/campaigns/campaigns.js',
     css: 'views/campaigns/campaigns.css',
     container: '#campaigns-view'
+  },
+  'link-detail': {
+    module: '../views/link-detail/link-detail.js',
+    css: 'views/link-detail/link-detail.css',
+    container: '#link-detail-view'
   },
   analytics: {
     module: '../views/analytics/analytics.js',
@@ -121,12 +127,24 @@ async function loadView(viewName) {
 /**
  * Switch between views
  */
-async function switchView(viewName) {
-  console.log(`🔄 Switching to view: ${viewName}`);
+/**
+ * Public navigation entry point. Kept as the exported name so every existing
+ * caller (sidebar items, quick actions, view modules) keeps working unchanged —
+ * but it now writes a URL instead of mutating the DOM directly, so history,
+ * refresh and sharing all behave.
+ */
+async function switchView(viewName, param = null) {
+  router.navigate(viewName, param);
+}
+
+/** Render a route. Called only by the router. */
+async function renderView(viewName, param = null) {
+  console.log(`🔄 Rendering view: ${viewName}${param ? ' / ' + param : ''}`);
   
   // Update nav active state
+  const navTarget = router.NAV_PARENT[viewName] || viewName;
   document.querySelectorAll('.nav-item').forEach(item => {
-    item.classList.toggle('active', item.dataset.view === viewName);
+    item.classList.toggle('active', item.dataset.view === navTarget);
   });
   
   // Hide all views
@@ -150,8 +168,10 @@ async function switchView(viewName) {
     }
   }
   
-  // Update state
+  // Update state. `routeParam` lets a view read its URL parameter (e.g. the
+  // link code in #/links/colo) without any change to the init(STATE) contract.
   STATE.currentView = viewName;
+  STATE.routeParam = param;
   
   // Load view module
   await loadView(viewName);
@@ -175,6 +195,13 @@ function initNavigation() {
     });
   });
   
+  // Views request navigation by event (e.g. the Analytics upgrade prompt).
+  // This listener did not exist, so those requests were silently dropped.
+  window.addEventListener('kortex-navigate', (e) => {
+    const { view, param } = e.detail || {};
+    if (view && VIEW_CONFIGS[view]) switchView(view, param || null);
+  });
+
   // Handle ANY element with data-view attribute (View All buttons, etc.)
   document.addEventListener('click', (e) => {
     const target = e.target.closest('[data-view]');
@@ -503,6 +530,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Check authentication
   if (!AUTH.isAuthenticated()) {
     console.log('❌ Not authenticated, redirecting to login...');
+    if (window.location.hash && window.location.hash !== '#/') {
+      sessionStorage.setItem('kortex_intended_route', window.location.hash);
+    }
     window.location.href = './login';
     return;
   }
@@ -518,9 +548,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   applyRoleVisibility();
   checkHealth();
 
-  // Load initial view (dashboard)
-  console.log('📱 Loading dashboard view...');
-  await switchView('dashboard');
+  // Restore the route the user was heading for before being bounced to login,
+  // so signing in returns you where you asked to go rather than to Dashboard.
+  const intended = sessionStorage.getItem('kortex_intended_route');
+  if (intended) {
+    sessionStorage.removeItem('kortex_intended_route');
+    if (!window.location.hash || window.location.hash === '#/') {
+      window.history.replaceState(null, '', intended);
+    }
+  }
+
+  // Hand navigation to the router: it renders the current URL now, and every
+  // change afterwards — including Back and Forward.
+  console.log('📱 Starting router...');
+  router.start((view, param) => { renderView(view, param); });
   console.log('✅ App initialization complete');
 });
 

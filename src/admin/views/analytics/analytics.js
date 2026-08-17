@@ -5,6 +5,7 @@
 
 import { STATE, utils } from '../../js/kortex-core.js';
 import { apiFetch } from '../../js/config.js';
+import * as router from '../../js/router.js';
 
 const LINK_LIMIT = 250;
 const RANGE_TO_DAYS = {
@@ -105,6 +106,7 @@ async function loadAnalytics() {
 
     const metrics = calculateMetrics(links, activeRange);
     container.innerHTML = renderAnalyticsDashboard(metrics);
+    attachDrilldown(container);
   } catch (err) {
     container.innerHTML = `
       <div class="empty-state">
@@ -574,6 +576,28 @@ function getHeadline(metrics) {
   return { title, detail };
 }
 
+/**
+ * Open the per-link drill-down when a link row is activated. Rows are the only
+ * navigation into it, so they carry a button role and respond to Enter/Space
+ * as well as click.
+ */
+function attachDrilldown(container) {
+  const open = (code) => {
+    if (!code) return;
+    // A real route: shareable, refresh-safe, and Back returns here.
+    router.navigate('link-detail', code);
+  };
+  container.querySelectorAll('[data-link-code]').forEach(row => {
+    row.addEventListener('click', () => open(row.dataset.linkCode));
+    row.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        open(row.dataset.linkCode);
+      }
+    });
+  });
+}
+
 function renderAnalyticsDashboard(metrics) {
   const headline = getHeadline(metrics);
 
@@ -617,36 +641,6 @@ function renderAnalyticsDashboard(metrics) {
           ${renderTopLinkRows(metrics)}
         </div>
       </article>
-
-      <article class="analytics-panel">
-        <div class="analytics-panel-header">
-          <div>
-            <h3>Platform Mix</h3>
-            <p>How destinations are distributed across the portfolio.</p>
-          </div>
-        </div>
-        ${renderPlatformMix(metrics)}
-      </article>
-
-      <article class="analytics-panel">
-        <div class="analytics-panel-header">
-          <div>
-            <h3>Performance Buckets</h3>
-            <p>How many links are driving traction versus sitting idle.</p>
-          </div>
-        </div>
-        ${renderPerformanceBuckets(metrics)}
-      </article>
-
-      <article class="analytics-panel">
-        <div class="analytics-panel-header">
-          <div>
-            <h3>Creator Output</h3>
-            <p>Which creators are producing the most clicks.</p>
-          </div>
-        </div>
-        ${renderCreatorRows(metrics)}
-      </article>
     </section>
 
     <section class="analytics-table-grid">
@@ -658,16 +652,6 @@ function renderAnalyticsDashboard(metrics) {
           </div>
         </div>
         ${renderTopLinksTable(metrics)}
-      </article>
-
-      <article class="analytics-panel">
-        <div class="analytics-panel-header">
-          <div>
-            <h3>Creator Breakdown</h3>
-            <p>Link count, click volume, and output quality by creator.</p>
-          </div>
-        </div>
-        ${renderCreatorTable(metrics)}
       </article>
     </section>
   `;
@@ -817,7 +801,7 @@ function renderTopLinksTable(metrics) {
         <span>Status</span>
       </div>
       ${metrics.topLinks.map(link => `
-        <div class="analytics-table-row analytics-table-links">
+        <div class="analytics-table-row analytics-table-links is-drillable" data-link-code="${utils.escapeHtml(link.code)}" role="button" tabindex="0" title="Open per-link analytics">
           <div class="analytics-link-cell" data-label="Link">
             <strong>${utils.escapeHtml(link.title)}</strong>
             <span>${utils.escapeHtml(link.code)} · ${utils.escapeHtml(link.createdLabel)}</span>
