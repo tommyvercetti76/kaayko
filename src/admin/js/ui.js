@@ -61,6 +61,7 @@ export function renderLinksTable(links) {
             <th>Title</th>
             <th>Created By</th>
             <th>Clicks</th>
+            <th>Insights</th>
             <th>Created</th>
             <th>Expires</th>
             <th>Edit</th>
@@ -79,7 +80,7 @@ export function renderLinksTable(links) {
 export function renderLinkAccordion(code) {
   return `
     <tr class="link-accordion-row" id="accordion-${escapeHtml(code)}">
-      <td colspan="10">
+      <td colspan="11">
         <div class="link-accordion">
           <div class="link-accordion-loading">
             <div class="acc-loader"></div>Loading analytics...
@@ -366,6 +367,11 @@ function renderLinkRow(link) {
       </td>
       <td style="color:var(--text-secondary);font-size:13px;">${escapeHtml(link.createdBy || 'system')}</td>
       <td style="text-align:center;"><strong style="color:var(--gold-primary);">${displayClicks}</strong></td>
+      <td style="text-align:center;">
+        <button class="action-btn-labeled action-insights" onclick="event.stopPropagation();window.location.hash='#/links/${encodeURIComponent(code)}'" title="Full analytics for ${escapeHtml(code)}">
+          Insights
+        </button>
+      </td>
       <td style="font-size:11px;color:var(--text-muted);">${created}</td>
       <td style="font-size:11px;color:var(--text-muted);">${expires}</td>
       <td style="text-align:center;">

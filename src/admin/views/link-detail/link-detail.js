@@ -117,6 +117,47 @@ function renderUnavailable(list) {
   </div>`;
 }
 
+function renderCadence(cadence, latency) {
+  if (!cadence && !latency) return '';
+  const cells = [];
+  if (cadence) {
+    if (cadence.hoursToFirstClick !== null) {
+      cells.push(['First scan', cadence.hoursToFirstClick < 1
+        ? 'under an hour after creation' : `${cadence.hoursToFirstClick}h after creation`]);
+    }
+    cells.push(['Longest silence', `${cadence.longestQuietHours}h`]);
+    cells.push(['Typical gap', `${cadence.medianGapHours}h between scans`]);
+    cells.push(['Last scan', `${cadence.hoursSinceLastClick}h ago`]);
+  }
+  if (latency) {
+    cells.push(['Redirect speed', `${latency.medianMs}ms median · ${latency.slowestMs}ms slowest`]);
+  }
+  return `<div class="ld-block">
+    <h4>Rhythm</h4>
+    <table class="ld-table">
+      ${cells.map(([k, v]) => `<tr><td class="ld-key">${esc(k)}</td><td colspan="3">${esc(v)}</td></tr>`).join('')}
+    </table>
+    ${cadence && cadence.longestQuietHours >= 72
+      ? `<p class="ld-note">A ${Math.round(cadence.longestQuietHours / 24)}-day silence is the dominant fact here — for a printed code, that is a placement question, not a traffic one.</p>`
+      : ''}
+  </div>`;
+}
+
+function renderHours(hours) {
+  if (!hours || !hours.some(h => h.clicks)) return '';
+  const max = Math.max(...hours.map(h => h.clicks));
+  return `<div class="ld-block">
+    <h4>Hour of day <span class="ld-h4-note">UTC</span></h4>
+    <div class="ld-hours">
+      ${hours.map(h => `
+        <span class="ld-hour${h.clicks ? ' has-clicks' : ''}"
+              style="--i:${max ? h.clicks / max : 0}"
+              title="${h.hour}:00 UTC — ${h.clicks} click${h.clicks === 1 ? '' : 's'}"></span>`).join('')}
+    </div>
+    <div class="ld-timeline-axis"><span>00:00</span><span>12:00</span><span>23:00</span></div>
+  </div>`;
+}
+
 function render(payload) {
   const { link, analytics } = payload;
   const t = analytics.totals;
@@ -142,7 +183,10 @@ function render(payload) {
     ${t.driftNote ? `<p class="ld-caveat">${esc(t.driftNote)}</p>` : ''}
 
     ${renderTimeline(analytics.timeline)}
+    ${renderCadence(analytics.cadence, analytics.latency)}
     ${renderUnique(analytics.unique)}
+    ${renderHours(analytics.breakdowns.hourOfDayUtc)}
+    ${renderBreakdown('Day of week', (analytics.breakdowns.dayOfWeekUtc || []).filter(d => d.clicks), t.events)}
     ${renderBreakdown('Device', analytics.breakdowns.deviceType, t.events)}
     ${renderBreakdown('Operating system', analytics.breakdowns.os, t.events)}
     ${renderBreakdown('Browser', analytics.breakdowns.browser, t.events)}

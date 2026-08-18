@@ -149,3 +149,21 @@
   .ld-headline { gap: 20px; }
   .ld-figure { font-size: 21px; }
 }
+
+/* Hour-of-day strip. Intensity encodes volume; empty hours stay visible so the
+   shape of the day reads at a glance rather than being cropped to the busy part. */
+.ld-hours { display: flex; gap: 2px; height: 34px; }
+.ld-hour {
+  flex: 1;
+  border-radius: 2px;
+  background: #16161a;
+}
+.ld-hour.has-clicks {
+  background: color-mix(in srgb, var(--gold-primary, #d4af37) calc(25% + var(--i) * 75%), #16161a);
+}
+.ld-h4-note {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: #55555c;
+  margin-left: 6px;
+}
