@@ -221,6 +221,7 @@ function renderMatrix(b, total) {
       ${facetBars('Platform', b.platform, total)}
       ${facetBars('Referrer', b.referrer, total)}
       ${facetBars('Destination', b.destination, total)}
+      ${b.country ? facetBars('Country', b.country, total) : ''}
     </div>
   </section>`;
 }
