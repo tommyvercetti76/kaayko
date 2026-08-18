@@ -226,7 +226,13 @@ function renderMatrix(b, total) {
   </section>`;
 }
 
-/* ── 6. Clock-of-day marginals ─────────────────────────────────────────────*/
+/* ── 6. When it gets scanned ───────────────────────────────────────────────
+   A 24-bin hour histogram and 7-bin weekday grid only carry a distribution once
+   there is enough volume. Below that threshold the individual scans ARE the
+   information — so show a scan log at low volume, and the distribution ramps
+   only when the sample is big enough for a shape to be real. */
+const HEATMAP_MIN = 25;
+
 function ramp(cells, labelEvery) {
   const max = Math.max(...cells.map(c => c.clicks), 1);
   return cells.map((c, i) => {
@@ -236,14 +242,41 @@ function ramp(cells, labelEvery) {
     return `<span class="ld-ramp-cell" style="background:${bg}" title="${esc(c.value ?? i)}: ${c.clicks}">${lbl}</span>`;
   }).join('');
 }
-function renderClock(b) {
-  const hasHours = b.hourOfDayUtc?.some(h => h.clicks);
-  const hasDows = b.dayOfWeekUtc?.some(d => d.clicks);
-  if (!hasHours && !hasDows) return '';
+
+function scanRow(s) {
+  const d = new Date(s.at);
+  const when = d.toISOString().replace('T', ' ').slice(0, 16);
+  const dev = [s.deviceType, s.os, s.browser].filter(Boolean).join(' · ') || 'unknown device';
+  return `<div class="ld-scan-row">
+    <span class="ld-scan-when">${esc(when)} UTC</span>
+    <span class="ld-scan-dev">${esc(dev)}</span>
+    <span class="ld-scan-geo">${s.country ? esc(s.country) : '—'}</span>
+  </div>`;
+}
+
+function renderWhen(a) {
+  const total = a.totals?.events || 0;
+  const b = a.breakdowns || {};
+
+  // Enough volume → the distribution is real. Show the ramps.
+  if (total >= HEATMAP_MIN) {
+    const hasHours = b.hourOfDayUtc?.some(h => h.clicks);
+    const hasDows = b.dayOfWeekUtc?.some(d => d.clicks);
+    if (!hasHours && !hasDows) return '';
+    return `<section class="ld-card">
+      <div class="ld-card-head"><h4>When it gets scanned <span class="ld-h5-note">UTC · ${esc(total)} scans</span></h4></div>
+      ${hasHours ? `<div class="ld-clockblock"><span class="ld-clock-label">Hour</span><div class="ld-ramp ld-ramp-24">${ramp(b.hourOfDayUtc.map((c, i) => ({ value: i, clicks: c.clicks })), 6)}</div></div>` : ''}
+      ${hasDows ? `<div class="ld-clockblock"><span class="ld-clock-label">Day</span><div class="ld-ramp ld-ramp-7">${ramp(b.dayOfWeekUtc, 1)}</div></div>` : ''}
+    </section>`;
+  }
+
+  // Low volume → the individual scans are the story.
+  const scans = a.recentScans || [];
+  if (!scans.length) return '';
   return `<section class="ld-card">
-    <div class="ld-card-head"><h4>When it gets scanned <span class="ld-h5-note">UTC</span></h4></div>
-    ${hasHours ? `<div class="ld-clockblock"><span class="ld-clock-label">Hour</span><div class="ld-ramp ld-ramp-24">${ramp(b.hourOfDayUtc.map((c, i) => ({ value: i, clicks: c.clicks })), 6)}</div></div>` : ''}
-    ${hasDows ? `<div class="ld-clockblock"><span class="ld-clock-label">Day</span><div class="ld-ramp ld-ramp-7">${ramp(b.dayOfWeekUtc, 1)}</div></div>` : ''}
+    <div class="ld-card-head"><h4>Every scan</h4><span class="ld-legend">${esc(scans.length)} scan${scans.length === 1 ? '' : 's'} · newest first</span></div>
+    <div class="ld-scanlog">${scans.map(scanRow).join('')}</div>
+    <p class="ld-note">Too few scans for an hour-of-day pattern to mean anything — here is each one instead. The distribution view appears past ${HEATMAP_MIN} scans.</p>
   </section>`;
 }
 
@@ -329,7 +362,7 @@ function render(payload) {
     </div>
     ${renderLatency(a.latency, a.unavailable)}
     ${renderMatrix(a.breakdowns, a.totals.events)}
-    ${renderClock(a.breakdowns)}
+    ${renderWhen(a)}
     ${renderMeta(link, a)}
     ${renderLedger(a.totals, a.unavailable)}
   </div>`;

@@ -129,3 +129,11 @@
 .analytics-table-row.is-drillable { cursor: pointer; transition: background var(--transition-fast); }
 .analytics-table-row.is-drillable:hover, .analytics-table-row.is-drillable:focus-visible { background: #16161a; outline: none; }
 .analytics-table-row.is-drillable:focus-visible { box-shadow: inset 2px 0 0 var(--gold-primary); }
+
+/* Scan log — shown at low volume where individual scans beat a sparse histogram. */
+.ld-scanlog { display: flex; flex-direction: column; }
+.ld-scan-row { display: grid; grid-template-columns: 150px 1fr auto; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border-subtle); font-size: 13px; }
+.ld-scan-row:last-child { border-bottom: 0; }
+.ld-scan-when { font-family: var(--mono); color: var(--text-primary); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ld-scan-dev { color: var(--text-secondary); }
+.ld-scan-geo { font-family: var(--mono); font-size: 12px; color: var(--text-muted); text-align: right; }
