@@ -6,10 +6,7 @@
 import { switchView } from '../../js/kortex-core.js';
 import { apiFetch } from '../../js/config.js';
 import { escapeHtml } from '../../js/utils.js';
-import { renderLinkAccordion, renderLinkAccordionContent } from '../../js/ui.js';
 
-const dashAccordionCache = new Map();
-const dashLinksMap = new Map();
 
 /**
  * Initialize dashboard view
@@ -190,8 +187,6 @@ async function loadRecentLinks() {
     }
 
     const recent = links.slice(0, 10);
-    dashLinksMap.clear();
-    recent.forEach(l => dashLinksMap.set(l.code || l.id || '', l));
     container.innerHTML = `
       <table class="dash-links-table">
         <thead>
@@ -209,7 +204,7 @@ async function loadRecentLinks() {
             const enabled = link.enabled !== false;
             const status = enabled ? '<span style="color:#4CAF50">Active</span>' : '<span style="color:#f44336">Disabled</span>';
             const tenant = escapeHtml(link.tenantId || 'kaayko');
-            return `<tr class="dash-link-row" data-link-code="${code}">
+            return `<tr class="dash-link-row" data-link-code="${code}" role="button" tabindex="0" title="Open full analytics for ${code}">
               <td style="color:#f0f0f0">${escapeHtml(link.title || link.code || '—')}</td>
               <td style="font-family:monospace;color:#D4A84B">${code}</td>
               <td>${link.clickCount || 0}</td>
@@ -220,55 +215,22 @@ async function loadRecentLinks() {
         </tbody>
       </table>
       <div style="text-align:center;padding:12px;color:#666;font-size:12px">
-        Showing ${recent.length} of ${links.length} links — click any row for analytics
+        Showing ${recent.length} of ${links.length} links — click any row for full analytics
       </div>
     `;
 
+    // Every row opens the same rich per-link drilldown (#/links/<code>) that
+    // All Links and Analytics use — not the old shallow inline accordion.
+    const openDrilldown = (code) => { if (code) window.location.hash = '#/links/' + encodeURIComponent(code); };
     container.querySelectorAll('.dash-link-row').forEach(row => {
-      row.addEventListener('click', () => {
-        const code = row.dataset.linkCode;
-        if (code) toggleDashAccordion(code);
+      row.addEventListener('click', () => openDrilldown(row.dataset.linkCode));
+      row.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDrilldown(row.dataset.linkCode); }
       });
     });
   } catch (error) {
     console.error('[Dashboard] Failed to load recent links:', error);
     container.innerHTML = '<div class="campaign-shortcuts-empty">Failed to load links.</div>';
-  }
-}
-
-async function toggleDashAccordion(code) {
-  const existing = document.getElementById(`accordion-${code}`);
-  if (existing) {
-    existing.remove();
-    document.querySelector(`.dash-link-row[data-link-code="${code}"]`)?.classList.remove('is-expanded');
-    return;
-  }
-
-  const row = document.querySelector(`.dash-link-row[data-link-code="${code}"]`);
-  if (!row) return;
-
-  row.classList.add('is-expanded');
-  row.insertAdjacentHTML('afterend', renderLinkAccordion(code));
-
-  const inner = document.getElementById(`accordion-${code}`)?.querySelector('.link-accordion');
-  if (!inner) return;
-
-  const link = dashLinksMap.get(code) || null;
-
-  if (dashAccordionCache.has(code)) {
-    inner.innerHTML = renderLinkAccordionContent(dashAccordionCache.get(code), link);
-    return;
-  }
-
-  try {
-    const res = await apiFetch(`/kortex/${code}/clicks?limit=100`);
-    if (!res || !res.ok) throw new Error('Failed');
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error || 'Failed');
-    dashAccordionCache.set(code, data);
-    inner.innerHTML = renderLinkAccordionContent(data, link);
-  } catch (err) {
-    inner.innerHTML = `<div class="link-accordion-error">Could not load analytics: ${escapeHtml(err.message)}</div>`;
   }
 }
 
