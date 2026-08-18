@@ -477,22 +477,18 @@ function applyRoleVisibility() {
   const role = AUTH.user?.role || 'user';
   const isSuperAdmin = role === 'super-admin';
 
-  // Hide super-admin-only nav items for tenant admins
-  const tenantOnboardingNav = document.querySelector('[data-view="tenant-onboarding"]');
-  if (tenantOnboardingNav && !isSuperAdmin) {
-    tenantOnboardingNav.style.display = 'none';
+  // Disappearing super-admin section: remove the entire Operator group (label
+  // and all) from the DOM for tenant admins, so a tenant never sees a heading
+  // over an empty space or infers a capability they don't have.
+  if (!isSuperAdmin) {
+    const operatorGroup = document.getElementById('nav-group-operator');
+    if (operatorGroup) operatorGroup.remove();
   }
 
   // Hide environment switcher for non-super-admins (production-only for tenants)
   const envSwitch = document.querySelector('.env-switch');
   if (envSwitch && !isSuperAdmin) {
     envSwitch.style.display = 'none';
-  }
-
-  // Hide ROOTS Engine link for non-super-admins
-  const rootsNav = document.querySelector('a[href="views/roots/"]');
-  if (rootsNav && !isSuperAdmin) {
-    rootsNav.style.display = 'none';
   }
 
   // Show tenant name prominently for tenant admins

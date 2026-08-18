@@ -16,6 +16,17 @@
   --gold-dark: #b8941f;
   --gold-subtle: rgba(212, 175, 55, 0.1);
   --gold-glow: rgba(212, 175, 55, 0.3);
+
+  /* Bullion redesign — gold spent like bullion, one hero moment per screen */
+  --gold-line: linear-gradient(180deg, var(--gold-bright), var(--gold-dark));
+  --hairline-gold: rgba(212, 175, 55, 0.22);
+  --surface-sunken: #0f0f10;          /* recessed diagram panels */
+  --shadow-card: inset 0 1px 0 rgba(255,255,255,0.03), 0 8px 24px rgba(0,0,0,0.45);
+  --focus-ring: 0 0 0 2px var(--bg-app), 0 0 0 4px var(--gold-primary);
+  --data-visitor: #7c8db5;            /* distinct-visitors series — cool, not gold */
+  --data-visitor-band: rgba(124, 141, 181, 0.18);
+  --data-void: rgba(255,255,255,0.045);   /* diagonal hatch: not-measured / null */
+  --grid-tick: rgba(255,255,255,0.05);
   
   /* Dark Theme - Premium Feel */
   --bg-app: #0a0a0a;
@@ -1887,3 +1898,88 @@ tbody td {
 }
 
 /* ============================================================================
+
+/* ==========================================================================
+   BULLION REDESIGN — sidebar shell
+   Grouped nav, one coherent line-icon set, gold reserved for the active row.
+   Appended last so it wins over the earlier flat-glyph nav rules.
+   ========================================================================== */
+
+/* Logo lockup: gold tile + wordmark over a hairline-gold underscore. */
+.sidebar-header {
+  padding: 22px var(--space-lg) 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  position: relative;
+}
+.sidebar-header::after {
+  content: "";
+  position: absolute;
+  left: var(--space-lg); right: var(--space-lg); bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--hairline-gold), transparent);
+}
+.sidebar-header .logo {
+  width: 44px; height: 44px; margin-bottom: 10px;
+  box-shadow: 0 4px 14px rgba(212,175,55,0.28), inset 0 1px 0 rgba(255,255,255,0.35);
+}
+.sidebar-header h2 {
+  font-family: 'Josefin Sans', system-ui, sans-serif;
+  font-size: 17px; font-weight: 700; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--text-primary); margin: 0;
+  padding-left: 0.18em;   /* optical: balance the tracking */
+}
+.sidebar-subtitle,
+.sidebar-header .version {
+  font-size: 10px; letter-spacing: 0.06em; color: var(--text-muted);
+  text-transform: none; margin: 0; opacity: 1; font-weight: 500;
+}
+.sidebar-subtitle { color: var(--text-muted); }
+.sidebar-header .version { margin-top: 1px; }
+
+/* Nav groups + section labels give the hierarchy the flat list lacked. */
+.sidebar-nav { padding: 14px 12px 8px; display: flex; flex-direction: column; gap: 4px; }
+.nav-group { display: flex; flex-direction: column; gap: 1px; }
+.nav-group + .nav-group { margin-top: 14px; }
+.nav-group-label {
+  font-size: 10.5px; font-weight: 600; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--text-muted);
+  margin: 0 0 6px; padding: 0 12px;
+}
+
+/* Rows: grey by default, gold rail + gold icon only when active. */
+.sidebar-nav .nav-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 9px 12px; margin: 0; border: 0; border-radius: var(--radius-sm);
+  color: var(--text-secondary); font-size: 13.5px; font-weight: 500;
+  text-decoration: none; cursor: pointer; position: relative;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.sidebar-nav .nav-item::before {
+  content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 0; border-radius: 3px; background: var(--gold-line);
+  transition: height var(--transition-base);
+}
+.sidebar-nav .nav-item:hover { background: rgba(255,255,255,0.035); color: var(--text-primary); }
+.sidebar-nav .nav-item.active { background: rgba(212,175,55,0.06); color: var(--text-primary); font-weight: 600; }
+.sidebar-nav .nav-item.active::before { height: 20px; }
+.sidebar-nav .nav-item:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+/* Icon system: single 1.5px outline, round joins; only the active icon goes gold. */
+.sidebar-nav .nav-icon {
+  width: 20px; height: 20px; flex: 0 0 20px;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--text-muted); transition: color var(--transition-fast);
+}
+.sidebar-nav .nav-icon svg {
+  width: 20px; height: 20px; display: block;
+  stroke: currentColor; stroke-width: 1.6;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.sidebar-nav .nav-item:hover .nav-icon { color: var(--text-secondary); }
+.sidebar-nav .nav-item.active .nav-icon { color: var(--gold-primary); }
+
+/* Cards float above the recessed sidebar with milled-metal depth. */
+.stat-card, .content-card, .panel, .analytics-panel, .data-card { box-shadow: var(--shadow-card); }
