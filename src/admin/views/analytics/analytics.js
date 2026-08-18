@@ -1,877 +1,230 @@
 /**
- * Analytics View Module
- * Portfolio-level analytics rendered from real Smart Links data only.
+ * Analytics view — portfolio, from the real click_events stream.
+ *
+ * This used to sum link.clickCount counters client-side and group by weak
+ * fields. It now reads GET /kortex/analytics/portfolio, which aggregates the
+ * actual events, and renders with the same honesty rules as the per-link
+ * drilldown: uncertainty is a range, the counter-vs-events drift is stated,
+ * and unmeasured metrics get a hatched ledger rather than a fake zero.
+ *
+ * @module views/analytics/analytics
  */
 
-import { STATE, utils } from '../../js/kortex-core.js';
+import * as utils from '../../js/utils.js';
 import { apiFetch } from '../../js/config.js';
 import * as router from '../../js/router.js';
 
-const LINK_LIMIT = 250;
-const RANGE_TO_DAYS = {
-  '7d': 7,
-  '30d': 30,
-  '90d': 90,
-  all: null
-};
-
-const RANGE_TIER_MINIMUM = {
-  '7d': 'starter',
-  '30d': 'pro',
-  '90d': 'pro',
-  all: 'business'
-};
-
-const TIER_RANK = { starter: 0, pro: 1, business: 2, enterprise: 3 };
-
-let activeRange = '7d';
-let currentTier = 'starter';
-
-async function fetchTier() {
-  try {
-    const res = await apiFetch('/billing/subscription');
-    if (!res) return 'starter';
-    const data = await res.json();
-    return data.subscription?.plan || 'starter';
-  } catch { return 'starter'; }
-}
-
-function canAccessRange(range) {
-  const required = RANGE_TIER_MINIMUM[range] || 'starter';
-  return (TIER_RANK[currentTier] || 0) >= (TIER_RANK[required] || 0);
-}
+const esc = (v) => utils.escapeHtml(String(v ?? ''));
+const RELIABILITY_ISO = '2026-08-17';
 
 export async function init() {
-  currentTier = await fetchTier();
-  setupRangeControls();
-  await loadAnalytics();
-}
-
-function setupRangeControls() {
-  const buttons = document.querySelectorAll('.range-btn');
-  if (!buttons.length) return;
-
-  buttons.forEach(button => {
-    const range = button.dataset.range;
-    button.classList.toggle('active', range === activeRange);
-
-    if (!canAccessRange(range)) {
-      button.classList.add('locked');
-      button.title = `Upgrade to ${RANGE_TIER_MINIMUM[range]} for ${range} analytics`;
-      button.innerHTML = `${button.textContent} <span style="font-size:10px;opacity:0.6">🔒</span>`;
-    }
-
-    button.addEventListener('click', async () => {
-      const selectedRange = button.dataset.range;
-      if (!selectedRange || selectedRange === activeRange) return;
-
-      if (!canAccessRange(selectedRange)) {
-        const upgrade = RANGE_TIER_MINIMUM[selectedRange];
-        if (confirm(`${selectedRange} analytics requires the ${upgrade} plan. View upgrade options?`)) {
-          window.dispatchEvent(new CustomEvent('kortex-navigate', { detail: { view: 'billing' } }));
-        }
-        return;
-      }
-
-      activeRange = selectedRange;
-      buttons.forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.range === activeRange);
-      });
-
-      await loadAnalytics();
-    });
+  // The retained window is fixed (30 days of events); the old tier-gated range
+  // buttons filtered on a range this data doesn't honor, so hide them rather
+  // than imply a filter that isn't applied.
+  document.querySelectorAll('.analytics-range, .range-btn').forEach((el) => {
+    const bar = el.closest('.analytics-range') || el;
+    if (bar) bar.style.display = 'none';
   });
+  await load();
 }
 
-async function loadAnalytics() {
+async function load() {
   const container = document.getElementById('analytics-content');
   if (!container) return;
-
-  container.innerHTML = '<div class="loading">Loading analytics...</div>';
-
+  container.innerHTML = '<div class="pf-loading">Loading portfolio…</div>';
   try {
-    const links = await fetchLinks();
-    STATE.links = links;
-
-    if (!links.length) {
-      container.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-icon">📊</div>
-          <h3>No Analytics Yet</h3>
-          <p>Create some links to see portfolio analytics.</p>
-        </div>
-      `;
-      return;
-    }
-
-    const metrics = calculateMetrics(links, activeRange);
-    container.innerHTML = renderAnalyticsDashboard(metrics);
+    const res = await apiFetch('/kortex/analytics/portfolio');
+    if (!res) return; // 401 handled by apiFetch (logout)
+    const payload = await res.json();
+    if (!res.ok || !payload?.success) throw new Error(payload?.error || `Request failed (${res.status})`);
+    container.innerHTML = render(payload.analytics);
     attachDrilldown(container);
   } catch (err) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">⚠️</div>
-        <h3>Analytics Unavailable</h3>
-        <p>${utils.escapeHtml(err.message)}</p>
-      </div>
-    `;
+    container.innerHTML = `<div class="pf-error">Couldn't load analytics: ${esc(err.message)}</div>`;
   }
 }
 
-async function fetchLinks() {
-  const res = await apiFetch(`/kortex?limit=${LINK_LIMIT}`);
-  if (!res) throw new Error('Authentication failed');
-
-  const data = await res.json();
-  if (!data.success) throw new Error(data.error || 'Failed to load analytics');
-
-  if (Array.isArray(data.links)) return data.links;
-  if (Array.isArray(data.short) || Array.isArray(data.structured)) {
-    return [...(data.structured || []), ...(data.short || [])];
-  }
-
-  return [];
-}
-
-function calculateMetrics(links, rangeKey = '7d') {
-  const normalizedLinks = links.map(link => normalizeLink(link));
-  const totalLinks = normalizedLinks.length;
-  const totalClicks = normalizedLinks.reduce((sum, link) => sum + link.clicks, 0);
-  const activeLinks = normalizedLinks.filter(link => link.enabled).length;
-  const disabledLinks = totalLinks - activeLinks;
-  const avgClicksPerLink = totalLinks ? totalClicks / totalLinks : 0;
-  const zeroClickLinks = normalizedLinks.filter(link => link.clicks === 0).length;
-  const recentlyActive = normalizedLinks.filter(link => {
-    if (!link.lastClickedAt) return false;
-    return Date.now() - link.lastClickedAt.getTime() < 24 * 60 * 60 * 1000;
-  }).length;
-
-  const linksWithUTM = normalizedLinks.filter(link => link.hasUTM).length;
-  const utmCampaigns = new Set(
-    normalizedLinks
-      .map(link => link.utmCampaign)
-      .filter(Boolean)
-  ).size;
-
-  const performanceBuckets = [
-    {
-      key: 'high',
-      label: 'High',
-      detail: '8+ clicks',
-      count: normalizedLinks.filter(link => link.clicks >= 8).length,
-      tone: 'good'
-    },
-    {
-      key: 'medium',
-      label: 'Medium',
-      detail: '3-7 clicks',
-      count: normalizedLinks.filter(link => link.clicks >= 3 && link.clicks < 8).length,
-      tone: 'warm'
-    },
-    {
-      key: 'low',
-      label: 'Low',
-      detail: '1-2 clicks',
-      count: normalizedLinks.filter(link => link.clicks > 0 && link.clicks < 3).length,
-      tone: 'muted'
-    },
-    {
-      key: 'zero',
-      label: 'Dormant',
-      detail: '0 clicks',
-      count: zeroClickLinks,
-      tone: 'quiet'
-    }
-  ];
-
-  const platformProfiles = {
-    webOnly: 0,
-    iosOnly: 0,
-    androidOnly: 0,
-    multiPlatform: 0,
-    unconfigured: 0
-  };
-
-  normalizedLinks.forEach(link => {
-    platformProfiles[link.platformProfile] += 1;
-  });
-
-  const platformRows = [
-    { key: 'webOnly', label: 'Web only', count: platformProfiles.webOnly, tone: 'gold' },
-    { key: 'iosOnly', label: 'iOS only', count: platformProfiles.iosOnly, tone: 'blue' },
-    { key: 'androidOnly', label: 'Android only', count: platformProfiles.androidOnly, tone: 'green' },
-    { key: 'multiPlatform', label: 'Multi-platform', count: platformProfiles.multiPlatform, tone: 'white' }
-  ].filter(row => row.count > 0 || totalLinks === 0);
-
-  if (platformProfiles.unconfigured > 0) {
-    platformRows.push({
-      key: 'unconfigured',
-      label: 'No destination',
-      count: platformProfiles.unconfigured,
-      tone: 'muted'
-    });
-  }
-
-  const creatorMap = new Map();
-  normalizedLinks.forEach(link => {
-    if (!creatorMap.has(link.creator)) {
-      creatorMap.set(link.creator, {
-        name: link.creator,
-        links: 0,
-        clicks: 0,
-        live: 0
-      });
-    }
-
-    const row = creatorMap.get(link.creator);
-    row.links += 1;
-    row.clicks += link.clicks;
-    row.live += link.enabled ? 1 : 0;
-  });
-
-  const creators = Array.from(creatorMap.values())
-    .map(creator => ({
-      ...creator,
-      avgClicks: creator.links ? creator.clicks / creator.links : 0,
-      sharePct: totalClicks ? (creator.clicks / totalClicks) * 100 : 0
-    }))
-    .sort((a, b) => {
-      if (b.clicks !== a.clicks) return b.clicks - a.clicks;
-      return a.name.localeCompare(b.name);
-    });
-
-  const campaignMap = new Map();
-  normalizedLinks.forEach(link => {
-    const campaignKey = link.campaign || 'Unassigned';
-
-    if (!campaignMap.has(campaignKey)) {
-      campaignMap.set(campaignKey, {
-        name: campaignKey,
-        links: 0,
-        clicks: 0,
-        live: 0
-      });
-    }
-
-    const row = campaignMap.get(campaignKey);
-    row.links += 1;
-    row.clicks += link.clicks;
-    row.live += link.enabled ? 1 : 0;
-  });
-
-  const campaigns = Array.from(campaignMap.values())
-    .map(campaign => ({
-      ...campaign,
-      avgClicks: campaign.links ? campaign.clicks / campaign.links : 0,
-      sharePct: totalClicks ? (campaign.clicks / totalClicks) * 100 : 0
-    }))
-    .sort((a, b) => {
-      if (b.clicks !== a.clicks) return b.clicks - a.clicks;
-      return a.name.localeCompare(b.name);
-    });
-
-  const topLinks = [...normalizedLinks]
-    .sort((a, b) => {
-      if (b.clicks !== a.clicks) return b.clicks - a.clicks;
-      return a.title.localeCompare(b.title);
-    })
-    .slice(0, 8);
-
-  const topLink = topLinks[0] || null;
-  const topCreator = creators[0] || null;
-  const activeRate = totalLinks ? (activeLinks / totalLinks) * 100 : 0;
-  const trend = buildTrendMetrics(normalizedLinks, rangeKey);
-
-  return {
-    normalizedLinks,
-    totalLinks,
-    totalClicks,
-    activeLinks,
-    disabledLinks,
-    avgClicksPerLink,
-    zeroClickLinks,
-    recentlyActive,
-    linksWithUTM,
-    utmCampaigns,
-    activeRate,
-    performanceBuckets,
-    platformRows,
-    creators,
-    campaigns,
-    topLinks,
-    topLink,
-    topCreator,
-    trend
-  };
-}
-
-function buildTrendMetrics(links, rangeKey) {
-  const now = Date.now();
-  const rangeDays = Object.prototype.hasOwnProperty.call(RANGE_TO_DAYS, rangeKey)
-    ? RANGE_TO_DAYS[rangeKey]
-    : 7;
-  const rangeMs = rangeDays ? rangeDays * 24 * 60 * 60 * 1000 : null;
-  const prevStart = rangeMs ? now - (rangeMs * 2) : null;
-  const currentStart = rangeMs ? now - rangeMs : null;
-
-  const isCurrentRange = (date) => {
-    if (!date) return false;
-    if (!rangeMs) return true;
-    const t = date.getTime();
-    return t >= currentStart && t <= now;
-  };
-
-  const isPreviousRange = (date) => {
-    if (!date || !rangeMs) return false;
-    const t = date.getTime();
-    return t >= prevStart && t < currentStart;
-  };
-
-  const newLinksCurrent = links.filter(link => isCurrentRange(link.createdAt)).length;
-  const newLinksPrevious = links.filter(link => isPreviousRange(link.createdAt)).length;
-  const engagedCurrent = links.filter(link => isCurrentRange(link.lastClickedAt)).length;
-  const engagedPrevious = links.filter(link => isPreviousRange(link.lastClickedAt)).length;
-
-  const currentCampaigns = new Set(
-    links.filter(link => isCurrentRange(link.lastClickedAt)).map(link => link.campaign)
-  );
-  const previousCampaigns = new Set(
-    links.filter(link => isPreviousRange(link.lastClickedAt)).map(link => link.campaign)
-  );
-
-  const currentCohort = links.filter(link => isCurrentRange(link.createdAt));
-  const previousCohort = links.filter(link => isPreviousRange(link.createdAt));
-  const currentDormantRate = currentCohort.length
-    ? (currentCohort.filter(link => link.clicks === 0).length / currentCohort.length) * 100
-    : 0;
-  const previousDormantRate = previousCohort.length
-    ? (previousCohort.filter(link => link.clicks === 0).length / previousCohort.length) * 100
-    : 0;
-
-  const engagementWindows = {
-    day: links.filter(link => link.lastClickedAt && (now - link.lastClickedAt.getTime()) <= 24 * 60 * 60 * 1000).length,
-    week: links.filter(link => link.lastClickedAt && (now - link.lastClickedAt.getTime()) <= 7 * 24 * 60 * 60 * 1000).length,
-    month: links.filter(link => link.lastClickedAt && (now - link.lastClickedAt.getTime()) <= 30 * 24 * 60 * 60 * 1000).length
-  };
-
-  const chartDays = rangeDays || 30;
-  const dayBuckets = Array.from({ length: chartDays }, (_, index) => {
-    const day = new Date(now - ((chartDays - 1 - index) * 24 * 60 * 60 * 1000));
-    const key = day.toISOString().slice(0, 10);
-    return {
-      key,
-      label: day.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      count: 0
-    };
-  });
-
-  const bucketLookup = new Map(dayBuckets.map(bucket => [bucket.key, bucket]));
-  links.forEach(link => {
-    if (!link.createdAt) return;
-    const key = link.createdAt.toISOString().slice(0, 10);
-    const bucket = bucketLookup.get(key);
-    if (bucket) bucket.count += 1;
-  });
-
-  const campaignMap = new Map();
-  links.forEach(link => {
-    const key = link.campaign || 'Unassigned';
-    if (!campaignMap.has(key)) {
-      campaignMap.set(key, {
-        name: key,
-        links: 0,
-        clicks: 0,
-        live: 0,
-        engagedCurrent: 0,
-        engagedPrevious: 0,
-        newCurrent: 0,
-        newPrevious: 0
-      });
-    }
-
-    const row = campaignMap.get(key);
-    row.links += 1;
-    row.clicks += link.clicks;
-    row.live += link.enabled ? 1 : 0;
-    if (isCurrentRange(link.lastClickedAt)) row.engagedCurrent += 1;
-    if (isPreviousRange(link.lastClickedAt)) row.engagedPrevious += 1;
-    if (isCurrentRange(link.createdAt)) row.newCurrent += 1;
-    if (isPreviousRange(link.createdAt)) row.newPrevious += 1;
-  });
-
-  const campaignMomentum = Array.from(campaignMap.values())
-    .map(campaign => {
-      const momentum = (campaign.engagedCurrent * 4) + (campaign.newCurrent * 2) + (campaign.clicks / 25);
-      return {
-        ...campaign,
-        momentum,
-        engagementDelta: campaign.engagedCurrent - campaign.engagedPrevious,
-        creationDelta: campaign.newCurrent - campaign.newPrevious
-      };
-    })
-    .sort((a, b) => {
-      if (b.momentum !== a.momentum) return b.momentum - a.momentum;
-      if (b.clicks !== a.clicks) return b.clicks - a.clicks;
-      return a.name.localeCompare(b.name);
-    });
-
-  return {
-    rangeKey,
-    rangeLabel: rangeDays ? `Last ${rangeDays} days` : 'All time',
-    summary: {
-      newLinksCurrent,
-      newLinksPrevious,
-      engagedCurrent,
-      engagedPrevious,
-      activeCampaignsCurrent: currentCampaigns.size,
-      activeCampaignsPrevious: previousCampaigns.size,
-      currentDormantRate,
-      previousDormantRate
-    },
-    engagementWindows,
-    creationSeries: dayBuckets,
-    campaignMomentum
-  };
-}
-
-function normalizeLink(link) {
-  const title = link.title || link.metadata?.title || 'Untitled';
-  const code = link.code || link.shortCode || link.id || 'unknown';
-  const clicks = getLinkClicks(link);
-  const createdAt = parseTimestamp(link.createdAt);
-  const lastClickedAt = parseTimestamp(link.lastClickedAt);
-  const creator = link.createdBy || 'Unknown';
-  const enabled = link.enabled !== false;
-  const hasUTM = Boolean(link.utm && Object.keys(link.utm).length);
-  const utmCampaign = link.utm?.utm_campaign || link.metadata?.campaignId || '';
-  const family = getLinkFamily(link);
-  const campaign = getCampaignName(link, family);
-  const platforms = getLinkPlatforms(link);
-
-  return {
-    raw: link,
-    title,
-    shortTitle: truncate(title, 42),
-    code,
-    clicks,
-    createdAt,
-    createdLabel: createdAt ? formatDate(createdAt) : 'Unknown',
-    lastClickedAt,
-    creator,
-    enabled,
-    hasUTM,
-    utmCampaign,
-    family,
-    campaign,
-    platforms,
-    platformProfile: getPlatformProfile(platforms)
-  };
-}
-
-function getCampaignName(link, family) {
-  const metadata = link.metadata || {};
-
-  const candidates = [
-    metadata.campaignId,
-    metadata.campaignName,
-    metadata.schoolName,
-    link.utm?.utm_campaign,
-    link.utmCampaign,
-    link.campaignId
-  ];
-
-  const resolved = candidates
-    .map(value => String(value || '').trim())
-    .find(Boolean);
-
-  return resolved || `${family} (Unassigned)`;
-}
-
-function getLinkClicks(link) {
-  if (link.metadata?.campaign === 'alumni') {
-    return Number(link.uniqueVisitCount ?? link.clickCount ?? 0);
-  }
-
-  return Number(link.clickCount ?? 0);
-}
-
-function getLinkFamily(link) {
-  const metadata = link.metadata || {};
-  const webDestination = (link.destinations?.web || link.webDestination || '').toLowerCase();
-
-  if (metadata.campaign === 'alumni') return 'Alumni';
-  if (metadata.campaign === 'roots' || webDestination.includes('/knowledge')) return 'ROOTS';
-  if (metadata.isAdmin) return 'Admin';
-  if (link.utm?.utm_campaign) return 'Marketing';
-  return 'General';
-}
-
-function getLinkPlatforms(link) {
-  const platforms = [];
-  if (link.destinations?.web || link.webDestination) platforms.push('Web');
-  if (link.destinations?.ios || link.iosDestination) platforms.push('iOS');
-  if (link.destinations?.android || link.androidDestination) platforms.push('Android');
-  return platforms;
-}
-
-function getPlatformProfile(platforms) {
-  if (platforms.length >= 2) return 'multiPlatform';
-  if (platforms.includes('iOS')) return 'iosOnly';
-  if (platforms.includes('Android')) return 'androidOnly';
-  if (platforms.includes('Web')) return 'webOnly';
-  return 'unconfigured';
-}
-
-function parseTimestamp(value) {
-  if (!value) return null;
-  if (value instanceof Date) return value;
-  if (typeof value === 'string' || typeof value === 'number') {
-    const parsed = new Date(value);
-    return Number.isNaN(parsed.getTime()) ? null : parsed;
-  }
-  if (typeof value === 'object' && typeof value._seconds === 'number') {
-    return new Date(value._seconds * 1000);
-  }
-  return null;
-}
-
-function formatDate(date) {
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-function formatNumber(value) {
-  return Number(value || 0).toLocaleString('en-US');
-}
-
-function formatPercent(value) {
-  return `${Math.round(Number(value || 0))}%`;
-}
-
-function truncate(value, limit) {
-  const text = String(value || '');
-  if (text.length <= limit) return text;
-  return `${text.slice(0, limit - 1)}…`;
-}
-
-function getHeadline(metrics) {
-  if (!metrics.totalLinks) {
-    return {
-      title: 'No active link portfolio yet',
-      detail: 'Create links to start building portfolio analytics.'
-    };
-  }
-
-  const topLinkShare = metrics.totalClicks
-    ? Math.round((metrics.topLink?.clicks || 0) / metrics.totalClicks * 100)
-    : 0;
-
-  const title = metrics.topLink
-    ? `${metrics.topLink.shortTitle} leads the portfolio with ${formatNumber(metrics.topLink.clicks)} clicks`
-    : `${formatNumber(metrics.totalClicks)} total clicks across ${formatNumber(metrics.totalLinks)} links`;
-
-  const detail = metrics.topCreator
-    ? `${metrics.topCreator.name} owns the most traffic, while ${formatPercent(metrics.activeRate)} of links are currently live. ${topLinkShare}% of all clicks are concentrated in the top link.`
-    : `${formatPercent(metrics.activeRate)} of links are live, with ${formatNumber(metrics.zeroClickLinks)} dormant links ready for cleanup or redistribution.`;
-
-  return { title, detail };
-}
-
-/**
- * Open the per-link drill-down when a link row is activated. Rows are the only
- * navigation into it, so they carry a button role and respond to Enter/Space
- * as well as click.
- */
 function attachDrilldown(container) {
-  const open = (code) => {
-    if (!code) return;
-    // A real route: shareable, refresh-safe, and Back returns here.
-    router.navigate('link-detail', code);
-  };
-  container.querySelectorAll('[data-link-code]').forEach(row => {
+  const open = (code) => code && router.navigate('link-detail', code);
+  container.querySelectorAll('[data-link-code]').forEach((row) => {
     row.addEventListener('click', () => open(row.dataset.linkCode));
     row.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        open(row.dataset.linkCode);
-      }
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(row.dataset.linkCode); }
     });
   });
 }
 
-function renderAnalyticsDashboard(metrics) {
-  const headline = getHeadline(metrics);
-
-  return `
-    <section class="analytics-overview-card">
-      <div class="analytics-overview-copy">
-        <span class="analytics-kicker">Portfolio Overview</span>
-        <h2>${utils.escapeHtml(headline.title)}</h2>
-        <p>${utils.escapeHtml(headline.detail)}</p>
-      </div>
-
-      <div class="analytics-metric-strip">
-        ${renderMetricStripItem('Clicks', formatNumber(metrics.totalClicks), `${formatNumber(metrics.totalLinks)} links`)}
-        ${renderMetricStripItem('Live', formatNumber(metrics.activeLinks), `${formatPercent(metrics.activeRate)} active rate`)}
-        ${renderMetricStripItem('Average', metrics.avgClicksPerLink.toFixed(1), 'clicks per link')}
-        ${renderMetricStripItem('UTM', formatNumber(metrics.linksWithUTM), `${formatNumber(metrics.utmCampaigns)} campaigns tagged`)}
-        ${renderMetricStripItem('Dormant', formatNumber(metrics.zeroClickLinks), 'links with zero clicks')}
-        ${renderMetricStripItem('Recent', formatNumber(metrics.recentlyActive), 'clicked in the last 24h')}
-      </div>
-    </section>
-
-    <section class="analytics-panel-grid">
-      <article class="analytics-panel analytics-panel-wide">
-        <div class="analytics-panel-header">
-          <div>
-            <h3>Campaign Performance</h3>
-            <p>Which campaigns are driving traffic right now.</p>
-          </div>
-        </div>
-        ${renderCampaignPerformance(metrics)}
-      </article>
-
-      <article class="analytics-panel analytics-panel-wide">
-        <div class="analytics-panel-header">
-          <div>
-            <h3>Top Links</h3>
-            <p>Where portfolio attention is concentrating right now.</p>
-          </div>
-        </div>
-        <div class="signal-list">
-          ${renderTopLinkRows(metrics)}
-        </div>
-      </article>
-    </section>
-
-    <section class="analytics-table-grid">
-      <article class="analytics-panel">
-        <div class="analytics-panel-header">
-          <div>
-            <h3>Top Link Details</h3>
-            <p>The most clicked links in the current portfolio snapshot.</p>
-          </div>
-        </div>
-        ${renderTopLinksTable(metrics)}
-      </article>
-    </section>
-  `;
+/* ── timeline ribbon (portfolio) ───────────────────────────────────────────*/
+function ribbon(timeline, unique) {
+  if (!timeline.length) return '';
+  const W = 900, H = 190, padL = 34, padR = 12, padT = 14, padB = 24;
+  const iw = W - padL - padR, ih = H - padT - padB, n = timeline.length;
+  const step = iw / n, bw = Math.max(2, Math.min(22, step * 0.62));
+  const maxC = Math.max(...timeline.map((d) => d.clicks), 1);
+  const yC = (v) => padT + ih - (v / maxC) * ih;
+  const bIdx = timeline.findIndex((d) => d.date >= RELIABILITY_ISO);
+  const hasB = bIdx > 0 && bIdx < n;
+  const bx = bIdx >= 0 ? padL + step * bIdx : null;
+  const grid = [0, Math.ceil(maxC / 2), maxC].map((v) => {
+    const yy = yC(v);
+    return `<line x1="${padL}" y1="${yy.toFixed(1)}" x2="${W - padR}" y2="${yy.toFixed(1)}" stroke="var(--grid-tick)"/><text x="${padL - 6}" y="${(yy + 3).toFixed(1)}" text-anchor="end" class="pf-tick">${v}</text>`;
+  }).join('');
+  const est = hasB ? `<rect x="${padL}" y="${padT}" width="${(bx - padL).toFixed(1)}" height="${ih}" fill="url(#pfHatch)" opacity="0.5"/>` : '';
+  const cols = timeline.map((d, i) => {
+    if (!d.clicks) return '';
+    const x = padL + step * i + (step - bw) / 2;
+    return `<rect x="${x.toFixed(1)}" y="${yC(d.clicks).toFixed(1)}" width="${bw.toFixed(1)}" height="${(ih - (yC(d.clicks) - padT)).toFixed(1)}" rx="1.5" fill="var(--gold-primary)"/>`;
+  }).join('');
+  const pts = timeline.map((d, i) => `${(padL + step * i + step / 2).toFixed(1)},${yC(d.uniqueVisitors || 0).toFixed(1)}`);
+  const split = hasB ? bIdx : 0;
+  const dotted = pts.slice(0, Math.max(1, split + 1)).join(' ');
+  const solid = pts.slice(split).join(' ');
+  const vline = `${split > 0 ? `<polyline points="${dotted}" fill="none" stroke="var(--data-visitor)" stroke-width="1.4" stroke-dasharray="2 3" opacity="0.7"/>` : ''}${solid.split(' ').length > 1 ? `<polyline points="${solid}" fill="none" stroke="var(--data-visitor)" stroke-width="1.8"/>` : ''}`;
+  const nearRight = bx != null && bx > padL + iw * 0.68;
+  const bMark = hasB ? `<line x1="${bx.toFixed(1)}" y1="${padT - 4}" x2="${bx.toFixed(1)}" y2="${padT + ih}" stroke="var(--gold-dark)" stroke-width="1" stroke-dasharray="3 3"/><text x="${(nearRight ? bx - 5 : bx + 5).toFixed(1)}" y="${padT + 6}" text-anchor="${nearRight ? 'end' : 'start'}" class="pf-note-svg">attribution begins</text>` : '';
+  const days = [0, Math.floor(n / 2), n - 1].filter((v, i, a) => a.indexOf(v) === i);
+  const xl = days.map((i) => `<text x="${(padL + step * i + step / 2).toFixed(1)}" y="${H - 7}" text-anchor="middle" class="pf-tick">${esc(timeline[i].date.slice(5))}</text>`).join('');
+  return `<section class="pf-card pf-card-hero">
+    <div class="pf-card-head"><h4>Clicks across all links</h4><span class="pf-legend"><i class="sw-gold"></i>clicks <i class="sw-visitor"></i>distinct visitors</span></div>
+    <svg viewBox="0 0 ${W} ${H}" class="pf-svg" preserveAspectRatio="none" role="img" aria-label="Portfolio clicks per day">
+      <defs><pattern id="pfHatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="var(--data-void)" stroke-width="3"/></pattern></defs>
+      ${est}${grid}${cols}${vline}${bMark}${xl}
+    </svg>
+    ${!unique?.reliable ? `<p class="pf-caveat">Visitors before ${RELIABILITY_ISO} can't be attributed — hatched region, dotted line. Only the solid segment is counted.</p>` : ''}
+  </section>`;
 }
 
-function renderCampaignPerformance(metrics) {
-  if (!metrics.campaigns.length) {
-    return '<p class="analytics-empty-inline">No campaign-tagged links yet.</p>';
+/* ── KPI strip ─────────────────────────────────────────────────────────────*/
+function kpis(a) {
+  const t = a.totals || {}, u = a.unique;
+  const visitors = u ? (u.reliable ? esc(u.distinctVisitors) : `${esc(u.lowerBound)}–${esc(u.upperBound)}`) : '—';
+  const item = (val, lbl, hero) => `<div class="pf-kpi${hero ? ' pf-kpi-hero' : ''}"><span class="pf-kpi-val">${val}</span><span class="pf-kpi-lbl">${lbl}</span></div>`;
+  return `<section class="pf-kpis">
+    ${item(esc(t.events ?? 0), 'clicks measured', true)}
+    ${item(esc(t.activeLinks ?? 0), 'active links')}
+    ${item(esc(t.dormantLinks ?? 0), 'dormant links')}
+    ${item(visitors, u?.reliable ? 'distinct visitors' : 'visitors (range)')}
+    ${item(esc(a.window?.daysWithTraffic ?? 0), 'days with traffic')}
+  </section>`;
+}
+
+/* ── top links (real event counts, drillable) ──────────────────────────────*/
+function topLinks(rows) {
+  if (!rows.length) return '';
+  const max = Math.max(...rows.map((r) => r.clicks), 1);
+  return `<section class="pf-card">
+    <div class="pf-card-head"><h4>Most-clicked links</h4><span class="pf-legend">by measured events · click to drill in</span></div>
+    <div class="pf-toplinks">
+      ${rows.map((r, i) => `
+        <div class="pf-link-row" data-link-code="${esc(r.code)}" role="button" tabindex="0" title="Open ${esc(r.code)} analytics">
+          <span class="pf-rank">${i + 1}</span>
+          <span class="pf-link-name"><b>${esc(r.title)}</b><span class="pf-link-sub">${esc(r.code)}${r.campaign ? ` · ${esc(r.campaign)}` : ''}</span></span>
+          <span class="pf-link-bar"><span class="pf-link-fill${i === 0 ? ' is-lead' : ''}" style="width:${Math.round((r.clicks / max) * 100)}%"></span></span>
+          <span class="pf-link-clicks">${esc(r.clicks)}</span>
+          <span class="pf-status ${r.enabled ? 'is-live' : 'is-paused'}">${r.enabled ? 'Live' : 'Paused'}</span>
+        </div>`).join('')}
+    </div>
+  </section>`;
+}
+
+/* ── campaigns (real rollup) ───────────────────────────────────────────────*/
+function campaigns(rows) {
+  if (!rows.length) return '';
+  const max = Math.max(...rows.map((r) => r.clicks), 1);
+  const onlyUnassigned = rows.length === 1 && rows[0].campaignId === null;
+  return `<section class="pf-card">
+    <div class="pf-card-head"><h4>Campaigns</h4></div>
+    ${rows.map((r, i) => `
+      <div class="pf-facet-row">
+        <span class="pf-facet-key">${esc(r.name)}<span class="pf-facet-sub"> ${esc(r.links)} link${r.links === 1 ? '' : 's'}</span></span>
+        <span class="pf-facet-track"><span class="pf-facet-fill${i === 0 && !onlyUnassigned ? ' is-lead' : ''}" style="width:${Math.round((r.clicks / max) * 100)}%"></span></span>
+        <span class="pf-facet-num">${esc(r.clicks)}</span>
+      </div>`).join('')}
+    ${onlyUnassigned ? '<p class="pf-note">No links are tagged to a campaign yet — this is one bucket, not a comparison.</p>' : ''}
+  </section>`;
+}
+
+/* ── source matrix ─────────────────────────────────────────────────────────*/
+function facet(title, rows, total) {
+  if (!rows || !rows.length || rows.every((r) => r.value === null)) {
+    return `<div class="pf-facet"><h5>${esc(title)}</h5><p class="pf-none">not reported</p></div>`;
   }
-
-  const visibleCampaigns = metrics.campaigns.slice(0, 8);
-  const maxClicks = Math.max(...visibleCampaigns.map(campaign => campaign.clicks), 1);
-
-  return `
-    <div class="campaign-performance-list">
-      ${visibleCampaigns.map((campaign, index) => `
-        <div class="campaign-performance-row">
-          <div class="campaign-rank">${index + 1}</div>
-          <div class="campaign-copy">
-            <div class="campaign-name">${utils.escapeHtml(campaign.name)}</div>
-            <div class="campaign-meta">${formatNumber(campaign.links)} link${campaign.links === 1 ? '' : 's'} · ${campaign.live} live · ${campaign.avgClicks.toFixed(1)} avg</div>
-          </div>
-          <div class="campaign-bar-wrap">
-            <div class="campaign-bar">
-              <div class="campaign-bar-fill" style="width:${Math.max(campaign.clicks ? 10 : 0, (campaign.clicks / maxClicks) * 100)}%"></div>
-            </div>
-          </div>
-          <div class="campaign-value">${formatNumber(campaign.clicks)} <span>${formatPercent(campaign.sharePct)}</span></div>
-        </div>
-      `).join('')}
+  const max = Math.max(...rows.map((r) => r.clicks));
+  return `<div class="pf-facet"><h5>${esc(title)}</h5>
+    ${rows.slice(0, 6).map((r, i) => `<div class="pf-facet-row">
+      <span class="pf-facet-key">${r.value === null ? '<em>none</em>' : esc(r.value)}</span>
+      <span class="pf-facet-track"><span class="pf-facet-fill${i === 0 ? ' is-lead' : ''}" style="width:${Math.round((r.clicks / max) * 100)}%"></span></span>
+      <span class="pf-facet-num">${esc(r.clicks)}</span></div>`).join('')}
+  </div>`;
+}
+function matrix(b, total) {
+  return `<section class="pf-card">
+    <div class="pf-card-head"><h4>Where clicks came from</h4></div>
+    <div class="pf-matrix">
+      ${facet('Device', b.deviceType, total)}
+      ${facet('OS', b.os, total)}
+      ${facet('Browser', b.browser, total)}
+      ${facet('Platform', b.platform, total)}
+      ${facet('Destination', b.destination, total)}
+      ${facet('Referrer', b.referrer, total)}
+      ${b.country ? facet('Country', b.country, total) : ''}
     </div>
-  `;
+  </section>`;
 }
 
-function renderMetricStripItem(label, value, detail) {
-  return `
-    <div class="analytics-metric-item">
-      <span class="analytics-metric-label">${utils.escapeHtml(label)}</span>
-      <strong class="analytics-metric-value">${utils.escapeHtml(value)}</strong>
-      <span class="analytics-metric-detail">${utils.escapeHtml(detail)}</span>
-    </div>
-  `;
+/* ── clock ramps ───────────────────────────────────────────────────────────*/
+function ramp(cells, labelEvery) {
+  const max = Math.max(...cells.map((c) => c.clicks), 1);
+  return cells.map((c, i) => {
+    const t = c.clicks / max;
+    const bg = c.clicks ? `color-mix(in srgb, var(--gold-primary) ${Math.round(20 + t * 80)}%, var(--surface-sunken))` : 'var(--data-void)';
+    const lbl = (i % labelEvery === 0) ? `<span class="pf-ramp-lbl">${esc(String(c.value ?? i)).slice(0, 3)}</span>` : '';
+    return `<span class="pf-ramp-cell" style="background:${bg}" title="${esc(c.value ?? i)}: ${c.clicks}">${lbl}</span>`;
+  }).join('');
+}
+function clock(b) {
+  const hasH = b.hourOfDayUtc?.some((h) => h.clicks);
+  const hasD = b.dayOfWeekUtc?.some((d) => d.clicks);
+  if (!hasH && !hasD) return '';
+  return `<section class="pf-card">
+    <div class="pf-card-head"><h4>When links get clicked <span class="pf-h5-note">UTC</span></h4></div>
+    ${hasH ? `<div class="pf-clockblock"><span class="pf-clock-label">Hour</span><div class="pf-ramp pf-ramp-24">${ramp(b.hourOfDayUtc.map((c, i) => ({ value: i, clicks: c.clicks })), 6)}</div></div>` : ''}
+    ${hasD ? `<div class="pf-clockblock"><span class="pf-clock-label">Day</span><div class="pf-ramp pf-ramp-7">${ramp(b.dayOfWeekUtc, 1)}</div></div>` : ''}
+  </section>`;
 }
 
-function renderTopLinkRows(metrics) {
-  const maxClicks = Math.max(...metrics.topLinks.map(link => link.clicks), 1);
-
-  return metrics.topLinks.slice(0, 5).map((link, index) => `
-    <div class="signal-row">
-      <div class="signal-rank">${index + 1}</div>
-      <div class="signal-copy">
-        <div class="signal-title">${utils.escapeHtml(link.title)}</div>
-        <div class="signal-meta">
-          <span>${utils.escapeHtml(link.family)}</span>
-          <span>${utils.escapeHtml(link.creator)}</span>
-          <span>${utils.escapeHtml(link.code)}</span>
-        </div>
-      </div>
-      <div class="signal-bar-wrap">
-        <div class="signal-bar">
-          <div class="signal-bar-fill" style="width:${Math.max(8, (link.clicks / maxClicks) * 100)}%"></div>
-        </div>
-      </div>
-      <div class="signal-value">${formatNumber(link.clicks)}</div>
-    </div>
-  `).join('');
+/* ── not-measured ledger ───────────────────────────────────────────────────*/
+function ledger(totals, unavailable) {
+  const rows = [];
+  if (totals && totals.counterSum != null) {
+    rows.push(`<div class="pf-ledger-row"><span class="pf-ledger-hatch"></span><span class="pf-ledger-key">Events retained vs lifetime counters</span><span class="pf-ledger-val">${esc(totals.events)} / ${esc(totals.counterSum)}</span></div>`);
+    if (totals.driftNote) rows.push(`<p class="pf-ledger-note">${esc(totals.driftNote)}</p>`);
+    if (totals.orphanCodes) rows.push(`<div class="pf-ledger-row"><span class="pf-ledger-hatch"></span><span class="pf-ledger-key">Events for deleted links</span><span class="pf-ledger-val">${esc(totals.orphanCodes)}</span></div>`);
+  }
+  for (const u of (unavailable || [])) {
+    rows.push(`<div class="pf-ledger-row"><span class="pf-ledger-hatch"></span><span class="pf-ledger-key">${esc(u.metric)}</span><span class="pf-ledger-val pf-ledger-void">not measured</span></div><p class="pf-ledger-note">${esc(u.reason)}</p>`);
+  }
+  if (!rows.length) return '';
+  return `<section class="pf-card pf-card-ledger">
+    <div class="pf-card-head"><h4>What this view is <em>not</em> telling you</h4></div>${rows.join('')}
+  </section>`;
 }
 
-function renderPlatformMix(metrics) {
-  const total = Math.max(metrics.totalLinks, 1);
+/** Offline preview hook (used by the verification harness; unused in prod). */
+export function __previewRender(container, analytics) { container.innerHTML = render(analytics); attachDrilldown(container); }
 
-  return `
-    <div class="mix-stack">
-      ${metrics.platformRows.map(row => `
-        <div
-          class="mix-segment tone-${row.tone}"
-          style="width:${(row.count / total) * 100}%"
-          title="${utils.escapeHtml(row.label)} · ${formatNumber(row.count)}"
-        ></div>
-      `).join('')}
-    </div>
-
-    <div class="mix-legend">
-      ${metrics.platformRows.map(row => `
-        <div class="mix-legend-row">
-          <div class="mix-legend-label">
-            <span class="mix-dot tone-${row.tone}"></span>
-            <span>${utils.escapeHtml(row.label)}</span>
-          </div>
-          <div class="mix-legend-value">${formatNumber(row.count)} <span>${formatPercent((row.count / total) * 100)}</span></div>
-        </div>
-      `).join('')}
-    </div>
-  `;
+function render(a) {
+  if (!a || !a.timeline?.length) {
+    return `<div class="pf-root">${kpis(a || { totals: {}, window: {} })}
+      <section class="pf-card"><p class="pf-none">No click events retained in the ${esc(a?.window?.retentionDays || 30)}-day window yet.</p></section>
+      ${ledger(a?.totals, a?.unavailable)}</div>`;
+  }
+  return `<div class="pf-root">
+    ${kpis(a)}
+    ${ribbon(a.timeline, a.unique)}
+    ${topLinks(a.topLinks)}
+    <div class="pf-grid-2">${campaigns(a.campaigns)}${clock(a.breakdowns)}</div>
+    ${matrix(a.breakdowns, a.totals.events)}
+    ${ledger(a.totals, a.unavailable)}
+  </div>`;
 }
-
-function renderPerformanceBuckets(metrics) {
-  const maxCount = Math.max(...metrics.performanceBuckets.map(bucket => bucket.count), 1);
-
-  return `
-    <div class="bucket-list">
-      ${metrics.performanceBuckets.map(bucket => `
-        <div class="bucket-row">
-          <div class="bucket-copy">
-            <span class="bucket-label">${utils.escapeHtml(bucket.label)}</span>
-            <span class="bucket-detail">${utils.escapeHtml(bucket.detail)}</span>
-          </div>
-          <div class="bucket-bar">
-            <div class="bucket-bar-fill tone-${bucket.tone}" style="width:${Math.max(bucket.count ? 10 : 0, (bucket.count / maxCount) * 100)}%"></div>
-          </div>
-          <div class="bucket-value">${formatNumber(bucket.count)}</div>
-        </div>
-      `).join('')}
-    </div>
-  `;
-}
-
-function renderCreatorRows(metrics) {
-  const maxClicks = Math.max(...metrics.creators.map(creator => creator.clicks), 1);
-
-  return `
-    <div class="creator-list">
-      ${metrics.creators.slice(0, 5).map(creator => `
-        <div class="creator-row">
-          <div class="creator-name-block">
-            <div class="creator-name">${utils.escapeHtml(creator.name)}</div>
-            <div class="creator-subtext">${formatNumber(creator.links)} link${creator.links === 1 ? '' : 's'} · ${creator.live} live</div>
-          </div>
-          <div class="creator-bar">
-            <div class="creator-bar-fill" style="width:${Math.max(8, (creator.clicks / maxClicks) * 100)}%"></div>
-          </div>
-          <div class="creator-value">${formatNumber(creator.clicks)}</div>
-        </div>
-      `).join('')}
-    </div>
-  `;
-}
-
-function renderTopLinksTable(metrics) {
-  return `
-    <div class="analytics-table">
-      <div class="analytics-table-head analytics-table-links">
-        <span>Link</span>
-        <span>Creator</span>
-        <span>Platforms</span>
-        <span>Clicks</span>
-        <span>Status</span>
-      </div>
-      ${metrics.topLinks.map(link => `
-        <div class="analytics-table-row analytics-table-links is-drillable" data-link-code="${utils.escapeHtml(link.code)}" role="button" tabindex="0" title="Open per-link analytics">
-          <div class="analytics-link-cell" data-label="Link">
-            <strong>${utils.escapeHtml(link.title)}</strong>
-            <span>${utils.escapeHtml(link.code)} · ${utils.escapeHtml(link.createdLabel)}</span>
-          </div>
-          <div data-label="Creator">${utils.escapeHtml(link.creator)}</div>
-          <div data-label="Platforms">${utils.escapeHtml(link.platforms.join(' / ') || 'No destination')}</div>
-          <div class="mono-cell" data-label="Clicks">${formatNumber(link.clicks)}</div>
-          <div data-label="Status">
-            <span class="analytics-status ${link.enabled ? 'is-live' : 'is-paused'}">${link.enabled ? 'Live' : 'Paused'}</span>
-          </div>
-        </div>
-      `).join('')}
-    </div>
-  `;
-}
-
-function renderCreatorTable(metrics) {
-  return `
-    <div class="analytics-table">
-      <div class="analytics-table-head analytics-table-creators">
-        <span>Creator</span>
-        <span>Links</span>
-        <span>Clicks</span>
-        <span>Average</span>
-        <span>Share</span>
-      </div>
-      ${metrics.creators.slice(0, 8).map(creator => `
-        <div class="analytics-table-row analytics-table-creators">
-          <div class="analytics-link-cell" data-label="Creator">
-            <strong>${utils.escapeHtml(creator.name)}</strong>
-            <span>${creator.live} live · ${creator.links - creator.live} paused</span>
-          </div>
-          <div class="mono-cell" data-label="Links">${formatNumber(creator.links)}</div>
-          <div class="mono-cell" data-label="Clicks">${formatNumber(creator.clicks)}</div>
-          <div class="mono-cell" data-label="Average">${creator.avgClicks.toFixed(1)}</div>
-          <div class="mono-cell" data-label="Share">${formatPercent(creator.sharePct)}</div>
-        </div>
-      `).join('')}
-    </div>
-  `;
-}
-
-function exportAnalyticsCSV() {
-  const headers = ['Code', 'Title', 'Clicks', 'Created', 'Status', 'Creator', 'Family', 'Campaign', 'Platforms', 'UTM Campaign'];
-  const rows = STATE.links.map(link => {
-    const normalized = normalizeLink(link);
-    return [
-      normalized.code,
-      `"${normalized.title.replace(/"/g, '""')}"`,
-      normalized.clicks,
-      normalized.createdAt ? normalized.createdAt.toISOString() : '',
-      normalized.enabled ? 'Live' : 'Paused',
-      `"${normalized.creator.replace(/"/g, '""')}"`,
-      normalized.family,
-      `"${String(normalized.campaign || '').replace(/"/g, '""')}"`,
-      normalized.platforms.join('+'),
-      `"${String(normalized.utmCampaign || '').replace(/"/g, '""')}"`
-    ];
-  });
-
-  const csv = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `kortex-analytics-${new Date().toISOString().split('T')[0]}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-window.exportAnalyticsCSV = exportAnalyticsCSV;
-
-export { loadAnalytics };
