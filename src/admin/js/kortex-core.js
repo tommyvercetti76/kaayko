@@ -71,6 +71,11 @@ const VIEW_CONFIGS = {
     module: '../views/tenant-onboarding/tenant-onboarding.js',
     css: 'views/tenant-onboarding/tenant-onboarding.css',
     container: '#tenant-onboarding-view'
+  },
+  submissions: {
+    module: '../views/submissions/submissions.js',
+    css: 'views/submissions/submissions.css',
+    container: '#submissions-view'
   }
 };
 

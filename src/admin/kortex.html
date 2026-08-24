@@ -116,6 +116,11 @@
           <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V5.5A1.5 1.5 0 0 1 5.5 4H12a1.5 1.5 0 0 1 1.5 1.5V20"/><path d="M3 20h11.5"/><path d="M7 8h3M7 11.5h3M7 15h3"/><path d="M18.5 13.5v5M16 16h5"/></svg></span>
           <span>Tenant Onboarding</span>
         </a>
+        <a href="#" class="nav-item" data-view="submissions">
+          <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M3 13.5h4l1.5 2.5h7L17 13.5h4"/><path d="M4.5 13.5 7 5.5A1.5 1.5 0 0 1 8.4 4.5h7.2a1.5 1.5 0 0 1 1.4 1L19.5 13.5V18a1.5 1.5 0 0 1-1.5 1.5H6A1.5 1.5 0 0 1 4.5 18z"/></svg></span>
+          <span>Submissions</span>
+          <span class="nav-badge" id="submissions-badge" hidden></span>
+        </a>
         <a href="views/roots/" class="nav-item nav-item-external" data-external="roots">
           <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="6" cy="12" r="2.2"/><circle cx="18" cy="5.5" r="2"/><circle cx="18" cy="12" r="2"/><circle cx="18" cy="18.5" r="2"/><path d="M8.1 11.1 16 6M8.2 12h7.6M8.1 12.9 16 18"/></svg></span>
           <span>ROOTS Engine</span>
@@ -1098,10 +1103,13 @@
             <span>Next →</span>
           </button>
         </div>
-        
+
       </div>
     </div>
-    
+
+    <!-- Submissions View -->
+    <div id="submissions-view" class="view hidden"></div>
+
   </main>
   
   <!-- QR Code Sidebar -->

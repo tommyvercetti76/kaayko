@@ -1,0 +1,341 @@
+/* ============================================================================
+   SUBMISSIONS VIEW STYLES
+   Community lake / river / boat-ramp review queue.
+   Matches the dark "Bullion" theme (gold accent #D4A84B / var(--gold-primary)).
+   ============================================================================ */
+
+.view-subtitle {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 400;
+  margin-top: 4px;
+}
+
+.submissions-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+/* --- Filter tabs --------------------------------------------------------- */
+.submissions-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: var(--space-md) var(--space-lg) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.submissions-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.submissions-tab:hover {
+  color: var(--text-secondary);
+}
+
+.submissions-tab.active {
+  color: var(--gold-primary);
+  border-bottom-color: var(--gold-primary);
+}
+
+.submissions-tab-count {
+  min-width: 20px;
+  padding: 1px 7px;
+  border-radius: var(--radius-full, 999px);
+  background: rgba(212, 168, 75, 0.12);
+  color: #d9bd7b;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.submissions-tab.active .submissions-tab-count {
+  background: var(--gold-primary);
+  color: var(--text-inverse, #1a1a1a);
+}
+
+/* --- Count line ---------------------------------------------------------- */
+.submissions-count {
+  padding: 12px var(--space-lg) 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* --- List ---------------------------------------------------------------- */
+.submissions-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg) var(--space-lg);
+}
+
+.submissions-empty,
+.submissions-error {
+  grid-column: 1 / -1;
+  padding: 28px 16px;
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-md);
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.submissions-error {
+  border-style: solid;
+  border-color: var(--error);
+  color: var(--error);
+  background: var(--error-bg);
+}
+
+/* --- Card ---------------------------------------------------------------- */
+.submission-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+  overflow: hidden;
+  transition: border-color var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.submission-card:hover {
+  border-color: rgba(212, 168, 75, 0.4);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(0, 0, 0, 0.35));
+}
+
+.submission-card.is-busy {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Media */
+.sub-media {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+  background: #0d0d0f;
+}
+
+.sub-hero {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  display: block;
+  background: #16161a;
+}
+
+.sub-hero--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  border: 1px dashed var(--border-subtle);
+}
+
+.sub-thumbs {
+  display: flex;
+  gap: 6px;
+}
+
+.sub-thumb {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle);
+  background: #16161a;
+}
+
+/* Body */
+.sub-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px 16px;
+}
+
+.sub-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.sub-head-text {
+  min-width: 0;
+}
+
+.sub-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  word-break: break-word;
+}
+
+.sub-loc {
+  margin-top: 2px;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+}
+
+.sub-status {
+  flex-shrink: 0;
+}
+
+.sub-coords {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.sub-coord-text {
+  font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+}
+
+.sub-map-link {
+  color: var(--gold-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.sub-map-link:hover {
+  color: #d9bd7b;
+  text-decoration: underline;
+}
+
+.sub-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sub-field-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #666;
+  font-weight: 600;
+}
+
+.sub-field-val {
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.4;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.sub-amenities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sub-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: var(--radius-full, 999px);
+  border: 1px solid var(--border-subtle);
+}
+
+.sub-pill--yes {
+  color: var(--success);
+  background: var(--success-bg);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.sub-pill--no {
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.sub-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  padding-top: 2px;
+}
+
+.sub-meta-sep {
+  opacity: 0.5;
+}
+
+.sub-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.sub-actions .btn {
+  flex: 1;
+  justify-content: center;
+}
+
+.sub-actions .btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* --- Sidebar pending badge ---------------------------------------------- */
+/* The [hidden] attribute selector is more specific than .nav-badge, so
+   toggling the `hidden` property in JS reliably shows/hides the badge. */
+.nav-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: auto;
+  padding: 0 6px;
+  border-radius: var(--radius-full, 999px);
+  background: var(--gold-primary);
+  color: var(--text-inverse, #1a1a1a);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.nav-badge[hidden] {
+  display: none;
+}
+
+/* --- Responsive ---------------------------------------------------------- */
+@media (max-width: 640px) {
+  .submissions-list {
+    grid-template-columns: 1fr;
+    padding: var(--space-md);
+  }
+
+  .submissions-tabs,
+  .submissions-count {
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
+  }
+}
