@@ -100,6 +100,9 @@
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+  <!-- Leaflet (self-hosted) for the map + score pins -->
+  <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
+  <script src="/vendor/leaflet/leaflet.js"></script>
 
   <style>
     /* ── Brand tokens (mirrors paddlingout.css) ── */
@@ -314,6 +317,62 @@
       font-size: 0.6rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase;
       color: #141210; background: linear-gradient(135deg, #d9bd7b, #b5935a);
       padding: 5px 10px; border-radius: 999px; white-space: nowrap;
+    }
+
+    /* ── Map of found lakes ─────────────────────────────────────────── */
+    .search-map-wrap { margin-bottom: 22px; }
+    .search-map {
+      height: 300px; border-radius: 14px; overflow: hidden;
+      border: 1px solid rgba(181,147,90,0.3); background: #0d0d0f; z-index: 0;
+    }
+    .map-legend {
+      display: flex; flex-wrap: wrap; gap: 14px; margin-top: 9px;
+      font-family: 'Josefin Sans', Arial, sans-serif; font-size: 0.62rem;
+      letter-spacing: 0.05em; text-transform: uppercase; color: rgba(237,232,223,0.6);
+    }
+    .map-legend .lg::before {
+      content:''; display:inline-block; width:9px; height:9px; border-radius:50%;
+      margin-right:5px; vertical-align:middle;
+    }
+    .lg-cover::before { background:#d9bd7b; }
+    .lg-good::before  { background:#316d43; }
+    .lg-mid::before   { background:#c59a61; }
+    .lg-bad::before   { background:#bd3b2b; }
+    /* Score pin (Leaflet divIcon) */
+    .score-pin {
+      display:flex; align-items:center; justify-content:center;
+      width:30px; height:30px; border-radius:50% 50% 50% 0; transform:rotate(-45deg);
+      border:2px solid rgba(255,255,255,0.85); box-shadow:0 2px 6px rgba(0,0,0,0.5);
+      font-family:'Josefin Sans',Arial,sans-serif; font-weight:700; font-size:12px; color:#fff;
+    }
+    .score-pin span { transform:rotate(45deg); }
+    .score-pin.cover { border-color:#fff; box-shadow:0 0 0 2px rgba(217,189,123,0.65),0 2px 6px rgba(0,0,0,0.5); }
+    .leaflet-popup-content-wrapper { background:#141210; color:#ede8df; border-radius:10px; }
+    .leaflet-popup-tip { background:#141210; }
+    .leaflet-popup-content { margin:12px 14px; }
+    .map-pop-name { font-family:'Josefin Sans',Arial,sans-serif; font-weight:600; font-size:0.92rem; color:#ede8df; }
+    .map-pop-meta { font-size:0.8rem; color:rgba(237,232,223,0.62); margin:3px 0 9px; }
+    .map-pop-actions { display:flex; gap:8px; }
+    .map-pop-actions a {
+      font-family:'Josefin Sans',Arial,sans-serif; font-size:0.64rem; font-weight:600;
+      letter-spacing:0.04em; text-transform:uppercase; text-decoration:none; padding:6px 11px; border-radius:7px;
+    }
+    .map-pop-actions .go { background:linear-gradient(135deg,#d9bd7b,#b5935a); color:#141210; }
+    .map-pop-actions .sub { border:1px solid rgba(181,147,90,0.4); color:#d9bd7b; }
+    /* Save-area (lock my city) */
+    .btn-save-area { background:none; border:none; cursor:pointer; color:#b5935a; padding:2px; line-height:0; }
+    .btn-save-area.saved { color:#d9bd7b; }
+    .btn-save-area .material-icons { font-size:20px; }
+    .my-area-chip {
+      display:none; align-items:center; gap:10px; margin:2px 0 16px;
+      font-family:'Cormorant Garamond',Georgia,serif; font-size:0.95rem; color:rgba(237,232,223,0.75);
+    }
+    .my-area-chip.visible { display:flex; }
+    .my-area-chip b { color:#d9bd7b; font-weight:600; font-family:'Josefin Sans',Arial,sans-serif; font-size:0.8rem; }
+    .my-area-chip button {
+      background:none; border:none; color:rgba(237,232,223,0.5); cursor:pointer;
+      font-family:'Josefin Sans',Arial,sans-serif; font-size:0.66rem; letter-spacing:0.06em;
+      text-transform:uppercase; text-decoration:underline;
     }
     .results-count {
       font-family: var(--font-sans);
@@ -545,6 +604,12 @@
     <!-- Status -->
     <div class="search-status" id="search-status"></div>
 
+    <!-- Saved "my area" (lock my city) -->
+    <div class="my-area-chip" id="my-area-chip">
+      <span>Showing lakes near <b id="my-area-label"></b></span>
+      <button type="button" id="my-area-change">Change</button>
+    </div>
+
     <!-- Popular spots (hidden once results show) -->
     <section class="search-intro">
       <p>
@@ -576,11 +641,25 @@
       </div>
     </div>
 
+    <!-- Map of found lakes (pins colored by Paddle Score) -->
+    <div id="search-map-wrap" class="search-map-wrap" hidden>
+      <div id="search-map" class="search-map" aria-label="Map of nearby lakes"></div>
+      <div class="map-legend" aria-hidden="true">
+        <span class="lg lg-cover">◆ We cover</span>
+        <span class="lg lg-good">Worth it</span>
+        <span class="lg lg-mid">Careful</span>
+        <span class="lg lg-bad">Hard pass</span>
+      </div>
+    </div>
+
     <!-- Results -->
     <div id="results-header" class="results-header">
       <span class="results-count" id="results-count"></span>
       <div style="display:flex;align-items:center;gap:8px">
         <span class="results-hint"  id="results-hint"></span>
+        <button id="save-area-btn" class="btn-save-area" title="Save this as my area" aria-label="Save this as my area" style="display:none">
+          <span class="material-icons">star_border</span>
+        </button>
         <button id="refresh-btn" class="btn-refresh" title="Force live search" aria-label="Refresh results" style="display:none">
           <span class="material-icons">refresh</span>
         </button>

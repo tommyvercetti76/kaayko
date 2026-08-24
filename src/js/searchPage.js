@@ -207,6 +207,10 @@ async function loadCoveredSpots() {
         lng: Number(loc.longitude ?? s.lng)
       };
     }).filter(s => s.name && Number.isFinite(s.lat) && Number.isFinite(s.lng));
+    // If a search already ran before the list loaded (auto-load path), refresh
+    // the covered card now that we can match.
+    const q = inputEl.value.trim();
+    if (q) renderCovered(matchCovered(q));
   } catch { /* covered-spot matching is a bonus — ignore failures */ }
 }
 
@@ -265,7 +269,141 @@ function renderCovered(spots) {
     card.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
   });
 }
-loadCoveredSpots();
+const coveredReady = loadCoveredSpots();  // awaited by runSearch before rendering
+
+// ── Map of found lakes (score-colored pins) ────────────────────────────────
+let searchMap = null, pinLayer = null;
+function ensureMap() {
+  const wrap = document.getElementById('search-map-wrap');
+  const el = document.getElementById('search-map');
+  if (!el || typeof L === 'undefined') return null;
+  wrap.hidden = false;
+  if (!searchMap) {
+    searchMap = L.map(el, { scrollWheelZoom: false });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(searchMap);
+    pinLayer = L.layerGroup().addTo(searchMap);
+    searchMap.setView([39.5, -98.35], 4);
+  }
+  setTimeout(() => searchMap.invalidateSize(), 120);
+  return searchMap;
+}
+function hideMap() { const w = document.getElementById('search-map-wrap'); if (w) w.hidden = true; }
+function scorePinIcon(score, covered) {
+  const s = (score != null && !isNaN(score)) ? Number(score).toFixed(1) : null;
+  const bg = covered ? '#b5935a' : (s != null ? scoreColor(s) : '#555');
+  const label = covered ? '◆' : (s != null ? s : '–');
+  return L.divIcon({
+    className: '',
+    html: `<div class="score-pin${covered ? ' cover' : ''}" style="background:${bg}"><span>${label}</span></div>`,
+    iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -28]
+  });
+}
+function pinPopup(o) {
+  // o: { name, meta, covered, lat, lng }
+  const fq = new URLSearchParams({ lat: o.lat, lng: o.lng, name: o.name }).toString();
+  const go = `<a class="go" href="/paddlingout/forecast?${fq}">Forecast</a>`;
+  const sub = `<a class="sub" href="/paddlingout/submitentry?${new URLSearchParams({ name: o.name, lat: o.lat, lng: o.lng }).toString()}">Add photos</a>`;
+  return `<div class="map-pop-name">${escapeHtml(o.name)}</div>` +
+    `<div class="map-pop-meta">${escapeHtml(o.meta)}</div>` +
+    `<div class="map-pop-actions">${go}${o.covered ? '' : sub}</div>`;
+}
+function renderMapPins(bodies, covered, scoreMap) {
+  const map = ensureMap();
+  if (!map) return;
+  pinLayer.clearLayers();
+  const pts = [];
+  (covered || []).forEach(s => {
+    pinLayer.addLayer(L.marker([s.lat, s.lng], { icon: scorePinIcon(null, true) })
+      .bindPopup(pinPopup({ name: s.name, meta: (s.subtitle || 'We cover this') + ' · exact location', covered: true, lat: s.lat, lng: s.lng })));
+    pts.push([s.lat, s.lng]);
+  });
+  (bodies || []).forEach(b => {
+    if (!Number.isFinite(b.lat) || !Number.isFinite(b.lng)) return;
+    const score = scoreMap && scoreMap.get(`${b.lat.toFixed(6)},${b.lng.toFixed(6)}`);
+    const lab = scoreLabel(score);
+    pinLayer.addLayer(L.marker([b.lat, b.lng], { icon: scorePinIcon(score, false) })
+      .bindPopup(pinPopup({ name: b.name, meta: `${lab ? lab + ' · ' : ''}${b.type} · ${b.distanceMiles} mi · approx (lake centre)`, covered: false, lat: b.lat, lng: b.lng })));
+    pts.push([b.lat, b.lng]);
+  });
+  // The wrap may have just un-hidden — settle the container size BEFORE fitting
+  // bounds / requesting tiles, or Leaflet only paints a partial tile grid.
+  setTimeout(() => {
+    map.invalidateSize();
+    if (pts.length) map.fitBounds(pts, { padding: [40, 40], maxZoom: 12 });
+  }, 180);
+}
+
+// ── Lock my city (saved area, localStorage only) ───────────────────────────
+const MY_AREA_KEY = 'kaayko_my_area';
+function getSavedArea() {
+  try { return JSON.parse(localStorage.getItem(MY_AREA_KEY) || 'null'); } catch { return null; }
+}
+function saveArea() {
+  if (lastSearchParams) { try { localStorage.setItem(MY_AREA_KEY, JSON.stringify(lastSearchParams)); } catch {} }
+  updateSaveAreaUI();
+}
+function clearArea() { try { localStorage.removeItem(MY_AREA_KEY); } catch {} updateSaveAreaUI(); }
+function updateSaveAreaUI() {
+  const saved = getSavedArea();
+  const btn = document.getElementById('save-area-btn');
+  const chip = document.getElementById('my-area-chip');
+  const label = document.getElementById('my-area-label');
+  const isSaved = !!(saved && lastSearchParams &&
+    Math.abs(saved.lat - lastSearchParams.lat) < 1e-4 && Math.abs(saved.lng - lastSearchParams.lng) < 1e-4);
+  if (btn) {
+    btn.style.display = lastSearchParams ? 'inline-flex' : 'none';
+    btn.classList.toggle('saved', isSaved);
+    const ic = btn.querySelector('.material-icons'); if (ic) ic.textContent = isSaved ? 'star' : 'star_border';
+    btn.title = isSaved ? 'Saved as my area (tap to remove)' : 'Save this as my area';
+  }
+  if (chip && label) {
+    if (saved && saved.label) { label.textContent = saved.label; chip.classList.add('visible'); }
+    else chip.classList.remove('visible');
+  }
+}
+document.getElementById('save-area-btn')?.addEventListener('click', () => {
+  const saved = getSavedArea();
+  const isSaved = saved && lastSearchParams &&
+    Math.abs(saved.lat - lastSearchParams.lat) < 1e-4 && Math.abs(saved.lng - lastSearchParams.lng) < 1e-4;
+  isSaved ? clearArea() : saveArea();
+});
+document.getElementById('my-area-change')?.addEventListener('click', () => {
+  clearArea();
+  inputEl.value = '';
+  inputEl.focus();
+});
+
+// ── Canonical Paddle Score labels (match paddlingout.js getScoreSeverity) ────
+function scoreLabel(score) {
+  const v = parseFloat(score);
+  if (isNaN(v)) return '';
+  return v >= 3.7 ? 'Worth it' : v >= 2.7 ? 'Careful' : 'Hard pass';
+}
+
+// ── Covered-spot cross-reference (so a lake we cover never reads as generic) ─
+function haversineMi(aLat, aLng, bLat, bLng) {
+  const R = 3958.8, dLat = (bLat - aLat) * Math.PI / 180, dLng = (bLng - aLng) * Math.PI / 180;
+  const s = Math.sin(dLat / 2) ** 2 +
+    Math.cos(aLat * Math.PI / 180) * Math.cos(bLat * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+function coveredWithin(lat, lng, radiusKm) {
+  const mi = (Number(radiusKm) || 30) * 0.621371;
+  return COVERED_SPOTS
+    .filter(s => haversineMi(lat, lng, s.lat, s.lng) <= mi)
+    .sort((a, b) => haversineMi(lat, lng, a.lat, a.lng) - haversineMi(lat, lng, b.lat, b.lng));
+}
+function normName(n) { return String(n || '').toLowerCase().replace(/\s+(lake|reservoir|river)$/,'').trim(); }
+function bodyIsCovered(body, coveredList) {
+  const bn = normName(body.name);
+  return coveredList.some(c => {
+    const d = haversineMi(body.lat, body.lng, c.lat, c.lng);
+    if (d < 2) return true;                                  // same water body
+    const cn = normName(c.name);
+    return d < 12 && cn && bn && (cn === bn || cn.includes(bn) || bn.includes(cn));
+  });
+}
 
 const updateSuggestions = debounce(async () => {
   const query = inputEl.value.trim();
@@ -368,7 +506,9 @@ document.querySelectorAll('.popular-chip').forEach(chip => {
 async function triggerTextSearch() {
   const query = inputEl.value.trim();
   if (!query) { setStatus('Enter a lake, city, or place name.', 'error'); return; }
-  renderCovered(matchCovered(query));   // instant: surface spots we already cover
+  const coveredNow = matchCovered(query);      // instant: spots we already cover
+  renderCovered(coveredNow);
+  if (coveredNow.length) renderMapPins([], coveredNow, null);  // drop covered pins now; nearby fill in when ready
   setStatus('Finding location…', 'loading');
 
   // If user picked a suggested option, use that exact lat/lng instead of re-geocoding.
@@ -391,6 +531,8 @@ async function runSearch(lat, lng, label = 'this location', forceRefresh = false
   if (isSearching) return;
   isSearching = true;
   lastSearchParams = { lat, lng, label, radiusKm };  // Track for refresh button
+  updateSaveAreaUI();  // reveal the ★ save-my-area control
+  await coveredReady;  // ensure covered-spot list is loaded before we cross-reference
   
   setStatus(`Searching near ${label}…`, 'loading');
   resultsHeader.classList.remove('visible');
@@ -411,7 +553,7 @@ async function runSearch(lat, lng, label = 'this location', forceRefresh = false
     if (!data.success) {
       // API error
       resultsList.innerHTML = '';
-      popularSection.style.display = '';
+      popularSection.style.display = ''; hideMap();
       refreshBtn.style.display = 'none';
       setStatus('Search failed — check connection and try again.', 'error');
       return;
@@ -420,7 +562,7 @@ async function runSearch(lat, lng, label = 'this location', forceRefresh = false
     if (data.status === 'no_results' || !data.waterBodies?.length) {
       // No water bodies found in radius (but search succeeded)
       resultsList.innerHTML = '';
-      popularSection.style.display = '';
+      popularSection.style.display = ''; hideMap();
       refreshBtn.style.display = 'none';
       showEmpty(label);
       setStatus('', '');
@@ -435,13 +577,13 @@ async function runSearch(lat, lng, label = 'this location', forceRefresh = false
 
     // Unknown status
     resultsList.innerHTML = '';
-    popularSection.style.display = '';
+    popularSection.style.display = ''; hideMap();
     refreshBtn.style.display = 'none';
     setStatus('Search returned unexpected response.', 'error');
 
   } catch (err) {
     resultsList.innerHTML = '';
-    popularSection.style.display = '';
+    popularSection.style.display = ''; hideMap();
     refreshBtn.style.display = 'none';
     setStatus('Search failed — check connection and try again.', 'error');
     console.error('Search error:', err);
@@ -456,9 +598,20 @@ function renderResults(bodies, label, cached, sources) {
   const gen = ++scoreGen;
   resultsList.innerHTML = '';
 
-  const items = bodies.slice(0, 15);
+  // Spots we already cover near this search — rendered as covered (link to their
+  // forecast) and removed from the generic list, so a covered lake (e.g.
+  // Lewisville) never shows a "Request" CTA or appears twice.
+  const coveredNear = lastSearchParams
+    ? coveredWithin(lastSearchParams.lat, lastSearchParams.lng, lastSearchParams.radiusKm)
+    : [];
+  renderCovered(coveredNear);
 
-  resultsCount.textContent = `${items.length} spot${items.length !== 1 ? 's' : ''} near ${label}`;
+  const items = bodies.slice(0, 15).filter(b => !bodyIsCovered(b, coveredNear));
+
+  const noun = items.length !== 1 ? 'spots' : 'spot';
+  resultsCount.textContent = items.length
+    ? `${items.length} ${coveredNear.length ? 'more ' : ''}${noun} near ${label}`
+    : (coveredNear.length ? `Spots we cover near ${label}` : `No spots near ${label}`);
   
   // Show source info + cache status
   let sourceStr = '';
@@ -531,10 +684,13 @@ function renderResults(bodies, label, cached, sources) {
     resultsList.appendChild(card);
   });
 
+  const coveredForMap = coveredNear;   // proximity-matched covered spots (computed above)
+
   // Fetch all scores in batch, then fill in cards
   fetchBatchScores(items).then(scoreMap => {
     if (scoreGen !== gen || !scoreMap) {
       // Batch failed — fall back to individual fetches
+      renderMapPins(items, coveredForMap, null);
       items.forEach((body, idx) => {
         const scoreId = `sc-${gen}-${idx}`;
         fetchScore(body.lat, body.lng).then(score => {
@@ -548,6 +704,8 @@ function renderResults(bodies, label, cached, sources) {
       });
       return;
     }
+
+    renderMapPins(items, coveredForMap, scoreMap);
 
     // Batch succeeded — fill in all scores
     items.forEach((body, idx) => {
@@ -687,7 +845,17 @@ function setStatus(msg, type = '') {
     inputEl.value = q;
     clearBtn.classList.add('visible');
     triggerTextSearch();
+  } else {
+    // No URL target — if the visitor locked a city before, open straight to it
+    // (their saved area; no GPS prompt, no re-typing).
+    const saved = getSavedArea();
+    if (saved && Number.isFinite(saved.lat) && Number.isFinite(saved.lng)) {
+      inputEl.value = saved.label || `${saved.lat.toFixed(4)}, ${saved.lng.toFixed(4)}`;
+      clearBtn.classList.add('visible');
+      runSearch(saved.lat, saved.lng, saved.label || 'your area', false, saved.radiusKm || 30);
+    }
   }
+  updateSaveAreaUI();
 })();
 
 // Location is opt-in: we do NOT auto-request GPS on load (that shows an
