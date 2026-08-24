@@ -457,7 +457,7 @@
             <button class="mini-btn" id="use-location" type="button">Use my location</button>
           </div>
           <div id="pin-map" class="pin-map" aria-label="Map. Drag the pin to the exact launch point."></div>
-          <p class="pin-hint">Tap <strong>Find</strong> to drop a pin from the name, then <strong>drag the pin</strong> to the exact launch or boat ramp. Use <strong>my location</strong> only if you&rsquo;re standing at the lake now.</p>
+          <p class="pin-hint">Tap <strong>Find</strong> to drop a pin from the name, then <strong>drag the pin</strong> to the exact launch or boat ramp. <strong>Use my location</strong> only if you&rsquo;re at the lake now &mdash; it&rsquo;s read once to place the pin, never tracked or stored.</p>
         </div>
 
         <label>
@@ -813,22 +813,66 @@
 
       document.getElementById('find-coords').addEventListener('click', inferCoordinates);
 
-      document.getElementById('use-location').addEventListener('click', function () {
-        if (!navigator.geolocation) {
-          setStatus('Location is not supported in this browser.', 'error');
+      // "Use my location" — opt-in, one-shot, and transparent. We only read the
+      // device position when the user taps this, use it once to place the pin,
+      // and never watch/track/store it beyond the coordinate they choose to
+      // submit. Every failure mode falls back to Find / dragging the pin.
+      var useLocBtn = document.getElementById('use-location');
+      useLocBtn.addEventListener('click', function () {
+        if (!navigator.geolocation || window.isSecureContext === false) {
+          setStatus('Location needs a secure (https) connection. Use Find, or drag the pin instead.', 'error');
           return;
         }
-        setStatus('Waiting for GPS...', '');
-        navigator.geolocation.getCurrentPosition(
-          pos => {
-            field('lat').value = pos.coords.latitude.toFixed(5);
-            field('lng').value = pos.coords.longitude.toFixed(5);
-            centerPin(pos.coords.latitude, pos.coords.longitude, 15);
-            setStatus('Your location added. Drag the pin to fine-tune the launch point.', 'ok');
-          },
-          () => setStatus('Location permission was not granted.', 'error'),
-          { timeout: 10000, maximumAge: 60000 }
-        );
+
+        function requestOnce() {
+          var label = useLocBtn.textContent;
+          useLocBtn.disabled = true;
+          useLocBtn.textContent = 'Locating…';
+          setStatus('Reading your location once to place the pin — it isn’t tracked or stored.', '');
+          navigator.geolocation.getCurrentPosition(
+            function (pos) {
+              useLocBtn.disabled = false; useLocBtn.textContent = label;
+              var la = pos.coords.latitude, ln = pos.coords.longitude;
+              var acc = Math.round(pos.coords.accuracy || 0); // metres
+              field('lat').value = la.toFixed(5);
+              field('lng').value = ln.toFixed(5);
+              centerPin(la, ln, acc > 500 ? 12 : 15);
+              if (acc && acc > 150) {
+                setStatus('Approximate location added (±' + acc + ' m). Drag the pin to the exact launch point.', 'ok');
+              } else {
+                setStatus('Location added. Drag the pin to fine-tune the launch point.', 'ok');
+              }
+            },
+            function (err) {
+              useLocBtn.disabled = false; useLocBtn.textContent = label;
+              if (err && err.code === 1) {
+                setStatus('No problem — location stays private. Use Find, or drag the pin to the launch point.', 'error');
+              } else if (err && err.code === 3) {
+                setStatus('Location timed out. Use Find, or drag the pin to the launch point.', 'error');
+              } else {
+                setStatus('Couldn’t get your location. Use Find, or drag the pin to the launch point.', 'error');
+              }
+            },
+            { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+          );
+        }
+
+        // If the browser already remembers a denial it won't re-prompt — explain
+        // that rather than failing silently. Otherwise the browser shows its own
+        // permission prompt (we never bypass it).
+        if (navigator.permissions && navigator.permissions.query) {
+          navigator.permissions.query({ name: 'geolocation' })
+            .then(function (st) {
+              if (st.state === 'denied') {
+                setStatus('Location is blocked for this site in your browser settings. Use Find, or drag the pin instead.', 'error');
+              } else {
+                requestOnce();
+              }
+            })
+            .catch(requestOnce);
+        } else {
+          requestOnce();
+        }
       });
 
       // ── Map pin picker (Leaflet + OpenStreetMap tiles) ────────────────────
