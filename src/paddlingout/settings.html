@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en" class="dark-theme">
+<head>
+  <script src="/js/prod-config.js"></script>
+  <script src="/js/prefs.js"></script>
+  <script>document.documentElement.classList.add('dark-theme');</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings | Kaayko Paddling Out</title>
+  <meta name="description" content="Your Kaayko preferences — units, saved area, and favorite lakes.">
+  <meta name="robots" content="noindex, follow">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#080808;
+      --panel:#0d0c0a;
+      --panel-soft:#10110d;
+      --fg:#ede8df;
+      --muted:rgba(237,232,223,0.58);
+      --gold:#b5935a;
+      --gold-bright:#d9bd7b;
+      --line:rgba(181,147,90,0.28);
+      --ok:#8fbc6a;
+      --bad:#f87171;
+      --font-serif:'Cormorant Garamond', Georgia, serif;
+      --font-sans:'Josefin Sans', Arial, sans-serif;
+      --ease:cubic-bezier(0.76,0,0.24,1);
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0; min-height:100vh;
+      background:
+        radial-gradient(1200px 600px at 80% -10%, rgba(181,147,90,0.06), transparent 60%),
+        var(--bg);
+      color:var(--fg); font-family:var(--font-serif);
+    }
+    .settings-shell { width:min(100%, 860px); margin:0 auto; padding:2rem 1.4rem 4rem; }
+    .settings-top {
+      display:flex; align-items:flex-end; justify-content:space-between; gap:1rem;
+      padding-bottom:1.2rem; border-bottom:1px solid rgba(181,147,90,0.18);
+    }
+    .back-link {
+      color:var(--gold); text-decoration:none; font-family:var(--font-sans);
+      font-size:.82rem; letter-spacing:.12em; text-transform:uppercase;
+      display:inline-flex; align-items:center; gap:.4rem; transition:color .2s;
+    }
+    .back-link:hover { color:var(--gold-bright); }
+    .settings-title { text-align:right; }
+    .settings-title .eyebrow {
+      display:block; font-family:var(--font-sans); font-size:.72rem;
+      letter-spacing:.32em; text-transform:uppercase; color:var(--gold); margin-bottom:.35rem;
+    }
+    .settings-title h1 {
+      margin:0; font-weight:600; font-size:clamp(1.8rem,4vw,2.6rem);
+      letter-spacing:.02em; line-height:1;
+    }
+
+    .card {
+      margin-top:1.6rem; background:linear-gradient(150deg, var(--panel), var(--panel-soft));
+      border:1px solid var(--line); border-radius:16px; padding:1.5rem 1.5rem 1.6rem;
+    }
+    .card > h2 {
+      margin:0 0 .3rem; font-family:var(--font-sans); font-weight:600;
+      font-size:.9rem; letter-spacing:.16em; text-transform:uppercase; color:var(--gold-bright);
+    }
+    .card > p.hint { margin:0 0 1.1rem; color:var(--muted); font-size:1.02rem; }
+
+    /* ── Units segmented toggle ── */
+    .seg {
+      display:grid; grid-template-columns:1fr 1fr; gap:.5rem;
+      background:rgba(0,0,0,0.35); border:1px solid var(--line);
+      border-radius:12px; padding:.4rem;
+    }
+    .seg button {
+      appearance:none; border:1px solid transparent; background:transparent;
+      color:var(--muted); cursor:pointer; border-radius:9px; padding:.85rem .5rem;
+      font-family:var(--font-sans); font-size:.98rem; letter-spacing:.02em;
+      display:flex; flex-direction:column; align-items:center; gap:.2rem;
+      transition:background .2s var(--ease), color .2s, border-color .2s, transform .1s;
+    }
+    .seg button .sub { font-size:.76rem; letter-spacing:.06em; opacity:.8; }
+    .seg button:hover { color:var(--fg); }
+    .seg button.active {
+      background:linear-gradient(135deg, rgba(217,189,123,0.22), rgba(181,147,90,0.12));
+      border-color:rgba(217,189,123,0.55); color:var(--gold-bright);
+      box-shadow:0 4px 18px rgba(0,0,0,0.35);
+    }
+
+    /* ── My area ── */
+    .area-row { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
+    .area-city { display:flex; align-items:center; gap:.7rem; min-width:0; }
+    .area-city .pin {
+      width:38px; height:38px; flex:0 0 auto; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      background:rgba(181,147,90,0.14); border:1px solid var(--line); color:var(--gold-bright);
+    }
+    .area-city .label { font-size:1.28rem; line-height:1.15; overflow:hidden; text-overflow:ellipsis; }
+    .area-city .empty { color:var(--muted); font-style:italic; }
+    .btn-row { display:flex; gap:.6rem; flex-wrap:wrap; }
+    .btn {
+      appearance:none; cursor:pointer; font-family:var(--font-sans);
+      font-size:.82rem; letter-spacing:.1em; text-transform:uppercase;
+      padding:.62rem 1.05rem; border-radius:10px; text-decoration:none;
+      display:inline-flex; align-items:center; gap:.4rem; transition:all .2s var(--ease);
+    }
+    .btn-gold { background:linear-gradient(135deg, var(--gold-bright), var(--gold)); color:#141210; border:1px solid transparent; font-weight:600; }
+    .btn-gold:hover { filter:brightness(1.08); transform:translateY(-1px); }
+    .btn-ghost { background:transparent; color:var(--fg); border:1px solid var(--line); }
+    .btn-ghost:hover { border-color:var(--gold-bright); color:var(--gold-bright); }
+
+    /* ── Favorites ── */
+    .fav-list { display:flex; flex-direction:column; gap:.7rem; }
+    .fav-item {
+      display:flex; align-items:center; gap:.9rem;
+      background:rgba(0,0,0,0.28); border:1px solid var(--line);
+      border-radius:12px; padding:.85rem 1rem; transition:border-color .2s, background .2s;
+    }
+    .fav-item:hover { border-color:rgba(217,189,123,0.5); background:rgba(0,0,0,0.4); }
+    .fav-star { color:var(--gold-bright); flex:0 0 auto; display:flex; }
+    .fav-main { flex:1 1 auto; min-width:0; }
+    .fav-main a { color:var(--fg); text-decoration:none; font-size:1.24rem; line-height:1.15; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .fav-main a:hover { color:var(--gold-bright); }
+    .fav-main .sub { color:var(--muted); font-size:.95rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .fav-actions { display:flex; align-items:center; gap:.5rem; flex:0 0 auto; }
+    .fav-view {
+      font-family:var(--font-sans); font-size:.74rem; letter-spacing:.1em; text-transform:uppercase;
+      color:var(--gold); text-decoration:none; padding:.45rem .7rem; border:1px solid var(--line); border-radius:8px; transition:all .2s;
+    }
+    .fav-view:hover { color:var(--gold-bright); border-color:var(--gold-bright); }
+    .fav-remove {
+      appearance:none; background:transparent; border:1px solid transparent; cursor:pointer;
+      color:var(--muted); width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center;
+      transition:all .2s;
+    }
+    .fav-remove:hover { color:var(--bad); border-color:rgba(248,113,113,0.4); background:rgba(248,113,113,0.08); }
+    .empty-state {
+      text-align:center; padding:1.6rem 1rem; color:var(--muted);
+    }
+    .empty-state .big { font-size:1.35rem; color:var(--fg); margin-bottom:.35rem; }
+    .empty-state a { color:var(--gold-bright); }
+    .foot { margin-top:2rem; text-align:center; color:var(--muted); font-family:var(--font-sans); font-size:.74rem; letter-spacing:.14em; text-transform:uppercase; }
+    @media (max-width:520px){
+      .settings-shell{ padding:1.4rem 1rem 3rem; }
+      .fav-main a{ font-size:1.1rem; }
+      .fav-view{ display:none; } /* the whole row title is still tappable */
+    }
+    @media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
+  </style>
+</head>
+<body>
+  <main class="settings-shell">
+    <div class="settings-top">
+      <a class="back-link" href="/paddlingout">← Paddling Out</a>
+      <div class="settings-title">
+        <span class="eyebrow">Kaayko</span>
+        <h1>Settings</h1>
+      </div>
+    </div>
+
+    <!-- ── Units ── -->
+    <section class="card">
+      <h2>Units</h2>
+      <p class="hint">How temperatures, wind, rain and distances are shown across every lake page.</p>
+      <div class="seg" id="unitsSeg" role="group" aria-label="Measurement units">
+        <button type="button" data-units="imperial" aria-pressed="false">
+          Imperial <span class="sub">°F · mph · mi</span>
+        </button>
+        <button type="button" data-units="metric" aria-pressed="false">
+          Metric <span class="sub">°C · km/h · km</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ── My area ── -->
+    <section class="card">
+      <h2>My area</h2>
+      <p class="hint">Lock a home city so search opens to the lakes and rivers around you.</p>
+      <div class="area-row">
+        <div class="area-city">
+          <span class="pin" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1112 6.5a2.5 2.5 0 010 5z"/></svg>
+          </span>
+          <span class="label" id="areaLabel"><span class="empty">No area saved yet</span></span>
+        </div>
+        <div class="btn-row" id="areaActions">
+          <a class="btn btn-gold" href="/paddlingout/search">Set / change</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── My favorites ── -->
+    <section class="card">
+      <h2>My favorites</h2>
+      <p class="hint">Lakes you star appear first on the Paddling Out list and here for quick access.</p>
+      <div class="fav-list" id="favList"></div>
+    </section>
+
+    <p class="foot">Preferences are stored on this device</p>
+  </main>
+
+  <script>
+    (function () {
+      const P = window.KaaykoPrefs;
+
+      // ── Units segmented toggle ──
+      const seg = document.getElementById('unitsSeg');
+      function paintUnits() {
+        const cur = P.getUnits();
+        seg.querySelectorAll('button').forEach(b => {
+          const on = b.dataset.units === cur;
+          b.classList.toggle('active', on);
+          b.setAttribute('aria-pressed', String(on));
+        });
+      }
+      seg.querySelectorAll('button').forEach(b => {
+        b.addEventListener('click', () => { P.setUnits(b.dataset.units); paintUnits(); });
+      });
+      paintUnits();
+
+      // ── My area ──
+      function paintArea() {
+        const area = P.getArea();
+        const label = document.getElementById('areaLabel');
+        const actions = document.getElementById('areaActions');
+        if (area && area.label) {
+          label.textContent = area.label;
+          actions.innerHTML =
+            '<a class="btn btn-ghost" href="/paddlingout/search">Change</a>' +
+            '<button class="btn btn-ghost" id="clearArea" type="button">Clear</button>';
+          document.getElementById('clearArea').addEventListener('click', () => { P.clearArea(); paintArea(); });
+        } else {
+          label.innerHTML = '<span class="empty">No area saved yet</span>';
+          actions.innerHTML = '<a class="btn btn-gold" href="/paddlingout/search">Set / change</a>';
+        }
+      }
+      paintArea();
+      window.addEventListener('kaayko:areachange', paintArea);
+
+      // ── Favorites ──
+      const STAR = '<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M12 17.3l-6.18 3.7 1.64-7.03L2 9.24l7.19-.61L12 2l2.81 6.63 7.19.61-5.46 4.73 1.64 7.03z"/></svg>';
+      const TRASH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m2 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>';
+      function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+      function paintFavs() {
+        const list = document.getElementById('favList');
+        const favs = P.getFavorites();
+        if (!favs.length) {
+          list.innerHTML =
+            '<div class="empty-state">' +
+            '<div class="big">No favorites yet</div>' +
+            '<div>Tap the ★ on any lake to save it. <a href="/paddlingout">Browse lakes →</a></div>' +
+            '</div>';
+          return;
+        }
+        list.innerHTML = favs.map(f => {
+          const href = '/paddlingout/forecast?id=' + encodeURIComponent(f.id);
+          const sub = f.subtitle ? '<div class="sub">' + esc(f.subtitle) + '</div>' : '';
+          return '<div class="fav-item" data-id="' + esc(f.id) + '">' +
+            '<span class="fav-star">' + STAR + '</span>' +
+            '<div class="fav-main"><a href="' + href + '">' + esc(f.title) + '</a>' + sub + '</div>' +
+            '<div class="fav-actions">' +
+              '<a class="fav-view" href="' + href + '">Forecast</a>' +
+              '<button class="fav-remove" type="button" aria-label="Remove ' + esc(f.title) + ' from favorites">' + TRASH + '</button>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+        list.querySelectorAll('.fav-remove').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = btn.closest('.fav-item').dataset.id;
+            P.removeFavorite(id);
+            paintFavs();
+          });
+        });
+      }
+      paintFavs();
+      window.addEventListener('kaayko:favchange', paintFavs);
+    })();
+  </script>
+</body>
+</html>

@@ -263,10 +263,19 @@ function renderCovered(spots) {
       <span class="covered-badge">✓ We cover this</span>
     </div>`).join('');
   el.classList.add('visible');
-  el.querySelectorAll('.covered-card').forEach(card => {
+  el.querySelectorAll('.covered-card').forEach((card, i) => {
     const go = () => openForecast({ lat: Number(card.dataset.lat), lng: Number(card.dataset.lng), name: card.dataset.name });
     card.addEventListener('click', go);
     card.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+    // Favorite ★ for covered lakes (needs a spot id)
+    const s = spots[i];
+    if (window.KaaykoPrefs && s && s.id) {
+      const fav = window.KaaykoPrefs.makeFavButton(
+        { id: s.id, title: s.name, subtitle: s.subtitle || '' },
+        { className: 'covered-fav' }
+      );
+      card.insertBefore(fav, card.querySelector('.covered-badge'));
+    }
   });
 }
 const coveredReady = loadCoveredSpots();  // awaited by runSearch before rendering
@@ -633,7 +642,13 @@ function renderResults(bodies, label, cached, sources) {
     card.tabIndex = 0;  // Keyboard accessible
 
     const scoreId = `sc-${gen}-${idx}`;
-    const areaStr = body.areaKm2 ? ` · ${body.areaKm2} km²` : '';
+    // Area follows the global unit preference (default imperial → mi²)
+    const useMetric = localStorage.getItem('kaayko_units') === 'metric';
+    const areaStr = body.areaKm2
+      ? (useMetric
+          ? ` · ${body.areaKm2} km²`
+          : ` · ${(parseFloat(body.areaKm2) * 0.386102).toFixed(1)} mi²`)
+      : '';
     const bodyName = escapeHtml(body.name);
     const bodyType = escapeHtml(body.type);
     const bodyDistance = escapeHtml(body.distanceMiles);

@@ -2,6 +2,8 @@
 <html lang="en" prefix="og: http://ogp.me/ns#" class="dark-theme">
 <head>
     <script src="/js/prod-config.js"></script>
+    <!-- Shared preferences (units / my area / favorites) — load before module scripts -->
+    <script src="/js/prefs.js"></script>
     <!-- Force dark mode — this page is dark-only -->
     <script>document.documentElement.classList.add('dark-theme');</script>
   <meta charset="UTF-8" />
@@ -323,6 +325,10 @@
       <a class="po-search-btn po-submit-btn" aria-label="Submit a lake" href="/paddlingout/submitentry">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm1 8v3h-2v-3H8V8h3V5h2v3h3v2h-3z"/></svg>
         <span class="po-search-label">Submit Lake</span>
+      </a>
+      <a class="po-search-btn po-settings-btn" aria-label="Settings &amp; favorites" href="/paddlingout/settings">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span class="po-search-label">Settings</span>
       </a>
     </div>
   </div>

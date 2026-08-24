@@ -206,6 +206,24 @@ main.forecast-main {
   border-color: rgba(181,147,90,0.65);
 }
 
+/* Favorite ★ — pinned top-right, mirrors the back arrow */
+.forecast-fav-slot {
+  position: absolute;
+  top: 1.0rem;
+  right: 1.5rem;
+  z-index: 3;
+}
+.forecast-fav-slot .kaayko-fav-btn {
+  width: 40px;
+  height: 40px;
+  background: rgba(8,8,8,0.52);
+  border: 1px solid rgba(181,147,90,0.30);
+}
+.forecast-fav-slot .kaayko-fav-btn:hover {
+  background: rgba(181,147,90,0.18);
+  border-color: rgba(181,147,90,0.65);
+}
+
 /* Lake name + location overlaid on image */
 .forecast-page-title {
   position: relative;

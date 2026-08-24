@@ -2,6 +2,7 @@
 <html lang="en" prefix="og: http://ogp.me/ns#" class="dark-theme">
 <head>
   <script src="/js/prod-config.js"></script>
+  <script src="/js/prefs.js"></script>
   <script>document.documentElement.classList.add('dark-theme');</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -72,6 +73,7 @@
       <h2 id="forecastLakeName">Loading…</h2>
       <p id="forecastLakeLocation"></p>
     </div>
+    <div class="forecast-fav-slot" id="forecastFavSlot"></div>
   </div>
 
   <!-- FORECAST PAGE CONTENT -->
@@ -235,6 +237,20 @@
       return   { icon: 'info_outline',          color: '#b5935a' };
     }
 
+    // Server warning/penalty strings embed metric units (e.g. "Extreme heat (42.5°C)",
+    // "Moderate waves (0.9 m)"). Convert to imperial for display unless the user chose metric.
+    // Thresholds/logic upstream stay metric — this only rewrites the human-readable text.
+    function localizeUnits(text) {
+      if (localStorage.getItem('kaayko_units') === 'metric') return String(text);
+      let t = String(text);
+      t = t.replace(/(-?\d+(?:\.\d+)?)\s*°\s*C\b/g, (_, n) => `${(parseFloat(n) * 9 / 5 + 32).toFixed(1)}°F`);
+      t = t.replace(/(-?\d+(?:\.\d+)?)\s*km\/h\b/gi, (_, n) => `${Math.round(parseFloat(n) * 0.621371)} mph`);
+      t = t.replace(/(-?\d+(?:\.\d+)?)\s*mm\b/gi, (_, n) => `${(parseFloat(n) / 25.4).toFixed(2)} in`);
+      t = t.replace(/(-?\d+(?:\.\d+)?)\s*km\b(?!\/)/gi, (_, n) => `${(parseFloat(n) * 0.621371).toFixed(1)} mi`);
+      t = t.replace(/(-?\d+(?:\.\d+)?)\s*m\b(?!\/)/gi, (_, n) => `${(parseFloat(n) * 3.28084).toFixed(1)} ft`);
+      return t;
+    }
+
     function renderTripBriefing(currentData, forecastData) {
       const container = document.getElementById('forecastAlertDrawer');
       if (!container) return;
@@ -263,7 +279,7 @@
         return `
           <div class="alert-item">
             <span class="material-icons alert-item-icon" style="color:${color}" aria-hidden="true">${icon}</span>
-            <span class="alert-item-text">${String(warning)}</span>
+            <span class="alert-item-text">${localizeUnits(warning)}</span>
           </div>`;
       }).join('');
 
@@ -441,6 +457,11 @@
           container.querySelectorAll('.units-btn').forEach(btn => {
             btn.addEventListener('click', () => {
               setTimeout(enhanceWeatherStats, 60);
+              // Re-render Lake alerts so embedded units follow the toggle
+              renderTripBriefing(currentData, forecastData);
+              // Re-render heatmap (reads kaayko_units) + restore any open selection
+              if (forecastData) window.KonditionsHeatmap.render(
+                document.getElementById('heatmapContainer'), forecastData, window.__kaaykoCurrentData);
               setTimeout(() => {
                 const active = document.querySelector('.khm-hit.is-active');
                 if (active) { active.classList.remove('is-active'); active.click(); }
@@ -543,6 +564,15 @@
         // Update title + OG tags immediately so shares reflect the actual lake
         document.getElementById('forecastLakeName').textContent = spot.title;
         document.getElementById('forecastLakeLocation').textContent = spot.subtitle || '';
+
+        // Favorite ★ toggle in the header
+        const favSlot = document.getElementById('forecastFavSlot');
+        if (favSlot && window.KaaykoPrefs) {
+          favSlot.innerHTML = '';
+          favSlot.appendChild(window.KaaykoPrefs.makeFavButton({
+            id: spot.id, title: spot.title, subtitle: spot.subtitle
+          }));
+        }
         document.title = `${spot.title} Paddle Forecast | Kaayko`;
         // Update Open Graph / Twitter meta for social sharing
         const _ogTitle    = `${spot.title} Paddle Conditions | Kaayko`;

@@ -47,7 +47,10 @@ document.addEventListener("DOMContentLoaded", () => {
       .then(async spots => {
         container.innerHTML = "";
         container.classList.remove("single-card");
-        
+
+        // Favorites first — saved lakes surface at the top of the list
+        if (window.KaaykoPrefs) spots = window.KaaykoPrefs.sortFavoritesFirst(spots);
+
         // Process cards in parallel for better performance
         const cardPromises = spots.map(spot => renderCard(spot));
         const cards = await Promise.all(cardPromises);
@@ -92,6 +95,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const card  = clone.querySelector(".card");
     const imgs  = card.querySelector(".img-container");
     const dots  = card.querySelector(".carousel-dots");
+
+    // Favorite ★ (top-right overlay) — saves to My favorites
+    if (window.KaaykoPrefs && spot && spot.id) {
+      imgs.appendChild(window.KaaykoPrefs.makeFavButton({
+        id: spot.id, title: spot.title, subtitle: spot.subtitle
+      }));
+    }
 
     const imageUrls = Array.isArray(spot.imgSrc) ? spot.imgSrc : [];
 

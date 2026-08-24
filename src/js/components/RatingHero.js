@@ -273,16 +273,16 @@ class RatingHero {
     if (!isNaN(windKph)) {
       const dir     = w.windDirection ? ` ${w.windDirection}` : '';
       const gustKph = parseFloat(w.gustSpeed) || 0;
-      const gustStr = gustKph > windKph * 1.2 ? ` · gusts ${gustKph.toFixed(0)} km/h` : '';
+      const gustStr = gustKph > windKph * 1.2 ? ` · gusts ${this.fmtWind(gustKph)}` : '';
       const B       = this.getBeaufortFromKph(windKph);
       if (windKph >= 50) {
-        items.push({ icon: '🌪️', label: `Storm-force Wind — ${windKph.toFixed(0)} km/h${dir} (B${B})${gustStr}`, detail: 'No paddling under any circumstances', severity: 'severe', priority: 0 });
+        items.push({ icon: '🌪️', label: `Storm-force Wind — ${this.fmtWind(windKph)}${dir} (B${B})${gustStr}`, detail: 'No paddling under any circumstances', severity: 'severe', priority: 0 });
       } else if (windKph >= 39) {
-        items.push({ icon: '⛔',  label: `Gale Wind — ${windKph.toFixed(0)} km/h${dir} (B${B})${gustStr}`,        detail: 'Impossible to paddle — capsize very likely', severity: 'severe', priority: 0 });
+        items.push({ icon: '⛔',  label: `Gale Wind — ${this.fmtWind(windKph)}${dir} (B${B})${gustStr}`,        detail: 'Impossible to paddle — capsize very likely', severity: 'severe', priority: 0 });
       } else if (windKph >= 29) {
-        items.push({ icon: '💨',  label: `Strong Wind — ${windKph.toFixed(0)} km/h${dir} (B${B})${gustStr}`,      detail: 'Whitecaps forming — expert paddlers only', severity: 'danger', priority: 1 });
+        items.push({ icon: '💨',  label: `Strong Wind — ${this.fmtWind(windKph)}${dir} (B${B})${gustStr}`,      detail: 'Whitecaps forming — expert paddlers only', severity: 'danger', priority: 1 });
       } else if (windKph >= 20) {
-        items.push({ icon: '🌬️', label: `Moderate Wind — ${windKph.toFixed(0)} km/h${dir} (B${B})${gustStr}`,    detail: 'Increased resistance — experienced paddlers', severity: 'warning', priority: 4 });
+        items.push({ icon: '🌬️', label: `Moderate Wind — ${this.fmtWind(windKph)}${dir} (B${B})${gustStr}`,    detail: 'Increased resistance — experienced paddlers', severity: 'warning', priority: 4 });
       }
       // calm/light wind only shown if score is good (Phase 3)
     }
@@ -290,9 +290,9 @@ class RatingHero {
     const wt = parseFloat(w.waterTemp);
     if (!isNaN(wt)) {
       if (wt < 10) {
-        items.push({ icon: '🧊', label: `Extreme Cold Water — ${wt.toFixed(1)}°C`, detail: 'Hypothermia within minutes — drysuit + PFD essential', severity: 'severe', priority: 1 });
+        items.push({ icon: '🧊', label: `Extreme Cold Water — ${this.fmtTemp(wt)}`, detail: 'Hypothermia within minutes — drysuit + PFD essential', severity: 'severe', priority: 1 });
       } else if (wt < 15) {
-        items.push({ icon: '❄️', label: `Cold Water — ${wt.toFixed(1)}°C`,         detail: 'Cold shock risk on immersion — wetsuit mandatory', severity: 'danger', priority: 2 });
+        items.push({ icon: '❄️', label: `Cold Water — ${this.fmtTemp(wt)}`,         detail: 'Cold shock risk on immersion — wetsuit mandatory', severity: 'danger', priority: 2 });
       }
       // comfortable/warm water only shown if score is good (Phase 3)
     }
@@ -300,22 +300,22 @@ class RatingHero {
     const precip = parseFloat(w.precipMm);
     if (!isNaN(precip) && precip >= 0.1) {
       if (precip >= 5) {
-        items.push({ icon: '🌧️', label: `Heavy Rain — ${precip.toFixed(1)} mm`,  detail: 'Lightning hazard — seek shelter immediately', severity: 'severe', priority: 0 });
+        items.push({ icon: '🌧️', label: `Heavy Rain — ${this.fmtPrecip(precip)}`,  detail: 'Lightning hazard — seek shelter immediately', severity: 'severe', priority: 0 });
       } else if (precip >= 1) {
-        items.push({ icon: '🌦️', label: `Rain — ${precip.toFixed(1)} mm`,        detail: 'Reduced visibility — monitor storm development', severity: 'danger', priority: 2 });
+        items.push({ icon: '🌦️', label: `Rain — ${this.fmtPrecip(precip)}`,        detail: 'Reduced visibility — monitor storm development', severity: 'danger', priority: 2 });
       } else {
-        items.push({ icon: '🌂', label: `Light Rain — ${precip.toFixed(1)} mm`,  detail: 'Watch for developing storms', severity: 'warning', priority: 5 });
+        items.push({ icon: '🌂', label: `Light Rain — ${this.fmtPrecip(precip)}`,  detail: 'Watch for developing storms', severity: 'warning', priority: 5 });
       }
     }
 
     const vis = parseFloat(w.visibility);
     if (!isNaN(vis) && vis < 9) {
       if (vis < 3) {
-        items.push({ icon: '🌫️', label: `Very Poor Visibility — ${vis.toFixed(1)} km`, detail: 'Navigation hazard — stay near shore', severity: 'severe', priority: 1 });
+        items.push({ icon: '🌫️', label: `Very Poor Visibility — ${this.fmtDist(vis)}`, detail: 'Navigation hazard — stay near shore', severity: 'severe', priority: 1 });
       } else if (vis < 6) {
-        items.push({ icon: '🌫️', label: `Poor Visibility — ${vis.toFixed(1)} km`,      detail: 'Mark your position — stay aware of other vessels', severity: 'danger', priority: 3 });
+        items.push({ icon: '🌫️', label: `Poor Visibility — ${this.fmtDist(vis)}`,      detail: 'Mark your position — stay aware of other vessels', severity: 'danger', priority: 3 });
       } else {
-        items.push({ icon: '🌁', label: `Reduced Visibility — ${vis.toFixed(1)} km`,   detail: 'Limit distance from shore', severity: 'warning', priority: 6 });
+        items.push({ icon: '🌁', label: `Reduced Visibility — ${this.fmtDist(vis)}`,   detail: 'Limit distance from shore', severity: 'warning', priority: 6 });
       }
     }
 
@@ -336,15 +336,15 @@ class RatingHero {
       if (!isNaN(windKph) && windKph < 20) {
         const dir   = w.windDirection ? ` ${w.windDirection}` : '';
         const label = windKph < 2 ? 'Glassy Calm' : windKph < 12 ? 'Light Breeze' : 'Gentle Breeze';
-        items.push({ icon: '≈', label: `${label} — ${windKph.toFixed(0)} km/h${dir} (B${this.getBeaufortFromKph(windKph)})`, detail: 'Ideal paddling conditions', severity: 'good', priority: 9 });
+        items.push({ icon: '≈', label: `${label} — ${this.fmtWind(windKph)}${dir} (B${this.getBeaufortFromKph(windKph)})`, detail: 'Ideal paddling conditions', severity: 'good', priority: 9 });
       }
       if (!isNaN(wt)) {
         if (wt >= 20 && wt < 27) {
-          items.push({ icon: '💧', label: `Comfortable Water — ${wt.toFixed(1)}°C`,  detail: 'Ideal paddling and swimming temperature', severity: 'good', priority: 9 });
+          items.push({ icon: '💧', label: `Comfortable Water — ${this.fmtTemp(wt)}`,  detail: 'Ideal paddling and swimming temperature', severity: 'good', priority: 9 });
         } else if (wt >= 15 && wt < 20) {
-          items.push({ icon: '🌊', label: `Cool Water — ${wt.toFixed(1)}°C`,         detail: 'Wetsuit recommended for extended sessions', severity: 'caution', priority: 7 });
+          items.push({ icon: '🌊', label: `Cool Water — ${this.fmtTemp(wt)}`,         detail: 'Wetsuit recommended for extended sessions', severity: 'caution', priority: 7 });
         } else if (wt >= 27) {
-          items.push({ icon: '🌡️', label: `Warm Water — ${wt.toFixed(1)}°C`,         detail: 'Stay hydrated — algae possible in summer', severity: 'caution', priority: 8 });
+          items.push({ icon: '🌡️', label: `Warm Water — ${this.fmtTemp(wt)}`,         detail: 'Stay hydrated — algae possible in summer', severity: 'caution', priority: 8 });
         }
       }
     }
@@ -500,6 +500,28 @@ class RatingHero {
   metersToFeet(m) {
     if (m === '--' || m === undefined || m === null || isNaN(parseFloat(m))) return '--';
     return (parseFloat(m) * 3.28084).toFixed(1);
+  }
+
+  // ── Unit-aware display formatters (thresholds stay metric; only display converts) ──
+  fmtWind(kph) {
+    return this.useMetric
+      ? `${kph.toFixed(0)} km/h`
+      : `${(kph * 0.621371).toFixed(0)} mph`;
+  }
+  fmtTemp(c) {
+    return this.useMetric
+      ? `${c.toFixed(1)}°C`
+      : `${((c * 9 / 5) + 32).toFixed(1)}°F`;
+  }
+  fmtPrecip(mm) {
+    return this.useMetric
+      ? `${mm.toFixed(1)} mm`
+      : `${(mm / 25.4).toFixed(2)} in`;
+  }
+  fmtDist(km) {
+    return this.useMetric
+      ? `${km.toFixed(1)} km`
+      : `${(km * 0.621371).toFixed(1)} mi`;
   }
 
   // kept for backward compat

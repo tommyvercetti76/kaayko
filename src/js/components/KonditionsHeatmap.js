@@ -83,7 +83,7 @@
     return ((hour - KHM_HOURS[0]) / KHM_SPAN * 100).toFixed(2);
   }
   function khmMacros(hd) {
-    const metric = localStorage.getItem('kaayko_units') !== 'imperial';
+    const metric = localStorage.getItem('kaayko_units') === 'metric';
     const wind  = parseFloat(hd?.windSpeed);
     const dir   = parseFloat(hd?.windDirection);
     const water = parseFloat(hd?.waterTemp);
