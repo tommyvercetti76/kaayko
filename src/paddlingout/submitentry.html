@@ -9,6 +9,9 @@
   <meta name="description" content="Submit a lake or paddling water body to Kaayko Paddling Out. Anonymous submissions are welcome.">
   <meta name="robots" content="noindex, follow">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <!-- Leaflet (self-hosted) for the drag-a-pin coordinate picker -->
+  <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
+  <script src="/vendor/leaflet/leaflet.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
@@ -155,6 +158,23 @@
       border-color:var(--gold);
       box-shadow:0 0 0 3px rgba(181,147,90,0.11);
     }
+    .pin-map {
+      height:260px;
+      margin-top:0.7rem;
+      border-radius:10px;
+      overflow:hidden;
+      border:1px solid rgba(181,147,90,0.3);
+      background:#0d0d0f;
+      z-index:0;
+    }
+    .pin-hint {
+      margin-top:0.5rem;
+      color:rgba(237,232,223,0.6);
+      font-size:0.8rem;
+      line-height:1.45;
+    }
+    .pin-hint strong { color:#d9bd7b; font-weight:600; }
+    .pin-map .leaflet-control-attribution { font-size:9px; }
     .coord-row {
       display:grid;
       grid-template-columns:1fr 1fr auto auto;
@@ -434,8 +454,10 @@
             <input id="lat" name="lat" inputmode="decimal" placeholder="Latitude" aria-label="Latitude">
             <input id="lng" name="lng" inputmode="decimal" placeholder="Longitude" aria-label="Longitude">
             <button class="mini-btn" id="find-coords" type="button">Find</button>
-            <button class="mini-btn" id="use-location" type="button">Use GPS</button>
+            <button class="mini-btn" id="use-location" type="button">Use my location</button>
           </div>
+          <div id="pin-map" class="pin-map" aria-label="Map. Drag the pin to the exact launch point."></div>
+          <p class="pin-hint">Tap <strong>Find</strong> to drop a pin from the name, then <strong>drag the pin</strong> to the exact launch or boat ramp. Use <strong>my location</strong> only if you&rsquo;re standing at the lake now.</p>
         </div>
 
         <label>
@@ -780,7 +802,8 @@
           }
           field('lat').value = Number(data[0].lat).toFixed(5);
           field('lng').value = Number(data[0].lon).toFixed(5);
-          setStatus('Coordinates found. Check them before submitting.', 'ok');
+          centerPin(Number(data[0].lat), Number(data[0].lon), 14);
+          setStatus('Pin dropped. Drag it to the exact launch or boat ramp.', 'ok');
           return true;
         } catch {
           setStatus('Could not find coordinates right now.', 'error');
@@ -800,12 +823,82 @@
           pos => {
             field('lat').value = pos.coords.latitude.toFixed(5);
             field('lng').value = pos.coords.longitude.toFixed(5);
-            setStatus('GPS coordinates added.', 'ok');
+            centerPin(pos.coords.latitude, pos.coords.longitude, 15);
+            setStatus('Your location added. Drag the pin to fine-tune the launch point.', 'ok');
           },
-          () => setStatus('GPS permission was not granted.', 'error'),
+          () => setStatus('Location permission was not granted.', 'error'),
           { timeout: 10000, maximumAge: 60000 }
         );
       });
+
+      // ── Map pin picker (Leaflet + OpenStreetMap tiles) ────────────────────
+      // Swap MAP_TILE_URL / MAP_ATTRIB for a keyed basemap (Mapbox/MapTiler) later.
+      var MAP_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+      var MAP_ATTRIB = '&copy; OpenStreetMap contributors';
+      var map = null, marker = null;
+      var pinIcon = (typeof L !== 'undefined') ? L.icon({
+        iconUrl: '/vendor/leaflet/images/marker-icon.png',
+        iconRetinaUrl: '/vendor/leaflet/images/marker-icon-2x.png',
+        shadowUrl: '/vendor/leaflet/images/marker-shadow.png',
+        iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+      }) : null;
+
+      function writeCoords(lat, lng) {
+        field('lat').value = Number(lat).toFixed(5);
+        field('lng').value = Number(lng).toFixed(5);
+      }
+
+      function placeMarker(lat, lng, updateFields) {
+        if (!map) return;
+        if (marker) {
+          marker.setLatLng([lat, lng]);
+        } else {
+          marker = L.marker([lat, lng], { draggable: true, icon: pinIcon }).addTo(map);
+          marker.on('dragend', function () {
+            var p = marker.getLatLng();
+            writeCoords(p.lat, p.lng);
+            setStatus('Pin moved. Coordinates updated.', 'ok');
+          });
+        }
+        if (updateFields) writeCoords(lat, lng);
+      }
+
+      function centerPin(lat, lng, zoom) {
+        if (!map) return;
+        placeMarker(lat, lng, false);
+        map.setView([lat, lng], zoom || 14);
+        setTimeout(function () { map.invalidateSize(); }, 80);
+      }
+
+      function initMap() {
+        var el = document.getElementById('pin-map');
+        if (!el || typeof L === 'undefined') { if (el) el.style.display = 'none'; return; }
+        var lat0 = parseCoord(field('lat').value);
+        var lng0 = parseCoord(field('lng').value);
+        var has = lat0 !== null && lng0 !== null;
+        map = L.map(el, { scrollWheelZoom: false }).setView(has ? [lat0, lng0] : [39.5, -98.35], has ? 13 : 4);
+        L.tileLayer(MAP_TILE_URL, { maxZoom: 19, attribution: MAP_ATTRIB }).addTo(map);
+        if (has) placeMarker(lat0, lng0, false);
+        // Tap anywhere on the map to drop / move the pin.
+        map.on('click', function (e) {
+          placeMarker(e.latlng.lat, e.latlng.lng, true);
+          setStatus('Pin placed. Coordinates updated.', 'ok');
+        });
+        setTimeout(function () { map.invalidateSize(); }, 200);
+      }
+
+      // Typing lat/lng by hand moves the pin too (two-way sync).
+      ['lat', 'lng'].forEach(function (id) {
+        field(id).addEventListener('change', function () {
+          var la = parseCoord(field('lat').value);
+          var ln = parseCoord(field('lng').value);
+          if (la !== null && ln !== null) {
+            centerPin(la, ln, (map && map.getZoom && map.getZoom() > 8) ? map.getZoom() : 13);
+          }
+        });
+      });
+
+      initMap();
 
       imageInput.addEventListener('change', function () {
         setImages(imageInput.files);   // async — updates selectedImages when done
@@ -904,6 +997,7 @@
         localStorage.setItem('kaayko_submitentry_tour_seen', '1');
         tourOverlay.classList.remove('visible');
         field('lakeName').focus();
+        if (map) setTimeout(function () { map.invalidateSize(); }, 60);
       });
       applyUrlPrefill();
     }());
