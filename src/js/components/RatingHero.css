@@ -189,9 +189,9 @@ html:not(.dark-theme) .paddle-score-label {
 }
 
 .units-btn {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: rgba(255, 255, 255, 0.8);
+  background: rgba(181, 147, 90, 0.08);
+  border: 1px solid rgba(181, 147, 90, 0.4);
+  color: rgba(237, 232, 223, 0.85);
   padding: 6px 12px;
   font-size: 12px;
   font-family: 'JosefinSans-Medium', 'Josefin Sans', sans-serif;
@@ -223,11 +223,11 @@ html:not(.dark-theme) .paddle-score-label {
 }
 
 .units-btn.active {
-  background: linear-gradient(135deg, rgba(29, 78, 216, 0.9), rgba(59, 130, 246, 0.8));
-  border-color: rgba(29, 78, 216, 1);
-  color: white;
+  background: linear-gradient(135deg, #d9bd7b, #b5935a);
+  border-color: #b5935a;
+  color: #141210;
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(29, 78, 216, 0.3);
+  box-shadow: 0 4px 16px rgba(181, 147, 90, 0.3);
 }
 
 /* Theme support for units toggle */
@@ -240,7 +240,7 @@ html.dark-theme .units-btn:hover {
 }
 
 html.dark-theme .units-btn.active {
-  color: ivory;
+  color: #141210;
 }
 
 html:not(.dark-theme) .units-btn {
@@ -1273,9 +1273,10 @@ html.dark-theme .feedback-thanks {
 }
 
 #ratingHeroContainer .units-btn.active {
-  background: rgba(181,147,90,0.2);
-  border-color: rgba(217,189,123,0.56);
-  box-shadow: 0 0 18px rgba(181,147,90,0.16);
+  background: linear-gradient(135deg, #d9bd7b, #b5935a);
+  border-color: #b5935a;
+  color: #141210;
+  box-shadow: 0 4px 16px rgba(181,147,90,0.3);
 }
 
 #ratingHeroContainer .paddler-briefing {

@@ -5,7 +5,8 @@
 class RatingHero {
   constructor() {
     this.element = null;
-    this.useMetric = localStorage.getItem('kaayko_units') !== 'imperial';
+    // Default to imperial (°F/mph) until the user chooses; their choice persists.
+    this.useMetric = localStorage.getItem('kaayko_units') === 'metric';
     this.lastRenderData = null;
     this.rawValues = {};
     this._feedbackSpotId = null;
