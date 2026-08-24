@@ -31,10 +31,6 @@
         "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }]
       },
       {
-        "source": "/create-kortex-link",
-        "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }]
-      },
-      {
         "source": "/kreator/admin/**",
         "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }]
       },
@@ -92,6 +88,8 @@
     "redirects": [
       { "source": "/admin/login", "destination": "/kortex", "type": 301 },
       { "source": "/admin/login.html", "destination": "/kortex", "type": 301 },
+      { "source": "/create-kortex-link", "destination": "/admin/kortex#/create", "type": 301 },
+      { "source": "/create-kortex-link.html", "destination": "/admin/kortex#/create", "type": 301 },
       { "source": "/paddlingout/trainer.html", "destination": "/paddlingout/trainer", "type": 301 },
       { "source": "/paddlingout/trainer/index.html", "destination": "/paddlingout/trainer", "type": 301 },
       { "source": "/alumni", "destination": "https://alumni.kaayko.com", "type": 301 },

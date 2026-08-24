@@ -2,12 +2,13 @@
 <html lang="en" prefix="og: http://ogp.me/ns#">
 <head>
   <script src="/js/prod-config.js"></script>
+  <script src="/js/site-features.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-  <title>Kaayko — Paddling Forecasts, Forge & Outdoor Gear Store</title>
-  <meta name="description" content="Kaayko delivers AI-powered paddle condition forecasts for 17 hand-picked spots, Forge — an open-source local-first AI workstation — and a curated outdoor gear store. Know before you paddle." />
+  <title>Kaayko — Paddling Forecasts & Forge</title>
+  <meta name="description" content="Kaayko delivers AI-powered paddle condition forecasts for 17 hand-picked spots and Forge — an open-source local-first AI workstation. Know before you paddle." />
   <meta name="author" content="Kaayko">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
   <link rel="canonical" href="https://kaayko.com/" />
@@ -15,12 +16,12 @@
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://kaayko.com/">
-  <meta property="og:title" content="Kaayko — Paddling Forecasts, Forge & Outdoor Gear">
-  <meta property="og:description" content="AI-powered paddle condition forecasts for 17 hand-picked spots. Forge, an open-source local-first AI workstation. Curated outdoor gear. Know before you go." />
+  <meta property="og:title" content="Kaayko — Paddling Forecasts & Forge">
+  <meta property="og:description" content="AI-powered paddle condition forecasts for 17 hand-picked spots. Forge, an open-source local-first AI workstation. Know before you go." />
   <meta property="og:image" content="https://kaayko.com/assets/kaayko-og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Kaayko — Paddling forecasts and outdoor gear">
+  <meta property="og:image:alt" content="Kaayko — Paddling forecasts and Forge">
   <meta property="og:site_name" content="Kaayko">
   <meta property="og:locale" content="en_US">
 
@@ -28,7 +29,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@kaayko">
   <meta name="twitter:creator" content="@kaayko">
-  <meta name="twitter:title" content="Kaayko — Paddling Forecasts & Outdoor Gear">
+  <meta name="twitter:title" content="Kaayko — Paddling Forecasts & Forge">
   <meta name="twitter:description" content="AI-powered paddle condition forecasts for 17 hand-picked spots. Know before you paddle." />
   <meta name="twitter:image" content="https://kaayko.com/assets/kaayko-og.png">
   <meta name="twitter:image:alt" content="Kaayko paddling forecast app">
@@ -47,7 +48,7 @@
         "width": 512,
         "height": 512
       },
-      "description": "Kaayko delivers AI-powered paddle condition forecasts, Forge — an open-source local-first AI workstation — and a curated outdoor gear store.",
+      "description": "Kaayko delivers AI-powered paddle condition forecasts and Forge — an open-source local-first AI workstation.",
       "sameAs": [
         "https://kaayko.com"
       ],
@@ -62,7 +63,7 @@
       "@type": "WebSite",
       "name": "Kaayko",
       "url": "https://kaayko.com",
-      "description": "AI-powered paddle condition forecasts for 17 hand-picked spots, Forge open-source AI workstation, and a curated outdoor gear store.",
+      "description": "AI-powered paddle condition forecasts for 17 hand-picked spots and Forge, an open-source AI workstation.",
       "potentialAction": {
         "@type": "SearchAction",
         "target": {
@@ -634,7 +635,12 @@
         </div>
       </section>
 
-      <section class="choice secondary panel-menu" id="panel-store" aria-label="Store" tabindex="0">
+      <a class="choice secondary" id="panel-youtube" href="https://www.youtube.com/@travelingout" target="_blank" rel="noopener noreferrer" data-feature="youtube">
+        <span class="choice-label" data-text="YouTube">YouTube</span>
+        <span class="choice-sub">Traveling Out — the channel</span>
+      </a>
+
+      <section class="choice secondary panel-menu" id="panel-store" aria-label="Store" tabindex="0" data-feature="store">
         <span class="choice-label" data-text="Store">Store</span>
         <span class="choice-sub">Invite only — for now</span>
         <div class="cta-group" aria-label="Store options">
@@ -649,19 +655,20 @@
     </section>
 
     <nav class="footer" aria-label="Splash links">
-      <a href="https://www.youtube.com/@travelingout" rel="noopener noreferrer">YouTube</a>
+      <!-- Only shown while the YouTube panel is off — the panel replaces it -->
+      <a href="https://www.youtube.com/@travelingout" rel="noopener noreferrer" data-feature-off="youtube">YouTube</a>
       <a href="/about">About</a>
     </nav>
   </main>
 
   <section class="home-content" aria-label="About Kaayko">
     <div class="home-inner">
-      <h1 class="home-lede" style="font-weight:600;letter-spacing:-0.01em">Kaayko builds three things, and publishes the failures next to the results.</h1>
+      <h1 class="home-lede" style="font-weight:600;letter-spacing:-0.01em">Kaayko builds <span data-feature="store">three</span><span data-feature-off="store">two</span> things, and publishes the failures next to the results.</h1>
 
       <p>
         Everything here was made by one person. That is the constraint the whole site is built around:
         small, honest, and specific rather than broad and vague. There is no team, no funding round, and
-        no roadmap deck &mdash; just three products that work, documented including where they don&rsquo;t.
+        no roadmap deck &mdash; just <span data-feature="store">three</span><span data-feature-off="store">two</span> products that work, documented including where they don&rsquo;t.
       </p>
 
       <h2>Paddling Out</h2>
@@ -691,8 +698,8 @@
         <a href="/forge-gallery">browse the render gallery</a>.
       </p>
 
-      <h2>The Store</h2>
-      <p>
+      <h2 data-feature="store">The Store</h2>
+      <p data-feature="store">
         A small run of printed shirts and totes, opened with an invite code. Vote counts decide which
         designs get printed next. It is invite-only because the run is genuinely small, not because it is
         exclusive &mdash; a human sends every invite.
@@ -703,7 +710,7 @@
         A forecast that hides its uncertainty is worse than no forecast, and a benchmark that only reports
         wins is marketing. So the Paddle Score ships with a written list of what it cannot measure, and
         Forge&rsquo;s numbers are published whether or not they cleared the bar.
-        <a href="/about">More about the three products and who built them</a>.
+        <a href="/about">More about <span data-feature="store">the three products</span><span data-feature-off="store">the two products</span> and who built them</a>.
       </p>
     </div>
   </section>
@@ -712,7 +719,7 @@
     <nav aria-label="Footer">
       <a href="/paddlingout">Paddling Out</a>
       <a href="/forge">Forge</a>
-      <a href="/store">Store</a>
+      <a href="/store" data-feature="store">Store</a>
       <a href="/about">About</a>
       <a href="/privacy">Privacy</a>
     </nav>
@@ -728,7 +735,15 @@
     const storePanel = document.getElementById("panel-store");
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const canHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-    const menus = [forgePanel, storePanel];
+
+    // Feature gate (js/site-features.js). A disabled panel must leave the DOM
+    // entirely — the seam engine and flex weights count panels, so a merely
+    // hidden one would still skew the layout math.
+    const storeOn = window.KaaykoFeatures ? KaaykoFeatures.isOn("store") : true;
+    home.querySelectorAll(":scope > .choice[data-feature]").forEach(panel => {
+      if (window.KaaykoFeatures && !KaaykoFeatures.isOn(panel.dataset.feature)) panel.remove();
+    });
+    const menus = [forgePanel, storePanel].filter(panel => panel.isConnected);
 
     // Access modal lives in js/storeAccess.js — shared with /about
     const modalIsOpen = () => KaaykoStoreAccess.isOpen();
@@ -966,12 +981,12 @@
     const accessCta  = document.getElementById("cta-access");
     const requestCta = document.getElementById("cta-request");
 
-    accessCta.addEventListener("click", (event) => {
+    if (accessCta) accessCta.addEventListener("click", (event) => {
       event.stopPropagation();
       KaaykoStoreAccess.open("access", { returnFocus: accessCta });
     });
 
-    requestCta.addEventListener("click", (event) => {
+    if (requestCta) requestCta.addEventListener("click", (event) => {
       event.stopPropagation();
       KaaykoStoreAccess.open("request", { returnFocus: requestCta });
     });
@@ -989,10 +1004,16 @@
     scramble(home);
 
     // Deep link: secretStore.js bounces uninvited visitors to /#store —
-    // land them straight on the invite-code card
+    // land them straight on the invite-code card. With the store feature off
+    // the panel is gone, but invite-code holders still get the modal, so a
+    // shared QR or direct link keeps working with no visible UI trace.
     if (initialHash === "#store") {
-      openMenu(storePanel);
-      KaaykoStoreAccess.open("access", { returnFocus: accessCta });
+      if (storeOn) {
+        openMenu(storePanel);
+        KaaykoStoreAccess.open("access", { returnFocus: accessCta });
+      } else {
+        KaaykoStoreAccess.open("access", {});
+      }
     }
   </script>
   <script>

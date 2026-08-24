@@ -44,14 +44,14 @@ export const AUTH = {
     const userStr = localStorage.getItem('kaayko_user');
     
     console.log('🔐 AUTH.init() called');
-    console.log('   Token in localStorage:', token ? 'YES' : 'NO');
+    if (CONFIG.ENVIRONMENT !== 'production') console.log('   Token in localStorage:', token ? 'YES' : 'NO');
     console.log('   User in localStorage:', userStr ? 'YES' : 'NO');
-    
+
     if (token && userStr) {
       try {
         this.token = token;
         this.user = JSON.parse(userStr);
-        console.log('   ✅ Parsed user:', this.user);
+        if (CONFIG.ENVIRONMENT !== 'production') console.log('   ✅ Parsed user:', this.user);
         return true;
       } catch (err) {
         console.error('   ❌ Failed to parse user data:', err);
@@ -116,9 +116,9 @@ export async function apiFetch(endpoint, options = {}) {
     : endpoint;
   const url = `${CONFIG.API_BASE}${normalizedEndpoint}`;
   
-  console.log(`🌐 API Request: ${url}`);
-  console.log('   Method:', options.method || 'GET');
-  console.log('   AUTH token:', AUTH.token ? 'EXISTS' : 'MISSING');
+  if (CONFIG.ENVIRONMENT !== 'production') console.log(`🌐 API Request: ${url}`);
+  if (CONFIG.ENVIRONMENT !== 'production') console.log('   Method:', options.method || 'GET');
+  if (CONFIG.ENVIRONMENT !== 'production') console.log('   AUTH token:', AUTH.token ? 'EXISTS' : 'MISSING');
   
   // Get tenant ID from localStorage
   const tenantId = localStorage.getItem('kaayko_tenant_id');
@@ -132,18 +132,17 @@ export async function apiFetch(endpoint, options = {}) {
     }
   };
   
-  console.log('   Headers:', fetchOptions.headers);
   if (tenantId) {
     console.log('   Tenant:', tenantId);
   }
-  
+
   try {
     const response = await fetch(url, fetchOptions);
-    console.log(`   Response status: ${response.status}`);
-    
+    if (CONFIG.ENVIRONMENT !== 'production') console.log(`   Response status: ${response.status}`);
+
     // Handle 401 Unauthorized - logout
     if (response.status === 401) {
-      console.error('❌ Authentication failed (401) - logging out');
+      if (CONFIG.ENVIRONMENT !== 'production') console.error('❌ Authentication failed (401) - logging out');
       AUTH.logout();
       return null;
     }
@@ -154,3 +153,70 @@ export async function apiFetch(endpoint, options = {}) {
     throw error;
   }
 }
+
+// ============================================================================
+// TOKEN AUTO-REFRESH
+// ============================================================================
+// Firebase ID tokens expire after ~1h. The SPA reads `kaayko_auth_token` from
+// localStorage once at load and never refreshes it, so admins were being
+// force-logged-out (401 -> logout) roughly an hour into a session. This mirrors
+// the refresh pattern used by views/roots/index.html
+// (`setInterval(() => user.getIdToken(true), 50*60*1000)`), but is wired into
+// the SPA via a dynamically-imported Firebase app so no build step / new
+// <script> tag is required. Fully defensive: any failure (no Firebase, no auth
+// session, offline) is a silent no-op that leaves the existing stored token
+// untouched — it never removes the token or logs the user out, so it can only
+// improve on the current behavior, never regress it.
+//
+// NOTE: this relies on the Firebase auth session persisted at login
+// (src/kortex.html, project "kaaykostore") being restorable from this same
+// origin. Verify in a real browser that onAuthStateChanged yields the signed-in
+// user before relying on this refresh in production.
+let tokenRefreshStarted = false;
+
+async function initTokenAutoRefresh() {
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    // Only relevant for an already-authenticated SPA session.
+    if (!localStorage.getItem('kaayko_auth_token')) return;
+
+    const firebaseConfig = {
+      apiKey: 'AIzaSyC59ECKLt3rowOoavF76hV_djb--W4jekA',
+      authDomain: 'kaaykostore.firebaseapp.com',
+      projectId: 'kaaykostore',
+      appId: '1:87383373015:web:ee1ce56d4f5192ec67ec92',
+      storageBucket: 'kaaykostore.firebasestorage.app',
+      messagingSenderId: '87383373015'
+    };
+
+    const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+    const { getAuth, onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+
+    const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user || tokenRefreshStarted) return;
+      tokenRefreshStarted = true;
+
+      const refresh = async () => {
+        try {
+          const token = await user.getIdToken(true);
+          if (token) {
+            localStorage.setItem('kaayko_auth_token', token);
+            AUTH.token = token;
+          }
+        } catch (err) {
+          // Keep the existing token; a later tick may succeed.
+        }
+      };
+
+      refresh();
+      setInterval(refresh, 50 * 60 * 1000);
+    });
+  } catch (err) {
+    // Firebase/auth unavailable — SPA continues with the stored token as before.
+  }
+}
+
+initTokenAutoRefresh();

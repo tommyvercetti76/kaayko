@@ -9,6 +9,8 @@ export function escapeHtml(text) {
   return div.innerHTML;
 }
 
+export function jsAttr(v){ return String(v == null ? '' : v).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
 export function formatDate(timestamp) {
   if (!timestamp) return '-';
   const date = timestamp._seconds ? new Date(timestamp._seconds * 1000) : new Date(timestamp);

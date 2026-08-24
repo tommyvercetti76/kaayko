@@ -41,7 +41,7 @@
 - `testRoutes.js` — gated by `FUNCTIONS_EMULATOR === 'true'` both at mount (`kreatorRoutes.js:53`) and inside each handler; not live in production
 - Magic link expiry — already implemented in `kreatorService.js`; `expiresAt` is stored and checked on every validation
 - `tooltip-test.html` — deleted
-- `reset-environment.html` — only sets visitor's own `localStorage` to `'production'`; no cross-user effect
+- `reset-environment.html` — deleted (removed in the Aug 2026 admin-console overhaul; previously only set visitor's own `localStorage`)
 
 ---
 
@@ -150,27 +150,32 @@ Product brief (marketing feature inventory): `kaayko-api/functions/docs/KORTEX_P
 **Pages:**
 | URL | File |
 |-----|------|
-| `/kortex` | `kaayko/src/admin/kortex.html` |
+| `/kortex` | `kaayko/src/kortex.html` (marketing + login → redirects to `/admin/kortex`) |
+| `/admin/kortex` | `kaayko/src/admin/kortex.html` (admin SPA shell — views below) |
 | `/login` | `kaayko/src/tenant.html` |
 | `/a/:code` | `kaayko/src/tenant.html` |
 | `/a/:tenantSlug/admin` | `kaayko/src/tenant.html` |
 | `/a/:tenantSlug/register` | `kaayko/src/tenant.html` |
 | `/a/:tenantSlug/campaigns/:campaignSlug` | `kaayko/src/tenant.html` |
-| `/admin/login` | `kaayko/src/admin/login.html` (→ /kortex) |
-| `/admin/clear-cache` | `kaayko/src/admin/clear-cache.html` |
+| `/admin/login` | `kaayko/src/admin/login.html` (→ /kortex; also 301 in `firebase.json`) |
 | `/admin/tenant-registration` | `kaayko/src/admin/tenant-registration.html` |
-| `/admin/views/dashboard` | `kaayko/src/admin/views/dashboard/dashboard.html` |
-| `/admin/views/create-link` | `kaayko/src/admin/views/create-link/create-link.html` |
-| `/admin/views/all-links` | `kaayko/src/admin/views/all-links/all-links.html` |
-| `/admin/views/qr-codes` | `kaayko/src/admin/views/qr-codes/qr-codes.html` |
-| `/admin/views/analytics` | `kaayko/src/admin/views/analytics/analytics.html` |
-| `/admin/views/billing` | `kaayko/src/admin/views/billing/billing.html` |
-| `/admin/views/tenant-onboarding` | `kaayko/src/admin/views/tenant-onboarding/tenant-onboarding.html` |
+| `/admin/kortex-backlog` | `kaayko/src/admin/kortex-backlog.html` |
 | `/admin/views/roots` | `kaayko/src/admin/views/roots/index.html` |
+| `/admin/views/roots/translations` | `kaayko/src/admin/views/roots/translations/index.html` |
 | `/admin/views/roots-v2` | `kaayko/src/admin/views/roots-v2/index.html` |
-| `/create-kortex-link` | `kaayko/src/create-kortex-link.html` |
-| ~~`/admin/reset-environment`~~ | `kaayko/src/admin/reset-environment.html` ⚠️ NO AUTH |
-| ~~`/admin/views/create-link/tooltip-test`~~ | `kaayko/src/admin/views/create-link/tooltip-test.html` ⚠️ test artifact |
+
+**Admin SPA views** — `.js`/`.css` modules lazy-loaded into `/admin/kortex` by the hash router (`kaayko/src/admin/js/router.js`); NOT standalone pages (only the `roots*` dirs above have their own `index.html`):
+| Hash route | View module |
+|-----|------|
+| `#/dashboard` | `kaayko/src/admin/views/dashboard/dashboard.js` |
+| `#/create` | `kaayko/src/admin/views/create-link/create-link.js` |
+| `#/links` | `kaayko/src/admin/views/all-links/all-links.js` |
+| `#/links/:code` (link detail) | `kaayko/src/admin/views/link-detail/link-detail.js` |
+| `#/campaigns` | `kaayko/src/admin/views/campaigns/campaigns.js` |
+| `#/qrcodes` | `kaayko/src/admin/views/qr-codes/qr-codes.js` |
+| `#/analytics` | `kaayko/src/admin/views/analytics/analytics.js` |
+| `#/billing` | `kaayko/src/admin/views/billing/billing.js` |
+| `#/tenant-onboarding` | `kaayko/src/admin/views/tenant-onboarding/tenant-onboarding.js` |
 
 **APIs used:**
 ```
@@ -182,6 +187,8 @@ GET    /api/kortex/links/:code/resolve
 POST   /api/kortex/events
 POST   /api/kortex/tenant-links
 GET    /api/kortex/tenants/:tenantId/analytics
+GET    /api/kortex/analytics/portfolio
+GET    /api/kortex/links/:code/analytics
 POST   /api/kortex/tenant-registration
 POST   /api/kortex
 GET    /api/kortex
@@ -215,6 +222,8 @@ GET/POST/PUT/DELETE /api/billing/subscriptions
 - `kaayko-api/functions/api/kortex/smartLinkService.js` — short link CRUD and V2 field storage
 - `kaayko-api/functions/api/kortex/redirectHandler.js` — device-aware and intent-aware redirect logic
 - `kaayko-api/functions/api/kortex/clickTracking.js` — click event recording
+- `kaayko-api/functions/api/kortex/linkAnalytics.js` — per-link analytics drilldown (reads raw `click_events`)
+- `kaayko-api/functions/api/kortex/portfolioAnalytics.js` — portfolio-wide analytics rollup
 - `kaayko-api/functions/api/campaigns/*` — campaign management and public namespace resolver
 - `kaayko-api/functions/api/kortex/deeplinkRoutes.js` — `/l/:id` and legacy universal link handling
 - `kaayko-api/functions/api/admin/` — order management
@@ -244,10 +253,17 @@ GET/POST/PUT/DELETE /api/billing/subscriptions
 
 **Firestore collections:**
 - `short_links` — smart link definitions (⚠️ actual name in code; old docs say `smartlinks`)
+- `tenants` — tenant configuration (slug, domains, plan, features)
+- `campaigns` — campaign definitions
+- `campaign_links` — campaign ↔ link associations
+- `campaign_memberships` — campaign role-based access
 - `link_analytics` — analytics events
 - `click_events` — click records
 - `install_events` — app install tracking
 - `custom_events` — custom event logging
+- `ctx_tokens` — attribution context tokens (legacy cookie/ctx resolution)
+- `api_keys` — public developer API keys
+- `security_alerts` — bot/abuse detection alerts
 - `webhook_subscriptions` — webhook config
 - `webhook_deliveries` — delivery log
 - `pending_tenant_registrations` — tenant signup queue
@@ -422,6 +438,13 @@ POST /api/presets                      → create preset (auth required)
 | `forecast_cache` | core | Cached weather data (TTL-based) |
 | `current_conditions_cache` | core | Cached current conditions |
 | `short_links` | kortex | Smart link definitions (code uses `short_links`, NOT `smartlinks`) |
+| `tenants` | kortex | Tenant configuration |
+| `campaigns` | kortex | Campaign definitions |
+| `campaign_links` | kortex | Campaign ↔ link associations |
+| `campaign_memberships` | kortex | Campaign role-based access |
+| `ctx_tokens` | kortex | Attribution context tokens |
+| `api_keys` | kortex | Public developer API keys |
+| `security_alerts` | kortex | Bot/abuse detection alerts |
 | `link_analytics` | kortex | Analytics events |
 | `click_events` | kortex | Click records |
 | `install_events` | kortex | App install tracking |

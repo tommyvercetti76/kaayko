@@ -84,7 +84,7 @@ async function loadQRCodes() {
     return `
       <div class="qr-card">
         <div class="qr-card-image">
-          <img src="${qrUrl}" alt="QR for ${code}" loading="lazy">
+          <img src="${qrUrl}" alt="QR for ${utils.escapeHtml(code)}" loading="lazy">
           
           <!-- URL Overlay - Shows on Hover -->
           <div class="qr-url-overlay">
@@ -95,7 +95,7 @@ async function loadQRCodes() {
         
         <div class="qr-card-content">
           <h4 class="qr-card-title">${utils.escapeHtml(link.title || 'Untitled')}</h4>
-          <div class="qr-card-code">${code}</div>
+          <div class="qr-card-code">${utils.escapeHtml(code)}</div>
           <div class="qr-card-stats">
             <span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -112,7 +112,7 @@ async function loadQRCodes() {
         </div>
         
         <div class="qr-card-actions">
-          <button class="qr-action-btn primary" onclick="window.downloadQRCode('${code}', '${qrUrl}')" title="Download QR Code">
+          <button class="qr-action-btn primary" onclick="window.downloadQRCode('${utils.jsAttr(code)}', '${utils.jsAttr(qrUrl)}')" title="Download QR Code">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
               <polyline points="7 10 12 15 17 10"></polyline>
@@ -121,7 +121,7 @@ async function loadQRCodes() {
             Download QR
           </button>
           
-          <button class="qr-action-btn" onclick="window.copyLink('${code}')" title="Copy Short URL">
+          <button class="qr-action-btn" onclick="window.copyLink('${utils.jsAttr(code)}')" title="Copy Short URL">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -154,12 +154,12 @@ export function showQRSidebar(code) {
   
   body.innerHTML = `
     <div class="qr-display">
-      <img src="${qrUrl}" alt="QR Code for ${code}">
+      <img src="${qrUrl}" alt="QR Code for ${utils.escapeHtml(code)}">
       
       <div class="qr-info">
         <div class="qr-info-item">
           <div class="qr-info-label">Short Link</div>
-          <div class="qr-info-value">${url}</div>
+          <div class="qr-info-value">${utils.escapeHtml(url)}</div>
         </div>
         
         <div class="qr-info-item">
@@ -186,10 +186,10 @@ export function showQRSidebar(code) {
       </div>
       
       <div class="qr-actions">
-        <button class="btn btn-primary" onclick="window.downloadQRCode('${code}', '${qrUrl}')">
+        <button class="btn btn-primary" onclick="window.downloadQRCode('${utils.jsAttr(code)}', '${utils.jsAttr(qrUrl)}')">
           ⬇ Download QR Code
         </button>
-        <button class="btn btn-secondary" onclick="window.copyLink('${code}')">
+        <button class="btn btn-secondary" onclick="window.copyLink('${utils.jsAttr(code)}')">
           📋 Copy Short URL
         </button>
       </div>

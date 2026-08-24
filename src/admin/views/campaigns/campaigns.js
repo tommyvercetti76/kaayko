@@ -5,9 +5,11 @@
 
 import { STATE, CONFIG, AUTH, utils, ui } from '../../js/kortex-core.js';
 import { apiFetch } from '../../js/config.js';
+import { escapeHtml, jsAttr } from '../../js/utils.js';
 
 let CURRENT_EDIT_CAMPAIGN = null;
 let CURRENT_CAMPAIGNS = [];
+let listenersBound = false;
 const NEW_CAMPAIGN_DAYS = 14;
 
 /**
@@ -24,6 +26,11 @@ export async function init(state) {
  * Initialize all event listeners
  */
 function initializeEventListeners() {
+  // Idempotency guard: init() runs on every navigation to this view; without
+  // this, each visit re-adds the listeners (esp. the #campaign-form submit
+  // handler), causing duplicate POST /campaigns on a single submit.
+  if (listenersBound) return;
+
   // Create campaign button
   document.getElementById('create-campaign-btn').addEventListener('click', openCreateModal);
   
@@ -46,6 +53,8 @@ function initializeEventListeners() {
   // Form submission
   document.getElementById('campaign-form').addEventListener('submit', handleSaveCampaign);
   document.getElementById('campaign-modal-cancel').addEventListener('click', closeCampaignModal);
+
+  listenersBound = true;
 }
 
 /**
@@ -138,7 +147,7 @@ function displayCampaigns(campaigns) {
  * Create a table row for a campaign
  */
 function createCampaignRow(campaign) {
-  const statusClass = campaign.status.toLowerCase();
+  const statusClass = (campaign.status || '').toLowerCase();
   const createdDateMs = parseCampaignDateMs(campaign.createdAt);
   const createdDate = createdDateMs > 0 ? new Date(createdDateMs).toLocaleDateString() : 'Unknown';
   const ageMeta = getCampaignAgeMeta(campaign.createdAt);
@@ -146,16 +155,16 @@ function createCampaignRow(campaign) {
   const memberCount = Array.isArray(campaign.members) ? campaign.members.length : 0;
   
   return `
-    <tr data-campaign-id="${campaign.campaignId}">
+    <tr data-campaign-id="${escapeHtml(campaign.campaignId)}">
       <td>
         <div class="campaign-name-cell">
           <div class="campaign-name">${escapeHtml(campaign.name)}</div>
-          <div class="campaign-slug">/${campaign.slug}</div>
+          <div class="campaign-slug">/${escapeHtml(campaign.slug)}</div>
         </div>
       </td>
       <td>${escapeHtml(campaign.type)}</td>
       <td>
-        <span class="status-badge ${statusClass}">${campaign.status}</span>
+        <span class="status-badge ${escapeHtml(statusClass)}">${escapeHtml(campaign.status)}</span>
       </td>
       <td><span class="stat-badge">${linkCount}</span></td>
       <td><span class="stat-badge">${memberCount}</span></td>
@@ -167,11 +176,11 @@ function createCampaignRow(campaign) {
       </td>
       <td>
         <div class="action-buttons">
-          ${campaign.isDerived ? '' : `<button class="action-btn edit-btn" data-id="${campaign.campaignId}" title="Edit campaign">Edit</button>`}
+          ${campaign.isDerived ? '' : `<button class="action-btn edit-btn" data-id="${escapeHtml(campaign.campaignId)}" title="Edit campaign">Edit</button>`}
           ${campaign.isDerived ? '' : getLifecycleButton(campaign)}
-          ${campaign.isDerived ? '' : `<button class="action-btn members-btn" data-id="${campaign.campaignId}" title="Manage members">Members</button>`}
-          <button class="action-btn links-btn" data-id="${campaign.campaignId}" title="View links">Links</button>
-          ${campaign.isDerived ? '' : `<button class="action-btn logs-btn" data-id="${campaign.campaignId}" title="View audit logs">Logs</button>`}
+          ${campaign.isDerived ? '' : `<button class="action-btn members-btn" data-id="${escapeHtml(campaign.campaignId)}" title="Manage members">Members</button>`}
+          <button class="action-btn links-btn" data-id="${escapeHtml(campaign.campaignId)}" title="View links">Links</button>
+          ${campaign.isDerived ? '' : `<button class="action-btn logs-btn" data-id="${escapeHtml(campaign.campaignId)}" title="View audit logs">Logs</button>`}
         </div>
       </td>
     </tr>
@@ -182,14 +191,14 @@ function createCampaignRow(campaign) {
  * Get lifecycle action button based on campaign status
  */
 function getLifecycleButton(campaign) {
-  const status = campaign.status.toLowerCase();
+  const status = (campaign.status || '').toLowerCase();
   
   if (status === 'active') {
-    return `<button class="action-btn pause-btn" data-id="${campaign.campaignId}" title="Pause campaign">Pause</button>`;
+    return `<button class="action-btn pause-btn" data-id="${escapeHtml(campaign.campaignId)}" title="Pause campaign">Pause</button>`;
   } else if (status === 'paused') {
-    return `<button class="action-btn resume-btn" data-id="${campaign.campaignId}" title="Resume campaign">Resume</button>`;
+    return `<button class="action-btn resume-btn" data-id="${escapeHtml(campaign.campaignId)}" title="Resume campaign">Resume</button>`;
   } else if (status === 'draft' || status === 'active') {
-    return `<button class="action-btn danger archive-btn" data-id="${campaign.campaignId}" title="Archive campaign">Archive</button>`;
+    return `<button class="action-btn danger archive-btn" data-id="${escapeHtml(campaign.campaignId)}" title="Archive campaign">Archive</button>`;
   }
   
   return '';
@@ -543,7 +552,7 @@ async function openMembersModal(campaignId) {
           <span class="member-role">${m.role}</span>
         </div>
         <div class="action-buttons">
-          <button class="action-btn" onclick="removeMember('${campaignId}', '${m.uid}')">Remove</button>
+          <button class="action-btn" onclick="removeMember('${jsAttr(campaignId)}', '${jsAttr(m.uid)}')">Remove</button>
         </div>
       </div>
     `).join('');
@@ -561,7 +570,7 @@ async function openMembersModal(campaignId) {
             <option value="viewer">Viewer</option>
             <option value="operator">Operator</option>
           </select>
-          <button class="btn-primary" onclick="addMember('${campaignId}')">Add</button>
+          <button class="btn-primary" onclick="addMember('${jsAttr(campaignId)}')">Add</button>
         </div>
       </div>
     `;
@@ -651,7 +660,7 @@ async function openLinksModal(campaignId) {
           <tr>
             <td><code>${escapeHtml(link.code)}</code></td>
             <td>${escapeHtml(link.destinations?.web || '—')}</td>
-            <td><span class="status-badge ${link.status}">${link.status}</span></td>
+            <td><span class="status-badge ${escapeHtml(link.status)}">${escapeHtml(link.status)}</span></td>
             <td>${link.usesCount || 0}</td>
             <td>
               <button class="action-btn">Edit</button>
@@ -718,15 +727,6 @@ async function openAuditLogModal(campaignId) {
       </div>
     `;
   }
-}
-
-/**
- * Utility: Escape HTML special characters
- */
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
 }
 
 // Export global functions for onclick handlers

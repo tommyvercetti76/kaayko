@@ -11,28 +11,30 @@ Kortex is the multi-tenant smart link platform — link CRUD, device-aware redir
 
 | Purpose | File |
 |---------|------|
-| Admin SPA shell | `admin/kortex.html` (1149 lines — sidebar nav, 8 views, modals, form sections) |
-| Create / Edit Link | `admin/views/create-link/create-link.js` (1204 lines) |
-| Create Link styles | `admin/views/create-link/create-link.css` (764 lines) |
+| Admin SPA shell | `admin/kortex.html` (1170 lines — sidebar nav, 9 views, modals, form sections) |
+| Hash router | `admin/js/router.js` (view ↔ URL map: `#/dashboard`, `#/campaigns`, `#/create`, `#/links`, `#/links/:code`, `#/qrcodes`, `#/analytics`, `#/billing`, `#/tenant-onboarding`; unknown hashes → dashboard) |
+| Create / Edit Link | `admin/views/create-link/create-link.js` (1203 lines) |
+| Create Link styles | `admin/views/create-link/create-link.css` (763 lines) |
 | All Links list | `admin/views/all-links/all-links.js` + `.css` |
+| Link detail (per-link analytics) | `admin/views/link-detail/link-detail.js` + `.css` (hash route `#/links/:code`) |
 | Campaigns | `admin/views/campaigns/campaigns.js` + `.css` |
 | Analytics dashboard | `admin/views/analytics/analytics.js` + `.css` |
 | QR Codes gallery | `admin/views/qr-codes/qr-codes.js` + `.css` |
 | Dashboard | `admin/views/dashboard/dashboard.js` + `.css` |
 | Billing | `admin/views/billing/billing.js` + `.css` + `.html` |
 | Tenant onboarding | `admin/views/tenant-onboarding/tenant-onboarding.js` + `.css` |
-| ROOTS invite view | `admin/views/roots/index.html`, `admin/views/roots-v2/index.html` |
-| Core view router | `admin/js/kortex-core.js` (mounts views, auth, state) |
+| ROOTS invite view | `admin/views/roots/index.html`, `admin/views/roots/translations/index.html`, `admin/views/roots-v2/index.html` (standalone pages, not SPA views) |
+| Core bootstrap | `admin/js/kortex-core.js` (lazy view loading via `VIEW_CONFIGS`, auth, state) |
 | Config & API base | `admin/js/config.js` (apiFetch, API_BASE, environment) |
 | Base styles | `admin/css/kortex-base.css` |
 | PostHog analytics | `admin/js/posthog.js` |
 | UI utilities | `admin/js/ui.js`, `admin/js/utils.js` |
-| Public marketing | `kortex.html` |
-| Public link create | `create-kortex-link.html` |
+| Marketing + login | `kortex.html` (serves `/kortex`; sign-in redirects to `/admin/kortex`) |
 | Tenant portal | `tenant.html`, `js/tenant-portal.js` |
 | Terms of Service | `legal/kortex-terms.html` |
 | Login redirect | `admin/login.html` |
 | Tenant registration | `admin/tenant-registration.html` |
+| Revenue backlog | `admin/kortex-backlog.html` |
 | Credential store | `js/secretStore.js` |
 
 ### Backend (`kaayko-api/functions/`)
@@ -40,24 +42,30 @@ Kortex is the multi-tenant smart link platform — link CRUD, device-aware redir
 #### Core module: `api/kortex/`
 | Purpose | File | Key exports |
 |---------|------|-------------|
-| Main API router | `smartLinks.js` (1173 lines) | Express router — POST/GET/PUT/DELETE `/api/kortex/*`, tenant endpoints, stats, QR |
-| Service layer | `smartLinkService.js` (601 lines) | `createShortLink()`, `listLinks()`, `getShortLink()`, `updateShortLink()`, `deleteShortLink()`, `getLinkStats()` |
+| Main API router | `smartLinks.js` (1450 lines) | Express router — POST/GET/PUT/DELETE `/api/kortex/*`, tenant endpoints, analytics, stats, QR, api-keys, webhooks |
+| Service layer | `smartLinkService.js` (651 lines) | `createShortLink()`, `listLinks()`, `getShortLink()`, `updateShortLink()`, `deleteShortLink()`, `getLinkStats()` |
 | Redirect engine | `redirectHandler.js` (852 lines) | Platform-aware redirect, alumni visit tokens, social OG, A/B routing, churn grace |
-| Click tracking | `clickTracking.js` (456 lines) | `recordClick()`, `trackInstall()`, click-to-install attribution, 30-day TTL |
-| Attribution | `attributionService.js` (303 lines) | Deferred deep linking, install attribution, custom events |
-| Security | `linkSecurityService.js` (407 lines) | HMAC signed URLs, velocity profiling, honeypots, bot detection, geo anomaly |
-| Webhooks | `webhookService.js` (504 lines) | HMAC-SHA256 signed delivery, exponential retry (12x), dead letter queue |
-| V2 intents | `v2LinkIntents.js` (444 lines) | 11 destination types, audience/intent routing, tenant event ledger |
-| Tenant context | `tenantContext.js` (279 lines) | Middleware: header → profile → API key → default resolution |
-| Tenant resolver | `tenantLinkResolver.js` (394 lines) | `alumni.kaayko.com/<slug>/<code>` host-aware routing, enumeration protection |
+| Click tracking | `clickTracking.js` (483 lines) | `recordClick()`, `trackInstall()`, click-to-install attribution, 30-day TTL |
+| Per-link analytics | `linkAnalytics.js` (282 lines) | Serves `/api/kortex/links/:code/analytics` — drilldown built from raw `click_events` (added Aug 2026) |
+| Portfolio analytics | `portfolioAnalytics.js` (250 lines) | Serves `/api/kortex/analytics/portfolio` — cross-link rollup from raw `click_events` (added Aug 2026) |
+| Attribution | `attributionService.js` (302 lines) | Deferred deep linking, install attribution, custom events |
+| Security | `linkSecurityService.js` (416 lines) | HMAC signed URLs, velocity profiling, honeypots, bot detection, geo anomaly |
+| Webhooks | `webhookService.js` (506 lines) | HMAC-SHA256 signed delivery, exponential retry (12x), dead letter queue |
+| V2 intents | `v2LinkIntents.js` (460 lines) | 11 destination types, audience/intent routing, tenant event ledger |
+| Tenant context | `tenantContext.js` (278 lines) | Middleware: header → profile → API key → default resolution |
+| Tenant resolver | `tenantLinkResolver.js` (393 lines) | `alumni.kaayko.com/<slug>/<code>` host-aware routing, enumeration protection |
 | Rate limiting | `rateLimitService.js` (314 lines) | IP/user/tenant/API-key rate limits, Firestore counters |
-| QR codes | `qrService.js` (102 lines) | PNG/SVG generation, branded colors, logo overlay, Pro-gated |
-| Analytics alerts | `analyticsAlertService.js` (214 lines) | Weekly digest, 30% drop detection, Monday 9am IST |
-| Public API | `publicApiRouter.js` (402 lines) | API-key auth, batch create, scoped CRUD, tenant analytics |
+| QR codes | `qrService.js` (101 lines) | PNG/SVG generation, branded colors, logo overlay, Pro-gated |
+| Analytics alerts | `analyticsAlertService.js` (217 lines) | Weekly digest, 30% drop detection, Monday 9am IST |
+| Public API | `publicApiRouter.js` (399 lines) | API-key auth, batch create, scoped CRUD, tenant analytics |
 | Public redirect | `publicRouter.js` (214 lines) | `/l/:code` entry, attribution resolution, organic detection |
-| Validation | `smartLinkValidation.js` (84 lines) | Code generation (`lk` + 4 chars), format validation |
-| Defaults | `smartLinkDefaults.js` (108 lines) | Default destinations per content space |
-| Enrichment | `smartLinkEnrichment.js` (163 lines) | Auto-populate metadata from Firestore (lakes, products, stores) |
+| Validation | `smartLinkValidation.js` (83 lines) | Code generation (`lk` + 4 chars), format validation |
+| Defaults | `smartLinkDefaults.js` (107 lines) | Default destinations per content space |
+| Enrichment | `smartLinkEnrichment.js` (162 lines) | Auto-populate metadata from Firestore (lakes, products, stores) |
+| Domain policy | `domainPolicy.js` | `KAAYKO_DOMAIN_WHITELIST` + `assertDestinationAllowed()` — allowlist shared by all creation paths |
+| Client IP | `clientIp.js` | Real visitor IP behind the Hosting → Cloud Run proxy (rate limits, unique visitors) |
+| SSRF guard | `ssrfGuard.js` | Enforces https, blocks loopback/private/metadata webhook target URLs |
+| Structured logging | `logger.js` | Single-line JSON logs for Cloud Logging severity parsing |
 
 #### Validation sub-module: `api/kortex/validation/`
 | File | Purpose |
@@ -109,14 +117,19 @@ PUT    /api/kortex/:code                   → update link
 DELETE /api/kortex/:code                   → delete link
 GET    /api/kortex/stats                   → link statistics
 GET    /api/kortex/:code/clicks            → click history
+GET    /api/kortex/links/:code/analytics   → per-link analytics drilldown (Aug 2026)
+GET    /api/kortex/analytics/portfolio     → portfolio-wide analytics (Aug 2026)
 POST   /api/kortex/qr/generate             → branded QR (Pro+)
 ```
 
 ### Tenant endpoints
 ```
-POST   /api/kortex/tenants                 → create tenant
-GET    /api/kortex/tenants/resolve          → resolve tenant from host
-POST   /api/kortex/tenants/:slug/bootstrap  → bootstrap tenant portal
+POST   /api/kortex/tenants/register              → tenant self-registration (rate-limited)
+POST   /api/kortex/tenant-registration           → tenant signup queue (rate-limited)
+GET    /api/kortex/tenants                       → list tenants (auth)
+GET    /api/kortex/tenants/resolve               → resolve tenant from host
+GET    /api/kortex/tenants/:tenantSlug/bootstrap → bootstrap tenant portal
+GET    /api/kortex/tenants/:tenantId/analytics   → tenant analytics (admin)
 ```
 
 ### Campaign routes
@@ -233,7 +246,7 @@ DEST_PAGES = {
 
 ### Domain whitelist (backend enforcement)
 ```js
-// In smartLinks.js
+// In domainPolicy.js — enforced in the service layer via assertDestinationAllowed()
 KAAYKO_DOMAIN_WHITELIST = [
   'kaayko.com',
   'coolschools.kaayko.com',  // Note: coolschools.web.app is the actual domain
@@ -321,7 +334,7 @@ cd kaayko-api && npm test -- --grep kortex
 
 **Adding a new destination to the picker:**
 1. Add entry to `DEST_GROUPS` or `DEST_PAGES` in `create-link.js`
-2. If new domain: add to `KAAYKO_DOMAIN_WHITELIST` in `smartLinks.js`
+2. If new domain: add to `KAAYKO_DOMAIN_WHITELIST` in `domainPolicy.js`
 3. Update `reverseMapUrl()` if edit-mode matching is needed
 
 **Adding a new API endpoint:**

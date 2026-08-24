@@ -14,12 +14,17 @@
 // Used by scripts/generate-spot-pages.js and scripts/apply-footer.js, and
 // enforced by scripts/verify-seo.js.
 
+// A link may carry a third element: the name of a feature flag from
+// src/js/site-features.js. The link is emitted with data-feature="<name>",
+// so pages that load site-features.js hide it while that flag is off.
+// The store set below stays untagged on purpose — checkout pages are already
+// inside the store flow, and a buyer mid-flow always keeps a way back.
 const SETS = {
-  // Root and general-interest pages: show the three products.
+  // Root and general-interest pages: show the products.
   site: [
     ['/paddlingout', 'Paddling Out'],
     ['/forge', 'Forge'],
-    ['/store', 'Store'],
+    ['/store', 'Store', 'store'],
     ['/about', 'About'],
     ['/privacy', 'Privacy'],
   ],
@@ -109,10 +114,11 @@ function render(setName, { light = false, indent = '  ', self = null } = {}) {
     `${i}<footer class="site-footer${light ? ' is-light' : ''}">\n` +
     `${i}  <nav aria-label="Footer">\n` +
     links
-      .map(([href, label]) => {
+      .map(([href, label, feature]) => {
         const ext = /^(https?:|mailto:)/.test(href);
         const rel = href.startsWith('http') ? ' rel="noopener noreferrer"' : '';
-        return `${i}    <a href="${href}"${rel}>${label}</a>`;
+        const feat = feature ? ` data-feature="${feature}"` : '';
+        return `${i}    <a href="${href}"${rel}${feat}>${label}</a>`;
       })
       .join('\n') +
     `\n${i}  </nav>\n` +

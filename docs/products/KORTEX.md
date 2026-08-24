@@ -12,7 +12,6 @@ Product strategy probe: [`KORTEX_PRODUCT_PROBE.md`](./KORTEX_PRODUCT_PROBE.md)
 Public and operator surfaces:
 
 - `src/kortex.html`
-- `src/create-kortex-link.html`
 - `src/redirect.html`
 - `src/tenant.html`
 - `src/admin/kortex.html`

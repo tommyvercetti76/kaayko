@@ -8,7 +8,7 @@ Static frontend for the Kaayko product portfolio. The `main` branch hosts commer
 | --- | --- | --- | --- |
 | Store / Commerce | `src/store.html`, `src/cart.html`, `src/order-success.html` | `kaayko-api` commerce routes | [`docs/products/STORE.md`](./docs/products/STORE.md) |
 | Paddling Out | `src/paddlingout.html` | `kaayko-api` weather and location routes | [`docs/products/PADDLING_OUT.md`](./docs/products/PADDLING_OUT.md) |
-| KORTEX | `src/kortex.html`, `src/create-kortex-link.html`, `src/admin/*`, `src/tenant.html`, `src/redirect.html` | `kaayko-api` KORTEX links, campaigns, deep links, billing, auth | [`docs/products/KORTEX.md`](./docs/products/KORTEX.md), [`.claude/commands/kortex.md`](./.claude/commands/kortex.md) |
+| KORTEX | `src/kortex.html`, `src/admin/*`, `src/tenant.html`, `src/redirect.html` | `kaayko-api` KORTEX links, campaigns, deep links, billing, auth | [`docs/products/KORTEX.md`](./docs/products/KORTEX.md), [`.claude/commands/kortex.md`](./.claude/commands/kortex.md) |
 | Kreator | `src/kreator/*` | `kaayko-api` kreator routes | [`docs/products/KREATOR.md`](./docs/products/KREATOR.md) |
 | Kamera Quest | `src/karma.html`, `src/karma/kameras/*` | `kaayko-api` cameras, lenses, presets | [`docs/products/KAMERA_QUEST.md`](./docs/products/KAMERA_QUEST.md) |
 | Knowledge / External surfaces | `src/knowledge/index.html`, `src/admin/views/roots/index.html`, `src/reads.html` | External `cool-schools` API and content surfaces | [`docs/products/KNOWLEDGE_EXTERNALS.md`](./docs/products/KNOWLEDGE_EXTERNALS.md) |
@@ -31,7 +31,7 @@ kaayko/
 ├── src/
 │   ├── index.html, store.html, cart.html, order-success.html
 │   ├── paddlingout.html
-│   ├── kortex.html, create-kortex-link.html, tenant.html, redirect.html
+│   ├── kortex.html, tenant.html, redirect.html
 │   ├── kreator/
 │   ├── karma/
 │   ├── admin/

@@ -282,9 +282,7 @@ function initEnvironmentSwitcher() {
 
 function initUserMenu() {
   console.log('👤 Initializing user menu...');
-  console.log('   AUTH.user:', AUTH.user);
-  console.log('   AUTH.token:', AUTH.token ? 'exists' : 'missing');
-  
+
   const emailEl = document.getElementById('user-email');
   const roleEl = document.getElementById('user-role');
   const tenantEl = document.getElementById('user-tenant');
@@ -303,14 +301,11 @@ function initUserMenu() {
   });
   
   if (AUTH.user && AUTH.user.email) {
-    console.log('   Setting user info:', AUTH.user.email, '/', AUTH.user.role);
     if (emailEl) {
       emailEl.textContent = AUTH.user.email;
-      console.log('   ✅ Email set to:', emailEl.textContent);
     }
     if (roleEl) {
       roleEl.textContent = AUTH.user.role || 'user';
-      console.log('   ✅ Role set to:', roleEl.textContent);
     }
     if (tenantEl) {
       const tenantName = AUTH.user.tenantName || localStorage.getItem('kaayko_tenant_id') || 'Default';
@@ -329,7 +324,7 @@ function initUserMenu() {
       initTenantSwitcher(tenantSelect);
     }
   } else {
-    console.error('   ❌ AUTH.user is missing or invalid:', AUTH.user);
+    console.error('   ❌ AUTH.user is missing or invalid');
     // Set fallback values
     if (emailEl) emailEl.textContent = 'Unknown User';
     if (roleEl) roleEl.textContent = 'N/A';
@@ -517,12 +512,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const authInitialized = AUTH.init();
   console.log('   Auth initialized:', authInitialized);
   
-  if (AUTH.user) {
-    console.log('   User:', AUTH.user.email);
-    console.log('   Role:', AUTH.user.role);
-    console.log('   Token:', AUTH.token ? `${AUTH.token.substring(0, 20)}...` : 'none');
-  }
-  
   // Check authentication
   if (!AUTH.isAuthenticated()) {
     console.log('❌ Not authenticated, redirecting to login...');
@@ -532,8 +521,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.location.href = './login';
     return;
   }
-  
-  console.log(`✅ Logged in as: ${AUTH.user?.email} (${AUTH.user?.role})`);
   
   // Initialize core components
   console.log('⚙️  Initializing UI components...');

@@ -1,24 +1,25 @@
 <!DOCTYPE html>
 <html lang="en" prefix="og: http://ogp.me/ns#">
 <head>
+  <script src="/js/site-features.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <title>About — Kaayko</title>
-  <meta name="description" content="Three things Kaayko makes: Paddling Out, Forge, and the Store — what each one is, shown with live data and real renders." />
+  <meta name="description" content="What Kaayko makes: Paddling Out and Forge — what each one is, shown with live data and real renders." />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://kaayko.com/about" />
 
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://kaayko.com/about">
   <meta property="og:title" content="About — Kaayko">
-  <meta property="og:description" content="Paddling Out, Forge, Store — what each one is, shown with live data and real renders.">
+  <meta property="og:description" content="Paddling Out and Forge — what each one is, shown with live data and real renders.">
   <meta property="og:image" content="https://kaayko.com/assets/kaayko-og.png">
   <meta property="og:site_name" content="Kaayko">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="About — Kaayko">
-  <meta name="twitter:description" content="Paddling Out, Forge, Store — what each one is, shown with live data and real renders.">
+  <meta name="twitter:description" content="Paddling Out and Forge — what each one is, shown with live data and real renders.">
   <meta name="twitter:image" content="https://kaayko.com/assets/kaayko-og.png">
 
   <script type="application/ld+json">
@@ -30,7 +31,7 @@
       "@id": "https://kaayko.com/about#page",
       "name": "About Kaayko",
       "url": "https://kaayko.com/about",
-      "description": "Paddling Out, Forge, and the Kaayko Store \u2014 what each one is, with live data and real numbers.",
+      "description": "Paddling Out and Forge \u2014 what each one is, with live data and real numbers.",
       "mainEntity": {
         "@id": "https://kaayko.com/about#founder"
       },
@@ -47,7 +48,7 @@
       "name": "Rohan",
       "url": "https://kaayko.com/about",
       "email": "rohan@kaayko.com",
-      "description": "Builds and maintains Kaayko \u2014 Paddling Out, Forge, and the store \u2014 solo.",
+      "description": "Builds and maintains Kaayko \u2014 Paddling Out and Forge \u2014 solo.",
       "worksFor": {
         "@type": "Organization",
         "name": "Kaayko",
@@ -516,13 +517,13 @@
         <a href="https://github.com/tommyvercetti76/Forge" rel="noopener noreferrer">Read the code</a>
       </p>
 
-      <h2>Store</h2>
-      <div class="kicker">Invite-only goods</div>
-      <p>
+      <h2 data-feature="store">Store</h2>
+      <div class="kicker" data-feature="store">Invite-only goods</div>
+      <p data-feature="store">
         A small run of printed shirts and totes. The store opens with an invite code, and vote counts
         decide which designs get printed next.
       </p>
-      <p class="note">
+      <p class="note" data-feature="store">
         <strong>How to get in.</strong> Ask for a code &mdash; it is not exclusivity, it is just how
         small this is. A human sends every invite.
       </p>
@@ -532,10 +533,10 @@
   <section class="closing">
     <h2 class="reveal">Made with care</h2>
     <p class="reveal">
-      Kaayko is proud to launch limited but quality products. In a world where people say "Wow", Kaayko dares to ask "Why"? 
-      Why are you going out to Kayak in a Blizzard? 
-      Why are you not using local AI to create art? 
-      Why are you not buying this overpriced t-shirt? 
+      Kaayko is proud to launch limited but quality products. In a world where people say "Wow", Kaayko dares to ask "Why"?
+      Why are you going out to Kayak in a Blizzard?
+      Why are you not using local AI to create art?
+      <span data-feature="store">Why are you not buying this overpriced t-shirt? </span>
       Kaayko has answers to problems unearthed.
     </p>
     <div class="actions reveal">
@@ -548,7 +549,7 @@
     <nav aria-label="Footer">
       <a href="/paddlingout">Paddling Out</a>
       <a href="/forge">Forge</a>
-      <a href="/store">Store</a>
+      <a href="/store" data-feature="store">Store</a>
       <a href="/privacy">Privacy</a>
     </nav>
     <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
@@ -683,7 +684,7 @@
         ]
       },
       {
-        id: "store", tone: "c", name: "Store",
+        id: "store", tone: "c", name: "Store", feature: "store",
         kicker: "Invite-only goods",
         def: "A small run of printed shirts and totes. The store opens with an invite code, and vote counts decide which designs get printed next.",
         source: "products", gated: true,
@@ -893,7 +894,10 @@
     // otherwise the same copy would appear twice.
     main.innerHTML = "";
 
-    var views = CHAPTERS.map(buildChapter);
+    // Feature-gated chapters (js/site-features.js) never build, so the
+    // ordinals stay dense — 01, 02 — with no gap where a chapter was.
+    var activeChapters = window.KaaykoFeatures ? KaaykoFeatures.filterOn(CHAPTERS) : CHAPTERS;
+    var views = activeChapters.map(buildChapter);
 
     // First chapter paints immediately; the rest arm as they come near.
     mountMedia(views[0], true);

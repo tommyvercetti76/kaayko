@@ -101,28 +101,39 @@ Agents: identify the page here, then look up the module in MODULE-MAP.md for ful
 | `/order-success` | `src/order-success.html` |
 | `/404` | `src/404.html` |
 
-### Kortex Admin And Tenant Portal (16)
+### Kortex Admin And Tenant Portal (13)
 
 | URL | File |
 |-----|------|
-| `/kortex` | `src/admin/kortex.html` |
+| `/kortex` | `src/kortex.html` (marketing + login → redirects to `/admin/kortex`) |
+| `/admin/kortex` | `src/admin/kortex.html` (admin SPA shell — views below) |
 | `/login` | `src/tenant.html` |
 | `/a/:code` | `src/tenant.html` |
 | `/a/:tenantSlug/admin` | `src/tenant.html` |
 | `/a/:tenantSlug/register` | `src/tenant.html` |
 | `/a/:tenantSlug/campaigns/:campaignSlug` | `src/tenant.html` |
 | `/admin/login` | `src/admin/login.html` (redirects → /kortex) |
-| `/admin/clear-cache` | `src/admin/clear-cache.html` |
 | `/admin/tenant-registration` | `src/admin/tenant-registration.html` |
-| `/admin/views/dashboard` | `src/admin/views/dashboard/dashboard.html` |
-| `/admin/views/create-link` | `src/admin/views/create-link/create-link.html` |
-| `/admin/views/all-links` | `src/admin/views/all-links/all-links.html` |
-| `/admin/views/qr-codes` | `src/admin/views/qr-codes/qr-codes.html` |
-| `/admin/views/analytics` | `src/admin/views/analytics/analytics.html` |
-| `/admin/views/billing` | `src/admin/views/billing/billing.html` |
-| `/admin/views/tenant-onboarding` | `src/admin/views/tenant-onboarding/tenant-onboarding.html` |
+| `/admin/kortex-backlog` | `src/admin/kortex-backlog.html` |
 | `/admin/views/roots` | `src/admin/views/roots/index.html` |
+| `/admin/views/roots/translations` | `src/admin/views/roots/translations/index.html` |
 | `/admin/views/roots-v2` | `src/admin/views/roots-v2/index.html` |
+
+### Kortex Admin SPA Views (hash routes on `/admin/kortex`)
+
+Views under `src/admin/views/<name>/` are `.js`/`.css` modules lazy-loaded by the hash router `src/admin/js/router.js` — NOT standalone URLs (exception: the `roots*` pages above, which have their own `index.html`).
+
+| URL | File |
+|-----|------|
+| `/admin/kortex#/dashboard` | `src/admin/views/dashboard/dashboard.js` |
+| `/admin/kortex#/create` | `src/admin/views/create-link/create-link.js` |
+| `/admin/kortex#/links` | `src/admin/views/all-links/all-links.js` |
+| `/admin/kortex#/links/:code` | `src/admin/views/link-detail/link-detail.js` |
+| `/admin/kortex#/campaigns` | `src/admin/views/campaigns/campaigns.js` |
+| `/admin/kortex#/qrcodes` | `src/admin/views/qr-codes/qr-codes.js` |
+| `/admin/kortex#/analytics` | `src/admin/views/analytics/analytics.js` |
+| `/admin/kortex#/billing` | `src/admin/views/billing/billing.js` |
+| `/admin/kortex#/tenant-onboarding` | `src/admin/views/tenant-onboarding/tenant-onboarding.js` |
 
 ### Kreator Platform (11)
 
@@ -163,4 +174,4 @@ Agents: identify the page here, then look up the module in MODULE-MAP.md for ful
 
 | URL | File |
 |-----|------|
-| `/create-kortex-link` | `src/create-kortex-link.html` |
+| `/create-kortex-link` | 301 redirect → `/admin/kortex#/create` (standalone page retired Aug 2026) |

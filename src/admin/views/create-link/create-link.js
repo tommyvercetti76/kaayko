@@ -950,7 +950,7 @@ function renderAlumniModal(linkCode, data, reportUrl) {
         <div style="font-size:11px;color:var(--kaayko-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Report Dashboard</div>
         <div style="display:flex;gap:8px;align-items:center;">
           <code style="flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:8px 10px;font-size:12px;word-break:break-all;">${utils.escapeHtml(reportUrl)}</code>
-          <button class="btn btn-secondary" style="flex-shrink:0;padding:8px 14px;font-size:12px;text-transform:none;" onclick="navigator.clipboard.writeText('${reportUrl}').then(()=>this.textContent='Copied!').catch(()=>{})">Copy</button>
+          <button class="btn btn-secondary" style="flex-shrink:0;padding:8px 14px;font-size:12px;text-transform:none;" onclick="navigator.clipboard.writeText('${utils.jsAttr(reportUrl)}').then(()=>this.textContent='Copied!').catch(()=>{})">Copy</button>
         </div>
       </div>`
     : `<p style="font-size:12px;color:var(--kaayko-muted);margin-top:12px;">Report link unavailable. Visit /admin/alumni to create one.</p>`;
@@ -959,8 +959,8 @@ function renderAlumniModal(linkCode, data, reportUrl) {
     <div>
       <div style="font-size:11px;color:var(--kaayko-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Share this link</div>
       <div style="display:flex;gap:8px;align-items:center;">
-        <code style="flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:8px 10px;font-size:13px;">${campaignUrl}</code>
-        <button class="btn btn-primary" style="flex-shrink:0;padding:8px 14px;font-size:12px;text-transform:none;" onclick="navigator.clipboard.writeText('${campaignUrl}').then(()=>this.textContent='Copied!').catch(()=>{})">Copy</button>
+        <code style="flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:8px 10px;font-size:13px;">${utils.escapeHtml(campaignUrl)}</code>
+        <button class="btn btn-primary" style="flex-shrink:0;padding:8px 14px;font-size:12px;text-transform:none;" onclick="navigator.clipboard.writeText('${utils.jsAttr(campaignUrl)}').then(()=>this.textContent='Copied!').catch(()=>{})">Copy</button>
       </div>
       ${reportLine}
     </div>
