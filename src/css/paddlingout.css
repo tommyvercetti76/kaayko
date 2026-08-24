@@ -600,6 +600,26 @@ body {
   border-color: var(--gold, #b5935a);
 }
 
+/* Header actions: Search (secondary) + Submit Lake (primary) */
+.po-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+.po-search-btn { text-decoration: none; }
+.po-submit-btn {
+  background: linear-gradient(135deg, var(--gold-bright, #d9bd7b), var(--gold, #b5935a));
+  color: #141210;
+  border-color: transparent;
+}
+.po-submit-btn:hover {
+  background: linear-gradient(135deg, var(--gold-bright, #d9bd7b), var(--gold, #b5935a));
+  border-color: transparent;
+  filter: brightness(1.06);
+}
+/* On small screens go icon-only so the brand + both actions fit one row.
+   Each button keeps its aria-label, so this stays accessible. */
+@media (max-width: 560px) {
+  .po-search-label { display: none; }
+  .po-search-btn { padding: 0 0.6rem; }
+}
+
 @media (max-width: 600px) {
   .po-page-header {
     padding: 1.4rem 1.1rem 1rem;

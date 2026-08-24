@@ -315,11 +315,16 @@
       <span class="po-eyebrow">Kaayko</span>
       <h1 class="po-title">Paddling Out</h1>
     </a>
-    <button class="po-search-btn" aria-label="Search Spots"
-            onclick="window.location.href='/paddlingout/search'">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
-      <span class="po-search-label">Search</span>
-    </button>
+    <div class="po-actions">
+      <a class="po-search-btn" aria-label="Search spots" href="/paddlingout/search">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+        <span class="po-search-label">Search</span>
+      </a>
+      <a class="po-search-btn po-submit-btn" aria-label="Submit a lake" href="/paddlingout/submitentry">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm1 8v3h-2v-3H8V8h3V5h2v3h3v2h-3z"/></svg>
+        <span class="po-search-label">Submit Lake</span>
+      </a>
+    </div>
   </div>
 
 
