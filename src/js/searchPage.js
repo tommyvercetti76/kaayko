@@ -288,16 +288,50 @@ function ensureMap() {
   if (!el || typeof L === 'undefined') return null;
   wrap.hidden = false;
   if (!searchMap) {
-    searchMap = L.map(el, { scrollWheelZoom: false });
+    // Buttery interaction: scroll/pinch zoom + inertia drag on, smooth animations.
+    searchMap = L.map(el, {
+      scrollWheelZoom: true,
+      wheelPxPerZoomLevel: 110,
+      zoomControl: true,
+      zoomAnimation: true,
+      fadeAnimation: true,
+      inertia: true
+    });
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
       { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(searchMap);
     pinLayer = L.layerGroup().addTo(searchMap);
     searchMap.setView([39.5, -98.35], 4);
+    wireSearchHere();
   }
+  showSearchHere();
   setTimeout(() => searchMap.invalidateSize(), 120);
   return searchMap;
 }
 function hideMap() { const w = document.getElementById('search-map-wrap'); if (w) w.hidden = true; }
+
+// "Search this area" — lets users pan/zoom the map and rediscover lakes at the
+// new centre without typing. Radius is derived from what's currently on screen.
+let searchHereWired = false;
+function showSearchHere() { const b = document.getElementById('search-here-btn'); if (b) b.hidden = false; }
+function wireSearchHere() {
+  if (searchHereWired) return;
+  const btn = document.getElementById('search-here-btn');
+  if (!btn) return;
+  searchHereWired = true;
+  btn.addEventListener('click', () => {
+    if (!searchMap) return;
+    const c = searchMap.getCenter();
+    let radiusKm = 30;
+    try {
+      const ne = searchMap.getBounds().getNorthEast();
+      radiusKm = Math.round(searchMap.distance(c, ne) / 1000);   // centre → corner
+    } catch {}
+    radiusKm = Math.max(10, Math.min(60, radiusKm || 30));       // runSearch clamps too
+    btn.classList.add('busy');
+    Promise.resolve(runSearch(c.lat, c.lng, 'this area', true, radiusKm))
+      .finally(() => btn.classList.remove('busy'));
+  });
+}
 function scorePinIcon(score, covered) {
   const s = (score != null && !isNaN(score)) ? Number(score).toFixed(1) : null;
   const bg = covered ? '#b5935a' : (s != null ? scoreColor(s) : '#555');
@@ -308,31 +342,33 @@ function scorePinIcon(score, covered) {
     iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -28]
   });
 }
-function pinPopup(o) {
-  // o: { name, meta, covered, lat, lng }
-  const fq = new URLSearchParams({ lat: o.lat, lng: o.lng, name: o.name }).toString();
-  const go = `<a class="go" href="/paddlingout/forecast?${fq}">Forecast</a>`;
-  const sub = `<a class="sub" href="/paddlingout/submitentry?${new URLSearchParams({ name: o.name, lat: o.lat, lng: o.lng }).toString()}">Add photos</a>`;
-  return `<div class="map-pop-name">${escapeHtml(o.name)}</div>` +
-    `<div class="map-pop-meta">${escapeHtml(o.meta)}</div>` +
-    `<div class="map-pop-actions">${go}${o.covered ? '' : sub}</div>`;
-}
 function renderMapPins(bodies, covered, scoreMap) {
   const map = ensureMap();
   if (!map) return;
   pinLayer.clearLayers();
   const pts = [];
+  // Tapping a pin takes you straight to that lake. Name shows on hover/long-press.
   (covered || []).forEach(s => {
-    pinLayer.addLayer(L.marker([s.lat, s.lng], { icon: scorePinIcon(null, true) })
-      .bindPopup(pinPopup({ name: s.name, meta: (s.subtitle || 'We cover this') + ' · exact location', covered: true, lat: s.lat, lng: s.lng })));
+    const url = s.id
+      ? `/paddlingout/forecast?id=${encodeURIComponent(s.id)}`
+      : `/paddlingout/forecast?${new URLSearchParams({ lat: s.lat, lng: s.lng, name: s.name }).toString()}`;
+    pinLayer.addLayer(
+      L.marker([s.lat, s.lng], { icon: scorePinIcon(null, true), title: s.name, keyboard: true })
+        .bindTooltip(`${s.name} · we cover this`, { direction: 'top', offset: [0, -30], opacity: 0.96 })
+        .on('click', () => { window.location.href = url; })
+    );
     pts.push([s.lat, s.lng]);
   });
   (bodies || []).forEach(b => {
     if (!Number.isFinite(b.lat) || !Number.isFinite(b.lng)) return;
     const score = scoreMap && scoreMap.get(`${b.lat.toFixed(6)},${b.lng.toFixed(6)}`);
     const lab = scoreLabel(score);
-    pinLayer.addLayer(L.marker([b.lat, b.lng], { icon: scorePinIcon(score, false) })
-      .bindPopup(pinPopup({ name: b.name, meta: `${lab ? lab + ' · ' : ''}${b.type} · ${b.distanceMiles} mi · approx (lake centre)`, covered: false, lat: b.lat, lng: b.lng })));
+    const tip = `${b.name}${lab ? ' · ' + lab : ''} · tap to open`;
+    pinLayer.addLayer(
+      L.marker([b.lat, b.lng], { icon: scorePinIcon(score, false), title: b.name, keyboard: true })
+        .bindTooltip(tip, { direction: 'top', offset: [0, -30], opacity: 0.96 })
+        .on('click', () => openForecast({ name: b.name, lat: b.lat, lng: b.lng, type: b.type }))
+    );
     pts.push([b.lat, b.lng]);
   });
   // The wrap may have just un-hidden — settle the container size BEFORE fitting

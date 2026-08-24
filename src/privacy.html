@@ -125,7 +125,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
     <h3>Automatically Collected</h3>
     <ul>
       <li><strong>Usage Data:</strong> Browser type, device info, pages visited, time spent, referring URLs.</li>
-      <li><strong>Cookies:</strong> Session management, preferences (dark mode), and Firebase Analytics.</li>
+      <li><strong>Cookies:</strong> We set no first-party tracking cookies. Third-party cookies are set only by Stripe on Store and checkout pages (fraud prevention) and by PostHog on the Kortex app (product analytics). Your Paddling Out preferences live in your browser's local storage, not cookies.</li>
       <li><strong>IP Addresses:</strong> Collected for fraud prevention and rate limiting. Not linked to personal identity.</li>
     </ul>
     <h3>Payment Information</h3>
@@ -158,7 +158,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
     </ul>
     <h3>Analytics</h3>
     <ul>
-      <li><strong>Firebase Analytics:</strong> Usage patterns stored for up to 14 months.</li>
+      <li><strong>Product Analytics (PostHog):</strong> Aggregate, pseudonymous usage on the Kortex link-management app only &mdash; page views and in-app navigation. It is not loaded on the public Paddling Out pages or the Store. Retained under PostHog's data policy.</li>
       <li><strong>Server Logs:</strong> API request logs retained for 30 days.</li>
     </ul>
   </div>
@@ -167,8 +167,9 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
     <h2>Third-Party Services</h2>
     <p>We do not sell your personal information. We share data with third parties only as needed to operate:</p>
     <ul>
-      <li><strong>Stripe:</strong> Payment processing</li>
-      <li><strong>Google Cloud Platform (Firebase):</strong> Hosting, database, analytics</li>
+      <li><strong>Stripe:</strong> Payment processing. Stripe.js loads on Store and checkout pages and sets its own cookies (<code>__stripe_mid</code>, <code>__stripe_sid</code>) for fraud prevention</li>
+      <li><strong>Google Cloud Platform (Firebase):</strong> Hosting, database, and authentication</li>
+      <li><strong>PostHog:</strong> Product analytics on the Kortex link-management app (aggregate usage only). It sets its own cookies / local storage on Kortex and is not used on the public Paddling Out pages or the Store</li>
       <li><strong>WeatherAPI.com:</strong> Real-time weather data for Paddling Out. Your location query (coordinates or place name) is sent to fetch conditions; no personal identifiers accompany it</li>
       <li><strong>Google Fonts:</strong> Typefaces are loaded from fonts.googleapis.com / fonts.gstatic.com, which means your browser makes a request to Google when pages load</li>
       <li><strong>GitHub:</strong> The Forge Gallery page lists images directly from the public Forge repository via api.github.com and raw.githubusercontent.com</li>
@@ -191,13 +192,15 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
 
   <div class="pp-section">
     <h2>Cookies &amp; Local Storage</h2>
-    <p>We use browser storage as follows:</p>
+    <p>The public Kaayko site (Paddling Out, home, About) sets <strong>no first-party cookies</strong>. What we keep is a small set of your own preferences in your browser's <strong>local storage</strong> &mdash; it stays on your device and is never sent to our servers:</p>
     <ul>
-      <li><strong>Local Storage:</strong> Remembering preferences like dark mode. This data stays on your device and is never transmitted to our servers.</li>
-      <li><strong>Firebase Auth Tokens:</strong> Authentication state is managed by Firebase Auth using IndexedDB, not traditional cookies.</li>
-      <li><strong>Cookies:</strong> Used in limited contexts for link attribution and session continuity within Kortex (smart links). Paddling Out does not set cookies.</li>
+      <li><strong>Preferences:</strong> your unit choice (<code>°F/mph</code> vs <code>°C/km&#47;h</code>), your saved favorite lakes, and your locked &ldquo;my area&rdquo; for search.</li>
+      <li><strong>&ldquo;You&rsquo;ve seen this&rdquo; flags:</strong> small markers so one-time notices and guided tours don&rsquo;t reappear (e.g. this storage notice, the search and rating tours), and, if you were given store access, a flag that remembers it.</li>
+      <li><strong>Ratings you submit:</strong> a local copy of paddle ratings you make, so they can sync and so you rate a spot once per day.</li>
+      <li><strong>Firebase Auth (Kortex / creator apps only):</strong> sign-in state is held by Firebase Auth in IndexedDB, not traditional cookies.</li>
     </ul>
-    <p>You can clear browser storage through your browser settings. Clearing local storage will reset your preferences.</p>
+    <p><strong>Third-party cookies</strong> appear only on specific pages: <strong>Stripe</strong> (<code>__stripe_mid</code>, <code>__stripe_sid</code>) on Store and checkout pages, and <strong>PostHog</strong> product-analytics storage on the Kortex app. These are described under Third-Party Services above.</p>
+    <p>You can clear browser storage at any time through your browser settings &mdash; doing so simply resets your preferences.</p>
   </div>
 
   <div class="pp-section">

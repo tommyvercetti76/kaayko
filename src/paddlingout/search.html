@@ -3,6 +3,7 @@
 <head>
   <script src="/js/prod-config.js"></script>
   <script src="/js/prefs.js"></script>
+  <script src="/js/consent-notice.js" defer></script>
   <script>document.documentElement.classList.add('dark-theme');</script>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -327,11 +328,71 @@
     .covered-card .kaayko-fav-btn.covered-fav:hover { background: rgba(181,147,90,0.14); }
 
     /* ── Map of found lakes ─────────────────────────────────────────── */
-    .search-map-wrap { margin-bottom: 22px; }
+    .search-map-wrap { margin-bottom: 22px; position: relative; }
     .search-map {
-      height: 300px; border-radius: 14px; overflow: hidden;
+      height: clamp(360px, 58vh, 640px); border-radius: 14px; overflow: hidden;
       border: 1px solid rgba(181,147,90,0.3); background: #0d0d0f; z-index: 0;
     }
+    /* "Search this area" — floating control so users can pan + rediscover */
+    .search-here-btn {
+      position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+      z-index: 500; display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 17px; border: none; border-radius: 999px; cursor: pointer;
+      background: linear-gradient(135deg, #d9bd7b, #b5935a); color: #141210;
+      font-family: 'Josefin Sans', Arial, sans-serif; font-weight: 600;
+      font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5); transition: transform .15s ease, filter .2s ease, opacity .2s ease;
+    }
+    .search-here-btn:hover { filter: brightness(1.06); transform: translateX(-50%) translateY(-1px); }
+    .search-here-btn:active { transform: translateX(-50%) translateY(0); }
+    .search-here-btn .material-icons { font-size: 16px; }
+    .search-here-btn[hidden] { display: none; }
+    .search-here-btn.busy { opacity: .55; pointer-events: none; }
+
+    /* ── First-time tour overlay ─────────────────────────────────────── */
+    .tour-overlay {
+      position: fixed; inset: 0; z-index: 2000; display: none;
+      align-items: center; justify-content: center; padding: 20px;
+      background: rgba(8,8,8,0.92); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+      animation: tourFade .3s ease both;
+    }
+    .tour-overlay.visible { display: flex; }
+    .tour-overlay.hiding { animation: tourFadeOut .28s ease forwards; }
+    @keyframes tourFade { from { opacity: 0 } to { opacity: 1 } }
+    @keyframes tourFadeOut { to { opacity: 0 } }
+    .tour-box {
+      width: min(460px, 100%); color: #ede8df;
+      background: linear-gradient(150deg,#0d0c0a,#111);
+      border: 1px solid rgba(217,189,123,0.34); border-radius: 18px;
+      padding: 26px 24px 22px; box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    }
+    .tour-eyebrow { font-family:'Josefin Sans',Arial,sans-serif; font-size:.7rem; letter-spacing:.3em; text-transform:uppercase; color:#b5935a; }
+    .tour-box h2 { font-family:'Cormorant Garamond',Georgia,serif; font-weight:600; font-size:1.7rem; margin:.3rem 0 1.1rem; }
+    .tour-step { display:flex; gap:12px; align-items:flex-start; margin-bottom:14px; }
+    .tour-step .n {
+      flex:0 0 auto; width:28px; height:28px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      background:rgba(217,189,123,0.15); border:1px solid rgba(217,189,123,0.35); color:#d9bd7b;
+      font-family:'Josefin Sans',Arial,sans-serif; font-weight:600; font-size:.85rem;
+    }
+    .tour-step .t { font-size:1.06rem; line-height:1.35; color:rgba(237,232,223,0.9); }
+    .tour-step .t b { color:#ede8df; font-weight:600; }
+    .tour-go {
+      margin-top:6px; width:100%; cursor:pointer; border:none; border-radius:11px;
+      background:linear-gradient(135deg,#d9bd7b,#b5935a); color:#141210;
+      font-family:'Josefin Sans',Arial,sans-serif; font-weight:600; font-size:.86rem; letter-spacing:.06em; text-transform:uppercase;
+      padding:.85rem 1rem; transition:filter .2s ease, transform .15s ease;
+    }
+    .tour-go:hover { filter:brightness(1.07); transform:translateY(-1px); }
+    .tour-help {
+      position:fixed; right:16px; bottom:16px; z-index:1500; width:42px; height:42px; border-radius:50%; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; border:1px solid rgba(217,189,123,0.4);
+      background:rgba(20,18,16,0.85); color:#d9bd7b; font-family:'Josefin Sans',Arial,sans-serif; font-weight:700; font-size:1.15rem;
+      -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); box-shadow:0 4px 14px rgba(0,0,0,0.5);
+      transition:transform .15s ease, background .2s ease;
+    }
+    .tour-help:hover { transform:scale(1.06); background:rgba(181,147,90,0.2); }
+    @media (prefers-reduced-motion:reduce){ .tour-overlay, .tour-overlay.hiding { animation:none; } }
     .map-legend {
       display: flex; flex-wrap: wrap; gap: 14px; margin-top: 9px;
       font-family: 'Josefin Sans', Arial, sans-serif; font-size: 0.62rem;
@@ -622,23 +683,6 @@
       <button type="button" id="my-area-change">Change</button>
     </div>
 
-    <!-- Popular spots (hidden once results show) -->
-    <section class="search-intro">
-      <p>
-        Search resolves any named lake, river or reservoir by city, state or postcode and returns a live
-        Paddle Score for it &mdash; wind speed and gusts, air and water temperature, UV index, cloud cover
-        and precipitation folded into one number from 1 (Danger) to 5 (Excellent), with fixed safety rules
-        applied on top.
-      </p>
-      <p>
-        Coverage is not the same as curation. Seventeen spots are hand-picked and written up in detail,
-        with notes on what drives the score at each one and what the model cannot see there. Everywhere
-        else returns a score from weather data alone.
-        <a href="/paddlingout">Browse the 17 curated spots</a>, or
-        <a href="/paddlingout/methodology">read how the Paddle Score is built</a>.
-      </p>
-    </section>
-
     <div class="popular-section" id="popular-section">
       <div class="popular-label">Popular paddle regions</div>
       <div class="popular-chips">
@@ -656,6 +700,9 @@
     <!-- Map of found lakes (pins colored by Paddle Score) -->
     <div id="search-map-wrap" class="search-map-wrap" hidden>
       <div id="search-map" class="search-map" aria-label="Map of nearby lakes"></div>
+      <button type="button" id="search-here-btn" class="search-here-btn" hidden>
+        <span class="material-icons" aria-hidden="true">search</span> Search this area
+      </button>
       <div class="map-legend" aria-hidden="true">
         <span class="lg lg-cover">◆ We cover</span>
         <span class="lg lg-good">Worth it</span>
@@ -678,6 +725,23 @@
       </div>
     </div>
     <div id="results-list" role="listbox"></div>
+
+    <!-- What this page does — kept below the map + results, not on top of them -->
+    <section class="search-intro">
+      <p>
+        Search resolves any named lake, river or reservoir by city, state or postcode and returns a live
+        Paddle Score for it &mdash; wind speed and gusts, air and water temperature, UV index, cloud cover
+        and precipitation folded into one number from 1 (Danger) to 5 (Excellent), with fixed safety rules
+        applied on top.
+      </p>
+      <p>
+        Coverage is not the same as curation. Seventeen spots are hand-picked and written up in detail,
+        with notes on what drives the score at each one and what the model cannot see there. Everywhere
+        else returns a score from weather data alone.
+        <a href="/paddlingout">Browse the 17 curated spots</a>, or
+        <a href="/paddlingout/methodology">read how the Paddle Score is built</a>.
+      </p>
+    </section>
 
   </main>
 
@@ -705,6 +769,53 @@
     (function () {
       var y = document.getElementById("year");
       if (y) y.textContent = new Date().getFullYear();
+    })();
+  </script>
+
+  <!-- First-time tour -->
+  <div class="tour-overlay" id="search-tour" role="dialog" aria-modal="true" aria-label="How search works">
+    <div class="tour-box">
+      <span class="tour-eyebrow">Paddling Out</span>
+      <h2>Find water near you</h2>
+      <div class="tour-step"><span class="n">1</span><span class="t">Type any <b>lake, river or city</b> &mdash; you get a live Paddle Score for it.</span></div>
+      <div class="tour-step"><span class="n">2</span><span class="t">Drag the map, then tap <b>&ldquo;Search this area&rdquo;</b> to discover spots around you.</span></div>
+      <div class="tour-step"><span class="n">3</span><span class="t">Tap any <b>pin</b> to open that lake&rsquo;s forecast.</span></div>
+      <div class="tour-step"><span class="n">4</span><span class="t">Tap the <b>&#9733;</b> to save favorites &mdash; they show first everywhere.</span></div>
+      <div class="tour-step"><span class="n">5</span><span class="t">Change units anytime in <b>Settings</b> &mdash; the gear, top-left.</span></div>
+      <button type="button" class="tour-go" id="search-tour-go">Start exploring</button>
+    </div>
+  </div>
+  <button type="button" class="tour-help" id="search-tour-help" title="How search works" aria-label="How search works">?</button>
+
+  <script>
+    (function () {
+      var KEY = 'kaayko_search_tour_seen';
+      var overlay = document.getElementById('search-tour');
+      var go = document.getElementById('search-tour-go');
+      var help = document.getElementById('search-tour-help');
+      if (!overlay) return;
+      function show() { overlay.classList.remove('hiding'); overlay.classList.add('visible'); }
+      function hide() {
+        overlay.classList.add('hiding');
+        setTimeout(function () { overlay.classList.remove('visible', 'hiding'); }, 300);
+        try { localStorage.setItem(KEY, '1'); } catch (e) {}
+      }
+      if (go) go.addEventListener('click', hide);
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) hide(); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && overlay.classList.contains('visible')) hide(); });
+      if (help) help.addEventListener('click', show);
+      var seen = true; try { seen = localStorage.getItem(KEY) === '1'; } catch (e) {}
+      if (seen) return;
+      // Don't stack on top of the storage notice. After a tick, check whether the
+      // notice bar is actually on screen: if so, wait for the user to dismiss it;
+      // if not (already acknowledged, or not present), show the tour.
+      setTimeout(function () {
+        if (document.getElementById('kaayko-consent')) {
+          window.addEventListener('kaayko:notice-dismissed', function () { setTimeout(show, 250); }, { once: true });
+        } else {
+          show();
+        }
+      }, 800);
     })();
   </script>
 

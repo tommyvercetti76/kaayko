@@ -107,10 +107,8 @@ class RatingHero {
                 </div>
               </div>
             </div>
-            <div class="units-toggle">
-              <button class="units-btn ${this.useMetric ? 'active' : ''}" data-unit="metric">°C / km/h</button>
-              <button class="units-btn ${!this.useMetric ? 'active' : ''}" data-unit="imperial">°F / mph</button>
-            </div>
+            <!-- Units are now chosen in Settings (kaayko_units); no per-page toggle here.
+                 Display still honors that preference via this.useMetric. -->
           </div>
         </div>
 
