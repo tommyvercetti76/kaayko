@@ -195,9 +195,49 @@
       padding:0 0.9rem;
       text-transform:uppercase;
     }
-    .mini-btn:hover, .submit-btn:hover, .ghost-btn:hover {
+    .mini-btn:hover, .ghost-btn:hover {
       border-color:var(--gold);
       background:rgba(181,147,90,0.16);
+    }
+    /* ── Sleeker fields ─────────────────────────────────────────────── */
+    input, textarea, select {
+      transition:border-color .18s var(--ease), box-shadow .18s var(--ease), background .18s var(--ease);
+    }
+    input::placeholder, textarea::placeholder { color:rgba(237,232,223,0.3); }
+    /* Custom-styled dropdowns (no dated native chrome) */
+    .select-wrap { position:relative; }
+    .select-wrap[hidden] { display:none; }
+    .select-wrap::after {
+      content:''; position:absolute; right:1.05rem; top:50%;
+      width:0.5rem; height:0.5rem;
+      border-right:2px solid var(--gold); border-bottom:2px solid var(--gold);
+      transform:translateY(-65%) rotate(45deg);
+      pointer-events:none; opacity:0.9;
+    }
+    select {
+      appearance:none; -webkit-appearance:none; -moz-appearance:none;
+      padding-right:2.4rem; cursor:pointer;
+    }
+    select option { background:#141210; color:var(--fg); }
+    /* Prominent, modern submit */
+    .submit-btn {
+      min-height:52px;
+      padding:0 1.7rem;
+      font-size:0.78rem;
+      letter-spacing:0.16em;
+      color:#141210;
+      background:linear-gradient(135deg, var(--gold-bright), var(--gold));
+      border:1px solid transparent;
+      border-radius:10px;
+      box-shadow:0 8px 24px rgba(181,147,90,0.22);
+      transition:filter .18s var(--ease), transform .18s var(--ease);
+    }
+    .submit-btn:hover { filter:brightness(1.06); transform:translateY(-1px); }
+    .submit-btn:disabled { opacity:0.55; cursor:default; filter:none; transform:none; }
+    .actions {
+      display:flex; align-items:center; justify-content:space-between;
+      gap:1rem; flex-wrap:wrap; margin-top:0.5rem;
+      padding-top:1rem; border-top:1px solid rgba(181,147,90,0.14);
     }
     .choice-row {
       display:flex;
@@ -439,13 +479,18 @@
           </label>
           <label>
             <span class="label-text">State / region</span>
-            <input id="region" name="region" maxlength="80" required placeholder="Texas">
+            <div class="select-wrap" id="region-select-wrap">
+              <select id="region" name="region" required></select>
+            </div>
+            <input id="regionText" name="regionText" maxlength="80" class="region-text" placeholder="State or region" hidden>
           </label>
         </div>
 
         <label>
           <span class="label-text">Country</span>
-          <input id="country" name="country" maxlength="80" value="United States">
+          <div class="select-wrap">
+            <select id="country" name="country"></select>
+          </div>
         </label>
 
         <div class="field-group">
@@ -468,17 +513,21 @@
         <div class="grid-two">
           <label>
             <span class="label-text">Parking</span>
-            <select id="parkingAvl" name="parkingAvl">
-              <option value="Y">Available</option>
-              <option value="N">Not sure / not available</option>
-            </select>
+            <div class="select-wrap">
+              <select id="parkingAvl" name="parkingAvl">
+                <option value="Y">Available</option>
+                <option value="N">Not sure / not available</option>
+              </select>
+            </div>
           </label>
           <label>
             <span class="label-text">Restrooms</span>
-            <select id="restroomsAvl" name="restroomsAvl">
-              <option value="N">Not sure / not available</option>
-              <option value="Y">Available</option>
-            </select>
+            <div class="select-wrap">
+              <select id="restroomsAvl" name="restroomsAvl">
+                <option value="N">Not sure / not available</option>
+                <option value="Y">Available</option>
+              </select>
+            </div>
           </label>
         </div>
 
@@ -629,6 +678,64 @@
         return document.getElementById(id);
       }
 
+      // ── Country / State dropdowns ─────────────────────────────────────
+      // US + India get real state pickers (Kaayko's coverage); any other
+      // country falls back to a free-text region field. regionValue() reads
+      // whichever control is active.
+      var COUNTRIES = ['United States','India','Canada','United Kingdom','Australia','New Zealand','Ireland',
+        'Argentina','Austria','Bangladesh','Belgium','Bhutan','Brazil','Chile','China','Colombia','Croatia',
+        'Czechia','Denmark','Egypt','Estonia','Fiji','Finland','France','Germany','Greece','Hungary','Iceland',
+        'Indonesia','Israel','Italy','Japan','Kenya','Latvia','Lithuania','Malaysia','Mexico','Nepal',
+        'Netherlands','Norway','Pakistan','Peru','Philippines','Poland','Portugal','Romania','Singapore',
+        'Slovakia','Slovenia','South Africa','South Korea','Spain','Sri Lanka','Sweden','Switzerland',
+        'Thailand','Turkey','Ukraine','United Arab Emirates','Vietnam'];
+      var US_STATES = ['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware',
+        'District of Columbia','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas',
+        'Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi',
+        'Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York',
+        'North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island',
+        'South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington',
+        'West Virginia','Wisconsin','Wyoming'];
+      var INDIA_STATES = ['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat',
+        'Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur',
+        'Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana',
+        'Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Andaman and Nicobar Islands','Chandigarh',
+        'Dadra and Nagar Haveli and Daman and Diu','Delhi','Jammu and Kashmir','Ladakh','Lakshadweep','Puducherry'];
+
+      function makeOption(value, label, selected) {
+        var o = document.createElement('option');
+        o.value = value; o.textContent = label || value; if (selected) o.selected = true;
+        return o;
+      }
+      function populateCountries() {
+        var sel = field('country');
+        sel.innerHTML = '';
+        COUNTRIES.forEach(function (c) { sel.appendChild(makeOption(c, c, c === 'United States')); });
+      }
+      function populateRegions(country) {
+        var sel = field('region');
+        var wrap = document.getElementById('region-select-wrap');
+        var txt = field('regionText');
+        var list = country === 'United States' ? US_STATES : (country === 'India' ? INDIA_STATES : null);
+        if (list) {
+          sel.innerHTML = '';
+          sel.appendChild(makeOption('', country === 'India' ? 'Select a state / UT' : 'Select a state'));
+          list.forEach(function (s) { sel.appendChild(makeOption(s, s)); });
+          wrap.hidden = false; sel.disabled = false; sel.required = true;
+          txt.hidden = true; txt.required = false; txt.value = '';
+        } else {
+          wrap.hidden = true; sel.disabled = true; sel.required = false; sel.value = '';
+          txt.hidden = false; txt.required = true;
+        }
+      }
+      function regionValue() {
+        var txt = field('regionText');
+        return (!txt.hidden ? txt.value : field('region').value).trim();
+      }
+      populateCountries();
+      populateRegions('United States');
+      field('country').addEventListener('change', function () { populateRegions(field('country').value); });
+
       function setImageError(message) {
         imageError.textContent = message || '';
       }
@@ -734,7 +841,11 @@
       function validateBeforeSubmit(lat, lng, preference) {
         if (!requireTrimmed('lakeName', 'Lake name is required.')) return false;
         if (!requireTrimmed('city', 'City or nearest town is required.')) return false;
-        if (!requireTrimmed('region', 'State or region is required.')) return false;
+        if (!regionValue()) {
+          setStatus('State or region is required.', 'error');
+          (field('regionText').hidden ? field('region') : field('regionText')).focus();
+          return false;
+        }
         if (!requireTrimmed('country', 'Country is required.')) return false;
         if (lat === null || lat < -90 || lat > 90 || lng === null || lng < -180 || lng > 180) {
           setStatus('Valid latitude and longitude are required.', 'error');
@@ -781,7 +892,7 @@
       }
 
       async function inferCoordinates() {
-        const query = [field('lakeName').value, field('city').value, field('region').value, field('country').value]
+        const query = [field('lakeName').value, field('city').value, regionValue(), field('country').value]
           .map(v => v.trim())
           .filter(Boolean)
           .join(', ');
@@ -995,7 +1106,7 @@
         const payload = new FormData();
         payload.append('lakeName', field('lakeName').value.trim());
         payload.append('city', field('city').value.trim());
-        payload.append('region', field('region').value.trim());
+        payload.append('region', regionValue());
         payload.append('country', field('country').value.trim());
         payload.append('lat', String(lat));
         payload.append('lng', String(lng));
