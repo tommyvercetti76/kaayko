@@ -468,11 +468,11 @@
         <div class="field-group">
           <span class="label-text">Lake images required</span>
           <label class="image-drop" id="image-drop" tabindex="0">
-            <input id="images" name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple required>
+            <input id="images" name="images" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple required>
             <span class="image-drop-main">
               <span class="image-drop-copy">
                 <strong>Upload 1-3 images</strong>
-                <span>JPEG, PNG, or WebP. Each image must be 5 MB or smaller.</span>
+                <span>JPEG, PNG, WebP, or HEIC. Large phone photos are resized automatically.</span>
               </span>
               <span class="image-count" id="image-count">0 selected</span>
             </span>
@@ -541,6 +541,62 @@
       const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
       let selectedImages = [];
       let previewUrls = [];
+      let optimizing = false;
+
+      // Phone cameras produce 3-12 MB photos (and iOS shoots HEIC), which the
+      // 5 MB / JPEG-PNG-WebP limits reject. Downscale + re-encode to JPEG in the
+      // browser so a normal phone photo always fits, before we validate/upload.
+      const MAX_DIMENSION = 2000;                       // longest edge, px
+      const COMPRESS_TARGET_BYTES = 4 * 1024 * 1024;    // aim under the 5 MB cap (and 3× under the 15 MB total)
+      const PASS_THROUGH_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
+      function loadImageEl(file) {
+        return new Promise((resolve, reject) => {
+          const url = URL.createObjectURL(file);
+          const img = new Image();
+          img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+          img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('decode failed')); };
+          img.src = url;
+        });
+      }
+
+      function canvasToBlob(canvas, quality) {
+        return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
+      }
+
+      async function compressImage(file) {
+        // Small, already-accepted images pass through untouched.
+        if (PASS_THROUGH_TYPES.has(file.type) && file.size <= COMPRESS_TARGET_BYTES) return file;
+        let img;
+        try {
+          img = await loadImageEl(file);
+        } catch {
+          // Undecodable here (e.g. HEIC on a browser without support) — hand the
+          // original to validation, which will show a clear format message.
+          return file;
+        }
+        let w = img.naturalWidth || img.width;
+        let h = img.naturalHeight || img.height;
+        if (!w || !h) return file;
+        const scale = Math.min(1, MAX_DIMENSION / Math.max(w, h));
+        w = Math.round(w * scale);
+        h = Math.round(h * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return file;
+        ctx.drawImage(img, 0, 0, w, h);
+        let quality = 0.85;
+        let blob = await canvasToBlob(canvas, quality);
+        while (blob && blob.size > COMPRESS_TARGET_BYTES && quality > 0.4) {
+          quality -= 0.12;
+          blob = await canvasToBlob(canvas, quality);
+        }
+        if (!blob) return file;
+        const base = (file.name || 'photo').replace(/\.[^.]+$/, '') || 'photo';
+        return new File([blob], base + '.jpg', { type: 'image/jpeg', lastModified: Date.now() });
+      }
 
       function setStatus(message, type) {
         statusEl.textContent = message || '';
@@ -604,8 +660,30 @@
           : `${selectedImages.length} selected`;
       }
 
-      function setImages(files) {
-        const list = Array.from(files || []);
+      async function setImages(files) {
+        let list = Array.from(files || []);
+        // Enforce the count before doing any (potentially slow) compression work.
+        if (list.length > MAX_IMAGES) {
+          selectedImages = [];
+          imageInput.value = '';
+          renderImagePreviews();
+          setImageError('Upload 1-3 images.');
+          return false;
+        }
+
+        // Resize/compress large or HEIC photos so they clear the size + type gates.
+        if (list.length) {
+          optimizing = true;
+          setImageError('');
+          imageCount.textContent = 'Optimizing…';
+          try {
+            list = await Promise.all(list.map(compressImage));
+          } catch {
+            // fall through to validation with whatever we have
+          }
+          optimizing = false;
+        }
+
         const error = validateImageFiles(list);
         if (error) {
           selectedImages = [];
@@ -730,7 +808,7 @@
       });
 
       imageInput.addEventListener('change', function () {
-        setImages(imageInput.files);
+        setImages(imageInput.files);   // async — updates selectedImages when done
       });
 
       imageDrop.addEventListener('dragover', function (event) {
@@ -758,6 +836,11 @@
       form.addEventListener('submit', async function (event) {
         event.preventDefault();
         setStatus('', '');
+
+        if (optimizing) {
+          setStatus('Still optimizing your photos — try again in a moment.', 'error');
+          return;
+        }
 
         let lat = parseCoord(field('lat').value);
         let lng = parseCoord(field('lng').value);

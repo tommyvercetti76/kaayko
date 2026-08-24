@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://kaayko.com/</loc>
-    <lastmod>2026-08-05</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -30,28 +30,28 @@
 
   <url>
     <loc>https://kaayko.com/about</loc>
-    <lastmod>2026-08-05</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://kaayko.com/reads</loc>
-    <lastmod>2026-08-15</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://kaayko.com/testimonials</loc>
-    <lastmod>2026-08-05</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
     <loc>https://kaayko.com/privacy</loc>
-    <lastmod>2026-08-05</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
@@ -72,7 +72,7 @@
 
   <url>
     <loc>https://kaayko.com/kreator</loc>
-    <lastmod>2026-08-05</lastmod>
+    <lastmod>2026-08-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
