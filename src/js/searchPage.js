@@ -82,9 +82,10 @@ async function geocode(query) {
   try {
     const ctrl = new AbortController();
     const tid  = setTimeout(() => ctrl.abort(), 8000);
+    // Cached server-side proxy (keeps users off Nominatim's per-IP rate limit).
     const res  = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=1`,
-      { signal: ctrl.signal, headers: { 'User-Agent': 'Kaayko/1.0', 'Accept-Language': 'en' } }
+      `${API_BASE}/paddlingOut/geocode?q=${encodeURIComponent(query)}&limit=1`,
+      { signal: ctrl.signal }
     );
     clearTimeout(tid);
     if (!res.ok) return null;
@@ -134,8 +135,8 @@ async function fetchGeocodeSuggestions(query) {
     const ctrl = new AbortController();
     const tid = setTimeout(() => ctrl.abort(), 2000);
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5`,
-      { signal: ctrl.signal, headers: { 'User-Agent': 'Kaayko/1.0', 'Accept-Language': 'en' } }
+      `${API_BASE}/paddlingOut/geocode?q=${encodeURIComponent(query)}&limit=5`,
+      { signal: ctrl.signal }
     );
     clearTimeout(tid);
     if (!res.ok) return [];
@@ -185,6 +186,87 @@ let isSearching = false;
 let scoreGen    = 0;
 let lastSearchParams = null;  // Track last search for refresh
 
+// ── Kaayko covered spots (matched first) ───────────────────────────────────
+// Load the curated spot list once so a search for a spot we already cover
+// surfaces our own forecast instantly, above the general nearby-water results.
+let COVERED_SPOTS = [];
+async function loadCoveredSpots() {
+  try {
+    const res = await fetch(`${API_BASE}/paddlingOut`);
+    if (!res.ok) return;
+    const data = await res.json();
+    const list = Array.isArray(data) ? data : (data.data || data.spots || []);
+    COVERED_SPOTS = list.map(s => {
+      const loc = s.location || {};
+      return {
+        id: s.id,
+        // `title` is the display name ("White Rock Lake"); `lakeName` is the slug.
+        name: s.title || s.lakeName || s.id || '',
+        subtitle: s.subtitle || '',
+        lat: Number(loc.latitude ?? s.lat),
+        lng: Number(loc.longitude ?? s.lng)
+      };
+    }).filter(s => s.name && Number.isFinite(s.lat) && Number.isFinite(s.lng));
+  } catch { /* covered-spot matching is a bonus — ignore failures */ }
+}
+
+function matchCovered(query) {
+  const q = String(query || '').toLowerCase().trim();
+  if (q.length < 2 || !COVERED_SPOTS.length) return [];
+  const toks = q.split(/\s+/).filter(Boolean);
+  return COVERED_SPOTS
+    .map(s => {
+      const name = s.name.toLowerCase();
+      const hay = (s.name + ' ' + s.subtitle).toLowerCase();
+      let score = 0;
+      if (name.startsWith(q)) score += 100;
+      else if (name.includes(q)) score += 60;
+      const matched = toks.filter(t => hay.includes(t)).length;
+      score += matched * 20;
+      return { s, score, all: matched === toks.length };
+    })
+    .filter(x => x.score > 0 && x.all)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 4)
+    .map(x => x.s);
+}
+
+function coveredSection() {
+  let el = document.getElementById('covered-section');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'covered-section';
+    el.className = 'covered-section';
+    // Directly under the search bar, so a spot we cover is the first thing shown.
+    statusEl.parentNode.insertBefore(el, statusEl.nextSibling);
+  }
+  return el;
+}
+function clearCovered() {
+  const el = document.getElementById('covered-section');
+  if (el) { el.innerHTML = ''; el.classList.remove('visible'); }
+}
+function renderCovered(spots) {
+  const el = coveredSection();
+  if (!spots.length) { clearCovered(); return; }
+  el.innerHTML = `<div class="covered-head">Kaayko spots</div>` + spots.map(s => `
+    <div class="covered-card" tabindex="0" role="button"
+         data-lat="${s.lat}" data-lng="${s.lng}" data-name="${escapeHtml(s.name)}">
+      <div class="covered-info">
+        <div class="covered-name">${escapeHtml(s.name)}</div>
+        ${s.subtitle ? `<div class="covered-sub">${escapeHtml(s.subtitle)}</div>` : ''}
+      </div>
+      <span class="covered-badge">✓ We cover this</span>
+    </div>`).join('');
+  el.classList.add('visible');
+  el.querySelectorAll('.covered-card').forEach(card => {
+    const go = () => openForecast({ lat: Number(card.dataset.lat), lng: Number(card.dataset.lng), name: card.dataset.name });
+    card.addEventListener('click', go);
+    card.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+  });
+}
+loadCoveredSpots();
+
 const updateSuggestions = debounce(async () => {
   const query = inputEl.value.trim();
   if (!suggestionsEl) return;
@@ -204,8 +286,13 @@ const updateSuggestions = debounce(async () => {
     });
   });
 
-  suggestionsEl.innerHTML = suggestions
-    .map(s => `<option value="${s.value.replace(/"/g, '&quot;')}"></option>`)
+  // Our own covered spots first, then geocoded places.
+  const coveredOpts = matchCovered(query).map(s => {
+    suggestionChoiceCache.set(s.name.toLowerCase(), { lat: s.lat, lng: s.lng, radiusKm: 25 });
+    return `<option value="${s.name.replace(/"/g, '&quot;')}"></option>`;
+  });
+  suggestionsEl.innerHTML = coveredOpts
+    .concat(suggestions.map(s => `<option value="${s.value.replace(/"/g, '&quot;')}"></option>`))
     .join('');
 }, 500);
 
@@ -218,6 +305,7 @@ clearBtn.addEventListener('click', () => {
   inputEl.value = '';
   clearBtn.classList.remove('visible');
   if (suggestionsEl) suggestionsEl.innerHTML = '';
+  clearCovered();
   inputEl.focus();
 });
 inputEl.addEventListener('keydown', e => {
@@ -249,6 +337,7 @@ function requestGPS() {
       const { latitude: lat, longitude: lng } = pos.coords;
       inputEl.value = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
       clearBtn.classList.add('visible');
+      clearCovered();
       runSearch(lat, lng, 'your location');
     },
     err => {
@@ -270,6 +359,7 @@ document.querySelectorAll('.popular-chip').forEach(chip => {
     const label = chip.textContent.trim();
     inputEl.value = label;
     clearBtn.classList.add('visible');
+    clearCovered();
     runSearch(lat, lng, label);
   });
 });
@@ -278,6 +368,7 @@ document.querySelectorAll('.popular-chip').forEach(chip => {
 async function triggerTextSearch() {
   const query = inputEl.value.trim();
   if (!query) { setStatus('Enter a lake, city, or place name.', 'error'); return; }
+  renderCovered(matchCovered(query));   // instant: surface spots we already cover
   setStatus('Finding location…', 'loading');
 
   // If user picked a suggested option, use that exact lat/lng instead of re-geocoding.
@@ -599,21 +690,7 @@ function setStatus(msg, type = '') {
   }
 })();
 
-// ── Auto-detect on load (silent — don't prompt if already searching) ──────
-window.addEventListener('DOMContentLoaded', () => {
-  const p = new URLSearchParams(window.location.search);
-  if (!p.has('lat') && !p.has('lng') && navigator.geolocation) {
-    // Try silently — won't show prompt unless browser has prior permission
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        if (isSearching) return; // user already clicked something
-        const { latitude: lat, longitude: lng } = pos.coords;
-        inputEl.value = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-        clearBtn.classList.add('visible');
-        runSearch(lat, lng, 'your location');
-      },
-      () => { /* permission denied silently — user sees popular chips */ },
-      { timeout: 3000, maximumAge: 300000 }
-    );
-  }
-});
+// Location is opt-in: we do NOT auto-request GPS on load (that shows an
+// immediate permission prompt on first visit). Visitors choose it via the
+// "Use my location" button, type a place, or tap a popular spot. If the page
+// was opened with ?lat/lng or ?q, checkUrlParams above already searched.

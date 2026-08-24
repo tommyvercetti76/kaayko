@@ -288,6 +288,33 @@
       opacity: 0; transition: opacity 0.3s;
     }
     .results-header.visible { opacity: 1; }
+
+    /* Covered ("Kaayko spots") matches, shown above nearby-water results */
+    .covered-section { display: none; margin-bottom: 22px; }
+    .covered-section.visible { display: block; }
+    .covered-head {
+      font-family: 'Josefin Sans', Arial, sans-serif;
+      font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase;
+      color: #b5935a; margin: 0 0 10px;
+    }
+    .covered-card {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 14px 16px; margin-bottom: 8px; cursor: pointer;
+      border: 1px solid rgba(181,147,90,0.34); border-radius: 12px;
+      background: linear-gradient(135deg, rgba(181,147,90,0.12), rgba(181,147,90,0.03));
+      transition: border-color .18s ease, transform .18s ease;
+    }
+    .covered-card:hover, .covered-card:focus-visible {
+      border-color: #b5935a; transform: translateY(-1px); outline: none;
+    }
+    .covered-name { font-family: 'Josefin Sans', Arial, sans-serif; font-weight: 600; color: #ede8df; }
+    .covered-sub { font-size: 0.85rem; color: rgba(237,232,223,0.6); margin-top: 2px; font-style: italic; }
+    .covered-badge {
+      flex-shrink: 0; font-family: 'Josefin Sans', Arial, sans-serif;
+      font-size: 0.6rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase;
+      color: #141210; background: linear-gradient(135deg, #d9bd7b, #b5935a);
+      padding: 5px 10px; border-radius: 999px; white-space: nowrap;
+    }
     .results-count {
       font-family: var(--font-sans);
       font-size: 0.72rem;
