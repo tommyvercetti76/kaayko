@@ -83,7 +83,13 @@
 html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-height: 100vh; -webkit-font-smoothing: antialiased; }
 .theme-toggle-icon { display: none !important; }
 
-.meth-wrap { max-width: 720px; margin: 0 auto; padding: 0 1.5rem 4rem; }
+/* body is display:flex (sticky footer); min-width:0 lets this flex item shrink
+   below its widest child instead of overflowing the mobile viewport. */
+.meth-wrap { max-width: 720px; width: 100%; box-sizing: border-box; min-width: 0; margin: 0 auto; padding: 0 1.5rem 4rem; }
+.meth-wrap > * { min-width: 0; max-width: 100%; }
+.score-table { width: 100%; table-layout: fixed; }
+.score-table th, .score-table td { overflow-wrap: anywhere; }
+#heatmapContainer, #heatmapContainer .khm-wrap, #heatmapContainer .khm-bar { min-width: 0; max-width: 100%; }
 
 .meth-back {
   display: inline-flex; align-items: center; gap: 0.4rem;
@@ -182,6 +188,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
 .site-footer p { margin: 0.2rem 0 0; }
 </style>
   <link rel="stylesheet" href="/css/footer.css">
+  <script src="/js/prefs.js"></script>
   <script src="/js/kaayko-icons.js" defer></script>
 </head>
 <body>

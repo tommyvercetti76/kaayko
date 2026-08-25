@@ -84,7 +84,14 @@
     return ((hour - KHM_HOURS[0]) / KHM_SPAN * 100).toFixed(2);
   }
   function khmMacros(hd) {
-    const P     = window.KaaykoPrefs;
+    // Defensive fallback: never throw if KaaykoPrefs (unit formatters) isn't loaded
+    // on the host page — degrade to plain metric rather than breaking the panel.
+    const P = window.KaaykoPrefs || {
+      fmtWind:   v => `${Math.round(parseFloat(v))} km/h`,
+      fmtTemp:   v => `${Math.round(parseFloat(v))}°C`,
+      fmtHeight: v => `${parseFloat(v).toFixed(1)} m`,
+      fmtDist:   v => `${parseFloat(v).toFixed(1)} km`
+    };
     const wind  = parseFloat(hd?.windSpeed);
     const dir   = parseFloat(hd?.windDirection);
     const water = parseFloat(hd?.waterTemp);
