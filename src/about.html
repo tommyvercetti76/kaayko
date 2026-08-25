@@ -578,7 +578,7 @@
           var rating = s.paddleScore && s.paddleScore.rating;
           return {
             url: "/paddlingout/forecast?id=" + encodeURIComponent(s.id),
-            title: s.lakeName || s.title || s.id,
+            title: s.title || s.lakeName || s.id,
             sub: s.subtitle || s.location || "",
             snip: s.text || "",
             stat: rating == null ? "" : Number(rating).toFixed(1),
