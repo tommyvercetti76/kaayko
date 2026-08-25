@@ -40,7 +40,7 @@
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <meta name="theme-color" content="#d4af37">
+  <meta name="theme-color" content="#080808">
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -155,13 +155,6 @@
       window.apiClient.setMode('production');
     }
 
-    // ── Severity helpers ────────────────────────────────────────────────────
-    function getScoreSeverity(score) {
-      if (score <= 2.0) return 'critical';
-      if (score <= 3.5) return 'moderate';
-      return 'good';
-    }
-
     function getSkillLevelFromRating(rating) {
       const r = parseFloat(rating);
       if (r >= 3.7) return 'WORTH IT';
@@ -238,19 +231,9 @@
       return   { icon: 'info_outline',          color: '#b5935a' };
     }
 
-    // Server warning/penalty strings embed metric units (e.g. "Extreme heat (42.5°C)",
-    // "Moderate waves (0.9 m)"). Convert to imperial for display unless the user chose metric.
-    // Thresholds/logic upstream stay metric — this only rewrites the human-readable text.
-    function localizeUnits(text) {
-      if (localStorage.getItem('kaayko_units') === 'metric') return String(text);
-      let t = String(text);
-      t = t.replace(/(-?\d+(?:\.\d+)?)\s*°\s*C\b/g, (_, n) => `${(parseFloat(n) * 9 / 5 + 32).toFixed(1)}°F`);
-      t = t.replace(/(-?\d+(?:\.\d+)?)\s*km\/h\b/gi, (_, n) => `${Math.round(parseFloat(n) * 0.621371)} mph`);
-      t = t.replace(/(-?\d+(?:\.\d+)?)\s*mm\b/gi, (_, n) => `${(parseFloat(n) / 25.4).toFixed(2)} in`);
-      t = t.replace(/(-?\d+(?:\.\d+)?)\s*km\b(?!\/)/gi, (_, n) => `${(parseFloat(n) * 0.621371).toFixed(1)} mi`);
-      t = t.replace(/(-?\d+(?:\.\d+)?)\s*m\b(?!\/)/gi, (_, n) => `${(parseFloat(n) * 3.28084).toFixed(1)} ft`);
-      return t;
-    }
+    // Server warning/penalty strings embed metric units (e.g. "Extreme heat (42.5°C)").
+    // Localize via the shared KaaykoPrefs.localizeUnits (single source of truth).
+    function localizeUnits(text) { return window.KaaykoPrefs.localizeUnits(text); }
 
     function renderTripBriefing(currentData, forecastData) {
       const container = document.getElementById('forecastAlertDrawer');
@@ -400,7 +383,7 @@
           pct   = Math.min(100, num);
           color = num >= 30 && num <= 70 ? '#316d43' : '#eb8127';
         } else if (label.includes('wave')) {
-          const ft = valueText.toLowerCase().includes(' m') ? num * 3.28 : num;
+          const ft = valueText.toLowerCase().includes(' m') ? num * 3.28084 : num;
           pct   = Math.min(100, (ft / 6) * 100);
           color = ft <= 1 ? '#316d43' : ft <= 2.5 ? '#eb8127' : '#bd3b2b';
         } else { barIdx++; return; }
@@ -451,25 +434,9 @@
         };
         const element = ratingHero.render(rating, interpretation, weather, forecastData, spot?.id || null);
         container.appendChild(element);
-        // Inject graphical bars after render
-        requestAnimationFrame(() => {
-          enhanceWeatherStats();
-          // Re-run when unit toggle fires (°C↔°F switch)
-          container.querySelectorAll('.units-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-              setTimeout(enhanceWeatherStats, 60);
-              // Re-render Lake alerts so embedded units follow the toggle
-              renderTripBriefing(currentData, forecastData);
-              // Re-render heatmap (reads kaayko_units) + restore any open selection
-              if (forecastData) window.KonditionsHeatmap.render(
-                document.getElementById('heatmapContainer'), forecastData, window.__kaaykoCurrentData);
-              setTimeout(() => {
-                const active = document.querySelector('.khm-hit.is-active');
-                if (active) { active.classList.remove('is-active'); active.click(); }
-              }, 80);
-            });
-          });
-        });
+        // Inject graphical bars after render. Units no longer change on this page
+        // (chosen in Settings), so there's no in-page unit-toggle to re-render for.
+        requestAnimationFrame(enhanceWeatherStats);
       } catch (err) { console.error('RatingHero error:', err); }
     }
 
@@ -520,8 +487,15 @@
     // ── Main load logic ─────────────────────────────────────────────────────
     const params = new URLSearchParams(window.location.search);
     const spotId    = params.get('id');
-    const customLat = params.get('lat');
-    const customLng = params.get('lng');
+    let   customLat = params.get('lat');
+    let   customLng = params.get('lng');
+    // A favorite saved from a generic (lat/lng) lake is stored with id
+    // "custom_<lat>_<lng>". Recover the coordinates so it reopens as that lake
+    // instead of 404-ing on a DB lookup.
+    if ((!customLat || !customLng) && spotId && spotId.indexOf('custom_') === 0) {
+      const parts = spotId.split('_');
+      if (parts.length >= 3) { customLat = parts[1]; customLng = parts[2]; }
+    }
     let currentSpot = null;
 
     function showError() {

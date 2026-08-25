@@ -517,13 +517,6 @@ main.forecast-main {
   grid-column: span 2 !important;
 }
 
-/* Unit toggle: match brand */
-#ratingHeroContainer .units-btn.active {
-  background: rgba(181,147,90,0.18) !important;
-  border-color: rgba(217,189,123,0.52) !important;
-  color: var(--gold-bright) !important;
-}
-
 /* Mobile: stay column, smaller type */
 @media (max-width: 780px) {
   #ratingHeroContainer .weather-stat {

@@ -73,7 +73,8 @@
     return 'critical';
   }
   function khmColor(sev) {
-    return sev === 'good' ? '#316d43' : sev === 'moderate' ? '#eb8127' : '#bd3b2b';
+    // Canonical tier colors (Careful = amber #c59a61, matching KaaykoPrefs.paddleScoreColor)
+    return sev === 'good' ? '#316d43' : sev === 'moderate' ? '#c59a61' : '#bd3b2b';
   }
   function khmRating(h) {
     const r = parseFloat(h?.mlPrediction?.rating ?? h?.prediction?.rating ?? h?.rating);
@@ -83,7 +84,7 @@
     return ((hour - KHM_HOURS[0]) / KHM_SPAN * 100).toFixed(2);
   }
   function khmMacros(hd) {
-    const metric = localStorage.getItem('kaayko_units') === 'metric';
+    const P     = window.KaaykoPrefs;
     const wind  = parseFloat(hd?.windSpeed);
     const dir   = parseFloat(hd?.windDirection);
     const water = parseFloat(hd?.waterTemp);
@@ -95,13 +96,13 @@
     const dirs  = ['N','NE','E','SE','S','SW','W','NW'];
     const dl    = !isNaN(dir) ? ' ' + dirs[Math.round(dir/45)%8] : '';
     const out   = [];
-    if (!isNaN(wind))  out.push({ icon:'air',               label:'Wind',       value: metric ? `${Math.round(wind)} km/h${dl}` : `${Math.round(wind*0.621371)} mph${dl}` });
-    if (!isNaN(uv))    out.push({ icon:'wb_sunny',          label:'UV Index',   value:uv.toFixed(1) });
-    if (!isNaN(water)) out.push({ icon:'water',             label:'Water Temp', value: metric ? `${Math.round(water)}°C` : `${Math.round(water*9/5+32)}°F` });
-    if (!isNaN(air))   out.push({ icon:'device_thermostat', label:'Air Temp',   value: metric ? `${Math.round(air)}°C` : `${Math.round(air*9/5+32)}°F` });
-    if (!isNaN(wave))  out.push({ icon:'waves',             label:'Wave Ht',    value: metric ? `${wave.toFixed(1)} m` : `${(wave*3.28084).toFixed(1)} ft` });
+    if (!isNaN(wind))  out.push({ icon:'air',               label:'Wind',       value: P.fmtWind(wind) + dl });
+    if (!isNaN(uv))    out.push({ icon:'wb_sunny',          label:'UV Index',   value: uv.toFixed(0) });
+    if (!isNaN(water)) out.push({ icon:'water',             label:'Water Temp', value: P.fmtTemp(water) });
+    if (!isNaN(air))   out.push({ icon:'device_thermostat', label:'Air Temp',   value: P.fmtTemp(air) });
+    if (!isNaN(wave))  out.push({ icon:'waves',             label:'Wave Ht',    value: P.fmtHeight(wave) });
     if (!isNaN(humid)) out.push({ icon:'water_drop',        label:'Humidity',   value:`${Math.round(humid)}%` });
-    if (!isNaN(vis))   out.push({ icon:'visibility',        label:'Visibility', value: metric ? `${vis} km` : `${(vis*0.621371).toFixed(1)} mi` });
+    if (!isNaN(vis))   out.push({ icon:'visibility',        label:'Visibility', value: P.fmtDist(vis) });
     return out;
   }
 

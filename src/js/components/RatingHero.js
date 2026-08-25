@@ -43,12 +43,11 @@ class RatingHero {
       cloudCover: cloudCover !== '--' ? parseFloat(cloudCover) : null
     };
 
-    // Unit conversion
-    const tempUnit  = this.useMetric ? '°C' : '°F';
-    const windUnit  = this.useMetric ? 'km/h' : 'mph';
-    const dispTemp      = this.useMetric ? temp      : this.celsiusToFahrenheit(temp);
-    const dispWaterTemp = this.useMetric ? waterTemp : this.celsiusToFahrenheit(waterTemp);
-    const dispWind      = this.useMetric ? wind      : this.kphToMph(wind);
+    // Unit display via the shared formatters (single source of truth)
+    const P = window.KaaykoPrefs;
+    const dispTempStr  = P.fmtTemp(temp);
+    const dispWindStr  = P.fmtWind(wind);
+    const dispWaterStr = P.fmtTemp(waterTemp);
 
     const heroHTML = `
       <div class="skill-level-section">
@@ -67,14 +66,14 @@ class RatingHero {
               <div class="weather-stat">
                 <div class="weather-icon">AIR</div>
                 <div class="weather-data">
-                  <span class="weather-value">${dispTemp}${tempUnit}</span>
+                  <span class="weather-value">${dispTempStr}</span>
                   <span class="weather-label">Air Temp</span>
                 </div>
               </div>
               <div class="weather-stat">
                 <div class="weather-icon">WND</div>
                 <div class="weather-data">
-                  <span class="weather-value">${dispWind} ${windUnit}</span>
+                  <span class="weather-value">${dispWindStr}</span>
                   <span class="weather-label">Wind Speed</span>
                 </div>
               </div>
@@ -88,7 +87,7 @@ class RatingHero {
               <div class="weather-stat">
                 <div class="weather-icon">H2O</div>
                 <div class="weather-data">
-                  <span class="weather-value">${typeof dispWaterTemp === 'number' ? dispWaterTemp.toFixed(1) : dispWaterTemp}${tempUnit}</span>
+                  <span class="weather-value">${dispWaterStr}</span>
                   <span class="weather-label">Water Temp</span>
                 </div>
               </div>
@@ -140,7 +139,6 @@ class RatingHero {
       }
     });
 
-    this.setupUnitToggle();
     this.setupFeedback();
     return this.element;
   }
@@ -179,14 +177,8 @@ class RatingHero {
   }
 
   getRingColor(rating) {
-    const r = parseFloat(rating);
-    if (r >= 4.5) return '#255a3a';
-    if (r >= 4.0) return '#316d43';
-    if (r >= 3.5) return '#c59a61';
-    if (r >= 3.0) return '#eb8127';
-    if (r >= 2.5) return '#bd3b2b';
-    if (r >= 2.0) return '#86170f';
-    return '#4a0a08';
+    // Single source of truth — tiers match the verdict label (>=3.7 / >=2.7)
+    return window.KaaykoPrefs.paddleScoreColor(rating);
   }
 
   getScoreLabel(rating) {
@@ -271,16 +263,16 @@ class RatingHero {
     if (!isNaN(windKph)) {
       const dir     = w.windDirection ? ` ${w.windDirection}` : '';
       const gustKph = parseFloat(w.gustSpeed) || 0;
-      const gustStr = gustKph > windKph * 1.2 ? ` · gusts ${this.fmtWind(gustKph)}` : '';
+      const gustStr = gustKph > windKph * 1.2 ? ` · gusts ${window.KaaykoPrefs.fmtWind(gustKph)}` : '';
       const B       = this.getBeaufortFromKph(windKph);
       if (windKph >= 50) {
-        items.push({ icon: '🌪️', label: `Storm-force Wind — ${this.fmtWind(windKph)}${dir} (B${B})${gustStr}`, detail: 'No paddling under any circumstances', severity: 'severe', priority: 0 });
+        items.push({ icon: '🌪️', label: `Storm-force Wind — ${window.KaaykoPrefs.fmtWind(windKph)}${dir} (B${B})${gustStr}`, detail: 'No paddling under any circumstances', severity: 'severe', priority: 0 });
       } else if (windKph >= 39) {
-        items.push({ icon: '⛔',  label: `Gale Wind — ${this.fmtWind(windKph)}${dir} (B${B})${gustStr}`,        detail: 'Impossible to paddle — capsize very likely', severity: 'severe', priority: 0 });
+        items.push({ icon: '⛔',  label: `Gale Wind — ${window.KaaykoPrefs.fmtWind(windKph)}${dir} (B${B})${gustStr}`,        detail: 'Impossible to paddle — capsize very likely', severity: 'severe', priority: 0 });
       } else if (windKph >= 29) {
-        items.push({ icon: '💨',  label: `Strong Wind — ${this.fmtWind(windKph)}${dir} (B${B})${gustStr}`,      detail: 'Whitecaps forming — expert paddlers only', severity: 'danger', priority: 1 });
+        items.push({ icon: '💨',  label: `Strong Wind — ${window.KaaykoPrefs.fmtWind(windKph)}${dir} (B${B})${gustStr}`,      detail: 'Whitecaps forming — expert paddlers only', severity: 'danger', priority: 1 });
       } else if (windKph >= 20) {
-        items.push({ icon: '🌬️', label: `Moderate Wind — ${this.fmtWind(windKph)}${dir} (B${B})${gustStr}`,    detail: 'Increased resistance — experienced paddlers', severity: 'warning', priority: 4 });
+        items.push({ icon: '🌬️', label: `Moderate Wind — ${window.KaaykoPrefs.fmtWind(windKph)}${dir} (B${B})${gustStr}`,    detail: 'Increased resistance — experienced paddlers', severity: 'warning', priority: 4 });
       }
       // calm/light wind only shown if score is good (Phase 3)
     }
@@ -288,9 +280,9 @@ class RatingHero {
     const wt = parseFloat(w.waterTemp);
     if (!isNaN(wt)) {
       if (wt < 10) {
-        items.push({ icon: '🧊', label: `Extreme Cold Water — ${this.fmtTemp(wt)}`, detail: 'Hypothermia within minutes — drysuit + PFD essential', severity: 'severe', priority: 1 });
+        items.push({ icon: '🧊', label: `Extreme Cold Water — ${window.KaaykoPrefs.fmtTemp(wt)}`, detail: 'Hypothermia within minutes — drysuit + PFD essential', severity: 'severe', priority: 1 });
       } else if (wt < 15) {
-        items.push({ icon: '❄️', label: `Cold Water — ${this.fmtTemp(wt)}`,         detail: 'Cold shock risk on immersion — wetsuit mandatory', severity: 'danger', priority: 2 });
+        items.push({ icon: '❄️', label: `Cold Water — ${window.KaaykoPrefs.fmtTemp(wt)}`,         detail: 'Cold shock risk on immersion — wetsuit mandatory', severity: 'danger', priority: 2 });
       }
       // comfortable/warm water only shown if score is good (Phase 3)
     }
@@ -298,22 +290,22 @@ class RatingHero {
     const precip = parseFloat(w.precipMm);
     if (!isNaN(precip) && precip >= 0.1) {
       if (precip >= 5) {
-        items.push({ icon: '🌧️', label: `Heavy Rain — ${this.fmtPrecip(precip)}`,  detail: 'Lightning hazard — seek shelter immediately', severity: 'severe', priority: 0 });
+        items.push({ icon: '🌧️', label: `Heavy Rain — ${window.KaaykoPrefs.fmtPrecip(precip)}`,  detail: 'Lightning hazard — seek shelter immediately', severity: 'severe', priority: 0 });
       } else if (precip >= 1) {
-        items.push({ icon: '🌦️', label: `Rain — ${this.fmtPrecip(precip)}`,        detail: 'Reduced visibility — monitor storm development', severity: 'danger', priority: 2 });
+        items.push({ icon: '🌦️', label: `Rain — ${window.KaaykoPrefs.fmtPrecip(precip)}`,        detail: 'Reduced visibility — monitor storm development', severity: 'danger', priority: 2 });
       } else {
-        items.push({ icon: '🌂', label: `Light Rain — ${this.fmtPrecip(precip)}`,  detail: 'Watch for developing storms', severity: 'warning', priority: 5 });
+        items.push({ icon: '🌂', label: `Light Rain — ${window.KaaykoPrefs.fmtPrecip(precip)}`,  detail: 'Watch for developing storms', severity: 'warning', priority: 5 });
       }
     }
 
     const vis = parseFloat(w.visibility);
     if (!isNaN(vis) && vis < 9) {
       if (vis < 3) {
-        items.push({ icon: '🌫️', label: `Very Poor Visibility — ${this.fmtDist(vis)}`, detail: 'Navigation hazard — stay near shore', severity: 'severe', priority: 1 });
+        items.push({ icon: '🌫️', label: `Very Poor Visibility — ${window.KaaykoPrefs.fmtDist(vis)}`, detail: 'Navigation hazard — stay near shore', severity: 'severe', priority: 1 });
       } else if (vis < 6) {
-        items.push({ icon: '🌫️', label: `Poor Visibility — ${this.fmtDist(vis)}`,      detail: 'Mark your position — stay aware of other vessels', severity: 'danger', priority: 3 });
+        items.push({ icon: '🌫️', label: `Poor Visibility — ${window.KaaykoPrefs.fmtDist(vis)}`,      detail: 'Mark your position — stay aware of other vessels', severity: 'danger', priority: 3 });
       } else {
-        items.push({ icon: '🌁', label: `Reduced Visibility — ${this.fmtDist(vis)}`,   detail: 'Limit distance from shore', severity: 'warning', priority: 6 });
+        items.push({ icon: '🌁', label: `Reduced Visibility — ${window.KaaykoPrefs.fmtDist(vis)}`,   detail: 'Limit distance from shore', severity: 'warning', priority: 6 });
       }
     }
 
@@ -334,15 +326,15 @@ class RatingHero {
       if (!isNaN(windKph) && windKph < 20) {
         const dir   = w.windDirection ? ` ${w.windDirection}` : '';
         const label = windKph < 2 ? 'Glassy Calm' : windKph < 12 ? 'Light Breeze' : 'Gentle Breeze';
-        items.push({ icon: '≈', label: `${label} — ${this.fmtWind(windKph)}${dir} (B${this.getBeaufortFromKph(windKph)})`, detail: 'Ideal paddling conditions', severity: 'good', priority: 9 });
+        items.push({ icon: '≈', label: `${label} — ${window.KaaykoPrefs.fmtWind(windKph)}${dir} (B${this.getBeaufortFromKph(windKph)})`, detail: 'Ideal paddling conditions', severity: 'good', priority: 9 });
       }
       if (!isNaN(wt)) {
         if (wt >= 20 && wt < 27) {
-          items.push({ icon: '💧', label: `Comfortable Water — ${this.fmtTemp(wt)}`,  detail: 'Ideal paddling and swimming temperature', severity: 'good', priority: 9 });
+          items.push({ icon: '💧', label: `Comfortable Water — ${window.KaaykoPrefs.fmtTemp(wt)}`,  detail: 'Ideal paddling and swimming temperature', severity: 'good', priority: 9 });
         } else if (wt >= 15 && wt < 20) {
-          items.push({ icon: '🌊', label: `Cool Water — ${this.fmtTemp(wt)}`,         detail: 'Wetsuit recommended for extended sessions', severity: 'caution', priority: 7 });
+          items.push({ icon: '🌊', label: `Cool Water — ${window.KaaykoPrefs.fmtTemp(wt)}`,         detail: 'Wetsuit recommended for extended sessions', severity: 'caution', priority: 7 });
         } else if (wt >= 27) {
-          items.push({ icon: '🌡️', label: `Warm Water — ${this.fmtTemp(wt)}`,         detail: 'Stay hydrated — algae possible in summer', severity: 'caution', priority: 8 });
+          items.push({ icon: '🌡️', label: `Warm Water — ${window.KaaykoPrefs.fmtTemp(wt)}`,         detail: 'Stay hydrated — algae possible in summer', severity: 'caution', priority: 8 });
         }
       }
     }
@@ -410,42 +402,6 @@ class RatingHero {
     return 12;
   }
 
-  // ── Unit toggle ───────────────────────────────────────────────────────────
-
-  setupUnitToggle() {
-    const buttons = this.element.querySelectorAll('.units-btn');
-    buttons.forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const unit = e.target.dataset.unit;
-        this.useMetric = unit === 'metric';
-        localStorage.setItem('kaayko_units', unit);
-        buttons.forEach(b => b.classList.remove('active'));
-        e.target.classList.add('active');
-        this.updateDisplayUnits();
-      });
-    });
-  }
-
-  updateDisplayUnits() {
-    if (!this.element) return;
-    const stats   = this.element.querySelectorAll('.weather-stat');
-    const tempUnit = this.useMetric ? '°C' : '°F';
-    const windUnit = this.useMetric ? 'km/h' : 'mph';
-
-    if (stats[0] && this.rawValues.temp !== null) {
-      const v = this.useMetric ? this.rawValues.temp.toFixed(1) : this.celsiusToFahrenheit(this.rawValues.temp);
-      stats[0].querySelector('.weather-value').textContent = `${v}${tempUnit}`;
-    }
-    if (stats[1] && this.rawValues.wind !== null) {
-      const v = this.useMetric ? this.rawValues.wind.toFixed(1) : this.kphToMph(this.rawValues.wind);
-      stats[1].querySelector('.weather-value').textContent = `${v} ${windUnit}`;
-    }
-    if (stats[3] && this.rawValues.waterTemp !== null) {
-      const v = this.useMetric ? this.rawValues.waterTemp.toFixed(1) : this.celsiusToFahrenheit(this.rawValues.waterTemp);
-      stats[3].querySelector('.weather-value').textContent = `${v}${tempUnit}`;
-    }
-  }
-
   // ── Feedback ──────────────────────────────────────────────────────────────
 
   setupFeedback() {
@@ -481,45 +437,6 @@ class RatingHero {
         }
       });
     });
-  }
-
-  // ── Conversions ───────────────────────────────────────────────────────────
-
-  celsiusToFahrenheit(c) {
-    if (c === '--' || c === undefined || c === null || isNaN(parseFloat(c))) return '--';
-    return ((parseFloat(c) * 9 / 5) + 32).toFixed(1);
-  }
-
-  kphToMph(kph) {
-    if (kph === '--' || kph === undefined || kph === null || isNaN(parseFloat(kph))) return '--';
-    return (parseFloat(kph) * 0.621371).toFixed(1);
-  }
-
-  metersToFeet(m) {
-    if (m === '--' || m === undefined || m === null || isNaN(parseFloat(m))) return '--';
-    return (parseFloat(m) * 3.28084).toFixed(1);
-  }
-
-  // ── Unit-aware display formatters (thresholds stay metric; only display converts) ──
-  fmtWind(kph) {
-    return this.useMetric
-      ? `${kph.toFixed(0)} km/h`
-      : `${(kph * 0.621371).toFixed(0)} mph`;
-  }
-  fmtTemp(c) {
-    return this.useMetric
-      ? `${c.toFixed(1)}°C`
-      : `${((c * 9 / 5) + 32).toFixed(1)}°F`;
-  }
-  fmtPrecip(mm) {
-    return this.useMetric
-      ? `${mm.toFixed(1)} mm`
-      : `${(mm / 25.4).toFixed(2)} in`;
-  }
-  fmtDist(km) {
-    return this.useMetric
-      ? `${km.toFixed(1)} km`
-      : `${(km * 0.621371).toFixed(1)} mi`;
   }
 
   // kept for backward compat

@@ -167,97 +167,6 @@ html:not(.dark-theme) .paddle-score-label {
   min-width: 0;
 }
 
-/* Units Toggle */
-.units-toggle {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-  margin-bottom: 0;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  position: relative;
-  z-index: 1;
-}
-
-/* Responsive units toggle */
-@media (max-width: 480px) {
-  .units-toggle {
-    gap: 12px;
-    margin-top: 16px;
-  }
-}
-
-.units-btn {
-  background: rgba(181, 147, 90, 0.08);
-  border: 1px solid rgba(181, 147, 90, 0.4);
-  color: rgba(237, 232, 223, 0.85);
-  padding: 6px 12px;
-  font-size: 12px;
-  font-family: 'JosefinSans-Medium', 'Josefin Sans', sans-serif;
-  border-radius: 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-  min-width: 80px;
-  text-align: center;
-  backdrop-filter: blur(4px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Responsive units button */
-@media (max-width: 480px) {
-  .units-btn {
-    padding: 8px 16px;
-    font-size: 13px;
-    min-width: 90px;
-  }
-}
-
-.units-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.95);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.units-btn.active {
-  background: linear-gradient(135deg, #d9bd7b, #b5935a);
-  border-color: #b5935a;
-  color: #141210;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(181, 147, 90, 0.3);
-}
-
-/* Theme support for units toggle */
-html.dark-theme .units-btn {
-  color: rgba(255, 250, 240, 0.7);
-}
-
-html.dark-theme .units-btn:hover {
-  color: rgba(255, 250, 240, 0.9);
-}
-
-html.dark-theme .units-btn.active {
-  color: #141210;
-}
-
-html:not(.dark-theme) .units-btn {
-  color: rgba(0, 0, 0, 0.7);
-  background: rgba(0, 0, 0, 0.1);
-  border-color: rgba(0, 0, 0, 0.2);
-}
-
-html:not(.dark-theme) .units-btn:hover {
-  color: rgba(0, 0, 0, 0.9);
-  background: rgba(0, 0, 0, 0.15);
-}
-
-html:not(.dark-theme) .units-btn.active {
-  color: black;
-}
-
 /* PENALTY INFORMATION DISPLAY */
 .penalty-info {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
@@ -1262,23 +1171,6 @@ html.dark-theme .feedback-thanks {
   color: rgba(237,232,223,0.6) !important;
 }
 
-#ratingHeroContainer .units-toggle {
-  justify-content: flex-start;
-  margin-top: 0.95rem;
-}
-
-#ratingHeroContainer .units-btn {
-  border-radius: 999px;
-  min-width: 98px;
-}
-
-#ratingHeroContainer .units-btn.active {
-  background: linear-gradient(135deg, #d9bd7b, #b5935a);
-  border-color: #b5935a;
-  color: #141210;
-  box-shadow: 0 4px 16px rgba(181,147,90,0.3);
-}
-
 #ratingHeroContainer .paddler-briefing {
   margin-top: 0;
 }
@@ -1323,10 +1215,6 @@ html.dark-theme .feedback-thanks {
 
   #ratingHeroContainer .weather-stat .weather-data {
     align-items: flex-start;
-  }
-
-  #ratingHeroContainer .units-toggle {
-    justify-content: center;
   }
 }
 

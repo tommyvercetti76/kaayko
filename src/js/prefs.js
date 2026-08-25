@@ -37,6 +37,38 @@
     return val;
   }
 
+  // ── Unit formatters (SINGLE source of truth — every surface calls these) ─────
+  // Inputs are metric (°C, km/h, mm, km, m, km²). Rounding/labels are canonical:
+  //   temp/wind → whole · precip mm .1 / in .2 · dist/height/area → .1
+  function _num(v) { return (v === '' || v == null || isNaN(parseFloat(v))) ? null : parseFloat(v); }
+  function fmtTemp(c)    { const n = _num(c);    return n == null ? '--' : (isMetric() ? `${Math.round(n)}°C`        : `${Math.round(n * 9 / 5 + 32)}°F`); }
+  function fmtWind(kph)  { const n = _num(kph);  return n == null ? '--' : (isMetric() ? `${Math.round(n)} km/h`     : `${Math.round(n * 0.621371)} mph`); }
+  function fmtPrecip(mm) { const n = _num(mm);   return n == null ? '--' : (isMetric() ? `${n.toFixed(1)} mm`        : `${(n / 25.4).toFixed(2)} in`); }
+  function fmtDist(km)   { const n = _num(km);   return n == null ? '--' : (isMetric() ? `${n.toFixed(1)} km`        : `${(n * 0.621371).toFixed(1)} mi`); }
+  function fmtHeight(m)  { const n = _num(m);    return n == null ? '--' : (isMetric() ? `${n.toFixed(1)} m`         : `${(n * 3.28084).toFixed(1)} ft`); }
+  function fmtArea(km2)  { const n = _num(km2);  return n == null ? '--' : (isMetric() ? `${n.toFixed(1)} km²`       : `${(n * 0.386102).toFixed(1)} mi²`); }
+  // Rewrite metric units embedded in server-generated strings (e.g. "Extreme heat (42.5°C)").
+  function localizeUnits(text) {
+    if (isMetric()) return String(text);
+    let t = String(text);
+    t = t.replace(/(-?\d+(?:\.\d+)?)\s*°\s*C\b/g,     (_, n) => `${Math.round(parseFloat(n) * 9 / 5 + 32)}°F`);
+    t = t.replace(/(-?\d+(?:\.\d+)?)\s*km\/h\b/gi,    (_, n) => `${Math.round(parseFloat(n) * 0.621371)} mph`);
+    t = t.replace(/(-?\d+(?:\.\d+)?)\s*mm\b/gi,       (_, n) => `${(parseFloat(n) / 25.4).toFixed(2)} in`);
+    t = t.replace(/(-?\d+(?:\.\d+)?)\s*km\b(?!\/)/gi, (_, n) => `${(parseFloat(n) * 0.621371).toFixed(1)} mi`);
+    t = t.replace(/(-?\d+(?:\.\d+)?)\s*m\b(?!\/)/gi,  (_, n) => `${(parseFloat(n) * 3.28084).toFixed(1)} ft`);
+    return t;
+  }
+
+  // ── Paddle Score color (SINGLE source; tiers match the verdict labels) ───────
+  // Canonical 3-tier: >=3.7 Worth it (green) · >=2.7 Careful (amber) · else Hard pass (red)
+  function paddleScoreColor(score) {
+    const n = _num(score);
+    if (n == null) return '#555';
+    if (n >= 3.7) return '#316d43';   // Worth it — green
+    if (n >= 2.7) return '#c59a61';   // Careful — amber
+    return '#bd3b2b';                 // Hard pass — red
+  }
+
   // ── My area (lock my city) ───────────────────────────────────────────────────
   function getArea() { return readJSON(AREA_KEY, null); }
   function clearArea() { try { localStorage.removeItem(AREA_KEY); } catch {} dispatch('kaayko:areachange', {}); }
@@ -135,6 +167,8 @@
 
   window.KaaykoPrefs = {
     getUnits, isMetric, setUnits,
+    fmtTemp, fmtWind, fmtPrecip, fmtDist, fmtHeight, fmtArea, localizeUnits,
+    paddleScoreColor,
     getArea, clearArea,
     getFavorites, isFavorite, addFavorite, removeFavorite, toggleFavorite, sortFavoritesFirst,
     makeFavButton

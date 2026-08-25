@@ -256,7 +256,13 @@
           return;
         }
         list.innerHTML = favs.map(f => {
-          const href = '/paddlingout/forecast?id=' + encodeURIComponent(f.id);
+          // Pass name/type so a "custom_lat_lng" (generic-lake) favorite reopens
+          // with its real name; DB spots ignore these and use fetched data.
+          let href = '/paddlingout/forecast?id=' + encodeURIComponent(f.id);
+          if (String(f.id).indexOf('custom_') === 0) {
+            href += '&name=' + encodeURIComponent(f.title || '') +
+                    '&type=' + encodeURIComponent(f.subtitle || '');
+          }
           const sub = f.subtitle ? '<div class="sub">' + esc(f.subtitle) + '</div>' : '';
           return '<div class="fav-item" data-id="' + esc(f.id) + '">' +
             '<span class="fav-star">' + STAR + '</span>' +

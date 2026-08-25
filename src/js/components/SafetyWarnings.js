@@ -32,7 +32,7 @@ class SafetyWarnings {
                 <div class="warning-severity-stripe"></div>
                 <div class="warning-card-content">
                   <div class="warning-card-icon">🚨</div>
-                  <div class="warning-card-text">${warning}</div>
+                  <div class="warning-card-text">${window.KaaykoPrefs && window.KaaykoPrefs.localizeUnits ? window.KaaykoPrefs.localizeUnits(warning) : warning}</div>
                 </div>
               </div>
             `).join('')}

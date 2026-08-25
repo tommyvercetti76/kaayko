@@ -2,6 +2,8 @@
 <html lang="en" prefix="og: http://ogp.me/ns#" class="dark-theme">
 <head>
   <script src="/js/prod-config.js"></script>
+  <script src="/js/prefs.js"></script>
+  <script src="/js/consent-notice.js" defer></script>
   <script>document.documentElement.classList.add('dark-theme');</script>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
@@ -23,7 +25,7 @@
   <meta name="referrer" content="strict-origin-when-cross-origin">
 
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <meta name="theme-color" content="#d4af37">
+  <meta name="theme-color" content="#080808">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -947,7 +949,7 @@ function checkGPSDistance() {
     gpsVerified = true;
     setGPS(true, 'At ' + (lakeData.title || lakeData.lakeName || spotId.replace(/_/g, ' ')));
   } else if (dist <= 30) {
-    setGPS(false, Math.round(dist) + ' km away');
+    setGPS(false, window.KaaykoPrefs.fmtDist(dist) + ' away');
   } else {
     setGPS(false, 'Rating remotely');
   }
@@ -1002,22 +1004,19 @@ function renderForm() {
 
 function renderWeather() {
   const w = weatherData || {};
+  const P = window.KaaykoPrefs;
+  // Inputs are metric; the shared formatters convert + label per the user's unit choice.
   const cells = [
-    { v: fmt(w.temperature || w.temp_c), u: '°', l: 'Air' },
-    { v: fmt(w.windSpeed || w.wind_kph), u: '', l: 'Wind' },
-    { v: fmt(w.gustSpeed || w.gust_kph), u: '', l: 'Gust' },
-    { v: fmt(w.waterTemp || w.water_temp_c), u: '°', l: 'Water' },
-    { v: fmt(w.waveHeight || w.wave_height_m, 2), u: 'm', l: 'Waves' },
-    { v: w.humidity != null ? Math.round(w.humidity) : '--', u: '%', l: 'Humid' },
+    { v: P.fmtTemp(w.temperature ?? w.temp_c),        l: 'Air' },
+    { v: P.fmtWind(w.windSpeed ?? w.wind_kph),        l: 'Wind' },
+    { v: P.fmtWind(w.gustSpeed ?? w.gust_kph),        l: 'Gust' },
+    { v: P.fmtTemp(w.waterTemp ?? w.water_temp_c),    l: 'Water' },
+    { v: P.fmtHeight(w.waveHeight ?? w.wave_height_m), l: 'Waves' },
+    { v: (w.humidity != null ? Math.round(w.humidity) + '%' : '--'), l: 'Humid' },
   ];
   document.getElementById('wxGrid').innerHTML = cells.map(c =>
-    `<div class="wx-cell"><div class="wx-val">${c.v}<small>${c.u}</small></div><div class="wx-lbl">${c.l}</div></div>`
+    `<div class="wx-cell"><div class="wx-val">${c.v}</div><div class="wx-lbl">${c.l}</div></div>`
   ).join('');
-}
-
-function fmt(v, d = 1) {
-  const n = parseFloat(v);
-  return isNaN(n) ? '--' : n.toFixed(d).replace(/\.0+$/, '');
 }
 
 /* ── Profile pills ────────────────────────────────────────────────────────── */

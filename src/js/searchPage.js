@@ -14,16 +14,8 @@ const API_BASE = ['localhost', '127.0.0.1'].includes(window.location.hostname)
   : 'https://api-vwcc5j4qda-uc.a.run.app';
 
 // ── Score helpers ─────────────────────────────────────────────────────────
-function scoreColor(s) {
-  const v = parseFloat(s);
-  if (v >= 4.5) return '#255a3a';
-  if (v >= 4.0) return '#316d43';
-  if (v >= 3.5) return '#c59a61';
-  if (v >= 3.0) return '#eb8127';
-  if (v >= 2.5) return '#bd3b2b';
-  if (v >= 2.0) return '#86170f';
-  return '#4a0a08';
-}
+// Single source of truth — tiers match the verdict label + legend (>=3.7 / >=2.7)
+function scoreColor(s) { return window.KaaykoPrefs.paddleScoreColor(s); }
 
 function buildRing(score) {
   const r    = 18, cx = 24, cy = 24;
@@ -264,11 +256,16 @@ function renderCovered(spots) {
     </div>`).join('');
   el.classList.add('visible');
   el.querySelectorAll('.covered-card').forEach((card, i) => {
-    const go = () => openForecast({ lat: Number(card.dataset.lat), lng: Number(card.dataset.lng), name: card.dataset.name });
+    const s = spots[i];
+    // Navigate by id (same as the map pin) so the forecast page + favorite ★ stay
+    // consistent — a lat/lng nav would synthesize a throwaway custom_ id instead.
+    const go = () => {
+      if (s && s.id) window.location.href = '/paddlingout/forecast?id=' + encodeURIComponent(s.id);
+      else openForecast({ lat: Number(card.dataset.lat), lng: Number(card.dataset.lng), name: card.dataset.name });
+    };
     card.addEventListener('click', go);
     card.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
     // Favorite ★ for covered lakes (needs a spot id)
-    const s = spots[i];
     if (window.KaaykoPrefs && s && s.id) {
       const fav = window.KaaykoPrefs.makeFavButton(
         { id: s.id, title: s.name, subtitle: s.subtitle || '' },
@@ -678,16 +675,14 @@ function renderResults(bodies, label, cached, sources) {
     card.tabIndex = 0;  // Keyboard accessible
 
     const scoreId = `sc-${gen}-${idx}`;
-    // Area follows the global unit preference (default imperial → mi²)
-    const useMetric = localStorage.getItem('kaayko_units') === 'metric';
-    const areaStr = body.areaKm2
-      ? (useMetric
-          ? ` · ${body.areaKm2} km²`
-          : ` · ${(parseFloat(body.areaKm2) * 0.386102).toFixed(1)} mi²`)
-      : '';
+    // Area + distance follow the global unit preference (shared formatters)
+    const areaStr = body.areaKm2 ? ` · ${window.KaaykoPrefs.fmtArea(body.areaKm2)}` : '';
+    // distanceMiles is supplied in miles by the API; fmtDist takes km, so convert first
+    const distKm = parseFloat(body.distanceMiles) * 1.60934;
+    const distStr = window.KaaykoPrefs.fmtDist(distKm);
     const bodyName = escapeHtml(body.name);
     const bodyType = escapeHtml(body.type);
-    const bodyDistance = escapeHtml(body.distanceMiles);
+    const bodyDistance = escapeHtml(distStr);
     const bodyArea = escapeHtml(areaStr);
 
     card.innerHTML = `
@@ -695,7 +690,7 @@ function renderResults(bodies, label, cached, sources) {
         <div class="water-card-name">${bodyName}</div>
         <div class="water-card-meta">
           <span class="type-chip">${bodyType}</span>
-          <span>${bodyDistance} mi${bodyArea}</span>
+          <span>${bodyDistance}${bodyArea}</span>
         </div>
       </div>
       <div id="${scoreId}"><div class="score-spinner"></div></div>
