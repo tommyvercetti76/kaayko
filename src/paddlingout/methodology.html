@@ -182,6 +182,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
 .site-footer p { margin: 0.2rem 0 0; }
 </style>
   <link rel="stylesheet" href="/css/footer.css">
+  <script src="/js/kaayko-icons.js" defer></script>
 </head>
 <body>
 
@@ -199,7 +200,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
   </div>
 
   <div class="meth-section">
-    <h2>The Score</h2>
+    <h2 data-kicon="gauge">The Score</h2>
     <p>Every spot gets a single number from <strong>1.0</strong> to <strong>5.0</strong>, computed fresh when you load a forecast. Scores snap to <strong>half-point steps</strong> (3.0, 3.5, 4.0&hellip;) and are clamped to the 1&ndash;5 range. One question is being answered: <em>how favorable are conditions for paddling right now?</em></p>
 
     <div class="verdict-card" id="live-verdict">
@@ -240,14 +241,14 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
   </div>
 
   <div class="meth-section">
-    <h2>The 3-Day Heatmap</h2>
+    <h2 data-kicon="grid">The 3-Day Heatmap</h2>
     <p>Forecast pages score <strong>every daylight hour</strong> (6&nbsp;AM to 8&nbsp;PM) for the next three days and blend them into one band per day, so you can pick your launch hour instead of just your day. This is not a mock-up &mdash; the component below is the forecast page&rsquo;s heatmap, rendering a live 3-day outlook. Tap a bar to open an hour:</p>
     <div id="heatmapContainer"><p class="hm-pending">Fetching a live 3-day forecast&hellip;</p></div>
     <p class="snap-caption" id="hm-caption">Rendered by the production Heatmap component.</p>
   </div>
 
   <div class="meth-section">
-    <h2>Data Sources</h2>
+    <h2 data-kicon="database">Data Sources</h2>
     <p>Weather comes from <strong>WeatherAPI.com</strong> &mdash; three feeds fetched in parallel for every score: current conditions, a 3-day hourly forecast with government weather alerts, and marine data (wave height, swell, water temperature) where the location has coverage.</p>
     <ul>
       <li><strong>Wind</strong> &mdash; sustained and gust speed, direction, mapped to the Beaufort scale</li>
@@ -262,7 +263,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
   </div>
 
   <div class="meth-section">
-    <h2>The Pipeline</h2>
+    <h2 data-kicon="flow">The Pipeline</h2>
     <p>Each score passes through six stages, in this order:</p>
     <div class="pipe">
       <div class="pipe-step"><div><b>Standardize</b><span>Raw feeds are normalized into the model&rsquo;s units &mdash; MPH wind, &deg;C temperatures, km visibility &mdash; with real values passed through, not defaults.</span></div></div>
@@ -276,7 +277,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
   </div>
 
   <div class="meth-section">
-    <h2>Hard Limits</h2>
+    <h2 data-kicon="shield">Hard Limits</h2>
     <p>After calibration, safety rules subtract points the model is never allowed to argue back. Most are small nudges for gusts, waves, heat, UV, visibility and rain &mdash; but a few are worth calling out, because they can sink an otherwise perfect day on their own:</p>
     <ul>
       <li><strong>Dangerous wind</strong> &mdash; above 25 mph (Beaufort 6), the score loses two full points. No model output survives that.</li>
@@ -286,7 +287,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
   </div>
 
   <div class="meth-section">
-    <h2>Crowd-Sourced Calibration <span class="beta-chip">Beta</span></h2>
+    <h2 data-kicon="users">Crowd-Sourced Calibration <span class="beta-chip">Beta</span></h2>
     <p><em>This loop is in beta &mdash; ratings are being collected and validated now, and per-lake offsets are applied conservatively while the sample grows.</em></p>
     <p>The model&rsquo;s labels came from people, and its corrections do too. When paddlers rate a real session, that rating flows back into the system:</p>
     <ul>
@@ -298,7 +299,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
   </div>
 
   <div class="meth-section">
-    <h2>Safety &mdash; Read This</h2>
+    <h2 data-kicon="alert">Safety &mdash; Read This</h2>
     <p><strong>Wear a life jacket.</strong> Every time, every body of water, regardless of what the score says. A PFD (personal flotation device) is the single most effective thing you can do to stay safe on the water.</p>
     <ul>
       <li><strong>The Paddle Score is guidance, not clearance.</strong> It reflects weather data and model predictions &mdash; it cannot account for your skill level, your equipment, water currents, boat traffic, or hazards specific to your launch site.</li>
@@ -310,7 +311,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
   </div>
 
   <div class="meth-section">
-    <h2>Limitations</h2>
+    <h2 data-kicon="eye">Limitations</h2>
     <p>The score is a decision aid, not a guarantee. Things we cannot measure or predict:</p>
     <ul>
       <li>Localized wind funneling through valleys, canyons, or narrow channels</li>
@@ -324,7 +325,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
   </div>
 
   <div class="meth-section">
-    <h2>Terms of Use</h2>
+    <h2 data-kicon="document">Terms of Use</h2>
     <p>By using Kaayko Paddling Out, you acknowledge and agree to the following:</p>
     <ul>
       <li>The Paddle Score, forecasts, and all information on this site are provided <strong>"as is"</strong> for informational purposes only. They do not constitute professional safety advice.</li>

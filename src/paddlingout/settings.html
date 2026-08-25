@@ -3,6 +3,8 @@
 <head>
   <script src="/js/prod-config.js"></script>
   <script src="/js/prefs.js"></script>
+  <script src="/js/consent-notice.js" defer></script>
+  <script src="/js/kaayko-icons.js" defer></script>
   <script>document.documentElement.classList.add('dark-theme');</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -162,7 +164,7 @@
 
     <!-- ── Units ── -->
     <section class="card">
-      <h2>Units</h2>
+      <h2 data-kicon="ruler">Units</h2>
       <p class="hint">How temperatures, wind, rain and distances are shown across every lake page.</p>
       <div class="seg" id="unitsSeg" role="group" aria-label="Measurement units">
         <button type="button" data-units="imperial" aria-pressed="false">
@@ -176,7 +178,7 @@
 
     <!-- ── My area ── -->
     <section class="card">
-      <h2>My area</h2>
+      <h2 data-kicon="pin">My area</h2>
       <p class="hint">Lock a home city so search opens to the lakes and rivers around you.</p>
       <div class="area-row">
         <div class="area-city">
@@ -193,7 +195,7 @@
 
     <!-- ── My favorites ── -->
     <section class="card">
-      <h2>My favorites</h2>
+      <h2 data-kicon="star">My favorites</h2>
       <p class="hint">Lakes you star appear first on the Paddling Out list and here for quick access.</p>
       <div class="fav-list" id="favList"></div>
     </section>

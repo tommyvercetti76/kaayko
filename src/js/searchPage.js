@@ -384,8 +384,11 @@ function getSavedArea() {
 function saveArea() {
   if (lastSearchParams) { try { localStorage.setItem(MY_AREA_KEY, JSON.stringify(lastSearchParams)); } catch {} }
   updateSaveAreaUI();
+  // Let the storage notice know a preference was saved (shows once, on first save)
+  try { window.dispatchEvent(new CustomEvent('kaayko:areachange', {})); } catch {}
 }
-function clearArea() { try { localStorage.removeItem(MY_AREA_KEY); } catch {} updateSaveAreaUI(); }
+function clearArea() { try { localStorage.removeItem(MY_AREA_KEY); } catch {} updateSaveAreaUI();
+  try { window.dispatchEvent(new CustomEvent('kaayko:areachange', {})); } catch {} }
 function updateSaveAreaUI() {
   const saved = getSavedArea();
   const btn = document.getElementById('save-area-btn');

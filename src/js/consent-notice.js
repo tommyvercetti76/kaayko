@@ -8,8 +8,11 @@
  * spells out. This is a transparency notice, not a consent wall, because there
  * is nothing non-essential of ours to opt out of.
  *
- * Shows once per device; dismissal is remembered in localStorage.
- * Include on public pages: <script src="/js/consent-notice.js" defer></script>
+ * It appears the FIRST time the visitor actually saves a preference (changing
+ * units, starring a favorite, or locking an area) — never on page load, and only
+ * on the Paddling Out surfaces where those actions exist. Dismissal is remembered
+ * in localStorage (shows once per device).
+ * Include on Paddling Out pages: <script src="/js/consent-notice.js" defer></script>
  */
 (function () {
   'use strict';
@@ -77,9 +80,24 @@
     });
   }
 
+  // Show the notice the first time the user SAVES a preference — not on load.
+  // KaaykoPrefs dispatches these when a preference is written.
+  function armTriggers() {
+    if (acked()) return;
+    var fired = false;
+    function trigger() {
+      if (fired || acked()) return;
+      fired = true;
+      build();
+    }
+    ['kaayko:unitschange', 'kaayko:favchange', 'kaayko:areachange'].forEach(function (evt) {
+      window.addEventListener(evt, trigger);
+    });
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', build, { once: true });
+    document.addEventListener('DOMContentLoaded', armTriggers, { once: true });
   } else {
-    build();
+    armTriggers();
   }
 })();

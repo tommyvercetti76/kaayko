@@ -463,10 +463,29 @@
     function renderLocationInfo(location, spot) {
       if (!location) return;
       const amenities = getAmenityItems(spot);
+
+      // Coordinates → tappable, opens that exact point on a map
+      const lat = spot?.location?.latitude ?? location.coordinates?.latitude;
+      const lng = spot?.location?.longitude ?? location.coordinates?.longitude;
+      const hasCoords = Number.isFinite(Number(lat)) && Number.isFinite(Number(lng));
+      const pinSvg = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+      const coordsCell = hasCoords
+        ? `<a class="loc-coords-link" href="https://www.google.com/maps/search/?api=1&query=${Number(lat)},${Number(lng)}" target="_blank" rel="noopener" title="Open this point on a map">${Number(lat).toFixed(4)}, ${Number(lng).toFixed(4)} ${pinSvg}</a>`
+        : formatCoordinates(location, spot);
+
+      // YouTube — shown only when the lake has a valid video link
+      const yt = spot?.youtubeURL;
+      const ytOk = typeof yt === 'string' && /^https:\/\/(www\.)?(youtube\.com|youtu\.be)\//i.test(yt);
+      const playSvg = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
+      const ytRow = ytOk
+        ? `<div class="loc-row"><span class="loc-label">Video</span><span><a class="loc-yt-link" href="${yt.replace(/"/g, '%22')}" target="_blank" rel="noopener">${playSvg} Watch on YouTube</a></span></div>`
+        : '';
+
       document.getElementById('locationInfo').innerHTML = `
         <div class="loc-row"><span class="loc-label">Region</span><span>${location.region || '—'}, ${location.country || '—'}</span></div>
         <div class="loc-row"><span class="loc-label">Local Time</span><span>${formatLocalTime(location, spot)}</span></div>
-        <div class="loc-row"><span class="loc-label">Coordinates</span><span>${formatCoordinates(location, spot)}</span></div>
+        <div class="loc-row"><span class="loc-label">Coordinates</span><span>${coordsCell}</span></div>
+        ${ytRow}
         <div class="loc-row loc-amenities"><span class="loc-label">Amenities</span><span class="amenities-list">
           ${amenities.map(item => `<span class="amenity-pill ${item.available ? 'available' : 'unavailable'}">${item.available ? '✓' : '—'} ${item.label}</span>`).join('')}
         </span></div>
