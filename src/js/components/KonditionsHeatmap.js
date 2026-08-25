@@ -96,13 +96,13 @@
     const dirs  = ['N','NE','E','SE','S','SW','W','NW'];
     const dl    = !isNaN(dir) ? ' ' + dirs[Math.round(dir/45)%8] : '';
     const out   = [];
-    if (!isNaN(wind))  out.push({ icon:'air',               label:'Wind',       value: P.fmtWind(wind) + dl });
-    if (!isNaN(uv))    out.push({ icon:'wb_sunny',          label:'UV Index',   value: uv.toFixed(0) });
-    if (!isNaN(water)) out.push({ icon:'water',             label:'Water Temp', value: P.fmtTemp(water) });
-    if (!isNaN(air))   out.push({ icon:'device_thermostat', label:'Air Temp',   value: P.fmtTemp(air) });
-    if (!isNaN(wave))  out.push({ icon:'waves',             label:'Wave Ht',    value: P.fmtHeight(wave) });
-    if (!isNaN(humid)) out.push({ icon:'water_drop',        label:'Humidity',   value:`${Math.round(humid)}%` });
-    if (!isNaN(vis))   out.push({ icon:'visibility',        label:'Visibility', value: P.fmtDist(vis) });
+    if (!isNaN(wind))  out.push({ icon:'wind',        label:'Wind',       value: P.fmtWind(wind) + dl });
+    if (!isNaN(uv))    out.push({ icon:'sun',         label:'UV Index',   value: uv.toFixed(0) });
+    if (!isNaN(water)) out.push({ icon:'water-temp',  label:'Water Temp', value: P.fmtTemp(water) });
+    if (!isNaN(air))   out.push({ icon:'thermometer', label:'Air Temp',   value: P.fmtTemp(air) });
+    if (!isNaN(wave))  out.push({ icon:'wave',        label:'Wave Ht',    value: P.fmtHeight(wave) });
+    if (!isNaN(humid)) out.push({ icon:'humidity',    label:'Humidity',   value:`${Math.round(humid)}%` });
+    if (!isNaN(vis))   out.push({ icon:'eye',         label:'Visibility', value: P.fmtDist(vis) });
     return out;
   }
 
@@ -254,7 +254,7 @@
             <div class="khm-macros">
               ${macros.map(m=>`
                 <div class="khm-macro">
-                  <span class="material-icons khm-macro-icon" style="color:${col}">${m.icon}</span>
+                  <span class="khm-macro-icon" style="color:${col}">${window.KaaykoIcons ? window.KaaykoIcons.get(m.icon) : ''}</span>
                   <div class="khm-macro-body">
                     <span class="khm-macro-label">${m.label}</span>
                     <span class="khm-macro-value">${m.value}</span>

@@ -3,6 +3,7 @@
 <head>
   <script src="/js/prod-config.js"></script>
   <script src="/js/prefs.js"></script>
+  <script src="/js/kaayko-icons.js"></script>
   <script src="/js/consent-notice.js" defer></script>
   <script>document.documentElement.classList.add('dark-theme');</script>
   <meta charset="UTF-8"/>
@@ -345,7 +346,7 @@
     }
     .search-here-btn:hover { filter: brightness(1.06); transform: translateX(-50%) translateY(-1px); }
     .search-here-btn:active { transform: translateX(-50%) translateY(0); }
-    .search-here-btn .material-icons { font-size: 16px; }
+    .search-here-btn [data-kicon-raw] svg { width: 15px; height: 15px; }
     .search-here-btn[hidden] { display: none; }
     .search-here-btn.busy { opacity: .55; pointer-events: none; }
 
@@ -418,7 +419,7 @@
     /* Save-area (lock my city) */
     .btn-save-area { background:none; border:none; cursor:pointer; color:#b5935a; padding:2px; line-height:0; }
     .btn-save-area.saved { color:#d9bd7b; }
-    .btn-save-area .material-icons { font-size:20px; }
+    .btn-save-area [data-kicon-raw] svg { width:20px; height:20px; }
     .my-area-chip {
       display:none; align-items:center; gap:10px; margin:2px 0 16px;
       font-family:'Cormorant Garamond',Georgia,serif; font-size:0.95rem; color:rgba(237,232,223,0.75);
@@ -560,6 +561,7 @@
       transition: border-color 0.2s, color 0.2s;
     }
     .btn-map:hover { border-color: var(--gold); color: var(--gold-bright); }
+    .btn-map svg { width: 18px; height: 18px; }
 
     .btn-request-lake {
       height: 34px;
@@ -590,7 +592,8 @@
       text-align: center; padding: 40px 24px;
       opacity: 0; animation: card-in 0.3s 0.1s ease forwards;
     }
-    .empty-state .mat { font-size: 40px; color: rgba(181,147,90,0.3); margin-bottom: 12px; }
+    .empty-state .mat { color: rgba(181,147,90,0.3); margin-bottom: 12px; display:flex; justify-content:center; }
+    .empty-state .mat svg { width: 40px; height: 40px; }
     .empty-state h3 {
       font-family: var(--font-sans); font-size: 1rem;
       letter-spacing: 0.12em; text-transform: uppercase;
@@ -651,15 +654,15 @@
     <!-- Search bar + GPS -->
     <div class="search-bar-row">
       <div class="search-bar-wrap" style="width:100%">
-        <span class="material-icons search-icon-left">water</span>
+        <span class="search-icon-left" data-kicon-raw="droplet"></span>
         <input type="text" id="search-input" class="search-input"
           placeholder="Lake, river, city…"
           autocomplete="off" autocorrect="off" spellcheck="false"
           list="search-suggestions"/>
         <datalist id="search-suggestions"></datalist>
-        <button class="search-clear-btn material-icons" id="search-clear" aria-label="Clear">close</button>
+        <button class="search-clear-btn" id="search-clear" aria-label="Clear" data-kicon-raw="close"></button>
       </div>
-      <button class="btn-gps material-icons" id="btn-gps" title="Use my location" aria-label="Use my location">my_location</button>
+      <button class="btn-gps" id="btn-gps" title="Use my location" aria-label="Use my location" data-kicon-raw="gps"></button>
     </div>
 
     <!-- Status -->
@@ -672,16 +675,16 @@
     </div>
 
     <div class="popular-section" id="popular-section">
-      <div class="popular-label">Popular paddle regions</div>
+      <div class="popular-label" data-kicon="pin">Popular paddle regions</div>
       <div class="popular-chips">
-        <button class="popular-chip" data-lat="33.0815" data-lng="-96.4775"><span class="chip-icon material-icons">water</span>Lavon Lake, TX</button>
-        <button class="popular-chip" data-lat="33.1439" data-lng="-96.9759"><span class="chip-icon material-icons">water</span>Lewisville Lake, TX</button>
-        <button class="popular-chip" data-lat="47.6553" data-lng="-122.2571"><span class="chip-icon material-icons">water</span>Lake Washington, WA</button>
-        <button class="popular-chip" data-lat="39.0931" data-lng="-120.0325"><span class="chip-icon material-icons">water</span>Lake Tahoe, CA</button>
-        <button class="popular-chip" data-lat="44.4759" data-lng="-110.5886"><span class="chip-icon material-icons">water</span>Yellowstone Lake, WY</button>
-        <button class="popular-chip" data-lat="43.9520" data-lng="-76.1743"><span class="chip-icon material-icons">water</span>Lake Ontario, NY</button>
-        <button class="popular-chip" data-lat="51.5085" data-lng="-0.1257"><span class="chip-icon material-icons">water</span>London, UK</button>
-        <button class="popular-chip" data-lat="-33.8688" data-lng="151.2093"><span class="chip-icon material-icons">water</span>Sydney, AU</button>
+        <button class="popular-chip" data-lat="33.0815" data-lng="-96.4775"><span class="chip-icon" data-kicon-raw="droplet"></span>Lavon Lake, TX</button>
+        <button class="popular-chip" data-lat="33.1439" data-lng="-96.9759"><span class="chip-icon" data-kicon-raw="droplet"></span>Lewisville Lake, TX</button>
+        <button class="popular-chip" data-lat="47.6553" data-lng="-122.2571"><span class="chip-icon" data-kicon-raw="droplet"></span>Lake Washington, WA</button>
+        <button class="popular-chip" data-lat="39.0931" data-lng="-120.0325"><span class="chip-icon" data-kicon-raw="droplet"></span>Lake Tahoe, CA</button>
+        <button class="popular-chip" data-lat="44.4759" data-lng="-110.5886"><span class="chip-icon" data-kicon-raw="droplet"></span>Yellowstone Lake, WY</button>
+        <button class="popular-chip" data-lat="43.9520" data-lng="-76.1743"><span class="chip-icon" data-kicon-raw="droplet"></span>Lake Ontario, NY</button>
+        <button class="popular-chip" data-lat="51.5085" data-lng="-0.1257"><span class="chip-icon" data-kicon-raw="droplet"></span>London, UK</button>
+        <button class="popular-chip" data-lat="-33.8688" data-lng="151.2093"><span class="chip-icon" data-kicon-raw="droplet"></span>Sydney, AU</button>
       </div>
     </div>
 
@@ -689,7 +692,7 @@
     <div id="search-map-wrap" class="search-map-wrap" hidden>
       <div id="search-map" class="search-map" aria-label="Map of nearby lakes"></div>
       <button type="button" id="search-here-btn" class="search-here-btn" hidden>
-        <span class="material-icons" aria-hidden="true">search</span> Search this area
+        <span data-kicon-raw="search" aria-hidden="true"></span> Search this area
       </button>
       <div class="map-legend" aria-hidden="true">
         <span class="lg lg-cover">◆ We cover</span>
@@ -705,10 +708,10 @@
       <div style="display:flex;align-items:center;gap:8px">
         <span class="results-hint"  id="results-hint"></span>
         <button id="save-area-btn" class="btn-save-area" title="Save this as my area" aria-label="Save this as my area" style="display:none">
-          <span class="material-icons">star_border</span>
+          <span data-kicon-raw="star"></span>
         </button>
         <button id="refresh-btn" class="btn-refresh" title="Force live search" aria-label="Refresh results" style="display:none">
-          <span class="material-icons">refresh</span>
+          <span data-kicon-raw="refresh"></span>
         </button>
       </div>
     </div>

@@ -233,7 +233,8 @@
   gap:0.6rem 0.7rem;
 }
 .khm-macro { display:flex; align-items:center; gap:0.5rem; }
-.khm-macro-icon { font-size:1.05rem; flex-shrink:0; }
+.khm-macro-icon { flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; }
+.khm-macro-icon svg { width:18px; height:18px; display:block; }
 .khm-macro-body { display:flex; flex-direction:column; gap:0.04rem; }
 .khm-macro-label {
   font-family:var(--font-sans); font-size:0.57rem;

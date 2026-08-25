@@ -3,6 +3,7 @@
 <head>
   <script src="/js/prod-config.js"></script>
   <script src="/js/prefs.js"></script>
+  <script src="/js/kaayko-icons.js"></script>
   <script src="/js/consent-notice.js" defer></script>
   <script>document.documentElement.classList.add('dark-theme');</script>
   <meta charset="UTF-8" />
@@ -207,28 +208,28 @@
     function getWarningMeta(text) {
       const t = text.toLowerCase();
       if (t.includes('cold') || t.includes('hypotherm') || t.includes('freeze') || t.includes('frost'))
-        return { icon: 'ac_unit',               color: '#7dd3fc' };
+        return { icon: 'thermometer', color: '#7dd3fc' };
       if (t.includes('uv') || t.includes('sunburn') || t.includes('solar'))
-        return { icon: 'wb_sunny',              color: '#fbbf24' };
+        return { icon: 'sun',         color: '#fbbf24' };
       if (t.includes('sun') || t.includes('heat') || t.includes('hot'))
-        return { icon: 'light_mode',            color: '#fbbf24' };
+        return { icon: 'sun',         color: '#fbbf24' };
       if (t.includes('wind') || t.includes('gust') || t.includes('breeze'))
-        return { icon: 'air',                   color: '#a5f3fc' };
+        return { icon: 'wind',        color: '#a5f3fc' };
       if (t.includes('storm') || t.includes('thunder') || t.includes('lightning'))
-        return { icon: 'thunderstorm',          color: '#f59e0b' };
+        return { icon: 'spark',       color: '#f59e0b' };
       if (t.includes('wave') || t.includes('swell') || t.includes('chop'))
-        return { icon: 'waves',                 color: '#67e8f9' };
+        return { icon: 'wave',        color: '#67e8f9' };
       if (t.includes('rain') || t.includes('precipit') || t.includes('shower'))
-        return { icon: 'rainy',                 color: '#93c5fd' };
+        return { icon: 'rain',        color: '#93c5fd' };
       if (t.includes('fog') || t.includes('mist') || t.includes('visib'))
-        return { icon: 'foggy',                 color: '#d1d5db' };
+        return { icon: 'eye',         color: '#d1d5db' };
       if (t.includes('water') || t.includes('current') || t.includes('flow') || t.includes('tide'))
-        return { icon: 'water',                 color: '#38bdf8' };
+        return { icon: 'droplet',     color: '#38bdf8' };
       if (t.includes('danger') || t.includes('hazard') || t.includes('extreme'))
-        return { icon: 'report',                color: '#f87171' };
+        return { icon: 'alert',       color: '#f87171' };
       if (t.includes('caution') || t.includes('warning') || t.includes('risk'))
-        return { icon: 'warning_amber',         color: '#fbbf24' };
-      return   { icon: 'info_outline',          color: '#b5935a' };
+        return { icon: 'alert',       color: '#fbbf24' };
+      return   { icon: 'info',        color: '#b5935a' };
     }
 
     // Server warning/penalty strings embed metric units (e.g. "Extreme heat (42.5°C)").
@@ -262,7 +263,7 @@
         const { icon, color } = getWarningMeta(warning);
         return `
           <div class="alert-item">
-            <span class="material-icons alert-item-icon" style="color:${color}" aria-hidden="true">${icon}</span>
+            <span class="alert-item-icon" style="color:${color}" aria-hidden="true">${window.KaaykoIcons ? window.KaaykoIcons.get(icon) : ''}</span>
             <span class="alert-item-text">${localizeUnits(warning)}</span>
           </div>`;
       }).join('');

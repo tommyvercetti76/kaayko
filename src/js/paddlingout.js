@@ -54,9 +54,14 @@ document.addEventListener("DOMContentLoaded", () => {
         // Process cards in parallel for better performance
         const cardPromises = spots.map(spot => renderCard(spot));
         const cards = await Promise.all(cardPromises);
-        cards.forEach(card => container.append(card));
+        // Staggered fade/slide-in instead of a single pop
+        cards.forEach((card, i) => {
+          card.classList.add("card-enter");
+          card.style.animationDelay = `${Math.min(i, 12) * 45}ms`;
+          container.append(card);
+        });
         container.append(renderSubmitEntryCard());
-        
+
         wireUpCarousels();
       })
       .catch(() => showError("Error loading spots."));

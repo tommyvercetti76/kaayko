@@ -51,7 +51,23 @@
     tag:      s('<path d="M20.59 13.41 11 3.84A2 2 0 0 0 9.59 3H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.58 9.58a2 2 0 0 0 2.83 0l4.59-4.59a2 2 0 0 0 0-2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/>'),
     heart:    s('<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>'),
     pin:      s('<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>'),
-    star:     f('<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14l-5-4.87 6.91-1.01L12 2z"/>')
+    star:     f('<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14l-5-4.87 6.91-1.01L12 2z"/>'),
+
+    // ── weather / conditions ──
+    thermometer: s('<path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>'),
+    wind:        s('<path d="M9.59 4.59A2 2 0 1 1 11 8H2"/><path d="M12.59 19.41A2 2 0 1 0 14 16H2"/><path d="M17.73 7.73A2.5 2.5 0 1 1 19.5 12H2"/>'),
+    compass:     s('<circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>'),
+    sun:         s('<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/>'),
+    cloud:       s('<path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>'),
+    droplet:     s('<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>'),
+    'water-temp':s('<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/><line x1="12" y1="10" x2="12" y2="15.5"/>'),
+    humidity:    s('<path d="M7 3.7l3 3a4.2 4.2 0 1 1-6 0z"/><path d="M16 10.7l3 3a4.2 4.2 0 1 1-6 0z"/>'),
+    rain:        s('<path d="M17 13a4.5 4.5 0 0 0-1-8.87A6 6 0 0 0 5 8.5"/><path d="M4 13a3.5 3.5 0 0 0 1 6.87"/><line x1="9" y1="19" x2="8" y2="22"/><line x1="14" y1="19" x2="13" y2="22"/><line x1="19" y1="18" x2="18" y2="21"/>'),
+    // ── controls ──
+    search:      s('<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>'),
+    close:       s('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>'),
+    gps:         s('<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/><line x1="12" y1="1" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="23"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/>'),
+    play:        f('<path d="M6 4l14 8-14 8z"/>')
   };
 
   function get(name) { return ICONS[name] || ''; }
@@ -61,7 +77,10 @@
     var css =
       '.kicon{display:inline-flex;align-items:center;justify-content:center;' +
       'color:var(--gold-bright,#d9bd7b);margin-right:.5em;vertical-align:-0.14em;flex:0 0 auto;}' +
-      '.kicon svg{width:.92em;height:.92em;display:block;}';
+      '.kicon svg{width:.92em;height:.92em;display:block;}' +
+      // icon-only controls: no wrapper/margin; SVG scales to the element's font-size
+      '[data-kicon-raw]{display:inline-flex;align-items:center;justify-content:center;}' +
+      '[data-kicon-raw] svg{width:1em;height:1em;display:block;}';
     var st = document.createElement('style');
     st.id = 'kaayko-icons-style';
     st.textContent = css;
@@ -70,6 +89,7 @@
 
   function render() {
     injectStyle();
+    // Headers/text: prepend a .kicon span before the text
     var els = document.querySelectorAll('[data-kicon]');
     for (var i = 0; i < els.length; i++) {
       var el = els[i];
@@ -80,6 +100,14 @@
       span.className = 'kicon';
       span.innerHTML = svg;
       el.insertBefore(span, el.firstChild);
+    }
+    // Icon-only controls: replace content with the raw SVG (sized by the element)
+    var raws = document.querySelectorAll('[data-kicon-raw]');
+    for (var j = 0; j < raws.length; j++) {
+      var r = raws[j];
+      if (r.querySelector(':scope > svg')) continue;        // idempotent
+      var rsvg = get(r.getAttribute('data-kicon-raw'));
+      if (rsvg) r.innerHTML = rsvg;
     }
   }
 

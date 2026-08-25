@@ -698,7 +698,7 @@ function renderResults(bodies, label, cached, sources) {
       </div>
       <div id="${scoreId}"><div class="score-spinner"></div></div>
       <button class="btn-request-lake" type="button">Request</button>
-      <button class="btn-map material-icons" title="Open in Maps">place</button>
+      <button class="btn-map" title="Open in Maps">${window.KaaykoIcons ? window.KaaykoIcons.get('pin') : ''}</button>
     `;
 
     card.querySelector('.btn-request-lake').addEventListener('click', e => {
@@ -866,7 +866,7 @@ function showEmpty(label) {
   const safeLabel = escapeHtml(label);
   resultsList.innerHTML = `
     <div class="empty-state">
-      <div class="mat material-icons">water_off</div>
+      <div class="mat">${window.KaaykoIcons ? window.KaaykoIcons.get('search') : ''}</div>
       <h3>No spots found near ${safeLabel}</h3>
       <p>Try a larger lake name or a nearby city.</p>
       <button class="btn-request-lake" id="empty-request-lake" type="button">Submit a lake</button>

@@ -420,10 +420,11 @@ main.forecast-main {
 }
 
 .alert-item-icon {
-  font-size: 1.05rem;
-  line-height: 1.55;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
 }
+.alert-item-icon svg { width: 17px; height: 17px; display: block; }
 
 .alert-item-text {
   font-family: var(--font-serif);
@@ -456,10 +457,13 @@ main.forecast-main {
    Replace with: large Cormorant Garamond values, gold micro-labels, clean dividers.
 */
 
-/* Hide the circular abbreviation badges entirely */
+/* Circular badges now hold real line-icons (not text abbreviations) — show them */
 #ratingHeroContainer .weather-icon {
-  display: none !important;
+  display: grid !important;
+  color: var(--gold-bright) !important;
+  margin-bottom: 0.15rem;
 }
+#ratingHeroContainer .weather-icon svg { width: 18px; height: 18px; }
 
 /* Each stat cell: column-centred, clip bar flush to bottom edge */
 #ratingHeroContainer .weather-stat {

@@ -129,6 +129,32 @@ body {
   position: relative;
 }
 
+/* ── Loading skeletons (instant paint; JS swaps in live cards) ── */
+.card-skeleton { cursor: default; pointer-events: none; }
+.card-skeleton .cs-img {
+  height: 280px;
+  background: linear-gradient(100deg, rgba(181,147,90,0.05) 30%, rgba(181,147,90,0.14) 50%, rgba(181,147,90,0.05) 70%);
+  background-size: 200% 100%;
+  animation: cs-shimmer 1.3s ease-in-out infinite;
+}
+.card-skeleton .cs-body { padding: 1rem 1.15rem 1.35rem; display: flex; flex-direction: column; gap: 0.6rem; }
+.card-skeleton .cs-line {
+  height: 14px; border-radius: 6px;
+  background: linear-gradient(100deg, rgba(181,147,90,0.06) 30%, rgba(181,147,90,0.15) 50%, rgba(181,147,90,0.06) 70%);
+  background-size: 200% 100%;
+  animation: cs-shimmer 1.3s ease-in-out infinite;
+}
+.card-skeleton .cs-lg { width: 62%; height: 20px; }
+.card-skeleton .cs-sm { width: 40%; }
+@keyframes cs-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+/* Live cards fade/slide in instead of popping all at once */
+.card.card-enter { animation: card-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes card-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .card-skeleton .cs-img, .card-skeleton .cs-line { animation: none; }
+  .card.card-enter { animation: none; }
+}
+
 .card:hover {
   transform: translateY(-6px);
   border-color: var(--gold);

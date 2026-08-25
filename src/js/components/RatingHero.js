@@ -48,6 +48,8 @@ class RatingHero {
     const dispTempStr  = P.fmtTemp(temp);
     const dispWindStr  = P.fmtWind(wind);
     const dispWaterStr = P.fmtTemp(waterTemp);
+    // Shared line-icons (single icon language across the app)
+    const ic = (n) => (window.KaaykoIcons ? window.KaaykoIcons.get(n) : '');
 
     const heroHTML = `
       <div class="skill-level-section">
@@ -64,42 +66,42 @@ class RatingHero {
           <div class="skill-info">
             <div class="core-weather-inline">
               <div class="weather-stat">
-                <div class="weather-icon">AIR</div>
+                <div class="weather-icon">${ic('thermometer')}</div>
                 <div class="weather-data">
                   <span class="weather-value">${dispTempStr}</span>
                   <span class="weather-label">Air Temp</span>
                 </div>
               </div>
               <div class="weather-stat">
-                <div class="weather-icon">WND</div>
+                <div class="weather-icon">${ic('wind')}</div>
                 <div class="weather-data">
                   <span class="weather-value">${dispWindStr}</span>
                   <span class="weather-label">Wind Speed</span>
                 </div>
               </div>
               <div class="weather-stat">
-                <div class="weather-icon">DIR</div>
+                <div class="weather-icon">${ic('compass')}</div>
                 <div class="weather-data">
                   <span class="weather-value">${windDirection}</span>
                   <span class="weather-label">Wind Dir</span>
                 </div>
               </div>
               <div class="weather-stat">
-                <div class="weather-icon">H2O</div>
+                <div class="weather-icon">${ic('water-temp')}</div>
                 <div class="weather-data">
                   <span class="weather-value">${dispWaterStr}</span>
                   <span class="weather-label">Water Temp</span>
                 </div>
               </div>
               <div class="weather-stat">
-                <div class="weather-icon">UV</div>
+                <div class="weather-icon">${ic('sun')}</div>
                 <div class="weather-data">
                   <span class="weather-value">${uvIndex}</span>
                   <span class="weather-label">UV Index</span>
                 </div>
               </div>
               <div class="weather-stat">
-                <div class="weather-icon">SKY</div>
+                <div class="weather-icon">${ic('cloud')}</div>
                 <div class="weather-data">
                   <span class="weather-value">${cloudCover}%</span>
                   <span class="weather-label">Cloud Cover</span>
