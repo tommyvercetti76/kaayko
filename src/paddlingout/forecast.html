@@ -232,6 +232,21 @@
       return   { icon: 'info',        color: '#b5935a' };
     }
 
+    // Group warnings into hazard categories so near-duplicate lines collapse to one.
+    function categorize(text) {
+      const t = text.toLowerCase();
+      if (/cold|hypotherm|freez|frost/.test(t))  return { key:'cold',  label:'Cold water', icon:'thermometer' };
+      if (/uv|sunburn|solar/.test(t))            return { key:'uv',    label:'UV',         icon:'sun' };
+      if (/heat|hot|summer|sun/.test(t))         return { key:'heat',  label:'Heat',       icon:'sun' };
+      if (/wind|gust|breeze/.test(t))            return { key:'wind',  label:'Wind',       icon:'wind' };
+      if (/storm|thunder|lightning/.test(t))     return { key:'storm', label:'Storms',     icon:'spark' };
+      if (/wave|swell|chop/.test(t))             return { key:'wave',  label:'Waves',      icon:'wave' };
+      if (/rain|precip|shower/.test(t))          return { key:'rain',  label:'Rain',       icon:'rain' };
+      if (/fog|mist|visib/.test(t))              return { key:'vis',   label:'Visibility', icon:'eye' };
+      if (/water|current|flow|tide/.test(t))     return { key:'water', label:'Water',      icon:'droplet' };
+      return { key:'other', label:'Conditions', icon:'info' };
+    }
+
     // Server warning/penalty strings embed metric units (e.g. "Extreme heat (42.5°C)").
     // Localize via the shared KaaykoPrefs.localizeUnits (single source of truth).
     function localizeUnits(text) { return window.KaaykoPrefs.localizeUnits(text); }
@@ -253,29 +268,44 @@
           }
         });
 
-      if (!warningItems.length) {
+      // Collapse to ONE alert per hazard category. Within a category, prefer the line
+      // that carries a number, so 3 near-identical "heat" lines become "Extreme heat (99°F)".
+      const byCat = new Map();
+      warningItems.forEach(w => {
+        const cat = categorize(w);
+        const hasNum = /\d/.test(w);
+        const existing = byCat.get(cat.key);
+        if (!existing || (hasNum && !existing.hasNum)) byCat.set(cat.key, { cat, text: w, hasNum });
+      });
+      const alerts = [...byCat.values()];
+
+      if (!alerts.length) {
         container.innerHTML = '';
         container.hidden = true;
         return;
       }
 
-      const itemsHTML = warningItems.map(warning => {
-        const { icon, color } = getWarningMeta(warning);
-        return `
+      // Name the hazards instead of counting them: "Heat & wind", not "5 conditions".
+      const labels = alerts.map(a => a.cat.label);
+      let title;
+      if (labels.length === 1)      title = labels[0];
+      else if (labels.length === 2) title = `${labels[0]} & ${labels[1].toLowerCase()}`;
+      else                          title = `${labels[0]}, ${labels[1].toLowerCase()} & ${labels.length - 2} more`;
+
+      const itemsHTML = alerts.map(a => `
           <div class="alert-item">
-            <span class="alert-item-icon" style="color:${color}" aria-hidden="true">${window.KaaykoIcons ? window.KaaykoIcons.get(icon) : ''}</span>
-            <span class="alert-item-text">${localizeUnits(warning)}</span>
-          </div>`;
-      }).join('');
+            <span class="alert-item-icon" style="color:${getWarningMeta(a.text).color}" aria-hidden="true">${window.KaaykoIcons ? window.KaaykoIcons.get(a.cat.icon) : ''}</span>
+            <span class="alert-item-text">${localizeUnits(a.text)}</span>
+          </div>`).join('');
 
       container.hidden = false;
       container.innerHTML = `
         <section class="forecast-alert-banner is-closed" role="region" aria-label="Paddling alerts">
           <button class="alert-summary" type="button" aria-expanded="false">
-            <span class="alert-mark">${warningItems.length}</span>
+            <span class="alert-mark">${alerts.length}</span>
             <span class="alert-summary-copy">
               <span class="briefing-kicker">Lake alerts</span>
-              <span class="alert-summary-title">${warningItems.length} condition${warningItems.length === 1 ? '' : 's'} to review</span>
+              <span class="alert-summary-title">${title}</span>
             </span>
           </button>
           <button class="alert-dismiss" type="button" aria-label="Dismiss lake alerts">×</button>
