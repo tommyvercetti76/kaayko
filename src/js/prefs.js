@@ -16,6 +16,7 @@
   const UNITS_KEY = 'kaayko_units';
   const AREA_KEY  = 'kaayko_my_area';
   const FAV_KEY   = 'kaayko_favorites';
+  const CARD_KEY  = 'kaayko_card_style';
 
   const GOLD        = '#d9bd7b'; // --gold-bright
   const GOLD_MUTED  = 'rgba(217,189,123,0.85)';
@@ -67,6 +68,17 @@
     if (n >= 3.7) return '#316d43';   // Worth it — green
     if (n >= 2.7) return '#c59a61';   // Careful — amber
     return '#bd3b2b';                 // Hard pass — red
+  }
+
+  // ── Card style (list layout: 'full' detailed | 'minimal' image-tile) ─────────
+  // Default is 'minimal' — first-time visitors land in the image-first look; only an
+  // explicit 'full' choice opts out.
+  function getCardStyle() { return localStorage.getItem(CARD_KEY) === 'full' ? 'full' : 'minimal'; }
+  function setCardStyle(s) {
+    const val = s === 'minimal' ? 'minimal' : 'full';
+    try { localStorage.setItem(CARD_KEY, val); } catch {}
+    dispatch('kaayko:cardstylechange', { style: val });
+    return val;
   }
 
   // ── My area (lock my city) ───────────────────────────────────────────────────
@@ -142,7 +154,8 @@
     if (document.getElementById('kaayko-prefs-style')) return;
     const css = `
       .kaayko-fav-btn{display:inline-flex;align-items:center;justify-content:center;
-        width:38px;height:38px;padding:0;border:none;border-radius:50%;
+        width:38px;height:38px;padding:0;border:none;border-radius:0;
+        clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px);
         background:rgba(20,18,16,.55);color:${GOLD_MUTED};cursor:pointer;
         -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
         transition:transform .15s ease,background .2s ease,color .2s ease;}
@@ -169,6 +182,7 @@
     getUnits, isMetric, setUnits,
     fmtTemp, fmtWind, fmtPrecip, fmtDist, fmtHeight, fmtArea, localizeUnits,
     paddleScoreColor,
+    getCardStyle, setCardStyle,
     getArea, clearArea,
     getFavorites, isFavorite, addFavorite, removeFavorite, toggleFavorite, sortFavoritesFirst,
     makeFavButton

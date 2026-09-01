@@ -30,6 +30,9 @@
       --font-serif:'Cormorant Garamond', Georgia, serif;
       --font-sans:'Josefin Sans', Arial, sans-serif;
       --ease:cubic-bezier(0.76,0,0.24,1);
+      --clip-lg: polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px), 0 14px);
+      --clip-md: polygon(9px 0, calc(100% - 9px) 0, 100% 9px, 100% calc(100% - 9px), calc(100% - 9px) 100%, 9px 100%, 0 calc(100% - 9px), 0 9px);
+      --clip-sm: polygon(6px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px), 0 6px);
     }
     * { box-sizing:border-box; }
     body {
@@ -62,7 +65,7 @@
 
     .card {
       margin-top:1.6rem; background:linear-gradient(150deg, var(--panel), var(--panel-soft));
-      border:1px solid var(--line); border-radius:16px; padding:1.5rem 1.5rem 1.6rem;
+      border:1px solid var(--line); border-radius:0; clip-path:var(--clip-lg); padding:1.5rem 1.5rem 1.6rem;
     }
     .card > h2 {
       margin:0 0 .3rem; font-family:var(--font-sans); font-weight:600;
@@ -74,11 +77,11 @@
     .seg {
       display:grid; grid-template-columns:1fr 1fr; gap:.5rem;
       background:rgba(0,0,0,0.35); border:1px solid var(--line);
-      border-radius:12px; padding:.4rem;
+      border-radius:0; clip-path:var(--clip-md); padding:.4rem;
     }
     .seg button {
       appearance:none; border:1px solid transparent; background:transparent;
-      color:var(--muted); cursor:pointer; border-radius:9px; padding:.85rem .5rem;
+      color:var(--muted); cursor:pointer; border-radius:0; clip-path:var(--clip-sm); padding:.85rem .5rem;
       font-family:var(--font-sans); font-size:.98rem; letter-spacing:.02em;
       display:flex; flex-direction:column; align-items:center; gap:.2rem;
       transition:background .2s var(--ease), color .2s, border-color .2s, transform .1s;
@@ -95,7 +98,7 @@
     .area-row { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
     .area-city { display:flex; align-items:center; gap:.7rem; min-width:0; }
     .area-city .pin {
-      width:38px; height:38px; flex:0 0 auto; border-radius:50%;
+      width:38px; height:38px; flex:0 0 auto; border-radius:0; clip-path:var(--clip-sm);
       display:flex; align-items:center; justify-content:center;
       background:rgba(181,147,90,0.14); border:1px solid var(--line); color:var(--gold-bright);
     }
@@ -105,7 +108,7 @@
     .btn {
       appearance:none; cursor:pointer; font-family:var(--font-sans);
       font-size:.82rem; letter-spacing:.1em; text-transform:uppercase;
-      padding:.62rem 1.05rem; border-radius:10px; text-decoration:none;
+      padding:.62rem 1.05rem; border-radius:0; clip-path:var(--clip-sm); text-decoration:none;
       display:inline-flex; align-items:center; gap:.4rem; transition:all .2s var(--ease);
     }
     .btn-gold { background:linear-gradient(135deg, var(--gold-bright), var(--gold)); color:#141210; border:1px solid transparent; font-weight:600; }
@@ -118,7 +121,7 @@
     .fav-item {
       display:flex; align-items:center; gap:.9rem;
       background:rgba(0,0,0,0.28); border:1px solid var(--line);
-      border-radius:12px; padding:.85rem 1rem; transition:border-color .2s, background .2s;
+      border-radius:0; clip-path:var(--clip-md); padding:.85rem 1rem; transition:border-color .2s, background .2s;
     }
     .fav-item:hover { border-color:rgba(217,189,123,0.5); background:rgba(0,0,0,0.4); }
     .fav-star { color:var(--gold-bright); flex:0 0 auto; display:flex; }
@@ -129,12 +132,12 @@
     .fav-actions { display:flex; align-items:center; gap:.5rem; flex:0 0 auto; }
     .fav-view {
       font-family:var(--font-sans); font-size:.74rem; letter-spacing:.1em; text-transform:uppercase;
-      color:var(--gold); text-decoration:none; padding:.45rem .7rem; border:1px solid var(--line); border-radius:8px; transition:all .2s;
+      color:var(--gold); text-decoration:none; padding:.45rem .7rem; border:1px solid var(--line); border-radius:0; clip-path:var(--clip-sm); transition:all .2s;
     }
     .fav-view:hover { color:var(--gold-bright); border-color:var(--gold-bright); }
     .fav-remove {
       appearance:none; background:transparent; border:1px solid transparent; cursor:pointer;
-      color:var(--muted); width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center;
+      color:var(--muted); width:34px; height:34px; border-radius:0; clip-path:var(--clip-sm); display:flex; align-items:center; justify-content:center;
       transition:all .2s;
     }
     .fav-remove:hover { color:var(--bad); border-color:rgba(248,113,113,0.4); background:rgba(248,113,113,0.08); }
@@ -172,6 +175,20 @@
         </button>
         <button type="button" data-units="metric" aria-pressed="false">
           Metric <span class="sub">°C · km/h · km</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ── Card style ── -->
+    <section class="card">
+      <h2 data-kicon="grid">Card style</h2>
+      <p class="hint">How lakes appear on the Paddling Out list. Minimal shows image-first tiles — long-press a tile to love it.</p>
+      <div class="seg" id="cardSeg" role="group" aria-label="Card style">
+        <button type="button" data-card="full" aria-pressed="false">
+          Detailed <span class="sub">photo · score · notes</span>
+        </button>
+        <button type="button" data-card="minimal" aria-pressed="false">
+          Minimal <span class="sub">image-first tiles</span>
         </button>
       </div>
     </section>
@@ -221,6 +238,23 @@
         b.addEventListener('click', () => { P.setUnits(b.dataset.units); paintUnits(); });
       });
       paintUnits();
+
+      // ── Card style segmented toggle ──
+      const cardSeg = document.getElementById('cardSeg');
+      if (cardSeg && P.getCardStyle) {
+        function paintCard() {
+          const cur = P.getCardStyle();
+          cardSeg.querySelectorAll('button').forEach(b => {
+            const on = b.dataset.card === cur;
+            b.classList.toggle('active', on);
+            b.setAttribute('aria-pressed', String(on));
+          });
+        }
+        cardSeg.querySelectorAll('button').forEach(b => {
+          b.addEventListener('click', () => { P.setCardStyle(b.dataset.card); paintCard(); });
+        });
+        paintCard();
+      }
 
       // ── My area ──
       function paintArea() {

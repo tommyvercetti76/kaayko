@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="glow" cx="26%" cy="34%" r="78%">
+      <stop offset="0%" stop-color="#1a1408"/>
+      <stop offset="46%" stop-color="#0d0b06"/>
+      <stop offset="100%" stop-color="#080808"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e9d29a"/>
+      <stop offset="55%" stop-color="#d9bd7b"/>
+      <stop offset="100%" stop-color="#b5935a"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="#080808"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <!-- frame -->
+  <rect x="40" y="40" width="1120" height="550" fill="none" stroke="#b5935a" stroke-opacity="0.28" stroke-width="1.5"/>
+
+  <!-- wordmark -->
+  <text x="96" y="286" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-weight="700"
+        font-size="150" letter-spacing="14" fill="url(#gold)">KAAYKO</text>
+
+  <!-- hairline -->
+  <rect x="100" y="330" width="150" height="3" fill="url(#gold)"/>
+
+  <!-- tagline -->
+  <text x="98" y="404" font-family="Georgia, 'Times New Roman', serif" font-style="italic"
+        font-size="52" fill="#ede8df">Know before you paddle.</text>
+
+  <!-- sub -->
+  <text x="100" y="470" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-weight="400"
+        font-size="27" letter-spacing="1.5" fill="#a9a49b">AI paddle-condition forecasts &#183; 17 hand-picked spots</text>
+  <text x="100" y="510" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-weight="400"
+        font-size="27" letter-spacing="1.5" fill="#a9a49b">Forge &#8212; an open-source, local-first AI workstation</text>
+
+  <!-- url -->
+  <text x="100" y="560" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-weight="600"
+        font-size="24" letter-spacing="4" fill="#d9bd7b">KAAYKO.COM</text>
+</svg>

@@ -35,7 +35,12 @@
   --score-good:     #316d43;
   --font-serif: 'Cormorant Garamond', Georgia, serif;
   --font-sans:  'Josefin Sans', 'Josefin_Bold', Arial, sans-serif;
+  --display:    'Bebas Neue', 'Josefin Sans', sans-serif;   /* one display face, matches homepage + About */
   --ease: cubic-bezier(0.76, 0, 0.24, 1);
+  /* shared corner-chamfer clips (hard edges, symmetric "dent" — no curves) */
+  --clip-lg: polygon(13px 0, calc(100% - 13px) 0, 100% 13px, 100% calc(100% - 13px), calc(100% - 13px) 100%, 13px 100%, 0 calc(100% - 13px), 0 13px);
+  --clip-md: polygon(9px 0, calc(100% - 9px) 0, 100% 9px, 100% calc(100% - 9px), calc(100% - 9px) 100%, 9px 100%, 0 calc(100% - 9px), 0 9px);
+  --clip-sm: polygon(6px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px), 0 6px);
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
@@ -114,13 +119,29 @@ body {
   margin: 0 auto;
 }
 
+/* Error / retry state (honest copy + a real retry) */
+.po-error {
+  grid-column: 1 / -1;
+  display: flex; flex-direction: column; align-items: center; gap: 1rem;
+  padding: clamp(2.5rem, 8vw, 5rem) 1.5rem; text-align: center;
+}
+.po-error-msg { margin: 0; font-family: var(--font-serif); font-style: italic; font-size: 1.15rem; color: var(--muted); }
+.po-error-retry {
+  cursor: pointer; border: 1px solid rgba(181,147,90,0.5); border-radius: 0; clip-path: var(--clip-md);
+  background: rgba(181,147,90,0.1); color: var(--gold-bright);
+  font-family: var(--font-sans); font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase;
+  padding: 0.7rem 1.4rem; transition: background 0.2s ease, transform 0.15s ease;
+}
+.po-error-retry:hover { background: rgba(181,147,90,0.2); transform: translateY(-1px); }
+
 /*─────────────────────────────────────────────────────────────────────────────
  3) Card base
 ─────────────────────────────────────────────────────────────────────────────*/
 .card {
   background: linear-gradient(135deg, var(--panel-a), var(--panel-c));
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 0;
+  clip-path: var(--clip-lg);       /* chamfered, matches the minimal tiles */
   overflow: hidden;
   cursor: pointer;
   display: flex;
@@ -285,7 +306,8 @@ body {
   background: rgba(8, 8, 8, 0.72);
   border: 1px solid var(--line);
   color: var(--fg);
-  border-radius: 50%;
+  border-radius: 0;
+  clip-path: var(--clip-sm);
   font-size: 1.4rem;
   line-height: 1;
   cursor: pointer;
@@ -325,8 +347,9 @@ body {
   backdrop-filter: blur(14px) saturate(160%);
   -webkit-backdrop-filter: blur(14px) saturate(160%);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 50px;
-  padding: 0.32rem 0.7rem 0.32rem 0.5rem;
+  border-radius: 0;
+  clip-path: var(--clip-sm);
+  padding: 0.34rem 0.72rem 0.34rem 0.55rem;
   display: flex;
   align-items: center;
   gap: 0.42rem;
@@ -343,11 +366,11 @@ body {
   transform: scale(1.04);
 }
 
-/* Colored dot — status indicator */
+/* Colored square — status indicator (sharp, matches the language) */
 .badge-dot {
   width: 7px;
   height: 7px;
-  border-radius: 50%;
+  border-radius: 0;
   background: var(--score-good);
   flex-shrink: 0;
 }
@@ -391,7 +414,7 @@ body {
 .carousel-dot {
   width: 6px;
   height: 6px;
-  border-radius: 50%;
+  border-radius: 0;                /* tiny square, not a circle */
   background: rgba(255, 255, 255, 0.38);
   cursor: pointer;
   transition: all 0.3s var(--ease);
@@ -581,10 +604,10 @@ body {
 }
 
 .po-title {
-  font-family: 'Josefin Sans', 'Josefin_Bold', Arial, sans-serif;
-  font-size: clamp(1.55rem, 4vw, 2.1rem);
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  font-family: var(--display);      /* Bebas — same wordmark face as the homepage */
+  font-size: clamp(1.7rem, 4.4vw, 2.35rem);
+  font-weight: 400;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--gold-bright, #d9bd7b);
   margin: 0;
@@ -596,7 +619,8 @@ body {
   height: 36px;
   padding: 0 1rem 0 0.7rem;
   border: 1px solid rgba(181,147,90,0.36);
-  border-radius: 50px;
+  border-radius: 0;
+  clip-path: var(--clip-md);       /* chamfered, not a pill */
   background: rgba(181,147,90,0.08);
   color: var(--gold, #b5935a);
   display: flex;

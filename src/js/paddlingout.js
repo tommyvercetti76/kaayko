@@ -1,214 +1,119 @@
 /**
- * File: scripts/paddlingout.js
+ * paddlingout.js — the Paddling Out list & detail views.
  *
- * Responsibilities:
- *   1) Hide hero banner on detail pages
- *   2) Autoplay a random hero video once on list pages
- *   3) Fetch and render paddling spots (list & detail views)
- *   4) Build cards with in‐card image carousel (dots + swipe)
- *   5) Inject conditions badge + forecast button
- *   6) Expose global helpers for YouTube & map links
- *   7) Insert the current year into the footer
+ * Cards are built by the shared window.PaddleCard component (js/components/PaddleCard.js),
+ * so a lake looks and behaves identically here and on the About page. This file only:
+ *   1) fetches spots (list vs single detail)
+ *   2) orders favorites first + renders via PaddleCard in the user's chosen style
+ *   3) re-renders instantly when the "Card style" preference changes (Settings)
+ *   4) appends the "Add a lake" tile + inserts the footer year
  */
 
-// API Configuration - Dynamic based on API client mode
-// const API_BASE = "https://api-vwcc5j4qda-uc.a.run.app"; // Production Functions URL
-// Now using dynamic API client instead
-
 document.addEventListener("DOMContentLoaded", () => {
+  const params    = new URLSearchParams(window.location.search);
+  const spotId    = params.get("id");                 // present → detail view
+  const container = document.getElementById("cardsContainer");
+  if (!container) return;
 
-  //──────────────────────────────────────────────────────────────────────────────
-  // Section 1: Query Parameters & DOM Elements
-  //──────────────────────────────────────────────────────────────────────────────
-  const params     = new URLSearchParams(window.location.search);
-  const spotId     = params.get("id");                         // if present → detail
-  const container  = document.getElementById("cardsContainer");
+  let lastSpots = null;                               // cache → re-render on style change, no refetch
+  const Prefs = () => window.KaaykoPrefs;
+  const variant = () => (Prefs() && Prefs().getCardStyle) ? Prefs().getCardStyle() : 'full';
 
-  //──────────────────────────────────────────────────────────────────────────────
-  // Section 4: Fetch & Render Spots (List vs Detail)
-  //──────────────────────────────────────────────────────────────────────────────
+  function endpoint() {
+    if (window.FORCE_PRODUCTION_MODE && window.PRODUCTION_API_BASE) return window.PRODUCTION_API_BASE;
+    const h = window.location.hostname;
+    if (h === 'localhost' || h === '127.0.0.1') return window.location.origin + '/api';
+    return "https://api-vwcc5j4qda-uc.a.run.app";     // Production Functions v2
+  }
+
   if (spotId) fetchSingle(spotId);
   else        fetchAll();
 
+  //──────────────────────────────────────────────────────────────────────────────
+  // List view
+  //──────────────────────────────────────────────────────────────────────────────
   function fetchAll() {
-    // Dynamic API endpoint - with production override support
-    const spotEndpoint = window.FORCE_PRODUCTION_MODE 
-      ? window.PRODUCTION_API_BASE  // Force production mode
-      : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-        ? `${window.location.origin}/api`  // Local Firebase emulator
-        : "https://api-vwcc5j4qda-uc.a.run.app";  // Production Functions v2 URL
-    
-    const currentMode = window.FORCE_PRODUCTION_MODE ? 'production' : (window.apiClient?.getMode() || 'local');
-    
-    console.log(`📍 Fetching paddle spots from ${spotEndpoint} (${currentMode} mode)`);
-    
-    fetch(`${spotEndpoint}/paddlingOut`)
+    // Abort a cold/hung Cloud Function instead of shimmering skeletons forever.
+    var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var timedOut = false;
+    var timer = setTimeout(function () { timedOut = true; if (ctrl) ctrl.abort(); }, 10000);
+    fetch(`${endpoint()}/paddlingOut`, ctrl ? { signal: ctrl.signal } : undefined)
       .then(r => r.json())
-      .then(async spots => {
-        container.innerHTML = "";
-        container.classList.remove("single-card");
-
-        // Favorites first — saved lakes surface at the top of the list
-        if (window.KaaykoPrefs) spots = window.KaaykoPrefs.sortFavoritesFirst(spots);
-
-        // Process cards in parallel for better performance
-        const cardPromises = spots.map(spot => renderCard(spot));
-        const cards = await Promise.all(cardPromises);
-        // Staggered fade/slide-in instead of a single pop
-        cards.forEach((card, i) => {
-          card.classList.add("card-enter");
-          card.style.animationDelay = `${Math.min(i, 12) * 45}ms`;
-          container.append(card);
-        });
-        container.append(renderSubmitEntryCard());
-
-        wireUpCarousels();
+      .then(data => {
+        clearTimeout(timer);
+        lastSpots = Array.isArray(data) ? data : (data.data || data.spots || []);
+        renderList(lastSpots);
       })
-      .catch(() => showError("Error loading spots."));
+      .catch(() => { clearTimeout(timer); showError(timedOut ? "timeout" : "error"); });
   }
 
+  function renderList(spots) {
+    if (!window.PaddleCard) { showError("Error loading spots."); return; }
+    container.innerHTML = "";
+    container.classList.remove("single-card");
+    const v = variant();
+    container.classList.toggle('minimal-list', v === 'minimal');
+
+    let ordered = spots.slice();
+    if (Prefs()) ordered = Prefs().sortFavoritesFirst(ordered);
+
+    ordered.forEach((spot, i) => {
+      const card = window.PaddleCard.create(spot, {
+        variant: v,
+        linkTo: v === 'minimal' ? 'forecast' : 'detail'
+      });
+      card.classList.add("card-enter");
+      card.style.animationDelay = `${Math.min(i, 12) * 45}ms`;
+      container.append(card);
+    });
+    container.append(renderSubmitEntryCard(v));
+
+    // Signal the first-launch walkthrough that REAL cards are on screen (never fires on skeletons).
+    try { window.dispatchEvent(new CustomEvent('kaayko:cardsrendered', { detail: { count: ordered.length } })); } catch (e) {}
+  }
+
+  //──────────────────────────────────────────────────────────────────────────────
+  // Detail view (single spot) — always the full, detailed card
+  //──────────────────────────────────────────────────────────────────────────────
   function fetchSingle(id) {
-    // Dynamic API endpoint - with production override support
-    const spotEndpoint = window.FORCE_PRODUCTION_MODE 
-      ? window.PRODUCTION_API_BASE  // Force production mode
-      : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-        ? `${window.location.origin}/api`  // Local Firebase emulator
-        : "https://api-vwcc5j4qda-uc.a.run.app";  // Production Functions v2 URL
-    
-    const currentMode = window.FORCE_PRODUCTION_MODE ? 'production' : (window.apiClient?.getMode() || 'local');
-    
-    console.log(`📍 Fetching single spot from ${spotEndpoint} (${currentMode} mode)`);
-    
-    fetch(`${spotEndpoint}/paddlingOut/${encodeURIComponent(id)}`)
+    fetch(`${endpoint()}/paddlingOut/${encodeURIComponent(id)}`)
       .then(r => r.ok ? r.json() : Promise.reject())
-      .then(async spot => {
+      .then(spot => {
+        if (!window.PaddleCard) { showError("Spot not found."); return; }
         container.innerHTML = "";
         container.classList.add("single-card");
-        const card = await renderCard(spot);
-        container.append(card);
-        wireUpCarousels();
+        container.classList.remove("minimal-list");
+        container.append(window.PaddleCard.create(spot, { variant: 'full', linkTo: 'detail' }));
       })
       .catch(() => showError("Spot not found."));
   }
 
+  // Live re-render when the user flips Card style in Settings (no refetch needed).
+  window.addEventListener('kaayko:cardstylechange', () => { if (lastSpots) renderList(lastSpots); });
+
   //──────────────────────────────────────────────────────────────────────────────
-  // Section 5: renderCard(spot) → Clones template & populates a .card element
+  // "Add a lake" tile — matches whichever card style is active
   //──────────────────────────────────────────────────────────────────────────────
-  async function renderCard(spot) {
-    const tpl   = document.getElementById("card-template");
-    const clone = tpl.content.cloneNode(true);
-    const card  = clone.querySelector(".card");
-    const imgs  = card.querySelector(".img-container");
-    const dots  = card.querySelector(".carousel-dots");
+  function renderSubmitEntryCard(v) {
+    const openSubmitPage = () => { window.location.href = "/paddlingout/submitentry"; };
 
-    // Favorite ★ (top-right overlay) — saves to My favorites
-    if (window.KaaykoPrefs && spot && spot.id) {
-      imgs.appendChild(window.KaaykoPrefs.makeFavButton({
-        id: spot.id, title: spot.title, subtitle: spot.subtitle
-      }));
-    }
-
-    const imageUrls = Array.isArray(spot.imgSrc) ? spot.imgSrc : [];
-
-    // 5a) Populate images & carousel dots
-    imageUrls.forEach((url, i) => {
-      const img = document.createElement("img");
-      img.src = url;
-      img.className = `carousel-image${i===0 ? " active" : ""}`;
-      img.dataset.index = i;
-      imgs.appendChild(img);
-
-      const dot = document.createElement("span");
-      dot.className = `carousel-dot${i===0 ? " active" : ""}`;
-      dot.dataset.index = i;
-      dot.addEventListener("click", e => {
-        e.stopPropagation();
-        showImage(card, i);
+    if (v === 'minimal') {
+      const tile = document.createElement("div");
+      tile.className = "pcard-submit";
+      tile.tabIndex = 0;
+      tile.setAttribute("role", "link");
+      tile.setAttribute("aria-label", "Add a new lake to Paddling Out");
+      tile.innerHTML =
+        '<span class="plus" aria-hidden="true">+</span>' +
+        '<span class="t">Add a lake</span>' +
+        '<span class="s">Anonymous is fine</span>';
+      tile.addEventListener("click", openSubmitPage);
+      tile.addEventListener("keydown", e => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openSubmitPage(); }
       });
-      dots.appendChild(dot);
-    });
-
-    // 5a-2) Wire up carousel arrows
-    const prevBtn = imgs.querySelector('.prev');
-    const nextBtn = imgs.querySelector('.next');
-
-    if (prevBtn && nextBtn) {
-      const getActiveIndex = () => {
-        const activeImg = card.querySelector('.carousel-image.active');
-        return activeImg ? parseInt(activeImg.dataset.index, 10) : 0;
-      };
-
-      prevBtn.addEventListener('click', e => {
-        e.stopPropagation();
-        const total = imageUrls.length;
-        showImage(card, (getActiveIndex() - 1 + total) % total);
-      });
-
-      nextBtn.addEventListener('click', e => {
-        e.stopPropagation();
-        const total = imageUrls.length;
-        showImage(card, (getActiveIndex() + 1) % total);
-      });
-
-      if (imageUrls.length <= 1) {
-        prevBtn.style.display = 'none';
-        nextBtn.style.display = 'none';
-      }
+      return tile;
     }
 
-    // 5b) Populate text fields
-    // Lake name is a real anchor to the spot's static page. This is the crawl
-    // path: Googlebot executes JS, so the rendered DOM must contain these links
-    // or the static spot pages are only reachable via the sitemap.
-    const nameEl = card.querySelector(".lake-name");
-    const slug = (window.KAAYKO_SPOT_SLUGS || {})[spot.id];
-    if (slug) {
-      const nameLink = document.createElement("a");
-      nameLink.href = `/paddlingout/${slug}`;
-      nameLink.textContent = spot.title;
-      nameLink.className = "lake-name-link";
-      // Let the anchor win over the card's own click handler.
-      nameLink.addEventListener("click", e => e.stopPropagation());
-      nameEl.textContent = "";
-      nameEl.appendChild(nameLink);
-    } else {
-      nameEl.textContent = spot.title;
-    }
-    card.querySelector(".location").textContent   = spot.subtitle;
-    card.querySelector(".description").textContent = spot.text;
-
-    // 5c) Conditions badge — inject into img-container
-    const badge = createConditionsBadge(spot);
-    imgs.appendChild(badge);
-
-    // Score class on card drives colored left border in list view
-    if (spot.paddleScore?.rating != null) {
-      card.classList.add(`score-${getScoreSeverity(spot.paddleScore.rating)}`);
-    }
-
-    // 5d) Forecast button → navigate to forecast page
-    const forecastBtn = card.querySelector(".forecast-button");
-    forecastBtn.addEventListener("click", e => {
-      e.stopPropagation();
-      window.location.href = `/paddlingout/forecast?id=${encodeURIComponent(spot.id)}`;
-    });
-
-    // 5d-2) Rate button → deep-link to paddle trainer with spot pre-selected
-    const rateBtn = card.querySelector(".rate-button");
-    rateBtn.addEventListener("click", e => {
-      e.stopPropagation();
-      window.location.href = `/paddlingout/trainer?lake=${encodeURIComponent(spot.id)}`;
-    });
-
-    // 5e) Card click → navigate to detail page
-    card.addEventListener("click", () => {
-      window.location.href = `paddlingout?id=${spot.id}`;
-    });
-
-    return card;
-  }
-
-  function renderSubmitEntryCard() {
     const card = document.createElement("article");
     card.className = "card submit-entry-card";
     card.tabIndex = 0;
@@ -223,232 +128,43 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="submit-entry-action">Submit entry</span>
       </div>
     `;
-
-    function openSubmitPage() {
-      window.location.href = "/paddlingout/submitentry";
-    }
-
     card.addEventListener("click", openSubmitPage);
-    card.addEventListener("keydown", event => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        openSubmitPage();
-      }
+    card.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openSubmitPage(); }
     });
-
     return card;
   }
 
-  function getScoreSeverity(score) {
-    if (score >= 3.7) return 'good';
-    if (score >= 2.7) return 'moderate';
-    return 'critical';
-  }
-
-  function createConditionsBadge(spot) {
-    const badge = document.createElement("div");
-    badge.classList.add("conditions-badge");
-
-    if (spot.paddleScore?.rating != null) {
-      const score    = spot.paddleScore.rating;
-      const severity = getScoreSeverity(score);
-      const label    = severity === 'good' ? 'Worth it'
-                     : severity === 'moderate' ? 'Careful' : 'Hard pass';
-      if (severity !== 'good') badge.classList.add(severity);
-      badge.innerHTML = `
-        <span class="badge-dot"></span>
-        <span class="badge-score">${score}</span>
-        <span class="badge-status">${label}</span>
-      `;
-    } else {
-      badge.innerHTML = `
-        <span class="badge-dot"></span>
-        <span class="badge-score">—</span>
-        <span class="badge-status">N/A</span>
-      `;
-    }
-
-    badge.addEventListener("click", e => {
-      e.stopPropagation();
-      window.location.href = `/paddlingout/forecast?id=${encodeURIComponent(spot.id)}`;
-    });
-
-    return badge;
-  }
-
   //──────────────────────────────────────────────────────────────────────────────
-  // Section 6: showImage(card, idx) → Switches active image & dot
+  // Inline error — honest copy + a real retry (no "list below" lie: that grid is
+  // <noscript>-only and invisible here).
   //──────────────────────────────────────────────────────────────────────────────
-  function showImage(card, idx) {
-    const images = card.querySelectorAll(".carousel-image");
-    const dots   = card.querySelectorAll(".carousel-dot");
-    const next   = (idx + images.length) % images.length;
-
-    images.forEach((img, i) => img.classList.toggle("active", i === next));
-    dots  .forEach((d,   i) => d.classList.toggle("active", i === next));
-  }
-
-  //──────────────────────────────────────────────────────────────────────────────
-  // Section 7: wireUpCarousels() → Attaches enhanced swipe logic to each card
-  //──────────────────────────────────────────────────────────────────────────────
-  function wireUpCarousels() {
-    container.querySelectorAll(".card").forEach(card => {
-      const box = card.querySelector(".img-container");
-      if (!box) return;
-
-      let startX = 0;
-      let isDragging = false;
-      let hasSwiped = false;
-      const imgs = card.querySelectorAll(".carousel-image");
-      if (imgs.length <= 1) return;
-
-      const onEnd = dx => {
-        console.log(`🏞️ Paddling swipe detected: dx=${dx}, threshold=40`);
-        if (Math.abs(dx) < 40) {
-          console.log(`⚠️ Paddling swipe too small, ignoring`);
-          return false;
-        }
-        
-        hasSwiped = true;
-        const curr = [...imgs].findIndex(i => i.classList.contains("active"));
-        const next = dx < 0 ? curr + 1 : curr - 1;
-        console.log(`🏞️ Paddling image: ${curr} → ${next}`);
-        showImage(card, next);
-        return true;
-      };
-
-      // Add styling for better touch interaction
-      box.style.touchAction = 'pan-y pinch-zoom';
-      box.style.userSelect = 'none';
-      box.style.cursor = 'grab';
-
-      // Prevent modal/navigation interference
-      box.addEventListener('click', (e) => {
-        if (hasSwiped) {
-          console.log(`🚫 Preventing navigation due to paddling swipe`);
-          e.stopPropagation();
-          e.preventDefault();
-          hasSwiped = false;
-        }
-      }, true);
-
-      if (window.PointerEvent) {
-        console.log(`🏞️ Using pointer events for paddling swipe`);
-        box.addEventListener("pointerdown", e => {
-          startX = e.clientX;
-          isDragging = true;
-          hasSwiped = false;
-          box.style.cursor = 'grabbing';
-          console.log(`👇 Paddling pointer down at ${startX}`);
-          e.preventDefault();
-        });
-        
-        box.addEventListener("pointermove", e => {
-          if (isDragging) {
-            const dx = e.clientX - startX;
-            if (Math.abs(dx) > 10) {
-              hasSwiped = true;
-            }
-          }
-        });
-        
-        box.addEventListener("pointerup", e => {
-          if (isDragging) {
-            const dx = e.clientX - startX;
-            console.log(`👆 Paddling pointer up at ${e.clientX}, dx=${dx}`);
-            onEnd(dx);
-            isDragging = false;
-            box.style.cursor = 'grab';
-          }
-        });
-      } else {
-        console.log(`🏞️ Using touch events for paddling swipe`);
-        box.addEventListener("touchstart", e => {
-          startX = e.touches[0].clientX;
-          isDragging = true;
-          hasSwiped = false;
-          console.log(`👇 Paddling touch start at ${startX}`);
-        }, { passive: false });
-        
-        box.addEventListener("touchmove", e => {
-          if (isDragging) {
-            const dx = e.touches[0].clientX - startX;
-            if (Math.abs(dx) > 10) {
-              hasSwiped = true;
-              e.preventDefault(); // Prevent scrolling
-            }
-          }
-        }, { passive: false });
-        
-        box.addEventListener("touchend", e => {
-          if (isDragging) {
-            const dx = e.changedTouches[0].clientX - startX;
-            console.log(`👆 Paddling touch end, dx=${dx}`);
-            onEnd(dx);
-            isDragging = false;
-          }
-        });
-
-        // Add mouse events for desktop
-        box.addEventListener("mousedown", e => {
-          startX = e.clientX;
-          isDragging = true;
-          hasSwiped = false;
-          box.style.cursor = 'grabbing';
-          console.log(`🖱️ Paddling mouse down at ${startX}`);
-          e.preventDefault();
-        });
-        
-        box.addEventListener("mousemove", e => {
-          if (isDragging) {
-            const dx = e.clientX - startX;
-            if (Math.abs(dx) > 10) {
-              hasSwiped = true;
-            }
-          }
-        });
-        
-        box.addEventListener("mouseup", e => {
-          if (isDragging) {
-            const dx = e.clientX - startX;
-            console.log(`🖱️ Paddling mouse up at ${e.clientX}, dx=${dx}`);
-            onEnd(dx);
-            isDragging = false;
-            box.style.cursor = 'grab';
-          }
-        });
-        
-        // Prevent mouse leave from breaking the interaction
-        box.addEventListener("mouseleave", e => {
-          if (isDragging) {
-            isDragging = false;
-            box.style.cursor = 'grab';
-          }
-        });
-      }
-    });
-  }
-
-  //──────────────────────────────────────────────────────────────────────────────
-  // Section 8: showError(msg) → Shows an inline notice without destroying the page
-  //──────────────────────────────────────────────────────────────────────────────
-  //
-  // This must not replace the whole container. The static spot list, intro copy
-  // and FAQ below it stay useful when the API is down, and a crawler that hits
-  // this path should still see a real page rather than an error state.
-  function showError(msg) {
+  function showError(kind) {
     container.innerHTML = "";
+    container.classList.remove('minimal-list');
     const notice = document.createElement("div");
-    notice.className = "error";
+    notice.className = "po-error";
     notice.setAttribute("role", "status");
-    notice.textContent = `${msg} Live scores are unavailable right now — the full spot list is below.`;
+    const line = kind === 'timeout'
+      ? "Live scores are taking too long to load right now."
+      : "We couldn’t load live scores right now.";
+    const msg = document.createElement('p');
+    msg.className = 'po-error-msg';
+    msg.textContent = line;
+    const retry = document.createElement('button');
+    retry.type = 'button';
+    retry.className = 'po-error-retry';
+    retry.textContent = 'Try again';
+    retry.addEventListener('click', function () {
+      container.classList.add('minimal-list');
+      container.innerHTML = '';
+      for (var k = 0; k < 8; k++) { var s = document.createElement('div'); s.className = 'pcard-skeleton'; s.setAttribute('aria-hidden', 'true'); container.appendChild(s); }
+      fetchAll();
+    });
+    notice.appendChild(msg); notice.appendChild(retry);
     container.appendChild(notice);
   }
 
-  //──────────────────────────────────────────────────────────────────────────────
-  // Section 9: Insert Current Year into Footer
-  //──────────────────────────────────────────────────────────────────────────────
   const yEl = document.getElementById("year");
   if (yEl) yEl.textContent = new Date().getFullYear();
-
 });

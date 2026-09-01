@@ -34,46 +34,68 @@
   <meta name="twitter:image" content="https://kaayko.com/assets/kaayko-og.png">
   <meta name="twitter:image:alt" content="Kaayko paddling forecast app">
 
-  <!-- Schema.org — Organization + WebSite with search -->
+  <!-- Schema.org — connected @graph so Google can resolve "Kaayko" as one entity.
+       @id cross-links + external sameAs give the corroboration a Knowledge Panel /
+       AI-Overview "Official Website" link needs. -->
   <script type="application/ld+json">
-  [
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "Kaayko",
-      "url": "https://kaayko.com",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://kaayko.com/kaayko-logo-512.png",
-        "width": 512,
-        "height": 512
-      },
-      "description": "Kaayko delivers AI-powered paddle condition forecasts and Forge — an open-source local-first AI workstation.",
-      "sameAs": [
-        "https://kaayko.com"
-      ],
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "contactType": "customer support",
-        "url": "https://kaayko.com/about"
-      }
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Kaayko",
-      "url": "https://kaayko.com",
-      "description": "AI-powered paddle condition forecasts for 17 hand-picked spots and Forge, an open-source AI workstation.",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": {
-          "@type": "EntryPoint",
-          "urlTemplate": "https://kaayko.com/paddlingout/search?q={search_term_string}"
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://kaayko.com/#organization",
+        "name": "Kaayko",
+        "alternateName": "Kaayko Paddling",
+        "url": "https://kaayko.com/",
+        "logo": {
+          "@type": "ImageObject",
+          "@id": "https://kaayko.com/#logo",
+          "url": "https://kaayko.com/kaayko-logo-512.png",
+          "width": 512,
+          "height": 512,
+          "caption": "Kaayko"
         },
-        "query-input": "required name=search_term_string"
+        "image": { "@id": "https://kaayko.com/#logo" },
+        "description": "Kaayko delivers AI-powered paddle condition forecasts and Forge — an open-source local-first AI workstation.",
+        "founder": {
+          "@type": "Person",
+          "@id": "https://kaayko.com/#founder",
+          "name": "Rohan Ramekar",
+          "url": "https://kaayko.com/about",
+          "sameAs": [
+            "https://github.com/tommyvercetti76",
+            "https://www.youtube.com/@travelingout"
+          ]
+        },
+        "sameAs": [
+          "https://www.youtube.com/@travelingout",
+          "https://github.com/tommyvercetti76"
+        ],
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "contactType": "customer support",
+          "url": "https://kaayko.com/about"
+        }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://kaayko.com/#website",
+        "name": "Kaayko",
+        "url": "https://kaayko.com/",
+        "description": "AI-powered paddle condition forecasts for 17 hand-picked spots and Forge, an open-source AI workstation.",
+        "publisher": { "@id": "https://kaayko.com/#organization" },
+        "inLanguage": "en-US",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://kaayko.com/paddlingout/search?q={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        }
       }
-    }
-  ]
+    ]
+  }
   </script>
 
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -304,7 +326,10 @@
     }
 
     .footer {
-      position: absolute;
+      /* fixed (not absolute) so ABOUT/YouTube stay pinned with the splash choices
+         instead of scrolling up through them; the opaque .home-content (z-index 9)
+         cleanly covers it as the page scrolls. */
+      position: fixed;
       left: 0;
       right: 0;
       bottom: max(1rem, env(safe-area-inset-bottom));

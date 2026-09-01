@@ -3,6 +3,8 @@
 <head>
   <script src="/js/site-features.js"></script>
   <script src="/js/kaayko-icons.js" defer></script>
+  <script src="/js/prefs.js"></script>
+  <script src="/js/components/PaddleCard.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -87,6 +89,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="/favicon-32x32.png">
   <link rel="stylesheet" href="/css/storeAccess.css">
+  <link rel="stylesheet" href="/js/components/PaddleCard.css">
   <meta name="theme-color" content="#080808">
 
   <style>
@@ -583,7 +586,8 @@
             snip: s.text || "",
             stat: rating == null ? "" : Number(rating).toFixed(1),
             statLabel: "Paddle Score now",
-            img: (s.imgSrc && s.imgSrc[0]) || ""
+            img: (s.imgSrc && s.imgSrc[0]) || "",
+            _spot: s   // raw spot → rendered by the shared PaddleCard (same card as the main list)
           };
         },
         live: "Live · Paddle Score",
@@ -775,14 +779,20 @@
     function feedNode(items, opts) {
       var rail = h("div", { class: "rail", role: "list", "aria-label": opts.label });
       pick(items, SHOWN).forEach(function (item) {
-        rail.appendChild(h("div", { role: "listitem" }, [cardNode(item, opts.gated)]));
+        // Real lake spots render through the shared PaddleCard (the same "singular"
+        // card as the main list) — full names, Paddle Score, multi-image, long-press
+        // to love. Non-lake items (products/gallery, and lake fallbacks) use cardNode.
+        var node = (item && item._spot && window.PaddleCard)
+          ? window.PaddleCard.create(item._spot, { variant: 'minimal', linkTo: 'forecast', carouselSwipe: false })
+          : cardNode(item, opts.gated);
+        rail.appendChild(h("div", { role: "listitem" }, [node]));
       });
 
       var prev = h("button", { class: "feed-btn", type: "button", "aria-label": "Previous", text: "‹" });
       var next = h("button", { class: "feed-btn", type: "button", "aria-label": "Next", text: "›" });
 
       function step(dir) {
-        var first = rail.querySelector(".card");
+        var first = rail.querySelector(".card, .pcard--minimal");
         var by = first ? first.getBoundingClientRect().width + 1 : rail.clientWidth * 0.82;
         rail.scrollBy({ left: dir * by, behavior: "smooth" });
       }

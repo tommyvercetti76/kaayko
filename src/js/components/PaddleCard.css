@@ -1,0 +1,301 @@
+/* PaddleCard — MINIMAL variant (image-first tile).
+   Design language: hard edges, NO curves. Each corner carries a small symmetric
+   chamfer (the "dent"); a gold hairline frames the tile and thickens to a bright
+   gold frame when saved. Namespaced (.pcard*) so it never collides with the
+   .card rules on paddlingout / about. Tokens fall back so it looks native on both. */
+
+.pcard--minimal {
+  --pc-notch: 13px;          /* corner chamfer — the tiny dent */
+  --pc-bw: 1.5px;            /* frame thickness (hairline) */
+  --pc-edge: rgba(181, 147, 90, 0.22);   /* default frame colour (subtle) */
+  --pc-clip: polygon(
+    var(--pc-notch) 0, calc(100% - var(--pc-notch)) 0,
+    100% var(--pc-notch), 100% calc(100% - var(--pc-notch)),
+    calc(100% - var(--pc-notch)) 100%, var(--pc-notch) 100%,
+    0 calc(100% - var(--pc-notch)), 0 var(--pc-notch)
+  );
+
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border: 0;
+  border-radius: 0;                 /* sharp — no curves */
+  padding: 0;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  isolation: isolate;
+  -webkit-tap-highlight-color: transparent;
+  clip-path: var(--pc-clip);
+  background: var(--pc-edge);        /* shows through the body inset as the frame */
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), filter 0.35s ease, background 0.3s ease;
+}
+.pcard--minimal:hover { transform: translateY(-3px); }
+.pcard--minimal:focus-visible { outline: none; --pc-edge: var(--gold-bright, #d9bd7b); --pc-bw: 2px; }
+
+/* inner body — inset by the frame width, same chamfer, so the root shows as a border */
+.pcard-body {
+  position: absolute;
+  inset: var(--pc-bw);
+  clip-path: var(--pc-clip);
+  background: #0d0b08;
+  overflow: hidden;
+}
+
+/* ── media / carousel layer ── */
+.pcard-media {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  cursor: grab;
+}
+.pcard-media--empty { background: linear-gradient(135deg, #1a1712, #0d0b08); cursor: default; }
+.pcard-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.55s ease, transform 0.8s var(--ease, cubic-bezier(0.16, 1, 0.3, 1));
+}
+.pcard-img.active { opacity: 1; }
+.pcard--minimal:hover .pcard-img.active { transform: scale(1.05); }
+
+.pcard-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(to top, rgba(8, 8, 8, 0.92) 0%, rgba(8, 8, 8, 0.42) 34%, rgba(8, 8, 8, 0) 62%);
+}
+
+/* ── edge carets (replace dots) — sharp hairline chevrons, hug the sides ── */
+.pcard-caret {
+  --cn: 6px;                       /* small matching chamfer */
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 4;
+  width: 30px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #f2e6c4;
+  clip-path: polygon(var(--cn) 0, calc(100% - var(--cn)) 0, 100% var(--cn), 100% calc(100% - var(--cn)),
+    calc(100% - var(--cn)) 100%, var(--cn) 100%, 0 calc(100% - var(--cn)), 0 var(--cn));
+  background: rgba(12, 11, 9, 0.4);   /* subtle chamfered chip + blur — no black glow */
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  opacity: 0;
+  transition: opacity 0.2s ease, background 0.2s ease;
+}
+.pcard-caret.prev { left: 8px; }
+.pcard-caret.next { right: 8px; }
+.pcard-caret svg { width: 16px; height: 16px; }
+.pcard-caret:hover { background: rgba(26, 21, 15, 0.6); color: #fff1d2; }
+.pcard-caret:focus-visible { outline: none; opacity: 1; box-shadow: 0 0 0 2px rgba(217, 189, 123, 0.85); }
+.pcard--minimal:hover .pcard-caret,
+.pcard--minimal:focus-within .pcard-caret { opacity: 1; }
+@media (hover: none) { .pcard-caret { opacity: 0.82; } }   /* touch has no hover — keep discoverable */
+
+/* ── save control — chamfered heart chip (accessible; reveals on hover/focus) ── */
+.pcard-fav {
+  --cn: 6px;
+  position: absolute; top: 8px; right: 8px; z-index: 5;
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: #f2e6c4;
+  clip-path: polygon(var(--cn) 0, calc(100% - var(--cn)) 0, 100% var(--cn), 100% calc(100% - var(--cn)),
+    calc(100% - var(--cn)) 100%, var(--cn) 100%, 0 calc(100% - var(--cn)), 0 var(--cn));
+  background: rgba(12, 11, 9, 0.42);
+  -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
+  opacity: 0; transform: scale(0.9);
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+.pcard-fav svg { width: 17px; height: 17px; display: block; }
+.pcard-fav:hover { background: rgba(26, 21, 15, 0.62); color: #fff1d2; }
+.pcard-fav:focus-visible { outline: none; opacity: 1; transform: scale(1); box-shadow: 0 0 0 2px rgba(217, 189, 123, 0.85); }
+.pcard-fav.is-on { color: #e9d29a; }
+.pcard--minimal:hover .pcard-fav,
+.pcard--minimal:focus-within .pcard-fav,
+.pcard--minimal.is-fav .pcard-fav { opacity: 1; transform: scale(1); }
+@media (hover: none) { .pcard-fav { opacity: 0.7; } }   /* touch: quietly present so save is discoverable */
+
+/* ── long-press charging heart — grows over the 500ms hold ── */
+.pcard-charge {
+  position: absolute; left: 50%; top: 50%; z-index: 5;
+  width: 42px; height: 42px; margin: -21px 0 0 -21px;
+  pointer-events: none; color: #e9d29a; opacity: 0; transform: scale(0.4);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.55));
+}
+.pcard-charge svg { width: 100%; height: 100%; display: block; }
+.pcard-charge.go { animation: pcard-charge 0.5s ease-out forwards; }
+@keyframes pcard-charge {
+  0%   { opacity: 0; transform: scale(0.4); }
+  60%  { opacity: 0.9; }
+  100% { opacity: 0.95; transform: scale(1.08); }
+}
+@media (prefers-reduced-motion: reduce) { .pcard-charge { display: none; } }
+
+/* ── meta overlay ── */
+.pcard-meta {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  padding: 0.85rem 0.95rem 0.9rem;
+  pointer-events: none;
+}
+.pcard-title {
+  font-family: var(--display, var(--font-sans, 'Josefin Sans', 'Bebas Neue', sans-serif));
+  font-size: clamp(1.1rem, 2.4vw, 1.4rem);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  line-height: 1.08;
+  text-transform: uppercase;
+  color: var(--fg, #f3efe7);
+}
+.pcard-sub {
+  font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif);
+  color: rgba(237, 232, 223, 0.66);
+  font-size: 0.82rem;
+  font-style: italic;
+  letter-spacing: 0.04em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pcard-stat { display: flex; align-items: baseline; gap: 0.45rem; margin-top: 0.18rem; }
+.pcard-stat-val {
+  font-family: var(--display, var(--font-sans, 'Josefin Sans', sans-serif));
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.pcard-stat-label {
+  color: rgba(217, 189, 123, 0.9);
+  font-size: 0.62rem;
+  font-style: italic;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ── the GOLD saved frame (long-press-to-love result): brighter + thicker + glow ── */
+.pcard--minimal.is-fav {
+  --pc-bw: 3px;
+  --pc-edge: linear-gradient(135deg, #f0d99f, #cba765);
+  filter: drop-shadow(0 0 14px rgba(217, 189, 123, 0.42));
+}
+
+/* love completion — a card pop + a gold heart that blooms and rises */
+@keyframes pcard-pop {
+  0%   { transform: scale(1); }
+  38%  { transform: scale(1.045); }
+  100% { transform: scale(1); }
+}
+.pcard--minimal.pcard-loved { animation: pcard-pop 0.46s cubic-bezier(0.16, 1, 0.3, 1); }
+.pcard-heart {
+  position: absolute; left: 50%; top: 54%; z-index: 6;
+  width: 46px; height: 46px; margin: -23px 0 0 -23px;
+  pointer-events: none; color: #f0d99f; opacity: 0;
+  transform: translateY(0) scale(0.4);
+  filter: drop-shadow(0 3px 10px rgba(217, 189, 123, 0.55));
+}
+.pcard-heart svg { width: 100%; height: 100%; display: block; }
+.pcard-heart.go { animation: pcard-heart 0.68s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+@keyframes pcard-heart {
+  0%   { opacity: 0; transform: translateY(6px) scale(0.4); }
+  32%  { opacity: 1; transform: translateY(-6px) scale(1.15); }
+  70%  { opacity: 1; transform: translateY(-20px) scale(1); }
+  100% { opacity: 0; transform: translateY(-40px) scale(0.95); }
+}
+
+/* denser grid when the list is in minimal (image-tile) mode */
+.container.minimal-list { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1.15rem; }
+
+/* minimal-shaped skeletons — same chamfer + aspect as real tiles (no first-paint flash) */
+.pcard-skeleton {
+  aspect-ratio: 4 / 5;
+  clip-path: polygon(13px 0, calc(100% - 13px) 0, 100% 13px, 100% calc(100% - 13px),
+    calc(100% - 13px) 100%, 13px 100%, 0 calc(100% - 13px), 0 13px);
+  background: linear-gradient(100deg, rgba(181,147,90,0.05) 30%, rgba(181,147,90,0.13) 50%, rgba(181,147,90,0.05) 70%);
+  background-size: 200% 100%;
+  animation: pcard-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes pcard-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .pcard-skeleton { animation: none; } }
+
+/* grid entrance (main list adds .card-enter) */
+@keyframes pcard-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.pcard.card-enter { animation: pcard-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* ── minimal "add a lake" tile — same chamfered, sharp language ── */
+.pcard-submit {
+  --pc-notch: 13px;
+  --pc-clip: polygon(
+    var(--pc-notch) 0, calc(100% - var(--pc-notch)) 0,
+    100% var(--pc-notch), 100% calc(100% - var(--pc-notch)),
+    calc(100% - var(--pc-notch)) 100%, var(--pc-notch) 100%,
+    0 calc(100% - var(--pc-notch)), 0 var(--pc-notch)
+  );
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  aspect-ratio: 4 / 5;
+  clip-path: var(--pc-clip);
+  cursor: pointer;
+  text-align: center;
+  padding: 1rem;
+  color: var(--gold-bright, #d9bd7b);
+  background: rgba(181, 147, 90, 0.34);   /* frame colour; inner drawn by ::before */
+  transition: transform 0.35s ease, background 0.25s ease;
+}
+.pcard-submit::before {
+  content: '';
+  position: absolute;
+  inset: 1.5px;
+  clip-path: var(--pc-clip);
+  background: linear-gradient(135deg, rgba(181, 147, 90, 0.12), transparent 60%), #100e0b;
+  z-index: 0;
+}
+.pcard-submit > * { position: relative; z-index: 1; }
+.pcard-submit:hover { transform: translateY(-3px); background: var(--gold-bright, #d9bd7b); }
+.pcard-submit .plus { font-size: 2rem; line-height: 1; font-weight: 300; }
+.pcard-submit .t {
+  font-family: var(--display, var(--font-sans, 'Josefin Sans', sans-serif));
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+.pcard-submit .s {
+  font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif);
+  font-style: italic;
+  font-size: 0.82rem;
+  color: rgba(237, 232, 223, 0.62);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pcard--minimal, .pcard-img, .pcard-caret, .pcard-submit { transition: none; }
+  .pcard.card-enter, .pcard--minimal.pcard-loved, .pcard-heart.go { animation: none; }
+  .pcard-heart { display: none; }
+  .pcard--minimal:hover { transform: none; }
+  .pcard--minimal:hover .pcard-img.active { transform: none; }
+}

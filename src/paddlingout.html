@@ -285,7 +285,7 @@
   <!-- Performance -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
   <link rel="dns-prefetch" href="https://api-vwcc5j4qda-uc.a.run.app">
   <link rel="preconnect" href="https://api-vwcc5j4qda-uc.a.run.app" crossorigin>
   
@@ -306,6 +306,7 @@
   <link rel="stylesheet" href="/js/components/RatingHero.css" />
   <link rel="stylesheet" href="/js/components/SafetyWarnings.css" />
   <link rel="stylesheet" href="/js/components/KonditionsHeatmap.css" />
+  <link rel="stylesheet" href="/js/components/PaddleCard.css" />
 
   <!-- Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
@@ -340,15 +341,17 @@
   <!-- MAIN: Cards injected by paddlingout.js (replaces static grid below) -->
   <main>
 
-    <section class="container" id="cardsContainer">
-      <!-- Skeleton cards paint instantly so the page never shows bare text while
-           lakes load. paddlingout.js clears #cardsContainer when live cards arrive. -->
-      <div class="card card-skeleton" aria-hidden="true"><div class="cs-img"></div><div class="cs-body"><div class="cs-line cs-lg"></div><div class="cs-line cs-sm"></div></div></div>
-      <div class="card card-skeleton" aria-hidden="true"><div class="cs-img"></div><div class="cs-body"><div class="cs-line cs-lg"></div><div class="cs-line cs-sm"></div></div></div>
-      <div class="card card-skeleton" aria-hidden="true"><div class="cs-img"></div><div class="cs-body"><div class="cs-line cs-lg"></div><div class="cs-line cs-sm"></div></div></div>
-      <div class="card card-skeleton" aria-hidden="true"><div class="cs-img"></div><div class="cs-body"><div class="cs-line cs-lg"></div><div class="cs-line cs-sm"></div></div></div>
-      <div class="card card-skeleton" aria-hidden="true"><div class="cs-img"></div><div class="cs-body"><div class="cs-line cs-lg"></div><div class="cs-line cs-sm"></div></div></div>
-      <div class="card card-skeleton" aria-hidden="true"><div class="cs-img"></div><div class="cs-body"><div class="cs-line cs-lg"></div><div class="cs-line cs-sm"></div></div></div>
+    <section class="container minimal-list" id="cardsContainer">
+      <!-- Minimal-shaped skeletons (chamfered 4:5 portrait) match the real tiles, so the
+           first paint has no shape/curve/column flash. Cleared when live cards arrive. -->
+      <div class="pcard-skeleton" aria-hidden="true"></div>
+      <div class="pcard-skeleton" aria-hidden="true"></div>
+      <div class="pcard-skeleton" aria-hidden="true"></div>
+      <div class="pcard-skeleton" aria-hidden="true"></div>
+      <div class="pcard-skeleton" aria-hidden="true"></div>
+      <div class="pcard-skeleton" aria-hidden="true"></div>
+      <div class="pcard-skeleton" aria-hidden="true"></div>
+      <div class="pcard-skeleton" aria-hidden="true"></div>
     </section>
 
       <noscript>
@@ -432,34 +435,6 @@
     <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
   </footer>
 
-  <!-- Card template for paddlingout.js -->
-  <template id="card-template">
-    <div class="card">
-      <div class="img-container">
-        <button class="carousel-nav prev" aria-label="Previous image">‹</button>
-        <button class="carousel-nav next" aria-label="Next image">›</button>
-        <!-- .conditions-badge injected by JS -->
-        <div class="carousel-dots">
-          <!-- .carousel-dot spans injected by JS -->
-        </div>
-      </div>
-      <div class="card-content">
-        <h2 class="lake-name"></h2>
-        <p class="location"></p>
-        <p class="description"></p>
-        <div class="card-actions">
-          <button class="forecast-button">
-            <span>Forecast</span>
-            <span>→</span>
-          </button>
-          <button class="rate-button">
-            <span>Rate</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </template>
-
   <!-- SCRIPTS -->
   <!-- 1) Main application entry point -->
   <script type="module" src="js/main.js"></script>
@@ -483,6 +458,7 @@
   
   <!-- 6) Page logic: fetch & render paddling spots -->
   <script src="js/spot-slugs.js"></script>
+  <script src="js/components/PaddleCard.js"></script>
   <script type="module" src="js/paddlingout.js"></script>
 
   <!-- Set current year in footer -->
@@ -520,6 +496,228 @@
     (function () {
       var y = document.getElementById("year");
       if (y) y.textContent = new Date().getFullYear();
+    })();
+  </script>
+
+  <!-- ── First-launch INTERACTIVE walkthrough (spotlight coach-marks) ─────── -->
+  <style>
+    #po-walk { position: fixed; inset: 0; z-index: 2100; display: none; }
+    #po-walk.active { display: block; }
+    .kw-svg { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: auto; }
+    #kw-dim { transition: opacity .25s ease; }
+    #kw-hole, #kw-ring { transition: all .34s cubic-bezier(.16,1,.3,1); }
+
+    .kw-pop {
+      --n: 12px;
+      --clip: polygon(var(--n) 0, calc(100% - var(--n)) 0, 100% var(--n), 100% calc(100% - var(--n)),
+        calc(100% - var(--n)) 100%, var(--n) 100%, 0 calc(100% - var(--n)), 0 var(--n));
+      position: fixed; z-index: 2102; width: min(340px, calc(100vw - 28px));
+      clip-path: var(--clip); padding: 1.5px;
+      background: linear-gradient(150deg, rgba(217,189,123,0.6), rgba(181,147,90,0.28));
+      box-shadow: 0 18px 50px rgba(0,0,0,0.55);
+      transition: top .34s cubic-bezier(.16,1,.3,1), left .34s cubic-bezier(.16,1,.3,1), opacity .2s ease;
+    }
+    .kw-pop-inner { clip-path: var(--clip); background: linear-gradient(160deg,#0e0d0b,#100f0c); padding: 20px 20px 16px; color: #ede8df; }
+    .kw-eyebrow { display:block; font-family:'Josefin Sans',Arial,sans-serif; font-size:.6rem; letter-spacing:.28em; text-transform:uppercase; color:#b5935a; }
+    .kw-title { font-family:'Cormorant Garamond',Georgia,serif; font-weight:600; font-size:1.5rem; line-height:1.06; margin:.35rem 0 .35rem; }
+    .kw-text { font-family:'Cormorant Garamond',Georgia,serif; font-size:1.04rem; line-height:1.36; color:rgba(237,232,223,0.82); margin:0; }
+    .kw-text b { color:#f3efe7; font-weight:600; }
+    .kw-foot { display:flex; align-items:center; justify-content:space-between; margin-top:18px; }
+    .kw-count { font-family:'Josefin Sans',Arial,sans-serif; font-size:.64rem; letter-spacing:.18em; color:rgba(217,189,123,0.75); }
+    .kw-btns { display:flex; align-items:center; gap:12px; }
+    .kw-skip { background:none; border:0; cursor:pointer; color:rgba(237,232,223,0.5); font-family:'Josefin Sans',Arial,sans-serif; font-size:.68rem; letter-spacing:.12em; text-transform:uppercase; padding:6px 2px; transition:color .2s ease; }
+    .kw-skip:hover { color:rgba(237,232,223,0.85); }
+    .kw-next {
+      --n: 8px;
+      --clip: polygon(var(--n) 0, calc(100% - var(--n)) 0, 100% var(--n), 100% calc(100% - var(--n)),
+        calc(100% - var(--n)) 100%, var(--n) 100%, 0 calc(100% - var(--n)), 0 var(--n));
+      cursor:pointer; border:0; clip-path:var(--clip);
+      background:linear-gradient(135deg,#e9d29a,#b5935a); color:#141210;
+      font-family:'Josefin Sans',Arial,sans-serif; font-weight:600; font-size:.68rem; letter-spacing:.16em; text-transform:uppercase;
+      padding:.65rem 1.15rem; transition:filter .2s ease, transform .15s ease;
+    }
+    .kw-next:hover { filter:brightness(1.08); transform:translateY(-1px); }
+
+    .potour-help {
+      --n: 9px;
+      --clip: polygon(var(--n) 0, calc(100% - var(--n)) 0, 100% var(--n), 100% calc(100% - var(--n)),
+        calc(100% - var(--n)) 100%, var(--n) 100%, 0 calc(100% - var(--n)), 0 var(--n));
+      position:fixed; right:16px; bottom:16px; z-index:1500; width:42px; height:42px; cursor:pointer; clip-path:var(--clip);
+      display:flex; align-items:center; justify-content:center; border:0;
+      background:rgba(20,18,16,0.9); color:#d9bd7b; font-family:'Josefin Sans',Arial,sans-serif; font-weight:700; font-size:1.1rem;
+      box-shadow:0 4px 14px rgba(0,0,0,0.5); transition:transform .15s ease, background .2s ease;
+    }
+    .potour-help:hover { transform:scale(1.06); background:rgba(181,147,90,0.24); }
+    @media (prefers-reduced-motion:reduce){ #kw-hole, #kw-ring, .kw-pop { transition:none; } }
+  </style>
+
+  <div id="po-walk" role="dialog" aria-modal="true" aria-label="How Paddling Out works">
+    <svg class="kw-svg" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <mask id="kw-mask">
+          <rect x="0" y="0" width="100%" height="100%" fill="white"></rect>
+          <polygon id="kw-hole" points="0,0 0,0 0,0" fill="black"></polygon>
+        </mask>
+      </defs>
+      <rect id="kw-dim" x="0" y="0" width="100%" height="100%" fill="rgba(6,6,6,0.82)" mask="url(#kw-mask)"></rect>
+      <polygon id="kw-ring" points="0,0 0,0 0,0" fill="none" stroke="#d9bd7b" stroke-width="1.6" stroke-linejoin="miter" style="display:none"></polygon>
+    </svg>
+    <div class="kw-pop" id="kw-pop">
+      <div class="kw-pop-inner">
+        <span class="kw-eyebrow">Paddling Out</span>
+        <h2 class="kw-title" id="kw-title" aria-live="polite"></h2>
+        <p class="kw-text" id="kw-text" aria-live="polite"></p>
+        <div class="kw-foot">
+          <span class="kw-count" id="kw-count"></span>
+          <div class="kw-btns">
+            <button type="button" class="kw-skip" id="kw-skip">Skip</button>
+            <button type="button" class="kw-next" id="kw-next">Next</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <button type="button" class="potour-help" id="po-tour-help" title="How Paddling Out works" aria-label="How Paddling Out works">?</button>
+  <script>
+    (function () {
+      if (new URLSearchParams(window.location.search).get('id')) return;  // list view only
+      var KEY = 'kaayko_paddlingout_tour_seen';
+      var root = document.getElementById('po-walk');
+      var hole = document.getElementById('kw-hole');
+      var ring = document.getElementById('kw-ring');
+      var pop  = document.getElementById('kw-pop');
+      var elTitle = document.getElementById('kw-title');
+      var elText  = document.getElementById('kw-text');
+      var elCount = document.getElementById('kw-count');
+      var btnNext = document.getElementById('kw-next');
+      var btnSkip = document.getElementById('kw-skip');
+      var help    = document.getElementById('po-tour-help');
+      if (!root) return;
+
+      var STEPS = [
+        { title: 'Know before you paddle', text: 'A quick tour of Paddling Out — 20 seconds.', target: null },
+        { title: 'The Paddle Score', text: 'This number is the <b>Paddle Score</b> — how good the water is right now: <b>Worth it</b>, <b>Careful</b>, or a <b>Hard pass</b>.', target: '.pcard--minimal .pcard-stat || .card .conditions-badge || .pcard--minimal, .card' },
+        { title: 'Open it, or save it', text: 'A tile opens the full hour-by-hour forecast. Tap the <b>♥</b> — or <b>press &amp; hold the tile</b> — to save it: the gold frame means it’s saved, and it rises to the top everywhere.', target: '.pcard--minimal, .card', demo: true },
+        { title: 'Search', text: 'Find any lake, river or city — or lock your home water so it opens here first.', target: '.po-search-btn' },
+        { title: 'Add a lake', text: 'Paddle somewhere we’re missing? Put it on the map — anonymous is fine.', target: '.po-submit-btn' },
+        { title: 'Make it yours', text: 'Switch <b>Minimal</b> or <b>Detailed</b> cards, change units, and find your saved lakes.', target: '.po-settings-btn' },
+        { title: 'Go find good water', text: 'That’s the tour. Everything you save stays on this device.', target: null, last: true }
+      ];
+
+      var i = 0, demoEl = null;
+
+      function chamfer(x, y, w, h, n) {
+        n = Math.max(0, Math.min(n, w / 2, h / 2));
+        return [ (x + n) + ',' + y, (x + w - n) + ',' + y, (x + w) + ',' + (y + n),
+          (x + w) + ',' + (y + h - n), (x + w - n) + ',' + (y + h), (x + n) + ',' + (y + h),
+          x + ',' + (y + h - n), x + ',' + (y + n) ].join(' ');
+      }
+
+      function clearDemo() { if (demoEl) { demoEl.classList.remove('is-fav'); demoEl = null; } }
+
+      // Try each '||'-separated selector in order; return the first element found.
+      function resolveTarget(sel) {
+        if (!sel) return null;
+        var parts = sel.split('||');
+        for (var k = 0; k < parts.length; k++) { var el = document.querySelector(parts[k].trim()); if (el) return el; }
+        return null;
+      }
+
+      function paint(step) {
+        var t = resolveTarget(step.target);
+        clearDemo();
+        if (t && step.demo && !t.classList.contains('is-fav')) { t.classList.add('is-fav'); demoEl = t; }
+
+        if (t) {
+          var r = t.getBoundingClientRect();
+          var pad = 8, x = r.left - pad, y = r.top - pad, w = r.width + pad * 2, h = r.height + pad * 2;
+          var pts = chamfer(x, y, w, h, 11);
+          hole.setAttribute('points', pts);
+          ring.setAttribute('points', pts);
+          ring.style.display = '';
+          positionPop(x, y, w, h);
+        } else {
+          hole.setAttribute('points', '0,0 0,0 0,0');
+          ring.style.display = 'none';
+          centerPop();
+        }
+        elTitle.innerHTML = step.title;
+        elText.innerHTML = step.text;
+        elCount.textContent = (i + 1) + ' / ' + STEPS.length;
+        btnNext.textContent = step.last ? 'Start exploring' : 'Next';
+        btnSkip.style.visibility = step.last ? 'hidden' : '';
+      }
+
+      function positionPop(x, y, w, h) {
+        var pw = pop.offsetWidth, ph = pop.offsetHeight, m = 14, vw = innerWidth, vh = innerHeight;
+        var top = y + h + m;
+        if (top + ph > vh - 10) top = y - ph - m;         // flip above if no room below
+        top = Math.max(10, Math.min(top, vh - ph - 10));
+        var left = x + w / 2 - pw / 2;
+        left = Math.max(12, Math.min(left, vw - pw - 12));
+        pop.style.top = top + 'px'; pop.style.left = left + 'px';
+      }
+      function centerPop() {
+        pop.style.left = Math.max(12, (innerWidth - pop.offsetWidth) / 2) + 'px';
+        pop.style.top  = Math.max(12, (innerHeight - pop.offsetHeight) / 2) + 'px';
+      }
+
+      function goTo(n) {
+        if (n >= STEPS.length) { finish(); return; }
+        i = n;
+        var step = STEPS[i];
+        var t = resolveTarget(step.target);
+        function after() {
+          paint(step);
+          // On the interaction step, actually PLAY the love animation on the demo card.
+          if (step.demo && window.PaddleCard && window.PaddleCard.animateLove) {
+            var card = document.querySelector('.pcard--minimal');
+            if (card) setTimeout(function () { window.PaddleCard.animateLove(card); }, 200);
+          }
+        }
+        if (t) { t.scrollIntoView({ block: 'center', behavior: 'smooth' }); setTimeout(after, 320); }
+        else { after(); }
+      }
+
+      function start() {
+        root.classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'auto' });
+        setTimeout(function () { goTo(0); try { btnNext.focus(); } catch (e) {} }, 60);
+      }
+      function finish() {
+        clearDemo();
+        root.classList.remove('active');
+        try { localStorage.setItem(KEY, '1'); } catch (e) {}
+      }
+
+      btnNext.addEventListener('click', function () { goTo(i + 1); });
+      btnSkip.addEventListener('click', finish);
+      document.addEventListener('keydown', function (e) {
+        if (!root.classList.contains('active')) return;
+        if (e.key === 'Escape') finish();
+        else if (e.key === 'ArrowRight' || e.key === 'Enter') goTo(i + 1);
+      });
+      window.addEventListener('resize', function () { if (root.classList.contains('active')) paint(STEPS[i]); });
+      if (help) help.addEventListener('click', start);
+
+      // First launch: start ONLY once REAL cards are on screen (never on skeletons, never
+      // on a dead API — so the "seen" flag is never burned on an empty tour).
+      var seen = true; try { seen = localStorage.getItem(KEY) === '1'; } catch (e) {}
+      if (seen) return;
+      var launched = false;
+      function tryLaunch() {
+        if (launched) return;
+        if (!document.querySelector('.pcard--minimal, .card')) return;   // real cards only
+        launched = true;
+        setTimeout(start, 450);
+      }
+      window.addEventListener('kaayko:cardsrendered', tryLaunch);
+      var tries = 0;
+      var iv = setInterval(function () {                                 // fallback if the event is missed
+        tries++;
+        if (launched || document.querySelector('.pcard--minimal, .card')) { clearInterval(iv); tryLaunch(); }
+        else if (tries > 60) { clearInterval(iv); }                     // API never returned → no tour, flag intact
+      }, 200);
     })();
   </script>
 
