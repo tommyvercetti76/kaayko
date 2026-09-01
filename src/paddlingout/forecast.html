@@ -114,21 +114,19 @@
       <!-- ── Two-column desktop grid ───────────────────────────────────── -->
       <div class="forecast-body">
 
-        <!-- LEFT: Hero + alerts -->
+        <!-- Two INDEPENDENT rails — each flows its own content, so a panel
+             opening in one column never inflates empty space in the other. -->
+
+        <!-- LEFT RAIL: score story → alerts → preparation -->
         <div class="forecast-col-left">
           <div id="ratingHeroContainer"></div>
           <div class="forecast-alert-drawer" id="forecastAlertDrawer"></div>
+          <div class="forecast-facts" id="prepStack"></div>
         </div>
 
-        <!-- RIGHT: Heatmap -->
+        <!-- RIGHT RAIL: outlook → the spot dossier -->
         <div class="forecast-col-right">
           <div id="heatmapContainer"></div>
-        </div>
-
-        <!-- BOTTOM-LEFT on desktop / bottom of stack on mobile.
-             Prep + Know-before-you-go render into this stack too, so they are
-             REAL grid citizens instead of auto-placed strays. -->
-        <div class="forecast-facts" id="spotFacts">
           <div class="forecast-location-info" id="locationInfo"></div>
         </div>
 
@@ -570,7 +568,7 @@
       document.querySelectorAll('.prep-block').forEach(el => el.remove());
       const list = (__prepTips || []).filter(t => t && t.title);
       if (list.length === 0) return;
-      const host = document.getElementById('locationInfo');
+      const host = document.getElementById('prepStack');
       if (!host) return;
       const P = window.KaaykoPrefs;
       const block = document.createElement('div');
@@ -586,15 +584,15 @@
           return `<div class="kbg-row${t.priority === 1 ? ' prep-p1' : ''}"><span class="kbg-icon">${icon}</span>` +
                  `<span><strong>${esc(t.title)}</strong><br>${esc(detail)}</span></div>`;
         }).join('');
-      host.parentNode.insertBefore(block, host);
+      host.appendChild(block);
     }
     window.addEventListener('kaayko:unitschange', () => renderPrepBlock());
 
     // "Know before you go" — Rohan-authored spot facts, shown only when present.
     function renderLocalTips(spot) {
-      const host = document.getElementById('locationInfo');
+      const host = document.getElementById('prepStack');
       const tips = Array.isArray(spot?.localTips) ? spot.localTips.filter(t => t && t.text) : [];
-      document.querySelectorAll('.kbg-block').forEach(el => el.remove()); // idempotent re-render
+      document.querySelectorAll('.kbg-block:not(.prep-block)').forEach(el => el.remove()); // idempotent re-render
       if (!host || tips.length === 0) return;
       const ICONS = { launch: 'pin', hazard: 'alert', season: 'sun', general: 'info' };
       const block = document.createElement('div');
@@ -605,7 +603,7 @@
           const icon = window.KaaykoIcons?.get?.(ICONS[t.category] || 'info') || '';
           return `<div class="kbg-row kbg-${esc(t.category || 'general')}"><span class="kbg-icon">${icon}</span><span>${esc(t.text)}</span></div>`;
         }).join('');
-      host.parentNode.insertBefore(block, host);
+      host.appendChild(block);
     }
 
     let __lastLocInfo = null;

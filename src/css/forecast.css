@@ -993,3 +993,23 @@ main.forecast-main {
 @media (min-width: 900px) {
   .forecast-col-right { grid-row: 1; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   26. DESIGN PASS v2.4 — two independent rails.
+   The shared grid ROW coupled column heights: an expanded hourly panel on the
+   right inflated dead space under the alerts on the left. Now each column is
+   its own flowing stack — a panel opening in one rail never creates a void in
+   the other. Supersedes the row-2 band placement (sections 21/24/25 grid-row
+   rules now target ids/rows that no longer exist).
+   ══════════════════════════════════════════════════════════════════════════ */
+@media (min-width: 900px) {
+  .forecast-body {
+    grid-template-rows: auto;
+  }
+  .forecast-col-left  { grid-column: 1; grid-row: 1; }
+  .forecast-col-right { grid-column: 2; grid-row: 1; }
+}
+.forecast-col-left,
+.forecast-col-right { gap: 1.5rem; }
+.forecast-facts { gap: 1.5rem; }
+.forecast-facts:empty { display: none; }
