@@ -758,10 +758,26 @@
           document.querySelector('.forecast-page-header')?.prepend(heroEl);
         }
 
-        // 2. Fetch conditions + forecast in parallel — each wrapped so one
-        //    failure doesn't kill the other
+        // 2. ONE source of truth for "NOW": known spots render the SAME
+        //    craft-adjusted cached score the list page shows (already in the
+        //    /paddlingOut/:id response) — a second scoring call here produced
+        //    a different number than the card the user just tapped.
+        //    The coordinate path survives only for custom lat/lng spots.
+        const currentFromSpot = spot?.paddleScore ? Promise.resolve({
+          success: true,
+          paddleScore: spot.paddleScore,
+          conditions: spot.paddleScore.conditions,
+          warnings: spot.paddleScore.warnings,
+          tips: spot.tips || [],
+          metadata: {
+            source: spot.paddleScore.predictionSource,
+            cached: true,
+            cachedAt: spot.paddleScore.computedAt
+          }
+        }) : null;
+
         const [currentData, forecastData] = await Promise.all([
-          window.apiClient.getCurrentData(spot.location.latitude, spot.location.longitude)
+          (currentFromSpot || window.apiClient.getCurrentData(spot.location.latitude, spot.location.longitude))
             .catch(e => { console.warn('getCurrentData failed:', e); return null; }),
           window.apiClient.getFastForecast(spot.location.latitude, spot.location.longitude)
             .catch(e => { console.warn('getFastForecast failed:', e); return null; })
