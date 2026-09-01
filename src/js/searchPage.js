@@ -9,8 +9,12 @@
  *  - Cards render instantly; score rings fill reactively per-card
  */
 
-const API_BASE = ['localhost', '127.0.0.1'].includes(window.location.hostname)
-  ? 'http://127.0.0.1:5001/kaaykostore/us-central1/api'
+// Single source of truth: KaaykoPrefs.kaaykoApiBase (prefs.js loads first).
+// This file previously ignored FORCE_PRODUCTION_MODE and hard-coded the
+// emulator port, so on localhost it talked to a different backend than every
+// sibling module.
+const API_BASE = (window.KaaykoPrefs && window.KaaykoPrefs.kaaykoApiBase)
+  ? window.KaaykoPrefs.kaaykoApiBase()
   : 'https://api-vwcc5j4qda-uc.a.run.app';
 
 // ── Score helpers ─────────────────────────────────────────────────────────
@@ -632,10 +636,12 @@ async function runSearch(lat, lng, label = 'this location', forceRefresh = false
     refreshBtn.style.display = 'none';
     setStatus('Search failed — check connection and try again.', 'error');
     console.error('Search error:', err);
-  } finally {
-    isSearching = false;
-    setStatus('', '');
   }
+  // Clear only the transient "searching…" line — every error path (thrown or
+  // the "unexpected response" branch) leaves its message on screen, where it
+  // used to be wiped in the same frame by an unconditional finally.
+  isSearching = false;
+  clearTransientStatus();
 }
 
 // ── Render results ────────────────────────────────────────────────────────
@@ -879,6 +885,12 @@ function showEmpty(label) {
 function setStatus(msg, type = '') {
   statusEl.textContent = msg;
   statusEl.className   = 'search-status' + (type ? ` ${type}` : '');
+}
+
+/** Clear the transient "searching…" line, but never an error the user must read. */
+function clearTransientStatus() {
+  if (statusEl.classList.contains('error')) return;
+  setStatus('', '');
 }
 
 // ── URL params: ?lat=33.1&lng=-96.7 ──────────────────────────────────────

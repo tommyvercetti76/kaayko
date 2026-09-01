@@ -56,7 +56,10 @@
     return { color: color, label: label, severity: sev, display: Number(rating).toFixed(1) };
   }
 
+  // Delegates to the single source of truth in prefs.js (loaded first on every
+  // page that uses this component); the literal stays only as a hard fallback.
   function apiBase() {
+    if (window.KaaykoPrefs && window.KaaykoPrefs.kaaykoApiBase) return window.KaaykoPrefs.kaaykoApiBase();
     if (window.FORCE_PRODUCTION_MODE && window.PRODUCTION_API_BASE) return window.PRODUCTION_API_BASE;
     var h = window.location.hostname;
     if (h === 'localhost' || h === '127.0.0.1') return window.location.origin + '/api';
@@ -187,10 +190,12 @@
     animateLove(root, nowFav);
   }
 
+  // Registered with the shared self-pruning painter registry — a per-card window
+  // listener leaked one (or three) listeners per card on every re-render.
   function keepFavSynced(root, spot) {
-    if (!spot || !spot.id) return;
-    window.addEventListener('kaayko:favchange', function (e) {
-      if (e.detail && e.detail.id === spot.id) root.classList.toggle('is-fav', !!e.detail.favorite);
+    if (!spot || !spot.id || !window.KaaykoPrefs || !window.KaaykoPrefs.registerFavPainter) return;
+    window.KaaykoPrefs.registerFavPainter(root, function () {
+      root.classList.toggle('is-fav', !!window.KaaykoPrefs.isFavorite(spot.id));
     });
   }
 
@@ -267,7 +272,7 @@
         animateLove(root, nowFav);
         paintFav();
       });
-      window.addEventListener('kaayko:favchange', function (e) { if (e.detail && e.detail.id === data.id) paintFav(); });
+      window.KaaykoPrefs.registerFavPainter(fav, paintFav);
       media.appendChild(fav);
     }
 

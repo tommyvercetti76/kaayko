@@ -302,10 +302,8 @@
   <!-- 2) Page-specific CSS (cards, carousel, etc.) -->
   <link rel="stylesheet" href="/css/paddlingout.css" />
   
-  <!-- 3) Component CSS -->
-  <link rel="stylesheet" href="/js/components/RatingHero.css" />
-  <link rel="stylesheet" href="/js/components/SafetyWarnings.css" />
-  <link rel="stylesheet" href="/js/components/KonditionsHeatmap.css" />
+  <!-- 3) Component CSS — this page renders cards only; the hero/warnings/heatmap
+       styles belong to the forecast page and were dead weight here. -->
   <link rel="stylesheet" href="/js/components/PaddleCard.css" />
 
   <!-- Material Icons -->
@@ -435,28 +433,21 @@
     <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
   </footer>
 
-  <!-- SCRIPTS -->
-  <!-- 1) Main application entry point -->
-  <script type="module" src="js/main.js"></script>
-  
-  <!-- 2) Header behaviors: dark-mode, menu -->
-    <!-- 1) Header & Dark mode -->
+  <!-- SCRIPTS
+       This page fetches spots and renders PaddleCards — nothing more. The
+       RatingHero / SafetyWarnings / KonditionsHeatmap components, the
+       apiClient + dataTransformer services, and main.js were all loaded but
+       never invoked here (main.js additionally polled every 100ms for five
+       seconds waiting on globals this page never loads, then gave up). They
+       live on the forecast page, where they are actually used. -->
+  <!-- 1) Header behaviors: dark-mode, menu -->
   <script src="js/header.js"></script>
   <script src="js/secretStore.js"></script>
-  
-  <!-- 3) UI helpers: carousel, modal, voting -->
+
+  <!-- 2) UI helpers: carousel, modal, voting -->
   <script type="module" src="js/kaayko_ui.js"></script>
-  
-  <!-- 4) Component scripts -->
-  <script src="js/components/RatingHero.js"></script>
-  <script src="js/components/SafetyWarnings.js"></script>
-  <script src="js/components/KonditionsHeatmap.js"></script>
-  
-  <!-- 5) Service layer -->
-  <script src="js/services/apiClient.js"></script>
-  <script src="js/services/dataTransformer.js"></script>
-  
-  <!-- 6) Page logic: fetch & render paddling spots -->
+
+  <!-- 3) Page logic: fetch & render paddling spots -->
   <script src="js/spot-slugs.js"></script>
   <script src="js/components/PaddleCard.js"></script>
   <script type="module" src="js/paddlingout.js"></script>

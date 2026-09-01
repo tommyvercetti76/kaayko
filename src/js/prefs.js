@@ -51,16 +51,35 @@
   function fmtArea(km2)  { const n = _num(km2);  return n == null ? '--' : (isMetric() ? `${n.toFixed(1)} km²`       : `${(n * 0.386102).toFixed(1)} mi²`); }
   function fmtVolume(l)  { const n = _num(l);    return n == null ? '--' : (isMetric() ? `${n.toFixed(1)} L`         : `~${Math.round(n * 33.814 / 8) * 8} fl oz`); }
   function fmtFlow(cms)  { const n = _num(cms);  return n == null ? '--' : (isMetric() ? `${n.toFixed(1)} m³/s`      : `${Math.round(n * 35.3147)} cfs`); }
-  // Rewrite metric units embedded in server-generated strings (e.g. "Extreme heat (42.5°C)").
+  // Rewrite units embedded in server-generated strings, in BOTH directions.
+  // Server penalty/warning text mixes metric ("Extreme heat (42.5°C)") and
+  // imperial ("Moderate winds (13.9 mph, B4)") — a metric user used to be shown
+  // the mph strings verbatim.
   function localizeUnits(text) {
-    if (isMetric()) return String(text);
     let t = String(text);
+    if (isMetric()) {
+      t = t.replace(/(-?\d+(?:\.\d+)?)\s*°\s*F\b/g,  (_, n) => `${Math.round((parseFloat(n) - 32) * 5 / 9)}°C`);
+      t = t.replace(/(-?\d+(?:\.\d+)?)\s*mph\b/gi,   (_, n) => `${Math.round(parseFloat(n) * 1.60934)} km/h`);
+      return t;
+    }
     t = t.replace(/(-?\d+(?:\.\d+)?)\s*°\s*C\b/g,     (_, n) => `${Math.round(parseFloat(n) * 9 / 5 + 32)}°F`);
     t = t.replace(/(-?\d+(?:\.\d+)?)\s*km\/h\b/gi,    (_, n) => `${Math.round(parseFloat(n) * 0.621371)} mph`);
     t = t.replace(/(-?\d+(?:\.\d+)?)\s*mm\b/gi,       (_, n) => `${(parseFloat(n) / 25.4).toFixed(2)} in`);
     t = t.replace(/(-?\d+(?:\.\d+)?)\s*km\b(?!\/)/gi, (_, n) => `${(parseFloat(n) * 0.621371).toFixed(1)} mi`);
     t = t.replace(/(-?\d+(?:\.\d+)?)\s*m\b(?!\/)/gi,  (_, n) => `${(parseFloat(n) * 3.28084).toFixed(1)} ft`);
     return t;
+  }
+
+  // ── API base (SINGLE source of truth) ───────────────────────────────────────
+  // Was reimplemented in 5 hand-maintained files with drifting rules — searchPage
+  // alone ignored FORCE_PRODUCTION_MODE and so talked to the emulator while its
+  // siblings forced production.
+  const API_PRODUCTION = 'https://api-vwcc5j4qda-uc.a.run.app';
+  function kaaykoApiBase() {
+    if (window.FORCE_PRODUCTION_MODE) return window.PRODUCTION_API_BASE || API_PRODUCTION;
+    const h = window.location.hostname;
+    if (h === 'localhost' || h === '127.0.0.1') return window.location.origin + '/api';
+    return API_PRODUCTION;
   }
 
   // ── Paddle Score color (SINGLE source; tiers match the verdict labels) ───────
@@ -160,8 +179,47 @@
     return favs.concat(rest);
   }
 
+  // ── Self-pruning repaint registry ────────────────────────────────────────────
+  // Every star button used to attach its own permanent window listener, so a
+  // list re-render (or a search) accumulated listeners without bound. One
+  // module-level listener now repaints all LIVE registrations and drops any
+  // whose element has left the document.
+  const _favPainters = [];
+  function registerFavPainter(el, paint) {
+    _favPainters.push({ el, paint });
+  }
+  window.addEventListener('kaayko:favchange', function () {
+    for (let i = _favPainters.length - 1; i >= 0; i--) {
+      const entry = _favPainters[i];
+      if (!entry.el || !entry.el.isConnected) { _favPainters.splice(i, 1); continue; }
+      try { entry.paint(); } catch { _favPainters.splice(i, 1); }
+    }
+  });
+
+  // ── Cross-page / cross-tab preference sync ───────────────────────────────────
+  // `storage` fires in OTHER documents when a preference changes, so a value set
+  // in Settings now reaches an already-open list page. bfcache restores (back
+  // button) re-broadcast too, since no storage event fires for those.
+  const STORAGE_EVENTS = {
+    [UNITS_KEY]: 'kaayko:unitschange',
+    [CARD_KEY]:  'kaayko:cardstylechange',
+    [BOAT_KEY]:  'kaayko:boattypechange',
+    [FAV_KEY]:   'kaayko:favchange',
+    [AREA_KEY]:  'kaayko:areachange'
+  };
+  window.addEventListener('storage', function (e) {
+    const evt = e && e.key && STORAGE_EVENTS[e.key];
+    if (evt) dispatch(evt, { external: true });
+  });
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted) {   // restored from bfcache — preferences may have changed elsewhere
+      dispatch('kaayko:unitschange', { external: true });
+      dispatch('kaayko:favchange', { external: true });
+    }
+  });
+
   // ── Reusable star button ─────────────────────────────────────────────────────
-  const STAR_FILLED = '<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M12 17.3l-6.18 3.7 1.64-7.03L2 9.24l7.19-.61L12 2l2.81 6.63 7.19.61-5.46 4.73 1.64 7.03z"/></svg>';
+  const STAR_FILLED ='<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M12 17.3l-6.18 3.7 1.64-7.03L2 9.24l7.19-.61L12 2l2.81 6.63 7.19.61-5.46 4.73 1.64 7.03z"/></svg>';
   const STAR_OUTLINE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20" aria-hidden="true"><path d="M12 17.3l-6.18 3.7 1.64-7.03L2 9.24l7.19-.61L12 2l2.81 6.63 7.19.61-5.46 4.73 1.64 7.03z"/></svg>';
 
   function makeFavButton(spot, opts) {
@@ -185,7 +243,9 @@
       if (opts.onToggle) opts.onToggle(nowFav);
     });
     // Keep every star in sync if the same lake is toggled elsewhere on the page.
-    window.addEventListener('kaayko:favchange', paint);
+    // Registered (not a per-button window listener) so detached buttons are
+    // pruned instead of leaking.
+    registerFavPainter(btn, paint);
     return btn;
   }
 
@@ -221,6 +281,7 @@
   window.KaaykoPrefs = {
     getUnits, isMetric, setUnits,
     fmtTemp, fmtWind, fmtPrecip, fmtDist, fmtHeight, fmtArea, fmtVolume, fmtFlow, localizeUnits,
+    kaaykoApiBase, registerFavPainter,
     paddleScoreColor,
     getCardStyle, setCardStyle,
     BOAT_TYPES, getBoatType, setBoatType, boatTypeLabel, craftParam, withCraft,

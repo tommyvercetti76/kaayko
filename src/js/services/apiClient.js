@@ -9,10 +9,14 @@ class ApiClient {
     
     // Auto-detect mode based on hostname
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    
-    // Current mode: 'production' (real-time) or 'emulator' (cached) 
+
+    // Current mode: 'production' (real-time) or 'emulator' (cached)
     this.mode = isLocalhost ? 'emulator' : 'production';
-    this.baseUrl = isLocalhost ? this.emulatorUrl : this.productionUrl;
+    // Single source of truth: KaaykoPrefs.kaaykoApiBase (honors
+    // FORCE_PRODUCTION_MODE, which this class used to ignore)
+    this.baseUrl = (window.KaaykoPrefs && window.KaaykoPrefs.kaaykoApiBase)
+      ? window.KaaykoPrefs.kaaykoApiBase()
+      : (isLocalhost ? this.emulatorUrl : this.productionUrl);
     
     console.log(`🚀 API Client initialized in ${this.mode} mode: ${this.baseUrl}`);
     

@@ -19,11 +19,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const Prefs = () => window.KaaykoPrefs;
   const variant = () => (Prefs() && Prefs().getCardStyle) ? Prefs().getCardStyle() : 'full';
 
+  // Single source of truth: KaaykoPrefs.kaaykoApiBase (prefs.js loads first)
   function endpoint() {
-    if (window.FORCE_PRODUCTION_MODE && window.PRODUCTION_API_BASE) return window.PRODUCTION_API_BASE;
-    const h = window.location.hostname;
-    if (h === 'localhost' || h === '127.0.0.1') return window.location.origin + '/api';
-    return "https://api-vwcc5j4qda-uc.a.run.app";     // Production Functions v2
+    return (Prefs() && Prefs().kaaykoApiBase)
+      ? Prefs().kaaykoApiBase()
+      : "https://api-vwcc5j4qda-uc.a.run.app";
   }
 
   if (spotId) fetchSingle(spotId);
