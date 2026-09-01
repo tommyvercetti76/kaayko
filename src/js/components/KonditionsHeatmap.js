@@ -77,13 +77,11 @@
     return sev === 'good' ? '#316d43' : sev === 'moderate' ? '#c59a61' : '#bd3b2b';
   }
   function khmRating(h) {
-    // Precise rating, NEVER pre-rounded: Math.round before tier classification made
-    // 3.5 render green "4/5 WORTH IT" and 2.5 amber "3/5 CAREFUL".
-    const r = parseFloat(
-      h?.ratingPrecise ?? h?.prediction?.ratingPrecise ??
-      h?.mlPrediction?.rating ?? h?.prediction?.rating ?? h?.rating
-    );
-    return isNaN(r) ? null : r;
+    // Half-point steps, same as every other surface. Snap to 0.5 — NEVER to whole
+    // integers (integer rounding made 3.5 render green "4/5 WORTH IT"). Severity
+    // and the displayed number derive from this same value, so they can't disagree.
+    const r = parseFloat(h?.mlPrediction?.rating ?? h?.prediction?.rating ?? h?.rating);
+    return isNaN(r) ? null : Math.round(r * 2) / 2;
   }
   function khmPct(hour) {
     return ((hour - KHM_HOURS[0]) / KHM_SPAN * 100).toFixed(2);

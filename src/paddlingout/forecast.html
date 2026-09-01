@@ -440,7 +440,7 @@
       try {
         const ratingHero = new window.RatingHero();
         container.innerHTML = '';
-        const rating = currentData.paddleScore.ratingPrecise ?? currentData.paddleScore.rating;
+        const rating = currentData.paddleScore.rating;
         const interpretation = {
           skillLevel: getSkillLevelFromRating(rating),
           recommendation: currentData.paddleScore.interpretation,

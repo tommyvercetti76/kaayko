@@ -226,17 +226,17 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
     <table class="score-table">
       <thead><tr><th></th><th>Score</th><th>Verdict</th><th>Meaning</th></tr></thead>
       <tbody>
-        <tr><td><span class="dot" style="background:#316d43"></span></td><td>3.7 and up</td><td>Worth it</td><td>Conditions are favorable for most paddlers.</td></tr>
-        <tr><td><span class="dot" style="background:#c59a61"></span></td><td>2.7 &ndash; 3.6</td><td>Careful</td><td>Mixed conditions. Check the details before heading out.</td></tr>
-        <tr><td><span class="dot" style="background:#bd3b2b"></span></td><td>Below 2.7</td><td>Hard pass</td><td>Conditions are poor. Postpone if possible.</td></tr>
+        <tr><td><span class="dot" style="background:#316d43"></span></td><td>4.0 and up</td><td>Worth it</td><td>Conditions are favorable for most paddlers.</td></tr>
+        <tr><td><span class="dot" style="background:#c59a61"></span></td><td>3.0 &ndash; 3.5</td><td>Careful</td><td>Mixed conditions. Check the details before heading out.</td></tr>
+        <tr><td><span class="dot" style="background:#bd3b2b"></span></td><td>Below 3.0</td><td>Hard pass</td><td>Conditions are poor. Postpone if possible.</td></tr>
       </tbody>
     </table>
 
-    <p>Scores are shown to one decimal (algorithm v2.0.0) &mdash; a 4.5 is visibly better than a 4.0 &mdash; and every surface uses the same three verdict colours:</p>
+    <p>Scores are shown in half-point steps &mdash; deliberately. The model computes to finer precision internally (kept for evaluation), but a paddling decision doesn't hinge on a 3.6 versus a 3.7, and every surface uses the same three verdict colours so the label always matches the number you see:</p>
     <div class="ramp" aria-label="Score colour ramp">
-      <span style="background:#bd3b2b">&lt;2.7</span>
-      <span style="background:#c59a61">2.7+</span>
-      <span style="background:#316d43">3.7+</span>
+      <span style="background:#bd3b2b">&lt;3.0</span>
+      <span style="background:#c59a61">3.0+</span>
+      <span style="background:#316d43">4.0+</span>
     </div>
     <p class="snap-caption">The exact colour stops the forecast pages use.</p>
 
@@ -273,8 +273,8 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
       <div class="pipe-step"><div><b>Predict</b><span>A <strong>gradient-boosted regression model</strong> (scikit-learn GradientBoostingRegressor, served on Cloud Run) trained on paddler ratings paired with the weather at the time of each paddle produces the base score.</span></div></div>
       <div class="pipe-step"><div><b>Calibrate</b><span>Bounded adjustments refine the base: water-temperature reality check, the next six forecast hours (improving or deteriorating trend), season, location profile, and wind-pattern analysis.</span></div></div>
       <div class="pipe-step"><div><b>Penalize</b><span>Hard safety rules subtract points for conditions the model should never be allowed to talk its way around &mdash; the full table is below.</span></div></div>
-      <div class="pipe-step"><div><b>Apply the lake&rsquo;s offset</b><span>If your ratings show the model runs hot or cold on a specific lake, that lake&rsquo;s stored bias offset is added here.</span></div></div>
-      <div class="pipe-step"><div><b>Clamp &amp; snap</b><span>The result is clamped to 1&ndash;5 and rounded to the nearest half point.</span></div></div>
+      <div class="pipe-step"><div><b>Apply the lake&rsquo;s offset</b><span>If your ratings show the model runs hot or cold on a specific lake, that lake&rsquo;s stored bias offset is added here &mdash; but an upward offset is <em>suppressed</em> whenever a major safety penalty fired, so comfort feedback can never soften a safety deduction.</span></div></div>
+      <div class="pipe-step"><div><b>Clamp &amp; snap</b><span>The result is clamped to 1&ndash;5 and rounded to the nearest half point. If you&rsquo;ve set a boat type, the craft rules layer (next section) then adjusts the final number.</span></div></div>
     </div>
     <p>If the model service is unreachable, a <strong>rule-based fallback</strong> produces the score from the same inputs &mdash; starting at 3.0, rewarding calm wind (+0.8 under 5&nbsp;mph) and comfortable temperatures (+0.3 for 18&ndash;30&deg;C), and subtracting for strong wind (&minus;1.2 over 20&nbsp;mph), active warnings (&minus;0.8), high UV and poor visibility. Fallback scores are marked with lower confidence.</p>
   </div>
@@ -287,6 +287,29 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
       <li><strong>Cold water</strong> &mdash; below 5&deg;C is an immersion hazard regardless of how sunny it looks, and is penalized hard.</li>
       <li><strong>Active official warnings</strong> &mdash; any government weather alert for the area drags the score down, always.</li>
     </ul>
+  </div>
+
+  <div class="meth-section">
+    <h2 data-kicon="wave">Your Boat Changes the Score</h2>
+    <p>Wind that&rsquo;s a workout in a kayak can be unmanageable on a stand-up paddleboard or a pedal boat. Pick your craft in <a href="/paddlingout/settings">Settings</a> and every score adjusts through a fixed, documented rules layer &mdash; it is <em>not</em> part of the machine-learned model, so it can be audited line by line. The hard-shell kayak is the baseline (the training ratings were made from a kayak perspective); no craft ever scores <em>higher</em> than the baseline in wind, only lower.</p>
+    <table class="score-table">
+      <thead><tr><th>Craft</th><th>Wind asks effort</th><th>Wind gets demanding</th><th>Above handling range</th></tr></thead>
+      <tbody>
+        <tr><td>Kayak (baseline)</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr>
+        <tr><td>Rowboat</td><td>12 mph</td><td>18 mph</td><td>22 mph</td></tr>
+        <tr><td>Canoe</td><td>10 mph</td><td>16 mph</td><td>20 mph</td></tr>
+        <tr><td>Inflatable kayak</td><td>10 mph</td><td>15 mph</td><td>18 mph</td></tr>
+        <tr><td>SUP</td><td>9 mph</td><td>14 mph</td><td>18 mph</td></tr>
+        <tr><td>Pedal boat</td><td>8 mph</td><td>12 mph</td><td>16 mph</td></tr>
+      </tbody>
+    </table>
+    <p>Deductions run from a quarter point up to 1.5 points, with extra weight for chop on wave-sensitive hulls and for big gust spreads on craft that catch wind (SUP, pedal, inflatable). The thresholds follow published paddling-safety guidance: beginner SUP instruction places the comfortable ceiling near 8&ndash;10 knots of wind, beginner kayaking near 10 knots with ~25 mph as the widely cited danger line (aligning with NWS small-craft-advisory territory), and canoes&rsquo; higher freeboard makes them notably more wind-bound than kayaks. When your craft lowered a score, the forecast page says so, in plain words.</p>
+  </div>
+
+  <div class="meth-section">
+    <h2 data-kicon="info">Trip Prep &amp; Spot Facts</h2>
+    <p>Forecast pages add short preparation tips &mdash; how much water to carry (computed from the NWS heat-index formula for the conditions on screen), wind technique for <em>your</em> craft, cold-water dressing, sun exposure. Every tip is computed from the live data shown on that page; if the data isn&rsquo;t there, the tip isn&rsquo;t either.</p>
+    <p>The same rule governs spot facts. <strong>Water type</strong> (lake or river) is recorded per spot. <strong>Cell coverage</strong> notes appear only for spots we&rsquo;ve graded against FCC Broadband Data Collection coverage maps (per-carrier, ~100&nbsp;m hexagons around the launch). <strong>&ldquo;Know before you go&rdquo;</strong> notes are written by us for spots we&rsquo;ve paddled. Nothing on these pages is inferred, scraped, or guessed &mdash; a missing row means we don&rsquo;t have verified data yet.</p>
   </div>
 
   <div class="meth-section">
@@ -335,6 +358,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
       <li>Kaayko is not responsible for any injury, loss, or damage arising from decisions made using this tool. <strong>You assume all risk</strong> associated with your paddling activities.</li>
       <li>Weather data is sourced from third-party providers and may be delayed, incomplete, or inaccurate. We do not guarantee the accuracy, timeliness, or completeness of any data displayed.</li>
       <li>The ML model is continuously improving but is not infallible. Scores may occasionally misrepresent actual conditions.</li>
+      <li>Preparation tips, craft adjustments, and spot notes are general informational guidance, not professional instruction &mdash; they never replace proper training, equipment, or your own judgment.</li>
       <li>You are solely responsible for assessing on-site conditions, wearing appropriate safety gear (including a life jacket), and making your own go/no-go decision.</li>
     </ul>
   </div>
@@ -376,7 +400,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
       var scored = rows.filter(function (s) { return s && s.paddleScore && s.paddleScore.rating != null; });
       if (!scored.length) return;
       var spot = scored[Math.floor(Math.random() * scored.length)];
-      var r = Number(spot.paddleScore.ratingPrecise != null ? spot.paddleScore.ratingPrecise : spot.paddleScore.rating);
+      var r = Number(spot.paddleScore.rating);
 
       var scoreEl = document.getElementById('lv-score');
       scoreEl.textContent = r.toFixed(1);

@@ -36,9 +36,9 @@
       subtitle: spot.subtitle || spot.location || '',
       text: spot.text || spot.description || '',
       images: imgs,
-      rating: (spot.paddleScore && spot.paddleScore.rating != null)
-        ? (spot.paddleScore.ratingPrecise != null ? spot.paddleScore.ratingPrecise : spot.paddleScore.rating)
-        : null,
+      // Display the half-point rating — precise decimals read as pseudo-precision
+      // on a card (ratingPrecise stays in the API for research/evals).
+      rating: (spot.paddleScore && spot.paddleScore.rating != null) ? spot.paddleScore.rating : null,
       youtubeURL: spot.youtubeURL || '',
       waterType: spot.waterType || null,
       coverageGrade: (spot.cellCoverage && spot.cellCoverage.grade) || null
