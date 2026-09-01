@@ -501,16 +501,24 @@
       const mark = document.querySelector('.score-mark');
       if (!isNight || !mark) return;
 
-      // First daylight hour in the outlook, with the score already computed for it
-      let next = null;
+      // First DAYLIGHT hour in the outlook, with the score already computed for it.
+      // isDay must be explicitly true: forecast payloads cached before that field
+      // existed would otherwise read as daylight and offer "next window: 10 PM".
+      // When no hour carries the flag at all (fully stale cache), fall back to a
+      // conservative civil-daylight window rather than guessing.
       const days = forecastData?.forecast || [];
       const nowHour = new Date().getHours();
+      const anyFlagged = days.some(d =>
+        Object.values(d.hourly || {}).some(h => h && h.isDay === true));
+      const isDaylight = (hd, h) => anyFlagged ? hd.isDay === true : (h >= 7 && h <= 18);
+
+      let next = null;
       outer:
       for (let d = 0; d < days.length; d++) {
         const hours = Object.keys(days[d].hourly || {}).map(Number).sort((a, b) => a - b);
         for (const h of hours) {
           const hd = days[d].hourly[String(h)] ?? days[d].hourly[h];
-          if (!hd || hd.isDay === false) continue;
+          if (!hd || !isDaylight(hd, h)) continue;
           if (d === 0 && h <= nowHour) continue;
           const r = parseFloat(hd.rating ?? hd.prediction?.rating);
           if (isNaN(r)) continue;
