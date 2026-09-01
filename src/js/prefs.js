@@ -17,6 +17,7 @@
   const AREA_KEY  = 'kaayko_my_area';
   const FAV_KEY   = 'kaayko_favorites';
   const CARD_KEY  = 'kaayko_card_style';
+  const BOAT_KEY  = 'kaayko_boat_type';
 
   const GOLD        = '#d9bd7b'; // --gold-bright
   const GOLD_MUTED  = 'rgba(217,189,123,0.85)';
@@ -79,6 +80,43 @@
     try { localStorage.setItem(CARD_KEY, val); } catch {}
     dispatch('kaayko:cardstylechange', { style: val });
     return val;
+  }
+
+  // ── Boat type (craft the Paddle Score adjusts for) ───────────────────────────
+  // Ids match the API's craft taxonomy (rate.html + ?craft= param). Kayak is the
+  // scoring baseline — absent/kayak sends no param, so old URLs stay clean.
+  const BOAT_TYPES = [
+    { id: 'kayak',      label: 'Kayak' },
+    { id: 'canoe',      label: 'Canoe' },
+    { id: 'sup',        label: 'SUP' },
+    { id: 'row',        label: 'Rowboat' },
+    { id: 'pedal',      label: 'Pedal boat' },
+    { id: 'inflatable', label: 'Inflatable kayak' }
+  ];
+  function getBoatType() {
+    const v = localStorage.getItem(BOAT_KEY);
+    return BOAT_TYPES.some(b => b.id === v) ? v : 'kayak';
+  }
+  function setBoatType(id) {
+    const val = BOAT_TYPES.some(b => b.id === id) ? id : 'kayak';
+    try { localStorage.setItem(BOAT_KEY, val); } catch {}
+    dispatch('kaayko:boattypechange', { boatType: val });
+    return val;
+  }
+  function boatTypeLabel(id) {
+    const b = BOAT_TYPES.find(b => b.id === (id || getBoatType()));
+    return b ? b.label : 'Kayak';
+  }
+  /** Query-string fragment for API calls: '' for kayak (identity), 'craft=sup' otherwise. */
+  function craftParam() {
+    const b = getBoatType();
+    return b === 'kayak' ? '' : 'craft=' + b;
+  }
+  /** Append the craft param to a URL that may or may not already have a query. */
+  function withCraft(url) {
+    const p = craftParam();
+    if (!p) return url;
+    return url + (url.indexOf('?') === -1 ? '?' : '&') + p;
   }
 
   // ── My area (lock my city) ───────────────────────────────────────────────────
@@ -183,6 +221,7 @@
     fmtTemp, fmtWind, fmtPrecip, fmtDist, fmtHeight, fmtArea, localizeUnits,
     paddleScoreColor,
     getCardStyle, setCardStyle,
+    BOAT_TYPES, getBoatType, setBoatType, boatTypeLabel, craftParam, withCraft,
     getArea, clearArea,
     getFavorites, isFavorite, addFavorite, removeFavorite, toggleFavorite, sortFavoritesFirst,
     makeFavButton

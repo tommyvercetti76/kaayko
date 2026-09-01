@@ -721,6 +721,8 @@ html, body {
         <div class="pill" data-group="craft" data-val="sup">SUP</div>
         <div class="pill" data-group="craft" data-val="canoe">Canoe</div>
         <div class="pill" data-group="craft" data-val="row">Row</div>
+        <div class="pill" data-group="craft" data-val="pedal">Pedal</div>
+        <div class="pill" data-group="craft" data-val="inflatable">Inflatable</div>
       </div>
       <div class="profile-row">
         <div class="profile-row-label">Paddling with</div>
@@ -1033,6 +1035,17 @@ function bindPills() {
       }
     });
   });
+
+  // Prefill craft from the saved boat-type preference (Settings → My boat)
+  const savedCraft = window.KaaykoPrefs?.getBoatType?.();
+  if (savedCraft && savedCraft !== profileState.craft) {
+    const pill = document.querySelector(`.pill[data-group="craft"][data-val="${savedCraft}"]`);
+    if (pill) {
+      document.querySelectorAll('.pill[data-group="craft"]').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      profileState.craft = savedCraft;
+    }
+  }
 }
 
 function restoreProfile() {

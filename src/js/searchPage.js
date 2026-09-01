@@ -801,7 +801,8 @@ async function fetchBatchScores(bodies) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          locations: bodies.map(b => ({ lat: b.lat, lng: b.lng }))
+          locations: bodies.map(b => ({ lat: b.lat, lng: b.lng })),
+          craft: (window.KaaykoPrefs && window.KaaykoPrefs.getBoatType) ? window.KaaykoPrefs.getBoatType() : undefined
         }),
         signal: ctrl.signal
       }

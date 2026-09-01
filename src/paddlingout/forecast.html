@@ -449,7 +449,12 @@
           originalRating: currentData.paddleScore.originalRating || rating,
           totalPenalty: currentData.paddleScore.totalPenalty || 0
         };
-        const penaltiesApplied = currentData.paddleScore.penaltiesApplied || [];
+        const penaltiesApplied = (currentData.paddleScore.penaltiesApplied || []).slice();
+        // Craft adjustment surfaces as a briefing row ("Adjusted for your SUP")
+        const craftAdj = currentData.paddleScore.craftAdjustment;
+        if (craftAdj && craftAdj.delta < 0) {
+          penaltiesApplied.push(`Adjusted for your ${craftAdj.label}: ${craftAdj.delta}`);
+        }
         const weather = {
           ...currentData.conditions,
           penalties: penaltiesApplied,
@@ -579,7 +584,8 @@
           };
         } else {
           // ── Known spot from paddling-out DB ─────────────────────────────
-          const spotRes = await fetch(`${apiBase}/paddlingOut/${encodeURIComponent(spotId)}`);
+          const spotUrl = `${apiBase}/paddlingOut/${encodeURIComponent(spotId)}`;
+          const spotRes = await fetch(window.KaaykoPrefs?.withCraft ? window.KaaykoPrefs.withCraft(spotUrl) : spotUrl);
           if (!spotRes.ok) throw new Error('Spot not found');
           spot = await spotRes.json();
         }

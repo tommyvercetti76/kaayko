@@ -37,7 +37,8 @@ document.addEventListener("DOMContentLoaded", () => {
     var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
     var timedOut = false;
     var timer = setTimeout(function () { timedOut = true; if (ctrl) ctrl.abort(); }, 10000);
-    fetch(`${endpoint()}/paddlingOut`, ctrl ? { signal: ctrl.signal } : undefined)
+    const listUrl = Prefs() && Prefs().withCraft ? Prefs().withCraft(`${endpoint()}/paddlingOut`) : `${endpoint()}/paddlingOut`;
+    fetch(listUrl, ctrl ? { signal: ctrl.signal } : undefined)
       .then(r => r.json())
       .then(data => {
         clearTimeout(timer);
@@ -76,7 +77,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Detail view (single spot) — always the full, detailed card
   //──────────────────────────────────────────────────────────────────────────────
   function fetchSingle(id) {
-    fetch(`${endpoint()}/paddlingOut/${encodeURIComponent(id)}`)
+    const detailUrl = `${endpoint()}/paddlingOut/${encodeURIComponent(id)}`;
+    fetch(Prefs() && Prefs().withCraft ? Prefs().withCraft(detailUrl) : detailUrl)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(spot => {
         if (!window.PaddleCard) { showError("Spot not found."); return; }
@@ -90,6 +92,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Live re-render when the user flips Card style in Settings (no refetch needed).
   window.addEventListener('kaayko:cardstylechange', () => { if (lastSpots) renderList(lastSpots); });
+  // Boat type changes the scores themselves — refetch with the new craft param.
+  window.addEventListener('kaayko:boattypechange', () => { if (spotId) fetchSingle(spotId); else fetchAll(); });
 
   //──────────────────────────────────────────────────────────────────────────────
   // "Add a lake" tile — matches whichever card style is active

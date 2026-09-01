@@ -94,6 +94,9 @@
       box-shadow:0 4px 18px rgba(0,0,0,0.35);
     }
 
+    /* Boat seg: 6 options — 2-up on phones, 3-up when there's room */
+    @media (min-width:560px) { .seg--boat { grid-template-columns:1fr 1fr 1fr; } }
+
     /* ── My area ── */
     .area-row { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
     .area-city { display:flex; align-items:center; gap:.7rem; min-width:0; }
@@ -193,6 +196,13 @@
       </div>
     </section>
 
+    <!-- ── Boat ── -->
+    <section class="card">
+      <h2 data-kicon="wave">My boat</h2>
+      <p class="hint">Paddle Scores adjust to your craft — wind that's fine in a kayak can be a battle on a SUP or pedal boat. Kayak is the baseline.</p>
+      <div class="seg seg--boat" id="boatSeg" role="group" aria-label="Boat type"></div>
+    </section>
+
     <!-- ── My area ── -->
     <section class="card">
       <h2 data-kicon="pin">My area</h2>
@@ -254,6 +264,34 @@
           b.addEventListener('click', () => { P.setCardStyle(b.dataset.card); paintCard(); });
         });
         paintCard();
+      }
+
+      // ── Boat type segmented toggle (rendered from the shared craft taxonomy) ──
+      const boatSeg = document.getElementById('boatSeg');
+      if (boatSeg && P.BOAT_TYPES) {
+        const SUBS = {
+          kayak: 'score baseline', canoe: 'high freeboard', sup: 'wind-sensitive',
+          row: 'oars · stable', pedal: 'flat water only', inflatable: 'light · packable'
+        };
+        boatSeg.innerHTML = '';
+        P.BOAT_TYPES.forEach(bt => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.dataset.boat = bt.id;
+          b.setAttribute('aria-pressed', 'false');
+          b.innerHTML = bt.label + ' <span class="sub">' + (SUBS[bt.id] || '') + '</span>';
+          b.addEventListener('click', () => { P.setBoatType(bt.id); paintBoat(); });
+          boatSeg.appendChild(b);
+        });
+        function paintBoat() {
+          const cur = P.getBoatType();
+          boatSeg.querySelectorAll('button').forEach(b => {
+            const on = b.dataset.boat === cur;
+            b.classList.toggle('active', on);
+            b.setAttribute('aria-pressed', String(on));
+          });
+        }
+        paintBoat();
       }
 
       // ── My area ──

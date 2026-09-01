@@ -165,7 +165,8 @@ class ApiClient {
       return cached.data;
     }
 
-    const url = `${this.baseUrl}/paddleScore?location=${lat},${lng}`;
+    const craftQ = (window.KaaykoPrefs && window.KaaykoPrefs.craftParam) ? window.KaaykoPrefs.craftParam() : '';
+    const url = `${this.baseUrl}/paddleScore?location=${lat},${lng}` + (craftQ ? `&${craftQ}` : '');
     
     try {
       console.log(`📡 Fetching current data from: ${url}`);
@@ -368,7 +369,8 @@ class ApiClient {
     }
 
     // Use the same base URL logic as other methods
-    const url = `${this.baseUrl}/fastForecast?lat=${lat}&lng=${lng}`;
+    const craftQ = (window.KaaykoPrefs && window.KaaykoPrefs.craftParam) ? window.KaaykoPrefs.craftParam() : '';
+    const url = `${this.baseUrl}/fastForecast?lat=${lat}&lng=${lng}` + (craftQ ? `&${craftQ}` : '');
     
     try {
       console.log(`⚡ Fetching optimized forecast from: ${url}`);
