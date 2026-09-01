@@ -1013,3 +1013,114 @@ main.forecast-main {
 .forecast-col-right { gap: 1.5rem; }
 .forecast-facts { gap: 1.5rem; }
 .forecast-facts:empty { display: none; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   27. DESIGN PASS v2.5 — the score as typography, the stats as a ledger.
+   Same essence (dominant score, verdict color, six live stats, black & gold),
+   new execution: monumental serif numeral over a ten-segment half-point
+   meter (the donut was the page's one curve-heavy widget), and the floating
+   stat tiles become a hairline ledger sharing The Spot's row anatomy.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── The score mark ── */
+.score-mark { text-align: center; }
+.score-mark-number {
+  font-family: var(--font-serif);
+  font-size: clamp(4rem, 6vw, 5.2rem);
+  font-weight: 600;
+  line-height: 1;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+.score-mark-denom {
+  font-size: 1.05rem;
+  font-weight: 400;
+  color: var(--muted);
+  margin-left: 0.45rem;
+  letter-spacing: 0.08em;
+}
+.score-meter {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin: 1rem 0 1.05rem;
+}
+.score-meter i {
+  width: 17px;
+  height: 7px;
+  background: rgba(217,189,123,0.14);
+  clip-path: polygon(3px 0, 100% 0, calc(100% - 3px) 100%, 0 100%);
+}
+#ratingHeroContainer .ring-label {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  letter-spacing: 0.24em;
+}
+/* NOW → a small chamfered gold chip under the verdict */
+#ratingHeroContainer .now-indicator {
+  display: inline-block;
+  margin-top: 0.7rem;
+  padding: 0.3rem 0.7rem 0.22rem;
+  font-family: var(--font-sans);
+  font-size: 0.6rem;
+  letter-spacing: 0.26em;
+  color: var(--gold-bright);
+  border: 1px solid var(--line-gold);
+  clip-path: var(--clip-sm);
+}
+
+/* ── The stats ledger: one hairline row per reading, label left, value right,
+     sharing The Spot dossier's anatomy ── */
+#ratingHeroContainer .core-weather-inline {
+  display: flex !important;
+  flex-direction: column !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0.2rem 0 !important;
+}
+#ratingHeroContainer .weather-stat {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.8rem !important;
+  padding: 0.72rem 0.1rem !important;
+  min-height: 0 !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(181,147,90,0.14) !important;
+}
+#ratingHeroContainer .weather-stat:last-child { border-bottom: none !important; }
+#ratingHeroContainer .stat-full-width { grid-column: unset !important; }
+#ratingHeroContainer .weather-data {
+  display: flex !important;
+  flex-direction: row-reverse !important;   /* source order value→label becomes label | value */
+  justify-content: space-between !important;
+  align-items: baseline !important;
+  flex: 1 !important;
+  gap: 0.75rem !important;
+}
+#ratingHeroContainer .weather-value {
+  font-family: var(--font-serif) !important;
+  font-size: 1.16rem !important;
+  color: rgba(237,232,223,0.94) !important;
+  text-align: right !important;
+}
+#ratingHeroContainer .weather-label {
+  font-family: var(--font-sans) !important;
+  font-size: 0.63rem !important;
+  letter-spacing: 0.2em !important;
+  text-transform: uppercase !important;
+  color: var(--gold) !important;
+}
+
+/* v2.5 fixups: an earlier !important column rule kept icons stacked above
+   their labels — force true ledger rows, icon inline-left at fixed rhythm */
+#ratingHeroContainer .weather-stat { flex-direction: row !important; text-align: left !important; }
+#ratingHeroContainer .weather-icon {
+  display: inline-flex !important;
+  width: 20px !important;
+  height: 20px !important;
+  margin: 0 !important;
+  flex: 0 0 20px !important;
+  align-items: center !important;
+  justify-content: center !important;
+}

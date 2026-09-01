@@ -148,33 +148,25 @@ class RatingHero {
   // ── SVG Donut Ring ────────────────────────────────────────────────────────
 
   buildScoreRing(rating) {
-    const r    = 46, cx = 60, cy = 60;
-    const circ = 2 * Math.PI * r;
-    const pct  = Math.max(0, Math.min(1, parseFloat(rating) / 5));
-    const fill = (pct * circ).toFixed(2);
-    const gap  = ((1 - pct) * circ).toFixed(2);
-    const color = this.getRingColor(rating);
-    const label = this.getScoreLabel(rating);
-    const pctStr = Math.round(pct * 100) + '%';
+    // The score as typography, not a widget: a monumental serif numeral over a
+    // ten-segment half-point meter (one chamfered tick per 0.5 — the scale
+    // itself made visible). The old donut ring was the one curve-heavy,
+    // fitness-app element on a hard-edged page.
+    const r = Math.max(0, Math.min(5, parseFloat(rating) || 0));
+    const color = this.getRingColor(r);
+    const label = this.getScoreLabel(r);
+    const display = Number(r).toFixed(1);
+    const filled = Math.round(r * 2);
+    const ticks = Array.from({ length: 10 }, (_, i) =>
+      i < filled ? `<i class="on" style="background:${color}"></i>` : '<i></i>'
+    ).join('');
 
     return `
-      <div class="score-ring-wrapper">
-        <svg class="score-ring" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-          <circle class="ring-track" cx="${cx}" cy="${cy}" r="${r}"/>
-          <circle class="ring-progress"
-            cx="${cx}" cy="${cy}" r="${r}"
-            stroke="${color}"
-            stroke-dasharray="0 ${circ.toFixed(2)}"
-            transform="rotate(-90 ${cx} ${cy})"
-            data-fill="${fill}"
-            data-gap="${gap}"/>
-        </svg>
-        <div class="ring-overlay">
-          <div class="ring-number">${Number(rating).toFixed(1)}</div>
-          <div class="ring-denom">/ 5</div>
-        </div>
+      <div class="score-mark" role="img" aria-label="Paddle score ${display} out of 5 — ${label.toLowerCase()}">
+        <div class="score-mark-number" aria-hidden="true">${display}<span class="score-mark-denom">/ 5</span></div>
+        <div class="score-meter" aria-hidden="true">${ticks}</div>
+        <div class="ring-label" aria-hidden="true" style="color:${color}">${label}</div>
       </div>
-      <div class="ring-label" style="color:${color}">${label}</div>
     `;
   }
 
