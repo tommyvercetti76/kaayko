@@ -77,8 +77,13 @@
     return sev === 'good' ? '#316d43' : sev === 'moderate' ? '#c59a61' : '#bd3b2b';
   }
   function khmRating(h) {
-    const r = parseFloat(h?.mlPrediction?.rating ?? h?.prediction?.rating ?? h?.rating);
-    return isNaN(r) ? null : Math.round(r);
+    // Precise rating, NEVER pre-rounded: Math.round before tier classification made
+    // 3.5 render green "4/5 WORTH IT" and 2.5 amber "3/5 CAREFUL".
+    const r = parseFloat(
+      h?.ratingPrecise ?? h?.prediction?.ratingPrecise ??
+      h?.mlPrediction?.rating ?? h?.prediction?.rating ?? h?.rating
+    );
+    return isNaN(r) ? null : r;
   }
   function khmPct(hour) {
     return ((hour - KHM_HOURS[0]) / KHM_SPAN * 100).toFixed(2);
@@ -192,7 +197,7 @@
           </div>
           <div class="khm-legend">
             <span><i class="khm-dot" style="background:#bd3b2b"></i>Hard pass</span>
-            <span><i class="khm-dot" style="background:#eb8127"></i>Careful</span>
+            <span><i class="khm-dot" style="background:#c59a61"></i>Careful</span>
             <span><i class="khm-dot" style="background:#316d43"></i>Worth it</span>
           </div>
         </div>
@@ -256,7 +261,7 @@
                 <span class="khm-panel-time">${formatHourDisplay(hour)}</span>
                 <span class="khm-panel-verdict" style="color:${col}">${label}</span>
               </div>
-              <div class="khm-panel-score" style="color:${col}">${score ?? '—'}<sub>/5</sub></div>
+              <div class="khm-panel-score" style="color:${col}">${score != null ? score.toFixed(1) : '—'}<sub>/5</sub></div>
             </div>
             <div class="khm-macros">
               ${macros.map(m=>`

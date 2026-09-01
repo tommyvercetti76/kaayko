@@ -226,21 +226,17 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
     <table class="score-table">
       <thead><tr><th></th><th>Score</th><th>Verdict</th><th>Meaning</th></tr></thead>
       <tbody>
-        <tr><td><span class="dot" style="background:#316d43"></span></td><td>4.0 and up</td><td>Worth it</td><td>Conditions are favorable for most paddlers.</td></tr>
-        <tr><td><span class="dot" style="background:#eb8127"></span></td><td>3.0 &ndash; 3.5</td><td>Careful</td><td>Mixed conditions. Check the details before heading out.</td></tr>
-        <tr><td><span class="dot" style="background:#bd3b2b"></span></td><td>Below 3.0</td><td>Hard pass</td><td>Conditions are poor. Postpone if possible.</td></tr>
+        <tr><td><span class="dot" style="background:#316d43"></span></td><td>3.7 and up</td><td>Worth it</td><td>Conditions are favorable for most paddlers.</td></tr>
+        <tr><td><span class="dot" style="background:#c59a61"></span></td><td>2.7 &ndash; 3.6</td><td>Careful</td><td>Mixed conditions. Check the details before heading out.</td></tr>
+        <tr><td><span class="dot" style="background:#bd3b2b"></span></td><td>Below 2.7</td><td>Hard pass</td><td>Conditions are poor. Postpone if possible.</td></tr>
       </tbody>
     </table>
 
-    <p>Displays shade continuously through seven bands rather than three flat colours &mdash; a 4.5 is visibly better than a 4.0:</p>
+    <p>Scores are shown to one decimal (algorithm v2.0.0) &mdash; a 4.5 is visibly better than a 4.0 &mdash; and every surface uses the same three verdict colours:</p>
     <div class="ramp" aria-label="Score colour ramp">
-      <span style="background:#4a0a08">&lt;2</span>
-      <span style="background:#86170f">2+</span>
-      <span style="background:#bd3b2b">2.5+</span>
-      <span style="background:#eb8127">3+</span>
-      <span style="background:#c59a61">3.5+</span>
-      <span style="background:#316d43">4+</span>
-      <span style="background:#255a3a">4.5+</span>
+      <span style="background:#bd3b2b">&lt;2.7</span>
+      <span style="background:#c59a61">2.7+</span>
+      <span style="background:#316d43">3.7+</span>
     </div>
     <p class="snap-caption">The exact colour stops the forecast pages use.</p>
 
@@ -361,16 +357,15 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
   // Swap the example verdict card for a live one — same fields the
   // forecast page renders. If the fetch fails, the example stands.
   var RAMP = [
-    [4.5, '#255a3a'], [4.0, '#316d43'], [3.5, '#c59a61'],
-    [3.0, '#eb8127'], [2.5, '#bd3b2b'], [2.0, '#86170f'], [0, '#4a0a08']
+    [3.7, '#316d43'], [2.7, '#c59a61'], [0, '#bd3b2b']
   ];
   function colorFor(r) {
     for (var i = 0; i < RAMP.length; i++) { if (r >= RAMP[i][0]) return RAMP[i][1]; }
     return RAMP[RAMP.length - 1][1];
   }
   function verdictFor(r) {
-    if (r >= 4) return 'Worth it';
-    if (r >= 3) return 'Careful';
+    if (r >= 3.7) return 'Worth it';
+    if (r >= 2.7) return 'Careful';
     return 'Hard pass';
   }
 
@@ -381,7 +376,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
       var scored = rows.filter(function (s) { return s && s.paddleScore && s.paddleScore.rating != null; });
       if (!scored.length) return;
       var spot = scored[Math.floor(Math.random() * scored.length)];
-      var r = Number(spot.paddleScore.rating);
+      var r = Number(spot.paddleScore.ratingPrecise != null ? spot.paddleScore.ratingPrecise : spot.paddleScore.rating);
 
       var scoreEl = document.getElementById('lv-score');
       scoreEl.textContent = r.toFixed(1);

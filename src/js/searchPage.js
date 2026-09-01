@@ -815,7 +815,7 @@ async function fetchBatchScores(bodies) {
     const scoreMap = new Map();
     data.scores.forEach(s => {
       const key = `${s.lat.toFixed(6)},${s.lng.toFixed(6)}`;
-      scoreMap.set(key, s.rating ?? s.score ?? null);
+      scoreMap.set(key, s.ratingPrecise ?? s.rating ?? s.score ?? null);
     });
     return scoreMap;
   } catch { clearTimeout(tid); return null; }
@@ -831,7 +831,7 @@ async function fetchScore(lat, lng) {
     clearTimeout(tid);
     if (!res.ok) return null;
     const data = await res.json();
-    const s = data.paddleScore?.rating ?? data.paddleScore ?? data.data?.paddleScore?.rating ?? data.score;
+    const s = data.paddleScore?.ratingPrecise ?? data.paddleScore?.rating ?? data.paddleScore ?? data.data?.paddleScore?.rating ?? data.score;
     if (s == null || isNaN(s)) return null;
     return Number(s).toFixed(1);
   } catch { clearTimeout(tid); return null; }

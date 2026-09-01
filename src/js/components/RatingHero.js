@@ -170,7 +170,7 @@ class RatingHero {
             data-gap="${gap}"/>
         </svg>
         <div class="ring-overlay">
-          <div class="ring-number">${rating}</div>
+          <div class="ring-number">${Number(rating).toFixed(1)}</div>
           <div class="ring-denom">/ 5</div>
         </div>
       </div>
