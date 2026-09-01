@@ -434,7 +434,7 @@ POST /api/presets                      → create preset (auth required)
 | `kaaykoproducts` | store | Product catalog |
 | `orders` | store, kortex | Checkout orders |
 | `payment_intents` | store | Stripe payment intents |
-| `paddlingSpots` | core | Paddle forecast spots |
+| `paddlingSpots` | core | Paddle forecast spots. Enrichment fields (v2.1+): `waterType` (lake\|river\|ramp), `cellCoverage` (FCC BDC-derived, null until computed), `localTips[]` (editorial), `hydrology` (river gauge, Phase 6) — seeded via `kaayko-api/functions/scripts/seed-spot-enrichment.js` from `data/spot-enrichment.json`, never community-supplied |
 | `forecast_cache` | core | Cached weather data (TTL-based) |
 | `current_conditions_cache` | core | Cached current conditions |
 | `short_links` | kortex | Smart link definitions (code uses `short_links`, NOT `smartlinks`) |

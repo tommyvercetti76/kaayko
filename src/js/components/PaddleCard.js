@@ -39,7 +39,9 @@
       rating: (spot.paddleScore && spot.paddleScore.rating != null)
         ? (spot.paddleScore.ratingPrecise != null ? spot.paddleScore.ratingPrecise : spot.paddleScore.rating)
         : null,
-      youtubeURL: spot.youtubeURL || ''
+      youtubeURL: spot.youtubeURL || '',
+      waterType: spot.waterType || null,
+      coverageGrade: (spot.cellCoverage && spot.cellCoverage.grade) || null
     };
   }
 
@@ -358,7 +360,12 @@
     } else {
       name.textContent = data.title;
     }
-    var loc = el('p', 'location'); loc.textContent = data.subtitle;
+    // Real spot facts appended inline: water type, and an offline-maps nudge
+    // only when FCC-derived coverage data says signal is patchy/absent.
+    var locBits = [data.subtitle];
+    if (data.waterType === 'river') locBits.push('River');
+    if (data.coverageGrade === 'patchy' || data.coverageGrade === 'none') locBits.push('Offline maps advised');
+    var loc = el('p', 'location'); loc.textContent = locBits.filter(Boolean).join(' · ');
     var desc = el('p', 'description'); desc.textContent = data.text;
 
     var actions = el('div', 'card-actions');

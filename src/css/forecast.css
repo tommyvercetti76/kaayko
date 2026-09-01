@@ -749,3 +749,36 @@ main.forecast-main {
    #locationInfo is a direct child of .forecast-body.
    Desktop: grid-placed bottom-left (col 1, row 2) — see section 21 grid.
    Mobile:  flex stack — naturally last, below both columns (heatmap above). */
+
+/* ── Know before you go (curated spot facts) ── */
+.kbg-block {
+  margin: 0 0 1rem;
+  padding: 1rem 1.1rem;
+  background: rgba(20, 18, 16, 0.55);
+  border: 1px solid rgba(217, 189, 123, 0.28);
+  clip-path: polygon(11px 0, calc(100% - 11px) 0, 100% 11px, 100% calc(100% - 11px), calc(100% - 11px) 100%, 11px 100%, 0 calc(100% - 11px), 0 11px);
+}
+.kbg-title {
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #d9bd7b;
+  margin-bottom: 0.65rem;
+}
+.kbg-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.4rem 0;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+.kbg-icon { color: #d9bd7b; flex: 0 0 auto; display: inline-flex; margin-top: 2px; }
+.kbg-icon svg { width: 16px; height: 16px; }
+.kbg-hazard .kbg-icon { color: #c59a61; }
+
+/* Cell-signal row emphasis */
+.cov-none, .cov-patchy { color: #c59a61; }
+.cov-good { color: #7ea98c; }

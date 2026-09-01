@@ -496,6 +496,52 @@
       return items;
     }
 
+    function esc(s) {
+      return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+    // Enrichment rows — rendered ONLY when the spot doc actually carries the data.
+    // No data → no row: contextual info here is always real, never inferred.
+    function enrichmentRows(spot) {
+      const rows = [];
+      if (spot?.waterType === 'river' || spot?.waterType === 'lake' || spot?.waterType === 'ramp') {
+        const label = { river: 'River', lake: 'Lake', ramp: 'Boat ramp' }[spot.waterType];
+        rows.push(`<div class="loc-row"><span class="loc-label">Water</span><span>${label}</span></div>`);
+      }
+      if (spot?.launchHint) {
+        rows.push(`<div class="loc-row"><span class="loc-label">Launch</span><span>${esc(spot.launchHint)}</span></div>`);
+      }
+      const cov = spot?.cellCoverage;
+      if (cov && ['good', 'patchy', 'none'].includes(cov.grade)) {
+        const text = cov.grade === 'good'
+          ? 'Good coverage near the launch'
+          : cov.grade === 'patchy'
+            ? 'Patchy signal — download offline maps'
+            : 'No signal at the water — download offline maps';
+        rows.push(`<div class="loc-row"><span class="loc-label">Cell signal</span><span class="cov-${cov.grade}">${text}</span></div>`);
+      }
+      return rows.join('');
+    }
+
+    // "Know before you go" — Rohan-authored spot facts, shown only when present.
+    function renderLocalTips(spot) {
+      const host = document.getElementById('locationInfo');
+      const tips = Array.isArray(spot?.localTips) ? spot.localTips.filter(t => t && t.text) : [];
+      document.querySelectorAll('.kbg-block').forEach(el => el.remove()); // idempotent re-render
+      if (!host || tips.length === 0) return;
+      const ICONS = { launch: 'pin', hazard: 'alert', season: 'sun', general: 'info' };
+      const block = document.createElement('div');
+      block.className = 'kbg-block';
+      block.innerHTML =
+        '<div class="kbg-title">Know before you go</div>' +
+        tips.slice(0, 4).map(t => {
+          const icon = window.KaaykoIcons?.get?.(ICONS[t.category] || 'info') || '';
+          return `<div class="kbg-row kbg-${esc(t.category || 'general')}"><span class="kbg-icon">${icon}</span><span>${esc(t.text)}</span></div>`;
+        }).join('');
+      host.parentNode.insertBefore(block, host);
+    }
+
     function renderLocationInfo(location, spot) {
       if (!location) return;
       const amenities = getAmenityItems(spot);
@@ -521,11 +567,13 @@
         <div class="loc-row"><span class="loc-label">Region</span><span>${location.region || '—'}, ${location.country || '—'}</span></div>
         <div class="loc-row"><span class="loc-label">Local Time</span><span>${formatLocalTime(location, spot)}</span></div>
         <div class="loc-row"><span class="loc-label">Coordinates</span><span>${coordsCell}</span></div>
+        ${enrichmentRows(spot)}
         ${ytRow}
         <div class="loc-row loc-amenities"><span class="loc-label">Amenities</span><span class="amenities-list">
           ${amenities.map(item => `<span class="amenity-pill ${item.available ? 'available' : 'unavailable'}">${item.available ? '✓' : '—'} ${item.label}</span>`).join('')}
         </span></div>
       `;
+      renderLocalTips(spot);
     }
 
     function renderApiStatus(forecastData) {
