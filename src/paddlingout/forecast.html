@@ -524,6 +524,34 @@
       return rows.join('');
     }
 
+    // "Prep" — preparation tips from the server's tips engine (real conditions +
+    // craft + spot facts). Values arrive metric; formatted here per units pref.
+    let __prepTips = [];
+    function renderPrepBlock(tips) {
+      if (tips) __prepTips = tips;
+      document.querySelectorAll('.prep-block').forEach(el => el.remove());
+      const list = (__prepTips || []).filter(t => t && t.title);
+      if (list.length === 0) return;
+      const host = document.getElementById('locationInfo');
+      if (!host) return;
+      const P = window.KaaykoPrefs;
+      const block = document.createElement('div');
+      block.className = 'kbg-block prep-block';
+      block.innerHTML =
+        '<div class="kbg-title">Prep</div>' +
+        list.map(t => {
+          let detail = String(t.detail || '');
+          if (t.values && t.values.waterLiters != null && P?.fmtVolume) {
+            detail = detail.replace('{water}', P.fmtVolume(t.values.waterLiters));
+          }
+          const icon = window.KaaykoIcons?.get?.(t.icon || 'info') || '';
+          return `<div class="kbg-row${t.priority === 1 ? ' prep-p1' : ''}"><span class="kbg-icon">${icon}</span>` +
+                 `<span><strong>${esc(t.title)}</strong><br>${esc(detail)}</span></div>`;
+        }).join('');
+      host.parentNode.insertBefore(block, host);
+    }
+    window.addEventListener('kaayko:unitschange', () => renderPrepBlock());
+
     // "Know before you go" — Rohan-authored spot facts, shown only when present.
     function renderLocalTips(spot) {
       const host = document.getElementById('locationInfo');
@@ -574,6 +602,7 @@
         </span></div>
       `;
       renderLocalTips(spot);
+      renderPrepBlock(Array.isArray(spot?.tips) ? spot.tips : []);
     }
 
     function renderApiStatus(forecastData) {

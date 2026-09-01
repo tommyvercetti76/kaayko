@@ -782,3 +782,12 @@ main.forecast-main {
 /* Cell-signal row emphasis */
 .cov-none, .cov-patchy { color: #c59a61; }
 .cov-good { color: #7ea98c; }
+
+/* Prep tips — priority-1 rows get the gold accent */
+.prep-block .kbg-row strong {
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 0.86rem;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.94);
+}
+.prep-block .prep-p1 strong { color: #d9bd7b; }

@@ -49,6 +49,8 @@
   function fmtDist(km)   { const n = _num(km);   return n == null ? '--' : (isMetric() ? `${n.toFixed(1)} km`        : `${(n * 0.621371).toFixed(1)} mi`); }
   function fmtHeight(m)  { const n = _num(m);    return n == null ? '--' : (isMetric() ? `${n.toFixed(1)} m`         : `${(n * 3.28084).toFixed(1)} ft`); }
   function fmtArea(km2)  { const n = _num(km2);  return n == null ? '--' : (isMetric() ? `${n.toFixed(1)} km²`       : `${(n * 0.386102).toFixed(1)} mi²`); }
+  function fmtVolume(l)  { const n = _num(l);    return n == null ? '--' : (isMetric() ? `${n.toFixed(1)} L`         : `~${Math.round(n * 33.814 / 8) * 8} fl oz`); }
+  function fmtFlow(cms)  { const n = _num(cms);  return n == null ? '--' : (isMetric() ? `${n.toFixed(1)} m³/s`      : `${Math.round(n * 35.3147)} cfs`); }
   // Rewrite metric units embedded in server-generated strings (e.g. "Extreme heat (42.5°C)").
   function localizeUnits(text) {
     if (isMetric()) return String(text);
@@ -218,7 +220,7 @@
 
   window.KaaykoPrefs = {
     getUnits, isMetric, setUnits,
-    fmtTemp, fmtWind, fmtPrecip, fmtDist, fmtHeight, fmtArea, localizeUnits,
+    fmtTemp, fmtWind, fmtPrecip, fmtDist, fmtHeight, fmtArea, fmtVolume, fmtFlow, localizeUnits,
     paddleScoreColor,
     getCardStyle, setCardStyle,
     BOAT_TYPES, getBoatType, setBoatType, boatTypeLabel, craftParam, withCraft,
