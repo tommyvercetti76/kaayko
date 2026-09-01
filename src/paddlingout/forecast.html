@@ -487,7 +487,68 @@
         // Inject graphical bars after render. Units no longer change on this page
         // (chosen in Settings), so there's no in-page unit-toggle to re-render for.
         requestAnimationFrame(enhanceWeatherStats);
+        applyNightGate(currentData, forecastData);
       } catch (err) { console.error('RatingHero error:', err); }
+    }
+
+    // ── Night gate ────────────────────────────────────────────────────────────
+    // Kaayko scores DAYLIGHT paddling only (see methodology + terms). After dark
+    // the numeral is stood down and the first daylight score takes its place, so
+    // nobody reads a green "Worth it" at midnight.
+    function applyNightGate(currentData, forecastData) {
+      const isNight = currentData?.conditions?.isDay === false
+        || currentData?.paddleScore?.night?.isNight === true;
+      const mark = document.querySelector('.score-mark');
+      if (!isNight || !mark) return;
+
+      // First daylight hour in the outlook, with the score already computed for it
+      let next = null;
+      const days = forecastData?.forecast || [];
+      const nowHour = new Date().getHours();
+      outer:
+      for (let d = 0; d < days.length; d++) {
+        const hours = Object.keys(days[d].hourly || {}).map(Number).sort((a, b) => a - b);
+        for (const h of hours) {
+          const hd = days[d].hourly[String(h)] ?? days[d].hourly[h];
+          if (!hd || hd.isDay === false) continue;
+          if (d === 0 && h <= nowHour) continue;
+          const r = parseFloat(hd.rating ?? hd.prediction?.rating);
+          if (isNaN(r)) continue;
+          next = { dayIndex: d, hour: h, rating: Math.round(r * 2) / 2 };
+          break outer;
+        }
+      }
+
+      const P = window.KaaykoPrefs;
+      const color = next ? P.paddleScoreColor(next.rating) : 'var(--muted)';
+      const label = next
+        ? (next.rating >= 3.7 ? 'WORTH IT' : next.rating >= 2.7 ? 'CAREFUL' : 'HARD PASS')
+        : '';
+      const dayWord = next ? (next.dayIndex === 0 ? 'Later today' : next.dayIndex === 1 ? 'Tomorrow' : 'In 2 days') : '';
+      const hourWord = next ? formatHourDisplay(next.hour) : '';
+
+      mark.classList.add('is-night');
+      mark.innerHTML =
+        '<div class="night-mark" role="img" aria-label="After dark — Kaayko scores daylight paddling only' +
+          (next ? `. Next daylight score ${next.rating.toFixed(1)} out of 5 at ${dayWord} ${hourWord}` : '') + '">' +
+          '<div class="night-eyebrow">After dark</div>' +
+          '<div class="night-copy">We score daylight paddling only</div>' +
+          (next
+            ? '<div class="night-next">' +
+                '<span class="night-next-label">Next daylight window</span>' +
+                `<span class="night-next-score" style="color:${color}">${next.rating.toFixed(1)}<span class="night-next-denom">/ 5</span></span>` +
+                `<span class="night-next-when">${dayWord} at ${hourWord} · <span style="color:${color}">${label}</span></span>` +
+              '</div>'
+            : '') +
+        '</div>';
+    }
+
+    function formatHourDisplay(h) {
+      const n = parseInt(h, 10);
+      if (n === 0) return '12 AM';
+      if (n < 12) return `${n} AM`;
+      if (n === 12) return '12 PM';
+      return `${n - 12} PM`;
     }
 
 

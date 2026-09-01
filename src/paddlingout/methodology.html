@@ -263,6 +263,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
       <li><strong>Official warnings</strong> &mdash; active weather alerts for the area</li>
     </ul>
     <p>Where a value is missing it is estimated conservatively or omitted &mdash; never silently defaulted to a flattering number.</p>
+    <p><strong>Waves, swell and water temperature on inland water.</strong> Marine feeds are built for the sea. Asked about a landlocked point, our provider does not return an error &mdash; it returns a plausible-looking marine record anyway. We verified this: a query for Antero Reservoir, an alpine Colorado reservoir at roughly 8,900&nbsp;feet, came back with 1.4&nbsp;m waves, a 5.2-second swell, and 28.8&nbsp;&deg;C water. So <strong>we do not use marine data on lakes and rivers at all</strong>. Wave and swell rules simply do not fire there, and water temperature is shown as an <em>estimate</em> derived from air temperature and season &mdash; labelled as such, never presented as a reading. For rivers, the flow and stage figures <em>are</em> real: they come from a named USGS gauge, and we show you which one.</p>
   </div>
 
   <div class="meth-section">
@@ -287,6 +288,12 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
       <li><strong>Cold water</strong> &mdash; below 5&deg;C is an immersion hazard regardless of how sunny it looks, and is penalized hard.</li>
       <li><strong>Active official warnings</strong> &mdash; any government weather alert for the area drags the score down, always.</li>
     </ul>
+  </div>
+
+  <div class="meth-section">
+    <h2 data-kicon="alert">Daylight Only &mdash; We Do Not Score Night Paddling</h2>
+    <p><strong>Kaayko scores daylight hours only, and we do not condone paddling after dark.</strong> Once the sun is down at a spot, the page stops showing a verdict entirely and shows you the next daylight window instead. This is deliberate: the score is built from wind, water, and weather, and none of those inputs capture what actually makes night paddling dangerous &mdash; you cannot read the water, you cannot be seen by motorized craft, self-rescue is far harder, and a capsize that would be a nuisance at noon becomes a serious emergency in the dark.</p>
+    <p>Night paddling is also regulated. Many jurisdictions require navigation lighting after sunset, and a number of parks and reservoirs prohibit being on the water at night at all. Those rules are local, they change, and it is your responsibility to know them for the water you are on. <strong>A daytime score never implies that the same water is acceptable at night.</strong></p>
   </div>
 
   <div class="meth-section">
@@ -358,6 +365,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
       <li>Kaayko is not responsible for any injury, loss, or damage arising from decisions made using this tool. <strong>You assume all risk</strong> associated with your paddling activities.</li>
       <li>Weather data is sourced from third-party providers and may be delayed, incomplete, or inaccurate. We do not guarantee the accuracy, timeliness, or completeness of any data displayed.</li>
       <li>The ML model is continuously improving but is not infallible. Scores may occasionally misrepresent actual conditions.</li>
+      <li><strong>Daylight only.</strong> Paddle Scores describe daylight conditions and are not provided for, and must never be relied on for, paddling after dark. Kaayko does not condone night paddling. You are responsible for local rules on night navigation, lighting, and water access.</li>
       <li>Preparation tips, craft adjustments, and spot notes are general informational guidance, not professional instruction &mdash; they never replace proper training, equipment, or your own judgment.</li>
       <li>You are solely responsible for assessing on-site conditions, wearing appropriate safety gear (including a life jacket), and making your own go/no-go decision.</li>
     </ul>

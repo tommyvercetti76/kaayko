@@ -1124,3 +1124,58 @@ main.forecast-main {
   align-items: center !important;
   justify-content: center !important;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   28. NIGHT GATE — Kaayko scores DAYLIGHT paddling only.
+   After dark the score numeral stands down and the first daylight window
+   takes its place, so no one can read a green "Worth it" at midnight.
+   ══════════════════════════════════════════════════════════════════════════ */
+.night-mark { text-align: center; }
+.night-eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--gold-bright);
+}
+.night-copy {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  color: rgba(237,232,223,0.9);
+  margin: 0.5rem 0 1.1rem;
+  line-height: 1.35;
+}
+.night-next {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.95rem 1rem 1rem;
+  border: 1px solid var(--line);
+  clip-path: var(--clip-md);
+  background: rgba(0,0,0,0.28);
+}
+.night-next-label {
+  font-family: var(--font-sans);
+  font-size: 0.6rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.night-next-score {
+  font-family: var(--font-serif);
+  font-size: 2.9rem;
+  line-height: 1;
+}
+.night-next-denom {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-left: 0.3rem;
+}
+.night-next-when {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(237,232,223,0.72);
+}
