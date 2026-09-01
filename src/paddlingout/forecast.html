@@ -81,9 +81,22 @@
   <!-- FORECAST PAGE CONTENT -->
   <main class="forecast-main">
 
-    <!-- Loading state -->
-    <div class="forecast-loading" id="forecastLoading">
-      <div class="forecast-spinner"></div>
+    <!-- Loading state: skeleton mirrors the real layout so the page doesn't
+         reflow when data lands -->
+    <div class="forecast-loading" id="forecastLoading" role="status" aria-label="Loading conditions">
+      <div class="fsk-grid" aria-hidden="true">
+        <div class="fsk-col">
+          <div class="fsk fsk-ring"></div>
+          <div class="fsk fsk-line w60"></div>
+          <div class="fsk fsk-stats"></div>
+        </div>
+        <div class="fsk-col">
+          <div class="fsk fsk-line w40"></div>
+          <div class="fsk fsk-bar"></div>
+          <div class="fsk fsk-bar"></div>
+          <div class="fsk fsk-bar"></div>
+        </div>
+      </div>
       <p>Loading conditions…</p>
     </div>
 
@@ -112,8 +125,12 @@
           <div id="heatmapContainer"></div>
         </div>
 
-        <!-- BOTTOM-LEFT on desktop / bottom of stack on mobile -->
-        <div class="forecast-location-info" id="locationInfo"></div>
+        <!-- BOTTOM-LEFT on desktop / bottom of stack on mobile.
+             Prep + Know-before-you-go render into this stack too, so they are
+             REAL grid citizens instead of auto-placed strays. -->
+        <div class="forecast-facts" id="spotFacts">
+          <div class="forecast-location-info" id="locationInfo"></div>
+        </div>
 
       </div>
       <!-- ── Full-width bottom ──────────────────────────────────────────── -->
@@ -512,6 +529,27 @@
       if (spot?.launchHint) {
         rows.push(`<div class="loc-row"><span class="loc-label">Launch</span><span>${esc(spot.launchHint)}</span></div>`);
       }
+      // Live river data from the spot's USGS gauge (server-attached, cache-backed)
+      const hyd = spot?.hydrologyNow;
+      if (hyd && hyd.discharge && window.KaaykoPrefs?.fmtFlow) {
+        const P = window.KaaykoPrefs;
+        const MONTHS = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        const month = MONTHS[new Date().getMonth() + 1];
+        const bandPhrase = {
+          high: `Running well above normal — ${hyd.pctOfNormal ?? '90+'}th percentile for ${month}`,
+          above: `Running above normal — ${hyd.pctOfNormal}th percentile for ${month}`,
+          normal: `Normal range for ${month}`,
+          below: `Running below normal — ${hyd.pctOfNormal}th percentile for ${month}`,
+          low: `Low water — ${hyd.pctOfNormal}th percentile for ${month}`
+        }[hyd.pctOfNormalBand] || null;
+        const staleNote = hyd.stale ? ' <em>(gauge last reported over a day ago)</em>' : '';
+        const gaugeLink = hyd.gaugeUrl
+          ? ` <a class="loc-coords-link" href="${esc(hyd.gaugeUrl)}" target="_blank" rel="noopener">USGS gauge →</a>` : '';
+        rows.push(`<div class="loc-row"><span class="loc-label">River flow</span><span class="flow-${esc(hyd.pctOfNormalBand || 'unknown')}">${P.fmtFlow(hyd.discharge.cms)}${bandPhrase ? ' — ' + bandPhrase : ''}${staleNote}${gaugeLink}</span></div>`);
+        if (hyd.gageHeight && P.fmtHeight) {
+          rows.push(`<div class="loc-row"><span class="loc-label">Water level</span><span>${P.fmtHeight(hyd.gageHeight.m)}</span></div>`);
+        }
+      }
       const cov = spot?.cellCoverage;
       if (cov && ['good', 'patchy', 'none'].includes(cov.grade)) {
         const text = cov.grade === 'good'
@@ -570,8 +608,14 @@
       host.parentNode.insertBefore(block, host);
     }
 
+    let __lastLocInfo = null;
+    window.addEventListener('kaayko:unitschange', () => {
+      if (__lastLocInfo) renderLocationInfo(__lastLocInfo.location, __lastLocInfo.spot);
+    });
+
     function renderLocationInfo(location, spot) {
       if (!location) return;
+      __lastLocInfo = { location, spot };
       const amenities = getAmenityItems(spot);
 
       // Coordinates → tappable, opens that exact point on a map
@@ -592,6 +636,7 @@
         : '';
 
       document.getElementById('locationInfo').innerHTML = `
+        <div class="card-eyebrow">The Spot</div>
         <div class="loc-row"><span class="loc-label">Region</span><span>${location.region || '—'}, ${location.country || '—'}</span></div>
         <div class="loc-row"><span class="loc-label">Local Time</span><span>${formatLocalTime(location, spot)}</span></div>
         <div class="loc-row"><span class="loc-label">Coordinates</span><span>${coordsCell}</span></div>

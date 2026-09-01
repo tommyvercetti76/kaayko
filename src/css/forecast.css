@@ -791,3 +791,129 @@ main.forecast-main {
   color: rgba(255, 255, 255, 0.94);
 }
 .prep-block .prep-p1 strong { color: #d9bd7b; }
+
+/* River flow band emphasis */
+.flow-high { color: #bd3b2b; }
+.flow-above, .flow-low { color: #c59a61; }
+.flow-normal, .flow-below { color: rgba(255, 255, 255, 0.86); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   24. DESIGN PASS v2.2 — one regal language for every panel.
+   Chamfered hard edges (no curves anywhere), a shared gold eyebrow with a
+   hairline rule, one placement grid, WCAG focus/contrast, skeleton loading.
+   Overrides live together here so the pass is auditable in one place.
+   ══════════════════════════════════════════════════════════════════════════ */
+:root {
+  --clip-lg: polygon(16px 0, calc(100% - 16px) 0, 100% 16px, 100% calc(100% - 16px), calc(100% - 16px) 100%, 16px 100%, 0 calc(100% - 16px), 0 16px);
+  --clip-md: polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px);
+  --clip-sm: polygon(7px 0, calc(100% - 7px) 0, 100% 7px, 100% calc(100% - 7px), calc(100% - 7px) 100%, 7px 100%, 0 calc(100% - 7px), 0 7px);
+}
+
+/* ── Shared card eyebrow: small caps, gold, hairline rule fading right ── */
+.card-eyebrow,
+.kbg-title {
+  font-family: var(--font-sans);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold-bright);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 0 0.9rem;
+}
+.card-eyebrow::after,
+.kbg-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(217,189,123,0.45), rgba(217,189,123,0));
+}
+
+/* ── No curves, anywhere: chamfer every panel and control ── */
+.forecast-location-info,
+.kbg-block,
+.forecast-alert-banner {
+  border-radius: 0 !important;
+  clip-path: var(--clip-md);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  padding: 1.15rem 1.35rem;
+}
+#ratingHeroContainer .rating-hero {
+  border-radius: 0 !important;
+  clip-path: var(--clip-lg);
+}
+#ratingHeroContainer .core-weather-inline { border-radius: 0 !important; clip-path: var(--clip-md); }
+.forecast-back-btn,
+.alert-mark,
+.alert-dismiss {
+  border-radius: 0 !important;
+  clip-path: var(--clip-sm);
+}
+.forecast-retry-btn { border-radius: 0; clip-path: var(--clip-sm); }
+.amenity-pill {
+  border-radius: 0 !important;
+  clip-path: var(--clip-sm);
+}
+.amenity-pill.unavailable { color: rgba(237,232,223,0.58) !important; } /* 4.5:1 floor */
+
+/* ── Placement: the facts stack is ONE grid citizen (col 1, row 2).
+   Injected Prep/Know-before-you-go used to auto-place into stray grid cells —
+   the "lumped together" bug. ── */
+.forecast-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+@media (min-width: 900px) {
+  #spotFacts { grid-column: 1; grid-row: 2; }
+}
+.kbg-block { margin: 0; }   /* stack gap owns the rhythm now */
+
+/* ── Alert banner: align with the card language ── */
+.forecast-alert-banner { border-left: 2px solid var(--gold); }
+
+/* ── WCAG: visible focus for every interactive element on the page ── */
+.forecast-main a:focus-visible,
+.forecast-main button:focus-visible,
+.forecast-page-header a:focus-visible,
+.forecast-fav-slot button:focus-visible {
+  outline: 2px solid var(--gold-bright);
+  outline-offset: 2px;
+  border-radius: 0;
+}
+
+/* ── Skeleton loading: mirrors the real two-column layout ── */
+.forecast-loading { padding: 2.5rem 2rem; }
+.forecast-loading p {
+  font-family: var(--font-sans);
+  font-size: 0.66rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 1.5rem;
+}
+.fsk-grid { display: flex; flex-direction: column; gap: 1.5rem; max-width: 1200px; margin: 0 auto; }
+@media (min-width: 900px) {
+  .fsk-grid { display: grid; grid-template-columns: 5fr 7fr; gap: 3rem; align-items: start; }
+}
+.fsk-col { display: flex; flex-direction: column; gap: 1rem; align-items: stretch; }
+.fsk {
+  background: linear-gradient(100deg, var(--surface) 40%, var(--surface-b) 50%, var(--surface) 60%);
+  background-size: 200% 100%;
+  animation: fskShimmer 1.4s ease-in-out infinite;
+  clip-path: var(--clip-md);
+}
+.fsk-ring  { width: 120px; height: 120px; align-self: center; clip-path: var(--clip-lg); }
+.fsk-line  { height: 14px; }
+.fsk-line.w60 { width: 60%; align-self: center; }
+.fsk-line.w40 { width: 40%; }
+.fsk-stats { height: 180px; }
+.fsk-bar   { height: 84px; }
+@keyframes fskShimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .fsk { animation: none; }
+}
