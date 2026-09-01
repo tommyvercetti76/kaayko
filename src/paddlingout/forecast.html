@@ -487,8 +487,34 @@
         // Inject graphical bars after render. Units no longer change on this page
         // (chosen in Settings), so there's no in-page unit-toggle to re-render for.
         requestAnimationFrame(enhanceWeatherStats);
+        requestAnimationFrame(() => markEstimatedWaterTemp(currentData));
         applyNightGate(currentData, forecastData);
       } catch (err) { console.error('RatingHero error:', err); }
+    }
+
+    // An estimate must never wear the same clothes as a measurement. When the
+    // water temperature came from a real sensor we say which one; when it is
+    // derived from air temperature we mark it "est."
+    function markEstimatedWaterTemp(currentData) {
+      const c = currentData?.conditions;
+      if (!c) return;
+      const label = [...document.querySelectorAll('#ratingHeroContainer .weather-label')]
+        .find(el => /water temp/i.test(el.textContent));
+      if (!label || label.dataset.wtMarked) return;
+      label.dataset.wtMarked = '1';
+      if (c.waterTempEstimated) {
+        const est = document.createElement('span');
+        est.className = 'wt-est';
+        est.textContent = ' · est';
+        est.title = 'Estimated from air temperature — no sensor on this water';
+        label.appendChild(est);
+      } else if (c.waterTempSource) {
+        const m = document.createElement('span');
+        m.className = 'wt-measured';
+        m.textContent = ' · measured';
+        m.title = `Measured at ${c.waterTempSource.gaugeName}`;
+        label.appendChild(m);
+      }
     }
 
     // ── Night gate ────────────────────────────────────────────────────────────
