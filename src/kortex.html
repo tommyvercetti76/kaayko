@@ -293,7 +293,11 @@ img, canvas, svg { max-width:100% }
 .seg-btn:hover { color:var(--muted) }
 .seg-btn.active { color:var(--gold-bright); border-bottom-color:var(--gold); text-shadow:var(--glow-xs) }
 .seg-btn:focus-visible { outline:1px solid var(--gold-bright); outline-offset:4px }
-.seg-note { text-align:center; margin:0 auto var(--sp-6); max-width:460px; min-height:2.6em }
+.seg-note { text-align:center; margin:0 auto var(--sp-3); max-width:460px; min-height:2.6em }
+.mode-facts { list-style:none; margin:0 auto var(--sp-6); padding:0; max-width:560px; display:flex; flex-wrap:wrap; justify-content:center; gap:var(--sp-1) 0; font-style:italic; font-size:0.92rem; color:var(--muted); line-height:1.5 }
+.mode-facts li { white-space:nowrap }
+.mode-facts li + li::before { content:'·'; color:var(--gold-dim); padding:0 10px }
+.field-help { margin:var(--sp-2) 0 0; font-style:italic; font-size:0.86rem; color:var(--muted); line-height:1.5 }
 .url-row { display:flex; gap:var(--sp-4); align-items:flex-end }
 .url-row .field { flex:1 1 auto; min-width:0; margin:0 }
 .url-row .btn-submit { width:auto; margin:0; padding:14px 22px; flex:0 0 auto }
@@ -337,6 +341,16 @@ input[type="time"].field-input { color-scheme:dark }
   text-shadow:0 0 12px rgba(181,147,90,0.15);
 }
 .code-card .note { text-align:center }
+.code-card.compact { margin:var(--sp-2) auto 0; max-width:560px }
+.code-actions { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:0 var(--sp-3); margin:0 0 var(--sp-3) }
+.next-steps { width:100%; max-width:520px; margin:0 auto; padding:0 0 0 1.6em; text-align:left; font-style:italic; font-size:0.98rem; color:var(--muted); line-height:1.55 }
+.next-steps li { margin:0 0 var(--sp-2); padding-left:4px }
+.next-steps li::marker { font-family:var(--mono); font-style:normal; color:var(--gold) }
+.next-steps b { color:var(--gold-bright); font-weight:500 }
+.next-steps i { color:var(--gold-bright) }
+.confirm { width:100%; max-width:520px; border-left:2px solid var(--gold); padding:var(--sp-3) var(--sp-4); text-align:left; background:rgba(181,147,90,0.05) }
+.confirm .note { margin:0 0 var(--sp-2) }
+.confirm .actions { justify-content:flex-start }
 .inline-form { display:flex; gap:var(--sp-3); align-items:flex-end; width:100%; max-width:460px; margin:0 auto }
 .inline-form .field { flex:1 1 auto; min-width:0; margin:0 }
 .inline-form .btn-submit { width:auto; margin:0; padding:12px 18px; flex:0 0 auto }
@@ -549,6 +563,10 @@ a.btn-submit { display:block; text-align:center }
   .url-row .btn-submit, .enter-row .btn-submit, .inline-form .btn-submit { width:100% }
 }
 @media(max-width:480px) {
+  /* Wrapped action rows: no separator left dangling at a line end. */
+  .actions .action-dot { display:none }
+  .actions { gap:var(--sp-2) var(--sp-5) }
+  .confirm .actions { flex-direction:column; align-items:flex-start; gap:var(--sp-2) }
   .hero { padding:var(--sp-10) var(--sp-4) var(--sp-7) }
   .section { padding:0 var(--sp-4) var(--sp-10) }
   .connect-section { padding:var(--sp-8) var(--sp-4) var(--sp-10) }
@@ -618,6 +636,7 @@ a.btn-submit { display:block; text-align:center }
         <button type="button" class="seg-btn" id="mode-static" role="tab" aria-selected="false">Static</button>
       </div>
       <p class="note seg-note" id="mode-note">Re-point it after printing and see every scan. Free for a year, renewable with your access code.</p>
+      <ul class="mode-facts" id="mode-facts"></ul>
 
       <div class="url-row">
         <div class="field">
@@ -643,9 +662,10 @@ a.btn-submit { display:block; text-align:center }
             <input class="field-input" type="url" id="mk-android" placeholder="https://play.google.com/…">
           </div>
         </div>
-        <div class="field">
-          <label class="field-label" for="mk-email">Email me the access code</label>
+        <div class="field" id="mk-email-field" hidden>
+          <label class="field-label" for="mk-email">Email (optional)</label>
           <input class="field-input" type="email" id="mk-email" autocomplete="email" placeholder="you@organisation.com">
+          <p class="field-help">Your access code appears on screen the moment the link is made; no email needed. Add one only if you also want a copy sent to you and a way to recover a lost code.</p>
         </div>
         <div class="field">
           <label class="check"><input type="checkbox" id="mk-night-on"> Send people somewhere else at night</label>
@@ -681,11 +701,22 @@ a.btn-submit { display:block; text-align:center }
       <p class="note" id="rs-night-note" hidden></p>
 
       <div class="code-card" id="rs-code-card">
-        <div class="code-label">Access code</div>
+        <div class="code-label" id="rs-code-label">Your access code</div>
         <div class="code-value" id="rs-code"></div>
-        <p class="note">The <strong>only key</strong> to this link's scans and settings. Save it somewhere safe. Anyone who has it can change where the QR points.</p>
+        <div class="code-actions">
+          <button type="button" class="action-link" id="rs-copy-code">Copy code</button>
+          <span class="action-dot" aria-hidden="true">&middot;</span>
+          <button type="button" class="action-link quiet" id="rs-keycard">Save key card</button>
+        </div>
+        <p class="note" id="rs-code-note"></p>
         <p class="status" id="rs-status"></p>
       </div>
+      <p class="note" id="rs-expiry" hidden></p>
+      <ol class="next-steps" id="rs-next" hidden>
+        <li><b>Download the QR</b> and put it on the poster, menu, sign or slide.</li>
+        <li><b>Keep the access code.</b> Copy it or save the key card now; it will not be shown again.</li>
+        <li><b>Come back any time.</b> kaayko.com/kortex, then <i>I have a code</i>: scans by day, device and country; change where it points; pause it; download the QR again.</li>
+      </ol>
       <form class="inline-form" id="rs-email-form" hidden>
         <div class="field">
           <label class="field-label" for="rs-email">Email me this code</label>
@@ -693,8 +724,16 @@ a.btn-submit { display:block; text-align:center }
         </div>
         <button type="submit" class="btn-submit" id="rs-email-btn">Send</button>
       </form>
-      <p class="note" id="rs-static-note" hidden>A static QR is the address itself, drawn as a code. It never expires and never phones home, but it can't be changed after printing.</p>
+      <p class="note" id="rs-static-note" hidden>This QR <strong>is</strong> the address, drawn as a code. Nothing was stored, so there is no access code, no dashboard and no scan count. It works forever and cannot be changed after printing. Want to change it later, or count the scans? Make it dynamic instead.</p>
       <p class="note" id="rs-ws-note" hidden></p>
+      <div class="confirm" id="rs-confirm" hidden>
+        <p class="note">Your access code has not been copied or saved. Once this is gone it cannot be shown again.</p>
+        <div class="actions">
+          <button type="button" class="action-link" id="rs-confirm-copy">Copy it now</button>
+          <span class="action-dot" aria-hidden="true">&middot;</span>
+          <button type="button" class="action-link quiet" id="rs-confirm-go">I have it, continue</button>
+        </div>
+      </div>
 
       <div class="actions">
         <button type="button" class="action-link quiet" id="rs-dl-png">Download PNG</button>
@@ -704,8 +743,10 @@ a.btn-submit { display:block; text-align:center }
         <button type="button" class="action-link quiet" id="rs-email-toggle">Email me the code</button>
         <span class="action-dot" aria-hidden="true">&middot;</span>
         <button type="button" class="action-link quiet" id="rs-another">Make another</button>
+        <span class="action-dot" aria-hidden="true" id="rs-dyn-dot">&middot;</span>
+        <button type="button" class="action-link" id="rs-make-dynamic">Make it dynamic</button>
         <span class="action-dot" aria-hidden="true" id="rs-open-dot">&middot;</span>
-        <button type="button" class="action-link" id="rs-open">Open my links</button>
+        <button type="button" class="action-link" id="rs-open">Open my dashboard</button>
       </div>
     </div>
   </div>
@@ -725,7 +766,8 @@ a.btn-submit { display:block; text-align:center }
           <button type="submit" class="btn-submit" id="mg-submit">Open</button>
         </div>
         <div id="mg-alert" class="alert" role="alert" style="margin-top:12px"></div>
-        <p class="form-note"><a href="#" id="mg-lost">Lost your code?</a></p>
+        <p class="form-note">Type or paste it; case and dashes don't matter.</p>
+        <p class="form-note"><a href="#" id="mg-lost" hidden>Lost your code?</a><span id="mg-lost-off">A lost code cannot be recovered: it is the only key, and nothing else identifies you. The QR itself keeps working.</span></p>
       </form>
       <form id="recover-form" hidden>
         <div class="enter-row">
@@ -746,9 +788,21 @@ a.btn-submit { display:block; text-align:center }
         <div class="actions">
           <button type="button" class="action-link quiet" id="ws-add">Add a link</button>
           <span class="action-dot" aria-hidden="true">&middot;</span>
-          <button type="button" class="action-link quiet" id="ws-email">Email me my code</button>
+          <button type="button" class="action-link quiet" id="ws-email" hidden>Email me my code</button>
+          <span class="action-dot" aria-hidden="true" id="ws-email-dot" hidden>&middot;</span>
+          <button type="button" class="action-link quiet" id="ws-rotate">New code</button>
           <span class="action-dot" aria-hidden="true">&middot;</span>
           <button type="button" class="action-link quiet" id="ws-forget">Forget this device</button>
+        </div>
+        <div class="code-card compact" id="ws-code-card" hidden>
+          <div class="code-label" id="ws-code-label">Your access code</div>
+          <div class="code-value" id="ws-code"></div>
+          <div class="code-actions">
+            <button type="button" class="action-link" id="ws-copy-code">Copy code</button>
+            <span class="action-dot" aria-hidden="true">&middot;</span>
+            <button type="button" class="action-link quiet" id="ws-keycard">Save key card</button>
+          </div>
+          <p class="note" id="ws-code-note"></p>
         </div>
         <form class="inline-form" id="ws-email-form" hidden>
           <div class="field">
@@ -1004,8 +1058,13 @@ function normaliseUrl(v) {
   try { const u = new URL(s); return u.protocol === 'http:' || u.protocol === 'https:' ? u.toString() : ''; } catch { return ''; }
 }
 async function copyText(text, btn) {
-  try { await navigator.clipboard.writeText(text); } catch { return; }
-  if (btn) { const old = btn.textContent; btn.textContent = 'Copied'; setTimeout(() => { btn.textContent = old; }, 1400); }
+  let done = false;
+  try { await navigator.clipboard.writeText(text); done = true; } catch {}
+  if (!done) { // older or locked-down browsers: select-and-copy through a hidden field
+    try { const t = document.createElement('textarea'); t.value = text; t.setAttribute('readonly', ''); t.style.cssText = 'position:fixed;left:-9999px'; document.body.appendChild(t); t.select(); done = document.execCommand('copy'); t.remove(); } catch {}
+  }
+  if (btn) { const old = btn.textContent; btn.textContent = done ? 'Copied' : 'Select and copy it'; setTimeout(() => { btn.textContent = old; }, 1600); }
+  return done;
 }
 function download(name, blob) {
   const a = document.createElement('a');
@@ -1063,20 +1122,85 @@ const FRIENDLY = {
 };
 function friendly(data, fallback) { return (data && (FRIENDLY[data.code] || data.error)) || fallback; }
 
+/* ── WHAT THE SERVER CAN DO RIGHT NOW ──
+   Email delivery is optional infrastructure. The page asks before it
+   promises anything, so a first-timer is never offered a feature that
+   would silently do nothing. Numbers come from the same config the
+   limits use, so the copy here cannot drift from the behaviour. */
+const CAPS = { email: false, lifetimeDays: 365, linkLimit: 25, analyticsDays: 7, sessionHours: 12 };
+function applyCaps() {
+  const on = !!CAPS.email;
+  ['mk-email-field', 'ws-email', 'ws-email-dot', 'mg-lost'].forEach(id => { $(id).hidden = !on; });
+  $('mg-lost-off').hidden = on;
+  if (!on) { $('mk-email').value = ''; $('recover-form').hidden = true; $('ws-email-form').hidden = true; }
+  renderFacts();
+}
+async function loadCaps() {
+  const { ok, data } = await guestApi('/capabilities');
+  if (ok && data) { CAPS.email = !!data.email; ['lifetimeDays', 'linkLimit', 'analyticsDays', 'sessionHours'].forEach(k => { if (data[k]) CAPS[k] = data[k]; }); }
+  applyCaps();
+}
+
+/* ── THE CODE, WHILE THIS TAB LIVES ──
+   The server keeps only a hash, so the code can never be shown again by
+   asking for it. This tab remembers it (sessionStorage: gone when the tab
+   closes, never shared with other tabs or sites) so a reload or a trip to
+   the dashboard does not lose it before it has been saved. */
+const CODE_KEY = 'kortex_guest_code';
+let codeSaved = true;
+function rememberCode(code, workspaceId) { try { sessionStorage.setItem(CODE_KEY, JSON.stringify({ code, workspaceId })); } catch {} }
+function knownCode() { try { const c = JSON.parse(sessionStorage.getItem(CODE_KEY) || 'null'); const s = guestSession(); return c && c.code && s && c.workspaceId === s.workspaceId ? c.code : null; } catch { return null; } }
+function forgetCode() { try { sessionStorage.removeItem(CODE_KEY); } catch {} }
+function markCodeSaved() { codeSaved = true; $('rs-confirm').hidden = true; }
+window.addEventListener('beforeunload', (e) => { if (!codeSaved) { e.preventDefault(); e.returnValue = ''; } });
+
+/* A private key card: the code, what it opens, until when, and where to
+   use it. Deliberately separate from the QR download, so the secret never
+   ends up on the poster. */
+async function keyCard(code, link, ws) {
+  if (!code) return;
+  try { if (document.fonts && document.fonts.load) await Promise.all([document.fonts.load('italic 32px "Cormorant Garamond"'), document.fonts.load('500 32px "Cormorant Garamond"')]); } catch {}
+  const W = 1200, H = 760, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const x = c.getContext('2d'), serif = '"Cormorant Garamond", Georgia, serif';
+  x.fillStyle = '#080808'; x.fillRect(0, 0, W, H);
+  x.strokeStyle = 'rgba(181,147,90,0.55)'; x.lineWidth = 2; x.strokeRect(40, 40, W - 80, H - 80);
+  x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.fillStyle = '#b5935a'; x.font = `italic 28px ${serif}`; x.fillText('K O R T E X   ·   A C C E S S   C O D E', W / 2, 120);
+  x.fillStyle = '#ede8df'; x.font = '600 60px ui-monospace, Menlo, Consolas, monospace'; x.fillText(code, W / 2, 245);
+  x.fillStyle = 'rgba(237,232,223,0.8)'; x.font = `italic 32px ${serif}`;
+  const title = link && link.title ? String(link.title).slice(0, 40) : '';
+  x.fillText(link ? stripScheme(link.shortUrl) + (title ? '   ·   ' + title : '') : 'Your free Kortex workspace', W / 2, 345);
+  if (ws && ws.expiresAt) x.fillText(`Live until ${fmtDate(ws.expiresAt)}. Opening it with this code renews it.`, W / 2, 395);
+  x.fillText('Open it at kaayko.com/kortex, then “I have a code”.', W / 2, 465);
+  x.fillStyle = '#d9bd7b'; x.font = `italic 28px ${serif}`;
+  x.fillText('Private. Keep it away from the printed QR.', W / 2, 550);
+  x.fillText('Anyone holding this code can re-point the link.', W / 2, 590);
+  x.fillStyle = 'rgba(237,232,223,0.5)'; x.font = `italic 24px ${serif}`;
+  x.fillText('Saved ' + new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }), W / 2, 665);
+  c.toBlob(b => download(`kortex-key-${String(code).split('-')[1] || 'card'}.png`, b), 'image/png');
+}
+
 /* ── MAKE ── */
 let mode = 'dynamic';
 let lastResult = null;
 const MODE_NOTES = {
-  dynamic: 'Re-point it after printing and see every scan. Free for a year, renewable with your access code.',
-  static: 'The address itself, drawn as a code. Nothing to track, nothing that expires, nothing to change later.'
+  dynamic: 'A short kaayko.com link behind the QR. Re-point it after printing and see every scan. Free for a year, renewed every time you open it with your access code.',
+  static: 'The address itself, drawn as a code. Nothing is stored, so there is no code to keep and nothing to see later. It works forever and can never be changed.'
 };
+function modeFacts(next) {
+  if (next === 'static') return ['the address itself', 'works forever', 'nothing stored', 'no access code', 'no scan counts', 'cannot be changed'];
+  const year = CAPS.lifetimeDays >= 365 ? 'a year' : `${CAPS.lifetimeDays} days`;
+  return ['short kaayko.com link', 'change where it points', 'scans by day, device, country', 'night and day destinations', 'access code shown once', `free for ${year}`];
+}
+function renderFacts() { $('mode-facts').innerHTML = modeFacts(mode).map(f => `<li>${escapeHtml(f)}</li>`).join(''); }
 function setMode(next) {
   mode = next;
   $('mode-dynamic').classList.toggle('active', next === 'dynamic'); $('mode-dynamic').setAttribute('aria-selected', next === 'dynamic');
   $('mode-static').classList.toggle('active', next === 'static'); $('mode-static').setAttribute('aria-selected', next === 'static');
   $('mode-note').textContent = MODE_NOTES[next];
   $('mk-options').hidden = next === 'static';
-  $('mk-submit').textContent = next === 'static' ? 'Draw' : 'Create';
+  $('mk-submit').textContent = next === 'static' ? 'Make QR' : 'Create';
+  renderFacts();
   $('mk-foot').hidden = next === 'static';
 }
 $('mode-dynamic').addEventListener('click', () => setMode('dynamic'));
@@ -1096,28 +1220,44 @@ function showResult(r) {
   lastResult = r;
   $('make-form').hidden = true; $('result').classList.add('show');
   const frame = $('qr-frame'); frame.innerHTML = '';
-  $('rs-email-form').hidden = true; setStatus('rs-status', '');
-  if (r.kind === 'static') {
+  $('rs-email-form').hidden = true; $('rs-confirm').hidden = true; setStatus('rs-status', '');
+  const isStatic = r.kind === 'static';
+  $('rs-static-note').hidden = !isStatic;
+  $('rs-make-dynamic').hidden = !isStatic; $('rs-dyn-dot').hidden = !isStatic;
+  $('rs-open').hidden = isStatic; $('rs-open-dot').hidden = isStatic;
+  if (isStatic) {
     frame.appendChild(qrCanvas(r.qr, 480, 2));
     $('rs-url').textContent = r.text;
-    $('rs-night-note').hidden = true;
-    $('rs-code-card').hidden = true; $('rs-static-note').hidden = false; $('rs-ws-note').hidden = true;
-    $('rs-email-toggle').hidden = true; $('rs-email-dot').hidden = true; $('rs-open').hidden = true; $('rs-open-dot').hidden = true;
+    ['rs-night-note', 'rs-code-card', 'rs-expiry', 'rs-next', 'rs-ws-note', 'rs-email-toggle', 'rs-email-dot'].forEach(id => { $(id).hidden = true; });
+    codeSaved = true;
   } else {
     const img = document.createElement('img'); img.alt = 'QR code for ' + r.link.shortUrl; img.src = r.qrPng; frame.appendChild(img);
     $('rs-url').textContent = stripScheme(r.link.shortUrl);
     const night = nightSummary(r.link.schedule);
     $('rs-night-note').hidden = !night; $('rs-night-note').textContent = night;
-    $('rs-static-note').hidden = true; $('rs-open').hidden = false; $('rs-open-dot').hidden = false;
     const newWorkspace = !!r.accessCode;
-    $('rs-code-card').hidden = !newWorkspace;
-    $('rs-email-toggle').hidden = !newWorkspace || !!r.emailSent; $('rs-email-dot').hidden = $('rs-email-toggle').hidden;
-    if (newWorkspace) {
-      $('rs-code').textContent = r.accessCode;
-      if (r.emailSent) setStatus('rs-status', r.emailDelivery === 'sent' ? `Sent to ${r.email}.` : `We'll email it to ${r.email} shortly.`, 'ok');
+    const wsId = r.workspace && r.workspace.id;
+    if (newWorkspace) rememberCode(r.accessCode, wsId);
+    const code = r.accessCode || knownCode();
+    $('rs-code-card').hidden = !code;
+    if (code) {
+      $('rs-code').textContent = code;
+      $('rs-code-label').textContent = newWorkspace ? 'Your access code' : 'Your access code, same as before';
+      $('rs-code-note').innerHTML = newWorkspace
+        ? 'Shown <strong>once</strong>. It is the only key to this link\'s scans and settings, and anyone holding it can re-point the QR. Keep it private, away from the printed code.'
+        : 'This link joined the workspace that code already opens. Nothing new to keep.';
     }
+    $('rs-email-toggle').hidden = !CAPS.email || !newWorkspace || !!r.emailSent; $('rs-email-dot').hidden = $('rs-email-toggle').hidden;
+    if (newWorkspace && r.emailSent) {
+      setStatus('rs-status', r.emailDelivery === 'sent' ? `A copy went to ${r.email}.` : r.emailDelivery === 'failed' ? `The email to ${r.email} could not be sent, so keep the code shown here.` : `A copy is on its way to ${r.email}.`, r.emailDelivery === 'failed' ? 'err' : 'ok');
+    }
+    const exp = r.workspace && r.workspace.expiresAt;
+    $('rs-expiry').hidden = !exp;
+    if (exp) $('rs-expiry').textContent = `Live until ${fmtDate(exp)}. Opening it with your code renews it for another ${CAPS.lifetimeDays >= 365 ? 'year' : CAPS.lifetimeDays + ' days'}.`;
+    $('rs-next').hidden = !newWorkspace;
     $('rs-ws-note').hidden = newWorkspace;
-    if (!newWorkspace) $('rs-ws-note').textContent = `Added to your workspace: ${r.workspace.links} of ${r.workspace.linkLimit} links. Your existing access code opens it.`;
+    if (!newWorkspace) $('rs-ws-note').textContent = `Added to your workspace: ${r.workspace.links} of ${r.workspace.linkLimit} links.`;
+    codeSaved = !newWorkspace || r.emailDelivery === 'sent';
   }
   $('result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
@@ -1173,7 +1313,21 @@ $('rs-dl-svg').addEventListener('click', () => {
   const qr = lastResult.kind === 'static' ? lastResult.qr : buildStaticQr(lastResult.link.shortUrl);
   download(lastResult.kind === 'static' ? 'kortex-qr.svg' : `kortex-${lastResult.link.code}.svg`, new Blob([qrSvg(qr)], { type: 'image/svg+xml' }));
 });
-$('rs-another').addEventListener('click', () => { resetMaker(); $('make').scrollIntoView({ behavior: 'smooth' }); });
+$('rs-copy-code').addEventListener('click', async () => { if (await copyText($('rs-code').textContent, $('rs-copy-code'))) markCodeSaved(); });
+$('rs-keycard').addEventListener('click', () => { keyCard($('rs-code').textContent, lastResult && lastResult.link, lastResult && lastResult.workspace); markCodeSaved(); });
+$('rs-confirm-copy').addEventListener('click', async () => { if (await copyText($('rs-code').textContent, $('rs-confirm-copy'))) markCodeSaved(); });
+$('rs-confirm-go').addEventListener('click', () => { markCodeSaved(); resetMaker(); $('make').scrollIntoView({ behavior: 'smooth' }); });
+$('rs-another').addEventListener('click', () => {
+  // Not letting anyone walk away from a code they have not kept.
+  if (!codeSaved) { $('rs-confirm').hidden = false; $('rs-confirm').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); return; }
+  resetMaker(); $('make').scrollIntoView({ behavior: 'smooth' });
+});
+$('rs-make-dynamic').addEventListener('click', () => {
+  const url = lastResult && lastResult.kind === 'static' ? lastResult.text : '';
+  $('result').classList.remove('show'); $('make-form').hidden = false;
+  setMode('dynamic'); $('mk-url').value = url; $('mk-url').focus();
+  $('make').scrollIntoView({ behavior: 'smooth' });
+});
 $('rs-open').addEventListener('click', () => { location.hash = '#manage'; openWorkspaceFromSession(); });
 $('rs-email-toggle').addEventListener('click', () => { $('rs-email-form').hidden = !$('rs-email-form').hidden; if (!$('rs-email-form').hidden) $('rs-email').focus(); });
 $('rs-email-form').addEventListener('submit', async (e) => {
@@ -1184,7 +1338,7 @@ $('rs-email-form').addEventListener('submit', async (e) => {
   btn.disabled = false;
   if (!ok) { setStatus('rs-status', friendly(data, 'Could not send the email.'), 'err'); return; }
   // Attaching an email issues a fresh code (the old one is never stored).
-  $('rs-code').textContent = data.accessCode; saveGuestSession(data.session, data.workspace);
+  $('rs-code').textContent = data.accessCode; saveGuestSession(data.session, data.workspace); rememberCode(data.accessCode, data.workspace && data.workspace.id); markCodeSaved();
   $('rs-email-form').hidden = true; $('rs-email-toggle').hidden = true; $('rs-email-dot').hidden = true;
   setStatus('rs-status', data.emailDelivery === 'sent' ? `Sent to ${address}. This new code replaces the earlier one.` : `We'll email it to ${address} shortly. The code shown is the new one.`, 'ok');
 });
@@ -1226,6 +1380,9 @@ function renderWorkspace(ws, revived) {
   if (!ws) return;
   $('ws-meta').innerHTML = `<b>${ws.links}</b> of ${ws.linkLimit} free links · live until <b>${fmtDate(ws.expiresAt)}</b> · ${ws.hasEmail ? `recovery email <b>${escapeHtml(ws.email)}</b>` : 'no email on file'}${revived ? ` · <b>${revived} link${revived === 1 ? '' : 's'} revived</b>` : ''}`;
   $('ws-lifetime').textContent = `Free links stay live for ${Math.round(ws.lifetimeDays / 30)} months and renew every time you open them with your code. Scan detail covers the last ${ws.analyticsDays} days; lifetime totals never reset.`;
+  const kc = knownCode();
+  if (kc && $('ws-code-card').hidden) showWsCode(kc, 'Your access code', 'Kept in this tab only. Copy it or save the key card if you have not already.', false);
+  if (!kc) $('ws-code-card').hidden = true;
   const list = $('links-list'); list.innerHTML = '';
   if (!wsLinks.length) { list.innerHTML = '<p class="note" style="padding:16px 0;text-align:center">No links yet. Make one above and it will appear here.</p>'; }
   wsLinks.forEach(l => {
@@ -1319,16 +1476,30 @@ async function openDetail(code) {
 }
 
 $('ws-add').addEventListener('click', () => { setMode('dynamic'); resetMaker(); $('make').scrollIntoView({ behavior: 'smooth' }); });
-$('ws-forget').addEventListener('click', () => { clearGuestSession(); openCode = null; $('detail').hidden = true; renderWorkspace(null); });
+$('ws-forget').addEventListener('click', () => { clearGuestSession(); forgetCode(); openCode = null; $('detail').hidden = true; renderWorkspace(null); });
 $('ws-email').addEventListener('click', () => { $('ws-email-form').hidden = !$('ws-email-form').hidden; if (!$('ws-email-form').hidden) $('ws-email-input').focus(); });
 $('ws-email-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const address = $('ws-email-input').value.trim(); if (!address) return;
   const { ok, data } = await guestApi('/email', { method: 'POST', body: { email: address } });
   if (!ok) { setStatus('ws-email-status', friendly(data, 'Could not send.'), 'err'); return; }
-  saveGuestSession(data.session, data.workspace); wsMeta = data.workspace; renderWorkspace(wsMeta);
+  saveGuestSession(data.session, data.workspace); wsMeta = data.workspace; rememberCode(data.accessCode, data.workspace && data.workspace.id); renderWorkspace(wsMeta);
+  showWsCode(data.accessCode, 'Your new access code', 'The previous code no longer works. Copy this one or save the key card now.');
   $('ws-email-form').hidden = true;
   setStatus('ws-email-status', `New code ${data.accessCode} ${data.emailDelivery === 'sent' ? 'sent to' : 'will be emailed to'} ${address}. Your previous code no longer works.`, 'ok');
+});
+function showWsCode(code, label, note, scroll = true) {
+  $('ws-code-card').hidden = false; $('ws-code').textContent = code; $('ws-code-label').textContent = label; $('ws-code-note').textContent = note;
+  if (scroll) $('ws-code-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+$('ws-copy-code').addEventListener('click', () => copyText($('ws-code').textContent, $('ws-copy-code')));
+$('ws-keycard').addEventListener('click', () => keyCard($('ws-code').textContent, null, wsMeta));
+$('ws-rotate').addEventListener('click', async () => {
+  if (!confirm('Issue a new access code? The current one stops working the moment the new one appears, and the new one is shown once.')) return;
+  const { ok, data } = await guestApi('/rotate', { method: 'POST' });
+  if (!ok) { setStatus('ws-email-status', friendly(data, 'Could not issue a new code.'), 'err'); return; }
+  saveGuestSession(data.session, data.workspace || wsMeta); rememberCode(data.accessCode, (data.workspace || wsMeta || {}).id);
+  showWsCode(data.accessCode, 'Your new access code', 'The previous code no longer works. Copy this one or save the key card now.');
 });
 
 /* ── REQUEST A TEAM WORKSPACE (lead capture; set up by hand) ── */
@@ -1500,6 +1671,7 @@ auth.onAuthStateChanged(async (user) => {
 
 /* ── BOOT ── */
 setMode('dynamic');
+loadCaps();
 if (guestSession()) { openWorkspaceFromSession(); }
 if (location.hash === '#manage') setTimeout(() => $('mg-code').focus(), 600);
 
