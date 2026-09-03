@@ -177,6 +177,12 @@ img, canvas, svg { max-width:100% }
   transition:opacity var(--dur-slow) ease;
   will-change:transform;
 }
+/* The cortex: a sparse neural network drawn behind the wordmark (canvas). */
+.cortex {
+  position:absolute; inset:0; z-index:0; pointer-events:none;
+  opacity:0; animation:cortexIn 1.8s ease-out 0.9s forwards;
+}
+@keyframes cortexIn { to { opacity:1 } }
 .hero-inner { position:relative; z-index:1; max-width:720px }
 .hero-title {
   font-family:'Bebas Neue',Impact,sans-serif;
@@ -1509,6 +1515,116 @@ document.querySelectorAll('.cap-card').forEach(card => {
     const r = hero.getBoundingClientRect(); tx = e.clientX - r.left; ty = e.clientY - r.top;
   });
   hero.addEventListener('pointerleave', () => { glow.style.opacity = '0'; active = false; });
+})();
+
+/* ── CORTEX — a living network of links behind the wordmark ──
+   Nodes are links, edges are the routes between them, and the bright pulses
+   are scans travelling the network. Two loose lobes, a quieter centre so the
+   wordmark stays crisp. Honours prefers-reduced-motion (one still frame),
+   sleeps when the hero is off-screen or the tab is hidden. */
+(function() {
+  const hero = document.querySelector('.hero');
+  if (!hero || !window.HTMLCanvasElement) return;
+  const canvas = document.createElement('canvas');
+  canvas.className = 'cortex'; canvas.setAttribute('aria-hidden', 'true');
+  hero.prepend(canvas);
+  const ctx = canvas.getContext('2d');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const TAU = Math.PI * 2;
+  let W = 0, H = 0, nodes = [], edges = [], pulses = [], running = false, raf = 0, last = 0;
+  const pointer = { x: -1e4, y: -1e4 };
+
+  function build() {
+    const count = W < 520 ? 24 : W < 900 ? 38 : 56;
+    const cx = W / 2, cy = H / 2;
+    const spreadX = Math.min(W * 0.46, 640), spreadY = Math.min(H * 0.40, 300);
+    nodes = [];
+    for (let i = 0; i < count; i++) {
+      const lobe = i % 2 ? -1 : 1;
+      const a = Math.random() * TAU;
+      const rr = 0.22 + Math.random() * 0.78;
+      const x = cx + lobe * spreadX * 0.28 + Math.cos(a) * spreadX * 0.72 * rr;
+      const y = cy + Math.sin(a) * spreadY * rr;
+      nodes.push({ x, y, ox: x, oy: y, r: 1 + Math.random() * 1.5, ph: Math.random() * TAU, sp: 0.12 + Math.random() * 0.22, amp: 5 + Math.random() * 9 });
+    }
+    edges = [];
+    const seen = new Set();
+    nodes.forEach((n, i) => {
+      nodes.map((m, j) => ({ j, d: Math.hypot(m.x - n.x, m.y - n.y) }))
+        .filter(o => o.j !== i).sort((p, q) => p.d - q.d)
+        .slice(0, 2 + (i % 3 === 0 ? 1 : 0))
+        .forEach(o => { const key = i < o.j ? i + '-' + o.j : o.j + '-' + i; if (!seen.has(key)) { seen.add(key); edges.push([i, o.j]); } });
+    });
+    pulses = [];
+  }
+  function resize() {
+    const r = hero.getBoundingClientRect();
+    W = r.width; H = r.height;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    build();
+  }
+  function spawnPulse() {
+    if (!edges.length) return;
+    pulses.push({ e: edges[Math.floor(Math.random() * edges.length)], t: 0, dir: Math.random() < 0.5 ? 1 : -1, speed: 0.3 + Math.random() * 0.45 });
+  }
+  function draw(time, dt) {
+    ctx.clearRect(0, 0, W, H);
+    nodes.forEach(n => {
+      n.x = n.ox + Math.sin(time * n.sp + n.ph) * n.amp;
+      n.y = n.oy + Math.cos(time * n.sp * 0.8 + n.ph) * n.amp * 0.6;
+    });
+    ctx.lineWidth = 0.8;
+    edges.forEach(([i, j]) => {
+      const a = nodes[i], b = nodes[j];
+      const boost = Math.max(0, 1 - Math.hypot((a.x + b.x) / 2 - pointer.x, (a.y + b.y) / 2 - pointer.y) / 260);
+      ctx.strokeStyle = `rgba(181,147,90,${0.12 + boost * 0.35})`;
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    });
+    nodes.forEach(n => {
+      const boost = Math.max(0, 1 - Math.hypot(n.x - pointer.x, n.y - pointer.y) / 220);
+      if (boost > 0.15) { ctx.fillStyle = `rgba(181,147,90,${boost * 0.16})`; ctx.beginPath(); ctx.arc(n.x, n.y, n.r * 4.5, 0, TAU); ctx.fill(); }
+      ctx.fillStyle = `rgba(217,189,123,${0.4 + boost * 0.55})`;
+      ctx.beginPath(); ctx.arc(n.x, n.y, n.r + boost * 1.2, 0, TAU); ctx.fill();
+    });
+    if (dt > 0 && Math.random() < dt * 1.5 && pulses.length < 7) spawnPulse();
+    pulses = pulses.filter(p => p.t <= 1);
+    pulses.forEach(p => {
+      p.t += dt * p.speed;
+      const [i, j] = p.e;
+      const a = p.dir > 0 ? nodes[i] : nodes[j], b = p.dir > 0 ? nodes[j] : nodes[i];
+      const x = a.x + (b.x - a.x) * p.t, y = a.y + (b.y - a.y) * p.t;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, 9);
+      g.addColorStop(0, 'rgba(237,232,223,0.95)'); g.addColorStop(0.35, 'rgba(217,189,123,0.55)'); g.addColorStop(1, 'rgba(181,147,90,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, 9, 0, TAU); ctx.fill();
+    });
+  }
+  function frame(ts) {
+    if (!running) return;
+    raf = requestAnimationFrame(frame);
+    const dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016;
+    last = ts;
+    draw(ts / 1000, dt);
+  }
+  function start() { if (running || reduced) return; running = true; last = 0; raf = requestAnimationFrame(frame); }
+  function stop() { running = false; cancelAnimationFrame(raf); }
+
+  resize();
+  let resizeTimer = 0;
+  window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(resize, 160); });
+  hero.addEventListener('pointermove', (e) => { const r = hero.getBoundingClientRect(); pointer.x = e.clientX - r.left; pointer.y = e.clientY - r.top; });
+  hero.addEventListener('pointerleave', () => { pointer.x = -1e4; pointer.y = -1e4; });
+
+  if (reduced) {
+    // One quiet still: the network with a few pulses frozen mid-route.
+    for (let k = 0; k < 4; k++) { spawnPulse(); pulses[k].t = Math.random(); }
+    draw(1, 0);
+  } else {
+    new IntersectionObserver((entries) => entries.forEach(en => en.isIntersecting ? start() : stop()), { threshold: 0.05 }).observe(hero);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); else start(); });
+  }
 })();
 </script>
 
