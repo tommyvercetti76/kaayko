@@ -5,24 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-  <title>Kortex — Smart Link Infrastructure | Kaayko</title>
-  <meta name="title" content="Kortex — Smart Link Infrastructure by Kaayko">
-  <meta name="description" content="Kortex by Kaayko — smart link infrastructure. Create branded short links, route by device, track clicks in real time, and attribute every outcome. Free to start.">
+  <title>Kortex — Free QR codes and smart links | Kaayko</title>
+  <meta name="title" content="Kortex — Free QR codes and smart links by Kaayko">
+  <meta name="description" content="Make a QR code or smart link in ten seconds, no account needed. Route by device, see scans in real time, change the destination any time. Free forever; paid plans for teams.">
   <meta name="author" content="Kaayko">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
   <link rel="canonical" href="https://kaayko.com/kortex">
 
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://kaayko.com/kortex">
-  <meta property="og:title" content="Kortex — Smart Link Infrastructure">
-  <meta property="og:description" content="One link. Every device. Every insight. Platform-aware routing, real-time analytics, and campaign attribution by Kaayko.">
+  <meta property="og:title" content="Kortex — Free QR codes and smart links">
+  <meta property="og:description" content="One link. Every device. Every insight. Make a QR in ten seconds, no account; your access code is the key.">
   <meta property="og:image" content="https://kaayko.com/assets/kortex-og-image.png">
   <meta property="og:site_name" content="Kaayko Kortex">
   <meta property="og:locale" content="en_US">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="https://kaayko.com/kortex">
-  <meta name="twitter:title" content="Kortex — Smart Link Infrastructure">
+  <meta name="twitter:title" content="Kortex — Free QR codes and smart links">
   <meta name="twitter:description" content="One link. Every device. Every insight. Smart link infrastructure by Kaayko.">
   <meta name="twitter:image" content="https://kaayko.com/assets/kortex-twitter-card.png">
   <meta name="twitter:creator" content="@kaayko">
@@ -34,22 +34,22 @@
     "name": "Kortex",
     "applicationCategory": "BusinessApplication",
     "operatingSystem": "Web",
-    "description": "Smart link infrastructure with platform routing, click analytics, attribution tracking, webhooks, and a developer API.",
-    "offers": { "@type": "Offer", "availability": "https://schema.org/InStock", "description": "Free Starter plan — 25 links, 3 campaigns, 7-day analytics" },
+    "description": "QR codes and smart links with device routing, scan analytics, attribution, webhooks and a developer API.",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "availability": "https://schema.org/InStock", "description": "Free — no account: unlimited static QR codes, 25 dynamic links, 7-day scan stats" },
     "provider": { "@type": "Organization", "name": "Kaayko", "url": "https://kaayko.com" },
     "featureList": [
-      "Branded short links with custom slugs",
+      "QR codes and short links without an account",
       "iOS / Android / Web device routing",
-      "Campaign attribution to real outcomes",
-      "Real-time click analytics",
+      "Real-time scan analytics",
+      "Editable destinations after printing",
+      "Destination safety checks on every link",
       "HMAC-signed webhook events",
-      "Scoped developer API keys",
-      "Multi-tenant architecture with RBAC"
+      "Scoped developer API keys"
     ]
   }
   </script>
 
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.cloudfunctions.net https://*.run.app https://*.googleapis.com; frame-src https://accounts.google.com;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.cloudfunctions.net https://*.run.app https://*.googleapis.com; frame-src https://accounts.google.com https://kaaykostore.firebaseapp.com https://appleid.apple.com;">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta http-equiv="X-XSS-Protection" content="1; mode=block">
   <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -67,9 +67,9 @@
 
 <style>
 /* ================================================================
-   KORTEX v2 — Glow Theme + Symmetry
+   KORTEX v3 — Glow Theme + Symmetry
    Kaayko brand · Bebas Neue · Cormorant Garamond
-   Design system informed by UI UX Pro Max
+   v3 adds the no-account QR maker, the access-code workspace and pricing.
 ================================================================ */
 
 /* ── TOKENS ── */
@@ -103,7 +103,7 @@
   --err: #ef4444;
   --ok: #22c55e;
 
-  /* Motion — 150-300ms range per UX Pro Max */
+  /* Motion — 150-300ms range */
   --ease: cubic-bezier(0.76,0,0.24,1);
   --ease-out: cubic-bezier(0.16,1,0.3,1);
   --dur-fast: 150ms;
@@ -115,6 +115,8 @@
   --sp-4: 16px; --sp-5: 24px; --sp-6: 32px;
   --sp-7: 40px; --sp-8: 48px; --sp-9: 64px;
   --sp-10: 80px; --sp-11: 96px; --sp-12: 120px;
+
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 }
 
 /* ── RESET + BASE ── */
@@ -129,6 +131,7 @@ body {
 }
 a { color:inherit; text-decoration:none }
 ::selection { background:rgba(181,147,90,0.25); color:var(--fg) }
+[hidden] { display:none !important }
 
 /* ── AMBIENT GLOW ORBS ── */
 .ambient { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden }
@@ -166,6 +169,7 @@ a { color:inherit; text-decoration:none }
   transition:color var(--dur-normal) ease, text-shadow var(--dur-normal) ease;
   min-height:44px; display:flex; align-items:center;
 }
+.nav-right { display:flex; gap:var(--sp-5) }
 .nav-back:hover,.nav-link:hover { color:var(--gold-bright); text-shadow:var(--glow-xs) }
 .nav-back:focus-visible,.nav-link:focus-visible { outline:1px solid var(--gold-bright); outline-offset:6px }
 
@@ -259,6 +263,20 @@ a { color:inherit; text-decoration:none }
 .hero-fade:nth-child(4) { animation-delay:1.2s }
 .hero-fade:nth-child(5) { animation-delay:1.5s }
 
+/* ── SECTION LABELS (shared) ── */
+.section-label {
+  text-align:center;
+  font-style:italic; font-size:clamp(0.68rem,1.2vw,0.78rem);
+  letter-spacing:0.4em; text-transform:lowercase;
+  color:var(--gold-dim); margin-bottom:var(--sp-7);
+}
+.section-intro {
+  text-align:center; margin:calc(-1 * var(--sp-5)) auto var(--sp-7);
+  max-width:560px;
+  font-style:italic; font-size:clamp(1rem,1.8vw,1.18rem);
+  color:var(--muted); letter-spacing:0.03em;
+}
+
 /* ── CAPABILITIES — symmetric 2x2 grid ── */
 .caps {
   position:relative; z-index:1;
@@ -329,84 +347,187 @@ a { color:inherit; text-decoration:none }
 /* ── Card expand — click to reveal detail ── */
 .cap-card { cursor:pointer; user-select:none }
 .cap-expand {
-  max-height:0; opacity:0; overflow:hidden;
-  transition:max-height 0.5s cubic-bezier(0.16,1,0.3,1),
-             opacity 0.35s ease,
-             margin-top 0.5s cubic-bezier(0.16,1,0.3,1);
+  max-height:0; overflow:hidden; opacity:0;
+  transition:max-height var(--dur-slow) var(--ease-out), opacity var(--dur-normal) ease, margin var(--dur-normal) ease;
   margin-top:0;
 }
-.cap-card.expanded .cap-expand {
-  max-height:160px; opacity:1;
-  margin-top:var(--sp-4);
-}
-.cap-card.expanded {
-  border-color:rgba(181,147,90,0.22);
-  box-shadow:0 0 24px rgba(181,147,90,0.08), 0 0 48px rgba(181,147,90,0.03);
-  background:rgba(181,147,90,0.03);
-}
-.cap-card.expanded .cap-icon {
-  opacity:0.9; transform:scale(1.15);
-  filter:drop-shadow(0 0 12px rgba(181,147,90,0.4));
-}
-.cap-icon { transition:opacity var(--dur-normal) ease, filter var(--dur-slow) ease, transform 0.5s cubic-bezier(0.16,1,0.3,1) }
-.cap-card.expanded .cap-tag { color:var(--muted) }
+.cap-card.expanded .cap-expand { max-height:200px; opacity:1; margin-top:var(--sp-4) }
 .cap-detail {
-  font-family:'SF Mono',ui-monospace,'Cascadia Code',monospace;
-  font-size:0.68rem; line-height:1.85; font-style:normal;
-  color:var(--dim); letter-spacing:0.02em;
-  white-space:pre; text-align:left;
-  display:inline-block;
-  padding-top:var(--sp-3);
-  border-top:1px solid rgba(181,147,90,0.08);
+  font-family:var(--mono); font-size:0.72rem; line-height:1.9;
+  color:var(--muted); text-align:left; white-space:pre;
+  padding:var(--sp-3) var(--sp-4);
+  background:rgba(8,8,8,0.6); border:1px solid rgba(181,147,90,0.08);
 }
-.cap-detail .hl { color:var(--gold) }
+.cap-detail .hl { color:var(--gold-bright) }
 
-/* ── Card icon animations (expand-triggered) ── */
-
-/* Links — chain snap on click */
-.cap-card.expanded .cap-link svg {
-  animation:linkSnap 0.5s cubic-bezier(0.16,1,0.3,1);
+/* ── PANEL (shared card used by make / manage / pricing) ── */
+.panel-shell {
+  max-width:880px; margin:0 auto;
+  border:1px solid rgba(181,147,90,0.12);
+  background:rgba(181,147,90,0.018);
+  position:relative;
+  box-shadow:0 0 40px rgba(181,147,90,0.04);
 }
-@keyframes linkSnap {
-  0% { transform:scale(1.15) rotate(0) }
-  30% { transform:scale(0.95) rotate(-15deg) }
-  60% { transform:scale(1.25) rotate(5deg) }
-  100% { transform:scale(1.15) rotate(0) }
+.panel-shell::before {
+  content:''; position:absolute; top:0; left:var(--sp-6); right:var(--sp-6); height:1px;
+  background:linear-gradient(90deg, transparent, rgba(181,147,90,0.35), transparent);
+  box-shadow:0 0 8px rgba(181,147,90,0.18);
 }
 
-/* Analytics — bars wave up and down */
-.cap-card.expanded .cap-bars svg line {
-  transform-box:fill-box; transform-origin:center bottom;
-  animation:barWave 1.8s ease-in-out infinite;
+/* ── MAKE — the no-account QR maker ── */
+.make { position:relative; z-index:1; padding:0 var(--sp-5) var(--sp-12) }
+.make-grid { display:grid; grid-template-columns:1fr 1px 1fr }
+.make-col { padding:var(--sp-7) var(--sp-6) }
+.make-seam {
+  background:linear-gradient(180deg, transparent 0%, rgba(181,147,90,0.2) 12%, rgba(181,147,90,0.2) 88%, transparent 100%);
+  box-shadow:var(--glow-line);
 }
-.cap-card.expanded .cap-bars svg line:nth-child(1) { animation-delay:0s }
-.cap-card.expanded .cap-bars svg line:nth-child(2) { animation-delay:0.25s }
-.cap-card.expanded .cap-bars svg line:nth-child(3) { animation-delay:0.5s }
-@keyframes barWave {
-  0%,100% { transform:scaleY(1) }
-  50% { transform:scaleY(0.3) }
+.mode-pills { display:flex; gap:var(--sp-2); margin-bottom:var(--sp-5) }
+.pill {
+  flex:1; min-height:44px; cursor:pointer;
+  background:none; border:1px solid var(--gold-line); color:var(--muted);
+  font-family:'Cormorant Garamond',Georgia,serif; font-style:italic;
+  font-size:0.86rem; letter-spacing:0.12em; text-transform:uppercase;
+  transition:color var(--dur-normal) ease, border-color var(--dur-normal) ease, box-shadow var(--dur-normal) ease, background var(--dur-normal) ease;
 }
+.pill:hover { color:var(--gold-bright); border-color:var(--gold-dim) }
+.pill.active { color:var(--bg); background:var(--gold); border-color:var(--gold); box-shadow:var(--glow-sm) }
+.pill:focus-visible { outline:2px solid var(--gold-bright); outline-offset:3px }
+.mode-note { font-style:italic; font-size:0.8rem; color:var(--dim); margin:calc(-1 * var(--sp-2)) 0 var(--sp-5); min-height:2.6em }
+details.adv { margin:var(--sp-2) 0 var(--sp-4) }
+details.adv summary {
+  cursor:pointer; list-style:none; min-height:44px; display:flex; align-items:center; gap:var(--sp-2);
+  font-style:italic; font-size:0.8rem; letter-spacing:0.08em; color:var(--gold-dim);
+}
+details.adv summary::-webkit-details-marker { display:none }
+details.adv summary::before { content:'+'; font-family:var(--mono); color:var(--gold) }
+details.adv[open] summary::before { content:'−' }
+details.adv .field { margin-top:var(--sp-3) }
+.honey { position:absolute; left:-9999px; width:1px; height:1px; opacity:0 }
 
-/* Attribution — bullseye rings pulse outward */
-.cap-card.expanded .cap-target svg circle {
-  transform-box:fill-box; transform-origin:center;
-  animation:ringPulse 2s ease-in-out infinite;
+/* result */
+.result-empty {
+  height:100%; min-height:320px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; gap:var(--sp-3);
 }
-.cap-card.expanded .cap-target svg circle:nth-child(1) { animation-delay:0s }
-.cap-card.expanded .cap-target svg circle:nth-child(2) { animation-delay:0.2s }
-.cap-card.expanded .cap-target svg circle:nth-child(3) { animation-delay:0.4s }
-@keyframes ringPulse {
-  0%,100% { opacity:0.55; stroke-width:1.5 }
-  50% { opacity:1; stroke-width:2.5 }
+.qr-ghost {
+  width:168px; height:168px; border:1px dashed rgba(181,147,90,0.25);
+  display:grid; place-items:center; color:var(--gold-dim); font-family:var(--mono); font-size:0.72rem; letter-spacing:0.2em;
+  box-shadow:inset 0 0 40px rgba(181,147,90,0.04);
 }
+.result { display:none; flex-direction:column; gap:var(--sp-4) }
+.result.show { display:flex }
+.qr-frame {
+  align-self:center; width:min(100%,240px); aspect-ratio:1; background:#fff; padding:12px;
+  box-shadow:0 0 0 1px rgba(181,147,90,0.25), var(--glow-md);
+}
+.qr-frame img, .qr-frame canvas, .qr-frame svg { width:100%; height:100%; display:block; image-rendering:pixelated }
+.short-line {
+  display:flex; align-items:center; gap:var(--sp-2); justify-content:space-between;
+  border-bottom:1px solid var(--gold-line); padding:8px 0;
+}
+.short-url { font-family:var(--mono); font-size:0.92rem; color:var(--gold-bright); word-break:break-all }
+.ghost-btn {
+  background:none; border:1px solid var(--gold-line); color:var(--gold);
+  font-family:'Cormorant Garamond',Georgia,serif; font-style:italic;
+  font-size:0.78rem; letter-spacing:0.12em; text-transform:uppercase;
+  padding:8px 14px; min-height:40px; cursor:pointer; white-space:nowrap;
+  transition:border-color var(--dur-normal) ease, color var(--dur-normal) ease, box-shadow var(--dur-normal) ease;
+}
+.ghost-btn:hover:not(:disabled) { color:var(--gold-bright); border-color:var(--gold-dim); box-shadow:var(--glow-xs) }
+.ghost-btn:disabled { opacity:.35; cursor:not-allowed }
+.ghost-btn:focus-visible { outline:2px solid var(--gold-bright); outline-offset:3px }
+.ghost-btn.danger { color:rgba(239,68,68,0.85); border-color:rgba(239,68,68,0.3) }
+.btn-row { display:flex; gap:var(--sp-2); flex-wrap:wrap }
+.code-card {
+  border:1px solid rgba(181,147,90,0.35); padding:var(--sp-4) var(--sp-4) var(--sp-3);
+  background:rgba(181,147,90,0.05); box-shadow:var(--glow-sm);
+}
+.code-label {
+  font-style:italic; font-size:0.7rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--gold-dim);
+  display:flex; justify-content:space-between; align-items:center; gap:var(--sp-2);
+}
+.code-value {
+  font-family:var(--mono); font-size:clamp(1.05rem,2.6vw,1.35rem); letter-spacing:0.08em;
+  color:var(--fg); margin:var(--sp-2) 0 var(--sp-3); word-break:break-all;
+  text-shadow:0 0 12px rgba(181,147,90,0.15);
+}
+.code-note { font-style:italic; font-size:0.82rem; color:var(--muted); line-height:1.55 }
+.code-note strong { color:var(--gold-bright); font-weight:500 }
+.inline-form { display:flex; gap:var(--sp-2); align-items:flex-end; margin-top:var(--sp-3) }
+.inline-form .field { flex:1; margin:0 }
+.status-line { font-style:italic; font-size:0.8rem; color:var(--dim); min-height:1.4em; margin-top:var(--sp-2) }
+.status-line.ok { color:rgba(34,197,94,0.85) }
+.status-line.err { color:rgba(239,68,68,0.85) }
 
-/* Scale — layers separate and restack */
-.cap-card.expanded .cap-stack svg > *:nth-child(1) { animation:stackUp 2.2s ease-in-out infinite }
-.cap-card.expanded .cap-stack svg > *:nth-child(3) { animation:stackMid 2.2s ease-in-out infinite 0.1s }
-.cap-card.expanded .cap-stack svg > *:nth-child(2) { animation:stackDown 2.2s ease-in-out infinite 0.2s }
-@keyframes stackUp { 0%,100% { transform:translateY(0) } 50% { transform:translateY(-3px) } }
-@keyframes stackMid { 0%,100% { transform:translateY(0) } 50% { transform:translateY(0) } }
-@keyframes stackDown { 0%,100% { transform:translateY(0) } 50% { transform:translateY(3px) } }
+/* ── MANAGE — access-code workspace ── */
+.manage { position:relative; z-index:1; padding:0 var(--sp-5) var(--sp-12) }
+.manage-shell { padding:var(--sp-7) var(--sp-6) }
+.manage-enter { max-width:520px; margin:0 auto }
+.ws-bar {
+  display:flex; flex-wrap:wrap; gap:var(--sp-3) var(--sp-5); align-items:center; justify-content:space-between;
+  padding-bottom:var(--sp-4); margin-bottom:var(--sp-4); border-bottom:1px solid var(--gold-line);
+}
+.ws-meta { font-style:italic; font-size:0.86rem; color:var(--muted) }
+.ws-meta b { color:var(--gold-bright); font-weight:500 }
+.links-list { display:flex; flex-direction:column }
+.link-row {
+  display:grid; grid-template-columns:1fr auto auto; gap:var(--sp-4); align-items:center;
+  padding:var(--sp-3) 0; border-bottom:1px solid rgba(181,147,90,0.1); cursor:pointer;
+  transition:background var(--dur-fast) ease;
+}
+.link-row:hover { background:rgba(181,147,90,0.03) }
+.link-row.active { background:rgba(181,147,90,0.05) }
+.link-title { font-size:1.02rem; color:var(--fg) }
+.link-sub { font-family:var(--mono); font-size:0.72rem; color:var(--dim); margin-top:2px }
+.link-count { font-family:'Bebas Neue',Impact,sans-serif; font-size:1.6rem; letter-spacing:0.05em; color:var(--gold-bright); line-height:1; text-align:right }
+.link-count small { display:block; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--dim) }
+.state-tag { font-style:italic; font-size:0.7rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold-dim); border:1px solid var(--gold-line); padding:3px 8px; white-space:nowrap }
+.state-tag.off { color:rgba(239,68,68,0.8); border-color:rgba(239,68,68,0.3) }
+.detail { margin-top:var(--sp-5); padding-top:var(--sp-5); border-top:1px solid var(--gold-line); display:grid; grid-template-columns:minmax(0,1fr) 220px; gap:var(--sp-6) }
+.stat-row { display:grid; grid-template-columns:repeat(3,1fr); gap:var(--sp-3); margin-bottom:var(--sp-4) }
+.stat { border:1px solid rgba(181,147,90,0.12); padding:var(--sp-3) }
+.stat b { display:block; font-family:'Bebas Neue',Impact,sans-serif; font-size:1.9rem; letter-spacing:0.04em; color:var(--fg); line-height:1; font-weight:400 }
+.stat span { font-style:italic; font-size:0.7rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--dim) }
+.bars { display:flex; align-items:flex-end; gap:6px; height:88px; padding-bottom:18px; position:relative; border-bottom:1px solid var(--gold-line) }
+.bar { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; position:relative }
+.bar i { display:block; width:100%; background:linear-gradient(180deg,var(--gold-bright),var(--gold)); min-height:2px; box-shadow:var(--glow-xs) }
+.bar span { position:absolute; bottom:-18px; font-family:var(--mono); font-size:0.6rem; color:var(--dim); letter-spacing:0.05em }
+.mini-list { margin-top:var(--sp-4); display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-4) }
+.mini-list h4 { font-style:italic; font-size:0.7rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold-dim); margin-bottom:var(--sp-2); font-weight:500 }
+.mini-list ul { list-style:none }
+.mini-list li { display:flex; justify-content:space-between; font-size:0.9rem; color:var(--muted); padding:3px 0; border-bottom:1px solid rgba(181,147,90,0.08) }
+.mini-list li b { color:var(--fg); font-weight:500 }
+.detail-side { display:flex; flex-direction:column; gap:var(--sp-3) }
+.detail-side .qr-frame { width:100%; }
+.detail-side .field { margin-bottom:var(--sp-2) }
+.lifetime-note { font-style:italic; font-size:0.78rem; color:var(--dim); margin-top:var(--sp-4); line-height:1.55 }
+
+/* ── PRICING ── */
+.pricing { position:relative; z-index:1; padding:0 var(--sp-5) var(--sp-12); max-width:1040px; margin:0 auto }
+.price-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--sp-4) }
+.price-card {
+  border:1px solid rgba(181,147,90,0.1); background:rgba(181,147,90,0.015);
+  padding:var(--sp-6) var(--sp-5) var(--sp-5); display:flex; flex-direction:column; gap:var(--sp-3);
+  position:relative; transition:border-color var(--dur-normal) ease, box-shadow var(--dur-slow) ease;
+}
+.price-card:hover { border-color:rgba(181,147,90,0.25); box-shadow:0 0 24px rgba(181,147,90,0.08) }
+.price-card.featured { border-color:rgba(181,147,90,0.4); box-shadow:var(--glow-md) }
+.price-card.featured::after {
+  content:'no account needed'; position:absolute; top:-1px; right:var(--sp-4); transform:translateY(-50%);
+  background:var(--bg); color:var(--gold); padding:0 8px;
+  font-style:italic; font-size:0.66rem; letter-spacing:0.2em; text-transform:lowercase;
+}
+.price-name { font-family:'Bebas Neue',Impact,sans-serif; font-size:1.7rem; letter-spacing:0.06em; text-transform:uppercase; line-height:1 }
+.price-amount { font-family:'Bebas Neue',Impact,sans-serif; font-size:2.6rem; letter-spacing:0.03em; color:var(--gold-bright); line-height:1; text-shadow:var(--glow-text) }
+.price-amount small { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.85rem; letter-spacing:0.08em; color:var(--dim); text-shadow:none; text-transform:lowercase }
+.price-for { font-style:italic; font-size:0.86rem; color:var(--muted); min-height:2.6em }
+.price-list { list-style:none; display:flex; flex-direction:column; gap:6px; flex:1; margin-top:var(--sp-2) }
+.price-list li { font-size:0.92rem; color:var(--muted); padding-left:16px; position:relative; line-height:1.45 }
+.price-list li::before { content:''; position:absolute; left:0; top:0.66em; width:6px; height:1px; background:var(--gold) }
+.price-list li em { font-style:italic; font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold-dim); margin-left:6px }
+.price-card .btn-submit, .price-card .ghost-btn { width:100%; margin-top:auto; text-align:center }
+.price-foot { text-align:center; margin-top:var(--sp-5); font-style:italic; font-size:0.8rem; color:var(--dim) }
 
 /* ── CONNECT — symmetric split panels ── */
 .connect-section {
@@ -452,6 +573,21 @@ a { color:inherit; text-decoration:none }
   font-style:italic; font-size:0.82rem;
   color:var(--dim); letter-spacing:0.04em;
 }
+.provider-btns { display:flex; flex-direction:column; gap:var(--sp-2); margin:var(--sp-3) 0 }
+.provider-btn {
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  min-height:46px; width:100%; cursor:pointer;
+  background:none; border:1px solid var(--gold-line); color:var(--fg);
+  font-family:'Cormorant Garamond',Georgia,serif; font-size:0.9rem; letter-spacing:0.1em; text-transform:uppercase;
+  transition:border-color var(--dur-normal) ease, box-shadow var(--dur-normal) ease, color var(--dur-normal) ease;
+}
+.provider-btn:hover:not(:disabled) { border-color:var(--gold-dim); box-shadow:var(--glow-xs); color:var(--gold-bright) }
+.provider-btn:disabled { opacity:.35; cursor:not-allowed }
+.provider-btn svg { width:16px; height:16px; flex:none }
+.or-line { display:flex; align-items:center; gap:var(--sp-3); font-style:italic; font-size:0.72rem; letter-spacing:0.2em; color:var(--dim); text-transform:lowercase }
+.or-line::before,.or-line::after { content:''; flex:1; height:1px; background:var(--gold-line) }
+.claim-box { margin-top:var(--sp-4); padding:var(--sp-3) var(--sp-4); border:1px solid var(--gold-line); font-style:italic; font-size:0.82rem; color:var(--muted) }
+.claim-box b { color:var(--gold-bright); font-weight:500 }
 
 /* ── FORM ELEMENTS ── */
 .field { margin-bottom:var(--sp-4) }
@@ -471,11 +607,12 @@ a { color:inherit; text-decoration:none }
   transition:border-color var(--dur-normal) ease, box-shadow var(--dur-normal) ease;
   min-height:44px;
 }
+.field-input.mono { font-family:var(--mono); letter-spacing:0.1em; font-size:0.95rem; text-transform:uppercase }
 .field-input:focus,.field-select:focus {
   border-bottom-color:var(--gold);
   box-shadow:0 4px 12px rgba(181,147,90,0.1);
 }
-.field-input::placeholder { color:var(--faint); font-style:italic }
+.field-input::placeholder { color:var(--faint); font-style:italic; text-transform:none; letter-spacing:0.06em; font-family:'Cormorant Garamond',Georgia,serif }
 .field-input:focus-visible,.field-select:focus-visible { outline:none }
 .field-select {
   cursor:pointer; appearance:none;
@@ -506,6 +643,7 @@ a { color:inherit; text-decoration:none }
 .btn-submit:focus-visible { outline:2px solid var(--gold-bright); outline-offset:4px }
 .connect-panel > form { flex:1; display:flex; flex-direction:column }
 .connect-panel .btn-submit { margin-top:auto }
+a.btn-submit { display:block; text-align:center }
 
 .form-note {
   margin-top:var(--sp-3);
@@ -585,9 +723,16 @@ a { color:inherit; text-decoration:none }
 .stagger > .reveal:nth-child(4) { transition-delay:240ms }
 
 /* ── RESPONSIVE ── */
+@media(max-width:900px) {
+  .price-grid { grid-template-columns:1fr 1fr }
+}
 @media(max-width:760px) {
   .caps-grid { grid-template-columns:1fr }
   .connect-shell { grid-template-columns:1fr }
+  .make-grid { grid-template-columns:1fr }
+  .make-seam { height:1px; background:linear-gradient(90deg, transparent, rgba(181,147,90,0.2) 20%, rgba(181,147,90,0.2) 80%, transparent) }
+  .detail { grid-template-columns:1fr }
+  .detail-side .qr-frame { width:min(100%,220px); align-self:flex-start }
   .connect-seam {
     width:100%; height:1px;
     background:linear-gradient(90deg,
@@ -598,16 +743,24 @@ a { color:inherit; text-decoration:none }
   }
   .connect-mark { writing-mode:horizontal-tb }
   .connect-panel { padding:var(--sp-6) var(--sp-4) }
+  .make-col, .manage-shell { padding:var(--sp-6) var(--sp-4) }
   .field-row { grid-template-columns:1fr }
+  .stat-row { grid-template-columns:repeat(3,1fr) }
+  .mini-list { grid-template-columns:1fr }
+  .link-row { grid-template-columns:1fr auto }
+  .link-row .state-tag { grid-column:1 / -1; justify-self:start }
 }
 @media(max-width:480px) {
   .hero { padding:var(--sp-10) var(--sp-4) var(--sp-7) }
-  .caps { padding:0 var(--sp-4) var(--sp-10) }
+  .caps, .make, .manage, .pricing { padding-left:var(--sp-4); padding-right:var(--sp-4); padding-bottom:var(--sp-10) }
   .connect-section { padding:var(--sp-8) var(--sp-4) var(--sp-10) }
   .cap-card { padding:var(--sp-5) var(--sp-4) var(--sp-6) }
+  .price-grid { grid-template-columns:1fr }
   .hero-actions { gap:var(--sp-3) }
   .nav { padding:var(--sp-3) var(--sp-3) 0 }
+  .nav-right { gap:var(--sp-3) }
   .foot { padding:var(--sp-4) var(--sp-3) }
+  .stat b { font-size:1.5rem }
 }
 
 /* ── ACCESSIBILITY ── */
@@ -636,7 +789,10 @@ a { color:inherit; text-decoration:none }
 <!-- ═══ NAV ═══ -->
 <nav class="nav" role="navigation" aria-label="Main navigation">
   <a href="/" class="nav-back">← Kaayko</a>
-  <a href="#connect" class="nav-link" id="nav-auth-link">Sign In</a>
+  <div class="nav-right">
+    <a href="#pricing" class="nav-link">Pricing</a>
+    <a href="#connect" class="nav-link" id="nav-auth-link">Sign In</a>
+  </div>
 </nav>
 
 <!-- ═══ HERO ═══ -->
@@ -644,13 +800,154 @@ a { color:inherit; text-decoration:none }
   <div class="hero-inner">
     <h1 class="hero-title hero-fade" data-text="KORTEX">KORTEX</h1>
     <div class="hero-seam"><span class="hero-mark">by kaayko</span></div>
-    <p class="hero-sub hero-fade">One link. Every device. Every insight.</p>
+    <p class="hero-sub hero-fade">One link. Every device. Every insight.<br>Make a QR in ten seconds. No account. Your access code is the key.</p>
     <div class="hero-actions hero-fade">
-      <a href="#connect" class="action-link">Get Started</a>
+      <a href="#make" class="action-link">Make a QR</a>
+      <span class="action-dot" aria-hidden="true">&middot;</span>
+      <a href="#manage" class="action-link">I have a code</a>
       <span class="action-dot" aria-hidden="true">&middot;</span>
       <a href="#connect" class="action-link" id="hero-auth-btn">Sign In</a>
     </div>
     <div class="scroll-cue hero-fade" aria-hidden="true">&darr;</div>
+  </div>
+</section>
+
+<!-- ═══ MAKE — no-account QR + smart link ═══ -->
+<section class="make" id="make" aria-label="Make a QR code">
+  <div class="section-label reveal">make a qr · no account</div>
+  <div class="panel-shell make-grid reveal">
+    <div class="make-col">
+      <form id="make-form" autocomplete="off" novalidate>
+        <div class="mode-pills" role="tablist" aria-label="QR type">
+          <button type="button" class="pill active" id="mode-dynamic" role="tab" aria-selected="true">Dynamic</button>
+          <button type="button" class="pill" id="mode-static" role="tab" aria-selected="false">Static</button>
+        </div>
+        <p class="mode-note" id="mode-note">Dynamic: a short link you can re-point after printing, with scans counted. Free for a year, renewable with your access code.</p>
+
+        <div class="field">
+          <label class="field-label" for="mk-url">Where should it go?</label>
+          <input class="field-input" type="url" id="mk-url" inputmode="url" placeholder="https://your-site.com/tickets" required>
+        </div>
+        <div class="field" id="mk-title-field">
+          <label class="field-label" for="mk-title">Name it (optional)</label>
+          <input class="field-input" type="text" id="mk-title" maxlength="120" placeholder="Spring fest poster">
+        </div>
+
+        <details class="adv" id="mk-adv">
+          <summary>Send phones to the app store instead</summary>
+          <div class="field">
+            <label class="field-label" for="mk-ios">iPhone destination</label>
+            <input class="field-input" type="url" id="mk-ios" placeholder="https://apps.apple.com/…">
+          </div>
+          <div class="field">
+            <label class="field-label" for="mk-android">Android destination</label>
+            <input class="field-input" type="url" id="mk-android" placeholder="https://play.google.com/…">
+          </div>
+        </details>
+
+        <div class="field" id="mk-email-field">
+          <label class="field-label" for="mk-email">Email me the access code (optional)</label>
+          <input class="field-input" type="email" id="mk-email" autocomplete="email" placeholder="you@organisation.com">
+        </div>
+        <input class="honey" type="text" name="website" id="mk-website" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+        <div id="mk-alert" class="alert" role="alert"></div>
+        <button type="submit" class="btn-submit" id="mk-submit">Create QR + link</button>
+        <p class="form-note" id="mk-foot">Every destination is checked for malware and phishing before the link goes live. <a href="/legal/kortex-terms">Terms</a></p>
+      </form>
+    </div>
+
+    <div class="make-seam" aria-hidden="true"></div>
+
+    <div class="make-col">
+      <div class="result-empty" id="result-empty">
+        <div class="qr-ghost">QR</div>
+        <p class="mode-note" style="min-height:0">Your code appears here. Print it, share it, put it on a poster.</p>
+      </div>
+
+      <div class="result" id="result">
+        <div class="qr-frame" id="qr-frame"></div>
+        <div class="short-line">
+          <span class="short-url" id="rs-url"></span>
+          <button type="button" class="ghost-btn" id="rs-copy-url">Copy</button>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="ghost-btn" id="rs-dl-png">Download PNG</button>
+          <button type="button" class="ghost-btn" id="rs-dl-svg">Download SVG</button>
+          <button type="button" class="ghost-btn" id="rs-another">Make another</button>
+        </div>
+
+        <div class="code-card" id="rs-code-card">
+          <div class="code-label"><span>Access code</span><button type="button" class="ghost-btn" id="rs-copy-code">Copy</button></div>
+          <div class="code-value" id="rs-code"></div>
+          <p class="code-note">This is the <strong>only key</strong> to your link's scans and settings. Save it somewhere safe. Anyone who has it can change where the QR points, so keep it private.</p>
+          <div id="rs-email-block">
+            <form class="inline-form" id="rs-email-form">
+              <div class="field">
+                <label class="field-label" for="rs-email">Email me this code</label>
+                <input class="field-input" type="email" id="rs-email" autocomplete="email" placeholder="you@organisation.com">
+              </div>
+              <button type="submit" class="ghost-btn" id="rs-email-btn">Send</button>
+            </form>
+          </div>
+          <p class="status-line" id="rs-status"></p>
+        </div>
+
+        <p class="code-note" id="rs-static-note" hidden>A static QR is just the address, drawn as a code. It never expires, never phones home, and can't be changed after printing. Want scans and the option to re-point it later? Make it dynamic.</p>
+        <div class="btn-row" id="rs-open-row"><button type="button" class="ghost-btn" id="rs-open">Open my links</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ MANAGE — access-code workspace ═══ -->
+<section class="manage" id="manage" aria-label="Manage your links">
+  <div class="section-label reveal">already have a code?</div>
+  <div class="panel-shell manage-shell reveal">
+    <div class="manage-enter" id="manage-enter">
+      <form id="code-form" autocomplete="off">
+        <div class="field">
+          <label class="field-label" for="mg-code">Access code</label>
+          <input class="field-input mono" type="text" id="mg-code" placeholder="KX-XXXXXX-XXXX-XXXX-XXXX-XXXX" autocapitalize="characters" spellcheck="false" maxlength="40">
+        </div>
+        <div id="mg-alert" class="alert" role="alert"></div>
+        <button type="submit" class="btn-submit" id="mg-submit">Open my links</button>
+        <p class="form-note"><a href="#" id="mg-lost">Lost your code?</a></p>
+      </form>
+      <form id="recover-form" hidden>
+        <div class="field">
+          <label class="field-label" for="rc-email">Email you added to the workspace</label>
+          <input class="field-input" type="email" id="rc-email" autocomplete="email" placeholder="you@organisation.com">
+        </div>
+        <div id="rc-alert" class="alert" role="alert"></div>
+        <button type="submit" class="btn-submit">Send me a new code</button>
+        <p class="form-note">We'll email a fresh code and retire the old one. No email on file? The code can't be recovered — that's what keeps your links yours.</p>
+      </form>
+    </div>
+
+    <div id="workspace" hidden>
+      <div class="ws-bar">
+        <div class="ws-meta" id="ws-meta"></div>
+        <div class="btn-row">
+          <button type="button" class="ghost-btn" id="ws-add">Add a link</button>
+          <button type="button" class="ghost-btn" id="ws-email">Email me my code</button>
+          <button type="button" class="ghost-btn" id="ws-forget">Forget this device</button>
+        </div>
+      </div>
+      <div id="ws-email-form-wrap" hidden>
+        <form class="inline-form" id="ws-email-form">
+          <div class="field">
+            <label class="field-label" for="ws-email-input">Email for a fresh code</label>
+            <input class="field-input" type="email" id="ws-email-input" autocomplete="email" placeholder="you@organisation.com">
+          </div>
+          <button type="submit" class="ghost-btn">Send</button>
+        </form>
+        <p class="status-line" id="ws-email-status"></p>
+      </div>
+      <div class="links-list" id="links-list"></div>
+      <div id="detail" class="detail" hidden></div>
+      <p class="lifetime-note" id="ws-lifetime"></p>
+    </div>
   </div>
 </section>
 
@@ -663,95 +960,155 @@ a { color:inherit; text-decoration:none }
       <h3 class="cap-name">Links</h3>
       <div class="cap-icon cap-link" aria-hidden="true"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></div>
       <p class="cap-tag">one link, every device</p>
-      <div class="cap-expand"><pre class="cap-detail"><span class="hl">kaay.ko/fest</span>
-├─ ios     → app store
+      <div class="cap-expand"><pre class="cap-detail"><span class="hl">kaayko.com/l/kx-3f9k2m</span>
+├─ iphone  → app store
 ├─ android → play store
-└─ web     → site</pre></div>
+└─ web     → your site</pre></div>
     </div>
     <div class="cap-card reveal">
       <span class="cap-num">02</span>
-      <h3 class="cap-name">Analytics</h3>
+      <h3 class="cap-name">Scans</h3>
       <div class="cap-icon cap-bars" aria-hidden="true"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-      <p class="cap-tag">every click, real time</p>
-      <div class="cap-expand"><pre class="cap-detail"><span class="hl">342</span> clicks  · <span class="hl">6</span> countries
-<span class="hl">218</span> unique  · <span class="hl">47%</span> mobile
-<span class="hl">3.2s</span> avg    · real-time</pre></div>
+      <p class="cap-tag">every scan, as it happens</p>
+      <div class="cap-expand"><pre class="cap-detail">scans     · by day, device, country
+last scan · 2 min ago · iphone · IN
+free      · last 7 days + lifetime total
+paid      · 90 days to full history</pre></div>
     </div>
     <div class="cap-card reveal">
       <span class="cap-num">03</span>
-      <h3 class="cap-name">Attribution</h3>
+      <h3 class="cap-name">Safety</h3>
       <div class="cap-icon cap-target" aria-hidden="true"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
-      <p class="cap-tag">click to conversion</p>
-      <div class="cap-expand"><pre class="cap-detail">click ·········· <span class="hl">ticket sold</span>
-click ·········· <span class="hl">app install</span>
-click ·········· <span class="hl">registration</span></pre></div>
+      <p class="cap-tag">checked before and after it goes live</p>
+      <div class="cap-expand"><pre class="cap-detail">phishing + malware feeds  · every create
+google safe browsing      · every edit
+nightly re-scan           · every live link
+your code, your link      · nobody else can touch it</pre></div>
     </div>
     <div class="cap-card reveal">
       <span class="cap-num">04</span>
-      <h3 class="cap-name">Scale</h3>
+      <h3 class="cap-name">Teams</h3>
       <div class="cap-icon cap-stack" aria-hidden="true"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></div>
-      <p class="cap-tag">teams, roles, api</p>
-      <div class="cap-expand"><pre class="cap-detail">├─ <span class="hl">acme-events</span>   admin
-├─ <span class="hl">sports-co</span>     editor
-└─ <span class="hl">alumni-fund</span>   viewer</pre></div>
+      <p class="cap-tag">sign in, api, webhooks</p>
+      <div class="cap-expand"><pre class="cap-detail">├─ <span class="hl">google / apple</span> sign-in
+├─ <span class="hl">api keys</span>   scoped, revocable
+└─ <span class="hl">webhooks</span>   signed, retried</pre></div>
     </div>
   </div>
 </section>
 
-<!-- ═══ CONNECT ═══ -->
-<section class="connect-section" id="connect" aria-label="Get started or sign in">
-  <p class="connect-intro reveal">Create your first link in 60 seconds.</p>
+<!-- ═══ PRICING ═══ -->
+<section class="pricing" id="pricing" aria-label="Pricing">
+  <div class="section-label reveal">pricing</div>
+  <p class="section-intro reveal">Start without an account. Pay when you need a team, history, or your own domain.</p>
+  <div class="price-grid stagger">
+    <div class="price-card featured reveal">
+      <div class="price-name">Free</div>
+      <div class="price-amount">$0 <small>forever</small></div>
+      <p class="price-for">For posters, menus, event tickets, one-off campaigns.</p>
+      <ul class="price-list">
+        <li>Unlimited static QR codes</li>
+        <li>25 dynamic links, re-point any time</li>
+        <li>Scans for the last 7 days, lifetime totals</li>
+        <li>Live for a year, renew free with your code</li>
+        <li>Device routing for iPhone and Android</li>
+        <li>"Powered by Kortex" on the redirect</li>
+      </ul>
+      <a href="#make" class="btn-submit">Make a QR</a>
+    </div>
+    <div class="price-card reveal">
+      <div class="price-name">Pro</div>
+      <div class="price-amount">$29 <small>/ month</small></div>
+      <p class="price-for">For marketers and small teams who run campaigns every month.</p>
+      <ul class="price-list">
+        <li>500 dynamic links, 25 campaigns</li>
+        <li>90 days of scan history</li>
+        <li>Branded QR: your colours and logo</li>
+        <li>No Kortex badge on redirects</li>
+        <li>API access, 5,000 calls a month</li>
+        <li>Custom domain <em>soon</em></li>
+      </ul>
+      <button type="button" class="ghost-btn" data-plan="pro">Start with Google</button>
+    </div>
+    <div class="price-card reveal">
+      <div class="price-name">Business</div>
+      <div class="price-amount">$99 <small>/ month</small></div>
+      <p class="price-for">For institutions, venues and agencies with many hands on the links.</p>
+      <ul class="price-list">
+        <li>2,500 dynamic links, unlimited campaigns</li>
+        <li>Full scan history and exports</li>
+        <li>White-label pages, no Kortex branding</li>
+        <li>API access, 25,000 calls a month</li>
+        <li>Team roles: admin, editor, viewer <em>soon</em></li>
+        <li>Five custom domains <em>soon</em></li>
+      </ul>
+      <button type="button" class="ghost-btn" data-plan="business">Start with Google</button>
+    </div>
+    <div class="price-card reveal">
+      <div class="price-name">Enterprise</div>
+      <div class="price-amount">Custom</div>
+      <p class="price-for">For universities, school networks and event companies with a security review.</p>
+      <ul class="price-list">
+        <li>Unlimited links, domains and API</li>
+        <li>Audit trail and access reports</li>
+        <li>Attribution into your CRM or ticketing</li>
+        <li>SLA and a named contact</li>
+      </ul>
+      <a href="mailto:kortex@kaayko.com?subject=Kortex%20Enterprise" class="ghost-btn" style="display:block;text-align:center">Talk to us</a>
+    </div>
+  </div>
+  <p class="price-foot">Prices in USD. Paid plans start with a sign-in; the free tier never needs one.</p>
+</section>
+
+<!-- ═══ CONNECT — paid sign-up + sign-in ═══ -->
+<section class="connect-section" id="connect" aria-label="Sign up or sign in">
+  <p class="connect-intro reveal">Teams sign in. Everyone else just needs their code.</p>
 
   <div class="connect-shell reveal">
-    <!-- LEFT — signup -->
-    <div class="connect-panel">
+    <!-- LEFT — paid workspace -->
+    <div class="connect-panel" id="signup">
       <div class="panel-head">
-        <div class="panel-title">Get Started</div>
-        <div class="panel-sub">Free forever — no credit card</div>
+        <div class="panel-title">Start a team workspace</div>
+        <div class="panel-sub">Pro and Business plans. Sign in with an account you already have.</div>
       </div>
-      <form id="inquiry-form">
-        <div class="field-row">
-          <div class="field">
-            <label class="field-label" for="inq-name">Name</label>
-            <input class="field-input" type="text" id="inq-name" required placeholder="Jane Smith" autocomplete="name">
-          </div>
-          <div class="field">
-            <label class="field-label" for="inq-email">Email</label>
-            <input class="field-input" type="email" id="inq-email" required placeholder="jane@company.com" autocomplete="email">
-          </div>
+      <form id="signup-form">
+        <div class="field">
+          <label class="field-label" for="su-org">Organisation</label>
+          <input class="field-input" type="text" id="su-org" required maxlength="80" placeholder="Acme Events" autocomplete="organization">
         </div>
-        <div class="field-row">
-          <div class="field">
-            <label class="field-label" for="inq-company">Organization</label>
-            <input class="field-input" type="text" id="inq-company" required placeholder="Acme Events" autocomplete="organization">
+        <div class="provider-btns">
+          <button type="button" class="provider-btn" data-provider="google">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.6 12.23c0-.68-.06-1.36-.18-2.02H12v3.83h5.4a4.6 4.6 0 0 1-2 3.03v2.5h3.23c1.9-1.75 2.97-4.32 2.97-7.34z"/><path fill="currentColor" opacity=".7" d="M12 21.6c2.7 0 4.96-.9 6.62-2.43l-3.23-2.5c-.9.6-2.04.96-3.39.96-2.6 0-4.8-1.76-5.6-4.12H3.07v2.58A9.98 9.98 0 0 0 12 21.6z"/><path fill="currentColor" opacity=".5" d="M6.4 13.5a6 6 0 0 1 0-3.83V7.1H3.07a10 10 0 0 0 0 8.98L6.4 13.5z"/><path fill="currentColor" opacity=".85" d="M12 6.38c1.47 0 2.79.5 3.83 1.5l2.87-2.87A9.97 9.97 0 0 0 12 2.4a9.98 9.98 0 0 0-8.93 5.5l3.33 2.58c.8-2.36 3-4.1 5.6-4.1z"/></svg>
+            Continue with Google
+          </button>
+          <button type="button" class="provider-btn" data-provider="apple">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.37 12.7c.02 2.9 2.54 3.87 2.57 3.88-.02.07-.4 1.38-1.33 2.72-.8 1.16-1.63 2.32-2.94 2.34-1.29.02-1.7-.76-3.17-.76s-1.93.74-3.15.79c-1.27.05-2.23-1.26-3.04-2.41-1.65-2.39-2.92-6.75-1.22-9.7.84-1.46 2.35-2.39 3.98-2.41 1.24-.02 2.42.84 3.17.84.76 0 2.19-1.03 3.69-.88.63.03 2.39.25 3.52 1.91-.09.06-2.1 1.23-2.08 3.68zM13.9 4.9c.67-.82 1.13-1.95 1-3.08-.97.04-2.15.65-2.84 1.46-.62.72-1.17 1.88-1.02 2.98 1.08.08 2.19-.55 2.86-1.36z"/></svg>
+            Continue with Apple
+          </button>
+          <div class="or-line">or</div>
+          <button type="button" class="provider-btn" data-provider="email" id="su-email-toggle">Continue with email</button>
+        </div>
+        <div id="su-email-fields" hidden>
+          <div class="field-row">
+            <div class="field">
+              <label class="field-label" for="su-name">Name</label>
+              <input class="field-input" type="text" id="su-name" placeholder="Jane Smith" autocomplete="name">
+            </div>
+            <div class="field">
+              <label class="field-label" for="su-email">Email</label>
+              <input class="field-input" type="email" id="su-email" placeholder="jane@company.com" autocomplete="email">
+            </div>
           </div>
           <div class="field">
-            <label class="field-label" for="inq-password">Password</label>
-            <input class="field-input" type="password" id="inq-password" required minlength="8" placeholder="At least 8 characters" autocomplete="new-password">
+            <label class="field-label" for="su-password">Password</label>
+            <input class="field-input" type="password" id="su-password" minlength="8" placeholder="At least 8 characters" autocomplete="new-password">
           </div>
+          <button type="submit" class="btn-submit">Create workspace</button>
         </div>
-        <div class="field-row">
-          <div class="field">
-            <label class="field-label" for="inq-use-case">Use Case</label>
-            <select class="field-select" id="inq-use-case">
-              <option value="Events & Ticketing">Events & Ticketing</option>
-              <option value="Marketing Campaigns">Marketing Campaigns</option>
-              <option value="Alumni & Fundraising">Alumni & Fundraising</option>
-              <option value="Sports & Entertainment">Sports & Entertainment</option>
-              <option value="Conferences & Expos">Conferences & Expos</option>
-              <option value="Education & Libraries">Education & Libraries</option>
-              <option value="Mobile App Deep Links">Mobile App Deep Links</option>
-              <option value="API / Developer Integration">API / Developer</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-        </div>
-        <button type="submit" class="btn-submit">Create Free Account</button>
-        <p class="form-note">25 links, 3 campaigns, 7-day analytics. By continuing you accept the <a href="/legal/kortex-terms">Terms</a>.</p>
-        <div id="inq-error" class="alert" role="alert"></div>
-        <div id="inq-ok" class="form-success" role="status">
-          Workspace created. We sent a verification link to <strong id="inq-ok-email"></strong> — opening your dashboard…
-        </div>
+        <div id="su-alert" class="alert" role="alert"></div>
+        <div id="su-claim" class="claim-box" hidden>You have free links on this device. <b>They'll move into the new workspace</b> so nothing is lost.</div>
+        <p class="form-note">Starts on the free limits; pick a plan from the dashboard. By continuing you accept the <a href="/legal/kortex-terms">Terms</a>.</p>
+        <div id="su-ok" class="form-success" role="status">Workspace ready — opening your dashboard…</div>
       </form>
     </div>
 
@@ -760,7 +1117,7 @@ click ·········· <span class="hl">registration</span></pre></div>
       <span class="connect-mark">kortex</span>
     </div>
 
-    <!-- RIGHT — login -->
+    <!-- RIGHT — sign in -->
     <div class="connect-panel" id="login">
       <div class="panel-head">
         <div class="panel-title">Sign In</div>
@@ -773,6 +1130,11 @@ click ·········· <span class="hl">registration</span></pre></div>
         <p style="color:var(--dim);font-style:italic;font-size:0.8rem">Authenticating&hellip;</p>
       </div>
       <form id="login-form">
+        <div class="provider-btns" id="login-providers">
+          <button type="button" class="provider-btn" data-provider="google" data-intent="login">Sign in with Google</button>
+          <button type="button" class="provider-btn" data-provider="apple" data-intent="login">Sign in with Apple</button>
+          <div class="or-line">or</div>
+        </div>
         <div class="field">
           <label class="field-label" for="email">Email</label>
           <input class="field-input" type="email" id="email" required autocomplete="email" placeholder="you@company.com">
@@ -799,7 +1161,8 @@ click ·········· <span class="hl">registration</span></pre></div>
     <nav aria-label="Footer">
       <a href="/legal/kortex-terms">Terms</a>
       <a href="/privacy">Privacy</a>
-      <a href="mailto:rohan@kaayko.com">Contact</a>
+      <a href="/kortex/appeal">Report a link</a>
+      <a href="mailto:kortex@kaayko.com">Contact</a>
     </nav>
     <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
   </footer>
@@ -807,6 +1170,7 @@ click ·········· <span class="hl">registration</span></pre></div>
 <!-- ═══ SCRIPTS ═══ -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="/js/vendor/qrcode-generator.js"></script>
 
 <script>
 /* ── CONFIG ── */
@@ -816,7 +1180,6 @@ const CONFIG = {
   PROD_API: 'https://api-vwcc5j4qda-uc.a.run.app',
   get API_BASE() { return this.ENVIRONMENT === 'production' ? this.PROD_API : this.LOCAL_API; }
 };
-console.log(`Environment: ${CONFIG.ENVIRONMENT} | API: ${CONFIG.API_BASE}`);
 
 /* ── FIREBASE ── */
 const firebaseConfig = {
@@ -831,56 +1194,476 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 document.getElementById('env-badge').textContent = CONFIG.ENVIRONMENT.charAt(0).toUpperCase() + CONFIG.ENVIRONMENT.slice(1);
 
+/* ── SMALL HELPERS ── */
+const $ = (id) => document.getElementById(id);
+function setAlert(id, type, msg) { const el = $(id); if (!el) return; el.className = msg ? `alert ${type} show` : 'alert'; el.textContent = msg || ''; }
+function setStatus(id, msg, tone) { const el = $(id); if (!el) return; el.textContent = msg || ''; el.className = 'status-line' + (tone ? ' ' + tone : ''); }
+function normaliseUrl(v) {
+  let s = String(v || '').trim();
+  if (!s) return '';
+  if (!/^https?:\/\//i.test(s)) s = 'https://' + s;
+  try { const u = new URL(s); return u.protocol === 'http:' || u.protocol === 'https:' ? u.toString() : ''; } catch { return ''; }
+}
+async function copyText(text, btn) {
+  try { await navigator.clipboard.writeText(text); } catch { return; }
+  if (btn) { const old = btn.textContent; btn.textContent = 'Copied'; setTimeout(() => { btn.textContent = old; }, 1400); }
+}
+function download(name, blob) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 800);
+}
+function fmtDate(iso) { if (!iso) return '—'; const d = new Date(iso); return isNaN(d) ? '—' : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }); }
+function fmtAgo(iso) {
+  if (!iso) return 'never';
+  const ms = Date.now() - new Date(iso).getTime(); if (isNaN(ms)) return '—';
+  const m = Math.round(ms / 60000); if (m < 1) return 'just now'; if (m < 60) return `${m} min ago`;
+  const h = Math.round(m / 60); if (h < 48) return `${h} h ago`;
+  return `${Math.round(h / 24)} days ago`;
+}
+
+/* ── STATIC QR (client-side, nothing leaves the browser) ── */
+function buildStaticQr(text) { const qr = qrcode(0, 'M'); qr.addData(text); qr.make(); return qr; }
+function qrCanvas(qr, size, margin) {
+  const n = qr.getModuleCount(); const cell = size / (n + margin * 2);
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  const ctx = c.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, size, size); ctx.fillStyle = '#000000';
+  for (let r = 0; r < n; r++) for (let col = 0; col < n; col++) if (qr.isDark(r, col)) {
+    ctx.fillRect(Math.floor((col + margin) * cell), Math.floor((r + margin) * cell), Math.ceil(cell), Math.ceil(cell));
+  }
+  return c;
+}
+function qrSvg(qr) { return qr.createSvgTag({ cellSize: 8, margin: 16, scalable: true }); }
+
+/* ── GUEST WORKSPACE STATE ── */
+const GUEST_KEY = 'kortex_guest_session';
+function guestSession() { try { const s = JSON.parse(localStorage.getItem(GUEST_KEY) || 'null'); if (s && s.token && s.exp > Date.now()) return s; } catch {} return null; }
+function saveGuestSession(token, workspace) { localStorage.setItem(GUEST_KEY, JSON.stringify({ token, exp: Date.now() + 11.5 * 3600e3, workspaceId: workspace && workspace.id })); }
+function clearGuestSession() { localStorage.removeItem(GUEST_KEY); }
+async function guestApi(path, opts = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  const token = opts.session || (guestSession() || {}).token;
+  if (token) headers['X-Kortex-Guest-Session'] = token;
+  let res;
+  try {
+    res = await fetch(`${CONFIG.API_BASE}/kortex/guest${path}`, { method: opts.method || 'GET', headers, body: opts.body ? JSON.stringify(opts.body) : undefined });
+  } catch { return { ok: false, status: 0, data: { error: 'Network problem. Check your connection and try again.' } }; }
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 401 && data.code === 'GUEST_SESSION_REQUIRED') clearGuestSession();
+  return { ok: res.ok, status: res.status, data };
+}
+const FRIENDLY = {
+  DESTINATION_BLOCKED: 'That destination was refused by our safety check.',
+  RATE_LIMIT_UNAVAILABLE: 'We are briefly unable to take new links. Try again in a minute.',
+  PLAN_LIMIT_EXCEEDED: 'This free workspace has reached 25 links. Start a team workspace for more.',
+  INVALID_ACCESS_CODE: 'That access code is not valid. Check for typos: the code has 22 letters and numbers.',
+  ACCESS_CODE_LOCKED: 'Too many attempts. Try again in about an hour.',
+  GUEST_NOT_CONFIGURED: 'Free links are not available right now.',
+  GUEST_SESSION_REQUIRED: 'Enter your access code to continue.'
+};
+function friendly(data, fallback) { return (data && (FRIENDLY[data.code] || data.error)) || fallback; }
+
+/* ── MAKE ── */
+let mode = 'dynamic';
+let lastResult = null;
+const MODE_NOTES = {
+  dynamic: 'Dynamic: a short link you can re-point after printing, with scans counted. Free for a year, renewable with your access code.',
+  static: 'Static: the address itself, drawn as a code. Nothing to track, nothing that expires, nothing you can change later.'
+};
+function setMode(next) {
+  mode = next;
+  $('mode-dynamic').classList.toggle('active', next === 'dynamic'); $('mode-dynamic').setAttribute('aria-selected', next === 'dynamic');
+  $('mode-static').classList.toggle('active', next === 'static'); $('mode-static').setAttribute('aria-selected', next === 'static');
+  $('mode-note').textContent = MODE_NOTES[next];
+  $('mk-email-field').hidden = next === 'static';
+  $('mk-adv').hidden = next === 'static';
+  $('mk-title-field').hidden = next === 'static';
+  $('mk-submit').textContent = next === 'static' ? 'Draw QR' : 'Create QR + link';
+  $('mk-foot').hidden = next === 'static';
+}
+$('mode-dynamic').addEventListener('click', () => setMode('dynamic'));
+$('mode-static').addEventListener('click', () => setMode('static'));
+
+function showResult(r) {
+  lastResult = r;
+  $('result-empty').hidden = true; $('result').classList.add('show');
+  const frame = $('qr-frame'); frame.innerHTML = '';
+  if (r.kind === 'static') {
+    frame.appendChild(qrCanvas(r.qr, 480, 2));
+    $('rs-url').textContent = r.text;
+    $('rs-code-card').hidden = true; $('rs-static-note').hidden = false; $('rs-open-row').hidden = true;
+  } else {
+    const img = document.createElement('img'); img.alt = 'QR code for ' + r.link.shortUrl; img.src = r.qrPng; frame.appendChild(img);
+    $('rs-url').textContent = r.link.shortUrl.replace(/^https?:\/\//, '');
+    $('rs-static-note').hidden = true; $('rs-open-row').hidden = false;
+    if (r.accessCode) {
+      $('rs-code-card').hidden = false; $('rs-code').textContent = r.accessCode;
+      $('rs-email-block').hidden = !!r.emailSent;
+      setStatus('rs-status', r.emailSent ? (r.emailDelivery === 'sent' ? `Sent to ${r.email}.` : `We'll email it to ${r.email} shortly.`) : '', 'ok');
+    } else {
+      $('rs-code-card').hidden = true;
+    }
+  }
+  $('result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+$('make-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  setAlert('mk-alert');
+  const url = normaliseUrl($('mk-url').value);
+  if (!url) { setAlert('mk-alert', 'error', 'Enter a full web address, like https://your-site.com/tickets'); $('mk-url').focus(); return; }
+  if (mode === 'static') {
+    showResult({ kind: 'static', text: url, qr: buildStaticQr(url) });
+    if (window.phTrack) phTrack('qr_static_created', {});
+    return;
+  }
+  const btn = $('mk-submit'); btn.disabled = true; btn.textContent = 'Checking destination…';
+  const body = {
+    destination: url,
+    title: $('mk-title').value.trim() || undefined,
+    iosDestination: normaliseUrl($('mk-ios').value) || undefined,
+    androidDestination: normaliseUrl($('mk-android').value) || undefined,
+    email: $('mk-email').value.trim() || undefined,
+    website: $('mk-website').value || undefined
+  };
+  const { ok, data } = await guestApi('/links', { method: 'POST', body });
+  btn.disabled = false; btn.textContent = 'Create QR + link';
+  if (!ok) {
+    const why = data.reasons && data.reasons.length ? ' ' + data.reasons.map(r => r.detail).join(' ') : '';
+    setAlert('mk-alert', 'error', friendly(data, 'Could not create the link. Please try again.') + why);
+    return;
+  }
+  saveGuestSession(data.session, data.workspace);
+  showResult({ kind: 'dynamic', link: data.link, qrPng: data.qr.png, accessCode: data.accessCode, email: body.email, emailSent: !!(data.accessCode && body.email), emailDelivery: data.emailDelivery });
+  if (!data.accessCode) setStatus('rs-status', `Added to your workspace (${data.workspace.links} of ${data.workspace.linkLimit} links).`, 'ok');
+  if (window.phTrack) phTrack('qr_dynamic_created', { newWorkspace: data.isNewWorkspace });
+});
+
+$('rs-copy-url').addEventListener('click', () => copyText(lastResult.kind === 'static' ? lastResult.text : lastResult.link.shortUrl, $('rs-copy-url')));
+$('rs-copy-code').addEventListener('click', () => copyText($('rs-code').textContent, $('rs-copy-code')));
+$('rs-dl-png').addEventListener('click', async () => {
+  if (!lastResult) return;
+  if (lastResult.kind === 'static') { qrCanvas(lastResult.qr, 1024, 2).toBlob(b => download('kortex-qr.png', b), 'image/png'); return; }
+  const res = await fetch(lastResult.qrPng); download(`kortex-${lastResult.link.code}.png`, await res.blob());
+});
+$('rs-dl-svg').addEventListener('click', async () => {
+  if (!lastResult) return;
+  if (lastResult.kind === 'static') { download('kortex-qr.svg', new Blob([qrSvg(lastResult.qr)], { type: 'image/svg+xml' })); return; }
+  const qr = buildStaticQr(lastResult.link.shortUrl); download(`kortex-${lastResult.link.code}.svg`, new Blob([qrSvg(qr)], { type: 'image/svg+xml' }));
+});
+$('rs-another').addEventListener('click', () => { $('mk-url').value = ''; $('mk-title').value = ''; $('mk-url').focus(); $('make').scrollIntoView({ behavior: 'smooth' }); });
+$('rs-open').addEventListener('click', () => { location.hash = '#manage'; openWorkspaceFromSession(); });
+$('rs-email-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const address = $('rs-email').value.trim(); if (!address) return;
+  const btn = $('rs-email-btn'); btn.disabled = true;
+  const { ok, data } = await guestApi('/email', { method: 'POST', body: { email: address } });
+  btn.disabled = false;
+  if (!ok) { setStatus('rs-status', friendly(data, 'Could not send the email.'), 'err'); return; }
+  // Attaching an email issues a fresh code (we never store the old one).
+  $('rs-code').textContent = data.accessCode; saveGuestSession(data.session, data.workspace);
+  $('rs-email-block').hidden = true;
+  setStatus('rs-status', data.emailDelivery === 'sent' ? `Sent to ${address}. This new code replaces the one above.` : `We'll email it to ${address} shortly. The code shown is the new one.`, 'ok');
+});
+
+/* ── MANAGE ── */
+let wsLinks = [];
+let wsMeta = null;
+let openCode = null;
+
+$('mg-lost').addEventListener('click', (e) => { e.preventDefault(); $('recover-form').hidden = !$('recover-form').hidden; });
+$('code-form').addEventListener('submit', async (e) => {
+  e.preventDefault(); setAlert('mg-alert');
+  const code = $('mg-code').value.trim(); if (!code) return;
+  const btn = $('mg-submit'); btn.disabled = true; btn.textContent = 'Checking…';
+  const { ok, data } = await guestApi('/session', { method: 'POST', body: { accessCode: code } });
+  btn.disabled = false; btn.textContent = 'Open my links';
+  if (!ok) { setAlert('mg-alert', 'error', friendly(data, 'Could not open the workspace.')); return; }
+  saveGuestSession(data.session, data.workspace);
+  $('mg-code').value = '';
+  await openWorkspaceFromSession(data.revivedLinks);
+});
+$('recover-form').addEventListener('submit', async (e) => {
+  e.preventDefault(); setAlert('rc-alert');
+  const address = $('rc-email').value.trim(); if (!address) return;
+  const { ok, data } = await guestApi('/recover', { method: 'POST', body: { email: address } });
+  if (!ok) { setAlert('rc-alert', 'error', friendly(data, 'Could not send a new code.')); return; }
+  setAlert('rc-alert', 'success', data.emailConfigured === false ? 'Request received. Email delivery is being set up, so this may take a little while.' : data.message);
+});
+
+async function openWorkspaceFromSession(revived) {
+  if (!guestSession()) return false;
+  const { ok, data } = await guestApi('/workspace');
+  if (!ok) { clearGuestSession(); renderWorkspace(null); return false; }
+  wsLinks = data.links; wsMeta = data.workspace; renderWorkspace(data.workspace, revived);
+  return true;
+}
+function renderWorkspace(ws, revived) {
+  $('manage-enter').hidden = !!ws; $('workspace').hidden = !ws;
+  if (!ws) return;
+  $('ws-meta').innerHTML = `<b>${ws.links}</b> of ${ws.linkLimit} free links · live until <b>${fmtDate(ws.expiresAt)}</b>${ws.hasEmail ? ` · code recovery via <b>${escapeHtml(ws.email)}</b>` : ' · no email on file'}${revived ? ` · <b>${revived} link${revived === 1 ? '' : 's'} revived</b>` : ''}`;
+  $('ws-lifetime').textContent = `Free links stay live for ${Math.round(ws.lifetimeDays / 30)} months and renew every time you open them with your code. Scan details cover the last ${ws.analyticsDays} days; lifetime totals never reset.`;
+  const list = $('links-list'); list.innerHTML = '';
+  if (!wsLinks.length) { list.innerHTML = '<p class="mode-note" style="padding:12px 0">No links yet. Make one above; it will land here.</p>'; }
+  wsLinks.forEach(l => {
+    const row = document.createElement('div'); row.className = 'link-row' + (l.code === openCode ? ' active' : ''); row.tabIndex = 0; row.setAttribute('role', 'button');
+    const state = l.status === 'blocked' ? '<span class="state-tag off">blocked</span>' : l.status === 'held' ? '<span class="state-tag">under review</span>' : !l.enabled ? '<span class="state-tag off">paused</span>' : '<span class="state-tag">live</span>';
+    row.innerHTML = `<div><div class="link-title">${escapeHtml(l.title || l.code)}</div><div class="link-sub">${escapeHtml(l.shortUrl.replace(/^https?:\/\//, ''))} → ${escapeHtml((l.destinations && l.destinations.web) || l.destinations.ios || '')}</div></div><div class="link-count">${l.clickCount}<small>scans</small></div>${state}`;
+    row.addEventListener('click', () => openDetail(l.code));
+    row.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(l.code); } });
+    list.appendChild(row);
+  });
+  if (openCode && !wsLinks.some(l => l.code === openCode)) { openCode = null; $('detail').hidden = true; }
+}
+function escapeHtml(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+
+async function openDetail(code) {
+  openCode = code; renderWorkspace(wsMeta);
+  const box = $('detail'); box.hidden = false; box.innerHTML = '<p class="mode-note">Loading scans…</p>';
+  const { ok, data } = await guestApi(`/links/${encodeURIComponent(code)}/analytics`);
+  if (!ok) { box.innerHTML = `<p class="alert error show">${escapeHtml(friendly(data, 'Could not load this link.'))}</p>`; return; }
+  const link = data.link, a = data.analytics;
+  const days = (a.timeline || []).slice(-7);
+  const max = Math.max(1, ...days.map(d => d.clicks));
+  const bars = days.length ? days.map(d => `<div class="bar"><i style="height:${Math.max(2, Math.round(d.clicks / max * 100))}%"></i><span>${escapeHtml(d.date.slice(5))}</span></div>`).join('') : '<p class="mode-note" style="align-self:center;width:100%;text-align:center">No scans in the last 7 days.</p>';
+  const top = (rows, n = 4) => (rows || []).filter(r => r.value !== null && r.value !== undefined).slice(0, n).map(r => `<li><span>${escapeHtml(r.value)}</span><b>${r.clicks}</b></li>`).join('') || '<li><span>—</span></li>';
+  const scans = (a.recentScans || []).slice(0, 5).map(s => `<li><span>${fmtAgo(s.at)} · ${escapeHtml(s.deviceType || '?')}</span><b>${escapeHtml(s.country || '')}</b></li>`).join('') || '<li><span>No scans yet</span></li>';
+  const stateLine = link.status === 'blocked' ? 'Blocked by the safety check. <a href="/kortex/appeal?code=' + encodeURIComponent(link.code) + '" style="color:var(--gold)">Request a review</a>.' : link.status === 'held' ? 'Under review; it goes live once checked.' : (!link.enabled ? 'Paused: scans see a "link disabled" page.' : 'Live.');
+  box.innerHTML = `
+    <div>
+      <div class="stat-row">
+        <div class="stat"><b>${data.lifetime.clicks}</b><span>scans, lifetime</span></div>
+        <div class="stat"><b>${a.totals.events}</b><span>last 7 days</span></div>
+        <div class="stat"><b>${a.unique ? a.unique.distinctVisitors : '—'}</b><span>people, 7 days</span></div>
+      </div>
+      <div class="bars">${bars}</div>
+      <div class="mini-list">
+        <div><h4>Devices</h4><ul>${top(a.breakdowns && a.breakdowns.deviceType)}</ul></div>
+        <div><h4>Countries</h4><ul>${top(a.breakdowns && a.breakdowns.country)}</ul></div>
+        <div><h4>Recent scans</h4><ul>${scans}</ul></div>
+        <div><h4>Status</h4><p class="code-note">${stateLine}<br>Last scan ${fmtAgo(data.lifetime.lastClickedAt)}.</p></div>
+      </div>
+    </div>
+    <div class="detail-side">
+      <div class="qr-frame"><img alt="QR code" src="${escapeHtml(link.qrUrl)}"></div>
+      <div class="short-line"><span class="short-url">${escapeHtml(link.shortUrl.replace(/^https?:\/\//, ''))}</span><button type="button" class="ghost-btn" id="dt-copy">Copy</button></div>
+      <form id="dt-form">
+        <div class="field"><label class="field-label" for="dt-title">Name</label><input class="field-input" id="dt-title" maxlength="120" value="${escapeHtml(link.title || '')}"></div>
+        <div class="field"><label class="field-label" for="dt-url">Points to</label><input class="field-input" id="dt-url" type="url" value="${escapeHtml((link.destinations && link.destinations.web) || '')}"></div>
+        <div class="btn-row">
+          <button type="submit" class="ghost-btn">Save</button>
+          <button type="button" class="ghost-btn" id="dt-toggle">${link.enabled ? 'Pause' : 'Resume'}</button>
+          <button type="button" class="ghost-btn danger" id="dt-delete">Delete</button>
+        </div>
+        <p class="status-line" id="dt-status"></p>
+      </form>
+    </div>`;
+  $('dt-copy').addEventListener('click', () => copyText(link.shortUrl, $('dt-copy')));
+  $('dt-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const url = normaliseUrl($('dt-url').value); if (!url) { setStatus('dt-status', 'Enter a full web address.', 'err'); return; }
+    const { ok: k, data: d } = await guestApi(`/links/${encodeURIComponent(code)}`, { method: 'PATCH', body: { destination: url, title: $('dt-title').value.trim() } });
+    if (!k) { setStatus('dt-status', friendly(d, 'Could not save.') + (d.reasons ? ' ' + d.reasons.map(r => r.detail).join(' ') : ''), 'err'); return; }
+    setStatus('dt-status', 'Saved. Every scan now goes to the new address.', 'ok'); await openWorkspaceFromSession(); openDetail(code);
+  });
+  $('dt-toggle').addEventListener('click', async () => {
+    const { ok: k, data: d } = await guestApi(`/links/${encodeURIComponent(code)}`, { method: 'PATCH', body: { enabled: !link.enabled } });
+    if (!k) { setStatus('dt-status', friendly(d, 'Could not update.'), 'err'); return; }
+    await openWorkspaceFromSession(); openDetail(code);
+  });
+  $('dt-delete').addEventListener('click', async () => {
+    if (!confirm('Delete this link? Anything printed with this QR will stop working. This cannot be undone.')) return;
+    const { ok: k, data: d } = await guestApi(`/links/${encodeURIComponent(code)}`, { method: 'DELETE' });
+    if (!k) { setStatus('dt-status', friendly(d, 'Could not delete.'), 'err'); return; }
+    openCode = null; $('detail').hidden = true; await openWorkspaceFromSession();
+  });
+}
+
+$('ws-add').addEventListener('click', () => { setMode('dynamic'); $('mk-url').focus(); $('make').scrollIntoView({ behavior: 'smooth' }); });
+$('ws-forget').addEventListener('click', () => { clearGuestSession(); openCode = null; $('detail').hidden = true; renderWorkspace(null); });
+$('ws-email').addEventListener('click', () => { $('ws-email-form-wrap').hidden = !$('ws-email-form-wrap').hidden; });
+$('ws-email-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const address = $('ws-email-input').value.trim(); if (!address) return;
+  const { ok, data } = await guestApi('/email', { method: 'POST', body: { email: address } });
+  if (!ok) { setStatus('ws-email-status', friendly(data, 'Could not send.'), 'err'); return; }
+  saveGuestSession(data.session, data.workspace); wsMeta = data.workspace; renderWorkspace(wsMeta);
+  setStatus('ws-email-status', `New code ${data.accessCode} ${data.emailDelivery === 'sent' ? 'sent to' : 'will be emailed to'} ${address}. Your previous code no longer works.`, 'ok');
+});
+
+/* ── PAID: provider sign-in + provisioning ── */
+const PENDING_SIGNUP_KEY = 'kortex_pending_signup';
+function readPendingSignup(email) {
+  try { const p = JSON.parse(localStorage.getItem(PENDING_SIGNUP_KEY) || 'null'); if (p && (!email || !p.email || p.email === email)) return p; } catch {}
+  return null;
+}
+async function provisionWorkspace(idToken, details) {
+  if (!details || !details.organization) return null;
+  const res = await fetch(`${CONFIG.API_BASE}/kortex/tenants/provision`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+    body: JSON.stringify({ name: details.name, organization: details.organization, useCase: details.useCase })
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.success) { const err = new Error(data.error || 'Could not create your workspace.'); err.code = data.code || `HTTP_${res.status}`; throw err; }
+  localStorage.removeItem(PENDING_SIGNUP_KEY);
+  return data;
+}
+async function claimGuestLinks(idToken) {
+  const s = guestSession(); if (!s) return null;
+  const res = await fetch(`${CONFIG.API_BASE}/kortex/guest/claim`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}`, 'X-Kortex-Guest-Session': s.token },
+    body: JSON.stringify({ name: $('su-org').value.trim() || undefined })
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.ok && data.success) { clearGuestSession(); return data; }
+  return null;
+}
+function storeSession(user, token, tenant, role, requireEmailVerification) {
+  localStorage.setItem('kaayko_auth_token', token);
+  localStorage.setItem('kaayko_user', JSON.stringify({
+    uid: user.uid, email: user.email, displayName: user.displayName || (user.email || '').split('@')[0],
+    role, emailVerified: user.emailVerified === true, requireEmailVerification: requireEmailVerification === true,
+    tenantId: tenant.id, tenantName: tenant.name
+  }));
+  localStorage.setItem('kaayko_tenant_id', tenant.id);
+  localStorage.setItem('kaayko_environment', CONFIG.ENVIRONMENT);
+}
+const PROVIDER_ERRORS = {
+  'auth/operation-not-allowed': 'That sign-in method is not switched on yet. Use email for now.',
+  'auth/popup-blocked': 'Your browser blocked the sign-in window. Allow pop-ups and try again.',
+  'auth/popup-closed-by-user': 'Sign-in window closed before finishing.',
+  'auth/account-exists-with-different-credential': 'This email already signed up another way. Use that method.',
+  'auth/network-request-failed': 'Network problem. Check your connection and try again.',
+  'auth/invalid-email': 'That email address does not look right.',
+  'auth/weak-password': 'Choose a stronger password (at least 8 characters).',
+  'auth/wrong-password': 'An account with this email already exists. Sign in on the right, or use "Forgot password?".',
+  'auth/invalid-credential': 'That email and password do not match.',
+  'auth/too-many-requests': 'Too many attempts. Please try again in a few minutes.',
+  'RATE_LIMIT_UNAVAILABLE': 'Sign-ups are briefly unavailable. Please try again in a minute.',
+  'HTTP_429': 'Too many sign-ups from this network. Please try again later.'
+};
+function providerFor(name) {
+  if (name === 'google') { const p = new firebase.auth.GoogleAuthProvider(); p.setCustomParameters({ prompt: 'select_account' }); return p; }
+  if (name === 'apple') { const p = new firebase.auth.OAuthProvider('apple.com'); p.addScope('email'); p.addScope('name'); return p; }
+  return null;
+}
+
+/* Sign-up panel: organisation + provider */
+$('su-email-toggle').addEventListener('click', () => { $('su-email-fields').hidden = !$('su-email-fields').hidden; if (!$('su-email-fields').hidden) $('su-email').focus(); });
+async function finishSignup(user, details) {
+  const idToken = await user.getIdToken();
+  const claimed = await claimGuestLinks(idToken);
+  const provisioned = claimed ? { tenant: claimed.tenant, user: claimed.user } : await provisionWorkspace(idToken, details);
+  if (!user.emailVerified && !claimed) { try { await user.sendEmailVerification({ url: 'https://kaayko.com/kortex?verified=1' }); } catch {} }
+  const fresh = await user.getIdToken(true);
+  storeSession(user, fresh, provisioned.tenant, (provisioned.user && provisioned.user.role) || 'admin', !!(provisioned.user && provisioned.user.requireEmailVerification));
+  const plan = localStorage.getItem('kortex_plan_intent');
+  $('su-ok').classList.add('show');
+  if (window.phTrack) phTrack('signup_completed', { source: 'landing_page', claimed: !!claimed, plan: plan || null });
+  setTimeout(() => { window.location.href = plan ? '/admin/kortex#/billing' : '/admin/kortex'; }, 900);
+}
+document.querySelectorAll('#signup-form .provider-btn[data-provider]:not([data-provider="email"])').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    setAlert('su-alert');
+    const org = $('su-org').value.trim();
+    if (org.length < 2) { setAlert('su-alert', 'error', 'Tell us your organisation first.'); $('su-org').focus(); return; }
+    const details = { organization: org, useCase: localStorage.getItem('kortex_plan_intent') || '' };
+    localStorage.setItem(PENDING_SIGNUP_KEY, JSON.stringify(details));
+    btn.disabled = true;
+    try {
+      const cred = await auth.signInWithPopup(providerFor(btn.dataset.provider));
+      await finishSignup(cred.user, details);
+    } catch (err) {
+      setAlert('su-alert', 'error', PROVIDER_ERRORS[err.code] || err.message || 'Sign-in failed.');
+      btn.disabled = false;
+    }
+  });
+});
+$('signup-form').addEventListener('submit', async (e) => {
+  e.preventDefault(); setAlert('su-alert');
+  const org = $('su-org').value.trim(); const email = $('su-email').value.trim(); const password = $('su-password').value; const name = $('su-name').value.trim();
+  if (org.length < 2) { setAlert('su-alert', 'error', 'Tell us your organisation first.'); return; }
+  if (!email) { setAlert('su-alert', 'error', 'Enter your email.'); return; }
+  if (password.length < 8) { setAlert('su-alert', 'error', 'Choose a password of at least 8 characters.'); return; }
+  const details = { name, email, organization: org, useCase: localStorage.getItem('kortex_plan_intent') || '' };
+  localStorage.setItem(PENDING_SIGNUP_KEY, JSON.stringify(details));
+  try {
+    let cred;
+    try { cred = await auth.createUserWithEmailAndPassword(email, password); }
+    catch (authErr) { if (authErr.code === 'auth/email-already-in-use') cred = await auth.signInWithEmailAndPassword(email, password); else throw authErr; }
+    if (name && !cred.user.displayName) { try { await cred.user.updateProfile({ displayName: name }); } catch {} }
+    await finishSignup(cred.user, details);
+  } catch (err) {
+    setAlert('su-alert', 'error', PROVIDER_ERRORS[err.code] || err.message || 'Something went wrong. Please try again.');
+  }
+});
+document.querySelectorAll('[data-plan]').forEach(b => b.addEventListener('click', () => {
+  localStorage.setItem('kortex_plan_intent', b.dataset.plan);
+  location.hash = '#connect'; setTimeout(() => $('su-org').focus(), 400);
+}));
+if (guestSession()) $('su-claim').hidden = false;
+
 /* ── FORGOT PASSWORD ── */
-document.getElementById('forgot-password-link').addEventListener('click', async (e) => {
+$('forgot-password-link').addEventListener('click', async (e) => {
   e.preventDefault();
   const email = prompt('Enter your email address:');
   if (!email) return;
-  try {
-    await auth.sendPasswordResetEmail(email);
-    showAlert('success', `Reset email sent to ${email}.`);
-  } catch (error) {
-    showAlert('error', error.code === 'auth/user-not-found' ? 'No account found.' : 'Failed to send reset email.');
-  }
+  try { await auth.sendPasswordResetEmail(email); showAlert('success', `Reset email sent to ${email}.`); }
+  catch (error) { showAlert('error', error.code === 'auth/user-not-found' ? 'No account found.' : 'Failed to send reset email.'); }
 });
 
 /* ── LOGIN STATE MACHINE ── */
 let loginState = { user: null, idToken: null, role: null, tenants: [], step: 'credentials' };
 
-document.getElementById('login-form').addEventListener('submit', async (e) => {
+$('login-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   if (loginState.step === 'credentials') await handleCredentialsStep();
   else if (loginState.step === 'tenant-selection') await handleTenantSelectionStep();
 });
+document.querySelectorAll('#login-providers .provider-btn').forEach(btn => btn.addEventListener('click', async () => {
+  try {
+    hideAlert(); btn.disabled = true;
+    const cred = await auth.signInWithPopup(providerFor(btn.dataset.provider));
+    await continueLogin(cred.user);
+  } catch (error) { showAlert('error', PROVIDER_ERRORS[error.code] || error.message || 'Sign-in failed.'); }
+  finally { btn.disabled = false; }
+}));
 
 async function handleCredentialsStep() {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  const loginBtn = document.getElementById('login-btn');
-  const loading = document.getElementById('loading');
-  const form = document.getElementById('login-form');
+  const email = $('email').value;
+  const password = $('password').value;
+  const loginBtn = $('login-btn'); const loading = $('loading'); const form = $('login-form');
   try {
     loginBtn.disabled = true; form.style.display = 'none'; loading.classList.add('show'); hideAlert();
     const cred = await auth.signInWithEmailAndPassword(email, password);
-    const user = cred.user;
+    await continueLogin(cred.user);
+  } catch (error) {
+    const msgs = { 'auth/user-not-found':'No account found.', 'auth/wrong-password':'Incorrect password.', 'auth/invalid-credential':'Incorrect email or password.',
+      'auth/invalid-email':'Invalid email.', 'auth/too-many-requests':'Too many attempts. Try later.' };
+    showAlert('error', msgs[error.code] || error.message || 'Login failed.');
+    loginBtn.disabled = false; form.style.display = ''; loading.classList.remove('show');
+  }
+}
+
+async function continueLogin(user) {
+  const loginBtn = $('login-btn'); const loading = $('loading'); const form = $('login-form');
+  try {
+    loginBtn.disabled = true; form.style.display = 'none'; loading.classList.add('show');
     const idToken = await user.getIdToken();
     let role = (await user.getIdTokenResult()).claims.role;
     if (!role) {
-      // A self-serve signup whose provisioning call never completed (network
-      // drop, closed tab) lands here: provisioning is idempotent, so retry it.
+      // A sign-up whose provisioning call never completed lands here: it is idempotent, so retry it.
       const recovered = await provisionWorkspace(idToken, readPendingSignup(user.email));
       if (recovered) role = (await user.getIdTokenResult(true)).claims.role;
     }
-    if (!role || !['super-admin','admin','editor','viewer'].includes(role)) throw new Error('Access denied. Admin role required.');
+    if (!role || !['super-admin','admin','editor','viewer'].includes(role)) throw new Error('No workspace is attached to this account yet. Start one on the left.');
     loginState = { ...loginState, user, idToken: await user.getIdToken(), role };
-    await fetchUserTenants(idToken, user.uid, role);
+    await fetchUserTenants(loginState.idToken, user.uid, role);
     loginState.step = 'tenant-selection';
     showTenantSelection();
     loginBtn.disabled = false; form.style.display = ''; loading.classList.remove('show');
   } catch (error) {
-    const msgs = { 'auth/user-not-found':'No account found.', 'auth/wrong-password':'Incorrect password.',
-      'auth/invalid-email':'Invalid email.', 'auth/too-many-requests':'Too many attempts. Try later.' };
-    showAlert('error', msgs[error.code] || error.message || 'Login failed.');
+    showAlert('error', error.message || 'Login failed.');
     loginBtn.disabled = false; form.style.display = ''; loading.classList.remove('show');
   }
 }
@@ -896,47 +1679,37 @@ async function fetchUserTenants(idToken, uid, role) {
 }
 
 function showTenantSelection() {
-  document.getElementById('email').parentElement.style.display = 'none';
-  document.getElementById('password').parentElement.style.display = 'none';
-  document.getElementById('tenant-selection-group').style.display = 'block';
-  const sel = document.getElementById('tenant');
+  $('login-providers').style.display = 'none';
+  $('email').parentElement.style.display = 'none';
+  $('password').parentElement.style.display = 'none';
+  $('tenant-selection-group').style.display = 'block';
+  const sel = $('tenant');
   sel.innerHTML = '';
   if (loginState.tenants.length === 1 && loginState.role !== 'super-admin') {
     const t = loginState.tenants[0];
-    sel.innerHTML = `<option value="${t.id}" selected>${t.name}</option>`;
+    sel.innerHTML = `<option value="${escapeHtml(t.id)}" selected>${escapeHtml(t.name)}</option>`;
     showAlert('success', `Signing in to ${t.name}…`);
     setTimeout(() => handleTenantSelectionStep(), 400);
     return;
   }
   sel.innerHTML = '<option value="">Select a tenant</option>';
   loginState.tenants.forEach(t => { const o = document.createElement('option'); o.value = t.id; o.textContent = t.name; sel.appendChild(o); });
-  document.getElementById('login-btn').textContent = 'Continue to Dashboard';
+  $('login-btn').textContent = 'Continue to Dashboard';
   showAlert('success', `Signed in as ${loginState.role === 'super-admin' ? 'Super Admin' : loginState.role.charAt(0).toUpperCase() + loginState.role.slice(1)}. Select your tenant.`);
 }
 
 async function handleTenantSelectionStep() {
-  const tenantId = document.getElementById('tenant').value;
+  const tenantId = $('tenant').value;
   if (!tenantId) { showAlert('error', 'Please select a tenant'); return; }
-  const loginBtn = document.getElementById('login-btn');
-  const loading = document.getElementById('loading');
-  const form = document.getElementById('login-form');
+  const loginBtn = $('login-btn'); const loading = $('loading'); const form = $('login-form');
   try {
     loginBtn.disabled = true; form.style.display = 'none'; loading.classList.add('show'); hideAlert();
     const tenant = loginState.tenants.find(t => t.id === tenantId);
-    localStorage.setItem('kaayko_auth_token', loginState.idToken);
-    localStorage.setItem('kaayko_user', JSON.stringify({
-      uid: loginState.user.uid, email: loginState.user.email,
-      displayName: loginState.user.displayName || loginState.user.email.split('@')[0],
-      role: loginState.role, emailVerified: loginState.user.emailVerified,
-      requireEmailVerification: loginState.requireEmailVerification === true,
-      tenantId, tenantName: tenant?.name || tenantId
-    }));
-    localStorage.setItem('kaayko_tenant_id', tenantId);
-    localStorage.setItem('kaayko_environment', CONFIG.ENVIRONMENT);
+    storeSession(loginState.user, loginState.idToken, { id: tenantId, name: tenant?.name || tenantId }, loginState.role, loginState.requireEmailVerification);
     showAlert('success', `Redirecting to ${tenant?.name || tenantId}…`);
     setTimeout(() => { window.location.href = '/admin/kortex'; }, 800);
     setTimeout(() => {
-      if (document.getElementById('loading').classList.contains('show')) {
+      if ($('loading').classList.contains('show')) {
         showAlert('error', 'Redirect timed out.');
         loading.classList.remove('show'); form.style.display = ''; loginBtn.disabled = false;
         loginBtn.textContent = 'Go to Dashboard';
@@ -948,8 +1721,8 @@ async function handleTenantSelectionStep() {
   }
 }
 
-function showAlert(type, msg) { const el = document.getElementById('alert'); el.className = `alert ${type} show`; el.textContent = msg; }
-function hideAlert() { const el = document.getElementById('alert'); el.className = 'alert'; el.textContent = ''; }
+function showAlert(type, msg) { const el = $('alert'); el.className = `alert ${type} show`; el.textContent = msg; }
+function hideAlert() { const el = $('alert'); el.className = 'alert'; el.textContent = ''; }
 
 /* ── AUTH STATE ── */
 auth.onAuthStateChanged(async (user) => {
@@ -959,11 +1732,11 @@ auth.onAuthStateChanged(async (user) => {
     if (t && n) {
       try {
         localStorage.setItem('kaayko_auth_token', await user.getIdToken(true));
-        const nav = document.getElementById('nav-auth-link');
+        const nav = $('nav-auth-link');
         if (nav) { nav.textContent = 'Dashboard'; nav.href = '/admin/kortex'; }
-        const hero = document.getElementById('hero-auth-btn');
+        const hero = $('hero-auth-btn');
         if (hero) { hero.textContent = 'Dashboard'; hero.href = '/admin/kortex'; }
-        const lp = document.getElementById('login'); if (lp) lp.style.display = 'none';
+        const lp = $('login'); if (lp) lp.style.display = 'none';
         const dv = document.querySelector('.connect-divider'); if (dv) dv.style.display = 'none';
         return;
       } catch {
@@ -973,120 +1746,9 @@ auth.onAuthStateChanged(async (user) => {
       }
     }
   }
-  document.getElementById('login-form').style.display = '';
-  document.getElementById('loading').classList.remove('show');
-  document.getElementById('login-btn').disabled = false;
-});
-
-/* ── SIGNUP (self-serve) ──
-   1. Create the Firebase user (email + password) in the browser.
-   2. POST the ID token to /kortex/tenants/provision → tenant + admin profile + role claim.
-   3. Send the verification email; the API refuses link writes until it is verified.
-   4. Store the session the same way login does and open the dashboard. */
-const PENDING_SIGNUP_KEY = 'kortex_pending_signup';
-
-function readPendingSignup(email) {
-  try {
-    const pending = JSON.parse(localStorage.getItem(PENDING_SIGNUP_KEY) || 'null');
-    if (pending && (!email || pending.email === email)) return pending;
-  } catch {}
-  return null;
-}
-
-async function provisionWorkspace(idToken, details) {
-  if (!details || !details.organization) return null;
-  const res = await fetch(`${CONFIG.API_BASE}/kortex/tenants/provision`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
-    body: JSON.stringify({ name: details.name, organization: details.organization, useCase: details.useCase })
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok || !data.success) {
-    const err = new Error(data.error || 'Could not create your workspace.');
-    err.code = data.code || `HTTP_${res.status}`;
-    throw err;
-  }
-  localStorage.removeItem(PENDING_SIGNUP_KEY);
-  return data;
-}
-
-function showSignupError(msg) {
-  const el = document.getElementById('inq-error');
-  el.className = 'alert error show'; el.textContent = msg;
-}
-
-document.getElementById('inquiry-form').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  const btn = this.querySelector('button[type="submit"]');
-  const name = document.getElementById('inq-name').value.trim();
-  const email = document.getElementById('inq-email').value.trim();
-  const company = document.getElementById('inq-company').value.trim();
-  const password = document.getElementById('inq-password').value;
-  const useCase = document.getElementById('inq-use-case').value;
-  document.getElementById('inq-error').className = 'alert';
-  if (!name || !email || !company) return;
-  if (password.length < 8) { showSignupError('Choose a password of at least 8 characters.'); return; }
-
-  btn.disabled = true; btn.textContent = 'Creating your workspace…';
-  const details = { name, email, organization: company, useCase };
-  try {
-    // Remember the intent first: if provisioning fails after the user exists,
-    // the next sign-in retries it (provisioning is idempotent).
-    localStorage.setItem(PENDING_SIGNUP_KEY, JSON.stringify(details));
-
-    let cred;
-    try {
-      cred = await auth.createUserWithEmailAndPassword(email, password);
-    } catch (authErr) {
-      if (authErr.code === 'auth/email-already-in-use') {
-        // Existing user: sign in and let provisioning (idempotent) finish the job.
-        cred = await auth.signInWithEmailAndPassword(email, password);
-      } else {
-        throw authErr;
-      }
-    }
-    const user = cred.user;
-    if (name && !user.displayName) { try { await user.updateProfile({ displayName: name }); } catch {} }
-
-    const idToken = await user.getIdToken();
-    const provisioned = await provisionWorkspace(idToken, details);
-
-    if (!user.emailVerified) {
-      try { await user.sendEmailVerification({ url: 'https://kaayko.com/kortex?verified=1' }); } catch (mailErr) { console.warn('verification email', mailErr); }
-    }
-
-    // Custom claims only appear in a refreshed token.
-    const freshToken = await user.getIdToken(true);
-    const tenant = provisioned.tenant;
-    localStorage.setItem('kaayko_auth_token', freshToken);
-    localStorage.setItem('kaayko_user', JSON.stringify({
-      uid: user.uid, email: user.email, displayName: user.displayName || name,
-      role: provisioned.user?.role || 'admin', emailVerified: user.emailVerified === true,
-      requireEmailVerification: provisioned.user?.requireEmailVerification !== false,
-      tenantId: tenant.id, tenantName: tenant.name
-    }));
-    localStorage.setItem('kaayko_tenant_id', tenant.id);
-    localStorage.setItem('kaayko_environment', CONFIG.ENVIRONMENT);
-
-    document.getElementById('inq-ok-email').textContent = email;
-    document.getElementById('inq-ok').classList.add('show');
-    btn.textContent = 'Workspace ready';
-    if (window.phTrack) phTrack('signup_completed', { source: 'landing_page', existing: provisioned.existing === true });
-    setTimeout(() => { window.location.href = '/admin/kortex'; }, 900);
-  } catch (err) {
-    const msgs = {
-      'auth/invalid-email': 'That email address does not look right.',
-      'auth/weak-password': 'Choose a stronger password (at least 8 characters).',
-      'auth/wrong-password': 'An account with this email already exists. Sign in on the right, or use "Forgot password?".',
-      'auth/invalid-credential': 'An account with this email already exists. Sign in on the right, or use "Forgot password?".',
-      'auth/too-many-requests': 'Too many attempts. Please try again in a few minutes.',
-      'auth/network-request-failed': 'Network problem. Check your connection and try again.',
-      'RATE_LIMIT_UNAVAILABLE': 'Signups are briefly unavailable. Please try again in a minute.',
-      'HTTP_429': 'Too many signups from this network. Please try again later.'
-    };
-    showSignupError(msgs[err.code] || err.message || 'Something went wrong. Please try again.');
-    btn.textContent = 'Create Free Account'; btn.disabled = false;
-  }
+  $('login-form').style.display = '';
+  $('loading').classList.remove('show');
+  $('login-btn').disabled = false;
 });
 
 /* Returning from the verification email: refresh the stored token so the
@@ -1107,6 +1769,11 @@ if (new URLSearchParams(window.location.search).get('verified') === '1') {
     } catch {}
   });
 }
+
+/* ── BOOT ── */
+setMode('dynamic');
+if (guestSession()) { openWorkspaceFromSession(); }
+if (location.hash === '#manage') setTimeout(() => $('mg-code').focus(), 600);
 
 /* ── SCROLL REVEAL ── */
 const revealObs = new IntersectionObserver((entries) => {
@@ -1189,12 +1856,7 @@ document.querySelectorAll('.cap-card').forEach(card => {
 
 <!-- Product analytics (PostHog) is intentionally NOT loaded on this public
      landing page — it runs only inside the authenticated admin app. The guarded
-     phTrack call below is therefore a safe no-op here. -->
-<script>
-document.getElementById('inquiry-form').addEventListener('submit', function() {
-  if (window.phTrack) phTrack('signup_attempted', { source: 'landing_page' });
-});
-</script>
+     phTrack calls above are therefore safe no-ops here. -->
   <script>
     /* kaayko-footer-year */
     (function () {
