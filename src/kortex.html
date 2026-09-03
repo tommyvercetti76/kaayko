@@ -78,13 +78,13 @@
   --bg: #080808;
   --surface: #0d0c0a;
   --fg: #ede8df;
-  --muted: rgba(237,232,223,0.58);
-  --dim: rgba(237,232,223,0.32);
-  --faint: rgba(237,232,223,0.12);
+  --muted: rgba(237,232,223,0.76);
+  --dim: rgba(237,232,223,0.62);
+  --faint: rgba(237,232,223,0.46);
 
   --gold: #b5935a;
   --gold-bright: #d9bd7b;
-  --gold-dim: rgba(181,147,90,0.48);
+  --gold-dim: rgba(181,147,90,0.84);
   --gold-line: rgba(181,147,90,0.22);
 
   --glow-core: rgba(181,147,90,0.35);
@@ -132,6 +132,10 @@ img, canvas, svg { max-width:100% }
 /* Long unbroken strings (URLs, codes) never widen a column. */
 .wrap-any { overflow-wrap:anywhere; word-break:break-word }
 
+/* ── SKIP LINK (keyboard users) ── */
+.skip-link { position:absolute; left:-9999px; top:8px; z-index:200; background:var(--gold); color:var(--bg); padding:10px 16px; font-style:italic; letter-spacing:0.12em; text-transform:uppercase; font-size:0.9rem }
+.skip-link:focus { left:16px; outline:2px solid var(--gold-bright); outline-offset:3px }
+
 /* ── AMBIENT GLOW ORBS ── */
 .ambient { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden }
 .orb { position:absolute; border-radius:50% }
@@ -151,7 +155,7 @@ img, canvas, svg { max-width:100% }
 .nav-back,.nav-link {
   color:var(--gold-dim);
   font-family:'Cormorant Garamond',Georgia,serif;
-  font-style:italic; font-size:clamp(0.72rem,1.5vw,0.84rem);
+  font-style:italic; font-size:clamp(0.82rem,1.6vw,0.92rem);
   letter-spacing:0.22em; text-transform:uppercase;
   transition:color var(--dur-normal) ease, text-shadow var(--dur-normal) ease;
   min-height:44px; display:flex; align-items:center;
@@ -163,10 +167,11 @@ img, canvas, svg { max-width:100% }
 /* ── HERO ── */
 .hero {
   position:relative; z-index:1;
-  min-height:100vh; min-height:100dvh;
+  min-height:100vh; min-height:100svh;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   text-align:center; padding:var(--sp-10) var(--sp-5) var(--sp-8);
   overflow:hidden;
+  background:linear-gradient(180deg, #060b1e 0%, #0a1233 42%, #0a1129 68%, #080808 100%);
 }
 .hero-glow {
   position:absolute; left:0; top:0; z-index:0;
@@ -177,12 +182,12 @@ img, canvas, svg { max-width:100% }
   transition:opacity var(--dur-slow) ease;
   will-change:transform;
 }
-/* The cortex: a sparse neural network drawn behind the wordmark (canvas). */
-.cortex {
+/* The night sky: seeded stars + real constellations (canvas). The gradient is CSS so nothing flashes before the script runs. */
+.sky {
   position:absolute; inset:0; z-index:0; pointer-events:none;
-  opacity:0; animation:cortexIn 1.8s ease-out 0.9s forwards;
+  opacity:0; animation:skyIn 1.6s ease-out 0.6s forwards;
 }
-@keyframes cortexIn { to { opacity:1 } }
+@keyframes skyIn { to { opacity:1 } }
 .hero-inner { position:relative; z-index:1; max-width:720px }
 .hero-title {
   font-family:'Bebas Neue',Impact,sans-serif;
@@ -221,7 +226,7 @@ img, canvas, svg { max-width:100% }
 .hero-actions { display:flex; align-items:center; gap:var(--sp-5); justify-content:center; flex-wrap:wrap }
 .action-link {
   color:var(--gold); font-style:italic;
-  font-size:clamp(0.8rem,1.5vw,0.92rem);
+  font-size:clamp(0.88rem,1.6vw,0.98rem);
   letter-spacing:0.16em; text-transform:uppercase;
   transition:color var(--dur-normal) ease, text-shadow var(--dur-normal) ease;
   min-height:44px; display:inline-flex; align-items:center;
@@ -229,7 +234,7 @@ img, canvas, svg { max-width:100% }
 }
 .action-link:hover { color:var(--gold-bright); text-shadow:var(--glow-xs) }
 .action-link:focus-visible { outline:1px solid var(--gold-bright); outline-offset:6px }
-.action-link.quiet { color:var(--gold-dim); font-size:0.76rem }
+.action-link.quiet { color:var(--gold); font-size:0.86rem }
 .action-link.quiet:hover { color:var(--gold-bright) }
 .action-dot { color:var(--gold-dim); font-size:0.65rem }
 .scroll-cue { margin-top:var(--sp-7); color:var(--gold-dim); font-style:italic; font-size:1.1rem; animation:float 2.4s ease-in-out infinite 1.6s; opacity:0; animation-fill-mode:both }
@@ -246,9 +251,9 @@ img, canvas, svg { max-width:100% }
 .section { position:relative; z-index:1; padding:0 var(--sp-5) var(--sp-12); max-width:880px; margin:0 auto }
 .section-label {
   text-align:center;
-  font-style:italic; font-size:clamp(0.68rem,1.2vw,0.78rem);
+  font-style:italic; font-size:clamp(0.8rem,1.3vw,0.9rem);
   letter-spacing:0.4em; text-transform:lowercase;
-  color:var(--gold-dim); margin-bottom:var(--sp-6);
+  color:var(--gold); margin-bottom:var(--sp-6);
 }
 .section-lead {
   text-align:center; max-width:520px; margin:calc(-1 * var(--sp-3)) auto var(--sp-6);
@@ -268,20 +273,20 @@ img, canvas, svg { max-width:100% }
   box-shadow:0 0 8px rgba(181,147,90,0.18);
 }
 .panel-narrow { max-width:600px; margin:0 auto }
-.note { font-style:italic; font-size:0.84rem; color:var(--dim); line-height:1.55 }
+.note { font-style:italic; font-size:0.98rem; color:var(--muted); line-height:1.55 }
 .note strong { color:var(--gold-bright); font-weight:500 }
 .actions { display:flex; flex-wrap:wrap; gap:0 var(--sp-4); align-items:center; justify-content:center }
 .actions .action-dot { padding:0 var(--sp-1) }
-.status { font-style:italic; font-size:0.82rem; color:var(--dim); min-height:1.4em; margin-top:var(--sp-2) }
+.status { font-style:italic; font-size:0.92rem; color:var(--muted); min-height:1.4em; margin-top:var(--sp-2) }
 .status.ok { color:rgba(34,197,94,0.85) }
-.status.err { color:rgba(239,68,68,0.85) }
+.status.err { color:#f28b84 }
 
 /* ── MAKE — the instrument ── */
 .seg { display:flex; justify-content:center; gap:var(--sp-6); margin-bottom:var(--sp-2) }
 .seg-btn {
   background:none; border:0; cursor:pointer; padding:10px 2px; min-height:44px;
   font-family:'Cormorant Garamond',Georgia,serif; font-style:italic;
-  font-size:0.88rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--dim);
+  font-size:0.94rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--muted);
   border-bottom:1px solid transparent;
   transition:color var(--dur-normal) ease, border-color var(--dur-normal) ease, text-shadow var(--dur-normal) ease;
 }
@@ -296,13 +301,16 @@ img, canvas, svg { max-width:100% }
 details.options { margin:var(--sp-4) 0 0 }
 details.options summary {
   cursor:pointer; list-style:none; min-height:44px; display:inline-flex; align-items:center; gap:var(--sp-2);
-  font-style:italic; font-size:0.8rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold-dim);
+  font-style:italic; font-size:0.88rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold);
 }
 details.options summary::-webkit-details-marker { display:none }
 details.options summary::before { content:'+'; font-family:var(--mono); color:var(--gold) }
 details.options[open] summary::before { content:'−' }
 details.options summary:hover { color:var(--gold-bright) }
 details.options .field { margin-top:var(--sp-3) }
+.check { display:flex; gap:12px; align-items:center; min-height:44px; cursor:pointer; font-style:italic; font-size:1rem; color:var(--muted) }
+.check input { width:18px; height:18px; accent-color:var(--gold); flex:none }
+input[type="time"].field-input { color-scheme:dark }
 .honey { position:absolute; left:-9999px; width:1px; height:1px; opacity:0 }
 
 /* result */
@@ -320,7 +328,7 @@ details.options .field { margin-top:var(--sp-3) }
   border:1px solid rgba(181,147,90,0.35); padding:var(--sp-5) var(--sp-5) var(--sp-4);
   background:rgba(181,147,90,0.05); box-shadow:var(--glow-sm);
 }
-.code-label { font-style:italic; font-size:0.7rem; letter-spacing:0.22em; text-transform:uppercase; color:var(--gold-dim) }
+.code-label { font-style:italic; font-size:0.8rem; letter-spacing:0.22em; text-transform:uppercase; color:var(--gold) }
 .code-value {
   font-family:var(--mono); font-size:clamp(1rem,3vw,1.2rem); letter-spacing:0.08em;
   color:var(--fg); margin:var(--sp-2) 0 var(--sp-3);
@@ -338,7 +346,7 @@ details.options .field { margin-top:var(--sp-3) }
 .enter-row .field { flex:1 1 auto; min-width:0; margin:0 }
 .enter-row .btn-submit { width:auto; margin:0; padding:14px 22px; flex:0 0 auto }
 .ws-head { display:flex; flex-direction:column; gap:var(--sp-3); align-items:center; text-align:center; padding-bottom:var(--sp-5); margin-bottom:var(--sp-3); border-bottom:1px solid var(--gold-line) }
-.ws-meta { font-style:italic; font-size:0.9rem; color:var(--muted) }
+.ws-meta { font-style:italic; font-size:1rem; color:var(--muted) }
 .ws-meta b { color:var(--gold-bright); font-weight:500 }
 .links-list { display:flex; flex-direction:column }
 .link-row {
@@ -350,26 +358,26 @@ details.options .field { margin-top:var(--sp-3) }
 .link-row:hover { background:rgba(181,147,90,0.03) }
 .link-row.active { background:rgba(181,147,90,0.05) }
 .link-title { font-size:1.05rem; color:var(--fg); overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
-.link-sub { font-family:var(--mono); font-size:0.7rem; color:var(--dim); margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
-.link-sub .st { color:var(--gold-dim); font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; margin-right:var(--sp-2) }
+.link-sub { font-family:var(--mono); font-size:0.8rem; color:var(--muted); margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+.link-sub .st { color:var(--gold); font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.8rem; letter-spacing:0.14em; text-transform:uppercase; margin-right:var(--sp-2) }
 .link-sub .st.off { color:rgba(239,68,68,0.75) }
 .link-count { font-family:'Bebas Neue',Impact,sans-serif; font-size:1.7rem; letter-spacing:0.05em; color:var(--gold-bright); line-height:1; text-align:right; white-space:nowrap }
-.link-count small { display:block; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.66rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--dim) }
+.link-count small { display:block; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.76rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted) }
 .detail { margin-top:var(--sp-5); padding-top:var(--sp-5); border-top:1px solid var(--gold-line); display:grid; grid-template-columns:minmax(0,1fr) 220px; gap:var(--sp-6); min-width:0 }
 .detail > * { min-width:0 }
 .stat-row { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--sp-3); margin-bottom:var(--sp-4) }
 .stat { padding:var(--sp-3) 0; border-top:1px solid var(--gold-line); min-width:0 }
 .stat b { display:block; font-family:'Bebas Neue',Impact,sans-serif; font-size:1.9rem; letter-spacing:0.04em; color:var(--fg); line-height:1; font-weight:400 }
-.stat span { display:block; font-style:italic; font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--dim); margin-top:4px }
+.stat span { display:block; font-style:italic; font-size:0.78rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-top:4px }
 .bars { display:flex; align-items:flex-end; gap:6px; height:92px; padding-bottom:18px; position:relative; border-bottom:1px solid var(--gold-line) }
 .bar { flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; position:relative }
 .bar i { display:block; width:100%; background:linear-gradient(180deg,var(--gold-bright),var(--gold)); min-height:2px; box-shadow:var(--glow-xs) }
-.bar span { position:absolute; bottom:-18px; font-family:var(--mono); font-size:0.58rem; color:var(--dim); letter-spacing:0.04em; white-space:nowrap }
+.bar span { position:absolute; bottom:-18px; font-family:var(--mono); font-size:0.68rem; color:var(--muted); letter-spacing:0.04em; white-space:nowrap }
 .mini-list { margin-top:var(--sp-4); display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--sp-4) }
 .mini-list > * { min-width:0 }
-.mini-list h4 { font-style:italic; font-size:0.68rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--gold-dim); margin-bottom:var(--sp-2); font-weight:500 }
+.mini-list h4 { font-style:italic; font-size:0.78rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--gold); margin-bottom:var(--sp-2); font-weight:500 }
 .mini-list ul { list-style:none }
-.mini-list li { display:flex; justify-content:space-between; gap:var(--sp-2); font-size:0.9rem; color:var(--muted); padding:3px 0; border-bottom:1px solid rgba(181,147,90,0.08); min-width:0 }
+.mini-list li { display:flex; justify-content:space-between; gap:var(--sp-2); font-size:0.98rem; color:var(--muted); padding:3px 0; border-bottom:1px solid rgba(181,147,90,0.08); min-width:0 }
 .mini-list li span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
 .mini-list li b { color:var(--fg); font-weight:500; flex:none }
 .detail-side { display:flex; flex-direction:column; gap:var(--sp-3); align-items:stretch }
@@ -400,12 +408,12 @@ details.options .field { margin-top:var(--sp-3) }
 .cap-name { font-family:'Bebas Neue',Impact,sans-serif; font-size:clamp(1.5rem,2.8vw,2rem); letter-spacing:0.05em; text-transform:uppercase; color:var(--fg); margin-bottom:var(--sp-3) }
 .cap-icon { margin:var(--sp-4) auto var(--sp-3); color:var(--gold); opacity:0.55; transition:opacity var(--dur-normal) ease, filter var(--dur-slow) ease }
 .cap-card:hover .cap-icon { opacity:0.9; filter:drop-shadow(0 0 10px rgba(181,147,90,0.35)) }
-.cap-tag { font-style:italic; font-size:clamp(0.82rem,1.2vw,0.92rem); color:var(--dim); letter-spacing:0.04em; transition:color var(--dur-normal) ease }
+.cap-tag { font-style:italic; font-size:clamp(0.92rem,1.3vw,1.02rem); color:var(--muted); letter-spacing:0.04em; transition:color var(--dur-normal) ease }
 .cap-card:hover .cap-tag { color:var(--muted) }
 .cap-expand { max-height:0; overflow:hidden; opacity:0; max-width:100%; transition:max-height var(--dur-slow) var(--ease-out), opacity var(--dur-normal) ease, margin var(--dur-normal) ease; margin-top:0 }
 .cap-card.expanded .cap-expand { max-height:220px; opacity:1; margin-top:var(--sp-4) }
 .cap-detail {
-  font-family:var(--mono); font-size:0.72rem; line-height:1.9;
+  font-family:var(--mono); font-size:0.8rem; line-height:1.9;
   color:var(--muted); text-align:left; white-space:pre-wrap; overflow-wrap:anywhere;
   padding:var(--sp-3) var(--sp-4); max-width:100%;
   background:rgba(8,8,8,0.6); border:1px solid rgba(181,147,90,0.08);
@@ -418,10 +426,10 @@ details.options .field { margin-top:var(--sp-3) }
 .plan:last-child { border-right:0 }
 .plan-name { font-family:'Bebas Neue',Impact,sans-serif; font-size:1.6rem; letter-spacing:0.08em; text-transform:uppercase; line-height:1 }
 .plan-price { font-family:'Bebas Neue',Impact,sans-serif; font-size:2.4rem; letter-spacing:0.03em; color:var(--gold-bright); line-height:1; text-shadow:var(--glow-text) }
-.plan-price small { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.82rem; letter-spacing:0.08em; color:var(--dim); text-shadow:none; text-transform:lowercase }
-.plan-for { font-style:italic; font-size:0.88rem; color:var(--muted); min-height:2.7em }
+.plan-price small { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.9rem; letter-spacing:0.08em; color:var(--muted); text-shadow:none; text-transform:lowercase }
+.plan-for { font-style:italic; font-size:0.98rem; color:var(--muted); min-height:2.7em }
 .plan-list { list-style:none; display:flex; flex-direction:column; gap:7px; flex:1; margin-top:var(--sp-2) }
-.plan-list li { font-size:0.94rem; color:var(--muted); padding-left:16px; position:relative; line-height:1.45 }
+.plan-list li { font-size:1.02rem; color:var(--muted); padding-left:16px; position:relative; line-height:1.45 }
 .plan-list li::before { content:''; position:absolute; left:0; top:0.7em; width:6px; height:1px; background:var(--gold) }
 .plan .btn-submit, .plan .action-link { margin-top:auto; align-self:center }
 .plan .btn-submit { width:100% }
@@ -429,7 +437,7 @@ details.options .field { margin-top:var(--sp-3) }
 
 /* ── CONNECT — symmetric split panels ── */
 .connect-section { position:relative; z-index:1; padding:var(--sp-9) var(--sp-5) var(--sp-12) }
-.connect-intro { text-align:center; margin-bottom:var(--sp-7); font-style:italic; font-size:clamp(1.05rem,2vw,1.3rem); color:var(--muted); letter-spacing:0.04em }
+.connect-intro { text-align:center; margin-bottom:var(--sp-7); font-style:italic; font-size:clamp(1.1rem,2vw,1.32rem); color:var(--muted); letter-spacing:0.04em }
 .connect-shell { max-width:880px; margin:0 auto; display:grid; grid-template-columns:minmax(0,1fr) 1px minmax(0,1fr); gap:0 }
 .connect-panel { padding:var(--sp-7) var(--sp-6); display:flex; flex-direction:column; min-width:0 }
 .connect-seam {
@@ -440,27 +448,27 @@ details.options .field { margin-top:var(--sp-3) }
 .connect-mark {
   position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
   writing-mode:vertical-rl; color:var(--gold); font-style:italic;
-  font-size:0.78rem; letter-spacing:0.5em; text-transform:lowercase; white-space:nowrap;
+  font-size:0.86rem; letter-spacing:0.5em; text-transform:lowercase; white-space:nowrap;
   text-shadow:0 0 10px rgba(181,147,90,0.2);
 }
 .panel-head { margin-bottom:var(--sp-5); text-align:center }
 .panel-title { font-family:'Bebas Neue',Impact,sans-serif; font-size:clamp(1.35rem,2.4vw,1.7rem); letter-spacing:0.05em; text-transform:uppercase; margin-bottom:var(--sp-1) }
-.panel-sub { font-style:italic; font-size:0.82rem; color:var(--dim); letter-spacing:0.04em }
+.panel-sub { font-style:italic; font-size:0.92rem; color:var(--muted); letter-spacing:0.04em }
 
 /* ── FORM ELEMENTS ── */
 .field { margin-bottom:var(--sp-4); min-width:0 }
-.field-label { display:block; font-size:0.7rem; font-style:italic; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold-dim); margin-bottom:var(--sp-1) }
+.field-label { display:block; font-size:0.8rem; font-style:italic; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold); margin-bottom:var(--sp-1) }
 .field-input,.field-select {
   width:100%; padding:10px 0;
   background:none; border:none; border-bottom:1px solid var(--gold-line);
   color:rgba(237,232,223,0.88);
-  font-family:'Cormorant Garamond',Georgia,serif; font-size:0.98rem; letter-spacing:0.06em;
+  font-family:'Cormorant Garamond',Georgia,serif; font-size:1.04rem; letter-spacing:0.06em;
   caret-color:var(--gold); outline:none; min-height:44px;
   transition:border-color var(--dur-normal) ease, box-shadow var(--dur-normal) ease;
 }
 .field-input.mono { font-family:var(--mono); letter-spacing:0.1em; font-size:0.95rem; text-transform:uppercase }
 .field-input:focus,.field-select:focus { border-bottom-color:var(--gold); box-shadow:0 4px 12px rgba(181,147,90,0.1) }
-.field-input::placeholder { color:var(--faint); font-style:italic; text-transform:none; letter-spacing:0.06em; font-family:'Cormorant Garamond',Georgia,serif }
+.field-input::placeholder { color:var(--faint); font-style:italic; opacity:1; text-transform:none; letter-spacing:0.06em; font-family:'Cormorant Garamond',Georgia,serif }
 .field-input:focus-visible,.field-select:focus-visible { outline:none }
 .field-select {
   cursor:pointer; appearance:none; padding-right:24px;
@@ -487,16 +495,16 @@ details.options .field { margin-top:var(--sp-3) }
 .connect-panel .btn-submit { margin-top:auto }
 a.btn-submit { display:block; text-align:center }
 
-.form-note { margin-top:var(--sp-3); font-style:italic; font-size:0.72rem; color:var(--dim); letter-spacing:0.03em; min-height:44px; display:flex; align-items:center; justify-content:center; text-align:center }
+.form-note { margin-top:var(--sp-3); font-style:italic; font-size:0.86rem; color:var(--muted); letter-spacing:0.03em; min-height:44px; display:flex; align-items:center; justify-content:center; text-align:center }
 .form-note a { color:var(--gold); transition:opacity var(--dur-fast) }
 .form-note a:hover { opacity:.7 }
 
 /* ── SUCCESS / ERROR ── */
-.form-success { display:none; padding:var(--sp-3) var(--sp-4); margin-top:var(--sp-3); border-left:2px solid var(--ok); font-style:italic; font-size:0.85rem; color:rgba(34,197,94,0.85); box-shadow:0 0 12px rgba(34,197,94,0.08) }
+.form-success { display:none; padding:var(--sp-3) var(--sp-4); margin-top:var(--sp-3); border-left:2px solid var(--ok); font-style:italic; font-size:0.95rem; color:rgba(34,197,94,0.85); box-shadow:0 0 12px rgba(34,197,94,0.08) }
 .form-success.show { display:block }
-.alert { padding:10px var(--sp-3); margin-bottom:var(--sp-3); font-style:italic; font-size:0.82rem; display:none; border-left:2px solid transparent; overflow-wrap:anywhere }
+.alert { padding:10px var(--sp-3); margin-bottom:var(--sp-3); font-style:italic; font-size:0.92rem; display:none; border-left:2px solid transparent; overflow-wrap:anywhere }
 .alert.show { display:block }
-.alert.error { border-left-color:var(--err); color:rgba(239,68,68,0.85) }
+.alert.error { border-left-color:var(--err); color:#f28b84 }
 .alert.success { border-left-color:var(--ok); color:rgba(34,197,94,0.85) }
 
 /* ── LOADING ── */
@@ -504,15 +512,15 @@ a.btn-submit { display:block; text-align:center }
 .loading.show { display:block }
 .spinner { width:24px; height:24px; border:1.5px solid var(--gold-line); border-top-color:var(--gold); border-radius:50%; animation:spin .7s linear infinite; margin:0 auto var(--sp-2); box-shadow:0 0 8px rgba(181,147,90,0.15) }
 @keyframes spin { to { transform:rotate(360deg) } }
-.login-foot { text-align:center; margin-top:var(--sp-3); font-style:italic; font-size:0.8rem }
+.login-foot { text-align:center; margin-top:var(--sp-3); font-style:italic; font-size:0.9rem }
 .login-foot a { color:var(--gold); transition:opacity var(--dur-fast); min-height:44px; display:inline-flex; align-items:center }
 .login-foot a:hover { opacity:.7 }
-.env-badge { font-size:0.62rem; font-style:italic; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold-dim); margin-bottom:var(--sp-3); display:block }
+.env-badge { font-size:0.74rem; font-style:italic; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold); margin-bottom:var(--sp-3); display:block }
 
 /* ── FOOTER — glowing separator ── */
 .foot { position:relative; z-index:1; padding:var(--sp-5) clamp(1.4rem,5vw,3.2rem) max(var(--sp-5),env(safe-area-inset-bottom)); display:flex; align-items:center; justify-content:space-between }
 .foot::before { content:''; position:absolute; top:0; left:clamp(1.4rem,5vw,3.2rem); right:clamp(1.4rem,5vw,3.2rem); height:1px; background:var(--gold-line); box-shadow:var(--glow-line) }
-.foot a,.foot span { color:var(--gold-dim); font-style:italic; font-size:clamp(0.68rem,1.3vw,0.78rem); letter-spacing:0.2em; text-transform:uppercase; transition:color var(--dur-normal) ease, text-shadow var(--dur-normal) ease }
+.foot a,.foot span { color:var(--gold); font-style:italic; font-size:clamp(0.8rem,1.3vw,0.88rem); letter-spacing:0.2em; text-transform:uppercase; transition:color var(--dur-normal) ease, text-shadow var(--dur-normal) ease }
 .foot a:hover { color:var(--gold-bright); text-shadow:var(--glow-xs) }
 
 /* ── SCROLL REVEAL ── */
@@ -572,6 +580,8 @@ a.btn-submit { display:block; text-align:center }
   <div class="orb orb-3"></div>
 </div>
 
+<a class="skip-link" href="#make">Skip to the QR maker</a>
+
 <!-- ═══ NAV ═══ -->
 <nav class="nav" role="navigation" aria-label="Main navigation">
   <a href="/" class="nav-back">← Kaayko</a>
@@ -600,7 +610,7 @@ a.btn-submit { display:block; text-align:center }
 
 <!-- ═══ MAKE ═══ -->
 <section class="section" id="make" aria-label="Make a QR code">
-  <div class="section-label reveal">make a qr · no account</div>
+  <h2 class="section-label reveal">make a qr · no account</h2>
   <div class="panel panel-narrow reveal">
     <form id="make-form" autocomplete="off" novalidate>
       <div class="seg" role="tablist" aria-label="QR type">
@@ -637,6 +647,24 @@ a.btn-submit { display:block; text-align:center }
           <label class="field-label" for="mk-email">Email me the access code</label>
           <input class="field-input" type="email" id="mk-email" autocomplete="email" placeholder="you@organisation.com">
         </div>
+        <div class="field">
+          <label class="check"><input type="checkbox" id="mk-night-on"> Send people somewhere else at night</label>
+          <div id="mk-night-fields" hidden>
+            <div class="field">
+              <label class="field-label" for="mk-night-url">Night destination</label>
+              <input class="field-input" type="url" id="mk-night-url" inputmode="url" placeholder="https://your-site.com/after-hours">
+            </div>
+            <div class="field-row">
+              <div class="field"><label class="field-label" for="mk-night-start">Night starts</label><input class="field-input" type="time" id="mk-night-start" value="18:00"></div>
+              <div class="field"><label class="field-label" for="mk-night-end">Night ends</label><input class="field-input" type="time" id="mk-night-end" value="06:00"></div>
+            </div>
+            <div class="field">
+              <label class="field-label" for="mk-tz">Time zone</label>
+              <input class="field-input" type="text" id="mk-tz" placeholder="Asia/Kolkata" autocomplete="off" spellcheck="false">
+            </div>
+            <p class="note">Between those hours the QR goes to the night address; otherwise to the main address above. Our clock, in this time zone, decides. Nothing a visitor sends can change it.</p>
+          </div>
+        </div>
       </details>
       <input class="honey" type="text" name="website" id="mk-website" tabindex="-1" autocomplete="off" aria-hidden="true">
 
@@ -650,6 +678,7 @@ a.btn-submit { display:block; text-align:center }
         <span class="short-url" id="rs-url"></span>
         <button type="button" class="action-link quiet" id="rs-copy-url">Copy</button>
       </div>
+      <p class="note" id="rs-night-note" hidden></p>
 
       <div class="code-card" id="rs-code-card">
         <div class="code-label">Access code</div>
@@ -684,7 +713,7 @@ a.btn-submit { display:block; text-align:center }
 
 <!-- ═══ MANAGE ═══ -->
 <section class="section" id="manage" aria-label="Manage your links">
-  <div class="section-label reveal">already have a code?</div>
+  <h2 class="section-label reveal">already have a code?</h2>
   <div class="panel reveal">
     <div class="panel-narrow" id="manage-enter">
       <form id="code-form" autocomplete="off">
@@ -739,7 +768,7 @@ a.btn-submit { display:block; text-align:center }
 
 <!-- ═══ CAPABILITIES — 2x2 symmetric grid ═══ -->
 <section class="section" id="capabilities" aria-label="Capabilities">
-  <div class="section-label reveal">capabilities</div>
+  <h2 class="section-label reveal">capabilities</h2>
   <div class="caps-grid stagger">
     <div class="cap-card reveal">
       <span class="cap-num">01</span>
@@ -783,7 +812,7 @@ rotate it any time</pre></div>
 
 <!-- ═══ PRICING ═══ -->
 <section class="section" id="pricing" aria-label="Pricing">
-  <div class="section-label reveal">pricing</div>
+  <h2 class="section-label reveal">pricing</h2>
   <p class="section-lead reveal">Free needs nothing from you. Teams pay for volume, history and the API.</p>
   <div class="plans reveal">
     <div class="plan">
@@ -1053,6 +1082,16 @@ function setMode(next) {
 $('mode-dynamic').addEventListener('click', () => setMode('dynamic'));
 $('mode-static').addEventListener('click', () => setMode('static'));
 
+/* Night routing (time-of-day windows, evaluated on the server in this zone) */
+function browserTz() { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch { return 'UTC'; } }
+$('mk-tz').value = browserTz();
+$('mk-night-on').addEventListener('change', () => { $('mk-night-fields').hidden = !$('mk-night-on').checked; if ($('mk-night-on').checked) $('mk-night-url').focus(); });
+function nightSummary(schedule) {
+  const win = schedule && schedule.windows && (schedule.windows.find(w => w.label === 'night') || schedule.windows[0]);
+  if (!win) return '';
+  return `Night routing on: ${win.start}–${win.end} (${schedule.timezone}) → ${stripScheme(win.url)}`;
+}
+
 function showResult(r) {
   lastResult = r;
   $('make-form').hidden = true; $('result').classList.add('show');
@@ -1061,11 +1100,14 @@ function showResult(r) {
   if (r.kind === 'static') {
     frame.appendChild(qrCanvas(r.qr, 480, 2));
     $('rs-url').textContent = r.text;
+    $('rs-night-note').hidden = true;
     $('rs-code-card').hidden = true; $('rs-static-note').hidden = false; $('rs-ws-note').hidden = true;
     $('rs-email-toggle').hidden = true; $('rs-email-dot').hidden = true; $('rs-open').hidden = true; $('rs-open-dot').hidden = true;
   } else {
     const img = document.createElement('img'); img.alt = 'QR code for ' + r.link.shortUrl; img.src = r.qrPng; frame.appendChild(img);
     $('rs-url').textContent = stripScheme(r.link.shortUrl);
+    const night = nightSummary(r.link.schedule);
+    $('rs-night-note').hidden = !night; $('rs-night-note').textContent = night;
     $('rs-static-note').hidden = true; $('rs-open').hidden = false; $('rs-open-dot').hidden = false;
     const newWorkspace = !!r.accessCode;
     $('rs-code-card').hidden = !newWorkspace;
@@ -1093,6 +1135,12 @@ $('make-form').addEventListener('submit', async (e) => {
     showResult({ kind: 'static', text: url, qr: buildStaticQr(url) });
     return;
   }
+  let schedule;
+  if ($('mk-night-on').checked) {
+    const nightUrl = normaliseUrl($('mk-night-url').value);
+    if (!nightUrl) { setAlert('mk-alert', 'error', 'Enter the night destination, or untick night routing.'); $('mk-night-url').focus(); return; }
+    schedule = { timezone: $('mk-tz').value.trim() || browserTz(), windows: [{ label: 'night', start: $('mk-night-start').value || '18:00', end: $('mk-night-end').value || '06:00', url: nightUrl }] };
+  }
   const btn = $('mk-submit'); btn.disabled = true; btn.textContent = 'Checking…';
   const body = {
     destination: url,
@@ -1100,6 +1148,7 @@ $('make-form').addEventListener('submit', async (e) => {
     iosDestination: normaliseUrl($('mk-ios').value) || undefined,
     androidDestination: normaliseUrl($('mk-android').value) || undefined,
     email: $('mk-email').value.trim() || undefined,
+    schedule,
     website: $('mk-website').value || undefined
   };
   const { ok, data } = await guestApi('/links', { method: 'POST', body });
@@ -1202,7 +1251,9 @@ async function openDetail(code) {
   const bars = days.length ? days.map(d => `<div class="bar"><i style="height:${Math.max(2, Math.round(d.clicks / max * 100))}%"></i><span>${escapeHtml(d.date.slice(5))}</span></div>`).join('') : '<p class="note" style="align-self:center;width:100%;text-align:center">No scans in the last 7 days.</p>';
   const top = (rows, n = 4) => (rows || []).filter(r => r.value !== null && r.value !== undefined).slice(0, n).map(r => `<li><span>${escapeHtml(r.value)}</span><b>${r.clicks}</b></li>`).join('') || '<li><span>—</span></li>';
   const scans = (a.recentScans || []).slice(0, 5).map(s => `<li><span>${fmtAgo(s.at)} · ${escapeHtml(s.deviceType || '?')}</span><b>${escapeHtml(s.country || '')}</b></li>`).join('') || '<li><span>No scans yet</span></li>';
-  const stateLine = link.status === 'blocked' ? `Blocked by the safety check. <a href="/kortex/appeal?code=${encodeURIComponent(link.code)}" style="color:var(--gold)">Request a review</a>.` : link.status === 'held' ? 'Under review; it goes live once checked.' : (!link.enabled ? 'Paused: scans see a "link disabled" page.' : 'Live.');
+  const nightWin = link.schedule && link.schedule.windows && (link.schedule.windows.find(w => w.label === 'night') || link.schedule.windows[0]);
+  const stateLine = (link.status === 'blocked' ? `Blocked by the safety check. <a href="/kortex/appeal?code=${encodeURIComponent(link.code)}" style="color:var(--gold)">Request a review</a>.` : link.status === 'held' ? 'Under review; it goes live once checked.' : (!link.enabled ? 'Paused: scans see a "link disabled" page.' : 'Live.'))
+    + (nightWin ? ` ${escapeHtml(nightSummary(link.schedule))}.` : '');
   box.innerHTML = `
     <div>
       <div class="stat-row">
@@ -1224,6 +1275,12 @@ async function openDetail(code) {
       <form id="dt-form">
         <div class="field"><label class="field-label" for="dt-title">Name</label><input class="field-input" id="dt-title" maxlength="120" value="${escapeHtml(link.title || '')}"></div>
         <div class="field"><label class="field-label" for="dt-url">Points to</label><input class="field-input" id="dt-url" type="url" value="${escapeHtml((link.destinations && link.destinations.web) || '')}"></div>
+        <div class="field"><label class="field-label" for="dt-night-url">At night, go to</label><input class="field-input" id="dt-night-url" type="url" placeholder="leave empty for none" value="${escapeHtml(nightWin ? nightWin.url : '')}"></div>
+        <div class="field-row">
+          <div class="field"><label class="field-label" for="dt-night-start">Night starts</label><input class="field-input" id="dt-night-start" type="time" value="${escapeHtml(nightWin ? nightWin.start : '18:00')}"></div>
+          <div class="field"><label class="field-label" for="dt-night-end">Night ends</label><input class="field-input" id="dt-night-end" type="time" value="${escapeHtml(nightWin ? nightWin.end : '06:00')}"></div>
+        </div>
+        <div class="field"><label class="field-label" for="dt-tz">Time zone</label><input class="field-input" id="dt-tz" spellcheck="false" value="${escapeHtml((link.schedule && link.schedule.timezone) || browserTz())}"></div>
         <button type="submit" class="btn-submit">Save</button>
         <div class="actions" style="margin-top:8px">
           <button type="button" class="action-link quiet" id="dt-toggle">${link.enabled ? 'Pause' : 'Resume'}</button>
@@ -1237,7 +1294,14 @@ async function openDetail(code) {
   $('dt-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const url = normaliseUrl($('dt-url').value); if (!url) { setStatus('dt-status', 'Enter a full web address.', 'err'); return; }
-    const { ok: k, data: d } = await guestApi(`/links/${encodeURIComponent(code)}`, { method: 'PATCH', body: { destination: url, title: $('dt-title').value.trim() } });
+    const nightRaw = $('dt-night-url').value.trim();
+    let schedule = null;
+    if (nightRaw) {
+      const nightUrl = normaliseUrl(nightRaw);
+      if (!nightUrl) { setStatus('dt-status', 'Enter a full web address for the night destination.', 'err'); return; }
+      schedule = { timezone: $('dt-tz').value.trim() || browserTz(), windows: [{ label: 'night', start: $('dt-night-start').value || '18:00', end: $('dt-night-end').value || '06:00', url: nightUrl }] };
+    }
+    const { ok: k, data: d } = await guestApi(`/links/${encodeURIComponent(code)}`, { method: 'PATCH', body: { destination: url, title: $('dt-title').value.trim(), schedule } });
     if (!k) { setStatus('dt-status', friendly(d, 'Could not save.') + (d.reasons ? ' ' + d.reasons.map(r => r.detail).join(' ') : ''), 'err'); return; }
     await openWorkspaceFromSession(); await openDetail(code); setStatus('dt-status', 'Saved. Every scan now goes to the new address.', 'ok');
   });
@@ -1517,115 +1581,194 @@ document.querySelectorAll('.cap-card').forEach(card => {
   hero.addEventListener('pointerleave', () => { glow.style.opacity = '0'; active = false; });
 })();
 
-/* ── CORTEX — a living network of links behind the wordmark ──
-   Nodes are links, edges are the routes between them, and the bright pulses
-   are scans travelling the network. Two loose lobes, a quieter centre so the
-   wordmark stays crisp. Honours prefers-reduced-motion (one still frame),
-   sleeps when the hero is off-screen or the tab is hidden. */
+/* ── NIGHT SKY — real constellations behind the wordmark ──
+   A seeded starfield and nine constellations drawn from their stars' actual
+   right ascension and declination (J2000), so Orion looks like Orion. One
+   constellation at a time: its stars brighten, then every link between them
+   shines at once, holds, fades, and the next one takes its place.
+   Nothing here depends on scroll position: coordinates are normalised, the
+   layout is seeded, and only a real width change rebuilds it. */
 (function() {
   const hero = document.querySelector('.hero');
   if (!hero || !window.HTMLCanvasElement) return;
   const canvas = document.createElement('canvas');
-  canvas.className = 'cortex'; canvas.setAttribute('aria-hidden', 'true');
+  canvas.className = 'sky'; canvas.setAttribute('aria-hidden', 'true');
   hero.prepend(canvas);
   const ctx = canvas.getContext('2d');
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const TAU = Math.PI * 2;
-  let W = 0, H = 0, nodes = [], edges = [], pulses = [], running = false, raf = 0, last = 0;
-  const pointer = { x: -1e4, y: -1e4 };
 
-  function build() {
-    const count = W < 520 ? 24 : W < 900 ? 38 : 56;
-    const cx = W / 2, cy = H / 2;
-    const spreadX = Math.min(W * 0.46, 640), spreadY = Math.min(H * 0.40, 300);
-    nodes = [];
+  // Right ascension in hours, declination in degrees. Edges index the stars.
+  const CONSTELLATIONS = [
+    { name: 'orion', stars: [[5.919,7.407,1],[5.419,6.350],[5.586,9.934],[5.679,-1.943],[5.604,-1.202],[5.533,-0.299],[5.796,-9.670],[5.242,-8.202,1]],
+      edges: [[0,2],[1,2],[0,3],[1,5],[3,4],[4,5],[3,6],[5,7],[6,7]] },
+    { name: 'ursa major', stars: [[11.062,61.751,1],[11.031,56.383],[11.897,53.695],[12.257,57.033],[12.900,55.960,1],[13.399,54.925],[13.792,49.313,1]],
+      edges: [[6,5],[5,4],[4,3],[3,2],[2,1],[1,0],[0,3]] },
+    { name: 'cassiopeia', stars: [[0.153,59.150],[0.675,56.537,1],[0.945,60.717],[1.430,60.235],[1.907,63.670]],
+      edges: [[0,1],[1,2],[2,3],[3,4]] },
+    { name: 'cygnus', stars: [[20.690,45.280,1],[20.370,40.257],[19.512,27.960],[19.749,45.131],[20.770,33.970]],
+      edges: [[0,1],[1,2],[3,1],[1,4]] },
+    { name: 'leo', stars: [[10.140,11.967,1],[10.122,16.763],[10.333,19.842],[10.278,23.417],[9.879,26.007],[9.764,23.774],[11.235,20.524],[11.237,15.430],[11.818,14.572,1]],
+      edges: [[0,1],[1,2],[2,3],[3,4],[4,5],[2,6],[6,8],[8,7],[7,0],[7,6]] },
+    { name: 'scorpius', stars: [[16.091,-19.805],[16.006,-22.622],[15.981,-26.114],[16.490,-26.432,1],[16.598,-28.216],[16.836,-34.293],[16.864,-38.047],[16.909,-42.362],[17.203,-43.239],[17.622,-42.998],[17.793,-40.127],[17.708,-39.030],[17.513,-37.296],[17.560,-37.104,1]],
+      edges: [[0,1],[1,2],[1,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,9],[9,10],[10,11],[11,12],[12,13]] },
+    { name: 'lyra', stars: [[18.616,38.784,1],[18.739,39.670],[18.746,37.605],[18.908,36.899],[18.982,32.690],[18.835,33.363]],
+      edges: [[0,1],[0,2],[2,3],[3,4],[4,5],[5,2]] },
+    { name: 'gemini', stars: [[7.577,31.888,1],[7.755,28.026,1],[7.186,30.245],[6.732,25.131],[6.383,22.514],[6.248,22.507],[7.335,21.982],[7.068,20.570],[6.629,16.399]],
+      edges: [[0,2],[2,3],[3,4],[4,5],[1,6],[6,7],[7,8],[2,6]] },
+    { name: 'taurus', stars: [[4.599,16.509,1],[5.438,28.607],[5.627,21.143],[4.330,15.628],[4.383,17.543],[4.477,19.180],[4.477,15.871],[4.011,12.490]],
+      edges: [[0,6],[6,3],[3,4],[4,5],[5,1],[0,2],[3,7]] }
+  ];
+
+  // Project each constellation onto a unit box, preserving its true shape.
+  CONSTELLATIONS.forEach(c => {
+    const ra0 = c.stars.reduce((s, st) => s + st[0], 0) / c.stars.length;
+    const dec0 = c.stars.reduce((s, st) => s + st[1], 0) / c.stars.length;
+    const cosD = Math.cos(dec0 * Math.PI / 180);
+    let pts = c.stars.map(st => ({ x: -(st[0] - ra0) * 15 * cosD, y: -(st[1] - dec0), bright: st[2] === 1 }));
+    const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
+    const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+    const span = Math.max(maxX - minX, maxY - minY) || 1;
+    c.aspect = (maxX - minX) / (maxY - minY || 1);
+    c.points = pts.map(p => ({ x: (p.x - minX) / span, y: (p.y - minY) / span, bright: p.bright }));
+    c.w = (maxX - minX) / span; c.h = (maxY - minY) / span;
+  });
+
+  function mulberry32(a) { return function() { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+  let W = 0, H = 0, dpr = 1, stars = [], twinklers = [], base = null, running = false, raf = 0, lastFrame = 0, startTs = 0;
+  let order = [], current = 0, phaseStart = 0;
+  const PERIOD = 9000, STAR_IN = 1100, LINE_IN = 1700, FADE_OUT = 7600;
+
+  function buildStars() {
+    const rnd = mulberry32(20260903);
+    const count = W < 520 ? 150 : 280;
+    stars = [];
     for (let i = 0; i < count; i++) {
-      const lobe = i % 2 ? -1 : 1;
-      const a = Math.random() * TAU;
-      const rr = 0.22 + Math.random() * 0.78;
-      const x = cx + lobe * spreadX * 0.28 + Math.cos(a) * spreadX * 0.72 * rr;
-      const y = cy + Math.sin(a) * spreadY * rr;
-      nodes.push({ x, y, ox: x, oy: y, r: 1 + Math.random() * 1.5, ph: Math.random() * TAU, sp: 0.12 + Math.random() * 0.22, amp: 5 + Math.random() * 9 });
+      stars.push({ x: rnd(), y: rnd(), r: 0.35 + rnd() * 1.1, a: 0.25 + rnd() * 0.65, ph: rnd() * TAU, sp: 0.4 + rnd() * 1.2, cool: rnd() < 0.3 });
     }
-    edges = [];
-    const seen = new Set();
-    nodes.forEach((n, i) => {
-      nodes.map((m, j) => ({ j, d: Math.hypot(m.x - n.x, m.y - n.y) }))
-        .filter(o => o.j !== i).sort((p, q) => p.d - q.d)
-        .slice(0, 2 + (i % 3 === 0 ? 1 : 0))
-        .forEach(o => { const key = i < o.j ? i + '-' + o.j : o.j + '-' + i; if (!seen.has(key)) { seen.add(key); edges.push([i, o.j]); } });
-    });
-    pulses = [];
+    twinklers = stars.filter((s, i) => i % 6 === 0);
+    order = CONSTELLATIONS.map((c, i) => i);
+    for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
   }
-  function resize() {
+  function renderBase() {
+    base = document.createElement('canvas');
+    base.width = canvas.width; base.height = canvas.height;
+    const b = base.getContext('2d');
+    b.setTransform(dpr, 0, 0, dpr, 0, 0);
+    stars.forEach((s, i) => {
+      if (i % 6 === 0) return; // twinklers are drawn live
+      b.fillStyle = s.cool ? `rgba(205,214,236,${s.a * 0.9})` : `rgba(237,232,223,${s.a})`;
+      b.beginPath(); b.arc(s.x * W, s.y * H, s.r, 0, TAU); b.fill();
+    });
+  }
+  function resize(force) {
     const r = hero.getBoundingClientRect();
-    W = r.width; H = r.height;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const nextW = Math.round(r.width), nextH = Math.round(r.height);
+    // Only a real width change rebuilds; mobile address-bar height changes are ignored.
+    if (!force && Math.abs(nextW - W) < 4) { return; }
+    W = nextW; H = nextH;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
     canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    build();
+    buildStars(); renderBase();
   }
-  function spawnPulse() {
-    if (!edges.length) return;
-    pulses.push({ e: edges[Math.floor(Math.random() * edges.length)], t: 0, dir: Math.random() < 0.5 ? 1 : -1, speed: 0.3 + Math.random() * 0.45 });
+
+  // Where the active constellation sits: alternate sides on wide screens, top/bottom on phones.
+  function placement(index) {
+    const c = CONSTELLATIONS[order[index % order.length]];
+    const phone = W < 640;
+    const boxW = phone ? Math.min(W * 0.62, 300) : Math.min(W * 0.30, 380);
+    const scale = boxW / Math.max(c.w, 0.001);
+    const w = c.w * scale, h = c.h * scale;
+    const side = index % 2 === 0 ? -1 : 1;
+    const cx = phone ? W * 0.5 : W * (0.5 + side * 0.31);
+    const cy = phone ? (index % 2 === 0 ? H * 0.22 : H * 0.80) : H * 0.50;
+    return { c, x: cx - w / 2, y: cy - h / 2, w, h, scale };
   }
-  function draw(time, dt) {
+
+  function ease(t) { t = Math.max(0, Math.min(1, t)); return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+
+  function drawConstellation(place, starA, lineA, shimmer) {
+    const { c, x, y, w, h } = place;
+    const pts = c.points.map(p => ({ x: x + p.x * w, y: y + p.y * h, bright: p.bright }));
+    if (lineA > 0) {
+      c.edges.forEach(([i, j]) => {
+        const a = pts[i], b = pts[j];
+        ctx.lineWidth = 2.6; ctx.strokeStyle = `rgba(217,189,123,${lineA * 0.18})`;
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+        ctx.lineWidth = 1; ctx.strokeStyle = `rgba(237,232,223,${lineA * (0.55 + shimmer * 0.2)})`;
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      });
+    }
+    pts.forEach(p => {
+      const r = p.bright ? 2.6 : 1.7;
+      if (p.bright && starA > 0) {
+        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 12);
+        g.addColorStop(0, `rgba(217,189,123,${starA * 0.5})`); g.addColorStop(1, 'rgba(217,189,123,0)');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, 12, 0, TAU); ctx.fill();
+      }
+      ctx.fillStyle = `rgba(237,232,223,${0.25 + starA * 0.75})`;
+      ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, TAU); ctx.fill();
+    });
+    if (lineA > 0.05) {
+      ctx.font = 'italic 13px "Cormorant Garamond", Georgia, serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = `rgba(181,147,90,${lineA * 0.95})`;
+      const label = c.name.split('').join('  ');
+      ctx.fillText(label, x + w / 2, y + h + 22);
+    }
+  }
+
+  function draw(now) {
     ctx.clearRect(0, 0, W, H);
-    nodes.forEach(n => {
-      n.x = n.ox + Math.sin(time * n.sp + n.ph) * n.amp;
-      n.y = n.oy + Math.cos(time * n.sp * 0.8 + n.ph) * n.amp * 0.6;
+    if (base) ctx.drawImage(base, 0, 0, W, H);
+    const t = (now - startTs) / 1000;
+    twinklers.forEach(s => {
+      const a = s.a * (0.55 + 0.45 * Math.sin(t * s.sp + s.ph));
+      ctx.fillStyle = s.cool ? `rgba(205,214,236,${a})` : `rgba(237,232,223,${a})`;
+      ctx.beginPath(); ctx.arc(s.x * W, s.y * H, s.r + 0.3, 0, TAU); ctx.fill();
     });
-    ctx.lineWidth = 0.8;
-    edges.forEach(([i, j]) => {
-      const a = nodes[i], b = nodes[j];
-      const boost = Math.max(0, 1 - Math.hypot((a.x + b.x) / 2 - pointer.x, (a.y + b.y) / 2 - pointer.y) / 260);
-      ctx.strokeStyle = `rgba(181,147,90,${0.12 + boost * 0.35})`;
-      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-    });
-    nodes.forEach(n => {
-      const boost = Math.max(0, 1 - Math.hypot(n.x - pointer.x, n.y - pointer.y) / 220);
-      if (boost > 0.15) { ctx.fillStyle = `rgba(181,147,90,${boost * 0.16})`; ctx.beginPath(); ctx.arc(n.x, n.y, n.r * 4.5, 0, TAU); ctx.fill(); }
-      ctx.fillStyle = `rgba(217,189,123,${0.4 + boost * 0.55})`;
-      ctx.beginPath(); ctx.arc(n.x, n.y, n.r + boost * 1.2, 0, TAU); ctx.fill();
-    });
-    if (dt > 0 && Math.random() < dt * 1.5 && pulses.length < 7) spawnPulse();
-    pulses = pulses.filter(p => p.t <= 1);
-    pulses.forEach(p => {
-      p.t += dt * p.speed;
-      const [i, j] = p.e;
-      const a = p.dir > 0 ? nodes[i] : nodes[j], b = p.dir > 0 ? nodes[j] : nodes[i];
-      const x = a.x + (b.x - a.x) * p.t, y = a.y + (b.y - a.y) * p.t;
-      const g = ctx.createRadialGradient(x, y, 0, x, y, 9);
-      g.addColorStop(0, 'rgba(237,232,223,0.95)'); g.addColorStop(0.35, 'rgba(217,189,123,0.55)'); g.addColorStop(1, 'rgba(181,147,90,0)');
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, 9, 0, TAU); ctx.fill();
-    });
+    const elapsed = now - phaseStart;
+    if (elapsed >= PERIOD) { current = (current + 1) % order.length; phaseStart = now; }
+    const e = now - phaseStart;
+    const starA = e < STAR_IN ? ease(e / STAR_IN) : e < FADE_OUT ? 1 : 1 - ease((e - FADE_OUT) / (PERIOD - FADE_OUT));
+    const lineA = e < STAR_IN ? 0 : e < LINE_IN ? ease((e - STAR_IN) / (LINE_IN - STAR_IN)) : e < FADE_OUT ? 1 : 1 - ease((e - FADE_OUT) / (PERIOD - FADE_OUT));
+    const shimmer = 0.5 + 0.5 * Math.sin(t * 1.6);
+    drawConstellation(placement(current), starA, lineA, shimmer);
   }
+
   function frame(ts) {
     if (!running) return;
     raf = requestAnimationFrame(frame);
-    const dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016;
-    last = ts;
-    draw(ts / 1000, dt);
+    if (ts - lastFrame < 33) return; // ~30 fps is plenty for a sky
+    lastFrame = ts;
+    draw(ts);
   }
-  function start() { if (running || reduced) return; running = true; last = 0; raf = requestAnimationFrame(frame); }
+  function start() { if (running || reduced) return; running = true; if (!startTs) { startTs = performance.now(); phaseStart = startTs; } raf = requestAnimationFrame(frame); }
   function stop() { running = false; cancelAnimationFrame(raf); }
 
-  resize();
+  resize(true);
+  // First frame right away, so the sky is never empty before the observer fires.
+  startTs = phaseStart = performance.now();
+  draw(startTs);
   let resizeTimer = 0;
-  window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(resize, 160); });
-  hero.addEventListener('pointermove', (e) => { const r = hero.getBoundingClientRect(); pointer.x = e.clientX - r.left; pointer.y = e.clientY - r.top; });
-  hero.addEventListener('pointerleave', () => { pointer.x = -1e4; pointer.y = -1e4; });
+  window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { resize(false); if (reduced) drawStill(); }, 200); });
 
+  function drawStill() {
+    const now = performance.now(); startTs = now; phaseStart = now - LINE_IN - 500;
+    draw(now);
+  }
   if (reduced) {
-    // One quiet still: the network with a few pulses frozen mid-route.
-    for (let k = 0; k < 4; k++) { spawnPulse(); pulses[k].t = Math.random(); }
-    draw(1, 0);
+    drawStill();
   } else {
+    if (hero.getBoundingClientRect().bottom > 0) start();
     new IntersectionObserver((entries) => entries.forEach(en => en.isIntersecting ? start() : stop()), { threshold: 0.05 }).observe(hero);
     document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); else start(); });
   }
 })();
+
 </script>
 
 <!-- Product analytics (PostHog) is intentionally NOT loaded on this public
