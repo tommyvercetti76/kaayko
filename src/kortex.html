@@ -726,6 +726,12 @@ click ·········· <span class="hl">registration</span></pre></div>
             <input class="field-input" type="text" id="inq-company" required placeholder="Acme Events" autocomplete="organization">
           </div>
           <div class="field">
+            <label class="field-label" for="inq-password">Password</label>
+            <input class="field-input" type="password" id="inq-password" required minlength="8" placeholder="At least 8 characters" autocomplete="new-password">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
             <label class="field-label" for="inq-use-case">Use Case</label>
             <select class="field-select" id="inq-use-case">
               <option value="Events & Ticketing">Events & Ticketing</option>
@@ -741,9 +747,10 @@ click ·········· <span class="hl">registration</span></pre></div>
           </div>
         </div>
         <button type="submit" class="btn-submit">Create Free Account</button>
-        <p class="form-note">25 links, 3 campaigns, 7-day analytics. <a href="/legal/kortex-terms">Terms</a></p>
+        <p class="form-note">25 links, 3 campaigns, 7-day analytics. By continuing you accept the <a href="/legal/kortex-terms">Terms</a>.</p>
+        <div id="inq-error" class="alert" role="alert"></div>
         <div id="inq-ok" class="form-success" role="status">
-          Account created — check <strong id="inq-ok-email"></strong> for your login.
+          Workspace created. We sent a verification link to <strong id="inq-ok-email"></strong> — opening your dashboard…
         </div>
       </form>
     </div>
@@ -857,9 +864,15 @@ async function handleCredentialsStep() {
     const cred = await auth.signInWithEmailAndPassword(email, password);
     const user = cred.user;
     const idToken = await user.getIdToken();
-    const role = (await user.getIdTokenResult()).claims.role;
+    let role = (await user.getIdTokenResult()).claims.role;
+    if (!role) {
+      // A self-serve signup whose provisioning call never completed (network
+      // drop, closed tab) lands here: provisioning is idempotent, so retry it.
+      const recovered = await provisionWorkspace(idToken, readPendingSignup(user.email));
+      if (recovered) role = (await user.getIdTokenResult(true)).claims.role;
+    }
     if (!role || !['super-admin','admin','editor','viewer'].includes(role)) throw new Error('Access denied. Admin role required.');
-    loginState = { ...loginState, user, idToken, role };
+    loginState = { ...loginState, user, idToken: await user.getIdToken(), role };
     await fetchUserTenants(idToken, user.uid, role);
     loginState.step = 'tenant-selection';
     showTenantSelection();
@@ -878,6 +891,7 @@ async function fetchUserTenants(idToken, uid, role) {
     if (!res.ok) throw new Error();
     const data = await res.json();
     loginState.tenants = (data.success && data.tenants?.length) ? data.tenants : [{ id:'kaayko-default', name:'Kaayko (Default)' }];
+    loginState.requireEmailVerification = data.profile?.requireEmailVerification === true;
   } catch { loginState.tenants = [{ id:'kaayko-default', name:'Kaayko (Default)' }]; }
 }
 
@@ -914,6 +928,7 @@ async function handleTenantSelectionStep() {
       uid: loginState.user.uid, email: loginState.user.email,
       displayName: loginState.user.displayName || loginState.user.email.split('@')[0],
       role: loginState.role, emailVerified: loginState.user.emailVerified,
+      requireEmailVerification: loginState.requireEmailVerification === true,
       tenantId, tenantName: tenant?.name || tenantId
     }));
     localStorage.setItem('kaayko_tenant_id', tenantId);
@@ -963,37 +978,135 @@ auth.onAuthStateChanged(async (user) => {
   document.getElementById('login-btn').disabled = false;
 });
 
-/* ── SIGNUP ── */
+/* ── SIGNUP (self-serve) ──
+   1. Create the Firebase user (email + password) in the browser.
+   2. POST the ID token to /kortex/tenants/provision → tenant + admin profile + role claim.
+   3. Send the verification email; the API refuses link writes until it is verified.
+   4. Store the session the same way login does and open the dashboard. */
+const PENDING_SIGNUP_KEY = 'kortex_pending_signup';
+
+function readPendingSignup(email) {
+  try {
+    const pending = JSON.parse(localStorage.getItem(PENDING_SIGNUP_KEY) || 'null');
+    if (pending && (!email || pending.email === email)) return pending;
+  } catch {}
+  return null;
+}
+
+async function provisionWorkspace(idToken, details) {
+  if (!details || !details.organization) return null;
+  const res = await fetch(`${CONFIG.API_BASE}/kortex/tenants/provision`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+    body: JSON.stringify({ name: details.name, organization: details.organization, useCase: details.useCase })
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.success) {
+    const err = new Error(data.error || 'Could not create your workspace.');
+    err.code = data.code || `HTTP_${res.status}`;
+    throw err;
+  }
+  localStorage.removeItem(PENDING_SIGNUP_KEY);
+  return data;
+}
+
+function showSignupError(msg) {
+  const el = document.getElementById('inq-error');
+  el.className = 'alert error show'; el.textContent = msg;
+}
+
 document.getElementById('inquiry-form').addEventListener('submit', async function(e) {
   e.preventDefault();
   const btn = this.querySelector('button[type="submit"]');
   const name = document.getElementById('inq-name').value.trim();
   const email = document.getElementById('inq-email').value.trim();
   const company = document.getElementById('inq-company').value.trim();
+  const password = document.getElementById('inq-password').value;
   const useCase = document.getElementById('inq-use-case').value;
+  document.getElementById('inq-error').className = 'alert';
   if (!name || !email || !company) return;
-  btn.disabled = true; btn.textContent = 'Creating account…';
+  if (password.length < 8) { showSignupError('Choose a password of at least 8 characters.'); return; }
+
+  btn.disabled = true; btn.textContent = 'Creating your workspace…';
+  const details = { name, email, organization: company, useCase };
   try {
-    const res = await fetch(`${CONFIG.API_BASE}/kortex/tenants/register`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, organization: company, useCase })
-    });
-    const data = await res.json();
-    if (data.success) {
-      document.getElementById('inq-ok-email').textContent = email;
-      document.getElementById('inq-ok').classList.add('show');
-      btn.textContent = 'Account Created';
-      setTimeout(() => { this.reset(); }, 1000);
-    } else { btn.textContent = 'Create Free Account'; btn.disabled = false; alert(data.error || 'Something went wrong.'); }
-  } catch {
-    const subject = encodeURIComponent('Kortex Signup — ' + useCase + ' (' + company + ')');
-    const body = encodeURIComponent('Name: ' + name + '\nEmail: ' + email + '\nOrg: ' + company + '\nUse Case: ' + useCase);
-    window.location.href = 'mailto:kortex@kaayko.com?subject=' + subject + '&body=' + body;
+    // Remember the intent first: if provisioning fails after the user exists,
+    // the next sign-in retries it (provisioning is idempotent).
+    localStorage.setItem(PENDING_SIGNUP_KEY, JSON.stringify(details));
+
+    let cred;
+    try {
+      cred = await auth.createUserWithEmailAndPassword(email, password);
+    } catch (authErr) {
+      if (authErr.code === 'auth/email-already-in-use') {
+        // Existing user: sign in and let provisioning (idempotent) finish the job.
+        cred = await auth.signInWithEmailAndPassword(email, password);
+      } else {
+        throw authErr;
+      }
+    }
+    const user = cred.user;
+    if (name && !user.displayName) { try { await user.updateProfile({ displayName: name }); } catch {} }
+
+    const idToken = await user.getIdToken();
+    const provisioned = await provisionWorkspace(idToken, details);
+
+    if (!user.emailVerified) {
+      try { await user.sendEmailVerification({ url: 'https://kaayko.com/kortex?verified=1' }); } catch (mailErr) { console.warn('verification email', mailErr); }
+    }
+
+    // Custom claims only appear in a refreshed token.
+    const freshToken = await user.getIdToken(true);
+    const tenant = provisioned.tenant;
+    localStorage.setItem('kaayko_auth_token', freshToken);
+    localStorage.setItem('kaayko_user', JSON.stringify({
+      uid: user.uid, email: user.email, displayName: user.displayName || name,
+      role: provisioned.user?.role || 'admin', emailVerified: user.emailVerified === true,
+      requireEmailVerification: provisioned.user?.requireEmailVerification !== false,
+      tenantId: tenant.id, tenantName: tenant.name
+    }));
+    localStorage.setItem('kaayko_tenant_id', tenant.id);
+    localStorage.setItem('kaayko_environment', CONFIG.ENVIRONMENT);
+
     document.getElementById('inq-ok-email').textContent = email;
     document.getElementById('inq-ok').classList.add('show');
+    btn.textContent = 'Workspace ready';
+    if (window.phTrack) phTrack('signup_completed', { source: 'landing_page', existing: provisioned.existing === true });
+    setTimeout(() => { window.location.href = '/admin/kortex'; }, 900);
+  } catch (err) {
+    const msgs = {
+      'auth/invalid-email': 'That email address does not look right.',
+      'auth/weak-password': 'Choose a stronger password (at least 8 characters).',
+      'auth/wrong-password': 'An account with this email already exists. Sign in on the right, or use "Forgot password?".',
+      'auth/invalid-credential': 'An account with this email already exists. Sign in on the right, or use "Forgot password?".',
+      'auth/too-many-requests': 'Too many attempts. Please try again in a few minutes.',
+      'auth/network-request-failed': 'Network problem. Check your connection and try again.',
+      'RATE_LIMIT_UNAVAILABLE': 'Signups are briefly unavailable. Please try again in a minute.',
+      'HTTP_429': 'Too many signups from this network. Please try again later.'
+    };
+    showSignupError(msgs[err.code] || err.message || 'Something went wrong. Please try again.');
     btn.textContent = 'Create Free Account'; btn.disabled = false;
   }
 });
+
+/* Returning from the verification email: refresh the stored token so the
+   API sees email_verified=true, then continue to the dashboard. */
+if (new URLSearchParams(window.location.search).get('verified') === '1') {
+  auth.onAuthStateChanged(async (user) => {
+    if (!user) return;
+    try {
+      await user.reload();
+      const token = await user.getIdToken(true);
+      const stored = JSON.parse(localStorage.getItem('kaayko_user') || 'null');
+      if (stored && stored.uid === user.uid) {
+        stored.emailVerified = user.emailVerified === true;
+        localStorage.setItem('kaayko_user', JSON.stringify(stored));
+        localStorage.setItem('kaayko_auth_token', token);
+        if (localStorage.getItem('kaayko_tenant_id')) window.location.href = '/admin/kortex';
+      }
+    } catch {}
+  });
+}
 
 /* ── SCROLL REVEAL ── */
 const revealObs = new IntersectionObserver((entries) => {

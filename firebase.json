@@ -105,6 +105,7 @@
       { "source": "/l/**", "function": "api" },
       { "source": "/resolve", "function": "api" },
       { "source": "/health", "function": "api" },
+      { "source": "/kortex/appeal", "destination": "/kortex-appeal.html" },
       { "source": "/a/**", "destination": "/tenant.html" },
       { "source": "/login", "destination": "/tenant.html" },
       { "source": "/karma/kameras/**", "destination": "/karma/kameras/index.html" },

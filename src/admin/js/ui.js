@@ -362,6 +362,11 @@ function renderLinkRow(link) {
             </svg>
           </button>
           <div class="link-url">${escapeHtml(shortUrl)}</div>
+          ${link.status === 'held'
+            ? '<span class="badge" style="background:rgba(212,168,75,.15);color:var(--gold-primary,#D4A84B);border:1px solid rgba(212,168,75,.4)" title="Held for review: the destination is new to Kortex and is being checked">Under review</span>'
+            : link.status === 'blocked'
+              ? '<span class="badge" style="background:rgba(224,90,79,.15);color:#e05a4f;border:1px solid rgba(224,90,79,.4)" title="Blocked by the safety check or an operator">Blocked</span>'
+              : ''}
           ${renderMetadataBadges(link)}
         </div>
       </td>

@@ -312,7 +312,13 @@ function renderLedger(totals, unavailable) {
 /* ── link header + meta ────────────────────────────────────────────────────*/
 function renderHeader(link, analytics) {
   const t = analytics.totals;
-  const status = link.enabled ? '<span class="ld-status is-live">Live</span>' : '<span class="ld-status is-paused">Paused</span>';
+  const status = link.status === 'held'
+    ? '<span class="ld-status is-paused" title="Held for review: the destination is new to Kortex and is being checked">Under review</span>'
+    : link.status === 'blocked'
+      ? '<span class="ld-status is-paused" title="Blocked by the safety check or an operator">Blocked</span>'
+      : link.enabled
+        ? '<span class="ld-status is-live">Live</span>'
+        : '<span class="ld-status is-paused">Paused</span>';
   return `<header class="ld-header">
     <button class="ld-back" data-ld-back>← Back</button>
     <div class="ld-header-main">

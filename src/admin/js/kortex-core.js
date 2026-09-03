@@ -502,6 +502,86 @@ function applyRoleVisibility() {
   }
 }
 
+// ============================================================================
+// EMAIL VERIFICATION BANNER (self-serve accounts)
+// ============================================================================
+// The API refuses link writes for self-serve accounts until the address is
+// verified (403 EMAIL_NOT_VERIFIED). The banner lets the user resend the mail
+// and, once verified, refresh the ID token so the API sees email_verified=true.
+
+let verifyBannerAuth = null;
+
+async function getFirebaseAuthUser() {
+  if (verifyBannerAuth) return verifyBannerAuth;
+  const firebaseConfig = {
+    apiKey: 'AIzaSyC59ECKLt3rowOoavF76hV_djb--W4jekA',
+    authDomain: 'kaaykostore.firebaseapp.com',
+    projectId: 'kaaykostore',
+    appId: '1:87383373015:web:ee1ce56d4f5192ec67ec92',
+    storageBucket: 'kaaykostore.firebasestorage.app',
+    messagingSenderId: '87383373015'
+  };
+  const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+  const authMod = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+  const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+  const auth = authMod.getAuth(app);
+  const user = await new Promise((resolve) => {
+    const stop = authMod.onAuthStateChanged(auth, (u) => { stop(); resolve(u); });
+  });
+  verifyBannerAuth = { auth, user, authMod };
+  return verifyBannerAuth;
+}
+
+function initVerificationBanner() {
+  const banner = document.getElementById('verify-banner');
+  const user = AUTH.user || {};
+  if (!banner) return;
+  if (user.requireEmailVerification !== true || user.emailVerified === true) {
+    banner.hidden = true;
+    return;
+  }
+
+  const emailEl = document.getElementById('verify-banner-email');
+  const note = document.getElementById('verify-banner-note');
+  if (emailEl) emailEl.textContent = user.email || 'your inbox';
+  banner.hidden = false;
+
+  document.getElementById('verify-banner-resend')?.addEventListener('click', async () => {
+    note.textContent = 'Sending…';
+    try {
+      const { user: fbUser, authMod } = await getFirebaseAuthUser();
+      if (!fbUser) throw new Error('Sign in again to resend the email.');
+      await authMod.sendEmailVerification(fbUser, { url: 'https://kaayko.com/kortex?verified=1' });
+      note.textContent = 'Sent. Check your inbox (and spam) for the verification link.';
+    } catch (err) {
+      note.textContent = err.message || 'Could not send the email right now.';
+    }
+  });
+
+  document.getElementById('verify-banner-check')?.addEventListener('click', async () => {
+    note.textContent = 'Checking…';
+    try {
+      const { user: fbUser } = await getFirebaseAuthUser();
+      if (!fbUser) throw new Error('Sign in again to continue.');
+      await fbUser.reload();
+      if (!fbUser.emailVerified) {
+        note.textContent = 'Not verified yet. Open the link in the email, then try again.';
+        return;
+      }
+      const token = await fbUser.getIdToken(true);
+      localStorage.setItem('kaayko_auth_token', token);
+      AUTH.token = token;
+      const stored = { ...(AUTH.user || {}), emailVerified: true };
+      localStorage.setItem('kaayko_user', JSON.stringify(stored));
+      AUTH.user = stored;
+      banner.hidden = true;
+      utils.showSuccess('Email verified. You can create links now.');
+    } catch (err) {
+      note.textContent = err.message || 'Could not confirm verification.';
+    }
+  });
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   console.log(`🚀 Kaayko Smart Links v6.0 (Modular)`);
   console.log(`🌍 Environment: ${CONFIG.ENVIRONMENT.toUpperCase()}`);
@@ -534,6 +614,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initEnvironmentSwitcher();
   initUserMenu();
   applyRoleVisibility();
+  initVerificationBanner();
   checkHealth();
 
   // Restore the route the user was heading for before being bounced to login,

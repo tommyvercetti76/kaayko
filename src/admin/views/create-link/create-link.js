@@ -19,7 +19,11 @@ const DEST_GROUPS = [
   { id: 'alumni', label: 'Alumni', baseUrl: 'https://kaayko.com/alumni' },
   { id: 'coolschools', label: 'CoolSchools', baseUrl: 'https://roots.kaayko.com/' },
   { id: 'kreator', label: 'Kreator', baseUrl: 'https://kaayko.com/kreator', defaultTenantOnly: true },
-  { id: 'custom', label: 'Custom URL', superAdminOnly: true },
+  // Any URL. Tenant admins may point links at their own properties now that the
+  // backend runs destination safety checks (private hosts, blocklists, Safe
+  // Browsing, domain review). On the Kaayko house tenant the whitelist still
+  // applies, so there it stays super-admin only.
+  { id: 'custom', label: 'Your URL', customUrl: true },
 ];
 
 const DEST_PAGES = [
@@ -270,6 +274,7 @@ function initDestinationPicker() {
 
   DEST_GROUPS.forEach(g => {
     if (g.superAdminOnly && !superAdmin) return;
+    if (g.customUrl && defaultTenant && !superAdmin) return;
     if (g.defaultTenantOnly && !defaultTenant) return;
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -463,8 +468,8 @@ function restorePickerFromUrl(url) {
     return;
   }
 
-  // 3. Unrecognized domain — super-admin custom
-  if (url && isSuperAdmin()) {
+  // 3. Unrecognized domain — custom URL (tenant admins, or super-admin on the house tenant)
+  if (url && (isSuperAdmin() || !isDefaultTenant())) {
     selectGroup('custom');
     const destInput = document.getElementById('webDestination');
     if (destInput) destInput.value = url;
@@ -663,10 +668,19 @@ async function handleCreateLink(e) {
 
     if (!data.success) {
       // Surface specific backend errors as inline field errors
-      if (data.code === 'DOMAIN_NOT_WHITELISTED') {
+      if (data.code === 'DOMAIN_NOT_WHITELISTED' || data.code === 'DOMAIN_NOT_ALLOWED') {
         showFieldError('webDestination', 'err-destination', data.error);
         document.getElementById('webDestination')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         throw new Error(data.error);
+      }
+      if (data.code === 'DESTINATION_BLOCKED') {
+        const why = (data.reasons || []).map(r => r.detail).join(' ') || data.error;
+        showFieldError('webDestination', 'err-destination', `This destination was refused: ${why}`);
+        document.getElementById('webDestination')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        throw new Error('Destination refused by the safety check');
+      }
+      if (data.code === 'EMAIL_NOT_VERIFIED') {
+        throw new Error('Verify your email address first — use the banner at the top of the page.');
       }
       if (data.code === 'ALREADY_EXISTS') {
         showFieldError('short-code', 'err-title', 'This short code is already taken');
@@ -697,6 +711,12 @@ async function handleCreateLink(e) {
     } else if (isAlumniLink(webDest) || formData.metadata?.isAdmin) {
       showAlumniSuccessModal(linkCode, data, webDest);
     } else {
+      if (data.status === 'held') {
+        utils.showToast(
+          `Link created and held for a quick review: ${shortUrl}. The destination is new to Kortex; it goes live once checked (usually under a day).`,
+          'warning', 9000
+        );
+      }
       const rootsNote = isROOTSLink(webDest) ? ' + ROOTS invite created' : '';
       const generateQR = document.getElementById('generateQR')?.checked;
       if (generateQR && data.link) {
