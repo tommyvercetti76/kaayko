@@ -1,133 +1,579 @@
 {
-  "hosting": {
-    "site": "kaaykostore",
-    "public": "src",
-    "cleanUrls": true,
-    "trailingSlash": false,
-    "ignore": [
-      "firebase.json",
-      "**/node_modules/**",
-      "**/admin/kortex-backlog.html"
-    ],
-    "headers": [
-      {
-        "source": "**",
-        "headers": [
-          { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
-          { "key": "X-Content-Type-Options", "value": "nosniff" },
-          { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },
-          { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-          { "key": "Permissions-Policy", "value": "geolocation=(self), camera=()" },
-          { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.gstatic.com https://apis.google.com https://cdn.jsdelivr.net https://*.posthog.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://firebasestorage.googleapis.com https://storage.googleapis.com https://api.qrserver.com https://www.google.com https://*.googleusercontent.com https://*.githubusercontent.com https://*.tile.openstreetmap.org; media-src 'self' blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.run.app https://us-central1-kaaykostore.cloudfunctions.net https://nominatim.openstreetmap.org https://world.openfoodfacts.org https://api.stripe.com https://*.posthog.com https://accounts.google.com https://api.github.com https://*.githubusercontent.com; frame-src 'self' https://js.stripe.com https://www.youtube.com https://accounts.google.com https://*.firebaseapp.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'" },
-          { "key": "Cache-Control", "value": "no-cache" }
-        ]
-      },
-      {
-        "source": "/admin/**",
-        "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }]
-      },
-      {
-        "source": "/kreator/admin/**",
-        "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }]
-      },
-      {
-        "source": "/fonts/**",
-        "headers": [{ "key":"Cache-Control","value":"public,max-age=31536000,immutable"}]
-      },
-      {
-        "source": "/apple-app-site-association",
-        "headers": [{ "key":"Content-Type","value":"application/json"}]
-      },
-      {
-        "source": "/.well-known/apple-app-site-association",
-        "headers": [{ "key":"Content-Type","value":"application/json"}]
-      },
-      {
-        "source": "/sitemap.xml",
-        "headers": [
-          { "key": "Content-Type", "value": "application/xml; charset=utf-8" },
-          { "key": "Cache-Control", "value": "public, max-age=3600" }
-        ]
-      },
-      {
-        "source": "/robots.txt",
-        "headers": [
-          { "key": "Content-Type", "value": "text/plain; charset=utf-8" },
-          { "key": "Cache-Control", "value": "public, max-age=3600" }
-        ]
-      },
-      {
-        "source": "/assets/**",
-        "headers": [{ "key":"Cache-Control","value":"public,max-age=31536000,immutable"}]
-      },
-      {
-        "source": "/admin/**",
-        "headers": [{ "key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]
-      },
-      {
-        "source": "/admin",
-        "headers": [{ "key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]
-      },
-      {
-        "source": "/kortex",
-        "headers": [{ "key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]
-      },
-      {
-        "source": "/kortex/r/**",
-        "headers": [
-          { "key": "Cache-Control", "value": "no-store" },
-          { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" },
-          { "key": "Referrer-Policy", "value": "no-referrer" },
-          { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https://kaayko.com https://api-vwcc5j4qda-uc.a.run.app data:; connect-src 'self' https://api-vwcc5j4qda-uc.a.run.app; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" }
-        ]
-      },
-      {
-        "source": "/karma/schools/somalwar/**",
-        "headers": [{ "key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]
-      },
-      {
-        "source": "/karma/schools/somalwar",
-        "headers": [{ "key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]
-      }
-    ],
-    "redirects": [
-      { "source": "/admin/login", "destination": "/kortex", "type": 301 },
-      { "source": "/admin/login.html", "destination": "/kortex", "type": 301 },
-      { "source": "/create-kortex-link", "destination": "/admin/kortex#/create", "type": 301 },
-      { "source": "/create-kortex-link.html", "destination": "/admin/kortex#/create", "type": 301 },
-      { "source": "/paddlingout/trainer.html", "destination": "/paddlingout/trainer", "type": 301 },
-      { "source": "/paddlingout/trainer/index.html", "destination": "/paddlingout/trainer", "type": 301 },
-      { "source": "/alumni", "destination": "https://alumni.kaayko.com", "type": 301 },
-      { "source": "/alumni.html", "destination": "https://alumni.kaayko.com", "type": 301 },
-      { "source": "/karma", "destination": "https://alumni.kaayko.com", "type": 301 },
-      { "source": "/karma.html", "destination": "https://alumni.kaayko.com", "type": 301 },
-      { "source": "/knowledge", "destination": "https://roots.kaayko.com/", "type": 301 },
-      { "source": "/knowledge/about", "destination": "https://roots.kaayko.com/roots", "type": 301 },
-      { "source": "/knowledge/request", "destination": "https://roots.kaayko.com/request", "type": 301 }
-    ],
-    "rewrites": [
-      { "source": "/api/**", "function": "api" },
-      { "source": "/l/**", "function": "api" },
-      { "source": "/resolve", "function": "api" },
-      { "source": "/health", "function": "api" },
-      { "source": "/kortex/appeal", "destination": "/kortex-appeal.html" },
-      { "source": "/kortex/report", "destination": "/kortex-report.html" },
-      { "source": "/kortex/samples", "destination": "/kortex-samples.html" },
-      { "source": "/kortex/r/**", "destination": "/kortex-r.html" },
-      { "source": "/kortex/support", "destination": "/kortex-support.html" },
-      { "source": "/qr/**", "function": "api" },
-      { "source": "/a/**", "destination": "/tenant.html" },
-      { "source": "/login", "destination": "/tenant.html" },
-      { "source": "/karma/kameras/**", "destination": "/karma/kameras/index.html" },
-      { "source": "/karma/schools/somalwar", "run": { "serviceId": "cool-schools", "region": "us-central1" } },
-      { "source": "/karma/schools/somalwar/**", "run": { "serviceId": "cool-schools", "region": "us-central1" } },
-      { "source": "/karma/mp3/**", "destination": "/karma/mp3/index.html" },
-      { "source": "/paddlingout/trainer", "destination": "/paddlingout/trainer/index.html" },
-      { "source": "/paddlingout/trainer/**", "destination": "/paddlingout/trainer/index.html" },
-      { "source": "/kutz", "destination": "/kutz/index.html" },
-      { "source": "/kutz/**", "destination": "/kutz/index.html" },
-      { "source": "/animals/**", "destination": "/animal.html" },
-      { "source": "/store/p/**", "destination": "/product.html" }
-    ]
-  }
+  "hosting": [
+    {
+      "site": "kaaykostore",
+      "public": "src",
+      "cleanUrls": true,
+      "trailingSlash": false,
+      "ignore": [
+        "firebase.json",
+        "**/node_modules/**",
+        "**/admin/kortex-backlog.html"
+      ],
+      "headers": [
+        {
+          "source": "**",
+          "headers": [
+            {
+              "key": "X-Frame-Options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "Strict-Transport-Security",
+              "value": "max-age=63072000; includeSubDomains; preload"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "strict-origin-when-cross-origin"
+            },
+            {
+              "key": "Permissions-Policy",
+              "value": "geolocation=(self), camera=()"
+            },
+            {
+              "key": "Content-Security-Policy",
+              "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.gstatic.com https://apis.google.com https://cdn.jsdelivr.net https://*.posthog.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://firebasestorage.googleapis.com https://storage.googleapis.com https://api.qrserver.com https://www.google.com https://*.googleusercontent.com https://*.githubusercontent.com https://*.tile.openstreetmap.org; media-src 'self' blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.run.app https://us-central1-kaaykostore.cloudfunctions.net https://nominatim.openstreetmap.org https://world.openfoodfacts.org https://api.stripe.com https://*.posthog.com https://accounts.google.com https://api.github.com https://*.githubusercontent.com; frame-src 'self' https://js.stripe.com https://www.youtube.com https://accounts.google.com https://*.firebaseapp.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache"
+            }
+          ]
+        },
+        {
+          "source": "/admin/**",
+          "headers": [
+            {
+              "key": "X-Robots-Tag",
+              "value": "noindex, nofollow, noarchive"
+            }
+          ]
+        },
+        {
+          "source": "/kreator/admin/**",
+          "headers": [
+            {
+              "key": "X-Robots-Tag",
+              "value": "noindex, nofollow, noarchive"
+            }
+          ]
+        },
+        {
+          "source": "/fonts/**",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "public,max-age=31536000,immutable"
+            }
+          ]
+        },
+        {
+          "source": "/apple-app-site-association",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        {
+          "source": "/.well-known/apple-app-site-association",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        {
+          "source": "/sitemap.xml",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/xml; charset=utf-8"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=3600"
+            }
+          ]
+        },
+        {
+          "source": "/robots.txt",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "text/plain; charset=utf-8"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=3600"
+            }
+          ]
+        },
+        {
+          "source": "/assets/**",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "public,max-age=31536000,immutable"
+            }
+          ]
+        },
+        {
+          "source": "/admin/**",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        },
+        {
+          "source": "/admin",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        },
+        {
+          "source": "/kortex",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        },
+        {
+          "source": "/kortex/r/**",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-store"
+            },
+            {
+              "key": "X-Robots-Tag",
+              "value": "noindex, nofollow, noarchive"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "Content-Security-Policy",
+              "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https://kaayko.com https://api-vwcc5j4qda-uc.a.run.app data:; connect-src 'self' https://api-vwcc5j4qda-uc.a.run.app; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+            }
+          ]
+        },
+        {
+          "source": "/karma/schools/somalwar/**",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        },
+        {
+          "source": "/karma/schools/somalwar",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        }
+      ],
+      "redirects": [
+        {
+          "source": "/admin/login",
+          "destination": "/kortex",
+          "type": 301
+        },
+        {
+          "source": "/admin/login.html",
+          "destination": "/kortex",
+          "type": 301
+        },
+        {
+          "source": "/create-kortex-link",
+          "destination": "/admin/kortex#/create",
+          "type": 301
+        },
+        {
+          "source": "/create-kortex-link.html",
+          "destination": "/admin/kortex#/create",
+          "type": 301
+        },
+        {
+          "source": "/paddlingout/trainer.html",
+          "destination": "/paddlingout/trainer",
+          "type": 301
+        },
+        {
+          "source": "/paddlingout/trainer/index.html",
+          "destination": "/paddlingout/trainer",
+          "type": 301
+        },
+        {
+          "source": "/alumni",
+          "destination": "https://alumni.kaayko.com",
+          "type": 301
+        },
+        {
+          "source": "/alumni.html",
+          "destination": "https://alumni.kaayko.com",
+          "type": 301
+        },
+        {
+          "source": "/karma",
+          "destination": "https://alumni.kaayko.com",
+          "type": 301
+        },
+        {
+          "source": "/karma.html",
+          "destination": "https://alumni.kaayko.com",
+          "type": 301
+        },
+        {
+          "source": "/knowledge",
+          "destination": "https://roots.kaayko.com/",
+          "type": 301
+        },
+        {
+          "source": "/knowledge/about",
+          "destination": "https://roots.kaayko.com/roots",
+          "type": 301
+        },
+        {
+          "source": "/knowledge/request",
+          "destination": "https://roots.kaayko.com/request",
+          "type": 301
+        }
+      ],
+      "rewrites": [
+        {
+          "source": "/api/**",
+          "function": "api"
+        },
+        {
+          "source": "/l/**",
+          "function": "api"
+        },
+        {
+          "source": "/resolve",
+          "function": "api"
+        },
+        {
+          "source": "/health",
+          "function": "api"
+        },
+        {
+          "source": "/kortex/appeal",
+          "destination": "/kortex-appeal.html"
+        },
+        {
+          "source": "/kortex/report",
+          "destination": "/kortex-report.html"
+        },
+        {
+          "source": "/kortex/samples",
+          "destination": "/kortex-samples.html"
+        },
+        {
+          "source": "/kortex/r/**",
+          "destination": "/kortex-r.html"
+        },
+        {
+          "source": "/kortex/support",
+          "destination": "/kortex-support.html"
+        },
+        {
+          "source": "/qr/**",
+          "function": "api"
+        },
+        {
+          "source": "/a/**",
+          "destination": "/tenant.html"
+        },
+        {
+          "source": "/login",
+          "destination": "/tenant.html"
+        },
+        {
+          "source": "/karma/kameras/**",
+          "destination": "/karma/kameras/index.html"
+        },
+        {
+          "source": "/karma/schools/somalwar",
+          "run": {
+            "serviceId": "cool-schools",
+            "region": "us-central1"
+          }
+        },
+        {
+          "source": "/karma/schools/somalwar/**",
+          "run": {
+            "serviceId": "cool-schools",
+            "region": "us-central1"
+          }
+        },
+        {
+          "source": "/karma/mp3/**",
+          "destination": "/karma/mp3/index.html"
+        },
+        {
+          "source": "/paddlingout/trainer",
+          "destination": "/paddlingout/trainer/index.html"
+        },
+        {
+          "source": "/paddlingout/trainer/**",
+          "destination": "/paddlingout/trainer/index.html"
+        },
+        {
+          "source": "/kutz",
+          "destination": "/kutz/index.html"
+        },
+        {
+          "source": "/kutz/**",
+          "destination": "/kutz/index.html"
+        },
+        {
+          "source": "/animals/**",
+          "destination": "/animal.html"
+        },
+        {
+          "source": "/store/p/**",
+          "destination": "/product.html"
+        }
+      ]
+    },
+    {
+      "site": "kaay-store",
+      "public": "src",
+      "cleanUrls": true,
+      "trailingSlash": false,
+      "ignore": [
+        "firebase.json",
+        "**/node_modules/**",
+        "**/admin/kortex-backlog.html",
+        "index.html",
+        "**/admin/**",
+        "**/kreator/**",
+        "**/kortex*.html",
+        "**/tenant*.html",
+        "**/alumni*.html"
+      ],
+      "headers": [
+        {
+          "source": "**",
+          "headers": [
+            {
+              "key": "X-Frame-Options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "Strict-Transport-Security",
+              "value": "max-age=63072000; includeSubDomains; preload"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "strict-origin-when-cross-origin"
+            },
+            {
+              "key": "Permissions-Policy",
+              "value": "geolocation=(self), camera=()"
+            },
+            {
+              "key": "Content-Security-Policy",
+              "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.gstatic.com https://apis.google.com https://cdn.jsdelivr.net https://*.posthog.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://firebasestorage.googleapis.com https://storage.googleapis.com https://api.qrserver.com https://www.google.com https://*.googleusercontent.com https://*.githubusercontent.com https://*.tile.openstreetmap.org; media-src 'self' blob: https://firebasestorage.googleapis.com; connect-src 'self' https://*.googleapis.com https://*.run.app https://us-central1-kaaykostore.cloudfunctions.net https://nominatim.openstreetmap.org https://world.openfoodfacts.org https://api.stripe.com https://*.posthog.com https://accounts.google.com https://api.github.com https://*.githubusercontent.com; frame-src 'self' https://js.stripe.com https://www.youtube.com https://accounts.google.com https://*.firebaseapp.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache"
+            }
+          ]
+        },
+        {
+          "source": "/admin/**",
+          "headers": [
+            {
+              "key": "X-Robots-Tag",
+              "value": "noindex, nofollow, noarchive"
+            }
+          ]
+        },
+        {
+          "source": "/kreator/admin/**",
+          "headers": [
+            {
+              "key": "X-Robots-Tag",
+              "value": "noindex, nofollow, noarchive"
+            }
+          ]
+        },
+        {
+          "source": "/fonts/**",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "public,max-age=31536000,immutable"
+            }
+          ]
+        },
+        {
+          "source": "/apple-app-site-association",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        {
+          "source": "/.well-known/apple-app-site-association",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        {
+          "source": "/sitemap.xml",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/xml; charset=utf-8"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=3600"
+            }
+          ]
+        },
+        {
+          "source": "/robots.txt",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "text/plain; charset=utf-8"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=3600"
+            }
+          ]
+        },
+        {
+          "source": "/assets/**",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "public,max-age=31536000,immutable"
+            }
+          ]
+        },
+        {
+          "source": "/admin/**",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        },
+        {
+          "source": "/admin",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        },
+        {
+          "source": "/kortex",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        },
+        {
+          "source": "/kortex/r/**",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-store"
+            },
+            {
+              "key": "X-Robots-Tag",
+              "value": "noindex, nofollow, noarchive"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "Content-Security-Policy",
+              "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https://kaayko.com https://api-vwcc5j4qda-uc.a.run.app data:; connect-src 'self' https://api-vwcc5j4qda-uc.a.run.app; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+            }
+          ]
+        },
+        {
+          "source": "/karma/schools/somalwar/**",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        },
+        {
+          "source": "/karma/schools/somalwar",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        }
+      ],
+      "rewrites": [
+        {
+          "source": "/api/**",
+          "function": "api"
+        },
+        {
+          "source": "/animals/**",
+          "destination": "/animal.html"
+        },
+        {
+          "source": "/p/**",
+          "destination": "/product.html"
+        },
+        {
+          "source": "/store/p/**",
+          "destination": "/product.html"
+        },
+        {
+          "source": "**",
+          "destination": "/store.html"
+        }
+      ]
+    }
+  ]
 }

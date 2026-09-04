@@ -53,10 +53,18 @@ const getSarcasticMessage = () => {
 };
 
 document.addEventListener('DOMContentLoaded', function() {
-  // Check if we're on the store page
-  const isStorePage = window.location.pathname === '/store' ||
-                     window.location.pathname === '/store.html';
-  
+  // kaay.store serves the same storefront from its own Firebase Hosting site,
+  // where the shop sits at "/" rather than "/store". Keep the list here in
+  // sync with kaayko/firebase.json's second hosting site and with
+  // kaayko-api/functions/config/origins.js.
+  const STORE_DOMAINS = ['kaay.store', 'www.kaay.store',
+                         'kaay-store.web.app', 'kaay-store.firebaseapp.com'];
+  const onStoreDomain = STORE_DOMAINS.indexOf(window.location.hostname) !== -1;
+  const path = window.location.pathname;
+
+  const isStorePage = path === '/store' || path === '/store.html' ||
+                     (onStoreDomain && (path === '/' || path === '/index.html'));
+
   if (!isStorePage) return;
   
   console.log('🔐 Store page detected, checking access...');
@@ -83,9 +91,43 @@ document.addEventListener('DOMContentLoaded', function() {
   const hasAccess = localStorage.getItem(accessKey) === atob('Z3JhbnRlZA==');
   
   if (!hasAccess) {
+    if (onStoreDomain) {
+      // There is no homepage to bounce to on a store-only domain — and every
+      // unmatched path rewrites back to the store, so a redirect here would
+      // loop forever. Ask for the code in place instead.
+      showInPageGate();
+      return;
+    }
     // Route to the homepage store panel on the current origin.
     // This keeps local previews on localhost instead of bouncing to production.
     window.location.replace('/#store');
+  }
+
+  /**
+   * Invite prompt for the store-only domain.
+   *
+   * Worth being honest about what this is: a doorway, not a lock. The product
+   * catalogue is served by a public API and readable by anyone who asks it
+   * directly, exactly as it is on kaayko.com/store today. This keeps the shop
+   * from being casually browsable; it does not make it secret.
+   */
+  function showInPageGate() {
+    document.documentElement.classList.add('store-locked');
+
+    const open = () => {
+      if (!window.KaaykoStoreAccess) return;
+      window.KaaykoStoreAccess.open('access', {
+        onGranted: function () {
+          document.documentElement.classList.remove('store-locked');
+          window.location.reload();
+        }
+      });
+    };
+
+    // The modal script is loaded after this one; wait for it if necessary
+    // rather than failing silently and showing a blank page.
+    if (window.KaaykoStoreAccess) open();
+    else window.addEventListener('load', open, { once: true });
   }
 });
 

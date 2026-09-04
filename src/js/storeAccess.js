@@ -185,6 +185,18 @@
     // Haptic confirmation (gentle double-pulse)
     if (global.navigator.vibrate) global.navigator.vibrate([30, 60, 30]);
 
+    // On a store-only domain (kaay.store) we are already standing on the
+    // store, so opening a second tab to /store is wrong. The caller passes
+    // onGranted to reveal the page in place instead.
+    if (typeof hooks.onGranted === "function") {
+      hooks.onGranted();
+      setHint("Access granted.", "ok");
+      el.input.disabled = true;
+      el.submit.disabled = true;
+      global.setTimeout(close, 900);
+      return;
+    }
+
     // Open the tab NOW — must be synchronous inside the user gesture, or the
     // browser treats it as a blocked popup
     global.open("/store", "_blank", "noopener,noreferrer");

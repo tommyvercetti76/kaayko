@@ -54,6 +54,7 @@
   
   <!-- 1) Global Styles -->
   <link rel="stylesheet" href="/css/storestyle.css" />
+  <link rel="stylesheet" href="/css/storeAccess.css" />
 
   <!-- 2) Header + Filter Toggle Styles -->
   <link rel="stylesheet" href="/css/header.css" />
@@ -66,6 +67,30 @@
   <!-- 4) Stripe.js -->
   <script src="https://js.stripe.com/v3/"></script>
   <link rel="stylesheet" href="/css/footer.css">
+  <!-- Store-only domain (kaay.store): hide the shop until the invite code is
+       accepted. Runs synchronously in <head> so the catalogue never flashes
+       before the gate appears. secretStore.js opens the prompt and clears
+       .store-locked on success. -->
+  <style>
+    html.store-locked body > header,
+    html.store-locked body > main,
+    html.store-locked body > footer { visibility: hidden; }
+  </style>
+  <script>
+    (function () {
+      var STORE_DOMAINS = ['kaay.store', 'www.kaay.store',
+                           'kaay-store.web.app', 'kaay-store.firebaseapp.com'];
+      if (STORE_DOMAINS.indexOf(location.hostname) === -1) return;
+      var p = location.pathname;
+      if (p !== '/' && p !== '/index.html') return;
+      var params = new URLSearchParams(location.search);
+      if (params.get('bypass') === 'kortex' && params.has('ref')) return;
+      try {
+        if (localStorage.getItem('kaaykoStoreAccess') === 'granted') return;
+      } catch (e) { /* private mode — fall through and lock */ }
+      document.documentElement.classList.add('store-locked');
+    })();
+  </script>
 </head>
 
 <body class="store-v2">
@@ -170,6 +195,7 @@
   </footer>
 
   <!-- SCRIPTS -->
+  <script src="js/storeAccess.js"></script>
   <script src="js/secretStore.js"></script>
   <script src="js/header.js"></script>
   <script type="module" src="js/cartManager.js"></script>
