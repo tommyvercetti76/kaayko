@@ -421,6 +421,23 @@ input[type="time"].field-input, input[type="date"].field-input { color-scheme:da
 .detail-side .field { margin-bottom:var(--sp-2) }
 .detail-side .btn-submit { padding:12px }
 .lifetime-note { text-align:center; margin-top:var(--sp-5) }
+.samples-section { padding-top:var(--sp-8) }
+.samples { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--sp-4); max-width:980px; margin:0 auto }
+.sample { position:relative; display:flex; flex-direction:column; gap:var(--sp-3); padding:var(--sp-5) var(--sp-4) var(--sp-4); border:1px solid rgba(181,147,90,0.24); background:rgba(5,7,14,0.6); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); min-width:0; text-align:left }
+.sample .tier { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.78rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold) }
+.sample .row { display:flex; gap:var(--sp-3); align-items:flex-start }
+.sample .qr { width:72px; height:72px; flex:none; background:#fff; padding:4px; box-shadow:0 0 0 1px rgba(181,147,90,0.25) }
+.sample .qr img { width:100%; height:100%; display:block; image-rendering:pixelated }
+.sample .big { font-family:'Bebas Neue',Impact,sans-serif; font-size:2.2rem; letter-spacing:0.04em; line-height:1; color:var(--fg) }
+.sample .big small { display:block; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.78rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-top:4px }
+.sample .title { font-size:1.02rem; color:var(--fg); overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+.sample .kind { font-style:italic; font-size:0.9rem; color:var(--muted) }
+.sample .spark { display:flex; align-items:flex-end; gap:3px; height:36px; border-bottom:1px solid var(--gold-line) }
+.sample .spark i { flex:1 1 0; background:linear-gradient(180deg,var(--gold-bright),var(--gold)); min-height:2px; box-shadow:var(--glow-xs) }
+.sample .meta { font-family:var(--mono); font-size:0.74rem; color:var(--muted); letter-spacing:0.02em }
+.sample .action-link { align-self:flex-start }
+.samples-note { text-align:center; margin-top:var(--sp-5) }
+@media(max-width:760px) { .samples { grid-template-columns:1fr } }
 .demo-banner { width:100%; text-align:left; border-left:2px solid var(--gold); padding:var(--sp-3) var(--sp-4); background:rgba(181,147,90,0.06); font-style:italic; font-size:0.98rem; color:var(--muted); line-height:1.55 }
 .demo-banner b { color:var(--gold-bright); font-weight:500 }
 .demo-banner .action-link { display:inline; margin-left:8px; font-size:0.9rem }
@@ -1113,6 +1130,12 @@ rotate it any time</pre></div>
 </section>
 
 <!-- ═══ FOOTER ═══ -->
+<section class="section samples-section" id="samples" aria-label="Sample reports" hidden>
+  <h2 class="section-label reveal">three sample reports · light, medium, heavy</h2>
+  <div class="samples reveal" id="samples-grid"></div>
+  <p class="note samples-note reveal">Real links on Kaayko's own pages, thirty days of simulated scans. Open one to see it four ways.</p>
+</section>
+
   <footer class="site-footer">
     <nav aria-label="Footer">
       <a href="/legal/kortex-terms">Terms</a>
@@ -2089,6 +2112,31 @@ function insightsFor(link, a, points) {
   const country = tallyOf(points, 'country')[0]; if (country && country.value !== '—') out.push(`Most scans from <b>${escapeHtml(country.value)}</b> (${pct(country.clicks / Math.max(1, n))}).`);
   return out;
 }
+
+/* ── FOOTER SAMPLES: the lightest, the median and the heaviest of the sample links ── */
+async function loadSamples() {
+  const grid = $('samples-grid'); if (!grid) return;
+  const { ok, data } = await guestApi('/demo/samples');
+  if (!ok || !data.samples) return;
+  const max = Math.max(1, ...data.samples.flatMap(s => s.timeline));
+  grid.innerHTML = data.samples.map(s => `<article class="sample">
+    <span class="tier">${escapeHtml(s.tier)} traffic</span>
+    <div class="row"><div class="qr"><img alt="QR code for ${escapeHtml(s.title)}" src="${escapeHtml(s.qrUrl)}?size=160" loading="lazy"></div>
+      <div style="min-width:0"><div class="big">${s.events}<small>scans, 7 days</small></div><div class="title">${escapeHtml(s.title)}</div><div class="kind">${escapeHtml(s.variation)}</div></div></div>
+    <div class="spark" aria-hidden="true">${s.timeline.map(v => `<i style="height:${Math.max(6, Math.round(v / max * 100))}%"></i>`).join('')}</div>
+    <div class="meta">${s.lifetime} lifetime · ${s.people} people · ${s.qrShare}% QR</div>
+    <button type="button" class="action-link" data-open-sample="${escapeHtml(s.code)}">Open this report</button>
+  </article>`).join('');
+  $('samples').hidden = false;
+  grid.querySelectorAll('[data-open-sample]').forEach(btn => btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    await openDemo();
+    let tries = 0; while (!wsLinks.length && tries++ < 20) await new Promise(r => setTimeout(r, 150));
+    if (wsLinks.some(l => l.code === btn.dataset.openSample)) { await openDetail(btn.dataset.openSample); $('detail').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    btn.disabled = false;
+  }));
+}
+loadSamples();
 
 /* ── THE SAMPLE (wanderer flow) ── */
 async function openDemo() {

@@ -94,7 +94,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
   <div class="pp-header">
     <div class="pp-eyebrow">Kaayko</div>
     <h1 class="pp-title">Privacy Policy</h1>
-    <p class="pp-subtitle">Last updated: August 2026</p>
+    <p class="pp-subtitle">Last updated: September 4, 2026</p>
   </div>
 
   <div class="pp-section">
@@ -128,6 +128,16 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
       <li><strong>Usage Data:</strong> Browser type, device info, pages visited, time spent, referring URLs.</li>
       <li><strong>Cookies:</strong> We set no first-party tracking cookies. Third-party cookies are set only by Stripe on Store and checkout pages (fraud prevention) and by PostHog on the Kortex app (product analytics). Your Paddling Out preferences live in your browser's local storage, not cookies.</li>
       <li><strong>IP Addresses:</strong> Collected for fraud prevention and rate limiting. Not linked to personal identity.</li>
+    </ul>
+    <h3>Kortex links and QR scans</h3>
+    <p>Kortex makes QR codes and short links for people who never sign in. What we keep, exactly:</p>
+    <ul>
+      <li><strong>When someone scans or taps a link:</strong> the time, device type, operating system, browser, country, the referring page if any, campaign tags, and the address we forwarded to. The visitor's IP address is turned into a keyed hash before anything is written; the raw address is discarded once the country has been looked up on our own servers. No cookie is set on a redirect.</li>
+      <li><strong>Search and social crawlers</strong> fetching a link are not counted as scans.</li>
+      <li><strong>Free workspaces</strong> are identified only by an access code. We store a salted hash of the code, never the code. If you attach an email address for recovery, we keep the address for delivery and a hash for lookup. Static QR codes are drawn in your browser and store nothing with us.</li>
+      <li><strong>Reports, appeals and support requests</strong> keep the message you write and the email you choose to give, plus a keyed hash of your IP for rate limiting.</li>
+      <li><strong>Audit log:</strong> every change to a link and every reviewer action is recorded with a keyed IP hash, never a raw address.</li>
+      <li><strong>The sample workspace</strong> on the Kortex page contains simulated scans only.</li>
     </ul>
     <h3>Payment Information</h3>
     <p><strong>We do not store credit card information.</strong> All payment processing is handled by Stripe, Inc. Card details are transmitted directly to Stripe under their privacy policy.</p>
@@ -165,11 +175,18 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
   </div>
 
   <div class="pp-section">
+    <h3>Kortex scan data</h3>
+    <ul>
+      <li>Dashboards and exports show at most 30 days of scan detail (7 on the free tier); lifetime totals stay on the link.</li>
+      <li>Scan records are marked to expire 30 days after they are written. Scheduled deletion of expired records is not yet enabled, so older records currently remain in our database until it is; they are not used for anything else. Ask us and we will delete a workspace's records.</li>
+      <li>A free workspace that is not opened with its code for 365 days has its links switched off, not deleted; opening it with the code restores them.</li>
+    </ul>
     <h2 data-kicon="link">Third-Party Services</h2>
     <p>We do not sell your personal information. We share data with third parties only as needed to operate:</p>
     <ul>
       <li><strong>Stripe:</strong> Payment processing. Stripe.js loads on Store and checkout pages and sets its own cookies (<code>__stripe_mid</code>, <code>__stripe_sid</code>) for fraud prevention</li>
       <li><strong>Google Cloud Platform (Firebase):</strong> Hosting, database, and authentication</li>
+      <li><strong>Google Cloud (us-central1):</strong> Hosting, functions and the database for Kortex run in Google Cloud's us-central1 region. Kortex email delivery, when enabled, goes through SendGrid.</li>
       <li><strong>PostHog:</strong> Product analytics on the Kortex link-management app (aggregate usage only). It sets its own cookies / local storage on Kortex and is not used on the public Paddling Out pages or the Store</li>
       <li><strong>WeatherAPI.com:</strong> Real-time weather data for Paddling Out. Your location query (coordinates or place name) is sent to fetch conditions; no personal identifiers accompany it</li>
       <li><strong>Google Fonts:</strong> Typefaces are loaded from fonts.googleapis.com / fonts.gstatic.com, which means your browser makes a request to Google when pages load</li>
