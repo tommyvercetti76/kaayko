@@ -78,7 +78,10 @@
 
 /* The card moves in the page, not the art inside a clipped frame — nothing
    can be cropped by this. */
-.animal-v2 .animal-hero-art {
+/* The animal page drives its own layered parallax in animal.v3.css; this
+   generic card drift applies only to any legacy hero still using the old
+   markup. */
+.animal-v2 .animal-hero-art:not(.an-hero-media) {
   will-change: transform;
   transform: translate3d(0, var(--pdp-card-y, 0), 0);
 }

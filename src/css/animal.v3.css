@@ -1,0 +1,231 @@
+/*─────────────────────────────────────────────────────────────────────────────
+  Animal page — layered scroll composition.
+
+  The previous layout was a single side-by-side spread: hero left, story right.
+  It fit in roughly one viewport, so parallax had nowhere to travel — it lurched
+  through its whole range in a few dozen pixels of scroll and stopped. Motion
+  needs distance, so the page is now stacked and tall, and the hero is a set of
+  layers that move at different rates.
+
+  Smoothness rules, applied without exception below:
+   • only `transform` and `opacity` animate — nothing that triggers layout
+   • motion is scroll-driven in CSS (`animation-timeline`), so it runs off the
+     main thread instead of a scroll listener writing styles every frame
+   • `view()` timelines are element-relative, so each section eases against its
+     own position rather than sharing one global scroll number
+   • no `backdrop-filter` anywhere in this file — it repaints per frame
+   • `will-change` only on the three hero layers that actually move continuously
+  ─────────────────────────────────────────────────────────────────────────────*/
+
+/* ── Escape the shared full-height flex trap ─────────────────────────
+   storestyle.css sets `html, body { height: 100% }` with `body{display:flex}`
+   and `main{flex:1}`, which pins #animal-root to exactly the viewport. Its
+   content then overflows without extending the document, so the page reports
+   nothing to scroll — the story, field notes and products were all there and
+   simply unreachable. That is the real reason the scrolling felt broken.
+   This stylesheet is loaded only by animal.html, so the bare html selector
+   cannot leak to other pages. */
+html, body.animal-v2 { height: auto; min-height: 100vh; }
+body.animal-v2 { display: flex; flex-direction: column; overflow: visible; }
+body.animal-v2 #animal-root { flex: 1 0 auto; }
+body.animal-v2 .site-footer { flex: 0 0 auto; }
+
+.animal-v2 .animal-root { max-width: none; margin: 0; padding: 0; }
+
+/* ── Hero ───────────────────────────────────────────────────────────────── */
+.animal-v2 .an-hero {
+  position: relative;
+  min-height: clamp(600px, 92vh, 940px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(20px, 3.5vh, 44px);
+  padding: clamp(32px, 6vh, 72px) 20px clamp(48px, 8vh, 88px);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Layer 1 — the ground. Drifts least, so it reads as furthest away. */
+.animal-v2 .an-hero-plate {
+  position: absolute;
+  inset: -8% -2% -2%;
+  z-index: 0;
+  will-change: transform;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 42%, #fbf2dc 0%, #f1e2bb 55%, #e4d0a4 100%);
+}
+.animal-v2 .an-hero.is-product .an-hero-plate {
+  background: radial-gradient(ellipse 75% 60% at 50% 45%, var(--v2-surface) 0%, var(--v2-image-bg) 70%);
+}
+html.dark-theme .animal-v2 .an-hero-plate {
+  background: radial-gradient(ellipse 70% 55% at 50% 42%, #241f14 0%, #14110b 60%, #0b0908 100%);
+}
+
+/* Layer 2 — the subject. */
+.animal-v2 .an-hero-media {
+  position: relative;
+  z-index: 1;
+  /* Explicit width AND height rather than aspect-ratio + max-height: with a
+     centred grid item, `height:100%` on the image resolved against the
+     unclamped box and the artwork overflowed its frame onto the title. */
+  width: min(78vw, 560px);
+  height: min(52vh, 520px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform;
+}
+.animal-v2 .an-hero.is-product .an-hero-media {
+  width: min(64vw, 420px);
+  height: min(52vh, 520px);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.18);
+}
+.animal-v2 .an-hero-media img {
+  /* An illustration is a composed object with margins — never crop it, and
+     never let it exceed its frame. A product photograph may fill its frame. */
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+.animal-v2 .an-hero.is-product .an-hero-media img { width: 100%; height: 100%; object-fit: cover; }
+.animal-v2 .an-hero-media[data-zoom-full] { cursor: zoom-in; }
+
+/* Layer 3 — the caption. Moves most and fades as it leaves. */
+.animal-v2 .an-hero-caption {
+  position: relative;
+  z-index: 2;
+  width: min(92vw, 900px);
+  text-align: center;
+  will-change: transform, opacity;
+}
+.animal-v2 .an-name {
+  margin: 0;
+  font-family: 'Josefin_Bold', 'Josefin Sans', Arial, sans-serif;
+  font-size: clamp(38px, 7vw, 84px);
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  color: var(--v2-fg);
+  text-wrap: balance;
+}
+.animal-v2 .an-scientific {
+  margin: 10px 0 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: clamp(16px, 2.2vw, 22px);
+  color: var(--v2-fg-muted);
+}
+.animal-v2 .an-status { margin: 18px 0 0; }
+
+.animal-v2 .an-scroll-cue {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: 14px;
+  width: 1px;
+  height: 34px;
+  background: linear-gradient(var(--v2-fg-muted), transparent);
+  opacity: .5;
+}
+
+/* ── Body ───────────────────────────────────────────────────────────────── */
+.animal-v2 .an-body {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: clamp(56px, 9vw, 120px) clamp(20px, 5vw, 48px) 120px;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(56px, 9vw, 112px);
+}
+
+.animal-v2 .an-kicker {
+  margin: 0 0 20px;
+  font-family: 'Josefin_Bold', 'Josefin Sans', Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--v2-gold);
+}
+
+.animal-v2 .an-story { max-width: 68ch; margin: 0 auto; }
+.animal-v2 .an-bio {
+  margin: 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(21px, 2.6vw, 28px);
+  line-height: 1.55;
+  color: var(--v2-fg);
+}
+
+.animal-v2 .an-facts .animal-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0 40px;
+}
+.animal-v2 .an-facts .animal-stat:first-child { border-top: 1px solid var(--v2-border); padding-top: 16px; }
+
+.animal-v2 .an-wear .animal-variants { margin-top: 0; }
+
+/* ── Motion ─────────────────────────────────────────────────────────────
+   All three hero layers share one timeline (the hero's own exit) so they
+   stay locked together and cannot drift out of step with one another.      */
+@supports (animation-timeline: view()) {
+  .animal-v2 .an-hero-plate,
+  .animal-v2 .an-hero-media,
+  .animal-v2 .an-hero-caption,
+  .animal-v2 .an-scroll-cue {
+    animation-timeline: view(block);
+    animation-range: contain 0% exit 100%;
+    animation-fill-mode: both;
+    animation-timing-function: linear;   /* scroll position IS the easing */
+  }
+  .animal-v2 .an-hero-plate    { animation-name: an-plate; }
+  .animal-v2 .an-hero-media    { animation-name: an-subject; }
+  .animal-v2 .an-hero-caption  { animation-name: an-caption; }
+  .animal-v2 .an-scroll-cue    { animation-name: an-cue; }
+
+  /* Sections rise as they come into view, each against its own position.
+     The range completes while the section is still entering, so a section is
+     fully legible well before it reaches the middle of the screen — and it
+     starts at 0.35 rather than 0 so that if a timeline ever fails to resolve,
+     the worst case is dimmed text rather than an invisible page. */
+  .animal-v2 .reveal {
+    animation: an-rise linear both;
+    animation-timeline: view(block);
+    animation-range: entry 0% entry 85%;
+  }
+}
+
+@keyframes an-plate   { to { transform: translate3d(0, 6%, 0) scale(1.04); } }
+@keyframes an-subject { to { transform: translate3d(0, -14%, 0); } }
+@keyframes an-caption { to { transform: translate3d(0, -34%, 0); opacity: 0; } }
+@keyframes an-cue     { to { opacity: 0; } }
+@keyframes an-rise    { from { opacity: 0.35; transform: translate3d(0, 22px, 0); }
+                        to   { opacity: 1; transform: none; } }
+
+/* No scroll timelines (Safari < 26, older Firefox): show everything, still,
+   in its finished state. A page that reveals nothing is worse than a page
+   that reveals without motion. */
+@supports not (animation-timeline: view()) {
+  .animal-v2 .reveal { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animal-v2 .an-hero-plate,
+  .animal-v2 .an-hero-media,
+  .animal-v2 .an-hero-caption,
+  .animal-v2 .an-scroll-cue,
+  .animal-v2 .reveal { animation: none !important; opacity: 1; transform: none; }
+  .animal-v2 .an-hero-caption { transform: none; }
+}
+
+/* ── Small screens ──────────────────────────────────────────────────────── */
+@media (max-width: 680px) {
+  .animal-v2 .an-hero { height: clamp(460px, 76vh, 680px); }
+  .animal-v2 .an-hero-media { width: 84vw; }
+  .animal-v2 .an-hero.is-product .an-hero-media { width: 74vw; }
+}

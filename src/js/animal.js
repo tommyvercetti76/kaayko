@@ -69,39 +69,46 @@ function renderHero(animal, products) {
   // shoppers is worse than showing them the thing they can actually buy, so
   // fall back to the product this animal appears on.
   const fallbackSrc = heroSrc ? "" : firstProductImage(products);
+  const src = heroSrc || fallbackSrc;
 
-  const art = heroSrc
-    ? `<img src="${esc(heroSrc)}" alt="${esc(animal.name)} illustration" />`
-    : fallbackSrc
-      ? `<img src="${esc(fallbackSrc)}" alt="${esc(animal.name)} on a Kaayko piece" />`
-      : "";
-
-  const artClass = heroSrc ? "animal-hero-art"
-    : fallbackSrc ? "animal-hero-art is-product"
-    : "animal-hero-art empty";
+  const kind = heroSrc ? "is-art" : fallbackSrc ? "is-product" : "is-empty";
   const zoomAttr = heroSrc ? ` data-zoom-full="${esc(animal.artUrl || heroSrc)}"` : "";
+  const alt = heroSrc
+    ? `${esc(animal.name)} illustration`
+    : `${esc(animal.name)} on a Kaayko piece`;
+
+  // Three stacked layers that move at different rates as the page scrolls:
+  // the plate (slowest), the subject, then the caption (fastest, fades out).
+  // Each is its own element so the browser animates transforms only — nothing
+  // here triggers layout while scrolling.
   return `
-    <section class="animal-hero">
-      <div class="${artClass}"${zoomAttr}>${art}</div>
-      <div class="animal-hero-text">
-        <h1 class="animal-name">${esc(animal.name)}</h1>
-        ${animal.scientificName ? `<p class="animal-scientific">${esc(animal.scientificName)}</p>` : ""}
+    <header class="an-hero ${kind}">
+      <div class="an-hero-plate" aria-hidden="true"></div>
+      <div class="an-hero-media"${zoomAttr}>
+        ${src ? `<img src="${esc(src)}" alt="${alt}" fetchpriority="high" />` : ""}
       </div>
-      ${renderStats(animal)}
-    </section>`;
+      <div class="an-hero-caption">
+        <h1 class="an-name">${esc(animal.name)}</h1>
+        ${animal.scientificName ? `<p class="an-scientific">${esc(animal.scientificName)}</p>` : ""}
+        ${animal.iucnStatus ? `<p class="an-status animal-status-pill" data-severity="${esc(String(animal.iucnStatus).toLowerCase().split(" ")[0])}">${esc(animal.iucnStatus)}</p>` : ""}
+      </div>
+      <div class="an-scroll-cue" aria-hidden="true"><span></span></div>
+    </header>`;
 }
 
 function renderStory(animal, products) {
-  if (!animal.bio && !(products || []).length) return "";
-  // Story column: bio prose, then variant cards beneath.
+  const stats = renderStats(animal);
+  const hasProse = Boolean(animal.bio);
+  if (!hasProse && !stats && !(products || []).length) return "";
+
   return `
-    <section class="animal-story">
-      <div class="animal-story-prose">
-        <h2>The Story</h2>
-        ${animal.bio ? `<p class="animal-bio">${esc(animal.bio)}</p>` : ""}
-      </div>
-      ${renderVariants(animal, products)}
-    </section>`;
+    ${hasProse ? `
+    <section class="an-story reveal">
+      <h2 class="an-kicker">The Story</h2>
+      <p class="an-bio">${esc(animal.bio)}</p>
+    </section>` : ""}
+    ${stats ? `<section class="an-facts reveal"><h2 class="an-kicker">Field Notes</h2>${stats}</section>` : ""}
+    ${renderVariants(animal, products)}`;
 }
 
 /**
@@ -149,10 +156,10 @@ function renderVariants(animal, products) {
       </button>
     </article>`).join("");
   return `
-    <div class="animal-buy">
-      <h2>${heading}</h2>
+    <section class="an-wear reveal">
+      <h2 class="an-kicker">${heading}</h2>
       <div class="animal-variants">${cards}</div>
-    </div>`;
+    </section>`;
 }
 
 const GENDERS = ["Male", "Female", "Teen", "Child", "Infant"];
@@ -339,7 +346,7 @@ function bindVariantActions(animal, products, openModalFn) {
     });
   });
   // Click the hero art → open the full-res zoom modal.
-  const heroArt = document.querySelector('.animal-hero-art[data-zoom-full]');
+  const heroArt = document.querySelector('.an-hero-media[data-zoom-full]');
   if (heroArt && animal.artUrl) {
     heroArt.style.cursor = 'zoom-in';
     // Keyboard-reachable zoom (2.1.1); the label keeps the illustration's name.
@@ -385,9 +392,9 @@ export async function animalPageInit(slug, { openModal }) {
   // Hero (image + identity + stats) and Story (bio + variants) sit side by side,
   // separated by a vertical hairline. Variants live inside the Story column.
   root.innerHTML = `
-    <section class="animal-spread">
-      ${renderHero(animal, products)}
+    ${renderHero(animal, products)}
+    <div class="an-body">
       ${renderStory(animal, products)}
-    </section>`;
+    </div>`;
   bindVariantActions(animal, products, openModal);
 }
