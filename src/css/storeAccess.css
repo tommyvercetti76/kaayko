@@ -9,8 +9,14 @@
   --sa-ease: cubic-bezier(0.76, 0, 0.24, 1);
 }
 
+/* Every rule here is scoped to #store-modal on purpose.
+   This file used to style a bare `.modal`, which is ALSO the class on the
+   store's image-zoom overlay in storestyle.css. Loading both on store.html
+   put a fixed, full-screen, always-visible layer over the catalogue: this
+   file has no `.modal.active` rule, so nothing ever hid it. Keep the id. */
+
 /* ── Store modal — one card for both Access and Request ───────────── */
-.modal {
+#store-modal {
   position: fixed;
   inset: 0;
   /* Above every page chrome that hosts it — the landing panels and the
@@ -22,11 +28,11 @@
   padding: clamp(1rem, 5vw, 2rem);
 }
 
-.modal[hidden] {
+#store-modal[hidden] {
   display: none;
 }
 
-.modal-scrim {
+#store-modal .modal-scrim {
   position: absolute;
   inset: 0;
   background: rgba(4, 4, 4, 0.72);
@@ -36,7 +42,7 @@
   transition: opacity 300ms ease;
 }
 
-.modal-card {
+#store-modal .modal-card {
   position: relative;
   width: min(420px, 100%);
   padding: clamp(2rem, 5vw, 2.75rem) clamp(1.5rem, 5vw, 2.5rem) clamp(1.75rem, 4vw, 2.25rem);
@@ -51,16 +57,16 @@
   transition: opacity 320ms ease, transform 380ms var(--sa-ease);
 }
 
-.modal--open .modal-scrim {
+#store-modal.modal--open .modal-scrim {
   opacity: 1;
 }
 
-.modal--open .modal-card {
+#store-modal.modal--open .modal-card {
   opacity: 1;
   transform: none;
 }
 
-.modal-close {
+#store-modal .modal-close {
   position: absolute;
   top: 0.5rem;
   right: 0.75rem;
@@ -76,14 +82,14 @@
   transition: color 200ms ease, transform 240ms var(--sa-ease);
 }
 
-.modal-close:hover,
-.modal-close:focus-visible {
+#store-modal .modal-close:hover ,
+#store-modal .modal-close:focus-visible {
   color: var(--sa-gold-bright);
   transform: rotate(90deg);
   outline: none;
 }
 
-.modal-eyebrow {
+#store-modal .modal-eyebrow {
   color: rgba(181, 147, 90, 0.6);
   font-family: "Cormorant Garamond", Georgia, serif;
   font-size: 0.68rem;
@@ -92,7 +98,7 @@
   text-transform: uppercase;
 }
 
-.modal-title {
+#store-modal .modal-title {
   margin-top: 0.55rem;
   color: var(--sa-fg);
   font-family: "Bebas Neue", Impact, sans-serif;
@@ -103,7 +109,7 @@
   text-transform: uppercase;
 }
 
-.modal-title::after {
+#store-modal .modal-title::after {
   content: "";
   display: block;
   width: 3.25rem;
@@ -112,7 +118,7 @@
   background: linear-gradient(90deg, transparent, var(--sa-gold), transparent);
 }
 
-.modal-sub {
+#store-modal .modal-sub {
   margin-top: 0.85rem;
   color: var(--sa-muted);
   font-family: "Cormorant Garamond", Georgia, serif;
@@ -122,18 +128,18 @@
   line-height: 1.5;
 }
 
-.modal-body {
+#store-modal .modal-body {
   display: flex;
   flex-direction: column;
   align-items: center;
   margin-top: clamp(1.4rem, 4vw, 1.9rem);
 }
 
-.modal-body[hidden] {
+#store-modal .modal-body[hidden] {
   display: none;
 }
 
-.modal-copy {
+#store-modal .modal-copy {
   max-width: 30ch;
   color: rgba(237, 232, 223, 0.66);
   font-family: "Cormorant Garamond", Georgia, serif;
@@ -141,7 +147,7 @@
   line-height: 1.6;
 }
 
-.modal-action {
+#store-modal .modal-action {
   margin-top: 1.35rem;
   padding: 0.72em 1.9em;
   border: 1px solid rgba(181, 147, 90, 0.45);
@@ -154,15 +160,15 @@
   transition: border-color 240ms ease, color 240ms ease, background 240ms ease;
 }
 
-.modal-action:hover,
-.modal-action:focus-visible {
+#store-modal .modal-action:hover ,
+#store-modal .modal-action:focus-visible {
   border-color: var(--sa-gold-bright);
   background: rgba(181, 147, 90, 0.1);
   color: var(--sa-gold-bright);
   outline: none;
 }
 
-.modal-fallback {
+#store-modal .modal-fallback {
   margin-top: 1.1rem;
   color: rgba(237, 232, 223, 0.4);
   font-family: "Cormorant Garamond", Georgia, serif;
@@ -171,13 +177,13 @@
   letter-spacing: 0.06em;
 }
 
-.modal-fallback a {
+#store-modal .modal-fallback a {
   color: rgba(181, 147, 90, 0.8);
   text-decoration: none;
   border-bottom: 1px solid rgba(181, 147, 90, 0.3);
 }
 
-.modal-fallback a:hover {
+#store-modal .modal-fallback a:hover {
   color: var(--sa-gold-bright);
 }
 
