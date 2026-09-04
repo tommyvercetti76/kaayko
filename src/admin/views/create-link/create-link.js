@@ -709,7 +709,7 @@ async function handleCreateLink(e) {
         throw new Error('Verify your email address first — use the banner at the top of the page.');
       }
       if (data.code === 'ALREADY_EXISTS') {
-        showFieldError('short-code', 'err-title', 'This short code is already taken');
+        showFieldError('short-code', 'err-shortcode', 'This short code is already taken');
         throw new Error('Short code already exists — try a different one');
       }
       throw new Error(data.error || `Failed to ${isEditing ? 'update' : 'create'} link`);
@@ -1115,7 +1115,8 @@ async function loadLinkForEditing(code) {
       const date = link.expiresAt._seconds
         ? new Date(link.expiresAt._seconds * 1000)
         : new Date(link.expiresAt);
-      expiresAt.value = date.toISOString().slice(0, 16);
+      const pad = (n) => String(n).padStart(2, '0'); // local components: datetime-local reads local time back
+      expiresAt.value = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
     }
 
     // Toggles

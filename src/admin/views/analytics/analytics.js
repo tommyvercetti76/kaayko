@@ -19,6 +19,8 @@ const RELIABILITY_ISO = '2026-08-17';
 
 export async function init() {
   // Portfolio "Export CSV": every link in this tenant, as a file.
+  const exportBtn = document.querySelector('#analytics-view [data-export-links]');
+  if (exportBtn && !exportBtn.dataset.bound) { exportBtn.dataset.bound = '1'; exportBtn.addEventListener('click', () => window.exportAnalyticsCSV()); }
   window.exportAnalyticsCSV = async () => {
     const btn = document.querySelector('#analytics-view .export-btn');
     const old = btn ? btn.innerHTML : '';

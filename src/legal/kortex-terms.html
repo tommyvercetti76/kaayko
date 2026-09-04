@@ -9,140 +9,122 @@
   <meta name="theme-color" content="#0a0a0a">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #080808; color: #e0e0e0; line-height: 1.7; padding: 40px 20px; }
+    body { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 17px; background: #080808; color: #ede8df; line-height: 1.7; padding: 40px 20px; }
     .container { max-width: 720px; margin: 0 auto; }
-    h1 { font-size: 28px; color: #D4A84B; margin-bottom: 8px; }
-    .effective { color: #666; font-size: 14px; margin-bottom: 40px; }
-    h2 { font-size: 18px; color: #f0f0f0; margin: 32px 0 12px; border-bottom: 1px solid #222; padding-bottom: 8px; }
-    p, li { font-size: 15px; color: #ccc; margin-bottom: 12px; }
+    h1 { font-family: 'Bebas Neue', Impact, sans-serif; font-weight: 400; letter-spacing: .06em; font-size: 40px; color: #ede8df; margin-bottom: 8px; }
+    .effective { color: rgba(237,232,223,.62); font-size: 15px; margin-bottom: 40px; font-style: italic; }
+    h2 { font-style: italic; font-weight: 500; font-size: 20px; color: #d9bd7b; margin: 32px 0 12px; border-bottom: 1px solid rgba(181,147,90,.22); padding-bottom: 8px; }
+    p, li { font-size: 17px; color: rgba(237,232,223,.82); margin-bottom: 12px; }
     ul { padding-left: 24px; }
     li { margin-bottom: 8px; }
-    strong { color: #f0f0f0; }
-    a { color: #D4A84B; text-decoration: none; }
+    strong { color: #ede8df; }
+    a { color: #b5935a; text-decoration: none; }
     a:hover { text-decoration: underline; }
     .highlight { background: #1a1a0a; border-left: 3px solid #D4A84B; padding: 12px 16px; margin: 16px 0; border-radius: 4px; }
   </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap">
   <link rel="stylesheet" href="/css/footer.css">
 </head>
 <body>
 <div class="container">
 
 <h1>Kortex Terms of Service</h1>
-<p class="effective">Effective: May 6, 2026 &middot; Last updated: May 6, 2026</p>
+<p class="effective">Effective: September 4, 2026 &middot; Last updated: September 4, 2026</p>
 
-<p>These Terms of Service ("Terms") govern your use of the Kortex smart link platform ("Service") operated by Kaayko ("we", "us", "our"). By creating an account or using the Service, you agree to these Terms.</p>
+<p>These Terms of Service ("Terms") govern your use of Kortex, the QR code and smart link service ("Service") operated by Kaayko ("we", "us", "our"). By making a link, entering an access code, or signing in, you agree to these Terms.</p>
 
-<h2>1. Service Description</h2>
-<p>Kortex provides smart link creation, campaign management, click analytics, attribution tracking, and related infrastructure services. The Service is offered in tiered plans: Starter (free), Pro, Business, and Enterprise.</p>
+<h2>1. What the Service is</h2>
+<p>Kortex makes QR codes and short links, routes visitors by device and time of day, records scans, and provides the related dashboard, exports and API. It is offered as a free tier that needs no account, and as paid plans with sign-in.</p>
 
-<h2>2. Account Registration</h2>
+<h2>2. The free tier and your access code</h2>
 <ul>
-  <li>You must provide accurate information during registration.</li>
-  <li>You are responsible for maintaining the security of your account credentials.</li>
-  <li>One person or entity may not maintain more than one free account.</li>
-  <li>You must be at least 18 years old to use the Service.</li>
+  <li>The free tier needs no account. When you make your first dynamic link you receive a one-time <strong>access code</strong>. It is shown once and is the only key to that workspace's links, settings and scans.</li>
+  <li>We store only a salted hash of the code. We cannot recover or re-send a lost code unless you attached an email address to the workspace and email delivery is available. A lost code cannot be reset by us.</li>
+  <li>Anyone who holds the code can change where your links point. Keep it private and away from anything you print.</li>
+  <li>A free workspace stays live for 365 days from its last use with the code. After that its links stop forwarding until the code is used again, which restores them; nothing is deleted by expiry.</li>
+  <li>Static QR codes are drawn in your browser and store nothing with us; they carry no code, no dashboard and no scan counts.</li>
+  <li>The sample workspace on the Kortex page is read-only demonstration data pointing at Kaayko's own products.</li>
 </ul>
 
-<h2>3. Plans, Pricing & Payment</h2>
+<h2>3. Plans, limits and pricing</h2>
 <ul>
-  <li><strong>Starter:</strong> Free. 25 links, 3 campaigns, 7-day analytics. "Powered by Kortex" badge on redirects.</li>
-  <li><strong>Pro:</strong> $79/month. 500 links, 25 campaigns, 90-day analytics, 5,000 API calls/month.</li>
-  <li><strong>Business:</strong> $199/month. 2,500 links, unlimited campaigns, full analytics, 25,000 API calls/month, multi-tenant, webhooks.</li>
-  <li><strong>Enterprise:</strong> Custom pricing. Unlimited everything, SLA, custom domains, white-label.</li>
+  <li><strong>Free:</strong> $0. Unlimited static QR codes, 25 dynamic links, scan detail for the last 7 days with lifetime totals, iPhone and Android routing, night and day routing, scan caps and end dates, campaign tags, CSV export. A small Kortex badge on the redirect. Help within 3 business days.</li>
+  <li><strong>Pro:</strong> $29 per month. 500 dynamic links, 25 campaigns, 90 days of scan detail, no badge, API keys and signed webhooks, sign-in for your team. Help within 1 business day.</li>
+  <li><strong>Business:</strong> $99 per month. 2,500 dynamic links, unlimited campaigns, everything in Pro, five times the API quota, onboarding with a person. Help within 4 hours.</li>
+  <li><strong>Enterprise:</strong> custom terms, including custom domains and white-label pages.</li>
 </ul>
-<p>Payments are processed via Stripe. Subscriptions renew monthly unless cancelled. You may upgrade or downgrade at any time; downgrades take effect at the end of the current billing period.</p>
+<p>Paid plans are set up on request and billed monthly through Stripe once billing is enabled for your workspace. You may cancel at any time; downgrades take effect at the end of the current billing period. When a plan limit is reached, further creation is blocked until you upgrade or reduce usage; we do not delete content when limits are reached.</p>
 
-<h2>4. Usage Limits</h2>
-<p>Each plan has defined limits for links, campaigns, API calls, and analytics depth. When you reach a limit, further creation is blocked until you upgrade or reduce usage. We do not delete content when limits are reached.</p>
-
-<h2>5. Data Ownership</h2>
+<h2>4. Safety, review and reports</h2>
 <ul>
-  <li>You retain ownership of all content you create through the Service (links, campaigns, analytics data).</li>
-  <li>We do not sell your data to third parties.</li>
-  <li>We may use anonymized, aggregated usage data to improve the Service.</li>
-  <li>You grant us a limited license to process, store, and display your content solely to operate the Service.</li>
+  <li>Every destination is checked when a link is made and when it is edited, and live links are re-checked on a schedule. Destinations that point at private networks, known malware or phishing hosts, or our blocklist are refused.</li>
+  <li>A link can be <strong>held for review</strong> (visitors see a neutral review page) or <strong>blocked</strong> (visitors see a 410 page). Holds are released only by a reviewer.</li>
+  <li>Anyone can report a link at kaayko.com/kortex/report. Three independent reports of phishing, malware or a scam pause a free link for review. Owners can request a review at kaayko.com/kortex/appeal. A person reads every report and every appeal.</li>
+  <li>We may switch off an entire workspace when it is used for abuse. Every one of its links then stops forwarding.</li>
 </ul>
 
-<h2>6. Cancellation & Churn Policy</h2>
-<div class="highlight">
-  <p><strong>This section defines what happens to your links when you cancel.</strong></p>
-</div>
+<h2>5. Data we keep, and for how long</h2>
 <ul>
-  <li><strong>Voluntary cancellation:</strong> You may cancel your subscription at any time from the Billing section of your dashboard.</li>
-  <li><strong>Grace period:</strong> After cancellation, your links remain active and continue to redirect for <strong>30 calendar days</strong>.</li>
-  <li><strong>After grace period:</strong> Links created under the cancelled account will redirect to a "link no longer active" page. They will not be deleted — they are deactivated.</li>
-  <li><strong>Data export:</strong> During the 30-day grace period, you may export all link data, analytics history, and campaign records via the admin dashboard or API.</li>
-  <li><strong>Reactivation:</strong> If you resubscribe within 90 days of cancellation, all your links and data are restored to their previous state.</li>
-  <li><strong>Permanent deletion:</strong> After 90 days of cancellation without reactivation, we reserve the right to permanently delete account data. Short codes will not be recycled for at least 12 months.</li>
-  <li><strong>Downgrade to Starter:</strong> If you downgrade (not cancel), your most recently created links up to the Starter limit (25) remain active. Others are deactivated but not deleted.</li>
+  <li>For each scan we keep the time, device type, operating system, browser, country, referrer, campaign tags and the address we forwarded to. Visitor IP addresses are hashed with a secret key and are never stored raw.</li>
+  <li>Scan detail is kept for 30 days; lifetime totals stay on the link. Dashboards show the window your plan allows.</li>
+  <li>Emails you attach are stored as a salted hash plus the address itself for delivery. Reports and support requests keep the email you give us so we can reply.</li>
+  <li>Every change to a link and every reviewer action is written to an audit log.</li>
+  <li>You own the links and data you create. We do not sell your data. We may use anonymised, aggregated usage data to improve the Service.</li>
 </ul>
 
-<h2>7. Multi-Tenant Isolation</h2>
+<h2>6. Cancellation and churn (paid plans)</h2>
 <ul>
-  <li>Each tenant's data is isolated. No tenant can view, modify, or access another tenant's links, analytics, or campaign data.</li>
-  <li>Super-admin access is restricted to Kaayko platform operators and is logged.</li>
-  <li>Tenant administrators are responsible for managing access within their tenant.</li>
+  <li>After cancellation, your links keep forwarding for <strong>30 calendar days</strong>, during which you can export everything.</li>
+  <li>After the grace period, links redirect to a "no longer active" page. They are deactivated, not deleted, and short codes are not recycled for at least 12 months.</li>
+  <li>Resubscribing within 90 days restores links and data. After 90 days we may permanently delete the workspace's data.</li>
 </ul>
 
-<h2>8. Acceptable Use</h2>
-<p>You may not use the Service to:</p>
+<h2>7. Multi-tenant isolation</h2>
 <ul>
-  <li>Distribute malware, phishing links, or deceptive content.</li>
-  <li>Generate spam or unsolicited communications.</li>
-  <li>Violate any applicable law, including data protection regulations.</li>
-  <li>Circumvent usage limits through multiple accounts or technical exploits.</li>
-  <li>Resell the Service without explicit written agreement.</li>
-</ul>
-<p>Violation may result in immediate account suspension without notice.</p>
-
-<h2>9. API Usage</h2>
-<ul>
-  <li>API access is governed by your plan's call limits.</li>
-  <li>API keys are confidential. You are responsible for any activity under your keys.</li>
-  <li>Rate limiting is enforced. Exceeding limits returns HTTP 429.</li>
-  <li>We reserve the right to throttle or suspend API access for abusive patterns.</li>
+  <li>Each workspace's data is isolated. No workspace can view or change another's links, scans or settings. Free workspaces are identified only by their access code.</li>
+  <li>Platform-operator access is restricted to Kaayko staff and is logged.</li>
 </ul>
 
-<h2>10. Webhooks & Data Delivery</h2>
+<h2>8. Acceptable use</h2>
+<p>You may not use the Service to distribute malware, phishing or deceptive content; to send spam; to break any applicable law, including data protection law; to get around limits or safety checks with multiple workspaces or technical tricks; or to resell the Service without written agreement. Violation may result in immediate suspension of the link or the workspace.</p>
+
+<h2>9. API and webhooks (paid plans)</h2>
 <ul>
-  <li>Webhook delivery is best-effort with exponential backoff retry (up to 12 attempts).</li>
-  <li>Failed webhook deliveries are stored for 7 days in the dead letter queue (Business/Enterprise plans).</li>
-  <li>We are not liable for missed webhook deliveries due to your endpoint being unreachable.</li>
+  <li>API keys are confidential; you are responsible for activity under your keys. Rate limits are enforced and answer HTTP 429.</li>
+  <li>Webhook delivery is best-effort with retries. We are not liable for deliveries missed because your endpoint was unreachable.</li>
 </ul>
 
-<h2>11. Data Residency</h2>
-<p>Kortex data is hosted in Google Cloud Platform's <strong>asia-south1 (Mumbai)</strong> region. For Enterprise customers requiring specific data residency guarantees, contact us for a Data Processing Agreement.</p>
+<h2>10. Where the Service runs</h2>
+<p>The Service and its data run on Google Cloud Platform in the <strong>us-central1 (Iowa, United States)</strong> region. Customers who need a specific data residency should contact us about Enterprise terms and a Data Processing Agreement.</p>
 
-<h2>12. Privacy & DPDP Compliance</h2>
-<p>We process personal data in accordance with our Privacy Policy and the Digital Personal Data Protection Act, 2023 (India). Click analytics data stores hashed IP addresses — we do not store raw IP addresses beyond the request lifecycle.</p>
+<h2>11. Privacy and DPDP</h2>
+<p>We process personal data in accordance with our Privacy Policy and the Digital Personal Data Protection Act, 2023 (India). See section 5 for exactly what a scan records.</p>
 
-<h2>13. Intellectual Property</h2>
-<ul>
-  <li>The Kortex platform, code, design, and brand are owned by Kaayko.</li>
-  <li>The "Powered by Kortex" badge on free-tier links is part of the Service and may not be removed, hidden, or obscured without upgrading to a paid plan.</li>
-</ul>
+<h2>12. Intellectual property</h2>
+<p>The Kortex platform, code, design and brand are owned by Kaayko. The Kortex badge shown on free-tier redirects is part of the Service.</p>
 
-<h2>14. Limitation of Liability</h2>
-<p>The Service is provided "as is". To the maximum extent permitted by law, Kaayko shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the Service. Our total liability shall not exceed the amount you paid us in the 12 months preceding the claim.</p>
+<h2>13. Limitation of liability</h2>
+<p>The Service is provided "as is". To the maximum extent permitted by law, Kaayko is not liable for indirect, incidental, special, consequential or punitive damages arising from your use of the Service, and our total liability is limited to the amount you paid us in the twelve months before the claim.</p>
 
-<h2>15. Modifications to Terms</h2>
-<p>We may modify these Terms with 30 days' written notice (via email to your registered address). Continued use after the notice period constitutes acceptance. Material changes to the churn policy or pricing require 60 days' notice.</p>
+<h2>14. Changes to these Terms</h2>
+<p>We may change these Terms with 30 days' notice on the Kortex page, and by email where we hold an address. Material changes to pricing or the churn policy carry 60 days' notice.</p>
 
-<h2>16. Termination by Us</h2>
-<p>We may terminate your account immediately for: acceptable use violations, non-payment (after 14-day grace), or legal requirement. In all other cases, we provide 30 days' notice.</p>
+<h2>15. Termination by us</h2>
+<p>We may suspend or end access immediately for acceptable-use violations, non-payment after a 14-day grace period, or legal requirement; otherwise with 30 days' notice.</p>
 
-<h2>17. Governing Law</h2>
-<p>These Terms are governed by the laws of India. Disputes shall be resolved in the courts of Nagpur, Maharashtra.</p>
+<h2>16. Governing law</h2>
+<p>These Terms are governed by the laws of India. Disputes are resolved in the courts of Nagpur, Maharashtra.</p>
 
-<h2>18. Contact</h2>
-<p>Questions about these Terms: <a href="mailto:rohan@kaayko.com">rohan@kaayko.com</a></p>
+<h2>17. Contact</h2>
+<p>Questions about these Terms or the Service: <a href="/kortex/support">kaayko.com/kortex/support</a>.</p>
 
 </div>
   <footer class="site-footer">
     <nav aria-label="Footer">
       <a href="/kortex">Kortex</a>
       <a href="/privacy">Privacy</a>
-      <a href="mailto:rohan@kaayko.com">Contact</a>
+      <a href="/kortex/support">Contact</a>
     </nav>
     <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
   </footer>

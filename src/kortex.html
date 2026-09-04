@@ -117,6 +117,7 @@
 /* ── RESET + BASE ── */
 *,*::before,*::after { margin:0; padding:0; box-sizing:border-box }
 html { scroll-behavior:smooth; scroll-padding-top:var(--sp-9); -webkit-text-size-adjust:100% }
+@media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto } }
 html, body { overflow-x:clip; max-width:100% }
 body {
   font-family:'Cormorant Garamond',Georgia,serif;
@@ -171,7 +172,6 @@ img, canvas, svg { max-width:100% }
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   text-align:center; padding:var(--sp-10) var(--sp-5) var(--sp-8);
   overflow:hidden;
-  background:linear-gradient(180deg, #060b1e 0%, #0a1233 42%, #0a1129 68%, #080808 100%);
 }
 .hero-glow {
   position:absolute; left:0; top:0; z-index:0;
@@ -182,10 +182,18 @@ img, canvas, svg { max-width:100% }
   transition:opacity var(--dur-slow) ease;
   will-change:transform;
 }
-/* The night sky: seeded stars + real constellations (canvas). The gradient is CSS so nothing flashes before the script runs. */
+/* One sky behind the whole page: a fixed canvas paints the deep-space ground,
+   a faint star-chart grid, the starfield and the constellation that is lit.
+   Content scrolls over it on glass plates, so every section shares the same
+   night. Before the script runs, the body gradient below stands in for it. */
 .sky {
-  position:absolute; inset:0; z-index:0; pointer-events:none;
-  opacity:0; animation:skyIn 1.6s ease-out 0.6s forwards;
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  opacity:0; animation:skyIn 1.4s ease-out 0.2s forwards;
+}
+body { background:linear-gradient(180deg, #060b1e 0%, #0a1233 45%, #0a1129 70%, #080808 100%) fixed; }
+.nav::before {
+  content:''; position:absolute; left:0; right:0; top:0; height:calc(100% + 28px); z-index:-1; pointer-events:none;
+  background:linear-gradient(180deg, rgba(5,8,18,0.86) 0%, rgba(5,8,18,0.55) 55%, rgba(5,8,18,0) 100%);
 }
 @keyframes skyIn { to { opacity:1 } }
 .hero-inner { position:relative; z-index:1; max-width:720px }
@@ -262,10 +270,21 @@ img, canvas, svg { max-width:100% }
 }
 .panel {
   position:relative;
-  border:1px solid rgba(181,147,90,0.12);
-  background:rgba(181,147,90,0.018);
-  box-shadow:0 0 40px rgba(181,147,90,0.04);
+  border:1px solid rgba(181,147,90,0.24);
+  background:rgba(5,7,14,0.66);
+  -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+  box-shadow:0 0 0 1px rgba(0,0,0,0.35), 0 30px 80px rgba(0,0,0,0.38), 0 0 40px rgba(181,147,90,0.05);
   padding:var(--sp-7) var(--sp-6);
+}
+/* Chart-plate corner ticks: the one ornament, used on every plate. */
+.panel::after {
+  content:''; position:absolute; inset:-1px; pointer-events:none; opacity:.85;
+  --tick:linear-gradient(var(--gold-bright),var(--gold-bright));
+  background:
+    var(--tick) left top/18px 1px no-repeat, var(--tick) left top/1px 18px no-repeat,
+    var(--tick) right top/18px 1px no-repeat, var(--tick) right top/1px 18px no-repeat,
+    var(--tick) left bottom/18px 1px no-repeat, var(--tick) left bottom/1px 18px no-repeat,
+    var(--tick) right bottom/18px 1px no-repeat, var(--tick) right bottom/1px 18px no-repeat;
 }
 .panel::before {
   content:''; position:absolute; top:0; left:var(--sp-6); right:var(--sp-6); height:1px;
@@ -318,7 +337,6 @@ input[type="time"].field-input, input[type="date"].field-input { color-scheme:da
 .utm-hint { margin:var(--sp-3) 0 0 }
 .utm-hint b { color:var(--gold-bright); font-weight:500 }
 .utm-hint .action-link { margin-left:6px }
-.stat-row { flex-wrap:wrap }
 .honey { position:absolute; left:-9999px; width:1px; height:1px; opacity:0 }
 
 /* result */
@@ -378,12 +396,12 @@ input[type="time"].field-input, input[type="date"].field-input { color-scheme:da
 .link-title { font-size:1.05rem; color:var(--fg); overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
 .link-sub { font-family:var(--mono); font-size:0.8rem; color:var(--muted); margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
 .link-sub .st { color:var(--gold); font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.8rem; letter-spacing:0.14em; text-transform:uppercase; margin-right:var(--sp-2) }
-.link-sub .st.off { color:rgba(239,68,68,0.75) }
+.link-sub .st.off { color:#f28b84 }
 .link-count { font-family:'Bebas Neue',Impact,sans-serif; font-size:1.7rem; letter-spacing:0.05em; color:var(--gold-bright); line-height:1; text-align:right; white-space:nowrap }
 .link-count small { display:block; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.76rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted) }
 .detail { margin-top:var(--sp-5); padding-top:var(--sp-5); border-top:1px solid var(--gold-line); display:grid; grid-template-columns:minmax(0,1fr) 220px; gap:var(--sp-6); min-width:0 }
 .detail > * { min-width:0 }
-.stat-row { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--sp-3); margin-bottom:var(--sp-4) }
+.stat-row { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:var(--sp-3); margin-bottom:var(--sp-4) }
 .stat { padding:var(--sp-3) 0; border-top:1px solid var(--gold-line); min-width:0 }
 .stat b { display:block; font-family:'Bebas Neue',Impact,sans-serif; font-size:1.9rem; letter-spacing:0.04em; color:var(--fg); line-height:1; font-weight:400 }
 .stat span { display:block; font-style:italic; font-size:0.78rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-top:4px }
@@ -403,6 +421,46 @@ input[type="time"].field-input, input[type="date"].field-input { color-scheme:da
 .detail-side .field { margin-bottom:var(--sp-2) }
 .detail-side .btn-submit { padding:12px }
 .lifetime-note { text-align:center; margin-top:var(--sp-5) }
+.demo-banner { width:100%; text-align:left; border-left:2px solid var(--gold); padding:var(--sp-3) var(--sp-4); background:rgba(181,147,90,0.06); font-style:italic; font-size:0.98rem; color:var(--muted); line-height:1.55 }
+.demo-banner b { color:var(--gold-bright); font-weight:500 }
+.demo-banner .action-link { display:inline; margin-left:8px; font-size:0.9rem }
+.overview { margin-top:var(--sp-4); padding-top:var(--sp-4); border-top:1px solid var(--gold-line) }
+.overview-head { display:flex; align-items:baseline; justify-content:space-between; gap:var(--sp-3); flex-wrap:wrap; margin-bottom:var(--sp-2) }
+.overview-head h4, .views-head h4 { font-style:italic; font-size:0.8rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--gold); font-weight:500 }
+.views { margin-top:var(--sp-3) }
+.views-nav { display:flex; gap:var(--sp-4); border-bottom:1px solid var(--gold-line); margin-bottom:var(--sp-3); flex-wrap:wrap }
+.views-nav button { background:none; border:0; border-bottom:1px solid transparent; margin-bottom:-1px; padding:8px 2px; min-height:40px; cursor:pointer; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.9rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted) }
+.views-nav button[aria-pressed="true"] { color:var(--gold-bright); border-bottom-color:var(--gold) }
+.views-nav button:focus-visible { outline:1px solid var(--gold-bright); outline-offset:4px }
+.view-pane { min-width:0 }
+.k-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch }
+.k-table { width:100%; border-collapse:collapse; font-size:0.92rem; font-variant-numeric:tabular-nums; min-width:520px }
+.k-table th { text-align:left; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-weight:500; font-size:0.78rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold); padding:6px 10px 8px 0; border-bottom:1px solid var(--gold-line); white-space:nowrap }
+.k-table td { padding:7px 10px 7px 0; border-bottom:1px solid rgba(181,147,90,0.1); color:var(--muted); vertical-align:top; max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+.k-table td.n, .k-table th.n { text-align:right; font-family:var(--mono); font-size:0.84rem }
+.k-table td b { color:var(--fg); font-weight:500 }
+.k-table .bar-cell { position:relative; min-width:120px }
+.k-table .bar-cell i { display:block; height:5px; background:linear-gradient(90deg,var(--gold),var(--gold-bright)); box-shadow:var(--glow-xs) }
+.k-tables { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--sp-4) }
+.k-tables .k-table { min-width:0 }
+.graph-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--sp-5) }
+.graph-grid > div { min-width:0 }
+.graph-grid h5, .radar-wrap h5, .sky-wrap h5 { font-style:italic; font-size:0.78rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--gold); margin-bottom:var(--sp-2); font-weight:500 }
+.bars.dense { gap:2px } .bars.dense .bar span { display:none } .bars.dense .bar:nth-child(6n+1) span { display:block }
+.radar-wrap { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:var(--sp-4); align-items:center }
+.radar-wrap svg { width:100%; max-width:360px; height:auto; display:block; margin:0 auto }
+.radar-legend { list-style:none; font-size:0.94rem; color:var(--muted) }
+.radar-legend li { display:flex; justify-content:space-between; gap:var(--sp-3); padding:5px 0; border-bottom:1px solid rgba(181,147,90,0.1) }
+.radar-legend b { color:var(--fg); font-weight:500; font-family:var(--mono); font-size:0.86rem }
+.sky-wrap canvas { width:100%; max-width:560px; height:auto; display:block; margin:0 auto; aspect-ratio:1 }
+.sky-legend { display:flex; gap:var(--sp-4); justify-content:center; flex-wrap:wrap; font-style:italic; font-size:0.86rem; color:var(--muted); margin-top:var(--sp-2) }
+.sky-legend i { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:middle }
+.report-kind { display:inline-block; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.8rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold-bright); border:1px solid rgba(181,147,90,0.35); padding:5px 10px; margin-bottom:var(--sp-2) }
+.insights { list-style:none; margin:var(--sp-3) 0 var(--sp-4); display:grid; gap:6px }
+.insights li { padding-left:18px; position:relative; font-style:italic; font-size:0.98rem; color:var(--muted); line-height:1.5 }
+.insights li::before { content:'✦'; position:absolute; left:0; top:2px; color:var(--gold); font-size:0.7rem }
+.insights b { color:var(--fg); font-weight:500 }
+@media(max-width:760px) { .k-tables, .graph-grid, .radar-wrap { grid-template-columns:1fr } }
 
 /* ── CAPABILITIES — symmetric 2x2 grid ── */
 .caps-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--sp-5) }
@@ -487,7 +545,7 @@ input[type="time"].field-input, input[type="date"].field-input { color-scheme:da
 .field-input.mono { font-family:var(--mono); letter-spacing:0.1em; font-size:0.95rem; text-transform:uppercase }
 .field-input:focus,.field-select:focus { border-bottom-color:var(--gold); box-shadow:0 4px 12px rgba(181,147,90,0.1) }
 .field-input::placeholder { color:var(--faint); font-style:italic; opacity:1; text-transform:none; letter-spacing:0.06em; font-family:'Cormorant Garamond',Georgia,serif }
-.field-input:focus-visible,.field-select:focus-visible { outline:none }
+.field-input:focus-visible,.field-select:focus-visible { outline:1px solid var(--gold-bright); outline-offset:4px }
 .field-select {
   cursor:pointer; appearance:none; padding-right:24px;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23b5935a'/%3E%3C/svg%3E");
@@ -566,7 +624,10 @@ a.btn-submit { display:block; text-align:center }
   .url-row, .enter-row, .inline-form { flex-direction:column; align-items:stretch }
   .url-row .btn-submit, .enter-row .btn-submit, .inline-form .btn-submit { width:100% }
 }
+.section, .connect-section, .site-footer, .hero { position:relative; z-index:1 }
+.cap-card, .plan { background:rgba(5,7,14,0.52); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px) }
 @media(max-width:480px) {
+  .panel, .cap-card, .plan { -webkit-backdrop-filter:none; backdrop-filter:none; background:rgba(5,7,14,0.88) }
   /* Wrapped action rows: no separator left dangling at a line end. */
   .actions .action-dot { display:none }
   .actions { gap:var(--sp-2) var(--sp-5) }
@@ -624,6 +685,8 @@ a.btn-submit { display:block; text-align:center }
       <span class="action-dot" aria-hidden="true">&middot;</span>
       <a href="#manage" class="action-link">I have a code</a>
       <span class="action-dot" aria-hidden="true">&middot;</span>
+      <button type="button" class="action-link" id="hero-sample">See a sample</button>
+      <span class="action-dot" aria-hidden="true">&middot;</span>
       <a href="#connect" class="action-link" id="hero-auth-btn">Sign In</a>
     </div>
     <div class="scroll-cue hero-fade" aria-hidden="true">&darr;</div>
@@ -635,9 +698,9 @@ a.btn-submit { display:block; text-align:center }
   <h2 class="section-label reveal">make a qr · no account</h2>
   <div class="panel panel-narrow reveal">
     <form id="make-form" autocomplete="off" novalidate>
-      <div class="seg" role="tablist" aria-label="QR type">
-        <button type="button" class="seg-btn active" id="mode-dynamic" role="tab" aria-selected="true">Dynamic</button>
-        <button type="button" class="seg-btn" id="mode-static" role="tab" aria-selected="false">Static</button>
+      <div class="seg" role="group" aria-label="QR type">
+        <button type="button" class="seg-btn active" id="mode-dynamic" aria-pressed="true">Dynamic</button>
+        <button type="button" class="seg-btn" id="mode-static" aria-pressed="false">Static</button>
       </div>
       <p class="note seg-note" id="mode-note">Re-point it after printing and see every scan. Free for a year, renewable with your access code.</p>
       <ul class="mode-facts" id="mode-facts"></ul>
@@ -688,7 +751,7 @@ a.btn-submit { display:block; text-align:center }
           <div id="mk-limit-fields" hidden>
             <div class="field-row">
               <div class="field"><label class="field-label" for="mk-max">Stop after (scans)</label><input class="field-input" type="number" id="mk-max" min="1" step="1" inputmode="numeric" placeholder="500"></div>
-              <div class="field"><label class="field-label" for="mk-expires">Ends on</label><input class="field-input" type="date" id="mk-expires"></div>
+              <div class="field"><label class="field-label" for="mk-expires">Ends on (end of that day, your time)</label><input class="field-input" type="date" id="mk-expires"></div>
             </div>
             <div class="field"><label class="field-label" for="mk-fallback">Then send people to (optional)</label><input class="field-input" type="url" id="mk-fallback" inputmode="url" placeholder="https://your-site.com/sold-out"></div>
             <p class="note">After the limit or the date, scans go to this address instead. Leave it empty and they see a plain "no longer available" page.</p>
@@ -812,6 +875,10 @@ a.btn-submit { display:block; text-align:center }
 
     <div id="workspace" hidden>
       <div class="ws-head">
+        <div class="demo-banner" id="ws-demo-banner" hidden>
+          <b>Sample workspace</b> · read-only · eight real links pointing at Kaayko's own products, with thirty days of simulated scans. Scanning any of them goes to the real page.
+          <button type="button" class="action-link" id="ws-demo-make">Make your own in ten seconds</button>
+        </div>
         <div class="ws-meta" id="ws-meta"></div>
         <div class="actions">
           <button type="button" class="action-link quiet" id="ws-add">Add a link</button>
@@ -822,7 +889,7 @@ a.btn-submit { display:block; text-align:center }
           <span class="action-dot" aria-hidden="true">&middot;</span>
           <button type="button" class="action-link quiet" id="ws-export">Export CSV</button>
           <span class="action-dot" aria-hidden="true">&middot;</span>
-          <button type="button" class="action-link quiet" id="ws-forget">Forget this device</button>
+          <button type="button" class="action-link quiet" id="ws-forget">Sign out on this device</button>
         </div>
         <div class="code-card compact" id="ws-code-card" hidden>
           <div class="code-label" id="ws-code-label">Your access code</div>
@@ -842,6 +909,10 @@ a.btn-submit { display:block; text-align:center }
           <button type="submit" class="btn-submit">Send</button>
         </form>
         <p class="status" id="ws-email-status" hidden></p>
+      </div>
+      <div class="overview" id="ws-overview" hidden>
+        <div class="overview-head"><h4>The workspace, four ways</h4><p class="note" id="ov-note"></p></div>
+        <div id="ov-views"></div>
       </div>
       <div class="links-list" id="links-list"></div>
       <div id="detail" class="detail" hidden></div>
@@ -1117,6 +1188,7 @@ function fmtAgo(iso) {
 function stripScheme(url) { return String(url || '').replace(/^https?:\/\//, ''); }
 
 /* ── STATIC QR (client-side, nothing leaves the browser) ── */
+function scanTarget(shortUrl) { try { const u = new URL(shortUrl); u.searchParams.set('s', 'qr'); return u.toString(); } catch { return shortUrl; } }
 function buildStaticQr(text) { const qr = qrcode(0, 'M'); qr.addData(text); qr.make(); return qr; }
 function qrCanvas(qr, size, margin) {
   const n = qr.getModuleCount(); const cell = size / (n + margin * 2);
@@ -1132,8 +1204,17 @@ function qrSvg(qr) { return qr.createSvgTag({ cellSize: 8, margin: 16, scalable:
 /* ── GUEST WORKSPACE STATE ── */
 const GUEST_KEY = 'kortex_guest_session';
 function guestSession() { try { const s = JSON.parse(localStorage.getItem(GUEST_KEY) || 'null'); if (s && s.token && s.exp > Date.now()) return s; } catch {} return null; }
-function saveGuestSession(token, workspace) { localStorage.setItem(GUEST_KEY, JSON.stringify({ token, exp: Date.now() + 11.5 * 3600e3, workspaceId: workspace && workspace.id })); }
+function saveGuestSession(token, workspace) { localStorage.setItem(GUEST_KEY, JSON.stringify({ token, exp: Date.now() + ((CAPS.sessionHours || 12) - 0.5) * 3600e3, workspaceId: workspace && workspace.id })); }
 function clearGuestSession() { localStorage.removeItem(GUEST_KEY); }
+/* The session is gone (expired, or the workspace was switched off): show the code entry again, say so, and focus it. */
+function sessionEnded() {
+  clearGuestSession(); openCode = null;
+  if ($('detail')) $('detail').hidden = true;
+  renderWorkspace(null);
+  setAlert('mg-alert', 'error', 'Your session ended. Enter your access code again.');
+  if (location.hash !== '#manage') location.hash = '#manage';
+  setTimeout(() => $('mg-code').focus(), 300);
+}
 async function guestApi(path, opts = {}) {
   const headers = { 'Content-Type': 'application/json' };
   const token = opts.session || (guestSession() || {}).token;
@@ -1143,7 +1224,7 @@ async function guestApi(path, opts = {}) {
     res = await fetch(`${CONFIG.API_BASE}/kortex/guest${path}`, { method: opts.method || 'GET', headers, body: opts.body ? JSON.stringify(opts.body) : undefined });
   } catch { return { ok: false, status: 0, data: { error: 'Network problem. Check your connection and try again.' } }; }
   const data = await res.json().catch(() => ({}));
-  if (res.status === 401 && data.code === 'GUEST_SESSION_REQUIRED') clearGuestSession();
+  if (res.status === 401 && data.code === 'GUEST_SESSION_REQUIRED') sessionEnded();
   return { ok: res.ok, status: res.status, data };
 }
 /* Fetch a file (CSV) with the workspace session and hand it to the browser. */
@@ -1166,7 +1247,7 @@ async function guestDownload(path, filename, btn) {
 const FRIENDLY = {
   DESTINATION_BLOCKED: 'That destination was refused by our safety check.',
   RATE_LIMIT_UNAVAILABLE: 'We are briefly unable to take new links. Try again in a minute.',
-  PLAN_LIMIT_EXCEEDED: 'This free workspace has reached 25 links.',
+  get PLAN_LIMIT_EXCEEDED() { return `This free workspace has reached ${CAPS.linkLimit} links.`; },
   INVALID_ACCESS_CODE: 'That access code is not valid. It has 22 letters and numbers after KX.',
   ACCESS_CODE_LOCKED: 'Too many attempts. Try again in about an hour.',
   GUEST_NOT_CONFIGURED: 'Free links are not available right now.',
@@ -1247,13 +1328,14 @@ function modeFacts(next) {
 function renderFacts() { $('mode-facts').innerHTML = modeFacts(mode).map(f => `<li>${escapeHtml(f)}</li>`).join(''); }
 function setMode(next) {
   mode = next;
-  $('mode-dynamic').classList.toggle('active', next === 'dynamic'); $('mode-dynamic').setAttribute('aria-selected', next === 'dynamic');
-  $('mode-static').classList.toggle('active', next === 'static'); $('mode-static').setAttribute('aria-selected', next === 'static');
+  $('mode-dynamic').classList.toggle('active', next === 'dynamic'); $('mode-dynamic').setAttribute('aria-pressed', next === 'dynamic');
+  $('mode-static').classList.toggle('active', next === 'static'); $('mode-static').setAttribute('aria-pressed', next === 'static');
   $('mode-note').textContent = MODE_NOTES[next];
   $('mk-options').hidden = next === 'static';
   $('mk-submit').textContent = next === 'static' ? 'Make QR' : 'Create';
   renderFacts();
   $('mk-foot').hidden = next === 'static';
+  if (next === 'static' && $('mk-utm-hint')) { $('mk-utm-hint').hidden = true; $('mk-utm-hint').innerHTML = ''; }
 }
 $('mode-dynamic').addEventListener('click', () => setMode('dynamic'));
 $('mode-static').addEventListener('click', () => setMode('static'));
@@ -1268,8 +1350,12 @@ $('mk-limit-on').addEventListener('change', () => { $('mk-limit-fields').hidden 
 /* Campaign tags a pasted address already carries, read back in plain words. */
 $('mk-url').addEventListener('input', () => {
   const hint = $('mk-utm-hint');
-  const d = window.KortexUtm ? KortexUtm.decode($('mk-url').value) : null;
+  const d = (window.KortexUtm && mode === 'dynamic') ? KortexUtm.decode(normaliseUrl($('mk-url').value) || $('mk-url').value) : null;
   if (!d || !d.hasTags) { hint.hidden = true; hint.innerHTML = ''; return; }
+  // The form carries source, medium and campaign; term and content stay on the address.
+  const movable = ['utm_source', 'utm_medium', 'utm_campaign'];
+  try { const keep = new URL(d.cleanUrl); ['utm_term', 'utm_content'].forEach(k => { if (d.tags[k]) keep.searchParams.set(k, d.tags[k]); }); d.cleanUrl = keep.toString(); } catch {}
+  if (!movable.some(k => d.tags[k])) { hint.hidden = true; hint.innerHTML = ''; return; }
   hint.hidden = false;
   hint.innerHTML = `This address already carries campaign tags: ${KortexUtm.chips(d.tags).map(c => `<b>${escapeHtml(c.label)}</b> ${escapeHtml(c.value)}`).join(' · ')}. ${escapeHtml(KortexUtm.sentence(d.tags))} <button type="button" class="action-link quiet" id="mk-utm-move">Move them into the link</button>`;
   $('mk-utm-move').addEventListener('click', () => {
@@ -1372,13 +1458,15 @@ $('make-form').addEventListener('submit', async (e) => {
   const url = normaliseUrl($('mk-url').value);
   if (!url) { setAlert('mk-alert', 'error', 'Enter a full web address, like https://your-site.com/tickets'); $('mk-url').focus(); return; }
   if (mode === 'static') {
-    showResult({ kind: 'static', text: url, qr: buildStaticQr(url) });
+    let qr;
+    try { qr = buildStaticQr(url); } catch { setAlert('mk-alert', 'error', 'That address is too long for a QR code. Shorten it, or make it dynamic.'); return; }
+    showResult({ kind: 'static', text: url, qr });
     return;
   }
   let schedule;
   if ($('mk-night-on').checked) {
     const nightUrl = normaliseUrl($('mk-night-url').value);
-    if (!nightUrl) { setAlert('mk-alert', 'error', 'Enter the night destination, or untick night routing.'); $('mk-night-url').focus(); return; }
+    if (!nightUrl) { setAlert('mk-alert', 'error', 'Enter the night destination, or untick night routing.'); $('mk-options').open = true; $('mk-night-url').focus(); return; }
     schedule = { timezone: $('mk-tz').value.trim() || browserTz(), windows: [{ label: 'night', start: $('mk-night-start').value || '18:00', end: $('mk-night-end').value || '06:00', url: nightUrl }] };
   }
   let limits, expiresAt, utm;
@@ -1386,6 +1474,7 @@ $('make-form').addEventListener('submit', async (e) => {
     const max = $('mk-max').value.trim();
     const fallbackRaw = $('mk-fallback').value.trim();
     const fallbackUrl = fallbackRaw ? normaliseUrl(fallbackRaw) : null;
+    $('mk-options').open = true;
     if (fallbackRaw && !fallbackUrl) { setAlert('mk-alert', 'error', 'Enter a full web address for the fallback, or leave it empty.'); $('mk-fallback').focus(); return; }
     if (max && !/^\d+$/.test(max)) { setAlert('mk-alert', 'error', 'The scan limit must be a whole number.'); $('mk-max').focus(); return; }
     expiresAt = expiryFromDateInput($('mk-expires').value);
@@ -1415,6 +1504,7 @@ $('make-form').addEventListener('submit', async (e) => {
     setAlert('mk-alert', 'error', friendly(data, 'Could not create the link. Please try again.') + why);
     return;
   }
+  try { localStorage.removeItem(DEMO_KEY); } catch {}
   saveGuestSession(data.session, data.workspace);
   showResult({ kind: 'dynamic', link: data.link, qrPng: data.qr.png, accessCode: data.accessCode, email: body.email, emailSent: !!(data.accessCode && body.email), emailDelivery: data.emailDelivery, workspace: data.workspace });
 });
@@ -1423,11 +1513,13 @@ $('rs-copy-url').addEventListener('click', () => copyText(lastResult.kind === 's
 $('rs-dl-png').addEventListener('click', async () => {
   if (!lastResult) return;
   if (lastResult.kind === 'static') { qrCanvas(lastResult.qr, 1024, 2).toBlob(b => download('kortex-qr.png', b), 'image/png'); return; }
-  const res = await fetch(lastResult.qrPng); download(`kortex-${lastResult.link.code}.png`, await res.blob());
+  const b64 = String(lastResult.qrPng).split(',')[1] || '';
+  const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  download(`kortex-${lastResult.link.code}.png`, new Blob([bytes], { type: 'image/png' }));
 });
 $('rs-dl-svg').addEventListener('click', () => {
   if (!lastResult) return;
-  const qr = lastResult.kind === 'static' ? lastResult.qr : buildStaticQr(lastResult.link.shortUrl);
+  const qr = lastResult.kind === 'static' ? lastResult.qr : buildStaticQr(scanTarget(lastResult.link.shortUrl));
   download(lastResult.kind === 'static' ? 'kortex-qr.svg' : `kortex-${lastResult.link.code}.svg`, new Blob([qrSvg(qr)], { type: 'image/svg+xml' }));
 });
 $('rs-copy-code').addEventListener('click', async () => { if (await copyText($('rs-code').textContent, $('rs-copy-code'))) markCodeSaved(); });
@@ -1480,22 +1572,35 @@ $('code-form').addEventListener('submit', async (e) => {
 $('recover-form').addEventListener('submit', async (e) => {
   e.preventDefault(); setAlert('rc-alert');
   const address = $('rc-email').value.trim(); if (!address) return;
+  const rbtn = e.submitter || $('recover-form').querySelector('button[type="submit"]'); if (rbtn) rbtn.disabled = true;
   const { ok, data } = await guestApi('/recover', { method: 'POST', body: { email: address } });
+  if (rbtn) rbtn.disabled = false;
   if (!ok) { setAlert('rc-alert', 'error', friendly(data, 'Could not send a new code.')); return; }
   setAlert('rc-alert', 'success', data.emailConfigured === false ? 'Request received. Email delivery is being set up, so this may take a little while.' : data.message);
 });
 
 async function openWorkspaceFromSession(revived) {
   if (!guestSession()) return false;
-  const { ok, data } = await guestApi('/workspace');
-  if (!ok) { clearGuestSession(); renderWorkspace(null); return false; }
+  const { ok, status, data } = await guestApi('/workspace');
+  if (!ok) {
+    if (status === 401 || (data && data.code === 'WORKSPACE_DISABLED')) { sessionEnded(); }
+    else { setAlert('mg-alert', 'error', friendly(data, 'Could not reach your workspace right now. Try again in a moment.')); }
+    return false;
+  }
   wsLinks = data.links; wsMeta = data.workspace; renderWorkspace(data.workspace, revived);
   return true;
 }
 function renderWorkspace(ws, revived) {
   $('manage-enter').hidden = !!ws; $('workspace').hidden = !ws;
   if (!ws) return;
-  $('ws-meta').innerHTML = `<b>${ws.links}</b> of ${ws.linkLimit} free links · live until <b>${fmtDate(ws.expiresAt)}</b> · ${ws.hasEmail ? `recovery email <b>${escapeHtml(ws.email)}</b>` : 'no email on file'}${revived ? ` · <b>${revived} link${revived === 1 ? '' : 's'} revived</b>` : ''}`;
+  const demo = !!(ws.demo || ws.readOnly || isDemoSession());
+  $('ws-demo-banner').hidden = !demo;
+  ['ws-rotate', 'ws-email', 'ws-email-dot'].forEach(id => { if ($(id)) $(id).hidden = demo || ($(id).hidden && id !== 'ws-rotate'); });
+  if ($('ws-rotate')) $('ws-rotate').hidden = demo || false;
+  $('ws-forget').textContent = demo ? 'Leave the sample' : 'Sign out on this device';
+  $('ws-add').textContent = demo ? 'Make your own' : 'Add a link';
+  if (wsLinks.length) loadOverview(ws); else $('ws-overview').hidden = true;
+  $('ws-meta').innerHTML = demo ? `<b>Sample workspace</b> · ${wsLinks.length} links · read-only` : `<b>${ws.links}</b> of ${ws.linkLimit} free links · live until <b>${fmtDate(ws.expiresAt)}</b> · ${ws.hasEmail ? `recovery email <b>${escapeHtml(ws.email)}</b>` : 'no email on file'}${revived ? ` · <b>${revived} link${revived === 1 ? '' : 's'} revived</b>` : ''}`;
   $('ws-lifetime').textContent = `Free links stay live for ${Math.round(ws.lifetimeDays / 30)} months and renew every time you open them with your code. Scan detail covers the last ${ws.analyticsDays} days; lifetime totals never reset.`;
   const kc = knownCode();
   if (kc && $('ws-code-card').hidden) showWsCode(kc, 'Your access code', 'Kept in this tab only. Copy it or save the key card if you have not already.', false);
@@ -1514,10 +1619,13 @@ function renderWorkspace(ws, revived) {
   if (openCode && !wsLinks.some(l => l.code === openCode)) { openCode = null; $('detail').hidden = true; }
 }
 
+let detailSeq = 0;
 async function openDetail(code) {
+  const seq = ++detailSeq;
   openCode = code; renderWorkspace(wsMeta);
   const box = $('detail'); box.hidden = false; box.innerHTML = '<p class="note">Loading scans…</p>';
   const { ok, data } = await guestApi(`/links/${encodeURIComponent(code)}/analytics`);
+  if (seq !== detailSeq) return; // a newer link was opened meanwhile
   if (!ok) { box.innerHTML = `<p class="alert error show">${escapeHtml(friendly(data, 'Could not load this link.'))}</p>`; return; }
   const link = data.link, a = data.analytics;
   const days = (a.timeline || []).slice(-7);
@@ -1529,8 +1637,15 @@ async function openDetail(code) {
   const stateLine = (link.status === 'blocked' ? `Blocked by the safety check. <a href="/kortex/appeal?code=${encodeURIComponent(link.code)}" style="color:var(--gold)">Request a review</a>.` : link.status === 'held' ? 'Under review; it goes live once checked.' : (!link.enabled ? 'Paused: scans see a "link disabled" page.' : 'Live.'))
     + (nightWin ? ` ${escapeHtml(nightSummary(link.schedule))}.` : '') + (limitSummary(link) ? ` ${escapeHtml(limitSummary(link))}` : '');
   const src = Object.fromEntries(((a.breakdowns && a.breakdowns.source) || []).map(r => [r.value, r.clicks]));
+  const points = (a.points || []).map(p => ptOf(p, false));
+  const variation = variationOf(link);
+  const insights = insightsFor(link, a, points);
+  const readOnly = !!(data.readOnly || isDemoSession());
   box.innerHTML = `
     <div>
+      <span class="report-kind">${escapeHtml(variation.name)}</span>
+      <p class="note">${escapeHtml(variation.blurb)}</p>
+      <ul class="insights">${insights.map(i => `<li>${i}</li>`).join('')}</ul>
       <div class="stat-row">
         <div class="stat"><b>${data.lifetime.clicks}</b><span>scans, lifetime</span></div>
         <div class="stat"><b>${a.totals.events}</b><span>last 7 days</span></div>
@@ -1538,19 +1653,22 @@ async function openDetail(code) {
         <div class="stat"><b>${a.unique ? a.unique.distinctVisitors : '—'}</b><span>people, 7 days</span></div>
       </div>
       <div class="bars">${bars}</div>
+      ${viewsHtml('dt')}
       <div class="mini-list">
-        <div><h4>Devices</h4><ul>${top(a.breakdowns && a.breakdowns.deviceType)}</ul></div>
-        <div><h4>Countries</h4><ul>${top(a.breakdowns && a.breakdowns.country)}</ul></div>
         <div><h4>Recent scans</h4><ul>${scans}</ul></div>
         <div><h4>Status</h4><p class="note">${stateLine} Last scan ${fmtAgo(data.lifetime.lastClickedAt)}.</p></div>
       </div>
     </div>
     <div class="detail-side">
-      <div class="qr-frame"><img alt="QR code" src="${escapeHtml(link.qrUrl)}"></div>
+      ${link.status === 'held' || link.status === 'blocked' ? '<p class="note">The QR image is available once the link is live.</p>' : `<div class="qr-frame"><img alt="QR code" src="${escapeHtml(link.qrUrl)}"></div>`}
       <div class="short-line"><span class="short-url">${escapeHtml(stripScheme(link.shortUrl))}</span><button type="button" class="action-link quiet" id="dt-copy">Copy</button></div>
       <form id="dt-form">
         <div class="field"><label class="field-label" for="dt-title">Name</label><input class="field-input" id="dt-title" maxlength="120" value="${escapeHtml(link.title || '')}"></div>
         <div class="field"><label class="field-label" for="dt-url">Points to</label><input class="field-input" id="dt-url" type="url" value="${escapeHtml((link.destinations && link.destinations.web) || '')}"></div>
+        <div class="field-row">
+          <div class="field"><label class="field-label" for="dt-ios">iPhone destination</label><input class="field-input" id="dt-ios" type="url" placeholder="same as above" value="${escapeHtml((link.destinations && link.destinations.ios) || '')}"></div>
+          <div class="field"><label class="field-label" for="dt-android">Android destination</label><input class="field-input" id="dt-android" type="url" placeholder="same as above" value="${escapeHtml((link.destinations && link.destinations.android) || '')}"></div>
+        </div>
         <div class="field"><label class="field-label" for="dt-night-url">At night, go to</label><input class="field-input" id="dt-night-url" type="url" placeholder="leave empty for none" value="${escapeHtml(nightWin ? nightWin.url : '')}"></div>
         <div class="field-row">
           <div class="field"><label class="field-label" for="dt-night-start">Night starts</label><input class="field-input" id="dt-night-start" type="time" value="${escapeHtml(nightWin ? nightWin.start : '18:00')}"></div>
@@ -1559,7 +1677,7 @@ async function openDetail(code) {
         <div class="field"><label class="field-label" for="dt-tz">Time zone</label><input class="field-input" id="dt-tz" spellcheck="false" value="${escapeHtml((link.schedule && link.schedule.timezone) || browserTz())}"></div>
         <div class="field-row">
           <div class="field"><label class="field-label" for="dt-max">Stop after (scans)</label><input class="field-input" id="dt-max" type="number" min="1" step="1" inputmode="numeric" placeholder="no limit" value="${link.limits && link.limits.maxClicks ? link.limits.maxClicks : ''}"></div>
-          <div class="field"><label class="field-label" for="dt-expires">Ends on</label><input class="field-input" id="dt-expires" type="date" value="${escapeHtml(dateInputValue(link.expiresAt))}"></div>
+          <div class="field"><label class="field-label" for="dt-expires">Ends on (end of day, your time)</label><input class="field-input" id="dt-expires" type="date" value="${escapeHtml(dateInputValue(link.expiresAt))}"></div>
         </div>
         <div class="field"><label class="field-label" for="dt-fallback">After the limit, send people to</label><input class="field-input" id="dt-fallback" type="url" placeholder="leave empty for a plain page" value="${escapeHtml((link.limits && link.limits.fallbackUrl) || '')}"></div>
         <div class="field-row">
@@ -1578,6 +1696,8 @@ async function openDetail(code) {
         <p class="status" id="dt-status" hidden></p>
       </form>
     </div>`;
+  mountViews('dt', { points, hasCode: false, uniquePeople: a.unique ? a.unique.distinctVisitors : null, windowRows: link.schedule ? tallyOf(points, 'win').map(r => ({ ...r, value: r.value === '—' ? 'day address' : 'night address' })) : null, skyTitle: 'This link\'s scans, as a star each' });
+  if (readOnly) { box.querySelectorAll('#dt-form input').forEach(i => { i.disabled = true; }); box.querySelectorAll('#dt-form .btn-submit, #dt-toggle, #dt-delete').forEach(b => { b.hidden = true; }); box.querySelectorAll('#dt-form .action-dot').forEach(d => { d.hidden = true; }); }
   $('dt-copy').addEventListener('click', () => copyText(link.shortUrl, $('dt-copy')));
   $('dt-csv').addEventListener('click', () => guestDownload(`/links/${encodeURIComponent(code)}/analytics.csv`, `kortex-${code}-scans.csv`, $('dt-csv')));
   $('dt-form').addEventListener('submit', async (e) => {
@@ -1599,7 +1719,10 @@ async function openDetail(code) {
     if ($('dt-expires').value && !expiresAt) { setStatus('dt-status', 'That end date is not valid.', 'err'); return; }
     const limits = (maxRaw || fallbackUrl) ? { maxClicks: maxRaw ? Number(maxRaw) : undefined, fallbackUrl: fallbackUrl || undefined } : null;
     const utm = utmFromFields('dt');
-    const { ok: k, data: d } = await guestApi(`/links/${encodeURIComponent(code)}`, { method: 'PATCH', body: { destination: url, title: $('dt-title').value.trim(), schedule, limits, expiresAt, utm } });
+    const iosRaw = $('dt-ios').value.trim(), androidRaw = $('dt-android').value.trim();
+    const iosUrl = iosRaw ? normaliseUrl(iosRaw) : '', androidUrl = androidRaw ? normaliseUrl(androidRaw) : '';
+    if ((iosRaw && !iosUrl) || (androidRaw && !androidUrl)) { setStatus('dt-status', 'Enter full web addresses for the iPhone and Android destinations, or leave them empty.', 'err'); return; }
+    const { ok: k, data: d } = await guestApi(`/links/${encodeURIComponent(code)}`, { method: 'PATCH', body: { destination: url, iosDestination: iosUrl, androidDestination: androidUrl, title: $('dt-title').value.trim(), schedule, limits, expiresAt, utm } });
     if (!k) { setStatus('dt-status', friendly(d, 'Could not save.') + (d.reasons ? ' ' + d.reasons.map(r => r.detail).join(' ') : ''), 'err'); return; }
     await openWorkspaceFromSession(); await openDetail(code); setStatus('dt-status', 'Saved. Every scan now goes to the new address.', 'ok');
   });
@@ -1616,13 +1739,15 @@ async function openDetail(code) {
   });
 }
 
-$('ws-add').addEventListener('click', () => { setMode('dynamic'); resetMaker(); $('make').scrollIntoView({ behavior: 'smooth' }); });
-$('ws-forget').addEventListener('click', () => { clearGuestSession(); forgetCode(); openCode = null; $('detail').hidden = true; renderWorkspace(null); });
+$('ws-add').addEventListener('click', () => { if (isDemoSession()) leaveDemo(); setMode('dynamic'); resetMaker(); $('make').scrollIntoView({ behavior: 'smooth' }); });
+$('ws-forget').addEventListener('click', () => { if (isDemoSession()) { leaveDemo(); return; } clearGuestSession(); forgetCode(); openCode = null; $('detail').hidden = true; renderWorkspace(null); });
 $('ws-email').addEventListener('click', () => { $('ws-email-form').hidden = !$('ws-email-form').hidden; if (!$('ws-email-form').hidden) $('ws-email-input').focus(); });
 $('ws-email-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const address = $('ws-email-input').value.trim(); if (!address) return;
+  const ebtn = e.submitter || $('ws-email-form').querySelector('button[type="submit"]'); if (ebtn) ebtn.disabled = true;
   const { ok, data } = await guestApi('/email', { method: 'POST', body: { email: address } });
+  if (ebtn) ebtn.disabled = false;
   if (!ok) { setStatus('ws-email-status', friendly(data, 'Could not send.'), 'err'); return; }
   saveGuestSession(data.session, data.workspace); wsMeta = data.workspace; rememberCode(data.accessCode, data.workspace && data.workspace.id); renderWorkspace(wsMeta);
   showWsCode(data.accessCode, 'Your new access code', 'The previous code no longer works. Copy this one or save the key card now.');
@@ -1638,7 +1763,9 @@ $('ws-export').addEventListener('click', () => guestDownload('/workspace/export.
 $('ws-keycard').addEventListener('click', () => keyCard($('ws-code').textContent, null, wsMeta));
 $('ws-rotate').addEventListener('click', async () => {
   if (!confirm('Issue a new access code? The current one stops working the moment the new one appears, and the new one is shown once.')) return;
+  if ($('ws-rotate').disabled) return; $('ws-rotate').disabled = true;
   const { ok, data } = await guestApi('/rotate', { method: 'POST' });
+  $('ws-rotate').disabled = false;
   if (!ok) { setStatus('ws-email-status', friendly(data, 'Could not issue a new code.'), 'err'); return; }
   saveGuestSession(data.session, data.workspace || wsMeta); rememberCode(data.accessCode, (data.workspace || wsMeta || {}).id);
   showWsCode(data.accessCode, 'Your new access code', 'The previous code no longer works. Copy this one or save the key card now.');
@@ -1811,7 +1938,188 @@ auth.onAuthStateChanged(async (user) => {
   $('login-btn').disabled = false;
 });
 
-/* ── BOOT ── */
+/* ── FOUR WAYS OF LOOKING AT ANY SET OF SCANS ──
+   Table, graphs, a spider chart of the mix, and the sky: every scan a star
+   placed by the hour it happened (around the clock) and how many days ago
+   (out from the centre), joined in the order they arrived. Points arrive as
+   [ms, platform, device, country, source, window, referrerHost], with a
+   leading link code on workspace-wide sets. */
+const DEMO_KEY = 'kortex_guest_demo';
+function isDemoSession() { try { return localStorage.getItem(DEMO_KEY) === '1'; } catch { return false; } }
+function localHour(ms) { const d = new Date(ms); return d.getHours() + d.getMinutes() / 60; }
+function localDow(ms) { return new Date(ms).getDay(); }
+const ptOf = (p, hasCode) => hasCode ? { code: p[0], ms: p[1], platform: p[2], device: p[3], country: p[4], source: p[5], win: p[6], ref: p[7] } : { code: null, ms: p[0], platform: p[1], device: p[2], country: p[3], source: p[4], win: p[5], ref: p[6] };
+function tallyOf(points, key) {
+  const m = new Map(); points.forEach(p => { const v = p[key] || '—'; m.set(v, (m.get(v) || 0) + 1); });
+  return [...m.entries()].sort((a, b) => b[1] - a[1]).map(([value, clicks]) => ({ value, clicks }));
+}
+function radarAxes(points, uniquePeople) {
+  const n = points.length || 1;
+  const share = f => points.filter(f).length / n;
+  const top = tallyOf(points, 'country')[0];
+  const repeat = uniquePeople != null ? Math.max(0, 1 - uniquePeople / n) : share(() => false);
+  return [
+    { label: 'Mobile', value: share(p => p.device === 'mobile'), hint: 'scans from phones' },
+    { label: 'QR', value: share(p => p.source === 'qr'), hint: 'scans of the printed code rather than taps on the link' },
+    { label: 'Evening', value: share(p => { const h = localHour(p.ms); return h >= 18 || h < 6; }), hint: 'between 6 pm and 6 am, your time' },
+    { label: 'Repeat', value: repeat, hint: 'visits from people who had scanned before' },
+    { label: 'Abroad', value: top ? share(p => p.country !== top.value) : 0, hint: top ? `outside ${top.value}` : 'outside the top country' },
+    { label: 'Weekend', value: share(p => { const d = localDow(p.ms); return d === 0 || d === 6; }), hint: 'Saturday and Sunday' }
+  ];
+}
+function pct(v) { return `${Math.round(v * 100)}%`; }
+function viewsHtml(id) {
+  const names = [['table', 'Table'], ['graphs', 'Graphs'], ['spider', 'Spider'], ['sky', 'Sky']];
+  return `<div class="views" id="${id}-views">
+    <div class="views-nav" role="group" aria-label="Ways of looking at it">${names.map(([k, l], i) => `<button type="button" data-view="${k}" aria-pressed="${i === 0}">${l}</button>`).join('')}</div>
+    ${names.map(([k], i) => `<div class="view-pane" data-pane="${k}" ${i ? 'hidden' : ''}></div>`).join('')}
+  </div>`;
+}
+function mountViews(id, ds) {
+  const root = $(`${id}-views`); if (!root) return;
+  const panes = Object.fromEntries([...root.querySelectorAll('.view-pane')].map(p => [p.dataset.pane, p]));
+  panes.table.innerHTML = renderTables(ds);
+  panes.graphs.innerHTML = renderGraphs(ds);
+  panes.spider.innerHTML = renderRadar(ds);
+  panes.sky.innerHTML = `<div class="sky-wrap"><h5>${escapeHtml(ds.skyTitle || 'Every scan, as a star')}</h5><canvas></canvas><div class="sky-legend"><span><i style="background:#d9bd7b"></i>QR scan</span><span><i style="background:#cdd6ec"></i>tap on the link</span><span>clock: hour of the day, your time · rings: days ago, today outermost · lines: the order they arrived</span></div></div>`;
+  let skyDrawn = false;
+  const drawSkyNow = () => { if (skyDrawn) return; skyDrawn = true; drawSky(panes.sky.querySelector('canvas'), ds.points, ds.hasCode); };
+  root.querySelectorAll('.views-nav button').forEach(btn => btn.addEventListener('click', () => {
+    root.querySelectorAll('.views-nav button').forEach(b => b.setAttribute('aria-pressed', b === btn));
+    Object.entries(panes).forEach(([k, pane]) => { pane.hidden = k !== btn.dataset.view; });
+    if (btn.dataset.view === 'sky') drawSkyNow();
+  }));
+}
+function tableHtml(title, rows, total, unit = 'scans') {
+  const max = Math.max(1, ...rows.map(r => r.clicks));
+  return `<div><h5 style="font-style:italic;font-size:0.78rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;font-weight:500">${escapeHtml(title)}</h5>
+  <table class="k-table"><thead><tr><th>${escapeHtml(title)}</th><th class="n">${unit}</th><th class="n">share</th><th></th></tr></thead><tbody>
+  ${rows.slice(0, 8).map(r => `<tr><td><b>${escapeHtml(String(r.value))}</b></td><td class="n">${r.clicks}</td><td class="n">${pct(r.clicks / Math.max(1, total))}</td><td class="bar-cell"><i style="width:${Math.round(r.clicks / max * 100)}%"></i></td></tr>`).join('') || '<tr><td colspan="4">Nothing yet</td></tr>'}
+  </tbody></table></div>`;
+}
+function renderTables(ds) {
+  if (ds.linkRows) {
+    return `<div class="k-scroll"><table class="k-table"><thead><tr><th>Link</th><th class="n">7 days</th><th class="n">QR</th><th class="n">taps</th><th class="n">people</th><th>top country</th><th>state</th><th class="n">lifetime</th></tr></thead><tbody>
+      ${ds.linkRows.map(r => `<tr><td><b>${escapeHtml(r.title)}</b><br><span class="mono" style="font-size:0.78rem">${escapeHtml(r.code)}</span></td><td class="n">${r.events}</td><td class="n">${r.qr}</td><td class="n">${r.taps}</td><td class="n">${r.unique}</td><td>${escapeHtml(r.topCountry || '—')}</td><td>${r.status !== 'active' ? escapeHtml(r.status) : r.enabled ? 'live' : 'paused'}</td><td class="n">${r.lifetime}</td></tr>`).join('')}
+    </tbody></table></div>`;
+  }
+  const t = ds.points.length;
+  return `<div class="k-tables">${tableHtml('Source', tallyOf(ds.points, 'source').map(r => ({ ...r, value: r.value === 'qr' ? 'QR scan' : 'tap on the link' })), t)}${tableHtml('Device', tallyOf(ds.points, 'device'), t)}${tableHtml('Country', tallyOf(ds.points, 'country'), t)}${tableHtml('Platform', tallyOf(ds.points, 'platform'), t)}${tableHtml('Referrer', tallyOf(ds.points.filter(p => p.ref), 'ref'), t, 'taps')}${ds.windowRows ? tableHtml('Destination', ds.windowRows, t) : ''}</div>`;
+}
+function barsHtml(values, labels, dense) {
+  const max = Math.max(1, ...values);
+  return `<div class="bars${dense ? ' dense' : ''}">${values.map((v, i) => `<div class="bar" title="${escapeHtml(labels[i])}: ${v}"><i style="height:${Math.max(2, Math.round(v / max * 100))}%"></i><span>${escapeHtml(labels[i])}</span></div>`).join('')}</div>`;
+}
+function renderGraphs(ds) {
+  const hours = new Array(24).fill(0); ds.points.forEach(p => { hours[Math.floor(localHour(p.ms))]++; });
+  const dows = new Array(7).fill(0); ds.points.forEach(p => { dows[localDow(p.ms)]++; });
+  const days = new Map(); ds.points.forEach(p => { const k = new Date(p.ms).toISOString().slice(5, 10); days.set(k, (days.get(k) || 0) + 1); });
+  const dayKeys = [...days.keys()].sort();
+  const perLink = ds.linkRows ? `<div><h5>Scans per link, 7 days</h5>${barsHtml(ds.linkRows.map(r => r.events), ds.linkRows.map(r => r.title.split(' · ')[0].slice(0, 12)))}</div>` : '';
+  return `<div class="graph-grid">
+    ${perLink || `<div><h5>By day</h5>${barsHtml(dayKeys.map(k => days.get(k)), dayKeys)}</div>`}
+    <div><h5>By hour of the day, your time</h5>${barsHtml(hours, hours.map((_, h) => String(h).padStart(2, '0')), true)}</div>
+    <div><h5>By day of the week</h5>${barsHtml(dows, ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'])}</div>
+    ${perLink ? `<div><h5>By day</h5>${barsHtml(dayKeys.map(k => days.get(k)), dayKeys)}</div>` : `<div><h5>Where they were sent</h5>${barsHtml((ds.windowRows || tallyOf(ds.points, 'win').map(r => ({ ...r, value: r.value === '—' ? 'day' : r.value }))).map(r => r.clicks), (ds.windowRows || tallyOf(ds.points, 'win').map(r => ({ ...r, value: r.value === '—' ? 'day' : r.value }))).map(r => String(r.value).slice(0, 14)))}</div>`}
+  </div>`;
+}
+function renderRadar(ds) {
+  const axes = radarAxes(ds.points, ds.uniquePeople);
+  const cx = 180, cy = 180, R = 130, n = axes.length;
+  const pt = (i, r) => { const a = -Math.PI / 2 + i * 2 * Math.PI / n; return [cx + Math.cos(a) * r, cy + Math.sin(a) * r]; };
+  const rings = [0.25, 0.5, 0.75, 1].map(f => `<polygon points="${axes.map((_, i) => pt(i, R * f).join(',')).join(' ')}" fill="none" stroke="rgba(181,147,90,0.18)" stroke-width="0.8"/>`).join('');
+  const spokes = axes.map((_, i) => { const [x, y] = pt(i, R); return `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="rgba(181,147,90,0.18)" stroke-width="0.8"/>`; }).join('');
+  const poly = axes.map((a, i) => pt(i, R * Math.max(0.02, a.value)).join(',')).join(' ');
+  const dots = axes.map((a, i) => { const [x, y] = pt(i, R * Math.max(0.02, a.value)); return `<circle cx="${x}" cy="${y}" r="3" fill="#f3e6c8"/><circle cx="${x}" cy="${y}" r="7" fill="rgba(217,189,123,0.18)"/>`; }).join('');
+  const labels = axes.map((a, i) => { const [x, y] = pt(i, R + 22); return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-size="11" letter-spacing="1.5" fill="#d9bd7b" font-style="italic" font-family="Cormorant Garamond, Georgia, serif">${escapeHtml(a.label.toUpperCase())}</text>`; }).join('');
+  return `<div class="radar-wrap"><div><h5>The mix, six ways at once</h5><svg viewBox="0 0 360 360" role="img" aria-label="Spider chart of the scan mix">${rings}${spokes}<polygon points="${poly}" fill="rgba(217,189,123,0.16)" stroke="#d9bd7b" stroke-width="1.2"/>${dots}${labels}</svg></div>
+    <ul class="radar-legend">${axes.map(a => `<li><span>${escapeHtml(a.label)} <small style="color:var(--dim)">· ${escapeHtml(a.hint)}</small></span><b>${pct(a.value)}</b></li>`).join('')}</ul></div>`;
+}
+function drawSky(canvas, points, hasCode) {
+  if (!canvas) return;
+  const size = Math.min(560, canvas.parentElement.clientWidth || 560), dpr = Math.min(2, window.devicePixelRatio || 1);
+  canvas.width = size * dpr; canvas.height = size * dpr; canvas.style.width = size + 'px'; canvas.style.height = size + 'px';
+  const x = canvas.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const cx = size / 2, cy = size / 2, R = size * 0.44, r0 = size * 0.08, TAU = Math.PI * 2;
+  const now = Date.now(), spanDays = 7;
+  x.clearRect(0, 0, size, size);
+  // Hour histogram as a faint ring, then the clock.
+  const hours = new Array(24).fill(0); points.forEach(p => { hours[Math.floor(localHour(p.ms))]++; });
+  const hmax = Math.max(1, ...hours);
+  hours.forEach((v, h) => { const a0 = -Math.PI / 2 + h / 24 * TAU, a1 = a0 + TAU / 24; const rr = R + 6 + (v / hmax) * size * 0.05; x.beginPath(); x.arc(cx, cy, rr, a0, a1); x.arc(cx, cy, R + 6, a1, a0, true); x.closePath(); x.fillStyle = 'rgba(181,147,90,0.16)'; x.fill(); });
+  x.strokeStyle = 'rgba(181,147,90,0.28)'; x.lineWidth = 0.8;
+  [0.25, 0.5, 0.75, 1].forEach(f => { x.beginPath(); x.arc(cx, cy, r0 + (R - r0) * f, 0, TAU); x.stroke(); });
+  for (let h = 0; h < 24; h++) { const a = -Math.PI / 2 + h / 24 * TAU; x.beginPath(); x.moveTo(cx + Math.cos(a) * (R + 2), cy + Math.sin(a) * (R + 2)); x.lineTo(cx + Math.cos(a) * (R + (h % 6 === 0 ? 14 : 6)), cy + Math.sin(a) * (R + (h % 6 === 0 ? 14 : 6))); x.stroke(); }
+  x.fillStyle = 'rgba(217,189,123,0.9)'; x.font = 'italic 12px "Cormorant Garamond", Georgia, serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+  [['00', 0], ['06', 6], ['12', 12], ['18', 18]].forEach(([l, h]) => { const a = -Math.PI / 2 + h / 24 * TAU; x.fillText(l, cx + Math.cos(a) * (R + 26), cy + Math.sin(a) * (R + 26)); });
+  const place = p => { const a = -Math.PI / 2 + (localHour(p.ms) / 24) * TAU; const age = Math.min(spanDays, Math.max(0, (now - p.ms) / 86400000)); const rr = r0 + (R - r0) * (1 - age / spanDays); return [cx + Math.cos(a) * rr, cy + Math.sin(a) * rr]; };
+  const byCode = new Map(); points.forEach(p => { const k = p.code || '_'; if (!byCode.has(k)) byCode.set(k, []); byCode.get(k).push(p); });
+  x.lineWidth = 0.6;
+  byCode.forEach(list => { list.sort((a, b) => a.ms - b.ms); x.strokeStyle = 'rgba(217,189,123,0.13)'; x.beginPath(); list.forEach((p, i) => { const [px, py] = place(p); if (i) x.lineTo(px, py); else x.moveTo(px, py); }); x.stroke(); });
+  points.forEach(p => { const [px, py] = place(p); const qr = p.source === 'qr'; const g = x.createRadialGradient(px, py, 0, px, py, 5); g.addColorStop(0, qr ? 'rgba(232,206,150,0.55)' : 'rgba(205,214,236,0.5)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(px, py, 5, 0, TAU); x.fill(); x.fillStyle = qr ? '#f3e6c8' : '#e2e8f7'; x.beginPath(); x.arc(px, py, 1.4, 0, TAU); x.fill(); });
+  const busiest = hours.indexOf(hmax);
+  x.fillStyle = 'rgba(237,232,223,0.72)'; x.font = '11px ui-monospace, Menlo, monospace';
+  x.fillText(`${points.length} scans · busiest hour ${String(busiest).padStart(2, '0')}:00`, cx, cy);
+}
+
+/* What each link is a report of, read off its own settings. */
+function variationOf(link) {
+  const d = link.destinations || {};
+  if (link.safety && link.safety.review) return { name: 'Safety review', blurb: 'This destination was held on first sight and released by a reviewer. The link kept its QR through the whole thing.' };
+  if (link.schedule && link.schedule.windows && link.schedule.windows.length) return { name: 'Night and day routing', blurb: 'One QR, two addresses: our clock in the link\'s time zone decides where a scan lands. Nothing a visitor sends can change it.' };
+  if (d.ios || d.android) return { name: 'Device routing', blurb: 'iPhones, Androids and everyone else each go to their own address. One QR on the card.' };
+  if (link.limits && link.limits.maxClicks) return { name: 'Scan cap with a fallback', blurb: 'After the cap, scans go to the fallback address instead of a dead end. The counter below shows how much is left.' };
+  if (link.expiresAt) return { name: 'End date with a fallback', blurb: 'After the date, scans go to the fallback address. Printed flyers never point at a 404.' };
+  if (link.utm && Object.keys(link.utm).length) return { name: 'Campaign tags', blurb: 'Every visit arrives tagged, so the destination\'s own analytics know it came from this link.' };
+  return { name: 'Plain dynamic link', blurb: 'A short kaayko.com link behind the QR: re-point it after printing and count every scan.' };
+}
+function insightsFor(link, a, points) {
+  const out = [];
+  const n = points.length;
+  const src = tallyOf(points, 'source'); const qr = (src.find(r => r.value === 'qr') || {}).clicks || 0;
+  if (n) out.push(`<b>${qr}</b> of ${n} visits this week were QR scans; the rest were taps on the link.`);
+  if (link.schedule && link.schedule.windows && link.schedule.windows.length) { const night = points.filter(p => p.win === 'night').length; out.push(`<b>${pct(night / Math.max(1, n))}</b> of scans came in the night window and went to ${escapeHtml(stripScheme(link.schedule.windows[0].url))}.`); }
+  if (link.limits && link.limits.maxClicks) { const used = link.clickCount || 0; out.push(`<b>${used} of ${link.limits.maxClicks}</b> scans used${link.limits.fallbackUrl ? `; after that, ${escapeHtml(stripScheme(link.limits.fallbackUrl))}` : ''}.`); }
+  if (link.expiresAt) { const days = Math.ceil((new Date(link.expiresAt) - Date.now()) / 86400000); out.push(days >= 0 ? `Ends in <b>${days} day${days === 1 ? '' : 's'}</b>${link.limits && link.limits.fallbackUrl ? `, then ${escapeHtml(stripScheme(link.limits.fallbackUrl))}` : ''}.` : `Ended <b>${-days} day${days === -1 ? '' : 's'} ago</b>.`); }
+  const d = link.destinations || {};
+  if (d.ios || d.android) { const plat = tallyOf(points, 'platform'); const ios = (plat.find(r => r.value === 'ios') || {}).clicks || 0, and = (plat.find(r => r.value === 'android') || {}).clicks || 0; out.push(`<b>${pct(ios / Math.max(1, n))}</b> iPhone, <b>${pct(and / Math.max(1, n))}</b> Android: each went to its own address.`); }
+  if (link.utm && Object.keys(link.utm).length) out.push(`Tags on every visit: ${Object.entries(link.utm).map(([k, v]) => `<b>${escapeHtml(k.replace('utm_', ''))}</b> ${escapeHtml(v)}`).join(' · ')}.`);
+  if (link.safety && link.safety.review) out.push(`Held on ${fmtDate(new Date(link.safety.review.heldAtMs).toISOString())}, approved ${fmtDate(new Date(link.safety.review.approvedAtMs).toISOString())} by a reviewer.`);
+  if (a.unique && a.unique.distinctVisitors) out.push(`<b>${a.unique.distinctVisitors}</b> different people${a.unique.clicksPerVisitor ? `, ${a.unique.clicksPerVisitor} scans each on average` : ''}.`);
+  const country = tallyOf(points, 'country')[0]; if (country && country.value !== '—') out.push(`Most scans from <b>${escapeHtml(country.value)}</b> (${pct(country.clicks / Math.max(1, n))}).`);
+  return out;
+}
+
+/* ── THE SAMPLE (wanderer flow) ── */
+async function openDemo() {
+  const { ok, data } = await guestApi('/demo');
+  if (!ok) { setAlert('mg-alert', 'error', friendly(data, 'The sample is not available right now.')); location.hash = '#manage'; return; }
+  saveGuestSession(data.session, data.workspace);
+  try { localStorage.setItem(DEMO_KEY, '1'); } catch {}
+  forgetCode(); codeSaved = true;
+  location.hash = '#manage';
+  await openWorkspaceFromSession();
+}
+function leaveDemo() { try { localStorage.removeItem(DEMO_KEY); } catch {} clearGuestSession(); openCode = null; overviewKey = null; $('detail').hidden = true; renderWorkspace(null); }
+$('hero-sample').addEventListener('click', openDemo);
+$('ws-demo-make').addEventListener('click', () => { leaveDemo(); setMode('dynamic'); resetMaker(); $('make').scrollIntoView({ behavior: 'smooth' }); });
+
+let overviewKey = null;
+async function loadOverview(ws) {
+  // One fetch per state of the workspace: re-rendering the list must not re-run 25 analytics reads.
+  const key = `${ws.id || ''}:${wsLinks.map(l => `${l.code}:${l.clickCount || 0}:${l.enabled}:${l.status}`).join('|')}`;
+  if (key === overviewKey) { $('ws-overview').hidden = false; return; }
+  overviewKey = key;
+  const box = $('ws-overview'); box.hidden = false; $('ov-views').innerHTML = '<p class="note">Reading the last seven days…</p>';
+  const { ok, data } = await guestApi('/workspace/analytics');
+  if (!ok) { $('ov-views').innerHTML = `<p class="note">${escapeHtml(friendly(data, 'Could not load the overview.'))}</p>`; return; }
+  const points = (data.points || []).map(p => ptOf(p, true));
+  const totalEvents = data.links.reduce((s, l) => s + l.events, 0), totalUnique = data.links.reduce((s, l) => s + l.unique, 0);
+  $('ov-note').textContent = `${data.links.length} links · ${totalEvents} scans in ${data.window.days} days · hours shown in ${browserTz()}`;
+  $('ov-views').innerHTML = viewsHtml('ov');
+  mountViews('ov', { points, hasCode: true, linkRows: data.links, uniquePeople: totalUnique, skyTitle: 'Every scan in the workspace, as a star' });
+}
+
 setMode('dynamic');
 loadCaps();
 if (guestSession()) { openWorkspaceFromSession(); }
@@ -1825,11 +2133,14 @@ document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
 
 /* ── CARD EXPAND (accordion) ── */
 document.querySelectorAll('.cap-card').forEach(card => {
-  card.addEventListener('click', () => {
+  card.tabIndex = 0; card.setAttribute('role', 'button'); card.setAttribute('aria-expanded', 'false');
+  const toggle = () => {
     const wasExpanded = card.classList.contains('expanded');
-    document.querySelectorAll('.cap-card.expanded').forEach(c => c.classList.remove('expanded'));
-    if (!wasExpanded) card.classList.add('expanded');
-  });
+    document.querySelectorAll('.cap-card.expanded').forEach(c => { c.classList.remove('expanded'); c.setAttribute('aria-expanded', 'false'); });
+    if (!wasExpanded) { card.classList.add('expanded'); card.setAttribute('aria-expanded', 'true'); }
+  };
+  card.addEventListener('click', toggle);
+  card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
 });
 
 /* ── SCRAMBLE (kaayko.com brand) ── */
@@ -1895,92 +2206,133 @@ document.querySelectorAll('.cap-card').forEach(card => {
   hero.addEventListener('pointerleave', () => { glow.style.opacity = '0'; active = false; });
 })();
 
-/* ── NIGHT SKY — real constellations behind the wordmark ──
-   A seeded starfield and nine constellations drawn from their stars' actual
-   right ascension and declination (J2000), so Orion looks like Orion. One
-   constellation at a time: its stars brighten, then every link between them
-   shines at once, holds, fades, and the next one takes its place.
-   Nothing here depends on scroll position: coordinates are normalised, the
-   layout is seeded, and only a real width change rebuilds it. */
+/* ── THE SKY — one fixed canvas behind the whole page ──
+   Deep-space ground, a faint star-chart grid, a seeded starfield, a soft band
+   of haze, and nine real constellations (stars at their J2000 right ascension
+   and declination) lit one at a time: stars brighten, every link between them
+   shines at once, pulses travel the links, then it fades and the next one
+   rises. The canvas is fixed to the viewport, so the sky never scrolls; the
+   page moves over it on glass plates. Only a real size change rebuilds it. */
 (function() {
-  const hero = document.querySelector('.hero');
-  if (!hero || !window.HTMLCanvasElement) return;
+  if (!window.HTMLCanvasElement) return;
   const canvas = document.createElement('canvas');
   canvas.className = 'sky'; canvas.setAttribute('aria-hidden', 'true');
-  hero.prepend(canvas);
+  document.body.prepend(canvas);
   const ctx = canvas.getContext('2d');
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const TAU = Math.PI * 2;
 
-  // Right ascension in hours, declination in degrees. Edges index the stars.
+  // Right ascension in hours, declination in degrees, magnitude class (1 = bright, 2 = mid, 3 = faint).
   const CONSTELLATIONS = [
-    { name: 'orion', stars: [[5.919,7.407,1],[5.419,6.350],[5.586,9.934],[5.679,-1.943],[5.604,-1.202],[5.533,-0.299],[5.796,-9.670],[5.242,-8.202,1]],
+    { name: 'orion', stars: [[5.919,7.407,1],[5.419,6.350,2],[5.586,9.934,3],[5.679,-1.943,2],[5.604,-1.202,2],[5.533,-0.299,2],[5.796,-9.670,2],[5.242,-8.202,1]],
       edges: [[0,2],[1,2],[0,3],[1,5],[3,4],[4,5],[3,6],[5,7],[6,7]] },
-    { name: 'ursa major', stars: [[11.062,61.751,1],[11.031,56.383],[11.897,53.695],[12.257,57.033],[12.900,55.960,1],[13.399,54.925],[13.792,49.313,1]],
+    { name: 'ursa major', stars: [[11.062,61.751,1],[11.031,56.383,2],[11.897,53.695,2],[12.257,57.033,3],[12.900,55.960,1],[13.399,54.925,2],[13.792,49.313,1]],
       edges: [[6,5],[5,4],[4,3],[3,2],[2,1],[1,0],[0,3]] },
-    { name: 'cassiopeia', stars: [[0.153,59.150],[0.675,56.537,1],[0.945,60.717],[1.430,60.235],[1.907,63.670]],
+    { name: 'cassiopeia', stars: [[0.153,59.150,2],[0.675,56.537,1],[0.945,60.717,2],[1.430,60.235,3],[1.907,63.670,3]],
       edges: [[0,1],[1,2],[2,3],[3,4]] },
-    { name: 'cygnus', stars: [[20.690,45.280,1],[20.370,40.257],[19.512,27.960],[19.749,45.131],[20.770,33.970]],
+    { name: 'cygnus', stars: [[20.690,45.280,1],[20.370,40.257,2],[19.512,27.960,2],[19.749,45.131,3],[20.770,33.970,2]],
       edges: [[0,1],[1,2],[3,1],[1,4]] },
-    { name: 'leo', stars: [[10.140,11.967,1],[10.122,16.763],[10.333,19.842],[10.278,23.417],[9.879,26.007],[9.764,23.774],[11.235,20.524],[11.237,15.430],[11.818,14.572,1]],
+    { name: 'leo', stars: [[10.140,11.967,1],[10.122,16.763,3],[10.333,19.842,2],[10.278,23.417,3],[9.879,26.007,3],[9.764,23.774,3],[11.235,20.524,2],[11.237,15.430,3],[11.818,14.572,1]],
       edges: [[0,1],[1,2],[2,3],[3,4],[4,5],[2,6],[6,8],[8,7],[7,0],[7,6]] },
-    { name: 'scorpius', stars: [[16.091,-19.805],[16.006,-22.622],[15.981,-26.114],[16.490,-26.432,1],[16.598,-28.216],[16.836,-34.293],[16.864,-38.047],[16.909,-42.362],[17.203,-43.239],[17.622,-42.998],[17.793,-40.127],[17.708,-39.030],[17.513,-37.296],[17.560,-37.104,1]],
+    { name: 'scorpius', stars: [[16.091,-19.805,2],[16.006,-22.622,2],[15.981,-26.114,2],[16.490,-26.432,1],[16.598,-28.216,3],[16.836,-34.293,2],[16.864,-38.047,2],[16.909,-42.362,2],[17.203,-43.239,3],[17.622,-42.998,2],[17.708,-39.030,2],[17.560,-37.104,1],[17.793,-40.127,3],[17.512,-37.296,3]],
       edges: [[0,1],[1,2],[1,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,9],[9,10],[10,11],[11,12],[12,13]] },
-    { name: 'lyra', stars: [[18.616,38.784,1],[18.739,39.670],[18.746,37.605],[18.908,36.899],[18.982,32.690],[18.835,33.363]],
+    { name: 'lyra', stars: [[18.616,38.784,1],[18.739,39.670,3],[18.746,37.605,3],[18.908,36.899,3],[18.982,32.690,2],[18.835,33.363,2]],
       edges: [[0,1],[0,2],[2,3],[3,4],[4,5],[5,2]] },
-    { name: 'gemini', stars: [[7.577,31.888,1],[7.755,28.026,1],[7.186,30.245],[6.732,25.131],[6.383,22.514],[6.248,22.507],[7.335,21.982],[7.068,20.570],[6.629,16.399]],
+    { name: 'gemini', stars: [[7.577,31.888,1],[7.755,28.026,1],[7.186,30.245,3],[6.732,25.131,2],[6.383,22.514,3],[6.248,22.507,3],[7.335,21.982,2],[7.068,20.570,3],[6.629,16.399,2]],
       edges: [[0,2],[2,3],[3,4],[4,5],[1,6],[6,7],[7,8],[2,6]] },
-    { name: 'taurus', stars: [[4.599,16.509,1],[5.438,28.607],[5.627,21.143],[4.330,15.628],[4.383,17.543],[4.477,19.180],[4.477,15.871],[4.011,12.490]],
+    { name: 'taurus', stars: [[4.599,16.509,1],[5.438,28.607,2],[5.627,21.143,3],[4.330,15.628,3],[4.383,17.543,3],[4.477,19.180,3],[4.477,15.871,3],[4.011,12.490,3]],
       edges: [[0,6],[6,3],[3,4],[4,5],[5,1],[0,2],[3,7]] }
   ];
-
-  // Project each constellation onto a unit box, preserving its true shape.
   CONSTELLATIONS.forEach(c => {
-    const ra0 = c.stars.reduce((s, st) => s + st[0], 0) / c.stars.length;
-    const dec0 = c.stars.reduce((s, st) => s + st[1], 0) / c.stars.length;
+    const ra0 = c.stars.reduce((t, st) => t + st[0], 0) / c.stars.length;
+    const dec0 = c.stars.reduce((t, st) => t + st[1], 0) / c.stars.length;
     const cosD = Math.cos(dec0 * Math.PI / 180);
-    let pts = c.stars.map(st => ({ x: -(st[0] - ra0) * 15 * cosD, y: -(st[1] - dec0), bright: st[2] === 1 }));
+    const pts = c.stars.map(st => ({ x: -(st[0] - ra0) * 15 * cosD, y: -(st[1] - dec0), m: st[2] || 3 }));
     const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
     const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
     const span = Math.max(maxX - minX, maxY - minY) || 1;
-    c.aspect = (maxX - minX) / (maxY - minY || 1);
-    c.points = pts.map(p => ({ x: (p.x - minX) / span, y: (p.y - minY) / span, bright: p.bright }));
+    c.points = pts.map(p => ({ x: (p.x - minX) / span, y: (p.y - minY) / span, m: p.m }));
     c.w = (maxX - minX) / span; c.h = (maxY - minY) / span;
   });
 
   function mulberry32(a) { return function() { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
-  let W = 0, H = 0, dpr = 1, stars = [], twinklers = [], base = null, running = false, raf = 0, lastFrame = 0, startTs = 0;
+  let W = 0, H = 0, dpr = 1, stars = [], twinklers = [], base = null, sprites = {}, running = false, raf = 0, lastFrame = 0, startTs = 0;
   let order = [], current = 0, phaseStart = 0;
   const PERIOD = 9000, STAR_IN = 1100, LINE_IN = 1700, FADE_OUT = 7600;
 
+  function sprite(radius, glow, warm) {
+    const size = Math.ceil((radius + glow) * 2 + 2);
+    const c = document.createElement('canvas'); c.width = c.height = Math.ceil(size * dpr);
+    const g = c.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const cx = size / 2, cy = size / 2;
+    const halo = g.createRadialGradient(cx, cy, 0, cx, cy, radius + glow);
+    halo.addColorStop(0, warm ? 'rgba(232,206,150,0.55)' : 'rgba(220,226,245,0.5)');
+    halo.addColorStop(0.35, warm ? 'rgba(217,189,123,0.16)' : 'rgba(205,214,236,0.14)');
+    halo.addColorStop(1, 'rgba(217,189,123,0)');
+    g.fillStyle = halo; g.beginPath(); g.arc(cx, cy, radius + glow, 0, TAU); g.fill();
+    g.fillStyle = warm ? 'rgba(252,246,232,1)' : 'rgba(240,244,255,1)';
+    g.beginPath(); g.arc(cx, cy, radius, 0, TAU); g.fill();
+    // Diffraction spikes on the brightest class.
+    if (radius >= 2.4) {
+      g.strokeStyle = 'rgba(245,235,210,0.55)'; g.lineWidth = 0.7;
+      g.beginPath(); g.moveTo(cx - radius * 3.2, cy); g.lineTo(cx + radius * 3.2, cy); g.moveTo(cx, cy - radius * 3.2); g.lineTo(cx, cy + radius * 3.2); g.stroke();
+    }
+    return { c, size };
+  }
+
   function buildStars() {
     const rnd = mulberry32(20260903);
-    const count = W < 520 ? 150 : 280;
+    const count = W < 520 ? 170 : W < 1100 ? 300 : 420;
     stars = [];
     for (let i = 0; i < count; i++) {
-      stars.push({ x: rnd(), y: rnd(), r: 0.35 + rnd() * 1.1, a: 0.25 + rnd() * 0.65, ph: rnd() * TAU, sp: 0.4 + rnd() * 1.2, cool: rnd() < 0.3 });
+      stars.push({ x: rnd(), y: rnd(), r: 0.3 + rnd() * 1.1, a: 0.2 + rnd() * 0.6, ph: rnd() * TAU, sp: 0.35 + rnd() * 1.1, cool: rnd() < 0.32 });
     }
-    twinklers = stars.filter((s, i) => i % 6 === 0);
+    twinklers = stars.filter((st, i) => i % 5 === 0);
     order = CONSTELLATIONS.map((c, i) => i);
     for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+    sprites = { 1: sprite(2.6, 18, true), 2: sprite(1.9, 11, true), 3: sprite(1.35, 7, false) };
   }
+
   function renderBase() {
     base = document.createElement('canvas');
     base.width = canvas.width; base.height = canvas.height;
     const b = base.getContext('2d');
     b.setTransform(dpr, 0, 0, dpr, 0, 0);
-    stars.forEach((s, i) => {
-      if (i % 6 === 0) return; // twinklers are drawn live
-      b.fillStyle = s.cool ? `rgba(205,214,236,${s.a * 0.9})` : `rgba(237,232,223,${s.a})`;
-      b.beginPath(); b.arc(s.x * W, s.y * H, s.r, 0, TAU); b.fill();
+    // Ground
+    const grad = b.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, '#060b1e'); grad.addColorStop(0.45, '#0a1233'); grad.addColorStop(0.72, '#0a1129'); grad.addColorStop(1, '#080808');
+    b.fillStyle = grad; b.fillRect(0, 0, W, H);
+    // A soft band of haze, the way a dark-sky night actually looks.
+    for (let i = 0; i < 7; i++) {
+      const t = i / 6, cx = W * (0.05 + 0.9 * t), cy = H * (0.78 - 0.62 * t) + Math.sin(i * 1.7) * H * 0.05;
+      const rad = Math.max(W, H) * (0.16 + (i % 3) * 0.05);
+      const g = b.createRadialGradient(cx, cy, 0, cx, cy, rad);
+      g.addColorStop(0, 'rgba(120,140,200,0.075)'); g.addColorStop(0.5, 'rgba(120,140,200,0.03)'); g.addColorStop(1, 'rgba(120,140,200,0)');
+      b.fillStyle = g; b.fillRect(cx - rad, cy - rad, rad * 2, rad * 2);
+    }
+    // Star-chart grid: gentle arcs of declination and meridians, barely there.
+    b.strokeStyle = 'rgba(181,147,90,0.07)'; b.lineWidth = 0.6;
+    for (let i = 1; i <= 5; i++) {
+      const cy = H * 1.9, r = H * 1.9 - H * (i / 6) + H * 0.1;
+      b.beginPath(); b.arc(W / 2, cy, r, Math.PI * 1.08, Math.PI * 1.92); b.stroke();
+    }
+    for (let i = 0; i <= 8; i++) {
+      const x0 = W * (i / 8);
+      b.beginPath(); b.moveTo(x0, 0); b.quadraticCurveTo(W / 2 + (x0 - W / 2) * 0.55, H * 0.55, x0, H); b.stroke();
+    }
+    // Stars
+    stars.forEach((st, i) => {
+      if (i % 5 === 0) return; // twinklers are drawn live
+      b.fillStyle = st.cool ? `rgba(205,214,236,${st.a * 0.9})` : `rgba(237,232,223,${st.a})`;
+      b.beginPath(); b.arc(st.x * W, st.y * H, st.r, 0, TAU); b.fill();
     });
   }
+
   function resize(force) {
-    const r = hero.getBoundingClientRect();
-    const nextW = Math.round(r.width), nextH = Math.round(r.height);
-    // Only a real width change rebuilds; mobile address-bar height changes are ignored.
-    if (!force && Math.abs(nextW - W) < 4) { return; }
+    const nextW = Math.round(window.innerWidth), nextH = Math.round(window.innerHeight);
+    // Address-bar height changes on phones are ignored; a real resize rebuilds.
+    if (!force && Math.abs(nextW - W) < 4 && Math.abs(nextH - H) < 140) return;
     W = nextW; H = nextH;
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
@@ -1989,49 +2341,67 @@ document.querySelectorAll('.cap-card').forEach(card => {
     buildStars(); renderBase();
   }
 
-  // Where the active constellation sits: alternate sides on wide screens, top/bottom on phones.
+  // Where the lit constellation sits: beside the wordmark on wide screens,
+  // above it on phones, always inside the safe area so nothing is clipped.
   function placement(index) {
     const c = CONSTELLATIONS[order[index % order.length]];
-    const phone = W < 640;
-    const boxW = phone ? Math.min(W * 0.62, 300) : Math.min(W * 0.30, 380);
+    const phone = W < 700;
+    const boxW = phone ? Math.min(W * 0.66, 300) : Math.min(W * 0.30, 440);
     const scale = boxW / Math.max(c.w, 0.001);
-    const w = c.w * scale, h = c.h * scale;
+    let w = c.w * scale, h = c.h * scale;
+    const maxH = phone ? H * 0.28 : H * 0.62;
+    if (h > maxH) { const k = maxH / h; w *= k; h *= k; }
     const side = index % 2 === 0 ? -1 : 1;
-    const cx = phone ? W * 0.5 : W * (0.5 + side * 0.31);
-    const cy = phone ? (index % 2 === 0 ? H * 0.22 : H * 0.80) : H * 0.50;
-    return { c, x: cx - w / 2, y: cy - h / 2, w, h, scale };
+    // Stay clear of the wordmark block: measure it once per placement.
+    const inner = document.querySelector('.hero-inner');
+    const box = inner ? inner.getBoundingClientRect() : null;
+    const roomLeft = box ? box.left : W * 0.3, roomRight = box ? W - box.right : W * 0.3;
+    const wide = !phone && Math.max(roomLeft, roomRight) > w + 48;
+    const useLeft = wide ? (roomLeft >= roomRight ? side < 0 || roomRight < w + 48 : side < 0 && roomLeft >= w + 48) : false;
+    const cx = !wide ? W * 0.5 : useLeft ? roomLeft / 2 : W - roomRight / 2;
+    const cy = !wide ? Math.max(h / 2 + 24, (box ? box.top + window.scrollY : H * 0.3) * 0.45) : H * 0.48;
+    if (!wide && !phone) { const k = Math.min(1, (H * 0.22) / Math.max(h, 1)); w *= k; h *= k; }
+    return { c, x: Math.max(16, Math.min(W - w - 16, cx - w / 2)), y: Math.max(16, cy - h / 2), w, h };
   }
 
   function ease(t) { t = Math.max(0, Math.min(1, t)); return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
 
-  function drawConstellation(place, starA, lineA, shimmer) {
+  function drawConstellation(place, starA, lineA, t, dim) {
     const { c, x, y, w, h } = place;
-    const pts = c.points.map(p => ({ x: x + p.x * w, y: y + p.y * h, bright: p.bright }));
-    if (lineA > 0) {
-      c.edges.forEach(([i, j]) => {
+    const pts = c.points.map(p => ({ x: x + p.x * w, y: y + p.y * h, m: p.m }));
+    const lA = lineA * dim, sA = starA * dim;
+    if (lA > 0) {
+      c.edges.forEach(([i, j], k) => {
         const a = pts[i], b = pts[j];
-        ctx.lineWidth = 2.6; ctx.strokeStyle = `rgba(217,189,123,${lineA * 0.18})`;
+        ctx.lineWidth = 4.5; ctx.strokeStyle = `rgba(217,189,123,${lA * 0.10})`;
         ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-        ctx.lineWidth = 1; ctx.strokeStyle = `rgba(237,232,223,${lineA * (0.55 + shimmer * 0.2)})`;
+        ctx.lineWidth = 0.9; ctx.strokeStyle = `rgba(242,230,205,${lA * 0.78})`;
         ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+        // A pulse travelling each link: the scans a link carries.
+        const u = ((t * 0.16) + k * 0.37) % 1;
+        const px = a.x + (b.x - a.x) * u, py = a.y + (b.y - a.y) * u;
+        const g = ctx.createRadialGradient(px, py, 0, px, py, 6);
+        g.addColorStop(0, `rgba(250,240,215,${lA * 0.75})`); g.addColorStop(1, 'rgba(217,189,123,0)');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px, py, 6, 0, TAU); ctx.fill();
       });
     }
     pts.forEach(p => {
-      const r = p.bright ? 2.6 : 1.7;
-      if (p.bright && starA > 0) {
-        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 12);
-        g.addColorStop(0, `rgba(217,189,123,${starA * 0.5})`); g.addColorStop(1, 'rgba(217,189,123,0)');
-        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, 12, 0, TAU); ctx.fill();
-      }
-      ctx.fillStyle = `rgba(237,232,223,${0.25 + starA * 0.75})`;
-      ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, TAU); ctx.fill();
+      const sp = sprites[p.m] || sprites[3];
+      ctx.globalAlpha = 0.28 + sA * 0.72;
+      ctx.drawImage(sp.c, p.x - sp.size / 2, p.y - sp.size / 2, sp.size, sp.size);
+      ctx.globalAlpha = 1;
     });
-    if (lineA > 0.05) {
-      ctx.font = 'italic 13px "Cormorant Garamond", Georgia, serif';
+    if (lA > 0.05) {
+      const cx = x + w / 2, ly = y + h + 26;
+      ctx.strokeStyle = `rgba(181,147,90,${lA * 0.5})`; ctx.lineWidth = 0.6;
+      ctx.beginPath(); ctx.moveTo(cx - 34, ly - 9); ctx.lineTo(cx + 34, ly - 9); ctx.stroke();
       ctx.textAlign = 'center';
-      ctx.fillStyle = `rgba(181,147,90,${lineA * 0.95})`;
-      const label = c.name.split('').join('  ');
-      ctx.fillText(label, x + w / 2, y + h + 22);
+      ctx.font = 'italic 13px "Cormorant Garamond", Georgia, serif';
+      ctx.fillStyle = `rgba(217,189,123,${lA * 0.95})`;
+      ctx.fillText(c.name.split('').join(' '), cx, ly + 6);
+      ctx.font = '10px ui-monospace, Menlo, monospace';
+      ctx.fillStyle = `rgba(237,232,223,${lA * 0.5})`;
+      ctx.fillText(`${c.points.length} stars · ${c.edges.length} links`, cx, ly + 22);
     }
   }
 
@@ -2039,46 +2409,43 @@ document.querySelectorAll('.cap-card').forEach(card => {
     ctx.clearRect(0, 0, W, H);
     if (base) ctx.drawImage(base, 0, 0, W, H);
     const t = (now - startTs) / 1000;
-    twinklers.forEach(s => {
-      const a = s.a * (0.55 + 0.45 * Math.sin(t * s.sp + s.ph));
-      ctx.fillStyle = s.cool ? `rgba(205,214,236,${a})` : `rgba(237,232,223,${a})`;
-      ctx.beginPath(); ctx.arc(s.x * W, s.y * H, s.r + 0.3, 0, TAU); ctx.fill();
+    twinklers.forEach(st => {
+      const a = st.a * (0.55 + 0.45 * Math.sin(t * st.sp + st.ph));
+      ctx.fillStyle = st.cool ? `rgba(205,214,236,${a})` : `rgba(237,232,223,${a})`;
+      ctx.beginPath(); ctx.arc(st.x * W, st.y * H, st.r + 0.3, 0, TAU); ctx.fill();
     });
     const elapsed = now - phaseStart;
     if (elapsed >= PERIOD) { current = (current + 1) % order.length; phaseStart = now; }
     const e = now - phaseStart;
     const starA = e < STAR_IN ? ease(e / STAR_IN) : e < FADE_OUT ? 1 : 1 - ease((e - FADE_OUT) / (PERIOD - FADE_OUT));
     const lineA = e < STAR_IN ? 0 : e < LINE_IN ? ease((e - STAR_IN) / (LINE_IN - STAR_IN)) : e < FADE_OUT ? 1 : 1 - ease((e - FADE_OUT) / (PERIOD - FADE_OUT));
-    const shimmer = 0.5 + 0.5 * Math.sin(t * 1.6);
-    drawConstellation(placement(current), starA, lineA, shimmer);
+    // Past the hero the constellation stays, quieter, behind the plates.
+    const scrolled = Math.min(1, Math.max(0, (window.scrollY || 0) / Math.max(1, H * 0.9)));
+    const dim = 1 - scrolled * 0.7;
+    drawConstellation(placement(current), starA, lineA, t, dim);
   }
 
   function frame(ts) {
     if (!running) return;
     raf = requestAnimationFrame(frame);
-    if (ts - lastFrame < 33) return; // ~30 fps is plenty for a sky
+    const budget = (window.scrollY || 0) > H ? 50 : 33; // 20 fps once the sky is mostly behind plates
+    if (ts - lastFrame < budget) return;
     lastFrame = ts;
     draw(ts);
   }
   function start() { if (running || reduced) return; running = true; if (!startTs) { startTs = performance.now(); phaseStart = startTs; } raf = requestAnimationFrame(frame); }
   function stop() { running = false; cancelAnimationFrame(raf); }
+  function drawStill() { const now = performance.now(); startTs = now; phaseStart = now - LINE_IN - 500; draw(now); }
 
   resize(true);
-  // First frame right away, so the sky is never empty before the observer fires.
   startTs = phaseStart = performance.now();
   draw(startTs);
   let resizeTimer = 0;
   window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { resize(false); if (reduced) drawStill(); }, 200); });
-
-  function drawStill() {
-    const now = performance.now(); startTs = now; phaseStart = now - LINE_IN - 500;
-    draw(now);
-  }
   if (reduced) {
     drawStill();
   } else {
-    if (hero.getBoundingClientRect().bottom > 0) start();
-    new IntersectionObserver((entries) => entries.forEach(en => en.isIntersecting ? start() : stop()), { threshold: 0.05 }).observe(hero);
+    start();
     document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); else start(); });
   }
 })();

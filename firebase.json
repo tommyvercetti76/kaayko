@@ -27,10 +27,6 @@
         "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }]
       },
       {
-        "source": "/kortex",
-        "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }]
-      },
-      {
         "source": "/kreator/admin/**",
         "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }]
       },
