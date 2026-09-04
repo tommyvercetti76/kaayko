@@ -268,6 +268,12 @@ GET/POST/PUT/DELETE /api/billing/subscriptions
 - `webhook_deliveries` — delivery log
 - `pending_tenant_registrations` — tenant signup queue
 - `kortex_events` — V2 event ledger for tenant links, registration, campaigns, and philanthropy
+- `kortex_audit_logs` — who did what to which link/workspace (actor, before/after); written by `auditLog.recordAudit`
+- `kortex_appeals` — review requests from held/blocked link owners (public `POST /kortex/appeals`)
+- `kortex_abuse_reports` — public abuse reports (`POST /kortex/report`); two distinct reporters auto-hold a guest link
+- `kortex_support_requests` — support queue with plan-aware targets (`POST /kortex/support`)
+- `kortex_blocked_hosts`, `kortex_known_domains`, `kortex_safety_meta` — destination safety engine (manual blocklist, learned domains, feed snapshot metadata)
+- `pending_emails` — outbound email queue / delivery log (`services/emailDelivery.js`)
 - `admin_users` — admin profiles (shared with kreator module)
 - `admin_audit_logs` — admin activity log
 - `orders` — e-commerce orders
