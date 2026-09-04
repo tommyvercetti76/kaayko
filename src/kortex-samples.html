@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kortex samples — eight reports on real links | Kaayko</title>
+  <meta name="description" content="Eight real Kortex links on Kaayko's own pages, each a report of one thing the platform does: routing, caps, end dates, campaign tags, night and day, safety review. Hover anything for the numbers.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://kaayko.com/kortex/samples">
+  <meta property="og:title" content="Kortex samples — eight reports on real links">
+  <meta property="og:description" content="Real links, real QR codes, simulated scans. See every stat four ways.">
+  <meta property="og:image" content="https://kaayko.com/assets/kortex-og-image.png">
+  <meta property="og:url" content="https://kaayko.com/kortex/samples">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://kaayko.com/assets/kortex-twitter-card.png">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.cloudfunctions.net https://*.run.app https://*.googleapis.com; frame-src https://accounts.google.com;">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <meta name="theme-color" content="#060b1e">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#080808; --fg:#ede8df; --muted:rgba(237,232,223,0.76); --dim:rgba(237,232,223,0.62); --faint:rgba(237,232,223,0.46); --gold:#b5935a; --gold-bright:#d9bd7b; --gold-dim:rgba(181,147,90,0.84); --gold-line:rgba(181,147,90,0.22); --glow-xs:0 0 6px rgba(181,147,90,0.15); --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace; --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-7:40px; --sp-8:48px; --sp-9:64px; --sp-10:80px }
+    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0 }
+    html { scroll-behavior:smooth; scroll-padding-top:80px; -webkit-text-size-adjust:100% }
+    @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto } }
+    html, body { overflow-x:clip }
+    body { font-family:'Cormorant Garamond',Georgia,serif; font-size:17px; line-height:1.55; color:var(--fg); background:linear-gradient(180deg,#060b1e 0%,#0a1233 45%,#0a1129 70%,#080808 100%) fixed; min-height:100vh }
+    a { color:inherit; text-decoration:none }
+    .sky { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0; animation:skyIn 1.4s ease-out 0.2s forwards }
+    @keyframes skyIn { to { opacity:1 } }
+    .nav { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; justify-content:space-between; align-items:center; padding:max(16px,env(safe-area-inset-top)) clamp(1.4rem,5vw,3.2rem) 0 }
+    .nav::before { content:''; position:absolute; left:0; right:0; top:0; height:calc(100% + 28px); z-index:-1; pointer-events:none; background:linear-gradient(180deg, rgba(5,8,18,0.86) 0%, rgba(5,8,18,0.55) 55%, rgba(5,8,18,0) 100%) }
+    .nav a { color:var(--gold-dim); font-style:italic; font-size:clamp(0.82rem,1.6vw,0.92rem); letter-spacing:0.22em; text-transform:uppercase; min-height:44px; display:flex; align-items:center }
+    .nav a:hover, .nav a:focus-visible { color:var(--gold-bright); outline:none }
+    .nav-right { display:flex; gap:24px }
+    main { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:120px clamp(1rem,4vw,2.5rem) 80px }
+    .lead { max-width:760px; margin:0 auto 56px; text-align:center }
+    .eyebrow { font-style:italic; font-size:0.86rem; letter-spacing:0.28em; text-transform:uppercase; color:var(--gold); margin-bottom:14px }
+    h1 { font-family:'Bebas Neue',Impact,sans-serif; font-weight:400; font-size:clamp(3rem,8vw,5.6rem); letter-spacing:0.06em; line-height:0.95; text-shadow:0 0 18px rgba(181,147,90,0.2) }
+    .lead p { font-style:italic; font-size:1.15rem; color:var(--muted); margin-top:16px }
+    .lead .actions { margin-top:22px; display:flex; gap:28px; justify-content:center; flex-wrap:wrap }
+    .action-link { background:none; border:0; cursor:pointer; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.95rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold); min-height:44px; display:inline-flex; align-items:center }
+    .action-link:hover { color:var(--gold-bright); text-shadow:var(--glow-xs) }
+    .action-link.primary { color:var(--bg); background:var(--gold); padding:0 22px; font-weight:500 }
+    .action-link.primary:hover { background:var(--gold-bright); color:var(--bg) }
+    .tiers { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin:0 auto 64px; max-width:980px }
+    .tier { padding:20px 22px; border:1px solid var(--gold-line); background:rgba(5,7,14,0.6); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); text-align:left; display:flex; flex-direction:column; gap:10px; min-width:0 }
+    .tier .lab { font-style:italic; font-size:0.78rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold) }
+    .tier .big { font-family:'Bebas Neue',Impact,sans-serif; font-size:2.6rem; letter-spacing:0.04em; line-height:1 }
+    .tier .big small { display:block; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.78rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-top:4px }
+    .tier .spark { display:flex; align-items:flex-end; gap:3px; height:34px; border-bottom:1px solid var(--gold-line) }
+    .tier .spark i { flex:1 1 0; background:linear-gradient(180deg,var(--gold-bright),var(--gold)); min-height:2px }
+    .tier .meta { font-family:var(--mono); font-size:0.74rem; color:var(--muted) }
+    .tier a { color:var(--gold); font-style:italic }
+    .report { position:relative; margin:0 auto 40px; padding:36px clamp(18px,3vw,36px); border:1px solid rgba(181,147,90,0.24); background:rgba(5,7,14,0.66); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); box-shadow:0 30px 80px rgba(0,0,0,0.38); display:grid; grid-template-columns:minmax(0,320px) minmax(0,1fr); gap:36px; scroll-margin-top:90px }
+    .report::after { content:''; position:absolute; inset:-1px; pointer-events:none; opacity:.85; --t:linear-gradient(var(--gold-bright),var(--gold-bright)); background:var(--t) left top/18px 1px no-repeat,var(--t) left top/1px 18px no-repeat,var(--t) right top/18px 1px no-repeat,var(--t) right top/1px 18px no-repeat,var(--t) left bottom/18px 1px no-repeat,var(--t) left bottom/1px 18px no-repeat,var(--t) right bottom/18px 1px no-repeat,var(--t) right bottom/1px 18px no-repeat }
+    .report > * { min-width:0 }
+    .report .num { font-family:var(--mono); font-size:0.74rem; letter-spacing:0.12em; color:var(--faint); margin-bottom:8px }
+    .report-kind { display:inline-block; font-style:italic; font-size:0.8rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold-bright); border:1px solid rgba(181,147,90,0.35); padding:5px 10px; margin-bottom:12px }
+    .report h2 { font-family:'Bebas Neue',Impact,sans-serif; font-weight:400; font-size:2rem; letter-spacing:0.05em; line-height:1.05; margin-bottom:6px }
+    .report .blurb { font-style:italic; color:var(--muted); margin-bottom:14px }
+    .qr-row { display:flex; gap:14px; align-items:center; margin:12px 0 16px }
+    .qr-frame { width:132px; height:132px; flex:none; background:#fff; padding:6px; box-shadow:0 0 0 1px rgba(181,147,90,0.25), 0 0 16px rgba(181,147,90,0.15) }
+    .qr-frame img { width:100%; height:100%; display:block; image-rendering:pixelated }
+    .qr-meta { font-family:var(--mono); font-size:0.78rem; color:var(--muted); line-height:1.7; overflow-wrap:anywhere }
+    .qr-meta b { color:var(--fg); font-weight:500 }
+    .insights { list-style:none; margin:10px 0 16px; display:grid; gap:6px }
+    .insights li { padding-left:18px; position:relative; font-style:italic; font-size:0.98rem; color:var(--muted); line-height:1.5 }
+    .insights li::before { content:'✦'; position:absolute; left:0; top:2px; color:var(--gold); font-size:0.7rem }
+    .insights b { color:var(--fg); font-weight:500 }
+    .stat-row { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:16px }
+    .stat { padding:12px 0; border-top:1px solid var(--gold-line); min-width:0 }
+    .stat b { display:block; font-family:'Bebas Neue',Impact,sans-serif; font-size:1.9rem; letter-spacing:0.04em; line-height:1; font-weight:400 }
+    .stat span { display:block; font-style:italic; font-size:0.76rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-top:4px }
+    /* views (same rules as the dashboard) */
+    .views-nav { display:flex; gap:16px; border-bottom:1px solid var(--gold-line); margin-bottom:12px; flex-wrap:wrap }
+    .views-nav button { background:none; border:0; border-bottom:1px solid transparent; margin-bottom:-1px; padding:8px 2px; min-height:40px; cursor:pointer; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.9rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted) }
+    .views-nav button[aria-pressed="true"] { color:var(--gold-bright); border-bottom-color:var(--gold) }
+    .views-nav button:focus-visible { outline:1px solid var(--gold-bright); outline-offset:4px }
+    .view-pane { min-width:0 }
+    .k-scroll { overflow-x:auto }
+    .k-table { width:100%; border-collapse:collapse; font-size:0.92rem; font-variant-numeric:tabular-nums }
+    .k-table th { text-align:left; font-style:italic; font-weight:500; font-size:0.78rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold); padding:6px 10px 8px 0; border-bottom:1px solid var(--gold-line); white-space:nowrap }
+    .k-table td { padding:7px 10px 7px 0; border-bottom:1px solid rgba(181,147,90,0.1); color:var(--muted); vertical-align:top; max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+    .k-table td.n, .k-table th.n { text-align:right; font-family:var(--mono); font-size:0.84rem }
+    .k-table td b { color:var(--fg); font-weight:500 }
+    .k-table tr[data-tip]:hover td { color:var(--fg) }
+    .k-table .bar-cell { position:relative; min-width:100px }
+    .k-table .bar-cell i { display:block; height:5px; background:linear-gradient(90deg,var(--gold),var(--gold-bright)) }
+    .k-tables { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px }
+    .graph-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px }
+    .graph-grid > div { min-width:0 }
+    .graph-grid h5, .radar-wrap h5, .sky-wrap h5 { font-style:italic; font-size:0.78rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--gold); margin-bottom:8px; font-weight:500 }
+    .bars { display:flex; align-items:flex-end; gap:6px; height:92px; padding-bottom:18px; position:relative; border-bottom:1px solid var(--gold-line) }
+    .bar { flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; position:relative }
+    .bar i { display:block; width:100%; background:linear-gradient(180deg,var(--gold-bright),var(--gold)); min-height:2px; transition:filter .15s ease }
+    .bar:hover i { filter:brightness(1.35) }
+    .bar span { position:absolute; bottom:-18px; font-family:var(--mono); font-size:0.68rem; color:var(--muted); white-space:nowrap }
+    .bars.dense { gap:2px } .bars.dense .bar span { display:none } .bars.dense .bar:nth-child(6n+1) span { display:block }
+    .radar-wrap { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; align-items:center }
+    .radar-wrap svg { width:100%; max-width:360px; height:auto; display:block; margin:0 auto }
+    .radar-legend { list-style:none; font-size:0.94rem; color:var(--muted) }
+    .radar-legend li { display:flex; justify-content:space-between; gap:12px; padding:5px 0; border-bottom:1px solid rgba(181,147,90,0.1) }
+    .radar-legend b { color:var(--fg); font-weight:500; font-family:var(--mono); font-size:0.86rem }
+    .sky-wrap canvas { width:100%; max-width:520px; height:auto; display:block; margin:0 auto; aspect-ratio:1; cursor:crosshair }
+    .sky-legend { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; font-style:italic; font-size:0.86rem; color:var(--muted); margin-top:8px }
+    .sky-legend i { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:middle }
+    .mono { font-family:var(--mono) }
+    .closing { text-align:center; margin-top:56px }
+    .closing p { font-style:italic; color:var(--muted); max-width:62ch; margin:0 auto 18px }
+    footer { position:relative; z-index:1; text-align:center; padding:32px 16px 48px; font-style:italic; font-size:0.9rem; color:var(--faint) }
+    footer a { color:var(--gold); margin:0 10px }
+    @media (max-width:900px) { .report { grid-template-columns:1fr; gap:24px } }
+    @media (max-width:760px) { .tiers, .k-tables, .graph-grid, .radar-wrap { grid-template-columns:1fr } .stat-row { grid-template-columns:repeat(2,minmax(0,1fr)) } }
+    @media (max-width:480px) { .report, .tier { -webkit-backdrop-filter:none; backdrop-filter:none; background:rgba(5,7,14,0.88) } }
+    .reveal { opacity:0; transform:translateY(14px); transition:opacity .6s ease, transform .6s ease }
+    .reveal.in { opacity:1; transform:none }
+    @media (prefers-reduced-motion:reduce) { .reveal { opacity:1; transform:none; transition:none } }
+  </style>
+</head>
+<body>
+<nav class="nav" role="navigation" aria-label="Main navigation">
+  <a href="/kortex" class="nav-back">← Kortex</a>
+  <div class="nav-right">
+    <a href="/kortex#make">Make a QR</a>
+    <a href="/kortex#pricing">Pricing</a>
+    <a href="/kortex#connect">Sign in</a>
+  </div>
+</nav>
+<main>
+  <header class="lead">
+    <div class="eyebrow">eight reports · real links · simulated scans</div>
+    <h1>What a Kortex link can do</h1>
+    <p>Every link on this page is live on one of Kaayko's own pages. Scan any code and you will land there. The scans behind the numbers are simulated, so each report has something to say. Hover any bar, dot or star for the number behind it.</p>
+    <div class="actions"><a class="action-link primary" href="/kortex#make">Make one in ten seconds</a><a class="action-link" href="/kortex?sample=kx-tent#manage">Open the sample dashboard</a></div>
+  </header>
+  <section class="tiers" id="tiers" aria-label="Light, medium and heavy traffic"></section>
+  <div id="reports"></div>
+  <section class="closing reveal">
+    <p>Each of these is a free link: no account, an access code shown once, a year of life renewed every time you open it. The paid plans add longer history, team sign-in, API keys and webhooks.</p>
+    <a class="action-link primary" href="/kortex#make">Make your own</a>
+  </section>
+</main>
+<footer><a href="/kortex">Kortex</a><a href="/legal/kortex-terms">Terms</a><a href="/privacy">Privacy</a><a href="/kortex/support">Get help</a><a href="/kortex/report">Report a link</a><div style="margin-top:10px">&copy; <span id="year">2026</span> Kaayko</div></footer>
+<script src="/js/kortex-views.js"></script>
+<script>
+(function () {
+  const API_BASE = (localStorage.getItem('kaayko_environment') || 'production') === 'production'
+    ? 'https://api-vwcc5j4qda-uc.a.run.app' : 'http://127.0.0.1:5001/kaaykostore/us-central1/api';
+  const V = window.KortexViews;
+  const $ = id => document.getElementById(id);
+  const esc = V.esc;
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  function tierCard(s) {
+    const max = Math.max(1, ...s.timeline);
+    return `<a class="tier" href="#${esc(s.code)}">
+      <span class="lab">${esc(s.tier)} traffic</span>
+      <div class="big">${s.events}<small>scans, 7 days</small></div>
+      <div style="font-size:1.02rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.title)}</div>
+      <div class="spark" aria-hidden="true">${s.timeline.map((v, i) => `<i data-tip="<b>day ${i + 1} of 7</b> · ${v} scans" style="height:${Math.max(6, Math.round(v / max * 100))}%"></i>`).join('')}</div>
+      <div class="meta">${s.lifetime} lifetime · ${s.people} people · ${s.qrShare}% QR · ${esc(s.variation)}</div>
+    </a>`;
+  }
+
+  function reportHtml(r, i) {
+    const points = r.points.map(p => V.ptOf(p, false));
+    const link = { ...r.link, expiresAt: r.link.expiresAt };
+    const kind = V.variationOf(link);
+    const a = { unique: { distinctVisitors: r.people, clicksPerVisitor: r.people ? +(r.events / r.people).toFixed(2) : null } };
+    const insights = V.insightsFor(link, a, points);
+    const d = r.link.destinations || {};
+    return `<article class="report reveal" id="${esc(r.code)}">
+      <div>
+        <div class="num">${String(i + 1).padStart(2, '0')} / 08</div>
+        <span class="report-kind">${esc(kind.name)}</span>
+        <h2>${esc(r.title)}</h2>
+        <p class="blurb">${esc(kind.blurb)}</p>
+        <div class="qr-row"><div class="qr-frame"><img alt="QR code for ${esc(r.title)}" src="${esc(r.qrUrl)}?size=264" loading="lazy" width="132" height="132"></div>
+          <div class="qr-meta"><b>${esc(V.stripScheme(r.shortUrl))}</b><br>→ ${esc(V.stripScheme(d.web || r.destination || ''))}${d.ios ? `<br>iPhone → ${esc(V.stripScheme(d.ios))}` : ''}${d.android ? `<br>Android → ${esc(V.stripScheme(d.android))}` : ''}${r.link.schedule && r.link.schedule.windows ? `<br>night → ${esc(V.stripScheme(r.link.schedule.windows[0].url))}` : ''}<br><span style="color:var(--faint)">scan it: it really goes there</span></div></div>
+        <ul class="insights">${insights.map(x => `<li>${x}</li>`).join('')}</ul>
+        <a class="action-link" href="/kortex?sample=${esc(r.code)}#manage">Open in the dashboard</a>
+      </div>
+      <div>
+        <div class="stat-row">
+          <div class="stat"><b>${r.events}</b><span>scans, 7 days</span></div>
+          <div class="stat"><b>${r.lifetime}</b><span>lifetime</span></div>
+          <div class="stat"><b>${r.people}</b><span>people, 7 days</span></div>
+          <div class="stat"><b>${r.qrShare}%</b><span>from QR scans</span></div>
+        </div>
+        ${V.viewsHtml('r-' + r.code)}
+      </div>
+    </article>`;
+  }
+
+  async function load() {
+    let data;
+    try {
+      const res = await fetch(`${API_BASE}/kortex/guest/demo/samples?full=1`);
+      data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Could not load the samples.');
+    } catch (e) {
+      $('reports').innerHTML = `<p style="text-align:center;font-style:italic;color:var(--muted)">${esc(e.message)}</p>`;
+      return;
+    }
+    $('tiers').innerHTML = data.samples.map(tierCard).join('');
+    V.attachTips($('tiers'));
+    $('reports').innerHTML = data.reports.map(reportHtml).join('');
+    data.reports.forEach(r => {
+      const points = r.points.map(p => V.ptOf(p, false));
+      V.mountViews('r-' + r.code, {
+        points, hasCode: false, uniquePeople: r.people,
+        windowRows: r.link.schedule ? V.tallyOf(points, 'win').map(x => ({ ...x, value: x.value === '—' ? 'day address' : 'night address' })) : null,
+        skyTitle: 'This link\'s scans, as a star each'
+      });
+    });
+    const io = new IntersectionObserver(entries => entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } }), { threshold: 0.08 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+    if (location.hash) { const target = document.querySelector(location.hash); if (target) setTimeout(() => target.scrollIntoView({ block: 'start' }), 60); }
+  }
+  load();
+})();
+</script>
+<script src="/js/kortex-sky.js"></script>
+</body>
+</html>

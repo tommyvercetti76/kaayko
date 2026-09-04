@@ -438,6 +438,10 @@ input[type="time"].field-input, input[type="date"].field-input { color-scheme:da
 .sample .action-link { align-self:flex-start }
 .samples-note { text-align:center; margin-top:var(--sp-5) }
 @media(max-width:760px) { .samples { grid-template-columns:1fr } }
+.settings { display:grid; gap:8px; margin:var(--sp-2) 0 }
+.settings div { display:grid; grid-template-columns:110px minmax(0,1fr); gap:8px; font-size:0.94rem; padding:6px 0; border-bottom:1px solid rgba(181,147,90,0.1) }
+.settings dt { font-style:italic; font-size:0.74rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold); padding-top:3px }
+.settings dd { color:var(--fg); overflow-wrap:anywhere }
 .demo-banner { width:100%; text-align:left; border-left:2px solid var(--gold); padding:var(--sp-3) var(--sp-4); background:rgba(181,147,90,0.06); font-style:italic; font-size:0.98rem; color:var(--muted); line-height:1.55 }
 .demo-banner b { color:var(--gold-bright); font-weight:500 }
 .demo-banner .action-link { display:inline; margin-left:8px; font-size:0.9rem }
@@ -686,6 +690,7 @@ a.btn-submit { display:block; text-align:center }
 <nav class="nav" role="navigation" aria-label="Main navigation">
   <a href="/" class="nav-back">← Kaayko</a>
   <div class="nav-right">
+    <a href="/kortex/samples" class="nav-link">Samples</a>
     <a href="#pricing" class="nav-link">Pricing</a>
     <a href="#connect" class="nav-link" id="nav-auth-link">Sign In</a>
   </div>
@@ -1133,7 +1138,7 @@ rotate it any time</pre></div>
 <section class="section samples-section" id="samples" aria-label="Sample reports" hidden>
   <h2 class="section-label reveal">three sample reports · light, medium, heavy</h2>
   <div class="samples reveal" id="samples-grid"></div>
-  <p class="note samples-note reveal">Real links on Kaayko's own pages, thirty days of simulated scans. Open one to see it four ways.</p>
+  <p class="note samples-note reveal">Real links on Kaayko's own pages, thirty days of simulated scans. <a href="/kortex/samples" style="color:var(--gold)">All eight, spread out, with hover detail</a>.</p>
 </section>
 
   <footer class="site-footer">
@@ -1152,6 +1157,7 @@ rotate it any time</pre></div>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="/js/vendor/qrcode-generator.js"></script>
 <script src="/js/kortex-utm.js"></script>
+<script src="/js/kortex-views.js"></script>
 
 <script>
 /* ── CONFIG ── */
@@ -1720,7 +1726,16 @@ async function openDetail(code) {
       </form>
     </div>`;
   mountViews('dt', { points, hasCode: false, uniquePeople: a.unique ? a.unique.distinctVisitors : null, windowRows: link.schedule ? tallyOf(points, 'win').map(r => ({ ...r, value: r.value === '—' ? 'day address' : 'night address' })) : null, skyTitle: 'This link\'s scans, as a star each' });
-  if (readOnly) { box.querySelectorAll('#dt-form input').forEach(i => { i.disabled = true; }); box.querySelectorAll('#dt-form .btn-submit, #dt-toggle, #dt-delete').forEach(b => { b.hidden = true; }); box.querySelectorAll('#dt-form .action-dot').forEach(d => { d.hidden = true; }); }
+  if (readOnly) {
+    const d = link.destinations || {}, win = nightWin;
+    const rows = [['Points to', stripScheme(d.web || '')], d.ios ? ['iPhone', stripScheme(d.ios)] : null, d.android ? ['Android', stripScheme(d.android)] : null,
+      win ? ['At night', `${stripScheme(win.url)} · ${win.start}–${win.end} ${link.schedule.timezone}`] : null,
+      link.limits && link.limits.maxClicks ? ['Stops after', `${link.limits.maxClicks} scans`] : null,
+      link.expiresAt ? ['Ends on', fmtDate(link.expiresAt)] : null,
+      link.limits && link.limits.fallbackUrl ? ['Then sends to', stripScheme(link.limits.fallbackUrl)] : null,
+      link.utm && Object.keys(link.utm).length ? ['Tags', Object.entries(link.utm).map(([k, v]) => `${k.replace('utm_', '')}=${v}`).join(' · ')] : null].filter(Boolean);
+    $('dt-form').outerHTML = `<dl class="settings">${rows.map(([k, v]) => `<div><dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd></div>`).join('')}</dl><p class="note">Sample link: settings are read-only. <a href="/kortex/samples#${encodeURIComponent(link.code)}" style="color:var(--gold)">See it spread out</a>.</p>`;
+  }
   $('dt-copy').addEventListener('click', () => copyText(link.shortUrl, $('dt-copy')));
   $('dt-csv').addEventListener('click', () => guestDownload(`/links/${encodeURIComponent(code)}/analytics.csv`, `kortex-${code}-scans.csv`, $('dt-csv')));
   $('dt-form').addEventListener('submit', async (e) => {
@@ -1961,157 +1976,10 @@ auth.onAuthStateChanged(async (user) => {
   $('login-btn').disabled = false;
 });
 
-/* ── FOUR WAYS OF LOOKING AT ANY SET OF SCANS ──
-   Table, graphs, a spider chart of the mix, and the sky: every scan a star
-   placed by the hour it happened (around the clock) and how many days ago
-   (out from the centre), joined in the order they arrived. Points arrive as
-   [ms, platform, device, country, source, window, referrerHost], with a
-   leading link code on workspace-wide sets. */
+/* The four views, the report framing and the hover tips live in /js/kortex-views.js (shared with the samples page). */
+const { ptOf, tallyOf, radarAxes, pct, viewsHtml, mountViews, variationOf, insightsFor, localHour, localDow } = window.KortexViews;
 const DEMO_KEY = 'kortex_guest_demo';
 function isDemoSession() { try { return localStorage.getItem(DEMO_KEY) === '1'; } catch { return false; } }
-function localHour(ms) { const d = new Date(ms); return d.getHours() + d.getMinutes() / 60; }
-function localDow(ms) { return new Date(ms).getDay(); }
-const ptOf = (p, hasCode) => hasCode ? { code: p[0], ms: p[1], platform: p[2], device: p[3], country: p[4], source: p[5], win: p[6], ref: p[7] } : { code: null, ms: p[0], platform: p[1], device: p[2], country: p[3], source: p[4], win: p[5], ref: p[6] };
-function tallyOf(points, key) {
-  const m = new Map(); points.forEach(p => { const v = p[key] || '—'; m.set(v, (m.get(v) || 0) + 1); });
-  return [...m.entries()].sort((a, b) => b[1] - a[1]).map(([value, clicks]) => ({ value, clicks }));
-}
-function radarAxes(points, uniquePeople) {
-  const n = points.length || 1;
-  const share = f => points.filter(f).length / n;
-  const top = tallyOf(points, 'country')[0];
-  const repeat = uniquePeople != null ? Math.max(0, 1 - uniquePeople / n) : share(() => false);
-  return [
-    { label: 'Mobile', value: share(p => p.device === 'mobile'), hint: 'scans from phones' },
-    { label: 'QR', value: share(p => p.source === 'qr'), hint: 'scans of the printed code rather than taps on the link' },
-    { label: 'Evening', value: share(p => { const h = localHour(p.ms); return h >= 18 || h < 6; }), hint: 'between 6 pm and 6 am, your time' },
-    { label: 'Repeat', value: repeat, hint: 'visits from people who had scanned before' },
-    { label: 'Abroad', value: top ? share(p => p.country !== top.value) : 0, hint: top ? `outside ${top.value}` : 'outside the top country' },
-    { label: 'Weekend', value: share(p => { const d = localDow(p.ms); return d === 0 || d === 6; }), hint: 'Saturday and Sunday' }
-  ];
-}
-function pct(v) { return `${Math.round(v * 100)}%`; }
-function viewsHtml(id) {
-  const names = [['table', 'Table'], ['graphs', 'Graphs'], ['spider', 'Spider'], ['sky', 'Sky']];
-  return `<div class="views" id="${id}-views">
-    <div class="views-nav" role="group" aria-label="Ways of looking at it">${names.map(([k, l], i) => `<button type="button" data-view="${k}" aria-pressed="${i === 0}">${l}</button>`).join('')}</div>
-    ${names.map(([k], i) => `<div class="view-pane" data-pane="${k}" ${i ? 'hidden' : ''}></div>`).join('')}
-  </div>`;
-}
-function mountViews(id, ds) {
-  const root = $(`${id}-views`); if (!root) return;
-  const panes = Object.fromEntries([...root.querySelectorAll('.view-pane')].map(p => [p.dataset.pane, p]));
-  panes.table.innerHTML = renderTables(ds);
-  panes.graphs.innerHTML = renderGraphs(ds);
-  panes.spider.innerHTML = renderRadar(ds);
-  panes.sky.innerHTML = `<div class="sky-wrap"><h5>${escapeHtml(ds.skyTitle || 'Every scan, as a star')}</h5><canvas></canvas><div class="sky-legend"><span><i style="background:#d9bd7b"></i>QR scan</span><span><i style="background:#cdd6ec"></i>tap on the link</span><span>clock: hour of the day, your time · rings: days ago, today outermost · lines: the order they arrived</span></div></div>`;
-  let skyDrawn = false;
-  const drawSkyNow = () => { if (skyDrawn) return; skyDrawn = true; drawSky(panes.sky.querySelector('canvas'), ds.points, ds.hasCode); };
-  root.querySelectorAll('.views-nav button').forEach(btn => btn.addEventListener('click', () => {
-    root.querySelectorAll('.views-nav button').forEach(b => b.setAttribute('aria-pressed', b === btn));
-    Object.entries(panes).forEach(([k, pane]) => { pane.hidden = k !== btn.dataset.view; });
-    if (btn.dataset.view === 'sky') drawSkyNow();
-  }));
-}
-function tableHtml(title, rows, total, unit = 'scans') {
-  const max = Math.max(1, ...rows.map(r => r.clicks));
-  return `<div><h5 style="font-style:italic;font-size:0.78rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;font-weight:500">${escapeHtml(title)}</h5>
-  <table class="k-table"><thead><tr><th>${escapeHtml(title)}</th><th class="n">${unit}</th><th class="n">share</th><th></th></tr></thead><tbody>
-  ${rows.slice(0, 8).map(r => `<tr><td><b>${escapeHtml(String(r.value))}</b></td><td class="n">${r.clicks}</td><td class="n">${pct(r.clicks / Math.max(1, total))}</td><td class="bar-cell"><i style="width:${Math.round(r.clicks / max * 100)}%"></i></td></tr>`).join('') || '<tr><td colspan="4">Nothing yet</td></tr>'}
-  </tbody></table></div>`;
-}
-function renderTables(ds) {
-  if (ds.linkRows) {
-    return `<div class="k-scroll"><table class="k-table"><thead><tr><th>Link</th><th class="n">7 days</th><th class="n">QR</th><th class="n">taps</th><th class="n">people</th><th>top country</th><th>state</th><th class="n">lifetime</th></tr></thead><tbody>
-      ${ds.linkRows.map(r => `<tr><td><b>${escapeHtml(r.title)}</b><br><span class="mono" style="font-size:0.78rem">${escapeHtml(r.code)}</span></td><td class="n">${r.events}</td><td class="n">${r.qr}</td><td class="n">${r.taps}</td><td class="n">${r.unique}</td><td>${escapeHtml(r.topCountry || '—')}</td><td>${r.status !== 'active' ? escapeHtml(r.status) : r.enabled ? 'live' : 'paused'}</td><td class="n">${r.lifetime}</td></tr>`).join('')}
-    </tbody></table></div>`;
-  }
-  const t = ds.points.length;
-  return `<div class="k-tables">${tableHtml('Source', tallyOf(ds.points, 'source').map(r => ({ ...r, value: r.value === 'qr' ? 'QR scan' : 'tap on the link' })), t)}${tableHtml('Device', tallyOf(ds.points, 'device'), t)}${tableHtml('Country', tallyOf(ds.points, 'country'), t)}${tableHtml('Platform', tallyOf(ds.points, 'platform'), t)}${tableHtml('Referrer', tallyOf(ds.points.filter(p => p.ref), 'ref'), t, 'taps')}${ds.windowRows ? tableHtml('Destination', ds.windowRows, t) : ''}</div>`;
-}
-function barsHtml(values, labels, dense) {
-  const max = Math.max(1, ...values);
-  return `<div class="bars${dense ? ' dense' : ''}">${values.map((v, i) => `<div class="bar" title="${escapeHtml(labels[i])}: ${v}"><i style="height:${Math.max(2, Math.round(v / max * 100))}%"></i><span>${escapeHtml(labels[i])}</span></div>`).join('')}</div>`;
-}
-function renderGraphs(ds) {
-  const hours = new Array(24).fill(0); ds.points.forEach(p => { hours[Math.floor(localHour(p.ms))]++; });
-  const dows = new Array(7).fill(0); ds.points.forEach(p => { dows[localDow(p.ms)]++; });
-  const days = new Map(); ds.points.forEach(p => { const k = new Date(p.ms).toISOString().slice(5, 10); days.set(k, (days.get(k) || 0) + 1); });
-  const dayKeys = [...days.keys()].sort();
-  const perLink = ds.linkRows ? `<div><h5>Scans per link, 7 days</h5>${barsHtml(ds.linkRows.map(r => r.events), ds.linkRows.map(r => r.title.split(' · ')[0].slice(0, 12)))}</div>` : '';
-  return `<div class="graph-grid">
-    ${perLink || `<div><h5>By day</h5>${barsHtml(dayKeys.map(k => days.get(k)), dayKeys)}</div>`}
-    <div><h5>By hour of the day, your time</h5>${barsHtml(hours, hours.map((_, h) => String(h).padStart(2, '0')), true)}</div>
-    <div><h5>By day of the week</h5>${barsHtml(dows, ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'])}</div>
-    ${perLink ? `<div><h5>By day</h5>${barsHtml(dayKeys.map(k => days.get(k)), dayKeys)}</div>` : `<div><h5>Where they were sent</h5>${barsHtml((ds.windowRows || tallyOf(ds.points, 'win').map(r => ({ ...r, value: r.value === '—' ? 'day' : r.value }))).map(r => r.clicks), (ds.windowRows || tallyOf(ds.points, 'win').map(r => ({ ...r, value: r.value === '—' ? 'day' : r.value }))).map(r => String(r.value).slice(0, 14)))}</div>`}
-  </div>`;
-}
-function renderRadar(ds) {
-  const axes = radarAxes(ds.points, ds.uniquePeople);
-  const cx = 180, cy = 180, R = 130, n = axes.length;
-  const pt = (i, r) => { const a = -Math.PI / 2 + i * 2 * Math.PI / n; return [cx + Math.cos(a) * r, cy + Math.sin(a) * r]; };
-  const rings = [0.25, 0.5, 0.75, 1].map(f => `<polygon points="${axes.map((_, i) => pt(i, R * f).join(',')).join(' ')}" fill="none" stroke="rgba(181,147,90,0.18)" stroke-width="0.8"/>`).join('');
-  const spokes = axes.map((_, i) => { const [x, y] = pt(i, R); return `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="rgba(181,147,90,0.18)" stroke-width="0.8"/>`; }).join('');
-  const poly = axes.map((a, i) => pt(i, R * Math.max(0.02, a.value)).join(',')).join(' ');
-  const dots = axes.map((a, i) => { const [x, y] = pt(i, R * Math.max(0.02, a.value)); return `<circle cx="${x}" cy="${y}" r="3" fill="#f3e6c8"/><circle cx="${x}" cy="${y}" r="7" fill="rgba(217,189,123,0.18)"/>`; }).join('');
-  const labels = axes.map((a, i) => { const [x, y] = pt(i, R + 22); return `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-size="11" letter-spacing="1.5" fill="#d9bd7b" font-style="italic" font-family="Cormorant Garamond, Georgia, serif">${escapeHtml(a.label.toUpperCase())}</text>`; }).join('');
-  return `<div class="radar-wrap"><div><h5>The mix, six ways at once</h5><svg viewBox="0 0 360 360" role="img" aria-label="Spider chart of the scan mix">${rings}${spokes}<polygon points="${poly}" fill="rgba(217,189,123,0.16)" stroke="#d9bd7b" stroke-width="1.2"/>${dots}${labels}</svg></div>
-    <ul class="radar-legend">${axes.map(a => `<li><span>${escapeHtml(a.label)} <small style="color:var(--dim)">· ${escapeHtml(a.hint)}</small></span><b>${pct(a.value)}</b></li>`).join('')}</ul></div>`;
-}
-function drawSky(canvas, points, hasCode) {
-  if (!canvas) return;
-  const size = Math.min(560, canvas.parentElement.clientWidth || 560), dpr = Math.min(2, window.devicePixelRatio || 1);
-  canvas.width = size * dpr; canvas.height = size * dpr; canvas.style.width = size + 'px'; canvas.style.height = size + 'px';
-  const x = canvas.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0);
-  const cx = size / 2, cy = size / 2, R = size * 0.44, r0 = size * 0.08, TAU = Math.PI * 2;
-  const now = Date.now(), spanDays = 7;
-  x.clearRect(0, 0, size, size);
-  // Hour histogram as a faint ring, then the clock.
-  const hours = new Array(24).fill(0); points.forEach(p => { hours[Math.floor(localHour(p.ms))]++; });
-  const hmax = Math.max(1, ...hours);
-  hours.forEach((v, h) => { const a0 = -Math.PI / 2 + h / 24 * TAU, a1 = a0 + TAU / 24; const rr = R + 6 + (v / hmax) * size * 0.05; x.beginPath(); x.arc(cx, cy, rr, a0, a1); x.arc(cx, cy, R + 6, a1, a0, true); x.closePath(); x.fillStyle = 'rgba(181,147,90,0.16)'; x.fill(); });
-  x.strokeStyle = 'rgba(181,147,90,0.28)'; x.lineWidth = 0.8;
-  [0.25, 0.5, 0.75, 1].forEach(f => { x.beginPath(); x.arc(cx, cy, r0 + (R - r0) * f, 0, TAU); x.stroke(); });
-  for (let h = 0; h < 24; h++) { const a = -Math.PI / 2 + h / 24 * TAU; x.beginPath(); x.moveTo(cx + Math.cos(a) * (R + 2), cy + Math.sin(a) * (R + 2)); x.lineTo(cx + Math.cos(a) * (R + (h % 6 === 0 ? 14 : 6)), cy + Math.sin(a) * (R + (h % 6 === 0 ? 14 : 6))); x.stroke(); }
-  x.fillStyle = 'rgba(217,189,123,0.9)'; x.font = 'italic 12px "Cormorant Garamond", Georgia, serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
-  [['00', 0], ['06', 6], ['12', 12], ['18', 18]].forEach(([l, h]) => { const a = -Math.PI / 2 + h / 24 * TAU; x.fillText(l, cx + Math.cos(a) * (R + 26), cy + Math.sin(a) * (R + 26)); });
-  const place = p => { const a = -Math.PI / 2 + (localHour(p.ms) / 24) * TAU; const age = Math.min(spanDays, Math.max(0, (now - p.ms) / 86400000)); const rr = r0 + (R - r0) * (1 - age / spanDays); return [cx + Math.cos(a) * rr, cy + Math.sin(a) * rr]; };
-  const byCode = new Map(); points.forEach(p => { const k = p.code || '_'; if (!byCode.has(k)) byCode.set(k, []); byCode.get(k).push(p); });
-  x.lineWidth = 0.6;
-  byCode.forEach(list => { list.sort((a, b) => a.ms - b.ms); x.strokeStyle = 'rgba(217,189,123,0.13)'; x.beginPath(); list.forEach((p, i) => { const [px, py] = place(p); if (i) x.lineTo(px, py); else x.moveTo(px, py); }); x.stroke(); });
-  points.forEach(p => { const [px, py] = place(p); const qr = p.source === 'qr'; const g = x.createRadialGradient(px, py, 0, px, py, 5); g.addColorStop(0, qr ? 'rgba(232,206,150,0.55)' : 'rgba(205,214,236,0.5)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(px, py, 5, 0, TAU); x.fill(); x.fillStyle = qr ? '#f3e6c8' : '#e2e8f7'; x.beginPath(); x.arc(px, py, 1.4, 0, TAU); x.fill(); });
-  const busiest = hours.indexOf(hmax);
-  x.fillStyle = 'rgba(237,232,223,0.72)'; x.font = '11px ui-monospace, Menlo, monospace';
-  x.fillText(`${points.length} scans · busiest hour ${String(busiest).padStart(2, '0')}:00`, cx, cy);
-}
-
-/* What each link is a report of, read off its own settings. */
-function variationOf(link) {
-  const d = link.destinations || {};
-  if (link.safety && link.safety.review) return { name: 'Safety review', blurb: 'This destination was held on first sight and released by a reviewer. The link kept its QR through the whole thing.' };
-  if (link.schedule && link.schedule.windows && link.schedule.windows.length) return { name: 'Night and day routing', blurb: 'One QR, two addresses: our clock in the link\'s time zone decides where a scan lands. Nothing a visitor sends can change it.' };
-  if (d.ios || d.android) return { name: 'Device routing', blurb: 'iPhones, Androids and everyone else each go to their own address. One QR on the card.' };
-  if (link.limits && link.limits.maxClicks) return { name: 'Scan cap with a fallback', blurb: 'After the cap, scans go to the fallback address instead of a dead end. The counter below shows how much is left.' };
-  if (link.expiresAt) return { name: 'End date with a fallback', blurb: 'After the date, scans go to the fallback address. Printed flyers never point at a 404.' };
-  if (link.utm && Object.keys(link.utm).length) return { name: 'Campaign tags', blurb: 'Every visit arrives tagged, so the destination\'s own analytics know it came from this link.' };
-  return { name: 'Plain dynamic link', blurb: 'A short kaayko.com link behind the QR: re-point it after printing and count every scan.' };
-}
-function insightsFor(link, a, points) {
-  const out = [];
-  const n = points.length;
-  const src = tallyOf(points, 'source'); const qr = (src.find(r => r.value === 'qr') || {}).clicks || 0;
-  if (n) out.push(`<b>${qr}</b> of ${n} visits this week were QR scans; the rest were taps on the link.`);
-  if (link.schedule && link.schedule.windows && link.schedule.windows.length) { const night = points.filter(p => p.win === 'night').length; out.push(`<b>${pct(night / Math.max(1, n))}</b> of scans came in the night window and went to ${escapeHtml(stripScheme(link.schedule.windows[0].url))}.`); }
-  if (link.limits && link.limits.maxClicks) { const used = link.clickCount || 0; out.push(`<b>${used} of ${link.limits.maxClicks}</b> scans used${link.limits.fallbackUrl ? `; after that, ${escapeHtml(stripScheme(link.limits.fallbackUrl))}` : ''}.`); }
-  if (link.expiresAt) { const days = Math.ceil((new Date(link.expiresAt) - Date.now()) / 86400000); out.push(days >= 0 ? `Ends in <b>${days} day${days === 1 ? '' : 's'}</b>${link.limits && link.limits.fallbackUrl ? `, then ${escapeHtml(stripScheme(link.limits.fallbackUrl))}` : ''}.` : `Ended <b>${-days} day${days === -1 ? '' : 's'} ago</b>.`); }
-  const d = link.destinations || {};
-  if (d.ios || d.android) { const plat = tallyOf(points, 'platform'); const ios = (plat.find(r => r.value === 'ios') || {}).clicks || 0, and = (plat.find(r => r.value === 'android') || {}).clicks || 0; out.push(`<b>${pct(ios / Math.max(1, n))}</b> iPhone, <b>${pct(and / Math.max(1, n))}</b> Android: each went to its own address.`); }
-  if (link.utm && Object.keys(link.utm).length) out.push(`Tags on every visit: ${Object.entries(link.utm).map(([k, v]) => `<b>${escapeHtml(k.replace('utm_', ''))}</b> ${escapeHtml(v)}`).join(' · ')}.`);
-  if (link.safety && link.safety.review) out.push(`Held on ${fmtDate(new Date(link.safety.review.heldAtMs).toISOString())}, approved ${fmtDate(new Date(link.safety.review.approvedAtMs).toISOString())} by a reviewer.`);
-  if (a.unique && a.unique.distinctVisitors) out.push(`<b>${a.unique.distinctVisitors}</b> different people${a.unique.clicksPerVisitor ? `, ${a.unique.clicksPerVisitor} scans each on average` : ''}.`);
-  const country = tallyOf(points, 'country')[0]; if (country && country.value !== '—') out.push(`Most scans from <b>${escapeHtml(country.value)}</b> (${pct(country.clicks / Math.max(1, n))}).`);
-  return out;
-}
 
 /* ── FOOTER SAMPLES: the lightest, the median and the heaviest of the sample links ── */
 async function loadSamples() {
@@ -2125,16 +1993,9 @@ async function loadSamples() {
       <div style="min-width:0"><div class="big">${s.events}<small>scans, 7 days</small></div><div class="title">${escapeHtml(s.title)}</div><div class="kind">${escapeHtml(s.variation)}</div></div></div>
     <div class="spark" aria-hidden="true">${s.timeline.map(v => `<i style="height:${Math.max(6, Math.round(v / max * 100))}%"></i>`).join('')}</div>
     <div class="meta">${s.lifetime} lifetime · ${s.people} people · ${s.qrShare}% QR</div>
-    <button type="button" class="action-link" data-open-sample="${escapeHtml(s.code)}">Open this report</button>
+    <a class="action-link" href="/kortex/samples#${escapeHtml(s.code)}">Open this report</a>
   </article>`).join('');
   $('samples').hidden = false;
-  grid.querySelectorAll('[data-open-sample]').forEach(btn => btn.addEventListener('click', async () => {
-    btn.disabled = true;
-    await openDemo();
-    let tries = 0; while (!wsLinks.length && tries++ < 20) await new Promise(r => setTimeout(r, 150));
-    if (wsLinks.some(l => l.code === btn.dataset.openSample)) { await openDetail(btn.dataset.openSample); $('detail').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-    btn.disabled = false;
-  }));
 }
 loadSamples();
 
@@ -2170,6 +2031,7 @@ async function loadOverview(ws) {
 
 setMode('dynamic');
 loadCaps();
+(async () => { const want = new URLSearchParams(location.search).get('sample'); if (!want) return; await openDemo(); let tries = 0; while (!wsLinks.length && tries++ < 30) await new Promise(r => setTimeout(r, 150)); if (wsLinks.some(l => l.code === want)) { await openDetail(want); $('detail').scrollIntoView({ block: 'start' }); } })();
 if (guestSession()) { openWorkspaceFromSession(); }
 if (location.hash === '#manage') setTimeout(() => $('mg-code').focus(), 600);
 
@@ -2254,254 +2116,9 @@ document.querySelectorAll('.cap-card').forEach(card => {
   hero.addEventListener('pointerleave', () => { glow.style.opacity = '0'; active = false; });
 })();
 
-/* ── THE SKY — one fixed canvas behind the whole page ──
-   Deep-space ground, a faint star-chart grid, a seeded starfield, a soft band
-   of haze, and nine real constellations (stars at their J2000 right ascension
-   and declination) lit one at a time: stars brighten, every link between them
-   shines at once, pulses travel the links, then it fades and the next one
-   rises. The canvas is fixed to the viewport, so the sky never scrolls; the
-   page moves over it on glass plates. Only a real size change rebuilds it. */
-(function() {
-  if (!window.HTMLCanvasElement) return;
-  const canvas = document.createElement('canvas');
-  canvas.className = 'sky'; canvas.setAttribute('aria-hidden', 'true');
-  document.body.prepend(canvas);
-  const ctx = canvas.getContext('2d');
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const TAU = Math.PI * 2;
-
-  // Right ascension in hours, declination in degrees, magnitude class (1 = bright, 2 = mid, 3 = faint).
-  const CONSTELLATIONS = [
-    { name: 'orion', stars: [[5.919,7.407,1],[5.419,6.350,2],[5.586,9.934,3],[5.679,-1.943,2],[5.604,-1.202,2],[5.533,-0.299,2],[5.796,-9.670,2],[5.242,-8.202,1]],
-      edges: [[0,2],[1,2],[0,3],[1,5],[3,4],[4,5],[3,6],[5,7],[6,7]] },
-    { name: 'ursa major', stars: [[11.062,61.751,1],[11.031,56.383,2],[11.897,53.695,2],[12.257,57.033,3],[12.900,55.960,1],[13.399,54.925,2],[13.792,49.313,1]],
-      edges: [[6,5],[5,4],[4,3],[3,2],[2,1],[1,0],[0,3]] },
-    { name: 'cassiopeia', stars: [[0.153,59.150,2],[0.675,56.537,1],[0.945,60.717,2],[1.430,60.235,3],[1.907,63.670,3]],
-      edges: [[0,1],[1,2],[2,3],[3,4]] },
-    { name: 'cygnus', stars: [[20.690,45.280,1],[20.370,40.257,2],[19.512,27.960,2],[19.749,45.131,3],[20.770,33.970,2]],
-      edges: [[0,1],[1,2],[3,1],[1,4]] },
-    { name: 'leo', stars: [[10.140,11.967,1],[10.122,16.763,3],[10.333,19.842,2],[10.278,23.417,3],[9.879,26.007,3],[9.764,23.774,3],[11.235,20.524,2],[11.237,15.430,3],[11.818,14.572,1]],
-      edges: [[0,1],[1,2],[2,3],[3,4],[4,5],[2,6],[6,8],[8,7],[7,0],[7,6]] },
-    { name: 'scorpius', stars: [[16.091,-19.805,2],[16.006,-22.622,2],[15.981,-26.114,2],[16.490,-26.432,1],[16.598,-28.216,3],[16.836,-34.293,2],[16.864,-38.047,2],[16.909,-42.362,2],[17.203,-43.239,3],[17.622,-42.998,2],[17.708,-39.030,2],[17.560,-37.104,1],[17.793,-40.127,3],[17.512,-37.296,3]],
-      edges: [[0,1],[1,2],[1,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,9],[9,10],[10,11],[11,12],[12,13]] },
-    { name: 'lyra', stars: [[18.616,38.784,1],[18.739,39.670,3],[18.746,37.605,3],[18.908,36.899,3],[18.982,32.690,2],[18.835,33.363,2]],
-      edges: [[0,1],[0,2],[2,3],[3,4],[4,5],[5,2]] },
-    { name: 'gemini', stars: [[7.577,31.888,1],[7.755,28.026,1],[7.186,30.245,3],[6.732,25.131,2],[6.383,22.514,3],[6.248,22.507,3],[7.335,21.982,2],[7.068,20.570,3],[6.629,16.399,2]],
-      edges: [[0,2],[2,3],[3,4],[4,5],[1,6],[6,7],[7,8],[2,6]] },
-    { name: 'taurus', stars: [[4.599,16.509,1],[5.438,28.607,2],[5.627,21.143,3],[4.330,15.628,3],[4.383,17.543,3],[4.477,19.180,3],[4.477,15.871,3],[4.011,12.490,3]],
-      edges: [[0,6],[6,3],[3,4],[4,5],[5,1],[0,2],[3,7]] }
-  ];
-  CONSTELLATIONS.forEach(c => {
-    const ra0 = c.stars.reduce((t, st) => t + st[0], 0) / c.stars.length;
-    const dec0 = c.stars.reduce((t, st) => t + st[1], 0) / c.stars.length;
-    const cosD = Math.cos(dec0 * Math.PI / 180);
-    const pts = c.stars.map(st => ({ x: -(st[0] - ra0) * 15 * cosD, y: -(st[1] - dec0), m: st[2] || 3 }));
-    const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
-    const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
-    const span = Math.max(maxX - minX, maxY - minY) || 1;
-    c.points = pts.map(p => ({ x: (p.x - minX) / span, y: (p.y - minY) / span, m: p.m }));
-    c.w = (maxX - minX) / span; c.h = (maxY - minY) / span;
-  });
-
-  function mulberry32(a) { return function() { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
-
-  let W = 0, H = 0, dpr = 1, stars = [], twinklers = [], base = null, sprites = {}, running = false, raf = 0, lastFrame = 0, startTs = 0;
-  let order = [], current = 0, phaseStart = 0;
-  const PERIOD = 9000, STAR_IN = 1100, LINE_IN = 1700, FADE_OUT = 7600;
-
-  function sprite(radius, glow, warm) {
-    const size = Math.ceil((radius + glow) * 2 + 2);
-    const c = document.createElement('canvas'); c.width = c.height = Math.ceil(size * dpr);
-    const g = c.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const cx = size / 2, cy = size / 2;
-    const halo = g.createRadialGradient(cx, cy, 0, cx, cy, radius + glow);
-    halo.addColorStop(0, warm ? 'rgba(232,206,150,0.55)' : 'rgba(220,226,245,0.5)');
-    halo.addColorStop(0.35, warm ? 'rgba(217,189,123,0.16)' : 'rgba(205,214,236,0.14)');
-    halo.addColorStop(1, 'rgba(217,189,123,0)');
-    g.fillStyle = halo; g.beginPath(); g.arc(cx, cy, radius + glow, 0, TAU); g.fill();
-    g.fillStyle = warm ? 'rgba(252,246,232,1)' : 'rgba(240,244,255,1)';
-    g.beginPath(); g.arc(cx, cy, radius, 0, TAU); g.fill();
-    // Diffraction spikes on the brightest class.
-    if (radius >= 2.4) {
-      g.strokeStyle = 'rgba(245,235,210,0.55)'; g.lineWidth = 0.7;
-      g.beginPath(); g.moveTo(cx - radius * 3.2, cy); g.lineTo(cx + radius * 3.2, cy); g.moveTo(cx, cy - radius * 3.2); g.lineTo(cx, cy + radius * 3.2); g.stroke();
-    }
-    return { c, size };
-  }
-
-  function buildStars() {
-    const rnd = mulberry32(20260903);
-    const count = W < 520 ? 170 : W < 1100 ? 300 : 420;
-    stars = [];
-    for (let i = 0; i < count; i++) {
-      stars.push({ x: rnd(), y: rnd(), r: 0.3 + rnd() * 1.1, a: 0.2 + rnd() * 0.6, ph: rnd() * TAU, sp: 0.35 + rnd() * 1.1, cool: rnd() < 0.32 });
-    }
-    twinklers = stars.filter((st, i) => i % 5 === 0);
-    order = CONSTELLATIONS.map((c, i) => i);
-    for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
-    sprites = { 1: sprite(2.6, 18, true), 2: sprite(1.9, 11, true), 3: sprite(1.35, 7, false) };
-  }
-
-  function renderBase() {
-    base = document.createElement('canvas');
-    base.width = canvas.width; base.height = canvas.height;
-    const b = base.getContext('2d');
-    b.setTransform(dpr, 0, 0, dpr, 0, 0);
-    // Ground
-    const grad = b.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0, '#060b1e'); grad.addColorStop(0.45, '#0a1233'); grad.addColorStop(0.72, '#0a1129'); grad.addColorStop(1, '#080808');
-    b.fillStyle = grad; b.fillRect(0, 0, W, H);
-    // A soft band of haze, the way a dark-sky night actually looks.
-    for (let i = 0; i < 7; i++) {
-      const t = i / 6, cx = W * (0.05 + 0.9 * t), cy = H * (0.78 - 0.62 * t) + Math.sin(i * 1.7) * H * 0.05;
-      const rad = Math.max(W, H) * (0.16 + (i % 3) * 0.05);
-      const g = b.createRadialGradient(cx, cy, 0, cx, cy, rad);
-      g.addColorStop(0, 'rgba(120,140,200,0.075)'); g.addColorStop(0.5, 'rgba(120,140,200,0.03)'); g.addColorStop(1, 'rgba(120,140,200,0)');
-      b.fillStyle = g; b.fillRect(cx - rad, cy - rad, rad * 2, rad * 2);
-    }
-    // Star-chart grid: gentle arcs of declination and meridians, barely there.
-    b.strokeStyle = 'rgba(181,147,90,0.07)'; b.lineWidth = 0.6;
-    for (let i = 1; i <= 5; i++) {
-      const cy = H * 1.9, r = H * 1.9 - H * (i / 6) + H * 0.1;
-      b.beginPath(); b.arc(W / 2, cy, r, Math.PI * 1.08, Math.PI * 1.92); b.stroke();
-    }
-    for (let i = 0; i <= 8; i++) {
-      const x0 = W * (i / 8);
-      b.beginPath(); b.moveTo(x0, 0); b.quadraticCurveTo(W / 2 + (x0 - W / 2) * 0.55, H * 0.55, x0, H); b.stroke();
-    }
-    // Stars
-    stars.forEach((st, i) => {
-      if (i % 5 === 0) return; // twinklers are drawn live
-      b.fillStyle = st.cool ? `rgba(205,214,236,${st.a * 0.9})` : `rgba(237,232,223,${st.a})`;
-      b.beginPath(); b.arc(st.x * W, st.y * H, st.r, 0, TAU); b.fill();
-    });
-  }
-
-  function resize(force) {
-    const nextW = Math.round(window.innerWidth), nextH = Math.round(window.innerHeight);
-    // Address-bar height changes on phones are ignored; a real resize rebuilds.
-    if (!force && Math.abs(nextW - W) < 4 && Math.abs(nextH - H) < 140) return;
-    W = nextW; H = nextH;
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
-    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    buildStars(); renderBase();
-  }
-
-  // Where the lit constellation sits: beside the wordmark on wide screens,
-  // above it on phones, always inside the safe area so nothing is clipped.
-  function placement(index) {
-    const c = CONSTELLATIONS[order[index % order.length]];
-    const phone = W < 700;
-    // Measure the wordmark block first; the figure is sized to the room beside it.
-    const inner = document.querySelector('.hero-inner');
-    const box = inner ? inner.getBoundingClientRect() : null;
-    const roomLeft = box ? box.left : W * 0.3, roomRight = box ? W - box.right : W * 0.3;
-    const sideRoom = Math.max(roomLeft, roomRight);
-    const wide = !phone && sideRoom >= 250;
-    const boxW = phone ? Math.min(W * 0.62, 300) : wide ? Math.min(W * 0.30, 440, sideRoom - 44) : Math.min(W * 0.5, 380);
-    const scale = boxW / Math.max(c.w, 0.001);
-    let w = c.w * scale, h = c.h * scale;
-    const maxH = phone ? H * 0.28 : H * 0.62;
-    if (h > maxH) { const k = maxH / h; w *= k; h *= k; }
-    const side = index % 2 === 0 ? -1 : 1;
-    const useLeft = wide ? (roomLeft >= roomRight ? side < 0 || roomRight < w + 44 : side < 0 && roomLeft >= w + 44) : false;
-    // No room beside the wordmark (phones, short windows): sit behind it, dimmed, like a chart under glass.
-    const cx = !wide ? W * 0.5 : useLeft ? roomLeft / 2 : W - roomRight / 2;
-    const cy = !wide ? (box ? box.top + box.height * 0.32 : H * 0.35) : H * 0.48;
-    if (!wide) { const k = Math.min(1, Math.min(W * 0.62, 380) / Math.max(w, 1), (H * 0.42) / Math.max(h, 1)); w *= k; h *= k; }
-    return { c, x: Math.max(16, Math.min(W - w - 16, cx - w / 2)), y: Math.max(16, cy - h / 2), w, h, dim: wide ? 1 : 0.45 };
-  }
-
-  function ease(t) { t = Math.max(0, Math.min(1, t)); return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
-
-  function drawConstellation(place, starA, lineA, t, dim) {
-    const { c, x, y, w, h } = place;
-    const pts = c.points.map(p => ({ x: x + p.x * w, y: y + p.y * h, m: p.m }));
-    const lA = lineA * dim, sA = starA * dim;
-    if (lA > 0) {
-      c.edges.forEach(([i, j], k) => {
-        const a = pts[i], b = pts[j];
-        ctx.lineWidth = 4.5; ctx.strokeStyle = `rgba(217,189,123,${lA * 0.10})`;
-        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-        ctx.lineWidth = 0.9; ctx.strokeStyle = `rgba(242,230,205,${lA * 0.78})`;
-        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-        // A pulse travelling each link: the scans a link carries.
-        const u = ((t * 0.16) + k * 0.37) % 1;
-        const px = a.x + (b.x - a.x) * u, py = a.y + (b.y - a.y) * u;
-        const g = ctx.createRadialGradient(px, py, 0, px, py, 6);
-        g.addColorStop(0, `rgba(250,240,215,${lA * 0.75})`); g.addColorStop(1, 'rgba(217,189,123,0)');
-        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px, py, 6, 0, TAU); ctx.fill();
-      });
-    }
-    pts.forEach(p => {
-      const sp = sprites[p.m] || sprites[3];
-      ctx.globalAlpha = 0.28 + sA * 0.72;
-      ctx.drawImage(sp.c, p.x - sp.size / 2, p.y - sp.size / 2, sp.size, sp.size);
-      ctx.globalAlpha = 1;
-    });
-    if (lA > 0.05 && dim >= 0.99) { // no label when the figure sits behind the wordmark
-      const cx = x + w / 2, ly = y + h + 26;
-      ctx.strokeStyle = `rgba(181,147,90,${lA * 0.5})`; ctx.lineWidth = 0.6;
-      ctx.beginPath(); ctx.moveTo(cx - 34, ly - 9); ctx.lineTo(cx + 34, ly - 9); ctx.stroke();
-      ctx.textAlign = 'center';
-      ctx.font = 'italic 13px "Cormorant Garamond", Georgia, serif';
-      ctx.fillStyle = `rgba(217,189,123,${lA * 0.95})`;
-      ctx.fillText(c.name.split('').join(' '), cx, ly + 6);
-      ctx.font = '10px ui-monospace, Menlo, monospace';
-      ctx.fillStyle = `rgba(237,232,223,${lA * 0.5})`;
-      ctx.fillText(`${c.points.length} stars · ${c.edges.length} links`, cx, ly + 22);
-    }
-  }
-
-  function draw(now) {
-    ctx.clearRect(0, 0, W, H);
-    if (base) ctx.drawImage(base, 0, 0, W, H);
-    const t = (now - startTs) / 1000;
-    twinklers.forEach(st => {
-      const a = st.a * (0.55 + 0.45 * Math.sin(t * st.sp + st.ph));
-      ctx.fillStyle = st.cool ? `rgba(205,214,236,${a})` : `rgba(237,232,223,${a})`;
-      ctx.beginPath(); ctx.arc(st.x * W, st.y * H, st.r + 0.3, 0, TAU); ctx.fill();
-    });
-    const elapsed = now - phaseStart;
-    if (elapsed >= PERIOD) { current = (current + 1) % order.length; phaseStart = now; }
-    const e = now - phaseStart;
-    const starA = e < STAR_IN ? ease(e / STAR_IN) : e < FADE_OUT ? 1 : 1 - ease((e - FADE_OUT) / (PERIOD - FADE_OUT));
-    const lineA = e < STAR_IN ? 0 : e < LINE_IN ? ease((e - STAR_IN) / (LINE_IN - STAR_IN)) : e < FADE_OUT ? 1 : 1 - ease((e - FADE_OUT) / (PERIOD - FADE_OUT));
-    // Past the hero the constellation stays, quieter, behind the plates.
-    const scrolled = Math.min(1, Math.max(0, (window.scrollY || 0) / Math.max(1, H * 0.9)));
-    const dim = 1 - scrolled * 0.7;
-    const place = placement(current);
-    drawConstellation(place, starA, lineA, t, dim * (place.dim || 1));
-  }
-
-  function frame(ts) {
-    if (!running) return;
-    raf = requestAnimationFrame(frame);
-    const budget = (window.scrollY || 0) > H ? 50 : 33; // 20 fps once the sky is mostly behind plates
-    if (ts - lastFrame < budget) return;
-    lastFrame = ts;
-    draw(ts);
-  }
-  function start() { if (running || reduced) return; running = true; if (!startTs) { startTs = performance.now(); phaseStart = startTs; } raf = requestAnimationFrame(frame); }
-  function stop() { running = false; cancelAnimationFrame(raf); }
-  function drawStill() { const now = performance.now(); startTs = now; phaseStart = now - LINE_IN - 500; draw(now); }
-
-  resize(true);
-  startTs = phaseStart = performance.now();
-  draw(startTs);
-  let resizeTimer = 0;
-  window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { resize(false); if (reduced) drawStill(); }, 200); });
-  if (reduced) {
-    drawStill();
-  } else {
-    start();
-    document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); else start(); });
-  }
-})();
 
 </script>
+<script src="/js/kortex-sky.js"></script>
 
 <!-- Product analytics (PostHog) is intentionally NOT loaded on this public
      landing page — it runs only inside the authenticated admin app. -->
