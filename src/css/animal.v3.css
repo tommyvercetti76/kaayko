@@ -52,7 +52,6 @@ body.animal-v2 .site-footer { flex: 0 0 auto; }
   position: absolute;
   inset: 0;
   z-index: 0;
-  will-change: transform;
   background: radial-gradient(ellipse 78% 62% at 50% 42%, #fbf3de 0%, #f0e0b7 58%, #dfc99b 100%);
 }
 html.dark-theme .animal-v2 .an-plate {
@@ -68,7 +67,6 @@ html.dark-theme .animal-v2 .an-plate {
   display: flex;
   align-items: center;
   justify-content: center;
-  will-change: transform;
 }
 .animal-v2 .an-art img {
   max-width: 100%;
@@ -212,36 +210,30 @@ html.dark-theme .animal-v2 .an-eyebrow[data-severity="endangered"] { color: #e08
 .animal-v2 .an-facts .animal-stat:first-child { border-top: none; padding-top: 0; }
 
 /* ── Motion ─────────────────────────────────────────────────────────────
-   One continuous movement: the plate drifts down, the art drifts up, so the
-   subject separates from its ground as you read. Everything else fades — no
-   translate, no bounce, nothing choreographed per section.                  */
-@supports (animation-timeline: view()) {
-  .animal-v2 .an-plate,
-  .animal-v2 .an-art {
-    animation-timeline: view(block);
-    animation-range: entry 100% exit 100%;
-    animation-fill-mode: both;
-    animation-timing-function: linear;   /* scroll position is the easing */
-  }
-  .animal-v2 .an-plate { animation-name: an-plate; }
-  .animal-v2 .an-art   { animation-name: an-art; }
+   There is no scroll parallax here any more, for two reasons.
 
+   A view transition captures an element's TRANSFORMED geometry, so a hero
+   drifting under a scroll timeline would be snapshotted mid-drift and the
+   morph from the store card would land crooked.
+
+   And the motion that matters on this page is the arrival: the photograph
+   travels out of the grid card and the rest of the page staggers in behind
+   it. That lives in css/pdp-motion.css. Adding a second, unrelated movement
+   on scroll only competes with it.
+
+   What remains is a single opacity settle for sections below the fold —
+   never from zero, so nothing is invisible if a timeline fails to resolve. */
+@supports (animation-timeline: view()) {
   .animal-v2 .fade {
     animation: an-fade linear both;
     animation-timeline: view(block);
     animation-range: entry 0% entry 70%;
   }
 }
-@keyframes an-plate { to { transform: translate3d(0, 5%, 0) scale(1.06); } }
-@keyframes an-art   { to { transform: translate3d(0, -7%, 0); } }
-/* Opacity only, and never to zero — content parked invisible behind a scroll
-   timeline is a blank page if that timeline fails to resolve. */
-@keyframes an-fade  { from { opacity: 0.45; } to { opacity: 1; } }
+@keyframes an-fade { from { opacity: 0.55; } to { opacity: 1; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .animal-v2 .an-plate, .animal-v2 .an-art, .animal-v2 .fade {
-    animation: none !important; opacity: 1; transform: none;
-  }
+  .animal-v2 .fade { animation: none !important; opacity: 1; }
 }
 
 /* ── Narrow ─────────────────────────────────────────────────────────────── */

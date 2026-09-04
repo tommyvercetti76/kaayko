@@ -1,102 +1,130 @@
 /**
- * Store → product page motion. Classic script, loaded in <head> on the store
- * page and both product pages, so it is in place before first paint.
+ * Store ⇄ product shared-element transition.
  *
- * Grid page:  stamp the tapped photo with view-transition-name so the
- *             browser can morph it into the product hero, and stash its URL.
- * Product page: paint that photo into the hero skeleton BEFORE first render
- *             (in `pagereveal`, which fires before the new document's
- *             transition snapshot), so the morph has a destination even
- *             though the real hero arrives later from the API. Then run the
- *             scroll parallax where CSS scroll timelines are unavailable.
+ * All the animation lives in css/pdp-motion.css. This file does one job: make
+ * sure exactly ONE image in each document carries
+ * `view-transition-name: product-hero`, and that on the way back it is the
+ * same card the shopper left from — otherwise the browser has nothing to match
+ * and falls back to a plain cross-fade.
  *
- * No dependencies. Does nothing harmful where View Transitions are absent.
+ * Classic script, loaded in <head>, because the destination has to be stamped
+ * before its first render.
  */
 (function () {
   'use strict';
 
-  var KEY = 'kaayko:heroPreview';
-  var NAME = 'product-hero';
+  var NAME  = 'product-hero';
+  var PREV  = 'kaayko:heroPreview';   // src + card key, for the outward trip
+  var BACK  = 'kaayko:heroReturn';    // which card to morph back into
   var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* ── Grid: stamp the pressed photo ──────────────────────────────────── */
-  function stamp(img) {
-    // Only one element in the document may carry the name.
+  function clearStamps() {
     var prev = document.querySelectorAll('[data-pdp-stamped]');
     for (var i = 0; i < prev.length; i++) {
       prev[i].style.viewTransitionName = '';
       prev[i].removeAttribute('data-pdp-stamped');
     }
+  }
+
+  function stamp(img) {
+    if (!img) return;
+    clearStamps();                       // the name must be unique per document
     img.style.viewTransitionName = NAME;
     img.setAttribute('data-pdp-stamped', '1');
+  }
+
+  /* ── Store grid: stamp what was pressed, and remember it ──────────────── */
+  function cardKey(img) {
+    var card = img.closest && img.closest('.carousel-item');
+    if (!card) return '';
+    var link = card.querySelector('a[href*="/animals/"], a[href*="/store/p/"]');
+    return link ? link.getAttribute('href') : '';
+  }
+
+  function onPress(img) {
+    if (reduced || !img) return;
+    stamp(img);
     try {
-      sessionStorage.setItem(KEY, JSON.stringify({ src: img.currentSrc || img.src, t: Date.now() }));
-    } catch (e) { /* private mode — the morph still works, the preview does not */ }
+      sessionStorage.setItem(PREV, JSON.stringify({ src: img.currentSrc || img.src, t: Date.now() }));
+      sessionStorage.setItem(BACK, cardKey(img));
+    } catch (e) { /* private mode: the morph still runs, the preview does not */ }
   }
 
   document.addEventListener('pointerdown', function (e) {
-    if (reduced) return;
     var img = e.target && e.target.closest && e.target.closest('img.carousel-image');
-    if (img) stamp(img);
+    if (img) onPress(img);
   }, true);
 
-  // Keyboard users: stamp the card's visible image when its link is activated.
   document.addEventListener('keydown', function (e) {
-    if (reduced || (e.key !== 'Enter' && e.key !== ' ')) return;
+    if (e.key !== 'Enter' && e.key !== ' ') return;
     var card = e.target && e.target.closest && e.target.closest('.carousel-item');
-    var img = card && card.querySelector('img.carousel-image');
-    if (img) stamp(img);
+    if (card) onPress(card.querySelector('img.carousel-image'));
   }, true);
 
-  /* ── Product page: destination for the morph, painted before first render ── */
+  /* ── Coming back: stamp the card we left from, so it reverses ─────────── */
+  function stampReturnCard() {
+    if (reduced) return;
+    var href = '';
+    try { href = sessionStorage.getItem(BACK) || ''; } catch (e) {}
+    if (!href) return;
+    var link = document.querySelector('.carousel-item a[href="' + href.replace(/"/g, '\\"') + '"]');
+    var card = link && link.closest('.carousel-item');
+    if (card) stamp(card.querySelector('img.carousel-image'));
+  }
+
+  /* ── Product page: give the photograph somewhere to land ─────────────── */
   function paintPreview() {
-    var host = document.querySelector('.animal-hero-art-skeleton, .product-gallery-skeleton');
-    if (!host || host.querySelector('.pdp-hero-preview')) return;
+    var host = document.querySelector('.an-art, .animal-hero-art-skeleton, .product-gallery-main, .product-gallery-skeleton');
+    if (!host || host.querySelector('img')) return;   // real image already there
     var data = null;
-    try { data = JSON.parse(sessionStorage.getItem(KEY) || 'null'); sessionStorage.removeItem(KEY); } catch (e) {}
-    if (!data || !data.src || Date.now() - data.t > 15000) return;
+    try { data = JSON.parse(sessionStorage.getItem(PREV) || 'null'); } catch (e) {}
+    if (!data || !data.src || Date.now() - data.t > 20000) return;
     var img = document.createElement('img');
     img.className = 'pdp-hero-preview';
     img.alt = '';
     img.decoding = 'sync';
-    img.src = data.src;                 // already in cache — it was on screen a moment ago
+    img.src = data.src;                 // already cached — it was on screen a moment ago
     host.appendChild(img);
   }
 
-  if ('onpagereveal' in window) {
-    window.addEventListener('pagereveal', paintPreview, { once: true });
-  }
+  /* Which page are we on? This script runs in <head>, so <body> is not parsed
+     yet and DOM queries answer nothing — the path is the only thing available
+     this early. (An earlier version gated the observer below on
+     `querySelector('#carousel')` and it therefore never ran at all.) */
+  var isPDP = /^\/(animals|store\/p)\//.test(location.pathname);
+
+  /* `pagereveal` fires before the new document's first render — the only
+     moment early enough for the browser to match the shared element. */
+  window.addEventListener('pagereveal', function () {
+    if (isPDP) paintPreview();
+    else stampReturnCard();
+  });
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', paintPreview, { once: true });
-  } else {
-    paintPreview();
+    document.addEventListener('DOMContentLoaded', function () {
+      if (isPDP) paintPreview(); else stampReturnCard();
+    }, { once: true });
   }
 
-  /* ── Parallax fallback (no CSS scroll timelines) ─────────────────────── */
-  var cssTimelines = window.CSS && CSS.supports && CSS.supports('animation-timeline: scroll()');
-  if (reduced || cssTimelines) return;
-
-  document.documentElement.classList.add('pdp-parallax-js');
-  var ticking = false;
-  function frame() {
-    ticking = false;
-    var range = window.innerHeight * 0.7;
-    var p = Math.min(Math.max(window.scrollY / range, 0), 1);
-
-    // Photographic hero: shifts inside its own frame (it is cover-fitted, so
-    // there is always more image than frame).
-    var photo = document.querySelector('.product-gallery-main img');
-    if (photo) photo.style.setProperty('--pdp-parallax-y', (-6 * p).toFixed(2) + '%');
-
-    // Illustration hero: the whole card drifts. Moving the art inside a
-    // clipped frame would crop a composition that was drawn with margins.
-    var card = document.querySelector('.animal-v2 .animal-hero-art');
-    if (card) card.style.setProperty('--pdp-card-y', (-22 * p).toFixed(1) + 'px');
+  /* The grid is rendered from an API response, so on a back-navigation the
+     card we must stamp usually does not exist yet. Keep looking as the store
+     paints.
+     Worth being straight about the limit: the browser captures the arriving
+     page at `pagereveal`. If the grid has not rendered by then — a cold
+     re-render rather than a restore from the back/forward cache — there is
+     nothing to match and the return degrades to a cross-fade. The forward
+     morph is unaffected. */
+  if (!isPDP) {
+    var tries = 0;
+    var mo = new MutationObserver(function () {
+      if (++tries > 60 || document.querySelector('[data-pdp-stamped]')) return mo.disconnect();
+      stampReturnCard();
+    });
+    var start = function () {
+      mo.observe(document.documentElement, { childList: true, subtree: true });
+      setTimeout(function () { mo.disconnect(); }, 10000);
+    };
+    if (document.documentElement) start();
+    else document.addEventListener('readystatechange', start, { once: true });
   }
-  function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(frame); } }
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll, { passive: true });
-  // The hero is rendered after an API fetch; catch it when it appears.
-  new MutationObserver(onScroll).observe(document.documentElement, { childList: true, subtree: true });
-  onScroll();
 })();
