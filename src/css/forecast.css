@@ -1183,3 +1183,4 @@ main.forecast-main {
 /* Provenance markers: an estimate must never look like a measurement */
 .wt-est      { color: rgba(237,232,223,0.42); letter-spacing: 0.08em; }
 .wt-measured { color: rgba(126,169,140,0.85); letter-spacing: 0.08em; }
+.wt-none { color: rgba(237,232,223,0.45) !important; font-size: 0.95rem !important; }

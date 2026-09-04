@@ -492,9 +492,9 @@
       } catch (err) { console.error('RatingHero error:', err); }
     }
 
-    // An estimate must never wear the same clothes as a measurement. When the
-    // water temperature came from a real sensor we say which one; when it is
-    // derived from air temperature we mark it "est."
+    // Water temperature is MEASURED OR NOTHING. When a sensor covers this water
+    // we show the reading and name the gauge; when none does we say "no sensor"
+    // instead of printing a number we invented.
     function markEstimatedWaterTemp(currentData) {
       const c = currentData?.conditions;
       if (!c) return;
@@ -502,18 +502,22 @@
         .find(el => /water temp/i.test(el.textContent));
       if (!label || label.dataset.wtMarked) return;
       label.dataset.wtMarked = '1';
-      if (c.waterTempEstimated) {
-        const est = document.createElement('span');
-        est.className = 'wt-est';
-        est.textContent = ' · est';
-        est.title = 'Estimated from air temperature — no sensor on this water';
-        label.appendChild(est);
-      } else if (c.waterTempSource) {
+
+      const row = label.closest('.weather-stat');
+      const valueEl = row?.querySelector('.weather-value');
+
+      if (c.waterTempMeasured && c.waterTempSource) {
         const m = document.createElement('span');
         m.className = 'wt-measured';
         m.textContent = ' · measured';
         m.title = `Measured at ${c.waterTempSource.gaugeName}`;
         label.appendChild(m);
+      } else if (!c.waterTempMeasured) {
+        if (valueEl) {
+          valueEl.textContent = 'No sensor';
+          valueEl.classList.add('wt-none');
+          valueEl.title = 'No water-temperature sensor covers this spot. We do not publish a figure we have not measured.';
+        }
       }
     }
 
