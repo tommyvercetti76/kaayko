@@ -29,6 +29,7 @@ export const ROUTES = {
   billing: '/billing',
   'tenant-onboarding': '/tenant-onboarding',
   submissions: '/submissions',
+  ops: '/ops',
 };
 
 export const DEFAULT_VIEW = 'dashboard';

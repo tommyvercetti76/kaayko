@@ -65,7 +65,8 @@
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#080808">
 
-<style>
+<link rel="stylesheet" href="/css/kortex-views.css">
+  <style>
 /* ================================================================
    KORTEX v4 — Glow Theme + Symmetry
    Kaayko brand · Bebas Neue · Cormorant Garamond
@@ -448,34 +449,11 @@ input[type="time"].field-input, input[type="date"].field-input { color-scheme:da
 .overview { margin-top:var(--sp-4); padding-top:var(--sp-4); border-top:1px solid var(--gold-line) }
 .overview-head { display:flex; align-items:baseline; justify-content:space-between; gap:var(--sp-3); flex-wrap:wrap; margin-bottom:var(--sp-2) }
 .overview-head h4, .views-head h4 { font-style:italic; font-size:0.8rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--gold); font-weight:500 }
-.views { margin-top:var(--sp-3) }
 .views-nav { display:flex; gap:var(--sp-4); border-bottom:1px solid var(--gold-line); margin-bottom:var(--sp-3); flex-wrap:wrap }
 .views-nav button { background:none; border:0; border-bottom:1px solid transparent; margin-bottom:-1px; padding:8px 2px; min-height:40px; cursor:pointer; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.9rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted) }
 .views-nav button[aria-pressed="true"] { color:var(--gold-bright); border-bottom-color:var(--gold) }
 .views-nav button:focus-visible { outline:1px solid var(--gold-bright); outline-offset:4px }
-.view-pane { min-width:0 }
-.k-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch }
-.k-table { width:100%; border-collapse:collapse; font-size:0.92rem; font-variant-numeric:tabular-nums; min-width:520px }
-.k-table th { text-align:left; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-weight:500; font-size:0.78rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold); padding:6px 10px 8px 0; border-bottom:1px solid var(--gold-line); white-space:nowrap }
-.k-table td { padding:7px 10px 7px 0; border-bottom:1px solid rgba(181,147,90,0.1); color:var(--muted); vertical-align:top; max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
-.k-table td.n, .k-table th.n { text-align:right; font-family:var(--mono); font-size:0.84rem }
-.k-table td b { color:var(--fg); font-weight:500 }
-.k-table .bar-cell { position:relative; min-width:120px }
-.k-table .bar-cell i { display:block; height:5px; background:linear-gradient(90deg,var(--gold),var(--gold-bright)); box-shadow:var(--glow-xs) }
-.k-tables { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--sp-4) }
-.k-tables .k-table { min-width:0 }
-.graph-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--sp-5) }
-.graph-grid > div { min-width:0 }
-.graph-grid h5, .radar-wrap h5, .sky-wrap h5 { font-style:italic; font-size:0.78rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--gold); margin-bottom:var(--sp-2); font-weight:500 }
 .bars.dense { gap:2px } .bars.dense .bar span { display:none } .bars.dense .bar:nth-child(6n+1) span { display:block }
-.radar-wrap { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:var(--sp-4); align-items:center }
-.radar-wrap svg { width:100%; max-width:360px; height:auto; display:block; margin:0 auto }
-.radar-legend { list-style:none; font-size:0.94rem; color:var(--muted) }
-.radar-legend li { display:flex; justify-content:space-between; gap:var(--sp-3); padding:5px 0; border-bottom:1px solid rgba(181,147,90,0.1) }
-.radar-legend b { color:var(--fg); font-weight:500; font-family:var(--mono); font-size:0.86rem }
-.sky-wrap canvas { width:100%; max-width:560px; height:auto; display:block; margin:0 auto; aspect-ratio:1 }
-.sky-legend { display:flex; gap:var(--sp-4); justify-content:center; flex-wrap:wrap; font-style:italic; font-size:0.86rem; color:var(--muted); margin-top:var(--sp-2) }
-.sky-legend i { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:middle }
 .report-kind { display:inline-block; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.8rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold-bright); border:1px solid rgba(181,147,90,0.35); padding:5px 10px; margin-bottom:var(--sp-2) }
 .insights { list-style:none; margin:var(--sp-3) 0 var(--sp-4); display:grid; gap:6px }
 .insights li { padding-left:18px; position:relative; font-style:italic; font-size:0.98rem; color:var(--muted); line-height:1.5 }
@@ -1653,7 +1631,7 @@ async function openDetail(code) {
   const seq = ++detailSeq;
   openCode = code; renderWorkspace(wsMeta);
   const box = $('detail'); box.hidden = false; box.innerHTML = '<p class="note">Loading scans…</p>';
-  const { ok, data } = await guestApi(`/links/${encodeURIComponent(code)}/analytics`);
+  const { ok, data } = await guestApi(`/links/${encodeURIComponent(code)}/analytics?tz=${encodeURIComponent(browserTz())}`);
   if (seq !== detailSeq) return; // a newer link was opened meanwhile
   if (!ok) { box.innerHTML = `<p class="alert error show">${escapeHtml(friendly(data, 'Could not load this link.'))}</p>`; return; }
   const link = data.link, a = data.analytics;
@@ -1668,20 +1646,19 @@ async function openDetail(code) {
   const src = Object.fromEntries(((a.breakdowns && a.breakdowns.source) || []).map(r => [r.value, r.clicks]));
   const points = (a.points || []).map(p => ptOf(p, false));
   const variation = variationOf(link);
-  const insights = insightsFor(link, a, points);
   const readOnly = !!(data.readOnly || isDemoSession());
   box.innerHTML = `
     <div>
       <span class="report-kind">${escapeHtml(variation.name)}</span>
       <p class="note">${escapeHtml(variation.blurb)}</p>
-      <ul class="insights">${insights.map(i => `<li>${i}</li>`).join('')}</ul>
       <div class="stat-row">
         <div class="stat"><b>${data.lifetime.clicks}</b><span>scans, lifetime</span></div>
-        <div class="stat"><b>${a.totals.events}</b><span>last 7 days</span></div>
-        <div class="stat"><b>${src.qr || 0}</b><span>from QR scans, 7 days</span></div>
-        <div class="stat"><b>${a.unique ? a.unique.distinctVisitors : '—'}</b><span>people, 7 days</span></div>
+        <div class="stat"><b>${a.totals.events}</b><span>last ${a.window.retentionDays} days</span></div>
+        <div class="stat"><b>${src.qr || 0}</b><span>from QR scans, ${a.window.retentionDays} days</span></div>
+        <div class="stat"><b>${a.unique ? a.unique.distinctVisitors : '—'}</b><span>people, ${a.window.retentionDays} days</span></div>
       </div>
       <div class="bars">${bars}</div>
+      <div id="dt-insights"></div>
       ${viewsHtml('dt')}
       <div class="mini-list">
         <div><h4>Recent scans</h4><ul>${scans}</ul></div>
@@ -1714,6 +1691,18 @@ async function openDetail(code) {
           <div class="field"><label class="field-label" for="dt-utm-medium">Tag: medium</label><input class="field-input" id="dt-utm-medium" maxlength="100" placeholder="qr" value="${escapeHtml((link.utm && link.utm.utm_medium) || '')}"></div>
         </div>
         <div class="field"><label class="field-label" for="dt-utm-campaign">Tag: campaign</label><input class="field-input" id="dt-utm-campaign" maxlength="100" placeholder="spring-fest" value="${escapeHtml((link.utm && link.utm.utm_campaign) || '')}"></div>
+        <div class="field-row">
+          <div class="field"><label class="field-label" for="dt-placement">Where the code lives</label><input class="field-input" id="dt-placement" list="dt-placements" maxlength="40" placeholder="poster, menu, badge…" value="${escapeHtml(link.placement || '')}"><datalist id="dt-placements"><option value="poster"><option value="menu"><option value="table tent"><option value="badge"><option value="flyer"><option value="packaging"><option value="window"><option value="business card"><option value="screen"><option value="vehicle"></datalist></div>
+          <div class="field"><label class="field-label" for="dt-print-cost">Print cost (for ROI)</label><input class="field-input" id="dt-print-cost" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0" value="${link.economics && link.economics.printCost != null ? link.economics.printCost : ''}"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label class="field-label" for="dt-value">Value of one visit</label><input class="field-input" id="dt-value" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0" value="${link.economics && link.economics.valuePerVisit != null ? link.economics.valuePerVisit : ''}"></div>
+          <div class="field"><label class="field-label" for="dt-currency">Currency</label><input class="field-input" id="dt-currency" maxlength="3" spellcheck="false" placeholder="USD" value="${escapeHtml((link.economics && link.economics.currency) || '')}"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label class="field-label" for="dt-camp-start">Campaign starts</label><input class="field-input" id="dt-camp-start" type="date" value="${escapeHtml(dateInputValue(link.campaignWindow && link.campaignWindow.startAt))}"></div>
+          <div class="field"><label class="field-label" for="dt-camp-end">Campaign ends</label><input class="field-input" id="dt-camp-end" type="date" value="${escapeHtml(dateInputValue(link.campaignWindow && link.campaignWindow.endAt))}"></div>
+        </div>
         <button type="submit" class="btn-submit">Save</button>
         <div class="actions" style="margin-top:8px">
           <button type="button" class="action-link quiet" id="dt-toggle">${link.enabled ? 'Pause' : 'Resume'}</button>
@@ -1721,11 +1710,16 @@ async function openDetail(code) {
           <button type="button" class="action-link quiet" id="dt-delete">Delete</button>
           <span class="action-dot" aria-hidden="true">&middot;</span>
           <button type="button" class="action-link quiet" id="dt-csv">Download CSV</button>
+          <span class="action-dot" aria-hidden="true">&middot;</span>
+          <button type="button" class="action-link quiet" id="dt-share">${link.shared ? 'Stop sharing' : 'Share report'}</button>
         </div>
+        ${link.shared ? `<p class="note" id="dt-share-line">Public report: <a href="${escapeHtml(link.shareUrl)}" target="_blank" rel="noopener" style="color:var(--gold)">${escapeHtml(stripScheme(link.shareUrl))}</a> (read-only, revocable)</p>` : ''}
         <p class="status" id="dt-status" hidden></p>
       </form>
     </div>`;
   mountViews('dt', { points, hasCode: false, uniquePeople: a.unique ? a.unique.distinctVisitors : null, windowRows: link.schedule ? tallyOf(points, 'win').map(r => ({ ...r, value: r.value === '—' ? 'day address' : 'night address' })) : null, skyTitle: 'This link\'s scans, as a star each' });
+  renderInsights($('dt-insights'), a.insights);
+  $('dt-copy').addEventListener('click', () => copyText(link.shortUrl, $('dt-copy')));
   if (readOnly) {
     const d = link.destinations || {}, win = nightWin;
     const rows = [['Points to', stripScheme(d.web || '')], d.ios ? ['iPhone', stripScheme(d.ios)] : null, d.android ? ['Android', stripScheme(d.android)] : null,
@@ -1736,7 +1730,13 @@ async function openDetail(code) {
       link.utm && Object.keys(link.utm).length ? ['Tags', Object.entries(link.utm).map(([k, v]) => `${k.replace('utm_', '')}=${v}`).join(' · ')] : null].filter(Boolean);
     $('dt-form').outerHTML = `<dl class="settings">${rows.map(([k, v]) => `<div><dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd></div>`).join('')}</dl><p class="note">Sample link: settings are read-only. <a href="/kortex/samples#${encodeURIComponent(link.code)}" style="color:var(--gold)">See it spread out</a>.</p>`;
   }
-  $('dt-copy').addEventListener('click', () => copyText(link.shortUrl, $('dt-copy')));
+  if (readOnly) return; // settings are a read-only list; nothing below exists
+  $('dt-share').addEventListener('click', async () => {
+    const { ok: k, data: d } = await guestApi(`/links/${encodeURIComponent(code)}/share`, { method: link.shared ? 'DELETE' : 'POST', body: link.shared ? undefined : {} });
+    if (!k) { setStatus('dt-status', friendly(d, 'Could not change sharing.'), 'err'); return; }
+    await openWorkspaceFromSession(); await openDetail(code);
+    setStatus('dt-status', link.shared ? 'Sharing stopped. The public address no longer works.' : 'Shared. Anyone with the address can read this one report, nothing else.', 'ok');
+  });
   $('dt-csv').addEventListener('click', () => guestDownload(`/links/${encodeURIComponent(code)}/analytics.csv`, `kortex-${code}-scans.csv`, $('dt-csv')));
   $('dt-form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -1757,10 +1757,17 @@ async function openDetail(code) {
     if ($('dt-expires').value && !expiresAt) { setStatus('dt-status', 'That end date is not valid.', 'err'); return; }
     const limits = (maxRaw || fallbackUrl) ? { maxClicks: maxRaw ? Number(maxRaw) : undefined, fallbackUrl: fallbackUrl || undefined } : null;
     const utm = utmFromFields('dt');
+    const placement = $('dt-placement').value.trim() || null;
+    const costRaw = $('dt-print-cost').value.trim(), valueRaw = $('dt-value').value.trim();
+    if ((costRaw && !(Number(costRaw) >= 0)) || (valueRaw && !(Number(valueRaw) >= 0))) { setStatus('dt-status', 'Print cost and value per visit must be numbers.', 'err'); return; }
+    const economics = (costRaw || valueRaw) ? { printCost: costRaw ? Number(costRaw) : undefined, valuePerVisit: valueRaw ? Number(valueRaw) : undefined, currency: $('dt-currency').value.trim() || undefined } : null;
+    const campStart = $('dt-camp-start').value, campEnd = $('dt-camp-end').value;
+    if (campStart && campEnd && campEnd < campStart) { setStatus('dt-status', 'The campaign end must be after its start.', 'err'); return; }
+    const campaignWindow = (campStart || campEnd) ? { startAt: campStart || undefined, endAt: campEnd || undefined } : null;
     const iosRaw = $('dt-ios').value.trim(), androidRaw = $('dt-android').value.trim();
     const iosUrl = iosRaw ? normaliseUrl(iosRaw) : '', androidUrl = androidRaw ? normaliseUrl(androidRaw) : '';
     if ((iosRaw && !iosUrl) || (androidRaw && !androidUrl)) { setStatus('dt-status', 'Enter full web addresses for the iPhone and Android destinations, or leave them empty.', 'err'); return; }
-    const { ok: k, data: d } = await guestApi(`/links/${encodeURIComponent(code)}`, { method: 'PATCH', body: { destination: url, iosDestination: iosUrl, androidDestination: androidUrl, title: $('dt-title').value.trim(), schedule, limits, expiresAt, utm } });
+    const { ok: k, data: d } = await guestApi(`/links/${encodeURIComponent(code)}`, { method: 'PATCH', body: { destination: url, iosDestination: iosUrl, androidDestination: androidUrl, title: $('dt-title').value.trim(), placement, economics, campaignWindow, schedule, limits, expiresAt, utm } });
     if (!k) { setStatus('dt-status', friendly(d, 'Could not save.') + (d.reasons ? ' ' + d.reasons.map(r => r.detail).join(' ') : ''), 'err'); return; }
     await openWorkspaceFromSession(); await openDetail(code); setStatus('dt-status', 'Saved. Every scan now goes to the new address.', 'ok');
   });
@@ -1977,7 +1984,7 @@ auth.onAuthStateChanged(async (user) => {
 });
 
 /* The four views, the report framing and the hover tips live in /js/kortex-views.js (shared with the samples page). */
-const { ptOf, tallyOf, radarAxes, pct, viewsHtml, mountViews, variationOf, insightsFor, localHour, localDow } = window.KortexViews;
+const { ptOf, tallyOf, radarAxes, pct, viewsHtml, mountViews, variationOf, renderInsights, renderWorkspaceInsights, localHour, localDow } = window.KortexViews;
 const DEMO_KEY = 'kortex_guest_demo';
 function isDemoSession() { try { return localStorage.getItem(DEMO_KEY) === '1'; } catch { return false; } }
 
@@ -2020,13 +2027,14 @@ async function loadOverview(ws) {
   if (key === overviewKey) { $('ws-overview').hidden = false; return; }
   overviewKey = key;
   const box = $('ws-overview'); box.hidden = false; $('ov-views').innerHTML = '<p class="note">Reading the last seven days…</p>';
-  const { ok, data } = await guestApi('/workspace/analytics');
+  const { ok, data } = await guestApi(`/workspace/analytics?tz=${encodeURIComponent(browserTz())}`);
   if (!ok) { $('ov-views').innerHTML = `<p class="note">${escapeHtml(friendly(data, 'Could not load the overview.'))}</p>`; return; }
   const points = (data.points || []).map(p => ptOf(p, true));
   const totalEvents = data.links.reduce((s, l) => s + l.events, 0), totalUnique = data.links.reduce((s, l) => s + l.unique, 0);
   $('ov-note').textContent = `${data.links.length} links · ${totalEvents} scans in ${data.window.days} days · hours shown in ${browserTz()}`;
-  $('ov-views').innerHTML = viewsHtml('ov');
+  $('ov-views').innerHTML = '<div id="ov-insights"></div>' + viewsHtml('ov');
   mountViews('ov', { points, hasCode: true, linkRows: data.links, uniquePeople: totalUnique, skyTitle: 'Every scan in the workspace, as a star' });
+  renderWorkspaceInsights($('ov-insights'), data.insights);
 }
 
 setMode('dynamic');

@@ -325,6 +325,7 @@ function renderHeader(link, analytics) {
       <div>
         <h3 class="ld-title">${esc(link.title || link.code)} ${status}</h3>
         <p class="ld-shorturl">${esc(link.shortUrl || 'kaayko.com/l/' + link.code)}</p>
+        ${link.shared && link.shareUrl ? `<p class="ld-shorturl">Shared report: <a href="${esc(link.shareUrl)}" target="_blank" rel="noopener">${esc(String(link.shareUrl).replace(/^https?:\/\//, ''))}</a></p>` : ''}
       </div>
       <div class="ld-header-kpis">
         <div class="ld-kpi ld-kpi-hero"><span class="ld-kpi-val">${esc(t.events)}</span><span class="ld-kpi-lbl">clicks measured</span></div>
@@ -345,6 +346,11 @@ function renderMeta(link, analytics) {
       <div class="ld-meta-row"><span class="ld-meta-k">Created</span><span>${fmtDateTime(link.createdAt)} · ${esc(link.createdBy || 'unknown')}</span></div>
       <div class="ld-meta-row"><span class="ld-meta-k">First → last click</span><span>${fmtDay(analytics.window.firstEvent)} → ${fmtDay(analytics.window.lastEvent)}</span></div>
       ${utm}
+      ${link.placement ? `<div class="ld-meta-row"><span class="ld-meta-k">Placement</span><span>${esc(link.placement)}</span></div>` : ''}
+      ${link.schedule && Array.isArray(link.schedule.windows) && link.schedule.windows.length ? `<div class="ld-meta-row"><span class="ld-meta-k">Windows</span><span>${link.schedule.windows.map(w => `${esc(w.label || '')} ${esc(w.start)}–${esc(w.end)} → ${esc(w.url)}`).join('<br>')} <span class="ld-none">(${esc(link.schedule.timezone || 'UTC')})</span></span></div>` : ''}
+      ${link.limits && (link.limits.maxClicks || link.limits.fallbackUrl) ? `<div class="ld-meta-row"><span class="ld-meta-k">Limits</span><span>${link.limits.maxClicks ? `stops after ${esc(link.limits.maxClicks)} clicks` : 'no cap'}${link.limits.fallbackUrl ? ` → ${esc(link.limits.fallbackUrl)}` : ''}</span></div>` : ''}
+      ${link.economics ? `<div class="ld-meta-row"><span class="ld-meta-k">Economics</span><span>print ${esc(link.economics.printCost != null ? link.economics.printCost : '—')} · value per visit ${esc(link.economics.valuePerVisit != null ? link.economics.valuePerVisit : '—')} ${esc(link.economics.currency || '')}</span></div>` : ''}
+      ${link.campaignWindow ? `<div class="ld-meta-row"><span class="ld-meta-k">Campaign</span><span>${fmtDay(link.campaignWindow.startAt)} → ${fmtDay(link.campaignWindow.endAt)}</span></div>` : ''}
     </div>
   </section>`;
 }
@@ -355,13 +361,16 @@ function render(payload) {
   if (!a.timeline.length) {
     return `<div class="ld-root">
       ${renderHeader(link, a)}
+      <div class="ld-insights" id="ld-insights"></div>
       ${renderLedger(a.totals, a.unavailable)}
       <section class="ld-card"><p class="ld-none">No clicks recorded within the ${esc(a.window?.retentionDays || 30)}-day retention window.</p></section>
     </div>`;
   }
   return `<div class="ld-root">
     ${renderHeader(link, a)}
+    <div class="ld-insights" id="ld-insights"></div>
     ${renderRibbon(a.timeline, a.unique)}
+    ${window.KortexViews ? `<section class="ld-card ld-views"><div class="ld-card-head"><h4>Four ways to look at it <em>· table, graphs, spider, sky</em></h4><span class="ld-h5-note">hours in ${esc(a.timeZone || 'UTC')}</span></div>${window.KortexViews.viewsHtml('ld')}</section>` : ''}
     <div class="ld-grid-2">
       ${renderReach(a.unique, a.installs)}
       ${renderRhythm(a.cadence)}
@@ -374,14 +383,34 @@ function render(payload) {
   </div>`;
 }
 
+const browserTz = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch (_) { return 'UTC'; } };
+
+/** The shared four views and the plain-language findings (same code as kaayko.com/kortex). */
+function mountShared(payload) {
+  const V = window.KortexViews;
+  if (!V) return;
+  const a = payload.analytics, link = payload.link || {};
+  const box = document.getElementById('ld-insights');
+  if (box) V.renderInsights(box, a.insights, { compact: true });
+  if (Array.isArray(a.points) && document.getElementById('ld-views')) {
+    const points = a.points.map(p => V.ptOf(p, false));
+    V.mountViews('ld', {
+      points, hasCode: false, uniquePeople: a.unique ? a.unique.distinctVisitors : null,
+      windowRows: link.schedule ? V.tallyOf(points, 'win').map(r => ({ ...r, value: r.value === '—' ? 'day address' : 'night address' })) : null,
+      skyTitle: 'Every click, as a star'
+    });
+  }
+}
+
 export async function showLinkDetail(code, container) {
   container.innerHTML = `<div class="ld-loading">Loading ${esc(code)}…</div>`;
   try {
-    const response = await apiFetch(`/kortex/links/${encodeURIComponent(code)}/analytics`);
+    const response = await apiFetch(`/kortex/links/${encodeURIComponent(code)}/analytics?tz=${encodeURIComponent(browserTz())}`);
     if (!response) return; // apiFetch handled a 401 by logging out
     const payload = await response.json();
     if (!response.ok || !payload?.success) throw new Error(payload?.error || `Request failed (${response.status})`);
     container.innerHTML = render(payload);
+    try { mountShared(payload); } catch (e) { console.warn('[LinkDetail] shared views failed:', e); }
     // Per-link CSV: the click events inside the plan window, as a file.
     const back = container.querySelector('[data-ld-back]');
     if (back) {
@@ -401,6 +430,21 @@ export async function showLinkDetail(code, container) {
         setTimeout(() => { dl.disabled = false; dl.textContent = 'Download CSV'; }, 2200);
       });
       back.insertAdjacentElement('afterend', dl);
+      // Sponsor proof: a revocable public report at kaayko.com/kortex/r/<token>.
+      const shared = !!payload.link?.shared;
+      const sh = document.createElement('button');
+      sh.type = 'button'; sh.className = 'ld-back'; sh.style.marginLeft = '10px'; sh.textContent = shared ? 'Stop sharing' : 'Share report';
+      sh.addEventListener('click', async () => {
+        sh.disabled = true;
+        try {
+          const r = await apiFetch(`/kortex/${encodeURIComponent(code)}/share`, { method: shared ? 'DELETE' : 'POST', body: '{}' });
+          const d = r ? await r.json().catch(() => ({})) : {};
+          if (!r || !r.ok || d.success === false) throw new Error(d.error || 'Could not change sharing');
+          utils.showToast(shared ? 'Sharing stopped; the public address no longer works.' : `Shared: ${String(d.shareUrl || '').replace(/^https?:\/\//, '')}`, 'success', 6000);
+          await showLinkDetail(code, container);
+        } catch (e) { utils.showToast(e.message, 'error', 4000); sh.disabled = false; }
+      });
+      dl.insertAdjacentElement('afterend', sh);
     }
   } catch (err) {
     container.innerHTML = `<div class="ld-root">

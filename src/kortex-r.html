@@ -3,16 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kortex samples — eight reports on real links | Kaayko</title>
-  <meta name="description" content="Eight real Kortex links on Kaayko's own pages, each a report of one thing the platform does: routing, caps, end dates, campaign tags, night and day, safety review. Hover anything for the numbers.">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://kaayko.com/kortex/samples">
-  <meta property="og:title" content="Kortex samples — eight reports on real links">
-  <meta property="og:description" content="Real links, real QR codes, simulated scans. See every stat four ways.">
-  <meta property="og:image" content="https://kaayko.com/assets/kortex-og-image.png">
-  <meta property="og:url" content="https://kaayko.com/kortex/samples">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="https://kaayko.com/assets/kortex-twitter-card.png">
+  <title>Kortex report | Kaayko</title>
+  <meta name="robots" content="noindex, nofollow">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.cloudfunctions.net https://*.run.app https://*.googleapis.com; frame-src https://accounts.google.com;">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <meta name="theme-color" content="#060b1e">
@@ -91,106 +83,68 @@
     .reveal.in { opacity:1; transform:none }
     @media (prefers-reduced-motion:reduce) { .reveal { opacity:1; transform:none; transition:none } }
   </style>
+  <style>
+    @media (min-width: 960px) { .report { grid-template-columns:minmax(0,320px) minmax(0,1fr) } }
+    .qr-meta { overflow-wrap:anywhere }
+    .share-note { text-align:center; font-style:italic; color:var(--faint); font-size:.9rem; margin-top:18px }
+    .ki-grid { margin-top:18px }
+  </style>
 </head>
 <body>
 <nav class="nav" role="navigation" aria-label="Main navigation">
   <a href="/kortex" class="nav-back">← Kortex</a>
-  <div class="nav-right">
-    <a href="/kortex#make">Make a QR</a>
-    <a href="/kortex#pricing">Pricing</a>
-    <a href="/kortex#connect">Sign in</a>
-  </div>
+  <div class="nav-right"><a href="/kortex#make">Make a QR</a><a href="/kortex/samples">Samples</a></div>
 </nav>
 <main>
   <header class="lead">
-    <div class="eyebrow">eight reports · real links · simulated scans</div>
-    <h1>What a Kortex link can do</h1>
-    <p>Every link on this page is live on one of Kaayko's own pages. Scan any code and you will land there. The scans behind the numbers are simulated, so each report has something to say. Hover any bar, dot or star for the number behind it.</p>
-    <div class="actions"><a class="action-link primary" href="/kortex#make">Make one in ten seconds</a><a class="action-link" href="/kortex?sample=kx-tent#manage">Open the sample dashboard</a></div>
+    <div class="eyebrow">shared report · read-only</div>
+    <h1 id="r-title">Loading…</h1>
+    <p id="r-sub"></p>
   </header>
-  <section class="tiers" id="tiers" aria-label="Light, medium and heavy traffic"></section>
-  <div id="reports"></div>
-  <section class="closing reveal">
-    <p>Each of these is a free link: no account, an access code shown once, a year of life renewed every time you open it. The paid plans add longer history, team sign-in, API keys and webhooks.</p>
-    <a class="action-link primary" href="/kortex#make">Make your own</a>
-  </section>
+  <div id="report"></div>
+  <p class="share-note">Shared by the link's owner. Counts are scans of one Kortex link; no individual is identified. <a href="/kortex" style="color:var(--gold)">Make your own</a>.</p>
 </main>
-<footer><a href="/kortex">Kortex</a><a href="/legal/kortex-terms">Terms</a><a href="/privacy">Privacy</a><a href="/kortex/support">Get help</a><a href="/kortex/report">Report a link</a><div style="margin-top:10px">&copy; <span id="year">2026</span> Kaayko</div></footer>
+<footer><a href="/kortex">Kortex</a><a href="/legal/kortex-terms">Terms</a><a href="/privacy">Privacy</a><a href="/kortex/report">Report a link</a><div style="margin-top:10px">&copy; <span id="year">2026</span> Kaayko</div></footer>
 <script src="/js/kortex-views.js"></script>
 <script>
 (function () {
   const API_BASE = (localStorage.getItem('kaayko_environment') || 'production') === 'production'
     ? 'https://api-vwcc5j4qda-uc.a.run.app' : 'http://127.0.0.1:5001/kaaykostore/us-central1/api';
-  const V = window.KortexViews;
-  const $ = id => document.getElementById(id);
-  const esc = V.esc;
-  document.getElementById('year').textContent = new Date().getFullYear();
-
-  function tierCard(s) {
-    const max = Math.max(1, ...s.timeline);
-    return `<a class="tier" href="#${esc(s.code)}">
-      <span class="lab">${esc(s.tier)} traffic</span>
-      <div class="big">${s.events}<small>scans, 7 days</small></div>
-      <div style="font-size:1.02rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.title)}</div>
-      <div class="spark" aria-hidden="true">${s.timeline.map((v, i) => `<i data-tip="<b>day ${i + 1} of 7</b> · ${v} scans" style="height:${Math.max(6, Math.round(v / max * 100))}%"></i>`).join('')}</div>
-      <div class="meta">${s.lifetime} lifetime · ${s.people} people · ${s.qrShare}% QR · ${esc(s.variation)}</div>
-    </a>`;
-  }
-
-  function reportHtml(r, i) {
-    const points = r.points.map(p => V.ptOf(p, false));
-    const link = { ...r.link, expiresAt: r.link.expiresAt };
-    const kind = V.variationOf(link);
-    const d = r.link.destinations || {};
-    return `<article class="report reveal" id="${esc(r.code)}">
-      <div>
-        <div class="num">${String(i + 1).padStart(2, '0')} / 08</div>
-        <span class="report-kind">${esc(kind.name)}</span>
-        <h2>${esc(r.title)}</h2>
-        <p class="blurb">${esc(kind.blurb)}</p>
-        <div class="qr-row"><div class="qr-frame"><img alt="QR code for ${esc(r.title)}" src="${esc(r.qrUrl)}?size=264" loading="lazy" width="132" height="132"></div>
-          <div class="qr-meta"><b>${esc(V.stripScheme(r.shortUrl))}</b><br>→ ${esc(V.stripScheme(d.web || r.destination || ''))}${d.ios ? `<br>iPhone → ${esc(V.stripScheme(d.ios))}` : ''}${d.android ? `<br>Android → ${esc(V.stripScheme(d.android))}` : ''}${r.link.schedule && r.link.schedule.windows ? `<br>night → ${esc(V.stripScheme(r.link.schedule.windows[0].url))}` : ''}<br><span style="color:var(--faint)">scan it: it really goes there</span></div></div>
-        <div id="ri-${esc(r.code)}"></div>
-        <a class="action-link" href="/kortex?sample=${esc(r.code)}#manage">Open in the dashboard</a>
-      </div>
-      <div>
-        <div class="stat-row">
-          <div class="stat"><b>${r.events}</b><span>scans, 7 days</span></div>
-          <div class="stat"><b>${r.lifetime}</b><span>lifetime</span></div>
-          <div class="stat"><b>${r.people}</b><span>people, 7 days</span></div>
-          <div class="stat"><b>${r.qrShare}%</b><span>from QR scans</span></div>
-        </div>
-        ${V.viewsHtml('r-' + r.code)}
-      </div>
-    </article>`;
-  }
-
+  const V = window.KortexViews, esc = V.esc, $ = id => document.getElementById(id);
+  $('year').textContent = new Date().getFullYear();
+  const token = (location.pathname.match(/\/kortex\/r\/([A-Za-z0-9_-]+)/) || [])[1] || new URLSearchParams(location.search).get('t') || '';
+  const tz = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch (e) { return 'UTC'; } })();
   async function load() {
+    if (!token) { $('r-title').textContent = 'No report here'; $('r-sub').textContent = 'This address needs a share token.'; return; }
     let data;
     try {
-      const res = await fetch(`${API_BASE}/kortex/guest/demo/samples?full=1`);
+      const res = await fetch(`${API_BASE}/kortex/shared/${encodeURIComponent(token)}?tz=${encodeURIComponent(tz)}`);
       data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.error || 'Could not load the samples.');
-    } catch (e) {
-      $('reports').innerHTML = `<p style="text-align:center;font-style:italic;color:var(--muted)">${esc(e.message)}</p>`;
-      return;
-    }
-    $('tiers').innerHTML = data.samples.map(tierCard).join('');
-    V.attachTips($('tiers'));
-    $('reports').innerHTML = data.reports.map(reportHtml).join('');
-    data.reports.forEach(r => {
-      const points = r.points.map(p => V.ptOf(p, false));
-      V.mountViews('r-' + r.code, {
-        points, hasCode: false, uniquePeople: r.people,
-        windowRows: r.link.schedule ? V.tallyOf(points, 'win').map(x => ({ ...x, value: x.value === '—' ? 'day address' : 'night address' })) : null,
-        skyTitle: 'Source → device → route → place',
-        fieldGraph: true
-      });
-      V.renderInsights(document.getElementById('ri-' + r.code), r.insights, { keys: ['qualityScore', 'bestWindow', 'rhythm', 'trend', 'qrSplit', 'deviceMatch', 'missed', 'channelMix', 'geoDrift', 'repeatPattern', 'roi', 'replay'], compact: true });
-    });
-    const io = new IntersectionObserver(entries => entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } }), { threshold: 0.08 });
-    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
-    if (location.hash) { const target = document.querySelector(location.hash); if (target) setTimeout(() => target.scrollIntoView({ block: 'start' }), 60); }
+      if (!res.ok || !data.success) throw new Error(res.status === 404 ? 'This report is no longer shared.' : (data.error || 'Could not load the report.'));
+    } catch (e) { $('r-title').textContent = 'Report unavailable'; $('r-sub').textContent = e.message; return; }
+    const l = data.link, a = data.analytics, points = (a.points || []).map(p => V.ptOf(p, false));
+    const kind = V.variationOf(l);
+    document.title = `${l.title || l.code} · Kortex report`;
+    $('r-title').textContent = l.title || l.code;
+    $('r-sub').textContent = `${kind.name} · ${a.window.retentionDays}-day window · hours shown in ${tz}`;
+    $('report').innerHTML = `<article class="report reveal in">
+      <div>
+        <span class="report-kind">${esc(kind.name)}</span>
+        <p class="blurb">${esc(kind.blurb)}</p>
+        <div class="qr-row"><div class="qr-frame"><img alt="QR code" src="${esc(l.qrUrl)}?size=264" width="132" height="132"></div>
+          <div class="qr-meta"><b>${esc(V.stripScheme(l.shortUrl || ''))}</b><br>→ ${esc(V.stripScheme(l.destination || ''))}${l.placement ? `<br>placement: ${esc(l.placement)}` : ''}</div></div>
+        <div class="stat-row">
+          <div class="stat"><b>${a.totals.events}</b><span>scans, ${a.window.retentionDays} days</span></div>
+          <div class="stat"><b>${l.clickCount}</b><span>lifetime</span></div>
+          <div class="stat"><b>${a.unique ? a.unique.distinctVisitors : '—'}</b><span>people</span></div>
+          <div class="stat"><b>${a.insights && a.insights.qrSplit.detail ? a.insights.qrSplit.detail.qrShare : 0}%</b><span>from QR scans</span></div>
+        </div>
+        <div id="r-insights"></div>
+      </div>
+      <div>${V.viewsHtml('r-shared')}</div>
+    </article>`;
+    V.renderInsights($('r-insights'), a.insights, { keys: ['qualityScore', 'bestWindow', 'rhythm', 'trend', 'qrSplit', 'deviceMatch', 'channelMix', 'geoDrift', 'repeatPattern'] , compact: true });
+    V.mountViews('r-shared', { points, hasCode: false, uniquePeople: a.unique ? a.unique.distinctVisitors : null, windowRows: l.schedule ? V.tallyOf(points, 'win').map(x => ({ ...x, value: x.value === '—' ? 'day address' : 'night address' })) : null, skyTitle: 'Every scan, as a star' });
   }
   load();
 })();

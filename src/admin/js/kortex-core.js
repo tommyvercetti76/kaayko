@@ -76,6 +76,11 @@ const VIEW_CONFIGS = {
     module: '../views/submissions/submissions.js',
     css: 'views/submissions/submissions.css',
     container: '#submissions-view'
+  },
+  ops: {
+    module: '../views/ops/ops.js',
+    css: 'views/ops/ops.css',
+    container: '#ops-view'
   }
 };
 

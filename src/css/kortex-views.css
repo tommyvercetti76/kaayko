@@ -1,0 +1,38 @@
+/* Kortex shared analytics views (table, graphs, spider, sky) and the findings cards.
+   One stylesheet for kaayko.com/kortex, /kortex/samples, /kortex/r/<token> and the admin.
+   Colours resolve from the host page's tokens, with the Kortex palette as fallback. */
+.views { margin-top:18px }
+.views-nav { display:flex; gap:16px; border-bottom:1px solid var(--gold-line, rgba(181,147,90,.28)); margin-bottom:12px; flex-wrap:wrap }
+.views-nav button { background:none; border:0; border-bottom:1px solid transparent; margin-bottom:-1px; padding:8px 2px; font-family:var(--serif, 'Cormorant Garamond', Georgia, serif); font-style:italic; font-size:0.95rem; letter-spacing:0.08em; color:var(--muted, rgba(237,232,223,.72)); cursor:pointer }
+.views-nav button[aria-pressed="true"] { color:var(--gold-bright, #d9bd7b); border-bottom-color:var(--gold, #b5935a) }
+.views-nav button:focus-visible { outline:1px solid var(--gold-bright, #d9bd7b); outline-offset:4px }
+.view-pane { min-width:0 }
+.k-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch }
+.k-table { width:100%; border-collapse:collapse; font-size:0.92rem; font-variant-numeric:tabular-nums; min-width:0 }
+.k-table th { text-align:left; font-family:var(--serif, 'Cormorant Garamond', Georgia, serif); font-style:italic; font-weight:500; font-size:0.78rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold, #b5935a); padding:6px 10px 6px 0; border-bottom:1px solid var(--gold-line, rgba(181,147,90,.28)) }
+.k-table td { padding:7px 10px 7px 0; border-bottom:1px solid rgba(181,147,90,0.1); color:var(--muted, rgba(237,232,223,.72)); vertical-align:top }
+.k-table td.n, .k-table th.n { text-align:right; font-family:var(--mono, ui-monospace, Menlo, monospace); font-size:0.84rem }
+.k-table td b { color:var(--fg, #ede8df); font-weight:500 }
+.k-table tr[data-tip]:hover td { color:var(--fg, #ede8df) }
+.k-table .bar-cell { position:relative; min-width:120px }
+.k-table .bar-cell i { display:block; height:5px; background:linear-gradient(90deg, var(--gold, #b5935a), var(--gold-bright, #d9bd7b)); border-radius:1px }
+.k-tables { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px }
+.k-tables .k-table { min-width:0 }
+.graph-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:24px }
+.graph-grid > div { min-width:0 }
+.graph-grid h5, .radar-wrap h5, .sky-wrap h5 { font-family:var(--serif, 'Cormorant Garamond', Georgia, serif); font-style:italic; font-size:0.78rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--gold, #b5935a); font-weight:500; margin:0 0 10px }
+.graph-grid .bars { display:flex; gap:4px; align-items:flex-end; height:120px; position:relative; margin-bottom:22px }
+.graph-grid .bar { flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; position:relative }
+.graph-grid .bar i { display:block; width:100%; background:linear-gradient(180deg, var(--gold-bright, #d9bd7b), var(--gold, #b5935a)); border-radius:1px 1px 0 0; min-height:2px }
+.graph-grid .bar:hover i { filter:brightness(1.35) }
+.graph-grid .bar span { position:absolute; bottom:-18px; font-family:var(--mono, ui-monospace, Menlo, monospace); font-size:0.68rem; color:var(--muted, rgba(237,232,223,.72)); white-space:nowrap }
+.radar-wrap { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:16px; align-items:center }
+.radar-wrap svg { width:100%; max-width:360px; height:auto; display:block; margin:0 auto }
+.radar-legend { list-style:none; font-size:0.94rem; color:var(--muted, rgba(237,232,223,.72)); margin:0; padding:0 }
+.radar-legend li { display:flex; justify-content:space-between; gap:12px; padding:5px 0; border-bottom:1px solid rgba(181,147,90,0.1) }
+.radar-legend b { color:var(--fg, #ede8df); font-weight:500; font-family:var(--mono, ui-monospace, Menlo, monospace); font-size:0.86rem }
+.sky-wrap canvas { width:100%; max-width:560px; height:auto; display:block; margin:0 auto; aspect-ratio:1 }
+.sky-legend { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; font-family:var(--serif, 'Cormorant Garamond', Georgia, serif); font-style:italic; font-size:0.86rem; color:var(--muted, rgba(237,232,223,.72)); margin-top:10px }
+.sky-legend i { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:middle }
+.mono { font-family:var(--mono, ui-monospace, Menlo, monospace) }
+@media (max-width: 640px) { .k-tables, .graph-grid, .radar-wrap { grid-template-columns:minmax(0, 1fr) } }

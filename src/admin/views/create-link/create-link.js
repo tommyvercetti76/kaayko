@@ -790,8 +790,35 @@ async function handleCreateLink(e) {
  * Build CREATE payload — flat destination fields (backend expects iosDestination, etc.)
  * Excludes dead fields: createdBy (backend overwrites), appStoreDefault, alumniDomain, tenantSlug
  */
+/** Rules shared with the public maker: night window, caps + fallback, placement, ROI inputs, campaign window. */
+function extractRules() {
+  const v = (id) => (document.getElementById(id)?.value || '').trim();
+  const nightUrl = v('nightUrl');
+  const schedule = nightUrl ? { timezone: v('nightTz') || (Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'), windows: [{ label: 'night', start: v('nightStart') || '18:00', end: v('nightEnd') || '06:00', url: nightUrl }] } : null;
+  const maxClicks = v('maxClicks'), fallbackUrl = v('fallbackUrl');
+  const limits = (maxClicks || fallbackUrl) ? { maxClicks: maxClicks ? Number(maxClicks) : undefined, fallbackUrl: fallbackUrl || undefined } : null;
+  const printCost = v('printCost'), valuePerVisit = v('valuePerVisit');
+  const economics = (printCost || valuePerVisit) ? { printCost: printCost ? Number(printCost) : undefined, valuePerVisit: valuePerVisit ? Number(valuePerVisit) : undefined, currency: v('currency') || undefined } : null;
+  const cs = v('campaignStart'), ce = v('campaignEnd');
+  const campaignWindow = (cs || ce) ? { startAt: cs || undefined, endAt: ce || undefined } : null;
+  return { schedule, limits, placement: v('placement') || null, economics, campaignWindow };
+}
+/** Fill the rule fields from a link being edited. */
+function prefillRules(link) {
+  if (!link) return;
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val == null ? '' : String(val); };
+  const win = link.schedule && Array.isArray(link.schedule.windows) ? (link.schedule.windows.find(w => w.label === 'night') || link.schedule.windows[0]) : null;
+  set('nightUrl', win ? win.url : ''); set('nightStart', win ? win.start : '18:00'); set('nightEnd', win ? win.end : '06:00'); set('nightTz', link.schedule ? link.schedule.timezone : '');
+  set('maxClicks', link.limits && link.limits.maxClicks ? link.limits.maxClicks : ''); set('fallbackUrl', link.limits ? link.limits.fallbackUrl : '');
+  set('placement', link.placement || '');
+  set('printCost', link.economics ? link.economics.printCost : ''); set('valuePerVisit', link.economics ? link.economics.valuePerVisit : ''); set('currency', link.economics ? link.economics.currency : '');
+  const day = (x) => (x ? String(x).slice(0, 10) : '');
+  set('campaignStart', link.campaignWindow ? day(link.campaignWindow.startAt) : ''); set('campaignEnd', link.campaignWindow ? day(link.campaignWindow.endAt) : '');
+}
+
 function extractCreatePayload() {
   const utm = buildUTM();
+  const rules = Object.fromEntries(Object.entries(extractRules()).filter(([, val]) => val !== null));
   const shortCodeInput = document.getElementById('short-code').value.trim();
   const expiresAtInput = document.getElementById('expiresAt').value;
   const webDest = document.getElementById('webDestination').value.trim();
@@ -838,6 +865,7 @@ function extractCreatePayload() {
     utm: Object.keys(utm).length ? utm : undefined,
     expiresAt: expiresAtInput ? new Date(expiresAtInput).toISOString() : undefined,
     enabled: document.getElementById('enabled').checked,
+    ...rules,
   };
 
   // Alumni metadata
@@ -879,6 +907,7 @@ function extractCreatePayload() {
  */
 function extractUpdatePayload() {
   const utm = buildUTM();
+  const rules = extractRules(); // null clears a rule on update
   const expiresAtInput = document.getElementById('expiresAt').value;
   const webDest = document.getElementById('webDestination').value.trim();
   const isAdmin = document.getElementById('isAdminLink')?.checked || false;
@@ -919,6 +948,7 @@ function extractUpdatePayload() {
     utm: Object.keys(utm).length ? utm : undefined,
     expiresAt: expiresAtInput ? new Date(expiresAtInput).toISOString() : undefined,
     enabled: document.getElementById('enabled').checked,
+    ...rules,
   };
 
   // Alumni metadata on update
@@ -1087,6 +1117,7 @@ async function loadLinkForEditing(code) {
     setField('short-code', actualCode);
     document.getElementById('short-code').readOnly = true;
     setField('title', link.title || '');
+    prefillRules(link);
     setField('description', link.description || '');
     setField('webDestination', webDest);
     setField('iosDestination', iosDest);
@@ -1237,6 +1268,10 @@ function resetCreateForm() {
   setField('rootsAssessmentType', 'parent');
   ['rootsChildAge', 'rootsSchoolId', 'rootsSchoolName'].forEach(id => setField(id, ''));
   setField('rootsMaxUses', '0');
+
+  // Rules
+  ['maxClicks', 'fallbackUrl', 'nightUrl', 'nightTz', 'placement', 'printCost', 'valuePerVisit', 'currency', 'campaignStart', 'campaignEnd'].forEach(id => setField(id, ''));
+  setField('nightStart', '18:00'); setField('nightEnd', '06:00');
 }
 
 window.resetCreateForm = resetCreateForm;

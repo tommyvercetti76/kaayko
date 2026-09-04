@@ -4,7 +4,7 @@
    Numbers are the product → tabular monospace everywhere.
    ========================================================================== */
 
-.ld-root { --mono: ui-monospace, SFMono-Regular, Menlo, "JetBrains Mono", monospace; color: var(--text-primary); display: flex; flex-direction: column; gap: 16px; }
+.ld-root { --mono: ui-monospace, SFMono-Regular, Menlo, "JetBrains Mono", monospace; --gold: var(--gold-primary); --gold-bright: var(--gold-bright); --gold-line: var(--hairline-gold); --fg: var(--text-primary); --muted: var(--text-secondary); --serif: inherit; color: var(--text-primary); display: flex; flex-direction: column; gap: 16px; }
 .ld-loading { color: var(--text-muted); padding: 40px; font-size: 14px; }
 
 /* Header */
@@ -137,3 +137,11 @@
 .ld-scan-when { font-family: var(--mono); color: var(--text-primary); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .ld-scan-dev { color: var(--text-secondary); }
 .ld-scan-geo { font-family: var(--mono); font-size: 12px; color: var(--text-muted); text-align: right; }
+
+/* Shared four views + findings inside the admin drilldown */
+.ld-views .views { margin-top: 4px; }
+.ld-insights { margin: 0; }
+.ld-insights .ki-grid { margin: 0; }
+.ld-insights .ki { border-radius: var(--radius-lg); background: var(--bg-card); border-color: var(--border-subtle); box-shadow: var(--shadow-card); }
+.ld-insights .ki h5 { font-style: normal; font-family: inherit; letter-spacing: .1em; font-weight: 600; color: var(--text-secondary); }
+.ld-insights .ki p { font-style: normal; font-family: inherit; font-size: 13px; }

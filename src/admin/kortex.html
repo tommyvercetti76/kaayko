@@ -50,6 +50,7 @@
   <meta name="theme-color" content="#d4af37">
   
   <!-- Stylesheets - Modular Architecture v6.0 -->
+    <link rel="stylesheet" href="/css/kortex-views.css">
     <link rel="stylesheet" href="css/kortex-base.css?v=6.3.3">
     <link rel="stylesheet" href="views/create-link/create-link.css?v=1.5">
 </head>
@@ -112,6 +113,11 @@
            block (label included) from the DOM for tenant admins. -->
       <div class="nav-group" id="nav-group-operator">
         <p class="nav-group-label">Operator</p>
+        <a href="#" class="nav-item" data-view="ops">
+          <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7"/><circle cx="18" cy="16.5" r="3"/><path d="m20.2 18.7 1.8 1.8"/></svg></span>
+          <span>Operate</span>
+          <span class="nav-badge" id="ops-badge" hidden></span>
+        </a>
         <a href="#" class="nav-item" data-view="tenant-onboarding">
           <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V5.5A1.5 1.5 0 0 1 5.5 4H12a1.5 1.5 0 0 1 1.5 1.5V20"/><path d="M3 20h11.5"/><path d="M7 8h3M7 11.5h3M7 15h3"/><path d="M18.5 13.5v5M16 16h5"/></svg></span>
           <span>Tenant Onboarding</span>
@@ -609,6 +615,41 @@
                     </button>
                   </label>
                   <input type="datetime-local" id="expiresAt" class="form-input">
+                </div>
+
+                <!-- Rules shared with the public maker: caps, fallback, night routing, placement, ROI inputs, campaign window -->
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="maxClicks">Stop after (clicks)</label>
+                    <input type="number" min="1" step="1" inputmode="numeric" id="maxClicks" class="form-input" placeholder="no limit">
+                  </div>
+                  <div class="form-group">
+                    <label for="fallbackUrl">After the limit or end date, send to</label>
+                    <input type="url" id="fallbackUrl" class="form-input" placeholder="https://… (optional; otherwise a plain page)">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="nightUrl">At night, go to</label>
+                  <input type="url" id="nightUrl" class="form-input" placeholder="https://… (optional; day/night routing on the server clock)">
+                </div>
+                <div class="form-row">
+                  <div class="form-group"><label for="nightStart">Night starts</label><input type="time" id="nightStart" class="form-input" value="18:00"></div>
+                  <div class="form-group"><label for="nightEnd">Night ends</label><input type="time" id="nightEnd" class="form-input" value="06:00"></div>
+                  <div class="form-group"><label for="nightTz">Time zone</label><input type="text" id="nightTz" class="form-input" placeholder="America/Denver" spellcheck="false"></div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="placement">Where the code lives</label>
+                    <input type="text" id="placement" class="form-input" list="placement-options" maxlength="40" placeholder="poster, menu, badge…">
+                    <datalist id="placement-options"><option value="poster"><option value="menu"><option value="table tent"><option value="badge"><option value="flyer"><option value="packaging"><option value="window"><option value="business card"><option value="screen"><option value="vehicle"></datalist>
+                  </div>
+                  <div class="form-group"><label for="printCost">Print cost</label><input type="number" min="0" step="0.01" inputmode="decimal" id="printCost" class="form-input" placeholder="0"></div>
+                  <div class="form-group"><label for="valuePerVisit">Value per visit</label><input type="number" min="0" step="0.01" inputmode="decimal" id="valuePerVisit" class="form-input" placeholder="0"></div>
+                  <div class="form-group"><label for="currency">Currency</label><input type="text" id="currency" class="form-input" maxlength="3" placeholder="USD" spellcheck="false"></div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group"><label for="campaignStart">Campaign starts</label><input type="date" id="campaignStart" class="form-input"></div>
+                  <div class="form-group"><label for="campaignEnd">Campaign ends</label><input type="date" id="campaignEnd" class="form-input"></div>
                 </div>
 
                 <div class="toggle-option">
@@ -1117,6 +1158,7 @@
 
     <!-- Submissions View -->
     <div id="submissions-view" class="view hidden"></div>
+    <div id="ops-view" class="view hidden"></div>
 
   </main>
   
@@ -1180,6 +1222,7 @@
     <!-- App Script -->
           <!-- Core JS Module -->
     <script src="/js/kortex-utm.js"></script>
+    <script src="/js/kortex-views.js"></script>
     <script type="module" src="js/kortex-core.js?v=6.5.4"></script>
     <!-- Product Analytics -->
     <script src="js/posthog.js"></script>

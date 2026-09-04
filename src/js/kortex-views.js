@@ -74,18 +74,160 @@ function viewsHtml(id) {
 function mountViews(id, ds) {
   const root = $(`${id}-views`); if (!root) return;
   const panes = Object.fromEntries([...root.querySelectorAll('.view-pane')].map(p => [p.dataset.pane, p]));
+  const skyButton = root.querySelector('[data-view="sky"]');
+  if (skyButton && ds.fieldGraph) skyButton.textContent = 'Field Map';
   panes.table.innerHTML = renderTables(ds);
   panes.graphs.innerHTML = renderGraphs(ds);
   panes.spider.innerHTML = renderRadar(ds);
-  panes.sky.innerHTML = `<div class="sky-wrap"><h5>${esc(ds.skyTitle || 'Every scan, as a star')}</h5><canvas></canvas><div class="sky-legend"><span><i style="background:#d9bd7b"></i>QR scan</span><span><i style="background:#cdd6ec"></i>tap on the link</span><span>clock: hour of the day, your time · rings: days ago, today outermost · lines: the order they arrived</span></div></div>`;
+  panes.sky.innerHTML = ds.fieldGraph
+    ? `<div class="sky-wrap"><h5>${esc(ds.skyTitle || 'Scan decision map')}</h5><canvas></canvas><div class="sky-legend"><span><i style="background:#e8884a"></i>QR path</span><span><i style="background:#4ec9e0"></i>tap path</span><span>hover a node or line to see what moved through it</span></div></div>`
+    : `<div class="sky-wrap"><h5>${esc(ds.skyTitle || 'Every scan, as a star')}</h5><canvas></canvas><div class="sky-legend"><span><i style="background:#d9bd7b"></i>QR scan</span><span><i style="background:#cdd6ec"></i>tap on the link</span><span>clock: hour of the day, your time · rings: days ago, today outermost · lines: the order they arrived</span></div></div>`;
   attachTips(root);
   let skyDrawn = false;
-  const drawSkyNow = () => { if (skyDrawn) return; skyDrawn = true; drawSky(panes.sky.querySelector('canvas'), ds.points, ds.hasCode); };
+  const drawSkyNow = () => { if (skyDrawn) return; skyDrawn = true; (ds.fieldGraph ? drawFieldGraph : drawSky)(panes.sky.querySelector('canvas'), ds.points, ds.hasCode); };
   root.querySelectorAll('.views-nav button').forEach(btn => btn.addEventListener('click', () => {
     root.querySelectorAll('.views-nav button').forEach(b => b.setAttribute('aria-pressed', b === btn));
     Object.entries(panes).forEach(([k, pane]) => { pane.hidden = k !== btn.dataset.view; });
     if (btn.dataset.view === 'sky') drawSkyNow();
   }));
+}
+
+function drawFieldGraph(canvas, points, hasCode) {
+  if (!canvas) return;
+  const width = Math.min(760, canvas.parentElement.clientWidth || 760);
+  const height = Math.max(360, Math.round(width * 0.56));
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  canvas.width = width * dpr; canvas.height = height * dpr;
+  canvas.style.width = width + 'px'; canvas.style.height = height + 'px';
+  const x = canvas.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const color = { source: '#e8884a', tap: '#4ec9e0', device: '#a97ad4', route: '#3dd68c', place: '#cdd6ec', root: '#f5c842' };
+  const columns = [
+    { key: 'origin', title: hasCode ? 'workspace' : 'qr', x: width * 0.08, color: color.root },
+    { key: 'source', title: 'source', x: width * 0.28, color: color.source },
+    { key: 'device', title: 'device', x: width * 0.49, color: color.device },
+    { key: 'route', title: 'route', x: width * 0.69, color: color.route },
+    { key: 'place', title: 'place', x: width * 0.90, color: color.place }
+  ];
+  const countries = tallyOf(points, 'country').slice(0, 5).map(r => r.value);
+  const rows = points.map(p => ({
+    origin: hasCode ? 'Workspace' : 'This QR',
+    source: p.source === 'qr' ? 'QR scan' : 'Link tap',
+    device: p.device || 'unknown',
+    route: p.win && p.win !== '—' ? `${p.win} route` : 'day route',
+    place: countries.includes(p.country) ? p.country : 'other'
+  }));
+  const nodeMap = new Map(), edgeMap = new Map();
+  function getNode(col, label) {
+    const id = `${col.key}:${label}`;
+    if (!nodeMap.has(id)) nodeMap.set(id, { id, col, label, count: 0, x: col.x, y: 0, w: 112, h: 32, color: col.color });
+    return nodeMap.get(id);
+  }
+  rows.forEach(row => {
+    const chain = columns.map(col => getNode(col, row[col.key]));
+    chain.forEach(n => n.count++);
+    for (let i = 0; i < chain.length - 1; i++) {
+      const a = chain[i], b = chain[i + 1], id = `${a.id}->${b.id}`;
+      if (!edgeMap.has(id)) edgeMap.set(id, { a, b, count: 0, color: b.label === 'Link tap' ? color.tap : a.color });
+      edgeMap.get(id).count++;
+    }
+  });
+  columns.forEach(col => {
+    const list = [...nodeMap.values()].filter(n => n.col === col).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+    const gap = Math.min(28, Math.max(14, (height - 112) / Math.max(1, list.length)));
+    const block = (list.length - 1) * gap;
+    list.forEach((n, i) => { n.y = height / 2 - block / 2 + i * gap; });
+  });
+  const nodes = [...nodeMap.values()];
+  const edges = [...edgeMap.values()];
+  const maxNode = Math.max(1, ...nodes.map(n => n.count));
+  const maxEdge = Math.max(1, ...edges.map(e => e.count));
+  x.clearRect(0, 0, width, height);
+  const bg = x.createLinearGradient(0, 0, width, height);
+  bg.addColorStop(0, 'rgba(232,136,74,0.06)');
+  bg.addColorStop(0.55, 'rgba(78,201,224,0.035)');
+  bg.addColorStop(1, 'rgba(7,8,12,0)');
+  x.fillStyle = bg; x.fillRect(0, 0, width, height);
+  columns.forEach(col => {
+    x.fillStyle = 'rgba(217,189,123,0.72)';
+    x.font = 'italic 11px "Cormorant Garamond", Georgia, serif';
+    x.textAlign = 'center'; x.textBaseline = 'top';
+    x.fillText(col.title.toUpperCase(), col.x, 18);
+    x.strokeStyle = 'rgba(181,147,90,0.12)';
+    x.beginPath(); x.moveTo(col.x, 45); x.lineTo(col.x, height - 34); x.stroke();
+  });
+  edges.forEach(e => {
+    const ax = e.a.x + e.a.w / 2, ay = e.a.y, bx = e.b.x - e.b.w / 2, by = e.b.y;
+    x.beginPath(); x.moveTo(ax, ay);
+    x.bezierCurveTo(ax + (bx - ax) * 0.48, ay, ax + (bx - ax) * 0.52, by, bx, by);
+    x.strokeStyle = hexToRgba(e.color, 0.18 + 0.46 * e.count / maxEdge);
+    x.lineWidth = 1.5 + 9 * e.count / maxEdge;
+    x.lineCap = 'round';
+    x.stroke();
+  });
+  nodes.forEach(n => {
+    const r = 7 + 10 * Math.sqrt(n.count / maxNode);
+    n.r = r;
+    const left = n.x - n.w / 2, top = n.y - n.h / 2;
+    x.fillStyle = 'rgba(7,8,12,0.86)';
+    roundRect(x, left, top, n.w, n.h, 8); x.fill();
+    x.strokeStyle = hexToRgba(n.color, 0.34); x.lineWidth = 1; x.stroke();
+    const dotX = left + 16;
+    const glow = x.createRadialGradient(dotX, n.y, 0, dotX, n.y, r * 2.8);
+    glow.addColorStop(0, hexToRgba(n.color, 0.28)); glow.addColorStop(1, 'rgba(0,0,0,0)');
+    x.fillStyle = glow; x.beginPath(); x.arc(dotX, n.y, r * 2.8, 0, Math.PI * 2); x.fill();
+    x.fillStyle = n.color; x.beginPath(); x.arc(dotX, n.y, r, 0, Math.PI * 2); x.fill();
+    x.fillStyle = '#f6efe2'; x.font = '12px ui-monospace, Menlo, monospace'; x.textAlign = 'left'; x.textBaseline = 'middle';
+    x.fillText(trimLabel(n.label, 11), left + 32, n.y - 5);
+    x.fillStyle = 'rgba(237,232,223,0.58)'; x.font = '10px ui-monospace, Menlo, monospace';
+    x.fillText(`${n.count} scan${n.count === 1 ? '' : 's'}`, left + 32, n.y + 9);
+  });
+  x.fillStyle = 'rgba(237,232,223,0.72)';
+  x.font = 'italic 13px "Cormorant Garamond", Georgia, serif';
+  x.textAlign = 'center';
+  x.fillText(`${points.length} scans, traced as source to destination decisions`, width / 2, height - 22);
+  canvas.onpointermove = e => {
+    const r = canvas.getBoundingClientRect(); const mx = (e.clientX - r.left) * (width / r.width), my = (e.clientY - r.top) * (height / r.height);
+    let bestNode = null, bd = Infinity;
+    nodes.forEach(n => {
+      const inside = mx >= n.x - n.w / 2 && mx <= n.x + n.w / 2 && my >= n.y - n.h / 2 && my <= n.y + n.h / 2;
+      const d = (n.x - mx) ** 2 + (n.y - my) ** 2;
+      if (inside && d < bd) { bd = d; bestNode = n; }
+    });
+    if (bestNode) return showTip(`<b>${esc(bestNode.label)}</b><br>${bestNode.count} scan${bestNode.count === 1 ? '' : 's'} passed through ${esc(bestNode.col.title)}.`, e.clientX, e.clientY);
+    let bestEdge = null, ed = Infinity;
+    edges.forEach(edge => {
+      const d = distanceToSegment(mx, my, edge.a.x + edge.a.w / 2, edge.a.y, edge.b.x - edge.b.w / 2, edge.b.y);
+      if (d < 10 && d < ed) { ed = d; bestEdge = edge; }
+    });
+    if (bestEdge) showTip(`<b>${esc(bestEdge.a.label)} → ${esc(bestEdge.b.label)}</b><br>${bestEdge.count} scan${bestEdge.count === 1 ? '' : 's'} followed this path.`, e.clientX, e.clientY);
+    else hideTip();
+  };
+  canvas.onpointerleave = hideTip;
+}
+
+function trimLabel(label, max) {
+  const s = String(label || 'unknown');
+  return s.length > max ? s.slice(0, max - 1) + '…' : s;
+}
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+function hexToRgba(hex, alpha) {
+  const raw = String(hex || '#ffffff').replace('#', '');
+  const n = parseInt(raw.length === 3 ? raw.split('').map(c => c + c).join('') : raw, 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${alpha})`;
+}
+function distanceToSegment(px, py, ax, ay, bx, by) {
+  const dx = bx - ax, dy = by - ay, len = dx * dx + dy * dy || 1;
+  const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / len));
+  const x = ax + t * dx, y = ay + t * dy;
+  return Math.hypot(px - x, py - y);
 }
 function tableHtml(title, rows, total, unit = 'scans') {
   const max = Math.max(1, ...rows.map(r => r.clicks));
@@ -179,23 +321,36 @@ function variationOf(link) {
   if (link.utm && Object.keys(link.utm).length) return { name: 'Campaign tags', blurb: 'Every visit arrives tagged, so the destination\'s own analytics know it came from this link.' };
   return { name: 'Plain dynamic link', blurb: 'A short kaayko.com link behind the QR: re-point it after printing and count every scan.' };
 }
-function insightsFor(link, a, points) {
-  const out = [];
-  const n = points.length;
-  const src = tallyOf(points, 'source'); const qr = (src.find(r => r.value === 'qr') || {}).clicks || 0;
-  if (n) out.push(`<b>${qr}</b> of ${n} visits this week were QR scans; the rest were taps on the link.`);
-  if (link.schedule && link.schedule.windows && link.schedule.windows.length) { const night = points.filter(p => p.win === 'night').length; out.push(`<b>${pct(night / Math.max(1, n))}</b> of scans came in the night window and went to ${esc(stripScheme(link.schedule.windows[0].url))}.`); }
-  if (link.limits && link.limits.maxClicks) { const used = link.clickCount || 0; out.push(`<b>${used} of ${link.limits.maxClicks}</b> scans used${link.limits.fallbackUrl ? `; after that, ${esc(stripScheme(link.limits.fallbackUrl))}` : ''}.`); }
-  if (link.expiresAt) { const days = Math.ceil((new Date(link.expiresAt) - Date.now()) / 86400000); out.push(days >= 0 ? `Ends in <b>${days} day${days === 1 ? '' : 's'}</b>${link.limits && link.limits.fallbackUrl ? `, then ${esc(stripScheme(link.limits.fallbackUrl))}` : ''}.` : `Ended <b>${-days} day${days === -1 ? '' : 's'} ago</b>.`); }
-  const d = link.destinations || {};
-  if (d.ios || d.android) { const plat = tallyOf(points, 'platform'); const ios = (plat.find(r => r.value === 'ios') || {}).clicks || 0, and = (plat.find(r => r.value === 'android') || {}).clicks || 0; out.push(`<b>${pct(ios / Math.max(1, n))}</b> iPhone, <b>${pct(and / Math.max(1, n))}</b> Android: each went to its own address.`); }
-  if (link.utm && Object.keys(link.utm).length) out.push(`Tags on every visit: ${Object.entries(link.utm).map(([k, v]) => `<b>${esc(k.replace('utm_', ''))}</b> ${esc(v)}`).join(' · ')}.`);
-  if (link.safety && link.safety.review) out.push(`Held on ${fmtDate(new Date(link.safety.review.heldAtMs).toISOString())}, approved ${fmtDate(new Date(link.safety.review.approvedAtMs).toISOString())} by a reviewer.`);
-  if (a.unique && a.unique.distinctVisitors) out.push(`<b>${a.unique.distinctVisitors}</b> different people${a.unique.clicksPerVisitor ? `, ${a.unique.clicksPerVisitor} scans each on average` : ''}.`);
-  const country = tallyOf(points, 'country')[0]; if (country && country.value !== '—') out.push(`Most scans from <b>${esc(country.value)}</b> (${pct(country.clicks / Math.max(1, n))}).`);
-  return out;
-}
+  /* ── the plain-language layer, rendered from what the server computed ── */
+  const INSIGHT_ORDER = ['qualityScore', 'bestWindow', 'rhythm', 'trend', 'qrSplit', 'deviceMatch', 'missed', 'fallbackUsage', 'repeatPattern', 'newVsReturning', 'channelMix', 'geoDrift', 'utmHealth', 'safetyImpact', 'anomalies', 'campaignLift', 'roi', 'placement', 'replay'];
+  function insightCard(f) {
+    if (!f) return '';
+    const extra = f.key === 'replay' && f.detail && f.detail.lines ? `<ul class="ki-lines">${f.detail.lines.map(l => `<li>${esc(l)}</li>`).join('')}</ul>`
+      : f.key === 'channelMix' && f.detail && f.detail.channels ? `<div class="ki-bars">${f.detail.channels.slice(0, 6).map(c => `<span data-tip="<b>${esc(c.channel)}</b> · ${c.count} visits"><i style="width:${Math.max(3, c.share)}%"></i>${esc(c.channel)} ${c.share}%</span>`).join('')}</div>`
+      : f.key === 'repeatPattern' && f.detail && f.detail.people ? `<div class="ki-bars">${[['once', f.detail.once], ['twice', f.detail.twice], ['3+', f.detail.more]].map(([l, v]) => `<span data-tip="<b>${l}</b> · ${v} people"><i style="width:${Math.max(3, Math.round(v / Math.max(1, f.detail.people) * 100))}%"></i>${l} ${v}</span>`).join('')}</div>`
+      : f.key === 'geoDrift' && f.detail && f.detail.movers && f.detail.movers.length ? `<div class="ki-bars">${f.detail.movers.slice(0, 4).map(m => `<span data-tip="<b>${esc(m.country)}</b> · ${m.before}% → ${m.after}%"><i style="width:${Math.max(3, m.after)}%"></i>${esc(m.country)} ${m.after}%${m.change ? ` (${m.change > 0 ? '+' : ''}${m.change})` : ''}</span>`).join('')}</div>`
+      : '';
+    return `<article class="ki ki-${esc(f.status)}" data-key="${esc(f.key)}"><div class="ki-head"><span class="ki-dot" aria-hidden="true"></span><h5>${esc(f.title)}</h5>${f.key === 'qualityScore' && f.detail && f.detail.score != null ? `<b class="ki-score">${f.detail.score}</b>` : ''}</div><p>${esc(f.headline)}</p>${extra}</article>`;
+  }
+  /** Render the findings into a container: `keys` limits and orders them; omitted = all. */
+  function renderInsights(container, insights, { keys = INSIGHT_ORDER, compact = false } = {}) {
+    if (!container) return;
+    if (!insights) { container.innerHTML = ''; return; }
+    ensureTip();
+    if (!document.getElementById('ki-style')) {
+      const st = document.createElement('style'); st.id = 'ki-style';
+      st.textContent = '.ki-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin:12px 0 18px}.ki{position:relative;padding:14px 16px 12px;border:1px solid rgba(181,147,90,.18);background:rgba(181,147,90,.035);min-width:0}.ki-head{display:flex;align-items:center;gap:8px;margin-bottom:6px}.ki h5{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-weight:500;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold,#b5935a);margin:0}.ki p{margin:0;font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-size:.98rem;line-height:1.5;color:var(--fg,rgba(237,232,223,.82))}.ki-dot{width:8px;height:8px;border-radius:50%;background:#8C95A4;flex:none;box-shadow:0 0 8px rgba(0,0,0,.4)}.ki-good .ki-dot{background:#5fc48f;box-shadow:0 0 8px rgba(95,196,143,.6)}.ki-warn .ki-dot{background:#e7ab4b;box-shadow:0 0 8px rgba(231,171,75,.6)}.ki-none .ki-dot{background:rgba(237,232,223,.25);box-shadow:none}.ki-none p{color:var(--muted,rgba(237,232,223,.55))}.ki-score{margin-left:auto;font-family:"Bebas Neue",Impact,sans-serif;font-size:1.7rem;letter-spacing:.04em;color:var(--fg,#ede8df);line-height:1}.ki-lines{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:4px}.ki-lines li{font-family:ui-monospace,Menlo,monospace;font-size:.74rem;color:var(--muted,rgba(237,232,223,.7));line-height:1.45;padding-left:12px;position:relative}.ki-lines li::before{content:"·";position:absolute;left:0;color:var(--gold,#b5935a)}.ki-bars{display:grid;gap:4px;margin-top:8px}.ki-bars span{position:relative;display:block;font-family:ui-monospace,Menlo,monospace;font-size:.72rem;color:var(--muted,rgba(237,232,223,.75));padding:3px 0 3px 0}.ki-bars i{position:absolute;left:0;bottom:0;height:2px;background:linear-gradient(90deg,var(--gold,#b5935a),var(--gold-bright,#d9bd7b))}.ki-compact .ki{padding:10px 12px}';
+      document.head.appendChild(st);
+    }
+    const list = keys.map(k => insights[k]).filter(Boolean);
+    container.innerHTML = `<div class="ki-grid${compact ? ' ki-compact' : ''}">${list.map(insightCard).join('')}</div>`;
+    attachTips(container);
+  }
+  /** Workspace-level findings (placement, safety, tags, standouts). */
+  function renderWorkspaceInsights(container, insights) {
+    renderInsights(container, insights, { keys: ['placementPerformance', 'safetyImpact', 'utmHealth', 'anomalies'], compact: true });
+  }
 
-
-  window.KortexViews = { ptOf, tallyOf, radarAxes, pct, viewsHtml, mountViews, drawSky, variationOf, insightsFor, localHour, localDow, esc, fmtDate, stripScheme, showTip, hideTip, attachTips };
+  window.KortexViews = {
+    renderInsights, renderWorkspaceInsights, INSIGHT_ORDER, ptOf, tallyOf, radarAxes, pct, viewsHtml, mountViews, drawSky, variationOf, localHour, localDow, esc, fmtDate, stripScheme, showTip, hideTip, attachTips };
 })();
