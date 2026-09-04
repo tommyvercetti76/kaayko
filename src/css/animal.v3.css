@@ -1,231 +1,262 @@
 /*─────────────────────────────────────────────────────────────────────────────
-  Animal page — layered scroll composition.
+  Animal page — a natural-history plate with the piece beside it.
 
-  The previous layout was a single side-by-side spread: hero left, story right.
-  It fit in roughly one viewport, so parallax had nowhere to travel — it lurched
-  through its whole range in a few dozen pixels of scroll and stopped. Motion
-  needs distance, so the page is now stacked and tall, and the hero is a set of
-  layers that move at different rates.
+  Previous version was centre-stacked: art, then title, then story, then the
+  product at the very bottom of a long scroll. Two faults. Composition — one
+  narrow centred column with everything the same width reads as a template.
+  And commerce — the thing for sale sat 2000px below the fold.
 
-  Smoothness rules, applied without exception below:
-   • only `transform` and `opacity` animate — nothing that triggers layout
-   • motion is scroll-driven in CSS (`animation-timeline`), so it runs off the
-     main thread instead of a scroll listener writing styles every frame
-   • `view()` timelines are element-relative, so each section eases against its
-     own position rather than sharing one global scroll number
-   • no `backdrop-filter` anywhere in this file — it repaints per frame
-   • `will-change` only on the three hero layers that actually move continuously
+  Now: an asymmetric spread. The plate holds the left, the identity and the
+  piece hold the right, and buying is possible without scrolling at all.
+
+  Motion is deliberately down to ONE continuous thing: the artwork drifts
+  against its plate. Everything else simply fades — no rise, no overshoot, no
+  per-section choreography. Restraint is the aesthetic; a page where every
+  block springs in reads as a demo.
   ─────────────────────────────────────────────────────────────────────────────*/
 
-/* ── Escape the shared full-height flex trap ─────────────────────────
-   storestyle.css sets `html, body { height: 100% }` with `body{display:flex}`
-   and `main{flex:1}`, which pins #animal-root to exactly the viewport. Its
-   content then overflows without extending the document, so the page reports
-   nothing to scroll — the story, field notes and products were all there and
-   simply unreachable. That is the real reason the scrolling felt broken.
-   This stylesheet is loaded only by animal.html, so the bare html selector
-   cannot leak to other pages. */
+/* Escape storestyle's `html,body{height:100%}` + `main{flex:1}`, which pinned
+   #animal-root to the viewport so the page could not scroll at all. Only
+   animal.html loads this file, so the bare html selector cannot leak. */
 html, body.animal-v2 { height: auto; min-height: 100vh; }
 body.animal-v2 { display: flex; flex-direction: column; overflow: visible; }
 body.animal-v2 #animal-root { flex: 1 0 auto; }
 body.animal-v2 .site-footer { flex: 0 0 auto; }
 
 .animal-v2 .animal-root { max-width: none; margin: 0; padding: 0; }
+.animal-v2 .animal-breadcrumb { max-width: 1360px; margin: 0 auto; padding: 22px clamp(20px, 4vw, 56px) 0; }
 
 /* ── Hero ───────────────────────────────────────────────────────────────── */
 .animal-v2 .an-hero {
-  position: relative;
-  min-height: clamp(600px, 92vh, 940px);
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
   align-items: center;
-  justify-content: center;
-  gap: clamp(20px, 3.5vh, 44px);
-  padding: clamp(32px, 6vh, 72px) 20px clamp(48px, 8vh, 88px);
-  overflow: hidden;
+  gap: clamp(32px, 5vw, 80px);
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: clamp(24px, 4vh, 56px) clamp(20px, 4vw, 56px) clamp(48px, 8vh, 96px);
+}
+
+.animal-v2 .an-figure {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 5 / 4;
+  border-radius: 20px;
+  overflow: hidden;          /* the plate scales inside this, the art does not */
   isolation: isolate;
 }
 
-/* Layer 1 — the ground. Drifts least, so it reads as furthest away. */
-.animal-v2 .an-hero-plate {
+/* The plate: an aged-paper ground the illustrations were drawn against. It is
+   the only element that scales, and it does so behind the art. */
+.animal-v2 .an-plate {
   position: absolute;
-  inset: -8% -2% -2%;
+  inset: 0;
   z-index: 0;
   will-change: transform;
-  background:
-    radial-gradient(ellipse 70% 55% at 50% 42%, #fbf2dc 0%, #f1e2bb 55%, #e4d0a4 100%);
+  background: radial-gradient(ellipse 78% 62% at 50% 42%, #fbf3de 0%, #f0e0b7 58%, #dfc99b 100%);
 }
-.animal-v2 .an-hero.is-product .an-hero-plate {
-  background: radial-gradient(ellipse 75% 60% at 50% 45%, var(--v2-surface) 0%, var(--v2-image-bg) 70%);
+html.dark-theme .animal-v2 .an-plate {
+  background: radial-gradient(ellipse 78% 62% at 50% 42%, #26200f 0%, #171205 58%, #0c0a06 100%);
 }
-html.dark-theme .animal-v2 .an-hero-plate {
-  background: radial-gradient(ellipse 70% 55% at 50% 42%, #241f14 0%, #14110b 60%, #0b0908 100%);
-}
+.animal-v2 .an-hero.is-product .an-plate { background: var(--v2-image-bg); }
 
-/* Layer 2 — the subject. */
-.animal-v2 .an-hero-media {
-  position: relative;
+/* The artwork. Contained, never cropped, and it drifts — the one moving thing. */
+.animal-v2 .an-art {
+  position: absolute;
+  inset: clamp(24px, 5%, 64px);
   z-index: 1;
-  /* Explicit width AND height rather than aspect-ratio + max-height: with a
-     centred grid item, `height:100%` on the image resolved against the
-     unclamped box and the artwork overflowed its frame onto the title. */
-  width: min(78vw, 560px);
-  height: min(52vh, 520px);
   display: flex;
   align-items: center;
   justify-content: center;
   will-change: transform;
 }
-.animal-v2 .an-hero.is-product .an-hero-media {
-  width: min(64vw, 420px);
-  height: min(52vh, 520px);
-  border-radius: 18px;
-  overflow: hidden;
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.18);
-}
-.animal-v2 .an-hero-media img {
-  /* An illustration is a composed object with margins — never crop it, and
-     never let it exceed its frame. A product photograph may fill its frame. */
+.animal-v2 .an-art img {
   max-width: 100%;
   max-height: 100%;
   width: auto;
   height: auto;
   object-fit: contain;
 }
-.animal-v2 .an-hero.is-product .an-hero-media img { width: 100%; height: 100%; object-fit: cover; }
-.animal-v2 .an-hero-media[data-zoom-full] { cursor: zoom-in; }
+/* A photograph is not a plate illustration — it fills the frame edge to edge. */
+.animal-v2 .an-hero.is-product .an-art { inset: 0; }
+.animal-v2 .an-hero.is-product .an-art img { width: 100%; height: 100%; object-fit: cover; }
+.animal-v2 .an-art[data-zoom-full] { cursor: zoom-in; }
 
-/* Layer 3 — the caption. Moves most and fades as it leaves. */
-.animal-v2 .an-hero-caption {
-  position: relative;
-  z-index: 2;
-  width: min(92vw, 900px);
-  text-align: center;
-  will-change: transform, opacity;
+/* ── Identity + buy ─────────────────────────────────────────────────────── */
+.animal-v2 .an-panel { max-width: 460px; }
+
+.animal-v2 .an-eyebrow {
+  margin: 0 0 18px;
+  font-family: 'Josefin_Bold', 'Josefin Sans', Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--v2-gold);
 }
+.animal-v2 .an-eyebrow[data-severity="critically"],
+.animal-v2 .an-eyebrow[data-severity="endangered"] { color: #a8412f; }
+html.dark-theme .animal-v2 .an-eyebrow[data-severity="critically"],
+html.dark-theme .animal-v2 .an-eyebrow[data-severity="endangered"] { color: #e08b7a; }
+
 .animal-v2 .an-name {
   margin: 0;
-  font-family: 'Josefin_Bold', 'Josefin Sans', Arial, sans-serif;
-  font-size: clamp(38px, 7vw, 84px);
-  line-height: 0.98;
-  letter-spacing: -0.02em;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 600;
+  font-size: clamp(46px, 5.4vw, 82px);
+  line-height: 0.96;
+  letter-spacing: -0.015em;
   color: var(--v2-fg);
   text-wrap: balance;
 }
 .animal-v2 .an-scientific {
-  margin: 10px 0 0;
+  margin: 12px 0 0;
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-style: italic;
-  font-size: clamp(16px, 2.2vw, 22px);
+  font-size: clamp(17px, 1.5vw, 21px);
   color: var(--v2-fg-muted);
 }
-.animal-v2 .an-status { margin: 18px 0 0; }
-
-.animal-v2 .an-scroll-cue {
-  position: absolute;
-  z-index: 2;
-  left: 50%;
-  bottom: 14px;
-  width: 1px;
-  height: 34px;
-  background: linear-gradient(var(--v2-fg-muted), transparent);
-  opacity: .5;
+.animal-v2 .an-lede {
+  margin: 26px 0 0;
+  padding-top: 26px;
+  border-top: 1px solid var(--v2-border);
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.72;
+  color: var(--v2-fg-muted);
 }
+
+/* The piece, beside the animal — not at the foot of the page. */
+.animal-v2 .variant-card.is-compact {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  align-items: center;
+  gap: 18px;
+  margin-top: 30px;
+  padding-top: 28px;
+  border-top: 1px solid var(--v2-border);
+}
+.animal-v2 .variant-card.is-compact .variant-img {
+  width: 92px;
+  height: 92px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--v2-image-bg);
+  cursor: zoom-in;
+}
+.animal-v2 .variant-card.is-compact .variant-img img { width: 100%; height: 100%; object-fit: cover; }
+.animal-v2 .an-buy-meta { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; }
+.animal-v2 .variant-card.is-compact .variant-title {
+  margin: 0;
+  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+  font-size: 15px;
+  color: var(--v2-fg);
+}
+.animal-v2 .variant-card.is-compact .variant-price {
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 14px;
+  color: var(--v2-fg-muted);
+}
+.animal-v2 .variant-card.is-compact .variant-cta {
+  margin-top: 10px;
+  min-height: 44px;
+  padding: 0 26px;
+  border: none;
+  border-radius: 999px;
+  background: var(--v2-fg);
+  color: var(--v2-bg);
+  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity .18s ease;
+}
+.animal-v2 .variant-card.is-compact .variant-cta:hover { opacity: .86; }
 
 /* ── Body ───────────────────────────────────────────────────────────────── */
 .animal-v2 .an-body {
-  max-width: 1100px;
+  max-width: 1360px;
   margin: 0 auto;
-  padding: clamp(56px, 9vw, 120px) clamp(20px, 5vw, 48px) 120px;
-  display: flex;
-  flex-direction: column;
-  gap: clamp(56px, 9vw, 112px);
+  padding: 0 clamp(20px, 4vw, 56px) clamp(72px, 10vw, 140px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  gap: clamp(32px, 5vw, 80px) clamp(32px, 5vw, 80px);
+  align-items: start;
 }
+.animal-v2 .an-story { grid-column: 1; }
+.animal-v2 .an-facts { grid-column: 2; }
+.animal-v2 .an-wear  { grid-column: 1 / -1; margin-top: clamp(24px, 4vw, 56px); }
 
 .animal-v2 .an-kicker {
-  margin: 0 0 20px;
+  margin: 0 0 18px;
+  padding-top: 20px;
+  border-top: 1px solid var(--v2-gold);
   font-family: 'Josefin_Bold', 'Josefin Sans', Arial, sans-serif;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
   color: var(--v2-gold);
 }
-
-.animal-v2 .an-story { max-width: 68ch; margin: 0 auto; }
 .animal-v2 .an-bio {
   margin: 0;
+  max-width: 60ch;
   font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: clamp(21px, 2.6vw, 28px);
-  line-height: 1.55;
+  font-size: clamp(21px, 2.1vw, 27px);
+  line-height: 1.58;
   color: var(--v2-fg);
 }
-
-.animal-v2 .an-facts .animal-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 0 40px;
-}
-.animal-v2 .an-facts .animal-stat:first-child { border-top: 1px solid var(--v2-border); padding-top: 16px; }
-
-.animal-v2 .an-wear .animal-variants { margin-top: 0; }
+.animal-v2 .an-facts .animal-stats { display: block; }
+.animal-v2 .an-facts .animal-stat { padding: 14px 0; border-top: 1px solid var(--v2-border); }
+.animal-v2 .an-facts .animal-stat:first-child { border-top: none; padding-top: 0; }
 
 /* ── Motion ─────────────────────────────────────────────────────────────
-   All three hero layers share one timeline (the hero's own exit) so they
-   stay locked together and cannot drift out of step with one another.      */
+   One continuous movement: the plate drifts down, the art drifts up, so the
+   subject separates from its ground as you read. Everything else fades — no
+   translate, no bounce, nothing choreographed per section.                  */
 @supports (animation-timeline: view()) {
-  .animal-v2 .an-hero-plate,
-  .animal-v2 .an-hero-media,
-  .animal-v2 .an-hero-caption,
-  .animal-v2 .an-scroll-cue {
+  .animal-v2 .an-plate,
+  .animal-v2 .an-art {
     animation-timeline: view(block);
-    animation-range: contain 0% exit 100%;
+    animation-range: entry 100% exit 100%;
     animation-fill-mode: both;
-    animation-timing-function: linear;   /* scroll position IS the easing */
+    animation-timing-function: linear;   /* scroll position is the easing */
   }
-  .animal-v2 .an-hero-plate    { animation-name: an-plate; }
-  .animal-v2 .an-hero-media    { animation-name: an-subject; }
-  .animal-v2 .an-hero-caption  { animation-name: an-caption; }
-  .animal-v2 .an-scroll-cue    { animation-name: an-cue; }
+  .animal-v2 .an-plate { animation-name: an-plate; }
+  .animal-v2 .an-art   { animation-name: an-art; }
 
-  /* Sections rise as they come into view, each against its own position.
-     The range completes while the section is still entering, so a section is
-     fully legible well before it reaches the middle of the screen — and it
-     starts at 0.35 rather than 0 so that if a timeline ever fails to resolve,
-     the worst case is dimmed text rather than an invisible page. */
-  .animal-v2 .reveal {
-    animation: an-rise linear both;
+  .animal-v2 .fade {
+    animation: an-fade linear both;
     animation-timeline: view(block);
-    animation-range: entry 0% entry 85%;
+    animation-range: entry 0% entry 70%;
   }
 }
-
-@keyframes an-plate   { to { transform: translate3d(0, 6%, 0) scale(1.04); } }
-@keyframes an-subject { to { transform: translate3d(0, -14%, 0); } }
-@keyframes an-caption { to { transform: translate3d(0, -34%, 0); opacity: 0; } }
-@keyframes an-cue     { to { opacity: 0; } }
-@keyframes an-rise    { from { opacity: 0.35; transform: translate3d(0, 22px, 0); }
-                        to   { opacity: 1; transform: none; } }
-
-/* No scroll timelines (Safari < 26, older Firefox): show everything, still,
-   in its finished state. A page that reveals nothing is worse than a page
-   that reveals without motion. */
-@supports not (animation-timeline: view()) {
-  .animal-v2 .reveal { opacity: 1; transform: none; }
-}
+@keyframes an-plate { to { transform: translate3d(0, 5%, 0) scale(1.06); } }
+@keyframes an-art   { to { transform: translate3d(0, -7%, 0); } }
+/* Opacity only, and never to zero — content parked invisible behind a scroll
+   timeline is a blank page if that timeline fails to resolve. */
+@keyframes an-fade  { from { opacity: 0.45; } to { opacity: 1; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .animal-v2 .an-hero-plate,
-  .animal-v2 .an-hero-media,
-  .animal-v2 .an-hero-caption,
-  .animal-v2 .an-scroll-cue,
-  .animal-v2 .reveal { animation: none !important; opacity: 1; transform: none; }
-  .animal-v2 .an-hero-caption { transform: none; }
+  .animal-v2 .an-plate, .animal-v2 .an-art, .animal-v2 .fade {
+    animation: none !important; opacity: 1; transform: none;
+  }
 }
 
-/* ── Small screens ──────────────────────────────────────────────────────── */
-@media (max-width: 680px) {
-  .animal-v2 .an-hero { height: clamp(460px, 76vh, 680px); }
-  .animal-v2 .an-hero-media { width: 84vw; }
-  .animal-v2 .an-hero.is-product .an-hero-media { width: 74vw; }
+/* ── Narrow ─────────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .animal-v2 .an-hero,
+  .animal-v2 .an-body { grid-template-columns: minmax(0, 1fr); }
+  .animal-v2 .an-story, .animal-v2 .an-facts, .animal-v2 .an-wear { grid-column: 1; }
+  .animal-v2 .an-panel { max-width: none; }
+  .animal-v2 .an-figure { aspect-ratio: 4 / 3; }
+  .animal-v2 .an-facts { margin-top: clamp(24px, 6vw, 48px); }
+
+  /* Tighten the run from name to button so "Add to bag" clears the fold on a
+     phone — it was landing four pixels under it, which is the difference
+     between a visible action and one nobody scrolls to find. */
+  .animal-v2 .an-lede { margin-top: 18px; padding-top: 18px; }
+  .animal-v2 .variant-card.is-compact { margin-top: 20px; padding-top: 20px; }
+  .animal-v2 .an-scientific { margin-top: 8px; }
 }

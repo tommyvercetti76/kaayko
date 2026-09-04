@@ -59,56 +59,71 @@ function renderStats(animal) {
   return `<dl class="animal-stats">${statBlocks.join("")}</dl>`;
 }
 
+/** Compact buy block for the hero. Same .variant-card contract the bindings
+ *  and cart-sync already query by data-product-id, so nothing else changes. */
+function heroBuy(p) {
+  if (!p) return "";
+  return `
+    <article class="variant-card is-compact" data-product-id="${esc(p.id)}">
+      <div class="variant-img" data-zoom role="button" tabindex="0" aria-label="${esc(p.title)} — open full-size image">${variantImage(p)}</div>
+      <div class="an-buy-meta">
+        <h2 class="variant-title">${esc(p.title)}</h2>
+        <span class="variant-price">${variantPriceText(p)}</span>
+        <button type="button" class="variant-cta" data-add-to-bag>
+          <span class="material-icons cta-check" style="display:none" aria-hidden="true">check</span>
+          <span class="cta-label">Add to bag</span>
+        </button>
+      </div>
+    </article>`;
+}
+
 function renderHero(animal, products) {
-  // Use the 1600px preview for the visible hero. The full 3600px artUrl is
-  // stashed on the wrapper as a data attribute for the click-to-zoom path.
   const heroSrc = animal.artPreviewUrl || animal.artUrl;
 
-  // Not every animal has its transparent artwork drawn yet — at the time of
-  // writing, five of twelve. Publishing a grey "art will appear here" box to
-  // shoppers is worse than showing them the thing they can actually buy, so
-  // fall back to the product this animal appears on.
+  // Not every animal has its transparent artwork drawn yet. Publishing a grey
+  // "art will appear here" box is worse than showing the piece it lives on.
   const fallbackSrc = heroSrc ? "" : firstProductImage(products);
   const src = heroSrc || fallbackSrc;
-
   const kind = heroSrc ? "is-art" : fallbackSrc ? "is-product" : "is-empty";
   const zoomAttr = heroSrc ? ` data-zoom-full="${esc(animal.artUrl || heroSrc)}"` : "";
-  const alt = heroSrc
-    ? `${esc(animal.name)} illustration`
-    : `${esc(animal.name)} on a Kaayko piece`;
+  const alt = heroSrc ? `${esc(animal.name)} illustration` : `${esc(animal.name)} on a Kaayko piece`;
 
-  // Three stacked layers that move at different rates as the page scrolls:
-  // the plate (slowest), the subject, then the caption (fastest, fades out).
-  // Each is its own element so the browser animates transforms only — nothing
-  // here triggers layout while scrolling.
+  // The first sentence of the bio carries the hero; the rest waits below.
+  const lede = animal.bio ? String(animal.bio).split(/(?<=\.)\s+/)[0] : "";
+
   return `
     <header class="an-hero ${kind}">
-      <div class="an-hero-plate" aria-hidden="true"></div>
-      <div class="an-hero-media"${zoomAttr}>
-        ${src ? `<img src="${esc(src)}" alt="${alt}" fetchpriority="high" />` : ""}
-      </div>
-      <div class="an-hero-caption">
+      <figure class="an-figure">
+        <div class="an-plate" aria-hidden="true"></div>
+        <div class="an-art"${zoomAttr}>
+          ${src ? `<img src="${esc(src)}" alt="${alt}" fetchpriority="high" />` : ""}
+        </div>
+      </figure>
+
+      <div class="an-panel">
+        ${animal.iucnStatus ? `<p class="an-eyebrow" data-severity="${esc(String(animal.iucnStatus).toLowerCase().split(" ")[0])}">${esc(animal.iucnStatus)}</p>` : ""}
         <h1 class="an-name">${esc(animal.name)}</h1>
         ${animal.scientificName ? `<p class="an-scientific">${esc(animal.scientificName)}</p>` : ""}
-        ${animal.iucnStatus ? `<p class="an-status animal-status-pill" data-severity="${esc(String(animal.iucnStatus).toLowerCase().split(" ")[0])}">${esc(animal.iucnStatus)}</p>` : ""}
+        ${lede ? `<p class="an-lede">${esc(lede)}</p>` : ""}
+        ${heroBuy(products[0])}
       </div>
-      <div class="an-scroll-cue" aria-hidden="true"><span></span></div>
     </header>`;
 }
 
 function renderStory(animal, products) {
   const stats = renderStats(animal);
+  const rest = (products || []).slice(1);
   const hasProse = Boolean(animal.bio);
-  if (!hasProse && !stats && !(products || []).length) return "";
+  if (!hasProse && !stats && !rest.length) return "";
 
   return `
     ${hasProse ? `
-    <section class="an-story reveal">
+    <section class="an-story fade">
       <h2 class="an-kicker">The Story</h2>
       <p class="an-bio">${esc(animal.bio)}</p>
     </section>` : ""}
-    ${stats ? `<section class="an-facts reveal"><h2 class="an-kicker">Field Notes</h2>${stats}</section>` : ""}
-    ${renderVariants(animal, products)}`;
+    ${stats ? `<section class="an-facts fade"><h2 class="an-kicker">Field Notes</h2>${stats}</section>` : ""}
+    ${renderVariants(animal, rest)}`;
 }
 
 /**
@@ -141,7 +156,7 @@ function variantPriceText(p) {
 
 function renderVariants(animal, products) {
   if (!products.length) return "";
-  const heading = `Wear the ${esc(animal.name.split(" ").pop())}`;
+  const heading = `More ${esc(animal.name.split(" ").pop())} pieces`;
   const cards = products.map(p => `
     <article class="variant-card" data-product-id="${esc(p.id)}">
       <div class="variant-img" data-zoom role="button" tabindex="0" aria-label="${esc(p.title)} — open full-size image">${variantImage(p)}</div>
@@ -156,7 +171,7 @@ function renderVariants(animal, products) {
       </button>
     </article>`).join("");
   return `
-    <section class="an-wear reveal">
+    <section class="an-wear fade">
       <h2 class="an-kicker">${heading}</h2>
       <div class="animal-variants">${cards}</div>
     </section>`;
@@ -346,7 +361,7 @@ function bindVariantActions(animal, products, openModalFn) {
     });
   });
   // Click the hero art → open the full-res zoom modal.
-  const heroArt = document.querySelector('.an-hero-media[data-zoom-full]');
+  const heroArt = document.querySelector('.an-art[data-zoom-full]');
   if (heroArt && animal.artUrl) {
     heroArt.style.cursor = 'zoom-in';
     // Keyboard-reachable zoom (2.1.1); the label keeps the illustration's name.
