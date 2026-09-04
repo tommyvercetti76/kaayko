@@ -79,12 +79,14 @@
         '<p class="modal-sub" id="modal-sub"></p>' +
         '<div class="modal-body" id="modal-body-code">' +
           '<div class="store-field-wrap" id="code-wrap">' +
+            '<label class="store-label" for="code-input">Invite code</label>' +
             '<input class="store-input" id="code-input" type="text" inputmode="text" ' +
               'placeholder="A1B2C3D4" autocomplete="off" autocorrect="off" ' +
-              'autocapitalize="characters" spellcheck="false" maxlength="20" aria-label="Invite code">' +
+              'autocapitalize="characters" spellcheck="false" maxlength="20" ' +
+              'aria-describedby="code-hint" aria-invalid="false">' +
             '<button class="store-arrow" id="code-submit" type="button" aria-label="Submit code">&rarr;</button>' +
           '</div>' +
-          '<p class="store-hint" id="code-hint" aria-live="polite"></p>' +
+          '<p class="store-hint" id="code-hint" role="alert"></p>' +
         '</div>' +
         '<div class="modal-body" id="modal-body-request" hidden>' +
           '<p class="modal-copy">We\'ll open a draft in your mail app — tell us who you are and we\'ll send a code back.</p>' +
@@ -146,6 +148,9 @@
   function setHint(msg, state /* "error" | "ok" | null */) {
     el.wrap.classList.remove("error", "ok");
     el.hint.classList.remove("error", "ok", "visible");
+    // role="alert" on the hint announces every change; aria-invalid flags the
+    // field itself so the error is discoverable from the input too (3.3.1).
+    el.input.setAttribute("aria-invalid", state === "error" ? "true" : "false");
     el.hint.textContent = msg;
     if (state) {
       el.wrap.classList.add(state);
@@ -159,6 +164,7 @@
     el.input.disabled = false;
     el.submit.disabled = false;
     el.wrap.classList.remove("error", "ok");
+    el.input.setAttribute("aria-invalid", "false");
     el.hint.textContent = "";
     el.hint.classList.remove("error", "ok", "visible");
   }

@@ -20,9 +20,12 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
   <script src="https://js.stripe.com/v3/"></script>
   <link rel="stylesheet" href="/css/footer.css">
+  <link rel="stylesheet" href="/css/pdp-motion.css" />
+  <script src="/js/pdp-motion.js"></script>
 </head>
 
 <body class="store-v2 product-v2">
+  <a class="skip-link" href="#product-root">Skip to product</a>
   <header class="header">
     <div class="header-top">
       <div class="header-brand">
@@ -44,7 +47,7 @@
     <a href="/store">← All products</a>
   </nav>
 
-  <main id="product-root" class="product-root">
+  <main id="product-root" class="product-root" tabindex="-1">
     <section class="product-shell skeleton" aria-hidden="true">
       <div class="product-gallery-skeleton"></div>
       <div class="product-info-skeleton">
@@ -99,7 +102,7 @@
           <circle cx="17" cy="19" r="1.8"></circle>
           <path d="M4 5h2l2.1 8.2a1 1 0 0 0 1 .8h7.9a1 1 0 0 0 1-.75L20 8H8"></path>
         </svg>
-        <span class="cart-badge">0</span>
+        <span class="cart-badge" aria-hidden="true">0</span>
       `;
       headerControls.insertBefore(cartBtn, headerControls.firstChild);
       const updateBadge = () => {
@@ -107,6 +110,8 @@
         const badge = cartBtn.querySelector('.cart-badge');
         badge.textContent = count;
         badge.style.display = count > 0 ? 'flex' : 'none';
+        // The link's accessible name is this label, never the badge digit (4.1.2).
+        cartBtn.setAttribute('aria-label', `Bag, ${count} item${count === 1 ? '' : 's'}`);
       };
       cartManager.subscribe(updateBadge);
       updateBadge();

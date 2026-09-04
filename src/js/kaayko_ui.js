@@ -48,12 +48,33 @@ function isNew(item) {
   return created > 0 && (Date.now() - created) < NEW_WINDOW_MS;
 }
 
+// Hide a size/fit mini panel and keep its trigger's aria-expanded in sync.
+// The trigger is the .cart-link sibling that opened it; focus goes back there
+// when the panel was dismissed from inside (Escape, Add, Remove, re-toggle).
+function closeMiniPanel(panel, { restoreFocus = false } = {}) {
+  if (!panel || panel.style.display === "none") return;
+  panel.style.display = "none";
+  const trigger = panel.parentElement?.querySelector(".cart-link");
+  if (!trigger) return;
+  if (trigger.hasAttribute("aria-expanded")) trigger.setAttribute("aria-expanded", "false");
+  if (restoreFocus) trigger.focus();
+}
+
 // Single delegated handler for closing mini panels on outside click
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.cart-button-container')) {
-    document.querySelectorAll('.cart-mini-panel').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.cart-mini-panel').forEach(p => closeMiniPanel(p));
   }
 });
+
+// Screen-reader announcement for the product grid. The grid is rebuilt
+// wholesale on every filter, so it must NOT be a live region (that would read
+// every card); the one-line #carousel-status region carries the result.
+function announceProductCount(n) {
+  const status = document.getElementById("carousel-status");
+  if (!status) return;
+  status.textContent = `${n} product${n === 1 ? "" : "s"} shown`;
+}
 
 /* ==========================================================================
    1) Carousel Rendering & Swipe
@@ -93,6 +114,8 @@ export function populateCarousel(items) {
     .slice()
     .sort((a, b) => getCreatedAtMs(b) - getCreatedAtMs(a));
 
+  announceProductCount(visibleItems.length);
+
   // Single-card deep-link mode: skip section UI entirely.
   if (carousel.classList.contains("single-card") && visibleItems.length === 1) {
     carousel.appendChild(createCarouselItem(visibleItems[0]));
@@ -120,34 +143,43 @@ export function populateCarousel(items) {
     const sectionItems = buckets.get(section.type);
 
     if (showHeaders) {
-      const heading = document.createElement("button");
-      heading.type = "button";
+      // The row is a plain flex container: a real <h2> (so heading navigation
+      // goes h1 → h2 → h3 product titles) wrapping the collapse toggle, with
+      // the Refine control as a sibling — never a focusable control nested
+      // inside another button. The whole row still toggles on click for
+      // mouse/touch, exactly as before.
+      const heading = document.createElement("div");
       heading.className = "carousel-section-title";
       heading.dataset.sectionType = section.type;
-      heading.setAttribute("aria-controls", `carousel-items-${section.type}`);
 
       const startsCollapsed = collapsed.has(section.type);
-      heading.setAttribute("aria-expanded", String(!startsCollapsed));
+      const count = sectionItems.length;
 
       heading.innerHTML = `
-        <span class="carousel-section-label">${section.label}</span>
-        <span class="carousel-section-count" aria-label="${sectionItems.length} item${sectionItems.length === 1 ? "" : "s"}">${sectionItems.length}</span>
-        <span class="carousel-section-refine" hidden role="button" tabindex="0" aria-expanded="false" aria-label="Refine this section">
+        <h2 class="carousel-section-heading">
+          <button type="button" class="carousel-section-toggle" aria-controls="carousel-items-${section.type}" aria-expanded="${String(!startsCollapsed)}">
+            <span class="carousel-section-label">${section.label}</span>
+            <span class="carousel-section-count">${count}</span>
+            <span class="visually-hidden">${count === 1 ? "item" : "items"}</span>
+          </button>
+        </h2>
+        <button type="button" class="carousel-section-refine" hidden aria-expanded="false" aria-controls="carousel-facets-${section.type}" aria-label="Refine this section">
           <span class="refine-label">Refine</span>
           <span class="refine-count" hidden>0</span>
           <svg class="refine-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </span>
+        </button>
         <svg class="carousel-section-chevron" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       `;
+      const toggle = heading.querySelector(".carousel-section-toggle");
 
       heading.addEventListener("click", (e) => {
         // Refine button captures its own clicks; don't propagate to collapse.
         if (e.target.closest(".carousel-section-refine")) return;
-        const wasExpanded = heading.getAttribute("aria-expanded") === "true";
+        const wasExpanded = toggle.getAttribute("aria-expanded") === "true";
         const nowExpanded = !wasExpanded;
-        heading.setAttribute("aria-expanded", String(nowExpanded));
+        toggle.setAttribute("aria-expanded", String(nowExpanded));
         sectionEl.classList.toggle("collapsed", !nowExpanded);
 
         const next = getCollapsedSections();
@@ -179,10 +211,8 @@ export function populateCarousel(items) {
             const isOpen = !open;
             refine.setAttribute("aria-expanded", String(isOpen));
           };
+          // A real <button> now: Enter/Space arrive as click natively.
           refine.addEventListener("click", (e) => { e.stopPropagation(); onToggle(); });
-          refine.addEventListener("keydown", (e) => {
-            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onToggle(); }
-          });
         }
       }
     }
@@ -236,20 +266,26 @@ function buildSectionFacets(sectionEl, items) {
   }
   if (rows.length === 0) return null;
 
+  const sectionType = sectionEl.dataset.sectionType || "section";
   const wrap = document.createElement("div");
   wrap.className = "section-facets";
+  wrap.id = `carousel-facets-${sectionType}`;
   for (const row of rows) {
     const rowEl = document.createElement("div");
     rowEl.className = "section-facet-row";
-    rowEl.innerHTML = `<span class="section-facet-label">${row.label}</span>`;
+    const labelId = `section-facet-label-${sectionType}-${row.key}`;
+    rowEl.innerHTML = `<span class="section-facet-label" id="${labelId}">${row.label}</span>`;
     const chips = document.createElement("div");
     chips.className = "section-facet-chips";
+    chips.setAttribute("role", "group");
+    chips.setAttribute("aria-labelledby", labelId);
     for (const [val, count] of row.entries) {
       const chip = document.createElement("button");
       chip.type = "button";
       chip.className = "section-facet-chip";
       chip.dataset.facet = row.key;
       chip.dataset.value = val.toLowerCase();
+      chip.setAttribute("aria-pressed", "false");
       chip.innerHTML = `${val}<span class="section-facet-count">${count}</span>`;
       chip.addEventListener("click", () => {
         // Single-select within a non-multi row (Theme/Park). Multi-select for Tags.
@@ -259,6 +295,9 @@ function buildSectionFacets(sectionEl, items) {
           });
         }
         chip.classList.toggle("selected");
+        rowEl.querySelectorAll(".section-facet-chip").forEach(c => {
+          c.setAttribute("aria-pressed", String(c.classList.contains("selected")));
+        });
         applySectionFilters(sectionEl);
       });
       chips.appendChild(chip);
@@ -424,6 +463,14 @@ function textEl(tag, cls, txt) {
   return e;
 }
 
+// Alt text for a gallery frame (1.1.1). Frame 1 is the product; later frames
+// are alternate views and stay named because only one frame is displayed at a
+// time — an empty alt would leave the visible frame nameless after a dot/swipe.
+function galleryAlt(title, i, total) {
+  const name = title || "Product image";
+  return i === 0 ? name : `${name} — view ${i + 1} of ${total}`;
+}
+
 function buildImageContainer(item, metadataPill, heartButton) {
   const container = document.createElement("div");
   container.className = "img-container";
@@ -437,6 +484,7 @@ function buildImageContainer(item, metadataPill, heartButton) {
   previews.forEach((url, i) => {
     const img      = document.createElement("img");
     img.src        = url;
+    img.alt        = galleryAlt(item.title, i, previews.length);
     img.className  = "carousel-image";
     img.style.display = i === 0 ? "block" : "none";
     container.append(img);
@@ -455,6 +503,16 @@ function buildImageContainer(item, metadataPill, heartButton) {
   return container;
 }
 
+// Mark dot `idx` as the current frame — class for the visuals, aria-pressed
+// for assistive tech. Used by the dots themselves and by swipe.
+function setActiveDot(dots, idx) {
+  Array.from(dots.children).forEach((d, i) => {
+    const active = i === idx;
+    d.classList.toggle("active", active);
+    d.setAttribute("aria-pressed", String(active));
+  });
+}
+
 function createImageIndicator(count, current) {
   if (count <= 1) {
     return null;
@@ -462,15 +520,20 @@ function createImageIndicator(count, current) {
 
   const dots = document.createElement("div");
   dots.className = "image-indicator";
+  dots.setAttribute("role", "group");
+  dots.setAttribute("aria-label", "Product photos");
   for (let i = 0; i < count; i++) {
-    const dot = document.createElement("span");
+    // Real buttons so keyboard users can reach every frame (2.1.1).
+    const dot = document.createElement("button");
+    dot.type = "button";
     dot.className = "indicator-dot" + (i === current ? " active" : "");
+    dot.setAttribute("aria-label", `Show image ${i + 1} of ${count}`);
+    dot.setAttribute("aria-pressed", String(i === current));
     dot.addEventListener("click", () => {
       const imgs = dots.parentElement.querySelectorAll(".carousel-image");
       imgs.forEach(img => (img.style.display = "none"));
-      Array.from(dots.children).forEach(d => d.classList.remove("active"));
       imgs[i].style.display = "block";
-      dot.classList.add("active");
+      setActiveDot(dots, i);
     });
     dots.append(dot);
   }
@@ -496,13 +559,10 @@ function addSwipe(container, count, indicator) {
     const imgs = container.querySelectorAll(".carousel-image");
 
     imgs[idx].style.display = "none";
-    if (indicator) {
-      indicator.children[idx].classList.remove("active");
-    }
     idx = dx < 0 ? (idx + 1) % count : (idx - 1 + count) % count;
     imgs[idx].style.display = "block";
     if (indicator) {
-      indicator.children[idx].classList.add("active");
+      setActiveDot(indicator, idx);
     }
     return true;
   };
@@ -632,20 +692,27 @@ export function openModal(item) {
   item.imgSrc.forEach((signedURL, i) => {
     const img      = document.createElement("img");
     img.src        = signedURL; // Use direct Firebase Storage URL
+    img.alt        = galleryAlt(item.title, i, item.imgSrc.length);
     img.className  = "modal-image";
     img.style.display = i === 0 ? "block" : "none";
     box.append(img);
   });
 
+  // Remember who opened the dialog so close can hand focus back (2.4.3).
+  modalNav.opener = document.activeElement;
+
   modal.classList.add("active");
   document.body.style.overflow = 'hidden';
   setupModalNav(box, item.imgSrc.length);
+
+  const closeBtn = document.getElementById("close-modal-button");
+  if (closeBtn) closeBtn.focus();
 }
 
 // Gallery state lives at module scope so the listeners below can be bound ONCE
 // against the static modal chrome. Binding them per openModal() call made a
 // single arrow-click advance several frames.
-const modalNav = { imgs: [], count: 0, idx: 0, bound: false };
+const modalNav = { imgs: [], count: 0, idx: 0, bound: false, opener: null };
 
 function showModalImage(i) {
   const { imgs, count } = modalNav;
@@ -703,6 +770,7 @@ function createLikeButton(item) {
 
   function refresh() {
     btn.classList.toggle("liked", liked);
+    btn.setAttribute("aria-pressed", String(liked));
     btn.textContent = liked ? "favorite" : "favorite_border";
     countEl.textContent = `${votes} vote${votes === 1 ? "" : "s"}`;
   }
@@ -737,6 +805,8 @@ function createLikeButton(item) {
 const GENDER_OPTIONS = ["Male", "Female", "Teen", "Child", "Infant"];
 const DEFAULT_SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
 const FIT_PREF_KEY = "kaayko.lastFit";
+// Unique ids for the per-card mini panel group labels.
+let miniPanelSeq = 0;
 
 export function readFitPref() {
   try {
@@ -812,11 +882,11 @@ function createBuyButton(item) {
   link.href = "#";
   link.dataset.productId = item.id;
   link.setAttribute("role", "button");
-  link.setAttribute("aria-haspopup", "dialog");
 
   const linkIcon = document.createElement("span");
   linkIcon.className = "material-icons cart-link-icon";
   linkIcon.textContent = "check";
+  linkIcon.setAttribute("aria-hidden", "true"); // ligature text must not be read
 
   const label = document.createElement("span");
   label.className = "cart-label";
@@ -838,10 +908,13 @@ function createBuyButton(item) {
 
   link.append(linkIcon, label);
 
-  // Mini panel for size/gender selection
+  // Mini panel for size/gender selection — a non-modal dialog popover.
   const miniPanel = document.createElement("div");
   miniPanel.className = "cart-mini-panel";
   miniPanel.style.display = "none";
+  miniPanel.setAttribute("role", "dialog");
+  miniPanel.setAttribute("aria-label", `Choose size and fit for ${item.title}`);
+  const panelUid = ++miniPanelSeq;
 
   let selectedGender = null;
   let selectedSize = null;
@@ -855,25 +928,27 @@ function createBuyButton(item) {
     selectedSize = sizes.includes(cartItem?.size) ? cartItem.size : fallback.size;
 
     const genderChips = GENDER_OPTIONS.map(g =>
-      `<button class="mini-option${selectedGender === g ? " selected" : ""}" data-gender="${g}">${g}</button>`
+      `<button type="button" class="mini-option${selectedGender === g ? " selected" : ""}" data-gender="${g}" aria-pressed="${String(selectedGender === g)}">${g}</button>`
     ).join("");
     const sizeChips = sizes.map(s =>
-      `<button class="mini-option${selectedSize === s ? " selected" : ""}" data-size="${s}">${s}</button>`
+      `<button type="button" class="mini-option${selectedSize === s ? " selected" : ""}" data-size="${s}" aria-pressed="${String(selectedSize === s)}">${s}</button>`
     ).join("");
+    const genderLabelId = `mini-gender-label-${panelUid}`;
+    const sizeLabelId = `mini-size-label-${panelUid}`;
 
     miniPanel.innerHTML = `
       <div class="mini-panel-content">
         <div class="mini-panel-section">
-          <label>Gender:</label>
-          <div class="mini-gender-options">${genderChips}</div>
+          <label id="${genderLabelId}">Gender:</label>
+          <div class="mini-gender-options" role="group" aria-labelledby="${genderLabelId}">${genderChips}</div>
         </div>
         <div class="mini-panel-section">
-          <label>Size:</label>
-          <div class="mini-size-options">${sizeChips}</div>
+          <label id="${sizeLabelId}">Size:</label>
+          <div class="mini-size-options" role="group" aria-labelledby="${sizeLabelId}">${sizeChips}</div>
         </div>
         <div class="mini-panel-actions">
-          <button class="mini-add-to-cart">${cartItem ? "Update bag" : "Add to bag"}</button>
-          ${cartItem ? '<button class="mini-remove-from-cart">Remove from bag</button>' : ""}
+          <button type="button" class="mini-add-to-cart">${cartItem ? "Update bag" : "Add to bag"}</button>
+          ${cartItem ? '<button type="button" class="mini-remove-from-cart">Remove from bag</button>' : ""}
         </div>
       </div>
     `;
@@ -887,11 +962,19 @@ function createBuyButton(item) {
   }
 
   function bindMiniPanel() {
+    // Chips are toggle buttons: the class drives the visuals, aria-pressed the state.
+    const selectChip = (chips, chosen) => {
+      chips.forEach(b => {
+        const on = b === chosen;
+        b.classList.toggle("selected", on);
+        b.setAttribute("aria-pressed", String(on));
+      });
+    };
+
     miniPanel.querySelectorAll("[data-gender]").forEach(genderBtn => {
       genderBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        miniPanel.querySelectorAll("[data-gender]").forEach(b => b.classList.remove("selected"));
-        genderBtn.classList.add("selected");
+        selectChip(miniPanel.querySelectorAll("[data-gender]"), genderBtn);
         selectedGender = genderBtn.dataset.gender;
         updateAddButton();
       });
@@ -900,8 +983,7 @@ function createBuyButton(item) {
     miniPanel.querySelectorAll("[data-size]").forEach(sizeBtn => {
       sizeBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        miniPanel.querySelectorAll("[data-size]").forEach(b => b.classList.remove("selected"));
-        sizeBtn.classList.add("selected");
+        selectChip(miniPanel.querySelectorAll("[data-size]"), sizeBtn);
         selectedSize = sizeBtn.dataset.size;
         updateAddButton();
       });
@@ -952,7 +1034,7 @@ function createBuyButton(item) {
     } else {
       saveFitPref(selectedGender, selectedSize);
       syncCartState();
-      miniPanel.style.display = "none";
+      closeMiniPanel(miniPanel, { restoreFocus: true });
       showBagToast(`${item.title} added to bag`);
     }
   }
@@ -961,7 +1043,7 @@ function createBuyButton(item) {
     if (window.cartManager) {
       window.cartManager.removeItem(item.id);
       syncCartState();
-      miniPanel.style.display = "none";
+      closeMiniPanel(miniPanel, { restoreFocus: true });
     }
   }
 
@@ -1041,15 +1123,19 @@ function createBuyButton(item) {
     }
 
     if (isVisible) {
-      miniPanel.style.display = "none";
+      closeMiniPanel(miniPanel, { restoreFocus: true });
       return;
     }
 
     // Close all other panels
-    document.querySelectorAll('.cart-mini-panel').forEach(p => p.style.display = "none");
+    document.querySelectorAll('.cart-mini-panel').forEach(p => closeMiniPanel(p));
 
     renderMiniPanel(currentlyInCart ? window.cartManager.getItem(item.id) : null);
     miniPanel.style.display = "block";
+    link.setAttribute("aria-expanded", "true");
+    // Move focus into the dialog: the current gender chip is the first choice.
+    const firstChoice = miniPanel.querySelector(".mini-option.selected") || miniPanel.querySelector(".mini-option");
+    if (firstChoice) firstChoice.focus();
   }
 
   link.addEventListener("click", toggleMiniPanel);
@@ -1058,6 +1144,20 @@ function createBuyButton(item) {
       toggleMiniPanel(e);
     }
   });
+
+  // Escape anywhere inside the control (trigger or panel) dismisses the
+  // panel and returns focus to the trigger.
+  container.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && miniPanel.style.display === "block") {
+      closeMiniPanel(miniPanel, { restoreFocus: true });
+    }
+  });
+
+  // Only products that actually open the picker advertise a popup (4.1.2).
+  if (needsPicker()) {
+    link.setAttribute("aria-haspopup", "dialog");
+    link.setAttribute("aria-expanded", "false");
+  }
 
   syncCartState();
   container.append(link, miniPanel);
@@ -1075,9 +1175,33 @@ export function setupModalCloseHandlers() {
   function closeModal() {
     modal.classList.remove("active");
     document.body.style.overflow = '';
+    // Hand focus back to whatever opened the gallery (2.4.3).
+    const opener = modalNav.opener;
+    modalNav.opener = null;
+    if (opener && typeof opener.focus === "function" && document.contains(opener)) {
+      opener.focus();
+    }
   }
 
   btn?.addEventListener("click", closeModal);
+
+  // Keep Tab inside the open dialog (2.1.2). The only focusable chrome is the
+  // close button and the two arrows (the arrows are hidden for one-photo items).
+  modal.addEventListener("keydown", e => {
+    if (e.key !== "Tab" || !modal.classList.contains("active")) return;
+    const focusables = Array.from(modal.querySelectorAll("button"))
+      .filter(b => !b.disabled && getComputedStyle(b).display !== "none");
+    if (!focusables.length) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  });
 
   // `.modal-content` is 100%×100%, so it — not `#modal` — is always the click
   // target. Dismiss on anything that is not the photo itself or an arrow, so a

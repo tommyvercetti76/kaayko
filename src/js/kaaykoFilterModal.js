@@ -21,12 +21,21 @@ document.addEventListener('DOMContentLoaded', function() {
     reset: !!filterReset
   });
 
+  // The control that opened the dialog; focus returns there on close (2.4.3).
+  let filterOpener = null;
+
   // Show filter modal
   function showFilter() {
     console.log('🎯 Attempting to show filter modal...');
     if (filterOverlay) {
+      filterOpener = (document.activeElement && document.activeElement !== document.body)
+        ? document.activeElement
+        : filterToggle;
       filterOverlay.classList.add('active');
       document.body.style.overflow = 'hidden'; // Prevent background scrolling
+      // Move focus into the dialog; its name (#filter-title) is announced on entry.
+      const first = filterOverlay.querySelector('#filter-close');
+      if (first) first.focus();
       console.log('✅ Filter modal shown');
     } else {
       console.error('❌ Filter overlay not found');
@@ -39,6 +48,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (filterOverlay) {
       filterOverlay.classList.remove('active');
       document.body.style.overflow = ''; // Restore scrolling
+      if (filterOpener && typeof filterOpener.focus === 'function' && document.contains(filterOpener)) {
+        filterOpener.focus();
+      }
+      filterOpener = null;
       console.log('✅ Filter modal hidden');
     }
   }
@@ -64,6 +77,24 @@ document.addEventListener('DOMContentLoaded', function() {
     filterOverlay.addEventListener('click', function(e) {
       if (e.target === filterOverlay) {
         hideFilter();
+      }
+    });
+
+    // Keep Tab inside the open dialog (2.1.2).
+    filterOverlay.addEventListener('keydown', function(e) {
+      if (e.key !== 'Tab' || !filterOverlay.classList.contains('active')) return;
+      const focusables = Array.from(
+        filterOverlay.querySelectorAll('button:not([disabled]), input:not([disabled]), a[href]')
+      ).filter(el => el.offsetParent !== null);
+      if (!focusables.length) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
       }
     });
   }

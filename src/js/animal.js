@@ -108,14 +108,14 @@ function renderVariants(animal, products) {
   const heading = `Wear the ${esc(animal.name.split(" ").pop())}`;
   const cards = products.map(p => `
     <article class="variant-card" data-product-id="${esc(p.id)}">
-      <div class="variant-img" data-zoom>${variantImage(p)}</div>
+      <div class="variant-img" data-zoom role="button" tabindex="0" aria-label="${esc(p.title)} — open full-size image">${variantImage(p)}</div>
       <div class="variant-meta">
         <h3 class="variant-title">${esc(p.title)}</h3>
         <span class="variant-price">${variantPriceText(p)}</span>
       </div>
       ${p.description ? `<p class="variant-description">${esc(p.description)}</p>` : ""}
       <button type="button" class="variant-cta" data-add-to-bag>
-        <span class="material-icons cta-check" style="display:none">check</span>
+        <span class="material-icons cta-check" style="display:none" aria-hidden="true">check</span>
         <span class="cta-label">Add to bag</span>
       </button>
     </article>`).join("");
@@ -198,23 +198,26 @@ function openSizeGenderPopup(product, priceLabel) {
   let g = GENDERS.includes(existing?.gender) ? existing.gender : fallback.gender;
   let s = sizes.includes(existing?.size) ? existing.size : fallback.size;
 
+  // Whoever opened the picker gets focus back when it closes (2.4.3).
+  const opener = document.activeElement;
+
   const overlay = document.createElement("div");
   overlay.className = "filter-overlay active";
   overlay.style.zIndex = 3000;
   overlay.innerHTML = `
-    <div class="filter-panel" style="max-width:380px;">
-      <h2>Choose your fit</h2>
+    <div class="filter-panel" style="max-width:380px;" role="dialog" aria-modal="true" aria-labelledby="vs-title">
+      <h2 id="vs-title">Choose your fit</h2>
       <button class="filter-close material-icons" type="button" aria-label="Close" id="vs-close">close</button>
       <div class="filter-section">
-        <strong>Gender</strong>
-        <div class="chip-group" id="vs-gender">
-          ${GENDERS.map(x => `<button type="button" class="chip${x === g ? " selected" : ""}" data-g="${x}">${x}</button>`).join("")}
+        <strong id="vs-gender-label">Gender</strong>
+        <div class="chip-group" id="vs-gender" role="group" aria-labelledby="vs-gender-label">
+          ${GENDERS.map(x => `<button type="button" class="chip${x === g ? " selected" : ""}" data-g="${x}" aria-pressed="${x === g}">${x}</button>`).join("")}
         </div>
       </div>
       <div class="filter-section">
-        <strong>Size</strong>
-        <div class="chip-group" id="vs-size">
-          ${sizes.map(x => `<button type="button" class="chip${x === s ? " selected" : ""}" data-s="${esc(x)}">${esc(x)}</button>`).join("")}
+        <strong id="vs-size-label">Size</strong>
+        <div class="chip-group" id="vs-size" role="group" aria-labelledby="vs-size-label">
+          ${sizes.map(x => `<button type="button" class="chip${x === s ? " selected" : ""}" data-s="${esc(x)}" aria-pressed="${x === s}">${esc(x)}</button>`).join("")}
         </div>
       </div>
       <div class="filter-actions">
@@ -224,19 +227,43 @@ function openSizeGenderPopup(product, priceLabel) {
     </div>`;
   document.body.appendChild(overlay);
 
+  // Chips are toggle buttons: the class drives the visuals, aria-pressed the state.
+  const selectChip = (chips, chosen) => chips.forEach(b => {
+    const on = b === chosen;
+    b.classList.toggle('selected', on);
+    b.setAttribute('aria-pressed', String(on));
+  });
   overlay.querySelectorAll('[data-g]').forEach(btn => btn.addEventListener('click', () => {
-    overlay.querySelectorAll('[data-g]').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected'); g = btn.dataset.g;
+    selectChip(overlay.querySelectorAll('[data-g]'), btn); g = btn.dataset.g;
   }));
   overlay.querySelectorAll('[data-s]').forEach(btn => btn.addEventListener('click', () => {
-    overlay.querySelectorAll('[data-s]').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected'); s = btn.dataset.s;
+    selectChip(overlay.querySelectorAll('[data-s]'), btn); s = btn.dataset.s;
   }));
 
-  const close = () => overlay.remove();
+  // Modal dialog behaviour (2.1.2 / 2.4.3 / 4.1.2): Escape closes, Tab stays
+  // inside, focus returns to the opener on close.
+  function onKeydown(e) {
+    if (e.key === 'Escape') { e.preventDefault(); close(); return; }
+    if (e.key !== 'Tab') return;
+    const focusables = Array.from(overlay.querySelectorAll('button:not([disabled])'));
+    if (!focusables.length) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (!overlay.contains(document.activeElement)) { e.preventDefault(); first.focus(); return; }
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+  function close() {
+    document.removeEventListener('keydown', onKeydown);
+    overlay.remove();
+    if (opener && typeof opener.focus === 'function' && document.contains(opener)) opener.focus();
+  }
+  document.addEventListener('keydown', onKeydown);
   overlay.querySelector('#vs-close').addEventListener('click', close);
   overlay.querySelector('#vs-cancel').addEventListener('click', close);
   overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+  // Land on the current gender choice; the dialog's name is announced on entry.
+  (overlay.querySelector('[data-g].selected') || overlay.querySelector('#vs-close')).focus();
   overlay.querySelector('#vs-confirm').addEventListener('click', () => {
     if (!g || !s) return;
     const ok = window.cartManager.addItem({
@@ -272,7 +299,11 @@ function bindVariantActions(animal, products, openModalFn) {
   products.forEach(p => {
     const card = document.querySelector(`.variant-card[data-product-id="${CSS.escape(p.id)}"]`);
     if (!card) return;
-    card.querySelector('[data-zoom]').addEventListener('click', () => openModalFn(p));
+    const zoom = card.querySelector('[data-zoom]');
+    zoom.addEventListener('click', () => openModalFn(p));
+    zoom.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModalFn(p); }
+    });
     card.querySelector('[data-add-to-bag]').addEventListener('click', e => {
       e.stopPropagation();
       addToBagSmart(p);
@@ -282,8 +313,14 @@ function bindVariantActions(animal, products, openModalFn) {
   const heroArt = document.querySelector('.animal-hero-art[data-zoom-full]');
   if (heroArt && animal.artUrl) {
     heroArt.style.cursor = 'zoom-in';
-    heroArt.addEventListener('click', () => {
-      openModalFn({ title: animal.name, imgSrc: [animal.artUrl] });
+    // Keyboard-reachable zoom (2.1.1); the label keeps the illustration's name.
+    heroArt.setAttribute('role', 'button');
+    heroArt.setAttribute('tabindex', '0');
+    heroArt.setAttribute('aria-label', `${animal.name} illustration — open full-size image`);
+    const zoomHero = () => openModalFn({ title: animal.name, imgSrc: [animal.artUrl] });
+    heroArt.addEventListener('click', zoomHero);
+    heroArt.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); zoomHero(); }
     });
   }
   syncVariantCtas(products);

@@ -1,0 +1,103 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Store → product page motion.
+
+   1. Cross-document View Transition: the product photo you tap on the grid
+      morphs into the product page hero. Both documents opt in; the browser
+      does the geometry. Unsupported browsers simply navigate — nothing
+      breaks, nothing is faked.
+   2. A "bump": the shared element's group animation uses an overshoot curve
+      so the image settles into place rather than sliding to a stop.
+   3. Hero parallax on scroll, scroll-driven in CSS where supported, with a
+      JS fallback in js/pdp-motion.js.
+   Everything is switched off under prefers-reduced-motion.
+   ───────────────────────────────────────────────────────────────────────── */
+
+@view-transition { navigation: auto; }
+
+/* Only one element per document may carry the name. On the grid the tapped
+   image is stamped by js/pdp-motion.js at pointerdown; on the product page
+   the hero carries it here. */
+.animal-v2 .animal-hero-art img,
+.animal-v2 .animal-hero-art .pdp-hero-preview,
+.product-gallery-main img,
+.product-gallery-skeleton .pdp-hero-preview {
+  view-transition-name: product-hero;
+}
+
+/* The rest of the page: a short, quiet crossfade. */
+::view-transition-old(root) { animation: 220ms cubic-bezier(.4,0,1,1) both pdp-vt-out; }
+::view-transition-new(root) { animation: 320ms cubic-bezier(0,0,.2,1) both pdp-vt-in; }
+@keyframes pdp-vt-out { to   { opacity: 0; } }
+@keyframes pdp-vt-in  { from { opacity: 0; } }
+
+/* The photo: spring into place. cubic-bezier with y > 1 overshoots, so the
+   image lands slightly past its target and eases back — the bump. */
+::view-transition-group(product-hero) {
+  animation-duration: 640ms;
+  animation-timing-function: cubic-bezier(.22, 1.28, .36, 1);
+}
+::view-transition-old(product-hero),
+::view-transition-new(product-hero) {
+  animation: none;             /* no crossfade between the two photos… */
+  mix-blend-mode: normal;
+  height: 100%;
+  object-fit: cover;           /* …just one image, resized as it travels */
+  border-radius: 14px;
+}
+::view-transition-old(product-hero) { display: none; }   /* show the destination image throughout */
+
+/* ── On the grid: pressing a card should feel like pressing something. ── */
+.store-v2 .carousel-item:has(.carousel-image:active) { transform: scale(.985); }
+.store-v2 .carousel-item { transition: transform 160ms cubic-bezier(.2,.8,.2,1); }
+
+/* ── Product page: hero parallax + entrance ─────────────────────────── */
+.animal-v2 .animal-hero-art,
+.product-gallery-main { overflow: hidden; }
+
+.animal-v2 .animal-hero-art img,
+.product-gallery-main img {
+  will-change: transform;
+  transform: translate3d(0, var(--pdp-parallax-y, 0), 0) scale(1.06);
+  transform-origin: 50% 40%;
+}
+
+/* Scroll-driven where the browser has it: the art drifts up at roughly half
+   scroll speed for the first ~70vh. */
+@supports (animation-timeline: scroll()) {
+  html:not(.pdp-parallax-js) .animal-v2 .animal-hero-art img,
+  html:not(.pdp-parallax-js) .product-gallery-main img {
+    animation: pdp-parallax linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 70vh;
+  }
+}
+@keyframes pdp-parallax {
+  from { transform: translate3d(0, 0, 0) scale(1.06); }
+  to   { transform: translate3d(0, -6%, 0) scale(1.06); }
+}
+
+/* Text rises in a beat after the image lands. Runs on insertion, so it also
+   serves as the entrance on browsers without view transitions. */
+.animal-v2 .animal-hero-text,
+.product-info {
+  animation: pdp-rise 560ms cubic-bezier(.22, 1.2, .36, 1) 120ms both;
+}
+@keyframes pdp-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Hero preview painted from the tapped card before the real image arrives —
+   exact same box the real hero will occupy, so the morph has a destination. */
+.pdp-hero-preview {
+  display: block; width: 100%; height: 100%; object-fit: cover; border-radius: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
+  .animal-v2 .animal-hero-art img,
+  .product-gallery-main img,
+  .animal-v2 .animal-hero-text,
+  .product-info,
+  .store-v2 .carousel-item { animation: none !important; transition: none !important; transform: none !important; }
+}

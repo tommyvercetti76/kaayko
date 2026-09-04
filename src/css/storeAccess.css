@@ -74,7 +74,7 @@
   height: 2.25rem;
   border: 0;
   background: none;
-  color: rgba(181, 147, 90, 0.55);
+  color: rgba(181, 147, 90, 0.75); /* 4.2:1 on the card — an icon-only control needs 3:1 */
   cursor: pointer;
   font-family: "Cormorant Garamond", Georgia, serif;
   font-size: 1.6rem;
@@ -86,11 +86,19 @@
 #store-modal .modal-close:focus-visible {
   color: var(--sa-gold-bright);
   transform: rotate(90deg);
-  outline: none;
+}
+
+/* Focus must stay VISIBLE (2.4.7): a gold ring on every control in the card. */
+#store-modal .modal-close:focus-visible,
+#store-modal .modal-action:focus-visible,
+#store-modal .modal-fallback a:focus-visible,
+#store-modal .store-arrow:focus-visible {
+  outline: 2px solid var(--sa-gold-bright);
+  outline-offset: 3px;
 }
 
 #store-modal .modal-eyebrow {
-  color: rgba(181, 147, 90, 0.6);
+  color: rgba(181, 147, 90, 0.9); /* 5.7:1 — 11px uppercase text needs 4.5:1 */
   font-family: "Cormorant Garamond", Georgia, serif;
   font-size: 0.68rem;
   font-style: italic;
@@ -165,12 +173,11 @@
   border-color: var(--sa-gold-bright);
   background: rgba(181, 147, 90, 0.1);
   color: var(--sa-gold-bright);
-  outline: none;
 }
 
 #store-modal .modal-fallback {
   margin-top: 1.1rem;
-  color: rgba(237, 232, 223, 0.4);
+  color: rgba(237, 232, 223, 0.6); /* 6.2:1 (was 3.3:1 at 12px) */
   font-family: "Cormorant Garamond", Georgia, serif;
   font-size: 0.76rem;
   font-style: italic;
@@ -195,21 +202,34 @@
   display: flex;
   align-items: center;
   width: 100%;
-  border-bottom: 1px solid rgba(181, 147, 90, 0.22);
+  border-bottom: 1px solid rgba(181, 147, 90, 0.7); /* 3.8:1 — the input boundary needs 3:1 (1.4.11) */
   padding-bottom: 2px;
   transition: border-color 280ms ease;
 }
 
 .store-field-wrap:focus-within { border-bottom-color: var(--sa-gold); }
-.store-field-wrap.error        { border-bottom-color: rgba(255, 80, 80, 0.55); }
-.store-field-wrap.ok           { border-bottom-color: rgba(130, 190, 80, 0.55); }
+.store-field-wrap.error        { border-bottom-color: rgba(255, 80, 80, 0.8); }
+.store-field-wrap.ok           { border-bottom-color: rgba(130, 190, 80, 0.75); }
+
+/* Real <label> for the code field (3.3.2); visually hidden, read by AT. */
+.store-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 
 .store-input {
   flex: 1;
   min-width: 0;
   background: none;
   border: none;
-  outline: none;
   color: rgba(237, 232, 223, 0.88);
   font-family: "Cormorant Garamond", Georgia, serif;
   font-size: clamp(0.92rem, 1.7vw, 1.05rem);
@@ -220,8 +240,14 @@
 }
 
 .store-input::placeholder {
-  color: rgba(255, 255, 255, 0.16);
+  color: rgba(237, 232, 223, 0.6); /* 6.2:1 (was 1.6:1) */
   letter-spacing: 0.07em;
+}
+
+.store-input:focus-visible {
+  outline: 2px solid var(--sa-gold-bright);
+  outline-offset: 4px;
+  border-radius: 2px;
 }
 
 .store-input:disabled { opacity: 0.35; }
@@ -230,7 +256,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: rgba(181, 147, 90, 0.28);
+  color: rgba(181, 147, 90, 0.72); /* 3.9:1 — icon-only control needs 3:1 */
   font-family: "Cormorant Garamond", Georgia, serif;
   font-size: 1.35em;
   line-height: 1;
@@ -258,7 +284,7 @@
   font-size: clamp(0.72rem, 1.2vw, 0.8rem);
   font-style: italic;
   letter-spacing: 0.04em;
-  color: rgba(255, 80, 80, 0.7);
+  color: rgba(255, 80, 80, 0.92); /* 5.3:1 (was 3.5:1) — error text must stay legible */
   text-align: center;
   opacity: 0;
   transition: opacity 260ms ease, color 260ms ease;

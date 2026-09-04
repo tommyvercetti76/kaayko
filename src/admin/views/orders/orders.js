@@ -212,6 +212,17 @@ async function postUpdate(body) {
   return res.json();
 }
 
+/** Send the customer a delay notice (FTC Mail Order Rule: notify before the promised date). */
+async function postDelay(body) {
+  const res = await apiFetch('/admin/orders/delay-notice', {
+    method: 'POST',
+    body: JSON.stringify(body)
+  });
+  if (!res) throw new Error('Session expired. Please sign in again.'); // 401 handled by apiFetch
+  if (!res.ok) throw new Error(await errorMessage(res, `Update failed (${res.status})`));
+  return res.json();
+}
+
 // ---------------------------------------------------------------------------
 // Actions
 // ---------------------------------------------------------------------------
@@ -232,6 +243,9 @@ function onListClick(e) {
   if (action === 'ship-open')   { toggleShipForm(card, true); return; }
   if (action === 'ship-cancel') { toggleShipForm(card, false); return; }
   if (action === 'ship-confirm') { confirmShip(id, card); return; }
+  if (action === 'delay-open')   { toggleDelayForm(card, true); return; }
+  if (action === 'delay-cancel') { toggleDelayForm(card, false); return; }
+  if (action === 'delay-confirm') { confirmDelay(id, card); return; }
   if (action === 'status') { changeStatus(id, card, btn.dataset.status); return; }
 }
 
@@ -275,6 +289,48 @@ function toggleShipForm(card, open) {
   if (open) {
     const input = form.querySelector('.order-tracking-input');
     if (input) input.focus();
+  }
+}
+
+function toggleDelayForm(card, open) {
+  if (!card) return;
+  const form = card.querySelector('.order-delay-form');
+  if (!form) return;
+  form.hidden = !open;
+  if (open) {
+    const input = form.querySelector('.order-delay-date');
+    if (input) { if (!input.min) input.min = new Date().toISOString().slice(0, 10); input.focus(); }
+  }
+}
+
+/**
+ * Tell the customer the order is running late. The rule: notify BEFORE the
+ * promised ship date, give a new date, and offer cancel-for-refund. The email
+ * template carries the offer; this just needs a real date.
+ */
+async function confirmDelay(parentOrderId, card) {
+  if (!card) return;
+  const form = card.querySelector('.order-delay-form');
+  if (!form) return;
+  const newEstimatedDate = String(form.querySelector('.order-delay-date').value || '').trim();
+  const reason = String(form.querySelector('.order-delay-reason').value || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(newEstimatedDate)) { showError('Pick the new expected ship date first.'); return; }
+  if (new Date(newEstimatedDate) < new Date(new Date().toDateString())) { showError('The new date has to be in the future.'); return; }
+
+  setCardBusy(card, true);
+  try {
+    const res = await postDelay({ parentOrderId, newEstimatedDate, reason: reason || undefined });
+    const shipment = shipments.find((sh) => sh.parentOrderId === parentOrderId);
+    if (shipment) shipment.estimatedDelivery = newEstimatedDate;
+    const queued = res && res.customerNotification && res.customerNotification.queued !== false;
+    showSuccess(queued
+      ? `Delay notice sent — customer told to expect shipping by ${newEstimatedDate}.`
+      : `Date recorded. Email was not sent: ${(res && res.customerNotification && res.customerNotification.reason) || 'no customer email on the order'}.`);
+    replaceCard(parentOrderId);
+  } catch (err) {
+    console.error('[Orders] Delay notice failed:', err && err.message);
+    showError(err && err.message ? err.message : 'Could not send the delay notice.');
+    setCardBusy(card, false);
   }
 }
 
@@ -498,6 +554,7 @@ function orderCard(shipment) {
 
       ${actionsFor(shipment, status, id)}
       ${shipForm(shipment, id)}
+      ${delayForm(shipment, id)}
     </article>
   `;
 }
@@ -513,6 +570,7 @@ function actionsFor(shipment, status, id) {
     buttons.push(canShip
       ? btn('btn-success', 'Mark shipped', { action: 'ship-open', id })
       : btn('btn-secondary', 'Mark shipped', { action: 'ship-open', id }, true));
+    buttons.push(btn('btn-secondary', 'Running late', { action: 'delay-open', id }));
     buttons.push(btn('btn-danger', 'Cancel order', { action: 'status', status: 'cancelled', id }));
   }
   if (status === 'shipped') {
@@ -532,6 +590,32 @@ function btn(cls, label, data, disabled = false) {
     .map(([k, v]) => `data-${k}="${jsAttr(v)}"`)
     .join(' ');
   return `<button type="button" class="btn ${cls}" ${attrs}${disabled ? ' disabled title="No shipping address on this order"' : ''}>${escapeHtml(label)}</button>`;
+}
+
+function delayForm(shipment, id) {
+  const told = shipment.estimatedDelivery
+    ? `<p class="order-delay-note">Customer has been told to expect shipping by <strong>${escapeHtml(String(shipment.estimatedDelivery).slice(0, 10))}</strong>.</p>`
+    : '';
+  const canEmail = Boolean(shipment.customerEmail);
+  return `
+    ${told}
+    <div class="order-ship-form order-delay-form" hidden>
+      <label class="order-field">
+        <span class="order-field-label">New expected ship date</span>
+        <input type="date" class="order-delay-date" required>
+      </label>
+      <label class="order-field">
+        <span class="order-field-label">Reason (optional, goes in the email)</span>
+        <textarea class="order-delay-reason" rows="2" maxlength="300" placeholder="e.g. the print run was delayed at the supplier"></textarea>
+      </label>
+      <p class="order-delay-hint">${canEmail
+        ? 'The customer gets an email with the new date and a one-click choice: keep the order, or cancel for a full refund.'
+        : 'No customer email on this order — the date will be recorded but nothing can be sent.'}</p>
+      <div class="order-ship-actions">
+        <button type="button" class="btn btn-secondary" data-action="delay-confirm" data-id="${jsAttr(id)}">Send delay notice</button>
+        <button type="button" class="btn btn-secondary" data-action="delay-cancel" data-id="${jsAttr(id)}">Back</button>
+      </div>
+    </div>`;
 }
 
 function shipForm(shipment, id) {

@@ -1,0 +1,49 @@
+/* Store policy pages — Terms of Sale, Returns, Shipping.
+   Day beige/ivory, night black and gold, from the store-v2 tokens. */
+html, body.legal-root { height: auto; min-height: 100vh; }          /* escape storestyle's 100% + flex trap */
+body.legal-root { display: flex; flex-direction: column; overflow: visible; }
+body.legal-root .legal-wrap { flex: 1 0 auto; }
+body.legal-root .site-footer { flex: 0 0 auto; }
+
+html.dark-theme body.legal-root.store-v2 {
+  --v2-bg: #080808; --v2-surface: #18160f; --v2-surface-elev: #1e1c12;
+  --v2-border: rgba(181,147,90,.20); --v2-fg: #ede8df; --v2-fg-muted: rgba(237,232,223,.66);
+  --v2-gold: #b5935a; --v2-gold-bright: #d9bd7b;
+  background: var(--v2-bg); color: var(--v2-fg);
+}
+
+.legal-wrap { max-width: 720px; margin: 0 auto; padding: clamp(28px,5vw,56px) clamp(18px,4vw,32px) 64px; }
+.legal-eyebrow { font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: 13px;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--v2-gold); }
+.legal-wrap h1 { margin: 8px 0 6px; font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 600;
+  font-size: clamp(34px,7vw,50px); line-height: 1.04; color: var(--v2-fg); text-wrap: balance; }
+.legal-meta { margin: 0 0 30px; font-family: 'Josefin_Light','Josefin Sans',Arial,sans-serif; font-size: 13px; color: var(--v2-fg-muted); }
+.legal-wrap h2 { margin: 34px 0 10px; font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 600;
+  font-size: 24px; color: var(--v2-fg); }
+.legal-wrap p, .legal-wrap li { font-family: 'Josefin_Light','Josefin Sans',Arial,sans-serif; font-size: 15px;
+  line-height: 1.7; color: var(--v2-fg); max-width: 68ch; }
+.legal-wrap p { margin: 0 0 14px; }
+.legal-wrap ul { margin: 0 0 14px; padding-left: 20px; }
+.legal-wrap li { margin: 0 0 6px; }
+.legal-wrap li::marker { color: var(--v2-gold); }
+.legal-wrap a { color: var(--v2-gold); text-underline-offset: 2px; }
+.legal-wrap strong { font-family: 'Josefin_Medium','Josefin Sans',Arial,sans-serif; font-weight: 500; }
+.legal-summary { padding: 16px 18px; border: 1px solid var(--v2-border); border-radius: 12px;
+  background: var(--v2-surface); margin: 0 0 26px; }
+.legal-summary p:last-child { margin: 0; }
+/* Facts only the owner can supply. Deliberately visible until replaced. */
+.fill { background: color-mix(in srgb, var(--v2-gold) 22%, transparent); padding: 0 4px; border-radius: 3px; }
+.legal-nav { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0 0 26px; padding: 0; list-style: none; }
+.legal-nav li { margin: 0; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; }
+.legal-nav a[aria-current="page"] { color: var(--v2-fg); text-decoration: none; border-bottom: 1px solid var(--v2-gold); }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+
+/* Skip link: hidden until it has keyboard focus, then unmistakable. */
+.skip-link {
+  position: absolute; left: 12px; top: -60px; z-index: 1000;
+  padding: 10px 14px; border-radius: 8px;
+  background: var(--v2-fg); color: var(--v2-bg);
+  font-family: 'Josefin_Medium','Josefin Sans',Arial,sans-serif; font-size: 13px;
+  text-decoration: none; transition: top .15s ease;
+}
+.skip-link:focus { top: 12px; outline: 2px solid var(--v2-gold); outline-offset: 2px; }

@@ -72,6 +72,7 @@
        before the gate appears. secretStore.js opens the prompt and clears
        .store-locked on success. -->
   <style>
+    html.store-locked body > .skip-link,
     html.store-locked body > header,
     html.store-locked body > main,
     html.store-locked body > footer { visibility: hidden; }
@@ -91,9 +92,12 @@
       document.documentElement.classList.add('store-locked');
     })();
   </script>
+  <link rel="stylesheet" href="/css/pdp-motion.css" />
+  <script src="/js/pdp-motion.js"></script>
 </head>
 
 <body class="store-v2">
+  <a class="skip-link" href="#main">Skip to products</a>
   <!-- HEADER (shared across all pages) -->
   <header class="header">
     <div class="header-top">
@@ -152,7 +156,7 @@
       </div>
       <div class="filter-section" id="votes-section">
         <div class="slider-label">
-          <span>Min Votes</span>
+          <label for="votes-slider">Min Votes</label>
           <span id="votes-value">0</span>
         </div>
         <input type="range" id="votes-slider" min="0" max="25" value="0" />
@@ -165,8 +169,11 @@
   </div>
 
   <!-- MAIN CONTENT: Product carousel -->
-  <main>
-    <section id="carousel" class="carousel" aria-live="polite">
+  <main id="main" tabindex="-1">
+    <!-- Filter results are announced here. The grid itself is rebuilt wholesale
+         on every filter, so it must not be a live region. -->
+    <p id="carousel-status" class="visually-hidden" role="status"></p>
+    <section id="carousel" class="carousel">
       <!-- Skeleton loading cards (replaced when products load) -->
       <div class="carousel-item skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text skeleton-title"></div><div class="skeleton-text skeleton-desc"></div><div class="skeleton-text skeleton-desc" style="width:80%"></div><div class="skeleton-text skeleton-price"></div></div>
       <div class="carousel-item skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text skeleton-title"></div><div class="skeleton-text skeleton-desc"></div><div class="skeleton-text skeleton-desc" style="width:80%"></div><div class="skeleton-text skeleton-price"></div></div>
@@ -225,7 +232,7 @@
           <circle cx="17" cy="19" r="1.8"></circle>
           <path d="M4 5h2l2.1 8.2a1 1 0 0 0 1 .8h7.9a1 1 0 0 0 1-.75L20 8H8"></path>
         </svg>
-        <span class="cart-badge">0</span>
+        <span class="cart-badge" aria-hidden="true">0</span>
       `;
       
       // Insert before filter button
@@ -237,6 +244,8 @@
         const badge = cartBtn.querySelector('.cart-badge');
         badge.textContent = count;
         badge.style.display = count > 0 ? 'flex' : 'none';
+        // The link's accessible name is this label, never the badge digit (4.1.2).
+        cartBtn.setAttribute('aria-label', `Bag, ${count} item${count === 1 ? '' : 's'}`);
       };
       
       cartManager.subscribe(updateBadge);

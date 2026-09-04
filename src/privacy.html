@@ -109,7 +109,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
     <p>Alumni pages formerly hosted under /karma now redirect to alumni.kaayko.com, which is operated separately.</p>
     <p>This Privacy Policy explains how we collect, use, disclose, and safeguard your information. By using our Services, you consent to the data practices described here.</p>
     <div class="pp-callout">
-      <p><strong>Key Point:</strong> We are committed to transparency. You have control over your data and can opt out of data retention at any time.</p>
+      <p><strong>Key Point:</strong> We keep only what an order genuinely needs, we say exactly how long we keep it, and we do not sell or share it.</p>
     </div>
   </div>
 
@@ -118,7 +118,8 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
     <h3>Information You Provide</h3>
     <ul>
       <li><strong>Purchase Information:</strong> Email address, phone number (optional), and shipping address through Stripe's secure payment processing.</li>
-      <li><strong>Order Fulfillment Data:</strong> If you consent, we retain shipping info for future order convenience.</li>
+      <li><strong>Order Data:</strong> When you buy from the store we record your name, shipping address, email address, phone number (if given), the items ordered, the amounts paid, and any sales tax collected. This is what it takes to ship your order, handle a return, and keep the records the law requires. There is no account and no saved profile; nothing is kept "for next time".</li>
+      <li><strong>Payment Data:</strong> Card details go directly to Stripe inside Stripe's own secure form and never reach Kaayko's servers. We store Stripe's reference IDs for the payment, not your card.</li>
       <li><strong>Location Queries:</strong> When using Paddling Out, you may provide location coordinates or lake names.</li>
       <li><strong>Paddle Ratings:</strong> Anonymous condition ratings submitted through Rate Your Paddle and the Paddle Trainer. We store a device fingerprint to prevent duplicate submissions (one rating per device per spot per day), not to identify you. If you allow location access when rating, GPS proximity to the spot is recorded as a quality signal.</li>
       <li><strong>Communications:</strong> If you contact us, we may retain your email address and message content.</li>
@@ -159,8 +160,9 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
     <h2 data-kicon="clock">Data Retention</h2>
     <h3>Order Data</h3>
     <ul>
-      <li><strong>With Consent:</strong> If you opt in, we store shipping info in Firebase Firestore for up to 2 years or until you request deletion.</li>
-      <li><strong>Without Consent:</strong> Order data is processed through Stripe and not permanently retained by Kaayko.</li>
+      <li><strong>Order Records:</strong> Stored in Firebase Firestore. Your contact details and shipping address are automatically removed from the record <strong>two years</strong> after the order; the transaction itself (items, amounts, tax, Stripe reference IDs, order status) is kept for as long as tax and accounting law requires us to keep it, and then deleted. This runs on a monthly schedule &mdash; it is not a promise, it is a job.</li>
+      <li><strong>Order Emails:</strong> Copies of confirmation and shipping emails are deleted within 90 days of sending.</li>
+      <li><strong>Deletion Requests:</strong> Email us and we will remove your contact details from any order record immediately, subject to the transaction record we are required to keep.</li>
     </ul>
     <h3>Paddle and Weather Data</h3>
     <ul>
@@ -171,6 +173,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
     <ul>
       <li><strong>Product Analytics (PostHog):</strong> Aggregate, pseudonymous usage on the Kortex link-management app only &mdash; page views and in-app navigation. It is not loaded on the public Paddling Out pages or the Store. Retained under PostHog's data policy.</li>
       <li><strong>Server Logs:</strong> API request logs retained for 30 days.</li>
+      <li><strong>Shopping Bag:</strong> The store keeps the contents of your bag in your browser's local storage (key <code>kaayko_cart</code>) so it survives a page reload. It never leaves your device until you check out.</li>
     </ul>
   </div>
 
@@ -202,7 +205,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
       <li><strong>Access:</strong> Request a copy of the personal data we hold.</li>
       <li><strong>Correction:</strong> Request correction of inaccurate data.</li>
       <li><strong>Deletion:</strong> Request deletion of your data.</li>
-      <li><strong>Opt-Out:</strong> Unsubscribe from marketing emails at any time.</li>
+      <li><strong>Marketing:</strong> We do not currently send marketing email. If we ever do, every message will carry an unsubscribe link.</li>
       <li><strong>Data Portability:</strong> Request your data in a machine-readable format.</li>
     </ul>
     <p>To exercise any of these rights, contact <strong>rohan@kaayko.com</strong>.</p>

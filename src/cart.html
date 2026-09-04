@@ -72,6 +72,9 @@
       --co-btn-bg:  var(--v2-fg);
       --co-btn-fg:  var(--v2-bg);
       --co-btn-glow: rgba(26, 24, 21, 0.20);
+      /* 45% of the foreground over the ground lands ≈3.3:1 in both themes —
+         the field border is its only visual boundary, so 1.4.11 applies. */
+      --co-input-border: color-mix(in srgb, var(--v2-fg) 45%, transparent);
     }
 
     html.dark-theme body.co-root.store-v2 {
@@ -380,7 +383,7 @@
       box-sizing: border-box;
       height: 46px;
       padding: 0 14px;
-      border: 1px solid var(--v2-border);
+      border: 1px solid var(--co-input-border);
       border-radius: 10px;
       background: var(--v2-surface-elev);
       color: var(--v2-fg);
@@ -388,7 +391,7 @@
       font-size: 14px;
       transition: border-color 0.18s ease, box-shadow 0.18s ease;
     }
-    .co-input::placeholder { color: color-mix(in srgb, var(--v2-fg-muted) 70%, transparent); }
+    .co-input::placeholder { color: var(--v2-fg-muted); }   /* ≥4.5:1 in both themes */
     .co-input:focus {
       outline: none;
       border-color: var(--v2-gold);
@@ -405,25 +408,25 @@
     }
     .co-error.is-shown { display: block; }
 
-    .co-consent {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      margin: 16px 0;
-      padding: 12px 14px;
-      border: 1px solid var(--v2-border);
-      border-radius: 10px;
-      background: var(--v2-surface-elev);
-      cursor: pointer;
-    }
-    .co-consent input { margin-top: 2px; accent-color: var(--v2-gold); flex: none; }
-    .co-consent span {
+    .co-ready-hint {
+      margin: 10px 0 0;
+      min-height: 1.2em;
+      text-align: center;
       font-family: var(--co-sans);
-      font-size: 12px;
-      line-height: 1.55;
+      font-size: 12.5px;
       color: var(--v2-fg-muted);
     }
-    .co-consent a { color: var(--v2-gold); text-decoration: underline; text-underline-offset: 2px; }
+    .co-legal {
+      margin: 12px 0 0;
+      text-align: center;
+      font-family: var(--co-sans);
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--v2-fg-muted);
+    }
+    .co-legal a { color: var(--v2-gold); text-underline-offset: 2px; }
+    .co-money-row.is-pending span:last-child { color: var(--v2-fg-muted); font-style: italic; }
+
 
     .co-divider {
       height: 1px;
@@ -657,7 +660,7 @@
 
   <div class="co-sticky" id="co-sticky">
     <button id="co-sticky-btn" class="co-btn">Continue · $0.00</button>
-    <p class="co-reassure">Free shipping · 30-day returns</p>
+    <p class="co-reassure" id="co-sticky-meta">Free US shipping · 30-day returns</p>
   </div>
 
   <footer class="site-footer is-light">
@@ -686,6 +689,10 @@
        cart subscription and a debounced resize handler, so a stray
        window resize minted a fresh Stripe PaymentIntent and a
        Firestore document.                                             */
+    // Must say the same thing as /legal/shipping — that page is the promise,
+    // this is the reminder.
+    const SHIP_TIME = 'Made to order · ships in 5–7 business days';
+
     const state = {
       step: 'bag',          // 'bag' | 'checkout'
       pi: null,             // { clientSecret, paymentIntentId, totals }
@@ -695,7 +702,13 @@
       cartSig: null,        // cart signature the current intent was priced for
       addressComplete: false,
       paymentComplete: false,
-      emailValid: false
+      emailValid: false,
+      // Sales tax is computed server-side once the shipping address is
+      // complete. Pay stays disabled until it is known — a shopper must never
+      // be charged an un-taxed total while tax is nominally on.
+      taxState: 'idle',     // 'idle' | 'pending' | 'ok' | 'disabled' | 'error'
+      taxKey: null,         // address the current tax figure was computed for
+      taxTimer: null
     };
 
     /* ── Helpers ─────────────────────────────────────────────────── */
@@ -784,14 +797,17 @@
     function totals(items) {
       const server = state.pi?.totals;
       if (server && typeof server.totalCents === 'number') {
+        const taxKnown = state.taxState === 'ok' || state.taxState === 'disabled';
         return {
           subtotal: (server.subtotalCents ?? server.totalCents) / 100,
+          tax: (server.taxCents || 0) / 100,
+          taxKnown,
           total: server.totalCents / 100,
           authoritative: true
         };
       }
       const subtotal = items.reduce((sum, i) => sum + parsePrice(i.price) * (i.quantity || 1), 0);
-      return { subtotal, total: subtotal, authoritative: false };
+      return { subtotal, tax: 0, taxKnown: false, total: subtotal, authoritative: false };
     }
 
     /* ── Render ──────────────────────────────────────────────────── */
@@ -833,29 +849,31 @@
         </div>
         <div class="co-layout">
           <section class="co-bag">
-            <span class="co-label">Items</span>
+            <h2 class="co-label">Items</h2>
             ${items.map(itemMarkup).join('')}
-            <p class="co-bag-note">A bag holds up to two pieces. Everything ships free, with 30 days to change your mind.</p>
+            <p class="co-bag-note">A bag holds up to two pieces. ${SHIP_TIME}. Free US shipping, and 30 days to change your mind.</p>
           </section>
 
           <aside class="co-aside">
             <div class="co-card">
-              <span class="co-label">Summary</span>
+              <h2 class="co-label">Summary</h2>
               <div class="co-money">
-                <div class="co-money-row"><span>Subtotal</span><span>${money(t.subtotal)}</span></div>
+                <div class="co-money-row"><span>Subtotal</span><span id="co-subtotal">${money(t.subtotal)}</span></div>
                 <div class="co-money-row"><span>Shipping</span><span>Free</span></div>
-                <div class="co-money-row is-total"><span>Total</span><span>${money(t.total)}</span></div>
+                <div class="co-money-row ${t.taxKnown ? '' : 'is-pending'}" id="co-tax-row"><span>Sales tax</span><span id="co-tax">${t.taxKnown ? money(t.tax) : 'Calculated from your address'}</span></div>
+                <div class="co-money-row is-total"><span>Total</span><span id="co-total">${money(t.total)}</span></div>
               </div>
 
               <div class="co-step ${state.step === 'checkout' ? 'is-open' : ''}" id="co-step">
                 <hr class="co-divider" />
-                <span class="co-label">Contact</span>
+                <h2 class="co-label">Contact</h2>
                 <div class="co-fieldset">
                   <div class="co-field">
                     <label class="co-field-label" for="co-email">Email <span class="co-req">*</span></label>
                     <input class="co-input" type="email" id="co-email" autocomplete="email"
-                           inputmode="email" placeholder="you@example.com" required />
-                    <div class="co-error" id="co-email-error">Please enter a valid email</div>
+                           inputmode="email" placeholder="you@example.com" required
+                           aria-describedby="co-email-error" aria-invalid="false" />
+                    <div class="co-error" id="co-email-error" role="alert">Please enter a valid email</div>
                   </div>
                   <div class="co-field">
                     <label class="co-field-label" for="co-phone">Phone <span class="co-opt">(optional)</span></label>
@@ -864,13 +882,10 @@
                   </div>
                 </div>
 
-                <label class="co-consent" for="co-consent">
-                  <input type="checkbox" id="co-consent" checked />
-                  <span>Save my shipping details so this order can be fulfilled. You can opt out at any time. <a href="/privacy">Privacy Policy</a></span>
-                </label>
+                <p class="co-legal" style="text-align:left;margin:0 0 4px">Your address and contact details are used to ship this order and are kept only as long as our <a href="/privacy">Privacy Policy</a> says.</p>
 
                 <hr class="co-divider" />
-                <span class="co-label">Shipping &amp; payment</span>
+                <h2 class="co-label">Shipping &amp; payment</h2>
                 <div id="co-address-element"></div>
                 <div id="co-payment-element">
                   <div class="co-skeleton"><i></i><i></i><i></i></div>
@@ -878,13 +893,19 @@
                 </div>
               </div>
 
-              <button id="co-primary" class="co-btn">
+              <button id="co-primary" class="co-btn" ${state.step === 'checkout' ? 'aria-describedby="co-ready-hint"' : ''}>
                 ${state.step === 'checkout' ? `Pay ${money(t.total)}` : `Continue · ${money(t.total)}`}
               </button>
+              ${state.step === 'checkout' ? `
+              <p class="co-ready-hint" id="co-ready-hint" aria-live="polite">Enter your email, shipping address and card details to pay.</p>
+              <p class="co-legal">By placing this order you agree to our
+                <a href="/legal/terms">Terms of Sale</a>,
+                <a href="/legal/returns">Returns Policy</a> and
+                <a href="/legal/shipping">Shipping Policy</a>.</p>` : ''}
               <p class="co-reassure">
                 ${state.step === 'checkout'
                   ? 'Payments are handled by Stripe. Card details never touch Kaayko servers.'
-                  : 'Free shipping · 30-day returns · Secure checkout by Stripe'}
+                  : `${SHIP_TIME} · Free US shipping · 30-day returns`}
               </p>
             </div>
           </aside>
@@ -899,6 +920,10 @@
 
       sticky.classList.add('is-active');
       stickyBtn.textContent = state.step === 'checkout' ? `Pay ${money(t.total)}` : `Continue · ${money(t.total)}`;
+      const stickyMeta = document.getElementById('co-sticky-meta');
+      if (stickyMeta) stickyMeta.innerHTML = state.step === 'checkout'
+        ? 'By paying you agree to our <a href="/legal/terms">Terms</a>, <a href="/legal/returns">Returns</a> and <a href="/legal/shipping">Shipping</a> policies.'
+        : 'Free US shipping · 30-day returns';
 
       if (state.step === 'bag') {
         primary.disabled = false;
@@ -1002,6 +1027,7 @@
         state.cartSig = signature(items);
         state.step = 'checkout';
         state.addressComplete = state.paymentComplete = state.emailValid = false;
+        state.taxState = 'idle'; state.taxKey = null;
         render();
         document.getElementById('co-step')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } catch (err) {
@@ -1040,14 +1066,14 @@
               colorBackground: token('--v2-surface-elev', dark ? '#141613' : '#ffffff'),
               colorText: token('--v2-fg', dark ? '#f5efe2' : '#1a1815'),
               colorTextSecondary: token('--v2-fg-muted', '#4d4740'),
-              colorDanger: '#c0492f',
+              colorDanger: token('--co-danger', '#a83826'),
               fontFamily: "'Josefin Sans', Arial, sans-serif",
               spacingUnit: '4px',
               borderRadius: '10px'
             },
             rules: {
               '.Label': { fontSize: '12px', fontWeight: '500', letterSpacing: '0.04em', marginBottom: '7px' },
-              '.Input': { border: `1px solid ${token('--v2-border', 'rgba(26,24,21,0.12)')}`, padding: '12px 14px' },
+              '.Input': { border: `1px solid ${token('--co-input-border', 'rgba(26,24,21,0.45)')}`, padding: '12px 14px' },
               '.Input:focus': {
                 border: `1px solid ${token('--v2-gold', '#8b6f3a')}`,
                 boxShadow: `0 0 0 3px ${dark ? 'rgba(212,182,132,0.20)' : 'rgba(139,111,58,0.18)'}`
@@ -1069,7 +1095,12 @@
         addressElement.mount(addressHost);
         paymentElement.mount(host);
 
-        addressElement.on('change', (e) => { state.addressComplete = e.complete; refreshReady(); });
+        addressElement.on('change', (e) => {
+          state.addressComplete = e.complete;
+          if (e.complete && e.value && e.value.address) scheduleTax(e.value.address);
+          else if (state.taxState !== 'disabled') { state.taxState = 'idle'; setTaxRow(null); }
+          refreshReady();
+        });
         paymentElement.on('change', (e) => { state.paymentComplete = e.complete; refreshReady(); });
 
         const email = document.getElementById('co-email');
@@ -1077,8 +1108,10 @@
         email.addEventListener('input', () => {
           const v = email.value.trim();
           state.emailValid = validEmail(v);
-          email.classList.toggle('is-invalid', v.length > 0 && !state.emailValid);
-          emailError.classList.toggle('is-shown', v.length > 0 && !state.emailValid);
+          const bad = v.length > 0 && !state.emailValid;
+          email.classList.toggle('is-invalid', bad);
+          email.setAttribute('aria-invalid', bad ? 'true' : 'false');
+          emailError.classList.toggle('is-shown', bad);
           refreshReady();
         });
         email.focus();
@@ -1094,11 +1127,106 @@
     }
 
     function refreshReady() {
-      const ready = state.addressComplete && state.paymentComplete && state.emailValid;
+      const taxSettled = state.taxState === 'ok' || state.taxState === 'disabled';
+      const ready = state.addressComplete && state.paymentComplete && state.emailValid && taxSettled;
       const primary = document.getElementById('co-primary');
       const stickyBtn = document.getElementById('co-sticky-btn');
       if (primary) primary.disabled = !ready;
       if (stickyBtn) stickyBtn.disabled = !ready;
+
+      // Say what is still missing, in words, where a screen reader hears it.
+      const hint = document.getElementById('co-ready-hint');
+      if (hint) {
+        const missing = [];
+        if (!state.emailValid) missing.push('your email');
+        if (!state.addressComplete) missing.push('a shipping address');
+        if (!state.paymentComplete) missing.push('card details');
+        let text = '';
+        if (missing.length) text = `Enter ${missing.join(', ').replace(/, ([^,]*)$/, ' and $1')} to pay.`;
+        else if (state.taxState === 'pending') text = 'Calculating sales tax…';
+        else if (state.taxState === 'error') text = 'Sales tax could not be calculated for that address.';
+        hint.textContent = text;
+      }
+    }
+
+    /* ── Sales tax ────────────────────────────────────────────────────
+       Computed by the server from the shipping address, which is only
+       known once the Address Element is complete; the intent's amount is
+       updated there too. Debounced, and stale responses are discarded.   */
+    function scheduleTax(address) {
+      clearTimeout(state.taxTimer);
+      state.taxTimer = setTimeout(() => calculateTax(address), 350);
+    }
+
+    function setTaxRow(label, pending = false) {
+      const row = document.getElementById('co-tax-row');
+      const cell = document.getElementById('co-tax');
+      if (!row || !cell) return;
+      row.classList.toggle('is-pending', !!pending);
+      cell.textContent = label == null ? 'Calculated from your address' : label;
+    }
+
+    function updateMoney() {
+      const t = totals(cartManager.getItems());
+      const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+      set('co-subtotal', money(t.subtotal));
+      set('co-total', money(t.total));
+      if (t.taxKnown) setTaxRow(t.tax > 0 ? money(t.tax) : 'None for this address');
+      const label = `Pay ${money(t.total)}`;
+      const primary = document.getElementById('co-primary');
+      const stickyBtn = document.getElementById('co-sticky-btn');
+      if (primary && state.step === 'checkout' && !/Processing/.test(primary.textContent)) primary.textContent = label;
+      if (stickyBtn && state.step === 'checkout' && !/Processing/.test(stickyBtn.textContent)) stickyBtn.textContent = label;
+    }
+
+    async function calculateTax(address) {
+      if (!state.pi) return;
+      const key = JSON.stringify(address);
+      if (key === state.taxKey && (state.taxState === 'ok' || state.taxState === 'disabled')) return;
+      state.taxKey = key;
+      state.taxState = 'pending';
+      setTaxRow('Calculating…', true);
+      refreshReady();
+
+      try {
+        const res = await fetch(`${API_URL}/createPaymentIntent/tax`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paymentIntentId: state.pi.paymentIntentId, address })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (key !== state.taxKey) return;                     // address changed meanwhile
+
+        // No such route yet = tax feature not deployed. Treat as off rather
+        // than stranding the shopper on a button that can never enable.
+        if (res.status === 404 || data.enabled === false) {
+          state.taxState = 'disabled';
+          state.pi.totals = { ...state.pi.totals, taxCents: 0,
+            totalCents: typeof data.totalCents === 'number' ? data.totalCents : state.pi.totals.totalCents };
+          updateMoney();
+          refreshReady();
+          return;
+        }
+        if (!res.ok) {
+          throw new Error((res.status < 500 && (data.message || data.error)) || 'tax unavailable');
+        }
+        state.taxState = 'ok';
+        state.pi.totals = { subtotalCents: data.subtotalCents, taxCents: data.taxCents, totalCents: data.totalCents };
+        updateMoney();
+        // The server changed the PaymentIntent's amount. Elements caches it,
+        // so without this the payment form keeps showing (and some wallet
+        // buttons keep offering) the pre-tax figure.
+        try { await state.elements.fetchUpdates(); } catch (e) { console.warn('fetchUpdates:', e); }
+      } catch (err) {
+        if (key !== state.taxKey) return;
+        console.error('tax calculation failed:', err);
+        state.taxState = 'error';
+        setTaxRow('Unavailable');
+        toast(err instanceof TypeError
+          ? 'We could not reach the tax service. Check your connection and try again.'
+          : 'We could not calculate sales tax for that address. Please check it and try again.', 'error');
+      }
+      refreshReady();
     }
 
     /* ── Confirm ─────────────────────────────────────────────────── */
@@ -1108,7 +1236,6 @@
 
       const email = document.getElementById('co-email');
       const phone = document.getElementById('co-phone');
-      const consent = document.getElementById('co-consent');
       const emailError = document.getElementById('co-email-error');
       const customerEmail = email.value.trim();
 
@@ -1130,10 +1257,10 @@
       if (primary) { primary.disabled = true; primary.textContent = 'Processing…'; }
       if (stickyBtn) { stickyBtn.disabled = true; stickyBtn.textContent = 'Processing…'; }
 
-      // Contact details and the consent choice are recorded here —
-      // when the shopper has actually made them. The old page read
-      // these fields at render time, before anything was typed, so
-      // every stored consent was really just the default checkbox.
+      // Contact details are recorded here — when the shopper has actually
+      // typed them, not at render time. There is no consent checkbox: the
+      // address is needed to ship the order, so it was never a real choice,
+      // and the privacy policy now says exactly what is kept and for how long.
       try {
         await fetch(`${API_URL}/createPaymentIntent/updateEmail`, {
           method: 'POST',
@@ -1141,8 +1268,7 @@
           body: JSON.stringify({
             paymentIntentId: state.pi.paymentIntentId,
             email: customerEmail,
-            phone: phone.value.trim() || null,
-            dataRetentionConsent: !!consent.checked
+            phone: phone.value.trim() || null
           })
         });
       } catch (err) {
