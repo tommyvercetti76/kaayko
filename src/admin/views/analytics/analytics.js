@@ -14,6 +14,9 @@ import * as utils from '../../js/utils.js';
 import { apiFetch } from '../../js/config.js';
 import * as router from '../../js/router.js';
 
+/** Hover copy for a mark; the shared tip layer reads [data-tip]. */
+const tip = (title, body) => `data-tip="<b>${esc(title)}</b>${body ? ` · ${esc(body)}` : ''}"`;
+
 const esc = (v) => utils.escapeHtml(String(v ?? ''));
 const RELIABILITY_ISO = '2026-08-17';
 
@@ -52,16 +55,29 @@ export async function init() {
 async function load() {
   const container = document.getElementById('analytics-content');
   if (!container) return;
-  container.innerHTML = '<div class="pf-loading">Loading portfolio…</div>';
+  container.innerHTML = '<div data-portfolio><div class="pf-loading">Loading portfolio…</div></div>';
+  await loadPortfolio(container.querySelector('[data-portfolio]'));
+}
+
+/** GET a Kortex JSON endpoint; null when apiFetch logged out on a 401. */
+async function fetchJson(path) {
+  const res = await apiFetch(path);
+  if (!res) return null;
+  const data = await res.json();
+  if (!res.ok || !data?.success) throw new Error(data?.error || `Request failed (${res.status})`);
+  return data;
+}
+
+async function loadPortfolio(el) {
+  if (!el) return;
   try {
-    const res = await apiFetch('/kortex/analytics/portfolio');
-    if (!res) return; // 401 handled by apiFetch (logout)
-    const payload = await res.json();
-    if (!res.ok || !payload?.success) throw new Error(payload?.error || `Request failed (${res.status})`);
-    container.innerHTML = render(payload.analytics);
-    attachDrilldown(container);
+    const payload = await fetchJson('/kortex/analytics/portfolio');
+    if (!payload) return;
+    el.innerHTML = render(payload.analytics);
+    attachDrilldown(el);
+    if (window.KortexViews) window.KortexViews.attachTips(el);
   } catch (err) {
-    container.innerHTML = `<div class="pf-error">Couldn't load analytics: ${esc(err.message)}</div>`;
+    el.innerHTML = `<div class="pf-error">Couldn't load analytics: ${esc(err.message)}</div>`;
   }
 }
 
@@ -94,7 +110,8 @@ function ribbon(timeline, unique) {
   const cols = timeline.map((d, i) => {
     if (!d.clicks) return '';
     const x = padL + step * i + (step - bw) / 2;
-    return `<rect x="${x.toFixed(1)}" y="${yC(d.clicks).toFixed(1)}" width="${bw.toFixed(1)}" height="${(ih - (yC(d.clicks) - padT)).toFixed(1)}" rx="1.5" fill="var(--gold-primary)"/>`;
+    const visitors = d.uniqueVisitors == null ? '' : `, ${d.uniqueVisitors} distinct visitor${d.uniqueVisitors === 1 ? '' : 's'}`;
+    return `<rect x="${x.toFixed(1)}" y="${yC(d.clicks).toFixed(1)}" width="${bw.toFixed(1)}" height="${(ih - (yC(d.clicks) - padT)).toFixed(1)}" rx="1.5" fill="var(--gold-primary)" ${tip(d.date, `${d.clicks} scan${d.clicks === 1 ? '' : 's'}${visitors}`)}/>`;
   }).join('');
   const pts = timeline.map((d, i) => `${(padL + step * i + step / 2).toFixed(1)},${yC(d.uniqueVisitors || 0).toFixed(1)}`);
   const split = hasB ? bIdx : 0;
@@ -106,8 +123,8 @@ function ribbon(timeline, unique) {
   const days = [0, Math.floor(n / 2), n - 1].filter((v, i, a) => a.indexOf(v) === i);
   const xl = days.map((i) => `<text x="${(padL + step * i + step / 2).toFixed(1)}" y="${H - 7}" text-anchor="middle" class="pf-tick">${esc(timeline[i].date.slice(5))}</text>`).join('');
   return `<section class="pf-card pf-card-hero">
-    <div class="pf-card-head"><h4>Clicks across all links</h4><span class="pf-legend"><i class="sw-gold"></i>clicks <i class="sw-visitor"></i>distinct visitors</span></div>
-    <svg viewBox="0 0 ${W} ${H}" class="pf-svg" preserveAspectRatio="none" role="img" aria-label="Portfolio clicks per day">
+    <div class="pf-card-head"><h4>Scans across all links</h4><span class="pf-legend"><i class="sw-gold"></i>scans <i class="sw-visitor"></i>distinct visitors</span></div>
+    <svg viewBox="0 0 ${W} ${H}" class="pf-svg" preserveAspectRatio="none" role="img" aria-label="Portfolio scans per day">
       <defs><pattern id="pfHatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="var(--data-void)" stroke-width="3"/></pattern></defs>
       ${est}${grid}${cols}${vline}${bMark}${xl}
     </svg>
@@ -119,13 +136,13 @@ function ribbon(timeline, unique) {
 function kpis(a) {
   const t = a.totals || {}, u = a.unique;
   const visitors = u ? (u.reliable ? esc(u.distinctVisitors) : `${esc(u.lowerBound)}–${esc(u.upperBound)}`) : '—';
-  const item = (val, lbl, hero) => `<div class="pf-kpi${hero ? ' pf-kpi-hero' : ''}"><span class="pf-kpi-val">${val}</span><span class="pf-kpi-lbl">${lbl}</span></div>`;
+  const item = (val, lbl, hero, why) => `<div class="pf-kpi${hero ? ' pf-kpi-hero' : ''}" ${tip(lbl, why)}><span class="pf-kpi-val">${val}</span><span class="pf-kpi-lbl">${lbl}</span></div>`;
   return `<section class="pf-kpis">
-    ${item(esc(t.events ?? 0), 'clicks measured', true)}
-    ${item(esc(t.activeLinks ?? 0), 'active links')}
-    ${item(esc(t.dormantLinks ?? 0), 'dormant links')}
-    ${item(visitors, u?.reliable ? 'distinct visitors' : 'visitors (range)')}
-    ${item(esc(a.window?.daysWithTraffic ?? 0), 'days with traffic')}
+    ${item(esc(t.events ?? 0), 'scans measured', true, `events retained in the last ${esc(a.window?.retentionDays ?? 30)} days, not lifetime counters`)}
+    ${item(esc(t.activeLinks ?? 0), 'active links', false, 'links that took at least one scan in this window')}
+    ${item(esc(t.dormantLinks ?? 0), 'dormant links', false, 'live links that took no scan in this window')}
+    ${item(visitors, u?.reliable ? 'distinct visitors' : 'visitors (range)', false, u?.reliable ? 'estimated from visitor keys' : 'part of the window predates visitor keys, so this is a range')}
+    ${item(esc(a.window?.daysWithTraffic ?? 0), 'days with traffic', false, 'days in the window with at least one scan')}
   </section>`;
 }
 
@@ -133,11 +150,12 @@ function kpis(a) {
 function topLinks(rows) {
   if (!rows.length) return '';
   const max = Math.max(...rows.map((r) => r.clicks), 1);
+  const total = rows.reduce((sum, r) => sum + r.clicks, 0);
   return `<section class="pf-card">
-    <div class="pf-card-head"><h4>Most-clicked links</h4><span class="pf-legend">by measured events · click to drill in</span></div>
+    <div class="pf-card-head"><h4>Most-scanned links</h4><span class="pf-legend">hover for the share · open a row for the full report</span></div>
     <div class="pf-toplinks">
       ${rows.map((r, i) => `
-        <div class="pf-link-row" data-link-code="${esc(r.code)}" role="button" tabindex="0" title="Open ${esc(r.code)} analytics">
+        <div class="pf-link-row" data-link-code="${esc(r.code)}" role="button" tabindex="0" ${tip(r.title, `${r.clicks} of ${total} scans (${Math.round((r.clicks / Math.max(1, total)) * 100)}%) · open for the full report`)}>
           <span class="pf-rank">${i + 1}</span>
           <span class="pf-link-name"><b>${esc(r.title)}</b><span class="pf-link-sub">${esc(r.code)}${r.campaign ? ` · ${esc(r.campaign)}` : ''}</span></span>
           <span class="pf-link-bar"><span class="pf-link-fill${i === 0 ? ' is-lead' : ''}" style="width:${Math.round((r.clicks / max) * 100)}%"></span></span>
@@ -156,7 +174,7 @@ function campaigns(rows) {
   return `<section class="pf-card">
     <div class="pf-card-head"><h4>Campaigns</h4></div>
     ${rows.map((r, i) => `
-      <div class="pf-facet-row">
+      <div class="pf-facet-row" ${tip(r.name, `${r.clicks} scans across ${r.links} link${r.links === 1 ? '' : 's'}`)}>
         <span class="pf-facet-key">${esc(r.name)}<span class="pf-facet-sub"> ${esc(r.links)} link${r.links === 1 ? '' : 's'}</span></span>
         <span class="pf-facet-track"><span class="pf-facet-fill${i === 0 && !onlyUnassigned ? ' is-lead' : ''}" style="width:${Math.round((r.clicks / max) * 100)}%"></span></span>
         <span class="pf-facet-num">${esc(r.clicks)}</span>
@@ -171,8 +189,9 @@ function facet(title, rows, total) {
     return `<div class="pf-facet"><h5>${esc(title)}</h5><p class="pf-none">not reported</p></div>`;
   }
   const max = Math.max(...rows.map((r) => r.clicks));
+  const shown = total || rows.reduce((sum, r) => sum + r.clicks, 0);
   return `<div class="pf-facet"><h5>${esc(title)}</h5>
-    ${rows.slice(0, 6).map((r, i) => `<div class="pf-facet-row">
+    ${rows.slice(0, 6).map((r, i) => `<div class="pf-facet-row" ${tip(r.value === null ? 'none reported' : String(r.value), `${r.clicks} of ${shown} scans (${Math.round((r.clicks / Math.max(1, shown)) * 100)}%)`)}>
       <span class="pf-facet-key">${r.value === null ? '<em>none</em>' : esc(r.value)}</span>
       <span class="pf-facet-track"><span class="pf-facet-fill${i === 0 ? ' is-lead' : ''}" style="width:${Math.round((r.clicks / max) * 100)}%"></span></span>
       <span class="pf-facet-num">${esc(r.clicks)}</span></div>`).join('')}
@@ -180,7 +199,7 @@ function facet(title, rows, total) {
 }
 function matrix(b, total) {
   return `<section class="pf-card">
-    <div class="pf-card-head"><h4>Where clicks came from</h4></div>
+    <div class="pf-card-head"><h4>Where scans came from</h4></div>
     <div class="pf-matrix">
       ${facet('Device', b.deviceType, total)}
       ${facet('OS', b.os, total)}
@@ -190,27 +209,6 @@ function matrix(b, total) {
       ${facet('Referrer', b.referrer, total)}
       ${b.country ? facet('Country', b.country, total) : ''}
     </div>
-  </section>`;
-}
-
-/* ── clock ramps ───────────────────────────────────────────────────────────*/
-function ramp(cells, labelEvery) {
-  const max = Math.max(...cells.map((c) => c.clicks), 1);
-  return cells.map((c, i) => {
-    const t = c.clicks / max;
-    const bg = c.clicks ? `color-mix(in srgb, var(--gold-primary) ${Math.round(20 + t * 80)}%, var(--surface-sunken))` : 'var(--data-void)';
-    const lbl = (i % labelEvery === 0) ? `<span class="pf-ramp-lbl">${esc(String(c.value ?? i)).slice(0, 3)}</span>` : '';
-    return `<span class="pf-ramp-cell" style="background:${bg}" title="${esc(c.value ?? i)}: ${c.clicks}">${lbl}</span>`;
-  }).join('');
-}
-function clock(b) {
-  const hasH = b.hourOfDayUtc?.some((h) => h.clicks);
-  const hasD = b.dayOfWeekUtc?.some((d) => d.clicks);
-  if (!hasH && !hasD) return '';
-  return `<section class="pf-card">
-    <div class="pf-card-head"><h4>When links get clicked <span class="pf-h5-note">UTC</span></h4></div>
-    ${hasH ? `<div class="pf-clockblock"><span class="pf-clock-label">Hour</span><div class="pf-ramp pf-ramp-24">${ramp(b.hourOfDayUtc.map((c, i) => ({ value: i, clicks: c.clicks })), 6)}</div></div>` : ''}
-    ${hasD ? `<div class="pf-clockblock"><span class="pf-clock-label">Day</span><div class="pf-ramp pf-ramp-7">${ramp(b.dayOfWeekUtc, 1)}</div></div>` : ''}
   </section>`;
 }
 
@@ -231,20 +229,17 @@ function ledger(totals, unavailable) {
   </section>`;
 }
 
-/** Offline preview hook (used by the verification harness; unused in prod). */
-export function __previewRender(container, analytics) { container.innerHTML = render(analytics); attachDrilldown(container); }
-
 function render(a) {
   if (!a || !a.timeline?.length) {
     return `<div class="pf-root">${kpis(a || { totals: {}, window: {} })}
-      <section class="pf-card"><p class="pf-none">No click events retained in the ${esc(a?.window?.retentionDays || 30)}-day window yet.</p></section>
+      <section class="pf-card"><p class="pf-none">No scan events retained in the ${esc(a?.window?.retentionDays || 30)}-day window yet.</p></section>
       ${ledger(a?.totals, a?.unavailable)}</div>`;
   }
   return `<div class="pf-root">
     ${kpis(a)}
     ${ribbon(a.timeline, a.unique)}
     ${topLinks(a.topLinks)}
-    <div class="pf-grid-2">${campaigns(a.campaigns)}${clock(a.breakdowns)}</div>
+    ${campaigns(a.campaigns)}
     ${matrix(a.breakdowns, a.totals.events)}
     ${ledger(a.totals, a.unavailable)}
   </div>`;

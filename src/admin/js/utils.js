@@ -11,6 +11,9 @@ export function escapeHtml(text) {
 
 export function jsAttr(v){ return String(v == null ? '' : v).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
 
+/** The viewer's IANA time zone, UTC when the browser cannot say. */
+export function browserTz() { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch (_) { return 'UTC'; } }
+
 export function formatDate(timestamp) {
   if (!timestamp) return '-';
   const date = timestamp._seconds ? new Date(timestamp._seconds * 1000) : new Date(timestamp);

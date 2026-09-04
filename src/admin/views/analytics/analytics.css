@@ -962,8 +962,6 @@
 .pf-tick { fill: var(--text-muted); font-size: 9px; font-family: var(--mono); }
 .pf-note-svg { fill: var(--gold-dark); font-size: 9px; font-family: var(--mono); }
 
-.pf-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-@media (max-width: 860px) { .pf-grid-2 { grid-template-columns: 1fr; } }
 
 /* top links */
 .pf-toplinks { display: flex; flex-direction: column; }
@@ -996,14 +994,6 @@
 .pf-facet-num { font-family: var(--mono); font-size: 12px; text-align: right; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
 
 /* clock ramps */
-.pf-clockblock { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-.pf-clockblock:has(.pf-ramp-24) { margin-bottom: 22px; }
-.pf-clock-label { width: 40px; font-size: 11px; color: var(--text-muted); }
-.pf-ramp { display: grid; gap: 3px; flex: 1; }
-.pf-ramp-24 { grid-template-columns: repeat(24, 1fr); }
-.pf-ramp-7 { grid-template-columns: repeat(7, 1fr); max-width: 320px; }
-.pf-ramp-cell { height: 26px; border-radius: 3px; position: relative; }
-.pf-ramp-lbl { position: absolute; bottom: -15px; left: 0; font-size: 8px; color: var(--text-muted); font-family: var(--mono); }
 
 /* ledger */
 .pf-ledger-row { display: grid; grid-template-columns: 14px 1fr auto; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border-subtle); }
@@ -1016,3 +1006,6 @@
 .pf-caveat { font-size: 12px; line-height: 1.5; color: #e0b978; background: rgba(212,175,55,0.07); border-left: 2px solid var(--gold-primary); padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 12px 0 0; }
 .pf-note { font-size: 12px; color: var(--text-muted); margin: 10px 0 0; }
 .pf-none { color: var(--text-muted); font-style: italic; font-size: 13px; margin: 0; }
+
+/* Work queue — the shared renderWorkspaceQueue table, restyled with the admin tokens.
+   Sorted by recoverable lost scans, so the first row is where ten minutes go. */

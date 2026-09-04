@@ -73,6 +73,15 @@
         "headers": [{ "key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]
       },
       {
+        "source": "/kortex/r/**",
+        "headers": [
+          { "key": "Cache-Control", "value": "no-store" },
+          { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" },
+          { "key": "Referrer-Policy", "value": "no-referrer" },
+          { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https://kaayko.com https://api-vwcc5j4qda-uc.a.run.app data:; connect-src 'self' https://api-vwcc5j4qda-uc.a.run.app; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" }
+        ]
+      },
+      {
         "source": "/karma/schools/somalwar/**",
         "headers": [{ "key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]
       },

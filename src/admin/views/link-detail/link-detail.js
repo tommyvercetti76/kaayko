@@ -1,12 +1,14 @@
 /**
  * Per-link drilldown — "Bullion" design.
  *
- * A single link read top-to-bottom, rendered entirely as inline SVG from the
- * real /kortex/links/:code/analytics payload. No chart library, no fabricated
- * data. Design rules, enforced in code:
+ * A single link read top-to-bottom from the real /kortex/links/:code/analytics
+ * payload. The Action Center (needs attention, what's working, result since
+ * the last change, explore tabs) and the five shared views come from
+ * window.KortexViews, the same code kaayko.com/kortex renders; the evidence
+ * charts below them are inline SVG. No chart library, no fabricated data.
  *
  *  - Gold is bullion: spent on exactly one hero element (the traffic ribbon's
- *    click columns), withheld elsewhere. Visitors are cool slate, not gold.
+ *    scan columns), withheld elsewhere. Visitors are cool slate, not gold.
  *  - Uncertainty is geometry: the reliability boundary (2026-08-17, when client
  *    IPs became resolvable) is drawn as a vertical marker that physically
  *    separates the "estimated" region from the "counted" region. Unreliable
@@ -20,9 +22,14 @@
 import { apiFetch } from '../../js/config.js';
 import * as router from '../../js/router.js';
 import * as utils from '../../js/utils.js';
+import * as ui from '../../js/ui.js';
+import { STATE } from '../../js/kortex-core.js';
 
 const esc = (v) => utils.escapeHtml(String(v ?? ''));
 const RELIABILITY_ISO = '2026-08-17';
+// Below this many delivered scans the individual scans are the story; above it
+// the Graphs tab (hours and weekdays in the viewer's zone) carries the shape.
+const SCAN_LOG_MAX = 25;
 
 function fmtDateTime(iso) {
   if (!iso) return '—';
@@ -35,6 +42,16 @@ function humanHours(h) {
   if (h < 48) return `${Math.round(h)}h`;
   return `${Math.round(h / 24)}d`;
 }
+const words = (constant) => String(constant || '').toLowerCase().replace(/_/g, ' ');
+const linkPath = (code, suffix = '') => `/kortex/${encodeURIComponent(code)}${suffix}`;
+
+/** Parse a JSON response; transport failures and `success:false` become one error. Null when apiFetch logged out on a 401. */
+async function readJson(response, failureMessage) {
+  if (!response) return null;
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || !data.success) throw new Error(data.error || `${failureMessage} (${response.status})`);
+  return data;
+}
 
 // One shared diagonal-hatch pattern id per render, injected once.
 function hatchDefs(id) {
@@ -45,7 +62,7 @@ function hatchDefs(id) {
 }
 
 /* ── 1. Traffic & reach ribbon ─────────────────────────────────────────────
-   Gold click columns per day + a slate visitor overlay. A vertical marker at
+   Gold scan columns per day + a slate visitor overlay. A vertical marker at
    the reliability boundary splits the estimated region (hatched, visitors
    cannot be trusted) from the counted region (solid visitor line). */
 function renderRibbon(timeline, unique) {
@@ -104,8 +121,8 @@ function renderRibbon(timeline, unique) {
 
   return `<section class="ld-card ld-card-hero">
     <div class="ld-card-head"><h4>Traffic &amp; reach</h4>
-      <span class="ld-legend"><i class="sw-gold"></i>clicks <i class="sw-visitor"></i>distinct visitors</span></div>
-    <svg viewBox="0 0 ${W} ${H}" class="ld-svg" preserveAspectRatio="none" role="img" aria-label="Daily clicks with distinct-visitor overlay">
+      <span class="ld-legend"><i class="sw-gold"></i>scans <i class="sw-visitor"></i>distinct visitors</span></div>
+    <svg viewBox="0 0 ${W} ${H}" class="ld-svg" preserveAspectRatio="none" role="img" aria-label="Daily scans with distinct-visitor overlay">
       ${hatchDefs('hatchRibbon')}
       ${estRegion}${grid}${cols}${visitorLine}${boundaryMark}${xLabels}
     </svg>
@@ -130,7 +147,7 @@ function renderReach(unique, installs) {
         <div class="ld-meter" title="${esc(unique.basedOnEvents)} of ${esc(unique.ofTotalEvents)} events attributable">
           <span class="ld-meter-fill" style="width:${cov}%"></span>
         </div>
-        <p class="ld-sub">${cov}% attribution coverage · ${unique.clicksPerVisitor ? `${esc(unique.clicksPerVisitor)} clicks/visitor` : 'ratio n/a'}${installs?.attributed ? ` · ${esc(installs.attributed)} installs` : ''}</p>
+        <p class="ld-sub">${cov}% attribution coverage · ${unique.clicksPerVisitor ? `${esc(unique.clicksPerVisitor)} scans per visitor` : 'ratio n/a'}${installs?.attributed ? ` · ${esc(installs.attributed)} installs` : ''}</p>
       </div>
     </div>
     ${unique.caveat ? `<p class="ld-caveat">${esc(unique.caveat)}</p>` : ''}
@@ -171,7 +188,7 @@ function renderRhythm(cadence) {
 }
 
 /* ── 4. Redirect latency range ─────────────────────────────────────────────*/
-function renderLatency(latency, unavailable) {
+function renderLatency(latency) {
   if (!latency) return '';
   const BUDGET = 500; // ms — a comfortable resolver budget
   const scaleMax = Math.max(latency.slowestMs, BUDGET) * 1.1;
@@ -197,7 +214,7 @@ function renderLatency(latency, unavailable) {
 }
 
 /* ── 5. Source breakdown matrix ────────────────────────────────────────────*/
-function facetBars(title, rows, total) {
+function facetBars(title, rows) {
   if (!rows || !rows.length || rows.every(r => r.value === null)) {
     return `<div class="ld-facet"><h5>${esc(title)}</h5><p class="ld-none">not reported</p></div>`;
   }
@@ -211,38 +228,25 @@ function facetBars(title, rows, total) {
       </div>`).join('')}
   </div>`;
 }
-function renderMatrix(b, total) {
+function renderMatrix(b) {
   return `<section class="ld-card">
-    <div class="ld-card-head"><h4>Where clicks came from</h4></div>
+    <div class="ld-card-head"><h4>Where scans came from</h4></div>
     <div class="ld-matrix">
-      ${facetBars('Device', b.deviceType, total)}
-      ${facetBars('OS', b.os, total)}
-      ${facetBars('Browser', b.browser, total)}
-      ${facetBars('Platform', b.platform, total)}
-      ${facetBars('Referrer', b.referrer, total)}
-      ${facetBars('Destination', b.destination, total)}
-      ${b.country ? facetBars('Country', b.country, total) : ''}
+      ${facetBars('Device', b.deviceType)}
+      ${facetBars('OS', b.os)}
+      ${facetBars('Browser', b.browser)}
+      ${facetBars('Platform', b.platform)}
+      ${facetBars('Referrer', b.referrer)}
+      ${facetBars('Destination', b.destination)}
+      ${b.country ? facetBars('Country', b.country) : ''}
     </div>
   </section>`;
 }
 
-/* ── 6. When it gets scanned ───────────────────────────────────────────────
-   A 24-bin hour histogram and 7-bin weekday grid only carry a distribution once
-   there is enough volume. Below that threshold the individual scans ARE the
-   information — so show a scan log at low volume, and the distribution ramps
-   only when the sample is big enough for a shape to be real. */
-const HEATMAP_MIN = 25;
-
-function ramp(cells, labelEvery) {
-  const max = Math.max(...cells.map(c => c.clicks), 1);
-  return cells.map((c, i) => {
-    const t = c.clicks / max;
-    const bg = c.clicks ? `color-mix(in srgb, var(--gold-primary) ${Math.round(20 + t * 80)}%, var(--surface-sunken))` : 'var(--data-void)';
-    const lbl = (i % labelEvery === 0) ? `<span class="ld-ramp-lbl">${esc(String(c.value ?? i)).slice(0, 3)}</span>` : '';
-    return `<span class="ld-ramp-cell" style="background:${bg}" title="${esc(c.value ?? i)}: ${c.clicks}">${lbl}</span>`;
-  }).join('');
-}
-
+/* ── 6. Every scan — the low-volume log ────────────────────────────────────
+   Below SCAN_LOG_MAX delivered scans a distribution has no shape, so the
+   individual scans are shown instead. Past it, the Graphs tab above carries
+   hours and weekdays in the viewer's zone. */
 function scanRow(s) {
   const d = new Date(s.at);
   const when = d.toISOString().replace('T', ' ').slice(0, 16);
@@ -254,29 +258,13 @@ function scanRow(s) {
   </div>`;
 }
 
-function renderWhen(a) {
-  const total = a.totals?.events || 0;
-  const b = a.breakdowns || {};
-
-  // Enough volume → the distribution is real. Show the ramps.
-  if (total >= HEATMAP_MIN) {
-    const hasHours = b.hourOfDayUtc?.some(h => h.clicks);
-    const hasDows = b.dayOfWeekUtc?.some(d => d.clicks);
-    if (!hasHours && !hasDows) return '';
-    return `<section class="ld-card">
-      <div class="ld-card-head"><h4>When it gets scanned <span class="ld-h5-note">UTC · ${esc(total)} scans</span></h4></div>
-      ${hasHours ? `<div class="ld-clockblock"><span class="ld-clock-label">Hour</span><div class="ld-ramp ld-ramp-24">${ramp(b.hourOfDayUtc.map((c, i) => ({ value: i, clicks: c.clicks })), 6)}</div></div>` : ''}
-      ${hasDows ? `<div class="ld-clockblock"><span class="ld-clock-label">Day</span><div class="ld-ramp ld-ramp-7">${ramp(b.dayOfWeekUtc, 1)}</div></div>` : ''}
-    </section>`;
-  }
-
-  // Low volume → the individual scans are the story.
+function renderEveryScan(a) {
   const scans = a.recentScans || [];
-  if (!scans.length) return '';
+  if (!scans.length || (a.totals?.events || 0) >= SCAN_LOG_MAX) return '';
   return `<section class="ld-card">
     <div class="ld-card-head"><h4>Every scan</h4><span class="ld-legend">${esc(scans.length)} scan${scans.length === 1 ? '' : 's'} · newest first</span></div>
     <div class="ld-scanlog">${scans.map(scanRow).join('')}</div>
-    <p class="ld-note">Too few scans for an hour-of-day pattern to mean anything — here is each one instead. The distribution view appears past ${HEATMAP_MIN} scans.</p>
+    <p class="ld-note">Too few scans for an hour-of-day pattern to mean anything — here is each one instead. Past ${SCAN_LOG_MAX} scans the Graphs tab shows hours and weekdays in your time zone.</p>
   </section>`;
 }
 
@@ -309,7 +297,29 @@ function renderLedger(totals, unavailable) {
   </section>`;
 }
 
-/* ── link header + meta ────────────────────────────────────────────────────*/
+/* ── link header: toolbar, identity, sharing state, result since last change ─*/
+const SINCE_WORDS = { pending: 'too early to tell', improved: 'improved', unchanged: 'unchanged', regressed: 'regressed' };
+
+/** One line on the measured effect of the last accepted or dismissed finding. */
+function renderSinceLastChange(since) {
+  if (!since) return '';
+  const rate = (side) => (side && side.usefulRate != null ? `${Math.round(side.usefulRate * 100)}%` : '—');
+  const ago = since.atMs ? utils.timeAgo(new Date(since.atMs)) : '';
+  return `<p class="ld-since is-${esc(since.state)}"><b>${esc(SINCE_WORDS[since.state] || since.state)}</b> since ${esc(words(since.type) || 'the last change')}${ago ? ` (${esc(ago)})` : ''} · useful rate ${rate(since.before)} → ${rate(since.after)} on ${esc(since.after?.observed ?? 0)} scans since</p>`;
+}
+
+function shareControls(link) {
+  return link.shared
+    ? `<button type="button" class="ld-back" data-ld-share="rotate">Rotate share link</button>
+       <button type="button" class="ld-back" data-ld-share="revoke">Stop sharing</button>`
+    : `<button type="button" class="ld-back" data-ld-share="mint">Share report</button>`;
+}
+function shareLine(link) {
+  if (!link.shared) return '';
+  const until = link.shareExpiresAt ? `expires ${fmtDay(link.shareExpiresAt)}` : 'no expiry';
+  return `<p class="ld-shorturl">Shared report active · ${esc(until)} · the address was shown once when it was made; rotate to get a fresh one.</p>`;
+}
+
 function renderHeader(link, analytics) {
   const t = analytics.totals;
   const status = link.status === 'held'
@@ -320,20 +330,31 @@ function renderHeader(link, analytics) {
         ? '<span class="ld-status is-live">Live</span>'
         : '<span class="ld-status is-paused">Paused</span>';
   return `<header class="ld-header">
-    <button class="ld-back" data-ld-back>← Back</button>
+    <div class="ld-toolbar">
+      <button type="button" class="ld-back" data-ld-back>← Back</button>
+      <button type="button" class="ld-back" data-ld-csv>Download CSV</button>
+      ${shareControls(link)}
+    </div>
     <div class="ld-header-main">
       <div>
         <h3 class="ld-title">${esc(link.title || link.code)} ${status}</h3>
         <p class="ld-shorturl">${esc(link.shortUrl || 'kaayko.com/l/' + link.code)}</p>
-        ${link.shared && link.shareUrl ? `<p class="ld-shorturl">Shared report: <a href="${esc(link.shareUrl)}" target="_blank" rel="noopener">${esc(String(link.shareUrl).replace(/^https?:\/\//, ''))}</a></p>` : ''}
+        ${shareLine(link)}
+        ${renderSinceLastChange(analytics.actionCenter?.sinceLastChange)}
       </div>
       <div class="ld-header-kpis">
-        <div class="ld-kpi ld-kpi-hero"><span class="ld-kpi-val">${esc(t.events)}</span><span class="ld-kpi-lbl">clicks measured</span></div>
+        <div class="ld-kpi ld-kpi-hero"><span class="ld-kpi-val">${esc(t.observed ?? t.events)}</span><span class="ld-kpi-lbl">scans observed</span></div>
         <div class="ld-kpi"><span class="ld-kpi-val">${esc(analytics.window.daysWithTraffic)}</span><span class="ld-kpi-lbl">active days</span></div>
         <div class="ld-kpi"><span class="ld-kpi-val">${esc(analytics.window.daysSpanned)}</span><span class="ld-kpi-lbl">days live</span></div>
       </div>
     </div>
   </header>`;
+}
+
+const placementText = (link) => link.placementLabel || words(link.placement);
+function checkpointText(cp) {
+  const verdict = cp.applied ? 'applied' : cp.dismissed ? `dismissed (${words(cp.dismissed)})` : 'recorded';
+  return `${words(cp.type)} · ${verdict} · ${fmtDateTime(cp.atMs ? new Date(cp.atMs).toISOString() : null)}`;
 }
 function renderMeta(link, analytics) {
   const utm = link.utm && Object.keys(link.utm).length
@@ -344,128 +365,191 @@ function renderMeta(link, analytics) {
     <div class="ld-meta">
       <div class="ld-meta-row"><span class="ld-meta-k">Destination</span><span>${esc(link.destination || '—')}</span></div>
       <div class="ld-meta-row"><span class="ld-meta-k">Created</span><span>${fmtDateTime(link.createdAt)} · ${esc(link.createdBy || 'unknown')}</span></div>
-      <div class="ld-meta-row"><span class="ld-meta-k">First → last click</span><span>${fmtDay(analytics.window.firstEvent)} → ${fmtDay(analytics.window.lastEvent)}</span></div>
+      <div class="ld-meta-row"><span class="ld-meta-k">First → last scan</span><span>${fmtDay(analytics.window.firstEvent)} → ${fmtDay(analytics.window.lastEvent)}</span></div>
       ${utm}
-      ${link.placement ? `<div class="ld-meta-row"><span class="ld-meta-k">Placement</span><span>${esc(link.placement)}</span></div>` : ''}
+      ${link.placement ? `<div class="ld-meta-row"><span class="ld-meta-k">Placement</span><span>${esc(placementText(link))}</span></div>` : ''}
       ${link.schedule && Array.isArray(link.schedule.windows) && link.schedule.windows.length ? `<div class="ld-meta-row"><span class="ld-meta-k">Windows</span><span>${link.schedule.windows.map(w => `${esc(w.label || '')} ${esc(w.start)}–${esc(w.end)} → ${esc(w.url)}`).join('<br>')} <span class="ld-none">(${esc(link.schedule.timezone || 'UTC')})</span></span></div>` : ''}
-      ${link.limits && (link.limits.maxClicks || link.limits.fallbackUrl) ? `<div class="ld-meta-row"><span class="ld-meta-k">Limits</span><span>${link.limits.maxClicks ? `stops after ${esc(link.limits.maxClicks)} clicks` : 'no cap'}${link.limits.fallbackUrl ? ` → ${esc(link.limits.fallbackUrl)}` : ''}</span></div>` : ''}
+      ${link.limits && (link.limits.maxClicks || link.limits.fallbackUrl) ? `<div class="ld-meta-row"><span class="ld-meta-k">Limits</span><span>${link.limits.maxClicks ? `stops after ${esc(link.limits.maxClicks)} scans` : 'no cap'}${link.limits.fallbackUrl ? ` → ${esc(link.limits.fallbackUrl)}` : ''}</span></div>` : ''}
       ${link.economics ? `<div class="ld-meta-row"><span class="ld-meta-k">Economics</span><span>print ${esc(link.economics.printCost != null ? link.economics.printCost : '—')} · value per visit ${esc(link.economics.valuePerVisit != null ? link.economics.valuePerVisit : '—')} ${esc(link.economics.currency || '')}</span></div>` : ''}
       ${link.campaignWindow ? `<div class="ld-meta-row"><span class="ld-meta-k">Campaign</span><span>${fmtDay(link.campaignWindow.startAt)} → ${fmtDay(link.campaignWindow.endAt)}</span></div>` : ''}
+      ${analytics.checkpoint ? `<div class="ld-meta-row"><span class="ld-meta-k">Last change</span><span>${esc(checkpointText(analytics.checkpoint))}</span></div>` : ''}
     </div>
   </section>`;
 }
 
+function viewsCard(a) {
+  if (!window.KortexViews) return '';
+  return `<section class="ld-card ld-views">
+    <div class="ld-card-head"><h4>The evidence</h4><span class="ld-h5-note">hours in ${esc(a.timeZone || 'UTC')}</span></div>
+    ${window.KortexViews.viewsHtml('ld')}
+  </section>`;
+}
+
 function render(payload) {
-  const { link, analytics } = payload;
-  const a = analytics;
-  if (!a.timeline.length) {
-    return `<div class="ld-root">
-      ${renderHeader(link, a)}
-      <div class="ld-insights" id="ld-insights"></div>
-      ${renderLedger(a.totals, a.unavailable)}
-      <section class="ld-card"><p class="ld-none">No clicks recorded within the ${esc(a.window?.retentionDays || 30)}-day retention window.</p></section>
-    </div>`;
-  }
+  const { link, analytics: a } = payload;
+  const evidence = a.timeline.length
+    ? `${renderRibbon(a.timeline, a.unique)}
+       ${viewsCard(a)}
+       <div class="ld-grid-2">${renderReach(a.unique, a.installs)}${renderRhythm(a.cadence)}</div>
+       ${renderLatency(a.latency)}
+       ${renderMatrix(a.breakdowns)}
+       ${renderEveryScan(a)}`
+    : `<section class="ld-card"><p class="ld-none">No scans recorded within the ${esc(a.window?.retentionDays || 30)}-day retention window.</p></section>`;
   return `<div class="ld-root">
     ${renderHeader(link, a)}
     <div class="ld-insights" id="ld-insights"></div>
-    ${renderRibbon(a.timeline, a.unique)}
-    ${window.KortexViews ? `<section class="ld-card ld-views"><div class="ld-card-head"><h4>Four ways to look at it <em>· table, graphs, spider, sky</em></h4><span class="ld-h5-note">hours in ${esc(a.timeZone || 'UTC')}</span></div>${window.KortexViews.viewsHtml('ld')}</section>` : ''}
-    <div class="ld-grid-2">
-      ${renderReach(a.unique, a.installs)}
-      ${renderRhythm(a.cadence)}
-    </div>
-    ${renderLatency(a.latency, a.unavailable)}
-    ${renderMatrix(a.breakdowns, a.totals.events)}
-    ${renderWhen(a)}
+    ${evidence}
     ${renderMeta(link, a)}
     ${renderLedger(a.totals, a.unavailable)}
   </div>`;
 }
 
-const browserTz = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch (_) { return 'UTC'; } };
+/* ── Action Center: a finding's CTA opens the edit form prefilled; a dismissal is a checkpoint ─*/
+async function postCheckpoint(code, body) {
+  const response = await apiFetch(linkPath(code, '/actions'), { method: 'POST', body: JSON.stringify(body) });
+  return readJson(response, 'Could not record the checkpoint');
+}
 
-/** The shared four views and the plain-language findings (same code as kaayko.com/kortex). */
-function mountShared(payload) {
+async function dismissFinding(code, finding, dismissed, container) {
+  try {
+    if (!(await postCheckpoint(code, { type: finding.action.type, applied: false, dismissed }))) return;
+    utils.showToast(`Dismissed "${finding.title}" — ${words(dismissed)}.`, 'info', 3500);
+    await showLinkDetail(code, container);
+  } catch (err) { utils.showToast(err.message, 'error', 4000); }
+}
+
+/** A CTA button opens the edit form with the finding's proposal typed in (REQUEST_REVIEW renders as a link to the appeal page instead). */
+function openFindingAction(code, finding) {
+  STATE.prefill = { code, action: finding.action };
+  STATE.editingCode = code;
+  router.navigate('create', code);
+}
+
+function mountActionCenter(payload, container, code) {
   const V = window.KortexViews;
-  if (!V) return;
-  const a = payload.analytics, link = payload.link || {};
   const box = document.getElementById('ld-insights');
-  if (box) V.renderInsights(box, a.insights, { compact: true });
-  if (Array.isArray(a.points) && document.getElementById('ld-views')) {
-    const points = a.points.map(p => V.ptOf(p, false));
-    V.mountViews('ld', {
-      points, hasCode: false, uniquePeople: a.unique ? a.unique.distinctVisitors : null,
-      windowRows: link.schedule ? V.tallyOf(points, 'win').map(r => ({ ...r, value: r.value === '—' ? 'day address' : 'night address' })) : null,
-      skyTitle: 'Every click, as a star'
-    });
+  if (!V || !box) return;
+  V.renderActionCenter(box, payload.analytics, {
+    onAction: (finding, options) => (options && options.dismissed
+      ? dismissFinding(code, finding, options.dismissed, container)
+      : openFindingAction(code, finding))
+  });
+}
+
+/** The five shared views (same code as kaayko.com/kortex): delivered and rescued points plus the lost ones. */
+function mountViews(payload) {
+  const V = window.KortexViews;
+  const a = payload.analytics, link = payload.link || {};
+  if (!V || !Array.isArray(a.points) || !document.getElementById('ld-views')) return;
+  const points = a.points.map(p => V.ptOf(p, false));
+  const lostPoints = (a.outcomes && Array.isArray(a.outcomes.points) ? a.outcomes.points : []).map(V.ptOfLost);
+  V.mountViews('ld', {
+    points, lostPoints, hasCode: false, uniquePeople: a.unique ? a.unique.distinctVisitors : null,
+    windowRows: link.schedule ? V.tallyOf(points, 'win').map(r => ({ ...r, value: r.value === '—' ? 'day address' : 'night address' })) : null,
+    skyTitle: 'Every scan, as a star',
+    mapTitle: 'Where each scan went'
+  });
+}
+
+/* ── Sharing v2: the address is returned once, then only its state is known ─*/
+const SHARE_REQUESTS = {
+  mint: { method: 'POST', suffix: '/share' },
+  rotate: { method: 'POST', suffix: '/share/rotate' },
+  revoke: { method: 'DELETE', suffix: '/share' }
+};
+const SHARE_CONFIRMS = {
+  rotate: 'Rotate the share link? The current address stops working immediately.',
+  revoke: 'Stop sharing? The public address stops working immediately.'
+};
+
+async function changeSharing(code, kind) {
+  const { method, suffix } = SHARE_REQUESTS[kind];
+  const response = await apiFetch(linkPath(code, suffix), { method, ...(method === 'POST' && { body: '{}' }) });
+  return readJson(response, 'Could not change sharing');
+}
+
+function showShareUrl(shareUrl, expiresAt) {
+  ui.showModal('Shared report address', `
+    <p class="ld-share-note">This address is shown once — copy it now; Kortex keeps only a fingerprint of it. Anyone holding it can read this one report until ${expiresAt ? esc(fmtDay(expiresAt)) : 'you stop sharing'}.</p>
+    <div class="ld-share-box"><code id="ld-share-url">${esc(shareUrl)}</code><button type="button" class="btn btn-primary" id="ld-share-copy">Copy</button></div>
+    <div class="ld-share-actions"><button type="button" class="btn btn-secondary" id="ld-share-done">Done</button></div>`);
+  document.getElementById('ld-share-copy').addEventListener('click', () => utils.copyToClipboard(shareUrl, 'Report address copied'));
+  document.getElementById('ld-share-done').addEventListener('click', ui.closeModal);
+}
+
+async function onShareClick(code, kind, container) {
+  if (SHARE_CONFIRMS[kind] && !window.confirm(SHARE_CONFIRMS[kind])) return;
+  const buttons = container.querySelectorAll('[data-ld-share]');
+  buttons.forEach(b => { b.disabled = true; });
+  try {
+    const data = await changeSharing(code, kind);
+    if (!data) return;
+    if (kind === 'revoke') utils.showToast('Sharing stopped; the public address no longer works.', 'success', 5000);
+    else showShareUrl(data.shareUrl, data.expiresAt);
+    await showLinkDetail(code, container);
+  } catch (err) {
+    utils.showToast(err.message, 'error', 4000);
+    buttons.forEach(b => { b.disabled = false; });
   }
 }
 
-export async function showLinkDetail(code, container) {
-  container.innerHTML = `<div class="ld-loading">Loading ${esc(code)}…</div>`;
+/* ── Per-link CSV: the click events inside the plan window, as a file ─*/
+async function downloadCsv(code, button) {
+  button.disabled = true; button.textContent = 'Preparing…';
   try {
-    const response = await apiFetch(`/kortex/links/${encodeURIComponent(code)}/analytics?tz=${encodeURIComponent(browserTz())}`);
-    if (!response) return; // apiFetch handled a 401 by logging out
-    const payload = await response.json();
-    if (!response.ok || !payload?.success) throw new Error(payload?.error || `Request failed (${response.status})`);
-    container.innerHTML = render(payload);
-    try { mountShared(payload); } catch (e) { console.warn('[LinkDetail] shared views failed:', e); }
-    // Per-link CSV: the click events inside the plan window, as a file.
-    const back = container.querySelector('[data-ld-back]');
-    if (back) {
-      const dl = document.createElement('button');
-      dl.type = 'button'; dl.className = 'ld-back'; dl.style.marginLeft = '10px'; dl.textContent = 'Download CSV';
-      dl.addEventListener('click', async () => {
-        dl.disabled = true; dl.textContent = 'Preparing…';
-        try {
-          const r = await apiFetch(`/kortex/${encodeURIComponent(code)}/clicks.csv`);
-          if (!r || !r.ok) throw new Error(r && r.status === 429 ? 'Too many exports for now.' : 'Export failed.');
-          const blob = await r.blob();
-          const a = document.createElement('a');
-          a.href = URL.createObjectURL(blob); a.download = `kortex-${code}-clicks.csv`; document.body.appendChild(a); a.click();
-          setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 800);
-          dl.textContent = 'Downloaded';
-        } catch (e) { dl.textContent = e.message; }
-        setTimeout(() => { dl.disabled = false; dl.textContent = 'Download CSV'; }, 2200);
-      });
-      back.insertAdjacentElement('afterend', dl);
-      // Sponsor proof: a revocable public report at kaayko.com/kortex/r/<token>.
-      const shared = !!payload.link?.shared;
-      const sh = document.createElement('button');
-      sh.type = 'button'; sh.className = 'ld-back'; sh.style.marginLeft = '10px'; sh.textContent = shared ? 'Stop sharing' : 'Share report';
-      sh.addEventListener('click', async () => {
-        sh.disabled = true;
-        try {
-          const r = await apiFetch(`/kortex/${encodeURIComponent(code)}/share`, { method: shared ? 'DELETE' : 'POST', body: '{}' });
-          const d = r ? await r.json().catch(() => ({})) : {};
-          if (!r || !r.ok || d.success === false) throw new Error(d.error || 'Could not change sharing');
-          utils.showToast(shared ? 'Sharing stopped; the public address no longer works.' : `Shared: ${String(d.shareUrl || '').replace(/^https?:\/\//, '')}`, 'success', 6000);
-          await showLinkDetail(code, container);
-        } catch (e) { utils.showToast(e.message, 'error', 4000); sh.disabled = false; }
-      });
-      dl.insertAdjacentElement('afterend', sh);
-    }
-  } catch (err) {
-    container.innerHTML = `<div class="ld-root">
-      <button class="ld-back" data-ld-back>← Back</button>
-      <p class="ld-caveat">Could not load analytics for ${esc(code)}: ${esc(err.message)}</p></div>`;
-  }
+    const r = await apiFetch(linkPath(code, '/clicks.csv'));
+    if (!r || !r.ok) throw new Error(r && r.status === 429 ? 'Too many exports for now.' : 'Export failed.');
+    const blob = await r.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = `kortex-${code}-clicks.csv`; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 800);
+    button.textContent = 'Downloaded';
+  } catch (e) { button.textContent = e.message; }
+  setTimeout(() => { button.disabled = false; button.textContent = 'Download CSV'; }, 2200);
+}
+
+/** A shared-module failure must not take the evidence cards or the toolbar down with it. */
+function mountGuarded(label, mount) {
+  try { mount(); } catch (e) { console.warn(`[LinkDetail] ${label} failed:`, e); }
+}
+
+function bindBack(container) {
   const back = container.querySelector('[data-ld-back]');
   if (back) back.addEventListener('click', () => {
     if (window.history.length > 1) window.history.back();
     else router.navigate('links', null, { replace: true });
   });
 }
+function bindToolbar(container, code) {
+  bindBack(container);
+  const csv = container.querySelector('[data-ld-csv]');
+  if (csv) csv.addEventListener('click', () => downloadCsv(code, csv));
+  container.querySelectorAll('[data-ld-share]').forEach(btn => btn.addEventListener('click', () => onShareClick(code, btn.dataset.ldShare, container)));
+}
 
-/** Render a payload directly into a container (used by the offline preview harness). */
-export function renderInto(container, payload) { container.innerHTML = render(payload); }
+export async function showLinkDetail(code, container) {
+  container.innerHTML = `<div class="ld-loading">Loading ${esc(code)}…</div>`;
+  try {
+    const response = await apiFetch(`/kortex/links/${encodeURIComponent(code)}/analytics?tz=${encodeURIComponent(utils.browserTz())}`);
+    const payload = await readJson(response, 'Could not load analytics');
+    if (!payload) return;
+    container.innerHTML = render(payload);
+    mountGuarded('action center', () => mountActionCenter(payload, container, code));
+    mountGuarded('shared views', () => mountViews(payload));
+    bindToolbar(container, code);
+  } catch (err) {
+    container.innerHTML = `<div class="ld-root">
+      <button type="button" class="ld-back" data-ld-back>← Back</button>
+      <p class="ld-caveat">Could not load analytics for ${esc(code)}: ${esc(err.message)}</p></div>`;
+    bindBack(container);
+  }
+}
 
 /** Routed view entry: link code arrives via #/links/<code> as STATE.routeParam. */
-export async function init(STATE) {
+export async function init(state) {
   const container = document.querySelector('#link-detail-content');
   if (!container) return;
-  const code = STATE?.routeParam;
+  const code = state?.routeParam;
   if (!code) { router.navigate('links', null, { replace: true }); return; }
   await showLinkDetail(code, container);
 }

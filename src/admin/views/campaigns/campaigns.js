@@ -87,7 +87,6 @@ async function loadCampaigns() {
     }
     
     displayCampaigns(CURRENT_CAMPAIGNS);
-    applyDashboardCampaignFocus();
   } catch (error) {
     console.error('[Campaigns] Error loading campaigns:', error);
     document.getElementById('campaigns-list').innerHTML = `
@@ -202,27 +201,6 @@ function getLifecycleButton(campaign) {
   }
   
   return '';
-}
-
-/**
- * Attach event listeners to dynamically created action buttons
- */
-function applyDashboardCampaignFocus() {
-  const campaignId = sessionStorage.getItem('dashboardCampaignFocus');
-  if (!campaignId) return;
-
-  sessionStorage.removeItem('dashboardCampaignFocus');
-
-  const rows = Array.from(document.querySelectorAll('#campaigns-list tr[data-campaign-id]'));
-  const targetRow = rows.find(row => row.dataset.campaignId === campaignId);
-  if (!targetRow) return;
-
-  targetRow.classList.add('campaign-focus-row');
-  targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-  setTimeout(() => {
-    targetRow.classList.remove('campaign-focus-row');
-  }, 2200);
 }
 
 function attachActionListeners() {

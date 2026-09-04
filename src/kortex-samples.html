@@ -8,7 +8,7 @@
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://kaayko.com/kortex/samples">
   <meta property="og:title" content="Kortex samples — eight reports on real links">
-  <meta property="og:description" content="Real links, real QR codes, simulated scans. See every stat four ways.">
+  <meta property="og:description" content="Real links, real QR codes, simulated scans. See every stat five ways.">
   <meta property="og:image" content="https://kaayko.com/assets/kortex-og-image.png">
   <meta property="og:url" content="https://kaayko.com/kortex/samples">
   <meta name="twitter:card" content="summary_large_image">
@@ -76,7 +76,7 @@
     .stat span { display:block; font-style:italic; font-size:0.76rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-top:4px }
     /* views (same rules as the dashboard) */
     .views-nav { display:flex; gap:16px; border-bottom:1px solid var(--gold-line); margin-bottom:12px; flex-wrap:wrap }
-    .views-nav button { background:none; border:0; border-bottom:1px solid transparent; margin-bottom:-1px; padding:8px 2px; min-height:40px; cursor:pointer; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.9rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted) }
+    .views-nav button { background:none; border:0; border-bottom:1px solid transparent; margin-bottom:-1px; padding:8px 2px; min-height:44px; cursor:pointer; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.9rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted) }
     .views-nav button[aria-pressed="true"] { color:var(--gold-bright); border-bottom-color:var(--gold) }
     .views-nav button:focus-visible { outline:1px solid var(--gold-bright); outline-offset:4px }
     .bars.dense { gap:2px } .bars.dense .bar span { display:none } .bars.dense .bar:nth-child(6n+1) span { display:block }
@@ -106,7 +106,7 @@
     <div class="eyebrow">eight reports · real links · simulated scans</div>
     <h1>What a Kortex link can do</h1>
     <p>Every link on this page is live on one of Kaayko's own pages. Scan any code and you will land there. The scans behind the numbers are simulated, so each report has something to say. Hover any bar, dot or star for the number behind it.</p>
-    <div class="actions"><a class="action-link primary" href="/kortex#make">Make one in ten seconds</a><a class="action-link" href="/kortex?sample=kx-tent#manage">Open the sample dashboard</a></div>
+    <div class="actions"><a class="action-link primary" href="/kortex#make">Make one in ten seconds</a></div>
   </header>
   <section class="tiers" id="tiers" aria-label="Light, medium and heavy traffic"></section>
   <div id="reports"></div>
@@ -151,7 +151,6 @@
         <div class="qr-row"><div class="qr-frame"><img alt="QR code for ${esc(r.title)}" src="${esc(r.qrUrl)}?size=264" loading="lazy" width="132" height="132"></div>
           <div class="qr-meta"><b>${esc(V.stripScheme(r.shortUrl))}</b><br>→ ${esc(V.stripScheme(d.web || r.destination || ''))}${d.ios ? `<br>iPhone → ${esc(V.stripScheme(d.ios))}` : ''}${d.android ? `<br>Android → ${esc(V.stripScheme(d.android))}` : ''}${r.link.schedule && r.link.schedule.windows ? `<br>night → ${esc(V.stripScheme(r.link.schedule.windows[0].url))}` : ''}<br><span style="color:var(--faint)">scan it: it really goes there</span></div></div>
         <div id="ri-${esc(r.code)}"></div>
-        <a class="action-link" href="/kortex?sample=${esc(r.code)}#manage">Open in the dashboard</a>
       </div>
       <div>
         <div class="stat-row">
@@ -181,10 +180,10 @@
     data.reports.forEach(r => {
       const points = r.points.map(p => V.ptOf(p, false));
       V.mountViews('r-' + r.code, {
-        points, hasCode: false, uniquePeople: r.people,
+        points, lostPoints: ((r.outcomes && r.outcomes.points) || []).map(V.ptOfLost), hasCode: false, uniquePeople: r.people,
         windowRows: r.link.schedule ? V.tallyOf(points, 'win').map(x => ({ ...x, value: x.value === '—' ? 'day address' : 'night address' })) : null,
-        skyTitle: 'Source → device → route → place',
-        fieldGraph: true
+        skyTitle: 'Every scan, as a star',
+        mapTitle: 'Source → device → route → outcome → place'
       });
       V.renderInsights(document.getElementById('ri-' + r.code), r.insights, { keys: ['qualityScore', 'bestWindow', 'rhythm', 'trend', 'qrSplit', 'deviceMatch', 'missed', 'channelMix', 'geoDrift', 'repeatPattern', 'roi', 'replay'], compact: true });
     });

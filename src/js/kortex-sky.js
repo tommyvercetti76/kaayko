@@ -123,7 +123,9 @@
   }
 
   function resize(force) {
-    const nextW = Math.round(window.innerWidth), nextH = Math.round(window.innerHeight);
+    // A viewport can report zero (a hidden tab, a pane that is not laid out);
+    // a zero-area canvas makes every later drawImage throw, so never go below 1.
+    const nextW = Math.max(1, Math.round(window.innerWidth)), nextH = Math.max(1, Math.round(window.innerHeight));
     // Address-bar height changes on phones are ignored; a real resize rebuilds.
     if (!force && Math.abs(nextW - W) < 4 && Math.abs(nextH - H) < 140) return;
     W = nextW; H = nextH;

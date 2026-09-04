@@ -117,7 +117,7 @@
 
 /* ── RESET + BASE ── */
 *,*::before,*::after { margin:0; padding:0; box-sizing:border-box }
-html { scroll-behavior:smooth; scroll-padding-top:var(--sp-9); -webkit-text-size-adjust:100% }
+html { scroll-behavior:smooth; scroll-padding-top:calc(var(--sp-9) + 16px); -webkit-text-size-adjust:100% }
 @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto } }
 html, body { overflow-x:clip; max-width:100% }
 body {
@@ -151,10 +151,20 @@ img, canvas, svg { max-width:100% }
 /* ── NAV ── */
 .nav {
   position:fixed; top:0; left:0; right:0; z-index:100;
-  display:flex; justify-content:space-between; align-items:center;
-  padding:max(var(--sp-4),env(safe-area-inset-top)) clamp(1.4rem,5vw,3.2rem) 0;
+  display:flex; justify-content:flex-end; align-items:center;
+  padding:max(var(--sp-4),env(safe-area-inset-top)) clamp(1.4rem,5vw,3.2rem) var(--sp-3);
+  transition:background var(--dur-normal) ease, border-color var(--dur-normal) ease;
+  border-bottom:1px solid transparent;
 }
-.nav-back,.nav-link {
+/* Past the hero the bar sits over content, so it earns an opaque ground and a
+   brighter ink: the options have to stay readable and reachable all the way down. */
+.nav.is-scrolled {
+  background:rgba(5,8,18,0.94);
+  -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+  border-bottom-color:var(--gold-line);
+}
+.nav.is-scrolled .nav-link { color:var(--gold) }
+.nav-link {
   color:var(--gold-dim);
   font-family:'Cormorant Garamond',Georgia,serif;
   font-style:italic; font-size:clamp(0.82rem,1.6vw,0.92rem);
@@ -163,8 +173,8 @@ img, canvas, svg { max-width:100% }
   min-height:44px; display:flex; align-items:center;
 }
 .nav-right { display:flex; gap:var(--sp-5) }
-.nav-back:hover,.nav-link:hover { color:var(--gold-bright); text-shadow:var(--glow-xs) }
-.nav-back:focus-visible,.nav-link:focus-visible { outline:1px solid var(--gold-bright); outline-offset:6px }
+.nav-link:hover { color:var(--gold-bright); text-shadow:var(--glow-xs) }
+.nav-link:focus-visible { outline:1px solid var(--gold-bright); outline-offset:6px }
 
 /* ── HERO ── */
 .hero {
@@ -195,7 +205,9 @@ body { background:linear-gradient(180deg, #060b1e 0%, #0a1233 45%, #0a1129 70%, 
 .nav::before {
   content:''; position:absolute; left:0; right:0; top:0; height:calc(100% + 28px); z-index:-1; pointer-events:none;
   background:linear-gradient(180deg, rgba(5,8,18,0.86) 0%, rgba(5,8,18,0.55) 55%, rgba(5,8,18,0) 100%);
+  opacity:1; transition:opacity var(--dur-normal) ease;
 }
+.nav.is-scrolled::before { opacity:0 }
 @keyframes skyIn { to { opacity:1 } }
 .hero-inner { position:relative; z-index:1; max-width:720px }
 .hero-title {
@@ -402,10 +414,6 @@ input[type="time"].field-input, input[type="date"].field-input { color-scheme:da
 .link-count small { display:block; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.76rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted) }
 .detail { margin-top:var(--sp-5); padding-top:var(--sp-5); border-top:1px solid var(--gold-line); display:grid; grid-template-columns:minmax(0,1fr) 220px; gap:var(--sp-6); min-width:0 }
 .detail > * { min-width:0 }
-.stat-row { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:var(--sp-3); margin-bottom:var(--sp-4) }
-.stat { padding:var(--sp-3) 0; border-top:1px solid var(--gold-line); min-width:0 }
-.stat b { display:block; font-family:'Bebas Neue',Impact,sans-serif; font-size:1.9rem; letter-spacing:0.04em; color:var(--fg); line-height:1; font-weight:400 }
-.stat span { display:block; font-style:italic; font-size:0.78rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-top:4px }
 .bars { display:flex; align-items:flex-end; gap:6px; height:92px; padding-bottom:18px; position:relative; border-bottom:1px solid var(--gold-line) }
 .bar { flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; position:relative }
 .bar i { display:block; width:100%; background:linear-gradient(180deg,var(--gold-bright),var(--gold)); min-height:2px; box-shadow:var(--glow-xs) }
@@ -421,36 +429,20 @@ input[type="time"].field-input, input[type="date"].field-input { color-scheme:da
 .detail-side .qr-frame { width:100% }
 .detail-side .field { margin-bottom:var(--sp-2) }
 .detail-side .btn-submit { padding:12px }
+/* A finding's proposal, typed into the form: the fields it touched light up until the next render. */
+.field-input.prefill-hl, .field-select.prefill-hl { border-bottom-color:var(--gold-bright); box-shadow:0 6px 18px rgba(181,147,90,0.22); animation:prefillPulse 1.1s ease-out 3 }
+.action-link.prefill-hl { color:var(--gold-bright); text-shadow:var(--glow-xs); animation:prefillPulse 1.1s ease-out 3 }
+@keyframes prefillPulse { 50% { box-shadow:0 0 0 3px rgba(217,189,123,0.35), 0 6px 22px rgba(181,147,90,0.3) } }
+.share-box { margin-top:var(--sp-3); padding:var(--sp-3) var(--sp-4); border:1px solid rgba(181,147,90,0.35); background:rgba(181,147,90,0.05); text-align:left }
+.share-box .short-line { justify-content:flex-start }
+.share-box .short-url { text-align:left }
+details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2); border-top:1px solid rgba(181,147,90,0.1) }
 .lifetime-note { text-align:center; margin-top:var(--sp-5) }
-.samples-section { padding-top:var(--sp-8) }
-.samples { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--sp-4); max-width:980px; margin:0 auto }
-.sample { position:relative; display:flex; flex-direction:column; gap:var(--sp-3); padding:var(--sp-5) var(--sp-4) var(--sp-4); border:1px solid rgba(181,147,90,0.24); background:rgba(5,7,14,0.6); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); min-width:0; text-align:left }
-.sample .tier { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.78rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold) }
-.sample .row { display:flex; gap:var(--sp-3); align-items:flex-start }
-.sample .qr { width:72px; height:72px; flex:none; background:#fff; padding:4px; box-shadow:0 0 0 1px rgba(181,147,90,0.25) }
-.sample .qr img { width:100%; height:100%; display:block; image-rendering:pixelated }
-.sample .big { font-family:'Bebas Neue',Impact,sans-serif; font-size:2.2rem; letter-spacing:0.04em; line-height:1; color:var(--fg) }
-.sample .big small { display:block; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.78rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-top:4px }
-.sample .title { font-size:1.02rem; color:var(--fg); overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
-.sample .kind { font-style:italic; font-size:0.9rem; color:var(--muted) }
-.sample .spark { display:flex; align-items:flex-end; gap:3px; height:36px; border-bottom:1px solid var(--gold-line) }
-.sample .spark i { flex:1 1 0; background:linear-gradient(180deg,var(--gold-bright),var(--gold)); min-height:2px; box-shadow:var(--glow-xs) }
-.sample .meta { font-family:var(--mono); font-size:0.74rem; color:var(--muted); letter-spacing:0.02em }
-.sample .action-link { align-self:flex-start }
-.samples-note { text-align:center; margin-top:var(--sp-5) }
-@media(max-width:760px) { .samples { grid-template-columns:1fr } }
-.settings { display:grid; gap:8px; margin:var(--sp-2) 0 }
-.settings div { display:grid; grid-template-columns:110px minmax(0,1fr); gap:8px; font-size:0.94rem; padding:6px 0; border-bottom:1px solid rgba(181,147,90,0.1) }
-.settings dt { font-style:italic; font-size:0.74rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold); padding-top:3px }
-.settings dd { color:var(--fg); overflow-wrap:anywhere }
-.demo-banner { width:100%; text-align:left; border-left:2px solid var(--gold); padding:var(--sp-3) var(--sp-4); background:rgba(181,147,90,0.06); font-style:italic; font-size:0.98rem; color:var(--muted); line-height:1.55 }
-.demo-banner b { color:var(--gold-bright); font-weight:500 }
-.demo-banner .action-link { display:inline; margin-left:8px; font-size:0.9rem }
 .overview { margin-top:var(--sp-4); padding-top:var(--sp-4); border-top:1px solid var(--gold-line) }
 .overview-head { display:flex; align-items:baseline; justify-content:space-between; gap:var(--sp-3); flex-wrap:wrap; margin-bottom:var(--sp-2) }
 .overview-head h4, .views-head h4 { font-style:italic; font-size:0.8rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--gold); font-weight:500 }
 .views-nav { display:flex; gap:var(--sp-4); border-bottom:1px solid var(--gold-line); margin-bottom:var(--sp-3); flex-wrap:wrap }
-.views-nav button { background:none; border:0; border-bottom:1px solid transparent; margin-bottom:-1px; padding:8px 2px; min-height:40px; cursor:pointer; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.9rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted) }
+.views-nav button { background:none; border:0; border-bottom:1px solid transparent; margin-bottom:-1px; padding:8px 2px; min-height:44px; cursor:pointer; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.9rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted) }
 .views-nav button[aria-pressed="true"] { color:var(--gold-bright); border-bottom-color:var(--gold) }
 .views-nav button:focus-visible { outline:1px solid var(--gold-bright); outline-offset:4px }
 .bars.dense { gap:2px } .bars.dense .bar span { display:none } .bars.dense .bar:nth-child(6n+1) span { display:block }
@@ -639,7 +631,6 @@ a.btn-submit { display:block; text-align:center }
   .nav { padding:var(--sp-3) var(--sp-3) 0 }
   .nav-right { gap:var(--sp-3) }
   .foot { padding:var(--sp-4) var(--sp-3) }
-  .stat b { font-size:1.5rem }
   .seg { gap:var(--sp-5) }
 }
 
@@ -666,7 +657,6 @@ a.btn-submit { display:block; text-align:center }
 
 <!-- ═══ NAV ═══ -->
 <nav class="nav" role="navigation" aria-label="Main navigation">
-  <a href="/" class="nav-back">← Kaayko</a>
   <div class="nav-right">
     <a href="/kortex/samples" class="nav-link">Samples</a>
     <a href="#pricing" class="nav-link">Pricing</a>
@@ -684,8 +674,6 @@ a.btn-submit { display:block; text-align:center }
       <a href="#make" class="action-link">Make a QR</a>
       <span class="action-dot" aria-hidden="true">&middot;</span>
       <a href="#manage" class="action-link">I have a code</a>
-      <span class="action-dot" aria-hidden="true">&middot;</span>
-      <button type="button" class="action-link" id="hero-sample">See a sample</button>
       <span class="action-dot" aria-hidden="true">&middot;</span>
       <a href="#connect" class="action-link" id="hero-auth-btn">Sign In</a>
     </div>
@@ -775,6 +763,24 @@ a.btn-submit { display:block; text-align:center }
             <p class="note">Between those hours the QR goes to the night address; otherwise to the main address above. Our clock, in this time zone, decides. Nothing a visitor sends can change it.</p>
           </div>
         </div>
+        <details class="options" id="mk-measure">
+          <summary>Measure this placement</summary>
+          <p class="field-help">Optional. Say where this code will live and what the print run cost, and the report can compare placements and estimate print payback.</p>
+          <div class="field-row">
+            <div class="field"><label class="field-label" for="mk-placement">Where will this code live?</label><select class="field-select" id="mk-placement"></select></div>
+            <div class="field" id="mk-placement-label-field" hidden><label class="field-label" for="mk-placement-label">Call it</label><input class="field-input" type="text" id="mk-placement-label" maxlength="40" placeholder="lobby easel"></div>
+          </div>
+          <div class="field"><label class="field-label" for="mk-campaign">Campaign name</label><input class="field-input" type="text" id="mk-campaign" maxlength="100" placeholder="spring-fest"><p class="field-help">Travels with every visit as the campaign tag.</p></div>
+          <div class="field-row">
+            <div class="field"><label class="field-label" for="mk-camp-start">Campaign starts</label><input class="field-input" type="date" id="mk-camp-start"></div>
+            <div class="field"><label class="field-label" for="mk-camp-end">Campaign ends</label><input class="field-input" type="date" id="mk-camp-end"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label class="field-label" for="mk-print-cost">Print cost (optional)</label><input class="field-input" type="number" id="mk-print-cost" min="0" step="0.01" inputmode="decimal" placeholder="0"></div>
+            <div class="field"><label class="field-label" for="mk-value">Value of one useful visit (optional)</label><input class="field-input" type="number" id="mk-value" min="0" step="0.01" inputmode="decimal" placeholder="0"></div>
+          </div>
+          <p class="note">Please do not enter names, phone numbers or addresses here. A place name and round numbers are all the report needs.</p>
+        </details>
       </details>
       <input class="honey" type="text" name="website" id="mk-website" tabindex="-1" autocomplete="off" aria-hidden="true">
 
@@ -875,10 +881,6 @@ a.btn-submit { display:block; text-align:center }
 
     <div id="workspace" hidden>
       <div class="ws-head">
-        <div class="demo-banner" id="ws-demo-banner" hidden>
-          <b>Sample workspace</b> · read-only · eight real links pointing at Kaayko's own products, with thirty days of simulated scans. Scanning any of them goes to the real page.
-          <button type="button" class="action-link" id="ws-demo-make">Make your own in ten seconds</button>
-        </div>
         <div class="ws-meta" id="ws-meta"></div>
         <div class="actions">
           <button type="button" class="action-link quiet" id="ws-add">Add a link</button>
@@ -911,7 +913,8 @@ a.btn-submit { display:block; text-align:center }
         <p class="status" id="ws-email-status" hidden></p>
       </div>
       <div class="overview" id="ws-overview" hidden>
-        <div class="overview-head"><h4>The workspace, four ways</h4><p class="note" id="ov-note"></p></div>
+        <div id="ov-queue"></div>
+        <div class="overview-head"><h4>The workspace, five ways</h4><p class="note" id="ov-note"></p></div>
         <div id="ov-views"></div>
       </div>
       <div class="links-list" id="links-list"></div>
@@ -1113,12 +1116,6 @@ rotate it any time</pre></div>
 </section>
 
 <!-- ═══ FOOTER ═══ -->
-<section class="section samples-section" id="samples" aria-label="Sample reports" hidden>
-  <h2 class="section-label reveal">three sample reports · light, medium, heavy</h2>
-  <div class="samples reveal" id="samples-grid"></div>
-  <p class="note samples-note reveal">Real links on Kaayko's own pages, thirty days of simulated scans. <a href="/kortex/samples" style="color:var(--gold)">All eight, spread out, with hover detail</a>.</p>
-</section>
-
   <footer class="site-footer">
     <nav aria-label="Footer">
       <a href="/legal/kortex-terms">Terms</a>
@@ -1213,6 +1210,13 @@ const GUEST_KEY = 'kortex_guest_session';
 function guestSession() { try { const s = JSON.parse(localStorage.getItem(GUEST_KEY) || 'null'); if (s && s.token && s.exp > Date.now()) return s; } catch {} return null; }
 function saveGuestSession(token, workspace) { localStorage.setItem(GUEST_KEY, JSON.stringify({ token, exp: Date.now() + ((CAPS.sessionHours || 12) - 0.5) * 3600e3, workspaceId: workspace && workspace.id })); }
 function clearGuestSession() { localStorage.removeItem(GUEST_KEY); }
+/* The sample workspace is read at /kortex/samples only. A session for it, left
+   behind by an earlier version of this page, is dropped before anything reads
+   it, and a read-only workspace answer is never rendered: "already have a
+   code?" belongs to real codes. */
+const SAMPLE_WORKSPACE_ID = 'g_demo00';
+function isSampleWorkspace(ws) { return !!ws && (ws.id === SAMPLE_WORKSPACE_ID || ws.demo === true); }
+function forgetSampleSession() { const s = guestSession(); if (s && s.workspaceId === SAMPLE_WORKSPACE_ID) clearGuestSession(); }
 /* The session is gone (expired, or the workspace was switched off): show the code entry again, say so, and focus it. */
 function sessionEnded() {
   clearGuestSession(); openCode = null;
@@ -1401,8 +1405,51 @@ function utmFromFields(prefix) {
   if (get(`${prefix}-utm-campaign`)) out.utm_campaign = get(`${prefix}-utm-campaign`);
   return out;
 }
+/* ── WHERE THE CODE LIVES ──
+   A controlled list, so placements can be compared; "other" carries a short
+   label of the owner's own. Older links hold free text, which sits under
+   "other" until the next save. */
+const PLACEMENTS = [['poster', 'Poster'], ['flyer', 'Flyer'], ['menu', 'Menu'], ['table_tent', 'Table tent'], ['packaging', 'Packaging'], ['badge', 'Badge'], ['business_card', 'Business card'], ['window', 'Storefront window'], ['screen', 'Screen'], ['vehicle', 'Vehicle'], ['other', 'Other']];
+const PERSONAL_LOOKING = /@|https?:\/\/|www\.|\d{6,}/;
+function placementOptions(selectedKey) {
+  return '<option value="">Not set</option>' + PLACEMENTS.map(([key, name]) => `<option value="${key}"${key === selectedKey ? ' selected' : ''}>${escapeHtml(name)}</option>`).join('');
+}
+function placementSelection(link) {
+  const raw = String(link.placement || '').trim();
+  if (!raw) return { key: '', label: '' };
+  const known = PLACEMENTS.find(([key, name]) => key === raw || name.toLowerCase() === raw.toLowerCase());
+  return known ? { key: known[0], label: link.placementLabel || '' } : { key: 'other', label: link.placementLabel || raw };
+}
+function bindPlacementLabel(prefix) {
+  const select = $(`${prefix}-placement`), field = $(`${prefix}-placement-label-field`);
+  const sync = () => { field.hidden = select.value !== 'other'; };
+  select.addEventListener('change', () => { sync(); if (!field.hidden) $(`${prefix}-placement-label`).focus(); });
+  sync();
+}
+$('mk-placement').innerHTML = placementOptions('');
+bindPlacementLabel('mk');
+/* Each reader returns { value, error }: the value the API takes (null clears) or the sentence to show. */
+function placementFromFields(prefix) {
+  const key = $(`${prefix}-placement`).value;
+  if (!key) return { value: null, error: null };
+  const label = key === 'other' ? $(`${prefix}-placement-label`).value.trim() : '';
+  if (PERSONAL_LOOKING.test(label)) return { value: null, error: 'Name the place in a few words, without an email, phone number or address.' };
+  return { value: { key, label: label || null }, error: null };
+}
+function economicsFromFields(prefix, currency) {
+  const cost = $(`${prefix}-print-cost`).value.trim(), value = $(`${prefix}-value`).value.trim();
+  if ((cost && !(Number(cost) >= 0)) || (value && !(Number(value) >= 0))) return { value: null, error: 'Print cost and value per visit must be numbers of zero or more.' };
+  if (!cost && !value) return { value: null, error: null };
+  return { value: { printCost: cost ? Number(cost) : undefined, valuePerVisit: value ? Number(value) : undefined, currency: currency || undefined }, error: null };
+}
+function campaignWindowFromFields(prefix) {
+  const start = $(`${prefix}-camp-start`).value, end = $(`${prefix}-camp-end`).value;
+  if (start && end && end < start) return { value: null, error: 'The campaign end must be after its start.' };
+  return { value: (start || end) ? { startAt: start || undefined, endAt: end || undefined } : null, error: null };
+}
+function nightWindowOf(schedule) { return (schedule && schedule.windows && (schedule.windows.find(w => w.label === 'night') || schedule.windows[0])) || null; }
 function nightSummary(schedule) {
-  const win = schedule && schedule.windows && (schedule.windows.find(w => w.label === 'night') || schedule.windows[0]);
+  const win = nightWindowOf(schedule);
   if (!win) return '';
   return `Night routing on: ${win.start}–${win.end} (${schedule.timezone}) → ${stripScheme(win.url)}`;
 }
@@ -1491,6 +1538,11 @@ $('make-form').addEventListener('submit', async (e) => {
     if (max || fallbackUrl) limits = { maxClicks: max ? Number(max) : undefined, fallbackUrl: fallbackUrl || undefined };
   }
   if ($('mk-utm-on').checked) { const tags = utmFromFields('mk'); if (Object.keys(tags).length) utm = tags; }
+  const placement = placementFromFields('mk'), economics = economicsFromFields('mk', ''), campaignWindow = campaignWindowFromFields('mk');
+  const measureProblem = placement.error || economics.error || campaignWindow.error;
+  if (measureProblem) { setAlert('mk-alert', 'error', measureProblem); $('mk-options').open = true; $('mk-measure').open = true; return; }
+  const campaign = $('mk-campaign').value.trim();
+  if (campaign && !(utm && utm.utm_campaign)) utm = { ...utm, utm_campaign: campaign };
   const btn = $('mk-submit'); btn.disabled = true; btn.textContent = 'Checking…';
   const body = {
     destination: url,
@@ -1502,6 +1554,9 @@ $('make-form').addEventListener('submit', async (e) => {
     limits,
     expiresAt,
     utm,
+    placement: placement.value || undefined,
+    economics: economics.value || undefined,
+    campaignWindow: campaignWindow.value || undefined,
     website: $('mk-website').value || undefined
   };
   const { ok, data } = await guestApi('/links', { method: 'POST', body });
@@ -1511,7 +1566,6 @@ $('make-form').addEventListener('submit', async (e) => {
     setAlert('mk-alert', 'error', friendly(data, 'Could not create the link. Please try again.') + why);
     return;
   }
-  try { localStorage.removeItem(DEMO_KEY); } catch {}
   saveGuestSession(data.session, data.workspace);
   showResult({ kind: 'dynamic', link: data.link, qrPng: data.qr.png, accessCode: data.accessCode, email: body.email, emailSent: !!(data.accessCode && body.email), emailDelivery: data.emailDelivery, workspace: data.workspace });
 });
@@ -1594,20 +1648,15 @@ async function openWorkspaceFromSession(revived) {
     else { setAlert('mg-alert', 'error', friendly(data, 'Could not reach your workspace right now. Try again in a moment.')); }
     return false;
   }
+  if (data.readOnly || isSampleWorkspace(data.workspace)) { clearGuestSession(); renderWorkspace(null); return false; }
   wsLinks = data.links; wsMeta = data.workspace; renderWorkspace(data.workspace, revived);
   return true;
 }
 function renderWorkspace(ws, revived) {
   $('manage-enter').hidden = !!ws; $('workspace').hidden = !ws;
   if (!ws) return;
-  const demo = !!(ws.demo || ws.readOnly || isDemoSession());
-  $('ws-demo-banner').hidden = !demo;
-  ['ws-rotate', 'ws-email', 'ws-email-dot'].forEach(id => { if ($(id)) $(id).hidden = demo || ($(id).hidden && id !== 'ws-rotate'); });
-  if ($('ws-rotate')) $('ws-rotate').hidden = demo || false;
-  $('ws-forget').textContent = demo ? 'Leave the sample' : 'Sign out on this device';
-  $('ws-add').textContent = demo ? 'Make your own' : 'Add a link';
   if (wsLinks.length) loadOverview(ws); else $('ws-overview').hidden = true;
-  $('ws-meta').innerHTML = demo ? `<b>Sample workspace</b> · ${wsLinks.length} links · read-only` : `<b>${ws.links}</b> of ${ws.linkLimit} free links · live until <b>${fmtDate(ws.expiresAt)}</b> · ${ws.hasEmail ? `recovery email <b>${escapeHtml(ws.email)}</b>` : 'no email on file'}${revived ? ` · <b>${revived} link${revived === 1 ? '' : 's'} revived</b>` : ''}`;
+  $('ws-meta').innerHTML = `<b>${ws.links}</b> of ${ws.linkLimit} free links · live until <b>${fmtDate(ws.expiresAt)}</b> · ${ws.hasEmail ? `recovery email <b>${escapeHtml(ws.email)}</b>` : 'no email on file'}${revived ? ` · <b>${revived} link${revived === 1 ? '' : 's'} revived</b>` : ''}`;
   $('ws-lifetime').textContent = `Free links stay live for ${Math.round(ws.lifetimeDays / 30)} months and renew every time you open them with your code. Scan detail covers the last ${ws.analyticsDays} days; lifetime totals never reset.`;
   const kc = knownCode();
   if (kc && $('ws-code-card').hidden) showWsCode(kc, 'Your access code', 'Kept in this tab only. Copy it or save the key card if you have not already.', false);
@@ -1626,43 +1675,100 @@ function renderWorkspace(ws, revived) {
   if (openCode && !wsLinks.some(l => l.code === openCode)) { openCode = null; $('detail').hidden = true; }
 }
 
+/* ── ACTION CENTER → SETTINGS ──
+   A finding proposes the PATCH body that would fix it. Accepting it types
+   the proposal into the settings form and lights the fields; the save (or
+   the Pause) that follows records a checkpoint, so the next window can say
+   whether it helped. Dismissing records the reason instead. */
+let pendingAction = null;
+const PREFILL_FIELDS = {
+  'limits.maxClicks': 'dt-max', 'limits.fallbackUrl': 'dt-fallback', expiresAt: 'dt-expires',
+  iosDestination: 'dt-ios', androidDestination: 'dt-android', placement: 'dt-placement', enabled: 'dt-toggle',
+  'utm.utm_source': 'dt-utm-source', 'utm.utm_medium': 'dt-utm-medium', 'utm.utm_campaign': 'dt-utm-campaign'
+};
+/* [field id, value] pairs for a proposed body; null on a branch clears every field under it. The schedule is applied whole, separately. */
+function prefillEntries(prefill) {
+  const out = [];
+  const walk = (value, path) => {
+    if (value && typeof value === 'object' && path !== 'schedule') { Object.entries(value).forEach(([k, v]) => walk(v, path ? `${path}.${k}` : k)); return; }
+    Object.entries(PREFILL_FIELDS).filter(([p]) => p === path || p.startsWith(`${path}.`)).forEach(([, id]) => out.push([id, value ?? '']));
+  };
+  walk(prefill || {}, '');
+  return out;
+}
+function fillNightFields(schedule) {
+  const win = nightWindowOf(schedule);
+  $('dt-night-url').value = win ? win.url : ''; $('dt-night-start').value = win ? win.start : '18:00'; $('dt-night-end').value = win ? win.end : '06:00';
+  $('dt-tz').value = (schedule && schedule.timezone) || browserTz();
+}
+function lightFields(fields) {
+  const els = fields.filter(Boolean);
+  els.forEach(el => el.classList.add('prefill-hl'));
+  if (!els.length) return;
+  els[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+  setTimeout(() => els[0].focus({ preventScroll: true }), 400);
+}
+function applyPrefill(prefill) {
+  const lit = prefillEntries(prefill).map(([id, value]) => {
+    const el = $(id);
+    if (el && el.tagName !== 'BUTTON') { el.value = id === 'dt-expires' ? dateInputValue(value) : String(value); el.dispatchEvent(new Event('change')); }
+    return el;
+  });
+  if (prefill && prefill.schedule !== undefined) { fillNightFields(prefill.schedule); lit.push($('dt-night-url'), $('dt-night-start'), $('dt-night-end'), $('dt-tz')); }
+  lightFields(lit);
+}
+function actOnFinding(code, finding, { dismissed } = {}) {
+  const action = finding && finding.action; if (!action) return;
+  if (dismissed) { dismissFinding(code, action.type, dismissed); return; }
+  if (action.type === 'REQUEST_REVIEW') { location.href = `/kortex/appeal?code=${encodeURIComponent(code)}`; return; }
+  const prefill = action.prefill || {};
+  pendingAction = { code, type: action.type, viaToggle: prefill.enabled !== undefined };
+  applyPrefill(prefill);
+  setStatus('dt-status', `${action.label}: ready below. Apply it, and the next window will say whether it helped.`, '');
+}
+async function dismissFinding(code, type, dismissed) {
+  const { ok, data } = await guestApi(`/links/${encodeURIComponent(code)}/actions`, { method: 'POST', body: { type, applied: false, dismissed } });
+  if (!ok) { setStatus('dt-status', friendly(data, 'Could not record that.'), 'err'); return; }
+  await openDetail(code);
+}
+/* After a change lands: the pending action, if it was the one just applied, becomes a checkpoint. False only when the record failed. */
+async function recordApplied(code, viaToggle) {
+  if (!pendingAction || pendingAction.code !== code || pendingAction.viaToggle !== viaToggle) return true;
+  const { type } = pendingAction; pendingAction = null;
+  const { ok } = await guestApi(`/links/${encodeURIComponent(code)}/actions`, { method: 'POST', body: { type, applied: true } });
+  return ok;
+}
+
 let detailSeq = 0;
+let shareReveal = null;
 async function openDetail(code) {
   const seq = ++detailSeq;
-  openCode = code; renderWorkspace(wsMeta);
+  openCode = code; pendingAction = null; renderWorkspace(wsMeta);
   const box = $('detail'); box.hidden = false; box.innerHTML = '<p class="note">Loading scans…</p>';
   const { ok, data } = await guestApi(`/links/${encodeURIComponent(code)}/analytics?tz=${encodeURIComponent(browserTz())}`);
   if (seq !== detailSeq) return; // a newer link was opened meanwhile
   if (!ok) { box.innerHTML = `<p class="alert error show">${escapeHtml(friendly(data, 'Could not load this link.'))}</p>`; return; }
-  const link = data.link, a = data.analytics;
-  const days = (a.timeline || []).slice(-7);
-  const max = Math.max(1, ...days.map(d => d.clicks));
-  const bars = days.length ? days.map(d => `<div class="bar"><i style="height:${Math.max(2, Math.round(d.clicks / max * 100))}%"></i><span>${escapeHtml(d.date.slice(5))}</span></div>`).join('') : '<p class="note" style="align-self:center;width:100%;text-align:center">No scans in the last 7 days.</p>';
-  const top = (rows, n = 4) => (rows || []).filter(r => r.value !== null && r.value !== undefined).slice(0, n).map(r => `<li><span>${escapeHtml(r.value)}</span><b>${r.clicks}</b></li>`).join('') || '<li><span>—</span></li>';
+  const link = data.link, a = data.analytics, days = a.window.retentionDays;
   const scans = (a.recentScans || []).slice(0, 5).map(s => `<li><span>${fmtAgo(s.at)} · ${escapeHtml(s.deviceType || '?')}</span><b>${escapeHtml(s.country || '')}</b></li>`).join('') || '<li><span>No scans yet</span></li>';
-  const nightWin = link.schedule && link.schedule.windows && (link.schedule.windows.find(w => w.label === 'night') || link.schedule.windows[0]);
+  const nightWin = nightWindowOf(link.schedule);
   const stateLine = (link.status === 'blocked' ? `Blocked by the safety check. <a href="/kortex/appeal?code=${encodeURIComponent(link.code)}" style="color:var(--gold)">Request a review</a>.` : link.status === 'held' ? 'Under review; it goes live once checked.' : (!link.enabled ? 'Paused: scans see a "link disabled" page.' : 'Live.'))
-    + (nightWin ? ` ${escapeHtml(nightSummary(link.schedule))}.` : '') + (limitSummary(link) ? ` ${escapeHtml(limitSummary(link))}` : '');
-  const src = Object.fromEntries(((a.breakdowns && a.breakdowns.source) || []).map(r => [r.value, r.clicks]));
+    + (nightWin ? ` ${escapeHtml(nightSummary(link.schedule))}.` : '') + (limitSummary(link) ? ` ${escapeHtml(limitSummary(link))}` : '')
+    + ` <b>${data.lifetime.clicks}</b> scans lifetime, last ${fmtAgo(data.lifetime.lastClickedAt)}; scan detail covers the last ${days} days.`;
   const points = (a.points || []).map(p => ptOf(p, false));
+  const lostPoints = ((a.outcomes && a.outcomes.points) || []).map(ptOfLost);
   const variation = variationOf(link);
-  const readOnly = !!(data.readOnly || isDemoSession());
+  const placement = placementSelection(link);
+  const reveal = shareReveal && shareReveal.code === code ? shareReveal : null; shareReveal = null;
+  const shareLine = link.shared ? `Shared, read-only, ${link.shareExpiresAt ? `until ${fmtDate(link.shareExpiresAt)}` : 'with no end date'}. The address was shown once; a new one replaces it.` : '';
   box.innerHTML = `
     <div>
       <span class="report-kind">${escapeHtml(variation.name)}</span>
       <p class="note">${escapeHtml(variation.blurb)}</p>
-      <div class="stat-row">
-        <div class="stat"><b>${data.lifetime.clicks}</b><span>scans, lifetime</span></div>
-        <div class="stat"><b>${a.totals.events}</b><span>last ${a.window.retentionDays} days</span></div>
-        <div class="stat"><b>${src.qr || 0}</b><span>from QR scans, ${a.window.retentionDays} days</span></div>
-        <div class="stat"><b>${a.unique ? a.unique.distinctVisitors : '—'}</b><span>people, ${a.window.retentionDays} days</span></div>
-      </div>
-      <div class="bars">${bars}</div>
-      <div id="dt-insights"></div>
+      <div id="dt-actions"></div>
       ${viewsHtml('dt')}
       <div class="mini-list">
         <div><h4>Recent scans</h4><ul>${scans}</ul></div>
-        <div><h4>Status</h4><p class="note">${stateLine} Last scan ${fmtAgo(data.lifetime.lastClickedAt)}.</p></div>
+        <div><h4>Status</h4><p class="note">${stateLine}</p></div>
       </div>
     </div>
     <div class="detail-side">
@@ -1692,13 +1798,14 @@ async function openDetail(code) {
         </div>
         <div class="field"><label class="field-label" for="dt-utm-campaign">Tag: campaign</label><input class="field-input" id="dt-utm-campaign" maxlength="100" placeholder="spring-fest" value="${escapeHtml((link.utm && link.utm.utm_campaign) || '')}"></div>
         <div class="field-row">
-          <div class="field"><label class="field-label" for="dt-placement">Where the code lives</label><input class="field-input" id="dt-placement" list="dt-placements" maxlength="40" placeholder="poster, menu, badge…" value="${escapeHtml(link.placement || '')}"><datalist id="dt-placements"><option value="poster"><option value="menu"><option value="table tent"><option value="badge"><option value="flyer"><option value="packaging"><option value="window"><option value="business card"><option value="screen"><option value="vehicle"></datalist></div>
-          <div class="field"><label class="field-label" for="dt-print-cost">Print cost (for ROI)</label><input class="field-input" id="dt-print-cost" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0" value="${link.economics && link.economics.printCost != null ? link.economics.printCost : ''}"></div>
+          <div class="field"><label class="field-label" for="dt-placement">Where the code lives</label><select class="field-select" id="dt-placement">${placementOptions(placement.key)}</select></div>
+          <div class="field" id="dt-placement-label-field" hidden><label class="field-label" for="dt-placement-label">Call it</label><input class="field-input" id="dt-placement-label" maxlength="40" placeholder="lobby easel" value="${escapeHtml(placement.label)}"></div>
         </div>
         <div class="field-row">
-          <div class="field"><label class="field-label" for="dt-value">Value of one visit</label><input class="field-input" id="dt-value" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0" value="${link.economics && link.economics.valuePerVisit != null ? link.economics.valuePerVisit : ''}"></div>
-          <div class="field"><label class="field-label" for="dt-currency">Currency</label><input class="field-input" id="dt-currency" maxlength="3" spellcheck="false" placeholder="USD" value="${escapeHtml((link.economics && link.economics.currency) || '')}"></div>
+          <div class="field"><label class="field-label" for="dt-print-cost">Print cost</label><input class="field-input" id="dt-print-cost" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0" value="${link.economics && link.economics.printCost != null ? link.economics.printCost : ''}"></div>
+          <div class="field"><label class="field-label" for="dt-value">Value of one useful visit</label><input class="field-input" id="dt-value" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0" value="${link.economics && link.economics.valuePerVisit != null ? link.economics.valuePerVisit : ''}"></div>
         </div>
+        <div class="field"><label class="field-label" for="dt-currency">Currency</label><input class="field-input" id="dt-currency" maxlength="3" spellcheck="false" placeholder="USD" value="${escapeHtml((link.economics && link.economics.currency) || '')}"></div>
         <div class="field-row">
           <div class="field"><label class="field-label" for="dt-camp-start">Campaign starts</label><input class="field-input" id="dt-camp-start" type="date" value="${escapeHtml(dateInputValue(link.campaignWindow && link.campaignWindow.startAt))}"></div>
           <div class="field"><label class="field-label" for="dt-camp-end">Campaign ends</label><input class="field-input" id="dt-camp-end" type="date" value="${escapeHtml(dateInputValue(link.campaignWindow && link.campaignWindow.endAt))}"></div>
@@ -1712,31 +1819,33 @@ async function openDetail(code) {
           <button type="button" class="action-link quiet" id="dt-csv">Download CSV</button>
           <span class="action-dot" aria-hidden="true">&middot;</span>
           <button type="button" class="action-link quiet" id="dt-share">${link.shared ? 'Stop sharing' : 'Share report'}</button>
+          ${link.shared ? '<span class="action-dot" aria-hidden="true">&middot;</span><button type="button" class="action-link quiet" id="dt-share-rotate">New share address</button>' : ''}
         </div>
-        ${link.shared ? `<p class="note" id="dt-share-line">Public report: <a href="${escapeHtml(link.shareUrl)}" target="_blank" rel="noopener" style="color:var(--gold)">${escapeHtml(stripScheme(link.shareUrl))}</a> (read-only, revocable)</p>` : ''}
+        ${shareLine ? `<p class="note">${shareLine}</p>` : ''}
+        ${reveal ? `<div class="share-box"><div class="short-line"><span class="short-url">${escapeHtml(reveal.shareUrl)}</span><button type="button" class="action-link quiet" id="dt-share-copy">Copy</button></div><p class="note">Shown once. Anyone holding this address can read this one report${reveal.expiresAt ? ` until ${fmtDate(reveal.expiresAt)}` : ''}, nothing else.</p></div>` : ''}
         <p class="status" id="dt-status" hidden></p>
       </form>
     </div>`;
-  mountViews('dt', { points, hasCode: false, uniquePeople: a.unique ? a.unique.distinctVisitors : null, windowRows: link.schedule ? tallyOf(points, 'win').map(r => ({ ...r, value: r.value === '—' ? 'day address' : 'night address' })) : null, skyTitle: 'This link\'s scans, as a star each' });
-  renderInsights($('dt-insights'), a.insights);
+  renderActionCenter($('dt-actions'), a, { onAction: (finding, opts) => actOnFinding(code, finding, opts) });
+  mountViews('dt', { points, lostPoints, hasCode: false, uniquePeople: a.unique ? a.unique.distinctVisitors : null, windowRows: link.schedule ? tallyOf(points, 'win').map(r => ({ ...r, value: r.value === '—' ? 'day address' : 'night address' })) : null, skyTitle: 'This link\'s scans, as a star each', mapTitle: 'Where each scan went' });
+  bindPlacementLabel('dt');
   $('dt-copy').addEventListener('click', () => copyText(link.shortUrl, $('dt-copy')));
-  if (readOnly) {
-    const d = link.destinations || {}, win = nightWin;
-    const rows = [['Points to', stripScheme(d.web || '')], d.ios ? ['iPhone', stripScheme(d.ios)] : null, d.android ? ['Android', stripScheme(d.android)] : null,
-      win ? ['At night', `${stripScheme(win.url)} · ${win.start}–${win.end} ${link.schedule.timezone}`] : null,
-      link.limits && link.limits.maxClicks ? ['Stops after', `${link.limits.maxClicks} scans`] : null,
-      link.expiresAt ? ['Ends on', fmtDate(link.expiresAt)] : null,
-      link.limits && link.limits.fallbackUrl ? ['Then sends to', stripScheme(link.limits.fallbackUrl)] : null,
-      link.utm && Object.keys(link.utm).length ? ['Tags', Object.entries(link.utm).map(([k, v]) => `${k.replace('utm_', '')}=${v}`).join(' · ')] : null].filter(Boolean);
-    $('dt-form').outerHTML = `<dl class="settings">${rows.map(([k, v]) => `<div><dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd></div>`).join('')}</dl><p class="note">Sample link: settings are read-only. <a href="/kortex/samples#${encodeURIComponent(link.code)}" style="color:var(--gold)">See it spread out</a>.</p>`;
-  }
-  if (readOnly) return; // settings are a read-only list; nothing below exists
+  if (reveal) $('dt-share-copy').addEventListener('click', () => copyText(reveal.shareUrl, $('dt-share-copy')));
+  const mintShare = async (suffix) => {
+    const { ok: k, data: d } = await guestApi(`/links/${encodeURIComponent(code)}/share${suffix}`, { method: 'POST', body: {} });
+    if (!k) { setStatus('dt-status', friendly(d, 'Could not share the report.'), 'err'); return; }
+    shareReveal = { code, shareUrl: d.shareUrl, expiresAt: d.expiresAt };
+    await openDetail(code);
+    setStatus('dt-status', 'Shared. Copy the address now: it is shown once.', 'ok');
+  };
   $('dt-share').addEventListener('click', async () => {
-    const { ok: k, data: d } = await guestApi(`/links/${encodeURIComponent(code)}/share`, { method: link.shared ? 'DELETE' : 'POST', body: link.shared ? undefined : {} });
-    if (!k) { setStatus('dt-status', friendly(d, 'Could not change sharing.'), 'err'); return; }
-    await openWorkspaceFromSession(); await openDetail(code);
-    setStatus('dt-status', link.shared ? 'Sharing stopped. The public address no longer works.' : 'Shared. Anyone with the address can read this one report, nothing else.', 'ok');
+    if (!link.shared) { mintShare(''); return; }
+    const { ok: k, data: d } = await guestApi(`/links/${encodeURIComponent(code)}/share`, { method: 'DELETE' });
+    if (!k) { setStatus('dt-status', friendly(d, 'Could not stop sharing.'), 'err'); return; }
+    await openDetail(code);
+    setStatus('dt-status', 'Sharing stopped. The public address no longer works.', 'ok');
   });
+  if (link.shared) $('dt-share-rotate').addEventListener('click', () => mintShare('/rotate'));
   $('dt-csv').addEventListener('click', () => guestDownload(`/links/${encodeURIComponent(code)}/analytics.csv`, `kortex-${code}-scans.csv`, $('dt-csv')));
   $('dt-form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -1757,24 +1866,24 @@ async function openDetail(code) {
     if ($('dt-expires').value && !expiresAt) { setStatus('dt-status', 'That end date is not valid.', 'err'); return; }
     const limits = (maxRaw || fallbackUrl) ? { maxClicks: maxRaw ? Number(maxRaw) : undefined, fallbackUrl: fallbackUrl || undefined } : null;
     const utm = utmFromFields('dt');
-    const placement = $('dt-placement').value.trim() || null;
-    const costRaw = $('dt-print-cost').value.trim(), valueRaw = $('dt-value').value.trim();
-    if ((costRaw && !(Number(costRaw) >= 0)) || (valueRaw && !(Number(valueRaw) >= 0))) { setStatus('dt-status', 'Print cost and value per visit must be numbers.', 'err'); return; }
-    const economics = (costRaw || valueRaw) ? { printCost: costRaw ? Number(costRaw) : undefined, valuePerVisit: valueRaw ? Number(valueRaw) : undefined, currency: $('dt-currency').value.trim() || undefined } : null;
-    const campStart = $('dt-camp-start').value, campEnd = $('dt-camp-end').value;
-    if (campStart && campEnd && campEnd < campStart) { setStatus('dt-status', 'The campaign end must be after its start.', 'err'); return; }
-    const campaignWindow = (campStart || campEnd) ? { startAt: campStart || undefined, endAt: campEnd || undefined } : null;
+    const placementIn = placementFromFields('dt'), economics = economicsFromFields('dt', $('dt-currency').value.trim()), campaignWindow = campaignWindowFromFields('dt');
+    const measureProblem = placementIn.error || economics.error || campaignWindow.error;
+    if (measureProblem) { setStatus('dt-status', measureProblem, 'err'); return; }
     const iosRaw = $('dt-ios').value.trim(), androidRaw = $('dt-android').value.trim();
     const iosUrl = iosRaw ? normaliseUrl(iosRaw) : '', androidUrl = androidRaw ? normaliseUrl(androidRaw) : '';
     if ((iosRaw && !iosUrl) || (androidRaw && !androidUrl)) { setStatus('dt-status', 'Enter full web addresses for the iPhone and Android destinations, or leave them empty.', 'err'); return; }
-    const { ok: k, data: d } = await guestApi(`/links/${encodeURIComponent(code)}`, { method: 'PATCH', body: { destination: url, iosDestination: iosUrl, androidDestination: androidUrl, title: $('dt-title').value.trim(), placement, economics, campaignWindow, schedule, limits, expiresAt, utm } });
+    const { ok: k, data: d } = await guestApi(`/links/${encodeURIComponent(code)}`, { method: 'PATCH', body: { destination: url, iosDestination: iosUrl, androidDestination: androidUrl, title: $('dt-title').value.trim(), placement: placementIn.value, economics: economics.value, campaignWindow: campaignWindow.value, schedule, limits, expiresAt, utm } });
     if (!k) { setStatus('dt-status', friendly(d, 'Could not save.') + (d.reasons ? ' ' + d.reasons.map(r => r.detail).join(' ') : ''), 'err'); return; }
-    await openWorkspaceFromSession(); await openDetail(code); setStatus('dt-status', 'Saved. Every scan now goes to the new address.', 'ok');
+    const noted = await recordApplied(code, false);
+    await openWorkspaceFromSession(); await openDetail(code);
+    setStatus('dt-status', noted ? 'Saved. Every scan now goes to the new address.' : 'Saved, but the change could not be recorded as a checkpoint.', noted ? 'ok' : 'err');
   });
   $('dt-toggle').addEventListener('click', async () => {
     const { ok: k, data: d } = await guestApi(`/links/${encodeURIComponent(code)}`, { method: 'PATCH', body: { enabled: !link.enabled } });
     if (!k) { setStatus('dt-status', friendly(d, 'Could not update.'), 'err'); return; }
-    await openWorkspaceFromSession(); openDetail(code);
+    const noted = await recordApplied(code, true);
+    await openWorkspaceFromSession(); await openDetail(code);
+    if (!noted) setStatus('dt-status', 'Changed, but it could not be recorded as a checkpoint.', 'err');
   });
   $('dt-delete').addEventListener('click', async () => {
     if (!confirm('Delete this link? Anything printed with this QR will stop working. This cannot be undone.')) return;
@@ -1784,8 +1893,8 @@ async function openDetail(code) {
   });
 }
 
-$('ws-add').addEventListener('click', () => { if (isDemoSession()) leaveDemo(); setMode('dynamic'); resetMaker(); $('make').scrollIntoView({ behavior: 'smooth' }); });
-$('ws-forget').addEventListener('click', () => { if (isDemoSession()) { leaveDemo(); return; } clearGuestSession(); forgetCode(); openCode = null; $('detail').hidden = true; renderWorkspace(null); });
+$('ws-add').addEventListener('click', () => { setMode('dynamic'); resetMaker(); $('make').scrollIntoView({ behavior: 'smooth' }); });
+$('ws-forget').addEventListener('click', () => { clearGuestSession(); forgetCode(); openCode = null; $('detail').hidden = true; renderWorkspace(null); });
 $('ws-email').addEventListener('click', () => { $('ws-email-form').hidden = !$('ws-email-form').hidden; if (!$('ws-email-form').hidden) $('ws-email-input').focus(); });
 $('ws-email-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -1983,65 +2092,46 @@ auth.onAuthStateChanged(async (user) => {
   $('login-btn').disabled = false;
 });
 
-/* The four views, the report framing and the hover tips live in /js/kortex-views.js (shared with the samples page). */
-const { ptOf, tallyOf, radarAxes, pct, viewsHtml, mountViews, variationOf, renderInsights, renderWorkspaceInsights, localHour, localDow } = window.KortexViews;
-const DEMO_KEY = 'kortex_guest_demo';
-function isDemoSession() { try { return localStorage.getItem(DEMO_KEY) === '1'; } catch { return false; } }
-
-/* ── FOOTER SAMPLES: the lightest, the median and the heaviest of the sample links ── */
-async function loadSamples() {
-  const grid = $('samples-grid'); if (!grid) return;
-  const { ok, data } = await guestApi('/demo/samples');
-  if (!ok || !data.samples) return;
-  const max = Math.max(1, ...data.samples.flatMap(s => s.timeline));
-  grid.innerHTML = data.samples.map(s => `<article class="sample">
-    <span class="tier">${escapeHtml(s.tier)} traffic</span>
-    <div class="row"><div class="qr"><img alt="QR code for ${escapeHtml(s.title)}" src="${escapeHtml(s.qrUrl)}?size=160" loading="lazy"></div>
-      <div style="min-width:0"><div class="big">${s.events}<small>scans, 7 days</small></div><div class="title">${escapeHtml(s.title)}</div><div class="kind">${escapeHtml(s.variation)}</div></div></div>
-    <div class="spark" aria-hidden="true">${s.timeline.map(v => `<i style="height:${Math.max(6, Math.round(v / max * 100))}%"></i>`).join('')}</div>
-    <div class="meta">${s.lifetime} lifetime · ${s.people} people · ${s.qrShare}% QR</div>
-    <a class="action-link" href="/kortex/samples#${escapeHtml(s.code)}">Open this report</a>
-  </article>`).join('');
-  $('samples').hidden = false;
-}
-loadSamples();
-
-/* ── THE SAMPLE (wanderer flow) ── */
-async function openDemo() {
-  const { ok, data } = await guestApi('/demo');
-  if (!ok) { setAlert('mg-alert', 'error', friendly(data, 'The sample is not available right now.')); location.hash = '#manage'; return; }
-  saveGuestSession(data.session, data.workspace);
-  try { localStorage.setItem(DEMO_KEY, '1'); } catch {}
-  forgetCode(); codeSaved = true;
-  location.hash = '#manage';
-  await openWorkspaceFromSession();
-}
-function leaveDemo() { try { localStorage.removeItem(DEMO_KEY); } catch {} clearGuestSession(); openCode = null; overviewKey = null; $('detail').hidden = true; renderWorkspace(null); }
-$('hero-sample').addEventListener('click', openDemo);
-$('ws-demo-make').addEventListener('click', () => { leaveDemo(); setMode('dynamic'); resetMaker(); $('make').scrollIntoView({ behavior: 'smooth' }); });
+/* The five views, the action center, the work queue, the report framing and the hover tips live in /js/kortex-views.js (shared with the samples page and the admin). */
+const { ptOf, ptOfLost, tallyOf, viewsHtml, mountViews, variationOf, renderInsights, renderActionCenter, renderWorkspaceQueue } = window.KortexViews;
 
 let overviewKey = null;
+const WORKSPACE_INSIGHT_KEYS = ['placementPerformance', 'safetyImpact', 'utmHealth', 'anomalies'];
 async function loadOverview(ws) {
   // One fetch per state of the workspace: re-rendering the list must not re-run 25 analytics reads.
   const key = `${ws.id || ''}:${wsLinks.map(l => `${l.code}:${l.clickCount || 0}:${l.enabled}:${l.status}`).join('|')}`;
   if (key === overviewKey) { $('ws-overview').hidden = false; return; }
   overviewKey = key;
-  const box = $('ws-overview'); box.hidden = false; $('ov-views').innerHTML = '<p class="note">Reading the last seven days…</p>';
+  const box = $('ws-overview'); box.hidden = false; $('ov-queue').innerHTML = ''; $('ov-views').innerHTML = '<p class="note">Reading the last seven days…</p>';
   const { ok, data } = await guestApi(`/workspace/analytics?tz=${encodeURIComponent(browserTz())}`);
   if (!ok) { $('ov-views').innerHTML = `<p class="note">${escapeHtml(friendly(data, 'Could not load the overview.'))}</p>`; return; }
   const points = (data.points || []).map(p => ptOf(p, true));
-  const totalEvents = data.links.reduce((s, l) => s + l.events, 0), totalUnique = data.links.reduce((s, l) => s + l.unique, 0);
-  $('ov-note').textContent = `${data.links.length} links · ${totalEvents} scans in ${data.window.days} days · hours shown in ${browserTz()}`;
+  const observed = data.links.reduce((s, l) => s + l.observed, 0);
+  $('ov-note').textContent = `${data.links.length} links · ${observed} scans in ${data.window.days} days · hours shown in ${browserTz()}${data.droppedLinks ? ` · ${data.droppedLinks} more not shown` : ''}`;
+  renderWorkspaceQueue($('ov-queue'), data, { onOpen: async (code, finding) => { await openDetail(code); if (finding) actOnFinding(code, finding); else $('detail').scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
   $('ov-views').innerHTML = '<div id="ov-insights"></div>' + viewsHtml('ov');
-  mountViews('ov', { points, hasCode: true, linkRows: data.links, uniquePeople: totalUnique, skyTitle: 'Every scan in the workspace, as a star' });
-  renderWorkspaceInsights($('ov-insights'), data.insights);
+  mountViews('ov', { points, lostPoints: [], hasCode: true, linkRows: data.links, uniquePeople: data.uniquePeople, skyTitle: 'Every scan in the workspace, as a star', mapTitle: 'Where the workspace\'s scans went' });
+  renderInsights($('ov-insights'), data.insights, { keys: WORKSPACE_INSIGHT_KEYS, compact: true });
 }
 
 setMode('dynamic');
 loadCaps();
-(async () => { const want = new URLSearchParams(location.search).get('sample'); if (!want) return; await openDemo(); let tries = 0; while (!wsLinks.length && tries++ < 30) await new Promise(r => setTimeout(r, 150)); if (wsLinks.some(l => l.code === want)) { await openDetail(want); $('detail').scrollIntoView({ block: 'start' }); } })();
+forgetSampleSession();
 if (guestSession()) { openWorkspaceFromSession(); }
 if (location.hash === '#manage') setTimeout(() => $('mg-code').focus(), 600);
+
+/* The bar is fixed; past the hero it takes an opaque ground so its options stay
+   readable and clickable over every section below. */
+const navEl = document.querySelector('.nav');
+let navScrolled = false;
+function syncNav() {
+  const scrolled = window.scrollY > 40;
+  if (scrolled === navScrolled) return;
+  navScrolled = scrolled;
+  navEl.classList.toggle('is-scrolled', scrolled);
+}
+addEventListener('scroll', syncNav, { passive: true });
+syncNav();
 
 /* ── SCROLL REVEAL ── */
 const revealObs = new IntersectionObserver((entries) => {

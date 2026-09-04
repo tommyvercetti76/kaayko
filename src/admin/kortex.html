@@ -202,71 +202,41 @@
     <!-- Dashboard View -->
     <div id="dashboard-view" class="view">
       <header class="view-header">
-        <h1>Dashboard</h1>
-        <p>Admin control center with direct campaign access</p>
+        <div>
+          <h1>Dashboard</h1>
+          <p class="view-subtitle">Where the next ten minutes go. Sorted by the scans you can still win back.</p>
+        </div>
+        <span class="dash-window" id="dash-window">—</span>
       </header>
 
-      <!-- KPI Cards -->
-      <div class="dashboard-kpi-row" id="dashboard-kpis">
-        <div class="kpi-card">
-          <span class="kpi-label">Total Clicks</span>
-          <strong class="kpi-value" id="kpi-total-clicks">—</strong>
-        </div>
-        <div class="kpi-card">
-          <span class="kpi-label">Active Links</span>
-          <strong class="kpi-value" id="kpi-active-links">—</strong>
-        </div>
-        <div class="kpi-card">
-          <span class="kpi-label">Top Performer</span>
-          <strong class="kpi-value kpi-value-sm" id="kpi-top-performer">—</strong>
-        </div>
-        <div class="kpi-card">
-          <span class="kpi-label">Expiring Soon</span>
-          <strong class="kpi-value" id="kpi-expiring-soon">—</strong>
-        </div>
-      </div>
+      <div id="dash-metrics" class="dash-metrics"></div>
 
-      <!-- Campaign Shortcuts -->
-      <div class="card campaign-shortcuts-card">
+      <section class="card">
         <div class="card-header">
-          <h3 class="card-title">All Campaigns</h3>
-          <a href="#" class="btn-secondary" data-view="campaigns">Manage Campaigns</a>
+          <h3 class="card-title">Work queue</h3>
+          <span class="card-note" id="dash-queue-note">loading…</span>
         </div>
-        <div id="dashboard-campaign-shortcuts" class="campaign-shortcuts-list">
-          <div class="loading">Loading campaign shortcuts...</div>
-        </div>
-      </div>
+        <div id="dash-queue"><div class="loading">Reading the workspace…</div></div>
+      </section>
 
-      <!-- Recent Links -->
-      <div class="card" id="dashboard-recent-links-card">
+      <section class="card" id="dash-findings-card" hidden>
         <div class="card-header">
-          <h3 class="card-title">Recent Links</h3>
-          <a href="#" class="btn-secondary" data-view="links">View All</a>
+          <h3 class="card-title">Across the workspace</h3>
+          <span class="card-note">placement, safety, campaign tags, standouts</span>
         </div>
-        <div id="dashboard-recent-links">
-          <div class="loading">Loading links...</div>
+        <div id="dash-findings"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <h3 class="card-title">Recently created</h3>
+          <a href="#" class="btn-secondary" data-view="links">All links</a>
         </div>
-      </div>
-
-      <!-- Quick Actions -->
-      <div class="quick-actions">
-        <button class="quick-action-btn" data-view="campaigns">
-          <span class="btn-icon">◈</span>
-          <span>Campaigns</span>
-        </button>
-        <button class="quick-action-btn" data-view="create">
-          <span class="btn-icon">+</span>
-          <span>Create Link</span>
-        </button>
-        <button class="quick-action-btn" data-view="links">
-          <span class="btn-icon">≡</span>
-          <span>All Links</span>
-        </button>
-      </div>
-      
-
+        <div id="dashboard-recent-links"><div class="loading">Loading links…</div></div>
+      </section>
     </div>
-    
+
+
     <!-- Create Link View -->
     <div id="create-view" class="view hidden">
       <header class="view-header">
@@ -640,9 +610,28 @@
                 <div class="form-row">
                   <div class="form-group">
                     <label for="placement">Where the code lives</label>
-                    <input type="text" id="placement" class="form-input" list="placement-options" maxlength="40" placeholder="poster, menu, badge…">
-                    <datalist id="placement-options"><option value="poster"><option value="menu"><option value="table tent"><option value="badge"><option value="flyer"><option value="packaging"><option value="window"><option value="business card"><option value="screen"><option value="vehicle"></datalist>
+                    <select id="placement" class="form-select">
+                      <option value="">Not set</option>
+                      <option value="poster">Poster</option>
+                      <option value="flyer">Flyer</option>
+                      <option value="menu">Menu</option>
+                      <option value="table_tent">Table tent</option>
+                      <option value="packaging">Packaging</option>
+                      <option value="badge">Badge</option>
+                      <option value="business_card">Business card</option>
+                      <option value="window">Storefront / window</option>
+                      <option value="screen">Screen</option>
+                      <option value="vehicle">Vehicle</option>
+                      <option value="other">Other</option>
+                    </select>
                   </div>
+                  <div class="form-group">
+                    <label for="placementLabel">Placement label (optional)</label>
+                    <input type="text" id="placementLabel" class="form-input" maxlength="40" autocomplete="off" placeholder="e.g. front window, spring menu">
+                    <span class="form-hint">Shown in reports instead of the list name. No names, phone numbers or addresses.</span>
+                  </div>
+                </div>
+                <div class="form-row">
                   <div class="form-group"><label for="printCost">Print cost</label><input type="number" min="0" step="0.01" inputmode="decimal" id="printCost" class="form-input" placeholder="0"></div>
                   <div class="form-group"><label for="valuePerVisit">Value per visit</label><input type="number" min="0" step="0.01" inputmode="decimal" id="valuePerVisit" class="form-input" placeholder="0"></div>
                   <div class="form-group"><label for="currency">Currency</label><input type="text" id="currency" class="form-input" maxlength="3" placeholder="USD" spellcheck="false"></div>

@@ -10,6 +10,10 @@ import { apiFetch } from '../../js/config.js';
 let CURRENT_EDIT_LINK = null;
 let SELECTED_CATEGORY = null;
 let SELECTED_PAGE = null;
+// The finding whose proposal was prefilled into this form; recorded as an applied checkpoint on save.
+let PENDING_ACTION = null;
+
+const UTM_FIELDS = { utm_source: 'utmSource', utm_medium: 'utmMedium', utm_campaign: 'utmCampaign', utm_term: 'utmTerm', utm_content: 'utmContent' };
 
 // ── Destination Registry — whitelisted Kaayko destinations ──
 // Only real, deployed domains: kaayko.com, roots.kaayko.com, alumni.kaayko.com
@@ -92,10 +96,11 @@ export async function init(state) {
     if (code) await loadLinkForEditing(code);
   });
 
-  // If editing, populate form
+  // If editing, populate form; a finding's proposal handed over from the link page lands on top of it.
   if (state.editingCode) {
     await loadLinkForEditing(state.editingCode);
   }
+  applyPendingPrefill();
 }
 
 // ============================================================================
@@ -600,8 +605,7 @@ function showUtmHint() {
   const move = document.getElementById('utm-decode-move');
   if (move) move.addEventListener('click', () => {
     destInput.value = d.cleanUrl;
-    const map = { utm_source: 'utmSource', utm_medium: 'utmMedium', utm_campaign: 'utmCampaign', utm_term: 'utmTerm', utm_content: 'utmContent' };
-    Object.entries(map).forEach(([k, id]) => { const el = document.getElementById(id); if (el && d.tags[k]) el.value = d.tags[k]; });
+    Object.entries(UTM_FIELDS).forEach(([k, id]) => { const el = document.getElementById(id); if (el && d.tags[k]) el.value = d.tags[k]; });
     hint.remove();
   });
 }
@@ -734,6 +738,7 @@ async function handleCreateLink(e) {
 
     if (isEditing) {
       utils.showToast(`Link "${linkCode}" updated successfully`, 'success', 4000);
+      await recordAppliedAction(code);
     } else if (isAlumniLink(webDest) || formData.metadata?.isAdmin) {
       showAlumniSuccessModal(linkCode, data, webDest);
     } else {
@@ -801,19 +806,117 @@ function extractRules() {
   const economics = (printCost || valuePerVisit) ? { printCost: printCost ? Number(printCost) : undefined, valuePerVisit: valuePerVisit ? Number(valuePerVisit) : undefined, currency: v('currency') || undefined } : null;
   const cs = v('campaignStart'), ce = v('campaignEnd');
   const campaignWindow = (cs || ce) ? { startAt: cs || undefined, endAt: ce || undefined } : null;
-  return { schedule, limits, placement: v('placement') || null, economics, campaignWindow };
+  return { schedule, limits, placement: placementPayload(), economics, campaignWindow };
+}
+/** Controlled placement key plus an optional display label; null clears. */
+function placementPayload() {
+  const key = getVal('placement');
+  if (!key) return null;
+  const label = getVal('placementLabel');
+  return label ? { key, label } : { key };
 }
 /** Fill the rule fields from a link being edited. */
 function prefillRules(link) {
   if (!link) return;
-  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val == null ? '' : String(val); };
-  const win = link.schedule && Array.isArray(link.schedule.windows) ? (link.schedule.windows.find(w => w.label === 'night') || link.schedule.windows[0]) : null;
-  set('nightUrl', win ? win.url : ''); set('nightStart', win ? win.start : '18:00'); set('nightEnd', win ? win.end : '06:00'); set('nightTz', link.schedule ? link.schedule.timezone : '');
-  set('maxClicks', link.limits && link.limits.maxClicks ? link.limits.maxClicks : ''); set('fallbackUrl', link.limits ? link.limits.fallbackUrl : '');
-  set('placement', link.placement || '');
-  set('printCost', link.economics ? link.economics.printCost : ''); set('valuePerVisit', link.economics ? link.economics.valuePerVisit : ''); set('currency', link.economics ? link.economics.currency : '');
+  setScheduleFields(link.schedule);
+  setText('maxClicks', link.limits && link.limits.maxClicks ? link.limits.maxClicks : ''); setText('fallbackUrl', link.limits ? link.limits.fallbackUrl : '');
+  setPlacementFields(link.placement, link.placementLabel);
+  setText('printCost', link.economics ? link.economics.printCost : ''); setText('valuePerVisit', link.economics ? link.economics.valuePerVisit : ''); setText('currency', link.economics ? link.economics.currency : '');
   const day = (x) => (x ? String(x).slice(0, 10) : '');
-  set('campaignStart', link.campaignWindow ? day(link.campaignWindow.startAt) : ''); set('campaignEnd', link.campaignWindow ? day(link.campaignWindow.endAt) : '');
+  setText('campaignStart', link.campaignWindow ? day(link.campaignWindow.startAt) : ''); setText('campaignEnd', link.campaignWindow ? day(link.campaignWindow.endAt) : '');
+}
+/** Night-window fields from a schedule (or the defaults when there is none). */
+function setScheduleFields(schedule) {
+  const windows = schedule && Array.isArray(schedule.windows) ? schedule.windows : [];
+  const win = windows.find(w => w.label === 'night') || windows[0] || null;
+  setText('nightUrl', win ? win.url : ''); setText('nightStart', win ? win.start : '18:00'); setText('nightEnd', win ? win.end : '06:00'); setText('nightTz', schedule ? schedule.timezone : '');
+}
+/** Select a controlled key; legacy free text (pre-controlled-list links) lands on "other" with the text as its label. */
+function setPlacementFields(key, label) {
+  const select = document.getElementById('placement');
+  if (!select) return;
+  const known = !!key && [...select.options].some(o => o.value === key);
+  select.value = known ? key : (key ? 'other' : '');
+  setText('placementLabel', label || (known ? '' : key));
+}
+/** UTM inputs from a link's tags — accepts both canonical (utm_source) and legacy shorthand (source) keys. */
+function setUtmFields(utm) {
+  Object.entries(UTM_FIELDS).forEach(([key, id]) => setText(id, utm[key] || utm[key.slice(4)] || ''));
+}
+/** datetime-local reads local time back, so write local components; Firestore timestamps and ISO strings both accepted. */
+function setExpiresAt(value) {
+  const el = document.getElementById('expiresAt');
+  if (!el) return;
+  if (!value) { el.value = ''; return; }
+  const date = value._seconds ? new Date(value._seconds * 1000) : new Date(value);
+  const pad = (n) => String(n).padStart(2, '0');
+  el.value = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+// ============================================================================
+// PREFILL FROM A FINDING — the link page hands over { code, action } via STATE.prefill
+// ============================================================================
+
+/* Each applier writes one PATCH-body field into the form and returns the ids it touched. */
+const PREFILL_APPLIERS = {
+  limits: (limits) => {
+    if (limits === null) { setText('maxClicks', ''); setText('fallbackUrl', ''); return ['maxClicks', 'fallbackUrl']; }
+    return Object.keys(limits).filter(k => k === 'maxClicks' || k === 'fallbackUrl').map(k => { setText(k, limits[k]); return k; });
+  },
+  expiresAt: (iso) => { setExpiresAt(iso); return ['expiresAt']; },
+  iosDestination: (url) => { setText('iosDestination', url); return ['iosDestination']; },
+  androidDestination: (url) => { setText('androidDestination', url); return ['androidDestination']; },
+  schedule: (schedule) => { setScheduleFields(schedule); return ['nightUrl', 'nightStart', 'nightEnd', 'nightTz']; },
+  utm: (utm) => Object.entries(UTM_FIELDS).filter(([key]) => key in (utm || {})).map(([key, id]) => { setText(id, utm[key]); return id; }),
+  placement: (p) => {
+    const { key, label } = typeof p === 'string' ? { key: p, label: '' } : (p || {});
+    setPlacementFields(key, label);
+    return ['placement', 'placementLabel'];
+  },
+  enabled: (on) => { setChecked('enabled', on); return ['enabled']; },
+};
+
+function applyActionPrefill(prefill) {
+  return Object.entries(prefill || {}).flatMap(([field, value]) => (PREFILL_APPLIERS[field] ? PREFILL_APPLIERS[field](value) : []));
+}
+
+const PREFILL_FLASH = [
+  { boxShadow: '0 0 0 0 rgba(212, 175, 55, 0.75)', borderColor: '#d4af37' },
+  { boxShadow: '0 0 0 8px rgba(212, 175, 55, 0)', borderColor: '#d4af37' }
+];
+/** Pulse the touched fields gold, scroll to the first and focus the first one still empty. Nothing is saved. */
+function highlightFields(ids) {
+  const targets = ids.map(id => document.getElementById(id)).filter(Boolean).map(el => el.closest('.toggle-option') || el);
+  if (!targets.length) return;
+  targets.forEach(el => el.animate(PREFILL_FLASH, { duration: 1200, iterations: 3 }));
+  targets[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+  (targets.find(el => 'value' in el && el.value === '') || targets[0]).focus({ preventScroll: true });
+}
+
+/** One-shot: consume STATE.prefill, and apply it only when it belongs to the link now loaded. */
+function applyPendingPrefill() {
+  const pending = STATE.prefill;
+  STATE.prefill = null;
+  if (!pending || !pending.action || !CURRENT_EDIT_LINK || pending.code !== STATE.editingCode) return;
+  const touched = applyActionPrefill(pending.action.prefill);
+  PENDING_ACTION = { code: pending.code, type: pending.action.type };
+  highlightFields(touched);
+  utils.showInfo(`Prefilled "${pending.action.label || pending.action.type}" — review the highlighted fields, then save to apply.`, 5000);
+}
+
+/** After a save that carried a finding's proposal, record it as an applied checkpoint so the link page can say whether it helped. */
+async function recordAppliedAction(code) {
+  if (!PENDING_ACTION || PENDING_ACTION.code !== code) return;
+  const { type } = PENDING_ACTION;
+  PENDING_ACTION = null;
+  try {
+    const res = await apiFetch(`/kortex/${encodeURIComponent(code)}/actions`, { method: 'POST', body: JSON.stringify({ type, applied: true }) });
+    const data = res ? await res.json().catch(() => ({})) : {};
+    if (!res || !res.ok || !data.success) throw new Error(data.error || 'checkpoint not recorded');
+    utils.showInfo('Checkpoint recorded — the link page will show whether this change helped.', 4000);
+  } catch (err) {
+    utils.showToast(`Saved, but the checkpoint was not recorded: ${err.message}`, 'warning', 5000);
+  }
 }
 
 function extractCreatePayload() {
@@ -1134,21 +1237,8 @@ async function loadLinkForEditing(code) {
     setField('linkSource', link.source || metadata.source || 'manual');
     setChecked('requiresAuth', link.requiresAuth || metadata.requiresAuth);
 
-    // UTM — accept both legacy shorthand and canonical keys
-    ['Source', 'Medium', 'Campaign', 'Term', 'Content'].forEach(f => {
-      const el = document.getElementById(`utm${f}`);
-      if (el) el.value = utm[`utm_${f.toLowerCase()}`] || utm[f.toLowerCase()] || '';
-    });
-
-    // Expiration
-    const expiresAt = document.getElementById('expiresAt');
-    if (expiresAt && link.expiresAt) {
-      const date = link.expiresAt._seconds
-        ? new Date(link.expiresAt._seconds * 1000)
-        : new Date(link.expiresAt);
-      const pad = (n) => String(n).padStart(2, '0'); // local components: datetime-local reads local time back
-      expiresAt.value = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-    }
+    setUtmFields(utm);
+    setExpiresAt(link.expiresAt);
 
     // Toggles
     setChecked('enabled', link.enabled !== false);
@@ -1206,6 +1296,11 @@ function setField(id, val) {
   if (el && val !== undefined && val !== null) el.value = val;
 }
 
+/** Like setField, but null/undefined clear the input instead of leaving it alone. */
+function setText(id, val) {
+  setField(id, val == null ? '' : String(val));
+}
+
 function setChecked(id, val) {
   const el = document.getElementById(id);
   if (el) el.checked = !!val;
@@ -1249,6 +1344,7 @@ function resetCreateForm() {
 
   STATE.editingCode = null;
   CURRENT_EDIT_LINK = null;
+  PENDING_ACTION = null;
 
   // Reset destination picker
   clearDestinationPicker();
@@ -1270,7 +1366,7 @@ function resetCreateForm() {
   setField('rootsMaxUses', '0');
 
   // Rules
-  ['maxClicks', 'fallbackUrl', 'nightUrl', 'nightTz', 'placement', 'printCost', 'valuePerVisit', 'currency', 'campaignStart', 'campaignEnd'].forEach(id => setField(id, ''));
+  ['maxClicks', 'fallbackUrl', 'nightUrl', 'nightTz', 'placement', 'placementLabel', 'printCost', 'valuePerVisit', 'currency', 'campaignStart', 'campaignEnd'].forEach(id => setField(id, ''));
   setField('nightStart', '18:00'); setField('nightEnd', '06:00');
 }
 

@@ -469,6 +469,7 @@ async function syncToProduction() {
 
 // Make globally accessible
 window.syncToProduction = syncToProduction;
+window.closeModal = ui.closeModal;
 
 // ============================================================================
 // INITIALIZATION

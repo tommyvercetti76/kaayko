@@ -5,21 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kortex report | Kaayko</title>
   <meta name="robots" content="noindex, nofollow">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.cloudfunctions.net https://*.run.app https://*.googleapis.com; frame-src https://accounts.google.com;">
+  <meta name="referrer" content="no-referrer">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <meta name="theme-color" content="#060b1e">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/kortex-views.css">
   <style>
-    :root { --bg:#080808; --fg:#ede8df; --muted:rgba(237,232,223,0.76); --dim:rgba(237,232,223,0.62); --faint:rgba(237,232,223,0.46); --gold:#b5935a; --gold-bright:#d9bd7b; --gold-dim:rgba(181,147,90,0.84); --gold-line:rgba(181,147,90,0.22); --glow-xs:0 0 6px rgba(181,147,90,0.15); --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace; --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-7:40px; --sp-8:48px; --sp-9:64px; --sp-10:80px }
+    /* A shared report: one link's aggregates, read-only, on the same night sky as the rest of Kortex. */
+    :root { --bg:#080808; --fg:#ede8df; --muted:rgba(237,232,223,0.76); --dim:rgba(237,232,223,0.62); --faint:rgba(237,232,223,0.46); --gold:#b5935a; --gold-bright:#d9bd7b; --gold-dim:rgba(181,147,90,0.84); --gold-line:rgba(181,147,90,0.22); --glow-xs:0 0 6px rgba(181,147,90,0.15); --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace; --good:#5fc48f; --warn:#e7ab4b; --lost:#ef6b6b }
     *,*::before,*::after { box-sizing:border-box; margin:0; padding:0 }
-    html { scroll-behavior:smooth; scroll-padding-top:80px; -webkit-text-size-adjust:100% }
+    html { scroll-behavior:smooth; -webkit-text-size-adjust:100% }
     @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto } }
     html, body { overflow-x:clip }
     body { font-family:'Cormorant Garamond',Georgia,serif; font-size:17px; line-height:1.55; color:var(--fg); background:linear-gradient(180deg,#060b1e 0%,#0a1233 45%,#0a1129 70%,#080808 100%) fixed; min-height:100vh }
     a { color:inherit; text-decoration:none }
+    [hidden] { display:none !important }
     .sky { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0; animation:skyIn 1.4s ease-out 0.2s forwards }
     @keyframes skyIn { to { opacity:1 } }
     .nav { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; justify-content:space-between; align-items:center; padding:max(16px,env(safe-area-inset-top)) clamp(1.4rem,5vw,3.2rem) 0 }
@@ -27,67 +28,72 @@
     .nav a { color:var(--gold-dim); font-style:italic; font-size:clamp(0.82rem,1.6vw,0.92rem); letter-spacing:0.22em; text-transform:uppercase; min-height:44px; display:flex; align-items:center }
     .nav a:hover, .nav a:focus-visible { color:var(--gold-bright); outline:none }
     .nav-right { display:flex; gap:24px }
-    main { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:120px clamp(1rem,4vw,2.5rem) 80px }
-    .lead { max-width:760px; margin:0 auto 56px; text-align:center }
+    main { position:relative; z-index:1; max-width:1080px; margin:0 auto; padding:120px clamp(1rem,4vw,2.5rem) 80px }
+    .lead { max-width:760px; margin:0 auto 40px; text-align:center }
     .eyebrow { font-style:italic; font-size:0.86rem; letter-spacing:0.28em; text-transform:uppercase; color:var(--gold); margin-bottom:14px }
-    h1 { font-family:'Bebas Neue',Impact,sans-serif; font-weight:400; font-size:clamp(3rem,8vw,5.6rem); letter-spacing:0.06em; line-height:0.95; text-shadow:0 0 18px rgba(181,147,90,0.2) }
-    .lead p { font-style:italic; font-size:1.15rem; color:var(--muted); margin-top:16px }
-    .lead .actions { margin-top:22px; display:flex; gap:28px; justify-content:center; flex-wrap:wrap }
-    .action-link { background:none; border:0; cursor:pointer; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.95rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold); min-height:44px; display:inline-flex; align-items:center }
+    h1 { font-family:'Bebas Neue',Impact,sans-serif; font-weight:400; font-size:clamp(2.6rem,7vw,4.8rem); letter-spacing:0.06em; line-height:0.95; text-shadow:0 0 18px rgba(181,147,90,0.2); overflow-wrap:anywhere }
+    .sub { font-style:italic; font-size:1.1rem; color:var(--muted); margin-top:14px }
+    .action-link { background:none; border:0; cursor:pointer; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.95rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold); min-height:44px; display:inline-flex; align-items:center; padding:0 4px }
     .action-link:hover { color:var(--gold-bright); text-shadow:var(--glow-xs) }
-    .action-link.primary { color:var(--bg); background:var(--gold); padding:0 22px; font-weight:500 }
-    .action-link.primary:hover { background:var(--gold-bright); color:var(--bg) }
-    .tiers { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin:0 auto 64px; max-width:980px }
-    .tier { padding:20px 22px; border:1px solid var(--gold-line); background:rgba(5,7,14,0.6); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); text-align:left; display:flex; flex-direction:column; gap:10px; min-width:0 }
-    .tier .lab { font-style:italic; font-size:0.78rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold) }
-    .tier .big { font-family:'Bebas Neue',Impact,sans-serif; font-size:2.6rem; letter-spacing:0.04em; line-height:1 }
-    .tier .big small { display:block; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.78rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-top:4px }
-    .tier .spark { display:flex; align-items:flex-end; gap:3px; height:34px; border-bottom:1px solid var(--gold-line) }
-    .tier .spark i { flex:1 1 0; background:linear-gradient(180deg,var(--gold-bright),var(--gold)); min-height:2px }
-    .tier .meta { font-family:var(--mono); font-size:0.74rem; color:var(--muted) }
-    .tier a { color:var(--gold); font-style:italic }
-    .report { position:relative; margin:0 auto 40px; padding:36px clamp(18px,3vw,36px); border:1px solid rgba(181,147,90,0.24); background:rgba(5,7,14,0.66); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); box-shadow:0 30px 80px rgba(0,0,0,0.38); display:grid; grid-template-columns:minmax(0,320px) minmax(0,1fr); gap:36px; scroll-margin-top:90px }
-    .report::after { content:''; position:absolute; inset:-1px; pointer-events:none; opacity:.85; --t:linear-gradient(var(--gold-bright),var(--gold-bright)); background:var(--t) left top/18px 1px no-repeat,var(--t) left top/1px 18px no-repeat,var(--t) right top/18px 1px no-repeat,var(--t) right top/1px 18px no-repeat,var(--t) left bottom/18px 1px no-repeat,var(--t) left bottom/1px 18px no-repeat,var(--t) right bottom/18px 1px no-repeat,var(--t) right bottom/1px 18px no-repeat }
-    .report > * { min-width:0 }
-    .report .num { font-family:var(--mono); font-size:0.74rem; letter-spacing:0.12em; color:var(--faint); margin-bottom:8px }
-    .report-kind { display:inline-block; font-style:italic; font-size:0.8rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold-bright); border:1px solid rgba(181,147,90,0.35); padding:5px 10px; margin-bottom:12px }
-    .report h2 { font-family:'Bebas Neue',Impact,sans-serif; font-weight:400; font-size:2rem; letter-spacing:0.05em; line-height:1.05; margin-bottom:6px }
-    .report .blurb { font-style:italic; color:var(--muted); margin-bottom:14px }
-    .qr-row { display:flex; gap:14px; align-items:center; margin:12px 0 16px }
+    .action-link:focus-visible { outline:1px solid var(--gold-bright); outline-offset:4px }
+    /* glass plates with the chart-plate corner ticks */
+    .plate { position:relative; margin:0 auto 32px; padding:36px clamp(18px,3vw,36px); border:1px solid rgba(181,147,90,0.24); background:rgba(5,7,14,0.66); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); box-shadow:0 30px 80px rgba(0,0,0,0.38) }
+    .plate::after { content:''; position:absolute; inset:-1px; pointer-events:none; opacity:.85; --t:linear-gradient(var(--gold-bright),var(--gold-bright)); background:var(--t) left top/18px 1px no-repeat,var(--t) left top/1px 18px no-repeat,var(--t) right top/18px 1px no-repeat,var(--t) right top/1px 18px no-repeat,var(--t) left bottom/18px 1px no-repeat,var(--t) left bottom/1px 18px no-repeat,var(--t) right bottom/18px 1px no-repeat,var(--t) right bottom/1px 18px no-repeat }
+    .plate > * { min-width:0 }
+    .error { max-width:620px; text-align:center }
+    .error p { font-style:italic; font-size:1.08rem; color:var(--muted); margin-bottom:10px }
+    .report { display:grid; grid-template-columns:minmax(0,300px) minmax(0,1fr); gap:36px }
+    .identity { display:flex; flex-direction:column; gap:14px }
     .qr-frame { width:132px; height:132px; flex:none; background:#fff; padding:6px; box-shadow:0 0 0 1px rgba(181,147,90,0.25), 0 0 16px rgba(181,147,90,0.15) }
     .qr-frame img { width:100%; height:100%; display:block; image-rendering:pixelated }
     .qr-meta { font-family:var(--mono); font-size:0.78rem; color:var(--muted); line-height:1.7; overflow-wrap:anywhere }
     .qr-meta b { color:var(--fg); font-weight:500 }
-    .insights { list-style:none; margin:10px 0 16px; display:grid; gap:6px }
-    .insights li { padding-left:18px; position:relative; font-style:italic; font-size:0.98rem; color:var(--muted); line-height:1.5 }
-    .insights li::before { content:'✦'; position:absolute; left:0; top:2px; color:var(--gold); font-size:0.7rem }
-    .insights b { color:var(--fg); font-weight:500 }
-    .stat-row { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:16px }
+    .tag { display:inline-block; font-style:italic; font-size:0.8rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold-bright); border:1px solid rgba(181,147,90,0.35); padding:5px 10px }
+    .note { font-style:italic; font-size:0.95rem; color:var(--muted); line-height:1.5 }
+    .note b { color:var(--gold-bright); font-weight:500 }
+    .body { display:flex; flex-direction:column; gap:22px }
+    .block h5 { font-style:italic; font-size:0.78rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--gold); font-weight:500; margin:0 0 10px }
+    .stat-row { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px }
     .stat { padding:12px 0; border-top:1px solid var(--gold-line); min-width:0 }
     .stat b { display:block; font-family:'Bebas Neue',Impact,sans-serif; font-size:1.9rem; letter-spacing:0.04em; line-height:1; font-weight:400 }
     .stat span { display:block; font-style:italic; font-size:0.76rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-top:4px }
-    /* views (same rules as the dashboard) */
-    .views-nav { display:flex; gap:16px; border-bottom:1px solid var(--gold-line); margin-bottom:12px; flex-wrap:wrap }
-    .views-nav button { background:none; border:0; border-bottom:1px solid transparent; margin-bottom:-1px; padding:8px 2px; min-height:40px; cursor:pointer; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.9rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted) }
-    .views-nav button[aria-pressed="true"] { color:var(--gold-bright); border-bottom-color:var(--gold) }
-    .views-nav button:focus-visible { outline:1px solid var(--gold-bright); outline-offset:4px }
+    .stat.lost b { color:var(--lost) } .stat.rescued b { color:var(--warn) } .stat.useful b { color:var(--good) }
+    .quiet { padding:18px 20px; border-left:2px solid var(--gold); background:rgba(181,147,90,0.05) }
+    /* findings: one line each, coloured by status */
+    .findings { list-style:none; display:grid; gap:10px }
+    .finding { display:grid; grid-template-columns:10px minmax(0,1fr); gap:10px; align-items:start; padding:12px 14px; border:1px solid rgba(181,147,90,.18); background:rgba(181,147,90,.035); min-width:0 }
+    .finding i { width:8px; height:8px; border-radius:50%; margin-top:8px; background:#8C95A4; box-shadow:0 0 8px rgba(0,0,0,.4) }
+    .finding.good i { background:var(--good); box-shadow:0 0 8px rgba(95,196,143,.6) }
+    .finding.warn i { background:var(--warn); box-shadow:0 0 8px rgba(231,171,75,.6) }
+    .finding.none i { background:rgba(237,232,223,.25); box-shadow:none }
+    .finding h6 { font-style:italic; font-weight:500; font-size:.78rem; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); margin:0 0 4px }
+    .finding p { font-style:italic; font-size:.98rem; line-height:1.5; color:var(--fg); margin:0 }
+    .finding.none p { color:var(--muted) }
+    /* bars: vertical for the days, horizontal for the categories */
+    .bars { display:flex; gap:4px; align-items:flex-end; height:120px; position:relative; margin-bottom:22px; border-bottom:1px solid var(--gold-line) }
+    .bar { flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; position:relative }
+    .bar i { display:block; width:100%; background:linear-gradient(180deg,var(--gold-bright),var(--gold)); border-radius:1px 1px 0 0; min-height:2px; box-shadow:var(--glow-xs) }
+    .bar span { position:absolute; bottom:-18px; font-family:var(--mono); font-size:0.68rem; color:var(--muted); white-space:nowrap }
     .bars.dense { gap:2px } .bars.dense .bar span { display:none } .bars.dense .bar:nth-child(6n+1) span { display:block }
-    .closing { text-align:center; margin-top:56px }
-    .closing p { font-style:italic; color:var(--muted); max-width:62ch; margin:0 auto 18px }
-    footer { position:relative; z-index:1; text-align:center; padding:32px 16px 48px; font-style:italic; font-size:0.9rem; color:var(--faint) }
-    footer a { color:var(--gold); margin:0 10px }
-    @media (max-width:900px) { .report { grid-template-columns:1fr; gap:24px } }
-    @media (max-width:760px) { .tiers, .k-tables, .graph-grid, .radar-wrap { grid-template-columns:1fr } .stat-row { grid-template-columns:repeat(2,minmax(0,1fr)) } }
-    @media (max-width:480px) { .report, .tier { -webkit-backdrop-filter:none; backdrop-filter:none; background:rgba(5,7,14,0.88) } }
-    .reveal { opacity:0; transform:translateY(14px); transition:opacity .6s ease, transform .6s ease }
-    .reveal.in { opacity:1; transform:none }
-    @media (prefers-reduced-motion:reduce) { .reveal { opacity:1; transform:none; transition:none } }
-  </style>
-  <style>
-    @media (min-width: 960px) { .report { grid-template-columns:minmax(0,320px) minmax(0,1fr) } }
-    .qr-meta { overflow-wrap:anywhere }
+    .rows { list-style:none; display:grid; gap:6px }
+    .rows li { display:grid; grid-template-columns:minmax(0,1fr) auto auto; gap:12px; align-items:center; font-size:0.94rem; color:var(--muted); padding:5px 0; border-bottom:1px solid rgba(181,147,90,0.1); position:relative }
+    .rows li span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+    .rows li b { color:var(--fg); font-weight:500; font-family:var(--mono); font-size:0.86rem }
+    .rows li small { font-family:var(--mono); font-size:0.74rem; color:var(--dim) }
+    .rows li em { position:absolute; left:0; bottom:0; height:2px; background:linear-gradient(90deg,var(--gold),var(--gold-bright)) }
+    .split { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px }
+    .split div { padding:12px 14px; border:1px solid rgba(181,147,90,.18) }
+    .split b { display:block; font-family:'Bebas Neue',Impact,sans-serif; font-size:1.7rem; letter-spacing:.04em; line-height:1 }
+    .split span { display:block; font-style:italic; font-size:.78rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-top:4px }
+    .two { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:22px }
+    .two > * { min-width:0 }
     .share-note { text-align:center; font-style:italic; color:var(--faint); font-size:.9rem; margin-top:18px }
-    .ki-grid { margin-top:18px }
+    .share-note a { color:var(--gold); min-height:44px; display:inline-flex; align-items:center }
+    footer { position:relative; z-index:1; text-align:center; padding:32px 16px 48px; font-style:italic; font-size:0.9rem; color:var(--faint) }
+    footer a { color:var(--gold); margin:0 10px; min-height:44px; display:inline-flex; align-items:center }
+    @media (max-width:900px) { .report { grid-template-columns:1fr; gap:24px } }
+    @media (max-width:640px) { .stat-row { grid-template-columns:repeat(2,minmax(0,1fr)) } .two { grid-template-columns:1fr } }
+    @media (max-width:480px) { .plate { -webkit-backdrop-filter:none; backdrop-filter:none; background:rgba(5,7,14,0.88); padding:24px 16px } .nav-right { gap:14px } }
   </style>
 </head>
 <body>
@@ -99,56 +105,36 @@
   <header class="lead">
     <div class="eyebrow">shared report · read-only</div>
     <h1 id="r-title">Loading…</h1>
-    <p id="r-sub"></p>
+    <p class="sub" id="r-sub"></p>
   </header>
-  <div id="report"></div>
-  <p class="share-note">Shared by the link's owner. Counts are scans of one Kortex link; no individual is identified. <a href="/kortex" style="color:var(--gold)">Make your own</a>.</p>
+  <section class="plate error" id="r-error" role="alert" hidden>
+    <p id="r-error-text"></p>
+    <button type="button" class="action-link" id="r-retry" hidden>Try again</button>
+  </section>
+  <article class="plate report" id="report" hidden>
+    <aside class="identity">
+      <div class="qr-frame"><img id="r-qr" alt="QR code" width="132" height="132"></div>
+      <div class="qr-meta" id="r-meta"></div>
+      <div id="r-placement"></div>
+      <p class="note" id="r-window"></p>
+      <p class="note" id="r-shared"></p>
+    </aside>
+    <div class="body">
+      <div id="r-totals"></div>
+      <section class="block" id="r-findings" hidden></section>
+      <section class="block" id="r-split" hidden></section>
+      <section class="block" id="r-timeline" hidden></section>
+      <div class="two">
+        <section class="block" id="r-devices" hidden></section>
+        <section class="block" id="r-countries" hidden></section>
+      </div>
+      <section class="block" id="r-campaign" hidden></section>
+    </div>
+  </article>
+  <p class="share-note">Shared by the link's owner. Counts are scans of one Kortex link; no individual is identified. <a href="/kortex">Make your own</a>.</p>
 </main>
 <footer><a href="/kortex">Kortex</a><a href="/legal/kortex-terms">Terms</a><a href="/privacy">Privacy</a><a href="/kortex/report">Report a link</a><div style="margin-top:10px">&copy; <span id="year">2026</span> Kaayko</div></footer>
-<script src="/js/kortex-views.js"></script>
-<script>
-(function () {
-  const API_BASE = (localStorage.getItem('kaayko_environment') || 'production') === 'production'
-    ? 'https://api-vwcc5j4qda-uc.a.run.app' : 'http://127.0.0.1:5001/kaaykostore/us-central1/api';
-  const V = window.KortexViews, esc = V.esc, $ = id => document.getElementById(id);
-  $('year').textContent = new Date().getFullYear();
-  const token = (location.pathname.match(/\/kortex\/r\/([A-Za-z0-9_-]+)/) || [])[1] || new URLSearchParams(location.search).get('t') || '';
-  const tz = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch (e) { return 'UTC'; } })();
-  async function load() {
-    if (!token) { $('r-title').textContent = 'No report here'; $('r-sub').textContent = 'This address needs a share token.'; return; }
-    let data;
-    try {
-      const res = await fetch(`${API_BASE}/kortex/shared/${encodeURIComponent(token)}?tz=${encodeURIComponent(tz)}`);
-      data = await res.json();
-      if (!res.ok || !data.success) throw new Error(res.status === 404 ? 'This report is no longer shared.' : (data.error || 'Could not load the report.'));
-    } catch (e) { $('r-title').textContent = 'Report unavailable'; $('r-sub').textContent = e.message; return; }
-    const l = data.link, a = data.analytics, points = (a.points || []).map(p => V.ptOf(p, false));
-    const kind = V.variationOf(l);
-    document.title = `${l.title || l.code} · Kortex report`;
-    $('r-title').textContent = l.title || l.code;
-    $('r-sub').textContent = `${kind.name} · ${a.window.retentionDays}-day window · hours shown in ${tz}`;
-    $('report').innerHTML = `<article class="report reveal in">
-      <div>
-        <span class="report-kind">${esc(kind.name)}</span>
-        <p class="blurb">${esc(kind.blurb)}</p>
-        <div class="qr-row"><div class="qr-frame"><img alt="QR code" src="${esc(l.qrUrl)}?size=264" width="132" height="132"></div>
-          <div class="qr-meta"><b>${esc(V.stripScheme(l.shortUrl || ''))}</b><br>→ ${esc(V.stripScheme(l.destination || ''))}${l.placement ? `<br>placement: ${esc(l.placement)}` : ''}</div></div>
-        <div class="stat-row">
-          <div class="stat"><b>${a.totals.events}</b><span>scans, ${a.window.retentionDays} days</span></div>
-          <div class="stat"><b>${l.clickCount}</b><span>lifetime</span></div>
-          <div class="stat"><b>${a.unique ? a.unique.distinctVisitors : '—'}</b><span>people</span></div>
-          <div class="stat"><b>${a.insights && a.insights.qrSplit.detail ? a.insights.qrSplit.detail.qrShare : 0}%</b><span>from QR scans</span></div>
-        </div>
-        <div id="r-insights"></div>
-      </div>
-      <div>${V.viewsHtml('r-shared')}</div>
-    </article>`;
-    V.renderInsights($('r-insights'), a.insights, { keys: ['qualityScore', 'bestWindow', 'rhythm', 'trend', 'qrSplit', 'deviceMatch', 'channelMix', 'geoDrift', 'repeatPattern'] , compact: true });
-    V.mountViews('r-shared', { points, hasCode: false, uniquePeople: a.unique ? a.unique.distinctVisitors : null, windowRows: l.schedule ? V.tallyOf(points, 'win').map(x => ({ ...x, value: x.value === '—' ? 'day address' : 'night address' })) : null, skyTitle: 'Every scan, as a star' });
-  }
-  load();
-})();
-</script>
+<script src="/js/kortex-report.js"></script>
 <script src="/js/kortex-sky.js"></script>
 </body>
 </html>

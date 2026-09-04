@@ -9,6 +9,7 @@
 
 /* Header */
 .ld-header { display: flex; flex-direction: column; gap: 14px; }
+.ld-toolbar { display: flex; flex-wrap: wrap; gap: 10px; }
 .ld-back {
   align-self: flex-start; background: none; border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm); color: var(--text-secondary); padding: 6px 12px;
@@ -26,6 +27,19 @@
 .ld-kpi-val { font-family: var(--mono); font-size: 22px; font-variant-numeric: tabular-nums; color: var(--text-secondary); line-height: 1; }
 .ld-kpi-hero .ld-kpi-val { color: var(--gold-primary); font-size: 28px; }  /* the one gold moment in the header */
 .ld-kpi-lbl { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+
+/* Result since the last accepted or dismissed finding — one line under the identity */
+.ld-since { display: inline-flex; flex-wrap: wrap; gap: 4px 6px; align-items: baseline; margin: 8px 0 0; padding: 5px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); background: var(--surface-sunken); font-size: 12px; color: var(--text-secondary); font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.ld-since b { font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; font-size: 10px; color: var(--text-muted); }
+.ld-since.is-improved b { color: var(--success); }
+.ld-since.is-regressed b { color: var(--error); }
+.ld-since.is-unchanged b { color: var(--gold-primary); }
+
+/* Shared report address — shown once, in the modal */
+.ld-share-note { font-size: 13px; line-height: 1.5; color: var(--text-secondary); margin: 0 0 12px; }
+.ld-share-box { display: flex; gap: 8px; align-items: center; }
+.ld-share-box code { flex: 1; min-width: 0; font-family: var(--mono, ui-monospace, Menlo, monospace); font-size: 12px; word-break: break-all; padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); background: var(--surface-sunken); color: var(--text-primary); }
+.ld-share-actions { display: flex; justify-content: flex-end; margin-top: 14px; }
 
 /* Cards — milled-metal depth */
 .ld-card {
@@ -93,16 +107,6 @@
 .ld-facet-fill { display: block; height: 100%; background: rgba(255,255,255,0.2); border-radius: 3px; }
 .ld-facet-fill.is-lead { background: var(--gold-primary); }   /* only the leader per facet is gold */
 .ld-facet-num { font-family: var(--mono); font-size: 12px; text-align: right; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
-
-/* Clock ramps */
-.ld-clockblock { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-.ld-clock-label { width: 40px; font-size: 11px; color: var(--text-muted); }
-.ld-ramp { display: grid; gap: 3px; flex: 1; }
-.ld-ramp-24 { grid-template-columns: repeat(24, 1fr); }
-.ld-ramp-7 { grid-template-columns: repeat(7, 1fr); max-width: 320px; }
-.ld-ramp-cell { height: 26px; border-radius: 3px; position: relative; }
-.ld-ramp-lbl { position: absolute; bottom: -15px; left: 0; font-size: 8px; color: var(--text-muted); font-family: var(--mono); }
-.ld-clockblock:has(.ld-ramp-24) { margin-bottom: 22px; }
 
 /* Not-measured ledger */
 .ld-card-ledger { background: var(--surface-sunken); }

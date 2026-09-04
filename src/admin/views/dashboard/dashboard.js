@@ -1,247 +1,121 @@
 /**
- * Dashboard View Module
- * Dashboard View — Campaign shortcuts and quick actions
+ * Dashboard — triage, not vanity.
+ *
+ * One question at sign-in: where do the next ten minutes go? The answer is the
+ * work queue, ordered by recoverable lost scans, over the same canonical
+ * numbers the wanderer dashboard and the per-link drilldown use
+ * (GET /kortex/workspace/analytics). Lifetime counters and campaign shortcuts
+ * lived here before and answered nothing.
+ *
+ * @module views/dashboard/dashboard
  */
 
-import { switchView } from '../../js/kortex-core.js';
 import { apiFetch } from '../../js/config.js';
-import { escapeHtml } from '../../js/utils.js';
+import { escapeHtml, browserTz } from '../../js/utils.js';
+import * as router from '../../js/router.js';
 
+const esc = (v) => escapeHtml(String(v ?? ''));
+const WORKSPACE_FINDING_KEYS = ['placementPerformance', 'safetyImpact', 'utmHealth', 'anomalies'];
+const RECENT_LIMIT = 8;
 
-/**
- * Initialize dashboard view
- */
 export async function init() {
-  setupQuickActions();
-  await Promise.all([loadKPIs(), loadCampaignShortcuts(), loadRecentLinks()]);
+  await Promise.all([loadWorkspace(), loadRecentLinks()]);
 }
 
-/**
- * Setup quick action buttons
- */
-function setupQuickActions() {
-  const buttons = document.querySelectorAll('.quick-action-btn');
-  buttons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const view = btn.dataset.view;
-      if (view) switchView(view);
-    });
-  });
+/** GET a Kortex JSON endpoint; null when apiFetch handled a 401 by logging out. */
+async function fetchJson(path) {
+  const res = await apiFetch(path);
+  if (!res) return null;
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.success) throw new Error(data.error || `Request failed (${res.status})`);
+  return data;
 }
 
-async function loadKPIs() {
+/* ── the four numbers that decide what to do ──────────────────────────────*/
+
+function metricsHtml(data) {
+  const rows = data.links || [];
+  const sum = (key) => rows.reduce((total, row) => total + (row[key] || 0), 0);
+  const observed = sum('observed'), useful = sum('useful'), lost = sum('lost'), rescued = sum('rescued');
+  const rate = observed ? Math.round((useful / observed) * 100) : 0;
+  const recoverable = sum('recoverableLost');
+  const metric = (value, label, tip, modifier) =>
+    `<div class="dash-metric${modifier ? ` is-${modifier}` : ''}" data-tip="${esc(tip)}"><b>${esc(value)}</b><span>${esc(label)}</span></div>`;
+  return [
+    metric(useful, 'Useful visits', 'Scans that reached a page you chose, including fallbacks.', 'good'),
+    metric(lost, 'Lost', 'Scans that reached no page: paused, held, blocked, past the end date or over the cap.', lost ? 'bad' : ''),
+    metric(rescued, 'Rescued', 'Scans a fallback address caught after a cap or an end date.', ''),
+    metric(`${rate}%`, 'Useful rate', 'Useful visits as a share of every scan observed in the window.', ''),
+    metric(recoverable, 'Recoverable', 'Lost scans with a fix you can apply today. The queue is sorted by this.', recoverable ? 'bad' : '')
+  ].join('');
+}
+
+async function loadWorkspace() {
+  const metrics = document.getElementById('dash-metrics');
+  const queue = document.getElementById('dash-queue');
+  const note = document.getElementById('dash-queue-note');
+  const windowChip = document.getElementById('dash-window');
+  if (!queue) return;
   try {
-    const res = await apiFetch('/kortex?limit=300');
-    if (!res || !res.ok) return;
-    const data = await res.json();
-    const links = data.links || [];
+    const data = await fetchJson(`/kortex/workspace/analytics?tz=${encodeURIComponent(browserTz())}`);
+    if (!data) return;
+    if (windowChip) windowChip.textContent = `${data.window?.days ?? '—'}-day window · ${data.window?.timeZone || 'UTC'}`;
+    if (metrics) metrics.innerHTML = metricsHtml(data);
+    if (note) note.textContent = `${(data.links || []).length} links · sorted by recoverable lost scans`;
 
-    const totalClicks = links.reduce((sum, l) => sum + (l.clickCount || 0), 0);
-    const activeLinks = links.filter(l => l.enabled !== false).length;
-
-    let topPerformer = '—';
-    if (links.length) {
-      const sorted = links.slice().sort((a, b) => (b.clickCount || 0) - (a.clickCount || 0));
-      topPerformer = sorted[0].title || sorted[0].code || sorted[0].id || '—';
+    const views = window.KortexViews;
+    if (!views) { queue.innerHTML = '<p class="dash-none">The shared views did not load.</p>'; return; }
+    views.renderWorkspaceQueue(queue, data, { onOpen: (code) => router.navigate('link-detail', code) });
+    if (data.droppedLinks) {
+      queue.insertAdjacentHTML('beforeend', `<p class="dash-none">${data.droppedLinks} more link${data.droppedLinks === 1 ? '' : 's'} not shown. All Links has the rest.</p>`);
     }
-
-    const now = Date.now();
-    const sevenDays = 7 * 24 * 60 * 60 * 1000;
-    const expiringSoon = links.filter(l => {
-      if (!l.expiresAt) return false;
-      const exp = l.expiresAt._seconds ? l.expiresAt._seconds * 1000 : new Date(l.expiresAt).getTime();
-      return exp > now && exp - now < sevenDays;
-    }).length;
-
-    const el = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
-    el('kpi-total-clicks', totalClicks.toLocaleString());
-    el('kpi-active-links', activeLinks);
-    el('kpi-top-performer', topPerformer.length > 18 ? topPerformer.slice(0, 18) + '...' : topPerformer);
-    el('kpi-expiring-soon', expiringSoon);
-  } catch (_) {}
-}
-
-async function loadCampaignShortcuts() {
-  const container = document.getElementById('dashboard-campaign-shortcuts');
-  if (!container) return;
-
-  container.innerHTML = '<div class="loading">Loading campaign shortcuts...</div>';
-
-  try {
-    const res = await apiFetch('/campaigns?limit=200');
-    if (!res || !res.ok) {
-      throw new Error('Failed to load campaigns');
-    }
-
-    const data = await res.json();
-    let campaigns = Array.isArray(data.campaigns) ? data.campaigns : [];
-
-    if (campaigns.length === 0) {
-      campaigns = await deriveCampaignsFromLinks();
-    }
-
-    renderCampaignShortcuts(campaigns, container);
-  } catch (error) {
-    console.warn('[Dashboard] Campaign shortcuts fallback to links:', error.message);
-    const campaigns = await deriveCampaignsFromLinks();
-    renderCampaignShortcuts(campaigns, container);
+    renderFindings(data.insights, views);
+    if (metrics) views.attachTips(metrics);
+  } catch (err) {
+    if (note) note.textContent = 'unavailable';
+    queue.innerHTML = `<p class="dash-none">Could not read the workspace: ${esc(err.message)}</p>`;
   }
 }
 
-async function deriveCampaignsFromLinks() {
-  try {
-    const res = await apiFetch('/kortex?limit=300');
-    if (!res || !res.ok) return [];
-
-    const data = await res.json();
-    const links = data.links || [];
-    const groups = new Map();
-
-    links.forEach(link => {
-      const metadata = link.metadata || {};
-      const destination = String(link.destinations?.web || link.webDestination || '').toLowerCase();
-      let type = 'general';
-
-      if (metadata.campaign === 'alumni') type = 'alumni';
-      else if (metadata.campaign === 'roots' || destination.includes('/knowledge')) type = 'roots';
-      else if (metadata.isAdmin) type = 'admin';
-      else if (link.utm?.utm_campaign) type = 'marketing';
-
-      const name = metadata.campaignId || link.utm?.utm_campaign || metadata.schoolName || link.title || `${type} campaign`;
-      const key = `${type}:${slugify(name)}`;
-
-      if (!groups.has(key)) {
-        groups.set(key, {
-          campaignId: key,
-          name,
-          type,
-          status: 'legacy',
-          links: 0
-        });
-      }
-
-      groups.get(key).links += 1;
-    });
-
-    return Array.from(groups.values());
-  } catch (_) {
-    return [];
-  }
+function renderFindings(insights, views) {
+  const card = document.getElementById('dash-findings-card');
+  const box = document.getElementById('dash-findings');
+  if (!card || !box) return;
+  const present = insights && WORKSPACE_FINDING_KEYS.some((key) => insights[key]);
+  card.hidden = !present;
+  if (present) views.renderInsights(box, insights, { keys: WORKSPACE_FINDING_KEYS, compact: true });
 }
 
-function renderCampaignShortcuts(campaigns, container) {
-  if (!Array.isArray(campaigns) || campaigns.length === 0) {
-    container.innerHTML = '<div class="campaign-shortcuts-empty">No campaigns yet. Use Campaigns to create and organize your first one.</div>';
-    return;
-  }
-
-  const sorted = campaigns
-    .slice()
-    .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
-
-  container.innerHTML = sorted.map(campaign => {
-    const type = String(campaign.type || 'general').toUpperCase();
-    const status = String(campaign.status || 'active').toUpperCase();
-    const count = Number(campaign.links || 0);
-
-    return `
-      <button class="campaign-shortcut-btn" data-view="campaigns" data-campaign-id="${escapeHtml(campaign.campaignId || '')}" title="Open Campaigns">
-        <span class="campaign-shortcut-title">${escapeHtml(campaign.name || 'Untitled Campaign')}</span>
-        <span class="campaign-shortcut-meta">
-          <span>${type}</span>
-          <span>•</span>
-          <span>${count} links</span>
-          <span>•</span>
-          <span class="campaign-shortcut-status">${status}</span>
-        </span>
-      </button>
-    `;
-  }).join('');
-
-  container.querySelectorAll('.campaign-shortcut-btn').forEach(button => {
-    button.addEventListener('click', () => {
-      const campaignId = button.dataset.campaignId || '';
-      if (campaignId) {
-        sessionStorage.setItem('dashboardCampaignFocus', campaignId);
-      } else {
-        sessionStorage.removeItem('dashboardCampaignFocus');
-      }
-    });
-  });
-}
+/* ── recently created: a way in, not a report ─────────────────────────────*/
 
 async function loadRecentLinks() {
   const container = document.getElementById('dashboard-recent-links');
   if (!container) return;
-
   try {
     const res = await apiFetch('/kortex?limit=50');
-    if (!res || !res.ok) throw new Error('Failed to load links');
-
-    const data = await res.json();
-    const links = data.links || [];
-
-    if (links.length === 0) {
-      container.innerHTML = '<div class="campaign-shortcuts-empty">No links yet.</div>';
-      return;
-    }
-
-    const recent = links.slice(0, 10);
-    container.innerHTML = `
-      <table class="dash-links-table">
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Code</th>
-            <th>Clicks</th>
-            <th>Status</th>
-            <th>Tenant</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${recent.map(link => {
-            const code = escapeHtml(link.code || link.id || '');
-            const enabled = link.enabled !== false;
-            const status = enabled ? '<span style="color:#4CAF50">Active</span>' : '<span style="color:#f44336">Disabled</span>';
-            const tenant = escapeHtml(link.tenantId || 'kaayko');
-            return `<tr class="dash-link-row" data-link-code="${code}" role="button" tabindex="0" title="Open full analytics for ${code}">
-              <td style="color:#f0f0f0">${escapeHtml(link.title || link.code || '—')}</td>
-              <td style="font-family:monospace;color:#D4A84B">${code}</td>
-              <td>${link.clickCount || 0}</td>
-              <td>${status}</td>
-              <td style="color:#666">${tenant}</td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>
-      <div style="text-align:center;padding:12px;color:#666;font-size:12px">
-        Showing ${recent.length} of ${links.length} links — click any row for full analytics
-      </div>
-    `;
-
-    // Every row opens the same rich per-link drilldown (#/links/<code>) that
-    // All Links and Analytics use — not the old shallow inline accordion.
-    const openDrilldown = (code) => { if (code) window.location.hash = '#/links/' + encodeURIComponent(code); };
-    container.querySelectorAll('.dash-link-row').forEach(row => {
-      row.addEventListener('click', () => openDrilldown(row.dataset.linkCode));
-      row.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDrilldown(row.dataset.linkCode); }
-      });
+    if (!res) return;
+    if (!res.ok) throw new Error(`Request failed (${res.status})`);
+    const links = (await res.json()).links || [];
+    if (!links.length) { container.innerHTML = '<p class="dash-none">No links yet.</p>'; return; }
+    const recent = links.slice(0, RECENT_LIMIT);
+    container.innerHTML = `<div class="dash-recent">${recent.map(rowHtml).join('')}</div>`;
+    container.querySelectorAll('[data-link-code]').forEach((row) => {
+      const open = () => router.navigate('link-detail', row.dataset.linkCode);
+      row.addEventListener('click', open);
+      row.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
     });
-  } catch (error) {
-    console.error('[Dashboard] Failed to load recent links:', error);
-    container.innerHTML = '<div class="campaign-shortcuts-empty">Failed to load links.</div>';
+  } catch (err) {
+    container.innerHTML = `<p class="dash-none">Could not load links: ${esc(err.message)}</p>`;
   }
 }
 
-function slugify(value) {
-  const slug = String(value || '')
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-
-  return slug || 'uncategorized';
+function rowHtml(link) {
+  const code = link.code || link.id || '';
+  const live = link.enabled !== false && (!link.status || link.status === 'active');
+  const state = link.status === 'held' ? 'Under review' : link.status === 'blocked' ? 'Blocked' : live ? 'Live' : 'Paused';
+  return `<div class="dash-recent-row" data-link-code="${esc(code)}" role="button" tabindex="0" aria-label="Open ${esc(code)}">
+    <span class="dash-recent-name"><b>${esc(link.title || code)}</b><span class="mono">${esc(code)}</span></span>
+    <span class="dash-recent-clicks">${esc(link.clickCount || 0)}</span>
+    <span class="dash-recent-state${live ? ' is-live' : ''}">${esc(state)}</span>
+  </div>`;
 }
-
-
