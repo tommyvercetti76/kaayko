@@ -23,6 +23,10 @@
 .product-gallery-skeleton .pdp-hero-preview {
   view-transition-name: product-hero;
 }
+/* A contained illustration must not be object-fit:cover'd mid-transition, or
+   it squashes on the way in. */
+::view-transition-old(product-hero).is-contain,
+::view-transition-new(product-hero).is-contain { object-fit: contain; }
 
 /* The rest of the page: a short, quiet crossfade. */
 ::view-transition-old(root) { animation: 220ms cubic-bezier(.4,0,1,1) both pdp-vt-out; }
@@ -50,23 +54,43 @@
 .store-v2 .carousel-item:has(.carousel-image:active) { transform: scale(.985); }
 .store-v2 .carousel-item { transition: transform 160ms cubic-bezier(.2,.8,.2,1); }
 
-/* ── Product page: hero parallax + entrance ─────────────────────────── */
-.animal-v2 .animal-hero-art,
+/* ── Parallax ───────────────────────────────────────────────────────
+   Two different heroes, two different treatments.
+
+   The PRODUCT gallery is a photograph fitted with object-fit:cover — it
+   already bleeds past its frame, so scaling it slightly and drifting it
+   crops nothing that was ever visible. Parallax belongs there.
+
+   The ANIMAL hero is not a photograph. It is a square illustration fitted
+   with object-fit:contain on a parchment "specimen card" — a composed
+   object with deliberate margins. Scaling it inside a clipped box enlarges
+   and crops the artwork off-centre, which is exactly what it looked like.
+   So the illustration itself never moves; the CARD drifts as a whole,
+   which reads as depth and keeps the composition intact. */
+
 .product-gallery-main { overflow: hidden; }
 
-.animal-v2 .animal-hero-art img,
 .product-gallery-main img {
   will-change: transform;
   transform: translate3d(0, var(--pdp-parallax-y, 0), 0) scale(1.06);
   transform-origin: 50% 40%;
 }
 
-/* Scroll-driven where the browser has it: the art drifts up at roughly half
-   scroll speed for the first ~70vh. */
+/* The card moves in the page, not the art inside a clipped frame — nothing
+   can be cropped by this. */
+.animal-v2 .animal-hero-art {
+  will-change: transform;
+  transform: translate3d(0, var(--pdp-card-y, 0), 0);
+}
+
 @supports (animation-timeline: scroll()) {
-  html:not(.pdp-parallax-js) .animal-v2 .animal-hero-art img,
   html:not(.pdp-parallax-js) .product-gallery-main img {
     animation: pdp-parallax linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 70vh;
+  }
+  html:not(.pdp-parallax-js) .animal-v2 .animal-hero-art {
+    animation: pdp-card-drift linear both;
     animation-timeline: scroll(root);
     animation-range: 0 70vh;
   }
@@ -74,6 +98,10 @@
 @keyframes pdp-parallax {
   from { transform: translate3d(0, 0, 0) scale(1.06); }
   to   { transform: translate3d(0, -6%, 0) scale(1.06); }
+}
+@keyframes pdp-card-drift {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(0, -22px, 0); }
 }
 
 /* Text rises in a beat after the image lands. Runs on insertion, so it also
@@ -95,7 +123,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   @view-transition { navigation: none; }
-  .animal-v2 .animal-hero-art img,
+  .animal-v2 .animal-hero-art,
   .product-gallery-main img,
   .animal-v2 .animal-hero-text,
   .product-info,

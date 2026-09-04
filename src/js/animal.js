@@ -59,14 +59,26 @@ function renderStats(animal) {
   return `<dl class="animal-stats">${statBlocks.join("")}</dl>`;
 }
 
-function renderHero(animal) {
+function renderHero(animal, products) {
   // Use the 1600px preview for the visible hero. The full 3600px artUrl is
   // stashed on the wrapper as a data attribute for the click-to-zoom path.
   const heroSrc = animal.artPreviewUrl || animal.artUrl;
+
+  // Not every animal has its transparent artwork drawn yet — at the time of
+  // writing, five of twelve. Publishing a grey "art will appear here" box to
+  // shoppers is worse than showing them the thing they can actually buy, so
+  // fall back to the product this animal appears on.
+  const fallbackSrc = heroSrc ? "" : firstProductImage(products);
+
   const art = heroSrc
     ? `<img src="${esc(heroSrc)}" alt="${esc(animal.name)} illustration" />`
-    : "";
-  const artClass = heroSrc ? "animal-hero-art" : "animal-hero-art empty";
+    : fallbackSrc
+      ? `<img src="${esc(fallbackSrc)}" alt="${esc(animal.name)} on a Kaayko piece" />`
+      : "";
+
+  const artClass = heroSrc ? "animal-hero-art"
+    : fallbackSrc ? "animal-hero-art is-product"
+    : "animal-hero-art empty";
   const zoomAttr = heroSrc ? ` data-zoom-full="${esc(animal.artUrl || heroSrc)}"` : "";
   return `
     <section class="animal-hero">
@@ -90,6 +102,23 @@ function renderStory(animal, products) {
       </div>
       ${renderVariants(animal, products)}
     </section>`;
+}
+
+/**
+ * A product photo for the hero, when an animal has no artwork of its own.
+ *
+ * Deliberately prefers the SECOND frame: the variant card lower down the page
+ * already shows the first, and the same photograph twice on one screen reads
+ * as a mistake. Products with a single image fall back to it.
+ */
+function firstProductImage(products) {
+  const list = Array.isArray(products) ? products : [];
+  for (const p of list) {
+    const frames = (p.previewSrc && p.previewSrc.length ? p.previewSrc : p.imgSrc) || [];
+    const src = frames[1] || frames[0];
+    if (src) return src;
+  }
+  return "";
 }
 
 function variantImage(p) {
@@ -357,7 +386,7 @@ export async function animalPageInit(slug, { openModal }) {
   // separated by a vertical hairline. Variants live inside the Story column.
   root.innerHTML = `
     <section class="animal-spread">
-      ${renderHero(animal)}
+      ${renderHero(animal, products)}
       ${renderStory(animal, products)}
     </section>`;
   bindVariantActions(animal, products, openModal);

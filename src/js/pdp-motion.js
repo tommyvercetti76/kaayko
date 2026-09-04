@@ -80,11 +80,18 @@
   var ticking = false;
   function frame() {
     ticking = false;
-    var hero = document.querySelector('.animal-v2 .animal-hero-art img, .product-gallery-main img');
-    if (!hero) return;
     var range = window.innerHeight * 0.7;
     var p = Math.min(Math.max(window.scrollY / range, 0), 1);
-    hero.style.setProperty('--pdp-parallax-y', (-6 * p).toFixed(2) + '%');
+
+    // Photographic hero: shifts inside its own frame (it is cover-fitted, so
+    // there is always more image than frame).
+    var photo = document.querySelector('.product-gallery-main img');
+    if (photo) photo.style.setProperty('--pdp-parallax-y', (-6 * p).toFixed(2) + '%');
+
+    // Illustration hero: the whole card drifts. Moving the art inside a
+    // clipped frame would crop a composition that was drawn with margins.
+    var card = document.querySelector('.animal-v2 .animal-hero-art');
+    if (card) card.style.setProperty('--pdp-card-y', (-22 * p).toFixed(1) + 'px');
   }
   function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(frame); } }
   window.addEventListener('scroll', onScroll, { passive: true });

@@ -123,6 +123,21 @@ html.dark-theme .animal-v2 .animal-hero-art {
     0 30px 60px rgba(0, 0, 0, 0.6),
     0 8px 22px rgba(0, 0, 0, 0.4);
 }
+/* No artwork yet: show the product instead of a placeholder. A photograph
+   does not belong on the parchment specimen card — that backdrop exists to
+   make a transparent illustration read as an exhibit — so this variant gets
+   the neutral image ground the store uses everywhere else. */
+.animal-v2 .animal-hero-art.is-product {
+  background: var(--v2-image-bg);
+  box-shadow: 0 0 0 1px var(--v2-image-border);
+}
+.animal-v2 .animal-hero-art.is-product img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
 .animal-v2 .animal-hero-art.empty {
   background: var(--v2-border);
   box-shadow: none;
