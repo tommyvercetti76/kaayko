@@ -384,9 +384,19 @@ function renderList() {
 
   if (!items.length) {
     const filter = FILTERS.find((f) => f.key === currentFilter) || FILTERS[0];
-    const message = filter.key === 'needs_action'
-      ? 'Nothing to pack. Every paid order has been shipped.'
-      : `No ${filter.label.toLowerCase()} orders.`;
+    // "Every order has shipped" is only true if orders exist. With none at
+    // all it is a flat lie, and it hides the far likelier cause: paid orders
+    // are not reaching Firestore. Say which of the two it is.
+    let message;
+    if (!shipments.length) {
+      message = 'No orders yet. If you have taken a payment, check that the '
+              + 'Stripe webhook is delivering \u2014 a charge with no order '
+              + 'means the event never arrived.';
+    } else if (filter.key === 'needs_action') {
+      message = 'Nothing to pack. Every paid order has been shipped.';
+    } else {
+      message = `No ${filter.label.toLowerCase()} orders.`;
+    }
     listEl.innerHTML = `<div class="orders-empty">${escapeHtml(message)}</div>`;
   } else {
     listEl.innerHTML = items.map(orderCard).join('');
