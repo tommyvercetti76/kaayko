@@ -66,8 +66,11 @@ async function loadWorkspace() {
     const views = window.KortexViews;
     if (!views) { queue.innerHTML = '<p class="dash-none">The shared views did not load.</p>'; return; }
     views.renderWorkspaceQueue(queue, data, { onOpen: (code) => router.navigate('link-detail', code) });
+    // renderWorkspaceQueue already states how many links were dropped; this adds
+    // only the pointer, which the shared component cannot carry (the landing
+    // page has no All Links view).
     if (data.droppedLinks) {
-      queue.insertAdjacentHTML('beforeend', `<p class="dash-none">${data.droppedLinks} more link${data.droppedLinks === 1 ? '' : 's'} not shown. All Links has the rest.</p>`);
+      queue.insertAdjacentHTML('beforeend', '<p class="dash-none">All Links has the rest.</p>');
     }
     renderFindings(data.insights, views);
     if (metrics) views.attachTips(metrics);

@@ -445,12 +445,7 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
 .views-nav button { background:none; border:0; border-bottom:1px solid transparent; margin-bottom:-1px; padding:8px 2px; min-height:44px; cursor:pointer; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.9rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted) }
 .views-nav button[aria-pressed="true"] { color:var(--gold-bright); border-bottom-color:var(--gold) }
 .views-nav button:focus-visible { outline:1px solid var(--gold-bright); outline-offset:4px }
-.bars.dense { gap:2px } .bars.dense .bar span { display:none } .bars.dense .bar:nth-child(6n+1) span { display:block }
 .report-kind { display:inline-block; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.8rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold-bright); border:1px solid rgba(181,147,90,0.35); padding:5px 10px; margin-bottom:var(--sp-2) }
-.insights { list-style:none; margin:var(--sp-3) 0 var(--sp-4); display:grid; gap:6px }
-.insights li { padding-left:18px; position:relative; font-style:italic; font-size:0.98rem; color:var(--muted); line-height:1.5 }
-.insights li::before { content:'✦'; position:absolute; left:0; top:2px; color:var(--gold); font-size:0.7rem }
-.insights b { color:var(--fg); font-weight:500 }
 @media(max-width:760px) { .k-tables, .graph-grid, .radar-wrap { grid-template-columns:1fr } }
 
 /* ── CAPABILITIES — symmetric 2x2 grid ── */
@@ -915,7 +910,7 @@ a.btn-submit { display:block; text-align:center }
       <div class="overview" id="ws-overview" hidden>
         <div id="ov-queue"></div>
         <div class="overview-head"><h4>The workspace, five ways</h4><p class="note" id="ov-note"></p></div>
-        <div id="ov-views"></div>
+        <div id="ov-views-host"></div>
       </div>
       <div class="links-list" id="links-list"></div>
       <div id="detail" class="detail" hidden></div>
@@ -1406,9 +1401,9 @@ function utmFromFields(prefix) {
   return out;
 }
 /* ── WHERE THE CODE LIVES ──
-   A controlled list, so placements can be compared; "other" carries a short
-   label of the owner's own. Older links hold free text, which sits under
-   "other" until the next save. */
+   A controlled list, so placements can be compared; any key can carry a short
+   label of the owner's own ("Poster · front window"). Older links hold free
+   text, which sits under "other" until the next save. */
 const PLACEMENTS = [['poster', 'Poster'], ['flyer', 'Flyer'], ['menu', 'Menu'], ['table_tent', 'Table tent'], ['packaging', 'Packaging'], ['badge', 'Badge'], ['business_card', 'Business card'], ['window', 'Storefront window'], ['screen', 'Screen'], ['vehicle', 'Vehicle'], ['other', 'Other']];
 const PERSONAL_LOOKING = /@|https?:\/\/|www\.|\d{6,}/;
 function placementOptions(selectedKey) {
@@ -1421,9 +1416,11 @@ function placementSelection(link) {
   return known ? { key: known[0], label: link.placementLabel || '' } : { key: 'other', label: link.placementLabel || raw };
 }
 function bindPlacementLabel(prefix) {
-  const select = $(`${prefix}-placement`), field = $(`${prefix}-placement-label-field`);
-  const sync = () => { field.hidden = select.value !== 'other'; };
-  select.addEventListener('change', () => { sync(); if (!field.hidden) $(`${prefix}-placement-label`).focus(); });
+  const select = $(`${prefix}-placement`), field = $(`${prefix}-placement-label-field`), input = $(`${prefix}-placement-label`);
+  // Shown for every chosen placement, and emptied when the placement is cleared
+  // so a label typed for one surface can never ride along to another.
+  const sync = () => { field.hidden = !select.value; if (field.hidden) input.value = ''; };
+  select.addEventListener('change', () => { sync(); if (!field.hidden) input.focus(); });
   sync();
 }
 $('mk-placement').innerHTML = placementOptions('');
@@ -1432,7 +1429,7 @@ bindPlacementLabel('mk');
 function placementFromFields(prefix) {
   const key = $(`${prefix}-placement`).value;
   if (!key) return { value: null, error: null };
-  const label = key === 'other' ? $(`${prefix}-placement-label`).value.trim() : '';
+  const label = $(`${prefix}-placement-label`).value.trim();
   if (PERSONAL_LOOKING.test(label)) return { value: null, error: 'Name the place in a few words, without an email, phone number or address.' };
   return { value: { key, label: label || null }, error: null };
 }
@@ -1718,16 +1715,19 @@ function applyPrefill(prefill) {
   lightFields(lit);
 }
 function actOnFinding(code, finding, { dismissed } = {}) {
-  const action = finding && finding.action; if (!action) return;
-  if (dismissed) { dismissFinding(code, action.type, dismissed); return; }
+  if (!finding) return;
+  const action = finding.action;
+  // A finding that carries no action can still be dismissed, by its own key.
+  if (dismissed) { dismissFinding(code, action ? { type: action.type } : { key: finding.key }, dismissed); return; }
+  if (!action) return;
   if (action.type === 'REQUEST_REVIEW') { location.href = `/kortex/appeal?code=${encodeURIComponent(code)}`; return; }
   const prefill = action.prefill || {};
   pendingAction = { code, type: action.type, viaToggle: prefill.enabled !== undefined };
   applyPrefill(prefill);
   setStatus('dt-status', `${action.label}: ready below. Apply it, and the next window will say whether it helped.`, '');
 }
-async function dismissFinding(code, type, dismissed) {
-  const { ok, data } = await guestApi(`/links/${encodeURIComponent(code)}/actions`, { method: 'POST', body: { type, applied: false, dismissed } });
+async function dismissFinding(code, what, dismissed) {
+  const { ok, data } = await guestApi(`/links/${encodeURIComponent(code)}/actions`, { method: 'POST', body: { ...what, applied: false, dismissed } });
   if (!ok) { setStatus('dt-status', friendly(data, 'Could not record that.'), 'err'); return; }
   await openDetail(code);
 }
@@ -2102,14 +2102,14 @@ async function loadOverview(ws) {
   const key = `${ws.id || ''}:${wsLinks.map(l => `${l.code}:${l.clickCount || 0}:${l.enabled}:${l.status}`).join('|')}`;
   if (key === overviewKey) { $('ws-overview').hidden = false; return; }
   overviewKey = key;
-  const box = $('ws-overview'); box.hidden = false; $('ov-queue').innerHTML = ''; $('ov-views').innerHTML = '<p class="note">Reading the last seven days…</p>';
+  const box = $('ws-overview'); box.hidden = false; $('ov-queue').innerHTML = ''; $('ov-views-host').innerHTML = '<p class="note">Reading the last seven days…</p>';
   const { ok, data } = await guestApi(`/workspace/analytics?tz=${encodeURIComponent(browserTz())}`);
-  if (!ok) { $('ov-views').innerHTML = `<p class="note">${escapeHtml(friendly(data, 'Could not load the overview.'))}</p>`; return; }
+  if (!ok) { $('ov-views-host').innerHTML = `<p class="note">${escapeHtml(friendly(data, 'Could not load the overview.'))}</p>`; return; }
   const points = (data.points || []).map(p => ptOf(p, true));
   const observed = data.links.reduce((s, l) => s + l.observed, 0);
-  $('ov-note').textContent = `${data.links.length} links · ${observed} scans in ${data.window.days} days · hours shown in ${browserTz()}${data.droppedLinks ? ` · ${data.droppedLinks} more not shown` : ''}`;
-  renderWorkspaceQueue($('ov-queue'), data, { onOpen: async (code, finding) => { await openDetail(code); if (finding) actOnFinding(code, finding); else $('detail').scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
-  $('ov-views').innerHTML = '<div id="ov-insights"></div>' + viewsHtml('ov');
+  $('ov-note').textContent = `${data.links.length} links · ${observed} scans in ${data.window.days} days · hours shown in ${browserTz()}`;
+  renderWorkspaceQueue($('ov-queue'), data, { onOpen: async (code, finding) => { await openDetail(code); if (finding && finding.action) actOnFinding(code, finding); else $('detail').scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
+  $('ov-views-host').innerHTML = '<div id="ov-insights"></div>' + viewsHtml('ov');
   mountViews('ov', { points, lostPoints: [], hasCode: true, linkRows: data.links, uniquePeople: data.uniquePeople, skyTitle: 'Every scan in the workspace, as a star', mapTitle: 'Where the workspace\'s scans went' });
   renderInsights($('ov-insights'), data.insights, { keys: WORKSPACE_INSIGHT_KEYS, compact: true });
 }

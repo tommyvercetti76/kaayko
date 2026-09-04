@@ -797,14 +797,13 @@ async function handleCreateLink(e) {
  */
 /** Rules shared with the public maker: night window, caps + fallback, placement, ROI inputs, campaign window. */
 function extractRules() {
-  const v = (id) => (document.getElementById(id)?.value || '').trim();
-  const nightUrl = v('nightUrl');
-  const schedule = nightUrl ? { timezone: v('nightTz') || (Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'), windows: [{ label: 'night', start: v('nightStart') || '18:00', end: v('nightEnd') || '06:00', url: nightUrl }] } : null;
-  const maxClicks = v('maxClicks'), fallbackUrl = v('fallbackUrl');
+  const nightUrl = getVal('nightUrl');
+  const schedule = nightUrl ? { timezone: getVal('nightTz') || (Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'), windows: [{ label: 'night', start: getVal('nightStart') || '18:00', end: getVal('nightEnd') || '06:00', url: nightUrl }] } : null;
+  const maxClicks = getVal('maxClicks'), fallbackUrl = getVal('fallbackUrl');
   const limits = (maxClicks || fallbackUrl) ? { maxClicks: maxClicks ? Number(maxClicks) : undefined, fallbackUrl: fallbackUrl || undefined } : null;
-  const printCost = v('printCost'), valuePerVisit = v('valuePerVisit');
-  const economics = (printCost || valuePerVisit) ? { printCost: printCost ? Number(printCost) : undefined, valuePerVisit: valuePerVisit ? Number(valuePerVisit) : undefined, currency: v('currency') || undefined } : null;
-  const cs = v('campaignStart'), ce = v('campaignEnd');
+  const printCost = getVal('printCost'), valuePerVisit = getVal('valuePerVisit');
+  const economics = (printCost || valuePerVisit) ? { printCost: printCost ? Number(printCost) : undefined, valuePerVisit: valuePerVisit ? Number(valuePerVisit) : undefined, currency: getVal('currency') || undefined } : null;
+  const cs = getVal('campaignStart'), ce = getVal('campaignEnd');
   const campaignWindow = (cs || ce) ? { startAt: cs || undefined, endAt: ce || undefined } : null;
   return { schedule, limits, placement: placementPayload(), economics, campaignWindow };
 }
@@ -1049,7 +1048,9 @@ function extractUpdatePayload() {
     conversionGoal: intent === 'donate' ? 'donation_completed'
       : intent === 'register' ? 'registration_submitted' : undefined,
     utm: Object.keys(utm).length ? utm : undefined,
-    expiresAt: expiresAtInput ? new Date(expiresAtInput).toISOString() : undefined,
+    // null clears; undefined would be dropped from the body and the stored
+    // end date would survive, so REMOVE_END_DATE could never take effect.
+    expiresAt: expiresAtInput ? new Date(expiresAtInput).toISOString() : null,
     enabled: document.getElementById('enabled').checked,
     ...rules,
   };
@@ -1095,10 +1096,9 @@ function getVal(id) {
 
 function buildUTM() {
   const utm = {};
-  const map = { Source: 'utm_source', Medium: 'utm_medium', Campaign: 'utm_campaign', Term: 'utm_term', Content: 'utm_content' };
-  Object.entries(map).forEach(([field, key]) => {
-    const v = document.getElementById(`utm${field}`)?.value?.trim();
-    if (v) utm[key] = v;
+  Object.entries(UTM_FIELDS).forEach(([key, id]) => {
+    const val = getVal(id);
+    if (val) utm[key] = val;
   });
   return utm;
 }
@@ -1167,7 +1167,7 @@ async function syncROOTSInvite(code, formData) {
     childAge: childAgeVal ? parseInt(childAgeVal, 10) : undefined,
     maxUses: maxUsesVal ? parseInt(maxUsesVal, 10) : 0,
     utm: formData.utm,
-    expiresAt: formData.expiresAt,
+    expiresAt: formData.expiresAt || undefined,
     metadata: { source: 'kortex', kortexCode: code },
   };
 

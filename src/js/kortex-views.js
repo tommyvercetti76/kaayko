@@ -51,7 +51,7 @@
 function localHour(ms) { const d = new Date(ms); return d.getHours() + d.getMinutes() / 60; }
 function localDow(ms) { return new Date(ms).getDay(); }
 const ptOf = (p, hasCode) => { const o = hasCode ? 1 : 0; return { code: hasCode ? p[0] : null, ms: p[o], platform: p[o + 1], device: p[o + 2], country: p[o + 3], source: p[o + 4], win: p[o + 5], ref: p[o + 6], outcome: p[o + 7] || 'delivered' }; };
-const ptOfLost = p => ({ ms: p[0], outcome: p[1], platform: p[2], country: p[3] });
+const ptOfLost = p => ({ ms: p[0], outcome: p[1], platform: p[2], country: p[3], source: p[4] || null });
 function tallyOf(points, key) {
   const m = new Map(); points.forEach(p => { const v = p[key] || '—'; m.set(v, (m.get(v) || 0) + 1); });
   return [...m.entries()].sort((a, b) => b[1] - a[1]).map(([value, clicks]) => ({ value, clicks }));
@@ -91,7 +91,7 @@ function mountViews(id, ds) {
   panes.sky.innerHTML = `<div class="sky-wrap"><h5>${esc(d.skyTitle || 'Every scan, as a star')}</h5><canvas></canvas><div class="sky-legend"><span><i style="background:#d9bd7b"></i>QR scan</span><span><i style="background:#cdd6ec"></i>tap on the link</span><span>clock: hour of the day, your time · rings: days ago, today outermost · lines: the order they arrived</span></div></div>`;
   attachTips(root);
   // The map and the sky measure their container, so they draw once their pane is visible.
-  const pending = { map: () => mountFieldMap(panes.map.querySelector('[data-fm]'), d.points, d.lostPoints), sky: () => drawSky(panes.sky.querySelector('canvas'), d.points) };
+  const pending = { map: () => mountFieldMap(panes.map.querySelector('[data-fm]'), d.points, d.lostPoints, !!d.windowRows), sky: () => drawSky(panes.sky.querySelector('canvas'), d.points) };
   root.querySelectorAll('.views-nav button').forEach(btn => btn.addEventListener('click', () => {
     root.querySelectorAll('.views-nav button').forEach(b => b.setAttribute('aria-pressed', b === btn));
     Object.entries(panes).forEach(([k, pane]) => { pane.hidden = k !== btn.dataset.view; });
@@ -113,10 +113,18 @@ const outcomeLabel = o => String(o || 'lost').replace(/_/g, ' ');
 const r1 = v => Math.round(v * 10) / 10;
 
 /** One row per scan with a label per column (null where a lost scan skipped it); rare labels fold into 'other'. */
-function fieldRows(points, lostPoints) {
-  const routeOf = p => p.outcome === 'fallback' ? 'fallback route' : p.win ? `${p.win} route` : 'day route';
-  const rows = points.map(p => ({ source: p.source === 'qr' ? 'QR scan' : 'Link tap', device: p.device || 'unknown', route: routeOf(p), outcome: p.outcome === 'fallback' ? 'rescued' : 'delivered', place: p.country || 'unknown' }))
-    .concat(lostPoints.map(p => ({ source: 'source unknown', device: null, route: null, outcome: outcomeLabel(p.outcome), place: p.country || 'unknown' })));
+function fieldRows(points, lostPoints, hasSchedule) {
+  // A scan only passes through Route when a routing rule actually fired. A link
+  // with no schedule made no such decision, so the column is left out rather
+  // than filled with a "day route" that never happened.
+  const sourceOf = p => p.source === 'qr' ? 'QR scan' : p.source === 'link' ? 'Link tap' : 'source unknown';
+  const routeOf = (p) => {
+    if (p.outcome === 'fallback') return 'fallback route';
+    if (p.win) return `${p.win} route`;
+    return hasSchedule ? 'default route' : null;
+  };
+  const rows = points.map(p => ({ source: sourceOf(p), device: p.device || 'unknown', route: routeOf(p), outcome: p.outcome === 'fallback' ? 'rescued' : 'delivered', place: p.country || 'unknown' }))
+    .concat(lostPoints.map(p => ({ source: sourceOf(p), device: null, route: null, outcome: outcomeLabel(p.outcome), place: p.country || 'unknown' })));
   FM_COLUMNS.forEach(([key]) => {
     const tally = tallyOf(rows.filter(r => r[key]), key);
     if (tally.length <= FM_MAX_NODES[key]) return;
@@ -136,17 +144,19 @@ function fieldPaths(rows) {
   });
   return [...m.values()].sort((a, b) => b.count - a.count);
 }
-/** Heights proportional to counts inside `space`, none below the minimum; the rest share what remains. */
+/** Heights proportional to counts inside `space`. A share too thin to see or click is
+    raised to the minimum and reported in `floored`, because at that point the height
+    is a legibility device and no longer represents the count. */
 function allocateHeights(counts, space) {
-  const pinned = new Set();
+  const floored = new Set();
   const h = counts.map(() => 0);
   for (;;) {
-    const free = space - pinned.size * FM_MIN_H;
-    const freeCount = counts.reduce((s, c, i) => pinned.has(i) ? s : s + c, 0) || 1;
-    counts.forEach((c, i) => { h[i] = pinned.has(i) ? FM_MIN_H : c / freeCount * free; });
-    const small = h.map((v, i) => !pinned.has(i) && v < FM_MIN_H ? i : -1).filter(i => i >= 0);
-    if (!small.length) return h;
-    small.forEach(i => pinned.add(i));
+    const free = space - floored.size * FM_MIN_H;
+    const freeCount = counts.reduce((s, c, i) => floored.has(i) ? s : s + c, 0) || 1;
+    counts.forEach((c, i) => { h[i] = floored.has(i) ? FM_MIN_H : c / freeCount * free; });
+    const small = h.map((v, i) => !floored.has(i) && v < FM_MIN_H ? i : -1).filter(i => i >= 0);
+    if (!small.length) return { h, floored };
+    small.forEach(i => floored.add(i));
   }
 }
 function nodeClass(n) {
@@ -172,25 +182,28 @@ function fieldModel(paths, width) {
     });
   });
   const total = paths.reduce((s, p) => s + p.count, 0);
-  const columns = FM_COLUMNS.map(([key, title], i) => ({ key, title, i, nodes: [...nodes.values()].filter(n => n.col === key).sort(nodeOrder) }));
+  const columns = FM_COLUMNS.map(([key, title]) => ({ key, title, nodes: [...nodes.values()].filter(n => n.col === key).sort(nodeOrder) }))
+    .filter(c => c.nodes.length)
+    .map((c, i) => ({ ...c, i }));
   const maxNodes = Math.max(1, ...columns.map(c => c.nodes.length));
   const height = Math.max(320, Math.min(640, 60 + maxNodes * 58));
   const nodeW = Math.round(Math.min(150, Math.max(96, width * 0.15)));
-  const colGap = (width - nodeW * FM_COLUMNS.length) / (FM_COLUMNS.length - 1);
+  const colGap = columns.length > 1 ? (width - nodeW * columns.length) / (columns.length - 1) : 0;
   const avail = height - FM_PAD_TOP - FM_PAD_BOTTOM;
   const block = Math.min(avail, Math.max(maxNodes * FM_MIN_H + (maxNodes - 1) * FM_GAP, 60 + total * 6));
   const top = FM_PAD_TOP + (avail - block) / 2;
   columns.forEach(c => {
     c.x = c.i * (nodeW + colGap);
-    const heights = allocateHeights(c.nodes.map(n => n.count), block - (c.nodes.length - 1) * FM_GAP);
+    const { h: heights, floored } = allocateHeights(c.nodes.map(n => n.count), block - (c.nodes.length - 1) * FM_GAP);
     let y = top;
-    c.nodes.forEach((n, i) => { n.x = c.x; n.y = y; n.h = heights[i]; n.w = nodeW; y += heights[i] + FM_GAP; });
+    c.nodes.forEach((n, i) => { n.x = c.x; n.y = y; n.h = heights[i]; n.w = nodeW; n.floored = floored.has(i); y += heights[i] + FM_GAP; });
   });
   nodes.forEach(n => {
     let off = 0; n.out.sort((p, q) => p.b.y - q.b.y).forEach(e => { e.y0 = n.y + off; e.h0 = n.h * e.count / n.count; off += e.h0; });
     off = 0; n.in.sort((p, q) => p.a.y - q.a.y).forEach(e => { e.y1 = n.y + off; e.h1 = n.h * e.count / n.count; off += e.h1; });
   });
-  return { width, height, nodeW, colGap, columns, nodes, edges, paths, total };
+  const floored = [...nodes.values()].some(n => n.floored);
+  return { width, height, nodeW, colGap, columns, nodes, edges, paths, total, floored };
 }
 function edgePath(e) {
   const x0 = r1(e.a.x + e.a.w), x1 = r1(e.b.x), cx = r1((x0 + x1) / 2);
@@ -207,21 +220,28 @@ function nodeText(n, model) {
   const sideRoom = model.colGap - 12;
   if (sideRoom <= inner) return `<text x="${x}" y="${mid}" dominant-baseline="middle">${esc(clipText(n.label, inner - tail.length * FM_CHAR) + tail)}</text>`;
   const side = esc(clipText(one, sideRoom));
-  return n.col === FM_COLUMNS[FM_COLUMNS.length - 1][0]
+  return n.col === model.columns[model.columns.length - 1].key
     ? `<text class="out" x="${r1(n.x - 6)}" y="${mid}" text-anchor="end" dominant-baseline="middle">${side}</text>`
     : `<text class="out" x="${r1(n.x + n.w + 6)}" y="${mid}" dominant-baseline="middle">${side}</text>`;
 }
 function nodeSvg(n, model) {
   const title = FM_COLUMNS.find(c => c[0] === n.col)[1];
-  return `<g class="fm-node fm-c-${nodeClass(n)}" data-node="${esc(n.id)}" tabindex="0" role="button" aria-pressed="false" aria-label="${esc(n.label)}, ${scans(n.count)}" data-tip="<b>${esc(n.label)}</b> · ${n.count} of ${scans(model.total)} through ${title}"><rect x="${r1(n.x)}" y="${r1(n.y)}" width="${n.w}" height="${r1(n.h)}" rx="3"/>${nodeText(n, model)}</g>`;
+  const note = n.floored ? ' · too thin to draw to scale, so this block is the minimum size' : '';
+  const label = `${esc(n.label)}, ${scans(n.count)}${n.floored ? ', shown at minimum height' : ''}`;
+  return `<g class="fm-node fm-c-${nodeClass(n)}${n.floored ? ' is-floored' : ''}" data-node="${esc(n.id)}" tabindex="0" role="button" aria-pressed="false" aria-label="${label}" data-tip="<b>${esc(n.label)}</b> · ${n.count} of ${scans(model.total)} through ${title}${note}"><rect x="${r1(n.x)}" y="${r1(n.y)}" width="${n.w}" height="${r1(n.h)}" rx="3"/>${nodeText(n, model)}</g>`;
 }
 function fieldMapHtml(model) {
   const titles = model.columns.map(c => `<text class="fm-col" x="${r1(c.x + model.nodeW / 2)}" y="14" text-anchor="middle">${c.title.toUpperCase()}</text>`).join('');
   const ribbons = [...model.edges.values()].map(e => `<path class="fm-edge fm-c-${nodeClass(e.a)}" data-edge="${esc(e.id)}" d="${edgePath(e)}" data-tip="<b>${esc(e.a.label)} → ${esc(e.b.label)}</b> · ${scans(e.count)}"/>`).join('');
   const boxes = model.columns.flatMap(c => c.nodes).map(n => nodeSvg(n, model)).join('');
+  const present = new Set([...model.nodes.values()].map(nodeClass));
+  const legend = FM_LEGEND.filter(([c]) => present.has(c));
+  const floorNote = model.floored
+    ? '<p class="fm-note">Blocks with a dashed edge hold too small a share to draw to scale, so they are shown at the minimum size. Every count beside a label is exact.</p>'
+    : '';
   return `<div class="fm-head"><span>hover a node to trace its paths · click to pin</span><span class="fm-chip" hidden><b></b> · <button type="button" class="fm-clear">clear</button></span></div>
     <svg viewBox="0 0 ${model.width} ${model.height}" role="group" aria-label="Field map: ${scans(model.total)} traced from source to place">${titles}${ribbons}${boxes}</svg>
-    <div class="fm-legend">${FM_LEGEND.map(([c, l]) => `<span><i class="fm-c-${c}"></i>${l}</span>`).join('')}</div>`;
+    <div class="fm-legend">${legend.map(([c, l]) => `<span><i class="fm-c-${c}"></i>${l}</span>`).join('')}</div>${floorNote}`;
 }
 /** Hover traces every path through a node or ribbon; click, Enter or Space pins that trace as a filter. */
 function bindFieldMap(box, model, state) {
@@ -256,9 +276,9 @@ function fieldListHtml(paths, total) {
   const note = paths.length > top.length ? `the ${top.length} commonest of ${paths.length} paths` : `${paths.length} path${paths.length === 1 ? '' : 's'}`;
   return `<ol class="fm-list">${top.map(p => `<li><span>${p.steps.map(s => esc(s[1])).join(' → ')}</span><b>${p.count}</b><small>${pct(p.count / total)}</small></li>`).join('')}</ol><p class="fm-note">${scans(total)} · ${note}</p>`;
 }
-function mountFieldMap(box, points, lostPoints) {
+function mountFieldMap(box, points, lostPoints, hasSchedule) {
   if (!box) return;
-  const paths = fieldPaths(fieldRows(points, lostPoints));
+  const paths = fieldPaths(fieldRows(points, lostPoints, hasSchedule));
   const total = paths.reduce((s, p) => s + p.count, 0);
   const state = { pinned: null, width: 0, mode: null };
   const draw = () => {
@@ -290,6 +310,8 @@ function renderTables(ds) {
   const outcomes = tallyOf(ds.points.map(p => ({ outcome: p.outcome === 'fallback' ? 'rescued' : 'delivered' })).concat(ds.lostPoints.map(p => ({ outcome: outcomeLabel(p.outcome) }))), 'outcome');
   return `<div class="k-tables">${tableHtml('Outcome', outcomes, t + ds.lostPoints.length)}${tableHtml('Source', tallyOf(ds.points, 'source').map(r => ({ ...r, value: r.value === 'qr' ? 'QR scan' : 'tap on the link' })), t)}${tableHtml('Device', tallyOf(ds.points, 'device'), t)}${tableHtml('Country', tallyOf(ds.points, 'country'), t)}${tableHtml('Platform', tallyOf(ds.points, 'platform'), t)}${tableHtml('Referrer', tallyOf(ds.points.filter(p => p.ref), 'ref'), t, 'taps')}${ds.windowRows ? tableHtml('Destination', ds.windowRows, t) : ''}</div>`;
 }
+/** Above this many bars a chart thins its labels (`.bars.dense` shows every sixth). */
+const DENSE_BARS = 10;
 function barsHtml(values, labels, dense) {
   const max = Math.max(1, ...values);
   return `<div class="bars${dense ? ' dense' : ''}">${values.map((v, i) => `<div class="bar" data-tip="<b>${esc(labels[i])}</b> · ${scans(v)}"><i style="height:${Math.max(2, Math.round(v / max * 100))}%"></i><span>${esc(labels[i])}</span></div>`).join('')}</div>`;
@@ -299,13 +321,17 @@ function renderGraphs(ds) {
   const dows = new Array(7).fill(0); ds.points.forEach(p => { dows[localDow(p.ms)]++; });
   const days = new Map(); ds.points.forEach(p => { const k = new Date(p.ms).toISOString().slice(5, 10); days.set(k, (days.get(k) || 0) + 1); });
   const dayKeys = [...days.keys()].sort();
-  const perLink = ds.linkRows ? `<div><h5>Scans per link, 7 days</h5>${barsHtml(ds.linkRows.map(r => r.events), ds.linkRows.map(r => r.title.split(' · ')[0].slice(0, 12)))}</div>` : '';
+  // Past ten bars the labels no longer fit side by side, so the chart thins them.
+  const linkTitles = ds.linkRows ? ds.linkRows.map(r => r.title.split(' · ')[0].slice(0, 12)) : [];
+  const perLink = ds.linkRows ? `<div><h5>Scans per link, 7 days</h5>${barsHtml(ds.linkRows.map(r => r.events), linkTitles, linkTitles.length > DENSE_BARS)}</div>` : '';
   const sentTo = ds.windowRows || tallyOf(ds.points, 'win').map(r => ({ ...r, value: r.value === '—' ? 'day' : r.value }));
+  const dayChart = `<div><h5>By day</h5>${barsHtml(dayKeys.map(k => days.get(k)), dayKeys, dayKeys.length > DENSE_BARS)}</div>`;
+  const sentChart = `<div><h5>Where they were sent</h5>${barsHtml(sentTo.map(r => r.clicks), sentTo.map(r => String(r.value).slice(0, 14)), sentTo.length > DENSE_BARS)}</div>`;
   return `<div class="graph-grid">
-    ${perLink || `<div><h5>By day</h5>${barsHtml(dayKeys.map(k => days.get(k)), dayKeys)}</div>`}
+    ${perLink || dayChart}
     <div><h5>By hour of the day, your time</h5>${barsHtml(hours, hours.map((_, h) => String(h).padStart(2, '0')), true)}</div>
     <div><h5>By day of the week</h5>${barsHtml(dows, ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'])}</div>
-    ${perLink ? `<div><h5>By day</h5>${barsHtml(dayKeys.map(k => days.get(k)), dayKeys)}</div>` : `<div><h5>Where they were sent</h5>${barsHtml(sentTo.map(r => r.clicks), sentTo.map(r => String(r.value).slice(0, 14)))}</div>`}
+    ${perLink ? dayChart : sentChart}
   </div>`;
 }
 function renderRadar(ds) {
@@ -392,11 +418,12 @@ function variationOf(link) {
     if (f.key === 'geoDrift' && d.movers && d.movers.length) return `<div class="ki-bars">${d.movers.slice(0, 4).map(m => `<span data-tip="<b>${esc(m.country)}</b> · ${m.before}% → ${m.after}%"><i style="width:${Math.max(3, m.after)}%"></i>${esc(m.country)} ${m.after}%${m.change ? ` (${m.change > 0 ? '+' : ''}${m.change})` : ''}</span>`).join('')}</div>`;
     return '';
   }
-  /** The CTA (a link when the action points at a page, else a button) and the Dismiss menu; a finding without an action offers neither. */
+  /** The CTA (a link when the action points at a page, else a button) and the Dismiss menu. A finding without an action still gets the menu, so it can leave the list. */
   function actionsHtml(f) {
     const a = f.action;
-    if (!a || !a.label) return '';
-    const cta = a.href ? `<a class="ki-cta" href="${esc(a.href)}" target="_blank" rel="noopener">${esc(a.label)}</a>` : `<button type="button" class="ki-cta">${esc(a.label)}</button>`;
+    const cta = a && a.label
+      ? (a.href ? `<a class="ki-cta" href="${esc(a.href)}" target="_blank" rel="noopener">${esc(a.label)}</a>` : `<button type="button" class="ki-cta">${esc(a.label)}</button>`)
+      : '';
     const menu = `<details class="ki-menu"><summary>Dismiss</summary><div role="menu">${DISMISS_REASONS.map(([k, l]) => `<button type="button" role="menuitem" data-dismiss="${k}">${l}</button>`).join('')}</div></details>`;
     return `<div class="ki-actions">${cta}${menu}</div>`;
   }
@@ -416,13 +443,6 @@ function variationOf(link) {
   /* ── Action Center: the numbers first, then what needs a fix, what is
      working, what the last change did, and the rest to explore ── */
   const EXPLORE_TABS = [['placement', 'Placement'], ['routing', 'Routing'], ['audience', 'Audience'], ['campaign', 'Campaign'], ['trust', 'Trust']];
-  const EXPLORE_DEFAULT = {
-    placement: ['qrSplit', 'placement', 'trend', 'bestWindow', 'rhythm', 'roi', 'campaignLift'],
-    routing: ['deviceMatch', 'missed', 'fallbackUsage', 'replay'],
-    audience: ['repeatPattern', 'newVsReturning', 'geoDrift'],
-    campaign: ['utmHealth', 'channelMix', 'anomalies'],
-    trust: ['safetyImpact', 'qualityScore']
-  };
   const ACTION_DONE = { ADD_FALLBACK: 'fallback added', RAISE_CAP: 'cap raised', REMOVE_CAP: 'cap removed', EXTEND_END_DATE: 'end date extended', REMOVE_END_DATE: 'end date removed', ADD_IOS_DESTINATION: 'iPhone destination added', ADD_ANDROID_DESTINATION: 'Android destination added', FIX_SCHEDULE: 'schedule fixed', ADD_UTM: 'campaign tags added', ADD_PLACEMENT: 'placement set', PAUSE_LINK: 'link paused', REQUEST_REVIEW: 'review requested' };
   const SINCE_STATE = { pending: 'Measuring', improved: 'Improved', unchanged: 'Unchanged', regressed: 'Regressed' };
   function sinceHtml(s) {
@@ -457,7 +477,7 @@ function variationOf(link) {
       return;
     }
     const pick = keys => (keys || []).map(k => insights[k]).filter(Boolean);
-    const explore = ac.explore || EXPLORE_DEFAULT;
+    const explore = ac.explore || {};
     container.innerHTML = `<div class="ac">${metrics}
       ${sectionHtml('Needs attention', pick(ac.needsAttention).slice(0, 3), 'Nothing needs a fix right now.', !readOnly)}
       ${sectionHtml("What's working", pick(ac.working).slice(0, 2), 'Nothing stands out as working yet.', false)}

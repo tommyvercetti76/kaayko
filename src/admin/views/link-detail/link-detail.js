@@ -344,8 +344,8 @@ function renderHeader(link, analytics) {
       </div>
       <div class="ld-header-kpis">
         <div class="ld-kpi ld-kpi-hero"><span class="ld-kpi-val">${esc(t.observed ?? t.events)}</span><span class="ld-kpi-lbl">scans observed</span></div>
-        <div class="ld-kpi"><span class="ld-kpi-val">${esc(analytics.window.daysWithTraffic)}</span><span class="ld-kpi-lbl">active days</span></div>
-        <div class="ld-kpi"><span class="ld-kpi-val">${esc(analytics.window.daysSpanned)}</span><span class="ld-kpi-lbl">days live</span></div>
+        <div class="ld-kpi"><span class="ld-kpi-val">${esc(analytics.window?.daysWithTraffic ?? 0)}</span><span class="ld-kpi-lbl">active days</span></div>
+        <div class="ld-kpi"><span class="ld-kpi-val">${esc(analytics.window?.daysSpanned ?? 0)}</span><span class="ld-kpi-lbl">days live</span></div>
       </div>
     </div>
   </header>`;
@@ -387,6 +387,9 @@ function viewsCard(a) {
 
 function render(payload) {
   const { link, analytics: a } = payload;
+  // The timeline holds delivered and rescued scans only. A link whose every
+  // scan was lost still has scans to plot, so it must not read as unscanned.
+  const observed = a.totals?.observed ?? a.totals?.events ?? 0;
   const evidence = a.timeline.length
     ? `${renderRibbon(a.timeline, a.unique)}
        ${viewsCard(a)}
@@ -394,7 +397,10 @@ function render(payload) {
        ${renderLatency(a.latency)}
        ${renderMatrix(a.breakdowns)}
        ${renderEveryScan(a)}`
-    : `<section class="ld-card"><p class="ld-none">No scans recorded within the ${esc(a.window?.retentionDays || 30)}-day retention window.</p></section>`;
+    : observed
+      ? `<section class="ld-card"><p class="ld-none">No useful visits: all ${esc(observed)} scan${observed === 1 ? '' : 's'} in this window were lost before reaching a destination. Every one is plotted below.</p></section>
+         ${viewsCard(a)}`
+      : `<section class="ld-card"><p class="ld-none">No scans recorded within the ${esc(a.window?.retentionDays || 30)}-day retention window.</p></section>`;
   return `<div class="ld-root">
     ${renderHeader(link, a)}
     <div class="ld-insights" id="ld-insights"></div>
@@ -412,7 +418,8 @@ async function postCheckpoint(code, body) {
 
 async function dismissFinding(code, finding, dismissed, container) {
   try {
-    if (!(await postCheckpoint(code, { type: finding.action.type, applied: false, dismissed }))) return;
+    const what = finding.action ? { type: finding.action.type } : { key: finding.key };
+    if (!(await postCheckpoint(code, { ...what, applied: false, dismissed }))) return;
     utils.showToast(`Dismissed "${finding.title}" — ${words(dismissed)}.`, 'info', 3500);
     await showLinkDetail(code, container);
   } catch (err) { utils.showToast(err.message, 'error', 4000); }

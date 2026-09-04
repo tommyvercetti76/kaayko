@@ -28,6 +28,10 @@
 .graph-grid .bar i { display:block; width:100%; background:linear-gradient(180deg, var(--gold-bright, #d9bd7b), var(--gold, #b5935a)); border-radius:1px 1px 0 0; min-height:2px }
 .graph-grid .bar:hover i { filter:brightness(1.35) }
 .graph-grid .bar span { position:absolute; bottom:-18px; font-family:var(--mono, ui-monospace, Menlo, monospace); font-size:0.68rem; color:var(--muted, rgba(237,232,223,.72)); white-space:nowrap }
+/* Dense charts (a month of days, 24 hours) keep every sixth label so they never overlap. */
+.graph-grid .bars.dense { gap:2px }
+.graph-grid .bars.dense .bar span { display:none }
+.graph-grid .bars.dense .bar:nth-child(6n+1) span { display:block }
 .radar-wrap { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:16px; align-items:center }
 .radar-wrap svg { width:100%; max-width:360px; height:auto; display:block; margin:0 auto }
 .radar-legend { list-style:none; font-size:0.94rem; color:var(--muted, rgba(237,232,223,.72)); margin:0; padding:0 }
@@ -64,6 +68,11 @@
 .fm-node text.out { fill:var(--fg, #ede8df) }
 .fm-node:hover rect, .fm-node:focus-visible rect { stroke:var(--gold-bright, #d9bd7b); stroke-width:1.5 }
 .fm-node[aria-pressed="true"] rect { stroke:#fff; stroke-width:1.5 }
+/* A block whose share is too thin to draw is raised to the minimum size; the dashed
+   edge says the height is a legibility floor and not a quantity. */
+.fm-node.is-floored rect { stroke:var(--fg, #ede8df); stroke-opacity:0.5; stroke-dasharray:3 2 }
+.fm-node.is-floored:hover rect, .fm-node.is-floored:focus-visible rect { stroke:var(--gold-bright, #d9bd7b); stroke-opacity:1 }
+.fm-note { font-family:var(--serif, 'Cormorant Garamond', Georgia, serif); font-style:italic; font-size:0.82rem; color:var(--muted, rgba(237,232,223,.6)); text-align:center; margin:8px auto 0; max-width:62ch; line-height:1.5 }
 .fm-edge { fill:var(--fm-c); fill-opacity:0.3 }
 .fm-edge:hover, .fm-edge.is-on { fill-opacity:0.62 }
 .fm svg.is-focus .fm-edge:not(.is-on) { fill-opacity:0.05 }
@@ -113,7 +122,7 @@
 .ki-menu summary { list-style:none; display:inline-flex; align-items:center; min-height:44px; padding:0 6px; cursor:pointer; font-family:var(--serif, 'Cormorant Garamond', Georgia, serif); font-style:italic; font-size:.9rem; color:var(--muted, rgba(237,232,223,.72)); text-decoration:underline; text-underline-offset:3px }
 .ki-menu summary::-webkit-details-marker { display:none }
 .ki-menu div { position:absolute; z-index:5; left:0; top:100%; min-width:180px; padding:6px; display:grid; background:var(--surface, #0d0c0a); border:1px solid var(--gold-line, rgba(181,147,90,.28)); box-shadow:0 10px 30px rgba(0,0,0,.45) }
-.ki-menu div button { text-align:left; min-height:40px; padding:0 10px; background:none; border:0; color:var(--fg, #ede8df); font:inherit; font-size:.9rem; cursor:pointer }
+.ki-menu div button { text-align:left; min-height:44px; padding:0 10px; background:none; border:0; color:var(--fg, #ede8df); font:inherit; font-size:.9rem; cursor:pointer }
 .ki-menu div button:hover { background:rgba(181,147,90,.12) }
 
 /* ── Action Center: what was delivered, what needs a fix, what the last change did ── */

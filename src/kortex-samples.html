@@ -66,10 +66,6 @@
     .qr-frame img { width:100%; height:100%; display:block; image-rendering:pixelated }
     .qr-meta { font-family:var(--mono); font-size:0.78rem; color:var(--muted); line-height:1.7; overflow-wrap:anywhere }
     .qr-meta b { color:var(--fg); font-weight:500 }
-    .insights { list-style:none; margin:10px 0 16px; display:grid; gap:6px }
-    .insights li { padding-left:18px; position:relative; font-style:italic; font-size:0.98rem; color:var(--muted); line-height:1.5 }
-    .insights li::before { content:'✦'; position:absolute; left:0; top:2px; color:var(--gold); font-size:0.7rem }
-    .insights b { color:var(--fg); font-weight:500 }
     .stat-row { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:16px }
     .stat { padding:12px 0; border-top:1px solid var(--gold-line); min-width:0 }
     .stat b { display:block; font-family:'Bebas Neue',Impact,sans-serif; font-size:1.9rem; letter-spacing:0.04em; line-height:1; font-weight:400 }
@@ -79,7 +75,6 @@
     .views-nav button { background:none; border:0; border-bottom:1px solid transparent; margin-bottom:-1px; padding:8px 2px; min-height:44px; cursor:pointer; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.9rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted) }
     .views-nav button[aria-pressed="true"] { color:var(--gold-bright); border-bottom-color:var(--gold) }
     .views-nav button:focus-visible { outline:1px solid var(--gold-bright); outline-offset:4px }
-    .bars.dense { gap:2px } .bars.dense .bar span { display:none } .bars.dense .bar:nth-child(6n+1) span { display:block }
     .closing { text-align:center; margin-top:56px }
     .closing p { font-style:italic; color:var(--muted); max-width:62ch; margin:0 auto 18px }
     footer { position:relative; z-index:1; text-align:center; padding:32px 16px 48px; font-style:italic; font-size:0.9rem; color:var(--faint) }

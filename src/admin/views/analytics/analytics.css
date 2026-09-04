@@ -962,7 +962,6 @@
 .pf-tick { fill: var(--text-muted); font-size: 9px; font-family: var(--mono); }
 .pf-note-svg { fill: var(--gold-dark); font-size: 9px; font-family: var(--mono); }
 
-
 /* top links */
 .pf-toplinks { display: flex; flex-direction: column; }
 .pf-link-row { display: grid; grid-template-columns: 24px minmax(0,1.4fr) 1fr 44px 52px; align-items: center; gap: 12px; padding: 9px 6px; border-bottom: 1px solid var(--border-subtle); cursor: pointer; border-radius: var(--radius-sm); transition: background var(--transition-fast); }
@@ -992,8 +991,6 @@
 .pf-facet-fill { display: block; height: 100%; background: rgba(255,255,255,0.2); border-radius: 3px; }
 .pf-facet-fill.is-lead { background: var(--gold-primary); }
 .pf-facet-num { font-family: var(--mono); font-size: 12px; text-align: right; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
-
-/* clock ramps */
 
 /* ledger */
 .pf-ledger-row { display: grid; grid-template-columns: 14px 1fr auto; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border-subtle); }
