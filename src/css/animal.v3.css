@@ -9,10 +9,8 @@
   Now: an asymmetric spread. The plate holds the left, the identity and the
   piece hold the right, and buying is possible without scrolling at all.
 
-  Motion is deliberately down to ONE continuous thing: the artwork drifts
-  against its plate. Everything else simply fades — no rise, no overshoot, no
-  per-section choreography. Restraint is the aesthetic; a page where every
-  block springs in reads as a demo.
+  There is no motion on this page at all. The only animation in the store is
+  the transition into it, in css/pdp-motion.css.
   ─────────────────────────────────────────────────────────────────────────────*/
 
 /* Escape storestyle's `html,body{height:100%}` + `main{flex:1}`, which pinned
@@ -209,32 +207,9 @@ html.dark-theme .animal-v2 .an-eyebrow[data-severity="endangered"] { color: #e08
 .animal-v2 .an-facts .animal-stat { padding: 14px 0; border-top: 1px solid var(--v2-border); }
 .animal-v2 .an-facts .animal-stat:first-child { border-top: none; padding-top: 0; }
 
-/* ── Motion ─────────────────────────────────────────────────────────────
-   There is no scroll parallax here any more, for two reasons.
-
-   A view transition captures an element's TRANSFORMED geometry, so a hero
-   drifting under a scroll timeline would be snapshotted mid-drift and the
-   morph from the store card would land crooked.
-
-   And the motion that matters on this page is the arrival: the photograph
-   travels out of the grid card and the rest of the page staggers in behind
-   it. That lives in css/pdp-motion.css. Adding a second, unrelated movement
-   on scroll only competes with it.
-
-   What remains is a single opacity settle for sections below the fold —
-   never from zero, so nothing is invisible if a timeline fails to resolve. */
-@supports (animation-timeline: view()) {
-  .animal-v2 .fade {
-    animation: an-fade linear both;
-    animation-timeline: view(block);
-    animation-range: entry 0% entry 70%;
-  }
-}
-@keyframes an-fade { from { opacity: 0.55; } to { opacity: 1; } }
-
-@media (prefers-reduced-motion: reduce) {
-  .animal-v2 .fade { animation: none !important; opacity: 1; }
-}
+/* No motion on this page. The only animation in the store is the transition
+   into it (css/pdp-motion.css); scroll-driven fades on every section on top
+   of that made the page feel slow and unsettled. Content is simply present. */
 
 /* ── Narrow ─────────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {

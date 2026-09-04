@@ -118,11 +118,11 @@ function renderStory(animal, products) {
 
   return `
     ${hasProse ? `
-    <section class="an-story fade">
+    <section class="an-story">
       <h2 class="an-kicker">The Story</h2>
       <p class="an-bio">${esc(animal.bio)}</p>
     </section>` : ""}
-    ${stats ? `<section class="an-facts fade"><h2 class="an-kicker">Field Notes</h2>${stats}</section>` : ""}
+    ${stats ? `<section class="an-facts"><h2 class="an-kicker">Field Notes</h2>${stats}</section>` : ""}
     ${renderVariants(animal, rest)}`;
 }
 
@@ -171,7 +171,7 @@ function renderVariants(animal, products) {
       </button>
     </article>`).join("");
   return `
-    <section class="an-wear fade">
+    <section class="an-wear">
       <h2 class="an-kicker">${heading}</h2>
       <div class="animal-variants">${cards}</div>
     </section>`;

@@ -1,26 +1,21 @@
 /*─────────────────────────────────────────────────────────────────────────────
-  Store → product shared-element transition.
+  Store → product transition.
 
-  The tapped photograph is the SAME element on both pages: it expands out of
-  the grid card into the hero, and the rest of the destination staggers in
-  behind it. Going back, the sequence reverses and the photograph shrinks
-  into the card it came from.
+  Deliberately one effect and nothing else: the tapped photograph travels from
+  the grid card to the hero, and the page cross-fades under it. Fast, standard
+  easing, no overshoot.
 
-  Mechanism: cross-document View Transitions. Both documents opt in, and one
-  element in each carries `view-transition-name: product-hero` — the tapped
-  card image on the store (stamped by js/pdp-motion.js) and the hero image on
-  the product page. The browser matches them by name and animates between
-  their two positions; there is no JS animation anywhere in this file.
-
-  Browsers without cross-document View Transitions simply navigate. Nothing
-  is hidden waiting for a transition that may never run.
+  Removed, because together they read as a jumbled mess: per-region staggered
+  entrances (four separate transition names animating on four different delays
+  over a cross-fading root), scroll-driven parallax on the hero, scroll-driven
+  fades on every section, and a press-scale on the cards. Each seemed small on
+  its own; layered they made the page feel slow and busy.
   ─────────────────────────────────────────────────────────────────────────────*/
 
 @view-transition { navigation: auto; }
 
-/* ── The shared photograph ──────────────────────────────────────────────── */
-/* Exactly one element per document may carry this name. On the store page
-   js/pdp-motion.js stamps the tapped image; here are the destinations. */
+/* One shared element. js/pdp-motion.js stamps the tapped card image on the
+   store; these are its counterparts on the two product pages. */
 .animal-v2 .an-art img,
 .animal-v2 .an-art .pdp-hero-preview,
 .product-v2 .product-gallery-main img,
@@ -28,72 +23,29 @@
   view-transition-name: product-hero;
 }
 
-/* Show only the destination image for the whole morph. Cross-fading the two
-   would blend a cover-cropped thumbnail into a contained illustration, which
-   reads as a smear; travelling as one photograph reads as the same object
-   moving. */
+/* Show only the destination image while it travels. Cross-fading a
+   cover-cropped thumbnail into a contained illustration reads as a smear. */
 ::view-transition-old(product-hero) { display: none; }
-::view-transition-new(product-hero) {
-  animation: none;                /* no fade — the group's motion is the effect */
-  height: 100%;
-  object-fit: contain;
-}
+::view-transition-new(product-hero) { animation: none; height: 100%; object-fit: contain; }
 
 ::view-transition-group(product-hero) {
-  animation-duration: 620ms;
-  /* Slight overshoot at the end of travel, so it settles rather than stops. */
-  animation-timing-function: cubic-bezier(.32, .94, .36, 1);
+  animation-duration: 340ms;
+  animation-timing-function: cubic-bezier(.4, 0, .2, 1);
   z-index: 5;
 }
 
-/* ── Everything else: staggered, behind the photograph ──────────────────── */
-/* Each region is named so it can be animated on its own delay. Without this
-   the whole page is one snapshot and can only cross-fade as a block. */
-.animal-v2 .an-panel  { view-transition-name: pdp-panel; }
-.animal-v2 .an-story  { view-transition-name: pdp-a; }
-.animal-v2 .an-facts  { view-transition-name: pdp-b; }
-.animal-v2 .an-wear   { view-transition-name: pdp-c; }
-.product-v2 .product-info { view-transition-name: pdp-panel; }
+/* The page underneath: a plain, quick cross-fade. */
+::view-transition-old(root) { animation: pdp-out 160ms ease-in both; }
+::view-transition-new(root) { animation: pdp-in 220ms ease-out both; }
+@keyframes pdp-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pdp-out { from { opacity: 1; } to { opacity: 0; } }
 
-::view-transition-group(pdp-panel),
-::view-transition-group(pdp-a),
-::view-transition-group(pdp-b),
-::view-transition-group(pdp-c) { z-index: 1; }
-
-::view-transition-old(pdp-panel),
-::view-transition-old(pdp-a),
-::view-transition-old(pdp-b),
-::view-transition-old(pdp-c) {
-  animation: pdp-out 180ms ease-in both;
-}
-
-/* Arriving: each region lifts in, one after the next, while the photograph is
-   still travelling. The delays are the "stagger". */
-::view-transition-new(pdp-panel) { animation: pdp-in 460ms cubic-bezier(.2,.7,.2,1) 150ms both; }
-::view-transition-new(pdp-a)     { animation: pdp-in 460ms cubic-bezier(.2,.7,.2,1) 230ms both; }
-::view-transition-new(pdp-b)     { animation: pdp-in 460ms cubic-bezier(.2,.7,.2,1) 300ms both; }
-::view-transition-new(pdp-c)     { animation: pdp-in 460ms cubic-bezier(.2,.7,.2,1) 360ms both; }
-
-/* The page ground itself: a plain, quick cross-fade under everything. */
-::view-transition-old(root) { animation: pdp-out 200ms ease-in both; }
-::view-transition-new(root) { animation: pdp-in-plain 320ms ease-out both; }
-
-@keyframes pdp-in       { from { opacity: 0; transform: translateY(18px); }
-                          to   { opacity: 1; transform: none; } }
-@keyframes pdp-in-plain { from { opacity: 0; } to { opacity: 1; } }
-@keyframes pdp-out      { from { opacity: 1; } to { opacity: 0; } }
-
-/* ── Pressing a card ────────────────────────────────────────────────────── */
-.store-v2 .carousel-item { transition: transform 180ms cubic-bezier(.2,.8,.2,1); }
-.store-v2 .carousel-item:has(.carousel-image:active) { transform: scale(.985); }
-
-/* Preview painted into the hero frame before first render, so the photograph
-   has somewhere to land while the real image is still being fetched. */
+/* Placeholder painted into the hero frame before first render, so the
+   photograph has somewhere to land while the real image loads. */
 .pdp-hero-preview { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
 .animal-v2 .an-hero.is-product .pdp-hero-preview,
 .product-v2 .pdp-hero-preview { width: 100%; height: 100%; object-fit: cover; }
 
 @media (prefers-reduced-motion: reduce) {
   @view-transition { navigation: none; }
-  .store-v2 .carousel-item { transition: none; }
 }
