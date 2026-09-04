@@ -106,6 +106,8 @@
       { "source": "/resolve", "function": "api" },
       { "source": "/health", "function": "api" },
       { "source": "/kortex/appeal", "destination": "/kortex-appeal.html" },
+      { "source": "/kortex/report", "destination": "/kortex-report.html" },
+      { "source": "/kortex/support", "destination": "/kortex-support.html" },
       { "source": "/qr/**", "function": "api" },
       { "source": "/a/**", "destination": "/tenant.html" },
       { "source": "/login", "destination": "/tenant.html" },

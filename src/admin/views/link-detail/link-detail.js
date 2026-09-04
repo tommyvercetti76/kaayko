@@ -382,6 +382,26 @@ export async function showLinkDetail(code, container) {
     const payload = await response.json();
     if (!response.ok || !payload?.success) throw new Error(payload?.error || `Request failed (${response.status})`);
     container.innerHTML = render(payload);
+    // Per-link CSV: the click events inside the plan window, as a file.
+    const back = container.querySelector('[data-ld-back]');
+    if (back) {
+      const dl = document.createElement('button');
+      dl.type = 'button'; dl.className = 'ld-back'; dl.style.marginLeft = '10px'; dl.textContent = 'Download CSV';
+      dl.addEventListener('click', async () => {
+        dl.disabled = true; dl.textContent = 'Preparing…';
+        try {
+          const r = await apiFetch(`/kortex/${encodeURIComponent(code)}/clicks.csv`);
+          if (!r || !r.ok) throw new Error(r && r.status === 429 ? 'Too many exports for now.' : 'Export failed.');
+          const blob = await r.blob();
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob); a.download = `kortex-${code}-clicks.csv`; document.body.appendChild(a); a.click();
+          setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 800);
+          dl.textContent = 'Downloaded';
+        } catch (e) { dl.textContent = e.message; }
+        setTimeout(() => { dl.disabled = false; dl.textContent = 'Download CSV'; }, 2200);
+      });
+      back.insertAdjacentElement('afterend', dl);
+    }
   } catch (err) {
     container.innerHTML = `<div class="ld-root">
       <button class="ld-back" data-ld-back>← Back</button>

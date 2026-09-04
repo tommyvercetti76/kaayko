@@ -18,6 +18,25 @@ const esc = (v) => utils.escapeHtml(String(v ?? ''));
 const RELIABILITY_ISO = '2026-08-17';
 
 export async function init() {
+  // Portfolio "Export CSV": every link in this tenant, as a file.
+  window.exportAnalyticsCSV = async () => {
+    const btn = document.querySelector('#analytics-view .export-btn');
+    const old = btn ? btn.innerHTML : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'Preparing…'; }
+    try {
+      const res = await apiFetch('/kortex/export/links.csv');
+      if (!res || !res.ok) throw new Error(res && res.status === 429 ? 'Too many exports for now.' : 'Export failed.');
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = 'kortex-links.csv'; document.body.appendChild(a); a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 800);
+      if (btn) btn.textContent = 'Downloaded';
+    } catch (err) {
+      if (btn) btn.textContent = err.message;
+    } finally {
+      setTimeout(() => { if (btn) { btn.disabled = false; btn.innerHTML = old; } }, 2200);
+    }
+  };
   // The retained window is fixed (30 days of events); the old tier-gated range
   // buttons filtered on a range this data doesn't honor, so hide them rather
   // than imply a filter that isn't applied.

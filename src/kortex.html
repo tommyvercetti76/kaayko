@@ -314,7 +314,11 @@ details.options summary:hover { color:var(--gold-bright) }
 details.options .field { margin-top:var(--sp-3) }
 .check { display:flex; gap:12px; align-items:center; min-height:44px; cursor:pointer; font-style:italic; font-size:1rem; color:var(--muted) }
 .check input { width:18px; height:18px; accent-color:var(--gold); flex:none }
-input[type="time"].field-input { color-scheme:dark }
+input[type="time"].field-input, input[type="date"].field-input { color-scheme:dark }
+.utm-hint { margin:var(--sp-3) 0 0 }
+.utm-hint b { color:var(--gold-bright); font-weight:500 }
+.utm-hint .action-link { margin-left:6px }
+.stat-row { flex-wrap:wrap }
 .honey { position:absolute; left:-9999px; width:1px; height:1px; opacity:0 }
 
 /* result */
@@ -645,6 +649,7 @@ a.btn-submit { display:block; text-align:center }
         </div>
         <button type="submit" class="btn-submit" id="mk-submit">Create</button>
       </div>
+      <p class="note utm-hint" id="mk-utm-hint" hidden></p>
 
       <details class="options" id="mk-options">
         <summary>Options</summary>
@@ -666,6 +671,28 @@ a.btn-submit { display:block; text-align:center }
           <label class="field-label" for="mk-email">Email (optional)</label>
           <input class="field-input" type="email" id="mk-email" autocomplete="email" placeholder="you@organisation.com">
           <p class="field-help">Your access code appears on screen the moment the link is made; no email needed. Add one only if you also want a copy sent to you and a way to recover a lost code.</p>
+        </div>
+        <div class="field">
+          <label class="check"><input type="checkbox" id="mk-utm-on"> Tag visits for your analytics</label>
+          <div id="mk-utm-fields" hidden>
+            <div class="field-row">
+              <div class="field"><label class="field-label" for="mk-utm-source">Source</label><input class="field-input" type="text" id="mk-utm-source" maxlength="100" placeholder="poster"></div>
+              <div class="field"><label class="field-label" for="mk-utm-medium">Medium</label><input class="field-input" type="text" id="mk-utm-medium" maxlength="100" placeholder="qr"></div>
+            </div>
+            <div class="field"><label class="field-label" for="mk-utm-campaign">Campaign</label><input class="field-input" type="text" id="mk-utm-campaign" maxlength="100" placeholder="spring-fest"></div>
+            <p class="note">These travel with every visit into Google Analytics or whatever the destination uses. Tags already on the address stay as they are. QR scans with no medium are counted as <i>qr</i> on their own.</p>
+          </div>
+        </div>
+        <div class="field">
+          <label class="check"><input type="checkbox" id="mk-limit-on"> Stop after a number of scans, or on a date</label>
+          <div id="mk-limit-fields" hidden>
+            <div class="field-row">
+              <div class="field"><label class="field-label" for="mk-max">Stop after (scans)</label><input class="field-input" type="number" id="mk-max" min="1" step="1" inputmode="numeric" placeholder="500"></div>
+              <div class="field"><label class="field-label" for="mk-expires">Ends on</label><input class="field-input" type="date" id="mk-expires"></div>
+            </div>
+            <div class="field"><label class="field-label" for="mk-fallback">Then send people to (optional)</label><input class="field-input" type="url" id="mk-fallback" inputmode="url" placeholder="https://your-site.com/sold-out"></div>
+            <p class="note">After the limit or the date, scans go to this address instead. Leave it empty and they see a plain "no longer available" page.</p>
+          </div>
         </div>
         <div class="field">
           <label class="check"><input type="checkbox" id="mk-night-on"> Send people somewhere else at night</label>
@@ -699,6 +726,7 @@ a.btn-submit { display:block; text-align:center }
         <button type="button" class="action-link quiet" id="rs-copy-url">Copy</button>
       </div>
       <p class="note" id="rs-night-note" hidden></p>
+      <p class="note" id="rs-limit-note" hidden></p>
 
       <div class="code-card" id="rs-code-card">
         <div class="code-label" id="rs-code-label">Your access code</div>
@@ -792,6 +820,8 @@ a.btn-submit { display:block; text-align:center }
           <span class="action-dot" aria-hidden="true" id="ws-email-dot" hidden>&middot;</span>
           <button type="button" class="action-link quiet" id="ws-rotate">New code</button>
           <span class="action-dot" aria-hidden="true">&middot;</span>
+          <button type="button" class="action-link quiet" id="ws-export">Export CSV</button>
+          <span class="action-dot" aria-hidden="true">&middot;</span>
           <button type="button" class="action-link quiet" id="ws-forget">Forget this device</button>
         </div>
         <div class="code-card compact" id="ws-code-card" hidden>
@@ -880,6 +910,7 @@ rotate it any time</pre></div>
         <li>Live for a year, renews with your code</li>
         <li>iPhone and Android routing</li>
         <li>A small Kortex badge on the redirect</li>
+        <li>Help within 3 business days</li>
       </ul>
       <a href="#make" class="btn-submit">Make a QR</a>
     </div>
@@ -893,6 +924,7 @@ rotate it any time</pre></div>
         <li>No badge on the redirect</li>
         <li>API keys and signed webhooks</li>
         <li>Sign-in for your team</li>
+        <li>Help within 1 business day</li>
       </ul>
       <button type="button" class="action-link" data-request="Pro">Request access</button>
     </div>
@@ -905,6 +937,7 @@ rotate it any time</pre></div>
         <li>Everything in Pro</li>
         <li>Five times the API quota</li>
         <li>Onboarding with a person</li>
+        <li>Help within 4 hours</li>
       </ul>
       <button type="button" class="action-link" data-request="Business">Request access</button>
     </div>
@@ -1012,9 +1045,10 @@ rotate it any time</pre></div>
   <footer class="site-footer">
     <nav aria-label="Footer">
       <a href="/legal/kortex-terms">Terms</a>
+      <a href="/kortex/support">Get help</a>
       <a href="/privacy">Privacy</a>
-      <a href="/kortex/appeal">Report a link</a>
-      <a href="mailto:kortex@kaayko.com">Contact</a>
+      <a href="/kortex/report">Report a link</a>
+      <a href="/kortex/support">Contact</a>
     </nav>
     <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
   </footer>
@@ -1023,6 +1057,7 @@ rotate it any time</pre></div>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="/js/vendor/qrcode-generator.js"></script>
+<script src="/js/kortex-utm.js"></script>
 
 <script>
 /* ── CONFIG ── */
@@ -1111,6 +1146,23 @@ async function guestApi(path, opts = {}) {
   if (res.status === 401 && data.code === 'GUEST_SESSION_REQUIRED') clearGuestSession();
   return { ok: res.ok, status: res.status, data };
 }
+/* Fetch a file (CSV) with the workspace session and hand it to the browser. */
+async function guestDownload(path, filename, btn) {
+  const token = (guestSession() || {}).token;
+  if (!token) { location.hash = '#manage'; return; }
+  const old = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Preparing…'; }
+  try {
+    const res = await fetch(`${CONFIG.API_BASE}/kortex/guest${path}`, { headers: { 'X-Kortex-Guest-Session': token } });
+    if (!res.ok) throw new Error(res.status === 429 ? 'Too many exports for now. Try again in a while.' : 'Could not prepare the file.');
+    download(filename, await res.blob());
+    if (btn) btn.textContent = 'Downloaded';
+  } catch (e) {
+    if (btn) btn.textContent = e.message;
+  } finally {
+    setTimeout(() => { if (btn) { btn.disabled = false; btn.textContent = old; } }, 2200);
+  }
+}
 const FRIENDLY = {
   DESTINATION_BLOCKED: 'That destination was refused by our safety check.',
   RATE_LIMIT_UNAVAILABLE: 'We are briefly unable to take new links. Try again in a minute.',
@@ -1190,7 +1242,7 @@ const MODE_NOTES = {
 function modeFacts(next) {
   if (next === 'static') return ['the address itself', 'works forever', 'nothing stored', 'no access code', 'no scan counts', 'cannot be changed'];
   const year = CAPS.lifetimeDays >= 365 ? 'a year' : `${CAPS.lifetimeDays} days`;
-  return ['short kaayko.com link', 'change where it points', 'scans by day, device, country', 'night and day destinations', 'access code shown once', `free for ${year}`];
+  return ['short kaayko.com link', 'change where it points', 'scans by day, device, country', 'night and day destinations', 'scan caps and end dates', 'campaign tags', 'access code shown once', `free for ${year}`];
 }
 function renderFacts() { $('mode-facts').innerHTML = modeFacts(mode).map(f => `<li>${escapeHtml(f)}</li>`).join(''); }
 function setMode(next) {
@@ -1210,6 +1262,52 @@ $('mode-static').addEventListener('click', () => setMode('static'));
 function browserTz() { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch { return 'UTC'; } }
 $('mk-tz').value = browserTz();
 $('mk-night-on').addEventListener('change', () => { $('mk-night-fields').hidden = !$('mk-night-on').checked; if ($('mk-night-on').checked) $('mk-night-url').focus(); });
+$('mk-utm-on').addEventListener('change', () => { $('mk-utm-fields').hidden = !$('mk-utm-on').checked; if ($('mk-utm-on').checked) $('mk-utm-source').focus(); });
+$('mk-limit-on').addEventListener('change', () => { $('mk-limit-fields').hidden = !$('mk-limit-on').checked; if ($('mk-limit-on').checked) $('mk-max').focus(); });
+
+/* Campaign tags a pasted address already carries, read back in plain words. */
+$('mk-url').addEventListener('input', () => {
+  const hint = $('mk-utm-hint');
+  const d = window.KortexUtm ? KortexUtm.decode($('mk-url').value) : null;
+  if (!d || !d.hasTags) { hint.hidden = true; hint.innerHTML = ''; return; }
+  hint.hidden = false;
+  hint.innerHTML = `This address already carries campaign tags: ${KortexUtm.chips(d.tags).map(c => `<b>${escapeHtml(c.label)}</b> ${escapeHtml(c.value)}`).join(' · ')}. ${escapeHtml(KortexUtm.sentence(d.tags))} <button type="button" class="action-link quiet" id="mk-utm-move">Move them into the link</button>`;
+  $('mk-utm-move').addEventListener('click', () => {
+    $('mk-url').value = d.cleanUrl;
+    $('mk-options').open = true; $('mk-utm-on').checked = true; $('mk-utm-fields').hidden = false;
+    $('mk-utm-source').value = d.tags.utm_source || ''; $('mk-utm-medium').value = d.tags.utm_medium || ''; $('mk-utm-campaign').value = d.tags.utm_campaign || '';
+    hint.hidden = true; hint.innerHTML = '';
+  });
+});
+
+function dateInputValue(iso) {
+  if (!iso) return '';
+  const d = new Date(iso); if (isNaN(d)) return '';
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+/* A date picked in the form means "through the end of that day, where I am". */
+function expiryFromDateInput(value) {
+  if (!value) return null;
+  const [y, m, d] = value.split('-').map(Number);
+  if (!y || !m || !d) return null;
+  return new Date(y, m - 1, d, 23, 59, 59).toISOString();
+}
+function limitSummary(link) {
+  const parts = [];
+  if (link.limits && link.limits.maxClicks) parts.push(`stops after ${link.limits.maxClicks} scans`);
+  if (link.expiresAt) parts.push(`ends ${fmtDate(link.expiresAt)}`);
+  if (!parts.length) return '';
+  const then = link.limits && link.limits.fallbackUrl ? `, then sends people to ${stripScheme(link.limits.fallbackUrl)}` : ', then shows a plain "no longer available" page';
+  return `This link ${parts.join(' and ')}${then}.`;
+}
+function utmFromFields(prefix) {
+  const get = id => ($(id) ? $(id).value.trim() : '');
+  const out = {};
+  if (get(`${prefix}-utm-source`)) out.utm_source = get(`${prefix}-utm-source`);
+  if (get(`${prefix}-utm-medium`)) out.utm_medium = get(`${prefix}-utm-medium`);
+  if (get(`${prefix}-utm-campaign`)) out.utm_campaign = get(`${prefix}-utm-campaign`);
+  return out;
+}
 function nightSummary(schedule) {
   const win = schedule && schedule.windows && (schedule.windows.find(w => w.label === 'night') || schedule.windows[0]);
   if (!win) return '';
@@ -1228,13 +1326,15 @@ function showResult(r) {
   if (isStatic) {
     frame.appendChild(qrCanvas(r.qr, 480, 2));
     $('rs-url').textContent = r.text;
-    ['rs-night-note', 'rs-code-card', 'rs-expiry', 'rs-next', 'rs-ws-note', 'rs-email-toggle', 'rs-email-dot'].forEach(id => { $(id).hidden = true; });
+    ['rs-night-note', 'rs-limit-note', 'rs-code-card', 'rs-expiry', 'rs-next', 'rs-ws-note', 'rs-email-toggle', 'rs-email-dot'].forEach(id => { $(id).hidden = true; });
     codeSaved = true;
   } else {
     const img = document.createElement('img'); img.alt = 'QR code for ' + r.link.shortUrl; img.src = r.qrPng; frame.appendChild(img);
     $('rs-url').textContent = stripScheme(r.link.shortUrl);
     const night = nightSummary(r.link.schedule);
     $('rs-night-note').hidden = !night; $('rs-night-note').textContent = night;
+    const lim = limitSummary(r.link);
+    $('rs-limit-note').hidden = !lim; $('rs-limit-note').textContent = lim;
     const newWorkspace = !!r.accessCode;
     const wsId = r.workspace && r.workspace.id;
     if (newWorkspace) rememberCode(r.accessCode, wsId);
@@ -1281,6 +1381,20 @@ $('make-form').addEventListener('submit', async (e) => {
     if (!nightUrl) { setAlert('mk-alert', 'error', 'Enter the night destination, or untick night routing.'); $('mk-night-url').focus(); return; }
     schedule = { timezone: $('mk-tz').value.trim() || browserTz(), windows: [{ label: 'night', start: $('mk-night-start').value || '18:00', end: $('mk-night-end').value || '06:00', url: nightUrl }] };
   }
+  let limits, expiresAt, utm;
+  if ($('mk-limit-on').checked) {
+    const max = $('mk-max').value.trim();
+    const fallbackRaw = $('mk-fallback').value.trim();
+    const fallbackUrl = fallbackRaw ? normaliseUrl(fallbackRaw) : null;
+    if (fallbackRaw && !fallbackUrl) { setAlert('mk-alert', 'error', 'Enter a full web address for the fallback, or leave it empty.'); $('mk-fallback').focus(); return; }
+    if (max && !/^\d+$/.test(max)) { setAlert('mk-alert', 'error', 'The scan limit must be a whole number.'); $('mk-max').focus(); return; }
+    expiresAt = expiryFromDateInput($('mk-expires').value);
+    if (!max && !expiresAt) { setAlert('mk-alert', 'error', 'Enter a number of scans or an end date, or untick the limit.'); $('mk-max').focus(); return; }
+    if ($('mk-expires').value && !expiresAt) { setAlert('mk-alert', 'error', 'That end date is not valid.'); $('mk-expires').focus(); return; }
+    if (expiresAt && new Date(expiresAt) < new Date()) { setAlert('mk-alert', 'error', 'The end date is already in the past.'); $('mk-expires').focus(); return; }
+    if (max || fallbackUrl) limits = { maxClicks: max ? Number(max) : undefined, fallbackUrl: fallbackUrl || undefined };
+  }
+  if ($('mk-utm-on').checked) { const tags = utmFromFields('mk'); if (Object.keys(tags).length) utm = tags; }
   const btn = $('mk-submit'); btn.disabled = true; btn.textContent = 'Checking…';
   const body = {
     destination: url,
@@ -1289,6 +1403,9 @@ $('make-form').addEventListener('submit', async (e) => {
     androidDestination: normaliseUrl($('mk-android').value) || undefined,
     email: $('mk-email').value.trim() || undefined,
     schedule,
+    limits,
+    expiresAt,
+    utm,
     website: $('mk-website').value || undefined
   };
   const { ok, data } = await guestApi('/links', { method: 'POST', body });
@@ -1410,12 +1527,14 @@ async function openDetail(code) {
   const scans = (a.recentScans || []).slice(0, 5).map(s => `<li><span>${fmtAgo(s.at)} · ${escapeHtml(s.deviceType || '?')}</span><b>${escapeHtml(s.country || '')}</b></li>`).join('') || '<li><span>No scans yet</span></li>';
   const nightWin = link.schedule && link.schedule.windows && (link.schedule.windows.find(w => w.label === 'night') || link.schedule.windows[0]);
   const stateLine = (link.status === 'blocked' ? `Blocked by the safety check. <a href="/kortex/appeal?code=${encodeURIComponent(link.code)}" style="color:var(--gold)">Request a review</a>.` : link.status === 'held' ? 'Under review; it goes live once checked.' : (!link.enabled ? 'Paused: scans see a "link disabled" page.' : 'Live.'))
-    + (nightWin ? ` ${escapeHtml(nightSummary(link.schedule))}.` : '');
+    + (nightWin ? ` ${escapeHtml(nightSummary(link.schedule))}.` : '') + (limitSummary(link) ? ` ${escapeHtml(limitSummary(link))}` : '');
+  const src = Object.fromEntries(((a.breakdowns && a.breakdowns.source) || []).map(r => [r.value, r.clicks]));
   box.innerHTML = `
     <div>
       <div class="stat-row">
         <div class="stat"><b>${data.lifetime.clicks}</b><span>scans, lifetime</span></div>
         <div class="stat"><b>${a.totals.events}</b><span>last 7 days</span></div>
+        <div class="stat"><b>${src.qr || 0}</b><span>from QR scans, 7 days</span></div>
         <div class="stat"><b>${a.unique ? a.unique.distinctVisitors : '—'}</b><span>people, 7 days</span></div>
       </div>
       <div class="bars">${bars}</div>
@@ -1438,16 +1557,29 @@ async function openDetail(code) {
           <div class="field"><label class="field-label" for="dt-night-end">Night ends</label><input class="field-input" id="dt-night-end" type="time" value="${escapeHtml(nightWin ? nightWin.end : '06:00')}"></div>
         </div>
         <div class="field"><label class="field-label" for="dt-tz">Time zone</label><input class="field-input" id="dt-tz" spellcheck="false" value="${escapeHtml((link.schedule && link.schedule.timezone) || browserTz())}"></div>
+        <div class="field-row">
+          <div class="field"><label class="field-label" for="dt-max">Stop after (scans)</label><input class="field-input" id="dt-max" type="number" min="1" step="1" inputmode="numeric" placeholder="no limit" value="${link.limits && link.limits.maxClicks ? link.limits.maxClicks : ''}"></div>
+          <div class="field"><label class="field-label" for="dt-expires">Ends on</label><input class="field-input" id="dt-expires" type="date" value="${escapeHtml(dateInputValue(link.expiresAt))}"></div>
+        </div>
+        <div class="field"><label class="field-label" for="dt-fallback">After the limit, send people to</label><input class="field-input" id="dt-fallback" type="url" placeholder="leave empty for a plain page" value="${escapeHtml((link.limits && link.limits.fallbackUrl) || '')}"></div>
+        <div class="field-row">
+          <div class="field"><label class="field-label" for="dt-utm-source">Tag: source</label><input class="field-input" id="dt-utm-source" maxlength="100" placeholder="poster" value="${escapeHtml((link.utm && link.utm.utm_source) || '')}"></div>
+          <div class="field"><label class="field-label" for="dt-utm-medium">Tag: medium</label><input class="field-input" id="dt-utm-medium" maxlength="100" placeholder="qr" value="${escapeHtml((link.utm && link.utm.utm_medium) || '')}"></div>
+        </div>
+        <div class="field"><label class="field-label" for="dt-utm-campaign">Tag: campaign</label><input class="field-input" id="dt-utm-campaign" maxlength="100" placeholder="spring-fest" value="${escapeHtml((link.utm && link.utm.utm_campaign) || '')}"></div>
         <button type="submit" class="btn-submit">Save</button>
         <div class="actions" style="margin-top:8px">
           <button type="button" class="action-link quiet" id="dt-toggle">${link.enabled ? 'Pause' : 'Resume'}</button>
           <span class="action-dot" aria-hidden="true">&middot;</span>
           <button type="button" class="action-link quiet" id="dt-delete">Delete</button>
+          <span class="action-dot" aria-hidden="true">&middot;</span>
+          <button type="button" class="action-link quiet" id="dt-csv">Download CSV</button>
         </div>
         <p class="status" id="dt-status" hidden></p>
       </form>
     </div>`;
   $('dt-copy').addEventListener('click', () => copyText(link.shortUrl, $('dt-copy')));
+  $('dt-csv').addEventListener('click', () => guestDownload(`/links/${encodeURIComponent(code)}/analytics.csv`, `kortex-${code}-scans.csv`, $('dt-csv')));
   $('dt-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const url = normaliseUrl($('dt-url').value); if (!url) { setStatus('dt-status', 'Enter a full web address.', 'err'); return; }
@@ -1458,7 +1590,16 @@ async function openDetail(code) {
       if (!nightUrl) { setStatus('dt-status', 'Enter a full web address for the night destination.', 'err'); return; }
       schedule = { timezone: $('dt-tz').value.trim() || browserTz(), windows: [{ label: 'night', start: $('dt-night-start').value || '18:00', end: $('dt-night-end').value || '06:00', url: nightUrl }] };
     }
-    const { ok: k, data: d } = await guestApi(`/links/${encodeURIComponent(code)}`, { method: 'PATCH', body: { destination: url, title: $('dt-title').value.trim(), schedule } });
+    const maxRaw = $('dt-max').value.trim();
+    if (maxRaw && !/^\d+$/.test(maxRaw)) { setStatus('dt-status', 'The scan limit must be a whole number.', 'err'); return; }
+    const fallbackRaw = $('dt-fallback').value.trim();
+    const fallbackUrl = fallbackRaw ? normaliseUrl(fallbackRaw) : null;
+    if (fallbackRaw && !fallbackUrl) { setStatus('dt-status', 'Enter a full web address for the fallback, or leave it empty.', 'err'); return; }
+    const expiresAt = $('dt-expires').value ? expiryFromDateInput($('dt-expires').value) : null;
+    if ($('dt-expires').value && !expiresAt) { setStatus('dt-status', 'That end date is not valid.', 'err'); return; }
+    const limits = (maxRaw || fallbackUrl) ? { maxClicks: maxRaw ? Number(maxRaw) : undefined, fallbackUrl: fallbackUrl || undefined } : null;
+    const utm = utmFromFields('dt');
+    const { ok: k, data: d } = await guestApi(`/links/${encodeURIComponent(code)}`, { method: 'PATCH', body: { destination: url, title: $('dt-title').value.trim(), schedule, limits, expiresAt, utm } });
     if (!k) { setStatus('dt-status', friendly(d, 'Could not save.') + (d.reasons ? ' ' + d.reasons.map(r => r.detail).join(' ') : ''), 'err'); return; }
     await openWorkspaceFromSession(); await openDetail(code); setStatus('dt-status', 'Saved. Every scan now goes to the new address.', 'ok');
   });
@@ -1493,6 +1634,7 @@ function showWsCode(code, label, note, scroll = true) {
   if (scroll) $('ws-code-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 $('ws-copy-code').addEventListener('click', () => copyText($('ws-code').textContent, $('ws-copy-code')));
+$('ws-export').addEventListener('click', () => guestDownload('/workspace/export.csv', 'kortex-links.csv', $('ws-export')));
 $('ws-keycard').addEventListener('click', () => keyCard($('ws-code').textContent, null, wsMeta));
 $('ws-rotate').addEventListener('click', async () => {
   if (!confirm('Issue a new access code? The current one stops working the moment the new one appears, and the new one is shown once.')) return;

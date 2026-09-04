@@ -578,7 +578,33 @@ function validateForm(isEditing) {
 // ============================================================================
 
 // Stable reference for event listener cleanup
-function _onDestChange() { checkROOTSDestination(); checkAlumniDestination(); }
+function _onDestChange() { checkROOTSDestination(); checkAlumniDestination(); showUtmHint(); }
+
+/* Campaign tags a pasted address already carries, read back in plain words,
+   with one click to move them into the UTM fields (shared helper: /js/kortex-utm.js). */
+function showUtmHint() {
+  const destInput = document.getElementById('webDestination');
+  if (!destInput || !window.KortexUtm) return;
+  let hint = document.getElementById('utm-decode-hint');
+  const d = KortexUtm.decode(destInput.value);
+  if (!d.hasTags) { if (hint) hint.remove(); return; }
+  if (!hint) {
+    hint = document.createElement('p');
+    hint.id = 'utm-decode-hint';
+    hint.className = 'form-hint';
+    hint.style.cssText = 'margin-top:8px;font-size:13px;line-height:1.5';
+    destInput.insertAdjacentElement('afterend', hint);
+  }
+  const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  hint.innerHTML = `This address already carries campaign tags: ${KortexUtm.chips(d.tags).map(c => `<b>${esc(c.label)}</b> ${esc(c.value)}`).join(' · ')}. ${esc(KortexUtm.sentence(d.tags))} <button type="button" class="btn-link" id="utm-decode-move">Move them into the UTM fields</button>`;
+  const move = document.getElementById('utm-decode-move');
+  if (move) move.addEventListener('click', () => {
+    destInput.value = d.cleanUrl;
+    const map = { utm_source: 'utmSource', utm_medium: 'utmMedium', utm_campaign: 'utmCampaign', utm_term: 'utmTerm', utm_content: 'utmContent' };
+    Object.entries(map).forEach(([k, id]) => { const el = document.getElementById(id); if (el && d.tags[k]) el.value = d.tags[k]; });
+    hint.remove();
+  });
+}
 
 function initCreateForm() {
   const form = document.getElementById('create-form');
