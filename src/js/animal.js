@@ -4,6 +4,7 @@
  */
 
 import { priceText } from "/js/priceMap.js";
+import { showBagToast, sizesFor, defaultFit, saveFitPref } from "/js/kaayko_ui.js";
 
 const API_BASE = window.FORCE_PRODUCTION_MODE
   ? window.PRODUCTION_API_BASE
@@ -34,12 +35,14 @@ function renderNotFound(root, slug) {
 }
 
 function renderError(root) {
+  // A `javascript:` href is blocked by our CSP — use a real button.
   root.innerHTML = `
     <section class="animal-empty">
       <h2>Couldn't load this page</h2>
       <p>Something hiccupped on our end.</p>
-      <a href="javascript:location.reload()">Try again</a>
+      <button type="button" class="animal-retry" id="animal-retry">Try again</button>
     </section>`;
+  root.querySelector('#animal-retry')?.addEventListener('click', () => location.reload());
 }
 
 function severity(status) {
@@ -104,7 +107,7 @@ function renderVariants(animal, products) {
   if (!products.length) return "";
   const heading = `Wear the ${esc(animal.name.split(" ").pop())}`;
   const cards = products.map(p => `
-    <article class="variant-card" data-product-id="${esc(p.productID)}">
+    <article class="variant-card" data-product-id="${esc(p.id)}">
       <div class="variant-img" data-zoom>${variantImage(p)}</div>
       <div class="variant-meta">
         <h3 class="variant-title">${esc(p.title)}</h3>
@@ -123,37 +126,78 @@ function renderVariants(animal, products) {
     </div>`;
 }
 
+const GENDERS = ["Male", "Female", "Teen", "Child", "Infant"];
+
+// The picker only earns its two taps for a multi-size t-shirt. One-size and
+// sizeless SKUs go straight into the bag.
+function needsPicker(product) {
+  if ((product.productType || "").toLowerCase() !== "tshirt") return false;
+  const sizes = (product.availableSizes || []).filter(Boolean);
+  const isOneSizeOrNone = sizes.length === 0 || (sizes.length === 1 && /one size/i.test(sizes[0]));
+  if (isOneSizeOrNone) return false;
+  return sizes.length > 1;
+}
+
+// The bag holds 2 unique products. Check BEFORE opening the picker so nobody
+// picks a gender and a size only to be turned away.
+function bagCapReached(product) {
+  const cm = window.cartManager;
+  if (!cm) return false;
+  if (cm.hasProduct(product.id)) return false;
+  const count = cm.getCount();
+  if (count < 2) return false;
+  if (window.showSustainabilityAlert) {
+    window.showSustainabilityAlert({ attemptedProduct: product.title, cartCount: count });
+  }
+  return true;
+}
+
 // Cart-add logic that respects product type — the size/gender picker bug fix.
-// T-shirts → open mini-panel (gender + size). Tote/Magnet → add directly.
+// T-shirts → open the fit popup. Tote/Magnet/one-size → add directly.
 function addToBagSmart(product) {
   const cm = window.cartManager;
   if (!cm) return false;
   const priceLabel = priceText(product);
-  const sizes = product.availableSizes || [];
-  const isOneSizeOrNone = sizes.length === 0 || (sizes.length === 1 && /one size/i.test(sizes[0]));
 
-  if (product.productType === "tshirt") {
-    // T-shirt → require size + gender via a popup
+  // Already in the bag → take them to it rather than silently re-adding.
+  if (cm.hasProduct(product.id) && !needsPicker(product)) {
+    window.location.href = "/cart";
+    return true;
+  }
+
+  if (bagCapReached(product)) return false;
+
+  if (needsPicker(product)) {
     return openSizeGenderPopup(product, priceLabel);
   }
 
   // Direct add for totes / magnets / one-size / sizeless products
+  const sizes = (product.availableSizes || []).filter(Boolean);
   const item = {
     productId: product.id,
     title: product.title,
     subtitle: product.description,
     price: priceLabel,
     imgSrc: product.imgSrc,
-    size: isOneSizeOrNone ? (sizes[0] || "One Size") : sizes[0],
+    size: sizes[0] || "One Size",
     gender: null
   };
   const ok = cm.addItem(item);
-  if (!ok && window.showSustainabilityAlert) window.showSustainabilityAlert();
+  if (!ok && window.showSustainabilityAlert) window.showSustainabilityAlert({ attemptedProduct: product.title });
+  if (ok) showBagToast(`${product.title} added to bag`);
   return ok;
 }
 
 function openSizeGenderPopup(product, priceLabel) {
-  // Minimal centered popup for sizing — only used when productType === 'tshirt'
+  // Minimal centered popup for sizing — only used for multi-size t-shirts.
+  const existing = window.cartManager?.getItem(product.id) || null;
+  const sizes = sizesFor(product);
+  const fallback = defaultFit(product);
+
+  // Start with a real selection so the confirm button is live on open.
+  let g = GENDERS.includes(existing?.gender) ? existing.gender : fallback.gender;
+  let s = sizes.includes(existing?.size) ? existing.size : fallback.size;
+
   const overlay = document.createElement("div");
   overlay.className = "filter-overlay active";
   overlay.style.zIndex = 3000;
@@ -164,23 +208,22 @@ function openSizeGenderPopup(product, priceLabel) {
       <div class="filter-section">
         <strong>Gender</strong>
         <div class="chip-group" id="vs-gender">
-          ${["Male","Female","Teen","Child","Infant"].map(g => `<button type="button" class="chip" data-g="${g}">${g}</button>`).join("")}
+          ${GENDERS.map(x => `<button type="button" class="chip${x === g ? " selected" : ""}" data-g="${x}">${x}</button>`).join("")}
         </div>
       </div>
       <div class="filter-section">
         <strong>Size</strong>
         <div class="chip-group" id="vs-size">
-          ${(product.availableSizes && product.availableSizes.length ? product.availableSizes : ["XS","S","M","L","XL","XXL"]).map(s => `<button type="button" class="chip" data-s="${s}">${s}</button>`).join("")}
+          ${sizes.map(x => `<button type="button" class="chip${x === s ? " selected" : ""}" data-s="${esc(x)}">${esc(x)}</button>`).join("")}
         </div>
       </div>
       <div class="filter-actions">
         <button type="button" id="vs-cancel">Cancel</button>
-        <button type="button" id="vs-confirm">Add to bag</button>
+        <button type="button" id="vs-confirm">${existing ? "Update bag" : "Add to bag"}</button>
       </div>
     </div>`;
   document.body.appendChild(overlay);
 
-  let g = null, s = null;
   overlay.querySelectorAll('[data-g]').forEach(btn => btn.addEventListener('click', () => {
     overlay.querySelectorAll('[data-g]').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected'); g = btn.dataset.g;
@@ -193,13 +236,18 @@ function openSizeGenderPopup(product, priceLabel) {
   const close = () => overlay.remove();
   overlay.querySelector('#vs-close').addEventListener('click', close);
   overlay.querySelector('#vs-cancel').addEventListener('click', close);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
   overlay.querySelector('#vs-confirm').addEventListener('click', () => {
     if (!g || !s) return;
     const ok = window.cartManager.addItem({
       productId: product.id, title: product.title, subtitle: product.description,
       price: priceLabel, imgSrc: product.imgSrc, size: s, gender: g
     });
-    if (!ok && window.showSustainabilityAlert) window.showSustainabilityAlert();
+    if (!ok && window.showSustainabilityAlert) window.showSustainabilityAlert({ attemptedProduct: product.title });
+    if (ok) {
+      saveFitPref(g, s);
+      showBagToast(`${product.title} added to bag`);
+    }
     close();
   });
   return true;
@@ -207,9 +255,10 @@ function openSizeGenderPopup(product, priceLabel) {
 
 function syncVariantCtas(products) {
   products.forEach(p => {
-    const card = document.querySelector(`.variant-card[data-product-id="${CSS.escape(p.productID)}"]`);
+    // Cards are keyed on the Firestore doc id — the same id addItem() stores.
+    const card = document.querySelector(`.variant-card[data-product-id="${CSS.escape(p.id)}"]`);
     if (!card) return;
-    const inCart = window.cartManager?.hasProduct(p.productID);
+    const inCart = window.cartManager?.hasProduct(p.id);
     const cta = card.querySelector('.variant-cta');
     const check = cta.querySelector('.cta-check');
     const label = cta.querySelector('.cta-label');
@@ -221,7 +270,7 @@ function syncVariantCtas(products) {
 
 function bindVariantActions(animal, products, openModalFn) {
   products.forEach(p => {
-    const card = document.querySelector(`.variant-card[data-product-id="${CSS.escape(p.productID)}"]`);
+    const card = document.querySelector(`.variant-card[data-product-id="${CSS.escape(p.id)}"]`);
     if (!card) return;
     card.querySelector('[data-zoom]').addEventListener('click', () => openModalFn(p));
     card.querySelector('[data-add-to-bag]').addEventListener('click', e => {

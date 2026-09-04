@@ -34,6 +34,73 @@
        theme instead of re-declaring its own palette.
        ──────────────────────────────────────────────────────────────── */
 
+    /* ── Escape the shared full-height flex trap ───────────────────────
+       storestyle.css sets `html, body { height: 100% }` with
+       `body { display:flex }` and `main { flex: 1 }`. That pins <main> to
+       exactly the viewport, so a checkout taller than the screen overflows
+       its own box and paints straight over the footer — and the document
+       reports nothing to scroll. Scoped to the checkout pages so the store
+       grid keeps the behaviour it was built against. */
+    html, body.co-root {
+      height: auto;
+      min-height: 100vh;
+    }
+    body.co-root {
+      display: flex;
+      flex-direction: column;
+      /* storestyle.css sets `html, body { overflow-x: hidden }`. On <html>
+         that propagates to the viewport, which is what we want. On <body> it
+         makes BODY its own scroll container, so the viewport has nothing to
+         scroll and window.scrollTo() does nothing. Hand scrolling back. */
+      overflow: visible;
+    }
+    body.co-root .co-wrapper { flex: 1 0 auto; }
+    body.co-root .site-footer { flex: 0 0 auto; }
+
+    /* ── Black & gold identity ─────────────────────────────────────────
+       Checkout commits to one look rather than following the store's
+       light/dark toggle: a focused, quiet room to pay in. Values are the
+       Paddling Out palette (css/forecast.css) so the two products read as
+       one house. Redefining the --v2-* tokens here re-skins every rule
+       below in one place instead of scattering colours through the file. */
+    /* Day is the store's beige/ivory. Night is black and gold, using the
+       Paddling Out palette (css/forecast.css) so the two products read as
+       one house. The theme toggle in the topbar drives both. */
+    body.co-root.store-v2 {
+      --co-danger:  #a83826;
+      --co-ease:    cubic-bezier(0.76, 0, 0.24, 1);
+      --co-btn-bg:  var(--v2-fg);
+      --co-btn-fg:  var(--v2-bg);
+      --co-btn-glow: rgba(26, 24, 21, 0.20);
+    }
+
+    html.dark-theme body.co-root.store-v2 {
+      --v2-bg:           #080808;
+      --v2-surface:      #18160f;   /* warm dark card, visible on #080808 */
+      --v2-surface-elev: #1e1c12;
+      --v2-border:       rgba(181, 147, 90, 0.20);
+      --v2-fg:           #ede8df;
+      --v2-fg-muted:     rgba(237, 232, 223, 0.62);
+      --v2-gold:         #b5935a;
+      --v2-gold-bright:  #d9bd7b;
+      --v2-image-bg:     #14120c;
+      --v2-image-border: rgba(181, 147, 90, 0.18);
+      --co-danger:       #d9614e;   /* lifted for contrast on near-black */
+      --co-btn-bg:       linear-gradient(180deg, var(--v2-gold-bright), var(--v2-gold));
+      --co-btn-fg:       #17130a;
+      --co-btn-glow:     rgba(181, 147, 90, 0.26);
+    }
+
+    /* storestyle.css paints body.store-v2 with its own radial wash; restate
+       it here so the night palette gets a matching one instead of cream. */
+    html.dark-theme body.co-root.store-v2 {
+      background:
+        radial-gradient(circle at 20% 12%, rgba(181, 147, 90, 0.10), transparent 38%),
+        radial-gradient(circle at 80% 84%, rgba(181, 147, 90, 0.07), transparent 44%),
+        var(--v2-bg);
+      color: var(--v2-fg);
+    }
+
     .store-v2 {
       --co-serif: 'Cormorant Garamond', Georgia, serif;
       --co-sans: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
@@ -95,8 +162,7 @@
 
     /* ── Layout ────────────────────────────────────────────────────── */
     .co-wrapper {
-      min-height: calc(100vh - 60px);
-      padding: clamp(24px, 4vw, 48px) clamp(16px, 4vw, 32px) 140px;
+      padding: clamp(24px, 4vw, 48px) clamp(16px, 4vw, 32px) clamp(32px, 5vw, 64px);
       box-sizing: border-box;
     }
 
@@ -263,16 +329,20 @@
       padding: 0 20px;
       border: none;
       border-radius: 999px;
-      background: var(--v2-fg);
-      color: var(--v2-bg);
+      background: var(--co-btn-bg);
+      color: var(--co-btn-fg);
       font-family: var(--co-sans-med);
       font-size: 14px;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.10em;
       text-transform: uppercase;
       cursor: pointer;
-      transition: opacity 0.18s ease, transform 0.18s ease;
+      transition: filter 0.2s var(--co-ease), transform 0.2s var(--co-ease),
+                  box-shadow 0.2s var(--co-ease);
     }
-    .co-btn:hover:not(:disabled) { opacity: 0.88; }
+    .co-btn:hover:not(:disabled) {
+      filter: brightness(1.07);
+      box-shadow: 0 6px 22px var(--co-btn-glow);
+    }
     .co-btn:active:not(:disabled) { transform: translateY(1px); }
     .co-btn:disabled { opacity: 0.38; cursor: not-allowed; }
     .co-btn:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 3px; }
@@ -324,14 +394,14 @@
       border-color: var(--v2-gold);
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--v2-gold) 18%, transparent);
     }
-    .co-input.is-invalid { border-color: #c0492f; }
+    .co-input.is-invalid { border-color: var(--co-danger); }
 
     .co-error {
       display: none;
       margin-top: 6px;
       font-family: var(--co-sans-med);
       font-size: 11.5px;
-      color: #c0492f;
+      color: var(--co-danger);
     }
     .co-error.is-shown { display: block; }
 
@@ -396,7 +466,7 @@
       border-radius: 10px;
       background: var(--v2-surface-elev);
     }
-    .co-failure .material-icons { font-size: 34px; color: #c0492f; }
+    .co-failure .material-icons { font-size: 34px; color: var(--co-danger); }
     .co-failure p {
       margin: 10px 0 16px;
       font-family: var(--co-sans);
@@ -476,27 +546,70 @@
       position: fixed;
       left: 50%;
       top: 20px;
-      transform: translateX(-50%);
       z-index: 10000;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 10px;
       max-width: min(92vw, 460px);
-      padding: 14px 20px;
-      border-radius: 10px;
-      background: #2b1512;
-      color: #ffeae6;
-      box-shadow: 0 10px 34px rgba(0,0,0,0.32);
-      font-family: var(--co-sans-med);
+      padding: 14px 18px;
+      border: 1px solid var(--v2-border);
+      border-radius: 12px;
+      background: var(--v2-surface-elev);
+      color: var(--v2-fg);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28);
+      font-family: var(--co-sans);
       font-size: 13.5px;
-      line-height: 1.5;
+      line-height: 1.55;
+      animation: co-toast-in 0.32s var(--co-ease) both;
     }
+    .co-toast .material-icons { font-size: 19px; flex: none; margin-top: 1px; }
+    .co-toast.is-error { border-color: color-mix(in srgb, var(--co-danger) 55%, transparent); }
+    .co-toast.is-error .material-icons { color: var(--co-danger); }
+    .co-toast.is-notice .material-icons { color: var(--v2-gold); }
+    .co-toast.is-leaving { animation: co-toast-out 0.24s var(--co-ease) both; }
+
+    @keyframes co-toast-in {
+      from { opacity: 0; transform: translate(-50%, -14px) scale(0.98); }
+      to   { opacity: 1; transform: translate(-50%, 0) scale(1); }
+    }
+    @keyframes co-toast-out {
+      from { opacity: 1; transform: translate(-50%, 0); }
+      to   { opacity: 0; transform: translate(-50%, -10px); }
+    }
+
+    /* ── Motion ────────────────────────────────────────────────────────
+       Restrained on purpose: entrances only, nothing that delays input. */
+    .co-item {
+      animation: co-rise 0.42s var(--co-ease) both;
+      animation-delay: calc(var(--co-i, 0) * 70ms);
+    }
+    .co-masthead { animation: co-rise 0.4s var(--co-ease) both; }
+    .co-aside    { animation: co-rise 0.46s var(--co-ease) 0.06s both; }
+    .co-step.is-open { animation: co-reveal 0.44s var(--co-ease) both; }
+
+    @keyframes co-rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: none; }
+    }
+    @keyframes co-reveal {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    .co-item-remove,
+    .co-empty a { transition: color 0.2s var(--co-ease), border-color 0.2s var(--co-ease); }
 
     /* ── Responsive ────────────────────────────────────────────────── */
     @media (max-width: 900px) {
       .co-layout { grid-template-columns: minmax(0, 1fr); }
       .co-aside { position: static; }
-      .co-wrapper { padding-bottom: 160px; }
+      /* The sticky bar is fixed to the viewport, so clearance has to sit on
+         the LAST element in flow. Padding on .co-wrapper alone left the
+         footer — its sibling — underneath the bar. */
+      .co-wrapper { padding-bottom: 32px; }
+      body.co-root .site-footer {
+        padding-bottom: calc(2.5rem + 118px + env(safe-area-inset-bottom));
+      }
       /* The sticky bar is the primary action here — don't show it twice. */
       .co-card > #co-primary,
       .co-card > .co-reassure { display: none; }
@@ -515,13 +628,18 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .co-skeleton i { animation: none; }
-      .co-btn, .co-input, .co-topbar-back, .co-item-remove { transition: none; }
+      .co-skeleton i,
+      .co-item, .co-masthead, .co-aside, .co-step.is-open, .co-toast {
+        animation: none;
+      }
+      .co-btn, .co-input, .co-topbar-back, .co-item-remove, .co-empty a {
+        transition: none;
+      }
     }
   </style>
 </head>
 
-<body class="store-v2">
+<body class="store-v2 co-root">
   <header class="co-topbar">
     <a href="store" class="co-topbar-back" aria-label="Back to store"><span class="material-icons">arrow_back</span></a>
     <div class="co-topbar-title">Bag <span id="co-count">0</span></div>
@@ -614,14 +732,48 @@
 
     const validEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
-    function toast(message) {
+    const TOAST_ICON = { error: 'error_outline', notice: 'info_outline', good: 'check_circle' };
+
+    function toast(message, kind = 'error') {
+      document.querySelector('.co-toast')?.remove();
       const el = document.createElement('div');
-      el.className = 'co-toast';
-      el.setAttribute('role', 'alert');
-      el.innerHTML = `<span class="material-icons" style="font-size:19px">error_outline</span><span></span>`;
+      el.className = `co-toast is-${kind}`;
+      el.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+      el.innerHTML = '<span class="material-icons"></span><span></span>';
+      el.firstElementChild.textContent = TOAST_ICON[kind] || TOAST_ICON.error;
       el.lastElementChild.textContent = message;
       document.body.appendChild(el);
-      setTimeout(() => el.remove(), 6000);
+      setTimeout(() => {
+        el.classList.add('is-leaving');
+        el.addEventListener('animationend', () => el.remove(), { once: true });
+        setTimeout(() => el.remove(), 600);
+      }, kind === 'error' ? 7000 : 5000);
+    }
+
+    /* Stripe's raw messages range from decent to opaque ("card_declined"),
+       and a shopper who cannot tell whether to retry, fix something, or use
+       another card simply leaves. Say what happened and what to do next. */
+    const DECLINE_COPY = {
+      insufficient_funds: 'That card was declined for insufficient funds. Try another card.',
+      lost_card:          'That card was declined. Please use a different card.',
+      stolen_card:        'That card was declined. Please use a different card.',
+      expired_card:       'That card has expired. Check the expiry date, or try another card.',
+      incorrect_cvc:      'That security code did not match. Check the CVC and try again.',
+      incorrect_number:   'That card number is not right. Check it and try again.',
+      processing_error:   'The card network had a problem. Wait a moment and try again.',
+      card_velocity_exceeded: 'That card has hit its limit. Try another card.',
+      generic_decline:    'Your bank declined the payment. They can tell you why — or try another card.'
+    };
+
+    function friendlyPaymentError(error) {
+      if (!error) return 'Something went wrong. Please try again.';
+      if (error.type === 'validation_error') return error.message;
+      const byDecline = DECLINE_COPY[error.decline_code] || DECLINE_COPY[error.code];
+      if (byDecline) return byDecline;
+      if (error.code === 'payment_intent_authentication_failure') {
+        return 'Your bank could not verify that payment. Try again, or use another card.';
+      }
+      return error.message || 'That payment could not be completed. Please try again.';
     }
 
     /* ── Totals ──────────────────────────────────────────────────────
@@ -765,11 +917,11 @@
       }
     }
 
-    function itemMarkup(item) {
+    function itemMarkup(item, index = 0) {
       const meta = metaLine(item);
       const qty = item.quantity || 1;
       return `
-        <article class="co-item">
+        <article class="co-item" style="--co-i:${index}">
           <img class="co-item-image" src="${esc(item.imgSrc)}" alt="${esc(item.title)}"
                onerror="this.classList.add('is-broken')" />
           <div class="co-item-body">
@@ -845,7 +997,7 @@
         // a price moved while the bag was open. Never quietly charge a
         // different number than the one the shopper was looking at.
         if (priced && Math.abs(before - after) >= 0.01) {
-          toast(`Prices updated — your total is now ${money(after)}.`);
+          toast(`Prices updated — your total is now ${money(after)}.`, 'notice');
         }
         state.cartSig = signature(items);
         state.step = 'checkout';
@@ -1014,7 +1166,7 @@
 
       if (error) {
         console.error('payment error:', error);
-        toast(error.message || 'That payment could not be completed.');
+        toast(friendlyPaymentError(error), 'error');
         restore();
       }
     }

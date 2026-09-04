@@ -1848,3 +1848,157 @@ html.dark-theme .store-v2 .footer-elements {
    light store pages). There is deliberately no `.store-v2 footer` rule here:
    it out-specified the shared component (0,1,1 beats 0,1,0) and repainted the
    footer as a dark gradient with uppercase text on a cream page. */
+/* ----------------------------------------------------------
+16) Purchase-funnel ergonomics (touch targets + bag toast)
+   No palette changes — these rules only grow hit areas and add
+   the post-add "Go to bag" affordance.
+---------------------------------------------------------- */
+
+/* The money button on a 2-up mobile grid was ~11×60px. The link keeps its
+   exact typographic look; an invisible pseudo-element gives it a 44px-tall,
+   44px-wide hit area that stays inside the 32px grid row gap. */
+.store-v2 .cart-link {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.store-v2 .cart-link::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  right: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 44px;
+  min-width: 44px;
+  border-radius: 6px;
+}
+
+.store-v2 .cart-link:active::before {
+  background: currentColor;
+  opacity: 0.08;
+}
+
+/* Section headers and refine chips are tapped too — keep them thumb-sized. */
+.store-v2 .carousel-section-title {
+  min-height: 44px;
+}
+.store-v2 .section-facet-chip,
+.store-v2 .carousel-section-refine {
+  min-height: 32px;
+}
+.store-v2 .indicator-dot {
+  cursor: pointer;
+}
+
+/* --- "Added to bag → Go to bag" toast --------------------------------- */
+/* Fixed under the sticky header, never over the footer. */
+.bag-toast {
+  position: fixed;
+  top: 76px;
+  right: 16px;
+  left: auto;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(420px, calc(100vw - 32px));
+  padding: 10px 12px 10px 14px;
+  border-radius: 10px;
+  background: var(--v2-surface, #fffdf6);
+  color: var(--v2-fg, #1a1815);
+  border: 1px solid var(--v2-border, rgba(26, 24, 21, 0.12));
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.3;
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.bag-toast.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.bag-toast-msg {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bag-toast-cta {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--v2-fg, #1a1815);
+  color: var(--v2-surface-elev, #ffffff);
+  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.bag-toast-cta:hover {
+  background: var(--v2-gold-bright, #6f5728);
+  color: var(--v2-surface-elev, #ffffff);
+}
+
+.bag-toast-close {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--v2-fg-muted, #4d4740);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.bag-toast-close:hover {
+  background: var(--v2-border, rgba(26, 24, 21, 0.12));
+}
+
+@media (max-width: 560px) {
+  .bag-toast {
+    top: 70px;
+    left: 12px;
+    right: 12px;
+    max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bag-toast {
+    transition: none;
+  }
+}
+
+/* Retry control on the animal PDP error state (was a CSP-blocked
+   `javascript:` link, now a real button — match the old link's look). */
+.animal-v2 .animal-empty .animal-retry {
+  margin-top: 12px;
+  min-height: 44px;
+  padding: 0 4px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--v2-border);
+  color: var(--v2-fg);
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}

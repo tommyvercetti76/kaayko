@@ -325,10 +325,13 @@ function createCarouselItem(item) {
     imgContainer.append(indicator);
   }
 
-  // Title becomes a link to the PDP. Animal SKUs → /animals/<slug>; legacy → /store/p/<productID>.
+  // Title becomes a link to the PDP. Animal SKUs → /animals/<slug>; legacy → /store/p/<docId>.
+  // NOTE: /store/p/:id resolves the Firestore DOC id (exposed as item.id) — the
+  // same identifier the cart/checkout uses. `item.productID` is a legacy label
+  // and 404s on the PDP route.
   const pdpUrl = item.animalSlug
     ? `/animals/${encodeURIComponent(item.animalSlug)}`
-    : (item.productID ? `/store/p/${encodeURIComponent(item.productID)}` : null);
+    : (item.id ? `/store/p/${encodeURIComponent(item.id)}` : null);
 
   const titleEl = document.createElement("h3");
   titleEl.className = "title";
@@ -391,8 +394,21 @@ function createCarouselItem(item) {
     addSwipe(imgContainer, item.imgSrc.length, indicator);
   }
 
+  // Photo → product page (retail convention). The zoom modal stays available on
+  // the PDP hero. Only when there is no PDP to go to do we fall back to zoom.
+  if (pdpUrl && item.imgSrc.length <= 1) {
+    imgContainer.style.cursor = "pointer";
+  }
   imgContainer.addEventListener("click", (e) => {
     if (e.target.closest(".image-overlay-control")) {
+      return;
+    }
+    // Dots switch the visible photo; they must not also navigate.
+    if (e.target.closest(".image-indicator")) {
+      return;
+    }
+    if (pdpUrl) {
+      window.location.href = pdpUrl;
       return;
     }
     openModal(item);
@@ -461,10 +477,17 @@ function createImageIndicator(count, current) {
   return dots;
 }
 
+// A finger never lands perfectly still. Anything under this is a tap (→ open the
+// product page), not a swipe.
+const TAP_SLOP = 24;
+
 function addSwipe(container, count, indicator) {
-  let startX = 0, idx = 0, threshold = 50;
+  let startX = 0, startY = 0, idx = 0, threshold = 50;
   let isDragging = false;
   let hasSwiped = false;
+  // Axis lock for the touch fallback: once a gesture is judged vertical we never
+  // preventDefault, so page scrolling always wins a diagonal thumb-flick.
+  let axis = null; // null = undecided, "x" = swipe photos, "y" = page scroll
 
   const process = dx => {
     if (Math.abs(dx) < threshold) return false;
@@ -489,7 +512,7 @@ function addSwipe(container, count, indicator) {
   container.style.userSelect = 'none';
   container.style.cursor = 'grab';
 
-  // Prevent modal opening when swiping
+  // Swallow the click that follows a real swipe so it doesn't also navigate.
   container.addEventListener('click', (e) => {
     if (hasSwiped) {
       e.stopPropagation();
@@ -510,7 +533,7 @@ function addSwipe(container, count, indicator) {
     container.addEventListener("pointermove", e => {
       if (isDragging) {
         const dx = e.clientX - startX;
-        if (Math.abs(dx) > 10) {
+        if (Math.abs(dx) > TAP_SLOP) {
           hasSwiped = true;
         }
       }
@@ -526,25 +549,39 @@ function addSwipe(container, count, indicator) {
   } else {
     container.addEventListener("touchstart", e => {
       startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
       isDragging = true;
       hasSwiped = false;
+      axis = null;
     }, {passive: false});
 
     container.addEventListener("touchmove", e => {
-      if (isDragging) {
-        const dx = e.touches[0].clientX - startX;
-        if (Math.abs(dx) > 10) {
-          hasSwiped = true;
-          e.preventDefault(); // Prevent scrolling
-        }
+      if (!isDragging) return;
+      const dx = e.touches[0].clientX - startX;
+      const dy = e.touches[0].clientY - startY;
+
+      // Decide the axis once, on the first meaningful movement.
+      if (axis === null) {
+        if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+        axis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
       }
+
+      // Vertical intent → hands the gesture back to the page. Never block scroll.
+      if (axis === "y") {
+        isDragging = false;
+        return;
+      }
+
+      if (Math.abs(dx) > TAP_SLOP) hasSwiped = true;
+      e.preventDefault(); // Horizontal photo swipe — suppress the rubber-band only.
     }, {passive: false});
 
     container.addEventListener("touchend", e => {
-      if (isDragging) {
+      if (isDragging && axis === "x") {
         process(e.changedTouches[0].clientX - startX);
-        isDragging = false;
       }
+      isDragging = false;
+      axis = null;
     });
 
     // Also add mouse events for desktop
@@ -559,7 +596,7 @@ function addSwipe(container, count, indicator) {
     container.addEventListener("mousemove", e => {
       if (isDragging) {
         const dx = e.clientX - startX;
-        if (Math.abs(dx) > 10) {
+        if (Math.abs(dx) > TAP_SLOP) {
           hasSwiped = true;
         }
       }
@@ -605,30 +642,47 @@ export function openModal(item) {
   setupModalNav(box, item.imgSrc.length);
 }
 
+// Gallery state lives at module scope so the listeners below can be bound ONCE
+// against the static modal chrome. Binding them per openModal() call made a
+// single arrow-click advance several frames.
+const modalNav = { imgs: [], count: 0, idx: 0, bound: false };
+
+function showModalImage(i) {
+  const { imgs, count } = modalNav;
+  if (!count || !imgs.length) return;
+  imgs[modalNav.idx].style.display = "none";
+  modalNav.idx = (i + count) % count;
+  imgs[modalNav.idx].style.display = "block";
+}
+
 function setupModalNav(container, count) {
-  let idx = 0, startX = 0;
+  modalNav.imgs = container.querySelectorAll(".modal-image");
+  modalNav.count = count;
+  modalNav.idx = 0;
+
   const prev = document.querySelector(".modal-nav-left");
   const next = document.querySelector(".modal-nav-right");
-  const imgs = container.querySelectorAll(".modal-image");
+  // A one-photo product gets no arrows at all.
+  const navDisplay = count > 1 ? "" : "none";
+  if (prev) prev.style.display = navDisplay;
+  if (next) next.style.display = navDisplay;
 
-  function show(i) {
-    imgs[idx].style.display = "none";
-    idx = (i + count) % count;
-    imgs[idx].style.display = "block";
-  }
+  if (modalNav.bound) return;
+  modalNav.bound = true;
 
-  prev?.addEventListener("click", () => show(idx - 1));
-  next?.addEventListener("click", () => show(idx + 1));
+  prev?.addEventListener("click", e => { e.stopPropagation(); showModalImage(modalNav.idx - 1); });
+  next?.addEventListener("click", e => { e.stopPropagation(); showModalImage(modalNav.idx + 1); });
 
+  let startX = 0;
   container.addEventListener("mousedown", e => startX = e.clientX);
   container.addEventListener(
     "mouseup",
-    e => Math.abs(e.clientX - startX) > 50 && show(e.clientX - startX < 0 ? idx + 1 : idx - 1)
+    e => Math.abs(e.clientX - startX) > 50 && showModalImage(e.clientX - startX < 0 ? modalNav.idx + 1 : modalNav.idx - 1)
   );
   container.addEventListener("touchstart", e => startX = e.touches[0].clientX, {passive:true});
   container.addEventListener(
     "touchend",
-    e => Math.abs(e.changedTouches[0].clientX - startX) > 50 && show(e.changedTouches[0].clientX - startX < 0 ? idx + 1 : idx - 1)
+    e => Math.abs(e.changedTouches[0].clientX - startX) > 50 && showModalImage(e.changedTouches[0].clientX - startX < 0 ? modalNav.idx + 1 : modalNav.idx - 1)
   );
 }
 
@@ -677,13 +731,82 @@ function createLikeButton(item) {
 /* ==========================================================================
    4) Buy Button & Cart Mini-Panel
    ========================================================================== */
+
+// Fit picker constants + last-used preference. Preselecting the shopper's last
+// choice removes two taps from every t-shirt purchase.
+const GENDER_OPTIONS = ["Male", "Female", "Teen", "Child", "Infant"];
+const DEFAULT_SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
+const FIT_PREF_KEY = "kaayko.lastFit";
+
+export function readFitPref() {
+  try {
+    const raw = localStorage.getItem(FIT_PREF_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+export function saveFitPref(gender, size) {
+  try {
+    localStorage.setItem(FIT_PREF_KEY, JSON.stringify({ gender, size }));
+  } catch (_) { /* localStorage full / unavailable; non-fatal */ }
+}
+
+// The sizes a SKU actually stocks. Falls back to the full run only when the
+// product carries no availableSizes at all.
+export function sizesFor(item) {
+  const sizes = (item.availableSizes || []).filter(Boolean);
+  return sizes.length ? sizes : DEFAULT_SIZES;
+}
+
+// Sensible starting selection: last-used if it is still offered, else the first
+// available size and the first gender.
+export function defaultFit(item) {
+  const sizes = sizesFor(item);
+  const pref = readFitPref() || {};
+  return {
+    size: sizes.includes(pref.size) ? pref.size : sizes[0],
+    gender: GENDER_OPTIONS.includes(pref.gender) ? pref.gender : GENDER_OPTIONS[0]
+  };
+}
+
+/**
+ * Confirmation with a route to checkout. Sits under the sticky header (never
+ * over the footer) and clears itself after a few seconds.
+ */
+export function showBagToast(message = "Added to bag") {
+  let toast = document.getElementById("bag-toast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "bag-toast";
+    toast.className = "bag-toast";
+    toast.setAttribute("role", "status");
+    toast.setAttribute("aria-live", "polite");
+    toast.innerHTML = `
+      <span class="bag-toast-msg"></span>
+      <a class="bag-toast-cta" href="/cart">Go to bag →</a>
+      <button type="button" class="bag-toast-close material-icons" aria-label="Dismiss">close</button>
+    `;
+    document.body.appendChild(toast);
+    toast.querySelector(".bag-toast-close").addEventListener("click", () => {
+      toast.classList.remove("visible");
+    });
+  }
+  toast.querySelector(".bag-toast-msg").textContent = message;
+  toast.classList.add("visible");
+  clearTimeout(toast._hideTimer);
+  toast._hideTimer = setTimeout(() => toast.classList.remove("visible"), 6000);
+  return toast;
+}
+
 function createBuyButton(item) {
   const container = document.createElement("div");
   container.className = "cart-button-container";
   container.dataset.productId = item.id;
 
   // Check if item is in cart
-  const isInCart = window.cartManager && window.cartManager.hasProduct(item.id);
   const link = document.createElement("a");
   link.className = "cart-link";
   link.href = "#";
@@ -704,100 +827,119 @@ function createBuyButton(item) {
     link.classList.toggle("in-cart", currentlyInCart);
     label.textContent = currentlyInCart ? "In bag" : "Add to bag";
     linkIcon.style.display = currentlyInCart ? "inline-flex" : "none";
-    link.setAttribute("aria-label", currentlyInCart ? "Edit bag item" : "Add item to bag");
+    if (currentlyInCart) {
+      link.setAttribute("aria-label", needsPicker() ? "Edit bag item" : "In your bag — view bag");
+      link.title = needsPicker() ? "Edit size and fit" : "View your bag";
+    } else {
+      link.setAttribute("aria-label", "Add item to bag");
+      link.title = "Add to bag";
+    }
   }
 
   link.append(linkIcon, label);
-  syncCartState();
 
   // Mini panel for size/gender selection
   const miniPanel = document.createElement("div");
   miniPanel.className = "cart-mini-panel";
   miniPanel.style.display = "none";
 
-  const cartItem = isInCart ? window.cartManager.getItem(item.id) : null;
+  let selectedGender = null;
+  let selectedSize = null;
 
-  miniPanel.innerHTML = `
-    <div class="mini-panel-content">
-      <div class="mini-panel-section">
-        <label>Gender:</label>
-        <div class="mini-gender-options">
-          <button class="mini-option" data-gender="Male">Male</button>
-          <button class="mini-option" data-gender="Female">Female</button>
-          <button class="mini-option" data-gender="Teen">Teen</button>
-          <button class="mini-option" data-gender="Child">Child</button>
-          <button class="mini-option" data-gender="Infant">Infant</button>
+  // One renderer for the panel so the "first paint" and the "reopen" paths can
+  // never drift apart. Sizes come from the SKU, not a hardcoded XS–XXL run.
+  function renderMiniPanel(cartItem) {
+    const sizes = sizesFor(item);
+    const fallback = defaultFit(item);
+    selectedGender = cartItem?.gender || fallback.gender;
+    selectedSize = sizes.includes(cartItem?.size) ? cartItem.size : fallback.size;
+
+    const genderChips = GENDER_OPTIONS.map(g =>
+      `<button class="mini-option${selectedGender === g ? " selected" : ""}" data-gender="${g}">${g}</button>`
+    ).join("");
+    const sizeChips = sizes.map(s =>
+      `<button class="mini-option${selectedSize === s ? " selected" : ""}" data-size="${s}">${s}</button>`
+    ).join("");
+
+    miniPanel.innerHTML = `
+      <div class="mini-panel-content">
+        <div class="mini-panel-section">
+          <label>Gender:</label>
+          <div class="mini-gender-options">${genderChips}</div>
+        </div>
+        <div class="mini-panel-section">
+          <label>Size:</label>
+          <div class="mini-size-options">${sizeChips}</div>
+        </div>
+        <div class="mini-panel-actions">
+          <button class="mini-add-to-cart">${cartItem ? "Update bag" : "Add to bag"}</button>
+          ${cartItem ? '<button class="mini-remove-from-cart">Remove from bag</button>' : ""}
         </div>
       </div>
-      <div class="mini-panel-section">
-        <label>Size:</label>
-        <div class="mini-size-options">
-          <button class="mini-option" data-size="XS">XS</button>
-          <button class="mini-option" data-size="S">S</button>
-          <button class="mini-option" data-size="M">M</button>
-          <button class="mini-option" data-size="L">L</button>
-          <button class="mini-option" data-size="XL">XL</button>
-          <button class="mini-option" data-size="XXL">XXL</button>
-        </div>
-      </div>
-      <div class="mini-panel-actions">
-        <button class="mini-add-to-cart" disabled>${isInCart ? 'Update Cart' : 'Add to Cart'}</button>
-        ${isInCart ? '<button class="mini-remove-from-cart">Remove</button>' : ''}
-      </div>
-    </div>
-  `;
+    `;
 
-  let selectedGender = cartItem?.gender || null;
-  let selectedSize = cartItem?.size || null;
-
-  // Pre-select if editing
-  if (cartItem) {
-    setTimeout(() => {
-      const genderBtn = miniPanel.querySelector(`[data-gender="${cartItem.gender}"]`);
-      const sizeBtn = miniPanel.querySelector(`[data-size="${cartItem.size}"]`);
-      if (genderBtn) genderBtn.classList.add('selected');
-      if (sizeBtn) sizeBtn.classList.add('selected');
-      miniPanel.querySelector('.mini-add-to-cart').disabled = false;
-    }, 0);
+    bindMiniPanel();
   }
 
-  // Gender selection
-  miniPanel.querySelectorAll('[data-gender]').forEach(genderBtn => {
-    genderBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      miniPanel.querySelectorAll('[data-gender]').forEach(b => b.classList.remove('selected'));
-      genderBtn.classList.add('selected');
-      selectedGender = genderBtn.dataset.gender;
-      updateAddButton();
-    });
-  });
-
-  // Size selection
-  miniPanel.querySelectorAll('[data-size]').forEach(sizeBtn => {
-    sizeBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      miniPanel.querySelectorAll('[data-size]').forEach(b => b.classList.remove('selected'));
-      sizeBtn.classList.add('selected');
-      selectedSize = sizeBtn.dataset.size;
-      updateAddButton();
-    });
-  });
-
   function updateAddButton() {
-    const addBtn = miniPanel.querySelector('.mini-add-to-cart');
-    addBtn.disabled = !(selectedGender && selectedSize);
+    const addBtn = miniPanel.querySelector(".mini-add-to-cart");
+    if (addBtn) addBtn.disabled = !(selectedGender && selectedSize);
+  }
+
+  function bindMiniPanel() {
+    miniPanel.querySelectorAll("[data-gender]").forEach(genderBtn => {
+      genderBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        miniPanel.querySelectorAll("[data-gender]").forEach(b => b.classList.remove("selected"));
+        genderBtn.classList.add("selected");
+        selectedGender = genderBtn.dataset.gender;
+        updateAddButton();
+      });
+    });
+
+    miniPanel.querySelectorAll("[data-size]").forEach(sizeBtn => {
+      sizeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        miniPanel.querySelectorAll("[data-size]").forEach(b => b.classList.remove("selected"));
+        sizeBtn.classList.add("selected");
+        selectedSize = sizeBtn.dataset.size;
+        updateAddButton();
+      });
+    });
+
+    const addBtn = miniPanel.querySelector(".mini-add-to-cart");
+    if (addBtn) {
+      addBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        addItemToCart();
+      });
+    }
+
+    const removeBtn = miniPanel.querySelector(".mini-remove-from-cart");
+    if (removeBtn) {
+      removeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        removeItemFromCart();
+      });
+    }
+
+    updateAddButton();
+  }
+
+  function priceLabel() {
+    return (item.actualPrice != null)
+      ? `$${item.actualPrice.toFixed(2)}`
+      : (PRICE_MAP[item.price] || item.price);
   }
 
   function addItemToCart() {
     if (!window.cartManager) return;
 
-    const actualPrice = PRICE_MAP[item.price] || item.price;
-
     const success = window.cartManager.addItem({
       productId: item.id,
       title: item.title,
       subtitle: item.description,
-      price: actualPrice,
+      price: priceLabel(),
       imgSrc: item.imgSrc,
       size: selectedSize,
       gender: selectedGender
@@ -805,11 +947,13 @@ function createBuyButton(item) {
 
     if (!success) {
       if (window.showSustainabilityAlert) {
-        window.showSustainabilityAlert();
+        window.showSustainabilityAlert({ attemptedProduct: item.title });
       }
     } else {
+      saveFitPref(selectedGender, selectedSize);
       syncCartState();
       miniPanel.style.display = "none";
+      showBagToast(`${item.title} added to bag`);
     }
   }
 
@@ -821,21 +965,6 @@ function createBuyButton(item) {
     }
   }
 
-  // Add to cart action
-  miniPanel.querySelector('.mini-add-to-cart').addEventListener('click', (e) => {
-    e.stopPropagation();
-    addItemToCart();
-  });
-
-  // Remove from cart action
-  const removeBtn = miniPanel.querySelector('.mini-remove-from-cart');
-  if (removeBtn) {
-    removeBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      removeItemFromCart();
-    });
-  }
-
   // Add directly to cart without showing the gender/size picker — used for
   // non-tshirt SKUs (totes, magnets, etc.) where gender + multi-size choice
   // doesn't apply. Reads availableSizes from the product; falls back to
@@ -844,30 +973,35 @@ function createBuyButton(item) {
     if (!window.cartManager) return;
     const currentCount = window.cartManager.getCount();
     const currentlyInCart = window.cartManager.hasProduct(item.id);
-    if (!currentlyInCart && currentCount >= 2) {
+    if (currentlyInCart) {
+      // Same label, opposite behaviour used to live here: "In bag" silently
+      // deleted the item. Removal now happens on the bag page, where it is
+      // labelled and reversible.
+      window.location.href = "/cart";
+      return;
+    }
+    if (currentCount >= 2) {
       if (window.showSustainabilityAlert) {
         window.showSustainabilityAlert({ attemptedProduct: item.title, cartCount: currentCount });
       }
       return;
     }
-    if (currentlyInCart) {
-      window.cartManager.removeItem(item.id);
-      syncCartState();
-      return;
-    }
     const sizes = item.availableSizes || [];
-    const price = (item.actualPrice != null) ? `$${item.actualPrice.toFixed(2)}` : (PRICE_MAP[item.price] || item.price);
     const ok = window.cartManager.addItem({
       productId: item.id,
       title: item.title,
       subtitle: item.description,
-      price,
+      price: priceLabel(),
       imgSrc: item.imgSrc,
       size: sizes[0] || "One Size",
       gender: null
     });
-    if (!ok && window.showSustainabilityAlert) window.showSustainabilityAlert();
+    if (!ok) {
+      if (window.showSustainabilityAlert) window.showSustainabilityAlert({ attemptedProduct: item.title });
+      return;
+    }
     syncCartState();
+    showBagToast(`${item.title} added to bag`);
   }
 
   // Decide whether this product needs the gender+size picker.
@@ -914,82 +1048,7 @@ function createBuyButton(item) {
     // Close all other panels
     document.querySelectorAll('.cart-mini-panel').forEach(p => p.style.display = "none");
 
-    // Regenerate panel content based on current cart state
-    const currentCartItem = currentlyInCart ? window.cartManager.getItem(item.id) : null;
-
-    miniPanel.innerHTML = `
-      <div class="mini-panel-content">
-        <div class="mini-panel-section">
-          <label>Gender:</label>
-          <div class="mini-gender-options">
-            <button class="mini-option ${currentCartItem?.gender === 'Male' ? 'selected' : ''}" data-gender="Male">Male</button>
-            <button class="mini-option ${currentCartItem?.gender === 'Female' ? 'selected' : ''}" data-gender="Female">Female</button>
-            <button class="mini-option ${currentCartItem?.gender === 'Teen' ? 'selected' : ''}" data-gender="Teen">Teen</button>
-            <button class="mini-option ${currentCartItem?.gender === 'Child' ? 'selected' : ''}" data-gender="Child">Child</button>
-            <button class="mini-option ${currentCartItem?.gender === 'Infant' ? 'selected' : ''}" data-gender="Infant">Infant</button>
-          </div>
-        </div>
-        <div class="mini-panel-section">
-          <label>Size:</label>
-          <div class="mini-size-options">
-            <button class="mini-option ${currentCartItem?.size === 'XS' ? 'selected' : ''}" data-size="XS">XS</button>
-            <button class="mini-option ${currentCartItem?.size === 'S' ? 'selected' : ''}" data-size="S">S</button>
-            <button class="mini-option ${currentCartItem?.size === 'M' ? 'selected' : ''}" data-size="M">M</button>
-            <button class="mini-option ${currentCartItem?.size === 'L' ? 'selected' : ''}" data-size="L">L</button>
-            <button class="mini-option ${currentCartItem?.size === 'XL' ? 'selected' : ''}" data-size="XL">XL</button>
-            <button class="mini-option ${currentCartItem?.size === 'XXL' ? 'selected' : ''}" data-size="XXL">XXL</button>
-          </div>
-        </div>
-        <div class="mini-panel-actions">
-          <button class="mini-add-to-cart" ${currentCartItem ? '' : 'disabled'}>${currentlyInCart ? 'Update Cart' : 'Add to Cart'}</button>
-          ${currentlyInCart ? '<button class="mini-remove-from-cart">Remove</button>' : ''}
-        </div>
-      </div>
-    `;
-
-    // Reset selection state
-    selectedGender = currentCartItem?.gender || null;
-    selectedSize = currentCartItem?.size || null;
-
-    // Re-attach event listeners
-    miniPanel.querySelectorAll('[data-gender]').forEach(genderBtn => {
-      genderBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        miniPanel.querySelectorAll('[data-gender]').forEach(b => b.classList.remove('selected'));
-        genderBtn.classList.add('selected');
-        selectedGender = genderBtn.dataset.gender;
-        const addBtn = miniPanel.querySelector('.mini-add-to-cart');
-        addBtn.disabled = !(selectedGender && selectedSize);
-      });
-    });
-
-    miniPanel.querySelectorAll('[data-size]').forEach(sizeBtn => {
-      sizeBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        miniPanel.querySelectorAll('[data-size]').forEach(b => b.classList.remove('selected'));
-        sizeBtn.classList.add('selected');
-        selectedSize = sizeBtn.dataset.size;
-        const addBtn = miniPanel.querySelector('.mini-add-to-cart');
-        addBtn.disabled = !(selectedGender && selectedSize);
-      });
-    });
-
-    const addBtn = miniPanel.querySelector('.mini-add-to-cart');
-    if (addBtn) {
-      addBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        addItemToCart();
-      });
-    }
-
-    const removeBtnNew = miniPanel.querySelector('.mini-remove-from-cart');
-    if (removeBtnNew) {
-      removeBtnNew.addEventListener('click', (e) => {
-        e.stopPropagation();
-        removeItemFromCart();
-      });
-    }
-
+    renderMiniPanel(currentlyInCart ? window.cartManager.getItem(item.id) : null);
     miniPanel.style.display = "block";
   }
 
@@ -1000,6 +1059,7 @@ function createBuyButton(item) {
     }
   });
 
+  syncCartState();
   container.append(link, miniPanel);
   return container;
 }
@@ -1018,10 +1078,33 @@ export function setupModalCloseHandlers() {
   }
 
   btn?.addEventListener("click", closeModal);
+
+  // `.modal-content` is 100%×100%, so it — not `#modal` — is always the click
+  // target. Dismiss on anything that is not the photo itself or an arrow, so a
+  // tap anywhere on the dark surround gets the shopper out.
   modal.addEventListener("click", e => {
-    if (e.target === modal) closeModal();
+    if (e.target.closest(".modal-nav")) return;
+    if (e.target.classList.contains("modal-image")) return; // swipe lands here
+    closeModal();
   });
+
   document.addEventListener("keydown", e => {
     if (e.key === "Escape" && modal.classList.contains("active")) closeModal();
   });
+
+  // Belt and braces: never leave the page scroll-locked. If the modal is not
+  // showing (fresh load, back/forward cache restore, tab return) the lock goes.
+  const somethingElseLocksScroll = () =>
+    !!document.querySelector(".filter-overlay.active, .cart-overlay.active");
+  const releaseIfClosed = () => {
+    if (modal.classList.contains("active")) return;
+    if (somethingElseLocksScroll()) return;
+    document.body.style.overflow = '';
+  };
+  window.addEventListener("pageshow", releaseIfClosed);
+  window.addEventListener("popstate", () => {
+    if (modal.classList.contains("active")) closeModal();
+  });
+  document.addEventListener("visibilitychange", releaseIfClosed);
+  releaseIfClosed();
 }

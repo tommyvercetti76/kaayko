@@ -21,6 +21,29 @@
   <link rel="stylesheet" href="/css/footer.css" />
 
   <style>
+    /* Same full-height flex escape as cart.html — see the note there. */
+    html, body.co-root { height: auto; min-height: 100vh; }
+    body.co-root { display: flex; flex-direction: column; overflow: visible; }
+    body.co-root .ok-wrapper { flex: 1 0 auto; }
+    body.co-root .site-footer { flex: 0 0 auto; }
+
+    /* Day beige/ivory, night black and gold — matching cart.html. */
+    html.dark-theme body.co-root.store-v2 {
+      --v2-bg:           #080808;
+      --v2-surface:      #18160f;
+      --v2-surface-elev: #1e1c12;
+      --v2-border:       rgba(181, 147, 90, 0.20);
+      --v2-fg:           #ede8df;
+      --v2-fg-muted:     rgba(237, 232, 223, 0.62);
+      --v2-gold:         #b5935a;
+      --v2-gold-bright:  #d9bd7b;
+      background:
+        radial-gradient(circle at 20% 12%, rgba(181, 147, 90, 0.10), transparent 38%),
+        radial-gradient(circle at 80% 84%, rgba(181, 147, 90, 0.07), transparent 44%),
+        var(--v2-bg);
+      color: var(--v2-fg);
+    }
+
     .store-v2 {
       --co-serif: 'Cormorant Garamond', Georgia, serif;
       --co-sans: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
@@ -160,7 +183,7 @@
   </style>
 </head>
 
-<body class="store-v2">
+<body class="store-v2 co-root">
   <main class="ok-wrapper">
     <div class="ok-panel">
       <div class="ok-mark"><span class="material-icons">check</span></div>
@@ -237,20 +260,27 @@
     // than from the cart or a query string: the cart is only ever what
     // the browser believed, and putting a customer's email in the URL
     // leaks it into history, referrers and server logs.
-    Stripe(STRIPE_KEY).retrievePaymentIntent(clientSecret)
-      .then(({ paymentIntent }) => {
-        if (!paymentIntent) throw new Error('no payment intent');
+    // Stripe.js can throw SYNCHRONOUSLY on a malformed client secret, which
+    // would skip both .catch and .finally — leaving the summary blank and,
+    // far worse, the bag uncleared after a completed payment. The order is
+    // already paid at this point, so clearing must never depend on this
+    // lookup succeeding.
+    (async () => {
+      try {
+        const { paymentIntent } = await Stripe(STRIPE_KEY).retrievePaymentIntent(clientSecret);
+        if (!paymentIntent) throw new Error('no payment intent returned');
         set('ok-total', `$${(paymentIntent.amount / 100).toFixed(2)}`);
         set('ok-email', paymentIntent.receipt_email || 'your email');
-      })
-      .catch((err) => {
+      } catch (err) {
         console.warn('could not retrieve payment intent:', err);
         set('ok-total', 'See your receipt');
         set('ok-email', 'your email');
-      })
-      .finally(() => {
-        cartManager.clear();
-      });
+      }
+    })();
+
+    // Unconditional, and first — the payment succeeded regardless of what
+    // the lookup above does.
+    try { cartManager.clear(); } catch (err) { console.warn('cart clear failed:', err); }
 
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>

@@ -94,6 +94,8 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log('🔄 Resetting filters...');
       resetAllFilters();
       clearFiltersAndShowAll();
+      // Reset IS the intent — don't make the shopper close the modal as well.
+      hideFilter();
     });
   }
 });

@@ -432,8 +432,9 @@ document.addEventListener('click', function(e) {
     if (!hasAccess) {
       e.preventDefault();
       console.log('🔐 Store link clicked without access, redirecting to keyword entry');
-      // Redirect to store page which will show the modal
-      window.location.href = 'store';
+      // Redirect to the store page which will show the modal. MUST be absolute:
+      // a relative 'store' resolves to /store/p/store from a PDP URL.
+      window.location.href = '/store';
     }
   }
 });

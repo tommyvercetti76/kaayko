@@ -20,17 +20,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 2) Modal close handlers (for image-zoom modal)
   setupModalCloseHandlers();
 
+  // Make populateCarousel globally available for filtering.
+  // This sits OUTSIDE the try below on purpose: when the product fetch fails,
+  // an assignment inside it never runs, and the filter modal's Apply button
+  // then silently does nothing instead of reporting the real problem.
+  window.populateCarousel = populateCarousel;
+
   // 3) Fetch & render products into the carousel
   try {
     const products = await getAllProducts();
-    
+
     // Store original products for filtering (make available to filter modal)
     if (window.storeOriginalProducts) {
       window.storeOriginalProducts(products);
     }
-    
-    // Make populateCarousel globally available for filtering
-    window.populateCarousel = populateCarousel;
 
     // detect deep-link via ?productID=… or ?id=… or store filter via ?store=…
     const params = new URLSearchParams(window.location.search);
