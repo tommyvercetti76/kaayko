@@ -2346,18 +2346,19 @@ document.querySelectorAll('.cap-card').forEach(card => {
   function placement(index) {
     const c = CONSTELLATIONS[order[index % order.length]];
     const phone = W < 700;
-    const boxW = phone ? Math.min(W * 0.62, 300) : Math.min(W * 0.30, 440);
+    // Measure the wordmark block first; the figure is sized to the room beside it.
+    const inner = document.querySelector('.hero-inner');
+    const box = inner ? inner.getBoundingClientRect() : null;
+    const roomLeft = box ? box.left : W * 0.3, roomRight = box ? W - box.right : W * 0.3;
+    const sideRoom = Math.max(roomLeft, roomRight);
+    const wide = !phone && sideRoom >= 250;
+    const boxW = phone ? Math.min(W * 0.62, 300) : wide ? Math.min(W * 0.30, 440, sideRoom - 44) : Math.min(W * 0.5, 380);
     const scale = boxW / Math.max(c.w, 0.001);
     let w = c.w * scale, h = c.h * scale;
     const maxH = phone ? H * 0.28 : H * 0.62;
     if (h > maxH) { const k = maxH / h; w *= k; h *= k; }
     const side = index % 2 === 0 ? -1 : 1;
-    // Stay clear of the wordmark block: measure it once per placement.
-    const inner = document.querySelector('.hero-inner');
-    const box = inner ? inner.getBoundingClientRect() : null;
-    const roomLeft = box ? box.left : W * 0.3, roomRight = box ? W - box.right : W * 0.3;
-    const wide = !phone && Math.max(roomLeft, roomRight) > w + 48;
-    const useLeft = wide ? (roomLeft >= roomRight ? side < 0 || roomRight < w + 48 : side < 0 && roomLeft >= w + 48) : false;
+    const useLeft = wide ? (roomLeft >= roomRight ? side < 0 || roomRight < w + 44 : side < 0 && roomLeft >= w + 44) : false;
     // No room beside the wordmark (phones, short windows): sit behind it, dimmed, like a chart under glass.
     const cx = !wide ? W * 0.5 : useLeft ? roomLeft / 2 : W - roomRight / 2;
     const cy = !wide ? (box ? box.top + box.height * 0.32 : H * 0.35) : H * 0.48;
@@ -2392,7 +2393,7 @@ document.querySelectorAll('.cap-card').forEach(card => {
       ctx.drawImage(sp.c, p.x - sp.size / 2, p.y - sp.size / 2, sp.size, sp.size);
       ctx.globalAlpha = 1;
     });
-    if (lA > 0.05) {
+    if (lA > 0.05 && dim >= 0.99) { // no label when the figure sits behind the wordmark
       const cx = x + w / 2, ly = y + h + 26;
       ctx.strokeStyle = `rgba(181,147,90,${lA * 0.5})`; ctx.lineWidth = 0.6;
       ctx.beginPath(); ctx.moveTo(cx - 34, ly - 9); ctx.lineTo(cx + 34, ly - 9); ctx.stroke();
