@@ -2346,7 +2346,7 @@ document.querySelectorAll('.cap-card').forEach(card => {
   function placement(index) {
     const c = CONSTELLATIONS[order[index % order.length]];
     const phone = W < 700;
-    const boxW = phone ? Math.min(W * 0.66, 300) : Math.min(W * 0.30, 440);
+    const boxW = phone ? Math.min(W * 0.62, 300) : Math.min(W * 0.30, 440);
     const scale = boxW / Math.max(c.w, 0.001);
     let w = c.w * scale, h = c.h * scale;
     const maxH = phone ? H * 0.28 : H * 0.62;
@@ -2358,10 +2358,11 @@ document.querySelectorAll('.cap-card').forEach(card => {
     const roomLeft = box ? box.left : W * 0.3, roomRight = box ? W - box.right : W * 0.3;
     const wide = !phone && Math.max(roomLeft, roomRight) > w + 48;
     const useLeft = wide ? (roomLeft >= roomRight ? side < 0 || roomRight < w + 48 : side < 0 && roomLeft >= w + 48) : false;
+    // No room beside the wordmark (phones, short windows): sit behind it, dimmed, like a chart under glass.
     const cx = !wide ? W * 0.5 : useLeft ? roomLeft / 2 : W - roomRight / 2;
-    const cy = !wide ? Math.max(h / 2 + 24, (box ? box.top + window.scrollY : H * 0.3) * 0.45) : H * 0.48;
-    if (!wide && !phone) { const k = Math.min(1, (H * 0.22) / Math.max(h, 1)); w *= k; h *= k; }
-    return { c, x: Math.max(16, Math.min(W - w - 16, cx - w / 2)), y: Math.max(16, cy - h / 2), w, h };
+    const cy = !wide ? (box ? box.top + box.height * 0.32 : H * 0.35) : H * 0.48;
+    if (!wide) { const k = Math.min(1, Math.min(W * 0.62, 380) / Math.max(w, 1), (H * 0.42) / Math.max(h, 1)); w *= k; h *= k; }
+    return { c, x: Math.max(16, Math.min(W - w - 16, cx - w / 2)), y: Math.max(16, cy - h / 2), w, h, dim: wide ? 1 : 0.45 };
   }
 
   function ease(t) { t = Math.max(0, Math.min(1, t)); return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
@@ -2422,7 +2423,8 @@ document.querySelectorAll('.cap-card').forEach(card => {
     // Past the hero the constellation stays, quieter, behind the plates.
     const scrolled = Math.min(1, Math.max(0, (window.scrollY || 0) / Math.max(1, H * 0.9)));
     const dim = 1 - scrolled * 0.7;
-    drawConstellation(placement(current), starA, lineA, t, dim);
+    const place = placement(current);
+    drawConstellation(place, starA, lineA, t, dim * (place.dim || 1));
   }
 
   function frame(ts) {
