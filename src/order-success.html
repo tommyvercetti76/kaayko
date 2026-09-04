@@ -1,353 +1,198 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  
-  <!-- Primary Meta Tags -->
-  <title>Order Confirmed - Thank You for Your Purchase | Kaayko Store</title>
-  <meta name="description" content="Your Kaayko order has been confirmed! Check your email for order details and shipping updates.">
+  <script src="/js/prod-config.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Order Confirmed — Kaayko</title>
   <meta name="robots" content="noindex, nofollow">
-  
-  <!-- Security -->
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <link rel="icon" type="image/png" href="/favicon-32x32.png">
-  <meta name="theme-color" content="#d4af37">
+  <meta name="theme-color" content="#f5f1e7">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+  <link rel="stylesheet" href="/fonts/fonts.css" />
+  <link rel="stylesheet" href="/css/storestyle.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/footer.css" />
+
   <style>
-    @font-face { font-family: 'Josefin_Bold'; src: url('fonts/JosefinSans-Bold.ttf') format('truetype'); }
-    @font-face { font-family: 'Josefin_Medium'; src: url('fonts/JosefinSans-Medium.ttf') format('truetype'); }
-    @font-face { font-family: 'Josefin_Light'; src: url('fonts/JosefinSans-Light.ttf') format('truetype'); }
-    
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    
-    body {
-      font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
-      background: #0a0a0a;
-      color: #fff;
+    .store-v2 {
+      --co-serif: 'Cormorant Garamond', Georgia, serif;
+      --co-sans: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+      --co-sans-med: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+    }
+
+    .ok-wrapper {
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: clamp(32px, 8vw, 96px) clamp(16px, 4vw, 32px) 64px;
+      box-sizing: border-box;
     }
-    
-    .success-container {
-      max-width: 600px;
-      width: 100%;
-      text-align: center;
-    }
-    
-    .success-icon {
-      width: 80px;
-      height: 80px;
-      background: linear-gradient(135deg, #10b981, #059669);
-      border-radius: 50%;
-      display: flex;
+
+    .ok-panel { width: 100%; max-width: 560px; text-align: center; }
+
+    .ok-mark {
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 24px;
-      animation: scaleIn 0.5s ease-out;
+      width: 64px;
+      height: 64px;
+      margin-bottom: 26px;
+      border: 1px solid var(--v2-gold);
+      border-radius: 50%;
+      color: var(--v2-gold);
     }
-    
-    .success-icon .material-icons {
-      font-size: 48px;
-      color: white;
+    .ok-mark .material-icons { font-size: 30px; }
+
+    .ok-panel h1 {
+      margin: 0 0 12px;
+      font-family: var(--co-serif);
+      font-weight: 500;
+      font-size: clamp(34px, 7vw, 52px);
+      line-height: 1.05;
+      color: var(--v2-fg);
     }
-    
-    @keyframes scaleIn {
-      from { transform: scale(0); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
+
+    .ok-lede {
+      margin: 0 auto 34px;
+      max-width: 42ch;
+      font-family: var(--co-sans);
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--v2-fg-muted);
     }
-    
-    h1 {
-      font-family: 'Josefin_Bold', Arial, sans-serif;
-      font-size: 36px;
-      margin-bottom: 12px;
-      animation: fadeInUp 0.6s ease-out 0.2s both;
-    }
-    
-    .subtitle {
-      font-family: 'Josefin_Light', Arial, sans-serif;
-      font-size: 18px;
-      color: rgba(255, 255, 255, 0.7);
-      margin-bottom: 32px;
-      animation: fadeInUp 0.6s ease-out 0.3s both;
-    }
-    
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .order-details {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      padding: 24px;
-      margin-bottom: 24px;
+
+    .ok-card {
+      padding: clamp(20px, 3vw, 28px);
+      border: 1px solid var(--v2-border);
+      border-radius: 14px;
+      background: var(--v2-surface);
       text-align: left;
-      animation: fadeInUp 0.6s ease-out 0.4s both;
     }
-    
-    .detail-row {
+
+    .ok-label {
+      display: block;
+      margin: 0 0 14px;
+      font-family: var(--co-serif);
+      font-style: italic;
+      font-weight: 500;
+      font-size: 13px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--v2-gold);
+    }
+
+    .ok-row {
       display: flex;
       justify-content: space-between;
-      padding: 12px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      align-items: baseline;
+      gap: 18px;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--v2-border);
+      font-family: var(--co-sans);
+      font-size: 13.5px;
+      color: var(--v2-fg-muted);
     }
-    
-    .detail-row:last-child { border-bottom: none; }
-    
-    .detail-label {
-      font-family: 'Josefin_Light', Arial, sans-serif;
-      color: rgba(255, 255, 255, 0.6);
-      font-size: 14px;
+    .ok-row:last-child { border-bottom: none; }
+
+    .ok-row dd {
+      margin: 0;
+      text-align: right;
+      font-family: var(--co-sans-med);
+      color: var(--v2-fg);
+      overflow-wrap: anywhere;
+      font-variant-numeric: tabular-nums;
     }
-    
-    .detail-value {
-      font-family: 'Josefin_Medium', Arial, sans-serif;
-      color: #fff;
-      font-size: 14px;
+    .ok-row dt { margin: 0; flex: none; }
+
+    .ok-ref { font-size: 12px; letter-spacing: 0.02em; }
+
+    .ok-next {
+      margin: 30px 0 0;
+      font-family: var(--co-sans);
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--v2-fg-muted);
     }
-    
-    .confirmation-id {
-      background: rgba(212, 175, 55, 0.1);
-      border: 1px solid rgba(212, 175, 55, 0.3);
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 32px;
-      animation: fadeInUp 0.6s ease-out 0.5s both;
-    }
-    
-    .confirmation-id-label {
-      font-family: 'Josefin_Light', Arial, sans-serif;
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.6);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 8px;
-    }
-    
-    .confirmation-id-value {
-      font-family: 'Josefin_Bold', Arial, sans-serif;
-      font-size: 18px;
-      color: #ffd700;
-      letter-spacing: 2px;
-    }
-    
-    .info-box {
-      background: rgba(59, 130, 246, 0.1);
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 32px;
-      text-align: left;
-      animation: fadeInUp 0.6s ease-out 0.6s both;
-    }
-    
-    .info-box p {
-      font-family: 'Josefin_Light', Arial, sans-serif;
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.8);
-      line-height: 1.6;
-      margin-bottom: 8px;
-    }
-    
-    .info-box p:last-child { margin-bottom: 0; }
-    
-    .action-buttons {
+
+    .ok-actions {
       display: flex;
-      gap: 16px;
       flex-wrap: wrap;
+      gap: 12px;
       justify-content: center;
-      animation: fadeInUp 0.6s ease-out 0.7s both;
+      margin-top: 32px;
     }
-    
-    .btn {
-      padding: 14px 28px;
-      border-radius: 8px;
-      font-family: 'Josefin_Medium', Arial, sans-serif;
-      font-size: 15px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-decoration: none;
+
+    .ok-btn {
       display: inline-flex;
       align-items: center;
       gap: 8px;
+      min-height: 48px;
+      padding: 0 26px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      background: var(--v2-fg);
+      color: var(--v2-bg);
+      text-decoration: none;
+      font-family: var(--co-sans-med);
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: opacity 0.18s ease;
     }
-    
-    .btn-primary {
-      background: linear-gradient(135deg, #d4af37, #ffd700);
-      color: #000;
-      border: none;
+    .ok-btn:hover { opacity: 0.88; }
+
+    .ok-btn.is-quiet {
+      background: none;
+      border-color: var(--v2-border);
+      color: var(--v2-fg);
     }
-    
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 16px rgba(212, 175, 55, 0.3);
-    }
-    
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.05);
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.3);
-    }
-    
-    @media (max-width: 640px) {
-      h1 { font-size: 28px; }
-      .subtitle { font-size: 16px; }
-      .action-buttons { flex-direction: column; }
-      .btn { width: 100%; justify-content: center; }
-    }
+    .ok-btn.is-quiet:hover { border-color: var(--v2-gold); color: var(--v2-gold); }
+
+    @media (prefers-reduced-motion: reduce) { .ok-btn { transition: none; } }
   </style>
-  <link rel="stylesheet" href="/css/footer.css">
 </head>
-<body>
-  <div class="success-container">
-    <div class="success-icon">
-      <span class="material-icons">check_circle</span>
-    </div>
-    
-    <h1>Order Confirmed!</h1>
-    <p class="subtitle">Thank you for your sustainable choice</p>
-    
-    <div class="order-details">
-      <div class="detail-row">
-        <span class="detail-label">Order Status</span>
-        <span class="detail-value">✓ Payment Successful</span>
+
+<body class="store-v2">
+  <main class="ok-wrapper">
+    <div class="ok-panel">
+      <div class="ok-mark"><span class="material-icons">check</span></div>
+
+      <h1>Thank you</h1>
+      <p class="ok-lede">
+        Your order is confirmed. A receipt is on its way, and we will email you
+        again the moment it ships.
+      </p>
+
+      <div class="ok-card">
+        <span class="ok-label">Order</span>
+        <dl style="margin:0">
+          <div class="ok-row"><dt>Reference</dt><dd class="ok-ref" id="ok-ref">—</dd></div>
+          <div class="ok-row"><dt>Date</dt><dd id="ok-date">—</dd></div>
+          <div class="ok-row"><dt>Total paid</dt><dd id="ok-total">—</dd></div>
+          <div class="ok-row"><dt>Receipt sent to</dt><dd id="ok-email">—</dd></div>
+        </dl>
       </div>
-      <div class="detail-row">
-        <span class="detail-label">Order Date</span>
-        <span class="detail-value" id="order-date">—</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">Items</span>
-        <span class="detail-value" id="item-count">—</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">Total Paid</span>
-        <span class="detail-value" id="total-paid">—</span>
+
+      <p class="ok-next">
+        Questions about this order? Reply to your receipt email and it reaches us directly.
+      </p>
+
+      <div class="ok-actions">
+        <a class="ok-btn" href="/store">Continue shopping</a>
+        <a class="ok-btn is-quiet" href="/">Back to Kaayko</a>
       </div>
     </div>
-    
-    <div class="confirmation-id">
-      <div class="confirmation-id-label">Confirmation ID</div>
-      <div class="confirmation-id-value" id="payment-intent-id">Loading...</div>
-    </div>
-    
-    <div class="info-box">
-      <p><strong>📧 Confirmation email sent</strong></p>
-      <p>We've sent your order confirmation and receipt to <strong id="customer-email">your email</strong>. Please allow 5-7 business days for delivery.</p>
-      <p style="margin-top: 12px;"><strong>🌿 Sustainability Impact:</strong> Your purchase helps remove ocean plastics and supports eco-friendly manufacturing.</p>
-    </div>
-    
-    <div class="action-buttons">
-      <a href="store" class="btn btn-primary">
-        <span class="material-icons" style="font-size: 18px;">storefront</span>
-        Continue Shopping
-      </a>
-      <a href="/" class="btn btn-secondary">
-        <span class="material-icons" style="font-size: 18px;">home</span>
-        Back to Home
-      </a>
-    </div>
-  </div>
-  
-  <script src="https://js.stripe.com/v3/"></script>
-  <script type="module">
-    import { cartManager } from './js/cartManager.js';
-    
-    // PREVENT BACK BUTTON - Replace history so back goes to store, not cart
-    if (window.history && window.history.replaceState) {
-      window.history.replaceState(null, '', window.location.href);
-    }
-    
-    // Redirect back button to store instead of cart
-    window.addEventListener('popstate', () => {
-      window.location.href = '/store';
-    });
-    
-    // Get payment intent ID from URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const paymentIntentId = urlParams.get('payment_intent');
-    const paymentIntentClientSecret = urlParams.get('payment_intent_client_secret');
-    const redirectStatus = urlParams.get('redirect_status');
-    
-    // Handle error scenarios - redirect to cart with error message
-    if (redirectStatus === 'failed') {
-      alert('Payment failed. Please try again.');
-      window.location.href = '/cart';
-      throw new Error('Payment failed');
-    }
-    
-    if (!paymentIntentId || redirectStatus !== 'succeeded') {
-      alert('Invalid payment confirmation. Redirecting to store.');
-      window.location.href = '/store';
-      throw new Error('Invalid payment confirmation');
-    }
-    
-    // Set payment intent ID
-    document.getElementById('payment-intent-id').textContent = paymentIntentId;
-    
-    // Set order date
-    const now = new Date();
-    document.getElementById('order-date').textContent = now.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-    
-    // Get cart data before clearing
-    const items = cartManager.getItems();
-    const total = cartManager.getTotalPrice();
-    
-    // Handle edge case: cart already cleared
-    if (items.length === 0) {
-      document.getElementById('item-count').textContent = 'N/A';
-      document.getElementById('total-paid').textContent = 'See receipt email';
-    } else {
-      document.getElementById('item-count').textContent = `${items.length} item${items.length !== 1 ? 's' : ''}`;
-      document.getElementById('total-paid').textContent = `$${total.toFixed(2)}`;
-    }
-    
-    // Get email from URL parameter (passed from checkout)
-    const emailParam = urlParams.get('email');
-    if (emailParam) {
-      document.getElementById('customer-email').textContent = emailParam;
-      console.log('✅ Displaying email from URL:', emailParam);
-    } else {
-      // Fallback: try to get from Stripe
-      if (paymentIntentClientSecret) {
-        const stripe = Stripe('pk_test_51Sb3SRGhBi2rBXlYPnG9eqAUfRUGyHKYcATYekHRX0IvmggnVbJSNpKNDUcv3m8z1vokdf8pieFXfQf8T0aEQrFN00WKO0aymr');
-        stripe.retrievePaymentIntent(paymentIntentClientSecret).then(({ paymentIntent }) => {
-          console.log('📧 Receipt Email:', paymentIntent.receipt_email);
-          if (paymentIntent.receipt_email) {
-            document.getElementById('customer-email').textContent = paymentIntent.receipt_email;
-          }
-        });
-      }
-    }
-    
-    // Clear cart immediately after successful payment
-    cartManager.clear();
-    console.log('✅ Cart cleared after successful payment');
-  </script>
-  <footer class="site-footer">
+  </main>
+
+  <footer class="site-footer is-light">
     <nav aria-label="Footer">
       <a href="/store">Store</a>
       <a href="/about">About</a>
@@ -356,13 +201,58 @@
     <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
   </footer>
 
-  <script>
-    /* kaayko-footer-year */
-    (function () {
-      var y = document.getElementById("year");
-      if (y) y.textContent = new Date().getFullYear();
-    })();
-  </script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <script type="module">
+    import { cartManager } from './js/cartManager.js';
 
+    const STRIPE_KEY = window.KAAYKO_STRIPE_PK;
+
+    const params = new URLSearchParams(location.search);
+    const paymentIntentId = params.get('payment_intent');
+    const clientSecret = params.get('payment_intent_client_secret');
+    const redirectStatus = params.get('redirect_status');
+
+    // Send the shopper back to the bag rather than stranding them here.
+    if (redirectStatus && redirectStatus !== 'succeeded') {
+      location.replace('/cart');
+      throw new Error('payment not successful');
+    }
+    if (!paymentIntentId || !clientSecret) {
+      location.replace('/store');
+      throw new Error('missing payment confirmation');
+    }
+
+    // Back should return to the store, never to a stale checkout.
+    history.replaceState(null, '', location.pathname);
+    addEventListener('popstate', () => location.replace('/store'));
+
+    const set = (id, value) => { document.getElementById(id).textContent = value; };
+
+    set('ok-ref', paymentIntentId);
+    set('ok-date', new Date().toLocaleDateString('en-US', {
+      year: 'numeric', month: 'long', day: 'numeric'
+    }));
+
+    // The amount and receipt address are read back from Stripe rather
+    // than from the cart or a query string: the cart is only ever what
+    // the browser believed, and putting a customer's email in the URL
+    // leaks it into history, referrers and server logs.
+    Stripe(STRIPE_KEY).retrievePaymentIntent(clientSecret)
+      .then(({ paymentIntent }) => {
+        if (!paymentIntent) throw new Error('no payment intent');
+        set('ok-total', `$${(paymentIntent.amount / 100).toFixed(2)}`);
+        set('ok-email', paymentIntent.receipt_email || 'your email');
+      })
+      .catch((err) => {
+        console.warn('could not retrieve payment intent:', err);
+        set('ok-total', 'See your receipt');
+        set('ok-email', 'your email');
+      })
+      .finally(() => {
+        cartManager.clear();
+      });
+
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>

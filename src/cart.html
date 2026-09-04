@@ -1,545 +1,545 @@
 <!DOCTYPE html>
-<html lang="en" prefix="og: http://ogp.me/ns#">
+<html lang="en">
 <head>
   <script src="/js/prod-config.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  
-  <!-- Primary Meta Tags -->
-  <title>Shopping Cart - Review Your Outdoor Gear | Kaayko Store</title>
-  <meta name="title" content="Cart - Kaayko Store">
-  <meta name="description" content="Review your Kaayko outdoor gear selection. Unique paddling apparel, water sports accessories, and adventure-ready products. Secure checkout with multiple payment options.">
+
+  <title>Your Bag — Kaayko</title>
+  <meta name="title" content="Your Bag — Kaayko">
+  <meta name="description" content="Review your Kaayko selection and check out securely.">
   <meta name="robots" content="noindex, nofollow">
-  
+
   <!-- Security - X-Frame-Options set via Firebase hosting headers -->
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <link rel="icon" type="image/png" href="/favicon-32x32.png">
-  <meta name="theme-color" content="#d4af37">
-  
+  <meta name="theme-color" content="#f5f1e7">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
   <link rel="stylesheet" href="/fonts/fonts.css" />
   <link rel="stylesheet" href="/css/storestyle.css" />
   <link rel="stylesheet" href="/css/header.css" />
-  <link rel="stylesheet" href="/css/kaaykoFilterModal.css" />
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-  
+  <link rel="stylesheet" href="/css/footer.css" />
+
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      background: #f7f5f1;
-      color: #1f1f1f;
-      overflow-x: hidden;
+    /* ────────────────────────────────────────────────────────────────
+       Checkout — namespaced `co-`.
+       Colours come entirely from the store-v2 token set defined in
+       storestyle.css, so this page follows the store's light/dark
+       theme instead of re-declaring its own palette.
+       ──────────────────────────────────────────────────────────────── */
+
+    .store-v2 {
+      --co-serif: 'Cormorant Garamond', Georgia, serif;
+      --co-sans: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+      --co-sans-med: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+      --co-radius: 14px;
+      --co-gap: clamp(20px, 3vw, 36px);
     }
 
-    .cart-topbar {
+    /* ── Top bar ───────────────────────────────────────────────────── */
+    .co-topbar {
       position: sticky;
       top: 0;
       z-index: 100;
-      height: 56px;
       display: grid;
       grid-template-columns: auto 1fr auto;
       align-items: center;
       gap: 12px;
-      padding: 0 16px;
-      background: rgba(247, 245, 241, 0.96);
-      backdrop-filter: blur(8px);
-      border-bottom: 1px solid #e3dfd6;
+      height: 60px;
+      padding: 0 clamp(16px, 4vw, 32px);
+      background: color-mix(in srgb, var(--v2-bg) 88%, transparent);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--v2-border);
     }
 
-    .cart-topbar-back {
+    .co-topbar-back {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 32px;
-      height: 32px;
-      color: #3a3a3a;
+      width: 36px;
+      height: 36px;
+      margin-left: -6px;
+      border-radius: 50%;
+      color: var(--v2-fg);
+      text-decoration: none;
+      transition: background 0.18s ease;
+    }
+    .co-topbar-back:hover { background: color-mix(in srgb, var(--v2-fg) 8%, transparent); }
+
+    .co-topbar-title {
+      font-family: var(--co-serif);
+      font-style: italic;
+      font-size: 15px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--v2-gold);
+    }
+
+    .co-topbar-actions { display: inline-flex; align-items: center; gap: 10px; }
+
+    .co-topbar-brand {
+      font-family: var(--co-sans-med);
+      font-size: 13px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--v2-fg);
       text-decoration: none;
     }
 
-    .cart-topbar-title {
-      font-family: 'Josefin_Medium', Arial, sans-serif;
-      font-size: 16px;
-      letter-spacing: 0.01em;
-      color: #262626;
+    /* ── Layout ────────────────────────────────────────────────────── */
+    .co-wrapper {
+      min-height: calc(100vh - 60px);
+      padding: clamp(24px, 4vw, 48px) clamp(16px, 4vw, 32px) 140px;
+      box-sizing: border-box;
     }
 
-    .cart-topbar-brand {
-      font-family: 'Josefin_Bold', Arial, sans-serif;
+    .co-page { max-width: 1180px; margin: 0 auto; }
+
+    .co-masthead { margin-bottom: clamp(24px, 4vw, 40px); }
+
+    .co-masthead h1 {
+      margin: 0;
+      font-family: var(--co-serif);
+      font-weight: 500;
+      font-size: clamp(34px, 6vw, 54px);
+      line-height: 1.04;
+      letter-spacing: -0.01em;
+      color: var(--v2-fg);
+    }
+
+    .co-masthead p {
+      margin: 10px 0 0;
+      font-family: var(--co-sans);
+      font-size: 14px;
+      color: var(--v2-fg-muted);
+    }
+
+    .co-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.85fr);
+      gap: var(--co-gap);
+      align-items: start;
+    }
+
+    /* ── Section label (house style: gold serif small caps) ────────── */
+    .co-label {
+      display: block;
+      margin: 0 0 14px;
+      font-family: var(--co-serif);
+      font-style: italic;
+      font-weight: 500;
+      font-size: 13px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--v2-gold);
+    }
+
+    /* ── Bag items ─────────────────────────────────────────────────── */
+    .co-bag { min-width: 0; }
+
+    .co-item {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: start;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--v2-border);
+    }
+    .co-item:first-of-type { border-top: 1px solid var(--v2-border); }
+
+    .co-item-image {
+      width: 92px;
+      aspect-ratio: 4 / 5;
+      border-radius: 10px;
+      object-fit: cover;
+      background: var(--v2-image-bg);
+      border: 1px solid var(--v2-image-border);
+    }
+    /* A missing image should leave a quiet tile, not overflowing alt
+       text. The alt attribute is untouched, so screen readers still
+       announce it. */
+    .co-item-image.is-broken { font-size: 0; color: transparent; }
+
+    .co-item-body { min-width: 0; }
+
+    .co-item-title {
+      margin: 0 0 6px;
+      font-family: var(--co-serif);
+      font-weight: 600;
+      font-size: 20px;
+      line-height: 1.2;
+      color: var(--v2-fg);
+    }
+
+    .co-item-meta {
+      margin: 0;
+      font-family: var(--co-sans);
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--v2-fg-muted);
+    }
+
+    .co-item-side {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+      white-space: nowrap;
+    }
+
+    .co-item-price {
+      font-family: var(--co-sans-med);
+      font-size: 16px;
+      color: var(--v2-fg);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .co-item-remove {
+      background: none;
+      border: none;
+      padding: 4px 0;
+      font-family: var(--co-sans);
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      color: var(--v2-fg-muted);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+      transition: color 0.18s ease;
+    }
+    .co-item-remove:hover { color: var(--v2-fg); }
+
+    .co-bag-note {
+      margin: 18px 0 0;
+      font-family: var(--co-sans);
+      font-size: 12px;
+      color: var(--v2-fg-muted);
+    }
+
+    /* ── Summary card ──────────────────────────────────────────────── */
+    .co-aside { position: sticky; top: 84px; min-width: 0; }
+
+    .co-card {
+      padding: clamp(20px, 2.4vw, 28px);
+      border: 1px solid var(--v2-border);
+      border-radius: var(--co-radius);
+      background: var(--v2-surface);
+    }
+
+    .co-money { font-variant-numeric: tabular-nums; }
+
+    .co-money-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 16px;
+      padding: 7px 0;
+      font-family: var(--co-sans);
+      font-size: 14px;
+      color: var(--v2-fg-muted);
+    }
+
+    .co-money-row.is-total {
+      margin-top: 12px;
+      padding-top: 14px;
+      border-top: 1px solid var(--v2-border);
+      font-family: var(--co-sans-med);
+      font-size: 19px;
+      color: var(--v2-fg);
+    }
+
+    /* ── Buttons ───────────────────────────────────────────────────── */
+    .co-btn {
+      width: 100%;
+      min-height: 50px;
+      margin-top: 20px;
+      padding: 0 20px;
+      border: none;
+      border-radius: 999px;
+      background: var(--v2-fg);
+      color: var(--v2-bg);
+      font-family: var(--co-sans-med);
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+    .co-btn:hover:not(:disabled) { opacity: 0.88; }
+    .co-btn:active:not(:disabled) { transform: translateY(1px); }
+    .co-btn:disabled { opacity: 0.38; cursor: not-allowed; }
+    .co-btn:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 3px; }
+
+    .co-reassure {
+      margin: 14px 0 0;
+      text-align: center;
+      font-family: var(--co-sans);
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--v2-fg-muted);
+    }
+
+    /* ── Checkout step (revealed after "Continue") ─────────────────── */
+    .co-step { display: none; }
+    .co-step.is-open { display: block; }
+
+    .co-fieldset { margin-bottom: 18px; }
+
+    .co-field { margin-bottom: 14px; }
+
+    .co-field-label {
+      display: block;
+      margin-bottom: 7px;
+      font-family: var(--co-sans-med);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      color: var(--v2-fg);
+    }
+    .co-req { color: var(--v2-gold); }
+    .co-opt { color: var(--v2-fg-muted); font-family: var(--co-sans); }
+
+    .co-input {
+      width: 100%;
+      box-sizing: border-box;
+      height: 46px;
+      padding: 0 14px;
+      border: 1px solid var(--v2-border);
+      border-radius: 10px;
+      background: var(--v2-surface-elev);
+      color: var(--v2-fg);
+      font-family: var(--co-sans);
+      font-size: 14px;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+    .co-input::placeholder { color: color-mix(in srgb, var(--v2-fg-muted) 70%, transparent); }
+    .co-input:focus {
+      outline: none;
+      border-color: var(--v2-gold);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--v2-gold) 18%, transparent);
+    }
+    .co-input.is-invalid { border-color: #c0492f; }
+
+    .co-error {
+      display: none;
+      margin-top: 6px;
+      font-family: var(--co-sans-med);
+      font-size: 11.5px;
+      color: #c0492f;
+    }
+    .co-error.is-shown { display: block; }
+
+    .co-consent {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin: 16px 0;
+      padding: 12px 14px;
+      border: 1px solid var(--v2-border);
+      border-radius: 10px;
+      background: var(--v2-surface-elev);
+      cursor: pointer;
+    }
+    .co-consent input { margin-top: 2px; accent-color: var(--v2-gold); flex: none; }
+    .co-consent span {
+      font-family: var(--co-sans);
+      font-size: 12px;
+      line-height: 1.55;
+      color: var(--v2-fg-muted);
+    }
+    .co-consent a { color: var(--v2-gold); text-decoration: underline; text-underline-offset: 2px; }
+
+    .co-divider {
+      height: 1px;
+      margin: 22px 0;
+      background: var(--v2-border);
+      border: none;
+    }
+
+    /* ── Stripe element hosts ──────────────────────────────────────── */
+    #co-address-element { margin-bottom: 20px; }
+
+    .co-skeleton {
+      display: grid;
+      gap: 10px;
+      padding: 4px 0;
+    }
+    .co-skeleton i {
+      display: block;
+      height: 44px;
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--v2-fg) 7%, transparent);
+      animation: co-pulse 1.5s ease-in-out infinite;
+    }
+    .co-skeleton i:nth-child(2) { animation-delay: 0.18s; }
+    .co-skeleton i:nth-child(3) { animation-delay: 0.36s; }
+    @keyframes co-pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 0.9; } }
+
+    .co-loading-note {
+      margin: 12px 0 0;
+      text-align: center;
+      font-family: var(--co-sans);
+      font-size: 12px;
+      color: var(--v2-fg-muted);
+    }
+
+    .co-failure {
+      padding: 22px 18px;
+      text-align: center;
+      border: 1px solid var(--v2-border);
+      border-radius: 10px;
+      background: var(--v2-surface-elev);
+    }
+    .co-failure .material-icons { font-size: 34px; color: #c0492f; }
+    .co-failure p {
+      margin: 10px 0 16px;
+      font-family: var(--co-sans);
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: var(--v2-fg-muted);
+    }
+    .co-failure button {
+      min-height: 42px;
+      padding: 0 22px;
+      border: 1px solid var(--v2-border);
+      border-radius: 999px;
+      background: none;
+      color: var(--v2-fg);
+      font-family: var(--co-sans-med);
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+    }
+
+    /* ── Empty state ───────────────────────────────────────────────── */
+    .co-empty {
+      padding: clamp(48px, 10vw, 96px) 16px;
+      text-align: center;
+    }
+    .co-empty h2 {
+      margin: 0 0 10px;
+      font-family: var(--co-serif);
+      font-weight: 500;
+      font-size: clamp(28px, 5vw, 40px);
+      color: var(--v2-fg);
+    }
+    .co-empty p {
+      margin: 0 0 26px;
+      font-family: var(--co-sans);
+      font-size: 14px;
+      color: var(--v2-fg-muted);
+    }
+    .co-empty a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 46px;
+      padding: 0 24px;
+      border: 1px solid var(--v2-border);
+      border-radius: 999px;
+      color: var(--v2-fg);
+      text-decoration: none;
+      font-family: var(--co-sans-med);
       font-size: 13px;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: #5f5f5f;
-      text-decoration: none;
-      margin-left: 8px;
     }
+    .co-empty a:hover { border-color: var(--v2-gold); color: var(--v2-gold); }
 
-    .cart-topbar-actions {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .cart-page-wrapper {
-      min-height: calc(100vh - 56px);
-      background: #f7f5f1;
-      padding: 20px 16px 120px;
-      box-sizing: border-box;
-    }
-
-    .cart-page {
-      max-width: 1120px;
-      margin: 0 auto;
-    }
-
-    .cart-layout {
-      display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 28px;
-      align-items: start;
-    }
-
-    .cart-items-section {
-      border-top: 1px solid #ddd8cf;
-      border-bottom: 1px solid #ddd8cf;
-      background: #f7f5f1;
-    }
-
-    .cart-item {
-      display: grid;
-      grid-template-columns: 80px 1fr auto;
-      gap: 14px;
-      align-items: start;
-      padding: 16px 0;
-      border-bottom: 1px solid #e7e1d7;
-    }
-
-    .cart-item:last-child {
-      border-bottom: none;
-    }
-
-    .cart-item-image {
-      width: 80px;
-      aspect-ratio: 4 / 5;
-      border-radius: 8px;
-      object-fit: cover;
-      background: #efede8;
-    }
-
-    .cart-item-title {
-      margin: 0 0 5px;
-      font-family: 'Josefin_Medium', Arial, sans-serif;
-      font-size: 15px;
-      color: #1f1f1f;
-      line-height: 1.3;
-    }
-
-    .cart-item-meta,
-    .cart-item-qty {
-      margin: 0;
-      font-family: 'Josefin_Light', Arial, sans-serif;
-      font-size: 12px;
-      color: #6f6a61;
-      line-height: 1.45;
-    }
-
-    .cart-item-price-remove {
-      text-align: right;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      align-items: flex-end;
-    }
-
-    .cart-item-price {
-      margin: 0;
-      font-family: 'Josefin_Medium', Arial, sans-serif;
-      font-size: 15px;
-      color: #1f1f1f;
-    }
-
-    .cart-item-remove {
-      background: none;
-      border: none;
-      padding: 0;
-      font-family: 'Josefin_Light', Arial, sans-serif;
-      font-size: 12px;
-      color: #8b867e;
-      text-decoration: underline;
-      text-underline-offset: 2px;
-      cursor: pointer;
-    }
-
-    .cart-summary-section {
-      border-top: 1px solid #ddd8cf;
-      border-bottom: 1px solid #ddd8cf;
-      padding: 14px 0 18px;
-      background: #f7f5f1;
-    }
-
-    .money-ladder {
-      border-bottom: 1px solid #e7e1d7;
-      padding-bottom: 12px;
-      margin-bottom: 12px;
-    }
-
-    .money-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 6px 0;
-      font-family: 'Josefin_Light', Arial, sans-serif;
-      font-size: 13px;
-      color: #555047;
-    }
-
-    .money-row.total {
-      font-family: 'Josefin_Medium', Arial, sans-serif;
-      font-size: 15px;
-      color: #1f1f1f;
-      padding-top: 10px;
-      border-top: 1px solid #ece7de;
-      margin-top: 8px;
-    }
-
-    .promo-wrap {
-      margin-bottom: 16px;
-    }
-
-    .promo-input {
-      width: 100%;
-      height: 40px;
-      border: 1px solid #d8d2c8;
-      border-radius: 8px;
-      padding: 0 12px;
-      background: #fff;
-      color: #232323;
-      font-family: 'Josefin_Light', Arial, sans-serif;
-      font-size: 13px;
-    }
-
-    .cart-summary-title {
-      margin: 14px 0 10px;
-      font-family: 'Josefin_Medium', Arial, sans-serif;
-      font-size: 13px;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      color: #4f4b45;
-    }
-
-    .payment-prompt {
-      margin: 8px 0 12px;
-      font-family: 'Josefin_Light', Arial, sans-serif;
-      font-size: 12px;
-      color: #7b756d;
-    }
-
-    .cart-form-group { margin-bottom: 12px; }
-    .cart-form-label {
-      display: block;
-      margin-bottom: 6px;
-      font-family: 'Josefin_Medium', Arial, sans-serif;
-      font-size: 12px;
-      color: #58524a;
-    }
-    .cart-form-required { color: #8d7040; }
-    .cart-form-optional { color: #8b867e; }
-
-    .cart-form-input {
-      width: 100%;
-      box-sizing: border-box;
-      height: 42px;
-      border: 1px solid #d8d2c8;
-      border-radius: 8px;
-      padding: 0 12px;
-      background: #fff;
-      color: #232323;
-      font-family: 'Josefin_Light', Arial, sans-serif;
-      font-size: 13px;
-    }
-
-    .cart-form-input:focus {
-      outline: none;
-      border-color: #8d7040;
-    }
-
-    .cart-form-error {
-      display: none;
-      margin-top: 4px;
-      font-family: 'Josefin_Medium', Arial, sans-serif;
-      font-size: 11px;
-      color: #c44747;
-    }
-
-    .cart-consent-box {
-      margin: 12px 0;
-      padding: 10px;
-      border: 1px solid #dfd8cd;
-      border-radius: 8px;
-      background: #fdfbf8;
-    }
-
-    .cart-consent-label {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      cursor: pointer;
-    }
-
-    .cart-consent-text {
-      font-family: 'Josefin_Light', Arial, sans-serif;
-      font-size: 11px;
-      color: #777168;
-      line-height: 1.45;
-    }
-
-    .cart-consent-text a {
-      color: #655028;
-      text-decoration: underline;
-    }
-
-    #cart-payment-element {
-      margin-bottom: 14px;
-    }
-
-    .cart-checkout-btn {
-      width: 100%;
-      height: 44px;
-      border: none;
-      border-radius: 999px;
-      background: #1e1e1e;
-      color: #fff;
-      font-family: 'Josefin_Medium', Arial, sans-serif;
-      font-size: 14px;
-      cursor: pointer;
-    }
-
-    .cart-checkout-btn:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-
-    .cart-empty {
-      text-align: center;
-      padding: 50px 10px;
-      color: #2b2b2b;
-    }
-
-    .cart-empty h2 {
-      margin: 0 0 8px;
-      font-family: 'Josefin_Medium', Arial, sans-serif;
-      font-size: 24px;
-    }
-
-    .cart-empty p {
-      margin: 0 0 20px;
-      font-family: 'Josefin_Light', Arial, sans-serif;
-      font-size: 14px;
-      color: #6e675d;
-    }
-
-    .cart-back-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 11px 16px;
-      border-radius: 999px;
-      border: 1px solid #cfc7bc;
-      color: #3a362f;
-      text-decoration: none;
-      font-family: 'Josefin_Medium', Arial, sans-serif;
-      font-size: 13px;
-    }
-
-    .checkout-sticky {
+    /* ── Sticky mobile bar ─────────────────────────────────────────── */
+    .co-sticky {
       position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      left: 0; right: 0; bottom: 0;
       z-index: 110;
-      background: rgba(247, 245, 241, 0.96);
-      border-top: 1px solid #ddd8cf;
-      padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
       display: none;
+      padding: 12px clamp(16px, 4vw, 32px) calc(12px + env(safe-area-inset-bottom));
+      background: color-mix(in srgb, var(--v2-bg) 92%, transparent);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-top: 1px solid var(--v2-border);
+    }
+    .co-sticky .co-btn { margin-top: 0; }
+    /* The summary card already carries the primary action on wide
+       screens; the sticky bar is the small-screen stand-in for it. */
+    @media (max-width: 900px) {
+      .co-sticky.is-active { display: block; }
     }
 
-    .checkout-sticky.active {
-      display: block;
+    /* ── Toast ─────────────────────────────────────────────────────── */
+    .co-toast {
+      position: fixed;
+      left: 50%;
+      top: 20px;
+      transform: translateX(-50%);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      max-width: min(92vw, 460px);
+      padding: 14px 20px;
+      border-radius: 10px;
+      background: #2b1512;
+      color: #ffeae6;
+      box-shadow: 0 10px 34px rgba(0,0,0,0.32);
+      font-family: var(--co-sans-med);
+      font-size: 13.5px;
+      line-height: 1.5;
     }
 
-    .checkout-sticky-btn {
-      width: 100%;
-      height: 44px;
-      border: none;
-      border-radius: 999px;
-      background: #1f1f1f;
-      color: #f7f5f1;
-      font-family: 'Josefin_Medium', Arial, sans-serif;
-      font-size: 14px;
-      cursor: pointer;
+    /* ── Responsive ────────────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .co-layout { grid-template-columns: minmax(0, 1fr); }
+      .co-aside { position: static; }
+      .co-wrapper { padding-bottom: 160px; }
+      /* The sticky bar is the primary action here — don't show it twice. */
+      .co-card > #co-primary,
+      .co-card > .co-reassure { display: none; }
     }
 
-    .checkout-sticky-btn:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-
-    .checkout-sticky-meta {
-      margin: 8px 0 0;
-      text-align: center;
-      font-family: 'Josefin_Light', Arial, sans-serif;
-      font-size: 11px;
-      color: #6f6a61;
-    }
-
-    /* No `footer` rule — the site footer is .site-footer in css/footer.css,
-       which has a .is-light variant for these light store pages. This rule
-       used !important and silently overrode the shared component. */
-
-    .dark-theme html,
-    .dark-theme body {
-      background: #0f100d;
-      color: #ede8df;
-    }
-
-    .dark-theme .cart-topbar {
-      background: rgba(15, 16, 13, 0.96);
-      border-bottom-color: rgba(181, 147, 90, 0.24);
-    }
-
-    .dark-theme .cart-topbar-back,
-    .dark-theme .cart-topbar-title,
-    .dark-theme .cart-topbar-brand {
-      color: #ede8df;
-    }
-
-    .dark-theme .cart-page-wrapper,
-    .dark-theme .cart-items-section,
-    .dark-theme .cart-summary-section {
-      background: #0f100d;
-      border-color: rgba(181, 147, 90, 0.24);
-    }
-
-    .dark-theme .cart-item,
-    .dark-theme .money-row.total,
-    .dark-theme .money-ladder {
-      border-color: rgba(181, 147, 90, 0.2);
-    }
-
-    .dark-theme .cart-item-title,
-    .dark-theme .cart-item-price,
-    .dark-theme .money-row.total {
-      color: #ede8df;
-    }
-
-    .dark-theme .cart-item-meta,
-    .dark-theme .cart-item-qty,
-    .dark-theme .money-row,
-    .dark-theme .payment-prompt,
-    .dark-theme .cart-form-label,
-    .dark-theme .cart-consent-text,
-    .dark-theme .checkout-sticky-meta,
-    .dark-theme .cart-empty p {
-      color: rgba(237, 232, 223, 0.72);
-    }
-
-    .dark-theme .cart-item-remove,
-    .dark-theme .cart-consent-text a {
-      color: #d4af7a;
-    }
-
-    .dark-theme .promo-input,
-    .dark-theme .cart-form-input,
-    .dark-theme .cart-consent-box {
-      background: #141511;
-      border-color: rgba(181, 147, 90, 0.34);
-      color: #ede8df;
-    }
-
-    .dark-theme .cart-checkout-btn,
-    .dark-theme .checkout-sticky {
-      background: #151612;
-      border-color: rgba(181, 147, 90, 0.26);
-      color: #ede8df;
-    }
-
-    .dark-theme .checkout-sticky-btn {
-      background: linear-gradient(135deg, #be9d66, #a6844f);
-      color: #111;
-    }
-
-    .dark-theme .cart-back-btn {
-      border-color: rgba(181, 147, 90, 0.34);
-      color: #ede8df;
-    }
-
-    .dark-theme .cart-empty h2 {
-      color: #ede8df;
-    }
-
-    /* No `.dark-theme footer` rule — footer.css handles the dark toggle via
-       `html.dark-theme .site-footer.is-light`. */
-
-    @media (max-width: 980px) {
-      .cart-layout {
-        grid-template-columns: 1fr;
-        gap: 18px;
+    @media (max-width: 480px) {
+      .co-item { grid-template-columns: 72px minmax(0, 1fr); gap: 14px; }
+      .co-item-image { width: 72px; }
+      .co-item-side {
+        grid-column: 2;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
       }
     }
 
-    @media (max-width: 640px) {
-      .cart-topbar {
-        padding: 0 12px;
-      }
-
-      .cart-page-wrapper {
-        padding: 14px 12px 122px;
-      }
-
-      .cart-item {
-        grid-template-columns: 72px 1fr auto;
-        gap: 10px;
-      }
-
-      .cart-item-image {
-        width: 72px;
-      }
-
-      .cart-item-title {
-        font-size: 14px;
-      }
-
-      .cart-item-price {
-        font-size: 14px;
-      }
-
-      .cart-summary-section {
-        padding-bottom: 8px;
-      }
+    @media (prefers-reduced-motion: reduce) {
+      .co-skeleton i { animation: none; }
+      .co-btn, .co-input, .co-topbar-back, .co-item-remove { transition: none; }
     }
   </style>
-  <link rel="stylesheet" href="/css/footer.css">
 </head>
+
 <body class="store-v2">
-  <header class="cart-topbar">
-    <a href="store" class="cart-topbar-back" aria-label="Back to store"><span class="material-icons">arrow_back</span></a>
-    <div class="cart-topbar-title">Bag <span id="cart-topbar-count">0</span></div>
-    <div class="cart-topbar-actions">
+  <header class="co-topbar">
+    <a href="store" class="co-topbar-back" aria-label="Back to store"><span class="material-icons">arrow_back</span></a>
+    <div class="co-topbar-title">Bag <span id="co-count">0</span></div>
+    <div class="co-topbar-actions">
       <button class="theme-toggle-icon" aria-label="Switch theme"></button>
-      <a href="/" class="cart-topbar-brand">Kaayko</a>
+      <a href="/" class="co-topbar-brand">Kaayko</a>
     </div>
   </header>
 
-  <div class="cart-page-wrapper">
-    <div class="cart-page">
-      <div id="cart-content"></div>
+  <main class="co-wrapper">
+    <div class="co-page">
+      <div id="co-content"></div>
     </div>
-  </div>
+  </main>
 
-  <div class="checkout-sticky" id="cartStickyBar">
-    <button id="cart-sticky-checkout-btn" class="checkout-sticky-btn" disabled>Checkout · $0.00</button>
-    <p class="checkout-sticky-meta">Free shipping · 30-day returns</p>
+  <div class="co-sticky" id="co-sticky">
+    <button id="co-sticky-btn" class="co-btn">Continue · $0.00</button>
+    <p class="co-reassure">Free shipping · 30-day returns</p>
   </div>
 
   <footer class="site-footer is-light">
@@ -555,363 +555,478 @@
   <script src="https://js.stripe.com/v3/"></script>
   <script type="module">
     import { cartManager } from './js/cartManager.js';
-    
-    const STRIPE_KEY = 'pk_test_51Sb3SRGhBi2rBXlYPnG9eqAUfRUGyHKYcATYekHRX0IvmggnVbJSNpKNDUcv3m8z1vokdf8pieFXfQf8T0aEQrFN00WKO0aymr';
-    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+
+    const STRIPE_KEY = window.KAAYKO_STRIPE_PK;
+    const API_URL = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
       ? 'http://127.0.0.1:5001/kaaykostore/us-central1/api'
       : 'https://api-vwcc5j4qda-uc.a.run.app';
-    
-    let desktopStripe;
-    
-    function renderCart() {
-      const container = document.getElementById('cart-content');
+
+    /* ── Checkout state ──────────────────────────────────────────────
+       The payment intent is created ONCE, when the shopper actively
+       continues to checkout — not on every render. The old page called
+       initPayment() from renderCart(), which was itself wired to a
+       cart subscription and a debounced resize handler, so a stray
+       window resize minted a fresh Stripe PaymentIntent and a
+       Firestore document.                                             */
+    const state = {
+      step: 'bag',          // 'bag' | 'checkout'
+      pi: null,             // { clientSecret, paymentIntentId, totals }
+      elements: null,
+      stripe: null,
+      creating: false,
+      cartSig: null,        // cart signature the current intent was priced for
+      addressComplete: false,
+      paymentComplete: false,
+      emailValid: false
+    };
+
+    /* ── Helpers ─────────────────────────────────────────────────── */
+
+    // Cart contents come from localStorage and product titles from
+    // Firestore, so never interpolate them into HTML unescaped.
+    const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+
+    const money = (n) => `$${Number(n || 0).toFixed(2)}`;
+
+    const parsePrice = (p) => {
+      const n = typeof p === 'number' ? p : parseFloat(String(p).replace(/[^0-9.]/g, ''));
+      return Number.isFinite(n) ? n : 0;
+    };
+
+    // A stable fingerprint of what is in the bag. If this changes after
+    // an intent exists, the intent was priced for a different bag.
+    const signature = (items) => items
+      .map(i => `${i.productId}|${i.size ?? ''}|${i.gender ?? ''}`)
+      .sort()
+      .join('~');
+
+    // `gender` is deliberately null for totes, magnets and other
+    // one-size goods (see js/animal.js) — the old page printed the
+    // literal string "null" next to the size.
+    const metaLine = (item) => {
+      const parts = [];
+      if (item.gender && item.gender !== 'null') parts.push(esc(item.gender));
+      if (item.size) parts.push(`Size ${esc(item.size)}`);
+      return parts.join(' · ');
+    };
+
+    const validEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+
+    function toast(message) {
+      const el = document.createElement('div');
+      el.className = 'co-toast';
+      el.setAttribute('role', 'alert');
+      el.innerHTML = `<span class="material-icons" style="font-size:19px">error_outline</span><span></span>`;
+      el.lastElementChild.textContent = message;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 6000);
+    }
+
+    /* ── Totals ──────────────────────────────────────────────────────
+       Once the server has priced the bag it is the authority: the API
+       resolves every price from Firestore rather than trusting what the
+       client sends. Until then we show the catalogue price the shopper
+       already saw on the product page.                                */
+    function totals(items) {
+      const server = state.pi?.totals;
+      if (server && typeof server.totalCents === 'number') {
+        return {
+          subtotal: (server.subtotalCents ?? server.totalCents) / 100,
+          total: server.totalCents / 100,
+          authoritative: true
+        };
+      }
+      const subtotal = items.reduce((sum, i) => sum + parsePrice(i.price) * (i.quantity || 1), 0);
+      return { subtotal, total: subtotal, authoritative: false };
+    }
+
+    /* ── Render ──────────────────────────────────────────────────── */
+
+    function render() {
+      const root = document.getElementById('co-content');
       const items = cartManager.getItems();
-      
-      const countEl = document.getElementById('cart-topbar-count');
-      if (countEl) countEl.textContent = items.length;
+      const sticky = document.getElementById('co-sticky');
+
+      document.getElementById('co-count').textContent = items.length;
 
       if (items.length === 0) {
-        container.innerHTML = `
-          <div class="cart-empty">
+        root.innerHTML = `
+          <div class="co-empty">
             <h2>Your bag is empty</h2>
-            <p>Browse the latest drops and add pieces you actually want to wear.</p>
-            <a href="store" class="cart-back-btn"><span class="material-icons">arrow_back</span> Back to Store</a>
-          </div>
-        `;
-        const sticky = document.getElementById('cartStickyBar');
-        if (sticky) sticky.classList.remove('active');
+            <p>Nothing here yet. Have a look at what is in the shop.</p>
+            <a href="store"><span class="material-icons" style="font-size:18px">arrow_back</span> Back to store</a>
+          </div>`;
+        sticky.classList.remove('is-active');
+        state.step = 'bag';
+        state.pi = null;
         return;
       }
-      
-      const total = cartManager.getTotalPrice();
-      const totalFormatted = total.toFixed(2);
-      
-      let html = `
-        <div class="cart-layout">
-          <section class="cart-items-section">`;
-      
-      items.forEach(item => {
-        html += `
-          <div class="cart-item">
-            <img src="${item.imgSrc}" alt="${item.title}" class="cart-item-image" onerror="this.style.backgroundColor='rgba(255,255,255,0.1)';this.alt='Image unavailable'">
-            <div class="cart-item-details">
-              <h3 class="cart-item-title">${item.title}</h3>
-              <div class="cart-item-meta">${item.gender} • Size ${item.size}</div>
-              <p class="cart-item-qty">Qty 1</p>
-            </div>
-            <div class="cart-item-price-remove">
-              <div class="cart-item-price">${item.price}</div>
-              <button class="cart-item-remove" data-product-id="${item.productId}">Remove</button>
-            </div>
-          </div>
-        `;
-      });
-      
-      html += `</section>
-          <aside class="cart-summary-section">
-            <div class="money-ladder">
-              <div class="money-row"><span>Subtotal</span><span>$${totalFormatted}</span></div>
-              <div class="money-row"><span>Shipping</span><span>Free</span></div>
-              <div class="money-row total"><span>Total</span><span>$${totalFormatted}</span></div>
-            </div>
 
-            <div class="promo-wrap">
-              <input class="promo-input" type="text" placeholder="Promo code" aria-label="Promo code" />
-            </div>
-
-            <div class="cart-summary-title">Contact Information</div>
-            <div class="cart-form-group">
-              <label class="cart-form-label">Email <span class="cart-form-required">*</span></label>
-              <input type="email" id="cart-customer-email" placeholder="you@example.com" required class="cart-form-input" />
-              <div id="cart-email-error" class="cart-form-error"></div>
-            </div>
-            <div class="cart-form-group">
-              <label class="cart-form-label">Phone <span class="cart-form-optional">(optional)</span></label>
-              <input type="tel" id="cart-customer-phone" placeholder="+1 (555) 123-4567" class="cart-form-input" />
-            </div>
-
-            <div class="cart-consent-box">
-              <label class="cart-consent-label">
-                <input type="checkbox" id="cart-data-consent" checked />
-                <span class="cart-consent-text">
-                  Save my shipping info for order fulfillment. You can opt out anytime. <a href="/privacy">Privacy Policy</a>
-                </span>
-              </label>
-            </div>
-            
-            <div class="cart-summary-title">Payment</div>
-            <p class="payment-prompt">Secure checkout powered by Stripe</p>
-            <div id="cart-payment-element">
-              <div style="padding: 16px; text-align: center; color: rgba(95,95,95,0.8); border: 1px solid #ddd7cc; border-radius: 8px; background: #fff;">
-                <div style="height: 38px; background: #f2efe8; border-radius: 4px; margin-bottom: 10px; animation: pulse 1.5s ease-in-out infinite;"></div>
-                <div style="height: 38px; background: #f2efe8; border-radius: 4px; margin-bottom: 10px; animation: pulse 1.5s ease-in-out infinite; animation-delay: 0.2s;"></div>
-                <div style="height: 38px; background: #f2efe8; border-radius: 4px; animation: pulse 1.5s ease-in-out infinite; animation-delay: 0.4s;"></div>
-                <p style="margin-top: 16px; font-size: 12px;">Loading payment form...</p>
-              </div>
-            </div>
-            <button id="cart-complete-order-btn" class="cart-checkout-btn" disabled>Checkout · $${totalFormatted}</button>
-          </aside>
-        </div>
-        <style>
-          @keyframes pulse {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.6; }
-          }
-        </style>`;
-      
-      container.innerHTML = html;
-      
-      container.querySelectorAll('.cart-item-remove').forEach(btn => {
-        btn.addEventListener('click', () => {
-          cartManager.removeItem(btn.dataset.productId);
-          renderCart();
-        });
-      });
-      
-      const sticky = document.getElementById('cartStickyBar');
-      const stickyBtn = document.getElementById('cart-sticky-checkout-btn');
-      if (sticky && stickyBtn) {
-        sticky.classList.add('active');
-        stickyBtn.textContent = `Checkout · $${totalFormatted}`;
+      // The bag changed underneath an intent priced for a different
+      // bag — drop back to review so a correctly priced one is made.
+      if (state.pi && state.cartSig !== signature(items)) {
+        state.pi = null;
+        state.elements = null;
+        state.step = 'bag';
       }
 
-      initPayment(items, total);
-    }
-    
-    async function initPayment(items, total) {
-      const prefix = 'cart-';
-      
-      try {
-        const consentCheckbox = document.getElementById(`${prefix}data-consent`);
-        const phoneInputInitial = document.getElementById(`${prefix}customer-phone`);
-        
-        const requestBody = {
-          items: items.map(i => {
-            // Parse price safely - handle string or number
-            let priceNum = typeof i.price === 'number' ? i.price : parseFloat(String(i.price).replace(/[$,]/g, ''));
-            if (isNaN(priceNum)) priceNum = 69.98; // Fallback price
-            
-            return {
-              productId: i.productId,
-              productTitle: i.title,
-              size: i.size,
-              gender: i.gender,
-              price: `$${priceNum.toFixed(2)}`
-            };
-          }),
-          price: `$${total.toFixed(2)}`,
-          customerEmail: document.getElementById(`${prefix}customer-email`)?.value.trim() || null,
-          customerPhone: phoneInputInitial?.value.trim() || null,
-          dataRetentionConsent: consentCheckbox?.checked || false
+      const t = totals(items);
+
+      root.innerHTML = `
+        <div class="co-masthead">
+          <h1>Your bag</h1>
+          <p>${items.length} ${items.length === 1 ? 'piece' : 'pieces'}, chosen well.</p>
+        </div>
+        <div class="co-layout">
+          <section class="co-bag">
+            <span class="co-label">Items</span>
+            ${items.map(itemMarkup).join('')}
+            <p class="co-bag-note">A bag holds up to two pieces. Everything ships free, with 30 days to change your mind.</p>
+          </section>
+
+          <aside class="co-aside">
+            <div class="co-card">
+              <span class="co-label">Summary</span>
+              <div class="co-money">
+                <div class="co-money-row"><span>Subtotal</span><span>${money(t.subtotal)}</span></div>
+                <div class="co-money-row"><span>Shipping</span><span>Free</span></div>
+                <div class="co-money-row is-total"><span>Total</span><span>${money(t.total)}</span></div>
+              </div>
+
+              <div class="co-step ${state.step === 'checkout' ? 'is-open' : ''}" id="co-step">
+                <hr class="co-divider" />
+                <span class="co-label">Contact</span>
+                <div class="co-fieldset">
+                  <div class="co-field">
+                    <label class="co-field-label" for="co-email">Email <span class="co-req">*</span></label>
+                    <input class="co-input" type="email" id="co-email" autocomplete="email"
+                           inputmode="email" placeholder="you@example.com" required />
+                    <div class="co-error" id="co-email-error">Please enter a valid email</div>
+                  </div>
+                  <div class="co-field">
+                    <label class="co-field-label" for="co-phone">Phone <span class="co-opt">(optional)</span></label>
+                    <input class="co-input" type="tel" id="co-phone" autocomplete="tel"
+                           placeholder="+1 (555) 123-4567" />
+                  </div>
+                </div>
+
+                <label class="co-consent" for="co-consent">
+                  <input type="checkbox" id="co-consent" checked />
+                  <span>Save my shipping details so this order can be fulfilled. You can opt out at any time. <a href="/privacy">Privacy Policy</a></span>
+                </label>
+
+                <hr class="co-divider" />
+                <span class="co-label">Shipping &amp; payment</span>
+                <div id="co-address-element"></div>
+                <div id="co-payment-element">
+                  <div class="co-skeleton"><i></i><i></i><i></i></div>
+                  <p class="co-loading-note">Preparing secure payment…</p>
+                </div>
+              </div>
+
+              <button id="co-primary" class="co-btn">
+                ${state.step === 'checkout' ? `Pay ${money(t.total)}` : `Continue · ${money(t.total)}`}
+              </button>
+              <p class="co-reassure">
+                ${state.step === 'checkout'
+                  ? 'Payments are handled by Stripe. Card details never touch Kaayko servers.'
+                  : 'Free shipping · 30-day returns · Secure checkout by Stripe'}
+              </p>
+            </div>
+          </aside>
+        </div>`;
+
+      root.querySelectorAll('[data-remove]').forEach(btn => {
+        btn.addEventListener('click', () => cartManager.removeItem(btn.dataset.remove));
+      });
+
+      const primary = document.getElementById('co-primary');
+      const stickyBtn = document.getElementById('co-sticky-btn');
+
+      sticky.classList.add('is-active');
+      stickyBtn.textContent = state.step === 'checkout' ? `Pay ${money(t.total)}` : `Continue · ${money(t.total)}`;
+
+      if (state.step === 'bag') {
+        primary.disabled = false;
+        stickyBtn.disabled = false;
+        primary.addEventListener('click', openCheckout);
+        stickyBtn.onclick = openCheckout;
+      } else {
+        primary.disabled = true;
+        stickyBtn.disabled = true;
+        primary.addEventListener('click', submitPayment);
+        stickyBtn.onclick = () => {
+          document.getElementById('co-payment-element')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          submitPayment();
         };
-        
-        console.log('Sending payment intent request:', requestBody);
-        
-        const response = await fetch(`${API_URL}/createPaymentIntent`, {
+        mountStripe();
+      }
+    }
+
+    function itemMarkup(item) {
+      const meta = metaLine(item);
+      const qty = item.quantity || 1;
+      return `
+        <article class="co-item">
+          <img class="co-item-image" src="${esc(item.imgSrc)}" alt="${esc(item.title)}"
+               onerror="this.classList.add('is-broken')" />
+          <div class="co-item-body">
+            <h3 class="co-item-title">${esc(item.title)}</h3>
+            <p class="co-item-meta">${meta}${meta ? '<br>' : ''}Quantity ${qty}</p>
+          </div>
+          <div class="co-item-side">
+            <span class="co-item-price">${money(parsePrice(item.price) * qty)}</span>
+            <button class="co-item-remove" data-remove="${esc(item.productId)}"
+                    aria-label="Remove ${esc(item.title)}">Remove</button>
+          </div>
+        </article>`;
+    }
+
+    /* ── Step 2: create the intent, then mount Stripe ─────────────── */
+
+    async function openCheckout() {
+      if (state.creating) return;
+      const items = cartManager.getItems();
+      if (!items.length) return;
+
+      state.creating = true;
+      const primary = document.getElementById('co-primary');
+      const stickyBtn = document.getElementById('co-sticky-btn');
+      if (primary) { primary.disabled = true; primary.textContent = 'Preparing…'; }
+      if (stickyBtn) { stickyBtn.disabled = true; stickyBtn.textContent = 'Preparing…'; }
+
+      try {
+        // Only identifiers and quantities are sent. Prices are resolved
+        // server-side from the product catalogue — the client does not
+        // get a say in what it is charged.
+        const res = await fetch(`${API_URL}/createPaymentIntent`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
+          body: JSON.stringify({
+            items: items.map(i => ({
+              productId: i.productId,
+              size: i.size ?? null,
+              gender: i.gender ?? null,
+              quantity: i.quantity || 1
+            }))
+          })
         });
-        
-        console.log('Payment intent response status:', response.status);
-        const responseData = await response.json();
-        console.log('Payment intent response data:', responseData);
-        
-        if (!response.ok) {
-          throw new Error(JSON.stringify(responseData));
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.clientSecret) {
+          // A 4xx is something the shopper can act on ("that piece just
+          // sold out"), so pass it through. A 5xx is ours to apologise
+          // for — never show the shopper a raw server message.
+          throw new Error(
+            (res.status < 500 && data.error)
+              ? data.error
+              : 'Checkout is briefly unavailable. Please try again in a moment.'
+          );
         }
-        
-        const { clientSecret } = responseData;
-        const stripe = Stripe(STRIPE_KEY);
-        desktopStripe = stripe;
-        const isDarkMode = document.documentElement.classList.contains('dark-theme');
-        const elements = stripe.elements({
-          clientSecret,
+
+        // The API answers with its own view of the bag (amount,
+        // subtotalCents, items). From here on that is what we display —
+        // it is what the card will actually be charged.
+        const priced = typeof data.amount === 'number'
+          ? { subtotalCents: data.subtotalCents ?? data.amount, totalCents: data.amount }
+          : null;
+
+        const before = totals(items).total;
+        state.pi = {
+          clientSecret: data.clientSecret,
+          paymentIntentId: data.paymentIntentId,
+          totals: priced
+        };
+        const after = totals(items).total;
+
+        // Both numbers come from the same catalogue, so a mismatch means
+        // a price moved while the bag was open. Never quietly charge a
+        // different number than the one the shopper was looking at.
+        if (priced && Math.abs(before - after) >= 0.01) {
+          toast(`Prices updated — your total is now ${money(after)}.`);
+        }
+        state.cartSig = signature(items);
+        state.step = 'checkout';
+        state.addressComplete = state.paymentComplete = state.emailValid = false;
+        render();
+        document.getElementById('co-step')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (err) {
+        console.error('checkout init failed:', err);
+        // A thrown TypeError here means the request never left the
+        // browser — offline, DNS, blocked. "Failed to fetch" means
+        // nothing to a shopper.
+        toast(err instanceof TypeError
+          ? 'We could not reach checkout. Check your connection and try again.'
+          : (err.message || 'Could not start checkout. Please try again.'));
+        state.step = 'bag';
+        render();
+      } finally {
+        state.creating = false;
+      }
+    }
+
+    function mountStripe() {
+      if (!state.pi || state.elements) return;
+
+      const host = document.getElementById('co-payment-element');
+      const addressHost = document.getElementById('co-address-element');
+
+      try {
+        const dark = document.documentElement.classList.contains('dark-theme');
+        const css = getComputedStyle(document.body);
+        const token = (name, fallback) => (css.getPropertyValue(name).trim() || fallback);
+
+        state.stripe = Stripe(STRIPE_KEY);
+        state.elements = state.stripe.elements({
+          clientSecret: state.pi.clientSecret,
           appearance: {
-            theme: isDarkMode ? 'night' : 'stripe',
+            theme: dark ? 'night' : 'stripe',
             variables: {
-              colorPrimary: '#d4af37',
-              colorBackground: isDarkMode ? '#1a1a1a' : '#ffffff',
-              colorText: isDarkMode ? '#ffffff' : '#1f1f1f',
-              colorDanger: '#ff4444',
-              fontFamily: 'Josefin_Medium, Arial, sans-serif',
+              colorPrimary: token('--v2-gold', '#8b6f3a'),
+              colorBackground: token('--v2-surface-elev', dark ? '#141613' : '#ffffff'),
+              colorText: token('--v2-fg', dark ? '#f5efe2' : '#1a1815'),
+              colorTextSecondary: token('--v2-fg-muted', '#4d4740'),
+              colorDanger: '#c0492f',
+              fontFamily: "'Josefin Sans', Arial, sans-serif",
               spacingUnit: '4px',
-              borderRadius: '8px'
+              borderRadius: '10px'
             },
             rules: {
-              '.Label': {
-                color: isDarkMode ? '#ffffff' : '#2b2b2b',
-                fontSize: '13px',
-                fontWeight: '500',
-                marginBottom: '8px'
-              },
-              '.Input': {
-                backgroundColor: isDarkMode ? '#0a0a0a' : '#ffffff',
-                border: isDarkMode ? '1px solid rgba(255,255,255,0.2)' : '1px solid #d8d2c8',
-                color: isDarkMode ? '#ffffff' : '#1f1f1f'
-              },
+              '.Label': { fontSize: '12px', fontWeight: '500', letterSpacing: '0.04em', marginBottom: '7px' },
+              '.Input': { border: `1px solid ${token('--v2-border', 'rgba(26,24,21,0.12)')}`, padding: '12px 14px' },
               '.Input:focus': {
-                border: '1px solid #d4af37',
-                boxShadow: '0 0 0 1px #d4af37'
-              }
+                border: `1px solid ${token('--v2-gold', '#8b6f3a')}`,
+                boxShadow: `0 0 0 3px ${dark ? 'rgba(212,182,132,0.20)' : 'rgba(139,111,58,0.18)'}`
+              },
+              '.Tab': { border: `1px solid ${token('--v2-border', 'rgba(26,24,21,0.12)')}` },
+              '.Tab--selected': { borderColor: token('--v2-gold', '#8b6f3a') }
             }
           },
-          fields: {
-            billingDetails: {
-              address: 'auto'
-            }
-          }
+          fields: { billingDetails: { address: 'auto' } }
         });
-        const paymentElement = elements.create('payment');
-        const addressElement = elements.create('address', {
+
+        const addressElement = state.elements.create('address', {
           mode: 'shipping',
           allowedCountries: ['US']
         });
-        const container = document.getElementById(`${prefix}payment-element`);
-        container.innerHTML = '';
-        const addressDiv = document.createElement('div');
-        addressDiv.style.marginBottom = '20px';
-        const paymentDiv = document.createElement('div');
-        container.appendChild(addressDiv);
-        container.appendChild(paymentDiv);
-        addressElement.mount(addressDiv);
-        paymentElement.mount(paymentDiv);
-        
-        const btn = document.getElementById('cart-complete-order-btn');
-        const stickyBtn = document.getElementById('cart-sticky-checkout-btn');
-        const emailInput = document.getElementById(`${prefix}customer-email`);
-        const phoneInput = document.getElementById(`${prefix}customer-phone`);
-        const emailError = document.getElementById(`${prefix}email-error`);
-        let addressComplete = false;
-        let paymentComplete = false;
-        let emailValid = false;
-        
-        const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-        
-        emailInput.addEventListener('input', () => {
-          const email = emailInput.value.trim();
-          if (!email) {
-            emailInput.style.borderColor = '#333';
-            emailError.style.display = 'none';
-            emailValid = false;
-          } else if (validateEmail(email)) {
-            emailInput.style.borderColor = '#10b981';
-            emailError.style.display = 'none';
-            emailValid = true;
-          } else {
-            emailInput.style.borderColor = '#ff4444';
-            emailError.textContent = 'Please enter a valid email';
-            emailError.style.display = 'block';
-            emailValid = false;
-          }
-          checkFormComplete();
-        });
-        
-        const checkFormComplete = () => {
-          const ready = !!(addressComplete && paymentComplete && emailValid);
-          btn.disabled = !ready;
-          if (stickyBtn) stickyBtn.disabled = !ready;
-        };
-        
-        addressElement.on('change', (event) => {
-          addressComplete = event.complete;
-          checkFormComplete();
-        });
-        
-        paymentElement.on('change', (event) => {
-          paymentComplete = event.complete;
-          checkFormComplete();
-        });
-        
-        const submitPayment = async () => {
-          const customerEmail = emailInput.value.trim();
-          const customerPhone = phoneInput.value.trim();
-          
-          if (!validateEmail(customerEmail)) {
-            emailError.textContent = 'Please enter a valid email';
-            emailError.style.display = 'block';
-            emailInput.style.borderColor = '#ff4444';
-            return;
-          }
-          
-          btn.disabled = true;
-          if (stickyBtn) stickyBtn.disabled = true;
-          btn.innerHTML = '<span class="material-icons" style="font-size: 16px; animation: spin 1s linear infinite;">refresh</span> Processing...';
-          if (stickyBtn) stickyBtn.textContent = 'Processing...';
-          
-          const { error } = await stripe.confirmPayment({
-            elements,
-            confirmParams: {
-              return_url: window.location.origin + '/order-success?email=' + encodeURIComponent(customerEmail),
-              receipt_email: customerEmail,
-              payment_method_data: {
-                billing_details: {
-                  email: customerEmail,
-                  phone: customerPhone || undefined
-                }
-              }
-            }
-          });
-          
-          if (error) {
-            showErrorMessage(error.message);
-            btn.disabled = false;
-            btn.innerHTML = `Checkout · $${total.toFixed(2)}`;
-            if (stickyBtn) {
-              stickyBtn.disabled = false;
-              stickyBtn.textContent = `Checkout · $${total.toFixed(2)}`;
-            }
-            
-            console.error('payment error:', error);
-          }
-        };
+        const paymentElement = state.elements.create('payment');
 
-        btn.addEventListener('click', submitPayment);
-        if (stickyBtn) {
-          stickyBtn.addEventListener('click', () => {
-            document.getElementById('cart-payment-element')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            submitPayment();
-          });
-        }
-      } catch (error) {
-        console.error('payment init error:', error);
-        const container = document.getElementById(`${prefix}payment-element`);
-        container.innerHTML = `
-          <div style="padding: 20px; text-align: center;">
-            <span class="material-icons" style="font-size: 40px; display: block; margin-bottom: 12px; color: #ef4444;">error_outline</span>
-            <p style="font-family: 'Josefin_Medium', Arial, sans-serif; font-size: 14px; margin-bottom: 16px; color: #ef4444;">
-              Unable to load payment form. Please check your connection and try again.
-            </p>
-            <button onclick="location.reload()" style="background: #111; color: #fff; border: none; padding: 10px 20px; border-radius: 20px; font-family: 'Josefin_Bold'; cursor: pointer;">
-              Retry
-            </button>
-          </div>
-        `;
+        host.innerHTML = '';
+        addressElement.mount(addressHost);
+        paymentElement.mount(host);
+
+        addressElement.on('change', (e) => { state.addressComplete = e.complete; refreshReady(); });
+        paymentElement.on('change', (e) => { state.paymentComplete = e.complete; refreshReady(); });
+
+        const email = document.getElementById('co-email');
+        const emailError = document.getElementById('co-email-error');
+        email.addEventListener('input', () => {
+          const v = email.value.trim();
+          state.emailValid = validEmail(v);
+          email.classList.toggle('is-invalid', v.length > 0 && !state.emailValid);
+          emailError.classList.toggle('is-shown', v.length > 0 && !state.emailValid);
+          refreshReady();
+        });
+        email.focus();
+      } catch (err) {
+        console.error('stripe mount failed:', err);
+        host.innerHTML = `
+          <div class="co-failure">
+            <span class="material-icons">error_outline</span>
+            <p>We could not load the payment form. Check your connection and try again.</p>
+            <button type="button" onclick="location.reload()">Retry</button>
+          </div>`;
       }
     }
-    
-    function showErrorMessage(message) {
-      const errorDiv = document.createElement('div');
-      errorDiv.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #ef4444; color: white; padding: 16px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 10000; max-width: 90%; font-family: Josefin_Medium, Arial, sans-serif; font-size: 14px;';
-      errorDiv.innerHTML = `<span class="material-icons" style="vertical-align: middle; margin-right: 8px; font-size: 18px;">error</span>${message}`;
-      document.body.appendChild(errorDiv);
-      setTimeout(() => errorDiv.remove(), 5000);
+
+    function refreshReady() {
+      const ready = state.addressComplete && state.paymentComplete && state.emailValid;
+      const primary = document.getElementById('co-primary');
+      const stickyBtn = document.getElementById('co-sticky-btn');
+      if (primary) primary.disabled = !ready;
+      if (stickyBtn) stickyBtn.disabled = !ready;
     }
-    
-    const style = document.createElement('style');
-    style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
-    document.head.appendChild(style);
-    
-    cartManager.subscribe(renderCart);
-    renderCart();
-    document.getElementById('year').textContent = new Date().getFullYear();
-    let resizeTimer;
-    window.addEventListener('resize', () => {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => renderCart(), 300);
-    });
+
+    /* ── Confirm ─────────────────────────────────────────────────── */
+
+    async function submitPayment() {
+      if (!state.stripe || !state.elements) return;
+
+      const email = document.getElementById('co-email');
+      const phone = document.getElementById('co-phone');
+      const consent = document.getElementById('co-consent');
+      const emailError = document.getElementById('co-email-error');
+      const customerEmail = email.value.trim();
+
+      if (!validEmail(customerEmail)) {
+        email.classList.add('is-invalid');
+        emailError.classList.add('is-shown');
+        email.focus();
+        return;
+      }
+
+      const primary = document.getElementById('co-primary');
+      const stickyBtn = document.getElementById('co-sticky-btn');
+      const restore = () => {
+        const t = totals(cartManager.getItems());
+        if (primary) { primary.disabled = false; primary.textContent = `Pay ${money(t.total)}`; }
+        if (stickyBtn) { stickyBtn.disabled = false; stickyBtn.textContent = `Pay ${money(t.total)}`; }
+      };
+
+      if (primary) { primary.disabled = true; primary.textContent = 'Processing…'; }
+      if (stickyBtn) { stickyBtn.disabled = true; stickyBtn.textContent = 'Processing…'; }
+
+      // Contact details and the consent choice are recorded here —
+      // when the shopper has actually made them. The old page read
+      // these fields at render time, before anything was typed, so
+      // every stored consent was really just the default checkbox.
+      try {
+        await fetch(`${API_URL}/createPaymentIntent/updateEmail`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            paymentIntentId: state.pi.paymentIntentId,
+            email: customerEmail,
+            phone: phone.value.trim() || null,
+            dataRetentionConsent: !!consent.checked
+          })
+        });
+      } catch (err) {
+        // Non-fatal: Stripe still receives the receipt email below.
+        console.warn('could not attach contact details:', err);
+      }
+
+      const { error } = await state.stripe.confirmPayment({
+        elements: state.elements,
+        confirmParams: {
+          return_url: `${location.origin}/order-success`,
+          receipt_email: customerEmail,
+          payment_method_data: {
+            billing_details: {
+              email: customerEmail,
+              phone: phone.value.trim() || undefined
+            }
+          }
+        }
+      });
+
+      if (error) {
+        console.error('payment error:', error);
+        toast(error.message || 'That payment could not be completed.');
+        restore();
+      }
+    }
+
+    /* ── Boot ────────────────────────────────────────────────────────
+       Subscribed to cart changes only. The old page also re-rendered on
+       a debounced window resize, and rendering created a payment
+       intent — so resizing the window spent Stripe objects.           */
+    cartManager.subscribe(render);
+    render();
   </script>
-  
+
   <script>
     /* kaayko-footer-year */
     (function () {

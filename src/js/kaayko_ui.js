@@ -17,12 +17,7 @@ const IMAGE_PROXY_BASE = window.location.hostname === 'localhost' || window.loca
   : "https://api-vwcc5j4qda-uc.a.run.app/images";  // Production
 
 // Price symbol → dollar amount mapping (single source of truth)
-const PRICE_MAP = {
-  "$$$$": "$49.99",
-  "$$$": "$39.99",
-  "$$": "$29.99",
-  "$": "$19.99"
-};
+import { PRICE_MAP } from "/js/priceMap.js";
 
 // Product type → section heading. Determines render order on the store page.
 // Unknown / missing productType lands in the "Other" bucket at the end.

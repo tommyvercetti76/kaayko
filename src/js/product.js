@@ -3,6 +3,8 @@
  * Fetches /api/products/<productID> and renders title + description + gallery + buy.
  */
 
+import { priceText } from "/js/priceMap.js";
+
 const API_BASE = window.FORCE_PRODUCTION_MODE
   ? window.PRODUCTION_API_BASE
   : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
@@ -21,11 +23,6 @@ function renderError(root, msg) {
     </section>`;
 }
 
-function priceText(p) {
-  if (typeof p.actualPrice === "number") return `$${p.actualPrice.toFixed(2)}`;
-  return esc(p.price || "");
-}
-
 function addToBagSmart(product) {
   const cm = window.cartManager;
   if (!cm) return false;
@@ -36,7 +33,7 @@ function addToBagSmart(product) {
     return openSizeGenderPopup(product);
   }
   const ok = cm.addItem({
-    productId: product.productID,
+    productId: product.id,
     title: product.title,
     subtitle: product.description,
     price: priceText(product),
@@ -92,7 +89,7 @@ function openSizeGenderPopup(product) {
   overlay.querySelector('#vs-confirm').addEventListener('click', () => {
     if (!g || !s) return;
     const ok = window.cartManager.addItem({
-      productId: product.productID, title: product.title, subtitle: product.description,
+      productId: product.id, title: product.title, subtitle: product.description,
       price: priceText(product), imgSrc: product.imgSrc, size: s, gender: g
     });
     if (!ok && window.showSustainabilityAlert) window.showSustainabilityAlert();

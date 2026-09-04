@@ -3,6 +3,8 @@
  * Fetches /api/animals/<slug> and paints the editorial layout.
  */
 
+import { priceText } from "/js/priceMap.js";
+
 const API_BASE = window.FORCE_PRODUCTION_MODE
   ? window.PRODUCTION_API_BASE
   : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
@@ -126,21 +128,21 @@ function renderVariants(animal, products) {
 function addToBagSmart(product) {
   const cm = window.cartManager;
   if (!cm) return false;
-  const priceText = typeof product.actualPrice === "number" ? `$${product.actualPrice.toFixed(2)}` : product.price;
+  const priceLabel = priceText(product);
   const sizes = product.availableSizes || [];
   const isOneSizeOrNone = sizes.length === 0 || (sizes.length === 1 && /one size/i.test(sizes[0]));
 
   if (product.productType === "tshirt") {
     // T-shirt → require size + gender via a popup
-    return openSizeGenderPopup(product, priceText);
+    return openSizeGenderPopup(product, priceLabel);
   }
 
   // Direct add for totes / magnets / one-size / sizeless products
   const item = {
-    productId: product.productID,
+    productId: product.id,
     title: product.title,
     subtitle: product.description,
-    price: priceText,
+    price: priceLabel,
     imgSrc: product.imgSrc,
     size: isOneSizeOrNone ? (sizes[0] || "One Size") : sizes[0],
     gender: null
@@ -150,7 +152,7 @@ function addToBagSmart(product) {
   return ok;
 }
 
-function openSizeGenderPopup(product, priceText) {
+function openSizeGenderPopup(product, priceLabel) {
   // Minimal centered popup for sizing — only used when productType === 'tshirt'
   const overlay = document.createElement("div");
   overlay.className = "filter-overlay active";
@@ -194,8 +196,8 @@ function openSizeGenderPopup(product, priceText) {
   overlay.querySelector('#vs-confirm').addEventListener('click', () => {
     if (!g || !s) return;
     const ok = window.cartManager.addItem({
-      productId: product.productID, title: product.title, subtitle: product.description,
-      price: priceText, imgSrc: product.imgSrc, size: s, gender: g
+      productId: product.id, title: product.title, subtitle: product.description,
+      price: priceLabel, imgSrc: product.imgSrc, size: s, gender: g
     });
     if (!ok && window.showSustainabilityAlert) window.showSustainabilityAlert();
     close();
