@@ -53,6 +53,7 @@
     <link rel="stylesheet" href="/css/kortex-views.css">
     <link rel="stylesheet" href="css/kortex-base.css?v=6.3.3">
     <link rel="stylesheet" href="views/create-link/create-link.css?v=1.5">
+    <link rel="stylesheet" href="views/orders/orders.css">
 </head>
 <body>
   
@@ -121,6 +122,11 @@
         <a href="#" class="nav-item" data-view="tenant-onboarding">
           <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V5.5A1.5 1.5 0 0 1 5.5 4H12a1.5 1.5 0 0 1 1.5 1.5V20"/><path d="M3 20h11.5"/><path d="M7 8h3M7 11.5h3M7 15h3"/><path d="M18.5 13.5v5M16 16h5"/></svg></span>
           <span>Tenant Onboarding</span>
+        </a>
+        <a href="#" class="nav-item" data-view="orders">
+          <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M3 8.5 12 4l9 4.5-9 4.5z"/><path d="M3 8.5V16l9 4.5V13"/><path d="M21 8.5V16l-9 4.5"/></svg></span>
+          <span>Orders</span>
+          <span class="nav-badge" id="orders-badge" hidden></span>
         </a>
         <a href="#" class="nav-item" data-view="submissions">
           <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M3 13.5h4l1.5 2.5h7L17 13.5h4"/><path d="M4.5 13.5 7 5.5A1.5 1.5 0 0 1 8.4 4.5h7.2a1.5 1.5 0 0 1 1.4 1L19.5 13.5V18a1.5 1.5 0 0 1-1.5 1.5H6A1.5 1.5 0 0 1 4.5 18z"/></svg></span>
@@ -1146,6 +1152,7 @@
     </div>
 
     <!-- Submissions View -->
+    <div id="orders-view" class="view hidden"></div>
     <div id="submissions-view" class="view hidden"></div>
     <div id="ops-view" class="view hidden"></div>
 

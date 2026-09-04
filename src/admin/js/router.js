@@ -29,6 +29,7 @@ export const ROUTES = {
   billing: '/billing',
   'tenant-onboarding': '/tenant-onboarding',
   submissions: '/submissions',
+  orders: '/orders',
   ops: '/ops',
 };
 

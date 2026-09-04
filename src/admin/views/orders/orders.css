@@ -1,0 +1,448 @@
+/* ============================================================================
+   ORDERS VIEW STYLES
+   Store fulfilment queue — a packing list, read while standing over a box.
+   Uses the existing dark "Bullion" tokens from css/kortex-base.css only.
+   ============================================================================ */
+
+.orders-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+/* --- Filter tabs --------------------------------------------------------- */
+.orders-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: var(--space-md) var(--space-lg) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.orders-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.orders-tab:hover { color: var(--text-secondary); }
+
+.orders-tab.active {
+  color: var(--gold-primary);
+  border-bottom-color: var(--gold-primary);
+}
+
+.orders-tab-count {
+  min-width: 20px;
+  padding: 1px 7px;
+  border-radius: var(--radius-full, 999px);
+  background: rgba(212, 175, 55, 0.12);
+  color: #d9bd7b;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.orders-tab.active .orders-tab-count {
+  background: var(--gold-primary);
+  color: var(--text-inverse, #1a1a1a);
+}
+
+/* --- Count line ---------------------------------------------------------- */
+.orders-count {
+  padding: 12px var(--space-lg) 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* --- List ---------------------------------------------------------------- */
+.orders-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: var(--space-lg);
+  padding: var(--space-lg);
+}
+
+.orders-empty,
+.orders-error {
+  grid-column: 1 / -1;
+  padding: 40px var(--space-lg);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.orders-error {
+  border: 1px solid var(--error);
+  border-radius: var(--radius-md);
+  background: var(--error-bg);
+  color: var(--error);
+}
+
+.orders-error-msg {
+  margin: 0 0 var(--space-md);
+  word-break: break-word;
+}
+
+.orders-more {
+  padding: 0 var(--space-lg) var(--space-lg);
+  text-align: center;
+}
+
+.orders-more:empty { padding: 0; }
+
+/* --- Order card ---------------------------------------------------------- */
+.order-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: var(--space-lg);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+  transition: border-color var(--transition-base);
+}
+
+.order-card:hover { border-color: rgba(212, 175, 55, 0.4); }
+
+.order-card.is-busy { opacity: 0.6; pointer-events: none; }
+
+.order-card--pending { border-left: 3px solid var(--warning); }
+.order-card--processing { border-left: 3px solid var(--info); }
+.order-card--shipped,
+.order-card--delivered { border-left: 3px solid var(--success); }
+.order-card--returned,
+.order-card--cancelled { border-left: 3px solid var(--error); }
+.order-card--mixed { border-left: 3px solid var(--warning); }
+
+.order-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.order-head-text { min-width: 0; }
+
+.order-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.order-sub {
+  margin-top: 3px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.order-sub--muted {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.order-status { flex-shrink: 0; }
+
+/* --- Blocks -------------------------------------------------------------- */
+.order-block-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.order-block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+/* --- Line items (the packing list) --------------------------------------- */
+.order-items {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.order-item {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.order-item--empty {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.order-item-qty {
+  flex-shrink: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gold-primary);
+}
+
+.order-item-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.order-item-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.order-item-variant {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.order-item-money {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
+/* --- Address ------------------------------------------------------------- */
+.order-address {
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.order-address-body {
+  margin-top: 6px;
+  font-style: normal;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.order-address--missing {
+  border-color: var(--error);
+  background: var(--error-bg);
+}
+
+.order-address-alert {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--error);
+  font-weight: 600;
+}
+
+.order-copy {
+  padding: 4px 10px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-full, 999px);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.order-copy:hover {
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+}
+
+/* --- Tracking ------------------------------------------------------------ */
+.order-tracking {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.order-tracking-value {
+  font-size: 13px;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.order-tracking-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gold-primary);
+  text-decoration: none;
+}
+
+/* --- Meta ---------------------------------------------------------------- */
+.order-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 11px;
+  color: #666;
+  overflow-wrap: anywhere;
+}
+
+.order-meta-sep { opacity: 0.5; }
+
+/* --- Actions ------------------------------------------------------------- */
+.order-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.order-actions .btn {
+  flex: 1 1 auto;
+  min-width: 120px;
+  justify-content: center;
+}
+
+.order-actions .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* --- Ship form ----------------------------------------------------------- */
+.order-ship-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--hairline-gold, rgba(212, 175, 55, 0.22));
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken, #0f0f10);
+}
+
+.order-ship-form[hidden] { display: none; }
+
+.order-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.order-field-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.order-tracking-input,
+.order-carrier-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 15px; /* >=16px-ish keeps iOS from zooming the whole panel */
+  font-family: inherit;
+}
+
+.order-tracking-input:focus,
+.order-carrier-select:focus {
+  outline: none;
+  border-color: var(--gold-primary);
+}
+
+.order-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.order-check input { width: 16px; height: 16px; accent-color: var(--gold-primary); }
+
+.order-ship-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.order-ship-actions .btn {
+  flex: 1;
+  justify-content: center;
+}
+
+/* --- Responsive: he checks orders on his phone --------------------------- */
+@media (max-width: 640px) {
+  .orders-list {
+    grid-template-columns: 1fr;
+    padding: var(--space-md);
+    gap: var(--space-md);
+  }
+
+  .orders-tabs,
+  .orders-count {
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
+  }
+
+  .orders-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .orders-tab { white-space: nowrap; }
+
+  .order-card { padding: var(--space-md); }
+
+  .order-actions .btn { flex: 1 1 100%; }
+
+  .order-tracking-input,
+  .order-carrier-select { font-size: 16px; }
+}
+
+/* --- Sidebar badge ------------------------------------------------------- */
+/* `.nav-badge` is also declared in submissions.css, but that file is only
+   lazy-loaded when the Submissions view is opened. orders.css is linked in the
+   document head, so these identical rules guarantee the Orders count is styled
+   even on a cold load straight into #/orders. */
+.nav-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: auto;
+  padding: 0 6px;
+  border-radius: var(--radius-full, 999px);
+  background: var(--gold-primary);
+  color: var(--text-inverse, #1a1a1a);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.nav-badge[hidden] { display: none; }
