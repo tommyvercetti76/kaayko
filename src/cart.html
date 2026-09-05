@@ -1261,8 +1261,15 @@
       // typed them, not at render time. There is no consent checkbox: the
       // address is needed to ship the order, so it was never a real choice,
       // and the privacy policy now says exactly what is kept and for how long.
+      // This must succeed BEFORE we take the money. The webhook writes the
+      // order from the payment intent, and that is where the address and phone
+      // used to pack and ship it come from. Previously a non-OK response was
+      // ignored entirely — only a thrown fetch was caught — so a rejected or
+      // 500'd contact update still went on to charge the card, leaving an order
+      // nobody could ship. Stripe's receipt_email is a fallback for the receipt,
+      // not a substitute for fulfilment details.
       try {
-        await fetch(`${API_URL}/createPaymentIntent/updateEmail`, {
+        const contactRes = await fetch(`${API_URL}/createPaymentIntent/updateEmail`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1271,9 +1278,15 @@
             phone: phone.value.trim() || null
           })
         });
+        if (!contactRes.ok) {
+          const body = await contactRes.json().catch(() => ({}));
+          throw new Error(body.message || body.error || `Contact update failed (${contactRes.status})`);
+        }
       } catch (err) {
-        // Non-fatal: Stripe still receives the receipt email below.
-        console.warn('could not attach contact details:', err);
+        console.error('could not attach contact details:', err);
+        toast('We could not save your contact details, so we have not taken payment. Check your email address and try again.', 'error');
+        restore();
+        return;
       }
 
       const { error } = await state.stripe.confirmPayment({

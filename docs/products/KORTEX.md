@@ -5,7 +5,7 @@
 KORTEX is the smart-link product surface, spanning public creation flows, authenticated admin workflows, billing, analytics, and redirect handling.
 
 Comprehensive agent command (file map, routes, collections, change patterns): `/.claude/commands/kortex.md`
-Product strategy probe: [`KORTEX_PRODUCT_PROBE.md`](./KORTEX_PRODUCT_PROBE.md)
+Product brief and deeper backend notes live in `kaayko-api/functions/docs/`.
 
 ## Primary entrypoints
 

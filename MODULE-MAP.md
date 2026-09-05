@@ -144,7 +144,7 @@ POST /api/createPaymentIntent/webhook  → Stripe webhook (no auth, raw body)
 > Multi-tenant smart link manager, tenant alias router, campaign links, and admin portal.
 
 Agent command (full file map, routes, collections, change patterns): `.claude/commands/kortex.md`
-Product strategy probe: `kaayko/docs/products/KORTEX_PRODUCT_PROBE.md`
+Product brief: `kaayko-api/functions/docs/KORTEX_PRODUCT_BRIEF.md`
 Product brief (marketing feature inventory): `kaayko-api/functions/docs/KORTEX_PRODUCT_BRIEF.md`
 
 **Pages:**

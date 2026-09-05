@@ -457,12 +457,12 @@
       <a class="back-link" href="/paddlingout">Back to lakes</a>
     </header>
 
-    <p class="launch-note">Add a lake, reservoir, river, or paddling water body. We keep entry simple: name, location, coordinates, access basics, and optional contact. Admin gets 2 days to validate; after that, complete entries go live automatically.</p>
+    <p class="launch-note">Add a lake, reservoir, river, or paddling water body. We keep entry simple: name, location, coordinates, access basics, and optional contact. Every entry is reviewed by a person before it appears publicly &mdash; nothing goes live automatically.</p>
 
     <section class="tour-strip" aria-label="How submission works">
       <div class="tour-step"><strong>1. Enter basics</strong><span>Name the water and where paddlers should look for it.</span></div>
       <div class="tour-step"><strong>2. Add images</strong><span>Upload at least one real lake photo so the entry can be reviewed.</span></div>
-      <div class="tour-step"><strong>3. Goes live</strong><span>We validate within 2 days. If not, it still goes live after the window.</span></div>
+      <div class="tour-step"><strong>3. We review it</strong><span>A person checks the details and photos. It appears publicly only once it is approved.</span></div>
     </section>
 
     <section class="submit-card" id="form-card">
@@ -903,9 +903,14 @@
 
         setStatus('Finding coordinates...', '');
         try {
-          const res = await fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(query) + '&format=json&limit=1&addressdetails=0', {
-            headers: { 'Accept-Language': 'en' }
-          });
+          // Server proxy, not a direct browser call to Nominatim — same path
+          // Search uses (js/searchPage.js). Keeps the user's typed place name
+          // off a third party, and puts rate limiting and caching server-side.
+          const res = await fetch(API_BASE + '/paddlingOut/geocode?q=' + encodeURIComponent(query) + '&limit=1');
+          if (!res.ok) {
+            setStatus('Could not find coordinates right now. Add latitude and longitude manually.', 'error');
+            return false;
+          }
           const data = await res.json();
           if (!Array.isArray(data) || !data.length) {
             setStatus('Could not infer coordinates. Add latitude and longitude manually.', 'error');
@@ -1133,9 +1138,11 @@
           if (!res.ok || !data.success) throw new Error(data.error || 'Submission failed');
 
           form.closest('.submit-card').style.display = 'none';
+          // Both variants must tell the same truth: queued for review, public
+          // only after approval. The backend never auto-publishes.
           successCopy.textContent = preference === 'email'
-            ? 'Thanks. We will notify you when admin validates the entry. It is scheduled to go live within 2 days.'
-            : 'Thanks. Your anonymous entry is scheduled to go live within 2 days after the validation window.';
+            ? 'Thanks - your entry is in the review queue. A person checks every submission before it appears publicly, and we will email you when it is approved or if we cannot use it.'
+            : 'Thanks - your entry is in the review queue. A person checks every submission before it appears publicly. You have not given us an email, so you will not hear back; check the lake list in a few days.';
           successPanel.classList.add('visible');
           window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (err) {

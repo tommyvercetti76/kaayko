@@ -636,12 +636,15 @@ async function runSearch(lat, lng, label = 'this location', forceRefresh = false
     refreshBtn.style.display = 'none';
     setStatus('Search failed — check connection and try again.', 'error');
     console.error('Search error:', err);
+  } finally {
+    // MUST be a finally. Three branches above (`!data.success`, `no_results`
+    // and `found`) return early, so this cleanup was skipped on every ordinary
+    // search — the lock stayed true and the page ignored every later search in
+    // the session. clearTransientStatus() already no-ops when the status is an
+    // error, so it cannot wipe a message an error path just set.
+    isSearching = false;
+    clearTransientStatus();
   }
-  // Clear only the transient "searching…" line — every error path (thrown or
-  // the "unexpected response" branch) leaves its message on screen, where it
-  // used to be wiped in the same frame by an unconditional finally.
-  isSearching = false;
-  clearTransientStatus();
 }
 
 // ── Render results ────────────────────────────────────────────────────────

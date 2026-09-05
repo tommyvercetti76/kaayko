@@ -20,18 +20,15 @@
 
   var MAIL_TO = "rohan@kaayko.com";
 
-  var SARCASM = [
-    "Wrong, dumbass. Try again.",
-    "Oh my God, you suck at this.",
-    "That's not it, genius.",
-    "Dude, seriously? That's your guess?",
-    "This is pretty sad to watch.",
-    "Are you actually stupid or just pretending?",
-    "Holy crap, you're terrible at this.",
-    "I've seen rocks with better problem-solving skills.",
-    "Just give up. This isn't for you.",
-    "Even Butters could do better.",
-    "I'm actually impressed by how bad you are at this."
+  // Neutral, short, one clear next step. This was a list of insults ("Wrong,
+  // dumbass", "Are you actually stupid") shown to anyone who mistyped an invite
+  // code — including buyers who had a valid one and fat-fingered it. The gate is
+  // access UX, not security (codes are client-side and the product API is
+  // public), so there is nothing here worth defending rudely.
+  var ACCESS_HINTS = [
+    "That code did not open the store. Check the spelling.",
+    "Still no match. Codes are case-sensitive.",
+    "That code is not recognised. Request access below and we will send you one."
   ];
 
   var el = null;          // cached node references, built on first open
@@ -180,7 +177,7 @@
 
     if (!validateCode(val)) {
       failures++;
-      setHint(SARCASM[Math.min(failures - 1, SARCASM.length - 1)], "error");
+      setHint(ACCESS_HINTS[Math.min(failures - 1, ACCESS_HINTS.length - 1)], "error");
       el.input.value = "";
       el.input.focus();
       return;

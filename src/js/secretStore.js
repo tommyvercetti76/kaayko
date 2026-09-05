@@ -22,30 +22,15 @@ const validateAccess = (i) => {
 // Additional security through obscurity
 const securityLayer = btoa('access_control_enabled');
 
-// Sarcastic failure messages (South Park style - no mercy)
+// Neutral access hints. These were deliberately insulting; a buyer who
+// mistypes a code should not be called stupid on the way to paying.
 
 const getSarcasticMessage = () => {
   failureCount++;
   const messages = [
-    // First attempts - Cartman level rudeness
-    "Wrong, dumbass. Try again.",
-    "Oh my God, you suck at this.",
-    "That's not it, genius. What's wrong with you?",
-    
-    // Getting more brutal - Stan's dry sarcasm
-    "Dude, seriously? That's your guess?",
-    "This is pretty sad to watch, not gonna lie.",
-    "Are you actually stupid or just pretending?",
-    
-    // Peak brutality - Full Cartman mode
-    "Holy crap, you're terrible at this.",
-    "I've seen rocks with better problem-solving skills.",
-    "Your parents must be so disappointed right now.",
-    
-    // Ultimate destruction
-    "This is pathetic. Even Butters could do better.",
-    "You know what? Just give up. This isn't for you.",
-    "I'm actually impressed by how bad you are at this."
+    "That code did not open the store. Check the spelling.",
+    "Still no match. Codes are case-sensitive.",
+    "That code is not recognised. You can request access instead."
   ];
   
   const index = Math.min(failureCount - 1, messages.length - 1);
@@ -421,12 +406,8 @@ function showSecretModal() {
     if (e.target === modalOverlay) {
       shakeModal(modal);
       const bypassMessages = [
-        "Oh, trying to click your way out? What are you, five years old?",
-        "Nice try, jackass. This isn't some cheap website you can just click around.",
-        "Wow, clicking outside the box. Real genius move there, Einstein.",
-        "Let me guess, next you'll try turning it off and on again?",
-        "This is embarrassing. Just enter the damn keyword already.",
-        "You know what? Just give up. This clearly isn't for you."
+        "Enter your invite code to continue.",
+        "The store opens with a code. Request one if you do not have it."
       ];
       errorMsg.innerHTML = bypassMessages[Math.floor(Math.random() * bypassMessages.length)];
     }

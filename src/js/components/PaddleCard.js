@@ -379,7 +379,11 @@
     fBtn.addEventListener('click', function (e) { e.stopPropagation(); window.location.href = '/paddlingout/forecast?id=' + encodeURIComponent(data.id); });
     var rBtn = el('button', 'rate-button', { type: 'button' });
     rBtn.innerHTML = '<span>Rate</span>';
-    rBtn.addEventListener('click', function (e) { e.stopPropagation(); window.location.href = '/paddlingout/trainer?lake=' + encodeURIComponent(data.id); });
+    // Public rate page, NOT the trainer. The trainer frontend calls /status,
+    // GET /ratings, /priority-lakes, /lakes, /weather, /scenarios, /admin-prefs
+    // and /reset-training, none of which exist in the backend — a normal user
+    // tapping Rate hit 404s. Trainer is internal model tooling.
+    rBtn.addEventListener('click', function (e) { e.stopPropagation(); window.location.href = '/paddlingout/rate?id=' + encodeURIComponent(data.id); });
     actions.appendChild(fBtn); actions.appendChild(rBtn);
 
     content.appendChild(name); content.appendChild(loc); content.appendChild(desc); content.appendChild(actions);

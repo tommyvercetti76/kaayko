@@ -209,8 +209,12 @@
     }
 
     function formatCoordinates(location, spot) {
-      const lat = spot?.location?.latitude ?? location.coordinates?.latitude;
-      const lng = spot?.location?.longitude ?? location.coordinates?.longitude;
+      // renderLocationInfo reaches this from a branch where neither source has
+      // coordinates — community lakes and custom lat/lng lookups both can — and
+      // `undefined.toFixed(4)` threw, taking the whole location card with it.
+      const lat = Number(spot?.location?.latitude ?? location?.coordinates?.latitude);
+      const lng = Number(spot?.location?.longitude ?? location?.coordinates?.longitude);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return 'Coordinates unavailable';
       return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
     }
 
@@ -733,7 +737,7 @@
 
       document.getElementById('locationInfo').innerHTML = `
         <div class="card-eyebrow">The Spot</div>
-        <div class="loc-row"><span class="loc-label">Region</span><span>${location.region || '—'}, ${location.country || '—'}</span></div>
+        <div class="loc-row"><span class="loc-label">Region</span><span>${esc(location.region || '—')}, ${esc(location.country || '—')}</span></div>
         <div class="loc-row"><span class="loc-label">Local Time</span><span>${formatLocalTime(location, spot)}</span></div>
         <div class="loc-row"><span class="loc-label">Coordinates</span><span>${coordsCell}</span></div>
         ${enrichmentRows(spot)}

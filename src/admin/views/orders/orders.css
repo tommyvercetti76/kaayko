@@ -452,3 +452,16 @@
 .order-delay-hint { margin: 4px 0 8px; font-size: 12px; color: var(--text-muted, #a89f90); }
 .order-delay-reason { width: 100%; box-sizing: border-box; resize: vertical; font: inherit; padding: 8px 10px;
   border-radius: 8px; border: 1px solid var(--border, rgba(255,255,255,.14)); background: transparent; color: inherit; }
+
+/* Mail queue health — shown only when something needs attention. Nothing
+   re-drives failed mail automatically, so this is the only place an operator
+   would notice a receipt that never arrived. */
+.mail-health {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border: 1px solid rgba(226, 170, 90, 0.45);
+  border-radius: 10px;
+  background: rgba(226, 170, 90, 0.12);
+  font-size: 13.5px;
+  line-height: 1.5;
+}

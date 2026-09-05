@@ -1,14 +1,26 @@
-# Product Docs Index
+# Frontend Product Docs Index
 
-These guides map each shipped frontend experience to the backend surface it depends on.
+Last reviewed: 2026-09-05
 
-| Product | Coverage |
-| --- | --- |
-| [`STORE.md`](./STORE.md) | Store catalog, cart, checkout, order success, and shared commerce scripts |
-| [`PADDLING_OUT.md`](./PADDLING_OUT.md) | Paddling directory, forecast UI, modal flows, and weather components |
-| [`KORTEX.md`](./KORTEX.md) | Public smart-link flows, admin portal, destination picker, validation, tenant onboarding, billing |
-| [`KORTEX_PRODUCT_PROBE.md`](./KORTEX_PRODUCT_PROBE.md) | Product strategy questions — pricing, ICP, competitive positioning |
-| [`KORTEX_FEATURE_AUDIT.md`](./KORTEX_FEATURE_AUDIT.md) | Feature inventory — what's LIVE, what's NOT BUILT |
-| [`KREATOR.md`](./KREATOR.md) | Application, login, onboarding, dashboard, and admin review surfaces |
-| [`KAMERA_QUEST.md`](./KAMERA_QUEST.md) | Kamera Quest frontend, enhancement layer, and preset result rendering |
-| [`KNOWLEDGE_EXTERNALS.md`](./KNOWLEDGE_EXTERNALS.md) | Adjacent experiences that do not use the Kaayko API main branch |
+These docs map shipped frontend experiences to their current source files, backend dependencies, launch blockers, and verification checks.
+
+| Product | Maintained doc | Notes |
+|---|---|---|
+| Store | [`STORE.md`](./STORE.md) | kaay.store catalog, product detail, cart, checkout, order success, and storefront access UX. |
+| Paddling Out | [`PADDLING_OUT.md`](./PADDLING_OUT.md) | Directory, forecast, search, add-lake, rate, trainer, and settings surfaces. |
+| KORTEX | [`KORTEX.md`](./KORTEX.md) | Public/admin smart-link frontend surfaces. |
+| Kreator | [`KREATOR.md`](./KREATOR.md) | Creator application, onboarding, profile, and admin review frontend surfaces. |
+| Kamera Quest | [`KAMERA_QUEST.md`](./KAMERA_QUEST.md) | Camera guidance frontend surface. |
+
+Latest audits:
+
+- [`../audits/PADDLING_OUT_FULL_FEATURE_AUDIT_2026-09-05.md`](../audits/PADDLING_OUT_FULL_FEATURE_AUDIT_2026-09-05.md)
+- [`../audits/KAAY_STORE_FULL_FEATURE_AUDIT_2026-09-05.md`](../audits/KAAY_STORE_FULL_FEATURE_AUDIT_2026-09-05.md)
+- [`../audits/CROSS_PRODUCT_USER_AND_OPERATIONS_AUDIT_2026-09-05.md`](../audits/CROSS_PRODUCT_USER_AND_OPERATIONS_AUDIT_2026-09-05.md)
+
+Removed obsolete docs:
+
+- `docs/products/STORE_BRAND_UX_AUDIT_2026-05-24.md` was superseded by the September store audit.
+- `docs/paddlingout/SEARCH-AUDIT.md` was superseded by the September Paddling Out audit.
+- `docs/paddlingout/SKILL.md` was replaced by `docs/paddlingout/AGENT.md`.
+

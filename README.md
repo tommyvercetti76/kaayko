@@ -11,7 +11,7 @@ Static frontend for the Kaayko product portfolio. The `main` branch hosts commer
 | KORTEX | `src/kortex.html`, `src/admin/*`, `src/tenant.html`, `src/redirect.html` | `kaayko-api` KORTEX links, campaigns, deep links, billing, auth | [`docs/products/KORTEX.md`](./docs/products/KORTEX.md), [`.claude/commands/kortex.md`](./.claude/commands/kortex.md) |
 | Kreator | `src/kreator/*` | `kaayko-api` kreator routes | [`docs/products/KREATOR.md`](./docs/products/KREATOR.md) |
 | Kamera Quest | `src/karma.html`, `src/karma/kameras/*` | `kaayko-api` cameras, lenses, presets | [`docs/products/KAMERA_QUEST.md`](./docs/products/KAMERA_QUEST.md) |
-| Knowledge / External surfaces | `src/knowledge/index.html`, `src/admin/views/roots/index.html`, `src/reads.html` | External `cool-schools` API and content surfaces | [`docs/products/KNOWLEDGE_EXTERNALS.md`](./docs/products/KNOWLEDGE_EXTERNALS.md) |
+| Knowledge / External surfaces | `src/knowledge/index.html`, `src/admin/views/roots/index.html`, `src/reads.html` | External `cool-schools` API and content surfaces | No maintained product doc in this checkout |
 
 ## Architecture
 
@@ -38,9 +38,11 @@ kaayko/
 │   ├── js/
 │   └── css/
 ├── docs/
+│   ├── README.md
 │   ├── products/
-│   ├── learnings/
-│   └── PRODUCT_AUTOMATION_PLAN.md
+│   ├── audits/
+│   ├── paddlingout/
+│   └── security/
 ├── firebase.json
 └── README.md
 ```
@@ -74,11 +76,11 @@ Use the emulator when you need Hosting rewrites and header behavior. Opening fil
 
 - Treat each product as a paired surface: backend routes plus frontend pages.
 - Before deploys, verify both route health and the actual page that consumes those routes.
-- Keep learnings and follow-up work in the product-specific notes under [`docs/learnings`](./docs/learnings/README.md).
+- Keep follow-up work in the relevant product doc or September audit resolution notes.
 
 ## Documentation map
 
 - Product index: [`docs/products/README.md`](./docs/products/README.md)
+- Docs index: [`docs/README.md`](./docs/README.md)
 - KORTEX agent (full file map, routes, collections, patterns): [`.claude/commands/kortex.md`](./.claude/commands/kortex.md)
-- Automation blueprint: [`docs/PRODUCT_AUTOMATION_PLAN.md`](./docs/PRODUCT_AUTOMATION_PLAN.md)
-- Learnings convention: [`docs/learnings/README.md`](./docs/learnings/README.md)
+- Latest audits: [`docs/audits`](./docs/audits)

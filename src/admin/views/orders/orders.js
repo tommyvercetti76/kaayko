@@ -112,6 +112,8 @@ export async function init(STATE) { // eslint-disable-line no-unused-vars
       <button type="button" class="btn btn-secondary" id="orders-refresh">Refresh</button>
     </header>
 
+    <div class="mail-health" id="mail-health" hidden></div>
+
     <div class="card orders-card">
       <div class="orders-tabs" id="orders-tabs"></div>
       <div class="orders-count" id="orders-count"></div>
@@ -158,6 +160,35 @@ export async function init(STATE) { // eslint-disable-line no-unused-vars
 // Data
 // ---------------------------------------------------------------------------
 
+/**
+ * Undelivered mail is invisible from the order list — an order reads "shipped"
+ * whether or not the confirmation ever reached the buyer. Nothing re-drives a
+ * failed mail document automatically, so surface it where fulfilment happens.
+ * Counts and ids only; mail bodies stay server-side.
+ */
+async function loadMailHealth() {
+  const el = document.getElementById('mail-health');
+  if (!el) return;
+  try {
+    const res = await apiFetch('/admin/mailHealth');
+    if (!res || !res.ok) return;
+    const h = await res.json();
+    const stuck = (h.error || 0) + (h.staleRetry || 0) + (h.processingStuck || 0);
+    if (!stuck) { el.hidden = true; return; }
+
+    const parts = [];
+    if (h.error) parts.push(`${h.error} failed`);
+    if (h.staleRetry) parts.push(`${h.staleRetry} stuck retrying`);
+    if (h.processingStuck) parts.push(`${h.processingStuck} stalled mid-send`);
+    el.innerHTML = `<strong>Email needs attention:</strong> ${escapeHtml(parts.join(', '))}. `
+      + `Receipts or shipping confirmations have not reached those customers. `
+      + `Nothing retries these automatically.`;
+    el.hidden = false;
+  } catch (_) {
+    // An unavailable health check must never break the orders screen.
+  }
+}
+
 async function load() {
   if (listEl) listEl.innerHTML = '<div class="loading">Loading orders…</div>';
   if (moreEl) moreEl.innerHTML = '';
@@ -166,7 +197,8 @@ async function load() {
     // No status filter on the query: fetching one page unfiltered avoids the
     // composite index the (status + createdAt) query needs, and gives every
     // tab an honest count from the same data.
-    const res = await apiFetch(`/admin/listOrders?groupByOrder=true&limit=${encodeURIComponent(currentLimit)}`);
+    loadMailHealth();   // fire and forget; never blocks the order list
+  const res = await apiFetch(`/admin/listOrders?groupByOrder=true&limit=${encodeURIComponent(currentLimit)}`);
     if (!res) return; // 401 → apiFetch already triggered logout
     if (!res.ok) throw new Error(await errorMessage(res, `Failed to load orders (${res.status})`));
 
@@ -322,10 +354,19 @@ async function confirmDelay(parentOrderId, card) {
     const res = await postDelay({ parentOrderId, newEstimatedDate, reason: reason || undefined });
     const shipment = shipments.find((sh) => sh.parentOrderId === parentOrderId);
     if (shipment) shipment.estimatedDelivery = newEstimatedDate;
-    const queued = res && res.customerNotification && res.customerNotification.queued !== false;
+    // The backend returns `queued` at the TOP LEVEL, not nested under
+    // `customerNotification` — reading the nested shape meant `queued` was
+    // always undefined, so a successfully sent notice was reported as "email
+    // was not sent". See api/admin/orderNotices.js: { success, queued, mailId,
+    // reason?, ... }. `queued:false` with reason 'already_sent_for_date' is a
+    // legitimate no-op, not a failure.
+    const queued = !!(res && res.queued);
+    const reason = (res && res.reason) || '';
     showSuccess(queued
       ? `Delay notice sent — customer told to expect shipping by ${newEstimatedDate}.`
-      : `Date recorded. Email was not sent: ${(res && res.customerNotification && res.customerNotification.reason) || 'no customer email on the order'}.`);
+      : reason === 'already_sent_for_date'
+        ? `Date recorded. The customer was already told this date, so no second email was sent.`
+        : `Date recorded. Email was not sent${reason ? `: ${reason}` : ' — no customer email on the order'}.`);
     replaceCard(parentOrderId);
   } catch (err) {
     console.error('[Orders] Delay notice failed:', err && err.message);

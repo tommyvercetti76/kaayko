@@ -63,6 +63,38 @@ html, body {
 }
 .theme-toggle-icon { display: none !important; }
 
+.model-call-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  margin-top: 0.15rem;
+}
+.model-call-score {
+  font: 400 2.6rem/1 var(--font-serif);
+  color: var(--gold-bright);
+}
+.model-call-verdict {
+  font: 400 0.95rem var(--font-sans);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg);
+}
+.model-call-note {
+  margin: 0.55rem 0 0;
+  font: 400 0.82rem/1.5 var(--font-sans);
+  color: var(--muted);
+}
+
+.submit-error {
+  margin-top: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid rgba(189,59,43,0.5);
+  border-radius: 10px;
+  background: rgba(189,59,43,0.12);
+  color: var(--fg);
+  font: 400 0.85rem/1.5 var(--font-sans);
+}
+
 /* ── Layout ──────────────────────────────────────────────────────────────── */
 .rate-wrap {
   max-width: 540px;
@@ -109,7 +141,13 @@ html, body {
   color: var(--muted);
   margin-top: 0.35rem;
 }
+.gps-badge.verified { cursor: default; }
+.gps-badge:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
 .gps-badge {
+  appearance: none;
+  color: inherit;
+  cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
@@ -684,10 +722,10 @@ html, body {
       <div class="lake-eyebrow">Rate your paddle</div>
       <h1 class="lake-name" id="lakeName"></h1>
       <div class="lake-sub" id="lakeSub"></div>
-      <div class="gps-badge unverified" id="gpsBadge">
+      <button type="button" class="gps-badge unverified" id="gpsBadge" onclick="requestGPS()">
         <span class="gps-dot"></span>
-        <span id="gpsText">Checking location...</span>
-      </div>
+        <span id="gpsText">Use my location to verify I was here</span>
+      </button>
     </div>
 
     <!-- Update banner (shown if already rated today) -->
@@ -697,6 +735,16 @@ html, body {
         <div>You rated this lake today. You can update within 2 hours.</div>
         <div class="update-time" id="updateTime"></div>
       </div>
+    </div>
+
+    <!-- Model's current call — shown before we ask for the user's -->
+    <div class="rate-card model-call" id="modelCall" style="display:none">
+      <div class="rate-card-label">Our call right now</div>
+      <div class="model-call-row">
+        <div class="model-call-score" id="modelScoreVal"></div>
+        <div class="model-call-verdict" id="modelScoreLabel"></div>
+      </div>
+      <p class="model-call-note">You were there. Tell us what it was actually like.</p>
     </div>
 
     <!-- Weather -->
@@ -876,7 +924,9 @@ async function init() {
   }
 
   checkExistingRating();
-  requestGPS();
+  // GPS is OPT-IN. This used to call requestGPS() here, firing the browser
+  // permission prompt on page load before the user had done anything —
+  // heavier than Search or Submit, where location is a deliberate tap.
   if (!localStorage.getItem('kaayko_rate_onboarded')) showOnboard();
 
   try {
@@ -928,9 +978,10 @@ function checkExistingRating() {
 /* ── GPS ──────────────────────────────────────────────────────────────────── */
 function requestGPS() {
   if (!navigator.geolocation) {
-    setGPS(false, 'GPS not available');
+    setGPS(false, 'GPS not available on this device');
     return;
   }
+  setGPS(false, 'Checking location...');
   navigator.geolocation.getCurrentPosition(
     pos => {
       gpsCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
@@ -972,7 +1023,24 @@ function setGPS(verified, text) {
 }
 
 /* ── Render form ─────────────────────────────────────────────────────────── */
+/** Canonical Paddle Score wording, shared with the rest of Paddling Out. */
+function rateScoreLabel(score) {
+  if (score >= 3.5) return 'Worth it';
+  if (score >= 2) return 'Careful';
+  return 'Hard pass';
+}
+
+function renderModelCall() {
+  const n = Number(predictedScore);
+  const card = document.getElementById('modelCall');
+  if (!Number.isFinite(n)) { card.style.display = 'none'; return; }
+  document.getElementById('modelScoreVal').textContent = n.toFixed(1);
+  document.getElementById('modelScoreLabel').textContent = rateScoreLabel(n);
+  card.style.display = '';
+}
+
 function renderForm() {
+  renderModelCall();
   document.getElementById('loadingState').style.display = 'none';
   document.getElementById('formState').style.display = 'block';
 
@@ -1187,23 +1255,64 @@ async function submitRating() {
     profile: { skill: profileState.skill, craft: profileState.craft, group: profileState.group },
   };
 
+  // The rating only counts if the SERVER took it. This used to swallow every
+  // failure and show the thank-you regardless, so a person could be told they
+  // had helped train the model when no label existed anywhere but their own
+  // browser. If the post fails we keep the form open and let them retry.
+  let serverAccepted = false;
+  let failureMessage = '';
   try {
     const res = await fetch(API_BASE + '/paddleScore/publicRating', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    if (res.ok) {
-      const data = await res.json();
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.success !== false) {
+      serverAccepted = true;
       saved.serverId = data.id;
+    } else if (res.status === 409) {
+      failureMessage = data.error || 'This rating is locked — the two-hour window has passed.';
+    } else if (res.status === 429) {
+      failureMessage = data.error || 'You have rated the daily maximum. Try again tomorrow.';
+    } else if (res.status === 404) {
+      failureMessage = 'We could not find this lake. Open Rate from a lake card or a QR code at the water.';
+    } else {
+      failureMessage = data.error || 'We could not save your rating just now.';
     }
   } catch (e) {
-    // API not built yet or offline — save locally, sync later
+    failureMessage = 'No connection. Your rating was not saved.';
+  }
+
+  if (!serverAccepted) {
+    // Form stays open and the button stays live so the tap can be repeated.
+    btn.disabled = false;
+    btn.textContent = 'Try again';
+    setSubmitError(failureMessage + ' Nothing has been recorded yet.');
+    return;
   }
 
   localStorage.setItem(storageKey, JSON.stringify(saved));
   existingRating = saved;
   showThankYou(false);
+}
+
+/**
+ * Recoverable submit error, shown next to the button. Deliberately NOT a
+ * thank-you: the rating did not reach the server, and saying otherwise is the
+ * exact trust bug this replaced.
+ */
+function setSubmitError(message) {
+  let el = document.getElementById('submitError');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'submitError';
+    el.className = 'submit-error';
+    el.setAttribute('role', 'alert');
+    document.getElementById('submitBtn').insertAdjacentElement('afterend', el);
+  }
+  el.textContent = message;
+  el.style.display = message ? 'block' : 'none';
 }
 
 function getActive(group) {
