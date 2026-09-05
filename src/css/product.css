@@ -1,24 +1,78 @@
-/* Thin product PDP — legacy SKUs without an animal page. */
+/* ==========================================================================
+   Product detail page.
 
-.product-v2 .product-root {
+   Layout is a two-column grid: the gallery holds the left column across both
+   rows and sticks while the right column (buy block, then the dossier) scrolls
+   past it. Class names `product-gallery-main` and the skeleton hooks are load
+   bearing — pdp-motion.css and product.html both name them.
+   ========================================================================== */
+
+/* Escape the shared `html, body { height: 100%; overflow-x: hidden }` in
+   storestyle.css. With html pinned to the viewport the document cannot scroll,
+   which left the dossier below the fold unreachable. Same fix the animal page
+   carries in animal.v3.css. */
+html,
+body.product-v2 {
+  height: auto;
+  min-height: 100vh;
+  overflow: visible;
+}
+
+/* The breadcrumb markup is shared with the animal page, but animal.css scopes
+   its styling to .animal-v2 — on this page the body is .product-v2, so the
+   link rendered as default browser blue, flush against the viewport edge. */
+.product-v2 .animal-breadcrumb {
+  width: 100%;
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0;
+  padding: 20px clamp(18px, 4vw, 32px) 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px;
+  letter-spacing: .06em;
 }
 
-.product-v2 .product-shell {
+.product-v2 .animal-breadcrumb a {
+  color: var(--v2-fg-muted);
+  text-decoration: none;
+}
+
+.product-v2 .animal-breadcrumb a:hover { color: var(--v2-fg); }
+
+.product-v2 .animal-breadcrumb a:focus-visible {
+  outline: 2px solid var(--v2-gold);
+  outline-offset: 3px;
+}
+
+.product-v2 .product-root {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 clamp(18px, 4vw, 32px);
+}
+
+.product-v2 .pdp {
   display: grid;
   grid-template-columns: 1.05fr 1fr;
-  gap: 56px;
+  grid-template-areas:
+    "gallery buy"
+    "gallery file";
+  grid-template-rows: auto 1fr;
+  gap: 32px 56px;
   align-items: start;
-  padding: 32px 0 64px;
+  padding: 32px 0 72px;
 }
 
-.product-v2 .product-gallery {
+/* ── Gallery ─────────────────────────────────────────────── */
+
+.product-v2 .pdp-gallery {
+  grid-area: gallery;
+  position: sticky;
+  top: 96px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
+
 .product-v2 .product-gallery-main {
   position: relative;
   aspect-ratio: 4 / 5;
@@ -28,6 +82,7 @@
   box-shadow: 0 0 0 1px var(--v2-image-border);
   cursor: zoom-in;
 }
+
 .product-v2 .product-gallery-main img {
   position: absolute;
   inset: 0;
@@ -35,14 +90,19 @@
   height: 100%;
   object-fit: cover;
 }
-.product-v2 .product-thumbs {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+
+.product-v2 .product-gallery-main:focus-visible {
+  outline: 2px solid var(--v2-gold);
+  outline-offset: 3px;
 }
+
+.product-v2 .product-thumbs { display: flex; gap: 10px; flex-wrap: wrap; }
+
 .product-v2 .product-thumb {
   flex: 0 0 80px;
   height: 100px;
+  padding: 0;
+  border: 0;
   border-radius: 10px;
   overflow: hidden;
   background: var(--v2-image-bg);
@@ -50,56 +110,152 @@
   cursor: pointer;
   transition: box-shadow 160ms ease;
 }
-.product-v2 .product-thumb.active {
-  box-shadow: 0 0 0 2px var(--v2-fg);
-}
-.product-v2 .product-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
-.product-v2 .product-info { display: flex; flex-direction: column; gap: 20px; }
-.product-v2 .product-title {
+.product-v2 .product-thumb.active { box-shadow: 0 0 0 2px var(--v2-fg); }
+.product-v2 .product-thumb:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 2px; }
+.product-v2 .product-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* ── Buy block ───────────────────────────────────────────── */
+
+.product-v2 .pdp-buy {
+  grid-area: buy;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 520px;
+}
+
+.product-v2 .pdp-eyebrow {
+  margin: 0;
+  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+  font-size: 11px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--v2-gold);
+}
+
+.product-v2 .pdp-title {
   margin: 0;
   font-family: 'Josefin_Bold', 'Josefin Sans', Arial, sans-serif;
-  font-size: clamp(28px, 4vw, 42px);
+  font-size: clamp(34px, 5vw, 56px);
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.02;
+  letter-spacing: -0.015em;
   color: var(--v2-fg);
 }
-.product-v2 .product-price {
+
+/* The catalogue's own punchline, given the size it has always deserved. */
+.product-v2 .pdp-hook {
+  margin: 0;
   font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
-  font-size: 22px;
+  font-size: clamp(18px, 2.4vw, 24px);
+  line-height: 1.25;
+  color: var(--v2-fg);
+  border-left: 3px solid var(--v2-gold);
+  padding-left: 14px;
+}
+
+.product-v2 .pdp-price {
+  margin: 0;
+  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+  font-size: 24px;
   color: var(--v2-fg);
 }
-.product-v2 .product-description {
+
+.product-v2 .pdp-picker { margin-top: 4px; }
+
+.product-v2 .pdp-reassure {
   margin: 0;
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.65;
-  color: var(--v2-fg-muted);
-  max-width: 540px;
-}
-.product-v2 .product-cta {
-  align-self: flex-start;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 48px;
-  padding: 0 28px;
-  background: var(--v2-fg);
-  color: var(--v2-surface-elev);
-  border: 1px solid var(--v2-fg);
-  border-radius: 10px;
-  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
   font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: background-color 160ms ease;
+  color: var(--v2-fg-muted);
 }
-.product-v2 .product-cta:hover { background: var(--v2-gold-bright); border-color: var(--v2-gold-bright); }
-.product-v2 .product-cta.in-cart { background: transparent; color: var(--v2-fg); }
-.product-v2 .product-cta .material-icons { font-size: 18px; }
+
+.product-v2 .pdp-reassure a { color: var(--v2-gold); text-underline-offset: 2px; }
+
+/* ── The file ────────────────────────────────────────────── */
+
+/* Inverted on purpose: a dossier should read as a different document from the
+   page it sits on. Fixed ink colours, not tokens — this panel looks the same
+   in both themes, which is what makes it feel stamped rather than styled. */
+.product-v2 .pdp-file {
+  grid-area: file;
+  background: #14120f;
+  color: #f2ebdc;
+  border: 1px solid rgba(212, 182, 132, 0.28);
+  border-radius: 14px;
+  padding: 26px 28px 22px;
+  max-width: 520px;
+}
+
+.product-v2 .pdp-file-head {
+  margin: 0 0 14px;
+  font-family: 'Josefin_Bold', 'Josefin Sans', Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: #d4b684;
+}
+
+.product-v2 .pdp-file[data-voice="field"] .pdp-file-head { color: #7ed192; }
+
+.product-v2 .pdp-story {
+  margin: 0 0 20px;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  color: rgba(242, 235, 220, 0.9);
+}
+
+.product-v2 .pdp-rows { margin: 0; }
+
+.product-v2 .pdp-row {
+  display: grid;
+  grid-template-columns: 118px 1fr;
+  gap: 14px;
+  padding: 11px 0;
+  border-top: 1px dashed rgba(212, 182, 132, 0.24);
+}
+
+.product-v2 .pdp-row dt {
+  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+  font-size: 10px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: rgba(212, 182, 132, 0.86);
+  padding-top: 3px;
+}
+
+.product-v2 .pdp-row dd {
+  margin: 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  color: #f2ebdc;
+}
+
+.product-v2 .pdp-flag {
+  margin: 18px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(126, 209, 146, 0.12);
+  border: 1px solid rgba(126, 209, 146, 0.34);
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #a9e2b8;
+}
+
+/* ── Skeleton (painted by product.html before the fetch lands) ── */
+
+.product-v2 .product-shell {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 56px;
+  align-items: start;
+  padding: 32px 0 64px;
+}
 
 .product-v2 .product-shell.skeleton .product-gallery-skeleton {
   aspect-ratio: 4/5;
@@ -107,6 +263,7 @@
   border-radius: 16px;
   animation: animal-pulse 1.4s ease-in-out infinite;
 }
+
 .product-v2 .product-info-skeleton { display: flex; flex-direction: column; gap: 14px; }
 .product-v2 .product-info-skeleton .sk-line { background: var(--v2-border); border-radius: 4px; animation: animal-pulse 1.4s ease-in-out infinite; }
 .product-v2 .product-info-skeleton .sk-line-xxl  { height: 44px; width: 70%; }
@@ -114,6 +271,17 @@
 .product-v2 .product-info-skeleton .sk-line-full { height: 14px; width: 100%; }
 .product-v2 .product-info-skeleton .sk-line-half { height: 14px; width: 60%; }
 
-@media (max-width: 768px) {
+/* ── Narrow ──────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .product-v2 .pdp {
+    grid-template-columns: 1fr;
+    grid-template-areas: "gallery" "buy" "file";
+    gap: 28px;
+    padding: 20px 0 48px;
+  }
+  .product-v2 .pdp-gallery { position: static; }
+  .product-v2 .pdp-buy,
+  .product-v2 .pdp-file { max-width: none; }
   .product-v2 .product-shell { grid-template-columns: 1fr; gap: 28px; padding: 20px 0 40px; }
 }

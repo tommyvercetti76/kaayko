@@ -4,7 +4,7 @@
  */
 
 import { priceText } from "/js/priceMap.js";
-import { showBagToast, sizesFor, defaultFit, saveFitPref } from "/js/kaayko_ui.js";
+import { attachExpandingPicker } from "/js/fitPicker.js";
 
 const API_BASE = window.FORCE_PRODUCTION_MODE
   ? window.PRODUCTION_API_BASE
@@ -68,7 +68,7 @@ function heroBuy(p) {
       <div class="variant-img" data-zoom role="button" tabindex="0" aria-label="${esc(p.title)} — open full-size image">${variantImage(p)}</div>
       <div class="an-buy-meta">
         <h2 class="variant-title">${esc(p.title)}</h2>
-        <span class="variant-price">${variantPriceText(p)}</span>
+        <span class="variant-price">${esc(priceText(p))}</span>
         <button type="button" class="variant-cta" data-add-to-bag>
           <span class="material-icons cta-check" style="display:none" aria-hidden="true">check</span>
           <span class="cta-label">Add to bag</span>
@@ -149,11 +149,6 @@ function variantImage(p) {
   return src ? `<img src="${esc(src)}" alt="${esc(p.title)}" loading="lazy" />` : "";
 }
 
-function variantPriceText(p) {
-  if (typeof p.actualPrice === "number") return `$${p.actualPrice.toFixed(2)}`;
-  return esc(p.price || "");
-}
-
 function renderVariants(animal, products) {
   if (!products.length) return "";
   const heading = `More ${esc(animal.name.split(" ").pop())} pieces`;
@@ -162,7 +157,7 @@ function renderVariants(animal, products) {
       <div class="variant-img" data-zoom role="button" tabindex="0" aria-label="${esc(p.title)} — open full-size image">${variantImage(p)}</div>
       <div class="variant-meta">
         <h3 class="variant-title">${esc(p.title)}</h3>
-        <span class="variant-price">${variantPriceText(p)}</span>
+        <span class="variant-price">${esc(priceText(p))}</span>
       </div>
       ${p.description ? `<p class="variant-description">${esc(p.description)}</p>` : ""}
       <button type="button" class="variant-cta" data-add-to-bag>
@@ -175,160 +170,6 @@ function renderVariants(animal, products) {
       <h2 class="an-kicker">${heading}</h2>
       <div class="animal-variants">${cards}</div>
     </section>`;
-}
-
-const GENDERS = ["Male", "Female", "Teen", "Child", "Infant"];
-
-// The picker only earns its two taps for a multi-size t-shirt. One-size and
-// sizeless SKUs go straight into the bag.
-function needsPicker(product) {
-  if ((product.productType || "").toLowerCase() !== "tshirt") return false;
-  const sizes = (product.availableSizes || []).filter(Boolean);
-  const isOneSizeOrNone = sizes.length === 0 || (sizes.length === 1 && /one size/i.test(sizes[0]));
-  if (isOneSizeOrNone) return false;
-  return sizes.length > 1;
-}
-
-// The bag holds 2 unique products. Check BEFORE opening the picker so nobody
-// picks a gender and a size only to be turned away.
-function bagCapReached(product) {
-  const cm = window.cartManager;
-  if (!cm) return false;
-  if (cm.hasProduct(product.id)) return false;
-  const count = cm.getCount();
-  if (count < 2) return false;
-  if (window.showSustainabilityAlert) {
-    window.showSustainabilityAlert({ attemptedProduct: product.title, cartCount: count });
-  }
-  return true;
-}
-
-// Cart-add logic that respects product type — the size/gender picker bug fix.
-// T-shirts → open the fit popup. Tote/Magnet/one-size → add directly.
-function addToBagSmart(product) {
-  const cm = window.cartManager;
-  if (!cm) return false;
-  const priceLabel = priceText(product);
-
-  // Already in the bag → take them to it rather than silently re-adding.
-  if (cm.hasProduct(product.id) && !needsPicker(product)) {
-    window.location.href = "/cart";
-    return true;
-  }
-
-  if (bagCapReached(product)) return false;
-
-  if (needsPicker(product)) {
-    return openSizeGenderPopup(product, priceLabel);
-  }
-
-  // Direct add for totes / magnets / one-size / sizeless products
-  const sizes = (product.availableSizes || []).filter(Boolean);
-  const item = {
-    productId: product.id,
-    title: product.title,
-    subtitle: product.description,
-    price: priceLabel,
-    imgSrc: product.imgSrc,
-    size: sizes[0] || "One Size",
-    gender: null
-  };
-  const ok = cm.addItem(item);
-  if (!ok && window.showSustainabilityAlert) window.showSustainabilityAlert({ attemptedProduct: product.title });
-  if (ok) showBagToast(`${product.title} added to bag`);
-  return ok;
-}
-
-function openSizeGenderPopup(product, priceLabel) {
-  // Minimal centered popup for sizing — only used for multi-size t-shirts.
-  const existing = window.cartManager?.getItem(product.id) || null;
-  const sizes = sizesFor(product);
-  const fallback = defaultFit(product);
-
-  // Start with a real selection so the confirm button is live on open.
-  let g = GENDERS.includes(existing?.gender) ? existing.gender : fallback.gender;
-  let s = sizes.includes(existing?.size) ? existing.size : fallback.size;
-
-  // Whoever opened the picker gets focus back when it closes (2.4.3).
-  const opener = document.activeElement;
-
-  const overlay = document.createElement("div");
-  overlay.className = "filter-overlay active";
-  overlay.style.zIndex = 3000;
-  overlay.innerHTML = `
-    <div class="filter-panel" style="max-width:380px;" role="dialog" aria-modal="true" aria-labelledby="vs-title">
-      <h2 id="vs-title">Choose your fit</h2>
-      <button class="filter-close material-icons" type="button" aria-label="Close" id="vs-close">close</button>
-      <div class="filter-section">
-        <strong id="vs-gender-label">Gender</strong>
-        <div class="chip-group" id="vs-gender" role="group" aria-labelledby="vs-gender-label">
-          ${GENDERS.map(x => `<button type="button" class="chip${x === g ? " selected" : ""}" data-g="${x}" aria-pressed="${x === g}">${x}</button>`).join("")}
-        </div>
-      </div>
-      <div class="filter-section">
-        <strong id="vs-size-label">Size</strong>
-        <div class="chip-group" id="vs-size" role="group" aria-labelledby="vs-size-label">
-          ${sizes.map(x => `<button type="button" class="chip${x === s ? " selected" : ""}" data-s="${esc(x)}" aria-pressed="${x === s}">${esc(x)}</button>`).join("")}
-        </div>
-      </div>
-      <div class="filter-actions">
-        <button type="button" id="vs-cancel">Cancel</button>
-        <button type="button" id="vs-confirm">${existing ? "Update bag" : "Add to bag"}</button>
-      </div>
-    </div>`;
-  document.body.appendChild(overlay);
-
-  // Chips are toggle buttons: the class drives the visuals, aria-pressed the state.
-  const selectChip = (chips, chosen) => chips.forEach(b => {
-    const on = b === chosen;
-    b.classList.toggle('selected', on);
-    b.setAttribute('aria-pressed', String(on));
-  });
-  overlay.querySelectorAll('[data-g]').forEach(btn => btn.addEventListener('click', () => {
-    selectChip(overlay.querySelectorAll('[data-g]'), btn); g = btn.dataset.g;
-  }));
-  overlay.querySelectorAll('[data-s]').forEach(btn => btn.addEventListener('click', () => {
-    selectChip(overlay.querySelectorAll('[data-s]'), btn); s = btn.dataset.s;
-  }));
-
-  // Modal dialog behaviour (2.1.2 / 2.4.3 / 4.1.2): Escape closes, Tab stays
-  // inside, focus returns to the opener on close.
-  function onKeydown(e) {
-    if (e.key === 'Escape') { e.preventDefault(); close(); return; }
-    if (e.key !== 'Tab') return;
-    const focusables = Array.from(overlay.querySelectorAll('button:not([disabled])'));
-    if (!focusables.length) return;
-    const first = focusables[0];
-    const last = focusables[focusables.length - 1];
-    if (!overlay.contains(document.activeElement)) { e.preventDefault(); first.focus(); return; }
-    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-  }
-  function close() {
-    document.removeEventListener('keydown', onKeydown);
-    overlay.remove();
-    if (opener && typeof opener.focus === 'function' && document.contains(opener)) opener.focus();
-  }
-  document.addEventListener('keydown', onKeydown);
-  overlay.querySelector('#vs-close').addEventListener('click', close);
-  overlay.querySelector('#vs-cancel').addEventListener('click', close);
-  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
-  // Land on the current gender choice; the dialog's name is announced on entry.
-  (overlay.querySelector('[data-g].selected') || overlay.querySelector('#vs-close')).focus();
-  overlay.querySelector('#vs-confirm').addEventListener('click', () => {
-    if (!g || !s) return;
-    const ok = window.cartManager.addItem({
-      productId: product.id, title: product.title, subtitle: product.description,
-      price: priceLabel, imgSrc: product.imgSrc, size: s, gender: g
-    });
-    if (!ok && window.showSustainabilityAlert) window.showSustainabilityAlert({ attemptedProduct: product.title });
-    if (ok) {
-      saveFitPref(g, s);
-      showBagToast(`${product.title} added to bag`);
-    }
-    close();
-  });
-  return true;
 }
 
 function syncVariantCtas(products) {
@@ -355,9 +196,10 @@ function bindVariantActions(animal, products, openModalFn) {
     zoom.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModalFn(p); }
     });
-    card.querySelector('[data-add-to-bag]').addEventListener('click', e => {
-      e.stopPropagation();
-      addToBagSmart(p);
+    attachExpandingPicker({
+      host: card,
+      trigger: card.querySelector('[data-add-to-bag]'),
+      product: p
     });
   });
   // Click the hero art → open the full-res zoom modal.

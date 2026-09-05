@@ -436,6 +436,14 @@
         {
           "source": "/store/p/**",
           "destination": "/product.html"
+        },
+        {
+          "source": "/store/about",
+          "destination": "/store-about.html"
+        },
+        {
+          "source": "/store/privacy",
+          "destination": "/store-privacy.html"
         }
       ]
     },
@@ -453,7 +461,9 @@
         "**/kreator/**",
         "**/kortex*.html",
         "**/tenant*.html",
-        "**/alumni*.html"
+        "**/alumni*.html",
+        "about.html",
+        "privacy.html"
       ],
       "headers": [
         {
@@ -736,6 +746,22 @@
         {
           "source": "/store/p/**",
           "destination": "/product.html"
+        },
+        {
+          "source": "/store/about",
+          "destination": "/store-about.html"
+        },
+        {
+          "source": "/store/privacy",
+          "destination": "/store-privacy.html"
+        },
+        {
+          "source": "/about",
+          "destination": "/store-about.html"
+        },
+        {
+          "source": "/privacy",
+          "destination": "/store-privacy.html"
         },
         {
           "source": "**",

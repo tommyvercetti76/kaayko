@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/prod-config.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>About the Kaayko Store</title>
+  <meta name="description" content="Why the Kaayko store exists: hand-drawn Indian wildlife, satirical t-shirts, printed to order, two things to a bag." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://kaayko.com/store/about" />
+
+  <link rel="icon" type="image/png" href="/favicon-32x32.png">
+  <meta name="theme-color" content="#d4af37">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/fonts/fonts.css" />
+  <link rel="stylesheet" href="/css/storestyle.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/footer.css" />
+  <link rel="stylesheet" href="/css/store-about.css" />
+</head>
+
+<body class="store-v2 about-v2">
+  <a class="skip-link" href="#about-main">Skip to content</a>
+
+  <header class="header">
+    <div class="header-top">
+      <div class="header-brand">
+        <h1 class="header-title">Kaayko</h1>
+        <p class="header-subtitle">Made for the Wild</p>
+      </div>
+      <nav class="top-menu"><ul></ul></nav>
+      <div class="header-controls">
+        <a href="/cart" class="cart-nav-button" aria-label="Bag">
+          <svg class="header-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="9" cy="19" r="1.8"></circle>
+            <circle cx="17" cy="19" r="1.8"></circle>
+            <path d="M4 5h2l2.1 8.2a1 1 0 0 0 1 .8h7.9a1 1 0 0 0 1-.75L20 8H8"></path>
+          </svg>
+        </a>
+        <button class="theme-toggle-icon" aria-label="Switch theme"></button>
+        <button class="fab-menu mobile-only" aria-label="Open menu">
+          <span class="header-icon-stack" aria-hidden="true"><span></span><span></span><span></span></span>
+        </button>
+      </div>
+    </div>
+    <div class="mobile-menu-overlay"><ul></ul></div>
+  </header>
+
+  <nav class="animal-breadcrumb">
+    <a href="/store">← All products</a>
+  </nav>
+
+  <main id="about-main" class="about-wrap" tabindex="-1">
+
+    <p class="about-eyebrow">Kaayko Store</p>
+    <h2 class="about-title">Two kinds of thing,<br>printed on purpose.</h2>
+    <p class="about-lede">
+      Kaayko began with one question — is the water worth it today. Everything
+      since has been an answer to a second one: what do you wear while you find out.
+    </p>
+
+    <section class="about-halves" aria-label="What we make">
+      <article class="half">
+        <h3>The animals</h3>
+        <p>
+          Drawn by hand, one at a time, mostly Indian and mostly in trouble.
+          There are a few hundred Bengal floricans left in the world. You will
+          almost certainly never see a snow leopard. We put them on the things
+          you carry every day, because a bag you use is harder to forget than a
+          photograph you scrolled past.
+        </p>
+        <p class="half-foot">Totes and magnets. No stock art, no photographs.</p>
+      </article>
+      <article class="half">
+        <h3>The shirts</h3>
+        <p>
+          These are not that. These are jokes, told straight and printed large:
+          one word that promises transcendence and delivers cotton, a philosopher
+          who ran an empire, a man who could not hear his own applause. If a
+          shirt has to explain itself it has already failed.
+        </p>
+        <p class="half-foot">Every tagline in the shop is on the shirt. Try the game below.</p>
+      </article>
+    </section>
+
+    <section class="about-make" aria-label="How we make them">
+      <h3>How this works</h3>
+      <ul class="make-list">
+        <li><strong>Printed to order.</strong> Nothing is made until you buy it, so nothing is made to be thrown away.</li>
+        <li><strong>Two things to a bag.</strong> The basket stops at two items. That is not a bug, and we are not going to fix it.</li>
+        <li><strong>Thirty days to change your mind.</strong> Unworn, unwashed, refunded in full. <a href="/legal/returns">The details</a>.</li>
+        <li><strong>Small runs.</strong> A design that stops selling stops being printed, and does not come back as a sale.</li>
+      </ul>
+    </section>
+
+    <section class="about-game" aria-labelledby="game-title">
+      <h3 id="game-title">Wild Guess</h3>
+      <p class="game-intro">Five taglines. Three suspects each. Everything here is really printed on something.</p>
+      <div id="game" class="game"><p class="game-empty">Loading the catalogue&hellip;</p></div>
+    </section>
+
+    <section class="about-collection" aria-labelledby="collection-title">
+      <h3 id="collection-title">Everything in the shop</h3>
+      <p class="col-intro">The whole catalogue, with what each one says.</p>
+      <div id="collection"><p class="col-empty">Loading&hellip;</p></div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer is-light">
+    <nav aria-label="Footer">
+      <a href="/store">Store</a>
+      <a href="/store/about" aria-current="page">About</a>
+      <a href="/store/privacy">Privacy</a>
+      <a href="/legal/terms">Terms</a>
+      <a href="/legal/returns">Returns</a>
+      <a href="/legal/shipping">Shipping</a>
+    </nav>
+    <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
+  </footer>
+
+  <script src="/js/header.js"></script>
+  <script type="module">
+    import { storeAboutInit } from '/js/store-about.js';
+    document.getElementById('year').textContent = new Date().getFullYear();
+    storeAboutInit();
+  </script>
+</body>
+</html>

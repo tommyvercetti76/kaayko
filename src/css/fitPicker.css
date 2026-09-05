@@ -1,0 +1,184 @@
+/* ==========================================================================
+   fitPicker.css — the shared fit/size control.
+
+   Used by the grid card (expands in place), the PDP and the animal PDP
+   (rendered inline beside the product). Colours come from the --v2-* tokens
+   in storestyle.css, so night mode follows the store with no overrides here.
+   ========================================================================== */
+
+.fitp {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: left;
+}
+
+.fitp-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fitp-legend {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--v2-fg-muted);
+}
+
+.fitp-guide-toggle {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  letter-spacing: .08em;
+  color: var(--v2-gold);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.fitp-opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Fit chips: word-width, pill-ish. Size boxes: fixed square, the apparel
+   convention — a shopper scans a row of equal boxes far faster than a row of
+   ragged pills. */
+.fitp-chip,
+.fitp-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;               /* 2.5.5 target size */
+  border: 1px solid var(--v2-border);
+  border-radius: 8px;
+  background: var(--v2-surface);
+  color: var(--v2-fg);
+  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease, color .15s ease;
+}
+
+.fitp-chip { padding: 0 16px; letter-spacing: .04em; }
+.fitp-box  { min-width: 52px; padding: 0 10px; letter-spacing: .06em; }
+
+.fitp-chip:hover,
+.fitp-box:hover { border-color: var(--v2-gold); }
+
+.fitp-chip:focus-visible,
+.fitp-box:focus-visible,
+.fitp-guide-toggle:focus-visible,
+.fitp-confirm:focus-visible {
+  outline: 2px solid var(--v2-gold);
+  outline-offset: 2px;
+}
+
+/* Selected state carries a border AND a fill, never colour alone (1.4.1). */
+.fitp-chip.is-selected,
+.fitp-box.is-selected {
+  background: var(--v2-fg);
+  border-color: var(--v2-fg);
+  color: var(--v2-bg);
+}
+
+.fitp-guide {
+  border: 1px solid var(--v2-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: color-mix(in srgb, var(--v2-gold) 7%, transparent);
+}
+
+.fitp-guide table { width: 100%; border-collapse: collapse; }
+
+.fitp-guide caption {
+  caption-side: top;
+  text-align: left;
+  padding-bottom: 8px;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 12px;
+  color: var(--v2-fg-muted);
+}
+
+.fitp-guide th,
+.fitp-guide td {
+  padding: 4px 0;
+  text-align: left;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px;
+  color: var(--v2-fg);
+  border-bottom: 1px solid var(--v2-border);
+}
+
+.fitp-guide thead th {
+  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--v2-fg-muted);
+}
+
+.fitp-guide tbody tr:last-child th,
+.fitp-guide tbody tr:last-child td { border-bottom: 0; }
+
+.fitp-guide p {
+  margin: 8px 0 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 12px;
+  color: var(--v2-fg-muted);
+}
+
+.fitp-confirm {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--v2-gold);
+  color: var(--v2-bg);
+  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity .15s ease;
+}
+
+html.dark-theme .fitp-confirm { color: #0d0f0d; }
+.fitp-confirm:hover { opacity: .88; }
+.fitp-confirm:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ==========================================================================
+   Expanding card
+   Grid rows animate 0fr → 1fr, so the card grows to its natural height with
+   no JS measuring and no fixed max-height to outgrow.
+   ========================================================================== */
+
+.fitp-slot {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .22s ease;
+}
+
+.fitp-slot > div { overflow: hidden; }
+
+.is-picking > .fitp-slot { grid-template-rows: 1fr; }
+
+.is-picking > .fitp-slot > div {
+  padding: 14px 0 2px;
+  border-top: 1px solid var(--v2-border);
+  margin-top: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fitp-slot { transition: none; }
+}

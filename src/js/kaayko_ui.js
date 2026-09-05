@@ -4,12 +4,13 @@
  *  1) Carousel rendering & swipe
  *  2) Image-zoom modal + navigation
  *  3) Voting (♥ button)
- *  4) Buy button & cart mini-panel
+ *  4) Buy button (fit picker lives in fitPicker.js)
  *
  * Updated: now skips any item where `isAvailable !== true`
  */
 
 import { voteOnProduct } from "./kaayko_apiClient.js";
+import { attachExpandingPicker, needsPicker } from "/js/fitPicker.js";
 
 // Cloud Function image proxy base - auto-detect environment
 const IMAGE_PROXY_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
@@ -48,24 +49,6 @@ function isNew(item) {
   return created > 0 && (Date.now() - created) < NEW_WINDOW_MS;
 }
 
-// Hide a size/fit mini panel and keep its trigger's aria-expanded in sync.
-// The trigger is the .cart-link sibling that opened it; focus goes back there
-// when the panel was dismissed from inside (Escape, Add, Remove, re-toggle).
-function closeMiniPanel(panel, { restoreFocus = false } = {}) {
-  if (!panel || panel.style.display === "none") return;
-  panel.style.display = "none";
-  const trigger = panel.parentElement?.querySelector(".cart-link");
-  if (!trigger) return;
-  if (trigger.hasAttribute("aria-expanded")) trigger.setAttribute("aria-expanded", "false");
-  if (restoreFocus) trigger.focus();
-}
-
-// Single delegated handler for closing mini panels on outside click
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('.cart-button-container')) {
-    document.querySelectorAll('.cart-mini-panel').forEach(p => closeMiniPanel(p));
-  }
-});
 
 // Screen-reader announcement for the product grid. The grid is rebuilt
 // wholesale on every filter, so it must NOT be a live region (that would read
@@ -453,6 +436,13 @@ function createCarouselItem(item) {
     openModal(item);
   });
 
+  // The fit picker expands the card itself; a tap outside shrinks it back.
+  attachExpandingPicker({
+    host: card,
+    trigger: cartControl.querySelector(".cart-link"),
+    product: item
+  });
+
   return card;
 }
 
@@ -797,370 +787,56 @@ function createLikeButton(item) {
 }
 
 /* ==========================================================================
-   4) Buy Button & Cart Mini-Panel
+/* ==========================================================================
+   4) Buy Button
+
+   The fit and size choice itself lives in /js/fitPicker.js and expands inside
+   the card. This builds the trigger and keeps its label in step with the bag.
    ========================================================================== */
 
-// Fit picker constants + last-used preference. Preselecting the shopper's last
-// choice removes two taps from every t-shirt purchase.
-const GENDER_OPTIONS = ["Male", "Female", "Teen", "Child", "Infant"];
-const DEFAULT_SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
-const FIT_PREF_KEY = "kaayko.lastFit";
-// Unique ids for the per-card mini panel group labels.
-let miniPanelSeq = 0;
-
-export function readFitPref() {
-  try {
-    const raw = localStorage.getItem(FIT_PREF_KEY);
-    const parsed = raw ? JSON.parse(raw) : null;
-    return parsed && typeof parsed === "object" ? parsed : null;
-  } catch (_) {
-    return null;
-  }
-}
-
-export function saveFitPref(gender, size) {
-  try {
-    localStorage.setItem(FIT_PREF_KEY, JSON.stringify({ gender, size }));
-  } catch (_) { /* localStorage full / unavailable; non-fatal */ }
-}
-
-// The sizes a SKU actually stocks. Falls back to the full run only when the
-// product carries no availableSizes at all.
-export function sizesFor(item) {
-  const sizes = (item.availableSizes || []).filter(Boolean);
-  return sizes.length ? sizes : DEFAULT_SIZES;
-}
-
-// Sensible starting selection: last-used if it is still offered, else the first
-// available size and the first gender.
-export function defaultFit(item) {
-  const sizes = sizesFor(item);
-  const pref = readFitPref() || {};
-  return {
-    size: sizes.includes(pref.size) ? pref.size : sizes[0],
-    gender: GENDER_OPTIONS.includes(pref.gender) ? pref.gender : GENDER_OPTIONS[0]
-  };
-}
-
-/**
- * Confirmation with a route to checkout. Sits under the sticky header (never
- * over the footer) and clears itself after a few seconds.
- */
-export function showBagToast(message = "Added to bag") {
-  let toast = document.getElementById("bag-toast");
-  if (!toast) {
-    toast = document.createElement("div");
-    toast.id = "bag-toast";
-    toast.className = "bag-toast";
-    toast.setAttribute("role", "status");
-    toast.setAttribute("aria-live", "polite");
-    toast.innerHTML = `
-      <span class="bag-toast-msg"></span>
-      <a class="bag-toast-cta" href="/cart">Go to bag →</a>
-      <button type="button" class="bag-toast-close material-icons" aria-label="Dismiss">close</button>
-    `;
-    document.body.appendChild(toast);
-    toast.querySelector(".bag-toast-close").addEventListener("click", () => {
-      toast.classList.remove("visible");
-    });
-  }
-  toast.querySelector(".bag-toast-msg").textContent = message;
-  toast.classList.add("visible");
-  clearTimeout(toast._hideTimer);
-  toast._hideTimer = setTimeout(() => toast.classList.remove("visible"), 6000);
-  return toast;
-}
+// One subscription for the whole grid rather than one per card: cards are
+// rebuilt wholesale on every filter change, and a per-card subscribe would
+// leave a listener behind for each destroyed card.
+window.cartManager?.subscribe?.(() => {
+  document.querySelectorAll(".cart-button-container").forEach((el) => el._syncBag?.());
+});
 
 function createBuyButton(item) {
   const container = document.createElement("div");
   container.className = "cart-button-container";
   container.dataset.productId = item.id;
 
-  // Check if item is in cart
-  const link = document.createElement("a");
-  link.className = "cart-link";
-  link.href = "#";
-  link.dataset.productId = item.id;
-  link.setAttribute("role", "button");
+  // A real <button>: this opens a picker, it does not navigate.
+  const trigger = document.createElement("button");
+  trigger.type = "button";
+  trigger.className = "cart-link";
+  trigger.dataset.productId = item.id;
 
-  const linkIcon = document.createElement("span");
-  linkIcon.className = "material-icons cart-link-icon";
-  linkIcon.textContent = "check";
-  linkIcon.setAttribute("aria-hidden", "true"); // ligature text must not be read
+  const icon = document.createElement("span");
+  icon.className = "material-icons cart-link-icon";
+  icon.textContent = "check";
+  icon.setAttribute("aria-hidden", "true");   // ligature text must not be read
 
   const label = document.createElement("span");
   label.className = "cart-label";
+  trigger.append(icon, label);
+  container.append(trigger);
 
-  function syncCartState() {
-    const currentlyInCart = !!(window.cartManager && window.cartManager.hasProduct(item.id));
-    container.classList.toggle("in-cart", currentlyInCart);
-    link.classList.toggle("in-cart", currentlyInCart);
-    label.textContent = currentlyInCart ? "In bag" : "Add to bag";
-    linkIcon.style.display = currentlyInCart ? "inline-flex" : "none";
-    if (currentlyInCart) {
-      link.setAttribute("aria-label", needsPicker() ? "Edit bag item" : "In your bag — view bag");
-      link.title = needsPicker() ? "Edit size and fit" : "View your bag";
-    } else {
-      link.setAttribute("aria-label", "Add item to bag");
-      link.title = "Add to bag";
-    }
+  function syncBag() {
+    const inBag = !!window.cartManager?.hasProduct(item.id);
+    const choosable = needsPicker(item);
+    container.classList.toggle("in-cart", inBag);
+    trigger.classList.toggle("in-cart", inBag);
+    label.textContent = inBag ? "In bag" : "Add to bag";
+    icon.style.display = inBag ? "inline-flex" : "none";
+    trigger.setAttribute("aria-label",
+      inBag
+        ? (choosable ? `Change size for ${item.title}` : `${item.title} is in your bag — view bag`)
+        : (choosable ? `Choose a size for ${item.title}` : `Add ${item.title} to bag`));
   }
 
-  link.append(linkIcon, label);
-
-  // Mini panel for size/gender selection — a non-modal dialog popover.
-  const miniPanel = document.createElement("div");
-  miniPanel.className = "cart-mini-panel";
-  miniPanel.style.display = "none";
-  miniPanel.setAttribute("role", "dialog");
-  miniPanel.setAttribute("aria-label", `Choose size and fit for ${item.title}`);
-  const panelUid = ++miniPanelSeq;
-
-  let selectedGender = null;
-  let selectedSize = null;
-
-  // One renderer for the panel so the "first paint" and the "reopen" paths can
-  // never drift apart. Sizes come from the SKU, not a hardcoded XS–XXL run.
-  function renderMiniPanel(cartItem) {
-    const sizes = sizesFor(item);
-    const fallback = defaultFit(item);
-    selectedGender = cartItem?.gender || fallback.gender;
-    selectedSize = sizes.includes(cartItem?.size) ? cartItem.size : fallback.size;
-
-    const genderChips = GENDER_OPTIONS.map(g =>
-      `<button type="button" class="mini-option${selectedGender === g ? " selected" : ""}" data-gender="${g}" aria-pressed="${String(selectedGender === g)}">${g}</button>`
-    ).join("");
-    const sizeChips = sizes.map(s =>
-      `<button type="button" class="mini-option${selectedSize === s ? " selected" : ""}" data-size="${s}" aria-pressed="${String(selectedSize === s)}">${s}</button>`
-    ).join("");
-    const genderLabelId = `mini-gender-label-${panelUid}`;
-    const sizeLabelId = `mini-size-label-${panelUid}`;
-
-    miniPanel.innerHTML = `
-      <div class="mini-panel-content">
-        <div class="mini-panel-section">
-          <label id="${genderLabelId}">Gender:</label>
-          <div class="mini-gender-options" role="group" aria-labelledby="${genderLabelId}">${genderChips}</div>
-        </div>
-        <div class="mini-panel-section">
-          <label id="${sizeLabelId}">Size:</label>
-          <div class="mini-size-options" role="group" aria-labelledby="${sizeLabelId}">${sizeChips}</div>
-        </div>
-        <div class="mini-panel-actions">
-          <button type="button" class="mini-add-to-cart">${cartItem ? "Update bag" : "Add to bag"}</button>
-          ${cartItem ? '<button type="button" class="mini-remove-from-cart">Remove from bag</button>' : ""}
-        </div>
-      </div>
-    `;
-
-    bindMiniPanel();
-  }
-
-  function updateAddButton() {
-    const addBtn = miniPanel.querySelector(".mini-add-to-cart");
-    if (addBtn) addBtn.disabled = !(selectedGender && selectedSize);
-  }
-
-  function bindMiniPanel() {
-    // Chips are toggle buttons: the class drives the visuals, aria-pressed the state.
-    const selectChip = (chips, chosen) => {
-      chips.forEach(b => {
-        const on = b === chosen;
-        b.classList.toggle("selected", on);
-        b.setAttribute("aria-pressed", String(on));
-      });
-    };
-
-    miniPanel.querySelectorAll("[data-gender]").forEach(genderBtn => {
-      genderBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        selectChip(miniPanel.querySelectorAll("[data-gender]"), genderBtn);
-        selectedGender = genderBtn.dataset.gender;
-        updateAddButton();
-      });
-    });
-
-    miniPanel.querySelectorAll("[data-size]").forEach(sizeBtn => {
-      sizeBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        selectChip(miniPanel.querySelectorAll("[data-size]"), sizeBtn);
-        selectedSize = sizeBtn.dataset.size;
-        updateAddButton();
-      });
-    });
-
-    const addBtn = miniPanel.querySelector(".mini-add-to-cart");
-    if (addBtn) {
-      addBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        addItemToCart();
-      });
-    }
-
-    const removeBtn = miniPanel.querySelector(".mini-remove-from-cart");
-    if (removeBtn) {
-      removeBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        removeItemFromCart();
-      });
-    }
-
-    updateAddButton();
-  }
-
-  function priceLabel() {
-    return (item.actualPrice != null)
-      ? `$${item.actualPrice.toFixed(2)}`
-      : (PRICE_MAP[item.price] || item.price);
-  }
-
-  function addItemToCart() {
-    if (!window.cartManager) return;
-
-    const success = window.cartManager.addItem({
-      productId: item.id,
-      title: item.title,
-      subtitle: item.description,
-      price: priceLabel(),
-      imgSrc: item.imgSrc,
-      size: selectedSize,
-      gender: selectedGender
-    });
-
-    if (!success) {
-      if (window.showSustainabilityAlert) {
-        window.showSustainabilityAlert({ attemptedProduct: item.title });
-      }
-    } else {
-      saveFitPref(selectedGender, selectedSize);
-      syncCartState();
-      closeMiniPanel(miniPanel, { restoreFocus: true });
-      showBagToast(`${item.title} added to bag`);
-    }
-  }
-
-  function removeItemFromCart() {
-    if (window.cartManager) {
-      window.cartManager.removeItem(item.id);
-      syncCartState();
-      closeMiniPanel(miniPanel, { restoreFocus: true });
-    }
-  }
-
-  // Add directly to cart without showing the gender/size picker — used for
-  // non-tshirt SKUs (totes, magnets, etc.) where gender + multi-size choice
-  // doesn't apply. Reads availableSizes from the product; falls back to
-  // "One Size" if nothing is configured.
-  function addDirect() {
-    if (!window.cartManager) return;
-    const currentCount = window.cartManager.getCount();
-    const currentlyInCart = window.cartManager.hasProduct(item.id);
-    if (currentlyInCart) {
-      // Same label, opposite behaviour used to live here: "In bag" silently
-      // deleted the item. Removal now happens on the bag page, where it is
-      // labelled and reversible.
-      window.location.href = "/cart";
-      return;
-    }
-    if (currentCount >= 2) {
-      if (window.showSustainabilityAlert) {
-        window.showSustainabilityAlert({ attemptedProduct: item.title, cartCount: currentCount });
-      }
-      return;
-    }
-    const sizes = item.availableSizes || [];
-    const ok = window.cartManager.addItem({
-      productId: item.id,
-      title: item.title,
-      subtitle: item.description,
-      price: priceLabel(),
-      imgSrc: item.imgSrc,
-      size: sizes[0] || "One Size",
-      gender: null
-    });
-    if (!ok) {
-      if (window.showSustainabilityAlert) window.showSustainabilityAlert({ attemptedProduct: item.title });
-      return;
-    }
-    syncCartState();
-    showBagToast(`${item.title} added to bag`);
-  }
-
-  // Decide whether this product needs the gender+size picker.
-  // Picker shows ONLY for t-shirts with multi-size selection.
-  function needsPicker() {
-    if ((item.productType || "").toLowerCase() !== "tshirt") return false;
-    const sizes = item.availableSizes || [];
-    if (sizes.length <= 1) return false;
-    return true;
-  }
-
-  // Toggle mini panel
-  function toggleMiniPanel(e) {
-    e.stopPropagation();
-    e.preventDefault();
-
-    if (!needsPicker()) {
-      addDirect();
-      return;
-    }
-
-    const isVisible = miniPanel.style.display === "block";
-
-    const currentCount = window.cartManager ? window.cartManager.getCount() : 0;
-    const currentlyInCart = !!(window.cartManager && window.cartManager.hasProduct(item.id));
-
-    // Critical guard: if the cart already has 2 unique items and this product is not in bag,
-    // show the sustainability modal from the top-layer CTA instead of opening size/gender panel.
-    if (!currentlyInCart && currentCount >= 2) {
-      if (window.showSustainabilityAlert) {
-        window.showSustainabilityAlert({
-          attemptedProduct: item.title,
-          cartCount: currentCount
-        });
-      }
-      return;
-    }
-
-    if (isVisible) {
-      closeMiniPanel(miniPanel, { restoreFocus: true });
-      return;
-    }
-
-    // Close all other panels
-    document.querySelectorAll('.cart-mini-panel').forEach(p => closeMiniPanel(p));
-
-    renderMiniPanel(currentlyInCart ? window.cartManager.getItem(item.id) : null);
-    miniPanel.style.display = "block";
-    link.setAttribute("aria-expanded", "true");
-    // Move focus into the dialog: the current gender chip is the first choice.
-    const firstChoice = miniPanel.querySelector(".mini-option.selected") || miniPanel.querySelector(".mini-option");
-    if (firstChoice) firstChoice.focus();
-  }
-
-  link.addEventListener("click", toggleMiniPanel);
-  link.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      toggleMiniPanel(e);
-    }
-  });
-
-  // Escape anywhere inside the control (trigger or panel) dismisses the
-  // panel and returns focus to the trigger.
-  container.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && miniPanel.style.display === "block") {
-      closeMiniPanel(miniPanel, { restoreFocus: true });
-    }
-  });
-
-  // Only products that actually open the picker advertise a popup (4.1.2).
-  if (needsPicker()) {
-    link.setAttribute("aria-haspopup", "dialog");
-    link.setAttribute("aria-expanded", "false");
-  }
-
-  syncCartState();
-  container.append(link, miniPanel);
+  container._syncBag = syncBag;
+  syncBag();
   return container;
 }
 
