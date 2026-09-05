@@ -13,7 +13,7 @@
  */
 
 import { priceText } from "/js/priceMap.js";
-import { createFitPicker, needsPicker, addDirect } from "/js/fitPicker.js";
+import { createFitPicker, needsPicker, addDirect, isSoldOut } from "/js/fitPicker.js";
 import { satireFor } from "/js/store-satire.js";
 
 const API_BASE = window.FORCE_PRODUCTION_MODE
@@ -123,6 +123,16 @@ function renderProduct(product, openModalFn) {
   // Sizes belong next to the thing being bought, not behind a modal, so the
   // picker is rendered inline and open. Its own confirm button is the CTA.
   const slot = document.getElementById('pdp-picker');
+
+  // Sold out replaces the whole buy control — offering a size for something we
+  // cannot ship is the wrong kind of helpful.
+  if (isSoldOut(product)) {
+    const note = document.createElement('p');
+    note.className = 'pdp-sold-out';
+    note.textContent = 'Sold out';
+    slot.appendChild(note);
+    return;
+  }
 
   if (needsPicker(product)) {
     slot.appendChild(createFitPicker(product).el);

@@ -285,3 +285,18 @@ body.product-v2 {
   .product-v2 .pdp-file { max-width: none; }
   .product-v2 .product-shell { grid-template-columns: 1fr; gap: 28px; padding: 20px 0 40px; }
 }
+
+/* Sold out replaces the buy control entirely — see js/product.js. */
+.product-v2 .pdp-sold-out {
+  margin: 0;
+  padding: 14px 18px;
+  border: 1px solid var(--v2-border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--v2-fg) 6%, transparent);
+  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--v2-fg-muted);
+  text-align: center;
+}

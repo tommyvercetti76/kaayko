@@ -1847,3 +1847,34 @@ html.dark-theme .store-v2 .footer-elements {
   outline: 2px solid var(--v2-gold);
   outline-offset: 3px;
 }
+
+/* ──────────────────────────────────────────────────────────
+   Sold out — still on display, not purchasable.
+   Distinct from hidden (isAvailable:false), which the server no longer
+   returns at all. Checkout enforces this independently in pricing.js.
+   ────────────────────────────────────────────────────────── */
+
+.store-v2 .sold-out-flag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 3;
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: rgba(20, 18, 15, 0.92);
+  color: #f2ebdc;
+  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+  font-size: 10px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+/* The photo dims, the words stay legible. */
+.store-v2 .carousel-item.is-sold-out .image-container img { opacity: .55; }
+
+.store-v2 .cart-button-container.is-sold-out .cart-link {
+  color: var(--v2-fg-muted);
+  cursor: not-allowed;
+}
+
+.store-v2 .cart-button-container.is-sold-out .cart-link::after { opacity: .18; }

@@ -196,8 +196,43 @@ const THEME_STORY = Object.freeze({
  * @returns {{voice: 'satire'|'field', hook: string, story: string,
  *            rows: Array<[string, string]>, atRisk: boolean}}
  */
+/**
+ * Editorial copy stored on the product document, written by the Kortex
+ * Products view. Returns null when the product carries none, so the built-in
+ * maps below remain the fallback.
+ *
+ * @param {object} product
+ * @returns {{voice: string, hook: string, story: string,
+ *            rows: Array<[string, string]>, atRisk: boolean}|null}
+ */
+function editorialFrom(product) {
+  const story = typeof product?.storyCopy === "string" ? product.storyCopy.trim() : "";
+  const rawRows = Array.isArray(product?.fileRows) ? product.fileRows : [];
+  const rows = rawRows
+    .filter((r) => r && typeof r.label === "string" && typeof r.value === "string" && r.label.trim() && r.value.trim())
+    .map((r) => [r.label.trim(), r.value.trim()]);
+
+  if (!story && !rows.length) return null;
+
+  const field = FIELD[product?.id];
+  return {
+    voice: field ? "field" : "satire",
+    hook: String(product?.description || "").trim(),
+    story: story || (field ? `${field.species} — ${field.range}.` : ""),
+    rows: rows.length ? rows : (field ? [["Species", field.species], ["IUCN status", field.status]] : []),
+    atRisk: !!field && AT_RISK.has(field.status)
+  };
+}
+
 export function satireFor(product) {
   const hook = String(product?.description || "").trim();
+
+  // Copy edited in Kortex wins over anything shipped in this file. The maps
+  // below stay as the default for every product nobody has edited yet, so
+  // there is no migration and no blank panel.
+  const edited = editorialFrom(product);
+  if (edited) return edited;
+
   const field = FIELD[product?.id];
 
   if (field) {

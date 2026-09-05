@@ -30,6 +30,7 @@ export const ROUTES = {
   'tenant-onboarding': '/tenant-onboarding',
   submissions: '/submissions',
   orders: '/orders',
+  products: '/products',
   ops: '/ops',
 };
 

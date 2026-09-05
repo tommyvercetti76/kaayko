@@ -10,7 +10,7 @@
  */
 
 import { voteOnProduct } from "./kaayko_apiClient.js";
-import { attachExpandingPicker, needsPicker } from "/js/fitPicker.js";
+import { attachExpandingPicker, needsPicker, isSoldOut } from "/js/fitPicker.js";
 
 // Cloud Function image proxy base - auto-detect environment
 const IMAGE_PROXY_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
@@ -339,9 +339,16 @@ function animateCarouselItems() {
 function createCarouselItem(item) {
   const card = document.createElement("div");
   card.className = "carousel-item";
+  if (isSoldOut(item)) card.classList.add("is-sold-out");
 
   const { metadataPill, heartButton } = createLikeButton(item);
   const imgContainer = buildImageContainer(item, metadataPill, heartButton);
+  if (isSoldOut(item)) {
+    const flag = document.createElement("span");
+    flag.className = "sold-out-flag";
+    flag.textContent = "Sold out";
+    imgContainer.append(flag);
+  }
   const indicator = createImageIndicator(item.imgSrc.length, 0);
   if (indicator) {
     imgContainer.append(indicator);
@@ -823,6 +830,17 @@ function createBuyButton(item) {
   container.append(trigger);
 
   function syncBag() {
+    // Sold out is terminal for this control: no label churn, no picker, and the
+    // button is genuinely disabled rather than merely styled that way.
+    if (isSoldOut(item)) {
+      container.classList.add("is-sold-out");
+      trigger.disabled = true;
+      icon.style.display = "none";
+      label.textContent = "Sold out";
+      trigger.setAttribute("aria-label", `${item.title} is sold out`);
+      return;
+    }
+
     const inBag = !!window.cartManager?.hasProduct(item.id);
     const choosable = needsPicker(item);
     container.classList.toggle("in-cart", inBag);

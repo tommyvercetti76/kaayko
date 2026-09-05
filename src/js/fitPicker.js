@@ -88,6 +88,16 @@ function isApparel(product) {
 }
 
 /**
+ * Off sale but still on display. Distinct from `isAvailable: false`, which
+ * removes the product from the storefront entirely — the server no longer even
+ * returns it. Checkout enforces this independently in pricing.js, so a stale
+ * tab cannot buy round it.
+ */
+export function isSoldOut(product) {
+  return product?.soldOut === true;
+}
+
+/**
  * Does this product need a choice before it can go in the bag?
  *
  * Deliberately NOT keyed on productType: 9 apparel SKUs ship with an empty
@@ -207,6 +217,7 @@ export function bagCapReached(product) {
 export function addToBag(product, { size, gender } = {}) {
   const cm = window.cartManager;
   if (!cm) return false;
+  if (isSoldOut(product)) return false;
   if (bagCapReached(product)) return false;
 
   const ok = cm.addItem({
@@ -234,6 +245,7 @@ export function addToBag(product, { size, gender } = {}) {
  * re-adding or — as an earlier version did — silently deleting itself.
  */
 export function addDirect(product) {
+  if (isSoldOut(product)) return false;
   if (window.cartManager?.hasProduct(product.id)) {
     window.location.href = "/cart";
     return true;
@@ -482,6 +494,7 @@ export function attachExpandingPicker({ host, trigger, product }) {
   trigger.addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isSoldOut(product)) return;
     if (!needsPicker(product)) { addDirect(product); return; }
     controller.isOpen() ? close({ restoreFocus: true }) : open();
   });
