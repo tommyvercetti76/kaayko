@@ -18,7 +18,7 @@ const IMAGE_PROXY_BASE = window.location.hostname === 'localhost' || window.loca
   : "https://api-vwcc5j4qda-uc.a.run.app/images";  // Production
 
 // Price symbol → dollar amount mapping (single source of truth)
-import { PRICE_MAP } from "/js/priceMap.js";
+import { PRICE_MAP, priceText } from "/js/priceMap.js";
 
 // Product type → section heading. Determines render order on the store page.
 // Unknown / missing productType lands in the "Other" bucket at the end.
@@ -269,7 +269,15 @@ function buildSectionFacets(sectionEl, items) {
       chip.dataset.facet = row.key;
       chip.dataset.value = val.toLowerCase();
       chip.setAttribute("aria-pressed", "false");
-      chip.innerHTML = `${val}<span class="section-facet-count">${count}</span>`;
+      // textContent, never innerHTML: `val` is a product tag, and tags are
+      // written by kreators through api/kreators/kreatorProductRoutes.js. An
+      // unescaped tag here was a stored-XSS path into every store visitor —
+      // and the admin ID token lives in localStorage on this same origin.
+      chip.append(document.createTextNode(val));
+      const countEl = document.createElement("span");
+      countEl.className = "section-facet-count";
+      countEl.textContent = count;
+      chip.append(countEl);
       chip.addEventListener("click", () => {
         // Single-select within a non-multi row (Theme/Park). Multi-select for Tags.
         if (!row.multi) {
@@ -405,11 +413,10 @@ function createCarouselItem(item) {
   // Convert price symbols to actual dollar amount - use actualPrice if available
   const actualPrice = document.createElement("p");
   actualPrice.className = "actual-price";
-  if (item.actualPrice) {
-    actualPrice.textContent = `$${item.actualPrice.toFixed(2)}`;
-  } else {
-    actualPrice.textContent = PRICE_MAP[item.price] || item.price;
-  }
+  // priceText() in priceMap.js tests `typeof === "number"`; this used to test
+  // truthiness, so a product priced 0 showed the "$" tier here and $0.00 on the
+  // PDP. One rule, one place.
+  actualPrice.textContent = priceText(item);
 
   priceContainer.append(actualPrice);
 

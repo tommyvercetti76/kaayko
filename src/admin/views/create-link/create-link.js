@@ -1110,7 +1110,7 @@ function buildUTM() {
 function showAlumniSuccessModal(linkCode, data, webDest) {
   let reportUrl = '';
   if (isAlumniLink(webDest)) {
-    apiFetch('/alumni/report-key', {
+    apiFetch('/alumni/admin/report-key', {
       method: 'POST',
       body: JSON.stringify({ linkCode })
     }).then(r => r.json()).then(d => {

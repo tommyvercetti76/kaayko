@@ -38,6 +38,7 @@
 }
 
 .site-footer nav {
+  flex-wrap: wrap;   /* footer links wrap instead of overflowing a narrow screen */
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -94,6 +95,8 @@ html.dark-theme .site-footer.is-light a { color: #b5935a; }
 html.dark-theme .site-footer.is-light a:hover { color: #d9bd7b; }
 
 @media (max-width: 520px) {
-  .site-footer { padding: 2rem 1.25rem; }
+  .site-footer {
+    padding: 2rem max(1.25rem, env(safe-area-inset-right)) max(2rem, env(safe-area-inset-bottom)) max(1.25rem, env(safe-area-inset-left));
+  }
   .site-footer nav { gap: 0.5rem 1rem; }
 }

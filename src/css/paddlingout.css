@@ -583,7 +583,12 @@ body {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  padding: 2rem 2rem 1.25rem;
+  gap: 1rem;
+  /* Side padding respects the notch/rounded corners on devices that report an
+     inset. env() resolves to 0 everywhere else, so this is a no-op on desktop.
+     Paired with viewport-fit=cover in the page <head> — one without the other
+     is either useless (no cover) or clips (cover with no inset padding). */
+  padding: 2rem max(2rem, env(safe-area-inset-right)) 1.25rem max(2rem, env(safe-area-inset-left));
   border-bottom: 1px solid rgba(181,147,90,0.18);
 }
 
@@ -591,6 +596,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+  min-width: 0;   /* without this a long spot name cannot shrink and shoves the
+                     header actions off-screen — flex children default to
+                     min-width:auto */
 }
 
 .po-eyebrow {
@@ -604,6 +612,7 @@ body {
 }
 
 .po-title {
+  overflow-wrap: anywhere;          /* a long single-word place name wraps rather than overflowing */
   font-family: var(--display);      /* Bebas — same wordmark face as the homepage */
   font-size: clamp(1.7rem, 4.4vw, 2.35rem);
   font-weight: 400;
@@ -672,7 +681,7 @@ body {
 
 @media (max-width: 600px) {
   .po-page-header {
-    padding: 1.4rem 1.1rem 1rem;
+    padding: 1.4rem max(1.1rem, env(safe-area-inset-right)) 1rem max(1.1rem, env(safe-area-inset-left));
   }
   .po-title {
     font-size: 1.4rem;

@@ -22,14 +22,20 @@ STORAGE_PREFIX = "kaaykoStoreTShirtImages"
 DEFAULT_BUCKET = "kaaykostore.firebasestorage.app"
 
 
+# Mirrors priceSymbolFor() in kaayko-api/functions/api/checkout/pricing.js and
+# PRICE_SYMBOL_CENTS: the highest tier at or below the price. These thresholds
+# used to be >=50/35/20 here, which disagreed with the server over most of the
+# range — the same $25 product got "$$" from this script and "$" from the API.
+# The symbol is only a fallback (actualPrice wins), but the two must not drift.
+_PRICE_TIERS = (("$", 19.99), ("$$", 29.99), ("$$$", 39.99), ("$$$$", 49.99))
+
+
 def price_to_symbol(price: float) -> str:
-    if price >= 50:
-        return "$$$$"
-    if price >= 35:
-        return "$$$"
-    if price >= 20:
-        return "$$"
-    return "$"
+    symbol = _PRICE_TIERS[0][0]
+    for sym, threshold in _PRICE_TIERS:
+        if price >= threshold:
+            symbol = sym
+    return symbol
 
 
 @dataclass

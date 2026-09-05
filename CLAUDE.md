@@ -35,7 +35,7 @@ firebase deploy
 - All `/api/**` requests are handled by the Express app at `kaayko-api/functions/api/index.js` — check `firebase.json` for routing
 - Frontend pages are plain HTML with vanilla JS — do not introduce a build step for existing pages
 - Kutz (`/kutz`) is the only React app — keep it isolated in `kaayko/kutz/`
-- Firestore auth: custom claims `admin` (boolean) and `kreator` (boolean) control access
+- Auth: there are no `admin`/`kreator` boolean custom claims (this line used to claim there were). Admin access = Firebase ID token verified by `requireAuth`, which then reads the role from Firestore `admin_users/{uid}`. Kreator access = a separate HMAC session token. See `kaayko-api/CLAUDE.md` → "Auth pattern"
 - Rate limiting is on product voting — don't remove it
 
 ## What NOT to do
