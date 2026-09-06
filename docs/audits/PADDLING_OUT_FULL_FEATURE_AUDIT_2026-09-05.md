@@ -7,13 +7,19 @@ Audited surfaces: `https://kaayko.com/paddlingout`, all nested Paddling Out page
 
 Paddling Out is useful and mostly connected for the core public journey: directory -> lake card -> forecast -> search -> submit a lake -> admin review. The live public API returned 17 public/scored spots, and the deployed Paddling Out pages were current as of `Last-Modified: Sat, 05 Sep 2026 14:46:03 GMT`.
 
-Do not call the full feature set complete yet. The main product has three important gaps:
+Current working-tree status: the public Paddling Out path is much closer to
+complete than it was at the start of this audit. The main public blockers found
+in the audit were addressed in code after the initial pass:
 
-1. The "Rate" experience is split between a polished Forecast page, a legacy `rate.html` page, and a trainer React app whose admin/training endpoints are not implemented in the current backend.
-2. "Add your own lake" frontend copy promises a 2-day auto-go-live flow, while the backend now intentionally keeps submissions hidden until admin validation.
-3. The Search page can lock itself after a successful/no-result search because `isSearching` is not reset on early returns.
+1. The public "Rate" CTA now goes to `/paddlingout/rate?id=...`, not the partial trainer app.
+2. "Add your own lake" copy now matches the safer admin-review publication model.
+3. Search cleanup now runs in `finally`, so a normal search should not lock the page.
+4. Public rating no longer stores raw IPs and validates public spot IDs before accepting labels.
 
-The submission backend itself is in much better shape than the old public copy suggests: image validation, size limits, storage cleanup on rejection, admin review, and public visibility gating are present. The product promise just needs to match the backend model.
+Do not call the full feature set complete yet. The remaining work is owner or
+ops driven: decide whether trainer is retired or rebuilt behind admin auth,
+perform a real Add Lake admin-approve/reject smoke, and decide whether submitters
+should receive an immediate confirmation email.
 
 ## Live Evidence
 
@@ -48,16 +54,19 @@ Backend verification:
 |---|---|---|---|---|
 | Public lake directory | `src/paddlingout.html`, `src/js/paddlingout.js` | `GET /api/paddlingOut` | Connected | Live list returned 17 public/scored spots. Favorites, card rendering, and Add Lake tile are present. |
 | Lake card forecast CTA | `src/js/components/PaddleCard.js:381` | `/paddlingout/forecast?id=...`, `GET /paddlingOut/:id`, `GET /fastForecast` | Connected | Strongest UX surface. |
-| Lake card rate CTA | `src/js/components/PaddleCard.js:382` | `/paddlingout/trainer?lake=...`, `/api/paddle-trainer/*` | Partly broken | CTA opens trainer, but several trainer endpoints return 404 live. Legacy `/paddlingout/rate` exists separately. |
-| Forecast page | `src/paddlingout/forecast.html`, `src/css/forecast.css`, `src/js/services/apiClient.js` | `GET /paddlingOut/:id`, `GET /fastForecast`, score APIs | Connected | Best visual system. Custom lat/lng forecast works. Needs small data guards and escaping hardening. |
-| Nearby search | `src/paddlingout/search.html`, `src/js/searchPage.js` | `GET /paddlingOut/geocode`, `GET /nearbyWater`, `POST /paddleScore/batch` | Mostly connected | Live APIs work. Search can lock because `isSearching` is not reset on early returns. |
-| Add your own lake | `src/paddlingout/submitentry.html` | `POST /paddlingOut/submitEntry`, admin validate/reject | Backend connected, promise mismatch | Upload validation, admin queue, and publication gate exist. Frontend still promises auto-go-live within 2 days. |
+| Lake card rate CTA | `src/js/components/PaddleCard.js:382` | `/paddlingout/rate?id=...`, `POST /paddleScore/publicRating` | Connected in working tree | CTA now avoids trainer. Rate remains a public contribution page; trainer is separate/internal until rebuilt. |
+| Forecast page | `src/paddlingout/forecast.html`, `src/css/forecast.css`, `src/js/services/apiClient.js` | `GET /paddlingOut/:id`, `GET /fastForecast`, score APIs | Connected | Best visual system. Custom lat/lng forecast works; coordinate guards and escaping hardening are in the working tree. |
+| Nearby search | `src/paddlingout/search.html`, `src/js/searchPage.js` | `GET /paddlingOut/geocode`, `GET /nearbyWater`, `POST /paddleScore/batch` | Connected in working tree | Live APIs work. Search state cleanup now runs in `finally`. |
+| Add your own lake | `src/paddlingout/submitentry.html` | `POST /paddlingOut/submitEntry`, admin validate/reject | Connected in working tree | Upload validation, admin queue, and publication gate exist. Frontend copy now says review-before-publication. |
 | Settings | `src/paddlingout/settings.html`, `src/js/paddlingPrefs.js` | local storage only | Connected | Device-local preferences are reasonable: units, boat type, card style, saved areas/favorites. |
-| Legacy rate page | `src/paddlingout/rate.html` | `GET /paddlingOut/:id`, `GET /paddleScore`, `POST /paddleScore/publicRating` | Connected with quality gaps | Submits feedback but treats failed API calls as success. Also asks GPS automatically. |
+| Legacy rate page | `src/paddlingout/rate.html` | `GET /paddlingOut/:id`, `GET /paddleScore`, `POST /paddleScore/publicRating` | Connected in working tree | Now treats the server as source of truth and makes GPS opt-in. A deeper visual rebuild is optional, not launch-blocking. |
 | Trainer | `src/paddlingout/trainer/index.html`, `paddle-llm/paddle-trainer/src/components/PaddleTrainer.jsx` | `GET /paddle-trainer/tourist-lakes`, `GET /tourist-weather`, `POST /ratings` implemented only | Partly broken | Frontend calls `/status`, `/ratings` GET, `/priority-lakes`, `/lakes`, `/weather`, `/scenarios`, `/admin-prefs`, `/reset-training`, DELETE `/ratings/:id`; these are absent. |
 | Admin submissions | `src/admin/kortex.html`, `src/admin/views/submissions/submissions.js` | `GET/POST /paddlingOut/admin/submissions...` | Connected and protected | Queue lists pending submissions, validates/rejects, escapes untrusted text and image URLs. |
 
-## P0/P1 Findings
+## Original P0/P1 Findings
+
+These were the initial audit findings. The working-tree resolution notes below
+record what has since been addressed and what remains owner-required.
 
 ### P0 - "Add Your Own Lake" Promise Does Not Match Publication Logic
 
@@ -254,8 +263,9 @@ P2:
 
 # Resolution Notes — 5 September 2026
 
-Implemented and deployed. Tests: `paddlingout-submit` + `weather-paddle-score` = 40 passed.
-Live smoke re-run after deploy; results inline below.
+Implemented in the current working tree. Tests from the September audit pass:
+`paddlingout-submit` + `weather-paddle-score` = 40 passed. Re-run live smoke
+after deployment before treating these as production facts.
 
 ## Completed
 
@@ -263,15 +273,13 @@ Live smoke re-run after deploy; results inline below.
 gone. The lede, the "3. Goes live" tour step and both success variants (email and
 anonymous) now say the entry is queued for review and appears publicly only after
 a person approves it. The anonymous variant additionally says the user will not
-hear back, because no email was given. Verified live: `grep '2 days'` on the
-deployed page returns 0.
+hear back, because no email was given.
 *Files:* `src/paddlingout/submitentry.html`
 
 **P0/P1 — Rate CTA no longer opens the trainer.** The lake-card CTA now goes to
 `/paddlingout/rate?id=<spotId>`. Trainer's nine missing endpoints are unchanged
 and remain unimplemented, but no public entry point reaches them; trainer already
-carries `noindex, follow`. Verified live: `grep 'paddlingout/trainer'` on the
-deployed `PaddleCard.js` returns 0.
+carries `noindex, follow`.
 *Files:* `src/js/components/PaddleCard.js`
 
 **P1 — Search no longer locks.** `runSearch` cleanup moved into a `finally`. Three
@@ -294,13 +302,11 @@ returns an HMAC under a server-side salt. `spotId` is now verified to exist *and
 be publicly visible (`isPublicPaddlingSpot`) before any rating is accepted — this
 previously only happened when GPS was supplied. `predictedScore` is coerced and
 bounded 0–5 via `coerceScore()`, which also rejects `null`/`''` rather than
-recording them as a genuine zero. Verified live: a rating for a non-existent spot
-returns `{"success":false,"error":"Unknown spot"}`.
+recording them as a genuine zero.
 *Files:* `functions/api/weather/paddleScore.js`
 
 **P1 — Submit uses the server geocode proxy.** Direct browser calls to Nominatim
-replaced with `/api/paddlingOut/geocode`, the same path Search uses. Verified live:
-`grep 'nominatim'` on the deployed page returns 0.
+replaced with `/api/paddlingOut/geocode`, the same path Search uses.
 *Files:* `src/paddlingout/submitentry.html`
 
 **P2 — Forecast guards.** `formatCoordinates` returns `Coordinates unavailable`
@@ -313,8 +319,8 @@ Region/country are escaped through the page's existing `esc()` before reaching
 that actually renders a single spot.
 *Files:* `functions/api/weather/paddlingout.js`
 
-**P2 — nearbyWater radius.** Bounded at both ends server-side. Verified live:
-`radius=-5` → 1, `radius=abc` → 30, `radius=999` → 60.
+**P2 — nearbyWater radius.** Bounded at both ends server-side:
+`radius=-5` normalizes to 1, `radius=abc` to 30, and `radius=999` to 60.
 *Files:* `functions/api/weather/nearbyWater.js`
 
 ## Rate page — what changed, and what did not
