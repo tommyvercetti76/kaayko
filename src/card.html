@@ -230,8 +230,8 @@ a { color: inherit; text-decoration: none; }
 
     <div class="eyebrow">
       <p class="cap">Kaayko &middot; no. 0001</p>
-      <h1>Five things, and <em>one</em> of them is why you have this.</h1>
-      <p>A shop, a forecast, a workstation, a link, a school network. Each card opens its own.</p>
+      <h1>Five things. <em>One</em> of them is why you have this.</h1>
+      <p>A bison, a crane, an owl, a raven, an elk. Each one stands for something you can use.</p>
     </div>
 
     <div class="card-wrap">
@@ -395,19 +395,22 @@ const nowEl = document.getElementById('now');
 const frontImg = document.getElementById('face-front');
 const backImg = document.getElementById('face-back');
 const pad = (n) => String(n).padStart(2, '0');
-let series = [], at = 0;
+let series = [], at = 0, ver = '0';
 
 function show(i, { focus = false } = {}) {
   if (!series.length) return;
   at = (i + series.length) % series.length;
   const c = series[at];
+  // The filenames are stable across rebuilds, so a cached SVG would keep serving
+  // the previous design under the new name. The index carries a build stamp and
+  // every card URL is versioned with it.
   const stem = `/assets/cards/${pad(c.n)}_${c.slug}`;
-  frontImg.src = `${stem}_front.svg`;
-  backImg.src = `${stem}_back.svg`;
+  frontImg.src = `${stem}_front.svg?v=${ver}`;
+  backImg.src = `${stem}_back.svg?v=${ver}`;
   frontImg.alt = `${c.name}, front of the card`;
   backImg.alt = `${c.name}, back of the card`;
-  nowEl.innerHTML = `<b>${esc(c.name)}</b>` +
-    `<i>${esc(c.line)} &middot; <a class="to-product" href="${esc(c.url)}">open it</a></i>`;
+  nowEl.innerHTML = `<b>${esc(c.hook)}</b>` +
+    `<i>${esc(c.name)} &middot; ${esc(c.line)} &middot; <a class="to-product" href="${esc(c.url)}">open it</a></i>`;
   [...marks.children].forEach((b, j) => {
     b.setAttribute('aria-checked', String(j === at));
     b.tabIndex = j === at ? 0 : -1;
@@ -417,7 +420,7 @@ function show(i, { focus = false } = {}) {
   // Warm the neighbours so stepping through never waits on the network.
   for (const d of [1, -1]) {
     const n = series[(at + d + series.length) % series.length];
-    new Image().src = `/assets/cards/${pad(n.n)}_${n.slug}_front.svg`;
+    new Image().src = `/assets/cards/${pad(n.n)}_${n.slug}_front.svg?v=${ver}`;
   }
 }
 
@@ -426,7 +429,9 @@ function show(i, { focus = false } = {}) {
     // The set changes when the shop's designs change, so never read a stale index:
     // a cached one asks for cards that have been replaced and the face comes back blank.
     const r = await fetch('/assets/cards/index.json', { cache: 'no-cache' });
-    series = (await r.json()).cards || [];
+    const idx = await r.json();
+    series = idx.cards || [];
+    ver = idx.v || '0';
   } catch (_) { series = []; }
   if (!series.length) return;
 

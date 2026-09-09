@@ -5,15 +5,19 @@
    "n": 1,
    "slug": "kaayko",
    "name": "Kaayko",
-   "line": "The shop. Printed to order, nothing made to be thrown away.",
+   "hook": "Own less. Mean it more.",
+   "line": "Two things a bag. Printed when you order, so nothing is made to be binned.",
+   "animal": "Bison",
    "url": "https://kaay.store",
-   "accent": "#A8843C"
+   "accent": "#8A5A2B"
   },
   {
    "n": 2,
    "slug": "paddlingout",
    "name": "Paddling Out",
-   "line": "Paddle conditions for seventeen hand-picked lakes, rivers and reservoirs.",
+   "hook": "Know before you launch.",
+   "line": "Seventeen spots scored for wind, water and UV before you load the car.",
+   "animal": "SandhillCrane",
    "url": "https://kaayko.com/paddlingout",
    "accent": "#2E6F76"
   },
@@ -21,7 +25,9 @@
    "n": 3,
    "slug": "forge",
    "name": "Forge",
-   "line": "Local-first generative AI for Apple Silicon. It runs on your own machine.",
+   "hook": "It never leaves the Mac.",
+   "line": "Local-first generative AI for Apple Silicon. Your files stay yours.",
+   "animal": "GrayOwl",
    "url": "https://kaayko.com/forge",
    "accent": "#A6512E"
   },
@@ -29,7 +35,9 @@
    "n": 4,
    "slug": "kortex",
    "name": "Kortex",
-   "line": "One link, every device. Make a QR in ten seconds and re-point it after printing.",
+   "hook": "Reprint nothing. Ever.",
+   "line": "Re-point a QR after it is already on the poster. Ten seconds, no account.",
+   "animal": "Raven",
    "url": "https://kaayko.com/kortex",
    "accent": "#3B4E8C"
   },
@@ -37,9 +45,12 @@
    "n": 5,
    "slug": "alumni",
    "name": "Alumni",
-   "line": "School alumni networks that actually connect: mentoring, scholarships, a real directory.",
+   "hook": "One call. The whole batch.",
+   "line": "Mentors, scholarships and a directory that is actually current.",
+   "animal": "Elk",
    "url": "https://kaayko.com/alumni",
    "accent": "#4E6B3E"
   }
- ]
+ ],
+ "v": "20260908214808"
 }
