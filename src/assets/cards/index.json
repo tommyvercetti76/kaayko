@@ -1,77 +1,77 @@
 {
- "label": "KAAYKO \u00b7 FIRST SERIES",
+ "label": "KAAYKO \u00b7 TOTE SERIES",
  "cards": [
   {
    "n": 1,
-   "slug": "blackbuck",
-   "name": "Indian Blackbuck",
-   "binomial": "Antilope cervicapra",
-   "range": "Velavadar, Gujarat",
-   "status": "Least Concern",
-   "denom": "1.00"
+   "slug": "bison",
+   "name": "Bison",
+   "binomial": "Bison bison",
+   "range": "Yellowstone, Wyoming",
+   "status": "Near Threatened",
+   "est": "1872"
   },
   {
    "n": 2,
-   "slug": "bobcat",
-   "name": "Bobcat",
-   "binomial": "Lynx rufus texensis",
-   "range": "Big Bend, Texas",
+   "slug": "elk",
+   "name": "Elk",
+   "binomial": "Cervus canadensis",
+   "range": "Rocky Mountain, Colorado",
    "status": "Least Concern",
-   "denom": "1.00"
+   "est": "1915"
   },
   {
    "n": 3,
-   "slug": "greater-flamingo",
-   "name": "Greater Flamingo",
-   "binomial": "Phoenicopterus roseus",
-   "range": "Chilika, Odisha",
+   "slug": "grizzly",
+   "name": "Grizzly Bear",
+   "binomial": "Ursus arctos horribilis",
+   "range": "Glacier, Montana",
    "status": "Least Concern",
-   "denom": "1.00"
+   "est": "1910"
   },
   {
    "n": 4,
-   "slug": "oriental-pied-hornbill",
-   "name": "Oriental Pied Hornbill",
-   "binomial": "Anthracoceros albirostris",
-   "range": "Sundarbans, West Bengal",
+   "slug": "raven",
+   "name": "Common Raven",
+   "binomial": "Corvus corax",
+   "range": "Acadia, Maine",
    "status": "Least Concern",
-   "denom": "1.00"
+   "est": "1919"
   },
   {
    "n": 5,
-   "slug": "red-panda",
-   "name": "Red Panda",
-   "binomial": "Ailurus fulgens",
-   "range": "Namdapha, Arunachal Pradesh",
-   "status": "Endangered",
-   "denom": "10.00"
+   "slug": "bobcat",
+   "name": "Bobcat",
+   "binomial": "Lynx rufus",
+   "range": "Big Bend, Texas",
+   "status": "Least Concern",
+   "est": "1944"
   },
   {
    "n": 6,
-   "slug": "indian-roller",
-   "name": "Indian Roller",
-   "binomial": "Coracias benghalensis",
-   "range": "Tadoba Andhari, Maharashtra",
+   "slug": "grayowl",
+   "name": "Great Gray Owl",
+   "binomial": "Strix nebulosa",
+   "range": "Yosemite, California",
    "status": "Least Concern",
-   "denom": "1.00"
+   "est": "1890"
   },
   {
    "n": 7,
-   "slug": "saltwater-crocodile",
-   "name": "Saltwater Crocodile",
-   "binomial": "Crocodylus porosus",
-   "range": "Sundarbans, West Bengal",
+   "slug": "peregronefalcon",
+   "name": "Peregrine Falcon",
+   "binomial": "Falco peregrinus",
+   "range": "Zion, Utah",
    "status": "Least Concern",
-   "denom": "1.00"
+   "est": "1919"
   },
   {
    "n": 8,
-   "slug": "indian-pitta",
-   "name": "Indian Pitta",
-   "binomial": "Pitta brachyura",
-   "range": "Tadoba Andhari, Maharashtra",
+   "slug": "woodpecker",
+   "name": "Pileated Woodpecker",
+   "binomial": "Dryocopus pileatus",
+   "range": "Great Smoky Mountains, Tennessee",
    "status": "Least Concern",
-   "denom": "1.00"
+   "est": "1934"
   }
  ]
 }
