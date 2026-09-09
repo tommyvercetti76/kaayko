@@ -420,7 +420,9 @@ function show(i, { focus = false } = {}) {
 
 (async () => {
   try {
-    const r = await fetch('/assets/cards/index.json');
+    // The set changes when the shop's designs change, so never read a stale index:
+    // a cached one asks for cards that have been replaced and the face comes back blank.
+    const r = await fetch('/assets/cards/index.json', { cache: 'no-cache' });
     series = (await r.json()).cards || [];
   } catch (_) { series = []; }
   if (!series.length) return;
