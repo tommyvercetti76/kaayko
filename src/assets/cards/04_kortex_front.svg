@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3.5in" height="2in"
+     viewBox="0 0 1050 600" data-property="kortex">
+<rect width="1050" height="600" fill="#E4D9C0"/>
+<rect x="16" y="16" width="1018" height="568" fill="#F5EFE1"/>
+<rect x="16" y="16" width="11" height="568" fill="#3B4E8C"/>
+
+<text x="72" y="86" style="font:400 22px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;fill:#1E1810;letter-spacing:11px">KAAYKO</text>
+<path d="M72 106 H978" stroke="#3B4E8C" stroke-width="1" opacity=".55"/>
+
+<text x="72" y="212" style="font:300 84px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;fill:#1E1810">Kortex</text>
+<text x="74" y="252" style="font:300 11px 'Josefin Sans',Futura,'Century Gothic',Avenir,sans-serif;fill:#3B4E8C;letter-spacing:7px">KAAYKO.COM/KORTEX</text>
+
+<text x="72" y="330" style="font:400 27px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;fill:#6E5C40">One link, every device. Make a QR in ten</text>
+<text x="72" y="368" style="font:400 27px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;fill:#6E5C40">seconds and re-point it after printing.</text>
+
+<path d="M72 434 H978" stroke="#6E5C40" stroke-width="0.7" opacity=".3"/>
+<text x="72" y="524" style="font:300 11px 'Josefin Sans',Futura,'Century Gothic',Avenir,sans-serif;fill:#6E5C40;letter-spacing:4px">NO ACCOUNT</text><text x="318" y="524" style="font:300 11px 'Josefin Sans',Futura,'Century Gothic',Avenir,sans-serif;fill:#6E5C40;letter-spacing:4px">ROUTE BY DEVICE</text><text x="564" y="524" style="font:300 11px 'Josefin Sans',Futura,'Century Gothic',Avenir,sans-serif;fill:#6E5C40;letter-spacing:4px">SCANS AS THEY HAPPEN</text>
+
+<g><path d="M906.0 200.0 L906.0 148.0" stroke="#3B4E8C" stroke-width="1.8"/><circle cx="906.0" cy="148.0" r="9.9" fill="#3B4E8C"/><path d="M906.0 200.0 L951.2 226.0" stroke="#3B4E8C" stroke-width="1.8"/><circle cx="951.2" cy="226.0" r="9.9" fill="#3B4E8C"/><path d="M906.0 200.0 L860.8 226.0" stroke="#3B4E8C" stroke-width="1.8"/><circle cx="860.8" cy="226.0" r="9.9" fill="#3B4E8C"/><circle cx="906.0" cy="200.0" r="7.8" fill="#3B4E8C"/></g>
+<rect x="844" y="392" width="134" height="134" rx="5" fill="#FBF7EB" stroke="#6E5C40" stroke-width="1"/>
+<image href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiCAIAAADS3EjhAAAFaElEQVR4nO3dO2psRxRAUcn0ABQqEpjmzX9Aj8YD8AAcOPEMblJs16nba6Wi1R9pUwIdTn3+fH993Mvrr98XX33++Wvgd16x8qquH7ti5Xmfmz7Jzh+7XwDcn8wgJzPIyQxyMoOczCAnM8jJDHIyg9zj+svdlMCKbkqgm6iYOdlw4jt6Hfg76TSDnMwgJzPIyQxyMoOczCAnM8jJDHIyg91TIDOnMTonvqNd2z5mzog8R/4EnWaQkxnkZAY5mUFOZpCTGeRkBjmZQU5mMHsK5N3MnOSYub9k5saOXZxmkJMZ5GQGOZlBTmaQkxnkZAY5mUFOZpAzBfI/TVSs6KYxTrwR5kROM8jJDHIyg5zMICczyMkMcjKDnMwgJzOYPQVy4r6HE6ciVp531zuaeU/NLk4zyMkMcjKDnMwgJzPIyQxyMoOczCAnM9g9BXK/fQ/dVMSJj12x63mfB/5OOs0gJzPIyQxyMoOczCAnM8jJDHIyg5zMIPf57z9/f7yTbkfFrlmNXdsvdm37OJHTDHIyg5zMICczyMkMcjKDnMwgJzPIyQx2T4F00wkzZyZmTmPs2iOy4n67T1Y4zSAnM8jJDHIyg5zMICczyMkMcjKDnMwg95j5X/NuDmDmBMnK83aPvTbzN+c1cpuL0wxyMoOczCAnM8jJDHIyg5zMICczyMkMco8T5x5OvIvkxA0Wu17Va+TkyspjnWaQkxnkZAY5mUFOZpCTGeRkBjmZQU5msPtGmGsz709ZMXO+pHtVJ25GubbrrpnrxzrNICczyMkMcjKDnMwgJzPIyQxyMoOczGD3jTAz5x5OtOsdzZzzeI3cMdM91mkGOZlBTmaQkxnkZAY5mUFOZpCTGeRkBrt3gczc6LBi19TLrn0eu+7WebffnGtOM8jJDHIyg5zMICczyMkMcjKDnMwgJzM4+UaYE/c9nDgVMfMOlGvPA3/6K5xmkJMZ5GQGOZlBTmaQkxnkZAY5mUFOZrD7RpjO/bZuXOued+YszorX7eaHnGaQkxnkZAY5mUFOZpCTGeRkBjmZQU5mMPtGmO6/9bv2W9xvC8W1E2dETtyM4jSDnMwgJzPIyQxyMoOczCAnM8jJDHIyg9k3wpy4sWPXHSgrZt4mM/M7r3AjDBzMH42QkxnkZAY5mUFOZpCTGeRkBjmZQe7z5/vr4svvNvfQmTlRcb8JktfILTJOM8jJDHIyg5zMICczyMkMcjIDmcH5nGZw3xthZu7kmPmaZ96Ac23m+31tmgFymkFOZpCTGeRkBjmZQU5mkJMZ5GQGOZnB7F0gM28qmbkNYtfMxIqZ8yUrTIHAbfmjEXIyg5zMICczyMkMcjKDnMwgJzPIPVb+L77rf+r3e96Z96e82yd5zY0wMJo/GiEnM8jJDHIyg5zMICczyMkMcjKD3OPEjQ4nThhcv6pdWzdmzog8R94HtMJpBjmZQU5mkJMZ5GQGOZlBTmaQkxnkZAa5x/WXd80BzNycsfKdZ849dJtgdn2SK7qfoNMMcjKDnMwgJzPIyQxyMoOczCAnM8jJDHZPgezanbBr38OJzztzn8e156YNNLs+K6cZ5GQGOZlBTmaQkxnkZAY5mUFOZpCTGcyeAjnRygaLE+8iOdErm4lZeezKnT5OM8jJDHIyg5zMICczyMkMcjKDnMwgJzPIvd0UyK55i5nbPla+8/0mZl5uhIFz+aMRcjKDnMwgJzPIyQxyMoOczCAnM5g9BTLztpHOu01jzHxV12be6eM0g5zMICczyMkMcjKDnMwgJzPIyQxyMoPc58/318e97LpPpHO/d7Ri5kzMNacZ5GQGOZlBTmaQkxnkZAY5mUFOZpCTGXzU/gPYZyYdXXxYdgAAAABJRU5ErkJggg==" x="854" y="402" width="114" height="114"/>
+</svg>

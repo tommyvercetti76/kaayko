@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3.5in" height="2in"
+     viewBox="0 0 1050 600" data-property="kaayko">
+<rect width="1050" height="600" fill="#E4D9C0"/>
+<rect x="16" y="16" width="1018" height="568" fill="#F5EFE1"/>
+<rect x="16" y="16" width="11" height="568" fill="#A8843C"/>
+
+<text x="72" y="86" style="font:400 22px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;fill:#1E1810;letter-spacing:11px">KAAYKO</text>
+<path d="M72 106 H978" stroke="#A8843C" stroke-width="1" opacity=".55"/>
+
+<text x="72" y="212" style="font:300 84px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;fill:#1E1810">Kaayko</text>
+<text x="74" y="252" style="font:300 11px 'Josefin Sans',Futura,'Century Gothic',Avenir,sans-serif;fill:#A8843C;letter-spacing:7px">KAAY.STORE</text>
+
+<text x="72" y="330" style="font:400 27px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;fill:#6E5C40">The shop. Printed to order, nothing made to</text>
+<text x="72" y="368" style="font:400 27px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;fill:#6E5C40">be thrown away.</text>
+
+<path d="M72 434 H978" stroke="#6E5C40" stroke-width="0.7" opacity=".3"/>
+<text x="72" y="524" style="font:300 11px 'Josefin Sans',Futura,'Century Gothic',Avenir,sans-serif;fill:#6E5C40;letter-spacing:4px">TWO THINGS A BAG</text><text x="318" y="524" style="font:300 11px 'Josefin Sans',Futura,'Century Gothic',Avenir,sans-serif;fill:#6E5C40;letter-spacing:4px">GUEST CHECKOUT ONLY</text><text x="564" y="524" style="font:300 11px 'Josefin Sans',Futura,'Century Gothic',Avenir,sans-serif;fill:#6E5C40;letter-spacing:4px">NO ACCOUNT, EVER</text>
+
+<g><rect x="854.0" y="148.0" width="104.0" height="104.0" fill="none" stroke="#A8843C" stroke-width="2.2"/><circle cx="854.0" cy="148.0" r="6.8" fill="#F5EFE1"/><circle cx="854.0" cy="148.0" r="6.8" fill="#F5EFE1"/><circle cx="874.8" cy="148.0" r="6.8" fill="#F5EFE1"/><circle cx="854.0" cy="168.8" r="6.8" fill="#F5EFE1"/><circle cx="895.6" cy="148.0" r="6.8" fill="#F5EFE1"/><circle cx="854.0" cy="189.6" r="6.8" fill="#F5EFE1"/><circle cx="916.4" cy="148.0" r="6.8" fill="#F5EFE1"/><circle cx="854.0" cy="210.4" r="6.8" fill="#F5EFE1"/><circle cx="937.2" cy="148.0" r="6.8" fill="#F5EFE1"/><circle cx="854.0" cy="231.2" r="6.8" fill="#F5EFE1"/><circle cx="958.0" cy="148.0" r="6.8" fill="#F5EFE1"/><circle cx="854.0" cy="252.0" r="6.8" fill="#F5EFE1"/></g>
+<rect x="844" y="392" width="134" height="134" rx="5" fill="#FBF7EB" stroke="#6E5C40" stroke-width="1"/>
+<image href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPoAAAD6CAIAAAAHjs1qAAAEaklEQVR4nO3dQYobORiA0e7BB8gyq8Bg5v4HCmYOkANkkc1sZl0OyIokf+9tG+Mq94co+FHp89vXLx/v5fHv94u/3v/+Z8Pvvf7siJHvvU/7rVb5a/UFwJ8jd0LkTojcCZE7IXInRO6EyJ0QuRNyu/7zvGnfiJFp36rZ58hn593viBPbsLoTIndC5E6I3AmROyFyJ0TuhMidELkT8mSqem3Vvs955u3dNN18lZFf0upOiNwJkTshcidE7oTInRC5EyJ3QuROyNBU9f3s+b7cE2e9e7K6EyJ3QuROiNwJkTshcidE7oTInRC5E5Kbqs6bm66afdbORh1hdSdE7oTInRC5EyJ3QuROiNwJkTshcidkaKpa2+k471zV69nniZPRx5ZtWN0JkTshcidE7oTInRC5EyJ3QuROiNwJeTJVPXGeV9vnumqv6v3ANqzuhMidELkTIndC5E6I3AmROyFyJ0TuhHz++vlj9TUcY9UccWTf58hE9v1Y3QmROyFyJ0TuhMidELkTIndC5E6I3Al5MlU9cT/itVU7O99vMnqfdlLsvKuyuhMid0LkTojcCZE7IXInRO6EyJ0QuRNymzcb23MWOM+8OzpxIvtYNDe9/l6rOyFyJ0TuhMidELkTIndC5E6I3AmROyGf375+2XA29n7zvHnmXdV9yzcej1yV1Z0QuRMid0LkTojcCZE7IXInRO6EyJ2QZeeqnjgL3HNuuspjy53K3gAM//MwQ4jcCZE7IXInRO6EyJ0QuRMid0KOfAPwqinjyB2NfHbVWbCrzLsjqzshcidE7oTInRC5EyJ3QuROiNwJkTshT94APM+J7+ldtQt21TT32qqrcq4q/BYPM4TInRC5EyJ3QuROiNwJkTshcidk2bmq107cQXttzx2ljy13wTpXFV7AwwwhcidE7oTInRC5EyJ3QuROiNwJue05+9xzR+m8+x353j1/q2sj1zwyc7W6EyJ3QuROiNwJkTshcidE7oTInRC5EzK0V3Xee1z39H53tMqq/cRWd0LkTojcCZE7IXInRO6EyJ0QuRMid0I+f/388VFy4huA99znuuf9XrO6EyJ3QuROiNwJkTshcidE7oTInRC5E3J7vx2WJ04K9/wv3KdNZFf9GlZ3QuROiNwJkTshcidE7oTInRC5EyJ3Qm6rJpQj9pxBrpoyzvsfPRbNp+1VhRfwMEOI3AmROyFyJ0TuhMidELkTIndCnkxVV003V01zV50UO+8dv/M+O2LVeb1Wd0LkTojcCZE7IXInRO6EyJ0QuRMid0KGpqrvZ9W0b8/dt9dW3e/IZ63uhMidELkTIndC5E6I3AmROyFyJ0TuhJiqvsyJ+z6v7Xlyqr2q8Fs8zBAid0LkTojcCZE7IXInRO6EyJ2QoanqnqeurnLiPtfHojcPX3OuKryAhxlC5E6I3AmROyFyJ0TuhMidELkT8mSqeuKbaa/VJsHz9ozOM++qrO6EyJ0QuRMid0LkTojcCZE7IXInRO58dPwH/tlhhLNgWEYAAAAASUVORK5CYII=" x="854" y="402" width="114" height="114"/>
+</svg>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3.5in" height="2in"
+     viewBox="0 0 1050 600" data-property="alumni">
+<rect width="1050" height="600" fill="#E4D9C0"/>
+<rect x="16" y="16" width="1018" height="568" fill="#F5EFE1"/>
+<rect x="16" y="16" width="11" height="568" fill="#4E6B3E"/>
+
+<text x="72" y="86" style="font:400 22px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;fill:#1E1810;letter-spacing:11px">KAAYKO</text>
+<path d="M72 106 H978" stroke="#4E6B3E" stroke-width="1" opacity=".55"/>
+
+<text x="72" y="212" style="font:300 84px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;fill:#1E1810">Alumni</text>
+<text x="74" y="252" style="font:300 11px 'Josefin Sans',Futura,'Century Gothic',Avenir,sans-serif;fill:#4E6B3E;letter-spacing:7px">KAAYKO.COM/ALUMNI</text>
+
+<text x="72" y="330" style="font:400 27px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;fill:#6E5C40">School alumni networks that actually</text>
+<text x="72" y="368" style="font:400 27px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;fill:#6E5C40">connect: mentoring, scholarships, a real</text>
+
+<path d="M72 434 H978" stroke="#6E5C40" stroke-width="0.7" opacity=".3"/>
+<text x="72" y="524" style="font:300 11px 'Josefin Sans',Futura,'Century Gothic',Avenir,sans-serif;fill:#6E5C40;letter-spacing:4px">BY BATCH AND CITY</text><text x="318" y="524" style="font:300 11px 'Josefin Sans',Futura,'Century Gothic',Avenir,sans-serif;fill:#6E5C40;letter-spacing:4px">ONE TAP, ANONYMOUS</text><text x="564" y="524" style="font:300 11px 'Josefin Sans',Futura,'Century Gothic',Avenir,sans-serif;fill:#6E5C40;letter-spacing:4px">SCHOOL-BACKED</text>
+
+<g><path d="M854.0 221.8 A52.0 52.0 0 0 1 958.0 221.8" fill="none" stroke="#4E6B3E" stroke-width="2.2" opacity="1.00"/><path d="M867.5 221.8 A38.5 38.5 0 0 1 944.5 221.8" fill="none" stroke="#4E6B3E" stroke-width="2.2" opacity="0.72"/><path d="M881.0 221.8 A25.0 25.0 0 0 1 931.0 221.8" fill="none" stroke="#4E6B3E" stroke-width="2.2" opacity="0.44"/><path d="M854.0 221.8 H958.0" stroke="#4E6B3E" stroke-width="2.2"/></g>
+<rect x="844" y="392" width="134" height="134" rx="5" fill="#FBF7EB" stroke="#6E5C40" stroke-width="1"/>
+<image href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiCAIAAADS3EjhAAAFZklEQVR4nO3dMW7jSBBAUWuhAzh0ZGAh7P0PNCD2AD6AAydzAyacP9Uk30sNyxSpjzagQvfj8+P97Vq2/39Fr/z697+39d7R/lV1d6PzGrrPnX+mLwCuT2aQkxnkZAY5mUFOZpCTGeRkBjmZQe65/+M1ZwiOTAmsOcnRvfKR97vm09+WvKr9+2w1g5zMICczyMkMcjKDnMwgJzPIyQxyMoPpKZCpiYo1v+nvrHknzzhB8lryTlrNICczyMkMcjKDnMwgJzPIyQxyMoOczGDtKZAzmjpdZercljNOclyP1QxyMoOczCAnM8jJDHIyg5zMICczyMkMcrebAulc75waEyR/itUMcjKDnMwgJzPIyQxyMoOczCAnM8jJDNaeArneXhHdTiFTvzs1fTK198m25GfSagY5mUFOZpCTGeRkBjmZQU5mkJMZ5GQG01MgU3tUdKamE6asOblyxBk/k1YzyMkMcjKDnMwgJzPIyQxyMoOczCAnM8g9fr6/+r9yC2vu2DE113K3aZt9VjPIyQxyMoOczCAnM8jJDHIyg5zMICczuO5eIN1OEt2Ewd3mPNa8qk73fq1mkJMZ5GQGOZlBTmaQkxnkZAY5mUFOZnDdvUC6b9zvNrkydULK1FOYcuT9Ws0gJzPIyQxyMoOczCAnM8jJDHIyg5zMYO0pkDUnOY688t2uat8Z78a+qXtlNYOczCAnM8jJDHIyg5zMICczyMkMcjKD6RNh9q15Bko3Q7DvbnMe15sR2bLPs9UMcjKDnMwgJzPIyQxyMoOczCAnM8jJDHLP7pv+bt7ieqeNTD2FM/7uEVPTNlYzyMkMcjKDnMwgJzPIyQxyMoOczCAnM8g9p/ZOOOOMSHfN+6ZmJjrb0DTG1A4lVjPIyQxyMoOczCAnM8jJDHIyg5zMICczyD0+P95vNclxtzmPqVc+Yjvh+Tj7rGaQkxnkZAY5mUFOZpCTGeRkBjmZQU5mkHse+eXuTJB9Z5zVmNrfYupeXe9Ul81eILAy/zRCTmaQkxnkZAY5mUFOZpCTGeRkBtMnwnQTBmvub3HEmld1xp1CthPeq31WM8jJDHIyg5zMICczyMkMcjKDnMwgJzPIPX6+vxbcWeFup6tM8Xz/zvO1mkFOZpCTGeRkBjmZQU5mkJMZ5GQGOZlB7jl1ykk3f3C3v7vmmS/d52obOhHmCKsZ5GQGOZlBTmaQkxnkZAY5mYHM4PysZjB9IswRU7tuTJ1FYu7hT92rNR15vlYzyMkMcjKDnMwgJzPIyQxyMoOczCAnM8g9zziNccY5j7vNTHReQ3fDiTCwNP80Qk5mkJMZ5GQGOZlBTmaQkxnkZAa5x8/319udrDmbcsTUVXWnulzv+VrNICczyMkMcjKDnMwgJzPIyQxyMoOczCD3+Px4f7uWqQmDbirijBMV+7Yl71U3QWI1g5zMICczyMkMcjKDnMwgJzPIyQxyMoPpE2G6CYMjjnxb3002TM0frDlfMnVqzxH2AoET808j5GQGOZlBTmaQkxnkZAY5mUFOZjA9BbLmXhFTrzy1J8cZr3nfa+j0nKm/azWDnMwgJzPIyQxyMoOczCAnM8jJDHIyg7WnQM5ozamIbseONc/H6UztyLLPagY5mUFOZpCTGeRkBjmZQU5mkJMZ5GQGudtNgZxxhmBqkmPfmmfNbAdeubsqqxnkZAY5mUFOZpCTGeRkBjmZQU5mkJMZrD0FMrXfw5RuZuKINXcKOeMszpbNtVjNICczyMkMcjKDnMwgJzPIyQxyMoOczGB6CqTb32JK903/kXt1xkmOqc/Ga8mTaPZZzSAnM8jJDHIyg5zMICczyMkMcjKDnMzgrfYbCPEHEdALwg0AAAAASUVORK5CYII=" x="854" y="402" width="114" height="114"/>
+</svg>

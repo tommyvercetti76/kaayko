@@ -170,7 +170,7 @@ a { color: inherit; text-decoration: none; }
 .mark:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
 .now { text-align: center; display: grid; gap: 3px; min-height: 42px; }
 .now b { font-weight: 400; font-size: clamp(17px, 2.6vw, 21px); }
-.now i { color: var(--dim); font-size: 14px; font-style: normal; }
+.now i { color: var(--dim); font-size: 14px; font-style: normal; max-width: 56ch; display: inline-block; }
 .now .to-product { color: var(--gold-lit); border-bottom: 1px solid rgba(240,217,160,.35); }
 .now .to-product:hover { border-bottom-color: var(--gold-lit); }
 
@@ -230,8 +230,8 @@ a { color: inherit; text-decoration: none; }
 
     <div class="eyebrow">
       <p class="cap">Kaayko &middot; no. 0001</p>
-      <h1>Somebody handed you <em>one</em> of these.</h1>
-      <p>Eight cards, eight things. Each one opens the thing it shows.</p>
+      <h1>Five things, and <em>one</em> of them is why you have this.</h1>
+      <p>A shop, a forecast, a workstation, a link, a school network. Each card opens its own.</p>
     </div>
 
     <div class="card-wrap">
@@ -407,7 +407,7 @@ function show(i, { focus = false } = {}) {
   frontImg.alt = `${c.name}, front of the card`;
   backImg.alt = `${c.name}, back of the card`;
   nowEl.innerHTML = `<b>${esc(c.name)}</b>` +
-    `<i>${esc(c.kind)} &middot; ${esc(c.price)} &middot; <a class="to-product" href="${esc(c.url)}">open it</a></i>`;
+    `<i>${esc(c.line)} &middot; <a class="to-product" href="${esc(c.url)}">open it</a></i>`;
   [...marks.children].forEach((b, j) => {
     b.setAttribute('aria-checked', String(j === at));
     b.tabIndex = j === at ? 0 : -1;

@@ -1,77 +1,45 @@
 {
- "label": "KAAYKO \u00b7 ONE PER PRODUCT",
+ "label": "KAAYKO \u00b7 WHAT WE RUN",
  "cards": [
   {
    "n": 1,
-   "slug": "india-postage-bottle",
-   "name": "India Postage Bottle",
-   "kind": "Insulated steel bottle",
-   "price": "$24.99",
-   "url": "https://kaay.store/store/p/2GlQkjNqJH1NyOIUmQ0J",
-   "id": "2GlQkjNqJH1NyOIUmQ0J"
+   "slug": "kaayko",
+   "name": "Kaayko",
+   "line": "The shop. Printed to order, nothing made to be thrown away.",
+   "url": "https://kaay.store",
+   "accent": "#A8843C"
   },
   {
    "n": 2,
-   "slug": "bengal-tiger-bottle",
-   "name": "Bengal Tiger Bottle",
-   "kind": "Insulated steel bottle",
-   "price": "$24.99",
-   "url": "https://kaay.store/store/p/Z1vamuFaTPvjkWHFJhle",
-   "id": "Z1vamuFaTPvjkWHFJhle"
+   "slug": "paddlingout",
+   "name": "Paddling Out",
+   "line": "Paddle conditions for seventeen hand-picked lakes, rivers and reservoirs.",
+   "url": "https://kaayko.com/paddlingout",
+   "accent": "#2E6F76"
   },
   {
    "n": 3,
-   "slug": "barahsingha-tote",
-   "name": "Barasingha Tote",
-   "kind": "Heavy cotton tote",
-   "price": "$$",
-   "url": "https://kaay.store/store/p/kaayko_barahsingha_tote",
-   "id": "kaayko_barahsingha_tote"
+   "slug": "forge",
+   "name": "Forge",
+   "line": "Local-first generative AI for Apple Silicon. It runs on your own machine.",
+   "url": "https://kaayko.com/forge",
+   "accent": "#A6512E"
   },
   {
    "n": 4,
-   "slug": "peacock-tote",
-   "name": "Peacock Tote",
-   "kind": "Heavy cotton tote",
-   "price": "$$",
-   "url": "https://kaay.store/store/p/kaayko_peacock_tote",
-   "id": "kaayko_peacock_tote"
+   "slug": "kortex",
+   "name": "Kortex",
+   "line": "One link, every device. Make a QR in ten seconds and re-point it after printing.",
+   "url": "https://kaayko.com/kortex",
+   "accent": "#3B4E8C"
   },
   {
    "n": 5,
-   "slug": "snow-leopard-tote",
-   "name": "Snow Leopard Tote",
-   "kind": "Heavy cotton tote",
-   "price": "$$",
-   "url": "https://kaay.store/store/p/kaayko_snow-leopard_tote",
-   "id": "kaayko_snow-leopard_tote"
-  },
-  {
-   "n": 6,
-   "slug": "gaur-magnet",
-   "name": "Gaur Magnet",
-   "kind": "Ceramic magnet",
-   "price": "$",
-   "url": "https://kaay.store/store/p/kaayko_gaur_magnet",
-   "id": "kaayko_gaur_magnet"
-  },
-  {
-   "n": 7,
-   "slug": "gir-magnet",
-   "name": "Gir Lion Magnet",
-   "kind": "Ceramic magnet",
-   "price": "$",
-   "url": "https://kaay.store/store/p/kaayko_gir_magnet",
-   "id": "kaayko_gir_magnet"
-  },
-  {
-   "n": 8,
-   "slug": "great-climb-shirt",
-   "name": "The Great Climb",
-   "kind": "Printed shirt",
-   "price": "$$$",
-   "url": "https://kaay.store/store/p/xyVsWqTkPcVbaiOCX0vv",
-   "id": "xyVsWqTkPcVbaiOCX0vv"
+   "slug": "alumni",
+   "name": "Alumni",
+   "line": "School alumni networks that actually connect: mentoring, scholarships, a real directory.",
+   "url": "https://kaayko.com/alumni",
+   "accent": "#4E6B3E"
   }
  ]
 }
