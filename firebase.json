@@ -459,8 +459,12 @@
           "destination": "/card.html"
         },
         {
+          "source": "/shipping",
+          "destination": "/shipping.html"
+        },
+        {
           "source": "/fly",
-          "destination": "/fly.html"
+          "destination": "/shipping.html"
         }
       ]
     },
@@ -794,8 +798,12 @@
           "destination": "/card.html"
         },
         {
+          "source": "/shipping",
+          "destination": "/shipping.html"
+        },
+        {
           "source": "/fly",
-          "destination": "/fly.html"
+          "destination": "/shipping.html"
         },
         {
           "source": "**",
