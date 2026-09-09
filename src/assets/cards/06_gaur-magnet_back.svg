@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3.5in" height="2in"
+     viewBox="0 0 1050 600">
+<rect width="1050" height="600" fill="#E4D9C0"/>
+<rect x="18" y="18" width="1014" height="564" fill="#F5EFE1"/>
+<rect x="32" y="32" width="986" height="536" fill="none" stroke="#A8843C" stroke-width="1" opacity=".5"/>
+
+<text x="525" y="196" text-anchor="middle"
+      style="font:400 62px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;fill:#221B12;letter-spacing:22px">KAAYKO</text>
+<path d="M300 226 H750" stroke="#A8843C" stroke-width="1.2" opacity=".7"/>
+<text x="525" y="262" text-anchor="middle"
+      style="font:300 12px 'Josefin Sans',Futura,'Century Gothic',Avenir,sans-serif;fill:#6E5C40;letter-spacing:8px">STYLE YOUR SOUL</text>
+
+<text x="525" y="342" text-anchor="middle" style="font:400 25px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;fill:#221B12">The basket holds two and refuses a third,</text>
+<text x="525" y="376" text-anchor="middle" style="font:400 25px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;fill:#221B12">however you ask it.</text>
+
+<text x="525" y="448" text-anchor="middle" style="font:400 22px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;fill:#6E5C40">kaay.store &#183; hello@kaayko.com</text>
+<text x="525" y="544" text-anchor="middle"
+      style="font:300 11px 'Josefin Sans',Futura,'Century Gothic',Avenir,sans-serif;fill:#6E5C40;letter-spacing:5px">PRINTED TO ORDER &#183; GUEST CHECKOUT ONLY &#183; NO. 06 OF 08</text>
+</svg>
