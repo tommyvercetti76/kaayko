@@ -120,7 +120,7 @@ a { color: inherit; text-decoration: none; }
   background: var(--paper);
 }
 .face.back { transform: rotateY(calc(var(--flip, 0deg) + 180deg)); }
-.face img { display: block; width: 100%; height: 100%; }
+.face img, .face svg { display: block; width: 100%; height: 100%; }
 
 /* Specular. Positioned where the reflected light lands, scaled by (N·H)^n. */
 .sheen {
@@ -212,11 +212,11 @@ a { color: inherit; text-decoration: none; }
       <div class="card" id="card" role="button" tabindex="0"
            aria-label="The Kaayko card. Activate to turn it over.">
         <div class="face front">
-          <img id="face-front" alt="Front of the Kaayko card">
+          <div id="face-front" role="img" aria-label="Front of the Kaayko card"></div>
           <i class="foil"></i><i class="sheen"></i><i class="grain"></i><i class="rim"></i>
         </div>
         <div class="face back">
-          <img id="face-back" alt="Back of the Kaayko card">
+          <div id="face-back" role="img" aria-label="Back of the Kaayko card"></div>
           <i class="foil"></i><i class="sheen"></i><i class="grain"></i><i class="rim"></i>
         </div>
       </div>
@@ -242,7 +242,10 @@ a { color: inherit; text-decoration: none; }
   </div>
 </main>
 
+<script src="/js/vendor/qrcode-generator.js"></script>
 <script type="module">
+import { front, back } from '/js/cards/render.js';
+
 /* ── the lighting model ────────────────────────────────────────────────────
    Blinn-Phong with a Schlick Fresnel term. The pointer is a light at (lx, ly)
    a little way above the card; the card's normal comes from its own tilt. The
@@ -357,25 +360,54 @@ document.getElementById('turn').addEventListener('click', (e) => { e.stopPropaga
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? `${location.origin}/api` : 'https://api-vwcc5j4qda-uc.a.run.app';
+
+// Only used when the API cannot be reached at all.
+const FALLBACK_BRAND = {
+  label: 'KAAYKO',
+  tagline: 'BUILDS THINGS, AND PUBLISHES THE FAILURES NEXT TO THE RESULTS',
+  properties: 'Kaayko \u00b7 Paddling Out \u00b7 Forge \u00b7 Kortex \u00b7 Alumni',
+  contact: 'kaayko.com \u00b7 hello@kaayko.com'
+};
+
 const marks = document.getElementById('marks');
 const nowEl = document.getElementById('now');
-const frontImg = document.getElementById('face-front');
-const backImg = document.getElementById('face-back');
+const frontEl = document.getElementById('face-front');
+const backEl = document.getElementById('face-back');
 const pad = (n) => String(n).padStart(2, '0');
-let series = [], at = 0, ver = '0';
+let series = [], brand = {}, at = 0;
+
+/* The card is drawn here, not fetched as a finished picture. It used to be five
+   pre-rendered SVG files with the words baked in, which meant a typo needed a
+   laptop and a script. Now the copy comes from the API, the art is a plain PNG,
+   and the QR is generated from whatever URL the card currently carries — so a
+   corrected link can never leave a stale QR behind.
+
+   These are drawn INLINE rather than into an <img>: an SVG inside an <img> runs
+   in secure static mode and refuses to load the external art file. */
+function draw(el, svg, label) {
+  el.innerHTML = svg;
+  el.setAttribute('aria-label', label);
+}
+
+function qrFor(url) {
+  try {
+    const q = qrcode(0, 'M');       // smallest version that fits, medium recovery
+    q.addData(url);
+    q.make();
+    return q;
+  } catch (_) { return null; }
+}
 
 function show(i, { focus = false } = {}) {
   if (!series.length) return;
   at = (i + series.length) % series.length;
   const c = series[at];
-  // The filenames are stable across rebuilds, so a cached SVG would keep serving
-  // the previous design under the new name. The index carries a build stamp and
-  // every card URL is versioned with it.
-  const stem = `/assets/cards/${pad(c.n)}_${c.slug}`;
-  frontImg.src = `${stem}_front.svg?v=${ver}`;
-  backImg.src = `${stem}_back.svg?v=${ver}`;
-  frontImg.alt = `${c.name}, front of the card`;
-  backImg.alt = `${c.name}, back of the card`;
+  draw(frontEl, front(c, { qr: qrFor(c.url), artHref: `/assets/cards/art/${c.art || c.slug}.png` }),
+       `${c.name}, front of the card`);
+  draw(backEl, back(c, brand, { index: at + 1, total: series.length }),
+       `${c.name}, back of the card`);
   nowEl.innerHTML = `<b>${esc(c.name)}</b>` +
     `<i><a class="to-product" href="${esc(c.url)}">${esc(c.url.replace('https://', ''))}</a></i>`;
   [...marks.children].forEach((b, j) => {
@@ -384,22 +416,26 @@ function show(i, { focus = false } = {}) {
     if (focus && j === at) b.focus();
   });
   card.classList.remove('is-flipped');            // a new card arrives face up
-  // Warm the neighbours so stepping through never waits on the network.
-  for (const d of [1, -1]) {
-    const n = series[(at + d + series.length) % series.length];
-    new Image().src = `/assets/cards/${pad(n.n)}_${n.slug}_front.svg?v=${ver}`;
-  }
 }
 
 (async () => {
   try {
-    // The set changes when the shop's designs change, so never read a stale index:
-    // a cached one asks for cards that have been replaced and the face comes back blank.
-    const r = await fetch('/assets/cards/index.json', { cache: 'no-cache' });
+    // Live copy first. The static index is the fallback, so the cards still
+    // render if the API is unreachable — with whatever words it was last built
+    // with, which is better than a blank card.
+    const r = await fetch(`${API}/cards`, { cache: 'no-cache' });
+    if (!r.ok) throw new Error(r.status);
     const idx = await r.json();
     series = idx.cards || [];
-    ver = idx.v || '0';
-  } catch (_) { series = []; }
+    brand = idx.brand || {};
+  } catch (_) {
+    try {
+      const r = await fetch('/assets/cards/index.json', { cache: 'no-cache' });
+      const idx = await r.json();
+      series = (idx.cards || []).map((c) => ({ ...c, art: c.slug }));
+      brand = FALLBACK_BRAND;
+    } catch (__) { series = []; }
+  }
   if (!series.length) return;
 
   marks.innerHTML = series.map((c, i) =>

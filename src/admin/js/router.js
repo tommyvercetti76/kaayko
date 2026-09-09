@@ -31,6 +31,7 @@ export const ROUTES = {
   submissions: '/submissions',
   orders: '/orders',
   products: '/products',
+  cards: '/cards',
   ops: '/ops',
 };
 

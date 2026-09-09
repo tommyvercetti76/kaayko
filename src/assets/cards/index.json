@@ -1,51 +1,57 @@
 {
  "label": "KAAYKO",
- "v": "20260908222329",
+ "v": "1788927031340",
+ "note": "Offline fallback for /card. The live copy is in Firestore; refresh this with scripts/seed-cards.js --snapshot",
  "cards": [
   {
    "n": 1,
    "slug": "kaayko",
    "name": "Store",
    "hook": "Your style sucks. Heal here.",
-   "animal": "Bison",
+   "host": "kaay.store",
    "url": "https://kaay.store",
-   "accent": "#8A5A2B"
+   "accent": "#8A5A2B",
+   "art": "kaayko"
   },
   {
    "n": 2,
    "slug": "paddlingout",
    "name": "Paddling Out",
    "hook": "Drown in data, not water.",
-   "animal": "SandhillCrane",
+   "host": "kaayko.com/paddlingout",
    "url": "https://kaayko.com/paddlingout",
-   "accent": "#2E6F76"
+   "accent": "#2E6F76",
+   "art": "paddlingout"
   },
   {
    "n": 3,
    "slug": "forge",
    "name": "Forge",
    "hook": "Brahma's blessings and a MacBook.",
-   "animal": "GrayOwl",
+   "host": "kaayko.com/forge",
    "url": "https://kaayko.com/forge",
-   "accent": "#A6512E"
+   "accent": "#A6512E",
+   "art": "forge"
   },
   {
    "n": 4,
    "slug": "kortex",
    "name": "Kortex",
    "hook": "A link to take you places.",
-   "animal": "Raven",
+   "host": "kaayko.com/kortex",
    "url": "https://kaayko.com/kortex",
-   "accent": "#3B4E8C"
+   "accent": "#3B4E8C",
+   "art": "kortex"
   },
   {
    "n": 5,
    "slug": "alumni",
    "name": "Alumni",
    "hook": "Revisit, and make yourself useful.",
-   "animal": "Elk",
+   "host": "kaayko.com/alumni",
    "url": "https://kaayko.com/alumni",
-   "accent": "#4E6B3E"
+   "accent": "#4E6B3E",
+   "art": "alumni"
   }
  ]
 }

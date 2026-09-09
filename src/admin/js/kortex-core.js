@@ -87,6 +87,11 @@ const VIEW_CONFIGS = {
     css: 'views/products/products.css',
     container: '#products-view'
   },
+  cards: {
+    module: '../views/cards/cards.js',
+    css: 'views/cards/cards.css',
+    container: '#cards-view'
+  },
   ops: {
     module: '../views/ops/ops.js',
     css: 'views/ops/ops.css',
