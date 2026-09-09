@@ -1,13 +1,12 @@
 {
  "label": "KAAYKO",
- "v": "20260908220429",
+ "v": "20260908222329",
  "cards": [
   {
    "n": 1,
    "slug": "kaayko",
-   "name": "Kaayko",
-   "hook": "Two. That is the entire basket.",
-   "line": "Two things a bag. Printed when you order, so nothing is made to be binned.",
+   "name": "Store",
+   "hook": "Your style sucks. Heal here.",
    "animal": "Bison",
    "url": "https://kaay.store",
    "accent": "#8A5A2B"
@@ -16,8 +15,7 @@
    "n": 2,
    "slug": "paddlingout",
    "name": "Paddling Out",
-   "hook": "Know before you paddle.",
-   "line": "Seventeen spots scored for wind, water and UV before you load the car.",
+   "hook": "Drown in data, not water.",
    "animal": "SandhillCrane",
    "url": "https://kaayko.com/paddlingout",
    "accent": "#2E6F76"
@@ -26,8 +24,7 @@
    "n": 3,
    "slug": "forge",
    "name": "Forge",
-   "hook": "It runs entirely on your own machine.",
-   "line": "Local-first generative AI for Apple Silicon. Your files stay yours.",
+   "hook": "Brahma's blessings and a MacBook.",
    "animal": "GrayOwl",
    "url": "https://kaayko.com/forge",
    "accent": "#A6512E"
@@ -36,8 +33,7 @@
    "n": 4,
    "slug": "kortex",
    "name": "Kortex",
-   "hook": "One link. Every device. Every insight.",
-   "line": "Re-point a QR after it is already on the poster. Ten seconds, no account.",
+   "hook": "A link to take you places.",
    "animal": "Raven",
    "url": "https://kaayko.com/kortex",
    "accent": "#3B4E8C"
@@ -46,8 +42,7 @@
    "n": 5,
    "slug": "alumni",
    "name": "Alumni",
-   "hook": "What would bring you back to your school?",
-   "line": "Mentors, scholarships and a directory that is actually current.",
+   "hook": "Revisit, and make yourself useful.",
    "animal": "Elk",
    "url": "https://kaayko.com/alumni",
    "accent": "#4E6B3E"

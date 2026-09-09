@@ -457,6 +457,10 @@
         {
           "source": "/card",
           "destination": "/card.html"
+        },
+        {
+          "source": "/fly",
+          "destination": "/fly.html"
         }
       ]
     },
@@ -788,6 +792,10 @@
         {
           "source": "/card",
           "destination": "/card.html"
+        },
+        {
+          "source": "/fly",
+          "destination": "/fly.html"
         },
         {
           "source": "**",
