@@ -1,5 +1,6 @@
 {
  "label": "KAAYKO \u00b7 WHAT WE RUN",
+ "v": "20260908215240",
  "cards": [
   {
    "n": 1,
@@ -51,6 +52,5 @@
    "url": "https://kaayko.com/alumni",
    "accent": "#4E6B3E"
   }
- ],
- "v": "20260908214808"
+ ]
 }
