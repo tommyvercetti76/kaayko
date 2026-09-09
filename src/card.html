@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Kaayko — the card</title>
-<meta name="description" content="Somebody handed you this. Two things at a time, no account, no trace.">
+<meta name="description" content="Five things Kaayko runs. One card each.">
 <meta name="theme-color" content="#0B0A08">
 <meta property="og:title" content="Kaayko — the card">
-<meta property="og:description" content="Somebody handed you this.">
+<meta property="og:description" content="Five things. One card each.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Josefin+Sans:wght@200;300;400&display=swap" rel="stylesheet">
@@ -204,9 +204,8 @@ a { color: inherit; text-decoration: none; }
   <div class="stage">
 
     <div class="eyebrow">
-      <p class="cap">Kaayko &middot; no. 0001</p>
-      <h1>Five things. <em>One</em> of them is why you have this.</h1>
-      <p>A bison, a crane, an owl, a raven, an elk. Each one stands for something you can use.</p>
+      <p class="cap">Kaayko</p>
+      <h1>Five things.</h1>
     </div>
 
     <div class="card-wrap">
@@ -377,8 +376,8 @@ function show(i, { focus = false } = {}) {
   backImg.src = `${stem}_back.svg?v=${ver}`;
   frontImg.alt = `${c.name}, front of the card`;
   backImg.alt = `${c.name}, back of the card`;
-  nowEl.innerHTML = `<b>${esc(c.hook)}</b>` +
-    `<i>${esc(c.name)} &middot; ${esc(c.line)} &middot; <a class="to-product" href="${esc(c.url)}">open it</a></i>`;
+  nowEl.innerHTML = `<b>${esc(c.name)}</b>` +
+    `<i><a class="to-product" href="${esc(c.url)}">${esc(c.url.replace('https://', ''))}</a></i>`;
   [...marks.children].forEach((b, j) => {
     b.setAttribute('aria-checked', String(j === at));
     b.tabIndex = j === at ? 0 : -1;

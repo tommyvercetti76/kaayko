@@ -8,7 +8,7 @@
 <rect x="396" y="0" width="6" height="600" fill="#2E6F76"/>
 
 <text x="450.0" y="196" style="font:300 82px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;fill:#1E1810">Paddling Out</text>
-<text x="450.0" y="272" style="font:400 38px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;font-style:italic;fill:#2E6F76">Know before you launch.</text>
+<text x="450.0" y="264" style="font:400 36px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;font-style:italic;fill:#2E6F76">Know before you paddle.</text>
 <path d="M450.0 316 H986" stroke="#6E5C40" stroke-width="0.9" opacity=".35"/>
 
 <text x="450.0" y="372" style="font:400 30px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;fill:#6E5C40">kaayko.com/paddlingout</text>

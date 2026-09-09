@@ -8,10 +8,10 @@
 <rect x="396" y="0" width="6" height="600" fill="#8A5A2B"/>
 
 <text x="450.0" y="196" style="font:300 82px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;fill:#1E1810">Kaayko</text>
-<text x="450.0" y="272" style="font:400 38px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;font-style:italic;fill:#8A5A2B">Own less. Mean it more.</text>
-<path d="M450.0 316 H986" stroke="#6E5C40" stroke-width="0.9" opacity=".35"/>
+<text x="450.0" y="264" style="font:400 36px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;font-style:italic;fill:#8A5A2B">Two. That is the entire</text><text x="450.0" y="310" style="font:400 36px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;font-style:italic;fill:#8A5A2B">basket.</text>
+<path d="M450.0 362 H986" stroke="#6E5C40" stroke-width="0.9" opacity=".35"/>
 
-<text x="450.0" y="372" style="font:400 30px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;fill:#6E5C40">kaay.store</text>
+<text x="450.0" y="418" style="font:400 30px 'Cormorant Garamond','EB Garamond',Georgia,'Times New Roman',serif;fill:#6E5C40">kaay.store</text>
 
 
 <rect x="860" y="394" width="128" height="128" rx="4" fill="#FBF7EB" stroke="#6E5C40" stroke-width="1"/>
