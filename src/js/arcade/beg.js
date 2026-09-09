@@ -1,14 +1,19 @@
 /**
  * arcade/beg.js — The Beggar's Reach.
  *
- * It is a typing race, so it is drawn as an instrument rather than a cartoon. The
- * previous version put two crude figures on a stage and they looked cheap next to
- * everything else in the shop; a gauge, set in the same faces as the rest of the store,
- * says the same thing and does not embarrass the page it sits on.
+ * It is a typing race. It was drawn as a gauge — an "arm" reaching a percentage
+ * of the way into a man's pocket — and the numbers were honest but nobody could
+ * tell what they were being asked to do, because reaching into a pocket is not
+ * something you do by typing.
  *
- * The whole state of the run is three numbers and a line of type:
+ * So the progress is a letter. You write at the window; every key you actually
+ * press carries the letter further across the street towards the postbox. Reach
+ * the slot and you may post it. Run out of the minute first and the wind takes
+ * it. The letter then burns or opens, which is the answer.
+ *
+ * The whole state of the run is three numbers, a letter in the air, and a line:
  *   seconds left, words a minute, words written
- *   a rule crossing the panel, filled as far as the arm has reached
+ *   how far across the street the letter has got
  *   one sentence saying what he is doing about it
  *
  * That last line is the performance. It is not on a timer and it is not tied to speed
@@ -17,14 +22,16 @@
  * running out of minute: each has its own line, and the ones that are reactions to
  * something you just did take precedence over the ambient ones. See `reactionFor`.
  *
- * The arm is still the anti-cheat: it advances per keydown, not per character present
- * in the box, so pasting a language model's plea moves it not one pixel. The run also
+ * The letter is still the anti-cheat: it advances per keystroke, not per character
+ * present in the box, so pasting a model's plea moves it not one pixel. The run also
  * carries its inter-key intervals to the server, which throws out anything typed on a
  * metronome. Grading is in kaayko-api/functions/api/arcade/begScore.js.
  */
 
+import { letterScene } from "./letterScene.js";
+
 const WINDOW_MS = 60000;
-const NEEDED_KEYS = 180;      // keystrokes to fully extend the arm (~36 wpm for a minute)
+const NEEDED_KEYS = 180;      // keystrokes to carry the letter the whole way (~36 wpm for a minute)
 const WPM_WINDOW_MS = 6000;   // how far back "how fast am I typing" looks
 const NOTICE_MS = 2600;       // how long a reaction to something you just did holds
 
@@ -36,19 +43,19 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
 /** Things you can do that he reacts to, in the order they are worth noticing. */
 export const TELLS = [
   { key: "swore",    test: (t) => /\b(fuck|shit|bitch|bastard|cunt|damn|crap|arse|ass)\w*\b/i.test(t),
-    line: "He has stopped listening. You are swearing at a man with money." },
+    line: "He will not open that one. You are swearing at a man with money." },
   { key: "shouting", test: (t) => t.length > 40 && (t.match(/[A-Z]/g) || []).length / t.replace(/[^a-z]/gi, "").length > 0.55,
-    line: "You are shouting. He is standing four feet away." },
+    line: "All in capitals. He is across a street, not across a field." },
   { key: "named",    test: (t) => /\b(bottle|magnet|tote|shirt|stamp|postage|tiger|everest|railway|philately|kaayko)\b/i.test(t),
-    line: "You named the thing. That is rarer than you would think." },
+    line: "You named the thing. He reads the ones that do." },
   { key: "reason",   test: (t) => /\b(because|since|so that|which is why|therefore|given that)\b/i.test(t),
-    line: "A reason. He did not expect one of those." },
+    line: "A reason. Most letters he gets have none." },
   { key: "number",   test: (t) => /\b\d{2,}\b/.test(t),
     line: "A number. He trusts numbers more than he trusts you." },
   { key: "stop",     test: (t) => /[.!?]/.test(t),
     line: "A full stop. He can follow a sentence." },
   { key: "forty",    test: (t) => (t.match(/\S+/g) || []).length >= 40,
-    line: "Forty words and he has not walked off." }
+    line: "Forty words, and the letter is heavy enough to carry them." }
 ];
 
 /**
@@ -56,21 +63,21 @@ export const TELLS = [
  * @param {{reach:number, wpm:number, idleMs:number, left:number, words:number}} s
  */
 export function ambient(s) {
-  if (s.reach >= 1) return "He has it out of his pocket. Finish the sentence.";
-  if (s.idleMs > 4200) return "He has looked at his watch twice now.";
-  if (s.idleMs > 2000) return "You have stopped. So has he.";
-  if (s.left < 8000 && s.reach < 0.6) return "He is putting his gloves back on.";
-  if (s.left < 15000 && s.reach < 0.85) return "He has somewhere to be.";
-  if (s.words === 0) return "He has not looked over.";
-  if (s.reach < 0.20) return "He is pretending not to have heard.";
-  if (s.reach < 0.45) return s.wpm > 45 ? "He noticed the noise, at least." : "He has half turned.";
-  if (s.reach < 0.70) return "He is listening. He is not happy about it.";
-  if (s.reach < 0.92) return "His hand has gone to his coat.";
-  return "Almost. Keep going.";
+  if (s.reach >= 1) return "It is at the slot. Post it, or keep writing and post it better.";
+  if (s.idleMs > 4200) return "The letter is hanging in the wind. So are you.";
+  if (s.idleMs > 2000) return "You have stopped, and so has it.";
+  if (s.left < 8000 && s.reach < 0.6) return "It will not make the far kerb at this rate.";
+  if (s.left < 15000 && s.reach < 0.85) return "The minute is going faster than the letter.";
+  if (s.words === 0) return "Nothing written yet, so nothing has left your hand.";
+  if (s.reach < 0.20) return "It is off the sill and over the gutter.";
+  if (s.reach < 0.45) return s.wpm > 45 ? "Moving. The wind has got under it." : "Halfway to the middle of the road.";
+  if (s.reach < 0.70) return "Over the white line. He can see it coming.";
+  if (s.reach < 0.92) return "Nearly at the far kerb.";
+  return "One more line and it is at the box.";
 }
 
 /**
- * The line under the gauge. A reaction to something just done beats the ambient
+ * The line under the scene. A reaction to something just done beats the ambient
  * state, which is what makes it feel like he is reading rather than counting.
  */
 export function reactionFor(state, notice) {
@@ -89,38 +96,39 @@ export function mountBeg(host, opts = {}) {
 
   host.innerHTML = `
     <div class="beg">
-      <div class="beg-gauge" aria-hidden="true">
-        <div class="beg-readout">
-          <div class="beg-cell"><b data-clock>60.0</b><span>seconds left</span></div>
-          <div class="beg-cell is-mid"><b data-wpm>0</b><span>words a minute</span></div>
-          <div class="beg-cell"><b data-words>0</b><span>words so far</span></div>
+      <div class="beg-scene">
+        <canvas class="beg-canvas" data-scene
+          aria-label="Your letter crossing the street to the postbox."></canvas>
+        <div class="beg-hud" aria-hidden="true">
+          <span><b data-clock>60.0</b> left</span>
+          <span><b data-wpm>0</b> wpm</span>
+          <span><b data-words>0</b> words</span>
+          <span class="beg-hud-reach"><b data-reach>0%</b> across</span>
         </div>
-        <div class="beg-track">
-          <i class="beg-track-fill" data-fill></i>
-          <i class="beg-track-mark" data-mark></i>
-          <i class="beg-track-end" data-end></i>
-        </div>
-        <div class="beg-ends"><span>your hand</span><span data-reach>0%</span><span>his pocket</span></div>
-        <p class="beg-react" data-react>He has not looked over.</p>
+        <div class="beg-open" data-open hidden></div>
       </div>
-      <label class="beg-label" for="beg-input">Make your case. The arm moves only when you type.</label>
+      <p class="beg-react" data-react>He is across the street, and he has not looked over.</p>
+      <label class="beg-label" for="beg-input">Write your case. Every letter you type carries it further across.</label>
       <textarea id="beg-input" class="beg-input" rows="4" spellcheck="false"
         autocomplete="off" autocorrect="off" autocapitalize="off"
-        placeholder="Sixty seconds. Convince him."></textarea>
+        placeholder="Sixty seconds. Say why, and say it in your own words."></textarea>
       <div class="beg-actions">
-        <button type="button" class="beg-start">Start begging</button>
-        <p class="beg-note" role="status" aria-live="polite">Up to ${maxPct}% &mdash; the case you make, whether he has heard it, whether it is spelled like a person, and how long you keep him standing. Most people get three or four.</p>
+        <button type="button" class="beg-start">Start writing</button>
+        <button type="button" class="beg-post" disabled>Post it</button>
+        <p class="beg-note" role="status" aria-live="polite">Up to ${maxPct}% &mdash; the case you make, whether he has heard it before, whether it reads like a person, and how long you keep him standing. Most people get three or four.</p>
       </div>
     </div>`;
 
   const $ = (sel) => host.querySelector(sel);
   const input = $(".beg-input");
   const startBtn = $(".beg-start");
+  const postBtn = $(".beg-post");
   const note = $(".beg-note");
   const clockEl = $("[data-clock]"), wpmEl = $("[data-wpm]"), wordsEl = $("[data-words]");
-  const fillEl = $("[data-fill]"), markEl = $("[data-mark]"), endEl = $("[data-end]");
   const reachEl = $("[data-reach]"), reactEl = $("[data-react]");
-  const gauge = $(".beg-gauge");
+  const openEl = $("[data-open]");
+  const scene = letterScene($("[data-scene]"));
+  const stage = $(".beg-scene");
 
   let raf = 0, running = false, startedAt = 0, finished = false;
   let keystrokes = 0, lastKey = 0, gaps = [], pasted = false, dropped = false, swipes = 0;
@@ -147,7 +155,7 @@ export function mountBeg(host, opts = {}) {
       if (!tell.test(text)) continue;
       seen.add(tell.key);
       notice = { line: tell.line, at: Date.now() };
-      gauge.classList.toggle("is-warned", tell.key === "swore" || tell.key === "shouting");
+      stage.classList.toggle("is-warned", tell.key === "swore" || tell.key === "shouting");
       return;
     }
   }
@@ -158,11 +166,11 @@ export function mountBeg(host, opts = {}) {
     wpmEl.textContent = String(wpm);
     wordsEl.textContent = String(words);
     reachEl.textContent = `${pct}%`;
-    fillEl.style.width = `${pct}%`;
-    markEl.style.left = `${pct}%`;
-    endEl.classList.toggle("is-lit", reach >= 1);
-    gauge.classList.toggle("is-hot", wpm >= 45);
-    gauge.classList.toggle("is-stalled", idleMs > 2000 && running);
+    scene.reach = reach;
+    stage.classList.toggle("is-hot", wpm >= 45);
+    stage.classList.toggle("is-stalled", idleMs > 2000 && running);
+    // The letter is at the slot: it is now the player's call when to post.
+    postBtn.disabled = !(running && reach >= 1);
     reactEl.textContent = reactionFor({ reach, wpm, words, left, idleMs }, notice);
   }
 
@@ -173,8 +181,10 @@ export function mountBeg(host, opts = {}) {
     const idleMs = lastKey ? now - lastKey : elapsed;
     checkTells(input.value);
     paint(reachNow(), wpmNow(now), wordCount(), left, idleMs);
-    if (reachNow() >= 1) return finish(elapsed, true);
-    if (left <= 0) return finish(WINDOW_MS, false);
+    // Reaching the slot no longer ends the run. It unlocks the button, and the
+    // player decides when to post — keep writing to make the case better, at the
+    // cost of the one axis that counts how long he was kept standing.
+    if (left <= 0) return finish(WINDOW_MS, reachNow() >= 1);
     raf = requestAnimationFrame(frame);
   }
 
@@ -185,15 +195,19 @@ export function mountBeg(host, opts = {}) {
     input.disabled = true;
     startBtn.disabled = false;
     startBtn.textContent = "Beg again";
-    gauge.classList.remove("is-hot", "is-stalled");
+    stage.classList.remove("is-hot", "is-stalled");
+
+    postBtn.disabled = true;
 
     if (!reached) {
-      reactEl.textContent = "He walked off. The arm never got there.";
-      note.textContent = `The arm fell short at ${Math.round(reachNow() * 100)}%. He did not even look up.`;
+      scene.blowAway();
+      reactEl.textContent = "The wind took it. It never crossed.";
+      note.textContent = `It got ${Math.round(reachNow() * 100)}% of the way over. He never saw it.`;
       return;
     }
-    reactEl.textContent = "He is reading it.";
-    note.textContent = "Reached him. He is reading it…";
+    scene.post();
+    reactEl.textContent = "Posted. He is reading it.";
+    note.textContent = "In the box. He is reading it…";
     opts.onWin?.({
       text: input.value,
       gaps: gaps.slice(0, 1200),
@@ -204,6 +218,22 @@ export function mountBeg(host, opts = {}) {
       swipes
     }, {
       say: (msg) => { note.textContent = msg; },
+      /** Refused: the letter comes back out of the slot and burns. */
+      burn: (html) => scene.burn(() => {
+        openEl.innerHTML = html;
+        openEl.hidden = false;
+        openEl.classList.add("is-ash");
+      }),
+      /** Accepted: it comes back out and opens, with the answer written inside.
+          `after` receives the opened panel — the caller must not go looking for
+          its own elements with a page-wide query, because the running game has
+          a clock of its own sitting right above it. */
+      open: (html, after) => scene.deliver(() => {
+        openEl.innerHTML = html;
+        openEl.hidden = false;
+        openEl.classList.remove("is-ash");
+        after?.(openEl);
+      }),
       replace: (html) => { host.innerHTML = html; }
     });
   }
@@ -213,7 +243,10 @@ export function mountBeg(host, opts = {}) {
     pasted = false; dropped = false; swipes = 0; seen = new Set(); notice = null;
     input.value = ""; input.disabled = false; input.focus();
     startBtn.disabled = true;
-    gauge.classList.remove("is-warned");
+    postBtn.disabled = true;
+    openEl.hidden = true; openEl.innerHTML = "";
+    scene.reset();
+    stage.classList.remove("is-warned");
     note.textContent = "Go.";
     running = true; startedAt = performance.now();
     paint(0, 0, 0, WINDOW_MS, 0);
@@ -241,17 +274,17 @@ export function mountBeg(host, opts = {}) {
   /** Glide typing, autocomplete, and dictation: whole words, no keystrokes. */
   function countSwipe(kind) {
     swipes += 1;
-    notice = { line: "Whole words are arriving at once. The arm only moves for keys.", at: Date.now() };
-    gauge.classList.add("is-warned");
+    notice = { line: "Whole words are arriving at once. Only keys carry the letter.", at: Date.now() };
+    stage.classList.add("is-warned");
     note.textContent = kind === "dictate"
-      ? "Dictation does not move the arm. He wants to watch you type it."
-      : "Swipe typing does not move the arm. Tap the letters.";
+      ? "Dictation does not carry the letter. He wants it in your hand."
+      : "Swipe typing does not carry the letter. Tap the keys.";
   }
 
   function markPaste() {
     pasted = true;
-    notice = { line: "He watched you paste that.", at: Date.now() };
-    gauge.classList.add("is-warned");
+    notice = { line: "He watched you paste that into the envelope.", at: Date.now() };
+    stage.classList.add("is-warned");
     note.textContent = "Pasting is not begging, and it now costs you.";
   }
 
@@ -286,7 +319,12 @@ export function mountBeg(host, opts = {}) {
   input.addEventListener("drop", (e) => { e.preventDefault(); dropped = true; });
 
   startBtn.addEventListener("click", start);
+  // Posting is a press, and only possible once the letter is at the slot.
+  postBtn.addEventListener("click", () => {
+    if (!running || reachNow() < 1) return;
+    finish(performance.now() - startedAt, true);
+  });
   paint(0, 0, 0, WINDOW_MS, 0);
 
-  return { start, stop: () => { running = false; cancelAnimationFrame(raf); } };
+  return { start, stop: () => { running = false; cancelAnimationFrame(raf); scene.stop(); } };
 }

@@ -2380,96 +2380,65 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
    ========================================================================== */
 .store-v2 .beg { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 
-.store-v2 .beg-gauge {
-  display: grid;
-  gap: 18px;
-  padding: 22px 20px 18px;
+.store-v2 .beg-scene {
+  position: relative;
   border: 1px solid var(--v2-border);
   border-radius: 12px;
-  background:
-    radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--v2-gold) 7%, transparent), transparent 70%),
-    var(--v2-surface, #14120c);
+  overflow: hidden;
+  background: #0A0912;
+  aspect-ratio: 16 / 7;
   min-width: 0;
 }
+.store-v2 .beg-canvas { display: block; width: 100%; height: 100%; }
 
-/* ── the three numbers ──────────────────────────────────────────────────── */
-.store-v2 .beg-readout {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  align-items: end;
+/* The three numbers sit ON the street rather than above it, so the eye never
+   leaves the letter to find out how long is left. */
+.store-v2 .beg-hud {
+  position: absolute; top: 0; left: 0; right: 0;
+  display: flex; gap: 16px; flex-wrap: wrap;
+  padding: 9px 13px;
+  font-family: 'Josefin Sans', Futura, Avenir, sans-serif;
+  font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--v2-fg, #F4EEDF) 62%, transparent);
+  background: linear-gradient(rgba(6,7,14,.72), rgba(6,7,14,0));
+  pointer-events: none;
 }
-.store-v2 .beg-cell {
-  display: grid; gap: 3px; justify-items: center; min-width: 0;
-  /* The labels used to run straight into the rules between the columns. */
-  padding: 0 10px;
+.store-v2 .beg-hud b {
+  font-weight: 400; font-size: 15px; letter-spacing: .02em;
+  color: var(--v2-fg, #F4EEDF); font-variant-numeric: tabular-nums;
 }
-.store-v2 .beg-cell.is-mid {
-  border-left: 1px solid var(--v2-border);
-  border-right: 1px solid var(--v2-border);
-}
-.store-v2 .beg-cell b {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 34px; font-weight: 500; line-height: 1;
-  color: var(--v2-fg);
-  font-variant-numeric: tabular-nums lining-nums;
-}
-.store-v2 .beg-cell.is-mid b { color: var(--v2-gold); }
-.store-v2 .beg-cell span {
-  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
-  font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase;
-  color: var(--v2-fg-muted); text-align: center; line-height: 1.3;
-  overflow-wrap: anywhere;
-}
+.store-v2 .beg-hud-reach b { color: var(--v2-gold-bright, var(--v2-gold)); }
 
-/* ── the reach, as a ruled line ─────────────────────────────────────────── */
-.store-v2 .beg-track {
-  position: relative;
-  height: 3px;
-  margin: 4px 6px 0;
-  border-radius: 2px;
-  background: color-mix(in srgb, var(--v2-fg) 12%, transparent);
+/* What the letter said, once it has opened — or what is left of it once it has
+   burnt. Either way it arrives over the scene, on the paper. */
+.store-v2 .beg-open {
+  position: absolute; inset: 8% 6%;
+  overflow: auto;
+  padding: 16px 18px;
+  border-radius: 6px;
+  background: #F4EEDF;
+  color: #1E1810;
+  box-shadow: 0 10px 40px rgba(0,0,0,.6), 0 0 0 1px rgba(181,147,90,.5);
+  animation: beg-unfold .45s cubic-bezier(.2,.8,.2,1) both;
 }
-.store-v2 .beg-track-fill {
-  position: absolute; inset: 0 auto 0 0;
-  width: 0;
-  border-radius: 2px;
-  background: linear-gradient(90deg,
-    color-mix(in srgb, var(--v2-gold) 45%, transparent), var(--v2-gold-bright, var(--v2-gold)));
-  transition: width .12s linear;
+.store-v2 .beg-open[hidden] { display: none; }
+.store-v2 .beg-open.is-ash {
+  background: #201B16;
+  color: #E4D9C0;
+  box-shadow: 0 10px 40px rgba(0,0,0,.7), 0 0 0 1px rgba(180,101,63,.55);
 }
-.store-v2 .beg-track-mark {
-  position: absolute; top: 50%; left: 0; z-index: 1;
-  width: 11px; height: 11px;
-  margin: -5.5px 0 0 -5.5px;
-  transform: rotate(45deg);
-  background: var(--v2-gold-bright, var(--v2-gold));
-  box-shadow: 0 0 0 3px var(--v2-surface, #14120c);
-  transition: left .12s linear;
+@keyframes beg-unfold {
+  from { transform: scaleY(.15) translateY(-14%); opacity: 0; }
+  to { transform: none; opacity: 1; }
 }
-.store-v2 .beg-track-end {
-  position: absolute; top: 50%; right: -6px;
-  width: 12px; height: 12px; margin-top: -6px;
-  border: 1px solid var(--v2-border);
-  border-radius: 50%;
-  background: var(--v2-surface, #14120c);
-  transition: background .2s ease, border-color .2s ease;
-}
-.store-v2 .beg-track-end.is-lit {
-  background: var(--v2-gold-bright, var(--v2-gold));
-  border-color: var(--v2-gold-bright, var(--v2-gold));
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--v2-gold) 22%, transparent);
-}
+/* The panel is dropped onto light paper, so the type inside it has to invert. */
+.store-v2 .beg-open .beg-verdict,
+.store-v2 .beg-open .beg-head { color: inherit; }
+.store-v2 .beg-open .beg-eyebrow,
+.store-v2 .beg-open .beg-axis-name,
+.store-v2 .beg-open .beg-tally { color: color-mix(in srgb, currentColor 74%, transparent); }
+.store-v2 .beg-open .beg-refused { border-left-color: #b4653f; }
 
-.store-v2 .beg-ends {
-  display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
-  margin: 0 2px;
-  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
-  font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase;
-  color: var(--v2-fg-muted);
-}
-.store-v2 .beg-ends [data-reach] { color: var(--v2-gold); font-variant-numeric: tabular-nums; }
-
-/* ── the line that is doing the acting ──────────────────────────────────── */
 .store-v2 .beg-react {
   margin: 0;
   min-height: 1.6em;
@@ -2482,13 +2451,12 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
 
 /* He reacts in the frame, too: a lift when you are quick, a dimming when you
    stall, and a flush of red when you have said something you should not have. */
-.store-v2 .beg-gauge.is-hot { border-color: color-mix(in srgb, var(--v2-gold) 55%, transparent); }
-.store-v2 .beg-gauge.is-hot .beg-cell.is-mid b { color: var(--v2-gold-bright, var(--v2-gold)); }
-.store-v2 .beg-gauge.is-stalled .beg-react { color: var(--v2-fg-muted); }
-.store-v2 .beg-gauge.is-warned { border-color: #b4653f; }
-.store-v2 .beg-gauge.is-warned .beg-react { color: #d87a4f; }
+.store-v2 .beg-scene.is-hot { border-color: color-mix(in srgb, var(--v2-gold) 55%, transparent); }
+.store-v2 .beg-scene.is-stalled + .beg-react { color: var(--v2-fg-muted); }
+.store-v2 .beg-scene.is-warned { border-color: #b4653f; }
+.store-v2 .beg-scene.is-warned + .beg-react { color: #d87a4f; }
 @media (prefers-reduced-motion: reduce) {
-  .store-v2 .beg-track-fill, .store-v2 .beg-track-mark { transition: none; }
+  .store-v2 .beg-open { animation: none; }
 }
 
 .store-v2 .beg-label, .store-v2 .beg-note, .store-v2 .beg-fine, .store-v2 .beg-rules {
@@ -2525,6 +2493,22 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
 .store-v2 .beg-start:hover:not(:disabled) { background: var(--v2-gold); color: var(--v2-bg); }
 .store-v2 .beg-start:disabled { opacity: .45; cursor: default; }
 .store-v2 .beg-start:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 2px; }
+
+/* Post it is the same control, lit, and only reachable once the letter is at
+   the slot — so the disabled state is doing real work and has to look deliberate. */
+.store-v2 .beg-post {
+  padding: 11px 20px;
+  border: 1px solid var(--v2-gold);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--v2-gold) 14%, transparent);
+  color: var(--v2-gold-bright, var(--v2-gold));
+  font-family: 'Josefin Sans', Futura, Avenir, sans-serif;
+  font-size: 12px; letter-spacing: .16em; text-transform: uppercase;
+  cursor: pointer;
+}
+.store-v2 .beg-post:hover:not(:disabled) { background: var(--v2-gold); color: var(--v2-bg); }
+.store-v2 .beg-post:disabled { opacity: .32; cursor: default; }
+.store-v2 .beg-post:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 2px; }
 
 /* ── The cart panel it now lives in ─────────────────────────────────────── */
 .store-v2 .beg-host { margin: 18px 0 0; min-width: 0; }

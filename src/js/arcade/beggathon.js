@@ -74,9 +74,9 @@ export async function mountBeggathon(host, opts = {}) {
         <p class="beg-eyebrow">Already argued</p>
         <h3 class="beg-head">${held.percent}% is on this bag.</h3>
         <p class="beg-code"><code>${esc(held.code)}</code></p>
-        <p class="beg-fine" data-clock></p>
+        <p class="beg-fine" data-expiry></p>
       </div>`;
-    countdown(host.querySelector("[data-clock]"), held, () => { host.innerHTML = ""; });
+    countdown(host.querySelector("[data-expiry]"), held, () => { host.innerHTML = ""; });
     return;
   }
 
@@ -90,7 +90,7 @@ export async function mountBeggathon(host, opts = {}) {
          <summary class="beg-summary">
            <span class="beg-eyebrow">Optional</span>
            <span class="beg-head">Ask him for up to ${maxPct}% off the whole bag</span>
-           <span class="beg-fine">Sixty seconds, typed by hand. Everything counts, including the spelling.</span>
+           <span class="beg-fine">Sixty seconds to write it and get it across the street. Typed by hand — everything counts, including the spelling.</span>
          </summary>
          <div class="beg-body"><p class="beg-fine">Setting up…</p></div>
        </details>`;
@@ -118,9 +118,11 @@ export async function mountBeggathon(host, opts = {}) {
         pasting. A plea he accepts takes one percent off that and nothing more — there is no
         discount at the end of this, only the ordinary price. No other game in the shop pays out
         until it is gone.</p>` : ""}
-      <p class="beg-rules">He is hard to move. He wants a real reason, about something in particular,
-        in words he has not heard before, and he does not want to be kept standing. Swearing ends it.
-        So does mashing, looping, shouting, and pasting. Most people get three or four percent.
+      <p class="beg-rules">Write to him, and type it: every key you press carries the letter
+        a little further across the street. Reach the postbox inside the minute and you may post it.
+        He wants a real reason, about something in particular, in words he has not read before, and
+        he does not like being kept waiting. Swearing, mashing, looping and pasting all end with the
+        letter burnt. Most people get three or four percent.
         ${atoning ? "" : `What he grants lasts ${ttl} minutes, used or not.`}</p>
       <div class="beg-slot"></div>`;
 
@@ -134,33 +136,35 @@ export async function mountBeggathon(host, opts = {}) {
         // Atonement: accepted, a percent came off the surcharge, and no code is minted.
         if (res?.correct && res.forgiven) {
           ui.say("");
-          body.innerHTML = `
+          ui.open(`
             <div class="beg-won">
               <p class="beg-eyebrow">${res.cleared ? "Settled" : "One percent lighter"}</p>
               <h4 class="beg-head">${esc(res.message)}</h4>
               ${statsMarkup({ ...res, percent: res.surchargePercent })}
-            </div>`;
+            </div>`);
           opts.onWin?.({ percent: 0, scope: "cart", forgiven: true, surchargePercent: res.surchargePercent });
           return;
         }
         if (!res?.correct || !res.code) {
           ui.say("");
-          body.insertAdjacentHTML("beforeend", refusalMarkup(res || {}));
+          ui.burn(refusalMarkup(res || {}));      // it comes back out and burns
           return;
         }
 
         saveReward({ ...res, expiresInMinutes: res.expiresInMinutes ?? ttl });
-        card.open = true;
-        body.innerHTML = `
+        if (card) card.open = true;
+        // The reply is written inside the letter, so the code arrives the same
+        // way the plea left: on paper, opened.
+        ui.open(`
           <div class="beg-won">
-            <p class="beg-eyebrow">He paid</p>
+            <p class="beg-eyebrow">He wrote back</p>
             <h4 class="beg-head">${res.percent}% off the whole bag.</h4>
             ${statsMarkup(res)}
             <p class="beg-code"><code>${esc(res.code)}</code></p>
-            <p class="beg-fine" data-clock></p>
-          </div>`;
-        countdown(body.querySelector("[data-clock]"),
-          { expiresAt: Date.now() + (res.expiresInMinutes ?? ttl) * 60000 });
+            <p class="beg-fine" data-expiry></p>
+          </div>`,
+          (panel) => countdown(panel.querySelector("[data-expiry]"),
+            { expiresAt: Date.now() + (res.expiresInMinutes ?? ttl) * 60000 }));
         opts.onWin?.({ code: res.code, percent: res.percent, scope: "cart" });
       }
     });
