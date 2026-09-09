@@ -1,0 +1,77 @@
+{
+ "label": "KAAYKO \u00b7 FIRST SERIES",
+ "cards": [
+  {
+   "n": 1,
+   "slug": "blackbuck",
+   "name": "Indian Blackbuck",
+   "binomial": "Antilope cervicapra",
+   "range": "Velavadar, Gujarat",
+   "status": "Least Concern",
+   "denom": "1.00"
+  },
+  {
+   "n": 2,
+   "slug": "bobcat",
+   "name": "Bobcat",
+   "binomial": "Lynx rufus texensis",
+   "range": "Big Bend, Texas",
+   "status": "Least Concern",
+   "denom": "1.00"
+  },
+  {
+   "n": 3,
+   "slug": "greater-flamingo",
+   "name": "Greater Flamingo",
+   "binomial": "Phoenicopterus roseus",
+   "range": "Chilika, Odisha",
+   "status": "Least Concern",
+   "denom": "1.00"
+  },
+  {
+   "n": 4,
+   "slug": "oriental-pied-hornbill",
+   "name": "Oriental Pied Hornbill",
+   "binomial": "Anthracoceros albirostris",
+   "range": "Sundarbans, West Bengal",
+   "status": "Least Concern",
+   "denom": "1.00"
+  },
+  {
+   "n": 5,
+   "slug": "red-panda",
+   "name": "Red Panda",
+   "binomial": "Ailurus fulgens",
+   "range": "Namdapha, Arunachal Pradesh",
+   "status": "Endangered",
+   "denom": "10.00"
+  },
+  {
+   "n": 6,
+   "slug": "indian-roller",
+   "name": "Indian Roller",
+   "binomial": "Coracias benghalensis",
+   "range": "Tadoba Andhari, Maharashtra",
+   "status": "Least Concern",
+   "denom": "1.00"
+  },
+  {
+   "n": 7,
+   "slug": "saltwater-crocodile",
+   "name": "Saltwater Crocodile",
+   "binomial": "Crocodylus porosus",
+   "range": "Sundarbans, West Bengal",
+   "status": "Least Concern",
+   "denom": "1.00"
+  },
+  {
+   "n": 8,
+   "slug": "indian-pitta",
+   "name": "Indian Pitta",
+   "binomial": "Pitta brachyura",
+   "range": "Tadoba Andhari, Maharashtra",
+   "status": "Least Concern",
+   "denom": "1.00"
+  }
+ ]
+}

@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en" class="card-page">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kaayko — the card</title>
+<meta name="description" content="Somebody handed you this. Two things at a time, no account, no trace.">
+<meta name="theme-color" content="#0B0A08">
+<meta property="og:title" content="Kaayko — the card">
+<meta property="og:description" content="Somebody handed you this.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Josefin+Sans:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════════════════════
+   Kaayko — the card.
+
+   One object, lit properly. The sheen is not a moving gradient pretending to be
+   light: the pointer is a real light position, the card carries a real surface
+   normal once it tilts, and the highlight is where the reflection of that light
+   actually lands (Blinn-Phong half-vector, plus a Schlick Fresnel term for the
+   edges). Foil hue shifts with the angle because that is what foil does.
+
+   Phone tilts the card with the accelerometer instead, and swaps the QR for
+   things you can actually press.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --ink: #0B0A08;
+  --ink-2: #131009;
+  --paper: #F4EEDF;
+  --gold: #B5935A;
+  --gold-lit: #F0D9A0;
+  --dim: rgba(244, 238, 223, .48);
+  --dimmer: rgba(244, 238, 223, .26);
+  --hair: rgba(181, 147, 90, .22);
+  --serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --sans: 'Josefin Sans', Futura, 'Century Gothic', Avenir, sans-serif;
+
+  /* written by the lighting model, every frame */
+  --sx: 50%; --sy: 30%;      /* where the reflection lands */
+  --spec: 0;                 /* specular strength */
+  --fres: 0;                 /* edge term */
+  --hue: 0deg;               /* foil shift */
+  --rx: 0deg; --ry: 0deg;    /* card attitude */
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--ink); color: var(--paper); }
+body {
+  font-family: var(--serif);
+  min-height: 100svh;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+.cap {
+  font-family: var(--sans); font-weight: 300;
+  font-size: 10.5px; letter-spacing: .28em; text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* ── the room ──────────────────────────────────────────────────────────── */
+.room {
+  position: relative;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(28px, 6vw, 72px) 20px clamp(40px, 8vw, 90px);
+  padding-bottom: max(40px, env(safe-area-inset-bottom));
+  isolation: isolate;
+}
+/* the lamp itself — it moves with the pointer, so the room agrees with the card */
+.room::before {
+  content: "";
+  position: absolute; inset: -20%;
+  background: radial-gradient(46% 46% at var(--sx) var(--sy),
+    rgba(181, 147, 90, .16), rgba(181, 147, 90, .04) 42%, transparent 70%);
+  z-index: -1; pointer-events: none;
+  transition: opacity .5s ease;
+}
+
+.stage { display: grid; gap: clamp(26px, 4vw, 40px); justify-items: center; width: 100%; max-width: 980px; }
+
+.eyebrow { display: grid; gap: 6px; justify-items: center; text-align: center; }
+.eyebrow h1 {
+  margin: 0; font-weight: 300; font-size: clamp(30px, 6vw, 52px); letter-spacing: .01em;
+}
+.eyebrow h1 em { font-style: italic; color: var(--gold-lit); }
+.eyebrow p { margin: 0; max-width: 34ch; color: var(--dim); font-size: clamp(15px, 2.4vw, 18px); line-height: 1.55; }
+
+/* ── the card ──────────────────────────────────────────────────────────── */
+.card-wrap {
+  perspective: 1400px;
+  width: min(92vw, 620px);
+  touch-action: pan-y;
+}
+.card {
+  position: relative;
+  aspect-ratio: 3.5 / 2;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform .55s cubic-bezier(.2, .8, .2, 1);
+  cursor: pointer;
+  border-radius: 10px;
+}
+.card.is-live { transition: none; }
+.card.is-flipped { --flip: 180deg; }
+.face {
+  position: absolute; inset: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  backface-visibility: hidden;
+  transform: rotateY(var(--flip, 0deg));
+  transition: transform .7s cubic-bezier(.2, .8, .2, 1);
+  box-shadow:
+    0 2px 3px rgba(0,0,0,.5),
+    0 24px 60px rgba(0,0,0,.62),
+    0 0 0 1px rgba(181,147,90,.20);
+  background: var(--paper);
+}
+.face.back { transform: rotateY(calc(var(--flip, 0deg) + 180deg)); }
+.face img { display: block; width: 100%; height: 100%; }
+
+/* Specular. Positioned where the reflected light lands, scaled by (N·H)^n. */
+.sheen {
+  position: absolute; inset: 0; pointer-events: none; border-radius: 10px;
+  background: radial-gradient(34% 46% at var(--sx) var(--sy),
+    rgba(255, 252, 240, .92), rgba(255, 246, 222, .35) 34%, transparent 66%);
+  opacity: calc(var(--spec) * .72);
+  mix-blend-mode: soft-light;
+}
+/* The foil. Gold does not brighten evenly — it shifts hue across the sweep. */
+.foil {
+  position: absolute; inset: 0; pointer-events: none; border-radius: 10px;
+  background: linear-gradient(calc(74deg + var(--hue)),
+    transparent 34%, rgba(255, 226, 150, .40) 46%,
+    rgba(255, 250, 232, .58) 50%, rgba(198, 150, 92, .40) 55%, transparent 68%);
+  opacity: calc(var(--spec) * .5);
+  mix-blend-mode: overlay;
+}
+/* Fresnel: grazing angles reflect more, so the rim lights up as the card turns. */
+.rim {
+  position: absolute; inset: 0; pointer-events: none; border-radius: 10px;
+  box-shadow: inset 0 0 0 1px rgba(255, 244, 214, calc(.10 + var(--fres) * .55)),
+              inset 0 0 26px rgba(255, 240, 200, calc(var(--fres) * .22));
+}
+.grain {
+  position: absolute; inset: 0; pointer-events: none; border-radius: 10px;
+  opacity: .16; mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+}
+
+/* The series strip. Eight markers, the way an album page numbers its spaces.
+   It is a radiogroup, so arrow keys move through it like a real control. */
+.series { display: grid; gap: 10px; justify-items: center; width: 100%; }
+.marks { display: flex; gap: 7px; flex-wrap: wrap; justify-content: center; }
+.mark {
+  width: 34px; height: 34px; padding: 0;
+  border: 1px solid var(--hair); border-radius: 8px;
+  background: transparent; color: var(--dimmer); cursor: pointer;
+  font-family: var(--sans); font-weight: 300; font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  transition: color .2s, border-color .2s, background .2s;
+}
+.mark:hover { color: var(--gold-lit); border-color: var(--gold); }
+.mark[aria-checked="true"] {
+  color: var(--ink); background: var(--gold-lit); border-color: var(--gold-lit);
+}
+.mark:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+.now { text-align: center; display: grid; gap: 3px; min-height: 42px; }
+.now b { font-weight: 400; font-size: clamp(17px, 2.6vw, 21px); }
+.now i { color: var(--dim); font-size: 14px; }
+
+.hint { display: flex; gap: 14px; align-items: center; }
+.hint button {
+  background: none; border: 1px solid var(--hair); color: var(--dim);
+  border-radius: 999px; padding: 7px 16px; cursor: pointer;
+  font-family: var(--sans); font-size: 10.5px; letter-spacing: .22em; text-transform: uppercase;
+  transition: color .2s, border-color .2s;
+}
+.hint button:hover { color: var(--gold-lit); border-color: var(--gold); }
+.hint button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+
+/* ── what is inside ────────────────────────────────────────────────────── */
+.vault { width: 100%; max-width: 980px; display: grid; gap: 20px; }
+.vault-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.vault-head h2 { margin: 0; font-weight: 300; font-size: clamp(20px, 3vw, 26px); }
+
+.pieces {
+  display: grid; gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(146px, 1fr));
+}
+.piece {
+  display: grid; gap: 8px;
+  border: 1px solid var(--hair); border-radius: 12px; padding: 10px;
+  background: linear-gradient(180deg, rgba(244,238,223,.035), transparent);
+  transition: border-color .22s ease, transform .22s ease;
+}
+.piece:hover, .piece:focus-visible { border-color: var(--gold); transform: translateY(-2px); outline: none; }
+.piece .shot {
+  aspect-ratio: 4 / 5; border-radius: 8px; overflow: hidden; background: #17140E;
+}
+.piece .shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.piece b { font-weight: 400; font-size: 15px; line-height: 1.3; }
+.piece span { font-family: var(--sans); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--dimmer); }
+
+.scan { display: none; gap: 18px; align-items: center; }
+.scan img { width: 108px; height: 108px; border-radius: 8px; background: #F7F3E9; padding: 7px; }
+.scan p { margin: 0; color: var(--dim); font-size: 15px; line-height: 1.5; max-width: 24ch; }
+@media (pointer: fine) and (min-width: 720px) { .scan { display: flex; } }
+
+.colophon {
+  width: 100%; max-width: 980px; padding-top: 22px; border-top: 1px solid var(--hair);
+  display: flex; flex-wrap: wrap; gap: 10px 26px; justify-content: space-between;
+}
+.colophon a:hover { color: var(--gold-lit); }
+
+@media (prefers-reduced-motion: reduce) {
+  .card, .face { transition: none; }
+  .sheen, .foil { display: none; }
+}
+</style>
+</head>
+<body>
+<main class="room" id="room">
+  <div class="stage">
+
+    <div class="eyebrow">
+      <p class="cap">Kaayko &middot; no. 0001</p>
+      <h1>Somebody handed you <em>this</em>.</h1>
+      <p>Two things at a time. No account, no password, no trace of you afterwards.</p>
+    </div>
+
+    <div class="card-wrap">
+      <div class="card" id="card" role="button" tabindex="0"
+           aria-label="The Kaayko card. Activate to turn it over.">
+        <div class="face front">
+          <img id="face-front" alt="Front of the Kaayko card">
+          <i class="foil"></i><i class="sheen"></i><i class="grain"></i><i class="rim"></i>
+        </div>
+        <div class="face back">
+          <img id="face-back" alt="Back of the Kaayko card">
+          <i class="foil"></i><i class="sheen"></i><i class="grain"></i><i class="rim"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="series">
+      <div class="marks" id="marks" role="radiogroup" aria-label="Choose a card from the series"></div>
+      <p class="now" id="now"><b>&nbsp;</b><i>&nbsp;</i></p>
+    </div>
+
+    <div class="hint">
+      <button type="button" id="turn">Turn it over</button>
+      <span class="cap" id="tilt-note">Move the light</span>
+    </div>
+
+    <section class="vault" aria-labelledby="vault-title">
+      <div class="vault-head">
+        <h2 id="vault-title">Everything here was posted once.</h2>
+        <span class="cap" id="vault-count"></span>
+      </div>
+      <div class="pieces" id="pieces"></div>
+      <div class="scan">
+        <img src="/assets/card-qr.png" alt="QR code to kaay.store/card" width="108" height="108">
+        <p>Take the card with you. It opens this page on a phone, where the pieces are pressable.</p>
+      </div>
+    </section>
+
+    <footer class="colophon">
+      <a class="cap" href="/store">The shop</a>
+      <a class="cap" href="/store/about">Why so few</a>
+      <a class="cap" href="mailto:hello@kaayko.com">hello@kaayko.com</a>
+      <span class="cap">Printed to order &middot; est. whenever</span>
+    </footer>
+
+  </div>
+</main>
+
+<script type="module">
+/* ── the lighting model ────────────────────────────────────────────────────
+   Blinn-Phong with a Schlick Fresnel term. The pointer is a light at (lx, ly)
+   a little way above the card; the card's normal comes from its own tilt. The
+   highlight is drawn where the reflection actually lands, not where the cursor
+   happens to be, which is why it slides the "wrong" way as the card turns.   */
+
+const card = document.getElementById('card');
+const room = document.getElementById('room');
+const TILT = 11;              // degrees of attitude at the edges
+const LIGHT_H = 1.35;         // how high the lamp sits, in card widths
+const SHINE = 42;             // specular exponent — higher is a tighter hotspot
+const F0 = 0.045;             // reflectance at normal incidence, for paper with foil
+
+const v = (x, y, z) => ({ x, y, z });
+const norm = (a) => { const m = Math.hypot(a.x, a.y, a.z) || 1; return v(a.x/m, a.y/m, a.z/m); };
+const dot = (a, b) => a.x*b.x + a.y*b.y + a.z*b.z;
+
+let raf = 0, target = { x: .5, y: .35 }, cur = { x: .5, y: .35 }, live = false;
+
+function light(px, py) {
+  // Attitude: the card leans toward the light.
+  const rx = (0.5 - py) * 2 * TILT;
+  const ry = (px - 0.5) * 2 * TILT;
+  const rxr = rx * Math.PI / 180, ryr = ry * Math.PI / 180;
+
+  // Surface normal after that rotation.
+  const N = norm(v(Math.sin(ryr), -Math.sin(rxr), Math.cos(rxr) * Math.cos(ryr)));
+  const V = v(0, 0, 1);                                   // viewer, straight on
+  const L = norm(v((px - 0.5) * 2, (0.5 - py) * 2, LIGHT_H));
+  const H = norm(v(L.x + V.x, L.y + V.y, L.z + V.z));     // half-vector
+
+  const spec = Math.pow(Math.max(0, dot(N, H)), SHINE);
+  const nv = Math.max(0, dot(N, V));
+  const fres = F0 + (1 - F0) * Math.pow(1 - nv, 5);        // Schlick
+
+  // Where the reflection lands on the card face: mirror the light about N.
+  const d = 2 * dot(L, N);
+  const R = v(d * N.x - L.x, d * N.y - L.y, d * N.z - L.z);
+  const sx = 50 + (R.x / Math.max(0.15, R.z)) * 46;
+  const sy = 50 - (R.y / Math.max(0.15, R.z)) * 46;
+
+  const s = card.style;
+  s.setProperty('--rx', rx.toFixed(2) + 'deg');
+  s.setProperty('--ry', ry.toFixed(2) + 'deg');
+  s.setProperty('--spec', (0.28 + spec * 0.85).toFixed(3));
+  s.setProperty('--fres', Math.min(1, fres * 5).toFixed(3));
+  s.setProperty('--hue', ((px - 0.5) * 46).toFixed(1) + 'deg');
+  s.setProperty('--sx', sx.toFixed(1) + '%');
+  s.setProperty('--sy', sy.toFixed(1) + '%');
+  room.style.setProperty('--sx', (px * 100).toFixed(1) + '%');
+  room.style.setProperty('--sy', (py * 100).toFixed(1) + '%');
+}
+
+function loop() {
+  cur.x += (target.x - cur.x) * 0.14;      // a little inertia; paper has mass
+  cur.y += (target.y - cur.y) * 0.14;
+  light(cur.x, cur.y);
+  raf = requestAnimationFrame(loop);
+}
+
+function aim(e) {
+  const r = card.getBoundingClientRect();
+  target.x = Math.max(-0.2, Math.min(1.2, (e.clientX - r.left) / r.width));
+  target.y = Math.max(-0.6, Math.min(1.6, (e.clientY - r.top) / r.height));
+  if (!live) { live = true; card.classList.add('is-live'); }
+}
+
+const fine = matchMedia('(pointer: fine)').matches;
+const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+if (!still) {
+  raf = requestAnimationFrame(loop);
+  if (fine) {
+    window.addEventListener('pointermove', aim, { passive: true });
+    window.addEventListener('pointerleave', () => { target = { x: .5, y: .35 }; });
+  } else {
+    // A phone has a better pointer than a pointer: the device itself.
+    document.getElementById('tilt-note').textContent = 'Tilt the phone';
+    const onTilt = (ev) => {
+      const g = ev.gamma ?? 0, b = ev.beta ?? 0;
+      target.x = Math.max(0, Math.min(1, 0.5 + g / 46));
+      target.y = Math.max(0, Math.min(1, 0.5 + (b - 42) / 52));
+      if (!live) { live = true; card.classList.add('is-live'); }
+    };
+    if (typeof DeviceOrientationEvent?.requestPermission === 'function') {
+      // iOS asks first. Do it on the same gesture that turns the card.
+      card.addEventListener('click', async function once() {
+        try { if (await DeviceOrientationEvent.requestPermission() === 'granted')
+          window.addEventListener('deviceorientation', onTilt); } catch (_) {}
+        card.removeEventListener('click', once);
+      }, { once: true });
+    } else {
+      window.addEventListener('deviceorientation', onTilt);
+    }
+  }
+}
+
+/* ── turning it over ─────────────────────────────────────────────────────── */
+const flip = () => card.classList.toggle('is-flipped');
+// A swipe that changed the card must not also turn it over.
+card.addEventListener('click', (e) => { if (!card.dataset.swiped) flip(); });
+card.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); }
+});
+document.getElementById('turn').addEventListener('click', (e) => { e.stopPropagation(); flip(); });
+
+/* ── the series ──────────────────────────────────────────────────────────────
+   Eight cards, one chassis. Only the face and the four facts change, which is the
+   whole idea, so the switcher only swaps two images and one line of type.        */
+const marks = document.getElementById('marks');
+const nowEl = document.getElementById('now');
+const frontImg = document.getElementById('face-front');
+const backImg = document.getElementById('face-back');
+const pad = (n) => String(n).padStart(2, '0');
+let series = [], at = 0;
+
+function show(i, { focus = false } = {}) {
+  if (!series.length) return;
+  at = (i + series.length) % series.length;
+  const c = series[at];
+  const stem = `/assets/cards/${pad(c.n)}_${c.slug}`;
+  frontImg.src = `${stem}_front.svg`;
+  backImg.src = `${stem}_back.svg`;
+  frontImg.alt = `${c.name}, front of the card`;
+  backImg.alt = `${c.name}, back of the card`;
+  nowEl.innerHTML = `<b>${esc(c.name)}</b><i>${esc(c.binomial)} &middot; ${esc(c.range)}</i>`;
+  [...marks.children].forEach((b, j) => {
+    b.setAttribute('aria-checked', String(j === at));
+    b.tabIndex = j === at ? 0 : -1;
+    if (focus && j === at) b.focus();
+  });
+  card.classList.remove('is-flipped');            // a new card arrives face up
+  // Warm the neighbours so stepping through never waits on the network.
+  for (const d of [1, -1]) {
+    const n = series[(at + d + series.length) % series.length];
+    new Image().src = `/assets/cards/${pad(n.n)}_${n.slug}_front.svg`;
+  }
+}
+
+(async () => {
+  try {
+    const r = await fetch('/assets/cards/index.json');
+    series = (await r.json()).cards || [];
+  } catch (_) { series = []; }
+  if (!series.length) return;
+
+  marks.innerHTML = series.map((c, i) =>
+    `<button type="button" class="mark" role="radio" aria-checked="false" tabindex="-1"
+       data-i="${i}" title="${esc(c.name)}">${pad(c.n)}</button>`).join('');
+  marks.addEventListener('click', (e) => {
+    const b = e.target.closest('.mark');
+    if (b) show(Number(b.dataset.i));
+  });
+  marks.addEventListener('keydown', (e) => {
+    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    if (step) { e.preventDefault(); show(at + step, { focus: true }); }
+    else if (e.key === 'Home') { e.preventDefault(); show(0, { focus: true }); }
+    else if (e.key === 'End') { e.preventDefault(); show(series.length - 1, { focus: true }); }
+  });
+  // The card itself steps on a horizontal swipe, so a phone needs no buttons.
+  let x0 = null;
+  card.addEventListener('pointerdown', (e) => { x0 = e.clientX; });
+  card.addEventListener('pointerup', (e) => {
+    if (x0 === null) return;
+    const dx = e.clientX - x0; x0 = null;
+    if (Math.abs(dx) > 46) {
+      card.dataset.swiped = '1';
+      show(at + (dx < 0 ? 1 : -1));
+      setTimeout(() => { delete card.dataset.swiped; }, 0);
+    }
+  });
+  show(0);
+})();
+
+/* ── what is inside ──────────────────────────────────────────────────────────
+   Live from the shop, so this page is never out of date, and every kind of
+   thing is shown rather than a wall of shirts.                               */
+const API = window.PRODUCTION_API_BASE || 'https://api-vwcc5j4qda-uc.a.run.app';
+const ORDER = ['bottle', 'tote', 'magnet', 'tshirt'];
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+(async () => {
+  const host = document.getElementById('pieces');
+  try {
+    const r = await fetch(`${API}/products`);
+    const { products = [] } = await r.json();
+    const byType = {};
+    for (const p of products) {
+      const t = String(p.productType || '').toLowerCase();
+      if (!ORDER.includes(t)) continue;
+      (byType[t] ||= []).push(p);
+    }
+    // Two of each kind, in a fixed order, so the mix is always a mix.
+    const picked = ORDER.flatMap((t) => (byType[t] || []).slice(0, 2).map((p) => ({ ...p, t })));
+    if (!picked.length) { host.remove(); return; }
+
+    host.innerHTML = picked.map((p) => {
+      const img = (p.imgSrc || p.images || [])[0] || '';
+      return `<a class="piece" href="/store/p/${encodeURIComponent(p.id)}">
+        <span class="shot"><img loading="lazy" src="${esc(img)}" alt=""></span>
+        <b>${esc(p.title)}</b>
+        <span>${esc(p.t)} &middot; ${esc(p.price ?? '')}</span>
+      </a>`;
+    }).join('');
+    document.getElementById('vault-count').textContent =
+      `${products.length} pieces · ${Object.keys(byType).length} kinds`;
+  } catch (_) {
+    host.innerHTML = `<a class="piece" href="/store"><b>The shop</b><span>open it</span></a>`;
+  }
+})();
+</script>
+</body>
+</html>

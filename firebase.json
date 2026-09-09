@@ -444,6 +444,10 @@
         {
           "source": "/store/privacy",
           "destination": "/store-privacy.html"
+        },
+        {
+          "source": "/card",
+          "destination": "/card.html"
         }
       ]
     },
@@ -762,6 +766,10 @@
         {
           "source": "/privacy",
           "destination": "/store-privacy.html"
+        },
+        {
+          "source": "/card",
+          "destination": "/card.html"
         },
         {
           "source": "**",
