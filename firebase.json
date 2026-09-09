@@ -12,15 +12,6 @@
       ],
       "headers": [
         {
-          "source": "/assets/cards/**",
-          "headers": [
-            {
-              "key": "Cache-Control",
-              "value": "public, max-age=300, must-revalidate"
-            }
-          ]
-        },
-        {
           "source": "**",
           "headers": [
             {
@@ -130,6 +121,15 @@
             {
               "key": "Cache-Control",
               "value": "public,max-age=31536000,immutable"
+            }
+          ]
+        },
+        {
+          "source": "/assets/cards/**",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=300, must-revalidate"
             }
           ]
         },
@@ -480,15 +480,6 @@
       ],
       "headers": [
         {
-          "source": "/assets/cards/**",
-          "headers": [
-            {
-              "key": "Cache-Control",
-              "value": "public, max-age=300, must-revalidate"
-            }
-          ]
-        },
-        {
           "source": "**",
           "headers": [
             {
@@ -598,6 +589,15 @@
             {
               "key": "Cache-Control",
               "value": "public,max-age=31536000,immutable"
+            }
+          ]
+        },
+        {
+          "source": "/assets/cards/**",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=300, must-revalidate"
             }
           ]
         },
