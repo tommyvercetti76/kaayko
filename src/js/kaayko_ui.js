@@ -30,7 +30,8 @@ const PRODUCT_TYPE_SECTIONS = [
   { type: "poster",  label: "Posters" },
   { type: "sticker", label: "Stickers" },
   { type: "mug",     label: "Mugs" },
-  { type: "cap",     label: "Caps" }
+  { type: "cap",     label: "Caps" },
+  { type: "bottle",  label: "Bottles" }
 ];
 const OTHER_SECTION = { type: "other", label: "Other" };
 
@@ -95,7 +96,9 @@ export function populateCarousel(items) {
   const visibleItems = items
     .filter(item => item.isAvailable !== false)
     .slice()
-    .sort((a, b) => getCreatedAtMs(b) - getCreatedAtMs(a));
+    .sort((a, b) =>
+      ((b.featured === true) - (a.featured === true)) ||
+      (getCreatedAtMs(b) - getCreatedAtMs(a)));
 
   announceProductCount(visibleItems.length);
 
@@ -106,117 +109,219 @@ export function populateCarousel(items) {
     return;
   }
 
-  const buckets = new Map();
-  for (const item of visibleItems) {
-    const key = (item.productType || "").toLowerCase();
-    const sectionKey = PRODUCT_TYPE_SECTIONS.some(s => s.type === key) ? key : OTHER_SECTION.type;
-    if (!buckets.has(sectionKey)) buckets.set(sectionKey, []);
-    buckets.get(sectionKey).push(item);
-  }
+  // One mixed grid. Products are interleaved rather than walled off by type: shoppers browse a
+  // whole store, not a filing cabinet. The toolbar above does the narrowing and the sorting.
+  const toolbar = buildBrowseToolbar(visibleItems, carousel);
+  carousel.appendChild(toolbar);
 
-  const orderedSections = [...PRODUCT_TYPE_SECTIONS, OTHER_SECTION].filter(s => buckets.has(s.type));
-  const showHeaders = orderedSections.length > 1;
-  const collapsed = getCollapsedSections();
+  const grid = document.createElement("div");
+  grid.className = "carousel-section-items store-grid";
+  grid.id = "carousel-items-all";
+  const mixRank = buildMixedOrder(visibleItems);
+  for (const item of visibleItems) grid.appendChild(decorateCard(item, mixRank.get(item) ?? 0));
+  carousel.appendChild(grid);
 
-  for (const section of orderedSections) {
-    const sectionEl = document.createElement("div");
-    sectionEl.className = "carousel-section";
-    sectionEl.dataset.sectionType = section.type;
-
-    const sectionItems = buckets.get(section.type);
-
-    if (showHeaders) {
-      // The row is a plain flex container: a real <h2> (so heading navigation
-      // goes h1 → h2 → h3 product titles) wrapping the collapse toggle, with
-      // the Refine control as a sibling — never a focusable control nested
-      // inside another button. The whole row still toggles on click for
-      // mouse/touch, exactly as before.
-      const heading = document.createElement("div");
-      heading.className = "carousel-section-title";
-      heading.dataset.sectionType = section.type;
-
-      const startsCollapsed = collapsed.has(section.type);
-      const count = sectionItems.length;
-
-      heading.innerHTML = `
-        <h2 class="carousel-section-heading">
-          <button type="button" class="carousel-section-toggle" aria-controls="carousel-items-${section.type}" aria-expanded="${String(!startsCollapsed)}">
-            <span class="carousel-section-label">${section.label}</span>
-            <span class="carousel-section-count">${count}</span>
-            <span class="visually-hidden">${count === 1 ? "item" : "items"}</span>
-          </button>
-        </h2>
-        <button type="button" class="carousel-section-refine" hidden aria-expanded="false" aria-controls="carousel-facets-${section.type}" aria-label="Refine this section">
-          <span class="refine-label">Refine</span>
-          <span class="refine-count" hidden>0</span>
-          <svg class="refine-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <svg class="carousel-section-chevron" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      `;
-      const toggle = heading.querySelector(".carousel-section-toggle");
-
-      heading.addEventListener("click", (e) => {
-        // Refine button captures its own clicks; don't propagate to collapse.
-        if (e.target.closest(".carousel-section-refine")) return;
-        const wasExpanded = toggle.getAttribute("aria-expanded") === "true";
-        const nowExpanded = !wasExpanded;
-        toggle.setAttribute("aria-expanded", String(nowExpanded));
-        sectionEl.classList.toggle("collapsed", !nowExpanded);
-
-        const next = getCollapsedSections();
-        if (nowExpanded) next.delete(section.type);
-        else next.add(section.type);
-        persistCollapsedSections(next);
-      });
-
-      if (startsCollapsed) sectionEl.classList.add("collapsed");
-      sectionEl.appendChild(heading);
-    }
-
-    // Sub-chip facets per section (Theme / Park / Tags) — only render rows
-    // whose facet has ≥2 distinct values within this section. Hidden by
-    // default behind the Refine toggle in the section header.
-    if (showHeaders) {
-      const facetsEl = buildSectionFacets(sectionEl, sectionItems);
-      if (facetsEl) {
-        facetsEl.classList.add("collapsed");
-        sectionEl.appendChild(facetsEl);
-        // Reveal the Refine toggle on this section's header now that we
-        // know facets exist.
-        const refine = sectionEl.querySelector(".carousel-section-refine");
-        if (refine) {
-          refine.hidden = false;
-          const onToggle = () => {
-            const open = facetsEl.classList.toggle("collapsed");
-            // After toggle, `collapsed` is REMOVED on open; flip the value.
-            const isOpen = !open;
-            refine.setAttribute("aria-expanded", String(isOpen));
-          };
-          // A real <button> now: Enter/Space arrive as click natively.
-          refine.addEventListener("click", (e) => { e.stopPropagation(); onToggle(); });
-        }
-      }
-    }
-
-    const itemsWrap = document.createElement("div");
-    itemsWrap.className = "carousel-section-items";
-    itemsWrap.id = `carousel-items-${section.type}`;
-    for (const item of sectionItems) {
-      const card = createCarouselItem(item);
-      // Stash filterable facets on the card so chip clicks can hide/show without re-render.
-      card.dataset.facetTheme = (item.theme || "").toLowerCase();
-      card.dataset.facetPark  = (item.nationalPark || "").toLowerCase();
-      card.dataset.facetTags  = (item.tags || []).join("|").toLowerCase();
-      itemsWrap.appendChild(card);
-    }
-    sectionEl.appendChild(itemsWrap);
-
-    carousel.appendChild(sectionEl);
-  }
-
+  applyBrowseState(carousel);
   animateCarouselItems();
+}
+
+/**
+ * A card plus the facet data the toolbar filters on, so narrowing is a class toggle
+ * rather than a re-render (which would drop carousel position and focus).
+ */
+function decorateCard(item, mixRank = 0) {
+  const card = createCarouselItem(item);
+  card.dataset.facetMix = String(mixRank);
+  card.dataset.facetType = (item.productType || "").toLowerCase();
+  card.dataset.facetCategory = (item.category || "").toLowerCase();
+  card.dataset.facetTheme = (item.theme || "").toLowerCase();
+  card.dataset.facetPark = (item.nationalPark || "").toLowerCase();
+  card.dataset.facetTags = (item.tags || []).join("|").toLowerCase();
+  card.dataset.facetPrice = String(getPriceValue(item));
+  card.dataset.facetVotes = String(Number(item.votes) || 0);
+  card.dataset.facetCreated = String(getCreatedAtMs(item));
+  card.dataset.facetFeatured = item.featured === true ? "1" : "0";
+  card.dataset.facetTitle = (item.title || "").toLowerCase();
+  return card;
+}
+
+/**
+ * A real number for every product, whatever the price field holds. Legacy docs carry a tier symbol
+ * ($..$$$$) resolved through the shared PRICE_MAP; newer ones carry a numeric actualPrice or a
+ * literal like "$24.99". Sorting and price filtering both need one comparable number.
+ */
+export function getPriceValue(item) {
+  if (typeof item?.actualPrice === "number" && item.actualPrice > 0) return item.actualPrice;
+  const raw = String(item?.price ?? "").trim();
+  const mapped = PRICE_MAP[raw];
+  const n = parseFloat(String(mapped ?? raw).replace(/[^0-9.]/g, ""));
+  return Number.isFinite(n) ? n : 0;
+}
+
+/**
+ * Default browse order: featured products lead, then everything else is dealt round-robin across
+ * product types. Without this the grid still reads as blocks — six bottles, then eleven totes —
+ * because items of a type share a creation date. Shoppers should meet the range, not a filing
+ * cabinet with the dividers removed.
+ */
+function buildMixedOrder(items) {
+  const rank = new Map();
+  const featured = items.filter(i => i.featured === true);
+  const rest = items.filter(i => i.featured !== true);
+
+  let n = 0;
+  for (const item of featured) rank.set(item, n++);
+
+  const queues = new Map();
+  for (const item of rest) {
+    const key = (item.productType || "other").toLowerCase();
+    if (!queues.has(key)) queues.set(key, []);
+    queues.get(key).push(item);
+  }
+  // Largest groups first so the deal stays even as smaller queues run dry.
+  const lanes = [...queues.values()].sort((a, b) => b.length - a.length);
+  for (let i = 0; lanes.some(q => q.length); i++) {
+    for (const lane of lanes) {
+      const next = lane.shift();
+      if (next) rank.set(next, n++);
+    }
+  }
+  return rank;
+}
+
+const SORTS = [
+  { id: "featured", label: "Featured & mixed" },
+  { id: "newest",   label: "Newest" },
+  { id: "price-asc",  label: "Price: low to high" },
+  { id: "price-desc", label: "Price: high to low" },
+  { id: "loved",    label: "Most loved" }
+];
+
+const BROWSE_STATE = { sort: "featured", type: "all", query: "" };
+
+function labelForType(type) {
+  const known = PRODUCT_TYPE_SECTIONS.find(s => s.type === type);
+  return known ? known.label : (type ? type[0].toUpperCase() + type.slice(1) : "Other");
+}
+
+/**
+ * Sort + type + search, in one row above the grid. Type chips carry live counts so a shopper can
+ * see what is behind each one before spending a click.
+ */
+function buildBrowseToolbar(items, carousel) {
+  const bar = document.createElement("div");
+  bar.className = "browse-toolbar";
+
+  const counts = new Map();
+  for (const it of items) {
+    const t = (it.productType || "other").toLowerCase();
+    counts.set(t, (counts.get(t) || 0) + 1);
+  }
+  const types = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+
+  const chips = document.createElement("div");
+  chips.className = "browse-chips";
+  chips.setAttribute("role", "group");
+  chips.setAttribute("aria-label", "Filter by product type");
+  const mkChip = (value, label, count) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "browse-chip";
+    b.dataset.value = value;
+    b.setAttribute("aria-pressed", String(BROWSE_STATE.type === value));
+    b.innerHTML = `<span>${label}</span><span class="browse-chip-count">${count}</span>`;
+    b.addEventListener("click", () => {
+      BROWSE_STATE.type = value;
+      applyBrowseState(carousel);
+    });
+    return b;
+  };
+  chips.appendChild(mkChip("all", "Everything", items.length));
+  for (const [type, count] of types) chips.appendChild(mkChip(type, labelForType(type), count));
+  bar.appendChild(chips);
+
+  const right = document.createElement("div");
+  right.className = "browse-controls";
+
+  const search = document.createElement("input");
+  search.type = "search";
+  search.className = "browse-search";
+  search.placeholder = "Search products";
+  search.setAttribute("aria-label", "Search products");
+  search.value = BROWSE_STATE.query;
+  search.addEventListener("input", () => {
+    BROWSE_STATE.query = search.value.trim().toLowerCase();
+    applyBrowseState(carousel);
+  });
+  right.appendChild(search);
+
+  const sortId = "browse-sort";
+  const sortLabel = document.createElement("label");
+  sortLabel.className = "visually-hidden";
+  sortLabel.setAttribute("for", sortId);
+  sortLabel.textContent = "Sort products";
+  const sort = document.createElement("select");
+  sort.className = "browse-sort";
+  sort.id = sortId;
+  for (const s of SORTS) {
+    const o = document.createElement("option");
+    o.value = s.id;
+    o.textContent = s.label;
+    if (s.id === BROWSE_STATE.sort) o.selected = true;
+    sort.appendChild(o);
+  }
+  sort.addEventListener("change", () => {
+    BROWSE_STATE.sort = sort.value;
+    applyBrowseState(carousel);
+  });
+  right.append(sortLabel, sort);
+
+  const count = document.createElement("p");
+  count.className = "browse-count";
+  count.setAttribute("aria-live", "polite");
+  right.appendChild(count);
+
+  bar.appendChild(right);
+  return bar;
+}
+
+/** Re-order and show/hide cards in place to match the current sort, type chip and search. */
+function applyBrowseState(carousel) {
+  const grid = carousel.querySelector(".store-grid");
+  if (!grid) return;
+  const cards = [...grid.children];
+
+  const num = (card, key) => Number(card.dataset[key]) || 0;
+  const comparators = {
+    featured: (a, b) => num(a, "facetMix") - num(b, "facetMix"),
+    newest:   (a, b) => num(b, "facetCreated") - num(a, "facetCreated"),
+    "price-asc":  (a, b) => num(a, "facetPrice") - num(b, "facetPrice"),
+    "price-desc": (a, b) => num(b, "facetPrice") - num(a, "facetPrice"),
+    loved:    (a, b) => num(b, "facetVotes") - num(a, "facetVotes")
+  };
+  cards.sort(comparators[BROWSE_STATE.sort] || comparators.featured);
+  cards.forEach((card, i) => { card.style.order = String(i); });
+
+  let shown = 0;
+  for (const card of cards) {
+    const typeOk = BROWSE_STATE.type === "all" || card.dataset.facetType === BROWSE_STATE.type;
+    const q = BROWSE_STATE.query;
+    const searchOk = !q ||
+      card.dataset.facetTitle.includes(q) ||
+      card.dataset.facetTags.includes(q) ||
+      card.dataset.facetTheme.includes(q);
+    const visible = typeOk && searchOk;
+    card.hidden = !visible;
+    if (visible) shown += 1;
+  }
+
+  for (const chip of carousel.querySelectorAll(".browse-chip")) {
+    chip.setAttribute("aria-pressed", String(chip.dataset.value === BROWSE_STATE.type));
+  }
+  const countEl = carousel.querySelector(".browse-count");
+  if (countEl) countEl.textContent = `${shown} ${shown === 1 ? "product" : "products"}`;
+  const empty = carousel.querySelector(".browse-empty");
+  if (empty) empty.hidden = shown !== 0;
 }
 
 // Tags hidden from the "Tags" sub-chip row (they're already represented elsewhere
@@ -337,7 +442,8 @@ function applySectionFilters(sectionEl) {
 }
 
 function animateCarouselItems() {
-  document.querySelectorAll("#carousel .carousel-item").forEach(card => {
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  document.querySelectorAll("#carousel .carousel-item:not(.animate)").forEach(card => {
     const delay = (Math.random() * 0.8).toFixed(2) + "s";
     card.style.animationDelay = delay;
     card.classList.add("animate");
@@ -348,9 +454,17 @@ function createCarouselItem(item) {
   const card = document.createElement("div");
   card.className = "carousel-item";
   if (isSoldOut(item)) card.classList.add("is-sold-out");
+  if (item.featured === true) card.classList.add("is-featured");
 
   const { metadataPill, heartButton } = createLikeButton(item);
   const imgContainer = buildImageContainer(item, metadataPill, heartButton);
+  if (item.featured === true) {
+    // Bottom-left of the image: the votes pill, NEW badge and heart already own the top row.
+    const badge = document.createElement("span");
+    badge.className = "featured-flag";
+    badge.textContent = "Featured";
+    imgContainer.append(badge);
+  }
   if (isSoldOut(item)) {
     const flag = document.createElement("span");
     flag.className = "sold-out-flag";

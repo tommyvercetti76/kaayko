@@ -1878,3 +1878,815 @@ html.dark-theme .store-v2 .footer-elements {
 }
 
 .store-v2 .cart-button-container.is-sold-out .cart-link::after { opacity: .18; }
+
+
+/* Featured products (Firestore `featured: true`): they lead the grid and carry a badge.
+   Placed bottom-left so it clears the votes pill (top-left), the NEW badge (top-centre)
+   and the heart control (top-right). */
+.store-v2 .carousel-item.is-featured { position: relative; }
+.store-v2 .carousel-item .featured-flag {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  z-index: 4;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--v2-overlay-bg);
+  color: var(--v2-overlay-fg);
+  font-family: 'Josefin_Bold', 'Josefin Sans', Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  pointer-events: none;
+}
+
+
+/* ==========================================================================
+   Browse toolbar — one mixed grid, narrowed here rather than split into
+   per-type sections. Josefin + --v2 tokens, same as the rest of the store.
+   ========================================================================== */
+.store-v2 .browse-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  margin: 0 0 22px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--v2-border);
+  max-width: 100%;
+}
+
+.store-v2 .browse-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.store-v2 .browse-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid var(--v2-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--v2-fg-muted);
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.store-v2 .browse-chip:hover { border-color: var(--v2-gold); color: var(--v2-fg); }
+.store-v2 .browse-chip:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 2px; }
+
+.store-v2 .browse-chip[aria-pressed="true"] {
+  background: var(--v2-fg);
+  color: var(--v2-bg);
+  border-color: var(--v2-fg);
+}
+
+.store-v2 .browse-chip-count {
+  font-size: 11px;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+}
+
+.store-v2 .browse-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.store-v2 .browse-search,
+.store-v2 .browse-sort {
+  padding: 7px 12px;
+  border: 1px solid var(--v2-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--v2-fg);
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px;
+  max-width: 100%;
+}
+
+.store-v2 .browse-search { min-width: 0; width: 190px; }
+.store-v2 .browse-search::placeholder { color: var(--v2-fg-muted); opacity: 0.8; }
+.store-v2 .browse-search:focus-visible,
+.store-v2 .browse-sort:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 2px; }
+
+.store-v2 .browse-count {
+  margin: 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 12px;
+  color: var(--v2-fg-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Hidden cards must leave the grid flow, or they hold empty tracks open. */
+.store-v2 .store-grid .carousel-item[hidden] { display: none !important; }
+
+/* Dark mode: unselected controls carry a gentle gold tint so they read as
+   interactive without shouting. The selected state stays high-contrast. */
+html.dark-theme .store-v2 .browse-chip,
+html.dark-theme .store-v2 .browse-search,
+html.dark-theme .store-v2 .browse-sort {
+  border-color: rgba(212, 182, 132, 0.34);
+  color: var(--v2-gold);
+}
+html.dark-theme .store-v2 .browse-chip:hover {
+  border-color: var(--v2-gold);
+  color: var(--v2-gold-bright);
+}
+html.dark-theme .store-v2 .browse-chip[aria-pressed="true"] {
+  background: var(--v2-gold);
+  border-color: var(--v2-gold);
+  color: #16120a;
+}
+html.dark-theme .store-v2 .browse-search::placeholder { color: rgba(212, 182, 132, 0.65); }
+
+@media (max-width: 700px) {
+  .store-v2 .browse-toolbar { gap: 10px; }
+  .store-v2 .browse-controls { width: 100%; }
+  .store-v2 .browse-search { flex: 1 1 140px; width: auto; }
+  .store-v2 .browse-sort { flex: 0 1 auto; }
+  .store-v2 .browse-count { width: 100%; }
+}
+
+/* One staggered entrance, and none at all for anyone who asked for less. */
+@media (prefers-reduced-motion: reduce) {
+  .store-v2 .carousel-item,
+  .store-v2 .carousel-item.animate {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ==========================================================================
+   Arcade widget — the per-product mini-game on the product page.
+   Same Cormorant/Josefin pairing and --v2 tokens as everything else.
+   ========================================================================== */
+.arcade-slot { display: block; max-width: 100%; }
+.arcade-loading {
+  margin: 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px;
+  color: var(--v2-fg-muted);
+}
+
+.arcade-card {
+  margin: 0 auto 26px;
+  max-width: 640px;
+  padding: 20px;
+  border: 1px solid var(--v2-border);
+  border-radius: 14px;
+  background: var(--v2-surface);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.arcade-eyebrow {
+  margin: 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--v2-gold);
+}
+
+.arcade-title {
+  margin: 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 600;
+  font-size: clamp(20px, 3vw, 26px);
+  line-height: 1.2;
+  color: var(--v2-fg);
+}
+
+.arcade-copy, .arcade-feedback, .arcade-fine, .arcade-label {
+  margin: 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  color: var(--v2-fg-muted);
+}
+.arcade-copy { font-size: 14.5px; line-height: 1.6; }
+.arcade-feedback { font-size: 13.5px; font-style: italic; min-height: 1em; }
+.arcade-fine { font-size: 12px; opacity: .8; }
+.arcade-label { font-size: 12px; }
+
+.arcade-options { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.arcade-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+.arcade-btn {
+  padding: 10px 16px;
+  border: 1px solid var(--v2-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--v2-fg);
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13.5px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 150ms ease, color 150ms ease, opacity 150ms ease;
+}
+.arcade-btn:hover:not(:disabled) { border-color: var(--v2-gold); color: var(--v2-gold); }
+.arcade-btn:disabled { opacity: .45; cursor: default; }
+.arcade-btn:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 2px; }
+
+.arcade-input {
+  flex: 1 1 180px;
+  min-width: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--v2-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--v2-fg);
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 14px;
+}
+.arcade-input:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 2px; }
+
+.arcade-card.is-won { border-color: var(--v2-gold); }
+.arcade-code { margin: 0; }
+.arcade-code code {
+  display: inline-block;
+  padding: 8px 14px;
+  border: 1px dashed var(--v2-gold);
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 17px;
+  letter-spacing: .1em;
+  color: var(--v2-gold);
+  word-break: break-all;
+}
+
+/* Dark mode: unselected controls carry the same gentle gold tint as the store. */
+html.dark-theme .arcade-btn,
+html.dark-theme .arcade-input {
+  border-color: rgba(212, 182, 132, 0.34);
+  color: var(--v2-gold);
+}
+html.dark-theme .arcade-btn:hover:not(:disabled) {
+  border-color: var(--v2-gold);
+  color: var(--v2-gold-bright);
+}
+
+@media (max-width: 560px) {
+  .arcade-card { padding: 16px; }
+  .arcade-form { flex-direction: column; align-items: stretch; }
+}
+@media (prefers-reduced-motion: reduce) { .arcade-btn { transition: none; } }
+
+/* ==========================================================================
+   The two machines, on a product page.
+   store-about.css dresses the About-page pair; this dresses the one on a PDP
+   and in the cart. Both use the same markup so the games do not care which.
+   The screen is a CRT in either theme — a game that borrows the page's own
+   ink ends up drawing dark on dark, which is how this went wrong once already.
+   ========================================================================== */
+.store-v2 .arcade-game { margin: 0; }
+
+.store-v2:not(.about-v2) .cab {
+  display: flex; flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--v2-border);
+  border-radius: 14px;
+  background: var(--v2-surface, #14120c);
+  overflow: hidden;
+}
+
+.store-v2:not(.about-v2) .cab-marquee {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 14px;
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--machine-key, #b5935a) 16%, transparent), transparent);
+  border-bottom: 1px solid var(--v2-border);
+}
+.store-v2:not(.about-v2) .cab-name {
+  margin: 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 19px; font-weight: 500; letter-spacing: .01em;
+  color: var(--machine-lit, var(--v2-gold));
+}
+.store-v2:not(.about-v2) .cab-lamps { display: flex; gap: 5px; flex: 0 0 auto; }
+.store-v2:not(.about-v2) .cab-lamps i {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--machine-lit, var(--v2-gold)); opacity: .45;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .store-v2:not(.about-v2) .cab-lamps i { animation: cabLampPdp 1.8s ease-in-out infinite; }
+  .store-v2:not(.about-v2) .cab-lamps i:nth-child(2) { animation-delay: .25s; }
+  .store-v2:not(.about-v2) .cab-lamps i:nth-child(3) { animation-delay: .5s; }
+}
+@keyframes cabLampPdp { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+
+.store-v2:not(.about-v2) .cab-body { padding: 12px 12px 0; }
+
+.store-v2:not(.about-v2) .cab-stage {
+  position: relative;
+  height: var(--cab-h, 200px);
+  border-radius: 10px;
+  background: #0a0c0a;
+  border: 1px solid var(--v2-border);
+  overflow: hidden;
+}
+.store-v2:not(.about-v2) .cab-canvas {
+  display: block; width: 100%; height: 100%;
+  touch-action: none; cursor: pointer;
+}
+.store-v2:not(.about-v2) .cab-canvas:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: -2px; }
+
+/* Scanlines belong to the glass, never to the game: pointer-events off, or the
+   first tap of every run lands on a decoration. */
+.store-v2:not(.about-v2) .cab-scanlines {
+  position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(180deg,
+    rgba(0,0,0,.20) 0 1px, transparent 1px 3px);
+  mix-blend-mode: multiply;
+}
+
+.store-v2:not(.about-v2) .cab-overlay {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; padding: 14px; text-align: center;
+  background: rgba(8, 10, 8, .68);
+}
+.store-v2:not(.about-v2) .cab-overlay[hidden] { display: none; }
+.store-v2:not(.about-v2) .cab-how {
+  margin: 0; font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13.5px; line-height: 1.5; color: #efe6d4; max-width: 30ch;
+}
+.store-v2:not(.about-v2) .cab-play {
+  padding: 9px 22px; border: 1px solid var(--machine-lit, var(--v2-gold)); border-radius: 999px;
+  background: transparent; color: var(--machine-lit, var(--v2-gold));
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px; letter-spacing: .1em; text-transform: uppercase; cursor: pointer;
+  transition: background .18s ease, color .18s ease;
+}
+.store-v2:not(.about-v2) .cab-play:hover:not(:disabled) {
+  background: var(--machine-lit, var(--v2-gold)); color: #0a0c0a;
+}
+.store-v2:not(.about-v2) .cab-play:disabled { opacity: .45; cursor: default; }
+.store-v2:not(.about-v2) .cab-play:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 3px; }
+
+/* The side placard. It is a contained tile in its own row — the art used to be a
+   background on the whole panel and the caption sat on top of it, unreadable. */
+.store-v2:not(.about-v2) .cab-panel {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 2px;
+  min-width: 0;
+}
+.store-v2:not(.about-v2) .cab-art {
+  flex: 0 0 auto; width: 46px; height: 46px;
+  border-radius: 8px; object-fit: cover;
+  border: 1px solid var(--v2-border);
+  background: #0a0c0a;
+}
+.store-v2:not(.about-v2) .cab-slot {
+  flex: 0 0 auto; width: 3px; height: 26px; border-radius: 2px;
+  background: color-mix(in srgb, var(--machine-lit, #b5935a) 55%, transparent);
+}
+.store-v2:not(.about-v2) .cab-blurb {
+  margin: 0; min-width: 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 12.5px; line-height: 1.5; color: var(--v2-fg-muted);
+  overflow-wrap: anywhere;
+}
+.store-v2:not(.about-v2) .cab-result {
+  margin: 0; padding: 0 14px 12px;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px; color: var(--v2-gold); min-height: 1em;
+}
+
+/* ── The three games, as one row of tabs ──────────────────────────────────
+   A row, never a stack: three cards down the page reads as three sections to
+   scroll past, and only one of them is ever playable at a time. Below 380px
+   the row scrolls sideways inside itself rather than wrapping, so the tabs
+   stay on one line and the page never grows a horizontal scrollbar.          */
+.store-v2 .arcade-tabs {
+  display: flex;
+  gap: 6px;
+  margin: 6px 0 12px;
+  padding: 4px;
+  border: 1px solid var(--v2-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--v2-fg) 4%, transparent);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.store-v2 .arcade-tabs::-webkit-scrollbar { display: none; }
+
+.store-v2 .arcade-tab {
+  flex: 1 1 0;
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--v2-fg-muted);
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  cursor: pointer;
+  text-align: center;
+  white-space: nowrap;
+  transition: background .18s ease, color .18s ease, border-color .18s ease;
+}
+.store-v2 .arcade-tab-name { font-size: 13.5px; }
+.store-v2 .arcade-tab-hint {
+  font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; opacity: .7;
+}
+.store-v2 .arcade-tab:hover:not(:disabled) { color: var(--v2-gold); }
+.store-v2 .arcade-tab[aria-selected="true"] {
+  border-color: var(--v2-gold);
+  background: color-mix(in srgb, var(--v2-gold) 14%, transparent);
+  color: var(--v2-gold);
+}
+.store-v2 .arcade-tab:disabled { opacity: .38; cursor: not-allowed; }
+.store-v2 .arcade-tab:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 2px; }
+
+/* The card had no rhythm of its own: eyebrow, title, tabs, game and fine print all
+   sat flush against each other. One gap, set once, rather than margins per element. */
+.store-v2 .arcade-card { display: grid; gap: 14px; }
+.store-v2 .arcade-card > * { margin: 0; }
+.store-v2 .arcade-card .arcade-tabs { margin: 2px 0 0; }
+.store-v2 .arcade-card .arcade-feedback:empty { display: none; }
+
+.store-v2 .arcade-panel {
+  min-width: 0;
+  /* Held steady while the next game loads, so the page cannot collapse and snap back. */
+  transition: opacity .18s ease;
+}
+.store-v2 .arcade-panel.is-loading { opacity: .35; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .store-v2 .arcade-panel { transition: none; } }
+
+/* ── The cabinet's own keys ───────────────────────────────────────────────
+   Real buttons, not "tap the picture". A long press on a canvas starts a text
+   selection and pops the callout menu on a phone, which makes hold-to-climb
+   unplayable; a button with touch-action and user-select off does not.       */
+.store-v2 .cab-controls {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px 0;
+}
+.store-v2 .cab-key {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 12px 8px;
+  border: 1px solid var(--machine-lit, var(--v2-gold));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--machine-lit, #b5935a) 10%, transparent);
+  color: var(--machine-lit, var(--v2-gold));
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 12.5px; letter-spacing: .1em; text-transform: uppercase;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background .09s ease, transform .09s ease;
+}
+.store-v2 .cab-key.is-hold { padding: 16px 8px; font-size: 13px; }
+.store-v2 .cab-key:disabled { opacity: .32; cursor: default; }
+.store-v2 .cab-key.is-down:not(:disabled) {
+  background: var(--machine-lit, var(--v2-gold));
+  color: #0a0c0a;
+  transform: translateY(1px);
+}
+.store-v2 .cab-key:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .store-v2 .cab-key { transition: none; } }
+
+/* In a tab there is no offer to accept, so there is no summary to draw. */
+.store-v2 .beg-card.is-bare { border: 0; background: transparent; border-radius: 0; }
+.store-v2 .beg-card.is-bare .beg-body { padding: 0; }
+
+/* ==========================================================================
+   The Beggar's Reach — a typing race, so an instrument rather than a cartoon.
+   Three readouts, one rule crossing the panel, and a line of type saying what
+   he is doing about it. Set in the store's own faces: a drawn figure here
+   looked cheap beside everything around it.
+   ========================================================================== */
+.store-v2 .beg { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+.store-v2 .beg-gauge {
+  display: grid;
+  gap: 18px;
+  padding: 22px 20px 18px;
+  border: 1px solid var(--v2-border);
+  border-radius: 12px;
+  background:
+    radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--v2-gold) 7%, transparent), transparent 70%),
+    var(--v2-surface, #14120c);
+  min-width: 0;
+}
+
+/* ── the three numbers ──────────────────────────────────────────────────── */
+.store-v2 .beg-readout {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+}
+.store-v2 .beg-cell {
+  display: grid; gap: 3px; justify-items: center; min-width: 0;
+  /* The labels used to run straight into the rules between the columns. */
+  padding: 0 10px;
+}
+.store-v2 .beg-cell.is-mid {
+  border-left: 1px solid var(--v2-border);
+  border-right: 1px solid var(--v2-border);
+}
+.store-v2 .beg-cell b {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 34px; font-weight: 500; line-height: 1;
+  color: var(--v2-fg);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.store-v2 .beg-cell.is-mid b { color: var(--v2-gold); }
+.store-v2 .beg-cell span {
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--v2-fg-muted); text-align: center; line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+/* ── the reach, as a ruled line ─────────────────────────────────────────── */
+.store-v2 .beg-track {
+  position: relative;
+  height: 3px;
+  margin: 4px 6px 0;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--v2-fg) 12%, transparent);
+}
+.store-v2 .beg-track-fill {
+  position: absolute; inset: 0 auto 0 0;
+  width: 0;
+  border-radius: 2px;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--v2-gold) 45%, transparent), var(--v2-gold-bright, var(--v2-gold)));
+  transition: width .12s linear;
+}
+.store-v2 .beg-track-mark {
+  position: absolute; top: 50%; left: 0; z-index: 1;
+  width: 11px; height: 11px;
+  margin: -5.5px 0 0 -5.5px;
+  transform: rotate(45deg);
+  background: var(--v2-gold-bright, var(--v2-gold));
+  box-shadow: 0 0 0 3px var(--v2-surface, #14120c);
+  transition: left .12s linear;
+}
+.store-v2 .beg-track-end {
+  position: absolute; top: 50%; right: -6px;
+  width: 12px; height: 12px; margin-top: -6px;
+  border: 1px solid var(--v2-border);
+  border-radius: 50%;
+  background: var(--v2-surface, #14120c);
+  transition: background .2s ease, border-color .2s ease;
+}
+.store-v2 .beg-track-end.is-lit {
+  background: var(--v2-gold-bright, var(--v2-gold));
+  border-color: var(--v2-gold-bright, var(--v2-gold));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--v2-gold) 22%, transparent);
+}
+
+.store-v2 .beg-ends {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+  margin: 0 2px;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--v2-fg-muted);
+}
+.store-v2 .beg-ends [data-reach] { color: var(--v2-gold); font-variant-numeric: tabular-nums; }
+
+/* ── the line that is doing the acting ──────────────────────────────────── */
+.store-v2 .beg-react {
+  margin: 0;
+  min-height: 1.6em;
+  text-align: center;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 20px; font-style: italic; font-weight: 500; line-height: 1.4;
+  color: var(--v2-gold-bright, var(--v2-gold));
+  text-wrap: balance;
+}
+
+/* He reacts in the frame, too: a lift when you are quick, a dimming when you
+   stall, and a flush of red when you have said something you should not have. */
+.store-v2 .beg-gauge.is-hot { border-color: color-mix(in srgb, var(--v2-gold) 55%, transparent); }
+.store-v2 .beg-gauge.is-hot .beg-cell.is-mid b { color: var(--v2-gold-bright, var(--v2-gold)); }
+.store-v2 .beg-gauge.is-stalled .beg-react { color: var(--v2-fg-muted); }
+.store-v2 .beg-gauge.is-warned { border-color: #b4653f; }
+.store-v2 .beg-gauge.is-warned .beg-react { color: #d87a4f; }
+@media (prefers-reduced-motion: reduce) {
+  .store-v2 .beg-track-fill, .store-v2 .beg-track-mark { transition: none; }
+}
+
+.store-v2 .beg-label, .store-v2 .beg-note, .store-v2 .beg-fine, .store-v2 .beg-rules {
+  margin: 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px; line-height: 1.55;
+  color: var(--v2-fg-muted);
+}
+.store-v2 .beg-fine { font-size: 12px; }
+
+.store-v2 .beg-input {
+  width: 100%; min-width: 0; resize: vertical;
+  padding: 14px 16px;
+  border: 1px solid var(--v2-border);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--v2-fg);
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 15px; line-height: 1.6;
+}
+.store-v2 .beg-input:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 2px; }
+.store-v2 .beg-input:disabled { opacity: .6; }
+
+.store-v2 .beg-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+
+.store-v2 .beg-start {
+  padding: 9px 22px;
+  border: 1px solid var(--v2-gold); border-radius: 999px;
+  background: transparent; color: var(--v2-gold);
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px; letter-spacing: .1em; text-transform: uppercase;
+  cursor: pointer;
+}
+.store-v2 .beg-start:hover:not(:disabled) { background: var(--v2-gold); color: var(--v2-bg); }
+.store-v2 .beg-start:disabled { opacity: .45; cursor: default; }
+.store-v2 .beg-start:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 2px; }
+
+/* ── The cart panel it now lives in ─────────────────────────────────────── */
+.store-v2 .beg-host { margin: 18px 0 0; min-width: 0; }
+
+.store-v2 .beg-card {
+  border: 1px solid var(--v2-border);
+  border-radius: 14px;
+  background: var(--v2-surface, #14120c);
+  overflow: hidden;
+}
+.store-v2 .beg-summary {
+  display: grid; gap: 3px;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;
+}
+.store-v2 .beg-summary::-webkit-details-marker { display: none; }
+.store-v2 .beg-summary::marker { content: ""; }
+.store-v2 .beg-summary:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: -2px; }
+
+.store-v2 .beg-eyebrow {
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--v2-gold);
+}
+.store-v2 .beg-head {
+  margin: 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 20px; font-weight: 500; line-height: 1.25;
+  color: var(--v2-fg);
+}
+.store-v2 .beg-card[open] .beg-summary { border-bottom: 1px solid var(--v2-border); }
+.store-v2 .beg-body { display: grid; gap: 14px; padding: 16px; min-width: 0; }
+
+.store-v2 .beg-verdict {
+  margin: 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 22px; font-style: italic; font-weight: 500;
+  color: var(--v2-gold-bright, var(--v2-gold));
+}
+
+/* The man's arithmetic, shown so it can be argued with. */
+.store-v2 .beg-axes {
+  margin: 14px 0 0; padding: 0; list-style: none;
+  display: grid; gap: 14px;
+}
+.store-v2 .beg-axis {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "name score" "bar bar" "note weight";
+  gap: 7px 12px;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--v2-fg) 8%, transparent);
+}
+.store-v2 .beg-axis:last-child { padding-bottom: 0; border-bottom: 0; }
+.store-v2 .beg-axis-name {
+  grid-area: name;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13.5px; color: var(--v2-fg);
+}
+.store-v2 .beg-axis-score {
+  grid-area: score;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 20px; color: var(--v2-gold);
+  font-variant-numeric: tabular-nums; line-height: 1;
+}
+.store-v2 .beg-axis-bar {
+  grid-area: bar;
+  display: block; height: 5px; border-radius: 3px;
+  background: color-mix(in srgb, var(--v2-fg) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--v2-fg) 8%, transparent);
+  overflow: hidden;
+}
+.store-v2 .beg-axis-bar i {
+  display: block; height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--v2-gold), var(--v2-gold-bright, var(--v2-gold)));
+}
+.store-v2 .beg-axis-note {
+  grid-area: note;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 12px; color: var(--v2-fg-muted); overflow-wrap: anywhere;
+}
+.store-v2 .beg-axis-weight {
+  grid-area: weight;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 11px; letter-spacing: .08em; color: var(--v2-fg-muted); white-space: nowrap;
+}
+.store-v2 .beg-tally {
+  margin: 4px 0 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px; line-height: 1.55; color: var(--v2-fg-muted);
+}
+.store-v2 .beg-tally b { color: var(--v2-gold); font-weight: 400; }
+
+.store-v2 .beg-code { margin: 0; }
+.store-v2 .beg-code code {
+  display: inline-block; padding: 8px 14px;
+  border: 1px dashed var(--v2-gold); border-radius: 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 15px; letter-spacing: .08em; color: var(--v2-gold);
+}
+.store-v2 .beg-won { display: grid; gap: 8px; min-width: 0; }
+.store-v2 .beg-refused {
+  display: grid; gap: 6px;
+  padding: 12px 14px;
+  border-left: 2px solid #b4653f;
+  background: color-mix(in srgb, #b4653f 8%, transparent);
+  border-radius: 0 8px 8px 0;
+}
+.store-v2 .beg-refuse-why {
+  margin: 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13.5px; line-height: 1.55; color: var(--v2-fg);
+}
+
+html.dark-theme .store-v2 .beg-input { border-color: rgba(212, 182, 132, 0.34); }
+
+@media (max-width: 560px) {
+    .store-v2 .beg-body { padding: 14px; }
+  .store-v2 .beg-head { font-size: 18px; }
+}
+
+/* ==========================================================================
+   The discount-code field and the line it produces, in the cart.
+   ========================================================================== */
+.store-v2 .co-reward { display: grid; gap: 6px; margin: 14px 0 0; min-width: 0; }
+.store-v2 .co-reward-row { display: flex; gap: 8px; align-items: stretch; min-width: 0; }
+.store-v2 .co-reward-row .co-input {
+  flex: 1 1 auto; min-width: 0;
+  text-transform: uppercase; letter-spacing: .06em;
+}
+.store-v2 .co-reward-btn {
+  flex: 0 0 auto;
+  padding: 0 18px;
+  border: 1px solid var(--v2-gold); border-radius: 10px;
+  background: transparent; color: var(--v2-gold);
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 12.5px; letter-spacing: .1em; text-transform: uppercase;
+  cursor: pointer;
+}
+.store-v2 .co-reward-btn:hover:not(:disabled) { background: var(--v2-gold); color: var(--v2-bg); }
+.store-v2 .co-reward-btn:disabled { opacity: .45; cursor: default; }
+.store-v2 .co-reward-btn:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 2px; }
+.store-v2 .co-reward-note {
+  margin: 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 12px; line-height: 1.5; color: var(--v2-fg-muted);
+}
+.store-v2 .co-money-row.is-discount { color: var(--v2-gold); }
+.store-v2 .co-money-row.is-discount[hidden] { display: none; }
+/* The paste penalty. Shown, never hidden — nobody is quietly charged more. */
+.store-v2 .co-money-row.is-surcharge { color: #b4653f; }
+.store-v2 .co-money-row.is-surcharge[hidden] { display: none; }
+
+.store-v2 .beg-penalty {
+  margin: 0; padding: 12px 14px;
+  border-left: 3px solid #b4653f;
+  background: color-mix(in srgb, #b4653f 10%, transparent);
+  border-radius: 0 8px 8px 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13.5px; line-height: 1.55; color: var(--v2-fg);
+}
+.store-v2 .beg-penalty b { color: #d87a4f; font-weight: 400; }
+.store-v2 .beg-refused.is-charged { border-left-color: #d87a4f; }

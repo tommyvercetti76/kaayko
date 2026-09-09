@@ -3,7 +3,7 @@
 <head>
   <script src="/js/prod-config.js"></script>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
   <title>Kaayko · Product</title>
   <meta name="description" content="Kaayko product detail" />
@@ -31,7 +31,7 @@
     <div class="header-top">
       <div class="header-brand">
         <h1 class="header-title">Kaayko</h1>
-        <p class="header-subtitle">Made for the Wild</p>
+        <p class="header-subtitle">Style Your Soul</p>
       </div>
       <nav class="top-menu"><ul></ul></nav>
       <div class="header-controls">
@@ -61,6 +61,10 @@
     </section>
   </main>
 
+  <!-- Per-product mini-game. Sits outside #product-root, which product.js rewrites
+       wholesale. Renders nothing for premium products; the server decides. -->
+  <section id="arcade-slot" class="arcade-slot" aria-label="Mini game"></section>
+
   <div id="modal" class="modal" role="dialog" aria-modal="true" aria-label="Product image gallery">
     <div class="modal-content">
       <button id="close-modal-button" class="modal-close material-icons" aria-label="Close">close</button>
@@ -88,9 +92,11 @@
     import { cartManager } from '/js/cartManager.js';
     import { setupModalCloseHandlers, openModal } from '/js/kaayko_ui.js';
     import { productPageInit } from '/js/product.js';
+    import { mountArcade } from '/js/arcade-widget.js';
     import '/js/sustainabilityAlert.js';
 
     window.cartManager = cartManager;
+
 
     const headerControls = document.querySelector('.header-controls');
     if (headerControls) {
@@ -129,6 +135,9 @@
       productID = last === 'product' ? '' : last;
     }
     productPageInit(productID, { openModal });
+
+    const arcadeId = (location.pathname.match(/\/store\/p\/([^/?#]+)/) || [])[1];
+    if (arcadeId) mountArcade(document.getElementById('arcade-slot'), decodeURIComponent(arcadeId));
   </script>
   <script>
     /* kaayko-footer-year */

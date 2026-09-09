@@ -139,8 +139,39 @@ const TYPE_CHIP_OPTIONS = [
   { value: 'poster',  label: 'Posters' },
   { value: 'sticker', label: 'Stickers' },
   { value: 'mug',     label: 'Mugs' },
-  { value: 'cap',     label: 'Caps' }
+  { value: 'cap',     label: 'Caps' },
+  { value: 'bottle',  label: 'Bottles' }
 ];
+
+// Price is filtered as a number, not as a tier symbol. Tier symbols excluded every product
+// carrying a literal price (the bottles at $24.99), and they mean nothing to a shopper.
+const PRICE_BANDS = [
+  { value: 'under-25', label: 'Under $25', min: 0,  max: 25 },
+  { value: '25-35',    label: '$25 – $35', min: 25, max: 35 },
+  { value: '35-50',    label: '$35 – $50', min: 35, max: 50 },
+  { value: 'over-50',  label: '$50+',      min: 50, max: Infinity }
+];
+
+// This file is loaded as a classic script, not a module, so it cannot import priceMap.js.
+// Mirror of PRICE_MAP in /js/priceMap.js — change both together.
+const PRICE_TIER_VALUES = { '$': 19.99, '$$': 29.99, '$$$': 39.99, '$$$$': 49.99 };
+
+function priceOf(product) {
+  if (typeof product?.actualPrice === 'number' && product.actualPrice > 0) return product.actualPrice;
+  const raw = String(product?.price ?? '').trim();
+  if (PRICE_TIER_VALUES[raw]) return PRICE_TIER_VALUES[raw];
+  const n = parseFloat(raw.replace(/[^0-9.]/g, ''));
+  return Number.isFinite(n) ? n : 0;
+}
+
+function matchesPriceBands(product, bandValues) {
+  if (!bandValues.length) return true;
+  const value = priceOf(product);
+  return bandValues.some(v => {
+    const band = PRICE_BANDS.find(b => b.value === v);
+    return band && value >= band.min && value < band.max;
+  });
+}
 
 // How many tag chips to surface in the modal (top-N by frequency).
 const MAX_TAG_CHIPS = 8;
@@ -161,21 +192,22 @@ function initializeFilterChips() {
   const priceChips = document.getElementById('price-chips');
   if (priceChips) {
     priceChips.innerHTML = '';
-    ['$', '$$', '$$$', '$$$$'].forEach(price => {
-      priceChips.appendChild(createChip(price, 'price'));
+    PRICE_BANDS.forEach(band => {
+      priceChips.appendChild(createChip(band.label, 'price', band.value));
     });
   }
 
   // Tag chips are populated dynamically once products land.
 }
 
-function createChip(text, type) {
+function createChip(text, type, value) {
   const chip = document.createElement('button');
   chip.type = 'button';
   chip.className = 'chip';
   chip.textContent = text;
   chip.dataset.type = type;
-  chip.dataset.value = text;
+  // Label and value differ for price bands ("Under $25" -> "under-25").
+  chip.dataset.value = value === undefined ? text : value;
   chip.setAttribute('aria-pressed', 'false');
 
   chip.addEventListener('click', function() {
@@ -203,7 +235,7 @@ function updateApplyButtonLabel() {
   if (!btn) return;
   // Apply current chip selections + slider against originalProducts to get the live count.
   const previewFilters = getCurrentFilters();
-  const anyActive = previewFilters.types.length || previewFilters.prices.length || previewFilters.tags.length || previewFilters.minVotes > 0;
+  const anyActive = previewFilters.types.length || previewFilters.prices.length || previewFilters.themes.length || previewFilters.tags.length || previewFilters.minVotes > 0;
   if (!anyActive) {
     btn.textContent = `Show all products`;
     return;
@@ -216,7 +248,8 @@ function matchCount(products, filters) {
   return products.filter(p => {
     if (p.isAvailable === false) return false;
     if (filters.types.length && !filters.types.includes((p.productType || '').toLowerCase())) return false;
-    if (filters.prices.length && !filters.prices.includes(p.price)) return false;
+    if (!matchesPriceBands(p, filters.prices)) return false;
+    if (filters.themes?.length && !filters.themes.includes(p.theme)) return false;
     if (filters.tags.length) {
       const ok = filters.tags.some(t => (p.tags || []).includes(t));
       if (!ok) return false;
@@ -273,6 +306,7 @@ let originalProducts = [];
 // Function to store original products (called from kaayko-main.js).
 // We use this moment to populate tag chips dynamically + size the slider.
 function storeOriginalProducts(products) {
+  hydrateThemeChips(products);
   originalProducts = products;
   console.log('💾 Stored', originalProducts.length, 'original products for filtering');
   hydrateDynamicFilters(products);
@@ -320,10 +354,28 @@ function hydrateDynamicFilters(products) {
 }
 
 // Function to get current filter criteria
+/** Theme is a first-class facet on the product model now (Wildlife, Heritage, Philately…). */
+function hydrateThemeChips(products) {
+  const host = document.getElementById('theme-chips');
+  if (!host) return;
+  const counts = new Map();
+  for (const p of products) {
+    const t = (p.theme || '').trim();
+    if (t) counts.set(t, (counts.get(t) || 0) + 1);
+  }
+  host.innerHTML = '';
+  [...counts.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .forEach(([theme]) => host.appendChild(createChip(theme, 'theme')));
+  const section = host.closest('.filter-section');
+  if (section) section.hidden = counts.size < 2;
+}
+
 function getCurrentFilters() {
   const filters = {
     types: [],
     prices: [],
+    themes: [],
     tags: [],
     minVotes: 0
   };
@@ -337,6 +389,9 @@ function getCurrentFilters() {
   filters.prices = Array.from(selectedPriceChips).map(chip => chip.dataset.value);
 
   // Get selected tag chips
+  const selectedThemeChips = document.querySelectorAll('.chip[data-type="theme"].selected');
+  filters.themes = Array.from(selectedThemeChips).map(chip => chip.dataset.value);
+
   const selectedTagChips = document.querySelectorAll('.chip[data-type="tag"].selected');
   filters.tags = Array.from(selectedTagChips).map(chip => chip.dataset.value);
 
@@ -355,7 +410,8 @@ function applyFilters() {
   const filters = getCurrentFilters();
   const filteredProducts = originalProducts.filter(p => {
     if (filters.types.length && !filters.types.includes((p.productType || '').toLowerCase())) return false;
-    if (filters.prices.length && !filters.prices.includes(p.price)) return false;
+    if (!matchesPriceBands(p, filters.prices)) return false;
+    if (filters.themes?.length && !filters.themes.includes(p.theme)) return false;
     if (filters.tags.length) {
       const ok = filters.tags.some(t => (p.tags || []).includes(t));
       if (!ok) return false;

@@ -37,7 +37,10 @@ html.dark-theme .store-v2 .filter-overlay {
   position: relative;
   width: 100%;
   max-width: 480px;
+  /* dvh, not vh: mobile browser chrome otherwise makes the panel taller than
+     the visible viewport and pushes the actions off-screen. */
   max-height: min(82vh, 720px);
+  max-height: min(82dvh, 720px);
   display: flex;
   flex-direction: column;
   background: var(--v2-surface-elev);
@@ -48,7 +51,12 @@ html.dark-theme .store-v2 .filter-overlay {
     0 1px 0 rgba(255,255,255,0.04) inset,
     0 24px 60px rgba(0, 0, 0, 0.35),
     0 4px 16px rgba(0, 0, 0, 0.18);
-  overflow: hidden;
+  /* The panel scrolls. It used to clip: with wrapped chips the content ran past
+     max-height and the Apply button became unreachable on small screens. */
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   font-family: 'Josefin Sans', 'Josefin_Light', Arial, sans-serif;
   transform: scale(0.96) translateY(8px);
   opacity: 0;
@@ -388,3 +396,32 @@ html.dark-theme .store-v2 .filter-overlay {
     transition: none;
   }
 }
+
+/* Actions stay reachable at the foot of the scroll, clear of the home indicator. */
+.store-v2 .filter-panel > .filter-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  background: var(--v2-surface-elev);
+  border-top: 1px solid var(--v2-border);
+  padding-bottom: max(14px, env(safe-area-inset-bottom));
+}
+
+/* Inner sections must not create their own scrollers, or a drag started inside
+   one never reaches the panel and the sheet feels stuck. */
+.store-v2 .filter-panel > .filter-section { overflow: visible; }
+
+/* Dark mode: unselected chips carry a gentle gold tint; selected stays solid. */
+html.dark-theme .store-v2 .chip:not(.selected) {
+  border-color: rgba(212, 182, 132, 0.34);
+  color: var(--v2-gold);
+}
+html.dark-theme .store-v2 .chip:not(.selected):hover {
+  border-color: var(--v2-gold);
+  color: var(--v2-gold-bright);
+}
+html.dark-theme .store-v2 #filter-reset {
+  border-color: rgba(212, 182, 132, 0.34);
+  color: var(--v2-gold);
+}
+

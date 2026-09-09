@@ -676,6 +676,7 @@
   <script src="https://js.stripe.com/v3/"></script>
   <script type="module">
     import { cartManager } from './js/cartManager.js';
+    import { savedReward, clearReward, checkCode, minutesLeft, clientToken } from './js/arcade/reward.js';
 
     const STRIPE_KEY = window.KAAYKO_STRIPE_PK;
     const API_URL = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
@@ -708,7 +709,11 @@
       // be charged an un-taxed total while tax is nominally on.
       taxState: 'idle',     // 'idle' | 'pending' | 'ok' | 'disabled' | 'error'
       taxKey: null,         // address the current tax figure was computed for
-      taxTimer: null
+      taxTimer: null,
+      // A reward code won at a machine or at the Beggathon. Held here only so the
+      // field can be pre-filled; the API re-checks it and decides what it is worth.
+      reward: savedReward(),
+      rewardNote: null      // why the last code was refused, in the shopper's words
     };
 
     /* ── Helpers ─────────────────────────────────────────────────── */
@@ -744,6 +749,45 @@
     };
 
     const validEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+
+    /* ── Reward codes ────────────────────────────────────────────────
+       Won at a machine on a product page (2% off magnets and bottles) or
+       at the Beggathon below the bag (up to 10% off everything). Every
+       code dies one hour after it is minted, used or not — that is the
+       API's rule and the field below only reports it. The discount
+       itself is computed by the server when the payment intent is
+       created; nothing here takes a cent off on its own.               */
+    const REWARD_REFUSALS = {
+      NO_SUCH_CODE:     'No such code.',
+      ALREADY_REDEEMED: 'That code has already been used.',
+      EXPIRED:          'That code has expired. They only last an hour.',
+      WRONG_OWNER:      'That code was won under a different email.',
+      NO_ELIGIBLE_ITEMS:'That code only covers magnets and bottles, and there are none in this bag.',
+      EMPTY_CART:       'Nothing in the bag to discount.',
+      LOCKED:           'No discount applies while you are carrying a paste penalty. Beg it off on any product page.',
+      VOIDED:           'That code was won before you pasted. Pasting cancelled it.'
+    };
+
+    function rewardFieldMarkup() {
+      const r = state.reward;
+      const left = r ? minutesLeft(r) : 0;
+      return `
+        <div class="co-reward" id="co-reward">
+          <label class="co-field-label" for="co-reward-input">Discount code <span class="co-opt">(optional)</span></label>
+          <div class="co-reward-row">
+            <input class="co-input" id="co-reward-input" type="text" inputmode="text"
+                   autocomplete="off" spellcheck="false" placeholder="KAY-XXXXX-XXXXX"
+                   value="${esc(r?.code || '')}" aria-describedby="co-reward-note" />
+            <button type="button" class="co-reward-btn" id="co-reward-apply">${r ? 'Remove' : 'Apply'}</button>
+          </div>
+          <p class="co-reward-note" id="co-reward-note" role="status" aria-live="polite">${
+            state.rewardNote ? esc(state.rewardNote)
+            : r ? `${r.percent}% held${r.scope === 'cart' ? ' against the whole bag' : ' against the magnets and bottles'}. ${
+                left > 0 ? `Expires in ${left} minute${left === 1 ? '' : 's'}.` : 'Expired.'}`
+            : 'Won one on a product page? Put it in. Codes last an hour.'
+          }</p>
+        </div>`;
+    }
 
     const TOAST_ICON = { error: 'error_outline', notice: 'info_outline', good: 'check_circle' };
 
@@ -801,13 +845,18 @@
         return {
           subtotal: (server.subtotalCents ?? server.totalCents) / 100,
           tax: (server.taxCents || 0) / 100,
+          discount: (server.discountCents || 0) / 100,
+          discountPercent: server.discountPercent || 0,
+          surcharge: (server.surchargeCents || 0) / 100,
+          surchargePercent: server.surchargePercent || 0,
           taxKnown,
           total: server.totalCents / 100,
           authoritative: true
         };
       }
       const subtotal = items.reduce((sum, i) => sum + parsePrice(i.price) * (i.quantity || 1), 0);
-      return { subtotal, tax: 0, taxKnown: false, total: subtotal, authoritative: false };
+      return { subtotal, tax: 0, discount: 0, discountPercent: 0, surcharge: 0, surchargePercent: 0,
+               taxKnown: false, total: subtotal, authoritative: false };
     }
 
     /* ── Render ──────────────────────────────────────────────────── */
@@ -859,10 +908,20 @@
               <h2 class="co-label">Summary</h2>
               <div class="co-money">
                 <div class="co-money-row"><span>Subtotal</span><span id="co-subtotal">${money(t.subtotal)}</span></div>
+                <div class="co-money-row is-discount" id="co-discount-row" ${t.discount > 0 ? '' : 'hidden'}>
+                  <span>Discount${t.discountPercent ? ` · ${t.discountPercent}%` : ''}</span>
+                  <span id="co-discount">&minus;${money(t.discount)}</span>
+                </div>
+                <div class="co-money-row is-surcharge" id="co-surcharge-row" ${t.surcharge > 0 ? '' : 'hidden'}>
+                  <span>Paste penalty${t.surchargePercent ? ` &middot; ${t.surchargePercent}%` : ''}</span>
+                  <span id="co-surcharge">+${money(t.surcharge)}</span>
+                </div>
                 <div class="co-money-row"><span>Shipping</span><span>Free</span></div>
                 <div class="co-money-row ${t.taxKnown ? '' : 'is-pending'}" id="co-tax-row"><span>Sales tax</span><span id="co-tax">${t.taxKnown ? money(t.tax) : 'Calculated from your address'}</span></div>
                 <div class="co-money-row is-total"><span>Total</span><span id="co-total">${money(t.total)}</span></div>
               </div>
+
+              ${rewardFieldMarkup()}
 
               <div class="co-step ${state.step === 'checkout' ? 'is-open' : ''}" id="co-step">
                 <hr class="co-divider" />
@@ -915,6 +974,8 @@
         btn.addEventListener('click', () => cartManager.removeItem(btn.dataset.remove));
       });
 
+      wireRewardField();
+
       const primary = document.getElementById('co-primary');
       const stickyBtn = document.getElementById('co-sticky-btn');
 
@@ -961,6 +1022,50 @@
         </article>`;
     }
 
+    function wireRewardField() {
+      const input = document.getElementById('co-reward-input');
+      const btn = document.getElementById('co-reward-apply');
+      const note = document.getElementById('co-reward-note');
+      if (!input || !btn) return;
+
+      const apply = async () => {
+        if (state.reward) {                       // the button reads Remove
+          clearReward();
+          state.reward = null;
+          state.rewardNote = null;
+          state.pi = null;                        // it was priced with the code
+          state.step = 'bag';
+          render();
+          return;
+        }
+        const code = input.value.trim().toUpperCase();
+        if (!code) return;
+        btn.disabled = true;
+        note.textContent = 'Checking…';
+        const res = await checkCode(code);
+        btn.disabled = false;
+
+        if (!res?.success) { note.textContent = 'No such code.'; return; }
+        if (res.expired)   { note.textContent = 'That code has expired. They only last an hour.'; return; }
+        if (res.redeemed)  { note.textContent = 'That code has already been used.'; return; }
+        if (res.voided)    { note.textContent = 'That code was won before you pasted. Pasting cancelled it.'; return; }
+        if (res.locked)    { note.textContent = REWARD_REFUSALS.LOCKED; return; }
+
+        state.reward = {
+          code, percent: res.percent, scope: res.scope, game: res.game,
+          expiresAt: Date.now() + (res.minutesLeft || 0) * 60000
+        };
+        try { localStorage.setItem('kaayko.arcade.reward', JSON.stringify(state.reward)); } catch (_) {}
+        state.rewardNote = null;
+        state.pi = null;
+        state.step = 'bag';
+        render();
+      };
+
+      btn.addEventListener('click', apply);
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); apply(); } });
+    }
+
     /* ── Step 2: create the intent, then mount Stripe ─────────────── */
 
     async function openCheckout() {
@@ -982,6 +1087,10 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            rewardCode: state.reward?.code || null,
+            // The arcade token. The server reads its standing: a paste surcharge is
+            // added here, and a code won before a strike stops counting.
+            arcadeToken: clientToken(),
             items: items.map(i => ({
               productId: i.productId,
               size: i.size ?? null,
@@ -1007,8 +1116,28 @@
         // subtotalCents, items). From here on that is what we display —
         // it is what the card will actually be charged.
         const priced = typeof data.amount === 'number'
-          ? { subtotalCents: data.subtotalCents ?? data.amount, totalCents: data.amount }
+          ? {
+              subtotalCents: data.subtotalCents ?? data.amount,
+              totalCents: data.amount,
+              discountCents: data.discountCents || 0,
+              discountPercent: data.discountPercent || 0,
+              surchargeCents: data.surchargeCents || 0,
+              surchargePercent: data.surchargePercent || 0
+            }
           : null;
+
+        // A code the server would not honour is worth saying out loud once, here,
+        // rather than leaving a shopper to wonder where their discount went.
+        if (data.rewardReason) {
+          state.rewardNote = REWARD_REFUSALS[data.rewardReason] || 'That code was not accepted.';
+          if (data.rewardReason !== 'NO_ELIGIBLE_ITEMS' && data.rewardReason !== 'EMPTY_CART') {
+            clearReward();
+            state.reward = null;
+          }
+          toast(state.rewardNote, 'notice');
+        } else if (data.discountCents > 0) {
+          state.rewardNote = null;
+        }
 
         const before = totals(items).total;
         state.pi = {
@@ -1171,6 +1300,19 @@
       const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
       set('co-subtotal', money(t.subtotal));
       set('co-total', money(t.total));
+      const dRow = document.getElementById('co-discount-row');
+      if (dRow) {
+        dRow.hidden = !(t.discount > 0);
+        set('co-discount', `\u2212${money(t.discount)}`);
+        dRow.firstElementChild.textContent = t.discountPercent ? `Discount \u00b7 ${t.discountPercent}%` : 'Discount';
+      }
+      const sRow = document.getElementById('co-surcharge-row');
+      if (sRow) {
+        sRow.hidden = !(t.surcharge > 0);
+        set('co-surcharge', `+${money(t.surcharge)}`);
+        sRow.firstElementChild.textContent = t.surchargePercent
+          ? `Paste penalty \u00b7 ${t.surchargePercent}%` : 'Paste penalty';
+      }
       if (t.taxKnown) setTaxRow(t.tax > 0 ? money(t.tax) : 'None for this address');
       const label = `Pay ${money(t.total)}`;
       const primary = document.getElementById('co-primary');

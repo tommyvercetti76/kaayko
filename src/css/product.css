@@ -52,7 +52,7 @@ body.product-v2 {
 
 .product-v2 .pdp {
   display: grid;
-  grid-template-columns: 1.05fr 1fr;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
   grid-template-areas:
     "gallery buy"
     "gallery file";
@@ -73,6 +73,9 @@ body.product-v2 {
   gap: 16px;
 }
 
+/* One frame for every product, 4:5, the same ratio the store grid uses. The catalogue
+   has no common shape of its own — sources run from 0.74 to 1.33 — so a fixed frame
+   with `cover` is the only way every product reads at the same size. */
 .product-v2 .product-gallery-main {
   position: relative;
   aspect-ratio: 4 / 5;
@@ -113,7 +116,9 @@ body.product-v2 {
 
 .product-v2 .product-thumb.active { box-shadow: 0 0 0 2px var(--v2-fg); }
 .product-v2 .product-thumb:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 2px; }
-.product-v2 .product-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.product-v2 .product-thumb img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
 
 /* ── Buy block ───────────────────────────────────────────── */
 
@@ -275,7 +280,7 @@ body.product-v2 {
 
 @media (max-width: 900px) {
   .product-v2 .pdp {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-areas: "gallery" "buy" "file";
     gap: 28px;
     padding: 20px 0 48px;
@@ -300,3 +305,41 @@ body.product-v2 {
   color: var(--v2-fg-muted);
   text-align: center;
 }
+
+/* ==========================================================================
+   Overflow containment.
+
+   Grid tracks and flex items both default to a min-width of `auto`, so a single
+   unbreakable string — a pasted URL in the story copy, a long product title —
+   sets the floor for the whole column and pushes the page sideways. Every child
+   of the PDP grid gets an explicit zero minimum, and prose is allowed to break.
+   ========================================================================== */
+.product-v2 .pdp > *,
+.product-v2 .pdp-gallery,
+.product-v2 .pdp-buy,
+.product-v2 .pdp-file {
+  min-width: 0;
+}
+
+/* `max-width` is what actually contains an over-wide image. `height: auto` was here
+   too, and because this block sits AFTER the gallery rules at the same specificity it
+   quietly beat `height: 100%` on the framed images — so a square photo sat 4:5-boxed
+   with a band of dead background under it, and every thumbnail did the same. Height is
+   `auto` by default for a replaced element, so nothing needs it stated here. */
+.product-v2 .pdp-gallery img,
+.product-v2 .pdp-thumbs img {
+  max-width: 100%;
+}
+
+.product-v2 .pdp-hook,
+.product-v2 .pdp-file,
+.product-v2 .pdp-file p,
+.product-v2 .pdp-file dd,
+.product-v2 .pdp-story {
+  overflow-wrap: anywhere;
+}
+
+/* Belt and braces: nothing on a product page may scroll the document sideways. */
+.product-v2 body,
+body.product-v2 { overflow-x: hidden; }
+

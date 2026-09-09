@@ -120,6 +120,7 @@ body.about-v2 {
 .about-make { margin: 0 0 48px; }
 
 .about-make h3,
+.about-arcade h3,
 .about-game h3,
 .about-collection h3 {
   margin: 0 0 8px;
@@ -127,6 +128,18 @@ body.about-v2 {
   font-weight: 600;
   font-size: clamp(24px, 3vw, 32px);
   color: var(--v2-fg);
+}
+
+/* Body copy inside these sections had no rule of its own and fell back to Arial.
+   Same Josefin treatment as .half p, which is what the rest of the page uses. */
+.about-make > p,
+.about-arcade > p {
+  margin: 0 0 12px;
+  max-width: 68ch;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.72;
+  color: var(--v2-fg-muted);
 }
 
 .make-list { margin: 14px 0 0; padding: 0; list-style: none; }
@@ -371,3 +384,466 @@ html.dark-theme .game-again { color: #0d0f0d; }
   .game-options { flex-direction: column; }
   .game-option { flex: 1 1 auto; }
 }
+
+
+/* ==========================================================================
+   Exhibits — four products with real buy links. Cormorant for the display
+   line, Josefin for reading, --v2 tokens throughout, same as the page above.
+   ========================================================================== */
+.exhibit-grid {
+  list-style: none;
+  margin: 20px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 26px 20px;
+}
+
+.exhibit {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+}
+
+.exhibit-link {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-decoration: none;
+  color: inherit;
+  min-width: 0;
+}
+
+.exhibit-no {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 14px;
+  letter-spacing: .04em;
+  color: var(--v2-gold);
+}
+
+.exhibit-img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--v2-border);
+  background: var(--v2-image-bg);
+}
+
+.exhibit-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 600;
+  font-size: 21px;
+  line-height: 1.2;
+  color: var(--v2-fg);
+}
+
+.exhibit-price {
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px;
+  color: var(--v2-fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.exhibit-caption {
+  margin: 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--v2-fg-muted);
+}
+
+.exhibit-buy,
+.machine-cta {
+  align-self: flex-start;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--v2-gold);
+  border-bottom: 1px solid var(--v2-gold);
+  padding-bottom: 2px;
+}
+.exhibit-link:focus-visible,
+.exhibit-buy:focus-visible,
+.machine-cta:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 3px; }
+
+/* ── The Arcade ─────────────────────────────────────────── */
+
+.about-arcade { margin: 0 0 48px; }
+
+.arcade-intro {
+  margin: 10px 0 0;
+  max-width: 62ch;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--v2-fg-muted);
+}
+
+.machines {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+  margin-top: 22px;
+}
+
+.machine {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  border: 1px solid var(--v2-border);
+  border-radius: 14px;
+  background: var(--v2-surface);
+  min-width: 0;
+}
+
+/* Cabinet plate, rendered locally with Forge. The gradient sits underneath so
+   a failed image request still leaves a finished-looking machine. */
+.machine-art {
+  height: 150px;
+  border-radius: 10px;
+  background-color: #2f2320;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid var(--v2-border);
+}
+.machine-art[data-art="approval"]   { background-image: url("/assets/arcade/approval.webp"); }
+.machine-art[data-art="nostalgia"]  { background-image: url("/assets/arcade/nostalgia.webp"); }
+.machine-art[data-art="compliance"] { background-image: url("/assets/arcade/compliance.webp"); }
+
+.machine-title {
+  margin: 6px 0 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 1.15;
+  color: var(--v2-fg);
+}
+
+.machine-sub,
+.machine-out,
+.machine-q,
+.machine-verdict {
+  margin: 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  color: var(--v2-fg-muted);
+}
+.machine-sub { font-size: 13px; }
+.machine-out, .machine-q { font-size: 14.5px; line-height: 1.6; }
+.machine-verdict { font-size: 13.5px; font-style: italic; min-height: 1em; }
+
+.machine-progress {
+  margin: 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--v2-gold);
+}
+
+.machine-score {
+  margin: 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 44px;
+  line-height: 1;
+  color: var(--v2-fg);
+  font-variant-numeric: tabular-nums;
+}
+
+.machine-body { margin-top: 6px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.machine-actions, .machine-options { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.machine-options { flex-direction: column; align-items: stretch; }
+
+.machine-btn {
+  padding: 10px 14px;
+  border: 1px solid var(--v2-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--v2-fg);
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13.5px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 150ms ease, color 150ms ease, opacity 150ms ease;
+}
+.machine-btn:hover:not(:disabled) { border-color: var(--v2-gold); color: var(--v2-gold); }
+.machine-btn:disabled { opacity: 0.45; cursor: default; }
+.machine-btn:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 2px; }
+.machine-btn.ghost { color: var(--v2-fg-muted); }
+.machine-btn.next { align-self: flex-start; }
+
+/* Dark mode: unselected calls to action carry a gentle gold tint. */
+html.dark-theme .machine-btn,
+html.dark-theme .about-v2 .machine-btn {
+  border-color: rgba(212, 182, 132, 0.34);
+  color: var(--v2-gold);
+}
+html.dark-theme .machine-btn:hover:not(:disabled) {
+  border-color: var(--v2-gold);
+  color: var(--v2-gold-bright);
+}
+
+.meter { width: 100%; max-width: 100%; accent-color: var(--v2-gold); }
+.meter-label {
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px;
+  color: var(--v2-fg-muted);
+}
+.meter:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 3px; }
+.meter-scale {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 10px;
+  color: var(--v2-fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+.meter-out { margin: 6px 0 0; display: grid; gap: 6px; }
+.meter-out div { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 8px; }
+.meter-out dt {
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--v2-gold);
+}
+.meter-out dd {
+  margin: 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--v2-fg-muted);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 560px) {
+  .machines { grid-template-columns: 1fr; }
+  .exhibit-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 22px 14px; }
+  .meter-out div { grid-template-columns: 88px minmax(0, 1fr); }
+  .machine { padding: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .machine-btn, .exhibit-buy, .machine-cta { transition: none; }
+}
+
+/* Catch-all: every text node under the About main inherits an approved face.
+   Cormorant is applied by the heading rules above; this stops anything new from
+   silently landing on the browser default. */
+.about-v2 #about-main {
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+}
+
+/* ==========================================================================
+   Cabinets.
+
+   Four machines, not four beige boxes. Each gets a lit marquee, a recessed
+   screen behind glass, a control panel with a coin slot, and its own house
+   colour so the row reads as an arcade rather than a settings page. The screen
+   plays itself until somebody inserts a coin.
+   ========================================================================== */
+.cab-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 26px;
+  margin-top: 26px;
+}
+
+/* A grid cell that can actually shrink: without this the canvas sets the floor
+   and two cabinets push the row wider than the page. */
+.cab-cell { min-width: 0; }
+
+.cab {
+  --machine: #7a2f28;
+  --machine-lit: #c9714f;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-radius: 16px 16px 10px 10px;
+  overflow: hidden;
+  background: #17140f;
+  box-shadow:
+    0 18px 34px rgba(0, 0, 0, .28),
+    inset 0 0 0 1px rgba(255, 255, 255, .06);
+}
+.cab[data-machine="franking"] { --machine: #8a6a1f; --machine-lit: #e6b95c; }
+.cab[data-machine="mailrun"]  { --machine: #2b3566; --machine-lit: #8ea0e0; }
+
+/* ── marquee: the lit sign across the top ─────────────────────────────── */
+.cab-marquee {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,0) 62%),
+    var(--machine);
+  border-bottom: 3px solid rgba(0, 0, 0, .35);
+}
+
+.cab-name {
+  margin: 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 600;
+  font-size: 23px;
+  line-height: 1.1;
+  letter-spacing: .01em;
+  color: #fdf6e6;
+  text-shadow: 0 1px 0 rgba(0,0,0,.45), 0 0 18px color-mix(in srgb, var(--machine-lit) 70%, transparent);
+}
+
+.cab-lamps { display: flex; gap: 6px; flex: 0 0 auto; }
+.cab-lamps i {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--machine-lit);
+  box-shadow: 0 0 8px var(--machine-lit);
+  opacity: .55;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .cab-lamps i { animation: cabLamp 1.8s ease-in-out infinite; }
+  .cab-lamps i:nth-child(2) { animation-delay: .25s; }
+  .cab-lamps i:nth-child(3) { animation-delay: .5s; }
+  @keyframes cabLamp { 0%, 100% { opacity: .35 } 50% { opacity: 1 } }
+}
+
+/* ── body: side art either flank, screen in the middle ────────────────── */
+/* The cabinet art used to be a background on this element, bleeding out under the
+   caption text and reading as an overlap. It is a contained plate in the panel now. */
+.cab-body {
+  padding: 16px 18px 0;
+  background-color: #17140f;
+}
+
+/* ── screen: recessed, glassy, faintly scanlined ──────────────────────── */
+.cab-stage {
+  position: relative;
+  height: var(--cab-h, 190px);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0a0c0a;
+  box-shadow:
+    inset 0 0 0 2px rgba(0,0,0,.6),
+    inset 0 0 26px rgba(0,0,0,.85),
+    0 0 0 3px color-mix(in srgb, var(--machine) 55%, #000);
+}
+
+.cab-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: crosshair;
+}
+.cab-canvas:focus-visible { outline: 2px solid var(--machine-lit); outline-offset: -3px; }
+
+.cab-scanlines {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(180deg, rgba(0,0,0,.22) 0 1px, transparent 1px 3px),
+    radial-gradient(120% 80% at 50% 45%, transparent 55%, rgba(0,0,0,.5) 100%);
+  mix-blend-mode: multiply;
+}
+
+.cab-overlay {
+  position: absolute; inset: 0; z-index: 2;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; padding: 16px; text-align: center;
+  background: rgba(8, 10, 8, .62);
+  backdrop-filter: blur(1px);
+}
+.cab-overlay[hidden] { display: none; }
+
+.cab-how {
+  margin: 0;
+  max-width: 28ch;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #efe6d4;
+}
+
+.cab-play {
+  padding: 10px 24px;
+  border: 2px solid var(--machine-lit);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--machine-lit);
+  font-family: 'Josefin_Bold', 'Josefin Sans', Arial, sans-serif;
+  font-size: 12px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+.cab-play:hover:not(:disabled) {
+  background: var(--machine-lit);
+  color: #17140f;
+  box-shadow: 0 0 22px color-mix(in srgb, var(--machine-lit) 60%, transparent);
+}
+.cab-play:disabled { opacity: .4; cursor: default; }
+.cab-play:focus-visible { outline: 2px solid var(--machine-lit); outline-offset: 3px; }
+
+/* ── control panel below the screen ───────────────────────────────────── */
+.cab-panel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 2px 15px;
+  background: #17140f;                 /* opaque: nothing shows through behind the text */
+  position: relative;
+  z-index: 1;
+}
+
+/* Side art, scaled down to a placard so it decorates without competing. */
+.cab-art {
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, .10);
+  opacity: .92;
+}
+.cab-slot {
+  flex: 0 0 auto;
+  width: 30px; height: 7px;
+  border-radius: 3px;
+  background: #050605;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 0 0 1px rgba(255,255,255,.07);
+}
+.cab-blurb {
+  margin: 0;
+  min-width: 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: rgba(239, 230, 212, .72);
+}
+
+.cab-result {
+  margin: 0;
+  padding: 0 18px 14px;
+  min-height: 1.2em;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px;
+  color: var(--machine-lit);
+}
+
+@media (max-width: 560px) {
+  .cab-grid { grid-template-columns: 1fr; gap: 20px; }
+  .cab-body { padding: 13px 13px 0; }
+  .cab-art { width: 40px; height: 40px; }
+  .cab-name { font-size: 20px; }
+}
+

@@ -24,6 +24,7 @@ The Store frontend is the kaay.store shopping surface: invite/access screen, cat
 - `src/js/kaayko_apiClient.js`
 - `src/js/kaayko_ui.js`
 - `src/js/cartManager.js`
+- `src/js/support-contact.js`
 - `src/js/storeAccess.js`
 - `src/js/secretStore.js`
 - `src/css/storestyle.css`
@@ -46,6 +47,7 @@ Admin fulfillment is handled inside Kortex:
 - `GET /api/admin/getOrder`
 - `POST /api/admin/updateOrderStatus`
 - `POST /api/admin/orders/delay-notice`
+- `GET /api/admin/mailHealth`
 - `GET /api/admin/products`
 - `PATCH /api/admin/products/:id`
 
@@ -63,22 +65,30 @@ Checkout sequence:
 6. Stripe confirms the payment and redirects to `/order-success`.
 7. Stripe webhook creates order records and queues buyer/admin email.
 
-## Launch Blockers
+## Current Status And Remaining Work
 
 See:
 
 - `docs/audits/KAAY_STORE_FULL_FEATURE_AUDIT_2026-09-05.md`
 - `docs/audits/CROSS_PRODUCT_USER_AND_OPERATIONS_AUDIT_2026-09-05.md`
 
-Blocking issues as of this review:
+Resolved in the current working tree:
+
+- Invite/access failure copy is neutral and buyer-safe.
+- Cart blocks payment when `/createPaymentIntent/updateEmail` returns non-OK.
+- Admin delay notices read the backend's top-level `queued` response.
+- Kortex Orders calls `/admin/mailHealth` to surface mail docs in `ERROR`, stale `RETRY`, or stuck `PROCESSING`.
+- Buyer-facing support links now come from `src/js/support-contact.js`, so the address is one change when the owner confirms the mailbox.
+
+Remaining launch blockers:
 
 - `src/js/prod-config.js` uses a Stripe `pk_test` publishable key.
 - `src/legal/terms.html` contains legal placeholders.
-- Buyer-facing support emails are inconsistent across frontend/backend docs.
-- Store invite failure copy must be neutral and buyer-safe.
-- Cart must handle non-OK contact update responses.
-- Admin delay notice UI must read the actual backend response shape.
-- Live SMTP secret and mail retry/redrive need operational verification.
+- Buyer-facing support email is centralized but still points to `rohanramekar17@gmail.com`; change to `orders@kaayko.com` only after the mailbox is real and monitored.
+- Live SMTP secret must be verified in Firebase Secret Manager.
+- Mail health is visible in admin, but automatic retry/redrive for stale `RETRY` docs is still not implemented.
+- A full test-mode purchase/receipt/admin/fulfillment smoke has not been run in this branch.
+- Sellable SKUs should get explicit `actualPrice` values before live purchase.
 
 ## Verification
 
@@ -104,4 +114,3 @@ Backend tests:
 - `auth-platform-admin.test.js`
 
 Do not attempt a real live purchase unless live Stripe config and legal/mail launch blockers are resolved by the owner.
-

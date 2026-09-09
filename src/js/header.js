@@ -114,9 +114,22 @@ function initializeHomeNavigation() {
   const homeElement = document.querySelector('.header-brand') || document.querySelector('.header-title');
   if (!homeElement) return;
 
+  // kaay.store is its own root. Inside the store the brand returns to the store index; it must
+  // never bounce a shopper out to the kaayko.com marketing site mid-basket.
+  const inStore = document.body.classList.contains('store-v2') ||
+                  location.pathname.startsWith('/store') ||
+                  location.hostname.startsWith('kaay.store') ||
+                  location.hostname.startsWith('kaay-store');
+  const destination = inStore ? '/store' : 'https://kaayko.com';
+
   homeElement.style.cursor = 'pointer';
-  homeElement.addEventListener('click', () => {
-    window.location.href = 'https://kaayko.com';
+  homeElement.setAttribute('role', 'link');
+  homeElement.setAttribute('tabindex', '0');
+  homeElement.setAttribute('aria-label', inStore ? 'Kaayko Store home' : 'Kaayko home');
+  const go = () => { window.location.href = destination; };
+  homeElement.addEventListener('click', go);
+  homeElement.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
   });
 }
 

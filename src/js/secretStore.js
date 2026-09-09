@@ -51,8 +51,16 @@ document.addEventListener('DOMContentLoaded', function() {
                      (onStoreDomain && (path === '/' || path === '/index.html'));
 
   if (!isStorePage) return;
-  
-  console.log('🔐 Store page detected, checking access...');
+
+  // GATE REMOVED (2026-09): kaay.store and kaayko.com/store are open to everyone.
+  // The invite check, the /#store bounce and the in-page code prompt below are all
+  // retired; the catalogue was always served by a public API, so the doorway was
+  // never a lock. Nothing here runs any more — the early return keeps the rest of
+  // the file intact (and the Kortex bypass harmless) without deleting history.
+  document.documentElement.classList.remove('store-locked');
+  return;
+
+  /* eslint-disable no-unreachable */
   
   // KORTEX BYPASS: ONLY for store access via smart links
   // Check if user came from a Kortex smart link redirect

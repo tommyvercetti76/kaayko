@@ -42,19 +42,28 @@ Trainer frontend still calls additional endpoints that are not implemented in th
 - Let users rate a paddle session without signup.
 - Keep settings local to the browser.
 
-## Current Launch Blockers
+## Current Status And Remaining Work
 
 See the full audit for details:
 
 - `docs/audits/PADDLING_OUT_FULL_FEATURE_AUDIT_2026-09-05.md`
 
-Blocking issues as of this review:
+Resolved in the current working tree:
 
-- Add Lake copy must match admin-review backend behavior.
-- Search must reset `isSearching` after success/no-result/error paths.
-- Public Rate must be complete and visually aligned with Forecast.
-- Trainer must either get the missing APIs or stop being the public Rate destination.
-- Rating APIs should stop storing raw IP and verify public spot IDs.
+- Add Lake copy matches admin-review backend behavior.
+- Search resets `isSearching` after success/no-result/error paths.
+- Public Rate is the card CTA destination and uses existing API-backed endpoints.
+- Public Rate keeps failed submissions visible as failures instead of fake local success.
+- Rating APIs avoid raw IP storage for new labels and verify public spot IDs.
+- Submit geocoding goes through the backend proxy.
+
+Remaining:
+
+- Run a real Add Lake smoke: submit with image, approve in Kortex, verify public/forecast, reject a second submission and verify image cleanup.
+- Decide whether trainer is rebuilt behind admin auth or retired from the public product.
+- Decide whether submitters with email should receive an immediate "we got it" confirmation; validation/rejection mail already exists.
+- Add weather endpoint rate limits before high-volume public traffic.
+- Run visual QA for Rate on mobile and desktop if the page gets a fuller aesthetic rebuild.
 
 ## Verification
 
@@ -70,4 +79,3 @@ Backend tests:
 
 - `cd ../kaayko-api/functions && npm run test:paddlingout`
 - `cd ../kaayko-api/functions && node ./node_modules/jest/bin/jest.js --runInBand __tests__/weather-paddle-score.test.js --forceExit --detectOpenHandles`
-
