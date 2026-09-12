@@ -43,7 +43,7 @@
   --line:         rgba(181,147,90,0.20);
   --line-gold:    rgba(181,147,90,0.52);
   --critical:     #bd3b2b;
-  --moderate:     #eb8127;
+  --moderate:     #c59a61;   /* amber — matches KaaykoPrefs.paddleScoreColor */
   --good:         #316d43;
   --ease:         cubic-bezier(0.76, 0, 0.24, 1);
   --font-serif:   'Cormorant Garamond', Georgia, serif;
@@ -335,9 +335,9 @@ main.forecast-main {
 .forecast-alert-banner {
   position: relative;
   margin-top: -0.15rem;
-  border-radius: 8px;
+  border-radius: 0;
   border: 1px solid rgba(181, 147, 90, 0.28);
-  border-left: 4px solid var(--moderate);
+  border-left: 3px solid var(--moderate);
   background: linear-gradient(135deg, rgba(28, 22, 8, 0.94), rgba(18, 14, 4, 0.90));
   box-shadow: 0 14px 44px rgba(0,0,0,0.32);
   overflow: hidden;
@@ -833,8 +833,7 @@ main.forecast-main {
 
 /* ── No curves, anywhere: chamfer every panel and control ── */
 .forecast-location-info,
-.kbg-block,
-.forecast-alert-banner {
+.kbg-block {
   border-radius: 0 !important;
   clip-path: var(--clip-md);
   background: var(--surface);
@@ -847,11 +846,9 @@ main.forecast-main {
 }
 #ratingHeroContainer .core-weather-inline { border-radius: 0 !important; clip-path: var(--clip-md); }
 .forecast-back-btn,
-.alert-mark,
-.alert-dismiss {
-  border-radius: 0 !important;
-  clip-path: var(--clip-sm);
-}
+.alert-mark { border-radius: 0 !important; clip-path: none; }         /* plain square count */
+.alert-dismiss { border: 0 !important; background: transparent !important; clip-path: none; } /* just the × */
+.alert-dismiss:hover { color: var(--fg); }
 .forecast-retry-btn { border-radius: 0; clip-path: var(--clip-sm); }
 .amenity-pill {
   border-radius: 0 !important;
@@ -1190,18 +1187,13 @@ main.forecast-main {
    as truncated hexagons. Each shape below draws its outline as a layer clipped
    to the polygon, with the fill clipped 1px inside it. Per element:
    --kc-clip (polygon), --kc-line (outline colour), --kc-bg (fill). */
-.forecast-location-info, .kbg-block, .night-next, .forecast-alert-banner, .alert-mark, .alert-dismiss, .amenity-pill, .forecast-retry-btn { position: relative; isolation: isolate; border-color: transparent !important; background: transparent !important; }
-.forecast-location-info::before, .kbg-block::before, .night-next::before, .forecast-alert-banner::before, .alert-mark::before, .alert-dismiss::before, .amenity-pill::before, .forecast-retry-btn::before, .forecast-location-info::after, .kbg-block::after, .night-next::after, .forecast-alert-banner::after, .alert-mark::after, .alert-dismiss::after, .amenity-pill::after, .forecast-retry-btn::after { content: ''; position: absolute; z-index: -1; clip-path: var(--kc-clip); pointer-events: none; }
-.forecast-location-info::before, .kbg-block::before, .night-next::before, .forecast-alert-banner::before, .alert-mark::before, .alert-dismiss::before, .amenity-pill::before, .forecast-retry-btn::before { inset: 0; background: var(--kc-line); }
-.forecast-location-info::after, .kbg-block::after, .night-next::after, .forecast-alert-banner::after, .alert-mark::after, .alert-dismiss::after, .amenity-pill::after, .forecast-retry-btn::after { inset: 1px; background: var(--kc-bg); -webkit-backdrop-filter: var(--kc-blur, none); backdrop-filter: var(--kc-blur, none); }
+.forecast-location-info, .kbg-block, .night-next, .amenity-pill, .forecast-retry-btn { position: relative; isolation: isolate; border-color: transparent !important; background: transparent !important; }
+.forecast-location-info::before, .kbg-block::before, .night-next::before, .amenity-pill::before, .forecast-retry-btn::before, .forecast-location-info::after, .kbg-block::after, .night-next::after, .amenity-pill::after, .forecast-retry-btn::after { content: ''; position: absolute; z-index: -1; clip-path: var(--kc-clip); pointer-events: none; }
+.forecast-location-info::before, .kbg-block::before, .night-next::before, .amenity-pill::before, .forecast-retry-btn::before { inset: 0; background: var(--kc-line); }
+.forecast-location-info::after, .kbg-block::after, .night-next::after, .amenity-pill::after, .forecast-retry-btn::after { inset: 1px; background: var(--kc-bg); -webkit-backdrop-filter: var(--kc-blur, none); backdrop-filter: var(--kc-blur, none); }
 
 .forecast-location-info, .kbg-block, .night-next { --kc-clip: var(--clip-md); --kc-line: var(--line); --kc-bg: var(--surface); }
 .night-next { --kc-bg: rgba(0,0,0,0.28); }
-.forecast-alert-banner { --kc-clip: var(--clip-md); --kc-line: rgba(181,147,90,0.28); --kc-bg: linear-gradient(135deg, rgba(28,22,8,0.94), rgba(18,14,4,0.90)); border-left: 0 !important; }
-.forecast-alert-banner::after { box-shadow: inset 4px 0 0 var(--moderate); }   /* the alert accent stripe, inside the cut */
-.alert-mark { --kc-clip: var(--clip-sm); --kc-line: rgba(255,165,0,0.45); --kc-bg: rgba(255,165,0,0.12); }
-.alert-dismiss { --kc-clip: var(--clip-sm); --kc-line: rgba(237,232,223,0.12); --kc-bg: rgba(255,255,255,0.04); }
-.alert-dismiss:hover { --kc-line: rgba(237,232,223,0.35); --kc-bg: rgba(255,255,255,0.08); }
 .amenity-pill { --kc-clip: var(--clip-sm); --kc-line: rgba(217,189,123,0.22); --kc-bg: rgba(217,189,123,0.06); }
 .forecast-retry-btn { --kc-clip: var(--clip-sm); --kc-line: var(--gold); --kc-bg: transparent; }
 .forecast-retry-btn:hover { --kc-bg: rgba(181,147,90,0.14); }

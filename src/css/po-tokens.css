@@ -1,0 +1,75 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Paddling Out design tokens — the ONE place the system is defined.
+   Loaded LAST in <head> on every Paddling Out page, so these values win over
+   each page's inline :root and the pages read as one product.
+
+   Shape:   chamfered, never rounded. --clip-sm/md/lg are the three cuts.
+   Colour:  black ground, bone text, bullion gold; three verdict colours.
+   Type:    Bebas (titles), Josefin (labels/UI), Cormorant (reading).
+   ───────────────────────────────────────────────────────────────────────────── */
+:root {
+  --bg:            #080808;
+  --fg:            #ede8df;
+  --muted:         rgba(237, 232, 223, 0.58);
+  --gold:          #b5935a;
+  --gold-bright:   #d9bd7b;
+  --gold-ink:      #141210;                 /* text on a gold fill */
+  --line:          rgba(181, 147, 90, 0.28); /* hairlines, panel outlines */
+  --line-strong:   rgba(181, 147, 90, 0.74); /* card frames on the list */
+  --surface:       rgba(181, 147, 90, 0.06); /* filled fields, chips */
+  --surface-2:     rgba(181, 147, 90, 0.12);
+  --panel-a:       #0d0c0a;
+  --panel-b:       #10110d;
+
+  /* Verdicts — Worth it / Careful / Hard pass. Careful is AMBER everywhere
+     (cards, heatmap, forecast, rate); the orange #eb8127 is retired. */
+  --good:          #316d43;
+  --moderate:      #c59a61;
+  --critical:      #bd3b2b;
+  /* Form feedback */
+  --ok:            #8fbc6a;
+  --bad:           #f87171;
+
+  --font-display:  'Bebas Neue', 'Josefin Sans', Arial, sans-serif;
+  --font-sans:     'Josefin Sans', Arial, sans-serif;
+  --font-serif:    'Cormorant Garamond', Georgia, serif;
+
+  --clip-sm: polygon(6px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px), 0 6px);
+  --clip-md: polygon(9px 0, calc(100% - 9px) 0, 100% 9px, 100% calc(100% - 9px), calc(100% - 9px) 100%, 9px 100%, 0 calc(100% - 9px), 0 9px);
+  --clip-lg: polygon(13px 0, calc(100% - 13px) 0, 100% 13px, 100% calc(100% - 13px), calc(100% - 13px) 100%, 13px 100%, 0 calc(100% - 13px), 0 13px);
+
+  --ease: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+/* ── Fields: filled, chamfered, underlined. Inputs cannot carry pseudo
+      elements, so instead of an outline that would be cut at the corners the
+      field is a soft gold fill with a gold hairline along the bottom. ── */
+.po-field,
+.po-page input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]),
+.po-page textarea,
+.po-page select {
+  border: 0 !important;
+  border-bottom: 1px solid var(--line) !important;
+  border-radius: 0 !important;
+  clip-path: var(--clip-sm);
+  background: var(--surface) !important;
+  color: var(--fg);
+  box-shadow: none !important;
+  transition: background 0.18s var(--ease), border-color 0.18s var(--ease);
+}
+.po-page input:focus, .po-page textarea:focus, .po-page select:focus, .po-field:focus {
+  outline: none;
+  border-bottom-color: var(--gold-bright) !important;
+  background: var(--surface-2) !important;
+}
+.po-page input::placeholder, .po-page textarea::placeholder { color: rgba(237, 232, 223, 0.32); }
+
+/* ── Section label ("PREP", "THE SPOT", "UNITS"): one size, one tracking ── */
+.po-kicker {
+  font-family: var(--font-sans);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+}

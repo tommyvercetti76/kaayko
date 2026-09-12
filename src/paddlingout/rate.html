@@ -47,7 +47,7 @@
   --line:        rgba(181,147,90,0.20);
   --line-gold:   rgba(181,147,90,0.52);
   --critical:    #bd3b2b;
-  --moderate:    #eb8127;
+  --moderate:    #c59a61;
   --good:        #316d43;
   --ease:        cubic-bezier(0.76, 0, 0.24, 1);
   --font-serif:  'Cormorant Garamond', Georgia, serif;
@@ -275,7 +275,7 @@ html, body {
 .rate-label { font: 400 0.6rem var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 0.15rem; }
 .rate-btn[data-val="1"] .rate-num { color: #4a0a08; }
 .rate-btn[data-val="2"] .rate-num { color: #bd3b2b; }
-.rate-btn[data-val="3"] .rate-num { color: #eb8127; }
+.rate-btn[data-val="3"] .rate-num { color: var(--moderate); }
 .rate-btn[data-val="4"] .rate-num { color: #316d43; }
 .rate-btn[data-val="5"] .rate-num { color: #255a3a; }
 .rate-btn.selected .rate-label { color: var(--gold-bright); }
@@ -665,8 +665,10 @@ html, body {
   <link rel="stylesheet" href="/css/footer.css">
   <link rel="stylesheet" href="/js/components/PoHeader.css">
   <script src="/js/components/PoHeader.js"></script>
+  <link rel="stylesheet" href="/css/po-tokens.css">
+  <link rel="stylesheet" href="/css/po-system.css">
 </head>
-<body>
+<body class="po-page">
 <div id="po-header" data-title="Rate your paddle" data-eyebrow="Paddling Out" data-back="/paddlingout" data-current="none"></div>
 
 <!-- ═══ Onboarding overlay (shown once) ═══ -->

@@ -691,7 +691,7 @@ body {
 .card::before, .po-error-retry::before, .conditions-badge::before { inset: 0; background: var(--kc-line); }
 .card::after, .po-error-retry::after, .conditions-badge::after { inset: 1px; background: var(--kc-bg); -webkit-backdrop-filter: var(--kc-blur, none); backdrop-filter: var(--kc-blur, none); }
 
-.card { --kc-clip: var(--clip-lg); --kc-line: var(--line); --kc-bg: linear-gradient(135deg, var(--panel-a), var(--panel-c)); }
+.card { --kc-clip: var(--clip-lg); --kc-line: var(--line-strong, var(--line)); --kc-bg: linear-gradient(135deg, var(--panel-a), var(--panel-c)); }
 .po-error-retry { --kc-clip: var(--clip-md); --kc-line: rgba(181,147,90,0.5); --kc-bg: rgba(181,147,90,0.1); }
 .po-error-retry:hover { --kc-bg: rgba(181,147,90,0.2); }
 .conditions-badge { --kc-clip: var(--clip-sm); --kc-line: rgba(255,255,255,0.1); --kc-bg: rgba(8,8,8,0.62); --kc-blur: blur(14px) saturate(160%); }
