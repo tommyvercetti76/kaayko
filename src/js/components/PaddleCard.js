@@ -48,6 +48,29 @@
     };
   }
 
+  // Only the visible slide carries a real `src`. Hidden slides are opacity:0 +
+  // absolute, which the browser still treats as "in viewport", so loading=lazy
+  // did nothing: every card fetched all of its photos on first paint (84 files
+  // on the list page). Slides get their src on first show; the neighbour is
+  // warmed so a swipe never lands on a blank frame.
+  function ensureSrc(img) {
+    if (img && img.dataset && img.dataset.src && !img.src) { img.src = img.dataset.src; delete img.dataset.src; }
+  }
+  function slideImg(cls, url, i, alt, eager) {
+    var img = el('img', cls + (i === 0 ? ' active' : ''));
+    img.dataset.index = i;
+    img.decoding = 'async';
+    img.alt = alt;
+    if (i === 0) {
+      img.loading = eager ? 'eager' : 'lazy';
+      if (eager) img.setAttribute('fetchpriority', 'high');
+      img.src = url;
+    } else {
+      img.dataset.src = url;
+    }
+    return img;
+  }
+
   var TAG_LABELS = {
     'community': 'Community', 'new': 'New', 'verified': 'Verified', 'staff-pick': 'Staff pick',
     'seasonal': 'Seasonal', 'river': 'River', 'boat-ramp': 'Boat ramp'
@@ -103,6 +126,9 @@
     function show(n) {
       if (!imgs.length) return;
       var i = ((n % imgs.length) + imgs.length) % imgs.length;
+      ensureSrc(imgs[i]);
+      ensureSrc(imgs[(i + 1) % imgs.length]);
+      ensureSrc(imgs[(i - 1 + imgs.length) % imgs.length]);
       for (var k = 0; k < imgs.length; k++) imgs[k].classList.toggle('active', k === i);
       for (var d = 0; d < dots.length; d++) dots[d].classList.toggle('active', d === i);
     }
@@ -250,13 +276,7 @@
 
     if (data.images.length) {
       data.images.forEach(function (url, i) {
-        var img = el('img', 'pcard-img' + (i === 0 ? ' active' : ''));
-        img.dataset.index = i;
-        img.loading = 'lazy';
-        img.decoding = 'async';
-        img.alt = data.title;
-        img.src = url;
-        media.appendChild(img);
+        media.appendChild(slideImg('pcard-img', url, i, data.title, opts.eager === true));
       });
     } else {
       media.classList.add('pcard-media--empty');
@@ -346,9 +366,7 @@
 
     // images
     data.images.forEach(function (url, i) {
-      var img = el('img', 'carousel-image' + (i === 0 ? ' active' : ''));
-      img.dataset.index = i; img.loading = 'lazy'; img.decoding = 'async'; img.alt = data.title; img.src = url;
-      media.appendChild(img);
+      media.appendChild(slideImg('carousel-image', url, i, data.title, opts.eager === true));
     });
 
     // conditions badge (top-right) → forecast

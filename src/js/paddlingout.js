@@ -32,20 +32,50 @@ document.addEventListener("DOMContentLoaded", () => {
   //──────────────────────────────────────────────────────────────────────────────
   // List view
   //──────────────────────────────────────────────────────────────────────────────
+  // Stale-while-revalidate for the list: the API is a scale-to-zero function
+  // and more than half of its requests were cold starts (1–5 s of skeletons).
+  // A returning visitor gets last visit's cards instantly; the live response
+  // replaces them the moment it lands. Scores refresh every 15 min server-side,
+  // so anything under 30 min old is worth painting.
+  const LIST_CACHE_KEY = 'kaayko_po_list_v1';
+  const LIST_CACHE_MAX_AGE_MS = 30 * 60 * 1000;
+  function readListCache(url) {
+    try {
+      const raw = localStorage.getItem(LIST_CACHE_KEY);
+      if (!raw) return null;
+      const c = JSON.parse(raw);
+      if (!c || c.url !== url || !Array.isArray(c.spots) || !c.spots.length) return null;
+      if (Date.now() - (c.at || 0) > LIST_CACHE_MAX_AGE_MS) return null;
+      return c.spots;
+    } catch (e) { return null; }
+  }
+  function writeListCache(url, spots) {
+    try { localStorage.setItem(LIST_CACHE_KEY, JSON.stringify({ url, at: Date.now(), spots })); } catch (e) { /* quota / private mode */ }
+  }
+
   function fetchAll() {
+    const listUrl = Prefs() && Prefs().withCraft ? Prefs().withCraft(`${endpoint()}/paddlingOut`) : `${endpoint()}/paddlingOut`;
+    const cached = readListCache(listUrl);
+    if (cached) { lastSpots = cached; renderList(cached); }
+
     // Abort a cold/hung Cloud Function instead of shimmering skeletons forever.
     var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
     var timedOut = false;
-    var timer = setTimeout(function () { timedOut = true; if (ctrl) ctrl.abort(); }, 10000);
-    const listUrl = Prefs() && Prefs().withCraft ? Prefs().withCraft(`${endpoint()}/paddlingOut`) : `${endpoint()}/paddlingOut`;
+    var timer = setTimeout(function () { timedOut = true; if (ctrl) ctrl.abort(); }, cached ? 20000 : 10000);
     fetch(listUrl, ctrl ? { signal: ctrl.signal } : undefined)
       .then(r => r.json())
       .then(data => {
         clearTimeout(timer);
-        lastSpots = Array.isArray(data) ? data : (data.data || data.spots || []);
-        renderList(lastSpots);
+        const spots = Array.isArray(data) ? data : (data.data || data.spots || []);
+        if (!spots.length && cached) return;          // keep the cached cards over an empty answer
+        lastSpots = spots;
+        writeListCache(listUrl, spots);
+        // Same ids and same scores → nothing to repaint; avoids a flash for warm visitors.
+        if (cached && JSON.stringify(cached.map(s => [s.id, s.paddleScore && s.paddleScore.rating])) ===
+                      JSON.stringify(spots.map(s => [s.id, s.paddleScore && s.paddleScore.rating]))) return;
+        renderList(spots);
       })
-      .catch(() => { clearTimeout(timer); showError(timedOut ? "timeout" : "error"); });
+      .catch(() => { clearTimeout(timer); if (!cached) showError(timedOut ? "timeout" : "error"); });
   }
 
   function renderList(spots) {
@@ -61,7 +91,9 @@ document.addEventListener("DOMContentLoaded", () => {
     ordered.forEach((spot, i) => {
       const card = window.PaddleCard.create(spot, {
         variant: v,
-        linkTo: v === 'minimal' ? 'forecast' : 'detail'
+        linkTo: v === 'minimal' ? 'forecast' : 'detail',
+        // First two covers are the LCP candidates: fetch them at high priority.
+        eager: i < 2
       });
       card.classList.add("card-enter");
       card.style.animationDelay = `${Math.min(i, 12) * 45}ms`;

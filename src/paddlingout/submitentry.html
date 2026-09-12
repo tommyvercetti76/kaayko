@@ -655,8 +655,8 @@
       // browser so a normal phone photo always fits, before we validate/upload.
       // Canvas re-encoding also drops EXIF (GPS, device) from anything it touches;
       // the API strips it from pass-through files too.
-      const MAX_DIMENSION = 2000;                       // longest edge, px
-      const COMPRESS_TARGET_BYTES = 4 * 1024 * 1024;    // aim under the 5 MB cap
+      const MAX_DIMENSION = 1800;                       // longest edge, px — cards never show more
+      const COMPRESS_TARGET_BYTES = 900 * 1024;         // ~0.9 MB: anything bigger is re-encoded
       const PASS_THROUGH_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
       function loadImageEl(file) {
@@ -693,10 +693,10 @@
         const ctx = canvas.getContext('2d');
         if (!ctx) return file;
         ctx.drawImage(img, 0, 0, w, h);
-        let quality = 0.85;
+        let quality = 0.82;
         let blob = await canvasToBlob(canvas, quality);
-        while (blob && blob.size > COMPRESS_TARGET_BYTES && quality > 0.4) {
-          quality -= 0.12;
+        while (blob && blob.size > COMPRESS_TARGET_BYTES && quality > 0.5) {
+          quality -= 0.08;
           blob = await canvasToBlob(canvas, quality);
         }
         if (!blob) return file;

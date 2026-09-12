@@ -599,9 +599,15 @@ function buildImageContainer(item, metadataPill, heartButton) {
   const previews = (item.previewSrc && item.previewSrc.length === item.imgSrc.length)
     ? item.previewSrc
     : item.imgSrc;
+  // Only the cover carries a real src. display:none does NOT stop a browser
+  // fetching an <img>, so the grid used to pull every photo of every product
+  // (143 files) before the shopper scrolled. Hidden slides get their src the
+  // first time they are shown (dot click / swipe) — see showSlide().
   previews.forEach((url, i) => {
     const img      = document.createElement("img");
-    img.src        = url;
+    if (i === 0) { img.src = url; img.loading = "lazy"; }
+    else { img.dataset.src = url; }
+    img.decoding   = "async";
     img.alt        = galleryAlt(item.title, i, previews.length);
     img.className  = "carousel-image";
     img.style.display = i === 0 ? "block" : "none";
@@ -631,6 +637,16 @@ function setActiveDot(dots, idx) {
   });
 }
 
+/** Reveal slide i, attaching its src on first show and warming the next one. */
+function showSlide(imgs, i) {
+  const img = imgs[i];
+  if (!img) return;
+  if (img.dataset.src) { img.src = img.dataset.src; delete img.dataset.src; }
+  const next = imgs[(i + 1) % imgs.length];
+  if (next && next.dataset.src) { next.src = next.dataset.src; delete next.dataset.src; }
+  img.style.display = "block";
+}
+
 function createImageIndicator(count, current) {
   if (count <= 1) {
     return null;
@@ -650,7 +666,7 @@ function createImageIndicator(count, current) {
     dot.addEventListener("click", () => {
       const imgs = dots.parentElement.querySelectorAll(".carousel-image");
       imgs.forEach(img => (img.style.display = "none"));
-      imgs[i].style.display = "block";
+      showSlide(imgs, i);
       setActiveDot(dots, i);
     });
     dots.append(dot);
@@ -678,7 +694,7 @@ function addSwipe(container, count, indicator) {
 
     imgs[idx].style.display = "none";
     idx = dx < 0 ? (idx + 1) % count : (idx - 1 + count) % count;
-    imgs[idx].style.display = "block";
+    showSlide(imgs, idx);
     if (indicator) {
       setActiveDot(indicator, idx);
     }
