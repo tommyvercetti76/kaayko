@@ -77,6 +77,11 @@ const VIEW_CONFIGS = {
     css: 'views/submissions/submissions.css',
     container: '#submissions-view'
   },
+  spots: {
+    module: '../views/spots/spots.js',
+    css: 'views/spots/spots.css',
+    container: '#spots-view'
+  },
   orders: {
     module: '../views/orders/orders.js',
     css: 'views/orders/orders.css',

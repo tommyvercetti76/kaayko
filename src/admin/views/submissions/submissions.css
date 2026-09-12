@@ -1,3 +1,4 @@
+@import url('../spots/spots.css');
 /* ============================================================================
    SUBMISSIONS VIEW STYLES
    Community lake / river / boat-ramp review queue.
@@ -339,3 +340,14 @@
     padding-right: var(--space-md);
   }
 }
+
+/* --- Inline editor + reviewer flags (added 12 Sep 2026) ------------------- */
+.submission-card { flex-wrap: wrap; }
+.sub-editor { flex-basis: 100%; width: 100%; padding: 0 var(--space-lg) var(--space-lg); }
+.sub-editor[hidden] { display: none; }
+.sub-flag {
+  margin: 6px 0; padding: 8px 10px; border-radius: var(--radius-md); font-size: 12px;
+  border: 1px solid rgba(212, 168, 75, 0.4); background: rgba(212, 168, 75, 0.08); color: var(--text-primary);
+}
+.sub-flag a { color: var(--gold-primary, #d4a84b); text-decoration: none; margin-left: 6px; }
+.sub-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0; }

@@ -87,33 +87,6 @@
       font-style:italic;
       line-height:1.48;
     }
-    .tour-strip {
-      display:grid;
-      grid-template-columns:repeat(3, minmax(0,1fr));
-      gap:0.8rem;
-      margin-bottom:1.2rem;
-    }
-    .tour-step {
-      border:1px solid var(--line);
-      border-radius:10px;
-      background:linear-gradient(135deg, rgba(181,147,90,0.08), rgba(49,109,67,0.05));
-      padding:1rem;
-    }
-    .tour-step strong {
-      display:block;
-      color:var(--gold-bright);
-      font-family:var(--font-sans);
-      font-size:0.72rem;
-      letter-spacing:0.12em;
-      text-transform:uppercase;
-    }
-    .tour-step span {
-      display:block;
-      margin-top:0.45rem;
-      color:var(--muted);
-      font-size:0.92rem;
-      line-height:1.35;
-    }
     .submit-card {
       border:1px solid var(--line);
       border-radius:12px;
@@ -313,7 +286,7 @@
     }
     .image-previews {
       display:grid;
-      grid-template-columns:repeat(3, minmax(0, 1fr));
+      grid-template-columns:repeat(5, minmax(0, 1fr));
       gap:0.7rem;
       margin-top:0.85rem;
     }
@@ -390,42 +363,78 @@
       color:var(--muted);
       line-height:1.45;
     }
-    .tour-overlay {
-      position:fixed;
-      inset:0;
-      z-index:30;
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:1.2rem;
-      background:rgba(4,4,4,0.76);
-      backdrop-filter:blur(8px);
-    }
-    .tour-overlay.visible { display:flex; }
-    .tour-modal {
-      width:min(100%, 460px);
-      border:1px solid rgba(181,147,90,0.34);
-      border-radius:12px;
-      background:#0d0c0a;
-      padding:1.4rem;
-      box-shadow:0 24px 80px rgba(0,0,0,0.55);
-    }
-    .tour-modal h2 {
-      margin:0 0 0.7rem;
-      color:var(--gold-bright);
+    /* ── Concise header + fine print ─────────────────────────────── */
+    .launch-note { margin:1.1rem 0 1rem; font-size:1rem; }
+    .fineprint {
+      margin:0 0 1.2rem;
+      color:var(--muted);
       font-family:var(--font-sans);
-      font-size:1.05rem;
-      letter-spacing:0.1em;
+      font-size:0.7rem;
+      letter-spacing:0.06em;
+      line-height:1.6;
       text-transform:uppercase;
     }
-    .tour-modal p {
-      margin:0 0 1rem;
-      color:var(--muted);
-      font-size:1rem;
-      line-height:1.45;
+    .fineprint a { color:var(--gold-bright); text-decoration:none; border-bottom:1px solid rgba(217,189,123,0.4); }
+    .fineprint a:hover { border-bottom-color:var(--gold-bright); }
+    .fineprint details { display:inline; }
+    .fineprint summary { display:inline; cursor:pointer; color:var(--gold-bright); list-style:none; }
+    .fineprint summary::-webkit-details-marker { display:none; }
+    .fineprint details[open] summary::after { content:':'; }
+    .fineprint details ul {
+      margin:0.4rem 0 0; padding-left:1.1rem;
+      color:var(--muted); font-family:var(--font-serif); font-size:0.95rem;
+      letter-spacing:0; text-transform:none; line-height:1.45;
     }
+    /* ── Inline validation ───────────────────────────────────────── */
+    .field-msg {
+      min-height:0;
+      color:var(--bad);
+      font-family:var(--font-sans);
+      font-size:0.64rem;
+      letter-spacing:0.06em;
+      text-transform:uppercase;
+    }
+    .field-msg:empty { display:none; }
+    .is-invalid input, .is-invalid select, .is-invalid textarea, .is-invalid .image-drop {
+      border-color:var(--bad) !important;
+      box-shadow:0 0 0 3px rgba(248,113,113,0.12);
+    }
+    .label-text .req { color:var(--gold-bright); margin-left:0.2rem; }
+    .label-text .opt { color:rgba(237,232,223,0.38); margin-left:0.35rem; letter-spacing:0.08em; }
+    /* ── Locked location fields (filled from the pin) ─────────────── */
+    .loc-lock {
+      display:none; align-items:center; justify-content:space-between; gap:0.8rem;
+      border:1px solid rgba(143,188,106,0.32); border-radius:9px;
+      background:rgba(49,109,67,0.12); padding:0.6rem 0.85rem;
+      color:var(--ok); font-family:var(--font-sans); font-size:0.66rem; letter-spacing:0.1em; text-transform:uppercase;
+    }
+    .loc-lock.visible { display:flex; }
+    .loc-lock button {
+      border:1px solid rgba(143,188,106,0.4); border-radius:999px; background:transparent;
+      color:var(--ok); cursor:pointer; font:inherit; padding:0.35rem 0.7rem;
+    }
+    .locked input, .locked select { opacity:0.72; pointer-events:none; background:rgba(143,188,106,0.06); border-color:rgba(143,188,106,0.28); }
+    /* ── Readiness checklist by the submit button ─────────────────── */
+    .todo {
+      margin:0; padding:0; list-style:none;
+      display:flex; flex-wrap:wrap; gap:0.4rem;
+    }
+    .todo li a {
+      display:inline-block; border:1px solid rgba(248,113,113,0.4); border-radius:999px;
+      background:rgba(248,113,113,0.08); color:#f3a3a3; text-decoration:none;
+      font-family:var(--font-sans); font-size:0.62rem; letter-spacing:0.08em; text-transform:uppercase;
+      padding:0.35rem 0.65rem;
+    }
+    .todo li a:hover { border-color:var(--bad); color:#fff; }
+    .todo-wrap { display:grid; gap:0.4rem; flex:1; min-width:0; }
+    .submit-btn.is-incomplete {
+      background:rgba(181,147,90,0.14); color:var(--gold-bright);
+      border-color:rgba(181,147,90,0.34); box-shadow:none;
+    }
+    .submit-btn.is-incomplete:hover { transform:none; filter:none; border-color:var(--gold); }
+    .honeypot { position:absolute; left:-9999px; width:1px; height:1px; opacity:0; overflow:hidden; }
     @media (max-width: 760px) {
-      .tour-strip, .grid-two, .coord-row {
+      .grid-two, .coord-row {
         grid-template-columns:1fr;
       }
       .submit-top {
@@ -441,7 +450,7 @@
         flex-direction:column;
       }
       .image-previews {
-        grid-template-columns:1fr;
+        grid-template-columns:repeat(2, minmax(0, 1fr));
       }
     }
   </style>
@@ -457,44 +466,64 @@
       <a class="back-link" href="/paddlingout">Back to lakes</a>
     </header>
 
-    <p class="launch-note">Add a lake, reservoir, river, or paddling water body. We keep entry simple: name, location, coordinates, access basics, and optional contact. Every entry is reviewed by a person before it appears publicly &mdash; nothing goes live automatically.</p>
-
-    <section class="tour-strip" aria-label="How submission works">
-      <div class="tour-step"><strong>1. Enter basics</strong><span>Name the water and where paddlers should look for it.</span></div>
-      <div class="tour-step"><strong>2. Add images</strong><span>Upload at least one real lake photo so the entry can be reviewed.</span></div>
-      <div class="tour-step"><strong>3. We review it</strong><span>A person checks the details and photos. It appears publicly only once it is approved.</span></div>
-    </section>
+    <p class="launch-note">Add a lake, river, or boat ramp. A person reviews every entry before it goes public.</p>
+    <p class="fineprint">
+      Public launches only &middot; photos must be yours &middot; nothing is tracked or stored beyond the entry itself.
+      <a href="/privacy">Privacy</a> &middot; <a href="/paddlingout/methodology">How scores work</a> &middot;
+      <details><summary>What gets an entry declined</summary>
+        <ul>
+          <li>No public access &mdash; private docks, fenced ramps, permit-only shorelines.</li>
+          <li>Photos that are not yours or do not show the water and launch.</li>
+          <li>A launch that is already on the map, or a pin far from the real put-in.</li>
+          <li>Conditions we cannot forecast safely (dams, spillways, active rapids).</li>
+        </ul>
+      </details>
+    </p>
 
     <section class="submit-card" id="form-card">
-      <form id="submit-entry-form">
-        <label>
-          <span class="label-text">Lake or water body</span>
-          <input id="lakeName" name="lakeName" maxlength="120" required placeholder="White Rock Lake">
+      <form id="submit-entry-form" novalidate>
+        <!-- Honeypot: invisible to people, filled by form bots. Never label it. -->
+        <div class="honeypot" aria-hidden="true">
+          <input name="website" type="text" tabindex="-1" autocomplete="off">
+        </div>
+
+        <label data-field="lakeName">
+          <span class="label-text">Lake or water body<span class="req" aria-hidden="true">*</span></span>
+          <input id="lakeName" name="lakeName" maxlength="120" placeholder="White Rock Lake" autocomplete="off">
+          <span class="field-msg" id="lakeName-msg" aria-live="polite"></span>
         </label>
 
+        <div class="loc-lock" id="loc-lock" aria-live="polite">
+          <span id="loc-lock-text">City, state and country filled from your location</span>
+          <button type="button" id="loc-unlock">Change</button>
+        </div>
+
         <div class="grid-two">
-          <label>
-            <span class="label-text">City or nearest town</span>
-            <input id="city" name="city" maxlength="80" required placeholder="Dallas">
+          <label data-field="city">
+            <span class="label-text">City or nearest town<span class="req" aria-hidden="true">*</span></span>
+            <input id="city" name="city" maxlength="80" placeholder="Dallas" autocomplete="address-level2">
+            <span class="field-msg" id="city-msg" aria-live="polite"></span>
           </label>
-          <label>
-            <span class="label-text">State / region</span>
+          <label data-field="region">
+            <span class="label-text">State / region<span class="req" aria-hidden="true">*</span></span>
             <div class="select-wrap" id="region-select-wrap">
-              <select id="region" name="region" required></select>
+              <select id="region" name="region"></select>
             </div>
             <input id="regionText" name="regionText" maxlength="80" class="region-text" placeholder="State or region" hidden>
+            <span class="field-msg" id="region-msg" aria-live="polite"></span>
           </label>
         </div>
 
-        <label>
-          <span class="label-text">Country</span>
+        <label data-field="country">
+          <span class="label-text">Country<span class="req" aria-hidden="true">*</span></span>
           <div class="select-wrap">
             <select id="country" name="country"></select>
           </div>
+          <span class="field-msg" id="country-msg" aria-live="polite"></span>
         </label>
 
-        <div class="field-group">
-          <span class="label-text">Coordinates</span>
+        <div class="field-group" data-field="coords">
+          <span class="label-text">Launch point<span class="req" aria-hidden="true">*</span></span>
           <div class="coord-row">
             <input id="lat" name="lat" inputmode="decimal" placeholder="Latitude" aria-label="Latitude">
             <input id="lng" name="lng" inputmode="decimal" placeholder="Longitude" aria-label="Longitude">
@@ -502,11 +531,12 @@
             <button class="mini-btn" id="use-location" type="button">Use my location</button>
           </div>
           <div id="pin-map" class="pin-map" aria-label="Map. Drag the pin to the exact launch point."></div>
-          <p class="pin-hint">Tap <strong>Find</strong> to drop a pin from the name, then <strong>drag the pin</strong> to the exact launch or boat ramp. <strong>Use my location</strong> only if you&rsquo;re at the lake now &mdash; it&rsquo;s read once to place the pin, never tracked or stored.</p>
+          <p class="pin-hint"><strong>Find</strong> drops a pin from the name; <strong>Use my location</strong> reads your position once and fills the place fields. Then <strong>drag the pin</strong> onto the exact put-in.</p>
+          <span class="field-msg" id="coords-msg" aria-live="polite"></span>
         </div>
 
-        <label>
-          <span class="label-text">Launch hint optional</span>
+        <label data-field="launchHint">
+          <span class="label-text">Launch hint<span class="opt">optional</span></span>
           <input id="launchHint" name="launchHint" maxlength="160" placeholder="Main public boat ramp, north shore, park entrance">
         </label>
 
@@ -531,42 +561,46 @@
           </label>
         </div>
 
-        <label>
-          <span class="label-text">Short note optional</span>
-          <textarea id="description" name="description" maxlength="360" placeholder="A useful thing paddlers should know before driving out."></textarea>
+        <label data-field="description">
+          <span class="label-text">Short note<span class="opt">optional</span></span>
+          <textarea id="description" name="description" maxlength="360" placeholder="One useful thing paddlers should know before driving out."></textarea>
         </label>
 
-        <div class="field-group">
-          <span class="label-text">Lake images required</span>
+        <div class="field-group" data-field="images">
+          <span class="label-text">Photos<span class="req" aria-hidden="true">*</span></span>
           <label class="image-drop" id="image-drop" tabindex="0">
-            <input id="images" name="images" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple required>
+            <input id="images" name="images" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple>
             <span class="image-drop-main">
               <span class="image-drop-copy">
-                <strong>Upload 1-3 images</strong>
-                <span>JPEG, PNG, WebP, or HEIC. Large phone photos are resized automatically.</span>
+                <strong>Add 2&ndash;5 photos</strong>
+                <span>Show the water and the launch. JPEG, PNG, WebP or HEIC; big phone photos are resized here first.</span>
               </span>
               <span class="image-count" id="image-count">0 selected</span>
             </span>
             <span class="image-previews" id="image-previews" aria-live="polite"></span>
           </label>
-          <span class="field-error" id="image-error" aria-live="polite"></span>
+          <span class="field-msg" id="images-msg" aria-live="polite"></span>
         </div>
 
-        <div class="field-group">
+        <div class="field-group" data-field="contact">
           <span class="label-text">Submit as</span>
           <div class="choice-row">
             <label class="choice"><input type="radio" name="contactPreference" value="anonymous" checked> Anonymous</label>
-            <label class="choice"><input type="radio" name="contactPreference" value="email"> Email me when validated</label>
+            <label class="choice"><input type="radio" name="contactPreference" value="email"> Email me when it is live</label>
           </div>
         </div>
 
-        <label class="email-wrap" id="email-wrap" hidden>
-          <span class="label-text">Email</span>
-          <input id="email" name="email" type="email" maxlength="254" placeholder="you@example.com">
+        <label class="email-wrap" id="email-wrap" hidden data-field="email">
+          <span class="label-text">Email<span class="req" aria-hidden="true">*</span></span>
+          <input id="email" name="email" type="email" maxlength="254" placeholder="you@example.com" autocomplete="email">
+          <span class="field-msg" id="email-msg" aria-live="polite"></span>
         </label>
 
         <div class="actions">
-          <span class="form-status" id="form-status" aria-live="polite"></span>
+          <div class="todo-wrap">
+            <span class="form-status" id="form-status" aria-live="polite"></span>
+            <ul class="todo" id="todo" aria-label="Still needed"></ul>
+          </div>
           <button class="submit-btn" id="submit-btn" type="submit">Submit entry</button>
         </div>
       </form>
@@ -576,14 +610,6 @@
       <h2>Entry received</h2>
       <p id="success-copy"></p>
     </section>
-  </div>
-
-  <div class="tour-overlay" id="tour-overlay">
-    <div class="tour-modal">
-      <h2>Add a lake in under a minute</h2>
-      <p>Give us the water body, the nearest place, coordinates, and at least one lake photo. You can stay anonymous, or leave an email and we’ll notify you when admin validates it.</p>
-      <button class="ghost-btn" id="start-tour" type="button">Start entry</button>
-    </div>
   </div>
 
   <script>
@@ -597,28 +623,40 @@
       const form = document.getElementById('submit-entry-form');
       const statusEl = document.getElementById('form-status');
       const submitBtn = document.getElementById('submit-btn');
+      const todoEl = document.getElementById('todo');
       const successPanel = document.getElementById('success-panel');
       const successCopy = document.getElementById('success-copy');
       const emailWrap = document.getElementById('email-wrap');
       const emailInput = document.getElementById('email');
-      const tourOverlay = document.getElementById('tour-overlay');
       const imageInput = document.getElementById('images');
       const imageDrop = document.getElementById('image-drop');
       const imagePreviews = document.getElementById('image-previews');
       const imageCount = document.getElementById('image-count');
-      const imageError = document.getElementById('image-error');
-      const MAX_IMAGES = 3;
+      const locLock = document.getElementById('loc-lock');
+      const locLockText = document.getElementById('loc-lock-text');
+      // Mirrors the API: 2 photos minimum so a reviewer can see water AND launch,
+      // 5 maximum, ≤5 MB each after the in-browser resize.
+      const MIN_IMAGES = 2;
+      const MAX_IMAGES = 5;
       const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
       const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
       let selectedImages = [];
       let previewUrls = [];
       let optimizing = false;
+      let submitting = false;
+      // Fields the user has interacted with — errors only show for these until
+      // they press submit, so an empty form doesn't open covered in red.
+      const touched = new Set();
+      let submitAttempted = false;
+      let locationLocked = false;
 
       // Phone cameras produce 3-12 MB photos (and iOS shoots HEIC), which the
       // 5 MB / JPEG-PNG-WebP limits reject. Downscale + re-encode to JPEG in the
       // browser so a normal phone photo always fits, before we validate/upload.
+      // Canvas re-encoding also drops EXIF (GPS, device) from anything it touches;
+      // the API strips it from pass-through files too.
       const MAX_DIMENSION = 2000;                       // longest edge, px
-      const COMPRESS_TARGET_BYTES = 4 * 1024 * 1024;    // aim under the 5 MB cap (and 3× under the 15 MB total)
+      const COMPRESS_TARGET_BYTES = 4 * 1024 * 1024;    // aim under the 5 MB cap
       const PASS_THROUGH_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
       function loadImageEl(file) {
@@ -636,14 +674,11 @@
       }
 
       async function compressImage(file) {
-        // Small, already-accepted images pass through untouched.
         if (PASS_THROUGH_TYPES.has(file.type) && file.size <= COMPRESS_TARGET_BYTES) return file;
         let img;
         try {
           img = await loadImageEl(file);
         } catch {
-          // Undecodable here (e.g. HEIC on a browser without support) — hand the
-          // original to validation, which will show a clear format message.
           return file;
         }
         let w = img.naturalWidth || img.width;
@@ -679,9 +714,6 @@
       }
 
       // ── Country / State dropdowns ─────────────────────────────────────
-      // US + India get real state pickers (Kaayko's coverage); any other
-      // country falls back to a free-text region field. regionValue() reads
-      // whichever control is active.
       var COUNTRIES = ['United States','India','Canada','United Kingdom','Australia','New Zealand','Ireland',
         'Argentina','Austria','Bangladesh','Belgium','Bhutan','Brazil','Chile','China','Colombia','Croatia',
         'Czechia','Denmark','Egypt','Estonia','Fiji','Finland','France','Germany','Greece','Hungary','Iceland',
@@ -701,6 +733,8 @@
         'Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana',
         'Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Andaman and Nicobar Islands','Chandigarh',
         'Dadra and Nagar Haveli and Daman and Diu','Delhi','Jammu and Kashmir','Ladakh','Lakshadweep','Puducherry'];
+      // Nominatim names a few countries differently from our list.
+      var COUNTRY_ALIASES = { 'United States of America': 'United States', 'USA': 'United States', 'UK': 'United Kingdom', 'Czech Republic': 'Czechia' };
 
       function makeOption(value, label, selected) {
         var o = document.createElement('option');
@@ -721,33 +755,172 @@
           sel.innerHTML = '';
           sel.appendChild(makeOption('', country === 'India' ? 'Select a state / UT' : 'Select a state'));
           list.forEach(function (s) { sel.appendChild(makeOption(s, s)); });
-          wrap.hidden = false; sel.disabled = false; sel.required = true;
-          txt.hidden = true; txt.required = false; txt.value = '';
+          wrap.hidden = false; sel.disabled = false;
+          txt.hidden = true; txt.value = '';
         } else {
-          wrap.hidden = true; sel.disabled = true; sel.required = false; sel.value = '';
-          txt.hidden = false; txt.required = true;
+          wrap.hidden = true; sel.disabled = true; sel.value = '';
+          txt.hidden = false;
         }
       }
       function regionValue() {
         var txt = field('regionText');
         return (!txt.hidden ? txt.value : field('region').value).trim();
       }
+      function setRegionValue(value) {
+        var txt = field('regionText');
+        var sel = field('region');
+        if (!txt.hidden) { txt.value = value; return true; }
+        var match = Array.from(sel.options).find(function (o) { return o.value && o.value.toLowerCase() === String(value).toLowerCase(); });
+        sel.value = match ? match.value : '';
+        return !!match;
+      }
+      function setCountryValue(name) {
+        var sel = field('country');
+        var canonical = COUNTRY_ALIASES[name] || name;
+        var match = COUNTRIES.find(function (c) { return c.toLowerCase() === String(canonical).toLowerCase(); });
+        if (!match && canonical) {
+          // Not in our short list — add it rather than forcing a wrong country.
+          sel.appendChild(makeOption(canonical, canonical));
+          match = canonical;
+        }
+        if (match) { sel.value = match; populateRegions(match); }
+        return !!match;
+      }
       populateCountries();
       populateRegions('United States');
-      field('country').addEventListener('change', function () { populateRegions(field('country').value); });
+      field('country').addEventListener('change', function () {
+        populateRegions(field('country').value);
+        touched.add('region');
+        refreshReadiness();
+      });
 
-      function setImageError(message) {
-        imageError.textContent = message || '';
+      // ── Validation model ──────────────────────────────────────────────
+      // One place decides what "complete" means. The checklist by the submit
+      // button, the inline messages and the submit gate all read from here, so
+      // the button can never say "ready" while a field is missing.
+      function parseCoord(value) {
+        // Number('') is 0, which used to make an EMPTY field read as a valid
+        // coordinate on the equator; blank must mean "not set".
+        const raw = String(value == null ? '' : value).trim();
+        if (!raw) return null;
+        const n = Number(raw);
+        return Number.isFinite(n) ? n : null;
       }
 
+      const CHECKS = [
+        { key: 'lakeName', label: 'Name the water', focus: 'lakeName',
+          test: () => field('lakeName').value.trim().length >= 2 ? '' : 'Lake or water body name is required.' },
+        { key: 'city', label: 'Nearest town', focus: 'city',
+          test: () => field('city').value.trim().length >= 2 ? '' : 'City or nearest town is required.' },
+        { key: 'region', label: 'State / region', focus: () => field('regionText').hidden ? field('region') : field('regionText'),
+          test: () => regionValue().length >= 2 ? '' : 'State or region is required.' },
+        { key: 'country', label: 'Country', focus: 'country',
+          test: () => field('country').value.trim() ? '' : 'Country is required.' },
+        { key: 'coords', label: 'Drop the pin', focus: 'lat',
+          test: () => {
+            const lat = parseCoord(field('lat').value);
+            const lng = parseCoord(field('lng').value);
+            if (lat === null || lng === null) return 'Place the pin: tap Find, Use my location, or the map.';
+            if (lat < -85 || lat > 85 || lng < -180 || lng > 180) return 'Those coordinates are off the map.';
+            if (Math.abs(lat) < 0.01 && Math.abs(lng) < 0.01) return 'That pin is in the ocean off Africa. Drop it on the water you mean.';
+            return '';
+          } },
+        { key: 'images', label: () => selectedImages.length ? ('Add ' + (MIN_IMAGES - selectedImages.length) + ' more photo' + (MIN_IMAGES - selectedImages.length === 1 ? '' : 's')) : 'Add 2 photos',
+          focus: () => imageDrop,
+          test: () => optimizing ? 'Still optimizing your photos.' : validateImageFiles(selectedImages) },
+        { key: 'email', label: 'Your email', focus: 'email',
+          test: () => {
+            if (currentPreference() !== 'email') return '';
+            const v = emailInput.value.trim();
+            if (!v) return 'Email is required to be notified.';
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? '' : 'Enter a valid email address.';
+          } }
+      ];
+
+      function currentPreference() {
+        return form.querySelector('input[name="contactPreference"]:checked')?.value || 'anonymous';
+      }
+
+      function focusTarget(check) {
+        return typeof check.focus === 'function' ? check.focus() : field(check.focus);
+      }
+
+      function showFieldMessage(key, message) {
+        const msg = document.getElementById(key + '-msg');
+        const wrap = form.querySelector('[data-field="' + key + '"]');
+        if (msg) msg.textContent = message || '';
+        if (wrap) wrap.classList.toggle('is-invalid', !!message);
+        const target = CHECKS.find(c => c.key === key);
+        const el = target ? focusTarget(target) : null;
+        if (el && el.setAttribute) el.setAttribute('aria-invalid', message ? 'true' : 'false');
+      }
+
+      // Recompute the checklist. Inline messages appear only for touched
+      // fields (or all of them once submit was attempted).
+      function refreshReadiness() {
+        const missing = [];
+        CHECKS.forEach(check => {
+          const message = check.test();
+          if (message) missing.push(check);
+          showFieldMessage(check.key, (submitAttempted || touched.has(check.key)) ? message : '');
+        });
+        todoEl.innerHTML = '';
+        missing.forEach(check => {
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = '#';
+          a.textContent = typeof check.label === 'function' ? check.label() : check.label;
+          a.addEventListener('click', e => {
+            e.preventDefault();
+            touched.add(check.key);
+            refreshReadiness();
+            scrollToCheck(check);
+          });
+          li.appendChild(a);
+          todoEl.appendChild(li);
+        });
+        const n = missing.length;
+        submitBtn.classList.toggle('is-incomplete', n > 0);
+        submitBtn.textContent = submitting ? 'Submitting…' : (n > 0 ? (n === 1 ? '1 item left' : n + ' items left') : 'Submit entry');
+        submitBtn.setAttribute('aria-describedby', n > 0 ? 'todo' : '');
+        return missing;
+      }
+
+      function scrollToCheck(check) {
+        const el = focusTarget(check);
+        if (!el) return;
+        const wrap = el.closest('[data-field]') || el;
+        wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => { try { el.focus({ preventScroll: true }); } catch (_) { el.focus(); } }, 320);
+      }
+
+      // Any interaction marks the field touched, then re-evaluates.
+      form.addEventListener('input', onFieldInteraction);
+      form.addEventListener('change', onFieldInteraction);
+      function onFieldInteraction(e) {
+        const wrap = e.target.closest('[data-field]');
+        if (wrap) touched.add(wrap.getAttribute('data-field'));
+        if (e.target.name === 'contactPreference') {
+          const wantsEmail = e.target.value === 'email';
+          emailWrap.hidden = !wantsEmail;
+          if (!wantsEmail) { emailInput.value = ''; touched.delete('email'); }
+        }
+        refreshReadiness();
+      }
+
+      // ── Images ────────────────────────────────────────────────────────
       function validateImageFiles(files) {
         const list = Array.from(files || []);
-        if (!list.length) return 'At least one lake image is required.';
-        if (list.length > MAX_IMAGES) return 'Upload 1-3 images.';
+        if (list.length < MIN_IMAGES) {
+          return list.length === 0
+            ? 'Add at least ' + MIN_IMAGES + ' photos: the water and the launch.'
+            : 'Add ' + (MIN_IMAGES - list.length) + ' more photo' + (MIN_IMAGES - list.length === 1 ? '' : 's') + ' (' + MIN_IMAGES + ' minimum).';
+        }
+        if (list.length > MAX_IMAGES) return 'Up to ' + MAX_IMAGES + ' photos. Remove ' + (list.length - MAX_IMAGES) + '.';
         const invalidType = list.find(file => !ALLOWED_IMAGE_TYPES.has(file.type));
-        if (invalidType) return 'Images must be JPEG, PNG, or WebP.';
+        if (invalidType) return 'Photos must be JPEG, PNG, or WebP (' + (invalidType.name || 'one file') + ' is not).';
         const oversized = list.find(file => file.size > MAX_IMAGE_BYTES);
-        if (oversized) return 'Each image must be 5 MB or smaller.';
+        if (oversized) return 'Each photo must be 5 MB or smaller (' + (oversized.name || 'one file') + ' is not).';
         return '';
       }
 
@@ -770,110 +943,83 @@
           previewUrls.push(url);
           const preview = document.createElement('span');
           preview.className = 'image-preview';
-          preview.innerHTML = `
-            <img src="${url}" alt="Selected lake image ${index + 1}">
-            <button type="button" aria-label="Remove image ${index + 1}">x</button>
-          `;
-          preview.querySelector('button').addEventListener('click', event => {
+          const img = document.createElement('img');
+          img.src = url;
+          img.alt = 'Selected lake image ' + (index + 1);
+          const remove = document.createElement('button');
+          remove.type = 'button';
+          remove.setAttribute('aria-label', 'Remove image ' + (index + 1));
+          remove.textContent = '×';
+          remove.addEventListener('click', event => {
             event.preventDefault();
             event.stopPropagation();
             selectedImages.splice(index, 1);
             syncImageInput();
             renderImagePreviews();
-            setImageError(validateImageFiles(selectedImages));
+            touched.add('images');
+            refreshReadiness();
           });
+          preview.append(img, remove);
           imagePreviews.append(preview);
         });
-        imageCount.textContent = selectedImages.length === 1
-          ? '1 selected'
-          : `${selectedImages.length} selected`;
+        const n = selectedImages.length;
+        imageCount.textContent = n + ' of ' + MAX_IMAGES + (n < MIN_IMAGES ? ' · ' + (MIN_IMAGES - n) + ' more needed' : '');
       }
 
-      async function setImages(files) {
-        let list = Array.from(files || []);
-        // Enforce the count before doing any (potentially slow) compression work.
-        if (list.length > MAX_IMAGES) {
-          selectedImages = [];
-          imageInput.value = '';
-          renderImagePreviews();
-          setImageError('Upload 1-3 images.');
-          return false;
-        }
+      // Adding photos APPENDS to the current selection (so a second picker
+      // visit adds rather than replaces), up to the cap.
+      async function addImages(files) {
+        let incoming = Array.from(files || []);
+        if (!incoming.length) return;
+        touched.add('images');
+        const room = MAX_IMAGES - selectedImages.length;
+        let dropped = 0;
+        if (incoming.length > room) { dropped = incoming.length - room; incoming = incoming.slice(0, Math.max(room, 0)); }
 
-        // Resize/compress large or HEIC photos so they clear the size + type gates.
-        if (list.length) {
-          optimizing = true;
-          setImageError('');
-          imageCount.textContent = 'Optimizing…';
-          try {
-            list = await Promise.all(list.map(compressImage));
-          } catch {
-            // fall through to validation with whatever we have
-          }
-          optimizing = false;
+        optimizing = true;
+        imageCount.textContent = 'Optimizing…';
+        refreshReadiness();
+        try {
+          incoming = await Promise.all(incoming.map(compressImage));
+        } catch {
+          // fall through with whatever we have
         }
+        optimizing = false;
 
-        const error = validateImageFiles(list);
-        if (error) {
-          selectedImages = [];
-          imageInput.value = '';
-          renderImagePreviews();
-          setImageError(error);
-          return false;
-        }
-        selectedImages = list;
+        const rejected = incoming.filter(f => !ALLOWED_IMAGE_TYPES.has(f.type) || f.size > MAX_IMAGE_BYTES);
+        const accepted = incoming.filter(f => !rejected.includes(f));
+        selectedImages = selectedImages.concat(accepted);
         syncImageInput();
         renderImagePreviews();
-        setImageError('');
-        return true;
+        refreshReadiness();
+        if (rejected.length) {
+          showFieldMessage('images', rejected.length + ' photo' + (rejected.length === 1 ? ' was' : 's were') + ' skipped: not JPEG/PNG/WebP or over 5 MB.');
+        } else if (dropped) {
+          showFieldMessage('images', 'Only ' + MAX_IMAGES + ' photos allowed; ' + dropped + ' skipped.');
+        }
       }
 
-      function requireTrimmed(id, message) {
-        const el = field(id);
-        if (!el.value.trim()) {
-          setStatus(message, 'error');
-          el.focus();
-          return false;
-        }
-        return true;
-      }
+      imageInput.addEventListener('change', function () {
+        addImages(imageInput.files);
+        imageInput.value = '';
+      });
+      imageDrop.addEventListener('dragover', function (event) {
+        event.preventDefault();
+        imageDrop.classList.add('dragging');
+      });
+      imageDrop.addEventListener('dragleave', function () {
+        imageDrop.classList.remove('dragging');
+      });
+      imageDrop.addEventListener('drop', function (event) {
+        event.preventDefault();
+        imageDrop.classList.remove('dragging');
+        addImages(event.dataTransfer.files);
+      });
+      imageDrop.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); imageInput.click(); }
+      });
 
-      function validateBeforeSubmit(lat, lng, preference) {
-        if (!requireTrimmed('lakeName', 'Lake name is required.')) return false;
-        if (!requireTrimmed('city', 'City or nearest town is required.')) return false;
-        if (!regionValue()) {
-          setStatus('State or region is required.', 'error');
-          (field('regionText').hidden ? field('region') : field('regionText')).focus();
-          return false;
-        }
-        if (!requireTrimmed('country', 'Country is required.')) return false;
-        if (lat === null || lat < -90 || lat > 90 || lng === null || lng < -180 || lng > 180) {
-          setStatus('Valid latitude and longitude are required.', 'error');
-          field('lat').focus();
-          return false;
-        }
-        const imageMessage = validateImageFiles(selectedImages);
-        if (imageMessage) {
-          setImageError(imageMessage);
-          setStatus(imageMessage, 'error');
-          imageDrop.focus();
-          return false;
-        }
-        if (preference === 'email') {
-          if (!emailInput.value.trim()) {
-            setStatus('Email is required for notifications.', 'error');
-            emailInput.focus();
-            return false;
-          }
-          if (!emailInput.checkValidity()) {
-            setStatus('Enter a valid email address.', 'error');
-            emailInput.focus();
-            return false;
-          }
-        }
-        return true;
-      }
-
+      // ── Location: geocode, reverse geocode, lock ───────────────────────
       function applyUrlPrefill() {
         const params = new URLSearchParams(window.location.search);
         if (params.get('name')) field('lakeName').value = params.get('name');
@@ -882,13 +1028,67 @@
         if (params.get('place')) {
           const parts = params.get('place').split(',').map(part => part.trim()).filter(Boolean);
           if (parts[0]) field('city').value = parts[0];
-          if (parts[1]) field('region').value = parts[1];
+          if (parts[1]) setRegionValue(parts[1]);
         }
       }
 
-      function parseCoord(value) {
-        const n = Number(String(value || '').trim());
-        return Number.isFinite(n) ? n : null;
+      // Fill city / region / country from a Nominatim address block. Only
+      // overwrites when `overwrite` is set (Use my location) — Find fills blanks.
+      function fillPlace(place, overwrite) {
+        if (!place) return false;
+        let filled = 0;
+        if (place.country && (overwrite || !field('country').value)) { if (setCountryValue(place.country)) filled++; }
+        if (place.region && (overwrite || !regionValue())) { if (setRegionValue(place.region)) filled++; }
+        if (place.city && (overwrite || !field('city').value.trim())) { field('city').value = place.city; filled++; }
+        ['city', 'region', 'country'].forEach(k => touched.add(k));
+        return filled > 0;
+      }
+
+      function setLocationLock(on, note) {
+        locationLocked = on;
+        ['city', 'region', 'country'].forEach(key => {
+          const wrap = form.querySelector('[data-field="' + key + '"]');
+          if (wrap) wrap.classList.toggle('locked', on);
+          wrap.querySelectorAll('input, select').forEach(el => {
+            if (el.tagName === 'SELECT') el.disabled = on || (el.id === 'region' && field('regionText').hidden === false);
+            else el.readOnly = on;
+          });
+        });
+        if (on && note) locLockText.textContent = note;
+        locLock.classList.toggle('visible', on);
+      }
+
+      document.getElementById('loc-unlock').addEventListener('click', function () {
+        setLocationLock(false);
+        populateRegions(field('country').value);
+        setStatus('Place fields unlocked. Edit anything that looks off.', '');
+        field('city').focus();
+      });
+
+      let reverseSeq = 0;
+      async function reverseFill(lat, lng, opts) {
+        opts = opts || {};
+        const seq = ++reverseSeq;
+        try {
+          const res = await fetch(API_BASE + '/paddlingOut/reverse-geocode?lat=' + encodeURIComponent(lat) + '&lng=' + encodeURIComponent(lng));
+          if (seq !== reverseSeq) return null;   // a newer lookup superseded this one
+          if (!res.ok) return null;
+          const place = await res.json();
+          if (!place || !place.success) return null;
+          const changed = fillPlace(place, !!opts.overwrite);
+          if (opts.lock) {
+            const parts = [place.city, place.region, place.country].filter(Boolean).join(', ');
+            setLocationLock(true, parts ? 'Filled from the pin: ' + parts : 'Place filled from the pin');
+          }
+          if (place.water && !field('lakeName').value.trim()) {
+            field('lakeName').value = place.water;
+            touched.add('lakeName');
+          }
+          refreshReadiness();
+          return changed ? place : null;
+        } catch {
+          return null;
+        }
       }
 
       async function inferCoordinates() {
@@ -901,24 +1101,30 @@
           return false;
         }
 
-        setStatus('Finding coordinates...', '');
+        setStatus('Finding coordinates…', '');
         try {
-          // Server proxy, not a direct browser call to Nominatim — same path
-          // Search uses (js/searchPage.js). Keeps the user's typed place name
-          // off a third party, and puts rate limiting and caching server-side.
           const res = await fetch(API_BASE + '/paddlingOut/geocode?q=' + encodeURIComponent(query) + '&limit=1');
           if (!res.ok) {
-            setStatus('Could not find coordinates right now. Add latitude and longitude manually.', 'error');
+            setStatus('Could not find coordinates right now. Tap the map to place the pin.', 'error');
             return false;
           }
           const data = await res.json();
           if (!Array.isArray(data) || !data.length) {
-            setStatus('Could not infer coordinates. Add latitude and longitude manually.', 'error');
+            setStatus('No match for that name. Tap the map to place the pin, or use your location.', 'error');
             return false;
           }
-          field('lat').value = Number(data[0].lat).toFixed(5);
-          field('lng').value = Number(data[0].lon).toFixed(5);
+          writeCoords(data[0].lat, data[0].lon);
           centerPin(Number(data[0].lat), Number(data[0].lon), 14);
+          if (data[0].address) {
+            const a = data[0].address;
+            fillPlace({
+              city: a.city || a.town || a.village || a.hamlet || a.county || '',
+              region: a.state || a.region || '',
+              country: a.country || ''
+            }, false);
+          }
+          touched.add('coords');
+          refreshReadiness();
           setStatus('Pin dropped. Drag it to the exact launch or boat ramp.', 'ok');
           return true;
         } catch {
@@ -929,14 +1135,13 @@
 
       document.getElementById('find-coords').addEventListener('click', inferCoordinates);
 
-      // "Use my location" — opt-in, one-shot, and transparent. We only read the
-      // device position when the user taps this, use it once to place the pin,
-      // and never watch/track/store it beyond the coordinate they choose to
-      // submit. Every failure mode falls back to Find / dragging the pin.
+      // "Use my location" — opt-in, one-shot. Read once, place the pin, fill
+      // the place fields from the coordinate, lock them so they can't drift
+      // from the pin. Never watched, never stored beyond what is submitted.
       var useLocBtn = document.getElementById('use-location');
       useLocBtn.addEventListener('click', function () {
         if (!navigator.geolocation || window.isSecureContext === false) {
-          setStatus('Location needs a secure (https) connection. Use Find, or drag the pin instead.', 'error');
+          setStatus('Location needs a secure (https) connection. Use Find, or tap the map instead.', 'error');
           return;
         }
 
@@ -944,43 +1149,43 @@
           var label = useLocBtn.textContent;
           useLocBtn.disabled = true;
           useLocBtn.textContent = 'Locating…';
-          setStatus('Reading your location once to place the pin — it isn’t tracked or stored.', '');
+          setStatus('Reading your location once to place the pin.', '');
           navigator.geolocation.getCurrentPosition(
-            function (pos) {
+            async function (pos) {
               useLocBtn.disabled = false; useLocBtn.textContent = label;
               var la = pos.coords.latitude, ln = pos.coords.longitude;
               var acc = Math.round(pos.coords.accuracy || 0); // metres
-              field('lat').value = la.toFixed(5);
-              field('lng').value = ln.toFixed(5);
+              writeCoords(la, ln);
               centerPin(la, ln, acc > 500 ? 12 : 15);
-              if (acc && acc > 150) {
-                setStatus('Approximate location added (±' + acc + ' m). Drag the pin to the exact launch point.', 'ok');
+              touched.add('coords');
+              refreshReadiness();
+              setStatus('Pin placed. Looking up the place…', '');
+              const place = await reverseFill(la, ln, { overwrite: true, lock: true });
+              if (place) {
+                setStatus((acc && acc > 150 ? 'Approximate fix (±' + acc + ' m). ' : '') + 'Place filled in. Drag the pin onto the exact put-in, then add photos.', 'ok');
               } else {
-                setStatus('Location added. Drag the pin to fine-tune the launch point.', 'ok');
+                setStatus('Pin placed. Could not look up the place name; fill city, state and country by hand.', '');
               }
             },
             function (err) {
               useLocBtn.disabled = false; useLocBtn.textContent = label;
               if (err && err.code === 1) {
-                setStatus('No problem — location stays private. Use Find, or drag the pin to the launch point.', 'error');
+                setStatus('No problem, location stays private. Use Find, or tap the map to place the pin.', 'error');
               } else if (err && err.code === 3) {
-                setStatus('Location timed out. Use Find, or drag the pin to the launch point.', 'error');
+                setStatus('Location timed out. Use Find, or tap the map to place the pin.', 'error');
               } else {
-                setStatus('Couldn’t get your location. Use Find, or drag the pin to the launch point.', 'error');
+                setStatus('Couldn’t get your location. Use Find, or tap the map to place the pin.', 'error');
               }
             },
             { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
           );
         }
 
-        // If the browser already remembers a denial it won't re-prompt — explain
-        // that rather than failing silently. Otherwise the browser shows its own
-        // permission prompt (we never bypass it).
         if (navigator.permissions && navigator.permissions.query) {
           navigator.permissions.query({ name: 'geolocation' })
             .then(function (st) {
               if (st.state === 'denied') {
-                setStatus('Location is blocked for this site in your browser settings. Use Find, or drag the pin instead.', 'error');
+                setStatus('Location is blocked for this site in your browser settings. Use Find, or tap the map instead.', 'error');
               } else {
                 requestOnce();
               }
@@ -992,7 +1197,6 @@
       });
 
       // ── Map pin picker (Leaflet + OpenStreetMap tiles) ────────────────────
-      // Swap MAP_TILE_URL / MAP_ATTRIB for a keyed basemap (Mapbox/MapTiler) later.
       var MAP_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
       var MAP_ATTRIB = '&copy; OpenStreetMap contributors';
       var map = null, marker = null;
@@ -1008,6 +1212,18 @@
         field('lng').value = Number(lng).toFixed(5);
       }
 
+      // When the place fields are locked to the pin, a moved pin re-derives
+      // them (debounced) so city/state never disagree with the coordinate.
+      let pinMoveTimer = null;
+      function onPinMoved(lat, lng, message) {
+        touched.add('coords');
+        refreshReadiness();
+        setStatus(message, 'ok');
+        if (!locationLocked) return;
+        clearTimeout(pinMoveTimer);
+        pinMoveTimer = setTimeout(function () { reverseFill(lat, lng, { overwrite: true, lock: true }); }, 700);
+      }
+
       function placeMarker(lat, lng, updateFields) {
         if (!map) return;
         if (marker) {
@@ -1017,7 +1233,7 @@
           marker.on('dragend', function () {
             var p = marker.getLatLng();
             writeCoords(p.lat, p.lng);
-            setStatus('Pin moved. Coordinates updated.', 'ok');
+            onPinMoved(p.lat, p.lng, 'Pin moved. Coordinates updated.');
           });
         }
         if (updateFields) writeCoords(lat, lng);
@@ -1039,74 +1255,39 @@
         map = L.map(el, { scrollWheelZoom: false }).setView(has ? [lat0, lng0] : [39.5, -98.35], has ? 13 : 4);
         L.tileLayer(MAP_TILE_URL, { maxZoom: 19, attribution: MAP_ATTRIB }).addTo(map);
         if (has) placeMarker(lat0, lng0, false);
-        // Tap anywhere on the map to drop / move the pin.
         map.on('click', function (e) {
           placeMarker(e.latlng.lat, e.latlng.lng, true);
-          setStatus('Pin placed. Coordinates updated.', 'ok');
+          onPinMoved(e.latlng.lat, e.latlng.lng, 'Pin placed. Coordinates updated.');
         });
         setTimeout(function () { map.invalidateSize(); }, 200);
       }
 
-      // Typing lat/lng by hand moves the pin too (two-way sync).
       ['lat', 'lng'].forEach(function (id) {
         field(id).addEventListener('change', function () {
           var la = parseCoord(field('lat').value);
           var ln = parseCoord(field('lng').value);
           if (la !== null && ln !== null) {
             centerPin(la, ln, (map && map.getZoom && map.getZoom() > 8) ? map.getZoom() : 13);
+            if (locationLocked) onPinMoved(la, ln, 'Coordinates updated.');
           }
         });
       });
 
-      initMap();
-
-      imageInput.addEventListener('change', function () {
-        setImages(imageInput.files);   // async — updates selectedImages when done
-      });
-
-      imageDrop.addEventListener('dragover', function (event) {
-        event.preventDefault();
-        imageDrop.classList.add('dragging');
-      });
-      imageDrop.addEventListener('dragleave', function () {
-        imageDrop.classList.remove('dragging');
-      });
-      imageDrop.addEventListener('drop', function (event) {
-        event.preventDefault();
-        imageDrop.classList.remove('dragging');
-        setImages(event.dataTransfer.files);
-      });
-
-      form.addEventListener('change', function (event) {
-        if (event.target.name === 'contactPreference') {
-          const wantsEmail = event.target.value === 'email';
-          emailWrap.hidden = !wantsEmail;
-          emailInput.required = wantsEmail;
-          if (!wantsEmail) emailInput.value = '';
-        }
-      });
-
+      // ── Submit ────────────────────────────────────────────────────────
       form.addEventListener('submit', async function (event) {
         event.preventDefault();
-        setStatus('', '');
-
-        if (optimizing) {
-          setStatus('Still optimizing your photos — try again in a moment.', 'error');
+        if (submitting) return;
+        submitAttempted = true;
+        const missing = refreshReadiness();
+        if (missing.length) {
+          setStatus(missing.length === 1 ? 'One thing still needed.' : missing.length + ' things still needed.', 'error');
+          scrollToCheck(missing[0]);
           return;
         }
 
-        let lat = parseCoord(field('lat').value);
-        let lng = parseCoord(field('lng').value);
-        const preference = form.querySelector('input[name="contactPreference"]:checked')?.value || 'anonymous';
-
-        if (lat === null || lng === null) {
-          const found = await inferCoordinates();
-          lat = parseCoord(field('lat').value);
-          lng = parseCoord(field('lng').value);
-          if (!found || lat === null || lng === null) return;
-        }
-
-        if (!validateBeforeSubmit(lat, lng, preference)) return;
+        const lat = parseCoord(field('lat').value);
+        const lng = parseCoord(field('lng').value);
+        const preference = currentPreference();
 
         const payload = new FormData();
         payload.append('lakeName', field('lakeName').value.trim());
@@ -1122,46 +1303,43 @@
         payload.append('contactPreference', preference);
         payload.append('anonymous', preference !== 'email' ? 'true' : 'false');
         payload.append('email', preference === 'email' ? emailInput.value.trim() : '');
+        payload.append('website', form.querySelector('input[name="website"]').value);
         payload.append('pageUrl', window.location.href);
         payload.append('referrer', document.referrer);
         payload.append('source', 'paddlingout_submitentry');
         selectedImages.forEach(file => payload.append('images', file, file.name));
 
+        submitting = true;
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Submitting';
+        refreshReadiness();
+        setStatus('Uploading ' + selectedImages.length + ' photos…', '');
         try {
-          const res = await fetch(API_BASE + '/paddlingOut/submitEntry', {
-            method: 'POST',
-            body: payload
-          });
+          const res = await fetch(API_BASE + '/paddlingOut/submitEntry', { method: 'POST', body: payload });
           const data = await res.json().catch(() => ({}));
-          if (!res.ok || !data.success) throw new Error(data.error || 'Submission failed');
+          if (!res.ok || !data.success) {
+            throw new Error(data.error || (res.status === 429
+              ? 'Daily submission limit reached. Try again tomorrow.'
+              : res.status === 409 ? 'This entry was already submitted recently.' : 'Submission failed. Please try again.'));
+          }
 
           form.closest('.submit-card').style.display = 'none';
-          // Both variants must tell the same truth: queued for review, public
-          // only after approval. The backend never auto-publishes.
           successCopy.textContent = preference === 'email'
-            ? 'Thanks - your entry is in the review queue. A person checks every submission before it appears publicly, and we will email you when it is approved or if we cannot use it.'
-            : 'Thanks - your entry is in the review queue. A person checks every submission before it appears publicly. You have not given us an email, so you will not hear back; check the lake list in a few days.';
+            ? 'Your entry is in the review queue. We will email you when it is live, or if we cannot use it.'
+            : 'Your entry is in the review queue. It will appear on the map once a person has checked it.';
           successPanel.classList.add('visible');
           window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (err) {
+          submitting = false;
           submitBtn.disabled = false;
-          submitBtn.textContent = 'Submit entry';
+          refreshReadiness();
           setStatus(err.message || 'Could not submit entry.', 'error');
         }
       });
 
-      if (!localStorage.getItem('kaayko_submitentry_tour_seen')) {
-        tourOverlay.classList.add('visible');
-      }
-      document.getElementById('start-tour').addEventListener('click', function () {
-        localStorage.setItem('kaayko_submitentry_tour_seen', '1');
-        tourOverlay.classList.remove('visible');
-        field('lakeName').focus();
-        if (map) setTimeout(function () { map.invalidateSize(); }, 60);
-      });
       applyUrlPrefill();
+      initMap();
+      renderImagePreviews();
+      refreshReadiness();
     }());
   </script>
   <footer class="site-footer">

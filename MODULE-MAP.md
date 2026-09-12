@@ -72,8 +72,19 @@
 
 **APIs used:**
 ```
-GET  /api/paddlingOut                          → all paddle spots with ML scores + weather
-GET  /api/paddlingOut/{id}                    → single spot detail
+GET  /api/paddlingOut                          → all PUBLIC paddle spots + cached scores + admin `tags[]`
+GET  /api/paddlingOut/{id}                    → single spot detail (404 if hidden)
+GET  /api/paddlingOut/geocode?q=              → cached Nominatim forward proxy
+GET  /api/paddlingOut/reverse-geocode?lat=&lng= → cached Nominatim reverse → {city,region,country,water}
+POST /api/paddlingOut/submitEntry             → community spot (multipart, 2–5 photos, EXIF stripped, honeypot `website`)
+--- platform admin only (requirePlatformAdmin; X-Admin-Key also works) ---
+GET  /api/paddlingOut/admin/submissions       → review queue (+ possibleDuplicateOf flag)
+POST /api/paddlingOut/admin/submissions/{id}/validate → publish; refuses w/o coords or photos; warms score inline; default tag `community`
+POST /api/paddlingOut/admin/submissions/{id}/reject   → hide + delete every prefixed photo; body {rejectionReason}
+GET  /api/paddlingOut/admin/spots[/{id}]      → whole catalogue incl. hidden, with isPublic/photos/hasCachedScore
+PATCH /api/paddlingOut/admin/spots/{id}       → edit whitelisted fields, tags, archived (publish toggle); audit → paddling_spot_audit
+POST /api/paddlingOut/admin/spots/{id}/images (multipart) / DELETE …/images?path=  → photo add/remove (ownership-checked)
+POST /api/paddlingOut/admin/spots/{id}/warm-score → recompute cached score now
 GET  /api/paddleScore?location={lat},{lon}    → ML score for custom location
 GET  /api/fastForecast?location=...           → cached weather (free)
 GET  /api/forecast?location=...               → premium on-demand weather
@@ -91,7 +102,8 @@ GET  /api/docs                                 → API spec (spec.yaml / spec.js
 - `kaayko-api/functions/api/weather/nearbyWater.js` — nearby water search
 - `kaayko-api/functions/api/core/` — health check, docs endpoints
 
-**Firestore collections:** `paddlingSpots`, `forecast_cache`, `current_conditions_cache`, `public_paddle_ratings`, `rate_limits`
+**Firestore collections:** `paddlingSpots`, `paddling_lake_submissions` (review record per community spot), `paddling_lake_submission_keys` (7-day dedupe), `lake_submission_rate_limits`, `paddle_score_cache`, `paddling_spot_audit` (append-only admin edit log), `forecast_cache`, `current_conditions_cache`, `public_paddle_ratings`, `rate_limits`
+**Admin UI:** Kortex SPA → Submissions (`src/admin/views/submissions/`) and Spots (`src/admin/views/spots/`, shared editor `spot-editor.js`)
 **External services:** Open-Meteo API (free, no auth), Marine API
 **Auth required:** No
 
