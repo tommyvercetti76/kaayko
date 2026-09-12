@@ -82,9 +82,9 @@ CSS-in-JS runtime, an ORM. Each would cost more than it returns at this size.
 
 ## 6. Known debt (so nobody rediscovers it)
 
-Closed 12 Sep 2026: helpers and API base now come from `util.js`/`prefs.js` on every paddling page · one Leaflet wrapper (`PinPicker`) · one geocode client (`geo.js`) · search results use the shared card (`row` variant) · search logic lives in `js/pages/search.js` · `nearbyWater` and the geocode proxies are tested.
+Closed 12 Sep 2026: add-a-lake and rate are page modules (`js/pages/submitentry.js`, `js/pages/rate.js`) with their CSS in `css/` · helpers and API base now come from `util.js`/`prefs.js` on every paddling page · one Leaflet wrapper (`PinPicker`) · one geocode client (`geo.js`) · search results use the shared card (`row` variant) · search logic lives in `js/pages/search.js` · `nearbyWater` and the geocode proxies are tested.
 
-Still open: store-side files (`product.js`, `store-about.js`, `animal.js`, `tenant-portal.js`, `kortex-report.js`, arcade) declare their own `API_BASE` · add-a-lake and rate keep large inline scripts (working, but not yet page modules) · no light theme (pages force dark; needs a light token set plus a pass over inline colours).
+Still open: store-side files (`product.js`, `store-about.js`, `animal.js`, `tenant-portal.js`, `kortex-report.js`, arcade) declare their own `API_BASE` · no light theme (pages force dark; needs a light token set plus a pass over inline colours).
 
 ## 7. Search rebuild — the plan
 
