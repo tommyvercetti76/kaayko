@@ -31,15 +31,15 @@ draws a card by hand.
 
 | Concern | Single source | Everyone else |
 |---|---|---|
-| API base URL | `prefs.js → kaaykoApiBase()` | must call it (10 files still declare `API_BASE`; to remove) |
-| Score colour + verdict label | `prefs.js → paddleScoreColor()`, `scoreMeta()` (to add) | PaddleCard, heatmap, search, methodology |
+| API base URL | `prefs.js → kaaykoApiBase()` via `KaaykoUtil.apiBase()` | every paddling page calls it; store-side files still declare their own (open) |
+| Score colour + verdict label | `prefs.js → paddleScoreColor()`, `scoreMeta()` | PaddleCard, heatmap, search, methodology |
 | Units + formatting | `prefs.js → fmtTemp/fmtWind/fmtDist/fmtArea` | all pages |
 | Favourites + my area | `prefs.js` + `kaayko:favchange` event | cards, forecast hero, settings, search |
-| Geocode (forward, reverse, suggest) | `js/services/geo.js` (to build) | search, add-a-lake |
-| Map + pin | `js/components/PinPicker.js` (to build) | search, add-a-lake |
+| Geocode (forward, reverse, suggest) | `js/services/geo.js` | search, add-a-lake |
+| Map + pin | `js/components/PinPicker.js` | search, add-a-lake |
 | A lake on screen | `PaddleCard.create()` (minimal · full · row) | list, about, search results |
 | Page header | `PoHeader.js` | all seven paddling pages |
-| Tiny helpers (`escapeHtml`, `debounce`, `haversineKm`) | `js/util.js` (to build) | currently copied per page |
+| Tiny helpers (`escapeHtml`, `debounce`, `haversineKm`) | `js/util.js` | search, add-a-lake, rate import it |
 | Design tokens | `css/po-tokens.css` | page CSS may add, never redefine |
 
 ## 4. Patterns we actually use (and where)
