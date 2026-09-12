@@ -82,7 +82,9 @@ CSS-in-JS runtime, an ORM. Each would cost more than it returns at this size.
 
 ## 6. Known debt (so nobody rediscovers it)
 
-`API_BASE` declared in 10 files · `escapeHtml`/`debounce`/`haversine` copied per page · two Leaflet inits · three geocode clients · four card designs · 600–1300-line inline scripts on search, add-a-lake and rate · no tests on `nearbyWater` or the geocode proxies · no light theme (pages force dark).
+Closed 12 Sep 2026: helpers and API base now come from `util.js`/`prefs.js` on every paddling page · one Leaflet wrapper (`PinPicker`) · one geocode client (`geo.js`) · search results use the shared card (`row` variant) · search logic lives in `js/pages/search.js` · `nearbyWater` and the geocode proxies are tested.
+
+Still open: store-side files (`product.js`, `store-about.js`, `animal.js`, `tenant-portal.js`, `kortex-report.js`, arcade) declare their own `API_BASE` · add-a-lake and rate keep large inline scripts (working, but not yet page modules) · no light theme (pages force dark; needs a light token set plus a pass over inline colours).
 
 ## 7. Search rebuild — the plan
 
@@ -90,13 +92,13 @@ Goal: **the map is the input.** Tap it, type into it, or locate yourself; result
 
 | Step | Build | Done when |
 |---|---|---|
-| 0 | `js/util.js`; `js/services/geo.js` (forward, reverse, suggest, memo cache, abort) | search + add-a-lake import them; per-page copies deleted |
-| 1 | `js/components/PinPicker.js` + `.css` — `create(el, {center, zoom, pickable, draggable, onPick})`, `setPin`, `flyTo`, `setResults(pins)`, `invalidate` | add-a-lake uses it for the draggable pin + reverse fill; no Leaflet code left in either page |
-| 2 | `css/search.css` (extracted) — mobile: search field pinned, map 45 vh, results sheet scrolls beneath; desktop ≥ 900 px: map left, results right, both full height | 375 px and 1280 px screenshots; no overflow; map never below the fold |
-| 3 | `js/pages/search.js` — one `state` `{mode: idle·locating·searching·results·empty·error, center, radiusKm, query, bodies, covered, scores}` and one `render(state)`; custom suggestion list (no `<datalist>`); tap-to-search; typing flies the map | every path reachable by keyboard; 429 from batch scoring shows a message; fallback capped at 6 single calls |
-| 4 | `PaddleCard` `variant: 'row'` for generic water bodies (name, type, distance, score ring) | search results are the shared card; `water-card` deleted |
-| 5 | Tests: `nearbyWater` (radius clamp, cache hit, no-results), `geocode` + `reverse-geocode` (validation, cache, 429), `geo.js` cache | `npm run test:paddlingout` green |
-| 6 | Deploy both sites, verify list · forecast · search · add-a-lake at 375 and desktop; update `MODULE-MAP.md` + agent file | links in the report |
+| 0 ✅ | `js/util.js`; `js/services/geo.js` (forward, reverse, suggest, memo cache, abort) | search + add-a-lake import them; per-page copies deleted |
+| 1 ✅ | `js/components/PinPicker.js` + `.css` — `create(el, {center, zoom, pickable, draggable, onPick})`, `setPin`, `flyTo`, `setResults(pins)`, `invalidate` | add-a-lake uses it for the draggable pin + reverse fill; no Leaflet code left in either page |
+| 2 ✅ | `css/search.css` (extracted) — mobile: search field pinned, map 45 vh, results sheet scrolls beneath; desktop ≥ 900 px: map left, results right, both full height | 375 px and 1280 px screenshots; no overflow; map never below the fold |
+| 3 ✅ | `js/pages/search.js` — one `state` `{mode: idle·locating·searching·results·empty·error, center, radiusKm, query, bodies, covered, scores}` and one `render(state)`; custom suggestion list (no `<datalist>`); tap-to-search; typing flies the map | every path reachable by keyboard; 429 from batch scoring shows a message; fallback capped at 6 single calls |
+| 4 ✅ | `PaddleCard` `variant: 'row'` for generic water bodies (name, type, distance, score ring) | search results are the shared card; `water-card` deleted |
+| 5 ✅ | Tests: `nearbyWater` (radius clamp, cache hit, no-results), `geocode` + `reverse-geocode` (validation, cache, 429), `geo.js` cache | `npm run test:paddlingout` green |
+| 6 ✅ | Deploy both sites, verify list · forecast · search · add-a-lake at 375 and desktop; update `MODULE-MAP.md` + agent file | links in the report |
 
 Budget: no sub-agents for the build; at most 3 for test writing if used at all.
 

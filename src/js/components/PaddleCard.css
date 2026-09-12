@@ -324,3 +324,46 @@
 .pcard-tag--new       { color: #fff; background: rgba(181, 147, 90, 0.72); border-color: transparent; }
 .pcard-tag--staff-pick { color: #141210; background: rgba(217, 189, 123, 0.92); border-color: transparent; }
 .card .pcard-tags { top: 0.9rem; left: 0.9rem; }
+
+/* ── ROW variant — search results; any water body, curated or not ─────────── */
+.pcard--row {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; align-items: center; gap: 0.7rem;
+  padding: 0.85rem 1rem; margin: 0 0 0.55rem;
+  background: linear-gradient(135deg, rgba(181,147,90,0.07), rgba(181,147,90,0.03));
+  border: 1px solid rgba(181,147,90,0.28); border-radius: 0;
+  cursor: pointer; text-decoration: none; color: #ede8df;
+  transition: border-color 0.18s ease, background 0.18s ease, transform 0.15s ease;
+  animation: pcardRowIn 0.35s cubic-bezier(0.2,0.8,0.2,1) both;
+}
+.pcard--row:hover, .pcard--row:focus-visible { border-color: #b5935a; background: rgba(181,147,90,0.12); transform: translateY(-1px); outline: none; }
+.pcard--row:focus-visible { box-shadow: 0 0 0 2px #d9bd7b; }
+.pcard--row[data-severity="critical"] { border-left: 3px solid #bd3b2b; }
+.pcard--row[data-severity="moderate"] { border-left: 3px solid #c59a61; }
+.pcard--row[data-severity="good"]     { border-left: 3px solid #316d43; }
+@keyframes pcardRowIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.pcard-row-body { min-width: 0; display: grid; gap: 0.25rem; }
+.pcard-row-name { font-family: 'Josefin Sans', Arial, sans-serif; font-size: 0.92rem; font-weight: 600; letter-spacing: 0.02em; color: #ede8df; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pcard-row-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 0.98rem; color: rgba(237,232,223,0.62); }
+.pcard-row-chip { font-family: 'Josefin Sans', Arial, sans-serif; font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: #d9bd7b; border: 1px solid rgba(217,189,123,0.35); padding: 3px 7px 2px; }
+.pcard-row-badge { justify-self: start; font-family: 'Josefin Sans', Arial, sans-serif; font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: #141210; background: #d9bd7b; padding: 3px 7px 2px; }
+.pcard-ring { position: relative; width: 48px; height: 48px; display: grid; place-items: center; flex-shrink: 0; }
+.pcard-ring-svg { position: absolute; inset: 0; width: 48px; height: 48px; }
+.pcard-ring-track { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 4; }
+.pcard-ring-fill { fill: none; stroke-width: 4; stroke-linecap: butt; transition: stroke-dasharray 0.6s ease; }
+.pcard-ring-val { position: relative; font-family: 'Josefin Sans', Arial, sans-serif; font-size: 0.82rem; font-weight: 600; color: #fff; font-variant-numeric: tabular-nums; }
+.pcard-ring-spin { width: 22px; height: 22px; border: 2px solid rgba(181,147,90,0.25); border-top-color: #d9bd7b; border-radius: 50%; animation: pcardSpin 0.9s linear infinite; }
+@keyframes pcardSpin { to { transform: rotate(360deg); } }
+.pcard-row-fav { width: 34px !important; height: 34px !important; }
+.pcard-row-actions { display: flex; gap: 0.35rem; }
+.pcard-row-action {
+  height: 34px; padding: 0 0.7rem; border: 1px solid rgba(181,147,90,0.36); background: transparent; color: #b5935a; cursor: pointer;
+  font-family: 'Josefin Sans', Arial, sans-serif; font-size: 0.62rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+  display: inline-flex; align-items: center; gap: 0.3rem;
+}
+.pcard-row-action svg { width: 16px; height: 16px; }
+.pcard-row-action:hover { border-color: #b5935a; color: #d9bd7b; background: rgba(181,147,90,0.1); }
+@media (max-width: 560px) {
+  .pcard--row { grid-template-columns: minmax(0, 1fr) auto auto; padding: 0.75rem 0.8rem; }
+  .pcard-row-actions { grid-column: 1 / -1; justify-content: flex-end; }
+}
+@media (prefers-reduced-motion: reduce) { .pcard--row { animation: none; } .pcard-ring-spin { animation: none; } }

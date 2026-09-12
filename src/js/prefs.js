@@ -92,6 +92,17 @@
     return '#bd3b2b';                 // Hard pass — red
   }
 
+  // ── Paddle Score meta (SINGLE source for colour + verdict + severity) ────────
+  // Every surface that shows a score reads this: cards, heatmap, search pins,
+  // methodology. Display is the half-point rating; null → em dash / N/A.
+  function scoreMeta(score) {
+    const n = _num(score);
+    if (n == null) return { rating: null, color: '#555', label: 'N/A', severity: null, display: '—' };
+    const severity = n >= 3.7 ? 'good' : n >= 2.7 ? 'moderate' : 'critical';
+    const label = severity === 'good' ? 'Worth it' : severity === 'moderate' ? 'Careful' : 'Hard pass';
+    return { rating: n, color: paddleScoreColor(n), label, severity, display: n.toFixed(1) };
+  }
+
   // ── Card style (list layout: 'full' detailed | 'minimal' image-tile) ─────────
   // Default is 'minimal' — first-time visitors land in the image-first look; only an
   // explicit 'full' choice opts out.
@@ -282,7 +293,7 @@
     getUnits, isMetric, setUnits,
     fmtTemp, fmtWind, fmtPrecip, fmtDist, fmtHeight, fmtArea, fmtVolume, fmtFlow, localizeUnits,
     kaaykoApiBase, registerFavPainter,
-    paddleScoreColor,
+    paddleScoreColor, scoreMeta,
     getCardStyle, setCardStyle,
     BOAT_TYPES, getBoatType, setBoatType, boatTypeLabel, craftParam, withCraft,
     getArea, clearArea,

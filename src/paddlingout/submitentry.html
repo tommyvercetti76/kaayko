@@ -12,6 +12,11 @@
   <!-- Leaflet (self-hosted) for the drag-a-pin coordinate picker -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script src="/vendor/leaflet/leaflet.js"></script>
+  <script src="/js/prefs.js"></script>
+  <script src="/js/util.js"></script>
+  <script src="/js/services/geo.js"></script>
+  <script src="/js/components/PinPicker.js"></script>
+  <link rel="stylesheet" href="/js/components/PinPicker.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
@@ -528,7 +533,7 @@
             <button class="mini-btn" id="find-coords" type="button">Find</button>
             <button class="mini-btn" id="use-location" type="button">Use my location</button>
           </div>
-          <div id="pin-map" class="pin-map" aria-label="Map. Drag the pin to the exact launch point."></div>
+          <div id="pin-map" class="pin-map pp-map" aria-label="Map. Drag the pin to the exact launch point."></div>
           <p class="pin-hint"><strong>Find</strong> drops a pin from the name; <strong>Use my location</strong> reads your position once and fills the place fields. Then <strong>drag the pin</strong> onto the exact put-in.</p>
           <span class="field-msg" id="coords-msg" aria-live="polite"></span>
         </div>
@@ -612,11 +617,7 @@
 
   <script>
     (function () {
-      const API_BASE = window.FORCE_PRODUCTION_MODE
-        ? window.PRODUCTION_API_BASE
-        : (['localhost', '127.0.0.1'].includes(window.location.hostname)
-          ? 'http://127.0.0.1:5001/kaaykostore/us-central1/api'
-          : 'https://api-vwcc5j4qda-uc.a.run.app');
+      const API_BASE = window.KaaykoUtil.apiBase();
 
       const form = document.getElementById('submit-entry-form');
       const statusEl = document.getElementById('form-status');
@@ -1063,72 +1064,36 @@
         field('city').focus();
       });
 
+      // ── Place fill (reverse geocode) — one service, one map ───────────────
       let reverseSeq = 0;
       async function reverseFill(lat, lng, opts) {
         opts = opts || {};
         const seq = ++reverseSeq;
-        try {
-          const res = await fetch(API_BASE + '/paddlingOut/reverse-geocode?lat=' + encodeURIComponent(lat) + '&lng=' + encodeURIComponent(lng));
-          if (seq !== reverseSeq) return null;   // a newer lookup superseded this one
-          if (!res.ok) return null;
-          const place = await res.json();
-          if (!place || !place.success) return null;
-          const changed = fillPlace(place, !!opts.overwrite);
-          if (opts.lock) {
-            const parts = [place.city, place.region, place.country].filter(Boolean).join(', ');
-            setLocationLock(true, parts ? 'Filled from the pin: ' + parts : 'Place filled from the pin');
-          }
-          if (place.water && !field('lakeName').value.trim()) {
-            field('lakeName').value = place.water;
-            touched.add('lakeName');
-          }
-          refreshReadiness();
-          return changed ? place : null;
-        } catch {
-          return null;
+        const place = await window.KaaykoGeo.reverse(lat, lng);
+        if (seq !== reverseSeq || !place) return null;      // superseded or unknown
+        const changed = fillPlace(place, !!opts.overwrite);
+        if (opts.lock) {
+          const parts = [place.city, place.region, place.country].filter(Boolean).join(', ');
+          setLocationLock(true, parts ? 'Filled from the pin: ' + parts : 'Place filled from the pin');
         }
+        if (place.water && !field('lakeName').value.trim()) { field('lakeName').value = place.water; touched.add('lakeName'); }
+        refreshReadiness();
+        return changed ? place : null;
       }
 
       async function inferCoordinates() {
         const query = [field('lakeName').value, field('city').value, regionValue(), field('country').value]
-          .map(v => v.trim())
-          .filter(Boolean)
-          .join(', ');
-        if (!query) {
-          setStatus('Add the lake name and place first.', 'error');
-          return false;
-        }
-
+          .map(v => v.trim()).filter(Boolean).join(', ');
+        if (!query) { setStatus('Add the lake name and place first.', 'error'); return false; }
         setStatus('Finding coordinates…', '');
-        try {
-          const res = await fetch(API_BASE + '/paddlingOut/geocode?q=' + encodeURIComponent(query) + '&limit=1');
-          if (!res.ok) {
-            setStatus('Could not find coordinates right now. Tap the map to place the pin.', 'error');
-            return false;
-          }
-          const data = await res.json();
-          if (!Array.isArray(data) || !data.length) {
-            setStatus('No match for that name. Tap the map to place the pin, or use your location.', 'error');
-            return false;
-          }
-          writeCoords(data[0].lat, data[0].lon);
-          centerPin(Number(data[0].lat), Number(data[0].lon), 14);
-          if (data[0].address) {
-            const a = data[0].address;
-            fillPlace({
-              city: a.city || a.town || a.village || a.hamlet || a.county || '',
-              region: a.state || a.region || '',
-              country: a.country || ''
-            }, false);
-          }
-          touched.add('coords');
-          refreshReadiness();
-          setStatus('Pin dropped. Drag it to the exact launch or boat ramp.', 'ok');
-          return true;
-        } catch {
-          setStatus('Could not find coordinates right now.', 'error');
-          return false;
-        }
+        const geo = await window.KaaykoGeo.forward(query);
+        if (!geo) { setStatus('No match for that name. Tap the map to place the pin, or use your location.', 'error'); return false; }
+        writeCoords(geo.lat, geo.lng);
+        centerPin(geo.lat, geo.lng, 14);
+        fillPlace(geo.address, false);
+        touched.add('coords'); refreshReadiness();
+        setStatus('Pin dropped. Drag it to the exact launch or boat ramp.', 'ok');
+        return true;
       }
 
       document.getElementById('find-coords').addEventListener('click', inferCoordinates);
@@ -1142,132 +1107,74 @@
           setStatus('Location needs a secure (https) connection. Use Find, or tap the map instead.', 'error');
           return;
         }
-
         function requestOnce() {
           var label = useLocBtn.textContent;
-          useLocBtn.disabled = true;
-          useLocBtn.textContent = 'Locating…';
+          useLocBtn.disabled = true; useLocBtn.textContent = 'Locating…';
           setStatus('Reading your location once to place the pin.', '');
           navigator.geolocation.getCurrentPosition(
             async function (pos) {
               useLocBtn.disabled = false; useLocBtn.textContent = label;
-              var la = pos.coords.latitude, ln = pos.coords.longitude;
-              var acc = Math.round(pos.coords.accuracy || 0); // metres
-              writeCoords(la, ln);
-              centerPin(la, ln, acc > 500 ? 12 : 15);
-              touched.add('coords');
-              refreshReadiness();
+              var la = pos.coords.latitude, ln = pos.coords.longitude, acc = Math.round(pos.coords.accuracy || 0);
+              writeCoords(la, ln); centerPin(la, ln, acc > 500 ? 12 : 15);
+              touched.add('coords'); refreshReadiness();
               setStatus('Pin placed. Looking up the place…', '');
               const place = await reverseFill(la, ln, { overwrite: true, lock: true });
-              if (place) {
-                setStatus((acc && acc > 150 ? 'Approximate fix (±' + acc + ' m). ' : '') + 'Place filled in. Drag the pin onto the exact put-in, then add photos.', 'ok');
-              } else {
-                setStatus('Pin placed. Could not look up the place name; fill city, state and country by hand.', '');
-              }
+              setStatus(place
+                ? (acc && acc > 150 ? 'Approximate fix (±' + acc + ' m). ' : '') + 'Place filled in. Drag the pin onto the exact put-in, then add photos.'
+                : 'Pin placed. Could not look up the place name; fill city, state and country by hand.', place ? 'ok' : '');
             },
             function (err) {
               useLocBtn.disabled = false; useLocBtn.textContent = label;
-              if (err && err.code === 1) {
-                setStatus('No problem, location stays private. Use Find, or tap the map to place the pin.', 'error');
-              } else if (err && err.code === 3) {
-                setStatus('Location timed out. Use Find, or tap the map to place the pin.', 'error');
-              } else {
-                setStatus('Couldn’t get your location. Use Find, or tap the map to place the pin.', 'error');
-              }
+              setStatus(err && err.code === 1 ? 'No problem, location stays private. Use Find, or tap the map to place the pin.'
+                : err && err.code === 3 ? 'Location timed out. Use Find, or tap the map to place the pin.'
+                : 'Couldn’t get your location. Use Find, or tap the map to place the pin.', 'error');
             },
             { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
           );
         }
-
         if (navigator.permissions && navigator.permissions.query) {
           navigator.permissions.query({ name: 'geolocation' })
-            .then(function (st) {
-              if (st.state === 'denied') {
-                setStatus('Location is blocked for this site in your browser settings. Use Find, or tap the map instead.', 'error');
-              } else {
-                requestOnce();
-              }
-            })
+            .then(function (st) { if (st.state === 'denied') setStatus('Location is blocked for this site in your browser settings. Use Find, or tap the map instead.', 'error'); else requestOnce(); })
             .catch(requestOnce);
-        } else {
-          requestOnce();
-        }
+        } else requestOnce();
       });
 
-      // ── Map pin picker (Leaflet + OpenStreetMap tiles) ────────────────────
-      var MAP_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-      var MAP_ATTRIB = '&copy; OpenStreetMap contributors';
-      var map = null, marker = null;
-      var pinIcon = (typeof L !== 'undefined') ? L.icon({
-        iconUrl: '/vendor/leaflet/images/marker-icon.png',
-        iconRetinaUrl: '/vendor/leaflet/images/marker-icon-2x.png',
-        shadowUrl: '/vendor/leaflet/images/marker-shadow.png',
-        iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
-      }) : null;
-
+      // ── Map: the shared PinPicker (tap to place, drag to fine-tune) ─────────
+      var picker = null;
       function writeCoords(lat, lng) {
         field('lat').value = Number(lat).toFixed(5);
         field('lng').value = Number(lng).toFixed(5);
       }
-
       // When the place fields are locked to the pin, a moved pin re-derives
       // them (debounced) so city/state never disagree with the coordinate.
       let pinMoveTimer = null;
       function onPinMoved(lat, lng, message) {
-        touched.add('coords');
-        refreshReadiness();
-        setStatus(message, 'ok');
+        touched.add('coords'); refreshReadiness(); setStatus(message, 'ok');
         if (!locationLocked) return;
         clearTimeout(pinMoveTimer);
         pinMoveTimer = setTimeout(function () { reverseFill(lat, lng, { overwrite: true, lock: true }); }, 700);
       }
-
-      function placeMarker(lat, lng, updateFields) {
-        if (!map) return;
-        if (marker) {
-          marker.setLatLng([lat, lng]);
-        } else {
-          marker = L.marker([lat, lng], { draggable: true, icon: pinIcon }).addTo(map);
-          marker.on('dragend', function () {
-            var p = marker.getLatLng();
-            writeCoords(p.lat, p.lng);
-            onPinMoved(p.lat, p.lng, 'Pin moved. Coordinates updated.');
-          });
-        }
-        if (updateFields) writeCoords(lat, lng);
-      }
-
-      function centerPin(lat, lng, zoom) {
-        if (!map) return;
-        placeMarker(lat, lng, false);
-        map.setView([lat, lng], zoom || 14);
-        setTimeout(function () { map.invalidateSize(); }, 80);
-      }
-
+      function centerPin(lat, lng, zoom) { if (picker) picker.setPin(lat, lng, { zoom: zoom || 14 }); }
       function initMap() {
         var el = document.getElementById('pin-map');
-        if (!el || typeof L === 'undefined') { if (el) el.style.display = 'none'; return; }
-        var lat0 = parseCoord(field('lat').value);
-        var lng0 = parseCoord(field('lng').value);
+        if (!el || !window.PinPicker) { if (el) el.style.display = 'none'; return; }
+        var lat0 = parseCoord(field('lat').value), lng0 = parseCoord(field('lng').value);
         var has = lat0 !== null && lng0 !== null;
-        map = L.map(el, { scrollWheelZoom: false }).setView(has ? [lat0, lng0] : [39.5, -98.35], has ? 13 : 4);
-        L.tileLayer(MAP_TILE_URL, { maxZoom: 19, attribution: MAP_ATTRIB }).addTo(map);
-        if (has) placeMarker(lat0, lng0, false);
-        map.on('click', function (e) {
-          placeMarker(e.latlng.lat, e.latlng.lng, true);
-          onPinMoved(e.latlng.lat, e.latlng.lng, 'Pin placed. Coordinates updated.');
+        picker = window.PinPicker.create(el, {
+          center: has ? [lat0, lng0] : [39.5, -98.35], zoom: has ? 13 : 4,
+          pickable: true, draggable: true, scrollWheelZoom: false,
+          onPick: function (lat, lng, how) {
+            writeCoords(lat, lng);
+            onPinMoved(lat, lng, how === 'drag' ? 'Pin moved. Coordinates updated.' : 'Pin placed. Coordinates updated.');
+            if (how === 'tap') picker.setPin(lat, lng, {});
+          }
         });
-        setTimeout(function () { map.invalidateSize(); }, 200);
+        if (has) picker.setPin(lat0, lng0, {});
       }
-
       ['lat', 'lng'].forEach(function (id) {
         field(id).addEventListener('change', function () {
-          var la = parseCoord(field('lat').value);
-          var ln = parseCoord(field('lng').value);
-          if (la !== null && ln !== null) {
-            centerPin(la, ln, (map && map.getZoom && map.getZoom() > 8) ? map.getZoom() : 13);
-            if (locationLocked) onPinMoved(la, ln, 'Coordinates updated.');
-          }
+          var la = parseCoord(field('lat').value), ln = parseCoord(field('lng').value);
+          if (la !== null && ln !== null) { centerPin(la, ln, 13); if (locationLocked) onPinMoved(la, ln, 'Coordinates updated.'); }
         });
       });
 

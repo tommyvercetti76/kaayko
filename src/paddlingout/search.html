@@ -3,6 +3,8 @@
 <head>
   <script src="/js/prod-config.js"></script>
   <script src="/js/prefs.js"></script>
+  <script src="/js/util.js"></script>
+  <script src="/js/services/geo.js"></script>
   <script src="/js/kaayko-icons.js"></script>
   <script src="/js/consent-notice.js" defer></script>
   <script>document.documentElement.classList.add('dark-theme');</script>
@@ -106,531 +108,12 @@
   <!-- Leaflet (self-hosted) for the map + score pins -->
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <script src="/vendor/leaflet/leaflet.js"></script>
+  <script src="/js/components/PinPicker.js"></script>
+  <script src="/js/components/PaddleCard.js"></script>
 
-  <style>
-    /* ── Brand tokens (mirrors paddlingout.css) ── */
-    :root {
-      --bg:          #080808;
-      --panel-a:     #0d0c0a;
-      --fg:          #ede8df;
-      --muted:       rgba(237,232,223,0.58);
-      --gold:        #b5935a;
-      --gold-bright: #d9bd7b;
-      --line:        rgba(181,147,90,0.74);
-      --font-serif:  'Cormorant Garamond', Georgia, serif;
-      --font-sans:   'Josefin Sans', Arial, sans-serif;
-      --ease:        cubic-bezier(0.76, 0, 0.24, 1);
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background: var(--bg);
-      color: var(--fg);
-      font-family: var(--font-serif);
-      min-height: 100vh;
-    }
-
-    /* Hide generic shared header — we use po-page-header */
-    .header { display: none !important; }
-    .theme-toggle-icon { display: none !important; }
-
-    /* ── In-page brand bar (mirrors paddlingout.css) ── */
-    .po-page-header {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      padding: 2rem 2rem 1.25rem;
-      border-bottom: 1px solid rgba(181,147,90,0.18);
-    }
-    .po-brand { display: flex; flex-direction: column; gap: 0.2rem; }
-    .po-eyebrow {
-      font-family: var(--font-serif);
-      font-size: 0.78rem;
-      font-style: italic;
-      letter-spacing: 0.28em;
-      color: var(--gold);
-      opacity: 0.82;
-      text-transform: lowercase;
-    }
-    .po-title {
-      font-family: var(--font-sans);
-      font-size: clamp(1.55rem, 4vw, 2.1rem);
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--gold-bright);
-      line-height: 1;
-    }
-    .po-back-btn {
-      flex-shrink: 0;
-      width: 36px;
-      height: 36px;
-      border: 1px solid rgba(181,147,90,0.36);
-      border-radius: 50%;
-      background: rgba(181,147,90,0.08);
-      color: var(--gold);
-      font-size: 1.1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      text-decoration: none;
-      transition: background 0.2s ease, border-color 0.2s ease;
-      margin-bottom: 0.15rem;
-    }
-    .po-back-btn:hover {
-      background: rgba(181,147,90,0.18);
-      border-color: var(--gold);
-    }
-
-    /* ── Search page layout ── */
-    main.search-page {
-      padding: 2rem 2rem 4rem;
-      max-width: 680px;
-      margin: 0 auto;
-    }
-
-    /* ── Search bar ── */
-    .search-bar-row {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-    .search-bar-wrap { position: relative; width: 100%; }
-    .search-input {
-      width: 100%;
-      padding: 14px 44px 14px 44px;
-      background: rgba(181,147,90,0.06);
-      border: 1.5px solid rgba(181,147,90,0.28);
-      border-radius: 12px;
-      color: var(--fg);
-      font-family: var(--font-sans);
-      font-size: 15px;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    .search-input:focus {
-      border-color: var(--gold-bright);
-      box-shadow: 0 0 0 3px rgba(181,147,90,0.12);
-    }
-    .search-input::placeholder { color: rgba(237,232,223,0.3); }
-
-    .search-icon-left {
-      position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
-      color: var(--gold); font-size: 20px; pointer-events: none;
-    }
-    .search-clear-btn {
-      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-      background: none; border: none; color: var(--muted); cursor: pointer;
-      font-size: 18px; padding: 4px; display: none;
-    }
-    .search-clear-btn.visible { display: block; }
-
-    .btn-gps {
-      padding: 0 16px;
-      background: rgba(181,147,90,0.08);
-      border: 1.5px solid rgba(181,147,90,0.28);
-      border-radius: 12px;
-      color: var(--gold);
-      font-size: 20px;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: background 0.2s;
-      flex-shrink: 0;
-    }
-    .btn-gps:hover { background: rgba(181,147,90,0.18); border-color: var(--gold); }
-    .btn-gps.loading { animation: gps-pulse 1s ease-in-out infinite; }
-    @keyframes gps-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
-
-    /* ── Status ── */
-    .search-status {
-      font-family: var(--font-sans);
-      font-size: 11px;
-      letter-spacing: 0.06em;
-      color: var(--muted);
-      padding: 0 2px 10px;
-      min-height: 20px;
-    }
-    .search-status.error   { color: #f87171; }
-    .search-status.loading { color: var(--gold); }
-
-    /* ── Popular chips ── */
-    .popular-section { margin-bottom: 24px; }
-    .popular-label {
-      font-family: var(--font-sans);
-      font-size: 0.65rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 12px;
-    }
-    .popular-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-    .popular-chip {
-      font-family: var(--font-sans);
-      font-size: 12px;
-      letter-spacing: 0.04em;
-      padding: 7px 13px;
-      background: rgba(181,147,90,0.06);
-      border: 1px solid rgba(181,147,90,0.2);
-      border-radius: 50px;
-      color: var(--muted);
-      cursor: pointer;
-      transition: all 0.2s var(--ease);
-      display: flex; align-items: center; gap: 6px;
-    }
-    .popular-chip:hover {
-      border-color: var(--gold);
-      background: rgba(181,147,90,0.12);
-      color: var(--gold-bright);
-    }
-    .popular-chip .chip-icon { font-size: 14px; opacity: 0.7; }
-
-    /* ── Results header ── */
-    .results-header {
-      display: flex; align-items: baseline; justify-content: space-between;
-      margin-bottom: 12px;
-      opacity: 0; transition: opacity 0.3s;
-    }
-    .results-header.visible { opacity: 1; }
-
-    /* Covered ("Kaayko spots") matches, shown above nearby-water results */
-    .covered-section { display: none; margin-bottom: 22px; }
-    .covered-section.visible { display: block; }
-    .covered-head {
-      font-family: 'Josefin Sans', Arial, sans-serif;
-      font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase;
-      color: #b5935a; margin: 0 0 10px;
-    }
-    .covered-card {
-      display: flex; align-items: center; justify-content: space-between; gap: 12px;
-      padding: 14px 16px; margin-bottom: 8px; cursor: pointer;
-      border: 1px solid rgba(181,147,90,0.34); border-radius: 12px;
-      background: linear-gradient(135deg, rgba(181,147,90,0.12), rgba(181,147,90,0.03));
-      transition: border-color .18s ease, transform .18s ease;
-    }
-    .covered-card:hover, .covered-card:focus-visible {
-      border-color: #b5935a; transform: translateY(-1px); outline: none;
-    }
-    .covered-name { font-family: 'Josefin Sans', Arial, sans-serif; font-weight: 600; color: #ede8df; }
-    .covered-sub { font-size: 0.85rem; color: rgba(237,232,223,0.6); margin-top: 2px; font-style: italic; }
-    .covered-badge {
-      flex-shrink: 0; font-family: 'Josefin Sans', Arial, sans-serif;
-      font-size: 0.6rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase;
-      color: #141210; background: linear-gradient(135deg, #d9bd7b, #b5935a);
-      padding: 5px 10px; border-radius: 999px; white-space: nowrap;
-    }
-    .covered-info { flex: 1 1 auto; min-width: 0; }
-    .covered-card .kaayko-fav-btn.covered-fav {
-      flex: 0 0 auto; width: 34px; height: 34px; background: transparent;
-      border: 1px solid rgba(181,147,90,0.30);
-    }
-    .covered-card .kaayko-fav-btn.covered-fav:hover { background: rgba(181,147,90,0.14); }
-
-    /* ── Map of found lakes ─────────────────────────────────────────── */
-    .search-map-wrap { margin-bottom: 22px; position: relative; }
-    .search-map {
-      height: clamp(360px, 58vh, 640px); border-radius: 14px; overflow: hidden;
-      border: 1px solid rgba(181,147,90,0.3); background: #0d0d0f; z-index: 0;
-    }
-    /* "Search this area" — floating control so users can pan + rediscover */
-    .search-here-btn {
-      position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
-      z-index: 500; display: inline-flex; align-items: center; gap: 6px;
-      padding: 10px 17px; border: none; border-radius: 999px; cursor: pointer;
-      background: linear-gradient(135deg, #d9bd7b, #b5935a); color: #141210;
-      font-family: 'Josefin Sans', Arial, sans-serif; font-weight: 600;
-      font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.5); transition: transform .15s ease, filter .2s ease, opacity .2s ease;
-    }
-    .search-here-btn:hover { filter: brightness(1.06); transform: translateX(-50%) translateY(-1px); }
-    .search-here-btn:active { transform: translateX(-50%) translateY(0); }
-    .search-here-btn [data-kicon-raw] svg { width: 15px; height: 15px; }
-    .search-here-btn[hidden] { display: none; }
-    .search-here-btn.busy { opacity: .55; pointer-events: none; }
-
-    /* ── First-time tour overlay ─────────────────────────────────────── */
-    .tour-overlay {
-      position: fixed; inset: 0; z-index: 2000; display: none;
-      align-items: center; justify-content: center; padding: 20px;
-      background: rgba(8,8,8,0.92); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
-      animation: tourFade .3s ease both;
-    }
-    .tour-overlay.visible { display: flex; }
-    .tour-overlay.hiding { animation: tourFadeOut .28s ease forwards; }
-    @keyframes tourFade { from { opacity: 0 } to { opacity: 1 } }
-    @keyframes tourFadeOut { to { opacity: 0 } }
-    .tour-box {
-      width: min(460px, 100%); color: #ede8df;
-      background: linear-gradient(150deg,#0d0c0a,#111);
-      border: 1px solid rgba(217,189,123,0.34); border-radius: 18px;
-      padding: 26px 24px 22px; box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-    }
-    .tour-eyebrow { font-family:'Josefin Sans',Arial,sans-serif; font-size:.7rem; letter-spacing:.3em; text-transform:uppercase; color:#b5935a; }
-    .tour-box h2 { font-family:'Cormorant Garamond',Georgia,serif; font-weight:600; font-size:1.7rem; margin:.3rem 0 1.1rem; }
-    .tour-step { display:flex; gap:12px; align-items:flex-start; margin-bottom:14px; }
-    .tour-step .n {
-      flex:0 0 auto; width:28px; height:28px; border-radius:50%;
-      display:flex; align-items:center; justify-content:center;
-      background:rgba(217,189,123,0.15); border:1px solid rgba(217,189,123,0.35); color:#d9bd7b;
-      font-family:'Josefin Sans',Arial,sans-serif; font-weight:600; font-size:.85rem;
-    }
-    .tour-step .t { font-size:1.06rem; line-height:1.35; color:rgba(237,232,223,0.9); }
-    .tour-step .t b { color:#ede8df; font-weight:600; }
-    .tour-go {
-      margin-top:6px; width:100%; cursor:pointer; border:none; border-radius:11px;
-      background:linear-gradient(135deg,#d9bd7b,#b5935a); color:#141210;
-      font-family:'Josefin Sans',Arial,sans-serif; font-weight:600; font-size:.86rem; letter-spacing:.06em; text-transform:uppercase;
-      padding:.85rem 1rem; transition:filter .2s ease, transform .15s ease;
-    }
-    .tour-go:hover { filter:brightness(1.07); transform:translateY(-1px); }
-    .tour-help {
-      position:fixed; right:16px; bottom:16px; z-index:1500; width:42px; height:42px; border-radius:50%; cursor:pointer;
-      display:flex; align-items:center; justify-content:center; border:1px solid rgba(217,189,123,0.4);
-      background:rgba(20,18,16,0.85); color:#d9bd7b; font-family:'Josefin Sans',Arial,sans-serif; font-weight:700; font-size:1.15rem;
-      -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); box-shadow:0 4px 14px rgba(0,0,0,0.5);
-      transition:transform .15s ease, background .2s ease;
-    }
-    .tour-help:hover { transform:scale(1.06); background:rgba(181,147,90,0.2); }
-    @media (prefers-reduced-motion:reduce){ .tour-overlay, .tour-overlay.hiding { animation:none; } }
-    .map-legend {
-      display: flex; flex-wrap: wrap; gap: 14px; margin-top: 9px;
-      font-family: 'Josefin Sans', Arial, sans-serif; font-size: 0.62rem;
-      letter-spacing: 0.05em; text-transform: uppercase; color: rgba(237,232,223,0.6);
-    }
-    .map-legend .lg::before {
-      content:''; display:inline-block; width:9px; height:9px; border-radius:50%;
-      margin-right:5px; vertical-align:middle;
-    }
-    .lg-cover::before { background:#d9bd7b; }
-    .lg-good::before  { background:#316d43; }
-    .lg-mid::before   { background:#c59a61; }
-    .lg-bad::before   { background:#bd3b2b; }
-    /* Score pin (Leaflet divIcon) */
-    .score-pin {
-      display:flex; align-items:center; justify-content:center;
-      width:30px; height:30px; border-radius:50% 50% 50% 0; transform:rotate(-45deg);
-      border:2px solid rgba(255,255,255,0.85); box-shadow:0 2px 6px rgba(0,0,0,0.5);
-      font-family:'Josefin Sans',Arial,sans-serif; font-weight:700; font-size:12px; color:#fff;
-    }
-    .score-pin span { transform:rotate(45deg); }
-    .score-pin.cover { border-color:#fff; box-shadow:0 0 0 2px rgba(217,189,123,0.65),0 2px 6px rgba(0,0,0,0.5); }
-    /* Save-area (lock my city) */
-    .btn-save-area { background:none; border:none; cursor:pointer; color:#b5935a; padding:2px; line-height:0; }
-    .btn-save-area.saved { color:#d9bd7b; }
-    .btn-save-area [data-kicon-raw] svg { width:20px; height:20px; }
-    .my-area-chip {
-      display:none; align-items:center; gap:10px; margin:2px 0 16px;
-      font-family:'Cormorant Garamond',Georgia,serif; font-size:0.95rem; color:rgba(237,232,223,0.75);
-    }
-    .my-area-chip.visible { display:flex; }
-    .my-area-chip b { color:#d9bd7b; font-weight:600; font-family:'Josefin Sans',Arial,sans-serif; font-size:0.8rem; }
-    .my-area-chip button {
-      background:none; border:none; color:rgba(237,232,223,0.5); cursor:pointer;
-      font-family:'Josefin Sans',Arial,sans-serif; font-size:0.66rem; letter-spacing:0.06em;
-      text-transform:uppercase; text-decoration:underline;
-    }
-    .results-count {
-      font-family: var(--font-sans);
-      font-size: 0.72rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--gold);
-    }
-    .results-hint {
-      font-family: var(--font-serif);
-      font-style: italic;
-      font-size: 0.85rem;
-      color: var(--muted);
-    }
-    
-    .btn-refresh {
-      background: none; border: none; color: var(--gold);
-      cursor: pointer; font-size: 18px; padding: 4px 8px;
-      display: flex; align-items: center; justify-content: center;
-      border-radius: 4px;
-      transition: background 0.2s;
-    }
-    .btn-refresh:hover { background: rgba(181,147,90,0.1); }
-    .btn-refresh:active { transform: rotate(180deg); transition: transform 0.3s; }
-    
-    .source-badge {
-      display: inline-block;
-      font-family: var(--font-sans);
-      font-size: 0.65rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      padding: 3px 7px;
-      background: rgba(181,147,90,0.1);
-      color: var(--gold);
-      border-radius: 50px;
-      margin-right: 6px;
-      border: 1px solid rgba(181,147,90,0.2);
-    }
-
-    /* ── Water card ── */
-    .water-card {
-      display: flex; align-items: center; gap: 12px;
-      background: linear-gradient(135deg, rgba(13,12,10,0.9), rgba(16,17,13,0.9));
-      border: 1px solid rgba(181,147,90,0.16);
-      border-radius: 12px;
-      padding: 13px 14px;
-      margin-bottom: 8px;
-      cursor: pointer;
-      transition: border-color 0.25s, background 0.25s, transform 0.2s var(--ease);
-      opacity: 0; transform: translateY(6px);
-      animation: card-in 0.25s ease forwards;
-    }
-    .water-card:hover {
-      border-color: var(--gold);
-      background: linear-gradient(135deg, rgba(181,147,90,0.06), rgba(181,147,90,0.03));
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 40px rgba(181,147,90,0.06);
-    }
-    @keyframes card-in { to { opacity: 1; transform: translateY(0); } }
-
-    /* Skeleton */
-    .water-card.skeleton { cursor: default; pointer-events: none; }
-    .water-card.skeleton:hover { transform: none; border-color: rgba(181,147,90,0.16); box-shadow: none; }
-    .skel {
-      height: 11px; border-radius: 5px;
-      background: rgba(181,147,90,0.08);
-      animation: skel-pulse 1.4s ease-in-out infinite;
-    }
-    @keyframes skel-pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 0.9; } }
-
-    .water-card-info { flex: 1; min-width: 0; }
-    .water-card-name {
-      font-family: var(--font-sans);
-      font-size: 0.95rem;
-      font-weight: 600;
-      letter-spacing: 0.03em;
-      color: var(--gold-bright);
-      margin: 0 0 5px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .water-card-meta {
-      font-family: var(--font-serif);
-      font-style: italic;
-      font-size: 0.85rem;
-      color: var(--muted);
-      display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
-    }
-    .type-chip {
-      font-family: var(--font-sans);
-      font-style: normal;
-      font-size: 0.6rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 2px 7px; border-radius: 50px;
-      background: rgba(181,147,90,0.1);
-      color: var(--gold);
-      border: 1px solid rgba(181,147,90,0.2);
-    }
-
-    /* Score ring */
-    .score-ring-wrap { position: relative; width: 48px; height: 48px; flex-shrink: 0; }
-    .score-ring-svg  { width: 48px; height: 48px; display: block; }
-    .score-track { fill: none; stroke: rgba(181,147,90,0.12); stroke-width: 4; }
-    .score-fill  { fill: none; stroke-width: 4; stroke-linecap: round; }
-    .score-label {
-      position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      font-family: var(--font-sans);
-      font-size: 11px; font-weight: 700; pointer-events: none;
-      color: var(--fg);
-    }
-    .score-spinner {
-      width: 48px; height: 48px;
-      border: 3px solid rgba(181,147,90,0.1);
-      border-top-color: rgba(181,147,90,0.5);
-      border-radius: 50%;
-      animation: spin 0.9s linear infinite;
-      flex-shrink: 0;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* Map button */
-    .btn-map {
-      width: 34px; height: 34px; background: none;
-      border: 1px solid rgba(181,147,90,0.18);
-      border-radius: 8px; color: var(--muted);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; flex-shrink: 0; font-size: 18px;
-      transition: border-color 0.2s, color 0.2s;
-    }
-    .btn-map:hover { border-color: var(--gold); color: var(--gold-bright); }
-    .btn-map svg { width: 18px; height: 18px; }
-
-    .btn-request-lake {
-      height: 34px;
-      padding: 0 11px;
-      background: rgba(181,147,90,0.08);
-      border: 1px solid rgba(181,147,90,0.2);
-      border-radius: 8px;
-      color: var(--gold);
-      cursor: pointer;
-      flex-shrink: 0;
-      font-family: var(--font-sans);
-      font-size: 0.62rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      transition: border-color 0.2s, color 0.2s, background 0.2s;
-    }
-    .btn-request-lake:hover,
-    .btn-request-lake:focus-visible {
-      background: rgba(181,147,90,0.15);
-      border-color: var(--gold);
-      color: var(--gold-bright);
-      outline: none;
-    }
-
-    /* Empty state */
-    .empty-state {
-      text-align: center; padding: 40px 24px;
-      opacity: 0; animation: card-in 0.3s 0.1s ease forwards;
-    }
-    .empty-state .mat { color: rgba(181,147,90,0.3); margin-bottom: 12px; display:flex; justify-content:center; }
-    .empty-state .mat svg { width: 40px; height: 40px; }
-    .empty-state h3 {
-      font-family: var(--font-sans); font-size: 1rem;
-      letter-spacing: 0.12em; text-transform: uppercase;
-      color: var(--gold); margin: 0 0 8px;
-    }
-    .empty-state p {
-      font-family: var(--font-serif); font-style: italic;
-      font-size: 0.95rem; color: var(--muted); margin: 0;
-    }
-    .empty-state .btn-request-lake {
-      margin-top: 18px;
-      height: 38px;
-      padding: 0 16px;
-    }
-
-    /* Footer — styled by the shared .site-footer component in css/footer.css.
-       No element-level rule here; those silently override the shared one. */
-
-
-    @media (max-width: 600px) {
-      .po-page-header { padding: 1.4rem 1.1rem 1rem; }
-      .po-title { font-size: 1.4rem; }
-      main.search-page { padding: 1.5rem 1rem 4rem; }
-      .btn-map { display: none; }
-      .btn-request-lake { padding: 0 9px; }
-    }
-
-    /* Static intro — this page is in the sitemap, so it needs real content
-       rather than being a bare search box to a crawler. */
-    .search-intro { max-width: 44rem; margin: 0 0 1.75rem; }
-    .search-intro p {
-      font-family: var(--font-serif); font-size: 1.06rem; line-height: 1.68;
-      color: rgba(237,232,223,0.72); margin: 0 0 0.85rem;
-    }
-    .search-intro a { color: var(--gold); text-decoration: none; border-bottom: 1px solid rgba(181,147,90,0.4); }
-    .search-intro a:hover { color: var(--gold-bright); border-color: var(--gold-bright); }
-  </style>
+  <link rel="stylesheet" href="/css/search.css">
+  <link rel="stylesheet" href="/js/components/PinPicker.css">
+  <link rel="stylesheet" href="/js/components/PaddleCard.css">
   <link rel="stylesheet" href="/css/footer.css">
   <link rel="stylesheet" href="/js/components/PoHeader.css">
   <script src="/js/components/PoHeader.js"></script>
@@ -642,90 +125,77 @@
   <div id="po-header" data-title="Search" data-eyebrow="Paddling Out" data-back="/paddlingout" data-current="search"></div>
 
   <main class="search-page">
-
-    <!-- Search bar + GPS -->
-    <div class="search-bar-row">
-      <div class="search-bar-wrap" style="width:100%">
-        <span class="search-icon-left" data-kicon-raw="droplet"></span>
-        <input type="text" id="search-input" class="search-input"
-          placeholder="Lake, river, city…"
-          autocomplete="off" autocorrect="off" spellcheck="false"
-          list="search-suggestions"/>
-        <datalist id="search-suggestions"></datalist>
-        <button class="search-clear-btn" id="search-clear" aria-label="Clear" data-kicon-raw="close"></button>
+    <!-- Sticky panel: the search bar and the map. The map is the input. -->
+    <div class="search-panel" id="search-panel">
+      <div class="search-bar-row">
+        <div class="search-bar-wrap" style="width:100%">
+          <span class="search-icon-left" data-kicon-raw="droplet"></span>
+          <input type="text" id="search-input" class="search-input"
+            placeholder="Lake, river, city…"
+            autocomplete="off" autocorrect="off" spellcheck="false"
+            role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="search-suggest" aria-label="Search lakes, rivers and places"/>
+          <button class="search-clear-btn" id="search-clear" aria-label="Clear" data-kicon-raw="close"></button>
+          <div class="search-suggest" id="search-suggest" role="listbox" aria-label="Suggestions" hidden></div>
+        </div>
+        <button class="btn-gps" id="btn-gps" title="Use my location" aria-label="Use my location" data-kicon-raw="gps"></button>
       </div>
-      <button class="btn-gps" id="btn-gps" title="Use my location" aria-label="Use my location" data-kicon-raw="gps"></button>
-    </div>
-
-    <!-- Status -->
-    <div class="search-status" id="search-status"></div>
-
-    <!-- Saved "my area" (lock my city) -->
-    <div class="my-area-chip" id="my-area-chip">
-      <span>Showing lakes near <b id="my-area-label"></b></span>
-      <button type="button" id="my-area-change">Change</button>
-    </div>
-
-    <div class="popular-section" id="popular-section">
-      <div class="popular-label" data-kicon="pin">Popular paddle regions</div>
-      <div class="popular-chips">
-        <button class="popular-chip" data-lat="33.0815" data-lng="-96.4775"><span class="chip-icon" data-kicon-raw="droplet"></span>Lavon Lake, TX</button>
-        <button class="popular-chip" data-lat="33.1439" data-lng="-96.9759"><span class="chip-icon" data-kicon-raw="droplet"></span>Lewisville Lake, TX</button>
-        <button class="popular-chip" data-lat="47.6553" data-lng="-122.2571"><span class="chip-icon" data-kicon-raw="droplet"></span>Lake Washington, WA</button>
-        <button class="popular-chip" data-lat="39.0931" data-lng="-120.0325"><span class="chip-icon" data-kicon-raw="droplet"></span>Lake Tahoe, CA</button>
-        <button class="popular-chip" data-lat="44.4759" data-lng="-110.5886"><span class="chip-icon" data-kicon-raw="droplet"></span>Yellowstone Lake, WY</button>
-        <button class="popular-chip" data-lat="43.9520" data-lng="-76.1743"><span class="chip-icon" data-kicon-raw="droplet"></span>Lake Ontario, NY</button>
-        <button class="popular-chip" data-lat="51.5085" data-lng="-0.1257"><span class="chip-icon" data-kicon-raw="droplet"></span>London, UK</button>
-        <button class="popular-chip" data-lat="-33.8688" data-lng="151.2093"><span class="chip-icon" data-kicon-raw="droplet"></span>Sydney, AU</button>
-      </div>
-    </div>
-
-    <!-- Map of found lakes (pins colored by Paddle Score) -->
-    <div id="search-map-wrap" class="search-map-wrap" hidden>
-      <div id="search-map" class="search-map" aria-label="Map of nearby lakes"></div>
-      <button type="button" id="search-here-btn" class="search-here-btn" hidden>
-        <span data-kicon-raw="search" aria-hidden="true"></span> Search this area
-      </button>
-      <div class="map-legend" aria-hidden="true">
-        <span class="lg lg-cover">◆ We cover</span>
-        <span class="lg lg-good">Worth it</span>
-        <span class="lg lg-mid">Careful</span>
-        <span class="lg lg-bad">Hard pass</span>
-      </div>
-    </div>
-
-    <!-- Results -->
-    <div id="results-header" class="results-header">
-      <span class="results-count" id="results-count"></span>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span class="results-hint"  id="results-hint"></span>
-        <button id="save-area-btn" class="btn-save-area" title="Save this as my area" aria-label="Save this as my area" style="display:none">
-          <span data-kicon-raw="pin"></span>
+      <div class="search-status" id="search-status" aria-live="polite"></div>
+      <div class="search-map-wrap" id="search-map-wrap">
+        <div id="search-map" class="search-map pp-map" role="application" aria-label="Map. Tap anywhere to search that spot."></div>
+        <button type="button" id="search-here-btn" class="search-here-btn" hidden>
+          <span data-kicon-raw="search" aria-hidden="true"></span> Search this area
         </button>
-        <button id="refresh-btn" class="btn-refresh" title="Force live search" aria-label="Refresh results" style="display:none">
-          <span data-kicon-raw="refresh"></span>
-        </button>
+        <p class="search-map-hint" id="search-map-hint">Tap the map to search there</p>
+        <div class="map-legend" aria-hidden="true">
+          <span class="lg lg-cover">◆ We cover</span>
+          <span class="lg lg-good">Worth it</span>
+          <span class="lg lg-mid">Careful</span>
+          <span class="lg lg-bad">Hard pass</span>
+        </div>
       </div>
     </div>
-    <div id="results-list" role="listbox"></div>
 
-    <!-- What this page does — kept below the map + results, not on top of them -->
-    <section class="search-intro">
-      <p>
-        Search resolves any named lake, river or reservoir by city, state or postcode and returns a live
-        Paddle Score for it &mdash; wind speed and gusts, air and water temperature, UV index, cloud cover
-        and precipitation folded into one number from 1 (Danger) to 5 (Excellent), with fixed safety rules
-        applied on top.
-      </p>
-      <p>
-        Coverage is not the same as curation. Seventeen spots are hand-picked and written up in detail,
-        with notes on what drives the score at each one and what the model cannot see there. Everywhere
-        else returns a score from weather data alone.
-        <a href="/paddlingout">Browse the 17 curated spots</a>, or
-        <a href="/paddlingout/methodology">read how the Paddle Score is built</a>.
-      </p>
-    </section>
+    <!-- Results scroll beneath the panel -->
+    <div class="search-results" id="search-results">
+      <div class="my-area-chip" id="my-area-chip">
+        <span>Showing lakes near <b id="my-area-label"></b></span>
+        <button type="button" id="my-area-change">Change</button>
+      </div>
+      <div class="popular-section" id="popular-section">
+        <div class="popular-label" data-kicon="pin">Popular paddle regions</div>
+        <div class="popular-chips" id="popular-chips"></div>
+      </div>
+      <div id="covered-section" class="covered-section"></div>
+      <div id="results-header" class="results-header">
+        <span class="results-count" id="results-count"></span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="results-hint" id="results-hint"></span>
+          <button id="save-area-btn" class="btn-save-area" title="Save this as my area" aria-label="Save this as my area" style="display:none">
+            <span data-kicon-raw="pin"></span>
+          </button>
+          <button id="refresh-btn" class="btn-refresh" title="Force live search" aria-label="Refresh results" style="display:none">
+            <span data-kicon-raw="refresh"></span>
+          </button>
+        </div>
+      </div>
+      <div id="results-list" role="listbox" aria-label="Nearby water"></div>
 
+      <section class="search-intro">
+        <p>
+          Search resolves any named lake, river or reservoir by city, state or postcode and returns a live
+          Paddle Score for it &mdash; wind speed and gusts, air and water temperature, UV index, cloud cover
+          and precipitation folded into one number from 1 (Danger) to 5 (Excellent), with fixed safety rules
+          applied on top.
+        </p>
+        <p>
+          Coverage is not the same as curation. Seventeen spots are hand-picked and written up in detail,
+          with notes on what drives the score at each one and what the model cannot see there. Everywhere
+          else returns a score from weather data alone.
+          <a href="/paddlingout">Browse the 17 curated spots</a>, or
+          <a href="/paddlingout/methodology">read how the Paddle Score is built</a>.
+        </p>
+      </section>
+    </div>
   </main>
 
   <footer class="site-footer">
@@ -738,15 +208,7 @@
     <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
   </footer>
 
-  <script src="/js/services/apiClient.js"></script>
-  <script src="/js/services/dataTransformer.js"></script>
-  <script src="/js/searchPage.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const y = document.getElementById('year');
-      if (y) y.textContent = new Date().getFullYear();
-    });
-  </script>
+  <script src="/js/pages/search.js"></script>
   <script>
     /* kaayko-footer-year */
     (function () {
@@ -761,7 +223,7 @@
       <span class="tour-eyebrow">Paddling Out</span>
       <h2>Find water near you</h2>
       <div class="tour-step"><span class="n">1</span><span class="t">Type any <b>lake, river or city</b> &mdash; you get a live Paddle Score for it.</span></div>
-      <div class="tour-step"><span class="n">2</span><span class="t">Drag the map, then tap <b>&ldquo;Search this area&rdquo;</b> to discover spots around you.</span></div>
+      <div class="tour-step"><span class="n">2</span><span class="t">Tap anywhere on the map to search there, or drag it and tap <b>&ldquo;Search this area&rdquo;</b>.</span></div>
       <div class="tour-step"><span class="n">3</span><span class="t">Tap any <b>pin</b> to open that lake&rsquo;s forecast.</span></div>
       <div class="tour-step"><span class="n">4</span><span class="t">Tap the <b>&hearts;</b> on a lake to save it &mdash; saved lakes show first everywhere.</span></div>
       <div class="tour-step"><span class="n">5</span><span class="t">Change units anytime in <b>Settings</b> &mdash; the gear, top-right.</span></div>

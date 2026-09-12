@@ -3,6 +3,7 @@
 <head>
   <script src="/js/prod-config.js"></script>
   <script src="/js/prefs.js"></script>
+  <script src="/js/util.js"></script>
   <script src="/js/consent-notice.js" defer></script>
   <script>document.documentElement.classList.add('dark-theme');</script>
   <meta charset="UTF-8"/>
@@ -880,7 +881,7 @@ html, body {
    Rate My Paddle — Client Logic
    ═══════════════════════════════════════════════════════════════════════════ */
 
-const API_BASE = window.KAAYKO_API_BASE || '/api';
+const API_BASE = (window.KaaykoUtil ? window.KaaykoUtil.apiBase() : (window.KAAYKO_API_BASE || '/api'));
 const STORAGE_PREFIX = 'kaayko_rate_';
 const UPDATE_WINDOW_MS = 2 * 60 * 60 * 1000;
 
@@ -1009,13 +1010,7 @@ function checkGPSDistance() {
   }
 }
 
-function haversine(lat1, lon1, lat2, lon2) {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2)**2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
+function haversine(lat1, lon1, lat2, lon2) { return window.KaaykoUtil.haversineKm(lat1, lon1, lat2, lon2); }
 
 function setGPS(verified, text) {
   const badge = document.getElementById('gpsBadge');

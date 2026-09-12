@@ -62,7 +62,14 @@
 | `/404` | `kaayko/src/404.html` |
 
 **JS files (paddlingout):**
-- `kaayko/src/js/paddlingout.js` — main logic, card rendering, carousel
+- `kaayko/src/js/paddlingout.js` — list page controller (stale-while-revalidate list cache)
+- `kaayko/src/js/pages/search.js` — Search controller: one `state`, one `render()`; map is the input (tap / type / locate)
+- `kaayko/src/js/util.js` — `KaaykoUtil`: escapeHtml, debounce, haversineKm, num, fetchJson, apiBase (the ONLY copies)
+- `kaayko/src/js/services/geo.js` — `KaaykoGeo`: forward / suggest / reverse geocode via the API proxies, memoised, abortable
+- `kaayko/src/js/components/PinPicker.js` — `PinPicker`: the ONE Leaflet wrapper (tap-to-pick, draggable pin, result pins) — used by Search and Add-a-lake
+- `kaayko/src/js/components/PaddleCard.js` — `PaddleCard.create(spot, {variant: minimal|full|row})` — every lake on screen, search results included
+- `kaayko/src/js/components/PoHeader.js` — the one page header
+- `kaayko/src/css/po-tokens.css` — design tokens (loaded last on every paddling page); `css/search.css` — search layout (sticky map panel + results)
 - `kaayko/src/js/services/apiClient.js` — fetch wrapper with fallback generation + caching
 - `kaayko/src/js/components/RatingHero.js` — paddle score display
 - `kaayko/src/js/components/WeatherStats.js` — weather data

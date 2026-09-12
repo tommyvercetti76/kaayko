@@ -91,6 +91,7 @@
   // Canonical 3-tier scale (matches prefs.js paddleScoreColor + the verdict labels).
   function scoreMeta(rating) {
     var P = window.KaaykoPrefs;
+    if (P && P.scoreMeta) return P.scoreMeta(rating);   // single source in prefs.js
     if (rating == null) return { color: '#555', label: 'N/A', severity: null, display: '—' };
     var sev = rating >= 3.7 ? 'good' : rating >= 2.7 ? 'moderate' : 'critical';
     var label = sev === 'good' ? 'Worth it' : sev === 'moderate' ? 'Careful' : 'Hard pass';
@@ -454,9 +455,71 @@
   }
 
   // ── public API ───────────────────────────────────────────────────────────────
+  // ── ROW variant (search results: any water body, curated or not) ────────────
+  // No photo. Name, meta line (type · distance · area), a score ring that fills
+  // when the score arrives (setScore), and optional actions. Same verdict
+  // colours as every other card because scoreMeta is shared.
+  function ringSvg(sm) {
+    var r = 18, cx = 24, cy = 24, circ = 2 * Math.PI * r;
+    var pct = sm.rating == null ? 0 : Math.max(0, Math.min(1, sm.rating / 5));
+    return '<svg class="pcard-ring-svg" viewBox="0 0 48 48" aria-hidden="true">' +
+      '<circle class="pcard-ring-track" cx="' + cx + '" cy="' + cy + '" r="' + r + '"/>' +
+      '<circle class="pcard-ring-fill" cx="' + cx + '" cy="' + cy + '" r="' + r + '" stroke="' + sm.color + '" ' +
+      'stroke-dasharray="' + (pct * circ).toFixed(2) + ' ' + ((1 - pct) * circ).toFixed(2) + '" transform="rotate(-90 ' + cx + ' ' + cy + ')"/>' +
+      '</svg><span class="pcard-ring-val">' + sm.display + '</span>';
+  }
+  function buildRow(data, opts) {
+    var row = el('div', 'pcard pcard--row', { role: 'option', tabindex: '0' });
+    row.dataset.id = data.id || '';
+    var body = el('div', 'pcard-row-body');
+    var name = el('div', 'pcard-row-name'); name.textContent = data.title;
+    var meta = el('div', 'pcard-row-meta');
+    (opts.metaBits || [data.subtitle]).filter(Boolean).forEach(function (bit, i) {
+      var s = el('span', i === 0 && opts.metaBits ? 'pcard-row-chip' : 'pcard-row-bit'); s.textContent = bit; meta.appendChild(s);
+    });
+    body.appendChild(name); body.appendChild(meta);
+    if (opts.badge) { var b = el('span', 'pcard-row-badge'); b.textContent = opts.badge; body.appendChild(b); }
+
+    var ring = el('div', 'pcard-ring' + (data.rating == null ? ' is-pending' : ''));
+    ring.setAttribute('aria-label', 'Paddle score');
+    ring.innerHTML = data.rating == null ? '<span class="pcard-ring-spin" aria-hidden="true"></span>' : ringSvg(scoreMeta(data.rating));
+
+    row.appendChild(body); row.appendChild(ring);
+
+    if (opts.showFavorite !== false && data.id && window.KaaykoPrefs && window.KaaykoPrefs.makeFavButton) {
+      row.appendChild(window.KaaykoPrefs.makeFavButton({ id: data.id, title: data.title, subtitle: data.subtitle }, { className: 'pcard-row-fav' }));
+    }
+    if (Array.isArray(opts.actions)) {
+      var acts = el('div', 'pcard-row-actions');
+      opts.actions.forEach(function (a) {
+        var btn = el('button', 'pcard-row-action', { type: 'button', 'aria-label': a.label });
+        btn.innerHTML = a.icon || ''; if (!a.icon) btn.textContent = a.label;
+        if (a.title) btn.title = a.title;
+        btn.addEventListener('click', function (e) { e.stopPropagation(); a.onClick(data); });
+        acts.appendChild(btn);
+      });
+      row.appendChild(acts);
+    }
+
+    /** Fill (or clear) the score ring after a batch score arrives. */
+    row.setScore = function (rating) {
+      var sm = scoreMeta(rating);
+      ring.classList.remove('is-pending');
+      ring.innerHTML = ringSvg(sm);
+      ring.setAttribute('aria-label', rating == null ? 'Paddle score unavailable' : 'Paddle score ' + sm.display + ', ' + sm.label);
+      row.dataset.severity = sm.severity || '';
+    };
+
+    if (typeof opts.onOpen === 'function') {
+      onActivate(row, function () { opts.onOpen(data); });
+    }
+    return row;
+  }
+
   function create(spot, opts) {
     opts = opts || {};
     var data = normalize(spot);
+    if (opts.variant === 'row') return buildRow(data, opts);
     return opts.variant === 'minimal' ? buildMinimal(data, opts) : buildFull(data, opts);
   }
 
