@@ -579,114 +579,7 @@ body {
 /* Hide the shared header entirely on this page */
 .header { display: none !important; }
 
-.po-page-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 1rem;
-  /* Side padding respects the notch/rounded corners on devices that report an
-     inset. env() resolves to 0 everywhere else, so this is a no-op on desktop.
-     Paired with viewport-fit=cover in the page <head> — one without the other
-     is either useless (no cover) or clips (cover with no inset padding). */
-  padding: 2rem max(2rem, env(safe-area-inset-right)) 1.25rem max(2rem, env(safe-area-inset-left));
-  border-bottom: 1px solid rgba(181,147,90,0.18);
-}
-
-.po-brand {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  min-width: 0;   /* without this a long spot name cannot shrink and shoves the
-                     header actions off-screen — flex children default to
-                     min-width:auto */
-}
-
-.po-eyebrow {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 0.78rem;
-  font-style: italic;
-  letter-spacing: 0.28em;
-  color: var(--gold, #b5935a);
-  opacity: 0.82;
-  text-transform: lowercase;
-}
-
-.po-title {
-  overflow-wrap: anywhere;          /* a long single-word place name wraps rather than overflowing */
-  font-family: var(--display);      /* Bebas — same wordmark face as the homepage */
-  font-size: clamp(1.7rem, 4.4vw, 2.35rem);
-  font-weight: 400;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--gold-bright, #d9bd7b);
-  margin: 0;
-  line-height: 1;
-}
-
-.po-search-btn {
-  flex-shrink: 0;
-  height: 36px;
-  padding: 0 1rem 0 0.7rem;
-  border: 1px solid rgba(181,147,90,0.36);
-  border-radius: 0;
-  clip-path: var(--clip-md);       /* chamfered, not a pill */
-  background: rgba(181,147,90,0.08);
-  color: var(--gold, #b5935a);
-  display: flex;
-  align-items: center;
-  gap: 0.38rem;
-  cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
-  margin-bottom: 0.15rem;
-}
-
-.po-search-btn .material-icons {
-  font-size: 18px;
-  line-height: 1;
-}
-
-.po-search-label {
-  font-family: 'Josefin Sans', Arial, sans-serif;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  line-height: 1;
-}
-
-.po-search-btn:hover {
-  background: rgba(181,147,90,0.18);
-  border-color: var(--gold, #b5935a);
-}
-
-/* Header actions: Search (secondary) + Submit Lake (primary) */
-.po-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
-.po-search-btn { text-decoration: none; }
-.po-submit-btn {
-  background: linear-gradient(135deg, var(--gold-bright, #d9bd7b), var(--gold, #b5935a));
-  color: #141210;
-  border-color: transparent;
-}
-.po-submit-btn:hover {
-  background: linear-gradient(135deg, var(--gold-bright, #d9bd7b), var(--gold, #b5935a));
-  border-color: transparent;
-  filter: brightness(1.06);
-}
-/* On small screens go icon-only so the brand + both actions fit one row.
-   Each button keeps its aria-label, so this stays accessible. */
-@media (max-width: 560px) {
-  .po-search-label { display: none; }
-  .po-search-btn { padding: 0 0.6rem; }
-}
-
-@media (max-width: 600px) {
-  .po-page-header {
-    padding: 1.4rem max(1.1rem, env(safe-area-inset-right)) 1rem max(1.1rem, env(safe-area-inset-left));
-  }
-  .po-title {
-    font-size: 1.4rem;
-  }
-}
+/* Page header lives in js/components/PoHeader.css (shared by every Paddling Out page). */
 
 /*─────────────────────────────────────────────────────────────────────────────
  12) Editorial blocks — intro lede and FAQ
@@ -787,3 +680,18 @@ body {
   color: var(--gold-bright);
   border-bottom-color: rgba(181, 147, 90, 0.5);
 }
+
+/* ── Chamfer outlines (12 Sep 2026) ────────────────────────────────────────
+   `border` + `clip-path` cuts the border off along every diagonal, which read
+   as truncated hexagons. Each shape below draws its outline as a layer clipped
+   to the polygon, with the fill clipped 1px inside it. Per element:
+   --kc-clip (polygon), --kc-line (outline colour), --kc-bg (fill). */
+.card, .po-error-retry, .conditions-badge { position: relative; isolation: isolate; border-color: transparent !important; background: transparent !important; }
+.card::before, .po-error-retry::before, .conditions-badge::before, .card::after, .po-error-retry::after, .conditions-badge::after { content: ''; position: absolute; z-index: -1; clip-path: var(--kc-clip); pointer-events: none; }
+.card::before, .po-error-retry::before, .conditions-badge::before { inset: 0; background: var(--kc-line); }
+.card::after, .po-error-retry::after, .conditions-badge::after { inset: 1px; background: var(--kc-bg); -webkit-backdrop-filter: var(--kc-blur, none); backdrop-filter: var(--kc-blur, none); }
+
+.card { --kc-clip: var(--clip-lg); --kc-line: var(--line); --kc-bg: linear-gradient(135deg, var(--panel-a), var(--panel-c)); }
+.po-error-retry { --kc-clip: var(--clip-md); --kc-line: rgba(181,147,90,0.5); --kc-bg: rgba(181,147,90,0.1); }
+.po-error-retry:hover { --kc-bg: rgba(181,147,90,0.2); }
+.conditions-badge { --kc-clip: var(--clip-sm); --kc-line: rgba(255,255,255,0.1); --kc-bg: rgba(8,8,8,0.62); --kc-blur: blur(14px) saturate(160%); }

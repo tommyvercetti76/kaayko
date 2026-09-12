@@ -219,8 +219,8 @@
   });
 
   // ── Reusable star button ─────────────────────────────────────────────────────
-  const STAR_FILLED ='<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M12 17.3l-6.18 3.7 1.64-7.03L2 9.24l7.19-.61L12 2l2.81 6.63 7.19.61-5.46 4.73 1.64 7.03z"/></svg>';
-  const STAR_OUTLINE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20" aria-hidden="true"><path d="M12 17.3l-6.18 3.7 1.64-7.03L2 9.24l7.19-.61L12 2l2.81 6.63 7.19.61-5.46 4.73 1.64 7.03z"/></svg>';
+  const STAR_FILLED ='<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M12 20.7s-6.9-4.4-9.3-8.6C1.2 9.4 2.6 5.5 6 4.6c2-.5 4 .3 5.1 1.9C12.2 4.9 14.2 4.1 16.2 4.6c3.4.9 4.8 4.8 3.3 7.5-2.4 4.2-7.5 8.6-7.5 8.6z"/></svg>'; // heart: one save symbol everywhere (cards, forecast, settings)
+  const STAR_OUTLINE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" width="20" height="20" aria-hidden="true"><path d="M12 20.7s-6.9-4.4-9.3-8.6C1.2 9.4 2.6 5.5 6 4.6c2-.5 4 .3 5.1 1.9C12.2 4.9 14.2 4.1 16.2 4.6c3.4.9 4.8 4.8 3.3 7.5-2.4 4.2-7.5 8.6-7.5 8.6z"/></svg>';
 
   function makeFavButton(spot, opts) {
     opts = opts || {};

@@ -236,10 +236,17 @@
         hit.classList.add('is-active');
         bar?.classList.add('has-sel');
 
-        // Snap cursor
+        // Place the cursor at the tapped hour, THEN reveal it. When it is
+        // already showing on this bar, hide → move → show so it never slides.
         if (cursor) {
-          cursor.style.left = `${khmPct(hour)}%`;
-          cursor.classList.add('visible');
+          const wasVisible = cursor.classList.contains('visible');
+          cursor.classList.remove('visible');
+          const place = () => {
+            cursor.style.left = `${khmPct(hour)}%`;
+            void cursor.offsetWidth;            // commit the position before the fade-in
+            cursor.classList.add('visible');
+          };
+          if (wasVisible) setTimeout(place, 90); else place();
         }
 
         // Build panel

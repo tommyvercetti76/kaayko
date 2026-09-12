@@ -5,7 +5,7 @@
   <script>document.documentElement.classList.add('dark-theme');</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Submit a Lake | Kaayko Paddling Out</title>
+  <title>Add a Lake | Kaayko Paddling Out</title>
   <meta name="description" content="Submit a lake or paddling water body to Kaayko Paddling Out. Anonymous submissions are welcome.">
   <meta name="robots" content="noindex, follow">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -14,7 +14,7 @@
   <script src="/vendor/leaflet/leaflet.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
     :root {
@@ -455,16 +455,12 @@
     }
   </style>
   <link rel="stylesheet" href="/css/footer.css">
+  <link rel="stylesheet" href="/js/components/PoHeader.css">
+  <script src="/js/components/PoHeader.js"></script>
 </head>
 <body>
+  <div id="po-header" data-title="Add a lake" data-eyebrow="Paddling Out" data-back="/paddlingout" data-current="submit"></div>
   <div class="submit-shell">
-    <header class="submit-top">
-      <div>
-        <span class="eyebrow">Paddling Out</span>
-        <h1>Submit Entry</h1>
-      </div>
-      <a class="back-link" href="/paddlingout">Back to lakes</a>
-    </header>
 
     <p class="launch-note">Add a lake, river, or boat ramp. A person reviews every entry before it goes public.</p>
     <p class="fineprint">

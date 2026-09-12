@@ -403,7 +403,6 @@ function updateSaveAreaUI() {
   if (btn) {
     btn.style.display = lastSearchParams ? 'inline-flex' : 'none';
     btn.classList.toggle('saved', isSaved);
-    const ic = btn.querySelector('.material-icons'); if (ic) ic.textContent = isSaved ? 'star' : 'star_border';
     btn.title = isSaved ? 'Saved as my area (tap to remove)' : 'Save this as my area';
   }
   if (chip && label) {

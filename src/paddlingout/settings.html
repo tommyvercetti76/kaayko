@@ -14,7 +14,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg:#080808;
@@ -157,17 +157,12 @@
     }
     @media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
   </style>
+  <link rel="stylesheet" href="/js/components/PoHeader.css">
+  <script src="/js/components/PoHeader.js"></script>
 </head>
 <body>
+  <div id="po-header" data-title="Settings" data-eyebrow="Paddling Out" data-back="/paddlingout" data-current="settings"></div>
   <main class="settings-shell">
-    <div class="settings-top">
-      <a class="back-link" href="/paddlingout">← Paddling Out</a>
-      <div class="settings-title">
-        <span class="eyebrow">Kaayko</span>
-        <h1>Settings</h1>
-      </div>
-    </div>
-
     <!-- ── Units ── -->
     <section class="card">
       <h2 data-kicon="ruler">Units</h2>
@@ -222,8 +217,8 @@
 
     <!-- ── My favorites ── -->
     <section class="card">
-      <h2 data-kicon="star">My favorites</h2>
-      <p class="hint">Lakes you star appear first on the Paddling Out list and here for quick access.</p>
+      <h2 data-kicon="heart">Saved lakes</h2>
+      <p class="hint">Lakes you save with the heart appear first on the Paddling Out list and here for quick access.</p>
       <div class="fav-list" id="favList"></div>
     </section>
 
@@ -314,7 +309,7 @@
       window.addEventListener('kaayko:areachange', paintArea);
 
       // ── Favorites ──
-      const STAR = '<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M12 17.3l-6.18 3.7 1.64-7.03L2 9.24l7.19-.61L12 2l2.81 6.63 7.19.61-5.46 4.73 1.64 7.03z"/></svg>';
+      const STAR = '<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M12 20.7s-6.9-4.4-9.3-8.6C1.2 9.4 2.6 5.5 6 4.6c2-.5 4 .3 5.1 1.9C12.2 4.9 14.2 4.1 16.2 4.6c3.4.9 4.8 4.8 3.3 7.5-2.4 4.2-7.5 8.6-7.5 8.6z"/></svg>';
       const TRASH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m2 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>';
       function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
@@ -324,8 +319,8 @@
         if (!favs.length) {
           list.innerHTML =
             '<div class="empty-state">' +
-            '<div class="big">No favorites yet</div>' +
-            '<div>Tap the ★ on any lake to save it. <a href="/paddlingout">Browse lakes →</a></div>' +
+            '<div class="big">No saved lakes yet</div>' +
+            '<div>Tap the &hearts; on any lake, or press and hold its tile, to save it. <a href="/paddlingout">Browse lakes →</a></div>' +
             '</div>';
           return;
         }

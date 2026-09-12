@@ -1,0 +1,146 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   PoHeader — the ONE header every Paddling Out page uses.
+   Rendered by js/components/PoHeader.js into <div id="po-header" …>.
+
+   Layout, all pages:   [‹ back]  eyebrow / TITLE          [Search] [Add] [Settings]
+   Mobile (≤560px):     labels drop, icons stay; back chevron stays first.
+   The current section's action is marked aria-current + .is-current.
+
+   Shapes: chamfered, never rounded — and the outline follows the chamfer.
+   A plain `border` + `clip-path` cuts the border off along the diagonal
+   (that was the "truncated hexagon" look). Here the outline is a pseudo layer
+   clipped to the same polygon, with the fill clipped 1px inside it.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --poh-gold: #b5935a;
+  --poh-gold-bright: #d9bd7b;
+  --poh-line: rgba(181, 147, 90, 0.36);
+  --poh-clip-md: polygon(9px 0, calc(100% - 9px) 0, 100% 9px, 100% calc(100% - 9px), calc(100% - 9px) 100%, 9px 100%, 0 calc(100% - 9px), 0 9px);
+}
+
+.po-page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  /* Side padding respects the notch on devices that report an inset; env()
+     is 0 elsewhere. Pairs with viewport-fit=cover in each page <head>. */
+  padding: 2rem max(2rem, env(safe-area-inset-right)) 1.25rem max(2rem, env(safe-area-inset-left));
+  border-bottom: 1px solid rgba(181, 147, 90, 0.18);
+}
+
+.po-brand-row { display: flex; align-items: flex-end; gap: 0.7rem; min-width: 0; }
+
+.po-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;                 /* a long spot name must shrink, not shove the actions off-screen */
+  text-decoration: none;
+  color: inherit;
+}
+
+.po-eyebrow {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 0.78rem;
+  font-style: italic;
+  letter-spacing: 0.28em;
+  color: var(--poh-gold);
+  opacity: 0.82;
+  text-transform: lowercase;
+}
+
+.po-title {
+  overflow-wrap: anywhere;
+  font-family: 'Bebas Neue', 'Josefin Sans', Arial, sans-serif;
+  font-size: clamp(1.7rem, 4.4vw, 2.35rem);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--poh-gold-bright);
+  margin: 0;
+  line-height: 1;
+}
+
+/* Chamfered control — outline and fill are two clipped layers under the content */
+.po-btn {
+  position: relative;
+  isolation: isolate;
+  flex-shrink: 0;
+  height: 36px;
+  padding: 0 1rem 0 0.7rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--poh-gold);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  cursor: pointer;
+  text-decoration: none;
+  margin-bottom: 0.15rem;
+  --poh-fill: rgba(181, 147, 90, 0.08);
+  --poh-outline: var(--poh-line);
+  transition: color 0.2s ease;
+}
+.po-btn::before,
+.po-btn::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  clip-path: var(--poh-clip-md);
+  transition: background 0.2s ease;
+}
+.po-btn::before { inset: 0; background: var(--poh-outline); }
+.po-btn::after  { inset: 1px; background: var(--poh-fill); }
+.po-btn:hover { --poh-fill: rgba(181, 147, 90, 0.18); --poh-outline: var(--poh-gold); }
+.po-btn:focus-visible { outline: 2px solid var(--poh-gold-bright); outline-offset: 3px; }
+.po-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+.po-btn-label {
+  font-family: 'Josefin Sans', Arial, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Primary action: Add a lake */
+.po-btn--primary {
+  color: #141210;
+  --poh-fill: linear-gradient(135deg, var(--poh-gold-bright), var(--poh-gold));
+  --poh-outline: transparent;
+}
+.po-btn--primary:hover { --poh-fill: linear-gradient(135deg, #e6cd8e, var(--poh-gold)); --poh-outline: transparent; }
+
+/* Where you are: the current section's button reads as pressed */
+.po-btn.is-current { color: var(--poh-gold-bright); --poh-fill: rgba(181, 147, 90, 0.2); --poh-outline: var(--poh-gold); }
+
+/* Back chevron — same chamfered chip, square */
+.po-back {
+  width: 36px;
+  padding: 0;
+  justify-content: center;
+}
+
+.po-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+
+@media (max-width: 560px) {
+  .po-btn-label { display: none; }
+  .po-btn { padding: 0 0.6rem; }
+  .po-actions { gap: 0.4rem; }
+}
+
+@media (max-width: 600px) {
+  .po-page-header {
+    padding: 1.4rem max(1.1rem, env(safe-area-inset-right)) 1rem max(1.1rem, env(safe-area-inset-left));
+  }
+  .po-title { font-size: 1.4rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .po-btn, .po-btn::before, .po-btn::after { transition: none; }
+}

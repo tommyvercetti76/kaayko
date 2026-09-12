@@ -47,7 +47,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="dns-prefetch" href="https://api-vwcc5j4qda-uc.a.run.app">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
 
   <!-- Shared store CSS -->
   <link rel="stylesheet" href="/css/storestyle.css" />
@@ -64,13 +64,16 @@
   <!-- Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
   <link rel="stylesheet" href="/css/footer.css">
+  <link rel="stylesheet" href="/js/components/PoHeader.css">
+  <script src="/js/components/PoHeader.js"></script>
 </head>
 
 <body>
 
+  <div id="po-header" data-title="Forecast" data-eyebrow="Paddling Out" data-back="/paddlingout" data-current="none"></div>
+
   <!-- HERO: full-viewport-width, lives outside <main> max-width container -->
   <div class="forecast-page-header">
-    <a class="forecast-back-btn" href="/paddlingout" aria-label="Back" id="forecastBackBtn">←</a>
     <div class="forecast-page-title" id="forecastPageTitle">
       <h2 id="forecastLakeName">Loading…</h2>
       <p id="forecastLakeLocation"></p>
@@ -938,24 +941,6 @@
     loadForecast();
   </script>
 
-  <!-- Smart back navigation: returns to wherever user came from -->
-  <script>
-    (function () {
-      const btn = document.getElementById('forecastBackBtn');
-      if (!btn) return;
-      btn.addEventListener('click', function (e) {
-        e.preventDefault();
-        // If there's real history to go back to (user navigated here from within the site),
-        // use browser back so search results, main grid, etc. are preserved.
-        // Fall back to /paddlingout for direct links / bookmarks.
-        if (window.history.length > 1 && document.referrer && document.referrer.includes(window.location.hostname)) {
-          window.history.back();
-        } else {
-          window.location.href = '/paddlingout';
-        }
-      });
-    })();
-  </script>
 
   <!-- Header scroll hide/show -->
   <script>

@@ -146,9 +146,13 @@
   box-shadow:0 0 0 1px rgba(255,255,255,0.25), 0 0 18px rgba(255,255,255,0.55);
   z-index:10; pointer-events:none;
   opacity:0;
-  transition:left 0.22s cubic-bezier(0.4,0,0.2,1), opacity 0.15s ease;
+  transform:translateX(-50%) scaleY(0.4);
+  transform-origin:center;
+  /* No `left` transition: the cursor must APPEAR at the tapped hour, not slide
+     across the bar from wherever it last was. It fades and unfolds in place. */
+  transition:opacity 0.18s ease, transform 0.22s cubic-bezier(0.2,0.8,0.2,1);
 }
-.khm-cursor.visible { opacity:1; }
+.khm-cursor.visible { opacity:1; transform:translateX(-50%) scaleY(1); }
 
 /* Invisible hit zones, one per hour */
 .khm-hit {

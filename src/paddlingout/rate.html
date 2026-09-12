@@ -29,7 +29,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="/css/storestyle.css">
   <link rel="stylesheet" href="/css/header.css">
@@ -663,8 +663,11 @@ html, body {
 }
 </style>
   <link rel="stylesheet" href="/css/footer.css">
+  <link rel="stylesheet" href="/js/components/PoHeader.css">
+  <script src="/js/components/PoHeader.js"></script>
 </head>
 <body>
+<div id="po-header" data-title="Rate your paddle" data-eyebrow="Paddling Out" data-back="/paddlingout" data-current="none"></div>
 
 <!-- ═══ Onboarding overlay (shown once) ═══ -->
 <div class="onboard-overlay" id="onboard" style="display:none">
@@ -696,10 +699,6 @@ html, body {
 <div class="rate-wrap" id="rateWrap">
 
   <!-- Back link -->
-  <a class="rate-back" href="/paddlingout">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
-    Paddling Out
-  </a>
 
   <!-- Loading state -->
   <div id="loadingState" class="rate-loading">

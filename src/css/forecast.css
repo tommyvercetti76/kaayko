@@ -1184,3 +1184,33 @@ main.forecast-main {
 .wt-est      { color: rgba(237,232,223,0.42); letter-spacing: 0.08em; }
 .wt-measured { color: rgba(126,169,140,0.85); letter-spacing: 0.08em; }
 .wt-none { color: rgba(237,232,223,0.45) !important; font-size: 0.95rem !important; }
+
+/* ── Chamfer outlines (12 Sep 2026) ────────────────────────────────────────
+   `border` + `clip-path` cuts the border off along every diagonal, which read
+   as truncated hexagons. Each shape below draws its outline as a layer clipped
+   to the polygon, with the fill clipped 1px inside it. Per element:
+   --kc-clip (polygon), --kc-line (outline colour), --kc-bg (fill). */
+.forecast-location-info, .kbg-block, .night-next, .forecast-alert-banner, .alert-mark, .alert-dismiss, .amenity-pill, .forecast-retry-btn { position: relative; isolation: isolate; border-color: transparent !important; background: transparent !important; }
+.forecast-location-info::before, .kbg-block::before, .night-next::before, .forecast-alert-banner::before, .alert-mark::before, .alert-dismiss::before, .amenity-pill::before, .forecast-retry-btn::before, .forecast-location-info::after, .kbg-block::after, .night-next::after, .forecast-alert-banner::after, .alert-mark::after, .alert-dismiss::after, .amenity-pill::after, .forecast-retry-btn::after { content: ''; position: absolute; z-index: -1; clip-path: var(--kc-clip); pointer-events: none; }
+.forecast-location-info::before, .kbg-block::before, .night-next::before, .forecast-alert-banner::before, .alert-mark::before, .alert-dismiss::before, .amenity-pill::before, .forecast-retry-btn::before { inset: 0; background: var(--kc-line); }
+.forecast-location-info::after, .kbg-block::after, .night-next::after, .forecast-alert-banner::after, .alert-mark::after, .alert-dismiss::after, .amenity-pill::after, .forecast-retry-btn::after { inset: 1px; background: var(--kc-bg); -webkit-backdrop-filter: var(--kc-blur, none); backdrop-filter: var(--kc-blur, none); }
+
+.forecast-location-info, .kbg-block, .night-next { --kc-clip: var(--clip-md); --kc-line: var(--line); --kc-bg: var(--surface); }
+.night-next { --kc-bg: rgba(0,0,0,0.28); }
+.forecast-alert-banner { --kc-clip: var(--clip-md); --kc-line: rgba(181,147,90,0.28); --kc-bg: linear-gradient(135deg, rgba(28,22,8,0.94), rgba(18,14,4,0.90)); border-left: 0 !important; }
+.forecast-alert-banner::after { box-shadow: inset 4px 0 0 var(--moderate); }   /* the alert accent stripe, inside the cut */
+.alert-mark { --kc-clip: var(--clip-sm); --kc-line: rgba(255,165,0,0.45); --kc-bg: rgba(255,165,0,0.12); }
+.alert-dismiss { --kc-clip: var(--clip-sm); --kc-line: rgba(237,232,223,0.12); --kc-bg: rgba(255,255,255,0.04); }
+.alert-dismiss:hover { --kc-line: rgba(237,232,223,0.35); --kc-bg: rgba(255,255,255,0.08); }
+.amenity-pill { --kc-clip: var(--clip-sm); --kc-line: rgba(217,189,123,0.22); --kc-bg: rgba(217,189,123,0.06); }
+.forecast-retry-btn { --kc-clip: var(--clip-sm); --kc-line: var(--gold); --kc-bg: transparent; }
+.forecast-retry-btn:hover { --kc-bg: rgba(181,147,90,0.14); }
+
+/* Hero heart: same outline-follows-the-cut treatment (prefs.js clips it at 8px) */
+.forecast-fav-slot .kaayko-fav-btn { position: relative; isolation: isolate; border: 0 !important; background: transparent !important;
+  --kc-clip: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+  --kc-line: rgba(181,147,90,0.30); --kc-bg: rgba(8,8,8,0.52); }
+.forecast-fav-slot .kaayko-fav-btn::before, .forecast-fav-slot .kaayko-fav-btn::after { content: ''; position: absolute; z-index: -1; clip-path: var(--kc-clip); pointer-events: none; }
+.forecast-fav-slot .kaayko-fav-btn::before { inset: 0; background: var(--kc-line); }
+.forecast-fav-slot .kaayko-fav-btn::after  { inset: 1px; background: var(--kc-bg); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.forecast-fav-slot .kaayko-fav-btn:hover { --kc-line: rgba(181,147,90,0.65); --kc-bg: rgba(181,147,90,0.18); }
