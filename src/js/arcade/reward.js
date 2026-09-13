@@ -11,11 +11,7 @@
  * page can stop offering a code that is already dead.
  */
 
-export const API_BASE = window.FORCE_PRODUCTION_MODE
-  ? window.PRODUCTION_API_BASE
-  : (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-      ? `${window.location.origin}/api`
-      : "https://api-vwcc5j4qda-uc.a.run.app");
+export const API_BASE = window.KAAYKO_API_BASE || window.PRODUCTION_API_BASE || 'https://api-vwcc5j4qda-uc.a.run.app';   // single source: prod-config.js
 
 const KEY = "kaayko.arcade.reward";
 const TOKEN_KEY = "kaayko.arcade.token";

@@ -8,11 +8,7 @@
  */
 
 // API Base URL - auto-detect environment with production override
-const API_BASE = window.FORCE_PRODUCTION_MODE 
-  ? window.PRODUCTION_API_BASE  // Force production mode
-  : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-      ? `${window.location.origin}/api`  // Local Firebase emulator
-      : "https://api-vwcc5j4qda-uc.a.run.app"); // CORRECT Firebase Functions v2 URL
+const API_BASE = window.KAAYKO_API_BASE || window.PRODUCTION_API_BASE || 'https://api-vwcc5j4qda-uc.a.run.app';   // single source: prod-config.js // CORRECT Firebase Functions v2 URL
 
 /**
  * Fetches the full list of products.

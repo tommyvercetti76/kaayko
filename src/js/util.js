@@ -65,6 +65,7 @@
 
   /** The API base every page must use. prefs.js owns the decision. */
   function apiBase() {
+    if (window.KAAYKO_API_BASE) return window.KAAYKO_API_BASE;   // computed once in prod-config.js
     if (window.KaaykoPrefs && window.KaaykoPrefs.kaaykoApiBase) return window.KaaykoPrefs.kaaykoApiBase();
     if (window.FORCE_PRODUCTION_MODE && window.PRODUCTION_API_BASE) return window.PRODUCTION_API_BASE;
     var h = window.location.hostname;

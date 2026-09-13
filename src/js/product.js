@@ -16,11 +16,7 @@ import { priceText } from "/js/priceMap.js";
 import { createFitPicker, needsPicker, addDirect, isSoldOut } from "/js/fitPicker.js";
 import { satireFor } from "/js/store-satire.js";
 
-const API_BASE = window.FORCE_PRODUCTION_MODE
-  ? window.PRODUCTION_API_BASE
-  : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-      ? `${window.location.origin}/api`
-      : "https://api-vwcc5j4qda-uc.a.run.app");
+const API_BASE = window.KAAYKO_API_BASE || window.PRODUCTION_API_BASE || 'https://api-vwcc5j4qda-uc.a.run.app';   // single source: prod-config.js
 
 function esc(s) {
   return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

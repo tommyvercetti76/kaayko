@@ -76,6 +76,7 @@
   // siblings forced production.
   const API_PRODUCTION = 'https://api-vwcc5j4qda-uc.a.run.app';
   function kaaykoApiBase() {
+    if (window.KAAYKO_API_BASE) return window.KAAYKO_API_BASE;   // computed once in prod-config.js
     if (window.FORCE_PRODUCTION_MODE) return window.PRODUCTION_API_BASE || API_PRODUCTION;
     const h = window.location.hostname;
     if (h === 'localhost' || h === '127.0.0.1') return window.location.origin + '/api';

@@ -9,6 +9,14 @@ window.FORCE_PRODUCTION_MODE = true;
 // Set the correct production API URL
 window.PRODUCTION_API_BASE = "https://api-vwcc5j4qda-uc.a.run.app";
 
+// The ONE API base for every page. prefs.js / util.js read this too. Localhost
+// goes through the hosting emulator rewrite (/api) unless production is forced.
+window.KAAYKO_API_BASE = window.FORCE_PRODUCTION_MODE
+  ? window.PRODUCTION_API_BASE
+  : ((location.hostname === "localhost" || location.hostname === "127.0.0.1")
+      ? location.origin + "/api"
+      : window.PRODUCTION_API_BASE);
+
 console.log("🚀 PRODUCTION MODE FORCED - Using:", window.PRODUCTION_API_BASE);
 
 /**

@@ -1083,10 +1083,24 @@
         // Only identifiers and quantities are sent. Prices are resolved
         // server-side from the product catalogue — the client does not
         // get a say in what it is charged.
+        function checkoutSessionNonce() {
+          try {
+            let n = sessionStorage.getItem('kaayko_checkout_session');
+            if (!n) {
+              n = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+                : 'cs-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12);
+              sessionStorage.setItem('kaayko_checkout_session', n);
+            }
+            return n;
+          } catch (e) { return ''; }   // no storage: server issues a fresh intent per call
+        }
         const res = await fetch(`${API_URL}/createPaymentIntent`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            // One nonce per bag session: retries reuse the same PaymentIntent,
+            // and no other shopper can ever derive the same key.
+            checkoutSession: checkoutSessionNonce(),
             rewardCode: state.reward?.code || null,
             // The arcade token. The server reads its standing: a paste surcharge is
             // added here, and a code won before a strike stops counting.

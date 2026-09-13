@@ -11,11 +11,7 @@
 
 import { priceText } from "/js/priceMap.js";
 
-const API_BASE = window.FORCE_PRODUCTION_MODE
-  ? window.PRODUCTION_API_BASE
-  : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-      ? `${window.location.origin}/api`
-      : "https://api-vwcc5j4qda-uc.a.run.app");
+const API_BASE = window.KAAYKO_API_BASE || window.PRODUCTION_API_BASE || 'https://api-vwcc5j4qda-uc.a.run.app';   // single source: prod-config.js
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

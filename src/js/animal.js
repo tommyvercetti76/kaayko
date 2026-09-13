@@ -6,11 +6,7 @@
 import { priceText } from "/js/priceMap.js";
 import { attachExpandingPicker } from "/js/fitPicker.js";
 
-const API_BASE = window.FORCE_PRODUCTION_MODE
-  ? window.PRODUCTION_API_BASE
-  : (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-      ? `${window.location.origin}/api`
-      : "https://api-vwcc5j4qda-uc.a.run.app");
+const API_BASE = window.KAAYKO_API_BASE || window.PRODUCTION_API_BASE || 'https://api-vwcc5j4qda-uc.a.run.app';   // single source: prod-config.js
 
 const IUCN_SEVERITY = {
   "critically endangered": "critical",
