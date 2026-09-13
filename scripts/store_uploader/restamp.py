@@ -116,13 +116,39 @@ def restamp(src: Path, out_dir: Path) -> dict:
     # Ink = not paper; a morphological opening at ~1.2% of the short side erases thin
     # rules and tooth stubs; the largest remaining blob is the printed design.
     ink = np.abs(np.asarray(body).astype(np.float32) - paper).max(axis=2) > 38
-    kk = max(5, int(min(bw, bh) * 0.012)) | 1
-    opened = Image.fromarray((ink * 255).astype(np.uint8)).filter(ImageFilter.MinFilter(kk)).filter(ImageFilter.MaxFilter(kk))
-    op = np.asarray(opened) > 0
+    # CLOSE, don't open: a closing at ~0.45 of a tooth pitch glues caption strips and
+    # edge text to the picture (they sit within ~0.3 pitch of it) but cannot bridge the
+    # stamp's own margin to the old teeth (≥0.5 pitch) or the album gap (≥1 pitch).
+    # Then drop specks and thin rules with a small opening, and take the largest blob.
+    # morphology at quarter resolution: PIL's rank filters are O(k²) per pixel and a
+    # 60 px kernel on a 4000 px scan takes a minute; at 1000 px it takes a second
+    q = 4
+    m_img = Image.fromarray((ink * 255).astype(np.uint8)).resize((max(1, bw // q), max(1, bh // q)), Image.BOX)
+    kc = max(3, int(pitch * 0.45 / q)) | 1
+    ko = max(3, int(min(bw, bh) * 0.008 / q)) | 1
+    closed = m_img.filter(ImageFilter.MaxFilter(kc)).filter(ImageFilter.MinFilter(kc))
+    opened = closed.filter(ImageFilter.MinFilter(ko)).filter(ImageFilter.MaxFilter(ko))
+    op = np.asarray(opened.resize((bw, bh), Image.NEAREST)) > 0
+    kk = ko * q
     small = np.asarray(opened.resize((max(1, bw // 6), max(1, bh // 6)), Image.NEAREST)) > 0
     lab = _label(small)
     if lab.max():
-        sizes = np.bincount(lab.ravel()); sizes[0] = 0; keep = lab == sizes.argmax()
+        sizes = np.bincount(lab.ravel()); sizes[0] = 0; main = int(sizes.argmax()); keep = lab == main
+        ys_, xs_ = np.where(keep)
+        # absorb text rows that belong to the design: a blob stacked directly above or
+        # below the main one, within a tooth pitch of it, not wider than the design
+        # (an album rule spans wider), and short (a line of type, not a picture)
+        my0, my1, mx0, mx1 = ys_.min(), ys_.max(), xs_.min(), xs_.max()
+        gap = pitch / 6.0; pw = (mx1 - mx0)
+        for lb in range(1, lab.max() + 1):
+            if lb == main or sizes[lb] < 20: continue
+            by, bx = np.where(lab == lb)
+            b0, b1, c0, c1 = by.min(), by.max(), bx.min(), bx.max()
+            stacked = (c0 >= mx0 - pw * 0.05) and (c1 <= mx1 + pw * 0.05)
+            near = (0 <= b0 - my1 <= gap) or (0 <= my0 - b1 <= gap)
+            short = (b1 - b0) <= 0.15 * (my1 - my0)
+            if stacked and near and short:
+                keep |= (lab == lb); my0, my1 = min(my0, b0), max(my1, b1)
         ys_, xs_ = np.where(keep)
         dy0, dy1 = int(ys_.min() * 6), int(min(bh, (ys_.max() + 1) * 6)); dx0, dx1 = int(xs_.min() * 6), int(min(bw, (xs_.max() + 1) * 6))
         # refine to exact ink edges inside that coarse box
@@ -144,7 +170,10 @@ def restamp(src: Path, out_dir: Path) -> dict:
         left_r, right_r = ink[dy0:dy1, :dx0], ink[dy0:dy1, dx1:]
         has_rule = any([line_in(top_r, 1), line_in(bot_r, 1), line_in(left_r, 0), line_in(right_r, 0)])
         ring_ink = float(np.concatenate([top_r.ravel(), bot_r.ravel(), left_r.ravel(), right_r.ravel()]).mean()) if (top_r.size + left_r.size) else 0.0
-        mode = "album" if has_rule else ("centre" if ring_ink < 0.01 else "face")
+        # width is the decisive evidence: a stamp's own paper margin is narrower than one
+        # tooth pitch; an album mount around a stamp is wider than that, rule or no rule
+        ring_w = min(dy0, bh - dy1, dx0, bw - dx1)
+        mode = "album" if (has_rule or ring_w > 1.0 * pitch) else ("centre" if ring_ink < 0.01 else "face")
         if mode == "face":
             dy0, dy1, dx0, dx1 = 0, bh, 0, bw
         # paper for the new margin: the ring just outside the design (the stamp's own white)
