@@ -195,7 +195,8 @@ outside the repo and dropped into a folder for `scripts/store_uploader`.
 - Data: one migration script (`kaayko-api/functions/scripts/migrate-prices.js`, dry-run first) sets `actualPrice` on all 36 docs from the table and deletes the `price` field. Historical orders are untouched (they snapshot).
 - Client: `priceMap.js` becomes `priceCents = actualPrice`, one table for display fallbacks; `PRICE_MAP`/`PRICE_SYMBOL_CENTS` deleted; `kaaykoFilterModal.js` price bands become the five real prices; admin tier flag deleted; `admin/products.js` and the kreator router stop writing a symbol; `store_uploader` `TYPE_DEFAULTS` = the table and `price_to_symbol` deleted; `smartLinkEnrichment.js` reads `actualPrice`.
 - Tests: `priceMap.test.mjs` and `checkout-payment-intent.test.js` rewritten for the table.
-- **decide:** the uploader knows print, sticker, mug, cap, poster with their own defaults. None exist in the catalogue; drop them from the store (`PRODUCT_TYPE_SECTIONS`, admin enum, uploader) or give them prices.
+- **Decided 13 Sep 2026:** print, cap and poster are dropped everywhere (grid sections, admin enum, uploader, tax map). Mug **$9.99** and sticker **$4.99** stay as a *coming soon* series: they exist in the type registry with `status: coming_soon`, the grid shows one "Coming soon" section naming the two types and their prices, nothing is buyable, and nothing collects an email (the brand does not). Uploading the first mug images and flipping the status to `live` is the launch.
+- **Type registry (new, and the point of pass two):** `productTypes` — one table read by everything: `{ key, label, priceCents, sizes, category, taxCode, status }`. The server prices from it, the uploader defaults from it, the grid sections come from it, the admin enum is it, the fit picker asks it for sizes. Adding a type is one row; no file elsewhere changes.
 
 ### B. One design, many products
 
@@ -241,3 +242,23 @@ Going live is the five-step switch documented in `prod-config.js` (live pk, sk, 
 ### Order of work (one pass, ~5 working days)
 
 1. A (prices + migration) → 2. C + D (games, about) → 3. B (designs, mockups, hoodie type; needs Rohan's templates/artwork) → 4. E (admin) → 5. F protocol run on the preview channel, then production, then the order test again on production.
+
+## 11. How I would run this store to scale (13 Sep 2026)
+
+Nine rules, then three horizons. Each rule names the thing in this repo it replaces.
+
+1. **The catalogue is a table, not a folder.** The `productTypes` registry (§10) is the first table; `designs` is the second. Today a type lives in eight files and a product is whatever the uploader wrote. Adding mugs must be one row and one status flip.
+2. **Design × type = product.** The artwork is the asset; products are derived from it by a script that also makes the images. Nothing is drawn twice by hand. Every product carries `designId`; "also available as" and the admin family view fall out of it.
+3. **One status per product.** `status: draft | live | sold_out | retired` behind one `isSellable(product)` that pricing, the public list and admin all call — replacing the three booleans (`isAvailable`, `soldOut`, `deletedAt`) that today are checked in three different ways.
+4. **Fulfilment is an API, not a person.** "Printed to order" is the promise, so integrate one print-on-demand provider: push the order on `payment_intent.succeeded`, take tracking from its webhook, use its mockups. This is the single largest lever; it removes the manual step, the missing-image problem and the shipping-cost guess at once. Until it lands, Kortex Orders is the manual bridge and must be excellent.
+5. **The customer can see their order without an account.** A tokenised order-status page linked from the receipt, refund/cancel from admin through Stripe (the delay notice already promises it), packing slip from the same order doc.
+6. **Money invariants do not move.** Server prices, the webhook is the only order writer, snapshots at purchase, idempotent keys, platform-admin for anything with money. Going live is the five-step switch, together.
+7. **Mail is a URL, on the domain.** SPF/DKIM on kaayko.com with a transactional provider; Gmail only ever for testing. Every mail is queued, redriven, and visible in Mail Health.
+8. **Observe the funnel, not the visitor.** Four events (view · bag · checkout · paid) per product type, a daily owner digest, scheduled Firestore exports before real money. No profiles, no retargeting — that is the brand, not a gap.
+9. **Keep the stance while scaling the operation.** Two to a bag, guest only, no account. Scale the catalogue, the fulfilment and the operator's console; never the manipulation.
+
+**Now — pass two (§10):** type registry with coming-soon mugs and stickers · prices by type, symbol deleted · design families + mockup script + hoodie type · one game · concise About · admin in the house language with order-line images · mail secret set · end-to-end order test on a channel, then production.
+
+**Next — before real money:** choose and integrate the print provider (mockups + order push + tracking) · order-status page, refund and cancel from admin · Firestore export schedule · domain mail · the live switch · `minInstances: 1` on the API.
+
+**Later — when the catalogue earns it:** series/collection pages (the stamp series, the wildlife series, the mug series) as indexable landing pages · a promotions table (the Beggathon becomes one row) · inventory only if in-house stock ever exists · a second currency only when orders show one.
