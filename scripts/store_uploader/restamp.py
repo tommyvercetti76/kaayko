@@ -131,6 +131,22 @@ def restamp(src: Path, out_dir: Path) -> dict:
         # a little breathing room so the opening has not shaved soft edges of the design
         pad = kk // 2 + 2
         dy0, dy1, dx0, dx1 = max(0, dy0 - pad), min(bh, dy1 + pad), max(0, dx0 - pad), min(bw, dx1 + pad)
+
+        # DECIDE BY EVIDENCE what the ring outside the ink box is:
+        #   a full-length line in it  → an album rule: the scan carries extra borders → use the ink box
+        #   pure paper                → the stamp's own margin, uneven from the scanner → keep the face, centre it
+        #   scattered ink (edge text on a white-paper design) → the ink box is NOT the design → keep the face as is
+        def line_in(region, axis):
+            if region.size == 0: return False
+            frac = region.mean(axis=axis)
+            return bool((frac > 0.6).any())
+        top_r, bot_r = ink[:dy0, dx0:dx1], ink[dy1:, dx0:dx1]
+        left_r, right_r = ink[dy0:dy1, :dx0], ink[dy0:dy1, dx1:]
+        has_rule = any([line_in(top_r, 1), line_in(bot_r, 1), line_in(left_r, 0), line_in(right_r, 0)])
+        ring_ink = float(np.concatenate([top_r.ravel(), bot_r.ravel(), left_r.ravel(), right_r.ravel()]).mean()) if (top_r.size + left_r.size) else 0.0
+        mode = "album" if has_rule else ("centre" if ring_ink < 0.01 else "face")
+        if mode == "face":
+            dy0, dy1, dx0, dx1 = 0, bh, 0, bw
         # paper for the new margin: the ring just outside the design (the stamp's own white)
         ringw = max(6, int(min(bw, bh) * 0.02))
         rr = np.asarray(body).astype(np.float32)
@@ -148,7 +164,7 @@ def restamp(src: Path, out_dir: Path) -> dict:
         fm = fm.filter(ImageFilter.GaussianBlur(1.5))
         rebuilt.paste(design, (m_new, m_new), fm)
         body = rebuilt; bw, bh = body.size
-        centre_note = {"design_px": [dw, dh], "margin_px": m_new}
+        centre_note = {"design_px": [dw, dh], "margin_px": m_new, "mode": mode}
     else:
         centre_note = {"design_px": None}
 
