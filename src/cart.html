@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="/css/storestyle.css" />
   <link rel="stylesheet" href="/css/header.css" />
   <link rel="stylesheet" href="/css/footer.css" />
+  <link rel="stylesheet" href="/css/toast.css" />
 
   <style>
     /* ────────────────────────────────────────────────────────────────
@@ -545,41 +546,6 @@
     }
 
     /* ── Toast ─────────────────────────────────────────────────────── */
-    .co-toast {
-      position: fixed;
-      left: 50%;
-      top: 20px;
-      z-index: 10000;
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      max-width: min(92vw, 460px);
-      padding: 14px 18px;
-      border: 1px solid var(--v2-border);
-      border-radius: 12px;
-      background: var(--v2-surface-elev);
-      color: var(--v2-fg);
-      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28);
-      font-family: var(--co-sans);
-      font-size: 13.5px;
-      line-height: 1.55;
-      animation: co-toast-in 0.32s var(--co-ease) both;
-    }
-    .co-toast .material-icons { font-size: 19px; flex: none; margin-top: 1px; }
-    .co-toast.is-error { border-color: color-mix(in srgb, var(--co-danger) 55%, transparent); }
-    .co-toast.is-error .material-icons { color: var(--co-danger); }
-    .co-toast.is-notice .material-icons { color: var(--v2-gold); }
-    .co-toast.is-leaving { animation: co-toast-out 0.24s var(--co-ease) both; }
-
-    @keyframes co-toast-in {
-      from { opacity: 0; transform: translate(-50%, -14px) scale(0.98); }
-      to   { opacity: 1; transform: translate(-50%, 0) scale(1); }
-    }
-    @keyframes co-toast-out {
-      from { opacity: 1; transform: translate(-50%, 0); }
-      to   { opacity: 0; transform: translate(-50%, -10px); }
-    }
-
     /* ── Motion ────────────────────────────────────────────────────────
        Restrained on purpose: entrances only, nothing that delays input. */
     .co-item {
@@ -632,7 +598,7 @@
 
     @media (prefers-reduced-motion: reduce) {
       .co-skeleton i,
-      .co-item, .co-masthead, .co-aside, .co-step.is-open, .co-toast {
+      .co-item, .co-masthead, .co-aside, .co-step.is-open {
         animation: none;
       }
       .co-btn, .co-input, .co-topbar-back, .co-item-remove, .co-empty a {
@@ -675,14 +641,6 @@
   <script type="module" src="/js/header.js"></script>
   <script src="https://js.stripe.com/v3/"></script>
   <script type="module" src="/js/pages/cart.js"></script>
-
-  <script>
-    /* kaayko-footer-year */
-    (function () {
-      var y = document.getElementById("year");
-      if (y) y.textContent = new Date().getFullYear();
-    })();
-  </script>
 
 </body>
 </html>

@@ -1,17 +1,19 @@
 /**
  * pages/cart.js — the bag and the checkout (/cart).
  *
- * Moved out of cart.html on 12 Sep 2026, line for line, so the money path could
- * be reviewed in one file. The Stripe publishable key comes from prod-config.js;
- * prices are never sent — the server re-derives them from the catalogue.
+ * Moved out of cart.html on 12 Sep 2026. Money is integer cents end to end: the
+ * bag stores priceCents, the server answers in cents, and money() is the only
+ * place a figure becomes a string. The Stripe publishable key comes from
+ * prod-config.js; prices are never sent — the server re-derives them from the
+ * catalogue (kaayko-api/functions/api/checkout/pricing.js).
  */
 import { cartManager } from '/js/cartManager.js';
 import { savedReward, clearReward, checkCode, minutesLeft, clientToken } from '/js/arcade/reward.js';
+import { esc, money } from '/js/kit.js';
+import { createPaymentIntent, calculateTax as requestTax, updateContact } from '/js/services/storeApi.js';
+import { show as showToast } from '/js/components/Toast.js';
 
 const STRIPE_KEY = window.KAAYKO_STRIPE_PK;
-const API_URL = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-  ? 'http://127.0.0.1:5001/kaaykostore/us-central1/api'
-  : 'https://api-vwcc5j4qda-uc.a.run.app';
 
 /* ── Checkout state ──────────────────────────────────────────────
    The payment intent is created ONCE, when the shopper actively
@@ -47,19 +49,11 @@ const state = {
 };
 
 /* ── Helpers ─────────────────────────────────────────────────── */
+// esc() and money() come from kit.js. Cart contents come from localStorage and
+// product titles from Firestore, so nothing is interpolated into HTML unescaped.
 
-// Cart contents come from localStorage and product titles from
-// Firestore, so never interpolate them into HTML unescaped.
-const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => (
-  { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
-));
-
-const money = (n) => `$${Number(n || 0).toFixed(2)}`;
-
-const parsePrice = (p) => {
-  const n = typeof p === 'number' ? p : parseFloat(String(p).replace(/[^0-9.]/g, ''));
-  return Number.isFinite(n) ? n : 0;
-};
+/** The checkout speaks in errors unless told otherwise. */
+const toast = (message, kind = 'error') => showToast(message, { kind });
 
 // A stable fingerprint of what is in the bag. If this changes after
 // an intent exists, the intent was priced for a different bag.
@@ -119,24 +113,6 @@ function rewardFieldMarkup() {
     </div>`;
 }
 
-const TOAST_ICON = { error: 'error_outline', notice: 'info_outline', good: 'check_circle' };
-
-function toast(message, kind = 'error') {
-  document.querySelector('.co-toast')?.remove();
-  const el = document.createElement('div');
-  el.className = `co-toast is-${kind}`;
-  el.setAttribute('role', kind === 'error' ? 'alert' : 'status');
-  el.innerHTML = '<span class="material-icons"></span><span></span>';
-  el.firstElementChild.textContent = TOAST_ICON[kind] || TOAST_ICON.error;
-  el.lastElementChild.textContent = message;
-  document.body.appendChild(el);
-  setTimeout(() => {
-    el.classList.add('is-leaving');
-    el.addEventListener('animationend', () => el.remove(), { once: true });
-    setTimeout(() => el.remove(), 600);
-  }, kind === 'error' ? 7000 : 5000);
-}
-
 /* Stripe's raw messages range from decent to opaque ("card_declined"),
    and a shopper who cannot tell whether to retry, fix something, or use
    another card simply leaves. Say what happened and what to do next. */
@@ -163,28 +139,28 @@ function friendlyPaymentError(error) {
   return error.message || 'That payment could not be completed. Please try again.';
 }
 
-/* ── Totals ──────────────────────────────────────────────────────
+/* ── Totals (integer cents) ───────────────────────────────────────
    Once the server has priced the bag it is the authority: the API
    resolves every price from Firestore rather than trusting what the
    client sends. Until then we show the catalogue price the shopper
-   already saw on the product page.                                */
+   already saw on the product page (priceCents, from priceMap.js).  */
 function totals(items) {
   const server = state.pi?.totals;
   if (server && typeof server.totalCents === 'number') {
     const taxKnown = state.taxState === 'ok' || state.taxState === 'disabled';
     return {
-      subtotal: (server.subtotalCents ?? server.totalCents) / 100,
-      tax: (server.taxCents || 0) / 100,
-      discount: (server.discountCents || 0) / 100,
+      subtotal: server.subtotalCents ?? server.totalCents,
+      tax: server.taxCents || 0,
+      discount: server.discountCents || 0,
       discountPercent: server.discountPercent || 0,
-      surcharge: (server.surchargeCents || 0) / 100,
+      surcharge: server.surchargeCents || 0,
       surchargePercent: server.surchargePercent || 0,
       taxKnown,
-      total: server.totalCents / 100,
+      total: server.totalCents,
       authoritative: true
     };
   }
-  const subtotal = items.reduce((sum, i) => sum + parsePrice(i.price) * (i.quantity || 1), 0);
+  const subtotal = items.reduce((sum, i) => sum + (i.priceCents || 0) * (i.quantity || 1), 0);
   return { subtotal, tax: 0, discount: 0, discountPercent: 0, surcharge: 0, surchargePercent: 0,
            taxKnown: false, total: subtotal, authoritative: false };
 }
@@ -345,7 +321,7 @@ function itemMarkup(item, index = 0) {
         <p class="co-item-meta">${meta}${meta ? '<br>' : ''}Quantity ${qty}</p>
       </div>
       <div class="co-item-side">
-        <span class="co-item-price">${money(parsePrice(item.price) * qty)}</span>
+        <span class="co-item-price">${money((item.priceCents || 0) * qty)}</span>
         <button class="co-item-remove" data-remove="${esc(item.productId)}"
                 aria-label="Remove ${esc(item.title)}">Remove</button>
       </div>
@@ -424,35 +400,33 @@ async function openCheckout() {
         return n;
       } catch (e) { return ''; }   // no storage: server issues a fresh intent per call
     }
-    const res = await fetch(`${API_URL}/createPaymentIntent`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        // One nonce per bag session: retries reuse the same PaymentIntent,
-        // and no other shopper can ever derive the same key.
-        checkoutSession: checkoutSessionNonce(),
-        rewardCode: state.reward?.code || null,
-        // The arcade token. The server reads its standing: a paste surcharge is
-        // added here, and a code won before a strike stops counting.
-        arcadeToken: clientToken(),
-        items: items.map(i => ({
-          productId: i.productId,
-          size: i.size ?? null,
-          gender: i.gender ?? null,
-          quantity: i.quantity || 1
-        }))
-      })
+    const res = await createPaymentIntent({
+      // One nonce per bag session: retries reuse the same PaymentIntent,
+      // and no other shopper can ever derive the same key.
+      checkoutSession: checkoutSessionNonce(),
+      rewardCode: state.reward?.code || null,
+      // The arcade token. The server reads its standing: a paste surcharge is
+      // added here, and a code won before a strike stops counting.
+      arcadeToken: clientToken(),
+      items: items.map(i => ({
+        productId: i.productId,
+        size: i.size ?? null,
+        gender: i.gender ?? null,
+        quantity: i.quantity || 1
+      }))
     });
 
-    const data = await res.json().catch(() => ({}));
+    const data = res.data || {};
     if (!res.ok || !data.clientSecret) {
-      // A 4xx is something the shopper can act on ("that piece just
-      // sold out"), so pass it through. A 5xx is ours to apologise
-      // for — never show the shopper a raw server message.
+      // Offline or a timeout means the request never got an answer — say so.
+      // A 4xx is something the shopper can act on ("that piece just sold
+      // out"), so pass it through. A 5xx is ours to apologise for — never
+      // show the shopper a raw server message.
       throw new Error(
-        (res.status < 500 && data.error)
-          ? data.error
-          : 'Checkout is briefly unavailable. Please try again in a moment.'
+        res.offline ? 'We could not reach checkout. Check your connection and try again.'
+        : res.timeout ? 'Checkout is taking too long to answer. Please try again.'
+        : (res.status < 500 && typeof data.error === 'string') ? data.error
+        : 'Checkout is briefly unavailable. Please try again in a moment.'
       );
     }
 
@@ -494,7 +468,7 @@ async function openCheckout() {
     // Both numbers come from the same catalogue, so a mismatch means
     // a price moved while the bag was open. Never quietly charge a
     // different number than the one the shopper was looking at.
-    if (priced && Math.abs(before - after) >= 0.01) {
+    if (priced && before !== after) {
       toast(`Prices updated — your total is now ${money(after)}.`, 'notice');
     }
     state.cartSig = signature(items);
@@ -505,12 +479,7 @@ async function openCheckout() {
     document.getElementById('co-step')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (err) {
     console.error('checkout init failed:', err);
-    // A thrown TypeError here means the request never left the
-    // browser — offline, DNS, blocked. "Failed to fetch" means
-    // nothing to a shopper.
-    toast(err instanceof TypeError
-      ? 'We could not reach checkout. Check your connection and try again.'
-      : (err.message || 'Could not start checkout. Please try again.'));
+    toast(err.message || 'Could not start checkout. Please try again.');
     state.step = 'bag';
     render();
   } finally {
@@ -675,13 +644,14 @@ async function calculateTax(address) {
   refreshReady();
 
   try {
-    const res = await fetch(`${API_URL}/createPaymentIntent/tax`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ paymentIntentId: state.pi.paymentIntentId, address })
-    });
-    const data = await res.json().catch(() => ({}));
+    const res = await requestTax({ paymentIntentId: state.pi.paymentIntentId, address });
+    const data = res.data || {};
     if (key !== state.taxKey) return;                     // address changed meanwhile
+    if (res.offline || res.timeout) {
+      throw new Error(res.offline
+        ? 'We could not reach the tax service. Check your connection and try again.'
+        : 'The tax service is taking too long to answer. Please try again.');
+    }
 
     // No such route yet = tax feature not deployed. Treat as off rather
     // than stranding the shopper on a button that can never enable.
@@ -694,7 +664,7 @@ async function calculateTax(address) {
       return;
     }
     if (!res.ok) {
-      throw new Error((res.status < 500 && (data.message || data.error)) || 'tax unavailable');
+      throw new Error('We could not calculate sales tax for that address. Please check it and try again.');
     }
     state.taxState = 'ok';
     state.pi.totals = { subtotalCents: data.subtotalCents, taxCents: data.taxCents, totalCents: data.totalCents };
@@ -708,9 +678,7 @@ async function calculateTax(address) {
     console.error('tax calculation failed:', err);
     state.taxState = 'error';
     setTaxRow('Unavailable');
-    toast(err instanceof TypeError
-      ? 'We could not reach the tax service. Check your connection and try again.'
-      : 'We could not calculate sales tax for that address. Please check it and try again.', 'error');
+    toast(err.message || 'We could not calculate sales tax for that address. Please check it and try again.', 'error');
   }
   refreshReady();
 }
@@ -755,18 +723,14 @@ async function submitPayment() {
   // nobody could ship. Stripe's receipt_email is a fallback for the receipt,
   // not a substitute for fulfilment details.
   try {
-    const contactRes = await fetch(`${API_URL}/createPaymentIntent/updateEmail`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        paymentIntentId: state.pi.paymentIntentId,
-        email: customerEmail,
-        phone: phone.value.trim() || null
-      })
+    const contactRes = await updateContact({
+      paymentIntentId: state.pi.paymentIntentId,
+      email: customerEmail,
+      phone: phone.value.trim() || null
     });
     if (!contactRes.ok) {
-      const body = await contactRes.json().catch(() => ({}));
-      throw new Error(body.message || body.error || `Contact update failed (${contactRes.status})`);
+      const body = contactRes.data || {};
+      throw new Error(body.message || body.error || `Contact update failed (${contactRes.status || 'no response'})`);
     }
   } catch (err) {
     console.error('could not attach contact details:', err);
