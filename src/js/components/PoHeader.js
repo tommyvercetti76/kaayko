@@ -31,11 +31,8 @@
     { key: 'settings', href: '/paddlingout/settings',    label: 'Settings', aria: 'Settings and saved lakes' }
   ];
 
-  function esc(s) {
-    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
-    });
-  }
+  // One escape helper for the whole frontend (js/util.js, loaded before this file).
+  function esc(s) { return window.KaaykoUtil.escapeHtml(s); }
 
   function render(host) {
     var d = host.dataset;

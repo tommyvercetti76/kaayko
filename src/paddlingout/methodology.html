@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="dark-theme">
 <head>
+  <script src="/js/prod-config.js"></script>
   <script>document.documentElement.classList.add('dark-theme');</script>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
@@ -189,10 +190,11 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
 </style>
   <link rel="stylesheet" href="/css/footer.css">
   <script src="/js/prefs.js"></script>
+  <script src="/js/util.js"></script>
   <script src="/js/kaayko-icons.js" defer></script>
   <link rel="stylesheet" href="/js/components/PoHeader.css">
   <script src="/js/components/PoHeader.js"></script>
-  <link rel="stylesheet" href="/css/po-tokens.css">
+  <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/po-system.css">
 </head>
 <body>
@@ -476,13 +478,6 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
 })();
 </script>
 
-  <script>
-    /* kaayko-footer-year */
-    (function () {
-      var y = document.getElementById("year");
-      if (y) y.textContent = new Date().getFullYear();
-    })();
-  </script>
 
 </body>
 </html>

@@ -4,10 +4,7 @@
    Includes Filter Toggle icon styling
    ========================================================================== */
 
-:root {
-  --color-brand-gold: #FFD700;
-  --color-bright-ivory: #fffff0;
-}
+/* Tokens (--color-*) are defined in css/tokens.css; link it before this file. */
 
 /*─────────────────────────────────────────────────────────────────────────────
  1) Base Header Layout (light mode)
@@ -469,19 +466,6 @@ html.dark-theme .custom-location-btn:hover {
 /*─────────────────────────────────────────────────────────────────────────────
  6) Dark-Mode Overrides (applied when <html class="dark-theme">)
 ─────────────────────────────────────────────────────────────────────────────*/
-html.dark-theme {
-  --color-body-bg:        #080808;
-  --color-header-bg:      #080808;
-  --color-modal-overlay:  rgba(0,0,0,0.88);
-  --color-text-base:      #ede8df;
-  --color-text-subtle:    #999;
-  --color-text-secondary: #777;
-  --color-bright-ivory:   #ede8df;
-  --color-accent:         #b5935a;
-  --color-card-bg:        #10110d;
-  /* Kaayko brand gold — replaces FFD700 in dark mode */
-  --color-brand-gold:     #b5935a;
-}
 html.dark-theme,
 html.dark-theme body {
   background-color: var(--color-body-bg) !important;

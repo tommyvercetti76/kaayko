@@ -19,7 +19,6 @@
 (function () {
   'use strict';
 
-  var API_FALLBACK = 'https://api-vwcc5j4qda-uc.a.run.app';
   var SWIPE = 40;   // px — commit an image change
   var MOVE  = 10;   // px — "the finger moved" gate (cancels a long-press / arms swipe)
   var LONG_MS = 500;
@@ -101,13 +100,10 @@
   }
 
   // Delegates to the single source of truth in prefs.js (loaded first on every
-  // page that uses this component); the literal stays only as a hard fallback.
+  // page that uses this component), which reads window.KAAYKO_API_BASE from prod-config.js.
   function apiBase() {
     if (window.KaaykoPrefs && window.KaaykoPrefs.kaaykoApiBase) return window.KaaykoPrefs.kaaykoApiBase();
-    if (window.FORCE_PRODUCTION_MODE && window.PRODUCTION_API_BASE) return window.PRODUCTION_API_BASE;
-    var h = window.location.hostname;
-    if (h === 'localhost' || h === '127.0.0.1') return window.location.origin + '/api';
-    return API_FALLBACK;
+    return window.KAAYKO_API_BASE;
   }
 
   function el(tag, cls, attrs) {

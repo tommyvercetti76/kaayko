@@ -54,11 +54,8 @@ const pageContent = {
  */
 async function fetchLakeImages() {
   try {
-    // Use the correct API endpoint from paddlingout.js
-    const _aboutApiBase = ['localhost', '127.0.0.1'].includes(window.location.hostname)
-      ? 'http://127.0.0.1:5001/kaaykostore/us-central1/api'
-      : 'https://api-vwcc5j4qda-uc.a.run.app';
-    const response = await fetch(`${_aboutApiBase}/paddlingOut`);
+    // The one API base, computed by prod-config.js (loaded in <head>).
+    const response = await fetch(`${window.KAAYKO_API_BASE}/paddlingOut`);
     
     if (!response.ok) {
       throw new Error('Failed to fetch lake data');

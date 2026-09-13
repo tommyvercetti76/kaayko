@@ -4,7 +4,7 @@
 class ApiClient {
   constructor() {
     // API endpoint configuration
-    this.productionUrl = 'https://api-vwcc5j4qda-uc.a.run.app';  // Updated to correct Firebase Functions v2 URL
+    this.productionUrl = window.PRODUCTION_API_BASE || window.KAAYKO_API_BASE;   // prod-config.js decides
     this.emulatorUrl = 'http://127.0.0.1:5001/kaaykostore/us-central1/api';
     
     // Auto-detect mode based on hostname

@@ -1,0 +1,139 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Kaayko design tokens — the ONE file where colour, type and cut are defined.
+
+   Two products, one vocabulary:
+     :root                 Paddling Out. Dark by default. Loaded LAST on those
+                           pages so it wins over each page's inline :root.
+     .store-v2             The store. Light by default; html.dark-theme (the
+                           header.js toggle) flips it. Loaded FIRST on store pages.
+
+   Canonical names: --bg --fg --muted --gold --gold-bright --line --surface
+   --surface-2 --good --moderate --critical --ok --bad, the three fonts and the
+   three cuts. The store's --v2-* names and the legacy --color-* names used by
+   header.css / storestyle.css are ALIASES defined here and nowhere else; do not
+   add new uses of them, and do not define a token in any other file.
+
+   Shape:   chamfered, never rounded. --clip-sm/md/lg are the three cuts.
+   Colour:  black ground, bone text, bullion gold; three verdict colours.
+   Type:    Bebas (titles), Josefin (labels/UI), Cormorant (reading).
+   ───────────────────────────────────────────────────────────────────────────── */
+:root {
+  --bg:            #080808;
+  --fg:            #ede8df;
+  --muted:         rgba(237, 232, 223, 0.58);
+  --gold:          #b5935a;
+  --gold-bright:   #d9bd7b;
+  --gold-ink:      #141210;                 /* text on a gold fill */
+  --line:          rgba(181, 147, 90, 0.28); /* hairlines, panel outlines */
+  --line-strong:   rgba(181, 147, 90, 0.74); /* card frames on the list */
+  --surface:       rgba(181, 147, 90, 0.06); /* filled fields, chips */
+  --surface-2:     rgba(181, 147, 90, 0.12);
+  --panel-a:       #0d0c0a;
+  --panel-b:       #10110d;
+
+  /* Verdicts — Worth it / Careful / Hard pass. Careful is AMBER everywhere
+     (cards, heatmap, forecast, rate); the orange #eb8127 is retired. */
+  --good:          #316d43;
+  --moderate:      #c59a61;
+  --critical:      #bd3b2b;
+  /* Form feedback */
+  --ok:            #8fbc6a;
+  --bad:           #f87171;
+
+  --font-display:  'Bebas Neue', 'Josefin Sans', Arial, sans-serif;
+  --font-sans:     'Josefin Sans', Arial, sans-serif;
+  --font-serif:    'Cormorant Garamond', Georgia, serif;
+
+  --clip-sm: polygon(6px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px), 0 6px);
+  --clip-md: polygon(9px 0, calc(100% - 9px) 0, 100% 9px, 100% calc(100% - 9px), calc(100% - 9px) 100%, 9px 100%, 0 calc(100% - 9px), 0 9px);
+  --clip-lg: polygon(13px 0, calc(100% - 13px) 0, 100% 13px, 100% calc(100% - 13px), calc(100% - 13px) 100%, 13px 100%, 0 calc(100% - 13px), 0 13px);
+
+  --ease: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+/* ══ The store ══════════════════════════════════════════════════════════════
+   Values are exactly those storestyle.css carried until 12 Sep 2026 (light
+   meets WCAG AA: fg ~14:1, muted ~7:1, gold 5.25:1 on bg). */
+.store-v2 {
+  --bg:           #f5f1e7;
+  --surface:      #fffdf6;
+  --surface-2:    #ffffff;
+  --line:         rgba(26, 24, 21, 0.12);
+  --fg:           #1a1815;
+  --muted:        #4d4740;
+  --gold:         #7a6030;
+  --gold-bright:  #6f5728;
+  --good:         #1f6b3a;
+  /* store-only */
+  --v2-section-title: #1a1815;
+  --v2-image-bg:      #f1ede6;
+  --v2-image-border:  rgba(0, 0, 0, 0.08);
+  --v2-overlay-bg:    rgba(255, 255, 255, 0.92);
+  --v2-overlay-fg:    #24211d;
+  --v2-new-bg:        #1f6b3a;
+  --v2-new-fg:        #f7f3e8;
+  /* aliases — every existing --v2-* rule keeps resolving */
+  --v2-bg:            var(--bg);
+  --v2-surface:       var(--surface);
+  --v2-surface-elev:  var(--surface-2);
+  --v2-border:        var(--line);
+  --v2-fg:            var(--fg);
+  --v2-fg-muted:      var(--muted);
+  --v2-gold:          var(--gold);
+  --v2-gold-bright:   var(--gold-bright);
+  --v2-green:         var(--good);
+}
+/* Dark — driven by the global <html>.dark-theme toggle in header.js. */
+html.dark-theme .store-v2 {
+  --bg:           #070807;
+  --surface:      #0d0f0d;
+  --surface-2:    #141613;
+  --line:         rgba(181, 147, 90, 0.22);
+  --fg:           #f5efe2;
+  --muted:        rgba(245, 239, 226, 0.82);
+  --gold:         #d4b684;
+  --gold-bright:  #eccf9c;
+  --good:         #7ed192;
+  --v2-section-title: #f5efe2;
+  --v2-image-bg:      #f1ede6;
+  --v2-image-border:  rgba(255, 255, 255, 0.04);
+  --v2-overlay-bg:    rgba(255, 255, 255, 0.92);
+  --v2-overlay-fg:    #24211d;
+  --v2-new-bg:        #5fb37a;
+  --v2-new-fg:        #0a1a10;
+}
+
+/* ══ Legacy names (header.css, storestyle.css, reads.html) ═════════════════
+   Moved here unchanged from the :root blocks those two files used to carry.
+   They pre-date the store palette above and describe the old header/footer
+   chrome; migrate rules to the canonical names and delete these. */
+:root {
+  --spacing-small:  4px;
+  --spacing-medium: 8px;
+  --spacing-large:  16px;
+
+  --color-body-bg:        #f9f9f9;
+  --color-header-bg:      #333;
+  --color-modal-overlay:  rgba(0, 0, 0, 0.8);
+  --color-accent:         #ff8c00;
+  --color-brand-gold:     #FFD700;
+  --color-error:          #ef4444;
+  --color-text-base:      #333;
+  --color-text-subtle:    #888;
+  --color-text-secondary: #ccc;
+  --color-off-black:      #111;
+  --color-bright-ivory:   #fffff0;
+  --color-card-bg:        #fff;
+}
+html.dark-theme {
+  --color-body-bg:        #080808;
+  --color-header-bg:      #080808;
+  --color-modal-overlay:  rgba(0, 0, 0, 0.88);
+  --color-text-base:      #ede8df;
+  --color-text-subtle:    #999;
+  --color-text-secondary: #777;
+  --color-bright-ivory:   #ede8df;
+  --color-accent:         #b5935a;
+  --color-card-bg:        #10110d;
+  --color-brand-gold:     #b5935a;   /* Kaayko brand gold replaces FFD700 in dark mode */
+}

@@ -3,6 +3,7 @@
  * Moved out of card.html on 12 Sep 2026 unchanged.
  */
 import { front, back } from '/js/cards/render.js';
+import { esc, apiBase } from '/js/kit.js';
 
 /* ── the lighting model ────────────────────────────────────────────────────
    Blinn-Phong with a Schlick Fresnel term. The pointer is a light at (lx, ly)
@@ -113,13 +114,9 @@ document.getElementById('turn').addEventListener('click', (e) => { e.stopPropaga
 /* ── the series ──────────────────────────────────────────────────────────────
    Eight cards, one chassis. Only the face and the four facts change, which is the
    whole idea, so the switcher only swaps two images and one line of type.        */
-// Card names and lines come from a JSON file, so they are escaped before they
-// reach innerHTML. This lived in the product-grid block that was removed.
-const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) =>
-  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-
-const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-  ? `${location.origin}/api` : 'https://api-vwcc5j4qda-uc.a.run.app';
+// Card names and lines come from a JSON file, so they are escaped (kit.esc) before they
+// reach innerHTML. The API base is the one every page uses.
+const API = apiBase();
 
 // Only used when the API cannot be reached at all.
 const FALLBACK_BRAND = {

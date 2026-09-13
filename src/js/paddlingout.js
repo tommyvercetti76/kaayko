@@ -19,11 +19,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const Prefs = () => window.KaaykoPrefs;
   const variant = () => (Prefs() && Prefs().getCardStyle) ? Prefs().getCardStyle() : 'full';
 
-  // Single source of truth: KaaykoPrefs.kaaykoApiBase (prefs.js loads first)
+  // Single source of truth: KaaykoPrefs.kaaykoApiBase (prefs.js loads first),
+  // which itself reads window.KAAYKO_API_BASE from prod-config.js.
   function endpoint() {
-    return (Prefs() && Prefs().kaaykoApiBase)
-      ? Prefs().kaaykoApiBase()
-      : "https://api-vwcc5j4qda-uc.a.run.app";
+    return (Prefs() && Prefs().kaaykoApiBase) ? Prefs().kaaykoApiBase() : window.KAAYKO_API_BASE;
   }
 
   if (spotId) fetchSingle(spotId);

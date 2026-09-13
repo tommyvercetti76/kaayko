@@ -21,8 +21,8 @@ const AW = 401;            // 1050 / phi — the art column
 const TX = AW + 56;        // where the words start
 const INK = "#1E1810", MUTE = "#6E5C40", PAPER = "#F5EFE1", CREAM = "#FCFBEA";
 
-export const esc = (s) => String(s ?? "").replace(/[&<>"']/g,
-  (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+import { esc } from "/js/kit.js";
+export { esc };
 
 /** Two lines, no more. A third line would collide with the rule under the hook. */
 export function wrap(text, width = 26, max = 2) {

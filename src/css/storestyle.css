@@ -8,30 +8,8 @@
 /* ----------------------------------------------------------
 1) RESET & GLOBAL LAYOUT (shared)
 ---------------------------------------------------------- */
-:root {
-  /* SPACING SCALE */
-  --spacing-small: 4px;
-  --spacing-medium: 8px;
-  --spacing-large: 16px;
-
-  /* COLOR PALETTE */
-  --color-body-bg: #f9f9f9;
-  --color-header-bg: #333;
-  --color-modal-overlay: rgba(0,0,0,0.8);
-  --color-accent: #ff8c00;
-  --color-brand-gold: #FFD700;
-  --color-error: #ef4444;
-  --color-text-base: #333;
-  --color-text-subtle: #888;
-  --color-text-secondary: #ccc;
-
-  /* SPECIAL TEXT COLORS */
-  --color-off-black: #111;
-  --color-bright-ivory:#fffff0;
-
-  /* CARD BACKGROUND */
-  --color-card-bg: #fff;
-}
+/* Tokens (--spacing-*, --color-*, --v2-*) are defined in css/tokens.css and
+   nowhere else. Every page that links this file links tokens.css first. */
 
 /* CUSTOM FONTS (shared) */
 @font-face {
@@ -823,44 +801,7 @@ Sustainability Alert Modal
 /* ----------------------------------------------------------
 14) Store 2.0 (scoped, feature-safe visual upgrade)
 ---------------------------------------------------------- */
-/* Light is the default — meets WCAG AA. */
-.store-v2 {
-  --v2-bg: #f5f1e7;
-  --v2-surface: #fffdf6;
-  --v2-surface-elev: #ffffff;
-  --v2-border: rgba(26, 24, 21, 0.12);
-  --v2-fg: #1a1815;                       /* ~14:1 on bg */
-  --v2-fg-muted: #4d4740;                 /* ~7:1 on bg, meets AA */
-  --v2-section-title: #1a1815;
-  --v2-gold: #7a6030;                     /* 5.25:1 on --v2-bg, 5.8:1 on --v2-surface (AA). #8b6f3a measured 4.20:1 */
-  --v2-gold-bright: #6f5728;
-  --v2-green: #1f6b3a;
-  --v2-image-bg: #f1ede6;
-  --v2-image-border: rgba(0, 0, 0, 0.08);
-  --v2-overlay-bg: rgba(255, 255, 255, 0.92);
-  --v2-overlay-fg: #24211d;
-  --v2-new-bg: #1f6b3a;
-  --v2-new-fg: #f7f3e8;
-}
-/* Dark theme override — driven by the global `<html>.dark-theme` toggle. */
-html.dark-theme .store-v2 {
-  --v2-bg: #070807;
-  --v2-surface: #0d0f0d;
-  --v2-surface-elev: #141613;
-  --v2-border: rgba(181, 147, 90, 0.22);
-  --v2-fg: #f5efe2;
-  --v2-fg-muted: rgba(245, 239, 226, 0.82);  /* ~10:1 on bg, AA */
-  --v2-section-title: #f5efe2;
-  --v2-gold: #d4b684;
-  --v2-gold-bright: #eccf9c;
-  --v2-green: #7ed192;
-  --v2-image-bg: #f1ede6;
-  --v2-image-border: rgba(255, 255, 255, 0.04);
-  --v2-overlay-bg: rgba(255, 255, 255, 0.92);
-  --v2-overlay-fg: #24211d;
-  --v2-new-bg: #5fb37a;
-  --v2-new-fg: #0a1a10;
-}
+/* Store palette: css/tokens.css (.store-v2 and html.dark-theme .store-v2). */
 
 .store-v2 html,
 .store-v2 body,

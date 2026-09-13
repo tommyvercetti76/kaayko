@@ -168,3 +168,37 @@ body .search-here-btn::before, body .search-here-btn::after { content: ''; posit
 body .search-here-btn::before { inset: 0; background: var(--kc-line); }
 body .search-here-btn::after  { inset: 1px; background: var(--kc-bg); }
 body .search-here-btn:hover { --kc-bg: linear-gradient(135deg, #e6cd8e, var(--gold)); }
+
+/* ═══ Fields and the section label — moved from po-tokens.css (12 Sep 2026) ═══ */
+/* ── Fields: filled, chamfered, underlined. Inputs cannot carry pseudo
+      elements, so instead of an outline that would be cut at the corners the
+      field is a soft gold fill with a gold hairline along the bottom. ── */
+.po-field,
+.po-page input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]),
+.po-page textarea,
+.po-page select {
+  border: 0 !important;
+  border-bottom: 1px solid var(--line) !important;
+  border-radius: 0 !important;
+  clip-path: var(--clip-sm);
+  background: var(--surface) !important;
+  color: var(--fg);
+  box-shadow: none !important;
+  transition: background 0.18s var(--ease), border-color 0.18s var(--ease);
+}
+.po-page input:focus, .po-page textarea:focus, .po-page select:focus, .po-field:focus {
+  outline: none;
+  border-bottom-color: var(--gold-bright) !important;
+  background: var(--surface-2) !important;
+}
+.po-page input::placeholder, .po-page textarea::placeholder { color: rgba(237, 232, 223, 0.32); }
+
+/* ── Section label ("PREP", "THE SPOT", "UNITS"): one size, one tracking ── */
+.po-kicker {
+  font-family: var(--font-sans);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
