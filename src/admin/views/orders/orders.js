@@ -88,6 +88,14 @@ let hasMore = false;
 let listEl = null;
 let tabsEl = null;
 let countEl = null;
+let searchQuery = '';
+
+function matchesSearch(s) {
+  if (!searchQuery) return true;
+  const hay = [s.orderNumber, s.customerEmail, s.parentOrderId, ...(s.items || []).map((i) => i.productTitle)]
+    .filter(Boolean).join(' ').toLowerCase();
+  return hay.includes(searchQuery);
+}
 let moreEl = null;
 
 // ---------------------------------------------------------------------------
@@ -116,6 +124,9 @@ export async function init(STATE) { // eslint-disable-line no-unused-vars
 
     <div class="card orders-card">
       <div class="orders-tabs" id="orders-tabs"></div>
+      <div class="orders-find">
+        <input type="search" class="orders-search" id="orders-search" placeholder="Order number, email or product" aria-label="Find an order" autocomplete="off" spellcheck="false">
+      </div>
       <div class="orders-count" id="orders-count"></div>
       <div class="orders-list" id="orders-list">
         <div class="loading">Loading orders…</div>
@@ -128,6 +139,11 @@ export async function init(STATE) { // eslint-disable-line no-unused-vars
   countEl = container.querySelector('#orders-count');
   listEl = container.querySelector('#orders-list');
   moreEl = container.querySelector('#orders-more');
+
+  // Find by the number the customer quotes, their email, or what they bought.
+  searchQuery = '';
+  const searchEl = container.querySelector('#orders-search');
+  if (searchEl) searchEl.addEventListener('input', () => { searchQuery = searchEl.value.trim().toLowerCase(); renderList(); updateCount(); });
 
   // Filter tabs — delegated, so re-rendering the buttons is safe.
   tabsEl.addEventListener('click', (e) => {
@@ -278,7 +294,71 @@ function onListClick(e) {
   if (action === 'delay-open')   { toggleDelayForm(card, true); return; }
   if (action === 'delay-cancel') { toggleDelayForm(card, false); return; }
   if (action === 'delay-confirm') { confirmDelay(id, card); return; }
+  if (action === 'cancel-open')   { toggleForm(card, '.order-cancel-form', true); return; }
+  if (action === 'cancel-close')  { toggleForm(card, '.order-cancel-form', false); return; }
+  if (action === 'cancel-confirm') { confirmCancel(id, card); return; }
+  if (action === 'refund-open')   { toggleForm(card, '.order-refund-form', true); return; }
+  if (action === 'refund-close')  { toggleForm(card, '.order-refund-form', false); return; }
+  if (action === 'refund-confirm') { confirmRefund(id, card); return; }
   if (action === 'status') { changeStatus(id, card, btn.dataset.status); return; }
+}
+
+function toggleForm(card, selector, open) {
+  if (!card) return;
+  const form = card.querySelector(selector);
+  if (!form) return;
+  form.hidden = !open;
+  if (open) { const first = form.querySelector('input, textarea'); if (first) first.focus(); }
+}
+
+async function postOrderAction(path, body) {
+  const res = await apiFetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  if (!res) throw new Error('Not signed in');
+  if (!res.ok) throw new Error(await errorMessage(res, `Request failed (${res.status})`));
+  return res.json();
+}
+
+/** Cancel before shipping: a full refund at Stripe and every line cancelled. */
+async function confirmCancel(parentOrderId, card) {
+  const form = card && card.querySelector('.order-cancel-form');
+  const reason = form ? String(form.querySelector('.order-cancel-reason').value || '').trim() : '';
+  const s = findShipment(parentOrderId);
+  const amount = s ? money(Math.max(0, (Number(s.orderTotalCents) || 0) - (Number(s.refundedCents) || 0)), s.currency || 'usd') : 'the full amount';
+  if (!window.confirm(`Cancel ${s && s.orderNumber ? s.orderNumber : 'this order'} and refund ${amount} to the customer's card? This cannot be undone.`)) return;
+  setCardBusy(card, true);
+  try {
+    const r = await postOrderAction('/admin/orders/cancel', { parentOrderId, reason });
+    showSuccess(r.refundId ? `Cancelled. ${money(r.refundedCents, s && s.currency)} is on its way back; the customer is emailed when Stripe confirms.` : 'Cancelled.');
+    await load();
+  } catch (err) {
+    showError(err && err.message ? err.message : 'Could not cancel this order.');
+    setCardBusy(card, false);
+  }
+}
+
+/** Refund some or all of a paid order, through Stripe. */
+async function confirmRefund(parentOrderId, card) {
+  const form = card && card.querySelector('.order-refund-form');
+  if (!form) return;
+  const s = findShipment(parentOrderId);
+  const left = s ? Math.max(0, (Number(s.orderTotalCents) || 0) - (Number(s.refundedCents) || 0)) : 0;
+  const dollars = String(form.querySelector('.order-refund-amount').value || '').trim();
+  const reason = String(form.querySelector('.order-refund-reason').value || '').trim();
+  const amountCents = dollars ? Math.round(Number(dollars) * 100) : left;
+  if (!Number.isInteger(amountCents) || amountCents <= 0 || amountCents > left) {
+    showError(`Enter an amount between $0.01 and ${money(left, s && s.currency)}.`);
+    return;
+  }
+  if (!window.confirm(`Refund ${money(amountCents, s && s.currency)} on ${s && s.orderNumber ? s.orderNumber : 'this order'}? Stripe sends it back to the card; this cannot be undone.`)) return;
+  setCardBusy(card, true);
+  try {
+    await postOrderAction('/admin/orders/refund', { parentOrderId, amountCents, reason });
+    showSuccess(`Refund of ${money(amountCents, s && s.currency)} requested. The order updates and the customer is emailed when Stripe confirms.`);
+    await load();
+  } catch (err) {
+    showError(err && err.message ? err.message : 'Could not refund this order.');
+    setCardBusy(card, false);
+  }
 }
 
 /** Advance a whole order to a plain status (no tracking involved). */
@@ -461,6 +541,7 @@ function visibleShipments() {
   const filter = FILTERS.find((f) => f.key === currentFilter) || FILTERS[0];
   return shipments
     .filter((s) => filter.match(statusOf(s)))
+    .filter(matchesSearch)
     .sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt));
 }
 
@@ -579,11 +660,14 @@ function orderCard(shipment) {
     <article class="order-card order-card--${escapeHtml(status)}" data-card-id="${jsAttr(id)}">
       <div class="order-head">
         <div class="order-head-text">
-          <h3 class="order-title">${escapeHtml(String(shipment.unitCount || items.length || 0))} item${(shipment.unitCount || 0) === 1 ? '' : 's'} · ${escapeHtml(money(shipment.orderTotalCents, currency))}</h3>
+          <h3 class="order-title">${shipment.orderNumber ? `<span class="order-number">${escapeHtml(shipment.orderNumber)}</span> · ` : ''}${escapeHtml(String(shipment.unitCount || items.length || 0))} item${(shipment.unitCount || 0) === 1 ? '' : 's'} · ${escapeHtml(money(shipment.orderTotalCents, currency))}</h3>
           <div class="order-sub">${escapeHtml(shipment.customerEmail || 'No email on file')}</div>
           <div class="order-sub order-sub--muted">${escapeHtml(dateTime(shipment.paidAt || shipment.createdAt))}</div>
         </div>
-        ${statusBadge(status)}
+        <div class="order-badges">
+          ${statusBadge(status)}
+          ${refundBadge(shipment)}
+        </div>
       </div>
 
       <div class="order-block">
@@ -602,8 +686,55 @@ function orderCard(shipment) {
       ${actionsFor(shipment, status, id)}
       ${shipForm(shipment, id)}
       ${delayForm(shipment, id)}
+      ${cancelForm(shipment, id)}
+      ${refundForm(shipment, id)}
     </article>
   `;
+}
+
+function refundBadge(shipment) {
+  const refunded = Number(shipment.refundedCents) || 0;
+  if (refunded <= 0) return '';
+  const full = shipment.paymentStatus === 'refunded';
+  return `<span class="badge badge-error order-status">${full ? 'Refunded' : `Refunded ${escapeHtml(money(refunded, shipment.currency || 'usd'))}`}</span>`;
+}
+
+function cancelForm(shipment, id) {
+  const left = Math.max(0, (Number(shipment.orderTotalCents) || 0) - (Number(shipment.refundedCents) || 0));
+  return `
+    <div class="order-ship-form order-cancel-form" hidden>
+      <label class="order-field">
+        <span class="order-field-label">Reason (optional, kept on the order)</span>
+        <textarea class="order-cancel-reason" rows="2" maxlength="300" placeholder="e.g. customer asked before it shipped"></textarea>
+      </label>
+      <p class="order-delay-hint">${left > 0
+        ? `${escapeHtml(money(left, shipment.currency || 'usd'))} goes back to the card through Stripe. Every line is marked cancelled now; the customer gets a refund email when Stripe confirms.`
+        : 'Nothing left to refund; the lines are marked cancelled.'}</p>
+      <div class="order-actions">
+        <button type="button" class="btn btn-danger" data-action="cancel-confirm" data-id="${jsAttr(id)}">Cancel &amp; refund</button>
+        <button type="button" class="btn btn-secondary" data-action="cancel-close" data-id="${jsAttr(id)}">Keep the order</button>
+      </div>
+    </div>`;
+}
+
+function refundForm(shipment, id) {
+  const left = Math.max(0, (Number(shipment.orderTotalCents) || 0) - (Number(shipment.refundedCents) || 0));
+  return `
+    <div class="order-ship-form order-refund-form" hidden>
+      <label class="order-field">
+        <span class="order-field-label">Amount (blank = everything left, ${escapeHtml(money(left, shipment.currency || 'usd'))})</span>
+        <input type="number" class="order-refund-amount" min="0.01" max="${(left / 100).toFixed(2)}" step="0.01" placeholder="${(left / 100).toFixed(2)}">
+      </label>
+      <label class="order-field">
+        <span class="order-field-label">Reason (optional, kept on the order)</span>
+        <textarea class="order-refund-reason" rows="2" maxlength="300" placeholder="e.g. returned unworn, refunded item price"></textarea>
+      </label>
+      <p class="order-delay-hint">Through Stripe, back to the card. The order record and the customer's email follow when Stripe confirms.</p>
+      <div class="order-actions">
+        <button type="button" class="btn btn-danger" data-action="refund-confirm" data-id="${jsAttr(id)}">Refund</button>
+        <button type="button" class="btn btn-secondary" data-action="refund-close" data-id="${jsAttr(id)}">Back</button>
+      </div>
+    </div>`;
 }
 
 function actionsFor(shipment, status, id) {
@@ -618,14 +749,17 @@ function actionsFor(shipment, status, id) {
       ? btn('btn-success', 'Mark shipped', { action: 'ship-open', id })
       : btn('btn-secondary', 'Mark shipped', { action: 'ship-open', id }, true));
     buttons.push(btn('btn-secondary', 'Running late', { action: 'delay-open', id }));
-    buttons.push(btn('btn-danger', 'Cancel order', { action: 'status', status: 'cancelled', id }));
+    buttons.push(btn('btn-danger', 'Cancel & refund', { action: 'cancel-open', id }));
   }
+  const refundable = Math.max(0, (Number(shipment.orderTotalCents) || 0) - (Number(shipment.refundedCents) || 0)) > 0;
   if (status === 'shipped') {
     buttons.push(btn('btn-success', 'Mark delivered', { action: 'status', status: 'delivered', id }));
     buttons.push(btn('btn-secondary', 'Mark returned', { action: 'status', status: 'returned', id }));
+    if (refundable) buttons.push(btn('btn-secondary', 'Refund', { action: 'refund-open', id }));
   }
-  if (status === 'delivered') {
-    buttons.push(btn('btn-secondary', 'Mark returned', { action: 'status', status: 'returned', id }));
+  if (status === 'delivered' || status === 'returned') {
+    if (status === 'delivered') buttons.push(btn('btn-secondary', 'Mark returned', { action: 'status', status: 'returned', id }));
+    if (refundable) buttons.push(btn('btn-secondary', 'Refund', { action: 'refund-open', id }));
   }
 
   if (!buttons.length) return '';

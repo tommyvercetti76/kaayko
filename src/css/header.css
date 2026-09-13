@@ -185,6 +185,23 @@ html.dark-theme .cart-nav-button {
   height: 20px;
 }
 /* when any filters are active */
+#filter-toggle { position: relative; }
+#filter-toggle[data-count]:not([data-count=""])::after {
+  content: attr(data-count);
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--gold, #b5935a);
+  color: #fff;
+  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+  font-size: 10px;
+  line-height: 16px;
+  text-align: center;
+}
 #filter-toggle.active {
   color: var(--color-brand-gold);
 }

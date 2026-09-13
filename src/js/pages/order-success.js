@@ -5,6 +5,7 @@
  */
 import { cartManager } from '/js/cartManager.js';
 import { money } from '/js/kit.js';
+import { lookupOrder } from '/js/services/storeApi.js';
 
 const STRIPE_KEY = window.KAAYKO_STRIPE_PK;
 
@@ -29,10 +30,31 @@ addEventListener('popstate', () => location.replace('/store'));
 
 const set = (id, value) => { document.getElementById(id).textContent = value; };
 
-set('ok-ref', paymentIntentId);
+set('ok-ref', 'Assigning…');
 set('ok-date', new Date().toLocaleDateString('en-US', {
   year: 'numeric', month: 'long', day: 'numeric'
 }));
+
+// The order number is minted by the webhook a moment after Stripe confirms, so
+// ask for it a few times. The Stripe id is never shown: if the number has not
+// arrived after the polling window, the receipt carries it.
+(async () => {
+  for (let attempt = 0; attempt < 8; attempt++) {
+    try {
+      const r = await lookupOrder({ paymentIntentId, clientSecret });
+      if (r.orderNumber) {
+        set('ok-ref', r.orderNumber);
+        const link = document.getElementById('ok-status');
+        if (link && r.statusPath) { link.href = r.statusPath; link.hidden = false; }
+        return;
+      }
+    } catch (err) {
+      console.warn('order lookup:', err);
+    }
+    await new Promise((res) => setTimeout(res, 2500));
+  }
+  set('ok-ref', 'On your receipt');
+})();
 
 // The amount and receipt address are read back from Stripe rather
 // than from the cart or a query string: the cart is only ever what

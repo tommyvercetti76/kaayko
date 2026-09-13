@@ -18,7 +18,7 @@ import { priceCents, priceText } from "/js/priceMap.js";
 
 // Type names and order come from the registry the API sent with the catalogue
 // (productTypes.js); unknown / missing productType lands in "Other".
-import { labelForType, comingSoonTypes } from "/js/productTypes.js";
+import { labelForType, comingSoonTypes, searchTermsFor } from "/js/productTypes.js";
 import { esc, money } from "/js/kit.js";
 
 // A product is "new" if it was created in the last NEW_WINDOW_DAYS days.
@@ -106,6 +106,7 @@ export function populateCarousel(items) {
   const mixRank = buildMixedOrder(visibleItems);
   for (const item of visibleItems) grid.appendChild(decorateCard(item, mixRank.get(item) ?? 0));
   carousel.appendChild(grid);
+  carousel.appendChild(buildBrowseEmpty());
 
   const soon = comingSoonStrip();
   if (soon) carousel.appendChild(soon);
@@ -153,6 +154,13 @@ function decorateCard(item, mixRank = 0) {
   card.dataset.facetCreated = String(getCreatedAtMs(item));
   card.dataset.facetFeatured = item.featured === true ? "1" : "0";
   card.dataset.facetTitle = (item.title || "").toLowerCase();
+  // Everything a shopper might type, folded once: title, what it is (and the words
+  // people use for it), the theme, the tags, the description, the animal, the park.
+  const type = (item.productType || "").toLowerCase();
+  card.dataset.facetSearch = foldSearch([
+    item.title, labelForType(type), labelForType(type, { singular: true }), searchTermsFor(type),
+    item.theme, (item.tags || []).join(" "), item.description, item.animalSlug, item.nationalPark, item.category
+  ].join(" "));
   return card;
 }
 
@@ -199,17 +207,118 @@ const SORTS = [
   { id: "featured", label: "Featured & mixed" },
   { id: "newest",   label: "Newest" },
   { id: "price-asc",  label: "Price: low to high" },
-  { id: "price-desc", label: "Price: high to low" },
-  { id: "loved",    label: "Most loved" }
+  { id: "price-desc", label: "Price: high to low" }
 ];
 
-const BROWSE_STATE = { sort: "featured", type: "all", query: "" };
+/**
+ * The ONE browse state. The toolbar owns sort, type and search; the Refine dialog
+ * (kaaykoFilterModal.js) owns themes and tags. Every facet is ANDed; within themes
+ * and within tags a card matches if it carries any selected value. Nothing here
+ * re-renders the grid: cards are shown, hidden and re-ordered in place.
+ */
+const BROWSE_STATE = { sort: "featured", type: "all", query: "", themes: [], tags: [] };
+
+/** Lower-case, accent-free, punctuation folded to spaces — for both the haystack and the query. */
+export function foldSearch(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+/** Query words that count: two letters or more, unless the whole query is one short word. */
+function searchWords(query) {
+  const words = foldSearch(query).split(" ").filter(Boolean);
+  const real = words.filter((w) => w.length >= 2);
+  return real.length ? real : words;
+}
+
+function cardMatches(card, state) {
+  if (state.type !== "all" && card.dataset.facetType !== state.type) return false;
+  if (state.themes.length && !state.themes.includes(card.dataset.facetTheme)) return false;
+  if (state.tags.length) {
+    const tags = card.dataset.facetTags.split("|");
+    if (!state.tags.some((t) => tags.includes(t))) return false;
+  }
+  const words = searchWords(state.query);
+  if (words.length) {
+    // Word prefixes, not substrings: "tee" finds tees, not "steel"; "cat" still
+    // finds the fishing cat. Every query word must start some word of the card.
+    const tokens = (card.dataset.facetSearch || "").split(" ");
+    if (!words.every((w) => tokens.some((t) => t.startsWith(w)))) return false;
+  }
+  return true;
+}
+
+function anyBrowseActive(state = BROWSE_STATE) {
+  return state.type !== "all" || !!searchWords(state.query).length || state.themes.length > 0 || state.tags.length > 0;
+}
+
+/** The Refine dialog hands its selection here; the grid updates in place. */
+export function setBrowseRefinements({ themes = [], tags = [] } = {}) {
+  BROWSE_STATE.themes = themes.map(foldSearch);
+  BROWSE_STATE.tags = tags.map((t) => String(t).toLowerCase());
+  applyBrowseState(document.getElementById("carousel"));
+}
+
+export function getBrowseState() {
+  return { ...BROWSE_STATE, themes: [...BROWSE_STATE.themes], tags: [...BROWSE_STATE.tags] };
+}
+
+/** How many cards a candidate refinement would show, with the toolbar's type and search as they are. */
+export function countBrowseMatches({ themes = [], tags = [] } = {}) {
+  const grid = document.querySelector("#carousel .store-grid");
+  if (!grid) return 0;
+  const state = { ...BROWSE_STATE, themes: themes.map(foldSearch), tags: tags.map((t) => String(t).toLowerCase()) };
+  return [...grid.children].filter((card) => cardMatches(card, state)).length;
+}
+
+/** Everything back to the whole store: type, search, themes, tags. Sort is a preference and stays. */
+export function resetBrowse() {
+  BROWSE_STATE.type = "all";
+  BROWSE_STATE.query = "";
+  BROWSE_STATE.themes = [];
+  BROWSE_STATE.tags = [];
+  const carousel = document.getElementById("carousel");
+  const search = carousel?.querySelector(".browse-search");
+  if (search) search.value = "";
+  applyBrowseState(carousel);
+  document.dispatchEvent(new CustomEvent("kaayko:browsereset"));
+}
+
+/** ?q= and ?type= deep links (a QR can land on "the magnets"); kept in the URL as the shopper narrows. */
+function readBrowseFromUrl() {
+  const p = new URLSearchParams(location.search);
+  const q = p.get("q");
+  const type = p.get("type");
+  if (q) BROWSE_STATE.query = q.slice(0, 80);
+  if (type) BROWSE_STATE.type = foldSearch(type).replace(/\s+/g, "");
+}
+
+let urlSyncTimer = null;
+function syncBrowseToUrl() {
+  clearTimeout(urlSyncTimer);
+  urlSyncTimer = setTimeout(() => {
+    const p = new URLSearchParams(location.search);
+    for (const k of ["q", "type"]) p.delete(k);
+    if (searchWords(BROWSE_STATE.query).length) p.set("q", BROWSE_STATE.query.trim());
+    if (BROWSE_STATE.type !== "all") p.set("type", BROWSE_STATE.type);
+    const qs = p.toString();
+    history.replaceState(null, "", `${location.pathname}${qs ? `?${qs}` : ""}`);
+  }, 250);
+}
 
 /**
  * Sort + type + search, in one row above the grid. Type chips carry live counts so a shopper can
  * see what is behind each one before spending a click.
  */
 function buildBrowseToolbar(items, carousel) {
+  readBrowseFromUrl();
+  if (BROWSE_STATE.type !== "all" && !items.some((it) => (it.productType || "").toLowerCase() === BROWSE_STATE.type)) {
+    BROWSE_STATE.type = "all";   // a ?type= nobody stocks is ignored, not an empty grid
+  }
   const bar = document.createElement("div");
   bar.className = "browse-toolbar";
 
@@ -247,12 +356,17 @@ function buildBrowseToolbar(items, carousel) {
   const search = document.createElement("input");
   search.type = "search";
   search.className = "browse-search";
-  search.placeholder = "Search products";
-  search.setAttribute("aria-label", "Search products");
+  search.placeholder = "Search: tiger, tote, stamp…";
+  search.setAttribute("aria-label", "Search the store");
+  search.autocomplete = "off";
+  search.spellcheck = false;
   search.value = BROWSE_STATE.query;
   search.addEventListener("input", () => {
-    BROWSE_STATE.query = search.value.trim().toLowerCase();
+    BROWSE_STATE.query = search.value;
     applyBrowseState(carousel);
+  });
+  search.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { search.value = ""; BROWSE_STATE.query = ""; applyBrowseState(carousel); }
   });
   right.appendChild(search);
 
@@ -282,12 +396,35 @@ function buildBrowseToolbar(items, carousel) {
   count.setAttribute("aria-live", "polite");
   right.appendChild(count);
 
+  const clear = document.createElement("button");
+  clear.type = "button";
+  clear.className = "browse-clear";
+  clear.textContent = "Clear";
+  clear.hidden = true;
+  clear.addEventListener("click", resetBrowse);
+  right.appendChild(clear);
+
   bar.appendChild(right);
   return bar;
 }
 
-/** Re-order and show/hide cards in place to match the current sort, type chip and search. */
+/** Shown in place of the grid when nothing matches; one button back to everything. */
+function buildBrowseEmpty() {
+  const empty = document.createElement("div");
+  empty.className = "browse-empty";
+  empty.hidden = true;
+  empty.setAttribute("role", "status");
+  empty.innerHTML = `
+    <p class="browse-empty-title">Nothing by that name.</p>
+    <p class="browse-empty-copy">Try the animal, the object or the theme: tiger, tote, stamp, satire.</p>
+    <button type="button" class="browse-empty-btn">Show everything</button>`;
+  empty.querySelector(".browse-empty-btn").addEventListener("click", resetBrowse);
+  return empty;
+}
+
+/** Re-order and show/hide cards in place to match the current sort, type, search, themes and tags. */
 function applyBrowseState(carousel) {
+  if (!carousel) return;
   const grid = carousel.querySelector(".store-grid");
   if (!grid) return;
   const cards = [...grid.children];
@@ -297,21 +434,14 @@ function applyBrowseState(carousel) {
     featured: (a, b) => num(a, "facetMix") - num(b, "facetMix"),
     newest:   (a, b) => num(b, "facetCreated") - num(a, "facetCreated"),
     "price-asc":  (a, b) => num(a, "facetPrice") - num(b, "facetPrice"),
-    "price-desc": (a, b) => num(b, "facetPrice") - num(a, "facetPrice"),
-    loved:    (a, b) => num(b, "facetVotes") - num(a, "facetVotes")
+    "price-desc": (a, b) => num(b, "facetPrice") - num(a, "facetPrice")
   };
   cards.sort(comparators[BROWSE_STATE.sort] || comparators.featured);
   cards.forEach((card, i) => { card.style.order = String(i); });
 
   let shown = 0;
   for (const card of cards) {
-    const typeOk = BROWSE_STATE.type === "all" || card.dataset.facetType === BROWSE_STATE.type;
-    const q = BROWSE_STATE.query;
-    const searchOk = !q ||
-      card.dataset.facetTitle.includes(q) ||
-      card.dataset.facetTags.includes(q) ||
-      card.dataset.facetTheme.includes(q);
-    const visible = typeOk && searchOk;
+    const visible = cardMatches(card, BROWSE_STATE);
     card.hidden = !visible;
     if (visible) shown += 1;
   }
@@ -319,10 +449,24 @@ function applyBrowseState(carousel) {
   for (const chip of carousel.querySelectorAll(".browse-chip")) {
     chip.setAttribute("aria-pressed", String(chip.dataset.value === BROWSE_STATE.type));
   }
+  const active = anyBrowseActive();
+  const refined = BROWSE_STATE.themes.length + BROWSE_STATE.tags.length;
   const countEl = carousel.querySelector(".browse-count");
-  if (countEl) countEl.textContent = `${shown} ${shown === 1 ? "product" : "products"}`;
+  if (countEl) countEl.textContent = `${shown} ${shown === 1 ? "product" : "products"}${refined ? ` · ${refined} refinement${refined === 1 ? "" : "s"}` : ""}`;
+  const clearEl = carousel.querySelector(".browse-clear");
+  if (clearEl) clearEl.hidden = !active;
   const empty = carousel.querySelector(".browse-empty");
   if (empty) empty.hidden = shown !== 0;
+  grid.classList.toggle("is-empty", shown === 0);
+
+  // The Refine button in the header carries the number of refinements in force.
+  const toggle = document.getElementById("filter-toggle");
+  if (toggle) {
+    toggle.classList.toggle("active", refined > 0);
+    toggle.dataset.count = refined ? String(refined) : "";
+    toggle.setAttribute("aria-label", refined ? `Refine (${refined} in force)` : "Refine");
+  }
+  syncBrowseToUrl();
 }
 
 // Tags hidden from the "Tags" sub-chip row (they're already represented elsewhere
@@ -457,8 +601,8 @@ function createCarouselItem(item) {
   if (isSoldOut(item)) card.classList.add("is-sold-out");
   if (item.featured === true) card.classList.add("is-featured");
 
-  const { metadataPill, heartButton } = createLikeButton(item);
-  const imgContainer = buildImageContainer(item, metadataPill, heartButton);
+  const heartButton = createLikeButton(item);
+  const imgContainer = buildImageContainer(item, heartButton);
   if (item.featured === true) {
     // Bottom-left of the image: the votes pill, NEW badge and heart already own the top row.
     const badge = document.createElement("span");
@@ -590,7 +734,7 @@ function galleryAlt(title, i, total) {
   return i === 0 ? name : `${name} — view ${i + 1} of ${total}`;
 }
 
-function buildImageContainer(item, metadataPill, heartButton) {
+function buildImageContainer(item, heartButton) {
   const container = document.createElement("div");
   container.className = "img-container";
 
@@ -615,7 +759,7 @@ function buildImageContainer(item, metadataPill, heartButton) {
     container.append(img);
   });
 
-  container.append(metadataPill, heartButton);
+  container.append(heartButton);
 
   if (isNew(item)) {
     const badge = document.createElement("span");
@@ -889,25 +1033,22 @@ function setupModalNav(container, count) {
 }
 
 /* ==========================================================================
-   3) Voting (♥ button)
+   3) The heart. A private mark, not a score: the count is never shown, there is
+   no "most loved" sort and no vote filter — the store keeps no social proof.
+   The vote still reaches the server as the one signal the owner reads.
    ========================================================================== */
 function createLikeButton(item) {
   const btn = document.createElement("button");
   btn.className = "heart-button image-overlay-control material-icons";
   btn.type = "button";
-  btn.setAttribute("aria-label", "Vote for this product");
+  btn.setAttribute("aria-label", "Love this");
 
   let liked = false;
-  let votes = item.votes || 0;
-
-  const countEl = document.createElement("span");
-  countEl.className = "image-meta-pill";
 
   function refresh() {
     btn.classList.toggle("liked", liked);
     btn.setAttribute("aria-pressed", String(liked));
     btn.textContent = liked ? "favorite" : "favorite_border";
-    countEl.textContent = `${votes} vote${votes === 1 ? "" : "s"}`;
   }
   refresh();
 
@@ -918,17 +1059,14 @@ function createLikeButton(item) {
     refresh();
     try {
       await voteOnProduct(item.id, delta);
-      votes += delta;
-      refresh();
     } catch (err) {
       console.error("Vote error:", err);
       liked = !liked;
       refresh();
-      console.warn("Vote update failed — UI rolled back.");
     }
   });
 
-  return { heartButton: btn, metadataPill: countEl };
+  return btn;
 }
 
 /* ==========================================================================

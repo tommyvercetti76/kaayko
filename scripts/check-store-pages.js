@@ -11,7 +11,7 @@ const path = require('path');
 
 const src = path.join(__dirname, '..', 'src');
 const STORE_PAGES = ['index.html', 'store.html', 'product.html', 'animal.html', 'cart.html',
-  'order-success.html', 'store-about.html', 'store-privacy.html', 'shipping.html', 'card.html', 'testimonials.html'];
+  'order-success.html', 'order-status.html', 'store-about.html', 'store-privacy.html', 'shipping.html', 'card.html', 'testimonials.html'];
 const INLINE_BUDGET = 30;
 const failures = [];
 

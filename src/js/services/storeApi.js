@@ -61,6 +61,23 @@ export function friendlyMessage(err, fallback = 'Something went wrong. Please tr
   return fallback;
 }
 
+/* ── The customer's own order ──────────────────────────────────────────── */
+
+/** POST /orders/lookup → { orderNumber, statusPath, statusUrl } or { pending: true }. Throws ApiError. */
+export async function lookupOrder({ paymentIntentId, clientSecret }, { timeoutMs = 10000 } = {}) {
+  const r = await request('/orders/lookup', { method: 'POST', body: { paymentIntentId, clientSecret }, timeoutMs });
+  if (!r.ok) throw toError(r, 'Your order');
+  return r.data || {};
+}
+
+/** GET /orders/:number?t=token → the order. Throws ApiError (status 404 for a wrong link). */
+export async function getOrderStatus(orderNumber, token, { timeoutMs = 12000 } = {}) {
+  const r = await request(`/orders/${encodeURIComponent(orderNumber)}?t=${encodeURIComponent(token)}`, { timeoutMs });
+  if (r.status === 404) throw new ApiError('No order by that link', { ...r });
+  if (!r.ok) throw toError(r, 'Your order');
+  return (r.data && r.data.order) || null;
+}
+
 /* ── Catalogue ─────────────────────────────────────────────────────────── */
 
 /**

@@ -87,9 +87,10 @@
       <li><strong>Stripe</strong> — payment processing and sales-tax calculation.</li>
       <li><strong>Google Firebase</strong> (Google Cloud) — hosting, the database your order is stored in, and
         the functions that process it. Data is held in the United States.</li>
-      <li><strong>Our print and shipping partner</strong> — receives your name, address and what to put in the
-        box, and nothing else.</li>
-      <li><strong>Our email provider</strong> — sends the confirmation to your address.</li>
+      <li><strong>The postal carrier</strong> — receives your name and address on the parcel. We print and pack
+        every order ourselves today; if that ever moves to a print partner, this list will name them first.</li>
+      <li><strong>Our email provider</strong> — carries the receipt, the shipping notice and any order email to your
+        address, and nothing else.</li>
     </ul>
     <p>That is the complete list. We do not sell, rent or share your information with anyone else, and we have
       never received a request from law enforcement. Transfers outside the UK/EU rely on the providers' standard
@@ -108,20 +109,19 @@
 
     <h2>What is stored in your browser</h2>
     <p>The store sets no advertising cookies and runs no analytics or tracking scripts — there is nothing here to
-      consent to. It uses your browser's local storage for four things, all of which stay on your device:</p>
+      consent to. It uses your browser's local storage for three things, all of which stay on your device:</p>
     <ul>
       <li><code>kaayko_cart</code> — what is in your bag.</li>
       <li><code>kaayko.lastFit</code> — the size and fit you chose last time, so you do not re-pick it.</li>
-      <li><code>darkTheme</code> and <code>kaayko.collapsedSections</code> — your display preferences.</li>
-      <li><code>kaaykoStoreAccess</code> — remembers that you have entered a valid invite code.</li>
+      <li><code>darkTheme</code> — your display preference.</li>
     </ul>
     <p>Clearing your browser's site data removes all of them. Stripe sets its own cookies on its payment fields
       for fraud prevention; those are strictly necessary to take a payment.</p>
 
     <h2>Your rights</h2>
     <p>You can ask us to show you what we hold, correct it, delete it, export it, or object to how we use it.
-      Email <a data-support-email="text" href="mailto:rohanramekar17@gmail.com">rohanramekar17@gmail.com</a> with the order reference from
-      your confirmation (it begins <code>pi_</code>). We reply within 30 days, free of charge.</p>
+      Email <a data-support-email="text" href="mailto:rohanramekar17@gmail.com">rohanramekar17@gmail.com</a> with the order number from
+      your receipt (it looks like <code>KAAY-1042</code>). We reply within 30 days, free of charge.</p>
     <p><strong>One honest limit:</strong> we cannot delete the financial record of a sale before the law lets us,
       so a deletion request removes your name, email, phone and address from the order and leaves the anonymised
       transaction. That is the same thing the 2-year job does, just sooner.</p>
@@ -136,7 +136,8 @@
     <h2>Security</h2>
     <p>The store is served only over HTTPS. Payment pages run under a restricted content-security policy that
       blocks third-party scripts. Order data is held in Firestore, which no public request can read — every
-      order is reachable only through an authenticated admin route. Card data is out of scope entirely because we
+      order is reachable only through an authenticated admin route, or through the order-status link in your
+      receipt, which carries a secret token that only you hold. Card data is out of scope entirely because we
       never hold it.</p>
     <p>If a breach affects your personal information we will tell you and the relevant regulator within 72 hours
       of becoming aware of it.</p>
@@ -154,7 +155,7 @@
     <nav aria-label="Footer">
       <a href="/store">Store</a>
       <a href="/store/about">About</a>
-      <a href="/store/privacy" aria-current="page">Privacy</a>
+      <a href="/store/privacy">Privacy</a>
       <a href="/legal/terms">Terms</a>
       <a href="/legal/returns">Returns</a>
       <a href="/legal/shipping">Shipping</a>

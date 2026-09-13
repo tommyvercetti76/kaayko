@@ -191,15 +191,15 @@
       <div class="ok-mark"><span class="material-icons">check</span></div>
 
       <h1>Thank you</h1>
-      <p class="ok-lede">
-        Your order is confirmed. A receipt is on its way, and we will email you
-        again the moment it ships.
+      <p class="ok-lede" id="ok-lede">
+        Your order is confirmed. A receipt with your order number is on its way,
+        and we will email you again the moment it ships.
       </p>
 
       <div class="ok-card">
         <span class="ok-label">Order</span>
         <dl style="margin:0">
-          <div class="ok-row"><dt>Reference</dt><dd class="ok-ref" id="ok-ref">—</dd></div>
+          <div class="ok-row"><dt id="ok-ref-label">Order number</dt><dd class="ok-ref" id="ok-ref">—</dd></div>
           <div class="ok-row"><dt>Date</dt><dd id="ok-date">—</dd></div>
           <div class="ok-row"><dt>Total paid</dt><dd id="ok-total">—</dd></div>
           <div class="ok-row"><dt>Receipt sent to</dt><dd id="ok-email">—</dd></div>
@@ -213,8 +213,8 @@
       </p>
 
       <div class="ok-actions">
-        <a class="ok-btn" href="/store">Continue shopping</a>
-        <a class="ok-btn is-quiet" href="/">Back to Kaayko</a>
+        <a class="ok-btn" id="ok-status" href="#" hidden>See your order</a>
+        <a class="ok-btn is-quiet" href="/store">Continue shopping</a>
       </div>
     </div>
   </main>
@@ -224,6 +224,9 @@
       <a href="/store">Store</a>
       <a href="/store/about">About</a>
       <a href="/store/privacy">Privacy</a>
+      <a href="/legal/terms">Terms</a>
+      <a href="/legal/returns">Returns</a>
+      <a href="/legal/shipping">Shipping</a>
     </nav>
     <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
   </footer>

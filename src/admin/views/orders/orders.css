@@ -57,6 +57,21 @@
 }
 
 /* --- Count line ---------------------------------------------------------- */
+.orders-find { padding: 10px 0 2px; }
+.orders-search {
+  width: 100%;
+  max-width: 420px;
+  padding: 9px 14px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 13px;
+}
+.orders-search:focus-visible { outline: 2px solid var(--gold-primary); outline-offset: 1px; }
+.order-badges { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.order-number { font-variant-numeric: tabular-nums; color: var(--gold-primary); }
+
 .orders-count {
   padding: 12px var(--space-lg) 0;
   color: var(--text-muted);

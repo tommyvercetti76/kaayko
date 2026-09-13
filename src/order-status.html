@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/prod-config.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Your order — Kaayko</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <link rel="icon" type="image/png" href="/favicon-32x32.png">
+  <meta name="theme-color" content="#f5f1e7">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/fonts/fonts.css" />
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/storestyle.css" />
+  <link rel="stylesheet" href="/css/header.css" />
+  <link rel="stylesheet" href="/css/footer.css" />
+
+  <style>
+    /* Same full-height flex escape as cart.html and order-success.html. */
+    html, body.os-root { height: auto; min-height: 100vh; }
+    body.os-root { display: flex; flex-direction: column; overflow: visible; }
+    body.os-root .os-wrapper { flex: 1 0 auto; }
+    body.os-root .site-footer { flex: 0 0 auto; }
+
+    html.dark-theme body.os-root.store-v2 {
+      --bg: #080808; --surface: #18160f; --surface-2: #1e1c12;
+      --line: rgba(181, 147, 90, 0.20); --fg: #ede8df; --muted: rgba(237, 232, 223, 0.62);
+      --gold: #b5935a; --gold-bright: #d9bd7b;
+      background:
+        radial-gradient(circle at 20% 12%, rgba(181, 147, 90, 0.10), transparent 38%),
+        radial-gradient(circle at 80% 84%, rgba(181, 147, 90, 0.07), transparent 44%),
+        var(--bg);
+      color: var(--fg);
+    }
+
+    .store-v2 {
+      --os-serif: 'Cormorant Garamond', Georgia, serif;
+      --os-sans: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+      --os-sans-med: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+    }
+
+    .os-wrapper {
+      display: flex; justify-content: center;
+      padding: clamp(28px, 6vw, 72px) clamp(16px, 4vw, 32px) 64px;
+      box-sizing: border-box;
+    }
+    .os-panel { width: 100%; max-width: 620px; }
+
+    .os-eyebrow {
+      margin: 0 0 8px;
+      font-family: var(--os-serif); font-style: italic; font-weight: 500;
+      font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold);
+    }
+    .os-panel h1 {
+      margin: 0 0 6px;
+      font-family: var(--os-serif); font-weight: 500;
+      font-size: clamp(32px, 6vw, 46px); line-height: 1.05; color: var(--fg);
+      font-variant-numeric: tabular-nums;
+    }
+    .os-lede { margin: 0 0 28px; font-family: var(--os-sans); font-size: 15px; line-height: 1.65; color: var(--muted); }
+
+    /* The journey: paid → being made → on its way → delivered. Done steps are ink, the
+       current one gold, the rest hairline. Cancelled/refunded collapses to one line. */
+    .os-steps {
+      list-style: none; margin: 0 0 28px; padding: 0;
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+    }
+    .os-step { border-top: 3px solid var(--line); padding-top: 10px; }
+    .os-step .os-step-name { display: block; font-family: var(--os-sans-med); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+    .os-step .os-step-when { display: block; margin-top: 4px; font-family: var(--os-sans); font-size: 12px; color: var(--muted); }
+    .os-step.is-done { border-top-color: var(--fg); }
+    .os-step.is-done .os-step-name { color: var(--fg); }
+    .os-step.is-now { border-top-color: var(--gold); }
+    .os-step.is-now .os-step-name { color: var(--gold); }
+    .os-closed { margin: 0 0 28px; padding: 14px 18px; border: 1px solid var(--line); border-radius: 12px; font-family: var(--os-sans); font-size: 14px; line-height: 1.6; color: var(--fg); }
+
+    .os-card { padding: clamp(18px, 3vw, 26px); border: 1px solid var(--line); border-radius: 14px; background: var(--surface); margin-bottom: 18px; }
+    .os-label { display: block; margin: 0 0 12px; font-family: var(--os-serif); font-style: italic; font-weight: 500; font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); }
+
+    .os-lines { list-style: none; margin: 0; padding: 0; }
+    .os-line { display: flex; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+    .os-line:last-child { border-bottom: none; }
+    .os-line-img { flex: none; width: 56px; height: 70px; object-fit: cover; border-radius: 6px; background: var(--surface-2); }
+    .os-line-img.is-blank { border: 1px solid var(--line); }
+    .os-line-body { flex: 1 1 auto; min-width: 0; }
+    .os-line-title { display: block; font-family: var(--os-sans-med); font-size: 14px; color: var(--fg); }
+    .os-line-meta { display: block; margin-top: 3px; font-family: var(--os-sans); font-size: 12.5px; color: var(--muted); }
+    .os-line-money { flex: none; font-family: var(--os-sans-med); font-size: 14px; color: var(--fg); font-variant-numeric: tabular-nums; }
+
+    .os-row { display: flex; justify-content: space-between; align-items: baseline; gap: 18px; padding: 8px 0; border-bottom: 1px solid var(--line); font-family: var(--os-sans); font-size: 13.5px; color: var(--muted); }
+    .os-row:last-child { border-bottom: none; }
+    .os-row dd { margin: 0; text-align: right; font-family: var(--os-sans-med); color: var(--fg); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+    .os-row dt { margin: 0; flex: none; }
+    .os-row.is-total dd { font-size: 16px; }
+
+    .os-track { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; min-height: 44px; padding: 0 22px; border-radius: 999px; background: var(--fg); color: var(--bg); text-decoration: none; font-family: var(--os-sans-med); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .os-track:hover { opacity: 0.88; }
+
+    .os-help { margin: 22px 0 0; font-family: var(--os-sans); font-size: 13px; line-height: 1.7; color: var(--muted); }
+    .os-help a { color: var(--fg); }
+
+    .os-state { padding: 48px 0; text-align: center; font-family: var(--os-sans); color: var(--muted); }
+    .os-state h2 { margin: 0 0 8px; font-family: var(--os-serif); font-weight: 500; font-size: 28px; color: var(--fg); }
+    .os-state a { color: var(--fg); }
+
+    @media (max-width: 520px) {
+      .os-steps { grid-template-columns: 1fr; gap: 0; }
+      .os-step { border-top: none; border-left: 3px solid var(--line); padding: 8px 0 8px 12px; }
+      .os-step.is-done { border-left-color: var(--fg); }
+      .os-step.is-now { border-left-color: var(--gold); }
+    }
+    @media (prefers-reduced-motion: reduce) { .os-track { transition: none; } }
+  </style>
+</head>
+
+<body class="store-v2 os-root">
+  <main class="os-wrapper">
+    <div class="os-panel" id="os-panel" aria-live="polite">
+      <div class="os-state"><h2>Finding your order…</h2></div>
+    </div>
+  </main>
+
+  <footer class="site-footer is-light">
+    <nav aria-label="Footer">
+      <a href="/store">Store</a>
+      <a href="/store/about">About</a>
+      <a href="/store/privacy">Privacy</a>
+      <a href="/legal/terms">Terms</a>
+      <a href="/legal/returns">Returns</a>
+      <a href="/legal/shipping">Shipping</a>
+    </nav>
+    <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
+  </footer>
+
+  <script type="module" src="/js/pages/order-status.js"></script>
+</body>
+</html>

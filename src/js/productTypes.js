@@ -64,3 +64,21 @@ export function typeRank(key) {
 export function comingSoonTypes() {
   return registry.filter((t) => t.status === "coming_soon");
 }
+
+/**
+ * What people type when they mean a type. Search folds these into every card's
+ * haystack so "tee", "t-shirt" and "shirt" all find the shirts, and "bag" the totes.
+ */
+const SEARCH_TERMS = Object.freeze({
+  tshirt:  "tshirt t-shirt tee tees shirt shirts top apparel",
+  hoodie:  "hoodie hoodies sweatshirt sweater pullover apparel",
+  tote:    "tote totes bag bags tote-bag canvas",
+  bottle:  "bottle bottles water-bottle flask drinkware",
+  magnet:  "magnet magnets fridge-magnet fridge",
+  mug:     "mug mugs cup cups coffee drinkware",
+  sticker: "sticker stickers decal decals"
+});
+
+export function searchTermsFor(key) {
+  return SEARCH_TERMS[norm(key)] || "";
+}

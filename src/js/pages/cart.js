@@ -24,7 +24,7 @@ const STRIPE_KEY = window.KAAYKO_STRIPE_PK;
    Firestore document.                                             */
 // Must say the same thing as /legal/shipping — that page is the promise,
 // this is the reminder.
-const SHIP_TIME = 'Made to order · ships in 5–7 business days';
+const SHIP_TIME = 'Made to order · on its way within 10 business days';
 
 const state = {
   step: 'bag',          // 'bag' | 'checkout'

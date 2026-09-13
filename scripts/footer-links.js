@@ -62,6 +62,9 @@ const SETS = {
     ['/store', 'Store'],
     ['/store/about', 'About'],
     ['/store/privacy', 'Privacy'],
+    ['/legal/terms', 'Terms'],
+    ['/legal/returns', 'Returns'],
+    ['/legal/shipping', 'Shipping'],
   ],
 };
 
@@ -74,7 +77,6 @@ const PAGES = {
   '404.html': 'site',
   'reads.html': 'site',
   'testimonials.html': 'site',
-  'animal.html': 'site',
 
   'paddlingout.html': 'paddling',
   'paddlingout/search.html': 'paddling',
@@ -93,7 +95,14 @@ const PAGES = {
   'store.html': 'store',
   'cart.html': 'store',
   'product.html': 'store',
+  'animal.html': 'store',
   'order-success.html': 'store',
+  'order-status.html': 'store',
+  'store-about.html': 'store',
+  'store-privacy.html': 'store',
+  'legal/terms.html': 'store',
+  'legal/returns.html': 'store',
+  'legal/shipping.html': 'store',
 };
 
 // Pages rendered on a light background need the light variant.
@@ -102,7 +111,9 @@ const PAGES = {
 // light variant under html.dark-theme so the footer follows the theme.
 const LIGHT = new Set([
   'reads.html', 'testimonials.html',
-  'store.html', 'cart.html', 'product.html',
+  'store.html', 'cart.html', 'product.html', 'animal.html',
+  'order-status.html', 'store-about.html', 'store-privacy.html',
+  'legal/terms.html', 'legal/returns.html', 'legal/shipping.html',
 ]);
 
 // `self` is the page's own URL path (e.g. '/about'). A link to the page you

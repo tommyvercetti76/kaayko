@@ -1857,6 +1857,60 @@ html.dark-theme .store-v2 .footer-elements {
   color: var(--muted);
 }
 
+/* Clear everything the shopper has narrowed by; hidden until something is. */
+.store-v2 .browse-clear {
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.store-v2 .browse-clear:hover { border-color: var(--gold); color: var(--gold); }
+.store-v2 .browse-clear:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+/* Nothing matched: say so in the shop's voice and offer the way back. */
+.store-v2 .browse-empty {
+  width: 100%;
+  padding: 56px 16px;
+  text-align: center;
+}
+.store-v2 .browse-empty-title {
+  margin: 0 0 8px;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 500;
+  font-size: clamp(24px, 3vw, 32px);
+  color: var(--fg);
+}
+.store-v2 .browse-empty-copy {
+  margin: 0 auto 20px;
+  max-width: 44ch;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.store-v2 .browse-empty-btn {
+  min-height: 44px;
+  padding: 0 24px;
+  border: 1px solid var(--fg);
+  border-radius: 999px;
+  background: var(--fg);
+  color: var(--bg);
+  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.store-v2 .browse-empty-btn:hover { opacity: 0.88; }
+.store-v2 .browse-empty-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.store-v2 .store-grid.is-empty { display: none; }
+
 /* Hidden cards must leave the grid flow, or they hold empty tracks open. */
 .store-v2 .store-grid .carousel-item[hidden] { display: none !important; }
 
