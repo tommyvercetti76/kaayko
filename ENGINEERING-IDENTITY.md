@@ -84,7 +84,9 @@ CSS-in-JS runtime, an ORM. Each would cost more than it returns at this size.
 
 Closed 12 Sep 2026: add-a-lake and rate are page modules (`js/pages/submitentry.js`, `js/pages/rate.js`) with their CSS in `css/` · helpers and API base now come from `util.js`/`prefs.js` on every paddling page · one Leaflet wrapper (`PinPicker`) · one geocode client (`geo.js`) · search results use the shared card (`row` variant) · search logic lives in `js/pages/search.js` · `nearbyWater` and the geocode proxies are tested.
 
-Still open: store-side files (`product.js`, `store-about.js`, `animal.js`, `tenant-portal.js`, `kortex-report.js`, arcade) declare their own `API_BASE` · no light theme (pages force dark; needs a light token set plus a pass over inline colours).
+Also closed 12 Sep 2026: every page reads `window.KAAYKO_API_BASE` from `prod-config.js` (Kortex's `tenant-portal.js` / `kortex-report.js` keep their environment switch by design) · Stripe idempotency keys no longer derive from the client IP · revoked admin tokens are rejected · submitters are emailed on rejection.
+
+On a branch, awaiting review: the light theme (`light-theme` branch, Firebase preview channel). Default stays dark.
 
 ## 7. Search rebuild — the plan
 
