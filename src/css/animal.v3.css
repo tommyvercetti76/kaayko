@@ -78,29 +78,20 @@ html.dark-theme .animal-v2 .an-plate {
 .animal-v2 .an-hero.is-product .an-art img { width: 100%; height: 100%; object-fit: cover; }
 .animal-v2 .an-art[data-zoom-full] { cursor: zoom-in; }
 
-/* The drawing, as a button on the frame: a small plate with the illustration on
-   it and a label. It opens the full-size art; the hero itself stays the photograph. */
-.animal-v2 .an-drawing {
-  position: absolute; left: 14px; bottom: 14px; z-index: 2;
-  display: flex; align-items: center; gap: 10px;
-  padding: 6px 14px 6px 6px;
-  border: 1px solid var(--v2-image-border, rgba(0,0,0,.12));
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
-  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  color: var(--fg);
-  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
-  font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase;
-  cursor: zoom-in;
-  transition: transform 160ms ease, border-color 160ms ease;
+/* Frame dots on the photograph: small, on the picture, out of the way. */
+.animal-v2 .an-dots {
+  position: absolute; left: 0; right: 0; bottom: 12px; z-index: 2;
+  display: flex; justify-content: center; gap: 8px;
 }
-.animal-v2 .an-drawing img {
-  width: 40px; height: 40px; border-radius: 50%; object-fit: contain;
-  background: radial-gradient(circle at 50% 40%, #fbf3de, #dfc99b);
+.animal-v2 .an-dot {
+  width: 6px; height: 6px; padding: 0; border: 0; border-radius: 50%;
+  background: rgba(255,255,255,.55); box-shadow: 0 0 0 1px rgba(0,0,0,.18);
+  cursor: pointer; position: relative;
 }
-.animal-v2 .an-drawing:hover { transform: translateY(-1px); border-color: var(--gold); }
-.animal-v2 .an-drawing:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
-@media (prefers-reduced-motion: reduce) { .animal-v2 .an-drawing { transition: none; } }
+.animal-v2 .an-dot::before { content: ""; position: absolute; inset: -7px; }
+.animal-v2 .an-dot.is-on { background: rgba(20,18,16,.85); box-shadow: 0 0 0 1px rgba(255,255,255,.6); }
+.animal-v2 .an-dot:focus-visible { outline: 2px solid #fff; outline-offset: 3px; box-shadow: 0 0 0 6px rgba(0,0,0,.6); }
+.animal-v2 .an-art[data-gallery] { cursor: zoom-in; }
 
 /* ── Identity + buy ─────────────────────────────────────────────────────── */
 .animal-v2 .an-panel { max-width: 460px; }

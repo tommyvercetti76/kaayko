@@ -71,73 +71,93 @@ function heroBuy(p) {
     </article>`;
 }
 
-function renderHero(animal, products) {
-  // ONE rule for every animal page: the hero is the piece for sale, photographed.
-  // It used to be the transparent illustration when one existed and a product
-  // photo when not, so two animals side by side looked like two different sites.
-  // The drawing, when there is one, is a button on the frame that opens it full size.
-  const src = firstProductImage(products);
-  const artFull = animal.artUrl || animal.artPreviewUrl || "";
-  const kind = src ? "is-product" : "is-empty";
-  const zoomAttr = "";
-  const alt = `${esc(animal.name)} on a Kaayko piece`;
+/** The photographs of the piece for sale, preview tier. */
+function heroFrames(products) {
+  const p = (Array.isArray(products) ? products : [])[0];
+  if (!p) return [];
+  return ((p.previewSrc && p.previewSrc.length ? p.previewSrc : p.imgSrc) || []).filter(Boolean);
+}
 
-  // The first sentence of the bio carries the hero; the rest waits below.
-  const lede = animal.bio ? String(animal.bio).split(/(?<=\.)\s+/)[0] : "";
+function renderHero(animal, products) {
+  // The hero is the piece for sale, photographed — every frame of it, swipeable.
+  const frames = heroFrames(products);
+  const kind = frames.length ? "is-product" : "is-empty";
+  const alt = `${esc(animal.name)} on a Kaayko piece`;
+  const dots = frames.length > 1 ? `
+        <div class="an-dots" role="tablist" aria-label="Photographs">${frames.map((_, i) => `
+          <button type="button" class="an-dot${i === 0 ? " is-on" : ""}" role="tab" aria-selected="${i === 0}" aria-label="Photo ${i + 1} of ${frames.length}" data-frame="${i}"></button>`).join("")}
+        </div>` : "";
 
   return `
     <header class="an-hero ${kind}">
       <figure class="an-figure">
         <div class="an-plate" aria-hidden="true"></div>
-        <div class="an-art"${zoomAttr}>
-          ${src ? `<img src="${esc(src)}" alt="${alt}" fetchpriority="high" />` : ""}
+        <div class="an-art" data-gallery role="button" tabindex="0" aria-label="${alt} — open full-size image">
+          ${frames.length ? `<img src="${esc(frames[0])}" alt="${alt}" fetchpriority="high" draggable="false" />` : ""}
         </div>
-        ${artFull ? `<button type="button" class="an-drawing" data-art="${esc(artFull)}" aria-label="See the ${esc(animal.name)} drawing full size">
-          <img src="${esc(animal.artPreviewUrl || artFull)}" alt="" loading="lazy" /><span>The drawing</span>
-        </button>` : ""}
+        ${dots}
       </figure>
 
       <div class="an-panel">
         ${animal.iucnStatus ? `<p class="an-eyebrow" data-severity="${esc(String(animal.iucnStatus).toLowerCase().split(" ")[0])}">${esc(animal.iucnStatus)}</p>` : ""}
         <h1 class="an-name">${esc(animal.name)}</h1>
         ${animal.scientificName ? `<p class="an-scientific">${esc(animal.scientificName)}</p>` : ""}
-        ${lede ? `<p class="an-lede">${esc(lede)}</p>` : ""}
         ${heroBuy(products[0])}
       </div>
     </header>`;
 }
 
-function renderStory(animal, products) {
-  const stats = renderStats(animal);
-  const rest = (products || []).slice(1);
-  const hasProse = Boolean(animal.bio);
-  if (!hasProse && !stats && !rest.length) return "";
-
-  return `
-    ${hasProse ? `
-    <section class="an-story">
-      <h2 class="an-kicker">The Story</h2>
-      <p class="an-bio">${esc(animal.bio)}</p>
-    </section>` : ""}
-    ${stats ? `<section class="an-facts"><h2 class="an-kicker">Field Notes</h2>${stats}</section>` : ""}
-    ${renderVariants(animal, rest)}`;
+/** Swipe, dots and arrow keys on the hero; a tap opens the zoom. */
+function bindHeroGallery(products, openModalFn) {
+  const art = document.querySelector('.an-art[data-gallery]');
+  const img = art && art.querySelector('img');
+  const frames = heroFrames(products);
+  if (!art || !img || !frames.length) return;
+  const dots = [...document.querySelectorAll('.an-dot')];
+  let frame = 0, swiped = false;
+  const setFrame = (i) => {
+    const n = frames.length; frame = ((i % n) + n) % n;
+    img.src = frames[frame];
+    dots.forEach((d, k) => { d.classList.toggle('is-on', k === frame); d.setAttribute('aria-selected', k === frame ? 'true' : 'false'); });
+  };
+  dots.forEach(d => d.addEventListener('click', (e) => { e.stopPropagation(); setFrame(parseInt(d.dataset.frame, 10)); }));
+  art.addEventListener('click', () => { if (swiped) { swiped = false; return; } openModalFn(products[0]); });
+  art.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModalFn(products[0]); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); setFrame(frame + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); setFrame(frame - 1); }
+  });
+  if (frames.length < 2) return;
+  let x0 = 0, y0 = 0, axis = null, active = false;
+  art.style.touchAction = 'pan-y';
+  art.addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse' && e.button !== 0) return; x0 = e.clientX; y0 = e.clientY; axis = null; active = true; });
+  art.addEventListener('pointermove', (e) => {
+    if (!active || axis) return;
+    const dx = Math.abs(e.clientX - x0), dy = Math.abs(e.clientY - y0);
+    if (dx > 8 || dy > 8) axis = dx > dy ? 'x' : 'y';
+  });
+  art.addEventListener('pointerup', (e) => {
+    if (!active) return; active = false;
+    if (axis !== 'x') return;
+    const dx = e.clientX - x0;
+    if (Math.abs(dx) < 40) return;
+    swiped = true; setFrame(frame + (dx < 0 ? 1 : -1));
+  });
+  art.addEventListener('pointercancel', () => { active = false; });
 }
 
-/**
- * A product photo for the hero, when an animal has no artwork of its own.
- *
- * Deliberately prefers the SECOND frame: the variant card lower down the page
- * already shows the first, and the same photograph twice on one screen reads
- * as a mistake. Products with a single image fall back to it.
- */
-function firstProductImage(products) {
-  const list = Array.isArray(products) ? products : [];
-  for (const p of list) {
-    const frames = (p.previewSrc && p.previewSrc.length ? p.previewSrc : p.imgSrc) || [];
-    const src = frames[1] || frames[0];
-    if (src) return src;
-  }
-  return "";
+function renderStory(animal, products) {
+  // No prose here. The animal bios in Firestore were generated text, not writing the
+  // owner had approved, and the hero repeated their first sentence — so the page
+  // said the same thing twice and neither time was true. Facts (Field Notes) and
+  // the other pieces remain; the bio comes back when there is one worth printing.
+  const stats = renderStats(animal);
+  const rest = (products || []).slice(1);
+  if (!stats && !rest.length) return "";
+
+  return `
+    ${stats ? `<section class="an-facts"><h2 class="an-kicker">Field Notes</h2>${stats}</section>` : ""}
+    ${renderVariants(animal, rest)}`;
 }
 
 function variantImage(p) {
@@ -199,24 +219,8 @@ function bindVariantActions(animal, products, openModalFn) {
       product: p
     });
   });
-  // The drawing button → open the illustration full size.
-  const drawing = document.querySelector('.an-drawing[data-art]');
-  if (drawing) drawing.addEventListener('click', () => openModalFn({ title: `${animal.name} — the drawing`, imgSrc: [drawing.dataset.art] }));
+  bindHeroGallery(products, openModalFn);
 
-  // Click the hero art → open the full-res zoom modal.
-  const heroArt = document.querySelector('.an-art[data-zoom-full]');
-  if (heroArt && animal.artUrl) {
-    heroArt.style.cursor = 'zoom-in';
-    // Keyboard-reachable zoom (2.1.1); the label keeps the illustration's name.
-    heroArt.setAttribute('role', 'button');
-    heroArt.setAttribute('tabindex', '0');
-    heroArt.setAttribute('aria-label', `${animal.name} illustration — open full-size image`);
-    const zoomHero = () => openModalFn({ title: animal.name, imgSrc: [animal.artUrl] });
-    heroArt.addEventListener('click', zoomHero);
-    heroArt.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); zoomHero(); }
-    });
-  }
   syncVariantCtas(products);
   cartManager.subscribe(() => syncVariantCtas(products));
 }
@@ -240,7 +244,7 @@ export async function animalPageInit(slug, { openModal }) {
 
   document.title = `${animal.name} · Kaayko`;
   const desc = document.querySelector('meta[name="description"]');
-  if (desc) desc.setAttribute('content', `${animal.name} — ${animal.scientificName}. ${animal.bio ? animal.bio.slice(0, 140) : ''}`);
+  if (desc) desc.setAttribute('content', `${animal.name}${animal.scientificName ? ` — ${animal.scientificName}` : ''}. Drawn by hand, printed to order at Kaayko.`);
 
   // Hero (image + identity + stats) and Story (bio + variants) sit side by side,
   // separated by a vertical hairline. Variants live inside the Story column.
