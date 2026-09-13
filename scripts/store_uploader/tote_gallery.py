@@ -69,10 +69,17 @@ def bag_mask(natural_template: Image.Image) -> np.ndarray:
     and greener, jeans blue, skin darker. Then keep the largest blob: the bag body."""
     a = np.asarray(natural_template.convert("RGB")).astype(np.int16)
     r, g, b = a[..., 0], a[..., 1], a[..., 2]
-    warm = ((r - b) > 10) & ((r - b) < 60) & (r > 170) & ((r - g) < 30)
+    # canvas: warm but barely saturated, and bright. The khaki sleeve is more saturated
+    # (r−b ≈ 50) and darker; skin and hair darker still; the wall is neutral.
+    warm = ((r - b) > 10) & ((r - b) < 42) & (r > 168) & ((r - g) < 22)
     m = Image.fromarray((warm * 255).astype(np.uint8))
     m = m.filter(ImageFilter.MinFilter(5)).filter(ImageFilter.MaxFilter(5))
-    arr = np.asarray(m) > 0
+    # fold shadows fall below the brightness gate: fill any hole enclosed by canvas
+    filled = m.convert("RGB")
+    ImageDraw.floodfill(filled, (0, 0), (255, 0, 255), thresh=10)
+    ImageDraw.floodfill(filled, (filled.width - 1, filled.height - 1), (255, 0, 255), thresh=10)
+    f = np.asarray(filled); outside = (f[..., 0] > 200) & (f[..., 1] < 60) & (f[..., 2] > 200)
+    arr = ~outside
     # largest connected component, by a cheap two-pass label on a 4× downsample
     small = np.asarray(m.resize((m.width // 4, m.height // 4), Image.NEAREST)) > 0
     lab = _label(small)
@@ -106,18 +113,26 @@ def body_geometry(mask: np.ndarray) -> dict:
     widths = mask.sum(axis=1)
     wide = np.where(widths >= 0.55 * widths.max())[0]
     top, bottom = int(wide.min()), int(wide.max())
-    cols = np.where(mask[top:bottom + 1].any(axis=0))[0]
-    left, right = int(cols.min()), int(cols.max())
-    # tilt: fit a line through the topmost canvas pixel of each column across the middle 60%
-    xs = np.arange(left + int((right - left) * 0.2), right - int((right - left) * 0.2))
-    ys = []
-    for x in xs:
-        col = np.where(mask[top:bottom + 1, x])[0]
-        ys.append(top + (col.min() if len(col) else 0))
-    ys = np.array(ys, dtype=float)
-    ok = ys > top
-    slope = np.polyfit(xs[ok], ys[ok], 1)[0] if ok.sum() > 10 else 0.0
-    tilt = float(np.degrees(np.arctan(slope)))
+    # left/right: the MEDIAN of each wide row's first and last canvas pixel. A sleeve
+    # highlight leaking into the mask on a few rows cannot move a median.
+    lefts, rights = [], []
+    for y in wide:
+        xs = np.where(mask[y])[0]
+        lefts.append(xs.min()); rights.append(xs.max())
+    left, right = int(np.median(lefts)), int(np.median(rights))
+    # tilt: the top edge of the body, read as the median top-of-canvas in the left
+    # third against the right third of the body (medians ignore the strap roots),
+    # clamped to what a hanging bag can actually do.
+    def top_at(x0, x1):
+        ys = []
+        for x in range(x0, x1):
+            col = np.where(mask[top:bottom + 1, x])[0]
+            if len(col): ys.append(top + col.min())
+        return float(np.median(ys)) if ys else float(top)
+    bw = right - left
+    yl, yr = top_at(left + int(bw * 0.12), left + int(bw * 0.38)), top_at(left + int(bw * 0.62), left + int(bw * 0.88))
+    tilt = float(np.degrees(np.arctan2(yr - yl, bw * 0.5)))
+    tilt = max(-5.0, min(5.0, tilt))
     return {"left": left, "top": top, "right": right, "bottom": bottom, "tilt": round(tilt, 2)}
 
 
@@ -203,6 +218,7 @@ def compose(art: Image.Image, view: str, set_name: str, geo: dict) -> Image.Imag
     if box.shape != alpha.shape or not er[py:py + a.height, px:px + a.width][alpha].all():
         raise RuntimeError(f"{view}: drawing would leave the bag — not written")
 
+    a = bend_to_fabric(a, canvas, px, py)
     layer = Image.new("RGB", canvas.size, (255, 255, 255))
     layer.paste(a.convert("RGB"), (px, py), a.split()[-1])
     mult = ImageChops.multiply(canvas, layer)
@@ -210,6 +226,29 @@ def compose(art: Image.Image, view: str, set_name: str, geo: dict) -> Image.Imag
     m.paste(a.split()[-1].point(lambda v: int(v * INK)), (px, py))
     m = m.filter(ImageFilter.GaussianBlur(0.8))
     return Image.composite(mult, canvas, m)
+
+
+def bend_to_fabric(a: Image.Image, canvas: Image.Image, px: int, py: int, strength: float = 7.0) -> Image.Image:
+    """Ink follows the cloth. The photograph's own luminance, blurred, is the height map
+    of the folds; its gradient displaces the drawing's pixels, so a line crossing a
+    crease bends with it instead of lying flat on top. `strength` is the largest shift
+    in pixels at this template's resolution."""
+    W, H = canvas.size
+    lum = np.asarray(canvas.convert("L").filter(ImageFilter.GaussianBlur(5)), dtype=np.float32) / 255.0
+    gy, gx = np.gradient(lum)
+    g = max(1e-6, float(np.percentile(np.hypot(gx, gy), 99.5)))
+    dx, dy = (gx / g) * strength, (gy / g) * strength
+    aw, ah = a.size
+    ys, xs = np.mgrid[0:ah, 0:aw].astype(np.float32)
+    sx = np.clip(xs - dx[py:py + ah, px:px + aw], 0, aw - 1)
+    sy = np.clip(ys - dy[py:py + ah, px:px + aw], 0, ah - 1)
+    src = np.asarray(a.convert("RGBA")).astype(np.float32)
+    x0, y0 = np.floor(sx).astype(int), np.floor(sy).astype(int)
+    x1, y1 = np.clip(x0 + 1, 0, aw - 1), np.clip(y0 + 1, 0, ah - 1)
+    fx, fy = (sx - x0)[..., None], (sy - y0)[..., None]
+    out = (src[y0, x0] * (1 - fx) * (1 - fy) + src[y0, x1] * fx * (1 - fy)
+           + src[y1, x0] * (1 - fx) * fy + src[y1, x1] * fx * fy)
+    return Image.fromarray(np.clip(out, 0, 255).astype(np.uint8), "RGBA")
 
 
 def slug_of(p: Path) -> str:
@@ -223,10 +262,16 @@ def render(art_path: Path, out_root: Path, frames: list[str], set_name: str, geo
     art = Image.open(art_path)
     d = out_root / slug_of(art_path); d.mkdir(parents=True, exist_ok=True)
     for n, v in enumerate(frames):
-        out = compose(art, v, set_name, geo)
+        try:
+            out = compose(art, v, set_name, geo)
+        except RuntimeError as e:
+            FAILED.append(f"{d.name}: {e}"); print(f"  !! {d.name}: {e}"); continue
         out.save(d / f"{n}_{v.split('_', 1)[1]}.png", optimize=True)
         print(f"  {d.name}/{n}_{v.split('_', 1)[1]}.png {out.size}")
     return d
+
+
+FAILED: list[str] = []
 
 
 def sheet(root: Path, T: int = 300) -> Path:
@@ -263,6 +308,8 @@ def main():
     frames = VIEWS if a.all else (a.frames or DEFAULT_FRAMES)
     for p in paths:
         render(p, Path(a.out) if a.out else p.parent, frames, a.set, geo)
+    if FAILED:
+        print(f"\n{len(FAILED)} frame(s) refused:\n  " + "\n  ".join(FAILED)); return 1
     return 0
 
 
