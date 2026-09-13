@@ -99,6 +99,7 @@ Agents: identify the page here, then look up the module in MODULE-MAP.md for ful
 | `/testimonials` | `src/testimonials.html` |
 | `/valentine` | `src/valentine.html` |
 | `/order-success` | `src/order-success.html` → `js/pages/order-success.js` |
+| `/order-status` | `src/order-status.html` → `js/pages/order-status.js` |
 | `/store/p/:id` (kaay.store `/p/:id`) | `src/product.html` → `js/pages/pdp.js` |
 | `/animals/:slug` | `src/animal.html` → `js/pages/pdp.js` |
 | `/store/about` (kaay.store `/about`) | `src/store-about.html` |

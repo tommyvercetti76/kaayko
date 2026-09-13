@@ -208,6 +208,23 @@ or marked **decide**._
   refund/cancel from Kortex, truthful privacy and promises, metadata in the shop's voice, one name, registry
   prices, Beggathon affordability, no social-proof machinery, backups, then the live switch. Eight owner
   inputs block it; items 3, 6 and 13 there can start without any.
+- **Keeping Our Word, the engineering half — shipped 13 Sep 2026 late evening** (kaayko `59cd2e4`, API
+  `b0ed128`): search rebuilt (folded multi-field haystack, word-prefix matching, type synonyms, `?q=`/`?type=`
+  deep links, empty state, Clear); ONE browse state for toolbar and the Refine dialog (theme + tags, applied
+  in place, live count); price bands, Min Votes, the votes pill, "Most loved" and the Apple app banner
+  deleted; store metadata + `assets/store-og.png` in the shop's voice; one footer on every store page incl.
+  legal; legal/privacy rewritten to the truth (order numbers, carrier + mail provider, no phantom partner, no
+  invite key, "on its way within 10 business days, in your hands in about two weeks" everywhere incl.
+  `policy.js`); human order numbers `KAAY-nnnn` minted at the webhook (`services/orderNumber.js`,
+  `counters/orders`) on `payment_intents` and every `orders/*` line; receipt shows the number, each line's
+  frozen image and a "See your order" link; `GET /orders/:number?t=token` + `order-status.html` at
+  `/order/:number` on both hosts; `POST /orders/lookup` gives the success page the number; `POST
+  /admin/orders/refund|cancel` through Stripe with the `charge.refunded` webhook doing the bookkeeping and
+  emailing the customer (`refundNotice.html`); Kortex Orders shows the number, finds by number/email/product,
+  cancels-and-refunds before shipping and refunds after, and finally receives the line thumbnails
+  (`listOrders` was dropping `imgSrc`); a daily Firestore backup schedule with 14-day retention exists.
+  Still owner-blocked: legal identity in Terms, the domain mailbox + `MAIL_SMTP_URL`, the store's name and
+  canonical, prices, the Beggathon cap, the live switch (and with it `noindex`).
 
 ### What the catalogue is today (measured)
 
