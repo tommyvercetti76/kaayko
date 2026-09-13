@@ -28,7 +28,10 @@
  *    fit comes back on its own, with no code change.
  */
 
-import { priceText } from "/js/priceMap.js";
+import { priceText, priceCents } from "/js/priceMap.js";
+import { cartManager } from "/js/cartManager.js";
+import { esc } from "/js/kit.js";
+import { show as showToast } from "/js/components/Toast.js";
 
 /* ==========================================================================
    Vocabulary
@@ -142,7 +145,7 @@ export function saveFitPref(gender, size) {
 export function defaultSelection(product) {
   const sizes = stockedSizes(product);
   const fits = fitsFor(product);
-  const inBag = window.cartManager?.getItem?.(product.id) || null;
+  const inBag = cartManager.getItem(product.id) || null;
   const pref = readFitPref() || {};
 
   const wanted = [inBag?.gender, LEGACY_FIT[inBag?.gender], pref.gender, LEGACY_FIT[pref.gender]]
@@ -160,37 +163,6 @@ export function defaultSelection(product) {
 }
 
 /* ==========================================================================
-   Bag toast
-   ========================================================================== */
-
-/**
- * Confirmation with a route to checkout. Sits under the sticky header (never
- * over the footer) and clears itself after a few seconds.
- */
-export function showBagToast(message = "Added to bag") {
-  let toast = document.getElementById("bag-toast");
-  if (!toast) {
-    toast = document.createElement("div");
-    toast.id = "bag-toast";
-    toast.className = "bag-toast";
-    toast.setAttribute("role", "status");
-    toast.setAttribute("aria-live", "polite");
-    toast.innerHTML = `
-      <span class="bag-toast-msg"></span>
-      <a class="bag-toast-cta" href="/cart">Go to bag →</a>
-      <button type="button" class="bag-toast-close material-icons" aria-label="Dismiss">close</button>
-    `;
-    document.body.appendChild(toast);
-    toast.querySelector(".bag-toast-close").addEventListener("click", () => toast.classList.remove("visible"));
-  }
-  toast.querySelector(".bag-toast-msg").textContent = message;
-  toast.classList.add("visible");
-  clearTimeout(toast._hideTimer);
-  toast._hideTimer = setTimeout(() => toast.classList.remove("visible"), 6000);
-  return toast;
-}
-
-/* ==========================================================================
    Adding to the bag
    ========================================================================== */
 
@@ -200,7 +172,7 @@ export function showBagToast(message = "Added to bag") {
  * @returns {boolean} true when the cap blocks this product (alert already shown)
  */
 export function bagCapReached(product) {
-  const cm = window.cartManager;
+  const cm = cartManager;
   if (!cm || cm.hasProduct(product.id)) return false;
   const count = cm.getCount();
   if (count < MAX_UNIQUE_PRODUCTS) return false;
@@ -215,7 +187,7 @@ export function bagCapReached(product) {
  * @returns {boolean} whether the item made it into the bag
  */
 export function addToBag(product, { size, gender } = {}) {
-  const cm = window.cartManager;
+  const cm = cartManager;
   if (!cm) return false;
   if (isSoldOut(product)) return false;
   if (bagCapReached(product)) return false;
@@ -224,7 +196,7 @@ export function addToBag(product, { size, gender } = {}) {
     productId: product.id,
     title: product.title,
     subtitle: product.description,
-    price: priceText(product),
+    priceCents: priceCents(product),
     imgSrc: product.imgSrc,
     size: size || stockedSizes(product)[0] || "One Size",
     gender: gender || null
@@ -235,7 +207,7 @@ export function addToBag(product, { size, gender } = {}) {
     return false;
   }
   if (gender && size) saveFitPref(gender, size);
-  showBagToast(`${product.title} added to bag`);
+  showToast(`${product.title} added to bag`, { kind: "good", action: { label: "Go to bag", href: "/cart" } });
   return true;
 }
 
@@ -246,7 +218,7 @@ export function addToBag(product, { size, gender } = {}) {
  */
 export function addDirect(product) {
   if (isSoldOut(product)) return false;
-  if (window.cartManager?.hasProduct(product.id)) {
+  if (cartManager.hasProduct(product.id)) {
     window.location.href = "/cart";
     return true;
   }
@@ -257,8 +229,6 @@ export function addDirect(product) {
    The control
    ========================================================================== */
 
-const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
-  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 /**
  * Mutually exclusive chips, done to the ARIA radiogroup pattern: one tab stop
@@ -367,7 +337,7 @@ export function createFitPicker(product, { onConfirm, showAction = true } = {}) 
 
   function syncConfirm() {
     if (!confirmBtn) return;
-    const inBag = !!window.cartManager?.hasProduct(product.id);
+    const inBag = !!cartManager.hasProduct(product.id);
     const price = priceText(product);
     confirmBtn.textContent = inBag ? "Update bag" : `Add to bag${price ? ` · ${price}` : ""}`;
     confirmBtn.disabled = !sel.size;
@@ -402,7 +372,7 @@ export function createFitPicker(product, { onConfirm, showAction = true } = {}) 
   syncConfirm();
   // cartManager.subscribe returns its own unsubscribe; hold onto it so a
   // picker that is rebuilt (every card open) does not leave a listener behind.
-  const unsubscribe = window.cartManager?.subscribe?.(syncConfirm) || (() => {});
+  const unsubscribe = cartManager.subscribe(syncConfirm) || (() => {});
 
   return {
     el,

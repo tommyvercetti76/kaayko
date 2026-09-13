@@ -9,16 +9,12 @@
  * Updated: now skips any item where `isAvailable !== true`
  */
 
-import { voteOnProduct } from "./kaayko_apiClient.js";
+import { voteOnProduct } from "/js/services/storeApi.js";
+import { cartManager } from "/js/cartManager.js";
 import { attachExpandingPicker, needsPicker, isSoldOut } from "/js/fitPicker.js";
 
-// Cloud Function image proxy base - auto-detect environment
-const IMAGE_PROXY_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? `${window.location.origin}/api/images`  // Local Firebase emulator
-  : "https://api-vwcc5j4qda-uc.a.run.app/images";  // Production
-
-// Price symbol → dollar amount mapping (single source of truth)
-import { PRICE_MAP, priceText } from "/js/priceMap.js";
+// Price: priceMap.js is the client's one authority (a mirror of the server's).
+import { priceCents, priceText } from "/js/priceMap.js";
 
 // Product type → section heading. Determines render order on the store page.
 // Unknown / missing productType lands in the "Other" bucket at the end.
@@ -146,16 +142,11 @@ function decorateCard(item, mixRank = 0) {
 }
 
 /**
- * A real number for every product, whatever the price field holds. Legacy docs carry a tier symbol
- * ($..$$$$) resolved through the shared PRICE_MAP; newer ones carry a numeric actualPrice or a
- * literal like "$24.99". Sorting and price filtering both need one comparable number.
+ * Dollars for sorting and price facets — the same figure the server would charge
+ * (priceMap.priceCents), or 0 when the product cannot be priced.
  */
 export function getPriceValue(item) {
-  if (typeof item?.actualPrice === "number" && item.actualPrice > 0) return item.actualPrice;
-  const raw = String(item?.price ?? "").trim();
-  const mapped = PRICE_MAP[raw];
-  const n = parseFloat(String(mapped ?? raw).replace(/[^0-9.]/g, ""));
-  return Number.isFinite(n) ? n : 0;
+  return (priceCents(item) ?? 0) / 100;
 }
 
 /**
@@ -941,7 +932,7 @@ function createLikeButton(item) {
 // One subscription for the whole grid rather than one per card: cards are
 // rebuilt wholesale on every filter change, and a per-card subscribe would
 // leave a listener behind for each destroyed card.
-window.cartManager?.subscribe?.(() => {
+cartManager.subscribe(() => {
   document.querySelectorAll(".cart-button-container").forEach((el) => el._syncBag?.());
 });
 
@@ -978,7 +969,7 @@ function createBuyButton(item) {
       return;
     }
 
-    const inBag = !!window.cartManager?.hasProduct(item.id);
+    const inBag = !!cartManager.hasProduct(item.id);
     const choosable = needsPicker(item);
     container.classList.toggle("in-cart", inBag);
     trigger.classList.toggle("in-cart", inBag);

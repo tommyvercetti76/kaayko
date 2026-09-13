@@ -1,8 +1,4 @@
-import { getAllProducts } from "./kaayko_apiClient.js";
-
-// 1) Image‐proxy base (reuse your existing Cloud Function)
-const IMAGE_PROXY_BASE =
-  "https://api-vwcc5j4qda-uc.a.run.app/images";
+import { getAllProducts, imageUrl } from "/js/services/storeApi.js";
 
 // 2) Your 20 fake reviews
 const fakeTestimonials = [
@@ -54,8 +50,7 @@ function extractFileName(signedUrl) {
 
 /** Compose your proxy URL */
 function makeProxyUrl(productID, signedUrl) {
-  const fileName = extractFileName(signedUrl);
-  return `${IMAGE_PROXY_BASE}/${encodeURIComponent(productID)}/${encodeURIComponent(fileName)}`;
+  return imageUrl(productID, extractFileName(signedUrl));
 }
 
 /** Build one testimonial card */

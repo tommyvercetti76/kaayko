@@ -89,23 +89,10 @@
   <!-- 2) your testimonials renderer -->
   <script type="module" src="js/testimonials.js"></script>
 
-  <!-- 3) inline module to set year & kick off testimonials -->
+  <!-- 3) kick off testimonials (the footer year is stamped by js/util.js via kit.js) -->
   <script type="module">
-    import { renderTestimonials } from './js/testimonials.js';
-
-    document.addEventListener("DOMContentLoaded", () => {
-      // Dynamic footer year
-      document.getElementById("year").textContent = new Date().getFullYear();
-      // Render all 20 fake testimonials (with real product images & votes)
-      renderTestimonials("testimonialsContainer");
-    });
-  </script>
-  <script>
-    /* kaayko-footer-year */
-    (function () {
-      var y = document.getElementById("year");
-      if (y) y.textContent = new Date().getFullYear();
-    })();
+    import { renderTestimonials } from '/js/testimonials.js';
+    document.addEventListener("DOMContentLoaded", () => renderTestimonials("testimonialsContainer"));
   </script>
 
 </body>

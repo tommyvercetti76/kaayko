@@ -134,6 +134,41 @@ function initializeHomeNavigation() {
 }
 
 /** ───────────────────────────────────────────────────────────────────────────
+ * 7) Cart badge
+ *    The header owns the bag link on every store page. Four pages used to
+ *    paste this block inline. Count comes from cartManager (a module, so it
+ *    has run before DOMContentLoaded) and then from the `kaayko:cartchange`
+ *    event it dispatches — this file is a classic script and cannot import.
+ *───────────────────────────────────────────────────────────────────────────*/
+function mountCartBadge() {
+  const controls = document.querySelector(".header-controls");
+  if (!controls || controls.querySelector(".cart-nav-button")) return;
+  if (!document.body.classList.contains("store-v2")) return;
+
+  const link = document.createElement("a");
+  link.href = "/cart";
+  link.className = "cart-nav-button";
+  link.innerHTML = `
+    <svg class="header-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="9" cy="19" r="1.8"></circle>
+      <circle cx="17" cy="19" r="1.8"></circle>
+      <path d="M4 5h2l2.1 8.2a1 1 0 0 0 1 .8h7.9a1 1 0 0 0 1-.75L20 8H8"></path>
+    </svg>
+    <span class="cart-badge" aria-hidden="true">0</span>`;
+  controls.insertBefore(link, controls.firstChild);
+
+  const badge = link.querySelector(".cart-badge");
+  const paint = (count) => {
+    badge.textContent = count;
+    badge.style.display = count > 0 ? "flex" : "none";
+    // The link's accessible name is this label, never the badge digit (4.1.2).
+    link.setAttribute("aria-label", `Bag, ${count} item${count === 1 ? "" : "s"}`);
+  };
+  paint(window.cartManager?.getCount?.() ?? 0);
+  document.addEventListener("kaayko:cartchange", (e) => paint(e.detail?.count ?? 0));
+}
+
+/** ───────────────────────────────────────────────────────────────────────────
  * Init all header/UI behavior once DOM is ready
  *───────────────────────────────────────────────────────────────────────────*/
 document.addEventListener("DOMContentLoaded", () => {
@@ -141,4 +176,5 @@ document.addEventListener("DOMContentLoaded", () => {
   populateMenu();
   setupMobileMenu();
   initializeHomeNavigation();
+  mountCartBadge();
 });

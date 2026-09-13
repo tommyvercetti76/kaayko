@@ -1,6 +1,7 @@
 /**
  * util.js — the tiny helpers every Paddling Out page used to copy.
  * Plain script, no module: exposes window.KaaykoUtil. Load after prod-config.js.
+ * ES modules import it through js/kit.js, which re-exports these same functions.
  *
  * One source for: escapeHtml, debounce, haversineKm, clamp, num, fetchJson.
  * If you find yourself writing any of these in a page, import this instead.
@@ -73,5 +74,17 @@
     return 'https://api-vwcc5j4qda-uc.a.run.app';
   }
 
-  window.KaaykoUtil = { escapeHtml: escapeHtml, debounce: debounce, haversineKm: haversineKm, clamp: clamp, num: num, fetchJson: fetchJson, apiBase: apiBase };
+  /**
+   * Footer year. Seventeen pages used to carry their own five-line IIFE for
+   * this. Runs now if the DOM is ready (module import, end-of-body script) and
+   * on DOMContentLoaded otherwise (classic script in <head>).
+   */
+  function stampYear() {
+    var y = document.getElementById('year');
+    if (y) y.textContent = String(new Date().getFullYear());
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', stampYear);
+  else stampYear();
+
+  window.KaaykoUtil = { escapeHtml: escapeHtml, debounce: debounce, haversineKm: haversineKm, clamp: clamp, num: num, fetchJson: fetchJson, apiBase: apiBase, stampYear: stampYear };
 }());

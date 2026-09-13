@@ -11,7 +11,8 @@
  * page can stop offering a code that is already dead.
  */
 
-export const API_BASE = window.KAAYKO_API_BASE || window.PRODUCTION_API_BASE || 'https://api-vwcc5j4qda-uc.a.run.app';   // single source: prod-config.js
+import { request } from "/js/services/storeApi.js";
+export { esc } from "/js/kit.js";
 
 const KEY = "kaayko.arcade.reward";
 const TOKEN_KEY = "kaayko.arcade.token";
@@ -42,25 +43,20 @@ export function clientToken() {
   }
 }
 
-export const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
-  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-
-/** POST when a body is given, GET otherwise. Never throws: a dead API is a false result. */
+/**
+ * POST when a body is given, GET otherwise. Never throws: a dead, slow or
+ * unreachable API is a false result with code OFFLINE, and the game copes.
+ */
 export async function api(path, body) {
   const token = clientToken();
   // GETs carry it in the query, POSTs in the body. Every route wants it.
-  const url = body || !token ? `${API_BASE}${path}`
-    : `${API_BASE}${path}${path.includes("?") ? "&" : "?"}token=${encodeURIComponent(token)}`;
-  try {
-    const res = await fetch(url, body ? {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...body, token })
-    } : undefined);
-    return await res.json();
-  } catch (_) {
-    return { success: false, code: "OFFLINE" };
-  }
+  const url = body || !token ? path
+    : `${path}${path.includes("?") ? "&" : "?"}token=${encodeURIComponent(token)}`;
+  const r = body
+    ? await request(url, { method: "POST", body: { ...body, token } })
+    : await request(url);
+  if (r.offline || r.timeout || r.data == null) return { success: false, code: "OFFLINE" };
+  return r.data;
 }
 
 /**

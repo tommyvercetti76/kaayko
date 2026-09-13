@@ -11,9 +11,8 @@
  */
 
 import { play, attract, SKIN } from "./play.js";
+import { esc } from "/js/kit.js";
 
-const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
-  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 export const MACHINES = [
   {

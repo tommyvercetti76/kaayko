@@ -1,0 +1,78 @@
+/* Toast — the store's one notice. Rendered by js/components/Toast.js.
+   Tokens are the store palette (--v2-*) with the checkout's dark values as
+   fallbacks; the checkout re-declares the tokens on its own root. */
+.ktoast {
+  position: fixed;
+  top: calc(16px + env(safe-area-inset-top));
+  right: 16px;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(460px, calc(100vw - 32px));
+  padding: 11px 10px 11px 14px;
+  border: 1px solid var(--v2-border, rgba(181, 147, 90, 0.20));
+  border-radius: 12px;
+  background: var(--v2-surface-elev, #1e1c12);
+  color: var(--v2-fg, #ede8df);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28);
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13.5px;
+  line-height: 1.45;
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+.ktoast.is-visible { opacity: 1; transform: none; pointer-events: auto; }
+
+.ktoast-icon { flex: none; display: inline-flex; width: 20px; height: 20px; }
+.ktoast-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.ktoast.is-good   .ktoast-icon { color: var(--v2-green, #7ed192); }
+.ktoast.is-notice .ktoast-icon { color: var(--v2-gold, #d4b684); }
+.ktoast.is-error  .ktoast-icon { color: var(--co-danger, #d9614e); }
+.ktoast.is-error  { border-color: color-mix(in srgb, var(--co-danger, #d9614e) 55%, transparent); }
+
+.ktoast-msg { flex: 1 1 auto; min-width: 0; }
+
+.ktoast-action {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--v2-fg, #ede8df);
+  color: var(--v2-bg, #080808);
+  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.ktoast-action:hover { background: var(--v2-gold-bright, #eccf9c); color: var(--v2-bg, #080808); }
+
+.ktoast-close {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--v2-fg-muted, rgba(237, 232, 223, 0.62));
+  cursor: pointer;
+}
+.ktoast-close svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.ktoast-close:hover { color: var(--v2-fg, #ede8df); background: var(--v2-border, rgba(181, 147, 90, 0.20)); }
+.ktoast-close:focus-visible, .ktoast-action:focus-visible { outline: 2px solid var(--v2-gold, #d4b684); outline-offset: 2px; }
+
+@media (max-width: 600px) {
+  .ktoast { left: 16px; right: 16px; max-width: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ktoast { transition: none; }
+}

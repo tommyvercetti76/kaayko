@@ -2,7 +2,13 @@
  * File: kaaykoFilterModal.js
  * Handles the filter modal functionality for the store page.
  * Shows/hides the filter overlay and manages filter interactions.
+ *
+ * A module since 12 Sep 2026: it imports the grid renderer and the price
+ * authority instead of reading them off window, and js/pages/store.js imports
+ * storeOriginalProducts() instead of a global.
  */
+import { populateCarousel } from "/js/kaayko_ui.js";
+import { priceCents } from "/js/priceMap.js";
 
 document.addEventListener('DOMContentLoaded', function() {
   console.log('🔧 Filter modal script loaded');
@@ -152,17 +158,8 @@ const PRICE_BANDS = [
   { value: 'over-50',  label: '$50+',      min: 50, max: Infinity }
 ];
 
-// This file is loaded as a classic script, not a module, so it cannot import priceMap.js.
-// Mirror of PRICE_MAP in /js/priceMap.js — change both together.
-const PRICE_TIER_VALUES = { '$': 19.99, '$$': 29.99, '$$$': 39.99, '$$$$': 49.99 };
-
-function priceOf(product) {
-  if (typeof product?.actualPrice === 'number' && product.actualPrice > 0) return product.actualPrice;
-  const raw = String(product?.price ?? '').trim();
-  if (PRICE_TIER_VALUES[raw]) return PRICE_TIER_VALUES[raw];
-  const n = parseFloat(raw.replace(/[^0-9.]/g, ''));
-  return Number.isFinite(n) ? n : 0;
-}
+// Dollars, from the same figure the server would charge (priceMap.priceCents).
+const priceOf = (product) => (priceCents(product) ?? 0) / 100;
 
 function matchesPriceBands(product, bandValues) {
   if (!bandValues.length) return true;
@@ -303,7 +300,7 @@ function resetAllFilters() {
 // Store original products for filtering
 let originalProducts = [];
 
-// Function to store original products (called from kaayko-main.js).
+// Function to store original products (called from js/pages/store.js).
 // We use this moment to populate tag chips dynamically + size the slider.
 function storeOriginalProducts(products) {
   hydrateThemeChips(products);
@@ -419,18 +416,16 @@ function applyFilters() {
     if ((p.votes || 0) < filters.minVotes) return false;
     return true;
   });
-  if (window.populateCarousel) window.populateCarousel(filteredProducts);
+  populateCarousel(filteredProducts);
 }
 
 // Function to clear filters and show all products
 function clearFiltersAndShowAll() {
-  if (originalProducts.length > 0 && window.populateCarousel) {
-    window.populateCarousel(originalProducts);
+  if (originalProducts.length > 0) {
+    populateCarousel(originalProducts);
     console.log('🔄 Showing all', originalProducts.length, 'products');
   }
 }
 
-// Make functions available globally
-window.storeOriginalProducts = storeOriginalProducts;
-window.applyFilters = applyFilters;
+export { storeOriginalProducts, applyFilters };
 window.clearFiltersAndShowAll = clearFiltersAndShowAll;

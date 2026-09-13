@@ -10,11 +10,8 @@
  */
 
 import { priceText } from "/js/priceMap.js";
-
-const API_BASE = window.KAAYKO_API_BASE || window.PRODUCTION_API_BASE || 'https://api-vwcc5j4qda-uc.a.run.app';   // single source: prod-config.js
-
-const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
-  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+import { getAllProducts } from "/js/services/storeApi.js";
+import { esc } from "/js/kit.js";
 
 /** Same PDP routing the grid uses — animal SKUs get the animal page. */
 function pdpUrl(p) {
@@ -225,10 +222,7 @@ function initCompliance(products) {
 export async function storeAboutInit() {
   let products = [];
   try {
-    const res = await fetch(`${API_BASE}/products`);
-    if (!res.ok) throw new Error(res.statusText);
-    const payload = await res.json();
-    products = (payload.products || []).filter((p) => p.isAvailable === true);
+    products = (await getAllProducts()).filter((p) => p.isAvailable === true);
     renderExhibits(products);
   } catch (err) {
     console.error("about: catalogue fetch failed:", err);

@@ -1,144 +1,129 @@
-// File: js/cartManager.js
 /**
- * Cart Management System for Kaayko Store
- * - Max 2 unique products (by productId)
- * - Persistent across session (localStorage)
- * - Events for cart updates
+ * cartManager.js — the bag. One instance, persisted in localStorage.
+ *
+ *   • At most 2 distinct products (by productId); quantity is structurally 1.
+ *   • Money is integer cents (`priceCents`), never a display string. The server
+ *     re-prices every line at checkout; this figure is only what the shopper sees
+ *     before that happens. See priceMap.js.
+ *   • Two ways to hear about changes: subscribe(cb) for modules, and the
+ *     `kaayko:cartchange` DOM event for classic scripts (header.js paints the badge).
+ *   • Publishes itself as window.cartManager for those classic scripts. Modules import it.
  */
+
+const STORAGE_KEY = 'kaayko_cart';
+const MAX_DISTINCT = 2;
+
+/** One-time migration for bags saved before 12 Sep 2026, which held price as "$29.99". */
+function migrate(item) {
+  if (!item || typeof item !== 'object') return null;
+  if (typeof item.priceCents !== 'number' && typeof item.price === 'string') {
+    const n = parseFloat(item.price.replace(/[^0-9.]/g, ''));
+    item.priceCents = Number.isFinite(n) && n > 0 ? Math.round(n * 100) : null;
+  }
+  delete item.price;
+  return item;
+}
 
 class CartManager {
   constructor() {
-    this.storageKey = 'kaayko_cart';
     this.listeners = [];
+    this.cart = [];
     this.load();
   }
 
-  // Load cart from localStorage
   load() {
     try {
-      const stored = localStorage.getItem(this.storageKey);
-      this.cart = stored ? JSON.parse(stored) : [];
+      const stored = localStorage.getItem(STORAGE_KEY);
+      const parsed = stored ? JSON.parse(stored) : [];
+      this.cart = Array.isArray(parsed) ? parsed.map(migrate).filter(Boolean) : [];
     } catch (e) {
       console.error('Failed to load cart:', e);
       this.cart = [];
     }
   }
 
-  // Save cart to localStorage
   save() {
     try {
-      localStorage.setItem(this.storageKey, JSON.stringify(this.cart));
-      this.notifyListeners();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.cart));
     } catch (e) {
       console.error('Failed to save cart:', e);
     }
+    this.notifyListeners();
   }
 
-  // Get all cart items
-  getItems() {
-    return [...this.cart];
-  }
+  getItems() { return this.cart.map((i) => ({ ...i })); }
+  getCount() { return this.cart.length; }
+  hasProduct(productId) { return this.cart.some((i) => i.productId === productId); }
+  getItem(productId) { return this.cart.find((i) => i.productId === productId); }
+  canAddNewProduct() { return this.cart.length < MAX_DISTINCT; }
 
-  // Get cart item count (unique products)
-  getCount() {
-    return this.cart.length;
-  }
-
-  // Check if product is in cart
-  hasProduct(productId) {
-    return this.cart.some(item => item.productId === productId);
-  }
-
-  // Get specific cart item by productId
-  getItem(productId) {
-    return this.cart.find(item => item.productId === productId);
-  }
-
-  // Can add new product? (max 2 unique)
-  canAddNewProduct() {
-    return this.cart.length < 2;
-  }
-
-  // Add or update item in cart
-  addItem({ productId, title, subtitle, price, imgSrc, size, gender }) {
-    const existingIndex = this.cart.findIndex(item => item.productId === productId);
-    
+  /**
+   * Add or update a line. `priceCents` is what priceMap.priceCents(product) returned
+   * (null when the product cannot be priced — the server will refuse it at checkout).
+   * @returns {boolean} false when the bag is full
+   */
+  addItem({ productId, title, subtitle, priceCents = null, imgSrc, size, gender }) {
+    const existingIndex = this.cart.findIndex((i) => i.productId === productId);
     const item = {
       productId,
       title,
       subtitle,
-      price,
-      imgSrc: imgSrc[0], // Use first image
+      priceCents: typeof priceCents === 'number' && Number.isFinite(priceCents) ? priceCents : null,
+      imgSrc: Array.isArray(imgSrc) ? imgSrc[0] : imgSrc,
       size,
       gender,
       addedAt: Date.now()
     };
-
     if (existingIndex >= 0) {
-      // Update existing item
       this.cart[existingIndex] = { ...this.cart[existingIndex], ...item };
     } else {
-      // Add new item (if allowed)
-      if (!this.canAddNewProduct()) {
-        return false; // Cart full
-      }
+      if (!this.canAddNewProduct()) return false;
       this.cart.push(item);
     }
-
     this.save();
     return true;
   }
 
-  // Update item size/gender
   updateItem(productId, { size, gender }) {
-    const item = this.cart.find(item => item.productId === productId);
-    if (item) {
-      if (size) item.size = size;
-      if (gender) item.gender = gender;
-      this.save();
-      return true;
-    }
-    return false;
+    const item = this.cart.find((i) => i.productId === productId);
+    if (!item) return false;
+    if (size) item.size = size;
+    if (gender) item.gender = gender;
+    this.save();
+    return true;
   }
 
-  // Remove item from cart
   removeItem(productId) {
-    const initialLength = this.cart.length;
-    this.cart = this.cart.filter(item => item.productId !== productId);
-    if (this.cart.length !== initialLength) {
-      this.save();
-      return true;
-    }
-    return false;
+    const before = this.cart.length;
+    this.cart = this.cart.filter((i) => i.productId !== productId);
+    if (this.cart.length === before) return false;
+    this.save();
+    return true;
   }
 
-  // Clear entire cart
   clear() {
     this.cart = [];
     this.save();
   }
 
-  // Get total price
-  getTotalPrice() {
-    return this.cart.reduce((total, item) => {
-      const price = parseFloat(item.price.replace(/[^0-9.]/g, ''));
-      return total + price;
-    }, 0);
+  /** Catalogue subtotal in cents, before the server has priced the bag. */
+  getTotalCents() {
+    return this.cart.reduce((sum, i) => sum + (i.priceCents || 0) * (i.quantity || 1), 0);
   }
 
-  // Subscribe to cart changes
   subscribe(callback) {
     this.listeners.push(callback);
-    return () => {
-      this.listeners = this.listeners.filter(cb => cb !== callback);
-    };
+    return () => { this.listeners = this.listeners.filter((cb) => cb !== callback); };
   }
 
-  // Notify all listeners
   notifyListeners() {
-    this.listeners.forEach(callback => callback(this.getItems()));
+    const items = this.getItems();
+    this.listeners.forEach((cb) => { try { cb(items); } catch (e) { console.error('cart listener failed:', e); } });
+    try {
+      document.dispatchEvent(new CustomEvent('kaayko:cartchange', { detail: { count: items.length, items } }));
+    } catch (_) { /* no document (tests) */ }
   }
 }
 
-// Export singleton instance
 export const cartManager = new CartManager();
+if (typeof window !== 'undefined') window.cartManager = cartManager;

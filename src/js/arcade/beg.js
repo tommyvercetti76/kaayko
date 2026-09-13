@@ -29,14 +29,13 @@
  */
 
 import { letterScene } from "./letterScene.js";
+import { esc } from "/js/kit.js";
 
 const WINDOW_MS = 60000;
 const NEEDED_KEYS = 180;      // keystrokes to carry the letter the whole way (~36 wpm for a minute)
 const WPM_WINDOW_MS = 6000;   // how far back "how fast am I typing" looks
 const NOTICE_MS = 2600;       // how long a reaction to something you just did holds
 
-const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
-  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 /* ── what he is doing about it ────────────────────────────────────────────── */
 

@@ -13,6 +13,7 @@
   <meta name="theme-color" content="#d4af37">
 
   <link rel="stylesheet" href="/css/storestyle.css" />
+  <link rel="stylesheet" href="/css/toast.css" />
   <link rel="stylesheet" href="/css/header.css" />
   <link rel="stylesheet" href="/css/kaaykoFilterModal.css" />
   <link rel="stylesheet" href="/css/animal.css" />
@@ -25,7 +26,7 @@
   <script src="/js/pdp-motion.js"></script>
 </head>
 
-<body class="store-v2 product-v2">
+<body class="store-v2 product-v2" data-pdp="product">
   <a class="skip-link" href="#product-root">Skip to product</a>
   <header class="header">
     <div class="header-top">
@@ -85,67 +86,7 @@
 
   <script src="/js/secretStore.js"></script>
   <script src="/js/header.js"></script>
-  <script type="module" src="/js/cartManager.js"></script>
-  <script type="module" src="/js/sustainabilityAlert.js"></script>
-
-  <script type="module">
-    import { cartManager } from '/js/cartManager.js';
-    import { setupModalCloseHandlers, openModal } from '/js/kaayko_ui.js';
-    import { productPageInit } from '/js/product.js';
-    import { mountArcade } from '/js/arcade-widget.js';
-    import '/js/sustainabilityAlert.js';
-
-    window.cartManager = cartManager;
-
-
-    const headerControls = document.querySelector('.header-controls');
-    if (headerControls) {
-      const cartBtn = document.createElement('a');
-      cartBtn.href = '/cart';
-      cartBtn.className = 'cart-nav-button';
-      cartBtn.innerHTML = `
-        <svg class="header-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="9" cy="19" r="1.8"></circle>
-          <circle cx="17" cy="19" r="1.8"></circle>
-          <path d="M4 5h2l2.1 8.2a1 1 0 0 0 1 .8h7.9a1 1 0 0 0 1-.75L20 8H8"></path>
-        </svg>
-        <span class="cart-badge" aria-hidden="true">0</span>
-      `;
-      headerControls.insertBefore(cartBtn, headerControls.firstChild);
-      const updateBadge = () => {
-        const count = cartManager.getCount();
-        const badge = cartBtn.querySelector('.cart-badge');
-        badge.textContent = count;
-        badge.style.display = count > 0 ? 'flex' : 'none';
-        // The link's accessible name is this label, never the badge digit (4.1.2).
-        cartBtn.setAttribute('aria-label', `Bag, ${count} item${count === 1 ? '' : 's'}`);
-      };
-      cartManager.subscribe(updateBadge);
-      updateBadge();
-    }
-
-    setupModalCloseHandlers();
-    document.getElementById('year').textContent = new Date().getFullYear();
-
-    const params = new URLSearchParams(window.location.search);
-    let productID = params.get('id') || '';
-    if (!productID) {
-      const segments = window.location.pathname.split('/').filter(Boolean);
-      const last = segments[segments.length - 1] || '';
-      productID = last === 'product' ? '' : last;
-    }
-    productPageInit(productID, { openModal });
-
-    const arcadeId = (location.pathname.match(/\/store\/p\/([^/?#]+)/) || [])[1];
-    if (arcadeId) mountArcade(document.getElementById('arcade-slot'), decodeURIComponent(arcadeId));
-  </script>
-  <script>
-    /* kaayko-footer-year */
-    (function () {
-      var y = document.getElementById("year");
-      if (y) y.textContent = new Date().getFullYear();
-    })();
-  </script>
+  <script type="module" src="/js/pages/pdp.js"></script>
 
 </body>
 </html>

@@ -34,13 +34,6 @@
       </div>
       <nav class="top-menu"><ul></ul></nav>
       <div class="header-controls">
-        <a href="/cart" class="cart-nav-button" aria-label="Bag">
-          <svg class="header-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="9" cy="19" r="1.8"></circle>
-            <circle cx="17" cy="19" r="1.8"></circle>
-            <path d="M4 5h2l2.1 8.2a1 1 0 0 0 1 .8h7.9a1 1 0 0 0 1-.75L20 8H8"></path>
-          </svg>
-        </a>
         <button class="theme-toggle-icon" aria-label="Switch theme"></button>
         <button class="fab-menu mobile-only" aria-label="Open menu">
           <span class="header-icon-stack" aria-hidden="true"><span></span><span></span><span></span></span>
@@ -171,8 +164,8 @@
 
   <script src="/js/header.js"></script>
   <script type="module">
+    import '/js/cartManager.js';                         // header.js paints the bag badge from it
     import { storeAboutInit } from '/js/store-about.js';
-    document.getElementById('year').textContent = new Date().getFullYear();
     storeAboutInit();
     import('/js/arcade/cabinet.js').then(({ mountArcadeRow }) => {
       mountArcadeRow(document.getElementById('arcade-cabinets'));

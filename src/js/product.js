@@ -15,12 +15,9 @@
 import { priceText } from "/js/priceMap.js";
 import { createFitPicker, needsPicker, addDirect, isSoldOut } from "/js/fitPicker.js";
 import { satireFor } from "/js/store-satire.js";
-
-const API_BASE = window.KAAYKO_API_BASE || window.PRODUCTION_API_BASE || 'https://api-vwcc5j4qda-uc.a.run.app';   // single source: prod-config.js
-
-function esc(s) {
-  return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-}
+import { getProduct, friendlyMessage } from "/js/services/storeApi.js";
+import { cartManager } from "/js/cartManager.js";
+import { esc } from "/js/kit.js";
 
 function renderError(root, msg) {
   root.innerHTML = `
@@ -140,12 +137,12 @@ function renderProduct(product, openModalFn) {
   cta.type = 'button';
   cta.className = 'fitp-confirm pdp-single-cta';
   const syncCta = () => {
-    const inBag = !!window.cartManager?.hasProduct(product.id);
+    const inBag = !!cartManager.hasProduct(product.id);
     cta.textContent = inBag ? 'In your bag · View bag' : `Add to bag${price ? ` · ${price}` : ''}`;
   };
   cta.addEventListener('click', () => addDirect(product));
   syncCta();
-  window.cartManager?.subscribe?.(syncCta);
+  cartManager.subscribe(syncCta);
   slot.appendChild(cta);
 }
 
@@ -154,13 +151,10 @@ export async function productPageInit(productID, { openModal }) {
   if (!root || !productID) return renderError(root, "Product not found");
 
   try {
-    const res = await fetch(`${API_BASE}/products/${encodeURIComponent(productID)}`);
-    if (res.status === 404) return renderError(root, "Product not found");
-    if (!res.ok) throw new Error(res.statusText);
-    const payload = await res.json();
-    renderProduct(payload.product, openModal);
+    renderProduct(await getProduct(productID), openModal);
   } catch (err) {
+    if (err?.status === 404) return renderError(root, "Product not found");
     console.error('product fetch failed:', err);
-    renderError(root, "Couldn't load this product");
+    renderError(root, friendlyMessage(err, "Couldn't load this product"));
   }
 }

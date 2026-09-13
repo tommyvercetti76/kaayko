@@ -5,8 +5,9 @@
 
 import { priceText } from "/js/priceMap.js";
 import { attachExpandingPicker } from "/js/fitPicker.js";
-
-const API_BASE = window.KAAYKO_API_BASE || window.PRODUCTION_API_BASE || 'https://api-vwcc5j4qda-uc.a.run.app';   // single source: prod-config.js
+import { getAnimal } from "/js/services/storeApi.js";
+import { cartManager } from "/js/cartManager.js";
+import { esc } from "/js/kit.js";
 
 const IUCN_SEVERITY = {
   "critically endangered": "critical",
@@ -16,10 +17,6 @@ const IUCN_SEVERITY = {
   "least concern": "low",
   "data deficient": "low"
 };
-
-function esc(s) {
-  return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-}
 
 function renderNotFound(root, slug) {
   root.innerHTML = `
@@ -173,7 +170,7 @@ function syncVariantCtas(products) {
     // Cards are keyed on the Firestore doc id — the same id addItem() stores.
     const card = document.querySelector(`.variant-card[data-product-id="${CSS.escape(p.id)}"]`);
     if (!card) return;
-    const inCart = window.cartManager?.hasProduct(p.id);
+    const inCart = cartManager.hasProduct(p.id);
     const cta = card.querySelector('.variant-cta');
     const check = cta.querySelector('.cta-check');
     const label = cta.querySelector('.cta-label');
@@ -213,7 +210,7 @@ function bindVariantActions(animal, products, openModalFn) {
     });
   }
   syncVariantCtas(products);
-  window.cartManager?.subscribe(() => syncVariantCtas(products));
+  cartManager.subscribe(() => syncVariantCtas(products));
 }
 
 export async function animalPageInit(slug, { openModal }) {
@@ -222,11 +219,9 @@ export async function animalPageInit(slug, { openModal }) {
 
   let payload;
   try {
-    const res = await fetch(`${API_BASE}/animals/${encodeURIComponent(slug)}`);
-    if (res.status === 404) return renderNotFound(root, slug);
-    if (!res.ok) throw new Error(res.statusText);
-    payload = await res.json();
+    payload = await getAnimal(slug);
   } catch (err) {
+    if (err?.status === 404) return renderNotFound(root, slug);
     console.error('animal fetch failed:', err);
     return renderError(root);
   }
