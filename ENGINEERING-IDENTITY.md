@@ -169,3 +169,75 @@ changing second, with the Stripe smoke test run on the channel both times.
 Known nuance for step 4: the cart stores `price` as a display string today. A
 tier symbol (`"$$"`) reaching the cart parses to `0`, so the bag would show a
 zero subtotal while Stripe charges the real price. Cents end that class of bug.
+
+## 10. Store, pass two — the plan (13 Sep 2026, not started)
+
+_One release, one preview channel, one end-to-end order test before it ships.
+Kreator work is paused. Every item below is either decided by Rohan's message
+or marked **decide**._
+
+### What the catalogue is today (measured)
+
+| Type | Count | Price now | Price after |
+|---|---|---|---|
+| tshirt | 17 | no `actualPrice`; tier symbols `$$`–`$$$$` ($29.99–$49.99) | **$19.99** |
+| tote | 11 | $34.99 | **$29.99** |
+| bottle | 6 | $24.99 | **$19.99** |
+| magnet | 2 | $9.99 | **$5.99** |
+| hoodie | 0 | — | **$24.99** (new type, sizes S–XL, category apparel, tax code clothing) |
+
+No print-on-demand provider is integrated anywhere; product photos are made
+outside the repo and dropped into a folder for `scripts/store_uploader`.
+
+### A. Prices by product type; the tier symbol goes
+
+- `api/checkout/pricing.js`: `PRICE_BY_TYPE_CENTS` (the table above) replaces `PRICE_SYMBOL_CENTS`; `resolvePrice()` = `actualPrice` if present, else the type price, else refuse (no symbol parsing, no legacy string parsing). `priceSymbolFor()` deleted.
+- Data: one migration script (`kaayko-api/functions/scripts/migrate-prices.js`, dry-run first) sets `actualPrice` on all 36 docs from the table and deletes the `price` field. Historical orders are untouched (they snapshot).
+- Client: `priceMap.js` becomes `priceCents = actualPrice`, one table for display fallbacks; `PRICE_MAP`/`PRICE_SYMBOL_CENTS` deleted; `kaaykoFilterModal.js` price bands become the five real prices; admin tier flag deleted; `admin/products.js` and the kreator router stop writing a symbol; `store_uploader` `TYPE_DEFAULTS` = the table and `price_to_symbol` deleted; `smartLinkEnrichment.js` reads `actualPrice`.
+- Tests: `priceMap.test.mjs` and `checkout-payment-intent.test.js` rewritten for the table.
+- **decide:** the uploader knows print, sticker, mug, cap, poster with their own defaults. None exist in the catalogue; drop them from the store (`PRODUCT_TYPE_SECTIONS`, admin enum, uploader) or give them prices.
+
+### B. One design, many products
+
+The same artwork already appears on totes and magnets by hand. Make that a first-class idea:
+
+- **Manifest:** `designs:` section in `manifest.yaml` — `Blackbuck: { artwork: Blackbuck.png, types: [tote, magnet, hoodie] }`. Each generated product carries `designId` and the same `theme`/`tags`/`animalSlug`.
+- **Mockups:** `store_uploader/mockup.py --design Blackbuck --types magnet,hoodie` composites the artwork onto blank templates (`templates/magnet.png`, `hoodie-front.png`, `tote.png`, `tshirt.png`, `bottle.png` with a placement box each) and writes `Blackbuck_Magnet_1.png`, `Blackbuck_Hoodie_1.png` into the upload folder; the existing `store_upload.py` does the rest (upscale → WebP → Storage → Firestore). Deterministic, minutes per family, same lighting on every product. Forge stays the tool for the artwork itself, not the mockup.
+- **Storefront:** PDP shows "Also as: magnet · hoodie" (siblings by `designId`); the grid gains a `hoodie` section; `TYPE_LABEL`, fit picker (hoodie = tshirt sizes), `satireFor` voice for hoodies, tax code.
+- **Admin:** Products view groups by design and shows the family; "Create variant" is NOT built — variants come from the uploader so images are never missing.
+- **decide:** which product photos are wanted for hoodies and magnets — flat composite (what `mockup.py` gives) or lifestyle shots (a provider's mockup tool, by hand, as today). The composite path needs one blank template per type from Rohan (or a provider's blank).
+
+### C. Games: only the Beggathon
+
+- `arcade-widget.js`: no tabs; mounts the Beggathon panel only. Franking Rush and Mail Run are not loaded (`cabinet.js`, `play.js`, `gameRules.js` stay in the repo, unreferenced by pages).
+- `store-about.html`: the arcade section and the two cabinets go.
+- Copy that promises "2% off magnets and bottles" (cart reward notes, about, PDP intro) is rewritten around the one game.
+- Server: `/arcade/challenge` and `/arcade/solve` answer `playable:false` for the machines so an old tab cannot mint a machine code; `/arcade/beg/*` unchanged.
+- **decide:** `/shipping`, `/fly`, `/card` are separate pages, linked only from each other. Unlink and `noindex`, or delete. If any printed QR points at `/card`, keep it.
+
+### D. About page, concise
+
+Keep: the two-line welcome · "Two. That is the basket." cut to one paragraph · "No account, no password" cut to one paragraph · the exhibits · "The unglamorous part" list. Fold "The past had standards" into two sentences under the welcome. Remove the arcade section. Target: under 350 words of copy (from ~800), same voice.
+
+### E. Admin panel, one language
+
+- One button vocabulary in `admin/css/kortex-base.css`: `.btn`, `.btn--primary` (solid gold, one per screen), `.btn--quiet`, `.btn--danger`, `.btn--sm`; the 20 ad-hoc classes (`btn-cyan`, `btn-green`, `ops-btn`, `cv-btn`, `pv-btn`, `btn-copy`…) are mapped onto them and deleted. Colours, type and cuts come from `css/tokens.css` (Bebas/Josefin/Cormorant, bullion gold, hairlines) so admin reads as the same house as the store.
+- Orders: every frozen checkout line snapshots the product's first image (`pricing.js`, next to `kreatorId`) and the Orders view shows it; status pills, one card shape, the same table rhythm as Products.
+- Products: the list already fetches `previewSrc`/`imgSrc` and renders a 56×68 thumb — **verify with Rohan's login which screen has no images**; if it is Orders, the snapshot above is the fix.
+- Scope this pass: shared chrome (sidebar, top bar), Dashboard, Products, Orders, Submissions, Spots. The Kortex link views keep their CSS until a later pass.
+
+### F. Testing the money path, and email
+
+Stripe is in **test mode** on production (`pk_test_…` in `prod-config.js`); real cards are refused by design. What can be tested fully today, on kaayko.com and kaay.store:
+
+1. Browse → PDP → bag (two-item cap) → checkout with `4242 4242 4242 4242` → Stripe succeeds → webhook writes `payment_intents/{pi}` + `orders/{pi}_item{n}` → Kortex Orders shows it → mark shipped with tracking → refund from the Stripe dashboard → `charge.refunded` updates the order.
+2. Discount: win a Beggathon code on a PDP → apply at checkout → the server prices it.
+3. Tax: `STRIPE_TAX_ENABLED` is false, so the row reads "None" — correct.
+
+What cannot be tested: **delivery of the four emails** (receipt, owner alert, shipping, delay notice). They are queued correctly and sit in `ERROR` because `MAIL_SMTP_URL` still holds the sentinel. The sender accepts any `smtps://user:pass@host:port` URL. Options: (a) today, a Gmail app password — `smtps://you%40gmail.com:APP_PASSWORD@smtp.gmail.com:465` — five minutes, no Zoho; (b) Brevo free tier with the kaayko.com domain verified; (c) wait for Zoho. Set the secret, redeploy `mailSender` + `mailRedrive`, and the queued mails redrive on their own. **decide:** (a) now for testing, (b) for launch.
+
+Going live is the five-step switch documented in `prod-config.js` (live pk, sk, webhook secret, dashboard endpoint, tax registration) — all five together, never one.
+
+### Order of work (one pass, ~5 working days)
+
+1. A (prices + migration) → 2. C + D (games, about) → 3. B (designs, mockups, hoodie type; needs Rohan's templates/artwork) → 4. E (admin) → 5. F protocol run on the preview channel, then production, then the order test again on production.
