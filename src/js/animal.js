@@ -72,15 +72,15 @@ function heroBuy(p) {
 }
 
 function renderHero(animal, products) {
-  const heroSrc = animal.artPreviewUrl || animal.artUrl;
-
-  // Not every animal has its transparent artwork drawn yet. Publishing a grey
-  // "art will appear here" box is worse than showing the piece it lives on.
-  const fallbackSrc = heroSrc ? "" : firstProductImage(products);
-  const src = heroSrc || fallbackSrc;
-  const kind = heroSrc ? "is-art" : fallbackSrc ? "is-product" : "is-empty";
-  const zoomAttr = heroSrc ? ` data-zoom-full="${esc(animal.artUrl || heroSrc)}"` : "";
-  const alt = heroSrc ? `${esc(animal.name)} illustration` : `${esc(animal.name)} on a Kaayko piece`;
+  // ONE rule for every animal page: the hero is the piece for sale, photographed.
+  // It used to be the transparent illustration when one existed and a product
+  // photo when not, so two animals side by side looked like two different sites.
+  // The drawing, when there is one, is a button on the frame that opens it full size.
+  const src = firstProductImage(products);
+  const artFull = animal.artUrl || animal.artPreviewUrl || "";
+  const kind = src ? "is-product" : "is-empty";
+  const zoomAttr = "";
+  const alt = `${esc(animal.name)} on a Kaayko piece`;
 
   // The first sentence of the bio carries the hero; the rest waits below.
   const lede = animal.bio ? String(animal.bio).split(/(?<=\.)\s+/)[0] : "";
@@ -92,6 +92,9 @@ function renderHero(animal, products) {
         <div class="an-art"${zoomAttr}>
           ${src ? `<img src="${esc(src)}" alt="${alt}" fetchpriority="high" />` : ""}
         </div>
+        ${artFull ? `<button type="button" class="an-drawing" data-art="${esc(artFull)}" aria-label="See the ${esc(animal.name)} drawing full size">
+          <img src="${esc(animal.artPreviewUrl || artFull)}" alt="" loading="lazy" /><span>The drawing</span>
+        </button>` : ""}
       </figure>
 
       <div class="an-panel">
@@ -196,6 +199,10 @@ function bindVariantActions(animal, products, openModalFn) {
       product: p
     });
   });
+  // The drawing button → open the illustration full size.
+  const drawing = document.querySelector('.an-drawing[data-art]');
+  if (drawing) drawing.addEventListener('click', () => openModalFn({ title: `${animal.name} — the drawing`, imgSrc: [drawing.dataset.art] }));
+
   // Click the hero art → open the full-res zoom modal.
   const heroArt = document.querySelector('.an-art[data-zoom-full]');
   if (heroArt && animal.artUrl) {

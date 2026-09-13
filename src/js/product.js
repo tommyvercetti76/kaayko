@@ -92,24 +92,60 @@ function renderProduct(product, openModalFn) {
     </article>`;
 
   // ── Gallery ──────────────────────────────────────────────
-  root.querySelectorAll('.product-thumb').forEach(t => {
-    t.addEventListener('click', () => {
-      root.querySelectorAll('.product-thumb').forEach(x => {
-        x.classList.remove('active');
-        x.setAttribute('aria-pressed', 'false');
-      });
-      t.classList.add('active');
-      t.setAttribute('aria-pressed', 'true');
-      document.getElementById('pg-main-img').src = previews[parseInt(t.dataset.idx, 10)];
+  // One place sets the frame: thumbs, a swipe on the picture, and the arrow keys
+  // all go through it, so the active thumb can never disagree with the image.
+  const mainImg = document.getElementById('pg-main-img');
+  const thumbEls = [...root.querySelectorAll('.product-thumb')];
+  let frame = 0;
+  function setFrame(i) {
+    const n = previews.length;
+    frame = ((i % n) + n) % n;
+    mainImg.src = previews[frame];
+    thumbEls.forEach((x, k) => {
+      x.classList.toggle('active', k === frame);
+      x.setAttribute('aria-pressed', k === frame ? 'true' : 'false');
     });
-  });
+  }
+  thumbEls.forEach(t => t.addEventListener('click', () => setFrame(parseInt(t.dataset.idx, 10))));
 
   // Zoom on click, and on Enter/Space since the wrapper acts as a button.
   const main = document.getElementById('pg-main');
-  main.addEventListener('click', () => openModalFn(product));
+  let swiped = false;
+  main.addEventListener('click', () => { if (swiped) { swiped = false; return; } openModalFn(product); });
   main.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModalFn(product); }
+    if (previews.length > 1 && e.key === 'ArrowRight') { e.preventDefault(); setFrame(frame + 1); }
+    if (previews.length > 1 && e.key === 'ArrowLeft') { e.preventDefault(); setFrame(frame - 1); }
   });
+
+  // Swipe on the picture. Axis-locked like the store cards: a mostly-horizontal
+  // drag of 40px changes the frame and swallows the click that follows it; a
+  // vertical one is the page scrolling and is left alone.
+  if (previews.length > 1) {
+    let x0 = 0, y0 = 0, axis = null, active = false;
+    main.style.touchAction = 'pan-y';
+    main.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      x0 = e.clientX; y0 = e.clientY; axis = null; active = true;
+    });
+    main.addEventListener('pointermove', (e) => {
+      if (!active || axis) return;
+      const dx = Math.abs(e.clientX - x0), dy = Math.abs(e.clientY - y0);
+      if (dx > 8 || dy > 8) axis = dx > dy ? 'x' : 'y';
+    });
+    const end = (e) => {
+      if (!active) return;
+      active = false;
+      if (axis !== 'x') return;
+      const dx = e.clientX - x0;
+      if (Math.abs(dx) < 40) return;
+      swiped = true;
+      setFrame(frame + (dx < 0 ? 1 : -1));
+    };
+    main.addEventListener('pointerup', end);
+    main.addEventListener('pointercancel', () => { active = false; });
+    mainImg.draggable = false;
+  }
 
   // ── Buy ──────────────────────────────────────────────────
   // Sizes belong next to the thing being bought, not behind a modal, so the
