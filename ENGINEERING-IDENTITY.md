@@ -15,10 +15,11 @@ conventions only hold if they are written down and checked. This document is tha
 ## 2. Layers (frontend)
 
 ```
-css/po-tokens.css          colour · type · cut          (design tokens; loaded last, wins)
-js/components/*            DOM factories + own CSS      (PaddleCard, PoHeader, KonditionsHeatmap, PinPicker)
-js/services/*              network, no DOM              (apiClient, geo, dataTransformer)
-js/prefs.js                user state + event bus       (units, craft, favourites, my-area, API base)
+css/tokens.css             colour · type · cut          (the only token file; last on paddling pages, first on store pages)
+js/components/*            DOM factories + own CSS      (PaddleCard, PoHeader, KonditionsHeatmap, PinPicker, Toast)
+js/services/*              network, no DOM              (storeApi, apiClient, geo, dataTransformer)
+js/prefs.js · cartManager  user state + event bus       (units, craft, favourites, my-area · the bag)
+js/util.js · js/kit.js     helpers, one implementation  (classic global · ES-module face)
 js/pages/*                 page controllers             (state → render; glue only)
 *.html                     structure                    (a mount point per component; no logic > 30 lines inline)
 ```
@@ -31,7 +32,7 @@ draws a card by hand.
 
 | Concern | Single source | Everyone else |
 |---|---|---|
-| API base URL | `prefs.js → kaaykoApiBase()` via `KaaykoUtil.apiBase()` | every paddling page calls it; store-side files still declare their own (open) |
+| API base URL | `prod-config.js → window.KAAYKO_API_BASE` (read by `util.js`/`kit.js`/`prefs.js`) | every page; `scripts/check-store-pages.js` fails the build on a hard-coded host |
 | Score colour + verdict label | `prefs.js → paddleScoreColor()`, `scoreMeta()` | PaddleCard, heatmap, search, methodology |
 | Units + formatting | `prefs.js → fmtTemp/fmtWind/fmtDist/fmtArea` | all pages |
 | Favourites + my area | `prefs.js` + `kaayko:favchange` event | cards, forecast hero, settings, search |
@@ -39,8 +40,13 @@ draws a card by hand.
 | Map + pin | `js/components/PinPicker.js` | search, add-a-lake |
 | A lake on screen | `PaddleCard.create()` (minimal · full · row) | list, about, search results |
 | Page header | `PoHeader.js` | all seven paddling pages |
-| Tiny helpers (`escapeHtml`, `debounce`, `haversineKm`) | `js/util.js` | search, add-a-lake, rate import it |
-| Design tokens | `css/po-tokens.css` | page CSS may add, never redefine |
+| Tiny helpers (`esc`, `debounce`, `haversineKm`, `fetchJson`, footer year) | `js/util.js`; modules import the same functions through `js/kit.js` | every page; the check fails on a second `esc` |
+| Money (cents ↔ string, product → cents) | `js/priceMap.js` — mirrors the server's `resolvePrice()` | grid, PDPs, fit picker, bag, checkout, order-success |
+| Store API calls (timeouts, error shape) | `js/services/storeApi.js` | grid, PDPs, about, testimonials, checkout, arcade (`reward.js` wraps it) |
+| The bag | `js/cartManager.js` (`priceCents`, `kaayko:cartchange` event) | fit picker, PDPs, checkout, header badge |
+| Cart badge | `js/header.js` | every store page |
+| Notices / toasts | `js/components/Toast.js` + `css/toast.css` | fit picker, checkout |
+| Design tokens | `css/tokens.css` — paddling `:root`, store `.store-v2` (+ `html.dark-theme`), legacy aliases | every page; no other file may define a custom property |
 
 ## 4. Patterns we actually use (and where)
 
@@ -86,7 +92,14 @@ Closed 12 Sep 2026: add-a-lake and rate are page modules (`js/pages/submitentry.
 
 Also closed 12 Sep 2026: every page reads `window.KAAYKO_API_BASE` from `prod-config.js` (Kortex's `tenant-portal.js` / `kortex-report.js` keep their environment switch by design) · Stripe idempotency keys no longer derive from the client IP · revoked admin tokens are rejected · submitters are emailed on rejection.
 
-On a branch, awaiting review: the light theme (`light-theme` branch, Firebase preview channel). Default stays dark.
+Closed 12 Sep 2026 (store rebuild, §9): eight `esc()` copies, two API clients, four dollar parsers, two cart-badge copies, 17 footer-year stamps, two toasts, two opposite palettes and 1 898 lines of inline page logic on the store surface are gone. `npm run check` enforces the rules; `npm test` pins the money math.
+
+Still open, in order of value:
+- `header.css` / `storestyle.css` use the legacy `--color-*` names (36 uses) and ~500 rules use `--v2-*`; both live in `tokens.css` as aliases of the canonical names. Rename the uses, then delete the aliases.
+- Paddling pages load `storestyle.css` (2 600 lines) and `header.css` for a footer they barely style.
+- The `/api` privileged-prefix CORS guard runs after `cors()`, so preflights are answered permissively; actual responses are stripped and checkout has its own guard (GAPS.md, low).
+- Marketing/Kortex pages (`forge`, `alumni`, `kortex`, `tenant`, the 16 static lake pages) still carry their own footer-year IIFE; they are outside the store and paddling surfaces.
+- On a branch, awaiting review: the light theme (`light-theme` branch, Firebase preview channel). Default stays dark. Note: with `tokens.css` the store already has a light/dark pair; the paddling light values belong in the same file when that branch lands.
 
 ## 7. Search rebuild — the plan
 
@@ -111,7 +124,9 @@ Budget: no sub-agents for the build; at most 3 for test writing if used at all.
 - **"Where is the domain logic?"** — In pure functions with tests: scoring tips, visibility, tag normalisation, image metadata stripping. The HTTP layer validates and delegates.
 - **"How do you make an anonymous upload safe?"** — Allow-listed fields, magic-byte type checks, metadata stripping, honeypot, a transactional rate limit and dedupe, and nothing is public until a platform admin approves it with coordinates and photos present.
 - **"What did the last performance fix teach you?"** — Measure first. The slow part was not our code: cold starts, uncacheable images and 84 eager image fetches. Fixes were a keep-warm schedule, cache headers, and loading only the visible slide.
-- **"What would you change?"** — Extract the three big inline scripts into page modules, finish the one-source table, add a light theme through tokens, and put min-instances on the API when traffic justifies the cost.
+- **"How do you keep money honest in the browser?"** — The client never computes a charge; it mirrors the server's price rule in cents for display, the server re-prices every line, and one test file pins both sides of the mirror.
+- **"What stops the duplication coming back?"** — A check script in the definition of done: every script must parse, a store page may carry 30 inline lines, the token sheet must load, and a second `esc` or a hard-coded API host fails the build.
+- **"What would you change?"** — Rename the legacy token aliases and delete them, stop loading the store stylesheet on paddling pages, put the CORS guard before `cors()`, land the light theme through `tokens.css`, and put min-instances on the API when traffic justifies the cost.
 
 ## 9. Store rebuild — the plan (kaayko.com/store · kaay.store)
 
@@ -139,14 +154,16 @@ touched._
 
 | Step | Build | Done when |
 |---|---|---|
-| 0 | `js/store/kit.js` — an ES-module facade over `window.KaaykoUtil` (`esc`, `money`, `fetchJson`, `apiBase`) so modules import instead of redefining; `util.js` stamps `#year` everywhere | 8 `esc` copies and 17 year stamps deleted; `cart.html` reads `apiBase()` |
-| 1 | `header.js` owns the cart badge (subscribes to `cartManager`) | both inline copies deleted; badge correct on store, product, cart |
-| 2 | `js/services/storeApi.js` — products, product, vote, images base, arcade reward, tax, payment intent; every call through `fetchJson` with a 9 s timeout and an error the page can act on | `kaayko_apiClient.js` deleted; `/images` base has one definition; the store shows "Try again", never an infinite spinner |
-| 3 | Page modules: `js/pages/cart.js` (extracted verbatim first, exactly as `rate.js` was), `js/pages/store.js`, `js/pages/product.js` glue, `js/pages/index.js`, `js/pages/shipping.js` | every store HTML file ≤ 30 inline lines; checkout smoke test passes on a preview channel before deploy |
-| 4 | Money as numbers: `cartManager` stores `priceCents` from `priceMap.priceCents(product)`; one `money(cents)`; cart totals, order-success and the idempotency fingerprint read cents | `parsePrice` and the `getTotal()` string parse deleted; server `pricing.js` remains the only authority — this is display only |
-| 5 | One token sheet: `css/tokens.css` shared with paddling; `storestyle.css` light palette removed; `--color-brand-gold` etc. become aliases of `--gold` for one release, then go | no colour literal in store CSS that `tokens.css` already names; light theme on the store becomes a branch, not a rewrite |
-| 6 | `js/components/Toast.js`; cart, product and store use it | one toast, ARIA live region, reduced-motion respected |
-| 7 | Tests + deploy: `node --check` on every module, jest for `priceCents`/`money`; preview channel; kaayko.com **and** kaay.store; 375 px pass; live checkout smoke | links in the report; `MODULE-MAP.md` and the store agent file updated |
+| 0 ✅ | `js/kit.js` — the ES-module face of `util.js` (`esc`, `money`, `fetchJson`, `apiBase`, `stampYear`); `util.js` stamps `#year` | 8 `esc` copies (+ `PoHeader`, `cards/render.js`) and 17 year stamps deleted; `cart.js` reads `apiBase()` |
+| 1 ✅ | `header.js` owns the cart badge; `cartManager` dispatches `kaayko:cartchange` | four inline copies deleted; badge correct on store, product, animal, about |
+| 2 ✅ | `js/services/storeApi.js` — products, product, vote, animal, payment intent, tax, contact; every call through `fetchJson` with a 10–15 s timeout; `{ok,status,data,offline,timeout}` for the checkout, `ApiError` for the rest | `kaayko_apiClient.js` deleted; the two hard-coded `/images` bases gone; the arcade's `api()` wraps `request()` |
+| 3 ✅ | Page modules: `pages/cart.js` (verbatim first, commit 0f4ca88; changed second, 21a0eee), `pages/store.js`, `pages/pdp.js` (product + animal, one file), `pages/order-success.js`, `pages/index.js`, `pages/shipping.js`, `pages/card.js` | store surface inline JS 1 898 → 21 lines; checkout smoke passed on the preview channel before deploy |
+| 4 ✅ | `priceMap.js` mirrors the server's `resolvePrice()` in integer cents; the bag stores `priceCents` (legacy bags migrate on load); `money(cents)` is the only formatter | `parsePrice` and `getTotalPrice()` deleted; a tier-symbol bag no longer shows $0.00 |
+| 5 ✅ | `css/tokens.css` (was `po-tokens.css`) is the only file that defines a token: paddling `:root`, store `.store-v2` + `html.dark-theme`, legacy `--color-*`/`--v2-*` as aliases | computed colours on store (light+dark), cart (light+dark), paddling list and search fields byte-identical before and after |
+| 6 ✅ | `js/components/Toast.js` + `css/toast.css`; fit picker and checkout use it | one toast, role status/alert, action link, reduced-motion respected |
+| 7 ✅ | `npm run check` (every script parses · store pages ≤ 30 inline lines · tokens first · one `esc` · one API base · asset refs) and `npm test` (priceMap 8 · cartManager 7 · storeApi 6); preview channel on both sites; 375 px pass; API accepts preview-channel origins so checkout can be smoke-tested pre-prod | deployed to kaayko.com and kaay.store 12 Sep 2026 (kaayko eb340a7, kaayko-api 3f6e…); every page on both hosts 200 |
+
+Also fixed on the way: testimonials avatars (blocked by the hosting CSP and a proxy that now 500s) show the products' own images; kaay.store product pages reached via `/p/:id` now mount the arcade; the dead `about-dynamic.js` is gone.
 
 Budget: no sub-agents for the build; at most 2 for tests. The cart (step 3) is
 the only step with money risk, and it is mitigated by extracting first and

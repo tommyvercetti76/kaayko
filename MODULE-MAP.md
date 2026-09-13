@@ -117,36 +117,56 @@ GET  /api/docs                                 → API spec (spec.yaml / spec.js
 ---
 
 ## Module: `store`
-> E-commerce: product catalog, voting, cart, Stripe checkout.
+> E-commerce: product catalog, voting, cart, Stripe checkout. Two hosting sites serve the same files: kaayko.com (`/store/...`) and kaay.store (`/`, `/p/:id`, `/about`, `/privacy`).
 
-**Pages:**
-| URL | File |
-|-----|------|
-| `/store` | `kaayko/src/store.html` |
-| `/cart` | `kaayko/src/cart.html` |
-| `/order-success` | `kaayko/src/order-success.html` |
+**Pages → page module:**
+| URL | File | Module |
+|-----|------|--------|
+| `/store` (kaay.store `/`) | `kaayko/src/store.html` | `js/pages/store.js` |
+| `/store/p/:id` (kaay.store `/p/:id`) | `kaayko/src/product.html` (`data-pdp="product"`) | `js/pages/pdp.js` → `js/product.js` |
+| `/animals/:slug` | `kaayko/src/animal.html` (`data-pdp="animal"`) | `js/pages/pdp.js` → `js/animal.js` |
+| `/cart` | `kaayko/src/cart.html` | `js/pages/cart.js` |
+| `/order-success` | `kaayko/src/order-success.html` | `js/pages/order-success.js` |
+| `/store/about` (kaay.store `/about`) | `kaayko/src/store-about.html` | inline (5 lines) → `js/store-about.js` |
+| `/store/privacy` (kaay.store `/privacy`) | `kaayko/src/store-privacy.html` | — |
+| `/shipping`, `/fly` | `kaayko/src/shipping.html` | `js/pages/shipping.js` |
+| `/card` | `kaayko/src/card.html` | `js/pages/card.js` |
+| `/testimonials` | `kaayko/src/testimonials.html` | `js/testimonials.js` |
 
-**JS files:**
-- `kaayko/src/js/kaayko_apiClient.js` — product API client (getAllProducts, getProductByID, voteOnProduct)
-- `kaayko/src/js/secretStore.js` — voting system
-- `kaayko/src/js/kaaykoFilterModal.js` — filter/search UI
-- `kaayko/src/js/cartManager.js` — cart (localStorage)
+Every store page loads, in this order: `js/prod-config.js` (the API base, in `<head>`), `css/tokens.css` before any other stylesheet, then classic `js/header.js` (theme toggle, cart badge) and ONE page module. `scripts/check-store-pages.js` enforces ≤ 30 inline JS lines per page.
+
+**One source per concern (12 Sep 2026):**
+- `kaayko/src/js/util.js` + `js/kit.js` — `esc`, `debounce`, `fetchJson`, `apiBase`, footer year (classic global · ES-module face)
+- `kaayko/src/js/services/storeApi.js` — every store API call, timeouts, `ApiError`; `request()` for the checkout's status branching
+- `kaayko/src/js/priceMap.js` — integer cents; `priceCents(product)` mirrors the server's `resolvePrice()`; `money(cents)`
+- `kaayko/src/js/cartManager.js` — the bag (`priceCents`, max 2 products, `kaayko:cartchange` event, `window.cartManager` for classic scripts)
+- `kaayko/src/js/components/Toast.js` + `css/toast.css` — the one notice
+- `kaayko/src/js/header.js` — theme toggle, cart badge, home link
+- `kaayko/src/js/kaayko_ui.js` — the grid, image modal, voting; `js/fitPicker.js` — THE size/fit picker; `js/kaaykoFilterModal.js` — filter modal (module)
+- `kaayko/src/js/product.js`, `js/animal.js`, `js/store-about.js`, `js/store-satire.js` — PDP renderers and copy
+- `kaayko/src/js/arcade/*`, `js/arcade-widget.js` — the games; `arcade/reward.js` wraps `storeApi.request()`
+- `kaayko/src/js/storeAccess.js`, `js/secretStore.js` — invite gate (classic)
+- Deleted: `kaayko_apiClient.js`, `kaayko-main.js`, `about-dynamic.js`
 
 **APIs used:**
 ```
-# Products
-GET  /api/products                     → all products
-GET  /api/products/{id}               → single product
-POST /api/products/{id}/vote          → vote  body: { voteChange: 1 | -1 }
-GET  /api/images                       → product images from Storage
+# Catalogue
+GET  /products                         → { products: [...] }
+GET  /products/{id}                    → { product }
+POST /products/{id}/vote               → body: { voteChange: 1 | -1 }
+GET  /animals/{slug}                   → { animal, products }
 
-# Checkout
-POST /api/createPaymentIntent          → create Stripe payment intent
-     body: { items, totalAmount, customerEmail, shippingAddress,
-             customerName, customerPhone, dataRetentionConsent }
-POST /api/createPaymentIntent/updateEmail  → update email on intent
-POST /api/createPaymentIntent/webhook  → Stripe webhook (no auth, raw body)
+# Checkout (browser origin must be first-party or a Firebase preview channel — config/origins.js)
+POST /createPaymentIntent              → { checkoutSession, rewardCode, arcadeToken, items:[{productId,size,gender,quantity}] }
+POST /createPaymentIntent/tax          → { paymentIntentId, address }
+POST /createPaymentIntent/updateEmail  → { paymentIntentId, email, phone }
+POST /createPaymentIntent/webhook      → Stripe webhook (no auth, raw body)
+
+# Arcade
+GET  /arcade/challenge?productId&game  POST /arcade/solve  POST /arcade/beg/start  POST /arcade/beg/solve  GET /arcade/reward/{code}
 ```
+
+**Checks:** `cd kaayko && npm run check && npm test` (see `package.json`).
 
 **API files:**
 - `kaayko-api/functions/api/products.js`

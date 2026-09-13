@@ -89,16 +89,22 @@ Agents: identify the page here, then look up the module in MODULE-MAP.md for ful
 
 | URL | File |
 |-----|------|
-| `/` | `src/index.html` (split Kaayko landing: Paddling Out / Forge / Store, then Store access layer) |
+| `/` | `src/index.html` → `js/pages/index.js` (split Kaayko landing: Paddling Out / Forge / Store, then Store access layer) |
 | `/paddlingout` | `src/paddlingout.html` |
 | `/about` | `src/about.html` |
-| `/store` | `src/store.html` |
-| `/cart` | `src/cart.html` |
+| `/store` (kaay.store `/`) | `src/store.html` → `js/pages/store.js` |
+| `/cart` | `src/cart.html` → `js/pages/cart.js` |
 | `/privacy` | `src/privacy.html` |
 | `/reads` | `src/reads.html` |
 | `/testimonials` | `src/testimonials.html` |
 | `/valentine` | `src/valentine.html` |
-| `/order-success` | `src/order-success.html` |
+| `/order-success` | `src/order-success.html` → `js/pages/order-success.js` |
+| `/store/p/:id` (kaay.store `/p/:id`) | `src/product.html` → `js/pages/pdp.js` |
+| `/animals/:slug` | `src/animal.html` → `js/pages/pdp.js` |
+| `/store/about` (kaay.store `/about`) | `src/store-about.html` |
+| `/store/privacy` (kaay.store `/privacy`) | `src/store-privacy.html` |
+| `/shipping`, `/fly` | `src/shipping.html` → `js/pages/shipping.js` |
+| `/card` | `src/card.html` → `js/pages/card.js` |
 | `/404` | `src/404.html` |
 
 ### Kortex Admin And Tenant Portal (13)
