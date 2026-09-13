@@ -12,10 +12,11 @@ plain paste sits on top of the fabric and looks like a sticker.
   python3 tote_gallery.py art.png --out /path/dir --frames hanging_front shoulder_a carry
   python3 tote_gallery.py /folder/of/*.transparent.png --out /gallery   # one subfolder each
   python3 tote_gallery.py --sheet /gallery                     # contact sheet of everything
+  python3 tote_gallery.py art.png --set natural                # on the natural-cotton photographs
 
-The blank's colour is the photograph's colour. Tinting a white bag in software was
-tried and removed: it never survives the straps and the folds. To sell natural cotton,
-photograph a natural blank in these six poses and drop the files into templates/tote/.
+Two template sets, the same six poses photographed on two blanks: templates/tote/
+(white) and templates/tote_natural/ (natural cotton). Pick with --set. The blank's
+colour is the photograph's colour; tinting in software was tried and removed.
 
 Output per drawing: <out>/<slug>/<n>_<template>.png at template resolution, plus
 <slug>/preview.png (1600px) of the first frame. Feed <out>/<slug>/ to store_upload.py.
@@ -26,7 +27,8 @@ from pathlib import Path
 from PIL import Image, ImageChops, ImageFilter
 
 HERE = Path(__file__).resolve().parent
-TDIR = HERE / "templates" / "tote"
+SETS = {"white": HERE / "templates" / "tote", "natural": HERE / "templates" / "tote_natural"}
+TDIR = SETS["white"]
 PRINT_SCALE = 0.96      # how much of the panel the drawing may fill
 INK = 0.96              # ink opacity: a little fabric shows through even solid colour
 
@@ -136,7 +138,10 @@ def main():
     ap.add_argument("--frames", nargs="*", help="template ids, in order (default: placements.json default_frames)")
     ap.add_argument("--all", action="store_true", help="every template, not just the default three")
     ap.add_argument("--sheet", help="build a contact sheet of an output root and exit")
+    ap.add_argument("--set", default="white", choices=list(SETS), help="which blank was photographed: white or natural cotton")
     a = ap.parse_args()
+    global TDIR
+    TDIR = SETS[a.set]
     if a.sheet:
         print(sheet(Path(a.sheet))); return 0
     paths = [Path(p) for pat in a.art for p in (glob.glob(pat) or [pat])]
