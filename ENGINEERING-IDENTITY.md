@@ -112,3 +112,46 @@ Budget: no sub-agents for the build; at most 3 for test writing if used at all.
 - **"How do you make an anonymous upload safe?"** — Allow-listed fields, magic-byte type checks, metadata stripping, honeypot, a transactional rate limit and dedupe, and nothing is public until a platform admin approves it with coordinates and photos present.
 - **"What did the last performance fix teach you?"** — Measure first. The slow part was not our code: cold starts, uncacheable images and 84 eager image fetches. Fixes were a keep-warm schedule, cache headers, and loading only the visible slide.
 - **"What would you change?"** — Extract the three big inline scripts into page modules, finish the one-source table, add a light theme through tokens, and put min-instances on the API when traffic justifies the cost.
+
+## 9. Store rebuild — the plan (kaayko.com/store · kaay.store)
+
+_Surveyed 12 Sep 2026. Same method as §7: one source per concern, page modules,
+nothing inline over 30 lines. The store is the money path, so the order below
+is cheapest-and-safest first and the cart is extracted verbatim before it is
+touched._
+
+**What the survey found** (all measured, `grep` reproducible):
+
+| Concern | Copies today | Where |
+|---|---|---|
+| HTML-escaping `esc()` | 8 + `util.js` | `animal.js`, `fitPicker.js`, `product.js`, `store-about.js`, `arcade/{beg,cabinet,reward}.js`, `cart.html` |
+| API base | 1 stray + 2 image bases | `cart.html` computes its own `API_URL`; `kaayko_ui.js` and `testimonials.js` hard-code `/images` |
+| API client | 2 | `js/kaayko_apiClient.js` (store) and `js/services/apiClient.js` (forecast only) |
+| Dollar formatting / parsing | 4 | `cart.html` `money`/`parsePrice`, `cartManager.getTotal()` re-parses a display string, `order-success.html`, `priceMap.priceText()` |
+| Cart badge in the header | 2 verbatim | inline in `store.html` and `product.html`; `header.js` does not own it |
+| Footer year stamp | 17 pages | every store/marketing page; `util.js` already does it for paddling |
+| Toast / modal | 3 | `cart.html` toast, `kaayko_ui.js` modal, `secretStore.js` modal |
+| Fetch timeout | 0 of 12 fetches | no `AbortController` anywhere on the store surface; a cold start is a spinner forever |
+| Design tokens | 2 palettes, opposite | `storestyle.css` declares light (#f9f9f9, orange #ff8c00) then `header.css` overrides to dark (#080808, #b5935a); `po-tokens.css` names the same colours differently |
+| Inline page logic | 1 400 lines | `cart.html` 802, `index.html` 353, `shipping.html` 233, `store.html` 91, `order-success.html` 57, `product.html` 54 |
+
+**Steps**
+
+| Step | Build | Done when |
+|---|---|---|
+| 0 | `js/store/kit.js` — an ES-module facade over `window.KaaykoUtil` (`esc`, `money`, `fetchJson`, `apiBase`) so modules import instead of redefining; `util.js` stamps `#year` everywhere | 8 `esc` copies and 17 year stamps deleted; `cart.html` reads `apiBase()` |
+| 1 | `header.js` owns the cart badge (subscribes to `cartManager`) | both inline copies deleted; badge correct on store, product, cart |
+| 2 | `js/services/storeApi.js` — products, product, vote, images base, arcade reward, tax, payment intent; every call through `fetchJson` with a 9 s timeout and an error the page can act on | `kaayko_apiClient.js` deleted; `/images` base has one definition; the store shows "Try again", never an infinite spinner |
+| 3 | Page modules: `js/pages/cart.js` (extracted verbatim first, exactly as `rate.js` was), `js/pages/store.js`, `js/pages/product.js` glue, `js/pages/index.js`, `js/pages/shipping.js` | every store HTML file ≤ 30 inline lines; checkout smoke test passes on a preview channel before deploy |
+| 4 | Money as numbers: `cartManager` stores `priceCents` from `priceMap.priceCents(product)`; one `money(cents)`; cart totals, order-success and the idempotency fingerprint read cents | `parsePrice` and the `getTotal()` string parse deleted; server `pricing.js` remains the only authority — this is display only |
+| 5 | One token sheet: `css/tokens.css` shared with paddling; `storestyle.css` light palette removed; `--color-brand-gold` etc. become aliases of `--gold` for one release, then go | no colour literal in store CSS that `tokens.css` already names; light theme on the store becomes a branch, not a rewrite |
+| 6 | `js/components/Toast.js`; cart, product and store use it | one toast, ARIA live region, reduced-motion respected |
+| 7 | Tests + deploy: `node --check` on every module, jest for `priceCents`/`money`; preview channel; kaayko.com **and** kaay.store; 375 px pass; live checkout smoke | links in the report; `MODULE-MAP.md` and the store agent file updated |
+
+Budget: no sub-agents for the build; at most 2 for tests. The cart (step 3) is
+the only step with money risk, and it is mitigated by extracting first and
+changing second, with the Stripe smoke test run on the channel both times.
+
+Known nuance for step 4: the cart stores `price` as a display string today. A
+tier symbol (`"$$"`) reaching the cart parses to `0`, so the bag would show a
+zero subtotal while Stripe charges the real price. Cents end that class of bug.
