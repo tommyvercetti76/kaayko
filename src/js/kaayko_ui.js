@@ -721,7 +721,7 @@ const TYPE_WORDS = /\s*[-–·]?\s*\b(t-?shirts?|tees?|shirts?|totes?|tote bags?
 export function cardName(item) {
   const raw = String(item.title || "").replace(/^kaayko\s+/i, "").trim();
   const short = raw.replace(TYPE_WORDS, "").replace(/^\s*[·\-–]\s*/, "").trim();
-  return short.length >= 3 ? short : raw;
+  return short.length >= 2 ? short : raw;
 }
 
 /** One quiet line: New · Bottle · 1963 stamp. The year comes from the description when it names one. */
