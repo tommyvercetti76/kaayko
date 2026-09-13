@@ -88,7 +88,7 @@ html.dark-theme .animal-v2 .an-plate {
   font-weight: 600;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--v2-gold);
+  color: var(--gold);
 }
 .animal-v2 .an-eyebrow[data-severity="critically"],
 .animal-v2 .an-eyebrow[data-severity="endangered"] { color: #a8412f; }
@@ -102,7 +102,7 @@ html.dark-theme .animal-v2 .an-eyebrow[data-severity="endangered"] { color: #e08
   font-size: clamp(46px, 5.4vw, 82px);
   line-height: 0.96;
   letter-spacing: -0.015em;
-  color: var(--v2-fg);
+  color: var(--fg);
   text-wrap: balance;
 }
 .animal-v2 .an-scientific {
@@ -110,16 +110,16 @@ html.dark-theme .animal-v2 .an-eyebrow[data-severity="endangered"] { color: #e08
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-style: italic;
   font-size: clamp(17px, 1.5vw, 21px);
-  color: var(--v2-fg-muted);
+  color: var(--muted);
 }
 .animal-v2 .an-lede {
   margin: 26px 0 0;
   padding-top: 26px;
-  border-top: 1px solid var(--v2-border);
+  border-top: 1px solid var(--line);
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
   font-size: 15px;
   line-height: 1.72;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
 }
 
 /* The piece, beside the animal — not at the foot of the page. */
@@ -130,7 +130,7 @@ html.dark-theme .animal-v2 .an-eyebrow[data-severity="endangered"] { color: #e08
   gap: 18px;
   margin-top: 30px;
   padding-top: 28px;
-  border-top: 1px solid var(--v2-border);
+  border-top: 1px solid var(--line);
 }
 .animal-v2 .variant-card.is-compact .variant-img {
   width: 92px;
@@ -146,12 +146,12 @@ html.dark-theme .animal-v2 .an-eyebrow[data-severity="endangered"] { color: #e08
   margin: 0;
   font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
   font-size: 15px;
-  color: var(--v2-fg);
+  color: var(--fg);
 }
 .animal-v2 .variant-card.is-compact .variant-price {
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
   font-size: 14px;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
 }
 .animal-v2 .variant-card.is-compact .variant-cta {
   margin-top: 10px;
@@ -159,8 +159,8 @@ html.dark-theme .animal-v2 .an-eyebrow[data-severity="endangered"] { color: #e08
   padding: 0 26px;
   border: none;
   border-radius: 999px;
-  background: var(--v2-fg);
-  color: var(--v2-bg);
+  background: var(--fg);
+  color: var(--bg);
   font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
   font-size: 13px;
   letter-spacing: 0.1em;
@@ -187,13 +187,13 @@ html.dark-theme .animal-v2 .an-eyebrow[data-severity="endangered"] { color: #e08
 .animal-v2 .an-kicker {
   margin: 0 0 18px;
   padding-top: 20px;
-  border-top: 1px solid var(--v2-gold);
+  border-top: 1px solid var(--gold);
   font-family: 'Josefin_Bold', 'Josefin Sans', Arial, sans-serif;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--v2-gold);
+  color: var(--gold);
 }
 .animal-v2 .an-bio {
   margin: 0;
@@ -201,10 +201,10 @@ html.dark-theme .animal-v2 .an-eyebrow[data-severity="endangered"] { color: #e08
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-size: clamp(21px, 2.1vw, 27px);
   line-height: 1.58;
-  color: var(--v2-fg);
+  color: var(--fg);
 }
 .animal-v2 .an-facts .animal-stats { display: block; }
-.animal-v2 .an-facts .animal-stat { padding: 14px 0; border-top: 1px solid var(--v2-border); }
+.animal-v2 .an-facts .animal-stat { padding: 14px 0; border-top: 1px solid var(--line); }
 .animal-v2 .an-facts .animal-stat:first-child { border-top: none; padding-top: 0; }
 
 /* No motion on this page. The only animation in the store is the transition

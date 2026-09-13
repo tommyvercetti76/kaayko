@@ -267,13 +267,8 @@ ${renderFooter('paddling', { indent: '' })}
     })
     .catch(function () { clearTimeout(timer); /* keep the static label */ });
 })();
-
-/* kaayko-footer-year */
-(function () {
-  var y = document.getElementById("year");
-  if (y) y.textContent = new Date().getFullYear();
-})();
 </script>
+<script src="/js/util.js"></script>
 
 </body>
 </html>

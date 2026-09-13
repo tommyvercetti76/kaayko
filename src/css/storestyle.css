@@ -8,8 +8,9 @@
 /* ----------------------------------------------------------
 1) RESET & GLOBAL LAYOUT (shared)
 ---------------------------------------------------------- */
-/* Tokens (--spacing-*, --color-*, --v2-*) are defined in css/tokens.css and
-   nowhere else. Every page that links this file links tokens.css first. */
+/* Tokens (--spacing-*, --color-*, the store's --bg/--fg/--gold… and the seven
+   store-only --v2-* names) are defined in css/tokens.css and nowhere else. Every
+   page that links this file links tokens.css, then base.css, first. */
 
 /* CUSTOM FONTS (shared) */
 @font-face {
@@ -26,31 +27,7 @@
 }
 
 /* RESET (shared) */
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-/* FULL-HEIGHT LAYOUT (shared) */
-html, body {
-  width: 100%;
-  height: 100%;
-  min-height: 100vh;
-  min-height: -webkit-fill-available;
-  overflow-x: hidden;
-  background-color: var(--color-body-bg);
-  color: var(--color-text-base);
-  scroll-behavior: smooth;
-  overscroll-behavior: none;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* BODY FLEX HELPERS (shared) */
-body {
-  font-family: 'Arial', sans-serif;
-  display: flex;
-  flex-direction: column;
-}
-
-/* MAIN CONTAINER (shared) */
-main { flex: 1; padding: 0 var(--spacing-medium); background: inherit; }
+/* The reset (*, html/body, body, main) lives in css/base.css. */
 
 /* ----------------------------------------------------------
 3) CAROUSEL (shared – used on index and elsewhere)
@@ -91,7 +68,7 @@ main { flex: 1; padding: 0 var(--spacing-medium); background: inherit; }
   text-transform: uppercase;
   color: var(--v2-section-title);
   padding: 0 4px 16px;
-  border-bottom: 1px solid var(--v2-border);
+  border-bottom: 1px solid var(--line);
   transition: border-color 200ms ease;
   user-select: none;
 }
@@ -113,7 +90,7 @@ main { flex: 1; padding: 0 var(--spacing-medium); background: inherit; }
   gap: 14px;
 }
 .store-v2 .carousel-section-toggle:focus-visible {
-  outline: 2px solid var(--v2-gold);
+  outline: 2px solid var(--gold);
   outline-offset: 4px;
   border-radius: 2px;
 }
@@ -126,9 +103,9 @@ main { flex: 1; padding: 0 var(--spacing-medium); background: inherit; }
   font-size: 11px;
   font-weight: 400;
   letter-spacing: 0.1em;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
   padding: 2px 8px;
-  border: 1px solid var(--v2-border);
+  border: 1px solid var(--line);
   border-radius: 999px;
   line-height: 1;
   min-width: 22px;
@@ -139,7 +116,7 @@ main { flex: 1; padding: 0 var(--spacing-medium); background: inherit; }
   width: 16px;
   height: 16px;
   margin-left: auto;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
   transition: transform 240ms cubic-bezier(0.2, 0.6, 0.2, 1);
 }
 .store-v2 .carousel-section.collapsed .carousel-section-chevron {
@@ -147,7 +124,7 @@ main { flex: 1; padding: 0 var(--spacing-medium); background: inherit; }
 }
 .store-v2 .carousel-section-title:hover .carousel-section-chevron,
 .store-v2 .carousel-section-title:hover .carousel-section-count {
-  color: var(--v2-fg);
+  color: var(--fg);
 }
 #carousel.single-card {
   display: flex; justify-content: center; align-items: center;
@@ -808,8 +785,8 @@ Sustainability Alert Modal
 body.store-v2 {
   background: radial-gradient(circle at 22% 14%, rgba(181, 147, 90, 0.14), transparent 36%),
               radial-gradient(circle at 78% 82%, rgba(181, 147, 90, 0.1), transparent 42%),
-              var(--v2-bg);
-  color: var(--v2-fg);
+              var(--bg);
+  color: var(--fg);
 }
 
 .store-v2 main {
@@ -880,9 +857,9 @@ body.store-v2 {
   font-weight: 500;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
   background: transparent;
-  border: 1px solid var(--v2-border);
+  border: 1px solid var(--line);
   border-radius: 999px;
   cursor: pointer;
   appearance: none;
@@ -897,17 +874,17 @@ body.store-v2 {
   display: none;
 }
 .store-v2 .carousel-section-refine:focus-visible {
-  outline: 2px solid var(--v2-gold);
+  outline: 2px solid var(--gold);
   outline-offset: 2px;
 }
 .store-v2 .carousel-section-refine:hover {
-  color: var(--v2-fg);
-  border-color: var(--v2-fg-muted);
-  background: var(--v2-border);
+  color: var(--fg);
+  border-color: var(--muted);
+  background: var(--line);
 }
 .store-v2 .carousel-section-refine.has-active {
-  color: var(--v2-fg);
-  border-color: var(--v2-fg);
+  color: var(--fg);
+  border-color: var(--fg);
 }
 .store-v2 .carousel-section-refine .refine-count {
   display: inline-flex;
@@ -917,8 +894,8 @@ body.store-v2 {
   height: 18px;
   padding: 0 5px;
   border-radius: 999px;
-  background: var(--v2-fg);
-  color: var(--v2-surface-elev);
+  background: var(--fg);
+  color: var(--surface-2);
   font-family: 'Josefin_Bold', 'Josefin Sans', Arial, sans-serif;
   font-size: 10px;
   letter-spacing: 0;
@@ -949,7 +926,7 @@ body.store-v2 {
   font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
   min-width: 54px;
 }
 .store-v2 .section-facet-chips {
@@ -964,9 +941,9 @@ body.store-v2 {
   gap: 6px;
   padding: 5px 11px;
   background: transparent;
-  border: 1px solid var(--v2-border);
+  border: 1px solid var(--line);
   border-radius: 999px;
-  color: var(--v2-fg);
+  color: var(--fg);
   font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
   font-size: 12px;
   font-weight: 500;
@@ -975,20 +952,20 @@ body.store-v2 {
   transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
 }
 .store-v2 .section-facet-chip:hover {
-  border-color: var(--v2-fg-muted);
-  background: var(--v2-border);
+  border-color: var(--muted);
+  background: var(--line);
 }
 .store-v2 .section-facet-chip:focus-visible {
-  outline: 2px solid var(--v2-gold);
+  outline: 2px solid var(--gold);
   outline-offset: 2px;
 }
 .store-v2 .section-facet-chip.selected {
-  background: var(--v2-fg);
-  border-color: var(--v2-fg);
-  color: var(--v2-surface-elev);
+  background: var(--fg);
+  border-color: var(--fg);
+  color: var(--surface-2);
 }
 .store-v2 .section-facet-chip.selected .section-facet-count {
-  color: var(--v2-surface-elev);
+  color: var(--surface-2);
   opacity: 0.7;
 }
 .store-v2 .section-facet-count {
@@ -996,7 +973,7 @@ body.store-v2 {
   font-size: 10px;
   font-weight: 400;
   letter-spacing: 0.04em;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
 }
 
 .store-v2 .carousel-section.collapsed .carousel-section-title {
@@ -1149,7 +1126,7 @@ body.store-v2 {
 }
 
 .store-v2 .title {
-  color: var(--v2-fg);
+  color: var(--fg);
   font-family: 'Josefin_Medium', Arial, sans-serif;
   font-size: 14px;
   font-weight: 500;
@@ -1168,7 +1145,7 @@ body.store-v2 {
   transition: color 160ms ease;
 }
 .store-v2 .title-link:hover {
-  color: var(--v2-gold-bright);
+  color: var(--gold-bright);
 }
 
 .store-v2 .product-store-link {
@@ -1176,7 +1153,7 @@ body.store-v2 {
 }
 
 .store-v2 .description {
-  color: var(--v2-fg-muted);
+  color: var(--muted);
   font-family: 'Josefin_Light', Arial, sans-serif;
   font-size: 12px;
   font-weight: 400;
@@ -1210,7 +1187,7 @@ body.store-v2 {
 }
 
 .store-v2 .actual-price {
-  color: var(--v2-fg);
+  color: var(--fg);
   font-family: 'Josefin_Medium', Arial, sans-serif;
   font-size: 13px;
   font-weight: 500;
@@ -1229,7 +1206,7 @@ body.store-v2 {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
   font-family: 'Josefin_Light', Arial, sans-serif;
   font-size: 11px;
   font-weight: 400;
@@ -1241,7 +1218,7 @@ body.store-v2 {
 }
 
 .store-v2 .cart-link.in-cart {
-  color: var(--v2-green);
+  color: var(--good);
 }
 
 .store-v2 .cart-link::after {
@@ -1261,11 +1238,11 @@ body.store-v2 {
 
 /* Was a hard-coded near-white, which is invisible on the ivory theme. */
 .store-v2 .cart-link:hover {
-  color: var(--v2-fg);
+  color: var(--fg);
 }
 
 .store-v2 .cart-link:focus-visible {
-  outline: 2px solid var(--v2-gold);
+  outline: 2px solid var(--gold);
   outline-offset: 3px;
 }
 
@@ -1288,17 +1265,17 @@ body.store-v2 {
 
 .store-v2 .store-banner {
   background: linear-gradient(135deg, #0a0a09 0%, #12140f 100%);
-  border-bottom: 1px solid var(--v2-border);
+  border-bottom: 1px solid var(--line);
 }
 
 .store-v2 .store-banner-link {
-  color: var(--v2-gold-bright);
+  color: var(--gold-bright);
 }
 
 .store-v2 .store-empty,
 .store-v2 .store-empty h2,
 .store-v2 .store-empty p {
-  color: var(--v2-fg);
+  color: var(--fg);
 }
 
 .store-v2 .store-back-link {
@@ -1356,7 +1333,7 @@ html.dark-theme .store-v2 .footer-elements {
 }
 
 .cart-v2 .cart-header h1 {
-  color: var(--v2-gold-bright);
+  color: var(--gold-bright);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   font-size: clamp(1.7rem, 3vw, 2.35rem);
@@ -1365,8 +1342,8 @@ html.dark-theme .store-v2 .footer-elements {
 .cart-v2 .cart-summary-bar,
 .cart-v2 .cart-item,
 .cart-v2 .cart-summary-panel {
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.03), transparent 44%), var(--v2-surface);
-  border: 1px solid var(--v2-border);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.03), transparent 44%), var(--surface);
+  border: 1px solid var(--line);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.42);
   border-radius: 12px;
 }
@@ -1390,7 +1367,7 @@ html.dark-theme .store-v2 .footer-elements {
 .cart-v2 .cart-summary-bar-total-value,
 .cart-v2 .cart-item-price,
 .cart-v2 .cart-summary-title {
-  color: var(--v2-gold-bright);
+  color: var(--gold-bright);
 }
 
 .cart-v2 .cart-summary-title {
@@ -1399,7 +1376,7 @@ html.dark-theme .store-v2 .footer-elements {
 }
 
 .cart-v2 .cart-item-title {
-  color: var(--v2-fg);
+  color: var(--fg);
 }
 
 .cart-v2 .cart-item-remove {
@@ -1413,11 +1390,11 @@ html.dark-theme .store-v2 .footer-elements {
 .cart-v2 .cart-form-input {
   background: #0f100d;
   border-color: rgba(181, 147, 90, 0.34);
-  color: var(--v2-fg);
+  color: var(--fg);
 }
 
 .cart-v2 .cart-form-input:focus {
-  border-color: var(--v2-gold-bright);
+  border-color: var(--gold-bright);
 }
 
 .cart-v2 .cart-form-input::placeholder {
@@ -1430,7 +1407,7 @@ html.dark-theme .store-v2 .footer-elements {
 }
 
 .cart-v2 .cart-consent-text a {
-  color: var(--v2-gold-bright);
+  color: var(--gold-bright);
 }
 
 .cart-v2 .cart-checkout-btn {
@@ -1455,7 +1432,7 @@ html.dark-theme .store-v2 .footer-elements {
 
 .cart-v2 .cart-empty h2,
 .cart-v2 .cart-empty p {
-  color: var(--v2-fg);
+  color: var(--fg);
 }
 
 .cart-v2 footer {
@@ -1505,7 +1482,7 @@ html.dark-theme .store-v2 .footer-elements {
 
 /* The store header is dark in BOTH themes (the gradient above; html.dark-theme
    paints it #080808 via header.css), so the brand text uses the night golds as
-   literals. The light-theme --v2-gold tokens are dark-on-light inks and
+   literals. The light-theme --gold tokens are dark-on-light inks and
    measured 2.3:1 (title) / 2.7:1 (subtitle) here. Title ≥ 6.4:1 and subtitle
    ≥ 5.4:1 against the darkest point of the gradient. */
 .store-v2 .header-title {
@@ -1535,7 +1512,7 @@ html.dark-theme .store-v2 .footer-elements {
 }
 
 .store-v2 .cart-nav-button:hover {
-  color: var(--v2-gold-bright);
+  color: var(--gold-bright);
 }
 
 .store-v2 .cart-badge {
@@ -1552,7 +1529,7 @@ html.dark-theme .store-v2 .footer-elements {
 .store-v2 #filter-toggle:hover,
 .store-v2 .fab-menu:hover,
 .store-v2 .theme-toggle-icon:hover {
-  color: var(--v2-gold-bright);
+  color: var(--gold-bright);
 }
 
 @media (max-width: 768px) {
@@ -1619,8 +1596,8 @@ html.dark-theme .store-v2 .footer-elements {
   padding: 0 4px;
   background: none;
   border: none;
-  border-bottom: 1px solid var(--v2-border);
-  color: var(--v2-fg);
+  border-bottom: 1px solid var(--line);
+  color: var(--fg);
   font-family: inherit;
   font-size: inherit;
   cursor: pointer;
@@ -1688,7 +1665,7 @@ html.dark-theme .store-v2 .footer-elements {
 .product-v2 .product-gallery-main:focus-visible,
 .animal-v2 .variant-img:focus-visible,
 .animal-v2 .animal-hero-art:focus-visible {
-  outline: 2px solid var(--v2-gold);
+  outline: 2px solid var(--gold);
   outline-offset: 3px;
 }
 
@@ -1717,7 +1694,7 @@ html.dark-theme .store-v2 .footer-elements {
 .store-v2 .carousel-item.is-sold-out .image-container img { opacity: .55; }
 
 .store-v2 .cart-button-container.is-sold-out .cart-link {
-  color: var(--v2-fg-muted);
+  color: var(--muted);
   cursor: not-allowed;
 }
 
@@ -1761,7 +1738,7 @@ html.dark-theme .store-v2 .footer-elements {
   gap: 12px 16px;
   margin: 0 0 22px;
   padding-bottom: 14px;
-  border-bottom: 1px solid var(--v2-border);
+  border-bottom: 1px solid var(--line);
   max-width: 100%;
 }
 
@@ -1777,10 +1754,10 @@ html.dark-theme .store-v2 .footer-elements {
   align-items: center;
   gap: 6px;
   padding: 7px 14px;
-  border: 1px solid var(--v2-border);
+  border: 1px solid var(--line);
   border-radius: 999px;
   background: transparent;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
   font-size: 13px;
   letter-spacing: 0.04em;
@@ -1788,13 +1765,13 @@ html.dark-theme .store-v2 .footer-elements {
   transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
 }
 
-.store-v2 .browse-chip:hover { border-color: var(--v2-gold); color: var(--v2-fg); }
-.store-v2 .browse-chip:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 2px; }
+.store-v2 .browse-chip:hover { border-color: var(--gold); color: var(--fg); }
+.store-v2 .browse-chip:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
 .store-v2 .browse-chip[aria-pressed="true"] {
-  background: var(--v2-fg);
-  color: var(--v2-bg);
-  border-color: var(--v2-fg);
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
 }
 
 .store-v2 .browse-chip-count {
@@ -1814,25 +1791,25 @@ html.dark-theme .store-v2 .footer-elements {
 .store-v2 .browse-search,
 .store-v2 .browse-sort {
   padding: 7px 12px;
-  border: 1px solid var(--v2-border);
+  border: 1px solid var(--line);
   border-radius: 999px;
   background: transparent;
-  color: var(--v2-fg);
+  color: var(--fg);
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
   font-size: 13px;
   max-width: 100%;
 }
 
 .store-v2 .browse-search { min-width: 0; width: 190px; }
-.store-v2 .browse-search::placeholder { color: var(--v2-fg-muted); opacity: 0.8; }
+.store-v2 .browse-search::placeholder { color: var(--muted); opacity: 0.8; }
 .store-v2 .browse-search:focus-visible,
-.store-v2 .browse-sort:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 2px; }
+.store-v2 .browse-sort:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
 .store-v2 .browse-count {
   margin: 0;
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
   font-size: 12px;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -1846,15 +1823,15 @@ html.dark-theme .store-v2 .browse-chip,
 html.dark-theme .store-v2 .browse-search,
 html.dark-theme .store-v2 .browse-sort {
   border-color: rgba(212, 182, 132, 0.34);
-  color: var(--v2-gold);
+  color: var(--gold);
 }
 html.dark-theme .store-v2 .browse-chip:hover {
-  border-color: var(--v2-gold);
-  color: var(--v2-gold-bright);
+  border-color: var(--gold);
+  color: var(--gold-bright);
 }
 html.dark-theme .store-v2 .browse-chip[aria-pressed="true"] {
-  background: var(--v2-gold);
-  border-color: var(--v2-gold);
+  background: var(--gold);
+  border-color: var(--gold);
   color: #16120a;
 }
 html.dark-theme .store-v2 .browse-search::placeholder { color: rgba(212, 182, 132, 0.65); }
@@ -1885,16 +1862,16 @@ html.dark-theme .store-v2 .browse-search::placeholder { color: rgba(212, 182, 13
   margin: 0;
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
   font-size: 13px;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
 }
 
 .arcade-card {
   margin: 0 auto 26px;
   max-width: 640px;
   padding: 20px;
-  border: 1px solid var(--v2-border);
+  border: 1px solid var(--line);
   border-radius: 14px;
-  background: var(--v2-surface);
+  background: var(--surface);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -1907,7 +1884,7 @@ html.dark-theme .store-v2 .browse-search::placeholder { color: rgba(212, 182, 13
   font-size: 11px;
   letter-spacing: .14em;
   text-transform: uppercase;
-  color: var(--v2-gold);
+  color: var(--gold);
 }
 
 .arcade-title {
@@ -1916,13 +1893,13 @@ html.dark-theme .store-v2 .browse-search::placeholder { color: rgba(212, 182, 13
   font-weight: 600;
   font-size: clamp(20px, 3vw, 26px);
   line-height: 1.2;
-  color: var(--v2-fg);
+  color: var(--fg);
 }
 
 .arcade-copy, .arcade-feedback, .arcade-fine, .arcade-label {
   margin: 0;
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
 }
 .arcade-copy { font-size: 14.5px; line-height: 1.6; }
 .arcade-feedback { font-size: 13.5px; font-style: italic; min-height: 1em; }
@@ -1934,44 +1911,44 @@ html.dark-theme .store-v2 .browse-search::placeholder { color: rgba(212, 182, 13
 
 .arcade-btn {
   padding: 10px 16px;
-  border: 1px solid var(--v2-border);
+  border: 1px solid var(--line);
   border-radius: 999px;
   background: transparent;
-  color: var(--v2-fg);
+  color: var(--fg);
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
   font-size: 13.5px;
   text-align: left;
   cursor: pointer;
   transition: border-color 150ms ease, color 150ms ease, opacity 150ms ease;
 }
-.arcade-btn:hover:not(:disabled) { border-color: var(--v2-gold); color: var(--v2-gold); }
+.arcade-btn:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
 .arcade-btn:disabled { opacity: .45; cursor: default; }
-.arcade-btn:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 2px; }
+.arcade-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
 .arcade-input {
   flex: 1 1 180px;
   min-width: 0;
   padding: 10px 14px;
-  border: 1px solid var(--v2-border);
+  border: 1px solid var(--line);
   border-radius: 999px;
   background: transparent;
-  color: var(--v2-fg);
+  color: var(--fg);
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
   font-size: 14px;
 }
-.arcade-input:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 2px; }
+.arcade-input:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
-.arcade-card.is-won { border-color: var(--v2-gold); }
+.arcade-card.is-won { border-color: var(--gold); }
 .arcade-code { margin: 0; }
 .arcade-code code {
   display: inline-block;
   padding: 8px 14px;
-  border: 1px dashed var(--v2-gold);
+  border: 1px dashed var(--gold);
   border-radius: 8px;
   font-family: 'Courier New', monospace;
   font-size: 17px;
   letter-spacing: .1em;
-  color: var(--v2-gold);
+  color: var(--gold);
   word-break: break-all;
 }
 
@@ -1979,11 +1956,11 @@ html.dark-theme .store-v2 .browse-search::placeholder { color: rgba(212, 182, 13
 html.dark-theme .arcade-btn,
 html.dark-theme .arcade-input {
   border-color: rgba(212, 182, 132, 0.34);
-  color: var(--v2-gold);
+  color: var(--gold);
 }
 html.dark-theme .arcade-btn:hover:not(:disabled) {
-  border-color: var(--v2-gold);
-  color: var(--v2-gold-bright);
+  border-color: var(--gold);
+  color: var(--gold-bright);
 }
 
 @media (max-width: 560px) {
@@ -2004,9 +1981,9 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
 .store-v2:not(.about-v2) .cab {
   display: flex; flex-direction: column;
   min-width: 0;
-  border: 1px solid var(--v2-border);
+  border: 1px solid var(--line);
   border-radius: 14px;
-  background: var(--v2-surface, #14120c);
+  background: var(--surface, #14120c);
   overflow: hidden;
 }
 
@@ -2015,18 +1992,18 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
   padding: 10px 14px;
   background: linear-gradient(180deg,
     color-mix(in srgb, var(--machine-key, #b5935a) 16%, transparent), transparent);
-  border-bottom: 1px solid var(--v2-border);
+  border-bottom: 1px solid var(--line);
 }
 .store-v2:not(.about-v2) .cab-name {
   margin: 0;
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-size: 19px; font-weight: 500; letter-spacing: .01em;
-  color: var(--machine-lit, var(--v2-gold));
+  color: var(--machine-lit, var(--gold));
 }
 .store-v2:not(.about-v2) .cab-lamps { display: flex; gap: 5px; flex: 0 0 auto; }
 .store-v2:not(.about-v2) .cab-lamps i {
   width: 5px; height: 5px; border-radius: 50%;
-  background: var(--machine-lit, var(--v2-gold)); opacity: .45;
+  background: var(--machine-lit, var(--gold)); opacity: .45;
 }
 @media (prefers-reduced-motion: no-preference) {
   .store-v2:not(.about-v2) .cab-lamps i { animation: cabLampPdp 1.8s ease-in-out infinite; }
@@ -2042,14 +2019,14 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
   height: var(--cab-h, 200px);
   border-radius: 10px;
   background: #0a0c0a;
-  border: 1px solid var(--v2-border);
+  border: 1px solid var(--line);
   overflow: hidden;
 }
 .store-v2:not(.about-v2) .cab-canvas {
   display: block; width: 100%; height: 100%;
   touch-action: none; cursor: pointer;
 }
-.store-v2:not(.about-v2) .cab-canvas:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: -2px; }
+.store-v2:not(.about-v2) .cab-canvas:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
 
 /* Scanlines belong to the glass, never to the game: pointer-events off, or the
    first tap of every run lands on a decoration. */
@@ -2072,17 +2049,17 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
   font-size: 13.5px; line-height: 1.5; color: #efe6d4; max-width: 30ch;
 }
 .store-v2:not(.about-v2) .cab-play {
-  padding: 9px 22px; border: 1px solid var(--machine-lit, var(--v2-gold)); border-radius: 999px;
-  background: transparent; color: var(--machine-lit, var(--v2-gold));
+  padding: 9px 22px; border: 1px solid var(--machine-lit, var(--gold)); border-radius: 999px;
+  background: transparent; color: var(--machine-lit, var(--gold));
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
   font-size: 13px; letter-spacing: .1em; text-transform: uppercase; cursor: pointer;
   transition: background .18s ease, color .18s ease;
 }
 .store-v2:not(.about-v2) .cab-play:hover:not(:disabled) {
-  background: var(--machine-lit, var(--v2-gold)); color: #0a0c0a;
+  background: var(--machine-lit, var(--gold)); color: #0a0c0a;
 }
 .store-v2:not(.about-v2) .cab-play:disabled { opacity: .45; cursor: default; }
-.store-v2:not(.about-v2) .cab-play:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 3px; }
+.store-v2:not(.about-v2) .cab-play:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
 
 /* The side placard. It is a contained tile in its own row — the art used to be a
    background on the whole panel and the caption sat on top of it, unreadable. */
@@ -2094,7 +2071,7 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
 .store-v2:not(.about-v2) .cab-art {
   flex: 0 0 auto; width: 46px; height: 46px;
   border-radius: 8px; object-fit: cover;
-  border: 1px solid var(--v2-border);
+  border: 1px solid var(--line);
   background: #0a0c0a;
 }
 .store-v2:not(.about-v2) .cab-slot {
@@ -2104,13 +2081,13 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
 .store-v2:not(.about-v2) .cab-blurb {
   margin: 0; min-width: 0;
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
-  font-size: 12.5px; line-height: 1.5; color: var(--v2-fg-muted);
+  font-size: 12.5px; line-height: 1.5; color: var(--muted);
   overflow-wrap: anywhere;
 }
 .store-v2:not(.about-v2) .cab-result {
   margin: 0; padding: 0 14px 12px;
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
-  font-size: 13px; color: var(--v2-gold); min-height: 1em;
+  font-size: 13px; color: var(--gold); min-height: 1em;
 }
 
 /* ── The three games, as one row of tabs ──────────────────────────────────
@@ -2123,9 +2100,9 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
   gap: 6px;
   margin: 6px 0 12px;
   padding: 4px;
-  border: 1px solid var(--v2-border);
+  border: 1px solid var(--line);
   border-radius: 12px;
-  background: color-mix(in srgb, var(--v2-fg) 4%, transparent);
+  background: color-mix(in srgb, var(--fg) 4%, transparent);
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -2140,7 +2117,7 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
   border: 1px solid transparent;
   border-radius: 9px;
   background: transparent;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
   cursor: pointer;
   text-align: center;
@@ -2151,14 +2128,14 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
 .store-v2 .arcade-tab-hint {
   font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; opacity: .7;
 }
-.store-v2 .arcade-tab:hover:not(:disabled) { color: var(--v2-gold); }
+.store-v2 .arcade-tab:hover:not(:disabled) { color: var(--gold); }
 .store-v2 .arcade-tab[aria-selected="true"] {
-  border-color: var(--v2-gold);
-  background: color-mix(in srgb, var(--v2-gold) 14%, transparent);
-  color: var(--v2-gold);
+  border-color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 14%, transparent);
+  color: var(--gold);
 }
 .store-v2 .arcade-tab:disabled { opacity: .38; cursor: not-allowed; }
-.store-v2 .arcade-tab:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 2px; }
+.store-v2 .arcade-tab:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
 /* The card had no rhythm of its own: eyebrow, title, tabs, game and fine print all
    sat flush against each other. One gap, set once, rather than margins per element. */
@@ -2188,10 +2165,10 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
   flex: 1 1 0;
   min-width: 0;
   padding: 12px 8px;
-  border: 1px solid var(--machine-lit, var(--v2-gold));
+  border: 1px solid var(--machine-lit, var(--gold));
   border-radius: 10px;
   background: color-mix(in srgb, var(--machine-lit, #b5935a) 10%, transparent);
-  color: var(--machine-lit, var(--v2-gold));
+  color: var(--machine-lit, var(--gold));
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
   font-size: 12.5px; letter-spacing: .1em; text-transform: uppercase;
   cursor: pointer;
@@ -2205,11 +2182,11 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
 .store-v2 .cab-key.is-hold { padding: 16px 8px; font-size: 13px; }
 .store-v2 .cab-key:disabled { opacity: .32; cursor: default; }
 .store-v2 .cab-key.is-down:not(:disabled) {
-  background: var(--machine-lit, var(--v2-gold));
+  background: var(--machine-lit, var(--gold));
   color: #0a0c0a;
   transform: translateY(1px);
 }
-.store-v2 .cab-key:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 2px; }
+.store-v2 .cab-key:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .store-v2 .cab-key { transition: none; } }
 
 /* In a tab there is no offer to accept, so there is no summary to draw. */
@@ -2226,7 +2203,7 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
 
 .store-v2 .beg-scene {
   position: relative;
-  border: 1px solid var(--v2-border);
+  border: 1px solid var(--line);
   border-radius: 12px;
   overflow: hidden;
   background: #0A0912;
@@ -2243,15 +2220,15 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
   padding: 9px 13px;
   font-family: 'Josefin Sans', Futura, Avenir, sans-serif;
   font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase;
-  color: color-mix(in srgb, var(--v2-fg, #F4EEDF) 62%, transparent);
+  color: color-mix(in srgb, var(--fg, #F4EEDF) 62%, transparent);
   background: linear-gradient(rgba(6,7,14,.72), rgba(6,7,14,0));
   pointer-events: none;
 }
 .store-v2 .beg-hud b {
   font-weight: 400; font-size: 15px; letter-spacing: .02em;
-  color: var(--v2-fg, #F4EEDF); font-variant-numeric: tabular-nums;
+  color: var(--fg, #F4EEDF); font-variant-numeric: tabular-nums;
 }
-.store-v2 .beg-hud-reach b { color: var(--v2-gold-bright, var(--v2-gold)); }
+.store-v2 .beg-hud-reach b { color: var(--gold-bright, var(--gold)); }
 
 /* What the letter said, once it has opened — or what is left of it once it has
    burnt. Either way it arrives over the scene, on the paper. */
@@ -2289,14 +2266,14 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
   text-align: center;
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-size: 20px; font-style: italic; font-weight: 500; line-height: 1.4;
-  color: var(--v2-gold-bright, var(--v2-gold));
+  color: var(--gold-bright, var(--gold));
   text-wrap: balance;
 }
 
 /* He reacts in the frame, too: a lift when you are quick, a dimming when you
    stall, and a flush of red when you have said something you should not have. */
-.store-v2 .beg-scene.is-hot { border-color: color-mix(in srgb, var(--v2-gold) 55%, transparent); }
-.store-v2 .beg-scene.is-stalled + .beg-react { color: var(--v2-fg-muted); }
+.store-v2 .beg-scene.is-hot { border-color: color-mix(in srgb, var(--gold) 55%, transparent); }
+.store-v2 .beg-scene.is-stalled + .beg-react { color: var(--muted); }
 .store-v2 .beg-scene.is-warned { border-color: #b4653f; }
 .store-v2 .beg-scene.is-warned + .beg-react { color: #d87a4f; }
 @media (prefers-reduced-motion: reduce) {
@@ -2307,60 +2284,60 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
   margin: 0;
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
   font-size: 13px; line-height: 1.55;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
 }
 .store-v2 .beg-fine { font-size: 12px; }
 
 .store-v2 .beg-input {
   width: 100%; min-width: 0; resize: vertical;
   padding: 14px 16px;
-  border: 1px solid var(--v2-border);
+  border: 1px solid var(--line);
   border-radius: 12px;
   background: transparent;
-  color: var(--v2-fg);
+  color: var(--fg);
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
   font-size: 15px; line-height: 1.6;
 }
-.store-v2 .beg-input:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 2px; }
+.store-v2 .beg-input:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 .store-v2 .beg-input:disabled { opacity: .6; }
 
 .store-v2 .beg-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 
 .store-v2 .beg-start {
   padding: 9px 22px;
-  border: 1px solid var(--v2-gold); border-radius: 999px;
-  background: transparent; color: var(--v2-gold);
+  border: 1px solid var(--gold); border-radius: 999px;
+  background: transparent; color: var(--gold);
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
   font-size: 13px; letter-spacing: .1em; text-transform: uppercase;
   cursor: pointer;
 }
-.store-v2 .beg-start:hover:not(:disabled) { background: var(--v2-gold); color: var(--v2-bg); }
+.store-v2 .beg-start:hover:not(:disabled) { background: var(--gold); color: var(--bg); }
 .store-v2 .beg-start:disabled { opacity: .45; cursor: default; }
-.store-v2 .beg-start:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 2px; }
+.store-v2 .beg-start:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
 /* Post it is the same control, lit, and only reachable once the letter is at
    the slot — so the disabled state is doing real work and has to look deliberate. */
 .store-v2 .beg-post {
   padding: 11px 20px;
-  border: 1px solid var(--v2-gold);
+  border: 1px solid var(--gold);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--v2-gold) 14%, transparent);
-  color: var(--v2-gold-bright, var(--v2-gold));
+  background: color-mix(in srgb, var(--gold) 14%, transparent);
+  color: var(--gold-bright, var(--gold));
   font-family: 'Josefin Sans', Futura, Avenir, sans-serif;
   font-size: 12px; letter-spacing: .16em; text-transform: uppercase;
   cursor: pointer;
 }
-.store-v2 .beg-post:hover:not(:disabled) { background: var(--v2-gold); color: var(--v2-bg); }
+.store-v2 .beg-post:hover:not(:disabled) { background: var(--gold); color: var(--bg); }
 .store-v2 .beg-post:disabled { opacity: .32; cursor: default; }
-.store-v2 .beg-post:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 2px; }
+.store-v2 .beg-post:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
 /* ── The cart panel it now lives in ─────────────────────────────────────── */
 .store-v2 .beg-host { margin: 18px 0 0; min-width: 0; }
 
 .store-v2 .beg-card {
-  border: 1px solid var(--v2-border);
+  border: 1px solid var(--line);
   border-radius: 14px;
-  background: var(--v2-surface, #14120c);
+  background: var(--surface, #14120c);
   overflow: hidden;
 }
 .store-v2 .beg-summary {
@@ -2371,27 +2348,27 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
 }
 .store-v2 .beg-summary::-webkit-details-marker { display: none; }
 .store-v2 .beg-summary::marker { content: ""; }
-.store-v2 .beg-summary:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: -2px; }
+.store-v2 .beg-summary:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
 
 .store-v2 .beg-eyebrow {
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
   font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
-  color: var(--v2-gold);
+  color: var(--gold);
 }
 .store-v2 .beg-head {
   margin: 0;
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-size: 20px; font-weight: 500; line-height: 1.25;
-  color: var(--v2-fg);
+  color: var(--fg);
 }
-.store-v2 .beg-card[open] .beg-summary { border-bottom: 1px solid var(--v2-border); }
+.store-v2 .beg-card[open] .beg-summary { border-bottom: 1px solid var(--line); }
 .store-v2 .beg-body { display: grid; gap: 14px; padding: 16px; min-width: 0; }
 
 .store-v2 .beg-verdict {
   margin: 0;
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-size: 22px; font-style: italic; font-weight: 500;
-  color: var(--v2-gold-bright, var(--v2-gold));
+  color: var(--gold-bright, var(--gold));
 }
 
 /* The man's arithmetic, shown so it can be argued with. */
@@ -2406,54 +2383,54 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
   gap: 7px 12px;
   align-items: center;
   padding-bottom: 12px;
-  border-bottom: 1px solid color-mix(in srgb, var(--v2-fg) 8%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--fg) 8%, transparent);
 }
 .store-v2 .beg-axis:last-child { padding-bottom: 0; border-bottom: 0; }
 .store-v2 .beg-axis-name {
   grid-area: name;
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
-  font-size: 13.5px; color: var(--v2-fg);
+  font-size: 13.5px; color: var(--fg);
 }
 .store-v2 .beg-axis-score {
   grid-area: score;
   font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 20px; color: var(--v2-gold);
+  font-size: 20px; color: var(--gold);
   font-variant-numeric: tabular-nums; line-height: 1;
 }
 .store-v2 .beg-axis-bar {
   grid-area: bar;
   display: block; height: 5px; border-radius: 3px;
-  background: color-mix(in srgb, var(--v2-fg) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--v2-fg) 8%, transparent);
+  background: color-mix(in srgb, var(--fg) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fg) 8%, transparent);
   overflow: hidden;
 }
 .store-v2 .beg-axis-bar i {
   display: block; height: 100%; border-radius: 3px;
-  background: linear-gradient(90deg, var(--v2-gold), var(--v2-gold-bright, var(--v2-gold)));
+  background: linear-gradient(90deg, var(--gold), var(--gold-bright, var(--gold)));
 }
 .store-v2 .beg-axis-note {
   grid-area: note;
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
-  font-size: 12px; color: var(--v2-fg-muted); overflow-wrap: anywhere;
+  font-size: 12px; color: var(--muted); overflow-wrap: anywhere;
 }
 .store-v2 .beg-axis-weight {
   grid-area: weight;
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
-  font-size: 11px; letter-spacing: .08em; color: var(--v2-fg-muted); white-space: nowrap;
+  font-size: 11px; letter-spacing: .08em; color: var(--muted); white-space: nowrap;
 }
 .store-v2 .beg-tally {
   margin: 4px 0 0;
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
-  font-size: 13px; line-height: 1.55; color: var(--v2-fg-muted);
+  font-size: 13px; line-height: 1.55; color: var(--muted);
 }
-.store-v2 .beg-tally b { color: var(--v2-gold); font-weight: 400; }
+.store-v2 .beg-tally b { color: var(--gold); font-weight: 400; }
 
 .store-v2 .beg-code { margin: 0; }
 .store-v2 .beg-code code {
   display: inline-block; padding: 8px 14px;
-  border: 1px dashed var(--v2-gold); border-radius: 8px;
+  border: 1px dashed var(--gold); border-radius: 8px;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 15px; letter-spacing: .08em; color: var(--v2-gold);
+  font-size: 15px; letter-spacing: .08em; color: var(--gold);
 }
 .store-v2 .beg-won { display: grid; gap: 8px; min-width: 0; }
 .store-v2 .beg-refused {
@@ -2466,7 +2443,7 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
 .store-v2 .beg-refuse-why {
   margin: 0;
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
-  font-size: 13.5px; line-height: 1.55; color: var(--v2-fg);
+  font-size: 13.5px; line-height: 1.55; color: var(--fg);
 }
 
 html.dark-theme .store-v2 .beg-input { border-color: rgba(212, 182, 132, 0.34); }
@@ -2488,21 +2465,21 @@ html.dark-theme .store-v2 .beg-input { border-color: rgba(212, 182, 132, 0.34); 
 .store-v2 .co-reward-btn {
   flex: 0 0 auto;
   padding: 0 18px;
-  border: 1px solid var(--v2-gold); border-radius: 10px;
-  background: transparent; color: var(--v2-gold);
+  border: 1px solid var(--gold); border-radius: 10px;
+  background: transparent; color: var(--gold);
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
   font-size: 12.5px; letter-spacing: .1em; text-transform: uppercase;
   cursor: pointer;
 }
-.store-v2 .co-reward-btn:hover:not(:disabled) { background: var(--v2-gold); color: var(--v2-bg); }
+.store-v2 .co-reward-btn:hover:not(:disabled) { background: var(--gold); color: var(--bg); }
 .store-v2 .co-reward-btn:disabled { opacity: .45; cursor: default; }
-.store-v2 .co-reward-btn:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 2px; }
+.store-v2 .co-reward-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 .store-v2 .co-reward-note {
   margin: 0;
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
-  font-size: 12px; line-height: 1.5; color: var(--v2-fg-muted);
+  font-size: 12px; line-height: 1.5; color: var(--muted);
 }
-.store-v2 .co-money-row.is-discount { color: var(--v2-gold); }
+.store-v2 .co-money-row.is-discount { color: var(--gold); }
 .store-v2 .co-money-row.is-discount[hidden] { display: none; }
 /* The paste penalty. Shown, never hidden — nobody is quietly charged more. */
 .store-v2 .co-money-row.is-surcharge { color: #b4653f; }
@@ -2514,7 +2491,7 @@ html.dark-theme .store-v2 .beg-input { border-color: rgba(212, 182, 132, 0.34); 
   background: color-mix(in srgb, #b4653f 10%, transparent);
   border-radius: 0 8px 8px 0;
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
-  font-size: 13.5px; line-height: 1.55; color: var(--v2-fg);
+  font-size: 13.5px; line-height: 1.55; color: var(--fg);
 }
 .store-v2 .beg-penalty b { color: #d87a4f; font-weight: 400; }
 .store-v2 .beg-refused.is-charged { border-left-color: #d87a4f; }

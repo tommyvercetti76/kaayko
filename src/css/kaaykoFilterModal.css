@@ -43,9 +43,9 @@ html.dark-theme .store-v2 .filter-overlay {
   max-height: min(82dvh, 720px);
   display: flex;
   flex-direction: column;
-  background: var(--v2-surface-elev);
-  color: var(--v2-fg);
-  border: 1px solid var(--v2-border);
+  background: var(--surface-2);
+  color: var(--fg);
+  border: 1px solid var(--line);
   border-radius: 16px;
   box-shadow:
     0 1px 0 rgba(255,255,255,0.04) inset,
@@ -78,8 +78,8 @@ html.dark-theme .store-v2 .filter-overlay {
   font-size: 18px;
   font-weight: 600;
   letter-spacing: 0.04em;
-  color: var(--v2-fg);
-  border-bottom: 1px solid var(--v2-border);
+  color: var(--fg);
+  border-bottom: 1px solid var(--line);
 }
 
 /*-----------------------------------------------------------------------------
@@ -97,7 +97,7 @@ html.dark-theme .store-v2 .filter-overlay {
   border: none;
   border-radius: 999px;
   background: transparent;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
   cursor: pointer;
   font-family: 'Material Icons';
   font-size: 20px;
@@ -105,11 +105,11 @@ html.dark-theme .store-v2 .filter-overlay {
   transition: background-color 160ms ease, color 160ms ease;
 }
 .store-v2 .filter-close:hover {
-  background: var(--v2-border);
-  color: var(--v2-fg);
+  background: var(--line);
+  color: var(--fg);
 }
 .store-v2 .filter-close:focus-visible {
-  outline: 2px solid var(--v2-gold);
+  outline: 2px solid var(--gold);
   outline-offset: 2px;
 }
 
@@ -125,7 +125,7 @@ html.dark-theme .store-v2 .filter-overlay {
   overflow-y: auto;
 }
 .store-v2 .filter-panel > .filter-section + .filter-section {
-  border-top: 1px solid var(--v2-border);
+  border-top: 1px solid var(--line);
 }
 .store-v2 .filter-panel > .filter-section:nth-last-of-type(1 of .filter-section) {
   flex: 1 1 auto;
@@ -141,7 +141,7 @@ html.dark-theme .store-v2 .filter-overlay {
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
 }
 .store-v2 .filter-section .filter-section-count {
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
@@ -149,7 +149,7 @@ html.dark-theme .store-v2 .filter-overlay {
   font-weight: 400;
   letter-spacing: 0.08em;
   text-transform: none;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
 }
 .store-v2 .filter-section .filter-section-count[data-count="0"] {
   visibility: hidden;
@@ -171,9 +171,9 @@ html.dark-theme .store-v2 .filter-overlay {
   gap: 6px;
   padding: 7px 14px;
   background: transparent;
-  border: 1px solid var(--v2-border);
+  border: 1px solid var(--line);
   border-radius: 999px;
-  color: var(--v2-fg);
+  color: var(--fg);
   font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
   font-size: 13px;
   font-weight: 500;
@@ -182,21 +182,21 @@ html.dark-theme .store-v2 .filter-overlay {
   transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
 }
 .store-v2 .chip:hover {
-  border-color: var(--v2-fg-muted);
-  background: var(--v2-border);
+  border-color: var(--muted);
+  background: var(--line);
 }
 .store-v2 .chip:focus-visible {
-  outline: 2px solid var(--v2-gold);
+  outline: 2px solid var(--gold);
   outline-offset: 2px;
 }
 .store-v2 .chip.selected {
-  background: var(--v2-fg);
-  border-color: var(--v2-fg);
-  color: var(--v2-surface-elev);
+  background: var(--fg);
+  border-color: var(--fg);
+  color: var(--surface-2);
 }
 .store-v2 .chip.selected:hover {
-  background: var(--v2-fg);
-  border-color: var(--v2-fg);
+  background: var(--fg);
+  border-color: var(--fg);
 }
 .store-v2 .chip.disabled {
   opacity: 0.35;
@@ -206,7 +206,7 @@ html.dark-theme .store-v2 .filter-overlay {
 /* Empty-state message when no tags exist in catalog */
 .store-v2 .filter-empty {
   margin-top: 12px;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
   font-size: 12px;
   font-style: italic;
 }
@@ -224,7 +224,7 @@ html.dark-theme .store-v2 .filter-overlay {
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
 }
 .store-v2 .slider-label #votes-value {
   font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
@@ -232,8 +232,8 @@ html.dark-theme .store-v2 .filter-overlay {
   font-weight: 500;
   letter-spacing: 0.02em;
   text-transform: none;
-  color: var(--v2-fg);
-  background: var(--v2-border);
+  color: var(--fg);
+  background: var(--line);
   padding: 2px 10px;
   border-radius: 999px;
   min-width: 28px;
@@ -253,17 +253,17 @@ html.dark-theme .store-v2 .filter-overlay {
 .store-v2 .filter-panel input[type="range"]::-webkit-slider-runnable-track {
   height: 3px;
   border-radius: 3px;
-  background: linear-gradient(to right, var(--v2-gold) 0%, var(--v2-gold) var(--progress), var(--v2-border) var(--progress), var(--v2-border) 100%);
+  background: linear-gradient(to right, var(--gold) 0%, var(--gold) var(--progress), var(--line) var(--progress), var(--line) 100%);
 }
 .store-v2 .filter-panel input[type="range"]::-moz-range-track {
   height: 3px;
   border-radius: 3px;
-  background: var(--v2-border);
+  background: var(--line);
 }
 .store-v2 .filter-panel input[type="range"]::-moz-range-progress {
   height: 3px;
   border-radius: 3px;
-  background: var(--v2-gold);
+  background: var(--gold);
 }
 .store-v2 .filter-panel input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -272,8 +272,8 @@ html.dark-theme .store-v2 .filter-overlay {
   height: 16px;
   margin-top: -6px;
   border-radius: 50%;
-  background: var(--v2-fg);
-  border: 2px solid var(--v2-surface-elev);
+  background: var(--fg);
+  border: 2px solid var(--surface-2);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
   cursor: grab;
   transition: transform 140ms ease, box-shadow 140ms ease;
@@ -282,8 +282,8 @@ html.dark-theme .store-v2 .filter-overlay {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--v2-fg);
-  border: 2px solid var(--v2-surface-elev);
+  background: var(--fg);
+  border: 2px solid var(--surface-2);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
   cursor: grab;
   transition: transform 140ms ease, box-shadow 140ms ease;
@@ -306,8 +306,8 @@ html.dark-theme .store-v2 .filter-overlay {
   justify-content: space-between;
   gap: 12px;
   padding: 16px 24px;
-  border-top: 1px solid var(--v2-border);
-  background: var(--v2-surface-elev);
+  border-top: 1px solid var(--line);
+  background: var(--surface-2);
 }
 .store-v2 .filter-actions button {
   appearance: none;
@@ -327,25 +327,25 @@ html.dark-theme .store-v2 .filter-overlay {
 .store-v2 .filter-actions #filter-reset {
   background: transparent;
   border: 1px solid transparent;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
 }
 .store-v2 .filter-actions #filter-reset:hover {
-  color: var(--v2-fg);
-  background: var(--v2-border);
+  color: var(--fg);
+  background: var(--line);
 }
 .store-v2 .filter-actions #filter-apply {
   flex: 1 1 auto;
-  background: var(--v2-fg);
-  border: 1px solid var(--v2-fg);
-  color: var(--v2-surface-elev);
+  background: var(--fg);
+  border: 1px solid var(--fg);
+  color: var(--surface-2);
 }
 .store-v2 .filter-actions #filter-apply:hover {
-  background: var(--v2-gold-bright);
-  border-color: var(--v2-gold-bright);
-  color: var(--v2-surface-elev);
+  background: var(--gold-bright);
+  border-color: var(--gold-bright);
+  color: var(--surface-2);
 }
 .store-v2 .filter-actions button:focus-visible {
-  outline: 2px solid var(--v2-gold);
+  outline: 2px solid var(--gold);
   outline-offset: 2px;
 }
 
@@ -379,7 +379,7 @@ html.dark-theme .store-v2 .filter-overlay {
     width: 36px;
     height: 4px;
     border-radius: 999px;
-    background: var(--v2-border);
+    background: var(--line);
   }
   .store-v2 .filter-section { padding: 16px 22px; }
   .store-v2 .filter-actions { padding: 14px 22px calc(14px + env(safe-area-inset-bottom)); }
@@ -402,8 +402,8 @@ html.dark-theme .store-v2 .filter-overlay {
   position: sticky;
   bottom: 0;
   z-index: 2;
-  background: var(--v2-surface-elev);
-  border-top: 1px solid var(--v2-border);
+  background: var(--surface-2);
+  border-top: 1px solid var(--line);
   padding-bottom: max(14px, env(safe-area-inset-bottom));
 }
 
@@ -414,14 +414,14 @@ html.dark-theme .store-v2 .filter-overlay {
 /* Dark mode: unselected chips carry a gentle gold tint; selected stays solid. */
 html.dark-theme .store-v2 .chip:not(.selected) {
   border-color: rgba(212, 182, 132, 0.34);
-  color: var(--v2-gold);
+  color: var(--gold);
 }
 html.dark-theme .store-v2 .chip:not(.selected):hover {
-  border-color: var(--v2-gold);
-  color: var(--v2-gold-bright);
+  border-color: var(--gold);
+  color: var(--gold-bright);
 }
 html.dark-theme .store-v2 #filter-reset {
   border-color: rgba(212, 182, 132, 0.34);
-  color: var(--v2-gold);
+  color: var(--gold);
 }
 

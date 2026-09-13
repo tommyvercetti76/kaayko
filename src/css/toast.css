@@ -11,10 +11,10 @@
   gap: 10px;
   max-width: min(460px, calc(100vw - 32px));
   padding: 11px 10px 11px 14px;
-  border: 1px solid var(--v2-border, rgba(181, 147, 90, 0.20));
+  border: 1px solid var(--line, rgba(181, 147, 90, 0.20));
   border-radius: 12px;
-  background: var(--v2-surface-elev, #1e1c12);
-  color: var(--v2-fg, #ede8df);
+  background: var(--surface-2, #1e1c12);
+  color: var(--fg, #ede8df);
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28);
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
   font-size: 13.5px;
@@ -28,8 +28,8 @@
 
 .ktoast-icon { flex: none; display: inline-flex; width: 20px; height: 20px; }
 .ktoast-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.ktoast.is-good   .ktoast-icon { color: var(--v2-green, #7ed192); }
-.ktoast.is-notice .ktoast-icon { color: var(--v2-gold, #d4b684); }
+.ktoast.is-good   .ktoast-icon { color: var(--good, #7ed192); }
+.ktoast.is-notice .ktoast-icon { color: var(--gold, #d4b684); }
 .ktoast.is-error  .ktoast-icon { color: var(--co-danger, #d9614e); }
 .ktoast.is-error  { border-color: color-mix(in srgb, var(--co-danger, #d9614e) 55%, transparent); }
 
@@ -42,15 +42,15 @@
   min-height: 34px;
   padding: 0 12px;
   border-radius: 999px;
-  background: var(--v2-fg, #ede8df);
-  color: var(--v2-bg, #080808);
+  background: var(--fg, #ede8df);
+  color: var(--bg, #080808);
   font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
   font-size: 12px;
   letter-spacing: 0.02em;
   text-decoration: none;
   white-space: nowrap;
 }
-.ktoast-action:hover { background: var(--v2-gold-bright, #eccf9c); color: var(--v2-bg, #080808); }
+.ktoast-action:hover { background: var(--gold-bright, #eccf9c); color: var(--bg, #080808); }
 
 .ktoast-close {
   flex: none;
@@ -63,12 +63,12 @@
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: var(--v2-fg-muted, rgba(237, 232, 223, 0.62));
+  color: var(--muted, rgba(237, 232, 223, 0.62));
   cursor: pointer;
 }
 .ktoast-close svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
-.ktoast-close:hover { color: var(--v2-fg, #ede8df); background: var(--v2-border, rgba(181, 147, 90, 0.20)); }
-.ktoast-close:focus-visible, .ktoast-action:focus-visible { outline: 2px solid var(--v2-gold, #d4b684); outline-offset: 2px; }
+.ktoast-close:hover { color: var(--fg, #ede8df); background: var(--line, rgba(181, 147, 90, 0.20)); }
+.ktoast-close:focus-visible, .ktoast-action:focus-visible { outline: 2px solid var(--gold, #d4b684); outline-offset: 2px; }
 
 @media (max-width: 600px) {
   .ktoast { left: 16px; right: 16px; max-width: none; }

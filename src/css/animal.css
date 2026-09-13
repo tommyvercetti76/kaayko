@@ -19,11 +19,11 @@
   text-transform: uppercase;
 }
 .animal-v2 .animal-breadcrumb a {
-  color: var(--v2-fg-muted);
+  color: var(--muted);
   text-decoration: none;
   transition: color 160ms ease;
 }
-.animal-v2 .animal-breadcrumb a:hover { color: var(--v2-fg); }
+.animal-v2 .animal-breadcrumb a:hover { color: var(--fg); }
 
 /* --- Root --- */
 .animal-v2 .animal-root {
@@ -49,7 +49,7 @@
   padding-left: 56px;
   /* Visible vertical separator between hero and story columns.
      Uses the muted foreground colour so it shows in both light + dark. */
-  border-left: 1px solid var(--v2-fg-muted);
+  border-left: 1px solid var(--muted);
   border-top: none;
   border-bottom: none;
 }
@@ -139,7 +139,7 @@ html.dark-theme .animal-v2 .animal-hero-art {
 }
 
 .animal-v2 .animal-hero-art.empty {
-  background: var(--v2-border);
+  background: var(--line);
   box-shadow: none;
 }
 .animal-v2 .animal-hero-art.empty::after {
@@ -153,7 +153,7 @@ html.dark-theme .animal-v2 .animal-hero-art {
   font-size: 12px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
 }
 
 .animal-v2 .animal-hero-text {
@@ -171,7 +171,7 @@ html.dark-theme .animal-v2 .animal-hero-art {
   font-weight: 700;
   line-height: 1.02;
   letter-spacing: -0.015em;
-  color: var(--v2-fg);
+  color: var(--fg);
 }
 .animal-v2 .animal-scientific {
   margin: 0;
@@ -179,21 +179,21 @@ html.dark-theme .animal-v2 .animal-hero-art {
   font-style: italic;
   font-size: 18px;
   letter-spacing: 0.02em;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
 }
 .animal-v2 .animal-status-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 7px 14px;
-  border: 1px solid var(--v2-border);
+  border: 1px solid var(--line);
   border-radius: 999px;
   font-family: 'Josefin_Bold', 'Josefin Sans', Arial, sans-serif;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--v2-fg);
+  color: var(--fg);
   background: transparent;
 }
 .animal-v2 .animal-status-pill[data-severity="critical"],
@@ -207,20 +207,20 @@ html.dark-theme .animal-v2 .animal-status-pill[data-severity="endangered"] {
   border-color: rgba(255, 163, 163, 0.45);
 }
 .animal-v2 .animal-status-pill[data-severity="vulnerable"] {
-  color: var(--v2-gold-bright);
-  border-color: var(--v2-gold-bright);
+  color: var(--gold-bright);
+  border-color: var(--gold-bright);
 }
 .animal-v2 .animal-park {
   margin: 0;
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
   font-size: 14px;
   letter-spacing: 0.04em;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
 }
 .animal-v2 .animal-park strong {
   font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
   font-weight: 500;
-  color: var(--v2-fg);
+  color: var(--fg);
 }
 
 /* ====== STORY column — bio prose + variant cards, stacked vertically ====== */
@@ -240,7 +240,7 @@ html.dark-theme .animal-v2 .animal-status-pill[data-severity="endangered"] {
   font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
 }
 .animal-v2 .animal-bio {
   margin: 0;
@@ -248,7 +248,7 @@ html.dark-theme .animal-v2 .animal-status-pill[data-severity="endangered"] {
   font-size: 19px;
   line-height: 1.7;
   letter-spacing: 0.005em;
-  color: var(--v2-fg);
+  color: var(--fg);
 }
 
 /* Stat block lives in the right column of the story split. */
@@ -259,7 +259,7 @@ html.dark-theme .animal-v2 .animal-status-pill[data-severity="endangered"] {
 }
 .animal-v2 .animal-stat {
   padding: 16px 0;
-  border-top: 1px solid var(--v2-border);
+  border-top: 1px solid var(--line);
 }
 .animal-v2 .animal-stat:first-child { border-top: none; padding-top: 4px; }
 .animal-v2 .animal-stat:last-child { padding-bottom: 4px; }
@@ -270,7 +270,7 @@ html.dark-theme .animal-v2 .animal-status-pill[data-severity="endangered"] {
   font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
 }
 .animal-v2 .animal-stat dd {
   margin: 0;
@@ -278,14 +278,14 @@ html.dark-theme .animal-v2 .animal-status-pill[data-severity="endangered"] {
   font-size: 16px;
   font-weight: 500;
   line-height: 1.4;
-  color: var(--v2-fg);
+  color: var(--fg);
 }
 
 /* --- Buy variants --- */
 /* In-column variant area — lives inside .animal-story, separated by a hairline. */
 .animal-v2 .animal-buy {
   padding-top: 32px;
-  border-top: 1px solid var(--v2-border);
+  border-top: 1px solid var(--line);
 }
 .animal-v2 .animal-variants {
   display: grid;
@@ -330,19 +330,19 @@ html.dark-theme .animal-v2 .animal-status-pill[data-severity="endangered"] {
   font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
   font-size: 15px;
   font-weight: 500;
-  color: var(--v2-fg);
+  color: var(--fg);
 }
 .animal-v2 .variant-price {
   font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
   font-size: 15px;
-  color: var(--v2-fg);
+  color: var(--fg);
 }
 .animal-v2 .variant-description {
   margin: 0;
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
   font-size: 13px;
   line-height: 1.5;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -356,9 +356,9 @@ html.dark-theme .animal-v2 .animal-status-pill[data-severity="endangered"] {
   gap: 6px;
   height: 44px;
   padding: 0 20px;
-  background: var(--v2-fg);
-  color: var(--v2-surface-elev);
-  border: 1px solid var(--v2-fg);
+  background: var(--fg);
+  color: var(--surface-2);
+  border: 1px solid var(--fg);
   border-radius: 10px;
   font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
   font-size: 13px;
@@ -369,13 +369,13 @@ html.dark-theme .animal-v2 .animal-status-pill[data-severity="endangered"] {
   transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
 }
 .animal-v2 .variant-cta:hover {
-  background: var(--v2-gold-bright);
-  border-color: var(--v2-gold-bright);
+  background: var(--gold-bright);
+  border-color: var(--gold-bright);
 }
 .animal-v2 .variant-cta.in-cart {
   background: transparent;
-  color: var(--v2-fg);
-  border-color: var(--v2-fg);
+  color: var(--fg);
+  border-color: var(--fg);
 }
 .animal-v2 .variant-cta .material-icons { font-size: 16px; }
 
@@ -389,19 +389,19 @@ html.dark-theme .animal-v2 .animal-status-pill[data-severity="endangered"] {
   gap: 12px;
   text-align: center;
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
 }
 .animal-v2 .animal-empty h2 {
   margin: 0;
   font-family: 'Josefin_Bold', 'Josefin Sans', Arial, sans-serif;
   font-size: 22px;
-  color: var(--v2-fg);
+  color: var(--fg);
 }
 .animal-v2 .animal-empty a {
   margin-top: 12px;
-  color: var(--v2-fg);
+  color: var(--fg);
   text-decoration: none;
-  border-bottom: 1px solid var(--v2-border);
+  border-bottom: 1px solid var(--line);
   padding-bottom: 2px;
 }
 
@@ -409,7 +409,7 @@ html.dark-theme .animal-v2 .animal-status-pill[data-severity="endangered"] {
 .animal-v2 .animal-hero.skeleton .animal-hero-art-skeleton,
 .animal-v2 .animal-hero.skeleton .sk-line,
 .animal-v2 .animal-hero.skeleton .sk-pill {
-  background: var(--v2-border);
+  background: var(--line);
   border-radius: 4px;
   animation: animal-pulse 1.4s ease-in-out infinite;
 }
@@ -440,7 +440,7 @@ html.dark-theme .animal-v2 .animal-status-pill[data-severity="endangered"] {
     padding-left: 0;
     padding-top: 36px;
     border-left: none;
-    border-top: 1px solid var(--v2-border);
+    border-top: 1px solid var(--line);
   }
 
   .animal-v2 .animal-hero-art {

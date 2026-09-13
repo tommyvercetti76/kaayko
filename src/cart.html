@@ -23,6 +23,7 @@
 
   <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/fonts/fonts.css" />
+  <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/storestyle.css" />
   <link rel="stylesheet" href="/css/header.css" />
   <link rel="stylesheet" href="/css/footer.css" />
@@ -71,27 +72,27 @@
     body.co-root.store-v2 {
       --co-danger:  #a83826;
       --co-ease:    cubic-bezier(0.76, 0, 0.24, 1);
-      --co-btn-bg:  var(--v2-fg);
-      --co-btn-fg:  var(--v2-bg);
+      --co-btn-bg:  var(--fg);
+      --co-btn-fg:  var(--bg);
       --co-btn-glow: rgba(26, 24, 21, 0.20);
       /* 45% of the foreground over the ground lands ≈3.3:1 in both themes —
          the field border is its only visual boundary, so 1.4.11 applies. */
-      --co-input-border: color-mix(in srgb, var(--v2-fg) 45%, transparent);
+      --co-input-border: color-mix(in srgb, var(--fg) 45%, transparent);
     }
 
     html.dark-theme body.co-root.store-v2 {
-      --v2-bg:           #080808;
-      --v2-surface:      #18160f;   /* warm dark card, visible on #080808 */
-      --v2-surface-elev: #1e1c12;
-      --v2-border:       rgba(181, 147, 90, 0.20);
-      --v2-fg:           #ede8df;
-      --v2-fg-muted:     rgba(237, 232, 223, 0.62);
-      --v2-gold:         #b5935a;
-      --v2-gold-bright:  #d9bd7b;
+      --bg:           #080808;
+      --surface:      #18160f;   /* warm dark card, visible on #080808 */
+      --surface-2: #1e1c12;
+      --line:       rgba(181, 147, 90, 0.20);
+      --fg:           #ede8df;
+      --muted:     rgba(237, 232, 223, 0.62);
+      --gold:         #b5935a;
+      --gold-bright:  #d9bd7b;
       --v2-image-bg:     #14120c;
       --v2-image-border: rgba(181, 147, 90, 0.18);
       --co-danger:       #d9614e;   /* lifted for contrast on near-black */
-      --co-btn-bg:       linear-gradient(180deg, var(--v2-gold-bright), var(--v2-gold));
+      --co-btn-bg:       linear-gradient(180deg, var(--gold-bright), var(--gold));
       --co-btn-fg:       #17130a;
       --co-btn-glow:     rgba(181, 147, 90, 0.26);
     }
@@ -102,8 +103,8 @@
       background:
         radial-gradient(circle at 20% 12%, rgba(181, 147, 90, 0.10), transparent 38%),
         radial-gradient(circle at 80% 84%, rgba(181, 147, 90, 0.07), transparent 44%),
-        var(--v2-bg);
-      color: var(--v2-fg);
+        var(--bg);
+      color: var(--fg);
     }
 
     .store-v2 {
@@ -125,10 +126,10 @@
       gap: 12px;
       height: 60px;
       padding: 0 clamp(16px, 4vw, 32px);
-      background: color-mix(in srgb, var(--v2-bg) 88%, transparent);
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
-      border-bottom: 1px solid var(--v2-border);
+      border-bottom: 1px solid var(--line);
     }
 
     .co-topbar-back {
@@ -139,11 +140,11 @@
       height: 36px;
       margin-left: -6px;
       border-radius: 50%;
-      color: var(--v2-fg);
+      color: var(--fg);
       text-decoration: none;
       transition: background 0.18s ease;
     }
-    .co-topbar-back:hover { background: color-mix(in srgb, var(--v2-fg) 8%, transparent); }
+    .co-topbar-back:hover { background: color-mix(in srgb, var(--fg) 8%, transparent); }
 
     .co-topbar-title {
       font-family: var(--co-serif);
@@ -151,7 +152,7 @@
       font-size: 15px;
       letter-spacing: 0.16em;
       text-transform: uppercase;
-      color: var(--v2-gold);
+      color: var(--gold);
     }
 
     .co-topbar-actions { display: inline-flex; align-items: center; gap: 10px; }
@@ -161,7 +162,7 @@
       font-size: 13px;
       letter-spacing: 0.22em;
       text-transform: uppercase;
-      color: var(--v2-fg);
+      color: var(--fg);
       text-decoration: none;
     }
 
@@ -182,14 +183,14 @@
       font-size: clamp(34px, 6vw, 54px);
       line-height: 1.04;
       letter-spacing: -0.01em;
-      color: var(--v2-fg);
+      color: var(--fg);
     }
 
     .co-masthead p {
       margin: 10px 0 0;
       font-family: var(--co-sans);
       font-size: 14px;
-      color: var(--v2-fg-muted);
+      color: var(--muted);
     }
 
     .co-layout {
@@ -209,7 +210,7 @@
       font-size: 13px;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: var(--v2-gold);
+      color: var(--gold);
     }
 
     /* ── Bag items ─────────────────────────────────────────────────── */
@@ -221,9 +222,9 @@
       gap: 18px;
       align-items: start;
       padding: 20px 0;
-      border-bottom: 1px solid var(--v2-border);
+      border-bottom: 1px solid var(--line);
     }
-    .co-item:first-of-type { border-top: 1px solid var(--v2-border); }
+    .co-item:first-of-type { border-top: 1px solid var(--line); }
 
     .co-item-image {
       width: 92px;
@@ -246,7 +247,7 @@
       font-weight: 600;
       font-size: 20px;
       line-height: 1.2;
-      color: var(--v2-fg);
+      color: var(--fg);
     }
 
     .co-item-meta {
@@ -254,7 +255,7 @@
       font-family: var(--co-sans);
       font-size: 13px;
       line-height: 1.6;
-      color: var(--v2-fg-muted);
+      color: var(--muted);
     }
 
     .co-item-side {
@@ -268,7 +269,7 @@
     .co-item-price {
       font-family: var(--co-sans-med);
       font-size: 16px;
-      color: var(--v2-fg);
+      color: var(--fg);
       font-variant-numeric: tabular-nums;
     }
 
@@ -279,19 +280,19 @@
       font-family: var(--co-sans);
       font-size: 12px;
       letter-spacing: 0.06em;
-      color: var(--v2-fg-muted);
+      color: var(--muted);
       text-decoration: underline;
       text-underline-offset: 3px;
       cursor: pointer;
       transition: color 0.18s ease;
     }
-    .co-item-remove:hover { color: var(--v2-fg); }
+    .co-item-remove:hover { color: var(--fg); }
 
     .co-bag-note {
       margin: 18px 0 0;
       font-family: var(--co-sans);
       font-size: 12px;
-      color: var(--v2-fg-muted);
+      color: var(--muted);
     }
 
     /* ── Summary card ──────────────────────────────────────────────── */
@@ -299,9 +300,9 @@
 
     .co-card {
       padding: clamp(20px, 2.4vw, 28px);
-      border: 1px solid var(--v2-border);
+      border: 1px solid var(--line);
       border-radius: var(--co-radius);
-      background: var(--v2-surface);
+      background: var(--surface);
     }
 
     .co-money { font-variant-numeric: tabular-nums; }
@@ -314,16 +315,16 @@
       padding: 7px 0;
       font-family: var(--co-sans);
       font-size: 14px;
-      color: var(--v2-fg-muted);
+      color: var(--muted);
     }
 
     .co-money-row.is-total {
       margin-top: 12px;
       padding-top: 14px;
-      border-top: 1px solid var(--v2-border);
+      border-top: 1px solid var(--line);
       font-family: var(--co-sans-med);
       font-size: 19px;
-      color: var(--v2-fg);
+      color: var(--fg);
     }
 
     /* ── Buttons ───────────────────────────────────────────────────── */
@@ -350,7 +351,7 @@
     }
     .co-btn:active:not(:disabled) { transform: translateY(1px); }
     .co-btn:disabled { opacity: 0.38; cursor: not-allowed; }
-    .co-btn:focus-visible { outline: 2px solid var(--v2-gold); outline-offset: 3px; }
+    .co-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
 
     .co-reassure {
       margin: 14px 0 0;
@@ -358,7 +359,7 @@
       font-family: var(--co-sans);
       font-size: 12px;
       line-height: 1.6;
-      color: var(--v2-fg-muted);
+      color: var(--muted);
     }
 
     /* ── Checkout step (revealed after "Continue") ─────────────────── */
@@ -375,10 +376,10 @@
       font-family: var(--co-sans-med);
       font-size: 12px;
       letter-spacing: 0.04em;
-      color: var(--v2-fg);
+      color: var(--fg);
     }
-    .co-req { color: var(--v2-gold); }
-    .co-opt { color: var(--v2-fg-muted); font-family: var(--co-sans); }
+    .co-req { color: var(--gold); }
+    .co-opt { color: var(--muted); font-family: var(--co-sans); }
 
     .co-input {
       width: 100%;
@@ -387,17 +388,17 @@
       padding: 0 14px;
       border: 1px solid var(--co-input-border);
       border-radius: 10px;
-      background: var(--v2-surface-elev);
-      color: var(--v2-fg);
+      background: var(--surface-2);
+      color: var(--fg);
       font-family: var(--co-sans);
       font-size: 14px;
       transition: border-color 0.18s ease, box-shadow 0.18s ease;
     }
-    .co-input::placeholder { color: var(--v2-fg-muted); }   /* ≥4.5:1 in both themes */
+    .co-input::placeholder { color: var(--muted); }   /* ≥4.5:1 in both themes */
     .co-input:focus {
       outline: none;
-      border-color: var(--v2-gold);
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--v2-gold) 18%, transparent);
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 18%, transparent);
     }
     .co-input.is-invalid { border-color: var(--co-danger); }
 
@@ -416,7 +417,7 @@
       text-align: center;
       font-family: var(--co-sans);
       font-size: 12.5px;
-      color: var(--v2-fg-muted);
+      color: var(--muted);
     }
     .co-legal {
       margin: 12px 0 0;
@@ -424,16 +425,16 @@
       font-family: var(--co-sans);
       font-size: 12px;
       line-height: 1.6;
-      color: var(--v2-fg-muted);
+      color: var(--muted);
     }
-    .co-legal a { color: var(--v2-gold); text-underline-offset: 2px; }
-    .co-money-row.is-pending span:last-child { color: var(--v2-fg-muted); font-style: italic; }
+    .co-legal a { color: var(--gold); text-underline-offset: 2px; }
+    .co-money-row.is-pending span:last-child { color: var(--muted); font-style: italic; }
 
 
     .co-divider {
       height: 1px;
       margin: 22px 0;
-      background: var(--v2-border);
+      background: var(--line);
       border: none;
     }
 
@@ -449,7 +450,7 @@
       display: block;
       height: 44px;
       border-radius: 8px;
-      background: color-mix(in srgb, var(--v2-fg) 7%, transparent);
+      background: color-mix(in srgb, var(--fg) 7%, transparent);
       animation: co-pulse 1.5s ease-in-out infinite;
     }
     .co-skeleton i:nth-child(2) { animation-delay: 0.18s; }
@@ -461,15 +462,15 @@
       text-align: center;
       font-family: var(--co-sans);
       font-size: 12px;
-      color: var(--v2-fg-muted);
+      color: var(--muted);
     }
 
     .co-failure {
       padding: 22px 18px;
       text-align: center;
-      border: 1px solid var(--v2-border);
+      border: 1px solid var(--line);
       border-radius: 10px;
-      background: var(--v2-surface-elev);
+      background: var(--surface-2);
     }
     .co-failure .material-icons { font-size: 34px; color: var(--co-danger); }
     .co-failure p {
@@ -477,15 +478,15 @@
       font-family: var(--co-sans);
       font-size: 13.5px;
       line-height: 1.6;
-      color: var(--v2-fg-muted);
+      color: var(--muted);
     }
     .co-failure button {
       min-height: 42px;
       padding: 0 22px;
-      border: 1px solid var(--v2-border);
+      border: 1px solid var(--line);
       border-radius: 999px;
       background: none;
-      color: var(--v2-fg);
+      color: var(--fg);
       font-family: var(--co-sans-med);
       font-size: 13px;
       letter-spacing: 0.06em;
@@ -502,13 +503,13 @@
       font-family: var(--co-serif);
       font-weight: 500;
       font-size: clamp(28px, 5vw, 40px);
-      color: var(--v2-fg);
+      color: var(--fg);
     }
     .co-empty p {
       margin: 0 0 26px;
       font-family: var(--co-sans);
       font-size: 14px;
-      color: var(--v2-fg-muted);
+      color: var(--muted);
     }
     .co-empty a {
       display: inline-flex;
@@ -516,16 +517,16 @@
       gap: 8px;
       min-height: 46px;
       padding: 0 24px;
-      border: 1px solid var(--v2-border);
+      border: 1px solid var(--line);
       border-radius: 999px;
-      color: var(--v2-fg);
+      color: var(--fg);
       text-decoration: none;
       font-family: var(--co-sans-med);
       font-size: 13px;
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
-    .co-empty a:hover { border-color: var(--v2-gold); color: var(--v2-gold); }
+    .co-empty a:hover { border-color: var(--gold); color: var(--gold); }
 
     /* ── Sticky mobile bar ─────────────────────────────────────────── */
     .co-sticky {
@@ -534,10 +535,10 @@
       z-index: 110;
       display: none;
       padding: 12px clamp(16px, 4vw, 32px) calc(12px + env(safe-area-inset-bottom));
-      background: color-mix(in srgb, var(--v2-bg) 92%, transparent);
+      background: color-mix(in srgb, var(--bg) 92%, transparent);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
-      border-top: 1px solid var(--v2-border);
+      border-top: 1px solid var(--line);
     }
     .co-sticky .co-btn { margin-top: 0; }
     /* The summary card already carries the primary action on wide

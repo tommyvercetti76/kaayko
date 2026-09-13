@@ -9,9 +9,10 @@
 
    Canonical names: --bg --fg --muted --gold --gold-bright --line --surface
    --surface-2 --good --moderate --critical --ok --bad, the three fonts and the
-   three cuts. The store's --v2-* names and the legacy --color-* names used by
-   header.css / storestyle.css are ALIASES defined here and nowhere else; do not
-   add new uses of them, and do not define a token in any other file.
+   three cuts. Both products use them. The store keeps seven of its own
+   (--v2-section-title, --v2-image-*, --v2-overlay-*, --v2-new-*), and the
+   legacy --color-* palette styles the old header/footer chrome in header.css
+   and storestyle.css. Every one of them is defined here and nowhere else.
 
    Shape:   chamfered, never rounded. --clip-sm/md/lg are the three cuts.
    Colour:  black ground, bone text, bullion gold; three verdict colours.
@@ -64,7 +65,7 @@
   --gold:         #7a6030;
   --gold-bright:  #6f5728;
   --good:         #1f6b3a;
-  /* store-only */
+  /* store-only (no canonical equivalent) */
   --v2-section-title: #1a1815;
   --v2-image-bg:      #f1ede6;
   --v2-image-border:  rgba(0, 0, 0, 0.08);
@@ -72,16 +73,6 @@
   --v2-overlay-fg:    #24211d;
   --v2-new-bg:        #1f6b3a;
   --v2-new-fg:        #f7f3e8;
-  /* aliases — every existing --v2-* rule keeps resolving */
-  --v2-bg:            var(--bg);
-  --v2-surface:       var(--surface);
-  --v2-surface-elev:  var(--surface-2);
-  --v2-border:        var(--line);
-  --v2-fg:            var(--fg);
-  --v2-fg-muted:      var(--muted);
-  --v2-gold:          var(--gold);
-  --v2-gold-bright:   var(--gold-bright);
-  --v2-green:         var(--good);
 }
 /* Dark — driven by the global <html>.dark-theme toggle in header.js. */
 html.dark-theme .store-v2 {

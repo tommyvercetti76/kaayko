@@ -108,7 +108,13 @@ function countFor(key) {
 
 function money(p) {
   if (typeof p.actualPrice === 'number') return `$${p.actualPrice.toFixed(2)}`;
-  return p.price || '—';           // legacy tier symbol, until someone sets a price
+  // No actualPrice: the customer is charged the tier rate for the symbol
+  // ($ 19.99 · $$ 29.99 · $$$ 39.99 · $$$$ 49.99). Say so, loudly, until someone sets one.
+  const TIER = { '$': '19.99', '$$': '29.99', '$$$': '39.99', '$$$$': '49.99' };
+  const tier = TIER[String(p.price || '').trim()];
+  return tier
+    ? `<span class="price-tier" title="No price set — charged the ${escapeHtml(p.price)} tier rate. Edit to set the real price.">⚠ $${tier} (tier ${escapeHtml(p.price)})</span>`
+    : '<span class="price-tier" title="No price set — this product cannot be sold until one is">⚠ no price</span>';
 }
 
 function statusPills(p) {

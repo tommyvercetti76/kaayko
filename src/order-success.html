@@ -17,6 +17,7 @@
 
   <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/fonts/fonts.css" />
+  <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/storestyle.css" />
   <link rel="stylesheet" href="/css/header.css" />
   <link rel="stylesheet" href="/css/footer.css" />
@@ -30,19 +31,19 @@
 
     /* Day beige/ivory, night black and gold — matching cart.html. */
     html.dark-theme body.co-root.store-v2 {
-      --v2-bg:           #080808;
-      --v2-surface:      #18160f;
-      --v2-surface-elev: #1e1c12;
-      --v2-border:       rgba(181, 147, 90, 0.20);
-      --v2-fg:           #ede8df;
-      --v2-fg-muted:     rgba(237, 232, 223, 0.62);
-      --v2-gold:         #b5935a;
-      --v2-gold-bright:  #d9bd7b;
+      --bg:           #080808;
+      --surface:      #18160f;
+      --surface-2: #1e1c12;
+      --line:       rgba(181, 147, 90, 0.20);
+      --fg:           #ede8df;
+      --muted:     rgba(237, 232, 223, 0.62);
+      --gold:         #b5935a;
+      --gold-bright:  #d9bd7b;
       background:
         radial-gradient(circle at 20% 12%, rgba(181, 147, 90, 0.10), transparent 38%),
         radial-gradient(circle at 80% 84%, rgba(181, 147, 90, 0.07), transparent 44%),
-        var(--v2-bg);
-      color: var(--v2-fg);
+        var(--bg);
+      color: var(--fg);
     }
 
     .store-v2 {
@@ -69,9 +70,9 @@
       width: 64px;
       height: 64px;
       margin-bottom: 26px;
-      border: 1px solid var(--v2-gold);
+      border: 1px solid var(--gold);
       border-radius: 50%;
-      color: var(--v2-gold);
+      color: var(--gold);
     }
     .ok-mark .material-icons { font-size: 30px; }
 
@@ -81,7 +82,7 @@
       font-weight: 500;
       font-size: clamp(34px, 7vw, 52px);
       line-height: 1.05;
-      color: var(--v2-fg);
+      color: var(--fg);
     }
 
     .ok-lede {
@@ -90,14 +91,14 @@
       font-family: var(--co-sans);
       font-size: 15px;
       line-height: 1.65;
-      color: var(--v2-fg-muted);
+      color: var(--muted);
     }
 
     .ok-card {
       padding: clamp(20px, 3vw, 28px);
-      border: 1px solid var(--v2-border);
+      border: 1px solid var(--line);
       border-radius: 14px;
-      background: var(--v2-surface);
+      background: var(--surface);
       text-align: left;
     }
 
@@ -110,7 +111,7 @@
       font-size: 13px;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: var(--v2-gold);
+      color: var(--gold);
     }
 
     .ok-row {
@@ -119,10 +120,10 @@
       align-items: baseline;
       gap: 18px;
       padding: 9px 0;
-      border-bottom: 1px solid var(--v2-border);
+      border-bottom: 1px solid var(--line);
       font-family: var(--co-sans);
       font-size: 13.5px;
-      color: var(--v2-fg-muted);
+      color: var(--muted);
     }
     .ok-row:last-child { border-bottom: none; }
 
@@ -130,7 +131,7 @@
       margin: 0;
       text-align: right;
       font-family: var(--co-sans-med);
-      color: var(--v2-fg);
+      color: var(--fg);
       overflow-wrap: anywhere;
       font-variant-numeric: tabular-nums;
     }
@@ -143,7 +144,7 @@
       font-family: var(--co-sans);
       font-size: 13px;
       line-height: 1.7;
-      color: var(--v2-fg-muted);
+      color: var(--muted);
     }
 
     .ok-actions {
@@ -162,8 +163,8 @@
       padding: 0 26px;
       border-radius: 999px;
       border: 1px solid transparent;
-      background: var(--v2-fg);
-      color: var(--v2-bg);
+      background: var(--fg);
+      color: var(--bg);
       text-decoration: none;
       font-family: var(--co-sans-med);
       font-size: 13px;
@@ -175,10 +176,10 @@
 
     .ok-btn.is-quiet {
       background: none;
-      border-color: var(--v2-border);
-      color: var(--v2-fg);
+      border-color: var(--line);
+      color: var(--fg);
     }
-    .ok-btn.is-quiet:hover { border-color: var(--v2-gold); color: var(--v2-gold); }
+    .ok-btn.is-quiet:hover { border-color: var(--gold); color: var(--gold); }
 
     @media (prefers-reduced-motion: reduce) { .ok-btn { transition: none; } }
   </style>
@@ -218,7 +219,7 @@
     </div>
   </main>
 
-  <footer class="site-footer is-light">
+  <footer class="site-footer">
     <nav aria-label="Footer">
       <a href="/store">Store</a>
       <a href="/store/about">About</a>

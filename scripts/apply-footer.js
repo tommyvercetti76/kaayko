@@ -11,7 +11,7 @@
 // For each page it:
 //   1. replaces the existing <footer>…</footer>, or inserts one before </body>
 //   2. ensures /css/footer.css is linked in <head>
-//   3. ensures the shared year-injection snippet is present exactly once
+//   3. ensures js/util.js (the footer-year stamp) is loaded once
 //
 // The 17 generated spot pages are NOT touched here — they get the same footer
 // from scripts/generate-spot-pages.js, which imports the same link sets.
@@ -24,14 +24,11 @@ const root = path.resolve(__dirname, '..');
 const checkOnly = process.argv.includes('--check');
 
 const CSS_LINK = '<link rel="stylesheet" href="/css/footer.css">';
-const YEAR_MARK = 'kaayko-footer-year';
-const YEAR_SCRIPT = `<script>
-  /* ${YEAR_MARK} */
-  (function () {
-    var y = document.getElementById("year");
-    if (y) y.textContent = new Date().getFullYear();
-  })();
-</script>`;
+// The footer year is stamped by js/util.js (classic) — or by js/kit.js, which
+// every page module imports and which runs util.js. Pages used to carry their
+// own five-line IIFE for this.
+const YEAR_SCRIPT = '<script src="/js/util.js"></script>';
+const hasYearStamp = (s) => s.includes('/js/util.js') || s.includes('/js/kit.js') || /\/js\/pages\//.test(s);
 
 let changed = 0;
 const drift = [];
@@ -73,9 +70,9 @@ for (const [rel, setName] of Object.entries(PAGES)) {
     if (/<\/head>/i.test(s)) s = s.replace(/([ \t]*)<\/head>/i, `$1  ${CSS_LINK}\n$1</head>`);
   }
 
-  // 3) Year injection, exactly once.
-  if (!s.includes(YEAR_MARK)) {
-    s = s.replace(/([ \t]*)<\/body>/i, `$1  ${YEAR_SCRIPT.replace(/\n/g, '\n$1  ')}\n\n$1</body>`);
+  // 3) Year injection, exactly once: util.js (or a module that imports kit.js).
+  if (!hasYearStamp(s)) {
+    s = s.replace(/([ \t]*)<\/body>/i, `$1  ${YEAR_SCRIPT}\n\n$1</body>`);
   }
 
   if (s !== before) {

@@ -3,7 +3,7 @@
  * The store's definition of done, as a check (ENGINEERING-IDENTITY.md §9):
  *   • no store page carries more than 30 lines of inline JavaScript
  *     (logic lives in js/pages/*; the synchronous kaay.store gate is the exception it allows)
- *   • every page that loads header.css or storestyle.css loads css/tokens.css first
+ *   • every page that loads header.css or storestyle.css loads css/tokens.css first and css/base.css before them
  *   • no first-party script defines its own escape helper or API base
  */
 const fs = require('fs');
@@ -39,9 +39,12 @@ for (const page of STORE_PAGES) {
     if (usesChrome) {
       const t = html.indexOf('css/tokens.css'), c = html.search(/css\/(header|storestyle)\.css/);
       const isStore = /<body[^>]*\bstore-v2\b/.test(html);
+      const b = html.indexOf('css/base.css');
       if (t < 0) failures.push(`${path.relative(src, full)}: loads header/storestyle.css without css/tokens.css`);
       // Store pages: tokens first. Paddling pages load tokens LAST on purpose (they win over inline :root).
       else if (isStore && t > c) failures.push(`${path.relative(src, full)}: css/tokens.css must come before header.css / storestyle.css`);
+      if (b < 0) failures.push(`${path.relative(src, full)}: loads storestyle.css without css/base.css (the reset lives there now)`);
+      else if (b > c) failures.push(`${path.relative(src, full)}: css/base.css must come before storestyle.css / header.css`);
     }
   }
 })(src);

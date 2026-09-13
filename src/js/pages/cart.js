@@ -504,10 +504,10 @@ function mountStripe() {
       appearance: {
         theme: dark ? 'night' : 'stripe',
         variables: {
-          colorPrimary: token('--v2-gold', '#8b6f3a'),
-          colorBackground: token('--v2-surface-elev', dark ? '#141613' : '#ffffff'),
-          colorText: token('--v2-fg', dark ? '#f5efe2' : '#1a1815'),
-          colorTextSecondary: token('--v2-fg-muted', '#4d4740'),
+          colorPrimary: token('--gold', '#8b6f3a'),
+          colorBackground: token('--surface-2', dark ? '#141613' : '#ffffff'),
+          colorText: token('--fg', dark ? '#f5efe2' : '#1a1815'),
+          colorTextSecondary: token('--muted', '#4d4740'),
           colorDanger: token('--co-danger', '#a83826'),
           fontFamily: "'Josefin Sans', Arial, sans-serif",
           spacingUnit: '4px',
@@ -517,11 +517,11 @@ function mountStripe() {
           '.Label': { fontSize: '12px', fontWeight: '500', letterSpacing: '0.04em', marginBottom: '7px' },
           '.Input': { border: `1px solid ${token('--co-input-border', 'rgba(26,24,21,0.45)')}`, padding: '12px 14px' },
           '.Input:focus': {
-            border: `1px solid ${token('--v2-gold', '#8b6f3a')}`,
+            border: `1px solid ${token('--gold', '#8b6f3a')}`,
             boxShadow: `0 0 0 3px ${dark ? 'rgba(212,182,132,0.20)' : 'rgba(139,111,58,0.18)'}`
           },
-          '.Tab': { border: `1px solid ${token('--v2-border', 'rgba(26,24,21,0.12)')}` },
-          '.Tab--selected': { borderColor: token('--v2-gold', '#8b6f3a') }
+          '.Tab': { border: `1px solid ${token('--line', 'rgba(26,24,21,0.12)')}` },
+          '.Tab--selected': { borderColor: token('--gold', '#8b6f3a') }
         }
       },
       fields: { billingDetails: { address: 'auto' } }

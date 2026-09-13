@@ -501,10 +501,7 @@ html.dark-theme .fab-menu::before {
   color: var(--color-brand-gold);
   filter: drop-shadow(0 0 2px rgba(255,215,0,0.5));
 }
-html.dark-theme footer {
-  background: #222;
-  color: #ccc;
-}
+/* `html.dark-theme footer` lives in css/base.css. */
 html.dark-theme .footer-elements {
   background: #222;
   border-top: 1px solid #444;

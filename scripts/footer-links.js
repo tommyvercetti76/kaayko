@@ -56,10 +56,12 @@ const SETS = {
   ],
 
   // Store and checkout: nothing that pulls a buyer out of the flow.
+  // /store/about and /store/privacy resolve on BOTH hosts (kaay.store rewrites
+  // them too); /about and /privacy would be the Kaayko marketing pages on kaayko.com.
   store: [
     ['/store', 'Store'],
-    ['/about', 'About'],
-    ['/privacy', 'Privacy'],
+    ['/store/about', 'About'],
+    ['/store/privacy', 'Privacy'],
   ],
 };
 

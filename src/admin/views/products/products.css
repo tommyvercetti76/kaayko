@@ -194,3 +194,6 @@
   .pv-state, .pv-quick { grid-column: 1 / -1; justify-content: flex-start; }
   .pv-rowpair { grid-template-columns: 1fr; }
 }
+
+/* A product still priced by its tier symbol — set actualPrice. */
+.price-tier { color: #d9a441; font-weight: 600; white-space: nowrap; }

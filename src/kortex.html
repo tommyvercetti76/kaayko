@@ -1114,10 +1114,8 @@ rotate it any time</pre></div>
   <footer class="site-footer">
     <nav aria-label="Footer">
       <a href="/legal/kortex-terms">Terms</a>
-      <a href="/kortex/support">Get help</a>
       <a href="/privacy">Privacy</a>
-      <a href="/kortex/report">Report a link</a>
-      <a href="/kortex/support">Contact</a>
+      <a href="mailto:rohan@kaayko.com">Contact</a>
     </nav>
     <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
   </footer>
@@ -2220,13 +2218,7 @@ document.querySelectorAll('.cap-card').forEach(card => {
 
 <!-- Product analytics (PostHog) is intentionally NOT loaded on this public
      landing page — it runs only inside the authenticated admin app. -->
-  <script>
-    /* kaayko-footer-year */
-    (function () {
-      var y = document.getElementById("year");
-      if (y) y.textContent = new Date().getFullYear();
-    })();
-  </script>
+  <script src="/js/util.js"></script>
 
 </body>
 </html>

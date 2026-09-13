@@ -28,7 +28,7 @@
   font-size: 11px;
   letter-spacing: .14em;
   text-transform: uppercase;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
 }
 
 .fitp-guide-toggle {
@@ -37,7 +37,7 @@
   padding: 0;
   font: inherit;
   letter-spacing: .08em;
-  color: var(--v2-gold);
+  color: var(--gold);
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -58,10 +58,10 @@
   align-items: center;
   justify-content: center;
   min-height: 44px;               /* 2.5.5 target size */
-  border: 1px solid var(--v2-border);
+  border: 1px solid var(--line);
   border-radius: 8px;
-  background: var(--v2-surface);
-  color: var(--v2-fg);
+  background: var(--surface);
+  color: var(--fg);
   font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
   font-size: 14px;
   line-height: 1;
@@ -73,29 +73,29 @@
 .fitp-box  { min-width: 52px; padding: 0 10px; letter-spacing: .06em; }
 
 .fitp-chip:hover,
-.fitp-box:hover { border-color: var(--v2-gold); }
+.fitp-box:hover { border-color: var(--gold); }
 
 .fitp-chip:focus-visible,
 .fitp-box:focus-visible,
 .fitp-guide-toggle:focus-visible,
 .fitp-confirm:focus-visible {
-  outline: 2px solid var(--v2-gold);
+  outline: 2px solid var(--gold);
   outline-offset: 2px;
 }
 
 /* Selected state carries a border AND a fill, never colour alone (1.4.1). */
 .fitp-chip.is-selected,
 .fitp-box.is-selected {
-  background: var(--v2-fg);
-  border-color: var(--v2-fg);
-  color: var(--v2-bg);
+  background: var(--fg);
+  border-color: var(--fg);
+  color: var(--bg);
 }
 
 .fitp-guide {
-  border: 1px solid var(--v2-border);
+  border: 1px solid var(--line);
   border-radius: 10px;
   padding: 12px 14px;
-  background: color-mix(in srgb, var(--v2-gold) 7%, transparent);
+  background: color-mix(in srgb, var(--gold) 7%, transparent);
 }
 
 .fitp-guide table { width: 100%; border-collapse: collapse; }
@@ -106,7 +106,7 @@
   padding-bottom: 8px;
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
   font-size: 12px;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
 }
 
 .fitp-guide th,
@@ -115,8 +115,8 @@
   text-align: left;
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
   font-size: 13px;
-  color: var(--v2-fg);
-  border-bottom: 1px solid var(--v2-border);
+  color: var(--fg);
+  border-bottom: 1px solid var(--line);
 }
 
 .fitp-guide thead th {
@@ -124,7 +124,7 @@
   font-size: 11px;
   letter-spacing: .1em;
   text-transform: uppercase;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
 }
 
 .fitp-guide tbody tr:last-child th,
@@ -134,7 +134,7 @@
   margin: 8px 0 0;
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
   font-size: 12px;
-  color: var(--v2-fg-muted);
+  color: var(--muted);
 }
 
 .fitp-confirm {
@@ -143,8 +143,8 @@
   padding: 0 18px;
   border: 0;
   border-radius: 10px;
-  background: var(--v2-gold);
-  color: var(--v2-bg);
+  background: var(--gold);
+  color: var(--bg);
   font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
   font-size: 13px;
   letter-spacing: .12em;
@@ -175,7 +175,7 @@ html.dark-theme .fitp-confirm { color: #0d0f0d; }
 
 .is-picking > .fitp-slot > div {
   padding: 14px 0 2px;
-  border-top: 1px solid var(--v2-border);
+  border-top: 1px solid var(--line);
   margin-top: 12px;
 }
 
