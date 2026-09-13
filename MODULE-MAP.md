@@ -172,7 +172,7 @@ GET  /arcade/challenge?productId&game  POST /arcade/solve  POST /arcade/beg/star
 - `kaayko-api/functions/api/products.js`
 - `kaayko-api/functions/api/checkout.js`
 
-**Firestore collections:** `kaaykoproducts`, `orders`, `payment_intents`
+**Firestore collections:** `kaaykoproducts`, `orders`, `payment_intents` — every frozen line item and order doc carries `kreatorId` (null for house products) since 13 Sep 2026
 **Firebase Storage:** `kaaykoStoreTShirtImages/{productID}/`
 **External services:** Stripe
 **Auth required:** No (browsing + checkout); admin order ops require auth
@@ -503,7 +503,8 @@ POST /api/presets                      → create preset (auth required)
 | `kreatorProducts` | kreator | Creator-submitted products |
 | `admin_users` | kortex, kreator | Admin profiles (shared) |
 | `admin_audit_logs` | kortex, kreator | Admin activity log (shared) |
-| `users/{uid}/kutz*` | kutz | All nutrition data |
+| `users/{uid}/kutz*` | kutz | All nutrition data (`kutzProfile`, `kutzDays` — a locked day accepts only the unlock flag per write) |
+| `users/{uid}/kutzPrivate/fitbit` | kutz | Fitbit OAuth tokens. Server-only: `firestore.rules` denies every client read/write; the API reads/writes with the Admin SDK. Added 13 Sep 2026 (tokens used to sit in the client-readable `kutzProfile/fitbit`; legacy docs migrate on first use) |
 | `cameras` | karma | Camera reference (⚠️ may be `Kameras`) |
 | `lenses` | karma | Lens reference |
 | `presets` | karma | Photography presets |

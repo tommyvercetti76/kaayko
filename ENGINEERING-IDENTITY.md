@@ -94,12 +94,9 @@ Also closed 12 Sep 2026: every page reads `window.KAAYKO_API_BASE` from `prod-co
 
 Closed 12 Sep 2026 (store rebuild, §9): eight `esc()` copies, two API clients, four dollar parsers, two cart-badge copies, 17 footer-year stamps, two toasts, two opposite palettes and 1 898 lines of inline page logic on the store surface are gone. `npm run check` enforces the rules; `npm test` pins the money math.
 
-Still open, in order of value:
-- `header.css` / `storestyle.css` use the legacy `--color-*` names (36 uses) and ~500 rules use `--v2-*`; both live in `tokens.css` as aliases of the canonical names. Rename the uses, then delete the aliases.
-- Paddling pages load `storestyle.css` (2 600 lines) and `header.css` for a footer they barely style.
-- The `/api` privileged-prefix CORS guard runs after `cors()`, so preflights are answered permissively; actual responses are stripped and checkout has its own guard (GAPS.md, low).
-- Marketing/Kortex pages (`forge`, `alumni`, `kortex`, `tenant`, the 16 static lake pages) still carry their own footer-year IIFE; they are outside the store and paddling surfaces.
-- On a branch, awaiting review: the light theme (`light-theme` branch, Firebase preview channel). Default stays dark. Note: with `tokens.css` the store already has a light/dark pair; the paddling light values belong in the same file when that branch lands.
+Closed 13 Sep 2026 (gap closure): the 536 `--v2-*` alias uses are renamed and the aliases deleted (the seven store-only `--v2-*` names and the legacy `--color-*` chrome palette are real tokens, defined once); `css/base.css` carries the reset, so the paddling pages no longer load 2 700 lines of store CSS; every page stamps the footer year through `util.js`, and both footer generators emit the same; the API's privileged-origin guard runs before `cors()`. Verified by computed-style probes before and after on every affected page.
+
+Still open, by owner decision only: the light theme (`light-theme` branch, Firebase preview channel — default stays dark; its paddling light values belong in `tokens.css` when it lands) and the items in `GAPS.md` marked owner / paid service / product feature.
 
 ## 7. Search rebuild — the plan
 
