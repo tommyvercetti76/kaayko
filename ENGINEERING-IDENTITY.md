@@ -199,6 +199,15 @@ or marked **decide**._
 - Verified live: 36 cards on both hosts, chips T-Shirts 17 · Totes 11 · Bottles 6 · Magnets 2, prices
   $19.99 / $29.99 / $5.99, PDP eyebrow from the registry, Beggathon only, About with four exhibits, no
   console errors; every untouched page (legal, paddling, reads, order-success) still 200.
+- **Product Owner review received the same evening** and vetted finding by finding in
+  `/Users/Rohan/Kaayko_v6/REVIEW-RESPONSE-2026-09-13.md` (workspace root, unversioned). Eight of nine site
+  findings confirmed (Terms template, Gmail address, stale privacy processors, `pi_` as the order number,
+  different-brand metadata, `noindex` grid, three footers + canonical, votes/price filters + app banner);
+  the invite-gate finding is wrong (gate removed, verified live). The next release is "Keeping Our Word":
+  domain mail, legal identity, human order number, receipt with images, tokenised order-status page,
+  refund/cancel from Kortex, truthful privacy and promises, metadata in the shop's voice, one name, registry
+  prices, Beggathon affordability, no social-proof machinery, backups, then the live switch. Eight owner
+  inputs block it; items 3, 6 and 13 there can start without any.
 
 ### What the catalogue is today (measured)
 
