@@ -89,3 +89,12 @@ The Firestore productID is derived deterministically from name+type, so re-runni
 - The `/api/products` endpoint re-derives `imgSrc` from Storage on every request, so what matters most is the Storage objects. The Firestore `imgSrc` field is written for completeness and as a fallback.
 - WebP encoding uses `method=6` (slowest, best compression). A 10-image upload takes ~30 seconds total on a modern Mac.
 - Existing T-shirt records without a `productType` field still render — they land in the "Other" section on the store page.
+
+## Tote gallery (13 Sep 2026)
+
+`tote_gallery.py` is the permanent tote mockup set: one transparent drawing in, six
+photographs out, from the templates in `templates/tote/` (cut from
+`Desktop/New_Totets/ToteSamples.png`, AI-upscaled 4x) placed by `placements.json`.
+Ink is multiplied into the canvas, not pasted; a drawing saved on a cream card is
+keyed automatically. `--all` for six frames, default three (front, shoulder, carry).
+Feed `<out>/<slug>/` to `store_upload.py`. `--sheet <out>` builds a contact sheet.

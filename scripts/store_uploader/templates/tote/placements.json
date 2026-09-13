@@ -1,0 +1,12 @@
+{
+  "_about": "Six blank tote photographs cut from Desktop/New_Totets/ToteSamples.png (13 Sep 2026). Boxes are fractions of the template: the printable front panel, centred. rotate is degrees, counter-clockwise positive, for the worn views where the bag hangs at a slight angle.",
+  "templates": [
+    {"id": "flat_wall",     "file": "0_flat_wall.webp",     "box": {"x": 0.27, "y": 0.50, "w": 0.46, "h": 0.40}, "rotate": 0},
+    {"id": "hanging_front", "file": "1_hanging_front.webp", "box": {"x": 0.24, "y": 0.28, "w": 0.52, "h": 0.48}, "rotate": 0},
+    {"id": "hanging_side",  "file": "2_hanging_side.webp",  "box": {"x": 0.26, "y": 0.29, "w": 0.48, "h": 0.48}, "rotate": 0},
+    {"id": "shoulder_a",    "file": "3_shoulder_a.webp",    "box": {"x": 0.24, "y": 0.47, "w": 0.36, "h": 0.34}, "rotate": -3},
+    {"id": "shoulder_b",    "file": "4_shoulder_b.webp",    "box": {"x": 0.28, "y": 0.43, "w": 0.36, "h": 0.34}, "rotate": -2},
+    {"id": "carry",         "file": "5_carry.webp",         "box": {"x": 0.37, "y": 0.46, "w": 0.38, "h": 0.34}, "rotate": 2}
+  ],
+  "default_frames": ["hanging_front", "shoulder_a", "carry"]
+}
