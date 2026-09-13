@@ -101,7 +101,7 @@ Agents: identify the page here, then look up the module in MODULE-MAP.md for ful
 | `/order-success` | `src/order-success.html` → `js/pages/order-success.js` |
 | `/order-status` | `src/order-status.html` → `js/pages/order-status.js` |
 | `/store/p/:id` (kaay.store `/p/:id`) | `src/product.html` → `js/pages/pdp.js` |
-| `/animals/:slug` | `src/animal.html` → `js/pages/pdp.js` |
+| `/animals/:slug` | `src/animal.html` → `js/pages/pdp.js` → forwards to `/store/p/:id` (one product page since 13 Sep 2026) |
 | `/store/about` (kaay.store `/about`) | `src/store-about.html` |
 | `/store/privacy` (kaay.store `/privacy`) | `src/store-privacy.html` |
 | `/shipping`, `/fly` | `src/shipping.html` → `js/pages/shipping.js` |

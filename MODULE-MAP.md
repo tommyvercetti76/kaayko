@@ -124,7 +124,7 @@ GET  /api/docs                                 → API spec (spec.yaml / spec.js
 |-----|------|--------|
 | `/store` (kaay.store `/`) | `kaayko/src/store.html` | `js/pages/store.js` |
 | `/store/p/:id` (kaay.store `/p/:id`) | `kaayko/src/product.html` (`data-pdp="product"`) | `js/pages/pdp.js` → `js/product.js` |
-| `/animals/:slug` | `kaayko/src/animal.html` (`data-pdp="animal"`) | `js/pages/pdp.js` → `js/animal.js` |
+| `/animals/:slug` | `kaayko/src/animal.html` (`data-pdp="animal"`) | `js/pages/pdp.js` → `js/animal.js` → `location.replace('/store/p/<id>')` — forwards only, nothing rendered |
 | `/cart` | `kaayko/src/cart.html` | `js/pages/cart.js` |
 | `/order-success` | `kaayko/src/order-success.html` | `js/pages/order-success.js` |
 | `/store/about` (kaay.store `/about`) | `kaayko/src/store-about.html` | inline (5 lines) → `js/store-about.js` |
