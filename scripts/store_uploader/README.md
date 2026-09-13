@@ -92,9 +92,11 @@ The Firestore productID is derived deterministically from name+type, so re-runni
 
 ## Tote gallery (13 Sep 2026)
 
-`tote_gallery.py` is the permanent tote mockup set: one transparent drawing in, six
-photographs out, from the templates in `templates/tote/` (cut from
-`Desktop/New_Totets/ToteSamples.png`, AI-upscaled 4x) placed by `placements.json`.
-Ink is multiplied into the canvas, not pasted; a drawing saved on a cream card is
-keyed automatically. `--all` for six frames, default three (front, shoulder, carry).
-Feed `<out>/<slug>/` to `store_upload.py`. `--sheet <out>` builds a contact sheet.
+`tote_gallery.py` renders a drawing onto the same three photographs for every product
+(front, shoulder, carry), on white or natural cotton (`--set`). Geometry is MEASURED:
+`--calibrate` finds the bag body and tilt on each template and writes `geometry.json`;
+the print panel is 60% of the body width, 20% below its top edge, the same on every
+view, and a drawing is fitted to it, so every product prints at the same visual size.
+A frame whose print would leave the bag is refused. Templates are 2× Lanczos, never
+AI-upscaled (that turned the canvas to plastic). `templates/tote/calibration.png` shows
+the measured boxes. Feed `<out>/<slug>/` to `store_upload.py`.

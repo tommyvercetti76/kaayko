@@ -1,0 +1,124 @@
+{
+ "panel_rule": {
+  "PANEL_W": 0.6,
+  "PANEL_TOP": 0.2,
+  "PANEL_H": 0.58,
+  "MARGIN": 0.03
+ },
+ "views": {
+  "0_flat_wall": {
+   "size": [
+    954,
+    1024
+   ],
+   "body": {
+    "left": 192,
+    "top": 442,
+    "right": 751,
+    "bottom": 987,
+    "tilt": 0.0
+   },
+   "panel": {
+    "x": 304,
+    "y": 551,
+    "w": 335,
+    "h": 316
+   }
+  },
+  "1_hanging_front": {
+   "size": [
+    956,
+    1024
+   ],
+   "body": {
+    "left": 102,
+    "top": 132,
+    "right": 835,
+    "bottom": 946,
+    "tilt": 0.11
+   },
+   "panel": {
+    "x": 249,
+    "y": 294,
+    "w": 439,
+    "h": 472
+   }
+  },
+  "2_hanging_side": {
+   "size": [
+    954,
+    1024
+   ],
+   "body": {
+    "left": 136,
+    "top": 150,
+    "right": 813,
+    "bottom": 946,
+    "tilt": -1.0
+   },
+   "panel": {
+    "x": 271,
+    "y": 309,
+    "w": 406,
+    "h": 461
+   }
+  },
+  "3_shoulder_a": {
+   "size": [
+    954,
+    1122
+   ],
+   "body": {
+    "left": 172,
+    "top": 437,
+    "right": 747,
+    "bottom": 975,
+    "tilt": -2.83
+   },
+   "panel": {
+    "x": 287,
+    "y": 544,
+    "w": 345,
+    "h": 312
+   }
+  },
+  "4_shoulder_b": {
+   "size": [
+    956,
+    1122
+   ],
+   "body": {
+    "left": 194,
+    "top": 382,
+    "right": 719,
+    "bottom": 921,
+    "tilt": 3.44
+   },
+   "panel": {
+    "x": 299,
+    "y": 489,
+    "w": 315,
+    "h": 312
+   }
+  },
+  "5_carry": {
+   "size": [
+    954,
+    1122
+   ],
+   "body": {
+    "left": 309,
+    "top": 458,
+    "right": 711,
+    "bottom": 905,
+    "tilt": -0.15
+   },
+   "panel": {
+    "x": 389,
+    "y": 547,
+    "w": 241,
+    "h": 259
+   }
+  }
+ }
+}
