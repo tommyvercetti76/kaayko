@@ -146,6 +146,9 @@ function row(p) {
           <button type="button" class="pv-btn" data-action="toggle-sold" data-id="${jsAttr(p.id)}" ${p.isAvailable ? '' : 'disabled'}>
             ${p.soldOut ? 'Back in stock' : 'Sold out'}
           </button>
+          <button type="button" class="pv-btn" data-action="toggle-games" data-id="${jsAttr(p.id)}" title="The Beggathon on this product's page, and whether its lines count in a won discount">
+            ${p.gamesEnabled === false ? 'Game off' : 'Game on'}
+          </button>
           <button type="button" class="pv-btn pv-btn-ghost" data-action="expand" data-id="${jsAttr(p.id)}" aria-expanded="${open}">
             ${open ? 'Close' : 'Edit'}
           </button>
@@ -262,6 +265,11 @@ function onClick(e) {
 
   if (btn.dataset.action === 'toggle-sold') {
     save(id, { soldOut: !product.soldOut });
+    return;
+  }
+
+  if (btn.dataset.action === 'toggle-games') {
+    save(id, { gamesEnabled: product.gamesEnabled === false });
   }
 }
 

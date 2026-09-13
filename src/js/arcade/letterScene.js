@@ -16,6 +16,11 @@
  *   accepted → it comes back out and OPENS, and what he granted is written
  *              inside it
  *
+ * THE WIND. It is the only thing working against the letter, so it has to be
+ * seen: streaks across the street that thicken as you stall or as the minute
+ * runs down, and a visible shove backwards on the letter itself. beg.js sets
+ * `wind` (0…1) every frame from those two facts; the scene only draws it.
+ *
  * The scene owns none of the rules. It is told a number between 0 and 1 and
  * which ending to play; every gate, every keystroke count and every refusal
  * still lives in beg.js and on the server. Nothing here can win a discount.
@@ -39,6 +44,8 @@ export function letterScene(canvas) {
   let phase = "writing";                    // writing | posting | burning | opening | gone
   let phaseT = 0;
   let embers = [], ash = [], flakes = [];
+  let wind = 0, gust = 0;                   // wind is set from outside; gust is its noise
+  let streaks = [];                         // {x, y, len, v, a}
   let onDone = null;
 
   const lerp = (a, b, k) => a + (b - a) * k;
@@ -60,10 +67,12 @@ export function letterScene(canvas) {
   function letterAt(w, h) {
     const from = { x: w * 0.17, y: h * 0.52 };
     const to = { x: w * 0.775, y: h * 0.47 };
-    const k = shown;
+    // The wind shoves it back down the street and worries at its tilt.
+    const shove = wind * (0.05 + gust * 0.03);
+    const k = Math.max(0, shown - shove);
     const x = lerp(from.x, to.x, k);
-    const y = lerp(from.y, to.y, k) - Math.sin(k * Math.PI) * h * 0.20;
-    const tilt = Math.sin(t * 3.1) * 0.10 + (1 - k) * 0.16;
+    const y = lerp(from.y, to.y, k) - Math.sin(k * Math.PI) * h * 0.20 + Math.sin(t * 7) * wind * 4;
+    const tilt = Math.sin(t * 3.1) * 0.10 + (1 - k) * 0.16 + Math.sin(t * 9) * wind * 0.22;
     return { x, y, tilt, k };
   }
 
@@ -212,6 +221,38 @@ export function letterScene(canvas) {
     ctx.fillRect(x - 8, top + 7, 16, 4);
   }
 
+  /** The wind, drawn: long thin streaks running right to left against the letter.
+      Their number and speed follow `wind`, so still air draws nothing at all. */
+  function drawWind(w, h) {
+    gust = 0.5 + 0.5 * Math.sin(t * 1.7) * Math.sin(t * 0.63);
+    const want = Math.round(wind * 26);
+    while (streaks.length < want) {
+      streaks.push({ x: w + rand(0, w), y: rand(h * 0.08, h * 0.78),
+                     len: rand(w * 0.06, w * 0.22), v: rand(w * 0.9, w * 1.6), a: rand(0.18, 0.55) });
+    }
+    if (streaks.length > want) streaks.length = want;
+    ctx.lineWidth = 1.2;
+    ctx.lineCap = "round";
+    for (const s of streaks) {
+      s.x -= s.v * (0.55 + wind * 0.8 + gust * 0.3) * STEP;
+      if (s.x + s.len < 0) { s.x = w + rand(0, w * 0.4); s.y = rand(h * 0.08, h * 0.78); }
+      const g = ctx.createLinearGradient(s.x, s.y, s.x + s.len, s.y);
+      g.addColorStop(0, `rgba(244,238,223,0)`);
+      g.addColorStop(0.6, `rgba(244,238,223,${s.a * (0.5 + wind * 0.5)})`);
+      g.addColorStop(1, `rgba(244,238,223,0)`);
+      ctx.strokeStyle = g;
+      ctx.beginPath(); ctx.moveTo(s.x, s.y + Math.sin(s.x * 0.02) * 2); ctx.lineTo(s.x + s.len, s.y); ctx.stroke();
+    }
+    // a haze on the road when it is blowing hard, so the gale is felt, not just drawn
+    if (wind > 0.55) {
+      ctx.globalAlpha = (wind - 0.55) * 0.5;
+      const haze = ctx.createLinearGradient(w, 0, 0, 0);
+      haze.addColorStop(0, "rgba(244,238,223,.10)"); haze.addColorStop(1, "rgba(244,238,223,0)");
+      ctx.fillStyle = haze; ctx.fillRect(0, h * 0.30, w, h * 0.55);
+      ctx.globalAlpha = 1;
+    }
+  }
+
   /* ── the two endings ───────────────────────────────────────────────────── */
 
   function stepBurn(x, y, s) {
@@ -264,8 +305,9 @@ export function letterScene(canvas) {
     lamp(w, h);
     window_(w, h);
     postbox(w, h, reach >= 1 && phase === "writing");
+    drawWind(w, h);
 
-    const s = Math.max(26, Math.min(46, w * 0.055));
+    const s = Math.max(24, Math.min(46, w * 0.07));
     const L = letterAt(w, h);
 
     if (phase === "writing") {
@@ -301,7 +343,8 @@ export function letterScene(canvas) {
       ctx.globalAlpha = 1;
       if (phaseT > 1.0 && onDone) { const f = onDone; onDone = null; f(); }
     } else if (phase === "gone") {
-      // the wind took it: tumbling away down the street
+      // the wind took it: tumbling away down the street, in a gale
+      wind = 1;
       const k = Math.min(1, phaseT / 1.6);
       ctx.globalAlpha = 1 - k;
       envelope(lerp(L.x, -60, k), lerp(L.y, h * 0.82, k * k), s, t * 4);
@@ -327,12 +370,15 @@ export function letterScene(canvas) {
     /** 0…1 — how far across the street the letter has got. */
     set reach(v) { reach = Math.max(0, Math.min(1, v)); },
     get reach() { return reach; },
+    /** 0…1 — how hard it is blowing against the letter. */
+    set wind(v) { wind = Math.max(0, Math.min(1, Number(v) || 0)); },
+    get wind() { return wind; },
     get phase() { return phase; },
     post() { to("posting"); },
     burn(done) { to("burning", done); },
     deliver(done) { to("opening", done); },
     blowAway(done) { to("gone", done); },
-    reset() { reach = 0; shown = 0; embers = []; ash = []; flakes = []; to("writing"); },
+    reset() { reach = 0; shown = 0; wind = 0; streaks = []; embers = []; ash = []; flakes = []; to("writing"); },
     stop() { cancelAnimationFrame(raf); }
   };
 }

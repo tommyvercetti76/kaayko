@@ -2001,6 +2001,7 @@ html.dark-theme .store-v2 .browse-search::placeholder { color: rgba(212, 182, 13
 .arcade-copy { font-size: 14.5px; line-height: 1.6; }
 .arcade-feedback { font-size: 13.5px; font-style: italic; min-height: 1em; }
 .arcade-fine { font-size: 12px; opacity: .8; }
+.arcade-fine a { color: var(--gold); text-decoration: underline; text-underline-offset: 2px; }
 .arcade-label { font-size: 12px; }
 
 .arcade-options { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
@@ -2291,12 +2292,15 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
 .store-v2 .beg-card.is-bare .beg-body { padding: 0; }
 
 /* ==========================================================================
-   The Beggar's Reach — a typing race, so an instrument rather than a cartoon.
-   Three readouts, one rule crossing the panel, and a line of type saying what
-   he is doing about it. Set in the store's own faces: a drawn figure here
-   looked cheap beside everything around it.
+   The Beggathon — a typing race, so an instrument rather than a cartoon.
+   Order: the street, the three numbers on their OWN strip in page colours,
+   the track, his line, the paper, the two keys, and the answer on its own
+   sheet below. Nothing legible is ever painted over the canvas: on a phone the
+   scene is 170px tall and in light mode the page's ink is near-black, which is
+   how the numbers became unreadable. Every width is fluid and every child has
+   min-width: 0, so no border runs out of its card at 320px.
    ========================================================================== */
-.store-v2 .beg { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.store-v2 .beg { display: flex; flex-direction: column; gap: 14px; min-width: 0; max-width: 100%; }
 
 .store-v2 .beg-scene {
   position: relative;
@@ -2305,128 +2309,200 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
   overflow: hidden;
   background: #0A0912;
   aspect-ratio: 16 / 7;
+  min-height: 150px;
   min-width: 0;
+  transition: border-color 200ms ease;
 }
 .store-v2 .beg-canvas { display: block; width: 100%; height: 100%; }
 
-/* The three numbers sit ON the street rather than above it, so the eye never
-   leaves the letter to find out how long is left. */
-.store-v2 .beg-hud {
-  position: absolute; top: 0; left: 0; right: 0;
-  display: flex; gap: 16px; flex-wrap: wrap;
-  padding: 9px 13px;
-  font-family: 'Josefin Sans', Futura, Avenir, sans-serif;
+/* The numbers. Page tokens, tabular, large — readable in both themes, and never
+   fighting the picture for the same pixels. */
+.store-v2 .beg-meter {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px 12px;
+  padding: 12px 14px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  min-width: 0;
+}
+.store-v2 .beg-stat {
+  display: grid; gap: 2px; min-width: 0;
+  text-align: center;
+}
+.store-v2 .beg-stat b {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 600; font-size: clamp(26px, 7vw, 34px); line-height: 1;
+  color: var(--fg); font-variant-numeric: tabular-nums;
+}
+.store-v2 .beg-stat span {
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
   font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase;
-  color: color-mix(in srgb, var(--fg, #F4EEDF) 62%, transparent);
-  background: linear-gradient(rgba(6,7,14,.72), rgba(6,7,14,0));
+  color: var(--muted);
+}
+.store-v2 .beg-stat.is-low b { color: #d87a4f; }
+
+.store-v2 .beg-track {
+  grid-column: 1 / -1;
+  position: relative;
+  height: 8px; margin: 6px 10px 8px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--fg) 10%, transparent);
+  overflow: visible;
+}
+.store-v2 .beg-track i {
+  display: block; height: 100%; width: 0; border-radius: 4px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-bright, var(--gold)));
+  transition: width 120ms linear;
+}
+.store-v2 .beg-track em {
+  position: absolute; top: 50%; left: 0;
+  transform: translate(-50%, -50%);
+  font-style: normal; font-size: 16px; line-height: 1;
+  color: var(--gold-bright, var(--gold));
+  transition: left 120ms linear;
   pointer-events: none;
 }
-.store-v2 .beg-hud b {
-  font-weight: 400; font-size: 15px; letter-spacing: .02em;
-  color: var(--fg, #F4EEDF); font-variant-numeric: tabular-nums;
+.store-v2 .beg-track::after {
+  /* the postbox, at the far end */
+  content: ""; position: absolute; right: -4px; top: 50%;
+  width: 8px; height: 16px; transform: translateY(-50%);
+  border-radius: 3px 3px 1px 1px; background: #8C2F24;
 }
-.store-v2 .beg-hud-reach b { color: var(--gold-bright, var(--gold)); }
-
-/* What the letter said, once it has opened — or what is left of it once it has
-   burnt. Either way it arrives over the scene, on the paper. */
-.store-v2 .beg-open {
-  position: absolute; inset: 8% 6%;
-  overflow: auto;
-  padding: 16px 18px;
-  border-radius: 6px;
-  background: #F4EEDF;
-  color: #1E1810;
-  box-shadow: 0 10px 40px rgba(0,0,0,.6), 0 0 0 1px rgba(181,147,90,.5);
-  animation: beg-unfold .45s cubic-bezier(.2,.8,.2,1) both;
+.store-v2 .beg-track.is-there i { background: var(--gold-bright, var(--gold)); }
+.store-v2 .beg-track-note {
+  grid-column: 1 / -1; margin: 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 12px; letter-spacing: .04em; color: var(--muted);
+  text-align: center;
 }
-.store-v2 .beg-open[hidden] { display: none; }
-.store-v2 .beg-open.is-ash {
-  background: #201B16;
-  color: #E4D9C0;
-  box-shadow: 0 10px 40px rgba(0,0,0,.7), 0 0 0 1px rgba(180,101,63,.55);
-}
-@keyframes beg-unfold {
-  from { transform: scaleY(.15) translateY(-14%); opacity: 0; }
-  to { transform: none; opacity: 1; }
-}
-/* The panel is dropped onto light paper, so the type inside it has to invert. */
-.store-v2 .beg-open .beg-verdict,
-.store-v2 .beg-open .beg-head { color: inherit; }
-.store-v2 .beg-open .beg-eyebrow,
-.store-v2 .beg-open .beg-axis-name,
-.store-v2 .beg-open .beg-tally { color: color-mix(in srgb, currentColor 74%, transparent); }
-.store-v2 .beg-open .beg-refused { border-left-color: #b4653f; }
+.store-v2 .beg-track-note [data-reach] { color: var(--fg); }
 
 .store-v2 .beg-react {
   margin: 0;
   min-height: 1.6em;
   text-align: center;
   font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 20px; font-style: italic; font-weight: 500; line-height: 1.4;
-  color: var(--gold-bright, var(--gold));
+  font-size: clamp(17px, 4.6vw, 20px); font-style: italic; font-weight: 500; line-height: 1.4;
+  color: var(--gold);
   text-wrap: balance;
+  overflow-wrap: anywhere;
 }
 
 /* He reacts in the frame, too: a lift when you are quick, a dimming when you
    stall, and a flush of red when you have said something you should not have. */
 .store-v2 .beg-scene.is-hot { border-color: color-mix(in srgb, var(--gold) 55%, transparent); }
-.store-v2 .beg-scene.is-stalled + .beg-react { color: var(--muted); }
+.store-v2 .beg-scene.is-stalled ~ .beg-react { color: var(--muted); }
 .store-v2 .beg-scene.is-warned { border-color: #b4653f; }
-.store-v2 .beg-scene.is-warned + .beg-react { color: #d87a4f; }
-@media (prefers-reduced-motion: reduce) {
-  .store-v2 .beg-open { animation: none; }
-}
+.store-v2 .beg-scene.is-warned ~ .beg-react { color: #d87a4f; }
 
 .store-v2 .beg-label, .store-v2 .beg-note, .store-v2 .beg-fine, .store-v2 .beg-rules {
   margin: 0;
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
   font-size: 13px; line-height: 1.55;
   color: var(--muted);
+  overflow-wrap: anywhere;
 }
 .store-v2 .beg-fine { font-size: 12px; }
+.store-v2 .beg-rules a, .store-v2 .beg-fine a { color: var(--gold); text-decoration: underline; text-underline-offset: 2px; }
 
 .store-v2 .beg-input {
   width: 100%; min-width: 0; resize: vertical;
+  box-sizing: border-box;
   padding: 14px 16px;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: transparent;
   color: var(--fg);
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
-  font-size: 15px; line-height: 1.6;
+  font-size: 16px; line-height: 1.6;          /* 16px: iOS does not zoom the page */
 }
+.store-v2 .beg-input::placeholder { color: var(--muted); opacity: .8; }
 .store-v2 .beg-input:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 .store-v2 .beg-input:disabled { opacity: .6; }
 
-.store-v2 .beg-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
-
-.store-v2 .beg-start {
-  padding: 9px 22px;
-  border: 1px solid var(--gold); border-radius: 999px;
-  background: transparent; color: var(--gold);
-  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
-  font-size: 13px; letter-spacing: .1em; text-transform: uppercase;
-  cursor: pointer;
+.store-v2 .beg-actions {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; min-width: 0;
 }
-.store-v2 .beg-start:hover:not(:disabled) { background: var(--gold); color: var(--bg); }
+
+.store-v2 .beg-start, .store-v2 .beg-post {
+  min-height: 46px; padding: 10px 18px;
+  border-radius: 999px;
+  font-family: 'Josefin Sans', Futura, Avenir, sans-serif;
+  font-size: 12.5px; letter-spacing: .14em; text-transform: uppercase;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease, opacity 150ms ease;
+  min-width: 0; white-space: nowrap;
+}
+.store-v2 .beg-start {
+  border: 1px solid var(--gold);
+  background: transparent; color: var(--gold);
+}
+.store-v2 .beg-start:hover:not(:disabled) { background: var(--gold); color: var(--gold-ink, var(--bg)); }
 .store-v2 .beg-start:disabled { opacity: .45; cursor: default; }
 .store-v2 .beg-start:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
 /* Post it is the same control, lit, and only reachable once the letter is at
    the slot — so the disabled state is doing real work and has to look deliberate. */
 .store-v2 .beg-post {
-  padding: 11px 20px;
   border: 1px solid var(--gold);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--gold) 14%, transparent);
-  color: var(--gold-bright, var(--gold));
-  font-family: 'Josefin Sans', Futura, Avenir, sans-serif;
-  font-size: 12px; letter-spacing: .16em; text-transform: uppercase;
-  cursor: pointer;
+  background: var(--gold);
+  color: var(--gold-ink, #141210);
 }
-.store-v2 .beg-post:hover:not(:disabled) { background: var(--gold); color: var(--bg); }
-.store-v2 .beg-post:disabled { opacity: .32; cursor: default; }
+.store-v2 .beg-post:hover:not(:disabled) { background: var(--gold-bright, var(--gold)); }
+.store-v2 .beg-post:disabled { opacity: .3; cursor: default; }
 .store-v2 .beg-post:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+/* The answer: his reply on paper, or what is left once it has burnt. Its own
+   sheet under the street, full width, in its own colours. */
+.store-v2 .beg-answer {
+  padding: 18px;
+  border-radius: 10px;
+  min-width: 0;
+  animation: beg-unfold .45s cubic-bezier(.2,.8,.2,1) both;
+}
+.store-v2 .beg-answer[hidden] { display: none; }
+.store-v2 .beg-answer.is-paper {
+  background: #F4EEDF; color: #1E1810;
+  box-shadow: 0 10px 34px rgba(0,0,0,.35), 0 0 0 1px rgba(181,147,90,.55);
+}
+.store-v2 .beg-answer.is-ash {
+  background: #201B16; color: #E4D9C0;
+  box-shadow: 0 10px 34px rgba(0,0,0,.45), 0 0 0 1px rgba(180,101,63,.55);
+}
+@keyframes beg-unfold {
+  from { transform: scaleY(.15) translateY(-14%); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+/* The panel is on its own paper, so the type inside it follows the paper. */
+.store-v2 .beg-answer .beg-verdict,
+.store-v2 .beg-answer .beg-head { color: inherit; }
+.store-v2 .beg-answer .beg-eyebrow { color: #7a6030; }
+.store-v2 .beg-answer.is-ash .beg-eyebrow { color: #d9bd7b; }
+.store-v2 .beg-answer .beg-axis-name,
+.store-v2 .beg-answer .beg-axis-note,
+.store-v2 .beg-answer .beg-axis-weight,
+.store-v2 .beg-answer .beg-tally,
+.store-v2 .beg-answer .beg-fine,
+.store-v2 .beg-answer .beg-refuse-why { color: color-mix(in srgb, currentColor 78%, transparent); }
+.store-v2 .beg-answer .beg-axis-score { color: inherit; }
+.store-v2 .beg-answer .beg-axis-bar { background: color-mix(in srgb, currentColor 12%, transparent); border-color: transparent; }
+.store-v2 .beg-answer .beg-axis-bar i { background: #7a6030; }
+.store-v2 .beg-answer.is-ash .beg-axis-bar i { background: #d9bd7b; }
+.store-v2 .beg-answer .beg-code code { color: #7a6030; border-color: #7a6030; font-size: clamp(14px, 4.2vw, 17px); }
+.store-v2 .beg-answer .beg-tally b { color: inherit; font-weight: 600; }
+.store-v2 .beg-answer .beg-refused { border-left-color: #b4653f; background: transparent; padding-left: 12px; }
+@media (prefers-reduced-motion: reduce) {
+  .store-v2 .beg-answer { animation: none; }
+  .store-v2 .beg-track i, .store-v2 .beg-track em { transition: none; }
+}
+
+@media (max-width: 480px) {
+  .store-v2 .beg-scene { aspect-ratio: 16 / 9; }
+  .store-v2 .beg-meter { padding: 10px 10px 10px; gap: 6px 8px; }
+  .store-v2 .beg-answer { padding: 14px; }
+}
 
 /* ── The cart panel it now lives in ─────────────────────────────────────── */
 .store-v2 .beg-host { margin: 18px 0 0; min-width: 0; }
@@ -2524,7 +2600,7 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
 
 .store-v2 .beg-code { margin: 0; }
 .store-v2 .beg-code code {
-  display: inline-block; padding: 8px 14px;
+  display: inline-block; padding: 8px 14px; max-width: 100%; box-sizing: border-box; overflow-wrap: anywhere;
   border: 1px dashed var(--gold); border-radius: 8px;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 15px; letter-spacing: .08em; color: var(--gold);

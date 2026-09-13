@@ -93,29 +93,39 @@ export function reactionFor(state, notice) {
 export function mountBeg(host, opts = {}) {
   const maxPct = opts.rewardPercentMax || 10;
 
+  // The instrument reads top to bottom: the street, then the three numbers on
+  // their own strip (page colours, so they are legible in both themes — they
+  // used to sit on the night sky in the page's text colour, which in light mode
+  // is near-black on near-black), then his line, then the paper. The answer
+  // arrives BELOW the street on its own sheet, never crammed inside a canvas
+  // that is 160px tall on a phone.
   host.innerHTML = `
     <div class="beg">
       <div class="beg-scene">
         <canvas class="beg-canvas" data-scene
-          aria-label="Your letter crossing the street to the postbox."></canvas>
-        <div class="beg-hud" aria-hidden="true">
-          <span><b data-clock>60.0</b> left</span>
-          <span><b data-wpm>0</b> wpm</span>
-          <span><b data-words>0</b> words</span>
-          <span class="beg-hud-reach"><b data-reach>0%</b> across</span>
+          aria-label="Your letter crossing a windy street to the postbox."></canvas>
+      </div>
+      <div class="beg-meter" aria-live="off">
+        <div class="beg-stat"><b data-clock>60</b><span>seconds</span></div>
+        <div class="beg-stat"><b data-words>0</b><span>words</span></div>
+        <div class="beg-stat"><b data-wpm>0</b><span>wpm</span></div>
+        <div class="beg-track" role="progressbar" aria-label="How far across the street the letter is"
+             aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-track>
+          <i data-fill></i><em data-marker>&#9993;</em>
         </div>
-        <div class="beg-open" data-open hidden></div>
+        <p class="beg-track-note"><span data-reach>0%</span> of the way across &middot; <span data-wind>still air</span></p>
       </div>
       <p class="beg-react" data-react>He is across the street, and he has not looked over.</p>
-      <label class="beg-label" for="beg-input">Write your case. Every letter you type carries it further across.</label>
+      <label class="beg-label" for="beg-input">Write your case. Every key you press carries the letter further across.</label>
       <textarea id="beg-input" class="beg-input" rows="4" spellcheck="false"
-        autocomplete="off" autocorrect="off" autocapitalize="off"
-        placeholder="Sixty seconds. Say why, and say it in your own words."></textarea>
+        autocomplete="off" autocorrect="off" autocapitalize="sentences" enterkeyhint="done"
+        placeholder="Sixty seconds. Say why, and say it in your own words." disabled></textarea>
       <div class="beg-actions">
         <button type="button" class="beg-start">Start writing</button>
         <button type="button" class="beg-post" disabled>Post it</button>
-        <p class="beg-note" role="status" aria-live="polite">Up to ${maxPct}% &mdash; the case you make, whether he has heard it before, whether it reads like a person, and how long you keep him standing. Most people get three or four.</p>
       </div>
+      <p class="beg-note" role="status" aria-live="polite">Up to ${maxPct}% &mdash; the case you make, whether he has heard it before, whether it reads like a person, and how long you keep him standing. Most people get three or four.</p>
+      <div class="beg-answer" data-answer hidden></div>
     </div>`;
 
   const $ = (sel) => host.querySelector(sel);
@@ -124,8 +134,9 @@ export function mountBeg(host, opts = {}) {
   const postBtn = $(".beg-post");
   const note = $(".beg-note");
   const clockEl = $("[data-clock]"), wpmEl = $("[data-wpm]"), wordsEl = $("[data-words]");
-  const reachEl = $("[data-reach]"), reactEl = $("[data-react]");
-  const openEl = $("[data-open]");
+  const reachEl = $("[data-reach]"), reactEl = $("[data-react]"), windEl = $("[data-wind]");
+  const trackEl = $("[data-track]"), fillEl = $("[data-fill]"), markerEl = $("[data-marker]");
+  const answerEl = $("[data-answer]");
   const scene = letterScene($("[data-scene]"));
   const stage = $(".beg-scene");
 
@@ -147,6 +158,18 @@ export function mountBeg(host, opts = {}) {
     return Math.round((stamps.length / 5) / (span / 60000));
   }
 
+  /**
+   * The wind, 0…1. It is the thing working against you, and it is made of the two
+   * things that actually cost you the letter: stopping, and the minute running out.
+   * It is drawn on the street, named under the meter, and it pushes the letter back.
+   */
+  function windNow(left, idleMs) {
+    const stalled = running ? Math.min(1, Math.max(0, (idleMs - 1200) / 3500)) : 0;
+    const late = left < 20000 ? (20000 - left) / 20000 : 0;
+    return Math.min(1, stalled * 0.75 + late * 0.65);
+  }
+  const windWord = (w) => w < 0.12 ? "still air" : w < 0.4 ? "a breeze" : w < 0.7 ? "wind picking up" : "a gale";
+
   /** Fire at most one new reaction per frame, so they do not stack up unread. */
   function checkTells(text) {
     for (const tell of TELLS) {
@@ -161,11 +184,19 @@ export function mountBeg(host, opts = {}) {
 
   function paint(reach, wpm, words, left, idleMs) {
     const pct = Math.round(reach * 100);
-    clockEl.textContent = (left / 1000).toFixed(1);
+    const wind = windNow(left, idleMs);
+    clockEl.textContent = String(Math.ceil(left / 1000));
+    clockEl.parentElement.classList.toggle("is-low", left < 10000 && running);
     wpmEl.textContent = String(wpm);
     wordsEl.textContent = String(words);
     reachEl.textContent = `${pct}%`;
+    windEl.textContent = windWord(wind);
+    fillEl.style.width = `${pct}%`;
+    markerEl.style.left = `${pct}%`;
+    trackEl.setAttribute("aria-valuenow", String(pct));
+    trackEl.classList.toggle("is-there", reach >= 1);
     scene.reach = reach;
+    scene.wind = wind;
     stage.classList.toggle("is-hot", wpm >= 45);
     stage.classList.toggle("is-stalled", idleMs > 2000 && running);
     // The letter is at the slot: it is now the player's call when to post.
@@ -180,11 +211,19 @@ export function mountBeg(host, opts = {}) {
     const idleMs = lastKey ? now - lastKey : elapsed;
     checkTells(input.value);
     paint(reachNow(), wpmNow(now), wordCount(), left, idleMs);
-    // Reaching the slot no longer ends the run. It unlocks the button, and the
+    // Reaching the slot does not end the run. It unlocks the button, and the
     // player decides when to post — keep writing to make the case better, at the
     // cost of the one axis that counts how long he was kept standing.
     if (left <= 0) return finish(WINDOW_MS, reachNow() >= 1);
     raf = requestAnimationFrame(frame);
+  }
+
+  function showAnswer(html, kind) {
+    answerEl.innerHTML = html;
+    answerEl.className = `beg-answer is-${kind}`;
+    answerEl.hidden = false;
+    // On a phone the sheet lands below the fold; bring it up without yanking the page.
+    try { answerEl.scrollIntoView({ block: "nearest", behavior: "smooth" }); } catch (_) {}
   }
 
   function finish(durationMs, reached) {
@@ -195,16 +234,19 @@ export function mountBeg(host, opts = {}) {
     startBtn.disabled = false;
     startBtn.textContent = "Beg again";
     stage.classList.remove("is-hot", "is-stalled");
-
     postBtn.disabled = true;
 
     if (!reached) {
+      scene.wind = 1;
+      windEl.textContent = "gone with the wind";
       scene.blowAway();
       reactEl.textContent = "The wind took it. It never crossed.";
-      note.textContent = `It got ${Math.round(reachNow() * 100)}% of the way over. He never saw it.`;
+      note.textContent = `It got ${Math.round(reachNow() * 100)}% of the way over. He never saw it. Nothing is charged, nothing is lost — beg again.`;
       return;
     }
     scene.post();
+    scene.wind = 0;
+    windEl.textContent = "posted";
     reactEl.textContent = "Posted. He is reading it.";
     note.textContent = "In the box. He is reading it…";
     opts.onWin?.({
@@ -217,22 +259,10 @@ export function mountBeg(host, opts = {}) {
       swipes
     }, {
       say: (msg) => { note.textContent = msg; },
-      /** Refused: the letter comes back out of the slot and burns. */
-      burn: (html) => scene.burn(() => {
-        openEl.innerHTML = html;
-        openEl.hidden = false;
-        openEl.classList.add("is-ash");
-      }),
-      /** Accepted: it comes back out and opens, with the answer written inside.
-          `after` receives the opened panel — the caller must not go looking for
-          its own elements with a page-wide query, because the running game has
-          a clock of its own sitting right above it. */
-      open: (html, after) => scene.deliver(() => {
-        openEl.innerHTML = html;
-        openEl.hidden = false;
-        openEl.classList.remove("is-ash");
-        after?.(openEl);
-      }),
+      /** Refused: the letter comes back out of the slot and burns; the reason lands below. */
+      burn: (html) => scene.burn(() => showAnswer(html, "ash")),
+      /** Accepted: it comes back out and opens; what he granted lands below on paper. */
+      open: (html, after) => scene.deliver(() => { showAnswer(html, "paper"); after?.(answerEl); }),
       replace: (html) => { host.innerHTML = html; }
     });
   }
@@ -240,16 +270,18 @@ export function mountBeg(host, opts = {}) {
   function start() {
     finished = false; keystrokes = 0; gaps = []; stamps = []; lastKey = 0;
     pasted = false; dropped = false; swipes = 0; seen = new Set(); notice = null;
-    input.value = ""; input.disabled = false; input.focus();
+    input.value = ""; input.disabled = false;
     startBtn.disabled = true;
     postBtn.disabled = true;
-    openEl.hidden = true; openEl.innerHTML = "";
+    answerEl.hidden = true; answerEl.innerHTML = "";
     scene.reset();
     stage.classList.remove("is-warned");
     note.textContent = "Go.";
     running = true; startedAt = performance.now();
     paint(0, 0, 0, WINDOW_MS, 0);
     raf = requestAnimationFrame(frame);
+    // Focus after the frame so the phone keyboard opens on the field, not the page.
+    requestAnimationFrame(() => { input.focus({ preventScroll: false }); });
   }
 
   /* ── counting keystrokes ────────────────────────────────────────────────
@@ -284,7 +316,7 @@ export function mountBeg(host, opts = {}) {
     pasted = true;
     notice = { line: "He watched you paste that into the envelope.", at: Date.now() };
     stage.classList.add("is-warned");
-    note.textContent = "Pasting is not begging, and it now costs you.";
+    note.textContent = "Pasting is not begging. It locks your discounts; it never changes your price.";
   }
 
   if (HAS_BEFOREINPUT) {

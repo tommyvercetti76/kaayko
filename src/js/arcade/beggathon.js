@@ -42,16 +42,16 @@ function statsMarkup(res) {
     <p class="beg-verdict">${esc(res.verdict || "")}</p>
     <ul class="beg-axes">${rows}</ul>
     <p class="beg-tally">${res.words} words in ${res.seconds} seconds, which he weighed at
-      <b>${res.forgiven ? `+${res.percent}% still owed` : `${res.percent}% off everything in the bag`}</b>.</p>`;
+      <b>${res.forgiven ? `${res.percent} more accepted ${res.percent === 1 ? "plea" : "pleas"} to unlock` : `${res.percent}% off the bag`}</b>.</p>`;
 }
 
 const refusalMarkup = (res) => `
   <div class="beg-refused${res.penalty ? " is-charged" : ""}">
-    <p class="beg-verdict">${res.penalty ? "He charged you for that." : "He turned away."}</p>
+    <p class="beg-verdict">${res.penalty ? "He saw that." : "He turned away."}</p>
     <p class="beg-refuse-why">${esc(res.message || "That was not a plea.")}</p>
     <p class="beg-fine">${
       res.penalty
-        ? `Now carrying +${res.penalty.surchargePercent}% of ${res.penalty.max}%. Beg it back down.`
+        ? `Discounts are locked on this browser. ${res.penalty.surchargePercent} accepted ${res.penalty.surchargePercent === 1 ? "plea unlocks" : "pleas unlock"} them. Your price is unchanged.`
         : res.attemptsLeft > 0
           ? `Refused at gate ${res.gate}. ${res.attemptsLeft} more ${res.attemptsLeft === 1 ? "attempt" : "attempts"}.`
           : "No more attempts."}</p>
@@ -61,7 +61,7 @@ const refusalMarkup = (res) => `
  * Mount the Beggathon into the cart.
  *
  * @param {HTMLElement} host
- * @param {{onWin?:(reward:{code:string,percent:number})=>void}} opts
+ * @param {{onWin?:(reward:{code:string,percent:number})=>void, bare?:boolean, productId?:string}} opts
  */
 export async function mountBeggathon(host, opts = {}) {
   if (!host) return;
@@ -103,9 +103,11 @@ export async function mountBeggathon(host, opts = {}) {
     if (started) return;
     started = true;
 
-    const ch = await api("/arcade/beg/start", {});
+    const ch = await api("/arcade/beg/start", opts.productId ? { productId: opts.productId } : {});
     if (!ch?.success) {
-      body.innerHTML = `<p class="beg-fine">He is not taking callers right now. Try again in a moment.</p>`;
+      body.innerHTML = ch?.code === "GAMES_OFF"
+        ? `<p class="beg-fine">The seller of this piece does not run the game.</p>`
+        : `<p class="beg-fine">He is not taking callers right now. Try again in a moment.</p>`;
       started = false;
       return;
     }
@@ -114,16 +116,17 @@ export async function mountBeggathon(host, opts = {}) {
     const ttl = ch.rewardExpiresInMinutes ?? 60;
     const atoning = ch.mode === "atonement";
     body.innerHTML = `
-      ${atoning ? `<p class="beg-penalty">You are carrying <b>+${ch.surchargePercent}%</b> on this order for
-        pasting. A plea he accepts takes one percent off that and nothing more — there is no
-        discount at the end of this, only the ordinary price. No other game in the shop pays out
-        until it is gone.</p>` : ""}
+      ${atoning ? `<p class="beg-penalty">Discounts are <b>locked</b> on this browser for pasting. Your price
+        has not changed and never will. ${ch.surchargePercent} accepted ${ch.surchargePercent === 1 ? "plea unlocks" : "pleas unlock"}
+        them; there is no discount at the end of this one.</p>` : ""}
       <p class="beg-rules">Write to him, and type it: every key you press carries the letter
         a little further across the street. Reach the postbox inside the minute and you may post it.
         He wants a real reason, about something in particular, in words he has not read before, and
         he does not like being kept waiting. Swearing, mashing, looping and pasting all end with the
         letter burnt. Most people get three or four percent.
-        ${atoning ? "" : `What he grants lasts ${ttl} minutes, used or not.`}</p>
+        ${atoning ? "" : `What he grants lasts ${ttl} minutes, used or not.`}
+        It is a game of skill, not chance, and losing never costs you anything &mdash; the
+        <a href="/legal/games">rules</a> are short.</p>
       <div class="beg-slot"></div>`;
 
     const { mountBeg } = await import("./beg.js");
