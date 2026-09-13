@@ -12,7 +12,10 @@ plain paste sits on top of the fabric and looks like a sticker.
   python3 tote_gallery.py art.png --out /path/dir --frames hanging_front shoulder_a carry
   python3 tote_gallery.py /folder/of/*.transparent.png --out /gallery   # one subfolder each
   python3 tote_gallery.py --sheet /gallery                     # contact sheet of everything
-  python3 tote_gallery.py art.png --fabric natural             # on unbleached cotton, not white
+
+The blank's colour is the photograph's colour. Tinting a white bag in software was
+tried and removed: it never survives the straps and the folds. To sell natural cotton,
+photograph a natural blank in these six poses and drop the files into templates/tote/.
 
 Output per drawing: <out>/<slug>/<n>_<template>.png at template resolution, plus
 <slug>/preview.png (1600px) of the first frame. Feed <out>/<slug>/ to store_upload.py.
@@ -26,12 +29,6 @@ HERE = Path(__file__).resolve().parent
 TDIR = HERE / "templates" / "tote"
 PRINT_SCALE = 0.96      # how much of the panel the drawing may fill
 INK = 0.96              # ink opacity: a little fabric shows through even solid colour
-FABRICS = {             # blank canvas colours the trade actually sells
-    "white":   None,
-    "natural": (239, 227, 200),   # unbleached cotton, the most common blank
-    "cream":   (245, 239, 227),
-    "oat":     (226, 214, 190),
-}
 
 
 def load_manifest():
@@ -74,34 +71,8 @@ def trim(im: Image.Image) -> Image.Image:
     return im.crop(bbox) if bbox else im
 
 
-def bag_mask(canvas: Image.Image, tpl: dict) -> Image.Image:
-    """Where the blank canvas is. The photographs put a white bag on a wall of almost
-    the same brightness, so no threshold alone can find it; placements.json carries
-    hand-drawn polygons for the bag and its straps, and inside them a pixel is canvas
-    when it is neutral (grey, not khaki sleeve or blue jeans) and not dark."""
-    import numpy as np
-    from PIL import ImageDraw
-    W, H = canvas.size
-    a = np.asarray(canvas).astype(np.int16)
-    mn, mx = a.min(axis=2), a.max(axis=2)
-    neutral = ((mx - mn) < 18) & (mn > 150)
-    region = Image.new("L", (W, H), 0); d = ImageDraw.Draw(region)
-    for pg in tpl.get("fabric_polys", []):
-        d.polygon([(x * W, y * H) for x, y in pg], fill=255)
-    m = (np.asarray(region) > 0) & neutral
-    return Image.fromarray((m * 255).astype(np.uint8)).filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(1.5))
-
-
-def dye(canvas: Image.Image, tpl: dict, rgb: tuple) -> Image.Image:
-    """Multiply the fabric colour into the bag only: weave, folds and shadows survive."""
-    tint = Image.new("RGB", canvas.size, rgb)
-    return Image.composite(ImageChops.multiply(canvas, tint), canvas, bag_mask(canvas, tpl))
-
-
-def compose(art: Image.Image, tpl: dict, fabric=None) -> Image.Image:
+def compose(art: Image.Image, tpl: dict) -> Image.Image:
     canvas = Image.open(TDIR / tpl["file"]).convert("RGB")
-    if fabric:
-        canvas = dye(canvas, tpl, fabric)
     W, H = canvas.size
     b = tpl["box"]
     bx, by, bw, bh = int(b["x"] * W), int(b["y"] * H), int(b["w"] * W), int(b["h"] * H)
@@ -130,20 +101,14 @@ def slug_of(p: Path) -> str:
     return s.replace("_4096", "").replace(" ", "_").lower()
 
 
-def parse_fabric(v):
-    if not v or v in ("white",): return None
-    if v in FABRICS: return FABRICS[v]
-    v = v.lstrip("#"); return tuple(int(v[i:i + 2], 16) for i in (0, 2, 4))
-
-
-def render(art_path: Path, out_root: Path, frames: list[str], fabric=None) -> Path:
+def render(art_path: Path, out_root: Path, frames: list[str]) -> Path:
     templates, default = load_manifest()
     frames = frames or default or list(templates)
     art = Image.open(art_path)
     d = out_root / slug_of(art_path); d.mkdir(parents=True, exist_ok=True)
     first = None
     for n, fid in enumerate(frames):
-        out = compose(art, templates[fid], fabric)
+        out = compose(art, templates[fid])
         out.save(d / f"{n}_{fid}.png", optimize=True)
         if first is None:
             first = out.copy(); first.thumbnail((1600, 1600)); first.save(d / "preview.png")
@@ -171,7 +136,6 @@ def main():
     ap.add_argument("--frames", nargs="*", help="template ids, in order (default: placements.json default_frames)")
     ap.add_argument("--all", action="store_true", help="every template, not just the default three")
     ap.add_argument("--sheet", help="build a contact sheet of an output root and exit")
-    ap.add_argument("--fabric", default="white", help="white | natural | cream | oat | #rrggbb — the blank's colour")
     a = ap.parse_args()
     if a.sheet:
         print(sheet(Path(a.sheet))); return 0
@@ -181,7 +145,7 @@ def main():
     frames = list(templates) if a.all else a.frames
     for p in paths:
         out_root = Path(a.out) if a.out else p.parent
-        render(p, out_root, frames, parse_fabric(a.fabric))
+        render(p, out_root, frames)
     return 0
 
 
