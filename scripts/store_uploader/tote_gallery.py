@@ -90,7 +90,14 @@ def bag_mask(natural_template: Image.Image) -> np.ndarray:
     sizes = np.bincount(lab.ravel()); sizes[0] = 0
     keep = lab == sizes.argmax()
     keep_full = np.asarray(Image.fromarray((keep * 255).astype(np.uint8)).resize(m.size, Image.NEAREST)) > 0
-    return arr & keep_full
+    out = arr & keep_full
+    # fill holes: stitching, seams and deep fold shadows fail the colour gate but are
+    # still bag. Anything not reachable from the image border is inside the bag.
+    f = Image.fromarray((out * 255).astype(np.uint8)).convert("RGB")
+    for pt in ((0, 0), (f.width - 1, 0), (0, f.height - 1), (f.width - 1, f.height - 1)):
+        ImageDraw.floodfill(f, pt, (255, 0, 255), thresh=10)
+    fa = np.asarray(f); outside = (fa[..., 0] > 200) & (fa[..., 1] < 60) & (fa[..., 2] > 200)
+    return ~outside
 
 
 def _label(binary: np.ndarray) -> np.ndarray:
@@ -200,9 +207,17 @@ def trim(im: Image.Image) -> Image.Image:
 
 
 # ── compose ────────────────────────────────────────────────────────────────────
+PANEL_OVERRIDE = None   # --panel 0.85: span more of the bag (a parcel of stamps, an all-over print)
+PAPER = False           # --paper: the art is an opaque object stuck ON the bag (stamps, labels), not ink IN it
+
+
 def compose(art: Image.Image, view: str, set_name: str, geo: dict) -> Image.Image:
     canvas = Image.open(SETS[set_name] / f"{view}.png").convert("RGB")
     g = geo["views"][view]; p, body = dict(g["panel"]), dict(g["body"])
+    if PANEL_OVERRIDE:
+        bw_, bh_ = body["right"] - body["left"], body["bottom"] - body["top"]
+        w_, h_ = int(bw_ * PANEL_OVERRIDE), int(bh_ * PANEL_OVERRIDE * 0.92)
+        p = {"x": body["left"] + (bw_ - w_) // 2, "y": body["top"] + int(bh_ * 0.06) + (int(bh_ * 0.88) - h_) // 2, "w": w_, "h": h_}
     k = 1
     a = trim(key_background(art))
     # fit to panel width; fall back to height for tall drawings
@@ -224,6 +239,16 @@ def compose(art: Image.Image, view: str, set_name: str, geo: dict) -> Image.Imag
         raise RuntimeError(f"{view}: drawing would leave the bag — not written")
 
     a = bend_to_fabric(a, canvas, px, py, strength=7.0 * k)
+    if PAPER:
+        # opaque paper on cloth: composite straight, keep the fold bend, add the cloth's
+        # own shading over it faintly so it sits in the light of the photograph
+        out = canvas.convert("RGBA")
+        out.alpha_composite(a, (px, py))
+        lum = canvas.convert("L").filter(ImageFilter.GaussianBlur(6 * k))
+        shade = Image.merge("RGB", (lum, lum, lum)).point(lambda v: 200 + v * 55 // 255)
+        shaded = ImageChops.multiply(out.convert("RGB"), shade)
+        m = Image.new("L", canvas.size, 0); m.paste(a.split()[-1], (px, py))
+        return Image.composite(shaded, canvas, m)
     layer = Image.new("RGB", canvas.size, (255, 255, 255))
     layer.paste(a.convert("RGB"), (px, py), a.split()[-1])
     mult = ImageChops.multiply(canvas, layer)
@@ -280,7 +305,20 @@ def render(art_path: Path, out_root: Path, frames: list[str], set_name: str, geo
         try:
             out = compose(art, v, set_name, geo)
         except RuntimeError as e:
-            FAILED.append(f"{d.name}: {e}"); print(f"  !! {d.name}: {e}"); continue
+            # a wide print that will not clear this view's bag margin: step the span down
+            # for THIS view only, never below the standard panel, and say so
+            global PANEL_OVERRIDE
+            if PANEL_OVERRIDE:
+                asked, out = PANEL_OVERRIDE, None
+                for frac in [round(asked - 0.04 * i, 2) for i in range(1, 8)]:
+                    if frac < 0.60: break
+                    PANEL_OVERRIDE = frac
+                    try: out = compose(art, v, set_name, geo); print(f"  {d.name}/{v}: span reduced {asked} → {frac} to stay on the bag"); break
+                    except RuntimeError: continue
+                PANEL_OVERRIDE = asked
+                if out is None: FAILED.append(f"{d.name}: {e}"); print(f"  !! {d.name}: {e}"); continue
+            else:
+                FAILED.append(f"{d.name}: {e}"); print(f"  !! {d.name}: {e}"); continue
         out.save(d / f"{n}_{v.split('_', 1)[1]}.png", optimize=True)
         print(f"  {d.name}/{n}_{v.split('_', 1)[1]}.png {out.size}")
     return d
@@ -310,7 +348,10 @@ def main():
     ap.add_argument("--build-templates", nargs=2, metavar=("WHITE_SHEET", "NATURAL_SHEET"))
     ap.add_argument("--calibrate", action="store_true")
     ap.add_argument("--sheet")
+    ap.add_argument("--panel", type=float, help="fraction of the bag body the print may span (default 0.60)")
+    ap.add_argument("--paper", action="store_true", help="opaque paper stuck on the bag (stamps, labels) rather than ink in the weave")
     a = ap.parse_args()
+    global PANEL_OVERRIDE, PAPER; PANEL_OVERRIDE = a.panel; PAPER = a.paper
     if a.build_templates:
         build_templates(Path(a.build_templates[0]), Path(a.build_templates[1])); return 0
     if a.calibrate:

@@ -46,11 +46,44 @@ def overlap(a, b) -> float:
 
 
 STYLE = {"neat": {"tilt": 14, "overlap": 0.20, "ring": 0.05, "size": 1.0},
-         "lazy": {"tilt": 28, "overlap": 0.45, "ring": 0.18, "size": 1.25}}   # lazy: bigger stamps, a tight pile
+         "lazy": {"tilt": 28, "overlap": 0.45, "ring": 0.18, "size": 1.25},    # a tight pile
+         "scatter": {"tilt": 22, "overlap": 0.0, "ring": 0.0, "size": 1.0}}    # stuck across the face like stamps on a parcel
 STYLE_NAME = "neat"
 
 
+def compose_scatter(stamps: list[Path], rng: random.Random):
+    """Stamps stuck across the whole face, one here, one there: a jittered grid over the
+    canvas, no two touching, each at its own tilt and size, like a parcel that has been
+    through several post offices."""
+    n = len(stamps)
+    canvas = Image.new("RGBA", (CANVAS, CANVAS), (0, 0, 0, 0))
+    cols = 2 if n <= 4 else 3
+    rows = (n + cols - 1) // cols
+    cw, ch = CANVAS / cols, CANVAS / rows
+    cells = [(c, r) for r in range(rows) for c in range(cols)]
+    rng.shuffle(cells)
+    placed, boxes = [], []
+    for p, (c, r) in zip(stamps, cells):
+        im = Image.open(p).convert("RGBA")
+        w = int(min(cw, ch) * rng.uniform(0.74, 0.90)); h = int(im.height * w / im.width)
+        if h > ch * 0.92: h = int(ch * 0.92); w = int(im.width * h / im.height)
+        im = im.resize((w, h), Image.LANCZOS)
+        tilt = rng.uniform(-22, 22)
+        im = shadow(im, k=max(6, w // 140)).rotate(tilt, resample=Image.BICUBIC, expand=True)
+        for _ in range(200):
+            x = int(c * cw + rng.uniform(0, max(1, cw - im.width))); y = int(r * ch + rng.uniform(0, max(1, ch - im.height)))
+            box = (x, y, x + im.width, y + im.height)
+            if all(overlap(box, b) == 0.0 for b in boxes): break
+        canvas.alpha_composite(im, (x, y)); boxes.append(box)
+        placed.append({"stamp": (p.parent.name if p.name == "hd.transparent.png" else p.stem), "width": w, "tilt": round(tilt, 1), "x": x, "y": y})
+    bbox = canvas.split()[-1].getbbox(); m = 30
+    canvas = canvas.crop((max(0, bbox[0] - m), max(0, bbox[1] - m), min(CANVAS, bbox[2] + m), min(CANVAS, bbox[3] + m)))
+    return canvas, placed
+
+
 def compose(stamps: list[Path], rng: random.Random):
+    if STYLE_NAME == "scatter":
+        return compose_scatter(stamps, rng)
     """Stamps dropped on a table: varied size and tilt, a corner may touch or slightly
     overlap a neighbour (never more than a fifth of the smaller one), every stamp
     fully readable, the pile spread across the whole print panel."""
@@ -90,6 +123,7 @@ def main():
     ap.add_argument("--set", default="natural"); ap.add_argument("--no-render", action="store_true")
     ap.add_argument("--style", choices=list(STYLE), default="neat", help="neat: a tidy pile; lazy: stuck like luggage labels, tilted and overlapping")
     ap.add_argument("--sizes", nargs="*", type=int, help="stamps per design, e.g. --sizes 5")
+    ap.add_argument("--panel", type=float, help="how much of the bag the print spans (passed to tote_gallery)")
     a = ap.parse_args()
     global STYLE_NAME; STYLE_NAME = a.style
     out = Path(a.out)
@@ -108,7 +142,10 @@ def main():
         manifest.append({"design": dp.name, "style": STYLE_NAME, "stamps": placed})
         print(f"design_{i:02d}: {n} stamps — {', '.join(x['stamp'] for x in placed)}")
         if not a.no_render:
-            subprocess.run([sys.executable, str(HERE / "tote_gallery.py"), str(dp), "--set", a.set, "--out", str(out / "totes")], check=False)
+            cmd = [sys.executable, str(HERE / "tote_gallery.py"), str(dp), "--set", a.set, "--out", str(out / "totes")]
+            if a.panel: cmd += ["--panel", str(a.panel)]
+            cmd += ["--paper"]      # stamps are paper stuck on the bag, not ink
+            subprocess.run(cmd, check=False)
     (out / "manifest.json").write_text(json.dumps(manifest, indent=1))
     return 0
 
