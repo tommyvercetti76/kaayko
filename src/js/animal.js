@@ -226,9 +226,11 @@ function bindVariantActions(animal, products, openModalFn) {
 }
 
 export async function animalPageInit(slug, { openModal }) {
+  // Since 13 Sep 2026 there is ONE product page. This route only forwards an old
+  // link or a printed QR code to the piece it was about; nothing is rendered here.
+  void openModal;
   const root = document.getElementById('animal-root');
   if (!root || !slug) { renderNotFound(root, slug || ''); return; }
-
   let payload;
   try {
     payload = await getAnimal(slug);
@@ -237,21 +239,7 @@ export async function animalPageInit(slug, { openModal }) {
     console.error('animal fetch failed:', err);
     return renderError(root);
   }
-
-  const animal = payload.animal;
-  // Registry order (totes before magnets; unknown types last).
   const products = (payload.products || []).slice().sort((a, b) => typeRank(a.productType) - typeRank(b.productType));
-
-  document.title = `${animal.name} · Kaayko`;
-  const desc = document.querySelector('meta[name="description"]');
-  if (desc) desc.setAttribute('content', `${animal.name}${animal.scientificName ? ` — ${animal.scientificName}` : ''}. Drawn by hand, printed to order at Kaayko.`);
-
-  // Hero (image + identity + stats) and Story (bio + variants) sit side by side,
-  // separated by a vertical hairline. Variants live inside the Story column.
-  root.innerHTML = `
-    ${renderHero(animal, products)}
-    <div class="an-body">
-      ${renderStory(animal, products)}
-    </div>`;
-  bindVariantActions(animal, products, openModal);
+  if (!products[0]?.id) return renderNotFound(root, slug);
+  location.replace(`/store/p/${encodeURIComponent(products[0].id)}`);
 }

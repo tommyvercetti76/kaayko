@@ -16,7 +16,7 @@ import { esc } from "/js/kit.js";
 /** Same PDP routing the grid uses — animal SKUs get the animal page. */
 function pdpUrl(p) {
   return p.animalSlug
-    ? `/animals/${encodeURIComponent(p.animalSlug)}`
+    ? `/store/p/${encodeURIComponent(p.id)}`
     : `/store/p/${encodeURIComponent(p.id)}`;
 }
 

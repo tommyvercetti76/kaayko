@@ -616,13 +616,11 @@ function createCarouselItem(item) {
     imgContainer.append(indicator);
   }
 
-  // Title becomes a link to the PDP. Animal SKUs → /animals/<slug>; legacy → /store/p/<docId>.
-  // NOTE: /store/p/:id resolves the Firestore DOC id (exposed as item.id) — the
-  // same identifier the cart/checkout uses. `item.productID` is a legacy label
-  // and 404s on the PDP route.
-  const pdpUrl = item.animalSlug
-    ? `/animals/${encodeURIComponent(item.animalSlug)}`
-    : (item.id ? `/store/p/${encodeURIComponent(item.id)}` : null);
+  // Title becomes a link to THE product page — one page, one layout, every type.
+  // Animal pieces used to route to /animals/<slug>, a second layout with its own
+  // headings; that page now forwards here. /store/p/:id resolves the Firestore
+  // DOC id (item.id), the same identifier the cart uses.
+  const pdpUrl = item.id ? `/store/p/${encodeURIComponent(item.id)}` : null;
 
   // The card says the name and one line under it; the paragraph belongs on the
   // product page. "Bengal Tiger Bottle" + a two-line description that truncated

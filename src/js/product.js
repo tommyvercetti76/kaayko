@@ -1,5 +1,5 @@
 /**
- * Product detail page for SKUs without an animal page.
+ * THE product page — every type, one layout. (/animals/<slug> forwards here.)
  *
  * Three things live here and nowhere else on this route:
  *   - the gallery (main image + thumbs, click to zoom)
@@ -84,7 +84,7 @@ function renderProduct(product, openModalFn) {
       </div>
 
       <aside class="pdp-file" data-voice="${esc(copy.voice)}">
-        <h2 class="pdp-file-head">${copy.voice === "field" ? "Field note" : "The file"}</h2>
+        <h2 class="pdp-file-head">About this piece</h2>
         <p class="pdp-story">${esc(copy.story)}</p>
         <dl class="pdp-rows">${rows}</dl>
         ${copy.atRisk ? `<p class="pdp-flag">On the IUCN Red List. We draw them while they are still here.</p>` : ""}
