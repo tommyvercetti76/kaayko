@@ -100,3 +100,12 @@ view, and a drawing is fitted to it, so every product prints at the same visual 
 A frame whose print would leave the bag is refused. Templates are 2× Lanczos, never
 AI-upscaled (that turned the canvas to plastic). `templates/tote/calibration.png` shows
 the measured boxes. Feed `<out>/<slug>/` to `store_upload.py`.
+
+## Restamp (13 Sep 2026)
+
+`restamp.py` re-perforates a scanned stamp cleanly: it reads the tooth pitch and depth
+from the scan's own alpha edge, crops the body inside the old teeth, samples the paper
+colour and grain from the stamp's own margin, lays a fresh band of that paper, and
+punches a perforation at the original pitch with a hole on every corner. Input is
+Forge's `*stamp_x4.png` (cut-to-perforation, x4); output `<slug>.restamped.png` is
+transparent and print-ready for stickers or bottle art, plus an audit JSON per stamp.
