@@ -603,13 +603,8 @@ function createCarouselItem(item) {
 
   const heartButton = createLikeButton(item);
   const imgContainer = buildImageContainer(item, heartButton);
-  if (item.featured === true) {
-    // Bottom-left of the image: the votes pill, NEW badge and heart already own the top row.
-    const badge = document.createElement("span");
-    badge.className = "featured-flag";
-    badge.textContent = "Featured";
-    imgContainer.append(badge);
-  }
+  // "Featured" is a sort order, not a sticker: the image carries the heart and
+  // nothing else (and "Sold out", when it is true, because that changes the price).
   if (isSoldOut(item)) {
     const flag = document.createElement("span");
     flag.className = "sold-out-flag";
@@ -629,19 +624,23 @@ function createCarouselItem(item) {
     ? `/animals/${encodeURIComponent(item.animalSlug)}`
     : (item.id ? `/store/p/${encodeURIComponent(item.id)}` : null);
 
+  // The card says the name and one line under it; the paragraph belongs on the
+  // product page. "Bengal Tiger Bottle" + a two-line description that truncated
+  // read as clutter; "Bengal Tiger" over "Bottle · 1963 stamp" reads as a label.
   const titleEl = document.createElement("h3");
   titleEl.className = "title";
+  titleEl.title = item.title;
   if (pdpUrl) {
     const titleLink = document.createElement("a");
     titleLink.href = pdpUrl;
     titleLink.className = "title-link";
-    titleLink.textContent = item.title;
+    titleLink.textContent = cardName(item);
     titleEl.appendChild(titleLink);
   } else {
-    titleEl.textContent = item.title;
+    titleEl.textContent = cardName(item);
   }
 
-  const descEl  = textEl("p",  "description", item.description);
+  const descEl  = textEl("p",  "description", cardMeta(item));
   const content = document.createElement("div");
   content.className = "product-copy";
 
@@ -719,6 +718,26 @@ function createCarouselItem(item) {
   return card;
 }
 
+/** The type word people already see in the meta line, so the name drops it. */
+const TYPE_WORDS = /\s*[-–·]?\s*\b(t-?shirts?|tees?|shirts?|totes?|tote bags?|bags?|bottles?|water bottles?|flasks?|magnets?|fridge magnets?|hoodies?|mugs?|stickers?)\b(?=\s*(?:[·\-–]\s*no\.?\s*\d+)?\s*$)/i;
+export function cardName(item) {
+  const raw = String(item.title || "").replace(/^kaayko\s+/i, "").trim();
+  const short = raw.replace(TYPE_WORDS, "").replace(/^\s*[·\-–]\s*/, "").trim();
+  return short.length >= 3 ? short : raw;
+}
+
+/** One quiet line: New · Bottle · 1963 stamp. The year comes from the description when it names one. */
+export function cardMeta(item) {
+  const parts = [];
+  if (isNew(item)) parts.push("New");
+  const type = labelForType(item.productType, { singular: true });
+  if (type) parts.push(type);
+  const year = String(item.description || "").match(/\b(1[89]\d{2}|20[0-2]\d)\b/);
+  if (year) parts.push(`${year[1]} stamp`);
+  else if (item.theme) parts.push(String(item.theme).slice(0, 24));
+  return parts.join(" · ");
+}
+
 function textEl(tag, cls, txt) {
   const e = document.createElement(tag);
   e.className   = cls;
@@ -761,13 +780,7 @@ function buildImageContainer(item, heartButton) {
 
   container.append(heartButton);
 
-  if (isNew(item)) {
-    const badge = document.createElement("span");
-    badge.className = "new-badge";
-    badge.textContent = "New";
-    badge.setAttribute("aria-label", "New product");
-    container.append(badge);
-  }
+  // "New" is said in the meta line under the name, not as a pill on the photograph.
 
   return container;
 }
