@@ -51,7 +51,7 @@ Three steps:
      Komodo_Magnet.png
    ```
 
-2. *(Optional)* drop a `manifest.yaml` in the same folder to override titles, prices, descriptions. See `manifest.example.yaml`. Without one, each product gets type-default pricing and an auto-generated placeholder title/description you can edit in Firestore later.
+2. *(Optional)* drop a `manifest.yaml` in the same folder to override titles and descriptions. See `manifest.example.yaml`. Without one, each product gets the type's price, sizes and category from the registry (`GET /products/types`, i.e. `kaayko-api/functions/config/productTypes.js`) and an auto-generated placeholder title/description you can edit in Kortex later. The registry is the only place a type or a price is defined; the script fetches it on every run.
 
 3. Run:
    ```bash
@@ -68,9 +68,8 @@ The Firestore productID is derived deterministically from name+type, so re-runni
   productID:       "kaayko_blackbuck_tote",
   title:           "Blackbuck Tote",
   description:     "...",
-  actualPrice:     34.99,
-  price:           "$$",         // symbol derived from actualPrice
-  productType:     "tote",        // NEW — drives store category sections
+  actualPrice:     29.99,         // from the registry for the type; the only price field
+  productType:     "tote",        // a registry key — drives sections, tax code, fallback price
   category:        "accessories",  // existing kreator category vocab
   tags:            [...],
   availableSizes:  ["One Size"],

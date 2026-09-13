@@ -55,38 +55,29 @@
     <h2 class="about-title">Style Your Soul.<br>Soul sold separately.</h2>
     <p class="about-lede">
       Welcome. You have found the only shop on the internet actively trying to sell you
-      less. We could move eleven of these to you before lunch. We have decided on two.
-      Somewhere a growth consultant just woke up cold and does not know why.
+      less. Everything here is drawn by hand, printed to order, and made the way things
+      used to be made: slowly, signed, and meant to be looked at closely by strangers
+      who were not born yet.
     </p>
 
     <section class="about-halves" aria-label="How we sell">
       <article class="half">
         <h3>Two. That is the entire basket.</h3>
         <p>
-          Not two of each. Two. The basket stops, and it will keep stopping no matter how
-          badly you want to hand us money. Everywhere else is engineered so you forget
-          where your wallet ends and your personality begins. Buy three, get the fourth
-          free. Spend twelve more to unlock shipping you did not want on a thing you did
-          not need, to reach a tier that does not exist, for a badge nobody will ever see.
-        </p>
-        <p>
-          This is not scarcity marketing. Scarcity marketing is when we pretend to run
-          out. We are not pretending. We have simply been to your house.
+          Not two of each. Two. The basket stops, and it keeps stopping however badly you
+          want to hand us money. Everywhere else is engineered so you forget where your
+          wallet ends and your personality begins. We are not pretending to run out. We
+          have simply been to your house.
         </p>
         <p class="half-foot">The cap is not a bug. We will not be fixing it.</p>
       </article>
       <article class="half">
         <h3>No account. No password. No relationship.</h3>
         <p>
-          Guest checkout, and only guest checkout. No profile. No loyalty tier. No
-          <em>welcome back</em> in a typeface we licensed specifically to sound like it
-          cares. We are not building a version of you to sell to somebody else.
-        </p>
-        <p>
-          We do not want to know what you nearly bought at two in the morning. We will
-          not email you in six weeks pretending we noticed you were gone, because we
-          will not have noticed, because we were outside. You buy the thing, the thing
-          arrives, we go back to being strangers. This used to be called shopping.
+          Guest checkout, and only guest checkout. No profile, no loyalty tier, no
+          <em>welcome back</em> in a typeface licensed to sound like it cares. You buy the
+          thing, the thing arrives, we go back to being strangers. This used to be called
+          shopping.
         </p>
         <p class="half-foot">You are not the product. Neither is your inbox.</p>
       </article>
@@ -96,47 +87,10 @@
       <h3 id="exhibits-title">Representation, for things that cannot advertise</h3>
       <p>
         Everything printed here stands in for something with no marketing budget and no
-        say in the matter. Living, non-living, or somewhere between. Thought counts.
-        Objects count. Animals count, and they have been counting for some time now,
+        say in the matter. Animals count, and they have been counting for some time now,
         downward. If it deserved a monument and got a landfill, it is a candidate.
       </p>
       <div id="exhibits"><p class="col-empty">Fetching the evidence&hellip;</p></div>
-    </section>
-
-    <section class="about-make" aria-label="On nostalgia">
-      <h3>The past had standards. We checked. Twice.</h3>
-      <p>
-        The person who makes these believes the world used to be better made. Not kinder.
-        Better made. A stamp hand-engraved at the India Security Press in 1953 still holds
-        up enlarged four times at 3600 pixels, seventy years and three currencies later.
-        Try that with a push notification. Try that with anything that shipped this quarter.
-      </p>
-      <p>
-        So the shop looks backwards deliberately. Not because the past was innocent, but
-        because it was willing to take its time, sign its work, and be looked at closely
-        by strangers who were not born yet.
-      </p>
-      <p>
-        As for the future: shut up, sit down and relax. Let the instincts take over.
-        Nature has run this operation for four billion years with no quarterly review, no
-        growth target and no engagement data, and it has never once needed to A/B test a
-        sunset.
-      </p>
-    </section>
-
-    <section class="about-arcade" aria-labelledby="arcade-title">
-      <h3 id="arcade-title">A cat toy for your entertainment</h3>
-      <p class="arcade-intro">
-        Two machines that sell you nothing. No reading, no questions, no clever answer
-        to look up &mdash; just the old kind of game, where your hands either do it or
-        they do not. One tap, one hold. Built to be lost quickly and played again anyway.
-      </p>
-      <p class="arcade-intro">
-        The same two sit on every magnet and every bottle in the shop, and clearing one
-        there is worth 2% off. Codes last an hour from the moment you win them, used or
-        not. There is a third game at the bag, but that one you have to talk your way into.
-      </p>
-      <div id="arcade-cabinets" class="cab-grid"></div>
     </section>
 
     <section class="about-make" aria-label="How this works">
@@ -146,7 +100,8 @@
         <li><strong>Two things to a bag.</strong> Yes, still two. You scrolled a long way to check.</li>
         <li><strong>Thirty days to change your mind.</strong> Unworn, unwashed, refunded in full. <a href="/legal/returns">The details</a>.</li>
         <li><strong>Small runs.</strong> A design that stops selling stops being printed, and does not return as a sale.</li>
-        <li><strong>The stamps are real.</strong> Scanned from originals, perforations and all. The collection follows India Post's philately programme: <a href="https://www.indiapost.gov.in/featuredservices/philately" rel="noopener">indiapost.gov.in</a>.</li>
+        <li><strong>The stamps are real.</strong> Scanned from originals, perforations and all, following India Post's philately programme: <a href="https://www.indiapost.gov.in/featuredservices/philately" rel="noopener">indiapost.gov.in</a>.</li>
+        <li><strong>One game.</strong> The Beggathon, on every product page and at the bag. Argue well and up to 10% comes off. Nothing else pays out.</li>
       </ul>
     </section>
 
@@ -169,9 +124,6 @@
     import '/js/cartManager.js';                         // header.js paints the bag badge from it
     import { storeAboutInit } from '/js/store-about.js';
     storeAboutInit();
-    import('/js/arcade/cabinet.js').then(({ mountArcadeRow }) => {
-      mountArcadeRow(document.getElementById('arcade-cabinets'));
-    });
   </script>
 </body>
 </html>

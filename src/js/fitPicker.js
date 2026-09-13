@@ -82,8 +82,7 @@ export function stockedSizes(product) {
 
 /**
  * Apparel gets a fit row; a tote with two sizes does not. Category is the
- * catalogue's own answer, with productType as the fallback for the 9 SKUs
- * whose productType was never filled in.
+ * catalogue's own answer, with productType (tshirt, hoodie) as the fallback.
  */
 function isApparel(product) {
   if (/^apparel$/i.test(norm(product?.category))) return true;
@@ -103,9 +102,8 @@ export function isSoldOut(product) {
 /**
  * Does this product need a choice before it can go in the bag?
  *
- * Deliberately NOT keyed on productType: 9 apparel SKUs ship with an empty
- * productType, and the old `productType === "tshirt"` test silently skipped
- * their picker and added every one of them as the first listed size.
+ * Keyed on the sizes the SKU actually stocks, not on productType: a type with
+ * one size needs no picker, and a new apparel type needs no code here.
  */
 export function needsPicker(product) {
   return stockedSizes(product).length > 1;

@@ -1814,6 +1814,49 @@ html.dark-theme .store-v2 .footer-elements {
   white-space: nowrap;
 }
 
+/* Coming soon — one line under the grid naming what is on its way and its price.
+   Not a card, not a form: nothing to click and nothing to join. */
+.store-v2 .coming-soon {
+  width: 100%;
+  margin: 0;                       /* .store-v2 .carousel is a flex column with its own gap */
+  padding: 22px 0 0;
+  border-top: 1px solid var(--line);
+  text-align: center;
+}
+.store-v2 .coming-soon-eyebrow {
+  margin: 0 0 8px;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.store-v2 .coming-soon-items {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 28px;
+  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  color: var(--fg);
+}
+.store-v2 .coming-soon-price {
+  margin-left: 8px;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+.store-v2 .coming-soon-note {
+  margin: 8px 0 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px;
+  color: var(--muted);
+}
+
 /* Hidden cards must leave the grid flow, or they hold empty tracks open. */
 .store-v2 .store-grid .carousel-item[hidden] { display: none !important; }
 

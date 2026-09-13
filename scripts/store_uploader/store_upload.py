@@ -28,9 +28,11 @@ See ``manifest.example.yaml``.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import sys
+import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -48,19 +50,36 @@ except ImportError:
 from image_pipeline import process_image
 from firestore_writer import ProductRecord, init_app, upload_product
 
-KNOWN_TYPES = {"tote", "magnet", "tshirt", "print", "sticker", "mug", "cap", "poster"}
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp"}
 
-TYPE_DEFAULTS = {
-    "tote":    {"price": 34.99, "availableSizes": ["One Size"], "category": "accessories"},
-    "magnet":  {"price": 9.99,  "availableSizes": [],            "category": "accessories"},
-    "tshirt":  {"price": 29.99, "availableSizes": ["S", "M", "L", "XL"], "category": "apparel"},
-    "print":   {"price": 24.99, "availableSizes": ["A4", "A3"], "category": "art"},
-    "sticker": {"price": 4.99,  "availableSizes": [],            "category": "accessories"},
-    "mug":     {"price": 14.99, "availableSizes": [],            "category": "accessories"},
-    "cap":     {"price": 19.99, "availableSizes": ["One Size"], "category": "apparel"},
-    "poster":  {"price": 29.99, "availableSizes": ["A2", "A1"], "category": "art"},
-}
+# The product-type registry — kaayko-api/functions/config/productTypes.js — is the ONE
+# table of types, prices, default sizes and categories. This script never carries a copy:
+# it fetches GET /products/types at start, so a type added on the server is known here on
+# the next run and a price changed there is what new uploads get. Filled by load_registry().
+API_BASE = os.environ.get("KAAYKO_API_BASE", "https://api-vwcc5j4qda-uc.a.run.app")
+REGISTRY: dict[str, dict] = {}
+
+
+def load_registry() -> dict[str, dict]:
+    url = f"{API_BASE}/products/types"
+    try:
+        with urllib.request.urlopen(url, timeout=15) as resp:
+            payload = json.load(resp)
+    except Exception as exc:  # noqa: BLE001 — any failure here means no upload
+        raise SystemExit(f"error: could not load the product-type registry from {url}: {exc}")
+    types: dict[str, dict] = {}
+    for row in payload.get("productTypes", []):
+        sizes = list(row.get("sizes") or [])
+        types[row["key"]] = {
+            "price": round(int(row["priceCents"]) / 100, 2),
+            "availableSizes": sizes or ["One Size"],   # never [] — that switches size validation off
+            "category": row.get("category", "other"),
+            "status": row.get("status", "live"),
+            "label": row.get("label", row["key"]),
+        }
+    if not types:
+        raise SystemExit(f"error: the registry at {url} came back empty")
+    return types
 
 GLOBAL_DEFAULTS = {
     "tags": [],
@@ -97,7 +116,7 @@ def parse_filename(path: Path) -> ParsedFile | None:
         index = 0
         type_token = parts[-1].lower()
         name = "_".join(parts[:-1])
-    if type_token not in KNOWN_TYPES:
+    if type_token not in REGISTRY:
         return None
     base = f"{name}_{parts[-2] if index else parts[-1]}"
     return ParsedFile(path=path, base=base, name=name, type_token=type_token, index=index)
@@ -131,7 +150,7 @@ def load_manifest(folder: Path) -> dict:
 
 def build_record(base: str, files: list[ParsedFile], manifest: dict) -> ProductRecord:
     type_token = files[0].type_token
-    type_defaults = TYPE_DEFAULTS.get(type_token, {})
+    type_defaults = {k: v for k, v in REGISTRY.get(type_token, {}).items() if k in ("price", "availableSizes", "category")}
     file_count = len(files)
 
     pretty_name = files[0].name.replace("_", " ")
@@ -180,6 +199,9 @@ def main(argv: list[str] | None = None) -> int:
         print(f"error: {folder} is not a directory", file=sys.stderr)
         return 2
 
+    REGISTRY.update(load_registry())
+    print(f"Registry: {', '.join(f'{k} ${v["price"]:.2f}' + (' (coming soon)' if v['status'] != 'live' else '') for k, v in REGISTRY.items())}")
+
     groups = scan_folder(folder)
     if args.only:
         groups = {k: v for k, v in groups.items() if k in set(args.only)}
@@ -194,7 +216,8 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Detected {len(records)} product(s) across {sum(len(v) for v in groups.values())} image(s).\n")
     for base, files in groups.items():
         rec = next(r for r in records if r.product_id == f"kaayko_{slugify(files[0].name)}_{files[0].type_token}")
-        print(f"  • {rec.title}  →  {rec.product_id}  ({rec.product_type}, ${rec.actual_price:.2f})")
+        soon = "  [coming soon: stored, not listed until the registry says live]" if REGISTRY.get(rec.product_type, {}).get("status") != "live" else ""
+        print(f"  • {rec.title}  →  {rec.product_id}  ({rec.product_type}, ${rec.actual_price:.2f}){soon}")
         for f in files:
             print(f"      {f.path.name}")
 

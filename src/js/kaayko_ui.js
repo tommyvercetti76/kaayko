@@ -16,20 +16,10 @@ import { attachExpandingPicker, needsPicker, isSoldOut } from "/js/fitPicker.js"
 // Price: priceMap.js is the client's one authority (a mirror of the server's).
 import { priceCents, priceText } from "/js/priceMap.js";
 
-// Product type → section heading. Determines render order on the store page.
-// Unknown / missing productType lands in the "Other" bucket at the end.
-const PRODUCT_TYPE_SECTIONS = [
-  { type: "tote",    label: "Totes" },
-  { type: "magnet",  label: "Magnets" },
-  { type: "tshirt",  label: "T-Shirts" },
-  { type: "print",   label: "Prints" },
-  { type: "poster",  label: "Posters" },
-  { type: "sticker", label: "Stickers" },
-  { type: "mug",     label: "Mugs" },
-  { type: "cap",     label: "Caps" },
-  { type: "bottle",  label: "Bottles" }
-];
-const OTHER_SECTION = { type: "other", label: "Other" };
+// Type names and order come from the registry the API sent with the catalogue
+// (productTypes.js); unknown / missing productType lands in "Other".
+import { labelForType, comingSoonTypes } from "/js/productTypes.js";
+import { esc, money } from "/js/kit.js";
 
 // A product is "new" if it was created in the last NEW_WINDOW_DAYS days.
 const NEW_WINDOW_DAYS = 14;
@@ -117,8 +107,33 @@ export function populateCarousel(items) {
   for (const item of visibleItems) grid.appendChild(decorateCard(item, mixRank.get(item) ?? 0));
   carousel.appendChild(grid);
 
+  const soon = comingSoonStrip();
+  if (soon) carousel.appendChild(soon);
+
   applyBrowseState(carousel);
   animateCarouselItems();
+}
+
+/**
+ * One quiet line under the grid naming the types that are on their way and what they
+ * will cost (registry rows with status "coming_soon"). Nothing to click and nothing to
+ * join: the brand does not collect emails. Flipping the row to "live" on the server and
+ * uploading the first images is the launch; this line then disappears on its own.
+ */
+function comingSoonStrip() {
+  const soon = comingSoonTypes();
+  if (!soon.length) return null;
+  const aside = document.createElement("aside");
+  aside.className = "coming-soon";
+  aside.setAttribute("aria-label", "Coming soon");
+  const items = soon.map((t) =>
+    `<span class="coming-soon-item">${esc(t.label)}<span class="coming-soon-price">${esc(money(t.priceCents))}</span></span>`
+  ).join("");
+  aside.innerHTML = `
+    <p class="coming-soon-eyebrow">Coming soon</p>
+    <p class="coming-soon-items">${items}</p>
+    <p class="coming-soon-note">Same drawings, smaller things. No list to join; they will simply appear here.</p>`;
+  return aside;
 }
 
 /**
@@ -189,11 +204,6 @@ const SORTS = [
 ];
 
 const BROWSE_STATE = { sort: "featured", type: "all", query: "" };
-
-function labelForType(type) {
-  const known = PRODUCT_TYPE_SECTIONS.find(s => s.type === type);
-  return known ? known.label : (type ? type[0].toUpperCase() + type.slice(1) : "Other");
-}
 
 /**
  * Sort + type + search, in one row above the grid. Type chips carry live counts so a shopper can

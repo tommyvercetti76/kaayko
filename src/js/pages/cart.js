@@ -75,8 +75,10 @@ const metaLine = (item) => {
 const validEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
 /* ── Reward codes ────────────────────────────────────────────────
-   Won at a machine on a product page (2% off magnets and bottles) or
-   at the Beggathon below the bag (up to 10% off everything). Every
+   Won at the Beggathon — on a product page or below the bag — for up
+   to 10% off everything. (The machines and their 2% codes were retired
+   on 13 Sep 2026; the 'eligible' scope below only outlives them by an
+   hour, which is how long any code lasts.) Every
    code dies one hour after it is minted, used or not — that is the
    API's rule and the field below only reports it. The discount
    itself is computed by the server when the payment intent is
@@ -86,7 +88,7 @@ const REWARD_REFUSALS = {
   ALREADY_REDEEMED: 'That code has already been used.',
   EXPIRED:          'That code has expired. They only last an hour.',
   WRONG_OWNER:      'That code was won under a different email.',
-  NO_ELIGIBLE_ITEMS:'That code only covers magnets and bottles, and there are none in this bag.',
+  NO_ELIGIBLE_ITEMS:'That code does not cover anything in this bag.',
   EMPTY_CART:       'Nothing in the bag to discount.',
   LOCKED:           'No discount applies while you are carrying a paste penalty. Beg it off on any product page.',
   VOIDED:           'That code was won before you pasted. Pasting cancelled it.'
@@ -106,7 +108,7 @@ function rewardFieldMarkup() {
       </div>
       <p class="co-reward-note" id="co-reward-note" role="status" aria-live="polite">${
         state.rewardNote ? esc(state.rewardNote)
-        : r ? `${r.percent}% held${r.scope === 'cart' ? ' against the whole bag' : ' against the magnets and bottles'}. ${
+        : r ? `${r.percent}% held${r.scope === 'cart' ? ' against the whole bag' : ' against the eligible items'}. ${
             left > 0 ? `Expires in ${left} minute${left === 1 ? '' : 's'}.` : 'Expired.'}`
         : 'Won one on a product page? Put it in. Codes last an hour.'
       }</p>

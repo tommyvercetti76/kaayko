@@ -4,15 +4,11 @@ defaults:
   maxQuantity: 50
   isAvailable: true
 
-types:
-  tote:
-    price: 34.99
-    availableSizes: [One Size]
-    category: accessories
-  magnet:
-    price: 9.99
-    availableSizes: []
-    category: accessories
+# Prices, default sizes and categories come from the registry (GET /products/types);
+# a `types:` block here only overrides them for this folder, which is rarely wanted.
+# types:
+#   tote:
+#     availableSizes: [One Size]
 
 products:
   Blackbuck_Tote:

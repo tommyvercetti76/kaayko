@@ -23,8 +23,10 @@ const TABS = [
   { key: 'soldout', label: 'Sold out' }
 ];
 
-const PRODUCT_TYPES = ['tshirt', 'tote', 'magnet', 'print', 'sticker', 'mug', 'cap', 'poster'];
-const CATEGORIES = ['apparel', 'accessories', 'art', 'other'];
+// The enums arrive with the listing (GET /admin/products → productTypes, categories)
+// from the server's registry; these are only the first paint before it answers.
+let PRODUCT_TYPES = ['tshirt', 'hoodie', 'tote', 'bottle', 'magnet', 'mug', 'sticker'];
+let CATEGORIES = ['apparel', 'accessories', 'drinkware', 'other'];
 
 let products = [];
 let activeTab = 'all';
@@ -46,6 +48,8 @@ async function load() {
   }
   const body = await res.json();
   products = body.products || [];
+  if (Array.isArray(body.productTypes)) PRODUCT_TYPES = body.productTypes.map((t) => t.key);
+  if (Array.isArray(body.categories)) CATEGORIES = body.categories;
   render();
 }
 
@@ -108,13 +112,9 @@ function countFor(key) {
 
 function money(p) {
   if (typeof p.actualPrice === 'number') return `$${p.actualPrice.toFixed(2)}`;
-  // No actualPrice: the customer is charged the tier rate for the symbol
-  // ($ 19.99 · $$ 29.99 · $$$ 39.99 · $$$$ 49.99). Say so, loudly, until someone sets one.
-  const TIER = { '$': '19.99', '$$': '29.99', '$$$': '39.99', '$$$$': '49.99' };
-  const tier = TIER[String(p.price || '').trim()];
-  return tier
-    ? `<span class="price-tier" title="No price set — charged the ${escapeHtml(p.price)} tier rate. Edit to set the real price.">⚠ $${tier} (tier ${escapeHtml(p.price)})</span>`
-    : '<span class="price-tier" title="No price set — this product cannot be sold until one is">⚠ no price</span>';
+  // No actualPrice: checkout falls back to the type's registry price, and the
+  // storefront shows none. Say so until someone sets one.
+  return '<span class="price-tier" title="No price set — the storefront shows no price and checkout charges the type\'s registry price. Edit to set one.">⚠ no price set</span>';
 }
 
 function statusPills(p) {
@@ -168,7 +168,7 @@ function editor(p) {
         <label>Price
           <input name="actualPrice" type="number" step="0.01" min="1" max="500"
                  value="${typeof p.actualPrice === 'number' ? p.actualPrice.toFixed(2) : ''}"
-                 placeholder="${escapeHtml(p.price || '')}">
+                 placeholder="19.99">
           <span class="pv-hint">This is what the customer is charged.</span>
         </label>
         <label class="pv-wide">Tagline
@@ -306,7 +306,7 @@ function onSubmit(e) {
     const next = Number(raw);
     const current = typeof product.actualPrice === 'number' ? product.actualPrice : null;
     if (Number.isFinite(next) && next !== current) {
-      const from = current === null ? `the ${product.price || '—'} tier` : `$${current.toFixed(2)}`;
+      const from = current === null ? 'no price' : `$${current.toFixed(2)}`;
       if (!window.confirm(`Change the price of "${product.title}" from ${from} to $${next.toFixed(2)}?\n\nThis is what customers will be charged from the next order.`)) {
         return;
       }

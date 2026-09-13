@@ -22,22 +22,6 @@ STORAGE_PREFIX = "kaaykoStoreTShirtImages"
 DEFAULT_BUCKET = "kaaykostore.firebasestorage.app"
 
 
-# Mirrors priceSymbolFor() in kaayko-api/functions/api/checkout/pricing.js and
-# PRICE_SYMBOL_CENTS: the highest tier at or below the price. These thresholds
-# used to be >=50/35/20 here, which disagreed with the server over most of the
-# range — the same $25 product got "$$" from this script and "$" from the API.
-# The symbol is only a fallback (actualPrice wins), but the two must not drift.
-_PRICE_TIERS = (("$", 19.99), ("$$", 29.99), ("$$$", 39.99), ("$$$$", 49.99))
-
-
-def price_to_symbol(price: float) -> str:
-    symbol = _PRICE_TIERS[0][0]
-    for sym, threshold in _PRICE_TIERS:
-        if price >= threshold:
-            symbol = sym
-    return symbol
-
-
 @dataclass
 class ProductRecord:
     product_id: str
@@ -108,8 +92,11 @@ def upload_product(record: ProductRecord) -> dict:
     payload = {
         "title": record.title,
         "description": record.description,
+        # actualPrice is the price. The tier symbol `price` used to hold was retired on
+        # 13 Sep 2026 and is written by nothing; pricing.js reads actualPrice, then the
+        # type's registry price, then refuses.
         "actualPrice": record.actual_price,
-        "price": price_to_symbol(record.actual_price),
+        "price": firestore.DELETE_FIELD,   # merge=True below: scrub the dead field on a re-upload
         "productType": record.product_type,
         "category": record.category,
         "tags": record.tags,

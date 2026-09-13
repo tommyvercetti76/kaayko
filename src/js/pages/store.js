@@ -7,7 +7,8 @@
  */
 import { cartManager } from "/js/cartManager.js";           // the bag exists before the header paints its badge
 import "/js/sustainabilityAlert.js";                          // window.showSustainabilityAlert for the fit picker
-import { getAllProducts, friendlyMessage } from "/js/services/storeApi.js";
+import { getCatalogue, friendlyMessage } from "/js/services/storeApi.js";
+import { setProductTypes } from "/js/productTypes.js";
 import { populateCarousel, setupModalCloseHandlers } from "/js/kaayko_ui.js";
 import { storeOriginalProducts } from "/js/kaaykoFilterModal.js";
 import { esc } from "/js/kit.js";
@@ -33,7 +34,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   let products;
   try {
-    products = await getAllProducts();
+    const catalogue = await getCatalogue();
+    products = catalogue.products;
+    setProductTypes(catalogue.productTypes);   // labels, section order, the coming-soon line
   } catch (err) {
     console.error("Failed to load products:", err);
     renderFailure(friendlyMessage(err, "The catalogue is not answering. Please try again."));

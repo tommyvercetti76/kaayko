@@ -1,8 +1,8 @@
 /**
  * arcade/reward.js — the one place that knows about reward codes in the browser.
  *
- * A code is won on a product page (2%, the two machines) or at the cart (up to 10%,
- * the Beggathon) and has to survive the walk between them, so it is kept in
+ * A code is won at the Beggathon — on a product page or at the cart (up to 10% off the
+ * whole bag) — and has to survive the walk between them, so it is kept in
  * localStorage. That store is a convenience only — the code is re-checked by the API
  * at checkout, and an expired or reused one takes nothing off however it got there.
  *

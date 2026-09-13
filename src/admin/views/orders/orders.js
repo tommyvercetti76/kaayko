@@ -534,8 +534,14 @@ function orderCard(shipment) {
       .filter((v) => v != null && String(v).trim() !== '')
       .map((v) => escapeHtml(v))
       .join(' · ');
+    // imgSrc is the snapshot frozen at purchase on the order line (pricing.js →
+    // payment_intents → webhook). Never looked up from the catalogue here.
+    const img = it.imgSrc && /^https:\/\//.test(it.imgSrc)
+      ? `<img class="order-item-img" src="${escapeHtml(it.imgSrc)}" alt="" loading="lazy">`
+      : `<span class="order-item-img order-item-img--none" aria-hidden="true"></span>`;
     return `
       <li class="order-item">
+        ${img}
         <span class="order-item-qty">${escapeHtml(String(it.quantity || 1))}×</span>
         <span class="order-item-main">
           <span class="order-item-title">${escapeHtml(it.productTitle || 'Untitled product')}</span>

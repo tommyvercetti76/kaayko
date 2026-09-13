@@ -63,12 +63,23 @@ export function friendlyMessage(err, fallback = 'Something went wrong. Please tr
 
 /* ── Catalogue ─────────────────────────────────────────────────────────── */
 
-/** GET /products → the array. Throws ApiError. */
-export async function getAllProducts({ timeoutMs = 12000 } = {}) {
+/**
+ * GET /products → { products, productTypes }. Throws ApiError.
+ * `productTypes` is the server's type registry (labels, order, coming-soon rows);
+ * it is [] on an older response, and the grid copes.
+ */
+export async function getCatalogue({ timeoutMs = 12000 } = {}) {
   const r = await request('/products', { timeoutMs });
   if (!r.ok) throw toError(r, 'The catalogue');
   const d = r.data;
-  return Array.isArray(d) ? d : (d && d.products) || [];
+  const products = Array.isArray(d) ? d : (d && d.products) || [];
+  const productTypes = d && !Array.isArray(d) && Array.isArray(d.productTypes) ? d.productTypes : [];
+  return { products, productTypes };
+}
+
+/** GET /products → the array. Throws ApiError. */
+export async function getAllProducts(opts) {
+  return (await getCatalogue(opts)).products;
 }
 
 /** GET /products/:id → the product. Throws ApiError (status 404 when unknown). */

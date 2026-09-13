@@ -8,6 +8,7 @@ import { attachExpandingPicker } from "/js/fitPicker.js";
 import { getAnimal } from "/js/services/storeApi.js";
 import { cartManager } from "/js/cartManager.js";
 import { esc } from "/js/kit.js";
+import { typeRank } from "/js/productTypes.js";
 
 const IUCN_SEVERITY = {
   "critically endangered": "critical",
@@ -227,11 +228,8 @@ export async function animalPageInit(slug, { openModal }) {
   }
 
   const animal = payload.animal;
-  const products = (payload.products || []).slice().sort((a,b) => {
-    // Order: totes first, then magnets, then everything else
-    const order = { tote: 0, magnet: 1, tshirt: 2 };
-    return (order[a.productType] ?? 9) - (order[b.productType] ?? 9);
-  });
+  // Registry order (totes before magnets; unknown types last).
+  const products = (payload.products || []).slice().sort((a, b) => typeRank(a.productType) - typeRank(b.productType));
 
   document.title = `${animal.name} · Kaayko`;
   const desc = document.querySelector('meta[name="description"]');

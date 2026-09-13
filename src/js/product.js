@@ -18,6 +18,7 @@ import { satireFor } from "/js/store-satire.js";
 import { getProduct, friendlyMessage } from "/js/services/storeApi.js";
 import { cartManager } from "/js/cartManager.js";
 import { esc } from "/js/kit.js";
+import { labelForType } from "/js/productTypes.js";
 
 function renderError(root, msg) {
   root.innerHTML = `
@@ -27,11 +28,9 @@ function renderError(root, msg) {
     </section>`;
 }
 
-/** "Originals · T-Shirt" — theme first, then what the thing physically is. */
-const TYPE_LABEL = { tshirt: "T-Shirt", tote: "Tote", magnet: "Magnet", print: "Print", poster: "Poster", sticker: "Sticker", mug: "Mug", cap: "Cap" };
-
+/** "Originals · T-Shirt" — theme first, then what the thing physically is (registry name). */
 function eyebrowFor(product) {
-  const type = TYPE_LABEL[String(product.productType || "").toLowerCase()]
+  const type = labelForType(product.productType, { singular: true })
     || (String(product.category || "").toLowerCase() === "apparel" ? "T-Shirt" : "");
   return [product.theme, type].filter(Boolean).join(" · ") || "Kaayko";
 }

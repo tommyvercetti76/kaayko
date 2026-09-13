@@ -9,6 +9,7 @@
  */
 import { populateCarousel } from "/js/kaayko_ui.js";
 import { priceCents } from "/js/priceMap.js";
+import { labelForType, typeRank } from "/js/productTypes.js";
 
 document.addEventListener('DOMContentLoaded', function() {
   console.log('🔧 Filter modal script loaded');
@@ -137,25 +138,15 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-const TYPE_CHIP_OPTIONS = [
-  { value: 'tote',    label: 'Totes' },
-  { value: 'magnet',  label: 'Magnets' },
-  { value: 'tshirt',  label: 'T-Shirts' },
-  { value: 'print',   label: 'Prints' },
-  { value: 'poster',  label: 'Posters' },
-  { value: 'sticker', label: 'Stickers' },
-  { value: 'mug',     label: 'Mugs' },
-  { value: 'cap',     label: 'Caps' },
-  { value: 'bottle',  label: 'Bottles' }
-];
-
+// Type chips are built from the catalogue once it lands (hydrateTypeChips): only
+// types with a product behind them, named and ordered by the registry.
 // Price is filtered as a number, not as a tier symbol. Tier symbols excluded every product
 // carrying a literal price (the bottles at $24.99), and they mean nothing to a shopper.
 const PRICE_BANDS = [
-  { value: 'under-25', label: 'Under $25', min: 0,  max: 25 },
-  { value: '25-35',    label: '$25 – $35', min: 25, max: 35 },
-  { value: '35-50',    label: '$35 – $50', min: 35, max: 50 },
-  { value: 'over-50',  label: '$50+',      min: 50, max: Infinity }
+  { value: 'under-10', label: 'Under $10', min: 0,  max: 10 },
+  { value: '10-20',    label: '$10 – $20', min: 10, max: 20 },
+  { value: '20-30',    label: '$20 – $30', min: 20, max: 30 },
+  { value: 'over-30',  label: '$30+',      min: 30, max: Infinity }
 ];
 
 // Dollars, from the same figure the server would charge (priceMap.priceCents).
@@ -174,27 +165,33 @@ function matchesPriceBands(product, bandValues) {
 const MAX_TAG_CHIPS = 8;
 
 function initializeFilterChips() {
-  // Type chips — always all the supported types (so the catalogue can grow).
+  // Type, price and tag chips are all populated once products land
+  // (storeOriginalProducts → hydrateTypeChips / hydratePriceChips / hydrateDynamicFilters),
+  // so the modal only ever offers a choice that has something behind it.
+}
+
+/** One chip per product type present in the catalogue, in registry order. */
+function hydrateTypeChips(products) {
   const typeChips = document.getElementById('type-chips');
-  if (typeChips) {
-    typeChips.innerHTML = '';
-    TYPE_CHIP_OPTIONS.forEach(opt => {
-      const chip = createChip(opt.label, 'type');
-      chip.dataset.value = opt.value;
-      typeChips.appendChild(chip);
-    });
-  }
+  if (!typeChips) return;
+  typeChips.innerHTML = '';
+  const present = new Set(products.filter(p => p.isAvailable !== false).map(p => (p.productType || '').toLowerCase()).filter(Boolean));
+  [...present].sort((a, b) => typeRank(a) - typeRank(b)).forEach(type => {
+    const chip = createChip(labelForType(type), 'type');
+    chip.dataset.value = type;
+    typeChips.appendChild(chip);
+  });
+}
 
-  // Price chips — fixed symbol set.
+/** Only the price bands at least one product falls into. */
+function hydratePriceChips(products) {
   const priceChips = document.getElementById('price-chips');
-  if (priceChips) {
-    priceChips.innerHTML = '';
-    PRICE_BANDS.forEach(band => {
-      priceChips.appendChild(createChip(band.label, 'price', band.value));
-    });
-  }
-
-  // Tag chips are populated dynamically once products land.
+  if (!priceChips) return;
+  priceChips.innerHTML = '';
+  const prices = products.filter(p => p.isAvailable !== false).map(priceOf);
+  PRICE_BANDS
+    .filter(band => prices.some(v => v >= band.min && v < band.max))
+    .forEach(band => priceChips.appendChild(createChip(band.label, 'price', band.value)));
 }
 
 function createChip(text, type, value) {
@@ -303,6 +300,8 @@ let originalProducts = [];
 // Function to store original products (called from js/pages/store.js).
 // We use this moment to populate tag chips dynamically + size the slider.
 function storeOriginalProducts(products) {
+  hydrateTypeChips(products);
+  hydratePriceChips(products);
   hydrateThemeChips(products);
   originalProducts = products;
   console.log('💾 Stored', originalProducts.length, 'original products for filtering');
@@ -314,7 +313,7 @@ function hydrateDynamicFilters(products) {
   if (tagChips) {
     tagChips.innerHTML = '';
     // Type-token tags are redundant with the Type filter; hide them here.
-    const typeTokens = new Set(['T-Shirt', 't-shirt', 'tote', 'magnet', 'print', 'poster', 'sticker', 'mug', 'cap']);
+    const typeTokens = new Set(['T-Shirt', 't-shirt', 'tshirt', 'hoodie', 'tote', 'bottle', 'magnet', 'sticker', 'mug']);
     const counts = new Map();
     for (const p of products) {
       if (p.isAvailable === false) continue;

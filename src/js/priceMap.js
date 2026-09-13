@@ -1,28 +1,20 @@
 /**
  * priceMap.js — the client's ONE price authority. Pure: no DOM, no fetch, testable in node.
  *
- * `kaaykoproducts.price` is a TIER SYMBOL ("$" … "$$$$"), not a dollar string:
- * kaayko/scripts/store_uploader/firestore_writer.py writes price_to_symbol(actualPrice).
- * Only some products also carry a numeric `actualPrice` (18 of 36 on 12 Sep 2026), and six
- * legacy docs hold a literal "$24.99" in `price`.
+ * A product's price is its `actualPrice`, in dollars, written by the uploader from the
+ * product-type registry (kaayko-api config/productTypes.js) or set in Kortex. The
+ * migration on 13 Sep 2026 wrote it onto every house product; the tier symbol that
+ * `price` used to hold ("$" … "$$$$") is retired and never read, here or on the server.
  *
- * priceCents() below is a line-for-line mirror of resolvePrice() in
- * kaayko-api/functions/api/checkout/pricing.js, which is the authority at checkout:
- *   1. actualPrice, if a finite number → its cents, or null when ≤ 0 (no fallback)
- *   2. price as a run of "$" → the tier table
- *   3. price as a legacy numeric string → parsed
- * Change one and you must change the other, or shoppers are shown a price they are not
- * charged. The test in kaayko/tests/priceMap.test.mjs pins every branch.
+ * priceCents() mirrors resolveUnitPriceCents() in kaayko-api/functions/api/checkout/pricing.js
+ * for the case the client can see: a finite, positive actualPrice → its cents; anything
+ * else → null, and the product cannot be bought. The server additionally falls back to
+ * the type's registry price for a document that carries no actualPrice at all; such a
+ * document is a data error the admin view flags, not a state the storefront prices.
  *
- * Money is INTEGER CENTS everywhere on the client from here on. money() is the only
- * place cents become a string, so "$29.99" is never parsed back into a number.
+ * Money is INTEGER CENTS everywhere on the client. money() is the only place cents
+ * become a string, so "$29.99" is never parsed back into a number.
  */
-export const PRICE_SYMBOL_CENTS = Object.freeze({
-  "$": 1999,
-  "$$": 2999,
-  "$$$": 3999,
-  "$$$$": 4999
-});
 
 /** Integer cents → "$12.34". Anything that is not a finite number → "". */
 export function money(cents) {
@@ -34,16 +26,8 @@ export function money(cents) {
 /** Integer cents the server would charge for this product, or null if it cannot be priced. */
 export function priceCents(product) {
   const ap = product?.actualPrice;
-  if (typeof ap === "number" && Number.isFinite(ap)) {
-    const cents = Math.round(ap * 100);
-    return cents > 0 ? cents : null;
-  }
-  const raw = typeof product?.price === "string" ? product.price.trim() : "";
-  if (!raw) return null;
-  if (/^\$+$/.test(raw)) return PRICE_SYMBOL_CENTS[raw] || null;
-  const parsed = parseFloat(raw.replace(/[$,\s]/g, ""));
-  if (!Number.isFinite(parsed)) return null;
-  const cents = Math.round(parsed * 100);
+  if (typeof ap !== "number" || !Number.isFinite(ap)) return null;
+  const cents = Math.round(ap * 100);
   return cents > 0 ? cents : null;
 }
 
@@ -51,8 +35,3 @@ export function priceCents(product) {
 export function priceText(product) {
   return money(priceCents(product));
 }
-
-/** Tier symbol → display string. Kept for the filter chips; derived, never hand-written. */
-export const PRICE_MAP = Object.freeze(
-  Object.fromEntries(Object.entries(PRICE_SYMBOL_CENTS).map(([symbol, cents]) => [symbol, money(cents)]))
-);
