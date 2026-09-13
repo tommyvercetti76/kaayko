@@ -138,13 +138,14 @@ Every store page loads, in this order: `js/prod-config.js` (the API base, in `<h
 **One source per concern (12 Sep 2026):**
 - `kaayko/src/js/util.js` + `js/kit.js` — `esc`, `debounce`, `fetchJson`, `apiBase`, footer year (classic global · ES-module face)
 - `kaayko/src/js/services/storeApi.js` — every store API call, timeouts, `ApiError`; `request()` for the checkout's status branching
-- `kaayko/src/js/priceMap.js` — integer cents; `priceCents(product)` mirrors the server's `resolvePrice()`; `money(cents)`
+- `kaayko/src/js/priceMap.js` — integer cents; `priceCents(product)` = `actualPrice` or null (the tier symbol is gone since 13 Sep 2026); `money(cents)`
+- `kaayko/src/js/productTypes.js` — the storefront's view of the type registry the API sends with `GET /products` (`productTypes`): labels, order, the "Coming soon" line. Server table: `kaayko-api/functions/config/productTypes.js` (prices, sizes, tax codes, status) — read by pricing, the public/admin/kreator product routes and `scripts/store_uploader` (fetched from `GET /products/types`)
 - `kaayko/src/js/cartManager.js` — the bag (`priceCents`, max 2 products, `kaayko:cartchange` event, `window.cartManager` for classic scripts)
 - `kaayko/src/js/components/Toast.js` + `css/toast.css` — the one notice
 - `kaayko/src/js/header.js` — theme toggle, cart badge, home link
 - `kaayko/src/js/kaayko_ui.js` — the grid, image modal, voting; `js/fitPicker.js` — THE size/fit picker; `js/kaaykoFilterModal.js` — filter modal (module)
 - `kaayko/src/js/product.js`, `js/animal.js`, `js/store-about.js`, `js/store-satire.js` — PDP renderers and copy
-- `kaayko/src/js/arcade/*`, `js/arcade-widget.js` — the games; `arcade/reward.js` wraps `storeApi.request()`
+- `kaayko/src/js/arcade-widget.js` → `arcade/beggathon.js` — the one game (the Beggathon) on PDPs and at the bag; `arcade/reward.js` wraps `storeApi.request()`. `arcade/cabinet.js`, `play.js`, `gameRules.js`, `shipping.js` are the retired machines, unreferenced by any page
 - `kaayko/src/js/storeAccess.js`, `js/secretStore.js` — invite gate (classic)
 - Deleted: `kaayko_apiClient.js`, `kaayko-main.js`, `about-dynamic.js`
 
@@ -172,7 +173,7 @@ GET  /arcade/challenge?productId&game  POST /arcade/solve  POST /arcade/beg/star
 - `kaayko-api/functions/api/products.js`
 - `kaayko-api/functions/api/checkout.js`
 
-**Firestore collections:** `kaaykoproducts`, `orders`, `payment_intents` — every frozen line item and order doc carries `kreatorId` (null for house products) since 13 Sep 2026
+**Firestore collections:** `kaaykoproducts` (price = `actualPrice`; `productType` is a registry key; no `price` field), `product_audit`, `orders`, `payment_intents` — every frozen line item and order doc carries `kreatorId` (null for house products), `productType` and `imgSrc` (the image the shopper saw) since 13 Sep 2026
 **Firebase Storage:** `kaaykoStoreTShirtImages/{productID}/`
 **External services:** Stripe
 **Auth required:** No (browsing + checkout); admin order ops require auth

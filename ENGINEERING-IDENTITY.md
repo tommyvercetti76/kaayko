@@ -170,11 +170,35 @@ Known nuance for step 4: the cart stores `price` as a display string today. A
 tier symbol (`"$$"`) reaching the cart parses to `0`, so the bag would show a
 zero subtotal while Stripe charges the real price. Cents end that class of bug.
 
-## 10. Store, pass two — the plan (13 Sep 2026, not started)
+## 10. Store, pass two — the plan (13 Sep 2026)
 
 _One release, one preview channel, one end-to-end order test before it ships.
 Kreator work is paused. Every item below is either decided by Rohan's message
 or marked **decide**._
+
+### Status, 13 Sep 2026 evening — shipped to both hosts (kaayko `9193680`, API `74129e9`)
+
+- **A shipped.** `kaayko-api/functions/config/productTypes.js` is the registry; `pricing.js` prices from
+  `actualPrice`, else the live type's price, else refuses — the tier symbol and legacy strings are never
+  read anywhere. `scripts/migrate-prices.js --apply` rewrote 45 documents (36 live + 9 hidden shirts that
+  had no `productType`; typed `tshirt`) with `product_audit` entries. `GET /products/types` is public and
+  the uploader fetches it instead of carrying a table. Client: `js/productTypes.js`, `priceMap.js` reads
+  `actualPrice` only, the grid shows one "Coming soon" line (Mugs $9.99 · Stickers $4.99).
+- **C shipped** except the deletion decision: `arcade-widget.js` mounts the Beggathon only; the API answers
+  `/arcade/challenge` with `playable:false, reason:"RETIRED"` and `/solve` with 410; `/card`, `/shipping`,
+  `/fly` are `noindex` and were never linked from the store (still to **decide**: delete).
+- **D shipped.** `store-about.html` copy is 344 words; the arcade section and its CSS are gone.
+- **E, the part that needed no design:** every frozen checkout line now carries `kreatorId` (it was dropped on
+  the `payment_intents` write — a real bug), `productType` and `imgSrc`; the webhook copies them onto
+  `orders/*`; Kortex Orders renders the image. Products view: the tier flag is gone; the Type select comes
+  from the listing's `productTypes`. The button vocabulary and chrome are **not** done: they need Rohan's
+  admin login to be seen with real data, and are a design pass to review together.
+- **B not started** (needs the blank templates / a mockup decision). **F:** the money path was exercised on the
+  preview channel (magnet → bag → checkout → server-priced PaymentIntent of 599 → Stripe mounted); email
+  still needs `MAIL_SMTP_URL`.
+- Verified live: 36 cards on both hosts, chips T-Shirts 17 · Totes 11 · Bottles 6 · Magnets 2, prices
+  $19.99 / $29.99 / $5.99, PDP eyebrow from the registry, Beggathon only, About with four exhibits, no
+  console errors; every untouched page (legal, paddling, reads, order-success) still 200.
 
 ### What the catalogue is today (measured)
 
