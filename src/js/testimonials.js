@@ -1,4 +1,4 @@
-import { getAllProducts, imageUrl } from "/js/services/storeApi.js";
+import { getAllProducts } from "/js/services/storeApi.js";
 
 // 2) Your 20 fake reviews
 const fakeTestimonials = [
@@ -33,26 +33,8 @@ function shuffleArray(arr) {
   return arr;
 }
 
-/** Extract filename from signed URL */
-function extractFileName(signedUrl) {
-  const url = new URL(signedUrl);
-  let path = url.pathname;
-
-  // only decode if there’s an escaped slash
-  if (path.includes('%2F')) {
-    path = decodeURIComponent(path);
-  }
-
-  // now split on real slashes and take the last segment
-  const segments = path.split('/');
-  return segments.pop();
-}
-
-/** Compose your proxy URL */
-function makeProxyUrl(productID, signedUrl) {
-  return imageUrl(productID, extractFileName(signedUrl));
-}
-
+/* Avatars are the products' own images, exactly as the store grid shows them.
+   They used to go through the API's /images proxy, whose legacy paths now 500. */
 /** Build one testimonial card */
 /** Build one testimonial card */
 function createTestimonialCard({ name, review, imgSrc, votes }) {
@@ -112,7 +94,7 @@ export async function renderTestimonials(containerId) {
     .flatMap(p => {
       if (!Array.isArray(p.imgSrc) || !p.imgSrc[0]) return [];
       return [{
-        img: makeProxyUrl(p.productID, p.imgSrc[0]),
+        img: p.imgSrc[0],
         votes: p.votes || 0
       }];
     });

@@ -98,14 +98,6 @@ export async function getAnimal(slug) {
   return r.data;
 }
 
-/* ── Images ────────────────────────────────────────────────────────────── */
-
-/** The image proxy. Two scripts used to hard-code this URL. */
-export function imagesBase() { return `${apiBase()}/images`; }
-export function imageUrl(productId, fileName) {
-  return `${imagesBase()}/${encodeURIComponent(productId)}/${encodeURIComponent(fileName)}`;
-}
-
 /* ── Checkout ──────────────────────────────────────────────────────────────
    These return the raw request() result: the cart page decides what a 404
    (tax route absent) or a 4xx (a piece just sold out) means to the shopper.

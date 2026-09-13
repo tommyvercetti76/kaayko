@@ -70,7 +70,3 @@ test('a 4xx message from the server is passed to the shopper; friendlyMessage ne
   await assert.rejects(api.voteOnProduct('p', 1), (err) => err.message === 'That piece just sold out.');
   assert.equal(api.friendlyMessage(new Error('ReferenceError: x is not defined'), 'fallback'), 'fallback');
 });
-
-test('imageUrl encodes both path segments under the API base', () => {
-  assert.equal(api.imageUrl('kaayko tote', 'a b.webp'), 'https://api.example.test/images/kaayko%20tote/a%20b.webp');
-});
