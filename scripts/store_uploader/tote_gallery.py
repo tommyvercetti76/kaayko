@@ -15,8 +15,10 @@ WHY IT ALWAYS WORKS
      peacock and a crocodile take the same room on the bag.
   4. Before a frame is written, the printed rectangle is checked against the bag mask
      eroded by a margin. A breach raises, it is never saved.
-  5. No AI upscale. The photographs are enlarged 2× with Lanczos and a light unsharp,
-     so the canvas keeps its grain instead of turning to plastic.
+  5. No AI upscale here. The photographs are enlarged 2× with Lanczos so the canvas keeps
+     its grain. HD is the uploader's job: store_upload.py's image_pipeline takes each frame
+     to 3600px with the same Real-ESRGAN pass that made the live tote set — one pipeline,
+     the same look on every product.
 
 USAGE
   python3 tote_gallery.py --calibrate                      # once, after templates change
@@ -200,7 +202,8 @@ def trim(im: Image.Image) -> Image.Image:
 # ── compose ────────────────────────────────────────────────────────────────────
 def compose(art: Image.Image, view: str, set_name: str, geo: dict) -> Image.Image:
     canvas = Image.open(SETS[set_name] / f"{view}.png").convert("RGB")
-    g = geo["views"][view]; p, body = g["panel"], g["body"]
+    g = geo["views"][view]; p, body = dict(g["panel"]), dict(g["body"])
+    k = 1
     a = trim(key_background(art))
     # fit to panel width; fall back to height for tall drawings
     ratio = min(p["w"] / a.width, p["h"] / a.height)
@@ -210,21 +213,23 @@ def compose(art: Image.Image, view: str, set_name: str, geo: dict) -> Image.Imag
     px, py = p["x"] + (p["w"] - a.width) // 2, p["y"] + (p["h"] - a.height) // 2
 
     # the guarantee: the printed rectangle sits inside the bag, with a margin
-    mask = np.asarray(Image.open(TROOT / f"{view}.mask.png")) > 0
-    margin = int((body["right"] - body["left"]) * MARGIN)
-    er = np.asarray(Image.fromarray(mask.astype(np.uint8) * 255).filter(ImageFilter.MinFilter(2 * margin + 1))) > 0
+    # erode at template resolution (cheap), then scale the eroded mask up if needed
+    mask1 = Image.open(TROOT / f"{view}.mask.png")
+    margin1 = int((body["right"] - body["left"]) / k * MARGIN)
+    er1 = mask1.filter(ImageFilter.MinFilter(2 * margin1 + 1))
+    er = np.asarray(er1) > 0
     box = er[py:py + a.height, px:px + a.width]
     alpha = np.asarray(a.split()[-1]) > 8
     if box.shape != alpha.shape or not er[py:py + a.height, px:px + a.width][alpha].all():
         raise RuntimeError(f"{view}: drawing would leave the bag — not written")
 
-    a = bend_to_fabric(a, canvas, px, py)
+    a = bend_to_fabric(a, canvas, px, py, strength=7.0 * k)
     layer = Image.new("RGB", canvas.size, (255, 255, 255))
     layer.paste(a.convert("RGB"), (px, py), a.split()[-1])
     mult = ImageChops.multiply(canvas, layer)
     m = Image.new("L", canvas.size, 0)
     m.paste(a.split()[-1].point(lambda v: int(v * INK)), (px, py))
-    m = m.filter(ImageFilter.GaussianBlur(0.8))
+    m = m.filter(ImageFilter.GaussianBlur(0.8 * k))
     return Image.composite(mult, canvas, m)
 
 
@@ -234,14 +239,24 @@ def bend_to_fabric(a: Image.Image, canvas: Image.Image, px: int, py: int, streng
     crease bends with it instead of lying flat on top. `strength` is the largest shift
     in pixels at this template's resolution."""
     W, H = canvas.size
-    lum = np.asarray(canvas.convert("L").filter(ImageFilter.GaussianBlur(5)), dtype=np.float32) / 255.0
+    k = max(1, W // 1000)                       # work at ~1000px, scale offsets back up
+    # blur at fold scale (not weave scale): the weave must not ripple the ink
+    small = canvas.convert("L").resize((W // k, H // k), Image.BILINEAR).filter(ImageFilter.GaussianBlur(14))
+    lum = np.asarray(small, dtype=np.float32) / 255.0
     gy, gx = np.gradient(lum)
     g = max(1e-6, float(np.percentile(np.hypot(gx, gy), 99.5)))
-    dx, dy = (gx / g) * strength, (gy / g) * strength
     aw, ah = a.size
+    x0s, y0s, x1s, y1s = px // k, py // k, (px + aw) // k + 2, (py + ah) // k + 2
+    def up(field):
+        f = Image.fromarray(np.ascontiguousarray(field[y0s:y1s, x0s:x1s]), "F").resize(((x1s - x0s) * k, (y1s - y0s) * k), Image.BILINEAR)
+        arr = np.asarray(f)
+        oy, ox = py - y0s * k, px - x0s * k
+        return arr[oy:oy + ah, ox:ox + aw]
+    dx, dy = up(gx / g) * strength, up(gy / g) * strength
+    if dx.shape != (ah, aw): return a
     ys, xs = np.mgrid[0:ah, 0:aw].astype(np.float32)
-    sx = np.clip(xs - dx[py:py + ah, px:px + aw], 0, aw - 1)
-    sy = np.clip(ys - dy[py:py + ah, px:px + aw], 0, ah - 1)
+    sx = np.clip(xs - dx, 0, aw - 1)
+    sy = np.clip(ys - dy, 0, ah - 1)
     src = np.asarray(a.convert("RGBA")).astype(np.float32)
     x0, y0 = np.floor(sx).astype(int), np.floor(sy).astype(int)
     x1, y1 = np.clip(x0 + 1, 0, aw - 1), np.clip(y0 + 1, 0, ah - 1)
