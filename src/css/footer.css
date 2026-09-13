@@ -3,7 +3,7 @@
 
   Deliberately self-contained: literal colour and font values, no CSS custom
   properties. Pages across this site define different token sets (forge.html
-  uses --gold #d1b073 and --ink; forge-gallery.html uses --gold #b5935a and
+  uses --gold #d1b073 and --ink; forge-gallery.html uses --gold var(--gold, #b5935a) and
   --fg), so a token-based footer would render a different colour per page.
   That is exactly the drift this file exists to end.
 
@@ -25,11 +25,11 @@
 .site-footer {
   box-sizing: border-box;
   margin: 0;
-  border-top: 1px solid rgba(181, 147, 90, 0.18);
+  border-top: 1px solid color-mix(in srgb, var(--gold, #b5935a) 18%, transparent);
   background: transparent;
   padding: 2.5rem 2rem;
   text-align: center;
-  color: rgba(237, 232, 223, 0.58);
+  color: color-mix(in srgb, var(--fg, #ede8df) 58%, transparent);
   font-family: "Josefin Sans", "Helvetica Neue", Arial, sans-serif;
   font-size: 0.7rem;
   font-style: normal;
@@ -47,7 +47,7 @@
 }
 
 .site-footer a {
-  color: #b5935a;
+  color: var(--gold, #b5935a);
   text-decoration: none;
   font-family: inherit;
   font-size: inherit;
@@ -60,13 +60,13 @@
 
 .site-footer a:hover,
 .site-footer a:focus-visible {
-  color: #d9bd7b;
-  border-bottom-color: rgba(181, 147, 90, 0.5);
+  color: var(--gold-bright, #d9bd7b);
+  border-bottom-color: color-mix(in srgb, var(--gold, #b5935a) 50%, transparent);
 }
 
 .site-footer p {
   margin: 0;
-  color: rgba(237, 232, 223, 0.6); /* 6.1:1 on the dark page grounds at 11.2px (was 3.9:1) */
+  color: color-mix(in srgb, var(--fg, #ede8df) 60%, transparent); /* 6.1:1 on the dark page grounds at 11.2px (was 3.9:1) */
   font-family: inherit;
   font-size: inherit;
   font-style: normal;
@@ -87,12 +87,12 @@
    the page is dark again, so the light variant has to revert or the footer
    would be dark-on-dark. */
 html.dark-theme .site-footer.is-light {
-  border-top-color: rgba(181, 147, 90, 0.18);
-  color: rgba(237, 232, 223, 0.58);
+  border-top-color: color-mix(in srgb, var(--gold, #b5935a) 18%, transparent);
+  color: color-mix(in srgb, var(--fg, #ede8df) 58%, transparent);
 }
-html.dark-theme .site-footer.is-light p { color: rgba(237, 232, 223, 0.6); }
-html.dark-theme .site-footer.is-light a { color: #b5935a; }
-html.dark-theme .site-footer.is-light a:hover { color: #d9bd7b; }
+html.dark-theme .site-footer.is-light p { color: color-mix(in srgb, var(--fg, #ede8df) 60%, transparent); }
+html.dark-theme .site-footer.is-light a { color: var(--gold, #b5935a); }
+html.dark-theme .site-footer.is-light a:hover { color: var(--gold-bright, #d9bd7b); }
 
 @media (max-width: 520px) {
   .site-footer {

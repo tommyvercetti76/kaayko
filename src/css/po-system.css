@@ -19,19 +19,19 @@ body .btn-gps::before { inset: 0; background: var(--kc-line); }
 body .btn-gps::after  { inset: 1px; background: var(--kc-bg); -webkit-backdrop-filter: var(--kc-blur, none); backdrop-filter: var(--kc-blur, none); }
 body .btn-gps:hover { background: transparent !important; border-color: transparent !important; --kc-bg: var(--surface-2); --kc-line: var(--gold); }
 
-body .covered-card { position: relative; isolation: isolate; border-color: transparent !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; clip-path: var(--clip-md); --kc-clip: var(--clip-md); --kc-line: rgba(181,147,90,0.34); --kc-bg: linear-gradient(135deg, rgba(181,147,90,0.12), rgba(181,147,90,0.03)); }
+body .covered-card { position: relative; isolation: isolate; border-color: transparent !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; clip-path: var(--clip-md); --kc-clip: var(--clip-md); --kc-line: color-mix(in srgb, var(--gold, #b5935a) 34%, transparent); --kc-bg: linear-gradient(135deg, color-mix(in srgb, var(--gold, #b5935a) 12%, transparent), color-mix(in srgb, var(--gold, #b5935a) 3%, transparent)); }
 body .covered-card::before, body .covered-card::after { content: ''; position: absolute; z-index: -1; clip-path: var(--kc-clip); pointer-events: none; transition: background 0.18s ease; }
 body .covered-card::before { inset: 0; background: var(--kc-line); }
 body .covered-card::after  { inset: 1px; background: var(--kc-bg); -webkit-backdrop-filter: var(--kc-blur, none); backdrop-filter: var(--kc-blur, none); }
-body .covered-card:hover { background: transparent !important; border-color: transparent !important; --kc-line: #b5935a; }
-body .covered-card:focus-visible { background: transparent !important; border-color: transparent !important; --kc-line: #b5935a; }
+body .covered-card:hover { background: transparent !important; border-color: transparent !important; --kc-line: var(--gold, #b5935a); }
+body .covered-card:focus-visible { background: transparent !important; border-color: transparent !important; --kc-line: var(--gold, #b5935a); }
 
 
-body .water-card { position: relative; isolation: isolate; border-color: transparent !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; clip-path: var(--clip-md); --kc-clip: var(--clip-md); --kc-line: rgba(181,147,90,0.16); --kc-bg: linear-gradient(135deg, rgba(13,12,10,0.9), rgba(16,17,13,0.9)); }
+body .water-card { position: relative; isolation: isolate; border-color: transparent !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; clip-path: var(--clip-md); --kc-clip: var(--clip-md); --kc-line: color-mix(in srgb, var(--gold, #b5935a) 16%, transparent); --kc-bg: linear-gradient(135deg, rgba(13,12,10,0.9), rgba(16,17,13,0.9)); }
 body .water-card::before, body .water-card::after { content: ''; position: absolute; z-index: -1; clip-path: var(--kc-clip); pointer-events: none; transition: background 0.18s ease; }
 body .water-card::before { inset: 0; background: var(--kc-line); }
 body .water-card::after  { inset: 1px; background: var(--kc-bg); -webkit-backdrop-filter: var(--kc-blur, none); backdrop-filter: var(--kc-blur, none); }
-body .water-card:hover { background: transparent !important; border-color: transparent !important; --kc-bg: linear-gradient(135deg, rgba(181,147,90,0.06), rgba(181,147,90,0.03)); --kc-line: var(--gold); }
+body .water-card:hover { background: transparent !important; border-color: transparent !important; --kc-bg: linear-gradient(135deg, color-mix(in srgb, var(--gold, #b5935a) 6%, transparent), color-mix(in srgb, var(--gold, #b5935a) 3%, transparent)); --kc-line: var(--gold); }
 
 body .tour-go { position: relative; isolation: isolate; border-color: transparent !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; clip-path: var(--clip-md); --kc-clip: var(--clip-md); --kc-line: transparent; --kc-bg: linear-gradient(135deg, var(--gold-bright), var(--gold)); color: var(--gold-ink); }
 body .tour-go::before, body .tour-go::after { content: ''; position: absolute; z-index: -1; clip-path: var(--kc-clip); pointer-events: none; transition: background 0.18s ease; }
@@ -39,7 +39,7 @@ body .tour-go::before { inset: 0; background: var(--kc-line); }
 body .tour-go::after  { inset: 1px; background: var(--kc-bg); -webkit-backdrop-filter: var(--kc-blur, none); backdrop-filter: var(--kc-blur, none); }
 body .tour-go:hover { background: transparent !important; border-color: transparent !important; --kc-bg: linear-gradient(135deg, #e6cd8e, var(--gold)); }
 
-body .tour-box { position: relative; isolation: isolate; border-color: transparent !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; clip-path: var(--clip-lg); --kc-clip: var(--clip-lg); --kc-line: rgba(217,189,123,0.34); --kc-bg: linear-gradient(150deg,#0d0c0a,#111); }
+body .tour-box { position: relative; isolation: isolate; border-color: transparent !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; clip-path: var(--clip-lg); --kc-clip: var(--clip-lg); --kc-line: color-mix(in srgb, var(--gold-bright, #d9bd7b) 34%, transparent); --kc-bg: linear-gradient(150deg,var(--panel-a, #0d0c0a),#111); }
 body .tour-box::before, body .tour-box::after { content: ''; position: absolute; z-index: -1; clip-path: var(--kc-clip); pointer-events: none; transition: background 0.18s ease; }
 body .tour-box::before { inset: 0; background: var(--kc-line); }
 body .tour-box::after  { inset: 1px; background: var(--kc-bg); -webkit-backdrop-filter: var(--kc-blur, none); backdrop-filter: var(--kc-blur, none); }
@@ -74,19 +74,19 @@ body .submit-btn::before, body .submit-btn::after { content: ''; position: absol
 body .submit-btn::before { inset: 0; background: var(--kc-line); }
 body .submit-btn::after  { inset: 1px; background: var(--kc-bg); -webkit-backdrop-filter: var(--kc-blur, none); backdrop-filter: var(--kc-blur, none); }
 body .submit-btn:hover { background: transparent !important; border-color: transparent !important; --kc-bg: linear-gradient(135deg, #e6cd8e, var(--gold)); }
-body .submit-btn.is-incomplete { background: transparent !important; border-color: transparent !important; --kc-bg: rgba(181,147,90,0.14); --kc-line: rgba(181,147,90,0.34); }
+body .submit-btn.is-incomplete { background: transparent !important; border-color: transparent !important; --kc-bg: color-mix(in srgb, var(--gold, #b5935a) 14%, transparent); --kc-line: color-mix(in srgb, var(--gold, #b5935a) 34%, transparent); }
 
 body .success-panel { position: relative; isolation: isolate; border-color: transparent !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; clip-path: var(--clip-md); --kc-clip: var(--clip-md); --kc-line: rgba(143,188,106,0.32); --kc-bg: rgba(49,109,67,0.12); }
 body .success-panel::before, body .success-panel::after { content: ''; position: absolute; z-index: -1; clip-path: var(--kc-clip); pointer-events: none; transition: background 0.18s ease; }
 body .success-panel::before { inset: 0; background: var(--kc-line); }
 body .success-panel::after  { inset: 1px; background: var(--kc-bg); -webkit-backdrop-filter: var(--kc-blur, none); backdrop-filter: var(--kc-blur, none); }
 
-body .image-drop { isolation: isolate; border-color: transparent !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; clip-path: var(--clip-md); --kc-clip: var(--clip-md); --kc-line: rgba(181,147,90,0.38); --kc-bg: rgba(181,147,90,0.06); }
+body .image-drop { isolation: isolate; border-color: transparent !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; clip-path: var(--clip-md); --kc-clip: var(--clip-md); --kc-line: color-mix(in srgb, var(--gold, #b5935a) 38%, transparent); --kc-bg: color-mix(in srgb, var(--gold, #b5935a) 6%, transparent); }
 body .image-drop::before, body .image-drop::after { content: ''; position: absolute; z-index: -1; clip-path: var(--kc-clip); pointer-events: none; transition: background 0.18s ease; }
 body .image-drop::before { inset: 0; background: var(--kc-line); }
 body .image-drop::after  { inset: 1px; background: var(--kc-bg); -webkit-backdrop-filter: var(--kc-blur, none); backdrop-filter: var(--kc-blur, none); }
-body .image-drop:hover { background: transparent !important; border-color: transparent !important; --kc-bg: rgba(181,147,90,0.11); --kc-line: var(--gold); }
-body .image-drop.dragging { background: transparent !important; border-color: transparent !important; --kc-bg: rgba(181,147,90,0.11); --kc-line: var(--gold); }
+body .image-drop:hover { background: transparent !important; border-color: transparent !important; --kc-bg: color-mix(in srgb, var(--gold, #b5935a) 11%, transparent); --kc-line: var(--gold); }
+body .image-drop.dragging { background: transparent !important; border-color: transparent !important; --kc-bg: color-mix(in srgb, var(--gold, #b5935a) 11%, transparent); --kc-line: var(--gold); }
 
 body .submit-card { position: relative; isolation: isolate; border-color: transparent !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; clip-path: var(--clip-lg); --kc-clip: var(--clip-lg); --kc-line: var(--line); --kc-bg: linear-gradient(135deg, var(--panel), var(--panel-soft)); }
 body .submit-card::before, body .submit-card::after { content: ''; position: absolute; z-index: -1; clip-path: var(--kc-clip); pointer-events: none; transition: background 0.18s ease; }
@@ -111,12 +111,12 @@ body .submit-error::before, body .submit-error::after { content: ''; position: a
 body .submit-error::before { inset: 0; background: var(--kc-line); }
 body .submit-error::after  { inset: 1px; background: var(--kc-bg); -webkit-backdrop-filter: var(--kc-blur, none); backdrop-filter: var(--kc-blur, none); }
 
-body .rate-btn { position: relative; isolation: isolate; border-color: transparent !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; clip-path: var(--clip-md); --kc-clip: var(--clip-md); --kc-line: var(--line-gold); --kc-bg: linear-gradient(135deg, #0d0c0a, #10110d); }
+body .rate-btn { position: relative; isolation: isolate; border-color: transparent !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; clip-path: var(--clip-md); --kc-clip: var(--clip-md); --kc-line: var(--line-gold); --kc-bg: linear-gradient(135deg, var(--panel-a, #0d0c0a), var(--panel-a, #0d0c0a)); }
 body .rate-btn::before, body .rate-btn::after { content: ''; position: absolute; z-index: -1; clip-path: var(--kc-clip); pointer-events: none; transition: background 0.18s ease; }
 body .rate-btn::before { inset: 0; background: var(--kc-line); }
 body .rate-btn::after  { inset: 1px; background: var(--kc-bg); -webkit-backdrop-filter: var(--kc-blur, none); backdrop-filter: var(--kc-blur, none); }
 body .rate-btn:hover { background: transparent !important; border-color: transparent !important; --kc-line: var(--gold); }
-body .rate-btn.selected { background: transparent !important; border-color: transparent !important; --kc-bg: rgba(181,147,90,0.12); --kc-line: var(--gold-bright); }
+body .rate-btn.selected { background: transparent !important; border-color: transparent !important; --kc-bg: color-mix(in srgb, var(--gold, #b5935a) 12%, transparent); --kc-line: var(--gold-bright); }
 
 body .submit-btn { position: relative; isolation: isolate; border-color: transparent !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; clip-path: var(--clip-md); --kc-clip: var(--clip-md); --kc-line: transparent; --kc-bg: linear-gradient(135deg, var(--gold-bright), var(--gold)); color: var(--gold-ink); }
 body .submit-btn::before, body .submit-btn::after { content: ''; position: absolute; z-index: -1; clip-path: var(--kc-clip); pointer-events: none; transition: background 0.18s ease; }
@@ -142,12 +142,12 @@ body .onboard-go::after  { inset: 1px; background: var(--kc-bg); -webkit-backdro
 body .onboard-go:hover { background: transparent !important; border-color: transparent !important; --kc-bg: linear-gradient(135deg, #e6cd8e, var(--gold)); }
 
 
-body .update-banner { position: relative; isolation: isolate; border-color: transparent !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; clip-path: var(--clip-md); --kc-clip: var(--clip-md); --kc-line: var(--line-gold); --kc-bg: rgba(181,147,90,0.08); }
+body .update-banner { position: relative; isolation: isolate; border-color: transparent !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; clip-path: var(--clip-md); --kc-clip: var(--clip-md); --kc-line: var(--line-gold); --kc-bg: color-mix(in srgb, var(--gold, #b5935a) 8%, transparent); }
 body .update-banner::before, body .update-banner::after { content: ''; position: absolute; z-index: -1; clip-path: var(--kc-clip); pointer-events: none; transition: background 0.18s ease; }
 body .update-banner::before { inset: 0; background: var(--kc-line); }
 body .update-banner::after  { inset: 1px; background: var(--kc-bg); -webkit-backdrop-filter: var(--kc-blur, none); backdrop-filter: var(--kc-blur, none); }
 
-body .rate-card { position: relative; isolation: isolate; border-color: transparent !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; clip-path: var(--clip-lg); --kc-clip: var(--clip-lg); --kc-line: var(--line-gold); --kc-bg: linear-gradient(135deg, #0d0c0a, #10110d); }
+body .rate-card { position: relative; isolation: isolate; border-color: transparent !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; clip-path: var(--clip-lg); --kc-clip: var(--clip-lg); --kc-line: var(--line-gold); --kc-bg: linear-gradient(135deg, var(--panel-a, #0d0c0a), var(--panel-a, #0d0c0a)); }
 body .rate-card::before, body .rate-card::after { content: ''; position: absolute; z-index: -1; clip-path: var(--kc-clip); pointer-events: none; transition: background 0.18s ease; }
 body .rate-card::before { inset: 0; background: var(--kc-line); }
 body .rate-card::after  { inset: 1px; background: var(--kc-bg); -webkit-backdrop-filter: var(--kc-blur, none); backdrop-filter: var(--kc-blur, none); }
@@ -155,11 +155,11 @@ body .rate-card::after  { inset: 1px; background: var(--kc-bg); -webkit-backdrop
 
 /* ═══ hand-tuned ═══ */
 /* Submit button 'N items left' state stays readable on the muted fill */
-body .submit-btn.is-incomplete { --kc-bg: rgba(181,147,90,0.14); --kc-line: rgba(181,147,90,0.34); color: var(--gold-bright); }
+body .submit-btn.is-incomplete { --kc-bg: color-mix(in srgb, var(--gold, #b5935a) 14%, transparent); --kc-line: color-mix(in srgb, var(--gold, #b5935a) 34%, transparent); color: var(--gold-bright); }
 body .submit-btn.is-incomplete:hover { --kc-line: var(--gold); }
 /* Dashed drop zone → soft outline (dashes cannot follow a chamfer) */
-body .image-drop { --kc-line: rgba(181,147,90,0.38); --kc-bg: rgba(181,147,90,0.06); }
-body .image-drop:hover, body .image-drop.dragging { --kc-line: var(--gold); --kc-bg: rgba(181,147,90,0.11); }
+body .image-drop { --kc-line: color-mix(in srgb, var(--gold, #b5935a) 38%, transparent); --kc-bg: color-mix(in srgb, var(--gold, #b5935a) 6%, transparent); }
+body .image-drop:hover, body .image-drop.dragging { --kc-line: var(--gold); --kc-bg: color-mix(in srgb, var(--gold, #b5935a) 11%, transparent); }
 /* Search: the map container and its floating control */
 body .search-map { overflow: hidden; }
 /* Floating "Search this area" — primary, keeps its absolute placement */

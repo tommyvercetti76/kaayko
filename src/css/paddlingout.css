@@ -24,12 +24,12 @@
 :root {
   --bg:            #080808;
   --panel-a:       #0d0c0a;
-  --panel-c:       #10110d;
+  --panel-c:       var(--panel-a, #0d0c0a);
   --fg:            #ede8df;
-  --muted:         rgba(237, 232, 223, 0.58);
+  --muted:         color-mix(in srgb, var(--fg, #ede8df) 58%, transparent);
   --gold:          #b5935a;
   --gold-bright:   #d9bd7b;
-  --line:          rgba(181, 147, 90, 0.74);
+  --line:          color-mix(in srgb, var(--gold, #b5935a) 74%, transparent);
   --score-critical: #bd3b2b;
   --score-moderate: #c59a61;
   --score-good:     #316d43;
@@ -87,7 +87,7 @@ body {
   display: block;
   padding: 1.2rem 1.4rem;
   background: rgba(20, 18, 12, 0.6);
-  border: 1px solid rgba(181, 147, 90, 0.2);
+  border: 1px solid color-mix(in srgb, var(--gold, #b5935a) 20%, transparent);
   border-radius: 10px;
   text-decoration: none;
   color: inherit;
@@ -127,12 +127,12 @@ body {
 }
 .po-error-msg { margin: 0; font-family: var(--font-serif); font-style: italic; font-size: 1.15rem; color: var(--muted); }
 .po-error-retry {
-  cursor: pointer; border: 1px solid rgba(181,147,90,0.5); border-radius: 0; clip-path: var(--clip-md);
-  background: rgba(181,147,90,0.1); color: var(--gold-bright);
+  cursor: pointer; border: 1px solid color-mix(in srgb, var(--gold, #b5935a) 50%, transparent); border-radius: 0; clip-path: var(--clip-md);
+  background: color-mix(in srgb, var(--gold, #b5935a) 10%, transparent); color: var(--gold-bright);
   font-family: var(--font-sans); font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase;
   padding: 0.7rem 1.4rem; transition: background 0.2s ease, transform 0.15s ease;
 }
-.po-error-retry:hover { background: rgba(181,147,90,0.2); transform: translateY(-1px); }
+.po-error-retry:hover { background: color-mix(in srgb, var(--gold, #b5935a) 20%, transparent); transform: translateY(-1px); }
 
 /*─────────────────────────────────────────────────────────────────────────────
  3) Card base
@@ -154,14 +154,14 @@ body {
 .card-skeleton { cursor: default; pointer-events: none; }
 .card-skeleton .cs-img {
   height: 280px;
-  background: linear-gradient(100deg, rgba(181,147,90,0.05) 30%, rgba(181,147,90,0.14) 50%, rgba(181,147,90,0.05) 70%);
+  background: linear-gradient(100deg, color-mix(in srgb, var(--gold, #b5935a) 5%, transparent) 30%, color-mix(in srgb, var(--gold, #b5935a) 14%, transparent) 50%, color-mix(in srgb, var(--gold, #b5935a) 5%, transparent) 70%);
   background-size: 200% 100%;
   animation: cs-shimmer 1.3s ease-in-out infinite;
 }
 .card-skeleton .cs-body { padding: 1rem 1.15rem 1.35rem; display: flex; flex-direction: column; gap: 0.6rem; }
 .card-skeleton .cs-line {
   height: 14px; border-radius: 6px;
-  background: linear-gradient(100deg, rgba(181,147,90,0.06) 30%, rgba(181,147,90,0.15) 50%, rgba(181,147,90,0.06) 70%);
+  background: linear-gradient(100deg, color-mix(in srgb, var(--gold, #b5935a) 6%, transparent) 30%, color-mix(in srgb, var(--gold, #b5935a) 15%, transparent) 50%, color-mix(in srgb, var(--gold, #b5935a) 6%, transparent) 70%);
   background-size: 200% 100%;
   animation: cs-shimmer 1.3s ease-in-out infinite;
 }
@@ -181,7 +181,7 @@ body {
   border-color: var(--gold);
   box-shadow:
     0 16px 40px rgba(0, 0, 0, 0.5),
-    0 0 60px rgba(181, 147, 90, 0.12);
+    0 0 60px color-mix(in srgb, var(--gold, #b5935a) 12%, transparent);
 }
 
 .submit-entry-card {
@@ -191,14 +191,14 @@ body {
   padding: 2rem;
   border-style: dashed;
   background:
-    linear-gradient(135deg, rgba(181,147,90,0.08), rgba(49,109,67,0.06)),
+    linear-gradient(135deg, color-mix(in srgb, var(--gold, #b5935a) 8%, transparent), rgba(49,109,67,0.06)),
     var(--panel-a);
 }
 
 .submit-entry-plus {
   width: 74px;
   height: 74px;
-  border: 1px solid rgba(181,147,90,0.42);
+  border: 1px solid color-mix(in srgb, var(--gold, #b5935a) 42%, transparent);
   border-radius: 50%;
   display: grid;
   place-items: center;
@@ -207,7 +207,7 @@ body {
   font-size: 3.1rem;
   font-weight: 300;
   line-height: 1;
-  background: rgba(181,147,90,0.08);
+  background: color-mix(in srgb, var(--gold, #b5935a) 8%, transparent);
 }
 
 .submit-entry-copy {
@@ -245,7 +245,7 @@ body {
 .submit-entry-action {
   width: fit-content;
   padding-bottom: 0.2rem;
-  border-bottom: 1px solid rgba(217,189,123,0.55);
+  border-bottom: 1px solid color-mix(in srgb, var(--gold-bright, #d9bd7b) 55%, transparent);
   color: var(--gold-bright);
 }
 
@@ -303,7 +303,7 @@ body {
   transform: translateY(-50%);
   width: 40px;
   height: 40px;
-  background: rgba(8, 8, 8, 0.72);
+  background: color-mix(in srgb, var(--bg, #080808) 72%, transparent);
   border: 1px solid var(--line);
   color: var(--fg);
   border-radius: 0;
@@ -324,7 +324,7 @@ body {
 }
 
 .carousel-nav:hover {
-  background: rgba(181, 147, 90, 0.28);
+  background: color-mix(in srgb, var(--gold, #b5935a) 28%, transparent);
   border-color: var(--gold-bright);
   transform: translateY(-50%) scale(1.08);
 }
@@ -343,10 +343,10 @@ body {
   position: absolute;
   top: 0.9rem;
   right: 0.9rem;
-  background: rgba(8, 8, 8, 0.62);
+  background: color-mix(in srgb, var(--bg, #080808) 62%, transparent);
   backdrop-filter: blur(14px) saturate(160%);
   -webkit-backdrop-filter: blur(14px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid color-mix(in srgb, var(--fg, #ffffff) 10%, transparent);
   border-radius: 0;
   clip-path: var(--clip-sm);
   padding: 0.34rem 0.72rem 0.34rem 0.55rem;
@@ -361,8 +361,8 @@ body {
 }
 
 .conditions-badge:hover {
-  background: rgba(8, 8, 8, 0.82);
-  border-color: rgba(255, 255, 255, 0.18);
+  background: color-mix(in srgb, var(--bg, #080808) 82%, transparent);
+  border-color: color-mix(in srgb, var(--fg, #ffffff) 18%, transparent);
   transform: scale(1.04);
 }
 
@@ -395,7 +395,7 @@ body {
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.09em;
-  color: rgba(255, 255, 255, 0.6);
+  color: color-mix(in srgb, var(--fg, #ffffff) 60%, transparent);
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
@@ -415,7 +415,7 @@ body {
   width: 6px;
   height: 6px;
   border-radius: 0;                /* tiny square, not a circle */
-  background: rgba(255, 255, 255, 0.38);
+  background: color-mix(in srgb, var(--fg, #ffffff) 38%, transparent);
   cursor: pointer;
   transition: all 0.3s var(--ease);
   flex-shrink: 0;
@@ -519,9 +519,9 @@ body {
 .rate-button:active {
   color: var(--gold-bright);
   text-shadow:
-    0 0 8px  rgba(217, 189, 123, 0.9),
-    0 0 22px rgba(181, 147, 90, 0.5),
-    0 0 50px rgba(181, 147, 90, 0.18);
+    0 0 8px  color-mix(in srgb, var(--gold-bright, #d9bd7b) 90%, transparent),
+    0 0 22px color-mix(in srgb, var(--gold, #b5935a) 50%, transparent),
+    0 0 50px color-mix(in srgb, var(--gold, #b5935a) 18%, transparent);
 }
 
 .forecast-button:hover::after,
@@ -598,7 +598,7 @@ body {
   font-size: 1.05rem;
   line-height: 1.66;
   max-width: 46rem;
-  color: rgba(237, 232, 223, 0.78);
+  color: color-mix(in srgb, var(--fg, #ede8df) 78%, transparent);
   margin: 0 0 0.9rem;
 }
 
@@ -609,7 +609,7 @@ body {
 .po-intro a {
   color: var(--gold);
   text-decoration: none;
-  border-bottom: 1px solid rgba(181, 147, 90, 0.4);
+  border-bottom: 1px solid color-mix(in srgb, var(--gold, #b5935a) 40%, transparent);
   transition: color 0.25s ease, border-color 0.25s ease;
 }
 .po-intro a:hover { color: var(--gold-bright); border-color: var(--gold-bright); }
@@ -626,7 +626,7 @@ body {
   opacity: 0.9;
   margin: 0 0 1.1rem;
   padding-bottom: 0.55rem;
-  border-bottom: 1px solid rgba(181, 147, 90, 0.18);
+  border-bottom: 1px solid color-mix(in srgb, var(--gold, #b5935a) 18%, transparent);
 }
 
 .po-faq {
@@ -644,11 +644,11 @@ body {
 .po-faq-item {
   padding: 1.15rem 1.35rem;
   background: rgba(20, 18, 12, 0.5);
-  border: 1px solid rgba(181, 147, 90, 0.16);
+  border: 1px solid color-mix(in srgb, var(--gold, #b5935a) 16%, transparent);
   border-radius: 10px;
   transition: border-color 0.3s var(--ease);
 }
-.po-faq-item:hover { border-color: rgba(181, 147, 90, 0.45); }
+.po-faq-item:hover { border-color: color-mix(in srgb, var(--gold, #b5935a) 45%, transparent); }
 
 .po-faq-item h3 {
   font-family: var(--font-sans);
@@ -664,7 +664,7 @@ body {
   font-family: var(--font-serif);
   font-size: 1rem;
   line-height: 1.62;
-  color: rgba(237, 232, 223, 0.7);
+  color: color-mix(in srgb, var(--fg, #ede8df) 70%, transparent);
   margin: 0;
 }
 
@@ -678,7 +678,7 @@ body {
 }
 .lake-name-link:hover {
   color: var(--gold-bright);
-  border-bottom-color: rgba(181, 147, 90, 0.5);
+  border-bottom-color: color-mix(in srgb, var(--gold, #b5935a) 50%, transparent);
 }
 
 /* ── Chamfer outlines (12 Sep 2026) ────────────────────────────────────────
@@ -692,6 +692,6 @@ body {
 .card::after, .po-error-retry::after, .conditions-badge::after { inset: 1px; background: var(--kc-bg); -webkit-backdrop-filter: var(--kc-blur, none); backdrop-filter: var(--kc-blur, none); }
 
 .card { --kc-clip: var(--clip-lg); --kc-line: var(--line-strong, var(--line)); --kc-bg: linear-gradient(135deg, var(--panel-a), var(--panel-c)); }
-.po-error-retry { --kc-clip: var(--clip-md); --kc-line: rgba(181,147,90,0.5); --kc-bg: rgba(181,147,90,0.1); }
-.po-error-retry:hover { --kc-bg: rgba(181,147,90,0.2); }
-.conditions-badge { --kc-clip: var(--clip-sm); --kc-line: rgba(255,255,255,0.1); --kc-bg: rgba(8,8,8,0.62); --kc-blur: blur(14px) saturate(160%); }
+.po-error-retry { --kc-clip: var(--clip-md); --kc-line: color-mix(in srgb, var(--gold, #b5935a) 50%, transparent); --kc-bg: color-mix(in srgb, var(--gold, #b5935a) 10%, transparent); }
+.po-error-retry:hover { --kc-bg: color-mix(in srgb, var(--gold, #b5935a) 20%, transparent); }
+.conditions-badge { --kc-clip: var(--clip-sm); --kc-line: color-mix(in srgb, var(--fg, #ffffff) 10%, transparent); --kc-bg: color-mix(in srgb, var(--bg, #080808) 62%, transparent); --kc-blur: blur(14px) saturate(160%); }

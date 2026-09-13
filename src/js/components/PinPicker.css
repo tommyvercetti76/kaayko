@@ -1,9 +1,9 @@
 /* PinPicker — result pins (score-coloured) and the picker container. */
-.pp-map { width: 100%; height: 100%; background: #0d0d0f; z-index: 0; }
-.pp-map .leaflet-control-attribution { font-size: 9px; background: rgba(8,8,8,0.6); color: rgba(237,232,223,0.6); }
-.pp-map .leaflet-control-attribution a { color: rgba(237,232,223,0.75); }
-.pp-map .leaflet-bar { border: 1px solid rgba(181,147,90,0.4); border-radius: 0; }
-.pp-map .leaflet-bar a { background: #14120e; color: #d9bd7b; border-bottom: 1px solid rgba(181,147,90,0.25); }
+.pp-map { width: 100%; height: 100%; background: var(--panel-a, #0d0c0a); z-index: 0; }
+.pp-map .leaflet-control-attribution { font-size: 9px; background: color-mix(in srgb, var(--bg, #080808) 60%, transparent); color: color-mix(in srgb, var(--fg, #ede8df) 60%, transparent); }
+.pp-map .leaflet-control-attribution a { color: color-mix(in srgb, var(--fg, #ede8df) 75%, transparent); }
+.pp-map .leaflet-bar { border: 1px solid color-mix(in srgb, var(--gold, #b5935a) 40%, transparent); border-radius: 0; }
+.pp-map .leaflet-bar a { background: var(--panel-b, #14120e); color: var(--gold-bright, #d9bd7b); border-bottom: 1px solid color-mix(in srgb, var(--gold, #b5935a) 25%, transparent); }
 .pp-map .leaflet-bar a:hover { background: #1f1b14; }
 
 .pp-pin {
@@ -17,7 +17,7 @@
 }
 .pp-pin.cover span { font-size: 12px; }
 .pp-map .leaflet-tooltip {
-  background: rgba(8,8,8,0.92); color: #ede8df; border: 1px solid rgba(181,147,90,0.4); border-radius: 0;
+  background: color-mix(in srgb, var(--bg, #080808) 92%, transparent); color: var(--fg, #ede8df); border: 1px solid color-mix(in srgb, var(--gold, #b5935a) 40%, transparent); border-radius: 0;
   font-family: 'Cormorant Garamond', Georgia, serif; font-size: 0.95rem; padding: 4px 8px;
 }
-.pp-map .leaflet-tooltip-top::before { border-top-color: rgba(181,147,90,0.4); }
+.pp-map .leaflet-tooltip-top::before { border-top-color: color-mix(in srgb, var(--gold, #b5935a) 40%, transparent); }

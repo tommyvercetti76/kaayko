@@ -11,8 +11,8 @@
    ───────────────────────────────────────────────────────────────────────────── */
 
 :root {
-  --poh-gold: #b5935a;
-  --poh-gold-bright: #d9bd7b;
+  --poh-gold: var(--gold, #b5935a);
+  --poh-gold-bright: var(--gold-bright, #d9bd7b);
 }
 
 .po-page-header {
@@ -23,7 +23,7 @@
   /* Side padding respects the notch on devices that report an inset; env()
      is 0 elsewhere. Pairs with viewport-fit=cover in each page <head>. */
   padding: 2rem max(2rem, env(safe-area-inset-right)) 1.25rem max(2rem, env(safe-area-inset-left));
-  border-bottom: 1px solid rgba(181, 147, 90, 0.18);
+  border-bottom: 1px solid color-mix(in srgb, var(--gold, #b5935a) 18%, transparent);
 }
 
 .po-brand-row { display: flex; align-items: flex-end; gap: 0.7rem; min-width: 0; }
@@ -94,8 +94,8 @@
 .po-btn.is-current { color: var(--poh-gold-bright); box-shadow: inset 0 -2px 0 var(--poh-gold-bright); }
 
 /* Primary action: Add a lake — solid gold, square */
-.po-btn--primary { padding: 0 0.9rem 0 0.7rem; background: var(--poh-gold-bright); color: #141210; }
-.po-btn--primary:hover { background: #e6cd8e; color: #141210; }
+.po-btn--primary { padding: 0 0.9rem 0 0.7rem; background: var(--poh-gold-bright); color: var(--gold-ink, #141210); }
+.po-btn--primary:hover { background: #e6cd8e; color: var(--gold-ink, #141210); }
 .po-btn--primary.is-current { box-shadow: none; background: var(--poh-gold); }
 
 /* Back chevron — plain */

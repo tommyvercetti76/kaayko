@@ -40,7 +40,7 @@ html.dark-theme .rating-hero {
 
 /* Dark mode support */
 html.dark-theme .rating-hero {
-  color: ivory;
+  color: var(--fg, ivory);
 }
 
 html:not(.dark-theme) .rating-hero {
@@ -104,7 +104,7 @@ html:not(.dark-theme) .rating-hero {
   font-size: 32px;
   font-weight: bold;
   line-height: 1;
-  color: white;
+  color: var(--fg, white);
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
   /* Ensure readability on all background colors */
 }
@@ -113,7 +113,7 @@ html:not(.dark-theme) .rating-hero {
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.5px;
-  color: white;
+  color: var(--fg, white);
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
   margin-top: 4px;
   opacity: 0.9;
@@ -122,7 +122,7 @@ html:not(.dark-theme) .rating-hero {
 
 /* Theme support for rating number */
 html.dark-theme .rating-number {
-  color: ivory;
+  color: var(--fg, ivory);
 }
 
 html:not(.dark-theme) .rating-number {
@@ -132,12 +132,12 @@ html:not(.dark-theme) .rating-number {
 
 /* Theme support for NOW indicator */
 html.dark-theme .now-indicator {
-  color: ivory;
+  color: var(--fg, ivory);
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 html:not(.dark-theme) .now-indicator {
-  color: #fff;
+  color: var(--fg, #fff);
   text-shadow: none;
 }
 
@@ -146,7 +146,7 @@ html:not(.dark-theme) .now-indicator {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: white;
+  color: var(--fg, white);
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
   text-align: center;
   margin-bottom: 4px;
@@ -154,11 +154,11 @@ html:not(.dark-theme) .now-indicator {
 
 /* Theme support for paddle score label */
 html.dark-theme .paddle-score-label {
-  color: ivory;
+  color: var(--fg, ivory);
 }
 
 html:not(.dark-theme) .paddle-score-label {
-  color: #fff;
+  color: var(--fg, #fff);
   text-shadow: none;
 }
 
@@ -258,13 +258,13 @@ html:not(.dark-theme) .paddle-score-label {
   font-size: 11px;
   line-height: 1.3;
   opacity: 0.9;
-  color: rgba(255, 255, 255, 0.8);
+  color: color-mix(in srgb, var(--fg, #fff) 80%, transparent);
 }
 
 /* Dark theme adjustments for penalties */
 html.dark-theme .penalty-info {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: color-mix(in srgb, var(--fg, #fff) 10%, transparent);
 }
 
 html.dark-theme .penalty-info-none {
@@ -428,7 +428,7 @@ html.dark-theme .penalty-title {
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.1);
   border-left: 3px solid rgba(255, 255, 255, 0.4);
-  color: rgba(255, 255, 255, 0.95);
+  color: color-mix(in srgb, var(--fg, #fff) 95%, transparent);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -483,8 +483,8 @@ html.dark-theme .penalty-title {
 /* Dark mode adjustments */
 html.dark-theme .condition-item {
   background: rgba(255, 255, 255, 0.08);
-  border-left-color: rgba(255, 255, 255, 0.3);
-  color: rgba(255, 255, 255, 0.9);
+  border-left-color: color-mix(in srgb, var(--fg, #fff) 30%, transparent);
+  color: color-mix(in srgb, var(--fg, #fff) 90%, transparent);
 }
 
 .skill-advice {
@@ -590,7 +590,7 @@ html.dark-theme .condition-item {
 /* Dark theme adjustments */
 html.dark-theme .skill-recommendation-modern {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: color-mix(in srgb, var(--fg, #fff) 15%, transparent);
 }
 
 html.dark-theme .skill-description,
@@ -674,12 +674,12 @@ html:not(.dark-theme) .skill-recommendation-modern {
   font-size: 16px;
   font-weight: 700;
   margin-bottom: 4px;
-  color: rgba(255, 255, 255, 0.95);
+  color: color-mix(in srgb, var(--fg, #fff) 95%, transparent);
 }
 
 /* Theme support for skill title */
 html.dark-theme .skill-title {
-  color: ivory;
+  color: var(--fg, ivory);
 }
 
 html:not(.dark-theme) .skill-title {
@@ -861,12 +861,12 @@ html:not(.dark-theme) .skill-title {
 .weather-value {
   font-size: 14px;
   font-weight: 600;
-  color: white;
+  color: var(--fg, white);
 }
 
 /* Theme support for weather value */
 html.dark-theme .weather-value {
-  color: ivory;
+  color: var(--fg, ivory);
 }
 
 html:not(.dark-theme) .weather-value {
@@ -875,7 +875,7 @@ html:not(.dark-theme) .weather-value {
 
 .weather-label {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.7);
+  color: color-mix(in srgb, var(--fg, #fff) 70%, transparent);
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
@@ -929,7 +929,7 @@ html:not(.dark-theme) .weather-label {
 
 /* Theme support for recommendation text */
 html.dark-theme .recommendation-text {
-  color: ivory;
+  color: var(--fg, ivory);
 }
 
 html:not(.dark-theme) .recommendation-text {
@@ -939,7 +939,7 @@ html:not(.dark-theme) .recommendation-text {
 .skill-details {
   font-size: 12px;
   line-height: 1.3;
-  color: rgba(255, 255, 255, 0.8);
+  color: color-mix(in srgb, var(--fg, #fff) 80%, transparent);
   margin: 0;
   background: transparent;
   padding: 8px 12px;
@@ -1083,7 +1083,7 @@ html.dark-theme .feedback-thanks {
   min-height: 210px;
   margin: 0;
   justify-content: center;
-  border-right: 1px solid rgba(217,189,123,0.18);
+  border-right: 1px solid color-mix(in srgb, var(--gold-bright, #d9bd7b) 18%, transparent);
 }
 
 #ratingHeroContainer .paddle-score-label {
@@ -1129,7 +1129,7 @@ html.dark-theme .feedback-thanks {
   gap: 0;
   padding: 0;
   margin: 0;
-  border: 1px solid rgba(217,189,123,0.16);
+  border: 1px solid color-mix(in srgb, var(--gold-bright, #d9bd7b) 16%, transparent);
   border-radius: 8px;
   overflow: hidden;
   background: rgba(255,255,255,0.025);
@@ -1139,14 +1139,14 @@ html.dark-theme .feedback-thanks {
   min-height: 68px;
   padding: 0.78rem 0.9rem;
   border: 0;
-  border-right: 1px solid rgba(217,189,123,0.12);
-  border-bottom: 1px solid rgba(217,189,123,0.12);
+  border-right: 1px solid color-mix(in srgb, var(--gold-bright, #d9bd7b) 12%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--gold-bright, #d9bd7b) 12%, transparent);
   border-radius: 0;
   background: transparent;
 }
 
 #ratingHeroContainer .weather-stat:hover {
-  background: rgba(217,189,123,0.055);
+  background: color-mix(in srgb, var(--gold-bright, #d9bd7b) 6%, transparent);
 }
 
 #ratingHeroContainer .weather-icon {
@@ -1154,27 +1154,27 @@ html.dark-theme .feedback-thanks {
   place-items: center;
   width: 34px;
   height: 34px;
-  border: 1px solid rgba(217,189,123,0.2);
+  border: 1px solid color-mix(in srgb, var(--gold-bright, #d9bd7b) 20%, transparent);
   border-radius: 50%;
   font-family: 'Josefin_Bold', Arial, sans-serif;
   font-size: 0.52rem;
   letter-spacing: 0.08em;
   color: var(--gold, #b5935a);
-  background: rgba(181,147,90,0.07);
+  background: color-mix(in srgb, var(--gold, #b5935a) 7%, transparent);
 }
 #ratingHeroContainer .weather-icon svg { width: 17px; height: 17px; display: block; }
 
 #ratingHeroContainer .weather-value {
   font-size: 1.05rem;
   line-height: 1.1;
-  color: ivory !important;
+  color: var(--fg, ivory) !important;
 }
 
 #ratingHeroContainer .weather-label {
   margin-top: 0.2rem;
   font-size: 0.66rem;
   letter-spacing: 0.11em;
-  color: rgba(237,232,223,0.6) !important;
+  color: color-mix(in srgb, var(--fg, #ede8df) 60%, transparent) !important;
 }
 
 #ratingHeroContainer .paddler-briefing {
@@ -1183,12 +1183,12 @@ html.dark-theme .feedback-thanks {
 
 #ratingHeroContainer .verdict-title,
 #ratingHeroContainer .cr-label {
-  color: ivory !important;
+  color: var(--fg, ivory) !important;
 }
 
 #ratingHeroContainer .verdict-subtitle,
 #ratingHeroContainer .cr-detail {
-  color: rgba(237,232,223,0.72) !important;
+  color: color-mix(in srgb, var(--fg, #ede8df) 72%, transparent) !important;
 }
 
 #ratingHeroContainer .paddle-feedback {
@@ -1204,7 +1204,7 @@ html.dark-theme .feedback-thanks {
   #ratingHeroContainer .rating-section {
     min-height: 176px;
     border-right: 0;
-    border-bottom: 1px solid rgba(217,189,123,0.18);
+    border-bottom: 1px solid color-mix(in srgb, var(--gold-bright, #d9bd7b) 18%, transparent);
     padding-bottom: 1rem;
   }
 
@@ -1305,7 +1305,7 @@ html:not(.dark-theme) .ring-track {
   font-size: 26px;
   font-weight: 700;
   line-height: 1;
-  color: #fff;
+  color: var(--fg, #fff);
 }
 
 .ring-denom {
@@ -1320,7 +1320,7 @@ html:not(.dark-theme) .ring-track {
 /* always white — ring sits on its own colored background context */
 html.dark-theme .ring-denom,
 html:not(.dark-theme) .ring-denom {
-  color: rgba(255, 255, 255, 0.6);
+  color: color-mix(in srgb, var(--fg, #fff) 60%, transparent);
 }
 
 .ring-pct {
@@ -1444,7 +1444,7 @@ html:not(.dark-theme) .paddler-briefing {
 }
 
 html.dark-theme .verdict-title {
-  color: ivory;
+  color: var(--fg, ivory);
 }
 html:not(.dark-theme) .verdict-title {
   color: #111;

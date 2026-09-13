@@ -5,7 +5,7 @@
   <script src="/js/prefs.js"></script>
   <script src="/js/consent-notice.js" defer></script>
   <script src="/js/kaayko-icons.js" defer></script>
-  <script>document.documentElement.classList.add('dark-theme');</script>
+  <script src="/js/theme.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Settings | Kaayko Paddling Out</title>
@@ -18,13 +18,13 @@
   <style>
     :root {
       --bg:#080808;
-      --panel:#0d0c0a;
-      --panel-soft:#10110d;
+      --panel:var(--panel-a, #0d0c0a);
+      --panel-soft:var(--panel-a, #0d0c0a);
       --fg:#ede8df;
-      --muted:rgba(237,232,223,0.58);
+      --muted:color-mix(in srgb, var(--fg, #ede8df) 58%, transparent);
       --gold:#b5935a;
       --gold-bright:#d9bd7b;
-      --line:rgba(181,147,90,0.28);
+      --line:color-mix(in srgb, var(--gold, #b5935a) 28%, transparent);
       --ok:#8fbc6a;
       --bad:#f87171;
       --font-serif:'Cormorant Garamond', Georgia, serif;
@@ -38,14 +38,14 @@
     body {
       margin:0; min-height:100vh;
       background:
-        radial-gradient(1200px 600px at 80% -10%, rgba(181,147,90,0.06), transparent 60%),
+        radial-gradient(1200px 600px at 80% -10%, color-mix(in srgb, var(--gold, #b5935a) 6%, transparent), transparent 60%),
         var(--bg);
       color:var(--fg); font-family:var(--font-serif);
     }
     .settings-shell { width:min(100%, 860px); margin:0 auto; padding:2rem 1.4rem 4rem; }
     .settings-top {
       display:flex; align-items:flex-end; justify-content:space-between; gap:1rem;
-      padding-bottom:1.2rem; border-bottom:1px solid rgba(181,147,90,0.18);
+      padding-bottom:1.2rem; border-bottom:1px solid color-mix(in srgb, var(--gold, #b5935a) 18%, transparent);
     }
     .back-link {
       color:var(--gold); text-decoration:none; font-family:var(--font-sans);
@@ -76,7 +76,7 @@
     /* ── Units segmented toggle ── */
     .seg {
       display:grid; grid-template-columns:1fr 1fr; gap:.5rem;
-      background:rgba(0,0,0,0.35); border:1px solid var(--line);
+      background:var(--surface-2, rgba(0,0,0,0.35)); border:1px solid var(--line);
       border-radius:0; clip-path:var(--clip-md); padding:.4rem;
     }
     .seg button {
@@ -89,8 +89,8 @@
     .seg button .sub { font-size:.76rem; letter-spacing:.06em; opacity:.8; }
     .seg button:hover { color:var(--fg); }
     .seg button.active {
-      background:linear-gradient(135deg, rgba(217,189,123,0.22), rgba(181,147,90,0.12));
-      border-color:rgba(217,189,123,0.55); color:var(--gold-bright);
+      background:linear-gradient(135deg, color-mix(in srgb, var(--gold-bright, #d9bd7b) 22%, transparent), color-mix(in srgb, var(--gold, #b5935a) 12%, transparent));
+      border-color:color-mix(in srgb, var(--gold-bright, #d9bd7b) 55%, transparent); color:var(--gold-bright);
       box-shadow:0 4px 18px rgba(0,0,0,0.35);
     }
 
@@ -103,7 +103,7 @@
     .area-city .pin {
       width:38px; height:38px; flex:0 0 auto; border-radius:0; clip-path:var(--clip-sm);
       display:flex; align-items:center; justify-content:center;
-      background:rgba(181,147,90,0.14); border:1px solid var(--line); color:var(--gold-bright);
+      background:color-mix(in srgb, var(--gold, #b5935a) 14%, transparent); border:1px solid var(--line); color:var(--gold-bright);
     }
     .area-city .label { font-size:1.28rem; line-height:1.15; overflow:hidden; text-overflow:ellipsis; }
     .area-city .empty { color:var(--muted); font-style:italic; }
@@ -114,7 +114,7 @@
       padding:.62rem 1.05rem; border-radius:0; clip-path:var(--clip-sm); text-decoration:none;
       display:inline-flex; align-items:center; gap:.4rem; transition:all .2s var(--ease);
     }
-    .btn-gold { background:linear-gradient(135deg, var(--gold-bright), var(--gold)); color:#141210; border:1px solid transparent; font-weight:600; }
+    .btn-gold { background:linear-gradient(135deg, var(--gold-bright), var(--gold)); color:var(--gold-ink, #141210); border:1px solid transparent; font-weight:600; }
     .btn-gold:hover { filter:brightness(1.08); transform:translateY(-1px); }
     .btn-ghost { background:transparent; color:var(--fg); border:1px solid var(--line); }
     .btn-ghost:hover { border-color:var(--gold-bright); color:var(--gold-bright); }
@@ -126,7 +126,7 @@
       background:rgba(0,0,0,0.28); border:1px solid var(--line);
       border-radius:0; clip-path:var(--clip-md); padding:.85rem 1rem; transition:border-color .2s, background .2s;
     }
-    .fav-item:hover { border-color:rgba(217,189,123,0.5); background:rgba(0,0,0,0.4); }
+    .fav-item:hover { border-color:color-mix(in srgb, var(--gold-bright, #d9bd7b) 50%, transparent); background:rgba(0,0,0,0.4); }
     .fav-star { color:var(--gold-bright); flex:0 0 auto; display:flex; }
     .fav-main { flex:1 1 auto; min-width:0; }
     .fav-main a { color:var(--fg); text-decoration:none; font-size:1.24rem; line-height:1.15; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -165,6 +165,17 @@
 <body>
   <div id="po-header" data-title="Settings" data-eyebrow="Paddling Out" data-back="/paddlingout" data-current="settings"></div>
   <main class="settings-shell">
+    <!-- ── Theme ── -->
+    <section class="card">
+      <h2 data-kicon="sun">Theme</h2>
+      <p class="hint">Dark is home. Light follows the paper, and System follows your device.</p>
+      <div class="seg" id="themeSeg" role="group" aria-label="Colour theme">
+        <button type="button" data-theme-pref="dark" aria-pressed="false">Dark <span class="sub">black · gold</span></button>
+        <button type="button" data-theme-pref="light" aria-pressed="false">Light <span class="sub">bone · ink</span></button>
+        <button type="button" data-theme-pref="system" aria-pressed="false">System <span class="sub">follows device</span></button>
+      </div>
+    </section>
+
     <!-- ── Units ── -->
     <section class="card">
       <h2 data-kicon="ruler">Units</h2>
@@ -232,6 +243,21 @@
       const P = window.KaaykoPrefs;
 
       // ── Units segmented toggle ──
+      // Theme — js/theme.js owns the preference and the <html data-theme> stamp.
+      (function () {
+        const tseg = document.getElementById('themeSeg');
+        if (!tseg || !window.KaaykoTheme) return;
+        function paint() {
+          const cur = window.KaaykoTheme.get();
+          tseg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themePref === cur)));
+        }
+        tseg.addEventListener('click', e => {
+          const b = e.target.closest('[data-theme-pref]'); if (!b) return;
+          window.KaaykoTheme.set(b.dataset.themePref); paint();
+        });
+        paint();
+      })();
+
       const seg = document.getElementById('unitsSeg');
       function paintUnits() {
         const cur = P.getUnits();

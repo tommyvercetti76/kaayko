@@ -26,7 +26,7 @@
 .khm-legend {
   display:flex; gap:0.7rem; flex-wrap:wrap;
   font-family:var(--font-sans); font-size:0.65rem;
-  letter-spacing:0.08em; text-transform:uppercase; color:rgba(237,232,223,0.56);
+  letter-spacing:0.08em; text-transform:uppercase; color:color-mix(in srgb, var(--fg, #ede8df) 56%, transparent);
 }
 .khm-legend span { display:inline-flex; align-items:center; gap:0.35rem; }
 .khm-dot {
@@ -47,11 +47,11 @@
 }
 .khm-day-label strong {
   font-family:var(--font-sans); font-size:0.72rem;
-  letter-spacing:0.12em; text-transform:uppercase; color:rgba(237,232,223,0.92);
+  letter-spacing:0.12em; text-transform:uppercase; color:color-mix(in srgb, var(--fg, #ede8df) 92%, transparent);
 }
 .khm-day-label > span {
   font-family:var(--font-sans); font-size:0.62rem;
-  letter-spacing:0.1em; color:rgba(237,232,223,0.40);
+  letter-spacing:0.1em; color:color-mix(in srgb, var(--fg, #ede8df) 40%, transparent);
 }
 
 /* "★ Best" — positioned relative to the bar-shell, not the label row */
@@ -125,7 +125,7 @@
 .khm-now span {
   position:absolute; top:6px; left:4px;
   font-family:var(--font-sans); font-size:0.48rem;
-  letter-spacing:0.1em; color:rgba(255,255,255,0.6);
+  letter-spacing:0.1em; color: color-mix(in srgb, var(--fg, #fff) 60%, transparent);
 }
 
 /* Best window gold line */
@@ -135,7 +135,7 @@
   width:2px;
   background:linear-gradient(180deg, var(--gold-bright) 0%, transparent 100%);
   z-index:5; pointer-events:none;
-  box-shadow:0 0 8px rgba(217,189,123,0.6);
+  box-shadow:0 0 8px color-mix(in srgb, var(--gold-bright, #d9bd7b) 60%, transparent);
 }
 
 /* Sliding cursor — snaps to tapped hour */
@@ -183,7 +183,7 @@
   position:absolute;
   transform:translateX(-50%);
   font-family:var(--font-sans); font-size:0.6rem;
-  letter-spacing:0.06em; color:rgba(237,232,223,0.44);
+  letter-spacing:0.06em; color:color-mix(in srgb, var(--fg, #ede8df) 44%, transparent);
   white-space:nowrap;
 }
 .khm-tick--first { transform:none; }
@@ -198,7 +198,7 @@
 
 .khm-panel-inner {
   background:rgba(18,12,6,0.97);
-  border:1px solid rgba(217,189,123,0.22);
+  border:1px solid color-mix(in srgb, var(--gold-bright, #d9bd7b) 22%, transparent);
   border-top:2px solid var(--pc, var(--gold));
   border-radius:0 0 10px 10px;
   padding:0.9rem 1.1rem 1rem;
@@ -208,14 +208,14 @@
 .khm-panel-hdr {
   display:flex; justify-content:space-between; align-items:center;
   padding-bottom:0.75rem; margin-bottom:0.75rem;
-  border-bottom:1px solid rgba(217,189,123,0.12);
+  border-bottom:1px solid color-mix(in srgb, var(--gold-bright, #d9bd7b) 12%, transparent);
 }
 .khm-panel-left { display:flex; flex-direction:column; gap:0.15rem; }
 
 .khm-panel-time {
   font-family:var(--font-sans); font-size:0.68rem;
   letter-spacing:0.14em; text-transform:uppercase;
-  color:rgba(237,232,223,0.55);
+  color:color-mix(in srgb, var(--fg, #ede8df) 55%, transparent);
 }
 .khm-panel-verdict {
   font-family:var(--font-sans); font-size:0.82rem;
@@ -227,7 +227,7 @@
 }
 .khm-panel-score sub {
   font-size:0.7rem; vertical-align:middle;
-  color:rgba(237,232,223,0.45); margin-left:2px;
+  color:color-mix(in srgb, var(--fg, #ede8df) 45%, transparent); margin-left:2px;
 }
 
 /* Macro grid */

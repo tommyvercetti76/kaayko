@@ -70,7 +70,7 @@
   top: -8px;
   right: -8px;
   background: #000;
-  color: #fff;
+  color: var(--fg, #fff);
   width: 20px;
   height: 20px;
   border-radius: 50%;
@@ -95,7 +95,7 @@
   padding: 20px;
   box-shadow: 
     0 20px 60px rgba(0,0,0,0.4),
-    0 0 0 1px rgba(255,255,255,0.1);
+    0 0 0 1px color-mix(in srgb, var(--fg, #ffffff) 10%, transparent);
   backdrop-filter: blur(10px);
   transform: scale(0.8) translateY(-20px);
   opacity: 0;
@@ -146,7 +146,7 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--fg, #ffffff) 30%, transparent), transparent);
   transition: left 0.5s;
 }
 
@@ -180,7 +180,7 @@
 
 .warning-card-text {
   flex: 1;
-  color: white;
+  color: var(--fg, white);
   font-weight: 500;
   font-size: 13px;
   line-height: 1.4;
@@ -190,7 +190,7 @@
 .warnings-footer {
   margin-top: 15px;
   padding-top: 15px;
-  border-top: 1px solid rgba(255,255,255,0.2);
+  border-top: 1px solid color-mix(in srgb, var(--fg, #ffffff) 20%, transparent);
   text-align: center;
 }
 
@@ -203,7 +203,7 @@
 
 .clear-all-warnings-btn {
   background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-  color: white;
+  color: var(--fg, white);
   border: none;
   padding: 8px 16px;
   border-radius: 20px;

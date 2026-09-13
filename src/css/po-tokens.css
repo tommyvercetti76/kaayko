@@ -18,6 +18,7 @@
   --line-strong:   rgba(181, 147, 90, 0.74); /* card frames on the list */
   --surface:       rgba(181, 147, 90, 0.06); /* filled fields, chips */
   --surface-2:     rgba(181, 147, 90, 0.12);
+  --surface-b:     #1e1c12;                  /* slightly lighter warm card (forecast skeletons) */
   --panel-a:       #0d0c0a;
   --panel-b:       #10110d;
 
@@ -40,6 +41,30 @@
 
   --ease: cubic-bezier(0.76, 0, 0.24, 1);
 }
+
+/* ── Light theme (opt-in via Settings, ?theme=light, or 'system') ────────────
+   Bone paper, ink text, the same bullion gold pulled darker for contrast.
+   Verdict colours are shared. Set by js/theme.js before first paint. */
+:root[data-theme="light"] {
+  --bg:            #f4f0e8;
+  --fg:            #1a1712;
+  --muted:         rgba(26, 23, 18, 0.62);
+  --gold:          #8a6a34;
+  --gold-bright:   #6f5325;
+  --gold-ink:      #f8f4ec;
+  --line:          rgba(26, 23, 18, 0.16);
+  --line-strong:   rgba(138, 106, 52, 0.55);
+  --surface:       rgba(138, 106, 52, 0.07);
+  --surface-2:     rgba(138, 106, 52, 0.14);
+  --surface-b:     #ece6da;
+  --panel-a:       #fbf9f4;
+  --panel-b:       #f1ece2;
+  --ok:            #3e7a2f;
+  --bad:           #b3261e;
+  --moderate:      #a3731f;
+  color-scheme: light;
+}
+:root[data-theme="light"] body { background: var(--bg); color: var(--fg); }
 
 /* ── Fields: filled, chamfered, underlined. Inputs cannot carry pseudo
       elements, so instead of an outline that would be cut at the corners the
