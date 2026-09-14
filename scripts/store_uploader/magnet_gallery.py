@@ -34,9 +34,45 @@ PARKS = {
 }
 
 
+# ── the blank, rebuilt at any size ──────────────────────────────────────────────
+# Measured off the live Gaur magnet photograph (960x858, disc r=290 at 466,427):
+#   wall 230 top-left falling to 220 bottom-right; light from the upper-left, so the
+#   upper-left arc casts nothing and the right arc drops to 145 right at the edge and
+#   recovers to the wall about 0.31r away. The disc's paper is 246,246,247.
+# It is drawn, not upscaled, so a 3600 px magnet is genuinely 3600 px — no AI, no mush.
+WALL = ((230, 229, 227), (221, 219, 216), (230, 229, 226), (220, 218, 214))   # TL TR BL BR
+PAPER = (246, 246, 247)
+SHADOW = {"dx": 0.085, "dy": 0.055, "blur": 0.098, "strength": 0.40}          # in units of r
+
+
+def plate(W: int, H: int, cx: float, cy: float, r: float) -> Image.Image:
+    wall = Image.new("RGB", (2, 2))
+    for i, px in enumerate(WALL):
+        wall.putpixel((i % 2, i // 2), px)
+    out = wall.resize((W, H), Image.BICUBIC)
+    sh = Image.new("L", (W, H), 0)
+    ImageDraw.Draw(sh).ellipse([cx - r + r * SHADOW["dx"], cy - r + r * SHADOW["dy"],
+                                cx + r + r * SHADOW["dx"], cy + r + r * SHADOW["dy"]], fill=255)
+    sh = sh.filter(ImageFilter.GaussianBlur(r * SHADOW["blur"])).point(lambda v: int(v * (1 - SHADOW["strength"]) * 0 + v))
+    dark = ImageChops.multiply(out, Image.new("RGB", (W, H), tuple(int(255 * (1 - SHADOW["strength"])) for _ in range(3))))
+    out = Image.composite(dark, out, sh)
+    disc = Image.new("L", (W, H), 0)
+    ImageDraw.Draw(disc).ellipse([cx - r, cy - r, cx + r, cy + r], fill=255)
+    disc = disc.filter(ImageFilter.GaussianBlur(max(1.0, r * 0.004)))
+    # the disc's face, a touch brighter where the light falls
+    face = Image.new("RGB", (2, 2))
+    face.putpixel((0, 0), tuple(min(255, c + 4) for c in PAPER)); face.putpixel((1, 0), PAPER)
+    face.putpixel((0, 1), PAPER); face.putpixel((1, 1), tuple(c - 5 for c in PAPER))
+    return Image.composite(face.resize((W, H), Image.BICUBIC), out, disc)
+
+
 def key_background(im: Image.Image, tol: int = 30) -> Image.Image:
     im = im.convert("RGBA")
-    if im.split()[-1].getextrema()[0] < 250:
+    al = np.asarray(im.split()[-1])
+    # "transparent" files are not always transparent: some carry a cream card with a few
+    # stray soft pixels, so min(alpha) alone says opaque when it is not. Key the card
+    # whenever almost nothing is actually cut out.
+    if (al < 16).mean() > 0.02:
         return im
     rgb = np.asarray(im.convert("RGB")).astype(np.int16); H, W = rgb.shape[:2]
     corner = np.median(np.stack([rgb[2, 2], rgb[2, W - 3], rgb[H - 3, 2], rgb[H - 3, W - 3]]), axis=0)
@@ -56,9 +92,10 @@ def trim(im: Image.Image) -> Image.Image:
     return im.crop(bb) if bb else im
 
 
-def render(art_path: Path, name: str, geo: dict) -> Image.Image:
-    canvas = Image.open(TDIR / "0_front.png").convert("RGB")
-    cx, cy, r = geo["disc"]["cx"], geo["disc"]["cy"], geo["disc"]["r"]
+def render(art_path: Path, name: str, geo: dict, scale: float = 1.0) -> Image.Image:
+    W, H = (int(v * scale) for v in geo["canvas"])
+    cx, cy, r = (geo["disc"][k] * scale for k in ("cx", "cy", "r"))
+    canvas = plate(W, H, cx, cy, r)
     inset = r * geo["print"]["inset"]
 
     layer = Image.new("RGB", canvas.size, (255, 255, 255))
@@ -101,15 +138,15 @@ def render(art_path: Path, name: str, geo: dict) -> Image.Image:
     return Image.composite(ImageChops.multiply(canvas, layer), canvas, mask)
 
 
-def diecut(art_path: Path, geo: dict) -> Image.Image:
+def diecut(art_path: Path, geo: dict, scale: float = 1.0) -> Image.Image:
     """A stamp magnet is cut to the stamp, not dropped inside a disc: the perforated edge
     IS the edge of the object. Same studio plate and the same light as the round magnets,
     with the shadow cast from the stamp's own outline."""
-    W, H = geo["canvas"]
-    # the studio wall, rebuilt from the blank's own corners (brighter left, cooler right)
-    wall = Image.new("RGB", (2, 2)); wall.putpixel((0, 0), (230, 229, 227)); wall.putpixel((1, 0), (221, 219, 216))
-    wall.putpixel((0, 1), (230, 229, 226)); wall.putpixel((1, 1), (220, 218, 214))
-    plate = wall.resize((W, H), Image.BICUBIC)
+    W, H = (int(v * scale) for v in geo["canvas"])
+    wall = Image.new("RGB", (2, 2))
+    for i, px in enumerate(WALL):
+        wall.putpixel((i % 2, i // 2), px)
+    base = wall.resize((W, H), Image.BICUBIC)
 
     a = Image.open(art_path).convert("RGBA")
     # equal AREA, not equal bounding box: a landscape stamp and a portrait one are the
@@ -124,9 +161,9 @@ def diecut(art_path: Path, geo: dict) -> Image.Image:
     off = max(3, int(W * 0.012))
     sh = Image.new("L", (W, H), 0); sh.paste(alpha, (px + off, py + int(off * 1.2)))
     sh = sh.filter(ImageFilter.GaussianBlur(W * 0.016)).point(lambda v: int(v * 0.42))
-    plate = Image.composite(ImageChops.multiply(plate, Image.new("RGB", (W, H), (120, 118, 114))), plate, sh)
+    base = Image.composite(ImageChops.multiply(base, Image.new("RGB", (W, H), (120, 118, 114))), base, sh)
 
-    out = plate.convert("RGBA")
+    out = base.convert("RGBA")
     out.alpha_composite(a, (px, py))
     # a hair of thickness: the top-left edge catches the light the way the disc does
     lip = Image.new("L", (W, H), 0); lip.paste(alpha, (px, py))
@@ -140,6 +177,7 @@ def main():
     ap.add_argument("art", nargs="+"); ap.add_argument("--out", required=True)
     ap.add_argument("--name", help="park name for a single magnet")
     ap.add_argument("--names", help="JSON file: {<art stem>: <park name>}; defaults to the PARKS table")
+    ap.add_argument("--size", type=int, default=3600, help="output width in px; the blank is drawn at this size, never upscaled")
     ap.add_argument("--diecut", action="store_true", help="the magnet is the artwork's own shape (stamps), not a round disc")
     a = ap.parse_args()
     out = Path(a.out)
@@ -148,16 +186,24 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     geo = json.loads((TDIR / "geometry.json").read_text())
     geo.setdefault("canvas", list(Image.open(TDIR / "0_front.png").size))
+    scale = a.size / geo["canvas"][0]
     names = json.loads(Path(a.names).read_text()) if a.names else {}
     paths = [Path(p) for pat in a.art for p in (glob.glob(pat) or [pat])]
     for p in paths:
         stem = p.stem.replace(".transparent", "").replace("_transparent_4096", "").replace("_4096", "")
         if a.diecut:
             name = ""
-            im = diecut(p, geo)
+            im = diecut(p, geo, scale)
         else:
-            name = a.name if a.name is not None else (names.get(stem) or PARKS.get(stem, ""))
-            im = render(p, name, geo)
+            if a.name is not None:
+                name = a.name
+            elif stem in names or stem in PARKS:
+                name = names.get(stem) or PARKS.get(stem, "")
+            else:   # file names vary ("gaur_gaur", "04_blackbuck_madhubani_tshirt"): match on the species
+                hit = next((k for k in sorted(PARKS, key=len, reverse=True) if k in stem), None)
+                name = PARKS.get(hit, "") if hit else ""
+                if hit is None: print(f"  (no park known for {stem})")
+            im = render(p, name, geo, scale)
         dst = out / f"{stem}_magnet.png"; im.save(dst, optimize=True)
         print(f"  {dst.name}  '{name}'  {im.size}")
     return 0
