@@ -1,0 +1,17 @@
+{
+ "_about": "Blank magnet derived from the live Gaur magnet photograph (Desktop/Kaayko_Tote/Gaur_Magnet.png): the disc was wiped to its own paper, the studio shadow and edge shading kept.",
+ "disc": {
+  "cx": 466.0,
+  "cy": 427.0,
+  "r": 290.0
+ },
+ "paper": [
+  246,
+  246,
+  247
+ ],
+ "print": {
+  "inset": 0.8,
+  "name_y": 0.2
+ }
+}
