@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign in — Kortex by KAAYKO</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.cloudfunctions.net https://*.run.app https://*.googleapis.com; frame-src https://accounts.google.com;">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <meta name="theme-color" content="#060b1e">
+  <style>
+:root { --fg:#ede8df; --muted:rgba(237,232,223,.76); --dim:rgba(237,232,223,.62); --faint:rgba(237,232,223,.46); --gold:#b5935a; --gold-bright:#d9bd7b; --gold-line:rgba(181,147,90,.22); --err:#ef4444; --ok:#22c55e; --serif:'Cormorant Garamond',Georgia,serif; --display:'Bebas Neue',Impact,sans-serif }
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box }
+html,body { min-height:100%; overflow-x:clip }
+body { font-family:var(--serif); font-weight:500; color:var(--fg); line-height:1.6; -webkit-font-smoothing:antialiased; background:linear-gradient(180deg,#060b1e 0%,#0a1233 45%,#0a1129 70%,#080808 100%) fixed; display:grid; place-items:center; padding:24px 16px }
+[hidden] { display:none !important }
+a { color:var(--gold); text-decoration:none }
+.card { width:100%; max-width:440px; padding:36px 32px; border:1px solid rgba(181,147,90,.28); background:rgba(5,7,14,.7); box-shadow:0 30px 80px rgba(0,0,0,.4) }
+.brand { display:flex; align-items:baseline; gap:10px; margin-bottom:6px }
+.brand b { font-family:var(--display); font-weight:400; font-size:1.9rem; letter-spacing:.14em; line-height:1 }
+.brand span { font-style:italic; font-size:.78rem; letter-spacing:.26em; text-transform:uppercase; color:var(--gold) }
+h1 { font-family:var(--display); font-weight:400; font-size:1.5rem; letter-spacing:.06em; text-transform:uppercase; margin:18px 0 2px }
+.sub { font-style:italic; color:var(--muted); font-size:.95rem; margin-bottom:22px }
+.env-badge { font-size:.72rem; font-style:italic; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); display:block; margin-bottom:10px }
+.field { margin-bottom:16px }
+.field-label { display:block; font-size:.8rem; font-style:italic; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); margin-bottom:4px }
+.field-input,.field-select { width:100%; padding:10px 0; background:none; border:none; border-bottom:1px solid var(--gold-line); color:rgba(237,232,223,.88); font-family:var(--serif); font-size:1.04rem; letter-spacing:.06em; caret-color:var(--gold); outline:none; min-height:44px }
+.field-input:focus,.field-select:focus { border-bottom-color:var(--gold) }
+.field-input::placeholder { color:var(--faint); font-style:italic }
+.field-select { appearance:none; cursor:pointer } .field-select option { background:#080808; color:var(--fg) }
+.btn-submit { width:100%; padding:14px; margin-top:8px; background:var(--gold); border:none; color:#080808; font-family:var(--serif); font-weight:600; font-size:.88rem; letter-spacing:.16em; text-transform:uppercase; cursor:pointer; min-height:44px }
+.btn-submit:hover:not(:disabled) { background:var(--gold-bright) } .btn-submit:disabled { opacity:.35; cursor:not-allowed }
+.alert { padding:10px 12px; margin-bottom:12px; font-style:italic; font-size:.92rem; display:none; border-left:2px solid transparent }
+.alert.show { display:block } .alert.error { border-left-color:var(--err); color:#f28b84 } .alert.success { border-left-color:var(--ok); color:rgba(34,197,94,.85) }
+.loading { display:none; text-align:center; padding:24px } .loading.show { display:block }
+.spinner { width:24px; height:24px; border:1.5px solid var(--gold-line); border-top-color:var(--gold); border-radius:50%; animation:spin .7s linear infinite; margin:0 auto 8px } @keyframes spin { to { transform:rotate(360deg) } }
+.login-foot { text-align:center; margin-top:14px; font-style:italic; font-size:.9rem }
+.foot { margin-top:22px; padding-top:14px; border-top:1px solid var(--gold-line); font-style:italic; font-size:.86rem; color:var(--dim); text-align:center }
+  </style>
+</head>
+<body>
+<main class="card">
+  <div class="brand"><b>KORTEX</b><span>by KAAYKO</span></div>
+  <h1>Sign in</h1>
+  <p class="sub">Admin and team accounts. Free links never sign in: enter your access code at <a href="https://kaay.link/#manage">kaay.link</a>.</p>
+  <div id="login">
+    <span class="env-badge" id="env-badge">Loading&hellip;</span>
+    <div id="alert" class="alert" role="alert"></div>
+    <div id="loading" class="loading"><div class="spinner"></div><p style="color:var(--dim);font-style:italic;font-size:.8rem">Authenticating&hellip;</p></div>
+    <form id="login-form">
+      <div class="field"><label class="field-label" for="email">Email</label><input class="field-input" type="email" id="email" required autocomplete="email" placeholder="you@company.com"></div>
+      <div class="field"><label class="field-label" for="password">Password</label><input class="field-input" type="password" id="password" required autocomplete="current-password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"></div>
+      <div class="field" id="tenant-selection-group" style="display:none"><label class="field-label" for="tenant">Tenant</label><select class="field-select" id="tenant"><option value="">Loading&hellip;</option></select></div>
+      <button type="submit" id="login-btn" class="btn-submit">Sign In</button>
+      <div class="login-foot"><a href="#" id="forgot-password-link">Forgot password?</a></div>
+    </form>
+  </div>
+  <p class="foot"><a href="https://kaay.link/">kaay.link</a> &middot; <a href="https://kaayko.com">kaayko.com</a></p>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script>
+/* What kortex-login.js expects from the page: CONFIG, $, escapeHtml. */
+const CONFIG = {
+  ENVIRONMENT: localStorage.getItem('kaayko_environment') || 'production',
+  LOCAL_API: 'http://127.0.0.1:5001/kaaykostore/us-central1/api',
+  PROD_API: 'https://api-vwcc5j4qda-uc.a.run.app',
+  get API_BASE() { return this.ENVIRONMENT === 'production' ? this.PROD_API : this.LOCAL_API; }
+};
+const $ = (id) => document.getElementById(id);
+function escapeHtml(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+</script>
+<script src="/js/kortex-login.js?v=20260915"></script>
+</body>
+</html>

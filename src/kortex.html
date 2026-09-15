@@ -3,850 +3,665 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-  <title>Kortex — Free QR codes and smart links | Kaayko</title>
-  <meta name="title" content="Kortex — Free QR codes and smart links by Kaayko">
-  <meta name="description" content="Make a QR code or smart link in ten seconds, no account needed. Route by device, see scans as they happen, change the destination any time. Free; team plans on request.">
-  <meta name="author" content="Kaayko">
+  <title>Kortex by KAAYKO — QR codes you can change after printing | kaay.link</title>
+  <meta name="description" content="Paste an address, get a kaay.link QR code in two seconds. No account. Re-point it after it's printed, route by device and time of day, and see every scan. Free.">
+  <meta name="author" content="KAAYKO">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
   <link rel="canonical" href="https://kaayko.com/kortex">
 
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://kaayko.com/kortex">
-  <meta property="og:title" content="Kortex — Free QR codes and smart links">
-  <meta property="og:description" content="One link. Every device. Every insight. Make a QR in ten seconds, no account; your access code is the key.">
-  <meta property="og:image" content="https://kaayko.com/assets/kortex-og-image.png">
-  <meta property="og:site_name" content="Kaayko Kortex">
+  <meta property="og:url" content="https://kaay.link/">
+  <meta property="og:title" content="Kortex by KAAYKO — QR codes you can change after printing">
+  <meta property="og:description" content="Paste an address, get kaay.link/… and a QR in two seconds. No account. Re-point it any time; see every scan.">
+  <meta property="og:image" content="https://kaay.link/assets/kortex-og-image.png">
+  <meta property="og:site_name" content="Kortex by KAAYKO">
   <meta property="og:locale" content="en_US">
-
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:url" content="https://kaayko.com/kortex">
-  <meta name="twitter:title" content="Kortex — Free QR codes and smart links">
-  <meta name="twitter:description" content="One link. Every device. Every insight. Smart link infrastructure by Kaayko.">
-  <meta name="twitter:image" content="https://kaayko.com/assets/kortex-twitter-card.png">
-  <meta name="twitter:creator" content="@kaayko">
+  <meta name="twitter:title" content="Kortex by KAAYKO — QR codes you can change after printing">
+  <meta name="twitter:description" content="Paste an address, get a kaay.link QR in two seconds. No account. Re-point it any time; see every scan.">
+  <meta name="twitter:image" content="https://kaay.link/assets/kortex-twitter-card.png">
 
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "Kortex",
-    "applicationCategory": "BusinessApplication",
-    "operatingSystem": "Web",
-    "description": "QR codes and smart links with device routing, scan analytics, attribution, webhooks and a developer API.",
-    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "availability": "https://schema.org/InStock", "description": "Free — no account: unlimited static QR codes, 25 dynamic links, 7-day scan stats" },
-    "provider": { "@type": "Organization", "name": "Kaayko", "url": "https://kaayko.com" },
-    "featureList": [
-      "QR codes and short links without an account",
-      "iOS / Android / Web device routing",
-      "Real-time scan analytics",
-      "Editable destinations after printing",
-      "Destination safety checks on every link",
-      "HMAC-signed webhook events",
-      "Scoped developer API keys"
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://kaayko.com/#organization",
+        "name": "KAAYKO",
+        "url": "https://kaayko.com",
+        "logo": "https://kaayko.com/kaayko-logo-512.png",
+        "sameAs": ["https://kaayko.com", "https://kaay.store", "https://kaay.link"]
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://kaay.link/#kortex",
+        "name": "Kortex",
+        "alternateName": "Kortex by KAAYKO",
+        "url": "https://kaay.link/",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "description": "QR codes and short links on kaay.link that can be re-pointed after printing, with device and time-of-day routing, scan caps, safety checks and scan analytics. No account needed.",
+        "publisher": { "@id": "https://kaayko.com/#organization" },
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "availability": "https://schema.org/InStock", "description": "Free, no account: unlimited static QR codes, 25 dynamic links, 7 days of scan detail, lifetime totals" },
+        "featureList": [
+          "kaay.link short addresses and QR codes without an account",
+          "Change the destination after the code is printed",
+          "iPhone, Android and web routing",
+          "Night and day destinations",
+          "Scan caps, end dates and fallback pages",
+          "Destination safety checks on create, on edit and nightly",
+          "Scan analytics by day, hour, device and country, with findings",
+          "CSV export and shareable read-only reports"
+        ]
+      }
     ]
   }
   </script>
 
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.cloudfunctions.net https://*.run.app https://*.googleapis.com; frame-src https://accounts.google.com;">
-  <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.run.app https://*.cloudfunctions.net; base-uri 'self'; form-action 'self'">
   <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="theme-color" content="#060b1e">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="dns-prefetch" href="https://api-vwcc5j4qda-uc.a.run.app">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
 
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="manifest" href="/site.webmanifest">
-  <meta name="theme-color" content="#080808">
 
-<link rel="stylesheet" href="/css/kortex-views.css">
+  <link rel="stylesheet" href="/css/kortex-views.css">
   <style>
 /* ================================================================
-   KORTEX v4 — Glow Theme + Symmetry
-   Kaayko brand · Bebas Neue · Cormorant Garamond
-   One instrument (make), one key (the access code), one quiet
-   workspace (manage). Nothing on the page that cannot be used today.
+   KORTEX by KAAYKO — kaay.link  (v2, 15 Sep 2026)
+   The page is the instrument: the maker sits in the hero, the result
+   replaces it, the code is the key, the workspace is one screen down.
+   Same night sky and gold as kaayko.com; less of everything else.
 ================================================================ */
-
-/* ── TOKENS ── */
 :root {
-  --bg: #080808;
-  --surface: #0d0c0a;
-  --fg: #ede8df;
-  --muted: rgba(237,232,223,0.76);
-  --dim: rgba(237,232,223,0.62);
-  --faint: rgba(237,232,223,0.46);
-
-  --gold: #b5935a;
-  --gold-bright: #d9bd7b;
-  --gold-dim: rgba(181,147,90,0.84);
-  --gold-line: rgba(181,147,90,0.22);
-
-  --glow-core: rgba(181,147,90,0.35);
-  --glow-mid: rgba(181,147,90,0.15);
-  --glow-soft: rgba(181,147,90,0.06);
-  --glow-xs: 0 0 6px var(--glow-mid);
-  --glow-sm: 0 0 8px var(--glow-mid), 0 0 20px var(--glow-soft);
-  --glow-md: 0 0 16px var(--glow-mid), 0 0 40px var(--glow-soft);
-  --glow-lg: 0 0 24px var(--glow-core), 0 0 56px var(--glow-mid), 0 0 96px var(--glow-soft);
-  --glow-text: 0 0 12px rgba(181,147,90,0.2), 0 0 40px rgba(181,147,90,0.12), 0 0 80px rgba(181,147,90,0.06);
-  --glow-line: 0 0 4px rgba(181,147,90,0.25), 0 0 12px rgba(181,147,90,0.1);
-
-  --err: #ef4444;
-  --ok: #22c55e;
-
-  --ease: cubic-bezier(0.76,0,0.24,1);
-  --ease-out: cubic-bezier(0.16,1,0.3,1);
-  --dur-fast: 150ms;
-  --dur-normal: 250ms;
-  --dur-slow: 400ms;
-
-  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px;
-  --sp-4: 16px; --sp-5: 24px; --sp-6: 32px;
-  --sp-7: 40px; --sp-8: 48px; --sp-9: 64px;
-  --sp-10: 80px; --sp-11: 96px; --sp-12: 120px;
-
-  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --bg:#080808; --fg:#ede8df;
+  --muted:rgba(237,232,223,0.76); --dim:rgba(237,232,223,0.62); --faint:rgba(237,232,223,0.46);
+  --gold:#b5935a; --gold-bright:#d9bd7b; --gold-dim:rgba(181,147,90,0.84); --gold-line:rgba(181,147,90,0.22);
+  --glow-xs:0 0 6px rgba(181,147,90,0.15);
+  --glow-sm:0 0 8px rgba(181,147,90,0.15), 0 0 20px rgba(181,147,90,0.06);
+  --glow-md:0 0 16px rgba(181,147,90,0.15), 0 0 40px rgba(181,147,90,0.06);
+  --glow-text:0 0 12px rgba(181,147,90,0.2), 0 0 40px rgba(181,147,90,0.12);
+  --glow-line:0 0 4px rgba(181,147,90,0.25), 0 0 12px rgba(181,147,90,0.1);
+  --err:#ef4444; --ok:#22c55e;
+  --ease-out:cubic-bezier(0.16,1,0.3,1); --dur-fast:150ms; --dur-normal:250ms; --dur-slow:400ms;
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-7:40px; --sp-8:48px; --sp-9:64px; --sp-10:80px; --sp-11:96px; --sp-12:120px;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  --serif:'Cormorant Garamond',Georgia,serif; --display:'Bebas Neue',Impact,sans-serif;
+  --wide:1120px;
 }
-
-/* ── RESET + BASE ── */
 *,*::before,*::after { margin:0; padding:0; box-sizing:border-box }
-html { scroll-behavior:smooth; scroll-padding-top:calc(var(--sp-9) + 16px); -webkit-text-size-adjust:100% }
-@media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto } }
+html { scroll-behavior:smooth; scroll-padding-top:72px; -webkit-text-size-adjust:100% }
 html, body { overflow-x:clip; max-width:100% }
-body {
-  font-family:'Cormorant Garamond',Georgia,serif;
-  font-weight:500;
-  background:var(--bg); color:var(--fg);
-  -webkit-font-smoothing:antialiased;
-  line-height:1.6;
-}
+body { font-family:var(--serif); font-weight:500; color:var(--fg); line-height:1.6; -webkit-font-smoothing:antialiased;
+  background:linear-gradient(180deg,#060b1e 0%,#0a1233 45%,#0a1129 70%,#080808 100%) fixed; }
 a { color:inherit; text-decoration:none }
 img, canvas, svg { max-width:100% }
 ::selection { background:rgba(181,147,90,0.25); color:var(--fg) }
 [hidden] { display:none !important }
-/* Long unbroken strings (URLs, codes) never widen a column. */
-.wrap-any { overflow-wrap:anywhere; word-break:break-word }
-
-/* ── SKIP LINK (keyboard users) ── */
-.skip-link { position:absolute; left:-9999px; top:8px; z-index:200; background:var(--gold); color:var(--bg); padding:10px 16px; font-style:italic; letter-spacing:0.12em; text-transform:uppercase; font-size:0.9rem }
+.sky { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0; animation:skyIn 1.4s ease-out .2s forwards }
+@keyframes skyIn { to { opacity:1 } }
+.skip-link { position:absolute; left:-9999px; top:8px; z-index:200; background:var(--gold); color:var(--bg); padding:10px 16px; font-style:italic; letter-spacing:.12em; text-transform:uppercase; font-size:.9rem }
 .skip-link:focus { left:16px; outline:2px solid var(--gold-bright); outline-offset:3px }
 
-/* ── AMBIENT GLOW ORBS ── */
-.ambient { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden }
-.orb { position:absolute; border-radius:50% }
-.orb-1 { width:600px; height:600px; top:-5%; left:8%; background:radial-gradient(circle,rgba(181,147,90,0.055),transparent 60%); animation:drift1 28s ease-in-out infinite }
-.orb-2 { width:480px; height:480px; bottom:5%; right:5%; background:radial-gradient(circle,rgba(181,147,90,0.04),transparent 60%); animation:drift2 34s ease-in-out infinite }
-.orb-3 { width:420px; height:420px; top:38%; left:48%; background:radial-gradient(circle,rgba(181,147,90,0.03),transparent 60%); animation:drift3 24s ease-in-out infinite }
-@keyframes drift1 { 0%,100%{transform:translate(0,0)} 33%{transform:translate(40px,-30px)} 66%{transform:translate(-25px,20px)} }
-@keyframes drift2 { 0%,100%{transform:translate(0,0)} 33%{transform:translate(-30px,25px)} 66%{transform:translate(20px,-15px)} }
-@keyframes drift3 { 0%,100%{transform:translate(0,0)} 33%{transform:translate(25px,20px)} 66%{transform:translate(-30px,-25px)} }
-
 /* ── NAV ── */
-.nav {
-  position:fixed; top:0; left:0; right:0; z-index:100;
-  display:flex; justify-content:flex-end; align-items:center;
-  padding:max(var(--sp-4),env(safe-area-inset-top)) clamp(1.4rem,5vw,3.2rem) var(--sp-3);
-  transition:background var(--dur-normal) ease, border-color var(--dur-normal) ease;
-  border-bottom:1px solid transparent;
-}
-/* Past the hero the bar sits over content, so it earns an opaque ground and a
-   brighter ink: the options have to stay readable and reachable all the way down. */
-.nav.is-scrolled {
-  background:rgba(5,8,18,0.94);
-  -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
-  border-bottom-color:var(--gold-line);
-}
-.nav.is-scrolled .nav-link { color:var(--gold) }
-.nav-link {
-  color:var(--gold-dim);
-  font-family:'Cormorant Garamond',Georgia,serif;
-  font-style:italic; font-size:clamp(0.82rem,1.6vw,0.92rem);
-  letter-spacing:0.22em; text-transform:uppercase;
-  transition:color var(--dur-normal) ease, text-shadow var(--dur-normal) ease;
-  min-height:44px; display:flex; align-items:center;
-}
-.nav-right { display:flex; gap:var(--sp-5) }
-.nav-link:hover { color:var(--gold-bright); text-shadow:var(--glow-xs) }
-.nav-link:focus-visible { outline:1px solid var(--gold-bright); outline-offset:6px }
-
-/* ── HERO ── */
-.hero {
-  position:relative; z-index:1;
-  min-height:100vh; min-height:100svh;
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  text-align:center; padding:var(--sp-10) var(--sp-5) var(--sp-8);
-  overflow:hidden;
-}
-.hero-glow {
-  position:absolute; left:0; top:0; z-index:0;
-  width:clamp(320px,44vw,680px); aspect-ratio:1; border-radius:50%;
-  background:radial-gradient(circle,rgba(181,147,90,0.14),rgba(181,147,90,0.05) 30%,transparent 62%);
-  opacity:0; pointer-events:none;
-  transform:translate3d(-50%,-50%,0);
-  transition:opacity var(--dur-slow) ease;
-  will-change:transform;
-}
-/* One sky behind the whole page: a fixed canvas paints the deep-space ground,
-   a faint star-chart grid, the starfield and the constellation that is lit.
-   Content scrolls over it on glass plates, so every section shares the same
-   night. Before the script runs, the body gradient below stands in for it. */
-.sky {
-  position:fixed; inset:0; z-index:0; pointer-events:none;
-  opacity:0; animation:skyIn 1.4s ease-out 0.2s forwards;
-}
-body { background:linear-gradient(180deg, #060b1e 0%, #0a1233 45%, #0a1129 70%, #080808 100%) fixed; }
-.nav::before {
-  content:''; position:absolute; left:0; right:0; top:0; height:calc(100% + 28px); z-index:-1; pointer-events:none;
-  background:linear-gradient(180deg, rgba(5,8,18,0.86) 0%, rgba(5,8,18,0.55) 55%, rgba(5,8,18,0) 100%);
-  opacity:1; transition:opacity var(--dur-normal) ease;
-}
+.nav { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; gap:var(--sp-4);
+  padding:max(var(--sp-3),env(safe-area-inset-top)) clamp(1rem,4vw,2.4rem); border-bottom:1px solid transparent; transition:background var(--dur-normal), border-color var(--dur-normal) }
+.nav::before { content:''; position:absolute; inset:0 0 -28px 0; z-index:-1; pointer-events:none; background:linear-gradient(180deg,rgba(5,8,18,.86),rgba(5,8,18,.55) 55%,rgba(5,8,18,0)); transition:opacity var(--dur-normal) }
+.nav.is-scrolled { background:rgba(5,8,18,.94); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border-bottom-color:var(--gold-line) }
 .nav.is-scrolled::before { opacity:0 }
-@keyframes skyIn { to { opacity:1 } }
-.hero-inner { position:relative; z-index:1; max-width:720px }
-.hero-title {
-  font-family:'Bebas Neue',Impact,sans-serif;
-  font-size:clamp(5rem,15vw,11rem); font-weight:400;
-  letter-spacing:0.07em; line-height:0.9; text-transform:uppercase;
-  color:var(--fg);
-  text-shadow:var(--glow-text);
-  margin-bottom:0.35em;
-}
-.hero-seam {
-  width:min(72%,400px); height:1px; margin:0 auto var(--sp-5);
-  background:linear-gradient(to right, transparent 0%, var(--gold-line) 8%, var(--gold-line) 35%, transparent 35%, transparent 65%, var(--gold-line) 65%, var(--gold-line) 92%, transparent 100%);
-  box-shadow:var(--glow-line);
-  position:relative;
-  transform:scaleX(0); transform-origin:center;
-  animation:drawSeam 760ms cubic-bezier(0.16,1,0.3,1) 0.4s both;
-}
-@keyframes drawSeam { to { transform:scaleX(1) } }
-.hero-mark {
-  position:absolute; top:50%; left:50%;
-  transform:translate(-50%,-50%);
-  color:var(--gold); font-style:italic;
-  font-size:clamp(0.68rem,1.3vw,0.82rem);
-  letter-spacing:0.52em; text-transform:lowercase;
-  white-space:nowrap; padding:0 10px;
-  background:var(--bg);
-  opacity:0; animation:markIn 300ms ease-out 1.16s both;
-}
-@keyframes markIn { to { opacity:0.86 } }
-.hero-sub {
-  font-style:italic;
-  font-size:clamp(1.05rem,2.2vw,1.32rem);
-  color:var(--muted); letter-spacing:0.06em; line-height:1.6;
-  margin-bottom:var(--sp-6);
-}
-.hero-actions { display:flex; align-items:center; gap:var(--sp-5); justify-content:center; flex-wrap:wrap }
-.action-link {
-  color:var(--gold); font-style:italic;
-  font-size:clamp(0.88rem,1.6vw,0.98rem);
-  letter-spacing:0.16em; text-transform:uppercase;
-  transition:color var(--dur-normal) ease, text-shadow var(--dur-normal) ease;
-  min-height:44px; display:inline-flex; align-items:center;
-  background:none; border:0; cursor:pointer; font-family:inherit;
-}
-.action-link:hover { color:var(--gold-bright); text-shadow:var(--glow-xs) }
-.action-link:focus-visible { outline:1px solid var(--gold-bright); outline-offset:6px }
-.action-link.quiet { color:var(--gold); font-size:0.86rem }
-.action-link.quiet:hover { color:var(--gold-bright) }
-.action-dot { color:var(--gold-dim); font-size:0.65rem }
-.scroll-cue { margin-top:var(--sp-7); color:var(--gold-dim); font-style:italic; font-size:1.1rem; animation:float 2.4s ease-in-out infinite 1.6s; opacity:0; animation-fill-mode:both }
-@keyframes float { 0%,100% { transform:translateY(0); opacity:0.35 } 50% { transform:translateY(8px); opacity:0.75 } }
-.hero-fade { opacity:0; transform:translateY(14px); animation:fadeUp .7s cubic-bezier(0.16,1,0.3,1) both }
-@keyframes fadeUp { to { opacity:1; transform:none } }
-.hero-fade:nth-child(1) { animation-delay:.25s }
-.hero-fade:nth-child(2) { animation-delay:.5s }
-.hero-fade:nth-child(3) { animation-delay:.95s }
-.hero-fade:nth-child(4) { animation-delay:1.2s }
-.hero-fade:nth-child(5) { animation-delay:1.5s }
+.brand { display:flex; align-items:baseline; gap:10px; min-height:44px }
+.brand-word { font-family:var(--display); font-size:1.5rem; letter-spacing:.14em; color:var(--fg); text-shadow:var(--glow-text); line-height:1 }
+.brand-by { font-style:italic; font-size:.78rem; letter-spacing:.28em; text-transform:uppercase; color:var(--gold) }
+.nav-right { display:flex; gap:clamp(.9rem,3vw,1.6rem) }
+.nav-link { color:var(--gold-dim); font-style:italic; font-size:clamp(.8rem,1.5vw,.9rem); letter-spacing:.2em; text-transform:uppercase; min-height:44px; display:flex; align-items:center; transition:color var(--dur-normal), text-shadow var(--dur-normal) }
+.nav-link:hover { color:var(--gold-bright); text-shadow:var(--glow-xs) }
+.nav-link:focus-visible, .action-link:focus-visible { outline:1px solid var(--gold-bright); outline-offset:6px }
 
-/* ── SHARED SECTION FURNITURE ── */
-.section { position:relative; z-index:1; padding:0 var(--sp-5) var(--sp-12); max-width:880px; margin:0 auto }
-.section-label {
-  text-align:center;
-  font-style:italic; font-size:clamp(0.8rem,1.3vw,0.9rem);
-  letter-spacing:0.4em; text-transform:lowercase;
-  color:var(--gold); margin-bottom:var(--sp-6);
-}
-.section-lead {
-  text-align:center; max-width:520px; margin:calc(-1 * var(--sp-3)) auto var(--sp-6);
-  font-style:italic; font-size:clamp(1rem,1.8vw,1.18rem);
-  color:var(--muted); letter-spacing:0.03em;
-}
-.panel {
-  position:relative;
-  border:1px solid rgba(181,147,90,0.24);
-  background:rgba(5,7,14,0.66);
-  -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
-  box-shadow:0 0 0 1px rgba(0,0,0,0.35), 0 30px 80px rgba(0,0,0,0.38), 0 0 40px rgba(181,147,90,0.05);
-  padding:var(--sp-7) var(--sp-6);
-}
-/* Chart-plate corner ticks: the one ornament, used on every plate. */
-.panel::after {
-  content:''; position:absolute; inset:-1px; pointer-events:none; opacity:.85;
-  --tick:linear-gradient(var(--gold-bright),var(--gold-bright));
-  background:
-    var(--tick) left top/18px 1px no-repeat, var(--tick) left top/1px 18px no-repeat,
-    var(--tick) right top/18px 1px no-repeat, var(--tick) right top/1px 18px no-repeat,
-    var(--tick) left bottom/18px 1px no-repeat, var(--tick) left bottom/1px 18px no-repeat,
-    var(--tick) right bottom/18px 1px no-repeat, var(--tick) right bottom/1px 18px no-repeat;
-}
-.panel::before {
-  content:''; position:absolute; top:0; left:var(--sp-6); right:var(--sp-6); height:1px;
-  background:linear-gradient(90deg, transparent, rgba(181,147,90,0.35), transparent);
-  box-shadow:0 0 8px rgba(181,147,90,0.18);
-}
+/* ── HERO: the instrument on the left, the poster on the right ── */
+.hero { position:relative; z-index:1; min-height:100svh; display:grid; place-items:center; padding:calc(var(--sp-10) + 24px) clamp(1rem,4vw,2.4rem) var(--sp-9) }
+.hero-inner { width:100%; max-width:var(--wide); display:grid; grid-template-columns:minmax(0,7fr) minmax(0,5fr); gap:clamp(2rem,6vw,5rem); align-items:center }
+.hero-inner > * { min-width:0 }
+.eyebrow { font-style:italic; font-size:clamp(.78rem,1.3vw,.86rem); letter-spacing:.42em; text-transform:lowercase; color:var(--gold); margin-bottom:var(--sp-4) }
+.eyebrow b { font-family:var(--mono); font-style:normal; font-weight:500; letter-spacing:.08em; text-transform:none; color:var(--gold-bright) }
+h1.hero-title { font-family:var(--display); font-weight:400; font-size:clamp(2.9rem,6.6vw,5.4rem); line-height:.96; letter-spacing:.04em; text-transform:uppercase; color:var(--fg); text-shadow:var(--glow-text); margin-bottom:var(--sp-4) }
+h1.hero-title em { font-style:normal; color:var(--gold-bright) }
+.hero-sub { font-style:italic; font-size:clamp(1.05rem,1.9vw,1.28rem); color:var(--muted); letter-spacing:.03em; max-width:34rem; margin-bottom:var(--sp-6) }
+.hero-fade { opacity:0; transform:translateY(14px); animation:fadeUp .7s var(--ease-out) both }
+@keyframes fadeUp { to { opacity:1; transform:none } }
+.hero-fade:nth-child(1) { animation-delay:.15s } .hero-fade:nth-child(2) { animation-delay:.3s } .hero-fade:nth-child(3) { animation-delay:.45s } .hero-fade:nth-child(4) { animation-delay:.6s }
+
+/* the poster: a real QR from the sample workspace, and the destination it keeps changing to */
+.poster-wrap { position:relative; display:flex; justify-content:center; opacity:0; animation:fadeUp .9s var(--ease-out) .5s both }
+.poster { position:relative; width:min(100%,340px); aspect-ratio:3/4; padding:clamp(18px,4vw,28px); background:#f3eee2; color:#141210; box-shadow:0 30px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(181,147,90,.25), 0 0 60px rgba(181,147,90,.08); transform:rotate(-2deg); display:flex; flex-direction:column; justify-content:space-between }
+.poster::before { content:''; position:absolute; top:-10px; left:50%; width:64px; height:20px; transform:translateX(-50%) rotate(1.5deg); background:rgba(181,147,90,.55); box-shadow:0 2px 6px rgba(0,0,0,.25) }
+.poster-head { font-family:var(--display); font-size:clamp(1.5rem,3.4vw,2rem); letter-spacing:.06em; line-height:1; text-transform:uppercase }
+.poster-head small { display:block; font-family:var(--serif); font-style:italic; font-size:.82rem; letter-spacing:.14em; text-transform:uppercase; color:#6b6355; margin-top:6px }
+.poster-qr { width:min(62%,180px); aspect-ratio:1; background:#fff; padding:8px; margin:var(--sp-3) auto; box-shadow:0 0 0 1px rgba(0,0,0,.08) }
+.poster-qr img { width:100%; height:100%; display:block; image-rendering:pixelated }
+.poster-addr { font-family:var(--mono); font-size:.86rem; letter-spacing:.03em; text-align:center; color:#141210 }
+.poster-foot { text-align:center; font-style:italic; font-size:.84rem; color:#6b6355; letter-spacing:.04em }
+.repoint { margin-top:var(--sp-5); text-align:center; font-style:italic; font-size:clamp(.98rem,1.6vw,1.08rem); color:var(--muted); min-height:2.8em; opacity:0; animation:fadeUp .7s var(--ease-out) .9s both }
+.repoint b { color:var(--gold-bright); font-weight:500; display:inline-block; min-width:9ch; text-align:left; transition:opacity var(--dur-normal) }
+.repoint .arrow { color:var(--gold); padding:0 8px }
+.repoint.swap b { opacity:0 }
+
+/* ── SHARED FURNITURE ── */
+.section { position:relative; z-index:1; padding:0 clamp(1rem,4vw,2.4rem) var(--sp-12); max-width:var(--wide); margin:0 auto }
+.section.narrow { max-width:880px }
+.section-label { text-align:center; font-style:italic; font-size:clamp(.8rem,1.3vw,.9rem); letter-spacing:.4em; text-transform:lowercase; color:var(--gold); margin-bottom:var(--sp-3) }
+.section-title { text-align:center; font-family:var(--display); font-size:clamp(1.9rem,4vw,3rem); letter-spacing:.05em; text-transform:uppercase; line-height:1; color:var(--fg); margin-bottom:var(--sp-3) }
+.section-lead { text-align:center; max-width:560px; margin:0 auto var(--sp-7); font-style:italic; font-size:clamp(1rem,1.8vw,1.18rem); color:var(--muted); letter-spacing:.03em }
+.panel { position:relative; border:1px solid rgba(181,147,90,.24); background:rgba(5,7,14,.66); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+  box-shadow:0 0 0 1px rgba(0,0,0,.35), 0 30px 80px rgba(0,0,0,.38), 0 0 40px rgba(181,147,90,.05); padding:var(--sp-6) var(--sp-6) }
+.panel::after { content:''; position:absolute; inset:-1px; pointer-events:none; opacity:.85; --tick:linear-gradient(var(--gold-bright),var(--gold-bright));
+  background:var(--tick) left top/18px 1px no-repeat,var(--tick) left top/1px 18px no-repeat,var(--tick) right top/18px 1px no-repeat,var(--tick) right top/1px 18px no-repeat,var(--tick) left bottom/18px 1px no-repeat,var(--tick) left bottom/1px 18px no-repeat,var(--tick) right bottom/18px 1px no-repeat,var(--tick) right bottom/1px 18px no-repeat }
 .panel-narrow { max-width:600px; margin:0 auto }
-.note { font-style:italic; font-size:0.98rem; color:var(--muted); line-height:1.55 }
+.note { font-style:italic; font-size:.98rem; color:var(--muted); line-height:1.55 }
 .note strong { color:var(--gold-bright); font-weight:500 }
 .actions { display:flex; flex-wrap:wrap; gap:0 var(--sp-4); align-items:center; justify-content:center }
 .actions .action-dot { padding:0 var(--sp-1) }
-.status { font-style:italic; font-size:0.92rem; color:var(--muted); min-height:1.4em; margin-top:var(--sp-2) }
-.status.ok { color:rgba(34,197,94,0.85) }
-.status.err { color:#f28b84 }
+.action-link { color:var(--gold); font-style:italic; font-size:clamp(.88rem,1.6vw,.98rem); letter-spacing:.16em; text-transform:uppercase; min-height:44px; display:inline-flex; align-items:center; background:none; border:0; cursor:pointer; font-family:inherit; transition:color var(--dur-normal), text-shadow var(--dur-normal) }
+.action-link:hover { color:var(--gold-bright); text-shadow:var(--glow-xs) }
+.action-link.quiet { font-size:.86rem }
+.action-dot { color:var(--gold-dim); font-size:.65rem }
+.status { font-style:italic; font-size:.92rem; color:var(--muted); min-height:1.4em; margin-top:var(--sp-2) }
+.status.ok { color:rgba(34,197,94,.85) } .status.err { color:#f28b84 }
 
-/* ── MAKE — the instrument ── */
-.seg { display:flex; justify-content:center; gap:var(--sp-6); margin-bottom:var(--sp-2) }
-.seg-btn {
-  background:none; border:0; cursor:pointer; padding:10px 2px; min-height:44px;
-  font-family:'Cormorant Garamond',Georgia,serif; font-style:italic;
-  font-size:0.94rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--muted);
-  border-bottom:1px solid transparent;
-  transition:color var(--dur-normal) ease, border-color var(--dur-normal) ease, text-shadow var(--dur-normal) ease;
-}
-.seg-btn:hover { color:var(--muted) }
+/* ── FORM ELEMENTS ── */
+.field { margin-bottom:var(--sp-4); min-width:0 }
+.field-label { display:block; font-size:.8rem; font-style:italic; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); margin-bottom:var(--sp-1) }
+.field-input,.field-select { width:100%; padding:10px 0; background:none; border:none; border-bottom:1px solid var(--gold-line); color:rgba(237,232,223,.88); font-family:var(--serif); font-size:1.04rem; letter-spacing:.06em; caret-color:var(--gold); outline:none; min-height:44px; transition:border-color var(--dur-normal), box-shadow var(--dur-normal) }
+.field-input.mono { font-family:var(--mono); letter-spacing:.1em; font-size:.95rem; text-transform:uppercase }
+.field-input.big { font-size:1.14rem; letter-spacing:.04em }
+.field-input:focus,.field-select:focus { border-bottom-color:var(--gold); box-shadow:0 4px 12px rgba(181,147,90,.1) }
+.field-input::placeholder { color:var(--faint); font-style:italic; opacity:1; text-transform:none; letter-spacing:.06em; font-family:var(--serif) }
+.field-input:focus-visible,.field-select:focus-visible { outline:1px solid var(--gold-bright); outline-offset:4px }
+.field-select { cursor:pointer; appearance:none; padding-right:24px; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23b5935a'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 0 center }
+.field-select option { background:var(--bg); color:var(--fg) }
+.field-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--sp-4) }
+.field-help { margin:var(--sp-2) 0 0; font-style:italic; font-size:.86rem; color:var(--muted); line-height:1.5 }
+input[type="time"].field-input, input[type="date"].field-input { color-scheme:dark }
+.btn-submit { width:100%; padding:14px; margin-top:var(--sp-2); background:var(--gold); border:none; color:var(--bg); font-family:var(--serif); font-weight:600; font-size:.88rem; letter-spacing:.16em; text-transform:uppercase; cursor:pointer; min-height:44px; white-space:nowrap; transition:background var(--dur-normal), transform var(--dur-normal), box-shadow var(--dur-slow) }
+.btn-submit:hover:not(:disabled) { background:var(--gold-bright); transform:translateY(-1px); box-shadow:0 0 16px rgba(181,147,90,.3), 0 0 32px rgba(181,147,90,.15) }
+.btn-submit:disabled { opacity:.35; cursor:not-allowed }
+.btn-submit:focus-visible { outline:2px solid var(--gold-bright); outline-offset:4px }
+a.btn-submit { display:block; text-align:center }
+.form-note { margin-top:var(--sp-3); font-style:italic; font-size:.86rem; color:var(--muted); letter-spacing:.03em; min-height:44px; display:flex; align-items:center; justify-content:center; text-align:center }
+.form-note a { color:var(--gold) }
+.form-success { display:none; padding:var(--sp-3) var(--sp-4); margin-top:var(--sp-3); border-left:2px solid var(--ok); font-style:italic; font-size:.95rem; color:rgba(34,197,94,.85) }
+.form-success.show { display:block }
+.alert { padding:10px var(--sp-3); margin-bottom:var(--sp-3); font-style:italic; font-size:.92rem; display:none; border-left:2px solid transparent; overflow-wrap:anywhere }
+.alert.show { display:block } .alert.error { border-left-color:var(--err); color:#f28b84 } .alert.success { border-left-color:var(--ok); color:rgba(34,197,94,.85) }
+.check { display:flex; gap:12px; align-items:center; min-height:44px; cursor:pointer; font-style:italic; font-size:1rem; color:var(--muted) }
+.check input { width:18px; height:18px; accent-color:var(--gold); flex:none }
+.honey { position:absolute; left:-9999px; width:1px; height:1px; opacity:0 }
+
+/* ── THE MAKER ── */
+.maker { padding:var(--sp-5) var(--sp-5) var(--sp-4) }
+.seg { display:flex; gap:var(--sp-5); margin-bottom:var(--sp-2) }
+.seg-btn { background:none; border:0; cursor:pointer; padding:8px 2px; min-height:44px; font-family:var(--serif); font-style:italic; font-size:.92rem; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); border-bottom:1px solid transparent; transition:color var(--dur-normal), border-color var(--dur-normal) }
 .seg-btn.active { color:var(--gold-bright); border-bottom-color:var(--gold); text-shadow:var(--glow-xs) }
 .seg-btn:focus-visible { outline:1px solid var(--gold-bright); outline-offset:4px }
-.seg-note { text-align:center; margin:0 auto var(--sp-3); max-width:460px; min-height:2.6em }
-.mode-facts { list-style:none; margin:0 auto var(--sp-6); padding:0; max-width:560px; display:flex; flex-wrap:wrap; justify-content:center; gap:var(--sp-1) 0; font-style:italic; font-size:0.92rem; color:var(--muted); line-height:1.5 }
+.seg-note { margin:0 0 var(--sp-2); min-height:2.6em; font-size:.94rem }
+.mode-facts { list-style:none; margin:0 0 var(--sp-4); padding:0; display:flex; flex-wrap:wrap; gap:var(--sp-1) 0; font-style:italic; font-size:.88rem; color:var(--dim); line-height:1.5 }
 .mode-facts li { white-space:nowrap }
-.mode-facts li + li::before { content:'·'; color:var(--gold-dim); padding:0 10px }
-.field-help { margin:var(--sp-2) 0 0; font-style:italic; font-size:0.86rem; color:var(--muted); line-height:1.5 }
+.mode-facts li + li::before { content:'·'; color:var(--gold-dim); padding:0 8px }
 .url-row { display:flex; gap:var(--sp-4); align-items:flex-end }
 .url-row .field { flex:1 1 auto; min-width:0; margin:0 }
-.url-row .btn-submit { width:auto; margin:0; padding:14px 22px; flex:0 0 auto }
-.field-input.big { font-size:1.12rem; letter-spacing:0.04em }
+.url-row .btn-submit { width:auto; margin:0; padding:14px 26px; flex:0 0 auto }
 details.options { margin:var(--sp-4) 0 0 }
-details.options summary {
-  cursor:pointer; list-style:none; min-height:44px; display:inline-flex; align-items:center; gap:var(--sp-2);
-  font-style:italic; font-size:0.88rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold);
-}
+details.options summary { cursor:pointer; list-style:none; min-height:44px; display:inline-flex; align-items:center; gap:var(--sp-2); font-style:italic; font-size:.86rem; letter-spacing:.12em; text-transform:uppercase; color:var(--gold) }
 details.options summary::-webkit-details-marker { display:none }
 details.options summary::before { content:'+'; font-family:var(--mono); color:var(--gold) }
 details.options[open] summary::before { content:'−' }
-details.options summary:hover { color:var(--gold-bright) }
 details.options .field { margin-top:var(--sp-3) }
-.check { display:flex; gap:12px; align-items:center; min-height:44px; cursor:pointer; font-style:italic; font-size:1rem; color:var(--muted) }
-.check input { width:18px; height:18px; accent-color:var(--gold); flex:none }
-input[type="time"].field-input, input[type="date"].field-input { color-scheme:dark }
-.utm-hint { margin:var(--sp-3) 0 0 }
-.utm-hint b { color:var(--gold-bright); font-weight:500 }
-.utm-hint .action-link { margin-left:6px }
-.honey { position:absolute; left:-9999px; width:1px; height:1px; opacity:0 }
+details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2); border-top:1px solid rgba(181,147,90,.1) }
+.utm-hint { margin:var(--sp-3) 0 0 } .utm-hint b { color:var(--gold-bright); font-weight:500 } .utm-hint .action-link { margin-left:6px }
 
 /* result */
-.result { display:none; flex-direction:column; align-items:center; gap:var(--sp-5); text-align:center }
+.result { display:none; flex-direction:column; align-items:center; gap:var(--sp-4); text-align:center }
 .result.show { display:flex }
-.qr-frame {
-  width:min(100%,220px); aspect-ratio:1; background:#fff; padding:12px;
-  box-shadow:0 0 0 1px rgba(181,147,90,0.25), var(--glow-md);
-}
+.qr-frame { width:min(100%,220px); aspect-ratio:1; background:#fff; padding:12px; box-shadow:0 0 0 1px rgba(181,147,90,.25), var(--glow-md) }
 .qr-frame img, .qr-frame canvas { width:100%; height:100%; display:block; image-rendering:pixelated }
 .short-line { display:flex; align-items:center; justify-content:center; gap:var(--sp-3); flex-wrap:wrap; max-width:100% }
-.short-url { font-family:var(--mono); font-size:1rem; color:var(--gold-bright); letter-spacing:0.02em; overflow-wrap:anywhere; text-align:center }
-.code-card {
-  width:100%; max-width:520px;
-  border:1px solid rgba(181,147,90,0.35); padding:var(--sp-5) var(--sp-5) var(--sp-4);
-  background:rgba(181,147,90,0.05); box-shadow:var(--glow-sm);
-}
-.code-label { font-style:italic; font-size:0.8rem; letter-spacing:0.22em; text-transform:uppercase; color:var(--gold) }
-.code-value {
-  font-family:var(--mono); font-size:clamp(1rem,3vw,1.2rem); letter-spacing:0.08em;
-  color:var(--fg); margin:var(--sp-2) 0 var(--sp-3);
-  /* Break only at the hyphens between groups, never inside a group. */
-  overflow-wrap:normal; word-break:normal;
-  text-shadow:0 0 12px rgba(181,147,90,0.15);
-}
+.short-url { font-family:var(--mono); font-size:1.05rem; color:var(--gold-bright); letter-spacing:.02em; overflow-wrap:anywhere; text-align:center }
+.code-card { width:100%; max-width:520px; border:1px solid rgba(181,147,90,.35); padding:var(--sp-5) var(--sp-5) var(--sp-4); background:rgba(181,147,90,.05); box-shadow:var(--glow-sm) }
+.code-label { font-style:italic; font-size:.8rem; letter-spacing:.22em; text-transform:uppercase; color:var(--gold) }
+.code-value { font-family:var(--mono); font-size:clamp(1rem,3vw,1.2rem); letter-spacing:.08em; color:var(--fg); margin:var(--sp-2) 0 var(--sp-3); overflow-wrap:normal; word-break:normal; text-shadow:0 0 12px rgba(181,147,90,.15) }
 .code-card .note { text-align:center }
 .code-card.compact { margin:var(--sp-2) auto 0; max-width:560px }
 .code-actions { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:0 var(--sp-3); margin:0 0 var(--sp-3) }
-.next-steps { width:100%; max-width:520px; margin:0 auto; padding:0 0 0 1.6em; text-align:left; font-style:italic; font-size:0.98rem; color:var(--muted); line-height:1.55 }
+.next-steps { width:100%; max-width:520px; margin:0 auto; padding:0 0 0 1.6em; text-align:left; font-style:italic; font-size:.98rem; color:var(--muted); line-height:1.55 }
 .next-steps li { margin:0 0 var(--sp-2); padding-left:4px }
 .next-steps li::marker { font-family:var(--mono); font-style:normal; color:var(--gold) }
-.next-steps b { color:var(--gold-bright); font-weight:500 }
-.next-steps i { color:var(--gold-bright) }
-.confirm { width:100%; max-width:520px; border-left:2px solid var(--gold); padding:var(--sp-3) var(--sp-4); text-align:left; background:rgba(181,147,90,0.05) }
-.confirm .note { margin:0 0 var(--sp-2) }
-.confirm .actions { justify-content:flex-start }
+.next-steps b { color:var(--gold-bright); font-weight:500 } .next-steps i { color:var(--gold-bright) }
+.confirm { width:100%; max-width:520px; border-left:2px solid var(--gold); padding:var(--sp-3) var(--sp-4); text-align:left; background:rgba(181,147,90,.05) }
+.confirm .note { margin:0 0 var(--sp-2) } .confirm .actions { justify-content:flex-start }
 .inline-form { display:flex; gap:var(--sp-3); align-items:flex-end; width:100%; max-width:460px; margin:0 auto }
 .inline-form .field { flex:1 1 auto; min-width:0; margin:0 }
 .inline-form .btn-submit { width:auto; margin:0; padding:12px 18px; flex:0 0 auto }
+
+/* ── PROOF: real scans from the sample workspace ── */
+.tiers { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--sp-4) }
+.tier { display:flex; flex-direction:column; gap:6px; padding:var(--sp-5); min-width:0; border:1px solid rgba(181,147,90,.18); background:rgba(5,7,14,.6); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); transition:border-color var(--dur-normal), box-shadow var(--dur-slow) }
+.tier:hover { border-color:rgba(181,147,90,.4); box-shadow:var(--glow-md) }
+.tier .lab { font-style:italic; font-size:.78rem; letter-spacing:.2em; text-transform:uppercase; color:var(--gold) }
+.tier .big { font-family:var(--display); font-size:2.6rem; letter-spacing:.04em; line-height:1; color:var(--gold-bright); text-shadow:var(--glow-text) }
+.tier .big small { display:block; font-family:var(--serif); font-style:italic; font-size:.78rem; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); text-shadow:none; margin-top:4px }
+.tier .ttl { font-size:1.02rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--fg) }
+.tier .spark { display:flex; align-items:flex-end; gap:3px; height:44px; margin:6px 0 }
+.tier .spark i { flex:1 1 0; background:linear-gradient(180deg,var(--gold-bright),var(--gold)); min-height:2px; box-shadow:var(--glow-xs) }
+.tier .meta { font-family:var(--mono); font-size:.74rem; color:var(--muted); letter-spacing:.02em }
+.proof-foot { text-align:center; margin-top:var(--sp-5) }
+.tiers-empty { text-align:center; font-style:italic; color:var(--muted); grid-column:1/-1 }
+
+/* ── HOW ── */
+.steps { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--sp-5); counter-reset:step }
+.step { position:relative; padding:var(--sp-6) var(--sp-5); border:1px solid rgba(181,147,90,.14); background:rgba(5,7,14,.5); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); min-width:0 }
+.step::before { counter-increment:step; content:'0' counter(step); display:block; font-family:var(--display); font-size:.9rem; letter-spacing:.25em; color:var(--gold); margin-bottom:var(--sp-3) }
+.step h3 { font-family:var(--display); font-size:1.8rem; letter-spacing:.05em; text-transform:uppercase; line-height:1; margin-bottom:var(--sp-3) }
+.step p { font-style:italic; color:var(--muted); font-size:1rem }
+.step code { font-family:var(--mono); font-style:normal; font-size:.86rem; color:var(--gold-bright) }
+
+/* ── STORIES ── */
+.story { display:grid; grid-template-columns:minmax(0,7fr) minmax(0,5fr); gap:clamp(1.5rem,4vw,3.5rem); align-items:center; padding:var(--sp-7) 0; border-top:1px solid var(--gold-line) }
+.story > * { min-width:0 }
+.story-who { display:block; font-style:italic; font-size:.8rem; letter-spacing:.22em; text-transform:uppercase; color:var(--gold); margin-bottom:var(--sp-3) }
+.story h3 { font-family:var(--display); font-size:clamp(1.7rem,3.4vw,2.5rem); letter-spacing:.04em; text-transform:uppercase; line-height:1; margin-bottom:var(--sp-3) }
+.story p { font-style:italic; color:var(--muted); font-size:1.02rem; margin-bottom:var(--sp-3) }
+.story p b { color:var(--gold-bright); font-weight:500 }
+.story-rule { font-family:var(--mono); font-style:normal !important; font-size:.78rem !important; color:var(--dim) !important; line-height:1.6 }
+.story-widget { padding:var(--sp-5); border:1px solid rgba(181,147,90,.3); background:rgba(5,7,14,.66); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); box-shadow:var(--glow-sm) }
+.w-head { font-style:italic; font-size:.8rem; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); margin-bottom:var(--sp-2) }
+.w-clock output { display:block; font-family:var(--display); font-size:3.2rem; letter-spacing:.06em; line-height:1; color:var(--fg); text-shadow:var(--glow-text); margin:var(--sp-2) 0 }
+.story-widget input[type=range] { width:100%; accent-color:var(--gold); margin:var(--sp-2) 0 4px }
+.w-scale { display:flex; justify-content:space-between; font-family:var(--mono); font-size:.68rem; color:var(--dim) }
+.w-result { margin-top:var(--sp-4); padding-top:var(--sp-3); border-top:1px solid var(--gold-line); font-size:1.1rem }
+.w-result b { color:var(--gold-bright); font-weight:500 }
+.w-result small { display:block; font-style:italic; font-size:.82rem; color:var(--dim) }
+.w-arrow { color:var(--gold) }
+.w-seg { display:flex; gap:var(--sp-2); flex-wrap:wrap; margin:var(--sp-2) 0 }
+.w-btn { background:none; border:1px solid var(--gold-line); color:var(--muted); padding:8px 14px; min-height:44px; cursor:pointer; font-family:var(--serif); font-style:italic; font-size:.9rem; letter-spacing:.12em; text-transform:uppercase; transition:color var(--dur-fast), border-color var(--dur-fast) }
+.w-btn.active, .w-btn:hover { color:var(--gold-bright); border-color:var(--gold) }
+.w-data { margin-top:var(--sp-4) }
+.w-data-label { display:block; font-style:italic; font-size:.78rem; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); margin-bottom:6px }
+.w-rows { display:flex; flex-direction:column; gap:4px; font-family:var(--mono); font-size:.78rem; color:var(--muted) }
+.w-rows div { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center }
+.w-rows i { display:block; height:6px; background:linear-gradient(90deg,var(--gold-bright),var(--gold)); box-shadow:var(--glow-xs) }
+.everything { text-align:center; margin-top:var(--sp-7); font-style:italic; color:var(--muted); font-size:.98rem; padding-top:var(--sp-5); border-top:1px solid var(--gold-line) }
+.everything b { color:var(--gold-bright); font-weight:500 }
+@media(max-width:960px) { .story { grid-template-columns:1fr } }
+
+/* ── CARDS ── */
+.cards { display:grid; grid-template-columns:minmax(0,3fr) minmax(0,2fr); gap:var(--sp-5); align-items:start }
+.cardimg { display:block; min-width:0 }
+.cardimg img { display:block; width:100%; height:auto; box-shadow:0 18px 30px rgba(0,0,0,.45), 0 50px 110px rgba(0,0,0,.6), 0 0 0 1px rgba(181,147,90,.3); transition:transform var(--dur-normal), box-shadow var(--dur-normal) }
+.cardimg:hover img { box-shadow:0 26px 40px rgba(0,0,0,.5), 0 70px 140px rgba(0,0,0,.65), 0 0 40px rgba(181,147,90,.25) }
+.cardimg:hover img { transform:translateY(-3px) }
+.cardimg span { display:block; margin-top:var(--sp-3); font-style:italic; font-size:.92rem; color:var(--muted); text-align:center }
+@media(max-width:760px) { .cards { grid-template-columns:1fr } }
+
+/* ── CASES ── */
+.cases { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--sp-5); align-items:start }
+.case { min-width:0 }
+.cardimg { display:block; min-width:0 }
+.cardimg img { display:block; width:100%; height:auto; box-shadow:0 18px 30px rgba(0,0,0,.45), 0 50px 110px rgba(0,0,0,.6), 0 0 0 1px rgba(181,147,90,.3); transition:transform var(--dur-normal), box-shadow var(--dur-normal) }
+.cardimg:hover img { box-shadow:0 26px 40px rgba(0,0,0,.5), 0 70px 140px rgba(0,0,0,.65), 0 0 40px rgba(181,147,90,.25) }
+.cardimg:hover img { transform:translateY(-3px) }
+.case-empty { aspect-ratio:3/2; display:grid; place-items:center; border:1px dashed rgba(181,147,90,.35); color:var(--gold); font-style:italic; letter-spacing:.3em; background:rgba(5,7,14,.4) }
+.case h3 { font-family:var(--display); font-size:1.6rem; letter-spacing:.05em; text-transform:uppercase; line-height:1; margin:var(--sp-4) 0 var(--sp-2) }
+.case p { font-style:italic; color:var(--muted); font-size:.98rem }
+.case-rule { font-family:var(--mono); font-style:normal !important; font-size:.74rem !important; color:var(--dim) !important; margin-top:var(--sp-2) }
+.everything { text-align:center; margin-top:var(--sp-7); font-style:italic; color:var(--muted); font-size:.98rem; padding-top:var(--sp-5); border-top:1px solid var(--gold-line) }
+.everything b { color:var(--gold-bright); font-weight:500 }
+@media(max-width:960px) { .cases { grid-template-columns:1fr } }
 
 /* ── MANAGE ── */
 .enter-row { display:flex; gap:var(--sp-4); align-items:flex-end }
 .enter-row .field { flex:1 1 auto; min-width:0; margin:0 }
 .enter-row .btn-submit { width:auto; margin:0; padding:14px 22px; flex:0 0 auto }
 .ws-head { display:flex; flex-direction:column; gap:var(--sp-3); align-items:center; text-align:center; padding-bottom:var(--sp-5); margin-bottom:var(--sp-3); border-bottom:1px solid var(--gold-line) }
-.ws-meta { font-style:italic; font-size:1rem; color:var(--muted) }
-.ws-meta b { color:var(--gold-bright); font-weight:500 }
+.ws-meta { font-style:italic; font-size:1rem; color:var(--muted) } .ws-meta b { color:var(--gold-bright); font-weight:500 }
 .links-list { display:flex; flex-direction:column }
-.link-row {
-  display:grid; grid-template-columns:minmax(0,1fr) auto; gap:var(--sp-3) var(--sp-4); align-items:center;
-  padding:var(--sp-4) 0; border-bottom:1px solid rgba(181,147,90,0.1); cursor:pointer;
-  transition:background var(--dur-fast) ease; min-width:0;
-}
+.link-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:var(--sp-3) var(--sp-4); align-items:center; padding:var(--sp-4) 0; border-bottom:1px solid rgba(181,147,90,.1); cursor:pointer; transition:background var(--dur-fast); min-width:0 }
 .link-row > * { min-width:0 }
-.link-row:hover { background:rgba(181,147,90,0.03) }
-.link-row.active { background:rgba(181,147,90,0.05) }
+.link-row:hover { background:rgba(181,147,90,.03) } .link-row.active { background:rgba(181,147,90,.05) }
 .link-title { font-size:1.05rem; color:var(--fg); overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
-.link-sub { font-family:var(--mono); font-size:0.8rem; color:var(--muted); margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
-.link-sub .st { color:var(--gold); font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.8rem; letter-spacing:0.14em; text-transform:uppercase; margin-right:var(--sp-2) }
+.link-sub { font-family:var(--mono); font-size:.8rem; color:var(--muted); margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+.link-sub .st { color:var(--gold); font-family:var(--serif); font-style:italic; font-size:.8rem; letter-spacing:.14em; text-transform:uppercase; margin-right:var(--sp-2) }
 .link-sub .st.off { color:#f28b84 }
-.link-count { font-family:'Bebas Neue',Impact,sans-serif; font-size:1.7rem; letter-spacing:0.05em; color:var(--gold-bright); line-height:1; text-align:right; white-space:nowrap }
-.link-count small { display:block; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.76rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted) }
+.link-count { font-family:var(--display); font-size:1.7rem; letter-spacing:.05em; color:var(--gold-bright); line-height:1; text-align:right; white-space:nowrap }
+.link-count small { display:block; font-family:var(--serif); font-style:italic; font-size:.76rem; letter-spacing:.14em; text-transform:uppercase; color:var(--muted) }
 .detail { margin-top:var(--sp-5); padding-top:var(--sp-5); border-top:1px solid var(--gold-line); display:grid; grid-template-columns:minmax(0,1fr) 220px; gap:var(--sp-6); min-width:0 }
 .detail > * { min-width:0 }
-.bars { display:flex; align-items:flex-end; gap:6px; height:92px; padding-bottom:18px; position:relative; border-bottom:1px solid var(--gold-line) }
-.bar { flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; position:relative }
-.bar i { display:block; width:100%; background:linear-gradient(180deg,var(--gold-bright),var(--gold)); min-height:2px; box-shadow:var(--glow-xs) }
-.bar span { position:absolute; bottom:-18px; font-family:var(--mono); font-size:0.68rem; color:var(--muted); letter-spacing:0.04em; white-space:nowrap }
 .mini-list { margin-top:var(--sp-4); display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--sp-4) }
 .mini-list > * { min-width:0 }
-.mini-list h4 { font-style:italic; font-size:0.78rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--gold); margin-bottom:var(--sp-2); font-weight:500 }
+.mini-list h4 { font-style:italic; font-size:.78rem; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); margin-bottom:var(--sp-2); font-weight:500 }
 .mini-list ul { list-style:none }
-.mini-list li { display:flex; justify-content:space-between; gap:var(--sp-2); font-size:0.98rem; color:var(--muted); padding:3px 0; border-bottom:1px solid rgba(181,147,90,0.08); min-width:0 }
-.mini-list li span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
-.mini-list li b { color:var(--fg); font-weight:500; flex:none }
+.mini-list li { display:flex; justify-content:space-between; gap:var(--sp-2); font-size:.98rem; color:var(--muted); padding:3px 0; border-bottom:1px solid rgba(181,147,90,.08); min-width:0 }
+.mini-list li span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap } .mini-list li b { color:var(--fg); font-weight:500; flex:none }
 .detail-side { display:flex; flex-direction:column; gap:var(--sp-3); align-items:stretch }
-.detail-side .qr-frame { width:100% }
-.detail-side .field { margin-bottom:var(--sp-2) }
-.detail-side .btn-submit { padding:12px }
-/* A finding's proposal, typed into the form: the fields it touched light up until the next render. */
-.field-input.prefill-hl, .field-select.prefill-hl { border-bottom-color:var(--gold-bright); box-shadow:0 6px 18px rgba(181,147,90,0.22); animation:prefillPulse 1.1s ease-out 3 }
+.detail-side .qr-frame { width:100% } .detail-side .field { margin-bottom:var(--sp-2) } .detail-side .btn-submit { padding:12px }
+.field-input.prefill-hl, .field-select.prefill-hl { border-bottom-color:var(--gold-bright); box-shadow:0 6px 18px rgba(181,147,90,.22); animation:prefillPulse 1.1s ease-out 3 }
 .action-link.prefill-hl { color:var(--gold-bright); text-shadow:var(--glow-xs); animation:prefillPulse 1.1s ease-out 3 }
-@keyframes prefillPulse { 50% { box-shadow:0 0 0 3px rgba(217,189,123,0.35), 0 6px 22px rgba(181,147,90,0.3) } }
-.share-box { margin-top:var(--sp-3); padding:var(--sp-3) var(--sp-4); border:1px solid rgba(181,147,90,0.35); background:rgba(181,147,90,0.05); text-align:left }
-.share-box .short-line { justify-content:flex-start }
-.share-box .short-url { text-align:left }
-details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2); border-top:1px solid rgba(181,147,90,0.1) }
+@keyframes prefillPulse { 50% { box-shadow:0 0 0 3px rgba(217,189,123,.35), 0 6px 22px rgba(181,147,90,.3) } }
+.share-box { margin-top:var(--sp-3); padding:var(--sp-3) var(--sp-4); border:1px solid rgba(181,147,90,.35); background:rgba(181,147,90,.05); text-align:left }
+.share-box .short-line { justify-content:flex-start } .share-box .short-url { text-align:left }
 .lifetime-note { text-align:center; margin-top:var(--sp-5) }
 .overview { margin-top:var(--sp-4); padding-top:var(--sp-4); border-top:1px solid var(--gold-line) }
 .overview-head { display:flex; align-items:baseline; justify-content:space-between; gap:var(--sp-3); flex-wrap:wrap; margin-bottom:var(--sp-2) }
-.overview-head h4, .views-head h4 { font-style:italic; font-size:0.8rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--gold); font-weight:500 }
+.overview-head h4, .views-head h4 { font-style:italic; font-size:.8rem; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); font-weight:500 }
 .views-nav { display:flex; gap:var(--sp-4); border-bottom:1px solid var(--gold-line); margin-bottom:var(--sp-3); flex-wrap:wrap }
-.views-nav button { background:none; border:0; border-bottom:1px solid transparent; margin-bottom:-1px; padding:8px 2px; min-height:44px; cursor:pointer; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.9rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted) }
+.views-nav button { background:none; border:0; border-bottom:1px solid transparent; margin-bottom:-1px; padding:8px 2px; min-height:44px; cursor:pointer; font-family:var(--serif); font-style:italic; font-size:.9rem; letter-spacing:.14em; text-transform:uppercase; color:var(--muted) }
 .views-nav button[aria-pressed="true"] { color:var(--gold-bright); border-bottom-color:var(--gold) }
-.views-nav button:focus-visible { outline:1px solid var(--gold-bright); outline-offset:4px }
-.report-kind { display:inline-block; font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.8rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold-bright); border:1px solid rgba(181,147,90,0.35); padding:5px 10px; margin-bottom:var(--sp-2) }
-@media(max-width:760px) { .k-tables, .graph-grid, .radar-wrap { grid-template-columns:1fr } }
+.report-kind { display:inline-block; font-family:var(--serif); font-style:italic; font-size:.8rem; letter-spacing:.18em; text-transform:uppercase; color:var(--gold-bright); border:1px solid rgba(181,147,90,.35); padding:5px 10px; margin-bottom:var(--sp-2) }
 
-/* ── CAPABILITIES — symmetric 2x2 grid ── */
-.caps-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--sp-5) }
-.cap-card {
-  padding:var(--sp-6) var(--sp-6) var(--sp-7);
-  border:1px solid rgba(181,147,90,0.08);
-  background:rgba(181,147,90,0.015);
-  text-align:center; position:relative; min-width:0;
-  transition:border-color var(--dur-normal) ease, box-shadow var(--dur-slow) ease, background var(--dur-normal) ease;
-  cursor:pointer; user-select:none;
-}
-.cap-card::before {
-  content:''; position:absolute; top:0; left:var(--sp-5); right:var(--sp-5); height:1px;
-  background:linear-gradient(90deg, transparent, rgba(181,147,90,0.25), transparent);
-  box-shadow:0 0 6px rgba(181,147,90,0.12);
-  opacity:0; transition:opacity var(--dur-normal) ease;
-}
-.cap-card:hover { border-color:rgba(181,147,90,0.2); box-shadow:0 0 24px rgba(181,147,90,0.08), 0 0 48px rgba(181,147,90,0.03); background:rgba(181,147,90,0.025) }
-.cap-card:hover::before { opacity:1 }
-.cap-num { display:block; font-family:'Bebas Neue',Impact,sans-serif; font-size:0.85rem; letter-spacing:0.25em; color:var(--gold); text-shadow:0 0 12px rgba(181,147,90,0.25); margin-bottom:var(--sp-2) }
-.cap-name { font-family:'Bebas Neue',Impact,sans-serif; font-size:clamp(1.5rem,2.8vw,2rem); letter-spacing:0.05em; text-transform:uppercase; color:var(--fg); margin-bottom:var(--sp-3) }
-.cap-icon { margin:var(--sp-4) auto var(--sp-3); color:var(--gold); opacity:0.55; transition:opacity var(--dur-normal) ease, filter var(--dur-slow) ease }
-.cap-card:hover .cap-icon { opacity:0.9; filter:drop-shadow(0 0 10px rgba(181,147,90,0.35)) }
-.cap-tag { font-style:italic; font-size:clamp(0.92rem,1.3vw,1.02rem); color:var(--muted); letter-spacing:0.04em; transition:color var(--dur-normal) ease }
-.cap-card:hover .cap-tag { color:var(--muted) }
-.cap-expand { max-height:0; overflow:hidden; opacity:0; max-width:100%; transition:max-height var(--dur-slow) var(--ease-out), opacity var(--dur-normal) ease, margin var(--dur-normal) ease; margin-top:0 }
-.cap-card.expanded .cap-expand { max-height:220px; opacity:1; margin-top:var(--sp-4) }
-.cap-detail {
-  font-family:var(--mono); font-size:0.8rem; line-height:1.9;
-  color:var(--muted); text-align:left; white-space:pre-wrap; overflow-wrap:anywhere;
-  padding:var(--sp-3) var(--sp-4); max-width:100%;
-  background:rgba(8,8,8,0.6); border:1px solid rgba(181,147,90,0.08);
-}
-.cap-detail .hl { color:var(--gold-bright) }
+/* ── CAPABILITIES: six lines, no cards ── */
+.caps { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:0; border-top:1px solid var(--gold-line); border-left:1px solid var(--gold-line) }
+.cap { padding:var(--sp-6) var(--sp-5); border-right:1px solid var(--gold-line); border-bottom:1px solid var(--gold-line); min-width:0; background:rgba(5,7,14,.4) }
+.cap h3 { font-family:var(--display); font-size:1.45rem; letter-spacing:.06em; text-transform:uppercase; line-height:1; margin-bottom:var(--sp-2); color:var(--fg) }
+.cap p { font-style:italic; font-size:.98rem; color:var(--muted) }
+.cap code { font-family:var(--mono); font-style:normal; font-size:.82rem; color:var(--gold-bright) }
 
-/* ── PRICING — one table, hairlines, no boxes ── */
+/* ── PRICING ── */
 .plans { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:0; border-top:1px solid var(--gold-line) }
-.plan { padding:var(--sp-6) var(--sp-5) var(--sp-6); border-right:1px solid rgba(181,147,90,0.12); display:flex; flex-direction:column; gap:var(--sp-3); min-width:0 }
+.plan { padding:var(--sp-6) var(--sp-5); border-right:1px solid rgba(181,147,90,.12); display:flex; flex-direction:column; gap:var(--sp-3); min-width:0; background:rgba(5,7,14,.4) }
 .plan:last-child { border-right:0 }
-.plan-name { font-family:'Bebas Neue',Impact,sans-serif; font-size:1.6rem; letter-spacing:0.08em; text-transform:uppercase; line-height:1 }
-.plan-price { font-family:'Bebas Neue',Impact,sans-serif; font-size:2.4rem; letter-spacing:0.03em; color:var(--gold-bright); line-height:1; text-shadow:var(--glow-text) }
-.plan-price small { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:0.9rem; letter-spacing:0.08em; color:var(--muted); text-shadow:none; text-transform:lowercase }
-.plan-for { font-style:italic; font-size:0.98rem; color:var(--muted); min-height:2.7em }
+.plan-name { font-family:var(--display); font-size:1.6rem; letter-spacing:.08em; text-transform:uppercase; line-height:1 }
+.plan-price { font-family:var(--display); font-size:2.4rem; letter-spacing:.03em; color:var(--gold-bright); line-height:1; text-shadow:var(--glow-text) }
+.plan-price small { font-family:var(--serif); font-style:italic; font-size:.9rem; letter-spacing:.08em; color:var(--muted); text-shadow:none; text-transform:lowercase }
+.plan-for { font-style:italic; font-size:.98rem; color:var(--muted); min-height:2.7em }
 .plan-list { list-style:none; display:flex; flex-direction:column; gap:7px; flex:1; margin-top:var(--sp-2) }
 .plan-list li { font-size:1.02rem; color:var(--muted); padding-left:16px; position:relative; line-height:1.45 }
-.plan-list li::before { content:''; position:absolute; left:0; top:0.7em; width:6px; height:1px; background:var(--gold) }
-.plan .btn-submit, .plan .action-link { margin-top:auto; align-self:center }
-.plan .btn-submit { width:100% }
+.plan-list li::before { content:''; position:absolute; left:0; top:.7em; width:6px; height:1px; background:var(--gold) }
+.plan .btn-submit, .plan .action-link { margin-top:auto; align-self:center } .plan .btn-submit { width:100% }
 .plan-foot { text-align:center; margin-top:var(--sp-5) }
 
-/* ── CONNECT — symmetric split panels ── */
-.connect-section { position:relative; z-index:1; padding:var(--sp-9) var(--sp-5) var(--sp-12) }
-.connect-intro { text-align:center; margin-bottom:var(--sp-7); font-style:italic; font-size:clamp(1.1rem,2vw,1.32rem); color:var(--muted); letter-spacing:0.04em }
-.connect-shell { max-width:880px; margin:0 auto; display:grid; grid-template-columns:minmax(0,1fr) 1px minmax(0,1fr); gap:0 }
-.connect-panel { padding:var(--sp-7) var(--sp-6); display:flex; flex-direction:column; min-width:0 }
-.connect-seam {
-  position:relative;
-  background:linear-gradient(180deg, transparent 0%, rgba(181,147,90,0.2) 12%, rgba(181,147,90,0.2) 38%, transparent 38%, transparent 62%, rgba(181,147,90,0.2) 62%, rgba(181,147,90,0.2) 88%, transparent 100%);
-  box-shadow:var(--glow-line);
-}
-.connect-mark {
-  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-  writing-mode:vertical-rl; color:var(--gold); font-style:italic;
-  font-size:0.86rem; letter-spacing:0.5em; text-transform:lowercase; white-space:nowrap;
-  text-shadow:0 0 10px rgba(181,147,90,0.2);
-}
-.panel-head { margin-bottom:var(--sp-5); text-align:center }
-.panel-title { font-family:'Bebas Neue',Impact,sans-serif; font-size:clamp(1.35rem,2.4vw,1.7rem); letter-spacing:0.05em; text-transform:uppercase; margin-bottom:var(--sp-1) }
-.panel-sub { font-style:italic; font-size:0.92rem; color:var(--muted); letter-spacing:0.04em }
+/* ── CONNECT ── */
+.connect { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:var(--sp-7); align-items:start }
+.connect > * { min-width:0 }
+.connect-head { margin-bottom:var(--sp-4) }
+.connect-head h3 { font-family:var(--display); font-size:1.6rem; letter-spacing:.06em; text-transform:uppercase; line-height:1; margin-bottom:var(--sp-1) }
+.connect-head p { font-style:italic; color:var(--muted); font-size:.95rem }
+.signin-card { padding:var(--sp-6) var(--sp-5); border:1px solid rgba(181,147,90,.24); background:rgba(5,7,14,.5) }
+.signin-card p { font-style:italic; color:var(--muted); margin-bottom:var(--sp-3) }
 
-/* ── FORM ELEMENTS ── */
-.field { margin-bottom:var(--sp-4); min-width:0 }
-.field-label { display:block; font-size:0.8rem; font-style:italic; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold); margin-bottom:var(--sp-1) }
-.field-input,.field-select {
-  width:100%; padding:10px 0;
-  background:none; border:none; border-bottom:1px solid var(--gold-line);
-  color:rgba(237,232,223,0.88);
-  font-family:'Cormorant Garamond',Georgia,serif; font-size:1.04rem; letter-spacing:0.06em;
-  caret-color:var(--gold); outline:none; min-height:44px;
-  transition:border-color var(--dur-normal) ease, box-shadow var(--dur-normal) ease;
-}
-.field-input.mono { font-family:var(--mono); letter-spacing:0.1em; font-size:0.95rem; text-transform:uppercase }
-.field-input:focus,.field-select:focus { border-bottom-color:var(--gold); box-shadow:0 4px 12px rgba(181,147,90,0.1) }
-.field-input::placeholder { color:var(--faint); font-style:italic; opacity:1; text-transform:none; letter-spacing:0.06em; font-family:'Cormorant Garamond',Georgia,serif }
-.field-input:focus-visible,.field-select:focus-visible { outline:1px solid var(--gold-bright); outline-offset:4px }
-.field-select {
-  cursor:pointer; appearance:none; padding-right:24px;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23b5935a'/%3E%3C/svg%3E");
-  background-repeat:no-repeat; background-position:right 0 center;
-}
-.field-select option { background:var(--bg); color:var(--fg) }
-.field-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--sp-4) }
+/* ── FOOTER ── */
+.foot { position:relative; z-index:1; max-width:var(--wide); margin:0 auto; padding:var(--sp-6) clamp(1rem,4vw,2.4rem) max(var(--sp-6),env(safe-area-inset-bottom)); display:flex; align-items:center; justify-content:space-between; gap:var(--sp-4); flex-wrap:wrap; border-top:1px solid var(--gold-line) }
+.foot-brand { font-family:var(--display); font-size:1.3rem; letter-spacing:.16em; color:var(--fg) }
+.foot-brand small { display:block; font-family:var(--serif); font-style:italic; font-size:.78rem; letter-spacing:.2em; text-transform:uppercase; color:var(--gold) }
+.foot nav { display:flex; gap:var(--sp-5); flex-wrap:wrap }
+.foot a { color:var(--gold); font-style:italic; font-size:.86rem; letter-spacing:.18em; text-transform:uppercase; min-height:44px; display:inline-flex; align-items:center }
+.foot a:hover { color:var(--gold-bright) }
+.foot p { font-style:italic; font-size:.84rem; color:var(--dim); width:100% }
 
-/* ── BUTTONS — glow hover ── */
-.btn-submit {
-  width:100%; padding:14px; margin-top:var(--sp-2);
-  background:var(--gold); border:none; color:var(--bg);
-  font-family:'Cormorant Garamond',Georgia,serif; font-weight:500;
-  font-size:0.86rem; letter-spacing:0.14em; text-transform:uppercase;
-  cursor:pointer; min-height:44px; white-space:nowrap;
-  transition:background var(--dur-normal) ease, transform var(--dur-normal) ease, box-shadow var(--dur-slow) ease;
-}
-.btn-submit:hover:not(:disabled) { background:var(--gold-bright); transform:translateY(-1px); box-shadow:0 0 16px rgba(181,147,90,0.3), 0 0 32px rgba(181,147,90,0.15), 0 0 56px rgba(181,147,90,0.06) }
-.btn-submit:active:not(:disabled) { transform:translateY(0) }
-.btn-submit:disabled { opacity:0.35; cursor:not-allowed }
-.btn-submit:focus-visible { outline:2px solid var(--gold-bright); outline-offset:4px }
-.connect-panel > form { flex:1; display:flex; flex-direction:column }
-.connect-panel .btn-submit { margin-top:auto }
-a.btn-submit { display:block; text-align:center }
-
-.form-note { margin-top:var(--sp-3); font-style:italic; font-size:0.86rem; color:var(--muted); letter-spacing:0.03em; min-height:44px; display:flex; align-items:center; justify-content:center; text-align:center }
-.form-note a { color:var(--gold); transition:opacity var(--dur-fast) }
-.form-note a:hover { opacity:.7 }
-
-/* ── SUCCESS / ERROR ── */
-.form-success { display:none; padding:var(--sp-3) var(--sp-4); margin-top:var(--sp-3); border-left:2px solid var(--ok); font-style:italic; font-size:0.95rem; color:rgba(34,197,94,0.85); box-shadow:0 0 12px rgba(34,197,94,0.08) }
-.form-success.show { display:block }
-.alert { padding:10px var(--sp-3); margin-bottom:var(--sp-3); font-style:italic; font-size:0.92rem; display:none; border-left:2px solid transparent; overflow-wrap:anywhere }
-.alert.show { display:block }
-.alert.error { border-left-color:var(--err); color:#f28b84 }
-.alert.success { border-left-color:var(--ok); color:rgba(34,197,94,0.85) }
-
-/* ── LOADING ── */
-.loading { display:none; text-align:center; padding:var(--sp-5) }
-.loading.show { display:block }
-.spinner { width:24px; height:24px; border:1.5px solid var(--gold-line); border-top-color:var(--gold); border-radius:50%; animation:spin .7s linear infinite; margin:0 auto var(--sp-2); box-shadow:0 0 8px rgba(181,147,90,0.15) }
-@keyframes spin { to { transform:rotate(360deg) } }
-.login-foot { text-align:center; margin-top:var(--sp-3); font-style:italic; font-size:0.9rem }
-.login-foot a { color:var(--gold); transition:opacity var(--dur-fast); min-height:44px; display:inline-flex; align-items:center }
-.login-foot a:hover { opacity:.7 }
-.env-badge { font-size:0.74rem; font-style:italic; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold); margin-bottom:var(--sp-3); display:block }
-
-/* ── FOOTER — glowing separator ── */
-.foot { position:relative; z-index:1; padding:var(--sp-5) clamp(1.4rem,5vw,3.2rem) max(var(--sp-5),env(safe-area-inset-bottom)); display:flex; align-items:center; justify-content:space-between }
-.foot::before { content:''; position:absolute; top:0; left:clamp(1.4rem,5vw,3.2rem); right:clamp(1.4rem,5vw,3.2rem); height:1px; background:var(--gold-line); box-shadow:var(--glow-line) }
-.foot a,.foot span { color:var(--gold); font-style:italic; font-size:clamp(0.8rem,1.3vw,0.88rem); letter-spacing:0.2em; text-transform:uppercase; transition:color var(--dur-normal) ease, text-shadow var(--dur-normal) ease }
-.foot a:hover { color:var(--gold-bright); text-shadow:var(--glow-xs) }
-
-/* ── SCROLL REVEAL ── */
-.reveal { opacity:0; transform:translateY(20px); transition:opacity .7s cubic-bezier(0.16,1,0.3,1), transform .7s cubic-bezier(0.16,1,0.3,1) }
+/* ── REVEAL ── */
+.reveal { opacity:0; transform:translateY(20px); transition:opacity .7s var(--ease-out), transform .7s var(--ease-out) }
 .reveal.visible { opacity:1; transform:none }
-.stagger > .reveal:nth-child(1) { transition-delay:0ms }
-.stagger > .reveal:nth-child(2) { transition-delay:80ms }
-.stagger > .reveal:nth-child(3) { transition-delay:160ms }
-.stagger > .reveal:nth-child(4) { transition-delay:240ms }
 
 /* ── RESPONSIVE ── */
+@media(max-width:960px) {
+  .hero-inner { grid-template-columns:1fr; gap:var(--sp-7) }
+  .poster-wrap { order:1; margin-top:var(--sp-2) } .poster { width:min(100%,240px); transform:rotate(-1.5deg) }
+  .poster-wrap > div { display:grid; grid-template-columns:auto minmax(0,1fr); gap:var(--sp-5); align-items:center; width:100% }
+  .repoint { margin-top:0; text-align:left }
+  .tiers, .steps, .caps, .plans, .connect { grid-template-columns:1fr }
+  .cap { border-right:0 } .caps { border-left:0 } .cap { border-left:0 }
+  .plan { border-right:0; border-top:1px solid var(--gold-line) } .plans { border-top:0 }
+}
 @media(max-width:760px) {
-  .caps-grid { grid-template-columns:1fr }
-  .plans { grid-template-columns:1fr; border-top:0 }
-  .plan { border-right:0; border-top:1px solid var(--gold-line); padding:var(--sp-6) 0 }
-  .connect-shell { grid-template-columns:1fr }
-  .connect-seam { width:100%; height:1px; background:linear-gradient(90deg, transparent 0%, rgba(181,147,90,0.2) 12%, rgba(181,147,90,0.2) 38%, transparent 38%, transparent 62%, rgba(181,147,90,0.2) 62%, rgba(181,147,90,0.2) 88%, transparent 100%); box-shadow:0 0 4px rgba(181,147,90,0.2), 0 0 10px rgba(181,147,90,0.08) }
-  .connect-mark { writing-mode:horizontal-tb }
-  .connect-panel { padding:var(--sp-6) var(--sp-4) }
-  .panel { padding:var(--sp-6) var(--sp-4) }
   .field-row { grid-template-columns:1fr }
-  .detail { grid-template-columns:1fr }
-  .detail-side .qr-frame { width:min(100%,200px); align-self:center }
+  .detail { grid-template-columns:1fr } .detail-side .qr-frame { width:min(100%,200px); align-self:center }
   .mini-list { grid-template-columns:1fr }
   .url-row, .enter-row, .inline-form { flex-direction:column; align-items:stretch }
   .url-row .btn-submit, .enter-row .btn-submit, .inline-form .btn-submit { width:100% }
+  .k-tables, .graph-grid, .radar-wrap { grid-template-columns:1fr }
+  .panel { padding:var(--sp-5) var(--sp-4) }
 }
-.section, .connect-section, .site-footer, .hero { position:relative; z-index:1 }
-.cap-card, .plan { background:rgba(5,7,14,0.52); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px) }
+@media(max-width:600px) {
+  .poster-wrap > div { grid-template-columns:1fr; justify-items:center } .repoint { text-align:center }
+}
 @media(max-width:480px) {
-  .panel, .cap-card, .plan { -webkit-backdrop-filter:none; backdrop-filter:none; background:rgba(5,7,14,0.88) }
-  /* Wrapped action rows: no separator left dangling at a line end. */
-  .actions .action-dot { display:none }
-  .actions { gap:var(--sp-2) var(--sp-5) }
+  .panel, .tier, .step, .cap, .plan, .signin-card { -webkit-backdrop-filter:none; backdrop-filter:none; background:rgba(5,7,14,.88) }
+  .actions .action-dot { display:none } .actions { gap:var(--sp-2) var(--sp-5) }
   .confirm .actions { flex-direction:column; align-items:flex-start; gap:var(--sp-2) }
-  .hero { padding:var(--sp-10) var(--sp-4) var(--sp-7) }
+  .hero { padding:calc(var(--sp-9) + 20px) var(--sp-4) var(--sp-8) }
   .section { padding:0 var(--sp-4) var(--sp-10) }
-  .connect-section { padding:var(--sp-8) var(--sp-4) var(--sp-10) }
-  .cap-card { padding:var(--sp-5) var(--sp-4) var(--sp-6) }
-  .hero-actions { gap:var(--sp-3) }
-  .nav { padding:var(--sp-3) var(--sp-3) 0 }
+  .brand-by { display:none }
   .nav-right { gap:var(--sp-3) }
-  .foot { padding:var(--sp-4) var(--sp-3) }
-  .seg { gap:var(--sp-5) }
+  .seg { gap:var(--sp-4) }
 }
-
-/* ── ACCESSIBILITY ── */
 @media(prefers-reduced-motion:reduce) {
-  *,*::before,*::after { transition-duration:0.01ms!important; animation-duration:0.01ms!important; animation-iteration-count:1!important }
-  .orb { animation:none!important }
-  .scroll-cue { animation:none!important; opacity:0.5!important }
+  *,*::before,*::after { transition-duration:.01ms!important; animation-duration:.01ms!important; animation-iteration-count:1!important }
+  .repoint b { transition:none }
 }
-</style>
-  <link rel="stylesheet" href="/css/footer.css">
+  </style>
 </head>
 
 <body>
-
-<!-- ═══ AMBIENT GLOW ═══ -->
-<div class="ambient" aria-hidden="true">
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-  <div class="orb orb-3"></div>
-</div>
-
-<a class="skip-link" href="#make">Skip to the QR maker</a>
+<a class="skip-link" href="#mk-url">Skip to the QR maker</a>
 
 <!-- ═══ NAV ═══ -->
 <nav class="nav" role="navigation" aria-label="Main navigation">
+  <a class="brand" href="/kortex" aria-label="Kortex by KAAYKO, home">
+    <span class="brand-word">KORTEX</span>
+    <span class="brand-by">by KAAYKO</span>
+  </a>
   <div class="nav-right">
-    <a href="/kortex/samples" class="nav-link">Samples</a>
     <a href="#pricing" class="nav-link">Pricing</a>
-    <a href="#connect" class="nav-link" id="nav-auth-link">Sign In</a>
+    <a href="/kortex/signin" class="nav-link">Sign in</a>
   </div>
 </nav>
 
-<!-- ═══ HERO ═══ -->
-<section class="hero" aria-label="Kortex hero">
+<!-- ═══ HERO: the instrument ═══ -->
+<header class="hero" id="make" aria-label="Make a QR code">
   <div class="hero-inner">
-    <h1 class="hero-title hero-fade" data-text="KORTEX">KORTEX</h1>
-    <div class="hero-seam"><span class="hero-mark">by kaayko</span></div>
-    <p class="hero-sub hero-fade">One link. Every device. Every insight.<br>Make a QR in ten seconds. No account. Your access code is the key.</p>
-    <div class="hero-actions hero-fade">
-      <a href="#make" class="action-link">Make a QR</a>
-      <span class="action-dot" aria-hidden="true">&middot;</span>
-      <a href="#manage" class="action-link">I have a code</a>
-      <span class="action-dot" aria-hidden="true">&middot;</span>
-      <a href="#connect" class="action-link" id="hero-auth-btn">Sign In</a>
+    <div>
+      <p class="eyebrow hero-fade">kortex by kaayko &middot; <b>kaay.link</b></p>
+      <h1 class="hero-title hero-fade">A QR code you can <em>change</em> after it&rsquo;s printed.</h1>
+      <p class="hero-sub hero-fade">Paste an address. Get <b style="font-family:var(--mono);font-style:normal;font-weight:500;color:var(--gold-bright)">kaay.link/&hellip;</b> and a QR. No account; one code is the key.</p>
+
+      <div class="panel maker hero-fade">
+        <form id="make-form" autocomplete="off" novalidate>
+          <div class="seg" role="group" aria-label="QR type">
+            <button type="button" class="seg-btn active" id="mode-dynamic" aria-pressed="true">Dynamic</button>
+            <button type="button" class="seg-btn" id="mode-static" aria-pressed="false">Static</button>
+          </div>
+          <p class="note seg-note" id="mode-note">Re-point it after printing. See every scan.</p>
+          <ul class="mode-facts" id="mode-facts"></ul>
+
+          <div class="url-row">
+            <div class="field">
+              <label class="field-label" for="mk-url">Where should it go?</label>
+              <input class="field-input big" type="url" id="mk-url" inputmode="url" placeholder="https://your-site.com/tickets" required>
+            </div>
+            <button type="submit" class="btn-submit" id="mk-submit">Create</button>
+          </div>
+          <p class="note utm-hint" id="mk-utm-hint" hidden></p>
+
+          <details class="options" id="mk-options">
+            <summary>Options</summary>
+            <div class="field">
+              <label class="field-label" for="mk-title">Name</label>
+              <input class="field-input" type="text" id="mk-title" maxlength="120" placeholder="Spring fest poster">
+            </div>
+            <div class="field-row">
+              <div class="field"><label class="field-label" for="mk-ios">iPhone destination</label><input class="field-input" type="url" id="mk-ios" placeholder="https://apps.apple.com/…"></div>
+              <div class="field"><label class="field-label" for="mk-android">Android destination</label><input class="field-input" type="url" id="mk-android" placeholder="https://play.google.com/…"></div>
+            </div>
+            <div class="field" id="mk-email-field" hidden>
+              <label class="field-label" for="mk-email">Email (optional)</label>
+              <input class="field-input" type="email" id="mk-email" autocomplete="email" placeholder="you@organisation.com">
+              <p class="field-help">Your access code appears on screen the moment the link is made; no email needed. Add one only if you also want a copy sent to you and a way to recover a lost code.</p>
+            </div>
+            <div class="field">
+              <label class="check"><input type="checkbox" id="mk-utm-on"> Tag visits for your analytics</label>
+              <div id="mk-utm-fields" hidden>
+                <div class="field-row">
+                  <div class="field"><label class="field-label" for="mk-utm-source">Source</label><input class="field-input" type="text" id="mk-utm-source" maxlength="100" placeholder="poster"></div>
+                  <div class="field"><label class="field-label" for="mk-utm-medium">Medium</label><input class="field-input" type="text" id="mk-utm-medium" maxlength="100" placeholder="qr"></div>
+                </div>
+                <div class="field"><label class="field-label" for="mk-utm-campaign">Campaign</label><input class="field-input" type="text" id="mk-utm-campaign" maxlength="100" placeholder="spring-fest"></div>
+                <p class="note">These travel with every visit into Google Analytics or whatever the destination uses. Tags already on the address stay as they are. QR scans with no medium are counted as <i>qr</i> on their own.</p>
+              </div>
+            </div>
+            <div class="field">
+              <label class="check"><input type="checkbox" id="mk-limit-on"> Stop after a number of scans, or on a date</label>
+              <div id="mk-limit-fields" hidden>
+                <div class="field-row">
+                  <div class="field"><label class="field-label" for="mk-max">Stop after (scans)</label><input class="field-input" type="number" id="mk-max" min="1" step="1" inputmode="numeric" placeholder="500"></div>
+                  <div class="field"><label class="field-label" for="mk-expires">Ends on (end of that day, your time)</label><input class="field-input" type="date" id="mk-expires"></div>
+                </div>
+                <div class="field"><label class="field-label" for="mk-fallback">Then send people to (optional)</label><input class="field-input" type="url" id="mk-fallback" inputmode="url" placeholder="https://your-site.com/sold-out"></div>
+                <p class="note">After the limit or the date, scans go to this address instead. Leave it empty and they see a plain &ldquo;no longer available&rdquo; page.</p>
+              </div>
+            </div>
+            <div class="field">
+              <label class="check"><input type="checkbox" id="mk-night-on"> Send people somewhere else at night</label>
+              <div id="mk-night-fields" hidden>
+                <div class="field"><label class="field-label" for="mk-night-url">Night destination</label><input class="field-input" type="url" id="mk-night-url" inputmode="url" placeholder="https://your-site.com/after-hours"></div>
+                <div class="field-row">
+                  <div class="field"><label class="field-label" for="mk-night-start">Night starts</label><input class="field-input" type="time" id="mk-night-start" value="18:00"></div>
+                  <div class="field"><label class="field-label" for="mk-night-end">Night ends</label><input class="field-input" type="time" id="mk-night-end" value="06:00"></div>
+                </div>
+                <div class="field"><label class="field-label" for="mk-tz">Time zone</label><input class="field-input" type="text" id="mk-tz" placeholder="Asia/Kolkata" autocomplete="off" spellcheck="false"></div>
+                <p class="note">Between those hours the QR goes to the night address; otherwise to the main address above. Our clock, in this time zone, decides. Nothing a visitor sends can change it.</p>
+              </div>
+            </div>
+            <details class="options" id="mk-measure">
+              <summary>Measure this placement</summary>
+              <p class="field-help">Optional. Say where this code will live and what the print run cost, and the report can compare placements and estimate print payback.</p>
+              <div class="field-row">
+                <div class="field"><label class="field-label" for="mk-placement">Where will this code live?</label><select class="field-select" id="mk-placement"></select></div>
+                <div class="field" id="mk-placement-label-field" hidden><label class="field-label" for="mk-placement-label">Call it</label><input class="field-input" type="text" id="mk-placement-label" maxlength="40" placeholder="lobby easel"></div>
+              </div>
+              <div class="field"><label class="field-label" for="mk-campaign">Campaign name</label><input class="field-input" type="text" id="mk-campaign" maxlength="100" placeholder="spring-fest"><p class="field-help">Travels with every visit as the campaign tag.</p></div>
+              <div class="field-row">
+                <div class="field"><label class="field-label" for="mk-camp-start">Campaign starts</label><input class="field-input" type="date" id="mk-camp-start"></div>
+                <div class="field"><label class="field-label" for="mk-camp-end">Campaign ends</label><input class="field-input" type="date" id="mk-camp-end"></div>
+              </div>
+              <div class="field-row">
+                <div class="field"><label class="field-label" for="mk-print-cost">Print cost (optional)</label><input class="field-input" type="number" id="mk-print-cost" min="0" step="0.01" inputmode="decimal" placeholder="0"></div>
+                <div class="field"><label class="field-label" for="mk-value">Value of one useful visit (optional)</label><input class="field-input" type="number" id="mk-value" min="0" step="0.01" inputmode="decimal" placeholder="0"></div>
+              </div>
+              <p class="note">Please do not enter names, phone numbers or addresses here. A place name and round numbers are all the report needs.</p>
+            </details>
+          </details>
+          <input class="honey" type="text" name="website" id="mk-website" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+          <div id="mk-alert" class="alert" role="alert"></div>
+          <p class="form-note" id="mk-foot">Every destination is safety-checked before it goes live. <a href="https://kaayko.com/legal/kortex-terms">Terms</a></p>
+        </form>
+
+        <div class="result" id="result">
+          <div class="qr-frame" id="qr-frame"></div>
+          <div class="short-line">
+            <span class="short-url" id="rs-url"></span>
+            <button type="button" class="action-link quiet" id="rs-copy-url">Copy</button>
+          </div>
+          <p class="note" id="rs-night-note" hidden></p>
+          <p class="note" id="rs-limit-note" hidden></p>
+          <div class="code-card" id="rs-code-card">
+            <div class="code-label" id="rs-code-label">Your access code</div>
+            <div class="code-value" id="rs-code"></div>
+            <div class="code-actions">
+              <button type="button" class="action-link" id="rs-copy-code">Copy code</button>
+              <span class="action-dot" aria-hidden="true">&middot;</span>
+              <button type="button" class="action-link quiet" id="rs-keycard">Save key card</button>
+            </div>
+            <p class="note" id="rs-code-note"></p>
+            <p class="status" id="rs-status"></p>
+          </div>
+          <p class="note" id="rs-expiry" hidden></p>
+          <ol class="next-steps" id="rs-next" hidden>
+            <li><b>Download the QR</b> and put it on the poster, menu, sign or slide.</li>
+            <li><b>Keep the access code.</b> Copy it or save the key card now; it will not be shown again.</li>
+            <li><b>Come back any time.</b> kaay.link, then <i>I have a code</i>: scans by day, device and country; change where it points; pause it; download the QR again.</li>
+          </ol>
+          <form class="inline-form" id="rs-email-form" hidden>
+            <div class="field"><label class="field-label" for="rs-email">Email me this code</label><input class="field-input" type="email" id="rs-email" autocomplete="email" placeholder="you@organisation.com"></div>
+            <button type="submit" class="btn-submit" id="rs-email-btn">Send</button>
+          </form>
+          <p class="note" id="rs-static-note" hidden>This QR <strong>is</strong> the address, drawn as a code. Nothing was stored, so there is no access code, no dashboard and no scan count. It works forever and cannot be changed after printing. Want to change it later, or count the scans? Make it dynamic instead.</p>
+          <p class="note" id="rs-ws-note" hidden></p>
+          <div class="confirm" id="rs-confirm" hidden>
+            <p class="note">Your access code has not been copied or saved. Once this is gone it cannot be shown again.</p>
+            <div class="actions">
+              <button type="button" class="action-link" id="rs-confirm-copy">Copy it now</button>
+              <span class="action-dot" aria-hidden="true">&middot;</span>
+              <button type="button" class="action-link quiet" id="rs-confirm-go">I have it, continue</button>
+            </div>
+          </div>
+          <div class="actions">
+            <button type="button" class="action-link quiet" id="rs-dl-png">Download PNG</button>
+            <span class="action-dot" aria-hidden="true">&middot;</span>
+            <button type="button" class="action-link quiet" id="rs-dl-svg">SVG</button>
+            <span class="action-dot" aria-hidden="true" id="rs-email-dot">&middot;</span>
+            <button type="button" class="action-link quiet" id="rs-email-toggle">Email me the code</button>
+            <span class="action-dot" aria-hidden="true">&middot;</span>
+            <button type="button" class="action-link quiet" id="rs-another">Make another</button>
+            <span class="action-dot" aria-hidden="true" id="rs-dyn-dot">&middot;</span>
+            <button type="button" class="action-link" id="rs-make-dynamic">Make it dynamic</button>
+            <span class="action-dot" aria-hidden="true" id="rs-open-dot">&middot;</span>
+            <button type="button" class="action-link" id="rs-open">Open my dashboard</button>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="scroll-cue hero-fade" aria-hidden="true">&darr;</div>
-  </div>
-</section>
 
-<!-- ═══ MAKE ═══ -->
-<section class="section" id="make" aria-label="Make a QR code">
-  <h2 class="section-label reveal">make a qr · no account</h2>
-  <div class="panel panel-narrow reveal">
-    <form id="make-form" autocomplete="off" novalidate>
-      <div class="seg" role="group" aria-label="QR type">
-        <button type="button" class="seg-btn active" id="mode-dynamic" aria-pressed="true">Dynamic</button>
-        <button type="button" class="seg-btn" id="mode-static" aria-pressed="false">Static</button>
-      </div>
-      <p class="note seg-note" id="mode-note">Re-point it after printing and see every scan. Free for a year, renewable with your access code.</p>
-      <ul class="mode-facts" id="mode-facts"></ul>
-
-      <div class="url-row">
-        <div class="field">
-          <label class="field-label" for="mk-url">Where should it go?</label>
-          <input class="field-input big" type="url" id="mk-url" inputmode="url" placeholder="https://your-site.com/tickets" required>
+    <div class="poster-wrap" aria-hidden="true">
+      <div>
+        <div class="poster">
+          <div class="poster-head">Paddling<br>Out <small>every Sunday &middot; 6 am</small></div>
+          <div class="poster-qr"><img src="/qr/kx-paddle.png?size=264" alt="" width="180" height="180" loading="eager"></div>
+          <div class="poster-addr">kaay.link/kx-paddle</div>
+          <div class="poster-foot">printed once, in March</div>
         </div>
-        <button type="submit" class="btn-submit" id="mk-submit">Create</button>
-      </div>
-      <p class="note utm-hint" id="mk-utm-hint" hidden></p>
-
-      <details class="options" id="mk-options">
-        <summary>Options</summary>
-        <div class="field">
-          <label class="field-label" for="mk-title">Name</label>
-          <input class="field-input" type="text" id="mk-title" maxlength="120" placeholder="Spring fest poster">
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label class="field-label" for="mk-ios">iPhone destination</label>
-            <input class="field-input" type="url" id="mk-ios" placeholder="https://apps.apple.com/…">
-          </div>
-          <div class="field">
-            <label class="field-label" for="mk-android">Android destination</label>
-            <input class="field-input" type="url" id="mk-android" placeholder="https://play.google.com/…">
-          </div>
-        </div>
-        <div class="field" id="mk-email-field" hidden>
-          <label class="field-label" for="mk-email">Email (optional)</label>
-          <input class="field-input" type="email" id="mk-email" autocomplete="email" placeholder="you@organisation.com">
-          <p class="field-help">Your access code appears on screen the moment the link is made; no email needed. Add one only if you also want a copy sent to you and a way to recover a lost code.</p>
-        </div>
-        <div class="field">
-          <label class="check"><input type="checkbox" id="mk-utm-on"> Tag visits for your analytics</label>
-          <div id="mk-utm-fields" hidden>
-            <div class="field-row">
-              <div class="field"><label class="field-label" for="mk-utm-source">Source</label><input class="field-input" type="text" id="mk-utm-source" maxlength="100" placeholder="poster"></div>
-              <div class="field"><label class="field-label" for="mk-utm-medium">Medium</label><input class="field-input" type="text" id="mk-utm-medium" maxlength="100" placeholder="qr"></div>
-            </div>
-            <div class="field"><label class="field-label" for="mk-utm-campaign">Campaign</label><input class="field-input" type="text" id="mk-utm-campaign" maxlength="100" placeholder="spring-fest"></div>
-            <p class="note">These travel with every visit into Google Analytics or whatever the destination uses. Tags already on the address stay as they are. QR scans with no medium are counted as <i>qr</i> on their own.</p>
-          </div>
-        </div>
-        <div class="field">
-          <label class="check"><input type="checkbox" id="mk-limit-on"> Stop after a number of scans, or on a date</label>
-          <div id="mk-limit-fields" hidden>
-            <div class="field-row">
-              <div class="field"><label class="field-label" for="mk-max">Stop after (scans)</label><input class="field-input" type="number" id="mk-max" min="1" step="1" inputmode="numeric" placeholder="500"></div>
-              <div class="field"><label class="field-label" for="mk-expires">Ends on (end of that day, your time)</label><input class="field-input" type="date" id="mk-expires"></div>
-            </div>
-            <div class="field"><label class="field-label" for="mk-fallback">Then send people to (optional)</label><input class="field-input" type="url" id="mk-fallback" inputmode="url" placeholder="https://your-site.com/sold-out"></div>
-            <p class="note">After the limit or the date, scans go to this address instead. Leave it empty and they see a plain "no longer available" page.</p>
-          </div>
-        </div>
-        <div class="field">
-          <label class="check"><input type="checkbox" id="mk-night-on"> Send people somewhere else at night</label>
-          <div id="mk-night-fields" hidden>
-            <div class="field">
-              <label class="field-label" for="mk-night-url">Night destination</label>
-              <input class="field-input" type="url" id="mk-night-url" inputmode="url" placeholder="https://your-site.com/after-hours">
-            </div>
-            <div class="field-row">
-              <div class="field"><label class="field-label" for="mk-night-start">Night starts</label><input class="field-input" type="time" id="mk-night-start" value="18:00"></div>
-              <div class="field"><label class="field-label" for="mk-night-end">Night ends</label><input class="field-input" type="time" id="mk-night-end" value="06:00"></div>
-            </div>
-            <div class="field">
-              <label class="field-label" for="mk-tz">Time zone</label>
-              <input class="field-input" type="text" id="mk-tz" placeholder="Asia/Kolkata" autocomplete="off" spellcheck="false">
-            </div>
-            <p class="note">Between those hours the QR goes to the night address; otherwise to the main address above. Our clock, in this time zone, decides. Nothing a visitor sends can change it.</p>
-          </div>
-        </div>
-        <details class="options" id="mk-measure">
-          <summary>Measure this placement</summary>
-          <p class="field-help">Optional. Say where this code will live and what the print run cost, and the report can compare placements and estimate print payback.</p>
-          <div class="field-row">
-            <div class="field"><label class="field-label" for="mk-placement">Where will this code live?</label><select class="field-select" id="mk-placement"></select></div>
-            <div class="field" id="mk-placement-label-field" hidden><label class="field-label" for="mk-placement-label">Call it</label><input class="field-input" type="text" id="mk-placement-label" maxlength="40" placeholder="lobby easel"></div>
-          </div>
-          <div class="field"><label class="field-label" for="mk-campaign">Campaign name</label><input class="field-input" type="text" id="mk-campaign" maxlength="100" placeholder="spring-fest"><p class="field-help">Travels with every visit as the campaign tag.</p></div>
-          <div class="field-row">
-            <div class="field"><label class="field-label" for="mk-camp-start">Campaign starts</label><input class="field-input" type="date" id="mk-camp-start"></div>
-            <div class="field"><label class="field-label" for="mk-camp-end">Campaign ends</label><input class="field-input" type="date" id="mk-camp-end"></div>
-          </div>
-          <div class="field-row">
-            <div class="field"><label class="field-label" for="mk-print-cost">Print cost (optional)</label><input class="field-input" type="number" id="mk-print-cost" min="0" step="0.01" inputmode="decimal" placeholder="0"></div>
-            <div class="field"><label class="field-label" for="mk-value">Value of one useful visit (optional)</label><input class="field-input" type="number" id="mk-value" min="0" step="0.01" inputmode="decimal" placeholder="0"></div>
-          </div>
-          <p class="note">Please do not enter names, phone numbers or addresses here. A place name and round numbers are all the report needs.</p>
-        </details>
-      </details>
-      <input class="honey" type="text" name="website" id="mk-website" tabindex="-1" autocomplete="off" aria-hidden="true">
-
-      <div id="mk-alert" class="alert" role="alert"></div>
-      <p class="form-note" id="mk-foot">Every destination is checked for malware and phishing before the link goes live. <a href="/legal/kortex-terms">Terms</a></p>
-    </form>
-
-    <div class="result" id="result">
-      <div class="qr-frame" id="qr-frame"></div>
-      <div class="short-line">
-        <span class="short-url" id="rs-url"></span>
-        <button type="button" class="action-link quiet" id="rs-copy-url">Copy</button>
-      </div>
-      <p class="note" id="rs-night-note" hidden></p>
-      <p class="note" id="rs-limit-note" hidden></p>
-
-      <div class="code-card" id="rs-code-card">
-        <div class="code-label" id="rs-code-label">Your access code</div>
-        <div class="code-value" id="rs-code"></div>
-        <div class="code-actions">
-          <button type="button" class="action-link" id="rs-copy-code">Copy code</button>
-          <span class="action-dot" aria-hidden="true">&middot;</span>
-          <button type="button" class="action-link quiet" id="rs-keycard">Save key card</button>
-        </div>
-        <p class="note" id="rs-code-note"></p>
-        <p class="status" id="rs-status"></p>
-      </div>
-      <p class="note" id="rs-expiry" hidden></p>
-      <ol class="next-steps" id="rs-next" hidden>
-        <li><b>Download the QR</b> and put it on the poster, menu, sign or slide.</li>
-        <li><b>Keep the access code.</b> Copy it or save the key card now; it will not be shown again.</li>
-        <li><b>Come back any time.</b> kaayko.com/kortex, then <i>I have a code</i>: scans by day, device and country; change where it points; pause it; download the QR again.</li>
-      </ol>
-      <form class="inline-form" id="rs-email-form" hidden>
-        <div class="field">
-          <label class="field-label" for="rs-email">Email me this code</label>
-          <input class="field-input" type="email" id="rs-email" autocomplete="email" placeholder="you@organisation.com">
-        </div>
-        <button type="submit" class="btn-submit" id="rs-email-btn">Send</button>
-      </form>
-      <p class="note" id="rs-static-note" hidden>This QR <strong>is</strong> the address, drawn as a code. Nothing was stored, so there is no access code, no dashboard and no scan count. It works forever and cannot be changed after printing. Want to change it later, or count the scans? Make it dynamic instead.</p>
-      <p class="note" id="rs-ws-note" hidden></p>
-      <div class="confirm" id="rs-confirm" hidden>
-        <p class="note">Your access code has not been copied or saved. Once this is gone it cannot be shown again.</p>
-        <div class="actions">
-          <button type="button" class="action-link" id="rs-confirm-copy">Copy it now</button>
-          <span class="action-dot" aria-hidden="true">&middot;</span>
-          <button type="button" class="action-link quiet" id="rs-confirm-go">I have it, continue</button>
-        </div>
-      </div>
-
-      <div class="actions">
-        <button type="button" class="action-link quiet" id="rs-dl-png">Download PNG</button>
-        <span class="action-dot" aria-hidden="true">&middot;</span>
-        <button type="button" class="action-link quiet" id="rs-dl-svg">SVG</button>
-        <span class="action-dot" aria-hidden="true" id="rs-email-dot">&middot;</span>
-        <button type="button" class="action-link quiet" id="rs-email-toggle">Email me the code</button>
-        <span class="action-dot" aria-hidden="true">&middot;</span>
-        <button type="button" class="action-link quiet" id="rs-another">Make another</button>
-        <span class="action-dot" aria-hidden="true" id="rs-dyn-dot">&middot;</span>
-        <button type="button" class="action-link" id="rs-make-dynamic">Make it dynamic</button>
-        <span class="action-dot" aria-hidden="true" id="rs-open-dot">&middot;</span>
-        <button type="button" class="action-link" id="rs-open">Open my dashboard</button>
+        <p class="repoint" id="repoint">Since then it has pointed at <span class="arrow">&rarr;</span><b id="repoint-to">the forecast</b><br><span id="repoint-when">this week</span></p>
       </div>
     </div>
   </div>
+</header>
+
+<!-- ═══ THREE USES ═══ -->
+<section class="section" id="cases" aria-label="Three uses, three real codes">
+  <h2 class="section-label reveal">three uses</h2>
+  <p class="section-title reveal">Print it once. Decide later.</p>
+  <div class="cases">
+    <article class="case reveal">
+      <a class="cardimg" href="https://kaayko.com/paddlingout/forecast?id=mcdonald"><img src="/assets/cards/lake-mcdonald-postcard.jpg" alt="Lake McDonald postcard with its kaay.link code" width="1400" height="933" loading="lazy"></a>
+      <h3>The paddler</h3>
+      <p>A sticker or postcard at the water. One code, the live paddle score behind it, iPhones sent to the app. Every lake it lands at is a placement to compare.</p>
+      <p class="case-rule">kaay.link/skcpfj8p &middot; device routing &middot; placement report</p>
+    </article>
+    <article class="case reveal">
+      <a class="cardimg" href="https://kaay.store/s/moms-shop"><img src="/assets/cards/moms-shop-card.jpg" alt="Mom's Shop card with its kaay.link code" width="900" height="1350" loading="lazy"></a>
+      <h3>The maker</h3>
+      <p>Mom&rsquo;s Shop: four totes on one shelf at kaay.store, one card, one code. Add a fifth tote next month and the printed code still works.</p>
+      <p class="case-rule">kaay.link/xf4hkysp &middot; kaay.store/s/moms-shop &middot; re-point any time</p>
+    </article>
+    <article class="case reveal">
+      <a class="cardimg" href="/assets/cards/music-gathering-poster.jpg"><img src="/assets/cards/music-gathering-poster.jpg" alt="An evening of music poster with its kaay.link code" width="900" height="1125" loading="lazy"></a>
+      <h3>The gathering</h3>
+      <p>A poster on the grocery board. Print it once; the code says where and when, and can point at the next evening after this one. Made in Forge.</p>
+      <p class="case-rule">kaay.link/zs9resps &middot; re-point after printing &middot; night and day</p>
+    </article>
+  </div>
+  <p class="everything reveal"><b>Every code, free:</b> device routing &middot; night and day destinations &middot; caps, end dates, fallback &middot; safety checks &middot; scans by day, hour, device, country &middot; findings &middot; CSV &middot; read-only reports</p>
 </section>
 
 <!-- ═══ MANAGE ═══ -->
-<section class="section" id="manage" aria-label="Manage your links">
+<section class="section narrow" id="manage" aria-label="Open your workspace">
   <h2 class="section-label reveal">already have a code?</h2>
+  <p class="section-title reveal">Your links, your scans</p>
   <div class="panel reveal">
     <div class="panel-narrow" id="manage-enter">
       <form id="code-form" autocomplete="off">
@@ -858,19 +673,16 @@ a.btn-submit { display:block; text-align:center }
           <button type="submit" class="btn-submit" id="mg-submit">Open</button>
         </div>
         <div id="mg-alert" class="alert" role="alert" style="margin-top:12px"></div>
-        <p class="form-note">Type or paste it; case and dashes don't matter.</p>
+        <p class="form-note">Type or paste it; case and dashes don&rsquo;t matter.</p>
         <p class="form-note"><a href="#" id="mg-lost" hidden>Lost your code?</a><span id="mg-lost-off">A lost code cannot be recovered: it is the only key, and nothing else identifies you. The QR itself keeps working.</span></p>
       </form>
       <form id="recover-form" hidden>
         <div class="enter-row">
-          <div class="field">
-            <label class="field-label" for="rc-email">Email you added to the workspace</label>
-            <input class="field-input" type="email" id="rc-email" autocomplete="email" placeholder="you@organisation.com">
-          </div>
+          <div class="field"><label class="field-label" for="rc-email">Email you added to the workspace</label><input class="field-input" type="email" id="rc-email" autocomplete="email" placeholder="you@organisation.com"></div>
           <button type="submit" class="btn-submit">Send a new code</button>
         </div>
         <div id="rc-alert" class="alert" role="alert" style="margin-top:12px"></div>
-        <p class="form-note">We email a fresh code and retire the old one. No email on file means the code can't be recovered; that is what keeps your links yours.</p>
+        <p class="form-note">We email a fresh code and retire the old one. No email on file means the code can&rsquo;t be recovered; that is what keeps your links yours.</p>
       </form>
     </div>
 
@@ -899,10 +711,7 @@ a.btn-submit { display:block; text-align:center }
           <p class="note" id="ws-code-note"></p>
         </div>
         <form class="inline-form" id="ws-email-form" hidden>
-          <div class="field">
-            <label class="field-label" for="ws-email-input">Email for a fresh code</label>
-            <input class="field-input" type="email" id="ws-email-input" autocomplete="email" placeholder="you@organisation.com">
-          </div>
+          <div class="field"><label class="field-label" for="ws-email-input">Email for a fresh code</label><input class="field-input" type="email" id="ws-email-input" autocomplete="email" placeholder="you@organisation.com"></div>
           <button type="submit" class="btn-submit">Send</button>
         </form>
         <p class="status" id="ws-email-status" hidden></p>
@@ -919,74 +728,31 @@ a.btn-submit { display:block; text-align:center }
   </div>
 </section>
 
-<!-- ═══ CAPABILITIES — 2x2 symmetric grid ═══ -->
-<section class="section" id="capabilities" aria-label="Capabilities">
-  <h2 class="section-label reveal">capabilities</h2>
-  <div class="caps-grid stagger">
-    <div class="cap-card reveal">
-      <span class="cap-num">01</span>
-      <h3 class="cap-name">Links</h3>
-      <div class="cap-icon" aria-hidden="true"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></div>
-      <p class="cap-tag">one link, every device</p>
-      <div class="cap-expand"><pre class="cap-detail"><span class="hl">kaay.link/7hf3kq2m</span>
-iphone  → app store
-android → play store
-web     → your site</pre></div>
-    </div>
-    <div class="cap-card reveal">
-      <span class="cap-num">02</span>
-      <h3 class="cap-name">Scans</h3>
-      <div class="cap-icon" aria-hidden="true"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-      <p class="cap-tag">every scan, as it happens</p>
-      <div class="cap-expand"><pre class="cap-detail">by day · device · country
-last scan <span class="hl">2 min ago</span> · iphone
-lifetime totals never reset</pre></div>
-    </div>
-    <div class="cap-card reveal">
-      <span class="cap-num">03</span>
-      <h3 class="cap-name">Safety</h3>
-      <div class="cap-icon" aria-hidden="true"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
-      <p class="cap-tag">checked before and after it goes live</p>
-      <div class="cap-expand"><pre class="cap-detail">phishing + malware feeds
-checked on create, on edit,
-and again every night</pre></div>
-    </div>
-    <div class="cap-card reveal">
-      <span class="cap-num">04</span>
-      <h3 class="cap-name">Yours</h3>
-      <div class="cap-icon" aria-hidden="true"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
-      <p class="cap-tag">one code, no account</p>
-      <div class="cap-expand"><pre class="cap-detail">your code opens your links
-nobody else's, ever
-rotate it any time</pre></div>
-    </div>
-  </div>
-</section>
-
 <!-- ═══ PRICING ═══ -->
 <section class="section" id="pricing" aria-label="Pricing">
   <h2 class="section-label reveal">pricing</h2>
-  <p class="section-lead reveal">Free needs nothing from you. Teams pay for volume, history and the API.</p>
+  <p class="section-title reveal">Free needs nothing from you</p>
+  <p class="section-lead reveal">Teams pay for volume, history and the API. Set up by hand for now.</p>
   <div class="plans reveal">
     <div class="plan">
       <div class="plan-name">Free</div>
       <div class="plan-price">$0 <small>no account</small></div>
-      <p class="plan-for">Posters, menus, tickets, one-off campaigns.</p>
+      <p class="plan-for">Posters, menus, stickers, walls.</p>
       <ul class="plan-list">
         <li>Unlimited static QR codes</li>
-        <li>25 dynamic links, re-point any time</li>
+        <li>25 dynamic kaay.link codes, re-point any time</li>
         <li>Scans for the last 7 days, lifetime totals</li>
         <li>Live for a year, renews with your code</li>
-        <li>iPhone and Android routing</li>
+        <li>iPhone and Android routing, night and day, caps</li>
         <li>A small Kortex badge on the redirect</li>
         <li>Help within 3 business days</li>
       </ul>
-      <a href="#make" class="btn-submit">Make a QR</a>
+      <a href="#mk-url" class="btn-submit">Make a QR</a>
     </div>
     <div class="plan">
       <div class="plan-name">Pro</div>
       <div class="plan-price">$29 <small>/ month</small></div>
-      <p class="plan-for">Marketers and small teams running campaigns every month.</p>
+      <p class="plan-for">Teams running campaigns every month.</p>
       <ul class="plan-list">
         <li>500 dynamic links, 25 campaigns</li>
         <li>30 days of scan detail per link</li>
@@ -1000,7 +766,7 @@ rotate it any time</pre></div>
     <div class="plan">
       <div class="plan-name">Business</div>
       <div class="plan-price">$99 <small>/ month</small></div>
-      <p class="plan-for">Institutions, venues and agencies with many links in play.</p>
+      <p class="plan-for">Institutions and venues with many codes live.</p>
       <ul class="plan-list">
         <li>2,500 dynamic links, unlimited campaigns</li>
         <li>Everything in Pro</li>
@@ -1011,224 +777,97 @@ rotate it any time</pre></div>
       <button type="button" class="action-link" data-request="Business">Request access</button>
     </div>
   </div>
-  <p class="note plan-foot">Prices in USD. Universities and event companies with a security review: <a href="mailto:kortex@kaayko.com?subject=Kortex%20Enterprise" style="color:var(--gold)">talk to us</a>.</p>
+  <p class="note plan-foot reveal">Prices in USD. Universities and event companies with a security review: <a href="mailto:kortex@kaayko.com?subject=Kortex%20Enterprise" style="color:var(--gold)">talk to us</a>.</p>
 </section>
 
 <!-- ═══ CONNECT ═══ -->
-<section class="connect-section" id="connect" aria-label="Request a team workspace or sign in">
-  <p class="connect-intro reveal">Teams sign in. Everyone else just needs their code.</p>
-
-  <div class="connect-shell reveal">
-    <!-- LEFT — request a team workspace -->
-    <div class="connect-panel">
-      <div class="panel-head">
-        <div class="panel-title">Team workspace</div>
-        <div class="panel-sub">Pro and Business. We set these up with you.</div>
-      </div>
+<section class="section" id="connect" aria-label="Request a team workspace or sign in">
+  <div class="connect">
+    <div class="panel">
+      <div class="connect-head"><h3>Team workspace</h3><p>Pro and Business, set up with you. Reply within two days.</p></div>
       <form id="request-form">
         <div class="field-row">
-          <div class="field">
-            <label class="field-label" for="rq-name">Name</label>
-            <input class="field-input" type="text" id="rq-name" required placeholder="Jane Smith" autocomplete="name">
-          </div>
-          <div class="field">
-            <label class="field-label" for="rq-email">Email</label>
-            <input class="field-input" type="email" id="rq-email" required placeholder="jane@company.com" autocomplete="email">
-          </div>
+          <div class="field"><label class="field-label" for="rq-name">Name</label><input class="field-input" type="text" id="rq-name" required placeholder="Jane Smith" autocomplete="name"></div>
+          <div class="field"><label class="field-label" for="rq-email">Email</label><input class="field-input" type="email" id="rq-email" required placeholder="jane@company.com" autocomplete="email"></div>
         </div>
         <div class="field-row">
-          <div class="field">
-            <label class="field-label" for="rq-org">Organisation</label>
-            <input class="field-input" type="text" id="rq-org" required placeholder="Acme Events" autocomplete="organization">
-          </div>
-          <div class="field">
-            <label class="field-label" for="rq-plan">Plan</label>
-            <select class="field-select" id="rq-plan">
-              <option value="Pro">Pro</option>
-              <option value="Business">Business</option>
-              <option value="Not sure yet">Not sure yet</option>
-            </select>
-          </div>
+          <div class="field"><label class="field-label" for="rq-org">Organisation</label><input class="field-input" type="text" id="rq-org" required placeholder="Acme Events" autocomplete="organization"></div>
+          <div class="field"><label class="field-label" for="rq-plan">Plan</label>
+            <select class="field-select" id="rq-plan"><option value="Pro">Pro</option><option value="Business">Business</option><option value="Not sure yet">Not sure yet</option></select></div>
         </div>
-        <div class="field">
-          <label class="field-label" for="rq-use-case">What are the links for?</label>
+        <div class="field"><label class="field-label" for="rq-use-case">What are the links for?</label>
           <select class="field-select" id="rq-use-case">
-            <option value="Events & Ticketing">Events & Ticketing</option>
+            <option value="Events & Ticketing">Events &amp; Ticketing</option>
             <option value="Marketing Campaigns">Marketing Campaigns</option>
-            <option value="Alumni & Fundraising">Alumni & Fundraising</option>
-            <option value="Sports & Entertainment">Sports & Entertainment</option>
-            <option value="Conferences & Expos">Conferences & Expos</option>
-            <option value="Education & Libraries">Education & Libraries</option>
+            <option value="Alumni & Fundraising">Alumni &amp; Fundraising</option>
+            <option value="Sports & Entertainment">Sports &amp; Entertainment</option>
+            <option value="Conferences & Expos">Conferences &amp; Expos</option>
+            <option value="Education & Libraries">Education &amp; Libraries</option>
+            <option value="Retail & Packaging">Retail &amp; Packaging</option>
             <option value="Mobile App Deep Links">Mobile App Deep Links</option>
             <option value="API / Developer Integration">API / Developer</option>
             <option value="Other">Other</option>
-          </select>
-        </div>
+          </select></div>
         <div id="rq-alert" class="alert" role="alert"></div>
         <button type="submit" class="btn-submit">Request access</button>
-        <p class="form-note">We reply by email within two days to set up the workspace. <a href="/legal/kortex-terms">Terms</a></p>
-        <div id="rq-ok" class="form-success" role="status">Request received. We'll email <strong id="rq-ok-email"></strong> to set things up.</div>
+        <p class="form-note"><a href="https://kaayko.com/legal/kortex-terms">Terms</a></p>
+        <div id="rq-ok" class="form-success" role="status">Request received. We&rsquo;ll email <strong id="rq-ok-email"></strong> to set things up.</div>
       </form>
     </div>
-
-    <!-- SEAM -->
-    <div class="connect-seam connect-divider" aria-hidden="true">
-      <span class="connect-mark">kortex</span>
-    </div>
-
-    <!-- RIGHT — sign in (admin and tenant accounts) -->
-    <div class="connect-panel" id="login">
-      <div class="panel-head">
-        <div class="panel-title">Sign In</div>
-        <div class="panel-sub">Access your dashboard</div>
-      </div>
-      <div><span class="env-badge" id="env-badge">Loading&hellip;</span></div>
-      <div id="alert" class="alert" role="alert"></div>
-      <div id="loading" class="loading">
-        <div class="spinner"></div>
-        <p style="color:var(--dim);font-style:italic;font-size:0.8rem">Authenticating&hellip;</p>
-      </div>
-      <form id="login-form">
-        <div class="field">
-          <label class="field-label" for="email">Email</label>
-          <input class="field-input" type="email" id="email" required autocomplete="email" placeholder="you@company.com">
-        </div>
-        <div class="field">
-          <label class="field-label" for="password">Password</label>
-          <input class="field-input" type="password" id="password" required autocomplete="current-password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
-        </div>
-        <div class="field" id="tenant-selection-group" style="display:none">
-          <label class="field-label" for="tenant">Tenant</label>
-          <select class="field-select" id="tenant"><option value="">Loading&hellip;</option></select>
-        </div>
-        <button type="submit" id="login-btn" class="btn-submit">Sign In</button>
-        <div class="login-foot">
-          <a href="#" id="forgot-password-link">Forgot password?</a>
-        </div>
-      </form>
+    <div class="signin-card">
+      <div class="connect-head"><h3>Already on a team?</h3><p>Team and admin accounts sign in on kaayko.com.</p></div>
+      <p>Free links never sign in: <a href="#manage" style="color:var(--gold)">enter your code</a>.</p>
+      <a class="btn-submit" href="/kortex/signin">Sign in on kaayko.com</a>
     </div>
   </div>
 </section>
 
 <!-- ═══ FOOTER ═══ -->
-  <footer class="site-footer">
-    <nav aria-label="Footer">
-      <a href="/legal/kortex-terms">Terms</a>
-      <a href="/privacy">Privacy</a>
-      <a href="mailto:rohan@kaayko.com">Contact</a>
-    </nav>
-    <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
-  </footer>
+<footer class="foot">
+  <div class="foot-brand">KAAYKO <small>kortex &middot; kaay.link</small></div>
+  <nav aria-label="Footer">
+    <a href="https://kaayko.com/legal/kortex-terms">Terms</a>
+    <a href="https://kaayko.com/privacy">Privacy</a>
+    <a href="https://kaayko.com/kortex/support">Support</a>
+    <a href="https://kaayko.com/kortex/report">Report a link</a>
+    <a href="https://kaayko.com">kaayko.com</a>
+  </nav>
+  <p>&copy; <span id="year">2026</span> KAAYKO. Kortex is a KAAYKO product.</p>
+</footer>
 
 <!-- ═══ SCRIPTS ═══ -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="/js/vendor/qrcode-generator.js"></script>
 <script src="/js/kortex-utm.js"></script>
 <script src="/js/kortex-views.js"></script>
-
-<script src="/js/kortex-app.js?v=20260915"></script>
-<script src="/js/kortex-login.js?v=20260915"></script>
+<script src="/js/kortex-app.js"></script>
 <script>
-/* The bar is fixed; past the hero it takes an opaque ground so its options stay
-   readable and clickable over every section below. */
-const navEl = document.querySelector('.nav');
-let navScrolled = false;
-function syncNav() {
-  const scrolled = window.scrollY > 40;
-  if (scrolled === navScrolled) return;
-  navScrolled = scrolled;
-  navEl.classList.toggle('is-scrolled', scrolled);
-}
-addEventListener('scroll', syncNav, { passive: true });
-syncNav();
+/* Page-only: the poster's changing destination, this week's sample numbers, the bar, reveals. */
+(function () {
+  const $ = id => document.getElementById(id);
+  $('year').textContent = new Date().getFullYear();
 
-/* ── SCROLL REVEAL ── */
-const revealObs = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target); } });
-}, { threshold:0.12, rootMargin:'0px 0px -40px 0px' });
-document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
-
-/* ── CARD EXPAND (accordion) ── */
-document.querySelectorAll('.cap-card').forEach(card => {
-  card.tabIndex = 0; card.setAttribute('role', 'button'); card.setAttribute('aria-expanded', 'false');
-  const toggle = () => {
-    const wasExpanded = card.classList.contains('expanded');
-    document.querySelectorAll('.cap-card.expanded').forEach(c => { c.classList.remove('expanded'); c.setAttribute('aria-expanded', 'false'); });
-    if (!wasExpanded) { card.classList.add('expanded'); card.setAttribute('aria-expanded', 'true'); }
-  };
-  card.addEventListener('click', toggle);
-  card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
-});
-
-/* ── SCRAMBLE (kaayko.com brand) ── */
-(function() {
-  const POOL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const TICK = 38;
+  /* The poster has pointed at different things since it was printed. */
+  const STOPS = [
+    ['the forecast', 'this week'], ['the Sunday meet-up sheet', 'the week before'], ['a sold-out page', 'the monsoon weekend'],
+    ['the new lake page', 'after it opened'], ['the App Store, on iPhones', 'since the app shipped']
+  ];
+  let stop = 0;
+  const rp = $('repoint'), to = $('repoint-to'), when = $('repoint-when');
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  function scramble(el) {
-    if (reduced) return;
-    const target = el.dataset.text || el.textContent.trim();
-    el.dataset.text = target;
-    const chars = Array.from(target);
-    const locked = chars.map(c => c === ' ');
-    chars.forEach((c, i) => { if (c !== ' ') setTimeout(() => { locked[i] = true; }, 190 + i * 42); });
-    const iv = setInterval(() => {
-      el.textContent = chars.map((c, i) => locked[i] ? c : POOL[Math.floor(Math.random() * POOL.length)]).join('');
-      if (locked.every(Boolean)) { clearInterval(iv); el.textContent = target; }
-    }, TICK);
-  }
-  setTimeout(() => scramble(document.querySelector('.hero-title')), 500);
+  if (!reduced) setInterval(() => {
+    rp.classList.add('swap');
+    setTimeout(() => { stop = (stop + 1) % STOPS.length; to.textContent = STOPS[stop][0]; when.textContent = STOPS[stop][1]; rp.classList.remove('swap'); }, 260);
+  }, 3200);
 
-  // Safeguard: force hero entrance if CSS animations don't fire (background tabs)
-  setTimeout(() => {
-    const seam = document.querySelector('.hero-seam');
-    const mark = document.querySelector('.hero-mark');
-    if (seam && getComputedStyle(seam).transform.includes('0, 0, 0')) {
-      seam.style.transform = 'scaleX(1)';
-      seam.style.transition = 'transform 760ms cubic-bezier(0.16,1,0.3,1)';
-    }
-    if (mark && getComputedStyle(mark).opacity === '0') {
-      mark.style.opacity = '0.86';
-      mark.style.transition = 'opacity 300ms ease-out';
-    }
-    document.querySelectorAll('.hero-fade').forEach(el => {
-      if (getComputedStyle(el).opacity === '0') {
-        el.style.opacity = '1'; el.style.transform = 'none';
-        el.style.transition = 'opacity .5s ease, transform .5s cubic-bezier(0.16,1,0.3,1)';
-      }
-    });
-  }, 2000);
-})();
+  /* The bar takes an opaque ground past the hero. */
+  const navEl = document.querySelector('.nav'); let navScrolled = false;
+  function syncNav() { const s = window.scrollY > 40; if (s === navScrolled) return; navScrolled = s; navEl.classList.toggle('is-scrolled', s); }
+  addEventListener('scroll', syncNav, { passive: true }); syncNav();
 
-/* ── CURSOR GLOW (kaayko.com brand) ── */
-(function() {
-  const hero = document.querySelector('.hero');
-  const glow = document.createElement('span');
-  glow.className = 'hero-glow'; glow.setAttribute('aria-hidden', 'true');
-  hero.prepend(glow);
-  let gx = 0, gy = 0, tx = 0, ty = 0, active = false;
-  function render() {
-    gx += (tx - gx) * 0.1; gy += (ty - gy) * 0.1;
-    glow.style.transform = `translate3d(${gx}px,${gy}px,0) translate(-50%,-50%)`;
-    if (active) requestAnimationFrame(render);
-  }
-  hero.addEventListener('pointerenter', (e) => {
-    const r = hero.getBoundingClientRect();
-    tx = e.clientX - r.left; ty = e.clientY - r.top; gx = tx; gy = ty;
-    glow.style.opacity = '1'; active = true; requestAnimationFrame(render);
-  });
-  hero.addEventListener('pointermove', (e) => {
-    const r = hero.getBoundingClientRect(); tx = e.clientX - r.left; ty = e.clientY - r.top;
-  });
-  hero.addEventListener('pointerleave', () => { glow.style.opacity = '0'; active = false; });
+  const io = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } }), { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 })();
 </script>
 <script src="/js/kortex-sky.js"></script>
-
-<!-- Product analytics (PostHog) is intentionally NOT loaded on this public
-     landing page — it runs only inside the authenticated admin app. -->
-  <script src="/js/util.js"></script>
-
 </body>
 </html>

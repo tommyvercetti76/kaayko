@@ -97,5 +97,5 @@ audit/
 # kaay.link hosting folder: shared assets are copied in by scripts/build-link-site.js
 link-site/js/
 link-site/css/
-link-site/assets/
+link-site/assets/kortex-*.png
 link-site/*.png

@@ -48,7 +48,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const params = new URLSearchParams(location.search);
   const pid = params.get("productID") || params.get("id");
-  const storeSlug = params.get("store");
+  // A maker's shelf: /store?store=<slug> or the short form kaay.store/s/<slug>.
+  const pathSegs = location.pathname.split("/").filter(Boolean);
+  const pathSlug = pathSegs[0] === "s" && pathSegs[1] ? decodeURIComponent(pathSegs[1]) : "";
+  const storeSlug = params.get("store") || pathSlug;
 
   if (pid) {
     const match = products.find((p) => p.productID === pid);

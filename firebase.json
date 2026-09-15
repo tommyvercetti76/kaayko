@@ -329,12 +329,12 @@
       "redirects": [
         {
           "source": "/admin/login",
-          "destination": "/kortex",
+          "destination": "/kortex/signin",
           "type": 301
         },
         {
           "source": "/admin/login.html",
-          "destination": "/kortex",
+          "destination": "/kortex/signin",
           "type": 301
         },
         {
@@ -409,6 +409,10 @@
         {
           "source": "/health",
           "function": "api"
+        },
+        {
+          "source": "/kortex/signin",
+          "destination": "/kortex-signin.html"
         },
         {
           "source": "/kortex/appeal",
@@ -814,6 +818,10 @@
         {
           "source": "/animals/**",
           "destination": "/animal.html"
+        },
+        {
+          "source": "/s/**",
+          "destination": "/store.html"
         },
         {
           "source": "/p/**",

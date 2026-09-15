@@ -138,6 +138,64 @@ def render(art_path: Path, name: str, geo: dict, scale: float = 1.0) -> Image.Im
     return Image.composite(ImageChops.multiply(canvas, layer), canvas, mask)
 
 
+def render_bleed(art_path: Path, name: str, geo: dict, scale: float = 1.0, medallion: bool = False) -> Image.Image:
+    """Full-bleed magnet: a scene render (painted water, ground, sky) fills the disc edge to
+    edge and is clipped by the circle, the way a photo magnet is made. Nothing floats on a
+    white card. The park name sits in a small cream label at the top, inside the rim."""
+    W, H = (int(v * scale) for v in geo["canvas"])
+    cx, cy, r = (geo["disc"][k] * scale for k in ("cx", "cy", "r"))
+    canvas = plate(W, H, cx, cy, r)
+    layer = Image.new("RGB", canvas.size, (255, 255, 255))
+    d = int(2 * r)
+    if medallion:
+        # a render composed as a round medallion: trim to its drawing, fit its own ring just
+        # inside the rim, the park name on a chip at the bottom where the ground arc is
+        a = trim(key_background(Image.open(art_path)))
+        k = min(d * 0.97 / a.width, d * 0.97 / a.height)
+        a = a.resize((max(1, int(a.width * k)), max(1, int(a.height * k))), Image.LANCZOS)
+        layer.paste(a.convert("RGB"), (int(cx - a.width / 2), int(cy - a.height / 2)), a.split()[-1])
+    else:
+        a = Image.open(art_path).convert("RGB")
+        k = max(d / a.width, d / a.height) * 1.02
+        a = a.resize((int(a.width * k), int(a.height * k)), Image.LANCZOS)
+        layer.paste(a, (int(cx - a.width / 2), int(cy - a.height / 2)))
+    if name:
+        name = name.upper(); size = int(r * 0.085)
+        font = ImageFont.truetype(str(FONT), size); track = size * TRACK
+        widths = [font.getlength(ch) for ch in name]; tw = sum(widths) + track * (len(name) - 1)
+        y = (cy + r * 0.80) if medallion else (cy - r * 0.80); pad = size * 0.9
+        ld = ImageDraw.Draw(layer, "RGBA")
+        ld.rounded_rectangle([cx - tw / 2 - pad, y - size * 0.8, cx + tw / 2 + pad, y + size * 0.8], radius=size * 0.8, fill=(255, 253, 248, 255), outline=(NAME_RGB[0], NAME_RGB[1], NAME_RGB[2], 140), width=max(1, size // 14))
+        x = cx - tw / 2
+        for ch, w in zip(name, widths):
+            ld.text((x, y), ch, font=font, fill=NAME_RGB, anchor="lm"); x += w + track
+    disc = Image.new("L", canvas.size, 0)
+    ImageDraw.Draw(disc).ellipse([cx - r + 2, cy - r + 2, cx + r - 2, cy + r - 2], fill=255)
+    disc = disc.filter(ImageFilter.GaussianBlur(0.6))
+    return Image.composite(ImageChops.multiply(canvas, layer), canvas, disc)
+
+
+def is_scene(art_path: Path, thresh: float = 0.45) -> bool:
+    """A render whose drawing covers most of the frame after keying is a scene, not a
+    figure on white: it goes full-bleed."""
+    al = np.asarray(key_background(Image.open(art_path)).split()[-1]) > 10
+    if al.mean() > thresh:
+        return True
+    ys, xs = np.where(al)
+    if len(ys) == 0:
+        return False
+    y0, y1 = ys.min(), ys.max()
+    # a painted water or ground band is a wide unbroken opaque row; a figure never is
+    band = al[y0 + int((y1 - y0) * 0.6):y1 + 1]
+    runs = 0
+    for row in band[::4]:
+        d = np.diff(np.concatenate([[0], row.astype(np.int8), [0]]))
+        starts, ends = np.where(d == 1)[0], np.where(d == -1)[0]
+        if len(starts):
+            runs = max(runs, int((ends - starts).max()))
+    return runs > 0.42 * al.shape[1]
+
+
 def diecut(art_path: Path, geo: dict, scale: float = 1.0) -> Image.Image:
     """A stamp magnet is cut to the stamp, not dropped inside a disc: the perforated edge
     IS the edge of the object. Same studio plate and the same light as the round magnets,
@@ -178,6 +236,8 @@ def main():
     ap.add_argument("--name", help="park name for a single magnet")
     ap.add_argument("--names", help="JSON file: {<art stem>: <park name>}; defaults to the PARKS table")
     ap.add_argument("--size", type=int, default=3600, help="output width in px; the blank is drawn at this size, never upscaled")
+    ap.add_argument("--bleed", choices=["auto", "on", "off"], default="auto", help="scene renders fill the disc edge to edge (auto: decided per file)")
+    ap.add_argument("--medallion", action="store_true", help="renders composed as round medallions: fit the ring inside the rim, name at the bottom")
     ap.add_argument("--diecut", action="store_true", help="the magnet is the artwork's own shape (stamps), not a round disc")
     a = ap.parse_args()
     out = Path(a.out)
@@ -203,7 +263,8 @@ def main():
                 hit = next((k for k in sorted(PARKS, key=len, reverse=True) if k in stem), None)
                 name = PARKS.get(hit, "") if hit else ""
                 if hit is None: print(f"  (no park known for {stem})")
-            im = render(p, name, geo, scale)
+            bleed = a.bleed == "on" or (a.bleed == "auto" and is_scene(p))
+            im = render_bleed(p, name, geo, scale, medallion=True) if a.medallion else (render_bleed(p, name, geo, scale) if bleed else render(p, name, geo, scale))
         dst = out / f"{stem}_magnet.png"; im.save(dst, optimize=True)
         print(f"  {dst.name}  '{name}'  {im.size}")
     return 0

@@ -182,8 +182,8 @@ async function keyCard(code, link, ws) {
 let mode = 'dynamic';
 let lastResult = null;
 const MODE_NOTES = {
-  dynamic: 'A short kaay.link address behind the QR. Re-point it after printing and see every scan. Free for a year, renewed every time you open it with your access code.',
-  static: 'The address itself, drawn as a code. Nothing is stored, so there is no code to keep and nothing to see later. It works forever and can never be changed.'
+  dynamic: 'A kaay.link address behind the QR. Re-point it after printing; see every scan. Free for a year.',
+  static: 'The address itself, drawn as a code. Nothing stored, nothing to see later, never changeable.'
 };
 function modeFacts(next) {
   if (next === 'static') return ['the address itself', 'works forever', 'nothing stored', 'no access code', 'no scan counts', 'cannot be changed'];

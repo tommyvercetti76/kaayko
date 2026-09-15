@@ -8,7 +8,7 @@
   <meta name="description" content="Paste an address, get a kaay.link QR code in two seconds. No account. Re-point it after it's printed, route by device and time of day, and see every scan. Free.">
   <meta name="author" content="KAAYKO">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
-  <link rel="canonical" href="https://kaay.link/">
+  <link rel="canonical" href="https://www.kaay.link/">
 
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://kaay.link/">
@@ -271,6 +271,59 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
 .step p { font-style:italic; color:var(--muted); font-size:1rem }
 .step code { font-family:var(--mono); font-style:normal; font-size:.86rem; color:var(--gold-bright) }
 
+/* ── STORIES ── */
+.story { display:grid; grid-template-columns:minmax(0,7fr) minmax(0,5fr); gap:clamp(1.5rem,4vw,3.5rem); align-items:center; padding:var(--sp-7) 0; border-top:1px solid var(--gold-line) }
+.story > * { min-width:0 }
+.story-who { display:block; font-style:italic; font-size:.8rem; letter-spacing:.22em; text-transform:uppercase; color:var(--gold); margin-bottom:var(--sp-3) }
+.story h3 { font-family:var(--display); font-size:clamp(1.7rem,3.4vw,2.5rem); letter-spacing:.04em; text-transform:uppercase; line-height:1; margin-bottom:var(--sp-3) }
+.story p { font-style:italic; color:var(--muted); font-size:1.02rem; margin-bottom:var(--sp-3) }
+.story p b { color:var(--gold-bright); font-weight:500 }
+.story-rule { font-family:var(--mono); font-style:normal !important; font-size:.78rem !important; color:var(--dim) !important; line-height:1.6 }
+.story-widget { padding:var(--sp-5); border:1px solid rgba(181,147,90,.3); background:rgba(5,7,14,.66); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); box-shadow:var(--glow-sm) }
+.w-head { font-style:italic; font-size:.8rem; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); margin-bottom:var(--sp-2) }
+.w-clock output { display:block; font-family:var(--display); font-size:3.2rem; letter-spacing:.06em; line-height:1; color:var(--fg); text-shadow:var(--glow-text); margin:var(--sp-2) 0 }
+.story-widget input[type=range] { width:100%; accent-color:var(--gold); margin:var(--sp-2) 0 4px }
+.w-scale { display:flex; justify-content:space-between; font-family:var(--mono); font-size:.68rem; color:var(--dim) }
+.w-result { margin-top:var(--sp-4); padding-top:var(--sp-3); border-top:1px solid var(--gold-line); font-size:1.1rem }
+.w-result b { color:var(--gold-bright); font-weight:500 }
+.w-result small { display:block; font-style:italic; font-size:.82rem; color:var(--dim) }
+.w-arrow { color:var(--gold) }
+.w-seg { display:flex; gap:var(--sp-2); flex-wrap:wrap; margin:var(--sp-2) 0 }
+.w-btn { background:none; border:1px solid var(--gold-line); color:var(--muted); padding:8px 14px; min-height:44px; cursor:pointer; font-family:var(--serif); font-style:italic; font-size:.9rem; letter-spacing:.12em; text-transform:uppercase; transition:color var(--dur-fast), border-color var(--dur-fast) }
+.w-btn.active, .w-btn:hover { color:var(--gold-bright); border-color:var(--gold) }
+.w-data { margin-top:var(--sp-4) }
+.w-data-label { display:block; font-style:italic; font-size:.78rem; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); margin-bottom:6px }
+.w-rows { display:flex; flex-direction:column; gap:4px; font-family:var(--mono); font-size:.78rem; color:var(--muted) }
+.w-rows div { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center }
+.w-rows i { display:block; height:6px; background:linear-gradient(90deg,var(--gold-bright),var(--gold)); box-shadow:var(--glow-xs) }
+.everything { text-align:center; margin-top:var(--sp-7); font-style:italic; color:var(--muted); font-size:.98rem; padding-top:var(--sp-5); border-top:1px solid var(--gold-line) }
+.everything b { color:var(--gold-bright); font-weight:500 }
+@media(max-width:960px) { .story { grid-template-columns:1fr } }
+
+/* ── CARDS ── */
+.cards { display:grid; grid-template-columns:minmax(0,3fr) minmax(0,2fr); gap:var(--sp-5); align-items:start }
+.cardimg { display:block; min-width:0 }
+.cardimg img { display:block; width:100%; height:auto; box-shadow:0 18px 30px rgba(0,0,0,.45), 0 50px 110px rgba(0,0,0,.6), 0 0 0 1px rgba(181,147,90,.3); transition:transform var(--dur-normal), box-shadow var(--dur-normal) }
+.cardimg:hover img { box-shadow:0 26px 40px rgba(0,0,0,.5), 0 70px 140px rgba(0,0,0,.65), 0 0 40px rgba(181,147,90,.25) }
+.cardimg:hover img { transform:translateY(-3px) }
+.cardimg span { display:block; margin-top:var(--sp-3); font-style:italic; font-size:.92rem; color:var(--muted); text-align:center }
+@media(max-width:760px) { .cards { grid-template-columns:1fr } }
+
+/* ── CASES ── */
+.cases { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--sp-5); align-items:start }
+.case { min-width:0 }
+.cardimg { display:block; min-width:0 }
+.cardimg img { display:block; width:100%; height:auto; box-shadow:0 18px 30px rgba(0,0,0,.45), 0 50px 110px rgba(0,0,0,.6), 0 0 0 1px rgba(181,147,90,.3); transition:transform var(--dur-normal), box-shadow var(--dur-normal) }
+.cardimg:hover img { box-shadow:0 26px 40px rgba(0,0,0,.5), 0 70px 140px rgba(0,0,0,.65), 0 0 40px rgba(181,147,90,.25) }
+.cardimg:hover img { transform:translateY(-3px) }
+.case-empty { aspect-ratio:3/2; display:grid; place-items:center; border:1px dashed rgba(181,147,90,.35); color:var(--gold); font-style:italic; letter-spacing:.3em; background:rgba(5,7,14,.4) }
+.case h3 { font-family:var(--display); font-size:1.6rem; letter-spacing:.05em; text-transform:uppercase; line-height:1; margin:var(--sp-4) 0 var(--sp-2) }
+.case p { font-style:italic; color:var(--muted); font-size:.98rem }
+.case-rule { font-family:var(--mono); font-style:normal !important; font-size:.74rem !important; color:var(--dim) !important; margin-top:var(--sp-2) }
+.everything { text-align:center; margin-top:var(--sp-7); font-style:italic; color:var(--muted); font-size:.98rem; padding-top:var(--sp-5); border-top:1px solid var(--gold-line) }
+.everything b { color:var(--gold-bright); font-weight:500 }
+@media(max-width:960px) { .cases { grid-template-columns:1fr } }
+
 /* ── MANAGE ── */
 .enter-row { display:flex; gap:var(--sp-4); align-items:flex-end }
 .enter-row .field { flex:1 1 auto; min-width:0; margin:0 }
@@ -403,9 +456,8 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
     <span class="brand-by">by KAAYKO</span>
   </a>
   <div class="nav-right">
-    <a href="https://kaayko.com/kortex/samples" class="nav-link">Samples</a>
     <a href="#pricing" class="nav-link">Pricing</a>
-    <a href="https://kaayko.com/kortex#connect" class="nav-link">Sign in</a>
+    <a href="https://kaayko.com/kortex/signin" class="nav-link">Sign in</a>
   </div>
 </nav>
 
@@ -415,7 +467,7 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
     <div>
       <p class="eyebrow hero-fade">kortex by kaayko &middot; <b>kaay.link</b></p>
       <h1 class="hero-title hero-fade">A QR code you can <em>change</em> after it&rsquo;s printed.</h1>
-      <p class="hero-sub hero-fade">Paste an address. Get <b style="font-family:var(--mono);font-style:normal;font-weight:500;color:var(--gold-bright)">kaay.link/&hellip;</b> and a QR in two seconds. No account. Your access code is the key to its scans and settings.</p>
+      <p class="hero-sub hero-fade">Paste an address. Get <b style="font-family:var(--mono);font-style:normal;font-weight:500;color:var(--gold-bright)">kaay.link/&hellip;</b> and a QR. No account; one code is the key.</p>
 
       <div class="panel maker hero-fade">
         <form id="make-form" autocomplete="off" novalidate>
@@ -423,7 +475,7 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
             <button type="button" class="seg-btn active" id="mode-dynamic" aria-pressed="true">Dynamic</button>
             <button type="button" class="seg-btn" id="mode-static" aria-pressed="false">Static</button>
           </div>
-          <p class="note seg-note" id="mode-note">Re-point it after printing and see every scan. Free for a year, renewable with your access code.</p>
+          <p class="note seg-note" id="mode-note">Re-point it after printing. See every scan.</p>
           <ul class="mode-facts" id="mode-facts"></ul>
 
           <div class="url-row">
@@ -506,7 +558,7 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
           <input class="honey" type="text" name="website" id="mk-website" tabindex="-1" autocomplete="off" aria-hidden="true">
 
           <div id="mk-alert" class="alert" role="alert"></div>
-          <p class="form-note" id="mk-foot">Every destination is checked for malware and phishing before the link goes live. <a href="https://kaayko.com/legal/kortex-terms">Terms</a></p>
+          <p class="form-note" id="mk-foot">Every destination is safety-checked before it goes live. <a href="https://kaayko.com/legal/kortex-terms">Terms</a></p>
         </form>
 
         <div class="result" id="result">
@@ -579,24 +631,31 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
   </div>
 </header>
 
-<!-- ═══ PROOF: real scans ═══ -->
-<section class="section" id="proof" aria-label="Real scans from the sample workspace">
-  <h2 class="section-label reveal">numbers, not promises</h2>
-  <p class="section-title reveal">Three real links, this week</p>
-  <p class="section-lead reveal">The sample workspace runs eight kaay.link codes on KAAYKO&rsquo;s own products. These are the lightest, the median and the heaviest, as scanned in the last seven days.</p>
-  <div class="tiers reveal" id="tiers"><p class="tiers-empty">Reading this week&rsquo;s scans&hellip;</p></div>
-  <p class="proof-foot reveal"><a class="action-link" href="https://kaayko.com/kortex/samples">Open all eight reports</a></p>
-</section>
-
-<!-- ═══ HOW ═══ -->
-<section class="section" id="how" aria-label="How it works">
-  <h2 class="section-label reveal">how it works</h2>
-  <p class="section-title reveal">Print once. Decide later.</p>
-  <div class="steps">
-    <div class="step reveal"><h3>Paste</h3><p>Any address becomes <code>kaay.link/&lt;code&gt;</code> and a QR. Two seconds, nothing to sign up for. The access code appears once; it is the only key.</p></div>
-    <div class="step reveal"><h3>Print</h3><p>Poster, menu, packaging, badge, stall board, slide. The code on the paper never changes, so the print run is never wasted.</p></div>
-    <div class="step reveal"><h3>Re-point</h3><p>Open the dashboard with your code. Change the destination, split iPhone from Android, send night scans elsewhere, cap it, end it. Every scan since is there to read.</p></div>
+<!-- ═══ THREE USES ═══ -->
+<section class="section" id="cases" aria-label="Three uses, three real codes">
+  <h2 class="section-label reveal">three uses</h2>
+  <p class="section-title reveal">Print it once. Decide later.</p>
+  <div class="cases">
+    <article class="case reveal">
+      <a class="cardimg" href="https://kaayko.com/paddlingout/forecast?id=mcdonald"><img src="/assets/cards/lake-mcdonald-postcard.jpg" alt="Lake McDonald postcard with its kaay.link code" width="1400" height="933" loading="lazy"></a>
+      <h3>The paddler</h3>
+      <p>A sticker or postcard at the water. One code, the live paddle score behind it, iPhones sent to the app. Every lake it lands at is a placement to compare.</p>
+      <p class="case-rule">kaay.link/skcpfj8p &middot; device routing &middot; placement report</p>
+    </article>
+    <article class="case reveal">
+      <a class="cardimg" href="https://kaay.store/s/moms-shop"><img src="/assets/cards/moms-shop-card.jpg" alt="Mom's Shop card with its kaay.link code" width="900" height="1350" loading="lazy"></a>
+      <h3>The maker</h3>
+      <p>Mom&rsquo;s Shop: four totes on one shelf at kaay.store, one card, one code. Add a fifth tote next month and the printed code still works.</p>
+      <p class="case-rule">kaay.link/xf4hkysp &middot; kaay.store/s/moms-shop &middot; re-point any time</p>
+    </article>
+    <article class="case reveal">
+      <a class="cardimg" href="/assets/cards/music-gathering-poster.jpg"><img src="/assets/cards/music-gathering-poster.jpg" alt="An evening of music poster with its kaay.link code" width="900" height="1125" loading="lazy"></a>
+      <h3>The gathering</h3>
+      <p>A poster on the grocery board. Print it once; the code says where and when, and can point at the next evening after this one. Made in Forge.</p>
+      <p class="case-rule">kaay.link/zs9resps &middot; re-point after printing &middot; night and day</p>
+    </article>
   </div>
+  <p class="everything reveal"><b>Every code, free:</b> device routing &middot; night and day destinations &middot; caps, end dates, fallback &middot; safety checks &middot; scans by day, hour, device, country &middot; findings &middot; CSV &middot; read-only reports</p>
 </section>
 
 <!-- ═══ MANAGE ═══ -->
@@ -669,30 +728,16 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
   </div>
 </section>
 
-<!-- ═══ CAPABILITIES ═══ -->
-<section class="section" id="capabilities" aria-label="What a link can do">
-  <h2 class="section-label reveal">what every link can do</h2>
-  <p class="section-title reveal">Free. All of it.</p>
-  <div class="caps reveal">
-    <div class="cap"><h3>Routes by device</h3><p>iPhone to the App Store, Android to Play, everyone else to the web. One code, <code>kaay.link/…</code>, three destinations.</p></div>
-    <div class="cap"><h3>Knows the hour</h3><p>A night destination between the hours you set, in your time zone, on our clock. Nothing a visitor sends can change it.</p></div>
-    <div class="cap"><h3>Stops on cue</h3><p>Cap it at a number of scans or an end date, then send people to a sold-out page of your choosing instead of a dead end.</p></div>
-    <div class="cap"><h3>Checked, always</h3><p>Every destination runs through phishing and malware feeds on create, on edit, and again every night. Blocked links tell the scanner why.</p></div>
-    <div class="cap"><h3>Reads its own scans</h3><p>By day, hour, device and country, with findings that say what to change and a checkpoint that tells you whether it helped.</p></div>
-    <div class="cap"><h3>Yours alone</h3><p>No account, no email. One access code opens your links and nobody else&rsquo;s. Rotate it any time. Share a read-only report with one address.</p></div>
-  </div>
-</section>
-
 <!-- ═══ PRICING ═══ -->
 <section class="section" id="pricing" aria-label="Pricing">
   <h2 class="section-label reveal">pricing</h2>
   <p class="section-title reveal">Free needs nothing from you</p>
-  <p class="section-lead reveal">Teams pay for volume, history and the API. Team workspaces are set up by hand for now.</p>
+  <p class="section-lead reveal">Teams pay for volume, history and the API. Set up by hand for now.</p>
   <div class="plans reveal">
     <div class="plan">
       <div class="plan-name">Free</div>
       <div class="plan-price">$0 <small>no account</small></div>
-      <p class="plan-for">Posters, menus, tickets, packaging, one-off campaigns.</p>
+      <p class="plan-for">Posters, menus, stickers, walls.</p>
       <ul class="plan-list">
         <li>Unlimited static QR codes</li>
         <li>25 dynamic kaay.link codes, re-point any time</li>
@@ -707,7 +752,7 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
     <div class="plan">
       <div class="plan-name">Pro</div>
       <div class="plan-price">$29 <small>/ month</small></div>
-      <p class="plan-for">Marketers and small teams running campaigns every month.</p>
+      <p class="plan-for">Teams running campaigns every month.</p>
       <ul class="plan-list">
         <li>500 dynamic links, 25 campaigns</li>
         <li>30 days of scan detail per link</li>
@@ -721,7 +766,7 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
     <div class="plan">
       <div class="plan-name">Business</div>
       <div class="plan-price">$99 <small>/ month</small></div>
-      <p class="plan-for">Institutions, venues and agencies with many links in play.</p>
+      <p class="plan-for">Institutions and venues with many codes live.</p>
       <ul class="plan-list">
         <li>2,500 dynamic links, unlimited campaigns</li>
         <li>Everything in Pro</li>
@@ -739,7 +784,7 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
 <section class="section" id="connect" aria-label="Request a team workspace or sign in">
   <div class="connect">
     <div class="panel">
-      <div class="connect-head"><h3>Team workspace</h3><p>Pro and Business. We set these up with you and reply within two days.</p></div>
+      <div class="connect-head"><h3>Team workspace</h3><p>Pro and Business, set up with you. Reply within two days.</p></div>
       <form id="request-form">
         <div class="field-row">
           <div class="field"><label class="field-label" for="rq-name">Name</label><input class="field-input" type="text" id="rq-name" required placeholder="Jane Smith" autocomplete="name"></div>
@@ -770,9 +815,9 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
       </form>
     </div>
     <div class="signin-card">
-      <div class="connect-head"><h3>Already on a team?</h3><p>Admin and team accounts sign in on kaayko.com; the console lives there.</p></div>
-      <p>Free links need no sign-in at all. Enter your access code under <a href="#manage" style="color:var(--gold)">already have a code</a>.</p>
-      <a class="btn-submit" href="https://kaayko.com/kortex#connect">Sign in on kaayko.com</a>
+      <div class="connect-head"><h3>Already on a team?</h3><p>Team and admin accounts sign in on kaayko.com.</p></div>
+      <p>Free links never sign in: <a href="#manage" style="color:var(--gold)">enter your code</a>.</p>
+      <a class="btn-submit" href="https://kaayko.com/kortex/signin">Sign in on kaayko.com</a>
     </div>
   </div>
 </section>
@@ -787,7 +832,7 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
     <a href="https://kaayko.com/kortex/report">Report a link</a>
     <a href="https://kaayko.com">kaayko.com</a>
   </nav>
-  <p>&copy; <span id="year">2026</span> KAAYKO. Kortex is a KAAYKO product. Every kaay.link address resolves through it.</p>
+  <p>&copy; <span id="year">2026</span> KAAYKO. Kortex is a KAAYKO product.</p>
 </footer>
 
 <!-- ═══ SCRIPTS ═══ -->
@@ -813,29 +858,6 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
     rp.classList.add('swap');
     setTimeout(() => { stop = (stop + 1) % STOPS.length; to.textContent = STOPS[stop][0]; when.textContent = STOPS[stop][1]; rp.classList.remove('swap'); }, 260);
   }, 3200);
-
-  /* Three real links from the sample workspace, as scanned this week. */
-  const esc = window.KortexViews.esc;
-  async function loadTiers() {
-    let data;
-    try {
-      const res = await fetch(`${CONFIG.API_BASE}/kortex/guest/demo/samples`);
-      data = await res.json();
-      if (!res.ok || !data.success) throw new Error();
-    } catch { $('tiers').innerHTML = '<p class="tiers-empty">The sample workspace is resting. <a href="https://kaayko.com/kortex/samples" style="color:var(--gold)">Open the reports</a>.</p>'; return; }
-    $('tiers').innerHTML = data.samples.map(s => {
-      const max = Math.max(1, ...s.timeline);
-      return `<a class="tier" href="https://kaayko.com/kortex/samples#${esc(s.code)}">
-        <span class="lab">${esc(s.tier)} traffic</span>
-        <div class="big">${s.events}<small>scans, 7 days</small></div>
-        <div class="ttl">${esc(s.title)}</div>
-        <div class="spark" aria-hidden="true">${s.timeline.map((v, i) => `<i data-tip="<b>day ${i + 1} of 7</b> · ${v} scans" style="height:${Math.max(6, Math.round(v / max * 100))}%"></i>`).join('')}</div>
-        <div class="meta">${esc(String(s.shortUrl || '').replace(/^https?:\/\//, ''))} · ${s.lifetime} lifetime · ${s.people} people · ${s.qrShare}% QR</div>
-      </a>`;
-    }).join('');
-    window.KortexViews.attachTips($('tiers'));
-  }
-  loadTiers();
 
   /* The bar takes an opaque ground past the hero. */
   const navEl = document.querySelector('.nav'); let navScrolled = false;
