@@ -268,7 +268,7 @@ Super-admins with `destinationCategory=custom` bypass the whitelist.
 ## 5 — Redirect Flow
 
 ```
-Browser hits kaayko.com/l/{code}
+Browser hits kaay.link/{code} (or legacy kaayko.com/l/{code})
   → publicRouter.js receives request
   → redirectHandler.js:
      1. Resolve link from Firestore (short_links)

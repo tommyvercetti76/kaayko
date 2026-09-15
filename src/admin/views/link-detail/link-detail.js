@@ -338,7 +338,7 @@ function renderHeader(link, analytics) {
     <div class="ld-header-main">
       <div>
         <h3 class="ld-title">${esc(link.title || link.code)} ${status}</h3>
-        <p class="ld-shorturl">${esc(link.shortUrl || 'kaayko.com/l/' + link.code)}</p>
+        <p class="ld-shorturl">${esc(link.shortUrl || 'kaay.link/' + link.code)}</p>
         ${shareLine(link)}
         ${renderSinceLastChange(analytics.actionCenter?.sinceLastChange)}
       </div>

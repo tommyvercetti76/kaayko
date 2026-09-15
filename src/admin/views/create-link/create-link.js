@@ -723,7 +723,7 @@ async function handleCreateLink(e) {
     const linkCode = data.link?.code || data.link?.shortCode || code;
     const shortUrl = data.link?.shortUrl
       ? data.link.shortUrl.replace(/^https?:\/\//, '')
-      : `kaayko.com/l/${linkCode}`;
+      : `kaay.link/${linkCode}`;
 
     // ROOTS dual-write
     const webDest = formData.webDestination || formData.destinations?.web || '';
@@ -1123,7 +1123,7 @@ function showAlumniSuccessModal(linkCode, data, webDest) {
 }
 
 function renderAlumniModal(linkCode, data, reportUrl) {
-  const campaignUrl = data.link?.shortUrl || `https://kaayko.com/l/${linkCode}`;
+  const campaignUrl = data.link?.shortUrl || `https://kaay.link/${linkCode}`;
   const reportLine = reportUrl
     ? `<div style="margin-top:16px;">
         <div style="font-size:11px;color:var(--kaayko-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Report Dashboard</div>

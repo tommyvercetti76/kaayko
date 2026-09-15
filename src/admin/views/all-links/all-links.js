@@ -1143,7 +1143,7 @@ export function editLink(code) {
  * Copy link to clipboard
  */
 export function copyLink(code) {
-  const url = `https://kaayko.com/l/${code}`;
+  const url = `https://kaay.link/${code}`;
   navigator.clipboard.writeText(url).then(() => {
     utils.showToast(`📋 Copied: ${url}`, 'success', 3000);
   }).catch(() => {
