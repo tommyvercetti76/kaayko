@@ -93,3 +93,9 @@ docs/learnings/
 
 # Security audit reports — findings + evidence, never publish (repo is public)
 audit/
+
+# kaay.link hosting folder: shared assets are copied in by scripts/build-link-site.js
+link-site/js/
+link-site/css/
+link-site/assets/
+link-site/*.png
