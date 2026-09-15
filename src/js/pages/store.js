@@ -84,8 +84,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       banner.innerHTML = `
         <div class="store-banner-content">
           <h2 class="store-banner-name">${esc(storeName)}</h2>
-          <p class="store-banner-count">${storeProducts.length} product${storeProducts.length !== 1 ? "s" : ""}</p>
-          <a href="/store" class="store-banner-link">← Browse All Products</a>
+          <p class="store-banner-count">${storeProducts.length} piece${storeProducts.length !== 1 ? "s" : ""}, printed to order</p>
+          <a href="/" class="store-banner-link">All pieces</a>
         </div>`;
       carousel.parentNode.insertBefore(banner, carousel);
     }

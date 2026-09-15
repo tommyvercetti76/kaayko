@@ -665,39 +665,42 @@ Sustainability Alert Modal
 12) Store Banner (for filtered store views)
 ---------------------------------------------------------- */
 .store-banner {
-  background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
-  padding: 24px 20px;
-  margin: 0 -8px 24px -8px;
-  border-radius: 0 0 20px 20px;
+  background: none;
+  padding: 28px 8px 8px;
+  margin: 0 0 12px;
   text-align: center;
-  color: white;
+  color: var(--color-text, #221b12);
 }
-
-.store-banner-content {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
+.store-banner-content { max-width: 720px; margin: 0 auto; }
 .store-banner-name {
-  font-family: 'Josefin_Bold', sans-serif;
-  font-size: 28px;
-  margin-bottom: 8px;
-  color: #fff;
+  font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif);
+  font-weight: 500;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  letter-spacing: .02em;
+  line-height: 1.1;
+  margin: 0 0 4px;
 }
-
 .store-banner-count {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 12px;
+  font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif);
+  font-style: italic;
+  font-size: 1.02rem;
+  color: var(--color-accent, #a8843c);
+  margin: 0 0 10px;
 }
-
+.store-banner-count::after {
+  content: ''; display: block; width: min(38%, 220px); height: 1px; margin: 14px auto 0;
+  background: linear-gradient(90deg, transparent, var(--color-accent, #a8843c), transparent);
+}
 .store-banner-link {
   display: inline-block;
-  color: var(--color-accent);
+  font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif);
+  font-style: italic;
+  font-size: .92rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--color-accent, #a8843c);
   text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  transition: color 0.2s;
+  transition: opacity .2s;
 }
 
 .store-banner-link:hover {
@@ -1127,7 +1130,7 @@ body.store-v2 {
 
 .store-v2 .title {
   color: var(--fg);
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif);
   font-size: 19px;
   font-weight: 600;
   line-height: 1.2;
@@ -1497,7 +1500,7 @@ html.dark-theme .store-v2 .footer-elements {
 
 .store-v2 .header-subtitle {
   color: #d4b684;
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif);
   font-size: 0.78rem;
   font-style: italic;
   letter-spacing: 0.28em;
@@ -1827,7 +1830,7 @@ html.dark-theme .store-v2 .footer-elements {
 }
 .store-v2 .coming-soon-eyebrow {
   margin: 0 0 8px;
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif);
   font-style: italic;
   font-weight: 500;
   font-size: 13px;
@@ -1883,7 +1886,7 @@ html.dark-theme .store-v2 .footer-elements {
 }
 .store-v2 .browse-empty-title {
   margin: 0 0 8px;
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif);
   font-weight: 500;
   font-size: clamp(24px, 3vw, 32px);
   color: var(--fg);
@@ -1988,7 +1991,7 @@ html.dark-theme .store-v2 .browse-search::placeholder { color: rgba(212, 182, 13
 
 .arcade-title {
   margin: 0;
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif);
   font-weight: 600;
   font-size: clamp(20px, 3vw, 26px);
   line-height: 1.2;
@@ -2096,7 +2099,7 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
 }
 .store-v2:not(.about-v2) .cab-name {
   margin: 0;
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif);
   font-size: 19px; font-weight: 500; letter-spacing: .01em;
   color: var(--machine-lit, var(--gold));
 }
@@ -2334,7 +2337,7 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
   text-align: center;
 }
 .store-v2 .beg-stat b {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif);
   font-weight: 600; font-size: clamp(26px, 7vw, 34px); line-height: 1;
   color: var(--fg); font-variant-numeric: tabular-nums;
 }
@@ -2385,7 +2388,7 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
   margin: 0;
   min-height: 1.6em;
   text-align: center;
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif);
   font-size: clamp(17px, 4.6vw, 20px); font-style: italic; font-weight: 500; line-height: 1.4;
   color: var(--gold);
   text-wrap: balance;
@@ -2532,7 +2535,7 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
 }
 .store-v2 .beg-head {
   margin: 0;
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif);
   font-size: 20px; font-weight: 500; line-height: 1.25;
   color: var(--fg);
 }
@@ -2541,7 +2544,7 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
 
 .store-v2 .beg-verdict {
   margin: 0;
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif);
   font-size: 22px; font-style: italic; font-weight: 500;
   color: var(--gold-bright, var(--gold));
 }
@@ -2568,7 +2571,7 @@ html.dark-theme .arcade-btn:hover:not(:disabled) {
 }
 .store-v2 .beg-axis-score {
   grid-area: score;
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif);
   font-size: 20px; color: var(--gold);
   font-variant-numeric: tabular-nums; line-height: 1;
 }

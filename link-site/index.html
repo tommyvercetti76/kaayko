@@ -112,125 +112,33 @@ img, canvas, svg { max-width:100% }
 .skip-link:focus { left:16px; outline:2px solid var(--gold-bright); outline-offset:3px }
 
 /* ── NAV ── */
-.nav {
-  position:fixed; top:0; left:0; right:0; z-index:100;
-  display:flex; justify-content:flex-end; align-items:center;
-  padding:max(var(--sp-4),env(safe-area-inset-top)) clamp(1.4rem,5vw,3.2rem) var(--sp-3);
-  transition:background var(--dur-normal) ease, border-color var(--dur-normal) ease;
-  border-bottom:1px solid transparent;
-}
-/* Past the hero the bar sits over content, so it earns an opaque ground and a
-   brighter ink: the options have to stay readable and reachable all the way down. */
-.nav.is-scrolled {
-  background:rgba(5,8,18,0.94);
-  -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
-  border-bottom-color:var(--gold-line);
-}
-.nav.is-scrolled .nav-link { color:var(--gold) }
-.nav-link {
-  color:var(--gold-dim);
-  font-family:'Cormorant Garamond',Georgia,serif;
-  font-style:italic; font-size:clamp(0.82rem,1.6vw,0.92rem);
-  letter-spacing:0.22em; text-transform:uppercase;
-  transition:color var(--dur-normal) ease, text-shadow var(--dur-normal) ease;
-  min-height:44px; display:flex; align-items:center;
-}
-.nav-right { display:flex; gap:var(--sp-5) }
-.nav-link:hover { color:var(--gold-bright); text-shadow:var(--glow-xs) }
-.nav-link:focus-visible { outline:1px solid var(--gold-bright); outline-offset:6px }
-
-/* ── HERO ── */
-.hero {
-  position:relative; z-index:1;
-  min-height:100vh; min-height:100svh;
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  text-align:center; padding:var(--sp-10) var(--sp-5) var(--sp-8);
-  overflow:hidden;
-}
-.hero-glow {
-  position:absolute; left:0; top:0; z-index:0;
-  width:clamp(320px,44vw,680px); aspect-ratio:1; border-radius:50%;
-  background:radial-gradient(circle,rgba(181,147,90,0.14),rgba(181,147,90,0.05) 30%,transparent 62%);
-  opacity:0; pointer-events:none;
-  transform:translate3d(-50%,-50%,0);
-  transition:opacity var(--dur-slow) ease;
-  will-change:transform;
-}
-/* One sky behind the whole page: a fixed canvas paints the deep-space ground,
-   a faint star-chart grid, the starfield and the constellation that is lit.
-   Content scrolls over it on glass plates, so every section shares the same
-   night. Before the script runs, the body gradient below stands in for it. */
-.sky {
-  position:fixed; inset:0; z-index:0; pointer-events:none;
-  opacity:0; animation:skyIn 1.4s ease-out 0.2s forwards;
-}
-body { background:linear-gradient(180deg, #060b1e 0%, #0a1233 45%, #0a1129 70%, #080808 100%) fixed; }
-.nav::before {
-  content:''; position:absolute; left:0; right:0; top:0; height:calc(100% + 28px); z-index:-1; pointer-events:none;
-  background:linear-gradient(180deg, rgba(5,8,18,0.86) 0%, rgba(5,8,18,0.55) 55%, rgba(5,8,18,0) 100%);
-  opacity:1; transition:opacity var(--dur-normal) ease;
-}
+.nav { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; gap:var(--sp-4);
+  padding:max(var(--sp-3),env(safe-area-inset-top)) clamp(1rem,4vw,2.4rem); border-bottom:1px solid transparent; transition:background var(--dur-normal), border-color var(--dur-normal) }
+.nav::before { content:''; position:absolute; inset:0 0 -28px 0; z-index:-1; pointer-events:none; background:linear-gradient(180deg,rgba(5,8,18,.86),rgba(5,8,18,.55) 55%,rgba(5,8,18,0)); transition:opacity var(--dur-normal) }
+.nav.is-scrolled { background:rgba(5,8,18,.94); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border-bottom-color:var(--gold-line) }
 .nav.is-scrolled::before { opacity:0 }
-@keyframes skyIn { to { opacity:1 } }
-.hero-inner { position:relative; z-index:1; max-width:720px }
-.hero-title {
-  font-family:'Bebas Neue',Impact,sans-serif;
-  font-size:clamp(5rem,15vw,11rem); font-weight:400;
-  letter-spacing:0.07em; line-height:0.9; text-transform:uppercase;
-  color:var(--fg);
-  text-shadow:var(--glow-text);
-  margin-bottom:0.35em;
-}
-.hero-seam {
-  width:min(72%,400px); height:1px; margin:0 auto var(--sp-5);
-  background:linear-gradient(to right, transparent 0%, var(--gold-line) 8%, var(--gold-line) 35%, transparent 35%, transparent 65%, var(--gold-line) 65%, var(--gold-line) 92%, transparent 100%);
-  box-shadow:var(--glow-line);
-  position:relative;
-  transform:scaleX(0); transform-origin:center;
-  animation:drawSeam 760ms cubic-bezier(0.16,1,0.3,1) 0.4s both;
-}
-@keyframes drawSeam { to { transform:scaleX(1) } }
-.hero-mark {
-  position:absolute; top:50%; left:50%;
-  transform:translate(-50%,-50%);
-  color:var(--gold); font-style:italic;
-  font-size:clamp(0.68rem,1.3vw,0.82rem);
-  letter-spacing:0.52em; text-transform:lowercase;
-  white-space:nowrap; padding:0 10px;
-  background:var(--bg);
-  opacity:0; animation:markIn 300ms ease-out 1.16s both;
-}
-@keyframes markIn { to { opacity:0.86 } }
-.hero-sub {
-  font-style:italic;
-  font-size:clamp(1.05rem,2.2vw,1.32rem);
-  color:var(--muted); letter-spacing:0.06em; line-height:1.6;
-  margin-bottom:var(--sp-6);
-}
-.hero-actions { display:flex; align-items:center; gap:var(--sp-5); justify-content:center; flex-wrap:wrap }
-.action-link {
-  color:var(--gold); font-style:italic;
-  font-size:clamp(0.88rem,1.6vw,0.98rem);
-  letter-spacing:0.16em; text-transform:uppercase;
-  transition:color var(--dur-normal) ease, text-shadow var(--dur-normal) ease;
-  min-height:44px; display:inline-flex; align-items:center;
-  background:none; border:0; cursor:pointer; font-family:inherit;
-}
-.action-link:hover { color:var(--gold-bright); text-shadow:var(--glow-xs) }
-.action-link:focus-visible { outline:1px solid var(--gold-bright); outline-offset:6px }
-.action-link.quiet { color:var(--gold); font-size:0.86rem }
-.action-link.quiet:hover { color:var(--gold-bright) }
-.action-dot { color:var(--gold-dim); font-size:0.65rem }
-.scroll-cue { margin-top:var(--sp-7); color:var(--gold-dim); font-style:italic; font-size:1.1rem; animation:float 2.4s ease-in-out infinite 1.6s; opacity:0; animation-fill-mode:both }
-@keyframes float { 0%,100% { transform:translateY(0); opacity:0.35 } 50% { transform:translateY(8px); opacity:0.75 } }
-.hero-fade { opacity:0; transform:translateY(14px); animation:fadeUp .7s cubic-bezier(0.16,1,0.3,1) both }
-@keyframes fadeUp { to { opacity:1; transform:none } }
-.hero-fade:nth-child(1) { animation-delay:.25s }
-.hero-fade:nth-child(2) { animation-delay:.5s }
-.hero-fade:nth-child(3) { animation-delay:.95s }
-.hero-fade:nth-child(4) { animation-delay:1.2s }
-.hero-fade:nth-child(5) { animation-delay:1.5s }
+.brand { display:flex; align-items:baseline; gap:10px; min-height:44px }
+.brand-word { font-family:var(--display); font-size:1.5rem; letter-spacing:.14em; color:var(--fg); text-shadow:var(--glow-text); line-height:1 }
+.brand-by { font-style:italic; font-size:.78rem; letter-spacing:.28em; text-transform:uppercase; color:var(--gold) }
+.nav-right { display:flex; gap:clamp(.9rem,3vw,1.6rem) }
+.nav-link { color:var(--gold-dim); font-style:italic; font-size:clamp(.8rem,1.5vw,.9rem); letter-spacing:.2em; text-transform:uppercase; min-height:44px; display:flex; align-items:center; transition:color var(--dur-normal), text-shadow var(--dur-normal) }
+.nav-link:hover { color:var(--gold-bright); text-shadow:var(--glow-xs) }
+.nav-link:focus-visible, .action-link:focus-visible { outline:1px solid var(--gold-bright); outline-offset:6px }
 
+/* ── HERO: the instrument on the left, the poster on the right ── */
+.hero { position:relative; z-index:1; display:grid; place-items:center; padding:calc(var(--sp-10) + 12px) clamp(1rem,4vw,2.4rem) var(--sp-9) }
+.hero-inner { width:100%; max-width:760px }
+.hero-inner > * { min-width:0 }
+.eyebrow { font-style:italic; font-size:clamp(.78rem,1.3vw,.86rem); letter-spacing:.42em; text-transform:lowercase; color:var(--gold); margin-bottom:var(--sp-4) }
+.eyebrow b { font-family:var(--mono); font-style:normal; font-weight:500; letter-spacing:.08em; text-transform:none; color:var(--gold-bright) }
+h1.hero-title { font-family:var(--display); font-weight:400; font-size:clamp(2.9rem,6.6vw,5.4rem); line-height:.96; letter-spacing:.04em; text-transform:uppercase; color:var(--fg); text-shadow:var(--glow-text); margin-bottom:var(--sp-4) }
+h1.hero-title em { font-style:normal; color:var(--gold-bright) }
+.hero-sub { font-style:italic; font-size:clamp(1.05rem,1.9vw,1.28rem); color:var(--muted); letter-spacing:.03em; max-width:34rem; margin-bottom:var(--sp-6) }
+.hero-fade { opacity:0; transform:translateY(14px); animation:fadeUp .7s var(--ease-out) both }
+@keyframes fadeUp { to { opacity:1; transform:none } }
+.hero-fade:nth-child(1) { animation-delay:.15s } .hero-fade:nth-child(2) { animation-delay:.3s } .hero-fade:nth-child(3) { animation-delay:.45s } .hero-fade:nth-child(4) { animation-delay:.6s }
+
+.hero-line { font-family:var(--serif); font-weight:500; font-style:italic; font-size:clamp(1.05rem,1.9vw,1.25rem); color:var(--muted); letter-spacing:.03em; text-align:center; margin:0 auto var(--sp-5); max-width:38rem }
 
 /* ── SHARED FURNITURE ── */
 .section { position:relative; z-index:1; padding:0 clamp(1rem,4vw,2.4rem) var(--sp-12); max-width:var(--wide); margin:0 auto }
@@ -388,20 +296,20 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
 .cardimg span { display:block; margin-top:var(--sp-3); font-style:italic; font-size:.92rem; color:var(--muted); text-align:center }
 @media(max-width:760px) { .cards { grid-template-columns:1fr } }
 
-/* ── CASES ── */
-.cases { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--sp-5); align-items:start }
+/* ── CASES: three cards in one frame, lit the way /card is ── */
+.cases { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--sp-6); align-items:start }
 .case { min-width:0 }
-.cardimg { display:block; min-width:0 }
-.cardimg img { display:block; width:100%; height:auto; box-shadow:0 18px 30px rgba(0,0,0,.45), 0 50px 110px rgba(0,0,0,.6), 0 0 0 1px rgba(181,147,90,.3); transition:transform var(--dur-normal), box-shadow var(--dur-normal) }
-.cardimg:hover img { box-shadow:0 26px 40px rgba(0,0,0,.5), 0 70px 140px rgba(0,0,0,.65), 0 0 40px rgba(181,147,90,.25) }
-.cardimg:hover img { transform:translateY(-3px) }
-.case-empty { aspect-ratio:3/2; display:grid; place-items:center; border:1px dashed rgba(181,147,90,.35); color:var(--gold); font-style:italic; letter-spacing:.3em; background:rgba(5,7,14,.4) }
+.cardimg { display:block; min-width:0; perspective:1200px; --rx:0deg; --ry:0deg; --sx:50%; --sy:30%; --spec:.25 }
+.cardimg .frame { position:relative; aspect-ratio:4/5; border-radius:10px; overflow:hidden; background:#f4eedf; transform:rotateX(var(--rx)) rotateY(var(--ry)); transition:transform .55s cubic-bezier(.2,.8,.2,1); box-shadow:0 2px 3px rgba(0,0,0,.5), 0 24px 60px rgba(0,0,0,.62), 0 0 0 1px rgba(181,147,90,.25) }
+.cardimg.is-live .frame { transition:none }
+.cardimg .frame img { display:block; width:100%; height:100%; object-fit:contain; background:#f4eedf }
+.cardimg .sheen { position:absolute; inset:0; pointer-events:none; background:radial-gradient(34% 46% at var(--sx) var(--sy), rgba(255,250,235,var(--spec)), rgba(255,250,235,0) 70%); mix-blend-mode:screen }
 .case h3 { font-family:var(--display); font-size:1.6rem; letter-spacing:.05em; text-transform:uppercase; line-height:1; margin:var(--sp-4) 0 var(--sp-2) }
 .case p { font-style:italic; color:var(--muted); font-size:.98rem }
 .case-rule { font-family:var(--mono); font-style:normal !important; font-size:.74rem !important; color:var(--dim) !important; margin-top:var(--sp-2) }
 .everything { text-align:center; margin-top:var(--sp-7); font-style:italic; color:var(--muted); font-size:.98rem; padding-top:var(--sp-5); border-top:1px solid var(--gold-line) }
 .everything b { color:var(--gold-bright); font-weight:500 }
-@media(max-width:960px) { .cases { grid-template-columns:1fr } }
+@media(max-width:960px) { .cases { grid-template-columns:1fr; max-width:420px; margin:0 auto } }
 
 /* ── MANAGE ── */
 .enter-row { display:flex; gap:var(--sp-4); align-items:flex-end }
@@ -530,33 +438,22 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
 
 <!-- ═══ NAV ═══ -->
 <nav class="nav" role="navigation" aria-label="Main navigation">
+  <a class="brand" href="/" aria-label="Kortex by KAAYKO, home">
+    <span class="brand-word">KORTEX</span>
+    <span class="brand-by">by KAAYKO</span>
+  </a>
   <div class="nav-right">
     <a href="#pricing" class="nav-link">Pricing</a>
-    <a href="https://kaayko.com/kortex/signin" class="nav-link" id="nav-auth-link">Sign In</a>
+    <a href="https://kaayko.com/kortex/signin" class="nav-link">Sign in</a>
   </div>
 </nav>
 
 <!-- ═══ HERO: the instrument ═══ -->
-<section class="hero" aria-label="Kortex hero">
+<header class="hero" id="make" aria-label="Make a QR code">
   <div class="hero-inner">
-    <h1 class="hero-title hero-fade" data-text="KORTEX">KORTEX</h1>
-    <div class="hero-seam"><span class="hero-mark">by kaayko</span></div>
-    <p class="hero-sub hero-fade">One link. Every device. Every insight.<br>Make a QR in ten seconds. No account. Your access code is the key.</p>
-    <div class="hero-actions hero-fade">
-      <a href="#make" class="action-link">Make a QR</a>
-      <span class="action-dot" aria-hidden="true">&middot;</span>
-      <a href="#manage" class="action-link">I have a code</a>
-      <span class="action-dot" aria-hidden="true">&middot;</span>
-      <a href="https://kaayko.com/kortex/signin" class="action-link" id="hero-auth-btn">Sign In</a>
-    </div>
-    <div class="scroll-cue hero-fade" aria-hidden="true">&darr;</div>
-  </div>
-</section>
-
-<!-- ═══ MAKE ═══ -->
-<section class="section narrow" id="make" aria-label="Make a QR code">
-  <h2 class="section-label reveal">make a qr &middot; no account</h2>
-  <div class="panel panel-narrow maker reveal">
+    <div>
+      <h1 class="hero-line hero-fade">A QR code you can change after it&rsquo;s printed. No account; one code is the key.</h1>
+      <div class="panel maker hero-fade">
         <form id="make-form" autocomplete="off" novalidate>
           <div class="seg" role="group" aria-label="QR type">
             <button type="button" class="seg-btn active" id="mode-dynamic" aria-pressed="true">Dynamic</button>
@@ -702,7 +599,9 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
           </div>
         </div>
       </div>
-</section>
+    </div>
+  </div>
+</header>
 
 
 <!-- ═══ THREE USES ═══ -->
@@ -711,19 +610,19 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
   <p class="section-title reveal">Print it once. Decide later.</p>
   <div class="cases">
     <article class="case reveal">
-      <a class="cardimg" href="https://kaayko.com/paddlingout/forecast?id=mcdonald"><img src="/assets/cards/lake-mcdonald-postcard.jpg" alt="Lake McDonald postcard with its kaay.link code" width="1400" height="933" loading="lazy"></a>
+      <a class="cardimg" href="https://kaayko.com/paddlingout/forecast?id=mcdonald"><span class="frame"><img src="/assets/cards/lake-mcdonald-postcard.jpg" alt="Lake McDonald postcard with its kaay.link code" width="1400" height="933" loading="lazy"><span class="sheen"></span></span></a>
       <h3>The paddler</h3>
       <p>A sticker or postcard at the water. One code, the live paddle score behind it, iPhones sent to the app. Every lake it lands at is a placement to compare.</p>
       <p class="case-rule">kaay.link/skcpfj8p &middot; device routing &middot; placement report</p>
     </article>
     <article class="case reveal">
-      <a class="cardimg" href="https://kaay.store/s/moms-shop"><img src="/assets/cards/moms-shop-card.jpg" alt="Mom's Shop card with its kaay.link code" width="900" height="1350" loading="lazy"></a>
+      <a class="cardimg" href="https://kaay.store/s/moms-shop"><span class="frame"><img src="/assets/cards/moms-shop-card.jpg" alt="Mom's Shop card with its kaay.link code" width="900" height="1350" loading="lazy"><span class="sheen"></span></span></a>
       <h3>The maker</h3>
       <p>Mom&rsquo;s Shop: four totes on one shelf at kaay.store, one card, one code. Add a fifth tote next month and the printed code still works.</p>
       <p class="case-rule">kaay.link/xf4hkysp &middot; kaay.store/s/moms-shop &middot; re-point any time</p>
     </article>
     <article class="case reveal">
-      <a class="cardimg" href="/assets/cards/music-gathering-poster.jpg"><img src="/assets/cards/music-gathering-poster.jpg" alt="An evening of music poster with its kaay.link code" width="900" height="1260" loading="lazy"></a>
+      <a class="cardimg" href="/assets/cards/music-gathering-poster.jpg"><span class="frame"><img src="/assets/cards/music-gathering-poster.jpg" alt="An evening of music poster with its kaay.link code" width="900" height="1260" loading="lazy"><span class="sheen"></span></span></a>
       <h3>The gathering</h3>
       <p>A poster on the grocery board. Print it once; the code says where and when, and can point at the next evening after this one. Made in Forge.</p>
       <p class="case-rule">kaay.link/zs9resps &middot; re-point after printing &middot; night and day</p>
@@ -928,67 +827,25 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
   const io = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } }), { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 })();
-/* ── SCRAMBLE (kaayko.com brand) ── */
-(function() {
-  const POOL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const TICK = 38;
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  function scramble(el) {
-    if (reduced) return;
-    const target = el.dataset.text || el.textContent.trim();
-    el.dataset.text = target;
-    const chars = Array.from(target);
-    const locked = chars.map(c => c === ' ');
-    chars.forEach((c, i) => { if (c !== ' ') setTimeout(() => { locked[i] = true; }, 190 + i * 42); });
-    const iv = setInterval(() => {
-      el.textContent = chars.map((c, i) => locked[i] ? c : POOL[Math.floor(Math.random() * POOL.length)]).join('');
-      if (locked.every(Boolean)) { clearInterval(iv); el.textContent = target; }
-    }, TICK);
-  }
-  setTimeout(() => scramble(document.querySelector('.hero-title')), 500);
-
-  // Safeguard: force hero entrance if CSS animations don't fire (background tabs)
-  setTimeout(() => {
-    const seam = document.querySelector('.hero-seam');
-    const mark = document.querySelector('.hero-mark');
-    if (seam && getComputedStyle(seam).transform.includes('0, 0, 0')) {
-      seam.style.transform = 'scaleX(1)';
-      seam.style.transition = 'transform 760ms cubic-bezier(0.16,1,0.3,1)';
+/* ── the three cards, lit like /card: the pointer is a lamp, the card leans toward it ── */
+(function () {
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches, fine = matchMedia('(pointer: fine)').matches;
+  if (still || !fine) return;
+  const TILT = 9;
+  document.querySelectorAll('.cardimg').forEach(card => {
+    let raf = 0, target = { x: .5, y: .35 }, cur = { x: .5, y: .35 }, on = false;
+    function light(px, py) {
+      const rx = (0.5 - py) * 2 * TILT, ry = (px - 0.5) * 2 * TILT;
+      const s = card.style;
+      s.setProperty('--rx', rx.toFixed(2) + 'deg'); s.setProperty('--ry', ry.toFixed(2) + 'deg');
+      s.setProperty('--sx', (px * 100).toFixed(1) + '%'); s.setProperty('--sy', (py * 100).toFixed(1) + '%');
+      s.setProperty('--spec', (0.18 + 0.5 * (1 - Math.min(1, Math.hypot(px - .5, py - .5) * 1.4))).toFixed(3));
     }
-    if (mark && getComputedStyle(mark).opacity === '0') {
-      mark.style.opacity = '0.86';
-      mark.style.transition = 'opacity 300ms ease-out';
-    }
-    document.querySelectorAll('.hero-fade').forEach(el => {
-      if (getComputedStyle(el).opacity === '0') {
-        el.style.opacity = '1'; el.style.transform = 'none';
-        el.style.transition = 'opacity .5s ease, transform .5s cubic-bezier(0.16,1,0.3,1)';
-      }
-    });
-  }, 2000);
-})();
-
-/* ── CURSOR GLOW (kaayko.com brand) ── */
-(function() {
-  const hero = document.querySelector('.hero');
-  const glow = document.createElement('span');
-  glow.className = 'hero-glow'; glow.setAttribute('aria-hidden', 'true');
-  hero.prepend(glow);
-  let gx = 0, gy = 0, tx = 0, ty = 0, active = false;
-  function render() {
-    gx += (tx - gx) * 0.1; gy += (ty - gy) * 0.1;
-    glow.style.transform = `translate3d(${gx}px,${gy}px,0) translate(-50%,-50%)`;
-    if (active) requestAnimationFrame(render);
-  }
-  hero.addEventListener('pointerenter', (e) => {
-    const r = hero.getBoundingClientRect();
-    tx = e.clientX - r.left; ty = e.clientY - r.top; gx = tx; gy = ty;
-    glow.style.opacity = '1'; active = true; requestAnimationFrame(render);
+    function loop() { cur.x += (target.x - cur.x) * .14; cur.y += (target.y - cur.y) * .14; light(cur.x, cur.y); if (on || Math.abs(target.x - cur.x) + Math.abs(target.y - cur.y) > .002) raf = requestAnimationFrame(loop); else raf = 0; }
+    card.addEventListener('pointerenter', () => { on = true; card.classList.add('is-live'); if (!raf) raf = requestAnimationFrame(loop); });
+    card.addEventListener('pointermove', e => { const r = card.getBoundingClientRect(); target.x = (e.clientX - r.left) / r.width; target.y = (e.clientY - r.top) / r.height; });
+    card.addEventListener('pointerleave', () => { on = false; card.classList.remove('is-live'); target = { x: .5, y: .35 }; if (!raf) raf = requestAnimationFrame(loop); });
   });
-  hero.addEventListener('pointermove', (e) => {
-    const r = hero.getBoundingClientRect(); tx = e.clientX - r.left; ty = e.clientY - r.top;
-  });
-  hero.addEventListener('pointerleave', () => { glow.style.opacity = '0'; active = false; });
 })();
 </script>
 <script src="/js/kortex-sky.js"></script>
