@@ -8,7 +8,7 @@
   <meta name="description" content="Paste an address, get a kaay.link QR code in two seconds. No account. Re-point it after it's printed, route by device and time of day, and see every scan. Free.">
   <meta name="author" content="KAAYKO">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
-  <link rel="canonical" href="https://kaayko.com/kortex">
+  <link rel="canonical" href="https://www.kaay.link/">
 
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://kaay.link/">
@@ -112,46 +112,125 @@ img, canvas, svg { max-width:100% }
 .skip-link:focus { left:16px; outline:2px solid var(--gold-bright); outline-offset:3px }
 
 /* ── NAV ── */
-.nav { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; gap:var(--sp-4);
-  padding:max(var(--sp-3),env(safe-area-inset-top)) clamp(1rem,4vw,2.4rem); border-bottom:1px solid transparent; transition:background var(--dur-normal), border-color var(--dur-normal) }
-.nav::before { content:''; position:absolute; inset:0 0 -28px 0; z-index:-1; pointer-events:none; background:linear-gradient(180deg,rgba(5,8,18,.86),rgba(5,8,18,.55) 55%,rgba(5,8,18,0)); transition:opacity var(--dur-normal) }
-.nav.is-scrolled { background:rgba(5,8,18,.94); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border-bottom-color:var(--gold-line) }
-.nav.is-scrolled::before { opacity:0 }
-.brand { display:flex; align-items:baseline; gap:10px; min-height:44px }
-.brand-word { font-family:var(--display); font-size:1.5rem; letter-spacing:.14em; color:var(--fg); text-shadow:var(--glow-text); line-height:1 }
-.brand-by { font-style:italic; font-size:.78rem; letter-spacing:.28em; text-transform:uppercase; color:var(--gold) }
-.nav-right { display:flex; gap:clamp(.9rem,3vw,1.6rem) }
-.nav-link { color:var(--gold-dim); font-style:italic; font-size:clamp(.8rem,1.5vw,.9rem); letter-spacing:.2em; text-transform:uppercase; min-height:44px; display:flex; align-items:center; transition:color var(--dur-normal), text-shadow var(--dur-normal) }
+.nav {
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  display:flex; justify-content:flex-end; align-items:center;
+  padding:max(var(--sp-4),env(safe-area-inset-top)) clamp(1.4rem,5vw,3.2rem) var(--sp-3);
+  transition:background var(--dur-normal) ease, border-color var(--dur-normal) ease;
+  border-bottom:1px solid transparent;
+}
+/* Past the hero the bar sits over content, so it earns an opaque ground and a
+   brighter ink: the options have to stay readable and reachable all the way down. */
+.nav.is-scrolled {
+  background:rgba(5,8,18,0.94);
+  -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+  border-bottom-color:var(--gold-line);
+}
+.nav.is-scrolled .nav-link { color:var(--gold) }
+.nav-link {
+  color:var(--gold-dim);
+  font-family:'Cormorant Garamond',Georgia,serif;
+  font-style:italic; font-size:clamp(0.82rem,1.6vw,0.92rem);
+  letter-spacing:0.22em; text-transform:uppercase;
+  transition:color var(--dur-normal) ease, text-shadow var(--dur-normal) ease;
+  min-height:44px; display:flex; align-items:center;
+}
+.nav-right { display:flex; gap:var(--sp-5) }
 .nav-link:hover { color:var(--gold-bright); text-shadow:var(--glow-xs) }
-.nav-link:focus-visible, .action-link:focus-visible { outline:1px solid var(--gold-bright); outline-offset:6px }
+.nav-link:focus-visible { outline:1px solid var(--gold-bright); outline-offset:6px }
 
-/* ── HERO: the instrument on the left, the poster on the right ── */
-.hero { position:relative; z-index:1; min-height:100svh; display:grid; place-items:center; padding:calc(var(--sp-10) + 24px) clamp(1rem,4vw,2.4rem) var(--sp-9) }
-.hero-inner { width:100%; max-width:var(--wide); display:grid; grid-template-columns:minmax(0,7fr) minmax(0,5fr); gap:clamp(2rem,6vw,5rem); align-items:center }
-.hero-inner > * { min-width:0 }
-.eyebrow { font-style:italic; font-size:clamp(.78rem,1.3vw,.86rem); letter-spacing:.42em; text-transform:lowercase; color:var(--gold); margin-bottom:var(--sp-4) }
-.eyebrow b { font-family:var(--mono); font-style:normal; font-weight:500; letter-spacing:.08em; text-transform:none; color:var(--gold-bright) }
-h1.hero-title { font-family:var(--display); font-weight:400; font-size:clamp(2.9rem,6.6vw,5.4rem); line-height:.96; letter-spacing:.04em; text-transform:uppercase; color:var(--fg); text-shadow:var(--glow-text); margin-bottom:var(--sp-4) }
-h1.hero-title em { font-style:normal; color:var(--gold-bright) }
-.hero-sub { font-style:italic; font-size:clamp(1.05rem,1.9vw,1.28rem); color:var(--muted); letter-spacing:.03em; max-width:34rem; margin-bottom:var(--sp-6) }
-.hero-fade { opacity:0; transform:translateY(14px); animation:fadeUp .7s var(--ease-out) both }
+/* ── HERO ── */
+.hero {
+  position:relative; z-index:1;
+  min-height:100vh; min-height:100svh;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding:var(--sp-10) var(--sp-5) var(--sp-8);
+  overflow:hidden;
+}
+.hero-glow {
+  position:absolute; left:0; top:0; z-index:0;
+  width:clamp(320px,44vw,680px); aspect-ratio:1; border-radius:50%;
+  background:radial-gradient(circle,rgba(181,147,90,0.14),rgba(181,147,90,0.05) 30%,transparent 62%);
+  opacity:0; pointer-events:none;
+  transform:translate3d(-50%,-50%,0);
+  transition:opacity var(--dur-slow) ease;
+  will-change:transform;
+}
+/* One sky behind the whole page: a fixed canvas paints the deep-space ground,
+   a faint star-chart grid, the starfield and the constellation that is lit.
+   Content scrolls over it on glass plates, so every section shares the same
+   night. Before the script runs, the body gradient below stands in for it. */
+.sky {
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  opacity:0; animation:skyIn 1.4s ease-out 0.2s forwards;
+}
+body { background:linear-gradient(180deg, #060b1e 0%, #0a1233 45%, #0a1129 70%, #080808 100%) fixed; }
+.nav::before {
+  content:''; position:absolute; left:0; right:0; top:0; height:calc(100% + 28px); z-index:-1; pointer-events:none;
+  background:linear-gradient(180deg, rgba(5,8,18,0.86) 0%, rgba(5,8,18,0.55) 55%, rgba(5,8,18,0) 100%);
+  opacity:1; transition:opacity var(--dur-normal) ease;
+}
+.nav.is-scrolled::before { opacity:0 }
+@keyframes skyIn { to { opacity:1 } }
+.hero-inner { position:relative; z-index:1; max-width:720px }
+.hero-title {
+  font-family:'Bebas Neue',Impact,sans-serif;
+  font-size:clamp(5rem,15vw,11rem); font-weight:400;
+  letter-spacing:0.07em; line-height:0.9; text-transform:uppercase;
+  color:var(--fg);
+  text-shadow:var(--glow-text);
+  margin-bottom:0.35em;
+}
+.hero-seam {
+  width:min(72%,400px); height:1px; margin:0 auto var(--sp-5);
+  background:linear-gradient(to right, transparent 0%, var(--gold-line) 8%, var(--gold-line) 35%, transparent 35%, transparent 65%, var(--gold-line) 65%, var(--gold-line) 92%, transparent 100%);
+  box-shadow:var(--glow-line);
+  position:relative;
+  transform:scaleX(0); transform-origin:center;
+  animation:drawSeam 760ms cubic-bezier(0.16,1,0.3,1) 0.4s both;
+}
+@keyframes drawSeam { to { transform:scaleX(1) } }
+.hero-mark {
+  position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  color:var(--gold); font-style:italic;
+  font-size:clamp(0.68rem,1.3vw,0.82rem);
+  letter-spacing:0.52em; text-transform:lowercase;
+  white-space:nowrap; padding:0 10px;
+  background:var(--bg);
+  opacity:0; animation:markIn 300ms ease-out 1.16s both;
+}
+@keyframes markIn { to { opacity:0.86 } }
+.hero-sub {
+  font-style:italic;
+  font-size:clamp(1.05rem,2.2vw,1.32rem);
+  color:var(--muted); letter-spacing:0.06em; line-height:1.6;
+  margin-bottom:var(--sp-6);
+}
+.hero-actions { display:flex; align-items:center; gap:var(--sp-5); justify-content:center; flex-wrap:wrap }
+.action-link {
+  color:var(--gold); font-style:italic;
+  font-size:clamp(0.88rem,1.6vw,0.98rem);
+  letter-spacing:0.16em; text-transform:uppercase;
+  transition:color var(--dur-normal) ease, text-shadow var(--dur-normal) ease;
+  min-height:44px; display:inline-flex; align-items:center;
+  background:none; border:0; cursor:pointer; font-family:inherit;
+}
+.action-link:hover { color:var(--gold-bright); text-shadow:var(--glow-xs) }
+.action-link:focus-visible { outline:1px solid var(--gold-bright); outline-offset:6px }
+.action-link.quiet { color:var(--gold); font-size:0.86rem }
+.action-link.quiet:hover { color:var(--gold-bright) }
+.action-dot { color:var(--gold-dim); font-size:0.65rem }
+.scroll-cue { margin-top:var(--sp-7); color:var(--gold-dim); font-style:italic; font-size:1.1rem; animation:float 2.4s ease-in-out infinite 1.6s; opacity:0; animation-fill-mode:both }
+@keyframes float { 0%,100% { transform:translateY(0); opacity:0.35 } 50% { transform:translateY(8px); opacity:0.75 } }
+.hero-fade { opacity:0; transform:translateY(14px); animation:fadeUp .7s cubic-bezier(0.16,1,0.3,1) both }
 @keyframes fadeUp { to { opacity:1; transform:none } }
-.hero-fade:nth-child(1) { animation-delay:.15s } .hero-fade:nth-child(2) { animation-delay:.3s } .hero-fade:nth-child(3) { animation-delay:.45s } .hero-fade:nth-child(4) { animation-delay:.6s }
+.hero-fade:nth-child(1) { animation-delay:.25s }
+.hero-fade:nth-child(2) { animation-delay:.5s }
+.hero-fade:nth-child(3) { animation-delay:.95s }
+.hero-fade:nth-child(4) { animation-delay:1.2s }
+.hero-fade:nth-child(5) { animation-delay:1.5s }
 
-/* the poster: a real QR from the sample workspace, and the destination it keeps changing to */
-.poster-wrap { position:relative; display:flex; justify-content:center; opacity:0; animation:fadeUp .9s var(--ease-out) .5s both }
-.poster { position:relative; width:min(100%,340px); aspect-ratio:3/4; padding:clamp(18px,4vw,28px); background:#f3eee2; color:#141210; box-shadow:0 30px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(181,147,90,.25), 0 0 60px rgba(181,147,90,.08); transform:rotate(-2deg); display:flex; flex-direction:column; justify-content:space-between }
-.poster::before { content:''; position:absolute; top:-10px; left:50%; width:64px; height:20px; transform:translateX(-50%) rotate(1.5deg); background:rgba(181,147,90,.55); box-shadow:0 2px 6px rgba(0,0,0,.25) }
-.poster-head { font-family:var(--display); font-size:clamp(1.5rem,3.4vw,2rem); letter-spacing:.06em; line-height:1; text-transform:uppercase }
-.poster-head small { display:block; font-family:var(--serif); font-style:italic; font-size:.82rem; letter-spacing:.14em; text-transform:uppercase; color:#6b6355; margin-top:6px }
-.poster-qr { width:min(62%,180px); aspect-ratio:1; background:#fff; padding:8px; margin:var(--sp-3) auto; box-shadow:0 0 0 1px rgba(0,0,0,.08) }
-.poster-qr img { width:100%; height:100%; display:block; image-rendering:pixelated }
-.poster-addr { font-family:var(--mono); font-size:.86rem; letter-spacing:.03em; text-align:center; color:#141210 }
-.poster-foot { text-align:center; font-style:italic; font-size:.84rem; color:#6b6355; letter-spacing:.04em }
-.repoint { margin-top:var(--sp-5); text-align:center; font-style:italic; font-size:clamp(.98rem,1.6vw,1.08rem); color:var(--muted); min-height:2.8em; opacity:0; animation:fadeUp .7s var(--ease-out) .9s both }
-.repoint b { color:var(--gold-bright); font-weight:500; display:inline-block; min-width:9ch; text-align:left; transition:opacity var(--dur-normal) }
-.repoint .arrow { color:var(--gold); padding:0 8px }
-.repoint.swap b { opacity:0 }
 
 /* ── SHARED FURNITURE ── */
 .section { position:relative; z-index:1; padding:0 clamp(1rem,4vw,2.4rem) var(--sp-12); max-width:var(--wide); margin:0 auto }
@@ -205,7 +284,7 @@ a.btn-submit { display:block; text-align:center }
 .honey { position:absolute; left:-9999px; width:1px; height:1px; opacity:0 }
 
 /* ── THE MAKER ── */
-.maker { padding:var(--sp-5) var(--sp-5) var(--sp-4) }
+.maker { padding:var(--sp-6) var(--sp-6) var(--sp-5) }
 .seg { display:flex; gap:var(--sp-5); margin-bottom:var(--sp-2) }
 .seg-btn { background:none; border:0; cursor:pointer; padding:8px 2px; min-height:44px; font-family:var(--serif); font-style:italic; font-size:.92rem; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); border-bottom:1px solid transparent; transition:color var(--dur-normal), border-color var(--dur-normal) }
 .seg-btn.active { color:var(--gold-bright); border-bottom-color:var(--gold); text-shadow:var(--glow-xs) }
@@ -451,25 +530,33 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
 
 <!-- ═══ NAV ═══ -->
 <nav class="nav" role="navigation" aria-label="Main navigation">
-  <a class="brand" href="/kortex" aria-label="Kortex by KAAYKO, home">
-    <span class="brand-word">KORTEX</span>
-    <span class="brand-by">by KAAYKO</span>
-  </a>
   <div class="nav-right">
     <a href="#pricing" class="nav-link">Pricing</a>
-    <a href="/kortex/signin" class="nav-link">Sign in</a>
+    <a href="/kortex/signin" class="nav-link" id="nav-auth-link">Sign In</a>
   </div>
 </nav>
 
 <!-- ═══ HERO: the instrument ═══ -->
-<header class="hero" id="make" aria-label="Make a QR code">
+<section class="hero" aria-label="Kortex hero">
   <div class="hero-inner">
-    <div>
-      <p class="eyebrow hero-fade">kortex by kaayko &middot; <b>kaay.link</b></p>
-      <h1 class="hero-title hero-fade">A QR code you can <em>change</em> after it&rsquo;s printed.</h1>
-      <p class="hero-sub hero-fade">Paste an address. Get <b style="font-family:var(--mono);font-style:normal;font-weight:500;color:var(--gold-bright)">kaay.link/&hellip;</b> and a QR. No account; one code is the key.</p>
+    <h1 class="hero-title hero-fade" data-text="KORTEX">KORTEX</h1>
+    <div class="hero-seam"><span class="hero-mark">by kaayko</span></div>
+    <p class="hero-sub hero-fade">One link. Every device. Every insight.<br>Make a QR in ten seconds. No account. Your access code is the key.</p>
+    <div class="hero-actions hero-fade">
+      <a href="#make" class="action-link">Make a QR</a>
+      <span class="action-dot" aria-hidden="true">&middot;</span>
+      <a href="#manage" class="action-link">I have a code</a>
+      <span class="action-dot" aria-hidden="true">&middot;</span>
+      <a href="/kortex/signin" class="action-link" id="hero-auth-btn">Sign In</a>
+    </div>
+    <div class="scroll-cue hero-fade" aria-hidden="true">&darr;</div>
+  </div>
+</section>
 
-      <div class="panel maker hero-fade">
+<!-- ═══ MAKE ═══ -->
+<section class="section narrow" id="make" aria-label="Make a QR code">
+  <h2 class="section-label reveal">make a qr &middot; no account</h2>
+  <div class="panel panel-narrow maker reveal">
         <form id="make-form" autocomplete="off" novalidate>
           <div class="seg" role="group" aria-label="QR type">
             <button type="button" class="seg-btn active" id="mode-dynamic" aria-pressed="true">Dynamic</button>
@@ -615,21 +702,8 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
           </div>
         </div>
       </div>
-    </div>
+</section>
 
-    <div class="poster-wrap" aria-hidden="true">
-      <div>
-        <div class="poster">
-          <div class="poster-head">Paddling<br>Out <small>every Sunday &middot; 6 am</small></div>
-          <div class="poster-qr"><img src="/qr/kx-paddle.png?size=264" alt="" width="180" height="180" loading="eager"></div>
-          <div class="poster-addr">kaay.link/kx-paddle</div>
-          <div class="poster-foot">printed once, in March</div>
-        </div>
-        <p class="repoint" id="repoint">Since then it has pointed at <span class="arrow">&rarr;</span><b id="repoint-to">the forecast</b><br><span id="repoint-when">this week</span></p>
-      </div>
-    </div>
-  </div>
-</header>
 
 <!-- ═══ THREE USES ═══ -->
 <section class="section" id="cases" aria-label="Three uses, three real codes">
@@ -846,19 +920,6 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
   const $ = id => document.getElementById(id);
   $('year').textContent = new Date().getFullYear();
 
-  /* The poster has pointed at different things since it was printed. */
-  const STOPS = [
-    ['the forecast', 'this week'], ['the Sunday meet-up sheet', 'the week before'], ['a sold-out page', 'the monsoon weekend'],
-    ['the new lake page', 'after it opened'], ['the App Store, on iPhones', 'since the app shipped']
-  ];
-  let stop = 0;
-  const rp = $('repoint'), to = $('repoint-to'), when = $('repoint-when');
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (!reduced) setInterval(() => {
-    rp.classList.add('swap');
-    setTimeout(() => { stop = (stop + 1) % STOPS.length; to.textContent = STOPS[stop][0]; when.textContent = STOPS[stop][1]; rp.classList.remove('swap'); }, 260);
-  }, 3200);
-
   /* The bar takes an opaque ground past the hero. */
   const navEl = document.querySelector('.nav'); let navScrolled = false;
   function syncNav() { const s = window.scrollY > 40; if (s === navScrolled) return; navScrolled = s; navEl.classList.toggle('is-scrolled', s); }
@@ -866,6 +927,68 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
 
   const io = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } }), { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+})();
+/* ── SCRAMBLE (kaayko.com brand) ── */
+(function() {
+  const POOL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const TICK = 38;
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function scramble(el) {
+    if (reduced) return;
+    const target = el.dataset.text || el.textContent.trim();
+    el.dataset.text = target;
+    const chars = Array.from(target);
+    const locked = chars.map(c => c === ' ');
+    chars.forEach((c, i) => { if (c !== ' ') setTimeout(() => { locked[i] = true; }, 190 + i * 42); });
+    const iv = setInterval(() => {
+      el.textContent = chars.map((c, i) => locked[i] ? c : POOL[Math.floor(Math.random() * POOL.length)]).join('');
+      if (locked.every(Boolean)) { clearInterval(iv); el.textContent = target; }
+    }, TICK);
+  }
+  setTimeout(() => scramble(document.querySelector('.hero-title')), 500);
+
+  // Safeguard: force hero entrance if CSS animations don't fire (background tabs)
+  setTimeout(() => {
+    const seam = document.querySelector('.hero-seam');
+    const mark = document.querySelector('.hero-mark');
+    if (seam && getComputedStyle(seam).transform.includes('0, 0, 0')) {
+      seam.style.transform = 'scaleX(1)';
+      seam.style.transition = 'transform 760ms cubic-bezier(0.16,1,0.3,1)';
+    }
+    if (mark && getComputedStyle(mark).opacity === '0') {
+      mark.style.opacity = '0.86';
+      mark.style.transition = 'opacity 300ms ease-out';
+    }
+    document.querySelectorAll('.hero-fade').forEach(el => {
+      if (getComputedStyle(el).opacity === '0') {
+        el.style.opacity = '1'; el.style.transform = 'none';
+        el.style.transition = 'opacity .5s ease, transform .5s cubic-bezier(0.16,1,0.3,1)';
+      }
+    });
+  }, 2000);
+})();
+
+/* ── CURSOR GLOW (kaayko.com brand) ── */
+(function() {
+  const hero = document.querySelector('.hero');
+  const glow = document.createElement('span');
+  glow.className = 'hero-glow'; glow.setAttribute('aria-hidden', 'true');
+  hero.prepend(glow);
+  let gx = 0, gy = 0, tx = 0, ty = 0, active = false;
+  function render() {
+    gx += (tx - gx) * 0.1; gy += (ty - gy) * 0.1;
+    glow.style.transform = `translate3d(${gx}px,${gy}px,0) translate(-50%,-50%)`;
+    if (active) requestAnimationFrame(render);
+  }
+  hero.addEventListener('pointerenter', (e) => {
+    const r = hero.getBoundingClientRect();
+    tx = e.clientX - r.left; ty = e.clientY - r.top; gx = tx; gy = ty;
+    glow.style.opacity = '1'; active = true; requestAnimationFrame(render);
+  });
+  hero.addEventListener('pointermove', (e) => {
+    const r = hero.getBoundingClientRect(); tx = e.clientX - r.left; ty = e.clientY - r.top;
+  });
+  hero.addEventListener('pointerleave', () => { glow.style.opacity = '0'; active = false; });
 })();
 </script>
 <script src="/js/kortex-sky.js"></script>
