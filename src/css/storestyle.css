@@ -744,10 +744,7 @@ Sustainability Alert Modal
 }
 
 /* Dark theme adjustments */
-.dark-theme .store-banner {
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
-  border-bottom: 1px solid #333;
-}
+.dark-theme .store-banner { background: none; color: var(--color-text, #ede8df); }
 
 .dark-theme .store-empty h2 {
   color: #fff;
@@ -1268,10 +1265,7 @@ body.store-v2 {
   font-weight: inherit;
 }
 
-.store-v2 .store-banner {
-  background: linear-gradient(135deg, #0a0a09 0%, #12140f 100%);
-  border-bottom: 1px solid var(--line);
-}
+.store-v2 .store-banner { background: none; border: 0; }
 
 .store-v2 .store-banner-link {
   color: var(--gold-bright);
