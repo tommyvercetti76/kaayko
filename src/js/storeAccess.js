@@ -18,7 +18,7 @@
     request: { title: "Request", sub: "No code yet? Ask us for one" }
   };
 
-  var MAIL_TO = "rohan@kaayko.com";
+  var MAIL_TO = "help@kaayko.com";
 
   // Neutral, short, one clear next step. This was a list of insults ("Wrong,
   // dumbass", "Are you actually stupid") shown to anyone who mistyped an invite

@@ -433,7 +433,7 @@
     }
 
     appendRows(d.leads);
-    el('gen-note').innerHTML='Report generated '+fmtTime(d.generatedAt)+' &middot; <a href=\"mailto:rohan@kaayko.com\">rohan@kaayko.com</a>';
+    el('gen-note').innerHTML='Report generated '+fmtTime(d.generatedAt)+' &middot; <a href=\"mailto:alumni@kaayko.com\">alumni@kaayko.com</a>';
 
     if(d.isAdminView&&d.links&&d.links.length>0){
       var totalClicks=d.links.reduce(function(a,l){return a+(l.consumedClicks!=null?l.consumedClicks:(l.clicks||0))},0);

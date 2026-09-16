@@ -491,7 +491,7 @@ Please get in touch at your earliest convenience.
 
 Thanks!`);
   
-  window.open(`mailto:enterprise@kaayko.com?subject=${subject}&body=${body}`, '_blank');
+  window.open(`mailto:kortex@kaayko.com?subject=${subject}&body=${body}`, '_blank');
   utils.showSuccess('Opening email client...');
 }
 
