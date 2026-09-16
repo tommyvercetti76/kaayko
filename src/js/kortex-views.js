@@ -397,15 +397,38 @@ function variationOf(link) {
   /* ── the plain-language layer, rendered from what the server computed ── */
   const INSIGHT_ORDER = ['qualityScore', 'bestWindow', 'rhythm', 'trend', 'qrSplit', 'deviceMatch', 'missed', 'fallbackUsage', 'repeatPattern', 'newVsReturning', 'channelMix', 'geoDrift', 'utmHealth', 'safetyImpact', 'anomalies', 'campaignLift', 'roi', 'placement', 'replay'];
   const CONFIDENCE_LABEL = { high: 'high confidence', medium: 'medium confidence', early: 'early signal' };
+  /* Plain mode: the free dashboard speaks to the person who printed the card,
+     not to an analyst. Findings become questions, badges and provenance go,
+     country codes become names, and a few sentences come first. */
+  let PLAIN = false;
+  function setPlain(v) { PLAIN = !!v; }
+  const PLAIN_TITLES = { qualityScore: 'Is the card doing its job?', bestWindow: 'When do people scan it?', rhythm: 'Which days are busiest?', trend: 'More or fewer than before?', qrSplit: 'Scanned, or tapped as a link?', deviceMatch: 'Phones or computers?', missed: 'Who did not get through?', fallbackUsage: 'The backup page', repeatPattern: 'Do people come back?', newVsReturning: 'New faces or familiar ones?', channelMix: 'Where did the taps come from?', geoDrift: 'Where were they?', utmHealth: 'Your campaign tags', safetyImpact: 'Anything unsafe?', anomalies: 'Anything odd this week?', campaignLift: 'Did the campaign help?', roi: 'Was the print worth it?', placement: 'Where the card lives', replay: 'One day, replayed' };
+  const COUNTRY = { IN: 'India', US: 'the US', GB: 'Britain', AE: 'the UAE', AU: 'Australia', CA: 'Canada', DE: 'Germany', SG: 'Singapore', FR: 'France', JP: 'Japan', NL: 'the Netherlands', IT: 'Italy', ES: 'Spain' };
+  const plainText = t => PLAIN ? String(t || '').replace(/\b(IN|US|GB|AE|AU|CA|DE|SG|FR|JP|NL|IT|ES)\b/g, m => COUNTRY[m] || m) : t;
+  function plainSummary(a) {
+    const pts = (a.points || []).map(p => ptOf(p, false));
+    if (!pts.length) return '';
+    const n = pts.length, people = a.unique && a.unique.distinctVisitors;
+    const hours = tallyOf(pts.map(p => ({ h: Math.floor(localHour(p.ms) / 3) * 3 })), 'h')[0];
+    const country = tallyOf(pts, 'country')[0];
+    const qr = Math.round(pts.filter(p => p.source === 'qr').length / n * 100);
+    const band = h => { const s = Number(h); const f = x => x === 0 ? '12 am' : x < 12 ? `${x} am` : x === 12 ? '12 pm' : `${x - 12} pm`; return `${f(s)} and ${f((s + 3) % 24)}`; };
+    const bits = [`This week ${n} ${n === 1 ? 'person' : 'people'} opened your page from this card${people ? `, about ${people} different ${people === 1 ? 'person' : 'people'}` : ''}.`];
+    if (hours) bits.push(`Most scanned it between ${band(hours.value)}.`);
+    if (country && country.value !== '—') bits.push(`${Math.round(country.clicks / n * 100)}% were in ${COUNTRY[country.value] || country.value}.`);
+    bits.push(qr >= 50 ? `${qr}% scanned the printed code; the rest tapped the link.` : `${100 - qr}% tapped the link; ${qr}% scanned the printed code.`);
+    return `<p class="ac-plain">${bits.join(' ')}</p>`;
+  }
   const PROVENANCE_SHOWN = new Set(['estimated', 'assumption', 'heuristic']);
   const DISMISS_REASONS = [['not_relevant', 'Not relevant'], ['known_event', 'Known event'], ['bad_data', 'Bad data'], ['remind_later', 'Remind me later']];
   function chipHtml(confidence) {
+    if (PLAIN) return '';
     return CONFIDENCE_LABEL[confidence] ? `<span class="ki-chip ki-chip-${esc(confidence)}">${CONFIDENCE_LABEL[confidence]}</span>` : '';
   }
   function metaHtml(f) {
     const bits = [];
     if (f.sampleSize) bits.push(scans(f.sampleSize));
-    if (PROVENANCE_SHOWN.has(f.provenance)) bits.push(esc(f.provenance));
+    if (!PLAIN && PROVENANCE_SHOWN.has(f.provenance)) bits.push(esc(f.provenance));
     if (f.insufficient) bits.push(`<span class="ki-need">${f.insufficient.have} of ${f.insufficient.needed} needed${f.insufficient.note ? ` · ${esc(f.insufficient.note)}` : ''}</span>`);
     return bits.length ? `<div class="ki-meta">${bits.join('<i>·</i>')}</div>` : '';
   }
@@ -430,7 +453,7 @@ function variationOf(link) {
   /** One finding as a card; `actions` adds the CTA and the Dismiss menu. */
   function insightCard(f, actions = false) {
     const score = f.key === 'qualityScore' && f.detail && f.detail.score != null ? `<b class="ki-score">${f.detail.score}</b>` : '';
-    return `<article class="ki ki-${esc(f.status)}${f.severity ? ` ki-sev-${esc(f.severity)}` : ''}" data-key="${esc(f.key)}"><div class="ki-head"><span class="ki-dot" aria-hidden="true"></span><h5>${esc(f.title)}</h5>${chipHtml(f.confidence)}${score}</div><p>${esc(f.headline)}</p>${metaHtml(f)}${extraHtml(f)}${actions ? actionsHtml(f) : ''}</article>`;
+    return `<article class="ki ki-${esc(f.status)}${f.severity ? ` ki-sev-${esc(f.severity)}` : ''}" data-key="${esc(f.key)}"><div class="ki-head"><span class="ki-dot" aria-hidden="true"></span><h5>${esc(PLAIN && PLAIN_TITLES[f.key] ? PLAIN_TITLES[f.key] : f.title)}</h5>${chipHtml(f.confidence)}${score}</div><p>${esc(plainText(f.headline))}</p>${metaHtml(f)}${extraHtml(f)}${actions ? actionsHtml(f) : ''}</article>`;
   }
   /** Render the findings into a container: `keys` limits and orders them; omitted = all. */
   function renderInsights(container, insights, { keys = INSIGHT_ORDER, compact = false } = {}) {
@@ -470,8 +493,9 @@ function variationOf(link) {
       container.innerHTML = '<div class="ac"><div class="ac-empty"><h5>No scans observed yet</h5><p>Print one test copy and scan it with a phone. It should land where you expect and show up here within a minute, with the device, country and route it took.</p></div></div>';
       return;
     }
-    const metrics = `<div class="ac-metrics"><div class="ac-metric"><b>${useful}</b><span>Useful visits</span></div><div class="ac-metric ac-m-lost"><b>${lost}</b><span>Lost</span></div><div class="ac-metric ac-m-rescued"><b>${rescued}</b><span>Rescued</span></div><div class="ac-metric"><b>${pct(usefulRate)}</b><span>Useful rate</span></div></div>
-      <p class="ac-support">${scans(observed)} observed · ${peopleLine(a.unique)}</p>`;
+    const L = PLAIN ? ['Reached the page', 'Did not get there', 'Sent to the backup', 'Got there'] : ['Useful visits', 'Lost', 'Rescued', 'Useful rate'];
+    const metrics = `${PLAIN ? plainSummary(a) : ''}<div class="ac-metrics"><div class="ac-metric"><b>${useful}</b><span>${L[0]}</span></div><div class="ac-metric ac-m-lost"><b>${lost}</b><span>${L[1]}</span></div><div class="ac-metric ac-m-rescued"><b>${rescued}</b><span>${L[2]}</span></div><div class="ac-metric"><b>${pct(usefulRate)}</b><span>${L[3]}</span></div></div>
+      ${PLAIN ? '' : `<p class="ac-support">${scans(observed)} observed · ${peopleLine(a.unique)}</p>`}`;
     if (observed < 5) {
       container.innerHTML = `<div class="ac">${metrics}<p class="ac-low">Counts only for now: findings begin at five scans, timing and trend reads at thirty across several days.</p></div>`;
       return;
@@ -479,10 +503,10 @@ function variationOf(link) {
     const pick = keys => (keys || []).map(k => insights[k]).filter(Boolean);
     const explore = ac.explore || {};
     container.innerHTML = `<div class="ac">${metrics}
-      ${sectionHtml('Needs attention', pick(ac.needsAttention).slice(0, 3), 'Nothing needs a fix right now.', !readOnly)}
-      ${sectionHtml("What's working", pick(ac.working).slice(0, 2), 'Nothing stands out as working yet.', false)}
+      ${sectionHtml(PLAIN ? 'Worth a look' : 'Needs attention', pick(ac.needsAttention).slice(0, 3), 'Nothing needs a fix right now.', !readOnly)}
+      ${sectionHtml(PLAIN ? 'Going well' : "What's working", pick(ac.working).slice(0, 2), 'Nothing stands out as working yet.', false)}
       ${ac.sinceLastChange ? `<section class="ac-section"><h5>Result since last change</h5>${sinceHtml(ac.sinceLastChange)}</section>` : ''}
-      <section class="ac-section"><h5>Explore</h5><div class="ac-tabs" role="group" aria-label="Explore the findings">${EXPLORE_TABS.map(([k, l], i) => `<button type="button" data-tab="${k}" aria-pressed="${i === 0}">${l}</button>`).join('')}</div>${EXPLORE_TABS.map(([k], i) => `<div class="ac-pane" data-pane="${k}" ${i ? 'hidden' : ''}></div>`).join('')}</section>
+      <section class="ac-section"><h5>${PLAIN ? 'More' : 'Explore'}</h5><div class="ac-tabs" role="group" aria-label="Explore the findings">${EXPLORE_TABS.map(([k, l], i) => `<button type="button" data-tab="${k}" aria-pressed="${i === 0}">${PLAIN ? ({ placement: 'Where it lives', routing: 'Phones and routes', audience: 'Who scans', campaign: 'Campaign', trust: 'Safety' })[k] : l}</button>`).join('')}</div>${EXPLORE_TABS.map(([k], i) => `<div class="ac-pane" data-pane="${k}" ${i ? 'hidden' : ''}></div>`).join('')}</section>
     </div>`;
     attachTips(container);
     EXPLORE_TABS.forEach(([k]) => renderInsights(container.querySelector(`.ac-pane[data-pane="${k}"]`), insights, { keys: explore[k] || [], compact: true }));
@@ -516,5 +540,5 @@ function variationOf(link) {
   }
 
   window.KortexViews = {
-    renderInsights, renderActionCenter, renderWorkspaceQueue, ptOf, ptOfLost, tallyOf, radarAxes, pct, viewsHtml, mountViews, drawSky, variationOf, localHour, localDow, esc, fmtDate, stripScheme, showTip, hideTip, attachTips };
+    renderInsights, renderActionCenter, renderWorkspaceQueue, setPlain, ptOf, ptOfLost, tallyOf, radarAxes, pct, viewsHtml, mountViews, drawSky, variationOf, localHour, localDow, esc, fmtDate, stripScheme, showTip, hideTip, attachTips };
 })();

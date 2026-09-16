@@ -154,3 +154,5 @@
 
 @media (max-width: 640px) { .k-tables, .graph-grid, .radar-wrap { grid-template-columns:minmax(0, 1fr) } .ac-metrics { grid-template-columns:repeat(2, minmax(0, 1fr)) } }
 @media (prefers-reduced-motion: reduce) { .fm-node, .fm-edge { transition:none } }
+
+.ac-plain { font-style:italic; font-size:1.08rem; line-height:1.55; color:var(--fg, #ede8df); margin:0 0 14px; max-width:60ch }

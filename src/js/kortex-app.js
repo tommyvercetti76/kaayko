@@ -834,6 +834,7 @@ $('request-form').addEventListener('submit', async function(e) {
 });
 /* The five views, the action center, the work queue, the report framing and the hover tips live in /js/kortex-views.js (shared with the samples page and the admin). */
 const { ptOf, ptOfLost, tallyOf, viewsHtml, mountViews, variationOf, renderInsights, renderActionCenter, renderWorkspaceQueue } = window.KortexViews;
+if (window.KortexViews.setPlain) window.KortexViews.setPlain(true);   // the free dashboard speaks plainly
 
 let overviewKey = null;
 const WORKSPACE_INSIGHT_KEYS = ['placementPerformance', 'safetyImpact', 'utmHealth', 'anomalies'];
