@@ -664,8 +664,8 @@ async function openDetail(code) {
   box.innerHTML = `
     <div>
       <p class="note">${escapeHtml(variation.blurb)}</p>
-      <div id="dt-actions"></div>
       ${answersHtml(data.answers)}
+      <div id="dt-actions"></div>
       ${viewsHtml('dt')}
       <div class="mini-list">
         <div><h4>Recent scans</h4><ul>${scans}</ul></div>
