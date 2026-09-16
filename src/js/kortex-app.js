@@ -79,7 +79,7 @@ function forgetSampleSession() { const s = guestSession(); if (s && s.workspaceI
 /* Demo codes: the three cards on the page. Opening one issues a read-only
    session for the sample workspace and shows ONLY that card's link, so a
    visitor sees exactly what the owner of that card would see. */
-const DEMO_CODES = { 'KX-DEMO-LAKE': 'kx-lakecard', 'KX-DEMO-SHELF': 'kx-shelf', 'KX-DEMO-BAITHAK': 'kx-baithak' };
+const DEMO_CODES = { 'KX-DEMO-LAKE': 'kx-lakecard', 'KX-DEMO-SHELF': 'mum-shop-20', 'KX-DEMO-BAITHAK': 'kx-baithak' };
 function demoCodeOf(raw) { const k = String(raw || '').trim().toUpperCase().replace(/\s+/g, ''); return DEMO_CODES[k] || null; }
 let demoFocus = null;
 /* The session is gone (expired, or the workspace was switched off): show the code entry again, say so, and focus it. */

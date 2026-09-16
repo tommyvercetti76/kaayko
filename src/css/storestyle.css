@@ -691,6 +691,10 @@ Sustainability Alert Modal
   content: ''; display: block; width: min(38%, 220px); height: 1px; margin: 14px auto 0;
   background: linear-gradient(90deg, transparent, var(--color-accent, #a8843c), transparent);
 }
+.store-banner-promo {
+  margin: 12px auto 0; max-width: 34em; font-style: italic; font-size: 1.02rem;
+  color: var(--color-accent, #a8843c);
+}
 .store-banner-link {
   display: inline-block;
   font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif);

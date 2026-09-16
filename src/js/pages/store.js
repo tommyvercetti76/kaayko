@@ -12,6 +12,8 @@ import { setProductTypes } from "/js/productTypes.js";
 import { populateCarousel, setupModalCloseHandlers } from "/js/kaayko_ui.js";
 import { storeOriginalProducts } from "/js/kaaykoFilterModal.js";
 import { esc } from "/js/kit.js";
+import { checkCode, savePromo, savedReward } from "/js/arcade/reward.js";
+import { show as showToast } from "/js/components/Toast.js";
 
 void cartManager;
 
@@ -25,6 +27,22 @@ function renderFailure(message) {
       <button type="button" class="store-back-link store-retry" data-action="retry">Try again</button>
     </div>`;
   carousel.querySelector('[data-action="retry"]').addEventListener("click", () => location.reload());
+}
+
+/**
+ * Check a promo code from the address and keep it if the server honours it.
+ * @returns {Promise<{code:string, percent:number, label:string|null}|null>}
+ */
+async function holdPromo(raw) {
+  const code = String(raw || "").trim().toUpperCase().slice(0, 32);
+  if (!code) return null;
+  const held = savedReward();
+  if (held?.kind === "promo" && held.code === code) return { code, percent: held.percent, label: held.label || null };
+  const res = await checkCode(code);
+  if (!res?.success || res.kind !== "promo" || !res.valid) return null;
+  savePromo({ code, percent: res.percent, scope: res.scope, label: res.label });
+  showToast(`${res.percent}% off is held for your bag.`, { kind: "good" });
+  return { code, percent: res.percent, label: res.label || null };
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -52,6 +70,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const pathSegs = location.pathname.split("/").filter(Boolean);
   const pathSlug = pathSegs[0] === "s" && pathSegs[1] ? decodeURIComponent(pathSegs[1]) : "";
   const storeSlug = params.get("store") || pathSlug;
+  // A maker's card can carry her friends' rate: kaay.store/s/<slug>?promo=CODE.
+  // The server says what the code is worth; this only holds it for the bag.
+  const promoHeld = await holdPromo(params.get("promo"));
 
   if (pid) {
     const match = products.find((p) => p.productID === pid);
@@ -85,6 +106,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         <div class="store-banner-content">
           <h2 class="store-banner-name">${esc(storeName)}</h2>
           <p class="store-banner-count">${storeProducts.length} piece${storeProducts.length !== 1 ? "s" : ""}, printed to order</p>
+          ${promoHeld ? `<p class="store-banner-promo">${esc(promoHeld.percent)}% off for friends is held for your bag. Code ${esc(promoHeld.code)}.</p>` : ""}
           <a href="/" class="store-banner-link">All pieces</a>
         </div>`;
       carousel.parentNode.insertBefore(banner, carousel);

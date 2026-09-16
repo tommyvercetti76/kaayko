@@ -8,7 +8,7 @@
  * catalogue (kaayko-api/functions/api/checkout/pricing.js).
  */
 import { cartManager } from '/js/cartManager.js';
-import { savedReward, clearReward, checkCode, minutesLeft, clientToken } from '/js/arcade/reward.js';
+import { savedReward, clearReward, checkCode, minutesLeft, clientToken, savePromo } from '/js/arcade/reward.js';
 import { esc, money } from '/js/kit.js';
 import { createPaymentIntent, calculateTax as requestTax, updateContact } from '/js/services/storeApi.js';
 import { show as showToast } from '/js/components/Toast.js';
@@ -89,6 +89,7 @@ const REWARD_REFUSALS = {
   EXPIRED:          'That code has expired. They only last an hour.',
   WRONG_OWNER:      'That code was won under a different email.',
   NO_ELIGIBLE_ITEMS:'That code does not cover anything in this bag.',
+  PROMO_INACTIVE:   'That code is no longer on offer.',
   EMPTY_CART:       'Nothing in the bag to discount.',
   LOCKED:           'No discount applies while you are carrying a paste penalty. Beg it off on any product page.',
   VOIDED:           'That code was won before you pasted. Pasting cancelled it.'
@@ -108,6 +109,7 @@ function rewardFieldMarkup() {
       </div>
       <p class="co-reward-note" id="co-reward-note" role="status" aria-live="polite">${
         state.rewardNote ? esc(state.rewardNote)
+        : r?.kind === 'promo' ? `${r.percent}% off${r.label ? ` ${esc(r.label)}` : r.scope === 'cart' ? ' the whole bag' : ' the pieces on that shelf'}. Taken off when you pay.`
         : r ? `${r.percent}% held${r.scope === 'cart' ? ' against the whole bag' : ' against the eligible items'}. ${
             left > 0 ? `Expires in ${left} minute${left === 1 ? '' : 's'}.` : 'Expired.'}`
         : 'Won one on a product page? Put it in. Codes last an hour.'
@@ -354,6 +356,14 @@ function wireRewardField() {
     btn.disabled = false;
 
     if (!res?.success) { note.textContent = 'No such code.'; return; }
+    if (res.kind === 'promo') {
+      if (!res.valid) { note.textContent = res.expired ? 'That code has run out.' : REWARD_REFUSALS.PROMO_INACTIVE; return; }
+      state.reward = { code, percent: res.percent, scope: res.scope, kind: 'promo', label: res.label || null, expiresAt: null };
+      savePromo(state.reward);
+      state.rewardNote = null; state.pi = null; state.step = 'bag';
+      render();
+      return;
+    }
     if (res.expired)   { note.textContent = 'That code has expired. They only last an hour.'; return; }
     if (res.redeemed)  { note.textContent = 'That code has already been used.'; return; }
     if (res.voided)    { note.textContent = 'That code was won before you pasted. Pasting cancelled it.'; return; }

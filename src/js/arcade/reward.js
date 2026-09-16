@@ -72,6 +72,20 @@ export function saveReward(r) {
   } catch (_) { /* private browsing: the code is still on screen to copy */ }
 }
 
+/**
+ * A handed-out promo (a maker's friends' rate, printed on a card). Kept until
+ * the shopper removes it or the server says no; there is no hour on it.
+ * @param {{code:string, percent:number, scope?:string, label?:string|null}} r
+ */
+export function savePromo(r) {
+  try {
+    localStorage.setItem(KEY, JSON.stringify({
+      code: String(r.code).toUpperCase(), percent: r.percent, scope: r.scope || "store",
+      kind: "promo", label: r.label || null, mintedAt: Date.now(), expiresAt: null
+    }));
+  } catch (_) {}
+}
+
 /** The stored code, or null if there is none or it has run out. */
 export function savedReward() {
   try {
