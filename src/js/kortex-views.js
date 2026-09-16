@@ -392,7 +392,7 @@ function variationOf(link) {
   if (link.limits && link.limits.maxClicks) return { name: 'Scan cap with a fallback', blurb: 'After the cap, scans go to the fallback address instead of a dead end. The counter below shows how much is left.' };
   if (link.expiresAt) return { name: 'End date with a fallback', blurb: 'After the date, scans go to the fallback address. Printed flyers never point at a 404.' };
   if (link.utm && Object.keys(link.utm).length) return { name: 'Campaign tags', blurb: 'Every visit arrives tagged, so the destination\'s own analytics know it came from this link.' };
-  return { name: 'Plain dynamic link', blurb: 'A short kaayko.com link behind the QR: re-point it after printing and count every scan.' };
+  return { name: 'Plain dynamic link', blurb: 'A short kaay.link address behind the QR: re-point it after printing and count every scan.' };
 }
   /* ── the plain-language layer, rendered from what the server computed ── */
   const INSIGHT_ORDER = ['qualityScore', 'bestWindow', 'rhythm', 'trend', 'qrSplit', 'deviceMatch', 'missed', 'fallbackUsage', 'repeatPattern', 'newVsReturning', 'channelMix', 'geoDrift', 'utmHealth', 'safetyImpact', 'anomalies', 'campaignLift', 'roi', 'placement', 'replay'];

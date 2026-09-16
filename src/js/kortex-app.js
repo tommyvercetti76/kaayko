@@ -49,6 +49,8 @@ function fmtAgo(iso) {
   return `${Math.round(h / 24)} days ago`;
 }
 function stripScheme(url) { return String(url || '').replace(/^https?:\/\//, ''); }
+/* The apex kaay.link has no certificate yet; www.kaay.link serves the same image. Drop this once the apex mints. */
+function qrSrc(url) { return String(url || '').replace(/^https:\/\/kaay\.link\//, 'https://www.kaay.link/'); }
 /* ── STATIC QR (client-side, nothing leaves the browser) ── */
 function scanTarget(shortUrl) { try { const u = new URL(shortUrl); u.searchParams.set('s', 'qr'); return u.toString(); } catch { return shortUrl; } }
 function buildStaticQr(text) { const qr = qrcode(0, 'M'); qr.addData(text); qr.make(); return qr; }
@@ -645,7 +647,7 @@ async function openDetail(code) {
       </div>
     </div>
     <div class="detail-side">
-      ${link.status === 'held' || link.status === 'blocked' ? '<p class="note">The QR image is available once the link is live.</p>' : `<div class="qr-frame"><img alt="QR code" src="${escapeHtml(link.qrUrl)}"></div>`}
+      ${link.status === 'held' || link.status === 'blocked' ? '<p class="note">The QR image is available once the link is live.</p>' : `<div class="qr-frame"><img alt="QR code" src="${escapeHtml(qrSrc(link.qrUrl))}"></div>`}
       <div class="short-line"><span class="short-url">${escapeHtml(stripScheme(link.shortUrl))}</span><button type="button" class="action-link quiet" id="dt-copy">Copy</button></div>
       <form id="dt-form">
         <div class="field"><label class="field-label" for="dt-title">Name</label><input class="field-input" id="dt-title" maxlength="120" value="${escapeHtml(link.title || '')}"></div>
