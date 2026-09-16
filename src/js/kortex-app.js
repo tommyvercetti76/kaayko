@@ -718,7 +718,7 @@ async function openDetail(code) {
         <div class="field"><label class="field-label" for="dt-tz">Time zone</label><input class="field-input" id="dt-tz" spellcheck="false" value="${escapeHtml((link.schedule && link.schedule.timezone) || browserTz())}"></div>
         <div class="field-row">
           <div class="field"><label class="field-label" for="dt-max">Stop after (scans)</label><input class="field-input" id="dt-max" type="number" min="1" step="1" inputmode="numeric" placeholder="no limit" value="${link.limits && link.limits.maxClicks ? link.limits.maxClicks : ''}"></div>
-          <div class="field"><label class="field-label" for="dt-expires">Ends on (end of day, your time)</label><input class="field-input" id="dt-expires" type="date" value="${escapeHtml(dateInputValue(link.expiresAt))}"></div>
+          <div class="field"><label class="field-label" for="dt-expires">Ends on (end of that day)</label><input class="field-input" id="dt-expires" type="date" value="${escapeHtml(dateInputValue(link.expiresAt))}"></div>
         </div>
         <div class="field"><label class="field-label" for="dt-fallback">After the limit, send people to</label><input class="field-input" id="dt-fallback" type="url" placeholder="leave empty for a plain page" value="${escapeHtml((link.limits && link.limits.fallbackUrl) || '')}"></div>
         <div class="field-row">
