@@ -65,7 +65,7 @@ function qrSvg(qr) { return qr.createSvgTag({ cellSize: 8, margin: 16, scalable:
 /* ── GUEST WORKSPACE STATE ── */
 const GUEST_KEY = 'kortex_guest_session';
 function guestSession() { try { const s = JSON.parse(localStorage.getItem(GUEST_KEY) || 'null'); if (s && s.token && s.exp > Date.now()) return s; } catch {} return null; }
-function saveGuestSession(token, workspace) { localStorage.setItem(GUEST_KEY, JSON.stringify({ token, exp: Date.now() + ((CAPS.sessionHours || 12) - 0.5) * 3600e3, workspaceId: workspace && workspace.id })); }
+function saveGuestSession(token, workspace, demoFocus) { localStorage.setItem(GUEST_KEY, JSON.stringify({ token, exp: Date.now() + (demoFocus ? 1.5 : (CAPS.sessionHours || 12) - 0.5) * 3600e3, workspaceId: workspace && workspace.id, demoFocus: demoFocus || null })); }
 function clearGuestSession() { localStorage.removeItem(GUEST_KEY); }
 /* The sample workspace is read at /kortex/samples only. A session for it, left
    behind by an earlier version of this page, is dropped before anything reads
@@ -73,7 +73,13 @@ function clearGuestSession() { localStorage.removeItem(GUEST_KEY); }
    code?" belongs to real codes. */
 const SAMPLE_WORKSPACE_ID = 'g_demo00';
 function isSampleWorkspace(ws) { return !!ws && (ws.id === SAMPLE_WORKSPACE_ID || ws.demo === true); }
-function forgetSampleSession() { const s = guestSession(); if (s && s.workspaceId === SAMPLE_WORKSPACE_ID) clearGuestSession(); }
+function forgetSampleSession() { const s = guestSession(); if (s && s.workspaceId === SAMPLE_WORKSPACE_ID && !s.demoFocus) clearGuestSession(); }
+/* Demo codes: the three cards on the page. Opening one issues a read-only
+   session for the sample workspace and shows ONLY that card's link, so a
+   visitor sees exactly what the owner of that card would see. */
+const DEMO_CODES = { 'KX-DEMO-LAKE': 'kx-lakecard', 'KX-DEMO-SHELF': 'kx-shelf', 'KX-DEMO-BAITHAK': 'kx-baithak' };
+function demoCodeOf(raw) { const k = String(raw || '').trim().toUpperCase().replace(/\s+/g, ''); return DEMO_CODES[k] || null; }
+let demoFocus = null;
 /* The session is gone (expired, or the workspace was switched off): show the code entry again, say so, and focus it. */
 function sessionEnded() {
   clearGuestSession(); openCode = null;
@@ -119,7 +125,8 @@ const FRIENDLY = {
   INVALID_ACCESS_CODE: 'That access code is not valid. It has 22 letters and numbers after KX.',
   ACCESS_CODE_LOCKED: 'Too many attempts. Try again in about an hour.',
   GUEST_NOT_CONFIGURED: 'Free links are not available right now.',
-  GUEST_SESSION_REQUIRED: 'Enter your access code to continue.'
+  GUEST_SESSION_REQUIRED: 'Enter your access code to continue.',
+  READ_ONLY_DEMO: 'This is a sample card, read-only. Make your own link above and the code you receive can change it.'
 };
 function friendly(data, fallback) { return (data && (FRIENDLY[data.code] || data.error)) || fallback; }
 /* ── WHAT THE SERVER CAN DO RIGHT NOW ──
@@ -478,10 +485,11 @@ $('code-form').addEventListener('submit', async (e) => {
   e.preventDefault(); setAlert('mg-alert');
   const code = $('mg-code').value.trim(); if (!code) return;
   const btn = $('mg-submit'); btn.disabled = true; btn.textContent = 'Checking…';
-  const { ok, data } = await guestApi('/session', { method: 'POST', body: { accessCode: code } });
+  const focus = demoCodeOf(code);
+  const { ok, data } = focus ? await guestApi('/demo') : await guestApi('/session', { method: 'POST', body: { accessCode: code } });
   btn.disabled = false; btn.textContent = 'Open';
   if (!ok) { setAlert('mg-alert', 'error', friendly(data, 'Could not open the workspace.')); return; }
-  saveGuestSession(data.session, data.workspace);
+  saveGuestSession(data.session, data.workspace, focus);
   $('mg-code').value = '';
   await openWorkspaceFromSession(data.revivedLinks);
 });
@@ -503,15 +511,22 @@ async function openWorkspaceFromSession(revived) {
     else { setAlert('mg-alert', 'error', friendly(data, 'Could not reach your workspace right now. Try again in a moment.')); }
     return false;
   }
-  if (data.readOnly || isSampleWorkspace(data.workspace)) { clearGuestSession(); renderWorkspace(null); return false; }
-  wsLinks = data.links; wsMeta = data.workspace; renderWorkspace(data.workspace, revived);
+  const sess = guestSession() || {};
+  demoFocus = sess.demoFocus || null;
+  if ((data.readOnly || isSampleWorkspace(data.workspace)) && !demoFocus) { clearGuestSession(); renderWorkspace(null); return false; }
+  wsLinks = demoFocus ? data.links.filter(l => l.code === demoFocus) : data.links;
+  wsMeta = data.workspace; renderWorkspace(data.workspace, revived);
+  if (demoFocus && wsLinks.length) { await openDetail(demoFocus); const d = $('detail'); if (d) d.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   return true;
 }
 function renderWorkspace(ws, revived) {
   $('manage-enter').hidden = !!ws; $('workspace').hidden = !ws;
   if (!ws) return;
-  if (wsLinks.length) loadOverview(ws); else $('ws-overview').hidden = true;
-  $('ws-meta').innerHTML = `<b>${ws.links}</b> of ${ws.linkLimit} free links · live until <b>${fmtDate(ws.expiresAt)}</b> · ${ws.hasEmail ? `recovery email <b>${escapeHtml(ws.email)}</b>` : 'no email on file'}${revived ? ` · <b>${revived} link${revived === 1 ? '' : 's'} revived</b>` : ''}`;
+  if (wsLinks.length && !demoFocus) loadOverview(ws); else $('ws-overview').hidden = true;
+  $('ws-meta').innerHTML = demoFocus
+    ? `<b>Sample card</b> · read-only · scans simulated to a realistic rhythm, refreshed weekly · your own code opens your own`
+    : `<b>${ws.links}</b> of ${ws.linkLimit} free links · live until <b>${fmtDate(ws.expiresAt)}</b> · ${ws.hasEmail ? `recovery email <b>${escapeHtml(ws.email)}</b>` : 'no email on file'}${revived ? ` · <b>${revived} link${revived === 1 ? '' : 's'} revived</b>` : ''}`;
+  ['ws-email', 'ws-email-dot', 'ws-rotate', 'ws-export'].forEach(id => { const el = $(id); if (el && demoFocus) el.hidden = true; });
   $('ws-lifetime').textContent = `Free links stay live for ${Math.round(ws.lifetimeDays / 30)} months and renew every time you open them with your code. Scan detail covers the last ${ws.analyticsDays} days; lifetime totals never reset.`;
   const kc = knownCode();
   if (kc && $('ws-code-card').hidden) showWsCode(kc, 'Your access code', 'Kept in this tab only. Copy it or save the key card if you have not already.', false);
@@ -752,7 +767,15 @@ async function openDetail(code) {
 }
 
 $('ws-add').addEventListener('click', () => { setMode('dynamic'); resetMaker(); $('make').scrollIntoView({ behavior: 'smooth' }); });
-$('ws-forget').addEventListener('click', () => { clearGuestSession(); forgetCode(); openCode = null; $('detail').hidden = true; renderWorkspace(null); });
+$('ws-forget').addEventListener('click', () => { clearGuestSession(); forgetCode(); openCode = null; demoFocus = null; $('detail').hidden = true; renderWorkspace(null); });
+/* A card's underlined verb hands the visitor its demo code: prefilled, one press of Open away. */
+document.querySelectorAll('[data-demo-code]').forEach(a => a.addEventListener('click', (e) => {
+  e.preventDefault();
+  clearGuestSession(); demoFocus = null; openCode = null; $('detail').hidden = true; renderWorkspace(null);
+  $('mg-code').value = a.dataset.demoCode; setAlert('mg-alert');
+  location.hash = '#manage';
+  setTimeout(() => { $('mg-submit').focus(); $('mg-submit').classList.add('prefill-hl'); setTimeout(() => $('mg-submit').classList.remove('prefill-hl'), 3600); }, 500);
+}));
 $('ws-email').addEventListener('click', () => { $('ws-email-form').hidden = !$('ws-email-form').hidden; if (!$('ws-email-form').hidden) $('ws-email-input').focus(); });
 $('ws-email-form').addEventListener('submit', async (e) => {
   e.preventDefault();
