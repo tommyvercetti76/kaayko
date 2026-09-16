@@ -73,7 +73,7 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 
-  <link rel="stylesheet" href="/css/kortex-views.css?v=20260916d">
+  <link rel="stylesheet" href="/css/kortex-views.css?v=20260916e">
   <style>
 /* ================================================================
    KORTEX by KAAYKO — kaay.link  (v2, 15 Sep 2026)
@@ -445,7 +445,20 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
   *,*::before,*::after { transition-duration:.01ms!important; animation-duration:.01ms!important; animation-iteration-count:1!important }
   .repoint b { transition:none }
 }
-  </style>
+  
+/* ── Legibility (16 Sep 2026): functional text is upright, larger and higher-contrast; the display face stays for headlines. ── */
+:root { --muted:rgba(237,232,223,.88); --dim:rgba(237,232,223,.78); --faint:rgba(237,232,223,.64) }
+:focus-visible { outline:2px solid var(--gold-bright); outline-offset:3px }
+.field-label { font-size:.92rem; font-style:normal; letter-spacing:.08em }
+.field-input, .field-select { font-size:1.08rem; letter-spacing:.02em }
+.field-input::placeholder { font-style:normal }
+.note, .ktap, .plan-foot, .section-lead, .link-sub, .mini-list p, .mini-list li, .ws-meta { font-size:1rem; font-style:normal; line-height:1.55 }
+.check { font-size:1rem; font-style:normal }
+.plan li { font-size:1rem; font-style:normal }
+.link-count small { font-size:.85rem }
+.action-link { font-size:.9rem }
+@media (max-width:640px) { .field-input, .field-select { font-size:1.06rem } }
+</style>
 </head>
 
 <body>
@@ -680,7 +693,7 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
       <p class="ktap">Tap the card</p>
     </article>
   </div>
-  <p class="everything reveal"><b>Every code, free:</b> device routing &middot; night and day destinations &middot; caps, end dates, fallback &middot; one question at the scan &middot; safety checks &middot; scans by day, hour, device, country &middot; findings &middot; CSV &middot; read-only reports</p>
+  <p class="everything reveal"><b>Every code, free:</b> device routing &middot; night and day destinations &middot; caps, end dates, fallback &middot; one question at the scan &middot; a preview of what the code will do &middot; safety checks &middot; scans by day, hour, device, country &middot; findings &middot; CSV &middot; read-only reports</p>
 </section>
 
 <!-- ═══ MANAGE ═══ -->
@@ -714,6 +727,7 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
     <div id="workspace" hidden>
       <div class="ws-head">
         <div class="ws-meta" id="ws-meta"></div>
+        <p class="note ws-upgrade">Need more than 25 codes, a year of daily totals, or a team? <a href="https://kaayko.com/kortex/signin?plan=pro&amp;claim=1" style="color:var(--gold)">Upgrade to Pro</a>, $29 a month. Your links and your code come with you.</p>
         <div class="actions">
           <button type="button" class="action-link quiet" id="ws-add">Add a link</button>
           <span class="action-dot" aria-hidden="true">&middot;</span>
@@ -724,6 +738,7 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
           <button type="button" class="action-link quiet" id="ws-export">Export CSV</button>
           <span class="action-dot" aria-hidden="true">&middot;</span>
           <button type="button" class="action-link quiet" id="ws-forget">Sign out on this device</button>
+          <button type="button" class="action-link quiet" id="ws-delete">Delete this workspace</button>
         </div>
         <div class="code-card compact" id="ws-code-card" hidden>
           <div class="code-label" id="ws-code-label">Your access code</div>
@@ -757,7 +772,7 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
 <section class="section" id="pricing" aria-label="Pricing">
   <h2 class="section-label reveal">pricing</h2>
   <p class="section-title reveal">Free needs nothing from you</p>
-  <p class="section-lead reveal">Teams pay for volume, history and the API. No card is taken online yet: Pro and Business are set up with you, by email, and billed the way you agree.</p>
+  <p class="section-lead reveal">Teams pay for volume, history and the API. Pay by card and the plan is on at once. Cancel from the console and the workspace drops back to Free at the end of the month.</p>
   <div class="plans reveal">
     <div class="plan">
       <div class="plan-name">Free</div>
@@ -769,7 +784,7 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
         <li>Scans for the last 7 days, lifetime totals</li>
         <li>Live for a year, renews with your code</li>
         <li>iPhone and Android routing, night and day, caps</li>
-        <li>A small Kortex badge on the redirect</li>
+        <li>A brief &ldquo;Powered by Kortex&rdquo; page before the redirect</li>
         <li>Help within 3 business days</li>
       </ul>
       <a href="#mk-url" class="btn-submit">Make a QR</a>
@@ -780,13 +795,13 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
       <p class="plan-for">Teams running campaigns every month.</p>
       <ul class="plan-list">
         <li>500 dynamic links, 25 campaigns</li>
-        <li>30 days of scan detail per link</li>
-        <li>No badge on the redirect</li>
+        <li>30 days of scan detail per link, a year of daily totals</li>
+        <li>No Kortex page before the redirect</li>
         <li>API keys and signed webhooks</li>
         <li>Sign-in for your team</li>
         <li>Help within 1 business day</li>
       </ul>
-      <button type="button" class="action-link" data-request="Pro">Request access</button>
+      <a class="action-link" href="https://kaayko.com/kortex/signin?plan=pro&amp;claim=1">Upgrade to Pro</a>
     </div>
     <div class="plan">
       <div class="plan-name">Business</div>
@@ -799,7 +814,7 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
         <li>Onboarding with a person</li>
         <li>Help within 4 hours</li>
       </ul>
-      <button type="button" class="action-link" data-request="Business">Request access</button>
+      <a class="action-link" href="https://kaayko.com/kortex/signin?plan=business&amp;claim=1">Upgrade to Business</a>
     </div>
   </div>
   <p class="note plan-foot reveal">Prices in USD. Universities and event companies with a security review: <a href="mailto:kortex@kaayko.com?subject=Kortex%20Enterprise" style="color:var(--gold)">talk to us</a>.</p>
@@ -855,6 +870,7 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
     <a href="https://kaayko.com/privacy">Privacy</a>
     <a href="https://kaayko.com/kortex/support">Support</a>
     <a href="https://kaayko.com/kortex/report">Report a link</a>
+    <a href="https://kaayko.com/kortex/security">Security &amp; status</a>
     <a href="https://kaayko.com">kaayko.com</a>
   </nav>
   <p>&copy; <span id="year">2026</span> KAAYKO. Kortex is a KAAYKO product.</p>
@@ -863,8 +879,8 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
 <!-- ═══ SCRIPTS ═══ -->
 <script src="/js/vendor/qrcode-generator.js"></script>
 <script src="/js/kortex-utm.js"></script>
-<script src="/js/kortex-views.js?v=20260916d"></script>
-<script src="/js/kortex-app.js?v=20260916d"></script>
+<script src="/js/kortex-views.js?v=20260916e"></script>
+<script src="/js/kortex-app.js?v=20260916e"></script>
 <script>
 /* Page-only: the poster's changing destination, this week's sample numbers, the bar, reveals. */
 (function () {

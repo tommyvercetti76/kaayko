@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security, data and status — Kortex by KAAYKO</title>
+  <meta name="description" content="What Kortex stores about a scan, how long, where, who processes it, what you can delete yourself, how to report a problem, and whether the redirects are up right now.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.run.app https://*.cloudfunctions.net; base-uri 'self'; form-action 'self'">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <meta name="theme-color" content="#060b1e">
+  <style>
+:root { --fg:#ede8df; --muted:rgba(237,232,223,.88); --dim:rgba(237,232,223,.78); --gold:#b5935a; --gold-bright:#d9bd7b; --gold-line:rgba(181,147,90,.28); --ok:#22c55e; --err:#ef4444; --serif:'Cormorant Garamond',Georgia,serif; --display:'Bebas Neue',Impact,sans-serif }
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box }
+html,body { min-height:100%; overflow-x:clip }
+body { font-family:var(--serif); font-weight:500; font-size:1.1rem; color:var(--fg); line-height:1.6; -webkit-font-smoothing:antialiased; background:linear-gradient(180deg,#060b1e 0%,#0a1233 45%,#0a1129 70%,#080808 100%) fixed; padding:24px 16px 64px }
+:focus-visible { outline:2px solid var(--gold-bright); outline-offset:3px }
+a { color:var(--gold) }
+main { max-width:860px; margin:0 auto }
+.brand { display:flex; align-items:baseline; gap:10px; margin-bottom:28px }
+.brand b { font-family:var(--display); font-weight:400; font-size:1.9rem; letter-spacing:.14em; line-height:1 } .brand span { font-style:italic; font-size:.8rem; letter-spacing:.26em; text-transform:uppercase; color:var(--gold) }
+.brand a { color:var(--fg); text-decoration:none }
+h1 { font-family:var(--display); font-weight:400; font-size:2.4rem; letter-spacing:.05em; text-transform:uppercase; margin-bottom:6px }
+.lead { color:var(--muted); font-size:1.15rem; max-width:44rem; margin-bottom:28px }
+h2 { font-family:var(--display); font-weight:400; font-size:1.35rem; letter-spacing:.08em; text-transform:uppercase; color:var(--gold-bright); margin:36px 0 10px; padding-top:18px; border-top:1px solid var(--gold-line) }
+p, li { color:var(--muted) } ul { padding-left:1.2em } li { margin:4px 0 }
+table { width:100%; border-collapse:collapse; margin:10px 0 6px } th, td { text-align:left; padding:9px 8px; border-bottom:1px solid var(--gold-line); vertical-align:top } th { font-style:italic; font-weight:500; color:var(--gold); letter-spacing:.08em; text-transform:uppercase; font-size:.85rem }
+.status { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin:12px 0 }
+.tile { padding:14px 16px; border:1px solid var(--gold-line); background:rgba(5,7,14,.55) } .tile b { display:block; font-size:1.5rem; font-family:var(--display); font-weight:400; letter-spacing:.06em } .tile span { font-size:.95rem; color:var(--dim) }
+.dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:8px; vertical-align:middle } .dot.ok { background:var(--ok) } .dot.bad { background:var(--err) } .dot.unknown { background:var(--gold) }
+.foot { margin-top:40px; padding-top:14px; border-top:1px solid var(--gold-line); color:var(--dim); font-size:1rem }
+code { font-family:ui-monospace,Menlo,monospace; font-size:.92em; color:var(--gold-bright) }
+@media (max-width:640px) { body { font-size:1.05rem } h1 { font-size:2rem } th, td { padding:7px 4px } }
+  </style>
+</head>
+<body>
+<main>
+  <div class="brand"><a href="https://kaayko.com/kortex"><b>KORTEX</b></a><span>by KAAYKO</span></div>
+  <h1>Security, data and status</h1>
+  <p class="lead">What a scan leaves behind, how long it stays, where it lives, who else touches it, what you can delete yourself, and whether the redirects are up right now. Everything on this page describes what the running system does; nothing here is a promise we cannot show.</p>
+
+  <h2 id="status">Status</h2>
+  <p>A probe fetches a sample code on kaay.link every fifteen minutes, once the way a phone does and once the way a script does, then the QR image and the API. The last result is below.</p>
+  <div class="status" id="status-tiles"><div class="tile"><b>…</b><span>Loading the last probe</span></div></div>
+  <p id="status-line">Region: Google Cloud <code>us-central1</code>. Hosting and the redirect function run on Firebase.</p>
+
+  <h2>What a scan stores</h2>
+  <table>
+    <tr><th>Kept</th><th>What it is</th><th>For how long</th></tr>
+    <tr><td>Scan record</td><td>Time, device type, operating system and browser family, country, whether it came from a QR or a tap, which destination was chosen, and a keyed hash that tells repeat visitors from new ones. Never the address, never the raw user agent, never the full referrer.</td><td>30 days, deleted by a database-level expiry on every record.</td></tr>
+    <tr><td>Daily totals</td><td>Counts per day per code: scans, delivered, lost, QR versus tap, device and country totals. No visitor keys.</td><td>The life of the link.</td></tr>
+    <tr><td>Answers</td><td>If a code asks a question: the choice, the party size, the time, a hash of the client so a second answer replaces the first. No name, no address.</td><td>400 days.</td></tr>
+    <tr><td>Access code</td><td>A salted hash. We cannot read it back or re-send it.</td><td>While the workspace exists.</td></tr>
+    <tr><td>Email</td><td>Only if you attach one: a salted hash plus the address, for delivery. Delivery is not switched on yet, so nothing is sent.</td><td>While the workspace exists.</td></tr>
+    <tr><td>Audit trail</td><td>Who changed a link and when: old destination, new destination, actor.</td><td>While the workspace exists.</td></tr>
+  </table>
+
+  <h2>Who else processes it</h2>
+  <table>
+    <tr><th>Processor</th><th>What for</th><th>Where</th></tr>
+    <tr><td>Google Cloud (Firebase)</td><td>Hosting, the redirect and API functions, the database, secrets.</td><td><code>us-central1</code>, United States</td></tr>
+    <tr><td>Stripe</td><td>Card payments for paid plans. We never see the card number.</td><td>United States and the European Union</td></tr>
+    <tr><td>Zoho Mail</td><td>Outbound email (access-code delivery, receipts), once delivery is switched on.</td><td>United States and India</td></tr>
+    <tr><td>Google Fonts</td><td>The two typefaces on these pages.</td><td>Global</td></tr>
+  </table>
+  <p>No advertising pixels, no third-party analytics on kaay.link or kaayko.com/kortex. We do not sell data. A data processing agreement for organisations is available on request; write to the address at the foot of this page.</p>
+
+  <h2>What you can do yourself</h2>
+  <ul>
+    <li><b>Export</b> a link or the whole workspace as CSV from the page.</li>
+    <li><b>Delete</b> a link, or the whole workspace with every scan and answer, from the page. Deletion is immediate and cannot be undone; printed codes stop resolving.</li>
+    <li><b>Rotate</b> the access code, or revoke a shared read-only report, at any time.</li>
+    <li><b>Pause</b> a code so scans see a paused page instead of the destination.</li>
+  </ul>
+
+  <h2>How the redirect is protected</h2>
+  <ul>
+    <li>Every destination is screened on save: private and internal addresses are refused, known-bad hosts are refused, and an unknown domain on a brand-new workspace is held for a person to look at before it goes live. Screening is a check, not a guarantee.</li>
+    <li>Anyone can report a link. A held or blocked link shows a review page with an appeal route, never the destination.</li>
+    <li>Automated clients (uptime monitors, link checkers, privacy scanners) are sent on to the destination without being counted; headless browsers are refused.</li>
+    <li>Access codes are checked with a fail-closed per-address limit, and every write is recorded in the audit trail.</li>
+    <li>Paid webhooks are signed with HMAC-SHA256 so a receiver can verify the sender.</li>
+  </ul>
+
+  <h2>Reporting a security problem</h2>
+  <p>Write to <a href="mailto:rohan@kaayko.com?subject=Kortex%20security">rohan@kaayko.com</a> with the subject <i>Kortex security</i>. You will get a human reply, and we will not pursue anyone who reports in good faith and does not access other people's data. Please do not run automated scanners against live redirects; they are counted as abuse.</p>
+
+  <h2>Accessibility</h2>
+  <p>The pages are built to WCAG 2.1 AA: keyboard reachable with visible focus, form controls with labels, colour never the only signal, text that scales. Functional text on the dashboard is upright and at least 16 pixels. If something is not usable for you, tell us at the address above and we will fix it.</p>
+
+  <h2>Cookies and local storage</h2>
+  <p>No cookies. The page keeps your session token, your view preferences and an unsent draft in your browser's local storage; nothing there is read by a third party. Clearing site data signs you out on that device; your access code still opens the workspace.</p>
+
+  <p class="foot">Kortex is operated by Kaayko. Terms: <a href="https://kaayko.com/legal/kortex-terms">kaayko.com/legal/kortex-terms</a>. Support: <a href="https://kaayko.com/kortex/support">kaayko.com/kortex/support</a>. Contact: <a href="mailto:rohan@kaayko.com">rohan@kaayko.com</a>.</p>
+</main>
+<script>
+(async () => {
+  const api = 'https://api-vwcc5j4qda-uc.a.run.app';
+  const tiles = document.getElementById('status-tiles'), line = document.getElementById('status-line');
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  try {
+    const r = await fetch(api + '/kortex/guest/status', { headers: { 'Accept': 'application/json', 'Accept-Language': navigator.language || 'en' } });
+    const d = await r.json();
+    if (!d.known) { tiles.innerHTML = '<div class="tile"><b>—</b><span>No probe has run yet.</span></div>'; return; }
+    const names = { phone: 'Redirect, as a phone', script: 'Redirect, as a script', qr: 'QR image', api: 'API health' };
+    tiles.innerHTML = d.checks.map(c => `<div class="tile"><b><span class="dot ${c.ok ? 'ok' : 'bad'}"></span>${c.ok ? 'Up' : 'Down'}</b><span>${esc(names[c.name] || c.name)} · ${c.status || 'no reply'} · ${c.ms} ms</span></div>`).join('')
+      + `<div class="tile"><b>${d.last24h.ratio == null ? '—' : Math.round(d.last24h.ratio * 100) + '%'}</b><span>Probes passed in the last 24 hours (${d.last24h.ok} of ${d.last24h.runs})</span></div>`;
+    line.textContent = `Last probe ${new Date(d.atMs).toLocaleString()} · region ${d.region} · hosting and the redirect function run on Firebase.`;
+  } catch (e) {
+    tiles.innerHTML = '<div class="tile"><b><span class="dot unknown"></span>Unknown</b><span>The status endpoint did not answer from this browser.</span></div>';
+  }
+})();
+</script>
+</body>
+</html>

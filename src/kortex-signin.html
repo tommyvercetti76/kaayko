@@ -45,7 +45,9 @@ h1 { font-family:var(--display); font-weight:400; font-size:1.5rem; letter-spaci
 <main class="card">
   <div class="brand"><b>KORTEX</b><span>by KAAYKO</span></div>
   <h1>Sign in</h1>
-  <p class="sub">Admin and team accounts. Free links never sign in: enter your access code at <a href="https://kaay.link/#manage">kaay.link</a>.</p>
+  <p class="sub" id="sub-signin">Admin and team accounts. Free links never sign in: enter your access code at <a href="https://kaay.link/#manage">kaay.link</a>.</p>
+  <p class="sub" id="sub-create" hidden>An account turns a free workspace into a paid one and gives your team a sign-in. Your links and your code come with you.</p>
+  <p class="alert success show" id="plan-line" hidden></p>
   <div id="login">
     <span class="env-badge" id="env-badge">Loading&hellip;</span>
     <div id="alert" class="alert" role="alert"></div>
@@ -53,9 +55,11 @@ h1 { font-family:var(--display); font-weight:400; font-size:1.5rem; letter-spaci
     <form id="login-form">
       <div class="field"><label class="field-label" for="email">Email</label><input class="field-input" type="email" id="email" required autocomplete="email" placeholder="you@company.com"></div>
       <div class="field"><label class="field-label" for="password">Password</label><input class="field-input" type="password" id="password" required autocomplete="current-password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"></div>
+      <div class="field" id="claim-group" hidden><label class="field-label" for="claim-code">Access code of your free workspace <span style="color:var(--dim)">(optional)</span></label><input class="field-input" type="text" id="claim-code" autocomplete="off" spellcheck="false" placeholder="KX-XXXXXX-XXXX-XXXX-XXXX-XXXX"></div>
+      <div class="field" id="org-group" hidden><label class="field-label" for="org-name">Workspace name</label><input class="field-input" type="text" id="org-name" maxlength="80" placeholder="Mom's Shop"></div>
       <div class="field" id="tenant-selection-group" style="display:none"><label class="field-label" for="tenant">Tenant</label><select class="field-select" id="tenant"><option value="">Loading&hellip;</option></select></div>
       <button type="submit" id="login-btn" class="btn-submit">Sign In</button>
-      <div class="login-foot"><a href="#" id="forgot-password-link">Forgot password?</a></div>
+      <div class="login-foot"><a href="#" id="forgot-password-link">Forgot password?</a> &middot; <a href="#" id="mode-toggle">New here? Create an account</a></div>
     </form>
   </div>
   <p class="foot"><a href="https://kaay.link/">kaay.link</a> &middot; <a href="https://kaayko.com">kaayko.com</a></p>
@@ -74,6 +78,6 @@ const CONFIG = {
 const $ = (id) => document.getElementById(id);
 function escapeHtml(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
 </script>
-<script src="/js/kortex-login.js?v=20260915"></script>
+<script src="/js/kortex-login.js?v=20260916"></script>
 </body>
 </html>

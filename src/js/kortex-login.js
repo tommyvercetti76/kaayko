@@ -29,9 +29,67 @@ $('forgot-password-link').addEventListener('click', async (e) => {
 /* ── LOGIN STATE MACHINE (admin + tenant accounts; unchanged) ── */
 let loginState = { user: null, idToken: null, role: null, tenants: [], step: 'credentials' };
 
+/* ── CREATE ACCOUNT (16 Sep 2026): a free workspace owner makes an account,
+   claims the workspace with its access code (or starts a new one), and lands
+   in the console; with ?plan=pro|business, on the billing view, ready to pay. */
+const PARAMS = new URLSearchParams(location.search);
+const PLAN = ['pro', 'business'].includes(PARAMS.get('plan')) ? PARAMS.get('plan') : null;
+let mode = PARAMS.get('claim') === '1' || PLAN ? 'create' : 'signin';
+function applyMode() {
+  const create = mode === 'create';
+  $('sub-signin').hidden = create; $('sub-create').hidden = !create;
+  $('claim-group').hidden = !create; $('org-group').hidden = !create;
+  $('login-btn').textContent = create ? 'Create account' : 'Sign In';
+  $('mode-toggle').textContent = create ? 'Have an account? Sign in' : 'New here? Create an account';
+  $('password').autocomplete = create ? 'new-password' : 'current-password';
+  const pl = $('plan-line');
+  if (PLAN) { pl.hidden = false; pl.textContent = `${PLAN === 'pro' ? 'Pro, $29 a month' : 'Business, $99 a month'}: ${create ? 'create your account, then pay by card.' : 'sign in, then pay by card.'}`; }
+}
+$('mode-toggle').addEventListener('click', (e) => { e.preventDefault(); mode = mode === 'create' ? 'signin' : 'create'; hideAlert(); applyMode(); });
+applyMode();
+
+function consoleUrl() { return PLAN ? `/admin/kortex?plan=${PLAN}#/billing` : '/admin/kortex'; }
+
+async function handleCreateStep() {
+  const email = $('email').value.trim(), password = $('password').value;
+  const accessCode = $('claim-code').value.trim(), name = $('org-name').value.trim();
+  const loginBtn = $('login-btn'), loading = $('loading'), form = $('login-form');
+  if (password.length < 8) { showAlert('error', 'Use a password of at least 8 characters.'); return; }
+  if (!accessCode && !name) { showAlert('error', 'Enter the access code of your free workspace, or a name for a new one.'); return; }
+  try {
+    loginBtn.disabled = true; form.style.display = 'none'; loading.classList.add('show'); hideAlert();
+    let user;
+    try { user = (await auth.createUserWithEmailAndPassword(email, password)).user; }
+    catch (err) {
+      if (err.code !== 'auth/email-already-in-use') throw err;
+      user = (await auth.signInWithEmailAndPassword(email, password)).user;   // same person, second visit
+    }
+    const idToken = await user.getIdToken();
+    const path = accessCode ? '/kortex/guest/claim' : '/kortex/tenants/provision';
+    const body = accessCode ? { accessCode, name: name || undefined } : { organization: name };
+    const res = await fetch(`${CONFIG.API_BASE}${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` }, body: JSON.stringify(body) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok && data.code !== 'ALREADY_HAS_TENANT' && data.code !== 'ALREADY_PROVISIONED') throw new Error(data.error || 'Could not set up the workspace.');
+    try { await user.sendEmailVerification(); } catch (_) { /* optional */ }
+    const fresh = await user.getIdToken(true);                     // the role claim is on it now
+    const tenantId = (data.tenant && data.tenant.id) || (data.profile && data.profile.tenantId) || null;
+    localStorage.setItem('kaayko_auth_token', fresh);
+    localStorage.setItem('kaayko_user', JSON.stringify({ uid: user.uid, email: user.email, displayName: user.email.split('@')[0], role: 'admin', emailVerified: user.emailVerified, requireEmailVerification: true, tenantId, tenantName: (data.tenant && data.tenant.name) || name || tenantId }));
+    if (tenantId) localStorage.setItem('kaayko_tenant_id', tenantId);
+    localStorage.setItem('kaayko_environment', CONFIG.ENVIRONMENT);
+    showAlert('success', accessCode ? 'Workspace claimed. Opening the console…' : 'Workspace made. Opening the console…');
+    setTimeout(() => { window.location.href = consoleUrl(); }, 800);
+  } catch (error) {
+    const msgs = { 'auth/invalid-email': 'That email does not look right.', 'auth/weak-password': 'Use a stronger password.', 'auth/wrong-password': 'That email already has an account and the password did not match. Sign in instead.', 'auth/too-many-requests': 'Too many attempts. Try later.' };
+    showAlert('error', msgs[error.code] || error.message || 'Could not create the account.');
+    loginBtn.disabled = false; form.style.display = ''; loading.classList.remove('show');
+  }
+}
+
 $('login-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  if (loginState.step === 'credentials') await handleCredentialsStep();
+  if (mode === 'create' && loginState.step === 'credentials') await handleCreateStep();
+  else if (loginState.step === 'credentials') await handleCredentialsStep();
   else if (loginState.step === 'tenant-selection') await handleTenantSelectionStep();
 });
 
@@ -110,7 +168,7 @@ async function handleTenantSelectionStep() {
     localStorage.setItem('kaayko_tenant_id', tenantId);
     localStorage.setItem('kaayko_environment', CONFIG.ENVIRONMENT);
     showAlert('success', `Redirecting to ${tenant?.name || tenantId}…`);
-    setTimeout(() => { window.location.href = '/admin/kortex'; }, 800);
+    setTimeout(() => { window.location.href = consoleUrl(); }, 800);
     setTimeout(() => {
       if ($('loading').classList.contains('show')) {
         showAlert('error', 'Redirect timed out.');

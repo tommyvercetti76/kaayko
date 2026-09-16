@@ -671,10 +671,26 @@ async function openDetail(code) {
         <div><h4>Recent scans</h4><ul>${scans}</ul></div>
         <div><h4>Status</h4><p class="note">${stateLine}</p></div>
       </div>
+      <div class="mini-list">
+        <div>
+          <h4>Try it before you print</h4>
+          <div class="field-row">
+            <div class="field"><label class="field-label" for="dt-sim-platform">Phone</label><select class="field-select" id="dt-sim-platform"><option value="ios">iPhone</option><option value="android">Android</option><option value="web">Computer</option></select></div>
+            <div class="field"><label class="field-label" for="dt-sim-at">Moment</label><input class="field-input" id="dt-sim-at" type="datetime-local" value="${escapeHtml(new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16))}"></div>
+          </div>
+          <button type="button" class="action-link" id="dt-sim-go">Show me where it goes</button>
+          <div id="dt-sim-out" class="note" aria-live="polite"></div>
+        </div>
+      </div>
     </div>
     <div class="detail-side">
       ${link.status === 'held' || link.status === 'blocked' ? '<p class="note">The QR image is available once the link is live.</p>' : `<div class="qr-frame"><img alt="QR code" src="${escapeHtml(qrSrc(link.qrUrl))}"></div>`}
       <div class="short-line"><span class="short-url">${escapeHtml(stripScheme(link.shortUrl))}</span><button type="button" class="action-link quiet" id="dt-copy">Copy</button></div>
+      ${link.status === 'held' || link.status === 'blocked' ? '' : `<div class="field-row qr-colours">
+        <div class="field"><label class="field-label" for="dt-ink">Ink</label><input class="field-input" id="dt-ink" type="color" value="#000000"></div>
+        <div class="field"><label class="field-label" for="dt-paper">Paper</label><input class="field-input" id="dt-paper" type="color" value="#ffffff"></div>
+      </div>
+      <p class="note"><a class="action-link quiet" id="dt-png" href="${escapeHtml(qrSrc(link.qrUrl))}?size=1024" target="_blank" rel="noopener">Open the PNG at print size</a> <a class="action-link quiet" id="dt-svg" href="${escapeHtml(qrSrc(link.qrUrl).replace(/\.png$/, '.svg'))}" target="_blank" rel="noopener">SVG</a> <span id="dt-colour-note">Keep the ink dark and the paper light, or phones struggle.</span></p>`}
       <form id="dt-form">
         <div class="field"><label class="field-label" for="dt-title">Name</label><input class="field-input" id="dt-title" maxlength="120" value="${escapeHtml(link.title || '')}"></div>
         <div class="field"><label class="field-label" for="dt-url">Points to</label><input class="field-input" id="dt-url" type="url" value="${escapeHtml((link.destinations && link.destinations.web) || '')}"></div>
@@ -794,6 +810,27 @@ async function openDetail(code) {
     setStatus('dt-status', noted ? 'Saved. Every scan now goes to the new address.' : 'Saved, but the change could not be recorded as a checkpoint.', noted ? 'ok' : 'err');
   });
   $('dt-ask-on').addEventListener('change', () => { $('dt-ask-fields').hidden = !$('dt-ask-on').checked; });
+  const simOut = $('dt-sim-out');
+  $('dt-sim-go').addEventListener('click', async () => {
+    const at = $('dt-sim-at').value ? new Date($('dt-sim-at').value).getTime() : Date.now();
+    simOut.textContent = 'Checking…';
+    const { ok: k, data: d } = await guestApi(`/links/${encodeURIComponent(code)}/preview?platform=${encodeURIComponent($('dt-sim-platform').value)}&at=${at}`);
+    if (!k) { simOut.textContent = friendly(d, 'Could not preview.'); return; }
+    const p = d.preview;
+    const outcome = { delivered: 'Goes to', fallback: 'Over the limit, so it goes to the backup', capped: 'Over the limit and no backup: the visitor sees a closed page', paused: 'Paused: the visitor sees a paused page', held: 'Waiting for review: the visitor sees a review page', blocked: 'Blocked by the safety check', workspace_off: 'The workspace is switched off' }[p.outcome] || p.outcome;
+    const why = p.steps.filter(s => s.hit).map(s => s.why).join(' ') || (p.steps[p.steps.length - 1] || {}).why || '';
+    simOut.innerHTML = `<b>${escapeHtml(outcome)}${p.destination ? ':' : '.'}</b> ${p.destination ? `<a href="${escapeHtml(p.destination)}" target="_blank" rel="noopener" style="color:var(--gold)">${escapeHtml(stripScheme(p.destination))}</a>` : ''}<br>${escapeHtml(why)}${p.timeZone ? ` Clock: ${escapeHtml(p.timeZone)}.` : ''}`;
+  });
+  const recolour = () => {
+    const ink = $('dt-ink'), paper = $('dt-paper'); if (!ink || !paper) return;
+    const q = `?fg=${encodeURIComponent(ink.value.slice(1))}&bg=${encodeURIComponent(paper.value.slice(1))}`;
+    const img = document.querySelector('.qr-frame img'); if (img) img.src = `${qrSrc(link.qrUrl)}${q}`;
+    $('dt-png').href = `${qrSrc(link.qrUrl)}${q}&size=1024`;
+    $('dt-svg').href = `${qrSrc(link.qrUrl).replace(/\.png$/, '.svg')}${q}`;
+    const lum = (h) => { const n = parseInt(h.slice(1), 16); return 0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255); };
+    $('dt-colour-note').textContent = lum(paper.value) - lum(ink.value) < 110 ? 'Too little contrast: phones will struggle with this pair.' : 'Keep the ink dark and the paper light, or phones struggle.';
+  };
+  ['dt-ink', 'dt-paper'].forEach(id => { const el = $(id); if (el) el.addEventListener('input', recolour); });
   $('dt-toggle').addEventListener('click', async () => {
     const { ok: k, data: d } = await guestApi(`/links/${encodeURIComponent(code)}`, { method: 'PATCH', body: { enabled: !link.enabled } });
     if (!k) { setStatus('dt-status', friendly(d, 'Could not update.'), 'err'); return; }
@@ -810,6 +847,14 @@ async function openDetail(code) {
 }
 
 $('ws-add').addEventListener('click', () => { setMode('dynamic'); resetMaker(); $('make').scrollIntoView({ behavior: 'smooth' }); });
+$('ws-delete').addEventListener('click', async () => {
+  const code = prompt('Delete this workspace? Every link, every scan and every answer goes, and anything printed with these codes stops working. Type the access code to confirm.');
+  if (!code) return;
+  const { ok, data } = await guestApi('/workspace', { method: 'DELETE', body: { accessCode: code.trim() } });
+  if (!ok) { alert(friendly(data, 'Could not delete the workspace.')); return; }
+  clearGuestSession(); forgetCode(); openCode = null; demoFocus = null; $('detail').hidden = true; renderWorkspace(null);
+  alert(`Deleted: ${data.deleted.links} link(s), ${data.deleted.events} scan record(s), ${data.deleted.answers} answer(s).`);
+});
 $('ws-forget').addEventListener('click', () => { clearGuestSession(); forgetCode(); openCode = null; demoFocus = null; $('detail').hidden = true; renderWorkspace(null); });
 /* A card's underlined verb hands the visitor its demo code: prefilled, one press of Open away. */
 document.querySelectorAll('[data-demo-code]').forEach(a => a.addEventListener('click', (e) => {

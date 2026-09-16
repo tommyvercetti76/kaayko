@@ -411,6 +411,10 @@
           "function": "api"
         },
         {
+          "source": "/kortex/security",
+          "destination": "/kortex-security.html"
+        },
+        {
           "source": "/kortex/signin",
           "destination": "/kortex-signin.html"
         },

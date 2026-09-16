@@ -49,8 +49,8 @@
 
 <h2>3. Plans, limits and pricing</h2>
 <ul>
-  <li><strong>Free:</strong> $0. Unlimited static QR codes, 25 dynamic links, scan detail for the last 7 days with lifetime totals, iPhone and Android routing, night and day routing, scan caps and end dates, campaign tags, CSV export. A small Kortex badge on the redirect. Help within 3 business days.</li>
-  <li><strong>Pro:</strong> $29 per month. 500 dynamic links, 25 campaigns, 90 days of scan detail, no badge, API keys and signed webhooks, sign-in for your team. Help within 1 business day.</li>
+  <li><strong>Free:</strong> $0. Unlimited static QR codes, 25 dynamic links, scan detail for the last 7 days with lifetime totals, iPhone and Android routing, night and day routing, scan caps and end dates, campaign tags, CSV export. A brief &ldquo;Powered by Kortex&rdquo; page before the redirect. Help within 3 business days.</li>
+  <li><strong>Pro:</strong> $29 per month. 500 dynamic links, 25 campaigns, 30 days of scan detail per link and a year of daily totals, no Kortex page before the redirect, API keys and signed webhooks, sign-in for your team. Help within 1 business day.</li>
   <li><strong>Business:</strong> $99 per month. 2,500 dynamic links, unlimited campaigns, everything in Pro, five times the API quota, onboarding with a person. Help within 4 hours.</li>
   <li><strong>Enterprise:</strong> custom terms, including custom domains and white-label pages.</li>
 </ul>
@@ -67,7 +67,7 @@
 <h2>5. Data we keep, and for how long</h2>
 <ul>
   <li>For each scan we keep the time, device type, operating system, browser, country, referrer, campaign tags and the address we forwarded to. Visitor IP addresses are hashed with a secret key and are never stored raw.</li>
-  <li>Dashboards and exports show scan detail for the window your plan allows (7 days on the free tier, up to 30 on paid plans); lifetime totals stay on the link. Older scan records are retained until our scheduled deletion is enabled; we do not use them for anything else and you can ask us to delete a workspace's records at any time.</li>
+  <li>Dashboards and exports show scan detail for the window your plan allows (7 days on the free tier, 30 on paid plans); lifetime totals stay on the link, and paid plans also keep a year of daily totals (counts only). Every scan record is deleted 30 days after the scan by a database-level expiry. Answers to a code's question keep no name and expire 400 days after they are given. You can export a workspace, delete a link, or delete the whole workspace yourself from the page at any time.</li>
   <li>Emails you attach are stored as a salted hash plus the address itself for delivery. Reports and support requests keep the email you give us so we can reply. Email delivery is not switched on yet: until it is, the page does not offer email features, and nothing that carries an access code is ever queued or logged.</li>
   <li>Every change to a link and every reviewer action is written to an audit log.</li>
   <li>You own the links and data you create. We do not sell your data. We may use anonymised, aggregated usage data to improve the Service.</li>
