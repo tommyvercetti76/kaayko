@@ -127,7 +127,8 @@ img, canvas, svg { max-width:100% }
 
 /* ── HERO: the instrument on the left, the poster on the right ── */
 .hero { position:relative; z-index:1; display:grid; place-items:center; padding:calc(var(--sp-10) + 12px) clamp(1rem,4vw,2.4rem) var(--sp-9) }
-.hero-inner { width:100%; max-width:760px }
+.hero-inner { width:100%; max-width:var(--wide); display:grid; grid-template-columns:minmax(0,3fr) minmax(0,7fr); gap:clamp(1.5rem,4vw,3.5rem); align-items:start }
+.hero-inner > * { min-width:0 }
 .hero-inner > * { min-width:0 }
 .eyebrow { font-style:italic; font-size:clamp(.78rem,1.3vw,.86rem); letter-spacing:.42em; text-transform:lowercase; color:var(--gold); margin-bottom:var(--sp-4) }
 .eyebrow b { font-family:var(--mono); font-style:normal; font-weight:500; letter-spacing:.08em; text-transform:none; color:var(--gold-bright) }
@@ -138,7 +139,15 @@ h1.hero-title em { font-style:normal; color:var(--gold-bright) }
 @keyframes fadeUp { to { opacity:1; transform:none } }
 .hero-fade:nth-child(1) { animation-delay:.15s } .hero-fade:nth-child(2) { animation-delay:.3s } .hero-fade:nth-child(3) { animation-delay:.45s } .hero-fade:nth-child(4) { animation-delay:.6s }
 
-.hero-line { font-family:var(--serif); font-weight:500; font-style:italic; font-size:clamp(1.05rem,1.9vw,1.25rem); color:var(--muted); letter-spacing:.03em; text-align:center; margin:0 auto var(--sp-5); max-width:38rem }
+.hero-side { padding-top:var(--sp-3) }
+.hero-mark-big { font-family:var(--display); font-weight:400; font-size:clamp(3.2rem,6vw,5.4rem); letter-spacing:.09em; line-height:.9; text-transform:uppercase; color:var(--fg); text-shadow:var(--glow-text); margin:0 0 .3em }
+.hero-side .hero-seam { width:min(100%,260px); height:1px; margin:0 0 var(--sp-4); background:linear-gradient(to right, var(--gold-line) 0%, var(--gold-line) 28%, transparent 28%, transparent 72%, var(--gold-line) 72%, var(--gold-line) 100%); box-shadow:var(--glow-line); position:relative }
+.hero-side .hero-mark { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:var(--gold); font-style:italic; font-size:.72rem; letter-spacing:.5em; text-transform:lowercase; white-space:nowrap; padding:0 8px; background:#0a1233 }
+.hero-what { font-family:var(--serif); font-weight:500; font-size:clamp(1.25rem,2.1vw,1.6rem); line-height:1.25; color:var(--fg); margin:0 0 var(--sp-4) }
+.hero-what em { font-style:italic; color:var(--gold-bright) }
+.hero-facts { list-style:none; margin:0; padding:0; display:grid; gap:8px; font-style:italic; font-size:.98rem; color:var(--muted); line-height:1.45 }
+.hero-facts b { font-style:normal; font-weight:500; color:var(--gold-bright); letter-spacing:.06em }
+@media(max-width:960px) { .hero-inner { grid-template-columns:1fr } .hero-side { text-align:center } .hero-side .hero-seam { margin-left:auto; margin-right:auto } .hero-facts { justify-items:center } }
 
 /* ── SHARED FURNITURE ── */
 .section { position:relative; z-index:1; padding:0 clamp(1rem,4vw,2.4rem) var(--sp-12); max-width:var(--wide); margin:0 auto }
@@ -456,8 +465,17 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
 <!-- ═══ HERO: the instrument ═══ -->
 <header class="hero" id="make" aria-label="Make a QR code">
   <div class="hero-inner">
+    <div class="hero-side hero-fade">
+      <h1 class="hero-mark-big">KORTEX</h1>
+      <div class="hero-seam"><span class="hero-mark">by kaayko</span></div>
+      <p class="hero-what">QR codes you can <em>change</em> after they&rsquo;re printed.</p>
+      <ul class="hero-facts">
+        <li><b>Create</b> a kaay.link code in seconds. No account.</li>
+        <li><b>Share</b> it on paper, a wall, a bag, a sticker.</li>
+        <li><b>Track</b> every scan: when, where, which device.</li>
+      </ul>
+    </div>
     <div>
-      <h1 class="hero-line hero-fade">A QR code you can change after it&rsquo;s printed. No account; one code is the key.</h1>
       <div class="panel maker hero-fade">
         <form id="make-form" autocomplete="off" novalidate>
           <div class="seg" role="group" aria-label="QR type">
