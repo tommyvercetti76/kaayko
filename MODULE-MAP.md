@@ -502,6 +502,8 @@ POST /api/presets                      → create preset (auth required)
 | `link_analytics` | kortex | Analytics events |
 | `click_events` | kortex | Click records |
 | `link_answers` | kortex | Answers to a code's question at the scan (RSVP), one per person |
+| `kortex_rollups` | kortex | Counts-only daily totals per link (outlive the 30-day event TTL; paid history reads them) |
+| `kortex_status` | kortex | `probe`: what the 15-minute redirect probe saw; read by GET /kortex/guest/status |
 | `install_events` | kortex | App install tracking |
 | `custom_events` | kortex | Custom event logging |
 | `webhook_subscriptions` | kortex | Webhook config |

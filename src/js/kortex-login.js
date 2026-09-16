@@ -40,6 +40,7 @@ function applyMode() {
   $('sub-signin').hidden = create; $('sub-create').hidden = !create;
   $('claim-group').hidden = !create; $('org-group').hidden = !create;
   $('login-btn').textContent = create ? 'Create account' : 'Sign In';
+  const h1 = document.querySelector('h1'); if (h1) h1.textContent = create ? 'Create your account' : 'Sign in';
   $('mode-toggle').textContent = create ? 'Have an account? Sign in' : 'New here? Create an account';
   $('password').autocomplete = create ? 'new-password' : 'current-password';
   const pl = $('plan-line');

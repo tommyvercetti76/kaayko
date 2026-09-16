@@ -812,6 +812,18 @@
           </div>
 
         </form>
+
+        <!-- Bulk (16 Sep 2026): many links at once, one per line -->
+        <details class="form-section" id="bulk-create" style="margin-top:24px">
+          <summary style="cursor:pointer;font-weight:600">Make many at once</summary>
+          <p class="form-hint" style="margin:8px 0">One link per line: the address, then an optional comma and a name. Up to 200 lines. Each line is checked the way a single link is; a bad line fails alone.</p>
+          <textarea id="bulk-rows" rows="8" style="width:100%;font-family:ui-monospace,Menlo,monospace;font-size:13px" placeholder="https://example.org/spring, Spring poster&#10;https://example.org/menu, Table 4"></textarea>
+          <div class="form-actions" style="margin-top:10px">
+            <button type="button" class="btn btn-primary" id="bulk-go">Create all</button>
+            <button type="button" class="btn btn-secondary" id="bulk-csv" hidden>Download results as CSV</button>
+          </div>
+          <div id="bulk-out" class="form-hint" aria-live="polite"></div>
+        </details>
       </div>
     </div>
     

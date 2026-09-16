@@ -89,6 +89,7 @@ export async function init(state) {
   initTooltips();
   applyRoleVisibility();
   showDomainHint();
+  initBulk();
 
   // Listen for editLink events from other views
   document.addEventListener('editLink', async (e) => {
@@ -1378,4 +1379,41 @@ window.resetCreateForm = resetCreateForm;
 
 export function editLink(code) {
   STATE.editingCode = code;
+}
+
+
+/* ── Bulk create (16 Sep 2026): POST /kortex/tenant-links/bulk, one row per line. ── */
+let bulkResults = null;
+function initBulk() {
+  const go = document.getElementById('bulk-go'), out = document.getElementById('bulk-out'), csv = document.getElementById('bulk-csv'), ta = document.getElementById('bulk-rows');
+  if (!go || !out || !ta) return;
+  go.addEventListener('click', async () => {
+    const rows = ta.value.split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(l => {
+      const i = l.indexOf(',');
+      const url = (i === -1 ? l : l.slice(0, i)).trim(), title = i === -1 ? '' : l.slice(i + 1).trim();
+      return { webDestination: /^https?:\/\//i.test(url) ? url : 'https://' + url, title: title || undefined };
+    });
+    if (!rows.length) { out.textContent = 'Nothing to make: paste one address per line.'; return; }
+    if (rows.length > 200) { out.textContent = 'At most 200 lines at a time.'; return; }
+    go.disabled = true; out.textContent = `Making ${rows.length} link${rows.length === 1 ? '' : 's'}…`;
+    try {
+      const res = await apiFetch('/kortex/tenant-links/bulk', { method: 'POST', body: JSON.stringify({ rows }) });
+      if (!res) throw new Error('Session expired. Please log in again.');
+      const data = await res.json();
+      bulkResults = (data.results || []).map((r, i) => ({ ...r, input: rows[r.row != null ? r.row : i] }));
+      const made = data.made || 0, failed = data.failed || 0;
+      out.innerHTML = `<b>${made} made${failed ? `, ${failed} failed` : ''}.</b><ul style="margin:8px 0 0 18px">${bulkResults.map(r => `<li>${utils.escapeHtml(r.input.webDestination)} → ${r.ok ? `<a href="${utils.escapeHtml(r.shortUrl)}" target="_blank" rel="noopener">${utils.escapeHtml(r.shortUrl)}</a>${r.status && r.status !== 'active' ? ` (${utils.escapeHtml(r.status)})` : ''}` : `<span style="color:#b91c1c">${utils.escapeHtml(r.error || 'failed')}</span>`}</li>`).join('')}</ul>`;
+      if (csv) csv.hidden = !bulkResults.length;
+      if (made && window.KortexApp && typeof window.KortexApp.refreshLinks === 'function') window.KortexApp.refreshLinks();
+    } catch (err) {
+      out.textContent = err.message || 'Bulk create failed.';
+    } finally { go.disabled = false; }
+  });
+  if (csv) csv.addEventListener('click', () => {
+    if (!bulkResults) return;
+    const q = (v) => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`;
+    const lines = ['destination,title,short_url,code,status,error', ...bulkResults.map(r => [r.input.webDestination, r.input.title || '', r.shortUrl || '', r.code || '', r.ok ? (r.status || 'active') : 'failed', r.ok ? '' : (r.error || '')].map(q).join(','))];
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'kortex-bulk-links.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
 }
