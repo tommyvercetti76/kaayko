@@ -156,3 +156,7 @@
 @media (prefers-reduced-motion: reduce) { .fm-node, .fm-edge { transition:none } }
 
 .ac-plain { font-style:italic; font-size:1.08rem; line-height:1.55; color:var(--fg, #ede8df); margin:0 0 14px; max-width:60ch }
+
+/* Room to work (16 Sep 2026): more tables and cards per row when the screen allows. */
+@media (min-width:1100px) { .k-tables { grid-template-columns:repeat(3, minmax(0, 1fr)) } .graph-grid { grid-template-columns:repeat(2, minmax(0, 1fr)) } }
+@media (min-width:1500px) { .k-tables { grid-template-columns:repeat(4, minmax(0, 1fr)) } .graph-grid { grid-template-columns:repeat(3, minmax(0, 1fr)) } .ki-grid { grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)) } }

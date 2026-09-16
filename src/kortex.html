@@ -73,7 +73,7 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 
-  <link rel="stylesheet" href="/css/kortex-views.css?v=20260916e">
+  <link rel="stylesheet" href="/css/kortex-views.css?v=20260916f">
   <style>
 /* ================================================================
    KORTEX by KAAYKO — kaay.link  (v2, 15 Sep 2026)
@@ -458,6 +458,19 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
 .link-count small { font-size:.85rem }
 .action-link { font-size:.9rem }
 @media (max-width:640px) { .field-input, .field-select { font-size:1.06rem } }
+
+/* ── Room to work (16 Sep 2026): the workspace is a tool, not a column of prose. It takes the screen it is given. ── */
+.field-label { white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+@media (min-width:1100px) {
+  #manage.section.narrow { max-width:min(1600px, 94vw) }
+  #manage .ws-head, #manage .panel-narrow { max-width:880px; margin-left:auto; margin-right:auto }
+  .detail { grid-template-columns:minmax(0,1fr) 400px; gap:var(--sp-8) }
+  .mini-list { grid-template-columns:repeat(3,minmax(0,1fr)) }
+}
+@media (min-width:1500px) {
+  .detail { grid-template-columns:minmax(0,1fr) 460px }
+  .mini-list { grid-template-columns:repeat(4,minmax(0,1fr)) }
+}
 </style>
 </head>
 
@@ -584,7 +597,7 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
               </div>
               <div class="field-row">
                 <div class="field"><label class="field-label" for="mk-print-cost">Print cost (optional)</label><input class="field-input" type="number" id="mk-print-cost" min="0" step="0.01" inputmode="decimal" placeholder="0"></div>
-                <div class="field"><label class="field-label" for="mk-value">Value of one useful visit (optional)</label><input class="field-input" type="number" id="mk-value" min="0" step="0.01" inputmode="decimal" placeholder="0"></div>
+                <div class="field"><label class="field-label" for="mk-value">Value per useful visit (optional)</label><input class="field-input" type="number" id="mk-value" min="0" step="0.01" inputmode="decimal" placeholder="0"></div>
               </div>
               <p class="note">Please do not enter names, phone numbers or addresses here. A place name and round numbers are all the report needs.</p>
             </details>
@@ -879,8 +892,8 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
 <!-- ═══ SCRIPTS ═══ -->
 <script src="/js/vendor/qrcode-generator.js"></script>
 <script src="/js/kortex-utm.js"></script>
-<script src="/js/kortex-views.js?v=20260916e"></script>
-<script src="/js/kortex-app.js?v=20260916e"></script>
+<script src="/js/kortex-views.js?v=20260916f"></script>
+<script src="/js/kortex-app.js?v=20260916f"></script>
 <script>
 /* Page-only: the poster's changing destination, this week's sample numbers, the bar, reveals. */
 (function () {

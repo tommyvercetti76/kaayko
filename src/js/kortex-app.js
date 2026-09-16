@@ -722,17 +722,17 @@ async function openDetail(code) {
         </div>
         <div class="field"><label class="field-label" for="dt-fallback">After the limit, send people to</label><input class="field-input" id="dt-fallback" type="url" placeholder="leave empty for a plain page" value="${escapeHtml((link.limits && link.limits.fallbackUrl) || '')}"></div>
         <div class="field-row">
-          <div class="field"><label class="field-label" for="dt-utm-source">Tag: source</label><input class="field-input" id="dt-utm-source" maxlength="100" placeholder="poster" value="${escapeHtml((link.utm && link.utm.utm_source) || '')}"></div>
-          <div class="field"><label class="field-label" for="dt-utm-medium">Tag: medium</label><input class="field-input" id="dt-utm-medium" maxlength="100" placeholder="qr" value="${escapeHtml((link.utm && link.utm.utm_medium) || '')}"></div>
+          <div class="field"><label class="field-label" for="dt-utm-source">Source tag</label><input class="field-input" id="dt-utm-source" maxlength="100" placeholder="poster" value="${escapeHtml((link.utm && link.utm.utm_source) || '')}"></div>
+          <div class="field"><label class="field-label" for="dt-utm-medium">Medium tag</label><input class="field-input" id="dt-utm-medium" maxlength="100" placeholder="qr" value="${escapeHtml((link.utm && link.utm.utm_medium) || '')}"></div>
         </div>
-        <div class="field"><label class="field-label" for="dt-utm-campaign">Tag: campaign</label><input class="field-input" id="dt-utm-campaign" maxlength="100" placeholder="spring-fest" value="${escapeHtml((link.utm && link.utm.utm_campaign) || '')}"></div>
+        <div class="field"><label class="field-label" for="dt-utm-campaign">Campaign tag</label><input class="field-input" id="dt-utm-campaign" maxlength="100" placeholder="spring-fest" value="${escapeHtml((link.utm && link.utm.utm_campaign) || '')}"></div>
         <div class="field-row">
-          <div class="field"><label class="field-label" for="dt-placement">Where the code lives</label><select class="field-select" id="dt-placement">${placementOptions(placement.key)}</select></div>
+          <div class="field"><label class="field-label" for="dt-placement">Placement</label><select class="field-select" id="dt-placement">${placementOptions(placement.key)}</select></div>
           <div class="field" id="dt-placement-label-field" hidden><label class="field-label" for="dt-placement-label">Call it</label><input class="field-input" id="dt-placement-label" maxlength="40" placeholder="lobby easel" value="${escapeHtml(placement.label)}"></div>
         </div>
         <div class="field-row">
           <div class="field"><label class="field-label" for="dt-print-cost">Print cost</label><input class="field-input" id="dt-print-cost" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0" value="${link.economics && link.economics.printCost != null ? link.economics.printCost : ''}"></div>
-          <div class="field"><label class="field-label" for="dt-value">Value of one useful visit</label><input class="field-input" id="dt-value" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0" value="${link.economics && link.economics.valuePerVisit != null ? link.economics.valuePerVisit : ''}"></div>
+          <div class="field"><label class="field-label" for="dt-value">Value per useful visit</label><input class="field-input" id="dt-value" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0" value="${link.economics && link.economics.valuePerVisit != null ? link.economics.valuePerVisit : ''}"></div>
         </div>
         <div class="field"><label class="field-label" for="dt-currency">Currency</label><input class="field-input" id="dt-currency" maxlength="3" spellcheck="false" placeholder="USD" value="${escapeHtml((link.economics && link.economics.currency) || '')}"></div>
         <div class="field-row">
