@@ -438,7 +438,7 @@ function variationOf(link) {
     if (f.key === 'replay' && d.lines) return `<ul class="ki-lines">${d.lines.map(l => `<li>${esc(l)}</li>`).join('')}</ul>`;
     if (f.key === 'channelMix' && d.channels) return `<div class="ki-bars">${d.channels.slice(0, 6).map(c => `<span data-tip="<b>${esc(c.channel)}</b> · ${c.count} visits"><i style="width:${Math.max(3, c.share)}%"></i>${esc(c.channel)} ${c.share}%</span>`).join('')}</div>`;
     if (f.key === 'repeatPattern' && d.people) return `<div class="ki-bars">${[['once', d.once], ['twice', d.twice], ['3+', d.more]].map(([l, v]) => `<span data-tip="<b>${l}</b> · ${v} people"><i style="width:${Math.max(3, Math.round(v / Math.max(1, d.people) * 100))}%"></i>${l} ${v}</span>`).join('')}</div>`;
-    if (f.key === 'geoDrift' && d.movers && d.movers.length) return `<div class="ki-bars">${d.movers.slice(0, 4).map(m => `<span data-tip="<b>${esc(m.country)}</b> · ${m.before}% → ${m.after}%"><i style="width:${Math.max(3, m.after)}%"></i>${esc(m.country)} ${m.after}%${m.change ? ` (${m.change > 0 ? '+' : ''}${m.change})` : ''}</span>`).join('')}</div>`;
+    if (f.key === 'geoDrift' && d.movers && d.movers.length) return `<div class="ki-bars">${d.movers.slice(0, 4).map(m => `<span data-tip="<b>${esc(plainText(m.country))}</b> · ${m.before}% → ${m.after}%"><i style="width:${Math.max(3, m.after)}%"></i>${esc(plainText(m.country))} ${m.after}%${m.change ? ` (${m.change > 0 ? '+' : ''}${m.change})` : ''}</span>`).join('')}</div>`;
     return '';
   }
   /** The CTA (a link when the action points at a page, else a button) and the Dismiss menu. A finding without an action still gets the menu, so it can leave the list. */

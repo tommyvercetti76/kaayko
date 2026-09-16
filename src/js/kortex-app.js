@@ -637,7 +637,6 @@ async function openDetail(code) {
   const shareLine = link.shared ? `Shared, read-only, ${link.shareExpiresAt ? `until ${fmtDate(link.shareExpiresAt)}` : 'with no end date'}. The address was shown once; a new one replaces it.` : '';
   box.innerHTML = `
     <div>
-      <span class="report-kind">${escapeHtml(variation.name)}</span>
       <p class="note">${escapeHtml(variation.blurb)}</p>
       <div id="dt-actions"></div>
       ${viewsHtml('dt')}
