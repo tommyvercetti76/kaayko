@@ -302,18 +302,14 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
 .kcard { position:relative; aspect-ratio:3/2; perspective:1400px; cursor:pointer; outline:none; --rx:0deg; --ry:0deg; container-type:inline-size }
 .kcard:focus-visible { outline:1px solid var(--gold-bright); outline-offset:6px }
 .kface { position:absolute; inset:0; border-radius:10px; overflow:hidden; backface-visibility:hidden; -webkit-backface-visibility:hidden; transform:rotateX(var(--rx)) rotateY(calc(var(--ry) + var(--flip,0deg))); transition:transform .7s cubic-bezier(.2,.8,.2,1); box-shadow:0 2px 3px rgba(0,0,0,.5), 0 24px 60px rgba(0,0,0,.62), 0 0 0 1px rgba(181,147,90,.2); background:#f4eedf }
-.kface.back { transform:rotateX(var(--rx)) rotateY(calc(var(--ry) + var(--flip,0deg) + 180deg)); background:rgba(5,7,14,.97); color:var(--fg); padding:5cqw 6cqw; display:flex; flex-direction:column; justify-content:center; gap:2.2cqw; border:1px solid rgba(181,147,90,.35) }
+.kface.back { transform:rotateX(var(--rx)) rotateY(calc(var(--ry) + var(--flip,0deg) + 180deg)); background:rgba(5,7,14,.97); color:var(--fg); padding:6cqw 7cqw; display:flex; flex-direction:column; justify-content:center; gap:1.6cqw; border:1px solid rgba(181,147,90,.35) }
 .kcard.is-flipped { --flip:180deg }
 .kface img { display:block; width:100%; height:100%; object-fit:cover }
-.kface.back h3 { font-family:var(--display); font-size:6cqw; letter-spacing:.06em; text-transform:uppercase; line-height:1; margin-bottom:.5cqw }
-.kcst { display:grid; gap:1.4cqw; margin:0 }
-.kcst > div { display:grid; grid-template-columns:max-content minmax(0,1fr); gap:2.6cqw; align-items:baseline }
-.kcst dt { font-style:italic; font-size:2.9cqw; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); white-space:nowrap }
-.kcst dd { margin:0; font-style:italic; font-size:3.5cqw; line-height:1.35; color:var(--muted) }
-.kctas { display:flex; align-items:baseline; gap:6cqw; flex-wrap:wrap; margin-top:1.5cqw }
-.klink { font-style:italic; font-size:3.4cqw; letter-spacing:.16em; text-transform:uppercase; color:var(--gold-bright); padding-bottom:.6cqw; border-bottom:1px solid var(--gold); transition:color var(--dur-fast), border-color var(--dur-fast) }
-.klink.quiet { color:var(--gold); border-bottom-color:rgba(181,147,90,.4) }
-.klink:hover { color:#fff; border-bottom-color:var(--gold-bright) }
+.kface.back h3 { font-family:var(--serif); font-weight:500; font-style:italic; font-size:3.6cqw; letter-spacing:.04em; color:var(--gold); line-height:1.25; margin-bottom:1cqw }
+.kstory { font-style:italic; font-size:4.6cqw; line-height:1.4; color:var(--fg); margin:0 }
+.kstory .klink { font-style:italic; font-size:inherit; letter-spacing:0; text-transform:none; color:var(--gold-bright); border-bottom:1px solid var(--gold); padding-bottom:.2cqw }
+.kstory .klink:hover { color:#fff; border-bottom-color:var(--gold-bright) }
+.kface.back .case-rule { font-family:var(--mono); font-style:normal; font-size:2.6cqw; color:var(--dim); margin-top:1.5cqw }
 .ktap { text-align:center; margin-top:var(--sp-3); font-style:italic; font-size:.78rem; letter-spacing:.22em; text-transform:uppercase; color:var(--dim) }
 .everything { text-align:center; margin-top:var(--sp-7); font-style:italic; color:var(--muted); font-size:.98rem; padding-top:var(--sp-5); border-top:1px solid var(--gold-line) }
 .everything b { color:var(--gold-bright); font-weight:500 }
@@ -622,16 +618,9 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
       <div class="kcard" role="button" tabindex="0" aria-label="Lake McDonald postcard. Activate to turn it over." data-flip>
         <div class="kface front"><img src="/assets/cards/lake-mcdonald-postcard.jpg" alt="Lake McDonald postcard" width="1200" height="800" loading="lazy"></div>
         <div class="kface back">
-          <h3>The paddler</h3>
-          <dl class="kcst">
-            <div><dt>Create</dt><dd>A postcard with the lake, the code in the water.</dd></div>
-            <div><dt>Share</dt><dd>Trailhead boards, a sticker on the kayak.</dd></div>
-            <div><dt>Track</dt><dd>Scans by lake, by hour, iPhone or Android.</dd></div>
-          </dl>
-          <div class="kctas">
-            <a class="klink" href="https://kaayko.com/kortex/samples#kx-lakecard" data-stop>See its scans</a>
-            <a class="klink quiet" href="https://www.kaay.link/kx-lakecard" data-stop>Open the forecast</a>
-          </div>
+          <h3>Kai, who paddles every lake he can drive to</h3>
+          <p class="kstory">He <a class="klink" href="#make" data-stop>creates</a> one code per lake and pastes the sticker at the put-in, so the next paddler gets the day&rsquo;s score before the boat is off the roof.</p>
+          <p class="case-rule">kaay.link/kx-lakecard</p>
         </div>
       </div>
       <p class="ktap">Tap the card</p>
@@ -640,16 +629,9 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
       <div class="kcard" role="button" tabindex="0" aria-label="Mom's Shop card. Activate to turn it over." data-flip>
         <div class="kface front"><img src="/assets/cards/moms-shop-card.jpg" alt="Mom's Shop card" width="1200" height="800" loading="lazy"></div>
         <div class="kface back">
-          <h3>The maker</h3>
-          <dl class="kcst">
-            <div><dt>Create</dt><dd>One card for a four-tote shelf on kaay.store.</dd></div>
-            <div><dt>Share</dt><dd>In every bag, on the stall, on the wall.</dd></div>
-            <div><dt>Track</dt><dd>Scans to bag to checkout; re-point when the shelf grows.</dd></div>
-          </dl>
-          <div class="kctas">
-            <a class="klink" href="https://kaayko.com/kortex/samples#kx-shelf" data-stop>See its scans</a>
-            <a class="klink quiet" href="https://www.kaay.link/kx-shelf" data-stop>Open the shelf</a>
-          </div>
+          <h3>Asha, 60, who opened her shelf this summer</h3>
+          <p class="kstory">Four totes on kaay.store, one card in every bag. She <a class="klink" href="https://kaayko.com/kortex/samples#kx-shelf" data-stop>tracks</a> who reached the shelf, from which stall, and at what hour.</p>
+          <p class="case-rule">kaay.link/kx-shelf</p>
         </div>
       </div>
       <p class="ktap">Tap the card</p>
@@ -658,16 +640,9 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
       <div class="kcard" role="button" tabindex="0" aria-label="An evening of music card. Activate to turn it over." data-flip>
         <div class="kface front"><img src="/assets/cards/music-gathering-card.jpg" alt="An evening of music card" width="1200" height="800" loading="lazy"></div>
         <div class="kface back">
-          <h3>The gathering</h3>
-          <dl class="kcst">
-            <div><dt>Create</dt><dd>A card for an evening; by night the code goes elsewhere.</dd></div>
-            <div><dt>Share</dt><dd>Grocery board, the school gate, a friend&rsquo;s phone.</dd></div>
-            <div><dt>Track</dt><dd>Who scanned after dark, and how many came back.</dd></div>
-          </dl>
-          <div class="kctas">
-            <a class="klink" href="https://kaayko.com/kortex/samples#kx-baithak" data-stop>See its scans</a>
-            <a class="klink quiet" href="https://www.kaay.link/kx-baithak" data-stop>Open the page</a>
-          </div>
+          <h3>Rehan, who hosts an evening of music once a month</h3>
+          <p class="kstory">One card on the grocery board, and the same code <a class="klink" href="https://kaayko.com/kortex/samples#kx-baithak" data-stop>shared</a> on the neighbourhood group. After dark it points at the booking page; by day, the details.</p>
+          <p class="case-rule">kaay.link/kx-baithak</p>
         </div>
       </div>
       <p class="ktap">Tap the card</p>
