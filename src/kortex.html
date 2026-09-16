@@ -544,6 +544,19 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
                 <p class="note">Between those hours the QR goes to the night address; otherwise to the main address above. Our clock, in this time zone, decides. Nothing a visitor sends can change it.</p>
               </div>
             </div>
+            <div class="field">
+              <label class="check"><input type="checkbox" id="mk-ask-on"> Ask one question when they scan</label>
+              <div id="mk-ask-fields" hidden>
+                <div class="field"><label class="field-label" for="mk-ask-q">The question</label><input class="field-input" type="text" id="mk-ask-q" maxlength="120" value="Are you coming?"></div>
+                <div class="field-row">
+                  <div class="field"><label class="field-label" for="mk-ask-o1">Answer one</label><input class="field-input" type="text" id="mk-ask-o1" maxlength="24" value="Yes"></div>
+                  <div class="field"><label class="field-label" for="mk-ask-o2">Answer two</label><input class="field-input" type="text" id="mk-ask-o2" maxlength="24" value="Maybe"></div>
+                </div>
+                <div class="field"><label class="field-label" for="mk-ask-o3">Answer three (optional)</label><input class="field-input" type="text" id="mk-ask-o3" maxlength="24" value="No"></div>
+                <label class="check"><input type="checkbox" id="mk-ask-guests" checked> Also ask how many they are bringing</label>
+                <p class="note">They see the question first, answer in one tap, then go on to your address. You see the count here. No names are kept: one answer per phone, and scanning again changes it.</p>
+              </div>
+            </div>
             <details class="options" id="mk-measure">
               <summary>Measure this placement</summary>
               <p class="field-help">Optional. Say where this code will live and what the print run cost, and the report can compare placements and estimate print payback.</p>
@@ -660,14 +673,14 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
         <div class="kface front"><img src="/assets/cards/music-gathering-card.jpg?v=25" alt="An evening of music card" width="1200" height="800" loading="lazy"></div>
         <div class="kface back">
           <h3>Rehan, who hosts an evening of music once a month</h3>
-          <p class="kstory">One card on the grocery board, and the same code <a class="klink" href="#manage" data-demo-code="KX-DEMO-BAITHAK" data-stop>shared</a> on the neighbourhood group. After dark it points at the booking page; by day, the details.</p>
+          <p class="kstory">One poster on the grocery board, the same code <a class="klink" href="#manage" data-demo-code="KX-DEMO-BAITHAK" data-stop>shared</a> on the neighbourhood group. It asks one thing, <i>are you coming?</i>, so by dusk he knows how many cushions to lay out.</p>
           <p class="case-rule">kaay.link/kx-baithak</p>
         </div>
       </div>
       <p class="ktap">Tap the card</p>
     </article>
   </div>
-  <p class="everything reveal"><b>Every code, free:</b> device routing &middot; night and day destinations &middot; caps, end dates, fallback &middot; safety checks &middot; scans by day, hour, device, country &middot; findings &middot; CSV &middot; read-only reports</p>
+  <p class="everything reveal"><b>Every code, free:</b> device routing &middot; night and day destinations &middot; caps, end dates, fallback &middot; one question at the scan &middot; safety checks &middot; scans by day, hour, device, country &middot; findings &middot; CSV &middot; read-only reports</p>
 </section>
 
 <!-- ═══ MANAGE ═══ -->

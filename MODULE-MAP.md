@@ -306,6 +306,7 @@ GET/POST/PUT/DELETE /api/billing/subscriptions
 - `campaign_memberships` — campaign role-based access
 - `link_analytics` — analytics events
 - `click_events` — click records
+- `link_answers` — one answer per person to a link's question at the scan (`{code}_{visitor}`; choice, guests; no names)
 - `install_events` — app install tracking
 - `custom_events` — custom event logging
 - `ctx_tokens` — attribution context tokens (legacy cookie/ctx resolution)
@@ -500,6 +501,7 @@ POST /api/presets                      → create preset (auth required)
 | `security_alerts` | kortex | Bot/abuse detection alerts |
 | `link_analytics` | kortex | Analytics events |
 | `click_events` | kortex | Click records |
+| `link_answers` | kortex | Answers to a code's question at the scan (RSVP), one per person |
 | `install_events` | kortex | App install tracking |
 | `custom_events` | kortex | Custom event logging |
 | `webhook_subscriptions` | kortex | Webhook config |

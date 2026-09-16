@@ -218,6 +218,29 @@ $('mode-static').addEventListener('click', () => setMode('static'));
 function browserTz() { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch { return 'UTC'; } }
 $('mk-tz').value = browserTz();
 $('mk-night-on').addEventListener('change', () => { $('mk-night-fields').hidden = !$('mk-night-on').checked; if ($('mk-night-on').checked) $('mk-night-url').focus(); });
+$('mk-ask-on').addEventListener('change', () => { $('mk-ask-fields').hidden = !$('mk-ask-on').checked; if ($('mk-ask-on').checked) $('mk-ask-q').focus(); });
+
+/* One question at the scan. Read from the maker (mk) or the detail form (dt).
+   Returns { value } (an object, or null when the box is unticked) or { error }. */
+function askFromFields(prefix) {
+  if (!$(`${prefix}-ask-on`).checked) return { value: null };
+  const question = $(`${prefix}-ask-q`).value.trim();
+  const options = ['o1', 'o2', 'o3'].map(k => $(`${prefix}-ask-${k}`).value.trim()).filter(Boolean);
+  if (!question) return { error: 'Write the question people will see.' };
+  if (options.length < 2) return { error: 'Give at least two answers.' };
+  if (new Set(options.map(o => o.toLowerCase())).size !== options.length) return { error: 'The answers must be different from each other.' };
+  return { value: { question, options, guests: $(`${prefix}-ask-guests`).checked } };
+}
+
+/* What people answered, in plain words. */
+function answersHtml(t) {
+  if (!t) return '';
+  const parts = t.options.map(o => `<li><span>${escapeHtml(o.label)}</span><b>${o.count}${t.guestsAsked && o.guests !== o.count ? ` <small>(${o.guests} people)</small>` : ''}</b></li>`).join('');
+  const line = t.answered
+    ? `${t.answered} answered${t.guestsAsked ? `, ${t.guests} people in all` : ''}${t.changed ? `; ${t.changed} changed their mind` : ''}.`
+    : 'Nobody has answered yet. The question shows the moment someone scans.';
+  return `<div class="mini-list answers"><div><h4>${escapeHtml(t.question)}</h4><ul>${parts}</ul><p class="note">${escapeHtml(line)}</p></div></div>`;
+}
 $('mk-utm-on').addEventListener('change', () => { $('mk-utm-fields').hidden = !$('mk-utm-on').checked; if ($('mk-utm-on').checked) $('mk-utm-source').focus(); });
 $('mk-limit-on').addEventListener('change', () => { $('mk-limit-fields').hidden = !$('mk-limit-on').checked; if ($('mk-limit-on').checked) $('mk-max').focus(); });
 
@@ -406,6 +429,8 @@ $('make-form').addEventListener('submit', async (e) => {
   const placement = placementFromFields('mk'), economics = economicsFromFields('mk', ''), campaignWindow = campaignWindowFromFields('mk');
   const measureProblem = placement.error || economics.error || campaignWindow.error;
   if (measureProblem) { setAlert('mk-alert', 'error', measureProblem); $('mk-options').open = true; $('mk-measure').open = true; return; }
+  const ask = askFromFields('mk');
+  if (ask.error) { setAlert('mk-alert', 'error', ask.error); $('mk-options').open = true; $('mk-ask-q').focus(); return; }
   const campaign = $('mk-campaign').value.trim();
   if (campaign && !(utm && utm.utm_campaign)) utm = { ...utm, utm_campaign: campaign };
   const btn = $('mk-submit'); btn.disabled = true; btn.textContent = 'Checking…';
@@ -422,6 +447,7 @@ $('make-form').addEventListener('submit', async (e) => {
     placement: placement.value || undefined,
     economics: economics.value || undefined,
     campaignWindow: campaignWindow.value || undefined,
+    ask: ask.value || undefined,
     website: $('mk-website').value || undefined
   };
   const { ok, data } = await guestApi('/links', { method: 'POST', body });
@@ -639,6 +665,7 @@ async function openDetail(code) {
     <div>
       <p class="note">${escapeHtml(variation.blurb)}</p>
       <div id="dt-actions"></div>
+      ${answersHtml(data.answers)}
       ${viewsHtml('dt')}
       <div class="mini-list">
         <div><h4>Recent scans</h4><ul>${scans}</ul></div>
@@ -654,6 +681,18 @@ async function openDetail(code) {
         <div class="field-row">
           <div class="field"><label class="field-label" for="dt-ios">iPhone destination</label><input class="field-input" id="dt-ios" type="url" placeholder="same as above" value="${escapeHtml((link.destinations && link.destinations.ios) || '')}"></div>
           <div class="field"><label class="field-label" for="dt-android">Android destination</label><input class="field-input" id="dt-android" type="url" placeholder="same as above" value="${escapeHtml((link.destinations && link.destinations.android) || '')}"></div>
+        </div>
+        <div class="field">
+          <label class="check"><input type="checkbox" id="dt-ask-on"${link.ask ? ' checked' : ''}> Ask one question when they scan</label>
+          <div id="dt-ask-fields"${link.ask ? '' : ' hidden'}>
+            <div class="field"><label class="field-label" for="dt-ask-q">The question</label><input class="field-input" id="dt-ask-q" maxlength="120" value="${escapeHtml(link.ask ? link.ask.question : 'Are you coming?')}"></div>
+            <div class="field-row">
+              <div class="field"><label class="field-label" for="dt-ask-o1">Answer one</label><input class="field-input" id="dt-ask-o1" maxlength="24" value="${escapeHtml(link.ask && link.ask.options[0] ? link.ask.options[0].label : 'Yes')}"></div>
+              <div class="field"><label class="field-label" for="dt-ask-o2">Answer two</label><input class="field-input" id="dt-ask-o2" maxlength="24" value="${escapeHtml(link.ask && link.ask.options[1] ? link.ask.options[1].label : 'Maybe')}"></div>
+            </div>
+            <div class="field"><label class="field-label" for="dt-ask-o3">Answer three (optional)</label><input class="field-input" id="dt-ask-o3" maxlength="24" value="${escapeHtml(link.ask ? (link.ask.options[2] ? link.ask.options[2].label : '') : 'No')}"></div>
+            <label class="check"><input type="checkbox" id="dt-ask-guests"${!link.ask || link.ask.guests !== false ? ' checked' : ''}> Also ask how many they are bringing</label>
+          </div>
         </div>
         <div class="field"><label class="field-label" for="dt-night-url">At night, go to</label><input class="field-input" id="dt-night-url" type="url" placeholder="leave empty for none" value="${escapeHtml(nightWin ? nightWin.url : '')}"></div>
         <div class="field-row">
@@ -743,15 +782,18 @@ async function openDetail(code) {
     const placementIn = placementFromFields('dt'), economics = economicsFromFields('dt', $('dt-currency').value.trim()), campaignWindow = campaignWindowFromFields('dt');
     const measureProblem = placementIn.error || economics.error || campaignWindow.error;
     if (measureProblem) { setStatus('dt-status', measureProblem, 'err'); return; }
+    const askIn = askFromFields('dt');
+    if (askIn.error) { setStatus('dt-status', askIn.error, 'err'); return; }
     const iosRaw = $('dt-ios').value.trim(), androidRaw = $('dt-android').value.trim();
     const iosUrl = iosRaw ? normaliseUrl(iosRaw) : '', androidUrl = androidRaw ? normaliseUrl(androidRaw) : '';
     if ((iosRaw && !iosUrl) || (androidRaw && !androidUrl)) { setStatus('dt-status', 'Enter full web addresses for the iPhone and Android destinations, or leave them empty.', 'err'); return; }
-    const { ok: k, data: d } = await guestApi(`/links/${encodeURIComponent(code)}`, { method: 'PATCH', body: { destination: url, iosDestination: iosUrl, androidDestination: androidUrl, title: $('dt-title').value.trim(), placement: placementIn.value, economics: economics.value, campaignWindow: campaignWindow.value, schedule, limits, expiresAt, utm } });
+    const { ok: k, data: d } = await guestApi(`/links/${encodeURIComponent(code)}`, { method: 'PATCH', body: { destination: url, iosDestination: iosUrl, androidDestination: androidUrl, title: $('dt-title').value.trim(), placement: placementIn.value, economics: economics.value, campaignWindow: campaignWindow.value, ask: askIn.value, schedule, limits, expiresAt, utm } });
     if (!k) { setStatus('dt-status', friendly(d, 'Could not save.') + (d.reasons ? ' ' + d.reasons.map(r => r.detail).join(' ') : ''), 'err'); return; }
     const noted = await recordApplied(code, false);
     await openWorkspaceFromSession(); await openDetail(code);
     setStatus('dt-status', noted ? 'Saved. Every scan now goes to the new address.' : 'Saved, but the change could not be recorded as a checkpoint.', noted ? 'ok' : 'err');
   });
+  $('dt-ask-on').addEventListener('change', () => { $('dt-ask-fields').hidden = !$('dt-ask-on').checked; });
   $('dt-toggle').addEventListener('click', async () => {
     const { ok: k, data: d } = await guestApi(`/links/${encodeURIComponent(code)}`, { method: 'PATCH', body: { enabled: !link.enabled } });
     if (!k) { setStatus('dt-status', friendly(d, 'Could not update.'), 'err'); return; }
