@@ -296,20 +296,27 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
 .cardimg span { display:block; margin-top:var(--sp-3); font-style:italic; font-size:.92rem; color:var(--muted); text-align:center }
 @media(max-width:760px) { .cards { grid-template-columns:1fr } }
 
-/* ── CASES: three cards in one frame, lit the way /card is ── */
+/* ── CASES: three cards, the /card object: same size, turn over on tap, no glow ── */
 .cases { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--sp-6); align-items:start }
 .case { min-width:0 }
-.cardimg { display:block; min-width:0; perspective:1200px; --rx:0deg; --ry:0deg; --sx:50%; --sy:30%; --spec:.25 }
-.cardimg .frame { position:relative; aspect-ratio:4/5; border-radius:10px; overflow:hidden; background:#f4eedf; transform:rotateX(var(--rx)) rotateY(var(--ry)); transition:transform .55s cubic-bezier(.2,.8,.2,1); box-shadow:0 2px 3px rgba(0,0,0,.5), 0 24px 60px rgba(0,0,0,.62), 0 0 0 1px rgba(181,147,90,.25) }
-.cardimg.is-live .frame { transition:none }
-.cardimg .frame img { display:block; width:100%; height:100%; object-fit:contain; background:#f4eedf }
-.cardimg .sheen { position:absolute; inset:0; pointer-events:none; background:radial-gradient(34% 46% at var(--sx) var(--sy), rgba(255,250,235,var(--spec)), rgba(255,250,235,0) 70%); mix-blend-mode:screen }
-.case h3 { font-family:var(--display); font-size:1.6rem; letter-spacing:.05em; text-transform:uppercase; line-height:1; margin:var(--sp-4) 0 var(--sp-2) }
-.case p { font-style:italic; color:var(--muted); font-size:.98rem }
-.case-rule { font-family:var(--mono); font-style:normal !important; font-size:.74rem !important; color:var(--dim) !important; margin-top:var(--sp-2) }
+.kcard { position:relative; aspect-ratio:3/2; perspective:1400px; cursor:pointer; outline:none; --rx:0deg; --ry:0deg }
+.kcard:focus-visible { outline:1px solid var(--gold-bright); outline-offset:6px }
+.kface { position:absolute; inset:0; border-radius:10px; overflow:hidden; backface-visibility:hidden; -webkit-backface-visibility:hidden; transform:rotateX(var(--rx)) rotateY(calc(var(--ry) + var(--flip,0deg))); transition:transform .7s cubic-bezier(.2,.8,.2,1); box-shadow:0 2px 3px rgba(0,0,0,.5), 0 24px 60px rgba(0,0,0,.62), 0 0 0 1px rgba(181,147,90,.2); background:#f4eedf }
+.kcard.is-live .kface { transition:transform .7s cubic-bezier(.2,.8,.2,1), none }
+.kface.back { transform:rotateX(var(--rx)) rotateY(calc(var(--ry) + var(--flip,0deg) + 180deg)); background:rgba(5,7,14,.96); color:var(--fg); padding:clamp(14px,3vw,26px); display:flex; flex-direction:column; justify-content:center; gap:8px; border:1px solid rgba(181,147,90,.35) }
+.kcard.is-flipped { --flip:180deg }
+.kface img { display:block; width:100%; height:100%; object-fit:cover }
+.kface.back h3 { font-family:var(--display); font-size:clamp(1.3rem,2.2vw,1.7rem); letter-spacing:.06em; text-transform:uppercase; line-height:1 }
+.kface.back p { font-style:italic; color:var(--muted); font-size:clamp(.86rem,1.3vw,.98rem); line-height:1.45 }
+.kface.back .case-rule { font-family:var(--mono); font-style:normal; font-size:.72rem; color:var(--dim) }
+.kctas { display:flex; align-items:center; gap:var(--sp-4); flex-wrap:wrap; margin-top:4px }
+.kctas .btn-submit { width:auto; margin:0; padding:10px 18px; font-size:.78rem }
+.kctas .action-link { font-size:.8rem }
+.ktap { text-align:center; margin-top:var(--sp-3); font-style:italic; font-size:.78rem; letter-spacing:.22em; text-transform:uppercase; color:var(--dim) }
 .everything { text-align:center; margin-top:var(--sp-7); font-style:italic; color:var(--muted); font-size:.98rem; padding-top:var(--sp-5); border-top:1px solid var(--gold-line) }
 .everything b { color:var(--gold-bright); font-weight:500 }
-@media(max-width:960px) { .cases { grid-template-columns:1fr; max-width:420px; margin:0 auto } }
+@media(max-width:960px) { .cases { grid-template-columns:1fr; max-width:520px; margin:0 auto } }
+@media(prefers-reduced-motion:reduce) { .kface { transition:none } }
 
 /* ── MANAGE ── */
 .enter-row { display:flex; gap:var(--sp-4); align-items:flex-end }
@@ -609,23 +616,50 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
   <h2 class="section-label reveal">three uses</h2>
   <p class="section-title reveal">Print it once. Decide later.</p>
   <div class="cases">
-    <article class="case reveal">
-      <a class="cardimg" href="https://kaayko.com/paddlingout/forecast?id=mcdonald"><span class="frame"><img src="/assets/cards/lake-mcdonald-postcard.jpg" alt="Lake McDonald postcard with its kaay.link code" width="1400" height="933" loading="lazy"><span class="sheen"></span></span></a>
-      <h3>The paddler</h3>
-      <p>A sticker or postcard at the water. One code, the live paddle score behind it, iPhones sent to the app. Every lake it lands at is a placement to compare.</p>
-      <p class="case-rule">kaay.link/skcpfj8p &middot; device routing &middot; placement report</p>
+    <article class="case">
+      <div class="kcard" role="button" tabindex="0" aria-label="Lake McDonald postcard. Activate to turn it over." data-flip>
+        <div class="kface front"><img src="/assets/cards/lake-mcdonald-postcard.jpg" alt="Lake McDonald postcard" width="1200" height="800" loading="lazy"></div>
+        <div class="kface back">
+          <h3>The paddler</h3>
+          <p>A postcard or sticker at the water. One code, the live paddle score behind it. Scan it at the lake, it counts; move the sticker to another lake, compare the two.</p>
+          <p class="case-rule">kaay.link/skcpfj8p</p>
+          <div class="kctas">
+            <a class="btn-submit" href="https://kaayko.com/kortex/r/report_lrboguIeqTf0.5sGGSUI-g2eRFyNJR8Upk_-I5ef-xT6l" data-stop>See its scans</a>
+            <a class="action-link" href="https://kaayko.com/paddlingout/forecast?id=mcdonald" data-stop>Open the forecast</a>
+          </div>
+        </div>
+      </div>
+      <p class="ktap">Tap the card</p>
     </article>
-    <article class="case reveal">
-      <a class="cardimg" href="https://kaay.store/s/moms-shop"><span class="frame"><img src="/assets/cards/moms-shop-card.jpg" alt="Mom's Shop card with its kaay.link code" width="900" height="1350" loading="lazy"><span class="sheen"></span></span></a>
-      <h3>The maker</h3>
-      <p>Mom&rsquo;s Shop: four totes on one shelf at kaay.store, one card, one code. Add a fifth tote next month and the printed code still works.</p>
-      <p class="case-rule">kaay.link/xf4hkysp &middot; kaay.store/s/moms-shop &middot; re-point any time</p>
+    <article class="case">
+      <div class="kcard" role="button" tabindex="0" aria-label="Mom's Shop card. Activate to turn it over." data-flip>
+        <div class="kface front"><img src="/assets/cards/moms-shop-card.jpg" alt="Mom's Shop card" width="1200" height="800" loading="lazy"></div>
+        <div class="kface back">
+          <h3>The maker</h3>
+          <p>Four totes on one shelf at kaay.store, one card, one code. Add a fifth tote next month and the printed code still works, straight through to the bag and checkout.</p>
+          <p class="case-rule">kaay.link/xf4hkysp</p>
+          <div class="kctas">
+            <a class="btn-submit" href="https://kaayko.com/kortex/r/report_1WlrtVX-Se4q.aIDMIMu-c8FH2oLAK36RoOReZmvR6ilJ" data-stop>See its scans</a>
+            <a class="action-link" href="https://kaay.store/s/moms-shop" data-stop>Open the shelf</a>
+          </div>
+        </div>
+      </div>
+      <p class="ktap">Tap the card</p>
     </article>
-    <article class="case reveal">
-      <a class="cardimg" href="/assets/cards/music-gathering-poster.jpg"><span class="frame"><img src="/assets/cards/music-gathering-poster.jpg" alt="An evening of music poster with its kaay.link code" width="900" height="1260" loading="lazy"><span class="sheen"></span></span></a>
-      <h3>The gathering</h3>
-      <p>A poster on the grocery board. Print it once; the code says where and when, and can point at the next evening after this one. Made in Forge.</p>
-      <p class="case-rule">kaay.link/zs9resps &middot; re-point after printing &middot; night and day</p>
+    <article class="case">
+      <div class="kcard" role="button" tabindex="0" aria-label="An evening of music card. Activate to turn it over." data-flip>
+        <div class="kface front"><img src="/assets/cards/music-gathering-card.jpg" alt="An evening of music card" width="1200" height="800" loading="lazy"></div>
+        <div class="kface back">
+          <h3>The gathering</h3>
+          <p>A card on the grocery board. Print it once; the code says where and when, and points at the next evening after this one without a reprint.</p>
+          <p class="case-rule">kaay.link/zs9resps</p>
+          <div class="kctas">
+            <a class="btn-submit" href="https://kaayko.com/kortex/r/report_Dmo13XmwB4bQ.VfKggUoQcKHF4wjynF38eHu-Qy6WC7fm" data-stop>See its scans</a>
+            <a class="action-link" href="/assets/cards/music-gathering-card.jpg" data-stop>See the card</a>
+          </div>
+        </div>
+      </div>
+      <p class="ktap">Tap the card</p>
     </article>
   </div>
   <p class="everything reveal"><b>Every code, free:</b> device routing &middot; night and day destinations &middot; caps, end dates, fallback &middot; safety checks &middot; scans by day, hour, device, country &middot; findings &middot; CSV &middot; read-only reports</p>
@@ -827,24 +861,20 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
   const io = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } }), { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 })();
-/* ── the three cards, lit like /card: the pointer is a lamp, the card leans toward it ── */
+/* ── the three cards: the /card object. Tap turns it over; the pointer tilts it a little. No sheen. ── */
 (function () {
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches, fine = matchMedia('(pointer: fine)').matches;
-  if (still || !fine) return;
-  const TILT = 9;
-  document.querySelectorAll('.cardimg').forEach(card => {
-    let raf = 0, target = { x: .5, y: .35 }, cur = { x: .5, y: .35 }, on = false;
-    function light(px, py) {
-      const rx = (0.5 - py) * 2 * TILT, ry = (px - 0.5) * 2 * TILT;
-      const s = card.style;
-      s.setProperty('--rx', rx.toFixed(2) + 'deg'); s.setProperty('--ry', ry.toFixed(2) + 'deg');
-      s.setProperty('--sx', (px * 100).toFixed(1) + '%'); s.setProperty('--sy', (py * 100).toFixed(1) + '%');
-      s.setProperty('--spec', (0.18 + 0.5 * (1 - Math.min(1, Math.hypot(px - .5, py - .5) * 1.4))).toFixed(3));
-    }
-    function loop() { cur.x += (target.x - cur.x) * .14; cur.y += (target.y - cur.y) * .14; light(cur.x, cur.y); if (on || Math.abs(target.x - cur.x) + Math.abs(target.y - cur.y) > .002) raf = requestAnimationFrame(loop); else raf = 0; }
+  document.querySelectorAll('[data-flip]').forEach(card => {
+    const flip = () => card.classList.toggle('is-flipped');
+    card.addEventListener('click', e => { if (e.target.closest('[data-stop]')) return; flip(); });
+    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); } });
+    if (still || !fine) return;
+    const TILT = 7; let raf = 0, t = { x: .5, y: .5 }, c = { x: .5, y: .5 }, on = false;
+    const set = () => { card.style.setProperty('--rx', ((0.5 - c.y) * 2 * TILT).toFixed(2) + 'deg'); card.style.setProperty('--ry', ((c.x - 0.5) * 2 * TILT).toFixed(2) + 'deg'); };
+    const loop = () => { c.x += (t.x - c.x) * .14; c.y += (t.y - c.y) * .14; set(); if (on || Math.abs(t.x - c.x) + Math.abs(t.y - c.y) > .002) raf = requestAnimationFrame(loop); else raf = 0; };
     card.addEventListener('pointerenter', () => { on = true; card.classList.add('is-live'); if (!raf) raf = requestAnimationFrame(loop); });
-    card.addEventListener('pointermove', e => { const r = card.getBoundingClientRect(); target.x = (e.clientX - r.left) / r.width; target.y = (e.clientY - r.top) / r.height; });
-    card.addEventListener('pointerleave', () => { on = false; card.classList.remove('is-live'); target = { x: .5, y: .35 }; if (!raf) raf = requestAnimationFrame(loop); });
+    card.addEventListener('pointermove', e => { const r = card.getBoundingClientRect(); t.x = (e.clientX - r.left) / r.width; t.y = (e.clientY - r.top) / r.height; });
+    card.addEventListener('pointerleave', () => { on = false; card.classList.remove('is-live'); t = { x: .5, y: .5 }; if (!raf) raf = requestAnimationFrame(loop); });
   });
 })();
 </script>
