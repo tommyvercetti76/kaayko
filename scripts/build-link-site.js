@@ -23,6 +23,7 @@ const FILES = [
   'js/kortex-views.js',
   'js/kortex-app.js',
   'js/kortex-sky.js',
+  'js/kortex-meteors.js',
   'css/kortex-views.css',
   'favicon-16x16.png',
   'favicon-32x32.png',

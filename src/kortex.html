@@ -296,22 +296,24 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
 .cardimg span { display:block; margin-top:var(--sp-3); font-style:italic; font-size:.92rem; color:var(--muted); text-align:center }
 @media(max-width:760px) { .cards { grid-template-columns:1fr } }
 
-/* ── CASES: three cards, the /card object: same size, turn over on tap, no glow ── */
+/* ── CASES: three cards, the /card object: one size, turn over on tap, underlined links, no glow ── */
 .cases { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--sp-6); align-items:start }
 .case { min-width:0 }
-.kcard { position:relative; aspect-ratio:3/2; perspective:1400px; cursor:pointer; outline:none; --rx:0deg; --ry:0deg }
+.kcard { position:relative; aspect-ratio:3/2; perspective:1400px; cursor:pointer; outline:none; --rx:0deg; --ry:0deg; container-type:inline-size }
 .kcard:focus-visible { outline:1px solid var(--gold-bright); outline-offset:6px }
 .kface { position:absolute; inset:0; border-radius:10px; overflow:hidden; backface-visibility:hidden; -webkit-backface-visibility:hidden; transform:rotateX(var(--rx)) rotateY(calc(var(--ry) + var(--flip,0deg))); transition:transform .7s cubic-bezier(.2,.8,.2,1); box-shadow:0 2px 3px rgba(0,0,0,.5), 0 24px 60px rgba(0,0,0,.62), 0 0 0 1px rgba(181,147,90,.2); background:#f4eedf }
-.kcard.is-live .kface { transition:transform .7s cubic-bezier(.2,.8,.2,1), none }
-.kface.back { transform:rotateX(var(--rx)) rotateY(calc(var(--ry) + var(--flip,0deg) + 180deg)); background:rgba(5,7,14,.96); color:var(--fg); padding:clamp(14px,3vw,26px); display:flex; flex-direction:column; justify-content:center; gap:8px; border:1px solid rgba(181,147,90,.35) }
+.kface.back { transform:rotateX(var(--rx)) rotateY(calc(var(--ry) + var(--flip,0deg) + 180deg)); background:rgba(5,7,14,.97); color:var(--fg); padding:5cqw 6cqw; display:flex; flex-direction:column; justify-content:center; gap:2.2cqw; border:1px solid rgba(181,147,90,.35) }
 .kcard.is-flipped { --flip:180deg }
 .kface img { display:block; width:100%; height:100%; object-fit:cover }
-.kface.back h3 { font-family:var(--display); font-size:clamp(1.3rem,2.2vw,1.7rem); letter-spacing:.06em; text-transform:uppercase; line-height:1 }
-.kface.back p { font-style:italic; color:var(--muted); font-size:clamp(.86rem,1.3vw,.98rem); line-height:1.45 }
-.kface.back .case-rule { font-family:var(--mono); font-style:normal; font-size:.72rem; color:var(--dim) }
-.kctas { display:flex; align-items:center; gap:var(--sp-4); flex-wrap:wrap; margin-top:4px }
-.kctas .btn-submit { width:auto; margin:0; padding:10px 18px; font-size:.78rem }
-.kctas .action-link { font-size:.8rem }
+.kface.back h3 { font-family:var(--display); font-size:6cqw; letter-spacing:.06em; text-transform:uppercase; line-height:1; margin-bottom:.5cqw }
+.kcst { display:grid; gap:1.4cqw; margin:0 }
+.kcst > div { display:grid; grid-template-columns:11cqw minmax(0,1fr); gap:2cqw; align-items:baseline }
+.kcst dt { font-style:italic; font-size:2.9cqw; letter-spacing:.2em; text-transform:uppercase; color:var(--gold) }
+.kcst dd { margin:0; font-style:italic; font-size:3.5cqw; line-height:1.35; color:var(--muted) }
+.kctas { display:flex; align-items:baseline; gap:6cqw; flex-wrap:wrap; margin-top:1.5cqw }
+.klink { font-style:italic; font-size:3.4cqw; letter-spacing:.16em; text-transform:uppercase; color:var(--gold-bright); padding-bottom:.6cqw; border-bottom:1px solid var(--gold); transition:color var(--dur-fast), border-color var(--dur-fast) }
+.klink.quiet { color:var(--gold); border-bottom-color:rgba(181,147,90,.4) }
+.klink:hover { color:#fff; border-bottom-color:var(--gold-bright) }
 .ktap { text-align:center; margin-top:var(--sp-3); font-style:italic; font-size:.78rem; letter-spacing:.22em; text-transform:uppercase; color:var(--dim) }
 .everything { text-align:center; margin-top:var(--sp-7); font-style:italic; color:var(--muted); font-size:.98rem; padding-top:var(--sp-5); border-top:1px solid var(--gold-line) }
 .everything b { color:var(--gold-bright); font-weight:500 }
@@ -613,19 +615,22 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
 
 <!-- ═══ THREE USES ═══ -->
 <section class="section" id="cases" aria-label="Three uses, three real codes">
-  <h2 class="section-label reveal">three uses</h2>
-  <p class="section-title reveal">Print it once. Decide later.</p>
+  <h2 class="section-label reveal">three cards, three codes</h2>
+  <p class="section-title reveal">Create. Share. Track.</p>
   <div class="cases">
     <article class="case">
       <div class="kcard" role="button" tabindex="0" aria-label="Lake McDonald postcard. Activate to turn it over." data-flip>
         <div class="kface front"><img src="/assets/cards/lake-mcdonald-postcard.jpg" alt="Lake McDonald postcard" width="1200" height="800" loading="lazy"></div>
         <div class="kface back">
           <h3>The paddler</h3>
-          <p>A postcard or sticker at the water. One code, the live paddle score behind it. Scan it at the lake, it counts; move the sticker to another lake, compare the two.</p>
-          <p class="case-rule">kaay.link/kx-lakecard</p>
+          <dl class="kcst">
+            <div><dt>Create</dt><dd>A postcard with the lake, the code in the water.</dd></div>
+            <div><dt>Share</dt><dd>Trailhead boards, a sticker on the kayak.</dd></div>
+            <div><dt>Track</dt><dd>Scans by lake, by hour, iPhone or Android.</dd></div>
+          </dl>
           <div class="kctas">
-            <a class="btn-submit" href="https://kaayko.com/kortex/samples#kx-lakecard" data-stop>See its scans</a>
-            <a class="action-link" href="https://www.kaay.link/kx-lakecard" data-stop>Open the forecast</a>
+            <a class="klink" href="https://kaayko.com/kortex/samples#kx-lakecard" data-stop>See its scans</a>
+            <a class="klink quiet" href="https://www.kaay.link/kx-lakecard" data-stop>Open the forecast</a>
           </div>
         </div>
       </div>
@@ -636,11 +641,14 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
         <div class="kface front"><img src="/assets/cards/moms-shop-card.jpg" alt="Mom's Shop card" width="1200" height="800" loading="lazy"></div>
         <div class="kface back">
           <h3>The maker</h3>
-          <p>Four totes on one shelf at kaay.store, one card, one code. Add a fifth tote next month and the printed code still works, straight through to the bag and checkout.</p>
-          <p class="case-rule">kaay.link/kx-shelf</p>
+          <dl class="kcst">
+            <div><dt>Create</dt><dd>One card for a four-tote shelf on kaay.store.</dd></div>
+            <div><dt>Share</dt><dd>In every bag, on the stall, on the wall.</dd></div>
+            <div><dt>Track</dt><dd>Scans to bag to checkout; re-point when the shelf grows.</dd></div>
+          </dl>
           <div class="kctas">
-            <a class="btn-submit" href="https://kaayko.com/kortex/samples#kx-shelf" data-stop>See its scans</a>
-            <a class="action-link" href="https://www.kaay.link/kx-shelf" data-stop>Open the shelf</a>
+            <a class="klink" href="https://kaayko.com/kortex/samples#kx-shelf" data-stop>See its scans</a>
+            <a class="klink quiet" href="https://www.kaay.link/kx-shelf" data-stop>Open the shelf</a>
           </div>
         </div>
       </div>
@@ -651,11 +659,14 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
         <div class="kface front"><img src="/assets/cards/music-gathering-card.jpg" alt="An evening of music card" width="1200" height="800" loading="lazy"></div>
         <div class="kface back">
           <h3>The gathering</h3>
-          <p>A card on the grocery board. Print it once; the code says where and when, and points at the next evening after this one without a reprint.</p>
-          <p class="case-rule">kaay.link/kx-baithak</p>
+          <dl class="kcst">
+            <div><dt>Create</dt><dd>A card for an evening; by night the code goes elsewhere.</dd></div>
+            <div><dt>Share</dt><dd>Grocery board, the school gate, a friend&rsquo;s phone.</dd></div>
+            <div><dt>Track</dt><dd>Who scanned after dark, and how many came back.</dd></div>
+          </dl>
           <div class="kctas">
-            <a class="btn-submit" href="https://kaayko.com/kortex/samples#kx-baithak" data-stop>See its scans</a>
-            <a class="action-link" href="https://www.kaay.link/kx-baithak" data-stop>See the card</a>
+            <a class="klink" href="https://kaayko.com/kortex/samples#kx-baithak" data-stop>See its scans</a>
+            <a class="klink quiet" href="https://www.kaay.link/kx-baithak" data-stop>Open the page</a>
           </div>
         </div>
       </div>
@@ -739,7 +750,7 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
 <section class="section" id="pricing" aria-label="Pricing">
   <h2 class="section-label reveal">pricing</h2>
   <p class="section-title reveal">Free needs nothing from you</p>
-  <p class="section-lead reveal">Teams pay for volume, history and the API. Set up by hand for now.</p>
+  <p class="section-lead reveal">Teams pay for volume, history and the API. No card is taken online yet: Pro and Business are set up with you, by email, and billed the way you agree.</p>
   <div class="plans reveal">
     <div class="plan">
       <div class="plan-name">Free</div>
@@ -861,23 +872,31 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
   const io = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } }), { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 })();
-/* ── the three cards: the /card object. Tap turns it over; the pointer tilts it a little. No sheen. ── */
+/* ── the three cards: the /card object. Tap turns it over. Held in a hand, it never sits quite still; the pointer leans it. No sheen. ── */
 (function () {
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches, fine = matchMedia('(pointer: fine)').matches;
-  document.querySelectorAll('[data-flip]').forEach(card => {
+  document.querySelectorAll('[data-flip]').forEach((card, i) => {
     const flip = () => card.classList.toggle('is-flipped');
     card.addEventListener('click', e => { if (e.target.closest('[data-stop]')) return; flip(); });
     card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); } });
-    if (still || !fine) return;
-    const TILT = 7; let raf = 0, t = { x: .5, y: .5 }, c = { x: .5, y: .5 }, on = false;
+    if (still) return;
+    const TILT = 7, ph = i * 1.7; let held = false, t = { x: .5, y: .5 }, c = { x: .5, y: .5 };
     const set = () => { card.style.setProperty('--rx', ((0.5 - c.y) * 2 * TILT).toFixed(2) + 'deg'); card.style.setProperty('--ry', ((c.x - 0.5) * 2 * TILT).toFixed(2) + 'deg'); };
-    const loop = () => { c.x += (t.x - c.x) * .14; c.y += (t.y - c.y) * .14; set(); if (on || Math.abs(t.x - c.x) + Math.abs(t.y - c.y) > .002) raf = requestAnimationFrame(loop); else raf = 0; };
-    card.addEventListener('pointerenter', () => { on = true; card.classList.add('is-live'); if (!raf) raf = requestAnimationFrame(loop); });
-    card.addEventListener('pointermove', e => { const r = card.getBoundingClientRect(); t.x = (e.clientX - r.left) / r.width; t.y = (e.clientY - r.top) / r.height; });
-    card.addEventListener('pointerleave', () => { on = false; card.classList.remove('is-live'); t = { x: .5, y: .5 }; if (!raf) raf = requestAnimationFrame(loop); });
+    let visible = true;
+    const loop = now => {
+      if (!held) { const s = now / 1000; t.x = .5 + .16 * Math.sin(s * .37 + ph) + .05 * Math.sin(s * 1.1 + ph * 2); t.y = .5 + .12 * Math.sin(s * .29 + ph * 1.3) + .04 * Math.sin(s * .9 + ph); }
+      c.x += (t.x - c.x) * (held ? .14 : .04); c.y += (t.y - c.y) * (held ? .14 : .04); set();
+      if (visible) requestAnimationFrame(loop);
+    };
+    if (fine) {
+      card.addEventListener('pointerenter', () => { held = true; });
+      card.addEventListener('pointermove', e => { const r = card.getBoundingClientRect(); t.x = (e.clientX - r.left) / r.width; t.y = (e.clientY - r.top) / r.height; });
+      card.addEventListener('pointerleave', () => { held = false; });
+    }
+    new IntersectionObserver(es => { const v = es[0].isIntersecting; if (v && !visible) { visible = true; requestAnimationFrame(loop); } else if (!v) visible = false; else if (v && visible && !card.dataset.started) { card.dataset.started = '1'; requestAnimationFrame(loop); } }).observe(card);
   });
 })();
 </script>
-<script src="/js/kortex-sky.js"></script>
+<script src="/js/kortex-meteors.js"></script>
 </body>
 </html>
