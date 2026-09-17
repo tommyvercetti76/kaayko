@@ -223,8 +223,9 @@
     .fg-about a:hover { color: var(--gold-bright); border-color: var(--gold-bright); }
   
 /* ── Pinterest wall (16 Sep 2026): CSS columns, three tile shapes, the card flip on every tile ── */
-.fgrid { columns:3 300px; column-gap:22px; max-width:1240px; margin:0 auto; padding:0 20px 40px }
-.fcard-wrap, .fcopy { break-inside:avoid; -webkit-column-break-inside:avoid; margin:0 0 22px; display:grid; gap:8px; justify-items:center }
+.fgrid { display:flex; gap:22px; align-items:flex-start; max-width:1240px; margin:0 auto; padding:0 20px 40px }
+.fcol { flex:1 1 0; min-width:0; display:grid; gap:22px; align-content:start }
+.fcard-wrap, .fcopy { margin:0; display:grid; gap:8px; justify-items:center; width:100% }
 .fcard { position:relative; width:100%; perspective:1400px; cursor:pointer; outline:none; --rx:0deg; --ry:0deg; --flip:0deg }
 .fcard-wrap.postcard .fcard { aspect-ratio:3/2 } .fcard-wrap.magnet .fcard { aspect-ratio:1/1 } .fcard-wrap.tall .fcard { aspect-ratio:4/5 }
 .fcard:focus-visible { outline:2px solid #F0D9A0; outline-offset:6px }
@@ -243,7 +244,7 @@
 .ftap { margin:0; font-family:'Josefin Sans',Futura,sans-serif; font-weight:300; font-size:10.5px; letter-spacing:.28em; text-transform:uppercase; color:rgba(244,238,223,.4) }
 .fcopy { justify-items:start; text-align:left; padding:clamp(18px,3vw,28px); border-radius:14px; background:rgba(244,238,223,.04); border:1px solid rgba(181,147,90,.18) }
 .fcopy h2 { margin:0 0 8px; font-weight:300; font-size:clamp(20px,2.6vw,26px); color:#F0D9A0; text-wrap:balance } .fcopy p { margin:0; color:rgba(244,238,223,.78); font-size:clamp(14px,1.6vw,16px); line-height:1.6 } .fcopy code { font-size:.88em; color:#F4EEDF }
-@media (max-width:640px) { .fgrid { columns:1 } }
+
 </style>
   <script type="application/ld+json">
 {
@@ -541,6 +542,27 @@
   </script>
 
 
+
+  <script>
+  (function () {
+    /* Real column boxes, filled shortest-first by each tile's known aspect, so
+       WebKit paints the 3D faces (CSS multicol does not). Re-laid on resize. */
+    var grid = document.getElementById('gallery'); if (!grid) return;
+    var tiles = Array.prototype.slice.call(grid.children);
+    var weight = function (el) { return el.classList.contains('tall') ? 1.25 : el.classList.contains('postcard') ? 0.67 : el.classList.contains('fcopy') ? 0.9 : 1; };
+    var last = 0;
+    function layout() {
+      var n = window.innerWidth < 640 ? 1 : window.innerWidth < 1000 ? 2 : 3;
+      if (n === last) return; last = n;
+      grid.innerHTML = '';
+      var cols = [], h = [];
+      for (var i = 0; i < n; i++) { var c = document.createElement('div'); c.className = 'fcol'; grid.appendChild(c); cols.push(c); h.push(0); }
+      tiles.forEach(function (t) { var k = h.indexOf(Math.min.apply(null, h)); cols[k].appendChild(t); h[k] += weight(t) + 0.08; });
+    }
+    layout();
+    window.addEventListener('resize', layout, { passive: true });
+  })();
+  </script>
   <script>
   (function () {
     /* Flip on tap or Enter; sway with the pointer; copy the prompt or the command. */
