@@ -221,7 +221,31 @@
     }
     .fg-about a { color: var(--gold); text-decoration: none; border-bottom: 1px solid rgba(181,147,90,0.4); }
     .fg-about a:hover { color: var(--gold-bright); border-color: var(--gold-bright); }
-  </style>
+  
+/* ── Eight cards (16 Sep 2026): the kaayko.com/card object, eight times, with the prompt on the back ── */
+.fgrid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:clamp(28px,4vw,56px) clamp(20px,3vw,40px); max-width:1180px; margin:0 auto; padding:0 20px 40px; align-items:start }
+.fcard-wrap { display:grid; gap:10px; justify-items:center }
+.fcard-wrap.postcard { grid-column:1 / -1; max-width:760px; margin:0 auto; width:100% }
+.fcard { position:relative; width:100%; perspective:1400px; cursor:pointer; outline:none; --rx:0deg; --ry:0deg; --flip:0deg }
+.fcard-wrap.postcard .fcard { aspect-ratio:3/2 } .fcard-wrap.magnet .fcard { aspect-ratio:1/1 }
+.fcard:focus-visible { outline:2px solid #F0D9A0; outline-offset:6px }
+.fface { position:absolute; inset:0; border-radius:12px; overflow:hidden; backface-visibility:hidden; -webkit-backface-visibility:hidden; transform:rotateX(var(--rx)) rotateY(calc(var(--ry) + var(--flip))); transition:transform .7s cubic-bezier(.2,.8,.2,1); background:#F5EFE3; box-shadow:0 2px 3px rgba(0,0,0,.5), 0 24px 60px rgba(0,0,0,.6), 0 0 0 1px rgba(181,147,90,.22) }
+.fcard-wrap.magnet .fface { border-radius:18px; box-shadow:0 3px 0 rgba(0,0,0,.35), 0 2px 3px rgba(0,0,0,.5), 0 20px 50px rgba(0,0,0,.6), 0 0 0 1px rgba(181,147,90,.22) }
+.fface.front img { width:100%; height:100%; object-fit:contain; display:block; background:#F5EFE3 }
+.fface.back { transform:rotateX(var(--rx)) rotateY(calc(var(--ry) + var(--flip) + 180deg)); background:#0e0c09; color:#F4EEDF; padding:clamp(14px,3.2cqw,28px); display:flex; flex-direction:column; gap:8px; border:1px solid rgba(181,147,90,.35); container-type:inline-size }
+.fcard.is-flipped { --flip:180deg }
+.fk { margin:0; font-family:'Josefin Sans',Futura,sans-serif; font-weight:300; font-size:10.5px; letter-spacing:.28em; text-transform:uppercase; color:rgba(244,238,223,.55) }
+.fface.back h3 { margin:0; font-weight:400; font-size:clamp(20px,5cqw,30px); line-height:1.1 }
+.fmeta { margin:0; font-size:clamp(12px,2.6cqw,14px); color:rgba(244,238,223,.62); line-height:1.4 }
+.fprompt { flex:1; min-height:0; margin:4px 0 0; overflow:auto; white-space:pre-wrap; font:400 clamp(11px,2.4cqw,13px)/1.45 ui-monospace,Menlo,monospace; color:rgba(244,238,223,.86); background:rgba(244,238,223,.05); border:1px solid rgba(181,147,90,.2); border-radius:6px; padding:10px }
+.fbtns { margin:0; display:flex; gap:16px; align-items:baseline; flex-wrap:wrap }
+.flink { background:none; border:0; padding:0; color:#F0D9A0; font:inherit; font-size:clamp(13px,2.8cqw,15px); text-decoration:underline; text-underline-offset:4px; cursor:pointer } .flink:hover { color:#fff }
+.fnote { font-size:12px; color:rgba(244,238,223,.6) }
+.ftap { margin:0; font-family:'Josefin Sans',Futura,sans-serif; font-weight:300; font-size:10.5px; letter-spacing:.28em; text-transform:uppercase; color:rgba(244,238,223,.4) }
+.fcopy { grid-column:1 / -1; max-width:62ch; margin:8px auto 4px; text-align:center }
+.fcopy h2 { margin:0 0 10px; font-weight:300; font-size:clamp(22px,3.4vw,32px); color:#F0D9A0 } .fcopy p { margin:0; color:rgba(244,238,223,.78); font-size:clamp(15px,2vw,18px); line-height:1.6 } .fcopy code { font-size:.88em; color:#F4EEDF }
+@media (max-width:720px) { .fgrid { grid-template-columns:1fr } .fcard-wrap.magnet { max-width:420px; width:100%; margin:0 auto } }
+</style>
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -288,8 +312,9 @@
     <h1>Gallery</h1>
     <div class="rule"></div>
     <p class="lede">
-      Every render here was made on-device by Forge — a local-first generative-AI
-      workstation for Apple Silicon. No cloud round trip, no rented GPU.
+      Eight renders, four African and four Indian, each made on-device by Forge, a local-first
+      generative-AI workstation for Apple Silicon. Turn a card over for the exact prompt and the command
+      that made it. No cloud round trip, no rented GPU.
     </p>
     <div class="facts" id="facts">
       <span><b>MIT</b> licensed · Python 3.11+</span>
@@ -300,12 +325,127 @@
     </div>
     <div class="masthead-actions">
       <a class="btn" href="https://github.com/tommyvercetti76/Forge" rel="noopener noreferrer">Read the code</a>
-      <a class="link" href="https://github.com/tommyvercetti76/Forge/tree/main/docs/gallery" rel="noopener noreferrer">The gallery folder</a>
+      <a class="link" href="https://github.com/tommyvercetti76/Forge/tree/main/docs/gallery" rel="noopener noreferrer">More renders in the repo</a>
     </div>
   </section>
 
-  <main class="gallery" id="gallery" aria-label="Forge renders">
-    <p class="status" id="status">Reading the gallery folder…</p>
+  <main class="fgrid" id="gallery" aria-label="Eight Forge renders, as cards">
+  <article class="fcard-wrap postcard">
+    <div class="fcard" role="button" tabindex="0" aria-label="Masai Giraffe. Activate to turn the card over." data-flip>
+      <div class="fface front"><img src="/assets/forge/giraffe.jpg" alt="Masai Giraffe, Madhubani folk-art render by Forge" width="1000" height="1000" loading="eager"></div>
+      <div class="fface back">
+        <p class="fk">Postcard · Tarangire, Tanzania</p>
+        <h3>Masai Giraffe</h3>
+        <p class="fmeta">FLUX.1 [dev] · 24 steps · guidance 5.5 · seed 13301 · 1280&times;1280 · on-device, Apple M5 Max</p>
+        <pre class="fprompt" tabindex="0">MADHUBANI MITHILA FOLK-ART MASAI GIRAFFE — Indian folk painting of a African species; NOT photoreal, NOT a safari poster, NOT clip art. single centered Masai Giraffe in complete full-body side profile for a premium Madhubani T-shirt print. standing tall in profile and filling the whole frame, head at the top edge browsing an acacia sprig, hooves at the bottom edge. the giraffe is LARGE and FILLS the frame from the top edge to the bottom edge. body filled with saturated saffron-ochre folk color, NOT natural species photography. the body MUST be unambiguously a giraffe: the neck is LONGER than the legs. immensely long neck as a single graceful folk vertical. BODY PATTERN — PATCHED: large jagged vermillion leaf-shaped patches separated by thin cream cha. almond eye, bold black double-contour keylines, matte saturated folk fills. PROMINENT MADHUBANI DECORATIVE PANELS at 6 zones — (1) forehead tikka medallion, (2) neck dot-band, (3) LARGE chest lotus medallion, (4) LARGE flank paisley panel, (5) LARGE hindquarter floral medallion, (6) leg-anklet bands at each joint. Each panel is dominant and uses a different colour combination; between the panels the body stays FLAT SOLID COLOR, no stippling.. AROUND the subject (negative space only, NOT on the body): subtle habitat aura of Tarangire baobab silhouettes, umbrella-acacia leaf sprigs, tall golden grass tussocks, and river-bank fig leaf dots, small folk sun disk and tiny scattered red-and-saffron flowers in the empty space around the subject. no text, no scenery, no full landscape</pre>
+        <p class="fbtns"><button type="button" class="flink" data-copy="prompt" data-stop>Copy the prompt</button><button type="button" class="flink" data-copy="cmd" data-stop>Copy the command</button><span class="fnote" aria-live="polite"></span></p>
+        <script type="application/json" class="fdata">{"prompt": "MADHUBANI MITHILA FOLK-ART MASAI GIRAFFE \u2014 Indian folk painting of a African species; NOT photoreal, NOT a safari poster, NOT clip art. single centered Masai Giraffe in complete full-body side profile for a premium Madhubani T-shirt print. standing tall in profile and filling the whole frame, head at the top edge browsing an acacia sprig, hooves at the bottom edge. the giraffe is LARGE and FILLS the frame from the top edge to the bottom edge. body filled with saturated saffron-ochre folk color, NOT natural species photography. the body MUST be unambiguously a giraffe: the neck is LONGER than the legs. immensely long neck as a single graceful folk vertical. BODY PATTERN \u2014 PATCHED: large jagged vermillion leaf-shaped patches separated by thin cream cha. almond eye, bold black double-contour keylines, matte saturated folk fills. PROMINENT MADHUBANI DECORATIVE PANELS at 6 zones \u2014 (1) forehead tikka medallion, (2) neck dot-band, (3) LARGE chest lotus medallion, (4) LARGE flank paisley panel, (5) LARGE hindquarter floral medallion, (6) leg-anklet bands at each joint. Each panel is dominant and uses a different colour combination; between the panels the body stays FLAT SOLID COLOR, no stippling.. AROUND the subject (negative space only, NOT on the body): subtle habitat aura of Tarangire baobab silhouettes, umbrella-acacia leaf sprigs, tall golden grass tussocks, and river-bank fig leaf dots, small folk sun disk and tiny scattered red-and-saffron flowers in the empty space around the subject. no text, no scenery, no full landscape", "cmd": "forge engine render minimalist-tshirt --profile madhubani --seed 13301 --width 1280 --height 1280 --subject \"MADHUBANI MITHILA FOLK-ART MASAI GIRAFFE \u2014 Indian folk painting of a African species; NOT photoreal, NOT a safari poster, NOT clip art. single centered Masai Giraffe in complete full-body side profile for a premium Madhubani T-shirt print. standing tall in profile and filling the whole frame, head at the top edge browsing an acacia sprig, hooves at the bottom edge. the giraffe is LARGE and FILLS the frame from the top edge to the bottom edge. body filled with saturated saffron-ochre folk color, NOT natural species photography. the body MUST be unambiguously a giraffe: the neck is LONGER than the legs. immensely long neck as a single graceful folk vertical. BODY PATTERN \u2014 PATCHED: large jagged vermillion leaf-shaped patches separated by thin cream cha. almond eye, bold black double-contour keylines, matte saturated folk fills. PROMINENT MADHUBANI DECORATIVE PANELS at 6 zones \u2014 (1) forehead tikka medallion, (2) neck dot-band, (3) LARGE chest lotus medallion, (4) LARGE flank paisley panel, (5) LARGE hindquarter floral medallion, (6) leg-anklet bands at each joint. Each panel is dominant and uses a different colour combination; between the panels the body stays FLAT SOLID COLOR, no stippling.. AROUND the subject (negative space only, NOT on the body): subtle habitat aura of Tarangire baobab silhouettes, umbrella-acacia leaf sprigs, tall golden grass tussocks, and river-bank fig leaf dots, small folk sun disk and tiny scattered red-and-saffron flowers in the empty space around the subject. no text, no scenery, no full landscape\""}</script>
+      </div>
+    </div>
+    <p class="ftap">Tap the card</p>
+  </article>
+  <article class="fcard-wrap postcard">
+    <div class="fcard" role="button" tabindex="0" aria-label="Cheetah. Activate to turn the card over." data-flip>
+      <div class="fface front"><img src="/assets/forge/cheetah.jpg" alt="Cheetah, Madhubani folk-art render by Forge" width="1000" height="1000" loading="eager"></div>
+      <div class="fface back">
+        <p class="fk">Postcard · Serengeti, Tanzania</p>
+        <h3>Cheetah</h3>
+        <p class="fmeta">FLUX.1 [dev] · 24 steps · guidance 5.5 · seed 13303 · 1280&times;1280 · on-device, Apple M5 Max</p>
+        <pre class="fprompt" tabindex="0">MADHUBANI MITHILA FOLK-ART CHEETAH — Indian folk painting of a African species; NOT photoreal, NOT a safari poster, NOT clip art. single centered Cheetah in complete full-body side profile for a premium Madhubani T-shirt print. standing alert in profile on a folk termite mound, body tall and filling the frame, head raised scanning, long tail curled down behind. the cheetah is LARGE and fills the frame, a big lotus medallion on the chest and a paisley panel on the flank sit among. body filled with saturated marigold-yellow folk color, NOT natural species photography. the body MUST be unambiguously a cheetah: the BLACK TEAR-LINES from eye to mouth are the species mark; SOLID round spots — NOT rosettes (NOT a leopard). black tear-lines running from the inner eye down to the mouth corner as bold folk keylines, small round head, deep chest and wasp waist. BODY PATTERN — SPOTTED: small SOLID round black spots scattered evenly over the marigold fill —. almond eye, bold black double-contour keylines, matte saturated folk fills. MADHUBANI DECORATIVE PANELS at 6 zones — forehead tikka, neck dot-band, LARGE chest lotus medallion, LARGE flank paisley panel, LARGE hindquarter floral medallion, leg-anklet bands; each panel a different colour, body between panels FLAT SOLID, no stippling. AROUND the subject (negative space only, NOT on the body): subtle habitat aura of red Kalahari dune-grass tufts, camel-thorn acacia sprigs, small folk sun disk and tiny red-and-saffron flowers in the empty space around the subject. no text, no scenery, no full landscape</pre>
+        <p class="fbtns"><button type="button" class="flink" data-copy="prompt" data-stop>Copy the prompt</button><button type="button" class="flink" data-copy="cmd" data-stop>Copy the command</button><span class="fnote" aria-live="polite"></span></p>
+        <script type="application/json" class="fdata">{"prompt": "MADHUBANI MITHILA FOLK-ART CHEETAH \u2014 Indian folk painting of a African species; NOT photoreal, NOT a safari poster, NOT clip art. single centered Cheetah in complete full-body side profile for a premium Madhubani T-shirt print. standing alert in profile on a folk termite mound, body tall and filling the frame, head raised scanning, long tail curled down behind. the cheetah is LARGE and fills the frame, a big lotus medallion on the chest and a paisley panel on the flank sit among. body filled with saturated marigold-yellow folk color, NOT natural species photography. the body MUST be unambiguously a cheetah: the BLACK TEAR-LINES from eye to mouth are the species mark; SOLID round spots \u2014 NOT rosettes (NOT a leopard). black tear-lines running from the inner eye down to the mouth corner as bold folk keylines, small round head, deep chest and wasp waist. BODY PATTERN \u2014 SPOTTED: small SOLID round black spots scattered evenly over the marigold fill \u2014. almond eye, bold black double-contour keylines, matte saturated folk fills. MADHUBANI DECORATIVE PANELS at 6 zones \u2014 forehead tikka, neck dot-band, LARGE chest lotus medallion, LARGE flank paisley panel, LARGE hindquarter floral medallion, leg-anklet bands; each panel a different colour, body between panels FLAT SOLID, no stippling. AROUND the subject (negative space only, NOT on the body): subtle habitat aura of red Kalahari dune-grass tufts, camel-thorn acacia sprigs, small folk sun disk and tiny red-and-saffron flowers in the empty space around the subject. no text, no scenery, no full landscape", "cmd": "forge engine render minimalist-tshirt --profile madhubani --seed 13303 --width 1280 --height 1280 --subject \"MADHUBANI MITHILA FOLK-ART CHEETAH \u2014 Indian folk painting of a African species; NOT photoreal, NOT a safari poster, NOT clip art. single centered Cheetah in complete full-body side profile for a premium Madhubani T-shirt print. standing alert in profile on a folk termite mound, body tall and filling the frame, head raised scanning, long tail curled down behind. the cheetah is LARGE and fills the frame, a big lotus medallion on the chest and a paisley panel on the flank sit among. body filled with saturated marigold-yellow folk color, NOT natural species photography. the body MUST be unambiguously a cheetah: the BLACK TEAR-LINES from eye to mouth are the species mark; SOLID round spots \u2014 NOT rosettes (NOT a leopard). black tear-lines running from the inner eye down to the mouth corner as bold folk keylines, small round head, deep chest and wasp waist. BODY PATTERN \u2014 SPOTTED: small SOLID round black spots scattered evenly over the marigold fill \u2014. almond eye, bold black double-contour keylines, matte saturated folk fills. MADHUBANI DECORATIVE PANELS at 6 zones \u2014 forehead tikka, neck dot-band, LARGE chest lotus medallion, LARGE flank paisley panel, LARGE hindquarter floral medallion, leg-anklet bands; each panel a different colour, body between panels FLAT SOLID, no stippling. AROUND the subject (negative space only, NOT on the body): subtle habitat aura of red Kalahari dune-grass tufts, camel-thorn acacia sprigs, small folk sun disk and tiny red-and-saffron flowers in the empty space around the subject. no text, no scenery, no full landscape\""}</script>
+      </div>
+    </div>
+    <p class="ftap">Tap the card</p>
+  </article>
+  <section class="fcopy"><h2>One engine, one profile, one subject.</h2><p>Every render here came from the same command: <code>forge engine render minimalist-tshirt --profile madhubani</code> with a subject sentence and a seed. The engine carries the style rules (folk fills, double-contour keylines, no scenery); the profile carries the model and the palette; the subject is the only thing that changes. Flip any card and the exact subject is there to copy.</p></section>
+  <article class="fcard-wrap magnet">
+    <div class="fcard" role="button" tabindex="0" aria-label="Shoebill. Activate to turn the card over." data-flip>
+      <div class="fface front"><img src="/assets/forge/shoebill.jpg" alt="Shoebill, Madhubani folk-art render by Forge" width="1000" height="1000" loading="lazy"></div>
+      <div class="fface back">
+        <p class="fk">Magnet · Bangweulu wetlands, Zambia</p>
+        <h3>Shoebill</h3>
+        <p class="fmeta">FLUX.1 [dev] · 24 steps · guidance 5.5 · seed 13302 · 1280&times;1280 · on-device, Apple M5 Max</p>
+        <pre class="fprompt" tabindex="0">MADHUBANI MITHILA FOLK-ART SHOEBILL — Indian folk painting of a African species; NOT photoreal, NOT a safari poster, NOT clip art. single centered Shoebill in complete full-body side profile for a premium Madhubani T-shirt print. standing motionless in profile among folk papyrus crowns with the great bill tucked down against the chest, both long legs planted. bill NOT thin, NOT curved, NOT an ibis — a HUGE BULBOUS CLOG as deep as long, as wide as the head, hooked tip. exactly TWO legs; a short shaggy crest tuft; NOT a pelican, NOT a stork. body filled with saturated slate-grey folk color, NOT natural species photography. the body MUST be unambiguously a shoebill: the BILL is the species mark — huge, bulbous, shoe-shaped, as wide as the head, with a hooked nail at the tip. an enormous shoe-shaped bill as wide as the head with a sharp hooked nail at the tip. almond eye, bold black double-contour keylines, matte saturated folk fills. MADHUBANI DECORATIVE PANELS at 6 zones — forehead tikka, neck dot-band, LARGE chest lotus medallion, LARGE flank paisley panel, LARGE hindquarter floral medallion, leg-anklet bands; each panel a different colour, body between panels FLAT SOLID, no stippling. AROUND the subject (negative space only, NOT on the body): subtle habitat aura of Nile papyrus reed crowns, borassus-palm fronds, Lake-Albert delta water-grass tufts, and water-hyacinth flower dots, small folk sun disk and tiny scattered red-and-saffron flowers in the empty space around the subject. no text, no scenery, no full landscape</pre>
+        <p class="fbtns"><button type="button" class="flink" data-copy="prompt" data-stop>Copy the prompt</button><button type="button" class="flink" data-copy="cmd" data-stop>Copy the command</button><span class="fnote" aria-live="polite"></span></p>
+        <script type="application/json" class="fdata">{"prompt": "MADHUBANI MITHILA FOLK-ART SHOEBILL \u2014 Indian folk painting of a African species; NOT photoreal, NOT a safari poster, NOT clip art. single centered Shoebill in complete full-body side profile for a premium Madhubani T-shirt print. standing motionless in profile among folk papyrus crowns with the great bill tucked down against the chest, both long legs planted. bill NOT thin, NOT curved, NOT an ibis \u2014 a HUGE BULBOUS CLOG as deep as long, as wide as the head, hooked tip. exactly TWO legs; a short shaggy crest tuft; NOT a pelican, NOT a stork. body filled with saturated slate-grey folk color, NOT natural species photography. the body MUST be unambiguously a shoebill: the BILL is the species mark \u2014 huge, bulbous, shoe-shaped, as wide as the head, with a hooked nail at the tip. an enormous shoe-shaped bill as wide as the head with a sharp hooked nail at the tip. almond eye, bold black double-contour keylines, matte saturated folk fills. MADHUBANI DECORATIVE PANELS at 6 zones \u2014 forehead tikka, neck dot-band, LARGE chest lotus medallion, LARGE flank paisley panel, LARGE hindquarter floral medallion, leg-anklet bands; each panel a different colour, body between panels FLAT SOLID, no stippling. AROUND the subject (negative space only, NOT on the body): subtle habitat aura of Nile papyrus reed crowns, borassus-palm fronds, Lake-Albert delta water-grass tufts, and water-hyacinth flower dots, small folk sun disk and tiny scattered red-and-saffron flowers in the empty space around the subject. no text, no scenery, no full landscape", "cmd": "forge engine render minimalist-tshirt --profile madhubani --seed 13302 --width 1280 --height 1280 --subject \"MADHUBANI MITHILA FOLK-ART SHOEBILL \u2014 Indian folk painting of a African species; NOT photoreal, NOT a safari poster, NOT clip art. single centered Shoebill in complete full-body side profile for a premium Madhubani T-shirt print. standing motionless in profile among folk papyrus crowns with the great bill tucked down against the chest, both long legs planted. bill NOT thin, NOT curved, NOT an ibis \u2014 a HUGE BULBOUS CLOG as deep as long, as wide as the head, hooked tip. exactly TWO legs; a short shaggy crest tuft; NOT a pelican, NOT a stork. body filled with saturated slate-grey folk color, NOT natural species photography. the body MUST be unambiguously a shoebill: the BILL is the species mark \u2014 huge, bulbous, shoe-shaped, as wide as the head, with a hooked nail at the tip. an enormous shoe-shaped bill as wide as the head with a sharp hooked nail at the tip. almond eye, bold black double-contour keylines, matte saturated folk fills. MADHUBANI DECORATIVE PANELS at 6 zones \u2014 forehead tikka, neck dot-band, LARGE chest lotus medallion, LARGE flank paisley panel, LARGE hindquarter floral medallion, leg-anklet bands; each panel a different colour, body between panels FLAT SOLID, no stippling. AROUND the subject (negative space only, NOT on the body): subtle habitat aura of Nile papyrus reed crowns, borassus-palm fronds, Lake-Albert delta water-grass tufts, and water-hyacinth flower dots, small folk sun disk and tiny scattered red-and-saffron flowers in the empty space around the subject. no text, no scenery, no full landscape\""}</script>
+      </div>
+    </div>
+    <p class="ftap">Tap the card</p>
+  </article>
+  <article class="fcard-wrap magnet">
+    <div class="fcard" role="button" tabindex="0" aria-label="Hippopotamus. Activate to turn the card over." data-flip>
+      <div class="fface front"><img src="/assets/forge/hippo.jpg" alt="Hippopotamus, Madhubani folk-art render by Forge" width="1000" height="1000" loading="lazy"></div>
+      <div class="fface back">
+        <p class="fk">Magnet · Okavango Delta, Botswana</p>
+        <h3>Hippopotamus</h3>
+        <p class="fmeta">FLUX.1 [dev] · 24 steps · guidance 5.5 · seed 15007 · 1280&times;1280 · on-device, Apple M5 Max</p>
+        <pre class="fprompt" tabindex="0">MADHUBANI MITHILA FOLK-ART HIPPOPOTAMUS — Indian folk painting of a African species; NOT photoreal, NOT a safari poster, NOT clip art. single centered Hippopotamus in complete full-body side profile for a premium Madhubani T-shirt print. standing on a papyrus riverbank in profile with the jaws opened wide in a territorial yawn, all four short legs visible. exactly FOUR short legs each a separate outline and ONE tiny tail. COMPOSED FOR A ROUND MAGNET: everything inside ONE circle, animal centred, ground drawn as an arc along the lower rim; NO straight horizon, NO rectangle, NO frame, white outside the circle. the body MUST be unambiguously a hippopotamus: a huge BARREL body on four SHORT stumpy legs. body filled with saturated plum-purple folk color, NOT natural species photography. enormous barrel body on four short legs, huge wedge head with eyes ears and nostrils set on top of the skull. BODY PATTERN — SMOOTH: the body interior is a flat saturated folk-color FILL with NO spots. almond eye, bold black double-contour keylines, matte saturated folk fills. MADHUBANI DECORATIVE PANELS at 6 zones — forehead tikka, neck dot-band, LARGE chest lotus medallion, LARGE flank paisley panel, LARGE hindquarter floral medallion, leg-anklet bands; each panel a different colour, body between panels FLAT SOLID, no stippling. inside the circle only: a thin ring of Chobe papyrus reed crowns, water-lily pads with floating blooms at the rim, folk sun high, red flowers on the lower arc. no text, no scenery, no full landscape</pre>
+        <p class="fbtns"><button type="button" class="flink" data-copy="prompt" data-stop>Copy the prompt</button><button type="button" class="flink" data-copy="cmd" data-stop>Copy the command</button><span class="fnote" aria-live="polite"></span></p>
+        <script type="application/json" class="fdata">{"prompt": "MADHUBANI MITHILA FOLK-ART HIPPOPOTAMUS \u2014 Indian folk painting of a African species; NOT photoreal, NOT a safari poster, NOT clip art. single centered Hippopotamus in complete full-body side profile for a premium Madhubani T-shirt print. standing on a papyrus riverbank in profile with the jaws opened wide in a territorial yawn, all four short legs visible. exactly FOUR short legs each a separate outline and ONE tiny tail. COMPOSED FOR A ROUND MAGNET: everything inside ONE circle, animal centred, ground drawn as an arc along the lower rim; NO straight horizon, NO rectangle, NO frame, white outside the circle. the body MUST be unambiguously a hippopotamus: a huge BARREL body on four SHORT stumpy legs. body filled with saturated plum-purple folk color, NOT natural species photography. enormous barrel body on four short legs, huge wedge head with eyes ears and nostrils set on top of the skull. BODY PATTERN \u2014 SMOOTH: the body interior is a flat saturated folk-color FILL with NO spots. almond eye, bold black double-contour keylines, matte saturated folk fills. MADHUBANI DECORATIVE PANELS at 6 zones \u2014 forehead tikka, neck dot-band, LARGE chest lotus medallion, LARGE flank paisley panel, LARGE hindquarter floral medallion, leg-anklet bands; each panel a different colour, body between panels FLAT SOLID, no stippling. inside the circle only: a thin ring of Chobe papyrus reed crowns, water-lily pads with floating blooms at the rim, folk sun high, red flowers on the lower arc. no text, no scenery, no full landscape", "cmd": "forge engine render minimalist-tshirt --profile madhubani --seed 15007 --width 1280 --height 1280 --subject \"MADHUBANI MITHILA FOLK-ART HIPPOPOTAMUS \u2014 Indian folk painting of a African species; NOT photoreal, NOT a safari poster, NOT clip art. single centered Hippopotamus in complete full-body side profile for a premium Madhubani T-shirt print. standing on a papyrus riverbank in profile with the jaws opened wide in a territorial yawn, all four short legs visible. exactly FOUR short legs each a separate outline and ONE tiny tail. COMPOSED FOR A ROUND MAGNET: everything inside ONE circle, animal centred, ground drawn as an arc along the lower rim; NO straight horizon, NO rectangle, NO frame, white outside the circle. the body MUST be unambiguously a hippopotamus: a huge BARREL body on four SHORT stumpy legs. body filled with saturated plum-purple folk color, NOT natural species photography. enormous barrel body on four short legs, huge wedge head with eyes ears and nostrils set on top of the skull. BODY PATTERN \u2014 SMOOTH: the body interior is a flat saturated folk-color FILL with NO spots. almond eye, bold black double-contour keylines, matte saturated folk fills. MADHUBANI DECORATIVE PANELS at 6 zones \u2014 forehead tikka, neck dot-band, LARGE chest lotus medallion, LARGE flank paisley panel, LARGE hindquarter floral medallion, leg-anklet bands; each panel a different colour, body between panels FLAT SOLID, no stippling. inside the circle only: a thin ring of Chobe papyrus reed crowns, water-lily pads with floating blooms at the rim, folk sun high, red flowers on the lower arc. no text, no scenery, no full landscape\""}</script>
+      </div>
+    </div>
+    <p class="ftap">Tap the card</p>
+  </article>
+  <section class="fcopy"><h2>Every render writes its own paperwork.</h2><p>Next to each PNG the engine leaves a directive sidecar: the full positive prompt, the negative list (over ninety phrases, from &ldquo;photorealistic&rdquo; to &ldquo;artist signature glyph&rdquo;), the 60/30/10 palette it was held to, the seed, the steps, the guidance, and an audit of which rules were applied. A run can be reproduced or argued with a year later. Four seeds render in one pass, 60.8% faster than one at a time.</p></section>
+  <article class="fcard-wrap magnet">
+    <div class="fcard" role="button" tabindex="0" aria-label="Red Panda. Activate to turn the card over." data-flip>
+      <div class="fface front"><img src="/assets/forge/red-panda.jpg" alt="Red Panda, Madhubani folk-art render by Forge" width="1000" height="1000" loading="lazy"></div>
+      <div class="fface back">
+        <p class="fk">Magnet · Singalila, Sikkim</p>
+        <h3>Red Panda</h3>
+        <p class="fmeta">FLUX.1 [dev] · 24 steps · guidance 5.5 · seed 15101 · 1280&times;1280 · on-device, Apple M5 Max</p>
+        <pre class="fprompt" tabindex="0">single centered Red Panda in complete full-body side profile for a premium Madhubani T-shirt print. balanced upright on a folk-pattern bamboo branch with forepaws raised in defensive &#x27;kung-fu&#x27; stance, tail extended for balance, head alert. Exactly four legs — two hind feet planted on the branch and two forepaws raised. COMPOSED FOR A ROUND MAGNET: everything inside ONE circle, animal centred, ground drawn as an arc along the lower rim; NO straight horizon, NO rectangle, NO frame, white outside the circle. TAIL is LONG and BUSHY with CLEAR ALTERNATING RINGS (rendered as folk bands of cream and walnut alternately — this is the defining field mark); WHITE FACIAL MARKINGS (cheeks, brows. body filled with saturated walnut-brown folk color, NOT natural species photography. russet-red coat translated as warm walnut folk fill with rich vermillion and saffron accent panels. almond eye, bold black double-contour keylines, matte saturated folk fills. PROMINENT MADHUBANI DECORATIVE PANELS at 6 zones — (1) forehead tikka medallion, (2) neck dot-band, (3) LARGE chest lotus medallion, (4) LARGE flank paisley panel, (5) LARGE hindquarter floral medallion, (6) leg-anklet bands at each joint. Each panel is dominant and uses a different colour combination; between the panels the body stays FLAT SOLID COLOR, no stippling.. inside the circle only: a thin ring of Eastern-Himalayan rhododendron leaf sprigs, mossy fir-and-bamboo tufts at the rim, folk sun high, red flowers on the lower arc. no text, no scenery, no full landscape</pre>
+        <p class="fbtns"><button type="button" class="flink" data-copy="prompt" data-stop>Copy the prompt</button><button type="button" class="flink" data-copy="cmd" data-stop>Copy the command</button><span class="fnote" aria-live="polite"></span></p>
+        <script type="application/json" class="fdata">{"prompt": "single centered Red Panda in complete full-body side profile for a premium Madhubani T-shirt print. balanced upright on a folk-pattern bamboo branch with forepaws raised in defensive 'kung-fu' stance, tail extended for balance, head alert. Exactly four legs \u2014 two hind feet planted on the branch and two forepaws raised. COMPOSED FOR A ROUND MAGNET: everything inside ONE circle, animal centred, ground drawn as an arc along the lower rim; NO straight horizon, NO rectangle, NO frame, white outside the circle. TAIL is LONG and BUSHY with CLEAR ALTERNATING RINGS (rendered as folk bands of cream and walnut alternately \u2014 this is the defining field mark); WHITE FACIAL MARKINGS (cheeks, brows. body filled with saturated walnut-brown folk color, NOT natural species photography. russet-red coat translated as warm walnut folk fill with rich vermillion and saffron accent panels. almond eye, bold black double-contour keylines, matte saturated folk fills. PROMINENT MADHUBANI DECORATIVE PANELS at 6 zones \u2014 (1) forehead tikka medallion, (2) neck dot-band, (3) LARGE chest lotus medallion, (4) LARGE flank paisley panel, (5) LARGE hindquarter floral medallion, (6) leg-anklet bands at each joint. Each panel is dominant and uses a different colour combination; between the panels the body stays FLAT SOLID COLOR, no stippling.. inside the circle only: a thin ring of Eastern-Himalayan rhododendron leaf sprigs, mossy fir-and-bamboo tufts at the rim, folk sun high, red flowers on the lower arc. no text, no scenery, no full landscape", "cmd": "forge engine render minimalist-tshirt --profile madhubani --seed 15101 --width 1280 --height 1280 --subject \"single centered Red Panda in complete full-body side profile for a premium Madhubani T-shirt print. balanced upright on a folk-pattern bamboo branch with forepaws raised in defensive 'kung-fu' stance, tail extended for balance, head alert. Exactly four legs \u2014 two hind feet planted on the branch and two forepaws raised. COMPOSED FOR A ROUND MAGNET: everything inside ONE circle, animal centred, ground drawn as an arc along the lower rim; NO straight horizon, NO rectangle, NO frame, white outside the circle. TAIL is LONG and BUSHY with CLEAR ALTERNATING RINGS (rendered as folk bands of cream and walnut alternately \u2014 this is the defining field mark); WHITE FACIAL MARKINGS (cheeks, brows. body filled with saturated walnut-brown folk color, NOT natural species photography. russet-red coat translated as warm walnut folk fill with rich vermillion and saffron accent panels. almond eye, bold black double-contour keylines, matte saturated folk fills. PROMINENT MADHUBANI DECORATIVE PANELS at 6 zones \u2014 (1) forehead tikka medallion, (2) neck dot-band, (3) LARGE chest lotus medallion, (4) LARGE flank paisley panel, (5) LARGE hindquarter floral medallion, (6) leg-anklet bands at each joint. Each panel is dominant and uses a different colour combination; between the panels the body stays FLAT SOLID COLOR, no stippling.. inside the circle only: a thin ring of Eastern-Himalayan rhododendron leaf sprigs, mossy fir-and-bamboo tufts at the rim, folk sun high, red flowers on the lower arc. no text, no scenery, no full landscape\""}</script>
+      </div>
+    </div>
+    <p class="ftap">Tap the card</p>
+  </article>
+  <article class="fcard-wrap postcard">
+    <div class="fcard" role="button" tabindex="0" aria-label="Sarus Crane. Activate to turn the card over." data-flip>
+      <div class="fface front"><img src="/assets/forge/sarus-crane.jpg" alt="Sarus Crane, Madhubani folk-art render by Forge" width="1000" height="1000" loading="lazy"></div>
+      <div class="fface back">
+        <p class="fk">Postcard · Keoladeo, Rajasthan</p>
+        <h3>Sarus Crane</h3>
+        <p class="fmeta">FLUX.1 [dev] · 24 steps · guidance 5.5 · seed 15108 · 1280&times;1280 · on-device, Apple M5 Max</p>
+        <pre class="fprompt" tabindex="0">single centered Sarus Crane in complete full-body side profile for a premium Madhubani T-shirt print. courtship dance with both wings spread wide and head thrown back, beak open in a trumpeting unison call, body lifted on tiptoes. exactly TWO long legs, both fully drawn, and ONE wing panel raised over the back; the far wing hidden. one long straight bill, red head and neck as flat vermillion, NOT a stork, NOT a flamingo. COMPOSED FOR A ROUND MAGNET: everything inside ONE circle, animal centred, ground drawn as an arc along the lower rim; NO straight horizon, NO rectangle, NO frame, white outside the circle. the body MUST be UNAMBIGUOUSLY a Sarus Crane (Antigone antigone): THE TALLEST FLYING BIRD IN THE WORLD (1.5-1.8m) — give it long-legged, long-necked. body filled with saturated deep-indigo folk color, NOT natural species photography. tallest flying bird on Earth — extraordinarily long legs and neck rendered as graceful folk verticals. almond eye, bold black double-contour keylines, matte saturated folk fills. PROMINENT MADHUBANI DECORATIVE PANELS at 6 zones — (1) forehead tikka medallion, (2) neck dot-band, (3) LARGE chest lotus medallion, (4) LARGE flank paisley panel, (5) LARGE hindquarter floral medallion, (6) leg-anklet bands at each joint. Each panel is dominant and uses a different colour combination; between the panels the body stays FLAT SOLID COLOR, no stippling.. inside the circle only: a thin ring of wetland-reed sprigs and water-hyacinth flower dots at the rim, folk sun high, red flowers on the lower arc. no text, no scenery, no full landscape</pre>
+        <p class="fbtns"><button type="button" class="flink" data-copy="prompt" data-stop>Copy the prompt</button><button type="button" class="flink" data-copy="cmd" data-stop>Copy the command</button><span class="fnote" aria-live="polite"></span></p>
+        <script type="application/json" class="fdata">{"prompt": "single centered Sarus Crane in complete full-body side profile for a premium Madhubani T-shirt print. courtship dance with both wings spread wide and head thrown back, beak open in a trumpeting unison call, body lifted on tiptoes. exactly TWO long legs, both fully drawn, and ONE wing panel raised over the back; the far wing hidden. one long straight bill, red head and neck as flat vermillion, NOT a stork, NOT a flamingo. COMPOSED FOR A ROUND MAGNET: everything inside ONE circle, animal centred, ground drawn as an arc along the lower rim; NO straight horizon, NO rectangle, NO frame, white outside the circle. the body MUST be UNAMBIGUOUSLY a Sarus Crane (Antigone antigone): THE TALLEST FLYING BIRD IN THE WORLD (1.5-1.8m) \u2014 give it long-legged, long-necked. body filled with saturated deep-indigo folk color, NOT natural species photography. tallest flying bird on Earth \u2014 extraordinarily long legs and neck rendered as graceful folk verticals. almond eye, bold black double-contour keylines, matte saturated folk fills. PROMINENT MADHUBANI DECORATIVE PANELS at 6 zones \u2014 (1) forehead tikka medallion, (2) neck dot-band, (3) LARGE chest lotus medallion, (4) LARGE flank paisley panel, (5) LARGE hindquarter floral medallion, (6) leg-anklet bands at each joint. Each panel is dominant and uses a different colour combination; between the panels the body stays FLAT SOLID COLOR, no stippling.. inside the circle only: a thin ring of wetland-reed sprigs and water-hyacinth flower dots at the rim, folk sun high, red flowers on the lower arc. no text, no scenery, no full landscape", "cmd": "forge engine render minimalist-tshirt --profile madhubani --seed 15108 --width 1280 --height 1280 --subject \"single centered Sarus Crane in complete full-body side profile for a premium Madhubani T-shirt print. courtship dance with both wings spread wide and head thrown back, beak open in a trumpeting unison call, body lifted on tiptoes. exactly TWO long legs, both fully drawn, and ONE wing panel raised over the back; the far wing hidden. one long straight bill, red head and neck as flat vermillion, NOT a stork, NOT a flamingo. COMPOSED FOR A ROUND MAGNET: everything inside ONE circle, animal centred, ground drawn as an arc along the lower rim; NO straight horizon, NO rectangle, NO frame, white outside the circle. the body MUST be UNAMBIGUOUSLY a Sarus Crane (Antigone antigone): THE TALLEST FLYING BIRD IN THE WORLD (1.5-1.8m) \u2014 give it long-legged, long-necked. body filled with saturated deep-indigo folk color, NOT natural species photography. tallest flying bird on Earth \u2014 extraordinarily long legs and neck rendered as graceful folk verticals. almond eye, bold black double-contour keylines, matte saturated folk fills. PROMINENT MADHUBANI DECORATIVE PANELS at 6 zones \u2014 (1) forehead tikka medallion, (2) neck dot-band, (3) LARGE chest lotus medallion, (4) LARGE flank paisley panel, (5) LARGE hindquarter floral medallion, (6) leg-anklet bands at each joint. Each panel is dominant and uses a different colour combination; between the panels the body stays FLAT SOLID COLOR, no stippling.. inside the circle only: a thin ring of wetland-reed sprigs and water-hyacinth flower dots at the rim, folk sun high, red flowers on the lower arc. no text, no scenery, no full landscape\""}</script>
+      </div>
+    </div>
+    <p class="ftap">Tap the card</p>
+  </article>
+  <section class="fcopy"><h2>Guarded runs, and a cut-out for free.</h2><p>A guarded run checks the result against the prompt&rsquo;s own claims before it is kept: a giraffe whose neck is shorter than its legs fails, a body that came out as a silhouette fails, a signature the model invented fails. Two of the Indian candidates for this page were dropped for a fake signature. Each keeper also gets a transparent PNG, the subject lifted off the paper, ready for print work.</p></section>
+  <article class="fcard-wrap magnet">
+    <div class="fcard" role="button" tabindex="0" aria-label="Indian Pangolin. Activate to turn the card over." data-flip>
+      <div class="fface front"><img src="/assets/forge/indian-pangolin.jpg" alt="Indian Pangolin, Madhubani folk-art render by Forge" width="1000" height="1000" loading="lazy"></div>
+      <div class="fface back">
+        <p class="fk">Magnet · Deccan scrub</p>
+        <h3>Indian Pangolin</h3>
+        <p class="fmeta">FLUX.1 [dev] · 24 steps · guidance 5.5 · seed 15109 · 1280&times;1280 · on-device, Apple M5 Max</p>
+        <pre class="fprompt" tabindex="0">single centered Indian Pangolin in complete full-body side profile for a premium Madhubani T-shirt print. walking forward on hind legs with forelimbs folded close to the chest and the long heavy tail used as a counterbalance. exactly four short legs and ONE long tapering tail; large overlapping scale plates as flat folk panels. COMPOSED FOR A ROUND MAGNET: everything inside ONE circle, animal centred, ground drawn as an arc along the lower rim; NO straight horizon, NO rectangle, NO frame, white outside the circle. ENTIRE BODY and TAIL covered in overlapping scales — translated into rhythmic interlocking folk panels; tail is THICK AND HEAVY (thicker than the body width. body filled with saturated deep-indigo folk color, NOT natural species photography. overlapping keratin scales covering the entire body and tail translated into rhythmic interlocking folk panels (saffron, leaf-green, vermillion). BODY PATTERN — SCALES AS REPEATING FOLK MOTIFS: body fully covered in overlapping scales runnin. almond eye, bold black double-contour keylines, matte saturated folk fills. PROMINENT MADHUBANI DECORATIVE PANELS at 6 zones — (1) forehead tikka medallion, (2) neck dot-band, (3) LARGE chest lotus medallion, (4) LARGE flank paisley panel, (5) LARGE hindquarter floral medallion, (6) leg-anklet bands at each joint. Each panel is dominant and uses a different colour combination; between the panels the body stays FLAT SOLID COLOR, no stippling.. inside the circle only: a thin ring of Maharashtra teak leaf sprigs and lantana flower dots at the rim, folk sun high, red flowers on the lower arc. no text, no scenery, no full landscape</pre>
+        <p class="fbtns"><button type="button" class="flink" data-copy="prompt" data-stop>Copy the prompt</button><button type="button" class="flink" data-copy="cmd" data-stop>Copy the command</button><span class="fnote" aria-live="polite"></span></p>
+        <script type="application/json" class="fdata">{"prompt": "single centered Indian Pangolin in complete full-body side profile for a premium Madhubani T-shirt print. walking forward on hind legs with forelimbs folded close to the chest and the long heavy tail used as a counterbalance. exactly four short legs and ONE long tapering tail; large overlapping scale plates as flat folk panels. COMPOSED FOR A ROUND MAGNET: everything inside ONE circle, animal centred, ground drawn as an arc along the lower rim; NO straight horizon, NO rectangle, NO frame, white outside the circle. ENTIRE BODY and TAIL covered in overlapping scales \u2014 translated into rhythmic interlocking folk panels; tail is THICK AND HEAVY (thicker than the body width. body filled with saturated deep-indigo folk color, NOT natural species photography. overlapping keratin scales covering the entire body and tail translated into rhythmic interlocking folk panels (saffron, leaf-green, vermillion). BODY PATTERN \u2014 SCALES AS REPEATING FOLK MOTIFS: body fully covered in overlapping scales runnin. almond eye, bold black double-contour keylines, matte saturated folk fills. PROMINENT MADHUBANI DECORATIVE PANELS at 6 zones \u2014 (1) forehead tikka medallion, (2) neck dot-band, (3) LARGE chest lotus medallion, (4) LARGE flank paisley panel, (5) LARGE hindquarter floral medallion, (6) leg-anklet bands at each joint. Each panel is dominant and uses a different colour combination; between the panels the body stays FLAT SOLID COLOR, no stippling.. inside the circle only: a thin ring of Maharashtra teak leaf sprigs and lantana flower dots at the rim, folk sun high, red flowers on the lower arc. no text, no scenery, no full landscape", "cmd": "forge engine render minimalist-tshirt --profile madhubani --seed 15109 --width 1280 --height 1280 --subject \"single centered Indian Pangolin in complete full-body side profile for a premium Madhubani T-shirt print. walking forward on hind legs with forelimbs folded close to the chest and the long heavy tail used as a counterbalance. exactly four short legs and ONE long tapering tail; large overlapping scale plates as flat folk panels. COMPOSED FOR A ROUND MAGNET: everything inside ONE circle, animal centred, ground drawn as an arc along the lower rim; NO straight horizon, NO rectangle, NO frame, white outside the circle. ENTIRE BODY and TAIL covered in overlapping scales \u2014 translated into rhythmic interlocking folk panels; tail is THICK AND HEAVY (thicker than the body width. body filled with saturated deep-indigo folk color, NOT natural species photography. overlapping keratin scales covering the entire body and tail translated into rhythmic interlocking folk panels (saffron, leaf-green, vermillion). BODY PATTERN \u2014 SCALES AS REPEATING FOLK MOTIFS: body fully covered in overlapping scales runnin. almond eye, bold black double-contour keylines, matte saturated folk fills. PROMINENT MADHUBANI DECORATIVE PANELS at 6 zones \u2014 (1) forehead tikka medallion, (2) neck dot-band, (3) LARGE chest lotus medallion, (4) LARGE flank paisley panel, (5) LARGE hindquarter floral medallion, (6) leg-anklet bands at each joint. Each panel is dominant and uses a different colour combination; between the panels the body stays FLAT SOLID COLOR, no stippling.. inside the circle only: a thin ring of Maharashtra teak leaf sprigs and lantana flower dots at the rim, folk sun high, red flowers on the lower arc. no text, no scenery, no full landscape\""}</script>
+      </div>
+    </div>
+    <p class="ftap">Tap the card</p>
+  </article>
+  <article class="fcard-wrap postcard">
+    <div class="fcard" role="button" tabindex="0" aria-label="Greater Flamingo. Activate to turn the card over." data-flip>
+      <div class="fface front"><img src="/assets/forge/greater-flamingo.jpg" alt="Greater Flamingo, Madhubani folk-art render by Forge" width="1000" height="1000" loading="lazy"></div>
+      <div class="fface back">
+        <p class="fk">Postcard · Rann of Kutch, Gujarat</p>
+        <h3>Greater Flamingo</h3>
+        <p class="fmeta">FLUX.1 [dev] · 24 steps · guidance 5.5 · seed 15106 · 1280&times;1280 · on-device, Apple M5 Max</p>
+        <pre class="fprompt" tabindex="0">single centered Greater Flamingo in complete full-body side profile for a premium Madhubani T-shirt print. wings half-spread in display with head dipped low and neck curved into a deep S, one long leg lifted forward. matte flat folk fills with black double-contour keylines and lotus panels on the body; NO gloss, NO gradient shading. Exactly TWO legs, both fully drawn: one planted on the ground line. Only the near wing is raised, as ONE flat decorated panel lifted over the back. COMPOSED FOR A ROUND MAGNET: everything inside ONE circle, animal centred, ground drawn as an arc along the lower rim; NO straight horizon, NO rectangle, NO frame, white outside the circle. BILL is DOWNWARD-BENT (sharply kinked roughly halfway along its length with a BLACK tip). body filled with saturated deep-indigo folk color, NOT natural species photography. extraordinarily long graceful S-curved neck, very long stilt-like legs rendered as vermillion folk verticals. almond eye, bold black double-contour keylines, matte saturated folk fills. PROMINENT MADHUBANI DECORATIVE PANELS at 6 zones — (1) forehead tikka medallion, (2) neck dot-band, (3) LARGE chest lotus medallion, (4) LARGE flank paisley panel, (5) LARGE hindquarter floral medallion, (6) leg-anklet bands at each joint. Each panel is dominant and uses a different colour combination; between the panels the body stays FLAT SOLID COLOR, no stippling.. inside the circle only: a thin ring of Chilika brackish-lagoon reed sprigs, Nalabana sea-grass tussocks and water-lily dots at the rim, folk sun high, red flowers on the lower arc. no text, no scenery, no full landscape</pre>
+        <p class="fbtns"><button type="button" class="flink" data-copy="prompt" data-stop>Copy the prompt</button><button type="button" class="flink" data-copy="cmd" data-stop>Copy the command</button><span class="fnote" aria-live="polite"></span></p>
+        <script type="application/json" class="fdata">{"prompt": "single centered Greater Flamingo in complete full-body side profile for a premium Madhubani T-shirt print. wings half-spread in display with head dipped low and neck curved into a deep S, one long leg lifted forward. matte flat folk fills with black double-contour keylines and lotus panels on the body; NO gloss, NO gradient shading. Exactly TWO legs, both fully drawn: one planted on the ground line. Only the near wing is raised, as ONE flat decorated panel lifted over the back. COMPOSED FOR A ROUND MAGNET: everything inside ONE circle, animal centred, ground drawn as an arc along the lower rim; NO straight horizon, NO rectangle, NO frame, white outside the circle. BILL is DOWNWARD-BENT (sharply kinked roughly halfway along its length with a BLACK tip). body filled with saturated deep-indigo folk color, NOT natural species photography. extraordinarily long graceful S-curved neck, very long stilt-like legs rendered as vermillion folk verticals. almond eye, bold black double-contour keylines, matte saturated folk fills. PROMINENT MADHUBANI DECORATIVE PANELS at 6 zones \u2014 (1) forehead tikka medallion, (2) neck dot-band, (3) LARGE chest lotus medallion, (4) LARGE flank paisley panel, (5) LARGE hindquarter floral medallion, (6) leg-anklet bands at each joint. Each panel is dominant and uses a different colour combination; between the panels the body stays FLAT SOLID COLOR, no stippling.. inside the circle only: a thin ring of Chilika brackish-lagoon reed sprigs, Nalabana sea-grass tussocks and water-lily dots at the rim, folk sun high, red flowers on the lower arc. no text, no scenery, no full landscape", "cmd": "forge engine render minimalist-tshirt --profile madhubani --seed 15106 --width 1280 --height 1280 --subject \"single centered Greater Flamingo in complete full-body side profile for a premium Madhubani T-shirt print. wings half-spread in display with head dipped low and neck curved into a deep S, one long leg lifted forward. matte flat folk fills with black double-contour keylines and lotus panels on the body; NO gloss, NO gradient shading. Exactly TWO legs, both fully drawn: one planted on the ground line. Only the near wing is raised, as ONE flat decorated panel lifted over the back. COMPOSED FOR A ROUND MAGNET: everything inside ONE circle, animal centred, ground drawn as an arc along the lower rim; NO straight horizon, NO rectangle, NO frame, white outside the circle. BILL is DOWNWARD-BENT (sharply kinked roughly halfway along its length with a BLACK tip). body filled with saturated deep-indigo folk color, NOT natural species photography. extraordinarily long graceful S-curved neck, very long stilt-like legs rendered as vermillion folk verticals. almond eye, bold black double-contour keylines, matte saturated folk fills. PROMINENT MADHUBANI DECORATIVE PANELS at 6 zones \u2014 (1) forehead tikka medallion, (2) neck dot-band, (3) LARGE chest lotus medallion, (4) LARGE flank paisley panel, (5) LARGE hindquarter floral medallion, (6) leg-anklet bands at each joint. Each panel is dominant and uses a different colour combination; between the panels the body stays FLAT SOLID COLOR, no stippling.. inside the circle only: a thin ring of Chilika brackish-lagoon reed sprigs, Nalabana sea-grass tussocks and water-lily dots at the rim, folk sun high, red flowers on the lower arc. no text, no scenery, no full landscape\""}</script>
+      </div>
+    </div>
+    <p class="ftap">Tap the card</p>
+  </article>
+  <section class="fcopy"><h2>On your machine, under a licence you can read.</h2><p>Forge runs on Apple Silicon with no cloud, no key and no upload. These eight were rendered with FLUX.1 [dev], whose licence is non-commercial, so they are shown here and not sold. Forge&rsquo;s default today is FLUX.2 klein 4B under Apache 2.0, and the same command reproduces the series on it. The model is a tool; the licence decides what the output is for.</p></section>
   </main>
 
 
@@ -336,7 +476,7 @@
       folder and a contact sheet; nothing is overwritten and the grade is on the sheet. The Baithak
       poster was rendered by FLUX.2 klein 4B, deliberately without people, because the model draws
       them badly and an honest render beats a flattering one. The three cards, the run sheet and the
-      raw render are in the wall above.
+      raw render are in the repository's gallery folder.
     </p>
 
     <h2>What these renders demonstrate</h2>
@@ -380,213 +520,36 @@
   </footer>
 
   <script>
-  (function () {
-    "use strict";
-
-    // The folder is the source of truth — whatever is committed there shows
-    // up here. Nothing is referenced by filename.
-    var LISTING = "https://api.github.com/repos/tommyvercetti76/Forge/contents/docs/gallery";
-    var IMAGE_RE = /\.(png|jpe?g|webp|gif|avif)$/i;
-
-    // Real notes about the project, cycled beneath the renders
-    var SNIPPETS = [
-      "Made on-device with FLUX.1-dev through mflux — no cloud round trip.",
-      "Forge runs image, text and audio locally; the core paths need no network.",
-      "MIT licensed and Python 3.11+, so this is reproducible on your own machine.",
-      "Scheduler work cut mflux multi-seed generation time by 60.8%.",
-      "One of a 41-species Madhubani folk-art catalog.",
-      "Candidates are screened by an auto-QC CLIP probe scoring F1 0.62 (LOOCV, N=16).",
-      "The v1 LoRA returned ITERATE — +0.0357 against a +0.05 ship threshold fixed before the run.",
-      "128 tests guard the engines that produced these.",
-      "v6 photo-init Kontext-img2img exists to fix prior collisions that prompt engineering could not.",
-      "Filenames carry their engine version; the maintainer's picks are marked."
-    ];
-
-    // Local copies, so the page still shows real work if GitHub is unreachable
-    var FALLBACK = [
-      "/assets/forge/voted_peacock.png",
-      "/assets/forge/voted_blackbuck.png",
-      "/assets/forge/voted_rhino.png",
-      "/assets/forge/voted_elephant.png"
-    ].map(function (src) { return { name: src.split("/").pop(), url: src }; });
-
-    var gallery = document.getElementById("gallery");
-    var status = document.getElementById("status");
-    var items = [];
-
-    function h(tag, props, kids) {
-      var node = document.createElement(tag);
-      Object.keys(props || {}).forEach(function (k) {
-        if (k === "class") node.className = props[k];
-        else if (k === "text") node.textContent = props[k];
-        else if (props[k] === true) node.setAttribute(k, "");
-        else if (props[k] != null && props[k] !== false) node.setAttribute(k, props[k]);
-      });
-      (kids || []).forEach(function (kid) { if (kid) node.appendChild(kid); });
-      return node;
-    }
-
-    // Read structure out of the filename rather than a lookup table, so a
-    // newly committed render is described correctly without a code change.
-    function describe(name) {
-      var base = name.replace(/\.[^.]+$/, "");
-      var tags = [];
-      var pick = false;
-
-      if (/^voted[_-]/i.test(base)) { pick = true; base = base.replace(/^voted[_-]/i, ""); }
-
-      var lead = base.match(/^v(\d+[a-z]?)[_-]/i);
-      var trail = base.match(/[_-]v(\d+[a-z]?)$/i);
-      if (lead) { tags.push("v" + lead[1]); base = base.replace(/^v\d+[a-z]?[_-]/i, ""); }
-      else if (trail) { tags.push("v" + trail[1]); base = base.replace(/[_-]v\d+[a-z]?$/i, ""); }
-
-      var title = base.replace(/[_-]+/g, " ").trim().replace(/\S+/g, function (w) {
-        return w.charAt(0).toUpperCase() + w.slice(1);
-      });
-
-      return { title: title || name, tags: tags, pick: pick };
-    }
-
-    // First screenful loads eagerly; the rest defer until scrolled near
-    function art(src, eager, alt) {
-      var img = h("img", { src: src, alt: alt || "A Forge render", decoding: "async", loading: eager ? null : "lazy", fetchpriority: eager ? "high" : null });
-      if (img.complete && img.naturalWidth) img.classList.add("is-loaded");
-      else img.addEventListener("load", function () { img.classList.add("is-loaded"); });
-      return img;
-    }
-
-    // Headings and subheadings are authored in the repo itself —
-    // docs/gallery/captions.json, keyed by filename. Anything without an
-    // entry falls back to filename parsing, so a new commit always renders.
-    function render(list, captions) {
-      captions = captions || {};
-      items = list.map(function (entry, i) {
-        var d = describe(entry.name);
-        var cap = captions[entry.name] || {};
-        return {
-          url: entry.url,
-          title: cap.title || d.title,
-          tags: cap.sub || d.tags.concat(d.pick ? ["Maintainer's pick"] : []).join(" · "),
-          snip: SNIPPETS[i % SNIPPETS.length],
-          pick: d.pick
-        };
-      });
-
-      gallery.innerHTML = "";
-
-      items.forEach(function (item, i) {
-        var shot = h("button", {
-          class: "tile-shot", type: "button",
-          "aria-label": "Open " + item.title + " larger"
-        }, [
-          art(item.url, i < 6, item.title + " — a Forge render"),
-          item.pick ? h("span", { class: "tile-badge", text: "Maintainer's pick" }) : null
-        ]);
-
-        shot.addEventListener("click", function () { openBox(i); });
-
-        gallery.appendChild(h("figure", { class: "tile" }, [
-          shot,
-          h("figcaption", { class: "tile-meta" }, [
-            h("p", { class: "tile-title", text: item.title }),
-            item.tags ? h("p", { class: "tile-tags", text: item.tags }) : null,
-            h("p", { class: "tile-snip", text: item.snip })
-          ])
-        ]));
-      });
-    }
-
-    /* ── Lightbox ─────────────────────────────────────────────────────── */
-    var box = document.getElementById("box");
-    var boxImg = document.getElementById("box-img");
-    var boxTitle = document.getElementById("box-title");
-    var boxTags = document.getElementById("box-tags");
-    var boxSnip = document.getElementById("box-snip");
-    var at = 0;
-    var lastFocus = null;
-
-    function paintBox() {
-      var item = items[at];
-      boxImg.src = item.url;
-      boxImg.alt = item.title + " — a Forge render";
-      boxTitle.textContent = item.title;
-      boxTags.textContent = item.tags;
-      boxSnip.textContent = item.snip;
-    }
-
-    function openBox(i) {
-      at = i;
-      lastFocus = document.activeElement;
-      paintBox();
-      box.hidden = false;
-      window.requestAnimationFrame(function () { box.classList.add("box--open"); });
-      document.body.style.overflow = "hidden";
-      box.querySelector(".box-close").focus();
-    }
-
-    function closeBox() {
-      if (box.hidden) return;
-      box.classList.remove("box--open");
-      window.setTimeout(function () { box.hidden = true; }, 300);
-      document.body.style.overflow = "";
-      if (lastFocus) { lastFocus.focus(); lastFocus = null; }
-    }
-
-    function step(by) {
-      if (!items.length) return;
-      at = (at + by + items.length) % items.length;
-      paintBox();
-    }
-
-    box.addEventListener("click", function (e) {
-      if (e.target.closest("[data-close]")) return closeBox();
-      var stepper = e.target.closest("[data-step]");
-      if (stepper) step(Number(stepper.getAttribute("data-step")));
-    });
-
-    document.addEventListener("keydown", function (e) {
-      if (box.hidden) return;
-      if (e.key === "Escape") closeBox();
-      else if (e.key === "ArrowRight") step(1);
-      else if (e.key === "ArrowLeft") step(-1);
-    });
-
-    /* ── Boot ─────────────────────────────────────────────────────────── */
-    var CAPTIONS_URL = "https://raw.githubusercontent.com/tommyvercetti76/Forge/main/docs/gallery/captions.json";
-
-    Promise.all([
-      fetch(LISTING, { headers: { Accept: "application/vnd.github+json" } })
-        .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); }),
-      // Captions are editorial, not structural — a miss must never block the wall
-      fetch(CAPTIONS_URL)
-        .then(function (r) { return r.ok ? r.json() : {}; })
-        .catch(function () { return {}; })
-    ])
-      .then(function (results) {
-        var data = results[0], captions = results[1];
-        if (!Array.isArray(data)) throw new Error("unexpected listing");
-        var files = data
-          .filter(function (e) { return e.type === "file" && IMAGE_RE.test(e.name) && e.name !== "captions.json"; })
-          .map(function (e) { return { name: e.name, url: e.download_url }; });
-        if (!files.length) throw new Error("no images");
-        render(files, captions);
-      })
-      .catch(function () {
-        render(FALLBACK);
-        gallery.insertBefore(
-          h("p", { class: "status", text: "Showing locally held renders — the live folder could not be reached." }),
-          gallery.firstChild
-        );
-      });
-  })();
-  </script>
-  <script>
     (function () {
       var y = document.getElementById("year");
       if (y) y.textContent = new Date().getFullYear();
     })();
   </script>
 
+
+  <script>
+  (function () {
+    /* Flip on tap or Enter; sway with the pointer; copy the prompt or the command. */
+    var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.querySelectorAll('.fcard').forEach(function (card) {
+      var flip = function () { card.classList.toggle('is-flipped'); };
+      card.addEventListener('click', function (e) { if (e.target.closest('[data-stop]') || e.target.closest('.fprompt')) return; flip(); });
+      card.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); } });
+      if (!reduced && matchMedia('(hover:hover)').matches) {
+        card.addEventListener('pointermove', function (e) { var r = card.getBoundingClientRect(); var x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5; card.style.setProperty('--ry', (x * 10) + 'deg'); card.style.setProperty('--rx', (-y * 8) + 'deg'); });
+        card.addEventListener('pointerleave', function () { card.style.setProperty('--ry', '0deg'); card.style.setProperty('--rx', '0deg'); });
+      }
+      var data = JSON.parse(card.querySelector('.fdata').textContent);
+      card.querySelectorAll('[data-copy]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var note = card.querySelector('.fnote'), text = data[b.dataset.copy];
+          (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(function () { note.textContent = 'Copied.'; }, function () { note.textContent = 'Select the text and copy it.'; });
+          setTimeout(function () { note.textContent = ''; }, 2500);
+        });
+      });
+    });
+  })();
+  </script>
   <script src="/js/util.js"></script>
 
 </body>
