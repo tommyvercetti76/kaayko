@@ -222,29 +222,28 @@
     .fg-about a { color: var(--gold); text-decoration: none; border-bottom: 1px solid rgba(181,147,90,0.4); }
     .fg-about a:hover { color: var(--gold-bright); border-color: var(--gold-bright); }
   
-/* ── Eight cards (16 Sep 2026): the kaayko.com/card object, eight times, with the prompt on the back ── */
-.fgrid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:clamp(28px,4vw,56px) clamp(20px,3vw,40px); max-width:1180px; margin:0 auto; padding:0 20px 40px; align-items:start }
-.fcard-wrap { display:grid; gap:10px; justify-items:center }
-.fcard-wrap.postcard { grid-column:1 / -1; max-width:760px; margin:0 auto; width:100% }
+/* ── Pinterest wall (16 Sep 2026): CSS columns, three tile shapes, the card flip on every tile ── */
+.fgrid { columns:3 300px; column-gap:22px; max-width:1240px; margin:0 auto; padding:0 20px 40px }
+.fcard-wrap, .fcopy { break-inside:avoid; -webkit-column-break-inside:avoid; margin:0 0 22px; display:grid; gap:8px; justify-items:center }
 .fcard { position:relative; width:100%; perspective:1400px; cursor:pointer; outline:none; --rx:0deg; --ry:0deg; --flip:0deg }
-.fcard-wrap.postcard .fcard { aspect-ratio:3/2 } .fcard-wrap.magnet .fcard { aspect-ratio:1/1 }
+.fcard-wrap.postcard .fcard { aspect-ratio:3/2 } .fcard-wrap.magnet .fcard { aspect-ratio:1/1 } .fcard-wrap.tall .fcard { aspect-ratio:4/5 }
 .fcard:focus-visible { outline:2px solid #F0D9A0; outline-offset:6px }
-.fface { position:absolute; inset:0; border-radius:12px; overflow:hidden; backface-visibility:hidden; -webkit-backface-visibility:hidden; transform:rotateX(var(--rx)) rotateY(calc(var(--ry) + var(--flip))); transition:transform .7s cubic-bezier(.2,.8,.2,1); background:#F5EFE3; box-shadow:0 2px 3px rgba(0,0,0,.5), 0 24px 60px rgba(0,0,0,.6), 0 0 0 1px rgba(181,147,90,.22) }
-.fcard-wrap.magnet .fface { border-radius:18px; box-shadow:0 3px 0 rgba(0,0,0,.35), 0 2px 3px rgba(0,0,0,.5), 0 20px 50px rgba(0,0,0,.6), 0 0 0 1px rgba(181,147,90,.22) }
-.fface.front img { width:100%; height:100%; object-fit:contain; display:block; background:#F5EFE3 }
-.fface.back { transform:rotateX(var(--rx)) rotateY(calc(var(--ry) + var(--flip) + 180deg)); background:#0e0c09; color:#F4EEDF; padding:clamp(14px,3.2cqw,28px); display:flex; flex-direction:column; gap:8px; border:1px solid rgba(181,147,90,.35); container-type:inline-size }
+.fface { position:absolute; inset:0; border-radius:14px; overflow:hidden; backface-visibility:hidden; -webkit-backface-visibility:hidden; transform:rotateX(var(--rx)) rotateY(calc(var(--ry) + var(--flip))); transition:transform .7s cubic-bezier(.2,.8,.2,1); background:#F5EFE3; box-shadow:0 2px 3px rgba(0,0,0,.5), 0 18px 44px rgba(0,0,0,.55), 0 0 0 1px rgba(181,147,90,.22) }
+.fface.front img { width:100%; height:100%; display:block; background:#F5EFE3; object-fit:contain }
+.fcard-wrap.tall .fface.front img { object-fit:cover; object-position:50% 40% }
+.fface.back { transform:rotateX(var(--rx)) rotateY(calc(var(--ry) + var(--flip) + 180deg)); background:#0e0c09; color:#F4EEDF; padding:clamp(14px,4cqw,24px); display:flex; flex-direction:column; gap:8px; border:1px solid rgba(181,147,90,.35); container-type:inline-size }
 .fcard.is-flipped { --flip:180deg }
 .fk { margin:0; font-family:'Josefin Sans',Futura,sans-serif; font-weight:300; font-size:10.5px; letter-spacing:.28em; text-transform:uppercase; color:rgba(244,238,223,.55) }
-.fface.back h3 { margin:0; font-weight:400; font-size:clamp(20px,5cqw,30px); line-height:1.1 }
-.fmeta { margin:0; font-size:clamp(12px,2.6cqw,14px); color:rgba(244,238,223,.62); line-height:1.4 }
-.fprompt { flex:1; min-height:0; margin:4px 0 0; overflow:auto; white-space:pre-wrap; font:400 clamp(11px,2.4cqw,13px)/1.45 ui-monospace,Menlo,monospace; color:rgba(244,238,223,.86); background:rgba(244,238,223,.05); border:1px solid rgba(181,147,90,.2); border-radius:6px; padding:10px }
-.fbtns { margin:0; display:flex; gap:16px; align-items:baseline; flex-wrap:wrap }
-.flink { background:none; border:0; padding:0; color:#F0D9A0; font:inherit; font-size:clamp(13px,2.8cqw,15px); text-decoration:underline; text-underline-offset:4px; cursor:pointer } .flink:hover { color:#fff }
+.fface.back h3 { margin:0; font-weight:400; font-size:clamp(18px,6cqw,26px); line-height:1.1 }
+.fmeta { margin:0; font-size:clamp(11px,3cqw,13px); color:rgba(244,238,223,.62); line-height:1.4 }
+.fprompt { flex:1; min-height:0; margin:2px 0 0; overflow:auto; white-space:pre-wrap; font:400 clamp(10px,2.8cqw,12px)/1.45 ui-monospace,Menlo,monospace; color:rgba(244,238,223,.86); background:rgba(244,238,223,.05); border:1px solid rgba(181,147,90,.2); border-radius:6px; padding:8px 10px }
+.fbtns { margin:0; display:flex; gap:14px; align-items:baseline; flex-wrap:wrap }
+.flink { background:none; border:0; padding:0; color:#F0D9A0; font:inherit; font-size:clamp(12px,3.2cqw,14px); text-decoration:underline; text-underline-offset:4px; cursor:pointer } .flink:hover { color:#fff }
 .fnote { font-size:12px; color:rgba(244,238,223,.6) }
 .ftap { margin:0; font-family:'Josefin Sans',Futura,sans-serif; font-weight:300; font-size:10.5px; letter-spacing:.28em; text-transform:uppercase; color:rgba(244,238,223,.4) }
-.fcopy { grid-column:1 / -1; max-width:62ch; margin:8px auto 4px; text-align:center }
-.fcopy h2 { margin:0 0 10px; font-weight:300; font-size:clamp(22px,3.4vw,32px); color:#F0D9A0 } .fcopy p { margin:0; color:rgba(244,238,223,.78); font-size:clamp(15px,2vw,18px); line-height:1.6 } .fcopy code { font-size:.88em; color:#F4EEDF }
-@media (max-width:720px) { .fgrid { grid-template-columns:1fr } .fcard-wrap.magnet { max-width:420px; width:100%; margin:0 auto } }
+.fcopy { justify-items:start; text-align:left; padding:clamp(18px,3vw,28px); border-radius:14px; background:rgba(244,238,223,.04); border:1px solid rgba(181,147,90,.18) }
+.fcopy h2 { margin:0 0 8px; font-weight:300; font-size:clamp(20px,2.6vw,26px); color:#F0D9A0; text-wrap:balance } .fcopy p { margin:0; color:rgba(244,238,223,.78); font-size:clamp(14px,1.6vw,16px); line-height:1.6 } .fcopy code { font-size:.88em; color:#F4EEDF }
+@media (max-width:640px) { .fgrid { columns:1 } }
 </style>
   <script type="application/ld+json">
 {
@@ -329,11 +328,11 @@
   </section>
 
   <main class="fgrid" id="gallery" aria-label="Ten Forge renders, as cards">
-  <article class="fcard-wrap postcard">
+  <article class="fcard-wrap tall">
     <div class="fcard" role="button" tabindex="0" aria-label="Brown-winged Kingfisher. Activate to turn the card over." data-flip>
       <div class="fface front"><img src="/assets/forge/brown-winged-kingfisher.jpg" alt="Brown-winged Kingfisher, Madhubani folk-art render by Forge" width="1000" height="1000" loading="eager"></div>
       <div class="fface back">
-        <p class="fk">Postcard · Sundarbans, West Bengal</p>
+        <p class="fk">Print · Sundarbans, West Bengal</p>
         <h3>Brown-winged Kingfisher</h3>
         <p class="fmeta">FLUX.1 [dev] · 14 steps · guidance 5.5 · seed 9340 · on-device, Apple M5 Max</p>
         <pre class="fprompt" tabindex="0">single centered Brown-winged Kingfisher in complete full-body side profile for a premium Madhubani T-shirt print. perched watching water below, head tilted down, beak forward. body filled with saturated warm-orange folk color, NOT natural species photography. MASSIVE coral-red beak (longer than head); vivid orange head + neck + breast + belly; dark brown wings and back (chocolate brown, NOT blue like other kingfishers); large head relative to body; short tail; red feet; almond folk-eye. large stocky kingfisher, vivid orange head + breast, dark brown wings and back, massive coral-red beak, short tail, found only in mangroves. almond eye, bold black double-contour keylines, matte saturated folk fills. PROMINENT MADHUBANI DECORATIVE PANELS at 6 anatomical zones — (1) small forehead tikka medallion, (2) collar/neck dot-band, (3) LARGE chest medallion (lotus or concentric mandala, saffron + vermillion + indigo, occupying the lower chest), (4) LARGE flank panel (paisley vine or rosette, mid-body), (5) LARGE hindquarter medallion (circular floral, saffron + green), (6) rhythmic leg-anklet bands at each joint. Each panel is a DOMINANT visual element, each panel uses a DIFFERENT color combination so the eye finds detail across the body. Between the panels the body interior remains FLAT SOLID COLOR — no stippling, no scatter dots on the smooth body areas.. AROUND the subject (negative space only, NOT on the body): subtle habitat aura of Sundari mangrove leaf sprigs and mudflat hibiscus dots, small folk sun disk in the sky, sparse folk-grass tufts and tiny scattered red-and-saffron 5-petal flowers ONLY in the empty space around the subject. no text, no scenery, no full landscape</pre>
@@ -343,11 +342,11 @@
     </div>
     <p class="ftap">Tap the card</p>
   </article>
-  <article class="fcard-wrap magnet">
+  <article class="fcard-wrap postcard">
     <div class="fcard" role="button" tabindex="0" aria-label="Chinkara. Activate to turn the card over." data-flip>
       <div class="fface front"><img src="/assets/forge/chinkara.jpg" alt="Chinkara, Madhubani folk-art render by Forge" width="1000" height="1000" loading="eager"></div>
       <div class="fface back">
-        <p class="fk">Magnet · Thar Desert, Rajasthan</p>
+        <p class="fk">Postcard · Thar Desert, Rajasthan</p>
         <h3>Chinkara</h3>
         <p class="fmeta">FLUX.1 [dev] · 24 steps · guidance 5.5 · seed 15103 · on-device, Apple M5 Max</p>
         <pre class="fprompt" tabindex="0">single centered Chinkara (Indian Gazelle) in complete full-body side profile for a premium Madhubani T-shirt print. leaping in a graceful arc with all four legs gathered close beneath the body in mid-stride, head and horns lifted forward. EXACTLY TWO unbranched horns, each a single smooth tapering rod with folk ring-bands, never forked, never antler tines. All four legs drawn as four separate double-contour outlines with cream gaps between them, never a merged mass. COMPOSED FOR A ROUND MAGNET: everything inside ONE circle, animal centred, ground drawn as an arc along the lower rim; NO straight horizon, NO rectangle, NO frame, white outside the circle. horns are slender, gently S-curved with visible rings, and present on BOTH sexes (males longer than females). body filled with saturated deep-indigo folk color, NOT natural species photography. elegantly slender legs, slightly S-curved ringed horns carried by both sexes (longer in males). almond eye, bold black double-contour keylines, matte saturated folk fills. PROMINENT MADHUBANI DECORATIVE PANELS at 6 zones — (1) forehead tikka medallion, (2) neck dot-band, (3) LARGE chest lotus medallion, (4) LARGE flank paisley panel, (5) LARGE hindquarter floral medallion, (6) leg-anklet bands at each joint. Each panel is dominant and uses a different colour combination; between the panels the body stays FLAT SOLID COLOR, no stippling.. inside the circle only: a thin ring of Indian neem leaf sprigs and dry-deciduous Gir forest grass dots at the rim, folk sun high, red flowers on the lower arc. no text, no scenery, no full landscape</pre>
@@ -357,11 +356,11 @@
     </div>
     <p class="ftap">Tap the card</p>
   </article>
-  <article class="fcard-wrap magnet">
+  <article class="fcard-wrap tall">
     <div class="fcard" role="button" tabindex="0" aria-label="Greater Flamingo. Activate to turn the card over." data-flip>
       <div class="fface front"><img src="/assets/forge/greater-flamingo.jpg" alt="Greater Flamingo, Madhubani folk-art render by Forge" width="1000" height="1000" loading="lazy"></div>
       <div class="fface back">
-        <p class="fk">Magnet · Rann of Kutch, Gujarat</p>
+        <p class="fk">Print · Rann of Kutch, Gujarat</p>
         <h3>Greater Flamingo</h3>
         <p class="fmeta">FLUX.1 [dev] · 24 steps · guidance 5.5 · seed 14001 · on-device, Apple M5 Max</p>
         <pre class="fprompt" tabindex="0">single centered Greater Flamingo in complete full-body side profile for a premium Madhubani T-shirt print. wings half-spread in display with head dipped low and neck curved into a deep S, one long leg lifted forward. matte flat folk fills with black double-contour keylines and lotus panels on the body; NO gloss, NO gradient shading. Exactly TWO legs, both fully drawn: one planted on the ground line. Only the near wing is raised, as ONE flat decorated panel lifted over the back. body filled with saturated deep-indigo folk color, NOT natural species photography. BILL is DOWNWARD-BENT (sharply kinked roughly halfway along its length with a BLACK tip) — defining field mark across all flamingo species and rendered here as a saffron-and-indigo folk wedge. extraordinarily long graceful S-curved neck, very long stilt-like legs rendered as vermillion folk verticals. almond eye, bold black double-contour keylines, matte saturated folk fills. PROMINENT MADHUBANI DECORATIVE PANELS at 6 zones — (1) forehead tikka medallion, (2) neck dot-band, (3) LARGE chest lotus medallion, (4) LARGE flank paisley panel, (5) LARGE hindquarter floral medallion, (6) leg-anklet bands at each joint. Each panel is dominant and uses a different colour combination; between the panels the body stays FLAT SOLID COLOR, no stippling.. AROUND the subject (negative space only, NOT on the body): subtle habitat aura of Chilika brackish-lagoon reed sprigs, Nalabana sea-grass tussocks and water-lily dots, small folk sun disk and tiny scattered red-and-saffron flowers in the empty space around the subject. no text, no scenery, no full landscape</pre>
@@ -372,11 +371,11 @@
     <p class="ftap">Tap the card</p>
   </article>
   <section class="fcopy"><h2>One engine, one profile, one subject.</h2><p>Every render here came from the same command: <code>forge engine render minimalist-tshirt --profile madhubani</code> with a subject sentence and a seed. The engine carries the style rules (folk fills, double-contour keylines, no scenery); the profile carries the model and the palette; the subject is the only thing that changes. Turn any card over and the exact subject is there to copy.</p></section>
-  <article class="fcard-wrap postcard">
+  <article class="fcard-wrap magnet">
     <div class="fcard" role="button" tabindex="0" aria-label="Grey-headed Fish Eagle. Activate to turn the card over." data-flip>
       <div class="fface front"><img src="/assets/forge/grey-headed-fish-eagle.jpg" alt="Grey-headed Fish Eagle, Madhubani folk-art render by Forge" width="1000" height="1000" loading="lazy"></div>
       <div class="fface back">
-        <p class="fk">Postcard · Kaziranga, Assam</p>
+        <p class="fk">Magnet · Kaziranga, Assam</p>
         <h3>Grey-headed Fish Eagle</h3>
         <p class="fmeta">FLUX.1 [dev] · 14 steps · guidance 5.5 · seed 9333 · on-device, Apple M5 Max</p>
         <pre class="fprompt" tabindex="0">single centered Grey-headed Fish Eagle in complete full-body side profile for a premium Madhubani T-shirt print. perched watching water below, head tilted down, wings folded. body filled with saturated warm-brown folk color, NOT natural species photography. GREY head + neck + breast (NOT white like white-bellied-sea-eagle); dark warm-brown back and wings; pale rufous-brown belly; distinctive WHITE tail with broad BLACK terminal band (visible perched or in flight); large hooked yellow beak with dark tip; yellow legs. large fish eagle, GREY HEAD AND NECK, dark brown back and wings, WHITE TAIL with broad black terminal band, pale buff-rufous breast, found along Pench&#x27;s lakes and forested streams. almond eye, bold black double-contour keylines, matte saturated folk fills. PROMINENT MADHUBANI DECORATIVE PANELS at 6 anatomical zones — (1) small forehead tikka medallion, (2) collar/neck dot-band, (3) LARGE chest medallion (lotus or concentric mandala, saffron + vermillion + indigo, occupying the lower chest), (4) LARGE flank panel (paisley vine or rosette, mid-body), (5) LARGE hindquarter medallion (circular floral, saffron + green), (6) rhythmic leg-anklet bands at each joint. Each panel is a DOMINANT visual element, each panel uses a DIFFERENT color combination so the eye finds detail across the body. Between the panels the body interior remains FLAT SOLID COLOR — no stippling, no scatter dots on the smooth body areas.. AROUND the subject (negative space only, NOT on the body): subtle habitat aura of Mahua flower sprigs and dry-deciduous bamboo grass dots, small folk sun disk in the sky, sparse folk-grass tufts and tiny scattered red-and-saffron 5-petal flowers ONLY in the empty space around the subject. no text, no scenery, no full landscape</pre>
@@ -401,11 +400,11 @@
     <p class="ftap">Tap the card</p>
   </article>
   <section class="fcopy"><h2>Every render writes its own paperwork.</h2><p>Next to each PNG the engine leaves a directive sidecar: the full positive prompt, the negative list (over ninety phrases, from &ldquo;photorealistic&rdquo; to &ldquo;artist signature glyph&rdquo;), the 60/30/10 palette it was held to, the seed, the steps, the guidance, and an audit of which rules were applied. A run can be reproduced or argued with a year later. Four seeds render in one pass, 60.8% faster than one at a time.</p></section>
-  <article class="fcard-wrap magnet">
+  <article class="fcard-wrap postcard">
     <div class="fcard" role="button" tabindex="0" aria-label="Indian Skimmer. Activate to turn the card over." data-flip>
       <div class="fface front"><img src="/assets/forge/indian-skimmer.jpg" alt="Indian Skimmer, Madhubani folk-art render by Forge" width="1000" height="1000" loading="lazy"></div>
       <div class="fface back">
-        <p class="fk">Magnet · Chambal River</p>
+        <p class="fk">Postcard · Chambal River</p>
         <h3>Indian Skimmer</h3>
         <p class="fmeta">FLUX.1 [dev] · 14 steps · guidance 5.5 · seed 9609 · on-device, Apple M5 Max</p>
         <pre class="fprompt" tabindex="0">single centered Indian Skimmer in complete full-body side profile for a premium Madhubani T-shirt print. skimming low over folk-pattern water with the long lower mandible slicing the surface in a horizontal line, wings angled upward, water dots scattering along the wake. ONE single closed bill - the two mandibles meet along one line and the lower simply projects further forward; never two separate beaks. both short orange-red legs are drawn tucked visibly under the tail. body filled with saturated deep-indigo folk color, NOT natural species photography. LOWER MANDIBLE is DISTINCTLY LONGER than the upper mandible — the unique defining field mark of skimmers (Rynchopidae); bill is bright orange with the lower jaw clearly extended forward. the only Indian bird with a LOWER mandible distinctly LONGER than the upper. almond eye, bold black double-contour keylines, matte saturated folk fills. PROMINENT MADHUBANI DECORATIVE PANELS at 6 zones — (1) forehead tikka medallion, (2) neck dot-band, (3) LARGE chest lotus medallion, (4) LARGE flank paisley panel, (5) LARGE hindquarter floral medallion, (6) leg-anklet bands at each joint. Each panel is dominant and uses a different colour combination; between the panels the body stays FLAT SOLID COLOR, no stippling.. AROUND the subject (negative space only, NOT on the body): subtle habitat aura of Gulf-of-Kutch grey-mangrove leaf sprigs, seagrass tufts, and coral-and-saltpan dust dots, small folk sun disk in the sky, sparse folk-grass tufts and tiny scattered red-and-saffron 5-petal flowers ONLY in the empty space around the subject. no text, no scenery, no full landscape</pre>
@@ -444,11 +443,11 @@
     <p class="ftap">Tap the card</p>
   </article>
   <section class="fcopy"><h2>Guarded runs, and a cut-out for free.</h2><p>A guarded run checks the result against the prompt&rsquo;s own claims before it is kept: a body that came out as a silhouette fails, a species mark that is missing fails, a signature the model invented fails. Each keeper also gets a transparent PNG, the subject lifted off the paper, ready for print work.</p></section>
-  <article class="fcard-wrap magnet">
+  <article class="fcard-wrap tall">
     <div class="fcard" role="button" tabindex="0" aria-label="Painted Stork. Activate to turn the card over." data-flip>
       <div class="fface front"><img src="/assets/forge/painted-stork.jpg" alt="Painted Stork, Madhubani folk-art render by Forge" width="1000" height="1000" loading="lazy"></div>
       <div class="fface back">
-        <p class="fk">Magnet · Keoladeo, Rajasthan</p>
+        <p class="fk">Print · Keoladeo, Rajasthan</p>
         <h3>Painted Stork</h3>
         <p class="fmeta">FLUX.1 [dev] · 14 steps · guidance 5.5 · seed 10007 · on-device, Apple M5 Max</p>
         <pre class="fprompt" tabindex="0">single centered Painted Stork in complete full-body side profile for a premium Madhubani T-shirt print. wings half-spread in display with head lifted and bill pointed slightly upward, one leg lifted forward in a courtship step, pink tertials fanned. body filled with saturated deep-indigo folk color, NOT natural species photography. the body MUST be UNAMBIGUOUSLY a Painted Stork (Mycteria leucocephala): THE NAMESAKE PINK FLIGHT-PLUMES — the wings show a PINK-CORAL BAND on the inner secondaries (visible in folded wing as a coral patch on the back/shoulder); MAINLY WHITE BODY with BLACK-AND-WHITE BARRED WING-COVERTS visible on the closed wing; LONG SLENDER YELLOW BILL curving slightly down at the tip; BARE ORANGE-RED FACE; LONG ORANGE-RED LEGS; S-CURVED NECK (storks fly with neck extended, stand with neck slightly arched). Render standing in a wetland habitat, side profile showing the back-shoulder pink patch. long downcurved yellow bill rendered as a saffron folk wedge, bare orange-yellow face skin translated into a saffron folk facial panel, mainly white body translated as indigo body fill with cream chest panel, pink tertial flight feathers translated into vermillion folk panels along the lower back and rump, long pink legs rendered as vermillion folk verticals. almond eye, bold black double-contour keylines, matte saturated folk fills. PROMINENT MADHUBANI DECORATIVE PANELS at 6 anatomical zones — (1) small forehead tikka medallion, (2) collar/neck dot-band, (3) LARGE chest medallion (lotus or concentric mandala, saffron + vermillion + indigo, occupying the lower chest), (4) LARGE flank panel (paisley vine or rosette, mid-body), (5) LARGE hindquarter medallion (circular floral, saffron + green), (6) rhythmic leg-anklet bands at each joint. Each panel is a DOMINANT visual element, each panel uses a DIFFERENT color combination so the eye finds detail across the body. Between the panels the body interior remains FLAT SOLID COLOR — no stippling, no scatter dots on the smooth body areas.. AROUND the subject (negative space only, NOT on the body): subtle habitat aura of wetland-reed sprigs and water-hyacinth flower dots, small folk sun disk in the sky, sparse folk-grass tufts and tiny scattered red-and-saffron 5-petal flowers ONLY in the empty space around the subject. no text, no scenery, no full landscape</pre>
@@ -458,11 +457,11 @@
     </div>
     <p class="ftap">Tap the card</p>
   </article>
-  <article class="fcard-wrap postcard">
+  <article class="fcard-wrap magnet">
     <div class="fcard" role="button" tabindex="0" aria-label="Oriental Pied Hornbill. Activate to turn the card over." data-flip>
       <div class="fface front"><img src="/assets/forge/oriental-pied-hornbill.jpg" alt="Oriental Pied Hornbill, Madhubani folk-art render by Forge" width="1000" height="1000" loading="lazy"></div>
       <div class="fface back">
-        <p class="fk">Postcard · Nameri, Assam</p>
+        <p class="fk">Magnet · Nameri, Assam</p>
         <h3>Oriental Pied Hornbill</h3>
         <p class="fmeta">FLUX.1 [dev] · 14 steps · guidance 5.5 · seed 9335 · on-device, Apple M5 Max</p>
         <pre class="fprompt" tabindex="0">single centered Oriental Pied Hornbill in complete full-body side profile for a premium Madhubani T-shirt print. perched with head turned to side, beak forward, wings folded. body filled with saturated deep-black folk color, NOT natural species photography. very large yellow-cream beak (about ½ head length) with small casque rising on top; black head + back + wings; white belly + lower breast; black tail with white tip; small fluffy throat patch; almond folk-eye with pale skin around it. medium hornbill, black-and-white plumage, large yellow-cream beak topped with small casque (yellow above), white belly and tail-tip, fluffy white throat patch. almond eye, bold black double-contour keylines, matte saturated folk fills. PROMINENT MADHUBANI DECORATIVE PANELS at 6 anatomical zones — (1) small forehead tikka medallion, (2) collar/neck dot-band, (3) LARGE chest medallion (lotus or concentric mandala, saffron + vermillion + indigo, occupying the lower chest), (4) LARGE flank panel (paisley vine or rosette, mid-body), (5) LARGE hindquarter medallion (circular floral, saffron + green), (6) rhythmic leg-anklet bands at each joint. Each panel is a DOMINANT visual element, each panel uses a DIFFERENT color combination so the eye finds detail across the body. Between the panels the body interior remains FLAT SOLID COLOR — no stippling, no scatter dots on the smooth body areas.. AROUND the subject (negative space only, NOT on the body): subtle habitat aura of Sundari mangrove leaf sprigs and mudflat hibiscus dots, small folk sun disk in the sky, sparse folk-grass tufts and tiny scattered red-and-saffron 5-petal flowers ONLY in the empty space around the subject. no text, no scenery, no full landscape</pre>
