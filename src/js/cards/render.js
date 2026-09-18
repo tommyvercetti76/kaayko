@@ -164,10 +164,13 @@ ${ghost}
 <text x="${L}" y="182" style="font:300 78px ${SERIF};fill:${INK}">${esc(card.name || "")}</text>
 <text x="${L}" y="244" style="font:400 32px ${SERIF};fill:${MUTE}">${esc(line)}</text>
 
-<path d="M${L} 300 H${R}" stroke="${MUTE}" stroke-width="0.9" opacity=".28"/>
+<!-- Half the width, and stopping short of x=${W - 520} so it never runs across
+     the ghosted animal. The address sits directly under it, at the size of a
+     caption rather than a headline. -->
+<path d="M${L} 300 H${L + (R - L) / 2}" stroke="${MUTE}" stroke-width="0.9" opacity=".28"/>
+<text x="${L}" y="${340}" style="font:400 24px ${SERIF};fill:${MUTE}">${esc(hostOf(card))}</text>
 ${factRow}
 
-<text x="${L}" y="${H - 44}" style="font:400 30px ${SERIF};fill:${INK}">${esc(hostOf(card))}</text>
 <text x="${R}" y="${H - 44}" text-anchor="end"
       style="font:300 12px ${SANS};fill:${MUTE};letter-spacing:5px">${index} OF ${total}</text>
 </svg>`;
