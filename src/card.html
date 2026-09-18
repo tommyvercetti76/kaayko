@@ -156,20 +156,28 @@ a { color: inherit; text-decoration: none; }
 /* The series strip. Eight markers, the way an album page numbers its spaces.
    It is a radiogroup, so arrow keys move through it like a real control. */
 .series { display: grid; gap: 10px; justify-items: center; width: 100%; }
-.marks { display: flex; gap: 7px; flex-wrap: wrap; justify-content: center; }
+/* One slider, not five numbered boxes. The numbers named nothing — the card's
+   own name is already printed under it — so the strip only has to show where
+   you are in the series and let you move. The button stays 44px tall for a
+   thumb; the visible bar is the thin part. */
+.marks { display: flex; gap: 6px; justify-content: center; align-items: center; }
 .mark {
-  width: 34px; height: 34px; padding: 0;
-  border: 1px solid var(--hair); border-radius: 8px;
-  background: transparent; color: var(--dimmer); cursor: pointer;
-  font-family: var(--sans); font-weight: 300; font-size: 12px;
-  font-variant-numeric: tabular-nums;
-  transition: color .2s, border-color .2s, background .2s;
+  width: 26px; height: 44px; padding: 0;
+  border: 0; background: transparent; cursor: pointer;
+  display: grid; place-items: center;
+  -webkit-tap-highlight-color: transparent;
 }
-.mark:hover { color: var(--gold-lit); border-color: var(--gold); }
-.mark[aria-checked="true"] {
-  color: var(--ink); background: var(--gold-lit); border-color: var(--gold-lit);
+.mark::before {
+  content: ""; display: block;
+  width: 18px; height: 3px; border-radius: 999px;
+  background: var(--hair);
+  transition: width .32s cubic-bezier(.2,.8,.2,1), background .24s ease;
 }
-.mark:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+.mark:hover::before { background: var(--gold); }
+.mark[aria-checked="true"] { width: 44px; }
+.mark[aria-checked="true"]::before { width: 36px; background: var(--gold-lit); }
+.mark:focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; border-radius: 8px; }
+@media (prefers-reduced-motion: reduce) { .mark::before { transition: none; } }
 .now { text-align: center; display: grid; gap: 3px; min-height: 42px; }
 .now b { font-weight: 400; font-size: clamp(17px, 2.6vw, 21px); }
 .now i { color: var(--dim); font-size: 14px; font-style: normal; max-width: 56ch; display: inline-block; }
@@ -189,7 +197,6 @@ a { color: inherit; text-decoration: none; }
 
 
 
-@media (hover: none), (pointer: coarse) { #tilt-note { display: none; } }
 .colophon {
   width: 100%; max-width: 980px; padding-top: 22px; border-top: 1px solid var(--hair);
   display: flex; flex-wrap: wrap; gap: 10px 26px; justify-content: space-between;
@@ -232,21 +239,13 @@ a { color: inherit; text-decoration: none; }
 
     <div class="hint">
       <button type="button" id="turn">Turn it over</button>
-      <!-- Two instructions competing for one small space, and the second is a lie
-           on a phone: there is no cursor to move. Shown only where a real pointer
-           exists. -->
-      <span class="cap" id="tilt-note">Move the light</span>
     </div>
 
-    <!-- The card is the brand's calling card, so the footer is the family: the
-         three kaay domains, all live. It used to offer one link to /store and a
-         shipping game, which is not what someone holding this wants next. -->
+    <!-- Every property already has a card in the series with its own address on
+         the face; listing them again here was the same links twice. Nothing is
+         printed on this page either. One way to reach a person is all it needs. -->
     <footer class="colophon">
-      <a class="cap" href="https://kaay.store">kaay.store</a>
-      <a class="cap" href="https://kaay.link">kaay.link</a>
-      <a class="cap" href="https://kaay.school">kaay.school</a>
       <a class="cap" href="mailto:help@kaayko.com">help@kaayko.com</a>
-      <span class="cap">Printed to order</span>
     </footer>
 
   </div>
