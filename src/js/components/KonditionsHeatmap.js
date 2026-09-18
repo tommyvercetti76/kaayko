@@ -149,7 +149,12 @@
       const bestHour = (best?.dayIndex === di) ? best.hour : null;
       const bestPct  = bestHour !== null ? khmPct(bestHour) : null;
 
-      // "Now" marker — only today, only within range
+      // Current-hour marker — only today, only within range.
+      // AUDIT-2026-09-18 #6: this used to read "NOW", the same word the hero
+      // chip used, while the two carry different numbers (Trinity River:
+      // 33.9 °C observed vs 35.4 °C forecast for the same hour). The hero is
+      // an observation; every cell of this strip is a FORECAST. The marker now
+      // says which hour it is, and the strip says what it is.
       const nowPct = (di === 0 && currentHour >= KHM_HOURS[0] && currentHour <= KHM_HOURS[KHM_HOURS.length-1])
         ? khmPct(currentHour) : null;
 
@@ -177,7 +182,7 @@
           <div class="khm-bar-shell">
             <div class="khm-bar" data-day="${di}" style="background:${gradient}">
               <div class="khm-gloss" aria-hidden="true"></div>
-              ${nowPct !== null ? `<div class="khm-now" style="left:${nowPct}%" aria-label="Now"><span>NOW</span></div>` : ''}
+              ${nowPct !== null ? `<div class="khm-now${parseFloat(nowPct) > 62 ? ' khm-now--flip' : ''}" style="left:${nowPct}%" aria-label="Current hour — forecast"><span>THIS HOUR</span></div>` : ''}
               <div class="khm-cursor" aria-hidden="true"></div>
               ${hits}
             </div>
@@ -191,7 +196,8 @@
       <div class="khm-wrap">
         <div class="khm-head">
           <div>
-            <span class="khm-eyebrow">3-day outlook</span>
+            <span class="khm-eyebrow">3-day forecast</span>
+            <span class="khm-source">Forecast, not observed conditions</span>
           </div>
           <div class="khm-legend">
             <span><i class="khm-dot" style="background:#bd3b2b"></i>Hard pass</span>
@@ -264,6 +270,7 @@
             <div class="khm-panel-hdr">
               <div class="khm-panel-left">
                 <span class="khm-panel-time">${formatHourDisplay(hour)}</span>
+                <span class="khm-panel-kind">Forecast</span>
                 <span class="khm-panel-verdict" style="color:${col}">${label}</span>
               </div>
               <div class="khm-panel-score" style="color:${col}">${score != null ? score.toFixed(1) : '—'}<sub>/5</sub></div>

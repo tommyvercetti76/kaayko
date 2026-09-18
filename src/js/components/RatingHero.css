@@ -1617,3 +1617,23 @@ html:not(.dark-theme) .suggestion-text {
     font-size: 14px;
   }
 }
+
+/* ── AUDIT-2026-09-18 #6 — observed vs forecast ────────────────────────────
+   The hero publishes an OBSERVATION (current.json); the 3-day strip beneath it
+   publishes a FORECAST, and the two legitimately differ. This line names the
+   hero's source so the difference reads as two sources, not as a bug. It is
+   deliberately quiet — the chip above it carries the emphasis. */
+.reading-source {
+  margin-top: 0.35rem;
+  font-size: 0.6rem;
+  line-height: 1.3;
+  letter-spacing: 0.04em;
+  text-align: center;
+  opacity: 0.68;
+  max-width: 22ch;
+  margin-left: auto;
+  margin-right: auto;
+  text-wrap: balance;
+}
+html.dark-theme .reading-source { color: ivory; }
+html:not(.dark-theme) .reading-source { color: #1a1a1a; }

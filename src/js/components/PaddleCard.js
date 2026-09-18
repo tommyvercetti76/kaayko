@@ -43,7 +43,10 @@
       coverageGrade: (spot.cellCoverage && spot.cellCoverage.grade) || null,
       // Admin display tags (API whitelists them; labels are fixed here so the
       // chip text is never user-influenced).
-      tags: (Array.isArray(spot.tags) ? spot.tags : []).filter(function (t) { return TAG_LABELS[t]; }).slice(0, 3)
+      tags: (Array.isArray(spot.tags) ? spot.tags : []).filter(function (t) { return TAG_LABELS[t]; }).slice(0, 3),
+      // The raw paddleScore block, kept so the card can show WHY (see whyState).
+      // Never read for the displayed number — that stays `rating` above.
+      score: (spot.paddleScore && typeof spot.paddleScore === 'object') ? spot.paddleScore : null
     };
   }
 
@@ -91,12 +94,138 @@
   function scoreMeta(rating) {
     var P = window.KaaykoPrefs;
     if (P && P.scoreMeta) return P.scoreMeta(rating);   // single source in prefs.js
-    if (rating == null) return { color: '#555', label: 'N/A', severity: null, display: '—' };
+    if (rating == null) return { rating: null, color: '#555', label: 'N/A', severity: null, display: '—' };
     var sev = rating >= 3.7 ? 'good' : rating >= 2.7 ? 'moderate' : 'critical';
     var label = sev === 'good' ? 'Worth it' : sev === 'moderate' ? 'Careful' : 'Hard pass';
     var color = (P && P.paddleScoreColor) ? P.paddleScoreColor(rating)
               : (sev === 'good' ? '#316d43' : sev === 'moderate' ? '#c59a61' : '#bd3b2b');
-    return { color: color, label: label, severity: sev, display: Number(rating).toFixed(1) };
+    // `rating` is read by ringSvg() to size the row ring — omitting it here made
+    // the ring render permanently empty whenever prefs.js had not loaded.
+    return { rating: Number(rating), color: color, label: label, severity: sev, display: Number(rating).toFixed(1) };
+  }
+
+  // ── WHY: the factors that actually moved the score ──────────────────────────
+  // HONEST ATTRIBUTION ONLY. Everything shown here comes verbatim from the
+  // scoring pipeline's own `penaltyDetails[]` / `adjustments[]`. Nothing is
+  // inferred, re-worded into a cause, or filled in when the response is silent:
+  //   • both arrays present and empty  → 'none'    ("nothing moved it")
+  //   • neither array present          → 'unknown' (render NOTHING — the search
+  //     row endpoint returns a bare {rating}, and "nothing moved it" would be a
+  //     claim we cannot make)
+  // A factor with no server-supplied text is DROPPED rather than labelled from
+  // its code, so the card never invents a plausible-sounding reason.
+  var WHY_MAX = 3;
+
+  function finite(v) { var n = typeof v === 'number' ? v : parseFloat(v); return isFinite(n) ? n : null; }
+
+  // Adjustment reasons already carry their own magnitude ("… (+0.2)"); the delta
+  // is rendered as its own token, so strip the duplicate tail.
+  function trimDelta(text) { return String(text).replace(/\s*\(([+−-]\s*\d+(?:\.\d+)?)\)\s*$/, '').trim(); }
+
+  function localize(text) {
+    var P = window.KaaykoPrefs;
+    try { return (P && P.localizeUnits) ? P.localizeUnits(text) : String(text); }
+    catch (e) { return String(text); }
+  }
+
+  function pushFactor(out, rawText, value) {
+    var v = finite(value);
+    if (v == null || v === 0) return;                       // no magnitude → no claim
+    var text = trimDelta(rawText == null ? '' : rawText);
+    if (!text) return;                                      // no server text → drop, never invent
+    out.push({ text: localize(text), value: v, dir: v < 0 ? 'down' : 'up' });
+  }
+
+  /**
+   * Classify a paddleScore block for display.
+   * @returns {{state:'unknown'|'unscored'|'night'|'factors'|'none', factors:Array, night:Object|null}}
+   */
+  function whyState(score) {
+    var s = (score && typeof score === 'object') ? score : null;
+    var night = (s && s.night && s.night.isNight === true) ? s.night : null;
+    var pens = s && Array.isArray(s.penaltyDetails) ? s.penaltyDetails : null;
+    var adjs = s && Array.isArray(s.adjustments) ? s.adjustments : null;
+
+    if (!s) return { state: 'unknown', factors: [], night: null };
+    if (s.rating == null) return { state: 'unscored', factors: [], night: night };
+
+    if (!pens && !adjs) return { state: night ? 'night' : 'unknown', factors: [], night: night };
+
+    var factors = [];
+    (pens || []).forEach(function (p) {
+      if (!p) return;
+      var amt = finite(p.amount);
+      if (amt == null) return;
+      pushFactor(factors, p.message, -Math.abs(amt));       // a penalty always pushes DOWN
+    });
+    (adjs || []).forEach(function (a) {
+      if (!a) return;
+      pushFactor(factors, a.reason, a.adjustment);
+    });
+    factors.sort(function (a, b) { return Math.abs(b.value) - Math.abs(a.value); });
+    factors = factors.slice(0, WHY_MAX);
+
+    if (night) return { state: 'night', factors: factors, night: night };
+    return { state: factors.length ? 'factors' : 'none', factors: factors, night: null };
+  }
+
+  function fmtDelta(v) {
+    var mag = Math.abs(v).toFixed(1);
+    return (v < 0 ? '−' : '+') + mag;                  // U+2212 minus, not a hyphen
+  }
+
+  // "6" → "6 AM". Hour only — the API gives an hour, so we show an hour.
+  function fmtHour(h) {
+    var n = finite(h);
+    if (n == null || n < 0 || n > 23) return null;
+    var hh = n % 12; if (hh === 0) hh = 12;
+    return hh + (n < 12 ? ' AM' : ' PM');
+  }
+
+  function whyLine(cls, text) { var n = el('div', cls); n.textContent = text; return n; }
+
+  /**
+   * Build the "why" strip. Returns null when there is nothing honest to say.
+   * `compact` (row variant) drops the heading and the no-factor copy.
+   */
+  function buildWhy(score, compact) {
+    var w = whyState(score);
+    if (w.state === 'unknown') return null;
+    if (compact && (w.state === 'none' || w.state === 'unscored')) return null;
+
+    var wrap = el('div', 'pcard-why' + (compact ? ' pcard-why--compact' : ''));
+    wrap.dataset.state = w.state;
+
+    // Not scored and night are the loud states and are always printed first.
+    if (w.state === 'unscored') {
+      wrap.appendChild(whyLine('pcard-why-flag', 'Not scored'));
+      wrap.appendChild(whyLine('pcard-why-note', 'No paddle score for this spot right now.'));
+      return wrap;
+    }
+    if (w.night) {
+      var hour = fmtHour(w.night.nextDaylight && w.night.nextDaylight.hour);
+      wrap.appendChild(whyLine('pcard-why-flag',
+        'Night here' + (hour ? ' · daylight about ' + hour + ' local' : '')));
+    }
+    if (!w.factors.length) {
+      if (!compact && w.state !== 'night') {
+        wrap.appendChild(whyLine('pcard-why-note', 'Nothing pushed this score up or down.'));
+      }
+      return wrap.childNodes.length ? wrap : null;
+    }
+
+    if (!compact) wrap.appendChild(whyLine('pcard-why-head', 'What moved it'));
+    var list = el('ul', 'pcard-why-list');
+    w.factors.forEach(function (f) {
+      var li = el('li', 'pcard-why-item');
+      li.dataset.dir = f.dir;
+      var d = el('span', 'pcard-why-delta'); d.textContent = fmtDelta(f.value);
+      var t = el('span', 'pcard-why-text');  t.textContent = f.text;
+      li.appendChild(d); li.appendChild(t);
+      list.appendChild(li);
+    });
+    wrap.appendChild(list);
+    return wrap;
   }
 
   // Delegates to the single source of truth in prefs.js (loaded first on every
@@ -426,7 +555,13 @@
     rBtn.addEventListener('click', function (e) { e.stopPropagation(); window.location.href = '/paddlingout/rate?id=' + encodeURIComponent(data.id); });
     actions.appendChild(fBtn); actions.appendChild(rBtn);
 
-    content.appendChild(name); content.appendChild(loc); content.appendChild(desc); content.appendChild(actions);
+    content.appendChild(name); content.appendChild(loc); content.appendChild(desc);
+    // Why the score is what it is — straight from the pipeline, or nothing at all.
+    if (opts.showWhy !== false) {
+      var why = buildWhy(data.score, false);
+      if (why) content.appendChild(why);
+    }
+    content.appendChild(actions);
 
     card.appendChild(media); card.appendChild(content);
 
@@ -476,6 +611,18 @@
     body.appendChild(name); body.appendChild(meta);
     if (opts.badge) { var b = el('span', 'pcard-row-badge'); b.textContent = opts.badge; body.appendChild(b); }
 
+    // Compact why, under the meta line. Search rows arrive as a bare {rating}
+    // (state 'unknown') and correctly get nothing.
+    var whyNode = null;
+    function paintWhy(score) {
+      if (opts.showWhy === false) return;
+      var next = buildWhy(score, true);
+      if (whyNode && whyNode.parentNode) whyNode.parentNode.removeChild(whyNode);
+      whyNode = next;
+      if (whyNode) body.appendChild(whyNode);
+    }
+    paintWhy(data.score);
+
     var ring = el('div', 'pcard-ring' + (data.rating == null ? ' is-pending' : ''));
     ring.setAttribute('aria-label', 'Paddle score');
     ring.innerHTML = data.rating == null ? '<span class="pcard-ring-spin" aria-hidden="true"></span>' : ringSvg(scoreMeta(data.rating));
@@ -497,13 +644,19 @@
       row.appendChild(acts);
     }
 
-    /** Fill (or clear) the score ring after a batch score arrives. */
-    row.setScore = function (rating) {
+    /**
+     * Fill (or clear) the score ring after a batch score arrives.
+     * @param {number|null} rating
+     * @param {Object} [score] full paddleScore block — when given, the compact
+     *        why line is repainted from it. Omit it and nothing is claimed.
+     */
+    row.setScore = function (rating, score) {
       var sm = scoreMeta(rating);
       ring.classList.remove('is-pending');
       ring.innerHTML = ringSvg(sm);
       ring.setAttribute('aria-label', rating == null ? 'Paddle score unavailable' : 'Paddle score ' + sm.display + ', ' + sm.label);
       row.dataset.severity = sm.severity || '';
+      if (arguments.length > 1) paintWhy(score);
     };
 
     if (typeof opts.onOpen === 'function') {
@@ -523,6 +676,8 @@
     create: create,
     normalize: normalize,
     scoreMeta: scoreMeta,
+    whyState: whyState,          // exported for tests + the forecast surfaces
+    buildWhy: buildWhy,
     apiBase: apiBase,
     animateLove: function (el) { if (el) animateLove(el, true); }   // for the walkthrough demo
   };

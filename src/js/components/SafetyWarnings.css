@@ -328,3 +328,15 @@
     font-size: 14px;
   }
 }
+
+/* AUDIT-2026-09-18 #8 — name the waterbody the alerts belong to. Resolved from
+   spot.waterType via KaaykoWaterType; a spot with no waterType reads the
+   neutral "Water alerts" rather than being called a lake. */
+.warning-kicker {
+  color: #d9bd7b;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}

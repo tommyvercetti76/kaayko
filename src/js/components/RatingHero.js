@@ -59,7 +59,14 @@ class RatingHero {
           <div class="rating-section">
             <div class="paddle-score-label">Paddle Score</div>
             ${this.buildScoreRing(rating)}
-            <div class="now-indicator">NOW</div>
+            <!-- AUDIT-2026-09-18 #6: this hero reads an OBSERVATION
+                 (current.json). The 3-day strip below it reads a FORECAST.
+                 They legitimately disagree — on Trinity River, 33.9 °C here vs
+                 35.4 °C in the same hour of the forecast. Both used to say
+                 "NOW", so the page read as broken. Each side now names its own
+                 source instead of pretending to agree. -->
+            <div class="now-indicator">OBSERVED · NOW</div>
+            <div class="reading-source">Measured now at the nearest station</div>
           </div>
 
           <!-- ── Weather stats + unit toggle ── -->
@@ -231,26 +238,48 @@ class RatingHero {
     const r     = parseFloat(rating) || 3;
 
     // ── Phase 1: Applied penalties explain WHY score was reduced ─────────────
-    // These are the actual reasons the ML pipeline docked points.
-    const penaltyStrings = (w.penalties || []).filter(p => typeof p === 'string');
-    let penaltyTotal = 0;
-    penaltyStrings.forEach(p => {
-      const m = p.match(/^(.+?):\s*([-+]?\d+\.?\d*)/);
-      if (!m) return;
-      const amount = parseFloat(m[2]);
-      if (amount > -0.1) return;
-      penaltyTotal += amount;
-      const abs = Math.abs(amount);
+    // These are the actual reasons the scoring pipeline docked points.
+    //
+    // AUDIT-2026-09-18 #22: prefer the STRUCTURED penaltyDetails[] the caller
+    // resolved ({code, magnitude, delta, message}). The pre-formatted
+    // `penalties` strings remain a fallback for cached responses that predate
+    // penaltyDetails — parsed anchored at the END of the line, because a
+    // message can carry its own signed figure ("…, +11.2 over wind: -1") and
+    // the old unanchored parse read that inner number as the penalty.
+    //
+    // A factor with no server-supplied text is DROPPED rather than named from
+    // its code: the briefing never invents a plausible-sounding reason.
+    const pushPenalty = (label, magnitude) => {
+      const abs = Math.abs(magnitude);
+      if (!isFinite(abs) || abs < 0.1) return;
+      const text = String(label || '').trim();
+      if (!text) return;
       const sev = abs >= 1.5 ? 'severe' : abs >= 1.0 ? 'danger' : abs >= 0.5 ? 'warning' : 'caution';
-      const icon = sev === 'severe' ? '⛔' : sev === 'danger' ? '⚠️' : '▲';
       items.push({
-        icon,
-        label: m[1].trim(),
-        detail: `Score impact: ${amount.toFixed(1)} pts`,
+        icon: sev === 'severe' ? '⛔' : sev === 'danger' ? '⚠️' : '▲',
+        label: text,
+        detail: `Score impact: -${abs.toFixed(1)} pts`,
         severity: sev,
         priority: abs >= 1.5 ? 0 : abs >= 1.0 ? 1 : abs >= 0.5 ? 3 : 5
       });
-    });
+    };
+
+    const details = Array.isArray(w.penaltyDetails) ? w.penaltyDetails : null;
+    if (details) {
+      details.forEach(d => {
+        if (!d || typeof d !== 'object') return;
+        const n = typeof d.magnitude === 'number' ? d.magnitude : parseFloat(d.magnitude ?? d.amount);
+        pushPenalty(d.message, n);
+      });
+    } else {
+      (w.penalties || []).filter(p => typeof p === 'string').forEach(p => {
+        const m = p.match(/^(.*):\s*([-+]?\d+(?:\.\d+)?)\s*(?:pts?)?$/i);
+        if (!m) return;
+        const amount = parseFloat(m[2]);
+        if (!(amount < -0.1)) return;   // the string format signs penalties negative
+        pushPenalty(m[1], amount);
+      });
+    }
 
     // ── Phase 2: Observable hazard conditions ────────────────────────────────
     const windKph = parseFloat(w.windSpeed);

@@ -5,6 +5,7 @@
   <script src="/js/prefs.js"></script>
   <script src="/js/util.js"></script>
   <script src="/js/kaayko-icons.js"></script>
+  <script src="/js/waterType.js"></script>
   <script src="/js/consent-notice.js" defer></script>
   <script>document.documentElement.classList.add('dark-theme');</script>
   <meta charset="UTF-8" />
@@ -274,9 +275,15 @@
     // Localize via the shared KaaykoPrefs.localizeUnits (single source of truth).
     function localizeUnits(text) { return window.KaaykoPrefs.localizeUnits(text); }
 
-    function renderTripBriefing(currentData, forecastData) {
+    // AUDIT-2026-09-18 #8: these alerts used to be headed "Lake alerts" on
+    // every spot, including Trinity River, whose payload says
+    // waterType: "river". KaaykoWaterType resolves the noun, and a spot with no
+    // waterType (the community Lake Arlington row has none) gets the neutral
+    // "Water alerts" rather than a guess.
+    function renderTripBriefing(currentData, forecastData, spot) {
       const container = document.getElementById('forecastAlertDrawer');
       if (!container) return;
+      const water = window.KaaykoWaterType.of(spot);
 
       const warnings = window.dataTransformer?.prepareWarningsData?.(forecastData) || [];
       const warningItems = Array.isArray(warnings) ? warnings.map(String) : [warnings].filter(Boolean).map(String);
@@ -323,15 +330,15 @@
 
       container.hidden = false;
       container.innerHTML = `
-        <section class="forecast-alert-banner is-closed" role="region" aria-label="Paddling alerts">
+        <section class="forecast-alert-banner is-closed" role="region" aria-label="${water.alertsLabel}">
           <button class="alert-summary" type="button" aria-expanded="false">
             <span class="alert-mark">${alerts.length}</span>
             <span class="alert-summary-copy">
-              <span class="briefing-kicker">Lake alerts</span>
+              <span class="briefing-kicker">${water.alertsLabel}</span>
               <span class="alert-summary-title">${title}</span>
             </span>
           </button>
-          <button class="alert-dismiss" type="button" aria-label="Dismiss lake alerts">×</button>
+          <button class="alert-dismiss" type="button" aria-label="${water.dismissLabel}">×</button>
           <div class="alert-details" hidden>
             <div class="alert-items">${itemsHTML}</div>
           </div>
@@ -627,9 +634,13 @@
     // No data → no row: contextual info here is always real, never inferred.
     function enrichmentRows(spot) {
       const rows = [];
-      if (spot?.waterType === 'river' || spot?.waterType === 'lake' || spot?.waterType === 'ramp') {
-        const label = { river: 'River', lake: 'Lake', ramp: 'Boat ramp' }[spot.waterType];
-        rows.push(`<div class="loc-row"><span class="loc-label">Water</span><span>${label}</span></div>`);
+      // AUDIT-2026-09-18 #8: the old inline map named only river/lake/ramp, so
+      // reservoir, coastal, bay and canal — all offered by the admin editor —
+      // rendered no row at all. `known` is false when the spot has no
+      // waterType, and an unknown type still prints nothing rather than a guess.
+      const water = window.KaaykoWaterType.of(spot);
+      if (water.known) {
+        rows.push(`<div class="loc-row"><span class="loc-label">Water</span><span>${esc(water.Noun)}</span></div>`);
       }
       if (spot?.launchHint) {
         rows.push(`<div class="loc-row"><span class="loc-label">Launch</span><span>${esc(spot.launchHint)}</span></div>`);
@@ -895,7 +906,7 @@
         // 3. Render what we have
         window.__kaaykoCurrentData = currentData;
         if (currentData) renderHero(currentData, forecastData, spot);
-        renderTripBriefing(currentData, forecastData);
+        renderTripBriefing(currentData, forecastData, currentSpot);
         if (forecastData) window.KonditionsHeatmap.render(
           document.getElementById('heatmapContainer'), forecastData, window.__kaaykoCurrentData);
         if (forecastData?.location) renderLocationInfo(forecastData.location, spot);

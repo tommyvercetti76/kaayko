@@ -188,6 +188,86 @@ class AdvancedLakeModal {
     `;
   }
 
+  /**
+   * Read the penalties off a paddleScore block.
+   *
+   * AUDIT-2026-09-18 #22. This used to parse `penaltiesApplied`, an array of
+   * PRE-FORMATTED display strings ("Extreme heat (37.4°C): -1"), with an
+   * unanchored /([-+]\d+\.?\d*)/. That is brittle in two ways, both real:
+   *
+   *   • it threw away the code (TEMP_VERY_HOT) and the structured magnitude;
+   *   • it took the FIRST signed number anywhere in the line. Lake Crescent
+   *     publishes "Gusty conditions (gusts 15.2 mph, +11.2 over wind): -1",
+   *     so the old code read the penalty as +11.2 instead of 1.
+   *
+   * `penaltyDetails` — [{code, amount, message, context}] — carries both, and
+   * `amount` is a positive magnitude. Strings are kept ONLY as a fallback for
+   * cached responses that predate the field; that path is marked so a caller
+   * can tell a recovered value from a reported one.
+   *
+   * Honest about absence: no penaltyDetails AND no penaltiesApplied is
+   * source 'absent', which is not the same claim as "nothing was penalised".
+   *
+   * @param {object} score - the paddleScore block
+   * @returns {{items: Array<{code:string|null, magnitude:number, delta:number,
+   *            message:string|null, context:object}>, strings: string[],
+   *            totalPenalty: number, source: 'structured'|'legacy-strings'|'absent'}}
+   */
+  static readPenalties(score) {
+    const s = (score && typeof score === 'object') ? score : {};
+    const strings = Array.isArray(s.penaltiesApplied)
+      ? s.penaltiesApplied.filter(x => typeof x === 'string')
+      : [];
+    const details = Array.isArray(s.penaltyDetails) ? s.penaltyDetails : null;
+
+    const finish = (items, source) => ({
+      items,
+      strings,
+      // Magnitudes, positive, matching paddleScore.totalPenalty.
+      totalPenalty: items.reduce((sum, p) => sum + p.magnitude, 0),
+      source
+    });
+
+    if (details) {
+      const items = [];
+      details.forEach(d => {
+        if (!d || typeof d !== 'object') return;
+        const n = typeof d.amount === 'number' ? d.amount : parseFloat(d.amount);
+        if (!isFinite(n) || n === 0) return;   // no magnitude → no claim
+        const magnitude = Math.abs(n);
+        items.push({
+          code: typeof d.code === 'string' && d.code ? d.code : null,
+          magnitude,
+          delta: -magnitude,                    // a penalty always pushes DOWN
+          message: typeof d.message === 'string' && d.message ? d.message : null,
+          context: (d.context && typeof d.context === 'object') ? d.context : {}
+        });
+      });
+      return finish(items, 'structured');
+    }
+
+    if (!strings.length) return finish([], 'absent');
+
+    // Fallback only. Anchored at the END of the line, so an inner signed
+    // figure inside the message cannot be mistaken for the penalty.
+    const items = [];
+    strings.forEach(str => {
+      const m = str.match(/^(.*):\s*([-+]?\d+(?:\.\d+)?)\s*(?:pts?)?$/i);
+      if (!m) return;
+      const n = parseFloat(m[2]);
+      if (!isFinite(n) || n === 0) return;
+      const magnitude = Math.abs(n);
+      items.push({
+        code: null,                             // the string format never carried one
+        magnitude,
+        delta: -magnitude,
+        message: m[1].trim() || null,
+        context: {}
+      });
+    });
+    return finish(items, 'legacy-strings');
+  }
+
   // Render all components
   renderComponents(forecastData, currentData) {
     this.renderHero(currentData, forecastData);
@@ -225,19 +305,22 @@ class AdvancedLakeModal {
         totalPenalty: currentData.paddleScore.totalPenalty || 0
       };
       
-      // Merge conditions with penalty information for safety analysis
-      const penaltiesApplied = currentData.paddleScore.penaltiesApplied || [];
+      // Merge conditions with penalty information for safety analysis.
+      // AUDIT-2026-09-18 #22: read the STRUCTURED penaltyDetails[], not the
+      // pre-formatted strings. See readPenalties().
+      const pen = AdvancedLakeModal.readPenalties(currentData.paddleScore);
       const weather = {
         ...currentData.conditions,
-        penalties: penaltiesApplied,
+        penalties: pen.strings,
+        penaltyDetails: pen.items,
+        penaltySource: pen.source,
         originalRating: currentData.paddleScore.originalMLRating || rating,
-        totalPenalty: penaltiesApplied.length > 0
-          ? penaltiesApplied.reduce((sum, p) => {
-              const m = typeof p === 'string' ? p.match(/([-+]\d+\.?\d*)/) : null;
-              return sum + (m ? parseFloat(m[1]) : 0);
-            }, 0)
-          : 0,
-        hasPenalties: penaltiesApplied.length > 0,
+        // Positive magnitude, the same convention as the API's own
+        // paddleScore.totalPenalty. The old string-parsing version returned a
+        // negative number here, and on a message carrying an inner signed
+        // figure it returned the wrong number entirely.
+        totalPenalty: pen.totalPenalty,
+        hasPenalties: pen.items.length > 0,
         isGoldStandard: currentData.paddleScore.isGoldStandard
       };
       
@@ -275,7 +358,9 @@ class AdvancedLakeModal {
     try {
       const safetyWarnings = new window.SafetyWarnings();
       container.innerHTML = '';
-      const element = safetyWarnings.render(warnings);
+      // AUDIT-2026-09-18 #8: pass the spot so the alerts name the right
+      // waterbody. `waterType` is on the /paddlingOut payload already.
+      const element = safetyWarnings.render(warnings, this.currentSpot);
       if (element) {
         container.appendChild(element);
         console.log('✅ SafetyWarnings rendered with', warnings.length, 'warnings');

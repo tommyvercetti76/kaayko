@@ -7,14 +7,25 @@ class SafetyWarnings {
     this.element = null;
   }
 
-  render(warnings) {
+  /**
+   * @param {string[]|string} warnings
+   * @param {*} [spotOrWaterType] - the spot (or a bare waterType string) these
+   *   warnings belong to. AUDIT-2026-09-18 #8: the UI called every waterbody a
+   *   lake, including Trinity River, whose payload says waterType: "river".
+   *   Resolved through KaaykoWaterType, so a spot with no waterType gets the
+   *   neutral "Water alerts" rather than a guess.
+   */
+  render(warnings, spotOrWaterType) {
     if (!warnings) return null;
     
     const warningArray = Array.isArray(warnings) ? warnings : [warnings];
     const warningCount = warningArray.length;
+    const water = (window.KaaykoWaterType && window.KaaykoWaterType.of)
+      ? window.KaaykoWaterType.of(spotOrWaterType)
+      : { alertsLabel: 'Water alerts' };
     
     const warningsHTML = `
-      <div class="safety-warnings-creative">
+      <div class="safety-warnings-creative" role="region" aria-label="${water.alertsLabel}">
         <div class="warning-pulse-container" onclick="this.parentElement.classList.toggle('warnings-revealed')">
           <div class="warning-pulse-ring"></div>
           <div class="warning-pulse-ring delay-1"></div>
@@ -38,6 +49,7 @@ class SafetyWarnings {
             `).join('')}
           </div>
           <div class="warnings-footer">
+            <div class="warning-kicker">${water.alertsLabel}</div>
             <div class="warning-tip">💡 Tap warning to dismiss</div>
           </div>
         </div>
