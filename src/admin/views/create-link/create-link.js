@@ -16,7 +16,7 @@ let PENDING_ACTION = null;
 const UTM_FIELDS = { utm_source: 'utmSource', utm_medium: 'utmMedium', utm_campaign: 'utmCampaign', utm_term: 'utmTerm', utm_content: 'utmContent' };
 
 // ── Destination Registry — whitelisted Kaayko destinations ──
-// Only real, deployed domains: kaayko.com, roots.kaayko.com, alumni.kaayko.com
+// Only real, deployed domains: kaayko.com, roots.kaayko.com, kaay.school
 // (coolschools.kaayko.com and blog.kaayko.com no longer resolve — do not add them back)
 const DEST_GROUPS = [
   { id: 'kaayko', label: 'Kaayko', baseUrl: 'https://kaayko.com/', defaultTenantOnly: true },
@@ -40,12 +40,12 @@ const DEST_PAGES = [
   { id: 'kaayko_reads', group: 'kaayko', label: 'Reads', url: 'https://kaayko.com/reads' },
   { id: 'kaayko_testimonials', group: 'kaayko', label: 'Testimonials', url: 'https://kaayko.com/testimonials' },
 
-  // Alumni — kaayko.com/alumni + alumni.kaayko.com
+  // Alumni — kaay.school
   { id: 'alumni_survey', group: 'alumni', label: 'Alumni Interest Survey', url: 'https://kaayko.com/alumni' },
 
   // CoolSchools — roots.kaayko.com (coolschools.kaayko.com no longer resolves)
   { id: 'cs_portal', group: 'coolschools', label: 'CoolSchools Home', url: 'https://roots.kaayko.com/' },
-  { id: 'cs_alumni', group: 'coolschools', label: 'Alumni Portal', url: 'https://alumni.kaayko.com/' },
+  { id: 'cs_alumni', group: 'coolschools', label: 'Alumni Portal', url: 'https://kaay.school/' },
   { id: 'cs_roots', group: 'coolschools', label: 'ROOTS Request', url: 'https://roots.kaayko.com/request' },
 
   // Kreator — kaayko.com/kreator

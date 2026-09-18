@@ -1,57 +1,57 @@
 {
- "label": "KAAYKO",
- "v": "1788927031340",
- "note": "Offline fallback for /card. The live copy is in Firestore; refresh this with scripts/seed-cards.js --snapshot",
- "cards": [
-  {
-   "n": 1,
-   "slug": "kaayko",
-   "name": "Store",
-   "hook": "Your style sucks. Heal here.",
-   "host": "kaay.store",
-   "url": "https://kaay.store",
-   "accent": "#8A5A2B",
-   "art": "kaayko"
-  },
-  {
-   "n": 2,
-   "slug": "paddlingout",
-   "name": "Paddling Out",
-   "hook": "Drown in data, not water.",
-   "host": "kaayko.com/paddlingout",
-   "url": "https://kaayko.com/paddlingout",
-   "accent": "#2E6F76",
-   "art": "paddlingout"
-  },
-  {
-   "n": 3,
-   "slug": "forge",
-   "name": "Forge",
-   "hook": "Brahma's blessings and a MacBook.",
-   "host": "kaayko.com/forge",
-   "url": "https://kaayko.com/forge",
-   "accent": "#A6512E",
-   "art": "forge"
-  },
-  {
-   "n": 4,
-   "slug": "kortex",
-   "name": "Kortex",
-   "hook": "A link to take you places.",
-   "host": "kaayko.com/kortex",
-   "url": "https://kaayko.com/kortex",
-   "accent": "#3B4E8C",
-   "art": "kortex"
-  },
-  {
-   "n": 5,
-   "slug": "alumni",
-   "name": "Alumni",
-   "hook": "Revisit, and make yourself useful.",
-   "host": "kaayko.com/alumni",
-   "url": "https://kaayko.com/alumni",
-   "accent": "#4E6B3E",
-   "art": "alumni"
-  }
- ]
+  "label": "KAAYKO",
+  "v": "1788927031340",
+  "note": "Offline fallback for /card. The live copy is in Firestore (kaaykocards); update it with PATCH /admin/cards/:slug as a platform admin, then mirror it here.",
+  "cards": [
+    {
+      "n": 1,
+      "slug": "kaayko",
+      "name": "Store",
+      "hook": "Your style sucks. Heal here.",
+      "host": "kaay.store",
+      "url": "https://kaay.store",
+      "accent": "#8A5A2B",
+      "art": "kaayko"
+    },
+    {
+      "n": 2,
+      "slug": "paddlingout",
+      "name": "Paddling Out",
+      "hook": "Drown in data, not water.",
+      "host": "kaayko.com/paddlingout",
+      "url": "https://kaayko.com/paddlingout",
+      "accent": "#2E6F76",
+      "art": "paddlingout"
+    },
+    {
+      "n": 3,
+      "slug": "forge",
+      "name": "Forge",
+      "hook": "Brahma's blessings and a MacBook.",
+      "host": "kaayko.com/forge",
+      "url": "https://kaayko.com/forge",
+      "accent": "#A6512E",
+      "art": "forge"
+    },
+    {
+      "n": 4,
+      "slug": "kortex",
+      "name": "Kortex",
+      "hook": "A link to take you places.",
+      "host": "kaayko.com/kortex",
+      "url": "https://kaayko.com/kortex",
+      "accent": "#3B4E8C",
+      "art": "kortex"
+    },
+    {
+      "n": 5,
+      "slug": "alumni",
+      "name": "Alumni",
+      "hook": "Revisit, and make yourself useful.",
+      "host": "kaay.school",
+      "url": "https://kaay.school",
+      "accent": "#4E6B3E",
+      "art": "alumni"
+    }
+  ]
 }

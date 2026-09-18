@@ -189,6 +189,7 @@ a { color: inherit; text-decoration: none; }
 
 
 
+@media (hover: none), (pointer: coarse) { #tilt-note { display: none; } }
 .colophon {
   width: 100%; max-width: 980px; padding-top: 22px; border-top: 1px solid var(--hair);
   display: flex; flex-wrap: wrap; gap: 10px 26px; justify-content: space-between;
@@ -231,14 +232,21 @@ a { color: inherit; text-decoration: none; }
 
     <div class="hint">
       <button type="button" id="turn">Turn it over</button>
+      <!-- Two instructions competing for one small space, and the second is a lie
+           on a phone: there is no cursor to move. Shown only where a real pointer
+           exists. -->
       <span class="cap" id="tilt-note">Move the light</span>
     </div>
 
+    <!-- The card is the brand's calling card, so the footer is the family: the
+         three kaay domains, all live. It used to offer one link to /store and a
+         shipping game, which is not what someone holding this wants next. -->
     <footer class="colophon">
-      <a class="cap" href="/store">The shop</a>
-      <a class="cap" href="/shipping">Play Kaayko Shipping</a>
+      <a class="cap" href="https://kaay.store">kaay.store</a>
+      <a class="cap" href="https://kaay.link">kaay.link</a>
+      <a class="cap" href="https://kaay.school">kaay.school</a>
       <a class="cap" href="mailto:help@kaayko.com">help@kaayko.com</a>
-      <span class="cap">Printed to order &middot; est. whenever</span>
+      <span class="cap">Printed to order</span>
     </footer>
 
   </div>
