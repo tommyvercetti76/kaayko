@@ -11,7 +11,13 @@
       "host": "kaay.store",
       "url": "https://kaay.store",
       "accent": "#8A5A2B",
-      "art": "kaayko"
+      "art": "kaayko",
+      "line": "Two things a bag, printed when you order.",
+      "facts": [
+        "Two a bag",
+        "Printed to order",
+        "No account"
+      ]
     },
     {
       "n": 2,
@@ -21,7 +27,13 @@
       "host": "kaayko.com/paddlingout",
       "url": "https://kaayko.com/paddlingout",
       "accent": "#2E6F76",
-      "art": "paddlingout"
+      "art": "paddlingout",
+      "line": "Seventeen spots scored for wind, water and UV.",
+      "facts": [
+        "17 spots",
+        "Scored daily",
+        "Free, no signup"
+      ]
     },
     {
       "n": 3,
@@ -31,7 +43,13 @@
       "host": "kaayko.com/forge",
       "url": "https://kaayko.com/forge",
       "accent": "#A6512E",
-      "art": "forge"
+      "art": "forge",
+      "line": "Local-first generative AI for Apple Silicon.",
+      "facts": [
+        "MIT licensed",
+        "Runs offline",
+        "Source open"
+      ]
     },
     {
       "n": 4,
@@ -41,7 +59,13 @@
       "host": "kaayko.com/kortex",
       "url": "https://kaayko.com/kortex",
       "accent": "#3B4E8C",
-      "art": "kortex"
+      "art": "kortex",
+      "line": "Make a QR in ten seconds and re-point it later.",
+      "facts": [
+        "No account",
+        "Route by device",
+        "Live scans"
+      ]
     },
     {
       "n": 5,
@@ -51,7 +75,13 @@
       "host": "kaay.school",
       "url": "https://kaay.school",
       "accent": "#4E6B3E",
-      "art": "alumni"
+      "art": "alumni",
+      "line": "Mentoring, scholarships and a current directory.",
+      "facts": [
+        "By batch and city",
+        "One tap",
+        "Brokered intros"
+      ]
     }
   ]
 }

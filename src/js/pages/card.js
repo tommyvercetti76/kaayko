@@ -158,9 +158,11 @@ function show(i, { focus = false } = {}) {
   if (!series.length) return;
   at = (i + series.length) % series.length;
   const c = series[at];
-  draw(frontEl, front(c, { qr: qrFor(c.url), artHref: `/assets/cards/art/${c.art || c.slug}.png` }),
+  const artHref = `/assets/cards/art/${c.art || c.slug}.png`;
+  draw(frontEl, front(c, { qr: qrFor(c.url), artHref }),
        `${c.name}, front of the card`);
-  draw(backEl, back(c, brand, { index: at + 1, total: series.length }),
+  // The back gets the same art, ghosted behind its words.
+  draw(backEl, back(c, brand, { index: at + 1, total: series.length, artHref }),
        `${c.name}, back of the card`);
   nowEl.innerHTML = `<b>${esc(c.name)}</b>` +
     `<i><a class="to-product" href="${esc(c.url)}">${esc(c.url.replace('https://', ''))}</a></i>`;

@@ -97,31 +97,79 @@ ${art}
 <rect x="${AW}" y="0" width="6" height="${H}" fill="${accent}"/>
 <text x="${TX}" y="200" style="font:300 86px ${SERIF};fill:${INK}">${esc(card.name)}</text>
 ${hook}
+<!-- The rule used to sit at y=380 while the QR box started at y=358, so the
+     line ran straight through the code. Everything below the rule now starts
+     below it: the address on the left, the code on the right, the mark beneath. -->
 <path d="M${TX} 380 H980" stroke="${MUTE}" stroke-width="0.9" opacity=".32"/>
-<text x="${TX}" y="434" style="font:400 30px ${SERIF};fill:${MUTE}">${esc(hostOf(card))}</text>
-<rect x="858" y="358" width="122" height="122" rx="4" fill="#FBF7EB" stroke="${MUTE}" stroke-width="1"/>
-${qr ? qrRects(qr, 867, 367, 104) : ""}
-<text x="919" y="518" text-anchor="middle"
-      style="font:300 26px ${SANS};fill:${MUTE};letter-spacing:7px">KAAYKO</text>
+<text x="${TX}" y="432" style="font:400 30px ${SERIF};fill:${MUTE}">${esc(hostOf(card))}</text>
+<rect x="858" y="406" width="122" height="122" rx="4" fill="#FBF7EB" stroke="${MUTE}" stroke-width="1"/>
+${qr ? qrRects(qr, 867, 415, 104) : ""}
+<text x="919" y="566" text-anchor="middle"
+      style="font:300 24px ${SANS};fill:${MUTE};letter-spacing:7px">KAAYKO</text>
 </svg>`;
 }
 
-/** @param {object} brand {label, tagline, properties, contact} */
-export function back(card, brand = {}, { index = 1, total = 5 } = {}) {
+/**
+ * The back of one card.
+ *
+ * It used to be the same block on all five — the wordmark, the house tagline,
+ * and the list "Kaayko · Paddling Out · Forge · Kortex · Alumni" — so whichever
+ * card you turned over, it advertised the other four and said nothing about the
+ * one in your hand. Everything sat centred in the middle of the card with the
+ * corners empty.
+ *
+ * Now each back sells its own card: the name, one sentence saying what the thing
+ * is, and three facts you can check on the page its QR opens. The facts sit in
+ * the same three places on every card, so the series reads as a set when they are
+ * laid out together.
+ *
+ * @param {object} card  {name, line, facts[], host, url, accent}
+ * @param {object} brand {label, contact}
+ */
+export function back(card, brand = {}, { index = 1, total = 5, artHref } = {}) {
   const accent = card.accent || "#8A5A2B";
   const label = brand.label || "KAAYKO";
+  const line = card.line || card.hook || "";
+  const facts = (Array.isArray(card.facts) ? card.facts : []).slice(0, 3);
+
+  const L = 88, R = W - 88;          // the type column, same inset both sides
+  const cell = (R - L) / 3;
+
+  // Bled off the right edge so it reads as a watermark under the words rather
+  // than a second picture competing with the front.
+  const ghost = artHref
+    ? `<g opacity=".09"><image href="${esc(artHref)}" x="${W - 520}" y="0" width="520" height="${H}" preserveAspectRatio="xMidYMid slice"/></g>`
+    : "";
+
+  // Three facts, each under its own short accent rule. A rule that is the width
+  // of its own label rather than the cell keeps the row from looking like a
+  // table.
+  const factRow = facts.map((f, k) => {
+    const cx = L + cell * k + cell / 2;
+    const tick = Math.min(cell - 28, 34 + String(f).length * 3.4);
+    return `<path d="M${(cx - tick / 2).toFixed(1)} 470 H${(cx + tick / 2).toFixed(1)}" stroke="${accent}" stroke-width="1.4" opacity=".85"/>
+<text x="${cx.toFixed(1)}" y="508" text-anchor="middle" style="font:300 17px ${SANS};fill:${INK};letter-spacing:4px">${esc(String(f).toUpperCase())}</text>`;
+  }).join("\n");
+
   return `<svg xmlns="http://www.w3.org/2000/svg" width="3.5in" height="2in"
-     viewBox="0 0 ${W} ${H}">
-<rect width="${W}" height="${H}" fill="#E4D9C0"/>
-<rect x="16" y="16" width="1018" height="568" fill="${PAPER}"/>
-<rect x="16" y="16" width="11" height="568" fill="${accent}"/>
-<text x="525" y="206" text-anchor="middle" style="font:400 58px ${SERIF};fill:${INK};letter-spacing:20px">${esc(label)}</text>
-<path d="M320 236 H730" stroke="${accent}" stroke-width="1.1" opacity=".7"/>
-<text x="525" y="272" text-anchor="middle" style="font:300 11px ${SANS};fill:${MUTE};letter-spacing:8px">${esc(brand.tagline || "")}</text>
-<text x="525" y="352" text-anchor="middle" style="font:400 24px ${SERIF};fill:${INK}">${esc(brand.properties || "")}</text>
-<text x="525" y="412" text-anchor="middle" style="font:400 23px ${SERIF};fill:${MUTE}">${esc(brand.contact || "")}</text>
-<text x="525" y="542" text-anchor="middle"
-      style="font:300 11px ${SANS};fill:${MUTE};letter-spacing:5px">${esc((card.name || "").toUpperCase())} &#183; CARD ${index} OF ${total}</text>
+     viewBox="0 0 ${W} ${H}" data-property="${esc(card.slug || "")}">
+<rect width="${W}" height="${H}" fill="${PAPER}"/>
+<!-- The same animal as the front, ghosted. It is the one thing that makes a card
+     recognisably its own at arm's length, and at 9% it is a watermark rather than
+     a picture, so nothing printed over it loses contrast. -->
+${ghost}
+<rect x="0" y="0" width="8" height="${H}" fill="${accent}"/>
+
+<text x="${L}" y="86" style="font:300 22px ${SANS};fill:${MUTE};letter-spacing:9px">${esc(label)}</text>
+<text x="${L}" y="182" style="font:300 78px ${SERIF};fill:${INK}">${esc(card.name || "")}</text>
+<text x="${L}" y="244" style="font:400 32px ${SERIF};fill:${MUTE}">${esc(line)}</text>
+
+<path d="M${L} 300 H${R}" stroke="${MUTE}" stroke-width="0.9" opacity=".28"/>
+${factRow}
+
+<text x="${L}" y="${H - 44}" style="font:400 30px ${SERIF};fill:${INK}">${esc(hostOf(card))}</text>
+<text x="${R}" y="${H - 44}" text-anchor="end"
+      style="font:300 12px ${SANS};fill:${MUTE};letter-spacing:5px">${index} OF ${total}</text>
 </svg>`;
 }
 
