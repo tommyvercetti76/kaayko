@@ -80,8 +80,13 @@ export function front(card, { qr, artHref, } = {}) {
     `<text x="${TX}" y="${278 + i * 48}" style="font:400 40px ${SERIF};font-style:italic;fill:${accent}">${esc(line)}</text>`
   ).join("");
 
+  // The art fills the whole column. It used to be a square dropped at y=100 in a
+  // 600-tall column, leaving 199px of flat CREAM above and below — and because
+  // each art file carried its own near-cream background, those bands were a
+  // visibly different colour from the picture. The art files are now cut to this
+  // column's shape and painted on this exact CREAM, so the seam disappears.
   const art = artHref
-    ? `<image href="${esc(artHref)}" x="0" y="100" width="${AW}" height="${AW}" preserveAspectRatio="xMidYMid meet"/>`
+    ? `<image href="${esc(artHref)}" x="0" y="0" width="${AW}" height="${H}" preserveAspectRatio="xMidYMid slice"/>`
     : "";
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="3.5in" height="2in"
