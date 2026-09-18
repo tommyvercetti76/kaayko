@@ -508,33 +508,33 @@
       } catch (err) { console.error('RatingHero error:', err); }
     }
 
-    // Water temperature is MEASURED OR NOTHING. When a sensor covers this water
-    // we show the reading and name the gauge; when none does we say "no sensor"
-    // instead of printing a number we invented.
-    function markEstimatedWaterTemp(currentData) {
+    // Water temperature is MEASURED OR NOTHING. RatingHero now renders
+    // "No sensor" itself when nothing was measured, so this only has one job
+    // left: name the gauge when something WAS.
+    //
+    // It used to also overwrite an invented figure with "No sensor", and it lost
+    // that race — one requestAnimationFrame after render the labels did not
+    // exist yet, `find` returned undefined, and it returned silently, leaving
+    // "72F" on screen under "Measured now at the nearest station". Retried
+    // across a few frames now, and correctness no longer depends on it winning.
+    function markEstimatedWaterTemp(currentData, attempt = 0) {
       const c = currentData?.conditions;
-      if (!c) return;
+      if (!c || !c.waterTempMeasured || !c.waterTempSource) return;
+
       const label = [...document.querySelectorAll('#ratingHeroContainer .weather-label')]
         .find(el => /water temp/i.test(el.textContent));
-      if (!label || label.dataset.wtMarked) return;
+      if (!label) {
+        if (attempt < 10) requestAnimationFrame(() => markEstimatedWaterTemp(currentData, attempt + 1));
+        return;
+      }
+      if (label.dataset.wtMarked) return;
       label.dataset.wtMarked = '1';
 
-      const row = label.closest('.weather-stat');
-      const valueEl = row?.querySelector('.weather-value');
-
-      if (c.waterTempMeasured && c.waterTempSource) {
-        const m = document.createElement('span');
-        m.className = 'wt-measured';
-        m.textContent = ' · measured';
-        m.title = `Measured at ${c.waterTempSource.gaugeName}`;
-        label.appendChild(m);
-      } else if (!c.waterTempMeasured) {
-        if (valueEl) {
-          valueEl.textContent = 'No sensor';
-          valueEl.classList.add('wt-none');
-          valueEl.title = 'No water-temperature sensor covers this spot. We do not publish a figure we have not measured.';
-        }
-      }
+      const m = document.createElement('span');
+      m.className = 'wt-measured';
+      m.textContent = ' · measured';
+      m.title = `Measured at ${c.waterTempSource.gaugeName}`;
+      label.appendChild(m);
     }
 
     // ── Night gate ────────────────────────────────────────────────────────────

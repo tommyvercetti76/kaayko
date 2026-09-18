@@ -1637,3 +1637,11 @@ html:not(.dark-theme) .suggestion-text {
 }
 html.dark-theme .reading-source { color: ivory; }
 html:not(.dark-theme) .reading-source { color: #1a1a1a; }
+
+/* Water temperature is MEASURED OR NOTHING. `.wt-none` styles the "No sensor"
+   tile the hero renders when nobody measured the water; `.wt-measured` is the
+   marker appended to the label when a named gauge did. These lived only in
+   forecast.css, so the same component rendered unstyled on every other surface
+   that mounts it. */
+.weather-value.wt-none { color: rgba(237,232,223,0.45); font-size: 0.95rem; }
+.wt-measured { color: rgba(126,169,140,0.85); letter-spacing: 0.08em; }

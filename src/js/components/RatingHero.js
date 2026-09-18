@@ -27,16 +27,28 @@ class RatingHero {
     const uvIndex       = weather?.uvIndex     !== undefined ? weather.uvIndex   : '--';
     const cloudCover    = weather?.cloudCover  !== undefined ? weather.cloudCover : '--';
 
-    // Real water temp from API; fallback: air - 3°C
+    // Water temperature is MEASURED OR NOTHING.
+    //
+    // This used to fall back to "air - 3C" when the API published nothing, and
+    // the hero rendered that invented figure directly under the heading
+    // "Measured now at the nearest station". On 18 Sep 2026 every one of the 18
+    // live spots had no water sensor, so every one of them was showing a
+    // fabricated temperature labelled as measured. A user who catches that is
+    // right to distrust the score next to it.
+    //
+    // There was a post-render patch (markEstimatedWaterTemp in forecast.html)
+    // meant to overwrite the tile with "No sensor", but it ran one
+    // requestAnimationFrame after render, lost the race against the hero's own
+    // stat markup, found no label and returned silently. Patching a wrong value
+    // afterwards is the wrong shape anyway: the value is never invented now.
     const rawWt = weather?.waterTemp;
-    const waterTemp = (rawWt !== undefined && rawWt !== null && !isNaN(parseFloat(rawWt)))
-      ? parseFloat(rawWt)
-      : (temp !== '--' ? parseFloat(temp) - 3 : '--');
+    const hasWaterTemp = rawWt !== undefined && rawWt !== null && !isNaN(parseFloat(rawWt));
+    const waterTemp = hasWaterTemp ? parseFloat(rawWt) : null;
 
     // Store raw values for unit switching
     this.rawValues = {
       temp:      temp !== '--' ? parseFloat(temp)  : null,
-      waterTemp: waterTemp !== '--' ? parseFloat(waterTemp) : null,
+      waterTemp,
       wind:      wind !== '--' ? parseFloat(wind)  : null,
       windDirection,
       uvIndex:   uvIndex !== '--' ? parseFloat(uvIndex)     : null,
@@ -47,7 +59,13 @@ class RatingHero {
     const P = window.KaaykoPrefs;
     const dispTempStr  = P.fmtTemp(temp);
     const dispWindStr  = P.fmtWind(wind);
-    const dispWaterStr = P.fmtTemp(waterTemp);
+    // No reading -> say so, in the tile itself. Never a number, never an em dash
+    // that reads as "loading".
+    const dispWaterStr = hasWaterTemp ? P.fmtTemp(waterTemp) : 'No sensor';
+    const waterTempClass = hasWaterTemp ? '' : ' wt-none';
+    const waterTempTitle = hasWaterTemp
+      ? ''
+      : ' title="No water-temperature sensor covers this spot. We do not publish a figure we have not measured."';
     // Shared line-icons (single icon language across the app)
     const ic = (n) => (window.KaaykoIcons ? window.KaaykoIcons.get(n) : '');
 
@@ -96,7 +114,7 @@ class RatingHero {
               <div class="weather-stat">
                 <div class="weather-icon">${ic('water-temp')}</div>
                 <div class="weather-data">
-                  <span class="weather-value">${dispWaterStr}</span>
+                  <span class="weather-value${waterTempClass}"${waterTempTitle}>${dispWaterStr}</span>
                   <span class="weather-label">Water Temp</span>
                 </div>
               </div>
