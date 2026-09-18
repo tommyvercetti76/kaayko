@@ -75,14 +75,21 @@ function aim(e) {
 const fine = matchMedia('(pointer: fine)').matches;
 const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+// Decoration, and fenced off as such. The series below is the page; the lamp and
+// the tilt are polish. A single bad line in here once took the whole module down
+// on every touch device — the card never rendered at all — so a throw in the
+// polish now costs the polish and nothing else.
+try {
 if (!still) {
   raf = requestAnimationFrame(loop);
   if (fine) {
     window.addEventListener('pointermove', aim, { passive: true });
     window.addEventListener('pointerleave', () => { target = { x: .5, y: .35 }; });
   } else {
-    // A phone has a better pointer than a pointer: the device itself.
-    document.getElementById('tilt-note').textContent = 'Tilt the phone';
+    // A phone has a better pointer than a pointer: the device itself. There is no
+    // on-screen note about it any more — the copy went when the page was cut back
+    // to four strings, and the line that wrote into it took the whole module down
+    // with a TypeError on every touch device, leaving one blank white card.
     const onTilt = (ev) => {
       const g = ev.gamma ?? 0, b = ev.beta ?? 0;
       target.x = Math.max(0, Math.min(1, 0.5 + g / 46));
@@ -101,6 +108,7 @@ if (!still) {
     }
   }
 }
+} catch (err) { console.warn('card: lighting off —', err); }
 
 /* ── turning it over ─────────────────────────────────────────────────────── */
 const flip = () => card.classList.toggle('is-flipped');
