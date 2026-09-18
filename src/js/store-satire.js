@@ -181,7 +181,7 @@ const AT_RISK = new Set(["Vulnerable", "Endangered", "Critically Endangered"]);
 /* ── Fallbacks ────────────────────────────────────────────── */
 
 const THEME_STORY = Object.freeze({
-  Wildlife: "Drawn by hand, printed small, and sold to people who would rather look at an animal than own one.",
+  Wildlife: "Printed small, and sold to people who would rather look at an animal than own one.",
   Heritage: "A person who did something permanent, reduced to one image on a shirt. They would probably have allowed it.",
   Rebel: "Says the quiet part on the front, at chest height, in a size everybody can read from across the room.",
   Philosophy: "A complete worldview, abbreviated until it fits on a garment. Most of them started shorter than you think.",

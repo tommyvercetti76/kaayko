@@ -22,7 +22,8 @@ const routes = [
   // serves real, crawlable product content.
   { loc: '/about', source: 'src/about.html', changefreq: 'monthly', priority: '0.8' },
   { loc: '/reads', source: 'src/reads.html', changefreq: 'weekly', priority: '0.7' },
-  { loc: '/testimonials', source: 'src/testimonials.html', changefreq: 'monthly', priority: '0.6' },
+  // /testimonials is out of the sitemap until it actually has testimonials in it.
+  // It is marked noindex for the same reason.
   { loc: '/privacy', source: 'src/privacy.html', changefreq: 'yearly', priority: '0.3' },
   { loc: '/forge', source: 'src/forge.html', changefreq: 'monthly', priority: '0.5' },
   { loc: '/forge-gallery', source: 'src/forge-gallery.html', changefreq: 'monthly', priority: '0.6' },
