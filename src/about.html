@@ -179,6 +179,40 @@
     .stage-art--frame { display: flex; align-items: center; justify-content: center; background: #f2ecdd; }
     .stage-art--frame img { object-fit: contain; padding: clamp(1rem, 6vw, 4rem); }
 
+    /* A card illustration is an OBJECT, not wallpaper. Stretched to a
+       full-bleed cover it becomes a six-foot piece of clip art floating on a
+       pale panel; set at its own scale in the dark room, with weight under it,
+       it reads as the printed card it actually is. */
+    .stage--plate { background:
+      radial-gradient(120% 90% at 72% 42%, rgba(60, 56, 48, 0.55) 0%, rgba(10, 10, 10, 0) 62%), #0b0b0c; }
+    @media (max-width: 760px) {
+      .stage--plate { background:
+        radial-gradient(110% 55% at 50% 26%, rgba(60, 56, 48, 0.5) 0%, rgba(10, 10, 10, 0) 68%), #0b0b0c; }
+    }
+
+    .stage-art--plate { display: flex; align-items: center; justify-content: flex-end;
+      padding: 0 clamp(1.5rem, 7vw, 6rem); }
+    .stage-art--plate img {
+      width: auto; height: auto;
+      max-height: min(52svh, 480px);
+      max-width: min(38vw, 380px);
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 44px 90px -34px rgba(0, 0, 0, 0.92), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    }
+    @media (max-width: 760px) {
+      /* Narrow, the copy owns the bottom half — the card sits above it, at
+         thumbnail scale, the way you would hold one. */
+      .stage-art--plate { align-items: flex-start; justify-content: center;
+        padding: clamp(4.5rem, 13svh, 7rem) 1.5rem 0; }
+      .stage-art--plate img { max-height: 30svh; max-width: 54vw; }
+    }
+
+    /* The heavy left wash exists to rescue words off a bright photograph.
+       Over a dark room holding one lit card it is just mud. */
+    .stage--plate .stage-scrim { background:
+      linear-gradient(to top, rgba(8, 8, 8, 0.88) 0%, rgba(8, 8, 8, 0.4) 30%, rgba(8, 8, 8, 0) 58%); }
+
     /* Legibility scrim — art stays the hero, words stay readable */
     .stage-scrim {
       position: absolute; inset: 0; z-index: -1;
@@ -927,7 +961,7 @@
     function ordinal(i) { return String(i + 1).padStart(2, "0"); }
 
     function buildChapter(def, index) {
-      var artWrap = h("div", { class: "stage-art" + (def.frame ? " stage-art--frame" : "")});
+      var artWrap = h("div", { class: "stage-art" + (def.frame ? " stage-art--frame" : "") + (def.image ? " stage-art--plate" : "") });
 
       // The name and the description live in the stage, over the picture. A
       // chapter with no picture has to carry them in its body instead, or it
@@ -948,7 +982,7 @@
         plain ? null : h("span", { class: "stage-hint", text: "Keep scrolling" })
       ]);
 
-      var stage = h("div", { class: "stage" }, [
+      var stage = h("div", { class: "stage" + (def.image ? " stage--plate" : "") }, [
         artWrap,
         h("div", { class: "stage-scrim" }),
         copy
