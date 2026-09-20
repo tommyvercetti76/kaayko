@@ -2,10 +2,10 @@
  * pages/card.js — the collectible card (/card): lighting model, flip, share, QR.
  * Moved out of card.html on 12 Sep 2026 unchanged.
  */
-import { front, back, PRINT } from '/js/cards/render.js';
-import { engravedFor, stockOf } from '/js/cards/skins/engraved.js';
-import { readFace, canVibrate, warmArt } from '/js/cards/relief.js';
-import { esc, apiBase } from '/js/kit.js';
+import { front, back, PRINT } from '/js/cards/render.js?v=1269a42';
+import { engravedFor, stockOf } from '/js/cards/skins/engraved.js?v=1269a42';
+import { readFace, canVibrate, warmArt } from '/js/cards/relief.js?v=1269a42';
+import { esc, apiBase } from '/js/kit.js?v=1269a42';
 
 /* ── the lighting model ────────────────────────────────────────────────────
    Blinn-Phong with a Schlick Fresnel term. The pointer is a light at (lx, ly)
@@ -66,10 +66,15 @@ function light(px, py) {
   room.style.setProperty('--sy', (py * 100).toFixed(1) + '%');
 }
 
+/** Where the lamp should sit for a pointer or a tilt at (px, py) over the card. */
+const lampAngle = (px, py) => 180 + Math.atan2(0.5 - py, px - 0.5) * 180 / Math.PI;
+
 const LAMP_VARS = ['--rx', '--ry', '--spec', '--fres', '--hue', '--sx', '--sy'];
 
 function lampOff() {
-  if (raf) { cancelAnimationFrame(raf); raf = 0; }
+  // The loop keeps running: it is what carries the pointer into the rake. Only
+  // the foil is switched off, and what it last wrote is removed, because an
+  // inline property beats any stylesheet.
   lamp = false;
   LAMP_VARS.forEach((k) => card.style.removeProperty(k));
   // The room runs its own copy of the light, so the background pool would
@@ -81,15 +86,15 @@ function lampOff() {
 }
 
 function lampOn() {
-  if (lamp || still) return;
+  if (still) return;
   lamp = true;
-  raf = requestAnimationFrame(loop);
+  if (!raf) raf = requestAnimationFrame(loop);
 }
 
 function loop() {
   cur.x += (target.x - cur.x) * 0.14;      // a little inertia; paper has mass
   cur.y += (target.y - cur.y) * 0.14;
-  light(cur.x, cur.y);
+  if (lamp) light(cur.x, cur.y);           // foil belongs to the colour card
   raf = requestAnimationFrame(loop);
 }
 
@@ -97,6 +102,7 @@ function aim(e) {
   const r = card.getBoundingClientRect();
   target.x = Math.max(-0.2, Math.min(1.2, (e.clientX - r.left) / r.width));
   target.y = Math.max(-0.6, Math.min(1.6, (e.clientY - r.top) / r.height));
+  if (engraved) aimLamp(lampAngle(target.x, target.y));
   if (!live) { live = true; card.classList.add('is-live'); }
 }
 
@@ -111,6 +117,8 @@ try {
 if (!still) {
   raf = requestAnimationFrame(loop);
   if (fine) {
+    // aim() still runs while engraved — it feeds the rake — but light() is
+    // fenced off inside the loop, so no foil is written.
     window.addEventListener('pointermove', aim, { passive: true });
     window.addEventListener('pointerleave', () => { target = { x: .5, y: .35 }; });
   } else {
@@ -122,6 +130,9 @@ if (!still) {
       const g = ev.gamma ?? 0, b = ev.beta ?? 0;
       target.x = Math.max(0, Math.min(1, 0.5 + g / 46));
       target.y = Math.max(0, Math.min(1, 0.5 + (b - 42) / 52));
+      // On a phone this IS the gesture: tilting the card to the light, which
+      // is how an emboss has been read since before there were phones.
+      if (engraved) aimLamp(lampAngle(target.x, target.y));
       if (!live) { live = true; card.classList.add('is-live'); }
     };
     if (typeof DeviceOrientationEvent?.requestPermission === 'function') {
@@ -176,7 +187,7 @@ function setSkin(on, { save = true } = {}) {
   // first engraved frame arrives still wearing a gold highlight.
   if (engraved) lampOff(); else lampOn();
   if (save) remember(engraved);
-  if (!engraved) unread();
+  if (!engraved) { unread(); stopRaking(); }
   if (series.length) { paintMarks(); show(at); }
   showHint();
 }
@@ -194,11 +205,12 @@ skinBtn.addEventListener('click', (e) => { e.stopPropagation(); setSkin(!engrave
    and it is the browser rather than the card. Saying that out loud is better
    than an interface that silently promises something it cannot deliver. */
 function showHint() {
-  if (!engraved || !touchy) { hintEl.hidden = true; return; }
+  if (!engraved) { hintEl.hidden = true; return; }
+  if (!touchy) { hintEl.hidden = false; hintEl.textContent = 'Move across the card to catch the light'; return; }
   hintEl.hidden = false;
   hintEl.textContent = canVibrate()
-    ? 'Drag a finger across the card \u00b7 tap to test the buzz'
-    : 'Drag a finger across the card \u00b7 this browser cannot vibrate';
+    ? 'Tilt to catch the light \u00b7 tap to buzz'
+    : 'Tilt to catch the light';
 }
 
 hintEl.addEventListener('click', (e) => {
@@ -258,40 +270,96 @@ function qrFor(url) {
 /**
  * The strip under the card.
  *
- * In colour it is a slider: five bars, no numbers, because the card's own name
- * is already printed beneath it. Engraved it becomes the set — the five cards
- * themselves, laid side by side, because the joke is a comparison and a
- * comparison cannot happen one card at a time. It is still the same
- * radiogroup, so the arrow keys and the screen reader do not notice.
- *
- * The proofs carry no QR: at this size a code is unscannable noise, and the
- * only thing worth looking at across five cards is the paper.
+ * Five bars, no numbers — the card's own name is printed beneath it. Engraved,
+ * each bar takes the colour of the stock that card is printed on, so the strip
+ * becomes the one place the five papers are seen together and the chrome never
+ * changes shape. It was briefly five little cards instead; that put a cut-off
+ * horizontal rail under the hero on a phone and made the page look broken at
+ * the exact moment it is trying to look expensive.
  */
 function paintMarks() {
   marks.innerHTML = series.map((c, i) => {
-    const proof = engraved
-      ? `<span class="proof">${front(c, { artHref: `/assets/cards/art/${c.art || c.slug}.png`, skin: { ...engravedFor(c, PRINT, `m${i}`), qrBox: false } })}</span>` +
-        `<span class="stockname">${esc(stockOf(c).name)}</span>`
-      : '';
-    // The stock is in the label too. Someone who cannot see the paper still
-    // hears what separates this card from the one beside it.
-    const label = engraved ? `${c.name} — ${stockOf(c).name}, ${stockOf(c).note}` : c.name;
+    const st = stockOf(c);
+    // The stock is in the label as well as the colour. Nothing here is carried
+    // by a paper difference a reader may not be able to see.
+    const label = engraved ? `${c.name} — ${st.name}, ${st.note}` : c.name;
+    const tint = engraved ? ` style="--stock:${st.hex}"` : '';
     return `<button type="button" class="mark" role="radio" aria-checked="false" tabindex="-1"
-       data-i="${i}" title="${esc(label)}" aria-label="${esc(label)}">${proof}</button>`;
+       data-i="${i}" title="${esc(label)}" aria-label="${esc(label)}"${tint}></button>`;
   }).join('');
 }
 
-/* ── reading the card with a finger ──────────────────────────────────────────
-   Only on touch, only when the die has been cut. The readers are torn down and
-   rebuilt on every card change because the map is measured from the drawing,
-   and the drawing is replaced wholesale each time.                           */
+/* ── reading a blind emboss ──────────────────────────────────────────────────
+   There is no ink on the animal and barely any on the letters. The only way
+   anyone has ever read an emboss is to tilt it until the light rakes across
+   and the relief throws a shadow, so that is the interaction: the lamp inside
+   the SVG filters moves, and the shadows swing with it.
+
+   It is driven by whatever the device has. A pointer over the card moves it
+   directly. A phone moves it by its own attitude, which is the real gesture —
+   you are tilting the card. And when nobody is doing either it drifts slowly
+   on its own, because a card that is only legible once you have discovered a
+   gesture is a card most people will never read.
+
+   This replaces the haptics as the primary answer rather than joining it.
+   Haptics were never going to arrive on an iPhone, and a visual that works
+   everywhere beats a tick that works in one browser on one platform.         */
+let lamps = [], rakeDeg = 228, rakeTarget = 228, idle = 0, rakeRaf = 0;
+
+function collectLamps() {
+  lamps = [];
+  for (const host of [frontEl, backEl]) {
+    const svg = host.querySelector('svg');
+    if (!svg) continue;
+    // By element, not by a marker attribute: these SVGs arrive through
+    // innerHTML, and the HTML parser drops data-* from filter primitives — an
+    // afternoon of a feature that silently did nothing lives in that sentence.
+    const art = svg.querySelector('feDistantLight');
+    const drops = svg.querySelectorAll('feDropShadow');
+    if (art || drops.length) lamps.push({ art, sh: drops[0] || null, so: drops[1] || null });
+  }
+}
+
+/** Point every lamp on the card at one angle. */
+function rake(deg) {
+  const r = deg * Math.PI / 180;
+  // SVG azimuth runs anticlockwise from east; the drop shadows are in ordinary
+  // screen coordinates, so they get the opposite sign on y.
+  const sx = -Math.cos(r), sy = Math.sin(r);
+  for (const l of lamps) {
+    if (l.art) l.art.setAttribute('azimuth', deg.toFixed(1));
+    if (l.sh) { l.sh.setAttribute('dx', (sx * 2.6).toFixed(2)); l.sh.setAttribute('dy', (sy * 2.6).toFixed(2)); }
+    if (l.so) { l.so.setAttribute('dx', (-sx * 1.7).toFixed(2)); l.so.setAttribute('dy', (-sy * 1.7).toFixed(2)); }
+  }
+}
+
+function rakeLoop() {
+  // Nobody has touched it for a moment: drift, so the relief is visible to
+  // someone who just opened the page and is not doing anything.
+  if (++idle > 90) rakeTarget = 228 + Math.sin(idle / 150) * 52;
+  const d = rakeTarget - rakeDeg;
+  if (Math.abs(d) > 0.15) { rakeDeg += d * 0.12; rake(rakeDeg); }
+  rakeRaf = requestAnimationFrame(rakeLoop);
+}
+
+function aimLamp(deg) { rakeTarget = deg; idle = 0; }
+
+function startRaking() {
+  collectLamps();
+  if (!lamps.length || rakeRaf) return;
+  rakeRaf = requestAnimationFrame(rakeLoop);
+}
+
+function stopRaking() {
+  if (rakeRaf) { cancelAnimationFrame(rakeRaf); rakeRaf = 0; }
+  lamps = [];
+}
+
+/* The fingertip reader. Where a browser can vibrate it ticks per letter; where
+   it cannot — which is every browser on iOS — the trace still draws. It is a
+   bonus on top of the rake now, not the main way the card is read. */
 let readers = [];
-// How far this gesture travelled. A tap turns the card over; a drag across it
-// is someone reading the relief, and turning the card over mid-read is the
-// single most annoying thing the page could do.
 let gestureMoved = 0;
-// `hover: none` alone misses Android devices that report a coarse pointer and
-// a hover capability, and those are exactly the devices that CAN vibrate.
 const touchy = matchMedia('(hover: none)').matches
   || matchMedia('(pointer: coarse)').matches
   || (navigator.maxTouchPoints || 0) > 0;
@@ -313,13 +381,13 @@ function attachReaders(c) {
       onRead: (f, u) => {
         if (!stylus) return;
         if (!f || !u) { stylus.dataset.on = ''; return; }
-        // The trace is what an iPhone gets instead of the haptics it cannot
-        // have, so it has to be legible on its own and not merely a garnish.
         const r = svg.getBoundingClientRect();
         const hr = host.getBoundingClientRect();
         stylus.style.left = `${r.left - hr.left + (u.x / 1050) * r.width}px`;
         stylus.style.top = `${r.top - hr.top + (u.y / 600) * r.height}px`;
         stylus.dataset.on = f.kind;
+        // A finger on the card is also a hand holding it up to the light.
+        aimLamp(lampAngle(u.x / 1050, u.y / 600));
       },
     });
     readers.push({ detach });
@@ -352,6 +420,7 @@ function show(i, { focus = false } = {}) {
   });
   card.classList.remove('is-flipped');            // a new card arrives face up
   attachReaders(c);
+  if (engraved) { stopRaking(); startRaking(); } else stopRaking();
 }
 
 (async () => {

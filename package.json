@@ -5,6 +5,7 @@
   "scripts": {
     "test": "node --import ./tests/_setup.mjs --test tests/*.test.mjs",
     "check": "node scripts/check-js.js && node scripts/check-dom-ids.js && node scripts/check-store-pages.js && node scripts/check-static-asset-refs.js",
-    "verify": "npm run check && npm test"
+    "verify": "npm run check && npm test",
+    "stamp": "node scripts/stamp-version.js"
   }
 }

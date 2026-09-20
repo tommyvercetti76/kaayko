@@ -119,9 +119,16 @@ const MUTE = "#5E5240";
 const QUIET = "#46402F";
 
 /**
- * Filters are defined per card, because five cards share one document in the
- * set view and an id is document-wide: `url(#deboss)` would resolve to
- * whichever card rendered first.
+ * Filters are defined per card and per face, because an id is document-wide and
+ * the admin preview concatenates both faces into one string.
+ *
+ * The light sources in here are found and moved at runtime — the feDistantLight
+ * inside the deboss, and the two feDropShadows inside the raise. A blind emboss
+ * has no ink: the only way anyone has ever read one is to tilt it until the
+ * light rakes across and the relief throws a shadow. See rake() in
+ * pages/card.js, which finds them STRUCTURALLY, by element, and not by an
+ * attribute — setting innerHTML runs the string through the HTML parser, which
+ * drops data-* from SVG filter primitives on the way in.
  */
 const defs = (id, d, relief) => `<defs>
 <filter id="${id}-deboss" x="-6%" y="-6%" width="112%" height="112%" color-interpolation-filters="sRGB">
