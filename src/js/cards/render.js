@@ -21,6 +21,42 @@ const AW = 401;            // 1050 / phi — the art column
 const TX = AW + 56;        // where the words start
 const INK = "#1E1810", MUTE = "#6E5C40", PAPER = "#F5EFE1", CREAM = "#FCFBEA";
 
+/**
+ * The card as it prints. Every visual decision the card makes is a field here,
+ * and nothing below reads a constant directly — so a second skin can restyle
+ * the web page without the printed card moving, which it must not, because a
+ * card already in someone's pocket cannot be redeployed.
+ *
+ * Geometry is deliberately absent. W, H, AW and TX are 3.5 x 2 inches at 300
+ * units to the inch; they are the object, not a style, and a skin may not
+ * touch them.
+ *
+ * `defs` and `textFilter` are the only additive fields: both are empty here, so
+ * this skin emits the markup it always emitted, to the byte. tests/cardRender
+ * pins that.
+ */
+export const PRINT = Object.freeze({
+  serif: SERIF,
+  sans: SANS,
+  ink: INK,
+  mute: MUTE,
+  paper: PAPER,
+  cream: CREAM,
+  qrPaper: "#FBF7EB",
+  /** The card's own colour. A skin may return one colour for all five. */
+  accentOf: (card) => card.accent || "#8A5A2B",
+  /** The animal: filling the front column, ghosted on the back. */
+  art: true,
+  /** The coloured edge, 6 units on the front and 8 on the back. */
+  spine: true,
+  /** The hook, set in the accent. Italic is the house voice, not a rule. */
+  hookItalic: true,
+  /** Emitted immediately inside <svg>. A skin puts its <defs> here. */
+  defs: "",
+  /** A filter attribute value applied to every line of type, or "". */
+  textFilter: "",
+});
+
 import { esc } from "/js/kit.js";
 export { esc };
 
@@ -73,11 +109,12 @@ export function qrRects(qr, x, y, size, fill = "#1E1810") {
  * @param {object} card   {slug, name, hook, url, host, accent, art}
  * @param {object} opts   {qr, artHref, total, index}
  */
-export function front(card, { qr, artHref, } = {}) {
-  const accent = card.accent || "#8A5A2B";
+export function front(card, { qr, artHref, skin = PRINT } = {}) {
+  const accent = skin.accentOf(card);
+  const F = skin.textFilter ? ` filter="${skin.textFilter}"` : "";
   const lines = wrap(card.hook);
   const hook = lines.map((line, i) =>
-    `<text x="${TX}" y="${278 + i * 48}" style="font:400 40px ${SERIF};font-style:italic;fill:${accent}">${esc(line)}</text>`
+    `<text x="${TX}" y="${278 + i * 48}"${F} style="font:400 40px ${skin.serif};${skin.hookItalic ? "font-style:italic;" : ""}fill:${accent}">${esc(line)}</text>`
   ).join("");
 
   // The art fills the whole column. It used to be a square dropped at y=100 in a
@@ -85,27 +122,27 @@ export function front(card, { qr, artHref, } = {}) {
   // each art file carried its own near-cream background, those bands were a
   // visibly different colour from the picture. The art files are now cut to this
   // column's shape and painted on this exact CREAM, so the seam disappears.
-  const art = artHref
+  const art = artHref && skin.art
     ? `<image href="${esc(artHref)}" x="0" y="0" width="${AW}" height="${H}" preserveAspectRatio="xMidYMid slice"/>`
     : "";
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="3.5in" height="2in"
      viewBox="0 0 ${W} ${H}" data-property="${esc(card.slug)}">
-<rect width="${W}" height="${H}" fill="${PAPER}"/>
-<rect x="0" y="0" width="${AW}" height="${H}" fill="${CREAM}"/>
+${skin.defs}<rect width="${W}" height="${H}" fill="${skin.paper}"/>
+<rect x="0" y="0" width="${AW}" height="${H}" fill="${skin.cream}"/>
 ${art}
-<rect x="${AW}" y="0" width="6" height="${H}" fill="${accent}"/>
-<text x="${TX}" y="200" style="font:300 86px ${SERIF};fill:${INK}">${esc(card.name)}</text>
+${skin.spine ? `<rect x="${AW}" y="0" width="6" height="${H}" fill="${accent}"/>` : ""}
+<text x="${TX}" y="200"${F} style="font:300 86px ${skin.serif};fill:${skin.ink}">${esc(card.name)}</text>
 ${hook}
 <!-- The rule used to sit at y=380 while the QR box started at y=358, so the
      line ran straight through the code. Everything below the rule now starts
      below it: the address on the left, the code on the right, the mark beneath. -->
-<path d="M${TX} 380 H980" stroke="${MUTE}" stroke-width="0.9" opacity=".32"/>
-<text x="${TX}" y="432" style="font:400 30px ${SERIF};fill:${MUTE}">${esc(hostOf(card))}</text>
-<rect x="858" y="406" width="122" height="122" rx="4" fill="#FBF7EB" stroke="${MUTE}" stroke-width="1"/>
-${qr ? qrRects(qr, 867, 415, 104) : ""}
-<text x="919" y="566" text-anchor="middle"
-      style="font:300 24px ${SANS};fill:${MUTE};letter-spacing:7px">KAAYKO</text>
+<path d="M${TX} 380 H980" stroke="${skin.mute}" stroke-width="0.9" opacity=".32"/>
+<text x="${TX}" y="432"${F} style="font:400 30px ${skin.serif};fill:${skin.mute}">${esc(hostOf(card))}</text>
+<rect x="858" y="406" width="122" height="122" rx="4" fill="${skin.qrPaper}" stroke="${skin.mute}" stroke-width="1"/>
+${qr ? qrRects(qr, 867, 415, 104, skin.ink) : ""}
+<text x="919" y="566" text-anchor="middle"${F}
+      style="font:300 24px ${skin.sans};fill:${skin.mute};letter-spacing:7px">KAAYKO</text>
 </svg>`;
 }
 
@@ -126,8 +163,9 @@ ${qr ? qrRects(qr, 867, 415, 104) : ""}
  * @param {object} card  {name, line, facts[], host, url, accent}
  * @param {object} brand {label, contact}
  */
-export function back(card, brand = {}, { index = 1, total = 5, artHref } = {}) {
-  const accent = card.accent || "#8A5A2B";
+export function back(card, brand = {}, { index = 1, total = 5, artHref, skin = PRINT } = {}) {
+  const accent = skin.accentOf(card);
+  const F = skin.textFilter ? ` filter="${skin.textFilter}"` : "";
   const label = brand.label || "KAAYKO";
   const line = card.line || card.hook || "";
   const facts = (Array.isArray(card.facts) ? card.facts : []).slice(0, 3);
@@ -137,7 +175,7 @@ export function back(card, brand = {}, { index = 1, total = 5, artHref } = {}) {
 
   // Bled off the right edge so it reads as a watermark under the words rather
   // than a second picture competing with the front.
-  const ghost = artHref
+  const ghost = artHref && skin.art
     ? `<g opacity=".09"><image href="${esc(artHref)}" x="${W - 520}" y="0" width="520" height="${H}" preserveAspectRatio="xMidYMid slice"/></g>`
     : "";
 
@@ -148,31 +186,31 @@ export function back(card, brand = {}, { index = 1, total = 5, artHref } = {}) {
     const cx = L + cell * k + cell / 2;
     const tick = Math.min(cell - 28, 34 + String(f).length * 3.4);
     return `<path d="M${(cx - tick / 2).toFixed(1)} 470 H${(cx + tick / 2).toFixed(1)}" stroke="${accent}" stroke-width="1.4" opacity=".85"/>
-<text x="${cx.toFixed(1)}" y="508" text-anchor="middle" style="font:300 17px ${SANS};fill:${INK};letter-spacing:4px">${esc(String(f).toUpperCase())}</text>`;
+<text x="${cx.toFixed(1)}" y="508" text-anchor="middle"${F} style="font:300 17px ${skin.sans};fill:${skin.ink};letter-spacing:4px">${esc(String(f).toUpperCase())}</text>`;
   }).join("\n");
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="3.5in" height="2in"
      viewBox="0 0 ${W} ${H}" data-property="${esc(card.slug || "")}">
-<rect width="${W}" height="${H}" fill="${PAPER}"/>
+${skin.defs}<rect width="${W}" height="${H}" fill="${skin.paper}"/>
 <!-- The same animal as the front, ghosted. It is the one thing that makes a card
      recognisably its own at arm's length, and at 9% it is a watermark rather than
      a picture, so nothing printed over it loses contrast. -->
 ${ghost}
-<rect x="0" y="0" width="8" height="${H}" fill="${accent}"/>
+${skin.spine ? `<rect x="0" y="0" width="8" height="${H}" fill="${accent}"/>` : ""}
 
-<text x="${L}" y="86" style="font:300 22px ${SANS};fill:${MUTE};letter-spacing:9px">${esc(label)}</text>
-<text x="${L}" y="182" style="font:300 78px ${SERIF};fill:${INK}">${esc(card.name || "")}</text>
-<text x="${L}" y="244" style="font:400 32px ${SERIF};fill:${MUTE}">${esc(line)}</text>
+<text x="${L}" y="86"${F} style="font:300 22px ${skin.sans};fill:${skin.mute};letter-spacing:9px">${esc(label)}</text>
+<text x="${L}" y="182"${F} style="font:300 78px ${skin.serif};fill:${skin.ink}">${esc(card.name || "")}</text>
+<text x="${L}" y="244"${F} style="font:400 32px ${skin.serif};fill:${skin.mute}">${esc(line)}</text>
 
 <!-- Half the width, and stopping short of x=${W - 520} so it never runs across
      the ghosted animal. The address sits directly under it, at the size of a
      caption rather than a headline. -->
-<path d="M${L} 300 H${L + (R - L) / 2}" stroke="${MUTE}" stroke-width="0.9" opacity=".28"/>
-<text x="${L}" y="${340}" style="font:400 24px ${SERIF};fill:${MUTE}">${esc(hostOf(card))}</text>
+<path d="M${L} 300 H${L + (R - L) / 2}" stroke="${skin.mute}" stroke-width="0.9" opacity=".28"/>
+<text x="${L}" y="${340}"${F} style="font:400 24px ${skin.serif};fill:${skin.mute}">${esc(hostOf(card))}</text>
 ${factRow}
 
-<text x="${R}" y="${H - 44}" text-anchor="end"
-      style="font:300 12px ${SANS};fill:${MUTE};letter-spacing:5px">${index} OF ${total}</text>
+<text x="${R}" y="${H - 44}" text-anchor="end"${F}
+      style="font:300 12px ${skin.sans};fill:${skin.mute};letter-spacing:5px">${index} OF ${total}</text>
 </svg>`;
 }
 
