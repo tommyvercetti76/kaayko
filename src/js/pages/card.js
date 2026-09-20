@@ -4,7 +4,7 @@
  */
 import { front, back, PRINT } from '/js/cards/render.js';
 import { engravedFor, stockOf } from '/js/cards/skins/engraved.js';
-import { readFace, canVibrate } from '/js/cards/relief.js';
+import { readFace, canVibrate, warmArt } from '/js/cards/relief.js';
 import { esc, apiBase } from '/js/kit.js';
 
 /* ── the lighting model ────────────────────────────────────────────────────
@@ -141,7 +141,7 @@ if (!still) {
 /* ── turning it over ─────────────────────────────────────────────────────── */
 const flip = () => card.classList.toggle('is-flipped');
 // A swipe that changed the card must not also turn it over.
-card.addEventListener('click', (e) => { if (!card.dataset.swiped) flip(); });
+card.addEventListener('click', (e) => { if (!card.dataset.swiped && gestureMoved < 8) flip(); });
 card.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); }
 });
@@ -158,6 +158,7 @@ document.getElementById('turn').addEventListener('click', (e) => { e.stopPropaga
 const KEY = 'kaayko.card.skin';
 const skinBtn = document.getElementById('skin');
 const stockEl = document.getElementById('stock');
+const hintEl = document.getElementById('touchhint');
 let engraved = false;
 
 // localStorage throws outright in Safari's private mode, so every touch of it
@@ -177,6 +178,10 @@ function setSkin(on, { save = true } = {}) {
   if (save) remember(engraved);
   if (!engraved) unread();
   if (series.length) { paintMarks(); show(at); }
+  hintEl.textContent = engraved && touchy
+    ? (canVibrate() ? 'Drag a finger across the card to feel it'
+                    : 'Drag a finger across the card to read it')
+    : '';
 }
 
 skinBtn.addEventListener('click', (e) => { e.stopPropagation(); setSkin(!engraved); });
@@ -255,7 +260,15 @@ function paintMarks() {
    rebuilt on every card change because the map is measured from the drawing,
    and the drawing is replaced wholesale each time.                           */
 let readers = [];
-const touchy = matchMedia('(hover: none)').matches;
+// How far this gesture travelled. A tap turns the card over; a drag across it
+// is someone reading the relief, and turning the card over mid-read is the
+// single most annoying thing the page could do.
+let gestureMoved = 0;
+// `hover: none` alone misses Android devices that report a coarse pointer and
+// a hover capability, and those are exactly the devices that CAN vibrate.
+const touchy = matchMedia('(hover: none)').matches
+  || matchMedia('(pointer: coarse)').matches
+  || (navigator.maxTouchPoints || 0) > 0;
 
 function unread() { readers.forEach((d) => d.detach()); readers = []; }
 
@@ -263,6 +276,7 @@ function attachReaders(c) {
   unread();
   if (!engraved || !touchy) return;
   const artHref = `/assets/cards/art/${c.art || c.slug}.png`;
+  warmArt(artHref);
   for (const host of [frontEl, backEl]) {
     const svg = host.querySelector('svg');
     if (!svg) continue;
@@ -351,8 +365,14 @@ function show(i, { focus = false } = {}) {
   // would otherwise deal the next card every time. A flick is fast; a read is
   // not. The gate only applies to the engraved set, so the colour card keeps
   // exactly the swipe it always had.
-  let x0 = null, t0 = 0;
-  card.addEventListener('pointerdown', (e) => { x0 = e.clientX; t0 = performance.now(); });
+  let x0 = null, y0 = 0, t0 = 0;
+  card.addEventListener('pointerdown', (e) => {
+    x0 = e.clientX; y0 = e.clientY; t0 = performance.now(); gestureMoved = 0;
+  });
+  card.addEventListener('pointermove', (e) => {
+    if (x0 === null) return;
+    gestureMoved = Math.max(gestureMoved, Math.hypot(e.clientX - x0, e.clientY - y0));
+  }, { passive: true });
   card.addEventListener('pointerup', (e) => {
     if (x0 === null) return;
     const dx = e.clientX - x0, dt = performance.now() - t0; x0 = null;

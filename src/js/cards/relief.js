@@ -50,6 +50,9 @@ const MIN_GAP_MS = 42;          // below this, separate ticks read as one buzz
 const ART_GRID_W = 132;         // the animal, sampled once
 const RAISED_BELOW = 0.74;      // luminance under which the die has bitten
 
+/** One animal, sampled once, shared by both faces and by every later visit. */
+const SAMPLES = new Map();
+
 export const canVibrate = () => typeof navigator !== 'undefined'
   && typeof navigator.vibrate === 'function';
 
@@ -61,7 +64,9 @@ export const canVibrate = () => typeof navigator !== 'undefined'
  * offset from the animal a finger can see.
  */
 function sampleArt(href, boxW, boxH) {
-  return new Promise((resolve) => {
+  const key = `${href}@${boxW}x${boxH}`;
+  if (SAMPLES.has(key)) return SAMPLES.get(key);
+  const p = new Promise((resolve) => {
     const img = new Image();
     img.onload = () => {
       try {
@@ -89,7 +94,18 @@ function sampleArt(href, boxW, boxH) {
     img.onerror = () => resolve(null);
     img.src = href;
   });
+  SAMPLES.set(key, p);
+  return p;
 }
+
+/**
+ * Sample an animal before anything asks for it.
+ *
+ * The first drag across a card used to be silent, because the artwork had not
+ * finished decoding into its grid yet — which reads exactly like a feature that
+ * does not work, and is the worst possible first impression of one that does.
+ */
+export const warmArt = (href, boxW = 401, boxH = 600) => sampleArt(href, boxW, boxH);
 
 /**
  * Everything on this face a finger can find, in the card's own units.
@@ -204,15 +220,24 @@ export function readFace(svg, { artHref, artBox = { w: 401, h: 600 }, haptics = 
     if (onRead) onRead(f, u);
   }
 
+  // Reading on the way down as well as on the way across: putting a fingertip
+  // straight onto a letter should answer, not wait for the finger to travel.
+  const onDown = (e) => {
+    if (e.pointerType !== 'touch') return;
+    lastId = '';
+    read(e.clientX, e.clientY);
+  };
   const onMove = (e) => { if (e.pointerType === 'touch') read(e.clientX, e.clientY); };
   const onLeave = () => { lastId = ''; if (onRead) onRead(null, null); };
 
+  svg.addEventListener('pointerdown', onDown, { passive: true });
   svg.addEventListener('pointermove', onMove, { passive: true });
   svg.addEventListener('pointerleave', onLeave, { passive: true });
   svg.addEventListener('pointercancel', onLeave, { passive: true });
 
   return function detach() {
     alive = false;
+    svg.removeEventListener('pointerdown', onDown);
     svg.removeEventListener('pointermove', onMove);
     svg.removeEventListener('pointerleave', onLeave);
     svg.removeEventListener('pointercancel', onLeave);

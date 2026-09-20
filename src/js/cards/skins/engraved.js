@@ -11,10 +11,11 @@
  * --------
  * Kaayko's cards are loud — five accent colours, five illustrated animals, a
  * gold foil that moves with the light. An engraver's card is the opposite: one
- * plate, one ink, no colour, and the only thing separating one card from the
- * next is a paper stock you cannot name at arm's length. The skin is therefore
- * an act of subtraction, and the joke only lands if the five become ALMOST the
- * same. Almost is a measurement, not a feeling — see STOCKS.
+ * ink, no colour, nothing drawn that does not have to be there, and the only
+ * thing separating one card from the next is a paper stock you cannot name at
+ * arm's length. The skin is therefore an act of subtraction, and the joke only
+ * lands if the five become ALMOST the same. Almost is a measurement, not a
+ * feeling — see STOCKS.
  *
  * WHAT SURVIVES, AND WHY
  * ----------------------
@@ -41,24 +42,25 @@
  * which is most readers, which is the point — must lose nothing.
  */
 export const STOCKS = Object.freeze({
-  kaayko:      Object.freeze({ name: "Bone",     hex: "#F6EFE3", note: "raised lettering" }),
-  paddlingout: Object.freeze({ name: "Oyster",   hex: "#F3F1E8", note: "deep impression" }),
-  forge:       Object.freeze({ name: "Antique",  hex: "#F7EEE1", note: "Romalian type" }),
-  kortex:      Object.freeze({ name: "Cloud",    hex: "#F5F0E9", note: "flat printed" }),
-  alumni:      Object.freeze({ name: "Eggshell", hex: "#F3F0E5", note: "watermarked" }),
+  kaayko:      Object.freeze({ name: "Bone",        hex: "#F7EEE1", note: "Silian Rail" }),
+  paddlingout: Object.freeze({ name: "Eggshell",    hex: "#F6EFE3", note: "Romalian type" }),
+  forge:       Object.freeze({ name: "Pale Nimbus", hex: "#F3F1E8", note: "raised lettering" }),
+  kortex:      Object.freeze({ name: "Pale Nimbus", hex: "#F5F0E9", note: "flat printed" }),
+  alumni:      Object.freeze({ name: "Off-white",   hex: "#F3F0E5", note: "watermarked" }),
 });
 
 /**
- * Five jobs off five different plates.
+ * Five jobs, four stocks.
  *
- * The stock alone is not the gag. In the scene the cards differ in stock AND
- * in the lettering AND in how deep the die went, and every man is certain his
- * combination is the better one. So each card here gets its own treatment, and
- * the treatments are chosen to be describable in three words and almost
- * impossible to rank.
+ * Every stock and every lettering name above is one the scene actually says —
+ * bone, eggshell, pale nimbus, off-white, Silian Rail, Romalian type. There
+ * are four cards in that scene and five properties here, so two of ours are
+ * printed on the same pale nimbus and are told apart only by the job: one
+ * struck, one flat. That is not a shortfall. Two men holding the same paper
+ * and arguing about the lettering is the most accurate thing in the set.
  *
- * Kortex is the one with no relief at all. Somebody always orders the cheap
- * job, and the whole point is that you have to look twice to notice.
+ * Kortex is the flat one. Somebody always orders the cheap job, and the whole
+ * point is that you have to look twice to notice.
  */
 const VARIATION = Object.freeze({
   // Widest tracking of the five, and the only one whose hook is tracked too.
@@ -103,7 +105,7 @@ const VARIATION = Object.freeze({
 
 const DEBOSS_DEFAULT = Object.freeze({ blur: 1.1, scale: 3.2, dx: 1.1, dy: 1.3, shade: ".42" });
 
-const FALLBACK = Object.freeze({ name: "Bone", hex: "#F6EFE3", note: "raised lettering" });
+const FALLBACK = Object.freeze({ name: "Bone", hex: "#F7EEE1", note: "Silian Rail" });
 
 /** The house face, which is Cormorant in caps and a lie, exactly as intended. */
 export const FACE = "Kaayko Engravers Roman";
@@ -156,16 +158,6 @@ ${relief === "none" ? "" : `<!-- Raised lettering. One unit of relief, which is 
 `;
 
 /**
- * The plate mark: the blind rectangular bruise an engraving die leaves in the
- * sheet, 30 units inside the trim. No ink — a light edge where the paper is
- * pushed down and a darker one where it comes back up. It is identical on all
- * five cards, which is the other half of the joke.
- */
-const PLATE = `
-<rect x="30.8" y="30.8" width="988.4" height="538.4" fill="none" stroke="#BDB49F" stroke-width="1" opacity=".42"/>
-<rect x="30" y="30" width="990" height="540" fill="none" stroke="#FFFFFF" stroke-width="1.1" opacity=".55"/>`;
-
-/**
  * The skin for one card. Built per card because the stock and the filter ids
  * both depend on which card it is.
  *
@@ -199,7 +191,6 @@ export function engravedFor(card, PRINT, face = "f") {
     // Five accents become one. This is the largest single subtraction.
     accentOf: () => QUIET,
     spine: false,
-    plate: PLATE,
     art: true,
     artFilter: `url(#${id}-deboss)`,
     // The animal is already inkless; it does not also need to be faint.
