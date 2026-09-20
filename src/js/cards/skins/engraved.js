@@ -41,14 +41,69 @@
  * which is most readers, which is the point — must lose nothing.
  */
 export const STOCKS = Object.freeze({
-  kaayko:      Object.freeze({ name: "Bone",     hex: "#F6EFE3" }),
-  paddlingout: Object.freeze({ name: "Oyster",   hex: "#F3F1E8" }),
-  forge:       Object.freeze({ name: "Antique",  hex: "#F7EEE1" }),
-  kortex:      Object.freeze({ name: "Cloud",    hex: "#F5F0E9" }),
-  alumni:      Object.freeze({ name: "Eggshell", hex: "#F3F0E5" }),
+  kaayko:      Object.freeze({ name: "Bone",     hex: "#F6EFE3", note: "raised lettering" }),
+  paddlingout: Object.freeze({ name: "Oyster",   hex: "#F3F1E8", note: "deep impression" }),
+  forge:       Object.freeze({ name: "Antique",  hex: "#F7EEE1", note: "Romalian type" }),
+  kortex:      Object.freeze({ name: "Cloud",    hex: "#F5F0E9", note: "flat printed" }),
+  alumni:      Object.freeze({ name: "Eggshell", hex: "#F3F0E5", note: "watermarked" }),
 });
 
-const FALLBACK = Object.freeze({ name: "Bone", hex: "#F6EFE3" });
+/**
+ * Five jobs off five different plates.
+ *
+ * The stock alone is not the gag. In the scene the cards differ in stock AND
+ * in the lettering AND in how deep the die went, and every man is certain his
+ * combination is the better one. So each card here gets its own treatment, and
+ * the treatments are chosen to be describable in three words and almost
+ * impossible to rank.
+ *
+ * Kortex is the one with no relief at all. Somebody always orders the cheap
+ * job, and the whole point is that you have to look twice to notice.
+ */
+const VARIATION = Object.freeze({
+  // Widest tracking of the five, and the only one whose hook is tracked too.
+  kaayko: Object.freeze({
+    relief: "raise",
+    type: { name: { size: 50, weight: 500, y: 188, track: 11, caps: true },
+            hook: { size: 26, weight: 300, y: 252, step: 36, wrap: 40, track: 1.6, italic: false } },
+  }),
+  // The die went deeper here: a longer shadow off the artwork, and the type
+  // set a shade smaller so the impression has room around it.
+  paddlingout: Object.freeze({
+    relief: "raise",
+    deboss: { blur: 1.35, scale: 4.4, dx: 1.5, dy: 1.8, shade: ".52" },
+    type: { name: { size: 46, weight: 500, y: 186, track: 7, caps: true },
+            hook: { size: 25, weight: 300, y: 248, step: 34, wrap: 42, track: .8, italic: true } },
+  }),
+  // The one that refuses to uppercase. Heavier, tighter, and the only card in
+  // the set whose name is still set the way a book would set it.
+  forge: Object.freeze({
+    relief: "raise",
+    type: { name: { size: 62, weight: 500, y: 196, track: 1.5, caps: false },
+            hook: { size: 25, weight: 300, y: 254, step: 34, wrap: 42, track: .6, italic: true } },
+  }),
+  // Flat. No die, no relief, no shoulder on a single letter. The saving is
+  // real and so is the difference, once you have the other four beside it.
+  kortex: Object.freeze({
+    relief: "none",
+    deboss: { blur: 1.1, scale: 1.5, dx: .5, dy: .6, shade: ".24" },
+    type: { name: { size: 48, weight: 400, y: 188, track: 9, caps: true },
+            hook: { size: 26, weight: 300, y: 250, step: 35, wrap: 40, track: 1, italic: false } },
+  }),
+  // The lightest hand of the five, and the animal pushed up into a watermark
+  // rather than held down as an impression.
+  alumni: Object.freeze({
+    relief: "raise",
+    ghost: ".62",
+    deboss: { blur: .95, scale: 2.6, dx: .9, dy: 1.1, shade: ".34" },
+    type: { name: { size: 47, weight: 400, y: 187, track: 10, caps: true },
+            hook: { size: 25, weight: 300, y: 250, step: 34, wrap: 42, track: 1.2, italic: false } },
+  }),
+});
+
+const DEBOSS_DEFAULT = Object.freeze({ blur: 1.1, scale: 3.2, dx: 1.1, dy: 1.3, shade: ".42" });
+
+const FALLBACK = Object.freeze({ name: "Bone", hex: "#F6EFE3", note: "raised lettering" });
 
 /** The house face, which is Cormorant in caps and a lie, exactly as intended. */
 export const FACE = "Kaayko Engravers Roman";
@@ -69,7 +124,7 @@ const QUIET = "#46402F";
  * set view and an id is document-wide: `url(#deboss)` would resolve to
  * whichever card rendered first.
  */
-const defs = (id) => `<defs>
+const defs = (id, d, relief) => `<defs>
 <filter id="${id}-deboss" x="-6%" y="-6%" width="112%" height="112%" color-interpolation-filters="sRGB">
   <!-- alpha = source alpha - luminance. Subtracting luminance alone would give
        the transparent area OUTSIDE the artwork a height of 1, and the filter
@@ -79,23 +134,24 @@ const defs = (id) => `<defs>
   <!-- The art is painted on a near-white ground, which still carries a little
        height. Clamp it to none, or the edge of the image prints as a panel. -->
   <feComponentTransfer in="h" result="hc"><feFuncA type="linear" slope="1.9" intercept="-0.17"/></feComponentTransfer>
-  <feGaussianBlur in="hc" stdDeviation="1.1" result="hb"/>
-  <feSpecularLighting in="hb" surfaceScale="3.2" specularConstant="1" specularExponent="18" lighting-color="#ffffff" result="lit">
+  <feGaussianBlur in="hc" stdDeviation="${d.blur}" result="hb"/>
+  <feSpecularLighting in="hb" surfaceScale="${d.scale}" specularConstant="1" specularExponent="18" lighting-color="#ffffff" result="lit">
     <feDistantLight azimuth="228" elevation="58"/>
   </feSpecularLighting>
   <feComposite in="lit" in2="hb" operator="in" result="litin"/>
-  <feOffset in="hb" dx="1.1" dy="1.3" result="sh"/>
-  <feFlood flood-color="#8C8375" flood-opacity=".42" result="shc"/>
+  <feOffset in="hb" dx="${d.dx}" dy="${d.dy}" result="sh"/>
+  <feFlood flood-color="#8C8375" flood-opacity="${d.shade}" result="shc"/>
   <feComposite in="shc" in2="sh" operator="in" result="shadow"/>
   <feMerge><feMergeNode in="shadow"/><feMergeNode in="litin"/></feMerge>
 </filter>
-<!-- Raised lettering. One unit of relief, which is what an engraver's die
+${relief === "none" ? "" : `<!-- Raised lettering. One unit of relief, which is what an engraver's die
      actually gives you: felt with a thumb, barely seen. Anything more reads as
-     a 2009 web emboss. -->
+     a 2009 web emboss. The flat job omits this filter rather than weakening
+     it, because a plate that was never made leaves nothing at all. -->
 <filter id="${id}-raise" x="-5%" y="-16%" width="110%" height="132%" color-interpolation-filters="sRGB">
   <feDropShadow dx="0.8" dy="1" stdDeviation="0.3" flood-color="#FFFFFF" flood-opacity=".8"/>
   <feDropShadow dx="-0.4" dy="-0.5" stdDeviation="0.25" flood-color="#000000" flood-opacity=".14"/>
-</filter>
+</filter>`}
 </defs>
 `;
 
@@ -119,6 +175,8 @@ const PLATE = `
 export function engravedFor(card, PRINT, face = "f") {
   const slug = String(card?.slug || "card").replace(/[^a-z0-9-]/gi, "") || "card";
   const stock = STOCKS[slug] || FALLBACK;
+  const v = VARIATION[slug] || VARIATION.kaayko;
+  const d = { ...DEBOSS_DEFAULT, ...(v.deboss || {}) };
   // Per card AND per face. An id is document-wide, and the admin preview
   // concatenates a front and a back into one string, so `kx-kaayko-deboss`
   // alone would be defined twice and every reference would resolve to the
@@ -145,19 +203,19 @@ export function engravedFor(card, PRINT, face = "f") {
     art: true,
     artFilter: `url(#${id}-deboss)`,
     // The animal is already inkless; it does not also need to be faint.
-    ghostOpacity: ".5",
-    defs: defs(id),
-    textFilter: `url(#${id}-raise)`,
+    ghostOpacity: v.ghost || ".5",
+    defs: defs(id, d, v.relief),
+    // The flat job gets no filter reference at all, not a weaker one.
+    textFilter: v.relief === "none" ? "" : `url(#${id}-raise)`,
     type: Object.freeze({
-      // Caps and tracking are what make five different names look like one
-      // engraver's hand. The size comes down because caps at 86 would run off
-      // the card: PADDLING OUT is twelve characters.
-      name:     Object.freeze({ weight: 500, size: 50, y: 188, track: 9, caps: true }),
+      // Caps, size and tracking are the variation's, not the skin's: this is
+      // where one card stops being the same job as the one beside it.
+      name:     Object.freeze({ ...PRINT.type.name, ...v.type.name }),
       // wrap() counts characters and knows nothing about the font, so a hook
-      // set 14 units smaller must be allowed more of them or it breaks early.
-      hook:     Object.freeze({ weight: 300, size: 26, y: 252, step: 36, wrap: 40, track: 1.2, italic: false }),
-      backName: Object.freeze({ weight: 500, size: 44, y: 178, track: 8, caps: true }),
-      backLine: Object.freeze({ weight: 400, size: 26, y: 234, track: .6 }),
+      // set smaller must be allowed more of them or it breaks early.
+      hook:     Object.freeze({ ...PRINT.type.hook, ...v.type.hook }),
+      backName: Object.freeze({ ...PRINT.type.backName, weight: v.type.name.weight, size: Math.round(v.type.name.size * .88), y: 178, track: Math.max(0, v.type.name.track - 1), caps: v.type.name.caps }),
+      backLine: Object.freeze({ ...PRINT.type.backLine, size: 26, y: 234, track: .6 }),
     }),
   };
 }

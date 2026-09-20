@@ -4,6 +4,7 @@
  */
 import { front, back, PRINT } from '/js/cards/render.js';
 import { engravedFor, stockOf } from '/js/cards/skins/engraved.js';
+import { readFace, canVibrate } from '/js/cards/relief.js';
 import { esc, apiBase } from '/js/kit.js';
 
 /* ── the lighting model ────────────────────────────────────────────────────
@@ -174,6 +175,7 @@ function setSkin(on, { save = true } = {}) {
   // first engraved frame arrives still wearing a gold highlight.
   if (engraved) lampOff(); else lampOn();
   if (save) remember(engraved);
+  if (!engraved) unread();
   if (series.length) { paintMarks(); show(at); }
 }
 
@@ -242,10 +244,46 @@ function paintMarks() {
       : '';
     // The stock is in the label too. Someone who cannot see the paper still
     // hears what separates this card from the one beside it.
-    const label = engraved ? `${c.name} — ${stockOf(c).name}` : c.name;
+    const label = engraved ? `${c.name} — ${stockOf(c).name}, ${stockOf(c).note}` : c.name;
     return `<button type="button" class="mark" role="radio" aria-checked="false" tabindex="-1"
        data-i="${i}" title="${esc(label)}" aria-label="${esc(label)}">${proof}</button>`;
   }).join('');
+}
+
+/* ── reading the card with a finger ──────────────────────────────────────────
+   Only on touch, only when the die has been cut. The readers are torn down and
+   rebuilt on every card change because the map is measured from the drawing,
+   and the drawing is replaced wholesale each time.                           */
+let readers = [];
+const touchy = matchMedia('(hover: none)').matches;
+
+function unread() { readers.forEach((d) => d.detach()); readers = []; }
+
+function attachReaders(c) {
+  unread();
+  if (!engraved || !touchy) return;
+  const artHref = `/assets/cards/art/${c.art || c.slug}.png`;
+  for (const host of [frontEl, backEl]) {
+    const svg = host.querySelector('svg');
+    if (!svg) continue;
+    const stylus = host.parentElement.querySelector('.stylus');
+    const detach = readFace(svg, {
+      artHref,
+      haptics: true,
+      onRead: (f, u) => {
+        if (!stylus) return;
+        if (!f || !u) { stylus.dataset.on = ''; return; }
+        // The trace is what an iPhone gets instead of the haptics it cannot
+        // have, so it has to be legible on its own and not merely a garnish.
+        const r = svg.getBoundingClientRect();
+        const hr = host.getBoundingClientRect();
+        stylus.style.left = `${r.left - hr.left + (u.x / 1050) * r.width}px`;
+        stylus.style.top = `${r.top - hr.top + (u.y / 600) * r.height}px`;
+        stylus.dataset.on = f.kind;
+      },
+    });
+    readers.push({ detach });
+  }
 }
 
 function show(i, { focus = false } = {}) {
@@ -264,7 +302,7 @@ function show(i, { focus = false } = {}) {
        `${c.name}, back of the card`);
   // The stock is named in text, so the one thing separating two cards is never
   // carried by a colour difference a reader may not be able to see.
-  stockEl.textContent = engraved ? `${stockOf(c).name} \u00b7 set in Kaayko Engravers Roman` : '';
+  stockEl.textContent = engraved ? `${stockOf(c).name} \u00b7 ${stockOf(c).note}` : '';
   nowEl.innerHTML = `<b>${esc(c.name)}</b>` +
     `<i><a class="to-product" href="${esc(c.url)}">${esc(c.url.replace('https://', ''))}</a></i>`;
   [...marks.children].forEach((b, j) => {
@@ -273,6 +311,7 @@ function show(i, { focus = false } = {}) {
     if (focus && j === at) b.focus();
   });
   card.classList.remove('is-flipped');            // a new card arrives face up
+  attachReaders(c);
 }
 
 (async () => {
@@ -307,12 +346,17 @@ function show(i, { focus = false } = {}) {
     else if (e.key === 'End') { e.preventDefault(); show(series.length - 1, { focus: true }); }
   });
   // The card itself steps on a horizontal swipe, so a phone needs no buttons.
-  let x0 = null;
-  card.addEventListener('pointerdown', (e) => { x0 = e.clientX; });
+  // Once the card can be read with a finger, distance alone stops being enough
+  // to tell what a drag meant: reading the animal is a long slow travel and
+  // would otherwise deal the next card every time. A flick is fast; a read is
+  // not. The gate only applies to the engraved set, so the colour card keeps
+  // exactly the swipe it always had.
+  let x0 = null, t0 = 0;
+  card.addEventListener('pointerdown', (e) => { x0 = e.clientX; t0 = performance.now(); });
   card.addEventListener('pointerup', (e) => {
     if (x0 === null) return;
-    const dx = e.clientX - x0; x0 = null;
-    if (Math.abs(dx) > 46) {
+    const dx = e.clientX - x0, dt = performance.now() - t0; x0 = null;
+    if (Math.abs(dx) > 46 && (!engraved || dt < 420)) {
       card.dataset.swiped = '1';
       show(at + (dx < 0 ? 1 : -1));
       setTimeout(() => { delete card.dataset.swiped; }, 0);

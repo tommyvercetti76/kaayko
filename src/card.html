@@ -296,6 +296,40 @@ a { color: inherit; text-decoration: none; }
 .mark[aria-checked="true"] .stockname { color: var(--dim); }
 @media (prefers-reduced-motion: reduce) { .proof { transition: none; } }
 
+/* ── the trace ──────────────────────────────────────────────────────────────
+   What the fingertip is reading, drawn where it is reading it. On Android it
+   accompanies a real tick; on an iPhone, where the Vibration API has never
+   existed, it IS the feature — so it has to be legible on its own rather than
+   decoration over the top of something else.
+
+   The shape says what was found: tight on a letter, a bar along a rule, wide
+   and soft over the animal.                                                  */
+.stylus { position: absolute; inset: auto; width: 0; height: 0; pointer-events: none; z-index: 3; }
+.stylus::before {
+  content: ""; position: absolute; left: 0; top: 0;
+  transform: translate(-50%, -50%);
+  border-radius: 999px; opacity: 0;
+  transition: opacity .12s ease, width .12s ease, height .12s ease;
+  width: 0; height: 0;
+}
+.stylus[data-on="glyph"]::before {
+  opacity: .85; width: 17px; height: 17px;
+  box-shadow: 0 0 0 1px rgba(36,31,25,.42), 0 0 10px 2px rgba(255,255,255,.75);
+}
+.stylus[data-on="rule"]::before {
+  opacity: .8; width: 40px; height: 7px; border-radius: 4px;
+  box-shadow: 0 0 0 1px rgba(36,31,25,.34), 0 0 9px 2px rgba(255,255,255,.7);
+}
+.stylus[data-on="plate"]::before {
+  opacity: .9; width: 13px; height: 13px;
+  box-shadow: 0 0 0 2px rgba(36,31,25,.46), 0 0 8px 2px rgba(255,255,255,.7);
+}
+.stylus[data-on="art"]::before {
+  opacity: .7; width: 30px; height: 30px;
+  box-shadow: 0 0 0 1px rgba(36,31,25,.22), 0 0 16px 6px rgba(255,255,255,.62);
+}
+@media (prefers-reduced-motion: reduce) { .stylus::before { transition: none; } }
+
 .stock {
   margin: 0; text-align: center; min-height: 1.2em;
   font-family: var(--sans); font-size: 10px; letter-spacing: .28em;
@@ -318,10 +352,12 @@ a { color: inherit; text-decoration: none; }
         <div class="face front">
           <div id="face-front" role="img" aria-label="Front of the Kaayko card"></div>
           <i class="foil"></i><i class="sheen"></i><i class="grain"></i><i class="rim"></i>
+          <i class="stylus" aria-hidden="true"></i>
         </div>
         <div class="face back">
           <div id="face-back" role="img" aria-label="Back of the Kaayko card"></div>
           <i class="foil"></i><i class="sheen"></i><i class="grain"></i><i class="rim"></i>
+          <i class="stylus" aria-hidden="true"></i>
         </div>
       </div>
     </div>
