@@ -352,6 +352,91 @@
   }
 
   // Adding photos APPENDS to the current selection (so a second picker
+  // ── Name suggestions ──────────────────────────────────────────────────
+  // The same geocoder the Search page types into. Searching for a lake and
+  // adding one are the same gesture from opposite ends, so this is the same
+  // service, the same ranking and the same list — not a second implementation
+  // that drifts. Pick one and the pin, the city, the state and the country
+  // all arrive with it.
+  const U = window.KaaykoUtil;
+  const nameInput = field('lakeName');
+  const nameSuggest = document.getElementById('lakeName-suggest');
+  let nameOptions = [];
+  let nameIndex = -1;
+  let namePicked = '';
+
+  function renderNameSuggest() {
+    nameInput.setAttribute('aria-expanded', nameOptions.length ? 'true' : 'false');
+    if (!nameOptions.length) { nameSuggest.hidden = true; nameSuggest.innerHTML = ''; return; }
+    nameSuggest.innerHTML = nameOptions.map(function (o, i) {
+      return '<div class="search-suggest-item" role="option" id="ns-' + i + '" data-i="' + i + '"' +
+        ' aria-selected="' + (i === nameIndex) + '"><span>' + U.escapeHtml(o.value) + '</span>' +
+        (o.water ? '<span class="tag">Water</span>' : '') + '</div>';
+    }).join('');
+    nameSuggest.hidden = false;
+  }
+  function closeNameSuggest() { nameOptions = []; nameIndex = -1; renderNameSuggest(); }
+
+  async function pickName(option) {
+    // The field asks for the water body, so it gets "Dillon Reservoir" — not
+    // "Dillon Reservoir, Dillon, Summit County". The rest of that string is
+    // the city/state/country, and those have their own fields below.
+    const name = option.name || option.value;
+    namePicked = name;
+    nameInput.value = name;
+    touched.add('lakeName');
+    closeNameSuggest();
+
+    // A pin lifted out of a ramp photo is a better launch point than the
+    // centre of a lake polygon, so a name never overrules it — it just fills
+    // in the words around it.
+    if (coordsFromPhoto) {
+      setStatus('Name set. The pin stays where your photo put it.', 'ok');
+      refreshReadiness();
+      return;
+    }
+    writeCoords(option.lat, option.lng);
+    centerPin(option.lat, option.lng, 14);   // lake scale; the ramp is a drag away
+    touched.add('coords');
+    refreshReadiness();
+    setStatus('Pin dropped on ' + name + '. Drag it onto the launch or boat ramp.', 'ok');
+    await reverseFill(option.lat, option.lng, { overwrite: true, lock: true });
+    // reverseFill takes the water name when the field is empty; it is not.
+    nameInput.value = name;
+    refreshReadiness();
+  }
+
+  const updateNameSuggest = U.debounce(function () {
+    const q = nameInput.value.trim();
+    if (q.length < 3 || q === namePicked) { closeNameSuggest(); return; }
+    window.KaaykoGeo.suggest(q).then(function (list) {
+      if (nameInput.value.trim() !== q) return;            // stale
+      nameOptions = (list || []).slice(0, 6);
+      nameIndex = -1;
+      renderNameSuggest();
+    }).catch(closeNameSuggest);
+  }, 300);
+
+  nameInput.addEventListener('input', function () { namePicked = ''; updateNameSuggest(); });
+  nameInput.addEventListener('keydown', function (e) {
+    if (!nameOptions.length) return;
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      nameIndex = (nameIndex + (e.key === 'ArrowDown' ? 1 : -1) + nameOptions.length) % nameOptions.length;
+      renderNameSuggest();
+    } else if (e.key === 'Enter' && nameIndex >= 0) {
+      e.preventDefault(); pickName(nameOptions[nameIndex]);
+    } else if (e.key === 'Escape') { closeNameSuggest(); }
+  });
+  nameSuggest.addEventListener('mousedown', function (e) {
+    // mousedown, not click: blur would close the list first.
+    const item = e.target.closest('[data-i]');
+    if (!item) return;
+    e.preventDefault();
+    pickName(nameOptions[Number(item.dataset.i)]);
+  });
+  nameInput.addEventListener('blur', function () { setTimeout(closeNameSuggest, 120); });
+
   // ── Location from the photo itself ────────────────────────────────────
   // These photos are taken standing on the ramp, so the fix baked into the
   // first one IS the launch point. Read it before compressImage re-encodes
@@ -493,6 +578,19 @@
       const parts = params.get('place').split(',').map(part => part.trim()).filter(Boolean);
       if (parts[0]) field('city').value = parts[0];
       if (parts[1]) setRegionValue(parts[1]);
+    }
+
+    // Arriving from Search with a coordinate already in hand, the city, state
+    // and country are derivable — so derive them. Asking someone to type what
+    // we can read off the pin they just handed us is the difference between a
+    // handoff and a second form. Blanks only: an explicit ?place= wins.
+    const la = parseCoord(field('lat').value), ln = parseCoord(field('lng').value);
+    if (la !== null && ln !== null) {
+      touched.add('coords');
+      reverseFill(la, ln, { overwrite: false, lock: true }).then(function () {
+        centerPin(la, ln, 14);
+        refreshReadiness();
+      });
     }
   }
 

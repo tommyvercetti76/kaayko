@@ -95,9 +95,11 @@
           <input id="launchHint" name="launchHint" maxlength="160" placeholder="Main public boat ramp, north shore, park entrance">
         </label>
 
-        <label data-field="lakeName">
+        <label data-field="lakeName" class="name-field">
           <span class="label-text">Lake or water body<span class="req" aria-hidden="true">*</span></span>
-          <input id="lakeName" name="lakeName" maxlength="120" placeholder="White Rock Lake" autocomplete="off">
+          <input id="lakeName" name="lakeName" maxlength="120" placeholder="Start typing — Dillon Reservoir" autocomplete="off"
+                 role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lakeName-suggest">
+          <div class="search-suggest" id="lakeName-suggest" role="listbox" hidden></div>
           <span class="field-msg" id="lakeName-msg" aria-live="polite"></span>
         </label>
 

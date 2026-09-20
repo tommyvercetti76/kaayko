@@ -409,6 +409,28 @@
     }
     .loc-lock.photo-fix button { border-color:rgba(181,147,90,0.5); color:var(--gold-bright); flex:none; }
     .locked input, .locked select { opacity:0.72; pointer-events:none; background:rgba(143,188,106,0.06); border-color:rgba(143,188,106,0.28); }
+    /* ── Name suggestions ─────────────────────────────────────────────
+       Deliberately the same markup and the same look as the Search page's
+       list: searching for a lake and adding one are the same gesture, and
+       they should not feel like two different products. */
+    .name-field { position:relative; }
+    .search-suggest {
+      position:absolute; left:0; right:0; top:100%; z-index:500;
+      background:#0f0e0b; border:1px solid var(--line); box-shadow:0 18px 40px rgba(0,0,0,0.55);
+      max-height:44vh; overflow-y:auto;
+    }
+    .search-suggest[hidden] { display:none; }
+    .search-suggest-item {
+      display:flex; align-items:center; justify-content:space-between; gap:0.8rem;
+      padding:0.7rem 0.9rem; cursor:pointer; border-bottom:1px solid rgba(181,147,90,0.12);
+      font-family:var(--font-serif, 'Cormorant Garamond', Georgia, serif); font-size:1.02rem; color:var(--fg);
+    }
+    .search-suggest-item:last-child { border-bottom:0; }
+    .search-suggest-item[aria-selected="true"], .search-suggest-item:hover { background:rgba(181,147,90,0.14); }
+    .search-suggest-item .tag {
+      font-family:var(--font-sans); font-size:0.58rem; letter-spacing:0.12em; text-transform:uppercase;
+      color:#d9bd7b; border:1px solid rgba(217,189,123,0.35); padding:3px 6px 2px; white-space:nowrap;
+    }
     /* ── Readiness checklist by the submit button ─────────────────── */
     .todo {
       margin:0; padding:0; list-style:none;

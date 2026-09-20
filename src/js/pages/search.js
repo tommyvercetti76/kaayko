@@ -59,10 +59,14 @@
 
   // ── Map ────────────────────────────────────────────────────────────────────
   picker = window.PinPicker && window.PinPicker.create($('search-map'), {
-    center: [39.5, -98.35], zoom: 4, pickable: true,
-    onPick: function (lat, lng) {
+    // Draggable: the pin lands where the geocoder thinks the lake is, and the
+    // launch you care about is somewhere along the shore. Dragging it re-runs
+    // the search from where you put it, exactly like tapping the map does.
+    center: [39.5, -98.35], zoom: 4, pickable: true, draggable: true,
+    onPick: function (lat, lng, how) {
       var r = U.clamp(picker.radiusKm(), 10, 30);
-      searchAt(lat, lng, lat.toFixed(3) + ', ' + lng.toFixed(3), r, { pin: true, fly: false });
+      searchAt(lat, lng, how === 'drag' ? 'this spot' : lat.toFixed(3) + ', ' + lng.toFixed(3), r,
+        { pin: how !== 'drag', fly: false });
     },
     onMove: function () { if (state.mode === 'results' || state.mode === 'empty') hereBtn.hidden = false; }
   });
@@ -132,6 +136,9 @@
 
   function pickSuggestion(sg) {
     inputEl.value = sg.value; clearBtn.classList.add('visible');
+    // Carry the water body's own name, not the whole address — it is what
+    // Add-a-lake wants in its name field.
+    state.query = sg.name || sg.value;
     state.suggestions = []; renderSuggestions();
     if (sg.covered && sg.id) { window.location.href = '/paddlingout/forecast?id=' + encodeURIComponent(sg.id); return; }
     searchAt(sg.lat, sg.lng, sg.value, sg.radiusKm || 30, { pin: true, fly: true });
@@ -139,7 +146,11 @@
 
   function submitText() {
     var q = inputEl.value.trim();
-    if (!q) { setStatus('Type a lake, river or city, tap the map, or use your location.', 'error'); return; }
+    if (!q) { setStatus('Type a lake, river or city, drag the pin, or use your location.', 'error'); return; }
+    // Only the debounced suggest path used to record this, so a submit that
+    // skipped it (paste + Enter, a restored value, the ?q= deep link) lost the
+    // name — and with it the "Add <name>" the empty state is supposed to offer.
+    state.query = q;
     state.suggestions = []; renderSuggestions();
     var covered = matchCovered(q);
     renderCovered(covered);
@@ -228,7 +239,14 @@
   function requestLake(body) {
     var p = new URLSearchParams();
     if (body) { if (body.name) p.set('name', body.name); if (body.type) p.set('type', body.type); if (body.lat != null) p.set('lat', body.lat); if (body.lng != null) p.set('lng', body.lng); }
-    else if (state.center) { p.set('lat', state.center.lat.toFixed(5)); p.set('lng', state.center.lng.toFixed(5)); }
+    else {
+      // Everything the person has already told us travels with them: the name
+      // they typed and the pin they are looking at. Re-asking for both is how
+      // a search that found nothing turns into a form nobody finishes.
+      var typed = (state.query || '').trim();
+      if (typed) p.set('name', typed);
+      if (state.center) { p.set('lat', state.center.lat.toFixed(5)); p.set('lng', state.center.lng.toFixed(5)); }
+    }
     window.location.href = '/paddlingout/submitentry' + (p.toString() ? '?' + p.toString() : '');
   }
 
@@ -260,9 +278,14 @@
     renderPins();
     if (state.mode === 'empty') {
       resultsHeader.classList.remove('visible');
+      var typed = (state.query || '').trim();
       resultsList.innerHTML = '<div class="empty-state"><div class="mat">' + (I ? I.get('search') : '') + '</div>' +
-        '<h3>No water found near ' + U.escapeHtml(state.label) + '</h3><p>Try a larger lake name, a nearby city, or tap the map somewhere else.</p>' +
-        '<button class="btn-request-lake" type="button" data-action="request">Add a lake here</button></div>';
+        '<h3>' + (typed ? 'We don\u2019t cover ' + U.escapeHtml(typed) + ' yet' : 'No water found near ' + U.escapeHtml(state.label)) + '</h3>' +
+        '<p>' + (typed
+          ? 'You are on it \u2014 add it and it goes in the map for everyone. The name and the pin carry over.'
+          : 'Try a larger lake name, a nearby city, or drag the pin somewhere else.') + '</p>' +
+        '<button class="btn-request-lake" type="button" data-action="request">' +
+        (typed ? 'Add ' + U.escapeHtml(typed) : 'Add a lake here') + '</button></div>';
       return;
     }
     var n = state.bodies.length;

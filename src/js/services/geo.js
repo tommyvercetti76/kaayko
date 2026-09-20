@@ -3,7 +3,7 @@
  * Exposes window.KaaykoGeo. Requires util.js. No DOM.
  *
  *   forward(query)          → { lat, lng, label, radiusKm, address } | null
- *   suggest(query)          → [{ value, lat, lng, radiusKm }]  (ranked, ≤6)
+ *   suggest(query)          → [{ name, value, lat, lng, water, radiusKm }]  (ranked, ≤6)
  *   reverse(lat, lng)       → { city, region, country, countryCode, water, displayName } | null
  *
  * All three go through the API's cached Nominatim proxies (never Nominatim
@@ -62,7 +62,8 @@
         if (!d) return null;
         var out = {
           lat: parseFloat(d.lat), lng: parseFloat(d.lon),
-          label: String(d.display_name || '').split(',').slice(0, 2).join(', '),
+          label: String(d.display_name || '').split(',').map(function (x) { return x.trim(); })
+                   .filter(Boolean).slice(0, 2).join(', '),
           radiusKm: inferRadiusKm(d),
           address: placeFromAddress(d.address)
         };
@@ -81,9 +82,19 @@
       .then(function (r) {
         if (!r.ok || !Array.isArray(r.data)) return [];
         var list = r.data.map(function (d) {
+          // "Dillon Reservoir, Dillon, Summit County, Colorado, ..." — the
+          // first part is the thing itself, the rest is where it is. Joining
+          // the raw slices re-inserted the leading spaces, so trim each part.
+          var parts = String(d.display_name || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean);
           return {
-            value: String(d.display_name || '').split(',').slice(0, 3).join(', '),
+            name: parts[0] || '',
+            value: parts.slice(0, 3).join(', '),
             lat: parseFloat(d.lat), lng: parseFloat(d.lon),
+            // Whether this is actually water, so a list can say so. Both the
+            // Search page and Add-a-lake read it; neither should have to
+            // re-derive it from class/type strings.
+            water: WATER_TYPES.indexOf(String(d.type || '').toLowerCase()) !== -1 ||
+                   ['natural', 'waterway'].indexOf(String(d.class || '').toLowerCase()) !== -1,
             radiusKm: inferRadiusKm(d), _r: rank(d, query)
           };
         }).sort(function (a, b) { return b._r - a._r; }).slice(0, 6)
