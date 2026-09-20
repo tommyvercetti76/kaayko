@@ -207,6 +207,58 @@ a { color: inherit; text-decoration: none; }
   .card, .face { transition: none; }
   .sheen, .foil { display: none; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   The engraved set — opt-in, off by default.
+
+   The card's own words, colours and faces are the skin's job and live in
+   js/cards/skins/engraved.js. This block is the ROOM: the jewel-box gives way
+   to a bright cold desk, because an engraver's card is looked at in daylight
+   and not held up to a lamp. Everything here is a re-declaration of the seven
+   variables the rest of the sheet already reads, so no rule below :root needs
+   to know the skin exists.
+
+   --dim carries body copy and sits at .72 because .62 measured 3.96:1 against
+   this background, and text has to clear 4.5. The control's border gets its own
+   value: at --hair's weight a button outline measured 2.07:1, under the 3:1 a
+   non-text control needs to be found at all.
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root[data-skin="engraved"] {
+  --ink: #D6D4CC;                       /* the desk, not the room */
+  --ink-2: #CFCDC4;
+  --paper: #241F19;                     /* ink on the desk, now that it is light */
+  --gold: #8A8275;
+  --gold-lit: #3A342B;
+  --dim: rgba(36, 31, 25, .72);
+  --dimmer: rgba(36, 31, 25, .44);
+  --hair: rgba(36, 31, 25, .34);
+}
+/* The lamp was a warm gold pool tracking the pointer. Daylight does not track
+   anything: one cold wash from above, and it stops following the mouse. */
+:root[data-skin="engraved"] .room::before {
+  background: radial-gradient(70% 50% at 50% 0%, rgba(255,255,255,.55), rgba(255,255,255,.12) 55%, transparent 78%);
+}
+/* Foil is the one thing an engraver never sells. Gone, not dimmed — and the
+   specular with it, because a matte cotton sheet has no hotspot. */
+:root[data-skin="engraved"] .foil,
+:root[data-skin="engraved"] .sheen { display: none; }
+/* .rim never reaches zero on its own: at --fres 0 it still paints a warm
+   hairline, which five cards in a row multiply into a visible gold grid. */
+:root[data-skin="engraved"] .rim { box-shadow: inset 0 0 0 1px rgba(36,31,25,.10); }
+/* Tooth stays — cotton rag has plenty — but it stops being gold-tinted noise. */
+:root[data-skin="engraved"] .grain { opacity: .10; filter: saturate(0); }
+:root[data-skin="engraved"] .face {
+  box-shadow: 0 1px 2px rgba(60,54,44,.20), 0 14px 34px rgba(60,54,44,.18), 0 0 0 1px rgba(36,31,25,.10);
+}
+:root[data-skin="engraved"] .hint button { border-color: rgba(36,31,25,.55); }
+:root[data-skin="engraved"] .hint button:hover { color: var(--gold-lit); border-color: var(--gold-lit); }
+/* The control that turns it on, and the one line of copy that explains the set. */
+.hint button[aria-pressed="true"] { color: var(--gold-lit); border-color: var(--gold); }
+.stock {
+  margin: 0; text-align: center; min-height: 1.2em;
+  font-family: var(--sans); font-size: 10px; letter-spacing: .28em;
+  text-transform: uppercase; color: var(--dimmer);
+}
 </style>
 </head>
 <body>
@@ -237,8 +289,13 @@ a { color: inherit; text-decoration: none; }
       <p class="now" id="now"><b>&nbsp;</b><i>&nbsp;</i></p>
     </div>
 
+    <p class="stock" id="stock"></p>
+
     <div class="hint">
       <button type="button" id="turn">Turn it over</button>
+      <!-- One word. Anyone who recognises it does not need the rest, and anyone
+           who does not is told what it changes by pressing it. -->
+      <button type="button" id="skin" aria-pressed="false">Bone</button>
     </div>
 
     <!-- Every property already has a card in the series with its own address on

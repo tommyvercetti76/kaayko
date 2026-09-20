@@ -2,7 +2,8 @@
  * pages/card.js — the collectible card (/card): lighting model, flip, share, QR.
  * Moved out of card.html on 12 Sep 2026 unchanged.
  */
-import { front, back } from '/js/cards/render.js';
+import { front, back, PRINT } from '/js/cards/render.js';
+import { engravedFor, stockOf } from '/js/cards/skins/engraved.js';
 import { esc, apiBase } from '/js/kit.js';
 
 /* ── the lighting model ────────────────────────────────────────────────────
@@ -23,6 +24,12 @@ const norm = (a) => { const m = Math.hypot(a.x, a.y, a.z) || 1; return v(a.x/m, 
 const dot = (a, b) => a.x*b.x + a.y*b.y + a.z*b.z;
 
 let raf = 0, target = { x: .5, y: .35 }, cur = { x: .5, y: .35 }, live = false;
+// The lamp writes --spec/--fres/--hue as INLINE properties on #card every
+// frame, and an inline property beats any stylesheet — so a class that merely
+// re-declares them loses. Turning the foil off means stopping the loop AND
+// removing what it last wrote, or the card keeps the highlight it happened to
+// be wearing.
+let lamp = true;
 
 function light(px, py) {
   // Attitude: the card leans toward the light.
@@ -56,6 +63,26 @@ function light(px, py) {
   s.setProperty('--sy', sy.toFixed(1) + '%');
   room.style.setProperty('--sx', (px * 100).toFixed(1) + '%');
   room.style.setProperty('--sy', (py * 100).toFixed(1) + '%');
+}
+
+const LAMP_VARS = ['--rx', '--ry', '--spec', '--fres', '--hue', '--sx', '--sy'];
+
+function lampOff() {
+  if (raf) { cancelAnimationFrame(raf); raf = 0; }
+  lamp = false;
+  LAMP_VARS.forEach((k) => card.style.removeProperty(k));
+  // The room runs its own copy of the light, so the background pool would
+  // otherwise go on following the pointer under a card that had stopped.
+  room.style.removeProperty('--sx');
+  room.style.removeProperty('--sy');
+  card.classList.remove('is-live');
+  live = false;
+}
+
+function lampOn() {
+  if (lamp || still) return;
+  lamp = true;
+  raf = requestAnimationFrame(loop);
 }
 
 function loop() {
@@ -119,6 +146,39 @@ card.addEventListener('keydown', (e) => {
 });
 document.getElementById('turn').addEventListener('click', (e) => { e.stopPropagation(); flip(); });
 
+/* ── the engraved set ────────────────────────────────────────────────────────
+   Five cards whose only difference is the paper. It is opt-in, it is off by
+   default, and it changes nothing about what the card SAYS — every card still
+   prints its own name, because the stock it is on is a joke and not a label.
+
+   The printed card is not reachable from here: this passes a second skin to
+   the same renderer, and tests/cardRender pins the bytes the default one
+   emits.                                                                     */
+const KEY = 'kaayko.card.skin';
+const skinBtn = document.getElementById('skin');
+const stockEl = document.getElementById('stock');
+let engraved = false;
+
+// localStorage throws outright in Safari's private mode, so every touch of it
+// is fenced. A preference we cannot read is simply a preference that is off.
+const remember = (v) => { try { localStorage.setItem(KEY, v ? 'engraved' : 'print'); } catch (_) {} };
+const remembered = () => { try { return localStorage.getItem(KEY) === 'engraved'; } catch (_) { return false; } };
+
+function setSkin(on, { save = true } = {}) {
+  engraved = !!on;
+  document.documentElement.dataset.skin = engraved ? 'engraved' : '';
+  if (!engraved) document.documentElement.removeAttribute('data-skin');
+  skinBtn.setAttribute('aria-pressed', String(engraved));
+  skinBtn.textContent = engraved ? 'In colour' : 'Bone';
+  // Foil belongs to the loud card. Stop the lamp before the skin lands, or the
+  // first engraved frame arrives still wearing a gold highlight.
+  if (engraved) lampOff(); else lampOn();
+  if (save) remember(engraved);
+  if (series.length) show(at);
+}
+
+skinBtn.addEventListener('click', (e) => { e.stopPropagation(); setSkin(!engraved); });
+
 /* ── the series ──────────────────────────────────────────────────────────────
    Eight cards, one chassis. Only the face and the four facts change, which is the
    whole idea, so the switcher only swaps two images and one line of type.        */
@@ -167,11 +227,18 @@ function show(i, { focus = false } = {}) {
   at = (i + series.length) % series.length;
   const c = series[at];
   const artHref = `/assets/cards/art/${c.art || c.slug}.png`;
-  draw(frontEl, front(c, { qr: qrFor(c.url), artHref }),
+  // A skin per face: the filter ids inside it are document-wide, and both faces
+  // live in the same document.
+  const skinF = engraved ? engravedFor(c, PRINT, 'f') : PRINT;
+  const skinB = engraved ? engravedFor(c, PRINT, 'b') : PRINT;
+  draw(frontEl, front(c, { qr: qrFor(c.url), artHref, skin: skinF }),
        `${c.name}, front of the card`);
   // The back gets the same art, ghosted behind its words.
-  draw(backEl, back(c, brand, { index: at + 1, total: series.length, artHref }),
+  draw(backEl, back(c, brand, { index: at + 1, total: series.length, artHref, skin: skinB }),
        `${c.name}, back of the card`);
+  // The stock is named in text, so the one thing separating two cards is never
+  // carried by a colour difference a reader may not be able to see.
+  stockEl.textContent = engraved ? `${stockOf(c).name} \u00b7 set in Kaayko Engravers Roman` : '';
   nowEl.innerHTML = `<b>${esc(c.name)}</b>` +
     `<i><a class="to-product" href="${esc(c.url)}">${esc(c.url.replace('https://', ''))}</a></i>`;
   [...marks.children].forEach((b, j) => {
@@ -231,4 +298,5 @@ function show(i, { focus = false } = {}) {
     }
   });
   show(0);
+  if (remembered()) setSkin(true, { save: false });
 })();

@@ -43,14 +43,34 @@ export const PRINT = Object.freeze({
   paper: PAPER,
   cream: CREAM,
   qrPaper: "#FBF7EB",
+  /** The code itself. Separate from `ink` so a skin can quiet it and still scan. */
+  qrInk: INK,
   /** The card's own colour. A skin may return one colour for all five. */
   accentOf: (card) => card.accent || "#8A5A2B",
   /** The animal: filling the front column, ghosted on the back. */
   art: true,
+  /** A filter applied to the animal, or "". A skin can deboss it into the stock. */
+  artFilter: "",
   /** The coloured edge, 6 units on the front and 8 on the back. */
   spine: true,
+  /** How far the animal is pushed under the words on the back. */
+  ghostOpacity: ".09",
   /** The hook, set in the accent. Italic is the house voice, not a rule. */
   hookItalic: true,
+  /**
+   * The ten places type is set. Sizes are print units, not pixels: 86 here is
+   * 86/300 of an inch. `wrap` is a character count, not a measurement —
+   * wrap() knows nothing about the font — so a skin that changes `size` must
+   * move `wrap` with it or the hook will break in the wrong place.
+   */
+  type: Object.freeze({
+    name:     Object.freeze({ weight: 300, size: 86, y: 200, track: 0, caps: false }),
+    hook:     Object.freeze({ weight: 400, size: 40, y: 278, step: 48, wrap: 26, track: 0, italic: true }),
+    backName: Object.freeze({ weight: 300, size: 78, y: 182, track: 0, caps: false }),
+    backLine: Object.freeze({ weight: 400, size: 32, y: 244, track: 0 }),
+  }),
+  /** The blind impression an engraving die leaves in the sheet. Inkless. */
+  plate: null,
   /** Emitted immediately inside <svg>. A skin puts its <defs> here. */
   defs: "",
   /** A filter attribute value applied to every line of type, or "". */
@@ -73,6 +93,12 @@ export function wrap(text, width = 26, max = 2) {
   if (line) lines.push(line);
   return lines.slice(0, max);
 }
+
+/** A letter-spacing declaration, or nothing at all when a skin does not track. */
+const track = (px) => (px ? `letter-spacing:${px}px;` : "");
+
+/** Uppercasing is a skin's decision, not the copy's: the admin types "Store". */
+const cased = (text, caps) => (caps ? String(text ?? "").toUpperCase() : text);
 
 /** The host as people say it, not as a URL parser says it. */
 export function hostOf(card) {
@@ -112,9 +138,10 @@ export function qrRects(qr, x, y, size, fill = "#1E1810") {
 export function front(card, { qr, artHref, skin = PRINT } = {}) {
   const accent = skin.accentOf(card);
   const F = skin.textFilter ? ` filter="${skin.textFilter}"` : "";
-  const lines = wrap(card.hook);
+  const T = skin.type;
+  const lines = wrap(card.hook, T.hook.wrap);
   const hook = lines.map((line, i) =>
-    `<text x="${TX}" y="${278 + i * 48}"${F} style="font:400 40px ${skin.serif};${skin.hookItalic ? "font-style:italic;" : ""}fill:${accent}">${esc(line)}</text>`
+    `<text x="${TX}" y="${T.hook.y + i * T.hook.step}"${F} style="font:${T.hook.weight} ${T.hook.size}px ${skin.serif};${T.hook.italic ? "font-style:italic;" : ""}${track(T.hook.track)}fill:${accent}">${esc(line)}</text>`
   ).join("");
 
   // The art fills the whole column. It used to be a square dropped at y=100 in a
@@ -122,17 +149,18 @@ export function front(card, { qr, artHref, skin = PRINT } = {}) {
   // each art file carried its own near-cream background, those bands were a
   // visibly different colour from the picture. The art files are now cut to this
   // column's shape and painted on this exact CREAM, so the seam disappears.
-  const art = artHref && skin.art
+  const img = artHref && skin.art
     ? `<image href="${esc(artHref)}" x="0" y="0" width="${AW}" height="${H}" preserveAspectRatio="xMidYMid slice"/>`
     : "";
+  const art = img && skin.artFilter ? `<g filter="${skin.artFilter}">${img}</g>` : img;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="3.5in" height="2in"
      viewBox="0 0 ${W} ${H}" data-property="${esc(card.slug)}">
 ${skin.defs}<rect width="${W}" height="${H}" fill="${skin.paper}"/>
 <rect x="0" y="0" width="${AW}" height="${H}" fill="${skin.cream}"/>
 ${art}
-${skin.spine ? `<rect x="${AW}" y="0" width="6" height="${H}" fill="${accent}"/>` : ""}
-<text x="${TX}" y="200"${F} style="font:300 86px ${skin.serif};fill:${skin.ink}">${esc(card.name)}</text>
+${skin.spine ? `<rect x="${AW}" y="0" width="6" height="${H}" fill="${accent}"/>` : ""}${skin.plate || ""}
+<text x="${TX}" y="${T.name.y}"${F} style="font:${T.name.weight} ${T.name.size}px ${skin.serif};${track(T.name.track)}fill:${skin.ink}">${esc(cased(card.name, T.name.caps))}</text>
 ${hook}
 <!-- The rule used to sit at y=380 while the QR box started at y=358, so the
      line ran straight through the code. Everything below the rule now starts
@@ -140,7 +168,7 @@ ${hook}
 <path d="M${TX} 380 H980" stroke="${skin.mute}" stroke-width="0.9" opacity=".32"/>
 <text x="${TX}" y="432"${F} style="font:400 30px ${skin.serif};fill:${skin.mute}">${esc(hostOf(card))}</text>
 <rect x="858" y="406" width="122" height="122" rx="4" fill="${skin.qrPaper}" stroke="${skin.mute}" stroke-width="1"/>
-${qr ? qrRects(qr, 867, 415, 104, skin.ink) : ""}
+${qr ? qrRects(qr, 867, 415, 104, skin.qrInk) : ""}
 <text x="919" y="566" text-anchor="middle"${F}
       style="font:300 24px ${skin.sans};fill:${skin.mute};letter-spacing:7px">KAAYKO</text>
 </svg>`;
@@ -169,6 +197,7 @@ export function back(card, brand = {}, { index = 1, total = 5, artHref, skin = P
   const label = brand.label || "KAAYKO";
   const line = card.line || card.hook || "";
   const facts = (Array.isArray(card.facts) ? card.facts : []).slice(0, 3);
+  const T = skin.type;
 
   const L = 88, R = W - 88;          // the type column, same inset both sides
   const cell = (R - L) / 3;
@@ -176,7 +205,7 @@ export function back(card, brand = {}, { index = 1, total = 5, artHref, skin = P
   // Bled off the right edge so it reads as a watermark under the words rather
   // than a second picture competing with the front.
   const ghost = artHref && skin.art
-    ? `<g opacity=".09"><image href="${esc(artHref)}" x="${W - 520}" y="0" width="520" height="${H}" preserveAspectRatio="xMidYMid slice"/></g>`
+    ? `<g opacity="${skin.ghostOpacity}"${skin.artFilter ? ` filter="${skin.artFilter}"` : ""}><image href="${esc(artHref)}" x="${W - 520}" y="0" width="520" height="${H}" preserveAspectRatio="xMidYMid slice"/></g>`
     : "";
 
   // Three facts, each under its own short accent rule. A rule that is the width
@@ -196,11 +225,11 @@ ${skin.defs}<rect width="${W}" height="${H}" fill="${skin.paper}"/>
      recognisably its own at arm's length, and at 9% it is a watermark rather than
      a picture, so nothing printed over it loses contrast. -->
 ${ghost}
-${skin.spine ? `<rect x="0" y="0" width="8" height="${H}" fill="${accent}"/>` : ""}
+${skin.spine ? `<rect x="0" y="0" width="8" height="${H}" fill="${accent}"/>` : ""}${skin.plate || ""}
 
 <text x="${L}" y="86"${F} style="font:300 22px ${skin.sans};fill:${skin.mute};letter-spacing:9px">${esc(label)}</text>
-<text x="${L}" y="182"${F} style="font:300 78px ${skin.serif};fill:${skin.ink}">${esc(card.name || "")}</text>
-<text x="${L}" y="244"${F} style="font:400 32px ${skin.serif};fill:${skin.mute}">${esc(line)}</text>
+<text x="${L}" y="${T.backName.y}"${F} style="font:${T.backName.weight} ${T.backName.size}px ${skin.serif};${track(T.backName.track)}fill:${skin.ink}">${esc(cased(card.name || "", T.backName.caps))}</text>
+<text x="${L}" y="${T.backLine.y}"${F} style="font:${T.backLine.weight} ${T.backLine.size}px ${skin.serif};${track(T.backLine.track)}fill:${skin.mute}">${esc(line)}</text>
 
 <!-- Half the width, and stopping short of x=${W - 520} so it never runs across
      the ghosted animal. The address sits directly under it, at the size of a
