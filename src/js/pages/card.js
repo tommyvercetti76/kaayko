@@ -5,7 +5,7 @@
 import { front, back, PRINT } from '/js/cards/render.js?v=b5761ba';
 import { engravedFor, stockOf } from '/js/cards/skins/engraved.js?v=b5761ba';
 import { readFace, warmArt } from '/js/cards/relief.js?v=b5761ba';
-import { rest, step, aimFromDevice, lampFor } from '/js/cards/attitude.js?v=b5761ba';
+import { rest, step, aimFromDevice, feedRate, lampFor } from '/js/cards/attitude.js?v=b5761ba';
 import { esc, apiBase } from '/js/kit.js?v=b5761ba';
 
 /* ── the lighting model ────────────────────────────────────────────────────
@@ -118,9 +118,16 @@ function onTilt(ev) {
   const now = performance.now();
   const dt = tiltLast ? Math.min(0.1, (now - tiltLast) / 1000) : 1 / 60;
   tiltLast = now;
-  aimFromDevice(att, beta, gamma, dt, { max: MAX_TILT });
+  // 70ms of lead, which is about what the smoothing costs.
+  aimFromDevice(att, beta, gamma, dt, { max: MAX_TILT, lead: 0.07 });
   if (engraved) aimLamp(lampFor(att.ty));
   if (!live) { live = true; card.classList.add('is-live'); }
+}
+
+/** The gyroscope, which leads the fused orientation by a frame or two. */
+function onMotion(ev) {
+  const r = ev.rotationRate;
+  if (r) feedRate(att, r.beta, r.gamma);
 }
 
 function attachTilt() {
@@ -128,18 +135,39 @@ function attachTilt() {
   tiltBound = true;
   att.ref = null; att.fb.reset(); att.fg.reset(); tiltLast = 0;
   window.addEventListener('deviceorientation', onTilt);
+  window.addEventListener('devicemotion', onMotion);
 }
 
 /** iOS grants this only inside a user gesture, so it is called from a click. */
 async function askTilt() {
-  const D = window.DeviceOrientationEvent;
+  const D = window.DeviceOrientationEvent, M = window.DeviceMotionEvent;
   if (!D) return false;
   if (typeof D.requestPermission === 'function') {
     try { if (await D.requestPermission() !== 'granted') return false; }
     catch (_) { return false; }
   }
+  // The gyroscope is a second permission on iOS and it is asked for separately.
+  // It is allowed to fail on its own: without it the card still answers the
+  // handset, just with the smoothing's lag showing.
+  if (M && typeof M.requestPermission === 'function') {
+    try { await M.requestPermission(); } catch (_) {}
+  }
   attachTilt();
   return true;
+}
+
+/* iOS will only hand over the motion sensors inside a user gesture, and it is
+   not fussy about WHICH gesture. Asking on the skin toggle alone meant that
+   anyone who arrived with the skin already remembered — which is everyone on
+   a second visit — turned it OFF with their first tap and was never asked at
+   all. So the first touch anywhere on the page asks, once. */
+if (typeof DeviceOrientationEvent?.requestPermission === 'function') {
+  const firstTouch = async () => {
+    document.removeEventListener('pointerdown', firstTouch);
+    const ok = await askTilt();
+    showHint(ok);
+  };
+  document.addEventListener('pointerdown', firstTouch, { once: true, passive: true });
 }
 
 const fine = matchMedia('(pointer: fine)').matches;

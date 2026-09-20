@@ -120,6 +120,7 @@ export const rest = () => ({
   vx: { v: 0 }, vy: { v: 0 },
   tx: 0, ty: 0,
   fb: oneEuro(), fg: oneEuro(),
+  rate: { beta: 0, gamma: 0 },
   ref: null,
 });
 
@@ -134,12 +135,44 @@ export const rest = () => ({
  * moves around it, which is what makes it read as an object in front of you
  * rather than a picture printed on the glass.
  */
-export function aimFromDevice(a, beta, gamma, dt, { gain = 1.15, max = 17 } = {}) {
-  if (!a.ref) a.ref = { beta, gamma };
-  const b = a.fb.filter(wrap180(beta - a.ref.beta), dt);
-  const g = a.fg.filter(wrap180(gamma - a.ref.gamma), dt);
-  a.tx = clamp(-b * gain, max);
-  a.ty = clamp(-g * gain, max);
+export function aimFromDevice(a, beta, gamma, dt, { gain = 1.15, max = 17, lead = 0 } = {}) {
+  // Level is averaged over the first fifth of a second, not taken from one
+  // sample. A single reading carries the same wander as every other reading,
+  // so calibrating on it leaves the card permanently crooked by up to a
+  // degree — which is small, constant, and exactly the kind of thing that
+  // reads as "the physics is off" without ever being identifiable.
+  // The first sample is the anchor; the average is taken over the OFFSETS from
+  // it, never over the raw angles. Averaging 179 and -179 gives 0, which is
+  // the opposite side of the circle — the card would snap a half turn the
+  // moment a hand crossed the boundary.
+  if (!a.ref) a.ref = { beta, gamma, ob: 0, og: 0, n: 0 };
+  if (a.ref.n < 12) {
+    a.ref.n += 1;
+    a.ref.ob += (wrap180(beta - a.ref.beta) - a.ref.ob) / a.ref.n;
+    a.ref.og += (wrap180(gamma - a.ref.gamma) - a.ref.og) / a.ref.n;
+  }
+  const b = a.fb.filter(wrap180(beta - a.ref.beta) - a.ref.ob, dt);
+  const g = a.fg.filter(wrap180(gamma - a.ref.gamma) - a.ref.og, dt);
+  // Lead the filtered angle by the gyroscope. Every smoother costs lag, and on
+  // a wrist flick that lag is the whole difference between an object and a
+  // recording of one. The rate gyro is a separate sensor that is already
+  // reporting the turn while the fused orientation is still catching up, so a
+  // short extrapolation along it cancels the smoothing's delay without
+  // reintroducing its noise — the noise lives in the ANGLE, not the rate.
+  a.tx = clamp(-(b + a.rate.beta * lead) * gain, max);
+  a.ty = clamp(-(g + a.rate.gamma * lead) * gain, max);
+  return a;
+}
+
+/**
+ * A gyroscope sample, in degrees per second about the device axes.
+ * Smoothed lightly on its own account: the rate is much cleaner than the
+ * angle, but it is not clean.
+ */
+export function feedRate(a, beta, gamma) {
+  const k = 0.35;
+  a.rate.beta += ((beta || 0) - a.rate.beta) * k;
+  a.rate.gamma += ((gamma || 0) - a.rate.gamma) * k;
   return a;
 }
 

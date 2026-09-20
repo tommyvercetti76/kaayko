@@ -48,7 +48,7 @@
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; background: var(--ink); color: var(--paper); }
+html, body { margin: 0; background: var(--ink); color: var(--paper); overflow-x: clip; }
 body {
   font-family: var(--serif);
   min-height: 100svh;
@@ -65,6 +65,13 @@ a { color: inherit; text-decoration: none; }
 /* ── the room ──────────────────────────────────────────────────────────── */
 .room {
   position: relative;
+  /* The lamp below is inset -20%, which on a 375px phone is 75px of real
+     scrollable width hanging off the right edge. It made the page scroll
+     sideways, and because the content is centred in the SCROLL box rather than
+     the viewport it also pushed the card off-centre — 20px of margin on the
+     left against 2.5px on the right. `clip` contains the bleed without making
+     a scroll container, which `hidden` on the body could not do from there. */
+  overflow: clip;
   min-height: 100svh;
   display: grid;
   place-items: center;
@@ -100,7 +107,10 @@ a { color: inherit; text-decoration: none; }
 /* ── the card ──────────────────────────────────────────────────────────── */
 .card-wrap {
   perspective: 1400px;
-  width: min(94vw, 620px);
+  /* 100% of the ROOM's padded content box, not of the viewport: 90vw is wider
+     than the space the room's own 20px gutters leave, which is where the last
+     2.5px of the off-centre came from. */
+  width: min(100%, 600px);
   touch-action: pan-y;
 }
 .card {
@@ -166,7 +176,7 @@ a { color: inherit; text-decoration: none; }
    own name is already printed under it — so the strip only has to show where
    you are in the series and let you move. The button stays 44px tall for a
    thumb; the visible bar is the thin part. */
-.marks { display: flex; gap: 6px; justify-content: center; align-items: center; }
+.marks { display: flex; gap: 6px; justify-content: center; align-items: center; min-height: 44px; }
 .mark {
   width: 26px; height: 44px; padding: 0;
   border: 0; background: transparent; cursor: pointer;
@@ -184,7 +194,7 @@ a { color: inherit; text-decoration: none; }
 .mark[aria-checked="true"]::before { width: 36px; background: var(--gold-lit); }
 .mark:focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; border-radius: 8px; }
 @media (prefers-reduced-motion: reduce) { .mark::before { transition: none; } }
-.now { text-align: center; display: grid; gap: 3px; min-height: 42px; }
+.now { text-align: center; display: grid; gap: 3px; min-height: 24px; }
 .now b { font-weight: 400; font-size: clamp(17px, 2.6vw, 21px); }
 .now i { color: var(--dim); font-size: 14px; font-style: normal; max-width: 56ch; display: inline-block; }
 .now .to-product { color: var(--gold-lit); border-bottom: 1px solid rgba(240,217,160,.35); }
@@ -293,13 +303,17 @@ a { color: inherit; text-decoration: none; }
 :root[data-skin="engraved"] .card-wrap { touch-action: none; }
 
 .touchhint {
+  /* Reserved whether or not it has anything to say. Toggling it in and out of
+     the layout is what made the page jump upward once you had interacted. */
   display: block; margin: 0 auto; padding: 4px 8px; border: 0; background: none;
+  min-height: 1.6em;
   text-align: center; font-family: var(--sans); font-size: 9.5px;
   letter-spacing: .22em; text-transform: uppercase; color: var(--dimmer);
   cursor: pointer; -webkit-tap-highlight-color: transparent;
 }
 .touchhint:hover, .touchhint:focus-visible { color: var(--dim); }
-.touchhint[hidden] { display: none; }
+/* hidden, but still holding its place in the column */
+.touchhint[hidden] { display: block; visibility: hidden; }
 
 /* ── the trace ──────────────────────────────────────────────────────────────
    What the fingertip is reading, drawn where it is reading it. On Android it
@@ -336,7 +350,7 @@ a { color: inherit; text-decoration: none; }
 @media (prefers-reduced-motion: reduce) { .stylus::before { transition: none; } }
 
 .stock {
-  margin: 0; text-align: center; min-height: 1.2em;
+  margin: 0; text-align: center; min-height: 1.3em;
   font-family: var(--sans); font-size: 10px; letter-spacing: .28em;
   text-transform: uppercase; color: var(--dimmer);
 }

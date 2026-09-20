@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-const { wrap180, clamp, oneEuro, smoothDamp, rest, step, aimFromDevice, lampFor } =
+const { wrap180, clamp, oneEuro, smoothDamp, rest, step, aimFromDevice, feedRate, lampFor } =
   await import('/js/cards/attitude.js');
 
 const FRAME = 1 / 60;
@@ -135,7 +135,7 @@ test('THE REVERSAL — tip the phone right, the card turns left', () => {
 
 test('THE REVERSAL — tip the top away, the card leans toward you', () => {
   const a = rest();
-  aimFromDevice(a, 52, 0, FRAME);
+  for (let i = 0; i < 15; i++) aimFromDevice(a, 52, 0, FRAME);
   for (let i = 0; i < 40; i++) aimFromDevice(a, 74, 0, FRAME);
   assert.ok(a.tx < 0, `got ${a.tx}`);
 });
@@ -143,29 +143,29 @@ test('THE REVERSAL — tip the top away, the card leans toward you', () => {
 test('level is wherever you were holding it, not an assumed posture', () => {
   for (const [beta, gamma] of [[0, 0], [52, 3], [88, -40]]) {
     const a = rest();
-    aimFromDevice(a, beta, gamma, FRAME);
-    assert.equal(a.tx, 0);
-    assert.equal(a.ty, 0);
+    for (let i = 0; i < 15; i++) aimFromDevice(a, beta, gamma, FRAME);
+    assert.ok(Math.abs(a.tx) < 0.001, `${beta}/${gamma} gave tx ${a.tx}`);
+    assert.ok(Math.abs(a.ty) < 0.001, `${beta}/${gamma} gave ty ${a.ty}`);
   }
 });
 
 test('a violent tilt is clamped, so the card never turns edge-on', () => {
   const a = rest();
-  aimFromDevice(a, 0, 0, FRAME);
+  for (let i = 0; i < 15; i++) aimFromDevice(a, 0, 0, FRAME);
   for (let i = 0; i < 80; i++) aimFromDevice(a, 90, 90, FRAME);
   assert.ok(Math.abs(a.tx) <= 17 && Math.abs(a.ty) <= 17);
 });
 
 test('crossing the 180 boundary does not spin the card', () => {
   const a = rest();
-  aimFromDevice(a, 0, 179, FRAME);
-  for (let i = 0; i < 30; i++) aimFromDevice(a, 0, -179, FRAME);
+  for (let i = 0; i < 15; i++) aimFromDevice(a, 0, 179, FRAME);   // level, at the seam
+  for (let i = 0; i < 40; i++) aimFromDevice(a, 0, -179, FRAME);  // two degrees across it
   assert.ok(Math.abs(a.ty) < 5, `two degrees of movement gave ${a.ty.toFixed(1)}°`);
 });
 
 test('END TO END — a shaky hand holding still leaves the card still', () => {
   const a = rest();
-  aimFromDevice(a, 52, 0, FRAME);
+  for (let i = 0; i < 15; i++) aimFromDevice(a, 52, 0, FRAME);
   const seen = [];
   for (const g of stillHand(0, 1.0, 300)) {
     aimFromDevice(a, 52, g, FRAME);
@@ -180,4 +180,78 @@ test('END TO END — a shaky hand holding still leaves the card still', () => {
 test('the lamp swings with the card, since the room light is fixed', () => {
   assert.ok(lampFor(10) > lampFor(-10));
   assert.equal(lampFor(0), 228);
+});
+
+/* ── the gyroscope lead ──────────────────────────────────────────────────────
+   Every smoother costs lag. On a wrist flick that lag is the difference
+   between an object and a recording of one, and it is the thing that cannot be
+   checked by reading the code. These run the whole chain — noisy fused angle
+   in, card angle out — at the rate a handset actually reports.              */
+
+const HAND = 1 / 60;
+
+/** A hand: a held angle, sensor wander, and an honest gyro reading. */
+function* hand(gammaAt, seconds, noise = 1.1, seed = 4) {
+  let s = seed, t = 0, prev = gammaAt(0);
+  while (t < seconds) {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    const g = gammaAt(t);
+    const rate = (g - prev) / HAND;            // deg/s, as rotationRate reports
+    prev = g;
+    yield { gamma: g + ((s / 0x7fffffff) * 2 - 1) * noise, rate, t };
+    t += HAND;
+  }
+}
+
+function run(gammaAt, seconds, lead) {
+  const a = rest();
+  const out = [];
+  for (const { gamma, rate, t } of hand(gammaAt, seconds)) {
+    feedRate(a, 0, rate);
+    aimFromDevice(a, 52, gamma, HAND, { lead });
+    step(a, HAND);
+    out.push({ t, ry: a.ry, want: -gammaAt(t) * 1.15 });
+  }
+  return out;
+}
+
+test('THE LEAD — it cancels the smoothing lag on a wrist flick', () => {
+  // A flick: twenty degrees in a fifth of a second, then held.
+  const flick = (t) => (t < 0.2 ? (t / 0.2) * 20 : 20);
+  const lagOf = (lead) => {
+    const r = run(flick, 0.6, lead).find((p) => p.t >= 0.2);
+    return Math.abs(r.want - r.ry);           // how far behind at the end of the flick
+  };
+  const without = lagOf(0), withLead = lagOf(0.07);
+  assert.ok(withLead < without,
+    `lead made it worse: ${withLead.toFixed(2)}° behind vs ${without.toFixed(2)}°`);
+  assert.ok(withLead < without * 0.75,
+    `only ${(100 - withLead / without * 100).toFixed(0)}% of the lag removed`);
+});
+
+test('and the lead does NOT reintroduce jitter when the hand is still', () => {
+  const tail = run(() => 0, 3, 0.07).slice(120).map((p) => p.ry);
+  const wander = Math.max(...tail) - Math.min(...tail);
+  assert.ok(wander < 0.4, `${wander.toFixed(2)}° of wander with the lead on`);
+});
+
+test('the card lands exactly where the hand is, lead or no lead', () => {
+  // Level is the FIRST reading, so the hand has to start somewhere and move.
+  const held = (t) => (t < 0.35 ? 0 : 12);   // hold level while it calibrates
+  for (const lead of [0, 0.07]) {
+    const end = run(held, 2.5, lead).at(-1);
+    assert.ok(Math.abs(end.ry - (-12 * 1.15)) < 0.4,
+      `lead ${lead}: settled at ${end.ry.toFixed(2)}, hand is at ${(-12 * 1.15).toFixed(2)}`);
+  }
+});
+
+test('a gyro that reports nothing degrades to the filtered angle, not to zero', () => {
+  const a = rest();
+  for (let i = 0; i < 15; i++) aimFromDevice(a, 52, 0, HAND, { lead: 0.07 });   // level
+  for (let i = 0; i < 200; i++) {
+    aimFromDevice(a, 52, 10, HAND, { lead: 0.07 });   // feedRate never called
+    step(a, HAND);
+  }
+  assert.ok(Math.abs(a.ry - (-10 * 1.15)) < 0.4,
+    `a card with no gyroscope should still follow the angle; got ${a.ry.toFixed(2)}`);
 });
