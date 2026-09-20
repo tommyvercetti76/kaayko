@@ -169,7 +169,7 @@ function setSkin(on, { save = true } = {}) {
   document.documentElement.dataset.skin = engraved ? 'engraved' : '';
   if (!engraved) document.documentElement.removeAttribute('data-skin');
   skinBtn.setAttribute('aria-pressed', String(engraved));
-  skinBtn.textContent = engraved ? 'In colour' : 'Bone';
+  skinBtn.textContent = engraved ? 'In colour' : 'American Psycho';
   // Foil belongs to the loud card. Stop the lamp before the skin lands, or the
   // first engraved frame arrives still wearing a gold highlight.
   if (engraved) lampOff(); else lampOn();
