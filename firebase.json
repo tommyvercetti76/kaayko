@@ -134,6 +134,24 @@
           ]
         },
         {
+          "source": "/card.html",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-store, no-cache, must-revalidate, max-age=0"
+            }
+          ]
+        },
+        {
+          "source": "/card",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-store, no-cache, must-revalidate, max-age=0"
+            }
+          ]
+        },
+        {
           "source": "/admin/**",
           "headers": [
             {
