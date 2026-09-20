@@ -174,7 +174,7 @@ function setSkin(on, { save = true } = {}) {
   // first engraved frame arrives still wearing a gold highlight.
   if (engraved) lampOff(); else lampOn();
   if (save) remember(engraved);
-  if (series.length) show(at);
+  if (series.length) { paintMarks(); show(at); }
 }
 
 skinBtn.addEventListener('click', (e) => { e.stopPropagation(); setSkin(!engraved); });
@@ -220,6 +220,32 @@ function qrFor(url) {
     q.make();
     return q;
   } catch (_) { return null; }
+}
+
+/**
+ * The strip under the card.
+ *
+ * In colour it is a slider: five bars, no numbers, because the card's own name
+ * is already printed beneath it. Engraved it becomes the set — the five cards
+ * themselves, laid side by side, because the joke is a comparison and a
+ * comparison cannot happen one card at a time. It is still the same
+ * radiogroup, so the arrow keys and the screen reader do not notice.
+ *
+ * The proofs carry no QR: at this size a code is unscannable noise, and the
+ * only thing worth looking at across five cards is the paper.
+ */
+function paintMarks() {
+  marks.innerHTML = series.map((c, i) => {
+    const proof = engraved
+      ? `<span class="proof">${front(c, { artHref: `/assets/cards/art/${c.art || c.slug}.png`, skin: { ...engravedFor(c, PRINT, `m${i}`), qrBox: false } })}</span>` +
+        `<span class="stockname">${esc(stockOf(c).name)}</span>`
+      : '';
+    // The stock is in the label too. Someone who cannot see the paper still
+    // hears what separates this card from the one beside it.
+    const label = engraved ? `${c.name} — ${stockOf(c).name}` : c.name;
+    return `<button type="button" class="mark" role="radio" aria-checked="false" tabindex="-1"
+       data-i="${i}" title="${esc(label)}" aria-label="${esc(label)}">${proof}</button>`;
+  }).join('');
 }
 
 function show(i, { focus = false } = {}) {
@@ -269,12 +295,7 @@ function show(i, { focus = false } = {}) {
   }
   if (!series.length) return;
 
-  // No number inside the button any more: the strip is a slider, and the card's
-  // name is already printed under it. The name becomes the accessible label so a
-  // screen reader still hears "Alumni", not "button 5".
-  marks.innerHTML = series.map((c, i) =>
-    `<button type="button" class="mark" role="radio" aria-checked="false" tabindex="-1"
-       data-i="${i}" title="${esc(c.name)}" aria-label="${esc(c.name)}"></button>`).join('');
+  paintMarks();
   marks.addEventListener('click', (e) => {
     const b = e.target.closest('.mark');
     if (b) show(Number(b.dataset.i));

@@ -254,6 +254,48 @@ a { color: inherit; text-decoration: none; }
 :root[data-skin="engraved"] .hint button:hover { color: var(--gold-lit); border-color: var(--gold-lit); }
 /* The control that turns it on, and the one line of copy that explains the set. */
 .hint button[aria-pressed="true"] { color: var(--gold-lit); border-color: var(--gold); }
+/* ── the set ────────────────────────────────────────────────────────────────
+   The slider becomes the five cards. Same radiogroup, same arrow keys; the
+   bars are simply replaced by the thing they were standing in for. Five proofs
+   at 3.5:2 across 980 units land near 176px each, which is small — but the
+   only thing being compared here is paper, and paper does not need to be big.
+
+   On a phone they do not shrink further: the rail scrolls and snaps, two and a
+   bit at a time, which is how the cards are looked at anyway.                */
+:root[data-skin="engraved"] .marks {
+  gap: 10px; flex-wrap: nowrap; max-width: 100%;
+  overflow-x: auto; scroll-snap-type: x proximity;
+  padding: 4px 2px 0; scrollbar-width: none;
+  /* `safe` is the whole point: centred while the five fit, and pinned to the
+     start once they do not, so the first proof is never scrolled out of reach
+     on the left where nothing can bring it back. */
+  justify-content: safe center;
+}
+:root[data-skin="engraved"] .marks::-webkit-scrollbar { display: none; }
+:root[data-skin="engraved"] .mark {
+  width: clamp(104px, 16vw, 168px); height: auto; scroll-snap-align: center;
+  display: grid; gap: 7px; justify-items: center; flex: 0 0 auto;
+}
+:root[data-skin="engraved"] .mark::before { display: none; }
+:root[data-skin="engraved"] .mark[aria-checked="true"] { width: clamp(104px, 16vw, 168px); }
+.proof {
+  display: block; width: 100%; border-radius: 3px; overflow: hidden;
+  box-shadow: 0 1px 1px rgba(60,54,44,.16), 0 4px 10px rgba(60,54,44,.14);
+  opacity: .72; transition: opacity .24s ease, box-shadow .24s ease;
+}
+.proof svg { display: block; width: 100%; height: auto; }
+.mark:hover .proof { opacity: .92; }
+.mark[aria-checked="true"] .proof {
+  opacity: 1;
+  box-shadow: 0 1px 1px rgba(60,54,44,.2), 0 7px 18px rgba(60,54,44,.22), 0 0 0 1px rgba(36,31,25,.28);
+}
+.stockname {
+  font-family: var(--sans); font-size: 8.5px; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--dimmer); line-height: 1;
+}
+.mark[aria-checked="true"] .stockname { color: var(--dim); }
+@media (prefers-reduced-motion: reduce) { .proof { transition: none; } }
+
 .stock {
   margin: 0; text-align: center; min-height: 1.2em;
   font-family: var(--sans); font-size: 10px; letter-spacing: .28em;

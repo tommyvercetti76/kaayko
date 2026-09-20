@@ -45,6 +45,8 @@ export const PRINT = Object.freeze({
   qrPaper: "#FBF7EB",
   /** The code itself. Separate from `ink` so a skin can quiet it and still scan. */
   qrInk: INK,
+  /** The quiet-zone box. A proof too small to scan should not draw one. */
+  qrBox: true,
   /** The card's own colour. A skin may return one colour for all five. */
   accentOf: (card) => card.accent || "#8A5A2B",
   /** The animal: filling the front column, ghosted on the back. */
@@ -167,7 +169,7 @@ ${hook}
      below it: the address on the left, the code on the right, the mark beneath. -->
 <path d="M${TX} 380 H980" stroke="${skin.mute}" stroke-width="0.9" opacity=".32"/>
 <text x="${TX}" y="432"${F} style="font:400 30px ${skin.serif};fill:${skin.mute}">${esc(hostOf(card))}</text>
-<rect x="858" y="406" width="122" height="122" rx="4" fill="${skin.qrPaper}" stroke="${skin.mute}" stroke-width="1"/>
+${skin.qrBox ? `<rect x="858" y="406" width="122" height="122" rx="4" fill="${skin.qrPaper}" stroke="${skin.mute}" stroke-width="1"/>` : ""}
 ${qr ? qrRects(qr, 867, 415, 104, skin.qrInk) : ""}
 <text x="919" y="566" text-anchor="middle"${F}
       style="font:300 24px ${skin.sans};fill:${skin.mute};letter-spacing:7px">KAAYKO</text>
