@@ -266,22 +266,36 @@ a { color: inherit; text-decoration: none; }
    model writes, so it works on whichever face is toward you. */
 :root[data-skin="engraved"] .foil { display: none; }
 :root[data-skin="engraved"] .sheen {
-  background: radial-gradient(40% 54% at var(--sx) var(--sy),
-    rgba(255,255,255,.92), rgba(255,252,242,.34) 36%, transparent 66%);
-  /* .30 of a soft-light white on cream measured out at 9% opacity, which is
-     invisible. `screen` brightens toward white, which is what a sheet of
-     cotton rag does when the light crosses it. */
-  opacity: calc(var(--spec) * .62);
-  mix-blend-mode: screen;
+  background: radial-gradient(42% 56% at var(--sx) var(--sy),
+    rgba(255,255,255,.82), rgba(255,253,246,.30) 38%, transparent 68%);
+  opacity: calc(var(--spec) * .52);
+  /* NO blend mode, deliberately. The card is inside transform-style:
+     preserve-3d with backface-visibility on each face, and WebKit drops
+     mix-blend-mode in that situation — which is why the front glistened and
+     the back did not, on a browser that is WebKit underneath. A plain white
+     wash composites the same way in every engine and on either face. */
+  mix-blend-mode: normal;
 }
-/* The back is rotated 180deg about Y, so its local x runs the other way and
-   the glint landed on the wrong edge of the card you are looking at. */
-:root[data-skin="engraved"] .face.back .sheen { transform: scaleX(-1); }
+/* That face is rotated 180deg about Y, so its local x runs the other way and
+   the glint sat on the wrong edge of the card you are looking at. Mirrored in
+   the gradient rather than with a transform: another transform inside a 3D
+   context is the last thing this needs. */
+:root[data-skin="engraved"] .face.back .sheen {
+  background: radial-gradient(42% 56% at calc(100% - var(--sx)) var(--sy),
+    rgba(255,255,255,.82), rgba(255,253,246,.30) 38%, transparent 68%);
+}
+/* The tooth blends too, for the same reason. */
+
 /* .rim never reaches zero on its own: at --fres 0 it still paints a warm
    hairline, which five cards in a row multiply into a visible gold grid. */
 :root[data-skin="engraved"] .rim { box-shadow: inset 0 0 0 1px rgba(36,31,25,.07); }
 /* Tooth stays — cotton rag has plenty — but it stops being gold-tinted noise. */
-:root[data-skin="engraved"] .grain { opacity: .10; filter: saturate(0); }
+:root[data-skin="engraved"] .grain {
+  /* Tooth stays — cotton rag has plenty — but it stops being gold-tinted
+     noise, and it stops relying on a blend mode that WebKit discards inside
+     the card's 3D context. */
+  opacity: .06; filter: saturate(0); mix-blend-mode: normal;
+}
 :root[data-skin="engraved"] .face {
   box-shadow: 0 2px 4px rgba(0,0,0,.55), 0 26px 60px rgba(0,0,0,.68), 0 0 0 1px rgba(255,255,255,.06);
 }
