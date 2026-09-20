@@ -230,8 +230,8 @@ a { color: inherit; text-decoration: none; }
    non-text control needs to be found at all.
    ═══════════════════════════════════════════════════════════════════════════ */
 :root[data-skin="engraved"] {
-  --ink: #24262A;                       /* a cold slate desk */
-  --ink-2: #202227;
+  --ink: #141619;                       /* a cold slate desk, lit from nowhere */
+  --ink-2: #101215;
   --paper: #EDEAE2;
   --gold: #8E9099;
   --gold-lit: #D8DAE0;
@@ -247,19 +247,27 @@ a { color: inherit; text-decoration: none; }
    the warm gold jewel-box of the colour card: that room is a lamp, this one
    is an office at night. */
 :root[data-skin="engraved"] .room::before {
-  background: radial-gradient(62% 48% at 50% 4%, rgba(214,222,236,.16), rgba(214,222,236,.05) 48%, transparent 74%);
+  background: radial-gradient(58% 44% at 50% 2%, rgba(198,210,228,.10), rgba(198,210,228,.03) 46%, transparent 70%);
 }
-/* Foil is the one thing an engraver never sells. Gone, not dimmed — and the
-   specular with it, because a matte cotton sheet has no hotspot. */
-:root[data-skin="engraved"] .foil,
-:root[data-skin="engraved"] .sheen { display: none; }
+/* Foil is the one thing an engraver never sells: gone, not dimmed. The sheen
+   stays, because cotton rag does catch the light — it just catches it white
+   and softly instead of gold and hard, and it is what makes the relief read as
+   relief while the card turns. It rides on the same --sx/--sy the lighting
+   model writes, so it works on whichever face is toward you. */
+:root[data-skin="engraved"] .foil { display: none; }
+:root[data-skin="engraved"] .sheen {
+  background: radial-gradient(46% 58% at var(--sx) var(--sy),
+    rgba(255,255,255,.55), rgba(255,255,255,.16) 38%, transparent 68%);
+  opacity: calc(var(--spec) * .30);
+  mix-blend-mode: soft-light;
+}
 /* .rim never reaches zero on its own: at --fres 0 it still paints a warm
    hairline, which five cards in a row multiply into a visible gold grid. */
 :root[data-skin="engraved"] .rim { box-shadow: inset 0 0 0 1px rgba(36,31,25,.07); }
 /* Tooth stays — cotton rag has plenty — but it stops being gold-tinted noise. */
 :root[data-skin="engraved"] .grain { opacity: .10; filter: saturate(0); }
 :root[data-skin="engraved"] .face {
-  box-shadow: 0 2px 3px rgba(0,0,0,.42), 0 20px 48px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.07);
+  box-shadow: 0 2px 4px rgba(0,0,0,.55), 0 26px 60px rgba(0,0,0,.68), 0 0 0 1px rgba(255,255,255,.06);
 }
 :root[data-skin="engraved"] .hint button { border-color: rgba(237,234,226,.34); }
 :root[data-skin="engraved"] .hint button:hover { color: var(--gold-lit); border-color: var(--gold-lit); }
@@ -371,7 +379,9 @@ a { color: inherit; text-decoration: none; }
       <button type="button" id="turn">Turn it over</button>
       <!-- One word. Anyone who recognises it does not need the rest, and anyone
            who does not is told what it changes by pressing it. -->
-      <button type="button" id="skin" aria-pressed="false">Bone</button>
+      <!-- The label is written by setSkin on load; this is only what shows for the
+           half-second before the module runs, and it must not disagree with it. -->
+      <button type="button" id="skin" aria-pressed="false">American Psycho</button>
     </div>
 
     <!-- Every property already has a card in the series with its own address on

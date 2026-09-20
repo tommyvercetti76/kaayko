@@ -5,7 +5,7 @@
 import { front, back, PRINT } from '/js/cards/render.js?v=032ef00';
 import { engravedFor, stockOf } from '/js/cards/skins/engraved.js?v=032ef00';
 import { readFace, warmArt } from '/js/cards/relief.js?v=032ef00';
-import { restAngle, rest, step, lampFor } from '/js/cards/attitude.js?v=032ef00';
+import { rest, step, aimFromDevice, lampFor } from '/js/cards/attitude.js?v=032ef00';
 import { esc, apiBase } from '/js/kit.js?v=032ef00';
 
 /* ── the lighting model ────────────────────────────────────────────────────
@@ -26,12 +26,6 @@ const norm = (a) => { const m = Math.hypot(a.x, a.y, a.z) || 1; return v(a.x/m, 
 const dot = (a, b) => a.x*b.x + a.y*b.y + a.z*b.z;
 
 let raf = 0, target = { x: .5, y: .35 }, cur = { x: .5, y: .35 }, live = false;
-// The lamp writes --spec/--fres/--hue as INLINE properties on #card every
-// frame, and an inline property beats any stylesheet — so a class that merely
-// re-declares them loses. Turning the foil off means stopping the loop AND
-// removing what it last wrote, or the card keeps the highlight it happened to
-// be wearing.
-let lamp = true;
 
 function light(px, py) {
   // Attitude: the card leans toward the light.
@@ -68,52 +62,27 @@ function light(px, py) {
 /** Where the lamp should sit for a pointer or a tilt at (px, py) over the card. */
 const lampAngle = (px, py) => 180 + Math.atan2(0.5 - py, px - 0.5) * 180 / Math.PI;
 
-const LAMP_VARS = ['--rx', '--ry', '--spec', '--fres', '--hue', '--sx', '--sy'];
-
-function lampOff() {
-  // The loop keeps running: it is what carries the pointer into the rake. Only
-  // the foil is switched off, and what it last wrote is removed, because an
-  // inline property beats any stylesheet.
-  lamp = false;
-  LAMP_VARS.forEach((k) => card.style.removeProperty(k));
-  // The room runs its own copy of the light, so the background pool would
-  // otherwise go on following the pointer under a card that had stopped.
-  room.style.removeProperty('--sx');
-  room.style.removeProperty('--sy');
-  card.classList.remove('is-live');
-  live = false;
-}
-
-function lampOn() {
-  if (still) return;
-  lamp = true;
-  if (!raf) raf = requestAnimationFrame(loop);
-}
-
 /* ── how the card hangs ──────────────────────────────────────────────────────
-   A spring, not a lerp. The card has an angular position, a velocity and a
-   rest angle it is being pulled toward; it overshoots slightly and settles,
-   because a stiff little rectangle held in the fingers does exactly that. The
-   old smoothing just slid toward the target and arrived dead, which is why the
-   card felt like a picture of a card.
-
-   On a phone the rest angle comes from the phone's own attitude, REVERSED: tip
-   the handset right and the card rotates left, so it holds its plane while the
-   screen moves around it. That is what makes it read as an object lying in
-   front of you rather than an image painted on the glass.                    */
+   The arithmetic is in cards/attitude.js, where it can be tested: a One Euro
+   filter on the handset reading and a critically damped spring solved rather
+   than integrated. This file only feeds it and writes the result.            */
 const MAX_TILT = 17;       // degrees at full deflection
-
 const att = rest();
 let lastT = 0;
 
 function loop(t) {
   // Real elapsed time, so the spring behaves the same on a 120Hz phone as on a
   // 60Hz laptop. Clamped, because a backgrounded tab returns a huge first step.
-  const dt = lastT ? Math.min(0.05, (t - lastT) / 1000) : 1 / 60;
+  const dt = lastT ? Math.min(0.25, (t - lastT) / 1000) : 1 / 60;
   lastT = t;
   cur.x += (target.x - cur.x) * 0.14;
   cur.y += (target.y - cur.y) * 0.14;
-  if (lamp) light(cur.x, cur.y);           // foil belongs to the colour card
+  // light() always runs now. What it writes is the same either way; which of
+  // those layers is visible is the stylesheet's business, and the engraved skin
+  // hides the foil and neutralises the sheen. Gating the whole function was how
+  // the card lost its attitude and stopped tilting at all — the attitude was
+  // computed in here.
+  light(cur.x, cur.y);
   step(att, dt);
   card.style.setProperty('--rx', att.rx.toFixed(2) + 'deg');
   card.style.setProperty('--ry', att.ry.toFixed(2) + 'deg');
@@ -138,24 +107,26 @@ function aim(e) {
    Both axes are NEGATED. Tip the phone right and the card turns left; tip the
    top away and the card leans toward you. The card is holding still while the
    screen moves around it.                                                    */
-let tiltRef = null, tiltBound = false;
+let tiltBound = false, tiltLast = 0;
 
 function onTilt(ev) {
   const { beta, gamma } = ev;
   if (beta == null || gamma == null) return;
-  if (!tiltRef) tiltRef = { beta, gamma };      // however you were holding it is level
-  const a = restAngle(tiltRef, beta, gamma, { max: MAX_TILT });
-  att.tx = a.rx;
-  att.ty = a.ry;
-  // The room's lamp is fixed, so turning the card is what rakes it.
-  if (engraved) aimLamp(lampFor(a.ry));
+  // Sensor events do not arrive on the frame clock, so the filter is told how
+  // long it actually waited. Getting this wrong is what makes a One Euro
+  // filter behave differently on two devices that both "work".
+  const now = performance.now();
+  const dt = tiltLast ? Math.min(0.1, (now - tiltLast) / 1000) : 1 / 60;
+  tiltLast = now;
+  aimFromDevice(att, beta, gamma, dt, { max: MAX_TILT });
+  if (engraved) aimLamp(lampFor(att.ty));
   if (!live) { live = true; card.classList.add('is-live'); }
 }
 
 function attachTilt() {
   if (tiltBound || !window.DeviceOrientationEvent) return;
   tiltBound = true;
-  tiltRef = null;
+  att.ref = null; att.fb.reset(); att.fg.reset(); tiltLast = 0;
   window.addEventListener('deviceorientation', onTilt);
 }
 
@@ -230,9 +201,6 @@ function setSkin(on, { save = true } = {}) {
   if (!engraved) document.documentElement.removeAttribute('data-skin');
   skinBtn.setAttribute('aria-pressed', String(engraved));
   skinBtn.textContent = engraved ? 'In colour' : 'American Psycho';
-  // Foil belongs to the loud card. Stop the lamp before the skin lands, or the
-  // first engraved frame arrives still wearing a gold highlight.
-  if (engraved) lampOff(); else lampOn();
   if (save) remember(engraved);
   if (!engraved) { unread(); stopRaking(); }
   if (series.length) { paintMarks(); show(at); }
@@ -527,5 +495,9 @@ function show(i, { focus = false } = {}) {
     }
   });
   show(0);
-  if (remembered()) setSkin(true, { save: false });
+  // Unconditionally, not only when a preference exists: the control's label
+  // lives in two places otherwise, and the copy in the HTML is the one nobody
+  // remembers to change. It read "Bone" on every cold load for three deploys
+  // after the module had stopped saying it.
+  setSkin(remembered(), { save: false });
 })();

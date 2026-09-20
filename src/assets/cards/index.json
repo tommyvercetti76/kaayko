@@ -5,22 +5,6 @@
   "cards": [
     {
       "n": 1,
-      "slug": "kaayko",
-      "name": "Store",
-      "hook": "Your style sucks. Heal here.",
-      "host": "kaay.store",
-      "url": "https://kaay.store",
-      "accent": "#8A5A2B",
-      "art": "kaayko",
-      "line": "Store for the rich and disillusioned.",
-      "facts": [
-        "40 designs",
-        "Printed to order",
-        "No account"
-      ]
-    },
-    {
-      "n": 2,
       "slug": "paddlingout",
       "name": "Paddling Out",
       "hook": "Drown in data, not water.",
@@ -36,7 +20,7 @@
       ]
     },
     {
-      "n": 3,
+      "n": 2,
       "slug": "forge",
       "name": "Forge",
       "hook": "Brahma's blessings and a MacBook.",
@@ -52,12 +36,12 @@
       ]
     },
     {
-      "n": 4,
+      "n": 3,
       "slug": "kortex",
-      "name": "Kortex",
+      "name": "kaay.link",
       "hook": "A link to take you places.",
-      "host": "kaayko.com/kortex",
-      "url": "https://kaayko.com/kortex",
+      "host": "kaay.link",
+      "url": "https://kaay.link",
       "accent": "#3B4E8C",
       "art": "kortex",
       "line": "A smarter link for smart audience.",
@@ -65,6 +49,22 @@
         "No account",
         "Route by device",
         "Live scans"
+      ]
+    },
+    {
+      "n": 4,
+      "slug": "kaayko",
+      "name": "Store",
+      "hook": "Your style sucks. Heal here.",
+      "host": "kaay.store",
+      "url": "https://kaay.store",
+      "accent": "#8A5A2B",
+      "art": "kaayko",
+      "line": "Store for the rich and disillusioned.",
+      "facts": [
+        "40 designs",
+        "Printed to order",
+        "No account"
       ]
     },
     {

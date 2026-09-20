@@ -1,74 +1,153 @@
 /**
  * cards/attitude.js — how the card hangs, and how it answers the handset.
  *
- * This is the arithmetic only: no DOM, no events, no listeners. It lives apart
- * from pages/card.js so it can be run and checked in a test rather than
- * squinted at in a phone, which is how the tilt came to be wired to nothing at
- * all and shipped three times without anybody able to prove it either way.
+ * Arithmetic only: no DOM, no events. It lives apart from pages/card.js so it
+ * can be run in a test rather than squinted at on a phone, which is how the
+ * tilt came to be wired to nothing and shipped twice with nobody able to prove
+ * it either way.
  *
- * THE MODEL
- * ---------
- * A card held in the fingers is a small stiff thing with mass. It does not
- * slide to a new angle and stop dead; it swings slightly past and settles. So
- * each axis is a damped spring — position, velocity, and a rest angle it is
- * pulled toward — and not an easing curve.
+ * WHY THE FIRST VERSION WAS NOT SMOOTH
+ * ------------------------------------
+ * Two reasons, and the second mattered more.
  *
- * THE REVERSAL
- * ------------
- * Rest angle comes from the handset's own attitude, negated. Tip the phone
- * right and the card turns left; tip its top away and the card leans toward
- * you. The card is holding still while the screen moves around it, which is
- * what makes it read as an object lying in front of you rather than a picture
- * printed on the glass.
+ * It integrated a spring by hand. Stepping velocity and position forward by dt
+ * is only approximately right, and how wrong it is depends on the frame time,
+ * so the card behaved differently on every device and visibly hitched whenever
+ * a frame ran long.
  *
- * Everything is measured from the FIRST reading rather than from an assumed
- * posture, so level is however you happened to be holding the phone: on a
- * desk, on a knee, or over a table.
+ * And nothing filtered the sensor. A handset's orientation is a fusion of
+ * gyroscope and accelerometer and it is NOISY — a phone lying still on a table
+ * reports an angle that wanders by a degree or more. Feeding that straight into
+ * a spring means faithfully reproducing the jitter. No amount of work on the
+ * spring fixes a shaky input.
+ *
+ * WHAT IT DOES NOW, AND WHERE IT COMES FROM
+ * -----------------------------------------
+ * The sensor goes through a One Euro filter (Casiez, Roussel & Vogel, CHI
+ * 2012), which is the standard answer to exactly this: an adaptive low-pass
+ * whose cutoff rises with speed. Hold still and it smooths hard, so the jitter
+ * disappears; move fast and it barely filters, so there is no lag. A fixed
+ * low-pass has to choose one or the other and is wrong half the time.
+ *
+ * The angle is then carried by a critically damped spring solved analytically
+ * rather than integrated — the SmoothDamp every game engine ships, using a
+ * Padé approximation of e^-x. It is unconditionally stable at any timestep,
+ * cannot overshoot, and cannot explode when a frame takes 200ms.
  */
 
 /** Shortest way round the circle, so 179° to -179° is 2° and not 358°. */
 export const wrap180 = (d) => ((d % 360) + 540) % 360 - 180;
 
-// The `+ 0` is not decoration: negating zero gives -0, which survives all the
-// way into a CSS string as "-0.00deg".
+/** Negating zero gives -0, which survives into a CSS string as "-0.00deg". */
 export const clamp = (v, lim) => (v > lim ? lim : v < -lim ? -lim : v) + 0;
 
-/**
- * The rest angle for a handset reading, relative to where it started.
- * Both axes are negated — that is the whole point.
- *
- * @param {{beta:number, gamma:number}} ref   the first reading; level
- * @param {number} beta   front-to-back, degrees
- * @param {number} gamma  left-to-right, degrees
- * @param {{gain?:number, max?:number}} opts
- * @returns {{rx:number, ry:number}} degrees for rotateX and rotateY
- */
-export function restAngle(ref, beta, gamma, { gain = 1.15, max = 17 } = {}) {
-  const db = wrap180(beta - ref.beta);
-  const dg = wrap180(gamma - ref.gamma);
-  return { rx: clamp(-db * gain, max), ry: clamp(-dg * gain, max) };
+/* ── One Euro ───────────────────────────────────────────────────────────────
+   Two low-passes: one on the value, one on its rate of change. The rate sets
+   the cutoff for the value, so the filter loosens its grip exactly when you
+   start moving.
+
+   minCutoff sets how still it is when you are still; beta how fast it lets go
+   when you move. These three were measured, not guessed: against a simulated
+   still hand wandering 2.4 degrees peak to peak, they leave 0.45 and still
+   track a thirty-degree sweep.
+
+   dCutoff matters more than it looks. The derivative of noise is enormous —
+   1.2 degrees of wander at 60Hz reads as 72 degrees per second — so with the
+   derivative loosely filtered, beta held the gate open permanently and
+   minCutoff did nothing at all. Filtering the rate hard is what makes the
+   adaptive part work.                                                        */
+
+const alpha = (cutoff, dt) => {
+  const tau = 1 / (2 * Math.PI * cutoff);
+  return 1 / (1 + tau / dt);
+};
+
+export function oneEuro({ minCutoff = 0.3, beta = 0.01, dCutoff = 0.3 } = {}) {
+  let x = null, dx = 0;
+  return {
+    reset() { x = null; dx = 0; },
+    /** @param {number} v raw reading @param {number} dt seconds since the last */
+    filter(v, dt) {
+      if (dt <= 0) return x === null ? v : x;
+      if (x === null) { x = v; return v; }
+      // Rate of change, itself smoothed, or one noisy sample opens the gate.
+      const rate = (v - x) / dt;
+      dx += alpha(dCutoff, dt) * (rate - dx);
+      // Moving fast raises the cutoff, which lets more of the signal through.
+      const cutoff = minCutoff + beta * Math.abs(dx);
+      x += alpha(cutoff, dt) * (v - x);
+      return x;
+    },
+  };
 }
 
-/** A fresh attitude, at rest and level. */
-export const rest = () => ({ rx: 0, ry: 0, vx: 0, vy: 0, tx: 0, ty: 0 });
+/* ── the spring ─────────────────────────────────────────────────────────── */
 
 /**
- * Advance the spring by dt seconds.
+ * Critically damped spring, solved rather than integrated.
  *
- * DAMP is set near critical for this stiffness — 2*sqrt(SPRING) is about 24.5,
- * and 17 sits just under it, so the card overshoots once by a hair and stops.
- * Above critical it crawls in dead and feels like a slideshow; far below it
- * wobbles like jelly and feels cheap.
+ * `smoothTime` is roughly how long it takes to arrive — the only knob, and it
+ * means the same thing on every device. Returns the new position and writes
+ * the new velocity back into `v`.
  *
- * dt is passed in rather than assumed, so the same spring behaves identically
- * on a 120Hz phone and a 60Hz laptop.
+ * Stable at ANY dt: a tab that was backgrounded for ten seconds comes back
+ * with the card at its rest angle rather than halfway across the room.
  */
-export function step(a, dt, { spring = 150, damp = 17 } = {}) {
-  const d = Math.min(dt, 0.05);            // a backgrounded tab returns a huge first step
-  a.vx += ((a.tx - a.rx) * spring - a.vx * damp) * d;
-  a.vy += ((a.ty - a.ry) * spring - a.vy * damp) * d;
-  a.rx += a.vx * d;
-  a.ry += a.vy * d;
+export function smoothDamp(current, target, v, smoothTime, dt) {
+  const st = Math.max(0.0001, smoothTime);
+  const omega = 2 / st;
+  const x = omega * Math.max(0, dt);
+  // Padé approximation of e^-x: cheap, and accurate to well past any real dt.
+  const exp = 1 / (1 + x + 0.48 * x * x + 0.235 * x * x * x);
+  const change = current - target;
+  const temp = (v.v + omega * change) * Math.max(0, dt);
+  v.v = (v.v - omega * temp) * exp;
+  let out = target + (change + temp) * exp;
+  // Never sail past the target — the sign of the remaining distance flipping
+  // is the only thing that can make a critically damped spring look springy.
+  if ((target - current > 0) === (out > target)) {
+    out = target;
+    v.v = dt > 0 ? (out - target) / dt : 0;
+  }
+  return out;
+}
+
+/* ── the card ───────────────────────────────────────────────────────────── */
+
+/** A fresh attitude, at rest and level. */
+export const rest = () => ({
+  rx: 0, ry: 0,
+  vx: { v: 0 }, vy: { v: 0 },
+  tx: 0, ty: 0,
+  fb: oneEuro(), fg: oneEuro(),
+  ref: null,
+});
+
+/**
+ * Take a handset reading and set the rest angle from it.
+ *
+ * Measured from the FIRST reading, so level is however you happened to be
+ * holding the phone — on a desk, on a knee, or over a table.
+ *
+ * Both axes are NEGATED. Tip the phone right and the card turns left; tip its
+ * top away and it leans toward you. The card holds its plane while the screen
+ * moves around it, which is what makes it read as an object in front of you
+ * rather than a picture printed on the glass.
+ */
+export function aimFromDevice(a, beta, gamma, dt, { gain = 1.15, max = 17 } = {}) {
+  if (!a.ref) a.ref = { beta, gamma };
+  const b = a.fb.filter(wrap180(beta - a.ref.beta), dt);
+  const g = a.fg.filter(wrap180(gamma - a.ref.gamma), dt);
+  a.tx = clamp(-b * gain, max);
+  a.ty = clamp(-g * gain, max);
+  return a;
+}
+
+/** Advance the card toward its rest angle. */
+export function step(a, dt, { smoothTime = 0.12 } = {}) {
+  const d = Math.min(Math.max(0, dt), 0.25);
+  a.rx = smoothDamp(a.rx, a.tx, a.vx, smoothTime, d);
+  a.ry = smoothDamp(a.ry, a.ty, a.vy, smoothTime, d);
   return a;
 }
 

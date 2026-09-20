@@ -17,7 +17,12 @@
  * diff it prints, and update the hash in the same commit that changes the card.
  * Do not re-pin to make a red test green.
  *
- * Hashes pinned 19 Sep 2026 against src/assets/cards/index.json.
+ * Hashes pinned 19 Sep 2026 against src/assets/cards/index.json, and re-pinned
+ * 20 Sep when the set was reordered and Kortex became kaay.link. That re-pin is
+ * worth reading, because it is the guard doing its job: only kortex's FRONT
+ * moved, since only its name changed — but four BACKS moved, because the back
+ * prints "N OF 5" and four cards changed position. Alumni was untouched at both
+ * ends: it was fifth before and it is fifth now.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -52,10 +57,10 @@ const artOf = (c) => `/assets/cards/art/${c.art || c.slug}.png`;
 
 /** [front, back] as they render today. */
 const PINNED = {
-  kaayko:      ['d461e00057e80e80', '860ec92fdaaad313'],
-  paddlingout: ['7ff0ccfd195eefd1', '98edea4beb58ab0a'],
-  forge:       ['2da71419f1d6d133', 'f1f539ce98badf5a'],
-  kortex:      ['f39e1dde43a15762', 'bf58c260e4b05874'],
+  paddlingout: ['7ff0ccfd195eefd1', '79f2cff62b6250ba'],
+  forge:       ['2da71419f1d6d133', '8f8511f341ac221b'],
+  kortex:      ['fe92922bf2cc00ce', '10b7ade65fa067c1'],
+  kaayko:      ['d461e00057e80e80', 'dac5840bc2717154'],
   alumni:      ['eebaf3b928cb37d4', '66fc0151e0e3aa79'],
 };
 
