@@ -45,19 +45,16 @@ export const STOCKS = Object.freeze({
   kaayko:      Object.freeze({ name: "Bone",        hex: "#F7EEE1", note: "Silian Rail" }),
   paddlingout: Object.freeze({ name: "Eggshell",    hex: "#F6EFE3", note: "Romalian type" }),
   forge:       Object.freeze({ name: "Pale Nimbus", hex: "#F3F1E8", note: "raised lettering" }),
-  kortex:      Object.freeze({ name: "Pale Nimbus", hex: "#F5F0E9", note: "flat printed" }),
+  kortex:      Object.freeze({ name: "White",       hex: "#F5F0E9", note: "flat printed" }),
   alumni:      Object.freeze({ name: "Off-white",   hex: "#F3F0E5", note: "watermarked" }),
 });
 
 /**
  * Five jobs, four stocks.
  *
- * Every stock and every lettering name above is one the scene actually says —
- * bone, eggshell, pale nimbus, off-white, Silian Rail, Romalian type. There
- * are four cards in that scene and five properties here, so two of ours are
- * printed on the same pale nimbus and are told apart only by the job: one
- * struck, one flat. That is not a shortfall. Two men holding the same paper
- * and arguing about the lettering is the most accurate thing in the set.
+ * Every stock and every lettering name above is one the scene actually says:
+ * bone, eggshell, pale nimbus, white, off-white, Silian Rail, Romalian type.
+ * Five names, five cards, and none of them used twice.
  *
  * Kortex is the flat one. Somebody always orders the cheap job, and the whole
  * point is that you have to look twice to notice.
@@ -146,13 +143,16 @@ const defs = (id, d, relief) => `<defs>
   <feComposite in="shc" in2="sh" operator="in" result="shadow"/>
   <feMerge><feMergeNode in="shadow"/><feMergeNode in="litin"/></feMerge>
 </filter>
-${relief === "none" ? "" : `<!-- Raised lettering. One unit of relief, which is what an engraver's die
-     actually gives you: felt with a thumb, barely seen. Anything more reads as
-     a 2009 web emboss. The flat job omits this filter rather than weakening
-     it, because a plate that was never made leaves nothing at all. -->
-<filter id="${id}-raise" x="-5%" y="-16%" width="110%" height="132%" color-interpolation-filters="sRGB">
-  <feDropShadow dx="0.8" dy="1" stdDeviation="0.3" flood-color="#FFFFFF" flood-opacity=".8"/>
-  <feDropShadow dx="-0.4" dy="-0.5" stdDeviation="0.25" flood-color="#000000" flood-opacity=".14"/>
+${relief === "none" ? "" : `<!-- Raised lettering. A real die gives about one unit of relief, and at one
+     unit of 1050 across a phone this was invisible — technically faithful and
+     practically absent. It is drawn at the scale the screen can resolve
+     instead: a warm shadow falling down-right off every letter and a lit
+     shoulder up-left, which is what the eye reads as raised. The flat job
+     omits this filter rather than weakening it, because a plate that was
+     never made leaves nothing at all. -->
+<filter id="${id}-raise" x="-8%" y="-22%" width="116%" height="144%" color-interpolation-filters="sRGB">
+  <feDropShadow dx="2.4" dy="3" stdDeviation="1.1" flood-color="#8A8064" flood-opacity=".5"/>
+  <feDropShadow dx="-1.6" dy="-2" stdDeviation=".8" flood-color="#FFFFFF" flood-opacity=".95"/>
 </filter>`}
 </defs>
 `;

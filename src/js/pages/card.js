@@ -178,13 +178,39 @@ function setSkin(on, { save = true } = {}) {
   if (save) remember(engraved);
   if (!engraved) unread();
   if (series.length) { paintMarks(); show(at); }
-  hintEl.textContent = engraved && touchy
-    ? (canVibrate() ? 'Drag a finger across the card to feel it'
-                    : 'Drag a finger across the card to read it')
-    : '';
+  showHint();
 }
 
 skinBtn.addEventListener('click', (e) => { e.stopPropagation(); setSkin(!engraved); });
+
+/* Whether a phone will actually buzz is not knowable from here.
+   navigator.vibrate is absent in every browser on iOS — Safari has never
+   shipped the Vibration API and every other iOS browser is Safari underneath —
+   and a privacy browser on Android may keep the function and quietly do
+   nothing with it, which is indistinguishable from a broken feature.
+
+   So the hint is a control. One tap asks for a long unmistakable buzz, and
+   what happens next is the answer: felt it, and the ticks will work; nothing,
+   and it is the browser rather than the card. Saying that out loud is better
+   than an interface that silently promises something it cannot deliver. */
+function showHint() {
+  if (!engraved || !touchy) { hintEl.hidden = true; return; }
+  hintEl.hidden = false;
+  hintEl.textContent = canVibrate()
+    ? 'Drag a finger across the card \u00b7 tap to test the buzz'
+    : 'Drag a finger across the card \u00b7 this browser cannot vibrate';
+}
+
+hintEl.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (!canVibrate()) {
+    hintEl.textContent = 'No vibration on iOS, in any browser \u00b7 the trace is shown instead';
+    return;
+  }
+  navigator.vibrate([70, 60, 70]);
+  hintEl.textContent = 'Felt nothing? Your browser is blocking it \u00b7 try Chrome';
+  setTimeout(showHint, 5200);
+});
 
 /* ── the series ──────────────────────────────────────────────────────────────
    Eight cards, one chassis. Only the face and the four facts change, which is the

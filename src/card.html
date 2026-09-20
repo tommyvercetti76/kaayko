@@ -224,19 +224,24 @@ a { color: inherit; text-decoration: none; }
    non-text control needs to be found at all.
    ═══════════════════════════════════════════════════════════════════════════ */
 :root[data-skin="engraved"] {
-  --ink: #D6D4CC;                       /* the desk, not the room */
-  --ink-2: #CFCDC4;
-  --paper: #241F19;                     /* ink on the desk, now that it is light */
-  --gold: #8A8275;
-  --gold-lit: #3A342B;
-  --dim: rgba(36, 31, 25, .72);
-  --dimmer: rgba(36, 31, 25, .44);
-  --hair: rgba(36, 31, 25, .34);
+  --ink: #24262A;                       /* a cold slate desk */
+  --ink-2: #202227;
+  --paper: #EDEAE2;
+  --gold: #8E9099;
+  --gold-lit: #D8DAE0;
+  --dim: rgba(237, 234, 226, .66);
+  --dimmer: rgba(237, 234, 226, .40);
+  --hair: rgba(237, 234, 226, .22);
 }
-/* The lamp was a warm gold pool tracking the pointer. Daylight does not track
-   anything: one cold wash from above, and it stops following the mouse. */
+/* This room was bright at first, on the reasoning that the scene is a daylit
+   conference room. That was wrong for the wrong reason: relief is read from a
+   shadow, and a bright flat field leaves a one-unit shadow nothing to fall
+   against — the embossing was there and simply could not be seen. Dark and
+   cold instead, so the cream sits in it as a lit object. Still nothing like
+   the warm gold jewel-box of the colour card: that room is a lamp, this one
+   is an office at night. */
 :root[data-skin="engraved"] .room::before {
-  background: radial-gradient(70% 50% at 50% 0%, rgba(255,255,255,.55), rgba(255,255,255,.12) 55%, transparent 78%);
+  background: radial-gradient(62% 48% at 50% 4%, rgba(214,222,236,.16), rgba(214,222,236,.05) 48%, transparent 74%);
 }
 /* Foil is the one thing an engraver never sells. Gone, not dimmed — and the
    specular with it, because a matte cotton sheet has no hotspot. */
@@ -244,13 +249,13 @@ a { color: inherit; text-decoration: none; }
 :root[data-skin="engraved"] .sheen { display: none; }
 /* .rim never reaches zero on its own: at --fres 0 it still paints a warm
    hairline, which five cards in a row multiply into a visible gold grid. */
-:root[data-skin="engraved"] .rim { box-shadow: inset 0 0 0 1px rgba(36,31,25,.10); }
+:root[data-skin="engraved"] .rim { box-shadow: inset 0 0 0 1px rgba(36,31,25,.07); }
 /* Tooth stays — cotton rag has plenty — but it stops being gold-tinted noise. */
 :root[data-skin="engraved"] .grain { opacity: .10; filter: saturate(0); }
 :root[data-skin="engraved"] .face {
-  box-shadow: 0 1px 2px rgba(60,54,44,.20), 0 14px 34px rgba(60,54,44,.18), 0 0 0 1px rgba(36,31,25,.10);
+  box-shadow: 0 2px 3px rgba(0,0,0,.42), 0 20px 48px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.07);
 }
-:root[data-skin="engraved"] .hint button { border-color: rgba(36,31,25,.55); }
+:root[data-skin="engraved"] .hint button { border-color: rgba(237,234,226,.34); }
 :root[data-skin="engraved"] .hint button:hover { color: var(--gold-lit); border-color: var(--gold-lit); }
 /* The control that turns it on, and the one line of copy that explains the set. */
 .hint button[aria-pressed="true"] { color: var(--gold-lit); border-color: var(--gold); }
@@ -280,14 +285,14 @@ a { color: inherit; text-decoration: none; }
 :root[data-skin="engraved"] .mark[aria-checked="true"] { width: clamp(104px, 16vw, 168px); }
 .proof {
   display: block; width: 100%; border-radius: 3px; overflow: hidden;
-  box-shadow: 0 1px 1px rgba(60,54,44,.16), 0 4px 10px rgba(60,54,44,.14);
+  box-shadow: 0 1px 2px rgba(0,0,0,.36), 0 6px 14px rgba(0,0,0,.34);
   opacity: .72; transition: opacity .24s ease, box-shadow .24s ease;
 }
 .proof svg { display: block; width: 100%; height: auto; }
 .mark:hover .proof { opacity: .92; }
 .mark[aria-checked="true"] .proof {
   opacity: 1;
-  box-shadow: 0 1px 1px rgba(60,54,44,.2), 0 7px 18px rgba(60,54,44,.22), 0 0 0 1px rgba(36,31,25,.28);
+  box-shadow: 0 2px 3px rgba(0,0,0,.4), 0 10px 22px rgba(0,0,0,.44), 0 0 0 1px rgba(255,255,255,.34);
 }
 .stockname {
   font-family: var(--sans); font-size: 8.5px; letter-spacing: .2em;
@@ -307,10 +312,13 @@ a { color: inherit; text-decoration: none; }
 :root[data-skin="engraved"] .card-wrap { touch-action: none; }
 
 .touchhint {
-  margin: 0; text-align: center; min-height: 1em;
-  font-family: var(--sans); font-size: 9.5px; letter-spacing: .22em;
-  text-transform: uppercase; color: var(--dimmer);
+  display: block; margin: 0 auto; padding: 4px 8px; border: 0; background: none;
+  text-align: center; font-family: var(--sans); font-size: 9.5px;
+  letter-spacing: .22em; text-transform: uppercase; color: var(--dimmer);
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
 }
+.touchhint:hover, .touchhint:focus-visible { color: var(--dim); }
+.touchhint[hidden] { display: none; }
 
 /* ── the trace ──────────────────────────────────────────────────────────────
    What the fingertip is reading, drawn where it is reading it. On Android it
@@ -384,7 +392,7 @@ a { color: inherit; text-decoration: none; }
     </div>
 
     <p class="stock" id="stock"></p>
-    <p class="touchhint" id="touchhint"></p>
+    <button type="button" class="touchhint" id="touchhint" hidden></button>
 
     <div class="hint">
       <button type="button" id="turn">Turn it over</button>
