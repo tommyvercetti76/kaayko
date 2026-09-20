@@ -70,11 +70,28 @@ function renderHero() {
   return captured.innerHTML;
 }
 
-function renderHeatmap() {
+/**
+ * The strip reads the wall clock: it draws a current-hour marker only when the
+ * real hour falls inside the 6 AM-8 PM band it plots, and it dates its three
+ * day labels off today. Left on the machine clock these assertions pass by day
+ * and fail by night, so pin the clock to the hour the audit measured.
+ */
+function pinnedClock(year, monthIndex, day, hour) {
+  const fixed = new Date(year, monthIndex, day, hour, 0, 0, 0).getTime();
+  return class PinnedDate extends Date {
+    constructor(...args) { super(...(args.length ? args : [fixed])); }
+    static now() { return fixed; }
+  };
+}
+
+/** @param {number} hour  wall-clock hour to render at; 13 is inside the band. */
+function renderHeatmap(hour = 13) {
   const container = sink();
   const ctx = {
     window: { KaaykoPrefs: PREFS, KaaykoIcons: { get: () => '' } },
-    console: { log() {}, warn() {}, error() {} }
+    console: { log() {}, warn() {}, error() {} },
+    // Trinity River, 18 Sep 2026 — the afternoon the two surfaces disagreed.
+    Date: pinnedClock(2026, 8, 18, hour)
   };
   vm.createContext(ctx);
   vm.runInContext(fs.readFileSync(HEAT, 'utf8'), ctx, { filename: HEAT });
@@ -114,6 +131,17 @@ test('THE POINT — the two surfaces no longer print the same bare word', () => 
   // The hero may still say NOW — it IS now — but qualified by its source.
   assert.ok(!/>NOW</.test(heroHtml), 'the hero chip must be qualified, not a bare "NOW"');
   assert.match(heroHtml, /OBSERVED · NOW/);
+});
+
+test('outside the plotted band the strip drops the marker, it does not fall back', () => {
+  // 11 PM: no cell of a 6 AM-8 PM strip is "this hour", so the marker is
+  // correctly absent. Absent is not a licence to reprint the bare "NOW" the
+  // hero owns — this is the case that used to make the suite pass by day and
+  // fail by night, and it is now asserted instead of left to the clock.
+  const html = renderHeatmap(23);
+  assert.ok(!/khm-now/.test(html), 'no current-hour marker outside 6 AM-8 PM');
+  assert.ok(!/>NOW</.test(html), 'and still never a bare "NOW"');
+  assert.match(html, /Forecast, not observed conditions/, 'the strip still names its source');
 });
 
 test('an opened forecast hour is labelled Forecast', () => {
