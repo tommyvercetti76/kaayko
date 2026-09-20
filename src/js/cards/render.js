@@ -79,7 +79,7 @@ export const PRINT = Object.freeze({
   textFilter: "",
 });
 
-import { esc } from "/js/kit.js?v=f043974";
+import { esc } from "/js/kit.js?v=f47f629";
 export { esc };
 
 /** Two lines, no more. A third line would collide with the rule under the hook. */
