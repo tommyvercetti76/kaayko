@@ -266,11 +266,17 @@ a { color: inherit; text-decoration: none; }
    model writes, so it works on whichever face is toward you. */
 :root[data-skin="engraved"] .foil { display: none; }
 :root[data-skin="engraved"] .sheen {
-  background: radial-gradient(46% 58% at var(--sx) var(--sy),
-    rgba(255,255,255,.55), rgba(255,255,255,.16) 38%, transparent 68%);
-  opacity: calc(var(--spec) * .30);
-  mix-blend-mode: soft-light;
+  background: radial-gradient(40% 54% at var(--sx) var(--sy),
+    rgba(255,255,255,.92), rgba(255,252,242,.34) 36%, transparent 66%);
+  /* .30 of a soft-light white on cream measured out at 9% opacity, which is
+     invisible. `screen` brightens toward white, which is what a sheet of
+     cotton rag does when the light crosses it. */
+  opacity: calc(var(--spec) * .62);
+  mix-blend-mode: screen;
 }
+/* The back is rotated 180deg about Y, so its local x runs the other way and
+   the glint landed on the wrong edge of the card you are looking at. */
+:root[data-skin="engraved"] .face.back .sheen { transform: scaleX(-1); }
 /* .rim never reaches zero on its own: at --fres 0 it still paints a warm
    hairline, which five cards in a row multiply into a visible gold grid. */
 :root[data-skin="engraved"] .rim { box-shadow: inset 0 0 0 1px rgba(36,31,25,.07); }

@@ -120,6 +120,13 @@ function onTilt(ev) {
   tiltLast = now;
   // 70ms of lead, which is about what the smoothing costs.
   aimFromDevice(att, beta, gamma, dt, { max: MAX_TILT, lead: 0.07 });
+  // The sheen is drawn from `target`, which until now only the pointer wrote.
+  // So the card rotated to the handset and the glint stayed nailed where it
+  // was: the gloss moved only while a finger was dragging, which is exactly
+  // the opposite of how a real card behaves. The lamp is fixed in the room, so
+  // the reflection has to travel as the card turns under it.
+  target.x = 0.5 - att.ty / (MAX_TILT * 2.4);
+  target.y = 0.5 + att.tx / (MAX_TILT * 2.4);
   if (engraved) aimLamp(lampFor(att.ty));
   if (!live) { live = true; card.classList.add('is-live'); }
 }
@@ -142,9 +149,10 @@ function attachTilt() {
 async function askTilt() {
   const D = window.DeviceOrientationEvent, M = window.DeviceMotionEvent;
   if (!D) return false;
+  let granted = true;
   if (typeof D.requestPermission === 'function') {
-    try { if (await D.requestPermission() !== 'granted') return false; }
-    catch (_) { return false; }
+    try { granted = (await D.requestPermission()) === 'granted'; }
+    catch (_) { granted = false; }
   }
   // The gyroscope is a second permission on iOS and it is asked for separately.
   // It is allowed to fail on its own: without it the card still answers the
@@ -152,8 +160,11 @@ async function askTilt() {
   if (M && typeof M.requestPermission === 'function') {
     try { await M.requestPermission(); } catch (_) {}
   }
+  // Bind either way. A refusal simply means no events arrive, and binding
+  // anyway covers the browsers that expose requestPermission without actually
+  // gating on it — of which there are more than there should be.
   attachTilt();
-  return true;
+  return granted;
 }
 
 /* iOS will only hand over the motion sensors inside a user gesture, and it is
