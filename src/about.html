@@ -226,6 +226,15 @@
        through the whole chapter — body included — handing off only when
        the next chapter arrives. With scroll timelines it fades in exactly
        as the big stage title gives way; without them it is simply there. */
+    /* A words-only chapter puts its heading in the body rather than over a
+       picture, so it drops the photo treatment and sits on the page ground. */
+    .stage-copy--plain {
+      position: static; padding: 0; max-width: 46rem;
+      margin: 0 0 clamp(18px, 3vw, 30px);
+      text-shadow: none;
+    }
+    .stage-copy--plain .stage-name { margin: 6px 0 10px; }
+
     .chapter-tab {
       position: sticky; top: 0; z-index: 30;
       height: 0; overflow: visible;
@@ -532,6 +541,37 @@
         <strong>How to get in.</strong> Ask for a code &mdash; it is not exclusivity, it is just how
         small this is. A human sends every invite.
       </p>
+
+      <h2 data-kicon="link">kaay.link</h2>
+      <div class="kicker">QR codes you can change after they are printed</div>
+      <p>
+        A code made in seconds and pointed anywhere, with every scan visible as it happens. No
+        account, and the code can be re-pointed long after the poster is on the wall.
+      </p>
+      <p class="note">
+        <strong>The sticker outlives the campaign.</strong> A printed code cannot be corrected, so
+        the one thing it must carry is an address you will still own in three years. Kaayko keeps the
+        code working; where it goes stays your decision to keep making.
+      </p>
+      <p>
+        <a href="https://kaay.link" rel="noopener noreferrer">Open kaay.link</a>
+      </p>
+
+      <h2 data-kicon="crest">Alumni</h2>
+      <div class="kicker">A school's own alumni portal</div>
+      <p>
+        A directory that stays current because the alumni keep it current &mdash; searchable by batch,
+        employer and city &mdash; with mentorship proposed by a teacher who knows both sides, and
+        reunions people actually turn up to.
+      </p>
+      <p class="note">
+        <strong>Giving is built and not switched on.</strong> Card and UPI payment is written and in
+        testing, and no school gets it until it has been proven end to end. Data stays in India, on
+        Indian infrastructure.
+      </p>
+      <p>
+        <a href="https://kaay.school" rel="noopener noreferrer">Open kaay.school</a>
+      </p>
     </div>
   </main>
 
@@ -542,10 +582,13 @@
       Why are you going out to Kayak in a Blizzard?
       Why are you not using local AI to create art?
       <span data-feature="store">Why are you not buying this overpriced t-shirt? </span>
+      Why is the QR code on a thousand posters pointing at a page you deleted?
+      Why is your alumni list a spreadsheet nobody has opened since 2019?
       Kaayko has answers to problems unearthed.
     </p>
     <div class="actions reveal">
       <a class="btn" href="mailto:help@kaayko.com">help@kaayko.com</a>
+      <a class="link" href="/card">Take a card</a>
       <a class="link" href="https://www.youtube.com/@travelingout" rel="noopener noreferrer">YouTube</a>
     </div>
   </section>
@@ -554,7 +597,10 @@
     <nav aria-label="Footer">
       <a href="/paddlingout">Paddling Out</a>
       <a href="/forge">Forge</a>
+      <a href="https://kaay.link" rel="noopener noreferrer">kaay.link</a>
+      <a href="https://kaay.school" rel="noopener noreferrer">Alumni</a>
       <a href="/store" data-feature="store">Store</a>
+      <a href="/card">The card</a>
       <a href="/privacy">Privacy</a>
     </nav>
     <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
@@ -702,6 +748,30 @@
           { kind: "gate", mode: "access", label: "I have a code" },
           { kind: "gate", mode: "request", label: "Request one", link: true }
         ]
+      },
+      {
+        id: "kaay-link", tone: "a", name: "kaay.link",
+        kicker: "QR codes you can change after they are printed",
+        def: "A code made in seconds and pointed anywhere, with every scan visible as it happens. No account, and it can be re-pointed long after the poster is on the wall.",
+        note: {
+          label: "The sticker outlives the campaign",
+          text: "A printed code cannot be corrected, so the one thing it has to carry is an address you will still own in three years. Kaayko keeps the code working; where it goes stays your decision to keep making."
+        },
+        actions: [
+          { kind: "btn", href: "https://kaay.link", label: "Open kaay.link", external: true }
+        ]
+      },
+      {
+        id: "alumni", tone: "b", name: "Alumni",
+        kicker: "A school's own alumni portal",
+        def: "A directory that stays current because the alumni keep it current — searchable by batch, employer and city — with mentorship proposed by a teacher who knows both sides, and reunions people actually turn up to.",
+        note: {
+          label: "Giving is built and not switched on",
+          text: "Card and UPI payment is written and in testing, and no school gets it until it has been proven end to end. Data stays in India, on Indian infrastructure."
+        },
+        actions: [
+          { kind: "btn", href: "https://kaay.school", label: "Open kaay.school", external: true }
+        ]
       }
     ];
 
@@ -842,11 +912,19 @@
     function buildChapter(def, index) {
       var artWrap = h("div", { class: "stage-art" + (def.frame ? " stage-art--frame" : "")});
 
-      var copy = h("div", { class: "stage-copy"}, [
-        h("p", { class: "stage-kicker", text: ordinal(index) + " · " + def.kicker }),
+      // The name and the description live in the stage, over the picture. A
+      // chapter with no picture has to carry them in its body instead, or it
+      // arrives as a caveat and a button with nothing above them saying what
+      // the thing is.
+      var plain = !def.source;
+      var copy = h("div", { class: plain ? "stage-copy stage-copy--plain reveal" : "stage-copy"}, [
+        // The number is already on the chapter tab. Over a photograph the two
+        // are far apart and it reads as a caption; in a plain body they sit
+        // one above the other and it reads as a mistake.
+        h("p", { class: "stage-kicker", text: plain ? def.kicker : ordinal(index) + " · " + def.kicker }),
         h("h2", { class: "stage-name", text: def.name }),
         h("p", { class: "stage-def", text: def.def }),
-        h("span", { class: "stage-hint", text: "Keep scrolling" })
+        plain ? null : h("span", { class: "stage-hint", text: "Keep scrolling" })
       ]);
 
       var stage = h("div", { class: "stage" }, [
@@ -855,10 +933,16 @@
         copy
       ]);
 
-      var railSlot = h("div", { class: "reveal" }, [h("p", { class: "feed-note", text: "Loading live records…" })]);
+      // Only a chapter that HAS records can be waiting for them. Without this
+      // guard the words-only chapters sat under "Loading live records…"
+      // forever, because the thing that clears it never runs for them.
+      var railSlot = def.source
+        ? h("div", { class: "reveal" }, [h("p", { class: "feed-note", text: "Loading live records…" })])
+        : h("div", {}, []);
 
       var body = h("div", { class: "chapter-body" }, [
         h("div", { class: "body-inner" }, [
+          plain ? copy : null,
           railSlot,
           def.note ? h("div", { class: "note reveal" }, [
             h("span", { class: "note-label", text: def.note.label }),
@@ -868,11 +952,14 @@
         ])
       ]);
 
+      // A chapter with no picture source is words only — kaay.link and Alumni
+      // are both services rather than things to photograph, and an empty
+      // stage where the art should be reads as a chapter that failed to load.
       var section = h("section", { class: "chapter", id: def.id, "data-tone": def.tone, "aria-label": def.name }, [
         h("div", { class: "chapter-tab", "aria-hidden": "true" }, [
           h("span", { text: ordinal(index) + " · " + def.name })
         ]),
-        h("div", { class: "pin" }, [stage]),
+        def.source ? h("div", { class: "pin" }, [stage]) : null,
         body
       ]);
 
@@ -889,6 +976,7 @@
       view.mounted = true;
 
       var def = view.def;
+      if (!def.source) return;                 // words-only chapter
       var src = SOURCES[def.source];
       loadSource(def.source).then(function (items) {
         var lead = pick(items, 1)[0];
