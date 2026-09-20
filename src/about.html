@@ -183,7 +183,22 @@
     .stage-scrim {
       position: absolute; inset: 0; z-index: -1;
       background:
+        /* The copy is left-aligned and the vertical scrim is almost clear at
+           62% height, which is exactly where the name sits — fine over a photo
+           that happens to be dark there, and unreadable over one that is not.
+           This darkens the left third only, so the animal on the right keeps
+           its light and the words keep their contrast whatever is behind them. */
+        linear-gradient(to right, rgba(8, 8, 8, 0.80) 0%, rgba(8, 8, 8, 0.58) 32%, rgba(8, 8, 8, 0.16) 58%, rgba(8, 8, 8, 0) 78%),
         linear-gradient(to top, rgba(8, 8, 8, 0.94) 0%, rgba(8, 8, 8, 0.55) 34%, rgba(8, 8, 8, 0.12) 62%, rgba(8, 8, 8, 0.3) 100%);
+    }
+    @media (max-width: 760px) {
+      /* Narrow, the copy spans the full width and there is no right side to
+         protect, so the wash has to cover all of it. */
+      .stage-scrim {
+        background:
+          linear-gradient(to right, rgba(8, 8, 8, 0.82) 0%, rgba(8, 8, 8, 0.68) 60%, rgba(8, 8, 8, 0.5) 100%),
+          linear-gradient(to top, rgba(8, 8, 8, 0.94) 0%, rgba(8, 8, 8, 0.6) 40%, rgba(8, 8, 8, 0.3) 100%);
+      }
     }
 
     .stage-copy {
@@ -751,6 +766,7 @@
       },
       {
         id: "kaay-link", tone: "a", name: "kaay.link",
+        image: "/assets/cards/art/kortex.png",
         kicker: "QR codes you can change after they are printed",
         def: "A code made in seconds and pointed anywhere, with every scan visible as it happens. No account, and it can be re-pointed long after the poster is on the wall.",
         note: {
@@ -763,6 +779,7 @@
       },
       {
         id: "alumni", tone: "b", name: "Alumni",
+        image: "/assets/cards/art/alumni.png",
         kicker: "A school's own alumni portal",
         def: "A directory that stays current because the alumni keep it current — searchable by batch, employer and city — with mentorship proposed by a teacher who knows both sides, and reunions people actually turn up to.",
         note: {
@@ -916,7 +933,11 @@
       // chapter with no picture has to carry them in its body instead, or it
       // arrives as a caveat and a button with nothing above them saying what
       // the thing is.
-      var plain = !def.source;
+      // A chapter needs a picture. It does not need a live FEED of pictures —
+      // those two got conflated, and the result was two sections with nothing
+      // in them where every other chapter has a full-bleed photograph. Both of
+      // these products already have art: the animal from their own card.
+      var plain = !def.source && !def.image;
       var copy = h("div", { class: plain ? "stage-copy stage-copy--plain reveal" : "stage-copy"}, [
         // The number is already on the chapter tab. Over a photograph the two
         // are far apart and it reads as a caption; in a plain body they sit
@@ -937,7 +958,7 @@
       // guard the words-only chapters sat under "Loading live records…"
       // forever, because the thing that clears it never runs for them.
       var railSlot = def.source
-        ? h("div", { class: "reveal" }, [h("p", { class: "feed-note", text: "Loading live records…" })])
+        ? h("div", { class: "reveal" }, [h("p", { class: "feed-note", text: "Loading live records\u2026" })])
         : h("div", {}, []);
 
       var body = h("div", { class: "chapter-body" }, [
@@ -959,7 +980,7 @@
         h("div", { class: "chapter-tab", "aria-hidden": "true" }, [
           h("span", { text: ordinal(index) + " · " + def.name })
         ]),
-        def.source ? h("div", { class: "pin" }, [stage]) : null,
+        plain ? null : h("div", { class: "pin" }, [stage]),
         body
       ]);
 
@@ -976,7 +997,9 @@
       view.mounted = true;
 
       var def = view.def;
-      if (!def.source) return;                 // words-only chapter
+      // A fixed picture needs no fetching; a rail of live records does.
+      if (def.image) view.artWrap.appendChild(art(def.image, eager));
+      if (!def.source) return;
       var src = SOURCES[def.source];
       loadSource(def.source).then(function (items) {
         var lead = pick(items, 1)[0];
