@@ -193,14 +193,9 @@
   }
 
   const CHECKS = [
-    { key: 'lakeName', label: 'Name the water', focus: 'lakeName',
-      test: () => field('lakeName').value.trim().length >= 2 ? '' : 'Lake or water body name is required.' },
-    { key: 'city', label: 'Nearest town', focus: 'city',
-      test: () => field('city').value.trim().length >= 2 ? '' : 'City or nearest town is required.' },
-    { key: 'region', label: 'State / region', focus: () => field('regionText').hidden ? field('region') : field('regionText'),
-      test: () => regionValue().length >= 2 ? '' : 'State or region is required.' },
-    { key: 'country', label: 'Country', focus: 'country',
-      test: () => field('country').value.trim() ? '' : 'Country is required.' },
+    { key: 'images', label: () => selectedImages.length ? ('Add ' + (MIN_IMAGES - selectedImages.length) + ' more photo' + (MIN_IMAGES - selectedImages.length === 1 ? '' : 's')) : 'Add 2 photos',
+      focus: () => imageDrop,
+      test: () => optimizing ? 'Still optimizing your photos.' : validateImageFiles(selectedImages) },
     { key: 'coords', label: 'Drop the pin', focus: 'lat',
       test: () => {
         const lat = parseCoord(field('lat').value);
@@ -210,9 +205,14 @@
         if (Math.abs(lat) < 0.01 && Math.abs(lng) < 0.01) return 'That pin is in the ocean off Africa. Drop it on the water you mean.';
         return '';
       } },
-    { key: 'images', label: () => selectedImages.length ? ('Add ' + (MIN_IMAGES - selectedImages.length) + ' more photo' + (MIN_IMAGES - selectedImages.length === 1 ? '' : 's')) : 'Add 2 photos',
-      focus: () => imageDrop,
-      test: () => optimizing ? 'Still optimizing your photos.' : validateImageFiles(selectedImages) },
+    { key: 'lakeName', label: 'Name the water', focus: 'lakeName',
+      test: () => field('lakeName').value.trim().length >= 2 ? '' : 'Lake or water body name is required.' },
+    { key: 'city', label: 'Nearest town', focus: 'city',
+      test: () => field('city').value.trim().length >= 2 ? '' : 'City or nearest town is required.' },
+    { key: 'region', label: 'State / region', focus: () => field('regionText').hidden ? field('region') : field('regionText'),
+      test: () => regionValue().length >= 2 ? '' : 'State or region is required.' },
+    { key: 'country', label: 'Country', focus: 'country',
+      test: () => field('country').value.trim() ? '' : 'Country is required.' },
     { key: 'email', label: 'Your email', focus: 'email',
       test: () => {
         if (currentPreference() !== 'email') return '';
@@ -352,6 +352,79 @@
   }
 
   // Adding photos APPENDS to the current selection (so a second picker
+  // ── Location from the photo itself ────────────────────────────────────
+  // These photos are taken standing on the ramp, so the fix baked into the
+  // first one IS the launch point. Read it before compressImage re-encodes
+  // the file and throws EXIF away, place the pin, and let the map do what it
+  // already does: reverse-geocode the place and hand the pin back to be
+  // dragged. Nothing about the upload changes — the bytes that leave the
+  // browser are still stripped.
+  let coordsFromPhoto = false;
+  const photoFix = document.getElementById('photo-fix');
+  const photoFixText = document.getElementById('photo-fix-text');
+
+  function showPhotoFix(note) {
+    if (!photoFix) return;
+    photoFixText.textContent = note;
+    photoFix.classList.add('visible');
+  }
+  function hidePhotoFix() {
+    if (photoFix) photoFix.classList.remove('visible');
+  }
+
+  function fixNote(fix) {
+    const bits = [];
+    if (fix.takenAt) {
+      bits.push('taken ' + fix.takenAt.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }));
+    }
+    if (fix.accuracyM && fix.accuracyM > 0) bits.push('\u00b1' + Math.round(fix.accuracyM) + '\u2009m');
+    return 'Pin placed from your photo' + (bits.length ? ' (' + bits.join(', ') + ')' : '') + '. Drag it if the ramp is a few steps off.';
+  }
+
+  // A pin the person placed themselves always wins; a photo only fills an
+  // empty launch point, or corrects one an earlier photo put there.
+  function mayTakeFixFromPhoto() {
+    if (coordsFromPhoto) return true;
+    return !field('lat').value.trim() && !field('lng').value.trim();
+  }
+
+  async function applyPhotoFix(files) {
+    if (!window.KaaykoExif || !mayTakeFixFromPhoto()) return;
+    let hit = null;
+    try { hit = await window.KaaykoExif.firstGps(files); } catch { return; }
+
+    if (!hit) {
+      // Only worth saying when there is still no pin to speak of.
+      if (!field('lat').value.trim()) {
+        showPhotoFix('No location in these photos. On an iPhone, tap \u201cOptions\u201d in the photo picker and turn Location on, or place the pin on the map below.');
+      }
+      return;
+    }
+    if (!mayTakeFixFromPhoto()) return;
+
+    const fix = hit.fix;
+    coordsFromPhoto = true;
+    writeCoords(fix.lat, fix.lng);
+    centerPin(fix.lat, fix.lng, 17);           // ramp scale, not lake scale
+    touched.add('coords');
+    refreshReadiness();
+    showPhotoFix(fixNote(fix));
+    await reverseFill(fix.lat, fix.lng, { overwrite: true, lock: true });
+    refreshReadiness();
+  }
+
+  if (photoFix) {
+    document.getElementById('photo-fix-clear').addEventListener('click', function () {
+      coordsFromPhoto = false;
+      field('lat').value = '';
+      field('lng').value = '';
+      setLocationLock(false);
+      hidePhotoFix();
+      refreshReadiness();
+      setStatus('Location from the photo removed. Place the pin on the map instead.', '');
+    });
+  }
+
   // visit adds rather than replaces), up to the cap.
   async function addImages(files) {
     let incoming = Array.from(files || []);
@@ -360,6 +433,10 @@
     const room = MAX_IMAGES - selectedImages.length;
     let dropped = 0;
     if (incoming.length > room) { dropped = incoming.length - room; incoming = incoming.slice(0, Math.max(room, 0)); }
+
+    // Before compression: the resize re-encodes through a canvas, which is
+    // exactly what destroys the GPS tag we want.
+    const fixPending = applyPhotoFix(incoming);
 
     optimizing = true;
     imageCount.textContent = 'Optimizing…';
@@ -377,6 +454,8 @@
     syncImageInput();
     renderImagePreviews();
     refreshReadiness();
+    try { await fixPending; } catch { /* the pin is still the user's to place */ }
+
     if (rejected.length) {
       showFieldMessage('images', rejected.length + ' photo' + (rejected.length === 1 ? ' was' : 's were') + ' skipped: not JPEG/PNG/WebP or over 5 MB.');
     } else if (dropped) {

@@ -395,6 +395,19 @@
       border:1px solid rgba(143,188,106,0.4); border-radius:999px; background:transparent;
       color:var(--ok); cursor:pointer; font:inherit; padding:0.35rem 0.7rem;
     }
+    /* The pin came out of the photo, not out of the person — say so, in a
+       colour that is not the green "you are finished" of the locked fields.
+       po-system.css paints these panels with ::before/::after and forces the
+       element's own background transparent, so the colour has to go through
+       its --kc-line / --kc-bg variables rather than background/border-color. */
+    .loc-lock.photo-fix {
+      margin:0 0 0.7rem;
+      --kc-line:rgba(181,147,90,0.38);
+      --kc-bg:rgba(181,147,90,0.10);
+      color:var(--gold-bright); text-transform:none; letter-spacing:0.02em;
+      font-size:0.72rem; line-height:1.45; text-align:left;
+    }
+    .loc-lock.photo-fix button { border-color:rgba(181,147,90,0.5); color:var(--gold-bright); flex:none; }
     .locked input, .locked select { opacity:0.72; pointer-events:none; background:rgba(143,188,106,0.06); border-color:rgba(143,188,106,0.28); }
     /* ── Readiness checklist by the submit button ─────────────────── */
     .todo {

@@ -53,6 +53,48 @@
           <input name="website" type="text" tabindex="-1" autocomplete="off">
         </div>
 
+
+
+
+
+        <div class="field-group" data-field="images">
+          <span class="label-text">Photos<span class="req" aria-hidden="true">*</span></span>
+          <label class="image-drop" id="image-drop" tabindex="0">
+            <input id="images" name="images" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple>
+            <span class="image-drop-main">
+              <span class="image-drop-copy">
+                <strong>Start here &mdash; add 2&ndash;5 photos</strong>
+                <span>Shot at the ramp, a photo carries its own GPS, and the rest of this form fills itself in. Show the water and the launch.</span>
+              </span>
+              <span class="image-count" id="image-count">0 selected</span>
+            </span>
+            <span class="image-previews" id="image-previews" aria-live="polite"></span>
+          </label>
+          <span class="field-msg" id="images-msg" aria-live="polite"></span>
+        </div>
+
+        <div class="field-group" data-field="coords">
+          <span class="label-text">Launch point<span class="req" aria-hidden="true">*</span></span>
+          <div class="coord-row">
+            <input id="lat" name="lat" inputmode="decimal" placeholder="Latitude" aria-label="Latitude">
+            <input id="lng" name="lng" inputmode="decimal" placeholder="Longitude" aria-label="Longitude">
+            <button class="mini-btn" id="find-coords" type="button">Find</button>
+            <button class="mini-btn" id="use-location" type="button">Use my location</button>
+          </div>
+          <div class="loc-lock photo-fix" id="photo-fix" aria-live="polite">
+            <span id="photo-fix-text"></span>
+            <button type="button" id="photo-fix-clear">Clear</button>
+          </div>
+          <div id="pin-map" class="pin-map pp-map" aria-label="Map. Drag the pin to the exact launch point."></div>
+          <p class="pin-hint">A ramp photo usually places this pin by itself. Otherwise <strong>Find</strong> drops one from the name and <strong>Use my location</strong> reads your position once. Either way, <strong>drag the pin</strong> onto the exact put-in.</p>
+          <span class="field-msg" id="coords-msg" aria-live="polite"></span>
+        </div>
+
+        <label data-field="launchHint">
+          <span class="label-text">Launch hint<span class="opt">optional</span></span>
+          <input id="launchHint" name="launchHint" maxlength="160" placeholder="Main public boat ramp, north shore, park entrance">
+        </label>
+
         <label data-field="lakeName">
           <span class="label-text">Lake or water body<span class="req" aria-hidden="true">*</span></span>
           <input id="lakeName" name="lakeName" maxlength="120" placeholder="White Rock Lake" autocomplete="off">
@@ -88,24 +130,6 @@
           <span class="field-msg" id="country-msg" aria-live="polite"></span>
         </label>
 
-        <div class="field-group" data-field="coords">
-          <span class="label-text">Launch point<span class="req" aria-hidden="true">*</span></span>
-          <div class="coord-row">
-            <input id="lat" name="lat" inputmode="decimal" placeholder="Latitude" aria-label="Latitude">
-            <input id="lng" name="lng" inputmode="decimal" placeholder="Longitude" aria-label="Longitude">
-            <button class="mini-btn" id="find-coords" type="button">Find</button>
-            <button class="mini-btn" id="use-location" type="button">Use my location</button>
-          </div>
-          <div id="pin-map" class="pin-map pp-map" aria-label="Map. Drag the pin to the exact launch point."></div>
-          <p class="pin-hint"><strong>Find</strong> drops a pin from the name; <strong>Use my location</strong> reads your position once and fills the place fields. Then <strong>drag the pin</strong> onto the exact put-in.</p>
-          <span class="field-msg" id="coords-msg" aria-live="polite"></span>
-        </div>
-
-        <label data-field="launchHint">
-          <span class="label-text">Launch hint<span class="opt">optional</span></span>
-          <input id="launchHint" name="launchHint" maxlength="160" placeholder="Main public boat ramp, north shore, park entrance">
-        </label>
-
         <div class="grid-two">
           <label>
             <span class="label-text">Parking</span>
@@ -132,21 +156,6 @@
           <textarea id="description" name="description" maxlength="360" placeholder="One useful thing paddlers should know before driving out."></textarea>
         </label>
 
-        <div class="field-group" data-field="images">
-          <span class="label-text">Photos<span class="req" aria-hidden="true">*</span></span>
-          <label class="image-drop" id="image-drop" tabindex="0">
-            <input id="images" name="images" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple>
-            <span class="image-drop-main">
-              <span class="image-drop-copy">
-                <strong>Add 2&ndash;5 photos</strong>
-                <span>Show the water and the launch. JPEG, PNG, WebP or HEIC; big phone photos are resized here first.</span>
-              </span>
-              <span class="image-count" id="image-count">0 selected</span>
-            </span>
-            <span class="image-previews" id="image-previews" aria-live="polite"></span>
-          </label>
-          <span class="field-msg" id="images-msg" aria-live="polite"></span>
-        </div>
 
         <div class="field-group" data-field="contact">
           <span class="label-text">Submit as</span>
@@ -178,6 +187,7 @@
     </section>
   </div>
 
+  <script src="/js/services/exifgps.js"></script>
   <script src="/js/pages/submitentry.js"></script>
   <footer class="site-footer">
     <nav aria-label="Footer">
