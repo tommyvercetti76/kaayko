@@ -12,7 +12,7 @@
       "url": "https://kaay.store",
       "accent": "#8A5A2B",
       "art": "kaayko",
-      "line": "Mithila folk prints on shirts, totes and bottles.",
+      "line": "Store for the rich and disillusioned.",
       "facts": [
         "40 designs",
         "Printed to order",
@@ -28,9 +28,9 @@
       "url": "https://kaayko.com/paddlingout",
       "accent": "#2E6F76",
       "art": "paddlingout",
-      "line": "Seventeen spots scored for wind, water and UV.",
+      "line": "You say, isn't it hard, Paddling out?",
       "facts": [
-        "17 spots",
+        "Curated spots",
         "Scored daily",
         "Free, no signup"
       ]
@@ -60,7 +60,7 @@
       "url": "https://kaayko.com/kortex",
       "accent": "#3B4E8C",
       "art": "kortex",
-      "line": "Make a QR in ten seconds and re-point it later.",
+      "line": "A smarter link for smart audience.",
       "facts": [
         "No account",
         "Route by device",
@@ -71,7 +71,7 @@
       "n": 5,
       "slug": "alumni",
       "name": "Alumni",
-      "hook": "Revisit, and make yourself useful.",
+      "hook": "Is your school, cool?",
       "host": "kaay.school",
       "url": "https://kaay.school",
       "accent": "#4E6B3E",
