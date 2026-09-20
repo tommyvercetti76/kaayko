@@ -4,7 +4,8 @@
  */
 import { front, back, PRINT } from '/js/cards/render.js?v=8fa7d55';
 import { engravedFor, stockOf } from '/js/cards/skins/engraved.js?v=8fa7d55';
-import { readFace, canVibrate, warmArt } from '/js/cards/relief.js?v=8fa7d55';
+import { readFace, warmArt } from '/js/cards/relief.js?v=8fa7d55';
+import { restAngle, rest, step, lampFor } from '/js/cards/attitude.js?v=8fa7d55';
 import { esc, apiBase } from '/js/kit.js?v=8fa7d55';
 
 /* ── the lighting model ────────────────────────────────────────────────────
@@ -55,8 +56,6 @@ function light(px, py) {
   const sy = 50 - (R.y / Math.max(0.15, R.z)) * 46;
 
   const s = card.style;
-  s.setProperty('--rx', rx.toFixed(2) + 'deg');
-  s.setProperty('--ry', ry.toFixed(2) + 'deg');
   s.setProperty('--spec', (0.28 + spec * 0.85).toFixed(3));
   s.setProperty('--fres', Math.min(1, fres * 5).toFixed(3));
   s.setProperty('--hue', ((px - 0.5) * 46).toFixed(1) + 'deg');
@@ -91,10 +90,33 @@ function lampOn() {
   if (!raf) raf = requestAnimationFrame(loop);
 }
 
-function loop() {
-  cur.x += (target.x - cur.x) * 0.14;      // a little inertia; paper has mass
+/* ── how the card hangs ──────────────────────────────────────────────────────
+   A spring, not a lerp. The card has an angular position, a velocity and a
+   rest angle it is being pulled toward; it overshoots slightly and settles,
+   because a stiff little rectangle held in the fingers does exactly that. The
+   old smoothing just slid toward the target and arrived dead, which is why the
+   card felt like a picture of a card.
+
+   On a phone the rest angle comes from the phone's own attitude, REVERSED: tip
+   the handset right and the card rotates left, so it holds its plane while the
+   screen moves around it. That is what makes it read as an object lying in
+   front of you rather than an image painted on the glass.                    */
+const MAX_TILT = 17;       // degrees at full deflection
+
+const att = rest();
+let lastT = 0;
+
+function loop(t) {
+  // Real elapsed time, so the spring behaves the same on a 120Hz phone as on a
+  // 60Hz laptop. Clamped, because a backgrounded tab returns a huge first step.
+  const dt = lastT ? Math.min(0.05, (t - lastT) / 1000) : 1 / 60;
+  lastT = t;
+  cur.x += (target.x - cur.x) * 0.14;
   cur.y += (target.y - cur.y) * 0.14;
   if (lamp) light(cur.x, cur.y);           // foil belongs to the colour card
+  step(att, dt);
+  card.style.setProperty('--rx', att.rx.toFixed(2) + 'deg');
+  card.style.setProperty('--ry', att.ry.toFixed(2) + 'deg');
   raf = requestAnimationFrame(loop);
 }
 
@@ -102,8 +124,51 @@ function aim(e) {
   const r = card.getBoundingClientRect();
   target.x = Math.max(-0.2, Math.min(1.2, (e.clientX - r.left) / r.width));
   target.y = Math.max(-0.6, Math.min(1.6, (e.clientY - r.top) / r.height));
+  att.tx = (0.5 - target.y) * 2 * TILT;
+  att.ty = (target.x - 0.5) * 2 * TILT;
   if (engraved) aimLamp(lampAngle(target.x, target.y));
   if (!live) { live = true; card.classList.add('is-live'); }
+}
+
+/* ── the phone's own attitude ────────────────────────────────────────────────
+   Calibrated to the first reading rather than to an assumed posture: whatever
+   angle the handset is at when the card appears becomes level, so it works
+   lying on a desk, propped on a knee, or held over a table.
+
+   Both axes are NEGATED. Tip the phone right and the card turns left; tip the
+   top away and the card leans toward you. The card is holding still while the
+   screen moves around it.                                                    */
+let tiltRef = null, tiltBound = false;
+
+function onTilt(ev) {
+  const { beta, gamma } = ev;
+  if (beta == null || gamma == null) return;
+  if (!tiltRef) tiltRef = { beta, gamma };      // however you were holding it is level
+  const a = restAngle(tiltRef, beta, gamma, { max: MAX_TILT });
+  att.tx = a.rx;
+  att.ty = a.ry;
+  // The room's lamp is fixed, so turning the card is what rakes it.
+  if (engraved) aimLamp(lampFor(a.ry));
+  if (!live) { live = true; card.classList.add('is-live'); }
+}
+
+function attachTilt() {
+  if (tiltBound || !window.DeviceOrientationEvent) return;
+  tiltBound = true;
+  tiltRef = null;
+  window.addEventListener('deviceorientation', onTilt);
+}
+
+/** iOS grants this only inside a user gesture, so it is called from a click. */
+async function askTilt() {
+  const D = window.DeviceOrientationEvent;
+  if (!D) return false;
+  if (typeof D.requestPermission === 'function') {
+    try { if (await D.requestPermission() !== 'granted') return false; }
+    catch (_) { return false; }
+  }
+  attachTilt();
+  return true;
 }
 
 const fine = matchMedia('(pointer: fine)').matches;
@@ -121,31 +186,13 @@ if (!still) {
     // fenced off inside the loop, so no foil is written.
     window.addEventListener('pointermove', aim, { passive: true });
     window.addEventListener('pointerleave', () => { target = { x: .5, y: .35 }; });
-  } else {
-    // A phone has a better pointer than a pointer: the device itself. There is no
-    // on-screen note about it any more — the copy went when the page was cut back
-    // to four strings, and the line that wrote into it took the whole module down
-    // with a TypeError on every touch device, leaving one blank white card.
-    const onTilt = (ev) => {
-      const g = ev.gamma ?? 0, b = ev.beta ?? 0;
-      target.x = Math.max(0, Math.min(1, 0.5 + g / 46));
-      target.y = Math.max(0, Math.min(1, 0.5 + (b - 42) / 52));
-      // On a phone this IS the gesture: tilting the card to the light, which
-      // is how an emboss has been read since before there were phones.
-      if (engraved) aimLamp(lampAngle(target.x, target.y));
-      if (!live) { live = true; card.classList.add('is-live'); }
-    };
-    if (typeof DeviceOrientationEvent?.requestPermission === 'function') {
-      // iOS asks first. Do it on the same gesture that turns the card.
-      card.addEventListener('click', async function once() {
-        try { if (await DeviceOrientationEvent.requestPermission() === 'granted')
-          window.addEventListener('deviceorientation', onTilt); } catch (_) {}
-        card.removeEventListener('click', once);
-      }, { once: true });
-    } else {
-      window.addEventListener('deviceorientation', onTilt);
-    }
   }
+  // A device with an attitude has a better pointer than a pointer. This is
+  // deliberately NOT inside the else: a tablet has both a fine pointer and a
+  // gyroscope, and gating tilt on the absence of a mouse silently excluded
+  // every one of them. Where no permission is needed it binds now; where iOS
+  // demands a gesture, askTilt runs from the toggle.
+  if (!(typeof DeviceOrientationEvent?.requestPermission === 'function')) attachTilt();
 }
 } catch (err) { console.warn('card: lighting off —', err); }
 
@@ -189,10 +236,16 @@ function setSkin(on, { save = true } = {}) {
   if (save) remember(engraved);
   if (!engraved) { unread(); stopRaking(); }
   if (series.length) { paintMarks(); show(at); }
-  showHint();
+  showHint(tiltBound);
 }
 
-skinBtn.addEventListener('click', (e) => { e.stopPropagation(); setSkin(!engraved); });
+skinBtn.addEventListener('click', async (e) => {
+  e.stopPropagation();
+  setSkin(!engraved);
+  // This click is the user gesture iOS requires, and it is the only reliable
+  // one on the page: tapping the card itself turns it over.
+  if (engraved) { const ok = await askTilt(); showHint(ok); }
+});
 
 /* Whether a phone will actually buzz is not knowable from here.
    navigator.vibrate is absent in every browser on iOS — Safari has never
@@ -204,24 +257,19 @@ skinBtn.addEventListener('click', (e) => { e.stopPropagation(); setSkin(!engrave
    what happens next is the answer: felt it, and the ticks will work; nothing,
    and it is the browser rather than the card. Saying that out loud is better
    than an interface that silently promises something it cannot deliver. */
-function showHint() {
-  if (!engraved) { hintEl.hidden = true; return; }
-  if (!touchy) { hintEl.hidden = false; hintEl.textContent = 'Move across the card to catch the light'; return; }
+function showHint(tiltLive) {
+  // Silence is the goal. A card that tilts in your hand needs no caption; the
+  // hint appears only where the device cannot do it and something has to say so.
+  if (!engraved || tiltLive || tiltBound || !touchy) { hintEl.hidden = true; return; }
   hintEl.hidden = false;
-  hintEl.textContent = canVibrate()
-    ? 'Tilt to catch the light \u00b7 tap to buzz'
-    : 'Tilt to catch the light';
+  hintEl.textContent = 'Motion access is off \u00b7 tap to retry';
 }
 
-hintEl.addEventListener('click', (e) => {
+hintEl.addEventListener('click', async (e) => {
   e.stopPropagation();
-  if (!canVibrate()) {
-    hintEl.textContent = 'No vibration on iOS, in any browser \u00b7 the trace is shown instead';
-    return;
-  }
-  navigator.vibrate([70, 60, 70]);
-  hintEl.textContent = 'Felt nothing? Your browser is blocking it \u00b7 try Chrome';
-  setTimeout(showHint, 5200);
+  const ok = await askTilt();
+  if (ok) showHint(true);
+  else hintEl.textContent = 'This browser will not report motion \u00b7 drag the card instead';
 });
 
 /* ── the series ──────────────────────────────────────────────────────────────
@@ -304,7 +352,7 @@ function paintMarks() {
    This replaces the haptics as the primary answer rather than joining it.
    Haptics were never going to arrive on an iPhone, and a visual that works
    everywhere beats a tick that works in one browser on one platform.         */
-let lamps = [], rakeDeg = 228, rakeTarget = 228, idle = 0, rakeRaf = 0;
+let lamps = [], rakeDeg = 228, rakeTarget = 228, rakeRaf = 0;
 
 function collectLamps() {
   lamps = [];
@@ -334,15 +382,14 @@ function rake(deg) {
 }
 
 function rakeLoop() {
-  // Nobody has touched it for a moment: drift, so the relief is visible to
-  // someone who just opened the page and is not doing anything.
-  if (++idle > 90) rakeTarget = 228 + Math.sin(idle / 150) * 52;
+  // No idle animation. The lamp moves when the card moves and at no other
+  // time — a card that sways on its own while sitting on a desk is a screensaver.
   const d = rakeTarget - rakeDeg;
   if (Math.abs(d) > 0.15) { rakeDeg += d * 0.12; rake(rakeDeg); }
   rakeRaf = requestAnimationFrame(rakeLoop);
 }
 
-function aimLamp(deg) { rakeTarget = deg; idle = 0; }
+function aimLamp(deg) { rakeTarget = deg; }
 
 function startRaking() {
   collectLamps();
@@ -411,8 +458,10 @@ function show(i, { focus = false } = {}) {
   // The stock is named in text, so the one thing separating two cards is never
   // carried by a colour difference a reader may not be able to see.
   stockEl.textContent = engraved ? `${stockOf(c).name} \u00b7 ${stockOf(c).note}` : '';
-  nowEl.innerHTML = `<b>${esc(c.name)}</b>` +
-    `<i><a class="to-product" href="${esc(c.url)}">${esc(c.url.replace('https://', ''))}</a></i>`;
+  // The card prints its own name in 50pt caps directly above this; repeating it
+  // here was the page reading itself out loud. Only the link is not on the card
+  // already — because the one on the card is ink, and this one is a link.
+  nowEl.innerHTML = `<i><a class="to-product" href="${esc(c.url)}">${esc(c.url.replace('https://', ''))}</a></i>`;
   [...marks.children].forEach((b, j) => {
     b.setAttribute('aria-checked', String(j === at));
     b.tabIndex = j === at ? 0 : -1;
