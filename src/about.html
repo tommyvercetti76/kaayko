@@ -109,7 +109,6 @@
       --display: "Bebas Neue", Impact, sans-serif;
     }
 
-    html { scroll-behavior: smooth; }
 
     /* overflow-x: clip, never hidden — hidden turns body into the scroll
        container, window.scroll stops firing, and every scroll-linked effect
@@ -151,227 +150,122 @@
     .topbar-home:hover, .topbar-home:focus-visible { transform: translateX(-4px); }
 
     /* ── Chapter ────────────────────────────────────────────────────── */
-    /* The Apple move: a full-height stage pins while the visitor scrolls
-       through the chapter; its art settles and its copy gives way, then the
-       body slides up over it. One engine drives every chapter. */
+    /* One composition, five times. A bounded two-column hero — the words on
+       one side, a framed picture on the other, the picture crossing to the
+       other side each chapter so the page has a beat — and a body under it.
+
+       Nothing is pinned. The previous engine pinned a 135svh stage, slid the
+       copy away as you scrolled and slid it back as you returned, and let the
+       body ride up over it with a negative margin. On a phone the pinned
+       height changed every time the browser's toolbar collapsed, and the copy
+       arriving from above on the way back up read as a page that had lost its
+       place. Now the document is static, so scrolling up is exactly scrolling
+       down in reverse, and the only scroll-linked motion is a 5% drift on the
+       picture that is symmetric by construction. */
     .chapter { position: relative; }
 
-    /* Shorter pins = less scroll-tax per chapter, especially on phones */
-    .pin { position: relative; height: 135vh; height: 135svh; }
-    @media (min-width: 900px) { .pin { height: 150vh; height: 150svh; } }
+    .hero {
+      padding: clamp(3.5rem, 10vh, 7rem) clamp(1.25rem, 5vw, 3rem) clamp(1.25rem, 3vh, 2rem);
+    }
+    .hero-inner {
+      width: 100%; max-width: 72rem; margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: clamp(2rem, 6vw, 5rem);
+      align-items: center;
+      /* A minimum, never a fixed height: fixed viewport heights are what
+         jumped on a phone as the browser chrome came and went. */
+      min-height: min(74vh, 700px);
+    }
+    .chapter[data-side="left"] .hero-art { order: -1; }
 
-    .stage {
-      position: sticky; top: 0;
-      height: 100vh; height: 100svh;
-      overflow: hidden;
-      display: flex; align-items: flex-end; justify-content: center;
-      isolation: isolate;
+    @media (max-width: 760px) {
+      .hero { padding-top: clamp(2.5rem, 7vh, 4rem); }
+      .hero-inner { grid-template-columns: 1fr; gap: 1.5rem; min-height: 0; }
+      /* The picture sits directly above the words, at a size you would hold
+         it, never a screen away. */
+      .hero-art { order: -1 !important; }
     }
 
-    .stage-art { position: absolute; inset: 0; z-index: -2; }
-    .stage-art img {
-      width: 100%; height: 100%;
+    /* ── The picture ──
+       The same frame whether it holds a printed card or a photograph of a
+       lake: rounded, with weight under it, lit from behind. That is the whole
+       design language of the page — the words change, the picture changes,
+       the frame does not. */
+    .hero-art { position: relative; display: grid; place-items: center; }
+    .hero-art::before {
+      content: ""; position: absolute; inset: -18% -12%; z-index: -1; pointer-events: none;
+      background: radial-gradient(60% 55% at 50% 48%, rgba(60, 56, 48, 0.55) 0%, rgba(10, 10, 10, 0) 70%);
+    }
+    .frame {
+      position: relative; overflow: hidden;
+      border-radius: 14px;
+      background: #0f0f10;
+      box-shadow: 0 44px 90px -34px rgba(0, 0, 0, 0.92), 0 0 0 1px rgba(255, 255, 255, 0.06);
+    }
+    .frame img {
+      display: block; width: 100%; height: 100%;
       object-fit: cover; object-position: center;
       opacity: 0; transition: opacity 700ms ease;
     }
-    .stage-art img.is-loaded { opacity: 1; }
-
-    .stage-art--frame { display: flex; align-items: center; justify-content: center; background: #f2ecdd; }
-    .stage-art--frame img { object-fit: contain; padding: clamp(1rem, 6vw, 4rem); }
-
-    /* A card illustration is an OBJECT, not wallpaper. Stretched to a
-       full-bleed cover it becomes a six-foot piece of clip art floating on a
-       pale panel; set at its own scale in the dark room, with weight under it,
-       it reads as the printed card it actually is. */
-    .stage--plate { background:
-      radial-gradient(120% 90% at 72% 42%, rgba(60, 56, 48, 0.55) 0%, rgba(10, 10, 10, 0) 62%), #0b0b0c; }
+    .frame img.is-loaded { opacity: 1; }
+    /* A card is a portrait object; a photograph is a landscape one. */
+    .frame--plate { width: min(100%, 360px); aspect-ratio: 802 / 1200; }
+    .frame--photo { width: 100%; aspect-ratio: 4 / 3; }
+    /* Forge's renders are drawn on cream and shown whole, not cropped. */
+    .frame--cream { width: 100%; aspect-ratio: 4 / 3; background: #f2ecdd; }
+    .frame--cream img { object-fit: contain; padding: clamp(0.75rem, 3vw, 1.5rem); }
     @media (max-width: 760px) {
-      .stage--plate { background:
-        radial-gradient(110% 55% at 50% 26%, rgba(60, 56, 48, 0.5) 0%, rgba(10, 10, 10, 0) 68%), #0b0b0c; }
+      .frame--plate { width: min(58vw, 260px); }
+      .frame--photo, .frame--cream { aspect-ratio: 16 / 10; }
     }
 
-    .stage-art--plate { display: flex; align-items: center; justify-content: flex-end;
-      padding: 0 clamp(1.5rem, 7vw, 6rem); }
-    .stage-art--plate img {
-      width: auto; height: auto;
-      max-height: min(52svh, 480px);
-      max-width: min(38vw, 380px);
-      object-fit: contain;
-      border-radius: 12px;
-      box-shadow: 0 44px 90px -34px rgba(0, 0, 0, 0.92), 0 0 0 1px rgba(255, 255, 255, 0.05);
-    }
-    @media (max-width: 760px) {
-      /* Narrow, the copy owns the bottom half — the card sits above it, at
-         thumbnail scale, the way you would hold one. */
-      .stage-art--plate { align-items: flex-start; justify-content: center;
-        padding: clamp(4.5rem, 13svh, 7rem) 1.5rem 0; }
-      .stage-art--plate img { max-height: 30svh; max-width: 54vw; }
-    }
-
-    /* Five pinned stages in a row, each lit from the same side with the plate
-       in the same corner, is one idea shown five times. The plate chapters
-       alternate: the emblem crosses to the other side of the room and the
-       light crosses with it, so the scroll has a beat instead of a loop. */
-    .stage--plate-left .stage-art--plate { justify-content: flex-start; }
-    .stage--plate-left { background:
-      radial-gradient(120% 90% at 28% 42%, rgba(60, 56, 48, 0.55) 0%, rgba(10, 10, 10, 0) 62%), #0b0b0c; }
-    @media (min-width: 761px) {
-      /* Desktop only: the copy steps clear of the emblem it now shares a side
-         with. Narrow, the plate is above the copy and there is nothing to clear. */
-      .stage--plate-left .stage-copy { padding-left: clamp(2rem, 40vw, 34rem); }
-    }
-    @media (max-width: 760px) {
-      .stage--plate-left { background:
-        radial-gradient(110% 55% at 50% 26%, rgba(60, 56, 48, 0.5) 0%, rgba(10, 10, 10, 0) 68%), #0b0b0c; }
-      .stage--plate-left .stage-art--plate { justify-content: center; }
-    }
-
-    /* The heavy left wash exists to rescue words off a bright photograph.
-       Over a dark room holding one lit card it is just mud. */
-    .stage--plate .stage-scrim { background:
-      linear-gradient(to top, rgba(8, 8, 8, 0.88) 0%, rgba(8, 8, 8, 0.4) 30%, rgba(8, 8, 8, 0) 58%); }
-
-    /* Legibility scrim — art stays the hero, words stay readable */
-    .stage-scrim {
-      position: absolute; inset: 0; z-index: -1;
-      background:
-        /* The copy is left-aligned and the vertical scrim is almost clear at
-           62% height, which is exactly where the name sits — fine over a photo
-           that happens to be dark there, and unreadable over one that is not.
-           This darkens the left third only, so the animal on the right keeps
-           its light and the words keep their contrast whatever is behind them. */
-        linear-gradient(to right, rgba(8, 8, 8, 0.80) 0%, rgba(8, 8, 8, 0.58) 32%, rgba(8, 8, 8, 0.16) 58%, rgba(8, 8, 8, 0) 78%),
-        linear-gradient(to top, rgba(8, 8, 8, 0.94) 0%, rgba(8, 8, 8, 0.55) 34%, rgba(8, 8, 8, 0.12) 62%, rgba(8, 8, 8, 0.3) 100%);
-    }
-    @media (max-width: 760px) {
-      /* Narrow, the copy spans the full width and there is no right side to
-         protect, so the wash has to cover all of it. */
-      .stage-scrim {
-        background:
-          linear-gradient(to right, rgba(8, 8, 8, 0.82) 0%, rgba(8, 8, 8, 0.68) 60%, rgba(8, 8, 8, 0.5) 100%),
-          linear-gradient(to top, rgba(8, 8, 8, 0.94) 0%, rgba(8, 8, 8, 0.6) 40%, rgba(8, 8, 8, 0.3) 100%);
-      }
-    }
-
-    .stage-copy {
-      position: relative;
-      width: 100%; max-width: 68rem;
-      margin: 0 auto;
-      padding: 0 clamp(1.25rem, 5vw, 3rem) clamp(4.5rem, 12vh, 7rem);
-      text-align: left;
-    }
-
+    /* ── The words ── */
+    .hero-copy { min-width: 0; }
     .stage-kicker { color: var(--gold-bright); font-size: clamp(0.68rem, 1.6vw, 0.78rem); font-style: italic; letter-spacing: 0.3em; text-transform: uppercase; }
-
     .stage-name {
-      margin-top: 0.35rem;
+      margin-top: 0.45rem;
       font-family: var(--display);
-      font-size: clamp(3.4rem, 14vw, 8.5rem);
-      font-weight: 400; letter-spacing: 0.04em; line-height: 0.92;
+      font-size: clamp(2.8rem, 7.4vw, 6.2rem);
+      font-weight: 400; letter-spacing: 0.04em; line-height: 0.94;
       text-transform: uppercase;
     }
-    /* "Paddling Out" is twelve characters and 8.5rem suits it. "School of the
-       Future" is twenty, and at the same size it breaks to three lines and
-       walks off the bottom of the stage. A long name gets a smaller setting —
-       the same decision the printed card makes, for the same reason. */
-    .stage-name--long { font-size: clamp(2.6rem, 9.4vw, 5.6rem); letter-spacing: 0.03em; }
-
-    /* The sentence that says what the thing IS — plainly */
+    .stage-name--long { font-size: clamp(2.1rem, 5.4vw, 4.4rem); letter-spacing: 0.03em; }
     .stage-def {
-      max-width: 34ch;
-      margin-top: clamp(0.8rem, 2.2vh, 1.2rem);
+      max-width: 36ch;
+      margin-top: clamp(0.9rem, 2.2vh, 1.3rem);
       color: rgba(237, 232, 223, 0.88);
-      font-size: clamp(1.05rem, 2.9vw, 1.4rem);
+      font-size: clamp(1.05rem, 2.6vw, 1.35rem);
       font-style: italic;
-      line-height: 1.5;
+      line-height: 1.55;
     }
 
-    .stage-hint {
-      display: inline-block;
-      margin-top: clamp(1rem, 2.6vh, 1.5rem);
-      color: rgba(181, 147, 90, 0.7);
-      font-size: 0.66rem; font-style: italic; letter-spacing: 0.26em; text-transform: uppercase;
-    }
-
-    /* ── Sticky chapter tab ─────────────────────────────────────────────
-       A compact "01 · Paddling Out" that pins under the top bar and stays
-       through the whole chapter — body included — handing off only when
-       the next chapter arrives. With scroll timelines it fades in exactly
-       as the big stage title gives way; without them it is simply there. */
-    /* A words-only chapter puts its heading in the body rather than over a
-       picture, so it drops the photo treatment and sits on the page ground. */
-    .stage-copy--plain {
-      position: static; padding: 0; max-width: 46rem;
-      margin: 0 0 clamp(18px, 3vw, 30px);
-      text-shadow: none;
-    }
-    .stage-copy--plain .stage-name { margin: 6px 0 10px; }
-
-    .chapter-tab {
-      position: sticky; top: 0; z-index: 30;
-      height: 0; overflow: visible;
-      text-align: center; pointer-events: none;
-    }
-    .chapter-tab span {
-      display: inline-block;
-      margin-top: clamp(0.85rem, 2.3vw, 1.25rem);
-      padding: 0.32rem 0.95rem;
-      border: 1px solid var(--line);
-      background: rgba(8, 8, 8, 0.78);
-      color: rgba(217, 189, 123, 0.92);
-      font-size: 0.64rem; font-style: italic;
-      letter-spacing: 0.26em; text-transform: uppercase;
-      white-space: nowrap;
-    }
-
-    /* ── Scroll-linked motion ───────────────────────────────────────────
-       CSS scroll timelines: every scroll animation runs on the compositor,
-       no JavaScript executes during scroll, and each element owns an
-       independent timeline — so no animation can starve or fight another.
-       Browsers without support get the same page with a static pinned hero. */
+    /* ── Scroll-linked motion ──
+       One thing moves with the scroll: the picture drifts 5% across its
+       visibility, on the compositor, with no JavaScript. It is symmetric —
+       the same position for the same scroll offset in either direction — so
+       the way back up is the way down, reversed. Browsers without scroll
+       timelines get the same page, still. */
     @supports (animation-timeline: view()) {
-      .chapter { timeline-scope: --chapter; }
-      .pin { view-timeline: --chapter block; }
-
-      .chapter-tab span {
-        opacity: 0;
-        animation: tab-in both linear;
-        animation-timeline: --chapter;
-        animation-range: contain 35% contain 85%;
+      .hero-art {
+        animation: drift both linear;
+        animation-timeline: view();
+        animation-range: entry 0% exit 100%;
       }
-
-      @keyframes tab-in {
-        from { opacity: 0; transform: translateY(-6px); }
-        to   { opacity: 1; transform: none; }
+      @keyframes drift {
+        from { transform: translateY(5%); }
+        to   { transform: translateY(-5%); }
       }
-
-      .stage-art {
-        animation: stage-settle both linear;
-        animation-timeline: --chapter;
-        animation-range: contain 0% contain 100%;
-      }
-
-      .stage-copy {
-        animation: copy-give both linear;
-        animation-timeline: --chapter;
-        animation-range: contain 30% contain 100%;
-      }
-
-      @keyframes stage-settle {
-        from { transform: scale(1.08); }
-        to   { transform: scale(1) translateY(4%); }
-      }
-
-      @keyframes copy-give {
-        from { opacity: 1; transform: none; }
-        to   { opacity: 0; transform: translateY(-40px); }
+      @media (max-width: 760px) {
+        @keyframes drift {
+          from { transform: translateY(2.5%); }
+          to   { transform: translateY(-2.5%); }
+        }
       }
     }
 
-    /* ── Chapter body: slides up over the pinned stage ──────────────── */
+    /* ── Chapter body ── */
     .chapter-body {
-      position: relative; z-index: 2;
-      margin-top: -30vh; margin-top: -30svh;
       border-top: 1px solid var(--line);
       padding: clamp(2rem, 5vw, 3.25rem) clamp(1.25rem, 5vw, 3rem) clamp(3rem, 7vw, 4.5rem);
     }
@@ -379,7 +273,7 @@
     .chapter[data-tone="b"] .chapter-body { background: #10110d; }
     .chapter[data-tone="c"] .chapter-body { background: #0d0c0a; }
 
-    .body-inner { width: 100%; max-width: 68rem; margin: 0 auto; display: grid; gap: clamp(1.3rem, 3.5vw, 2rem); }
+    .body-inner { width: 100%; max-width: 72rem; margin: 0 auto; display: grid; gap: clamp(1.3rem, 3.5vw, 2rem); }
 
     /* ── Live rail ──────────────────────────────────────────────────── */
     .feed { border: 1px solid var(--line); background: rgba(0, 0, 0, 0.28); overflow: hidden; }
@@ -544,14 +438,9 @@
     .reveal.is-in { opacity: 1; transform: none; }
 
     @media (prefers-reduced-motion: reduce) {
-      html { scroll-behavior: auto; }
       *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
       .reveal { opacity: 1; transform: none; }
-      .stage-art, .stage-copy { animation: none !important; }
-      .chapter-tab span { animation: none !important; opacity: 1 !important; transform: none !important; }
-      .pin { height: auto; }
-      .stage { position: relative; height: 100vh; height: 100svh; }
-      .chapter-body { margin-top: 0; }
+      .hero-art { animation: none !important; transform: none !important; }
     }
 
     /* ── Static chapter fallback ────────────────────────────────────────
@@ -639,8 +528,8 @@
         small this is. A human sends every invite.
       </p>
 
-      <h2 data-kicon="link">kaay.link</h2>
-      <div class="kicker">QR codes you can change after they are printed</div>
+      <h2 data-kicon="link">Kortex</h2>
+      <div class="kicker">The link that can change its mind</div>
       <p>
         A code made in seconds and pointed anywhere, with every scan visible as it happens. No
         account, and the code can be re-pointed long after the poster is on the wall.
@@ -651,11 +540,11 @@
         code working; where it goes stays your decision to keep making.
       </p>
       <p>
-        <a href="https://kaay.link" rel="noopener noreferrer">Open kaay.link</a>
+        <a href="https://kaay.link" rel="noopener noreferrer">Open Kortex</a>
       </p>
 
-      <h2 data-kicon="crest">Alumni</h2>
-      <div class="kicker">A school's own alumni portal</div>
+      <h2 data-kicon="crest">School</h2>
+      <div class="kicker">From Future, Connecting past with present.</div>
       <p>
         A directory that stays current because the alumni keep it current &mdash; searchable by batch,
         employer and city &mdash; with mentorship proposed by a teacher who knows both sides, and
@@ -694,8 +583,8 @@
     <nav aria-label="Footer">
       <a href="/paddlingout">Paddling Out</a>
       <a href="/forge">Forge</a>
-      <a href="https://kaay.link" rel="noopener noreferrer">kaay.link</a>
-      <a href="https://kaay.school" rel="noopener noreferrer">Alumni</a>
+      <a href="https://kaay.link" rel="noopener noreferrer">Kortex</a>
+      <a href="https://kaay.school" rel="noopener noreferrer">School</a>
       <a href="/store" data-feature="store">Store</a>
       <a href="/card">Inventory</a>
       <a href="/privacy">Privacy</a>
@@ -1065,43 +954,32 @@
     function ordinal(i) { return String(i + 1).padStart(2, "0"); }
 
     function buildChapter(def, index) {
-      var artWrap = h("div", { class: "stage-art" + (def.frame ? " stage-art--frame" : "") + (def.image ? " stage-art--plate" : "") });
+      // The picture's frame: a portrait plate for a card, a landscape frame
+      // for a photograph, cream for Forge's renders. mountMedia puts the
+      // image inside it later, so the first paint costs nothing.
+      var kind = def.image ? "frame--plate" : (def.frame ? "frame--cream" : "frame--photo");
+      var artWrap = h("div", { class: "frame " + kind });
 
-      // The name and the description live in the stage, over the picture. A
-      // chapter with no picture has to carry them in its body instead, or it
-      // arrives as a caveat and a button with nothing above them saying what
-      // the thing is.
-      // A chapter needs a picture. It does not need a live FEED of pictures —
-      // those two got conflated, and the result was two sections with nothing
-      // in them where every other chapter has a full-bleed photograph. Both of
-      // these products already have art: the animal from their own card.
-      var plain = !def.source && !def.image;
-      var copy = h("div", { class: plain ? "stage-copy stage-copy--plain reveal" : "stage-copy"}, [
-        // The number is already on the chapter tab. Over a photograph the two
-        // are far apart and it reads as a caption; in a plain body they sit
-        // one above the other and it reads as a mistake.
-        h("p", { class: "stage-kicker", text: plain ? def.kicker : ordinal(index) + " · " + def.kicker }),
+      var copy = h("div", { class: "hero-copy reveal" }, [
+        h("p", { class: "stage-kicker", text: ordinal(index) + " · " + def.kicker }),
         h("h2", { class: "stage-name" + (def.name.length > 14 ? " stage-name--long" : ""), text: def.name }),
-        h("p", { class: "stage-def", text: def.def }),
-        plain ? null : h("span", { class: "stage-hint", text: "Keep scrolling" })
+        h("p", { class: "stage-def", text: def.def })
       ]);
 
-      var stage = h("div", { class: "stage" + (def.image ? " stage--plate" + (def.plateSide === "left" ? " stage--plate-left" : "") : "") }, [
-        artWrap,
-        h("div", { class: "stage-scrim" }),
-        copy
+      var hero = h("div", { class: "hero" }, [
+        h("div", { class: "hero-inner" }, [
+          copy,
+          (def.image || def.source) ? h("div", { class: "hero-art" }, [artWrap]) : null
+        ])
       ]);
 
-      // Only a chapter that HAS records can be waiting for them. Without this
-      // guard the words-only chapters sat under "Loading live records…"
-      // forever, because the thing that clears it never runs for them.
+      // Only a chapter that HAS records can be waiting for them.
       var railSlot = def.source
-        ? h("div", { class: "reveal" }, [h("p", { class: "feed-note", text: "Loading live records\u2026" })])
+        ? h("div", { class: "reveal" }, [h("p", { class: "feed-note", text: "Loading live records…" })])
         : h("div", {}, []);
 
       var body = h("div", { class: "chapter-body" }, [
         h("div", { class: "body-inner" }, [
-          plain ? copy : null,
           railSlot,
           def.note ? h("div", { class: "note reveal" }, [
             def.note.icon ? noteIcon(def.note.icon) : null,
@@ -1114,14 +992,11 @@
         ])
       ]);
 
-      // A chapter with no picture source is words only — kaay.link and Alumni
-      // are both services rather than things to photograph, and an empty
-      // stage where the art should be reads as a chapter that failed to load.
-      var section = h("section", { class: "chapter", id: def.id, "data-tone": def.tone, "aria-label": def.name }, [
-        h("div", { class: "chapter-tab", "aria-hidden": "true" }, [
-          h("span", { text: ordinal(index) + " · " + def.name })
-        ]),
-        plain ? null : h("div", { class: "pin" }, [stage]),
+      // The picture crosses the page every chapter. Odd chapters carry it on
+      // the right, even ones on the left; a stated plateSide overrides.
+      var side = def.plateSide || (index % 2 ? "left" : "right");
+      var section = h("section", { class: "chapter", id: def.id, "data-tone": def.tone, "data-side": side, "aria-label": def.name }, [
+        hero,
         body
       ]);
 

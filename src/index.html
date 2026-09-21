@@ -326,9 +326,9 @@
     }
 
     .footer {
-      /* fixed (not absolute) so ABOUT/YouTube stay pinned with the splash choices
-         instead of scrolling up through them; the opaque .home-content (z-index 9)
-         cleanly covers it as the page scrolls. */
+      /* fixed (not absolute) so ABOUT/Inventory stay pinned with the splash
+         choices. The splash is the page now; there is nothing below it to
+         scroll up through except the site footer. */
       position: fixed;
       left: 0;
       right: 0;
@@ -592,52 +592,19 @@
       }
     }
 
-    /* ── Below-the-fold content ─────────────────────────────────────────
-       The splash above is the first screen. This is the crawlable,
-       readable substance underneath it. It used to live in <noscript>,
-       where Googlebot never saw it because Googlebot renders JS. */
-    .home-content {
-      position: relative;
-      z-index: 9;
-      background: var(--bg);
-      border-top: 1px solid rgba(181, 147, 90, 0.18);
-      padding: clamp(3rem, 8vw, 5rem) clamp(1.15rem, 5vw, 3.2rem) 1rem;
-    }
-    .home-inner { max-width: 46rem; margin: 0 auto; }
-    .home-content h2 {
-      font-family: "Josefin Sans", Arial, sans-serif;
-      font-size: 0.74rem;
-      font-weight: 600;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin: 2.75rem 0 0.85rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid rgba(181, 147, 90, 0.18);
-    }
-    .home-content h2:first-of-type { margin-top: 0; }
-    .home-content p {
-      font-size: clamp(1.06rem, 2.3vw, 1.2rem);
-      line-height: 1.7;
-      color: rgba(237, 232, 223, 0.78);
-      margin: 0 0 1rem;
-    }
-    .home-lede {
-      font-size: clamp(1.2rem, 2.8vw, 1.42rem) !important;
-      color: var(--fg) !important;
-      line-height: 1.58 !important;
-    }
-    .home-content a { color: var(--gold); text-decoration: none;
-      border-bottom: 1px solid rgba(181, 147, 90, 0.4); }
-    .home-content a:hover { color: var(--gold-bright); border-color: var(--gold-bright); }
+    /* The splash is the page. The words about what Kaayko builds live on
+       /about, which the footer links; they used to be repeated here as an
+       essay under the fold, and a landing page that keeps going after the
+       landing is a landing page nobody trusted to land. */
 
+    .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
   </style>
-  <link rel="stylesheet" href="/css/footer.css">
 </head>
 <body>
 
 
   <main class="shell" aria-label="Kaayko landing">
+    <h1 class="sr-only">Kaayko &mdash; Paddling Out, Forge, Kortex, the Store and School</h1>
     <img class="brand-ghost" src="/kaayko-logo-512.png" alt="" aria-hidden="true">
 
     <section class="page active" id="pg-home" aria-label="Kaayko">
@@ -684,79 +651,11 @@
       <a href="https://www.youtube.com/@travelingout" rel="noopener noreferrer" data-feature-off="youtube">YouTube</a>
       <a href="/about">About</a>
       <a href="/card">Inventory</a>
+      <a href="/privacy">Privacy</a>
     </nav>
   </main>
 
-  <section class="home-content" aria-label="About Kaayko">
-    <div class="home-inner">
-      <h1 class="home-lede" style="font-weight:600;letter-spacing:-0.01em">Kaayko builds <span data-feature="store">five</span><span data-feature-off="store">four</span> things, and publishes the failures next to the results.</h1>
 
-      <p>
-        Everything here was made by one person. That is the constraint the whole site is built around:
-        small, honest, and specific rather than broad and vague. There is no team, no funding round, and
-        no roadmap deck &mdash; just <span data-feature="store">five</span><span data-feature-off="store">four</span> products that work, documented including where they don&rsquo;t.
-      </p>
-
-      <h2>Paddling Out</h2>
-      <p>
-        Live paddle-condition scores for <span data-spot-count>21</span> hand-picked lakes, rivers and reservoirs. Wind speed and gusts,
-        air and water temperature, UV index, cloud cover, precipitation and visibility fold into a single
-        Paddle Score from 1 (Danger) to 5 (Excellent), then fixed safety rules trim it further &mdash; wind
-        above 25&nbsp;mph costs two full points, and water below 5&deg;C is penalised hard no matter how good
-        the day looks.
-      </p>
-      <p>
-        The model behind it is a gradient-boosted tree ensemble trained on paddler ratings &mdash; human
-        judgements of real days, never a rule&rsquo;s own output &mdash; and constrained so that more wind and
-        more rain can only ever lower a score, never raise it. Every spot is added by hand, not scraped
-        from a database.
-        The score is a decision aid, not clearance to go out: it cannot see your skill, your equipment,
-        currents, or the hazards at your launch site.
-        <a href="/paddlingout">Browse every spot</a>, or
-        <a href="/paddlingout/methodology">read how the score works, including its limits</a>.
-      </p>
-
-      <h2>Forge</h2>
-      <p>
-        An open-source, local-first AI workstation for Apple Silicon. It runs entirely on your own machine
-        &mdash; no cloud, no API keys, no subscription, and nothing uploaded. Every render in the gallery was
-        produced on-device. Where a benchmark came in under the threshold written down before the run, that
-        result is published too, next to the methodology. A benchmark you can only pass is not a benchmark.
-        <a href="/forge">See what Forge is</a> or
-        <a href="/forge-gallery">browse the render gallery</a>.
-      </p>
-
-      <h2 data-feature="store">The Store</h2>
-      <p data-feature="store">
-        A small run of printed shirts and totes, opened with an invite code. Vote counts decide which
-        designs get printed next. It is invite-only because the run is genuinely small, not because it is
-        exclusive &mdash; a human sends every invite.
-      </p>
-
-      <h2>Why it&rsquo;s built this way</h2>
-      <p>
-        A forecast that hides its uncertainty is worse than no forecast, and a benchmark that only reports
-        wins is marketing. So the Paddle Score ships with a written list of what it cannot measure, and
-        Forge&rsquo;s numbers are published whether or not they cleared the bar.
-        <a href="/about">More about <span data-feature="store">the five products</span><span data-feature-off="store">the four products</span> and who built them</a>,
-        or <a href="/card">take a card</a>.
-      </p>
-    </div>
-  </section>
-
-  <footer class="site-footer">
-    <nav aria-label="Footer">
-      <a href="/paddlingout">Paddling Out</a>
-      <a href="/forge">Forge</a>
-      <a href="https://kaay.link" rel="noopener noreferrer">kaay.link</a>
-      <a href="https://kaay.school" rel="noopener noreferrer">Alumni</a>
-      <a href="/store" data-feature="store">Store</a>
-      <a href="/about">About</a>
-      <a href="/card">Inventory</a>
-      <a href="/privacy">Privacy</a>
-    </nav>
-    <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
-  </footer>
 
 
 

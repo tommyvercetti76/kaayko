@@ -71,7 +71,9 @@ const SETS = {
 // Which set each public page uses. Anything not listed here is a utility,
 // redirect, auth or non-Kaayko-brand surface and is left alone on purpose.
 const PAGES = {
-  'index.html': 'site',
+  // index.html is one fixed screen with its own pinned nav; a shared footer
+  // under it was 131px of scroll that revealed nothing, since the splash
+  // covers it. Not generated there.
   'about.html': 'site',
   'privacy.html': 'site',
   '404.html': 'site',
