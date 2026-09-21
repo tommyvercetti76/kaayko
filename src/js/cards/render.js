@@ -18,6 +18,8 @@ const SANS = "'Josefin Sans',Futura,'Century Gothic',Avenir,sans-serif";
 
 const W = 1050, H = 600;
 const AW = 401;            // 1050 / phi — the art column
+/** The front's art column, for anything that has to draw the animal where the card does. */
+export const ART_COLUMN = Object.freeze({ x: 0, y: 0, w: AW, h: 600 });
 const TX = AW + 56;        // where the words start
 const INK = "#1E1810", MUTE = "#6E5C40", PAPER = "#F5EFE1", CREAM = "#FCFBEA";
 

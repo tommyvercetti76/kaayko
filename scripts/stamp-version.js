@@ -31,6 +31,8 @@ const FILES = [
   'src/js/cards/skins/engraved.js',
   'src/js/cards/relief.js',
   'src/js/cards/attitude.js',
+  'src/js/cards/lamp.js',
+  'src/js/cards/morph.js',
   // kit.js imports /js/util.js; it was the one module below the stamped ones
   // that could still be served stale — exactly the failure this exists for.
   'src/js/kit.js',

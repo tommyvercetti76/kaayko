@@ -17,11 +17,13 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    Kaayko — the card.
 
-   One object, lit properly. The sheen is not a moving gradient pretending to be
-   light: the pointer is a real light position, the card carries a real surface
-   normal once it tilts, and the highlight is where the reflection of that light
-   actually lands (Blinn-Phong half-vector, plus a Schlick Fresnel term for the
-   edges). Foil hue shifts with the angle because that is what foil does.
+   One object, lit by one lamp. The sheen is not a moving gradient pretending
+   to be light: there is a lamp at a point in the room, the card carries its
+   true attitude, and the glint is where the lamp's reflection is actually
+   seen — a plane mirror, solved, in cards/lamp.js. The same lamp dims the
+   sheet as it turns away, lights the rim at grazing angles, and throws the
+   emboss's shadow. Foil hue shifts with the angle because that is what foil
+   does.
 
    On a phone, Inspect picks the card up so it can be turned in the hand. The
    QR stays a QR: it is the one thing on the card you can actually use.
@@ -39,12 +41,22 @@
   --serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
   --sans: 'Josefin Sans', Futura, 'Century Gothic', Avenir, sans-serif;
 
-  /* written by the lighting model, every frame */
-  --sx: 50%; --sy: 30%;      /* where the reflection lands */
-  --spec: 0;                 /* specular strength */
-  --fres: 0;                 /* edge term */
-  --hue: 0deg;               /* foil shift */
-  --rx: 0deg; --ry: 0deg;    /* card attitude */
+  /* Written by the lighting model every frame — and read ONLY by transforms
+     and opacities, which the compositor changes without repainting a pixel.
+     That is the whole of why the card turns smoothly: a frame of turning is
+     a commit of a dozen numbers, never a re-raster of the face. */
+  --gx: 0px; --gy: 0px;              /* the glint, from the face's centre */
+  --ga: 0deg; --g1: 2; --g2: 2;      /* the glint's ellipse: angle and the two radii */
+  --wa: 0deg; --w1: 6; --w2: 6;      /* the wash around it: same centre, wider */
+  --spec: 0; --wash: 0;              /* their strengths */
+  --shade: 0;                        /* Lambert: how far the sheet faces away from the lamp */
+  --fres: 0;                         /* Fresnel at the rim */
+  --hue: 0deg;                       /* foil shift */
+  /* The relief: lit from right / left / below / above. The defaults are the
+     room's lamp on a card at rest, so a page that never runs the frame loop
+     (reduced motion) still shows the emboss rather than a flat sheet. */
+  --lxp: 0; --lxn: .42; --lyp: 0; --lyn: .14;
+  --rx: 0deg; --ry: 0deg;            /* card attitude */
 }
 
 * { box-sizing: border-box; }
@@ -83,14 +95,18 @@ a { color: inherit; text-decoration: none; }
   padding-bottom: max(28px, env(safe-area-inset-bottom));
   isolation: isolate;
 }
-/* the lamp itself — it moves with the pointer, so the room agrees with the card */
+/* the lamp itself — the one light the card is lit by, seen on the wall behind
+   it. It is moved with a transform, never by moving the gradient: repainting
+   a viewport-sized gradient every frame was the second-largest paint on the
+   page, and on a phone it is the whole screen. */
 .room::before {
   content: "";
   position: absolute; inset: -20%;
-  background: radial-gradient(46% 46% at var(--sx) var(--sy),
+  background: radial-gradient(33% 33% at 50% 50%,
     rgba(181, 147, 90, .16), rgba(181, 147, 90, .04) 42%, transparent 70%);
+  transform: translate(var(--lampx, -12vw), var(--lampy, -30vh));
+  will-change: transform;
   z-index: -1; pointer-events: none;
-  transition: opacity .5s ease;
 }
 
 .stage { display: grid; gap: clamp(16px, 3vw, 30px); justify-items: center; align-content: center; width: 100%; max-width: 980px; }
@@ -147,42 +163,70 @@ a { color: inherit; text-decoration: none; }
 .face.back { transform: rotateY(calc(var(--flip, 0deg) + 180deg)); }
 .face img, .face svg { display: block; width: 100%; height: 100%; }
 
-/* Specular. Positioned where the reflected light lands, scaled by (N·H)^n. */
-.sheen {
-  position: absolute; inset: 0; pointer-events: none; border-radius: 10px;
-  background: radial-gradient(var(--sw, 34%) var(--sh, 46%) at var(--sx) var(--sy),
-    rgba(255, 252, 240, .92), rgba(255, 246, 222, .35) 34%, transparent 66%);
-  opacity: calc(var(--spec) * .72);
-  mix-blend-mode: soft-light;
+/* ── what the light does to the face ──────────────────────────────────────
+   Every layer here is its own compositing layer, and every number the model
+   writes lands in a transform or an opacity. Nothing repaints while the card
+   turns: not the face, not the relief, not the drawn card under them. */
+.face > i, .face > .relief { position: absolute; inset: 0; pointer-events: none; border-radius: 10px; }
+.shade, .wash, .sheen, .foil, .rim-lit, .relief > div { will-change: transform, opacity; }
+
+/* Lambert. The whole face dims as it turns away from the lamp and clears as
+   it turns toward it — the term that makes a turned card read as lit rather
+   than merely tilted. A plain wash with an opacity, so it composites the
+   same on either face in every engine. */
+/* The exposure is set for the glint, not the paper: a floor of shade on the
+   whole sheet, so that the lamp's reflection — which cannot be brighter than
+   white on a screen — still stands off the stock around it. A card under one
+   lamp in a dark room does look like this. */
+.shade { background: #1c1610; opacity: calc(.07 + var(--shade) * .6); }
+
+/* The glint, and the wash around it. One Gaussian each, drawn ONCE as a
+   circle a card-width across, and then moved, turned and stretched into the
+   ellipse the model fitted — with a transform, which costs nothing. The
+   stops are exp(-r²/2σ²) at half-sigma steps with σ a fourteenth of the
+   card's width, so a scale of 14σ is the model's sigma exactly. */
+.sheen, .wash {
+  inset: auto; left: 0; top: 50%; width: 100%; aspect-ratio: 1; border-radius: 0;
+  background: radial-gradient(circle closest-side,
+    rgba(255, 252, 240, 1) 0%, rgba(255, 252, 240, .88) 7.1%, rgba(255, 252, 240, .61) 14.3%,
+    rgba(255, 252, 240, .32) 21.4%, rgba(255, 252, 240, .135) 28.6%, rgba(255, 252, 240, .044) 35.7%,
+    rgba(255, 252, 240, .011) 42.9%, rgba(255, 252, 240, 0) 50%);
+  transform: translate(var(--gx), calc(var(--gy) - 50%)) rotate(var(--ga)) scale(var(--g1), var(--g2));
+  opacity: calc(var(--spec) * .62);
 }
-/* Lambert. The whole face dims as it turns away from the room's lamp and
-   clears as it turns toward it — the term that makes a turned card read as
-   lit rather than merely tilted. Written by the lighting model; zero under a
-   pointer, where the card lies flat on the desk. A plain opaque wash with an
-   opacity, so it composites the same on either face in every engine. */
-.shade {
-  position: absolute; inset: 0; pointer-events: none; border-radius: 10px;
-  background: #1c1610;
-  opacity: var(--shade, 0);
-  mix-blend-mode: normal;
+.wash {
+  transform: translate(var(--gx), calc(var(--gy) - 50%)) rotate(var(--wa)) scale(var(--w1), var(--w2));
+  opacity: calc(var(--wash) * .22);
 }
-/* The foil. Gold does not brighten evenly — it shifts hue across the sweep. */
+/* The foil. Gold does not brighten evenly — it shifts hue across the sweep.
+   Oversized so that turning it never shows a corner. */
 .foil {
-  position: absolute; inset: 0; pointer-events: none; border-radius: 10px;
-  background: linear-gradient(calc(74deg + var(--hue)),
+  inset: -30%; border-radius: 0;
+  background: linear-gradient(74deg,
     transparent 34%, rgba(255, 226, 150, .40) 46%,
     rgba(255, 250, 232, .58) 50%, rgba(198, 150, 92, .40) 55%, transparent 68%);
+  transform: rotate(var(--hue));
   opacity: calc(var(--spec) * .5);
   mix-blend-mode: overlay;
 }
-/* Fresnel: grazing angles reflect more, so the rim lights up as the card turns. */
-.rim {
-  position: absolute; inset: 0; pointer-events: none; border-radius: 10px;
-  box-shadow: inset 0 0 0 1px rgba(255, 244, 214, calc(.10 + var(--fres) * .55)),
-              inset 0 0 26px rgba(255, 240, 200, calc(var(--fres) * .22));
+/* Fresnel: grazing angles reflect more, so the rim lights up as the card
+   turns. A still hairline, and a lit one whose opacity is the term. */
+.rim { box-shadow: inset 0 0 0 1px rgba(255, 244, 214, .10); }
+.rim-lit {
+  box-shadow: inset 0 0 0 1px rgba(255, 244, 214, .55), inset 0 0 26px rgba(255, 240, 200, .22);
+  opacity: var(--fres);
 }
+/* The relief, engraved only: four stills of the emboss, each lit from one
+   side, each shown by as much as the lamp is on that side. See
+   cards/skins/engraved.js for why four pictures and not one lamp. */
+.relief { overflow: hidden; }
+.relief > div { position: absolute; inset: 0; }
+.relief svg { display: block; width: 100%; height: 100%; }
+.relief [data-dir="xp"] { opacity: calc(var(--lxp) * 1.7); }
+.relief [data-dir="xn"] { opacity: calc(var(--lxn) * 1.7); }
+.relief [data-dir="yp"] { opacity: calc(var(--lyp) * 1.7); }
+.relief [data-dir="yn"] { opacity: calc(var(--lyn) * 1.7); }
 .grain {
-  position: absolute; inset: 0; pointer-events: none; border-radius: 10px;
   opacity: .16; mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
 }
@@ -235,37 +279,22 @@ a { color: inherit; text-decoration: none; }
 @media(max-width: 600px){ .mode-stage { width: 26px; height: 36px; } }
 .mode img {
   position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain;
-  transform-origin: 50% 88%;               /* the stem: the rose grows from the crown */
-  transition: opacity .34s ease, transform .5s cubic-bezier(.2,.8,.2,1);
+  transition: opacity .18s ease;
 }
 /* Two resting states. The skull is the set in colour; the rose is the set
-   engraved. Between them the rose grows out of the skull's crown, which is
-   the one transformation the two share, drawn by the same hand. */
-.mode-mid { opacity: 0; }
-.mode-rose { opacity: 0; transform: scale(.86) rotate(-10deg); }
-.mode[data-mode="rose"] .mode-skull { opacity: 0; transform: scale(.9) translateY(4px); transition-delay: 0s; }
-.mode[data-mode="rose"] .mode-rose  { opacity: 1; transform: none; transition-delay: .52s, .52s; }
-.mode[data-mode="skull"] .mode-skull { transition-delay: .52s, .52s; }
-.mode[data-mode="skull"] .mode-rose  { transition-delay: 0s; }
-/* The bloom. The midpoint rises through the crossover and is gone by the
-   time the rose opens; the stage breathes a little gold at the moment the
-   two meet. Runs only when the button is pressed, never on load. */
-.mode-stage.is-morphing .mode-mid { animation: bloom .9s ease both; }
-.mode-stage.is-morphing { animation: breathe .9s ease both; }
-@keyframes bloom {
-  0%   { opacity: 0; transform: scale(.92) translateY(3px); }
-  38%  { opacity: 1; transform: none; }
-  62%  { opacity: 1; transform: none; }
-  100% { opacity: 0; transform: scale(1.04) translateY(-3px); }
+   engraved. Between them, when a person presses it, the skull comes apart
+   into gold dust and settles as the rose — see cards/morph.js. While the
+   dust is in the air neither drawing is on the page; the rose comes back
+   under the last of it. */
+.mode-rose { opacity: 0; }
+.mode[data-mode="rose"] .mode-skull { opacity: 0; }
+.mode[data-mode="rose"] .mode-rose  { opacity: 1; }
+.mode .mode-stage.is-dusting img { opacity: 0; }
+.mode-dust {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 300%; height: 300%; pointer-events: none; opacity: 0;
 }
-@keyframes breathe {
-  0%, 100% { filter: drop-shadow(0 0 0 rgba(214,183,120,0)); }
-  50%      { filter: drop-shadow(0 0 10px rgba(214,183,120,.55)); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .mode img { transition: opacity .2s ease; transform: none !important; }
-  .mode-stage.is-morphing, .mode-stage.is-morphing .mode-mid { animation: none; }
-}
+@media (prefers-reduced-motion: reduce) { .mode-dust { display: none; } }
 
 /* ── inspect ────────────────────────────────────────────────────────── */
 .hint { display: flex; gap: 14px; align-items: center; }
@@ -312,7 +341,7 @@ a { color: inherit; text-decoration: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .card, .face { transition: none; }
-  .sheen, .foil { display: none; }
+  .sheen, .wash, .foil, .shade { display: none; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -352,33 +381,18 @@ a { color: inherit; text-decoration: none; }
 }
 /* Foil is the one thing an engraver never sells: gone, not dimmed. The sheen
    stays, because cotton rag does catch the light — it just catches it white
-   and softly instead of gold and hard, and it is what makes the relief read as
-   relief while the card turns. It rides on the same --sx/--sy the lighting
-   model writes, so it works on whichever face is toward you. */
+   and softly instead of gold and hard. Satin paper is two lobes, a glint and
+   the wash round it, and both come from the same lamp: the model writes one
+   centre and two ellipses. No blend mode, deliberately: the card is inside
+   transform-style: preserve-3d with backface-visibility on each face, and
+   WebKit drops mix-blend-mode in that situation — which is why the front
+   glistened and the back did not, on a browser that is WebKit underneath. */
 :root[data-skin="engraved"] .foil { display: none; }
-:root[data-skin="engraved"] .sheen {
-  /* Cotton rag under one lamp: a broad, white, soft wash that stretches into
-     a streak as the sheet goes oblique — the radii come from the lighting
-     model, not from here. */
-  background: radial-gradient(calc(var(--sw, 34%) * 1.25) calc(var(--sh, 46%) * 1.2) at var(--sx) var(--sy),
-    rgba(255,255,255,.92), rgba(255,253,246,.36) 38%, transparent 68%);
-  opacity: calc(var(--spec) * .78);
-  /* NO blend mode, deliberately. The card is inside transform-style:
-     preserve-3d with backface-visibility on each face, and WebKit drops
-     mix-blend-mode in that situation — which is why the front glistened and
-     the back did not, on a browser that is WebKit underneath. A plain white
-     wash composites the same way in every engine and on either face. */
-  mix-blend-mode: normal;
-}
-/* That face is rotated 180deg about Y, so its local x runs the other way and
-   the glint sat on the wrong edge of the card you are looking at. Mirrored in
-   the gradient rather than with a transform: another transform inside a 3D
-   context is the last thing this needs. */
-:root[data-skin="engraved"] .face.back .sheen {
-  background: radial-gradient(calc(var(--sw, 34%) * 1.25) calc(var(--sh, 46%) * 1.2) at calc(100% - var(--sx)) var(--sy),
-    rgba(255,255,255,.84), rgba(255,253,246,.32) 38%, transparent 68%);
-}
-/* The tooth blends too, for the same reason. */
+:root[data-skin="engraved"] .sheen { opacity: calc(var(--spec) * .92); }
+:root[data-skin="engraved"] .wash  { opacity: calc(var(--wash) * .38); }
+:root[data-skin="engraved"] .shade { opacity: calc(.10 + var(--shade) * .62); }
+/* The model computes in the frame of whichever face is up, so nothing here
+   is mirrored for the back: the numbers arrive already in that face's own x. */
 
 /* .rim never reaches zero on its own: at --fres 0 it still paints a warm
    hairline, which five cards in a row multiply into a visible gold grid. */
@@ -466,9 +480,9 @@ a { color: inherit; text-decoration: none; }
        in the corner, out of the column, so it never moves the card. -->
   <button type="button" class="mode" id="skin" aria-pressed="false" aria-label="American Psycho" data-mode="skull">
     <span class="mode-stage" id="skin-stage" aria-hidden="true">
-      <img class="mode-skull" src="/assets/card/skull.webp" alt="" width="30" height="42" decoding="async">
-      <img class="mode-mid"   src="/assets/card/skullrose.webp" alt="" width="30" height="42" decoding="async">
-      <img class="mode-rose"  src="/assets/card/rose.webp" alt="" width="30" height="42" decoding="async">
+      <img class="mode-skull" id="mode-skull" src="/assets/card/skull.webp" alt="" width="30" height="42" decoding="async">
+      <img class="mode-rose"  id="mode-rose"  src="/assets/card/rose.webp" alt="" width="30" height="42" decoding="async">
+      <canvas class="mode-dust" id="mode-dust" width="90" height="126"></canvas>
     </span>
   </button>
 
@@ -487,12 +501,14 @@ a { color: inherit; text-decoration: none; }
            aria-label="The Kaayko card. Activate to turn it over.">
         <div class="face front">
           <div id="face-front" role="img" aria-label="Front of the Kaayko card"></div>
-          <i class="shade"></i><i class="foil"></i><i class="sheen"></i><i class="grain"></i><i class="rim"></i>
+          <div class="relief" aria-hidden="true"></div>
+          <i class="shade"></i><i class="foil"></i><i class="wash"></i><i class="sheen"></i><i class="grain"></i><i class="rim"></i><i class="rim-lit"></i>
           <i class="stylus" aria-hidden="true"></i>
         </div>
         <div class="face back">
           <div id="face-back" role="img" aria-label="Back of the Kaayko card"></div>
-          <i class="shade"></i><i class="foil"></i><i class="sheen"></i><i class="grain"></i><i class="rim"></i>
+          <div class="relief" aria-hidden="true"></div>
+          <i class="shade"></i><i class="foil"></i><i class="wash"></i><i class="sheen"></i><i class="grain"></i><i class="rim"></i><i class="rim-lit"></i>
           <i class="stylus" aria-hidden="true"></i>
         </div>
       </div>

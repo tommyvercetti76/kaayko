@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-const { wrap180, clamp, oneEuro, smoothDamp, rest, step, aimFromDevice, feedRate, lampFor } =
+const { wrap180, clamp, oneEuro, smoothDamp, rest, step, aimFromDevice, feedRate } =
   await import('/js/cards/attitude.js');
 
 const FRAME = 1 / 60;
@@ -176,12 +176,6 @@ test('END TO END — a shaky hand holding still leaves the card still', () => {
   assert.ok(spread(tail) < 0.35,
     `the card still wanders ${spread(tail).toFixed(2)}° with a still hand`);
 });
-
-test('the lamp swings with the card, since the room light is fixed', () => {
-  assert.ok(lampFor(10) > lampFor(-10));
-  assert.equal(lampFor(0), 228);
-});
-
 /* ── the gyroscope lead ──────────────────────────────────────────────────────
    Every smoother costs lag. On a wrist flick that lag is the difference
    between an object and a recording of one, and it is the thing that cannot be

@@ -183,6 +183,3 @@ export function step(a, dt, { smoothTime = 0.12 } = {}) {
   a.ry = smoothDamp(a.ry, a.ty, a.vy, smoothTime, d);
   return a;
 }
-
-/** Where the lamp sits for a card at this attitude. The room's light is fixed. */
-export const lampFor = (ry, base = 228, sweep = 3.2) => base + ry * sweep;

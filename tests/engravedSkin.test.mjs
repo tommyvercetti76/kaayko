@@ -160,7 +160,7 @@ test('a card nobody planned for still gets a stock rather than a crash', () => {
   const s = engravedFor({ slug: 'a-sixth-thing' }, PRINT);
   assert.ok(s.paper.startsWith('#'));
   assert.equal(stockOf({ slug: 'a-sixth-thing' }).name, 'Bone');
-  assert.ok(!/[^a-z0-9-]/.test(s.artFilter.slice(5, -1).replace(/-(deboss|raise)$/, '').replace(/^kx-/, '')));
+  assert.ok(!/[^a-z0-9-]/.test(s.artFilter.slice(5, -1).replace(/-(impress|deboss|raise)$/, '').replace(/^kx-/, '')));
 });
 
 test('a slug that is trying to break out of the filter id cannot', () => {

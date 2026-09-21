@@ -2,120 +2,89 @@
  * pages/card.js — the collectible card (/card): lighting model, flip, inspect, QR.
  * Moved out of card.html on 12 Sep 2026 unchanged.
  */
-import { front, back, PRINT, BACK, ART_EXTENT } from '/js/cards/render.js?v=ce7d26a';
-import { engravedFor, stockOf } from '/js/cards/skins/engraved.js?v=ce7d26a';
+import { front, back, PRINT, BACK, ART_EXTENT, ART_COLUMN } from '/js/cards/render.js?v=ce7d26a';
+import { engravedFor, stockOf, reliefArt, reliefType, DIRS } from '/js/cards/skins/engraved.js?v=ce7d26a';
 import { readFace, warmArt } from '/js/cards/relief.js?v=ce7d26a';
-import { rest, step, lampFor, wrap180, clamp } from '/js/cards/attitude.js?v=ce7d26a';
+import { rest, step, clamp } from '/js/cards/attitude.js?v=ce7d26a';
+import { lightFace, pointerLamp, v } from '/js/cards/lamp.js?v=ce7d26a';
+import { dustMorph } from '/js/cards/morph.js?v=ce7d26a';
 import { esc, apiBase } from '/js/kit.js?v=ce7d26a';
 
-/* ── the lighting model ────────────────────────────────────────────────────
-   Blinn-Phong with a Schlick Fresnel term. The pointer is a light at (lx, ly)
-   a little way above the card; the card's normal comes from its own tilt. The
-   highlight is drawn where the reflection actually lands, not where the cursor
-   happens to be, which is why it slides the "wrong" way as the card turns.   */
+/* ── the light ─────────────────────────────────────────────────────────────
+   One lamp. Everything the eye reads as light on this card — the glint, its
+   shape, the wash round it, how dark the sheet goes as it turns away, the
+   rim at a grazing angle, which way the emboss throws its shadow, the glow
+   on the wall behind — is one function of that lamp and the card's true
+   attitude, solved in cards/lamp.js and checked there against a brute-force
+   render. It used to be three unrelated formulas that happened to move at
+   the same time, and it read that way.
+
+   On a desk the lamp is the pointer, a little above the sheet; the card leans
+   to face it. In the hand the lamp is fixed in the room, above and to the
+   left, and the card turns under it.
+
+   What this writes is a dozen CSS custom properties, and every one of them
+   lands in a transform or an opacity. The face is never repainted by light.  */
 
 const card = document.getElementById('card');
 const room = document.getElementById('room');
-const TILT = 11;              // degrees of attitude at the edges
-const LIGHT_H = 1.35;         // how high the lamp sits, in card widths
-const SHINE = 42;             // specular exponent — higher is a tighter hotspot
-const F0 = 0.045;             // reflectance at normal incidence, for paper with foil
+const cardWrap = card.parentElement;
+const TILT = 11;                            // degrees the card leans toward the pointer
+// Card widths from the centre; y is down, z toward you. Near, and only a
+// little above the sheet's middle, on purpose: a desk lamp is five card
+// widths off and its glint crosses a turned card in a flash, which is true
+// and unwatchable. This close, a turn of thirty degrees walks the glint
+// from one edge to the other, and it sits on the sheet at rest.
+const ROOM_LAMP = v(-0.42, -0.14, 0.9);
+const LIFT = 1.06;                          // the card's scale while held
+const PERSPECTIVE = parseFloat(getComputedStyle(cardWrap).perspective) || 1400;
 
-const v = (x, y, z) => ({ x, y, z });
-const norm = (a) => { const m = Math.hypot(a.x, a.y, a.z) || 1; return v(a.x/m, a.y/m, a.z/m); };
-const dot = (a, b) => a.x*b.x + a.y*b.y + a.z*b.z;
+let eye = v(0, 0, PERSPECTIVE / 600), cardW = 600, cardBox = null, roomBox = null;
+/** Where the eye is, in card widths: the CSS perspective over the card's real width. */
+function measure() {
+  cardBox = cardWrap.getBoundingClientRect();
+  roomBox = room.getBoundingClientRect();
+  cardW = cardBox.width || 600;
+  eye = v(0, 0, PERSPECTIVE / cardW);
+}
+measure();
+window.addEventListener('resize', measure);
 
 let raf = 0, target = { x: .5, y: .35 }, cur = { x: .5, y: .35 }, live = false;
 
-function light(px, py) {
-  // Attitude: the card leans toward the light.
-  const rx = (0.5 - py) * 2 * TILT;
-  const ry = (px - 0.5) * 2 * TILT;
-  const rxr = rx * Math.PI / 180, ryr = ry * Math.PI / 180;
-
-  // Surface normal after that rotation.
-  const N = norm(v(Math.sin(ryr), -Math.sin(rxr), Math.cos(rxr) * Math.cos(ryr)));
-  const V = v(0, 0, 1);                                   // viewer, straight on
-  const L = norm(v((px - 0.5) * 2, (0.5 - py) * 2, LIGHT_H));
-  const H = norm(v(L.x + V.x, L.y + V.y, L.z + V.z));     // half-vector
-
-  const spec = Math.pow(Math.max(0, dot(N, H)), SHINE);
-  const nv = Math.max(0, dot(N, V));
-  const fres = F0 + (1 - F0) * Math.pow(1 - nv, 5);        // Schlick
-
-  // Where the reflection lands on the card face: mirror the light about N.
-  const d = 2 * dot(L, N);
-  const R = v(d * N.x - L.x, d * N.y - L.y, d * N.z - L.z);
-  const sx = 50 + (R.x / Math.max(0.15, R.z)) * 46;
-  const sy = 50 - (R.y / Math.max(0.15, R.z)) * 46;
-
+/** Light the card at this attitude, and the room behind it. */
+function lit(rx, ry, lift) {
+  const lamp = (fine && !inspecting) ? pointerLamp(cur.x, cur.y) : ROOM_LAMP;
+  const o = lightFace({
+    rx, ry, lamp, eye, lift,
+    // Paper: a soft glint in a broad wash. Foil: a tighter, harder one.
+    shine: engraved ? 46 : 90, soft: engraved ? 9 : 14, f0: 0.045, gain: engraved ? 30 : 24,
+  });
   const s = card.style;
-  s.setProperty('--spec', (0.28 + spec * 0.85).toFixed(3));
-  s.setProperty('--fres', Math.min(1, fres * 5).toFixed(3));
-  s.setProperty('--hue', ((px - 0.5) * 46).toFixed(1) + 'deg');
-  s.setProperty('--sx', sx.toFixed(1) + '%');
-  s.setProperty('--sy', sy.toFixed(1) + '%');
-  s.setProperty('--sw', '34%'); s.setProperty('--sh', '46%'); s.setProperty('--shade', '0');
-  room.style.setProperty('--sx', (px * 100).toFixed(1) + '%');
-  room.style.setProperty('--sy', (py * 100).toFixed(1) + '%');
+  const px = (n) => (n * cardW).toFixed(1) + 'px';
+  // The glint's ellipse. The gradient's own sigma is a fourteenth of the card's
+  // width (see .sheen), so a scale of 14σ is the model's sigma exactly.
+  s.setProperty('--gx', px(o.gx)); s.setProperty('--gy', px(o.gy));
+  s.setProperty('--ga', o.angle.toFixed(1) + 'deg');
+  s.setProperty('--g1', (o.s1 * 14).toFixed(3)); s.setProperty('--g2', (o.s2 * 14).toFixed(3));
+  s.setProperty('--wa', o.wangle.toFixed(1) + 'deg');
+  s.setProperty('--w1', (o.w1 * 14).toFixed(3)); s.setProperty('--w2', (o.w2 * 14).toFixed(3));
+  s.setProperty('--spec', o.peak.toFixed(3)); s.setProperty('--wash', o.peak.toFixed(3));
+  s.setProperty('--shade', o.shade.toFixed(3));
+  s.setProperty('--fres', Math.min(1, o.fres * 5).toFixed(3));
+  s.setProperty('--hue', (o.L.x * 46).toFixed(1) + 'deg');
+  // The relief: how much of each still shows is how far the lamp is on that side.
+  s.setProperty('--lxp', o.weights.xp.toFixed(3)); s.setProperty('--lxn', o.weights.xn.toFixed(3));
+  s.setProperty('--lyp', o.weights.yp.toFixed(3)); s.setProperty('--lyn', o.weights.yn.toFixed(3));
+  // The glow on the wall: the lamp itself, seen from the eye, on the desk's plane.
+  if (cardBox && roomBox) {
+    const k = eye.z / Math.max(0.2, eye.z - lamp.z);
+    const lx = cardBox.left + cardBox.width / 2 + lamp.x * cardW * k - (roomBox.left + roomBox.width / 2);
+    const ly = cardBox.top + cardBox.height / 2 + lamp.y * cardW * k - (roomBox.top + roomBox.height / 2);
+    room.style.setProperty('--lampx', lx.toFixed(1) + 'px');
+    room.style.setProperty('--lampy', ly.toFixed(1) + 'px');
+  }
 }
-
-/* ── the room's lamp ─────────────────────────────────────────────────────
-   light() above treats the POINTER as the lamp, which is right for a mouse
-   hovering a card on a desk. A card held up and turned in the hand is lit by
-   a lamp that does not move: it is the card that turns under it. So this
-   takes the card's true attitude — the full angle, not the ±11° a pointer
-   implies — and a lamp fixed above-left and in front, and asks the same
-   Blinn-Phong where the reflection lands and how bright it is.
-
-   Paper is not foil. The engraved set gets a broader, softer exponent, so
-   its highlight is a wash across the sheet rather than a hot point.        */
-const LAMP = norm(v(-0.45, 0.62, 1.35));   // card widths from the centre; +y is up
-const SHINE_PAPER = 11;
-
-function lightFromAttitude(rxDeg, ryDeg) {
-  const rxr = rxDeg * Math.PI / 180, ryr = ryDeg * Math.PI / 180;
-  const N = norm(v(Math.sin(ryr) * Math.cos(rxr), -Math.sin(rxr), Math.cos(rxr) * Math.cos(ryr)));
-  const V = v(0, 0, 1);
-  const H = norm(v(LAMP.x + V.x, LAMP.y + V.y, LAMP.z + V.z));
-  const nv = Math.max(0, dot(N, V));
-  const spec = Math.pow(Math.max(0, dot(N, H)), engraved ? SHINE_PAPER : SHINE);
-  const fres = F0 + (1 - F0) * Math.pow(1 - nv, 5);
-  // Lambert. On cream paper a white glint has nowhere to go — the sheet is
-  // already nearly white — so the shine has to be read by CONTRAST: the face
-  // dims as it turns away from the lamp and brightens as it turns toward it,
-  // and the glint sits on top of that. This is the term that makes a turned
-  // card look lit rather than merely tilted.
-  const diff = Math.max(0, dot(N, LAMP));
-  const shade = Math.min(0.5, Math.max(0, (1 - diff) * 0.62));
-
-  // Mirror the lamp about the normal; where that ray meets the plane is the
-  // glint. At grazing angles it runs off the edge — a tilted sheet reflects
-  // the lamp past you, not at you.
-  const d = 2 * dot(LAMP, N);
-  const R = v(d * N.x - LAMP.x, d * N.y - LAMP.y, d * N.z - LAMP.z);
-  const rz = Math.max(0.12, R.z);
-  const sx = 50 + (R.x / rz) * 46;
-  const sy = 50 - (R.y / rz) * 46;
-  // A highlight on a turned sheet is a streak, not a spot: it stretches
-  // along the axis the card is turning on as the surface goes oblique.
-  const stretch = 1 + 1.7 * (1 - nv);
-
-  const s = card.style;
-  s.setProperty('--spec', (0.22 + spec * 0.95).toFixed(3));
-  s.setProperty('--fres', Math.min(1, fres * 5).toFixed(3));
-  s.setProperty('--hue', ((ryDeg / 90) * 46).toFixed(1) + 'deg');
-  s.setProperty('--sx', sx.toFixed(1) + '%');
-  s.setProperty('--sy', sy.toFixed(1) + '%');
-  s.setProperty('--sw', (34 * stretch).toFixed(1) + '%');
-  s.setProperty('--sh', (46 * (1 + 0.3 * (stretch - 1))).toFixed(1) + '%');
-  s.setProperty('--shade', shade.toFixed(3));
-  room.style.setProperty('--sx', (50 + LAMP.x * 40).toFixed(1) + '%');
-  room.style.setProperty('--sy', (50 - LAMP.y * 40).toFixed(1) + '%');
-}
-
-/** Where the lamp should sit for a pointer at (px, py) over the card. */
-const lampAngle = (px, py) => 180 + Math.atan2(0.5 - py, px - 0.5) * 180 / Math.PI;
 
 /* ── how the card hangs ──────────────────────────────────────────────────────
    The arithmetic is in cards/attitude.js, where it can be tested: a
@@ -133,12 +102,6 @@ function loop(t) {
   lastT = t;
   cur.x += (target.x - cur.x) * 0.14;
   cur.y += (target.y - cur.y) * 0.14;
-  // light() always runs now. What it writes is the same either way; which of
-  // those layers is visible is the stylesheet's business, and the engraved skin
-  // hides the foil and neutralises the sheen. Gating the whole function was how
-  // the card lost its attitude and stopped tilting at all — the attitude was
-  // computed in here.
-  if (!inspecting) light(cur.x, cur.y);
   if (grab.on) {
     // While held, the card is exactly where the finger put it. No spring: a
     // spring under a hand is what makes an object feel like it is on a string.
@@ -147,21 +110,11 @@ function loop(t) {
     step(att, dt, { smoothTime: inspecting ? INSPECT_SETTLE : 0.12 });
     if (inspecting) settleInspect();
   }
-  if (inspecting) {
-    // The lamp is fixed in the room, so the reflection travels as the card
-    // turns under it. Lit from the angle RELATIVE TO THE FACE THAT IS UP:
-    // at 180° the back is square to the viewer exactly as the front is at 0°,
-    // so the lamp must agree at both — otherwise the fold from 180 to 0 that
-    // ends a turn swept a highlight across a card that had already stopped.
-    const a = wrap180(att.ry);
-    const rel = Math.abs(a) > 90 ? a - Math.sign(a) * 180 : a;
-    lightFromAttitude(att.rx, rel);
-    // Keep the pointer model's own state parked where the card is, so when
-    // the card is put down the hover lamp does not leap.
-    target.x = cur.x = 0.5 - rel / (INSPECT_MAX_RX * 2.4);
-    target.y = cur.y = 0.5 + att.rx / (INSPECT_MAX_RX * 2.4);
-    if (engraved) aimLamp(lampFor(rel));
-  }
+  // Lit from the true attitude, every frame, in both skins, whether it is
+  // leaning to a pointer or turning in a hand. The model works in the frame
+  // of whichever face is up: at 180° the back is square to the viewer exactly
+  // as the front is at 0°, and a full turn ends where it began.
+  lit(att.rx, att.ry, inspecting ? LIFT : 1);
   card.style.setProperty('--rx', att.rx.toFixed(2) + 'deg');
   card.style.setProperty('--ry', att.ry.toFixed(2) + 'deg');
   raf = requestAnimationFrame(loop);
@@ -185,7 +138,6 @@ const INSPECT_MAX_RX = 48;     // degrees of pitch before it stops following
 const INSPECT_SETTLE = 0.46;   // seconds — long enough to feel the coast
 const INSPECT_GAIN = 0.42;     // degrees per pixel of drag
 const inspectBtn = document.getElementById('inspect');
-const cardWrap = card.parentElement;
 let inspecting = false;
 const grab = { on: false, id: null, x: 0, y: 0, t: 0, wx: 0, wy: 0 };   // w = angular velocity, deg/s
 
@@ -281,9 +233,9 @@ function aim(e) {
   const r = card.getBoundingClientRect();
   target.x = Math.max(-0.2, Math.min(1.2, (e.clientX - r.left) / r.width));
   target.y = Math.max(-0.6, Math.min(1.6, (e.clientY - r.top) / r.height));
+  // The card leans to face the lamp over it, as a sheet on a desk does.
   att.tx = (0.5 - target.y) * 2 * TILT;
   att.ty = (target.x - 0.5) * 2 * TILT;
-  if (engraved) aimLamp(lampAngle(target.x, target.y));
   if (!live) { live = true; card.classList.add('is-live'); }
 }
 
@@ -305,7 +257,6 @@ try {
 if (!still) {
   raf = requestAnimationFrame(loop);
   if (fine) {
-    // aim() feeds both the lamp and, while engraved, the rake.
     window.addEventListener('pointermove', aim, { passive: true });
     window.addEventListener('pointerleave', () => { target = { x: .5, y: .35 }; });
   }
@@ -335,6 +286,22 @@ const skinStage = document.getElementById('skin-stage');
 const stockEl = document.getElementById('stock');
 let engraved = false;
 
+// The skull comes apart into gold dust and settles as the rose. Built on the
+// first press, from the two drawings already on the page.
+let morph = null;
+function morphNow(dir) {
+  if (still) return;
+  try {
+    morph ??= dustMorph({
+      stage: skinStage,
+      canvas: document.getElementById('mode-dust'),
+      from: document.getElementById('mode-skull'),
+      to: document.getElementById('mode-rose'),
+    });
+    morph.play(dir);
+  } catch (err) { console.warn('card: morph off —', err); }
+}
+
 // localStorage throws outright in Safari's private mode, so every touch of it
 // is fenced. A preference we cannot read is simply a preference that is off.
 const remember = (v) => { try { localStorage.setItem(KEY, v ? 'engraved' : 'print'); } catch (_) {} };
@@ -348,16 +315,12 @@ function setSkin(on, { save = true } = {}) {
   // The control is the picture. A skull is the set in colour; press it and the
   // set goes engraved, and the rose is how you know.
   skinBtn.setAttribute('aria-label', engraved ? 'Back to colour' : 'American Psycho');
-  // The skull becomes the rose by way of a rose growing out of the skull.
-  // Only when a person presses it: on load the icon is simply in its state.
+  // The skull becomes the rose as dust. Only when a person presses it: on
+  // load the icon is simply in its state.
   skinBtn.dataset.mode = engraved ? 'rose' : 'skull';
-  if (save && skinStage) {
-    skinStage.classList.remove('is-morphing'); void skinStage.offsetWidth;
-    skinStage.classList.add('is-morphing');
-    clearTimeout(skinStage._t); skinStage._t = setTimeout(() => skinStage.classList.remove('is-morphing'), 1000);
-  }
+  if (save) morphNow(engraved ? 'to' : 'back');
   if (save) remember(engraved);
-  if (!engraved) { unread(); stopRaking(); }
+  if (!engraved) unread();
   // show() lands a NEW card face up. This is the same card in a different
   // stock, so whichever face was up stays up — pressing the rose while
   // reading a back must not turn the card over.
@@ -365,7 +328,11 @@ function setSkin(on, { save = true } = {}) {
   if (series.length) { paintMarks(); show(at); if (wasFlipped) card.classList.add('is-flipped'); }
 }
 
-skinBtn.addEventListener('click', (e) => { e.stopPropagation(); setSkin(!engraved); });
+skinBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (morph && morph.busy()) return;       // let the dust land
+  setSkin(!engraved);
+});
 
 /* ── the series ──────────────────────────────────────────────────────────────
    Eight cards, one chassis. Only the face and the four facts change, which is the
@@ -432,84 +399,52 @@ function paintMarks() {
   }).join('');
 }
 
-/* ── reading a blind emboss ──────────────────────────────────────────────────
+/* ── the relief ─────────────────────────────────────────────────────────────
    There is no ink on the animal and barely any on the letters. The only way
    anyone has ever read an emboss is to tilt it until the light rakes across
-   and the relief throws a shadow, so that is the interaction: the lamp inside
-   the SVG filters moves, and the shadows swing with it.
+   and the relief throws a shadow — so the relief has to move with the lamp.
 
-   It is driven by whatever the device has. A pointer over the card moves it
-   directly. On a phone, Inspect puts the card in the hand and the lamp
-   follows the turn. There is no idle drift: a card that moves on its own
-   reads as broken more often than as alive.
-
-   This replaces the haptics as the primary answer rather than joining it.
-   Haptics were never going to arrive on an iPhone, and a visual that works
-   everywhere beats a tick that works in one browser on one platform.         */
-let lamps = [], rakeDeg = 228, rakeTarget = 228, rakeRaf = 0;
-
-function collectLamps() {
-  lamps = [];
-  for (const host of [frontEl, backEl]) {
-    const svg = host.querySelector('svg');
-    if (!svg) continue;
-    // By element, not by a marker attribute: these SVGs arrive through
-    // innerHTML, and the HTML parser drops data-* from filter primitives — an
-    // afternoon of a feature that silently did nothing lives in that sentence.
-    const art = svg.querySelector('feDistantLight');
-    const drops = svg.querySelectorAll('feDropShadow');
-    if (art || drops.length) lamps.push({ art, sh: drops[0] || null, so: drops[1] || null });
+   It used to move by rewriting the lamp inside the SVG filters, which re-ran
+   a blur and a specular pass over the face for every write, and that was the
+   stutter in the engraved set: the turn was waiting on the raster. Now each
+   face carries four STILLS of its relief — lit from the right, the left,
+   below, above — and the lamp only sets their opacities, which the
+   compositor changes for nothing. cards/skins/engraved.js has the maths;
+   this only lays them over the face.                                        */
+function layRelief(host, c, face) {
+  const stack = host.parentElement.querySelector('.relief');
+  if (!stack) return;
+  stack.innerHTML = '';
+  if (!engraved) return;
+  const artHref = `/assets/cards/art/${c.art || c.slug}.png`;
+  const art = reliefArt(c, artHref, face, {
+    column: ART_COLUMN, back: BACK, extent: ART_EXTENT[c.art || c.slug] || { x: 0, y: 0, w: 802, h: 1200 },
+  });
+  const type = reliefType(c, face);
+  const svg = host.querySelector('svg');
+  const texts = svg ? [...svg.querySelectorAll('text')] : [];
+  const frag = document.createDocumentFragment();
+  for (const dir of Object.keys(DIRS)) {
+    const a = document.createElement('div');
+    a.dataset.dir = dir; a.className = 'art';
+    a.innerHTML = art[dir];
+    frag.appendChild(a);
+    if (!type || !texts.length) continue;
+    // The lettering is the face's own <text>, cloned: it is never set twice,
+    // so it cannot drift from what the card says.
+    const t = document.createElement('div');
+    t.dataset.dir = dir; t.className = 'type';
+    t.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1050 600" aria-hidden="true"><defs>${type[dir].defs}</defs><g filter="url(#${type[dir].id})"></g></svg>`;
+    const g = t.querySelector('g');
+    for (const el of texts) { const k = el.cloneNode(true); k.removeAttribute('filter'); g.appendChild(k); }
+    frag.appendChild(t);
   }
-}
-
-/** Point every lamp on the card at one angle. */
-function rake(deg) {
-  const r = deg * Math.PI / 180;
-  // SVG azimuth runs anticlockwise from east; the drop shadows are in ordinary
-  // screen coordinates, so they get the opposite sign on y.
-  const sx = -Math.cos(r), sy = Math.sin(r);
-  for (const l of lamps) {
-    if (l.art) l.art.setAttribute('azimuth', deg.toFixed(1));
-    if (l.sh) { l.sh.setAttribute('dx', (sx * 2.6).toFixed(2)); l.sh.setAttribute('dy', (sy * 2.6).toFixed(2)); }
-    if (l.so) { l.so.setAttribute('dx', (-sx * 1.7).toFixed(2)); l.so.setAttribute('dy', (-sy * 1.7).toFixed(2)); }
-  }
-}
-
-let lastRakeAt = 0;
-function rakeLoop(now) {
-  // No idle animation. The lamp moves when the card moves and at no other
-  // time — a card that sways on its own while sitting on a desk is a screensaver.
-  const d = rakeTarget - rakeDeg;
-  if (Math.abs(d) > 0.15) {
-    rakeDeg += d * 0.12;
-    // Every write here re-runs a blur + specular-lighting chain over a whole
-    // face, on both faces. Under a finger that was 120 re-runs a second —
-    // the jank in the engraved set, and only there. The CSS sheen carries
-    // the per-frame light; the relief only has to move a few times a second
-    // to read as moving, so while the card is held it is written at ~11Hz,
-    // while it settles at ~22Hz, and at the frame rate only under a mouse.
-    const gap = grab.on ? 90 : inspecting ? 45 : 0;
-    if (!gap || now - lastRakeAt >= gap) { rake(rakeDeg); lastRakeAt = now; }
-  }
-  rakeRaf = requestAnimationFrame(rakeLoop);
-}
-
-function aimLamp(deg) { rakeTarget = deg; }
-
-function startRaking() {
-  collectLamps();
-  if (!lamps.length || rakeRaf) return;
-  rakeRaf = requestAnimationFrame(rakeLoop);
-}
-
-function stopRaking() {
-  if (rakeRaf) { cancelAnimationFrame(rakeRaf); rakeRaf = 0; }
-  lamps = [];
+  stack.appendChild(frag);
 }
 
 /* The fingertip reader. Where a browser can vibrate it ticks per letter; where
    it cannot — which is every browser on iOS — the trace still draws. It is a
-   bonus on top of the rake now, not the main way the card is read. */
+   bonus on top of the relief under the lamp, not the main way the card is read. */
 let readers = [];
 let gestureMoved = 0;
 const touchy = matchMedia('(hover: none)').matches
@@ -544,8 +479,6 @@ function attachReaders(c) {
         stylus.style.left = `${r.left - hr.left + (u.x / 1050) * r.width}px`;
         stylus.style.top = `${r.top - hr.top + (u.y / 600) * r.height}px`;
         stylus.dataset.on = f.kind;
-        // A finger on the card is also a hand holding it up to the light.
-        aimLamp(lampAngle(u.x / 1050, u.y / 600));
       },
     });
     readers.push({ detach });
@@ -579,8 +512,10 @@ function show(i, { focus = false } = {}) {
     if (focus && j === at) b.focus();
   });
   card.classList.remove('is-flipped');            // a new card arrives face up
+  layRelief(frontEl, c, 'f');
+  layRelief(backEl, c, 'b');
   attachReaders(c);
-  if (engraved) { stopRaking(); startRaking(); } else stopRaking();
+  measure();                                      // the caption under the card can change height
 }
 
 (async () => {
