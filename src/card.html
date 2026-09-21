@@ -120,6 +120,9 @@ a { color: inherit; text-decoration: none; }
 .card {
   position: relative;
   aspect-ratio: 3.5 / 2;
+  /* A drag across the card selected its type — blue over "PADDLING OUT" in a
+     screenshot, the long-press selection sheet on a phone. It is an object. */
+  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
   transform-style: preserve-3d;
   transform: scale(var(--lift, 1)) rotateX(var(--rx)) rotateY(var(--ry));
   transition: transform .55s cubic-bezier(.2, .8, .2, 1);
@@ -147,10 +150,21 @@ a { color: inherit; text-decoration: none; }
 /* Specular. Positioned where the reflected light lands, scaled by (N·H)^n. */
 .sheen {
   position: absolute; inset: 0; pointer-events: none; border-radius: 10px;
-  background: radial-gradient(34% 46% at var(--sx) var(--sy),
+  background: radial-gradient(var(--sw, 34%) var(--sh, 46%) at var(--sx) var(--sy),
     rgba(255, 252, 240, .92), rgba(255, 246, 222, .35) 34%, transparent 66%);
   opacity: calc(var(--spec) * .72);
   mix-blend-mode: soft-light;
+}
+/* Lambert. The whole face dims as it turns away from the room's lamp and
+   clears as it turns toward it — the term that makes a turned card read as
+   lit rather than merely tilted. Written by the lighting model; zero under a
+   pointer, where the card lies flat on the desk. A plain opaque wash with an
+   opacity, so it composites the same on either face in every engine. */
+.shade {
+  position: absolute; inset: 0; pointer-events: none; border-radius: 10px;
+  background: #1c1610;
+  opacity: var(--shade, 0);
+  mix-blend-mode: normal;
 }
 /* The foil. Gold does not brighten evenly — it shifts hue across the sweep. */
 .foil {
@@ -217,8 +231,41 @@ a { color: inherit; text-decoration: none; }
 /* Gold linework on nothing — the page supplies the black. The files are built
    that way (a luminance mask over one gold), so no filter runs here and the
    mark reads the same on every browser. */
-.mode img { display: block; width: 30px; height: 42px; object-fit: contain; }
-@media(max-width: 600px){ .mode img { width: 26px; height: 36px; } }
+.mode-stage { position: relative; display: block; width: 30px; height: 42px; }
+@media(max-width: 600px){ .mode-stage { width: 26px; height: 36px; } }
+.mode img {
+  position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain;
+  transform-origin: 50% 88%;               /* the stem: the rose grows from the crown */
+  transition: opacity .34s ease, transform .5s cubic-bezier(.2,.8,.2,1);
+}
+/* Two resting states. The skull is the set in colour; the rose is the set
+   engraved. Between them the rose grows out of the skull's crown, which is
+   the one transformation the two share, drawn by the same hand. */
+.mode-mid { opacity: 0; }
+.mode-rose { opacity: 0; transform: scale(.86) rotate(-10deg); }
+.mode[data-mode="rose"] .mode-skull { opacity: 0; transform: scale(.9) translateY(4px); transition-delay: 0s; }
+.mode[data-mode="rose"] .mode-rose  { opacity: 1; transform: none; transition-delay: .52s, .52s; }
+.mode[data-mode="skull"] .mode-skull { transition-delay: .52s, .52s; }
+.mode[data-mode="skull"] .mode-rose  { transition-delay: 0s; }
+/* The bloom. The midpoint rises through the crossover and is gone by the
+   time the rose opens; the stage breathes a little gold at the moment the
+   two meet. Runs only when the button is pressed, never on load. */
+.mode-stage.is-morphing .mode-mid { animation: bloom .9s ease both; }
+.mode-stage.is-morphing { animation: breathe .9s ease both; }
+@keyframes bloom {
+  0%   { opacity: 0; transform: scale(.92) translateY(3px); }
+  38%  { opacity: 1; transform: none; }
+  62%  { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: scale(1.04) translateY(-3px); }
+}
+@keyframes breathe {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(214,183,120,0)); }
+  50%      { filter: drop-shadow(0 0 10px rgba(214,183,120,.55)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mode img { transition: opacity .2s ease; transform: none !important; }
+  .mode-stage.is-morphing, .mode-stage.is-morphing .mode-mid { animation: none; }
+}
 
 /* ── inspect ────────────────────────────────────────────────────────── */
 .hint { display: flex; gap: 14px; align-items: center; }
@@ -232,6 +279,7 @@ a { color: inherit; text-decoration: none; }
 .card.is-inspecting {
   transition: none;
   cursor: grabbing;
+  will-change: transform;
   /* Off the table, slightly: the shadow lengthens and the card grows a little,
      which is all "picked up" needs to mean. */
   --lift: 1.06;
@@ -309,9 +357,12 @@ a { color: inherit; text-decoration: none; }
    model writes, so it works on whichever face is toward you. */
 :root[data-skin="engraved"] .foil { display: none; }
 :root[data-skin="engraved"] .sheen {
-  background: radial-gradient(42% 56% at var(--sx) var(--sy),
-    rgba(255,255,255,.82), rgba(255,253,246,.30) 38%, transparent 68%);
-  opacity: calc(var(--spec) * .52);
+  /* Cotton rag under one lamp: a broad, white, soft wash that stretches into
+     a streak as the sheet goes oblique — the radii come from the lighting
+     model, not from here. */
+  background: radial-gradient(calc(var(--sw, 34%) * 1.25) calc(var(--sh, 46%) * 1.2) at var(--sx) var(--sy),
+    rgba(255,255,255,.92), rgba(255,253,246,.36) 38%, transparent 68%);
+  opacity: calc(var(--spec) * .78);
   /* NO blend mode, deliberately. The card is inside transform-style:
      preserve-3d with backface-visibility on each face, and WebKit drops
      mix-blend-mode in that situation — which is why the front glistened and
@@ -324,8 +375,8 @@ a { color: inherit; text-decoration: none; }
    the gradient rather than with a transform: another transform inside a 3D
    context is the last thing this needs. */
 :root[data-skin="engraved"] .face.back .sheen {
-  background: radial-gradient(42% 56% at calc(100% - var(--sx)) var(--sy),
-    rgba(255,255,255,.82), rgba(255,253,246,.30) 38%, transparent 68%);
+  background: radial-gradient(calc(var(--sw, 34%) * 1.25) calc(var(--sh, 46%) * 1.2) at calc(100% - var(--sx)) var(--sy),
+    rgba(255,255,255,.84), rgba(255,253,246,.32) 38%, transparent 68%);
 }
 /* The tooth blends too, for the same reason. */
 
@@ -413,8 +464,12 @@ a { color: inherit; text-decoration: none; }
        the set goes engraved, and a rose says so. Anyone who recognises either
        does not need a label, and the aria-label tells everyone else. It lives
        in the corner, out of the column, so it never moves the card. -->
-  <button type="button" class="mode" id="skin" aria-pressed="false" aria-label="American Psycho">
-    <img id="skin-icon" src="/assets/card/skull.webp" alt="" width="30" height="42" decoding="async">
+  <button type="button" class="mode" id="skin" aria-pressed="false" aria-label="American Psycho" data-mode="skull">
+    <span class="mode-stage" id="skin-stage" aria-hidden="true">
+      <img class="mode-skull" src="/assets/card/skull.webp" alt="" width="30" height="42" decoding="async">
+      <img class="mode-mid"   src="/assets/card/skullrose.webp" alt="" width="30" height="42" decoding="async">
+      <img class="mode-rose"  src="/assets/card/rose.webp" alt="" width="30" height="42" decoding="async">
+    </span>
   </button>
 
   <!-- Header and colophon are rows of the room, not members of the stage: the
@@ -432,12 +487,12 @@ a { color: inherit; text-decoration: none; }
            aria-label="The Kaayko card. Activate to turn it over.">
         <div class="face front">
           <div id="face-front" role="img" aria-label="Front of the Kaayko card"></div>
-          <i class="foil"></i><i class="sheen"></i><i class="grain"></i><i class="rim"></i>
+          <i class="shade"></i><i class="foil"></i><i class="sheen"></i><i class="grain"></i><i class="rim"></i>
           <i class="stylus" aria-hidden="true"></i>
         </div>
         <div class="face back">
           <div id="face-back" role="img" aria-label="Back of the Kaayko card"></div>
-          <i class="foil"></i><i class="sheen"></i><i class="grain"></i><i class="rim"></i>
+          <i class="shade"></i><i class="foil"></i><i class="sheen"></i><i class="grain"></i><i class="rim"></i>
           <i class="stylus" aria-hidden="true"></i>
         </div>
       </div>

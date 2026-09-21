@@ -55,8 +55,63 @@ function light(px, py) {
   s.setProperty('--hue', ((px - 0.5) * 46).toFixed(1) + 'deg');
   s.setProperty('--sx', sx.toFixed(1) + '%');
   s.setProperty('--sy', sy.toFixed(1) + '%');
+  s.setProperty('--sw', '34%'); s.setProperty('--sh', '46%'); s.setProperty('--shade', '0');
   room.style.setProperty('--sx', (px * 100).toFixed(1) + '%');
   room.style.setProperty('--sy', (py * 100).toFixed(1) + '%');
+}
+
+/* ── the room's lamp ─────────────────────────────────────────────────────
+   light() above treats the POINTER as the lamp, which is right for a mouse
+   hovering a card on a desk. A card held up and turned in the hand is lit by
+   a lamp that does not move: it is the card that turns under it. So this
+   takes the card's true attitude — the full angle, not the ±11° a pointer
+   implies — and a lamp fixed above-left and in front, and asks the same
+   Blinn-Phong where the reflection lands and how bright it is.
+
+   Paper is not foil. The engraved set gets a broader, softer exponent, so
+   its highlight is a wash across the sheet rather than a hot point.        */
+const LAMP = norm(v(-0.45, 0.62, 1.35));   // card widths from the centre; +y is up
+const SHINE_PAPER = 11;
+
+function lightFromAttitude(rxDeg, ryDeg) {
+  const rxr = rxDeg * Math.PI / 180, ryr = ryDeg * Math.PI / 180;
+  const N = norm(v(Math.sin(ryr) * Math.cos(rxr), -Math.sin(rxr), Math.cos(rxr) * Math.cos(ryr)));
+  const V = v(0, 0, 1);
+  const H = norm(v(LAMP.x + V.x, LAMP.y + V.y, LAMP.z + V.z));
+  const nv = Math.max(0, dot(N, V));
+  const spec = Math.pow(Math.max(0, dot(N, H)), engraved ? SHINE_PAPER : SHINE);
+  const fres = F0 + (1 - F0) * Math.pow(1 - nv, 5);
+  // Lambert. On cream paper a white glint has nowhere to go — the sheet is
+  // already nearly white — so the shine has to be read by CONTRAST: the face
+  // dims as it turns away from the lamp and brightens as it turns toward it,
+  // and the glint sits on top of that. This is the term that makes a turned
+  // card look lit rather than merely tilted.
+  const diff = Math.max(0, dot(N, LAMP));
+  const shade = Math.min(0.5, Math.max(0, (1 - diff) * 0.62));
+
+  // Mirror the lamp about the normal; where that ray meets the plane is the
+  // glint. At grazing angles it runs off the edge — a tilted sheet reflects
+  // the lamp past you, not at you.
+  const d = 2 * dot(LAMP, N);
+  const R = v(d * N.x - LAMP.x, d * N.y - LAMP.y, d * N.z - LAMP.z);
+  const rz = Math.max(0.12, R.z);
+  const sx = 50 + (R.x / rz) * 46;
+  const sy = 50 - (R.y / rz) * 46;
+  // A highlight on a turned sheet is a streak, not a spot: it stretches
+  // along the axis the card is turning on as the surface goes oblique.
+  const stretch = 1 + 1.7 * (1 - nv);
+
+  const s = card.style;
+  s.setProperty('--spec', (0.22 + spec * 0.95).toFixed(3));
+  s.setProperty('--fres', Math.min(1, fres * 5).toFixed(3));
+  s.setProperty('--hue', ((ryDeg / 90) * 46).toFixed(1) + 'deg');
+  s.setProperty('--sx', sx.toFixed(1) + '%');
+  s.setProperty('--sy', sy.toFixed(1) + '%');
+  s.setProperty('--sw', (34 * stretch).toFixed(1) + '%');
+  s.setProperty('--sh', (46 * (1 + 0.3 * (stretch - 1))).toFixed(1) + '%');
+  s.setProperty('--shade', shade.toFixed(3));
+  room.style.setProperty('--sx', (50 + LAMP.x * 40).toFixed(1) + '%');
+  room.style.setProperty('--sy', (50 - LAMP.y * 40).toFixed(1) + '%');
 }
 
 /** Where the lamp should sit for a pointer at (px, py) over the card. */
@@ -83,7 +138,7 @@ function loop(t) {
   // hides the foil and neutralises the sheen. Gating the whole function was how
   // the card lost its attitude and stopped tilting at all — the attitude was
   // computed in here.
-  light(cur.x, cur.y);
+  if (!inspecting) light(cur.x, cur.y);
   if (grab.on) {
     // While held, the card is exactly where the finger put it. No spring: a
     // spring under a hand is what makes an object feel like it is on a string.
@@ -100,8 +155,11 @@ function loop(t) {
     // ends a turn swept a highlight across a card that had already stopped.
     const a = wrap180(att.ry);
     const rel = Math.abs(a) > 90 ? a - Math.sign(a) * 180 : a;
-    target.x = 0.5 - rel / (INSPECT_MAX_RX * 2.4);
-    target.y = 0.5 + att.rx / (INSPECT_MAX_RX * 2.4);
+    lightFromAttitude(att.rx, rel);
+    // Keep the pointer model's own state parked where the card is, so when
+    // the card is put down the hover lamp does not leap.
+    target.x = cur.x = 0.5 - rel / (INSPECT_MAX_RX * 2.4);
+    target.y = cur.y = 0.5 + att.rx / (INSPECT_MAX_RX * 2.4);
     if (engraved) aimLamp(lampFor(rel));
   }
   card.style.setProperty('--rx', att.rx.toFixed(2) + 'deg');
@@ -144,6 +202,11 @@ function setInspect(on) {
   cardWrap.classList.toggle('is-inspecting', inspecting);
   inspectBtn.setAttribute('aria-pressed', String(inspecting));
   inspectBtn.textContent = inspecting ? 'Put it down' : 'Inspect';
+  // A held card is being turned, not read: the fingertip readers — a glyph
+  // scan and a vibration per feature on every pointermove — come off while
+  // it is in the hand and go back on when it is put down.
+  if (inspecting) unread();
+  else if (engraved && series.length) attachReaders(series[at]);
   if (!inspecting) {
     // Put down mid-coast, the card keeps the face it was heading for rather
     // than swinging 150° back to the one it left.
@@ -268,7 +331,7 @@ card.addEventListener('keydown', (e) => {
    emits.                                                                     */
 const KEY = 'kaayko.card.skin';
 const skinBtn = document.getElementById('skin');
-const skinIcon = document.getElementById('skin-icon');
+const skinStage = document.getElementById('skin-stage');
 const stockEl = document.getElementById('stock');
 let engraved = false;
 
@@ -285,7 +348,14 @@ function setSkin(on, { save = true } = {}) {
   // The control is the picture. A skull is the set in colour; press it and the
   // set goes engraved, and the rose is how you know.
   skinBtn.setAttribute('aria-label', engraved ? 'Back to colour' : 'American Psycho');
-  skinIcon.src = engraved ? '/assets/card/rose.webp' : '/assets/card/skull.webp';
+  // The skull becomes the rose by way of a rose growing out of the skull.
+  // Only when a person presses it: on load the icon is simply in its state.
+  skinBtn.dataset.mode = engraved ? 'rose' : 'skull';
+  if (save && skinStage) {
+    skinStage.classList.remove('is-morphing'); void skinStage.offsetWidth;
+    skinStage.classList.add('is-morphing');
+    clearTimeout(skinStage._t); skinStage._t = setTimeout(() => skinStage.classList.remove('is-morphing'), 1000);
+  }
   if (save) remember(engraved);
   if (!engraved) { unread(); stopRaking(); }
   // show() lands a NEW card face up. This is the same card in a different
@@ -405,11 +475,22 @@ function rake(deg) {
   }
 }
 
-function rakeLoop() {
+let lastRakeAt = 0;
+function rakeLoop(now) {
   // No idle animation. The lamp moves when the card moves and at no other
   // time — a card that sways on its own while sitting on a desk is a screensaver.
   const d = rakeTarget - rakeDeg;
-  if (Math.abs(d) > 0.15) { rakeDeg += d * 0.12; rake(rakeDeg); }
+  if (Math.abs(d) > 0.15) {
+    rakeDeg += d * 0.12;
+    // Every write here re-runs a blur + specular-lighting chain over a whole
+    // face, on both faces. Under a finger that was 120 re-runs a second —
+    // the jank in the engraved set, and only there. The CSS sheen carries
+    // the per-frame light; the relief only has to move a few times a second
+    // to read as moving, so while the card is held it is written at ~11Hz,
+    // while it settles at ~22Hz, and at the frame rate only under a mouse.
+    const gap = grab.on ? 90 : inspecting ? 45 : 0;
+    if (!gap || now - lastRakeAt >= gap) { rake(rakeDeg); lastRakeAt = now; }
+  }
   rakeRaf = requestAnimationFrame(rakeLoop);
 }
 
