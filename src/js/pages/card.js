@@ -2,13 +2,13 @@
  * pages/card.js — the collectible card (/card): lighting model, flip, inspect, QR.
  * Moved out of card.html on 12 Sep 2026 unchanged.
  */
-import { front, back, PRINT, BACK, ART_EXTENT, ART_COLUMN } from '/js/cards/render.js?v=ce7d26a';
-import { engravedFor, stockOf, reliefArt, reliefType, DIRS } from '/js/cards/skins/engraved.js?v=ce7d26a';
-import { readFace, warmArt } from '/js/cards/relief.js?v=ce7d26a';
-import { rest, step, clamp } from '/js/cards/attitude.js?v=ce7d26a';
-import { lightFace, pointerLamp, v } from '/js/cards/lamp.js?v=ce7d26a';
-import { dustMorph } from '/js/cards/morph.js?v=ce7d26a';
-import { esc, apiBase } from '/js/kit.js?v=ce7d26a';
+import { front, back, PRINT, BACK, ART_EXTENT, ART_COLUMN } from '/js/cards/render.js?v=f604359';
+import { engravedFor, stockOf, reliefArt, reliefType, DIRS } from '/js/cards/skins/engraved.js?v=f604359';
+import { readFace, warmArt } from '/js/cards/relief.js?v=f604359';
+import { rest, step, clamp } from '/js/cards/attitude.js?v=f604359';
+import { lightFace, pointerLamp, v } from '/js/cards/lamp.js?v=f604359';
+import { dustMorph } from '/js/cards/morph.js?v=f604359';
+import { esc, apiBase } from '/js/kit.js?v=f604359';
 
 /* ── the light ─────────────────────────────────────────────────────────────
    One lamp. Everything the eye reads as light on this card — the glint, its
