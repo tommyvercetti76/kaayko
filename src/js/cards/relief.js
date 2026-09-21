@@ -63,22 +63,29 @@ export const canVibrate = () => typeof navigator !== 'undefined'
  * cover-and-centre arithmetic has to be repeated here or every tick lands
  * offset from the animal a finger can see.
  */
-function sampleArt(href, boxW, boxH) {
-  const key = `${href}@${boxW}x${boxH}`;
+function sampleArt(href, boxW, boxH, fit = 'slice', crop = null) {
+  const key = `${href}@${boxW}x${boxH}/${fit}/${crop ? [crop.x, crop.y, crop.w, crop.h].join(',') : 'all'}`;
   if (SAMPLES.has(key)) return SAMPLES.get(key);
   const p = new Promise((resolve) => {
     const img = new Image();
     img.onload = () => {
       try {
-        const scale = Math.max(boxW / img.naturalWidth, boxH / img.naturalHeight);
-        const dw = img.naturalWidth * scale, dh = img.naturalHeight * scale;
+        // `slice` covers the box (the front's column); `meet` fits inside it
+        // (the back's picture). `crop` is the window of the file being shown —
+        // the back frames the animal's extent, not the whole file. The grid
+        // must agree with the SVG or every tick lands beside the animal
+        // instead of on it.
+        const sx = crop ? crop.x : 0, sy = crop ? crop.y : 0;
+        const sw = crop ? crop.w : img.naturalWidth, sh = crop ? crop.h : img.naturalHeight;
+        const scale = fit === 'meet' ? Math.min(boxW / sw, boxH / sh) : Math.max(boxW / sw, boxH / sh);
+        const dw = sw * scale, dh = sh * scale;
         const gw = ART_GRID_W, gh = Math.round(gw * (boxH / boxW));
         const c = document.createElement('canvas');
         c.width = gw; c.height = gh;
         const ctx = c.getContext('2d', { willReadFrequently: true });
-        // Draw the same crop the SVG shows: cover the box, centred, then read
-        // only the box.
-        ctx.drawImage(img, (boxW - dw) / 2 * (gw / boxW), (boxH - dh) / 2 * (gh / boxH),
+        // Draw the same window the SVG shows, fitted the same way, centred.
+        ctx.drawImage(img, sx, sy, sw, sh,
+          (boxW - dw) / 2 * (gw / boxW), (boxH - dh) / 2 * (gh / boxH),
           dw * (gw / boxW), dh * (gh / boxH));
         const px = ctx.getImageData(0, 0, gw, gh).data;
         const grid = new Float32Array(gw * gh);
@@ -105,7 +112,8 @@ function sampleArt(href, boxW, boxH) {
  * finished decoding into its grid yet — which reads exactly like a feature that
  * does not work, and is the worst possible first impression of one that does.
  */
-export const warmArt = (href, boxW = 401, boxH = 600) => sampleArt(href, boxW, boxH);
+export const warmArt = (href, box = { w: 401, h: 600, fit: 'slice' }) =>
+  sampleArt(href, box.w, box.h, box.fit || 'slice', box.crop || null);
 
 /**
  * Everything on this face a finger can find, in the card's own units.
@@ -155,16 +163,21 @@ function onPlateEdge(p, x, y, t = 5) {
  * Attach the reader to one face.
  *
  * @param {SVGElement} svg      the drawn card
- * @param {object} opts         { artHref, artBox:{w,h}, haptics, onRead }
+ * @param {object} opts         { artHref, artBox:{x,y,w,h,fit}, haptics, onRead }
+ *   artBox is WHERE the picture sits on this face and HOW it is fitted. The
+ *   front's column is at the origin and covers; the back's picture is boxed
+ *   on the right and fitted inside. It used to assume the front's box on both
+ *   faces, so on the back the finger read a bird that was not under it.
  * @returns {function} detach
  */
-export function readFace(svg, { artHref, artBox = { w: 401, h: 600 }, haptics = true, onRead } = {}) {
+export function readFace(svg, { artHref, artBox = { x: 0, y: 0, w: 401, h: 600, fit: 'slice' }, haptics = true, onRead } = {}) {
   let map = mapOf(svg);
   let art = null;
   let lastId = '', lastAt = 0;
   let alive = true;
+  const ax = artBox.x || 0, ay = artBox.y || 0;
 
-  if (artHref) sampleArt(artHref, artBox.w, artBox.h).then((a) => { if (alive) art = a; });
+  if (artHref) sampleArt(artHref, artBox.w, artBox.h, artBox.fit || 'slice', artBox.crop || null).then((a) => { if (alive) art = a; });
 
   const toUser = (clientX, clientY) => {
     const m = svg.getScreenCTM();
@@ -175,7 +188,8 @@ export function readFace(svg, { artHref, artBox = { w: 401, h: 600 }, haptics = 
   };
 
   /** Depth of the animal under a point, 0 when there is none. */
-  function artDepth(x, y) {
+  function artDepth(ux, uy) {
+    const x = ux - ax, y = uy - ay;          // into the picture's own frame
     if (!art || x < 0 || y < 0 || x > art.boxW || y > art.boxH) return 0;
     const gx = Math.floor((x / art.boxW) * art.gw);
     const gy = Math.floor((y / art.boxH) * art.gh);

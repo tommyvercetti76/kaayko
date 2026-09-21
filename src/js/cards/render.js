@@ -68,8 +68,11 @@ export const PRINT = Object.freeze({
   type: Object.freeze({
     name:     Object.freeze({ weight: 300, size: 86, y: 200, track: 0, caps: false }),
     hook:     Object.freeze({ weight: 400, size: 40, y: 278, step: 48, wrap: 26, track: 0, italic: true }),
-    backName: Object.freeze({ weight: 300, size: 78, y: 182, track: 0, caps: false }),
-    backLine: Object.freeze({ weight: 400, size: 32, y: 244, track: 0 }),
+    // The back's column is 392px (88→480) so the picture can have the rest.
+    // "Paddling Out" measures 359px at 68; a 62-character line wraps to two
+    // rows at 28. Both are checked by the test suite against BACK.
+    backName: Object.freeze({ weight: 300, size: 68, y: 178, track: 0, caps: false }),
+    backLine: Object.freeze({ weight: 400, size: 28, y: 236, track: 0 }),
   }),
   /** The blind impression an engraving die leaves in the sheet. Inkless. */
   plate: null,
@@ -129,18 +132,45 @@ export function wrap(text, width = 26, max = 2) {
  * The ghost used to be bled off the right edge, 520px wide and the full height
  * of the card, and the line of type ran across it on every card — at 9% on the
  * printed stock it read as a watermark; on the engraved stock, at 50–62%, the
- * line sat on top of the bird. So the picture now has a box and the type has a
+ * line sat on top of the bird. So the picture has a box and the type has a
  * column, and they do not share an inch of paper.
+ *
+ * The box is the full height of the card inside a 40px margin. The art files
+ * carry their own cream margin — they were cut for the front, where `slice`
+ * crops it away — so shown whole they read as a stamp in a field of paper.
+ * The back instead frames each animal at its measured extent (ART_EXTENT) and
+ * fits THAT to the box: the portrait ones fill the height, the wide ones fill
+ * the width, and none is clipped. Everything typed lives in the column; the
+ * three facts stack at its foot and the index sits under the picture.
  */
 export const BACK = Object.freeze({
-  textRight: 612,             // the type column ends here …
-  ghostX: 640,                // … the picture begins here (28px of paper between)
-  ghostY: 96, ghostH: 344,    // between the label row and the facts row
+  textRight: 480,             // the type column ends here …
+  pad: 40,                    // … and the picture keeps this much paper on three sides
+  ghostX: 520,                // 40px of paper between the column and the picture
+  ghostY: 40, ghostH: 520,    // the full height, inside the padding: 600 − 2·40
+  ghostW: 490,                // to the right-hand margin: 1050 − 40 − 520
+  factsY: 448, factStep: 36,  // the three facts, bottom-anchored in the column
+  indexY: 584,                // "N OF 5", bottom-right, under the picture
   lineStep: 1.25,             // line height as a multiple of the type size
   // Widest realistic advance per character for the serif at these sizes,
   // measured in Cormorant Garamond: sentence text runs 0.38–0.44em per
   // character; 0.44 is the ceiling used to turn a pixel budget into a wrap.
   em: 0.44,
+});
+
+/**
+ * Where the animal actually is inside each art file, in file pixels (802x1200).
+ * Measured: every pixel that is not the cream ground, bounding box. The front
+ * never needs this — `slice` covers its column — but the back frames the
+ * animal, not the file. Re-measure with `node scripts/measure-art.js` when an
+ * art file changes; the test suite does not read PNGs.
+ */
+export const ART_EXTENT = Object.freeze({
+  paddlingout: Object.freeze({ x:  49, y: 270, w: 703, h:  634 }),
+  forge:       Object.freeze({ x:  80, y: 190, w: 641, h:  795 }),
+  kortex:      Object.freeze({ x:  80, y: 282, w: 642, h:  611 }),
+  kaayko:      Object.freeze({ x:  82, y: 363, w: 639, h:  451 }),
+  alumni:      Object.freeze({ x:  30, y: 302, w: 742, h:  571 }),
 });
 
 /** How many characters of the back line fit in the type column at this size. */
@@ -251,20 +281,26 @@ export function back(card, brand = {}, { index = 1, total = 5, artHref, skin = P
   const facts = (Array.isArray(card.facts) ? card.facts : []).slice(0, 3);
   const T = skin.type;
 
-  const L = 88, R = W - 88;          // the type column, same inset both sides
-  const cell = (R - L) / 3;
+  const L = 88;                      // the type column's left edge; its right is BACK.textRight
 
   // In its own box, right of the type column and between the label row and
   // the facts row. `meet`, not `slice`: the whole animal, smaller, rather than
   // a crop of it — a watermark is a picture you can name at arm's length.
+  // A nested <svg> whose viewBox is the animal's extent: the file is drawn at
+  // its natural size inside it, and only that window is fitted to the box.
+  const ex = ART_EXTENT[card.art || card.slug] || { x: 0, y: 0, w: 802, h: 1200 };
   const ghost = artHref && skin.art
-    ? `<g opacity="${skin.ghostOpacity}"${skin.artFilter ? ` filter="${skin.artFilter}"` : ""}><image href="${esc(artHref)}" x="${BACK.ghostX}" y="${BACK.ghostY}" width="${W - BACK.ghostX}" height="${BACK.ghostH}" preserveAspectRatio="xMidYMid meet"/></g>`
+    ? `<g opacity="${skin.ghostOpacity}"${skin.artFilter ? ` filter="${skin.artFilter}"` : ""}><svg x="${BACK.ghostX}" y="${BACK.ghostY}" width="${BACK.ghostW}" height="${BACK.ghostH}" viewBox="${ex.x} ${ex.y} ${ex.w} ${ex.h}" preserveAspectRatio="xMidYMid meet"><image href="${esc(artHref)}" x="0" y="0" width="802" height="1200"/></svg></g>`
     : "";
 
   // The line wraps inside the column instead of running under the picture,
   // and the rule and the address move down with it when it takes two lines.
+  // Up to three rows. Two was the cap, and a sentence that needed a third
+  // simply lost its last words — "…before you make the drive" printed without
+  // the drive. The rule and the address move down with it; the facts are
+  // anchored to the foot, and the test suite checks the address clears them.
   const lineSize = T.backLine.size;
-  const lineRows = wrap(line, backWrap(lineSize), 2);
+  const lineRows = wrap(line, backWrap(lineSize), 3);
   const lineStep = Math.round(lineSize * BACK.lineStep);
   const lineSvg = lineRows.map((row, i) =>
     `<text x="${L}" y="${T.backLine.y + i * lineStep}"${F} style="font:${T.backLine.weight} ${lineSize}px ${skin.serif};${track(T.backLine.track)}fill:${skin.mute}">${esc(row)}</text>`
@@ -272,14 +308,15 @@ export function back(card, brand = {}, { index = 1, total = 5, artHref, skin = P
   const ruleY = T.backLine.y + (lineRows.length - 1) * lineStep + 56;
   const hostY = ruleY + 40;
 
-  // Three facts, each under its own short accent rule. A rule that is the width
-  // of its own label rather than the cell keeps the row from looking like a
-  // table.
+  // Three facts, stacked at the foot of the column, each behind a short accent
+  // tick. They used to sit in three cells across the whole card, which put the
+  // third one under the animal; the longest of them measures 302px at this
+  // size, in a column 524 wide. Anchored to the bottom, so a sentence that takes
+  // two lines above moves nothing below.
   const factRow = facts.map((f, k) => {
-    const cx = L + cell * k + cell / 2;
-    const tick = Math.min(cell - 28, 34 + String(f).length * 3.4);
-    return `<path d="M${(cx - tick / 2).toFixed(1)} 470 H${(cx + tick / 2).toFixed(1)}" stroke="${accent}" stroke-width="1.4" opacity=".85"/>
-<text x="${cx.toFixed(1)}" y="508" text-anchor="middle"${F} style="font:300 17px ${skin.sans};fill:${skin.ink};letter-spacing:4px">${esc(String(f).toUpperCase())}</text>`;
+    const y = BACK.factsY + k * BACK.factStep;
+    return `<path d="M${L} ${y - 5} H${L + 22}" stroke="${accent}" stroke-width="1.4" opacity=".85"/>
+<text x="${L + 36}" y="${y}"${F} style="font:300 15px ${skin.sans};fill:${skin.ink};letter-spacing:3px">${esc(String(f).toUpperCase())}</text>`;
   }).join("\n");
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="3.5in" height="2in"
@@ -298,11 +335,11 @@ ${lineSvg}
 <!-- Stops at the type column's edge, so it never runs across the animal. The
      address sits directly under it, at the size of a caption rather than a
      headline. Both drop a line when the sentence above them takes two. -->
-<path d="M${L} ${ruleY} H${Math.min(L + (R - L) / 2, BACK.textRight)}" stroke="${skin.mute}" stroke-width="0.9" opacity=".28"/>
+<path d="M${L} ${ruleY} H${L + (BACK.textRight - L) / 2}" stroke="${skin.mute}" stroke-width="0.9" opacity=".28"/>
 <text x="${L}" y="${hostY}"${F} style="font:400 24px ${skin.serif};fill:${skin.mute}">${esc(hostOf(card))}</text>
 ${factRow}
 
-<text x="${R}" y="${H - 44}" text-anchor="end"${F}
+<text x="${W - BACK.pad}" y="${BACK.indexY}" text-anchor="end"${F}
       style="font:300 12px ${skin.sans};fill:${skin.mute};letter-spacing:5px">${index} OF ${total}</text>
 </svg>`;
 }

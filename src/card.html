@@ -23,8 +23,8 @@
    actually lands (Blinn-Phong half-vector, plus a Schlick Fresnel term for the
    edges). Foil hue shifts with the angle because that is what foil does.
 
-   Phone tilts the card with the accelerometer instead, and swaps the QR for
-   things you can actually press.
+   On a phone, Inspect picks the card up so it can be turned in the hand. The
+   QR stays a QR: it is the one thing on the card you can actually use.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
@@ -74,9 +74,13 @@ a { color: inherit; text-decoration: none; }
   overflow: clip;
   min-height: 100svh;
   display: grid;
+  /* header / stage / colophon. The stage takes whatever is left and centres
+     the card in it, so the card holds its place while the header is free to
+     be as tall or as short as it likes. */
+  grid-template-rows: auto 1fr auto;
   place-items: center;
-  padding: clamp(28px, 6vw, 72px) 20px clamp(40px, 8vw, 90px);
-  padding-bottom: max(40px, env(safe-area-inset-bottom));
+  padding: clamp(22px, 4vw, 40px) 20px clamp(28px, 5vw, 48px);
+  padding-bottom: max(28px, env(safe-area-inset-bottom));
   isolation: isolate;
 }
 /* the lamp itself — it moves with the pointer, so the room agrees with the card */
@@ -89,7 +93,7 @@ a { color: inherit; text-decoration: none; }
   transition: opacity .5s ease;
 }
 
-.stage { display: grid; gap: clamp(18px, 3.2vw, 34px); justify-items: center; width: 100%; max-width: 980px; }
+.stage { display: grid; gap: clamp(16px, 3vw, 30px); justify-items: center; align-content: center; width: 100%; max-width: 980px; }
 @media(max-width: 600px){
   /* On a phone the card is the page. Everything under it is caption. */
   .stage{ gap: 14px; }
@@ -97,7 +101,7 @@ a { color: inherit; text-decoration: none; }
   .colophon{ padding-top: 16px; }
 }
 
-.eyebrow { display: grid; gap: 6px; justify-items: center; text-align: center; }
+.eyebrow { display: grid; gap: 6px; justify-items: center; text-align: center; align-self: start; padding-bottom: clamp(10px, 2vw, 18px); }
 .eyebrow h1 {
   margin: 0; font-weight: 300; font-size: clamp(30px, 6vw, 52px); letter-spacing: .01em;
 }
@@ -202,21 +206,19 @@ a { color: inherit; text-decoration: none; }
 
 /* ── the mode control ───────────────────────────────────────────────── */
 .mode {
-  display: block; margin: 0 auto 2px; padding: 6px 10px 4px;
+  position: absolute; top: clamp(14px, 2.4vw, 24px); right: clamp(14px, 2.4vw, 24px); z-index: 2;
+  display: block; padding: 8px; margin: 0;
   background: none; border: 0; cursor: pointer; line-height: 0;
   -webkit-tap-highlight-color: transparent;
-  filter: drop-shadow(0 6px 14px rgba(0,0,0,.55));
-  opacity: .78; transition: opacity .25s, transform .25s;
+  opacity: .72; transition: opacity .25s, transform .25s;
 }
 .mode:hover, .mode:focus-visible { opacity: 1; transform: translateY(-1px); }
-.mode:focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; border-radius: 8px; }
-/* Forge draws black linework on white. On the dark room the black vanishes
-   and only the red florals survive — a smudge, not a skull. Inverting the
-   luminance and turning the hue back gives cream linework and keeps the red,
-   which is the engraving the toggle is named for. */
-.mode img { display: block; width: 34px; height: 48px; object-fit: contain;
-  filter: invert(1) hue-rotate(180deg) brightness(1.08); }
-@media(max-width: 600px){ .mode img { width: 30px; height: 42px; } }
+.mode:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 8px; }
+/* Gold linework on nothing — the page supplies the black. The files are built
+   that way (a luminance mask over one gold), so no filter runs here and the
+   mark reads the same on every browser. */
+.mode img { display: block; width: 30px; height: 42px; object-fit: contain; }
+@media(max-width: 600px){ .mode img { width: 26px; height: 36px; } }
 
 /* ── inspect ────────────────────────────────────────────────────────── */
 .hint { display: flex; gap: 14px; align-items: center; }
@@ -224,6 +226,9 @@ a { color: inherit; text-decoration: none; }
    already the lamp and the card already follows it, so the control is not
    offered. */
 @media (hover: hover) and (pointer: fine) { .hint { display: none; } }
+/* The frame loop is never started under reduced motion, so Inspect would lift
+   the card and then draw nothing you did with it. Not offered. */
+@media (prefers-reduced-motion: reduce) { .hint { display: none; } }
 .card.is-inspecting {
   transition: none;
   cursor: grabbing;
@@ -232,6 +237,10 @@ a { color: inherit; text-decoration: none; }
   --lift: 1.06;
 }
 .card-wrap.is-inspecting { touch-action: none; }
+/* The settle folds a 180° coast into is-flipped and zeroes the angle in one
+   frame. Both faces tween --flip over .7s unless told not to, so a card that
+   had landed on its back snapped to the front and turned over again. */
+.card.is-inspecting .face { transition: none; }
 .card.is-inspecting .face { box-shadow:
   0 4px 6px rgba(0,0,0,.55), 0 46px 90px rgba(0,0,0,.72), 0 0 0 1px rgba(181,147,90,.28); }
 .hint button {
@@ -247,6 +256,7 @@ a { color: inherit; text-decoration: none; }
 
 
 .colophon {
+  align-self: end;
   width: 100%; max-width: 980px; padding-top: 22px; border-top: 1px solid var(--hair);
   display: flex; flex-wrap: wrap; gap: 10px 26px; justify-content: space-between;
 }
@@ -398,18 +408,24 @@ a { color: inherit; text-decoration: none; }
 </head>
 <body>
 <main class="room" id="room">
-  <div class="stage">
 
-    <div class="eyebrow">
-      <!-- The whole control is the icon. A skull is the set as it is; press it
-           and the set goes engraved, and a rose says so. Anyone who recognises
-           either does not need a label, and the aria-label tells everyone else. -->
-      <button type="button" class="mode" id="skin" aria-pressed="false" aria-label="American Psycho">
-        <img id="skin-icon" src="/assets/card/skull.webp" alt="" width="34" height="48" decoding="async">
-      </button>
-      <p class="cap">Kaayko</p>
-      <h1>Why not?</h1>
-    </div>
+  <!-- The whole control is the icon. A skull is the set as it is; press it and
+       the set goes engraved, and a rose says so. Anyone who recognises either
+       does not need a label, and the aria-label tells everyone else. It lives
+       in the corner, out of the column, so it never moves the card. -->
+  <button type="button" class="mode" id="skin" aria-pressed="false" aria-label="American Psycho">
+    <img id="skin-icon" src="/assets/card/skull.webp" alt="" width="30" height="42" decoding="async">
+  </button>
+
+  <!-- Header and colophon are rows of the room, not members of the stage: the
+       stage is centred in whatever is left between them, so the card sits in
+       the same place whatever the header says. -->
+  <div class="eyebrow">
+    <p class="cap">Kaayko</p>
+    <h1>Why not?</h1>
+  </div>
+
+  <div class="stage">
 
     <div class="card-wrap">
       <div class="card" id="card" role="button" tabindex="0"
@@ -443,14 +459,14 @@ a { color: inherit; text-decoration: none; }
       <button type="button" id="inspect" aria-pressed="false">Inspect</button>
     </div>
 
-    <!-- Every property already has a card in the series with its own address on
-         the face; listing them again here was the same links twice. Nothing is
-         printed on this page either. One way to reach a person is all it needs. -->
-    <footer class="colophon">
-      <a class="cap" href="mailto:help@kaayko.com">help@kaayko.com</a>
-    </footer>
-
   </div>
+
+  <!-- Every property already has a card in the series with its own address on
+       the face; listing them again here was the same links twice. Nothing is
+       printed on this page either. One way to reach a person is all it needs. -->
+  <footer class="colophon">
+    <a class="cap" href="mailto:help@kaayko.com">help@kaayko.com</a>
+  </footer>
 </main>
 
 <!-- Versioned deliberately. card.html is served no-cache and revalidates, but

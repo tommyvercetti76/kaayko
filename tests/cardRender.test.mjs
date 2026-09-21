@@ -40,7 +40,7 @@ globalThis.document ??= {
   getElementById: () => null,
 };
 
-const { front, back, wrap, hostOf, qrRects, BACK, backWrap, PRINT } = await import('/js/cards/render.js');
+const { front, back, wrap, hostOf, qrRects, BACK, backWrap, PRINT, ART_EXTENT } = await import('/js/cards/render.js');
 
 const INDEX = fileURLToPath(new URL('../src/assets/cards/index.json', import.meta.url));
 const idx = JSON.parse(fs.readFileSync(INDEX, 'utf8'));
@@ -56,17 +56,15 @@ const digest = (svg) => crypto.createHash('sha256').update(svg).digest('hex').sl
 const artOf = (c) => `/assets/cards/art/${c.art || c.slug}.png`;
 
 /** [front, back] as they render today. */
-// Re-pinned 21 Sep 2026. Every BACK moved: the ghost now sits in its own box
-// and the sentence wraps inside a type column, so no card prints words over
-// its animal. Four FRONTS did not move at all; alumni's did, because it is
-// "School" now. The guard caught the backs being pinned into the front slot
-// on the way here — which is the guard working.
+// Re-pinned 20 Sep 2026. Every BACK moved again: the picture is now the full
+// height of the card inside a 40px margin, framed at the animal's measured
+// extent, with the type in a 392px column beside it. No FRONT moved.
 const PINNED = {
-  paddlingout: ['9bc106d58993f93f', '8075a23d5491bc62'],
-  forge:       ['2da71419f1d6d133', '9923b82dc40d23ca'],
-  kortex:      ['9e8838d7a584c564', '81098d9cee4e9c06'],
-  kaayko:      ['49b36fd9a9a2cb1e', '136bb10e8328aa2c'],
-  alumni:      ['14a94fe6a546b0fb', 'df4b97ad687b2f8b'],
+  paddlingout: ['9bc106d58993f93f', 'e13b2c3a8def24f3'],
+  forge:       ['2da71419f1d6d133', 'e45f35cbeae37262'],
+  kortex:      ['9e8838d7a584c564', 'd57257e39b63de48'],
+  kaayko:      ['49b36fd9a9a2cb1e', 'da775073face2778'],
+  alumni:      ['14a94fe6a546b0fb', '4faf74c825593623'],
 };
 
 const render = (c) => ({
@@ -103,28 +101,62 @@ test('no card needs a line the front will not print', () => {
 test('THE BACK — the words and the animal never touch', () => {
   for (const c of idx.cards) {
     const svg = render(c).back;
-    // The picture is inside its box.
-    const img = svg.match(/<image href="[^"]+" x="(\d+)" y="(\d+)" width="(\d+)" height="(\d+)" preserveAspectRatio="xMidYMid meet"\/>/);
-    assert.ok(img, `${c.slug}: back has no boxed ghost`);
-    const [x, y, w, h] = img.slice(1).map(Number);
+    // The picture is a window onto the animal's own extent, fitted to a box
+    // that is the full height inside the margin.
+    const win = svg.match(/<svg x="(\d+)" y="(\d+)" width="(\d+)" height="(\d+)" viewBox="(\d+) (\d+) (\d+) (\d+)" preserveAspectRatio="xMidYMid meet"><image href="[^"]+" x="0" y="0" width="802" height="1200"\/><\/svg>/);
+    assert.ok(win, `${c.slug}: back has no framed picture`);
+    const [x, y, w, h, vx, vy, vw, vh] = win.slice(1).map(Number);
     assert.equal(x, BACK.ghostX);
-    assert.ok(y >= BACK.ghostY && y + h <= BACK.ghostY + BACK.ghostH, `${c.slug}: ghost leaves its band`);
-    assert.equal(x + w, 1050);
+    assert.equal(y, BACK.ghostY);
+    assert.equal(h, 600 - 2 * BACK.pad, `${c.slug}: the picture does not fill the height`);
+    assert.equal(x + w, 1050 - BACK.pad, `${c.slug}: the picture is not inset from the right edge`);
+    assert.ok(x - BACK.textRight >= 40, `${c.slug}: less than 40px between the column and the picture`);
+    // The window is the measured extent, and it is inside the file.
+    const ex = ART_EXTENT[c.art || c.slug];
+    assert.ok(ex, `${c.slug}: no measured extent for its art`);
+    assert.deepEqual({ x: vx, y: vy, w: vw, h: vh }, ex);
+    assert.ok(vx >= 0 && vy >= 0 && vx + vw <= 802 && vy + vh <= 1200, `${c.slug}: extent leaves the file`);
+    // Fitted, never clipped: the drawn animal is as tall as the box or as wide
+    // as it, whichever the animal's own shape allows, and no larger.
+    const scale = Math.min(w / vw, h / vh);
+    const drawnW = vw * scale, drawnH = vh * scale;
+    assert.ok(drawnW <= w + 0.01 && drawnH <= h + 0.01, `${c.slug}: the animal would be clipped`);
+    assert.ok(Math.abs(drawnW - w) < 0.5 || Math.abs(drawnH - h) < 0.5, `${c.slug}: the animal fills neither the height nor the width`);
 
     // Every line of the sentence fits the type column at the ceiling advance,
     // and none of it was dropped.
     const size = PRINT.type.backLine.size;
     const rows = wrap(c.line || c.hook, backWrap(size), 99);
-    assert.ok(rows.length <= 2, `${c.slug}: back line needs ${rows.length} lines — "${c.line}"`);
+    assert.ok(rows.length <= 3, `${c.slug}: back line needs ${rows.length} lines — "${c.line}"`);
+    // Three rows push the rule and the address down; the address must still
+    // clear the facts, which are anchored to the foot of the column.
+    const step = Math.round(size * BACK.lineStep);
+    const hostY = PRINT.type.backLine.y + (rows.length - 1) * step + 56 + 40;
+    assert.ok(hostY + 24 <= BACK.factsY - 8, `${c.slug}: address at y=${hostY} runs into the facts at ${BACK.factsY}`);
     for (const row of rows) {
       const right = 88 + row.length * size * BACK.em;
       assert.ok(right <= BACK.textRight, `${c.slug}: "${row}" reaches x=${right.toFixed(0)}, column ends at ${BACK.textRight}`);
     }
-    // Nothing that is typed sits inside the picture's box.
-    for (const m of svg.matchAll(/<text x="(\d+(?:\.\d+)?)" y="(\d+(?:\.\d+)?)"[^>]*>([^<]*)<\/text>/g)) {
+    // Nothing that is typed starts inside the picture's box — and since the
+    // box is now the full height, that means nothing typed starts right of the
+    // column at all. The index is end-anchored at the column's edge.
+    for (const m of svg.matchAll(/<text x="(\d+(?:\.\d+)?)" y="(\d+(?:\.\d+)?)"([^>]*)>([^<]*)<\/text>/g)) {
       const tx = Number(m[1]), ty = Number(m[2]);
-      const inBand = ty > BACK.ghostY && ty < BACK.ghostY + BACK.ghostH + 12;
-      if (inBand) assert.ok(tx < BACK.ghostX, `${c.slug}: "${m[3]}" at x=${tx} is inside the picture's box`);
+      const belowPicture = ty > BACK.ghostY + BACK.ghostH;
+      // Everything typed is in the column — except the index, which sits in
+      // the bottom margin under the picture, end-anchored to the right edge.
+      if (!belowPicture) assert.ok(tx <= BACK.textRight, `${c.slug}: "${m[4]}" starts at x=${tx}, right of the column`);
+      else assert.ok(/text-anchor="end"/.test(m[3]), `${c.slug}: "${m[4]}" is under the picture but not end-anchored`);
+    }
+    // The name fits the column at its size (Cormorant, measured 359px at 68 for
+    // "Paddling Out"; 0.44em/char is the ceiling advance).
+    const nameW = String(c.name).length * PRINT.type.backName.size * BACK.em;
+    assert.ok(88 + nameW <= BACK.textRight, `${c.slug}: name "${c.name}" reaches x=${(88 + nameW).toFixed(0)}`);
+    // The three facts fit the column at this size (302px measured for the
+    // longest, in Josefin Sans at 15px/3px tracking; 0.62em is the ceiling).
+    for (const f of (c.facts || [])) {
+      const right = 88 + 36 + String(f).length * (15 * 0.62 + 3);
+      assert.ok(right <= BACK.textRight, `${c.slug}: fact "${f}" reaches x=${right.toFixed(0)}`);
     }
   }
 });

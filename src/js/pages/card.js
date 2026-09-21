@@ -1,8 +1,8 @@
 /**
- * pages/card.js — the collectible card (/card): lighting model, flip, share, QR.
+ * pages/card.js — the collectible card (/card): lighting model, flip, inspect, QR.
  * Moved out of card.html on 12 Sep 2026 unchanged.
  */
-import { front, back, PRINT } from '/js/cards/render.js?v=639e44c';
+import { front, back, PRINT, BACK, ART_EXTENT } from '/js/cards/render.js?v=639e44c';
 import { engravedFor, stockOf } from '/js/cards/skins/engraved.js?v=639e44c';
 import { readFace, warmArt } from '/js/cards/relief.js?v=639e44c';
 import { rest, step, lampFor, wrap180, clamp } from '/js/cards/attitude.js?v=639e44c';
@@ -59,13 +59,14 @@ function light(px, py) {
   room.style.setProperty('--sy', (py * 100).toFixed(1) + '%');
 }
 
-/** Where the lamp should sit for a pointer or a tilt at (px, py) over the card. */
+/** Where the lamp should sit for a pointer at (px, py) over the card. */
 const lampAngle = (px, py) => 180 + Math.atan2(0.5 - py, px - 0.5) * 180 / Math.PI;
 
 /* ── how the card hangs ──────────────────────────────────────────────────────
-   The arithmetic is in cards/attitude.js, where it can be tested: a One Euro
-   filter on the handset reading and a critically damped spring solved rather
-   than integrated. This file only feeds it and writes the result.            */
+   The arithmetic is in cards/attitude.js, where it can be tested: a
+   critically damped spring solved rather than integrated. This file only
+   feeds it — from the pointer, or from a finger holding the card — and
+   writes the result.                                                          */
 const MAX_TILT = 17;       // degrees at full deflection
 const att = rest();
 let lastT = 0;
@@ -93,10 +94,15 @@ function loop(t) {
   }
   if (inspecting) {
     // The lamp is fixed in the room, so the reflection travels as the card
-    // turns under it — the same mapping the handset's tilt used to write.
-    target.x = 0.5 - wrap180(att.ry) / (INSPECT_MAX_RX * 2.4);
+    // turns under it. Lit from the angle RELATIVE TO THE FACE THAT IS UP:
+    // at 180° the back is square to the viewer exactly as the front is at 0°,
+    // so the lamp must agree at both — otherwise the fold from 180 to 0 that
+    // ends a turn swept a highlight across a card that had already stopped.
+    const a = wrap180(att.ry);
+    const rel = Math.abs(a) > 90 ? a - Math.sign(a) * 180 : a;
+    target.x = 0.5 - rel / (INSPECT_MAX_RX * 2.4);
     target.y = 0.5 + att.rx / (INSPECT_MAX_RX * 2.4);
-    if (engraved) aimLamp(lampFor(wrap180(att.ry)));
+    if (engraved) aimLamp(lampFor(rel));
   }
   card.style.setProperty('--rx', att.rx.toFixed(2) + 'deg');
   card.style.setProperty('--ry', att.ry.toFixed(2) + 'deg');
@@ -123,7 +129,14 @@ const INSPECT_GAIN = 0.42;     // degrees per pixel of drag
 const inspectBtn = document.getElementById('inspect');
 const cardWrap = card.parentElement;
 let inspecting = false;
-const grab = { on: false, x: 0, y: 0, t: 0, wx: 0, wy: 0 };   // w = angular velocity, deg/s
+const grab = { on: false, id: null, x: 0, y: 0, t: 0, wx: 0, wy: 0 };   // w = angular velocity, deg/s
+
+/** Whatever half-turn the card is on, make it the real state and start at 0. */
+function foldTurn() {
+  const half = Math.round(att.ry / 180);
+  if (half % 2 !== 0) card.classList.toggle('is-flipped');
+  att.ry -= half * 180; att.ty -= half * 180;
+}
 
 function setInspect(on) {
   inspecting = !!on;
@@ -131,13 +144,21 @@ function setInspect(on) {
   cardWrap.classList.toggle('is-inspecting', inspecting);
   inspectBtn.setAttribute('aria-pressed', String(inspecting));
   inspectBtn.textContent = inspecting ? 'Put it down' : 'Inspect';
-  if (!inspecting) { grab.on = false; att.tx = 0; att.ty = 0; }
+  if (!inspecting) {
+    // Put down mid-coast, the card keeps the face it was heading for rather
+    // than swinging 150° back to the one it left.
+    grab.on = false; grab.id = null;
+    foldTurn(); att.tx = 0; att.ty = 0;
+  }
   if (!live) { live = true; card.classList.add('is-live'); }
 }
 
 function grabStart(e) {
   if (!inspecting) return;
-  grab.on = true; grab.x = e.clientX; grab.y = e.clientY; grab.t = performance.now();
+  // One finger holds the card. A second touch used to re-seat the grab and
+  // then both fed it, so the card thrashed between two hands.
+  if (grab.on) return;
+  grab.on = true; grab.id = e.pointerId; grab.x = e.clientX; grab.y = e.clientY; grab.t = performance.now();
   grab.wx = 0; grab.wy = 0;
   att.tx = att.rx; att.ty = att.ry;
   att.vx.v = 0; att.vy.v = 0;
@@ -145,7 +166,7 @@ function grabStart(e) {
 }
 
 function grabMove(e) {
-  if (!grab.on) return;
+  if (!grab.on || e.pointerId !== grab.id) return;
   const now = performance.now();
   const dt = Math.max(1 / 240, (now - grab.t) / 1000);
   const dx = e.clientX - grab.x, dy = e.clientY - grab.y;
@@ -162,8 +183,8 @@ function grabMove(e) {
 }
 
 function grabEnd(e) {
-  if (!grab.on) return;
-  grab.on = false;
+  if (!grab.on || (e.pointerId != null && e.pointerId !== grab.id)) return;
+  grab.on = false; grab.id = null;
   try { card.releasePointerCapture(e.pointerId); } catch (_) {}
   // Hand the throw to the spring, then ask where it would coast to and land
   // on the face nearest THAT — so a flick spins it over and a nudge does not.
@@ -176,13 +197,11 @@ function grabEnd(e) {
 /** Once it has come to rest on its other face, make that the real state. */
 function settleInspect() {
   if (grab.on || Math.abs(att.vy.v) > 2 || Math.abs(att.ry - att.ty) > 0.4) return;
-  const half = Math.round(att.ty / 180);
-  if (half === 0) return;
+  if (Math.round(att.ty / 180) === 0) return;
   // ry of 180 (or −180, or 540) IS the back. Fold it into the flip state so
   // the card and the accessibility tree agree on which face is up, and start
   // the next turn from zero.
-  if (half % 2 !== 0) card.classList.toggle('is-flipped');
-  att.ry = 0; att.ty = 0; att.vy.v = 0;
+  foldTurn(); att.ry = 0; att.ty = 0; att.vy.v = 0;
 }
 
 if (inspectBtn) {
@@ -223,8 +242,7 @@ try {
 if (!still) {
   raf = requestAnimationFrame(loop);
   if (fine) {
-    // aim() still runs while engraved — it feeds the rake — but light() is
-    // fenced off inside the loop, so no foil is written.
+    // aim() feeds both the lamp and, while engraved, the rake.
     window.addEventListener('pointermove', aim, { passive: true });
     window.addEventListener('pointerleave', () => { target = { x: .5, y: .35 }; });
   }
@@ -270,7 +288,11 @@ function setSkin(on, { save = true } = {}) {
   skinIcon.src = engraved ? '/assets/card/rose.webp' : '/assets/card/skull.webp';
   if (save) remember(engraved);
   if (!engraved) { unread(); stopRaking(); }
-  if (series.length) { paintMarks(); show(at); }
+  // show() lands a NEW card face up. This is the same card in a different
+  // stock, so whichever face was up stays up — pressing the rose while
+  // reading a back must not turn the card over.
+  const wasFlipped = card.classList.contains('is-flipped');
+  if (series.length) { paintMarks(); show(at); if (wasFlipped) card.classList.add('is-flipped'); }
 }
 
 skinBtn.addEventListener('click', (e) => { e.stopPropagation(); setSkin(!engraved); });
@@ -347,10 +369,9 @@ function paintMarks() {
    the SVG filters moves, and the shadows swing with it.
 
    It is driven by whatever the device has. A pointer over the card moves it
-   directly. A phone moves it by its own attitude, which is the real gesture —
-   you are tilting the card. And when nobody is doing either it drifts slowly
-   on its own, because a card that is only legible once you have discovered a
-   gesture is a card most people will never read.
+   directly. On a phone, Inspect puts the card in the hand and the lamp
+   follows the turn. There is no idle drift: a card that moves on its own
+   reads as broken more often than as alive.
 
    This replaces the haptics as the primary answer rather than joining it.
    Haptics were never going to arrive on an iPhone, and a visual that works
@@ -420,13 +441,19 @@ function attachReaders(c) {
   unread();
   if (!engraved || !touchy) return;
   const artHref = `/assets/cards/art/${c.art || c.slug}.png`;
-  warmArt(artHref);
+  // Where the animal is on each face. The front's column covers from the
+  // origin; the back's picture is boxed on the right and fitted inside.
+  const FRONT_ART = { x: 0, y: 0, w: 401, h: 600, fit: 'slice' };
+  const BACK_ART = { x: BACK.ghostX, y: BACK.ghostY, w: BACK.ghostW, h: BACK.ghostH, fit: 'meet',
+                     crop: ART_EXTENT[c.art || c.slug] || null };
+  warmArt(artHref, FRONT_ART); warmArt(artHref, BACK_ART);
   for (const host of [frontEl, backEl]) {
     const svg = host.querySelector('svg');
     if (!svg) continue;
     const stylus = host.parentElement.querySelector('.stylus');
     const detach = readFace(svg, {
       artHref,
+      artBox: host === backEl ? BACK_ART : FRONT_ART,
       haptics: true,
       onRead: (f, u) => {
         if (!stylus) return;

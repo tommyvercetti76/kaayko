@@ -212,8 +212,12 @@ export function engravedFor(card, PRINT, face = "f") {
       // wrap() counts characters and knows nothing about the font, so a hook
       // set smaller must be allowed more of them or it breaks early.
       hook:     Object.freeze({ ...PRINT.type.hook, ...v.type.hook }),
-      backName: Object.freeze({ ...PRINT.type.backName, weight: v.type.name.weight, size: Math.round(v.type.name.size * .88), y: 178, track: Math.max(0, v.type.name.track - 1), caps: v.type.name.caps }),
-      backLine: Object.freeze({ ...PRINT.type.backLine, size: 26, y: 234, track: .6 }),
+      // The back's column is 392px and the name is set in caps with wide
+      // tracking, which is what made "PADDLING OUT" 445px at the old size.
+      // Smaller and tighter here than on the front; the test suite measures
+      // it against BACK.textRight.
+      backName: Object.freeze({ ...PRINT.type.backName, weight: v.type.name.weight, size: Math.round(v.type.name.size * .74), y: 176, track: Math.max(0, v.type.name.track - 4), caps: v.type.name.caps }),
+      backLine: Object.freeze({ ...PRINT.type.backLine, size: 24, y: 230, track: .5 }),
     }),
   };
 }
