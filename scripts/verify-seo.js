@@ -77,7 +77,11 @@ try {
     if (!/&copy;/.test(body)) note(`${rel}: footer has no copyright line`);
     if (!/<nav aria-label="Footer">/.test(body)) note(`${rel}: footer has no nav`);
     if (!/id="year"/.test(body)) note(`${rel}: footer year span missing`);
-    if (!html.includes('kaayko-footer-year')) note(`${rel}: footer year script missing`);
+    // The year is stamped by js/util.js (classic), or by js/kit.js / any page
+    // module that imports it. Mirrors hasYearStamp() in scripts/apply-footer.js —
+    // this used to look for the literal 'kaayko-footer-year', which is in no page
+    // on the site, so it failed on every page and buried the real findings.
+    if (!/\/js\/(util\.js|kit\.js|pages\/)/.test(html)) note(`${rel}: footer year script missing`);
   }
 }
 

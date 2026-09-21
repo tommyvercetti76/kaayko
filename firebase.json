@@ -377,22 +377,22 @@
         },
         {
           "source": "/alumni",
-          "destination": "https://alumni.kaayko.com",
+          "destination": "https://kaay.school",
           "type": 301
         },
         {
           "source": "/alumni.html",
-          "destination": "https://alumni.kaayko.com",
+          "destination": "https://kaay.school",
           "type": 301
         },
         {
           "source": "/karma",
-          "destination": "https://alumni.kaayko.com",
+          "destination": "https://kaay.school",
           "type": 301
         },
         {
           "source": "/karma.html",
-          "destination": "https://alumni.kaayko.com",
+          "destination": "https://kaay.school",
           "type": 301
         },
         {
