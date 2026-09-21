@@ -3,7 +3,8 @@
  * Moved out of card.html on 12 Sep 2026 unchanged.
  */
 import { front, back, PRINT, BACK, ART_EXTENT, ART_COLUMN } from '/js/cards/render.js?v=f604359';
-import { engravedFor, stockOf, reliefArt, reliefType, DIRS } from '/js/cards/skins/engraved.js?v=f604359';
+import { engravedFor, stockOf, embossParams, reliefType, DIRS } from '/js/cards/skins/engraved.js?v=f604359';
+import { embossOf, stillCanvas } from '/js/cards/emboss.js?v=f604359';
 import { readFace, warmArt } from '/js/cards/relief.js?v=f604359';
 import { rest, step, clamp } from '/js/cards/attitude.js?v=f604359';
 import { lightFace, pointerLamp, v } from '/js/cards/lamp.js?v=f604359';
@@ -36,8 +37,8 @@ const TILT = 11;                            // degrees the card leans toward the
 // and unwatchable. This close, a turn of thirty degrees walks the glint
 // from one edge to the other, and it sits on the sheet at rest.
 const ROOM_LAMP = v(-0.42, -0.14, 0.9);
-const LIFT = 1.06;                          // the card's scale while held
 const PERSPECTIVE = parseFloat(getComputedStyle(cardWrap).perspective) || 1400;
+const lampEl = document.getElementById('lamp');
 
 let eye = v(0, 0, PERSPECTIVE / 600), cardW = 600, cardBox = null, roomBox = null;
 /** Where the eye is, in card widths: the CSS perspective over the card's real width. */
@@ -52,37 +53,75 @@ window.addEventListener('resize', measure);
 
 let raf = 0, target = { x: .5, y: .35 }, cur = { x: .5, y: .35 }, live = false;
 
+/* ── how the light is written ──────────────────────────────────────────────
+   Straight onto each layer's own style, and NEVER as a custom property on
+   the card. For a phone this is the most important decision in the file.
+   WebKit inherits a custom property through the whole subtree, and every
+   filtered SVG element under the card answers the change with a repaint —
+   measured on the iOS Simulator with the same turn: 283ms a frame with the
+   light written as properties on the card, 17ms written like this. Chrome
+   never showed it, which is how it shipped. The custom properties left in
+   the stylesheet are resting defaults for a page that never runs the loop.
+
+   Two more WebKit facts, measured the same way and encoded below: a layer
+   whose opacity reaches zero is dropped and re-rendered when it comes back,
+   so the relief never goes below RELIEF_FLOOR; and a change of scale on the
+   card re-rasters every layer under it, so the card is never scaled.       */
+const write = (el, prop, val) => { if (el && el.style[prop] !== val) el.style[prop] = val; };
+const SIG = 14;               // the sheen gradient's own sigma is a fourteenth of the card, see .sheen
+const RELIEF_FLOOR = 0.02;
+let quiet = false;            // the probe rig, isolating the light
+let reliefParts = 'all';      // the probe rig, weighing the relief: 'all' | 'art' | 'flat'
+
+/** The layers of one face, found once. `stills` is filled by layStills. */
+function faceLayers(host) {
+  const face = host.parentElement;
+  const q = (sel) => face.querySelector(sel);
+  return { host, face, sheen: q('.sheen'), wash: q('.wash'), shade: q('.shade'), foil: q('.foil'), rim: q('.rim-lit'), relief: q('.relief'), stills: {} };
+}
+let faces = null;
+const layersOf = () => (faces ??= [faceLayers(frontEl), faceLayers(backEl)]);
+
 /** Light the card at this attitude, and the room behind it. */
-function lit(rx, ry, lift) {
+function lit(rx, ry) {
+  if (quiet) return;
   const lamp = (fine && !inspecting) ? pointerLamp(cur.x, cur.y) : ROOM_LAMP;
   const o = lightFace({
-    rx, ry, lamp, eye, lift,
+    rx, ry, lamp, eye,
     // Paper: a soft glint in a broad wash. Foil: a tighter, harder one.
     shine: engraved ? 46 : 90, soft: engraved ? 9 : 14, f0: 0.045, gain: engraved ? 30 : 24,
   });
-  const s = card.style;
   const px = (n) => (n * cardW).toFixed(1) + 'px';
-  // The glint's ellipse. The gradient's own sigma is a fourteenth of the card's
-  // width (see .sheen), so a scale of 14σ is the model's sigma exactly.
-  s.setProperty('--gx', px(o.gx)); s.setProperty('--gy', px(o.gy));
-  s.setProperty('--ga', o.angle.toFixed(1) + 'deg');
-  s.setProperty('--g1', (o.s1 * 14).toFixed(3)); s.setProperty('--g2', (o.s2 * 14).toFixed(3));
-  s.setProperty('--wa', o.wangle.toFixed(1) + 'deg');
-  s.setProperty('--w1', (o.w1 * 14).toFixed(3)); s.setProperty('--w2', (o.w2 * 14).toFixed(3));
-  s.setProperty('--spec', o.peak.toFixed(3)); s.setProperty('--wash', o.peak.toFixed(3));
-  s.setProperty('--shade', o.shade.toFixed(3));
-  s.setProperty('--fres', Math.min(1, o.fres * 5).toFixed(3));
-  s.setProperty('--hue', (o.L.x * 46).toFixed(1) + 'deg');
+  // The glint's ellipse. The gradient's own sigma is a fourteenth of the
+  // card's width, so a scale of 14σ is the model's sigma exactly.
+  const at = `translate(${px(o.gx)}, calc(${px(o.gy)} - 50%))`;
+  const glint = `${at} rotate(${o.angle.toFixed(1)}deg) scale(${(o.s1 * SIG).toFixed(3)}, ${(o.s2 * SIG).toFixed(3)})`;
+  const wash = `${at} rotate(${o.wangle.toFixed(1)}deg) scale(${(o.w1 * SIG).toFixed(3)}, ${(o.w2 * SIG).toFixed(3)})`;
+  // Exposure is set for the glint, not the paper: a floor of shade on the
+  // whole sheet, so the lamp's reflection — which cannot be brighter than
+  // white on a screen — still stands off the stock around it.
+  const spec = (o.peak * (engraved ? 0.92 : 0.62)).toFixed(3);
+  const washO = (o.peak * (engraved ? 0.38 : 0.22)).toFixed(3);
+  const shade = (engraved ? 0.10 + o.shade * 0.62 : 0.07 + o.shade * 0.60).toFixed(3);
+  const rim = Math.min(1, o.fres * 5).toFixed(3);
+  const foil = `rotate(${(o.L.x * 46).toFixed(1)}deg)`, foilO = (o.peak * 0.5).toFixed(3);
   // The relief: how much of each still shows is how far the lamp is on that side.
-  s.setProperty('--lxp', o.weights.xp.toFixed(3)); s.setProperty('--lxn', o.weights.xn.toFixed(3));
-  s.setProperty('--lyp', o.weights.yp.toFixed(3)); s.setProperty('--lyn', o.weights.yn.toFixed(3));
+  const still = (wt) => Math.max(RELIEF_FLOOR, Math.min(1, wt * 1.7)).toFixed(3);
+  const stills = { xp: still(o.weights.xp), xn: still(o.weights.xn), yp: still(o.weights.yp), yn: still(o.weights.yn) };
+  for (const f of layersOf()) {
+    write(f.sheen, 'transform', glint); write(f.sheen, 'opacity', spec);
+    write(f.wash, 'transform', wash); write(f.wash, 'opacity', washO);
+    write(f.shade, 'opacity', shade);
+    write(f.foil, 'transform', foil); write(f.foil, 'opacity', foilO);
+    write(f.rim, 'opacity', rim);
+    for (const dir in f.stills) for (const st of f.stills[dir]) write(st.el, 'opacity', (stills[dir] * st.k).toFixed(3));
+  }
   // The glow on the wall: the lamp itself, seen from the eye, on the desk's plane.
-  if (cardBox && roomBox) {
+  if (cardBox && roomBox && lampEl) {
     const k = eye.z / Math.max(0.2, eye.z - lamp.z);
     const lx = cardBox.left + cardBox.width / 2 + lamp.x * cardW * k - (roomBox.left + roomBox.width / 2);
     const ly = cardBox.top + cardBox.height / 2 + lamp.y * cardW * k - (roomBox.top + roomBox.height / 2);
-    room.style.setProperty('--lampx', lx.toFixed(1) + 'px');
-    room.style.setProperty('--lampy', ly.toFixed(1) + 'px');
+    write(lampEl, 'transform', `translate(${lx.toFixed(1)}px, ${ly.toFixed(1)}px)`);
   }
 }
 
@@ -114,9 +153,8 @@ function loop(t) {
   // leaning to a pointer or turning in a hand. The model works in the frame
   // of whichever face is up: at 180° the back is square to the viewer exactly
   // as the front is at 0°, and a full turn ends where it began.
-  lit(att.rx, att.ry, inspecting ? LIFT : 1);
-  card.style.setProperty('--rx', att.rx.toFixed(2) + 'deg');
-  card.style.setProperty('--ry', att.ry.toFixed(2) + 'deg');
+  lit(att.rx, att.ry);
+  write(card, 'transform', `rotateX(${att.rx.toFixed(2)}deg) rotateY(${att.ry.toFixed(2)}deg)`);
   raf = requestAnimationFrame(loop);
 }
 
@@ -318,14 +356,19 @@ function setSkin(on, { save = true } = {}) {
   // The skull becomes the rose as dust. Only when a person presses it: on
   // load the icon is simply in its state.
   skinBtn.dataset.mode = engraved ? 'rose' : 'skull';
-  if (save) morphNow(engraved ? 'to' : 'back');
   if (save) remember(engraved);
   if (!engraved) unread();
   // show() lands a NEW card face up. This is the same card in a different
   // stock, so whichever face was up stays up — pressing the rose while
   // reading a back must not turn the card over.
   const wasFlipped = card.classList.contains('is-flipped');
-  if (series.length) { paintMarks(); show(at); if (wasFlipped) card.classList.add('is-flipped'); }
+  // Order matters on a phone. The card changes stock at once (cheap: the
+  // base faces carry one small filter), the dust flies over the changed
+  // card from the NEXT frame — so its first frame is not the one that paid
+  // for the new faces — and the relief, which is the expensive raster,
+  // rises into the paper only after the dust has settled.
+  if (series.length) { paintMarks(); show(at, { relief: save && !still ? 'after-morph' : 'soon' }); if (wasFlipped) card.classList.add('is-flipped'); }
+  if (save) requestAnimationFrame(() => morphNow(engraved ? 'to' : 'back'));
 }
 
 skinBtn.addEventListener('click', (e) => {
@@ -411,35 +454,136 @@ function paintMarks() {
    below, above — and the lamp only sets their opacities, which the
    compositor changes for nothing. cards/skins/engraved.js has the maths;
    this only lays them over the face.                                        */
-function layRelief(host, c, face) {
-  const stack = host.parentElement.querySelector('.relief');
-  if (!stack) return;
-  stack.innerHTML = '';
+let reliefTimer = 0, reliefSeq = 0;
+
+/**
+ * Take the relief off both faces now, and lay it again in two phases: the
+ * impression's tint at once — the base face has no animal of its own, so
+ * this IS the animal — and the lit stills after `delayMs`: one frame later
+ * for a card change, or once the dust has settled for a skin change. The
+ * stills are the one moment of work on this page, and it must never land
+ * in a frame that is showing motion.
+ */
+function scheduleRelief(c, delayMs) {
+  clearTimeout(reliefTimer);
+  const seq = ++reliefSeq;
+  for (const f of layersOf()) { f.relief.classList.remove('is-set'); f.relief.innerHTML = ''; f.stills = {}; }
   if (!engraved) return;
-  const artHref = `/assets/cards/art/${c.art || c.slug}.png`;
-  const art = reliefArt(c, artHref, face, {
-    column: ART_COLUMN, back: BACK, extent: ART_EXTENT[c.art || c.slug] || { x: 0, y: 0, w: 802, h: 1200 },
-  });
-  const type = reliefType(c, face);
-  const svg = host.querySelector('svg');
+  const alive = () => engraved && seq === reliefSeq && series[at] === c;
+  const params = embossParams(c);
+  const emboss = embossOf(`/assets/cards/art/${c.art || c.slug}.png`, params);
+  emboss.then((e) => {
+    if (!alive()) return;
+    for (const f of layersOf()) layTint(f, c, e, params);
+    requestAnimationFrame(() => requestAnimationFrame(() => { if (alive()) for (const f of layersOf()) f.relief.classList.add('is-set'); }));
+  }).catch((err) => console.warn('card: relief —', err));
+  reliefTimer = setTimeout(() => {
+    emboss.then((e) => {
+      if (!alive()) return;
+      for (const f of layersOf()) layStills(f, c, e, params);
+      // Two frames: one for the insert to be laid out, one for the transition to
+      // have something to start from. The raster lands in the first.
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (alive()) for (const f of layersOf()) { const st = f.relief.querySelector('.stills'); if (st) st.classList.add('is-set'); }
+      }));
+    }).catch(() => {});
+  }, delayMs);
+}
+
+/** The window round a set of SVG text elements, in the face's units, with room for a shadow. */
+function typeWindow(texts, W = 1050, H = 600, margin = 14) {
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const t of texts) {
+    try { const b = t.getBBox(); x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x + b.width); y1 = Math.max(y1, b.y + b.height); } catch (_) {}
+  }
+  if (!Number.isFinite(x0)) return { x: 0, y: 0, w: W, h: H };
+  x0 = Math.max(0, x0 - margin); y0 = Math.max(0, y0 - margin);
+  x1 = Math.min(W, x1 + margin); y1 = Math.min(H, y1 + margin);
+  return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+}
+
+/** Place a layer over its window of the face, and no larger: a layer is a texture, and a texture is memory. */
+const placeStill = (el, win, W = 1050, H = 600) => {
+  el.style.cssText = `inset:auto;left:${(win.x / W * 100).toFixed(2)}%;top:${(win.y / H * 100).toFixed(2)}%;width:${(win.w / W * 100).toFixed(2)}%;height:${(win.h / H * 100).toFixed(2)}%`;
+};
+
+/**
+ * Where the art FILE sits on this face, in the face's units — the same
+ * arithmetic render.js used to draw it: the front's column, which the file
+ * fills exactly; or the back's box, into which the animal's measured extent
+ * is fitted, so the file itself hangs past the box on every side.
+ */
+function artRect(face, c) {
+  if (face !== 'b') return { x: ART_COLUMN.x, y: ART_COLUMN.y, w: ART_COLUMN.w, h: ART_COLUMN.h };
+  const ex = ART_EXTENT[c.art || c.slug] || { x: 0, y: 0, w: 802, h: 1200 };
+  const k = Math.min(BACK.ghostW / ex.w, BACK.ghostH / ex.h);
+  return {
+    x: BACK.ghostX + (BACK.ghostW - ex.w * k) / 2 - ex.x * k,
+    y: BACK.ghostY + (BACK.ghostH - ex.h * k) / 2 - ex.y * k,
+    w: 802 * k, h: 1200 * k,
+  };
+}
+
+/** The window the animal's layers are cut to: its box, plus a margin for the relief, inside the sheet. */
+function artWindow(face, W = 1050, H = 600) {
+  const box = face === 'b' ? { x: BACK.ghostX, y: BACK.ghostY, w: BACK.ghostW, h: BACK.ghostH } : ART_COLUMN;
+  const m = Math.ceil(Math.max(box.w, box.h) * 0.06) + 2;
+  const x0 = Math.max(0, box.x - m), y0 = Math.max(0, box.y - m);
+  const x1 = Math.min(W, box.x + box.w + m), y1 = Math.min(H, box.y + box.h + m);
+  return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+}
+
+/** One canvas of the animal, in a layer cut to the window, placed where the file is. */
+function artLayer(face, c, imageData, cls) {
+  const win = artWindow(face), rect = artRect(face, c);
+  const el = document.createElement('div');
+  el.className = cls;
+  placeStill(el, win);
+  const cv = stillCanvas(imageData);
+  cv.style.cssText = `position:absolute;left:${((rect.x - win.x) / win.w * 100).toFixed(2)}%;top:${((rect.y - win.y) / win.h * 100).toFixed(2)}%;width:${(rect.w / win.w * 100).toFixed(2)}%;height:${(rect.h / win.h * 100).toFixed(2)}%`;
+  el.appendChild(cv);
+  return el;
+}
+
+/** Phase one: the impression, at the watermark's strength on the back. */
+function layTint(f, c, e, params) {
+  const face = f.host === backEl ? 'b' : 'f';
+  const el = artLayer(face, c, e.tint, 'art tint');
+  el.style.opacity = face === 'b' ? String(params.ghost) : '1';
+  f.relief.appendChild(el);
+}
+
+/** Phase two: the four lit stills of the animal, and of the type. */
+function layStills(f, c, e, params) {
+  const face = f.host === backEl ? 'b' : 'f';
+  const ghost = face === 'b' ? params.ghost : 1;
+  const wrap = document.createElement('div');
+  wrap.className = 'stills';
+  const type = reliefParts === 'art' ? null : reliefType(c, face);
+  const svg = f.host.querySelector('svg');
   const texts = svg ? [...svg.querySelectorAll('text')] : [];
-  const frag = document.createDocumentFragment();
+  const tw = type && texts.length ? typeWindow(texts) : null;
+  const flat = reliefParts === 'flat' ? (html) => html.replace(/ filter="url\(#[^"]+\)"/g, '') : (html) => html;
+  f.stills = {};
   for (const dir of Object.keys(DIRS)) {
-    const a = document.createElement('div');
-    a.dataset.dir = dir; a.className = 'art';
-    a.innerHTML = art[dir];
-    frag.appendChild(a);
-    if (!type || !texts.length) continue;
+    f.stills[dir] = [];
+    const a = artLayer(face, c, e[dir], 'art');
+    a.dataset.dir = dir;
+    a.style.opacity = String(RELIEF_FLOOR);
+    wrap.appendChild(a); f.stills[dir].push({ el: a, k: ghost });
+    if (!tw) continue;
     // The lettering is the face's own <text>, cloned: it is never set twice,
     // so it cannot drift from what the card says.
     const t = document.createElement('div');
     t.dataset.dir = dir; t.className = 'type';
-    t.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1050 600" aria-hidden="true"><defs>${type[dir].defs}</defs><g filter="url(#${type[dir].id})"></g></svg>`;
+    t.innerHTML = flat(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${tw.x} ${tw.y} ${tw.w} ${tw.h}" aria-hidden="true"><defs>${type[dir].defs}</defs><g filter="url(#${type[dir].id})"></g></svg>`);
     const g = t.querySelector('g');
     for (const el of texts) { const k = el.cloneNode(true); k.removeAttribute('filter'); g.appendChild(k); }
-    frag.appendChild(t);
+    placeStill(t, tw);
+    t.style.opacity = String(RELIEF_FLOOR);
+    wrap.appendChild(t); f.stills[dir].push({ el: t, k: 1 });
   }
-  stack.appendChild(frag);
+  f.relief.appendChild(wrap);
 }
 
 /* The fingertip reader. Where a browser can vibrate it ticks per letter; where
@@ -485,7 +629,7 @@ function attachReaders(c) {
   }
 }
 
-function show(i, { focus = false } = {}) {
+function show(i, { focus = false, relief = 'soon' } = {}) {
   if (!series.length) return;
   at = (i + series.length) % series.length;
   const c = series[at];
@@ -512,8 +656,9 @@ function show(i, { focus = false } = {}) {
     if (focus && j === at) b.focus();
   });
   card.classList.remove('is-flipped');            // a new card arrives face up
-  layRelief(frontEl, c, 'f');
-  layRelief(backEl, c, 'b');
+  // 1400ms: the dust lands at 1150 and the rose has faded in by 1330. The
+  // raster must fall in a still moment, and this is the first one.
+  scheduleRelief(c, relief === 'after-morph' ? 1400 : 16);
   attachReaders(c);
   measure();                                      // the caption under the card can change height
 }
@@ -578,4 +723,8 @@ function show(i, { focus = false } = {}) {
   // remembers to change. It read "Bone" on every cold load for three deploys
   // after the module had stopped saying it.
   setSkin(remembered(), { save: false });
+  // A rig for measuring the page on a real engine, only when the URL asks
+  // for it. Never fetched otherwise. See cards/probe.js.
+  const probe = new URLSearchParams(location.search).get('probe');
+  if (probe) import('/js/cards/probe.js?v=ce7d26a').then((m) => m.run({ label: probe, setSkin, setInspect, att, grab, quiet: (on) => { quiet = !!on; }, parts: (p) => { reliefParts = p; } })).catch((err) => console.warn('card: probe —', err));
 })();

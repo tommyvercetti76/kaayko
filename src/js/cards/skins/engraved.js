@@ -63,7 +63,7 @@ export const STOCKS = Object.freeze({
  * went (the slope of the relief, so how hard the light catches it), `tone`
  * the faint tint left in the impression whatever the light does. There is no
  * direction in here any more — which way the relief throws its shadow is the
- * lamp's business, see reliefArt below.
+ * lamp's business, see embossParams and cards/emboss.js.
  */
 const VARIATION = Object.freeze({
   // Widest tracking of the five, and the only one whose hook is tracked too.
@@ -125,103 +125,33 @@ const MUTE = "#5E5240";
 const QUIET = "#46402F";
 
 /**
- * Filters are defined per card and per face, because an id is document-wide and
- * the admin preview concatenates both faces into one string.
+ * The relief.
  *
- * NOTHING IN HERE MOVES. That is the whole design.
+ * NOTHING IN HERE MOVES, and almost nothing in here is a filter. That is the
+ * whole design, and both halves were measured on an iPhone.
  *
- * The relief used to be lit by a lamp inside the filter — a feDistantLight
+ * The relief used to be lit by a lamp inside an SVG filter — a feDistantLight
  * whose azimuth was rewritten as the card turned. Every rewrite re-ran a blur
- * and a specular pass over the face, on the main thread's schedule, and that
- * was the stutter in the engraved set: the card's TURN was waiting on the
- * relief's RASTER. So the relief is now four still pictures per face — the
- * emboss lit from the right, from the left, from below, from above — and the
- * one lamp in cards/lamp.js only sets how much of each shows. An opacity is
- * the compositor's to change; a filter is not.
+ * and a specular pass over the face, and that was the stutter in the
+ * engraved set. So the relief became four still pictures per face — the
+ * emboss lit from the right, the left, below, above — and the one lamp in
+ * cards/lamp.js only sets how much of each shows. A Lambert emboss is linear
+ * in the light: the brightness a bump adds or takes away under a light L is
+ * −(L.x·hx + L.y·hy) for a height field h; the x term is one picture scaled
+ * by L.x, the y term another scaled by L.y, split by sign because a picture
+ * cannot be shown at a negative opacity.
  *
- * It works because a Lambert emboss is linear in the light. The brightness a
- * bump adds or takes away under a light L is −(L.x·hx + L.y·hy) for a height
- * field h: the x term is one picture scaled by L.x, the y term another scaled
- * by L.y, and a picture cannot be shown at a negative opacity, so each axis
- * is split by sign. Four pictures, four opacities, and the emboss turns under
- * the lamp exactly as the sheen does, because it is the same L.
+ * Then the stills themselves stopped being filters. Fourteen primitives per
+ * still cost 267ms to lay on iOS, and cost the same at half the resolution:
+ * WebKit pays per primitive, not per pixel. The animal's stills are now
+ * computed once in cards/emboss.js — the same height field, blur and
+ * difference, in a typed array — and laid as plain canvases. The params
+ * below are what that computation takes. Only the raised lettering is still
+ * a filter, and it is two primitives, not eleven.
  */
-const HEIGHT = (blur) => `<!-- alpha = source alpha - luminance. Subtracting luminance alone would give
-       the transparent area OUTSIDE the artwork a height of 1, and the filter
-       region would emboss as a rectangle. The dark animal becomes the raised
-       form; everything bright becomes flat stock. -->
-  <feColorMatrix in="SourceGraphic" type="matrix" result="h" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -0.2126 -0.7152 -0.0722 1 0"/>
-  <!-- The art is painted on a near-white ground, which still carries a little
-       height. Clamp it to none, or the edge of the image prints as a panel. -->
-  <feComponentTransfer in="h" result="hc"><feFuncA type="linear" slope="1.9" intercept="-0.17"/></feComponentTransfer>
-  <feGaussianBlur in="hc" stdDeviation="${blur}" result="hb"/>`;
-
-/** The impression itself, under no light in particular: a faint tint where the die bit. */
-const impress = (id, d) => `<filter id="${id}-impress" x="-6%" y="-6%" width="112%" height="112%" color-interpolation-filters="sRGB">
-  ${HEIGHT(d.blur)}
-  <feFlood flood-color="#8C8375" flood-opacity="${d.tone}" result="c"/>
-  <feComposite in="c" in2="hb" operator="in"/>
-</filter>`;
 
 /** Where each still's light comes from, in the face's own frame: x right, y down. */
 export const DIRS = Object.freeze({ xp: [1, 0], xn: [-1, 0], yp: [0, 1], yn: [0, -1] });
-
-/**
- * The emboss lit from one side. A slope that faces the light is lit white; a
- * slope that faces away is in shadow. h(p + s·a) − h(p − s·a) is the rise of
- * the surface TOWARD the light: positive means the surface climbs toward it,
- * which is the far side of a bump, in shadow; negative is the near side, lit.
- */
-function reliefFilter(id, dir, d) {
-  const [ax, ay] = DIRS[dir];
-  const step = 1.5;
-  const gain = (1.6 * d.scale).toFixed(2);
-  return `<filter id="${id}" x="-6%" y="-6%" width="112%" height="112%" color-interpolation-filters="sRGB">
-  ${HEIGHT(d.blur)}
-  <feOffset in="hb" dx="${(-step * ax).toFixed(2)}" dy="${(-step * ay).toFixed(2)}" result="fwd"/>
-  <feOffset in="hb" dx="${(step * ax).toFixed(2)}" dy="${(step * ay).toFixed(2)}" result="bwd"/>
-  <feComposite in="fwd" in2="bwd" operator="arithmetic" k2="1" k3="-1" result="rise"/>
-  <feComposite in="bwd" in2="fwd" operator="arithmetic" k2="1" k3="-1" result="fall"/>
-  <feComponentTransfer in="rise" result="riseg"><feFuncA type="linear" slope="${gain}"/></feComponentTransfer>
-  <feComponentTransfer in="fall" result="fallg"><feFuncA type="linear" slope="${gain}"/></feComponentTransfer>
-  <feFlood flood-color="#FFFFFF" result="w"/>
-  <feFlood flood-color="#4A4034" result="k"/>
-  <feComposite in="w" in2="fallg" operator="in" result="lit"/>
-  <feComposite in="k" in2="riseg" operator="in" result="dark"/>
-  <feMerge><feMergeNode in="dark"/><feMergeNode in="lit"/></feMerge>
-</filter>`;
-}
-
-/**
- * Raised lettering, lit from one side: a warm shadow thrown away from the
- * light and a white shoulder toward it, both cut away under the glyph itself
- * since the ink is drawn by the face beneath. A real die gives about one
- * unit of relief, and at one unit of 1050 across a phone this was invisible
- * — technically faithful and practically absent — so it is drawn at the
- * scale the screen can resolve. The flat job omits this rather than
- * weakening it, because a plate that was never made leaves nothing at all.
- */
-function typeFilter(id, dir) {
-  const [ax, ay] = DIRS[dir];
-  return `<filter id="${id}" x="-8%" y="-22%" width="116%" height="144%" color-interpolation-filters="sRGB">
-  <feGaussianBlur in="SourceAlpha" stdDeviation="1.1" result="sb"/>
-  <feOffset in="sb" dx="${(-2.6 * ax).toFixed(2)}" dy="${(-2.6 * ay).toFixed(2)}" result="so"/>
-  <feFlood flood-color="#8A8064" flood-opacity=".9" result="sc"/>
-  <feComposite in="sc" in2="so" operator="in" result="s1"/>
-  <feComposite in="s1" in2="SourceAlpha" operator="out" result="shadow"/>
-  <feGaussianBlur in="SourceAlpha" stdDeviation=".7" result="hb"/>
-  <feOffset in="hb" dx="${(1.7 * ax).toFixed(2)}" dy="${(1.7 * ay).toFixed(2)}" result="ho"/>
-  <feFlood flood-color="#FFFFFF" result="hc"/>
-  <feComposite in="hc" in2="ho" operator="in" result="h1"/>
-  <feComposite in="h1" in2="SourceAlpha" operator="out" result="shoulder"/>
-  <feMerge><feMergeNode in="shadow"/><feMergeNode in="shoulder"/></feMerge>
-</filter>`;
-}
-
-const defs = (id, d) => `<defs>
-${impress(id, d)}
-</defs>
-`;
 
 const idFor = (card, face) => {
   const slug = String(card?.slug || "card").replace(/[^a-z0-9-]/gi, "") || "card";
@@ -229,27 +159,34 @@ const idFor = (card, face) => {
 };
 
 /**
- * The four stills of the animal for one face, as SVG strings the page lays
- * over the drawn card. Each is the art exactly where render.js puts it —
- * the front's column, or the back's boxed window on the animal's extent —
- * so the relief lands on the animal and not beside it.
- *
- * @returns {{xp:string, xn:string, yp:string, yn:string}}
+ * What the die did to this card's animal, for cards/emboss.js: the softness
+ * of its edge, how hard the light catches a slope, the tint it leaves in
+ * the impression, and how far the back's watermark is pushed under the words.
  */
-export function reliefArt(card, artHref, face, { W = 1050, H = 600, column, back, extent } = {}) {
-  const { slug, id } = idFor(card, face);
+export function embossParams(card) {
+  const { slug } = idFor(card, "f");
   const v = VARIATION[slug] || VARIATION.kaayko;
   const d = { ...DEBOSS_DEFAULT, ...(v.deboss || {}) };
-  const href = String(artHref).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const out = {};
-  for (const dir of Object.keys(DIRS)) {
-    const fid = `${id}-${dir}`;
-    const art = face === "b"
-      ? `<g opacity="${v.ghost || ".5"}" filter="url(#${fid})"><svg x="${back.ghostX}" y="${back.ghostY}" width="${back.ghostW}" height="${back.ghostH}" viewBox="${extent.x} ${extent.y} ${extent.w} ${extent.h}" preserveAspectRatio="xMidYMid meet"><image href="${href}" x="0" y="0" width="802" height="1200"/></svg></g>`
-      : `<g filter="url(#${fid})"><image href="${href}" x="${column.x}" y="${column.y}" width="${column.w}" height="${column.h}" preserveAspectRatio="xMidYMid slice"/></g>`;
-    out[dir] = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" aria-hidden="true"><defs>${reliefFilter(fid, dir, d)}</defs>${art}</svg>`;
-  }
-  return out;
+  return { blur: d.blur, gain: 1.6 * d.scale, tone: Number(d.tone), ghost: Number(v.ghost || ".5") };
+}
+
+/**
+ * Raised lettering, lit from one side: a warm shadow thrown away from the
+ * light and a white shoulder toward it, under the glyph, which the still
+ * draws again in ink over the face's own. Two primitives: feDropShadow is
+ * blur, offset, flood and composite in one, and the second takes the first's
+ * result. A real die gives about one unit of relief, and at one unit of
+ * 1050 across a phone this was invisible — technically faithful and
+ * practically absent — so it is drawn at the scale the screen can resolve.
+ * The flat job omits this rather than weakening it, because a plate that
+ * was never made leaves nothing at all.
+ */
+function typeFilter(id, dir) {
+  const [ax, ay] = DIRS[dir];
+  return `<filter id="${id}" x="-8%" y="-22%" width="116%" height="144%" color-interpolation-filters="sRGB">
+  <feDropShadow dx="${(-2.6 * ax).toFixed(2)}" dy="${(-2.6 * ay).toFixed(2)}" stdDeviation="1.1" flood-color="#8A8064" flood-opacity=".9"/>
+  <feDropShadow dx="${(1.7 * ax).toFixed(2)}" dy="${(1.7 * ay).toFixed(2)}" stdDeviation=".7" flood-color="#FFFFFF" flood-opacity="1"/>
+</filter>`;
 }
 
 /**
@@ -279,14 +216,11 @@ export function reliefType(card, face) {
  * @param {object} PRINT  the default skin, which this one starts from
  */
 export function engravedFor(card, PRINT, face = "f") {
-  // Per card AND per face. An id is document-wide, and the admin preview
-  // concatenates a front and a back into one string, so `kx-kaayko-impress`
-  // alone would be defined twice and every reference would resolve to the
-  // first one. The set view makes the same mistake five times over.
-  const { slug, id } = idFor(card, face);
+  // The filter ids the page builds from this are per card AND per face: an
+  // id is document-wide, and both faces live in the same document.
+  const { slug } = idFor(card, face);
   const stock = STOCKS[slug] || FALLBACK;
   const v = VARIATION[slug] || VARIATION.kaayko;
-  const d = { ...DEBOSS_DEFAULT, ...(v.deboss || {}) };
 
   return {
     ...PRINT,
@@ -304,13 +238,14 @@ export function engravedFor(card, PRINT, face = "f") {
     // Five accents become one. This is the largest single subtraction.
     accentOf: () => QUIET,
     spine: false,
-    art: true,
-    // The base face carries only the impression's tint. The relief — lit
-    // from wherever the lamp is — is laid over it by the page, see reliefArt.
-    artFilter: `url(#${id}-impress)`,
-    // The animal is already inkless; it does not also need to be faint.
+    // No animal in the base at all, and no filter. The animal is the relief,
+    // laid over the face by the page from cards/emboss.js: the impression's
+    // tint, and four stills under the lamp. The base is plain paper and type,
+    // which is why switching to this set costs the page nothing it can feel.
+    art: false,
+    artFilter: "",
     ghostOpacity: v.ghost || ".5",
-    defs: defs(id, d),
+    defs: "",
     // Flat in the base on every job; the raised jobs get their shadow and
     // shoulder from reliefType, over the top, under the lamp.
     textFilter: "",

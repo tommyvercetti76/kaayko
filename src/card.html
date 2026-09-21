@@ -41,22 +41,16 @@
   --serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
   --sans: 'Josefin Sans', Futura, 'Century Gothic', Avenir, sans-serif;
 
-  /* Written by the lighting model every frame — and read ONLY by transforms
-     and opacities, which the compositor changes without repainting a pixel.
-     That is the whole of why the card turns smoothly: a frame of turning is
-     a commit of a dozen numbers, never a re-raster of the face. */
-  --gx: 0px; --gy: 0px;              /* the glint, from the face's centre */
-  --ga: 0deg; --g1: 2; --g2: 2;      /* the glint's ellipse: angle and the two radii */
-  --wa: 0deg; --w1: 6; --w2: 6;      /* the wash around it: same centre, wider */
-  --spec: 0; --wash: 0;              /* their strengths */
-  --shade: 0;                        /* Lambert: how far the sheet faces away from the lamp */
-  --fres: 0;                         /* Fresnel at the rim */
-  --hue: 0deg;                       /* foil shift */
-  /* The relief: lit from right / left / below / above. The defaults are the
-     room's lamp on a card at rest, so a page that never runs the frame loop
-     (reduced motion) still shows the emboss rather than a flat sheet. */
+  /* The lighting model writes NOTHING here while it runs. Every number it
+     produces goes straight onto a layer's own style as a transform or an
+     opacity — the compositor changes those without repainting a pixel. It
+     used to write custom properties on the card, and WebKit inherits those
+     through the whole subtree and repaints every filtered SVG element under
+     it in answer: 283ms a frame on an iPhone, measured. The one set left is
+     the relief's resting state, for a page that never runs the loop
+     (reduced motion): the room's lamp on a card at rest, so the emboss
+     still shows rather than a flat sheet. */
   --lxp: 0; --lxn: .42; --lyp: 0; --lyn: .14;
-  --rx: 0deg; --ry: 0deg;            /* card attitude */
 }
 
 * { box-sizing: border-box; }
@@ -96,15 +90,15 @@ a { color: inherit; text-decoration: none; }
   isolation: isolate;
 }
 /* the lamp itself — the one light the card is lit by, seen on the wall behind
-   it. It is moved with a transform, never by moving the gradient: repainting
-   a viewport-sized gradient every frame was the second-largest paint on the
-   page, and on a phone it is the whole screen. */
-.room::before {
-  content: "";
+   it. A real element, not a pseudo-element, so the model can move it with a
+   transform written straight onto it: repainting a viewport-sized gradient
+   every frame was the second-largest paint on the page, and a custom
+   property on the room would reach the card under it. */
+.lamp {
   position: absolute; inset: -20%;
   background: radial-gradient(33% 33% at 50% 50%,
     rgba(181, 147, 90, .16), rgba(181, 147, 90, .04) 42%, transparent 70%);
-  transform: translate(var(--lampx, -12vw), var(--lampy, -30vh));
+  transform: translate(-12vw, -30vh);
   will-change: transform;
   z-index: -1; pointer-events: none;
 }
@@ -126,6 +120,7 @@ a { color: inherit; text-decoration: none; }
 
 /* ── the card ──────────────────────────────────────────────────────────── */
 .card-wrap {
+  position: relative;
   perspective: 1400px;
   /* 100% of the ROOM's padded content box, not of the viewport: 90vw is wider
      than the space the room's own 20px gutters leave, which is where the last
@@ -140,19 +135,22 @@ a { color: inherit; text-decoration: none; }
      screenshot, the long-press selection sheet on a phone. It is an object. */
   user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
   transform-style: preserve-3d;
-  transform: scale(var(--lift, 1)) rotateX(var(--rx)) rotateY(var(--ry));
+  /* Written by the loop straight onto the element. Never scaled: a change of
+     scale on the card re-rasters every layer under it in WebKit, and the
+     one frame that did (picking it up at 1.06) cost 330ms. */
+  transform: rotateX(0deg) rotateY(0deg);
+  will-change: transform;
   transition: transform .55s cubic-bezier(.2, .8, .2, 1);
   cursor: pointer;
   border-radius: 10px;
 }
 .card.is-live { transition: none; }
-.card.is-flipped { --flip: 180deg; }
 .face {
   position: absolute; inset: 0;
   border-radius: 10px;
   overflow: hidden;
   backface-visibility: hidden;
-  transform: rotateY(var(--flip, 0deg));
+  transform: rotateY(0deg);
   transition: transform .7s cubic-bezier(.2, .8, .2, 1);
   box-shadow:
     0 2px 3px rgba(0,0,0,.5),
@@ -160,7 +158,12 @@ a { color: inherit; text-decoration: none; }
     0 0 0 1px rgba(181,147,90,.20);
   background: var(--paper);
 }
-.face.back { transform: rotateY(calc(var(--flip, 0deg) + 180deg)); }
+/* The flip is four class rules and not a custom property, for the same
+   reason as everything else here: a property on the card would change the
+   computed style of every element under it. */
+.face.back { transform: rotateY(180deg); }
+.card.is-flipped .face.front { transform: rotateY(180deg); }
+.card.is-flipped .face.back { transform: rotateY(360deg); }
 .face img, .face svg { display: block; width: 100%; height: 100%; }
 
 /* ── what the light does to the face ──────────────────────────────────────
@@ -168,7 +171,7 @@ a { color: inherit; text-decoration: none; }
    writes lands in a transform or an opacity. Nothing repaints while the card
    turns: not the face, not the relief, not the drawn card under them. */
 .face > i, .face > .relief { position: absolute; inset: 0; pointer-events: none; border-radius: 10px; }
-.shade, .wash, .sheen, .foil, .rim-lit, .relief > div { will-change: transform, opacity; }
+.shade, .wash, .sheen, .foil, .rim-lit, .relief .stills > div { will-change: transform, opacity; }
 
 /* Lambert. The whole face dims as it turns away from the lamp and clears as
    it turns toward it — the term that makes a turned card read as lit rather
@@ -178,7 +181,7 @@ a { color: inherit; text-decoration: none; }
    whole sheet, so that the lamp's reflection — which cannot be brighter than
    white on a screen — still stands off the stock around it. A card under one
    lamp in a dark room does look like this. */
-.shade { background: #1c1610; opacity: calc(.07 + var(--shade) * .6); }
+.shade { background: #1c1610; opacity: 0; }
 
 /* The glint, and the wash around it. One Gaussian each, drawn ONCE as a
    circle a card-width across, and then moved, turned and stretched into the
@@ -191,13 +194,10 @@ a { color: inherit; text-decoration: none; }
     rgba(255, 252, 240, 1) 0%, rgba(255, 252, 240, .88) 7.1%, rgba(255, 252, 240, .61) 14.3%,
     rgba(255, 252, 240, .32) 21.4%, rgba(255, 252, 240, .135) 28.6%, rgba(255, 252, 240, .044) 35.7%,
     rgba(255, 252, 240, .011) 42.9%, rgba(255, 252, 240, 0) 50%);
-  transform: translate(var(--gx), calc(var(--gy) - 50%)) rotate(var(--ga)) scale(var(--g1), var(--g2));
-  opacity: calc(var(--spec) * .62);
+  transform: translateY(-50%) scale(3);
+  opacity: 0;
 }
-.wash {
-  transform: translate(var(--gx), calc(var(--gy) - 50%)) rotate(var(--wa)) scale(var(--w1), var(--w2));
-  opacity: calc(var(--wash) * .22);
-}
+.wash { transform: translateY(-50%) scale(6); }
 /* The foil. Gold does not brighten evenly — it shifts hue across the sweep.
    Oversized so that turning it never shows a corner. */
 .foil {
@@ -205,8 +205,7 @@ a { color: inherit; text-decoration: none; }
   background: linear-gradient(74deg,
     transparent 34%, rgba(255, 226, 150, .40) 46%,
     rgba(255, 250, 232, .58) 50%, rgba(198, 150, 92, .40) 55%, transparent 68%);
-  transform: rotate(var(--hue));
-  opacity: calc(var(--spec) * .5);
+  opacity: 0;
   mix-blend-mode: overlay;
 }
 /* Fresnel: grazing angles reflect more, so the rim lights up as the card
@@ -214,13 +213,25 @@ a { color: inherit; text-decoration: none; }
 .rim { box-shadow: inset 0 0 0 1px rgba(255, 244, 214, .10); }
 .rim-lit {
   box-shadow: inset 0 0 0 1px rgba(255, 244, 214, .55), inset 0 0 26px rgba(255, 240, 200, .22);
-  opacity: var(--fres);
+  opacity: 0;
 }
 /* The relief, engraved only: four stills of the emboss, each lit from one
    side, each shown by as much as the lamp is on that side. See
    cards/skins/engraved.js for why four pictures and not one lamp. */
-.relief { overflow: hidden; }
-.relief > div { position: absolute; inset: 0; }
+/* The relief is laid a moment after the card and fades in — the raster of
+   its layers is the one expensive thing on the page, and it must not land in
+   a frame that is showing motion. Under reduced motion it simply appears. */
+.relief { overflow: hidden; opacity: 0; transition: opacity .55s ease; }
+.relief.is-set { opacity: 1; }
+/* The animal is five canvases — the impression's tint, then four stills
+   lit from the four sides — computed once from the art in cards/emboss.js
+   and cut to the animal's window. Not filters: on iOS a filter costs per
+   primitive, and two hundred of them cost the switch 267ms. The lit stills
+   arrive in their own wrapper a moment after the tint and fade in. */
+.relief > div, .relief .stills > div { position: absolute; inset: 0; overflow: hidden; }
+.relief .stills { opacity: 0; transition: opacity .55s ease; }
+.relief .stills.is-set { opacity: 1; }
+.relief canvas { position: absolute; display: block; }
 .relief svg { display: block; width: 100%; height: 100%; }
 .relief [data-dir="xp"] { opacity: calc(var(--lxp) * 1.7); }
 .relief [data-dir="xn"] { opacity: calc(var(--lxn) * 1.7); }
@@ -307,19 +318,29 @@ a { color: inherit; text-decoration: none; }
 @media (prefers-reduced-motion: reduce) { .hint { display: none; } }
 .card.is-inspecting {
   transition: none;
-  cursor: grabbing;
-  will-change: transform;
-  /* Off the table, slightly: the shadow lengthens and the card grows a little,
-     which is all "picked up" needs to mean. */
-  --lift: 1.06;
+  /* No cursor change, deliberately: `cursor` is inherited, and an inherited
+     property changing on the card reaches every filtered SVG element under
+     it, which WebKit answers with a repaint — 300ms in the frame the card
+     was picked up, measured, for a cursor no touch screen has. Off the
+     table is the desk shadow below. It used to grow by six percent as well,
+     and that one change of scale re-rastered every layer under it. */
 }
 .card-wrap.is-inspecting { touch-action: none; }
 /* The settle folds a 180° coast into is-flipped and zeroes the angle in one
-   frame. Both faces tween --flip over .7s unless told not to, so a card that
-   had landed on its back snapped to the front and turned over again. */
+   frame. Both faces tween their flip over .7s unless told not to, so a card
+   that had landed on its back snapped to the front and turned over again. */
 .card.is-inspecting .face { transition: none; }
-.card.is-inspecting .face { box-shadow:
-  0 4px 6px rgba(0,0,0,.55), 0 46px 90px rgba(0,0,0,.72), 0 0 0 1px rgba(181,147,90,.28); }
+/* The shadow a held card throws on the desk: its own flat layer under the
+   card, faded in by opacity. It used to be a change of box-shadow on the
+   faces, and that repainted both of them — with their filters — in the very
+   frame the card was picked up: 300ms, measured. A desk shadow does not turn
+   with the card in any case. */
+.desk {
+  position: absolute; inset: 0; border-radius: 10px; pointer-events: none;
+  box-shadow: 0 46px 90px rgba(0,0,0,.72), 0 4px 6px rgba(0,0,0,.4);
+  opacity: 0; transition: opacity .35s ease; will-change: opacity;
+}
+.card-wrap.is-inspecting .desk { opacity: 1; }
 .hint button {
   background: none; border: 1px solid var(--hair); color: var(--dim);
   border-radius: 999px; padding: 7px 16px; cursor: pointer;
@@ -340,7 +361,8 @@ a { color: inherit; text-decoration: none; }
 .colophon a:hover { color: var(--gold-lit); }
 
 @media (prefers-reduced-motion: reduce) {
-  .card, .face { transition: none; }
+  .card, .face, .relief, .relief .stills { transition: none; }
+  .relief, .relief .stills { opacity: 1; }
   .sheen, .wash, .foil, .shade { display: none; }
 }
 
@@ -376,7 +398,7 @@ a { color: inherit; text-decoration: none; }
    cold instead, so the cream sits in it as a lit object. Still nothing like
    the warm gold jewel-box of the colour card: that room is a lamp, this one
    is an office at night. */
-:root[data-skin="engraved"] .room::before {
+:root[data-skin="engraved"] .lamp {
   background: radial-gradient(58% 44% at 50% 2%, rgba(198,210,228,.10), rgba(198,210,228,.03) 46%, transparent 70%);
 }
 /* Foil is the one thing an engraver never sells: gone, not dimmed. The sheen
@@ -388,9 +410,8 @@ a { color: inherit; text-decoration: none; }
    WebKit drops mix-blend-mode in that situation — which is why the front
    glistened and the back did not, on a browser that is WebKit underneath. */
 :root[data-skin="engraved"] .foil { display: none; }
-:root[data-skin="engraved"] .sheen { opacity: calc(var(--spec) * .92); }
-:root[data-skin="engraved"] .wash  { opacity: calc(var(--wash) * .38); }
-:root[data-skin="engraved"] .shade { opacity: calc(.10 + var(--shade) * .62); }
+/* The paper's exposure — a stronger glint, a broader wash, a floor of shade
+   — is set by the model per skin, on the elements, not here. */
 /* The model computes in the frame of whichever face is up, so nothing here
    is mirrored for the back: the numbers arrive already in that face's own x. */
 
@@ -473,6 +494,7 @@ a { color: inherit; text-decoration: none; }
 </head>
 <body>
 <main class="room" id="room">
+  <i class="lamp" id="lamp" aria-hidden="true"></i>
 
   <!-- The whole control is the icon. A skull is the set as it is; press it and
        the set goes engraved, and a rose says so. Anyone who recognises either
@@ -497,6 +519,7 @@ a { color: inherit; text-decoration: none; }
   <div class="stage">
 
     <div class="card-wrap">
+      <i class="desk" aria-hidden="true"></i>
       <div class="card" id="card" role="button" tabindex="0"
            aria-label="The Kaayko card. Activate to turn it over.">
         <div class="face front">
