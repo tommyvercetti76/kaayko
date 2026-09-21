@@ -208,6 +208,24 @@
       .stage-art--plate img { max-height: 30svh; max-width: 54vw; }
     }
 
+    /* Five pinned stages in a row, each lit from the same side with the plate
+       in the same corner, is one idea shown five times. The plate chapters
+       alternate: the emblem crosses to the other side of the room and the
+       light crosses with it, so the scroll has a beat instead of a loop. */
+    .stage--plate-left .stage-art--plate { justify-content: flex-start; }
+    .stage--plate-left { background:
+      radial-gradient(120% 90% at 28% 42%, rgba(60, 56, 48, 0.55) 0%, rgba(10, 10, 10, 0) 62%), #0b0b0c; }
+    @media (min-width: 761px) {
+      /* Desktop only: the copy steps clear of the emblem it now shares a side
+         with. Narrow, the plate is above the copy and there is nothing to clear. */
+      .stage--plate-left .stage-copy { padding-left: clamp(2rem, 40vw, 34rem); }
+    }
+    @media (max-width: 760px) {
+      .stage--plate-left { background:
+        radial-gradient(110% 55% at 50% 26%, rgba(60, 56, 48, 0.5) 0%, rgba(10, 10, 10, 0) 68%), #0b0b0c; }
+      .stage--plate-left .stage-art--plate { justify-content: center; }
+    }
+
     /* The heavy left wash exists to rescue words off a bright photograph.
        Over a dark room holding one lit card it is just mud. */
     .stage--plate .stage-scrim { background:
@@ -252,6 +270,11 @@
       font-weight: 400; letter-spacing: 0.04em; line-height: 0.92;
       text-transform: uppercase;
     }
+    /* "Paddling Out" is twelve characters and 8.5rem suits it. "School of the
+       Future" is twenty, and at the same size it breaks to three lines and
+       walks off the bottom of the stage. A long name gets a smaller setting —
+       the same decision the printed card makes, for the same reason. */
+    .stage-name--long { font-size: clamp(2.6rem, 9.4vw, 5.6rem); letter-spacing: 0.03em; }
 
     /* The sentence that says what the thing IS — plainly */
     .stage-def {
@@ -445,12 +468,35 @@
     .feed-note { margin-top: 0.75rem; color: var(--faint); font-size: 0.72rem; font-style: italic; letter-spacing: 0.1em; line-height: 1.6; }
 
     /* ── Note ───────────────────────────────────────────────────────── */
+    /* The caveat used to be a 2px gold border and a tinted box — the same
+       strip five times, under five different photographs. It is the one place
+       on the page where we admit a limit, so it is the last place that should
+       look automated. Each chapter now has its own emblem, drawn on the
+       machine it is served from, and the words sit beside it like a caption
+       under a plate rather than a warning in a form. */
     .note {
-      padding: clamp(0.85rem, 2.5vw, 1.2rem) clamp(1rem, 3vw, 1.4rem);
-      border-left: 2px solid var(--gold); background: rgba(181, 147, 90, 0.055);
+      display: grid; grid-template-columns: auto 1fr;
+      align-items: start; gap: clamp(1rem, 3vw, 1.8rem);
+      padding: clamp(1.1rem, 3vw, 1.6rem) 0 clamp(1.1rem, 3vw, 1.6rem);
+      border-top: 1px solid rgba(181, 147, 90, 0.22);
+      border-bottom: 1px solid rgba(181, 147, 90, 0.22);
     }
-    .note-label { display: block; margin-bottom: 0.4rem; color: rgba(181, 147, 90, 0.8); font-size: 0.66rem; font-style: italic; letter-spacing: 0.22em; text-transform: uppercase; }
-    .note p { max-width: 62ch; color: rgba(237, 232, 223, 0.8); font-size: 0.95rem; }
+    .note-emblem {
+      width: clamp(76px, 14vw, 132px); height: auto; flex: none;
+      /* The plates are drawn on cream. Dropped straight onto the dark room
+         they read as bright cut-outs, so they are pulled back and warmed to
+         sit in the same light as the type. */
+      opacity: 0.94; filter: saturate(0.92) drop-shadow(0 14px 26px rgba(0, 0, 0, 0.55));
+      mix-blend-mode: normal;
+    }
+    .note-body { min-width: 0; }
+    .note-label { display: block; margin-bottom: 0.45rem; color: rgba(217, 189, 123, 0.92); font-size: 0.68rem; font-style: italic; letter-spacing: 0.22em; text-transform: uppercase; }
+    .note p { max-width: 58ch; color: rgba(237, 232, 223, 0.82); font-size: clamp(0.95rem, 2.4vw, 1.02rem); line-height: 1.62; }
+    @media (max-width: 560px) {
+      /* Narrow, a 132px emblem beside 58 characters leaves neither room. */
+      .note { grid-template-columns: 1fr; gap: 0.9rem; }
+      .note-emblem { width: 96px; }
+    }
 
     /* ── Actions ────────────────────────────────────────────────────── */
     .actions { display: flex; flex-wrap: wrap; align-items: center; gap: clamp(0.8rem, 2.5vw, 1.4rem); }
@@ -757,12 +803,13 @@
     var CHAPTERS = [
       {
         id: "paddling-out", tone: "a", name: "Paddling Out",
-        kicker: "Know before you go",
-        def: "Live paddle-condition scores for real lakes. Wind, water temperature, UV and rain fold into one number from 1 to 5 — check it before you drive out.",
+        kicker: "So everybody comes home",
+        def: "Somebody is loading a kayak right now who does not know the wind gets up at four. Paddling Out reads the water the way a local would and says it in one number — before the drive, not after.",
         source: "lakes",
         note: {
+          emblem: "/assets/about/emblems/lifejacket.webp",
           label: "Guidance, not clearance",
-          text: "The model is trained on real paddler ratings, but it cannot see your skill, your equipment, or the launch site. Wear a life jacket every time, whatever the number says."
+          text: "The number knows the weather. It does not know you \u2014 your skill, your boat, or what the launch looks like this morning. It has never met you. Wear the jacket every time, whatever it says."
         },
         actions: [
           { kind: "btn", href: "/paddlingout", label: "Open Paddling Out" },
@@ -771,13 +818,14 @@
       },
       {
         id: "forge", tone: "b", name: "Forge",
-        kicker: "Local-first generative AI",
-        def: "An open-source AI workstation that runs entirely on a Mac. Every image in this chapter was rendered on-device — no cloud, no subscription, no upload.",
+        kicker: "Nothing you make ever leaves",
+        def: "A studio that lives on your own Mac. No account, no subscription, nothing uploaded — every picture in this chapter was drawn on the machine it is being served from.",
         source: "gallery",
         frame: true,
         note: {
+          emblem: "/assets/about/emblems/verdict.webp",
           label: "That last number is a failure",
-          text: "The ship threshold was written down before the run and the result came in under it, so the verdict is published next to the methodology — not left out. A benchmark you can only pass is not a benchmark."
+          text: "We wrote the passing mark down before the run, and the result came in under it. So it is published, next to the method, instead of quietly dropped. A benchmark you can only pass is not a benchmark."
         },
         actions: [
           { kind: "btn", href: "/forge-gallery", label: "See the gallery" },
@@ -786,12 +834,13 @@
       },
       {
         id: "store", tone: "c", name: "Store", feature: "store",
-        kicker: "Invite-only goods",
-        def: "A small run of printed shirts and totes. The store opens with an invite code, and vote counts decide which designs get printed next.",
+        kicker: "A shelf you help stock",
+        def: "Designs go up, people vote, and the ones people actually want get printed. What arrives is something a few hundred strangers agreed was worth wearing.",
         source: "products", gated: true,
         note: {
+          emblem: "/assets/about/emblems/invite.webp",
           label: "How to get in",
-          text: "Ask for a code — it is not exclusivity, it is just how small this is. A human sends every invite."
+          text: "Ask, and a code arrives. It is not exclusivity \u2014 it is how small this still is. A person sends every one of them."
         },
         actions: [
           { kind: "gate", mode: "access", label: "I have a code" },
@@ -799,26 +848,28 @@
         ]
       },
       {
-        id: "kaay-link", tone: "a", name: "kaay.link",
+        id: "kaay-link", tone: "a", name: "Kortex", host: "kaay.link",
         image: "/assets/cards/art/kortex.png",
-        kicker: "QR codes you can change after they are printed",
-        def: "A code made in seconds and pointed anywhere, with every scan visible as it happens. No account, and it can be re-pointed long after the poster is on the wall.",
+        kicker: "The link that can change its mind",
+        def: "You print a code on a poster and then the plan changes. Kortex keeps the code working and lets you send it somewhere new — years after the ink dried.",
         note: {
+          emblem: "/assets/about/emblems/signpost.webp",
           label: "The sticker outlives the campaign",
-          text: "A printed code cannot be corrected, so the one thing it has to carry is an address you will still own in three years. Kaayko keeps the code working; where it goes stays your decision to keep making."
+          text: "Ink does not take corrections. So the only thing a printed code has to carry is an address you will still own in three years. We keep the code alive; where it points stays yours to keep deciding."
         },
         actions: [
           { kind: "btn", href: "https://kaay.link", label: "Open kaay.link", external: true }
         ]
       },
       {
-        id: "alumni", tone: "b", name: "Alumni",
-        image: "/assets/cards/art/alumni.png",
-        kicker: "A school's own alumni portal",
-        def: "A directory that stays current because the alumni keep it current — searchable by batch, employer and city — with mentorship proposed by a teacher who knows both sides, and reunions people actually turn up to.",
+        id: "alumni", tone: "b", name: "School of the Future", host: "kaay.school",
+        image: "/assets/cards/art/alumni.png", plateSide: "left",
+        kicker: "School does not end at the gate",
+        def: "The people who went there are the best thing a school has, and most schools lose them by thirty. This keeps them findable, and puts a teacher who knows both sides in the middle of the introduction.",
         note: {
+          emblem: "/assets/about/emblems/giving.webp",
           label: "Giving is built and not switched on",
-          text: "Card and UPI payment is written and in testing, and no school gets it until it has been proven end to end. Data stays in India, on Indian infrastructure."
+          text: "Card and UPI payments are written, and still in testing. No school gets them until money has moved end to end without us holding our breath. Data stays in India, on Indian infrastructure."
         },
         actions: [
           { kind: "btn", href: "https://kaay.school", label: "Open kaay.school", external: true }
@@ -977,12 +1028,12 @@
         // are far apart and it reads as a caption; in a plain body they sit
         // one above the other and it reads as a mistake.
         h("p", { class: "stage-kicker", text: plain ? def.kicker : ordinal(index) + " · " + def.kicker }),
-        h("h2", { class: "stage-name", text: def.name }),
+        h("h2", { class: "stage-name" + (def.name.length > 14 ? " stage-name--long" : ""), text: def.name }),
         h("p", { class: "stage-def", text: def.def }),
         plain ? null : h("span", { class: "stage-hint", text: "Keep scrolling" })
       ]);
 
-      var stage = h("div", { class: "stage" + (def.image ? " stage--plate" : "") }, [
+      var stage = h("div", { class: "stage" + (def.image ? " stage--plate" + (def.plateSide === "left" ? " stage--plate-left" : "") : "") }, [
         artWrap,
         h("div", { class: "stage-scrim" }),
         copy
@@ -1000,8 +1051,13 @@
           plain ? copy : null,
           railSlot,
           def.note ? h("div", { class: "note reveal" }, [
-            h("span", { class: "note-label", text: def.note.label }),
-            h("p", { text: def.note.text })
+            def.note.emblem
+              ? h("img", { class: "note-emblem", src: def.note.emblem, alt: "", loading: "lazy", decoding: "async" })
+              : null,
+            h("div", { class: "note-body" }, [
+              h("span", { class: "note-label", text: def.note.label }),
+              h("p", { text: def.note.text })
+            ])
           ]) : null,
           h("div", { class: "actions reveal" }, def.actions.map(actionNode))
         ])

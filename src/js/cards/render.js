@@ -82,6 +82,26 @@ export const PRINT = Object.freeze({
 import { esc } from "/js/kit.js?v=1a2b43b";
 export { esc };
 
+/**
+ * The name gets one line in a fixed column — TX (457) to the rule at 980, so
+ * 523px. "Paddling Out" measures 454px at 86px and fits. "School of the Future"
+ * measures 679px and does not; it would run 156px past the rule, straight
+ * through the QR box.
+ *
+ * It shrinks rather than wraps: the hook sits 78px below the name, so a second
+ * line has nowhere to go. A compositor handed a long name and a fixed plate
+ * does exactly this.
+ *
+ * The ratio is NOT derivable from character count — measured in Cormorant
+ * Garamond at 86px the per-character advance runs from 0.395 ("School of the
+ * Future") to 0.499 ("Alumni"), so an estimate would be wrong by a third. A
+ * card that needs a smaller name states it, measured, as `nameSize`.
+ */
+function nameSize(card, fallback) {
+  const n = Number(card && card.nameSize);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
 /** Two lines, no more. A third line would collide with the rule under the hook. */
 export function wrap(text, width = 26, max = 2) {
   const words = String(text ?? "").split(/\s+/).filter(Boolean);
@@ -162,7 +182,7 @@ ${skin.defs}<rect width="${W}" height="${H}" fill="${skin.paper}"/>
 <rect x="0" y="0" width="${AW}" height="${H}" fill="${skin.cream}"/>
 ${art}
 ${skin.spine ? `<rect x="${AW}" y="0" width="6" height="${H}" fill="${accent}"/>` : ""}${skin.plate || ""}
-<text x="${TX}" y="${T.name.y}"${F} style="font:${T.name.weight} ${T.name.size}px ${skin.serif};${track(T.name.track)}fill:${skin.ink}">${esc(cased(card.name, T.name.caps))}</text>
+<text x="${TX}" y="${T.name.y}"${F} style="font:${T.name.weight} ${nameSize(card, T.name.size)}px ${skin.serif};${track(T.name.track)}fill:${skin.ink}">${esc(cased(card.name, T.name.caps))}</text>
 ${hook}
 <!-- The rule used to sit at y=380 while the QR box started at y=358, so the
      line ran straight through the code. Everything below the rule now starts
@@ -230,7 +250,7 @@ ${ghost}
 ${skin.spine ? `<rect x="0" y="0" width="8" height="${H}" fill="${accent}"/>` : ""}${skin.plate || ""}
 
 <text x="${L}" y="86"${F} style="font:300 22px ${skin.sans};fill:${skin.mute};letter-spacing:9px">${esc(label)}</text>
-<text x="${L}" y="${T.backName.y}"${F} style="font:${T.backName.weight} ${T.backName.size}px ${skin.serif};${track(T.backName.track)}fill:${skin.ink}">${esc(cased(card.name || "", T.backName.caps))}</text>
+<text x="${L}" y="${T.backName.y}"${F} style="font:${T.backName.weight} ${nameSize(card, T.backName.size)}px ${skin.serif};${track(T.backName.track)}fill:${skin.ink}">${esc(cased(card.name || "", T.backName.caps))}</text>
 <text x="${L}" y="${T.backLine.y}"${F} style="font:${T.backLine.weight} ${T.backLine.size}px ${skin.serif};${track(T.backLine.track)}fill:${skin.mute}">${esc(line)}</text>
 
 <!-- Half the width, and stopping short of x=${W - 520} so it never runs across

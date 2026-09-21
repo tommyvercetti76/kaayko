@@ -56,12 +56,15 @@ const digest = (svg) => crypto.createHash('sha256').update(svg).digest('hex').sl
 const artOf = (c) => `/assets/cards/art/${c.art || c.slug}.png`;
 
 /** [front, back] as they render today. */
+// Re-pinned 21 Sep 2026: kaay.link became Kortex and Alumni became School of
+// the Future, and four cards took new hooks and back lines. Forge is
+// untouched and its hashes did not move — which is the guard working.
 const PINNED = {
-  paddlingout: ['7ff0ccfd195eefd1', '79f2cff62b6250ba'],
+  paddlingout: ['9bc106d58993f93f', '17bbcce0b4993a15'],
   forge:       ['2da71419f1d6d133', '8f8511f341ac221b'],
-  kortex:      ['fe92922bf2cc00ce', '10b7ade65fa067c1'],
-  kaayko:      ['d461e00057e80e80', 'dac5840bc2717154'],
-  alumni:      ['eebaf3b928cb37d4', '66fc0151e0e3aa79'],
+  kortex:      ['9e8838d7a584c564', '9271af31d581c87c'],
+  kaayko:      ['a033f1768ab65f56', 'e5b246e76052011f'],
+  alumni:      ['e5cdbeb951c997ed', '2c6ddb61b25a5ab9'],
 };
 
 const render = (c) => ({

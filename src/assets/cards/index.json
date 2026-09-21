@@ -7,12 +7,12 @@
       "n": 1,
       "slug": "paddlingout",
       "name": "Paddling Out",
-      "hook": "Drown in data, not water.",
+      "hook": "So everybody comes home.",
       "host": "kaayko.com/paddlingout",
       "url": "https://kaayko.com/paddlingout",
       "accent": "#2E6F76",
       "art": "paddlingout",
-      "line": "You say, isn't it hard, Paddling out?",
+      "line": "Reads the water like a local would, before you make the drive.",
       "facts": [
         "Curated spots",
         "Scored daily",
@@ -38,31 +38,31 @@
     {
       "n": 3,
       "slug": "kortex",
-      "name": "kaay.link",
-      "hook": "A link to take you places.",
+      "name": "Kortex",
+      "hook": "Print it once. Point it anywhere.",
       "host": "kaay.link",
       "url": "https://kaay.link",
       "accent": "#3B4E8C",
       "art": "kortex",
-      "line": "A smarter link for smart audience.",
+      "line": "The link that can change its mind, years after the ink dried.",
       "facts": [
         "No account",
-        "Route by device",
-        "Live scans"
+        "Re-point anytime",
+        "Scans as they happen"
       ]
     },
     {
       "n": 4,
       "slug": "kaayko",
       "name": "Store",
-      "hook": "Your style sucks. Heal here.",
+      "hook": "A shelf you help stock.",
       "host": "kaay.store",
       "url": "https://kaay.store",
       "accent": "#8A5A2B",
       "art": "kaayko",
-      "line": "Store for the rich and disillusioned.",
+      "line": "Designs go up, people vote, the winners get printed.",
       "facts": [
-        "40 designs",
+        "You pick what runs",
         "Printed to order",
         "No account"
       ]
@@ -70,18 +70,19 @@
     {
       "n": 5,
       "slug": "alumni",
-      "name": "Alumni",
-      "hook": "Is your school, cool?",
+      "name": "School of the Future",
+      "hook": "School does not end at the gate.",
       "host": "kaay.school",
       "url": "https://kaay.school",
       "accent": "#4E6B3E",
       "art": "alumni",
-      "line": "A directory that stays current, and alumni who mentor.",
+      "line": "The people who went there are the best thing a school has.",
       "facts": [
-        "By batch and city",
-        "Brokered intros",
-        "Data in India"
-      ]
+        "Findable by batch",
+        "A teacher makes the intro",
+        "Data stays in India"
+      ],
+      "nameSize": 62
     }
   ]
 }
