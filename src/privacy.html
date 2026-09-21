@@ -96,7 +96,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
   <div class="pp-header">
     <div class="pp-eyebrow">Kaayko</div>
     <h1 class="pp-title">Privacy Policy</h1>
-    <p class="pp-subtitle">Last updated: September 4, 2026</p>
+    <p class="pp-subtitle">Last updated: September 21, 2026</p>
   </div>
 
   <div class="pp-section">
@@ -191,11 +191,13 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
     <ul>
       <li><strong>Stripe:</strong> Payment processing. Stripe.js loads on Store and checkout pages and sets its own cookies (<code>__stripe_mid</code>, <code>__stripe_sid</code>) for fraud prevention</li>
       <li><strong>Google Cloud Platform (Firebase):</strong> Hosting, database, and authentication</li>
-      <li><strong>Google Cloud (us-central1):</strong> Hosting, functions and the database for Kortex run in Google Cloud's us-central1 region. Kortex email delivery, when enabled, goes through SendGrid.</li>
+      <li><strong>Google Cloud (us-central1):</strong> Hosting, functions and the database for Kortex run in Google Cloud's us-central1 region. Email for every product is delivered by <strong>Zoho Mail</strong> over SMTP from one Kaayko mailbox; a copy of each message is held in our database for 90 days so delivery can be checked and retried.</li>
       <li><strong>PostHog:</strong> Product analytics on the Kortex link-management app (aggregate usage only). It sets its own cookies / local storage on Kortex and is not used on the public Paddling Out pages or the Store</li>
       <li><strong>WeatherAPI.com:</strong> Real-time weather data for Paddling Out. Your location query (coordinates or place name) is sent to fetch conditions; no personal identifiers accompany it</li>
       <li><strong>Google Fonts:</strong> Typefaces are loaded from fonts.googleapis.com / fonts.gstatic.com, which means your browser makes a request to Google when pages load</li>
       <li><strong>GitHub:</strong> The Forge Gallery page lists images directly from the public Forge repository via api.github.com and raw.githubusercontent.com</li>
+      <li><strong>OpenStreetMap:</strong> Map tiles on Paddling Out load from tile.openstreetmap.org, so your browser requests them directly. Place-name search and reverse geocoding are proxied through our own server to Nominatim (also OpenStreetMap), so your query reaches them without your IP address</li>
+      <li><strong>U.S. Geological Survey:</strong> Lake and reservoir geometry for searches inside the United States comes from the USGS National Hydrography Dataset (hydro.nationalmap.gov), queried by our server, not your browser</li>
     </ul>
     <p>We may also disclose information if required by law, court order, or to protect our rights and safety.</p>
   </div>

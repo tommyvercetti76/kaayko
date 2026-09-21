@@ -10,7 +10,8 @@
   <!-- Primary Meta Tags -->
   <title>Testimonials — Kaayko</title>
   <meta name="title" content="Testimonials — Kaayko">
-  <meta name="description" content="Kaayko testimonials. Nothing here yet.">
+  <meta name="description" content="Kaayko testimonials — placeholder copy, not real reviews.">
+  <meta name="robots" content="noindex, follow">
   <meta name="author" content="Kaayko">
   <meta name="robots" content="noindex, follow">
   <link rel="canonical" href="https://kaayko.com/testimonials">
@@ -22,19 +23,11 @@
   <meta property="og:description" content="Real reviews from the paddling community. See what users say about Kaayko.">
   <meta property="og:image" content="https://kaayko.com/assets/testimonials-og.png">
   
-  <!-- Schema.org Reviews -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "Kaayko",
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "reviewCount": "150"
-    }
-  }
-  </script>
+  <!-- No Schema.org rating here. This page renders invented testimonials
+       (js/testimonials.js), and an AggregateRating of 4.8 from 150 reviews
+       that never happened is fabricated review data: Google surfaces it as a
+       rich result and both Google's policy and the FTC's rule on fake reviews
+       treat it as deceptive. It is gone, not merely relabelled. -->
   
   <!-- Security -->
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -70,6 +63,7 @@
   <!-- MAIN CONTENT -->
   <main style="max-width: 900px; margin: 30px auto;">
     <h2 class="testimonials-heading">What People Are Saying</h2>
+    <p class="testimonials-note" style="text-align:center;opacity:.72;font-style:italic;margin:-6px 0 22px">Placeholder copy. These are invented, like the arcade machines — no real customer said any of it.</p>
     <div id="testimonialsContainer" class="reviews-container"></div>
   </main>
 
