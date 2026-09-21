@@ -63,8 +63,8 @@ const PINNED = {
   paddlingout: ['9bc106d58993f93f', '17bbcce0b4993a15'],
   forge:       ['2da71419f1d6d133', '8f8511f341ac221b'],
   kortex:      ['9e8838d7a584c564', '9271af31d581c87c'],
-  kaayko:      ['a033f1768ab65f56', 'e5b246e76052011f'],
-  alumni:      ['e5cdbeb951c997ed', '2c6ddb61b25a5ab9'],
+  kaayko:      ['49b36fd9a9a2cb1e', 'e5b246e76052011f'],
+  alumni:      ['6d57db2e04488f87', '0302f8fd7dc72554'],
 };
 
 const render = (c) => ({

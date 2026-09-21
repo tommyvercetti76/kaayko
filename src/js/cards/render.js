@@ -85,8 +85,10 @@ export { esc };
 /**
  * The name gets one line in a fixed column — TX (457) to the rule at 980, so
  * 523px. "Paddling Out" measures 454px at 86px and fits. "School of the Future"
- * measures 679px and does not; it would run 156px past the rule, straight
- * through the QR box.
+ * measured 679px and did not; it would have run 156px past the rule, straight
+ * through the QR box. That name is gone (the card now reads "GuruCool", 339px,
+ * comfortably inside) but the escape hatch stays, because the next long one
+ * will not announce itself.
  *
  * It shrinks rather than wraps: the hook sits 78px below the name, so a second
  * line has nowhere to go. A compositor handed a long name and a fixed plate

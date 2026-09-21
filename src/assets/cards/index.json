@@ -55,7 +55,7 @@
       "n": 4,
       "slug": "kaayko",
       "name": "Store",
-      "hook": "A shelf you help stock.",
+      "hook": "Style, at exorbitant prices.",
       "host": "kaay.store",
       "url": "https://kaay.store",
       "accent": "#8A5A2B",
@@ -70,8 +70,8 @@
     {
       "n": 5,
       "slug": "alumni",
-      "name": "School of the Future",
-      "hook": "School does not end at the gate.",
+      "name": "GuruCool",
+      "hook": "School of the Future, connecting past and present.",
       "host": "kaay.school",
       "url": "https://kaay.school",
       "accent": "#4E6B3E",
@@ -81,8 +81,7 @@
         "Findable by batch",
         "A teacher makes the intro",
         "Data stays in India"
-      ],
-      "nameSize": 62
+      ]
     }
   ]
 }
