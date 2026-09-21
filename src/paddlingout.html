@@ -15,7 +15,7 @@
 
   <!-- Primary Meta Tags -->
   <title>Kayak & Paddle Conditions for 17 Hand-Picked Spots | Kaayko Paddling Out</title>
-  <meta name="description" content="Free AI-powered paddle condition scores for 17 hand-picked lakes, rivers, and reservoirs. Real-time wind speed, water temperature, UV index, and 3-day hourly forecasts. Know before you go.">
+  <meta name="description" content="Free AI-powered paddle condition scores for 21 hand-picked lakes, rivers, and reservoirs. Real-time wind speed, water temperature, UV index, and 3-day hourly forecasts. Know before you go.">
   <meta name="author" content="Kaayko">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
   <link rel="canonical" href="https://kaayko.com/paddlingout">
@@ -38,7 +38,7 @@
   <meta name="twitter:creator" content="@kaayko">
   <meta name="twitter:url" content="https://kaayko.com/paddlingout">
   <meta name="twitter:title" content="Paddling Out — Real-Time Kayak & Paddle Conditions">
-  <meta name="twitter:description" content="AI-powered paddle safety ratings for 17 hand-picked spots. Wind, water temp, UV — one score. Know before you paddle.">
+  <meta name="twitter:description" content="AI-powered paddle safety ratings for 21 hand-picked spots. Wind, water temp, UV — one score. Know before you paddle.">
   <meta name="twitter:image" content="https://kaayko.com/assets/paddlingout-og.png">
   <meta name="twitter:image:alt" content="Kaayko Paddling Out live lake conditions">
 
@@ -54,7 +54,7 @@
       "url": "https://kaayko.com/paddlingout",
       "applicationCategory": "SportsApplication",
       "operatingSystem": "Web",
-      "description": "Free AI-powered paddle condition forecasts with real-time wind speed, water temperature, UV index, and safety ratings for 17 hand-picked paddling destinations.",
+      "description": "Free AI-powered paddle condition forecasts with real-time wind speed, water temperature, UV index, and safety ratings for 21 hand-picked paddling destinations.",
       "featureList": [
         "Real-time paddle score (1–5)",
         "Wind speed and direction",
@@ -64,7 +64,7 @@
         "Precipitation probability",
         "3-day hourly heatmap forecast",
         "Lake safety alerts",
-        "17 hand-picked paddling destinations"
+        "21 hand-picked paddling destinations"
       ],
       "offers": {
         "@type": "Offer",
@@ -95,7 +95,7 @@
           "name": "What is Kaayko Paddling Out?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Kaayko Paddling Out is a free AI-powered paddle conditions tool that gives real-time safety scores for 17 hand-picked lakes, rivers, and reservoirs across the US. It combines wind speed, water temperature, UV index, cloud cover, and precipitation data into a single Paddle Score from 1 (Danger) to 5 (Excellent)."
+            "text": "Kaayko Paddling Out is a free AI-powered paddle conditions tool that gives real-time safety scores for 21 hand-picked lakes, rivers, and reservoirs across the US. It combines wind speed, water temperature, UV index, cloud cover, and precipitation data into a single Paddle Score from 1 (Danger) to 5 (Excellent)."
           }
         },
         {
@@ -119,7 +119,7 @@
           "name": "Which lakes and rivers are covered?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Kaayko covers 17 hand-picked paddling destinations, including lakes, reservoirs, and rivers. You can browse all spots on the main Paddling Out page or use the search to find spots near any city or zip code."
+            "text": "Kaayko covers 21 hand-picked paddling destinations, including lakes, reservoirs, and rivers. You can browse all spots on the main Paddling Out page or use the search to find spots near any city or zip code."
           }
         },
         {
@@ -370,8 +370,9 @@
           constrained by fixed safety rules the model is not allowed to override.
         </p>
         <p>
-          The model behind it was trained on roughly 1.4 million hourly weather observations across
-          164 water bodies in the United States and India. The failures are published next to the
+          The model behind it is a gradient-boosted tree ensemble trained on paddler ratings &mdash;
+          human judgements of real days, never a rule&rsquo;s own output &mdash; and constrained so more
+          wind and more rain can only lower a score. The failures are published next to the
           results: <a href="/paddlingout/methodology">read the full methodology, including what the
           score cannot see</a>.
         </p>
@@ -381,7 +382,7 @@
         <div class="po-faq-grid">
           <div class="po-faq-item">
             <h3 data-kicon="info">What is Kaayko Paddling Out?</h3>
-            <p>Kaayko Paddling Out is a free AI-powered paddle conditions tool that gives real-time safety scores for 17 hand-picked lakes, rivers, and reservoirs across the US. It combines wind speed, water temperature, UV index, cloud cover, and precipitation data into a single Paddle Score from 1 (Danger) to 5 (Excellent).</p>
+            <p>Kaayko Paddling Out is a free AI-powered paddle conditions tool that gives real-time safety scores for 21 hand-picked lakes, rivers, and reservoirs across the US. It combines wind speed, water temperature, UV index, cloud cover, and precipitation data into a single Paddle Score from 1 (Danger) to 5 (Excellent).</p>
           </div>
           <div class="po-faq-item">
             <h3 data-kicon="gauge">How is the paddle score calculated?</h3>
@@ -393,7 +394,7 @@
           </div>
           <div class="po-faq-item">
             <h3 data-kicon="pin">Which lakes and rivers are covered?</h3>
-            <p>Kaayko covers 17 hand-picked paddling destinations, including lakes, reservoirs, and rivers. You can browse all spots on the main Paddling Out page or use the search to find spots near any city or zip code.</p>
+            <p>Kaayko covers 21 hand-picked paddling destinations, including lakes, reservoirs, and rivers. You can browse all spots on the main Paddling Out page or use the search to find spots near any city or zip code.</p>
           </div>
           <div class="po-faq-item">
             <h3 data-kicon="refresh">How often is the paddle forecast updated?</h3>

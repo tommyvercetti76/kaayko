@@ -4,7 +4,7 @@
   "description": "Static frontend for kaayko.com and kaay.store. No build step; these scripts only check and test.",
   "scripts": {
     "test": "node --import ./tests/_setup.mjs --test tests/*.test.mjs",
-    "check": "node scripts/check-js.js && node scripts/check-dom-ids.js && node scripts/check-store-pages.js && node scripts/check-static-asset-refs.js",
+    "check": "node scripts/check-js.js && node scripts/check-dom-ids.js && node scripts/check-store-pages.js && node scripts/check-static-asset-refs.js && node scripts/check-spot-count.js",
     "verify": "npm run check && npm test",
     "stamp": "node scripts/stamp-version.js"
   }

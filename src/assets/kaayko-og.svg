@@ -31,7 +31,7 @@
 
   <!-- sub -->
   <text x="100" y="470" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-weight="400"
-        font-size="27" letter-spacing="1.5" fill="#a9a49b">AI paddle-condition forecasts &#183; 17 hand-picked spots</text>
+        font-size="27" letter-spacing="1.5" fill="#a9a49b">AI paddle-condition forecasts &#183; 21 hand-picked spots</text>
   <text x="100" y="510" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-weight="400"
         font-size="27" letter-spacing="1.5" fill="#a9a49b">Forge &#8212; an open-source, local-first AI workstation</text>
 

@@ -8,7 +8,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
   <title>Kaayko — Paddling Forecasts & Forge</title>
-  <meta name="description" content="Kaayko delivers AI-powered paddle condition forecasts for 17 hand-picked spots and Forge — an open-source local-first AI workstation. Know before you paddle." />
+  <meta name="description" content="Kaayko delivers AI-powered paddle condition forecasts for 21 hand-picked spots and Forge — an open-source local-first AI workstation. Know before you paddle." />
   <meta name="author" content="Kaayko">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
   <link rel="canonical" href="https://kaayko.com/" />
@@ -17,7 +17,7 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://kaayko.com/">
   <meta property="og:title" content="Kaayko — Paddling Forecasts & Forge">
-  <meta property="og:description" content="AI-powered paddle condition forecasts for 17 hand-picked spots. Forge, an open-source local-first AI workstation. Know before you go." />
+  <meta property="og:description" content="AI-powered paddle condition forecasts for 21 hand-picked spots. Forge, an open-source local-first AI workstation. Know before you go." />
   <meta property="og:image" content="https://kaayko.com/assets/kaayko-og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -30,7 +30,7 @@
   <meta name="twitter:site" content="@kaayko">
   <meta name="twitter:creator" content="@kaayko">
   <meta name="twitter:title" content="Kaayko — Paddling Forecasts & Forge">
-  <meta name="twitter:description" content="AI-powered paddle condition forecasts for 17 hand-picked spots. Know before you paddle." />
+  <meta name="twitter:description" content="AI-powered paddle condition forecasts for 21 hand-picked spots. Know before you paddle." />
   <meta name="twitter:image" content="https://kaayko.com/assets/kaayko-og.png">
   <meta name="twitter:image:alt" content="Kaayko paddling forecast app">
 
@@ -82,7 +82,7 @@
         "@id": "https://kaayko.com/#website",
         "name": "Kaayko",
         "url": "https://kaayko.com/",
-        "description": "AI-powered paddle condition forecasts for 17 hand-picked spots and Forge, an open-source AI workstation.",
+        "description": "AI-powered paddle condition forecasts for 21 hand-picked spots and Forge, an open-source AI workstation.",
         "publisher": { "@id": "https://kaayko.com/#organization" },
         "inLanguage": "en-US",
         "potentialAction": {
@@ -694,20 +694,22 @@
       <p>
         Everything here was made by one person. That is the constraint the whole site is built around:
         small, honest, and specific rather than broad and vague. There is no team, no funding round, and
-        no roadmap deck &mdash; just <span data-feature="store">three</span><span data-feature-off="store">two</span> products that work, documented including where they don&rsquo;t.
+        no roadmap deck &mdash; just <span data-feature="store">five</span><span data-feature-off="store">four</span> products that work, documented including where they don&rsquo;t.
       </p>
 
       <h2>Paddling Out</h2>
       <p>
-        Live paddle-condition scores for 17 hand-picked lakes, rivers and reservoirs. Wind speed and gusts,
+        Live paddle-condition scores for <span data-spot-count>21</span> hand-picked lakes, rivers and reservoirs. Wind speed and gusts,
         air and water temperature, UV index, cloud cover, precipitation and visibility fold into a single
         Paddle Score from 1 (Danger) to 5 (Excellent), then fixed safety rules trim it further &mdash; wind
         above 25&nbsp;mph costs two full points, and water below 5&deg;C is penalised hard no matter how good
         the day looks.
       </p>
       <p>
-        The model behind it was trained on roughly 1.4 million hourly weather observations across 164 water
-        bodies in the United States and India. Every spot is added by hand, not scraped from a database.
+        The model behind it is a gradient-boosted tree ensemble trained on paddler ratings &mdash; human
+        judgements of real days, never a rule&rsquo;s own output &mdash; and constrained so that more wind and
+        more rain can only ever lower a score, never raise it. Every spot is added by hand, not scraped
+        from a database.
         The score is a decision aid, not clearance to go out: it cannot see your skill, your equipment,
         currents, or the hazards at your launch site.
         <a href="/paddlingout">Browse every spot</a>, or
