@@ -2,11 +2,11 @@
  * pages/card.js — the collectible card (/card): lighting model, flip, inspect, QR.
  * Moved out of card.html on 12 Sep 2026 unchanged.
  */
-import { front, back, PRINT, BACK, ART_EXTENT } from '/js/cards/render.js?v=639e44c';
-import { engravedFor, stockOf } from '/js/cards/skins/engraved.js?v=639e44c';
-import { readFace, warmArt } from '/js/cards/relief.js?v=639e44c';
-import { rest, step, lampFor, wrap180, clamp } from '/js/cards/attitude.js?v=639e44c';
-import { esc, apiBase } from '/js/kit.js?v=639e44c';
+import { front, back, PRINT, BACK, ART_EXTENT } from '/js/cards/render.js?v=6a7fce4';
+import { engravedFor, stockOf } from '/js/cards/skins/engraved.js?v=6a7fce4';
+import { readFace, warmArt } from '/js/cards/relief.js?v=6a7fce4';
+import { rest, step, lampFor, wrap180, clamp } from '/js/cards/attitude.js?v=6a7fce4';
+import { esc, apiBase } from '/js/kit.js?v=6a7fce4';
 
 /* ── the lighting model ────────────────────────────────────────────────────
    Blinn-Phong with a Schlick Fresnel term. The pointer is a light at (lx, ly)
