@@ -117,7 +117,7 @@ a { color: inherit; text-decoration: none; }
   position: relative;
   aspect-ratio: 3.5 / 2;
   transform-style: preserve-3d;
-  transform: rotateX(var(--rx)) rotateY(var(--ry));
+  transform: scale(var(--lift, 1)) rotateX(var(--rx)) rotateY(var(--ry));
   transition: transform .55s cubic-bezier(.2, .8, .2, 1);
   cursor: pointer;
   border-radius: 10px;
@@ -200,7 +200,40 @@ a { color: inherit; text-decoration: none; }
 .now .to-product { color: var(--gold-lit); border-bottom: 1px solid rgba(240,217,160,.35); }
 .now .to-product:hover { border-bottom-color: var(--gold-lit); }
 
+/* ── the mode control ───────────────────────────────────────────────── */
+.mode {
+  display: block; margin: 0 auto 2px; padding: 6px 10px 4px;
+  background: none; border: 0; cursor: pointer; line-height: 0;
+  -webkit-tap-highlight-color: transparent;
+  filter: drop-shadow(0 6px 14px rgba(0,0,0,.55));
+  opacity: .78; transition: opacity .25s, transform .25s;
+}
+.mode:hover, .mode:focus-visible { opacity: 1; transform: translateY(-1px); }
+.mode:focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; border-radius: 8px; }
+/* Forge draws black linework on white. On the dark room the black vanishes
+   and only the red florals survive — a smudge, not a skull. Inverting the
+   luminance and turning the hue back gives cream linework and keeps the red,
+   which is the engraving the toggle is named for. */
+.mode img { display: block; width: 34px; height: 48px; object-fit: contain;
+  filter: invert(1) hue-rotate(180deg) brightness(1.08); }
+@media(max-width: 600px){ .mode img { width: 30px; height: 42px; } }
+
+/* ── inspect ────────────────────────────────────────────────────────── */
 .hint { display: flex; gap: 14px; align-items: center; }
+/* A held card is a touch gesture. Where there is a fine pointer the cursor is
+   already the lamp and the card already follows it, so the control is not
+   offered. */
+@media (hover: hover) and (pointer: fine) { .hint { display: none; } }
+.card.is-inspecting {
+  transition: none;
+  cursor: grabbing;
+  /* Off the table, slightly: the shadow lengthens and the card grows a little,
+     which is all "picked up" needs to mean. */
+  --lift: 1.06;
+}
+.card-wrap.is-inspecting { touch-action: none; }
+.card.is-inspecting .face { box-shadow:
+  0 4px 6px rgba(0,0,0,.55), 0 46px 90px rgba(0,0,0,.72), 0 0 0 1px rgba(181,147,90,.28); }
 .hint button {
   background: none; border: 1px solid var(--hair); color: var(--dim);
   border-radius: 999px; padding: 7px 16px; cursor: pointer;
@@ -299,10 +332,9 @@ a { color: inherit; text-decoration: none; }
 :root[data-skin="engraved"] .face {
   box-shadow: 0 2px 4px rgba(0,0,0,.55), 0 26px 60px rgba(0,0,0,.68), 0 0 0 1px rgba(255,255,255,.06);
 }
-:root[data-skin="engraved"] .hint button { border-color: rgba(237,234,226,.34); }
-:root[data-skin="engraved"] .hint button:hover { color: var(--gold-lit); border-color: var(--gold-lit); }
 /* The control that turns it on, and the one line of copy that explains the set. */
 .hint button[aria-pressed="true"] { color: var(--gold-lit); border-color: var(--gold); }
+:root[data-skin="engraved"] .hint button { border-color: rgba(237,234,226,.34); }
 /* Engraved, each bar wears the stock its card is printed on — the one place
    the five papers are seen together, and the chrome keeps its shape. */
 :root[data-skin="engraved"] .mark::before { background: var(--stock, var(--hair)); opacity: .5; }
@@ -322,18 +354,6 @@ a { color: inherit; text-decoration: none; }
    except across the face of the card itself. */
 :root[data-skin="engraved"] .card-wrap { touch-action: none; }
 
-.touchhint {
-  /* Reserved whether or not it has anything to say. Toggling it in and out of
-     the layout is what made the page jump upward once you had interacted. */
-  display: block; margin: 0 auto; padding: 4px 8px; border: 0; background: none;
-  min-height: 1.6em;
-  text-align: center; font-family: var(--sans); font-size: 9.5px;
-  letter-spacing: .22em; text-transform: uppercase; color: var(--dimmer);
-  cursor: pointer; -webkit-tap-highlight-color: transparent;
-}
-.touchhint:hover, .touchhint:focus-visible { color: var(--dim); }
-/* hidden, but still holding its place in the column */
-.touchhint[hidden] { display: block; visibility: hidden; }
 
 /* ── the trace ──────────────────────────────────────────────────────────────
    What the fingertip is reading, drawn where it is reading it. On Android it
@@ -381,6 +401,12 @@ a { color: inherit; text-decoration: none; }
   <div class="stage">
 
     <div class="eyebrow">
+      <!-- The whole control is the icon. A skull is the set as it is; press it
+           and the set goes engraved, and a rose says so. Anyone who recognises
+           either does not need a label, and the aria-label tells everyone else. -->
+      <button type="button" class="mode" id="skin" aria-pressed="false" aria-label="American Psycho">
+        <img id="skin-icon" src="/assets/card/skull.webp" alt="" width="34" height="48" decoding="async">
+      </button>
       <p class="cap">Kaayko</p>
       <h1>Why not?</h1>
     </div>
@@ -407,15 +433,14 @@ a { color: inherit; text-decoration: none; }
     </div>
 
     <p class="stock" id="stock"></p>
-    <button type="button" class="touchhint" id="touchhint" hidden></button>
 
+    <!-- Tapping the card turns it over; that needed no button. On a phone the
+         card can also be picked up: hold Inspect and it comes off the table,
+         drag it round, let go and it settles — spun past halfway, it settles on
+         its other face. The handset's own tilt used to do a version of this on
+         its own and was never quite in anyone's hands. -->
     <div class="hint">
-      <button type="button" id="turn">Turn it over</button>
-      <!-- One word. Anyone who recognises it does not need the rest, and anyone
-           who does not is told what it changes by pressing it. -->
-      <!-- The label is written by setSkin on load; this is only what shows for the
-           half-second before the module runs, and it must not disagree with it. -->
-      <button type="button" id="skin" aria-pressed="false">American Psycho</button>
+      <button type="button" id="inspect" aria-pressed="false">Inspect</button>
     </div>
 
     <!-- Every property already has a card in the series with its own address on

@@ -115,8 +115,36 @@ export function wrap(text, width = 26, max = 2) {
     else line = next;
   }
   if (line) lines.push(line);
+  // `max` is a cap, and a cap that silently discards the third line is how
+  // "School of the Future, connecting past and present." printed without its
+  // last word. The cap stays — the geometry below it is fixed — but the test
+  // suite asserts every card fits inside it, so a copy change that needs a
+  // third line fails the build instead of shipping a sentence with no end.
   return lines.slice(0, max);
 }
+
+/**
+ * The back has one hard rule: the words and the animal never touch.
+ *
+ * The ghost used to be bled off the right edge, 520px wide and the full height
+ * of the card, and the line of type ran across it on every card — at 9% on the
+ * printed stock it read as a watermark; on the engraved stock, at 50–62%, the
+ * line sat on top of the bird. So the picture now has a box and the type has a
+ * column, and they do not share an inch of paper.
+ */
+export const BACK = Object.freeze({
+  textRight: 612,             // the type column ends here …
+  ghostX: 640,                // … the picture begins here (28px of paper between)
+  ghostY: 96, ghostH: 344,    // between the label row and the facts row
+  lineStep: 1.25,             // line height as a multiple of the type size
+  // Widest realistic advance per character for the serif at these sizes,
+  // measured in Cormorant Garamond: sentence text runs 0.38–0.44em per
+  // character; 0.44 is the ceiling used to turn a pixel budget into a wrap.
+  em: 0.44,
+});
+
+/** How many characters of the back line fit in the type column at this size. */
+export const backWrap = (size) => Math.floor((BACK.textRight - 88) / (size * BACK.em));
 
 /** A letter-spacing declaration, or nothing at all when a skin does not track. */
 const track = (px) => (px ? `letter-spacing:${px}px;` : "");
@@ -226,11 +254,23 @@ export function back(card, brand = {}, { index = 1, total = 5, artHref, skin = P
   const L = 88, R = W - 88;          // the type column, same inset both sides
   const cell = (R - L) / 3;
 
-  // Bled off the right edge so it reads as a watermark under the words rather
-  // than a second picture competing with the front.
+  // In its own box, right of the type column and between the label row and
+  // the facts row. `meet`, not `slice`: the whole animal, smaller, rather than
+  // a crop of it — a watermark is a picture you can name at arm's length.
   const ghost = artHref && skin.art
-    ? `<g opacity="${skin.ghostOpacity}"${skin.artFilter ? ` filter="${skin.artFilter}"` : ""}><image href="${esc(artHref)}" x="${W - 520}" y="0" width="520" height="${H}" preserveAspectRatio="xMidYMid slice"/></g>`
+    ? `<g opacity="${skin.ghostOpacity}"${skin.artFilter ? ` filter="${skin.artFilter}"` : ""}><image href="${esc(artHref)}" x="${BACK.ghostX}" y="${BACK.ghostY}" width="${W - BACK.ghostX}" height="${BACK.ghostH}" preserveAspectRatio="xMidYMid meet"/></g>`
     : "";
+
+  // The line wraps inside the column instead of running under the picture,
+  // and the rule and the address move down with it when it takes two lines.
+  const lineSize = T.backLine.size;
+  const lineRows = wrap(line, backWrap(lineSize), 2);
+  const lineStep = Math.round(lineSize * BACK.lineStep);
+  const lineSvg = lineRows.map((row, i) =>
+    `<text x="${L}" y="${T.backLine.y + i * lineStep}"${F} style="font:${T.backLine.weight} ${lineSize}px ${skin.serif};${track(T.backLine.track)}fill:${skin.mute}">${esc(row)}</text>`
+  ).join("\n");
+  const ruleY = T.backLine.y + (lineRows.length - 1) * lineStep + 56;
+  const hostY = ruleY + 40;
 
   // Three facts, each under its own short accent rule. A rule that is the width
   // of its own label rather than the cell keeps the row from looking like a
@@ -245,21 +285,21 @@ export function back(card, brand = {}, { index = 1, total = 5, artHref, skin = P
   return `<svg xmlns="http://www.w3.org/2000/svg" width="3.5in" height="2in"
      viewBox="0 0 ${W} ${H}" data-property="${esc(card.slug || "")}">
 ${skin.defs}<rect width="${W}" height="${H}" fill="${skin.paper}"/>
-<!-- The same animal as the front, ghosted. It is the one thing that makes a card
-     recognisably its own at arm's length, and at 9% it is a watermark rather than
-     a picture, so nothing printed over it loses contrast. -->
+<!-- The same animal as the front, ghosted, in a box of its own. It is the one
+     thing that makes a card recognisably its own at arm's length — and nothing
+     is printed over it, at any opacity, on any stock. -->
 ${ghost}
 ${skin.spine ? `<rect x="0" y="0" width="8" height="${H}" fill="${accent}"/>` : ""}${skin.plate || ""}
 
 <text x="${L}" y="86"${F} style="font:300 22px ${skin.sans};fill:${skin.mute};letter-spacing:9px">${esc(label)}</text>
 <text x="${L}" y="${T.backName.y}"${F} style="font:${T.backName.weight} ${nameSize(card, T.backName.size)}px ${skin.serif};${track(T.backName.track)}fill:${skin.ink}">${esc(cased(card.name || "", T.backName.caps))}</text>
-<text x="${L}" y="${T.backLine.y}"${F} style="font:${T.backLine.weight} ${T.backLine.size}px ${skin.serif};${track(T.backLine.track)}fill:${skin.mute}">${esc(line)}</text>
+${lineSvg}
 
-<!-- Half the width, and stopping short of x=${W - 520} so it never runs across
-     the ghosted animal. The address sits directly under it, at the size of a
-     caption rather than a headline. -->
-<path d="M${L} 300 H${L + (R - L) / 2}" stroke="${skin.mute}" stroke-width="0.9" opacity=".28"/>
-<text x="${L}" y="${340}"${F} style="font:400 24px ${skin.serif};fill:${skin.mute}">${esc(hostOf(card))}</text>
+<!-- Stops at the type column's edge, so it never runs across the animal. The
+     address sits directly under it, at the size of a caption rather than a
+     headline. Both drop a line when the sentence above them takes two. -->
+<path d="M${L} ${ruleY} H${Math.min(L + (R - L) / 2, BACK.textRight)}" stroke="${skin.mute}" stroke-width="0.9" opacity=".28"/>
+<text x="${L}" y="${hostY}"${F} style="font:400 24px ${skin.serif};fill:${skin.mute}">${esc(hostOf(card))}</text>
 ${factRow}
 
 <text x="${R}" y="${H - 44}" text-anchor="end"${F}

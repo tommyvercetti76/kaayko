@@ -5,7 +5,7 @@
 import { front, back, PRINT } from '/js/cards/render.js?v=3e6367c';
 import { engravedFor, stockOf } from '/js/cards/skins/engraved.js?v=3e6367c';
 import { readFace, warmArt } from '/js/cards/relief.js?v=3e6367c';
-import { rest, step, aimFromDevice, feedRate, lampFor } from '/js/cards/attitude.js?v=3e6367c';
+import { rest, step, lampFor, wrap180, clamp } from '/js/cards/attitude.js?v=3e6367c';
 import { esc, apiBase } from '/js/kit.js?v=3e6367c';
 
 /* ── the lighting model ────────────────────────────────────────────────────
@@ -83,13 +83,119 @@ function loop(t) {
   // the card lost its attitude and stopped tilting at all — the attitude was
   // computed in here.
   light(cur.x, cur.y);
-  step(att, dt);
+  if (grab.on) {
+    // While held, the card is exactly where the finger put it. No spring: a
+    // spring under a hand is what makes an object feel like it is on a string.
+    att.rx = att.tx; att.ry = att.ty;
+  } else {
+    step(att, dt, { smoothTime: inspecting ? INSPECT_SETTLE : 0.12 });
+    if (inspecting) settleInspect();
+  }
+  if (inspecting) {
+    // The lamp is fixed in the room, so the reflection travels as the card
+    // turns under it — the same mapping the handset's tilt used to write.
+    target.x = 0.5 - wrap180(att.ry) / (INSPECT_MAX_RX * 2.4);
+    target.y = 0.5 + att.rx / (INSPECT_MAX_RX * 2.4);
+    if (engraved) aimLamp(lampFor(wrap180(att.ry)));
+  }
   card.style.setProperty('--rx', att.rx.toFixed(2) + 'deg');
   card.style.setProperty('--ry', att.ry.toFixed(2) + 'deg');
   raf = requestAnimationFrame(loop);
 }
 
+/* ── inspect ─────────────────────────────────────────────────────────────────
+   The weapon rack at the gun shop: hold the button and the thing comes off
+   the table into your hands; drag and it turns; let go and it keeps turning
+   with what you gave it, then settles. Spun past halfway, it settles on the
+   other face.
+
+   Three ideas make it feel like an object rather than a slider:
+     1. Held, it is a rigid body under the finger: no smoothing at all.
+     2. Released, the finger's last angular velocity is handed to the spring's
+        own velocity state, so it coasts on its momentum and the same critically
+        damped solve that lands the tilt lands this — no overshoot, no bounce.
+     3. It settles on the nearest FACE, not the nearest angle: a flick that would
+        coast past 90° is asked where it would have ended up, and that is
+        snapped to 0° or 180° before the spring is told.                       */
+const INSPECT_MAX_RX = 48;     // degrees of pitch before it stops following
+const INSPECT_SETTLE = 0.46;   // seconds — long enough to feel the coast
+const INSPECT_GAIN = 0.42;     // degrees per pixel of drag
+const inspectBtn = document.getElementById('inspect');
+const cardWrap = card.parentElement;
+let inspecting = false;
+const grab = { on: false, x: 0, y: 0, t: 0, wx: 0, wy: 0 };   // w = angular velocity, deg/s
+
+function setInspect(on) {
+  inspecting = !!on;
+  card.classList.toggle('is-inspecting', inspecting);
+  cardWrap.classList.toggle('is-inspecting', inspecting);
+  inspectBtn.setAttribute('aria-pressed', String(inspecting));
+  inspectBtn.textContent = inspecting ? 'Put it down' : 'Inspect';
+  if (!inspecting) { grab.on = false; att.tx = 0; att.ty = 0; }
+  if (!live) { live = true; card.classList.add('is-live'); }
+}
+
+function grabStart(e) {
+  if (!inspecting) return;
+  grab.on = true; grab.x = e.clientX; grab.y = e.clientY; grab.t = performance.now();
+  grab.wx = 0; grab.wy = 0;
+  att.tx = att.rx; att.ty = att.ry;
+  att.vx.v = 0; att.vy.v = 0;
+  try { card.setPointerCapture(e.pointerId); } catch (_) {}
+}
+
+function grabMove(e) {
+  if (!grab.on) return;
+  const now = performance.now();
+  const dt = Math.max(1 / 240, (now - grab.t) / 1000);
+  const dx = e.clientX - grab.x, dy = e.clientY - grab.y;
+  grab.x = e.clientX; grab.y = e.clientY; grab.t = now;
+  // Yaw is unbounded — you can turn it right round. Pitch stops before the
+  // card becomes a line.
+  att.ty += dx * INSPECT_GAIN;
+  att.tx = clamp(att.tx - dy * INSPECT_GAIN, INSPECT_MAX_RX);
+  // Angular velocity, smoothed: the last few pixels of a drag say more about
+  // the throw than the last one.
+  const a = 0.35;
+  grab.wy = grab.wy * (1 - a) + (dx * INSPECT_GAIN / dt) * a;
+  grab.wx = grab.wx * (1 - a) + (-dy * INSPECT_GAIN / dt) * a;
+}
+
+function grabEnd(e) {
+  if (!grab.on) return;
+  grab.on = false;
+  try { card.releasePointerCapture(e.pointerId); } catch (_) {}
+  // Hand the throw to the spring, then ask where it would coast to and land
+  // on the face nearest THAT — so a flick spins it over and a nudge does not.
+  att.vy.v = grab.wy; att.vx.v = grab.wx;
+  const coastY = att.ry + grab.wy * INSPECT_SETTLE * 0.75;
+  att.ty = Math.round(coastY / 180) * 180;
+  att.tx = 0;
+}
+
+/** Once it has come to rest on its other face, make that the real state. */
+function settleInspect() {
+  if (grab.on || Math.abs(att.vy.v) > 2 || Math.abs(att.ry - att.ty) > 0.4) return;
+  const half = Math.round(att.ty / 180);
+  if (half === 0) return;
+  // ry of 180 (or −180, or 540) IS the back. Fold it into the flip state so
+  // the card and the accessibility tree agree on which face is up, and start
+  // the next turn from zero.
+  if (half % 2 !== 0) card.classList.toggle('is-flipped');
+  att.ry = 0; att.ty = 0; att.vy.v = 0;
+}
+
+if (inspectBtn) {
+  inspectBtn.addEventListener('click', (e) => { e.stopPropagation(); setInspect(!inspecting); });
+  card.addEventListener('pointerdown', grabStart);
+  card.addEventListener('pointermove', grabMove);
+  card.addEventListener('pointerup', grabEnd);
+  card.addEventListener('pointercancel', grabEnd);
+  card.addEventListener('lostpointercapture', grabEnd);
+}
+
 function aim(e) {
+  if (inspecting) return;
   const r = card.getBoundingClientRect();
   target.x = Math.max(-0.2, Math.min(1.2, (e.clientX - r.left) / r.width));
   target.y = Math.max(-0.6, Math.min(1.6, (e.clientY - r.top) / r.height));
@@ -99,87 +205,12 @@ function aim(e) {
   if (!live) { live = true; card.classList.add('is-live'); }
 }
 
-/* ── the phone's own attitude ────────────────────────────────────────────────
-   Calibrated to the first reading rather than to an assumed posture: whatever
-   angle the handset is at when the card appears becomes level, so it works
-   lying on a desk, propped on a knee, or held over a table.
-
-   Both axes are NEGATED. Tip the phone right and the card turns left; tip the
-   top away and the card leans toward you. The card is holding still while the
-   screen moves around it.                                                    */
-let tiltBound = false, tiltLast = 0;
-
-function onTilt(ev) {
-  const { beta, gamma } = ev;
-  if (beta == null || gamma == null) return;
-  // Sensor events do not arrive on the frame clock, so the filter is told how
-  // long it actually waited. Getting this wrong is what makes a One Euro
-  // filter behave differently on two devices that both "work".
-  const now = performance.now();
-  const dt = tiltLast ? Math.min(0.1, (now - tiltLast) / 1000) : 1 / 60;
-  tiltLast = now;
-  // 70ms of lead, which is about what the smoothing costs.
-  aimFromDevice(att, beta, gamma, dt, { max: MAX_TILT, lead: 0.07 });
-  // The sheen is drawn from `target`, which until now only the pointer wrote.
-  // So the card rotated to the handset and the glint stayed nailed where it
-  // was: the gloss moved only while a finger was dragging, which is exactly
-  // the opposite of how a real card behaves. The lamp is fixed in the room, so
-  // the reflection has to travel as the card turns under it.
-  target.x = 0.5 - att.ty / (MAX_TILT * 2.4);
-  target.y = 0.5 + att.tx / (MAX_TILT * 2.4);
-  if (engraved) aimLamp(lampFor(att.ty));
-  if (!live) { live = true; card.classList.add('is-live'); }
-}
-
-/** The gyroscope, which leads the fused orientation by a frame or two. */
-function onMotion(ev) {
-  const r = ev.rotationRate;
-  if (r) feedRate(att, r.beta, r.gamma);
-}
-
-function attachTilt() {
-  if (tiltBound || !window.DeviceOrientationEvent) return;
-  tiltBound = true;
-  att.ref = null; att.fb.reset(); att.fg.reset(); tiltLast = 0;
-  window.addEventListener('deviceorientation', onTilt);
-  window.addEventListener('devicemotion', onMotion);
-}
-
-/** iOS grants this only inside a user gesture, so it is called from a click. */
-async function askTilt() {
-  const D = window.DeviceOrientationEvent, M = window.DeviceMotionEvent;
-  if (!D) return false;
-  let granted = true;
-  if (typeof D.requestPermission === 'function') {
-    try { granted = (await D.requestPermission()) === 'granted'; }
-    catch (_) { granted = false; }
-  }
-  // The gyroscope is a second permission on iOS and it is asked for separately.
-  // It is allowed to fail on its own: without it the card still answers the
-  // handset, just with the smoothing's lag showing.
-  if (M && typeof M.requestPermission === 'function') {
-    try { await M.requestPermission(); } catch (_) {}
-  }
-  // Bind either way. A refusal simply means no events arrive, and binding
-  // anyway covers the browsers that expose requestPermission without actually
-  // gating on it — of which there are more than there should be.
-  attachTilt();
-  return granted;
-}
-
-/* iOS will only hand over the motion sensors inside a user gesture, and it is
-   not fussy about WHICH gesture. Asking on the skin toggle alone meant that
-   anyone who arrived with the skin already remembered — which is everyone on
-   a second visit — turned it OFF with their first tap and was never asked at
-   all. So the first touch anywhere on the page asks, once. */
-if (typeof DeviceOrientationEvent?.requestPermission === 'function') {
-  const firstTouch = async () => {
-    document.removeEventListener('pointerdown', firstTouch);
-    const ok = await askTilt();
-    showHint(ok);
-  };
-  document.addEventListener('pointerdown', firstTouch, { once: true, passive: true });
-}
+/* ── the handset's tilt is gone ──────────────────────────────────────────
+   It rotated the card to the phone on its own, which was never quite in
+   anyone's hands: the permission prompt landed on the first tap of whatever
+   you were tapping, iOS asked twice, and a card that moved while you were
+   trying to read it read as broken more often than as alive. Inspect, below,
+   is the same physics under a finger that asked for it.                    */
 
 const fine = matchMedia('(pointer: fine)').matches;
 const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -197,23 +228,17 @@ if (!still) {
     window.addEventListener('pointermove', aim, { passive: true });
     window.addEventListener('pointerleave', () => { target = { x: .5, y: .35 }; });
   }
-  // A device with an attitude has a better pointer than a pointer. This is
-  // deliberately NOT inside the else: a tablet has both a fine pointer and a
-  // gyroscope, and gating tilt on the absence of a mouse silently excluded
-  // every one of them. Where no permission is needed it binds now; where iOS
-  // demands a gesture, askTilt runs from the toggle.
-  if (!(typeof DeviceOrientationEvent?.requestPermission === 'function')) attachTilt();
 }
 } catch (err) { console.warn('card: lighting off —', err); }
 
 /* ── turning it over ─────────────────────────────────────────────────────── */
 const flip = () => card.classList.toggle('is-flipped');
-// A swipe that changed the card must not also turn it over.
-card.addEventListener('click', (e) => { if (!card.dataset.swiped && gestureMoved < 8) flip(); });
+// A swipe that changed the card must not also turn it over, and neither must
+// letting go of a card you were inspecting.
+card.addEventListener('click', (e) => { if (!inspecting && !card.dataset.swiped && gestureMoved < 8) flip(); });
 card.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); }
 });
-document.getElementById('turn').addEventListener('click', (e) => { e.stopPropagation(); flip(); });
 
 /* ── the engraved set ────────────────────────────────────────────────────────
    Five cards whose only difference is the paper. It is opt-in, it is off by
@@ -225,8 +250,8 @@ document.getElementById('turn').addEventListener('click', (e) => { e.stopPropaga
    emits.                                                                     */
 const KEY = 'kaayko.card.skin';
 const skinBtn = document.getElementById('skin');
+const skinIcon = document.getElementById('skin-icon');
 const stockEl = document.getElementById('stock');
-const hintEl = document.getElementById('touchhint');
 let engraved = false;
 
 // localStorage throws outright in Safari's private mode, so every touch of it
@@ -239,45 +264,16 @@ function setSkin(on, { save = true } = {}) {
   document.documentElement.dataset.skin = engraved ? 'engraved' : '';
   if (!engraved) document.documentElement.removeAttribute('data-skin');
   skinBtn.setAttribute('aria-pressed', String(engraved));
-  skinBtn.textContent = engraved ? 'In colour' : 'American Psycho';
+  // The control is the picture. A skull is the set in colour; press it and the
+  // set goes engraved, and the rose is how you know.
+  skinBtn.setAttribute('aria-label', engraved ? 'Back to colour' : 'American Psycho');
+  skinIcon.src = engraved ? '/assets/card/rose.webp' : '/assets/card/skull.webp';
   if (save) remember(engraved);
   if (!engraved) { unread(); stopRaking(); }
   if (series.length) { paintMarks(); show(at); }
-  showHint(tiltBound);
 }
 
-skinBtn.addEventListener('click', async (e) => {
-  e.stopPropagation();
-  setSkin(!engraved);
-  // This click is the user gesture iOS requires, and it is the only reliable
-  // one on the page: tapping the card itself turns it over.
-  if (engraved) { const ok = await askTilt(); showHint(ok); }
-});
-
-/* Whether a phone will actually buzz is not knowable from here.
-   navigator.vibrate is absent in every browser on iOS — Safari has never
-   shipped the Vibration API and every other iOS browser is Safari underneath —
-   and a privacy browser on Android may keep the function and quietly do
-   nothing with it, which is indistinguishable from a broken feature.
-
-   So the hint is a control. One tap asks for a long unmistakable buzz, and
-   what happens next is the answer: felt it, and the ticks will work; nothing,
-   and it is the browser rather than the card. Saying that out loud is better
-   than an interface that silently promises something it cannot deliver. */
-function showHint(tiltLive) {
-  // Silence is the goal. A card that tilts in your hand needs no caption; the
-  // hint appears only where the device cannot do it and something has to say so.
-  if (!engraved || tiltLive || tiltBound || !touchy) { hintEl.hidden = true; return; }
-  hintEl.hidden = false;
-  hintEl.textContent = 'Motion access is off \u00b7 tap to retry';
-}
-
-hintEl.addEventListener('click', async (e) => {
-  e.stopPropagation();
-  const ok = await askTilt();
-  if (ok) showHint(true);
-  else hintEl.textContent = 'This browser will not report motion \u00b7 drag the card instead';
-});
+skinBtn.addEventListener('click', (e) => { e.stopPropagation(); setSkin(!engraved); });
 
 /* ── the series ──────────────────────────────────────────────────────────────
    Eight cards, one chassis. Only the face and the four facts change, which is the
@@ -290,7 +286,7 @@ const API = apiBase();
 const FALLBACK_BRAND = {
   label: 'KAAYKO',
   tagline: 'BUILDS THINGS, AND PUBLISHES THE FAILURES NEXT TO THE RESULTS',
-  properties: 'Kaayko \u00b7 Paddling Out \u00b7 Forge \u00b7 Kortex \u00b7 Alumni',
+  properties: 'Kaayko \u00b7 Paddling Out \u00b7 Forge \u00b7 Kortex \u00b7 School',
   contact: 'kaayko.com \u00b7 hello@kaayko.com'
 };
 
@@ -527,7 +523,7 @@ function show(i, { focus = false } = {}) {
   card.addEventListener('pointerup', (e) => {
     if (x0 === null) return;
     const dx = e.clientX - x0, dt = performance.now() - t0; x0 = null;
-    if (Math.abs(dx) > 46 && (!engraved || dt < 420)) {
+    if (!inspecting && Math.abs(dx) > 46 && (!engraved || dt < 420)) {
       card.dataset.swiped = '1';
       show(at + (dx < 0 ? 1 : -1));
       setTimeout(() => { delete card.dataset.swiped; }, 0);

@@ -40,7 +40,7 @@ globalThis.document ??= {
   getElementById: () => null,
 };
 
-const { front, back, wrap, hostOf, qrRects } = await import('/js/cards/render.js');
+const { front, back, wrap, hostOf, qrRects, BACK, backWrap, PRINT } = await import('/js/cards/render.js');
 
 const INDEX = fileURLToPath(new URL('../src/assets/cards/index.json', import.meta.url));
 const idx = JSON.parse(fs.readFileSync(INDEX, 'utf8'));
@@ -56,15 +56,17 @@ const digest = (svg) => crypto.createHash('sha256').update(svg).digest('hex').sl
 const artOf = (c) => `/assets/cards/art/${c.art || c.slug}.png`;
 
 /** [front, back] as they render today. */
-// Re-pinned 21 Sep 2026: kaay.link became Kortex and Alumni became School of
-// the Future, and four cards took new hooks and back lines. Forge is
-// untouched and its hashes did not move — which is the guard working.
+// Re-pinned 21 Sep 2026. Every BACK moved: the ghost now sits in its own box
+// and the sentence wraps inside a type column, so no card prints words over
+// its animal. Four FRONTS did not move at all; alumni's did, because it is
+// "School" now. The guard caught the backs being pinned into the front slot
+// on the way here — which is the guard working.
 const PINNED = {
-  paddlingout: ['9bc106d58993f93f', '17bbcce0b4993a15'],
-  forge:       ['2da71419f1d6d133', '8f8511f341ac221b'],
-  kortex:      ['9e8838d7a584c564', '9271af31d581c87c'],
-  kaayko:      ['49b36fd9a9a2cb1e', 'e5b246e76052011f'],
-  alumni:      ['6d57db2e04488f87', '0302f8fd7dc72554'],
+  paddlingout: ['9bc106d58993f93f', '8075a23d5491bc62'],
+  forge:       ['2da71419f1d6d133', '9923b82dc40d23ca'],
+  kortex:      ['9e8838d7a584c564', '81098d9cee4e9c06'],
+  kaayko:      ['49b36fd9a9a2cb1e', '136bb10e8328aa2c'],
+  alumni:      ['14a94fe6a546b0fb', 'df4b97ad687b2f8b'],
 };
 
 const render = (c) => ({
@@ -86,6 +88,46 @@ for (const card of idx.cards) {
       `back of ${card.slug} changed. If that was deliberate, re-pin it in this file in the same commit.`);
   });
 }
+
+test('no card needs a line the front will not print', () => {
+  // wrap() caps at two lines and drops the rest. "School of the Future,
+  // connecting past and present." printed as "…connecting past and" because of
+  // it. This is the guard that was missing: every hook fits, or the build fails.
+  for (const c of idx.cards) {
+    const rows = wrap(c.hook, PRINT.type.hook.wrap, 99);
+    assert.ok(rows.length <= 2, `${c.slug}: hook needs ${rows.length} lines at wrap ${PRINT.type.hook.wrap} — "${c.hook}"`);
+    assert.equal(rows.join(' '), c.hook, `${c.slug}: hook lost words in wrapping`);
+  }
+});
+
+test('THE BACK — the words and the animal never touch', () => {
+  for (const c of idx.cards) {
+    const svg = render(c).back;
+    // The picture is inside its box.
+    const img = svg.match(/<image href="[^"]+" x="(\d+)" y="(\d+)" width="(\d+)" height="(\d+)" preserveAspectRatio="xMidYMid meet"\/>/);
+    assert.ok(img, `${c.slug}: back has no boxed ghost`);
+    const [x, y, w, h] = img.slice(1).map(Number);
+    assert.equal(x, BACK.ghostX);
+    assert.ok(y >= BACK.ghostY && y + h <= BACK.ghostY + BACK.ghostH, `${c.slug}: ghost leaves its band`);
+    assert.equal(x + w, 1050);
+
+    // Every line of the sentence fits the type column at the ceiling advance,
+    // and none of it was dropped.
+    const size = PRINT.type.backLine.size;
+    const rows = wrap(c.line || c.hook, backWrap(size), 99);
+    assert.ok(rows.length <= 2, `${c.slug}: back line needs ${rows.length} lines — "${c.line}"`);
+    for (const row of rows) {
+      const right = 88 + row.length * size * BACK.em;
+      assert.ok(right <= BACK.textRight, `${c.slug}: "${row}" reaches x=${right.toFixed(0)}, column ends at ${BACK.textRight}`);
+    }
+    // Nothing that is typed sits inside the picture's box.
+    for (const m of svg.matchAll(/<text x="(\d+(?:\.\d+)?)" y="(\d+(?:\.\d+)?)"[^>]*>([^<]*)<\/text>/g)) {
+      const tx = Number(m[1]), ty = Number(m[2]);
+      const inBand = ty > BACK.ghostY && ty < BACK.ghostY + BACK.ghostH + 12;
+      if (inBand) assert.ok(tx < BACK.ghostX, `${c.slug}: "${m[3]}" at x=${tx} is inside the picture's box`);
+    }
+  }
+});
 
 test('the card is 3.5 x 2 inches, and says so in inches, not pixels', () => {
   const svg = render(idx.cards[0]).front;
