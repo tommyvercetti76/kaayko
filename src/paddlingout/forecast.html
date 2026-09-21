@@ -767,14 +767,13 @@
     }
 
     function renderApiStatus(forecastData) {
-      const mlIcon = window.dataTransformer?.getMLStatusIcon?.(forecastData) || '🤖';
+      // One source of truth for both halves — they used to be computed from
+      // two different expressions and contradicted each other on every score.
+      const p = window.dataTransformer?.getPredictionProvenance?.(forecastData)
+        || { icon: '📊', label: 'Estimated forecast' };
       const responseTime = forecastData.metadata?.responseTime || 'N/A';
-      const current = window.dataTransformer?.extractCurrentConditions?.(forecastData);
-      const source = current?.mlModelUsed === true || current?.predictionSource === 'ml-model'
-        ? 'ML forecast'
-        : 'Estimated forecast';
       document.getElementById('apiStatus').innerHTML =
-        `${mlIcon} ${source} &nbsp;|&nbsp; ${responseTime}`;
+        `${p.icon} ${p.label} &nbsp;|&nbsp; ${responseTime}`;
     }
 
     // ── Main load logic ─────────────────────────────────────────────────────

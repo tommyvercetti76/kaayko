@@ -44,15 +44,36 @@ class DataTransformer {
   // (heatmap data prep removed — KonditionsHeatmap consumes the API
   // forecast shape directly)
 
-  // Get ML status icon from forecast data
+  /**
+   * What produced this number, as one decision.
+   *
+   * The API emits four values for predictionSource — 'ml-model' (the remote
+   * Cloud Run service), 'local-model' (the trained tree ensemble that runs
+   * in-process), 'paddle-llm', and 'fallback-rules'. This knew about one of
+   * them, so the in-process model — which IS the model — was being reported
+   * as a fallback.
+   *
+   * Icon and label came from two expressions that disagreed: the icon required
+   * mlModelUsed AND source === 'ml-model', the label accepted either. In
+   * production (mlModelUsed true, source 'local-model') that rendered the
+   * chart glyph, meaning "not ML", beside the words "ML forecast". One
+   * function now returns both so they cannot drift apart again.
+   */
+  getPredictionProvenance(forecastData) {
+    const current = this.extractCurrentConditions(forecastData);
+    const source = current?.predictionSource;
+    if (source === 'ml-model')    return { icon: '🤖', label: 'ML forecast', ml: true };
+    if (source === 'local-model') return { icon: '🤖', label: 'ML forecast', ml: true };
+    if (source === 'paddle-llm')  return { icon: '🤖', label: 'ML forecast', ml: true };
+    if (source === 'fallback-rules') return { icon: '📊', label: 'Estimated forecast', ml: false };
+    // Unknown or absent: say so rather than claim either.
+    return { icon: '📊', label: current?.mlModelUsed === true ? 'ML forecast' : 'Estimated forecast',
+             ml: current?.mlModelUsed === true };
+  }
+
+  // Kept for callers that only want the glyph.
   getMLStatusIcon(forecastData) {
-    const currentData = this.extractCurrentConditions(forecastData);
-    const mlModelUsed = currentData?.mlModelUsed;
-    const predictionSource = currentData?.predictionSource;
-    
-    // Show robot if ML model is actually used, chart for fallback
-    const isMLPowered = mlModelUsed === true && predictionSource === 'ml-model';
-    return isMLPowered ? '🤖' : '📊';
+    return this.getPredictionProvenance(forecastData).icon;
   }
 
   // Prepare data for RatingHero component

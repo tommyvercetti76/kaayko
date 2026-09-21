@@ -476,26 +476,28 @@
        under a plate rather than a warning in a form. */
     .note {
       display: grid; grid-template-columns: auto 1fr;
-      align-items: start; gap: clamp(1rem, 3vw, 1.8rem);
+      align-items: start; gap: clamp(0.9rem, 2.4vw, 1.3rem);
       padding: clamp(1.1rem, 3vw, 1.6rem) 0 clamp(1.1rem, 3vw, 1.6rem);
       border-top: 1px solid rgba(181, 147, 90, 0.22);
       border-bottom: 1px solid rgba(181, 147, 90, 0.22);
     }
     .note-emblem {
-      width: clamp(76px, 14vw, 132px); height: auto; flex: none;
-      /* The plates are drawn on cream. Dropped straight onto the dark room
-         they read as bright cut-outs, so they are pulled back and warmed to
-         sit in the same light as the type. */
-      opacity: 0.94; filter: saturate(0.92) drop-shadow(0 14px 26px rgba(0, 0, 0, 0.55));
-      mix-blend-mode: normal;
+      width: clamp(40px, 7vw, 52px); height: auto; flex: none;
+      color: rgba(217, 189, 123, 0.9);
+      /* Hand-cut, not generated. A caveat about drowning is not the place for
+         ornament — the icon has to be legible at 40px on a phone in daylight
+         and say exactly the thing the sentence says. */
+      stroke: currentColor; fill: none;
+      stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round;
+      vector-effect: non-scaling-stroke;
     }
     .note-body { min-width: 0; }
     .note-label { display: block; margin-bottom: 0.45rem; color: rgba(217, 189, 123, 0.92); font-size: 0.68rem; font-style: italic; letter-spacing: 0.22em; text-transform: uppercase; }
     .note p { max-width: 58ch; color: rgba(237, 232, 223, 0.82); font-size: clamp(0.95rem, 2.4vw, 1.02rem); line-height: 1.62; }
     @media (max-width: 560px) {
       /* Narrow, a 132px emblem beside 58 characters leaves neither room. */
-      .note { grid-template-columns: 1fr; gap: 0.9rem; }
-      .note-emblem { width: 96px; }
+      .note { grid-template-columns: auto 1fr; gap: 0.85rem; }
+      .note-emblem { width: 38px; }
     }
 
     /* ── Actions ────────────────────────────────────────────────────── */
@@ -695,7 +697,7 @@
       <a href="https://kaay.link" rel="noopener noreferrer">kaay.link</a>
       <a href="https://kaay.school" rel="noopener noreferrer">Alumni</a>
       <a href="/store" data-feature="store">Store</a>
-      <a href="/card">The card</a>
+      <a href="/card">Inventory</a>
       <a href="/privacy">Privacy</a>
     </nav>
     <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
@@ -769,12 +771,14 @@
 
       gallery: {
         live: "Rendered on-device",
-        note: function () { return "Four maintainer-voted renders from the Madhubani catalog — the full set is in the gallery."; },
+        note: function () { return "Six from the catalog the gallery publishes \u2014 the full set is there."; },
         cards: [
-          { url: "/forge-gallery", title: "Peacock", sub: "Madhubani · FLUX.1-dev", snip: "The national bird of India, by the minimalist-tshirt engine.", stat: "", statLabel: "", img: "/assets/forge/voted_peacock.png" },
-          { url: "/forge-gallery", title: "Blackbuck", sub: "Madhubani · FLUX.1-dev", snip: "One of the 41 species in the catalog.", stat: "", statLabel: "", img: "/assets/forge/voted_blackbuck.png" },
-          { url: "/forge-gallery", title: "One-horned Rhinoceros", sub: "Madhubani · FLUX.1-dev", snip: "Voted best of its run by the maintainer.", stat: "", statLabel: "", img: "/assets/forge/voted_rhino.png" },
-          { url: "/forge-gallery", title: "Indian Elephant", sub: "Madhubani · FLUX.1-dev", snip: "Part of the gold-standard auto-QC set.", stat: "", statLabel: "", img: "/assets/forge/voted_elephant.png" }
+          { url: "/forge-gallery", title: "Brown-winged Kingfisher", sub: "Madhubani \u00b7 FLUX.1-dev", snip: "Rendered on the machine this page is served from.", stat: "", statLabel: "", img: "/assets/forge/brown-winged-kingfisher.jpg" },
+          { url: "/forge-gallery", title: "Chinkara", sub: "Madhubani \u00b7 FLUX.1-dev", snip: "Rendered on the machine this page is served from.", stat: "", statLabel: "", img: "/assets/forge/chinkara.jpg" },
+          { url: "/forge-gallery", title: "Greater Flamingo", sub: "Madhubani \u00b7 FLUX.1-dev", snip: "Rendered on the machine this page is served from.", stat: "", statLabel: "", img: "/assets/forge/greater-flamingo.jpg" },
+          { url: "/forge-gallery", title: "Grey-headed Fish Eagle", sub: "Madhubani \u00b7 FLUX.1-dev", snip: "Rendered on the machine this page is served from.", stat: "", statLabel: "", img: "/assets/forge/grey-headed-fish-eagle.jpg" },
+          { url: "/forge-gallery", title: "Indian Giant Squirrel", sub: "Madhubani \u00b7 FLUX.1-dev", snip: "Rendered on the machine this page is served from.", stat: "", statLabel: "", img: "/assets/forge/indian-giant-squirrel.jpg" },
+          { url: "/forge-gallery", title: "Indian Skimmer", sub: "Madhubani \u00b7 FLUX.1-dev", snip: "Rendered on the machine this page is served from.", stat: "", statLabel: "", img: "/assets/forge/indian-skimmer.jpg" }
         ]
       }
     };
@@ -807,7 +811,7 @@
         def: "Somebody is loading a kayak right now who does not know the wind gets up at four. Paddling Out reads the water the way a local would and says it in one number — before the drive, not after.",
         source: "lakes",
         note: {
-          emblem: "/assets/about/emblems/lifejacket.webp",
+          icon: "vest",
           label: "Guidance, not clearance",
           text: "The number knows the weather. It does not know you \u2014 your skill, your boat, or what the launch looks like this morning. It has never met you. Wear the jacket every time, whatever it says."
         },
@@ -823,7 +827,7 @@
         source: "gallery",
         frame: true,
         note: {
-          emblem: "/assets/about/emblems/verdict.webp",
+          icon: "threshold",
           label: "That last number is a failure",
           text: "We wrote the passing mark down before the run, and the result came in under it. So it is published, next to the method, instead of quietly dropped. A benchmark you can only pass is not a benchmark."
         },
@@ -838,7 +842,7 @@
         def: "Designs go up, people vote, and the ones people actually want get printed. What arrives is something a few hundred strangers agreed was worth wearing.",
         source: "products", gated: true,
         note: {
-          emblem: "/assets/about/emblems/invite.webp",
+          icon: "key",
           label: "How to get in",
           text: "Ask, and a code arrives. It is not exclusivity \u2014 it is how small this still is. A person sends every one of them."
         },
@@ -853,7 +857,7 @@
         kicker: "The link that can change its mind",
         def: "You print a code on a poster and then the plan changes. Kortex keeps the code working and lets you send it somewhere new — years after the ink dried.",
         note: {
-          emblem: "/assets/about/emblems/signpost.webp",
+          icon: "repoint",
           label: "The sticker outlives the campaign",
           text: "Ink does not take corrections. So the only thing a printed code has to carry is an address you will still own in three years. We keep the code alive; where it points stays yours to keep deciding."
         },
@@ -867,7 +871,7 @@
         kicker: "School does not end at the gate",
         def: "The people who went there are the best thing a school has, and most schools lose them by thirty. This keeps them findable, and puts a teacher who knows both sides in the middle of the introduction.",
         note: {
-          emblem: "/assets/about/emblems/giving.webp",
+          icon: "switchOff",
           label: "Giving is built and not switched on",
           text: "Card and UPI payments are written, and still in testing. No school gets them until money has moved end to end without us holding our breath. Data stays in India, on Indian infrastructure."
         },
@@ -876,6 +880,55 @@
         ]
       }
     ];
+
+    /* ── Caveat marks ─────────────────────────────────────────────────
+       Five icons, drawn here rather than generated, because each has one job:
+       say the sentence beside it before the sentence is read. A life vest for
+       "wear it anyway". A bar under a dashed line for "this one failed the
+       threshold we set". A key for "ask and you are in". A code with an arrow
+       leaving it for "re-point it later". A switch in the off position for
+       "built, not switched on".
+       24x24, 1.35 stroke, currentColor — legible at 38px on a phone. */
+    var NOTE_ICONS = {
+      // A vest was drawn three ways and every one of them read as a pair of
+      // brackets once it was 38px on a phone. The ring is unambiguous at any
+      // size, which is the only property that matters on a drowning warning.
+      vest:      'M12 3.6a8.4 8.4 0 1 0 0 16.8 8.4 8.4 0 0 0 0-16.8Z' +
+                 '|M12 8.4a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2Z' +
+                 '|M12 3.6v4.8|M12 15.6v4.8|M3.6 12h4.8|M15.6 12h4.8',
+      // Strokes read as ticks at 38px; closed bars read as bars. Two clear the
+      // line, the last one does not — which is the sentence beside it.
+      threshold: 'M3 20h18|M5.4 9h3.2v11H5.4Z|M10.4 7.4h3.2V20h-3.2Z|M15.4 14h3.2v6h-3.2Z',
+      thresholdDash: 'M3 11.4h18',
+      key:       'M7.6 8.6a3.4 3.4 0 1 0 0 6.8 3.4 3.4 0 0 0 0-6.8Z|M11 12h9.4|M17.2 12v2.9|M20.4 12v2.2',
+      repoint:   'M3.6 3.6h7v7h-7Z|M5.9 5.9h2.4v2.4H5.9Z|M13.4 3.6h7v7h-7Z|M15.7 5.9h2.4v2.4h-2.4Z' +
+                 '|M3.6 13.4h7v7h-7Z|M5.9 15.7h2.4v2.4H5.9Z|M13.6 14.4h6.8|M17.6 11.6l2.8 2.8-2.8 2.8',
+      switchOff: 'M6.4 8.4h11.2a3.6 3.6 0 0 1 0 7.2H6.4a3.6 3.6 0 0 1 0-7.2Z|M6.6 9.6a2.4 2.4 0 1 0 0 4.8 2.4 2.4 0 0 0 0-4.8Z',
+    };
+
+    function noteIcon(name) {
+      var d = NOTE_ICONS[name];
+      if (!d) return null;
+      var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("class", "note-emblem");
+      svg.setAttribute("viewBox", "0 0 24 24");
+      svg.setAttribute("aria-hidden", "true");
+      d.split("|").forEach(function (seg) {
+        var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", seg);
+        svg.appendChild(path);
+      });
+      // The threshold the last bar fell under is the whole point of that note,
+      // so it is drawn as a rule the eye reads as a limit, not another bar.
+      if (name === "threshold") {
+        var dash = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        dash.setAttribute("d", NOTE_ICONS.thresholdDash);
+        dash.setAttribute("stroke-dasharray", "2.2 2.2");
+        dash.setAttribute("opacity", "0.75");
+        svg.appendChild(dash);
+      }
+      return svg;
+    }
 
     /* ── DOM helper ───────────────────────────────────────────────────── */
     function h(tag, props, kids) {
@@ -1051,9 +1104,7 @@
           plain ? copy : null,
           railSlot,
           def.note ? h("div", { class: "note reveal" }, [
-            def.note.emblem
-              ? h("img", { class: "note-emblem", src: def.note.emblem, alt: "", loading: "lazy", decoding: "async" })
-              : null,
+            def.note.icon ? noteIcon(def.note.icon) : null,
             h("div", { class: "note-body" }, [
               h("span", { class: "note-label", text: def.note.label }),
               h("p", { text: def.note.text })
