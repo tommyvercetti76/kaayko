@@ -55,6 +55,14 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--ink); color: var(--paper); overflow-x: clip; }
+/* The page changes colour on the same clock as the skull becomes the rose
+   (MORPH_MS in pages/card.js). One-time transitions of colour on a few
+   elements; nothing here runs while the card turns. */
+html, body { transition: background-color 1.15s ease, color 1.15s ease; }
+.eyebrow h1 em, .cap, .now i, .now .to-product, .stock, .hint button, .colophon a { transition: color 1.15s ease, border-color 1.15s ease; }
+/* The arriving face, during a timed switch: over the old one, on its own layer. */
+#face-front, #face-back { position: relative; }
+.face .incoming { position: absolute; inset: 0; will-change: opacity; }
 body {
   font-family: var(--serif);
   min-height: 100svh;
@@ -221,7 +229,7 @@ a { color: inherit; text-decoration: none; }
 /* The relief is laid a moment after the card and fades in — the raster of
    its layers is the one expensive thing on the page, and it must not land in
    a frame that is showing motion. Under reduced motion it simply appears. */
-.relief { overflow: hidden; opacity: 0; transition: opacity .55s ease; }
+.relief { overflow: hidden; opacity: 0; transition: opacity .55s ease; will-change: opacity; }
 .relief.is-set { opacity: 1; }
 /* The animal is five canvases — the impression's tint, then four stills
    lit from the four sides — computed once from the art in cards/emboss.js
@@ -361,7 +369,7 @@ a { color: inherit; text-decoration: none; }
 .colophon a:hover { color: var(--gold-lit); }
 
 @media (prefers-reduced-motion: reduce) {
-  .card, .face, .relief, .relief .stills { transition: none; }
+  html, body, .card, .face, .relief, .relief .stills, .eyebrow h1 em, .cap, .now i, .now .to-product, .stock, .hint button, .colophon a { transition: none; }
   .relief, .relief .stills { opacity: 1; }
   .sheen, .wash, .foil, .shade { display: none; }
 }

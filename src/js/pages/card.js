@@ -335,6 +335,7 @@ function morphNow(dir) {
       canvas: document.getElementById('mode-dust'),
       from: document.getElementById('mode-skull'),
       to: document.getElementById('mode-rose'),
+      duration: MORPH_MS,
     });
     morph.play(dir);
   } catch (err) { console.warn('card: morph off —', err); }
@@ -367,7 +368,8 @@ function setSkin(on, { save = true } = {}) {
   // card from the NEXT frame — so its first frame is not the one that paid
   // for the new faces — and the relief, which is the expensive raster,
   // rises into the paper only after the dust has settled.
-  if (series.length) { paintMarks(); show(at, { relief: save && !still ? 'after-morph' : 'soon' }); if (wasFlipped) card.classList.add('is-flipped'); }
+  const timed = save && !still;
+  if (series.length) { paintMarks(); show(at, { relief: timed ? 'after-morph' : 'soon', fade: timed ? MORPH_MS : 0 }); if (wasFlipped) card.classList.add('is-flipped'); }
   if (save) requestAnimationFrame(() => morphNow(engraved ? 'to' : 'back'));
 }
 
@@ -406,9 +408,29 @@ let series = [], brand = {}, at = 0;
 
    These are drawn INLINE rather than into an <img>: an SVG inside an <img> runs
    in secure static mode and refuses to load the external art file. */
-function draw(el, svg, label) {
-  el.innerHTML = svg;
+/* How long the skull takes to become the rose, and so how long the card
+   takes to change stock under it: the two are one gesture and run on one
+   clock. The stylesheet's 1.15s transitions on the page's colours are this
+   number too. */
+const MORPH_MS = 1150;
+
+function draw(el, svg, label, fade = 0) {
   el.setAttribute('aria-label', label);
+  const old = el.querySelector('svg');
+  if (!fade || !old) { el.innerHTML = svg; return; }
+  // A crossfade, timed to the dust: the new face comes in over the old one
+  // on its own compositing layer, and the old one goes once it is under.
+  el.insertAdjacentHTML('beforeend', svg);
+  const nu = el.lastElementChild;
+  nu.classList.add('incoming');
+  nu.style.opacity = '0';
+  nu.style.transition = `opacity ${fade}ms ease`;
+  requestAnimationFrame(() => requestAnimationFrame(() => { nu.style.opacity = '1'; }));
+  setTimeout(() => {
+    if (nu.parentElement !== el) return;              // the page moved on
+    for (const n of [...el.children]) if (n !== nu) n.remove();
+    nu.classList.remove('incoming'); nu.style.transition = ''; nu.style.opacity = '';
+  }, fade + 40);
 }
 
 function qrFor(url) {
@@ -464,17 +486,29 @@ let reliefTimer = 0, reliefSeq = 0;
  * stills are the one moment of work on this page, and it must never land
  * in a frame that is showing motion.
  */
-function scheduleRelief(c, delayMs) {
+function scheduleRelief(c, delayMs, fade = 0) {
   clearTimeout(reliefTimer);
   const seq = ++reliefSeq;
-  for (const f of layersOf()) { f.relief.classList.remove('is-set'); f.relief.innerHTML = ''; f.stills = {}; }
+  for (const f of layersOf()) {
+    f.stills = {};
+    // On a timed switch the old relief fades out on the same clock as the
+    // face under it, and the new impression fades in on it. Otherwise the
+    // change is a cut, as a new card is.
+    f.relief.style.transitionDuration = fade ? `${fade}ms` : '';
+    f.relief.classList.remove('is-set');
+    // What fades out is the impression alone. The lit stills go at once:
+    // eight of them carry filters, and a group fading over filtered layers
+    // is a frame of work on WebKit — measured at 100ms a frame.
+    if (fade) { const r = f.relief; r.querySelector('.stills')?.remove(); setTimeout(() => { if (seq === reliefSeq && !r.classList.contains('is-set')) r.innerHTML = ''; }, fade + 40); }
+    else f.relief.innerHTML = '';
+  }
   if (!engraved) return;
   const alive = () => engraved && seq === reliefSeq && series[at] === c;
   const params = embossParams(c);
   const emboss = embossOf(`/assets/cards/art/${c.art || c.slug}.png`, params);
   emboss.then((e) => {
     if (!alive()) return;
-    for (const f of layersOf()) layTint(f, c, e, params);
+    for (const f of layersOf()) { f.relief.innerHTML = ''; layTint(f, c, e, params); }
     requestAnimationFrame(() => requestAnimationFrame(() => { if (alive()) for (const f of layersOf()) f.relief.classList.add('is-set'); }));
   }).catch((err) => console.warn('card: relief —', err));
   reliefTimer = setTimeout(() => {
@@ -629,7 +663,7 @@ function attachReaders(c) {
   }
 }
 
-function show(i, { focus = false, relief = 'soon' } = {}) {
+function show(i, { focus = false, relief = 'soon', fade = 0 } = {}) {
   if (!series.length) return;
   at = (i + series.length) % series.length;
   const c = series[at];
@@ -639,10 +673,10 @@ function show(i, { focus = false, relief = 'soon' } = {}) {
   const skinF = engraved ? engravedFor(c, PRINT, 'f') : PRINT;
   const skinB = engraved ? engravedFor(c, PRINT, 'b') : PRINT;
   draw(frontEl, front(c, { qr: qrFor(c.url), artHref, skin: skinF }),
-       `${c.name}, front of the card`);
+       `${c.name}, front of the card`, fade);
   // The back gets the same art, ghosted behind its words.
   draw(backEl, back(c, brand, { index: at + 1, total: series.length, artHref, skin: skinB }),
-       `${c.name}, back of the card`);
+       `${c.name}, back of the card`, fade);
   // The stock is named in text, so the one thing separating two cards is never
   // carried by a colour difference a reader may not be able to see.
   stockEl.textContent = engraved ? `${stockOf(c).name} \u00b7 ${stockOf(c).note}` : '';
@@ -658,8 +692,11 @@ function show(i, { focus = false, relief = 'soon' } = {}) {
   card.classList.remove('is-flipped');            // a new card arrives face up
   // 1400ms: the dust lands at 1150 and the rose has faded in by 1330. The
   // raster must fall in a still moment, and this is the first one.
-  scheduleRelief(c, relief === 'after-morph' ? 1400 : 16);
-  attachReaders(c);
+  scheduleRelief(c, relief === 'after-morph' ? 1400 : 16, fade);
+  // The readers measure the face's glyphs, so they wait for the face that
+  // is arriving rather than reading the one on its way out.
+  if (fade) setTimeout(() => { if (series[at] === c) attachReaders(c); }, fade + 60);
+  else attachReaders(c);
   measure();                                      // the caption under the card can change height
 }
 
