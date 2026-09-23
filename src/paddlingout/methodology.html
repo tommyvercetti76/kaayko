@@ -210,7 +210,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
 
   <div class="meth-section">
     <h2 data-kicon="gauge">The Score</h2>
-    <p>Every spot gets a single number from <strong>1.0</strong> to <strong>5.0</strong>, computed fresh when you load a forecast. Scores snap to <strong>half-point steps</strong> (3.0, 3.5, 4.0&hellip;) and are clamped to the 1&ndash;5 range. One question is being answered: <em>how favorable are conditions for paddling right now?</em></p>
+    <p>Every spot gets a single number from <strong>1.0</strong> to <strong>5.0</strong>, recomputed on a schedule every 15&nbsp;minutes and stored, not computed while you wait. That is deliberate: the card you tap and the forecast page you land on read the same stored number, so they cannot disagree with each other, and the forecast page tells you how old that number is. Scores snap to <strong>half-point steps</strong> (3.0, 3.5, 4.0&hellip;) and are clamped to the 1&ndash;5 range. One question is being answered: <em>how favorable are conditions for paddling right now?</em></p>
 
     <div class="verdict-card" id="live-verdict">
       <div class="verdict-score" id="lv-score">4.5</div>
@@ -356,6 +356,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
       <li>Boat traffic, construction, or temporary closures</li>
       <li>Your personal fitness, swimming ability, experience, or equipment</li>
       <li>Water quality, algae blooms, or contamination advisories</li>
+      <li>Weather that is local to one lake. Readings come from the nearest reporting station, so two spots close to each other can receive identical wind and temperature and move in lockstep &mdash; Ken&rsquo;s Lake and the Colorado River at Moab, 19&nbsp;km apart, often do.</li>
     </ul>
     <p>The Paddle Score supplements your judgment &mdash; it does not replace it. When in doubt, don't go out.</p>
   </div>

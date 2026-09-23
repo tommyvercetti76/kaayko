@@ -25,9 +25,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return (Prefs() && Prefs().kaaykoApiBase) ? Prefs().kaaykoApiBase() : window.KAAYKO_API_BASE;
   }
 
-  if (spotId) fetchSingle(spotId);
-  else        fetchAll();
-
   //──────────────────────────────────────────────────────────────────────────────
   // List view
   //──────────────────────────────────────────────────────────────────────────────
@@ -36,8 +33,23 @@ document.addEventListener("DOMContentLoaded", () => {
   // A returning visitor gets last visit's cards instantly; the live response
   // replaces them the moment it lands. Scores refresh every 15 min server-side,
   // so anything under 30 min old is worth painting.
+  //
+  // THESE TWO CONSTANTS MUST BE DECLARED BEFORE THE DISPATCH BELOW.
+  // They used to sit under it. `fetchAll` is a hoisted function declaration so
+  // the call itself worked, but the first thing it does is read the cache, and
+  // `const` bindings are in the temporal dead zone until their declaration is
+  // evaluated. readListCache therefore threw ReferenceError on EVERY first
+  // load, its own try/catch swallowed that as "no cache", and the stale copy
+  // was faithfully written on every visit and never once read back. The whole
+  // point of this block — a returning visitor seeing cards immediately instead
+  // of skeletons — had never worked. Found 22 Sep 2026 while writing the test
+  // below, which is why the test drives the real page script rather than a
+  // copy of its logic.
   const LIST_CACHE_KEY = 'kaayko_po_list_v1';
   const LIST_CACHE_MAX_AGE_MS = 30 * 60 * 1000;
+
+  if (spotId) fetchSingle(spotId);
+  else        fetchAll();
   function readListCache(url) {
     try {
       const raw = localStorage.getItem(LIST_CACHE_KEY);
@@ -50,6 +62,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   function writeListCache(url, spots) {
     try { localStorage.setItem(LIST_CACHE_KEY, JSON.stringify({ url, at: Date.now(), spots })); } catch (e) { /* quota / private mode */ }
+  }
+  function scoredCount(list) {
+    return (list || []).reduce(function (n, s) { return n + (s && s.paddleScore ? 1 : 0); }, 0);
   }
 
   function fetchAll() {
@@ -67,6 +82,14 @@ document.addEventListener("DOMContentLoaded", () => {
         clearTimeout(timer);
         const spots = Array.isArray(data) ? data : (data.data || data.spots || []);
         if (!spots.length && cached) return;          // keep the cached cards over an empty answer
+        // ...and over a SCORELESS one. Every spot present with every score null
+        // is the signature of the server's warm cache sitting between batches,
+        // not of news about the water. Guarding only the empty answer meant
+        // that a few seconds of server-side gap were written straight into this
+        // visitor's cache and then served back to them, blank, for the next
+        // thirty minutes. Measured 21 Sep 2026: one such answer turned 21
+        // cached scores into 0.
+        if (cached && scoredCount(cached) > 0 && scoredCount(spots) === 0) return;
         lastSpots = spots;
         writeListCache(listUrl, spots);
         // Same ids and same scores → nothing to repaint; avoids a flash for warm visitors.

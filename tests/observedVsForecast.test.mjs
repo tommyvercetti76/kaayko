@@ -50,7 +50,7 @@ function sink() {
   return node;
 }
 
-function renderHero() {
+function renderHero(extra = {}) {
   const captured = sink();
   const ctx = {
     window: { KaaykoPrefs: PREFS, KaaykoIcons: { get: () => '' } },
@@ -65,10 +65,14 @@ function renderHero() {
   // Trinity River's observed hero reading, 18 Sep 2026.
   hero.render(2.0, {}, {
     temperature: 33.9, windSpeed: 5.4, windDirection: 'SE',
-    uvIndex: 6.8, cloudCover: 41, humidity: 37
+    uvIndex: 6.8, cloudCover: 41, humidity: 37,
+    ...extra
   });
   return captured.innerHTML;
 }
+
+/** Minutes ago, as an ISO stamp the hero will read out of `weather.computedAt`. */
+const minutesAgo = (m) => new Date(Date.now() - m * 60 * 1000).toISOString();
 
 /**
  * The strip reads the wall clock: it draws a current-hour marker only when the
@@ -108,7 +112,30 @@ test('the hero names itself an OBSERVATION', () => {
   const html = renderHero();
   assert.match(html, /OBSERVED/, 'the hero chip must say OBSERVED');
   assert.match(html, /class="reading-source"/, 'the hero must name its source');
-  assert.match(html, /Measured now at the nearest station/);
+  assert.match(html, /Measured at the nearest station/);
+});
+
+/**
+ * 21 Sep 2026 — the second half of the same problem. The chip said "NOW" over
+ * a score that is pre-computed every 15 minutes and stored; measured live, the
+ * hero printed "OBSERVED · NOW" above a number calculated twelve minutes
+ * earlier. Naming the source was step one; saying how old the reading is is
+ * step two, and it is the one a reader can act on.
+ */
+test('the hero prints the age of the reading it was given', () => {
+  assert.match(renderHero({ computedAt: minutesAgo(12) }), /OBSERVED · 12 MIN AGO/);
+  assert.match(renderHero({ computedAt: minutesAgo(0) }),  /OBSERVED · JUST NOW/);
+  assert.match(renderHero({ computedAt: minutesAgo(180) }), /OBSERVED · 3 HR AGO/);
+});
+
+test('an age it was not given is not invented', () => {
+  const html = renderHero();                      // no computedAt
+  assert.ok(!/MIN AGO|HR AGO|JUST NOW/.test(html), 'no age may be claimed without a timestamp');
+  assert.ok(!/NOW</.test(html), 'and it must not fall back to asserting "NOW"');
+});
+
+test('the rescoring cadence is stated, not implied', () => {
+  assert.match(renderHero({ computedAt: minutesAgo(12) }), /rescored every 15 minutes/);
 });
 
 test('the 3-day strip names itself a FORECAST', () => {
@@ -128,9 +155,14 @@ test('THE POINT — the two surfaces no longer print the same bare word', () => 
   assert.match(heatHtml, /THIS HOUR/, 'the strip marks the hour, and says it is a forecast');
   assert.match(heatHtml, /aria-label="Current hour — forecast"/);
 
-  // The hero may still say NOW — it IS now — but qualified by its source.
+  // The hero does not say NOW at all any more: it is not now, it is the last
+  // warm cycle. Qualified by its source AND by its age.
   assert.ok(!/>NOW</.test(heroHtml), 'the hero chip must be qualified, not a bare "NOW"');
-  assert.match(heroHtml, /OBSERVED · NOW/);
+  assert.match(heroHtml, /OBSERVED/);
+  const chip = (html) => (html.match(/<div class="now-indicator">([^<]*)<\/div>/) || [])[1];
+  const dated = chip(renderHero({ computedAt: minutesAgo(12) }));
+  assert.equal(dated, 'OBSERVED · 12 MIN AGO',
+    'with a timestamp in hand the chip prints the age, never the word "NOW"');
 });
 
 test('outside the plotted band the strip drops the marker, it does not fall back', () => {

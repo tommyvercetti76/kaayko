@@ -450,14 +450,26 @@
     var title = el('span', 'pcard-title'); title.textContent = data.title;
     meta.appendChild(title);
     if (data.subtitle) { var sub = el('span', 'pcard-sub'); sub.textContent = data.subtitle; meta.appendChild(sub); }
+    // The tile ALWAYS carries a score line. It used to be inside
+    // `if (data.rating != null)`, so a spot whose score had not been computed
+    // rendered as a photo and a name with nothing where the number goes —
+    // indistinguishable from a tile that simply had nothing to say. Measured on
+    // 21 Sep 2026 a warm-cache gap blanked every score on the page and the
+    // grid looked, to a reader, entirely normal. An absent number is a fact
+    // about the spot and has to be readable as one.
+    var stat = el('div', 'pcard-stat');
     if (data.rating != null) {
       var sm = scoreMeta(data.rating);
-      var stat = el('div', 'pcard-stat');
       var val = el('span', 'pcard-stat-val'); val.textContent = sm.display; val.style.color = sm.color;
       var lab = el('span', 'pcard-stat-label'); lab.textContent = sm.label;
       stat.appendChild(val); stat.appendChild(lab);
-      meta.appendChild(stat);
+    } else {
+      stat.className = 'pcard-stat pcard-stat--unscored';
+      var uval = el('span', 'pcard-stat-val'); uval.textContent = '\u2014';
+      var ulab = el('span', 'pcard-stat-label'); ulab.textContent = 'No score yet';
+      stat.appendChild(uval); stat.appendChild(ulab);
     }
+    meta.appendChild(stat);
 
     body.appendChild(media);
     body.appendChild(meta);

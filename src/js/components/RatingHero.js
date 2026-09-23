@@ -69,6 +69,26 @@ class RatingHero {
     // Shared line-icons (single icon language across the app)
     const ic = (n) => (window.KaaykoIcons ? window.KaaykoIcons.get(n) : '');
 
+    // HOW OLD THIS READING ACTUALLY IS.
+    //
+    // The hero used to say "OBSERVED · NOW" and "Measured now at the nearest
+    // station" over a number that is not from now and was never going to be.
+    // Scores are pre-computed on a 15-minute schedule and stored; this page
+    // deliberately re-reads the SAME stored score the card showed, so the two
+    // can never disagree. Measured 21 Sep 2026: the hero said "NOW" over a
+    // value computed twelve minutes earlier. The label now carries the age it
+    // actually has. When nothing tells us the age, we say "observed" and stop,
+    // rather than asserting a freshness we cannot support.
+    const computedAt = weather?.computedAt ? Date.parse(weather.computedAt) : NaN;
+    const ageMin = Number.isFinite(computedAt) ? Math.max(0, Math.round((Date.now() - computedAt) / 60000)) : null;
+    const ageText = ageMin === null ? ''
+      : ageMin < 2 ? ' · JUST NOW'
+      : ageMin < 90 ? ` · ${ageMin} MIN AGO`
+      : ` · ${Math.round(ageMin / 60)} HR AGO`;
+    const sourceText = ageMin === null
+      ? 'Measured at the nearest station'
+      : 'Nearest station · rescored every 15 minutes';
+
     const heroHTML = `
       <div class="skill-level-section">
         <div class="header-content">
@@ -83,8 +103,8 @@ class RatingHero {
                  35.4 °C in the same hour of the forecast. Both used to say
                  "NOW", so the page read as broken. Each side now names its own
                  source instead of pretending to agree. -->
-            <div class="now-indicator">OBSERVED · NOW</div>
-            <div class="reading-source">Measured now at the nearest station</div>
+            <div class="now-indicator">OBSERVED${ageText}</div>
+            <div class="reading-source">${sourceText}</div>
           </div>
 
           <!-- ── Weather stats + unit toggle ── -->

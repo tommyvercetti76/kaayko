@@ -186,6 +186,11 @@
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
+/* No number yet: the line still reads, in a muted voice, so the reader can
+   tell "we have not scored this" from "there is nothing to say here". */
+.pcard-stat--unscored .pcard-stat-val { color: rgba(232, 228, 220, 0.62); }
+.pcard-stat--unscored .pcard-stat-label { color: rgba(232, 228, 220, 0.55); font-style: normal; }
+
 .pcard-stat-label {
   color: rgba(217, 189, 123, 0.9);
   font-size: 0.62rem;

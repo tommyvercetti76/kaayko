@@ -16,7 +16,11 @@ const ROOT = path.join(__dirname, '..', 'src');
 const FILES = [
   'index.html', 'paddlingout.html', 'paddlingout/search.html', 'assets/kaayko-og.svg',
 ];
-const RE = /(\d+)\s+hand-picked/g;
+// Case-INSENSITIVE on purpose. It was /hand-picked/g, so the two title-cased
+// claims ("21 Hand-Picked Spots", in <title> and og:title) were invisible to
+// this check — which is exactly how the page came to say 17 in its title and
+// 21 in its description at the same time, and pass.
+const RE = /(\d+)\s+hand-picked/gi;
 
 const found = new Map();
 for (const rel of FILES) {

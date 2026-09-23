@@ -487,6 +487,9 @@
         }
         const weather = {
           ...currentData.conditions,
+          // When the stored score was computed. The hero prints its age rather
+          // than claiming "NOW" over a number from the last warm cycle.
+          computedAt: currentData.paddleScore.computedAt || currentData.metadata?.cachedAt || null,
           penalties: penaltiesApplied,
           originalRating: currentData.paddleScore.originalMLRating || rating,
           totalPenalty: penaltiesApplied.length > 0
