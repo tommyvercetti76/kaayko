@@ -239,17 +239,18 @@ main{display:block;position:relative;z-index:1;overflow-x:clip}
 :root[data-layout="book"] .face .story{left:0}
 .face .rh{left:var(--padx)}
 .face .folio{left:0}
-.stay{position:absolute;top:0;width:var(--pw);height:var(--bh);z-index:5}
-.leaf{position:absolute;top:0;width:var(--pw);height:var(--bh);z-index:6;transform-style:preserve-3d;will-change:transform}
-.leaf-r{left:calc(var(--bw) - var(--pw));transform-origin:0 50%;transform:rotateY(calc(var(--a,0) * -1deg))}
-.leaf-l{left:0;transform-origin:100% 50%;transform:rotateY(calc(var(--a,0) * 1deg))}
-.side{position:absolute;inset:0;-webkit-backface-visibility:hidden;backface-visibility:hidden}
-.side.back{transform:rotateY(180deg)}
-.side::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:9}
-.leaf-r .front::after{background:linear-gradient(90deg,rgba(0,0,0,calc(var(--p,0) * .32)),rgba(0,0,0,0) 55%)}
-.leaf-r .back::after{background:linear-gradient(270deg,rgba(0,0,0,calc((1 - var(--p,0)) * .36)),rgba(0,0,0,0) 60%)}
-.leaf-l .front::after{background:linear-gradient(270deg,rgba(0,0,0,calc(var(--p,0) * .32)),rgba(0,0,0,0) 55%)}
-.leaf-l .back::after{background:linear-gradient(90deg,rgba(0,0,0,calc((1 - var(--p,0)) * .36)),rgba(0,0,0,0) 60%)}
+/* the turn: four laid-out copies, folded by clip and transform only (story.js, "page turns") */
+.turn-layer{position:absolute;top:0;left:0;width:var(--pw);height:var(--bh);z-index:6;pointer-events:none;visibility:hidden}
+.turn-layer.on{visibility:visible}
+:root:not([data-layout="book"]) .turn-layer{display:none}
+.turn-layer .face{inset:auto;top:0;left:0;width:var(--pw);height:var(--bh);transform-origin:0 0}
+.turn-layer .face-left,.turn-layer .face-under{z-index:1}
+.turn-layer .face-front{z-index:3}
+.turn-layer .face-back{z-index:4;will-change:transform,clip-path}
+.turn-spine{position:absolute;top:0;left:-44px;width:88px;height:100%;z-index:2;pointer-events:none;
+  background:linear-gradient(90deg,rgba(0,0,0,0),rgba(0,0,0,.08) 40%,rgba(0,0,0,.2) 50%,rgba(0,0,0,.08) 60%,rgba(0,0,0,0))}
+.reader.single .turn-spine{display:none}
+.fold-shade{position:absolute;top:0;left:0;z-index:5;transform-origin:0 0;pointer-events:none;opacity:0;background:linear-gradient(to bottom,rgba(0,0,0,1),rgba(0,0,0,0))}
 .end-mark{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:10px;color:var(--violet)}
 .end-mark svg{width:120px}
 

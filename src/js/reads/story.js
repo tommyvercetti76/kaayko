@@ -197,98 +197,195 @@
     measureBook();
     B.ready = true;
     setIndex(anchor ? pageOf(anchor) : 0);
+    prewarmTurns();
   }
 
-  // A picture of page i: the paper, a copy of the article shifted to that page, and its running head.
-  function pageFace(i) {
-    const face = el('div', 'face');
-    face.setAttribute('aria-hidden', 'true');
-    face.inert = true;
-    face.append(el('div', 'face-board'));
-    if (i >= 0 && i < B.pages) {
-      const win = el('div', 'face-window');
-      const copy = story.cloneNode(true);
-      copy.removeAttribute('id'); copy.removeAttribute('tabindex'); copy.removeAttribute('aria-labelledby');
-      copy.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'));
-      copy.querySelectorAll('iframe').forEach((f) => f.replaceWith(el('div', 'video-hold')));  // never a second player
-      copy.style.setProperty('--shift', `${-i * B.pw}px`);
-      win.append(copy);
-      face.append(win);
-      if (i > 0) {
-        const rh = el('span', 'rh'); rh.textContent = i % 2 === 0 && B.spread ? 'Kaayko Reads' : 'Never Give Up';
-        if (!(i % 2 === 0 && B.spread)) rh.style.textAlign = B.spread ? 'right' : 'left';
-        const folio = el('span', 'folio'); folio.textContent = String(i + 1);
-        face.append(rh, folio);
-      }
-    } else if (i === B.pages) {
-      const end = el('div', 'end-mark');
-      end.innerHTML = '<svg viewBox="0 0 120 120" aria-hidden="true"><g fill="none" stroke="currentColor" filter="url(#ink)"><circle cx="60" cy="60" r="52" stroke-width="3"/><circle cx="60" cy="60" r="33" stroke-width="1.5"/></g><text x="60" y="66" text-anchor="middle" fill="currentColor" font-family="Barlow Condensed, sans-serif" font-weight="600" font-size="17" letter-spacing="4">FIN</text></svg>';
-      face.append(end);
-    }
+  /* ── page turns: a sheet of paper, folded ────────────────────
+     The turning sheet folds along the perpendicular bisector between its corner's resting place and
+     where that corner is now: under your finger when you drag, along an arc when you tap or press a
+     key. The part past the fold is reflected across it and shows the back of the sheet; where the
+     sheet has lifted, the page beneath shows through, shadowed along the fold. The corner can never
+     pull further from the spine than the paper is wide, so the sheet bends; it does not stretch.
+     The four pages a turn needs (left, beneath, front, back) are copies of the article laid out once
+     per book layout and kept hidden. A turn only moves and clips them; it never re-lays-out text. */
+  const FIN_SVG = '<svg viewBox="0 0 120 120" aria-hidden="true"><g fill="none" stroke="currentColor" filter="url(#ink)"><circle cx="60" cy="60" r="52" stroke-width="3"/><circle cx="60" cy="60" r="33" stroke-width="1.5"/></g><text x="60" y="66" text-anchor="middle" fill="currentColor" font-family="Barlow Condensed, sans-serif" font-weight="600" font-size="17" letter-spacing="4">FIN</text></svg>';
+  const Turn = { layer: null, faces: null, key: '' };
+  let prewarmTimer = 0;
+
+  function makeFace(role) {
+    const face = el('div', `face face-${role}`);
+    const win = el('div', 'face-window');
+    const copy = story.cloneNode(true);
+    copy.removeAttribute('id'); copy.removeAttribute('tabindex'); copy.removeAttribute('aria-labelledby');
+    copy.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'));
+    copy.querySelectorAll('iframe').forEach((f) => f.replaceWith(el('div', 'video-hold')));  // never a second player
+    copy.querySelectorAll('.here').forEach((n) => n.classList.remove('here', 'fading'));
+    win.append(copy);
+    const rh = el('span', 'rh'), folio = el('span', 'folio'), end = el('div', 'end-mark'), shade = el('div', 'fold-shade');
+    end.innerHTML = FIN_SVG;
+    face.append(el('div', 'face-board'), win, rh, folio, end, shade);
+    Object.assign(face, { _copy: copy, _win: win, _rh: rh, _folio: folio, _end: end, _shade: shade });
     return face;
   }
 
-  function startFlip(dir) {
-    if (B.flip) return null;
-    const from = B.idx, target = B.idx + step() * dir;
-    if (target < 0 || target > lastIdx()) return null;
-    const leaf = el('div', 'leaf'), front = el('div', 'side front'), back = el('div', 'side back');
-    let stay = null, reverse = false;
-    if (B.spread) {
-      stay = el('div', 'stay');
-      if (dir > 0) { leaf.classList.add('leaf-r'); front.append(pageFace(from + 1)); back.append(pageFace(from + 2)); stay.style.left = '0'; stay.append(pageFace(from)); }
-      else { leaf.classList.add('leaf-l'); front.append(pageFace(from)); back.append(pageFace(from - 1)); stay.style.left = `${B.pw}px`; stay.append(pageFace(from + 1)); }
-    } else {
-      leaf.classList.add('leaf-r');
-      const paper = el('div', 'face'); paper.append(el('div', 'face-board'));
-      if (dir > 0) { front.append(pageFace(from)); back.append(paper); }
-      else { front.append(pageFace(from - 1)); back.append(paper); reverse = true; }
-    }
-    leaf.append(front, back);
-    if (stay) reader.append(stay);
-    reader.append(leaf);
-    const f = { dir, from, target, leaf, stay, reverse, t: 0 };
-    // Under the turning page the real article is already where the turn will leave it.
-    if (!reverse) setIndex(target);
-    B.flip = f;
-    setT(f, 0);
-    return f;
+  function ensureTurnLayer() {
+    const key = `${B.spread}:${B.pw}x${B.ph}:${B.sw}:${state.scale}`;
+    if (Turn.layer && Turn.key === key) return;
+    if (Turn.layer) Turn.layer.remove();
+    const layer = el('div', 'turn-layer');
+    layer.setAttribute('aria-hidden', 'true');
+    layer.inert = true;
+    const faces = { left: makeFace('left'), under: makeFace('under'), front: makeFace('front'), back: makeFace('back') };
+    faces.left.style.left = `${-B.pw}px`;
+    layer.append(faces.left, faces.under, el('div', 'turn-spine'), faces.front, faces.back);
+    reader.append(layer);
+    Object.assign(Turn, { layer, faces, key });
   }
 
-  function setT(f, t) {
-    f.t = t;
-    const a = f.reverse ? 180 * (1 - t) : 180 * t;
-    f.leaf.style.setProperty('--a', a.toFixed(2));
-    f.leaf.style.setProperty('--p', (a / 180).toFixed(3));
-    if (!B.spread) f.leaf.style.opacity = a > 100 ? String(clamp(1 - (a - 100) / 70, 0, 1)) : '1';
+  // Lay the copies out while the reader is still on the first spread, not on the first turn.
+  function prewarmTurns() {
+    clearTimeout(prewarmTimer);
+    prewarmTimer = setTimeout(() => { if (state.layout === 'book' && B.ready && !B.flip) ensureTurnLayer(); }, 250);
+  }
+
+  // Page n on a face. Out of range is plain paper; one past the end is the closing mark.
+  function showPage(face, n) {
+    const inRange = n >= 0 && n < B.pages;
+    face._win.style.visibility = inRange ? '' : 'hidden';
+    face._end.style.visibility = n === B.pages ? '' : 'hidden';
+    if (inRange) face._copy.style.setProperty('--shift', `${-n * B.pw}px`);
+    const head = inRange && n > 0;
+    face._rh.style.visibility = face._folio.style.visibility = head ? '' : 'hidden';
+    if (head) {
+      const leftPage = B.spread && n % 2 === 0;
+      face._rh.textContent = leftPage ? 'Kaayko Reads' : 'Never Give Up';
+      face._rh.style.textAlign = leftPage || !B.spread ? 'left' : 'right';
+      face._folio.textContent = String(n + 1);
+    }
+  }
+
+  // Keep only the part of polygon `pts` where f(point) >= 0 (one Sutherland–Hodgman pass).
+  function clipPoly(pts, f) {
+    const out = [];
+    for (let i = 0; i < pts.length; i++) {
+      const a = pts[i], b = pts[(i + 1) % pts.length], fa = f(a), fb = f(b);
+      if (fa >= 0) out.push(a);
+      if ((fa >= 0) !== (fb >= 0)) { const k = fa / (fa - fb); out.push({ x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k }); }
+    }
+    return out;
+  }
+  const polygon = (pts) => (pts.length > 2 ? `polygon(${pts.map((p) => `${p.x.toFixed(2)}px ${p.y.toFixed(2)}px`).join(',')})` : 'polygon(0 0,0 0,0 0)');
+
+  // A shadow strip whose top edge lies on the fold line through `pt`, reaching `depth` px along `n`.
+  function shade(el, pt, n, depth, alpha) {
+    const L = 4 * Math.max(B.pw, B.ph), u = { x: -n.y, y: n.x };
+    el.style.width = `${L}px`;
+    el.style.height = `${depth.toFixed(1)}px`;
+    el.style.transform = `matrix(${u.x},${u.y},${n.x},${n.y},${(pt.x - (u.x * L) / 2).toFixed(2)},${(pt.y - (u.y * L) / 2).toFixed(2)})`;
+    el.style.opacity = alpha.toFixed(3);
+  }
+
+  // The paper cannot stretch: the corner stays within a page-width of the spine point on its own
+  // edge, and within a diagonal of the spine point on the opposite edge.
+  function constrain(P, y0) {
+    const W = B.pw, H = B.ph, diag = Math.hypot(W, H);
+    const near = { x: 0, y: y0 }, far = { x: 0, y: H - y0 };
+    let q = { x: P.x, y: P.y };
+    const dn = Math.hypot(q.x - near.x, q.y - near.y);
+    if (dn > W) q = { x: near.x + (q.x - near.x) * (W / dn), y: near.y + (q.y - near.y) * (W / dn) };
+    const df = Math.hypot(q.x - far.x, q.y - far.y);
+    if (df > diag) q = { x: far.x + (q.x - far.x) * (diag / df), y: far.y + (q.y - far.y) * (diag / df) };
+    return q;
+  }
+
+  // Coordinates: origin at the top of the spine (the hinge), the turning sheet spans x 0…W.
+  function draw(t, target) {
+    const W = B.pw, H = B.ph, { under, front, back } = Turn.faces;
+    const P = constrain(target, t.y0);
+    t.P = P;
+    const dx = P.x - t.c0.x, dy = P.y - t.c0.y, len = Math.hypot(dx, dy);
+    if (len < 0.5) {
+      front.style.clipPath = 'none';
+      back.style.visibility = 'hidden';
+      [under, front, back].forEach((f) => { f._shade.style.opacity = '0'; });
+      return;
+    }
+    back.style.visibility = '';
+    const d = { x: dx / len, y: dy / len };                       // fold normal, rest corner → corner
+    const M = { x: (t.c0.x + P.x) / 2, y: (t.c0.y + P.y) / 2 };   // a point on the fold line
+    const md = M.x * d.x + M.y * d.y;
+    const side = (X) => X.x * d.x + X.y * d.y - md;               // > 0: flat side, < 0: folded over
+    const sheet = [{ x: 0, y: 0 }, { x: W, y: 0 }, { x: W, y: H }, { x: 0, y: H }];
+    front.style.clipPath = polygon(clipPoly(sheet, side));
+    // The back of the sheet: its page, upright, carried by (reflection across the fold) ∘ (mirror
+    // across the sheet's middle). Two reflections make a rotation, so its text is never mirrored.
+    const r11 = 1 - 2 * d.x * d.x, r12 = -2 * d.x * d.y, r22 = 1 - 2 * d.y * d.y;
+    back.style.transform = `matrix(${(-r11).toFixed(5)},${(-r12).toFixed(5)},${r12.toFixed(5)},${r22.toFixed(5)},${(r11 * W + 2 * md * d.x).toFixed(2)},${(r12 * W + 2 * md * d.y).toFixed(2)})`;
+    back.style.clipPath = polygon(clipPoly(sheet, (X) => -side(X)).map((X) => ({ x: W - X.x, y: X.y })));
+    // Shading follows how far the corner has travelled and how high the sheet is lifted.
+    const p = Math.min(1, len / (2 * W)), lift = Math.sin(Math.PI * p);
+    shade(front._shade, M, d, 18 + 26 * lift, 0.07 + 0.16 * lift);
+    shade(under._shade, M, { x: -d.x, y: -d.y }, clamp(len * 0.3, 10, 80), 0.18 + 0.22 * (1 - p));
+    shade(back._shade, { x: W - M.x, y: M.y }, { x: d.x, y: -d.y }, clamp(len * 0.45, 24, W * 0.6), 0.08 + 0.2 * lift);
+  }
+
+  // A tap or a key lifts the corner and carries it over on an arc, inside the paper's reach.
+  function arcPoint(t, k) {
+    const W = B.pw, H = B.ph, lift = Math.min(H * 0.3, W * 0.5), up = t.y0 === 0 ? 1 : -1;
+    return { x: W * Math.cos(Math.PI * k), y: t.y0 + up * lift * Math.sin(Math.PI * k) };
+  }
+
+  function startTurn(dir, y0) {
+    if (B.flip) return null;
+    const from = B.idx, target = from + step() * dir;
+    if (target < 0 || target > lastIdx()) return null;
+    ensureTurnLayer();
+    const W = B.pw, { left, under, front, back } = Turn.faces;
+    // Forward from (i, i+1): left i, front i+1, back i+2, beneath i+3. Back is the same sheet
+    // turned the other way from the spread before. A single page turns alone; its back is paper.
+    const base = B.spread ? (dir > 0 ? from : from - 2) : (dir > 0 ? from : from - 1);
+    if (B.spread) showPage(left, base);
+    left.style.visibility = B.spread ? '' : 'hidden';
+    showPage(under, B.spread ? base + 3 : base + 1);
+    showPage(front, B.spread ? base + 1 : base);
+    showPage(back, B.spread ? base + 2 : -1);
+    Turn.layer.style.left = `${B.spread ? W : 0}px`;
+    const t = { dir, from, target, y0, c0: { x: W, y: y0 }, e: { x: -W, y: y0 }, P: null };
+    B.flip = t;
+    draw(t, dir > 0 ? t.c0 : t.e);
+    Turn.layer.classList.add('on');
+    return t;
   }
 
   const easeInOut = (k) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
   const easeOut = (k) => 1 - Math.pow(1 - k, 3);
 
-  function finishFlip(f, commit, fromDrag) {
-    const t0 = f.t, t1 = commit ? 1 : 0;
-    const dur = animate() ? (fromDrag ? 380 : 700) * Math.abs(t1 - t0) + 60 : 0;
+  // Carry the corner to the left (the sheet lies on the left page) or back to the right.
+  function settle(t, toLeft, fromDrag) {
+    const from = { ...t.P }, to = toLeft ? t.e : t.c0;
+    const dist = Math.hypot(to.x - from.x, to.y - from.y);
+    const dur = !animate() ? 0 : fromDrag ? 200 + 360 * (dist / (2 * B.pw)) : (B.spread ? 900 : 700);
     const start = performance.now();
-    const curve = fromDrag ? easeOut : easeInOut;
     const tick = (now) => {
-      if (B.flip !== f) return;
+      if (B.flip !== t) return;
       const k = dur ? clamp((now - start) / dur, 0, 1) : 1;
-      setT(f, t0 + (t1 - t0) * curve(k));
+      if (fromDrag) { const q = easeOut(k); draw(t, { x: from.x + (to.x - from.x) * q, y: from.y + (to.y - from.y) * q }); }
+      else { const q = easeInOut(k); draw(t, arcPoint(t, toLeft ? q : 1 - q)); }
       if (k < 1) { requestAnimationFrame(tick); return; }
-      f.leaf.remove(); if (f.stay) f.stay.remove();
+      const committed = t.dir > 0 ? toLeft : !toLeft;
       B.flip = null;
-      setIndex(commit ? f.target : f.from, { say: commit });
+      setIndex(committed ? t.target : t.from, { say: committed });  // the real page lands first, then the copy goes
+      Turn.layer.classList.remove('on');
     };
     requestAnimationFrame(tick);
   }
 
   function cancelFlip() {
-    const f = B.flip;
-    if (!f) return;
-    f.leaf.remove(); if (f.stay) f.stay.remove();
+    const t = B.flip;
+    if (!t) return;
     B.flip = null;
-    setIndex(f.from);
+    if (Turn.layer) Turn.layer.classList.remove('on');
+    setIndex(t.from);
   }
 
   function turn(dir) {
@@ -296,8 +393,8 @@
     const target = B.idx + step() * dir;
     if (target < 0 || target > lastIdx()) return;
     if (!animate()) { setIndex(target, { say: true }); return; }
-    const f = startFlip(dir);
-    if (f) finishFlip(f, true, false);
+    const t = startTurn(dir, B.ph);  // a tap lifts the bottom corner, the way a thumb does
+    if (t) settle(t, dir > 0, false);
   }
 
   $('#prev').addEventListener('click', () => turn(-1));
@@ -322,28 +419,30 @@
   });
   $('#window').addEventListener('scroll', (e) => { e.currentTarget.scrollLeft = 0; });
 
-  // Drag a page: the leaf follows the pointer; past a third of the way, or with a flick, it turns.
+  // Drag a page by its edge: the corner on that side (top or bottom half) follows the pointer
+  // exactly. Let go past two thirds of the way, or with a flick, and it lands; otherwise it falls back.
   reader.addEventListener('pointerdown', (e) => {
     if (state.layout !== 'book' || B.flip || e.button !== 0 || e.target.closest('a, button')) return;
-    const r = reader.getBoundingClientRect();
-    B.drag = { id: e.pointerId, dir: e.clientX - r.left > r.width / 2 ? 1 : -1, x0: e.clientX, lastX: e.clientX, lastT: performance.now(), v: 0, f: null };
+    const r = reader.getBoundingClientRect(), x = e.clientX - r.left;
+    const dir = B.spread ? (x > B.pw ? 1 : -1) : (x > r.width / 2 ? 1 : -1);
+    B.drag = { id: e.pointerId, dir, x0: e.clientX, y0: e.clientY, cy: e.clientY - r.top, t: null, rest: null, lastX: e.clientX, lastT: performance.now(), v: 0 };
   });
   reader.addEventListener('pointermove', (e) => {
     const d = B.drag;
     if (!d || e.pointerId !== d.id) return;
-    const dx = e.clientX - d.x0;
-    if (!d.f) {
-      if (Math.abs(dx) < 8) return;
+    const dx = e.clientX - d.x0, dy = e.clientY - d.y0;
+    if (!d.t) {
+      if (Math.hypot(dx, dy) < 6) return;
       if ((d.dir > 0 && dx > 0) || (d.dir < 0 && dx < 0) || !animate()) { B.drag = null; return; }
-      d.f = startFlip(d.dir);
-      if (!d.f) { B.drag = null; return; }
+      d.t = startTurn(d.dir, d.cy < B.ph / 2 ? 0 : B.ph);
+      if (!d.t) { B.drag = null; return; }
+      d.rest = d.dir > 0 ? { ...d.t.c0 } : { ...d.t.e };
       reader.classList.add('dragging');
       try { reader.setPointerCapture(e.pointerId); } catch (_) { /* fine */ }
     }
-    const span = B.spread ? B.pw * 1.7 : B.pw * 1.2;
-    setT(d.f, clamp(((d.dir > 0 ? -dx : dx) / span) * 1.1, 0, 1));
+    draw(d.t, { x: d.rest.x + dx, y: d.rest.y + dy });
     const now = performance.now();
-    d.v = (d.dir > 0 ? d.lastX - e.clientX : e.clientX - d.lastX) / Math.max(1, now - d.lastT);
+    d.v = (e.clientX - d.lastX) / Math.max(1, now - d.lastT);  // px/ms, positive to the right
     d.lastX = e.clientX; d.lastT = now;
   });
   function endDrag(e, cancelled) {
@@ -351,8 +450,10 @@
     if (!d || e.pointerId !== d.id) return;
     B.drag = null;
     reader.classList.remove('dragging');
-    if (!d.f) { if (!cancelled) turn(d.dir); return; }
-    finishFlip(d.f, !cancelled && (d.f.t > 0.33 || d.v > 0.45), true);
+    if (!d.t) { if (!cancelled) turn(d.dir); return; }
+    const x = d.t.P.x, W = B.pw;
+    const done = !cancelled && (d.dir > 0 ? (x < W * 0.35 || d.v < -0.5) : (x > -W * 0.35 || d.v > 0.5));
+    settle(d.t, d.dir > 0 ? done : !done, true);
   }
   reader.addEventListener('pointerup', (e) => endDrag(e, false));
   reader.addEventListener('pointercancel', (e) => endDrag(e, true));

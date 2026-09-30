@@ -64,7 +64,7 @@
 
 **Kaayko Reads (static, no API):**
 - `kaayko/src/css/reads.css` + `css/reads-fonts.css` — the Album design (tokens measured to 7:1 in both themes); fonts self-hosted in `src/fonts/reads/` (OFL)
-- `kaayko/src/js/reads/story.js` — the reader: Scroll layout, or Book (the same article paginated by CSS columns, page turns by drag/click/keys), switching keeps the reader's place
+- `kaayko/src/js/reads/story.js` — the reader: Scroll layout, or Book (the same article paginated by CSS columns), switching keeps the reader's place. Page turns are a paper fold: the sheet folds on the perpendicular bisector of its corner's rest point and the pointer (or an arc for taps/keys), the part past the fold is reflected to show the sheet's back; four page copies are laid out once per layout (`.turn-layer`, hidden) and a turn only changes their clip-path/transform
 - `kaayko/src/js/reads/ripples.js` — still ripple lines traced from a lake's real shoreline (`src/reads/lakes/<lake>.json`, USGS NHD), via a distance transform
 - `kaayko/src/js/reads/library.js` — the /reads Library (theme, preferred layout applied to every chapter link, ripples)
 - Chapters: `<h2 class="chapter" id="ch-N">` in the story; the story's Contents menu and the Library's table of contents link to them. In Book layout each chapter opens a fresh page
