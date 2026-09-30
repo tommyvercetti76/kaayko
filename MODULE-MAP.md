@@ -54,7 +54,7 @@
 | `/` | `kaayko/src/index.html` (split Kaayko landing: Paddling Out / Forge / Store, then Store access layer) |
 | `/paddlingout` | `kaayko/src/paddlingout.html` |
 | `/about` | `kaayko/src/about.html` |
-| `/reads` | `kaayko/src/reads.html` → `js/reads/home.js` (Reads landing) |
+| `/reads` | `kaayko/src/reads.html` → `js/reads/library.js` (the Library) |
 | `/reads/never-give-up` | `kaayko/src/reads/never-give-up.html` → `js/reads/story.js` (Scroll/Book reader) |
 | `/testimonials` | `kaayko/src/testimonials.html` |
 | `/privacy` | `kaayko/src/privacy.html` |
@@ -66,7 +66,9 @@
 - `kaayko/src/css/reads.css` + `css/reads-fonts.css` — the Album design (tokens measured to 7:1 in both themes); fonts self-hosted in `src/fonts/reads/` (OFL)
 - `kaayko/src/js/reads/story.js` — the reader: Scroll layout, or Book (the same article paginated by CSS columns, page turns by drag/click/keys), switching keeps the reader's place
 - `kaayko/src/js/reads/ripples.js` — still ripple lines traced from a lake's real shoreline (`src/reads/lakes/<lake>.json`, USGS NHD), via a distance transform
-- `kaayko/src/js/reads/home.js` — the /reads landing (theme + ripples)
+- `kaayko/src/js/reads/library.js` — the /reads Library (theme, preferred layout applied to every chapter link, ripples)
+- Chapters: `<h2 class="chapter" id="ch-N">` in the story; the story's Contents menu and the Library's table of contents link to them. In Book layout each chapter opens a fresh page
+- Video: a still until played, then the YouTube privacy-mode player in the same frame (`www.youtube-nocookie.com`, allowed in the hosting CSP frame-src)
 
 **JS files (paddlingout):**
 - `kaayko/src/js/paddlingout.js` — list page controller (stale-while-revalidate list cache)

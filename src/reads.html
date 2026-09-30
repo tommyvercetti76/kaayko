@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Kaayko Reads</title>
-  <meta name="description" content="Kaayko Reads: stories from the water and the road. Read them as one long scroll, or turn them like a book.">
+  <title>Library · Kaayko Reads</title>
+  <meta name="description" content="The Kaayko Reads library: stories from the water and the road, each with its own table of contents. Read them as one long scroll, or turn them like a book.">
   <link rel="canonical" href="https://kaayko.com/reads">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Kaayko">
   <meta property="og:url" content="https://kaayko.com/reads">
   <meta property="og:title" content="Kaayko Reads">
-  <meta property="og:description" content="Kaayko Reads: stories from the water and the road. Read them as one long scroll, or turn them like a book.">
+  <meta property="og:description" content="The Kaayko Reads library: stories from the water and the road, each with its own table of contents. Read them as one long scroll, or turn them like a book.">
   <meta property="og:image" content="https://kaayko.com/reads/never-give-up/lone-rock-beach.jpg">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Kaayko Reads">
-  <meta name="twitter:description" content="Kaayko Reads: stories from the water and the road. Read them as one long scroll, or turn them like a book.">
+  <meta name="twitter:description" content="The Kaayko Reads library: stories from the water and the road, each with its own table of contents. Read them as one long scroll, or turn them like a book.">
   <meta name="twitter:image" content="https://kaayko.com/reads/never-give-up/lone-rock-beach.jpg">
   <script type="application/ld+json">{"@context": "https://schema.org", "@type": "Blog", "name": "Kaayko Reads", "url": "https://kaayko.com/reads", "publisher": {"@type": "Organization", "name": "Kaayko", "url": "https://kaayko.com"}, "blogPost": [{"@type": "BlogPosting", "headline": "Never Give Up", "url": "https://kaayko.com/reads/never-give-up", "datePublished": "2025-10-12", "author": {"@type": "Person", "name": "Rohan Ramekar"}}]}</script>
   <link rel="icon" type="image/png" href="/favicon-32x32.png">
@@ -35,87 +35,77 @@
   <link rel="stylesheet" href="/css/reads.css">
   <link rel="stylesheet" href="/css/footer.css">
 </head>
-<body class="reads-home">
-<svg class="defs" aria-hidden="true" focusable="false">
-  <defs>
-    <path id="pm-arc" d="M-51 0a51 51 0 1 1 102 0a51 51 0 1 1-102 0"/>
-    <filter id="ink" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.2" xChannelSelector="R" yChannelSelector="G"/></filter>
-  </defs>
-</svg>
-
+<body class="reads-library">
 <canvas id="ripples" aria-hidden="true" data-lake="/reads/lakes/lake-powell.json"></canvas>
 
-<a class="skip" href="#main">Skip to the stories</a>
+<a class="skip" href="#main">Skip to the library</a>
 
 <header class="bar" id="bar">
-  <a class="brand" href="/reads" aria-current="page"><span class="brand-name">Kaayko Reads</span><span class="brand-sub">Field notes</span></a>
+  <a class="brand" href="/reads" aria-current="page"><span class="brand-name">Kaayko Reads</span><span class="brand-sub">Library</span></a>
   <div class="tools">
-    <fieldset class="seg">
-      <legend class="sr-only">Theme</legend>
-      <input type="radio" name="theme" id="theme-auto" value="auto"><label for="theme-auto">Auto</label>
-      <input type="radio" name="theme" id="theme-light" value="light"><label for="theme-light">Light</label>
-      <input type="radio" name="theme" id="theme-dark" value="dark"><label for="theme-dark">Dark</label>
-    </fieldset>
+    <details class="display" id="display">
+      <summary><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="5" cy="4" r="1.8" fill="var(--bar)" stroke="currentColor" stroke-width="1.4"/><circle cx="11" cy="8" r="1.8" fill="var(--bar)" stroke="currentColor" stroke-width="1.4"/><circle cx="7" cy="12" r="1.8" fill="var(--bar)" stroke="currentColor" stroke-width="1.4"/></svg><span>Display</span></summary>
+      <div class="panel">
+        <fieldset>
+          <legend>Open stories as</legend>
+          <div class="choices">
+            <label><input type="radio" name="open" id="open-scroll" value="scroll">Scroll</label>
+            <label><input type="radio" name="open" id="open-book" value="book">Book</label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Theme</legend>
+          <div class="choices">
+            <label><input type="radio" name="theme" id="theme-auto" value="auto">Auto</label>
+            <label><input type="radio" name="theme" id="theme-light" value="light">Light</label>
+            <label><input type="radio" name="theme" id="theme-dark" value="dark">Dark</label>
+          </div>
+        </fieldset>
+      </div>
+    </details>
   </div>
 </header>
 
-<main id="main" class="home" tabindex="-1">
-  <section class="masthead" aria-labelledby="home-title">
-    <p class="kicker">Field notes</p>
-    <h1 class="home-title" id="home-title">Kaayko Reads</h1>
-    <p class="tagline">Thoughts. Perspectives. Stories.</p>
-  </section>
-
-  <article class="feature" aria-labelledby="feature-title">
-    <a class="feature-plate" href="/reads/never-give-up" tabindex="-1" aria-hidden="true">
-      <span class="mount"><img src="/reads/never-give-up/lone-rock.jpg" alt="" width="1179" height="1561" decoding="async" fetchpriority="high"></span>
-      <svg class="postmark feature-postmark" viewBox="0 0 330 150" aria-hidden="true" focusable="false">
-            <g filter="url(#ink)">
-              <g transform="translate(75 75)" fill="none" stroke="currentColor">
-                <circle r="63" stroke-width="3"/>
-                <circle r="40" stroke-width="1.5"/>
-                <text fill="currentColor" stroke="none" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="600" font-size="12.5" letter-spacing="3"><textPath href="#pm-arc">KAAYKO READS · PAGE, ARIZONA ·</textPath></text>
-                <text fill="currentColor" stroke="none" text-anchor="middle" y="-4" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="600" font-size="16" letter-spacing="1">12 OCT 25</text>
-                <text fill="currentColor" stroke="none" text-anchor="middle" y="15" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="600" font-size="11" letter-spacing="2">15 MIN</text>
-              </g>
-              <g fill="none" stroke="currentColor" stroke-width="3">
-                <path d="M150 42q9-7 18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0"/>
-                <path d="M150 61q9-7 18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0"/>
-                <path d="M150 80q9-7 18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0"/>
-                <path d="M150 99q9-7 18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0"/>
-                <path d="M150 118q9-7 18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0"/>
-              </g>
-            </g>
-          </svg>
-    </a>
-    <div class="feature-text">
-      <p class="kicker">Paddleboarding · Lake Powell</p>
-      <h2 class="feature-title" id="feature-title"><a href="/reads/never-give-up">Never Give Up</a></h2>
-      <ol class="route" aria-label="The route">
-        <li>Moran Point</li><li>Desert View</li><li>Page</li><li>Lone Rock Beach</li><li>Lake Powell</li>
-      </ol>
-      <p class="feature-lede">I woke up at Moran Point inside The Grand Canyon National Park, miles away from the comfort of my home.</p>
-      <p class="byline"><span>By Rohan Ramekar</span><span><time datetime="2025-10-12">Oct 12, 2025</time></span><span>15 min read</span></p>
-      <div class="feature-actions">
-        <a class="btn" href="/reads/never-give-up#scroll">Read as a scroll</a>
-        <a class="btn btn-ghost" href="/reads/never-give-up#book">Read as a book</a>
-      </div>
+<main id="main" class="library" tabindex="-1">
+  <header class="library-head">
+    <div>
+      <p class="kicker">Kaayko Reads</p>
+      <h1 class="library-title">Library</h1>
+      <p class="library-tagline">Thoughts. Perspectives. Stories.</p>
     </div>
-  </article>
+    <p class="library-count">1 volume · 6 chapters</p>
+  </header>
 
-  <section class="lakes home-lakes" aria-labelledby="lakes-title">
-    <h2 id="lakes-title">Lakes in these stories</h2>
-    <p class="lakes-sub">Every one is on Paddling Out, with the day’s paddle score and conditions.</p>
-    <ul class="stamps">
-      <li class="stamp-item"><a class="stamp" href="/paddlingout/forecast?id=cottonwood"><img src="/reads/never-give-up/stamp-cottonwood.jpg" alt="" width="520" height="390" loading="lazy" decoding="async"><span class="stamp-name">Cottonwood Lake</span><span class="stamp-place">Colorado</span><span class="stamp-cta">Today’s paddle conditions<span class="sr-only"> for Cottonwood Lake on Paddling Out</span></span></a></li>
-      <li class="stamp-item"><a class="stamp" href="/paddlingout/forecast?id=taylorpark"><img src="/reads/never-give-up/stamp-taylorpark.jpg" alt="" width="520" height="390" loading="lazy" decoding="async"><span class="stamp-name">Taylor Park Reservoir</span><span class="stamp-place">Colorado</span><span class="stamp-cta">Today’s paddle conditions<span class="sr-only"> for Taylor Park Reservoir on Paddling Out</span></span></a></li>
-      <li class="stamp-item"><a class="stamp" href="/paddlingout/forecast?id=powell"><img src="/reads/never-give-up/stamp-powell.jpg" alt="" width="520" height="390" loading="lazy" decoding="async"><span class="stamp-name">Lake Powell</span><span class="stamp-place">Utah and Arizona</span><span class="stamp-cta">Today’s paddle conditions<span class="sr-only"> for Lake Powell on Paddling Out</span></span></a></li>
-    </ul>
+  <section aria-labelledby="shelf-title">
+    <h2 class="sr-only" id="shelf-title">Volumes</h2>
+    <article class="volume" aria-labelledby="vol-1-title">
+      <a class="volume-cover" href="/reads/never-give-up" data-view-link tabindex="-1" aria-hidden="true"><span class="mount"><img src="/reads/never-give-up/lone-rock.jpg" alt="" width="1179" height="1561" decoding="async" fetchpriority="high"></span></a>
+      <div class="volume-body">
+        <p class="volume-no">Volume I · Paddleboarding · 2025</p>
+        <h3 class="volume-title" id="vol-1-title"><a href="/reads/never-give-up" data-view-link>Never Give Up</a></h3>
+        <p class="volume-meta"><span>Rohan Ramekar</span><span><time datetime="2025-10-12">Oct 12, 2025</time></span><span>15 min read</span><span>6 chapters</span></p>
+        <p class="volume-lede">I woke up at Moran Point inside The Grand Canyon National Park, miles away from the comfort of my home.</p>
+        <div class="volume-actions">
+          <a class="btn" href="/reads/never-give-up?view=scroll">Read as a scroll</a>
+          <a class="btn btn-ghost" href="/reads/never-give-up?view=book">Read as a book</a>
+        </div>
+        <h4 class="contents-title" id="vol-1-contents">Contents</h4>
+        <ol class="toc" aria-labelledby="vol-1-contents">
+          <li><a class="toc-link" href="/reads/never-give-up#ch-1" data-view-link><span class="toc-no" aria-hidden="true">I</span><span class="sr-only">Chapter 1: </span><span class="toc-title">Moran Point</span><span class="toc-leader" aria-hidden="true"></span><span class="toc-time">1 min</span></a></li>
+          <li><a class="toc-link" href="/reads/never-give-up#ch-2" data-view-link><span class="toc-no" aria-hidden="true">II</span><span class="sr-only">Chapter 2: </span><span class="toc-title">Desert View</span><span class="toc-leader" aria-hidden="true"></span><span class="toc-time">3 min</span></a></li>
+          <li><a class="toc-link" href="/reads/never-give-up#ch-3" data-view-link><span class="toc-no" aria-hidden="true">III</span><span class="sr-only">Chapter 3: </span><span class="toc-title">Page</span><span class="toc-leader" aria-hidden="true"></span><span class="toc-time">1 min</span></a></li>
+          <li><a class="toc-link" href="/reads/never-give-up#ch-4" data-view-link><span class="toc-no" aria-hidden="true">IV</span><span class="sr-only">Chapter 4: </span><span class="toc-title">Lone Rock Beach</span><span class="toc-leader" aria-hidden="true"></span><span class="toc-time">4 min</span></a></li>
+          <li><a class="toc-link" href="/reads/never-give-up#ch-5" data-view-link><span class="toc-no" aria-hidden="true">V</span><span class="sr-only">Chapter 5: </span><span class="toc-title">Lake Powell</span><span class="toc-leader" aria-hidden="true"></span><span class="toc-time">4 min</span></a></li>
+          <li><a class="toc-link" href="/reads/never-give-up#ch-6" data-view-link><span class="toc-no" aria-hidden="true">VI</span><span class="sr-only">Chapter 6: </span><span class="toc-title">The Dust Devil</span><span class="toc-leader" aria-hidden="true"></span><span class="toc-time">3 min</span></a></li>
+        </ol>
+        <p class="volume-lakes"><span>Lakes</span> <a href="/paddlingout/forecast?id=cottonwood">Cottonwood Lake</a> <span aria-hidden="true">·</span> <a href="/paddlingout/forecast?id=taylorpark">Taylor Park Reservoir</a> <span aria-hidden="true">·</span> <a href="/paddlingout/forecast?id=powell">Lake Powell</a></p>
+      </div>
+    </article>
   </section>
 </main>
 
 <script src="/js/reads/ripples.js" defer></script>
-<script src="/js/reads/home.js" defer></script>
+<script src="/js/reads/library.js" defer></script>
 <script src="/js/util.js"></script>
   <footer class="site-footer is-light">
     <nav aria-label="Footer">

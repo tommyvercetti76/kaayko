@@ -116,14 +116,6 @@ main{display:block;position:relative;z-index:1;overflow-x:clip}
 .finale em{font-style:normal}
 .fin{display:block;width:6.5rem;margin:0 auto 3em;color:var(--violet)}
 
-/* Where he was: a small cancellation in the margin, beside the paragraph that gets there */
-.pm{display:none}
-@media (min-width:1260px){
-  :root:not([data-layout="book"]) .pm{position:absolute;left:-10.5rem;top:-.2em;display:grid;background:var(--leaf);place-content:center;gap:.3em;width:7.2rem;height:7.2rem;border:2px solid var(--violet);border-radius:50%;
-    color:var(--violet);text-align:center;font:600 .68rem/1.15 var(--f-label);letter-spacing:.14em;text-transform:uppercase;transform:rotate(-8deg)}
-  :root:not([data-layout="book"]) .pm::after{content:"";position:absolute;inset:.45rem;border:1px solid var(--violet);border-radius:50%;opacity:.7}
-  :root:not([data-layout="book"]) .pm span+span{font-weight:500;letter-spacing:.1em}
-}
 
 /* Plates: photographs mounted with corners, numbered like an album */
 .story-body{counter-reset:plate}
@@ -274,43 +266,65 @@ main{display:block;position:relative;z-index:1;overflow-x:clip}
   .progress span,.ring{forced-color-adjust:auto}
 }
 
-/* ── /reads landing ─────────────────────────────────────────
-   Opens on the masthead and the featured story, mounted like the first plate in an album,
-   its postmark struck as the page arrives; then the lakes the stories visit, as stamps. */
-.home{position:relative;z-index:1;max-width:68rem;margin:0 auto;padding:calc(var(--barh) + 56px) 16px 72px;font-family:var(--f-text);color:var(--ink)}
-.home:focus{outline:none}
-.masthead{text-align:center;max-width:40rem;margin:0 auto 72px}
-.masthead .kicker{font-size:.8rem;margin-bottom:1.1rem}
-.home-title{margin:0;font:400 clamp(3.4rem,11vw,7.2rem)/.92 var(--f-display);letter-spacing:-.01em;text-wrap:balance}
-.tagline{margin:1.2rem 0 0;font:600 .9rem/1.3 var(--f-label);letter-spacing:.3em;text-transform:uppercase;color:var(--muted)}
+/* ── chapters ───────────────────────────────────────────── */
+.chapter{position:relative;display:flex;align-items:baseline;gap:1rem;margin:3.4em 0 1.3em;padding-top:1.3em;border-top:1px solid var(--edge);font-weight:400}
+.story-body > .chapter:first-child{margin-top:0;padding-top:0;border-top:0}
+.chapter-no{flex:none;min-width:2.6em;font:600 .78em/1 var(--f-label);letter-spacing:.22em;color:var(--violet)}
+.chapter-title{font:400 1.75em/1.1 var(--f-display);color:var(--ink);text-wrap:balance}
+.chapter:focus{outline:none}
+.chapter:focus-visible{outline:3px solid var(--violet);outline-offset:8px}
+/* In the book, every chapter opens on a fresh page. */
+:root[data-layout="book"] .chapter{break-before:column;break-after:avoid;margin:0 0 1.1em;padding-top:1.6em;border-top:0}
+:root[data-layout="book"] .story-body > .chapter:first-child{break-before:auto}
+:root[data-layout="book"] .chapter-title{font-size:1.6em}
 
-.feature{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:clamp(32px,6vw,80px);align-items:center;max-width:60rem;margin:0 auto 96px}
-@media (max-width:820px){.feature{grid-template-columns:1fr;gap:48px}}
-.feature-plate{position:relative;display:block;justify-self:center;width:min(100%,23rem);text-decoration:none;color:var(--violet)}
-.feature-plate .mount{transition:transform .35s ease}
-.feature-plate:hover .mount{transform:rotate(-.8deg)}
-.feature-plate .mount img{display:block;width:100%;height:auto}
-/* the strike sits on the photo's corner; its cancel lines stay clear of the text beside it */
-.reads-home .feature-postmark{top:-8%;right:-10%;width:72%;opacity:1;transform:rotate(-9deg)}
-@media (max-width:820px){.reads-home .feature-postmark{right:-8%;width:62%}}
-@media (prefers-reduced-motion: no-preference){
-  .reads-home .feature-postmark{animation:strike .7s cubic-bezier(.2,1.4,.4,1) .35s both}
-}
-@keyframes strike{from{opacity:0;transform:scale(1.7) rotate(2deg)}to{opacity:1;transform:rotate(-9deg)}}
+/* ── table of contents (the story's menu and the library) ─ */
+.toc{list-style:none;margin:0;padding:0}
+.toc-link{display:flex;align-items:baseline;gap:.8rem;min-height:44px;padding:.6rem 0;border-bottom:1px solid var(--grid);color:var(--ink);text-decoration:none}
+.toc li:last-child .toc-link{border-bottom:0}
+.toc-no{flex:none;width:2.4rem;font:600 .8rem/1 var(--f-label);letter-spacing:.18em;color:var(--violet)}
+.toc-title{flex:none;max-width:70%;font:400 1.3rem/1.2 var(--f-display)}
+.toc-leader{flex:1;min-width:1.5rem;border-bottom:1px dotted var(--edge);transform:translateY(-.28em)}
+.toc-time{flex:none;font:600 .78rem/1 var(--f-label);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-variant-numeric:tabular-nums}
+.toc-link:hover .toc-title,.toc-link:focus-visible .toc-title{text-decoration:underline;text-decoration-color:var(--violet);text-decoration-thickness:.07em;text-underline-offset:.22em}
+.panel-contents{width:min(23rem,calc(100vw - 32px))}
+.panel-contents .toc-title{font-size:1.12rem}
 
-.feature-text{min-width:0}
-.feature-text .kicker{font-size:.8rem;margin-bottom:1rem}
-.feature-title{margin:0 0 .45em;font:400 clamp(2.8rem,6.4vw,4.6rem)/.96 var(--f-display);text-wrap:balance}
-.feature-title a{color:inherit;text-decoration:none;background:linear-gradient(var(--violet),var(--violet)) 0 100%/0 3px no-repeat;transition:background-size .3s ease}
-.feature-title a:hover,.feature-title a:focus-visible{background-size:100% 3px}
-.feature .route{font-size:.8rem}
-.feature-lede{margin:0 0 1.5rem;max-width:34rem;font:400 1.22rem/1.62 var(--f-text)}
-.feature .byline{font-size:.8rem;margin-bottom:1.8rem}
-.feature-actions{display:flex;flex-wrap:wrap;gap:12px}
+/* ── the video: a still until asked, then the player in the same frame ── */
+.video-frame{position:relative;aspect-ratio:16 / 9}
+.video-frame img{width:100%;height:100%;object-fit:cover}
+.video-play{position:absolute;inset:9px;display:block;width:auto;padding:0;border:0;background:transparent;color:#fff;cursor:pointer}
+.video-play:hover .play{transform:scale(1.06)}
+.video-play:focus-visible{outline:3px solid var(--violet);outline-offset:4px}
+.video-frame iframe,.video-hold{position:absolute;inset:9px;width:calc(100% - 18px);height:calc(100% - 18px);border:0;background:#0b0f14}
+:root[data-layout="book"] .plate.video .mount{width:100%}
+:root[data-layout="book"] .video-frame img{width:100%;max-height:none}
+
+/* ── the library (/reads) ───────────────────────────────── */
+.library{position:relative;z-index:1;max-width:66rem;margin:0 auto;padding:calc(var(--barh) + 64px) 20px 88px;font-family:var(--f-text);color:var(--ink)}
+.library:focus{outline:none}
+.library-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 32px;padding-bottom:28px;margin-bottom:8px;border-bottom:2px solid var(--ink)}
+.library-head .kicker{font-size:.8rem;margin-bottom:.9rem}
+.library-title{margin:0;font:400 clamp(3rem,8vw,5.2rem)/.95 var(--f-display);letter-spacing:-.01em}
+.library-tagline{margin:.9rem 0 0;font:600 .82rem/1.3 var(--f-label);letter-spacing:.26em;text-transform:uppercase;color:var(--muted)}
+.library-count{margin:0;font:600 .82rem/1.3 var(--f-label);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-variant-numeric:tabular-nums}
+.volume{display:grid;grid-template-columns:minmax(0,17rem) minmax(0,1fr);gap:clamp(28px,5vw,64px);padding:48px 0;border-bottom:1px solid var(--edge)}
+@media (max-width:760px){.volume{grid-template-columns:1fr}.volume-cover{max-width:15rem}}
+.volume-cover{display:block;align-self:start;text-decoration:none}
+.volume-cover .mount img{display:block;width:100%;height:auto}
+.volume-body{min-width:0;max-width:40rem}
+.volume-no{margin:0 0 .8rem;font:600 .8rem/1.3 var(--f-label);letter-spacing:.2em;text-transform:uppercase;color:var(--violet)}
+.volume-title{margin:0 0 .6rem;font:400 clamp(2.4rem,5vw,3.6rem)/1 var(--f-display);text-wrap:balance}
+.volume-title a{color:inherit;text-decoration:none}
+.volume-title a:hover,.volume-title a:focus-visible{text-decoration:underline;text-decoration-color:var(--violet);text-decoration-thickness:.05em;text-underline-offset:.14em}
+.volume-meta{display:flex;flex-wrap:wrap;gap:.4em 1.3em;margin:0 0 1.4rem;font:600 .8rem/1.3 var(--f-label);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.volume-lede{margin:0 0 1.6rem;font:italic 400 1.18rem/1.6 var(--f-text)}
+.volume-actions{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:2.4rem}
 .btn{display:inline-flex;align-items:center;min-height:48px;padding:0 22px;border:1px solid var(--ink);border-radius:999px;background:var(--ink);color:var(--leaf);font:600 1rem/1 var(--f-ui);text-decoration:none}
 .btn:hover{text-decoration:underline;text-underline-offset:.2em}
 .btn-ghost{background:transparent;color:var(--ink);border-color:var(--edge)}
-
-.home-lakes{max-width:60rem;margin:0 auto;font-size:1.1rem;text-align:center}
-.home-lakes .stamps{grid-template-columns:repeat(auto-fit,minmax(12rem,15rem));justify-content:center;text-align:left}
-@media (prefers-reduced-motion: reduce){.feature-plate .mount{transition:none}.feature-title a{transition:none}}
+.contents-title{margin:0 0 .4rem;padding-bottom:.6rem;border-bottom:1px solid var(--edge);font:600 .8rem/1 var(--f-label);letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.volume-lakes{display:flex;flex-wrap:wrap;gap:.3em .9em;margin:1.8rem 0 0;font-size:.95rem;color:var(--muted)}
+.volume-lakes span{font:600 .78rem/1.6 var(--f-label);letter-spacing:.16em;text-transform:uppercase}
+.volume-lakes a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--violet);text-underline-offset:.2em}
+@media (max-width:560px){.toc-title{max-width:62%;font-size:1.15rem}}

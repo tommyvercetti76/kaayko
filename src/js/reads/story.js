@@ -183,6 +183,7 @@
     $('.board-l').style.boxShadow = stack(Math.round(prog * 5), -1);
     $('.board-r').style.boxShadow = stack(Math.round((1 - prog) * 5), 1);
     if (say) announce(label);
+    pauseHiddenVideo();
   }
   function stack(n, sign) {
     const s = [];
@@ -209,6 +210,7 @@
       const copy = story.cloneNode(true);
       copy.removeAttribute('id'); copy.removeAttribute('tabindex'); copy.removeAttribute('aria-labelledby');
       copy.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'));
+      copy.querySelectorAll('iframe').forEach((f) => f.replaceWith(el('div', 'video-hold')));  // never a second player
       copy.style.setProperty('--shift', `${-i * B.pw}px`);
       win.append(copy);
       face.append(win);
@@ -361,6 +363,55 @@
     if (story.scrollWidth !== B.sw) { const a = currentAnchor(); countPages(); setIndex(pageOf(a)); }
   }, 1200);
 
+  /* ── chapters: the Contents menu, and #ch-N links from the library ── */
+  function goToChapter(id, { smooth = true } = {}) {
+    const h = document.getElementById(id);
+    if (!h) return;
+    if (state.layout === 'book' && B.ready) { cancelFlip(); setIndex(pageOf(h), { say: true }); }
+    else h.scrollIntoView({ behavior: smooth && animate() ? 'smooth' : 'auto', block: 'start' });
+    h.focus({ preventScroll: true });
+    try { history.replaceState(null, '', `${location.pathname}${location.search}#${id}`); } catch (_) { /* sandboxed */ }
+  }
+  const contents = $('#contents');
+  $$('#contents .toc-link').forEach((a) => a.addEventListener('click', (e) => {
+    e.preventDefault();
+    contents.open = false;
+    goToChapter(a.getAttribute('href').slice(1));
+  }));
+  contents.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && contents.open) { contents.open = false; contents.querySelector('summary').focus(); }
+  });
+  document.addEventListener('pointerdown', (e) => { if (contents.open && !contents.contains(e.target)) contents.open = false; });
+  contents.addEventListener('toggle', () => { if (contents.open) display.open = false; });
+  display.addEventListener('toggle', () => { if (display.open) contents.open = false; });
+  function bootChapter() {
+    const m = (location.hash || '').match(/^#(ch-\d+)$/);
+    if (m) goToChapter(m[1], { smooth: false });
+  }
+
+  /* ── the video plays on the page, and loads from YouTube only when asked ── */
+  const YT = 'https://www.youtube-nocookie.com';
+  $$('.video-play', story).forEach((btn) => btn.addEventListener('click', () => {
+    const fig = btn.closest('.video');
+    const frame = btn.closest('.video-frame');
+    const player = document.createElement('iframe');
+    player.src = `${YT}/embed/${encodeURIComponent(fig.dataset.video)}?autoplay=1&rel=0&playsinline=1&enablejsapi=1`;
+    player.title = `${fig.dataset.title || 'Video'} (YouTube)`;
+    player.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+    player.allowFullscreen = true;
+    player.referrerPolicy = 'strict-origin-when-cross-origin';
+    frame.replaceChildren(player);
+    player.focus();
+  }));
+  // A video on a page the reader has turned away from stops playing.
+  function pauseHiddenVideo() {
+    const player = story.querySelector('.video iframe');
+    if (!player || state.layout !== 'book' || !B.ready) return;
+    const p = pageOf(player.closest('.video'));
+    if (p >= B.idx && p < B.idx + step()) return;
+    try { player.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'pauseVideo', args: [] }), YT); } catch (_) { /* not ready yet */ }
+  }
+
   /* ── switching layouts, keeping the reader's place ────── */
   function applyLayout(layout, anchor) {
     state.layout = layout;
@@ -382,7 +433,12 @@
     if (layout === 'book' && !bookFits()) { syncControls(); return; }
     const anchor = currentAnchor();
     store.set('layout', layout);
-    try { history.replaceState(null, '', `#${layout}`); } catch (_) { /* sandboxed */ }
+    try {
+      const u = new URL(location.href);
+      u.searchParams.set('view', layout);
+      if (u.hash === '#book' || u.hash === '#scroll') u.hash = '';
+      history.replaceState(null, '', u);
+    } catch (_) { /* sandboxed */ }
     const run = () => {
       applyLayout(layout, anchor);
       syncControls();
@@ -429,6 +485,7 @@
   (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => {
     if (state.layout === 'book') { const i = B.idx; measureBook(); setIndex(i); }
     else onScroll();
+    bootChapter();
   });
   $$('img', story).forEach((img) => { if (!img.complete) img.addEventListener('load', () => { if (state.layout === 'book' && !B.flip) { countPages(); setIndex(B.idx); } }, { once: true }); });
 })();
