@@ -78,6 +78,7 @@ const PAGES = {
   'privacy.html': 'site',
   '404.html': 'site',
   'reads.html': 'site',
+  'reads/never-give-up.html': 'site',
   'testimonials.html': 'site',
 
   'paddlingout.html': 'paddling',
@@ -113,7 +114,7 @@ const PAGES = {
 // (--v2-bg #f5f1e7). They also have a dark-mode toggle — footer.css reverts the
 // light variant under html.dark-theme so the footer follows the theme.
 const LIGHT = new Set([
-  'reads.html', 'testimonials.html',
+  'reads.html', 'reads/never-give-up.html', 'testimonials.html',
   'store.html', 'cart.html', 'product.html', 'animal.html',
   'order-status.html', 'store-about.html', 'store-privacy.html',
   'legal/terms.html', 'legal/returns.html', 'legal/shipping.html', 'legal/games.html',

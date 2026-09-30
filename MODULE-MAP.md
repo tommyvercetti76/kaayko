@@ -54,12 +54,19 @@
 | `/` | `kaayko/src/index.html` (split Kaayko landing: Paddling Out / Forge / Store, then Store access layer) |
 | `/paddlingout` | `kaayko/src/paddlingout.html` |
 | `/about` | `kaayko/src/about.html` |
-| `/reads` | `kaayko/src/reads.html` |
+| `/reads` | `kaayko/src/reads.html` → `js/reads/home.js` (Reads landing) |
+| `/reads/never-give-up` | `kaayko/src/reads/never-give-up.html` → `js/reads/story.js` (Scroll/Book reader) |
 | `/testimonials` | `kaayko/src/testimonials.html` |
 | `/privacy` | `kaayko/src/privacy.html` |
 | `/valentine` | `kaayko/src/valentine.html` (seasonal campaign) |
 | `/redirect` | `kaayko/src/redirect.html` (spinner UI for smart link flow) |
 | `/404` | `kaayko/src/404.html` |
+
+**Kaayko Reads (static, no API):**
+- `kaayko/src/css/reads.css` + `css/reads-fonts.css` — the Album design (tokens measured to 7:1 in both themes); fonts self-hosted in `src/fonts/reads/` (OFL)
+- `kaayko/src/js/reads/story.js` — the reader: Scroll layout, or Book (the same article paginated by CSS columns, page turns by drag/click/keys), switching keeps the reader's place
+- `kaayko/src/js/reads/ripples.js` — still ripple lines traced from a lake's real shoreline (`src/reads/lakes/<lake>.json`, USGS NHD), via a distance transform
+- `kaayko/src/js/reads/home.js` — the /reads landing (theme + ripples)
 
 **JS files (paddlingout):**
 - `kaayko/src/js/paddlingout.js` — list page controller (stale-while-revalidate list cache)

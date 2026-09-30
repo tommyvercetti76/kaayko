@@ -95,7 +95,8 @@ Agents: identify the page here, then look up the module in MODULE-MAP.md for ful
 | `/store` (kaay.store `/`) | `src/store.html` → `js/pages/store.js` |
 | `/cart` | `src/cart.html` → `js/pages/cart.js` |
 | `/privacy` | `src/privacy.html` |
-| `/reads` | `src/reads.html` |
+| `/reads` | `src/reads.html` → `js/reads/home.js` (Kaayko Reads landing: featured story, lakes as stamps) |
+| `/reads/never-give-up` | `src/reads/never-give-up.html` → `js/reads/story.js` (one article, Scroll or Book layout; photos in `src/reads/never-give-up/`) |
 | `/testimonials` | `src/testimonials.html` |
 | `/valentine` | `src/valentine.html` |
 | `/order-success` | `src/order-success.html` → `js/pages/order-success.js` |

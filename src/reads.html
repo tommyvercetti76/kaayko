@@ -1,308 +1,122 @@
 <!DOCTYPE html>
-<html lang="en" prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article#">
+<html lang="en">
 <head>
-  <script src="/js/prod-config.js"></script>
-  <script src="/js/site-features.js"></script>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-
-  <!-- Primary Meta Tags -->
-  <title>Reads - Paddling Stories, Kayak Adventures & Water Sports Blog | Kaayko</title>
-  <meta name="title" content="Reads - Paddling Stories & Kayaking Adventures from Kaayko Community">
-  <meta name="description" content="Discover paddling stories, kayak adventures, water sports tips, and outdoor insights from the Kaayko community. Expert paddling guides, lake reviews, gear recommendations, and inspiring paddle journeys. Join the conversation." />
-  <meta name="author" content="Kaayko Community">
-  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
-  <link rel="canonical" href="https://kaayko.com/reads" />
-  
-  <!-- Open Graph / Facebook -->
-  <meta property="og:type" content="blog">
-  <meta property="og:url" content="https://kaayko.com/reads">
-  <meta property="og:title" content="Reads - Paddling Stories & Adventures">
-  <meta property="og:description" content="Paddling stories, kayak adventures, and water sports insights from the Kaayko community. Discover new perspectives on paddling culture.">
-  <meta property="og:image" content="https://kaayko.com/assets/reads-og.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Kaayko Reads</title>
+  <meta name="description" content="Kaayko Reads: stories from the water and the road. Read them as one long scroll, or turn them like a book.">
+  <link rel="canonical" href="https://kaayko.com/reads">
+  <meta property="og:type" content="website">
   <meta property="og:site_name" content="Kaayko">
-  <meta property="article:publisher" content="https://kaayko.com">
-  
-  <!-- Twitter -->
+  <meta property="og:url" content="https://kaayko.com/reads">
+  <meta property="og:title" content="Kaayko Reads">
+  <meta property="og:description" content="Kaayko Reads: stories from the water and the road. Read them as one long scroll, or turn them like a book.">
+  <meta property="og:image" content="https://kaayko.com/reads/never-give-up/lone-rock-beach.jpg">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:url" content="https://kaayko.com/reads">
-  <meta name="twitter:title" content="Reads - Kayak Adventures & Paddling Stories">
-  <meta name="twitter:description" content="Explore paddling stories, tips, and adventures from the Kaayko community.">
-  <meta name="twitter:image" content="https://kaayko.com/assets/reads-twitter.png">
-  <meta name="twitter:creator" content="@kaayko">
-  
-  <!-- Schema.org Blog -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Blog",
-    "name": "Kaayko Reads",
-    "description": "Paddling stories, kayak adventures, and water sports insights from the outdoor community.",
-    "url": "https://kaayko.com/reads",
-    "publisher": {
-      "@type": "Organization",
-      "name": "Kaayko",
-      "logo": "https://kaayko.com/assets/kaayko-logo.png"
-    },
-    "inLanguage": "en-US"
-  }
-  </script>
-
-  <!-- Smart App Banner -->
-  <meta name="apple-itunes-app" content="app-id=6747012283, app-argument=https://kaayko.com/reads" />
-  
-  <!-- Security & Performance -->
-  <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <meta name="twitter:title" content="Kaayko Reads">
+  <meta name="twitter:description" content="Kaayko Reads: stories from the water and the road. Read them as one long scroll, or turn them like a book.">
+  <meta name="twitter:image" content="https://kaayko.com/reads/never-give-up/lone-rock-beach.jpg">
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "Blog", "name": "Kaayko Reads", "url": "https://kaayko.com/reads", "publisher": {"@type": "Organization", "name": "Kaayko", "url": "https://kaayko.com"}, "blogPost": [{"@type": "BlogPosting", "headline": "Never Give Up", "url": "https://kaayko.com/reads/never-give-up", "datePublished": "2025-10-12", "author": {"@type": "Person", "name": "Rohan Ramekar"}}]}</script>
   <link rel="icon" type="image/png" href="/favicon-32x32.png">
-  <meta name="theme-color" content="#d4af37">
-
-  <!-- Standard Stylesheets (like other pages) -->
-  <link rel="stylesheet" href="/css/tokens.css">
-  <link rel="stylesheet" href="/css/base.css">
-  <link rel="stylesheet" href="/css/storestyle.css" />
-  <link rel="stylesheet" href="/css/header.css" />
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-
-  <!-- Page-specific styles for blog access -->
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      background: var(--bg-color);
-      font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
-    }
-
-    /* Main content area */
-    main {
-      margin-top: 60px; /* Reduced from 80px */
-      padding: 20px;
-      min-height: calc(100vh - 120px);
-    }
-
-    .reads-container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    /* Hero Section */
-    .reads-hero {
-      text-align: center;
-      margin-bottom: 40px;
-      padding: 0px 20px 20px 20px;
-    }
-
-    .reads-hero h1 {
-      font-family: 'Josefin_Bold', 'Josefin Sans', Arial, sans-serif;
-      font-size: 3rem;
-      color: var(--color-text-base, #333);
-      margin-bottom: 16px;
-      background: linear-gradient(135deg, #d4af37, #ffd700);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .reads-hero p {
-      font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
-      font-size: 1.2rem;
-      color: var(--color-text-subtle, #666);
-      max-width: 600px;
-      margin: 0 auto;
-      line-height: 1.6;
-    }
-
-    /* Blog Access - Single Card Centered */
-    .blog-access-grid {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 40px;
-    }
-
-    .blog-card.centered {
-      max-width: 400px;
-      width: 100%;
-    }
-
-    .blog-card {
-      background: var(--color-card-bg, #fff);
-      border-radius: 16px;
-      padding: 32px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s ease;
-      border: 2px solid transparent;
-      text-align: center;
-    }
-
-    .blog-card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-      border-color: #d4af37;
-    }
-
-    .blog-card.primary {
-      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-      color: #ffffff;
-      border-color: #d4af37;
-    }
-
-    .blog-card.primary:hover {
-      box-shadow: 0 12px 40px rgba(212, 175, 55, 0.3);
-    }
-
-    .card-icon {
-      font-size: 3rem;
-      margin-bottom: 20px;
-      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-    }
-
-    .blog-card h3 {
-      font-family: 'Josefin_Bold', 'Josefin Sans', Arial, sans-serif;
-      font-size: 1.5rem;
-      margin-bottom: 16px;
-      color: inherit;
-    }
-
-    .blog-card p {
-      font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
-      font-size: 1rem;
-      line-height: 1.6;
-      margin-bottom: 24px;
-      opacity: 0.9;
-    }
-
-    .blog-button {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 14px 28px;
-      background: #d4af37;
-      color: #1a1a1a;
-      text-decoration: none;
-      border-radius: 8px;
-      font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
-      font-weight: 600;
-      font-size: 1rem;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
-    }
-
-    .blog-button:hover {
-      background: #ffd700;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
-    }
-
-    .blog-button.primary {
-      background: linear-gradient(135deg, #d4af37 0%, #ffd700 100%);
-      color: #1a1a1a;
-      font-weight: 700;
-      padding: 16px 32px;
-      font-size: 1.1rem;
-    }
-
-    .external-icon {
-      font-size: 1.2rem;
-      transition: transform 0.3s ease;
-    }
-
-    .blog-button:hover .external-icon {
-      transform: translateX(2px) translateY(-2px);
-    }
-
-    /* Dark theme support */
-    .dark-theme .blog-card:not(.primary) {
-      background: #2a2a2a;
-      color: #ffffff;
-      border-color: #444;
-    }
-
-    .dark-theme .blog-card:not(.primary):hover {
-      border-color: #d4af37;
-    }
-
-    /* Mobile responsiveness */
-    @media (max-width: 768px) {
-      main {
-        margin-top: 50px; /* Reduced for mobile */
-        padding: 20px 15px;
-      }
-      
-      .reads-hero h1 {
-        font-size: 2.2rem;
-      }
-      
-      .reads-hero {
-        margin-bottom: 40px;
-        padding: 0px 20px 20px 20px;
-      }
-      
-      .blog-access-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
-      }
-      
-      .blog-card {
-        padding: 24px;
-      }
-    }
-  </style>
+  <meta name="theme-color" content="#eceff1">
+  <script>
+(function () {
+  var r = document.documentElement;
+  var get = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  var t = get('reads:theme');
+  if (t !== 'light' && t !== 'dark' && t !== 'auto') t = get('darkTheme') === 'enabled' ? 'dark' : 'auto';
+  if (t !== 'auto') r.setAttribute('data-theme', t);
+  if (t === 'dark' || (t === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches)) r.classList.add('dark-theme');
+  r.setAttribute('data-host-theme', '');
+})();
+  </script>
+  <link rel="preload" href="/fonts/reads/im-fell-double-pica-normal-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/reads-fonts.css">
+  <link rel="stylesheet" href="/css/reads.css">
   <link rel="stylesheet" href="/css/footer.css">
 </head>
+<body class="reads-home">
+<svg class="defs" aria-hidden="true" focusable="false">
+  <defs>
+    <path id="pm-arc" d="M-51 0a51 51 0 1 1 102 0a51 51 0 1 1-102 0"/>
+    <filter id="ink" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.2" xChannelSelector="R" yChannelSelector="G"/></filter>
+  </defs>
+</svg>
 
-<body>
-  <!-- STANDARD HEADER (exactly like other pages) -->
-  <header class="header">
-    <div class="header-top">
-      <div class="header-brand">
-        <span class="header-title">Kaayko</span>
-        <p class="header-subtitle">Thoughts. Perspectives. Stories.</p>
-      </div>
+<canvas id="ripples" aria-hidden="true" data-lake="/reads/lakes/lake-powell.json"></canvas>
 
-      <!-- Desktop navigation -->
-      <nav class="top-menu"><ul></ul></nav>
+<a class="skip" href="#main">Skip to the stories</a>
 
-      <!-- Controls -->
-      <div class="header-controls">
-        <button class="theme-toggle-icon material-icons" aria-label="Toggle Dark Mode"></button>
-        <button class="fab-menu material-icons mobile-only" aria-label="Open Menu">menu</button>
+<header class="bar" id="bar">
+  <a class="brand" href="/reads" aria-current="page"><span class="brand-name">Kaayko Reads</span><span class="brand-sub">Field notes</span></a>
+  <div class="tools">
+    <fieldset class="seg">
+      <legend class="sr-only">Theme</legend>
+      <input type="radio" name="theme" id="theme-auto" value="auto"><label for="theme-auto">Auto</label>
+      <input type="radio" name="theme" id="theme-light" value="light"><label for="theme-light">Light</label>
+      <input type="radio" name="theme" id="theme-dark" value="dark"><label for="theme-dark">Dark</label>
+    </fieldset>
+  </div>
+</header>
+
+<main id="main" class="home" tabindex="-1">
+  <section class="masthead" aria-labelledby="home-title">
+    <p class="kicker">Field notes</p>
+    <h1 class="home-title" id="home-title">Kaayko Reads</h1>
+    <p class="tagline">Thoughts. Perspectives. Stories.</p>
+  </section>
+
+  <article class="feature" aria-labelledby="feature-title">
+    <a class="feature-plate" href="/reads/never-give-up" tabindex="-1" aria-hidden="true">
+      <span class="mount"><img src="/reads/never-give-up/lone-rock.jpg" alt="" width="1179" height="1561" decoding="async" fetchpriority="high"></span>
+      <svg class="postmark feature-postmark" viewBox="0 0 330 150" aria-hidden="true" focusable="false">
+            <g filter="url(#ink)">
+              <g transform="translate(75 75)" fill="none" stroke="currentColor">
+                <circle r="63" stroke-width="3"/>
+                <circle r="40" stroke-width="1.5"/>
+                <text fill="currentColor" stroke="none" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="600" font-size="12.5" letter-spacing="3"><textPath href="#pm-arc">KAAYKO READS · PAGE, ARIZONA ·</textPath></text>
+                <text fill="currentColor" stroke="none" text-anchor="middle" y="-4" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="600" font-size="16" letter-spacing="1">12 OCT 25</text>
+                <text fill="currentColor" stroke="none" text-anchor="middle" y="15" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="600" font-size="11" letter-spacing="2">15 MIN</text>
+              </g>
+              <g fill="none" stroke="currentColor" stroke-width="3">
+                <path d="M150 42q9-7 18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0"/>
+                <path d="M150 61q9-7 18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0"/>
+                <path d="M150 80q9-7 18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0"/>
+                <path d="M150 99q9-7 18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0"/>
+                <path d="M150 118q9-7 18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0t18 0"/>
+              </g>
+            </g>
+          </svg>
+    </a>
+    <div class="feature-text">
+      <p class="kicker">Paddleboarding · Lake Powell</p>
+      <h2 class="feature-title" id="feature-title"><a href="/reads/never-give-up">Never Give Up</a></h2>
+      <ol class="route" aria-label="The route">
+        <li>Moran Point</li><li>Desert View</li><li>Page</li><li>Lone Rock Beach</li><li>Lake Powell</li>
+      </ol>
+      <p class="feature-lede">I woke up at Moran Point inside The Grand Canyon National Park, miles away from the comfort of my home.</p>
+      <p class="byline"><span>By Rohan Ramekar</span><span><time datetime="2025-10-12">Oct 12, 2025</time></span><span>15 min read</span></p>
+      <div class="feature-actions">
+        <a class="btn" href="/reads/never-give-up#scroll">Read as a scroll</a>
+        <a class="btn btn-ghost" href="/reads/never-give-up#book">Read as a book</a>
       </div>
     </div>
-    
-    <!-- Mobile overlay menu -->
-    <div class="mobile-menu-overlay">
-      <ul></ul>
-    </div>
-  </header>
+  </article>
 
-  <!-- Main content -->
-  <main>
-    <div class="reads-container">
-      <!-- Hero Section -->
-      <div class="reads-hero">
-        <h1>Kaayko Reads</h1>
-        <p>Discover paddling stories, adventures, and insights from the water</p>
-      </div>
+  <section class="lakes home-lakes" aria-labelledby="lakes-title">
+    <h2 id="lakes-title">Lakes in these stories</h2>
+    <p class="lakes-sub">Every one is on Paddling Out, with the day’s paddle score and conditions.</p>
+    <ul class="stamps">
+      <li class="stamp-item"><a class="stamp" href="/paddlingout/forecast?id=cottonwood"><img src="/reads/never-give-up/stamp-cottonwood.jpg" alt="" width="520" height="390" loading="lazy" decoding="async"><span class="stamp-name">Cottonwood Lake</span><span class="stamp-place">Colorado</span><span class="stamp-cta">Today’s paddle conditions<span class="sr-only"> for Cottonwood Lake on Paddling Out</span></span></a></li>
+      <li class="stamp-item"><a class="stamp" href="/paddlingout/forecast?id=taylorpark"><img src="/reads/never-give-up/stamp-taylorpark.jpg" alt="" width="520" height="390" loading="lazy" decoding="async"><span class="stamp-name">Taylor Park Reservoir</span><span class="stamp-place">Colorado</span><span class="stamp-cta">Today’s paddle conditions<span class="sr-only"> for Taylor Park Reservoir on Paddling Out</span></span></a></li>
+      <li class="stamp-item"><a class="stamp" href="/paddlingout/forecast?id=powell"><img src="/reads/never-give-up/stamp-powell.jpg" alt="" width="520" height="390" loading="lazy" decoding="async"><span class="stamp-name">Lake Powell</span><span class="stamp-place">Utah and Arizona</span><span class="stamp-cta">Today’s paddle conditions<span class="sr-only"> for Lake Powell on Paddling Out</span></span></a></li>
+    </ul>
+  </section>
+</main>
 
-      <!-- Blog Access - Single Simple Option -->
-      <div class="blog-access-grid">
-        <!-- Single Main Blog Link -->
-        <div class="blog-card primary centered">
-          <div class="card-icon">📖</div>
-          <h3>Kaayko Blog</h3>
-          <p>Read our paddling stories, tips, and adventures from the water.</p>
-          <a href="/paddlingout" class="blog-button primary">
-            Read Stories
-          </a>
-        </div>
-      </div>
-
-    </div>
-  </main>
-
-  <!-- Footer -->
+<script src="/js/reads/ripples.js" defer></script>
+<script src="/js/reads/home.js" defer></script>
+<script src="/js/util.js"></script>
   <footer class="site-footer is-light">
     <nav aria-label="Footer">
       <a href="/paddlingout">Paddling Out</a>
@@ -313,36 +127,6 @@
     </nav>
     <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
   </footer>
-
-  <!-- Scripts -->
-  <script src="js/header.js"></script>
-  <script src="js/secretStore.js"></script>
-  
-  <script>
-    // Simple page initialization
-    document.addEventListener('DOMContentLoaded', function() {
-      // Set current year
-      const yearElement = document.getElementById('year');
-      if (yearElement) {
-        yearElement.textContent = new Date().getFullYear();
-      }
-
-      // Add click tracking for blog links
-      const blogButtons = document.querySelectorAll('.blog-button');
-      blogButtons.forEach(button => {
-        button.addEventListener('click', function() {
-          const destination = this.href;
-          console.log('📖 Blog link clicked:', destination);
-          
-          // Optional: Add analytics tracking here
-          // trackEvent('blog_link_click', { destination });
-        });
-      });
-
-      console.log('📚 Kaayko Reads page initialized - Blog access ready');
-    });
-  </script>
-  <script src="/js/util.js"></script>
 
 </body>
 </html>
