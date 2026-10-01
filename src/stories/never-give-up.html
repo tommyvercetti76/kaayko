@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Never Give Up · Kaayko Reads</title>
+  <title>Never Give Up · Kaayko Stories</title>
   <meta name="description" content="Grand Canyon to Lake Powell in one day: a sedan stuck in the sand twice, a rat fighting the waves at Lone Rock, a dust devil, and a reason to keep going. A paddling story by Rohan Ramekar.">
   <meta name="author" content="Rohan Ramekar">
-  <link rel="canonical" href="https://kaayko.com/reads/never-give-up">
+  <link rel="canonical" href="https://kaayko.com/stories/never-give-up">
   <meta property="og:type" content="article">
   <meta property="og:site_name" content="Kaayko">
-  <meta property="og:url" content="https://kaayko.com/reads/never-give-up">
+  <meta property="og:url" content="https://kaayko.com/stories/never-give-up">
   <meta property="og:title" content="Never Give Up">
   <meta property="og:description" content="Grand Canyon to Lake Powell in one day: a sedan stuck in the sand twice, a rat fighting the waves at Lone Rock, a dust devil, and a reason to keep going. A paddling story by Rohan Ramekar.">
-  <meta property="og:image" content="https://kaayko.com/reads/never-give-up/lone-rock-beach.jpg">
+  <meta property="og:image" content="https://kaayko.com/stories/never-give-up/lone-rock-beach.jpg">
   <meta property="og:image:width" content="1300">
   <meta property="og:image:height" content="973">
   <meta property="og:image:alt" content="A paddle board on the sand at Lone Rock Beach, Lake Powell.">
@@ -20,32 +20,33 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Never Give Up">
   <meta name="twitter:description" content="Grand Canyon to Lake Powell in one day: a sedan stuck in the sand twice, a rat fighting the waves at Lone Rock, a dust devil, and a reason to keep going. A paddling story by Rohan Ramekar.">
-  <meta name="twitter:image" content="https://kaayko.com/reads/never-give-up/lone-rock-beach.jpg">
-  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Never Give Up", "description": "Grand Canyon to Lake Powell in one day: a sedan stuck in the sand twice, a rat fighting the waves at Lone Rock, a dust devil, and a reason to keep going. A paddling story by Rohan Ramekar.", "image": ["https://kaayko.com/reads/never-give-up/lone-rock-beach.jpg"], "datePublished": "2025-10-12", "dateModified": "2026-09-29", "author": {"@type": "Person", "name": "Rohan Ramekar"}, "publisher": {"@type": "Organization", "name": "Kaayko", "url": "https://kaayko.com"}, "mainEntityOfPage": "https://kaayko.com/reads/never-give-up", "wordCount": 3775, "timeRequired": "PT15M", "isPartOf": {"@type": "Blog", "name": "Kaayko Reads", "url": "https://kaayko.com/reads"}}</script>
+  <meta name="twitter:image" content="https://kaayko.com/stories/never-give-up/lone-rock-beach.jpg">
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Never Give Up", "description": "Grand Canyon to Lake Powell in one day: a sedan stuck in the sand twice, a rat fighting the waves at Lone Rock, a dust devil, and a reason to keep going. A paddling story by Rohan Ramekar.", "image": ["https://kaayko.com/stories/never-give-up/lone-rock-beach.jpg"], "datePublished": "2025-10-12", "dateModified": "2026-09-29", "author": {"@type": "Person", "name": "Rohan Ramekar"}, "publisher": {"@type": "Organization", "name": "Kaayko", "url": "https://kaayko.com"}, "mainEntityOfPage": "https://kaayko.com/stories/never-give-up", "wordCount": 3775, "timeRequired": "PT15M", "isPartOf": {"@type": "Blog", "name": "Kaayko Stories", "url": "https://kaayko.com/stories"}}</script>
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Kaayko", "item": "https://kaayko.com/"}, {"@type": "ListItem", "position": 2, "name": "Stories", "item": "https://kaayko.com/stories"}, {"@type": "ListItem", "position": 3, "name": "Never Give Up", "item": "https://kaayko.com/stories/never-give-up"}]}</script>
   <link rel="icon" type="image/png" href="/favicon-32x32.png">
   <meta name="theme-color" content="#eceff1">
   <script>
 (function () {
   var r = document.documentElement;
   var get = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
-  var t = get('reads:theme');
+  var t = get('stories:theme');
   if (t !== 'light' && t !== 'dark' && t !== 'auto') t = get('darkTheme') === 'enabled' ? 'dark' : 'auto';
   if (t !== 'auto') r.setAttribute('data-theme', t);
   if (t === 'dark' || (t === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches)) r.classList.add('dark-theme');
   r.setAttribute('data-host-theme', '');
   var q = null; try { q = new URLSearchParams(location.search).get('view'); } catch (e) { /* old browser */ }
   var h = (location.hash || '').slice(1);
-  var l = q === 'book' || q === 'scroll' ? q : (h === 'book' || h === 'scroll' ? h : get('reads:layout'));
+  var l = q === 'book' || q === 'scroll' ? q : (h === 'book' || h === 'scroll' ? h : get('stories:layout'));
   r.setAttribute('data-layout', l === 'book' ? 'book' : 'scroll');
-  var s = parseFloat(get('reads:scale')); if (s >= 0.9 && s <= 1.6) r.style.setProperty('--scale', String(s));
+  var s = parseFloat(get('stories:scale')); if (s >= 0.9 && s <= 1.6) r.style.setProperty('--scale', String(s));
 })();
   </script>
-  <link rel="preload" href="/fonts/reads/literata-normal-400-600.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/css/reads-fonts.css">
-  <link rel="stylesheet" href="/css/reads.css">
+  <link rel="preload" href="/fonts/stories/literata-normal-400-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/stories-fonts.css">
+  <link rel="stylesheet" href="/css/stories.css">
   <link rel="stylesheet" href="/css/footer.css">
 </head>
-<body class="reads-story">
+<body class="stories-reader">
 <svg class="defs" aria-hidden="true" focusable="false">
   <defs>
     <path id="pm-arc" d="M-51 0a51 51 0 1 1 102 0a51 51 0 1 1-102 0"/>
@@ -53,12 +54,12 @@
   </defs>
 </svg>
 
-<canvas id="ripples" aria-hidden="true" data-lake="/reads/lakes/lake-powell.json"></canvas>
+<canvas id="ripples" aria-hidden="true" data-lake="/stories/lakes/lake-powell.json"></canvas>
 
 <a class="skip" href="#story">Skip to the story</a>
 
 <header class="bar" id="bar">
-  <a class="brand" href="/reads"><span class="brand-name">Kaayko Reads</span><span class="brand-sub">Field notes</span></a>
+  <a class="brand" href="/stories"><span class="brand-name">Kaayko Stories</span><span class="brand-sub">Field notes</span></a>
   <div class="tools">
     <fieldset class="seg">
       <legend class="sr-only">Layout</legend>
@@ -126,7 +127,7 @@
               <g transform="translate(75 75)" fill="none" stroke="currentColor">
                 <circle r="63" stroke-width="3"/>
                 <circle r="40" stroke-width="1.5"/>
-                <text fill="currentColor" stroke="none" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="600" font-size="12.5" letter-spacing="3"><textPath href="#pm-arc">KAAYKO READS · PAGE, ARIZONA ·</textPath></text>
+                <text fill="currentColor" stroke="none" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="600" font-size="12.5" letter-spacing="3"><textPath href="#pm-arc">KAAYKO STORIES · PAGE, ARIZONA ·</textPath></text>
                 <text fill="currentColor" stroke="none" text-anchor="middle" y="-4" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="600" font-size="16" letter-spacing="1">12 OCT 25</text>
                 <text fill="currentColor" stroke="none" text-anchor="middle" y="15" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="600" font-size="11" letter-spacing="2">15 MIN</text>
               </g>
@@ -139,7 +140,7 @@
               </g>
             </g>
           </svg>
-          <p class="kicker">Kaayko Reads · Paddleboarding</p>
+          <p class="kicker">Kaayko Stories · Paddleboarding</p>
           <h1 class="title" id="story-title">Never Give Up</h1>
           <ol class="route" aria-label="The route">
             <li>Moran Point</li><li>Desert View</li><li>Page</li><li>Lone Rock Beach</li><li>Lake Powell</li>
@@ -150,8 +151,8 @@
 <h2 class="chapter" id="ch-1" tabindex="-1"><span class="chapter-no" aria-hidden="true">I</span><span class="sr-only">Chapter 1: </span><span class="chapter-title">Moran Point</span></h2>
 <p class="lede">I woke up at <em>Moran Point </em>inside <em>The Grand Canyon National Park, </em>miles away from the comfort of my home. What was I doing there? Well, I was searching far and wide for serene waters to paddle on. Day before, I had been on the <em><a href="/paddlingout/forecast?id=cottonwood">Cottonwood Lake<span class="sr-only"> (paddle conditions on Paddling Out)</span></a> </em>and <em><a href="/paddlingout/forecast?id=taylorpark">Taylor Park Reservoir<span class="sr-only"> (paddle conditions on Paddling Out)</span></a> </em>in colorful <em>Colorado</em>.</p>
 <p>It’s never enough though, is it?</p>
-<figure class="plate"><div class="mount"><img src="/reads/never-give-up/cottonwood-lake.jpg" alt="Rippled water on Cottonwood Lake seen from the nose of a paddle board, with pine-covered mountains rising on both sides under a blue sky and white clouds." width="1300" height="976" loading="eager" decoding="async"></div><figcaption>Cottonwood Lake, Colorado</figcaption></figure>
-<figure class="plate"><div class="mount"><img src="/reads/never-give-up/taylor-park-reservoir.jpg" alt="A stand-up paddle board resting in the shallows of Taylor Park Reservoir, with snow-capped peaks beyond a dark, forested shore under a cloudy sky." width="1300" height="866" loading="eager" decoding="async"></div><figcaption>Taylor Park Reservoir, Colorado</figcaption></figure>
+<figure class="plate"><div class="mount"><img src="/stories/never-give-up/cottonwood-lake.jpg" alt="Rippled water on Cottonwood Lake seen from the nose of a paddle board, with pine-covered mountains rising on both sides under a blue sky and white clouds." width="1300" height="976" loading="eager" decoding="async"></div><figcaption>Cottonwood Lake, Colorado</figcaption></figure>
+<figure class="plate"><div class="mount"><img src="/stories/never-give-up/taylor-park-reservoir.jpg" alt="A stand-up paddle board resting in the shallows of Taylor Park Reservoir, with snow-capped peaks beyond a dark, forested shore under a cloudy sky." width="1300" height="866" loading="eager" decoding="async"></div><figcaption>Taylor Park Reservoir, Colorado</figcaption></figure>
 <p>My sights had shifted to <em><a href="/paddlingout/forecast?id=powell">Lake Powell<span class="sr-only"> (paddle conditions on Paddling Out)</span></a> </em>in<em> Utah</em>. On my way, to slow down, I parked my hide in the <em>Grand Canyon National Park </em>for the night.</p>
 <p>Traveling solo is a liberating experience. You have the freedom to explore, to observe, to simply <em>be</em>. With that freedom, you may transform into a child. When you are a kid, you are not afraid to try. You do it because you <em>like</em> it. Today, you are in the cool mountains. Tomorrow, in an unforgiving desert. All guided by impulse. Somewhere in doing so, the <em>adult</em> in you finds happiness.</p>
 <p>Romantic experience though this is <em>not!</em> One must perform acts of <em>deliberate discomfort.</em> Sleeping in car is one such act. Sure, it isn’t as comfortable as your bed but it gets you going and quick. On roadtrips, starting early is as important as staying hydrated. When the rest of the world is finding their toothbrush at eight reels a minute, <em>you</em> must be <em>out there. D</em>isappear before shadows get on the other side!</p>
@@ -159,7 +160,7 @@
 <p>After an average sleep on the edge of the canyon, I recovered from my slumber. Excited by what lies ahead, I sprung my car to life. <em>6:30 am </em>was the time on the clock. Wheels were in motion towards <em>Desert View Watchtower </em>for sunrise.</p>
 <p>The drive to the Watchtower was short but long enough for me to revisit the evening of yesterday. Walking along the rim of the canyon, I had met an old couple. Old man had a map of the canyon in one of his hands and wife’s hand in another. They were patiently waiting for the sunset. We had a brief yet pleasant conversation. When asked if he may suggest a few spots to watch sunrise, he drew out his map and <em>pointed</em> at <em>Hopi, Yaki, Lipan, Navajo and Desert View </em>Points<em>. </em>I thought<em> </em>him using an old school map with locations etched with pencil was pretty cool. After bidding farewell to the couple, I was looking for a quiet spot to watch sunset.</p>
 <p>A renowned research; <em>‘trust me bruh’,</em> recommends avoiding crowd at the <em>Grand Canyon</em>. After a short walk, I was led to a viewpoint where solitude greeted me. It is, however, foolish to think you’ll ever be alone. There were birds around me, chirping back to their nests. Big Elks bellowed in distance. Condors circled over chasm older than all religions. There were shades of orange my eyes could barely comprehend! Like an impatient insect, my finger tapped the shutter. Golden hour and all that!</p>
-<figure class="plate"><div class="mount"><img src="/reads/never-give-up/grand-canyon-sunset.jpg" alt="The Grand Canyon rim in silhouette against an orange sunset, with two small figures standing on top of the cliff." width="1000" height="667" loading="lazy" decoding="async"></div><figcaption>‘Yeah bruh, take it in (from distance).’</figcaption></figure>
+<figure class="plate"><div class="mount"><img src="/stories/never-give-up/grand-canyon-sunset.jpg" alt="The Grand Canyon rim in silhouette against an orange sunset, with two small figures standing on top of the cliff." width="1000" height="667" loading="lazy" decoding="async"></div><figcaption>‘Yeah bruh, take it in (from distance).’</figcaption></figure>
 <p>Satisfied, I remember then trudging in moonlight to my car parked near the <em>Grand Canyon Village</em>. They serve great pizza and fudge there. I drove to <em>Tusayan</em>, a small town near Park’s entrance for some Mexican food instead. Naughty wind blew away my hopes for stargazing that night. Sleeping early was a wise choice made.</p>
 <p>As my car pulled up at the <em>Desert View Watchtower, </em>I marveled at the stupidity of human brain.</p>
 <div class="voices"><p><em>Reminiscing in the past and dreaming a future that is at best, a fantasy.</em></p></div>
@@ -170,7 +171,7 @@
 <p>These were not my thoughts at the time. My mind was occupied with shutter speed, aperture and ISO numbers to take better photos than yesterday. Thoughts spiraled further to plan things <em>after</em> sunrise. Within seconds, I was at the <em>Lake Powell</em>. All in my mind of course!</p>
 <p>Like a chime in cyclone, these thoughts! Thinking about everything else but the living moment! I had to remind myself to be still. It isn’t easy to be so. Every little discomfort amplifies when you are trying to be still. The chilly wind was biting my face as I set my camera up for that <em>perfect time lapse</em>. My body needed warmth and fast. About forty squats and push ups later, wind felt like a sweet kiss from the woman you love. It’s an irony that to be still, I <em>had</em> to move. Birds on their first flight of the day watched my struggles. I don’t think they cared. Little Pikas scurried around with electric agility. I don’t think they cared either. Crows? Nah, they didn’t care at all!</p>
 <div class="voices"><p><em>What do they care about then?</em></p></div>
-<figure class="plate video" data-video="4CZAJUvXvc0" data-title="Sunrise in Grand Canyon"><div class="mount video-frame"><img src="/reads/never-give-up/sunrise-in-grand-canyon.jpg" alt="" width="1100" height="619" loading="lazy" decoding="async"><button type="button" class="video-play"><span class="play" aria-hidden="true"></span><span class="video-label">Play “Sunrise in Grand Canyon”<span class="sr-only"> (YouTube video, plays here)</span></span></button></div><figcaption>Better in person <span class="desc">Video: sunrise light moving across the layered walls of the Grand Canyon, filmed from the South Rim.</span></figcaption></figure>
+<figure class="plate video" data-video="4CZAJUvXvc0" data-title="Sunrise in Grand Canyon"><div class="mount video-frame"><img src="/stories/never-give-up/sunrise-in-grand-canyon.jpg" alt="" width="1100" height="619" loading="lazy" decoding="async"><button type="button" class="video-play"><span class="play" aria-hidden="true"></span><span class="video-label">Play “Sunrise in Grand Canyon”<span class="sr-only"> (YouTube video, plays here)</span></span></button></div><figcaption>Better in person <span class="desc">Video: sunrise light moving across the layered walls of the Grand Canyon, filmed from the South Rim.</span></figcaption></figure>
 <p>After working out at one of the best open air gym, I felt content. There’s no special reward for waking up early except that you win at everything. After a divine sunrise (an every day phenomenon) my car was moving in the direction of <em>Lake Powell. </em>Ahead of me was a two hour drive. I remember starting it with a prayer. <em>Hanuman Chalisa</em> to be precise. Vivid is my memory of feeling invincible on that drive. So much so, I was flying!</p>
 <h2 class="chapter" id="ch-3" tabindex="-1"><span class="chapter-no" aria-hidden="true">III</span><span class="sr-only">Chapter 3: </span><span class="chapter-title">Page</span></h2>
 <p>Town of <em>Page</em> is famous for the <em>Antelope Canyon, Horseshoe Bend</em> and of course, <em>Lake Powell. </em>I had decided to explore the <em>Wahweap Bay</em> area of the lake<em>. </em>Ahead of my schedule I was.<em> </em>I needed to secure water and sun screen. I pulled up at a gas station, picked up the <em>only </em>sunscreen available in that store (odds for this!) and some water. Two liters to be precise. I also filled up gasoline in car. Hey, if you want to get lost in the desert make sure you do so with a full tank and lots of water. I asked the dude manning the station about beaches. He suggested two. I asked him which one’s free?</p>
@@ -184,9 +185,9 @@
 <p>He laid out a <em>Sand Trax Mat</em> underneath the tires and we started to gently move the car out. It did not work. We then started digging the sand out of the way. Days like these you wish you had Pokémon.</p>
 <div class="voices"><p><em>Diglett used Dig and it was super effective!</em></p></div>
 <p>In reality, digging a path out for a sunken sedan is a foolhardy exercise. His wife (bless her soul) went out to get some help. She disappeared and reappeared with a reassuring note that help was on the way. A <em>Red Jeep </em>soon<em> </em>showed up on the spot. Out stepped a lanky, white dude. He was a <em>Marine</em>. He had a toothy grin. He attached a make shift pulley to drag my sedan out of its sandy misery.</p>
-<figure class="plate portrait"><div class="mount"><img src="/reads/never-give-up/red-jeep.jpg" alt="A man in shorts and a cap walks across the sand toward a red Jeep Wrangler parked on a sandy track." width="1179" height="2067" loading="lazy" decoding="async"></div><figcaption>Thank you for your service, Sir!</figcaption></figure>
+<figure class="plate portrait"><div class="mount"><img src="/stories/never-give-up/red-jeep.jpg" alt="A man in shorts and a cap walks across the sand toward a red Jeep Wrangler parked on a sandy track." width="1179" height="2067" loading="lazy" decoding="async"></div><figcaption>Thank you for your service, Sir!</figcaption></figure>
 <p>Its amazing how people show up. One simply has to ask. I had nothing to offer to the man for his assistance but my gratitude. I do not believe in giving money to people who helped me. Instead, I prefer giving them something I have. I offered the man a small token of appreciation. His eyes lit up; his grin widened. What was it? I’d rather keep it a mystery.</p>
-<figure class="plate small"><div class="mount"><img src="/reads/never-give-up/he-was-happy.jpg" alt="Pulp Fiction meme: Vincent looks up from an open briefcase under the words “Vincent!! We happy!!??”" width="562" height="364" loading="lazy" decoding="async"></div><figcaption>He was happy</figcaption></figure>
+<figure class="plate small"><div class="mount"><img src="/stories/never-give-up/he-was-happy.jpg" alt="Pulp Fiction meme: Vincent looks up from an open briefcase under the words “Vincent!! We happy!!??”" width="562" height="364" loading="lazy" decoding="async"></div><figcaption>He was happy</figcaption></figure>
 <p>To the lovely woman and her husband, I offered a liter of Water. Water in the desert is like gold. They insisted I keep it for myself but I wasn’t having any of it. The <em>Marine </em>pointed me to correct route to the beach and bid farewell. I hopped into the car started crawling to the beach. The desert heat had a spell on me. I took another wrong turn and found myself sinking in the sand, again.</p>
 <p><em>This can’t be right,</em> I thought. I had woken up before Sunrise, worked out at the edge of <em>Grand Canyon</em>, drove methodically to reach the town of <em>Page</em>. Even had overcome an adversity early in the day. Yet I find myself in another? <em>This can’t be right!</em></p>
 <div class="voices"><p><em>‘Call the Tow-Truck company. Do it!’</em></p><p><em>‘But I can see literally see the lake!’</em></p><p><em>‘What good is seeing it when you can’t be in it?’</em></p><p><em>‘NO! I’ll find a way!’</em></p><p><em>‘You fool, the Sun is overhead now. Call the tow truck.’</em></p></div>
@@ -195,12 +196,12 @@
 <p>I could see another RV stuck in sand nearby. I wasn’t alone. The heat was hot and the ground was dry. Air around me was full of sounds. Sounds of flies buzzing around me, sounds of scurrying serpentines in the shrubs, sounds of my own despair getting louder every second that passed as I sat in my sedan. Praying that it is lifted out of the sand by <em>Hanuman.</em></p>
 <p>My prayers were answered. The <em>Red Jeep</em> that saved me not too long ago, was sent for me again. The <em>Marine</em> and I laughed heartily. ‘<em>Didn’t I just rescue you?’ </em>he asked with his signature toothy grin. ‘<em>Let’s do it again’</em>, I said without any shame or hesitation. I could sense his girlfriend (half his age) was annoyed. She didn’t seem to like that her man was <em>Superman for free. </em>She asked if I could pay him. I knew the <em>Marine </em>did<em> not</em> want any monetary compensation in return. To keep her cool in this sweltering heat, I offered him $20. He didn’t want to take it but <em>Hell hath no fury like a woman scorned. </em>He had no choice but to accept my token of gratitude. I thanked them for rescuing me, again. Finally, I had my car parked at the beach. I unpacked my <em>SUP</em> (Stand Up Paddle Board) and readied myself for <em>Lake Powell.</em></p>
 <h2 class="chapter" id="ch-5" tabindex="-1"><span class="chapter-no" aria-hidden="true">V</span><span class="sr-only">Chapter 5: </span><span class="chapter-title">Lake Powell</span></h2>
-<figure class="plate"><div class="mount"><img src="/reads/never-give-up/lone-rock-beach.jpg" alt="An inflatable paddle board lying on the sand at Lone Rock Beach beside a dry shrub, with the lake and pale sandstone cliffs beyond under streaks of cloud." width="1300" height="973" loading="lazy" decoding="async"></div><figcaption>It’s a Go!</figcaption></figure>
+<figure class="plate"><div class="mount"><img src="/stories/never-give-up/lone-rock-beach.jpg" alt="An inflatable paddle board lying on the sand at Lone Rock Beach beside a dry shrub, with the lake and pale sandstone cliffs beyond under streaks of cloud." width="1300" height="973" loading="lazy" decoding="async"></div><figcaption>It’s a Go!</figcaption></figure>
 <p>Heat was getting hotter every minute. Water of the lake was cool turquoise. Nature often balances itself like so. Balance <em>is</em> nature. Balance is necessary. Balance is the key to stay afloat when the waves tower around you, boats glide by and you are desperate to seek shelter from the scorching sunlight.</p>
 <p>There was no shade. My shadow had disappeared, only sweat. I was now in the middle of the lake. Sound of waves crushing against the sandstones was comforting yet haunting. <em>The day was not easy yet here I was. </em>Fighting everything. Was this all to prove a point? To whom? Why? Thoughts!</p>
 <div class="voices"><p><em>‘This heat will kill me.’</em></p><p><em>‘Oh shut up! Not today.’</em></p><p><em>‘What if?’</em></p><p><em>‘Bodies float, don’t they?’</em></p><p><em>‘Do you have your I.D. on you? They’ll need it.’</em></p><p><em>‘Did you tell your parents you are here?’</em></p><p><em>‘What if..’</em></p></div>
 <p>Best way to conquer your mind is to just do things. I aimed for the Lone Rock (on which the Beach is aptly named) and started paddling at a steady pace. I had already given away a bottle of water to the lady and now I was left with a mere liter. <em>Surrounded by water yet desperate for it.</em> Such is life! I powered through these thoughts and approached the rock.</p>
-<figure class="plate portrait"><div class="mount"><img src="/reads/never-give-up/lone-rock.jpg" alt="Lone Rock, a tall sandstone butte, rising from green-blue water in front of the nose of the paddle board." width="1179" height="1561" loading="lazy" decoding="async"></div><figcaption>Lone Rock</figcaption></figure>
+<figure class="plate portrait"><div class="mount"><img src="/stories/never-give-up/lone-rock.jpg" alt="Lone Rock, a tall sandstone butte, rising from green-blue water in front of the nose of the paddle board." width="1179" height="1561" loading="lazy" decoding="async"></div><figcaption>Lone Rock</figcaption></figure>
 <p>No shade. Desperate times. It was not funny anymore. The <em>only</em> sunscreen that I had scored at the gas station earlier was a gift from <em>God</em>. My neck, face and limbs were plastered with it. Wind was blowing hot air on my face. I circled around the <em>Lone Rock</em>. There was sparse vegetation nearby. Overgrown shrubbery submerged in the lake that swayed with the breeze. I sought refuge in the greens. There were spiders weaving intricate webs. Sticky, as I remember bludgeoning through some of them. Fat insects that I’d not eat unless I were <em>Timon</em> or <em>Pumba.</em> I was envious of the fishes swimming lazily nearby. What do they know about the heat? They are always underwater!</p>
 <p>Afternoon was past. I was running out of water and energy to stay afloat. I may be infinite in mind but body is limited. Wind had dragged me far from where I had parked. I was now working against the wind to reach ashore. Classic! Giving up was not an option. So started my slow drift to the shoreline. Motorboats were creating wake as high as five feet. <em>There’s always a bigger boat,</em> I thought. I found a little pocket of space by the <em>Lone Rock </em>where a sliver of shadow had appeared. Resting for five minutes, I began my journey back.</p>
 <p>Something floated by — a small tuft of fur at first glance. As it moved closer to look, I realized it was a rat, fighting the same waves as I was. It’s stakes far higher than my own. It was moving its tiny limbs, desperate to stay afloat and alive. It was headed for the <em>Lone Rock.</em> Waves were crushing it underneath and yet it’d float up and try again. It was getting nowhere. Water can be unforgiving. <em>It is life and death at the same time.</em></p>
@@ -220,7 +221,7 @@
 <p>I struck up conversation with the girl at the campsite. Her name was <em>Hayley</em>. I offered her help in setting their freshly destroyed tent. That’s the least I could do. We also had a chat about paddling. She and her friend were going to just chill for the day. Next morning, they were headed to the <em>Antelope Canyon </em>via <em>Lake Powell. </em>A truly scenic route, I might add. She asked me where I had been paddling so far. I don’t remember what I told her. I was just euphoric that despite having my SUP thrown into the lake by a <em>Dust Devil</em>, an angel was bringing it back ashore, saving me the trouble. Another angel stayed with me, to comfort me.</p>
 <p>Soon her friend brought my paddle board ashore. Her name was <em>Ashley</em>. I apologized for the trouble she had to go through to get it back. She and her friend simply smiled and said to me that ‘<em>it was a good practice’. </em>I probed further what she meant by<em> ‘a good practice’</em>?<em>. </em>They were state level swimmers for <em>Arizona. </em>This blew my mind. What were the odds of me putting my paddle board at a campsite of angels who were champions at swimming? <em>God is great!</em></p>
 <p>I had to express my gratitude. I again offered them something that I had.Their eyes lit up. I had a gift every aware human being would love. What it was shall remain a mystery.</p>
-<figure class="plate portrait small"><div class="mount"><img src="/reads/never-give-up/angels-were-happy.jpg" alt="Two-panel Pulp Fiction meme: “Vincent! We happy?” above “Yeah we happy!”" width="432" height="852" loading="lazy" decoding="async"></div><figcaption>Angels were happy and so was I!</figcaption></figure>
+<figure class="plate portrait small"><div class="mount"><img src="/stories/never-give-up/angels-were-happy.jpg" alt="Two-panel Pulp Fiction meme: “Vincent! We happy?” above “Yeah we happy!”" width="432" height="852" loading="lazy" decoding="async"></div><figcaption>Angels were happy and so was I!</figcaption></figure>
 <p>I was smiling on my way back to the car. It was nearly 4 p.m. I had been looked after and how! I had not eaten food all day but had gobbled up experiences that’d keep me satiated for years to come. That kind couple, the <em>Red</em> <em>Jeep</em>, the <em>Rat</em> and the <em>Angels</em> were all sent for me. They saved me in ways I never thought was possible. Every time I neared a breaking point, something clicked. Something that kept me going. Something that took my soul out of the deep dark hole of despair. Something which reminded that one must..</p>
 <p class="finale"><em>Never Give Up!</em></p>
 <svg class="fin" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" filter="url(#ink)"><circle cx="60" cy="60" r="52" stroke-width="3"/><circle cx="60" cy="60" r="33" stroke-width="1.5"/></g><text x="60" y="66" text-anchor="middle" fill="currentColor" font-family="Barlow Condensed, sans-serif" font-weight="600" font-size="17" letter-spacing="4">FIN</text></svg>
@@ -229,9 +230,9 @@
           <h2 id="lakes-title">Lakes in this story</h2>
           <p class="lakes-sub">All three are on Paddling Out, with the day’s paddle score and conditions.</p>
           <ul class="stamps">
-            <li class="stamp-item"><a class="stamp" href="/paddlingout/forecast?id=cottonwood"><img src="/reads/never-give-up/stamp-cottonwood.jpg" alt="" width="520" height="390" loading="lazy" decoding="async"><span class="stamp-name">Cottonwood Lake</span><span class="stamp-place">Colorado</span><span class="stamp-cta">Today’s paddle conditions<span class="sr-only"> for Cottonwood Lake on Paddling Out</span></span></a></li>
-            <li class="stamp-item"><a class="stamp" href="/paddlingout/forecast?id=taylorpark"><img src="/reads/never-give-up/stamp-taylorpark.jpg" alt="" width="520" height="390" loading="lazy" decoding="async"><span class="stamp-name">Taylor Park Reservoir</span><span class="stamp-place">Colorado</span><span class="stamp-cta">Today’s paddle conditions<span class="sr-only"> for Taylor Park Reservoir on Paddling Out</span></span></a></li>
-            <li class="stamp-item"><a class="stamp" href="/paddlingout/forecast?id=powell"><img src="/reads/never-give-up/stamp-powell.jpg" alt="" width="520" height="390" loading="lazy" decoding="async"><span class="stamp-name">Lake Powell</span><span class="stamp-place">Utah and Arizona</span><span class="stamp-cta">Today’s paddle conditions<span class="sr-only"> for Lake Powell on Paddling Out</span></span></a></li>
+            <li class="stamp-item"><a class="stamp" href="/paddlingout/forecast?id=cottonwood"><img src="/stories/never-give-up/stamp-cottonwood.jpg" alt="" width="520" height="390" loading="lazy" decoding="async"><span class="stamp-name">Cottonwood Lake</span><span class="stamp-place">Colorado</span><span class="stamp-cta">Today’s paddle conditions<span class="sr-only"> for Cottonwood Lake on Paddling Out</span></span></a></li>
+            <li class="stamp-item"><a class="stamp" href="/paddlingout/forecast?id=taylorpark"><img src="/stories/never-give-up/stamp-taylorpark.jpg" alt="" width="520" height="390" loading="lazy" decoding="async"><span class="stamp-name">Taylor Park Reservoir</span><span class="stamp-place">Colorado</span><span class="stamp-cta">Today’s paddle conditions<span class="sr-only"> for Taylor Park Reservoir on Paddling Out</span></span></a></li>
+            <li class="stamp-item"><a class="stamp" href="/paddlingout/forecast?id=powell"><img src="/stories/never-give-up/stamp-powell.jpg" alt="" width="520" height="390" loading="lazy" decoding="async"><span class="stamp-name">Lake Powell</span><span class="stamp-place">Utah and Arizona</span><span class="stamp-cta">Today’s paddle conditions<span class="sr-only"> for Lake Powell on Paddling Out</span></span></a></li>
           </ul>
         </section>
         <div class="story-foot">
@@ -241,7 +242,7 @@
       </article>
     </div>
     <div class="chrome" aria-hidden="true">
-      <span class="rh rh-l">Kaayko Reads</span><span class="rh rh-r">Never Give Up</span>
+      <span class="rh rh-l">Kaayko Stories</span><span class="rh rh-r">Never Give Up</span>
       <span class="folio folio-l" id="folio-l"></span><span class="folio folio-r" id="folio-r"></span>
     </div>
     <div class="gutter" aria-hidden="true"></div>
@@ -256,8 +257,8 @@
 
 <p class="sr-only" id="announce" role="status" aria-live="polite"></p>
 
-<script src="/js/reads/ripples.js" defer></script>
-<script src="/js/reads/story.js" defer></script>
+<script src="/js/stories/ripples.js" defer></script>
+<script src="/js/stories/story.js" defer></script>
 <script src="/js/util.js"></script>
   <footer class="site-footer is-light">
     <nav aria-label="Footer">

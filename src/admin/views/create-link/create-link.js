@@ -37,7 +37,7 @@ const DEST_PAGES = [
   { id: 'kaayko_paddling', group: 'kaayko', label: 'Paddling Out', url: 'https://kaayko.com/paddlingout' },
   { id: 'kaayko_paddling_forecast', group: 'kaayko', label: 'Forecast', url: 'https://kaayko.com/paddlingout/forecast' },
   { id: 'kaayko_about', group: 'kaayko', label: 'About', url: 'https://kaayko.com/about' },
-  { id: 'kaayko_reads', group: 'kaayko', label: 'Reads', url: 'https://kaayko.com/reads' },
+  { id: 'kaayko_stories', group: 'kaayko', label: 'Stories', url: 'https://kaayko.com/stories' },
   { id: 'kaayko_testimonials', group: 'kaayko', label: 'Testimonials', url: 'https://kaayko.com/testimonials' },
 
   // Alumni — kaay.school

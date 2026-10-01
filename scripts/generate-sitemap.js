@@ -21,7 +21,8 @@ const routes = [
   // Re-add here (and drop the noindex in src/store.html) only when the storefront
   // serves real, crawlable product content.
   { loc: '/about', source: 'src/about.html', changefreq: 'monthly', priority: '0.8' },
-  { loc: '/reads', source: 'src/reads.html', changefreq: 'weekly', priority: '0.7' },
+  { loc: '/stories', source: 'src/stories.html', changefreq: 'weekly', priority: '0.8' },
+  { loc: '/stories/never-give-up', source: 'src/stories/never-give-up.html', changefreq: 'monthly', priority: '0.8' },
   // /testimonials is out of the sitemap until it actually has testimonials in it.
   // It is marked noindex for the same reason.
   { loc: '/privacy', source: 'src/privacy.html', changefreq: 'yearly', priority: '0.3' },

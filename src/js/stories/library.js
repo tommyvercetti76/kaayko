@@ -1,5 +1,5 @@
 /**
- * Kaayko Reads — the library (/reads).
+ * Kaayko Stories — the library (/stories).
  * Theme, the reader's preferred layout (every chapter and title link opens in it), the
  * Display menu, and the lake behind the page. The pre-paint script in <head> has already
  * applied a remembered theme; this keeps the controls, the shared footer (html.dark-theme)
@@ -8,8 +8,8 @@
 (function () {
   'use strict';
   const root = document.documentElement;
-  const read = (k) => { try { return localStorage.getItem('reads:' + k); } catch (_) { return null; } };
-  const save = (k, v) => { try { localStorage.setItem('reads:' + k, v); } catch (_) { /* private window */ } };
+  const read = (k) => { try { return localStorage.getItem('stories:' + k); } catch (_) { return null; } };
+  const save = (k, v) => { try { localStorage.setItem('stories:' + k, v); } catch (_) { /* private window */ } };
   const osDark = matchMedia('(prefers-color-scheme: dark)');
   const ripples = window.KaaykoRipples ? window.KaaykoRipples.mount(document.getElementById('ripples')) : null;
   const bar = document.getElementById('bar');

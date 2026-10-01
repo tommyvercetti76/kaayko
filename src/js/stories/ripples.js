@@ -1,7 +1,7 @@
 /**
- * Kaayko Reads — still ripple lines traced from a lake's real shoreline.
+ * Kaayko Stories — still ripple lines traced from a lake's real shoreline.
  *
- * The canvas names its lake: <canvas id="ripples" data-lake="/reads/lakes/lake-powell.json">.
+ * The canvas names its lake: <canvas id="ripples" data-lake="/stories/lakes/lake-powell.json">.
  * That file is the lake's shoreline as rings of [x, y, x, y, …], north up, fitted to a
  * unit square (from the USGS National Hydrography Dataset; islands are extra rings).
  *

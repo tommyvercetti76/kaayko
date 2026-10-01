@@ -1,7 +1,7 @@
 /**
- * Kaayko Reads — the story reader. One article, two ways to hold it: Scroll (a single column)
+ * Kaayko Stories — the story reader. One article, two ways to hold it: Scroll (a single column)
  * and Book (the same article cut into a two-page spread by CSS columns, turned by hand).
- * Switching keeps the reader's place. Built to WCAG 2.2 AA with AAA contrast; see css/reads.css.
+ * Switching keeps the reader's place. Built to WCAG 2.2 AA with AAA contrast; see css/stories.css.
  */
 (() => {
   const $ = (s, r = document) => r.querySelector(s);
@@ -11,8 +11,8 @@
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const el = (tag, cls) => { const e = document.createElement(tag); if (cls) e.className = cls; return e; };
   const store = {
-    get(k) { try { return localStorage.getItem('reads:' + k); } catch (_) { return null; } },
-    set(k, v) { try { localStorage.setItem('reads:' + k, v); } catch (_) { /* private window */ } }
+    get(k) { try { return localStorage.getItem('stories:' + k); } catch (_) { return null; } },
+    set(k, v) { try { localStorage.setItem('stories:' + k, v); } catch (_) { /* private window */ } }
   };
   const osReduced = matchMedia('(prefers-reduced-motion: reduce)');
   const hostTheme = root.getAttribute('data-host-theme') || '';
@@ -192,20 +192,31 @@
     return s.join(',');
   }
 
+  // In a book every page is laid out at once, so a photo on page 30 must not wait to be scrolled to.
+  let photosEager = false;
+  function eagerPhotos() {
+    if (photosEager) return;
+    photosEager = true;
+    $$('img', story).forEach((img) => { img.loading = 'eager'; if (img.decode) img.decode().catch(() => { /* still loading */ }); });
+  }
+
   function layoutBook(anchor) {
     cancelFlip();
+    eagerPhotos();
     measureBook();
     B.ready = true;
     setIndex(anchor ? pageOf(anchor) : 0);
     prewarmTurns();
   }
 
-  /* ── page turns: a sheet of paper, folded ────────────────────
+  /* ── page turns: a sheet of paper, bent ──────────────────────
      The turning sheet folds along the perpendicular bisector between its corner's resting place and
-     where that corner is now: under your finger when you drag, along an arc when you tap or press a
-     key. The part past the fold is reflected across it and shows the back of the sheet; where the
-     sheet has lifted, the page beneath shows through, shadowed along the fold. The corner can never
-     pull further from the spine than the paper is wide, so the sheet bends; it does not stretch.
+     where that corner is now: under your finger when you drag, under a thumb when you tap or press a
+     key, and in free fall once either lets go. The part past the fold is reflected across it and
+     shows the back of the sheet. The sheet does not crease: it bends over a cylinder along the fold,
+     so the page beneath shows through a gap, the bend is dark at its silhouette and catches the light
+     along its crown, and the radius loosens as the sheet stands up. The corner can never pull further
+     from the spine than the paper is wide, so the sheet bends; it does not stretch.
      The four pages a turn needs (left, beneath, front, back) are copies of the article laid out once
      per book layout and kept hidden. A turn only moves and clips them; it never re-lays-out text. */
   const FIN_SVG = '<svg viewBox="0 0 120 120" aria-hidden="true"><g fill="none" stroke="currentColor" filter="url(#ink)"><circle cx="60" cy="60" r="52" stroke-width="3"/><circle cx="60" cy="60" r="33" stroke-width="1.5"/></g><text x="60" y="66" text-anchor="middle" fill="currentColor" font-family="Barlow Condensed, sans-serif" font-weight="600" font-size="17" letter-spacing="4">FIN</text></svg>';
@@ -220,11 +231,13 @@
     copy.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'));
     copy.querySelectorAll('iframe').forEach((f) => f.replaceWith(el('div', 'video-hold')));  // never a second player
     copy.querySelectorAll('.here').forEach((n) => n.classList.remove('here', 'fading'));
+    // A copy's photos must be there the moment its page is shown: no lazy loading, no async decode.
+    copy.querySelectorAll('img').forEach((img) => { img.loading = 'eager'; img.decoding = 'sync'; });
     win.append(copy);
-    const rh = el('span', 'rh'), folio = el('span', 'folio'), end = el('div', 'end-mark'), shade = el('div', 'fold-shade');
+    const rh = el('span', 'rh'), folio = el('span', 'folio'), end = el('div', 'end-mark'), shade = el('div', 'fold-shade'), light = el('div', 'fold-shade fold-light');
     end.innerHTML = FIN_SVG;
-    face.append(el('div', 'face-board'), win, rh, folio, end, shade);
-    Object.assign(face, { _copy: copy, _win: win, _rh: rh, _folio: folio, _end: end, _shade: shade });
+    face.append(el('div', 'face-board'), win, rh, folio, end, shade, light);
+    Object.assign(face, { _copy: copy, _win: win, _rh: rh, _folio: folio, _end: end, _shade: shade, _light: light });
     return face;
   }
 
@@ -258,7 +271,7 @@
     face._rh.style.visibility = face._folio.style.visibility = head ? '' : 'hidden';
     if (head) {
       const leftPage = B.spread && n % 2 === 0;
-      face._rh.textContent = leftPage ? 'Kaayko Reads' : 'Never Give Up';
+      face._rh.textContent = leftPage ? 'Kaayko Stories' : 'Never Give Up';
       face._rh.style.textAlign = leftPage || !B.spread ? 'left' : 'right';
       face._folio.textContent = String(n + 1);
     }
@@ -308,6 +321,7 @@
       front.style.clipPath = 'none';
       back.style.visibility = 'hidden';
       [under, front, back].forEach((f) => { f._shade.style.opacity = '0'; });
+      back._light.style.opacity = '0';
       return;
     }
     back.style.visibility = '';
@@ -315,24 +329,39 @@
     const M = { x: (t.c0.x + P.x) / 2, y: (t.c0.y + P.y) / 2 };   // a point on the fold line
     const md = M.x * d.x + M.y * d.y;
     const side = (X) => X.x * d.x + X.y * d.y - md;               // > 0: flat side, < 0: folded over
+    // The bend: a cylinder of radius R along the fold. Loose while the sheet stands, tight as it lies
+    // down. The sheet leaves the page 0.57R before the fold line and lands 2.57R past it, so the page
+    // beneath shows through a gap of g along the fold.
+    const p = Math.min(1, len / (2 * W)), lift = Math.sin(Math.PI * p);
+    const R = 3 + clamp(W * 0.085, 12, 52) * lift, g = 0.57 * R;
     const sheet = [{ x: 0, y: 0 }, { x: W, y: 0 }, { x: W, y: H }, { x: 0, y: H }];
-    front.style.clipPath = polygon(clipPoly(sheet, side));
+    front.style.clipPath = polygon(clipPoly(sheet, (X) => side(X) - g));
     // The back of the sheet: its page, upright, carried by (reflection across the fold) ∘ (mirror
     // across the sheet's middle). Two reflections make a rotation, so its text is never mirrored.
     const r11 = 1 - 2 * d.x * d.x, r12 = -2 * d.x * d.y, r22 = 1 - 2 * d.y * d.y;
     back.style.transform = `matrix(${(-r11).toFixed(5)},${(-r12).toFixed(5)},${r12.toFixed(5)},${r22.toFixed(5)},${(r11 * W + 2 * md * d.x).toFixed(2)},${(r12 * W + 2 * md * d.y).toFixed(2)})`;
-    back.style.clipPath = polygon(clipPoly(sheet, (X) => -side(X)).map((X) => ({ x: W - X.x, y: X.y })));
-    // Shading follows how far the corner has travelled and how high the sheet is lifted.
-    const p = Math.min(1, len / (2 * W)), lift = Math.sin(Math.PI * p);
-    shade(front._shade, M, d, 18 + 26 * lift, 0.07 + 0.16 * lift);
-    shade(under._shade, M, { x: -d.x, y: -d.y }, clamp(len * 0.3, 10, 80), 0.18 + 0.22 * (1 - p));
-    shade(back._shade, { x: W - M.x, y: M.y }, { x: d.x, y: -d.y }, clamp(len * 0.45, 24, W * 0.6), 0.08 + 0.2 * lift);
+    back.style.clipPath = polygon(clipPoly(sheet, (X) => -side(X) - g).map((X) => ({ x: W - X.x, y: X.y })));
+    // Light from above. The bend is dark at its silhouette and bright along its crown (1.57R in),
+    // the sheet throws a shadow back across the page beneath, and a soft crease shadow lies on
+    // what stays flat.
+    const Mb = { x: W - M.x, y: M.y }, nb = { x: d.x, y: -d.y };   // the fold, seen from the back
+    shade(back._shade, { x: Mb.x + nb.x * g, y: Mb.y + nb.y * g }, nb, R * 1.1, 0.12 + 0.26 * lift);
+    shade(back._light, { x: Mb.x + nb.x * R * 1.15, y: Mb.y + nb.y * R * 1.15 }, nb, R * 0.9, 0.08 + 0.22 * lift);
+    const Mg = { x: M.x + d.x * g, y: M.y + d.y * g };
+    shade(under._shade, Mg, { x: -d.x, y: -d.y }, g + clamp(len * 0.3, 10, 80), 0.16 + 0.22 * (1 - p));
+    shade(front._shade, Mg, d, 14 + 24 * lift, 0.06 + 0.14 * lift);
   }
 
-  // A tap or a key lifts the corner and carries it over on an arc, inside the paper's reach.
-  function arcPoint(t, k) {
-    const W = B.pw, H = B.ph, lift = Math.min(H * 0.3, W * 0.5), up = t.y0 === 0 ? 1 : -1;
-    return { x: W * Math.cos(Math.PI * k), y: t.y0 + up * lift * Math.sin(Math.PI * k) };
+  /* The sheet in flight. φ is its angle from its resting side (0 = flat on the right, π = flat on the
+     left); the corner projects to x = W·cos φ, lifted A·sin φ toward the page's middle, which is what
+     makes the fold diagonal. Gravity tips the sheet toward whichever side it leans (torque ∝ cos φ),
+     the air damps it, the hand that let go keeps a light hold until it is past the vertical, and the
+     lift relaxes as it falls, so the fold straightens the way a dropped page flattens. */
+  const PHYS = { g: 1.05e-4, drag: 2.6e-3, hand: 2.4e-5, relax: 320 };
+  const pos = (t, phi, A) => ({ x: B.pw * Math.cos(phi), y: t.y0 + (t.y0 === 0 ? 1 : -1) * A * Math.sin(phi) });
+  function angleOf(t, P) {
+    const phi = Math.acos(clamp(P.x / B.pw, -1, 1)), sn = Math.sin(phi);
+    return { phi, A: sn > 0.05 ? ((P.y - t.y0) * (t.y0 === 0 ? 1 : -1)) / sn : 0 };
   }
 
   function startTurn(dir, y0) {
@@ -357,27 +386,42 @@
     return t;
   }
 
-  const easeInOut = (k) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
-  const easeOut = (k) => 1 - Math.pow(1 - k, 3);
-
-  // Carry the corner to the left (the sheet lies on the left page) or back to the right.
-  function settle(t, toLeft, fromDrag) {
-    const from = { ...t.P }, to = toLeft ? t.e : t.c0;
-    const dist = Math.hypot(to.x - from.x, to.y - from.y);
-    const dur = !animate() ? 0 : fromDrag ? 200 + 360 * (dist / (2 * B.pw)) : (B.spread ? 900 : 700);
-    const start = performance.now();
+  // Let go: the sheet falls to the left page (toLeft) or back to the right, from where it is,
+  // with the velocity v (px/ms) it was given.
+  function settle(t, toLeft, v = { x: 0, y: 0 }) {
+    if (!animate()) { finish(t, toLeft); return; }
+    const W = B.pw, phiT = toLeft ? Math.PI : 0;
+    let { phi, A } = angleOf(t, t.P);
+    let omega = clamp(-v.x / (W * Math.max(0.05, Math.sin(phi))), -0.03, 0.03);   // dx = −W·sin φ·dφ
+    let last = performance.now();
     const tick = (now) => {
       if (B.flip !== t) return;
-      const k = dur ? clamp((now - start) / dur, 0, 1) : 1;
-      if (fromDrag) { const q = easeOut(k); draw(t, { x: from.x + (to.x - from.x) * q, y: from.y + (to.y - from.y) * q }); }
-      else { const q = easeInOut(k); draw(t, arcPoint(t, toLeft ? q : 1 - q)); }
-      if (k < 1) { requestAnimationFrame(tick); return; }
-      const committed = t.dir > 0 ? toLeft : !toLeft;
-      B.flip = null;
-      setIndex(committed ? t.target : t.from, { say: committed });  // the real page lands first, then the copy goes
-      Turn.layer.classList.remove('on');
+      let dt = Math.min(48, now - last);
+      last = now;
+      while (dt > 0) {
+        const h = Math.min(6, dt);
+        dt -= h;
+        const notOver = (phi < Math.PI / 2) === toLeft;          // still on the wrong side of vertical
+        const alpha = -PHYS.g * Math.cos(phi) - PHYS.drag * omega + PHYS.hand * (phiT - phi) * (notOver ? 2 : 1);
+        omega += alpha * h;
+        phi = clamp(phi + omega * h, 0, Math.PI);
+        if (phi === 0 || phi === Math.PI) omega = 0;             // the page: the sheet lies down
+        A -= (A / PHYS.relax) * h;
+      }
+      draw(t, pos(t, phi, A));
+      if (Math.abs(phi - phiT) < 1e-3 && Math.abs(omega) < 1e-4) finish(t, toLeft);
+      else requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
+  }
+
+  function finish(t, toLeft) {
+    const committed = t.dir > 0 ? toLeft : !toLeft;
+    draw(t, toLeft ? t.e : t.c0);
+    B.flip = null;
+    setIndex(committed ? t.target : t.from, { say: committed });  // the real page lands under the copy
+    // The copy stays two frames more, so the real page has painted before it goes.
+    requestAnimationFrame(() => requestAnimationFrame(() => { if (!B.flip) Turn.layer.classList.remove('on'); }));
   }
 
   function cancelFlip() {
@@ -388,13 +432,28 @@
     setIndex(t.from);
   }
 
+  // A tap or a key: a thumb lifts the bottom corner, carries the sheet past the vertical, and lets go.
   function turn(dir) {
     if (state.layout !== 'book' || B.flip) return;
     const target = B.idx + step() * dir;
     if (target < 0 || target > lastIdx()) return;
     if (!animate()) { setIndex(target, { say: true }); return; }
-    const t = startTurn(dir, B.ph);  // a tap lifts the bottom corner, the way a thumb does
-    if (t) settle(t, dir > 0, false);
+    const t = startTurn(dir, B.ph);
+    if (!t) return;
+    const W = B.pw, Amax = Math.min(B.ph * 0.3, W * 0.5), dur = B.spread ? 400 : 340;
+    const phi0 = dir > 0 ? 0 : Math.PI, span = (dir > 0 ? 1 : -1) * 0.62 * Math.PI;
+    const start = performance.now();
+    let prev = { phi: phi0, now: start };
+    const push = (now) => {
+      if (B.flip !== t) return;
+      const k = clamp((now - start) / dur, 0, 1), e = 0.4 * k + 0.6 * k * k;   // the thumb speeds up, then lets go
+      const phi = phi0 + span * e, A = Amax * Math.sin((Math.PI * k) / 2);
+      draw(t, pos(t, phi, A));
+      if (k < 1) { prev = { phi, now }; requestAnimationFrame(push); return; }
+      const omega = (phi - prev.phi) / Math.max(1, now - prev.now);
+      settle(t, dir > 0, { x: -omega * W * Math.sin(phi), y: 0 });
+    };
+    requestAnimationFrame(push);
   }
 
   $('#prev').addEventListener('click', () => turn(-1));
@@ -453,7 +512,7 @@
     if (!d.t) { if (!cancelled) turn(d.dir); return; }
     const x = d.t.P.x, W = B.pw;
     const done = !cancelled && (d.dir > 0 ? (x < W * 0.35 || d.v < -0.5) : (x > -W * 0.35 || d.v > 0.5));
-    settle(d.t, d.dir > 0 ? done : !done, true);
+    settle(d.t, d.dir > 0 ? done : !done, { x: cancelled ? 0 : d.v, y: 0 });
   }
   reader.addEventListener('pointerup', (e) => endDrag(e, false));
   reader.addEventListener('pointercancel', (e) => endDrag(e, true));
@@ -461,7 +520,7 @@
   // If the reader's own text settings reflow the pages (zoom, text spacing), keep the count honest.
   setInterval(() => {
     if (state.layout !== 'book' || !B.ready || B.flip) return;
-    if (story.scrollWidth !== B.sw) { const a = currentAnchor(); countPages(); setIndex(pageOf(a)); }
+    if (story.scrollWidth !== B.sw) { const a = currentAnchor(); countPages(); setIndex(pageOf(a)); prewarmTurns(); }
   }, 1200);
 
   /* ── chapters: the Contents menu, and #ch-N links from the library ── */
@@ -588,5 +647,5 @@
     else onScroll();
     bootChapter();
   });
-  $$('img', story).forEach((img) => { if (!img.complete) img.addEventListener('load', () => { if (state.layout === 'book' && !B.flip) { countPages(); setIndex(B.idx); } }, { once: true }); });
+  $$('img', story).forEach((img) => { if (!img.complete) img.addEventListener('load', () => { if (state.layout === 'book' && !B.flip) { countPages(); setIndex(B.idx); prewarmTurns(); } }, { once: true }); });
 })();

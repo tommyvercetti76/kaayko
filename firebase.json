@@ -346,6 +346,31 @@
       ],
       "redirects": [
         {
+          "source": "/reads",
+          "destination": "/stories",
+          "type": 301
+        },
+        {
+          "source": "/reads/:rest*",
+          "destination": "/stories/:rest",
+          "type": 301
+        },
+        {
+          "source": "/css/reads.css",
+          "destination": "/css/stories.css",
+          "type": 301
+        },
+        {
+          "source": "/css/reads-fonts.css",
+          "destination": "/css/stories-fonts.css",
+          "type": 301
+        },
+        {
+          "source": "/js/reads/:rest*",
+          "destination": "/js/stories/:rest",
+          "type": 301
+        },
+        {
           "source": "/admin/login",
           "destination": "/kortex/signin",
           "type": 301

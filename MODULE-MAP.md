@@ -54,19 +54,19 @@
 | `/` | `kaayko/src/index.html` (split Kaayko landing: Paddling Out / Forge / Store, then Store access layer) |
 | `/paddlingout` | `kaayko/src/paddlingout.html` |
 | `/about` | `kaayko/src/about.html` |
-| `/reads` | `kaayko/src/reads.html` → `js/reads/library.js` (the Library) |
-| `/reads/never-give-up` | `kaayko/src/reads/never-give-up.html` → `js/reads/story.js` (Scroll/Book reader) |
+| `/stories` | `kaayko/src/stories.html` → `js/stories/library.js` (the Library) |
+| `/stories/never-give-up` | `kaayko/src/stories/never-give-up.html` → `js/stories/story.js` (Scroll/Book reader) |
 | `/testimonials` | `kaayko/src/testimonials.html` |
 | `/privacy` | `kaayko/src/privacy.html` |
 | `/valentine` | `kaayko/src/valentine.html` (seasonal campaign) |
 | `/redirect` | `kaayko/src/redirect.html` (spinner UI for smart link flow) |
 | `/404` | `kaayko/src/404.html` |
 
-**Kaayko Reads (static, no API):**
-- `kaayko/src/css/reads.css` + `css/reads-fonts.css` — the Album design (tokens measured to 7:1 in both themes); fonts self-hosted in `src/fonts/reads/` (OFL)
-- `kaayko/src/js/reads/story.js` — the reader: Scroll layout, or Book (the same article paginated by CSS columns), switching keeps the reader's place. Page turns are a paper fold: the sheet folds on the perpendicular bisector of its corner's rest point and the pointer (or an arc for taps/keys), the part past the fold is reflected to show the sheet's back; four page copies are laid out once per layout (`.turn-layer`, hidden) and a turn only changes their clip-path/transform
-- `kaayko/src/js/reads/ripples.js` — still ripple lines traced from a lake's real shoreline (`src/reads/lakes/<lake>.json`, USGS NHD), via a distance transform
-- `kaayko/src/js/reads/library.js` — the /reads Library (theme, preferred layout applied to every chapter link, ripples)
+**Kaayko Stories (static, no API):**
+- `kaayko/src/css/stories.css` + `css/stories-fonts.css` — the Album design (tokens measured to 7:1 in both themes); fonts self-hosted in `src/fonts/stories/` (OFL)
+- `kaayko/src/js/stories/story.js` — the reader: Scroll layout, or Book (the same article paginated by CSS columns), switching keeps the reader's place. Page turns are a paper fold: the sheet folds on the perpendicular bisector of its corner's rest point and the pointer (or an arc for taps/keys), the part past the fold is reflected to show the sheet's back; four page copies are laid out once per layout (`.turn-layer`, hidden) and a turn only changes their clip-path/transform. Page turns: four pooled copies of the article (left, beneath, front, back), their photos eager and decoded synchronously; the sheet bends over a cylinder along the fold (a gap of 0.57R shows the page beneath, shaded silhouette, lit crown); drags follow the finger, releases and taps run on gravity + air drag + a light hand; the copies stay two frames after a landing so the real page has painted. The old `/reads` paths 301 to `/stories` (firebase.json).
+- `kaayko/src/js/stories/ripples.js` — still ripple lines traced from a lake's real shoreline (`src/stories/lakes/<lake>.json`, USGS NHD), via a distance transform
+- `kaayko/src/js/stories/library.js` — the /stories Library (theme, preferred layout applied to every chapter link, ripples)
 - Chapters: `<h2 class="chapter" id="ch-N">` in the story; the story's Contents menu and the Library's table of contents link to them. In Book layout each chapter opens a fresh page
 - Video: a still until played, then the YouTube privacy-mode player in the same frame (`www.youtube-nocookie.com`, allowed in the hosting CSP frame-src)
 

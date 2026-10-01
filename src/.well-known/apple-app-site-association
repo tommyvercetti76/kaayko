@@ -31,8 +31,8 @@
             "comment": "Store campaigns"
           },
           {
-            "/": "/reads/*",
-            "comment": "Blog articles (future)"
+            "/": "/stories/*",
+            "comment": "Stories"
           },
           {
             "/": "/qr/*/*",

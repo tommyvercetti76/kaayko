@@ -5,7 +5,7 @@
  * `link-site/` is the public folder of the `kaay-link` Firebase Hosting site.
  * It is deliberately NOT `src/`: every file under the public folder is served
  * at its own path, and on kaay.link a path is a link, so a page like
- * src/reads.html would shadow the link named "reads". The folder therefore
+ * src/stories.html would shadow the link named "reads". The folder therefore
  * holds only index.html, robots.txt and the shared Kortex scripts and images
  * copied from src/ by this script. The copies are gitignored; run this before
  * deploying (deploy-hosting-safe.sh does).

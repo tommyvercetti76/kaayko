@@ -94,7 +94,7 @@ html.dark-theme .store-v2 {
   --v2-new-fg:        #0a1a10;
 }
 
-/* ══ Legacy names (header.css, storestyle.css, reads.html) ═════════════════
+/* ══ Legacy names (header.css, storestyle.css, stories.html) ═════════════════
    Moved here unchanged from the :root blocks those two files used to carry.
    They pre-date the store palette above and describe the old header/footer
    chrome; migrate rules to the canonical names and delete these. */

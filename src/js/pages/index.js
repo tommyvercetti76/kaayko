@@ -1,5 +1,5 @@
 /**
- * pages/index.js — the kaayko.com landing page: three panels, one seam engine,
+ * pages/index.js — the kaayko.com landing page: five panels, one seam engine,
  * the scramble, the cursor glow, and the store-access modal hand-off.
  * Moved out of index.html on 12 Sep 2026 unchanged. Reads the KaaykoStoreAccess
  * and KaaykoFeatures globals published by the two classic scripts before it.
@@ -27,7 +27,7 @@ const modalIsOpen = () => KaaykoStoreAccess.isOpen();
 
 // ── N-panel seam engine ───────────────────────────────────────────────
 // Each panel has flex weight 1; an expanded panel gets PANEL_EXPAND_WEIGHT.
-// Seam positions are derived mathematically so N panels (up to 4) always
+// Seam positions are derived mathematically so N panels (up to 5) always
 // produce symmetric, proportional splits regardless of which panel opens.
 // Weight 2 against 1 and 1 gives the highlighted section half the axis
 // and a quarter to each of the others. Keep in sync with .choice--wide.
