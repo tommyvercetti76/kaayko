@@ -129,23 +129,23 @@
 
   function measureBook() {
     const availW = innerWidth - 32;
-    const availH = innerHeight - barH() - pagerH() - 28;
+    const availH = innerHeight - barH() - pagerH() - 16;
     B.spread = availW >= 780;
     let pw = B.spread ? (availW - 16) / 2 : availW;
     let ph = availH;
     pw = Math.min(pw, 600, ph * 0.76);
-    ph = Math.min(ph, pw * 1.42);
+    ph = Math.min(ph, pw * (B.spread ? 1.42 : 1.85));   // a phone's page may be tall; a spread keeps a book's shape
     pw = Math.floor(pw); ph = Math.floor(ph);
     const padx = Math.round(clamp(pw * 0.1, 20, 58));
-    const padt = Math.round(clamp(ph * 0.085, 36, 62));
-    const padb = Math.round(clamp(ph * 0.085, 40, 62));
+    const padt = Math.round(clamp(ph * 0.07, 30, 56));
+    const padb = Math.round(clamp(ph * 0.07, 34, 56));
     Object.assign(B, { pw, ph, padx, padt, padb, iw: pw - padx * 2, ih: ph - padt - padb });
     const bw = B.spread ? pw * 2 : pw;
     const vars = {
       '--pw': pw, '--bh': ph, '--bw': bw, '--iw': B.iw, '--ih': B.ih, '--padx': padx, '--padt': padt, '--padb': padb,
       '--fs': clamp(B.iw / 25, 15, 19),
       '--bx': Math.round((innerWidth - bw) / 2),
-      '--by': Math.round(barH() + Math.max(12, (innerHeight - barH() - pagerH() - ph) / 2))
+      '--by': Math.round(barH() + Math.max(8, (innerHeight - barH() - pagerH() - ph) / 2))
     };
     for (const [k, v] of Object.entries(vars)) root.style.setProperty(k, `${v}px`);
     reader.classList.toggle('single', !B.spread);
@@ -184,6 +184,7 @@
     $('.board-r').style.boxShadow = stack(Math.round((1 - prog) * 5), 1);
     if (say) announce(label);
     pauseHiddenVideo();
+    pointCompass();
   }
   function stack(n, sign) {
     const s = [];
@@ -200,13 +201,13 @@
     $$('img', story).forEach((img) => { img.loading = 'eager'; if (img.decode) img.decode().catch(() => { /* still loading */ }); });
   }
 
-  function layoutBook(anchor) {
+  function layoutBook(anchor, warmAfter = 250) {
     cancelFlip();
     eagerPhotos();
     measureBook();
     B.ready = true;
     setIndex(anchor ? pageOf(anchor) : 0);
-    prewarmTurns();
+    prewarmTurns(warmAfter);
   }
 
   /* ── page turns: a sheet of paper, bent ──────────────────────
@@ -256,9 +257,9 @@
   }
 
   // Lay the copies out while the reader is still on the first spread, not on the first turn.
-  function prewarmTurns() {
+  function prewarmTurns(after = 250) {
     clearTimeout(prewarmTimer);
-    prewarmTimer = setTimeout(() => { if (state.layout === 'book' && B.ready && !B.flip) ensureTurnLayer(); }, 250);
+    prewarmTimer = setTimeout(() => { if (state.layout === 'book' && B.ready && !B.flip) ensureTurnLayer(); }, after);
   }
 
   // Page n on a face. Out of range is plain paper; one past the end is the closing mark.
@@ -481,8 +482,11 @@
   // Drag a page by its edge: the corner on that side (top or bottom half) follows the pointer
   // exactly. Let go past two thirds of the way, or with a flick, and it lands; otherwise it falls back.
   reader.addEventListener('pointerdown', (e) => {
-    if (state.layout !== 'book' || B.flip || e.button !== 0 || e.target.closest('a, button')) return;
-    const r = reader.getBoundingClientRect(), x = e.clientX - r.left;
+    if (state.layout !== 'book' || B.flip || e.button !== 0 || e.target.closest('a, button, mark')) return;
+    const r = reader.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+    // Inside the text, a press selects; a page is taken by its edge or its margin.
+    const onEdge = Math.min(x % B.pw, B.pw - (x % B.pw)) < 56 || y < B.padt || y > B.ph - B.padb;
+    if (e.target.closest('.story') && !onEdge) return;
     const dir = B.spread ? (x > B.pw ? 1 : -1) : (x > r.width / 2 ? 1 : -1);
     B.drag = { id: e.pointerId, dir, x0: e.clientX, y0: e.clientY, cy: e.clientY - r.top, t: null, rest: null, lastX: e.clientX, lastT: performance.now(), v: 0 };
   });
@@ -573,11 +577,12 @@
   }
 
   /* ── switching layouts, keeping the reader's place ────── */
-  function applyLayout(layout, anchor) {
+  function applyLayout(layout, anchor, { animating = false } = {}) {
     state.layout = layout;
     root.dataset.layout = layout;
+    placeCompass(layout);
     if (layout === 'book') {
-      layoutBook(anchor);
+      layoutBook(anchor, animating ? 700 : 250);
     } else {
       cancelFlip();
       B.ready = false;
@@ -585,7 +590,9 @@
       $$('.board').forEach((b) => { b.style.boxShadow = ''; });
       if (anchor) window.scrollTo(0, Math.max(0, anchor.getBoundingClientRect().top + scrollY - barH() - 20));
       onScroll();
+      pointCompass();
     }
+    if (Ripples.avoid) setTimeout(Ripples.avoid, 50);
   }
 
   function setLayout(layout, { user = false } = {}) {
@@ -599,13 +606,14 @@
       if (u.hash === '#book' || u.hash === '#scroll') u.hash = '';
       history.replaceState(null, '', u);
     } catch (_) { /* sandboxed */ }
+    const vt = user && animate() && !!document.startViewTransition;
     const run = () => {
-      applyLayout(layout, anchor);
+      applyLayout(layout, anchor, { animating: vt });
       syncControls();
       markHere(anchor);
       announce(layout === 'book' ? `Book layout. ${$('#pager-label').textContent}.` : 'Scroll layout.');
     };
-    if (user && animate() && document.startViewTransition) document.startViewTransition(run);
+    if (vt) document.startViewTransition(run);
     else run();
   }
   $$('input[name="layout"]').forEach((r) => r.addEventListener('change', () => setLayout(r.value, { user: true })));
@@ -637,8 +645,177 @@
   });
   osReduced.addEventListener('change', syncControls);
 
+  /* ── the compass: from wherever you are reading, which way is the place? ──
+     Each part names its place (data-geo on its heading). The needle points from the compass's own
+     spot on the screen to that place on the chart beneath, so it swings as the story moves on. */
+  const compass = $('#compass'), needle = compass && compass.querySelector('.needle'), compassLabel = compass && compass.querySelector('.compass-label');
+  const placed = $$('.chapter[data-geo]', story);
+  function placeCompass(layout) {
+    if (!compass) return;
+    if (layout === 'book') $('#pager').prepend(compass); else document.body.append(compass);
+  }
+  function currentPlace() {
+    let h = null;
+    if (state.layout === 'book') { if (!B.ready) return null; for (const c of placed) if (pageOf(c) <= B.idx + step() - 1) h = c; }
+    else { const line = innerHeight * 0.45; for (const c of placed) if (c.getBoundingClientRect().top <= line) h = c; }
+    return h;
+  }
+  function pointCompass() {
+    if (!compass || !Ripples.toPx) return;
+    const h = currentPlace();
+    const [lon, lat] = h ? h.dataset.geo.split(',').map(Number) : [NaN, NaN];
+    const px = Number.isFinite(lon) ? Ripples.toPx(lon, lat) : null;
+    const r = compass.querySelector('svg').getBoundingClientRect();
+    const deg = px && r.width ? (Math.atan2(px[1] - (r.top + r.height / 2), px[0] - (r.left + r.width / 2)) * 180) / Math.PI + 90 : 0;
+    needle.style.transform = `rotate(${deg.toFixed(1)}deg)`;
+    const name = h ? (h.dataset.place || h.querySelector('.chapter-title').textContent.trim()) : 'North';
+    compassLabel.textContent = name;
+    compass.setAttribute('aria-label', h ? `Compass: ${name} lies that way` : 'Compass: north is up');
+  }
+  addEventListener('kaayko:chart', pointCompass);
+  let compassQueued = false;
+  addEventListener('scroll', () => {
+    if (state.layout === 'book' || compassQueued) return;
+    compassQueued = true;
+    requestAnimationFrame(() => { compassQueued = false; pointCompass(); });
+  }, { passive: true });
+
+  /* ── highlights: the reader's own pencil, kept in this browser ──
+     A highlight is stored as spans of (block, from, to) over the article's text, so it survives a
+     reload and lands on the same words in either layout. The marks live in the article itself, so
+     the book's copies carry them too. */
+  const HL = { key: 'hl:' + location.pathname.split('/').pop(), items: [], mode: '', current: null,
+    bar: $('#hl-bar'), add: $('#hl-add'), del: $('#hl-del'), list: $('#hl-list'), empty: $('#hl-empty') };
+  const hlBlocks = () => $$('p, h2, figcaption', $('.story-body')).filter((b) => !b.closest('.lakes, .story-foot'));
+  const textNodes = (block) => { const out = [], w = document.createTreeWalker(block, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) out.push(n); return out; };
+  function pointOffset(block, node, off) {
+    const r = document.createRange();
+    r.setStart(block, 0);
+    try { r.setEnd(node, off); } catch (_) { return 0; }
+    return r.toString().length;
+  }
+  function captureSelection() {
+    const sel = getSelection();
+    if (!sel || sel.isCollapsed || !sel.rangeCount) return null;
+    const range = sel.getRangeAt(0);
+    if (!story.contains(range.commonAncestorContainer)) return null;
+    const blocks = hlBlocks();
+    const hit = blocks.map((b, i) => ({ b, i })).filter(({ b }) => range.intersectsNode(b));
+    if (!hit.length) return null;
+    const spans = hit.map(({ b, i }, k) => {
+      const from = k === 0 ? pointOffset(b, range.startContainer, range.startOffset) : 0;
+      const to = k === hit.length - 1 ? pointOffset(b, range.endContainer, range.endOffset) : b.textContent.length;
+      return [i, Math.max(0, from), Math.min(b.textContent.length, to)];
+    }).filter(([, from, to]) => to > from);
+    if (!spans.length) return null;
+    return { id: Date.now().toString(36), spans, text: range.toString().replace(/\s+/g, ' ').trim().slice(0, 140) };
+  }
+  function paint(item) {
+    const blocks = hlBlocks();
+    for (const [bi, from, to] of item.spans) {
+      const b = blocks[bi];
+      if (!b) continue;
+      let at = 0;
+      for (const t of textNodes(b)) {
+        const len = t.data.length, a = Math.max(from, at), z = Math.min(to, at + len);
+        if (z > a) {
+          let node = t;
+          if (a > at) node = node.splitText(a - at);
+          if (z < at + len) node.splitText(z - a);
+          const m = el('mark', 'hl');
+          m.dataset.hl = item.id;
+          node.replaceWith(m);
+          m.append(node);
+        }
+        at += len;
+      }
+    }
+  }
+  function unpaint(id) {
+    $$(`mark.hl[data-hl="${id}"]`, story).forEach((m) => m.replaceWith(...m.childNodes));
+    story.normalize();
+  }
+  const saveHL = () => store.set(HL.key, JSON.stringify(HL.items));
+  function copiesStale() { Turn.key = ''; if (state.layout === 'book') { countPages(); setIndex(B.idx); prewarmTurns(60); } }
+  function renderHL() {
+    if (!HL.list) return;
+    HL.list.replaceChildren(...HL.items.map((it) => {
+      const li = el('li'), jump = el('button', 'hl-jump'), del = el('button', 'hl-del');
+      jump.type = 'button'; jump.textContent = `“${it.text}”`;
+      jump.addEventListener('click', () => jumpToHL(it));
+      del.type = 'button'; del.setAttribute('aria-label', `Remove the highlight “${it.text.slice(0, 40)}”`); del.textContent = '×';
+      del.addEventListener('click', () => removeHL(it.id));
+      li.append(jump, del);
+      return li;
+    }));
+    HL.empty.hidden = HL.items.length > 0;
+  }
+  function jumpToHL(it) {
+    const m = story.querySelector(`mark.hl[data-hl="${it.id}"]`);
+    if (!m) return;
+    contents.open = false;
+    if (state.layout === 'book') { cancelFlip(); setIndex(pageOf(m), { say: true }); }
+    else m.scrollIntoView({ block: 'center', behavior: animate() ? 'smooth' : 'auto' });
+  }
+  function removeHL(id) {
+    unpaint(id);
+    HL.items = HL.items.filter((it) => it.id !== id);
+    saveHL(); renderHL(); copiesStale();
+    announce('Highlight removed.');
+  }
+  function hideBar() { HL.bar.hidden = true; HL.mode = ''; }
+  function showBar(rect, mode) {
+    HL.mode = mode;
+    HL.add.hidden = mode !== 'add';
+    HL.del.hidden = mode !== 'del';
+    HL.bar.hidden = false;
+    const w = HL.bar.offsetWidth, h = HL.bar.offsetHeight;
+    let top = rect.top - h - 10;
+    if (top < barH() + 8) top = rect.bottom + 10;
+    HL.bar.style.left = `${clamp(rect.left + rect.width / 2 - w / 2, 8, innerWidth - w - 8).toFixed(0)}px`;
+    HL.bar.style.top = `${clamp(top, 8, innerHeight - h - 8).toFixed(0)}px`;
+  }
+  let selTimer = 0;
+  document.addEventListener('selectionchange', () => {
+    clearTimeout(selTimer);
+    selTimer = setTimeout(() => {
+      const sel = getSelection();
+      const live = sel && !sel.isCollapsed && sel.rangeCount && story.contains(sel.getRangeAt(0).commonAncestorContainer);
+      if (live) showBar(sel.getRangeAt(0).getBoundingClientRect(), 'add');
+      else if (HL.mode === 'add') hideBar();
+    }, 160);
+  });
+  story.addEventListener('click', (e) => {
+    const m = e.target.closest('mark.hl');
+    if (!m) return;
+    const sel = getSelection();
+    if (sel && !sel.isCollapsed) return;
+    HL.current = m.dataset.hl;
+    showBar(m.getBoundingClientRect(), 'del');
+  });
+  document.addEventListener('pointerdown', (e) => { if (HL.mode === 'del' && !HL.bar.contains(e.target)) hideBar(); });
+  if (HL.bar) {
+    HL.add.addEventListener('click', () => {
+      const item = captureSelection();
+      if (!item) return;
+      paint(item);
+      HL.items.push(item);
+      saveHL(); renderHL(); copiesStale();
+      getSelection().removeAllRanges();
+      hideBar();
+      announce('Highlighted.');
+    });
+    HL.del.addEventListener('click', () => { if (HL.current) removeHL(HL.current); hideBar(); });
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'h') { e.preventDefault(); HL.add.click(); }
+    });
+    try { HL.items = JSON.parse(store.get(HL.key) || '[]'); } catch (_) { HL.items = []; }
+    HL.items.forEach(paint);   // before the book is laid out, so its copies carry the marks
+    renderHL();
+  }
+
   /* ── boot ─────────────────────────────────────────────── */
-  applyTheme(); syncControls(); measureBar(); checkFit();
+  applyTheme(); syncControls(); measureBar(); checkFit(); placeCompass(state.layout);
   Ripples.render();
   if (state.layout === 'book') { if (bookFits()) layoutBook(null); else applyLayout('scroll', null); }
   onScroll();
@@ -646,6 +823,7 @@
     if (state.layout === 'book') { const i = B.idx; measureBook(); setIndex(i); }
     else onScroll();
     bootChapter();
+    pointCompass();
   });
   $$('img', story).forEach((img) => { if (!img.complete) img.addEventListener('load', () => { if (state.layout === 'book' && !B.flip) { countPages(); setIndex(B.idx); prewarmTurns(); } }, { once: true }); });
 })();

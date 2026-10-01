@@ -96,6 +96,7 @@
       field = { gw, gh, s, water, dist, fadeLen: Math.max(W, H) * 0.5, ox, oy, size };
       draw();
       chart();
+      dispatchEvent(new CustomEvent('kaayko:chart'));   // the compass may now be pointed
     }
 
     // The lake was fitted as x = lon·cos(mid lat), y = −lat, centred in a square of side `span`.
@@ -131,7 +132,7 @@
     function avoid() {
       const layer = document.getElementById('chart');
       if (!layer) return;
-      const blocks = [...document.querySelectorAll('.bar, main h1, main h2, main h3, main h4, main p, main li, main .btn, main .cover-wrap, main .library-mark, .story, .reader, .pager, .site-footer, .chart-key')]
+      const blocks = [...document.querySelectorAll('.bar, main h1, main h2, main h3, main h4, main p, main li, main .btn, main .cover-wrap, .story, .reader, .pager, .site-footer, .chart-key, .compass')]
         .map((b) => b.getBoundingClientRect()).filter((r) => r.width && r.height);
       const labels = [...layer.querySelectorAll(':scope > :not(.chart-line), .chart-line > *')];
       for (const l of labels) {
@@ -178,6 +179,7 @@
     api.render = render;
     api.draw = draw;
     api.avoid = avoid;
+    api.toPx = (lon, lat) => (geo && field ? toPx(lon, lat) : null);
     return api;
   }
 

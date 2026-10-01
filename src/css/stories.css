@@ -393,3 +393,73 @@ main{display:block;position:relative;z-index:1;overflow-x:clip}
 @media (max-width:560px){.toc-place{display:none}}
 .toc-sealed .toc-link:hover .toc-title{text-decoration:none}
 .stories-reader .chart-key{max-width:38rem;margin:-56px auto 56px;padding:0 16px}
+
+/* ── more page, less chrome: the book on a phone ── */
+:root[data-layout="book"] .bar{padding-top:calc(env(safe-area-inset-top,0px) + 6px);padding-bottom:6px}
+:root[data-layout="book"] .pager{padding:6px 12px calc(8px + env(safe-area-inset-bottom,0px));gap:4px 12px}
+.pager-label{min-width:9em;font-size:.9rem}
+@media (max-width:700px){.pager input[type=range]{height:34px}}
+/* the menus: a sheet under the bar on narrow screens, never clipped */
+@media (max-width:640px){.panel{position:fixed;left:12px;right:12px;top:calc(var(--barh) + 6px);width:auto;max-height:calc(100dvh - var(--barh) - 20px);overflow:auto;overscroll-behavior:contain}}
+/* a page is taken by its edge; its text can be selected and marked */
+:root[data-layout="book"] .story{-webkit-user-select:text;user-select:text}
+.turn-layer .stamp-item{filter:none}
+
+/* ── the library, tightened: no seal, a smaller stamp beside the title on phones ── */
+.library{padding-top:calc(var(--barh) + 36px)}
+.library-head{display:block;padding-bottom:18px;margin-bottom:0}
+.library-title{font-size:clamp(2.8rem,8vw,5.5rem);line-height:.92;margin-left:-.03em}
+.library-tagline{margin-top:.5rem}
+.library-count{margin-top:.6rem}
+.library-mark{display:none}
+@media (max-width:760px){
+  .volume{display:block;padding:30px 0}
+  .cover-wrap{float:left;width:8.5rem;max-width:8.5rem;margin:4px 18px 6px 0}
+  .cover-stamp{padding:9px 9px 28px}
+  .cover-place{left:10px;right:10px;bottom:8px;font-size:.56rem}
+  .cover-cancel{width:6.2rem;right:-1.4rem;top:-.9rem}
+  .cover-blank .seal{width:4.4rem}
+  .cover-blank .blank-note{margin-top:.5rem;font-size:.52rem}
+  .volume-lede{overflow:hidden}
+  .volume-actions,.contents-title,.volume-lakes{clear:both}
+}
+
+/* ── the chart, quieter ── */
+.chart-place{opacity:.55}
+.chart-arm{opacity:.45}
+.chart-name{opacity:.28}
+.chart-lat,.chart-lon{opacity:.5}
+.chart-line{opacity:.22}
+@media (max-width:700px){.chart-place,.chart-tick{display:none}}
+
+/* ── the compass ── */
+.compass{position:fixed;left:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:30;display:grid;justify-items:center;gap:3px;width:60px;pointer-events:none;color:var(--muted);font:600 .58rem/1.2 var(--f-label);letter-spacing:.1em;text-transform:uppercase;text-align:center}
+.compass svg{width:40px;height:40px;color:var(--ink);overflow:visible}
+.compass .needle{transform-origin:20px 20px;transition:transform .7s cubic-bezier(.2,.8,.2,1);fill:var(--violet)}
+.compass-label{max-width:60px;color:var(--muted)}
+.pager .compass{position:static;width:auto;grid-auto-flow:column;align-items:center;gap:8px;margin-right:auto;text-align:left}
+.pager .compass svg{width:34px;height:34px}
+@media (max-width:700px){:root:not([data-layout="book"]) .compass{display:none}.pager .compass-label{display:none}}
+@media (prefers-reduced-motion: reduce){.compass .needle{transition:none}}
+@media (forced-colors: active){.compass .needle{fill:CanvasText}}
+
+/* ── highlights ── */
+mark.hl{background:color-mix(in srgb,var(--violet) 22%,transparent);color:inherit;border-radius:2px;padding:.04em 0;-webkit-box-decoration-break:clone;box-decoration-break:clone;cursor:pointer}
+.hl-bar{position:fixed;z-index:60;display:flex;gap:4px;padding:5px;background:var(--ink);color:var(--leaf);border-radius:10px;box-shadow:0 12px 30px -10px var(--shadow)}
+.hl-bar[hidden]{display:none}
+.hl-bar button{min-height:40px;padding:0 14px;border:0;border-radius:6px;background:transparent;color:inherit;font:600 .92rem/1 var(--f-ui);cursor:pointer}
+.hl-bar button:hover,.hl-bar button:focus-visible{background:rgba(255,255,255,.16);outline-color:var(--leaf)}
+.hl-list{list-style:none;margin:0;padding:0;display:grid;gap:6px;max-height:38vh;overflow:auto}
+.hl-list li{display:flex;align-items:stretch;gap:6px}
+.hl-jump{flex:1;min-width:0;min-height:44px;padding:6px 10px;border:1px solid var(--edge);border-radius:8px;background:transparent;color:var(--ink);font:italic 400 .95rem/1.35 var(--f-text);text-align:left;cursor:pointer}
+.hl-jump:hover,.hl-jump:focus-visible{border-color:var(--violet)}
+.hl-del{flex:none;min-width:44px;border:1px solid var(--edge);border-radius:8px;background:transparent;color:var(--ink);font:400 1.3rem/1 var(--f-ui);cursor:pointer}
+.hl-empty{margin:0;font:500 .9rem/1.45 var(--f-ui);color:var(--muted)}
+@media (forced-colors: active){mark.hl{background:Mark;color:MarkText}}
+/* in the book, a long press on a link must not open the browser's preview; a drag is a page turn */
+:root[data-layout="book"] .reader a,:root[data-layout="book"] .reader img{-webkit-touch-callout:none;-webkit-user-drag:none}
+:root[data-layout="book"] .reader{-webkit-tap-highlight-color:transparent}
+.turn-layer .stamp-item{filter:none}
+.turn-layer .stamp{-webkit-mask:none;mask:none;outline:1px solid var(--edge);outline-offset:-1px}
+/* small phones: the bar stays one line */
+@media (max-width:400px){.bar{gap:6px 8px;padding-left:12px;padding-right:12px}.brand-name{font-size:1.05rem}.tools{gap:6px}.seg label{padding:0 10px;min-height:40px}.display summary{min-height:40px;padding:0 11px}}
