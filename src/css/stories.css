@@ -463,3 +463,27 @@ mark.hl{background:color-mix(in srgb,var(--violet) 22%,transparent);color:inheri
 .turn-layer .stamp{-webkit-mask:none;mask:none;outline:1px solid var(--edge);outline-offset:-1px}
 /* small phones: the bar stays one line */
 @media (max-width:400px){.bar{gap:6px 8px;padding-left:12px;padding-right:12px}.brand-name{font-size:1.05rem}.tools{gap:6px}.seg label{padding:0 10px;min-height:40px}.display summary{min-height:40px;padding:0 11px}}
+
+/* ── the instrument strip: compass, place, a fact; the scrub in the book ── */
+:root[data-layout="book"] .pager{display:flex;flex-wrap:nowrap;align-items:center;gap:12px;padding:8px 16px calc(10px + env(safe-area-inset-bottom,0px))}
+.pager input[type=range]{flex:1;width:auto;min-width:96px;height:34px;order:0}
+@media (max-width:700px){.pager input[type=range]{order:0;width:auto}}
+.compass{position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:30;display:flex;width:auto;align-items:center;gap:9px;max-width:min(22rem,calc(100vw - 24px));padding:5px 13px 5px 6px;border:1px solid var(--edge);border-radius:999px;background:color-mix(in srgb,var(--bar) 94%,transparent);color:var(--muted);pointer-events:none;text-align:left}
+.compass svg{flex:none;width:34px;height:34px;color:var(--ink);overflow:visible}
+.compass-text{display:grid;gap:2px;min-width:0}
+.compass-label{display:block;max-width:none;font:600 .72rem/1.15 var(--f-label);letter-spacing:.14em;text-transform:uppercase;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.compass-fact{display:block;font:600 .6rem/1.2 var(--f-label);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.compass-fact:empty{display:none}
+.pager .compass{position:static;flex:none;max-width:58%;padding:0;border:0;background:none;margin:0}
+.pager .compass-label{display:block}
+@media (max-width:700px){:root:not([data-layout="book"]) .compass{display:flex}.pager .compass{max-width:56%}.pager .compass svg{width:30px;height:30px}}
+@media (prefers-reduced-motion: reduce){.compass .needle{transition:none}}
+@media (max-width:700px){.compass-fact{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.pager .compass{max-width:60%}}
+@media (max-width:760px){.volume-sealed .volume-title{font-size:clamp(1.9rem,8vw,2.6rem)}.volume-sealed .contents-title{margin-top:14px}}
+
+/* on a phone the scroll's column is the whole width, so the instrument is a strip under it, as in the book */
+@media (max-width:700px){
+  :root:not([data-layout="book"]) .compass{left:0;right:0;bottom:0;max-width:none;padding:7px 16px calc(9px + env(safe-area-inset-bottom,0px));border:0;border-top:1px solid var(--edge);border-radius:0;background:var(--bar)}
+  :root:not([data-layout="book"]) body{padding-bottom:calc(58px + env(safe-area-inset-bottom,0px))}
+  .chart-line{display:none}
+}

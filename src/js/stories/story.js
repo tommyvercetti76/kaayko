@@ -173,8 +173,6 @@
     const scrub = $('#scrub');
     scrub.max = String(B.pages); scrub.value = String(a);
     scrub.setAttribute('aria-valuetext', label);
-    $('#prev').disabled = B.idx <= 0;
-    $('#next').disabled = B.idx >= lastIdx();
     $('#folio-l').textContent = B.spread && B.idx > 0 ? String(B.idx + 1) : '';
     $('#folio-r').textContent = B.spread ? (B.idx + 1 < B.pages ? String(B.idx + 2) : '') : (B.idx > 0 ? String(B.idx + 1) : '');
     $('.chrome .rh-l').hidden = B.spread && B.idx === 0;
@@ -457,8 +455,6 @@
     requestAnimationFrame(push);
   }
 
-  $('#prev').addEventListener('click', () => turn(-1));
-  $('#next').addEventListener('click', () => turn(1));
   $('#scrub').addEventListener('input', (e) => { cancelFlip(); setIndex(Number(e.target.value) - 1); });
   $('#scrub').addEventListener('change', () => announce($('#pager-label').textContent));
 
@@ -613,7 +609,7 @@
       markHere(anchor);
       announce(layout === 'book' ? `Book layout. ${$('#pager-label').textContent}.` : 'Scroll layout.');
     };
-    if (vt) document.startViewTransition(run);
+    if (vt) { const t = document.startViewTransition(run); [t.ready, t.finished, t.updateCallbackDone].forEach((p) => p.catch(() => {})); }  // a hidden tab skips the fade
     else run();
   }
   $$('input[name="layout"]').forEach((r) => r.addEventListener('change', () => setLayout(r.value, { user: true })));
@@ -648,7 +644,19 @@
   /* ── the compass: from wherever you are reading, which way is the place? ──
      Each part names its place (data-geo on its heading). The needle points from the compass's own
      spot on the screen to that place on the chart beneath, so it swings as the story moves on. */
-  const compass = $('#compass'), needle = compass && compass.querySelector('.needle'), compassLabel = compass && compass.querySelector('.compass-label');
+  const compass = $('#compass'), needle = compass && compass.querySelector('.needle'), compassLabel = compass && compass.querySelector('.compass-label'), compassFact = compass && compass.querySelector('.compass-fact');
+  const fmtCoord = (lat, lon) => `${Math.abs(lat).toFixed(2)}°${lat < 0 ? 'S' : 'N'} ${Math.abs(lon).toFixed(2)}°${lon < 0 ? 'W' : 'E'}`;
+  const rad = Math.PI / 180;
+  function kmBetween(lat1, lon1, lat2, lon2) {
+    const a = Math.sin(((lat2 - lat1) * rad) / 2) ** 2 + Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin(((lon2 - lon1) * rad) / 2) ** 2;
+    return 2 * 6371 * Math.asin(Math.sqrt(a));
+  }
+  function bearingTo(lat1, lon1, lat2, lon2) {
+    const y = Math.sin((lon2 - lon1) * rad) * Math.cos(lat2 * rad);
+    const x = Math.cos(lat1 * rad) * Math.sin(lat2 * rad) - Math.sin(lat1 * rad) * Math.cos(lat2 * rad) * Math.cos((lon2 - lon1) * rad);
+    return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+  }
+  const POINTS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
   const placed = $$('.chapter[data-geo]', story);
   function placeCompass(layout) {
     if (!compass) return;
@@ -669,8 +677,22 @@
     const deg = px && r.width ? (Math.atan2(px[1] - (r.top + r.height / 2), px[0] - (r.left + r.width / 2)) * 180) / Math.PI + 90 : 0;
     needle.style.transform = `rotate(${deg.toFixed(1)}deg)`;
     const name = h ? (h.dataset.place || h.querySelector('.chapter-title').textContent.trim()) : 'North';
+    // The fact is measured, not written: the place's coordinates, and how far and which way it
+    // lies from the part before it (great-circle distance and initial bearing).
+    let fact = '';
+    if (h) {
+      const prev = placed[placed.indexOf(h) - 1];
+      fact = fmtCoord(lat, lon);
+      if (prev) {
+        const [plon, plat] = prev.dataset.geo.split(',').map(Number);
+        const km = kmBetween(plat, plon, lat, lon), dir = POINTS[Math.round(bearingTo(plat, plon, lat, lon) / 22.5) % 16];
+        const from = (prev.dataset.place || prev.querySelector('.chapter-title').textContent.trim()).split(',')[0];
+        fact += ` · ${km < 10 ? km.toFixed(1) : Math.round(km)} km ${dir} of ${from}`;
+      } else if (h.dataset.region) fact += ` · ${h.dataset.region}`;
+    }
     compassLabel.textContent = name;
-    compass.setAttribute('aria-label', h ? `Compass: ${name} lies that way` : 'Compass: north is up');
+    compassFact.textContent = fact;
+    compass.setAttribute('aria-label', h ? `Compass: ${name} lies that way. ${fact}` : 'Compass: north is up');
   }
   addEventListener('kaayko:chart', pointCompass);
   let compassQueued = false;
