@@ -3,7 +3,10 @@
  *
  * The canvas names its lake: <canvas id="ripples" data-lake="/stories/lakes/lake-powell.json">.
  * That file is the lake's shoreline as rings of [x, y, x, y, …], north up, fitted to a
- * unit square (from the USGS National Hydrography Dataset; islands are extra rings).
+ * unit square (from the USGS National Hydrography Dataset; islands are extra rings), with
+ * its bounding box in degrees, the places on its shore, a state line and a graticule.
+ * Those are set in HTML (#chart) at their true positions, so the chart reads as a chart:
+ * labels that would sit under the page's text step aside as it scrolls.
  *
  * Every line sits at an exact distance from that shore: the lake is rasterised, a
  * Euclidean distance transform gives each pixel its distance to the water, and lines are
@@ -48,8 +51,9 @@
     const ctx = canvas && canvas.getContext && canvas.getContext('2d');
     if (!ctx || !canvas.dataset.lake) return api;
     const root = document.documentElement;
-    let rings = null;
+    let rings = null, geo = null;
     let field = null;
+    const dms = (deg, pos, neg) => { const a = Math.abs(deg), d = Math.floor(a), m = Math.round((a - d) * 60); return `${d}°${m ? `${String(m).padStart(2, '0')}′` : ''}${deg < 0 ? neg : pos}`; };
 
     function render() {
       if (!rings) return;
@@ -89,9 +93,53 @@
         edt1d(f, gw, d, v, z);
         for (let x = 0; x < gw; x++) dist[y * gw + x] = Math.sqrt(d[x]) / s; // CSS px to the shore
       }
-      field = { gw, gh, s, water, dist, fadeLen: Math.max(W, H) * 0.5 };
+      field = { gw, gh, s, water, dist, fadeLen: Math.max(W, H) * 0.5, ox, oy, size };
       draw();
+      chart();
     }
+
+    // The lake was fitted as x = lon·cos(mid lat), y = −lat, centred in a square of side `span`.
+    function toPx(lon, lat) {
+      const [minLon, minLat, maxLon, maxLat] = geo.bbox, { ox, oy, size } = field;
+      const kx = Math.cos(((minLat + maxLat) / 2) * Math.PI / 180);
+      const w = (maxLon - minLon) * kx, h = maxLat - minLat, span = Math.max(w, h);
+      return [ox + (((lon - minLon) * kx + (span - w) / 2) / span) * size, oy + (((maxLat - lat) + (span - h) / 2) / span) * size, size / (span * 111.32)];
+    }
+
+    function chart() {
+      let layer = document.getElementById('chart');
+      if (!geo) { if (layer) layer.remove(); return; }
+      if (!layer) { layer = document.createElement('div'); layer.id = 'chart'; layer.setAttribute('aria-hidden', 'true'); canvas.after(layer); }
+      const put = (cls, x, y, html) => { const e = document.createElement('span'); e.className = cls; e.style.left = `${x.toFixed(1)}px`; e.style.top = `${y.toFixed(1)}px`; e.innerHTML = html; layer.append(e); return e; };
+      layer.replaceChildren();
+      const [, , pxPerKm] = toPx(geo.bbox[0], geo.bbox[1]);
+      root.style.setProperty('--km', `${pxPerKm.toFixed(3)}px`);
+      if (geo.line) {
+        const [, y] = toPx(geo.bbox[0], geo.line[0]);
+        const l = document.createElement('div'); l.className = 'chart-line'; l.style.top = `${y.toFixed(1)}px`;
+        l.innerHTML = `<b>${geo.line[1]}</b><i>${geo.line[2]}</i>`;
+        layer.append(l);
+      }
+      for (const lat of (geo.grid && geo.grid.lat) || []) { const [, y] = toPx(geo.bbox[0], lat); put('chart-tick chart-lat', 0, y, dms(lat, 'N', 'S')); }
+      for (const lon of (geo.grid && geo.grid.lon) || []) { const [x] = toPx(lon, geo.bbox[1]); put('chart-tick chart-lon', x, 0, dms(lon, 'E', 'W')); }
+      for (const [name, lon, lat, kind] of geo.places || []) { const [x, y] = toPx(lon, lat); put(`chart-${kind || 'place'}`, x, y, name); }
+      avoid();
+    }
+
+    // A label under the page's text would cost that text its contrast, so it steps aside.
+    let avoidQueued = false;
+    function avoid() {
+      const layer = document.getElementById('chart');
+      if (!layer) return;
+      const blocks = [...document.querySelectorAll('.bar, main h1, main h2, main h3, main h4, main p, main li, main .btn, main .cover-wrap, main .library-mark, .story, .reader, .pager, .site-footer, .chart-key')]
+        .map((b) => b.getBoundingClientRect()).filter((r) => r.width && r.height);
+      const labels = [...layer.querySelectorAll(':scope > :not(.chart-line), .chart-line > *')];
+      for (const l of labels) {
+        const r = l.getBoundingClientRect(), pad = 6;
+        l.classList.toggle('off', blocks.some((b) => r.left < b.right + pad && r.right > b.left - pad && r.top < b.bottom + pad && r.bottom > b.top - pad));
+      }
+    }
+    addEventListener('scroll', () => { if (avoidQueued) return; avoidQueued = true; requestAnimationFrame(() => { avoidQueued = false; avoid(); }); }, { passive: true });
 
     function draw() {
       if (!field) return;
@@ -120,11 +168,16 @@
 
     fetch(canvas.dataset.lake)
       .then((res) => (res.ok ? res.json() : null))
-      .then((data) => { if (Array.isArray(data) && data.length) { rings = data; render(); } })
+      .then((data) => {
+        if (Array.isArray(data) && data.length) rings = data;
+        else if (data && Array.isArray(data.rings) && data.rings.length) { rings = data.rings; if (data.bbox) geo = data; }
+        if (rings) render();
+      })
       .catch(() => { /* decorative: the page reads the same without it */ });
 
     api.render = render;
     api.draw = draw;
+    api.avoid = avoid;
     return api;
   }
 

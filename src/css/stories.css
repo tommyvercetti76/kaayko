@@ -35,6 +35,36 @@ img{max-width:100%}
 html{scroll-padding-top:calc(var(--barh) + 16px);scroll-padding-bottom:24px}
 body{background-color:var(--leaf);color:var(--ink);font-family:var(--f-ui)}
 #ripples{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block;pointer-events:none}
+.reader{position:relative;z-index:1}
+/* the chart's furniture: places on the shore, a state line, a graticule; all at their true positions */
+#chart{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;font:600 .68rem/1 var(--f-label);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+#chart > *{position:absolute;white-space:nowrap;transition:opacity .3s}
+#chart .off{opacity:0}
+.chart-place{transform:translate(9px,-50%);opacity:.85}
+.chart-place::before{content:"";position:absolute;left:-10px;top:50%;width:5px;height:5px;margin-top:-2.5px;border-radius:50%;background:var(--violet)}
+.chart-arm{transform:translate(-50%,-50%);font:italic 400 .8rem/1 var(--f-text);letter-spacing:.08em;text-transform:none;opacity:.7}
+.chart-name{transform:translate(-50%,-50%);font-size:clamp(.9rem,1.7vw,1.35rem);letter-spacing:.55em;opacity:.5}
+.chart-line{left:0;right:0;height:0;border-top:1px dashed var(--muted);opacity:.32}
+.chart-line b,.chart-line i{position:absolute;left:16px;font-style:normal;font-weight:600;letter-spacing:.3em;opacity:1}
+.chart-line b{bottom:5px}
+.chart-line i{top:5px}
+.chart-lat{left:0;padding-left:16px;transform:translateY(-50%);opacity:.75}
+.chart-lat::before{content:"";position:absolute;left:0;top:50%;width:11px;height:1px;background:var(--muted)}
+.chart-lon{top:auto!important;bottom:0;padding-bottom:16px;transform:translateX(-50%);opacity:.75}
+.chart-lon::after{content:"";position:absolute;left:50%;bottom:0;width:1px;height:11px;background:var(--muted)}
+.chart-key{position:relative;z-index:1;display:flex;align-items:center;gap:14px;margin:56px 0 0;font:600 .68rem/1.5 var(--f-label);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.chart-key .north{flex:none;width:22px;height:30px;color:var(--violet)}
+.chart-key .km{flex:none;display:grid;gap:4px;justify-items:center}
+.chart-key .km i{display:block;width:calc(var(--km,4px) * 10);height:5px;border:1px solid var(--muted);border-top:0;box-sizing:border-box}
+.chart-key b{color:var(--ink)}
+.chart-key{--col:66rem}
+.stories-reader .chart-key{--col:38rem}
+/* Pinned in the margin only where the margin can hold it; otherwise it closes the page. */
+@media (min-width:96rem){.chart-key{position:fixed;left:24px;bottom:22px;max-width:min(19rem,calc((100vw - var(--col)) / 2 - 48px));margin:0}}
+@media (min-width:70rem){.stories-reader .chart-key{position:fixed;left:24px;bottom:22px;max-width:min(19rem,calc((100vw - var(--col)) / 2 - 48px));margin:0;padding:0}}
+:root[data-layout="book"] .chart-key{display:none}
+@media (max-width:700px){.chart-name,.chart-arm{display:none}}
+@media (forced-colors: active){#chart{display:none}}
 :root[data-layout="book"] body{overflow:hidden}
 .defs{position:absolute;width:0;height:0;overflow:hidden}
 .sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
@@ -347,3 +377,19 @@ main{display:block;position:relative;z-index:1;overflow-x:clip}
 .cover-place{position:absolute;left:14px;right:14px;bottom:12px;display:flex;justify-content:space-between;gap:.6em;font:600 .7rem/1.3 var(--f-label);letter-spacing:.14em;text-transform:uppercase;color:var(--stamp-violet)}
 .cover-cancel{position:absolute;right:-2.4rem;top:-1.4rem;width:10.5rem;height:auto;color:var(--stamp-violet);transform:rotate(-16deg);pointer-events:none;opacity:.9}
 @media (forced-colors: active){.cover-stamp{-webkit-mask:none;mask:none;border:1px solid CanvasText}}
+
+/* ── a sealed book: its stamp is still blank, its chapters wait ── */
+.volume-sealed .cover-stamp{min-height:17rem;padding:13px}
+.cover-blank{display:grid;place-items:center;aspect-ratio:3 / 4;outline:1.5px solid var(--stamp-violet);outline-offset:3px;color:var(--stamp-violet);text-align:center}
+.cover-blank .seal{width:7.5rem;height:auto;transform:rotate(-12deg)}
+.cover-blank .blank-note{margin-top:1rem;font:600 .68rem/1.4 var(--f-label);letter-spacing:.2em;text-transform:uppercase}
+.volume-sealed .volume-title{color:var(--muted)}
+.toc-sealed .toc-link{cursor:default}
+.toc-sealed .toc-title{color:var(--muted)}
+.toc-place{flex:none;margin-left:.2rem;font:600 .68rem/1.2 var(--f-label);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.toc-lock{flex:none;display:inline-flex;align-items:center;gap:.5em;font:600 .72rem/1 var(--f-label);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.toc-lock svg{width:11px;height:13px}
+.volume-also{margin:2rem 0 0}
+@media (max-width:560px){.toc-place{display:none}}
+.toc-sealed .toc-link:hover .toc-title{text-decoration:none}
+.stories-reader .chart-key{max-width:38rem;margin:-56px auto 56px;padding:0 16px}
