@@ -341,7 +341,7 @@ main{display:block;position:relative;z-index:1;overflow-x:clip}
 .library-title{margin:0;font:400 clamp(3rem,8vw,5.2rem)/.95 var(--f-display);letter-spacing:-.01em}
 .library-tagline{margin:.9rem 0 0;font:600 .82rem/1.3 var(--f-label);letter-spacing:.26em;text-transform:uppercase;color:var(--muted)}
 .library-count{margin:0;font:600 .82rem/1.3 var(--f-label);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-variant-numeric:tabular-nums}
-.volume{display:grid;grid-template-columns:minmax(0,17rem) minmax(0,1fr);gap:clamp(28px,5vw,64px);padding:48px 0;border-bottom:1px solid var(--edge)}
+.volume{display:grid;grid-template-columns:minmax(0,21rem) minmax(0,1fr);gap:clamp(28px,5vw,64px);padding:48px 0;border-bottom:1px solid var(--edge)}
 @media (max-width:760px){.volume{grid-template-columns:1fr}.volume-cover{max-width:15rem}}
 .volume-cover{display:block;align-self:start;text-decoration:none}
 .volume-cover .mount img{display:block;width:100%;height:auto}
@@ -511,10 +511,10 @@ mark.hl{background:color-mix(in srgb,var(--violet) 22%,transparent);color:inheri
 
 
 /* ── a book is a pile of its lake stamps ── */
-.pile{position:relative;aspect-ratio:17 / 19;max-width:17rem;margin:6px 0 0}
+.pile{position:relative;aspect-ratio:5 / 8;width:100%;max-width:21rem;margin:6px 0 0}
 .pile-link{position:absolute;inset:0;display:block;text-decoration:none}
-.stamp-s{position:absolute;left:var(--x);top:var(--y);width:50%;transform:rotate(var(--r));filter:drop-shadow(0 1px 1px var(--shadow)) drop-shadow(0 10px 16px var(--shadow))}
-.stamp-s.front{width:56%;z-index:2}
+.stamp-s{position:absolute;left:var(--x);top:var(--y);width:46%;transform:rotate(var(--r));filter:drop-shadow(0 1px 1px var(--shadow)) drop-shadow(0 10px 16px var(--shadow))}
+.stamp-s.front{width:55%;z-index:2}
 .stamp-paper{display:block;padding:6% 6% 8%;background:var(--paper);--r:4px;--g:11px;
   -webkit-mask:linear-gradient(#000 0 0) center/calc(100% - 2*var(--r)) calc(100% - 2*var(--r)) no-repeat,radial-gradient(circle var(--r) at 50% 0,#0000 97%,#000) top/var(--g) var(--r) round no-repeat,radial-gradient(circle var(--r) at 50% 100%,#0000 97%,#000) bottom/var(--g) var(--r) round no-repeat,radial-gradient(circle var(--r) at 0 50%,#0000 97%,#000) left/var(--r) var(--g) no-repeat round,radial-gradient(circle var(--r) at 100% 50%,#0000 97%,#000) right/var(--r) var(--g) no-repeat round;
   mask:linear-gradient(#000 0 0) center/calc(100% - 2*var(--r)) calc(100% - 2*var(--r)) no-repeat,radial-gradient(circle var(--r) at 50% 0,#0000 97%,#000) top/var(--g) var(--r) round no-repeat,radial-gradient(circle var(--r) at 50% 100%,#0000 97%,#000) bottom/var(--g) var(--r) round no-repeat,radial-gradient(circle var(--r) at 0 50%,#0000 97%,#000) left/var(--r) var(--g) no-repeat round,radial-gradient(circle var(--r) at 100% 50%,#0000 97%,#000) right/var(--r) var(--g) no-repeat round}
@@ -522,10 +522,9 @@ mark.hl{background:color-mix(in srgb,var(--violet) 22%,transparent);color:inheri
 .stamp-s.front .stamp-paper img{aspect-ratio:3 / 4}
 .stamp-paper span{display:block;margin-top:7%;font:600 .5rem/1.2 var(--f-label);letter-spacing:.12em;text-transform:uppercase;color:var(--stamp-violet);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pile .cover-cancel{right:-1.2rem;top:-1.1rem;z-index:3}
-.pile-seal{position:absolute;left:30%;top:33%;width:40%;height:auto;z-index:3;color:var(--stamp-violet);transform:rotate(-14deg);filter:drop-shadow(0 0 2px var(--paper))}
-.volume-sealed .stamp-s{opacity:.82}
+.pile-seal{position:absolute;left:31%;top:36%;width:38%;height:auto;z-index:3;color:var(--stamp-violet);transform:rotate(-14deg);filter:drop-shadow(0 0 2px var(--paper))}
 @media (max-width:760px){
-  .cover-wrap.pile{float:none;width:min(100%,16rem);max-width:16rem;margin:0 auto 14px}
+  .cover-wrap.pile{float:none;width:min(100%,21rem);max-width:21rem;margin:0 auto 18px}
   .volume-actions,.contents-title,.volume-lakes{clear:both}
 }
 @media (forced-colors: active){.stamp-paper{-webkit-mask:none;mask:none;border:1px solid CanvasText}}
@@ -560,11 +559,6 @@ mark.hl{background:color-mix(in srgb,var(--violet) 22%,transparent);color:inheri
 .toc-book .toc-open{margin:0 -.8rem;padding-inline:.8rem;border-radius:6px;background:color-mix(in srgb,var(--violet) 10%,transparent);box-shadow:inset 3px 0 var(--violet)}
 .toc-sealed .toc-open .toc-title{color:var(--ink)}
 .toc-open:hover .toc-title,.toc-open:focus-visible .toc-title{text-decoration:underline;text-decoration-color:var(--violet);text-underline-offset:.22em}
-.toc-go{flex:none;display:inline-flex;align-items:center;gap:.45em;font:600 .72rem/1 var(--f-label);letter-spacing:.14em;text-transform:uppercase;color:var(--violet)}
-.toc-go svg{width:12px;height:10px;transition:transform .2s}
-.toc-open:hover .toc-go svg{transform:translateX(3px)}
-.pile-8{aspect-ratio:17 / 21}
 .stamp-s.shut .stamp-paper img{filter:grayscale(1) contrast(.8) brightness(.78)}
 .stamp-s.shut .stamp-paper{background:color-mix(in srgb,var(--paper) 88%,var(--ink))}
-.stamp-back{display:block;aspect-ratio:4 / 3;outline:1.5px solid var(--stamp-violet);outline-offset:2px;background:radial-gradient(circle at 50% 50%,transparent 0 17%,var(--stamp-violet) 17.5% 19.5%,transparent 20%),repeating-linear-gradient(-45deg,color-mix(in srgb,var(--stamp-violet) 22%,transparent) 0 1px,transparent 1px 6px)}
-@media (prefers-reduced-motion: reduce){.toc-go svg{transition:none}}
+.toc-unlocked{color:var(--violet)}
