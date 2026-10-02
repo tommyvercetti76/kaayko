@@ -107,7 +107,7 @@ Agents: identify the page here, then look up the module in MODULE-MAP.md for ful
 | `/store/privacy` (kaay.store `/privacy`) | `src/store-privacy.html` |
 | `/shipping`, `/fly` | `src/shipping.html` → `js/pages/shipping.js` |
 | `/card` | `src/card.html` → `js/pages/card.js` |
-| `/404` | `src/404.html` |
+| `/404` | `src/404.html` → `js/pages/not-found.js` (deals the /card deck via cards/render.js) |
 
 ### Kortex Admin And Tenant Portal (13)
 
