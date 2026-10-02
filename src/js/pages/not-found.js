@@ -63,17 +63,29 @@ function deal({ cards, brand }) {
   hand.innerHTML = cards.map((c, i) => {
     const art = `/assets/cards/art/${c.art || c.slug}.png`;
     const off = i - (n - 1) / 2;   // a hand: fanned about its middle, the outer cards lower
+    // The <li> never moves, so the place you point at stays put while the card in it
+    // lifts, turns and makes way; a moving hover target is what made the hand flicker.
     return `<li class="mini" style="--i:${i};--off:${off.toFixed(2)}">
-  <a class="mini-card" href="${esc(c.url)}" aria-label="${esc(spoken(c))}">
-    <span class="mini-turn">
-      <span class="mini-face mini-front">${front(c, { qr: qrFor(c.url), artHref: art, skin: PRINT })}</span>
-      <span class="mini-face mini-back">${back(c, brand, { index: i + 1, total: n, artHref: art, skin: PRINT })}</span>
-    </span>
-  </a>
+  <div class="mini-pose">
+    <a class="mini-card" href="${esc(c.url)}" aria-label="${esc(spoken(c))}">
+      <span class="mini-turn">
+        <span class="mini-face mini-front">${front(c, { qr: qrFor(c.url), artHref: art, skin: PRINT })}</span>
+        <span class="mini-face mini-back">${back(c, brand, { index: i + 1, total: n, artHref: art, skin: PRINT })}</span>
+      </span>
+    </a>
+  </div>
   <button class="mini-flip" type="button" aria-pressed="false" aria-label="Turn ${esc(c.name)} over"><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M15.5 7.5A6 6 0 1 0 16 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M16.5 3.5v4.4h-4.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
 </li>`;
   }).join('');
-  hand.classList.add('dealt');
+  // Dealt, not dropped: every card starts on one pile in the middle and goes to its place in
+  // the hand in turn. Reading the layout commits the pile as the starting point, so the cards
+  // travel from it; waiting for frames instead stalls the deal in a tab that is not painting.
+  hand.classList.add('dealt', 'dealing');
+  void hand.offsetWidth;
+  hand.classList.remove('dealing');
+  // Once the last card has landed the stagger is spent; without this, pointing at the sixth
+  // card would wait out a deal that finished long ago.
+  setTimeout(() => hand.classList.add('settled'), 70 * n + 700);
 }
 
 hand.addEventListener('click', (e) => {

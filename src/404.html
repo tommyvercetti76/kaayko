@@ -2,6 +2,12 @@
 <html lang="en" class="dark-theme">
 <head>
   <script src="/js/site-features.js?v=d5ff872"></script>
+  <script>
+    // With scripts, the plain list waits for the deck instead of flashing first; if the deck
+    // has not arrived in three seconds, the list is shown after all.
+    document.documentElement.classList.add('deck');
+    setTimeout(function () { if (!document.querySelector('.hand.dealt')) document.documentElement.classList.remove('deck'); }, 3000);
+  </script>
   <script src="/js/prod-config.js?v=d5ff872"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -43,32 +49,51 @@
     .hand { list-style: none; margin: clamp(36px, 7vh, 64px) auto 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 22px; max-width: 64rem; }
     .hand:not(.dealt) a { display: block; padding: 18px 20px; border: 1px solid var(--hair); border-radius: 10px; text-decoration: none; text-align: left; font: 400 1.2rem/1.3 var(--serif); }
     .hand:not(.dealt) a span { display: block; margin-top: 4px; font: 300 .72rem/1.3 var(--sans); letter-spacing: .18em; color: var(--gold); }
+    html.deck .hand:not(.dealt) { visibility: hidden; }
     .mini { position: relative; }
+    .mini-pose { display: block; }
     .mini-card { display: block; aspect-ratio: 7 / 4; perspective: 1400px; border-radius: 6px; text-decoration: none; outline-offset: 6px; }
     .mini-card:focus-visible { outline: 2px solid var(--gold); }
-    .mini-turn { position: relative; display: block; width: 100%; height: 100%; transform-style: preserve-3d; -webkit-transform-style: preserve-3d; transition: transform .7s cubic-bezier(.2, .75, .2, 1); }
+    /* One easing for everything that moves: quick to start, long and soft to settle. */
+    .mini-turn { position: relative; display: block; width: 100%; height: 100%; transform-style: preserve-3d; -webkit-transform-style: preserve-3d;
+      transition: transform .7s cubic-bezier(.22, .61, .36, 1); }
     .mini-face { position: absolute; inset: 0; display: block; border-radius: 6px; overflow: hidden; -webkit-backface-visibility: hidden; backface-visibility: hidden; box-shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 18px 34px -16px rgba(0, 0, 0, .8); }
     .mini-face svg { display: block; width: 100%; height: 100%; }
     .mini-back { transform: rotateY(180deg); }
     .mini.is-turned .mini-turn { transform: rotateY(180deg); }
+    /* A card turns over only once the pointer has rested on it, so a sweep across the hand
+       lifts cards in passing and turns none; it turns back at once when the pointer leaves. */
     @media (hover: hover) {
-      .mini-card:hover .mini-turn, .mini-card:focus-visible .mini-turn { transform: rotateY(180deg); }
+      .mini:hover .mini-turn, .mini:focus-within .mini-turn { transform: rotateY(180deg); transition-delay: .22s; }
     }
     .mini-flip { display: none; position: absolute; right: -8px; top: -8px; z-index: 2; width: 44px; height: 44px; padding: 0; border: 1px solid var(--hair); border-radius: 50%; background: var(--ink); color: var(--paper); cursor: pointer; }
     .mini-flip svg { width: 18px; height: 18px; }
     .mini-flip:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
     @media (hover: none) { .mini-flip { display: grid; place-items: center; } }
 
-    /* A real hand where there is room for one: the cards overlap, fanned about the middle,
-       the outer ones a little lower. The one you point at stands up out of the hand. */
+    /* The deal, where cards stack: each rises into place in turn. */
+    .hand.dealt .mini-pose { transition: transform .6s cubic-bezier(.22, .61, .36, 1), opacity .45s ease; transition-delay: calc(var(--i) * 70ms); }
+    .hand.dealing .mini-pose { opacity: 0; transform: translateY(26px); }
+    .hand.settled .mini-pose { transition-delay: 0s; }
+
+    /* A real hand where there is room for one: the cards overlap, fanned about the middle, the
+       outer ones a little lower. The one you point at stands up out of the hand and its
+       neighbours lean away to make room; all of it on the inner layer, never the <li>. */
     @media (min-width: 1080px) and (hover: hover) {
       .hand.dealt { display: flex; justify-content: center; gap: 0; padding: 30px 0 70px; }
-      .hand.dealt .mini { flex: none; width: 15rem; margin-left: -3.4rem; transform: translateY(calc(var(--off) * var(--off) * 7px)) rotate(calc(var(--off) * 5deg)); transform-origin: 50% 120%; transition: transform .35s cubic-bezier(.2, .75, .2, 1); z-index: var(--i); }
+      .hand.dealt .mini { flex: none; width: 15rem; margin-left: -3.4rem; z-index: var(--i); }
       .hand.dealt .mini:first-child { margin-left: 0; }
-      .hand.dealt .mini:hover, .hand.dealt .mini:focus-within { transform: translateY(-34px) rotate(0deg); z-index: 20; }
+      .hand.dealt .mini-pose { transform-origin: 50% 120%; will-change: transform;
+        transform: translate(0, calc(var(--off) * var(--off) * 7px)) rotate(calc(var(--off) * 5deg)); }
+      .hand.dealt .mini:hover, .hand.dealt .mini:focus-within { z-index: 20; }
+      .hand.dealt .mini:hover .mini-pose, .hand.dealt .mini:focus-within .mini-pose { transform: translate(0, -34px) rotate(0deg); }
+      .hand.dealt .mini:hover ~ .mini .mini-pose { transform: translate(2.2rem, calc(var(--off) * var(--off) * 7px)) rotate(calc(var(--off) * 5deg + 2deg)); }
+      .hand.dealt .mini:has(~ .mini:hover) .mini-pose { transform: translate(-2.2rem, calc(var(--off) * var(--off) * 7px)) rotate(calc(var(--off) * 5deg - 2deg)); }
+      /* Dealt from one pile in the middle of the hand. */
+      .hand.dealing .mini-pose { opacity: 0; transform: translate(calc(var(--off) * -11.6rem), 40px) rotate(0deg); }
     }
     @media (prefers-reduced-motion: reduce) {
-      .mini-turn, .hand.dealt .mini { transition: none; }
+      .mini-turn, .hand.dealt .mini-pose { transition: none; }
     }
 
     .nf-more { margin: clamp(30px, 6vh, 48px) 0 0; font: 300 .76rem/1 var(--sans); letter-spacing: .28em; text-transform: uppercase; }
