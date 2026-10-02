@@ -345,9 +345,7 @@ main{display:block;position:relative;z-index:1;overflow-x:clip}
 .library-tagline{margin:.9rem 0 0;font:600 .82rem/1.3 var(--f-label);letter-spacing:.26em;text-transform:uppercase;color:var(--muted)}
 .library-count{margin:0;font:600 .82rem/1.3 var(--f-label);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-variant-numeric:tabular-nums}
 .volume{display:grid;grid-template-columns:minmax(0,21rem) minmax(0,1fr);gap:clamp(28px,5vw,64px);padding:48px 0;border-bottom:1px solid var(--edge)}
-@media (max-width:760px){.volume{grid-template-columns:1fr}.volume-cover{max-width:15rem}}
-.volume-cover{display:block;align-self:start;text-decoration:none}
-.volume-cover .mount img{display:block;width:100%;height:auto}
+@media (max-width:760px){.volume{grid-template-columns:1fr}}
 .volume-body{min-width:0;max-width:40rem}
 .volume-no{margin:0 0 .8rem;font:600 .8rem/1.3 var(--f-label);letter-spacing:.2em;text-transform:uppercase;color:var(--violet)}
 .volume-title{margin:0 0 .6rem;font:400 clamp(2.4rem,5vw,3.6rem)/1 var(--f-display);text-wrap:balance}
@@ -371,18 +369,7 @@ main{display:block;position:relative;z-index:1;overflow-x:clip}
 .library-mark{grid-area:seal;align-self:center;justify-self:end;width:clamp(9rem,17vw,13rem);height:auto;margin-right:clamp(0px,2vw,20px);color:var(--violet);transform:rotate(-9deg)}
 @media (max-width:640px){.library-head{grid-template-columns:1fr;grid-template-areas:"seal" "head" "count";gap:4px}.library-mark{justify-self:start;width:8.5rem;margin:0 0 -10px 2px}}
 .cover-wrap{position:relative;max-width:17rem;margin:6px 0 0 4px}
-.volume-cover{display:block;transform:rotate(-2.2deg);filter:drop-shadow(0 1px 1px var(--shadow)) drop-shadow(0 14px 22px var(--shadow))}
-.cover-stamp{position:relative;display:block;padding:13px 13px 40px;background:var(--paper);--r:6px;--g:17px;-webkit-mask:linear-gradient(#000 0 0) center/calc(100% - 2*var(--r)) calc(100% - 2*var(--r)) no-repeat,radial-gradient(circle var(--r) at 50% 0,#0000 97%,#000) top/var(--g) var(--r) round no-repeat,radial-gradient(circle var(--r) at 50% 100%,#0000 97%,#000) bottom/var(--g) var(--r) round no-repeat,radial-gradient(circle var(--r) at 0 50%,#0000 97%,#000) left/var(--r) var(--g) no-repeat round,radial-gradient(circle var(--r) at 100% 50%,#0000 97%,#000) right/var(--r) var(--g) no-repeat round;mask:linear-gradient(#000 0 0) center/calc(100% - 2*var(--r)) calc(100% - 2*var(--r)) no-repeat,radial-gradient(circle var(--r) at 50% 0,#0000 97%,#000) top/var(--g) var(--r) round no-repeat,radial-gradient(circle var(--r) at 50% 100%,#0000 97%,#000) bottom/var(--g) var(--r) round no-repeat,radial-gradient(circle var(--r) at 0 50%,#0000 97%,#000) left/var(--r) var(--g) no-repeat round,radial-gradient(circle var(--r) at 100% 50%,#0000 97%,#000) right/var(--r) var(--g) no-repeat round}
-.cover-stamp img{display:block;width:100%;height:auto;aspect-ratio:3 / 4;object-fit:cover;outline:1.5px solid var(--stamp-violet);outline-offset:3px}
-.cover-place{position:absolute;left:14px;right:14px;bottom:12px;display:flex;justify-content:space-between;gap:.6em;font:600 .7rem/1.3 var(--f-label);letter-spacing:.14em;text-transform:uppercase;color:var(--stamp-violet)}
-.cover-cancel{position:absolute;right:-2.4rem;top:-1.4rem;width:10.5rem;height:auto;color:var(--stamp-violet);transform:rotate(-16deg);pointer-events:none;opacity:.9}
-@media (forced-colors: active){.cover-stamp{-webkit-mask:none;mask:none;border:1px solid CanvasText}}
 
-/* ── a sealed book: its stamp is still blank, its chapters wait ── */
-.volume-sealed .cover-stamp{min-height:17rem;padding:13px}
-.cover-blank{display:grid;place-items:center;aspect-ratio:3 / 4;outline:1.5px solid var(--stamp-violet);outline-offset:3px;color:var(--stamp-violet);text-align:center}
-.cover-blank .seal{width:7.5rem;height:auto;transform:rotate(-12deg)}
-.cover-blank .blank-note{margin-top:1rem;font:600 .68rem/1.4 var(--f-label);letter-spacing:.2em;text-transform:uppercase}
 .volume-sealed .volume-title{color:var(--muted)}
 .toc-sealed .toc-link{cursor:default}
 .toc-sealed .toc-title{color:var(--muted)}
@@ -414,11 +401,6 @@ main{display:block;position:relative;z-index:1;overflow-x:clip}
 @media (max-width:760px){
   .volume{display:block;padding:30px 0}
   .cover-wrap{float:left;width:8.5rem;max-width:8.5rem;margin:4px 18px 6px 0}
-  .cover-stamp{padding:9px 9px 28px}
-  .cover-place{left:10px;right:10px;bottom:8px;font-size:.56rem}
-  .cover-cancel{width:6.2rem;right:-1.4rem;top:-.9rem}
-  .cover-blank .seal{width:4.4rem}
-  .cover-blank .blank-note{margin-top:.5rem;font-size:.52rem}
   .volume-lede{overflow:hidden}
   .volume-actions,.contents-title{clear:both}
 }
@@ -536,43 +518,47 @@ mark.hl.smolder{animation:smolder 2.5s cubic-bezier(.3,.1,.3,1) both}
 .video-play::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.35),rgba(0,0,0,0) 45%);pointer-events:none}
 
 
-/* ── a book is a pile of its lake stamps ── */
-.pile{position:relative;aspect-ratio:5 / 8;width:100%;max-width:21rem;margin:6px 0 0}
-.pile-link{position:absolute;inset:0;display:block;text-decoration:none}
-.stamp-s{position:absolute;left:var(--x);top:var(--y);width:46%;transform:rotate(var(--r));filter:drop-shadow(0 1px 1px var(--shadow)) drop-shadow(0 10px 16px var(--shadow))}
-.stamp-s.front{width:55%;z-index:2}
-.stamp-paper{display:block;padding:6% 6% 8%;background:var(--paper);--r:4px;--g:11px;
-  -webkit-mask:linear-gradient(#000 0 0) center/calc(100% - 2*var(--r)) calc(100% - 2*var(--r)) no-repeat,radial-gradient(circle var(--r) at 50% 0,#0000 97%,#000) top/var(--g) var(--r) round no-repeat,radial-gradient(circle var(--r) at 50% 100%,#0000 97%,#000) bottom/var(--g) var(--r) round no-repeat,radial-gradient(circle var(--r) at 0 50%,#0000 97%,#000) left/var(--r) var(--g) no-repeat round,radial-gradient(circle var(--r) at 100% 50%,#0000 97%,#000) right/var(--r) var(--g) no-repeat round;
-  mask:linear-gradient(#000 0 0) center/calc(100% - 2*var(--r)) calc(100% - 2*var(--r)) no-repeat,radial-gradient(circle var(--r) at 50% 0,#0000 97%,#000) top/var(--g) var(--r) round no-repeat,radial-gradient(circle var(--r) at 50% 100%,#0000 97%,#000) bottom/var(--g) var(--r) round no-repeat,radial-gradient(circle var(--r) at 0 50%,#0000 97%,#000) left/var(--r) var(--g) no-repeat round,radial-gradient(circle var(--r) at 100% 50%,#0000 97%,#000) right/var(--r) var(--g) no-repeat round}
-.stamp-paper img{display:block;width:100%;aspect-ratio:4 / 3;height:auto;object-fit:cover;outline:1.5px solid var(--stamp-violet);outline-offset:2px}
-.stamp-s.front .stamp-paper img{aspect-ratio:3 / 4}
-.stamp-paper span{display:block;margin-top:7%;font:600 .5rem/1.2 var(--f-label);letter-spacing:.12em;text-transform:uppercase;color:var(--stamp-violet);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pile .cover-cancel{right:-1.2rem;top:-1.1rem;z-index:3}
-@media (max-width:760px){
-  .cover-wrap.pile{float:none;width:min(100%,21rem);max-width:21rem;margin:0 auto 18px}
-  .volume-actions,.contents-title{clear:both}
-}
-@media (forced-colors: active){.stamp-paper{-webkit-mask:none;mask:none;border:1px solid CanvasText}}
-
-/* ── a sealed book: its stamps are still in the envelope ──
-   Book 2 is open, its stamps out on the table. Book 1's are in a glassine envelope, the
-   frosted sleeve a collector keeps stamps in: laid in two columns, each name whole, seen
-   through the glassine, with the flap folded down and closed with a wax seal. */
-.envelope{position:relative;max-width:21rem;margin:6px 0 0;padding:23% 7% 8%;border-radius:4px;background:var(--glass-back);
-  box-shadow:inset 0 0 0 1px var(--glass-edge),inset 0 1px 0 var(--glass-edge),0 22px 40px -22px var(--shadow);transform:rotate(-1.2deg)}
-.envelope::after{content:"";position:absolute;inset:0;z-index:2;border-radius:inherit;pointer-events:none;
+/* ── a book is a deck of its story cards, kept in a glassine envelope ──
+   One card per story, in the family of the Kortex cards on kaay.link: a photo, the lake in
+   condensed capitals, the place in italic, a line for its state. Book 1 is sealed: the whole
+   deck is in the envelope with the flap down under a wax seal, the top card showing through
+   the glassine and the rest as the edges of the stack. Book 2 is open: its flap is up and the
+   one story you can read is out on the table, in front of the seven still inside. */
+.env{position:relative;width:100%;max-width:21rem;margin:6px 0 0}
+.env-sealed{aspect-ratio:10 / 7;transform:rotate(-1.2deg)}
+.env-open{aspect-ratio:10 / 11.4}
+.env-pocket{position:absolute;inset:0;z-index:1;border-radius:4px;overflow:hidden;background:var(--glass-back);
+  box-shadow:inset 0 0 0 1px var(--glass-edge),inset 0 1px 0 var(--glass-edge),0 22px 40px -22px var(--shadow)}
+.env-open .env-pocket{top:22.8%;bottom:auto;height:61.4%}
+.env-pocket::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
   background:linear-gradient(112deg,transparent 22%,var(--glass-sheen) 32%,transparent 44%),var(--glass-front);
   -webkit-backdrop-filter:blur(.6px) saturate(.85);backdrop-filter:blur(.6px) saturate(.85)}
-.env-stamps{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:.9rem 1.1rem}
-.envelope .stamp-s{position:relative;left:auto;top:auto;width:auto;transform:rotate(var(--r));filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.3))}
-.envelope .stamp-s:last-child{grid-column:1 / -1;justify-self:center;width:calc(50% - .55rem)}
-.envelope .stamp-paper span{font-size:.62rem;letter-spacing:.07em}
+.env-deck{position:absolute;inset:0;z-index:1}
+.scard{position:absolute;left:8%;top:8%;width:84%;aspect-ratio:3 / 2;display:block;container-type:inline-size;overflow:hidden;border-radius:3.4% / 5.1%;
+  background:#3a3f46;box-shadow:0 1px 1.5px rgba(0,0,0,.35);transform:translate(calc(var(--k) * 2.4px),calc(var(--k) * 2.6px)) rotate(var(--r))}
+.scard img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.scard.plain{background:#ece5d4}
+.env-open .env-deck img{filter:saturate(.5) brightness(.82)}
+.scard.top::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(8,10,14,.88),rgba(8,10,14,.5) 42%,rgba(8,10,14,0) 72%)}
+.scard-txt{position:absolute;left:6.5cqw;right:6.5cqw;bottom:8.6cqw;z-index:1;color:#f5f0e4}
+.scard-name{display:block;font:600 9.4cqw/.95 var(--f-label);letter-spacing:.03em;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,.45)}
+.scard-place{display:block;margin-top:1.4cqw;font:italic 400 3.9cqw/1.25 var(--f-text)}
+.scard-meta{display:block;margin-top:3.6cqw;font:italic 400 3.2cqw/1.2 var(--f-text);opacity:.82}
+.scard-line{display:flex;align-items:center;gap:1.5cqw;margin-top:1cqw;font:400 4.6cqw/1.1 var(--f-text)}
+.scard-line svg{flex:none;width:3.1cqw;height:3.7cqw}
+.scard-foot{position:absolute;left:0;right:0;bottom:3.4cqw;z-index:1;text-align:center;font:italic 400 2.3cqw/1 var(--f-text);letter-spacing:.34em;text-transform:uppercase;color:#f5f0e4;opacity:.72}
 .env-flap{position:absolute;left:0;top:0;z-index:3;display:block;width:100%;height:auto}
+.env-flap-up{z-index:0}
 .env-flap .flap-paper{fill:var(--glass-flap)}
 .env-flap .flap-fold{fill:none;stroke:var(--glass-edge);stroke-width:1;vector-effect:non-scaling-stroke}
-.env-seal{position:absolute;left:50%;top:0;z-index:4;display:block;width:23%;height:auto;margin:13.5% 0 0 -11.5%;transform:rotate(-9deg);filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
-@media (max-width:760px){.cover-wrap.envelope{float:none;width:min(100%,16rem);max-width:16rem;margin:0 auto 26px}}
-@media (forced-colors: active){.envelope::after{display:none}.envelope{border:1px solid CanvasText}}
+.env-seal{position:absolute;left:50%;top:0;z-index:4;display:block;width:16%;height:auto;margin:10% 0 0 -8%;transform:rotate(-9deg);filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+.env-out{position:absolute;left:13%;top:49%;z-index:5;display:block;width:82%;transform:rotate(-3deg);
+  filter:drop-shadow(0 1px 1px rgba(0,0,0,.3)) drop-shadow(0 16px 24px var(--shadow));transition:transform .4s cubic-bezier(.22,.61,.36,1)}
+.env-out .scard{position:relative;left:auto;top:auto;width:100%;transform:none}
+.env-out:hover,.env-out:focus-visible{transform:rotate(-1.5deg) translateY(-4px)}
+@media (max-width:760px){.cover-wrap.env{float:none;width:min(100%,19rem);max-width:19rem;margin:0 auto 22px}}
+@media (forced-colors: active){.env-pocket::after{display:none}.env-pocket,.scard{border:1px solid CanvasText}}
+@media (prefers-reduced-motion: reduce){.env-out{transition:none}}
 
 /* ── the video: YouTube's frame lies under the still. A tap on the still passes through to the
    player at its centre, so one tap is the whole gesture on every phone; when the player says it is
@@ -604,8 +590,6 @@ mark.hl.smolder{animation:smolder 2.5s cubic-bezier(.3,.1,.3,1) both}
 .toc-book .toc-open{margin:0 -.8rem;padding-inline:.8rem;border-radius:6px;background:color-mix(in srgb,var(--violet) 10%,transparent);box-shadow:inset 3px 0 var(--violet)}
 .toc-sealed .toc-open .toc-title{color:var(--ink)}
 .toc-open:hover .toc-title,.toc-open:focus-visible .toc-title{text-decoration:underline;text-decoration-color:var(--violet);text-underline-offset:.22em}
-.stamp-s.shut .stamp-paper img{filter:grayscale(1) contrast(.8) brightness(.78)}
-.stamp-s.shut .stamp-paper{background:color-mix(in srgb,var(--paper) 88%,var(--ink))}
 .toc-unlocked{color:var(--violet)}
 .library-title .dot-i{color:var(--red)}
 .check-flame{width:10px;height:15px;margin-left:2px;color:#d9730d;vertical-align:-1px}
