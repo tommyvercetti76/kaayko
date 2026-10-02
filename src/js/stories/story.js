@@ -1067,6 +1067,25 @@
     renderHL();
   }
 
+  /* ── share: the phone's own sheet where there is one, else the link on the clipboard. The
+     button stays hidden on a browser that can do neither, so nothing on the page is a dud. ── */
+  const shareBtn = $('[data-share]', story);
+  const canShare = !!navigator.share || !!(navigator.clipboard && window.isSecureContext);
+  if (shareBtn && canShare) {
+    shareBtn.hidden = false;   // before the book is laid out, so its page counts include it
+    shareBtn.addEventListener('click', async () => {
+      const link = document.querySelector('link[rel="canonical"]');
+      const url = link ? link.href : location.href.split(/[?#]/)[0];
+      const title = document.title;
+      if (navigator.share) {
+        try { await navigator.share({ title, url }); } catch (_) { /* closed the sheet */ }
+        return;
+      }
+      try { await navigator.clipboard.writeText(url); announce('Link copied.'); shareBtn.textContent = 'Link copied'; }
+      catch (_) { announce('Could not copy the link.'); }
+    });
+  }
+
   /* ── boot ─────────────────────────────────────────────── */
   applyTheme(); syncControls(); measureBar(); checkFit(); placeCompass(state.layout);
   Ripples.render();

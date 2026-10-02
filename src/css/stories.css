@@ -78,7 +78,9 @@ button,input,select,summary{font:inherit}
 /* ── the bar ───────────────────────────────────────────── */
 .bar{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 14px;
   padding:calc(env(safe-area-inset-top,0px) + 10px) 16px 10px;background:var(--bar);border-bottom:1px solid var(--edge);color:var(--ink)}
-a.brand{text-decoration:none;color:inherit}
+/* "Kaayko" goes home and "Stories" goes to the library: two links that still read as one name */
+.brand-name a{color:inherit;text-decoration:none;padding:8px 0}
+.brand-name a:hover,.brand-name a:focus-visible{text-decoration:underline;text-decoration-thickness:.06em;text-underline-offset:.14em}
 .brand{margin:0;display:flex;align-items:baseline;gap:10px;min-width:0}
 .brand-name{font:400 1.35rem/1 var(--f-display)}
 .brand-sub{font:600 .78rem/1 var(--f-label);letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
@@ -189,8 +191,16 @@ main{display:block;position:relative;z-index:1;overflow-x:clip}
 .stamp-cta{font:600 .8rem/1.2 var(--f-ui);text-decoration:underline;text-decoration-color:var(--stamp-violet);text-underline-offset:.2em}
 .story-foot{margin-top:2.4em;padding-top:1.2em;border-top:1px solid var(--edge);font-size:.9em;color:var(--muted)}
 .story-foot p{margin:0 0 .8em}
-.tags{list-style:none;display:flex;flex-wrap:wrap;gap:.5em;margin:.5em 0 1.2em;padding:0}
-.tags li{padding:.35em .7em;border:1px solid var(--edge);border-radius:3px;font:600 .78rem/1 var(--f-label);letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
+/* After the story: a way back and a way to pass it on, before the small print */
+.story-end{margin:0 0 2.2em}
+.story-end-next{color:var(--ink)}
+.story-end-actions{display:flex;flex-wrap:wrap;gap:10px}
+.story-end .btn{text-decoration:none}
+.story-end .btn:hover{text-decoration:underline;text-underline-offset:.2em}
+button.btn{cursor:pointer}
+/* Tags are metadata, not buttons: plain text, so nothing looks tappable that is not */
+.tags{list-style:none;display:flex;flex-wrap:wrap;gap:.45em 1.6em;margin:.5em 0 1.2em;padding:0}
+.tags li{font:600 .74rem/1.4 var(--f-label);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .here{scroll-margin-top:calc(var(--barh) + 24px)}
 .here::before{content:"";position:absolute;left:-1.3rem;top:.55em;width:.62rem;height:.62rem;border-radius:50%;background:var(--violet);transition:opacity .6s}
 .here.fading::before{opacity:0}
