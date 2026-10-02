@@ -29,6 +29,7 @@ firebase deploy
 ## Navigation
 - **Page → file map:** `PAGE-MAP.md`
 - **Module map (pages + APIs + Firestore + services):** `MODULE-MAP.md`
+- **Stories (`/stories`):** static HTML with no API — `docs/stories/README.md`. **Every change to Stories files gets an entry in `docs/stories/EDIT-LOG.md`** (what, before → after, why, commit, deployed or not, how checked). After a text edit run `node scripts/stories-reading-time.js src/stories/<chapter>.html`
 - **Slash commands:** `.claude/commands/` — type `/store`, `/kutz`, `/kortex`, etc.
 
 ## Architecture rules
