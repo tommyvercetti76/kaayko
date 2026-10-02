@@ -84,7 +84,7 @@ export const PRINT = Object.freeze({
   textFilter: "",
 });
 
-import { esc } from "/js/kit.js?v=d5ff872";
+import { esc } from "/js/kit.js?v=39b8d76";
 export { esc };
 
 /**
