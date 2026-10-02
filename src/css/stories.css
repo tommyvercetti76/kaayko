@@ -8,7 +8,7 @@ img{max-width:100%}
    two-page spread by CSS columns; only the page being turned is ever copied, and only for the turn. */
 :root{
   /* Album: quadrille leaf, indigo ink, violet cancellation ink. Every text pair measured at 7:1 or better (WCAG AAA). */
-  --leaf:#eceff1; --grid:#dde2e6; --paper:#fdfcf7; --ink:#1b2130; --muted:#3d4453; --violet:#4a2e80; --red:#b3201a; --burn:#5f3504; --char:#2a1402; --scorch:rgba(173,104,18,.14); --burn-glow:transparent; --smoke:92,100,116; --edge:#6f7784;
+  --leaf:#eceff1; --grid:#dde2e6; --paper:#fdfcf7; --ink:#1b2130; --muted:#3d4453; --violet:#4a2e80; --red:#b3201a; --burn:#5f3504; --char:#2a1402; --scorch:rgba(173,104,18,.14); --burn-glow:transparent; --smoke:92,100,116; --glass-back:rgba(255,255,255,.46); --glass-front:rgba(255,253,246,.30); --glass-flap:rgba(255,253,246,.66); --glass-sheen:rgba(255,255,255,.26); --glass-edge:rgba(96,88,70,.30); --edge:#6f7784;
   --stamp-ink:#1b2130; --stamp-violet:#4a2e80; --bar:#f6f7f8; --scrim:rgba(11,15,20,.88); --shadow:rgba(27,33,48,.25);
   /* Lake Powell, sampled from the open water at Lone Rock in his photo */
   --ripple:#4e7167; --ripple-alpha:.13; --ripple-fill:.06;
@@ -20,13 +20,13 @@ img{max-width:100%}
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --leaf:#0f1013; --grid:#1b1d22; --paper:#f6f4ec; --ink:#ebe8f0; --muted:#b8b4c2; --violet:#c6b2f2; --red:#ff7a6e; --burn:#f0c264; --char:#6b3410; --scorch:rgba(240,170,60,.12); --burn-glow:rgba(255,170,60,.38); --smoke:214,218,228; --edge:#6d7382; --bar:#16171b; --shadow:rgba(0,0,0,.6);
+    --leaf:#0f1013; --grid:#1b1d22; --paper:#f6f4ec; --ink:#ebe8f0; --muted:#b8b4c2; --violet:#c6b2f2; --red:#ff7a6e; --burn:#f0c264; --char:#6b3410; --scorch:rgba(240,170,60,.12); --burn-glow:rgba(255,170,60,.38); --smoke:214,218,228; --glass-back:rgba(240,236,224,.06); --glass-front:rgba(240,236,224,.05); --glass-flap:rgba(240,236,224,.17); --glass-sheen:rgba(255,255,255,.11); --glass-edge:rgba(255,255,255,.30); --edge:#6d7382; --bar:#16171b; --shadow:rgba(0,0,0,.6);
     --ripple:#6b908e; --ripple-alpha:.19; --ripple-fill:.08;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --leaf:#0f1013; --grid:#1b1d22; --paper:#f6f4ec; --ink:#ebe8f0; --muted:#b8b4c2; --violet:#c6b2f2; --red:#ff7a6e; --burn:#f0c264; --char:#6b3410; --scorch:rgba(240,170,60,.12); --burn-glow:rgba(255,170,60,.38); --smoke:214,218,228; --edge:#6d7382; --bar:#16171b; --shadow:rgba(0,0,0,.6);
+  --leaf:#0f1013; --grid:#1b1d22; --paper:#f6f4ec; --ink:#ebe8f0; --muted:#b8b4c2; --violet:#c6b2f2; --red:#ff7a6e; --burn:#f0c264; --char:#6b3410; --scorch:rgba(240,170,60,.12); --burn-glow:rgba(255,170,60,.38); --smoke:214,218,228; --glass-back:rgba(240,236,224,.06); --glass-front:rgba(240,236,224,.05); --glass-flap:rgba(240,236,224,.17); --glass-sheen:rgba(255,255,255,.11); --glass-edge:rgba(255,255,255,.30); --edge:#6d7382; --bar:#16171b; --shadow:rgba(0,0,0,.6);
   --ripple:#6b908e; --ripple-alpha:.19; --ripple-fill:.08;
   color-scheme:dark;
 }
@@ -420,7 +420,8 @@ main{display:block;position:relative;z-index:1;overflow-x:clip}
   .cover-blank .seal{width:4.4rem}
   .cover-blank .blank-note{margin-top:.5rem;font-size:.52rem}
   .volume-lede{overflow:hidden}
-  .volume-actions,.contents-title,}
+  .volume-actions,.contents-title{clear:both}
+}
 
 /* ── the chart, quieter ── */
 .chart-place{opacity:.55}
@@ -547,11 +548,31 @@ mark.hl.smolder{animation:smolder 2.5s cubic-bezier(.3,.1,.3,1) both}
 .stamp-s.front .stamp-paper img{aspect-ratio:3 / 4}
 .stamp-paper span{display:block;margin-top:7%;font:600 .5rem/1.2 var(--f-label);letter-spacing:.12em;text-transform:uppercase;color:var(--stamp-violet);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pile .cover-cancel{right:-1.2rem;top:-1.1rem;z-index:3}
-.pile-seal{position:absolute;left:-2%;top:77%;width:30%;height:auto;z-index:3;color:var(--stamp-violet);transform:rotate(-14deg);filter:drop-shadow(0 0 2px var(--paper))}
 @media (max-width:760px){
   .cover-wrap.pile{float:none;width:min(100%,21rem);max-width:21rem;margin:0 auto 18px}
-  .volume-actions,.contents-title,}
+  .volume-actions,.contents-title{clear:both}
+}
 @media (forced-colors: active){.stamp-paper{-webkit-mask:none;mask:none;border:1px solid CanvasText}}
+
+/* ── a sealed book: its stamps are still in the envelope ──
+   Book 2 is open, its stamps out on the table. Book 1's are in a glassine envelope, the
+   frosted sleeve a collector keeps stamps in: laid in two columns, each name whole, seen
+   through the glassine, with the flap folded down and closed with a wax seal. */
+.envelope{position:relative;max-width:21rem;margin:6px 0 0;padding:23% 7% 8%;border-radius:4px;background:var(--glass-back);
+  box-shadow:inset 0 0 0 1px var(--glass-edge),inset 0 1px 0 var(--glass-edge),0 22px 40px -22px var(--shadow);transform:rotate(-1.2deg)}
+.envelope::after{content:"";position:absolute;inset:0;z-index:2;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(112deg,transparent 22%,var(--glass-sheen) 32%,transparent 44%),var(--glass-front);
+  -webkit-backdrop-filter:blur(.6px) saturate(.85);backdrop-filter:blur(.6px) saturate(.85)}
+.env-stamps{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:.9rem 1.1rem}
+.envelope .stamp-s{position:relative;left:auto;top:auto;width:auto;transform:rotate(var(--r));filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.3))}
+.envelope .stamp-s:last-child{grid-column:1 / -1;justify-self:center;width:calc(50% - .55rem)}
+.envelope .stamp-paper span{font-size:.62rem;letter-spacing:.07em}
+.env-flap{position:absolute;left:0;top:0;z-index:3;display:block;width:100%;height:auto}
+.env-flap .flap-paper{fill:var(--glass-flap)}
+.env-flap .flap-fold{fill:none;stroke:var(--glass-edge);stroke-width:1;vector-effect:non-scaling-stroke}
+.env-seal{position:absolute;left:50%;top:0;z-index:4;display:block;width:23%;height:auto;margin:13.5% 0 0 -11.5%;transform:rotate(-9deg);filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+@media (max-width:760px){.cover-wrap.envelope{float:none;width:min(100%,16rem);max-width:16rem;margin:0 auto 26px}}
+@media (forced-colors: active){.envelope::after{display:none}.envelope{border:1px solid CanvasText}}
 
 /* ── the video: YouTube's frame lies under the still. A tap on the still passes through to the
    player at its centre, so one tap is the whole gesture on every phone; when the player says it is
