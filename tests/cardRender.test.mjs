@@ -7,7 +7,7 @@
  * test. Its header says not to improve its numbers on the evidence of a screen,
  * because 1050 x 600 units IS 3.5 x 2 inches, and nothing enforced that.
  *
- * So: the output of all five cards, front and back, is pinned by hash. Any
+ * So: the output of every card, front and back, is pinned by hash. Any
  * change to a colour, a font, a coordinate or a single character of markup
  * fails here. That is the point. A skin added for the web page must leave these
  * hashes untouched, because a card already in someone's pocket cannot be
@@ -59,12 +59,17 @@ const artOf = (c) => `/assets/cards/art/${c.art || c.slug}.png`;
 // Re-pinned 20 Sep 2026. Every BACK moved again: the picture is now the full
 // height of the card inside a 40px margin, framed at the animal's measured
 // extent, with the type in a 392px column beside it. No FRONT moved.
+// Re-pinned 1 Oct 2026, when Stories joined as the second card. No FRONT of
+// the five moved (the fronts carry no position). Every BACK moved: each prints
+// "N OF 6" now, and the four after Paddling Out each went one place down.
+// Stories is pinned new, on both faces.
 const PINNED = {
-  paddlingout: ['9bc106d58993f93f', 'e13b2c3a8def24f3'],
-  forge:       ['2da71419f1d6d133', 'e45f35cbeae37262'],
-  kortex:      ['9e8838d7a584c564', 'd57257e39b63de48'],
-  kaayko:      ['49b36fd9a9a2cb1e', 'da775073face2778'],
-  alumni:      ['14a94fe6a546b0fb', '4faf74c825593623'],
+  paddlingout: ['9bc106d58993f93f', '44de42e4cf2cdd67'],
+  stories:     ['4f356546f9651710', 'c1c9f6d20321917c'],
+  forge:       ['2da71419f1d6d133', 'd908a3733e05a546'],
+  kortex:      ['9e8838d7a584c564', '7eaf6ff60c868bd7'],
+  kaayko:      ['49b36fd9a9a2cb1e', '16d6c31adcae9f83'],
+  alumni:      ['14a94fe6a546b0fb', '57a54d9fed3fb0c2'],
 };
 
 const render = (c) => ({
@@ -72,8 +77,8 @@ const render = (c) => ({
   back:  back(c, { label: idx.label }, { index: c.n, total: idx.cards.length, artHref: artOf(c) }),
 });
 
-test('the index still holds the five cards the hashes were pinned against', () => {
-  assert.equal(idx.cards.length, 5);
+test('the index still holds the six cards the hashes were pinned against', () => {
+  assert.equal(idx.cards.length, 6);
   assert.deepEqual(idx.cards.map((c) => c.slug).sort(), Object.keys(PINNED).sort());
 });
 

@@ -44,17 +44,19 @@
 export const STOCKS = Object.freeze({
   kaayko:      Object.freeze({ name: "Bone",        hex: "#F7EEE1", note: "Silian Rail" }),
   paddlingout: Object.freeze({ name: "Eggshell",    hex: "#F6EFE3", note: "Romalian type" }),
+  stories:     Object.freeze({ name: "Subtle off-white", hex: "#F4EEE1", note: "tasteful thickness" }),
   forge:       Object.freeze({ name: "Pale Nimbus", hex: "#F3F1E8", note: "raised lettering" }),
   kortex:      Object.freeze({ name: "White",       hex: "#F5F0E9", note: "flat printed" }),
   alumni:      Object.freeze({ name: "Off-white",   hex: "#F3F0E5", note: "watermarked" }),
 });
 
 /**
- * Five jobs, four stocks.
+ * Six jobs, four stocks and two halves of one compliment.
  *
  * Every stock and every lettering name above is one the scene actually says:
- * bone, eggshell, pale nimbus, white, off-white, Silian Rail, Romalian type.
- * Five names, five cards, and none of them used twice.
+ * bone, eggshell, pale nimbus, white, off-white, Silian Rail, Romalian type,
+ * and the subtle off-white and tasteful thickness of Paul Allen's card, which
+ * Stories took when the watermark had gone to Alumni. Six cards, none twice.
  *
  * Kortex is the flat one. Somebody always orders the cheap job, and the whole
  * point is that you have to look twice to notice.
@@ -79,6 +81,15 @@ const VARIATION = Object.freeze({
     deboss: { blur: 1.35, scale: 1.9, tone: ".14" },
     type: { name: { size: 46, weight: 500, y: 186, track: 7, caps: true },
             hook: { size: 25, weight: 300, y: 248, step: 34, wrap: 42, track: .8, italic: true } },
+  }),
+  // Paul Allen's card, the half the watermark did not take: the subtle
+  // off-white, and the tasteful thickness of it. The die goes in deeper than
+  // anywhere but Paddling Out, because thickness is the whole compliment.
+  stories: Object.freeze({
+    relief: "raise",
+    deboss: { blur: 1.25, scale: 1.75, tone: ".12" },
+    type: { name: { size: 48, weight: 500, y: 187, track: 8, caps: true },
+            hook: { size: 25, weight: 300, y: 250, step: 34, wrap: 42, track: 1, italic: true } },
   }),
   // The one that refuses to uppercase. Heavier, tighter, and the only card in
   // the set whose name is still set the way a book would set it.

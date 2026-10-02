@@ -282,7 +282,7 @@ export async function init() {
     <div class="cv-list" id="cards-list"></div>
     <section class="cv-section">
       <h2>The back of every card</h2>
-      <p class="cv-lede">Shared by all five. Changing this changes the whole set.</p>
+      <p class="cv-lede">Shared by every card. Changing this changes the whole set.</p>
       <div id="cards-brand"></div>
     </section>
   `;

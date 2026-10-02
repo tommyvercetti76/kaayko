@@ -27,6 +27,9 @@ const rev = execSync('git rev-parse --short HEAD', { cwd: root }).toString().tri
 const FILES = [
   'src/card.html',
   'src/js/pages/card.js',
+  // The 404 deals the same deck, from the same modules.
+  'src/404.html',
+  'src/js/pages/not-found.js',
   'src/js/cards/render.js',
   'src/js/cards/skins/engraved.js',
   'src/js/cards/relief.js',

@@ -2,14 +2,14 @@
  * pages/card.js — the collectible card (/card): lighting model, flip, inspect, QR.
  * Moved out of card.html on 12 Sep 2026 unchanged.
  */
-import { front, back, PRINT, BACK, ART_EXTENT, ART_COLUMN } from '/js/cards/render.js?v=e318523';
-import { engravedFor, stockOf, embossParams, reliefType, DIRS } from '/js/cards/skins/engraved.js?v=e318523';
-import { embossOf, stillCanvas } from '/js/cards/emboss.js?v=e318523';
-import { readFace, warmArt } from '/js/cards/relief.js?v=e318523';
-import { rest, step, clamp } from '/js/cards/attitude.js?v=e318523';
-import { lightFace, pointerLamp, v } from '/js/cards/lamp.js?v=e318523';
-import { dustMorph } from '/js/cards/morph.js?v=e318523';
-import { esc, apiBase } from '/js/kit.js?v=e318523';
+import { front, back, PRINT, BACK, ART_EXTENT, ART_COLUMN } from '/js/cards/render.js?v=d5ff872';
+import { engravedFor, stockOf, embossParams, reliefType, DIRS } from '/js/cards/skins/engraved.js?v=d5ff872';
+import { embossOf, stillCanvas } from '/js/cards/emboss.js?v=d5ff872';
+import { readFace, warmArt } from '/js/cards/relief.js?v=d5ff872';
+import { rest, step, clamp } from '/js/cards/attitude.js?v=d5ff872';
+import { lightFace, pointerLamp, v } from '/js/cards/lamp.js?v=d5ff872';
+import { dustMorph } from '/js/cards/morph.js?v=d5ff872';
+import { esc, apiBase } from '/js/kit.js?v=d5ff872';
 
 /* ── the light ─────────────────────────────────────────────────────────────
    One lamp. Everything the eye reads as light on this card — the glint, its
@@ -390,7 +390,7 @@ const API = apiBase();
 const FALLBACK_BRAND = {
   label: 'KAAYKO',
   tagline: 'BUILDS THINGS, AND PUBLISHES THE FAILURES NEXT TO THE RESULTS',
-  properties: 'Kaayko \u00b7 Paddling Out \u00b7 Forge \u00b7 Kortex \u00b7 School',
+  properties: 'Kaayko \u00b7 Paddling Out \u00b7 Stories \u00b7 Forge \u00b7 Kortex \u00b7 School',
   contact: 'kaayko.com \u00b7 hello@kaayko.com'
 };
 
@@ -763,5 +763,5 @@ function show(i, { focus = false, relief = 'soon', fade = 0 } = {}) {
   // A rig for measuring the page on a real engine, only when the URL asks
   // for it. Never fetched otherwise. See cards/probe.js.
   const probe = new URLSearchParams(location.search).get('probe');
-  if (probe) import('/js/cards/probe.js?v=e318523').then((m) => m.run({ label: probe, setSkin, setInspect, att, grab, quiet: (on) => { quiet = !!on; }, parts: (p) => { reliefParts = p; } })).catch((err) => console.warn('card: probe —', err));
+  if (probe) import('/js/cards/probe.js?v=d5ff872').then((m) => m.run({ label: probe, setSkin, setInspect, att, grab, quiet: (on) => { quiet = !!on; }, parts: (p) => { reliefParts = p; } })).catch((err) => console.warn('card: probe —', err));
 })();

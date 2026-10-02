@@ -1,91 +1,104 @@
 <!DOCTYPE html>
 <html lang="en" class="dark-theme">
 <head>
-  <script src="/js/site-features.js"></script>
+  <script src="/js/site-features.js?v=d5ff872"></script>
+  <script src="/js/prod-config.js?v=d5ff872"></script>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Page Not Found — Kaayko</title>
   <meta name="description" content="That page doesn't exist on kaayko.com. Here's where to go instead.">
   <meta name="robots" content="noindex, follow">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <meta name="theme-color" content="#0B0A08">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <!-- Reuses the site's design system: .po-page-header, .po-intro, .seo-lake
-       and the shared footer / .footer-links all come from paddlingout.css. -->
-  <link rel="stylesheet" href="/css/paddlingout.css">
-  <meta name="theme-color" content="#080808">
-
+  <!-- The faces the cards are set in (cards/render.js), so a mini card prints like the real one. -->
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Josefin+Sans:wght@200;300;400;600&display=swap" rel="stylesheet">
   <style>
-    /* Only the error numeral is page-specific. Everything else is shared. */
-    .nf-code {
-      font-family: var(--font-sans);
-      font-size: clamp(3.5rem, 13vw, 7rem);
-      font-weight: 700;
-      line-height: 1;
-      letter-spacing: 0.04em;
-      color: var(--gold);
-      opacity: 0.9;
+    /* The 404 is the card room from /card with the deck dealt out: same ink, same paper, same gold. */
+    :root {
+      --ink: #0B0A08;
+      --paper: #F4EEDF;
+      --gold: #B5935A;
+      --dim: rgba(244, 238, 223, .72);
+      --hair: rgba(181, 147, 90, .28);
+      --serif: "Cormorant Garamond", Georgia, serif;
+      --sans: "Josefin Sans", system-ui, sans-serif;
     }
-    .nf-title {
-      font-family: var(--font-serif);
-      font-size: clamp(1.5rem, 4.5vw, 2.4rem);
-      font-weight: 600;
-      color: var(--fg);
-      margin: 0.75rem 0 0;
+    html, body { margin: 0; background: var(--ink); color: var(--paper); }
+    body { min-height: 100vh; display: flex; flex-direction: column; font-family: var(--serif); }
+    a { color: inherit; }
+    .nf-top { padding: calc(env(safe-area-inset-top, 0px) + 22px) 24px 0; text-align: center; }
+    .nf-brand { font: 300 .8rem/1 var(--sans); letter-spacing: .5em; text-decoration: none; color: var(--dim); padding: 10px 0 10px .5em; display: inline-block; }
+    .nf-brand:hover, .nf-brand:focus-visible { color: var(--paper); }
+    main { flex: 1; width: 100%; max-width: 72rem; margin: 0 auto; padding: clamp(28px, 6vh, 64px) 20px 40px; box-sizing: border-box; text-align: center; }
+    .nf-code { margin: 0; font: 300 .82rem/1 var(--sans); letter-spacing: .5em; color: var(--gold); padding-left: .5em; }
+    h1 { margin: 18px auto 0; max-width: 18ch; font: 400 clamp(2.2rem, 6vw, 3.6rem)/1.05 var(--serif); letter-spacing: -.01em; text-wrap: balance; }
+    .nf-sub { margin: 18px auto 0; max-width: 34rem; font: italic 400 clamp(1.1rem, 2.4vw, 1.3rem)/1.5 var(--serif); color: var(--dim); }
+    .nf-sub code { font: 400 .82em/1 ui-monospace, SFMono-Regular, Menlo, monospace; font-style: normal; color: var(--paper); background: rgba(244, 238, 223, .08); padding: .15em .4em; border-radius: 4px; word-break: break-all; }
+
+    /* ── the hand ──────────────────────────────────────────────
+       Before the deck arrives this is a plain list of the same places. Once dealt,
+       each card is the printed card, small: 1050 × 600 units, so 7 : 4. */
+    .hand { list-style: none; margin: clamp(36px, 7vh, 64px) auto 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 22px; max-width: 64rem; }
+    .hand:not(.dealt) a { display: block; padding: 18px 20px; border: 1px solid var(--hair); border-radius: 10px; text-decoration: none; text-align: left; font: 400 1.2rem/1.3 var(--serif); }
+    .hand:not(.dealt) a span { display: block; margin-top: 4px; font: 300 .72rem/1.3 var(--sans); letter-spacing: .18em; color: var(--gold); }
+    .mini { position: relative; }
+    .mini-card { display: block; aspect-ratio: 7 / 4; perspective: 1400px; border-radius: 6px; text-decoration: none; outline-offset: 6px; }
+    .mini-card:focus-visible { outline: 2px solid var(--gold); }
+    .mini-turn { position: relative; display: block; width: 100%; height: 100%; transform-style: preserve-3d; -webkit-transform-style: preserve-3d; transition: transform .7s cubic-bezier(.2, .75, .2, 1); }
+    .mini-face { position: absolute; inset: 0; display: block; border-radius: 6px; overflow: hidden; -webkit-backface-visibility: hidden; backface-visibility: hidden; box-shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 18px 34px -16px rgba(0, 0, 0, .8); }
+    .mini-face svg { display: block; width: 100%; height: 100%; }
+    .mini-back { transform: rotateY(180deg); }
+    .mini.is-turned .mini-turn { transform: rotateY(180deg); }
+    @media (hover: hover) {
+      .mini-card:hover .mini-turn, .mini-card:focus-visible .mini-turn { transform: rotateY(180deg); }
     }
-    .nf-links {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 1rem;
-      max-width: 46rem;
-      margin: 2rem auto 3.5rem;
-      padding: 0 clamp(1.25rem, 4vw, 2rem);
+    .mini-flip { display: none; position: absolute; right: -8px; top: -8px; z-index: 2; width: 44px; height: 44px; padding: 0; border: 1px solid var(--hair); border-radius: 50%; background: var(--ink); color: var(--paper); cursor: pointer; }
+    .mini-flip svg { width: 18px; height: 18px; }
+    .mini-flip:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+    @media (hover: none) { .mini-flip { display: grid; place-items: center; } }
+
+    /* A real hand where there is room for one: the cards overlap, fanned about the middle,
+       the outer ones a little lower. The one you point at stands up out of the hand. */
+    @media (min-width: 1080px) and (hover: hover) {
+      .hand.dealt { display: flex; justify-content: center; gap: 0; padding: 30px 0 70px; }
+      .hand.dealt .mini { flex: none; width: 15rem; margin-left: -3.4rem; transform: translateY(calc(var(--off) * var(--off) * 7px)) rotate(calc(var(--off) * 5deg)); transform-origin: 50% 120%; transition: transform .35s cubic-bezier(.2, .75, .2, 1); z-index: var(--i); }
+      .hand.dealt .mini:first-child { margin-left: 0; }
+      .hand.dealt .mini:hover, .hand.dealt .mini:focus-within { transform: translateY(-34px) rotate(0deg); z-index: 20; }
     }
+    @media (prefers-reduced-motion: reduce) {
+      .mini-turn, .hand.dealt .mini { transition: none; }
+    }
+
+    .nf-more { margin: clamp(30px, 6vh, 48px) 0 0; font: 300 .76rem/1 var(--sans); letter-spacing: .28em; text-transform: uppercase; }
+    .nf-more a { display: inline-block; padding: 14px 10px; color: var(--dim); text-decoration: none; }
+    .nf-more a:hover, .nf-more a:focus-visible { color: var(--paper); text-decoration: underline; text-underline-offset: .4em; }
+    .nf-more span { color: var(--hair); }
   </style>
   <link rel="stylesheet" href="/css/footer.css">
 </head>
 <body>
 
-  <header class="po-page-header">
-    <a class="po-brand" href="/" style="text-decoration:none;color:inherit">
-      <span class="po-eyebrow">kaayko</span>
-      <span class="po-title">Kaayko</span>
-    </a>
+  <header class="nf-top">
+    <a class="nf-brand" href="/">KAAYKO</a>
   </header>
 
   <main>
-    <section class="po-intro">
-      <div class="nf-code">404</div>
-      <h1 class="nf-title">This page doesn&rsquo;t exist.</h1>
-      <p>
-        Either the link was wrong, or something moved and I didn&rsquo;t leave a forwarding
-        address. Both happen. Here&rsquo;s where the real pages are.
-      </p>
-    </section>
+    <p class="nf-code">404</p>
+    <h1>You drew a card we never printed.</h1>
+    <p class="nf-sub">Nothing lives at <code id="nf-path">this address</code>. These do. Pick a card, any card.</p>
 
-    <nav class="nf-links" aria-label="Main pages">
-      <a class="seo-lake" href="/">
-        <h2>Home</h2>
-        <p>Paddling Out, Forge, and the store</p>
-      </a>
-      <a class="seo-lake" href="/paddlingout">
-        <h2>Paddling Out</h2>
-        <p>Live paddle conditions for 17 spots</p>
-      </a>
-      <a class="seo-lake" href="/paddlingout/methodology">
-        <h2>Methodology</h2>
-        <p>How the Paddle Score works</p>
-      </a>
-      <a class="seo-lake" href="/forge">
-        <h2>Forge</h2>
-        <p>Local-first generative AI</p>
-      </a>
-      <a class="seo-lake" href="/about">
-        <h2>About</h2>
-        <p>What Kaayko is, and who built it</p>
-      </a>
-    </nav>
+    <ul class="hand" id="hand" aria-label="Kaayko, one card each">
+      <li><a href="/paddlingout">Paddling Out<span>KAAYKO.COM/PADDLINGOUT</span></a></li>
+      <li><a href="/stories">Stories<span>KAAYKO.COM/STORIES</span></a></li>
+      <li><a href="/forge">Forge<span>KAAYKO.COM/FORGE</span></a></li>
+      <li><a href="https://kaay.link">Kortex<span>KAAY.LINK</span></a></li>
+      <li><a href="https://kaay.store">Store<span>KAAY.STORE</span></a></li>
+      <li><a href="https://kaay.school">School<span>KAAY.SCHOOL</span></a></li>
+    </ul>
+
+    <p class="nf-more"><a href="/">Home</a> <span aria-hidden="true">·</span> <a href="/card">The whole deck</a> <span aria-hidden="true">·</span> <a href="/about">About</a></p>
   </main>
 
   <!-- Same footer markup as /paddlingout and the spot pages. -->
@@ -100,15 +113,7 @@
     <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
   </footer>
 
-  <script>
-    // Same year injection the other pages use (see paddlingout.js Section 9).
-    (function () {
-      var y = document.getElementById("year");
-      if (y) y.textContent = new Date().getFullYear();
-    })();
-  </script>
-
-  <script src="/js/util.js"></script>
-
+  <script src="/js/vendor/qrcode-generator.js?v=d5ff872"></script>
+  <script type="module" src="/js/pages/not-found.js?v=d5ff872"></script>
 </body>
 </html>

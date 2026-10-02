@@ -21,6 +21,22 @@
     },
     {
       "n": 2,
+      "slug": "stories",
+      "name": "Stories",
+      "hook": "The lake was the easy part.",
+      "host": "kaayko.com/stories",
+      "url": "https://kaayko.com/stories",
+      "accent": "#5B3A86",
+      "art": "stories",
+      "line": "Paddling stories, read as a scroll or turned like a book.",
+      "facts": [
+        "Two books, one open",
+        "Scroll or turn pages",
+        "Free to read"
+      ]
+    },
+    {
+      "n": 3,
       "slug": "forge",
       "name": "Forge",
       "hook": "Brahma's blessings and a MacBook.",
@@ -36,7 +52,7 @@
       ]
     },
     {
-      "n": 3,
+      "n": 4,
       "slug": "kortex",
       "name": "Kortex",
       "hook": "Print it once. Point it anywhere.",
@@ -52,7 +68,7 @@
       ]
     },
     {
-      "n": 4,
+      "n": 5,
       "slug": "kaayko",
       "name": "Store",
       "hook": "Style, at exorbitant prices.",
@@ -68,7 +84,7 @@
       ]
     },
     {
-      "n": 5,
+      "n": 6,
       "slug": "alumni",
       "name": "School",
       "hook": "From Future, Connecting past with present.",
