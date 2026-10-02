@@ -265,8 +265,8 @@ main{display:block;position:relative;z-index:1;overflow-x:clip}
 /* the page being turned */
 .face{position:absolute;inset:0;overflow:hidden}
 .face-board{position:absolute;inset:0}
-.face-window{position:absolute;left:var(--padx);top:var(--padt);width:var(--iw);height:var(--ih);overflow:hidden}
-:root[data-layout="book"] .face .story{left:0}
+.face-window{position:absolute;left:0;top:var(--padt);width:var(--pw);height:var(--ih);overflow:hidden}
+:root[data-layout="book"] .face .story{left:var(--padx)}
 .face .rh{left:var(--padx)}
 .face .folio{left:0}
 /* the turn: four laid-out copies, folded by clip and transform only (story.js, "page turns") */
@@ -402,7 +402,7 @@ main{display:block;position:relative;z-index:1;overflow-x:clip}
 /* the menus: a sheet under the bar on narrow screens, never clipped */
 @media (max-width:640px){.panel{position:fixed;left:12px;right:12px;top:calc(var(--barh) + 6px);width:auto;max-height:calc(100dvh - var(--barh) - 20px);overflow:auto;overscroll-behavior:contain}}
 /* a page is taken by its edge; its text can be selected and marked */
-:root[data-layout="book"] .story{-webkit-user-select:text;user-select:text}
+:root[data-layout="book"][data-hl="1"] .story{-webkit-user-select:text;user-select:text}
 .turn-layer .stamp-item{filter:none}
 
 /* ── the library, tightened: no seal, a smaller stamp beside the title on phones ── */
@@ -487,3 +487,62 @@ mark.hl{background:color-mix(in srgb,var(--violet) 22%,transparent);color:inheri
   :root:not([data-layout="book"]) body{padding-bottom:calc(58px + env(safe-area-inset-bottom,0px))}
   .chart-line{display:none}
 }
+
+/* ── photographs: no frame, no plate number; as wide as the page allows ── */
+.mount{padding:0;background:none;box-shadow:0 1px 2px var(--shadow),0 18px 30px -22px var(--shadow)}
+.mount::after{display:none}
+.plate figcaption::before{content:none}
+.plate figcaption{margin-top:.7em;font-size:.82em}
+.plate.portrait .mount img,.plate.small .mount img{width:auto;max-width:100%;margin-inline:auto}
+@media (max-width:700px){
+  :root:not([data-layout="book"]) .plate:not(.portrait):not(.small){margin-inline:-16px}
+  :root:not([data-layout="book"]) .plate:not(.portrait):not(.small) figcaption{padding-inline:16px}
+  :root:not([data-layout="book"]) .plate.portrait .mount{max-width:none}
+  :root:not([data-layout="book"]) .plate.portrait .mount img{max-height:78vh}
+}
+:root[data-layout="book"] .plate:not(.portrait):not(.small) .mount{width:var(--pw);max-width:none;margin-inline:calc(var(--padx) * -1)}
+:root[data-layout="book"] .plate:not(.portrait):not(.small) .mount img{width:100%;max-width:none;max-height:calc(var(--ih) * .62);object-fit:cover}
+:root[data-layout="book"] .plate.portrait .mount img{max-height:calc(var(--ih) * .66)}
+.video-play{inset:0}
+.video-frame iframe,.video-hold{inset:0;width:100%;height:100%}
+.video-label{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.video .play{width:4.6rem;height:4.6rem;margin:-2.3rem 0 0 -2.3rem;box-shadow:0 0 0 8px rgba(255,255,255,.22),0 10px 30px rgba(0,0,0,.45);transition:transform .25s}
+.video-play::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.35),rgba(0,0,0,0) 45%);pointer-events:none}
+
+
+/* ── a book is a pile of its lake stamps ── */
+.pile{position:relative;aspect-ratio:17 / 19;max-width:17rem;margin:6px 0 0}
+.pile-link{position:absolute;inset:0;display:block;text-decoration:none}
+.stamp-s{position:absolute;left:var(--x);top:var(--y);width:50%;transform:rotate(var(--r));filter:drop-shadow(0 1px 1px var(--shadow)) drop-shadow(0 10px 16px var(--shadow))}
+.stamp-s.front{width:56%;z-index:2}
+.stamp-paper{display:block;padding:6% 6% 8%;background:var(--paper);--r:4px;--g:11px;
+  -webkit-mask:linear-gradient(#000 0 0) center/calc(100% - 2*var(--r)) calc(100% - 2*var(--r)) no-repeat,radial-gradient(circle var(--r) at 50% 0,#0000 97%,#000) top/var(--g) var(--r) round no-repeat,radial-gradient(circle var(--r) at 50% 100%,#0000 97%,#000) bottom/var(--g) var(--r) round no-repeat,radial-gradient(circle var(--r) at 0 50%,#0000 97%,#000) left/var(--r) var(--g) no-repeat round,radial-gradient(circle var(--r) at 100% 50%,#0000 97%,#000) right/var(--r) var(--g) no-repeat round;
+  mask:linear-gradient(#000 0 0) center/calc(100% - 2*var(--r)) calc(100% - 2*var(--r)) no-repeat,radial-gradient(circle var(--r) at 50% 0,#0000 97%,#000) top/var(--g) var(--r) round no-repeat,radial-gradient(circle var(--r) at 50% 100%,#0000 97%,#000) bottom/var(--g) var(--r) round no-repeat,radial-gradient(circle var(--r) at 0 50%,#0000 97%,#000) left/var(--r) var(--g) no-repeat round,radial-gradient(circle var(--r) at 100% 50%,#0000 97%,#000) right/var(--r) var(--g) no-repeat round}
+.stamp-paper img{display:block;width:100%;aspect-ratio:4 / 3;height:auto;object-fit:cover;outline:1.5px solid var(--stamp-violet);outline-offset:2px}
+.stamp-s.front .stamp-paper img{aspect-ratio:3 / 4}
+.stamp-paper span{display:block;margin-top:7%;font:600 .5rem/1.2 var(--f-label);letter-spacing:.12em;text-transform:uppercase;color:var(--stamp-violet);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pile .cover-cancel{right:-1.2rem;top:-1.1rem;z-index:3}
+.pile-seal{position:absolute;left:30%;top:33%;width:40%;height:auto;z-index:3;color:var(--stamp-violet);transform:rotate(-14deg);filter:drop-shadow(0 0 2px var(--paper))}
+.volume-sealed .stamp-s{opacity:.82}
+@media (max-width:760px){
+  .cover-wrap.pile{float:none;width:min(100%,16rem);max-width:16rem;margin:0 auto 14px}
+  .volume-actions,.contents-title,.volume-lakes{clear:both}
+}
+@media (forced-colors: active){.stamp-paper{-webkit-mask:none;mask:none;border:1px solid CanvasText}}
+
+/* ── the video: YouTube's frame lies under the still. A tap on the still passes through to the
+   player at its centre, so one tap is the whole gesture on every phone; when the player says it is
+   playing, the frame grows into the theatre without being moved (a moved frame reloads). ── */
+.video-frame{background:#0b0f14}
+.video-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;z-index:1}
+.video-face{position:absolute;inset:0;z-index:2;pointer-events:none;transition:opacity .35s}
+.video-face img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.video-face::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.35),rgba(0,0,0,0) 45%)}
+.video-shield{position:absolute;pointer-events:auto}
+.video-shield-top{left:0;right:0;top:0;height:24%}
+.video-shield-br{right:0;bottom:0;width:48%;height:24%}
+.video .playing .video-face{opacity:0;pointer-events:none}
+.video .playing .video-shield{pointer-events:none}
+.video-play{pointer-events:none;z-index:3}
+.video-play::after{content:none}
+.video-play:focus-visible .play{outline:3px solid #fff;outline-offset:6px}

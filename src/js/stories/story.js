@@ -23,8 +23,10 @@
     layout: root.dataset.layout,
     theme: root.getAttribute('data-theme') || 'auto',
     scale: parseFloat(getComputedStyle(root).getPropertyValue('--scale')) || 1,
-    motion: store.get('motion') === null ? !osReduced.matches : store.get('motion') === '1'
+    motion: store.get('motion') === null ? !osReduced.matches : store.get('motion') === '1',
+    hl: store.get('hl') === '1'
   };
+  root.dataset.hl = state.hl ? '1' : '0';
   const animate = () => state.motion && !osReduced.matches;
 
   let announceTimer;
@@ -53,6 +55,7 @@
     $('#size-down').disabled = state.scale <= SCALES[0];
     $('#size-up').disabled = state.scale >= SCALES[SCALES.length - 1];
     $('#motion').checked = state.motion;
+    if ($('#hl-mode')) $('#hl-mode').checked = state.hl;
   }
   $$('input[name="theme"]').forEach((r) => r.addEventListener('change', () => {
     state.theme = r.value; store.set('theme', r.value); applyTheme(); Ripples.draw();
@@ -181,8 +184,8 @@
     $('.board-l').style.boxShadow = stack(Math.round(prog * 5), -1);
     $('.board-r').style.boxShadow = stack(Math.round((1 - prog) * 5), 1);
     if (say) announce(label);
-    pauseHiddenVideo();
     pointCompass();
+    readyVisibleVideos();
   }
   function stack(n, sign) {
     const s = [];
@@ -367,6 +370,8 @@
     if (B.flip) return null;
     const from = B.idx, target = from + step() * dir;
     if (target < 0 || target > lastIdx()) return null;
+    try { getSelection().removeAllRanges(); } catch (_) { /* none */ }
+    if (HL.bar) hideBar();
     ensureTurnLayer();
     const W = B.pw, { left, under, front, back } = Turn.faces;
     // Forward from (i, i+1): left i, front i+1, back i+2, beneath i+3. Back is the same sheet
@@ -482,7 +487,7 @@
     const r = reader.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
     // Inside the text, a press selects; a page is taken by its edge or its margin.
     const onEdge = Math.min(x % B.pw, B.pw - (x % B.pw)) < 56 || y < B.padt || y > B.ph - B.padb;
-    if (e.target.closest('.story') && !onEdge) return;
+    if (state.hl && e.target.closest('.story') && !onEdge) return;
     const dir = B.spread ? (x > B.pw ? 1 : -1) : (x > r.width / 2 ? 1 : -1);
     B.drag = { id: e.pointerId, dir, x0: e.clientX, y0: e.clientY, cy: e.clientY - r.top, t: null, rest: null, lastX: e.clientX, lastT: performance.now(), v: 0 };
   });
@@ -549,27 +554,54 @@
     if (m) goToChapter(m[1], { smooth: false });
   }
 
-  /* ── the video plays on the page, and loads from YouTube only when asked ── */
+  /* ── the video. YouTube's frame is made ready under the still once its page is in front, and a
+     tap on the still passes through to the player's own play button: the one gesture every phone
+     honours. When the player reports that it is playing, the still fades. Its fullscreen is the
+     player's own. A player on a page turned away from is paused. ── */
   const YT = 'https://www.youtube-nocookie.com';
-  $$('.video-play', story).forEach((btn) => btn.addEventListener('click', () => {
-    const fig = btn.closest('.video');
-    const frame = btn.closest('.video-frame');
+  const videos = $$('.video', story);
+  let live = null;
+  const tell = (player, func) => { try { player.contentWindow.postMessage(JSON.stringify({ event: 'command', func, args: [] }), YT); } catch (_) { /* not up yet */ } };
+  function ensurePlayer(fig) {
+    if (fig._player) return fig._player;
+    const frame = fig.querySelector('.video-frame'), title = fig.dataset.title || 'Video';
     const player = document.createElement('iframe');
-    player.src = `${YT}/embed/${encodeURIComponent(fig.dataset.video)}?autoplay=1&rel=0&playsinline=1&enablejsapi=1`;
-    player.title = `${fig.dataset.title || 'Video'} (YouTube)`;
+    player.src = `${YT}/embed/${encodeURIComponent(fig.dataset.video)}?playsinline=1&rel=0&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`;
+    player.title = `${title} (YouTube)`;
     player.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
     player.allowFullscreen = true;
     player.referrerPolicy = 'strict-origin-when-cross-origin';
-    frame.replaceChildren(player);
-    player.focus();
-  }));
-  // A video on a page the reader has turned away from stops playing.
-  function pauseHiddenVideo() {
-    const player = story.querySelector('.video iframe');
-    if (!player || state.layout !== 'book' || !B.ready) return;
-    const p = pageOf(player.closest('.video'));
-    if (p >= B.idx && p < B.idx + step()) return;
-    try { player.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'pauseVideo', args: [] }), YT); } catch (_) { /* not ready yet */ }
+    player.addEventListener('load', () => { try { player.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }), YT); } catch (_) { /* fine */ } });
+    frame.prepend(player);
+    fig._player = player;
+    return player;
+  }
+  addEventListener('message', (e) => {
+    if (e.origin !== YT) return;
+    let data; try { data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data; } catch (_) { return; }
+    const fig = videos.find((f) => f._player && f._player.contentWindow === e.source);
+    if (!fig || !data || data.event !== 'infoDelivery' || !data.info) return;
+    const st = data.info.playerState, frame = fig.querySelector('.video-frame');
+    if (st === 1) { frame.classList.add('playing'); live = fig; }          // playing: the still goes
+    else if (st === 0) { frame.classList.remove('playing'); live = null; } // ended: it comes back
+  });
+  // Keyboard, and the shields over the player's own links: ask the player to play (every desktop
+  // browser allows this after a click; a phone wants the tap on the player itself).
+  videos.forEach((fig) => {
+    const ask = () => { ensurePlayer(fig); tell(fig._player, 'playVideo'); };
+    fig.querySelector('.video-play').addEventListener('click', ask);
+    fig.querySelectorAll('.video-shield').forEach((sh) => sh.addEventListener('click', ask));
+  });
+  function readyVisibleVideos() {
+    if (state.layout !== 'book' || !B.ready) return;
+    for (const fig of videos) {
+      const p = pageOf(fig), shown = p >= B.idx && p < B.idx + step();
+      if (shown) ensurePlayer(fig); else if (fig._player) tell(fig._player, 'pauseVideo');
+    }
+  }
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => { if (state.layout === 'scroll') entries.forEach((en) => { if (en.isIntersecting) ensurePlayer(en.target); }); }, { rootMargin: '100% 0px' });
+    videos.forEach((fig) => io.observe(fig));
   }
 
   /* ── switching layouts, keeping the reader's place ────── */
@@ -800,6 +832,7 @@
   let selTimer = 0;
   document.addEventListener('selectionchange', () => {
     clearTimeout(selTimer);
+    if (!state.hl || B.flip || B.drag) { if (HL.mode === 'add') hideBar(); return; }
     selTimer = setTimeout(() => {
       const sel = getSelection();
       const live = sel && !sel.isCollapsed && sel.rangeCount && story.contains(sel.getRangeAt(0).commonAncestorContainer);
@@ -809,7 +842,7 @@
   });
   story.addEventListener('click', (e) => {
     const m = e.target.closest('mark.hl');
-    if (!m) return;
+    if (!m || !state.hl) return;
     const sel = getSelection();
     if (sel && !sel.isCollapsed) return;
     HL.current = m.dataset.hl;
@@ -830,6 +863,11 @@
     HL.del.addEventListener('click', () => { if (HL.current) removeHL(HL.current); hideBar(); });
     document.addEventListener('keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'h') { e.preventDefault(); HL.add.click(); }
+    });
+    $('#hl-mode').addEventListener('change', (e) => {
+      state.hl = e.target.checked; store.set('hl', state.hl ? '1' : '0'); root.dataset.hl = state.hl ? '1' : '0';
+      if (!state.hl) { hideBar(); try { getSelection().removeAllRanges(); } catch (_) { /* none */ } }
+      announce(state.hl ? 'Highlighter on. Select words to highlight them.' : 'Highlighter off.');
     });
     try { HL.items = JSON.parse(store.get(HL.key) || '[]'); } catch (_) { HL.items = []; }
     HL.items.forEach(paint);   // before the book is laid out, so its copies carry the marks
