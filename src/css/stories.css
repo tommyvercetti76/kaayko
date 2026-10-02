@@ -8,7 +8,7 @@ img{max-width:100%}
    two-page spread by CSS columns; only the page being turned is ever copied, and only for the turn. */
 :root{
   /* Album: quadrille leaf, indigo ink, violet cancellation ink. Every text pair measured at 7:1 or better (WCAG AAA). */
-  --leaf:#eceff1; --grid:#dde2e6; --paper:#fdfcf7; --ink:#1b2130; --muted:#3d4453; --violet:#4a2e80; --edge:#6f7784;
+  --leaf:#eceff1; --grid:#dde2e6; --paper:#fdfcf7; --ink:#1b2130; --muted:#3d4453; --violet:#4a2e80; --red:#b3201a; --edge:#6f7784;
   --stamp-ink:#1b2130; --stamp-violet:#4a2e80; --bar:#f6f7f8; --scrim:rgba(11,15,20,.88); --shadow:rgba(27,33,48,.25);
   /* Lake Powell, sampled from the open water at Lone Rock in his photo */
   --ripple:#4e7167; --ripple-alpha:.13; --ripple-fill:.06;
@@ -20,13 +20,13 @@ img{max-width:100%}
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --leaf:#0f1013; --grid:#1b1d22; --paper:#f6f4ec; --ink:#ebe8f0; --muted:#b8b4c2; --violet:#c6b2f2; --edge:#6d7382; --bar:#16171b; --shadow:rgba(0,0,0,.6);
+    --leaf:#0f1013; --grid:#1b1d22; --paper:#f6f4ec; --ink:#ebe8f0; --muted:#b8b4c2; --violet:#c6b2f2; --red:#ff7a6e; --edge:#6d7382; --bar:#16171b; --shadow:rgba(0,0,0,.6);
     --ripple:#6b908e; --ripple-alpha:.19; --ripple-fill:.08;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --leaf:#0f1013; --grid:#1b1d22; --paper:#f6f4ec; --ink:#ebe8f0; --muted:#b8b4c2; --violet:#c6b2f2; --edge:#6d7382; --bar:#16171b; --shadow:rgba(0,0,0,.6);
+  --leaf:#0f1013; --grid:#1b1d22; --paper:#f6f4ec; --ink:#ebe8f0; --muted:#b8b4c2; --violet:#c6b2f2; --red:#ff7a6e; --edge:#6d7382; --bar:#16171b; --shadow:rgba(0,0,0,.6);
   --ripple:#6b908e; --ripple-alpha:.19; --ripple-fill:.08;
   color-scheme:dark;
 }
@@ -562,3 +562,4 @@ mark.hl{background:color-mix(in srgb,var(--violet) 22%,transparent);color:inheri
 .stamp-s.shut .stamp-paper img{filter:grayscale(1) contrast(.8) brightness(.78)}
 .stamp-s.shut .stamp-paper{background:color-mix(in srgb,var(--paper) 88%,var(--ink))}
 .toc-unlocked{color:var(--violet)}
+.library-title .dot-i{color:var(--red)}
