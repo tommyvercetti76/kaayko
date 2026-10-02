@@ -8,7 +8,7 @@ img{max-width:100%}
    two-page spread by CSS columns; only the page being turned is ever copied, and only for the turn. */
 :root{
   /* Album: quadrille leaf, indigo ink, violet cancellation ink. Every text pair measured at 7:1 or better (WCAG AAA). */
-  --leaf:#eceff1; --grid:#dde2e6; --paper:#fdfcf7; --ink:#1b2130; --muted:#3d4453; --violet:#4a2e80; --red:#b3201a; --burn:#5f3504; --char:#2a1402; --scorch:rgba(173,104,18,.14); --burn-glow:transparent; --smoke:70,64,58; --edge:#6f7784;
+  --leaf:#eceff1; --grid:#dde2e6; --paper:#fdfcf7; --ink:#1b2130; --muted:#3d4453; --violet:#4a2e80; --red:#b3201a; --burn:#5f3504; --char:#2a1402; --scorch:rgba(173,104,18,.14); --burn-glow:transparent; --smoke:92,100,116; --edge:#6f7784;
   --stamp-ink:#1b2130; --stamp-violet:#4a2e80; --bar:#f6f7f8; --scrim:rgba(11,15,20,.88); --shadow:rgba(27,33,48,.25);
   /* Lake Powell, sampled from the open water at Lone Rock in his photo */
   --ripple:#4e7167; --ripple-alpha:.13; --ripple-fill:.06;
@@ -20,13 +20,13 @@ img{max-width:100%}
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --leaf:#0f1013; --grid:#1b1d22; --paper:#f6f4ec; --ink:#ebe8f0; --muted:#b8b4c2; --violet:#c6b2f2; --red:#ff7a6e; --burn:#f0c264; --char:#6b3410; --scorch:rgba(240,170,60,.12); --burn-glow:rgba(255,170,60,.38); --smoke:205,200,212; --edge:#6d7382; --bar:#16171b; --shadow:rgba(0,0,0,.6);
+    --leaf:#0f1013; --grid:#1b1d22; --paper:#f6f4ec; --ink:#ebe8f0; --muted:#b8b4c2; --violet:#c6b2f2; --red:#ff7a6e; --burn:#f0c264; --char:#6b3410; --scorch:rgba(240,170,60,.12); --burn-glow:rgba(255,170,60,.38); --smoke:214,218,228; --edge:#6d7382; --bar:#16171b; --shadow:rgba(0,0,0,.6);
     --ripple:#6b908e; --ripple-alpha:.19; --ripple-fill:.08;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --leaf:#0f1013; --grid:#1b1d22; --paper:#f6f4ec; --ink:#ebe8f0; --muted:#b8b4c2; --violet:#c6b2f2; --red:#ff7a6e; --burn:#f0c264; --char:#6b3410; --scorch:rgba(240,170,60,.12); --burn-glow:rgba(255,170,60,.38); --smoke:205,200,212; --edge:#6d7382; --bar:#16171b; --shadow:rgba(0,0,0,.6);
+  --leaf:#0f1013; --grid:#1b1d22; --paper:#f6f4ec; --ink:#ebe8f0; --muted:#b8b4c2; --violet:#c6b2f2; --red:#ff7a6e; --burn:#f0c264; --char:#6b3410; --scorch:rgba(240,170,60,.12); --burn-glow:rgba(255,170,60,.38); --smoke:214,218,228; --edge:#6d7382; --bar:#16171b; --shadow:rgba(0,0,0,.6);
   --ripple:#6b908e; --ripple-alpha:.19; --ripple-fill:.08;
   color-scheme:dark;
 }
@@ -457,14 +457,20 @@ mark.hl.igniting{color:transparent;-webkit-text-fill-color:transparent;backgroun
   background-size:calc(var(--W) * 2 + 72px) 100%;background-repeat:no-repeat;-webkit-background-clip:text;background-clip:text;
   -webkit-box-decoration-break:slice;box-decoration-break:slice;animation:burn var(--burn-dur,1s) linear var(--burn-delay,0ms) both}
 @keyframes burn{from{background-position:calc(-1 * (var(--W) + 72px)) 0}to{background-position:0 0}}
-mark.hl.dousing{color:var(--ink);background-color:transparent;text-shadow:none;opacity:.6}
+mark.hl.dousing{color:var(--ink);background-color:transparent;text-shadow:none;opacity:.55;transition:color .3s,background-color .3s,opacity .4s}
+/* Once through, the passage is drawn on once (the glow swells), breathes out, and settles as gold. */
+mark.hl.smolder{animation:smolder 2.5s cubic-bezier(.3,.1,.3,1) both}
+@keyframes smolder{
+  0%{color:#ffcf6b;text-shadow:0 0 .3em rgba(255,140,30,.95),0 0 .8em rgba(255,90,10,.5)}
+  28%{color:#ffe1a0;text-shadow:0 0 .45em rgba(255,160,50,1),0 0 1.3em rgba(255,100,20,.65)}
+  60%{color:var(--burn);text-shadow:0 0 .4em rgba(255,140,30,.5)}
+  100%{color:var(--burn);text-shadow:0 0 .55em var(--burn-glow)}}
+/* While the HIGH lighter's flame is drawn as the pointer, the system cursor steps aside. */
+:root.flame-cursor .story-body :is(p,h2,figcaption),:root.flame-cursor .story-body mark.hl{cursor:none}
 :root[data-hl="1"] .story-body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 :root[data-hl="1"] .story-body :is(p,h2,figcaption){cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='30' viewBox='0 0 20 30'%3E%3Cpath d='M10 1c2 6 8 10 8 18a8 8 0 0 1-16 0c0-5 3-8 4-12 1 3 2 4 3 5 1-4 1-7 1-11Z' fill='%23ff8a1a' stroke='%23421f02' stroke-width='1.2'/%3E%3Cpath d='M10 13c1 3 4 5 4 9a4 4 0 0 1-8 0c0-2 1-4 2-5 1 1 1 2 2 2 0-2 0-4 0-6Z' fill='%23fff1c2'/%3E%3C/svg%3E") 10 28,crosshair}
 :root[data-hl="1"] .story-body mark.hl{cursor:pointer}
 .smoke{position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:25;pointer-events:none}
-.lighter-flame{position:fixed;left:0;top:0;z-index:46;width:22px;height:33px;margin:-70px 0 0 -11px;pointer-events:none;transform-origin:50% 100%;animation:flicker .16s ease-in-out infinite alternate;filter:drop-shadow(0 0 6px rgba(255,140,30,.75))}
-.lighter-flame[hidden]{display:none}
-@keyframes flicker{from{transform:scale(1,1)}to{transform:scale(.93,1.08)}}
 ::highlight(lighter){background-color:rgba(255,138,26,.26);color:var(--ink)}
 .hl-bar{position:fixed;z-index:60;display:flex;gap:4px;padding:5px;background:var(--ink);color:var(--leaf);border-radius:10px;box-shadow:0 12px 30px -10px var(--shadow)}
 .hl-bar[hidden]{display:none}
@@ -476,8 +482,7 @@ mark.hl.dousing{color:var(--ink);background-color:transparent;text-shadow:none;o
 .hl-jump:hover,.hl-jump:focus-visible{border-color:var(--violet)}
 .hl-del{flex:none;min-width:44px;border:1px solid var(--edge);border-radius:8px;background:transparent;color:var(--ink);font:400 1.3rem/1 var(--f-ui);cursor:pointer}
 .hl-empty{margin:0;font:500 .9rem/1.45 var(--f-ui);color:var(--muted)}
-@media (forced-colors: active){mark.hl,mark.hl.igniting{background:Mark;color:MarkText;-webkit-text-fill-color:MarkText;animation:none}}
-@media (prefers-reduced-motion: reduce){.lighter-flame{animation:none}}
+@media (forced-colors: active){mark.hl,mark.hl.igniting,mark.hl.smolder{background:Mark;color:MarkText;-webkit-text-fill-color:MarkText;animation:none}}
 /* in the book, a long press on a link must not open the browser's preview; a drag is a page turn */
 :root[data-layout="book"] .reader a,:root[data-layout="book"] .reader img{-webkit-touch-callout:none;-webkit-user-drag:none}
 :root[data-layout="book"] .reader{-webkit-tap-highlight-color:transparent}
@@ -588,3 +593,5 @@ mark.hl.dousing{color:var(--ink);background-color:transparent;text-shadow:none;o
 .toc-unlocked{color:var(--violet)}
 .library-title .dot-i{color:var(--red)}
 .check-flame{width:10px;height:15px;margin-left:2px;color:#d9730d;vertical-align:-1px}
+@media (prefers-reduced-motion: reduce){mark.hl.smolder{animation:none}}
+.check-high{font-weight:700;letter-spacing:.04em}

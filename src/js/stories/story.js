@@ -511,7 +511,7 @@
 
   document.addEventListener('keydown', (e) => {
     if (state.layout !== 'book' || e.metaKey || e.ctrlKey || e.altKey) return;
-    if (e.target.closest('input, select, textarea, summary, .panel')) return;
+    if (e.target.closest && e.target.closest('input, select, textarea, summary, .panel')) return;
     if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); turn(1); }
     else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); turn(-1); }
     else if (e.key === 'Home') { e.preventDefault(); cancelFlip(); setIndex(0, { say: true }); }
@@ -781,7 +781,7 @@
     requestAnimationFrame(() => { compassQueued = false; pointCompass(); });
   }, { passive: true });
 
-  /* ── the Lighter: drag across words and they burn ──
+  /* ── the HIGH lighter: drag across words and they burn ──
      A burnt passage is stored as spans of (block, from, to) over the article's text, so it survives a
      reload and lands on the same words in either layout. The marks live in the article itself, so the
      book's copies carry them too. A press and drag (on a phone: hold, then drag) lights whole words
@@ -863,15 +863,13 @@
   }
   function removeHL(id) {
     const marks = $$(`mark.hl[data-hl="${id}"]`, story);
-    const gone = () => {
-      unpaint(id);
-      HL.items = HL.items.filter((it) => it.id !== id);
-      saveHL(); renderHL(); copiesStale();
-    };
+    HL.items = HL.items.filter((it) => it.id !== id);   // saved first: the effect can never keep it alight
+    saveHL(); renderHL();
+    const gone = () => { unpaint(id); copiesStale(); };
     if (animate() && marks.length) {
-      Smoke.puff(marks.flatMap((m) => [...m.getClientRects()]));
+      try { if (window.High) High.douse(marks.flatMap((m) => [...m.getClientRects()])); } catch (_) { /* the words still go out */ }
       marks.forEach((m) => m.classList.add('dousing'));
-      setTimeout(gone, 380);
+      setTimeout(gone, 420);
     } else gone();
     announce('Put out.');
   }
@@ -889,9 +887,13 @@
     HL.del.focus({ preventScroll: true });
   }
 
-  // Burning: the ember edge moves at a steady pace through the passage, mark after mark, and settles
-  // as gold. Each mark's strip is sized to its own length laid end to end (see mark.hl.igniting).
-  const EDGE = 72;   // px of strip between gold and ink: char, ember, flame, the yellow leading edge
+  // Burning: the ember edge moves at a steady pace through the passage, mark after mark (each mark's
+  // strip is sized to its own length laid end to end; see mark.hl.igniting). Then the passage is
+  // drawn on once and settles as gold (.smolder), while high.js puts the smoke in the air.
+  const EDGE = 72, LEAD = 16;   // px of strip between gold and ink; where its yellow leading edge sits
+  const High = window.High || null;
+  if (High) High.setMotion(animate);
+  const airOK = () => !!High && animate();
   function ignite(marks, done) {
     if (!marks.length || !animate()) { done(); return; }
     const widths = marks.map((m) => [...m.getClientRects()].reduce((s, r) => s + r.width, 0));
@@ -908,11 +910,16 @@
       at += dur;
       return job;
     });
-    Smoke.burn(plan);
+    try { if (airOK()) High.burn(plan, EDGE, LEAD); } catch (_) { /* the words still burn without the air */ }
     setTimeout(() => {
-      marks.forEach((m) => { m.classList.remove('igniting'); ['--W', '--burn-dur', '--burn-delay'].forEach((v) => m.style.removeProperty(v)); });
+      marks.forEach((m) => {
+        m.classList.remove('igniting');
+        ['--W', '--burn-dur', '--burn-delay'].forEach((v) => m.style.removeProperty(v));
+        m.classList.add('smolder');
+      });
+      setTimeout(() => marks.forEach((m) => m.classList.remove('smolder')), 2600);
       done();
-    }, at + 60);
+    }, at + 40);
   }
   function burn(range) {
     const item = captureRange(range);
@@ -921,112 +928,16 @@
     const marks = paint(item);
     HL.items.push(item);
     saveHL(); renderHL();
-    Turn.key = '';   // the next turn copies the page with these words burnt
+    Turn.key = '';   // the next turn copies the page with these words lit
     ignite(marks, () => { if (state.layout === 'book' && B.ready) prewarmTurns(60); });
-    announce('Burnt.');
+    announce('Lit.');
   }
 
-  // Smoke and sparks, on one canvas over the page, running only while there is something in the air.
-  const Smoke = (() => {
-    let cv = null, cx = null, sprite = null, tint = '', parts = [], jobs = [], raf = 0, last = 0;
-    const rnd = (a, b) => a + Math.random() * (b - a);
-    function size() {
-      const d = Math.min(2, devicePixelRatio || 1);
-      cv.width = Math.round(innerWidth * d); cv.height = Math.round(innerHeight * d);
-      cx.setTransform(d, 0, 0, d, 0, 0);
-    }
-    function ready() {
-      if (!cv) {
-        cv = el('canvas', 'smoke'); cv.setAttribute('aria-hidden', 'true');
-        document.body.append(cv); cx = cv.getContext('2d'); size();
-        addEventListener('resize', size);
-      }
-      const t = getComputedStyle(root).getPropertyValue('--smoke').trim() || '128,128,128';
-      if (t !== tint) {   // one soft puff, drawn once per theme and stamped for every particle
-        tint = t; sprite = document.createElement('canvas'); sprite.width = sprite.height = 64;
-        const g = sprite.getContext('2d'), rg = g.createRadialGradient(32, 32, 0, 32, 32, 32);
-        rg.addColorStop(0, `rgba(${t},.55)`); rg.addColorStop(.5, `rgba(${t},.22)`); rg.addColorStop(1, `rgba(${t},0)`);
-        g.fillStyle = rg; g.fillRect(0, 0, 64, 64);
-      }
-    }
-    const smoke = (x, y, big = 1) => ({ k: 's', x, y: y + scrollY, vx: rnd(-0.012, 0.012), vy: rnd(-0.05, -0.028) * big, r0: rnd(2, 4) * big, grow: rnd(12, 22) * big, a: rnd(0.35, 0.6), life: rnd(1100, 1900), age: 0, seed: rnd(0, 6000), wob: rnd(0.006, 0.016) });
-    const spark = (x, y) => ({ k: 'e', x, y: y + scrollY, vx: rnd(-0.05, 0.05), vy: rnd(-0.16, -0.08), r0: rnd(0.7, 1.5), grow: 0, a: 1, life: rnd(300, 650), age: 0, seed: 0, wob: 0 });
-    // Where the burning edge is along a mark's line boxes, `d` px from its start.
-    function along(rects, d) {
-      for (const r of rects) { if (d <= r.width) return { x: r.left + d, y: r.top, h: r.height }; d -= r.width; }
-      const r = rects[rects.length - 1];
-      return { x: r.right, y: r.top, h: r.height };
-    }
-    function tick(now) {
-      const dt = last ? Math.min(48, now - last) : 16;
-      last = now;
-      jobs = jobs.filter((j) => {
-        const t = now - j.t0;
-        const live = j.plan.filter((p) => t >= p.delay && t < p.delay + p.dur);
-        for (const p of live) {
-          const rects = [...p.m.getClientRects()].filter((r) => r.width > 0);
-          if (!rects.length) continue;
-          const d = (t - p.delay) * (p.w + EDGE) / p.dur - 16;   // the yellow leading edge of the strip
-          if (d < 0 || d > p.w) continue;
-          const at = along(rects, d);
-          parts.push(smoke(at.x + rnd(-2, 2), at.y + at.h * rnd(0.15, 0.6)));
-          if (Math.random() < 0.7) parts.push(smoke(at.x - rnd(4, 14), at.y + at.h * rnd(0.1, 0.5), 0.8));
-          if (Math.random() < 0.55) parts.push(spark(at.x, at.y + at.h * rnd(0.3, 0.8)));
-        }
-        return t < j.end;
-      });
-      cx.clearRect(0, 0, innerWidth, innerHeight);
-      parts = parts.filter((q) => (q.age += dt) < q.life);
-      for (const q of parts) {
-        const k = q.age / q.life;
-        q.x += (q.vx + Math.sin((q.age + q.seed) / 240) * q.wob) * dt;
-        q.y += q.vy * dt;
-        const y = q.y - scrollY;
-        if (q.k === 's') {
-          const r = q.r0 + q.grow * k;
-          cx.globalAlpha = q.a * (k < 0.12 ? k / 0.12 : 1) * (1 - k) * (1 - k);
-          cx.drawImage(sprite, q.x - r, y - r, r * 2, r * 2);
-        } else {
-          cx.globalAlpha = 1 - k;
-          cx.fillStyle = k < 0.35 ? '#ffe7a3' : '#ff7a12';
-          cx.beginPath(); cx.arc(q.x, y, q.r0 * (1 - k * 0.5), 0, 6.283); cx.fill();
-          q.vy += 0.00012 * dt;   // sparks slow as they cool
-        }
-      }
-      cx.globalAlpha = 1;
-      if (parts.length || jobs.length) raf = requestAnimationFrame(tick);
-      else { raf = 0; last = 0; cx.clearRect(0, 0, innerWidth, innerHeight); }
-    }
-    const run = () => { if (!raf) raf = requestAnimationFrame(tick); };
-    return {
-      burn(plan) {
-        if (!animate()) return;
-        ready();
-        const end = plan.reduce((s, p) => Math.max(s, p.delay + p.dur), 0);
-        jobs.push({ plan, t0: performance.now(), end });
-        run();
-      },
-      puff(rects) {
-        if (!animate()) return;
-        ready();
-        for (const r of rects) for (let x = r.left; x < r.right; x += 9) parts.push(smoke(x + rnd(-3, 3), r.top + r.height * rnd(0.2, 0.7), 0.9));
-        run();
-      }
-    };
-  })();
-
-  // The press. A mouse or pen lights at once; a finger lights after a short hold, so a swipe still
-  // scrolls the page or turns it. On a phone a small flame rides above the finger so the words under
-  // it stay visible.
+  // The press. A mouse or pen lights at once; a finger lights after a short hold (the flint strikes
+  // and the flame catches), so a swipe still scrolls the page or turns it. The flame is the pointer
+  // over words while the HIGH lighter is on, and rides above the finger on a phone.
   const LT = { id: null, type: '', armed: false, moved: false, hold: 0, a: null, b: null, x0: 0, y0: 0, target: null };
   const hasHighlights = typeof Highlight === 'function' && window.CSS && CSS.highlights;
-  const flame = (() => {
-    const f = el('div', 'lighter-flame');
-    f.hidden = true; f.setAttribute('aria-hidden', 'true');
-    f.innerHTML = '<svg viewBox="0 0 22 33" width="22" height="33"><defs><radialGradient id="lf-g" cx="50%" cy="72%" r="62%"><stop offset="0" stop-color="#fff6d6"/><stop offset=".42" stop-color="#ffc247"/><stop offset="1" stop-color="#ff5a0a"/></radialGradient></defs><path d="M11 1c2.2 6.5 9 10.6 9 19.4a9 9 0 0 1-18 0c0-5.6 3.4-8.8 4.4-13.2 1.1 3.2 2.3 4.6 3.4 5.6 1-4.3 1.2-7.6 1.2-11.8Z" fill="url(#lf-g)"/></svg>';
-    document.body.append(f);
-    return f;
-  })();
   const onWords = (t) => {
     const b = t && t.closest && t.closest('.story-body :is(p, h2, figcaption)');
     return !!b && !b.closest('.lakes, .story-foot') && !t.closest('a, button, .video-frame');
@@ -1053,21 +964,37 @@
     if (!hasHighlights || !LT.a) return;
     CSS.highlights.set('lighter', new Highlight(wordRange(LT.a, LT.b)));
   }
-  function moveFlame(x, y) { flame.style.left = `${x}px`; flame.style.top = `${y}px`; }
+  // The flame as the mouse pointer: shown over words, hidden off them; the system cursor is hidden
+  // only while the flame is actually drawn.
+  let hovering = false;
+  function hover(e, on) {
+    const show = on && state.hl && airOK() && e.pointerType !== 'touch';
+    if (show && hovering) { High.flameAt(e.clientX, e.clientY); return; }
+    if (show === hovering) return;
+    hovering = show;
+    root.classList.toggle('flame-cursor', show);
+    if (show) High.flame(true, 'mouse', e.clientX, e.clientY);
+    else if (High) High.flame(false);
+  }
   function arm() {
     if (B.flip || (B.drag && B.drag.t)) { endLight(); return; }   // the page is already turning
     if (B.drag && B.drag.id === LT.id) B.drag = null;              // held still: this finger lights, it does not turn
     LT.armed = true;
     try { story.setPointerCapture(LT.id); } catch (_) { /* gone */ }
-    if (LT.type === 'touch') { moveFlame(LT.x0, LT.y0); flame.hidden = false; if (navigator.vibrate) navigator.vibrate(8); }
+    if (airOK()) {
+      High.strike(LT.x0, LT.y0, LT.type === 'touch' ? 'touch' : 'mouse');
+      if (LT.type === 'touch') High.flame(true, 'touch', LT.x0, LT.y0);
+    }
+    if (LT.type === 'touch' && navigator.vibrate) navigator.vibrate(8);
     preview();
   }
   function endLight() {
     clearTimeout(LT.hold);
     try { if (LT.id !== null) story.releasePointerCapture(LT.id); } catch (_) { /* gone */ }
-    Object.assign(LT, { id: null, armed: false, moved: false, a: null, b: null, target: null });
+    const touch = LT.type === 'touch';
+    Object.assign(LT, { id: null, type: '', armed: false, moved: false, a: null, b: null, target: null });
     if (hasHighlights) CSS.highlights.delete('lighter');
-    flame.hidden = true;
+    if (touch && High) High.flame(false);
   }
   story.addEventListener('pointerdown', (e) => {
     if (!state.hl || e.button !== 0 || B.flip || !onWords(e.target)) return;
@@ -1079,18 +1006,24 @@
     else { e.preventDefault(); arm(); }
   });
   story.addEventListener('pointermove', (e) => {
+    if (e.pointerType !== 'touch') hover(e, LT.armed || onWords(e.target));
     if (e.pointerId !== LT.id) return;
     const far = Math.hypot(e.clientX - LT.x0, e.clientY - LT.y0);
     if (!LT.armed) { if (far > 8) endLight(); return; }   // a swipe before the hold: let it scroll
-    if (far > 4) LT.moved = true;
-    if (LT.type === 'touch') moveFlame(e.clientX, e.clientY);
+    if (far > 6) LT.moved = true;
+    if (airOK()) {
+      if (LT.type === 'touch') High.flameAt(e.clientX, e.clientY);
+      if (LT.moved) High.heat(e.clientX, e.clientY);   // the paper under the flame starts to smoke
+    }
     const pt = caretAt(e.clientX, e.clientY);
     if (pt) { LT.b = pt; preview(); }
   });
+  story.addEventListener('pointerleave', (e) => { if (!LT.armed) hover(e, false); });
   story.addEventListener('pointerup', (e) => {
     if (e.pointerId !== LT.id) return;
     const { armed, moved, type, a, b, target } = LT;
     endLight();
+    hover(e, onWords(e.target));
     const mark = target && target.closest('mark.hl');
     if (!armed || (!moved && type !== 'touch') || (!moved && mark)) {   // a tap or a click
       if (mark) offerPutOut(mark, e.clientX, e.clientY); else hideBar();
@@ -1101,11 +1034,20 @@
   story.addEventListener('pointercancel', (e) => { if (e.pointerId === LT.id) endLight(); });
   story.addEventListener('touchmove', (e) => { if (LT.armed) e.preventDefault(); }, { passive: false });
   story.addEventListener('contextmenu', (e) => { if (state.hl && LT.id !== null) e.preventDefault(); });
-  document.addEventListener('pointerdown', (e) => { if (!HL.bar.hidden && !HL.bar.contains(e.target) && !e.target.closest('mark.hl')) hideBar(); });
+  // Lit words can always be put out, with the HIGH lighter on or off: a tap or click on them offers it.
+  story.addEventListener('click', (e) => {
+    if (state.hl) return;   // with it on, the press above already offered it
+    const m = e.target.closest('mark.hl');
+    if (!m) return;
+    const sel = getSelection();
+    if (sel && !sel.isCollapsed) return;
+    offerPutOut(m, e.clientX, e.clientY);
+  });
+  document.addEventListener('pointerdown', (e) => { if (!HL.bar.hidden && !HL.bar.contains(e.target) && !(e.target.closest && e.target.closest('mark.hl'))) hideBar(); });
   if (HL.bar) {
     HL.del.addEventListener('click', () => { const id = HL.current; hideBar(); if (id) removeHL(id); });
     HL.bar.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideBar(); });
-    // A keyboard selection (scroll layout, Lighter off) burns with Cmd/Ctrl+Shift+H.
+    // A keyboard selection (scroll layout, HIGH lighter off) lights with Cmd/Ctrl+Shift+H.
     document.addEventListener('keydown', (e) => {
       if (!((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'h')) return;
       const sel = getSelection();
@@ -1117,8 +1059,8 @@
     });
     $('#hl-mode').addEventListener('change', (e) => {
       state.hl = e.target.checked; store.set('hl', state.hl ? '1' : '0'); root.dataset.hl = state.hl ? '1' : '0';
-      if (!state.hl) { hideBar(); endLight(); }
-      announce(state.hl ? 'Lighter on. Drag across words to burn them; on a phone, hold, then drag.' : 'Lighter off.');
+      if (!state.hl) { hideBar(); endLight(); hovering = true; hover(e, false); }
+      announce(state.hl ? 'HIGH lighter on. Drag across words to light them; on a phone, hold, then drag. Tap lit words to put them out.' : 'HIGH lighter off.');
     });
     try { HL.items = JSON.parse(store.get(HL.key) || '[]'); } catch (_) { HL.items = []; }
     HL.items.forEach(paint);   // before the book is laid out, so its copies carry the marks
