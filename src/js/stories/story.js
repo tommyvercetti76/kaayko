@@ -8,6 +8,9 @@
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const root = document.documentElement;
   const story = $('#story'), reader = $('#reader');
+  // The blocks burnt words are counted against, in the article's own order. Taken once, before the
+  // book may set a paragraph ahead of a photo, so stored spans always land on the same words.
+  const HL_BLOCKS = $$('p, h2, figcaption', $('.story-body')).filter((b) => !b.closest('.lakes, .story-foot'));
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const el = (tag, cls) => { const e = document.createElement(tag); if (cls) e.className = cls; return e; };
   const store = {
@@ -155,7 +158,49 @@
     countPages();
   }
 
+  // Photos in the book. A photo too tall for what is left of its page used to jump to the next one
+  // and leave this page half empty. Now, if there is room for most of it, it is lowered to fit; if
+  // not, the paragraph after it is set first and fills the page, and the photo follows it, as a
+  // printed book places its plates. The scroll keeps the article's own order.
+  const moved = [];
+  function unfitPlates() {
+    while (moved.length) { const { p, after } = moved.pop(); after.after(p); }
+    $$('.story-body > .plate', story).forEach((pl) => pl.style.removeProperty('--fit'));
+  }
+  function fitPlates() {
+    unfitPlates();
+    if (state.layout !== 'book') return '';
+    const s0 = story.getBoundingClientRect(), col = (x) => Math.floor((x - s0.left + 1) / B.pw), out = [];
+    for (const plate of $$('.story-body > .plate', story)) {
+      for (let tries = 0; tries < 3; tries++) {
+        const prev = plate.previousElementSibling, frags = prev ? prev.getClientRects() : [], last = frags[frags.length - 1];
+        if (!last) break;
+        if (col(plate.getBoundingClientRect().left) <= col(last.left)) break;   // it sits where its text left off
+        const free = B.ih - (last.bottom - s0.top);
+        const img = plate.matches('.video') ? null : plate.querySelector('.mount img');
+        if (img) {
+          const room = Math.floor(free - (plate.getBoundingClientRect().height - img.getBoundingClientRect().height) - (parseFloat(getComputedStyle(plate).marginTop) || 0) - 6);
+          if (room >= B.ih * 0.42) {
+            plate.style.setProperty('--fit', `${room}px`);
+            if (col(plate.getBoundingClientRect().left) <= col(last.left)) { out.push(room); break; }
+            plate.style.removeProperty('--fit');
+          }
+        }
+        let after = plate;   // photos side by side in the text travel together
+        while (after.nextElementSibling && after.nextElementSibling.matches('.plate')) after = after.nextElementSibling;
+        const next = after.nextElementSibling;
+        if (free < 48 || !next || !next.matches('p')) break;   // a sliver of page, or a new chapter: leave it
+        plate.before(next);
+        moved.push({ p: next, after });
+        out.push('p');
+      }
+    }
+    return out.join(',');
+  }
+
   function countPages() {
+    const fit = fitPlates();
+    if (fit !== B.fit) { B.fit = fit; Turn.key = ''; }   // the copies must be laid out the same way
     B.sw = story.scrollWidth;
     B.pages = Math.max(1, Math.round((B.sw + B.padx * 2) / B.pw));
   }
@@ -233,6 +278,7 @@
     copy.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'));
     copy.querySelectorAll('iframe').forEach((f) => f.replaceWith(el('div', 'video-hold')));  // never a second player
     copy.querySelectorAll('.here').forEach((n) => n.classList.remove('here', 'fading'));
+    copy.querySelectorAll('mark.igniting').forEach((m) => m.classList.remove('igniting'));   // a copy shows words already burnt
     // A copy's photos must be there the moment its page is shown: no lazy loading, no async decode.
     copy.querySelectorAll('img').forEach((img) => { img.loading = 'eager'; img.decoding = 'sync'; });
     win.append(copy);
@@ -484,10 +530,10 @@
   // exactly. Let go past two thirds of the way, or with a flick, and it lands; otherwise it falls back.
   reader.addEventListener('pointerdown', (e) => {
     if (state.layout !== 'book' || B.flip || e.button !== 0 || e.target.closest('a, button, mark')) return;
-    const r = reader.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
-    // Inside the text, a press selects; a page is taken by its edge or its margin.
-    const onEdge = Math.min(x % B.pw, B.pw - (x % B.pw)) < 56 || y < B.padt || y > B.ph - B.padb;
-    if (state.hl && e.target.closest('.story') && !onEdge) return;
+    const r = reader.getBoundingClientRect(), x = e.clientX - r.left;
+    // With the Lighter on, a mouse on words lights them, and the page is taken by its margin. A finger
+    // on words still starts a turn: only a hold lights them (see arm), so a swipe across text turns.
+    if (state.hl && onWords(e.target) && e.pointerType !== 'touch') return;
     const dir = B.spread ? (x > B.pw ? 1 : -1) : (x > r.width / 2 ? 1 : -1);
     B.drag = { id: e.pointerId, dir, x0: e.clientX, y0: e.clientY, cy: e.clientY - r.top, t: null, rest: null, lastX: e.clientX, lastT: performance.now(), v: 0 };
   });
@@ -614,6 +660,7 @@
     } else {
       cancelFlip();
       B.ready = false;
+      unfitPlates();
       story.style.removeProperty('--shift');
       $$('.board').forEach((b) => { b.style.boxShadow = ''; });
       if (anchor) window.scrollTo(0, Math.max(0, anchor.getBoundingClientRect().top + scrollY - barH() - 20));
@@ -734,13 +781,16 @@
     requestAnimationFrame(() => { compassQueued = false; pointCompass(); });
   }, { passive: true });
 
-  /* ── highlights: the reader's own pencil, kept in this browser ──
-     A highlight is stored as spans of (block, from, to) over the article's text, so it survives a
-     reload and lands on the same words in either layout. The marks live in the article itself, so
-     the book's copies carry them too. */
-  const HL = { key: 'hl:' + location.pathname.split('/').pop(), items: [], mode: '', current: null,
-    bar: $('#hl-bar'), add: $('#hl-add'), del: $('#hl-del'), list: $('#hl-list'), empty: $('#hl-empty') };
-  const hlBlocks = () => $$('p, h2, figcaption', $('.story-body')).filter((b) => !b.closest('.lakes, .story-foot'));
+  /* ── the Lighter: drag across words and they burn ──
+     A burnt passage is stored as spans of (block, from, to) over the article's text, so it survives a
+     reload and lands on the same words in either layout. The marks live in the article itself, so the
+     book's copies carry them too. A press and drag (on a phone: hold, then drag) lights whole words
+     under it; letting go burns them. An ember edge runs through the passage at a steady pace, smoke and
+     sparks come off it, and the letters settle as burnt gold. A tap on a burnt passage offers to put it
+     out. The browser's own selection is never used: no handles, no menu, no button to press. */
+  const HL = { key: 'hl:' + location.pathname.split('/').pop(), items: [], current: null,
+    bar: $('#hl-bar'), del: $('#hl-del'), list: $('#hl-list'), empty: $('#hl-empty') };
+  const hlBlocks = () => HL_BLOCKS;
   const textNodes = (block) => { const out = [], w = document.createTreeWalker(block, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) out.push(n); return out; };
   function pointOffset(block, node, off) {
     const r = document.createRange();
@@ -748,24 +798,22 @@
     try { r.setEnd(node, off); } catch (_) { return 0; }
     return r.toString().length;
   }
-  function captureSelection() {
-    const sel = getSelection();
-    if (!sel || sel.isCollapsed || !sel.rangeCount) return null;
-    const range = sel.getRangeAt(0);
-    if (!story.contains(range.commonAncestorContainer)) return null;
+  function captureRange(range) {
+    if (!range || range.collapsed || !story.contains(range.commonAncestorContainer)) return null;
     const blocks = hlBlocks();
-    const hit = blocks.map((b, i) => ({ b, i })).filter(({ b }) => range.intersectsNode(b));
+    const hit = blocks.map((b, i) => ({ b, i })).filter(({ b }) => range.intersectsNode(b))
+      .sort((x, y) => (x.b.compareDocumentPosition(y.b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));   // page order
     if (!hit.length) return null;
     const spans = hit.map(({ b, i }, k) => {
-      const from = k === 0 ? pointOffset(b, range.startContainer, range.startOffset) : 0;
-      const to = k === hit.length - 1 ? pointOffset(b, range.endContainer, range.endOffset) : b.textContent.length;
+      const from = k === 0 && b.contains(range.startContainer) ? pointOffset(b, range.startContainer, range.startOffset) : 0;
+      const to = k === hit.length - 1 && b.contains(range.endContainer) ? pointOffset(b, range.endContainer, range.endOffset) : b.textContent.length;
       return [i, Math.max(0, from), Math.min(b.textContent.length, to)];
     }).filter(([, from, to]) => to > from);
     if (!spans.length) return null;
     return { id: Date.now().toString(36), spans, text: range.toString().replace(/\s+/g, ' ').trim().slice(0, 140) };
   }
   function paint(item) {
-    const blocks = hlBlocks();
+    const blocks = hlBlocks(), made = [];
     for (const [bi, from, to] of item.spans) {
       const b = blocks[bi];
       if (!b) continue;
@@ -780,10 +828,12 @@
           m.dataset.hl = item.id;
           node.replaceWith(m);
           m.append(node);
+          made.push(m);
         }
         at += len;
       }
     }
+    return made;
   }
   function unpaint(id) {
     $$(`mark.hl[data-hl="${id}"]`, story).forEach((m) => m.replaceWith(...m.childNodes));
@@ -797,7 +847,7 @@
       const li = el('li'), jump = el('button', 'hl-jump'), del = el('button', 'hl-del');
       jump.type = 'button'; jump.textContent = `“${it.text}”`;
       jump.addEventListener('click', () => jumpToHL(it));
-      del.type = 'button'; del.setAttribute('aria-label', `Remove the highlight “${it.text.slice(0, 40)}”`); del.textContent = '×';
+      del.type = 'button'; del.setAttribute('aria-label', `Put out “${it.text.slice(0, 40)}”`); del.textContent = '×';
       del.addEventListener('click', () => removeHL(it.id));
       li.append(jump, del);
       return li;
@@ -812,62 +862,263 @@
     else m.scrollIntoView({ block: 'center', behavior: animate() ? 'smooth' : 'auto' });
   }
   function removeHL(id) {
-    unpaint(id);
-    HL.items = HL.items.filter((it) => it.id !== id);
-    saveHL(); renderHL(); copiesStale();
-    announce('Highlight removed.');
+    const marks = $$(`mark.hl[data-hl="${id}"]`, story);
+    const gone = () => {
+      unpaint(id);
+      HL.items = HL.items.filter((it) => it.id !== id);
+      saveHL(); renderHL(); copiesStale();
+    };
+    if (animate() && marks.length) {
+      Smoke.puff(marks.flatMap((m) => [...m.getClientRects()]));
+      marks.forEach((m) => m.classList.add('dousing'));
+      setTimeout(gone, 380);
+    } else gone();
+    announce('Put out.');
   }
-  function hideBar() { HL.bar.hidden = true; HL.mode = ''; }
-  function showBar(rect, mode) {
-    HL.mode = mode;
-    HL.add.hidden = mode !== 'add';
-    HL.del.hidden = mode !== 'del';
+  function hideBar() { HL.bar.hidden = true; HL.current = null; }
+  // Offered just above where the passage was tapped (below it near the top of the screen), so it
+  // never sits on the line being read.
+  function offerPutOut(mark, x, y) {
+    HL.current = mark.dataset.hl;
     HL.bar.hidden = false;
     const w = HL.bar.offsetWidth, h = HL.bar.offsetHeight;
-    let top = rect.top - h - 10;
-    if (top < barH() + 8) top = rect.bottom + 10;
-    HL.bar.style.left = `${clamp(rect.left + rect.width / 2 - w / 2, 8, innerWidth - w - 8).toFixed(0)}px`;
+    let top = y - h - 22;
+    if (top < barH() + 8) top = y + 26;
+    HL.bar.style.left = `${clamp(x - w / 2, 8, innerWidth - w - 8).toFixed(0)}px`;
     HL.bar.style.top = `${clamp(top, 8, innerHeight - h - 8).toFixed(0)}px`;
+    HL.del.focus({ preventScroll: true });
   }
-  let selTimer = 0;
-  document.addEventListener('selectionchange', () => {
-    clearTimeout(selTimer);
-    if (!state.hl || B.flip || B.drag) { if (HL.mode === 'add') hideBar(); return; }
-    selTimer = setTimeout(() => {
-      const sel = getSelection();
-      const live = sel && !sel.isCollapsed && sel.rangeCount && story.contains(sel.getRangeAt(0).commonAncestorContainer);
-      if (live) showBar(sel.getRangeAt(0).getBoundingClientRect(), 'add');
-      else if (HL.mode === 'add') hideBar();
-    }, 160);
-  });
-  story.addEventListener('click', (e) => {
-    const m = e.target.closest('mark.hl');
-    if (!m || !state.hl) return;
-    const sel = getSelection();
-    if (sel && !sel.isCollapsed) return;
-    HL.current = m.dataset.hl;
-    showBar(m.getBoundingClientRect(), 'del');
-  });
-  document.addEventListener('pointerdown', (e) => { if (HL.mode === 'del' && !HL.bar.contains(e.target)) hideBar(); });
-  if (HL.bar) {
-    HL.add.addEventListener('click', () => {
-      const item = captureSelection();
-      if (!item) return;
-      paint(item);
-      HL.items.push(item);
-      saveHL(); renderHL(); copiesStale();
-      getSelection().removeAllRanges();
-      hideBar();
-      announce('Highlighted.');
+
+  // Burning: the ember edge moves at a steady pace through the passage, mark after mark, and settles
+  // as gold. Each mark's strip is sized to its own length laid end to end (see mark.hl.igniting).
+  const EDGE = 72;   // px of strip between gold and ink: char, ember, flame, the yellow leading edge
+  function ignite(marks, done) {
+    if (!marks.length || !animate()) { done(); return; }
+    const widths = marks.map((m) => [...m.getClientRects()].reduce((s, r) => s + r.width, 0));
+    const total = widths.reduce((s, w) => s + w + EDGE, 0);
+    const pace = Math.max(0.42, total / 2600);   // px per ms; a long passage burns faster, never past 2.6 s
+    let at = 0;
+    const plan = marks.map((m, i) => {
+      const dur = (widths[i] + EDGE) / pace;
+      m.style.setProperty('--W', `${widths[i].toFixed(1)}px`);
+      m.style.setProperty('--burn-dur', `${dur.toFixed(0)}ms`);
+      m.style.setProperty('--burn-delay', `${at.toFixed(0)}ms`);
+      m.classList.add('igniting');
+      const job = { m, w: widths[i], delay: at, dur };
+      at += dur;
+      return job;
     });
-    HL.del.addEventListener('click', () => { if (HL.current) removeHL(HL.current); hideBar(); });
+    Smoke.burn(plan);
+    setTimeout(() => {
+      marks.forEach((m) => { m.classList.remove('igniting'); ['--W', '--burn-dur', '--burn-delay'].forEach((v) => m.style.removeProperty(v)); });
+      done();
+    }, at + 60);
+  }
+  function burn(range) {
+    const item = captureRange(range);
+    if (!item) return;
+    hideBar();
+    const marks = paint(item);
+    HL.items.push(item);
+    saveHL(); renderHL();
+    Turn.key = '';   // the next turn copies the page with these words burnt
+    ignite(marks, () => { if (state.layout === 'book' && B.ready) prewarmTurns(60); });
+    announce('Burnt.');
+  }
+
+  // Smoke and sparks, on one canvas over the page, running only while there is something in the air.
+  const Smoke = (() => {
+    let cv = null, cx = null, sprite = null, tint = '', parts = [], jobs = [], raf = 0, last = 0;
+    const rnd = (a, b) => a + Math.random() * (b - a);
+    function size() {
+      const d = Math.min(2, devicePixelRatio || 1);
+      cv.width = Math.round(innerWidth * d); cv.height = Math.round(innerHeight * d);
+      cx.setTransform(d, 0, 0, d, 0, 0);
+    }
+    function ready() {
+      if (!cv) {
+        cv = el('canvas', 'smoke'); cv.setAttribute('aria-hidden', 'true');
+        document.body.append(cv); cx = cv.getContext('2d'); size();
+        addEventListener('resize', size);
+      }
+      const t = getComputedStyle(root).getPropertyValue('--smoke').trim() || '128,128,128';
+      if (t !== tint) {   // one soft puff, drawn once per theme and stamped for every particle
+        tint = t; sprite = document.createElement('canvas'); sprite.width = sprite.height = 64;
+        const g = sprite.getContext('2d'), rg = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+        rg.addColorStop(0, `rgba(${t},.55)`); rg.addColorStop(.5, `rgba(${t},.22)`); rg.addColorStop(1, `rgba(${t},0)`);
+        g.fillStyle = rg; g.fillRect(0, 0, 64, 64);
+      }
+    }
+    const smoke = (x, y, big = 1) => ({ k: 's', x, y: y + scrollY, vx: rnd(-0.012, 0.012), vy: rnd(-0.05, -0.028) * big, r0: rnd(2, 4) * big, grow: rnd(12, 22) * big, a: rnd(0.35, 0.6), life: rnd(1100, 1900), age: 0, seed: rnd(0, 6000), wob: rnd(0.006, 0.016) });
+    const spark = (x, y) => ({ k: 'e', x, y: y + scrollY, vx: rnd(-0.05, 0.05), vy: rnd(-0.16, -0.08), r0: rnd(0.7, 1.5), grow: 0, a: 1, life: rnd(300, 650), age: 0, seed: 0, wob: 0 });
+    // Where the burning edge is along a mark's line boxes, `d` px from its start.
+    function along(rects, d) {
+      for (const r of rects) { if (d <= r.width) return { x: r.left + d, y: r.top, h: r.height }; d -= r.width; }
+      const r = rects[rects.length - 1];
+      return { x: r.right, y: r.top, h: r.height };
+    }
+    function tick(now) {
+      const dt = last ? Math.min(48, now - last) : 16;
+      last = now;
+      jobs = jobs.filter((j) => {
+        const t = now - j.t0;
+        const live = j.plan.filter((p) => t >= p.delay && t < p.delay + p.dur);
+        for (const p of live) {
+          const rects = [...p.m.getClientRects()].filter((r) => r.width > 0);
+          if (!rects.length) continue;
+          const d = (t - p.delay) * (p.w + EDGE) / p.dur - 16;   // the yellow leading edge of the strip
+          if (d < 0 || d > p.w) continue;
+          const at = along(rects, d);
+          parts.push(smoke(at.x + rnd(-2, 2), at.y + at.h * rnd(0.15, 0.6)));
+          if (Math.random() < 0.7) parts.push(smoke(at.x - rnd(4, 14), at.y + at.h * rnd(0.1, 0.5), 0.8));
+          if (Math.random() < 0.55) parts.push(spark(at.x, at.y + at.h * rnd(0.3, 0.8)));
+        }
+        return t < j.end;
+      });
+      cx.clearRect(0, 0, innerWidth, innerHeight);
+      parts = parts.filter((q) => (q.age += dt) < q.life);
+      for (const q of parts) {
+        const k = q.age / q.life;
+        q.x += (q.vx + Math.sin((q.age + q.seed) / 240) * q.wob) * dt;
+        q.y += q.vy * dt;
+        const y = q.y - scrollY;
+        if (q.k === 's') {
+          const r = q.r0 + q.grow * k;
+          cx.globalAlpha = q.a * (k < 0.12 ? k / 0.12 : 1) * (1 - k) * (1 - k);
+          cx.drawImage(sprite, q.x - r, y - r, r * 2, r * 2);
+        } else {
+          cx.globalAlpha = 1 - k;
+          cx.fillStyle = k < 0.35 ? '#ffe7a3' : '#ff7a12';
+          cx.beginPath(); cx.arc(q.x, y, q.r0 * (1 - k * 0.5), 0, 6.283); cx.fill();
+          q.vy += 0.00012 * dt;   // sparks slow as they cool
+        }
+      }
+      cx.globalAlpha = 1;
+      if (parts.length || jobs.length) raf = requestAnimationFrame(tick);
+      else { raf = 0; last = 0; cx.clearRect(0, 0, innerWidth, innerHeight); }
+    }
+    const run = () => { if (!raf) raf = requestAnimationFrame(tick); };
+    return {
+      burn(plan) {
+        if (!animate()) return;
+        ready();
+        const end = plan.reduce((s, p) => Math.max(s, p.delay + p.dur), 0);
+        jobs.push({ plan, t0: performance.now(), end });
+        run();
+      },
+      puff(rects) {
+        if (!animate()) return;
+        ready();
+        for (const r of rects) for (let x = r.left; x < r.right; x += 9) parts.push(smoke(x + rnd(-3, 3), r.top + r.height * rnd(0.2, 0.7), 0.9));
+        run();
+      }
+    };
+  })();
+
+  // The press. A mouse or pen lights at once; a finger lights after a short hold, so a swipe still
+  // scrolls the page or turns it. On a phone a small flame rides above the finger so the words under
+  // it stay visible.
+  const LT = { id: null, type: '', armed: false, moved: false, hold: 0, a: null, b: null, x0: 0, y0: 0, target: null };
+  const hasHighlights = typeof Highlight === 'function' && window.CSS && CSS.highlights;
+  const flame = (() => {
+    const f = el('div', 'lighter-flame');
+    f.hidden = true; f.setAttribute('aria-hidden', 'true');
+    f.innerHTML = '<svg viewBox="0 0 22 33" width="22" height="33"><defs><radialGradient id="lf-g" cx="50%" cy="72%" r="62%"><stop offset="0" stop-color="#fff6d6"/><stop offset=".42" stop-color="#ffc247"/><stop offset="1" stop-color="#ff5a0a"/></radialGradient></defs><path d="M11 1c2.2 6.5 9 10.6 9 19.4a9 9 0 0 1-18 0c0-5.6 3.4-8.8 4.4-13.2 1.1 3.2 2.3 4.6 3.4 5.6 1-4.3 1.2-7.6 1.2-11.8Z" fill="url(#lf-g)"/></svg>';
+    document.body.append(f);
+    return f;
+  })();
+  const onWords = (t) => {
+    const b = t && t.closest && t.closest('.story-body :is(p, h2, figcaption)');
+    return !!b && !b.closest('.lakes, .story-foot') && !t.closest('a, button, .video-frame');
+  };
+  function caretAt(x, y) {
+    let node = null, off = 0;
+    if (document.caretPositionFromPoint) { const p = document.caretPositionFromPoint(x, y); if (p) { node = p.offsetNode; off = p.offset; } }
+    else if (document.caretRangeFromPoint) { const r = document.caretRangeFromPoint(x, y); if (r) { node = r.startContainer; off = r.startOffset; } }
+    if (!node || node.nodeType !== 3 || !onWords(node.parentElement)) return null;
+    return { node, off };
+  }
+  const WORD = /[\p{L}\p{N}'’-]/u;
+  function wordRange(p, q) {
+    const r = document.createRange();
+    r.setStart(p.node, p.off);
+    const [s, e] = r.comparePoint(q.node, q.off) < 0 ? [q, p] : [p, q];
+    let so = s.off, eo = e.off;
+    while (so > 0 && WORD.test(s.node.data[so - 1])) so--;
+    while (eo < e.node.data.length && WORD.test(e.node.data[eo])) eo++;
+    r.setStart(s.node, so); r.setEnd(e.node, eo);
+    return r;
+  }
+  function preview() {
+    if (!hasHighlights || !LT.a) return;
+    CSS.highlights.set('lighter', new Highlight(wordRange(LT.a, LT.b)));
+  }
+  function moveFlame(x, y) { flame.style.left = `${x}px`; flame.style.top = `${y}px`; }
+  function arm() {
+    if (B.flip || (B.drag && B.drag.t)) { endLight(); return; }   // the page is already turning
+    if (B.drag && B.drag.id === LT.id) B.drag = null;              // held still: this finger lights, it does not turn
+    LT.armed = true;
+    try { story.setPointerCapture(LT.id); } catch (_) { /* gone */ }
+    if (LT.type === 'touch') { moveFlame(LT.x0, LT.y0); flame.hidden = false; if (navigator.vibrate) navigator.vibrate(8); }
+    preview();
+  }
+  function endLight() {
+    clearTimeout(LT.hold);
+    try { if (LT.id !== null) story.releasePointerCapture(LT.id); } catch (_) { /* gone */ }
+    Object.assign(LT, { id: null, armed: false, moved: false, a: null, b: null, target: null });
+    if (hasHighlights) CSS.highlights.delete('lighter');
+    flame.hidden = true;
+  }
+  story.addEventListener('pointerdown', (e) => {
+    if (!state.hl || e.button !== 0 || B.flip || !onWords(e.target)) return;
+    const pt = caretAt(e.clientX, e.clientY);
+    if (!pt) return;
+    endLight();
+    Object.assign(LT, { id: e.pointerId, type: e.pointerType, a: pt, b: pt, x0: e.clientX, y0: e.clientY, target: e.target });
+    if (e.pointerType === 'touch') LT.hold = setTimeout(arm, 260);
+    else { e.preventDefault(); arm(); }
+  });
+  story.addEventListener('pointermove', (e) => {
+    if (e.pointerId !== LT.id) return;
+    const far = Math.hypot(e.clientX - LT.x0, e.clientY - LT.y0);
+    if (!LT.armed) { if (far > 8) endLight(); return; }   // a swipe before the hold: let it scroll
+    if (far > 4) LT.moved = true;
+    if (LT.type === 'touch') moveFlame(e.clientX, e.clientY);
+    const pt = caretAt(e.clientX, e.clientY);
+    if (pt) { LT.b = pt; preview(); }
+  });
+  story.addEventListener('pointerup', (e) => {
+    if (e.pointerId !== LT.id) return;
+    const { armed, moved, type, a, b, target } = LT;
+    endLight();
+    const mark = target && target.closest('mark.hl');
+    if (!armed || (!moved && type !== 'touch') || (!moved && mark)) {   // a tap or a click
+      if (mark) offerPutOut(mark, e.clientX, e.clientY); else hideBar();
+      return;
+    }
+    burn(wordRange(a, b));
+  });
+  story.addEventListener('pointercancel', (e) => { if (e.pointerId === LT.id) endLight(); });
+  story.addEventListener('touchmove', (e) => { if (LT.armed) e.preventDefault(); }, { passive: false });
+  story.addEventListener('contextmenu', (e) => { if (state.hl && LT.id !== null) e.preventDefault(); });
+  document.addEventListener('pointerdown', (e) => { if (!HL.bar.hidden && !HL.bar.contains(e.target) && !e.target.closest('mark.hl')) hideBar(); });
+  if (HL.bar) {
+    HL.del.addEventListener('click', () => { const id = HL.current; hideBar(); if (id) removeHL(id); });
+    HL.bar.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideBar(); });
+    // A keyboard selection (scroll layout, Lighter off) burns with Cmd/Ctrl+Shift+H.
     document.addEventListener('keydown', (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'h') { e.preventDefault(); HL.add.click(); }
+      if (!((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'h')) return;
+      const sel = getSelection();
+      if (!sel || sel.isCollapsed || !sel.rangeCount) return;
+      e.preventDefault();
+      const r = sel.getRangeAt(0).cloneRange();
+      sel.removeAllRanges();
+      burn(r);
     });
     $('#hl-mode').addEventListener('change', (e) => {
       state.hl = e.target.checked; store.set('hl', state.hl ? '1' : '0'); root.dataset.hl = state.hl ? '1' : '0';
-      if (!state.hl) { hideBar(); try { getSelection().removeAllRanges(); } catch (_) { /* none */ } }
-      announce(state.hl ? 'Highlighter on. Select words to highlight them.' : 'Highlighter off.');
+      if (!state.hl) { hideBar(); endLight(); }
+      announce(state.hl ? 'Lighter on. Drag across words to burn them; on a phone, hold, then drag.' : 'Lighter off.');
     });
     try { HL.items = JSON.parse(store.get(HL.key) || '[]'); } catch (_) { HL.items = []; }
     HL.items.forEach(paint);   // before the book is laid out, so its copies carry the marks
