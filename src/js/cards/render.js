@@ -84,7 +84,7 @@ export const PRINT = Object.freeze({
   textFilter: "",
 });
 
-import { esc } from "/js/kit.js?v=39b8d76";
+import { esc } from "/js/kit.js?v=01cba65";
 export { esc };
 
 /**
@@ -169,7 +169,7 @@ export const BACK = Object.freeze({
  */
 export const ART_EXTENT = Object.freeze({
   paddlingout: Object.freeze({ x:  49, y: 270, w: 703, h:  634 }),
-  stories:     Object.freeze({ x:  68, y: 165, w: 721, h:  747 }),
+  stories:     Object.freeze({ x:  52, y: 213, w: 698, h:  749 }),
   forge:       Object.freeze({ x:  80, y: 190, w: 641, h:  795 }),
   kortex:      Object.freeze({ x:  80, y: 282, w: 642, h:  611 }),
   kaayko:      Object.freeze({ x:  82, y: 363, w: 639, h:  451 }),

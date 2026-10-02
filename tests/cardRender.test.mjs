@@ -65,7 +65,7 @@ const artOf = (c) => `/assets/cards/art/${c.art || c.slug}.png`;
 // Stories is pinned new, on both faces.
 const PINNED = {
   paddlingout: ['9bc106d58993f93f', '44de42e4cf2cdd67'],
-  stories:     ['4f356546f9651710', 'c1c9f6d20321917c'],
+  stories:     ['4f356546f9651710', '502cca19a3f2e582'],   // back re-pinned when the coyote became the Forge orca
   forge:       ['2da71419f1d6d133', 'd908a3733e05a546'],
   kortex:      ['9e8838d7a584c564', '7eaf6ff60c868bd7'],
   kaayko:      ['49b36fd9a9a2cb1e', '16d6c31adcae9f83'],

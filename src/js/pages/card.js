@@ -2,14 +2,14 @@
  * pages/card.js — the collectible card (/card): lighting model, flip, inspect, QR.
  * Moved out of card.html on 12 Sep 2026 unchanged.
  */
-import { front, back, PRINT, BACK, ART_EXTENT, ART_COLUMN } from '/js/cards/render.js?v=39b8d76';
-import { engravedFor, stockOf, embossParams, reliefType, DIRS } from '/js/cards/skins/engraved.js?v=39b8d76';
-import { embossOf, stillCanvas } from '/js/cards/emboss.js?v=39b8d76';
-import { readFace, warmArt } from '/js/cards/relief.js?v=39b8d76';
-import { rest, step, clamp } from '/js/cards/attitude.js?v=39b8d76';
-import { lightFace, pointerLamp, v } from '/js/cards/lamp.js?v=39b8d76';
-import { dustMorph } from '/js/cards/morph.js?v=39b8d76';
-import { esc, apiBase } from '/js/kit.js?v=39b8d76';
+import { front, back, PRINT, BACK, ART_EXTENT, ART_COLUMN } from '/js/cards/render.js?v=01cba65';
+import { engravedFor, stockOf, embossParams, reliefType, DIRS } from '/js/cards/skins/engraved.js?v=01cba65';
+import { embossOf, stillCanvas } from '/js/cards/emboss.js?v=01cba65';
+import { readFace, warmArt } from '/js/cards/relief.js?v=01cba65';
+import { rest, step, clamp } from '/js/cards/attitude.js?v=01cba65';
+import { lightFace, pointerLamp, v } from '/js/cards/lamp.js?v=01cba65';
+import { dustMorph } from '/js/cards/morph.js?v=01cba65';
+import { esc, apiBase } from '/js/kit.js?v=01cba65';
 
 /* ── the light ─────────────────────────────────────────────────────────────
    One lamp. Everything the eye reads as light on this card — the glint, its
@@ -763,5 +763,5 @@ function show(i, { focus = false, relief = 'soon', fade = 0 } = {}) {
   // A rig for measuring the page on a real engine, only when the URL asks
   // for it. Never fetched otherwise. See cards/probe.js.
   const probe = new URLSearchParams(location.search).get('probe');
-  if (probe) import('/js/cards/probe.js?v=39b8d76').then((m) => m.run({ label: probe, setSkin, setInspect, att, grab, quiet: (on) => { quiet = !!on; }, parts: (p) => { reliefParts = p; } })).catch((err) => console.warn('card: probe —', err));
+  if (probe) import('/js/cards/probe.js?v=01cba65').then((m) => m.run({ label: probe, setSkin, setInspect, att, grab, quiet: (on) => { quiet = !!on; }, parts: (p) => { reliefParts = p; } })).catch((err) => console.warn('card: probe —', err));
 })();

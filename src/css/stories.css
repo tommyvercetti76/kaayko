@@ -360,9 +360,6 @@ main{display:block;position:relative;z-index:1;overflow-x:clip}
 .btn:hover{text-decoration:underline;text-underline-offset:.2em}
 .btn-ghost{background:transparent;color:var(--ink);border-color:var(--edge)}
 .contents-title{margin:0 0 .4rem;padding-bottom:.6rem;border-bottom:1px solid var(--edge);font:600 .8rem/1 var(--f-label);letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
-.volume-lakes{display:flex;flex-wrap:wrap;gap:.3em .9em;margin:1.8rem 0 0;font-size:.95rem;color:var(--muted)}
-.volume-lakes span{font:600 .78rem/1.6 var(--f-label);letter-spacing:.16em;text-transform:uppercase}
-.volume-lakes a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--violet);text-underline-offset:.2em}
 @media (max-width:560px){.toc-title{max-width:62%;font-size:1.15rem}}
 
 /* ── the library's identity: a masthead seal, and every volume a stamp in the album ── */
@@ -423,8 +420,7 @@ main{display:block;position:relative;z-index:1;overflow-x:clip}
   .cover-blank .seal{width:4.4rem}
   .cover-blank .blank-note{margin-top:.5rem;font-size:.52rem}
   .volume-lede{overflow:hidden}
-  .volume-actions,.contents-title,.volume-lakes{clear:both}
-}
+  .volume-actions,.contents-title,}
 
 /* ── the chart, quieter ── */
 .chart-place{opacity:.55}
@@ -551,11 +547,10 @@ mark.hl.smolder{animation:smolder 2.5s cubic-bezier(.3,.1,.3,1) both}
 .stamp-s.front .stamp-paper img{aspect-ratio:3 / 4}
 .stamp-paper span{display:block;margin-top:7%;font:600 .5rem/1.2 var(--f-label);letter-spacing:.12em;text-transform:uppercase;color:var(--stamp-violet);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pile .cover-cancel{right:-1.2rem;top:-1.1rem;z-index:3}
-.pile-seal{position:absolute;left:31%;top:36%;width:38%;height:auto;z-index:3;color:var(--stamp-violet);transform:rotate(-14deg);filter:drop-shadow(0 0 2px var(--paper))}
+.pile-seal{position:absolute;left:-2%;top:77%;width:30%;height:auto;z-index:3;color:var(--stamp-violet);transform:rotate(-14deg);filter:drop-shadow(0 0 2px var(--paper))}
 @media (max-width:760px){
   .cover-wrap.pile{float:none;width:min(100%,21rem);max-width:21rem;margin:0 auto 18px}
-  .volume-actions,.contents-title,.volume-lakes{clear:both}
-}
+  .volume-actions,.contents-title,}
 @media (forced-colors: active){.stamp-paper{-webkit-mask:none;mask:none;border:1px solid CanvasText}}
 
 /* ── the video: YouTube's frame lies under the still. A tap on the still passes through to the
