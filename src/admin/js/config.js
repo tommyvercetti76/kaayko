@@ -96,13 +96,13 @@ export const AUTH = {
     localStorage.removeItem('kaayko_tenant_id');
     
     // Redirect to login
-    window.location.href = './login';
+    window.location.href = '/kortex/signin';
   },
   
   // Require authentication (redirect if not logged in)
   requireAuth() {
     if (!this.isAuthenticated()) {
-      window.location.href = './login';
+      window.location.href = '/kortex/signin';
       return false;
     }
     return true;
@@ -140,7 +140,12 @@ export async function apiFetch(endpoint, options = {}) {
     const response = await fetch(url, fetchOptions);
     if (CONFIG.ENVIRONMENT !== 'production') console.log(`   Response status: ${response.status}`);
 
-    // Handle 401 Unauthorized - logout
+    // 401: the stored token is usually just stale (it lives an hour). Get a
+    // fresh one from the Firebase session and try once more before logging out.
+    if (response.status === 401 && !options._retried) {
+      const token = await freshToken();
+      if (token) return apiFetch(endpoint, { ...options, _retried: true });
+    }
     if (response.status === 401) {
       if (CONFIG.ENVIRONMENT !== 'production') console.error('❌ Authentication failed (401) - logging out');
       AUTH.logout();
@@ -172,7 +177,37 @@ export async function apiFetch(endpoint, options = {}) {
 // (src/kortex.html, project "kaaykostore") being restorable from this same
 // origin. Verify in a real browser that onAuthStateChanged yields the signed-in
 // user before relying on this refresh in production.
+
+const FIREBASE_CONFIG = {
+  apiKey: 'AIzaSyC59ECKLt3rowOoavF76hV_djb--W4jekA',
+  authDomain: 'kaaykostore.firebaseapp.com',
+  projectId: 'kaaykostore',
+  appId: '1:87383373015:web:ee1ce56d4f5192ec67ec92',
+  storageBucket: 'kaaykostore.firebasestorage.app',
+  messagingSenderId: '87383373015'
+};
 let tokenRefreshStarted = false;
+
+// A fresh ID token from the persisted Firebase session, or null when there is
+// no session (signed out, revoked) or Firebase can't load. Stores it for AUTH.
+export async function freshToken() {
+  try {
+    const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+    const { getAuth, onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+    const app = getApps().length ? getApps()[0] : initializeApp(FIREBASE_CONFIG);
+    const auth = getAuth(app);
+    const user = auth.currentUser || await new Promise((resolve) => {
+      const stop = onAuthStateChanged(auth, (u) => { stop(); resolve(u); });
+    });
+    if (!user) return null;
+    const token = await user.getIdToken(true);
+    localStorage.setItem('kaayko_auth_token', token);
+    AUTH.token = token;
+    return token;
+  } catch (err) {
+    return null;
+  }
+}
 
 async function initTokenAutoRefresh() {
   try {
@@ -180,19 +215,11 @@ async function initTokenAutoRefresh() {
     // Only relevant for an already-authenticated SPA session.
     if (!localStorage.getItem('kaayko_auth_token')) return;
 
-    const firebaseConfig = {
-      apiKey: 'AIzaSyC59ECKLt3rowOoavF76hV_djb--W4jekA',
-      authDomain: 'kaaykostore.firebaseapp.com',
-      projectId: 'kaaykostore',
-      appId: '1:87383373015:web:ee1ce56d4f5192ec67ec92',
-      storageBucket: 'kaaykostore.firebasestorage.app',
-      messagingSenderId: '87383373015'
-    };
 
     const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
     const { getAuth, onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
 
-    const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+    const app = getApps().length ? getApps()[0] : initializeApp(FIREBASE_CONFIG);
     const auth = getAuth(app);
 
     onAuthStateChanged(auth, (user) => {

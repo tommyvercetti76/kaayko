@@ -629,7 +629,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (window.location.hash && window.location.hash !== '#/') {
       sessionStorage.setItem('kortex_intended_route', window.location.hash);
     }
-    window.location.href = './login';
+    window.location.href = '/kortex/signin';
     return;
   }
   

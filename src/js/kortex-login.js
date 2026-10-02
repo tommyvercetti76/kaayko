@@ -191,15 +191,13 @@ auth.onAuthStateChanged(async (user) => {
   if (user) {
     const t = localStorage.getItem('kaayko_auth_token');
     const n = localStorage.getItem('kaayko_tenant_id');
-    if (t && n) {
+    if (t && n && localStorage.getItem('kaayko_user') && mode === 'signin') {
+      // Already signed in (e.g. "Sign in" from kaay.link): go straight to the
+      // console. This page used to hide its form here and leave a dead card.
       try {
         localStorage.setItem('kaayko_auth_token', await user.getIdToken(true));
-        const nav = $('nav-auth-link');
-        if (nav) { nav.textContent = 'Dashboard'; nav.href = '/admin/kortex'; }
-        const hero = $('hero-auth-btn');
-        if (hero) { hero.textContent = 'Dashboard'; hero.href = '/admin/kortex'; }
-        const lp = $('login'); if (lp) lp.style.display = 'none';
-        const dv = document.querySelector('.connect-divider'); if (dv) dv.style.display = 'none';
+        showAlert('success', 'Signed in. Opening the console…');
+        window.location.replace(consoleUrl());
         return;
       } catch {
         localStorage.removeItem('kaayko_auth_token');
