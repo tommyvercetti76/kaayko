@@ -1,8 +1,10 @@
 /**
  * pages/home-entrance.js — the landing page's layout and its one entrance.
  *
- * Loaded as a classic, blocking script straight after #pg-home, so it runs
- * before the first paint. That is the point: the page used to paint with no
+ * Loaded as a blocking script in <head> (so it is fetched before the body
+ * exists and nothing can wait on the network after the panels), and called
+ * by a one-line inline script straight after #pg-home, so it runs before the
+ * first paint. That is the point: the page used to paint with no
  * panel count (headlines twice their size, broken mid-word) and one divider,
  * then index.js corrected all of it 150–400 ms later, and the hover
  * transitions animated the correction. Here the layout is final before
@@ -20,11 +22,16 @@
  * hover, focus, the menus and the store modal; it moves the dividers through
  * KaaykoHome.place().
  */
-(function () {
+window.KaaykoHomeEntrance = function (home) {
   "use strict";
 
-  var home = document.getElementById("pg-home");
-  if (!home) return;
+  if (!home || home.dataset.panels) return;
+
+  // Nothing below may animate. Chrome sometimes computes styles in the middle
+  // of this (reading the window width can do it), which would give a divider
+  // a "before" position or a headline a "before" colour to transition from.
+  // .is-placing turns transitions off until the final layout has been styled.
+  home.classList.add("is-placing");
   var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   // A disabled panel leaves the DOM entirely: the divider math counts panels.
@@ -172,8 +179,12 @@
   }
 
   // Hide the headlines until the entrance reveals them. Not with reduced
-  // motion: then they are simply there.
+  // motion: then they are simply there. Until .is-placed the CSS keeps them
+  // hidden anyway, so a paint before this point never shows a wrong size.
   if (!reduced) labels.forEach(veil);
+  home.classList.add("is-placed");
+  void home.offsetWidth;                    // style the final layout with transitions still off
+  home.classList.remove("is-placing");
 
   // Start once the fonts are in (so nothing swaps mid-motion) and a frame
   // has been painted (so the drawing-in has a "before" to animate from).
@@ -198,4 +209,4 @@
   setTimeout(enter, 3000);
 
   window.KaaykoHome = { place: place };
-})();
+};

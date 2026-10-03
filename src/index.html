@@ -3,6 +3,8 @@
 <head>
   <script src="/js/prod-config.js"></script>
   <script src="/js/site-features.js"></script>
+  <!-- Fetched before the body exists: the call after #pg-home must not wait on the network -->
+  <script src="/js/pages/home-entrance.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -281,7 +283,31 @@
          breaks at its space instead of running under the divider. Scramble
          preserves spaces, so the break point never jitters. */
       overflow-wrap: break-word;
+      transition: color 260ms ease;
+    }
+
+    /* Size changes animate only for hover and focus, never on load: they are
+       switched on a frame after the layout is final (home-entrance.js) */
+    #pg-home.is-in .choice-label {
       transition: color 260ms ease, transform 360ms var(--ease), font-size 420ms var(--ease);
+    }
+
+    /* Until the layout is placed, a headline could only show at the wrong
+       size, so it is not shown. Without JavaScript it appears at 3 s. */
+    /* While home-entrance.js builds the layout nothing animates (it then
+       styles the final layout once and lifts this) */
+    #pg-home.is-placing,
+    #pg-home.is-placing * {
+      transition: none !important;
+    }
+
+    #pg-home:not(.is-placed) .choice-label {
+      visibility: hidden;
+      animation: home-reveal 0s linear 3s forwards;
+    }
+
+    @keyframes home-reveal {
+      to { visibility: visible; }
     }
 
     .seam {
@@ -609,8 +635,8 @@
 
     /* The scramble runs in an overlay over the real headline, which holds its
        box (transparent) the whole time, so nothing resizes or rewraps */
-    .choice-label.is-veiled {
-      color: transparent !important;
+    #pg-home .choice-label.is-veiled {
+      color: transparent;
     }
 
     .label-scramble {
@@ -684,8 +710,8 @@
         </div>
       </section>
     </section>
-    <!-- Blocking on purpose: sets the panel count, dividers and wordmarks before the first paint -->
-    <script src="/js/pages/home-entrance.js"></script>
+    <!-- Inline on purpose: sets the panel count, dividers and wordmarks before the first paint -->
+    <script>window.KaaykoHomeEntrance && window.KaaykoHomeEntrance(document.getElementById("pg-home"));</script>
 
     <nav class="footer" aria-label="Splash links">
       <!-- Only shown while the YouTube panel is off — the panel replaces it -->
