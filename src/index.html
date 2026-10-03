@@ -99,14 +99,21 @@
   </script>
 
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
+  <link rel="preload" href="/fonts/home/bebas-neue-normal-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/home/cormorant-garamond-italic-500.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="modulepreload" href="/js/kit.js">
   <link rel="icon" type="image/png" href="/favicon-32x32.png">
   <link rel="stylesheet" href="/css/storeAccess.css">
   <meta name="theme-color" content="#080808">
 
   <style>
+    /* Self-hosted (OFL, licences beside the files). "block": the page never
+       paints a stand-in face and swaps it mid-entrance; the entrance waits
+       for these (js/pages/home-entrance.js). */
+    @font-face { font-family: "Bebas Neue"; font-style: normal; font-weight: 400; font-display: block; src: url("/fonts/home/bebas-neue-normal-400.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+    @font-face { font-family: "Cormorant Garamond"; font-style: italic; font-weight: 500; font-display: block; src: url("/fonts/home/cormorant-garamond-italic-500.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+    @font-face { font-family: "Cormorant Garamond"; font-style: normal; font-weight: 500; font-display: swap; src: url("/fonts/home/cormorant-garamond-normal-500.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -299,7 +306,7 @@
       transition: transform 760ms cubic-bezier(0.16, 1, 0.3, 1) 120ms, top 440ms var(--ease), left 440ms var(--ease);
     }
 
-    .page.active .seam {
+    .page.is-in .seam {
       transform: scaleX(1);
     }
 
@@ -322,7 +329,7 @@
       white-space: nowrap;
     }
 
-    .page.active .mark {
+    .page.is-in .mark {
       opacity: 0.86;
     }
 
@@ -422,7 +429,7 @@
         transform: scaleY(0);
       }
 
-      .page.active .seam {
+      .page.is-in .seam {
         transform: scaleY(1);
       }
 
@@ -590,12 +597,36 @@
       color: var(--gold-bright);
     }
 
-    /* Touch has no hover to lean on — every section states what it is */
+    /* Touch has no hover to lean on — every section states what it is,
+       rising in just after its headline starts to resolve */
     @media (hover: none), (pointer: coarse) {
-      .choice-sub {
+      .page.is-lit .choice-sub {
         opacity: 1;
         transform: none;
+        transition-delay: 200ms;
       }
+    }
+
+    /* The scramble runs in an overlay over the real headline, which holds its
+       box (transparent) the whole time, so nothing resizes or rewraps */
+    .choice-label.is-veiled {
+      color: transparent !important;
+    }
+
+    .label-scramble {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--fg);
+      pointer-events: none;
+    }
+
+    .label-scramble-line {
+      display: block;
+      white-space: nowrap;
     }
 
     /* The splash is the page. The words about what Kaayko builds live on
@@ -614,8 +645,6 @@
     <img class="brand-ghost" src="/kaayko-logo-512.png" alt="" aria-hidden="true">
 
     <section class="page active" id="pg-home" aria-label="Kaayko">
-      <div class="seam"></div>
-      <div class="mark">kaayko</div>
       <a class="choice primary" href="/paddlingout" target="_blank" rel="noopener noreferrer">
         <span class="choice-label" data-text="Paddling Out">Paddling Out</span>
         <span class="choice-sub">Know before you paddle</span>
@@ -655,6 +684,8 @@
         </div>
       </section>
     </section>
+    <!-- Blocking on purpose: sets the panel count, dividers and wordmarks before the first paint -->
+    <script src="/js/pages/home-entrance.js"></script>
 
     <nav class="footer" aria-label="Splash links">
       <!-- Only shown while the YouTube panel is off — the panel replaces it -->

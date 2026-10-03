@@ -1,96 +1,29 @@
 /**
- * pages/index.js — the kaayko.com landing page: five panels, one seam engine,
- * the scramble, the cursor glow, and the store-access modal hand-off.
- * Moved out of index.html on 12 Sep 2026 unchanged. Reads the KaaykoStoreAccess
- * and KaaykoFeatures globals published by the two classic scripts before it.
+ * pages/index.js — the kaayko.com landing page's behaviour: hover and focus
+ * widen a section, the menus, the cursor glow, and the store-access modal
+ * hand-off. The layout (panel count, dividers, wordmarks) and the entrance
+ * (dividers drawing in, the scramble) are set before the first paint by
+ * js/pages/home-entrance.js; this moves the dividers through KaaykoHome.place().
+ * Reads the KaaykoStoreAccess, KaaykoFeatures and KaaykoHome globals.
  */
 import '/js/kit.js';   // stamps the footer year
 
-const POOL = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const home = document.getElementById("pg-home");
 const forgePanel = document.getElementById("panel-forge");
 const storePanel = document.getElementById("panel-store");
-const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const canHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
-// Feature gate (js/site-features.js). A disabled panel must leave the DOM
-// entirely — the seam engine and flex weights count panels, so a merely
-// hidden one would still skew the layout math.
+// Disabled panels were already removed by home-entrance.js, before the first paint.
 const storeOn = window.KaaykoFeatures ? KaaykoFeatures.isOn("store") : true;
-home.querySelectorAll(":scope > .choice[data-feature]").forEach(panel => {
-  if (window.KaaykoFeatures && !KaaykoFeatures.isOn(panel.dataset.feature)) panel.remove();
-});
-const menus = [forgePanel, storePanel].filter(panel => panel.isConnected);
+const menus = [forgePanel, storePanel].filter(panel => panel && panel.isConnected);   // a disabled panel is already gone (null)
 
 // Access modal lives in js/storeAccess.js — shared with /about
 const modalIsOpen = () => KaaykoStoreAccess.isOpen();
 
-// ── N-panel seam engine ───────────────────────────────────────────────
-// Each panel has flex weight 1; an expanded panel gets PANEL_EXPAND_WEIGHT.
-// Seam positions are derived mathematically so N panels (up to 5) always
-// produce symmetric, proportional splits regardless of which panel opens.
-// Weight 2 against 1 and 1 gives the highlighted section half the axis
-// and a quarter to each of the others. Keep in sync with .choice--wide.
-const PANEL_EXPAND_WEIGHT = 2;
-
-function getSeamPositions(weights) {
-  const total = weights.reduce((a, b) => a + b, 0);
-  const positions = [];
-  let cum = 0;
-  for (let i = 0; i < weights.length - 1; i++) {
-    cum += weights[i];
-    positions.push((cum / total) * 100);
-  }
-  return positions;
-}
-
+// ── Dividers ──────────────────────────────────────────────────────────
+// home-entrance.js owns the divider math; a highlighted section has weight 2.
 function updateSeam(page, expandedIndex) {
-  const panels = Array.from(page.querySelectorAll(":scope > .choice"));
-  const n = panels.length;
-  if (n < 2) return;
-
-  const isDesktop = window.innerWidth >= 720;
-  const seams = Array.from(page.querySelectorAll(":scope > .seam"));
-  const marks = Array.from(page.querySelectorAll(":scope > .mark"));
-
-  const weights = panels.map((_, i) => i === expandedIndex ? PANEL_EXPAND_WEIGHT : 1);
-  const positions = getSeamPositions(weights);
-
-  const axis  = isDesktop ? "left" : "top";
-  const reset = isDesktop ? "top"  : "left";
-
-  // Every divider gets a seam and a wordmark, and they ride together
-  seams.forEach((seam, i) => {
-    seam.style[axis]  = (positions[i] ?? (i + 1) / n * 100) + "%";
-    seam.style[reset] = "";
-  });
-
-  marks.forEach((mark, i) => {
-    mark.style[axis]  = (positions[i] ?? 50) + "%";
-    mark.style[reset] = "";
-  });
-}
-
-function initPages() {
-  document.querySelectorAll(".page").forEach(page => {
-    const panels = Array.from(page.querySelectorAll(":scope > .choice"));
-    const n = panels.length;
-    page.dataset.panels = n;
-
-    // Auto-generate a seam + wordmark per division, so a page with three
-    // panels reads the same on both dividers as a page with two
-    const template = page.querySelector(":scope > .mark");
-    for (let i = page.querySelectorAll(":scope > .seam").length; i < n - 1; i++) {
-      const seam = document.createElement("div");
-      seam.className = "seam";
-      page.insertBefore(seam, panels[0]);
-    }
-    for (let i = page.querySelectorAll(":scope > .mark").length; i < n - 1; i++) {
-      page.insertBefore(template.cloneNode(true), panels[0]);
-    }
-
-    updateSeam(page, -1);
-  });
+  if (window.KaaykoHome) window.KaaykoHome.place(expandedIndex);
 }
 
 // ── Section expand / collapse ─────────────────────────────────────────
@@ -123,45 +56,6 @@ function openMenu(panel) {
 }
 
 window.addEventListener("resize", () => updateSeam(home, wideIndex()));
-
-// ── scramble ──────────────────────────────────────────────────────────
-function wrapLabel(label) {
-  const text = label.dataset.text || label.textContent.trim();
-  const choice = label.closest(".choice");
-  if (choice) choice.setAttribute("aria-label", text);
-  label.dataset.text = text;
-  label.textContent  = text;
-}
-
-function scramble(page) {
-  if (prefersReducedMotion) return;
-
-  const TICK = 38;
-  const NOISE_TICKS = 5;
-  const LOCK_STEP   = 42;
-
-  page.querySelectorAll(".choice-label").forEach((label) => {
-    const target = label.dataset.text || label.textContent.trim();
-    const chars  = Array.from(target);
-    const locked = chars.map(c => c === " ");
-
-    chars.forEach((char, i) => {
-      if (char === " ") return;
-      window.setTimeout(() => { locked[i] = true; }, NOISE_TICKS * TICK + i * LOCK_STEP);
-    });
-
-    const interval = window.setInterval(() => {
-      label.textContent = chars.map((char, i) =>
-        locked[i] ? char : POOL[Math.floor(Math.random() * POOL.length)]
-      ).join("");
-
-      if (locked.every(Boolean)) {
-        window.clearInterval(interval);
-        label.textContent = target;
-      }
-    }, TICK);
-  });
-}
 
 // ── cursor glow ───────────────────────────────────────────────────────
 function attachCursorGlow(choice) {
@@ -200,7 +94,6 @@ function attachCursorGlow(choice) {
 }
 
 // ── wire up ───────────────────────────────────────────────────────────
-document.querySelectorAll(".choice-label").forEach(wrapLabel);
 document.querySelectorAll(".choice").forEach(attachCursorGlow);
 
 // Read hash before it is stripped from the address bar
@@ -277,8 +170,6 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-initPages();
-scramble(home);
 
 // Deep link: secretStore.js bounces uninvited visitors to /#store —
 // land them straight on the invite-code card. With the store feature off
