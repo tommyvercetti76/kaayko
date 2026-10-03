@@ -425,6 +425,7 @@
 
     var root = el('a', 'pcard pcard--minimal', { href: href });
     if (data.id) root.dataset.spotId = data.id;   // lets a check match a tile to its API row
+    if (data.closed) root.classList.add('is-paused');
     if (window.KaaykoPrefs && window.KaaykoPrefs.isFavorite(data.id)) root.classList.add('is-fav');
     root.setAttribute('aria-label', data.title + (data.subtitle ? ' — ' + data.subtitle : ''));
 
@@ -534,6 +535,7 @@
   function buildFull(data, opts) {
     var card = el('article', 'card');
     if (data.id) card.dataset.spotId = data.id;
+    if (data.closed) card.classList.add('is-paused');
     var sm = data.closed
       ? { rating: null, color: null, severity: null, display: '\u2014', label: data.closed.label }
       : data.night
@@ -704,7 +706,7 @@
       ring.innerHTML = '<span class="pcard-ring-val pcard-ring-closed" aria-hidden="true">' + (pz.state === 'season' ? '\u2744' : '\u2715') + '</span>';
       ring.setAttribute('aria-label', pz.short + '. No score.');
     }
-    if (data.closed) pausedRing(data.closed);
+    if (data.closed) { pausedRing(data.closed); row.classList.add('is-paused'); }
     else if (data.night) nightRing(data.night);
     else ring.innerHTML = data.rating == null ? '<span class="pcard-ring-spin" aria-hidden="true"></span>' : ringSvg(scoreMeta(data.rating));
 
@@ -734,7 +736,7 @@
     row.setScore = function (rating, score) {
       if (data.closed) return;   // closed stays closed, whatever a later score says
       var pz = score && pausedOf(score.status);   // the batch says this water is closed / out of season
-      if (pz) { data.closed = pz; pausedRing(pz); row.dataset.severity = ''; return; }
+      if (pz) { data.closed = pz; pausedRing(pz); row.classList.add('is-paused'); row.dataset.severity = ''; return; }
       var sm = scoreMeta(rating);
       ring.classList.remove('is-pending', 'is-night');
       var n = arguments.length > 1 ? nightOf(score) : null;
@@ -758,7 +760,54 @@
     return opts.variant === 'minimal' ? buildMinimal(data, opts) : buildFull(data, opts);
   }
 
+  // ── Lakes with no rating go last, greyed, under their own heading ─────────────
+  // One rule for every list (Paddling Out, search's "Spots we cover", About):
+  // rated lakes first (saved ones on top), then closed / out-of-season lakes,
+  // soonest back first, closures last. Their own heading says why, and a
+  // remembered toggle hides them.
+  var HIDE_KEY = 'kaayko_hide_paused';
+  function isPaused(spot) { return !!pausedOf(spot && spot.status); }
+  function orderForList(spots) {
+    var P = window.KaaykoPrefs;
+    var favFirst = function (list) { return P && P.sortFavoritesFirst ? P.sortFavoritesFirst(list) : list; };
+    var active = [], paused = [];
+    (spots || []).forEach(function (s) { (isPaused(s) ? paused : active).push(s); });
+    paused.sort(function (a, b) {
+      var ca = a.status.state === 'closed', cb = b.status.state === 'closed';
+      if (ca !== cb) return ca ? 1 : -1;
+      return String(a.status.resumes || '').localeCompare(String(b.status.resumes || ''));
+    });
+    return { active: favFirst(active), paused: favFirst(paused) };
+  }
+  function hidePausedPref() { try { return localStorage.getItem(HIDE_KEY) === '1'; } catch (e) { return false; } }
+  /** The heading above the greyed lakes; toggles `data-paused-hidden` on `host`. */
+  function pausedHeading(count, host) {
+    var head = el('div', 'pcard-paused-head', { role: 'group', 'aria-label': 'Lakes with no rating right now' });
+    var text = el('div', 'pcard-paused-text');
+    var t = el('span', 'pcard-paused-title'); t.textContent = 'Out of season & closed \u00b7 ' + count;
+    var sub = el('span', 'pcard-paused-sub');
+    sub.textContent = 'No rating until the water opens again. Frozen lakes come back in spring.';
+    text.appendChild(t); text.appendChild(sub);
+    var btn = el('button', 'pcard-paused-toggle', { type: 'button' });
+    function paint() {
+      var hidden = hidePausedPref();
+      if (host) host.toggleAttribute('data-paused-hidden', hidden);
+      btn.textContent = hidden ? 'Show' : 'Hide';
+      btn.setAttribute('aria-expanded', String(!hidden));
+    }
+    btn.addEventListener('click', function () {
+      try { localStorage.setItem(HIDE_KEY, hidePausedPref() ? '0' : '1'); } catch (e) {}
+      paint();
+    });
+    head.appendChild(text); head.appendChild(btn);
+    paint();
+    return head;
+  }
+
   window.PaddleCard = {
+    isPaused: isPaused,
+    orderForList: orderForList,
+    pausedHeading: pausedHeading,
     create: create,
     normalize: normalize,
     scoreMeta: scoreMeta,

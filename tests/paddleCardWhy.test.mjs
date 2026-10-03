@@ -259,3 +259,20 @@ test('normalize keeps the raw score block but still shows the half-point rating'
   assert.equal(d.score.ratingPrecise, 3.6);
   assert.equal(PC.normalize({ id: 'x' }).score, null);
 });
+
+// ── lakes with no rating go last (3 Oct 2026) ───────────────────────────────
+test('rated lakes first; out-of-season next, soonest back first; closures last', () => {
+  const season = (id, resumes) => ({ id, paddleScore: null, status: { state: 'season', resumes, summary: 'Out of season.' } });
+  const { active, paused } = PC.orderForList([
+    season('jenny', '2027-05-15'),
+    { id: 'powell', paddleScore: { rating: 3 } },
+    { id: 'antero', paddleScore: null, status: { state: 'closed', summary: 'Closed.' } },
+    season('cottonwood', '2027-04-25'),
+    { id: 'union', paddleScore: { rating: 3.5 } }
+  ]);
+  // arrays from the sandbox realm: compare by value
+  assert.equal(JSON.stringify(active.map(s => s.id)), JSON.stringify(['powell', 'union']));
+  assert.equal(JSON.stringify(paused.map(s => s.id)), JSON.stringify(['cottonwood', 'jenny', 'antero']));
+  assert.equal(PC.isPaused({ status: { state: 'season' } }), true);
+  assert.equal(PC.isPaused({ status: null }), false);
+});

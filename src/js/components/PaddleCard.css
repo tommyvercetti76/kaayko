@@ -457,3 +457,32 @@
   .pcard-why-item { grid-template-columns: 2.6rem minmax(0, 1fr); gap: 0.45rem; }
   .pcard-why-text { font-size: 0.93rem; }
 }
+
+/* ── Lakes with no rating: last, greyed, under their own heading (3 Oct 2026) ── */
+.pcard-paused-head {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  margin-top: 0.6rem; padding: 1rem 0 0.2rem;
+  border-top: 1px solid rgba(181, 147, 90, 0.25);
+}
+.pcard-paused-text { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+.pcard-paused-title { font-family: 'Josefin Sans', Arial, sans-serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: #9cc0e6; }
+.pcard-paused-sub { font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: 1rem; color: rgba(232, 228, 220, 0.66); }
+.pcard-paused-toggle {
+  flex: 0 0 auto; min-height: 40px; padding: 0 1rem; cursor: pointer;
+  background: transparent; border: 1px solid rgba(156, 192, 230, 0.4); color: #9cc0e6;
+  font-family: 'Josefin Sans', Arial, sans-serif; font-size: 0.66rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+}
+.pcard-paused-toggle:hover { border-color: #9cc0e6; }
+[data-paused-hidden] .is-paused { display: none !important; }
+
+/* greyed: the photo loses its colour, the tile steps back; the reason stays legible */
+.pcard--minimal.is-paused .pcard-img,
+.card.is-paused .carousel-image { filter: grayscale(1) brightness(0.62) contrast(0.95); transition: filter 0.3s ease; }
+@media (hover: hover) {   /* a tap on a phone leaves :hover stuck; only real pointers lift the grey */
+  .pcard--minimal.is-paused:hover .pcard-img,
+  .card.is-paused:hover .carousel-image { filter: grayscale(0.6) brightness(0.75); }
+}
+.pcard--minimal.is-paused .pcard-title, .card.is-paused .card-title { color: rgba(232, 228, 220, 0.72); }
+.pcard--row.is-paused { opacity: 0.72; }
+@media (prefers-reduced-motion: reduce) { .pcard--minimal.is-paused .pcard-img, .card.is-paused .carousel-image { transition: none; } }

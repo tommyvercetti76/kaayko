@@ -213,6 +213,12 @@ async function main() {
           const got = /^(Closed|Out of season)/.test(c.label.trim()) ? 'paused' : c.text.includes('\u263E') ? 'night' : c.text.trim();
           if (want.text != null && got !== want.text) p.push(`${c.id}: card shows "${got}", the lake says "${want.text}"`);
         }
+        // Lakes with no rating are last, greyed, after their own heading
+        const order = await ev(`[...document.querySelectorAll('#cardsContainer > [data-spot-id], #cardsContainer > .pcard-paused-head')].map(e => e.classList.contains('pcard-paused-head') ? 'HEAD' : (e.classList.contains('is-paused') ? 'P' : 'A'))`);
+        const head = order.indexOf('HEAD'), pausedWant = r.api.filter((x) => expectFor(x).closed).length;
+        if (pausedWant && head < 0) p.push('no heading above the lakes with no rating');
+        if (head >= 0 && (order.slice(0, head).includes('P') || order.slice(head + 1).includes('A'))) p.push(`rated and paused lakes are interleaved: ${order.join('')}`);
+        if (order.filter((x) => x === 'P').length !== pausedWant) p.push(`${order.filter((x) => x === 'P').length} greyed cards, the API has ${pausedWant} without a rating`);
         // compared only against a run that saw the same lake states (a sunset between runs is not a bug)
         const lakeStates = r.cards.map((c) => c.id + '=' + expectFor(byId.get(c.id)).text).join(',');
         p.push(...sameEverywhere('list|' + lakeStates, view.name, r.cards.map((c) => c.id + '=' + (/^(Closed|Out of season)/.test(c.label.trim()) ? 'paused' : c.text.includes('\u263E') ? 'night' : c.text.trim()))));

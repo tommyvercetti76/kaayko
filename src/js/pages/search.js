@@ -394,6 +394,9 @@
     coveredEl.innerHTML = '';
     if (!list || !list.length) { coveredEl.classList.remove('visible'); return; }
     var head = document.createElement('div'); head.className = 'covered-head'; head.textContent = 'Spots we cover'; coveredEl.appendChild(head);
+    // same order as the list page: rated first, closed / out-of-season last and greyed
+    var byState = window.PaddleCard.orderForList(list.map(function (s) { return Object.assign({}, s, { id: s.id }); }));
+    list = byState.active.concat(byState.paused);
     list.forEach(function (s) {
       var row = window.PaddleCard.create({ id: s.id, title: s.name, subtitle: s.subtitle, status: s.status, paddleScore: s.score || (s.rating == null ? null : { rating: s.rating }) }, {
         variant: 'row', badge: 'We cover this', onOpen: function () { window.location.href = '/paddlingout/forecast?id=' + encodeURIComponent(s.id); }

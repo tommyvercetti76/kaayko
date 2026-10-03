@@ -610,7 +610,8 @@
       lakes: {
         path: "/paddlingOut",
         rows: function (d) { return Array.isArray(d) ? d : (d.data || d.spots || []); },
-        valid: function (s) { return s && s.id; },
+        // "scored right now": a closed or out-of-season lake has no score, so it is not drawn
+        valid: function (s) { return s && s.id && !(window.PaddleCard && window.PaddleCard.isPaused(s)); },
         card: function (s) {
           var rating = s.paddleScore && s.paddleScore.rating;
           return {

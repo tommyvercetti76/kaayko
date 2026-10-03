@@ -93,8 +93,8 @@ document.addEventListener("DOMContentLoaded", () => {
         lastSpots = spots;
         writeListCache(listUrl, spots);
         // Same ids and same scores → nothing to repaint; avoids a flash for warm visitors.
-        if (cached && JSON.stringify(cached.map(s => [s.id, s.paddleScore && s.paddleScore.rating])) ===
-                      JSON.stringify(spots.map(s => [s.id, s.paddleScore && s.paddleScore.rating]))) return;
+        if (cached && JSON.stringify(cached.map(s => [s.id, s.paddleScore && s.paddleScore.rating, s.status && s.status.state])) ===
+                      JSON.stringify(spots.map(s => [s.id, s.paddleScore && s.paddleScore.rating, s.status && s.status.state]))) return;
         renderList(spots);
       })
       .catch(() => { clearTimeout(timer); if (!cached) showError(timedOut ? "timeout" : "error"); });
@@ -107,10 +107,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const v = variant();
     container.classList.toggle('minimal-list', v === 'minimal');
 
-    let ordered = spots.slice();
-    if (Prefs()) ordered = Prefs().sortFavoritesFirst(ordered);
-
-    ordered.forEach((spot, i) => {
+    // Rated lakes first (saved on top); closed / out-of-season lakes last, greyed,
+    // under their own heading with a remembered Hide toggle (PaddleCard.orderForList).
+    const PC = window.PaddleCard;
+    const { active, paused } = PC.orderForList ? PC.orderForList(spots)
+      : { active: Prefs() ? Prefs().sortFavoritesFirst(spots.slice()) : spots.slice(), paused: [] };   // an older cached card script
+    const ordered = active.concat(paused);
+    const place = (spot, i) => {
       const card = window.PaddleCard.create(spot, {
         variant: v,
         linkTo: v === 'minimal' ? 'forecast' : 'detail',
@@ -120,8 +123,13 @@ document.addEventListener("DOMContentLoaded", () => {
       card.classList.add("card-enter");
       card.style.animationDelay = `${Math.min(i, 12) * 45}ms`;
       container.append(card);
-    });
+    };
+    active.forEach(place);
     container.append(renderSubmitEntryCard(v));
+    if (paused.length && PC.pausedHeading) {
+      container.append(PC.pausedHeading(paused.length, container));
+      paused.forEach((spot, i) => place(spot, active.length + i));
+    }
 
     // Signal the first-launch walkthrough that REAL cards are on screen (never fires on skeletons).
     try { window.dispatchEvent(new CustomEvent('kaayko:cardsrendered', { detail: { count: ordered.length } })); } catch (e) {}
