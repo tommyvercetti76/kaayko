@@ -113,9 +113,16 @@ than the old wrong-sized ones did, and nothing moves after they arrive.
 
 ### To undo (all three entries)
 
+Restore the two changed files from `c3be544`, the commit before this work, and remove the two new ones. A
+plain `git revert` of the three commits stops on a conflict in this log file, so don't
+use it. This route was tested on a scratch copy and leaves `src/` byte-identical to
+`c3be544`:
+
 ```
 cd ~/Kaayko_v6/kaayko
-git revert --no-edit 1905751 d76d16e 9184643
+git checkout c3be544 -- src/index.html src/js/pages/index.js
+git rm -rq src/js/pages/home-entrance.js src/fonts/home
+git commit -m "Home: back to the entrance before 3 Oct"
 firebase deploy --only hosting:kaaykostore,hosting:kaay-store
 git push
 ```
