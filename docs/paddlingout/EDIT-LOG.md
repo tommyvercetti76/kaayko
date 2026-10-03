@@ -4,6 +4,18 @@ Newest first. What changed, why, the commit, whether it is live, and how it was 
 
 ---
 
+## 2026-10-03 18:25 CDT · Every freezing lake resumes May 15
+
+- **Commit:** kaayko-api (off-season.json) · **Live:** yes (status is computed per request).
+- **Owner decision:** all seven freezing lakes get ratings back on **15 May**, not late April:
+  Cottonwood, Taylor Park, Antero (were 25 Apr), Turquoise (was 1 May), Jackson, Jenny, String.
+  Reason: high lakes can still be iced after late April (Teton ice "commonly persists from
+  November to May"; Taylor Park boating is June–October per a non-official source).
+- Unchanged: Lake McDonald (not a freezing lake; closed by Glacier rule 1 Nov → second Sunday in
+  May). Kens Lake stays rated (brief midwinter freeze, no dates in any source).
+
+---
+
 ## 2026-10-03 18:10 CDT · Only lakes that freeze; paused lakes last and greyed
 
 - **Commits:** kaayko `9864539`, `2ffbc6b`; kaayko-api `259df70`
