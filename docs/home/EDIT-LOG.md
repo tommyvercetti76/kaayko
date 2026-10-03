@@ -7,9 +7,35 @@ live, how it was checked, and how to undo it.
 
 ---
 
+## 2026-10-03 · Follow-up: the layout can never paint before it is placed
+
+- **Commit:** `d76d16e` (on top of `9184643`)
+- **Live:** kaayko.com and kaay.store, after preview channel `home-entrance`.
+- **Found by:** the first recording of the live site after `9184643`. The headlines
+  shrank again on desktop. The browser had painted the parsed panels while the blocking
+  `home-entrance.js` was still downloading (paint at 224 ms, script at 236 ms), so the
+  old layout was painted and the correction animated. The preview runs had only been
+  lucky with timing.
+
+| File | Change |
+|---|---|
+| `src/index.html` | `home-entrance.js` loads in `<head>`, and a one-line inline call straight after `#pg-home` runs it, so nothing between the panels and their layout waits on the network. Headlines are hidden until `.is-placed` (CSS, with a 3 s no-JavaScript fallback). Headline size transitions apply only under `#pg-home.is-in`. `.is-placing` switches all transitions off while the layout is built. |
+| `src/js/pages/home-entrance.js` | Now `window.KaaykoHomeEntrance(home)`. It adds `.is-placing` first, builds and veils, adds `.is-placed`, forces one style pass (`home.offsetWidth`), then lifts `.is-placing`. Chrome sometimes computes styles mid-script, which had given dividers a "before" position and headlines a "before" colour to animate from (2 of 3 fast-phone runs). |
+
+**Checked:**
+- 12 cold loads on the preview (5 phone fast, 3 desktop, 2 phone 4G, 2 landscape),
+  then 6 on live (desktop, phone fast, phone 4G, two each).
+- Every run: the panel count is set before the first paint, "Paddling Out" has a single
+  size (50.4 px desktop, 28.8 px phone, 29.5 px landscape), and the only transitions are
+  the divider draw, the wordmark fade and the touch subheadings.
+- CLS at most 0.0018.
+- Hover (desktop) and tap open/close (phone) re-tested, with no console errors.
+
+---
+
 ## 2026-10-03 · One entrance instead of a page correcting itself on load
 
-- **Commit:** the commit that adds this file (`git log -1 -- docs/home/EDIT-LOG.md`)
+- **Commit:** `9184643`
 - **Live:** kaayko.com and kaay.store, after preview channel `home-entrance`.
 
 ### Why
@@ -68,11 +94,11 @@ than the old wrong-sized ones did, and nothing moves after they arrive.
 - Preview: `/#store` opens the invite modal with the Store panel off.
 - Filmstrips before and after at desktop, phone on 4G, and phone landscape.
 
-### To undo
+### To undo (both entries)
 
 ```
 cd ~/Kaayko_v6/kaayko
-git revert <this commit>
+git revert --no-edit d76d16e 9184643
 firebase deploy --only hosting:kaaykostore,hosting:kaay-store
 git push
 ```
