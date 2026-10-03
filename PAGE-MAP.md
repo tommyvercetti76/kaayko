@@ -91,6 +91,7 @@ Agents: identify the page here, then look up the module in MODULE-MAP.md for ful
 |-----|------|
 | `/` | `src/index.html` → `js/pages/index.js` (split Kaayko landing: Paddling Out / Forge / Store, then Store access layer) |
 | `/paddlingout` | `src/paddlingout.html` |
+| `/paddlingout/forecast?id=` | `src/paddlingout/forecast.html` → `js/pages/forecast.js` (all page logic; lake-local time from `js/services/spotTime.js`; API shapes in `js/contracts/paddling.js`) |
 | `/about` | `src/about.html` |
 | `/store` (kaay.store `/`) | `src/store.html` → `js/pages/store.js` |
 | `/cart` | `src/cart.html` → `js/pages/cart.js` |
@@ -106,7 +107,7 @@ Agents: identify the page here, then look up the module in MODULE-MAP.md for ful
 | `/store/about` (kaay.store `/about`) | `src/store-about.html` |
 | `/store/privacy` (kaay.store `/privacy`) | `src/store-privacy.html` |
 | `/shipping`, `/fly` | `src/shipping.html` → `js/pages/shipping.js` |
-| `/card` | `src/card.html` → `js/pages/card.js` |
+| `/card` | `src/card.html` → `js/pages/card.js` (`window.KaaykoCard.start()/stop()`; card modules carry `?v=` stamps, re-run `npm run stamp` when they change) |
 | `/404` | `src/404.html` → `js/pages/not-found.js` (deals the /card deck via cards/render.js) |
 
 ### Kortex Admin And Tenant Portal (13)

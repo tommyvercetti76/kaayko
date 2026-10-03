@@ -22,6 +22,11 @@ cd kaayko/kutz && npm run dev
 # API (Cloud Functions emulator)
 cd kaayko-api && firebase emulators:start --only functions
 
+# Checks: static (npm run check), unit (npm test), both (npm run verify)
+# Real browser, phone + desktop, key pages + live API contracts (exit 1 on failure):
+npm run browser-check                      # kaayko.com
+BASE=https://kaaykostore--<channel>.web.app npm run browser-check   # a preview channel
+
 # Deploy
 firebase deploy
 ```

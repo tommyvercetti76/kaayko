@@ -102,7 +102,7 @@ PATCH /api/paddlingOut/admin/spots/{id}       → edit whitelisted fields, tags,
 POST /api/paddlingOut/admin/spots/{id}/images (multipart) / DELETE …/images?path=  → photo add/remove (ownership-checked)
 POST /api/paddlingOut/admin/spots/{id}/warm-score → recompute cached score now
 GET  /api/paddleScore?location={lat},{lon}    → ML score for custom location
-GET  /api/fastForecast?location=...           → cached weather (free)
+GET  /api/fastForecast?lat=&lng=              → cached weather (free); location.timeZone = the lake's IANA zone (contract: src/js/contracts/paddling.js)
 GET  /api/forecast?location=...               → premium on-demand weather
 GET  /api/nearbyWater?lat=&lon=               → find nearby lakes/rivers
 GET  /api/valentine                            → valentine campaign data
