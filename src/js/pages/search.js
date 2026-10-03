@@ -27,7 +27,7 @@
     label: '',
     bodies: [],            // generic water bodies from /nearbyWater
     coveredNear: [],       // curated spots within radius
-    scores: new Map(),     // "lat,lng" → rating | null
+    scores: new Map(),     // "lat,lng" → score block { rating, night, daylight, … } | null
     scoreNote: '',         // e.g. daily limit reached
     cached: false, sources: [],
     suggestions: [],       // [{ value, lat, lng, radiusKm, covered, id }]
@@ -84,7 +84,8 @@
     state.covered = list.map(function (s) {
       var loc = s.location || {};
       return { id: s.id, name: s.title || s.lakeName || s.id || '', subtitle: s.subtitle || '',
-        lat: Number(loc.latitude), lng: Number(loc.longitude), rating: s.paddleScore && s.paddleScore.rating != null ? s.paddleScore.rating : null };
+        lat: Number(loc.latitude), lng: Number(loc.longitude), rating: s.paddleScore && s.paddleScore.rating != null ? s.paddleScore.rating : null,
+        score: s.paddleScore && typeof s.paddleScore === 'object' ? s.paddleScore : null };
     }).filter(function (s) { return s.name && Number.isFinite(s.lat) && Number.isFinite(s.lng); });
   }).catch(function () {});
 
@@ -215,7 +216,11 @@
       if (myGen !== gen) return;
       if (r.status === 429) { state.scoreNote = 'Daily score limit reached; showing lakes without scores.'; bodies.forEach(function (b) { state.scores.set(keyOf(b.lat, b.lng), null); }); renderScores(); return; }
       if (r.ok && r.data && r.data.success && Array.isArray(r.data.scores)) {
-        r.data.scores.forEach(function (s) { state.scores.set(keyOf(s.lat, s.lng), s.rating != null ? s.rating : (s.score != null ? s.score : null)); });
+        // Keep the whole block: the night rule needs `night` and `daylight`, not just the number.
+        r.data.scores.forEach(function (s) {
+          var rating = s.rating != null ? s.rating : (s.score != null ? s.score : null);
+          state.scores.set(keyOf(s.lat, s.lng), rating == null && !s.night ? null : Object.assign({}, s, { rating: rating }));
+        });
         bodies.forEach(function (b) { if (!state.scores.has(keyOf(b.lat, b.lng))) state.scores.set(keyOf(b.lat, b.lng), null); });
         renderScores(); return;
       }
@@ -224,8 +229,8 @@
       bodies.slice(6).forEach(function (b) { state.scores.set(keyOf(b.lat, b.lng), null); });
       Promise.all(few.map(function (b) {
         return U.fetchJson(API + '/paddleScore?lat=' + b.lat + '&lng=' + b.lng, { timeoutMs: 8000 }).then(function (rr) {
-          var d = rr.data || {}, s = d.paddleScore && d.paddleScore.rating != null ? d.paddleScore.rating : (d.score != null ? d.score : null);
-          state.scores.set(keyOf(b.lat, b.lng), rr.ok ? s : null);
+          var d = rr.data || {};
+          state.scores.set(keyOf(b.lat, b.lng), rr.ok && d.paddleScore ? Object.assign({}, d.paddleScore, { conditions: d.conditions }) : null);
         });
       })).then(function () { if (myGen === gen) renderScores(); });
     });
@@ -311,7 +316,11 @@
   }
 
   function renderScores() {
-    rows.forEach(function (row, key) { if (state.scores.has(key)) row.setScore(state.scores.get(key)); });
+    rows.forEach(function (row, key) {
+      if (!state.scores.has(key)) return;
+      var sc = state.scores.get(key);
+      row.setScore(sc ? sc.rating : null, sc);
+    });
     renderPins();
   }
 
@@ -321,7 +330,14 @@
       return { lat: s.lat, lng: s.lng, cover: true, title: s.name, tooltip: s.name + ' · we cover this',
         onClick: function () { window.location.href = '/paddlingout/forecast?id=' + encodeURIComponent(s.id); } };
     }).concat(state.bodies.map(function (b) {
-      var sm = P.scoreMeta(state.scores.has(keyOf(b.lat, b.lng)) ? state.scores.get(keyOf(b.lat, b.lng)) : null);
+      var sc = state.scores.has(keyOf(b.lat, b.lng)) ? state.scores.get(keyOf(b.lat, b.lng)) : null;
+      // Same night rule as every card: after dark at THAT water, no score on the pin.
+      var night = sc && window.PaddleCard ? window.PaddleCard.nightOf(sc) : null;
+      if (night) {
+        return { lat: b.lat, lng: b.lng, label: '\u263E', color: '#8a7a55', title: b.name,
+          tooltip: b.name + ' · night there' + (night.back ? ', daylight from ' + night.back + ' local' : '') + ' · tap to open', onClick: function () { openForecast(b); } };
+      }
+      var sm = P.scoreMeta(sc ? sc.rating : null);
       return { lat: b.lat, lng: b.lng, label: sm.rating == null ? '–' : sm.display, color: sm.color, title: b.name,
         tooltip: b.name + (sm.rating != null ? ' · ' + sm.label : '') + ' · tap to open', onClick: function () { openForecast(b); } };
     }));
@@ -334,7 +350,7 @@
     if (!list || !list.length) { coveredEl.classList.remove('visible'); return; }
     var head = document.createElement('div'); head.className = 'covered-head'; head.textContent = 'Spots we cover'; coveredEl.appendChild(head);
     list.forEach(function (s) {
-      var row = window.PaddleCard.create({ id: s.id, title: s.name, subtitle: s.subtitle, paddleScore: s.rating == null ? null : { rating: s.rating } }, {
+      var row = window.PaddleCard.create({ id: s.id, title: s.name, subtitle: s.subtitle, paddleScore: s.score || (s.rating == null ? null : { rating: s.rating }) }, {
         variant: 'row', badge: 'We cover this', onOpen: function () { window.location.href = '/paddlingout/forecast?id=' + encodeURIComponent(s.id); }
       });
       coveredEl.appendChild(row);

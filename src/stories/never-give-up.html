@@ -43,6 +43,7 @@
   </script>
   <link rel="preload" href="/fonts/stories/literata-normal-400-600.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/fonts/stories/im-fell-double-pica-normal-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/stories/barlow-condensed-normal-600.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/stories-fonts.css">
   <link rel="stylesheet" href="/css/stories.css">
   <link rel="stylesheet" href="/css/footer.css">
@@ -111,6 +112,7 @@
   <p class="layout-note" id="layout-note" hidden>Book layout needs a bigger window. Showing the scroll.</p>
   <div class="progress" aria-hidden="true"><span id="progress"></span></div>
 </header>
+<script>/* the bar's real height before first paint, so nothing moves when the scripts measure it again */document.documentElement.style.setProperty('--barh', document.getElementById('bar').offsetHeight + 'px');</script>
 
 <nav class="pager" id="pager" aria-label="Book pages">
   <input type="range" id="scrub" min="1" max="1" step="1" value="1" aria-label="Page">

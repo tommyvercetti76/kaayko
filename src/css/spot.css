@@ -115,6 +115,7 @@
 .spot-score .dot.s-critical { background: var(--score-critical); box-shadow: 0 0 10px rgba(189,59,43,.8); }
 .spot-score .dot.s-moderate { background: var(--score-moderate); box-shadow: 0 0 10px rgba(235,129,39,.8); }
 .spot-score .dot.s-good     { background: var(--score-good);     box-shadow: 0 0 10px rgba(49,109,67,.85); }
+.spot-score .dot.s-night    { background: transparent; box-shadow: inset 0 0 0 1.5px var(--gold); }   /* night at the lake: no score */
 .spot-score b { font-weight: 700; color: var(--gold-bright); }
 .spot-score .reading {
   font-family: var(--font-serif);

@@ -281,3 +281,6 @@
    that the label would run off the end of the bar. */
 .khm-now span { white-space:nowrap; }
 .khm-now--flip span { left:auto; right:4px; }
+
+/* An hour after dark at the lake: no score, the same as every other surface. */
+.khm-panel-night { margin: 0.4rem 0 0; font-size: 0.78rem; color: rgba(232, 228, 220, 0.66); }

@@ -392,8 +392,13 @@ function markEstimatedWaterTemp(currentData, attempt = 0) {
  * @param {FastForecastResponse} forecastData
  */
 function applyNightGate(currentData, forecastData) {
-  const isNight = currentData?.conditions?.isDay === false
-    || currentData?.paddleScore?.night?.isNight === true;
+  // The one night rule (KaaykoSpotTime.isNightAt): the lake's sunrise/sunset at
+  // this moment, falling back to the API's flag. Cards, search and spot pages
+  // use the same call, so they can never disagree with this hero.
+  const scoreBlock = currentData?.paddleScore ? { ...currentData.paddleScore, conditions: currentData.conditions } : null;
+  const isNight = window.KaaykoSpotTime?.isNightAt
+    ? window.KaaykoSpotTime.isNightAt(scoreBlock)
+    : (currentData?.conditions?.isDay === false || currentData?.paddleScore?.night?.isNight === true);
   const mark = document.querySelector('.score-mark');
   if (!isNight || !mark) return;
 
@@ -407,9 +412,7 @@ function applyNightGate(currentData, forecastData) {
   // seen from Dallas, skipped its whole morning ("later today at 4 PM").
   const T = window.KaaykoSpotTime;
   const now = lakeNow(forecastData);
-  const anyFlagged = days.some(d =>
-    Object.values(d.hourly || {}).some(h => h && h.isDay === true));
-  const isDaylight = (hd, h) => anyFlagged ? hd.isDay === true : (h >= 7 && h <= 18);
+  const isDaylight = (hd, h) => T.isDaylightHour(hd, h);   // the shared per-hour rule
 
   let next = null;
   outer:
@@ -453,11 +456,7 @@ function applyNightGate(currentData, forecastData) {
 }
 
 function formatHourDisplay(h) {
-  const n = parseInt(h, 10);
-  if (n === 0) return '12 AM';
-  if (n < 12) return `${n} AM`;
-  if (n === 12) return '12 PM';
-  return `${n - 12} PM`;
+  return window.KaaykoSpotTime.hourLabel(h);   // one format everywhere: "6 AM"
 }
 
 

@@ -431,6 +431,8 @@ class RatingHero {
           const ahead = T ? T.isAhead(day, h, now, dayIdx) : (dayIdx > 0 || h > now.hour);
           if (!ahead) continue;
           const hData = hourly[h];
+          // Never suggest an hour after dark at the lake (same rule as the heatmap and night gate).
+          if (T && T.isDaylightHour ? !T.isDaylightHour(hData, h) : hData?.isDay === false) continue;
           const r = parseFloat(hData?.rating ?? hData?.prediction?.rating);
           if (!isNaN(r) && r >= current + 1.0 && r >= 3.0) {
             const dayLabel = (T && day?.date) ? T.relativeDay(day.date, now)
@@ -444,11 +446,10 @@ class RatingHero {
   }
 
   formatHourDisplay(hour) {
-    const h = parseInt(hour);
-    if (h === 0)  return '12:00 AM';
-    if (h < 12)   return `${h}:00 AM`;
-    if (h === 12) return '12:00 PM';
-    return `${h - 12}:00 PM`;
+    const T = window.KaaykoSpotTime;
+    if (T && T.hourLabel) return T.hourLabel(hour);   // one format everywhere: "6 AM"
+    const h = parseInt(hour, 10);
+    return ((h % 12) || 12) + (h < 12 ? ' AM' : ' PM');
   }
 
   getBeaufortFromKph(kph) {

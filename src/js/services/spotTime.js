@@ -118,7 +118,72 @@
     return isNaN(at.getTime()) ? 'Later' : at.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'UTC' });
   }
 
-  const api = { estimateTimezone, zoneOf, nowAt, isAhead, isToday, dayOffset, dayLabels, relativeDay };
+  /* ── night at the lake: ONE rule for every surface ──────────────────────
+   * Kaayko scores daylight paddling only, so at night no surface shows a live
+   * score: not the list card, not search, not a spot page, not the forecast
+   * hero. Whether it is night is decided at the moment of rendering from the
+   * lake's sunrise and sunset (`daylight`, UTC instants from the API), so a
+   * copy fetched 40 minutes ago and one fetched now agree, and the viewer's
+   * own clock and timezone never enter into it. Without those instants (a copy
+   * cached before they existed) the API's own flag decides.
+   */
+  function ms(v) { const t = Date.parse(v); return Number.isFinite(t) ? t : null; }
+
+  /**
+   * @param {{night?:{isNight:boolean}, daylight?:{sunrise:string,sunset:string,nextSunrise:string}, conditions?:{isDay:boolean}}} score
+   * @param {Date} [at]
+   * @returns {boolean}
+   */
+  function isNightAt(score, at) {
+    if (!score || typeof score !== 'object') return false;
+    const t = (at instanceof Date ? at : new Date()).getTime();
+    const d = score.daylight || {};
+    const rise = ms(d.sunrise), set = ms(d.sunset), next = ms(d.nextSunrise);
+    if (rise != null && set != null) {
+      if (t >= rise && t < set) return false;
+      if (t < rise) return true;                       // before dawn, same lake day
+      if (next != null && t < next) return true;       // after dusk, before tomorrow's dawn
+      // past the window this copy describes: fall through to its flag
+    }
+    return (score.night && score.night.isNight === true) || (score.conditions && score.conditions.isDay === false) || false;
+  }
+
+  /** When daylight returns at the lake, as lake-local text ("6 AM"), or null. */
+  function daylightReturns(score, at) {
+    if (!score || typeof score !== 'object') return null;
+    const t = (at instanceof Date ? at : new Date()).getTime();
+    const d = score.daylight || {};
+    const rise = ms(d.sunrise), next = ms(d.nextSunrise);
+    const when = rise != null && t < rise ? rise : (next != null && t < next ? next : null);
+    if (when != null && validZone(d.zone)) {
+      return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', timeZone: d.zone })
+        .format(new Date(when)).replace(':00', '');
+    }
+    const h = score.night && score.night.nextDaylight && Number(score.night.nextDaylight.hour);
+    if (Number.isFinite(h) && h >= 0 && h <= 23) return ((h % 12) || 12) + (h < 12 ? ' AM' : ' PM');
+    return null;
+  }
+
+  /** "6 AM", "12 PM": the one hour format on every surface (lake-local hour in). */
+  function hourLabel(hour) {
+    const h = parseInt(hour, 10);
+    if (!Number.isFinite(h) || h < 0 || h > 23) return '';
+    return ((h % 12) || 12) + (h < 12 ? ' AM' : ' PM');
+  }
+
+  /**
+   * Is forecast hour `hd` (lake-local hour `h`) in daylight? The API's own
+   * per-hour flag (WeatherAPI is_day for that hour at the lake); a civil
+   * 7 AM-6 PM only for a payload too old to carry it. The heatmap, the best
+   * window, "better later" and the night gate all ask this, so none of them
+   * can offer an hour the others call night.
+   */
+  function isDaylightHour(hd, h) {
+    if (hd && typeof hd.isDay === 'boolean') return hd.isDay;
+    return h >= 7 && h <= 18;
+  }
+
+  const api = { estimateTimezone, zoneOf, nowAt, isAhead, isToday, dayOffset, dayLabels, relativeDay, isNightAt, daylightReturns, hourLabel, isDaylightHour };
   root.KaaykoSpotTime = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

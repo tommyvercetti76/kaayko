@@ -37,9 +37,13 @@ const RUN = new Date().toISOString().replace(/[:.]/g, '-');
 const OUT = join(tmpdir(), 'kaayko-browser-check', RUN);
 mkdirSync(OUT, { recursive: true });
 
-const PHONE = { name: 'phone', width: 390, height: 844, mobile: true,
+// Every view is a viewer in Dallas, except the "far" one: the same phone in India.
+// A lake's page must read the same from both, because every rating is the
+// lake's, at the lake's current time, whoever is looking.
+const PHONE = { name: 'phone', width: 390, height: 844, mobile: true, tz: 'America/Chicago',
   ua: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1' };
-const DESKTOP = { name: 'desktop', width: 1440, height: 900, mobile: false, ua: null };
+const DESKTOP = { name: 'desktop', width: 1440, height: 900, mobile: false, ua: null, tz: 'America/Chicago' };
+const FAR = { ...PHONE, name: 'phone@IST', tz: 'Asia/Kolkata' };
 
 const results = [];
 const record = (page, view, ok, detail) => results.push({ page, view, ok, detail });
@@ -111,6 +115,7 @@ async function visit(port, url, view, { probe = null, settle = 3500 } = {}) {
     await send('Emulation.setEmitTouchEventsForMouse', { enabled: true, configuration: 'mobile' });
   }
   if (view.ua) await send('Network.setUserAgentOverride', { userAgent: view.ua });
+  if (view.tz) await send('Emulation.setTimezoneOverride', { timezoneId: view.tz });
   await send('Page.addScriptToEvaluateOnNewDocument', { source: `(() => { window.__cls = 0; window.__shifts = []; const name = (n) => !n || !n.tagName ? '?' : n.tagName.toLowerCase() + (n.id ? '#' + n.id : '') + (typeof n.className === 'string' && n.className ? '.' + n.className.trim().split(/\\s+/).slice(0, 2).join('.') : ''); try { new PerformanceObserver((l) => l.getEntries().forEach((e) => { if (e.hadRecentInput) return; window.__cls += e.value; window.__shifts.push({ v: +e.value.toFixed(3), t: Math.round(e.startTime), who: (e.sources || []).map((x) => name(x.node) + ' ' + Math.round(x.currentRect.y - x.previousRect.y) + 'px/' + Math.round(x.currentRect.height - x.previousRect.height) + 'h').slice(0, 3).join(', ') }); })).observe({ type: 'layout-shift', buffered: true }); } catch (_) {} })();` + (probe || '') });
   await send('Page.navigate', { url });
   await sleep(settle);
@@ -125,6 +130,7 @@ async function visit(port, url, view, { probe = null, settle = 3500 } = {}) {
 /** The common bar every page must clear, then the page's own checks. */
 async function checkPage(port, label, url, view, assertions = async () => [], opts = {}) {
   if (ONLY && !label.includes(ONLY)) return;
+  if (opts.skip) return;
   let v;
   try {
     v = await visit(port, url, view, opts);
@@ -138,6 +144,21 @@ async function checkPage(port, label, url, view, assertions = async () => [], op
   } catch (e) {
     record(label, view.name, false, `could not check: ${e.message.slice(0, 160)}`);
   } finally { v?.close(); }
+}
+
+/** What every surface must show for a spot right now: night (no score) or the rating. */
+function expectFor(score) {
+  if (T.isNightAt(score)) return { night: true, text: 'night' };
+  return { night: false, text: score && score.rating != null ? Number(score.rating).toFixed(1) : null };
+}
+
+// The same lake page, read from Dallas and from India, must say the same thing.
+const seen = new Map();   // "page|what" → { view, value }
+function sameEverywhere(key, view, value) {
+  const v = JSON.stringify(value);
+  if (!seen.has(key)) { seen.set(key, { view, v }); return []; }
+  const first = seen.get(key);
+  return first.v === v ? [] : [`${key} differs by viewer: ${first.view} saw ${first.v}, ${view} saw ${v}`];
 }
 
 const json = async (u, init) => (await fetch(u, { headers: { 'User-Agent': PHONE.ua, 'Content-Type': 'application/json' }, ...init })).json();
@@ -163,7 +184,8 @@ async function main() {
 
   const b = await browser();
   try {
-    for (const view of [PHONE, DESKTOP]) {
+    for (const view of [PHONE, DESKTOP, FAR]) {
+      const far = view === FAR;
       // ── 2. homepage: one headline size from the first frame, only the entrance moves
       await checkPage(b.port, 'home', `${BASE}/`, view, async (ev) => {
         const r = await ev('({ t: [...new Set(window.__bc.transitions)], sizes: [...window.__bc.sizes], panels: document.getElementById("pg-home").dataset.panels, cls: document.getElementById("pg-home").className })');
@@ -174,21 +196,46 @@ async function main() {
         if (extra.length) p.push(`unplanned load transitions: ${extra.join(', ')}`);
         if (!/is-lit/.test(r.cls)) p.push('entrance never finished');
         return p;
-      }, { probe: HOME_PROBE });
+      }, { probe: HOME_PROBE, skip: far });
 
-      // ── 3. Paddling Out list
+      // ── 3. Paddling Out list: every card shows night exactly when it is night AT THAT LAKE
       await checkPage(b.port, 'paddlingout', `${BASE}/paddlingout`, view, async (ev) => {
-        const n = await ev('document.querySelectorAll(".pcard, .paddle-card, [data-spot-id]").length');
-        return n >= 10 ? [] : [`only ${n} lake cards rendered`];
+        const r = await ev(`fetch('/api/paddlingOut').then(x => x.json()).then(api => ({ api, cards: [...document.querySelectorAll('[data-spot-id]')].map(c => ({ id: c.dataset.spotId, text: (c.querySelector('.badge-score, .pcard-stat-val') || {}).textContent || '' })) }))`);
+        const p = [];
+        if (r.cards.length < 10) p.push(`only ${r.cards.length} lake cards rendered`);
+        const byId = new Map(r.api.map((s) => [s.id, s.paddleScore]));
+        for (const c of r.cards) {
+          const want = expectFor(byId.get(c.id));
+          const got = c.text.includes('\u263E') ? 'night' : c.text.trim();
+          if (want.text != null && got !== want.text) p.push(`${c.id}: card shows "${got}", the lake says "${want.text}"`);
+        }
+        p.push(...sameEverywhere('list', view.name, r.cards.map((c) => c.id + '=' + (c.text.includes('\u263E') ? 'night' : c.text.trim()))));
+        return p;
       });
+
+      // ── 3b. a static spot page: the same rule on its live pill
+      for (const [id, slug] of [['ambazari', 'ambazari-lake-nagpur'], ['powell', 'lake-powell-utah']]) {
+        await checkPage(b.port, `spot page ${id}`, `${BASE}/paddlingout/${slug}`, view, async (ev) => {
+          const r = await ev(`fetch('/api/paddlingOut').then(x => x.json()).then(api => ({ api, text: (document.getElementById('live-text') || {}).textContent || '' }))`);
+          const want = expectFor((r.api.find((s) => s.id === id) || {}).paddleScore);
+          const p = [];
+          if (want.night && !/Night at the lake/.test(r.text)) p.push(`pill says "${r.text}" while it is night at the lake`);
+          if (!want.night && want.text && !r.text.includes(want.text + ' / 5')) p.push(`pill says "${r.text}", the lake says ${want.text}`);
+          p.push(...sameEverywhere(`spot ${id}`, view.name, r.text));
+          return p;
+        }, { settle: 4000 });
+      }
 
       // ── 4. forecast: labels and "this hour" on the LAKE's clock
       for (const s of forecastSpots) {
         await checkPage(b.port, `forecast ${s.id}`, `${BASE}/paddlingout/forecast?id=${s.id}`, view, async (ev) => {
           const ff = forecasts[s.id];
           const now = T.nowAt(ff.location);
-          const dom = await ev(`({ labels: [...document.querySelectorAll('.khm-day-label')].map(e => e.textContent.replace(/\\s+/g,' ').trim()), now: (document.querySelector('.khm-now') || {}).style?.left || null })`);
+          const dom = await ev(`fetch('/api/paddleScore?spotId=${s.id}').then(x => x.json()).then(ps => ({ ps, labels: [...document.querySelectorAll('.khm-day-label')].map(e => e.textContent.replace(/\\s+/g,' ').trim()), now: (document.querySelector('.khm-now') || {}).style?.left || null, nightMark: !!document.querySelector('.night-mark'), next: ((document.querySelector('.night-next-when') || {}).textContent || '').trim() }))`);
           const p = [];
+          const night = T.isNightAt({ ...dom.ps.paddleScore, conditions: dom.ps.conditions });
+          if (night !== dom.nightMark) p.push(night ? 'it is night at the lake but the hero shows a score' : 'the hero says "after dark" in daylight at the lake');
+          p.push(...sameEverywhere(`forecast ${s.id}`, view.name, { labels: dom.labels, now: dom.now, night: dom.nightMark, next: dom.next }));
           const want = ff.forecast.slice(0, 3).map((d) => { const l = T.dayLabels(d.date, now); return `${l.primary} ${l.secondary}`; });
           want.forEach((w, i) => { if (dom.labels[i] && dom.labels[i].replace(/\s/g, '') !== w.replace(/\s/g, '')) p.push(`day ${i} labelled "${dom.labels[i]}", lake says "${w}"`); });
           const todayOnForecast = ff.forecast.slice(0, 3).some((d) => d.date === now.date);
@@ -202,6 +249,8 @@ async function main() {
           return p;
         }, { settle: 6000 });
       }
+
+      if (far) continue;   // the far viewer only re-reads the lake pages
 
       // ── 5. Stories
       await checkPage(b.port, 'stories', `${BASE}/stories`, view, async (ev) =>

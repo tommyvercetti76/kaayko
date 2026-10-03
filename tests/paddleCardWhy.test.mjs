@@ -184,19 +184,19 @@ test('night is printed first and keeps its factors underneath', () => {
   const node = PC.buildWhy(score, false);
   assert.equal(node.dataset.state, 'night');
   const t = texts(node);
-  assert.equal(t[0], 'Night here · daylight about 6 AM local');
+  assert.equal(t[0], 'Night at the lake · daylight from 6 AM local');
   assert.ok(t.includes('Very light winds'));
 });
 
 test('night with no factors says only the night line — no filler', () => {
   const score = { rating: 3.5, night: { isNight: true }, penaltyDetails: [], adjustments: [] };
-  assert.deepEqual(texts(PC.buildWhy(score, false)), ['Night here']);
+  assert.deepEqual(texts(PC.buildWhy(score, false)), ['Night at the lake']);
 });
 
 test('night survives a response that carries no factor arrays', () => {
   const score = { rating: 3.5, night: { isNight: true, nextDaylight: { hour: 13 } } };
   assert.equal(PC.whyState(score).state, 'night');
-  assert.deepEqual(texts(PC.buildWhy(score, true)), ['Night here · daylight about 1 PM local']);
+  assert.deepEqual(texts(PC.buildWhy(score, true)), ['Night at the lake · daylight from 1 PM local']);
 });
 
 test('isNight false or missing is not night', () => {
@@ -207,7 +207,7 @@ test('isNight false or missing is not night', () => {
 test('a bad nextDaylight hour is omitted rather than guessed', () => {
   for (const hour of [undefined, null, 24, -1, 'six']) {
     const score = { rating: 3, night: { isNight: true, nextDaylight: { hour } }, penaltyDetails: [], adjustments: [] };
-    assert.deepEqual(texts(PC.buildWhy(score, false)), ['Night here'], `hour=${String(hour)}`);
+    assert.deepEqual(texts(PC.buildWhy(score, false)), ['Night at the lake'], `hour=${String(hour)}`);
   }
 });
 

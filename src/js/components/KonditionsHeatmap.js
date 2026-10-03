@@ -25,11 +25,14 @@
   }
 
   function formatHourDisplay(hour) {
+    const T = window.KaaykoSpotTime;
+    if (T && T.hourLabel) return T.hourLabel(hour);   // one format everywhere: "6 AM"
     const h = parseInt(hour, 10);
-    if (h === 0) return '12:00 AM';
-    if (h < 12) return `${h}:00 AM`;
-    if (h === 12) return '12:00 PM';
-    return `${h - 12}:00 PM`;
+    return ((h % 12) || 12) + (h < 12 ? ' AM' : ' PM');
+  }
+  function daylightHour(hd, h) {
+    const T = window.KaaykoSpotTime;
+    return T && T.isDaylightHour ? T.isDaylightHour(hd, h) : !(hd && hd.isDay === false);
   }
 
   /**
@@ -60,6 +63,7 @@
         const ahead = T ? T.isAhead(day, hour, now, dayIndex) : (dayIndex > 0 || hour > now.hour);
         if (!ahead) return;
         const hourData = hourly[String(hour)] || hourly[hour];
+        if (!daylightHour(hourData, hour)) return;   // never offer an hour after dark
         const rating = parseFloat(hourData?.mlPrediction?.rating ?? hourData?.prediction?.rating ?? hourData?.rating);
         if (isNaN(rating)) return;
         if (!best || rating > best.score) {
@@ -141,11 +145,23 @@
     const { now, T }  = lakeNow(forecastData);
     const currentHour = now.hour;
 
-    // Build a CSS linear-gradient string from hourly scores
-    function buildGradient(day) {
+    // AUDIT-2026-10-03 F5, one "now": the lake's current hour shows the OBSERVED
+    // score the hero shows, not a second, forecast number for the same moment.
+    // At night there is no observed score to show (the hero says so too).
+    const obsBlock = currentData?.paddleScore ? { ...currentData.paddleScore, conditions: currentData.conditions } : null;
+    const obsNight = obsBlock && T && T.isNightAt ? T.isNightAt(obsBlock) : false;
+    const observed = obsBlock && !obsNight && Number.isFinite(parseFloat(obsBlock.rating))
+      ? Math.round(parseFloat(obsBlock.rating) * 2) / 2 : null;
+    const isNowCell = (day, di, h) => observed !== null && h === currentHour && (T ? T.isToday(day, now, di) : di === 0);
+    const NIGHT = '#120f0a';
+
+    // Build a CSS linear-gradient string from hourly scores. Hours after dark at
+    // the lake carry no colour: Kaayko does not score night paddling, anywhere.
+    function buildGradient(day, di) {
       const stops = KHM_HOURS.map(h => {
         const hd    = day.hourly?.[String(h)] ?? day.hourly?.[h];
-        const score = hd ? khmRating(hd) : null;
+        if (hd && !daylightHour(hd, h)) return `${NIGHT} ${khmPct(h)}%`;
+        const score = isNowCell(day, di, h) ? observed : (hd ? khmRating(hd) : null);
         const col   = score !== null ? khmColor(khmSeverity(score)) : '#1e150a';
         return `${col} ${khmPct(h)}%`;
       });
@@ -162,7 +178,7 @@
       const d = new Date(); d.setDate(d.getDate() + di);
       const primary   = labels ? labels.primary : (di === 0 ? 'Today' : di === 1 ? 'Tomorrow' : d.toLocaleDateString('en-US',{weekday:'short'}));
       const secondary = labels ? labels.secondary : d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-      const gradient  = buildGradient(day);
+      const gradient  = buildGradient(day, di);
 
       // Best-window flag for this day
       const bestHour = (best?.dayIndex === di) ? best.hour : null;
@@ -202,7 +218,7 @@
           <div class="khm-bar-shell">
             <div class="khm-bar" data-day="${di}" style="background:${gradient}">
               <div class="khm-gloss" aria-hidden="true"></div>
-              ${nowPct !== null ? `<div class="khm-now${parseFloat(nowPct) > 62 ? ' khm-now--flip' : ''}" style="left:${nowPct}%" aria-label="Current hour — forecast"><span>THIS HOUR</span></div>` : ''}
+              ${nowPct !== null ? `<div class="khm-now${parseFloat(nowPct) > 62 ? ' khm-now--flip' : ''}" style="left:${nowPct}%" aria-label="Current hour — ${observed !== null ? 'observed' : 'forecast'}"><span>THIS HOUR</span></div>` : ''}
               <div class="khm-cursor" aria-hidden="true"></div>
               ${hits}
             </div>
@@ -217,7 +233,7 @@
         <div class="khm-head">
           <div>
             <span class="khm-eyebrow">3-day forecast</span>
-            <span class="khm-source">Forecast, not observed conditions</span>
+            <span class="khm-source">${observed !== null ? 'This hour observed, later hours forecast' : 'Forecast, not observed conditions'}</span>
           </div>
           <div class="khm-legend">
             <span><i class="khm-dot" style="background:#bd3b2b"></i>Hard pass</span>
@@ -278,11 +294,31 @@
         // Build panel
         const hd = forecast[di]?.hourly?.[String(hour)] ?? forecast[di]?.hourly?.[hour];
         if (!hd || !panel) return;
-        const score  = khmRating(hd);
+        if (!daylightHour(hd, hour)) {
+          panel.hidden = false;
+          panel.innerHTML = `
+            <div class="khm-panel-inner" style="--pc:#8a7a55">
+              <div class="khm-panel-hdr">
+                <div class="khm-panel-left">
+                  <span class="khm-panel-time">${formatHourDisplay(hour)}</span>
+                  <span class="khm-panel-kind">After dark</span>
+                  <span class="khm-panel-verdict" style="color:#8a7a55">Not scored</span>
+                </div>
+                <div class="khm-panel-score" style="color:#8a7a55">\u263E</div>
+              </div>
+              <p class="khm-panel-night">Kaayko scores daylight paddling only.</p>
+            </div>`;
+          return;
+        }
+        const nowCell = isNowCell(forecast[di], di, hour);
+        const c      = currentData?.conditions || {};
+        const score  = nowCell ? observed : khmRating(hd);
         const sev    = score !== null ? khmSeverity(score) : 'critical';
         const col    = khmColor(sev);
         const label  = { good:'WORTH IT', moderate:'CAREFUL', critical:'HARD PASS' }[sev];
-        const macros = khmMacros(hd);
+        const macros = khmMacros(nowCell
+          ? { windSpeed: c.windSpeed, airTemp: c.temperature, uvIndex: c.uvIndex, humidity: c.humidity, visibility: c.visibility, waterTemp: c.waterTemp }
+          : hd);
 
         panel.hidden = false;
         panel.innerHTML = `
@@ -290,7 +326,7 @@
             <div class="khm-panel-hdr">
               <div class="khm-panel-left">
                 <span class="khm-panel-time">${formatHourDisplay(hour)}</span>
-                <span class="khm-panel-kind">Forecast</span>
+                <span class="khm-panel-kind">${nowCell ? 'Observed' : 'Forecast'}</span>
                 <span class="khm-panel-verdict" style="color:${col}">${label}</span>
               </div>
               <div class="khm-panel-score" style="color:${col}">${score != null ? score.toFixed(1) : '—'}<sub>/5</sub></div>

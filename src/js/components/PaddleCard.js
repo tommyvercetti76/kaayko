@@ -23,6 +23,23 @@
   var MOVE  = 10;   // px — "the finger moved" gate (cancels a long-press / arms swipe)
   var LONG_MS = 500;
 
+  // ── night at the lake ─────────────────────────────────────────────────────────
+  // Kaayko scores daylight paddling only. At night the card shows no live score
+  // (the forecast hero, search and the spot pages say the same thing), and the
+  // decision is the lake's, made at render time by KaaykoSpotTime from its
+  // sunrise/sunset. It used to print "4.0 Worth it" with a small "Night here"
+  // under it, while the forecast for the same lake said "we score daylight only".
+  function nightOf(score) {
+    var T = window.KaaykoSpotTime;
+    if (!score || typeof score !== 'object') return null;
+    var isNight = T && T.isNightAt ? T.isNightAt(score)
+      : ((score.night && score.night.isNight === true) || (score.conditions && score.conditions.isDay === false));
+    if (!isNight) return null;
+    var back = T && T.daylightReturns ? T.daylightReturns(score) : fmtHour(score.night && score.night.nextDaylight && score.night.nextDaylight.hour);
+    return { back: back };
+  }
+  var MOON = '\u263E';
+
   // ── data shaping ────────────────────────────────────────────────────────────
   function normalize(spot) {
     spot = spot || {};
@@ -46,7 +63,8 @@
       tags: (Array.isArray(spot.tags) ? spot.tags : []).filter(function (t) { return TAG_LABELS[t]; }).slice(0, 3),
       // The raw paddleScore block, kept so the card can show WHY (see whyState).
       // Never read for the displayed number — that stays `rating` above.
-      score: (spot.paddleScore && typeof spot.paddleScore === 'object') ? spot.paddleScore : null
+      score: (spot.paddleScore && typeof spot.paddleScore === 'object') ? spot.paddleScore : null,
+      night: nightOf(spot.paddleScore)
     };
   }
 
@@ -142,7 +160,7 @@
    */
   function whyState(score) {
     var s = (score && typeof score === 'object') ? score : null;
-    var night = (s && s.night && s.night.isNight === true) ? s.night : null;
+    var night = nightOf(s);
     var pens = s && Array.isArray(s.penaltyDetails) ? s.penaltyDetails : null;
     var adjs = s && Array.isArray(s.adjustments) ? s.adjustments : null;
 
@@ -203,9 +221,8 @@
       return wrap;
     }
     if (w.night) {
-      var hour = fmtHour(w.night.nextDaylight && w.night.nextDaylight.hour);
       wrap.appendChild(whyLine('pcard-why-flag',
-        'Night here' + (hour ? ' · daylight about ' + hour + ' local' : '')));
+        'Night at the lake' + (w.night.back ? ' · daylight from ' + w.night.back + ' local' : '')));
     }
     if (!w.factors.length) {
       if (!compact && w.state !== 'night') {
@@ -392,6 +409,7 @@
     var href = opts.href || forecastUrl;
 
     var root = el('a', 'pcard pcard--minimal', { href: href });
+    if (data.id) root.dataset.spotId = data.id;   // lets a check match a tile to its API row
     if (window.KaaykoPrefs && window.KaaykoPrefs.isFavorite(data.id)) root.classList.add('is-fav');
     root.setAttribute('aria-label', data.title + (data.subtitle ? ' — ' + data.subtitle : ''));
 
@@ -458,7 +476,13 @@
     // grid looked, to a reader, entirely normal. An absent number is a fact
     // about the spot and has to be readable as one.
     var stat = el('div', 'pcard-stat');
-    if (data.rating != null) {
+    if (data.night) {
+      stat.className = 'pcard-stat pcard-stat--night';
+      var nval = el('span', 'pcard-stat-val'); nval.textContent = MOON; nval.setAttribute('aria-hidden', 'true');
+      var nlab = el('span', 'pcard-stat-label');
+      nlab.textContent = 'Night' + (data.night.back ? ' · daylight ' + data.night.back : '');
+      stat.appendChild(nval); stat.appendChild(nlab);
+    } else if (data.rating != null) {
       var sm = scoreMeta(data.rating);
       var val = el('span', 'pcard-stat-val'); val.textContent = sm.display; val.style.color = sm.color;
       var lab = el('span', 'pcard-stat-label'); lab.textContent = sm.label;
@@ -488,7 +512,10 @@
   // ── FULL variant (detailed list card; reuses paddlingout.css classes) ─────────
   function buildFull(data, opts) {
     var card = el('article', 'card');
-    var sm = scoreMeta(data.rating);
+    if (data.id) card.dataset.spotId = data.id;
+    var sm = data.night
+      ? { rating: null, color: null, severity: null, display: MOON, label: 'Night' + (data.night.back ? ' · daylight ' + data.night.back : '') }
+      : scoreMeta(data.rating);
     if (sm.severity) card.classList.add('score-' + sm.severity);
 
     var media = el('div', 'img-container');
@@ -508,7 +535,7 @@
     });
 
     // conditions badge (top-right) → forecast
-    var badge = el('div', 'conditions-badge' + (sm.severity && sm.severity !== 'good' ? ' ' + sm.severity : ''));
+    var badge = el('div', 'conditions-badge' + (data.night ? ' is-night' : (sm.severity && sm.severity !== 'good' ? ' ' + sm.severity : '')));
     badge.innerHTML = '<span class="badge-dot"></span><span class="badge-score">' + sm.display +
       '</span><span class="badge-status">' + sm.label + '</span>';
     badge.addEventListener('click', function (e) {
@@ -635,9 +662,15 @@
     }
     paintWhy(data.score);
 
-    var ring = el('div', 'pcard-ring' + (data.rating == null ? ' is-pending' : ''));
+    var ring = el('div', 'pcard-ring' + (data.rating == null && !data.night ? ' is-pending' : ''));
+    function nightRing(n) {
+      ring.classList.add('is-night');
+      ring.innerHTML = '<span class="pcard-ring-val pcard-ring-moon" aria-hidden="true">' + MOON + '</span>';
+      ring.setAttribute('aria-label', 'Night at the lake' + (n.back ? ', daylight from ' + n.back + ' local' : '') + '. No score after dark.');
+    }
     ring.setAttribute('aria-label', 'Paddle score');
-    ring.innerHTML = data.rating == null ? '<span class="pcard-ring-spin" aria-hidden="true"></span>' : ringSvg(scoreMeta(data.rating));
+    if (data.night) nightRing(data.night);
+    else ring.innerHTML = data.rating == null ? '<span class="pcard-ring-spin" aria-hidden="true"></span>' : ringSvg(scoreMeta(data.rating));
 
     row.appendChild(body); row.appendChild(ring);
 
@@ -664,7 +697,9 @@
      */
     row.setScore = function (rating, score) {
       var sm = scoreMeta(rating);
-      ring.classList.remove('is-pending');
+      ring.classList.remove('is-pending', 'is-night');
+      var n = arguments.length > 1 ? nightOf(score) : null;
+      if (n) { nightRing(n); row.dataset.severity = ''; paintWhy(score); return; }
       ring.innerHTML = ringSvg(sm);
       ring.setAttribute('aria-label', rating == null ? 'Paddle score unavailable' : 'Paddle score ' + sm.display + ', ' + sm.label);
       row.dataset.severity = sm.severity || '';
@@ -689,6 +724,7 @@
     normalize: normalize,
     scoreMeta: scoreMeta,
     whyState: whyState,          // exported for tests + the forecast surfaces
+    nightOf: nightOf,            // the one night decision, for surfaces that draw their own score
     buildWhy: buildWhy,
     apiBase: apiBase,
     animateLove: function (el) { if (el) animateLove(el, true); }   // for the walkthrough demo

@@ -190,6 +190,11 @@
    tell "we have not scored this" from "there is nothing to say here". */
 .pcard-stat--unscored .pcard-stat-val { color: rgba(232, 228, 220, 0.62); }
 .pcard-stat--unscored .pcard-stat-label { color: rgba(232, 228, 220, 0.55); font-style: normal; }
+/* Night at the lake: no score after dark, the same on every surface. */
+.pcard-stat--night .pcard-stat-val { color: rgba(217, 189, 123, 0.85); font-size: 1.15rem; }
+.pcard-stat--night .pcard-stat-label { color: rgba(232, 228, 220, 0.7); font-style: normal; }
+.pcard-ring.is-night { border-radius: 50%; box-shadow: inset 0 0 0 2px rgba(217, 189, 123, 0.28); }
+.pcard-ring-moon { color: rgba(217, 189, 123, 0.9); font-size: 1.1rem; }
 
 .pcard-stat-label {
   color: rgba(217, 189, 123, 0.9);

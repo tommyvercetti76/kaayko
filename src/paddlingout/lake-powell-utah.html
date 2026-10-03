@@ -202,6 +202,7 @@
   <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
 </footer>
 
+<script src="/js/services/spotTime.js"></script>
 <script>
 // Progressive enhancement only. Everything above is complete without this.
 // On any failure the static page is untouched and the pill keeps its static label.
@@ -214,7 +215,7 @@
   var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
   var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 8000);
 
-  fetch('https://api-vwcc5j4qda-uc.a.run.app/paddlingOut', ctrl ? { signal: ctrl.signal } : undefined)
+  fetch('/api/paddlingOut', ctrl ? { signal: ctrl.signal } : undefined)
     .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
     .then(function (list) {
       clearTimeout(timer);
@@ -224,10 +225,20 @@
       var ps = spot.paddleScore;
       var rating = ps && typeof ps === 'object' ? ps.rating : ps;
       var reading = ps && typeof ps === 'object' ? ps.interpretation : null;
+      // The same night rule as every other surface (js/services/spotTime.js):
+      // after dark AT THE LAKE there is no live score, whatever the reader's clock says.
+      var T = window.KaaykoSpotTime;
+      if (ps && typeof ps === 'object' && T && T.isNightAt(ps)) {
+        var back = T.daylightReturns(ps);
+        if (dot) dot.className = 'dot s-night';
+        el.textContent = 'Night at the lake' + (back ? ' \u00b7 daylight from ' + back + ' local' : '');
+        return;
+      }
       if (typeof rating !== 'number' || !isFinite(rating)) return;
-      if (dot) dot.className = 'dot ' + (rating < 2.5 ? 's-critical' : rating < 3.5 ? 's-moderate' : 's-good');
-      el.innerHTML = 'Paddle Score <b>' + rating + ' / 5</b>'
-        + (reading ? ' <span class="reading">' + String(reading) + '</span>' : '');
+      // Verdict tiers are 3.7 / 2.7 everywhere (prefs.js scoreMeta); this pill used 3.5 / 2.5.
+      if (dot) dot.className = 'dot ' + (rating < 2.7 ? 's-critical' : rating < 3.7 ? 's-moderate' : 's-good');
+      el.innerHTML = 'Paddle Score <b>' + rating.toFixed(1) + ' / 5</b>'
+        + (reading ? ' <span class="reading">' + String(reading).replace(/[<>&]/g, '') + '</span>' : '');
     })
     .catch(function () { clearTimeout(timer); /* keep the static label */ });
 })();

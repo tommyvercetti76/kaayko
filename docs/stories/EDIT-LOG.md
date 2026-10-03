@@ -13,6 +13,34 @@ How to edit Stories yourself: [README.md](README.md).
 
 ---
 
+## 2026-10-03 16:40 CDT · Nothing moves on load: bar height, matched fallback fonts
+
+- **Commit:** this entry's commit (`git log -1 -- docs/stories/EDIT-LOG.md`)
+- **Live:** deployed to kaayko.com and kaay.store, after preview channel `lake-clock`.
+- **Why:** after the 15:57 preload, `npm run browser-check` still measured the chapter at
+  0.08–0.20 layout shift on desktop, varying run to run. Three causes, each found by the
+  check naming what moved:
+  1. The top bar is 73 px on desktop and 69 px on phones; CSS assumed 64 px until
+     `story.js` measured it, so the whole chapter dropped 9 px.
+  2. The route line ("Moran Point · Desert View · …") and the byline are Barlow Condensed,
+     which was not preloaded. Its fallback is wider, so the route wrapped to two lines and
+     snapped back to one when Barlow arrived: the 25 px jump.
+  3. Unadjusted Georgia is 10% wider than IM Fell (title, drop cap) and 8% narrower than
+     Literata (body), so the swap re-wrapped text.
+- **`src/stories/never-give-up.html`, `src/stories.html`:** one inline line right after the
+  bar sets `--barh` from the bar's real height before first paint. Barlow Condensed 600
+  (15 KB) is preloaded.
+- **`src/css/stories-fonts.css`, `src/css/stories.css`:** three fallback faces, Georgia and
+  Arial Narrow scaled to each real face's measured width and line metrics (`size-adjust`,
+  `ascent-override`, `descent-override`), placed second in `--f-display`, `--f-text` and
+  `--f-label`. Readers see the real fonts as before; the fallbacks only fill the first
+  fraction of a second, at the right size.
+- **Checked:** four runs each, desktop: 0.082 / 0.097 / 0.021 / 0.097 before the Barlow fix,
+  0.021 ×4 after; phone 0.000. Library 0.000. Reading-time checker: all five places agree.
+- **Text:** unchanged.
+
+---
+
 ## 2026-10-03 15:57 CDT · Preload the drop-cap font
 
 - **Commit:** this entry's commit (`git log -1 -- docs/stories/EDIT-LOG.md`)

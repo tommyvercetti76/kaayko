@@ -5,3 +5,12 @@
 @font-face{font-family:'IM Fell Double Pica';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/stories/im-fell-double-pica-normal-400.woff2') format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
 @font-face{font-family:'Literata';font-style:italic;font-weight:400;font-display:swap;src:url('/fonts/stories/literata-italic-400.woff2') format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
 @font-face{font-family:'Literata';font-style:normal;font-weight:400 600;font-display:swap;src:url('/fonts/stories/literata-normal-400-600.woff2') format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+
+/* Size-matched fallbacks (3 Oct 2026). Until the real faces arrive the page is set in
+   Georgia scaled to each face's width and line metrics, so the swap moves nothing:
+   unadjusted Georgia is 10% wider than IM Fell and 8% narrower than Literata, which
+   re-wrapped the title and the lede and jumped the chapter 25 px on load.
+   Ratios measured with fontTools over the opening of Part 1. */
+@font-face{font-family:'IM Fell fallback';src:local('Georgia');size-adjust:90.6%;ascent-override:103.7%;descent-override:34.7%;line-gap-override:0%}
+@font-face{font-family:'Literata fallback';src:local('Georgia');size-adjust:107.9%;ascent-override:109.1%;descent-override:28.5%;line-gap-override:0%}
+@font-face{font-family:'Barlow fallback';src:local('Arial Narrow');size-adjust:82.4%;ascent-override:121.3%;descent-override:24.3%;line-gap-override:0%}

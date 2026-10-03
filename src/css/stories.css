@@ -12,9 +12,9 @@ img{max-width:100%}
   --stamp-ink:#1b2130; --stamp-violet:#4a2e80; --bar:#f6f7f8; --scrim:rgba(11,15,20,.88); --shadow:rgba(27,33,48,.25);
   /* Lake Powell, sampled from the open water at Lone Rock in his photo */
   --ripple:#4e7167; --ripple-alpha:.13; --ripple-fill:.06;
-  --f-display:"IM Fell Double Pica","Iowan Old Style",Georgia,serif;
-  --f-text:"Literata",Charter,"Iowan Old Style",Georgia,serif;
-  --f-label:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-display:"IM Fell Double Pica","IM Fell fallback","Iowan Old Style",Georgia,serif;
+  --f-text:"Literata","Literata fallback",Charter,"Iowan Old Style",Georgia,serif;
+  --f-label:"Barlow Condensed","Barlow fallback","Arial Narrow",sans-serif;
   --f-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
   --scale:1; --barh:64px;
 }

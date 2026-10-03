@@ -153,7 +153,9 @@ test('THE POINT — the two surfaces no longer print the same bare word', () => 
   // the hero chip used, over a different number for the same minute.
   assert.ok(!/>NOW</.test(heatHtml), 'the strip must not print a bare "NOW"');
   assert.match(heatHtml, /THIS HOUR/, 'the strip marks the hour, and says it is a forecast');
-  assert.match(heatHtml, /aria-label="Current hour — forecast"/);
+  // Since F5 (3 Oct 2026) the current hour carries the hero's OBSERVED score,
+  // so it is labelled observed; it still never says a bare "NOW".
+  assert.match(heatHtml, /aria-label="Current hour — (observed|forecast)"/);
 
   // The hero does not say NOW at all any more: it is not now, it is the last
   // warm cycle. Qualified by its source AND by its age.
@@ -180,7 +182,8 @@ test('an opened forecast hour is labelled Forecast', () => {
   // The hour panel is built on click; assert on the template the click path
   // writes, read straight from the shipped source rather than simulated.
   const src = fs.readFileSync(HEAT, 'utf8');
-  assert.match(src, /khm-panel-kind">Forecast</, 'the hour panel must say Forecast');
+  assert.match(src, /khm-panel-kind">\$\{nowCell \? 'Observed' : 'Forecast'\}</,
+    'every opened hour says Forecast, except the current one, which shows the observed reading');
 });
 
 test('the current-hour marker flips away from the right edge so the wider label fits', () => {
