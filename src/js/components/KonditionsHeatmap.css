@@ -283,4 +283,5 @@
 .khm-now--flip span { left:auto; right:4px; }
 
 /* An hour after dark at the lake: no score, the same as every other surface. */
-.khm-panel-night { margin: 0.4rem 0 0; font-size: 0.78rem; color: rgba(232, 228, 220, 0.66); }
+/* same voice as the hero's night line (.night-copy): the site serif, not the system font */
+.khm-panel-night { margin: 0.4rem 0 0; font-family: var(--font-serif); font-size: 1.05rem; line-height: 1.35; color: rgba(237, 232, 223, 0.85); }
