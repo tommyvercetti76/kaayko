@@ -4,6 +4,31 @@ Newest first. What changed, why, the commit, whether it is live, and how it was 
 
 ---
 
+## 2026-10-03 18:10 CDT · Only lakes that freeze; paused lakes last and greyed
+
+- **Commits:** kaayko `9864539`, `2ffbc6b`; kaayko-api `259df70`
+- **Live:** API + hosting (kaayko.com, kaay.store); browser-check 42/42 on production.
+- **Owner rule:** only lakes that FREEZE lose their rating in winter, decided on sourced evidence
+  (`kaayko-api/functions/data/spot-freeze.json`, 15 spots, quotes from the pages; re-check each autumn).
+
+  | Lake | Evidence | No rating | Back |
+  |---|---|---|---|
+  | Cottonwood | USFS lists ice fishing | 1 Oct | 25 Apr |
+  | Taylor Park | CPW: "Activities: Fishing, Ice Fishing" | 1 Oct | 25 Apr |
+  | Turquoise | USFS: closed for ice and snow, ice fishing | 1 Oct | 1 May (ramp) |
+  | Antero | Denver Water: no vehicles on the ice (and closed all 2026) | 1 Oct | 25 Apr |
+  | Jackson | NPS: ice fishing on its frozen surface; ice-out early to mid May | 1 Oct | 15 May |
+  | Jenny | NPS-hosted study: ice Nov–May; boating opens 15 May, ice permitting | 1 Oct | 15 May |
+  | String | drains into Jenny; ice-free only by 8 May 2025 (local news) | 1 Oct | 15 May |
+  | Lake McDonald | rarely freezes (NPS: last mostly frozen 2007) → rated | closed by rule 1 Nov | 2nd Sunday in May |
+
+  Rated all winter: Diablo (rarely freezes), Merrimack and Crescent (no evidence either way),
+  Colorado River, Sammamish, Union (do not freeze). **Kens Lake**: freezes briefly (non-official
+  sources, no dates); left rated pending the owner.
+- **List:** rated lakes first (saved on top), then "Out of season & closed · N", greyed, soonest back
+  first, closures last, with a remembered Hide/Show. Same order in search; About never draws one.
+---
+
 ## 2026-10-03 17:40 CDT · No rating for closed or cold lakes out of season; Know before you go; Add a lake rebuilt
 
 - **Commits:** kaayko-api `4e42a29`, `5d11be8`; kaayko `1a5dbbd`, `1a36aa6`, `89178c3`
