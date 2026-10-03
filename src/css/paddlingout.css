@@ -379,6 +379,10 @@ body {
 .conditions-badge.moderate .badge-dot { background: var(--score-moderate); }
 .conditions-badge.is-night .badge-dot { background: rgba(217, 189, 123, 0.55); }
 .conditions-badge.is-night .badge-score { color: rgba(217, 189, 123, 0.9); }
+.conditions-badge.is-closed .badge-dot { background: #e07a6c; }
+.conditions-badge.is-closed .badge-score, .conditions-badge.is-closed .badge-status { color: #e07a6c; }
+.conditions-badge.is-season .badge-dot { background: #9cc0e6; }
+.conditions-badge.is-season .badge-score, .conditions-badge.is-season .badge-status { color: #9cc0e6; }
 
 .badge-label { display: none; }
 

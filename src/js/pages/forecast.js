@@ -560,22 +560,26 @@ function renderPrepBlock(tips) {
 }
 window.addEventListener('kaayko:unitschange', () => renderPrepBlock());
 
-// "Know before you go" — Rohan-authored spot facts, shown only when present.
+// "Know before you go" — sourced, dated spot facts (components/KnowBeforeYouGo.js)
+// plus any hand-written localTips.
 function renderLocalTips(spot) {
   const host = document.getElementById('prepStack');
-  const tips = Array.isArray(spot?.localTips) ? spot.localTips.filter(t => t && t.text) : [];
   document.querySelectorAll('.kbg-block:not(.prep-block)').forEach(el => el.remove()); // idempotent re-render
-  if (!host || tips.length === 0) return;
-  const ICONS = { launch: 'pin', hazard: 'alert', season: 'sun', general: 'info' };
-  const block = document.createElement('div');
-  block.className = 'kbg-block';
-  block.innerHTML =
-    '<div class="kbg-title">Know before you go</div>' +
-    tips.slice(0, 4).map(t => {
-      const icon = window.KaaykoIcons?.get?.(ICONS[t.category] || 'info') || '';
-      return `<div class="kbg-row kbg-${esc(t.category || 'general')}"><span class="kbg-icon">${icon}</span><span>${esc(t.text)}</span></div>`;
-    }).join('');
-  host.appendChild(block);
+  const K = window.KaaykoKBYG;
+  if (!host || !K) return;
+  const html = K.facts(spot);
+  if (html) host.insertAdjacentHTML('beforeend', html);
+}
+
+// A spot closed to recreation shows no Paddle Score anywhere (cards, search,
+// spot pages, here). Its hero becomes the closure, with the source.
+function applyClosure(spot) {
+  const K = window.KaaykoKBYG;
+  if (!K || !K.isPaused(spot)) return false;
+  const hero = document.getElementById('ratingHeroContainer');
+  if (hero) hero.innerHTML = K.closure(spot);
+  ['heatmapContainer', 'forecastAlertDrawer'].forEach(id => { const el = document.getElementById(id); if (el) el.hidden = true; });
+  return true;
 }
 
 let __lastLocInfo = null;
@@ -747,22 +751,26 @@ async function loadForecast() {
       }
     }) : null;
 
+    // Closed, or a cold-weather lake out of season: no score is requested at all.
+    const paused = window.KaaykoKBYG?.isPaused(spot);
     const [currentData, forecastData] = await Promise.all([
-      (currentFromSpot || window.apiClient.getCurrentData(spot.location.latitude, spot.location.longitude))
+      paused ? Promise.resolve(null) : (currentFromSpot || window.apiClient.getCurrentData(spot.location.latitude, spot.location.longitude))
         .catch(e => { console.warn('getCurrentData failed:', e); return null; }),
       window.apiClient.getFastForecast(spot.location.latitude, spot.location.longitude)
         .catch(e => { console.warn('getFastForecast failed:', e); return null; })
     ]);
 
-    if (!currentData && !forecastData) throw new Error('Both API calls failed');
+    if (!currentData && !forecastData && !paused) throw new Error('Both API calls failed');
 
     // 3. Render what we have
     window.__kaaykoCurrentData = currentData;
     if (currentData) renderHero(currentData, forecastData, spot);
-    renderTripBriefing(currentData, forecastData, currentSpot);
-    if (forecastData) window.KonditionsHeatmap.render(
+    if (!paused) renderTripBriefing(currentData, forecastData, currentSpot);
+    if (forecastData && !paused) window.KonditionsHeatmap.render(
       document.getElementById('heatmapContainer'), forecastData, window.__kaaykoCurrentData);
     if (forecastData?.location) renderLocationInfo(forecastData.location, spot);
+    else renderLocalTips(spot);   // the facts do not depend on the forecast
+    applyClosure(spot);
     if (forecastData) renderApiStatus(forecastData);
 
     // 4. Show content

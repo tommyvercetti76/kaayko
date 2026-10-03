@@ -227,6 +227,13 @@
       var reading = ps && typeof ps === 'object' ? ps.interpretation : null;
       // The same night rule as every other surface (js/services/spotTime.js):
       // after dark AT THE LAKE there is no live score, whatever the reader's clock says.
+      // Closed, or a cold-weather lake out of season: no score (the API sends none).
+      var st = spot.status && spot.status.state;
+      if (st === 'closed' || st === 'season') {
+        if (dot) dot.className = 'dot ' + (st === 'season' ? 's-season' : 's-closed');
+        el.textContent = st === 'closed' ? 'Closed to recreation \u00b7 see why' : (spot.status.summary || 'Out of season');
+        return;
+      }
       var T = window.KaaykoSpotTime;
       if (ps && typeof ps === 'object' && T && T.isNightAt(ps)) {
         var back = T.daylightReturns(ps);

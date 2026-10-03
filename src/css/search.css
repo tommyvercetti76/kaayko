@@ -397,6 +397,8 @@
 /* first paint of ?mode=add, before search.js runs (set by an inline script) */
 html[data-lake-mode="add"] #find-pane { display: none !important; }
 html[data-lake-mode="add"] #add-pane[hidden] { display: block !important; }
+/* the "?" is the search tour; on the Add tab it would sit on the submit bar */
+html[data-lake-mode="add"] .tour-help { display: none !important; }
 .lake-modes {
   display: flex; gap: 0.25rem;
   padding: 0.35rem max(1rem, env(safe-area-inset-right)) 0 max(1rem, env(safe-area-inset-left));

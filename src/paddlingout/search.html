@@ -221,20 +221,12 @@
   </main>
   <section class="add-pane" id="add-pane" role="tabpanel" aria-labelledby="mode-add" hidden>
   <div class="submit-shell">
-
-    <p class="launch-note">Add a lake, river, or boat ramp. A person reviews every entry before it goes public.</p>
-    <p class="fineprint">
-      Public launches only &middot; photos must be yours &middot; we keep your entry, and with it a one-way hash of your IP address and your browser’s user-agent, to stop spam. <a href="/privacy">What we keep</a>.
-      <a href="/privacy">Privacy</a> &middot; <a href="/paddlingout/methodology">How scores work</a> &middot;
-      <details><summary>What gets an entry declined</summary>
-        <ul>
-          <li>No public access &mdash; private docks, fenced ramps, permit-only shorelines.</li>
-          <li>Photos that are not yours or do not show the water and launch.</li>
-          <li>A launch that is already on the map, or a pin far from the real put-in.</li>
-          <li>Conditions we cannot forecast safely (dams, spillways, active rapids).</li>
-        </ul>
-      </details>
-    </p>
+    <!-- Add a lake, rebuilt for speed (3 Oct 2026): what is required comes first
+         and in the order a person thinks of it: photos, then where. Everything
+         optional is folded; the place line replaces three filled fields; the
+         legal note sits by the button. Every check and every id is unchanged,
+         and a person still reviews every entry before it is public. -->
+    <p class="launch-note">Add a lake, river or boat ramp. Two photos and a pin; a person checks every entry before it goes public.</p>
 
     <section class="submit-card" id="form-card">
       <form id="submit-entry-form" novalidate>
@@ -243,12 +235,9 @@
           <input name="website" type="text" tabindex="-1" autocomplete="off">
         </div>
 
-
-
-
-
+        <!-- 1 · Photos -->
         <div class="field-group" data-field="images">
-          <span class="label-text">Photos<span class="req" aria-hidden="true">*</span></span>
+          <span class="label-text"><span class="step-n">1</span>Photos<span class="req" aria-hidden="true">*</span></span>
           <label class="image-drop" id="image-drop" tabindex="0">
             <input id="images" name="images" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple>
             <span class="image-drop-main">
@@ -263,42 +252,40 @@
           <span class="field-msg" id="images-msg" aria-live="polite"></span>
         </div>
 
-        <div class="field-group" data-field="coords">
-          <span class="label-text">Launch point<span class="req" aria-hidden="true">*</span></span>
-          <div class="coord-row">
-            <input id="lat" name="lat" inputmode="decimal" placeholder="Latitude" aria-label="Latitude">
-            <input id="lng" name="lng" inputmode="decimal" placeholder="Longitude" aria-label="Longitude">
-            <button class="mini-btn" id="find-coords" type="button">Find</button>
-            <button class="mini-btn" id="use-location" type="button">Use my location</button>
-          </div>
-          <div class="loc-lock photo-fix" id="photo-fix" aria-live="polite">
-            <span id="photo-fix-text"></span>
-            <button type="button" id="photo-fix-clear">Clear</button>
-          </div>
-          <div id="pin-map" class="pin-map pp-map" aria-label="Map. Drag the pin to the exact launch point."></div>
-          <p class="pin-hint">A ramp photo usually places this pin by itself. Otherwise <strong>Find</strong> drops one from the name and <strong>Use my location</strong> reads your position once. Either way, <strong>drag the pin</strong> onto the exact put-in.</p>
-          <span class="field-msg" id="coords-msg" aria-live="polite"></span>
-        </div>
-
-        <label data-field="launchHint">
-          <span class="label-text">Launch hint<span class="opt">optional</span></span>
-          <input id="launchHint" name="launchHint" maxlength="160" placeholder="Main public boat ramp, north shore, park entrance">
-        </label>
-
+        <!-- 2 · Where: name (it places the pin), then the pin itself -->
         <label data-field="lakeName" class="name-field">
-          <span class="label-text">Lake or water body<span class="req" aria-hidden="true">*</span></span>
+          <span class="label-text"><span class="step-n">2</span>Lake or water body<span class="req" aria-hidden="true">*</span></span>
           <input id="lakeName" name="lakeName" maxlength="120" placeholder="Start typing — Dillon Reservoir" autocomplete="off"
                  role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lakeName-suggest">
           <div class="search-suggest" id="lakeName-suggest" role="listbox" hidden></div>
           <span class="field-msg" id="lakeName-msg" aria-live="polite"></span>
         </label>
-
+        <div class="field-group" data-field="coords">
+          <span class="label-text">Put-in on the map<span class="req" aria-hidden="true">*</span></span>
+          <div class="loc-lock photo-fix" id="photo-fix" aria-live="polite">
+            <span id="photo-fix-text"></span>
+            <button type="button" id="photo-fix-clear">Clear</button>
+          </div>
+          <div id="pin-map" class="pin-map pp-map" aria-label="Map. Tap to drop the pin, drag it onto the exact launch point."></div>
+          <p class="pin-hint">Picking the name drops the pin; a ramp photo places it exactly. <strong>Drag the pin</strong> onto the put-in.</p>
+          <div class="where-actions">
+            <button class="mini-btn" id="use-location" type="button">Use my location</button>
+            <details class="coord-manual">
+              <summary>Enter coordinates instead</summary>
+              <div class="coord-row">
+                <input id="lat" name="lat" inputmode="decimal" placeholder="Latitude" aria-label="Latitude">
+                <input id="lng" name="lng" inputmode="decimal" placeholder="Longitude" aria-label="Longitude">
+                <button class="mini-btn" id="find-coords" type="button">Find</button>
+              </div>
+            </details>
+          </div>
+          <span class="field-msg" id="coords-msg" aria-live="polite"></span>
+        </div>
         <div class="loc-lock" id="loc-lock" aria-live="polite">
           <span id="loc-lock-text">City, state and country filled from your location</span>
           <button type="button" id="loc-unlock">Change</button>
         </div>
-
-        <div class="grid-two">
+        <div class="grid-two place-fields">
           <label data-field="city">
             <span class="label-text">City or nearest town<span class="req" aria-hidden="true">*</span></span>
             <input id="city" name="city" maxlength="80" placeholder="Dallas" autocomplete="address-level2">
@@ -313,8 +300,7 @@
             <span class="field-msg" id="region-msg" aria-live="polite"></span>
           </label>
         </div>
-
-        <label data-field="country">
+        <label data-field="country" class="place-fields">
           <span class="label-text">Country<span class="req" aria-hidden="true">*</span></span>
           <div class="select-wrap">
             <select id="country" name="country"></select>
@@ -322,32 +308,94 @@
           <span class="field-msg" id="country-msg" aria-live="polite"></span>
         </label>
 
-        <div class="grid-two">
-          <label>
-            <span class="label-text">Parking</span>
-            <div class="select-wrap">
-              <select id="parkingAvl" name="parkingAvl">
-                <option value="Y">Available</option>
-                <option value="N">Not sure / not available</option>
-              </select>
+        <!-- 3 · Optional: everything a reviewer finds useful, folded -->
+        <details class="opt-details">
+          <summary><span class="step-n">3</span>More about this water <span class="opt">optional · helps the review</span></summary>
+          <div class="opt-body">
+            <label data-field="launchHint">
+              <span class="label-text">Where exactly to launch</span>
+              <input id="launchHint" name="launchHint" maxlength="160" placeholder="Main public boat ramp, north shore, park entrance">
+            </label>
+            <!-- What the submitter knows about the water. Hints for the reviewer, who
+                 confirms them against an official source before anything is published. -->
+            <div class="grid-two">
+              <label>
+                <span class="label-text">Type of water</span>
+                <div class="select-wrap">
+                  <select id="waterType" name="waterType">
+                    <option value="">Not sure</option>
+                    <option value="lake">Lake</option>
+                    <option value="reservoir">Reservoir</option>
+                    <option value="river">River</option>
+                    <option value="bay">Bay</option>
+                    <option value="coastal">Coastal</option>
+                    <option value="canal">Canal</option>
+                  </select>
+                </div>
+              </label>
+              <label>
+                <span class="label-text">Put-in</span>
+                <div class="select-wrap">
+                  <select id="launchType" name="launchType">
+                    <option value="">Not sure</option>
+                    <option value="beach">Beach (sand or gravel)</option>
+                    <option value="ramp">Boat ramp</option>
+                    <option value="dock">Dock</option>
+                    <option value="shore">Shoreline</option>
+                    <option value="steps">Steps</option>
+                  </select>
+                </div>
+              </label>
             </div>
-          </label>
-          <label>
-            <span class="label-text">Restrooms</span>
-            <div class="select-wrap">
-              <select id="restroomsAvl" name="restroomsAvl">
-                <option value="N">Not sure / not available</option>
-                <option value="Y">Available</option>
-              </select>
+            <div class="grid-two">
+              <label>
+                <span class="label-text">Fee to launch</span>
+                <div class="select-wrap">
+                  <select id="fee" name="fee">
+                    <option value="">Not sure</option>
+                    <option value="free">Free</option>
+                    <option value="paid">Paid (entry, parking or launch)</option>
+                  </select>
+                </div>
+              </label>
+              <label>
+                <span class="label-text">Motor boats</span>
+                <div class="select-wrap">
+                  <select id="motors" name="motors">
+                    <option value="">Not sure</option>
+                    <option value="none">None (paddle only)</option>
+                    <option value="limited">Limited (no-wake or small motors)</option>
+                    <option value="mixed">Shared with powerboats</option>
+                  </select>
+                </div>
+              </label>
             </div>
-          </label>
-        </div>
-
-        <label data-field="description">
-          <span class="label-text">Short note<span class="opt">optional</span></span>
-          <textarea id="description" name="description" maxlength="360" placeholder="One useful thing paddlers should know before driving out."></textarea>
-        </label>
-
+            <div class="grid-two">
+              <label>
+                <span class="label-text">Parking</span>
+                <div class="select-wrap">
+                  <select id="parkingAvl" name="parkingAvl">
+                    <option value="N">Not sure / not available</option>
+                    <option value="Y">Available</option>
+                  </select>
+                </div>
+              </label>
+              <label>
+                <span class="label-text">Restrooms</span>
+                <div class="select-wrap">
+                  <select id="restroomsAvl" name="restroomsAvl">
+                    <option value="N">Not sure / not available</option>
+                    <option value="Y">Available</option>
+                  </select>
+                </div>
+              </label>
+            </div>
+            <label data-field="description">
+              <span class="label-text">Short note</span>
+              <textarea id="description" name="description" maxlength="360" placeholder="One useful thing paddlers should know before driving out."></textarea>
+            </label>
+          </div>
+        </details>
 
         <div class="field-group" data-field="contact">
           <span class="label-text">Submit as</span>
@@ -356,12 +404,23 @@
             <label class="choice"><input type="radio" name="contactPreference" value="email"> Email me when it is live</label>
           </div>
         </div>
-
         <label class="email-wrap" id="email-wrap" hidden data-field="email">
           <span class="label-text">Email<span class="req" aria-hidden="true">*</span></span>
           <input id="email" name="email" type="email" maxlength="254" placeholder="you@example.com" autocomplete="email">
           <span class="field-msg" id="email-msg" aria-live="polite"></span>
         </label>
+
+        <p class="fineprint">
+          Public launches only &middot; photos must be yours &middot; we keep your entry, and with it a one-way hash of your IP address and your browser’s user-agent, to stop spam. <a href="/privacy">What we keep</a> &middot; <a href="/paddlingout/methodology">How scores work</a>
+        </p>
+        <details class="declined"><summary>What gets an entry declined</summary>
+          <ul>
+            <li>No public access &mdash; private docks, fenced ramps, permit-only shorelines.</li>
+            <li>Photos that are not yours or do not show the water and launch.</li>
+            <li>A launch that is already on the map, or a pin far from the real put-in.</li>
+            <li>Conditions we cannot forecast safely (dams, spillways, active rapids).</li>
+          </ul>
+        </details>
 
         <div class="actions">
           <div class="todo-wrap">
@@ -372,7 +431,6 @@
         </div>
       </form>
     </section>
-
     <section class="success-panel" id="success-panel">
       <h2>Entry received</h2>
       <p id="success-copy"></p>

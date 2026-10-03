@@ -148,8 +148,10 @@ async function checkPage(port, label, url, view, assertions = async () => [], op
   } finally { v?.close(); }
 }
 
-/** What every surface must show for a spot right now: night (no score) or the rating. */
-function expectFor(score) {
+/** What every surface must show for a spot right now: closed, night (no score), or the rating. */
+function expectFor(spot) {
+  if (spot && spot.status && (spot.status.state === 'closed' || spot.status.state === 'season')) return { closed: true, night: false, text: 'paused' };
+  const score = spot && spot.paddleScore;
   if (T.isNightAt(score)) return { night: true, text: 'night' };
   return { night: false, text: score && score.rating != null ? Number(score.rating).toFixed(1) : null };
 }
@@ -202,28 +204,31 @@ async function main() {
 
       // ── 3. Paddling Out list: every card shows night exactly when it is night AT THAT LAKE
       await checkPage(b.port, 'paddlingout', `${BASE}/paddlingout`, view, async (ev) => {
-        const r = await ev(`fetch('/api/paddlingOut').then(x => x.json()).then(api => ({ api, cards: [...document.querySelectorAll('[data-spot-id]')].map(c => ({ id: c.dataset.spotId, text: (c.querySelector('.badge-score, .pcard-stat-val') || {}).textContent || '' })) }))`);
+        const r = await ev(`fetch('/api/paddlingOut').then(x => x.json()).then(api => ({ api, cards: [...document.querySelectorAll('[data-spot-id]')].map(c => ({ id: c.dataset.spotId, text: (c.querySelector('.badge-score, .pcard-stat-val') || {}).textContent || '', label: (c.querySelector('.badge-status, .pcard-stat-label') || {}).textContent || '' })) }))`);
         const p = [];
         if (r.cards.length < 10) p.push(`only ${r.cards.length} lake cards rendered`);
-        const byId = new Map(r.api.map((s) => [s.id, s.paddleScore]));
+        const byId = new Map(r.api.map((s) => [s.id, s]));
         for (const c of r.cards) {
           const want = expectFor(byId.get(c.id));
-          const got = c.text.includes('\u263E') ? 'night' : c.text.trim();
+          const got = /^(Closed|Out of season)/.test(c.label.trim()) ? 'paused' : c.text.includes('\u263E') ? 'night' : c.text.trim();
           if (want.text != null && got !== want.text) p.push(`${c.id}: card shows "${got}", the lake says "${want.text}"`);
         }
-        p.push(...sameEverywhere('list', view.name, r.cards.map((c) => c.id + '=' + (c.text.includes('\u263E') ? 'night' : c.text.trim()))));
+        // compared only against a run that saw the same lake states (a sunset between runs is not a bug)
+        const lakeStates = r.cards.map((c) => c.id + '=' + expectFor(byId.get(c.id)).text).join(',');
+        p.push(...sameEverywhere('list|' + lakeStates, view.name, r.cards.map((c) => c.id + '=' + (/^(Closed|Out of season)/.test(c.label.trim()) ? 'paused' : c.text.includes('\u263E') ? 'night' : c.text.trim()))));
         return p;
       });
 
       // ── 3b. a static spot page: the same rule on its live pill
-      for (const [id, slug] of [['ambazari', 'ambazari-lake-nagpur'], ['powell', 'lake-powell-utah']]) {
+      for (const [id, slug] of [['ambazari', 'ambazari-lake-nagpur'], ['powell', 'lake-powell-utah'], ['antero', 'antero-reservoir-colorado'], ['jenny', 'jenny-lake-wyoming']]) {
         await checkPage(b.port, `spot page ${id}`, `${BASE}/paddlingout/${slug}`, view, async (ev) => {
           const r = await ev(`fetch('/api/paddlingOut').then(x => x.json()).then(api => ({ api, text: (document.getElementById('live-text') || {}).textContent || '' }))`);
-          const want = expectFor((r.api.find((s) => s.id === id) || {}).paddleScore);
+          const want = expectFor(r.api.find((s) => s.id === id) || {});
           const p = [];
+          if (want.closed && !/Closed to recreation|Out of season/.test(r.text)) p.push(`pill says "${r.text}" while the spot has no rating`);
           if (want.night && !/Night at the lake/.test(r.text)) p.push(`pill says "${r.text}" while it is night at the lake`);
-          if (!want.night && want.text && !r.text.includes(want.text + ' / 5')) p.push(`pill says "${r.text}", the lake says ${want.text}`);
-          p.push(...sameEverywhere(`spot ${id}`, view.name, r.text));
+          if (!want.night && !want.closed && want.text && !r.text.includes(want.text + ' / 5')) p.push(`pill says "${r.text}", the lake says ${want.text}`);
+          p.push(...sameEverywhere(`spot ${id}|${want.text}`, view.name, r.text));
           return p;
         }, { settle: 4000 });
       }
@@ -237,7 +242,7 @@ async function main() {
           const p = [];
           const night = T.isNightAt({ ...dom.ps.paddleScore, conditions: dom.ps.conditions });
           if (night !== dom.nightMark) p.push(night ? 'it is night at the lake but the hero shows a score' : 'the hero says "after dark" in daylight at the lake');
-          p.push(...sameEverywhere(`forecast ${s.id}`, view.name, { labels: dom.labels, now: dom.now, night: dom.nightMark, next: dom.next }));
+          p.push(...sameEverywhere(`forecast ${s.id}|${night}|${T.nowAt(forecasts[s.id].location).date}|${T.nowAt(forecasts[s.id].location).hour}`, view.name, { labels: dom.labels, now: dom.now, night: dom.nightMark, next: dom.next }));
           const want = ff.forecast.slice(0, 3).map((d) => { const l = T.dayLabels(d.date, now); return `${l.primary} ${l.secondary}`; });
           want.forEach((w, i) => { if (dom.labels[i] && dom.labels[i].replace(/\s/g, '') !== w.replace(/\s/g, '')) p.push(`day ${i} labelled "${dom.labels[i]}", lake says "${w}"`); });
           const todayOnForecast = ff.forecast.slice(0, 3).some((d) => d.date === now.date);
@@ -251,6 +256,31 @@ async function main() {
           return p;
         }, { settle: 6000 });
       }
+
+      // ── 4c. Know before you go: every fact sourced; a closed spot shows no score
+      await checkPage(b.port, 'facts jenny', `${BASE}/paddlingout/forecast?id=jenny`, view, async (ev) => {
+        const r = await ev(`({ rows: document.querySelectorAll('#kbg-facts .kbg-fact').length, sourced: document.querySelectorAll('#kbg-facts .kbg-fact .kbg-src a').length, season: !!document.querySelector('.kbg-closed.is-season'), score: !!document.querySelector('#ratingHeroContainer .score-mark'), heat: (document.getElementById('heatmapContainer') || {}).hidden })`);
+        const p = [];
+        // Jenny Lake is a cold-weather lake: from 1 Oct to 15 May it has no rating
+        const md = new Date().toISOString().slice(5, 10);
+        if (md >= '10-01' || md < '05-15') {
+          if (!r.season) p.push('out of season but no season panel');
+          if (r.score) p.push('a Paddle Score is shown out of season');
+          if (!r.heat) p.push('the forecast strip is shown out of season');
+        }
+        if (r.rows < 5) p.push(`only ${r.rows} facts shown`);
+        if (r.sourced < r.rows) p.push(`${r.rows - r.sourced} facts without a source link`);
+        return p;
+      }, { settle: 6000 });
+      await checkPage(b.port, 'closed antero', `${BASE}/paddlingout/forecast?id=antero`, view, async (ev) => {
+        const r = await ev(`({ closed: !!document.querySelector('.kbg-closed'), score: !!document.querySelector('#ratingHeroContainer .score-mark'), heat: (document.getElementById('heatmapContainer') || {}).hidden, src: !!document.querySelector('.kbg-closed .kbg-src a') })`);
+        const p = [];
+        if (!r.closed) p.push('no closure shown');
+        if (r.score) p.push('a Paddle Score is shown for a closed spot');
+        if (!r.heat) p.push('the forecast strip is still shown');
+        if (!r.src) p.push('the closure has no source link');
+        return p;
+      }, { settle: 6000, skip: far });
 
       if (far) continue;   // the far viewer only re-reads the lake pages
 

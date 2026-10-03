@@ -197,7 +197,7 @@
     { key: 'images', label: () => selectedImages.length ? ('Add ' + (MIN_IMAGES - selectedImages.length) + ' more photo' + (MIN_IMAGES - selectedImages.length === 1 ? '' : 's')) : 'Add 2 photos',
       focus: () => imageDrop,
       test: () => optimizing ? 'Still optimizing your photos.' : validateImageFiles(selectedImages) },
-    { key: 'coords', label: 'Drop the pin', focus: 'lat',
+    { key: 'coords', label: 'Drop the pin', focus: () => document.getElementById('pin-map') || field('lat'),
       test: () => {
         const lat = parseCoord(field('lat').value);
         const lng = parseCoord(field('lng').value);
@@ -275,6 +275,10 @@
   function scrollToCheck(check) {
     const el = focusTarget(check);
     if (!el) return;
+    // a target folded away (optional details, manual coordinates, a filled place) is opened first
+    const fold = el.closest('details');
+    if (fold && !fold.open) fold.open = true;
+    if (el.closest('.place-fields.is-folded')) setLocationLock(false);
     const wrap = el.closest('[data-field]') || el;
     wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
     setTimeout(() => { try { el.focus({ preventScroll: true }); } catch (_) { el.focus(); } }, 320);
@@ -618,6 +622,12 @@
       });
     });
     if (on && note) locLockText.textContent = note;
+    // Filled from the pin: show the place as one line and fold the three fields.
+    // A field with no value never folds, so nothing still needed is ever hidden.
+    const filled = ['city', 'country'].every(k => field(k).value.trim()) && regionValue();
+    const place = [field('city').value.trim(), regionValue(), field('country').value.trim()].filter(Boolean).join(', ');
+    if (on && filled && !(note && note.indexOf(place) !== -1)) locLockText.textContent = place + ' \u00b7 from the pin';
+    form.querySelectorAll('.place-fields').forEach(el => el.classList.toggle('is-folded', !!(on && filled)));
     locLock.classList.toggle('visible', on);
   }
 
@@ -769,6 +779,11 @@
     payload.append('description', field('description').value.trim());
     payload.append('parkingAvl', field('parkingAvl').value);
     payload.append('restroomsAvl', field('restroomsAvl').value);
+    // Hints for the reviewer (never published as facts without a source)
+    ['waterType', 'launchType', 'fee', 'motors'].forEach(function (k) {
+      var el = document.getElementById(k);
+      if (el && el.value) payload.append(k, el.value);
+    });
     payload.append('contactPreference', preference);
     payload.append('anonymous', preference !== 'email' ? 'true' : 'false');
     payload.append('email', preference === 'email' ? emailInput.value.trim() : '');

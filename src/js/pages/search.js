@@ -85,7 +85,7 @@
       var loc = s.location || {};
       return { id: s.id, name: s.title || s.lakeName || s.id || '', subtitle: s.subtitle || '',
         lat: Number(loc.latitude), lng: Number(loc.longitude), rating: s.paddleScore && s.paddleScore.rating != null ? s.paddleScore.rating : null,
-        score: s.paddleScore && typeof s.paddleScore === 'object' ? s.paddleScore : null };
+        score: s.paddleScore && typeof s.paddleScore === 'object' ? s.paddleScore : null, status: s.status || null };
     }).filter(function (s) { return s.name && Number.isFinite(s.lat) && Number.isFinite(s.lng); });
   }).catch(function () {});
 
@@ -395,7 +395,7 @@
     if (!list || !list.length) { coveredEl.classList.remove('visible'); return; }
     var head = document.createElement('div'); head.className = 'covered-head'; head.textContent = 'Spots we cover'; coveredEl.appendChild(head);
     list.forEach(function (s) {
-      var row = window.PaddleCard.create({ id: s.id, title: s.name, subtitle: s.subtitle, paddleScore: s.score || (s.rating == null ? null : { rating: s.rating }) }, {
+      var row = window.PaddleCard.create({ id: s.id, title: s.name, subtitle: s.subtitle, status: s.status, paddleScore: s.score || (s.rating == null ? null : { rating: s.rating }) }, {
         variant: 'row', badge: 'We cover this', onOpen: function () { window.location.href = '/paddlingout/forecast?id=' + encodeURIComponent(s.id); }
       });
       coveredEl.appendChild(row);

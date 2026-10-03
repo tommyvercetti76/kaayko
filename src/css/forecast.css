@@ -1221,3 +1221,20 @@ main.forecast-main {
 .forecast-fav-slot .kaayko-fav-btn::before { inset: 0; background: var(--kc-line); }
 .forecast-fav-slot .kaayko-fav-btn::after  { inset: 1px; background: var(--kc-bg); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
 .forecast-fav-slot .kaayko-fav-btn:hover { --kc-line: rgba(181,147,90,0.65); --kc-bg: rgba(181,147,90,0.18); }
+
+/* ── Know before you go: sourced facts (3 Oct 2026) ───────────────────────── */
+.kbg-fact strong { font-family: var(--font-sans, 'Josefin Sans', sans-serif); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: #d9bd7b; margin-right: 0.25rem; }
+.kbg-src { display: block; margin-top: 0.2rem; font-size: 0.74rem; color: rgba(232, 228, 220, 0.55); }
+.kbg-src a, .kbg-dir { color: rgba(217, 189, 123, 0.85); text-decoration: underline; text-underline-offset: 2px; }
+.kbg-src em { font-style: normal; color: #c59a61; }
+.kbg-dir { white-space: nowrap; }
+.kbg-permits .kbg-icon, .kbg-hazard .kbg-icon { color: #c59a61; }
+
+/* Closed to recreation: replaces the hero; no score is shown */
+.kbg-closed { padding: 1.2rem 1.25rem; border: 1px solid rgba(189, 59, 43, 0.55); background: rgba(189, 59, 43, 0.1); clip-path: var(--clip-md); }
+.kbg-closed-eyebrow { font-family: var(--font-sans, 'Josefin Sans', sans-serif); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: #e07a6c; }
+.kbg-closed-copy { margin: 0.5rem 0 0.4rem; font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif); font-size: 1.3rem; line-height: 1.35; color: rgba(255, 255, 255, 0.94); }
+.kbg-closed-note { font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif); font-size: 1rem !important; }
+.kbg-closed-note { margin: 0 0 0.5rem; font-size: 0.85rem; color: rgba(232, 228, 220, 0.7); }
+.kbg-closed.is-season { border-color: rgba(143, 178, 214, 0.5); background: rgba(143, 178, 214, 0.08); }
+.kbg-closed.is-season .kbg-closed-eyebrow { color: #9cc0e6; }

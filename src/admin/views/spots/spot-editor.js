@@ -36,6 +36,13 @@ export function safeImageUrl(url) {
 }
 
 /** HTML for the editor form. `spot` is an admin-shaped spot payload. */
+/** What the submitter said about the water: hints to confirm, never published as facts. */
+function hintLine(h) {
+  if (!h) return '';
+  const bits = [h.waterType, h.launchType && `put-in: ${h.launchType}`, h.fee && `fee: ${h.fee}`, h.motors && `motors: ${h.motors}`].filter(Boolean);
+  return bits.length ? `<span class="se-hint">Submitter said: ${escapeHtml(bits.join(' · '))}</span>` : '';
+}
+
 export function renderEditor(spot, tagLabels = DEFAULT_TAGS) {
   const c = coords(spot);
   const tags = Array.isArray(spot.tags) ? spot.tags : [];
@@ -61,6 +68,7 @@ export function renderEditor(spot, tagLabels = DEFAULT_TAGS) {
           <select name="waterType">
             ${WATER_TYPES.map(t => `<option value="${t}"${(spot.waterType || '') === t ? ' selected' : ''}>${t || '—'}</option>`).join('')}
           </select>
+          ${hintLine(spot.submitterHints)}
         </label>
         <label>City / nearest town
           <input name="city" type="text" maxlength="80" value="${escapeHtml(spot.city || '')}">
@@ -95,6 +103,12 @@ export function renderEditor(spot, tagLabels = DEFAULT_TAGS) {
         </label>
         <label class="se-wide">YouTube URL
           <input name="youtubeURL" type="url" maxlength="300" value="${escapeHtml(spot.youtubeURL || '')}" placeholder="https://youtube.com/…">
+        </label>
+        <label class="se-wide">Closure <span class="se-hint">JSON or empty. {"state":"closed","summary":…,"source":"https://…","checked":"YYYY-MM-DD"} hides the live score on every surface</span>
+          <textarea name="status" rows="3" spellcheck="false" class="se-json">${escapeHtml(spot.status ? JSON.stringify(spot.status, null, 1) : '')}</textarea>
+        </label>
+        <label class="se-wide">Know before you go <span class="se-hint">JSON: fees, permits, motorized, launch, rentals, dogs, season, parking, hazards[]. Every fact needs summary, an https source and a checked date</span>
+          <textarea name="facts" rows="8" spellcheck="false" class="se-json">${escapeHtml(spot.facts ? JSON.stringify(spot.facts, null, 1) : '')}</textarea>
         </label>
         <fieldset class="se-wide se-tags">
           <legend>Display tags <span class="se-hint">shown as chips on the card</span></legend>
@@ -142,6 +156,13 @@ export function bindEditor(root, { onChange } = {}) {
     ['title', 'city', 'region', 'country', 'subtitle', 'launchHint', 'text', 'parkingAvl', 'restroomsAvl', 'youtubeURL', 'waterType']
       .forEach(k => { patch[k] = String(fd.get(k) ?? '').trim(); });
     patch.tags = fd.getAll('tags');
+    // facts / closure: JSON in, validated on the server (spotFacts.js)
+    for (const k of ['facts', 'status']) {
+      const raw = String(fd.get(k) ?? '').trim();
+      if (!raw) { patch[k] = null; continue; }
+      try { patch[k] = JSON.parse(raw); }
+      catch (err) { setStatus(`${k === 'facts' ? 'Know before you go' : 'Closure'} is not valid JSON.`, 'err'); return; }
+    }
     const lat = String(fd.get('lat') || '').trim();
     const lng = String(fd.get('lng') || '').trim();
     if (lat || lng) {

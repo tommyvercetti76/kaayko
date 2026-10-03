@@ -195,6 +195,12 @@
 .pcard-stat--night .pcard-stat-label { color: rgba(232, 228, 220, 0.7); font-style: normal; }
 .pcard-ring.is-night { border-radius: 50%; box-shadow: inset 0 0 0 2px rgba(217, 189, 123, 0.28); }
 .pcard-ring-moon { color: rgba(217, 189, 123, 0.9); font-size: 1.1rem; }
+/* Closed to recreation: no score, the same on every surface */
+.pcard-stat--closed .pcard-stat-val { color: rgba(224, 122, 108, 0.9); }
+.pcard-stat--closed .pcard-stat-label { color: #e07a6c; font-style: normal; }
+.pcard-ring.is-closed { border-radius: 50%; box-shadow: inset 0 0 0 2px rgba(224, 122, 108, 0.45); }
+.pcard-ring-closed { color: #e07a6c; }
+.pcard-stat--closed.is-season .pcard-stat-val, .pcard-stat--closed.is-season .pcard-stat-label { color: #9cc0e6; }
 
 .pcard-stat-label {
   color: rgba(217, 189, 123, 0.9);

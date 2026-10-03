@@ -23,7 +23,9 @@
       --ease:cubic-bezier(0.76,0,0.24,1);
     }
     * { box-sizing:border-box; }
-    /* body: styled by the host page (search.html) */
+    /* The page-level body rule moved here: the form keeps its own base type
+       (it inherited the search page's otherwise, with no matched fallback). */
+    .submit-shell { color:var(--fg); font-family:var(--font-serif); }
     .submit-shell {
       width:min(100%, 980px);
       margin:0 auto;
@@ -53,7 +55,7 @@
       letter-spacing:0.24em;
       text-transform:lowercase;
     }
-    .submit-shell h1 {
+    :where(.submit-shell) h1 {
       margin:0.2rem 0 0;
       color:var(--gold-bright);
       font-family:var(--font-sans);
@@ -76,7 +78,7 @@
       background:linear-gradient(135deg, var(--panel), var(--panel-soft));
       padding:1.2rem;
     }
-    .submit-shell form {
+    :where(.submit-shell) form {
       display:grid;
       gap:1rem;
     }
@@ -85,7 +87,7 @@
       grid-template-columns:repeat(2, minmax(0,1fr));
       gap:1rem;
     }
-    .submit-shell label, .field-group {
+    :where(.submit-shell) label, .field-group {
       display:grid;
       gap:0.45rem;
     }
@@ -96,7 +98,7 @@
       letter-spacing:0.14em;
       text-transform:uppercase;
     }
-    .submit-shell input, .submit-shell textarea, .submit-shell select {
+    :where(.submit-shell) input, :where(.submit-shell) textarea, :where(.submit-shell) select {
       width:100%;
       border:1px solid rgba(181,147,90,0.24);
       border-radius:9px;
@@ -106,11 +108,11 @@
       outline:none;
       padding:0.78rem 0.85rem;
     }
-    .submit-shell textarea {
+    :where(.submit-shell) textarea {
       min-height:96px;
       resize:vertical;
     }
-    .submit-shell input:focus, .submit-shell textarea:focus, .submit-shell select:focus {
+    :where(.submit-shell) input:focus, :where(.submit-shell) textarea:focus, :where(.submit-shell) select:focus {
       border-color:var(--gold);
       box-shadow:0 0 0 3px rgba(181,147,90,0.11);
     }
@@ -156,10 +158,10 @@
       background:rgba(181,147,90,0.16);
     }
     /* ── Sleeker fields ─────────────────────────────────────────────── */
-    .submit-shell input, .submit-shell textarea, .submit-shell select {
+    :where(.submit-shell) input, :where(.submit-shell) textarea, :where(.submit-shell) select {
       transition:border-color .18s var(--ease), box-shadow .18s var(--ease), background .18s var(--ease);
     }
-    .submit-shell input::placeholder, .submit-shell textarea::placeholder { color:rgba(237,232,223,0.3); }
+    :where(.submit-shell) input::placeholder, :where(.submit-shell) textarea::placeholder { color:rgba(237,232,223,0.3); }
     /* Custom-styled dropdowns (no dated native chrome) */
     .select-wrap { position:relative; }
     .select-wrap[hidden] { display:none; }
@@ -170,11 +172,11 @@
       transform:translateY(-65%) rotate(45deg);
       pointer-events:none; opacity:0.9;
     }
-    .submit-shell select {
+    :where(.submit-shell) select {
       appearance:none; -webkit-appearance:none; -moz-appearance:none;
       padding-right:2.4rem; cursor:pointer;
     }
-    .submit-shell select option { background:#141210; color:var(--fg); }
+    :where(.submit-shell) select option { background:#141210; color:var(--fg); }
     /* Prominent, modern submit */
     .submit-btn {
       min-height:52px;
@@ -470,3 +472,24 @@
         grid-template-columns:repeat(2, minmax(0, 1fr));
       }
     }
+
+/* ── Add a lake, rebuilt for speed (3 Oct 2026) ─────────────────────────── */
+.step-n { display: inline-grid; place-items: center; width: 1.35rem; height: 1.35rem; margin-right: 0.5rem; border: 1px solid rgba(217,189,123,0.55); border-radius: 50%; font-size: 0.68rem; color: var(--gold-bright); vertical-align: 1px; }
+.where-actions { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0.6rem 1rem; margin-top: 0.6rem; }
+.where-actions .mini-btn { flex: 0 0 auto; }
+.coord-manual { flex: 1 1 220px; }
+.coord-manual summary, .opt-details summary, .declined summary { cursor: pointer; color: var(--gold-bright); font-family: var(--font-sans); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; list-style-position: inside; min-height: 44px; display: flex; align-items: center; gap: 0.4rem; }
+.coord-manual summary { min-height: 40px; }
+.coord-manual .coord-row { margin-top: 0.5rem; }
+.place-fields.is-folded { display: none; }
+.opt-details { border-top: 1px solid rgba(181,147,90,0.18); border-bottom: 1px solid rgba(181,147,90,0.18); padding: 0.2rem 0; }
+.opt-details .opt { margin-left: 0.4rem; text-transform: none; letter-spacing: 0.02em; color: var(--muted); font-size: 0.72rem; }
+.opt-details[open] summary { margin-bottom: 0.6rem; }
+.opt-body { display: grid; gap: 1rem; padding-bottom: 0.8rem; }
+.submit-shell .fineprint { margin: 0; font-size: 0.68rem; line-height: 1.5; }
+.declined ul { margin: 0.2rem 0 0.4rem 1.1rem; padding: 0; color: var(--muted); font-size: 0.85rem; }
+/* The button and what is still missing stay in reach on a phone */
+@media (max-width: 700px) {
+  .submit-shell .actions { position: sticky; bottom: 0; z-index: 5; margin: 0 -1rem -1rem; padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom)); background: linear-gradient(180deg, rgba(13,12,10,0.86), rgba(13,12,10,0.98)); border-top: 1px solid rgba(181,147,90,0.22); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+  .submit-shell .todo { max-height: 4.4rem; overflow: auto; }
+}

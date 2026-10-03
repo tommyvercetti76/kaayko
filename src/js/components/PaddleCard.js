@@ -39,6 +39,17 @@
     return { back: back };
   }
   var MOON = '\u263E';
+  var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  /** null, or { state:'closed'|'season', label, short, line, summary } */
+  function pausedOf(status) {
+    var st = status && status.state;
+    if (st !== 'closed' && st !== 'season') return null;
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(status.resumes || '');
+    var back = m ? MON[+m[2] - 1] + ' ' + (+m[3]) : '';
+    return st === 'closed'
+      ? { state: st, label: 'Closed', short: 'Closed', line: 'Closed to recreation', summary: status.summary || '' }
+      : { state: st, label: 'Out of season', short: back ? 'Out of season · back ' + back : 'Out of season', line: 'Out of season', summary: status.summary || '' };
+  }
 
   // ── data shaping ────────────────────────────────────────────────────────────
   function normalize(spot) {
@@ -64,6 +75,10 @@
       // The raw paddleScore block, kept so the card can show WHY (see whyState).
       // Never read for the displayed number — that stays `rating` above.
       score: (spot.paddleScore && typeof spot.paddleScore === 'object') ? spot.paddleScore : null,
+      // Closed to recreation, or a cold-weather lake out of season (spot.status,
+      // decided by the API, which sends no rating then): no score, outranks night.
+      // A score on a closed reservoir reads as "fine to go out" (Antero, 2026).
+      closed: pausedOf(spot.status),
       night: nightOf(spot.paddleScore)
     };
   }
@@ -476,7 +491,13 @@
     // grid looked, to a reader, entirely normal. An absent number is a fact
     // about the spot and has to be readable as one.
     var stat = el('div', 'pcard-stat');
-    if (data.night) {
+    if (data.closed) {
+      stat.className = 'pcard-stat pcard-stat--closed';
+      var cval = el('span', 'pcard-stat-val'); cval.textContent = '\u2014'; cval.setAttribute('aria-hidden', 'true');
+      var clab = el('span', 'pcard-stat-label'); clab.textContent = data.closed.short;
+      if (data.closed.state === 'season') stat.classList.add('is-season');
+      stat.appendChild(cval); stat.appendChild(clab);
+    } else if (data.night) {
       stat.className = 'pcard-stat pcard-stat--night';
       var nval = el('span', 'pcard-stat-val'); nval.textContent = MOON; nval.setAttribute('aria-hidden', 'true');
       var nlab = el('span', 'pcard-stat-label');
@@ -513,7 +534,9 @@
   function buildFull(data, opts) {
     var card = el('article', 'card');
     if (data.id) card.dataset.spotId = data.id;
-    var sm = data.night
+    var sm = data.closed
+      ? { rating: null, color: null, severity: null, display: '\u2014', label: data.closed.label }
+      : data.night
       ? { rating: null, color: null, severity: null, display: MOON, label: 'Night' + (data.night.back ? ' · daylight ' + data.night.back : '') }
       : scoreMeta(data.rating);
     if (sm.severity) card.classList.add('score-' + sm.severity);
@@ -535,7 +558,7 @@
     });
 
     // conditions badge (top-right) → forecast
-    var badge = el('div', 'conditions-badge' + (data.night ? ' is-night' : (sm.severity && sm.severity !== 'good' ? ' ' + sm.severity : '')));
+    var badge = el('div', 'conditions-badge' + (data.closed ? ' is-closed' + (data.closed.state === 'season' ? ' is-season' : '') : data.night ? ' is-night' : (sm.severity && sm.severity !== 'good' ? ' ' + sm.severity : '')));
     badge.innerHTML = '<span class="badge-dot"></span><span class="badge-score">' + sm.display +
       '</span><span class="badge-status">' + sm.label + '</span>';
     badge.addEventListener('click', function (e) {
@@ -596,7 +619,13 @@
 
     content.appendChild(name); content.appendChild(loc); content.appendChild(desc);
     // Why the score is what it is — straight from the pipeline, or nothing at all.
-    if (opts.showWhy !== false) {
+    if (data.closed) {
+      // A closed spot says why it has no score, and nothing about a score.
+      var cw = el('div', 'pcard-why'); cw.dataset.state = 'closed';
+      cw.appendChild(whyLine('pcard-why-flag', data.closed.line));
+      if (data.closed.summary) cw.appendChild(whyLine('pcard-why-note', data.closed.summary));
+      content.appendChild(cw);
+    } else if (opts.showWhy !== false) {
       var why = buildWhy(data.score, false);
       if (why) content.appendChild(why);
     }
@@ -654,7 +683,7 @@
     // (state 'unknown') and correctly get nothing.
     var whyNode = null;
     function paintWhy(score) {
-      if (opts.showWhy === false) return;
+      if (opts.showWhy === false || data.closed) return;
       var next = buildWhy(score, true);
       if (whyNode && whyNode.parentNode) whyNode.parentNode.removeChild(whyNode);
       whyNode = next;
@@ -669,7 +698,14 @@
       ring.setAttribute('aria-label', 'Night at the lake' + (n.back ? ', daylight from ' + n.back + ' local' : '') + '. No score after dark.');
     }
     ring.setAttribute('aria-label', 'Paddle score');
-    if (data.night) nightRing(data.night);
+    function pausedRing(pz) {
+      ring.classList.remove('is-pending');
+      ring.classList.add('is-closed');
+      ring.innerHTML = '<span class="pcard-ring-val pcard-ring-closed" aria-hidden="true">' + (pz.state === 'season' ? '\u2744' : '\u2715') + '</span>';
+      ring.setAttribute('aria-label', pz.short + '. No score.');
+    }
+    if (data.closed) pausedRing(data.closed);
+    else if (data.night) nightRing(data.night);
     else ring.innerHTML = data.rating == null ? '<span class="pcard-ring-spin" aria-hidden="true"></span>' : ringSvg(scoreMeta(data.rating));
 
     row.appendChild(body); row.appendChild(ring);
@@ -696,6 +732,9 @@
      *        why line is repainted from it. Omit it and nothing is claimed.
      */
     row.setScore = function (rating, score) {
+      if (data.closed) return;   // closed stays closed, whatever a later score says
+      var pz = score && pausedOf(score.status);   // the batch says this water is closed / out of season
+      if (pz) { data.closed = pz; pausedRing(pz); row.dataset.severity = ''; return; }
       var sm = scoreMeta(rating);
       ring.classList.remove('is-pending', 'is-night');
       var n = arguments.length > 1 ? nightOf(score) : null;

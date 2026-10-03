@@ -25,12 +25,19 @@
  * @property {Verdict} interpretation    derived from the snapped rating
  * @property {string} [computedAt]
  *
+ * @typedef {Object} SpotStatus          why a spot gets no rating (the API then sends paddleScore: null)
+ * @property {'closed'|'season'} state   closed to recreation | cold-weather lake out of season
+ * @property {string} summary
+ * @property {string} [resumes]          "YYYY-MM-DD" (season)
+ * @property {string} [source]
+ *
  * @typedef {Object} Spot                one row of GET /paddlingOut
  * @property {string} id
  * @property {string} title
  * @property {WaterType} waterType       REQUIRED: drives "Lake/River alerts" and river handling
  * @property {{latitude:number, longitude:number}} location
- * @property {ScoreSummary} paddleScore
+ * @property {ScoreSummary|null} paddleScore   null when status is set
+ * @property {SpotStatus|null} status
  * @property {string[]} [imgSrc]
  * @property {string[]} [tags]
  *
@@ -72,11 +79,13 @@
     try { new Intl.DateTimeFormat('en-US', { timeZone: v }); return true; } catch (_) { return false; }
   };
   const inRange = (lo, hi) => (v) => isNum(v) && v >= lo && v <= hi;
+  // closed to recreation, or a cold-weather lake out of season
+  const paused = (spot) => !!(spot && spot.status && (spot.status.state === 'closed' || spot.status.state === 'season'));
   const oneOf = (list) => (v) => list.includes(v);
   const isDate = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
 
   /**
-   * Each contract: [path, test, what it means]. A path segment ending in []
+   * Each contract: [path, test, what it means, skipIf?(payload)]. A path segment ending in []
    * applies the rest of the path to every element of that array.
    */
   const CONTRACTS = {
@@ -86,8 +95,11 @@
       ['waterType', oneOf(WATER_TYPES), `waterType is one of ${WATER_TYPES.join('/')}`],
       ['location.latitude', inRange(-90, 90), 'latitude'],
       ['location.longitude', inRange(-180, 180), 'longitude'],
-      ['paddleScore.rating', inRange(1, 5), 'a score from 1 to 5'],
-      ['paddleScore.interpretation', oneOf(VERDICTS), 'a canonical verdict'],
+      ['paddleScore.rating', inRange(1, 5), 'a score from 1 to 5', paused],
+      ['paddleScore.interpretation', oneOf(VERDICTS), 'a canonical verdict', paused],
+      // a paused spot (closed / out of season) must carry NO rating, and say why
+      ['paddleScore', (v) => v === null, 'no rating while closed or out of season', (p) => !paused(p)],
+      ['status.summary', isStr, 'why there is no rating', (p) => !paused(p)],
     ],
     paddleScore: [
       ['success', (v) => v === true, 'success'],
@@ -130,7 +142,8 @@
     const rules = CONTRACTS[name];
     if (!rules) throw new Error(`no contract named ${name}`);
     const problems = [];
-    for (const [path, ok, meaning] of rules) {
+    for (const [path, ok, meaning, skip] of rules) {
+      if (skip && skip(payload)) continue;
       const vals = values(payload, path);
       const bad = vals.filter((v) => !ok(v)).length;
       if (bad) problems.push(`${name}.${path}: expected ${meaning}${vals.length > 1 ? ` (${bad} of ${vals.length} wrong)` : ` (got ${JSON.stringify(vals[0])})`}`);
