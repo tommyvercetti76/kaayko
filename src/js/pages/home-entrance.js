@@ -165,7 +165,8 @@ window.KaaykoHomeEntrance = function (home) {
     all.forEach(function (pair, k) {
       setTimeout(function () { pair[0].locked[pair[1]] = true; }, NOISE_TICKS * TICK + k * LOCK_STEP);
     });
-    var timer = setInterval(function () {
+    var timer = 0;
+    function tick() {
       var done = true;
       lines.forEach(function (l) {
         l.el.textContent = l.chars.map(function (c, k) {
@@ -175,7 +176,9 @@ window.KaaykoHomeEntrance = function (home) {
         }).join("");
       });
       if (done) { clearInterval(timer); unveil(label); }
-    }, TICK);
+    }
+    tick();   // scrambled from its first frame: the overlay never shows the answer first
+    timer = setInterval(tick, TICK);
   }
 
   // Hide the headlines until the entrance reveals them. Not with reduced
