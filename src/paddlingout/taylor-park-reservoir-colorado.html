@@ -4,21 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Taylor Park Reservoir Kayak &amp; Paddle Conditions — Live Forecast | Kaayko</title>
-<meta name="description" content="Taylor Park Reservoir kayak and paddle conditions. Live Paddle Score from wind, water temperature and UV, plus a 3-day hourly forecast. Gunnison County, Colorado.">
+<meta name="description" content="Taylor Park Reservoir kayak and paddle conditions. Live Paddle Score from wind, air temperature and UV, plus a 3-day hourly forecast. Gunnison County, Colorado.">
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
 <link rel="canonical" href="https://kaayko.com/paddlingout/taylor-park-reservoir-colorado">
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://kaayko.com/paddlingout/taylor-park-reservoir-colorado">
 <meta property="og:title" content="Taylor Park Reservoir, Colorado — Kayak &amp; Paddle Conditions">
-<meta property="og:description" content="Taylor Park Reservoir kayak and paddle conditions. Live Paddle Score from wind, water temperature and UV, plus a 3-day hourly forecast. Gunnison County, Colorado.">
+<meta property="og:description" content="Taylor Park Reservoir kayak and paddle conditions. Live Paddle Score from wind, air temperature and UV, plus a 3-day hourly forecast. Gunnison County, Colorado.">
 <meta property="og:image" content="https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Ftaylorpark1.webp?alt=media">
 <meta property="og:image:alt" content="Taylor Park Reservoir, Gunnison County, Colorado">
 <meta property="og:site_name" content="Kaayko">
 
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Taylor Park Reservoir, Colorado — Kayak &amp; Paddle Conditions">
-<meta name="twitter:description" content="Taylor Park Reservoir kayak and paddle conditions. Live Paddle Score from wind, water temperature and UV, plus a 3-day hourly forecast. Gunnison County, Colorado.">
+<meta name="twitter:description" content="Taylor Park Reservoir kayak and paddle conditions. Live Paddle Score from wind, air temperature and UV, plus a 3-day hourly forecast. Gunnison County, Colorado.">
 <meta name="twitter:image" content="https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Ftaylorpark1.webp?alt=media">
 <meta name="twitter:image:alt" content="Taylor Park Reservoir, Gunnison County, Colorado">
 
@@ -63,7 +63,7 @@
       "@id": "https://kaayko.com/paddlingout/taylor-park-reservoir-colorado#webpage",
       "url": "https://kaayko.com/paddlingout/taylor-park-reservoir-colorado",
       "name": "Taylor Park Reservoir Kayak & Paddle Conditions — Live Forecast | Kaayko",
-      "description": "Taylor Park Reservoir kayak and paddle conditions. Live Paddle Score from wind, water temperature and UV, plus a 3-day hourly forecast. Gunnison County, Colorado.",
+      "description": "Taylor Park Reservoir kayak and paddle conditions. Live Paddle Score from wind, air temperature and UV, plus a 3-day hourly forecast. Gunnison County, Colorado.",
       "about": {
         "@id": "https://kaayko.com/paddlingout/taylor-park-reservoir-colorado#place"
       },
@@ -146,14 +146,15 @@
     <p class="spot-lede">Taylor Park Reservoir sits on the Taylor River in Gunnison County, Colorado, at 3,141 metres — a little over 10,300 feet. It is the highest location Kaayko tracks by more than two hundred metres, held in a broad basin ringed by the Sawatch and Elk mountains.</p>
 
     <h2>What drives the score here</h2>
-    <p>Everything here follows from the altitude. This is the spot where the cold-water rule is most consistently in play, and it is entirely normal for Taylor Park to return a capped score on a day that looks flawless from the shore. The basin is also open enough that wind reaches the surface without much interruption, so exposure compounds the elevation rather than offsetting it — unlike Cottonwood, which sits high but sheltered. If you want to understand why the Paddle Score refuses to be talked out of a low number, this is the clearest example in the list.</p>
+    <p>Everything here follows from the altitude. The water stays colder for longer here than anywhere else in this list, and the score cannot see it: no sensor measures this reservoir, so a day that looks flawless from the shore can score well over water that is still dangerously cold. The basin is also open enough that wind reaches the surface without much interruption, so exposure compounds the elevation rather than offsetting it — unlike Cottonwood, which sits high but sheltered. If you want to understand why the number is a starting point and not clearance, this is the clearest example in the list.</p>
 
     <h2>What the Paddle Score measures</h2>
     <p>
-      A single number from 1 (Danger) to 5 (Excellent), built from wind speed and gusts, air and water
-      temperature, UV index, cloud cover, precipitation and visibility &mdash; then constrained by fixed
-      safety rules the model is not allowed to override. Wind above 25&nbsp;mph costs two full points.
-      Water below 5&deg;C is penalised hard regardless of how good the day looks.
+      A single number from 1 (Danger) to 5 (Excellent), built from wind speed and gusts, air
+      temperature, UV index, cloud cover, precipitation and visibility at the lake &mdash; then constrained by
+      fixed safety rules the model is not allowed to override. Wind above 25&nbsp;mph costs two full points.
+      Water temperature counts only where a sensor measures it, and none covers this lake yet, so judge cold
+      water yourself. No score after dark, or while the lake is frozen or closed.
     </p>
     <p><a class="spot-link" href="/paddlingout/methodology">Read the full methodology</a></p>
 
@@ -230,8 +231,11 @@
       // Closed, or a cold-weather lake out of season: no score (the API sends none).
       var st = spot.status && spot.status.state;
       if (st === 'closed' || st === 'season') {
-        if (dot) dot.className = 'dot ' + (st === 'season' ? 's-season' : 's-closed');
-        el.textContent = st === 'closed' && !spot.status.resumes ? 'Closed to recreation \u00b7 see why' : (spot.status.summary || 'Out of season');
+        if (dot) dot.className = 'dot s-season';   // one colour for every lake with no rating
+        var y = /^(\d{4})-12-31$/.exec(spot.status.until || '');
+        el.textContent = st === 'closed' && !spot.status.resumes
+          ? (y ? 'Closed for ' + y[1] + ' \u00b7 see why' : 'Closed to recreation \u00b7 see why')
+          : (spot.status.summary || 'Out of season');
         return;
       }
       var T = window.KaaykoSpotTime;

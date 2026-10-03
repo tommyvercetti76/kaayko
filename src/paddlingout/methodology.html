@@ -6,7 +6,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>How the Kaayko Paddle Score Works — Data, Model &amp; Limits</title>
-  <meta name="description" content="The real Paddle Score pipeline: WeatherAPI data, a gradient-boosted model, calibration layers, the exact penalty table, and crowd-sourced per-lake offsets.">
+  <meta name="description" content="The real Paddle Score pipeline: WeatherAPI data, a gradient-boosted model trained on paddler ratings, the exact safety rules, daylight-only scoring, and no score for frozen or closed water.">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
   <link rel="canonical" href="https://kaayko.com/paddlingout/methodology">
 
@@ -30,7 +30,7 @@
         "@type": "TechArticle",
         "@id": "https://kaayko.com/paddlingout/methodology#article",
         "headline": "How the Kaayko Paddle Score Works — Data, Model & Limits",
-        "description": "The Paddle Score pipeline: WeatherAPI data sources, a gradient-boosted model, calibration layers, hard safety limits, crowd-sourced per-lake offsets, and the score's stated limitations.",
+        "description": "The Paddle Score pipeline: WeatherAPI data sources, a gradient-boosted model trained on paddler ratings, calibration that can only lower a score, hard safety limits, daylight-only scoring, no score for frozen or closed water, and the score's stated limitations.",
         "url": "https://kaayko.com/paddlingout/methodology",
         "mainEntityOfPage": "https://kaayko.com/paddlingout/methodology",
         "datePublished": "2026-08-04",
@@ -248,7 +248,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
 
   <div class="meth-section">
     <h2 data-kicon="grid">The 3-Day Heatmap</h2>
-    <p>Forecast pages score <strong>every daylight hour</strong> (6&nbsp;AM to 8&nbsp;PM) for the next three days and blend them into one band per day, so you can pick your launch hour instead of just your day. This is not a mock-up &mdash; the component below is the forecast page&rsquo;s heatmap, rendering a live 3-day outlook. Tap a bar to open an hour:</p>
+    <p>Forecast pages show the next three days from 6&nbsp;AM to 8&nbsp;PM <strong>at the lake</strong>, one band per day, so you can pick your launch hour instead of just your day. Every daylight hour is scored; hours when the sun is down at the lake stay dark and unscored. The hour you are in shows the same observed score as the top of the page, so there is one number for &ldquo;now&rdquo;; later hours are forecasts. Days, hours and &ldquo;this hour&rdquo; are always the lake&rsquo;s own clock, wherever you are reading from. This is not a mock-up &mdash; the component below is the forecast page&rsquo;s heatmap, rendering a live 3-day outlook. Tap a bar to open an hour:</p>
     <div id="heatmapContainer"><p class="hm-pending">Fetching a live 3-day forecast&hellip;</p></div>
     <p class="snap-caption" id="hm-caption">Rendered by the production Heatmap component.</p>
   </div>
@@ -259,15 +259,16 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
     <ul>
       <li><strong>Wind</strong> &mdash; sustained and gust speed, direction, mapped to the Beaufort scale</li>
       <li><strong>Air temperature</strong> &mdash; actual and feels-like, &deg;C</li>
-      <li><strong>Water temperature</strong> &mdash; from marine data where available; estimated conservatively from air temperature otherwise</li>
+      <li><strong>Water temperature</strong> &mdash; shown only where a sensor measures it (today: no spot; see below)</li>
       <li><strong>Waves</strong> &mdash; significant height, swell period and direction (used for steepness and wind-against-swell checks)</li>
       <li><strong>UV index, visibility, humidity, cloud cover</strong></li>
       <li><strong>Precipitation</strong> &mdash; amount in mm and probability</li>
       <li><strong>Official warnings</strong> &mdash; active weather alerts for the area</li>
     </ul>
-    <p>Where a value is missing it is estimated conservatively or omitted &mdash; never silently defaulted to a flattering number.</p>
+    <p>Where a value is missing it is omitted &mdash; never silently defaulted to a flattering number, and never shown to you as if it were measured.</p>
     <p><strong>Waves, swell and water temperature on inland water.</strong> Marine feeds are built for the sea. Asked about a landlocked point, our provider does not return an error &mdash; it returns a plausible-looking marine record anyway. We verified this: a query for Antero Reservoir, an alpine Colorado reservoir at roughly 8,900&nbsp;feet, came back with 1.4&nbsp;m waves, a 5.2-second swell, and 28.8&nbsp;&deg;C water. So <strong>we do not use marine data on lakes and rivers at all</strong>, and wave and swell rules simply do not fire there.</p>
-    <p><strong>Water temperature comes from a real sensor wherever one exists.</strong> We curate a small number of spots on purpose, so each one is matched by hand to a USGS monitoring site that actually reports water temperature on that body of water &mdash; proximity alone is not enough, because the nearest sensor is often a creek that is not the lake you are paddling. Where a reviewed sensor exists you get its reading, marked <em>measured</em>, with the gauge named. Where none exists &mdash; and for many recreational lakes none does &mdash; we estimate, and mark it <em>est.</em> so you always know which one you are looking at. That estimate uses a real <strong>30-day mean air temperature</strong>, not today's weather, because a lake stores heat over weeks: judging an August lake by a cool night's air is how you end up telling someone to wear a drysuit on water that is actually 70&nbsp;&deg;F. We also do not warn about &ldquo;cool water&rdquo; in the 16&ndash;18&nbsp;&deg;C range at all &mdash; that is ordinary, comfortable paddling water, and crying wolf there only teaches people to ignore the warning that matters. River flow and stage are likewise real, named-gauge USGS readings.</p>
+    <p><strong>Water temperature: measured, or nothing.</strong> We show a water temperature, and let it trigger cold-water warnings and penalties, only when a sensor on that body of water measured it &mdash; the nearest sensor is often a creek that is not the lake you are paddling, so proximity alone does not count. <strong>Today none of our spots has a matched sensor</strong>, so every forecast page says &ldquo;No sensor&rdquo; and no water-temperature rule fires. Treat cold water as your own call. (The model itself was trained with a water-temperature input and still receives one derived from the air, because that is how it learned; that derived value is a model input only &mdash; it is never shown to you and never triggers a warning.)</p>
+    <p><strong>River flow is not checked yet.</strong> The Colorado at Moab, the Trinity and the Merrimack are scored on the weather alone: we have not yet connected a river gauge to any of them, so a river running high on a calm, sunny day can still score well. Check the flow yourself before a river trip.</p>
   </div>
 
   <div class="meth-section">
@@ -276,9 +277,9 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
     <div class="pipe">
       <div class="pipe-step"><div><b>Standardize</b><span>Raw feeds are normalized into the model&rsquo;s units &mdash; MPH wind, &deg;C temperatures, km visibility &mdash; with real values passed through, not defaults.</span></div></div>
       <div class="pipe-step"><div><b>Predict</b><span>A <strong>monotonic histogram gradient-boosting model</strong> (400 trees, 19 features, artifact <code>direct-hgb-mono-v2-2026-09-18</code>) trained on paddler ratings paired with the weather at the time of each paddle produces the base score. It is evaluated in our own server process, not called over the network. Out-of-fold error is <strong>0.60 MAE</strong> (95% CI 0.51&ndash;0.70) on 187 rated paddles across 93 lakes, cross-validated grouped by lake so no lake appears in both sides of a fold. Seven features are monotonically constrained, so more wind, bigger gusts, higher waves, more rain can only ever lower the score.</span></div></div>
-      <div class="pipe-step"><div><b>Calibrate</b><span>Bounded adjustments refine the base: water-temperature reality check, the next six forecast hours (improving or deteriorating trend), season, location profile, and wind-pattern analysis.</span></div></div>
+      <div class="pipe-step"><div><b>Calibrate</b><span>Small, bounded adjustments from the next six forecast hours (a deteriorating trend), the season at the lake, its location profile and its wind pattern. They can only lower the score: upward adjustments are switched off.</span></div></div>
       <div class="pipe-step"><div><b>Penalize</b><span>Hard safety rules subtract points for conditions the model should never be allowed to talk its way around &mdash; the full table is below.</span></div></div>
-      <div class="pipe-step"><div><b>Apply the lake&rsquo;s offset</b><span>If your ratings show the model runs hot or cold on a specific lake, that lake&rsquo;s stored bias offset is added here &mdash; but an upward offset is <em>suppressed</em> whenever a major safety penalty fired, so comfort feedback can never soften a safety deduction.</span></div></div>
+      <div class="pipe-step"><div><b>Apply the lake&rsquo;s offset</b><span>Built for the day paddler ratings show the model running hot or cold on a specific lake. <strong>No lake has an offset yet</strong> (see Calibration below), so today this stage changes nothing. When it does, an upward offset is <em>suppressed</em> whenever a major safety penalty fired, so comfort feedback can never soften a safety deduction.</span></div></div>
       <div class="pipe-step"><div><b>Clamp &amp; snap</b><span>The result is clamped to 1&ndash;5 and rounded to the nearest half point. If you&rsquo;ve set a boat type, the craft rules layer (next section) then adjusts the final number.</span></div></div>
     </div>
     <p>If the model service is unreachable, a <strong>rule-based fallback</strong> produces the score from the same inputs &mdash; starting at 3.0, rewarding calm wind (+0.8 under 5&nbsp;mph) and comfortable temperatures (+0.3 for 18&ndash;30&deg;C), and subtracting for strong wind (&minus;1.2 over 20&nbsp;mph), active warnings (&minus;0.8), high UV and poor visibility. Fallback scores are marked with lower confidence.</p>
@@ -289,15 +290,21 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
     <p>After calibration, safety rules subtract points the model is never allowed to argue back. Most are small nudges for gusts, waves, heat, UV, visibility and rain &mdash; but a few are worth calling out, because they can sink an otherwise perfect day on their own:</p>
     <ul>
       <li><strong>Dangerous wind</strong> &mdash; above 25 mph (Beaufort 6), the score loses two full points. No model output survives that.</li>
-      <li><strong>Cold water</strong> &mdash; below 5&deg;C is an immersion hazard regardless of how sunny it looks, and is penalized hard.</li>
+      <li><strong>Cold water</strong> &mdash; below 5&deg;C is an immersion hazard regardless of how sunny it looks, and is penalized hard. This rule needs a measured water temperature, and no spot has one today, so it does not fire.</li>
       <li><strong>Active official warnings</strong> &mdash; any government weather alert for the area drags the score down, always.</li>
     </ul>
   </div>
 
   <div class="meth-section">
     <h2 data-kicon="alert">Daylight Only &mdash; We Do Not Score Night Paddling</h2>
-    <p><strong>Kaayko scores daylight hours only, and we do not condone paddling after dark.</strong> Once the sun is down at a spot, the page stops showing a verdict entirely and shows you the next daylight window instead. This is deliberate: the score is built from wind, water, and weather, and none of those inputs capture what actually makes night paddling dangerous &mdash; you cannot read the water, you cannot be seen by motorized craft, self-rescue is far harder, and a capsize that would be a nuisance at noon becomes a serious emergency in the dark.</p>
+    <p><strong>Kaayko scores daylight hours only, and we do not condone paddling after dark.</strong> Once the sun is down at a spot &mdash; decided by that lake&rsquo;s own sunrise and sunset, not your clock &mdash; no surface shows it a score: not the list, not search, not its page. The forecast shows the next daylight window instead. This is deliberate: the score is built from wind, water, and weather, and none of those inputs capture what actually makes night paddling dangerous &mdash; you cannot read the water, you cannot be seen by motorized craft, self-rescue is far harder, and a capsize that would be a nuisance at noon becomes a serious emergency in the dark.</p>
     <p>Night paddling is also regulated. Many jurisdictions require navigation lighting after sunset, and a number of parks and reservoirs prohibit being on the water at night at all. Those rules are local, they change, and it is your responsibility to know them for the water you are on. <strong>A daytime score never implies that the same water is acceptable at night.</strong></p>
+  </div>
+
+  <div class="meth-section">
+    <h2 data-kicon="alert">Frozen and Closed Water &mdash; No Score</h2>
+    <p><strong>Lakes that freeze have no Paddle Score from October&nbsp;1 until May&nbsp;15.</strong> A score is built from wind and weather; it cannot see ice, and a frozen lake on a calm, sunny day would otherwise rate well. A lake is on this list only when an official source shows it freezes &mdash; ice-fishing rules, park notices, a published study &mdash; never because of its elevation alone. Today: Cottonwood, Taylor Park, Turquoise, Antero, Jackson, Jenny and String. Lakes that only rarely freeze, like Lake McDonald, stay scored.</p>
+    <p><strong>Closed water has no score either.</strong> When the managing agency closes a lake to recreation (Antero, closed by Denver Water for 2026) or to boating for part of the year (Glacier allows boating on Lake McDonald only from the second Sunday in May to October&nbsp;31), we show it as closed, with the agency&rsquo;s notice and its date. Lakes without a score sit at the bottom of the list, greyed, so they never read as an option.</p>
   </div>
 
   <div class="meth-section">
@@ -320,17 +327,17 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
   <div class="meth-section">
     <h2 data-kicon="info">Trip Prep &amp; Spot Facts</h2>
     <p>Forecast pages add short preparation tips &mdash; how much water to carry (computed from the NWS heat-index formula for the conditions on screen), wind technique for <em>your</em> craft, cold-water dressing, sun exposure. Every tip is computed from the live data shown on that page; if the data isn&rsquo;t there, the tip isn&rsquo;t either.</p>
-    <p>The same rule governs spot facts. <strong>Water type</strong> (lake or river) is recorded per spot. <strong>Cell coverage</strong> notes appear only for spots we&rsquo;ve graded against FCC Broadband Data Collection coverage maps (per-carrier, ~100&nbsp;m hexagons around the launch). <strong>&ldquo;Know before you go&rdquo;</strong> notes are written by us for spots we&rsquo;ve paddled. Nothing on these pages is inferred, scraped, or guessed &mdash; a missing row means we don&rsquo;t have verified data yet.</p>
+    <p>The same rule governs spot facts. <strong>Water type</strong> (lake or river) is recorded per spot. <strong>Cell coverage</strong> notes appear only for spots we&rsquo;ve graded against FCC Broadband Data Collection coverage maps (per-carrier, ~100&nbsp;m hexagons around the launch). <strong>&ldquo;Know before you go&rdquo;</strong> &mdash; fees, permits and invasive-species inspections, the put-in, motor boats, season, rentals, dogs, parking and hazards &mdash; comes from the agency that runs the water (park services, forest service, state wildlife and parks departments, cities) and shows its source and the date we checked it. Rules change: the linked source is the authority, not our copy. Nothing on these pages is inferred or guessed &mdash; a missing row means we don&rsquo;t have a source for it yet.</p>
   </div>
 
   <div class="meth-section">
-    <h2 data-kicon="users">Crowd-Sourced Calibration <span class="beta-chip">Beta</span></h2>
-    <p><em>This loop is in beta &mdash; ratings are being collected and validated now, and per-lake offsets are applied conservatively while the sample grows.</em></p>
-    <p>The model&rsquo;s labels came from people, and its corrections do too. When paddlers rate a real session, that rating flows back into the system:</p>
+    <h2 data-kicon="users">Crowd-Sourced Calibration <span class="beta-chip">Not live yet</span></h2>
+    <p><em>Nothing you rate changes a score yet.</em> The model&rsquo;s labels came from people, and the plan is for its corrections to as well, but the loop is not connected: we have no ratings to learn from, and no lake has an offset.</p>
+    <p>What exists today:</p>
     <ul>
-      <li>Each rating is stored against the score the model had predicted for that spot at that time</li>
-      <li>Condition chips (chop, wind, crowding&hellip;) are <strong>validated server-side against the actual weather</strong> at submission time, and GPS proximity is recorded as a quality signal &mdash; ratings from people demonstrably at the lake weigh more</li>
-      <li>Persistent bias per lake &mdash; the model consistently over- or under-scoring &mdash; becomes that lake&rsquo;s stored <strong>calibration offset</strong>, applied as stage five of every future score</li>
+      <li>You can rate a real session from any lake&rsquo;s page; the rating is stored against the score we showed for that spot at that time</li>
+      <li>Condition chips (chop, wind, crowding&hellip;) are cleaned and stored; your GPS position is stored if you allow it. Neither is weighed yet</li>
+      <li>When a lake has enough ratings, a persistent bias &mdash; the model consistently over- or under-scoring there &mdash; is meant to become that lake&rsquo;s offset in stage five. We will say so here when it does</li>
     </ul>
     <p>Anti-abuse, concretely: <strong>one rating per device fingerprint per spot per day</strong>, with a two-hour window to revise your own submission, plus IP-based daily rate limits. The fingerprint exists to stop ballot-stuffing, not to identify you &mdash; no account, no name, no email.</p>
   </div>
@@ -353,7 +360,9 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
     <ul>
       <li>Localized wind funneling through valleys, canyons, or narrow channels</li>
       <li>Sudden thunderstorm development between forecast intervals</li>
-      <li>Water currents, tides, dam releases, or underwater hazards</li>
+      <li>Water currents, tides, dam releases, or underwater hazards &mdash; and, today, river flow (no river gauge is connected yet)</li>
+      <li>Water temperature &mdash; no spot has a matched sensor yet, so cold water is your call</li>
+      <li>Ice. A frozen lake is caught by the season rule above, not by the score</li>
       <li>Boat traffic, construction, or temporary closures</li>
       <li>Your personal fitness, swimming ability, experience, or equipment</li>
       <li>Water quality, algae blooms, or contamination advisories</li>

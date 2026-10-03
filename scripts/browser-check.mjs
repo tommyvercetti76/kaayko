@@ -231,7 +231,7 @@ async function main() {
           const r = await ev(`fetch('/api/paddlingOut').then(x => x.json()).then(api => ({ api, text: (document.getElementById('live-text') || {}).textContent || '' }))`);
           const want = expectFor(r.api.find((s) => s.id === id) || {});
           const p = [];
-          if (want.closed && !/Closed to recreation|Out of season/.test(r.text)) p.push(`pill says "${r.text}" while the spot has no rating`);
+          if (want.closed && !/^(Closed|Out of season)/.test(r.text)) p.push(`pill says "${r.text}" while the spot has no rating`);
           if (want.night && !/Night at the lake/.test(r.text)) p.push(`pill says "${r.text}" while it is night at the lake`);
           if (!want.night && !want.closed && want.text && !r.text.includes(want.text + ' / 5')) p.push(`pill says "${r.text}", the lake says ${want.text}`);
           p.push(...sameEverywhere(`spot ${id}|${want.text}`, view.name, r.text));

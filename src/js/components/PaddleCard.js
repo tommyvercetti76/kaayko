@@ -46,8 +46,10 @@
     if (st !== 'closed' && st !== 'season') return null;
     var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(status.resumes || '');
     var back = m ? MON[+m[2] - 1] + ' ' + (+m[3]) : '';
+    var untilYear = /^(\d{4})-12-31$/.exec(status.until || '');
     return st === 'closed'
-      ? { state: st, label: 'Closed', short: back ? 'Closed · back ' + back : 'Closed',
+      ? { state: st, label: 'Closed',
+          short: untilYear ? 'Closed for ' + untilYear[1] : back ? 'Closed · back ' + back : 'Closed',
           line: back ? 'Closed to boating' : 'Closed to recreation', summary: status.summary || '' }
       : { state: st, label: 'Out of season', short: back ? 'Out of season · back ' + back : 'Out of season', line: 'Out of season', summary: status.summary || '' };
   }
@@ -497,7 +499,7 @@
       stat.className = 'pcard-stat pcard-stat--closed';
       var cval = el('span', 'pcard-stat-val'); cval.textContent = '\u2014'; cval.setAttribute('aria-hidden', 'true');
       var clab = el('span', 'pcard-stat-label'); clab.textContent = data.closed.short;
-      if (data.closed.state === 'season') stat.classList.add('is-season');
+      stat.classList.add('is-season');   // one calm colour for closed and out-of-season alike
       stat.appendChild(cval); stat.appendChild(clab);
     } else if (data.night) {
       stat.className = 'pcard-stat pcard-stat--night';
@@ -538,7 +540,7 @@
     if (data.id) card.dataset.spotId = data.id;
     if (data.closed) card.classList.add('is-paused');
     var sm = data.closed
-      ? { rating: null, color: null, severity: null, display: '\u2014', label: data.closed.label }
+      ? { rating: null, color: null, severity: null, display: '\u2014', label: data.closed.short }
       : data.night
       ? { rating: null, color: null, severity: null, display: MOON, label: 'Night' + (data.night.back ? ' · daylight ' + data.night.back : '') }
       : scoreMeta(data.rating);
@@ -561,7 +563,7 @@
     });
 
     // conditions badge (top-right) → forecast
-    var badge = el('div', 'conditions-badge' + (data.closed ? ' is-closed' + (data.closed.state === 'season' ? ' is-season' : '') : data.night ? ' is-night' : (sm.severity && sm.severity !== 'good' ? ' ' + sm.severity : '')));
+    var badge = el('div', 'conditions-badge' + (data.closed ? ' is-closed is-season' : data.night ? ' is-night' : (sm.severity && sm.severity !== 'good' ? ' ' + sm.severity : '')));
     badge.innerHTML = '<span class="badge-dot"></span><span class="badge-score">' + sm.display +
       '</span><span class="badge-status">' + sm.label + '</span>';
     badge.addEventListener('click', function (e) {
@@ -704,7 +706,7 @@
     function pausedRing(pz) {
       ring.classList.remove('is-pending');
       ring.classList.add('is-closed');
-      ring.innerHTML = '<span class="pcard-ring-val pcard-ring-closed" aria-hidden="true">' + (pz.state === 'season' ? '\u2744' : '\u2715') + '</span>';
+      ring.innerHTML = '<span class="pcard-ring-val pcard-ring-closed" aria-hidden="true">' + (pz.state === 'season' ? '\u2744' : '\u2014') + '</span>';
       ring.setAttribute('aria-label', pz.short + '. No score.');
     }
     if (data.closed) { pausedRing(data.closed); row.classList.add('is-paused'); }

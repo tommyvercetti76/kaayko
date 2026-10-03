@@ -80,8 +80,9 @@
     if (!st) return '';
     var s = spot.status;
     var season = st === 'season';
-    return '<div class="kbg-closed' + (season ? ' is-season' : '') + '" role="status">' +
-      '<div class="kbg-closed-eyebrow">' + (season ? 'Out of season' : 'Closed') + '</div>' +
+    var untilYear = /^(\d{4})-12-31$/.exec(s.until || '');
+    return '<div class="kbg-closed is-season" role="status">' +
+      '<div class="kbg-closed-eyebrow">' + (season ? 'Out of season' : untilYear ? 'Closed for ' + untilYear[1] : 'Closed') + '</div>' +
       '<p class="kbg-closed-copy">' + esc(s.summary) + '</p>' +
       (s.reason ? '<p class="kbg-closed-note">' + esc(s.reason) + '</p>' : '') +
       '<p class="kbg-closed-note">' + (season

@@ -4,21 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Jenny Lake Kayak &amp; Paddle Conditions — Live Forecast | Kaayko</title>
-<meta name="description" content="Jenny Lake kayak and paddle conditions. Live Paddle Score from wind, water temperature and UV, plus a 3-day hourly forecast. Grand Teton National Park, Wyoming.">
+<meta name="description" content="Jenny Lake kayak and paddle conditions. Live Paddle Score from wind, air temperature and UV, plus a 3-day hourly forecast. Grand Teton National Park, Wyoming.">
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
 <link rel="canonical" href="https://kaayko.com/paddlingout/jenny-lake-wyoming">
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://kaayko.com/paddlingout/jenny-lake-wyoming">
 <meta property="og:title" content="Jenny Lake, Wyoming — Kayak &amp; Paddle Conditions">
-<meta property="og:description" content="Jenny Lake kayak and paddle conditions. Live Paddle Score from wind, water temperature and UV, plus a 3-day hourly forecast. Grand Teton National Park, Wyoming.">
+<meta property="og:description" content="Jenny Lake kayak and paddle conditions. Live Paddle Score from wind, air temperature and UV, plus a 3-day hourly forecast. Grand Teton National Park, Wyoming.">
 <meta property="og:image" content="https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fjenny1.webp?alt=media">
 <meta property="og:image:alt" content="Jenny Lake, Grand Teton National Park, Wyoming">
 <meta property="og:site_name" content="Kaayko">
 
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Jenny Lake, Wyoming — Kayak &amp; Paddle Conditions">
-<meta name="twitter:description" content="Jenny Lake kayak and paddle conditions. Live Paddle Score from wind, water temperature and UV, plus a 3-day hourly forecast. Grand Teton National Park, Wyoming.">
+<meta name="twitter:description" content="Jenny Lake kayak and paddle conditions. Live Paddle Score from wind, air temperature and UV, plus a 3-day hourly forecast. Grand Teton National Park, Wyoming.">
 <meta name="twitter:image" content="https://firebasestorage.googleapis.com/v0/b/kaaykostore.firebasestorage.app/o/images%2Fpaddling_out%2Fjenny1.webp?alt=media">
 <meta name="twitter:image:alt" content="Jenny Lake, Grand Teton National Park, Wyoming">
 
@@ -63,7 +63,7 @@
       "@id": "https://kaayko.com/paddlingout/jenny-lake-wyoming#webpage",
       "url": "https://kaayko.com/paddlingout/jenny-lake-wyoming",
       "name": "Jenny Lake Kayak & Paddle Conditions — Live Forecast | Kaayko",
-      "description": "Jenny Lake kayak and paddle conditions. Live Paddle Score from wind, water temperature and UV, plus a 3-day hourly forecast. Grand Teton National Park, Wyoming.",
+      "description": "Jenny Lake kayak and paddle conditions. Live Paddle Score from wind, air temperature and UV, plus a 3-day hourly forecast. Grand Teton National Park, Wyoming.",
       "about": {
         "@id": "https://kaayko.com/paddlingout/jenny-lake-wyoming#place"
       },
@@ -146,14 +146,15 @@
     <p class="spot-lede">Jenny Lake sits at the base of the Teton Range in Grand Teton National Park, Wyoming, at a recorded 2,073 metres. It is a glacially formed lake, smaller and more enclosed than Jackson Lake to its north, and held tight against the mountains along its western shore.</p>
 
     <h2>What drives the score here</h2>
-    <p>Elevation is the thing to understand here. At just over 2,000 metres the water stays cold long into the season, and cold water is weighted heavily in the Paddle Score regardless of how warm the air is or how clear the sky looks. This is the most common reason a bright summer day at Jenny does not return a perfect score, and it surprises people every year. Being smaller and more sheltered than Jackson, Jenny is somewhat less often limited by wind and somewhat more often by water temperature — two lakes eleven metres apart in altitude that fail their scores for different reasons.</p>
+    <p>Elevation is the thing to understand here. At just over 2,000 metres the water stays cold long into the season, and the Paddle Score cannot see it: no sensor measures this lake, so a bright summer day can score well over water cold enough to make a capsize serious. That surprises people every year. Being smaller and more sheltered than Jackson, Jenny is less often limited by wind, which makes the cold water, not the weather, its real constraint.</p>
 
     <h2>What the Paddle Score measures</h2>
     <p>
-      A single number from 1 (Danger) to 5 (Excellent), built from wind speed and gusts, air and water
-      temperature, UV index, cloud cover, precipitation and visibility &mdash; then constrained by fixed
-      safety rules the model is not allowed to override. Wind above 25&nbsp;mph costs two full points.
-      Water below 5&deg;C is penalised hard regardless of how good the day looks.
+      A single number from 1 (Danger) to 5 (Excellent), built from wind speed and gusts, air
+      temperature, UV index, cloud cover, precipitation and visibility at the lake &mdash; then constrained by
+      fixed safety rules the model is not allowed to override. Wind above 25&nbsp;mph costs two full points.
+      Water temperature counts only where a sensor measures it, and none covers this lake yet, so judge cold
+      water yourself. No score after dark, or while the lake is frozen or closed.
     </p>
     <p><a class="spot-link" href="/paddlingout/methodology">Read the full methodology</a></p>
 
@@ -230,8 +231,11 @@
       // Closed, or a cold-weather lake out of season: no score (the API sends none).
       var st = spot.status && spot.status.state;
       if (st === 'closed' || st === 'season') {
-        if (dot) dot.className = 'dot ' + (st === 'season' ? 's-season' : 's-closed');
-        el.textContent = st === 'closed' && !spot.status.resumes ? 'Closed to recreation \u00b7 see why' : (spot.status.summary || 'Out of season');
+        if (dot) dot.className = 'dot s-season';   // one colour for every lake with no rating
+        var y = /^(\d{4})-12-31$/.exec(spot.status.until || '');
+        el.textContent = st === 'closed' && !spot.status.resumes
+          ? (y ? 'Closed for ' + y[1] + ' \u00b7 see why' : 'Closed to recreation \u00b7 see why')
+          : (spot.status.summary || 'Out of season');
         return;
       }
       var T = window.KaaykoSpotTime;
