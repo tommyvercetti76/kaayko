@@ -1,207 +1,24 @@
 <!DOCTYPE html>
-<html lang="en" class="dark-theme">
+<html lang="en">
 <head>
-  <script src="/js/prod-config.js"></script>
-  <script>document.documentElement.classList.add('dark-theme');</script>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Add a Lake | Kaayko Paddling Out</title>
-  <meta name="description" content="Submit a lake or paddling water body to Kaayko Paddling Out. Anonymous submissions are welcome.">
   <meta name="robots" content="noindex, follow">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <!-- Leaflet (self-hosted) for the drag-a-pin coordinate picker -->
-  <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
-  <script src="/vendor/leaflet/leaflet.js"></script>
-  <script src="/js/prefs.js"></script>
-  <script src="/js/util.js"></script>
-  <script src="/js/services/geo.js"></script>
-  <script src="/js/components/PinPicker.js"></script>
-  <link rel="stylesheet" href="/js/components/PinPicker.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="/css/submitentry.css">
-  <link rel="stylesheet" href="/css/footer.css">
-  <link rel="stylesheet" href="/js/components/PoHeader.css">
-  <script src="/js/components/PoHeader.js"></script>
-  <link rel="stylesheet" href="/css/tokens.css">
-  <link rel="stylesheet" href="/css/po-system.css">
+  <link rel="canonical" href="https://kaayko.com/paddlingout/search">
+  <!-- Add-a-lake is the "Add" tab of /paddlingout/search since 3 Oct 2026. This
+       address stays alive for old links, bookmarks and QR codes, and forwards
+       with its query (name, lat, lng, place) so a prefilled handoff still fills. -->
+  <script>
+    (function () {
+      var q = window.location.search.replace(/^\?/, '');
+      window.location.replace('/paddlingout/search?mode=add' + (q ? '&' + q : '') + window.location.hash);
+    })();
+  </script>
+  <meta http-equiv="refresh" content="1; url=/paddlingout/search?mode=add">
+  <style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#080808;color:#ede8df;font:400 1rem/1.5 Georgia,serif}a{color:#d9bd7b}</style>
 </head>
-<body class="po-page">
-  <div id="po-header" data-title="Add a lake" data-eyebrow="Paddling Out" data-back="/paddlingout" data-current="submit"></div>
-  <script>PoHeader.mount()</script>
-  <div class="submit-shell">
-
-    <p class="launch-note">Add a lake, river, or boat ramp. A person reviews every entry before it goes public.</p>
-    <p class="fineprint">
-      Public launches only &middot; photos must be yours &middot; we keep your entry, and with it a one-way hash of your IP address and your browser’s user-agent, to stop spam. <a href="/privacy">What we keep</a>.
-      <a href="/privacy">Privacy</a> &middot; <a href="/paddlingout/methodology">How scores work</a> &middot;
-      <details><summary>What gets an entry declined</summary>
-        <ul>
-          <li>No public access &mdash; private docks, fenced ramps, permit-only shorelines.</li>
-          <li>Photos that are not yours or do not show the water and launch.</li>
-          <li>A launch that is already on the map, or a pin far from the real put-in.</li>
-          <li>Conditions we cannot forecast safely (dams, spillways, active rapids).</li>
-        </ul>
-      </details>
-    </p>
-
-    <section class="submit-card" id="form-card">
-      <form id="submit-entry-form" novalidate>
-        <!-- Honeypot: invisible to people, filled by form bots. Never label it. -->
-        <div class="honeypot" aria-hidden="true">
-          <input name="website" type="text" tabindex="-1" autocomplete="off">
-        </div>
-
-
-
-
-
-        <div class="field-group" data-field="images">
-          <span class="label-text">Photos<span class="req" aria-hidden="true">*</span></span>
-          <label class="image-drop" id="image-drop" tabindex="0">
-            <input id="images" name="images" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple>
-            <span class="image-drop-main">
-              <span class="image-drop-copy">
-                <strong>Start here &mdash; add 2&ndash;5 photos</strong>
-                <span>Shot at the ramp, a photo carries its own GPS, and the rest of this form fills itself in. Show the water and the launch.</span>
-              </span>
-              <span class="image-count" id="image-count">0 selected</span>
-            </span>
-            <span class="image-previews" id="image-previews" aria-live="polite"></span>
-          </label>
-          <span class="field-msg" id="images-msg" aria-live="polite"></span>
-        </div>
-
-        <div class="field-group" data-field="coords">
-          <span class="label-text">Launch point<span class="req" aria-hidden="true">*</span></span>
-          <div class="coord-row">
-            <input id="lat" name="lat" inputmode="decimal" placeholder="Latitude" aria-label="Latitude">
-            <input id="lng" name="lng" inputmode="decimal" placeholder="Longitude" aria-label="Longitude">
-            <button class="mini-btn" id="find-coords" type="button">Find</button>
-            <button class="mini-btn" id="use-location" type="button">Use my location</button>
-          </div>
-          <div class="loc-lock photo-fix" id="photo-fix" aria-live="polite">
-            <span id="photo-fix-text"></span>
-            <button type="button" id="photo-fix-clear">Clear</button>
-          </div>
-          <div id="pin-map" class="pin-map pp-map" aria-label="Map. Drag the pin to the exact launch point."></div>
-          <p class="pin-hint">A ramp photo usually places this pin by itself. Otherwise <strong>Find</strong> drops one from the name and <strong>Use my location</strong> reads your position once. Either way, <strong>drag the pin</strong> onto the exact put-in.</p>
-          <span class="field-msg" id="coords-msg" aria-live="polite"></span>
-        </div>
-
-        <label data-field="launchHint">
-          <span class="label-text">Launch hint<span class="opt">optional</span></span>
-          <input id="launchHint" name="launchHint" maxlength="160" placeholder="Main public boat ramp, north shore, park entrance">
-        </label>
-
-        <label data-field="lakeName" class="name-field">
-          <span class="label-text">Lake or water body<span class="req" aria-hidden="true">*</span></span>
-          <input id="lakeName" name="lakeName" maxlength="120" placeholder="Start typing — Dillon Reservoir" autocomplete="off"
-                 role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lakeName-suggest">
-          <div class="search-suggest" id="lakeName-suggest" role="listbox" hidden></div>
-          <span class="field-msg" id="lakeName-msg" aria-live="polite"></span>
-        </label>
-
-        <div class="loc-lock" id="loc-lock" aria-live="polite">
-          <span id="loc-lock-text">City, state and country filled from your location</span>
-          <button type="button" id="loc-unlock">Change</button>
-        </div>
-
-        <div class="grid-two">
-          <label data-field="city">
-            <span class="label-text">City or nearest town<span class="req" aria-hidden="true">*</span></span>
-            <input id="city" name="city" maxlength="80" placeholder="Dallas" autocomplete="address-level2">
-            <span class="field-msg" id="city-msg" aria-live="polite"></span>
-          </label>
-          <label data-field="region">
-            <span class="label-text">State / region<span class="req" aria-hidden="true">*</span></span>
-            <div class="select-wrap" id="region-select-wrap">
-              <select id="region" name="region"></select>
-            </div>
-            <input id="regionText" name="regionText" maxlength="80" class="region-text" placeholder="State or region" hidden>
-            <span class="field-msg" id="region-msg" aria-live="polite"></span>
-          </label>
-        </div>
-
-        <label data-field="country">
-          <span class="label-text">Country<span class="req" aria-hidden="true">*</span></span>
-          <div class="select-wrap">
-            <select id="country" name="country"></select>
-          </div>
-          <span class="field-msg" id="country-msg" aria-live="polite"></span>
-        </label>
-
-        <div class="grid-two">
-          <label>
-            <span class="label-text">Parking</span>
-            <div class="select-wrap">
-              <select id="parkingAvl" name="parkingAvl">
-                <option value="Y">Available</option>
-                <option value="N">Not sure / not available</option>
-              </select>
-            </div>
-          </label>
-          <label>
-            <span class="label-text">Restrooms</span>
-            <div class="select-wrap">
-              <select id="restroomsAvl" name="restroomsAvl">
-                <option value="N">Not sure / not available</option>
-                <option value="Y">Available</option>
-              </select>
-            </div>
-          </label>
-        </div>
-
-        <label data-field="description">
-          <span class="label-text">Short note<span class="opt">optional</span></span>
-          <textarea id="description" name="description" maxlength="360" placeholder="One useful thing paddlers should know before driving out."></textarea>
-        </label>
-
-
-        <div class="field-group" data-field="contact">
-          <span class="label-text">Submit as</span>
-          <div class="choice-row">
-            <label class="choice"><input type="radio" name="contactPreference" value="anonymous" checked> Anonymous</label>
-            <label class="choice"><input type="radio" name="contactPreference" value="email"> Email me when it is live</label>
-          </div>
-        </div>
-
-        <label class="email-wrap" id="email-wrap" hidden data-field="email">
-          <span class="label-text">Email<span class="req" aria-hidden="true">*</span></span>
-          <input id="email" name="email" type="email" maxlength="254" placeholder="you@example.com" autocomplete="email">
-          <span class="field-msg" id="email-msg" aria-live="polite"></span>
-        </label>
-
-        <div class="actions">
-          <div class="todo-wrap">
-            <span class="form-status" id="form-status" aria-live="polite"></span>
-            <ul class="todo" id="todo" aria-label="Still needed"></ul>
-          </div>
-          <button class="submit-btn" id="submit-btn" type="submit">Submit entry</button>
-        </div>
-      </form>
-    </section>
-
-    <section class="success-panel" id="success-panel">
-      <h2>Entry received</h2>
-      <p id="success-copy"></p>
-    </section>
-  </div>
-
-  <script src="/js/services/exifgps.js"></script>
-  <script src="/js/pages/submitentry.js"></script>
-  <footer class="site-footer">
-    <nav aria-label="Footer">
-      <a href="/paddlingout">Paddling Out</a>
-      <a href="/paddlingout/methodology">Methodology</a>
-      <a href="/about">About</a>
-      <a href="/privacy">Privacy</a>
-    </nav>
-    <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
-  </footer>
-
-
+<body>
+  <p>Add a lake now lives with search. <a href="/paddlingout/search?mode=add">Continue</a>.</p>
 </body>
 </html>

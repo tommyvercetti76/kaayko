@@ -58,7 +58,8 @@ const HOME_PROBE = `(() => {
   }, true);
   const tick = () => {
     const l = document.querySelector('.choice-label');
-    if (l) log.sizes.add(getComputedStyle(l).fontSize);
+    // only what a person can see: labels stay visibility:hidden until placed
+    if (l && getComputedStyle(l).visibility === 'visible') log.sizes.add(getComputedStyle(l).fontSize);
     if (performance.now() < 3000) requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);
@@ -96,7 +97,8 @@ async function visit(port, url, view, { probe = null, settle = 3500 } = {}) {
     if (msg.method === 'Runtime.consoleAPICalled' && p.type === 'error') errors.push(p.args.map((a) => a.value ?? a.description ?? '').join(' ').slice(0, 200));
     if (msg.method === 'Network.responseReceived') {
       const r = p.response;
-      if (p.type === 'Document' && r.url.split('#')[0] === url.split('#')[0]) status = r.status;
+      // the first Document response is the page itself (a redirect lands here as the final 200)
+      if (p.type === 'Document' && status === null) status = r.status;
       if (r.status >= 400 && r.url.startsWith(origin)) failed.push(`${r.status} ${r.url.slice(origin.length, origin.length + 80)}`);
     }
     if (msg.method === 'Network.loadingFailed' && !p.canceled && p.type !== 'Ping') failed.push(`failed ${p.errorText} (${p.type})`);
@@ -251,6 +253,21 @@ async function main() {
       }
 
       if (far) continue;   // the far viewer only re-reads the lake pages
+
+      // ── 4b. Find or add: one page. The old add address forwards, filled in.
+      await checkPage(b.port, 'find or add', `${BASE}/paddlingout/submitentry?name=Dillon%20Reservoir&lat=39.6175&lng=-106.0526`, view, async (ev) => {
+        const r = await ev(`({ url: location.pathname + location.search, title: (document.getElementById('po-title') || {}).textContent, actions: document.querySelectorAll('.po-actions .po-btn').length, add: !document.getElementById('add-pane').hidden, find: !document.getElementById('find-pane').hidden, name: document.getElementById('lakeName').value, mapH: document.getElementById('pin-map').offsetHeight, pin: !!document.querySelector('#pin-map .leaflet-marker-icon') })`);
+        const p = [];
+        if (!/^\/paddlingout\/search\?mode=add/.test(r.url)) p.push(`old add address landed on ${r.url}`);
+        if (!r.add || r.find) p.push('the Add tab is not the one showing');
+        if (r.title !== 'Add a lake') p.push(`header says "${r.title}"`);
+        if (r.name !== 'Dillon Reservoir') p.push('the name did not carry over');
+        if (r.mapH < 200 || !r.pin) p.push(`add map ${r.mapH}px tall, pin ${r.pin ? 'placed' : 'missing'}`);
+        if (r.actions !== 2) p.push(`header has ${r.actions} actions, expected Find-or-add + Settings`);
+        const back = await ev(`(document.getElementById('mode-find').click(), new Promise(ok => setTimeout(() => ok({ find: !document.getElementById('find-pane').hidden, mapH: document.getElementById('search-map').offsetHeight }), 600)))`);
+        if (!back.find || back.mapH < 150) p.push(`back to Find: pane ${back.find ? 'shown' : 'hidden'}, map ${back.mapH}px`);
+        return p;
+      }, { settle: 5000 });
 
       // ── 5. Stories
       await checkPage(b.port, 'stories', `${BASE}/stories`, view, async (ev) =>

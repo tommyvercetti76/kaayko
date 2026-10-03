@@ -11,12 +11,12 @@
  *
  * data-title    page title (default "Paddling Out"); data-eyebrow default "Kaayko"
  * data-back     href for the ‹ chevron; omit on the section home
- * data-current  which action is "here": search | submit | settings | none
+ * data-current  which action is "here": search | settings | none ("submit" = search)
  * data-brand-href  where the title links (default "/paddlingout"; the home
  *                  page points at "/")
  *
- * Every page gets the same three actions in the same order, so the way to
- * Search, Add a lake and Settings never moves. Plain script, no module —
+ * Every page gets the same two actions in the same order, so the way to
+ * Find or add a lake, and to Settings, never moves. Plain script, no module —
  * pages load it before their own scripts.
  */
 (function () {
@@ -27,9 +27,10 @@
     settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'
   };
 
+  // Find and Add are one action since 3 Oct 2026: one page, two tabs. Search,
+  // and if we do not cover the water, add it there with the name and pin carried.
   var ACTIONS = [
-    { key: 'search',   href: '/paddlingout/search',      label: 'Search',   aria: 'Search lakes and rivers' },
-    { key: 'submit',   href: '/paddlingout/submitentry', label: 'Add a lake', aria: 'Add a lake', primary: true },
+    { key: 'search',   href: '/paddlingout/search',      label: 'Find or add', aria: 'Find a lake, or add one', primary: true },
     { key: 'settings', href: '/paddlingout/settings',    label: 'Settings', aria: 'Settings and saved lakes' }
   ];
 
@@ -41,7 +42,7 @@
     var title = d.title || 'Paddling Out';
     var eyebrow = d.eyebrow || 'Kaayko';
     var back = d.back || '';
-    var current = d.current || '';
+    var current = d.current === 'submit' ? 'search' : (d.current || '');
     var brandHref = d.brandHref || '/paddlingout';
     var titleTag = d.titleTag === 'h2' ? 'h2' : 'h1';
 

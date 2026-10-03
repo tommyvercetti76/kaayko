@@ -112,6 +112,7 @@
   <script src="/js/services/spotTime.js"></script>
   <script src="/js/components/PaddleCard.js"></script>
 
+  <link rel="stylesheet" href="/css/submitentry.css">
   <link rel="stylesheet" href="/css/search.css">
   <link rel="stylesheet" href="/js/components/PinPicker.css">
   <link rel="stylesheet" href="/js/components/PaddleCard.css">
@@ -123,10 +124,29 @@
 </head>
 <body class="po-page">
 
-  <div id="po-header" data-title="Search" data-eyebrow="Paddling Out" data-back="/paddlingout" data-current="search"></div>
+  <div id="po-header" data-title="Find a lake" data-eyebrow="Paddling Out" data-back="/paddlingout" data-current="search"></div>
   <script>PoHeader.mount()</script>
 
-  <main class="search-page">
+  <!-- Finding a lake and adding one are one job (3 Oct 2026): search; if we cover it,
+       open it; if we do not, add it right here, with the name and the pin carried over. -->
+  <div class="lake-modes" role="tablist" aria-label="Find or add a lake">
+    <button type="button" role="tab" id="mode-find" class="lake-mode" aria-selected="true" aria-controls="find-pane">Find a lake</button>
+    <button type="button" role="tab" id="mode-add" class="lake-mode" aria-selected="false" aria-controls="add-pane" tabindex="-1">Add a lake</button>
+  </div>
+  <script>
+    // Pick the tab BEFORE first paint: deciding it in search.js painted Find, then
+    // swapped to Add, a 0.2 layout shift on desktop (browser-check, 3 Oct 2026).
+    (function () {
+      var add = /(?:^|[?&])mode=add(?:&|$)/.test(location.search);
+      if (!add) return;
+      document.documentElement.setAttribute('data-lake-mode', 'add');
+      var f = document.getElementById('mode-find'), a = document.getElementById('mode-add');
+      f.setAttribute('aria-selected', 'false'); f.tabIndex = -1;
+      a.setAttribute('aria-selected', 'true'); a.tabIndex = 0;
+      if (window.PoHeader) PoHeader.setTitle('Add a lake');
+    })();
+  </script>
+  <main class="search-page" id="find-pane" role="tabpanel" aria-labelledby="mode-find">
     <!-- Sticky panel: the search bar and the map. The map is the input. -->
     <div class="search-panel" id="search-panel">
       <div class="search-bar-row">
@@ -199,6 +219,166 @@
       </section>
     </div>
   </main>
+  <section class="add-pane" id="add-pane" role="tabpanel" aria-labelledby="mode-add" hidden>
+  <div class="submit-shell">
+
+    <p class="launch-note">Add a lake, river, or boat ramp. A person reviews every entry before it goes public.</p>
+    <p class="fineprint">
+      Public launches only &middot; photos must be yours &middot; we keep your entry, and with it a one-way hash of your IP address and your browser’s user-agent, to stop spam. <a href="/privacy">What we keep</a>.
+      <a href="/privacy">Privacy</a> &middot; <a href="/paddlingout/methodology">How scores work</a> &middot;
+      <details><summary>What gets an entry declined</summary>
+        <ul>
+          <li>No public access &mdash; private docks, fenced ramps, permit-only shorelines.</li>
+          <li>Photos that are not yours or do not show the water and launch.</li>
+          <li>A launch that is already on the map, or a pin far from the real put-in.</li>
+          <li>Conditions we cannot forecast safely (dams, spillways, active rapids).</li>
+        </ul>
+      </details>
+    </p>
+
+    <section class="submit-card" id="form-card">
+      <form id="submit-entry-form" novalidate>
+        <!-- Honeypot: invisible to people, filled by form bots. Never label it. -->
+        <div class="honeypot" aria-hidden="true">
+          <input name="website" type="text" tabindex="-1" autocomplete="off">
+        </div>
+
+
+
+
+
+        <div class="field-group" data-field="images">
+          <span class="label-text">Photos<span class="req" aria-hidden="true">*</span></span>
+          <label class="image-drop" id="image-drop" tabindex="0">
+            <input id="images" name="images" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple>
+            <span class="image-drop-main">
+              <span class="image-drop-copy">
+                <strong>Start here &mdash; add 2&ndash;5 photos</strong>
+                <span>Shot at the ramp, a photo carries its own GPS, and the rest of this form fills itself in. Show the water and the launch.</span>
+              </span>
+              <span class="image-count" id="image-count">0 selected</span>
+            </span>
+            <span class="image-previews" id="image-previews" aria-live="polite"></span>
+          </label>
+          <span class="field-msg" id="images-msg" aria-live="polite"></span>
+        </div>
+
+        <div class="field-group" data-field="coords">
+          <span class="label-text">Launch point<span class="req" aria-hidden="true">*</span></span>
+          <div class="coord-row">
+            <input id="lat" name="lat" inputmode="decimal" placeholder="Latitude" aria-label="Latitude">
+            <input id="lng" name="lng" inputmode="decimal" placeholder="Longitude" aria-label="Longitude">
+            <button class="mini-btn" id="find-coords" type="button">Find</button>
+            <button class="mini-btn" id="use-location" type="button">Use my location</button>
+          </div>
+          <div class="loc-lock photo-fix" id="photo-fix" aria-live="polite">
+            <span id="photo-fix-text"></span>
+            <button type="button" id="photo-fix-clear">Clear</button>
+          </div>
+          <div id="pin-map" class="pin-map pp-map" aria-label="Map. Drag the pin to the exact launch point."></div>
+          <p class="pin-hint">A ramp photo usually places this pin by itself. Otherwise <strong>Find</strong> drops one from the name and <strong>Use my location</strong> reads your position once. Either way, <strong>drag the pin</strong> onto the exact put-in.</p>
+          <span class="field-msg" id="coords-msg" aria-live="polite"></span>
+        </div>
+
+        <label data-field="launchHint">
+          <span class="label-text">Launch hint<span class="opt">optional</span></span>
+          <input id="launchHint" name="launchHint" maxlength="160" placeholder="Main public boat ramp, north shore, park entrance">
+        </label>
+
+        <label data-field="lakeName" class="name-field">
+          <span class="label-text">Lake or water body<span class="req" aria-hidden="true">*</span></span>
+          <input id="lakeName" name="lakeName" maxlength="120" placeholder="Start typing — Dillon Reservoir" autocomplete="off"
+                 role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lakeName-suggest">
+          <div class="search-suggest" id="lakeName-suggest" role="listbox" hidden></div>
+          <span class="field-msg" id="lakeName-msg" aria-live="polite"></span>
+        </label>
+
+        <div class="loc-lock" id="loc-lock" aria-live="polite">
+          <span id="loc-lock-text">City, state and country filled from your location</span>
+          <button type="button" id="loc-unlock">Change</button>
+        </div>
+
+        <div class="grid-two">
+          <label data-field="city">
+            <span class="label-text">City or nearest town<span class="req" aria-hidden="true">*</span></span>
+            <input id="city" name="city" maxlength="80" placeholder="Dallas" autocomplete="address-level2">
+            <span class="field-msg" id="city-msg" aria-live="polite"></span>
+          </label>
+          <label data-field="region">
+            <span class="label-text">State / region<span class="req" aria-hidden="true">*</span></span>
+            <div class="select-wrap" id="region-select-wrap">
+              <select id="region" name="region"></select>
+            </div>
+            <input id="regionText" name="regionText" maxlength="80" class="region-text" placeholder="State or region" hidden>
+            <span class="field-msg" id="region-msg" aria-live="polite"></span>
+          </label>
+        </div>
+
+        <label data-field="country">
+          <span class="label-text">Country<span class="req" aria-hidden="true">*</span></span>
+          <div class="select-wrap">
+            <select id="country" name="country"></select>
+          </div>
+          <span class="field-msg" id="country-msg" aria-live="polite"></span>
+        </label>
+
+        <div class="grid-two">
+          <label>
+            <span class="label-text">Parking</span>
+            <div class="select-wrap">
+              <select id="parkingAvl" name="parkingAvl">
+                <option value="Y">Available</option>
+                <option value="N">Not sure / not available</option>
+              </select>
+            </div>
+          </label>
+          <label>
+            <span class="label-text">Restrooms</span>
+            <div class="select-wrap">
+              <select id="restroomsAvl" name="restroomsAvl">
+                <option value="N">Not sure / not available</option>
+                <option value="Y">Available</option>
+              </select>
+            </div>
+          </label>
+        </div>
+
+        <label data-field="description">
+          <span class="label-text">Short note<span class="opt">optional</span></span>
+          <textarea id="description" name="description" maxlength="360" placeholder="One useful thing paddlers should know before driving out."></textarea>
+        </label>
+
+
+        <div class="field-group" data-field="contact">
+          <span class="label-text">Submit as</span>
+          <div class="choice-row">
+            <label class="choice"><input type="radio" name="contactPreference" value="anonymous" checked> Anonymous</label>
+            <label class="choice"><input type="radio" name="contactPreference" value="email"> Email me when it is live</label>
+          </div>
+        </div>
+
+        <label class="email-wrap" id="email-wrap" hidden data-field="email">
+          <span class="label-text">Email<span class="req" aria-hidden="true">*</span></span>
+          <input id="email" name="email" type="email" maxlength="254" placeholder="you@example.com" autocomplete="email">
+          <span class="field-msg" id="email-msg" aria-live="polite"></span>
+        </label>
+
+        <div class="actions">
+          <div class="todo-wrap">
+            <span class="form-status" id="form-status" aria-live="polite"></span>
+            <ul class="todo" id="todo" aria-label="Still needed"></ul>
+          </div>
+          <button class="submit-btn" id="submit-btn" type="submit">Submit entry</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="success-panel" id="success-panel">
+      <h2>Entry received</h2>
+      <p id="success-copy"></p>
+    </section>
+  </div>
+  </section>
 
   <footer class="site-footer">
     <nav aria-label="Footer">
@@ -210,6 +390,8 @@
     <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
   </footer>
 
+  <script src="/js/services/exifgps.js"></script>
+  <script src="/js/pages/submitentry.js"></script>
   <script src="/js/pages/search.js"></script>
 
   <!-- First-time tour -->
@@ -221,7 +403,8 @@
       <div class="tour-step"><span class="n">2</span><span class="t">Tap anywhere on the map to search there, or drag it and tap <b>&ldquo;Search this area&rdquo;</b>.</span></div>
       <div class="tour-step"><span class="n">3</span><span class="t">Tap any <b>pin</b> to open that lake&rsquo;s forecast.</span></div>
       <div class="tour-step"><span class="n">4</span><span class="t">Tap the <b>&hearts;</b> on a lake to save it &mdash; saved lakes show first everywhere.</span></div>
-      <div class="tour-step"><span class="n">5</span><span class="t">Change units anytime in <b>Settings</b> &mdash; the gear, top-right.</span></div>
+      <div class="tour-step"><span class="n">5</span><span class="t">Not on the map yet? Tap <b>Add this lake</b> on a result, or the <b>Add a lake</b> tab &mdash; the name and pin come with you.</span></div>
+      <div class="tour-step"><span class="n">6</span><span class="t">Change units anytime in <b>Settings</b> &mdash; the gear, top-right.</span></div>
       <button type="button" class="tour-go" id="search-tour-go">Start exploring</button>
     </div>
   </div>
@@ -246,6 +429,9 @@
       if (help) help.addEventListener('click', show);
       var seen = true; try { seen = localStorage.getItem(KEY) === '1'; } catch (e) {}
       if (seen) return;
+      // Someone who came here to add a lake is mid-task; the search tour can wait.
+      var addPane = document.getElementById('add-pane');
+      if (addPane && !addPane.hidden) return;
       // Don't stack on top of the storage notice. After a tick, check whether the
       // notice bar is actually on screen: if so, wait for the user to dismiss it;
       // if not (already acknowledged, or not present), show the tour.

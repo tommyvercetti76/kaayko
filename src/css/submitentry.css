@@ -1,5 +1,12 @@
 /* paddlingout/submitentry.html — extracted 12 Sep 2026. Tokens: css/po-tokens.css (loaded after). */
-    :root {
+/* Size-matched fallbacks (3 Oct 2026). The form paints before Google Fonts arrive;
+   plain Georgia is 12% wider than Cormorant, so the photo box wrapped to two lines
+   and snapped to one when the font landed: a 0.2 layout shift on a cold desktop
+   load. Ratios measured with fontTools against the Google Fonts latin files. */
+@font-face{font-family:'Cormorant fallback';src:local('Georgia');font-style:normal;size-adjust:89.1%;ascent-override:103.8%;descent-override:32.2%;line-gap-override:0%}
+@font-face{font-family:'Cormorant fallback';src:local('Georgia Italic'),local('Georgia-Italic');font-style:italic;size-adjust:79.6%;ascent-override:116.1%;descent-override:36.1%;line-gap-override:0%}
+@font-face{font-family:'Josefin fallback';src:local('Arial'),local('ArialMT');size-adjust:99.4%;ascent-override:75.4%;descent-override:25.1%;line-gap-override:0%}
+    .submit-shell {
       --bg:#080808;
       --panel:#0d0c0a;
       --panel-soft:#10110d;
@@ -11,18 +18,12 @@
       --ok:#8fbc6a;
       --bad:#f87171;
       --warn:#d9bd7b;
-      --font-serif:'Cormorant Garamond', Georgia, serif;
-      --font-sans:'Josefin Sans', Arial, sans-serif;
+      --font-serif:'Cormorant Garamond', 'Cormorant fallback', Georgia, serif;
+      --font-sans:'Josefin Sans', 'Josefin fallback', Arial, sans-serif;
       --ease:cubic-bezier(0.76,0,0.24,1);
     }
     * { box-sizing:border-box; }
-    body {
-      margin:0;
-      min-height:100vh;
-      background:var(--bg);
-      color:var(--fg);
-      font-family:var(--font-serif);
-    }
+    /* body: styled by the host page (search.html) */
     .submit-shell {
       width:min(100%, 980px);
       margin:0 auto;
@@ -52,7 +53,7 @@
       letter-spacing:0.24em;
       text-transform:lowercase;
     }
-    h1 {
+    .submit-shell h1 {
       margin:0.2rem 0 0;
       color:var(--gold-bright);
       font-family:var(--font-sans);
@@ -75,7 +76,7 @@
       background:linear-gradient(135deg, var(--panel), var(--panel-soft));
       padding:1.2rem;
     }
-    form {
+    .submit-shell form {
       display:grid;
       gap:1rem;
     }
@@ -84,7 +85,7 @@
       grid-template-columns:repeat(2, minmax(0,1fr));
       gap:1rem;
     }
-    label, .field-group {
+    .submit-shell label, .field-group {
       display:grid;
       gap:0.45rem;
     }
@@ -95,7 +96,7 @@
       letter-spacing:0.14em;
       text-transform:uppercase;
     }
-    input, textarea, select {
+    .submit-shell input, .submit-shell textarea, .submit-shell select {
       width:100%;
       border:1px solid rgba(181,147,90,0.24);
       border-radius:9px;
@@ -105,15 +106,15 @@
       outline:none;
       padding:0.78rem 0.85rem;
     }
-    textarea {
+    .submit-shell textarea {
       min-height:96px;
       resize:vertical;
     }
-    input:focus, textarea:focus, select:focus {
+    .submit-shell input:focus, .submit-shell textarea:focus, .submit-shell select:focus {
       border-color:var(--gold);
       box-shadow:0 0 0 3px rgba(181,147,90,0.11);
     }
-    .pin-map {
+    .submit-shell .pin-map {   /* beats PinPicker.css .pp-map{height:100%}, which loads after on the search page */
       height:260px;
       margin-top:0.7rem;
       border-radius:10px;
@@ -155,10 +156,10 @@
       background:rgba(181,147,90,0.16);
     }
     /* ── Sleeker fields ─────────────────────────────────────────────── */
-    input, textarea, select {
+    .submit-shell input, .submit-shell textarea, .submit-shell select {
       transition:border-color .18s var(--ease), box-shadow .18s var(--ease), background .18s var(--ease);
     }
-    input::placeholder, textarea::placeholder { color:rgba(237,232,223,0.3); }
+    .submit-shell input::placeholder, .submit-shell textarea::placeholder { color:rgba(237,232,223,0.3); }
     /* Custom-styled dropdowns (no dated native chrome) */
     .select-wrap { position:relative; }
     .select-wrap[hidden] { display:none; }
@@ -169,11 +170,11 @@
       transform:translateY(-65%) rotate(45deg);
       pointer-events:none; opacity:0.9;
     }
-    select {
+    .submit-shell select {
       appearance:none; -webkit-appearance:none; -moz-appearance:none;
       padding-right:2.4rem; cursor:pointer;
     }
-    select option { background:#141210; color:var(--fg); }
+    .submit-shell select option { background:#141210; color:var(--fg); }
     /* Prominent, modern submit */
     .submit-btn {
       min-height:52px;
@@ -224,8 +225,7 @@
       padding:1rem;
       transition:border-color 0.2s, background 0.2s;
     }
-    .image-drop:hover,
-    .image-drop.dragging {
+    .image-drop:hover, .image-drop.dragging {
       border-color:var(--gold);
       background:rgba(181,147,90,0.11);
     }

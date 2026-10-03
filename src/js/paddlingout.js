@@ -153,7 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // "Add a lake" tile — matches whichever card style is active
   //──────────────────────────────────────────────────────────────────────────────
   function renderSubmitEntryCard(v) {
-    const openSubmitPage = () => { window.location.href = "/paddlingout/submitentry"; };
+    const openSubmitPage = () => { window.location.href = "/paddlingout/search?mode=add"; };
 
     if (v === 'minimal') {
       const tile = document.createElement("div");

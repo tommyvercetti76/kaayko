@@ -346,6 +346,11 @@
       ],
       "redirects": [
         {
+          "source": "/paddlingout/submitentry",
+          "destination": "/paddlingout/search?mode=add",
+          "type": 301
+        },
+        {
           "source": "/kreator/admin{,/**}",
           "destination": "/kreator",
           "type": 301
@@ -918,6 +923,13 @@
         {
           "source": "**",
           "destination": "/store.html"
+        }
+      ],
+      "redirects": [
+        {
+          "source": "/paddlingout/submitentry",
+          "destination": "/paddlingout/search?mode=add",
+          "type": 301
         }
       ]
     },

@@ -1,5 +1,6 @@
 /**
- * pages/submitentry.js — controller for /paddlingout/submitentry
+ * pages/submitentry.js — the Add-a-lake form, the "Add" tab of /paddlingout/search
+ * (Find and Add were two pages until 3 Oct 2026; /paddlingout/submitentry now forwards here)
  * Extracted from the page 12 Sep 2026. Depends on prod-config, prefs, util, geo, PinPicker, PoHeader (loaded before).
  */
 (function () {
@@ -569,8 +570,8 @@
   });
 
   // ── Location: geocode, reverse geocode, lock ───────────────────────
-  function applyUrlPrefill() {
-    const params = new URLSearchParams(window.location.search);
+  function applyUrlPrefill(given) {
+    const params = given || new URLSearchParams(window.location.search);
     if (params.get('name')) field('lakeName').value = params.get('name');
     if (params.get('lat')) field('lat').value = params.get('lat');
     if (params.get('lng')) field('lng').value = params.get('lng');
@@ -804,8 +805,20 @@
     }
   });
 
-  applyUrlPrefill();
-  initMap();
+  // ── Hosted inside the combined Find / Add page (3 Oct 2026) ────────────
+  // The form can load in a hidden tab. Leaflet sizes the map from its box and a
+  // hidden box is 0×0, so the map is built the first time the tab is shown.
+  // Search hands over what the person already told it (name, pin) via show().
+  function paneHidden() { return !!form.closest('[hidden]'); }
+  window.KaaykoAddLake = {
+    show: function (params) {
+      if (params) applyUrlPrefill(params);
+      if (!picker) initMap(); else picker.invalidate();
+      refreshReadiness();
+    }
+  };
+
+  if (!paneHidden()) { applyUrlPrefill(); initMap(); }
   renderImagePreviews();
   refreshReadiness();
 }());

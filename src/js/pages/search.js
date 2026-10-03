@@ -252,7 +252,52 @@
       if (typed) p.set('name', typed);
       if (state.center) { p.set('lat', state.center.lat.toFixed(5)); p.set('lng', state.center.lng.toFixed(5)); }
     }
-    window.location.href = '/paddlingout/submitentry' + (p.toString() ? '?' + p.toString() : '');
+    setMode('add', p);
+  }
+
+  // ── Find / Add: one page, two tabs (3 Oct 2026) ────────────────────────────
+  // Searching for a lake and adding one are the same job. A result we do not
+  // cover becomes an "Add this lake" that opens the form here, filled in.
+  var tabFind = $('mode-find'), tabAdd = $('mode-add');
+  var findPane = $('find-pane'), addPane = $('add-pane');
+  function setMode(mode, params, opts) {
+    var add = mode === 'add';
+    if (!tabFind || !addPane) {   // page without the tabs: the old handoff
+      window.location.href = '/paddlingout/search?mode=add' + (params && params.toString() ? '&' + params.toString() : '');
+      return;
+    }
+    findPane.hidden = add; addPane.hidden = !add;
+    if (add) document.documentElement.setAttribute('data-lake-mode', 'add');
+    else document.documentElement.removeAttribute('data-lake-mode');
+    tabFind.setAttribute('aria-selected', String(!add)); tabAdd.setAttribute('aria-selected', String(add));
+    tabFind.tabIndex = add ? -1 : 0; tabAdd.tabIndex = add ? 0 : -1;
+    if (window.PoHeader) window.PoHeader.setTitle(add ? 'Add a lake' : 'Find a lake');
+    document.title = (add ? 'Add a Lake' : 'Find Kayak & Paddle Spots Near You') + ' | Kaayko Paddling Out';
+    if (add && window.KaaykoAddLake) window.KaaykoAddLake.show(params || null);
+    if (!add && picker) picker.invalidate();   // a map built while hidden measured 0x0
+    if (!(opts && opts.keepUrl)) {
+      var u = new URLSearchParams(add && params ? params : '');
+      if (add) u.set('mode', 'add');
+      else if ((state.query || '').trim()) u.set('q', state.query.trim());   // a refresh keeps the search
+      try { history.replaceState(null, '', '/paddlingout/search' + (u.toString() ? '?' + u.toString() : '')); } catch (e) {}
+    }
+    if (!(opts && opts.noScroll)) window.scrollTo({ top: 0 });
+  }
+  if (tabFind) {
+    tabFind.addEventListener('click', function () { setMode('find'); });
+    tabAdd.addEventListener('click', function () {
+      // carry the name typed and the pin in view, as the old Request button did
+      var p = new URLSearchParams(), typed = (state.query || '').trim();
+      if (typed) p.set('name', typed);
+      if (state.center) { p.set('lat', state.center.lat.toFixed(5)); p.set('lng', state.center.lng.toFixed(5)); }
+      setMode('add', p.toString() ? p : null);
+    });
+    [tabFind, tabAdd].forEach(function (t) {
+      t.addEventListener('keydown', function (e) {
+        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+        e.preventDefault(); (t === tabFind ? tabAdd : tabFind).click(); (t === tabFind ? tabAdd : tabFind).focus();
+      });
+    });
   }
 
   // My area
@@ -304,7 +349,7 @@
       var bits = [b.type || 'Water', P.fmtDist(distKm) + (b.areaKm2 ? ' · ' + P.fmtArea(b.areaKm2) : '')];
       var row = window.PaddleCard.create({ id: '', title: b.name, subtitle: bits[1], paddleScore: null }, {
         variant: 'row', metaBits: bits, showFavorite: false, onOpen: function () { openForecast(b); },
-        actions: [{ label: 'Request', title: 'Ask us to cover this lake', onClick: function () { requestLake(b); } },
+        actions: [{ label: 'Add this lake', title: 'Add it to Paddling Out: the name and pin carry over', onClick: function () { requestLake(b); } },
                   { label: 'Open in Maps', icon: I ? I.get('pin') : 'Map', onClick: function () { window.open('https://www.google.com/maps/search/?api=1&query=' + b.lat + ',' + b.lng, '_blank', 'noopener'); } }]
       });
       row.style.animationDelay = (idx * 35) + 'ms';
@@ -415,6 +460,7 @@
   // ── Entry: ?lat&lng · ?q · saved area · idle ───────────────────────────────
   (function start() {
     var p = new URLSearchParams(window.location.search);
+    if (p.get('mode') === 'add') { p.delete('mode'); setMode('add', p, { keepUrl: true, noScroll: true }); render(); return; }
     var lat = parseFloat(p.get('lat')), lng = parseFloat(p.get('lng')), q = (p.get('q') || '').trim();
     if (!isNaN(lat) && !isNaN(lng)) { inputEl.value = lat.toFixed(4) + ', ' + lng.toFixed(4); clearBtn.classList.add('visible'); searchAt(lat, lng, lat.toFixed(3) + ', ' + lng.toFixed(3), 30, { pin: true, fly: true }); return; }
     if (q) { inputEl.value = q; clearBtn.classList.add('visible'); submitText(); return; }
