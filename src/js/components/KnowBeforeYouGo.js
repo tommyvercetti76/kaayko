@@ -83,9 +83,9 @@
     return '<div class="kbg-closed' + (season ? ' is-season' : '') + '" role="status">' +
       '<div class="kbg-closed-eyebrow">' + (season ? 'Out of season' : 'Closed') + '</div>' +
       '<p class="kbg-closed-copy">' + esc(s.summary) + '</p>' +
-      (season && s.reason ? '<p class="kbg-closed-note">' + esc(s.reason) + '</p>' : '') +
+      (s.reason ? '<p class="kbg-closed-note">' + esc(s.reason) + '</p>' : '') +
       '<p class="kbg-closed-note">' + (season
-        ? 'No Paddle Score until then. Cold water and short, freezing days make a rating misleading.'
+        ? 'No Paddle Score until the ice is out: a score would say a frozen lake is fine to paddle.'
         : 'There is no Paddle Score while it is closed: a score would say the water is fine to go out on.') + '</p>' +
       (s.source ? sourceLine(s) : '') + '</div>';
   }

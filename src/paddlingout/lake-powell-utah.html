@@ -231,7 +231,7 @@
       var st = spot.status && spot.status.state;
       if (st === 'closed' || st === 'season') {
         if (dot) dot.className = 'dot ' + (st === 'season' ? 's-season' : 's-closed');
-        el.textContent = st === 'closed' ? 'Closed to recreation \u00b7 see why' : (spot.status.summary || 'Out of season');
+        el.textContent = st === 'closed' && !spot.status.resumes ? 'Closed to recreation \u00b7 see why' : (spot.status.summary || 'Out of season');
         return;
       }
       var T = window.KaaykoSpotTime;

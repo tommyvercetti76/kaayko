@@ -47,7 +47,8 @@
     var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(status.resumes || '');
     var back = m ? MON[+m[2] - 1] + ' ' + (+m[3]) : '';
     return st === 'closed'
-      ? { state: st, label: 'Closed', short: 'Closed', line: 'Closed to recreation', summary: status.summary || '' }
+      ? { state: st, label: 'Closed', short: back ? 'Closed · back ' + back : 'Closed',
+          line: back ? 'Closed to boating' : 'Closed to recreation', summary: status.summary || '' }
       : { state: st, label: 'Out of season', short: back ? 'Out of season · back ' + back : 'Out of season', line: 'Out of season', summary: status.summary || '' };
   }
 
