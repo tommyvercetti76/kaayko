@@ -8,8 +8,8 @@ Use this guide for Paddling Out frontend work in `kaayko`. For backend/API work,
 
 Read these before changing Paddling Out:
 
-- `docs/audits/PADDLING_OUT_FULL_FEATURE_AUDIT_2026-09-05.md`
-- `docs/audits/CROSS_PRODUCT_USER_AND_OPERATIONS_AUDIT_2026-09-05.md`
+- `kaayko-api/docs/audits/PADDLING_OUT_FULL_FEATURE_AUDIT_2026-09-05.md`
+- `kaayko-api/docs/audits/CROSS_PRODUCT_USER_AND_OPERATIONS_AUDIT_2026-09-05.md`
 - `docs/products/PADDLING_OUT.md`
 - `docs/paddlingout/UI-UX-DESIGN-PRINCIPLES.md`
 
@@ -82,5 +82,5 @@ Backend tests to coordinate with `kaayko-api`:
 - `npm run test:paddlingout`
 - `weather-paddle-score.test.js`
 
-Update `docs/audits/PADDLING_OUT_FULL_FEATURE_AUDIT_2026-09-05.md` with a `Resolution Notes` section whenever P0/P1 items are addressed.
+Update `kaayko-api/docs/audits/PADDLING_OUT_FULL_FEATURE_AUDIT_2026-09-05.md` with a `Resolution Notes` section whenever P0/P1 items are addressed.
 

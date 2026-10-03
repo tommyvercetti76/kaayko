@@ -47,7 +47,7 @@ console.log("🚀 PRODUCTION MODE FORCED - Using:", window.PRODUCTION_API_BASE);
 
    All five belong to the SAME Stripe account. Do not flip one and test.
 
-   Also still open before real money (see docs/audits/): Terms carry legal
+   Also still open before real money (see the audits in the private kaayko-api repo): Terms carry legal
    placeholders, and MAIL_SMTP_URL must exist or every receipt lands in ERROR.
    ───────────────────────────────────────────────────────────────────────── */
 window.KAAYKO_STRIPE_PK = "pk_test_51Sb3SXK1xkNVIdc56q3mvEy0TSv5Jr7iUOpZRucl6oAzO3Dgl0PI6b2WDz2kW4LmgSgPHKlCkIyHUmUB3jhRo1ra00ZPcK4faX";

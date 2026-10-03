@@ -346,6 +346,11 @@
       ],
       "redirects": [
         {
+          "source": "/kreator/admin{,/**}",
+          "destination": "/kreator",
+          "type": 301
+        },
+        {
           "source": "/reads",
           "destination": "/stories",
           "type": 301

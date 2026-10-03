@@ -83,4 +83,4 @@ Use the emulator when you need Hosting rewrites and header behavior. Opening fil
 - Product index: [`docs/products/README.md`](./docs/products/README.md)
 - Docs index: [`docs/README.md`](./docs/README.md)
 - KORTEX agent (full file map, routes, collections, patterns): [`.claude/commands/kortex.md`](./.claude/commands/kortex.md)
-- Latest audits: [`docs/audits`](./docs/audits)
+- Latest audits: `kaayko-api/docs/audits` (private repo; moved out of this public one on 3 Oct 2026)

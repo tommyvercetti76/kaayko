@@ -355,7 +355,7 @@ GET/POST/PUT/DELETE /api/billing/subscriptions
 | `/kreator/dashboard` | `kaayko/src/kreator/dashboard.html` |
 | `/kreator/add-product` | `kaayko/src/kreator/add-product.html` |
 | `/kreator/forgot-password` | `kaayko/src/kreator/forgot-password.html` |
-| `/kreator/admin` | `kaayko/src/kreator/admin/index.html` |
+| `/kreator/admin` | removed 3 Oct 2026; 301 → `/kreator` |
 | ~~`/kreator/apply-old-social`~~ | `kaayko/src/kreator/apply-old-social.html` (legacy) |
 | ~~`/kreator/dashboard-old-influencer`~~ | `kaayko/src/kreator/dashboard-old-influencer.html` (legacy) |
 
@@ -394,7 +394,7 @@ GET  /api/kreators/admin/stats                    → overall stats
 
 **Firestore collections:** `kreatorApplications`, `kreators`, `kreatorProducts`, `admin_users`, `admin_audit_logs`
 **External services:** Google OAuth
-**Auth required:** Public: apply, check-status. Magic link: onboarding. `kreator` claim: dashboard, add-product. `admin` claim: /kreator/admin
+**Auth required:** Public: apply, check-status. Magic link: onboarding. `kreator` claim: dashboard, add-product. platform admin (API only): /api/kreators/admin/*
 
 ---
 

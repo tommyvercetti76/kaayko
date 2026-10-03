@@ -46,7 +46,7 @@ Trainer frontend still calls additional endpoints that are not implemented in th
 
 See the full audit for details:
 
-- `docs/audits/PADDLING_OUT_FULL_FEATURE_AUDIT_2026-09-05.md`
+- `kaayko-api/docs/audits/PADDLING_OUT_FULL_FEATURE_AUDIT_2026-09-05.md`
 
 Resolved in the current working tree:
 

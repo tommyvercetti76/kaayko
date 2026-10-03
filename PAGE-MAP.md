@@ -157,7 +157,7 @@ Views under `src/admin/views/<name>/` are `.js`/`.css` modules lazy-loaded by th
 | `/kreator/dashboard-old-influencer` | `src/kreator/dashboard-old-influencer.html` (legacy) |
 | `/kreator/add-product` | `src/kreator/add-product.html` |
 | `/kreator/forgot-password` | `src/kreator/forgot-password.html` |
-| `/kreator/admin` | `src/kreator/admin/index.html` |
+| `/kreator/admin` | removed 3 Oct 2026 (hard-coded password, never worked); 301 → `/kreator`. Applications are reviewed through the API as a platform admin |
 
 ### Karma (4)
 

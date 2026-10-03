@@ -71,6 +71,27 @@ scan_text() {
     2>/dev/null | grep -v 'secret-scan: allow' || true
 }
 
+# ── 3. The live values themselves. ───────────────────────────────────────────
+# Patterns only catch secrets with a recognisable shape. On 3 Oct 2026 the live
+# ADMIN_PASSPHRASE (a random string) was found in a committed audit doc in the
+# PUBLIC repo, with a curl example around it. So every file is also checked for
+# the exact value of each production secret, read from the local, never-committed
+# kaayko-api env file. Values are compared, never printed.
+secrets_env="${KAAYKO_SECRETS_ENV:-$HOME/Kaayko_v6/kaayko-api/functions/.env}"
+live_values=""
+if [ -r "$secrets_env" ]; then
+  live_values=$(mktemp)
+  chmod 600 "$live_values"
+  trap 'rm -f "$live_values"' EXIT
+  tab=$(printf '\t')
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in ''|'#'*) continue ;; esac
+    name=${line%%=*}; val=${line#*=}
+    val=$(printf '%s' "$val" | sed -e "s/^[\"']//" -e "s/[\"']\$//")
+    [ ${#val} -ge 16 ] && printf '%s%s%s\n' "$name" "$tab" "$val" >> "$live_values"
+  done < "$secrets_env"
+fi
+
 seen=""
 for pr in $pairs; do
   rev="${pr%%:*}"; p="${pr#*:}"
@@ -80,6 +101,14 @@ for pr in $pairs; do
   esac
   content=$(git show "$rev:$p" 2>/dev/null || true)
   [ -n "$content" ] || continue
+  if [ -n "$live_values" ]; then
+    while IFS="$tab" read -r name val; do
+      if printf '%s' "$content" | grep -qF -- "$val"; then
+        say "BLOCKED  $p$([ -n "$rev" ] && printf ' (in %s)' "$(git log -1 --format=%h "$rev" 2>/dev/null)") — contains the live value of $name"
+        bad=1
+      fi
+    done < "$live_values"
+  fi
   hits=$(scan_text "$content")
   if [ -n "$hits" ]; then
     case " $seen " in *" $p "*) continue ;; esac

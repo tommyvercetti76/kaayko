@@ -69,8 +69,8 @@ Checkout sequence:
 
 See:
 
-- `docs/audits/KAAY_STORE_FULL_FEATURE_AUDIT_2026-09-05.md`
-- `docs/audits/CROSS_PRODUCT_USER_AND_OPERATIONS_AUDIT_2026-09-05.md`
+- `kaayko-api/docs/audits/KAAY_STORE_FULL_FEATURE_AUDIT_2026-09-05.md`
+- `kaayko-api/docs/audits/CROSS_PRODUCT_USER_AND_OPERATIONS_AUDIT_2026-09-05.md`
 
 Resolved in the current working tree:
 
