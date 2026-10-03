@@ -7,6 +7,23 @@ live, how it was checked, and how to undo it.
 
 ---
 
+## 2026-10-03 · Follow-up 2: the scramble starts scrambled
+
+- **Commit:** `1905751` (on top of `d76d16e`)
+- **Live:** kaayko.com and kaay.store.
+- **Found by:** the before-and-after filmstrip of the live site. On a fast phone, one
+  frame showed the finished headlines just before they scrambled. The overlay was
+  created holding the final text, and only got random letters on the first tick 38 ms
+  later.
+- **Change:** `home-entrance.js` fills the overlay with random letters in the same step
+  that creates it.
+- **Checked:** a frame check (any headline readable before its scramble ends) flagged
+  the live site before the fix 3 of 3 times. After the fix: 0 of 9 on the preview and
+  0 of 6 on live (phone fast ×3, phone 4G, desktop, landscape), with one headline size
+  throughout and only entrance transitions.
+
+---
+
 ## 2026-10-03 · Follow-up: the layout can never paint before it is placed
 
 - **Commit:** `d76d16e` (on top of `9184643`)
@@ -94,11 +111,11 @@ than the old wrong-sized ones did, and nothing moves after they arrive.
 - Preview: `/#store` opens the invite modal with the Store panel off.
 - Filmstrips before and after at desktop, phone on 4G, and phone landscape.
 
-### To undo (both entries)
+### To undo (all three entries)
 
 ```
 cd ~/Kaayko_v6/kaayko
-git revert --no-edit d76d16e 9184643
+git revert --no-edit 1905751 d76d16e 9184643
 firebase deploy --only hosting:kaaykostore,hosting:kaay-store
 git push
 ```
