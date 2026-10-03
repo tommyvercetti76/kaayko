@@ -4,6 +4,24 @@ Newest first. What changed, why, the commit, whether it is live, and how it was 
 
 ---
 
+## 2026-10-03 18:50 CDT · The pages say what runs; FAQ removed; one look for lakes with no score
+
+- **Live:** hosting + API; browser-check 42/42 on production.
+- **Methodology (audit F2):** now states: water temperature measured-or-nothing and no spot has a sensor
+  (the cold-water rule cannot fire); river flow not checked (no gauge); calibration can only lower a score;
+  no lake has an offset; crowd calibration not live (0 ratings); night = the lake's sun on every surface;
+  new "Frozen and Closed Water" section. Model facts verified against the artifact: 400 trees, 19 features,
+  monotone in wind/gusts/waves/rain/visibility, trained on 187 human ratings across 93 lakes, MAE 0.60.
+- **17 spot pages:** every "cold-water rule caps the score here" passage rewritten in the page's own voice:
+  the cold water is real and the score cannot see it. All 68 description strings drop "water temperature".
+- **/paddlingout:** the six-question FAQ and its FAQPage schema removed. Google stopped showing FAQ rich
+  results for sites like this in Aug 2023, it repeated the intro, and four answers were stale. To restore:
+  `git show HEAD~1:src/paddlingout.html` for the section and schema.
+- **Paused lakes:** one calm colour; Antero reads "Closed for 2026" (status.until 2026-12-31), then the
+  freeze season. Re-check Denver Water before 15 May 2027.
+
+---
+
 ## 2026-10-03 18:25 CDT · Every freezing lake resumes May 15
 
 - **Commit:** kaayko-api (off-season.json) · **Live:** yes (status is computed per request).
