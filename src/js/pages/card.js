@@ -2,14 +2,14 @@
  * pages/card.js — the collectible card (/card): lighting model, flip, inspect, QR.
  * Moved out of card.html on 12 Sep 2026 unchanged.
  */
-import { front, back, PRINT, BACK, ART_EXTENT, ART_COLUMN } from '/js/cards/render.js?v=01cba65';
-import { engravedFor, stockOf, embossParams, reliefType, DIRS } from '/js/cards/skins/engraved.js?v=01cba65';
-import { embossOf, stillCanvas } from '/js/cards/emboss.js?v=01cba65';
-import { readFace, warmArt } from '/js/cards/relief.js?v=01cba65';
-import { rest, step, clamp } from '/js/cards/attitude.js?v=01cba65';
-import { lightFace, pointerLamp, v } from '/js/cards/lamp.js?v=01cba65';
-import { dustMorph } from '/js/cards/morph.js?v=01cba65';
-import { esc, apiBase } from '/js/kit.js?v=01cba65';
+import { front, back, PRINT, BACK, ART_EXTENT, ART_COLUMN } from '/js/cards/render.js?v=3526885';
+import { engravedFor, stockOf, embossParams, reliefType, DIRS } from '/js/cards/skins/engraved.js?v=3526885';
+import { embossOf, stillCanvas } from '/js/cards/emboss.js?v=3526885';
+import { readFace, warmArt } from '/js/cards/relief.js?v=3526885';
+import { rest, step, clamp } from '/js/cards/attitude.js?v=3526885';
+import { lightFace, pointerLamp, v } from '/js/cards/lamp.js?v=3526885';
+import { dustMorph } from '/js/cards/morph.js?v=3526885';
+import { esc, apiBase } from '/js/kit.js?v=3526885';
 
 /* ── the light ─────────────────────────────────────────────────────────────
    One lamp. Everything the eye reads as light on this card — the glint, its
@@ -26,6 +26,31 @@ import { esc, apiBase } from '/js/kit.js?v=01cba65';
 
    What this writes is a dozen CSS custom properties, and every one of them
    lands in a transform or an opacity. The face is never repainted by light.  */
+
+
+/* ── lifecycle ─────────────────────────────────────────────────────────────
+   The page used to wire itself up as the module loaded and assume it lived
+   for the whole visit: no way to stop the frame loop, the window listeners,
+   the timers, the fingertip readers or a dust morph in flight. mount() is that
+   same code, unchanged in order (it is not re-indented, so the 12 Sep move
+   stays diffable), and it returns stop(). start() runs it once on load.
+   Anything that shows the card more than once (a modal, a client-side route,
+   a React wrapper) calls KaaykoCard.stop() before it goes, and start() again.
+   ─────────────────────────────────────────────────────────────────────── */
+let current = null;
+export function start() { if (!current) current = mount(); return current; }
+export function stop() { if (current) { current(); current = null; } }
+window.KaaykoCard = { start, stop };
+
+function mount() {
+const life = new AbortController();
+let stopped = false;
+const timers = new Set(), frames = new Set();
+const on = (el, type, fn, opts) => el.addEventListener(type, fn,
+  Object.assign({}, typeof opts === 'object' ? opts : { capture: !!opts }, { signal: life.signal }));
+const later = (fn, ms) => { const id = setTimeout(() => { timers.delete(id); if (!stopped) fn(); }, ms); timers.add(id); return id; };
+const cancelLater = (id) => { clearTimeout(id); timers.delete(id); };
+const frame = (fn) => { const id = requestAnimationFrame((t) => { frames.delete(id); if (!stopped) fn(t); }); frames.add(id); return id; };
 
 const card = document.getElementById('card');
 const room = document.getElementById('room');
@@ -49,7 +74,7 @@ function measure() {
   eye = v(0, 0, PERSPECTIVE / cardW);
 }
 measure();
-window.addEventListener('resize', measure);
+on(window, 'resize', measure);
 
 let raf = 0, target = { x: .5, y: .35 }, cur = { x: .5, y: .35 }, live = false;
 
@@ -135,6 +160,7 @@ const att = rest();
 let lastT = 0;
 
 function loop(t) {
+  if (stopped) return;
   // Real elapsed time, so the spring behaves the same on a 120Hz phone as on a
   // 60Hz laptop. Clamped, because a backgrounded tab returns a huge first step.
   const dt = lastT ? Math.min(0.25, (t - lastT) / 1000) : 1 / 60;
@@ -258,12 +284,12 @@ function settleInspect() {
 }
 
 if (inspectBtn) {
-  inspectBtn.addEventListener('click', (e) => { e.stopPropagation(); setInspect(!inspecting); });
-  card.addEventListener('pointerdown', grabStart);
-  card.addEventListener('pointermove', grabMove);
-  card.addEventListener('pointerup', grabEnd);
-  card.addEventListener('pointercancel', grabEnd);
-  card.addEventListener('lostpointercapture', grabEnd);
+  on(inspectBtn, 'click', (e) => { e.stopPropagation(); setInspect(!inspecting); });
+  on(card, 'pointerdown', grabStart);
+  on(card, 'pointermove', grabMove);
+  on(card, 'pointerup', grabEnd);
+  on(card, 'pointercancel', grabEnd);
+  on(card, 'lostpointercapture', grabEnd);
 }
 
 function aim(e) {
@@ -295,8 +321,8 @@ try {
 if (!still) {
   raf = requestAnimationFrame(loop);
   if (fine) {
-    window.addEventListener('pointermove', aim, { passive: true });
-    window.addEventListener('pointerleave', () => { target = { x: .5, y: .35 }; });
+    on(window, 'pointermove', aim, { passive: true });
+    on(window, 'pointerleave', () => { target = { x: .5, y: .35 }; });
   }
 }
 } catch (err) { console.warn('card: lighting off —', err); }
@@ -305,8 +331,8 @@ if (!still) {
 const flip = () => card.classList.toggle('is-flipped');
 // A swipe that changed the card must not also turn it over, and neither must
 // letting go of a card you were inspecting.
-card.addEventListener('click', (e) => { if (!inspecting && !card.dataset.swiped && gestureMoved < 8) flip(); });
-card.addEventListener('keydown', (e) => {
+on(card, 'click', (e) => { if (!inspecting && !card.dataset.swiped && gestureMoved < 8) flip(); });
+on(card, 'keydown', (e) => {
   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); }
 });
 
@@ -370,10 +396,10 @@ function setSkin(on, { save = true } = {}) {
   // rises into the paper only after the dust has settled.
   const timed = save && !still;
   if (series.length) { paintMarks(); show(at, { relief: timed ? 'after-morph' : 'soon', fade: timed ? MORPH_MS : 0 }); if (wasFlipped) card.classList.add('is-flipped'); }
-  if (save) requestAnimationFrame(() => morphNow(engraved ? 'to' : 'back'));
+  if (save) frame(() => morphNow(engraved ? 'to' : 'back'));
 }
 
-skinBtn.addEventListener('click', (e) => {
+on(skinBtn, 'click', (e) => {
   e.stopPropagation();
   if (morph && morph.busy()) return;       // let the dust land
   setSkin(!engraved);
@@ -425,8 +451,8 @@ function draw(el, svg, label, fade = 0) {
   nu.classList.add('incoming');
   nu.style.opacity = '0';
   nu.style.transition = `opacity ${fade}ms ease`;
-  requestAnimationFrame(() => requestAnimationFrame(() => { nu.style.opacity = '1'; }));
-  setTimeout(() => {
+  frame(() => frame(() => { nu.style.opacity = '1'; }));
+  later(() => {
     if (nu.parentElement !== el) return;              // the page moved on
     for (const n of [...el.children]) if (n !== nu) n.remove();
     nu.classList.remove('incoming'); nu.style.transition = ''; nu.style.opacity = '';
@@ -487,7 +513,7 @@ let reliefTimer = 0, reliefSeq = 0;
  * in a frame that is showing motion.
  */
 function scheduleRelief(c, delayMs, fade = 0) {
-  clearTimeout(reliefTimer);
+  cancelLater(reliefTimer);
   const seq = ++reliefSeq;
   for (const f of layersOf()) {
     f.stills = {};
@@ -499,7 +525,7 @@ function scheduleRelief(c, delayMs, fade = 0) {
     // What fades out is the impression alone. The lit stills go at once:
     // eight of them carry filters, and a group fading over filtered layers
     // is a frame of work on WebKit — measured at 100ms a frame.
-    if (fade) { const r = f.relief; r.querySelector('.stills')?.remove(); setTimeout(() => { if (seq === reliefSeq && !r.classList.contains('is-set')) r.innerHTML = ''; }, fade + 40); }
+    if (fade) { const r = f.relief; r.querySelector('.stills')?.remove(); later(() => { if (seq === reliefSeq && !r.classList.contains('is-set')) r.innerHTML = ''; }, fade + 40); }
     else f.relief.innerHTML = '';
   }
   if (!engraved) return;
@@ -509,15 +535,15 @@ function scheduleRelief(c, delayMs, fade = 0) {
   emboss.then((e) => {
     if (!alive()) return;
     for (const f of layersOf()) { f.relief.innerHTML = ''; layTint(f, c, e, params); }
-    requestAnimationFrame(() => requestAnimationFrame(() => { if (alive()) for (const f of layersOf()) f.relief.classList.add('is-set'); }));
+    frame(() => frame(() => { if (alive()) for (const f of layersOf()) f.relief.classList.add('is-set'); }));
   }).catch((err) => console.warn('card: relief —', err));
-  reliefTimer = setTimeout(() => {
+  reliefTimer = later(() => {
     emboss.then((e) => {
       if (!alive()) return;
       for (const f of layersOf()) layStills(f, c, e, params);
       // Two frames: one for the insert to be laid out, one for the transition to
       // have something to start from. The raster lands in the first.
-      requestAnimationFrame(() => requestAnimationFrame(() => {
+      frame(() => frame(() => {
         if (alive()) for (const f of layersOf()) { const st = f.relief.querySelector('.stills'); if (st) st.classList.add('is-set'); }
       }));
     }).catch(() => {});
@@ -695,7 +721,7 @@ function show(i, { focus = false, relief = 'soon', fade = 0 } = {}) {
   scheduleRelief(c, relief === 'after-morph' ? 1400 : 16, fade);
   // The readers measure the face's glyphs, so they wait for the face that
   // is arriving rather than reading the one on its way out.
-  if (fade) setTimeout(() => { if (series[at] === c) attachReaders(c); }, fade + 60);
+  if (fade) later(() => { if (series[at] === c) attachReaders(c); }, fade + 60);
   else attachReaders(c);
   measure();                                      // the caption under the card can change height
 }
@@ -705,27 +731,27 @@ function show(i, { focus = false, relief = 'soon', fade = 0 } = {}) {
     // Live copy first. The static index is the fallback, so the cards still
     // render if the API is unreachable — with whatever words it was last built
     // with, which is better than a blank card.
-    const r = await fetch(`${API}/cards`, { cache: 'no-cache' });
+    const r = await fetch(`${API}/cards`, { cache: 'no-cache', signal: life.signal });
     if (!r.ok) throw new Error(r.status);
     const idx = await r.json();
     series = idx.cards || [];
     brand = idx.brand || {};
   } catch (_) {
     try {
-      const r = await fetch('/assets/cards/index.json', { cache: 'no-cache' });
+      const r = await fetch('/assets/cards/index.json', { cache: 'no-cache', signal: life.signal });
       const idx = await r.json();
       series = (idx.cards || []).map((c) => ({ ...c, art: c.slug }));
       brand = FALLBACK_BRAND;
     } catch (__) { series = []; }
   }
-  if (!series.length) return;
+  if (stopped || !series.length) return;   // stopped while the catalog was loading
 
   paintMarks();
-  marks.addEventListener('click', (e) => {
+  on(marks, 'click', (e) => {
     const b = e.target.closest('.mark');
     if (b) show(Number(b.dataset.i));
   });
-  marks.addEventListener('keydown', (e) => {
+  on(marks, 'keydown', (e) => {
     const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
     if (step) { e.preventDefault(); show(at + step, { focus: true }); }
     else if (e.key === 'Home') { e.preventDefault(); show(0, { focus: true }); }
@@ -738,20 +764,20 @@ function show(i, { focus = false, relief = 'soon', fade = 0 } = {}) {
   // not. The gate only applies to the engraved set, so the colour card keeps
   // exactly the swipe it always had.
   let x0 = null, y0 = 0, t0 = 0;
-  card.addEventListener('pointerdown', (e) => {
+  on(card, 'pointerdown', (e) => {
     x0 = e.clientX; y0 = e.clientY; t0 = performance.now(); gestureMoved = 0;
   });
-  card.addEventListener('pointermove', (e) => {
+  on(card, 'pointermove', (e) => {
     if (x0 === null) return;
     gestureMoved = Math.max(gestureMoved, Math.hypot(e.clientX - x0, e.clientY - y0));
   }, { passive: true });
-  card.addEventListener('pointerup', (e) => {
+  on(card, 'pointerup', (e) => {
     if (x0 === null) return;
     const dx = e.clientX - x0, dt = performance.now() - t0; x0 = null;
     if (!inspecting && Math.abs(dx) > 46 && (!engraved || dt < 420)) {
       card.dataset.swiped = '1';
       show(at + (dx < 0 ? 1 : -1));
-      setTimeout(() => { delete card.dataset.swiped; }, 0);
+      later(() => { delete card.dataset.swiped; }, 0);
     }
   });
   show(0);
@@ -763,5 +789,19 @@ function show(i, { focus = false, relief = 'soon', fade = 0 } = {}) {
   // A rig for measuring the page on a real engine, only when the URL asks
   // for it. Never fetched otherwise. See cards/probe.js.
   const probe = new URLSearchParams(location.search).get('probe');
-  if (probe) import('/js/cards/probe.js?v=01cba65').then((m) => m.run({ label: probe, setSkin, setInspect, att, grab, quiet: (on) => { quiet = !!on; }, parts: (p) => { reliefParts = p; } })).catch((err) => console.warn('card: probe —', err));
+  if (probe) import('/js/cards/probe.js?v=3526885').then((m) => m.run({ label: probe, setSkin, setInspect, att, grab, quiet: (on) => { quiet = !!on; }, parts: (p) => { reliefParts = p; } })).catch((err) => console.warn('card: probe —', err));
 })();
+
+return function stopCard() {
+  stopped = true;
+  life.abort();                                   // every listener, and a catalog fetch in flight
+  cancelAnimationFrame(raf);
+  timers.forEach((id) => clearTimeout(id)); timers.clear();
+  frames.forEach((id) => cancelAnimationFrame(id)); frames.clear();
+  reliefSeq++;                                    // relief work already under way sees a new sequence and stands down
+  unread();                                       // fingertip readers
+  if (morph && morph.cancel) morph.cancel();      // a dust morph in flight
+};
+}
+
+start();

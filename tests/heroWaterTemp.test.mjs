@@ -33,11 +33,12 @@ test('cold-water warnings cannot fire on an absent reading', () => {
 });
 
 test('the "measured" marker retries instead of losing the render race', () => {
-  const page = readFileSync(new URL('../src/paddlingout/forecast.html', import.meta.url), 'utf8');
+  // The page logic moved out of forecast.html into js/pages/forecast.js on 3 Oct 2026.
+  const page = readFileSync(new URL('../src/js/pages/forecast.js', import.meta.url), 'utf8');
   assert.ok(/markEstimatedWaterTemp\(currentData, attempt \+ 1\)/.test(page),
     'markEstimatedWaterTemp does not retry when the hero has not rendered yet');
   assert.ok(!/valueEl\.textContent = 'No sensor'/.test(page),
-    'forecast.html still patches the value after render; the hero should render it');
+    'forecast.js still patches the value after render; the hero should render it');
 });
 
 test('the component carries its own wt-none / wt-measured styles', () => {

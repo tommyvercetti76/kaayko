@@ -462,6 +462,8 @@ class AdvancedLakeModal {
 
   // Estimate timezone based on coordinates
   estimateTimezone(lat, lng) {
+    // One copy of this lives in services/spotTime.js; use it when the page loaded it.
+    if (window.KaaykoSpotTime) return window.KaaykoSpotTime.estimateTimezone(lat, lng);
     // Simple timezone estimation based on longitude
     // This is a basic approximation - real apps would use a timezone API
     const utcOffset = Math.round(lng / 15);

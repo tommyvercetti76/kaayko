@@ -101,6 +101,7 @@ function inkOf(img, count, w = 112, h = 156) {
  */
 export function dustMorph({ stage, canvas, from, to, count = 720, scale = 3, colour = [214, 183, 120], duration = 1150 }) {
   let A = null, B = null, raf = 0, running = false;
+  let settle = null;   // resolves the play promise when cancel() interrupts it
   const [cr, cg, cb] = colour;
 
   function prepare() {
@@ -175,6 +176,7 @@ export function dustMorph({ stage, canvas, from, to, count = 720, scale = 3, col
     canvas.style.opacity = '1';
     const t0 = performance.now();
     return new Promise((resolve) => {
+      settle = () => resolve(false);     // cancel() resolves a play it interrupts
       const tick = (now) => {
         const e = Math.min(1, (now - t0) / duration);
         draw(ctx, e, src, dst, geom);
@@ -184,12 +186,25 @@ export function dustMorph({ stage, canvas, from, to, count = 720, scale = 3, col
         if (e < 1) { raf = requestAnimationFrame(tick); return; }
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         canvas.style.opacity = '0';
-        running = false; raf = 0;
+        running = false; raf = 0; settle = null;
         resolve(true);
       };
       raf = requestAnimationFrame(tick);
     });
   }
 
-  return { play, busy: () => running };
+  /** Stop a play in flight and put the stage back as if it had finished. Safe to call any time. */
+  function cancel() {
+    if (raf) cancelAnimationFrame(raf);
+    raf = 0;
+    if (!running) return;
+    running = false;
+    const ctx = canvas.getContext && canvas.getContext('2d');
+    if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+    canvas.style.opacity = '0';
+    stage.classList.remove('is-dusting');
+    if (settle) { const s = settle; settle = null; s(); }
+  }
+
+  return { play, busy: () => running, cancel };
 }

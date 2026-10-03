@@ -13,6 +13,10 @@
  *   pp.flyTo(lat, lng, zoom)
  *   pp.setResults([{ lat, lng, label, tooltip, color, cover, onClick }])   result pins
  *   pp.fitResults()  pp.clearResults()  pp.invalidate()  pp.center()  pp.radiusKm()
+ *   pp.destroy()     cancels pending timers, removes every listener and the map;
+ *                    every method is a no-op afterwards. Pages that live for the
+ *                    whole visit never need it; anything that mounts a map more
+ *                    than once (a modal, a re-rendered panel) must call it.
  *
  * Used by Search (tap-to-search, result pins) and Add-a-lake (draggable pin).
  * Tile source is one constant below; swap it for a keyed provider later.
@@ -54,10 +58,21 @@
     var results = L.layerGroup().addTo(map);
     var pin = null;
     var pts = [];
+    var dead = false;
+    var timers = new Set();
+    // Every delayed call goes through here, so destroy() can cancel it and a
+    // late one never touches a removed map.
+    function later(fn, ms) {
+      var id = setTimeout(function () { timers.delete(id); if (!dead) fn(); }, ms);
+      timers.add(id);
+      return id;
+    }
+    function cancel(id) { if (id != null) { clearTimeout(id); timers.delete(id); } }
 
     function emitPick(lat, lng, how) { if (typeof opts.onPick === 'function') opts.onPick(lat, lng, how); }
 
     function setPin(lat, lng, o) {
+      if (dead) return null;
       o = o || {};
       if (pin) pin.setLatLng([lat, lng]);
       else {
@@ -68,10 +83,11 @@
       else if (o.zoom) map.setView([lat, lng], o.zoom);
       return pin;
     }
-    function clearPin() { if (pin) { map.removeLayer(pin); pin = null; } }
-    function flyTo(lat, lng, zoom) { map.flyTo([lat, lng], zoom || map.getZoom(), { duration: 0.6 }); }
+    function clearPin() { if (!dead && pin) { map.removeLayer(pin); pin = null; } }
+    function flyTo(lat, lng, zoom) { if (!dead) map.flyTo([lat, lng], zoom || map.getZoom(), { duration: 0.6 }); }
 
     function setResults(list) {
+      if (dead) return;
       results.clearLayers(); pts = [];
       (list || []).forEach(function (p) {
         if (!Number.isFinite(p.lat) || !Number.isFinite(p.lng)) return;
@@ -83,12 +99,12 @@
       });
     }
     function fitResults(pad) {
-      if (!pts.length) return;
-      setTimeout(function () { map.invalidateSize(); map.fitBounds(pts, { padding: [pad || 40, pad || 40], maxZoom: 12 }); }, 60);
+      if (dead || !pts.length) return;
+      later(function () { map.invalidateSize(); map.fitBounds(pts, { padding: [pad || 40, pad || 40], maxZoom: 12 }); }, 60);
     }
-    function clearResults() { results.clearLayers(); pts = []; }
-    function invalidate() { setTimeout(function () { map.invalidateSize(); }, 80); }
-    function center() { var c = map.getCenter(); return { lat: c.lat, lng: c.lng }; }
+    function clearResults() { if (!dead) { results.clearLayers(); pts = []; } }
+    function invalidate() { if (!dead) later(function () { map.invalidateSize(); }, 80); }
+    function center() { if (dead) return null; var c = map.getCenter(); return { lat: c.lat, lng: c.lng }; }
     function radiusKm() {
       try { var c = map.getCenter(); return Math.round(map.distance(c, map.getBounds().getNorthEast()) / 1000); }
       catch (e) { return 30; }
@@ -99,12 +115,25 @@
     }
     if (typeof opts.onMove === 'function') {
       var t = null;
-      map.on('moveend zoomend', function () { clearTimeout(t); t = setTimeout(function () { opts.onMove(center(), radiusKm()); }, 250); });
+      map.on('moveend zoomend', function () { cancel(t); t = later(function () { opts.onMove(center(), radiusKm()); }, 250); });
     }
     invalidate();
 
+    function destroy() {
+      if (dead) return;
+      dead = true;
+      timers.forEach(function (id) { clearTimeout(id); });
+      timers.clear();
+      if (pin) pin.off();
+      results.eachLayer(function (m) { m.off(); });
+      map.off();       // every map listener
+      map.remove();    // tiles, layers, DOM, Leaflet's own window listeners
+      pin = null; pts = [];
+    }
+
     return { map: map, setPin: setPin, clearPin: clearPin, flyTo: flyTo, setResults: setResults, fitResults: fitResults,
-      clearResults: clearResults, invalidate: invalidate, center: center, radiusKm: radiusKm, hasPin: function () { return !!pin; } };
+      clearResults: clearResults, invalidate: invalidate, center: center, radiusKm: radiusKm,
+      hasPin: function () { return !!pin; }, destroy: destroy, isDestroyed: function () { return dead; } };
   }
 
   window.PinPicker = { create: create };

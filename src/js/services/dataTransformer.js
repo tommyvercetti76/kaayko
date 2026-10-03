@@ -10,8 +10,13 @@ class DataTransformer {
       return null;
     }
 
-    const hourly = forecastData.forecast[0].hourly;
-    const currentHour = new Date().getHours();
+    // The LAKE's current hour on the LAKE's today (services/spotTime.js) —
+    // AUDIT-2026-10-03 F1: this took the viewer's hour from forecast day 0.
+    const T = (typeof window !== 'undefined') ? window.KaaykoSpotTime : null;
+    const now = T ? T.nowAt(forecastData.location) : { hour: new Date().getHours(), date: null };
+    const today = (now.date && forecastData.forecast.find(d => d && d.date === now.date && d.hourly)) || forecastData.forecast[0];
+    const hourly = today.hourly;
+    const currentHour = now.hour;
 
     // Try current hour first, then scan nearby hours (within ±3h), then fallback to 8/12/18
     const candidates = [

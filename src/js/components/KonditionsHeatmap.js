@@ -32,18 +32,33 @@
     return `${h - 12}:00 PM`;
   }
 
+  /**
+   * The LAKE's now, from the forecast's own location (services/spotTime.js).
+   * AUDIT-2026-10-03 F1: this read the viewer's clock, so "this hour", "today"
+   * and the best window were wrong for anyone outside the lake's timezone.
+   * Pages that do not load spotTime.js keep the old viewer-clock behaviour.
+   */
+  function lakeNow(forecastData) {
+    const T = window.KaaykoSpotTime;
+    if (T) return { now: T.nowAt(forecastData?.location), T };
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    return { now: { date: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`, hour: d.getHours() }, T: null };
+  }
+
   function findBestWindow(currentData, forecastData) {
     const forecast = forecastData?.forecast;
     if (!Array.isArray(forecast)) return null;
 
     const currentRating = parseFloat(currentData?.paddleScore?.rating ?? 0);
-    const currentHour = new Date().getHours();
+    const { now, T } = lakeNow(forecastData);
     let best = null;
 
     forecast.slice(0, 3).forEach((day, dayIndex) => {
       const hourly = day?.hourly || {};
       Object.keys(hourly).map(Number).sort((a, b) => a - b).forEach(hour => {
-        if (dayIndex === 0 && hour <= currentHour) return;
+        const ahead = T ? T.isAhead(day, hour, now, dayIndex) : (dayIndex > 0 || hour > now.hour);
+        if (!ahead) return;
         const hourData = hourly[String(hour)] || hourly[hour];
         const rating = parseFloat(hourData?.mlPrediction?.rating ?? hourData?.prediction?.rating ?? hourData?.rating);
         if (isNaN(rating)) return;
@@ -54,7 +69,8 @@
     });
 
     if (!best || (best.score < 3 && best.score < currentRating + 0.5)) return null;
-    const dayLabel = best.dayIndex === 0 ? 'Later today' : best.dayIndex === 1 ? 'Tomorrow' : 'Day 3';
+    const dayLabel = (T && best.date) ? T.relativeDay(best.date, now)
+      : best.dayIndex === 0 ? 'Later today' : best.dayIndex === 1 ? 'Tomorrow' : 'Day 3';
     return {
       ...best,
       dayLabel,
@@ -122,7 +138,8 @@
     if (!Array.isArray(forecast) || !forecast.length) return;
 
     const best        = findBestWindow(currentData, forecastData);
-    const currentHour = new Date().getHours();
+    const { now, T }  = lakeNow(forecastData);
+    const currentHour = now.hour;
 
     // Build a CSS linear-gradient string from hourly scores
     function buildGradient(day) {
@@ -140,9 +157,11 @@
     const TICK_LABELS = { 6:'6 AM', 9:'9 AM', 12:'12 PM', 15:'3 PM', 18:'6 PM', 20:'8 PM' };
 
     const daysHTML = forecast.slice(0, 3).map((day, di) => {
+      // Labelled from the forecast's own (lake-local) date, not the viewer's calendar.
+      const labels = (T && day?.date) ? T.dayLabels(day.date, now) : null;
       const d = new Date(); d.setDate(d.getDate() + di);
-      const primary   = di === 0 ? 'Today' : di === 1 ? 'Tomorrow' : d.toLocaleDateString('en-US',{weekday:'short'});
-      const secondary = d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      const primary   = labels ? labels.primary : (di === 0 ? 'Today' : di === 1 ? 'Tomorrow' : d.toLocaleDateString('en-US',{weekday:'short'}));
+      const secondary = labels ? labels.secondary : d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
       const gradient  = buildGradient(day);
 
       // Best-window flag for this day
@@ -155,7 +174,8 @@
       // 33.9 °C observed vs 35.4 °C forecast for the same hour). The hero is
       // an observation; every cell of this strip is a FORECAST. The marker now
       // says which hour it is, and the strip says what it is.
-      const nowPct = (di === 0 && currentHour >= KHM_HOURS[0] && currentHour <= KHM_HOURS[KHM_HOURS.length-1])
+      const isLakeToday = T ? T.isToday(day, now, di) : di === 0;
+      const nowPct = (isLakeToday && currentHour >= KHM_HOURS[0] && currentHour <= KHM_HOURS[KHM_HOURS.length-1])
         ? khmPct(currentHour) : null;
 
       // Invisible hit-zones, one per hour

@@ -1,9 +1,11 @@
 /**
  * PoHeader — the single Paddling Out page header.
  *
- * Usage (any paddling page, before this script runs):
+ * Usage (any paddling page):
  *   <div id="po-header" data-title="Search" data-eyebrow="Paddling Out"
  *        data-back="/paddlingout" data-current="search"></div>
+ *   <script>PoHeader.mount()</script>      (inline, right after the placeholder)
+ * with, in <head>, after js/util.js:
  *   <link rel="stylesheet" href="/js/components/PoHeader.css">
  *   <script src="/js/components/PoHeader.js"></script>
  *
@@ -79,9 +81,20 @@
     });
   }
 
+  // Each page calls PoHeader.mount() inline, right after its placeholder, so the
+  // header is in the first paint. Waiting for DOMContentLoaded (which also waits
+  // for the module scripts) let the browser paint the page headerless and then
+  // push everything down 108 px: a 0.075 layout shift on every desktop Paddling
+  // Out page (scripts/browser-check.mjs, 3 Oct 2026). DOMContentLoaded stays as
+  // the fallback for a page without the inline call; a host is drawn once, so the
+  // second pass cannot undo a setTitle.
   function init() {
     var hosts = document.querySelectorAll('[id="po-header"], [data-po-header]');
-    for (var i = 0; i < hosts.length; i++) { render(hosts[i]); wireBack(hosts[i]); }
+    for (var i = 0; i < hosts.length; i++) {
+      if (hosts[i].dataset.poMounted) continue;
+      render(hosts[i]); wireBack(hosts[i]);
+      hosts[i].dataset.poMounted = '1';
+    }
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
@@ -90,6 +103,7 @@
   // Pages that learn their title later (forecast) can update it in place.
   window.PoHeader = {
     setTitle: function (text) { var t = document.getElementById('po-title'); if (t) t.textContent = text; },
-    render: render
+    render: render,
+    mount: init
   };
 }());

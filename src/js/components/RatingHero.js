@@ -418,18 +418,23 @@ class RatingHero {
       if (!Array.isArray(forecast)) return null;
 
       const current = parseFloat(currentRating);
-      const currentHour = new Date().getHours();
+      // The LAKE's now (services/spotTime.js), not the viewer's clock — AUDIT-2026-10-03 F1.
+      const T = window.KaaykoSpotTime;
+      const now = T ? T.nowAt(forecastData?.location) : { hour: new Date().getHours() };
 
       for (let dayIdx = 0; dayIdx < forecast.length; dayIdx++) {
-        const hourly = forecast[dayIdx]?.hourly || {};
+        const day = forecast[dayIdx];
+        const hourly = day?.hourly || {};
         const hours  = Object.keys(hourly).map(Number).sort((a, b) => a - b);
 
         for (const h of hours) {
-          if (dayIdx === 0 && h <= currentHour) continue;
+          const ahead = T ? T.isAhead(day, h, now, dayIdx) : (dayIdx > 0 || h > now.hour);
+          if (!ahead) continue;
           const hData = hourly[h];
           const r = parseFloat(hData?.rating ?? hData?.prediction?.rating);
           if (!isNaN(r) && r >= current + 1.0 && r >= 3.0) {
-            const dayLabel = dayIdx === 0 ? 'Later today' : dayIdx === 1 ? 'Tomorrow' : (forecast[dayIdx].date?.slice(5) || 'Day 3');
+            const dayLabel = (T && day?.date) ? T.relativeDay(day.date, now)
+              : dayIdx === 0 ? 'Later today' : dayIdx === 1 ? 'Tomorrow' : (day?.date?.slice(5) || 'Day 3');
             return `Better window: <strong>${dayLabel} at ${this.formatHourDisplay(h)}</strong> — Score ${r.toFixed(1)} (${this.getScoreLabel(r)})`;
           }
         }

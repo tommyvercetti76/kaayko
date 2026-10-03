@@ -319,13 +319,29 @@
 
   <!-- IN-PAGE BRAND BAR (replaces shared header) -->
   <div id="po-header" data-title="Paddling Out" data-eyebrow="Kaayko" data-brand-href="/" data-current="none"></div>
+  <script>PoHeader.mount()</script>
 
   <!-- MAIN: Cards injected by paddlingout.js (replaces static grid below) -->
   <main>
 
     <section class="container minimal-list" id="cardsContainer">
       <!-- Minimal-shaped skeletons (chamfered 4:5 portrait) match the real tiles, so the
-           first paint has no shape/curve/column flash. Cleared when live cards arrive. -->
+           first paint has no shape/curve/column flash. Cleared when live cards arrive.
+           One per spot (21, the "hand-picked" count): with 8, the cards pushed the
+           About section down four rows on desktop, a 0.78 layout shift (browser-check, 3 Oct 2026). -->
+      <div class="pcard-skeleton" aria-hidden="true"></div>
+      <div class="pcard-skeleton" aria-hidden="true"></div>
+      <div class="pcard-skeleton" aria-hidden="true"></div>
+      <div class="pcard-skeleton" aria-hidden="true"></div>
+      <div class="pcard-skeleton" aria-hidden="true"></div>
+      <div class="pcard-skeleton" aria-hidden="true"></div>
+      <div class="pcard-skeleton" aria-hidden="true"></div>
+      <div class="pcard-skeleton" aria-hidden="true"></div>
+      <div class="pcard-skeleton" aria-hidden="true"></div>
+      <div class="pcard-skeleton" aria-hidden="true"></div>
+      <div class="pcard-skeleton" aria-hidden="true"></div>
+      <div class="pcard-skeleton" aria-hidden="true"></div>
+      <div class="pcard-skeleton" aria-hidden="true"></div>
       <div class="pcard-skeleton" aria-hidden="true"></div>
       <div class="pcard-skeleton" aria-hidden="true"></div>
       <div class="pcard-skeleton" aria-hidden="true"></div>

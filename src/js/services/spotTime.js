@@ -1,0 +1,124 @@
+/**
+ * services/spotTime.js — the LAKE's clock.
+ *
+ * Every "now" on a forecast is the lake's now: which hour is "this hour", which
+ * forecast day is "today", whether a window is still ahead, what "tomorrow"
+ * means. These used to read the viewer's browser clock (new Date().getHours()),
+ * so a visitor in Dallas looking at Ambazari Lake at 1:30 am Nagpur time was
+ * told its next daylight window was "later today at 4 PM", and saw India's
+ * 4 Oct labelled "Today, Oct 3" (AUDIT-2026-10-03 F1).
+ *
+ * The zone comes from the forecast response (`location.timeZone`, the IANA zone
+ * WeatherAPI reports). Without it, a coarse estimate from longitude stands in,
+ * and `estimated: true` says so. Forecast days are compared by their own
+ * `date` strings ("YYYY-MM-DD", already lake-local), never by array position.
+ *
+ * Classic script: sets window.KaaykoSpotTime. Also exports for Node tests.
+ */
+(function (root) {
+  'use strict';
+
+  /** Coarse IANA zone from coordinates, for when the API sent none. */
+  function estimateTimezone(lat, lng) {
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+    if (lat >= 25 && lat <= 49 && lng >= -125 && lng <= -66) {
+      if (lng <= -114) return 'America/Los_Angeles';
+      if (lng <= -104) return 'America/Denver';
+      if (lng <= -87) return 'America/Chicago';
+      return 'America/New_York';
+    }
+    if (lat >= 6 && lat <= 36 && lng >= 68 && lng <= 98) return 'Asia/Kolkata';
+    const off = Math.round(lng / 15);
+    if (off >= -12 && off <= 12) return `Etc/GMT${off <= 0 ? '+' : '-'}${Math.abs(off)}`;
+    return null;
+  }
+
+  function validZone(tz) {
+    if (!tz || typeof tz !== 'string') return false;
+    try { new Intl.DateTimeFormat('en-US', { timeZone: tz }); return true; } catch (_) { return false; }
+  }
+
+  /** The lake's IANA zone: the API's, else an estimate from its coordinates. */
+  function zoneOf(location, spot) {
+    const given = location && (location.timeZone || location.timezone);
+    if (validZone(given)) return { zone: given, estimated: false };
+    const c = (location && location.coordinates) || (spot && spot.location) || {};
+    const lat = Number(c.latitude ?? c.lat), lng = Number(c.longitude ?? c.lng);
+    const guess = estimateTimezone(lat, lng);
+    return validZone(guess) ? { zone: guess, estimated: true } : { zone: null, estimated: true };
+  }
+
+  /** Wall-clock parts of an instant in a zone: { date: "YYYY-MM-DD", hour, minute }. */
+  function partsIn(zone, at) {
+    const f = new Intl.DateTimeFormat('en-CA', {
+      timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+    });
+    const p = {};
+    for (const x of f.formatToParts(at)) p[x.type] = x.value;
+    return { date: `${p.year}-${p.month}-${p.day}`, hour: Number(p.hour) % 24, minute: Number(p.minute) };
+  }
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  /**
+   * The lake's "now": { date, hour, minute, zone, estimated }.
+   * @param {{timeZone?:string, coordinates?:{latitude:number, longitude:number}}} [location]
+   * @param {{location?:{latitude:number, longitude:number}}} [spot]
+   * @param {Date} [at]  the instant (defaults to now; tests pass their own)
+   */
+  function nowAt(location, spot, at) {
+    const when = at instanceof Date ? at : new Date();
+    const { zone, estimated } = zoneOf(location, spot);
+    if (zone) return Object.assign(partsIn(zone, when), { zone, estimated });
+    // Last resort: the viewer's clock, flagged.
+    return {
+      date: `${when.getFullYear()}-${pad(when.getMonth() + 1)}-${pad(when.getDate())}`,
+      hour: when.getHours(), minute: when.getMinutes(), zone: null, estimated: true
+    };
+  }
+
+  /** Is hour `hour` of forecast day `day` still ahead of the lake's `now`? */
+  function isAhead(day, hour, now, dayIndex) {
+    if (day && day.date) {
+      if (day.date > now.date) return true;
+      if (day.date < now.date) return false;
+      return hour > now.hour;
+    }
+    return dayIndex > 0 || hour > now.hour;   // no date on the day: old behaviour
+  }
+
+  /** Is forecast day `day` the lake's today? */
+  function isToday(day, now, dayIndex) {
+    return day && day.date ? day.date === now.date : dayIndex === 0;
+  }
+
+  /** Days from the lake's today to `dateStr` (0 today, 1 tomorrow, -1 yesterday). */
+  function dayOffset(dateStr, now) {
+    const a = Date.parse(`${dateStr}T12:00:00Z`), b = Date.parse(`${now.date}T12:00:00Z`);
+    return Number.isFinite(a) && Number.isFinite(b) ? Math.round((a - b) / 86400000) : null;
+  }
+
+  /** Labels for a forecast day: { primary: "Today" | "Tomorrow" | "Mon", secondary: "Oct 4" }. */
+  function dayLabels(dateStr, now) {
+    const at = new Date(`${dateStr}T12:00:00Z`);
+    if (!dateStr || isNaN(at.getTime())) return null;
+    const off = dayOffset(dateStr, now);
+    const weekday = at.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' });
+    const primary = off === 0 ? 'Today' : off === 1 ? 'Tomorrow' : off === -1 ? 'Yesterday' : weekday;
+    return { primary, secondary: at.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }) };
+  }
+
+  /** "Later today" / "Tomorrow" / "Mon": how to refer to a forecast day from the lake's now. */
+  function relativeDay(dateStr, now) {
+    const off = dayOffset(dateStr, now);
+    if (off === 0) return 'Later today';
+    if (off === 1) return 'Tomorrow';
+    const at = new Date(`${dateStr}T12:00:00Z`);
+    return isNaN(at.getTime()) ? 'Later' : at.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'UTC' });
+  }
+
+  const api = { estimateTimezone, zoneOf, nowAt, isAhead, isToday, dayOffset, dayLabels, relativeDay };
+  root.KaaykoSpotTime = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof window !== 'undefined' ? window : globalThis);

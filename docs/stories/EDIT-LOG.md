@@ -13,6 +13,25 @@ How to edit Stories yourself: [README.md](README.md).
 
 ---
 
+## 2026-10-03 15:57 CDT · Preload the drop-cap font
+
+- **Commit:** this entry's commit (`git log -1 -- docs/stories/EDIT-LOG.md`)
+- **Live:** deployed to kaayko.com and kaay.store at 15:55 CDT, after preview channel `lake-clock`.
+- **`src/stories/never-give-up.html`:** added a preload for
+  `/fonts/stories/im-fell-double-pica-normal-400.woff2`, the face of the Part 1 drop cap
+  and the title. The library page already preloaded it; the chapter did not.
+- **Why:** the new `npm run browser-check` measured a 0.10–0.13 layout shift on desktop
+  (over Google's 0.1 "good" line). The drop cap first painted in Georgia, which is taller,
+  then the real face arrived at about 0.2 s and the lede and everything under it moved up
+  25 px.
+- **Checked:** browser-check on desktop, before and after: 0.103 / 0.132 before, 0.080 after;
+  phone 0.000 both. Nothing a reader sees changed except that the jump is smaller.
+- **Still open:** the swap is smaller but not gone, because a preload starts the download
+  early and cannot promise it lands before first paint. The full fix is a size-matched
+  Georgia fallback (`size-adjust`/`ascent-override` on a local `@font-face`), not done.
+
+---
+
 ## 2026-10-02 18:10 CDT · Reading-time checker, editing guide, one word of count
 
 - **Commit:** this entry's commit (`git log -1 -- docs/stories/EDIT-LOG.md`)
