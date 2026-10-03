@@ -4,6 +4,51 @@ Newest first. What changed, why, the commit, whether it is live, and how it was 
 
 ---
 
+## 2026-10-03 17:40 CDT · No rating for closed or cold lakes out of season; Know before you go; Add a lake rebuilt
+
+- **Commits:** kaayko-api `4e42a29`, `5d11be8`; kaayko `1a5dbbd`, `1a36aa6`, `89178c3`
+- **Live:** API and hosting (kaayko.com + kaay.store); browser-check 42/42 on production.
+
+### One night rule, one "now", on the lake's clock (`1a5dbbd`, `4e42a29`)
+- Every surface decides night at the lake from its sunrise/sunset (`KaaykoSpotTime.isNightAt`):
+  list cards, search rows and pins, the 17 spot pages, the forecast hero. The list used to print
+  "4.0 Worth it" at 2 am in Nagpur while the forecast said "daylight only".
+- Heatmap: night hours carry no score; the current hour shows the observed score (audit F5).
+- Server warnings and the trainer read the lake's clock, not UTC (F9).
+
+### Find and Add a lake are one page (`1a36aa6`, `89178c3`)
+- `/paddlingout/search` has Find / Add tabs; "Add this lake" on a result opens the form filled.
+  `/paddlingout/submitentry` 301s there with its query. Header: "Find or add" + Settings.
+- The form, rebuilt with every check unchanged: photos → name (picking it drops the pin and fills
+  the place, folded to one line) → map; coordinates and optional questions folded; fine print by the
+  button; sticky "what's left" bar on phones. Parking defaults to "Not sure" (it claimed "Available").
+
+### No rating when the water is closed or out of season (`5d11be8`)
+- **Owner decision, 3 Oct 2026:** cold-weather lakes get no rating from 1 October until late April
+  (25 April), or the official opening where later. The API sends no rating at all.
+
+  | Lake | Ratings resume | Why that date |
+  |---|---|---|
+  | Cottonwood, Taylor Park | 25 Apr | owner rule |
+  | Antero | 25 Apr (and closed all of 2026) | owner rule; Denver Water closure |
+  | Turquoise | 1 May | USFS: 2026 ramp opened May 1 |
+  | Jackson, String | 1 May | NPS: Teton Park Road opens May 1 |
+  | Jenny | 15 May | NPS: Jenny Lake boating opens May 15, ice permitting |
+  | Lake McDonald | second Sunday in May | NPS: no launching before then |
+- Edit: `kaayko-api/functions/data/off-season.json` → Firestore `paddlingSpots/{id}.offSeason`, or the
+  admin spot editor. Closures: `status` in the same editor.
+
+### Know before you go (`5d11be8`, `89178c3`)
+- Fees, permits and invasive-species inspections, put-in, motor boats, season, rentals, dogs, parking,
+  hazards for all 21 spots, each with an official source, a quote and the date checked. Researched
+  3 Oct 2026; `kaayko-api/functions/data/spot-facts.json`. Facts change: re-check before each season.
+
+### Removed
+- A "best time to paddle" built on NASA POWER weather was built and pulled the same hour: it put a
+  second weather source beside WeatherAPI. Never shipped to a page. Nothing scores from it.
+- A lake-local weekday sent to the remote model was reverted: no model input changed today.
+---
+
 ## 2026-10-03 15:55 CDT · The lake's clock, typed API contracts, start/stop for the map picker and the card, and a standing browser check
 
 - **Commits:** kaayko `this entry's commit` (`git log -1 -- docs/paddlingout/EDIT-LOG.md`), kaayko-api `e88749d`
