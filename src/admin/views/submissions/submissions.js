@@ -34,6 +34,9 @@ let allSubmissions = [];
 let currentFilter = 'pending';
 let tagLabels = DEFAULT_TAGS;
 let openEditorId = null;
+// id → the server's reason an Approve was refused (422: no water type, no
+// coordinates, no photos, no name). Shown on the card until the spot is edited.
+const approveBlocked = new Map();
 
 // Live DOM references, re-bound on every init() (the view module is cached but
 // init runs on each navigation, replacing the container's contents).
@@ -148,7 +151,16 @@ async function approve(id, btn) {
   } catch (err) {
     console.error('[Submissions] Approve failed:', err);
     showError(err.message || 'Failed to approve submission.');
-    setCardBusy(card, false);
+    if (err.status === 422) {
+      // The spot is missing something only an admin can set (usually the
+      // water type, which a public submission never fills in). Say so on the
+      // card and open the editor so the fix is one tap away.
+      approveBlocked.set(id, err.message);
+      openEditorId = id;
+      renderList();
+    } else {
+      setCardBusy(card, false);
+    }
   }
 }
 
@@ -184,7 +196,9 @@ async function postAction(id, action, bodyObj) {
       const d = await res.json();
       if (d && (d.error || d.message)) msg = d.error || d.message;
     } catch (_) { /* non-JSON error body */ }
-    throw new Error(msg);
+    const err = new Error(msg);
+    err.status = res.status;
+    throw err;
   }
   try { return await res.json(); } catch (_) { return {}; }
 }
@@ -211,6 +225,7 @@ async function mountEditor(id) {
     bindEditor(host, {
       onChange: (fresh) => {
         if (!fresh) return;
+        approveBlocked.delete(id);
         // Reflect edits on the review card without a full reload.
         const sub = allSubmissions.find((s) => (s.spotId || s.id) === id);
         if (sub) {
@@ -309,6 +324,9 @@ function submissionCard(sub) {
   const tags = Array.isArray(sub.tags) && sub.tags.length
     ? `<div class="sub-tags">${sub.tags.map((t) => `<span class="sp-tag">${escapeHtml(tagLabels[t] || t)}</span>`).join('')}</div>`
     : '';
+  const blocked = status === 'pending' && approveBlocked.has(id)
+    ? `<div class="sub-flag sub-flag--blocked" role="alert">${escapeHtml(approveBlocked.get(id))}</div>`
+    : '';
   const note = status === 'rejected' && sub.rejectionReason
     ? `<div class="sub-field"><span class="sub-field-label">Rejection reason</span><span class="sub-field-val">${escapeHtml(sub.rejectionReason)}</span></div>`
     : '';
@@ -357,6 +375,7 @@ function submissionCard(sub) {
           <span class="sub-meta-sep">•</span>
           <span class="sub-meta-item">${created}</span>
         </div>
+        ${blocked}
         ${actions}
       </div>
       <div class="sub-editor" data-editor-for="${jsAttr(id)}" ${editing ? '' : 'hidden'}></div>
@@ -410,10 +429,17 @@ export function updateSubmissionsBadge(count) {
 function setCardBusy(card, busy, which) {
   if (!card) return;
   card.classList.toggle('is-busy', busy);
-  card.querySelectorAll('[data-action]').forEach((b) => { b.disabled = busy; });
+  card.querySelectorAll('[data-action]').forEach((b) => {
+    b.disabled = busy;
+    // A failed request used to leave the button reading "Approving…" forever.
+    if (!busy && b.dataset.label) { b.textContent = b.dataset.label; delete b.dataset.label; }
+  });
   if (busy && which) {
     const active = card.querySelector(`[data-action="${which}"]`);
-    if (active) active.textContent = which === 'approve' ? 'Approving…' : 'Rejecting…';
+    if (active) {
+      active.dataset.label = active.textContent;
+      active.textContent = which === 'approve' ? 'Approving…' : 'Rejecting…';
+    }
   }
 }
 
