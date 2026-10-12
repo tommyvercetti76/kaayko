@@ -342,9 +342,42 @@
 }
 
 /* --- Inline editor + reviewer flags (added 12 Sep 2026) ------------------- */
-.submission-card { flex-wrap: wrap; }
-.sub-editor { flex-basis: 100%; width: 100%; padding: 0 var(--space-lg) var(--space-lg); }
+/* Editing (rebuilt 11 Oct 2026): the card used to be a wrapping flex COLUMN,
+   so the grid row's height pushed the editor into a clipped side strip. Now an
+   editing card takes the whole row — review on the left, form on the right —
+   and stacks under 980px. */
 .sub-editor[hidden] { display: none; }
+.submission-card.is-editing {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(300px, 400px) minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  align-items: start;
+  overflow: visible;
+  border-color: rgba(212, 168, 75, 0.45);
+}
+.submission-card.is-editing:hover { transform: none; box-shadow: none; }
+.submission-card.is-editing .sub-media { grid-column: 1; grid-row: 1; border-top-left-radius: var(--radius-lg); }
+.submission-card.is-editing .sub-body  { grid-column: 1; grid-row: 2; }
+.submission-card.is-editing .sub-editor {
+  grid-column: 2; grid-row: 1 / span 2;
+  padding: var(--space-md);
+  border-left: 1px solid var(--border-subtle);
+  min-width: 0;
+}
+.sub-editor .se-editor { border: 0; padding: var(--space-sm) var(--space-sm) 0; background: transparent; }
+/* Save sits at the TOP of the form so it is reachable without scrolling past
+   the JSON fields. (Sticky can't work here: .main-content is an overflow
+   container that never scrolls itself — the window does.) */
+.sub-editor .se-actions {
+  order: -1;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+@media (max-width: 980px) {
+  .submission-card.is-editing { display: flex; flex-direction: column; }
+  .submission-card.is-editing .sub-editor { border-left: 0; border-top: 1px solid var(--border-subtle); padding: var(--space-sm); }
+}
 .sub-flag {
   margin: 6px 0; padding: 8px 10px; border-radius: var(--radius-md); font-size: 12px;
   border: 1px solid rgba(212, 168, 75, 0.4); background: rgba(212, 168, 75, 0.08); color: var(--text-primary);

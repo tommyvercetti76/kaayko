@@ -217,6 +217,7 @@ function toggleEditor(id) {
 async function mountEditor(id) {
   const host = listEl && listEl.querySelector(`[data-editor-for="${CSS.escape(id)}"]`);
   if (!host) return;
+  ensureEditorStyles();
   host.hidden = false;
   host.innerHTML = '<div class="loading">Loading spot…</div>';
   try {
@@ -241,6 +242,18 @@ async function mountEditor(id) {
   } catch (err) {
     host.innerHTML = `<div class="submissions-error">${escapeHtml(err.message || 'Failed to load spot.')}</div>`;
   }
+}
+
+// The editor's styles live with the Spots view, and kortex-core only loads a
+// view's CSS when that view is opened — so opening Submissions first rendered
+// an unstyled form. Same href as kortex-core, so neither loads it twice.
+function ensureEditorStyles() {
+  const href = 'views/spots/spots.css';
+  if (document.querySelector(`link[href="${href}"]`)) return;
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = href;
+  document.head.appendChild(link);
 }
 
 // ---------------------------------------------------------------------------
@@ -347,7 +360,7 @@ function submissionCard(sub) {
     : (editBtn ? `<div class="sub-actions">${editBtn}</div>` : '');
 
   return `
-    <article class="submission-card" data-card-id="${jsAttr(id)}">
+    <article class="submission-card${editing ? ' is-editing' : ''}" data-card-id="${jsAttr(id)}">
       <div class="sub-media">
         ${hero}
         ${thumbs ? `<div class="sub-thumbs">${thumbs}</div>` : ''}

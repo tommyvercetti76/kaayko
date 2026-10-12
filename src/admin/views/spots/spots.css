@@ -80,6 +80,7 @@
 .se-grid input, .se-grid select, .se-grid textarea {
   width: 100%; padding: 8px 10px; font-size: 13px; color: var(--text-primary);
   background: rgba(255,255,255,0.04); border: 1px solid var(--border-medium); border-radius: var(--radius-md);
+  font-family: inherit;
 }
 .se-grid input:focus, .se-grid select:focus, .se-grid textarea:focus { outline: none; border-color: var(--gold-primary, #d4a84b); }
 .se-wide { grid-column: 1 / -1; }
