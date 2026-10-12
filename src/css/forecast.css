@@ -140,7 +140,9 @@ main.forecast-main {
   overflow: hidden;
   border-radius: 0;
   width: 100%;
-  min-height: 320px;
+  /* Scales with the width (11 Oct 2026). A fixed 320px across a wide window
+     was a 3–5:1 slice through the middle of a 3:2 photo: sky, cut-off peaks. */
+  min-height: clamp(300px, 34vw, 520px);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -154,12 +156,12 @@ main.forecast-main {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(8,8,8,0.08) 0%,
-    rgba(8,8,8,0.30) 45%,
-    rgba(8,8,8,0.90) 100%
-  );
+  /* Dark only where the title sits, plus a light top fade for the back /
+     heart buttons. The old ramp went 30% → 90% black over the bottom half,
+     which is where the water and shoreline are. */
+  background:
+    linear-gradient(to bottom, rgba(8,8,8,0.40) 0%, rgba(8,8,8,0) 22%),
+    linear-gradient(to top, rgba(8,8,8,0.88) 0%, rgba(8,8,8,0.55) 18%, rgba(8,8,8,0) 48%);
   z-index: 1;
   pointer-events: none;
 }
@@ -169,7 +171,9 @@ main.forecast-main {
   position: absolute;
   inset: 0;
   background-size: cover;
-  background-position: center;
+  /* Below centre: lake photos put the horizon in the lower half, so a centred
+     crop of a wide strip was mostly sky. */
+  background-position: center 62%;
   background-repeat: no-repeat;
   z-index: 0;
   opacity: 0;
@@ -668,7 +672,7 @@ main.forecast-main {
 @media (max-width: 600px) {
   main.forecast-main { padding: 0 0 2.5rem !important; }
   .forecast-body { padding: 1.25rem 0.75rem 0; }
-  .forecast-page-header { min-height: 220px; }
+  .forecast-page-header { min-height: clamp(240px, 62vw, 340px); }
   .alert-summary { padding-right: 3rem; }
   .alert-details { padding-left: 1rem; }
   .loc-row {

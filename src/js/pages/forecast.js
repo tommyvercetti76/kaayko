@@ -653,6 +653,25 @@ function showError() {
   document.getElementById('forecastError').style.display = 'flex';
 }
 
+// Resolves to a landscape photo from `urls` (random order, at most 3 tried),
+// else the first one tried. Loading it here also means the hero's fade-in
+// starts with the photo already decoded. Never rejects.
+function pickLandscape(urls) {
+  const order = urls.slice().sort(() => Math.random() - 0.5).slice(0, 3);
+  const size = (src) => new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(img.naturalWidth / (img.naturalHeight || 1));
+    img.onerror = () => resolve(0);
+    img.src = src;
+  });
+  return (async () => {
+    for (const src of order) {
+      if (await size(src) >= 1.2) return src;
+    }
+    return order[0];
+  })();
+}
+
 async function loadForecast() {
   document.getElementById('forecastLoading').style.display = 'flex';
   document.getElementById('forecastError').style.display = 'none';
@@ -711,13 +730,20 @@ async function loadForecast() {
     _setMeta('meta[name="twitter:title"]',        _ogTitle);
     _setMeta('meta[name="twitter:description"]',  _ogDesc);
 
-    // Pick a random image from the spot's gallery for the hero + page bg
+    // A random image from the spot's gallery for the hero + page bg — but a
+    // LANDSCAPE one. The hero is a wide strip, and a portrait phone photo in
+    // it is a band of sky at any height (Browns Point, 11 Oct 2026). Tries
+    // up to 3 in random order; a portrait-only gallery still gets its first.
+    // Not awaited: the hero fades in once its photo has loaded anyway.
     const imgs = Array.isArray(spot.imgSrc) && spot.imgSrc.length ? spot.imgSrc : [];
-    const heroSrc = imgs.length
-      ? imgs[Math.floor(Math.random() * imgs.length)]
-      : (spot.headerImage || spot.coverImage || null);
+    if (imgs.length) {
+      pickLandscape(imgs).then(paintHero);
+    } else {
+      paintHero(spot.headerImage || spot.coverImage || null);
+    }
 
-    if (heroSrc) {
+    function paintHero(heroSrc) {
+      if (!heroSrc) return;
       // Full-page ultra-faint ambient background
       document.querySelector('.forecast-lake-bg')?.remove();
       const bgEl = document.createElement('div');
