@@ -88,7 +88,7 @@
 
 **APIs used:**
 ```
-GET  /api/paddlingOut                          → all PUBLIC paddle spots + cached scores + admin `tags[]`
+GET  /api/paddlingOut                          → all PUBLIC paddle spots + cached scores (no `tags`: removed 13 Oct 2026, schema in kaayko-api `spotSchema.js`)
 GET  /api/paddlingOut/{id}                    → single spot detail (404 if hidden)
 GET  /api/paddlingOut/geocode?q=              → cached Nominatim forward proxy
 GET  /api/paddlingOut/reverse-geocode?lat=&lng= → cached Nominatim reverse → {city,region,country,water}
