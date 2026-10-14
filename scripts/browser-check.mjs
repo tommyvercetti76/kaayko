@@ -274,7 +274,14 @@ async function main() {
           if (r.score) p.push('a Paddle Score is shown out of season');
           if (!r.heat) p.push('the forecast strip is shown out of season');
         }
-        if (r.rows < 5) p.push(`only ${r.rows} facts shown`);
+        // Since 14 Oct 2026 facts come only from approved official feeds, so the
+        // count varies: the page must show exactly what the API serves.
+        const api = await fetch(`${BASE}/api/paddlingOut/jenny`).then(x => x.json()).catch(() => null);
+        const f = (api && api.facts) || {};
+        const want = Object.keys(f).filter(k => k !== 'hazards' && f[k]).length + (Array.isArray(f.hazards) ? f.hazards.length : 0);
+        if (!api) p.push('could not read the API to compare facts');
+        else if (r.rows !== want) p.push(`${r.rows} facts shown, API serves ${want}`);
+        if (want && !r.rows) p.push('facts served but none shown');
         if (r.sourced < r.rows) p.push(`${r.rows - r.sourced} facts without a source link`);
         return p;
       }, { settle: 6000 });
