@@ -104,12 +104,17 @@ export function renderEditor(spot, tagLabels = DEFAULT_TAGS) {
         <label class="se-wide">YouTube URL
           <input name="youtubeURL" type="url" maxlength="300" value="${escapeHtml(spot.youtubeURL || '')}" placeholder="https://youtube.com/…">
         </label>
+        <details class="se-wide se-advanced"${spot.status || spot.facts ? ' open' : ''}>
+        <summary>Advanced: closure &amp; know-before-you-go <span class="se-hint">JSON, optional. Leave empty if unsure</span></summary>
+        <div class="se-grid">
         <label class="se-wide">Closure <span class="se-hint">JSON or empty. {"state":"closed","summary":…,"source":"https://…","checked":"YYYY-MM-DD"} hides the live score on every surface</span>
           <textarea name="status" rows="3" spellcheck="false" class="se-json">${escapeHtml(spot.status ? JSON.stringify(spot.status, null, 1) : '')}</textarea>
         </label>
         <label class="se-wide">Know before you go <span class="se-hint">JSON: fees, permits, motorized, launch, rentals, dogs, season, parking, hazards[]. Every fact needs summary, an https source and a checked date</span>
           <textarea name="facts" rows="8" spellcheck="false" class="se-json">${escapeHtml(spot.facts ? JSON.stringify(spot.facts, null, 1) : '')}</textarea>
         </label>
+        </div>
+        </details>
         <fieldset class="se-wide se-tags">
           <legend>Display tags <span class="se-hint">shown as chips on the card</span></legend>
           ${Object.entries(tagLabels).map(([key, label]) => `
@@ -137,6 +142,70 @@ export function renderEditor(spot, tagLabels = DEFAULT_TAGS) {
   `;
 }
 
+const JSON_LABEL = { facts: 'Know before you go', status: 'Closure' };
+
+/** Show a message next to the field it is about, open its section, and focus it. */
+function fieldError(form, name, msg) {
+  form.querySelectorAll('.se-field-err').forEach(el => el.remove());
+  const field = form.querySelector(`[name="${name}"]`);
+  if (!field) return;
+  const details = field.closest('details');
+  if (details) details.open = true;
+  const note = document.createElement('span');
+  note.className = 'se-field-err';
+  note.textContent = msg;
+  field.insertAdjacentElement('afterend', note);
+  field.focus();
+  field.scrollIntoView({ block: 'center', behavior: 'smooth' });
+}
+
+/**
+ * Read the form into a PATCH body. Returns { patch } or { error, field }.
+ * macOS and iOS turn typed quotes into curly ones, which made hand-typed JSON
+ * fail every time; they are straightened before parsing.
+ */
+export function collectPatch(form) {
+  const fd = new FormData(form);
+  const patch = {};
+  ['title', 'city', 'region', 'country', 'subtitle', 'launchHint', 'text', 'parkingAvl', 'restroomsAvl', 'youtubeURL', 'waterType']
+    .forEach(k => { patch[k] = String(fd.get(k) ?? '').trim(); });
+  patch.tags = fd.getAll('tags');
+  for (const k of ['facts', 'status']) {
+    const raw = String(fd.get(k) ?? '').trim().replace(/[\u201C\u201D\u201E\u2033]/g, '"').replace(/[\u2018\u2019\u2032]/g, "'");
+    if (!raw) { patch[k] = null; continue; }
+    try { patch[k] = JSON.parse(raw); }
+    catch (err) { return { field: k, error: `${JSON_LABEL[k]} is not valid JSON (${err.message}). Fix it or clear the box.` }; }
+  }
+  const lat = String(fd.get('lat') || '').trim();
+  const lng = String(fd.get('lng') || '').trim();
+  if (lat || lng) {
+    if (!lat || !lng) return { field: lat ? 'lng' : 'lat', error: 'Both latitude and longitude are needed.' };
+    patch.lat = Number(lat); patch.lng = Number(lng);
+  }
+  if (!patch.title) return { field: 'title', error: 'Name cannot be empty.' };
+  return { patch };
+}
+
+/** True when the editor in `root` has changes that were not saved. */
+export function isEditorDirty(root) {
+  return root?.querySelector('.se-editor')?.dataset.dirty === '1';
+}
+
+/**
+ * Save the editor in `root` if it has unsaved changes. Resolves to the fresh
+ * spot (or null when there was nothing to save); throws with the reason when
+ * the form is invalid or the save fails, after pointing at the bad field.
+ */
+export async function saveEditorIfDirty(root) {
+  const form = root?.querySelector('.se-editor');
+  if (!form || form.dataset.dirty !== '1') return null;
+  const { patch, error, field } = collectPatch(form);
+  if (error) { fieldError(form, field, error); throw new Error(error); }
+  const result = await patchSpot(form.dataset.seId, patch);
+  form.dataset.dirty = '';
+  return result.spot;
+}
+
 /**
  * Wire an editor that renderEditor() produced inside `root`.
  * `onChange(spot)` receives the fresh admin-shaped spot after every write.
@@ -149,31 +218,23 @@ export function bindEditor(root, { onChange } = {}) {
   const setStatus = (msg, cls) => { if (statusEl) { statusEl.textContent = msg || ''; statusEl.className = 'se-status' + (cls ? ' ' + cls : ''); } };
   const busy = (on) => form.querySelectorAll('button, input, select, textarea').forEach(el => { el.disabled = on; });
 
+  // Anything typed or picked marks the form unsaved, so Approve can save it
+  // first instead of publishing the old values.
+  const markDirty = (e) => { if (!e.target.closest('[data-se="add-photos"]')) form.dataset.dirty = '1'; };
+  form.addEventListener('input', markDirty);
+  form.addEventListener('change', markDirty);
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const fd = new FormData(form);
-    const patch = {};
-    ['title', 'city', 'region', 'country', 'subtitle', 'launchHint', 'text', 'parkingAvl', 'restroomsAvl', 'youtubeURL', 'waterType']
-      .forEach(k => { patch[k] = String(fd.get(k) ?? '').trim(); });
-    patch.tags = fd.getAll('tags');
     // facts / closure: JSON in, validated on the server (spotFacts.js)
-    for (const k of ['facts', 'status']) {
-      const raw = String(fd.get(k) ?? '').trim();
-      if (!raw) { patch[k] = null; continue; }
-      try { patch[k] = JSON.parse(raw); }
-      catch (err) { setStatus(`${k === 'facts' ? 'Know before you go' : 'Closure'} is not valid JSON.`, 'err'); return; }
-    }
-    const lat = String(fd.get('lat') || '').trim();
-    const lng = String(fd.get('lng') || '').trim();
-    if (lat || lng) {
-      if (!lat || !lng) { setStatus('Both latitude and longitude are needed.', 'err'); return; }
-      patch.lat = Number(lat); patch.lng = Number(lng);
-    }
-    if (!patch.title) { setStatus('Name cannot be empty.', 'err'); return; }
+    const { patch, error, field } = collectPatch(form);
+    if (error) { setStatus(error, 'err'); fieldError(form, field, error); return; }
+    form.querySelectorAll('.se-field-err').forEach(el => el.remove());
 
     busy(true); setStatus('Saving…');
     try {
       const spot = await patchSpot(id, patch);
+      form.dataset.dirty = '';
       setStatus(spot.paddleScore?.warmed ? 'Saved. Score recomputed.' : 'Saved.', 'ok');
       showSuccess('Spot updated.');
       if (onChange) onChange(spot.spot);

@@ -17,7 +17,7 @@
 
 import { apiFetch } from '../../js/config.js';
 import { escapeHtml, jsAttr, formatDate, showSuccess, showError, showInfo } from '../../js/utils.js';
-import { renderEditor, bindEditor, fetchSpot, DEFAULT_TAGS } from '../spots/spot-editor.js';
+import { renderEditor, bindEditor, fetchSpot, saveEditorIfDirty, DEFAULT_TAGS } from '../spots/spot-editor.js';
 
 // ---------------------------------------------------------------------------
 // Module state
@@ -101,12 +101,27 @@ export async function init(STATE) { // eslint-disable-line no-unused-vars
     else if (action === 'edit') toggleEditor(id);
   });
 
+  // One water type per card: the picker above Approve and the editor's field
+  // follow each other, so they can never disagree (they did: Bay vs —).
   listEl.addEventListener('change', (e) => {
-    const sel = e.target.closest('[data-wt-for]');
-    if (!sel) return;
-    pickedWaterType.set(sel.dataset.wtFor, sel.value);
-    approveBlocked.delete(sel.dataset.wtFor);
-    const flag = sel.closest('.submission-card')?.querySelector('.sub-flag--blocked');
+    const card = e.target.closest('.submission-card');
+    if (!card) return;
+    const id = card.dataset.cardId;
+    let value = null;
+    if (e.target.matches('[data-wt-for]')) {
+      value = e.target.value;
+      const other = card.querySelector('.se-editor select[name="waterType"]');
+      if (other && other.value !== value) { other.value = value; other.closest('.se-editor').dataset.dirty = '1'; }
+    } else if (e.target.matches('.se-editor select[name="waterType"]')) {
+      value = e.target.value;
+      const other = card.querySelector('[data-wt-for]');
+      if (other) other.value = value;
+    } else {
+      return;
+    }
+    if (value) pickedWaterType.set(id, value); else pickedWaterType.delete(id);
+    approveBlocked.delete(id);
+    const flag = card.querySelector('.sub-flag--blocked');
     if (flag) flag.remove();
   });
 
@@ -160,6 +175,10 @@ async function approve(id, btn) {
   }
   setCardBusy(card, true, 'approve');
   try {
+    // Edits typed into the open editor used to be dropped: Approve published
+    // the old values. Save them first; a bad field stops the approval there.
+    const editorHost = card && card.querySelector('.sub-editor');
+    if (editorHost && !editorHost.hidden) await saveEditorIfDirty(editorHost);
     const result = await postAction(id, 'validate', waterType ? { waterType } : {});
     markStatus(id, 'validated');
     const score = result && result.paddleScore;
@@ -247,6 +266,14 @@ async function mountEditor(id) {
   try {
     const spot = await fetchSpot(id);
     host.innerHTML = renderEditor(spot, tagLabels);
+    // Start the editor on the same water type the card offers.
+    const sub = allSubmissions.find((s) => (s.spotId || s.id) === id);
+    const offered = pickedWaterType.get(id) || (sub && sub.suggestedWaterType);
+    const wtSelect = host.querySelector('select[name="waterType"]');
+    if (wtSelect && !spot.waterType && offered) {
+      wtSelect.value = offered;
+      host.querySelector('.se-editor').dataset.dirty = '1';
+    }
     bindEditor(host, {
       onChange: (fresh) => {
         if (!fresh) return;
