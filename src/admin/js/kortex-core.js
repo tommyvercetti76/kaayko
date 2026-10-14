@@ -82,6 +82,11 @@ const VIEW_CONFIGS = {
     css: 'views/spots/spots.css',
     container: '#spots-view'
   },
+  facts: {
+    module: '../views/facts/facts.js',
+    css: 'views/facts/facts.css',
+    container: '#facts-view'
+  },
   orders: {
     module: '../views/orders/orders.js',
     css: 'views/orders/orders.css',

@@ -95,10 +95,12 @@ GET  /api/paddlingOut/reverse-geocode?lat=&lng= → cached Nominatim reverse →
 POST /api/paddlingOut/submitEntry             → community spot (multipart, 2–5 photos, EXIF stripped, honeypot `website`)
 --- platform admin only (requirePlatformAdmin; X-Admin-Key also works) ---
 GET  /api/paddlingOut/admin/submissions       → review queue (+ possibleDuplicateOf flag)
-POST /api/paddlingOut/admin/submissions/{id}/validate → publish; refuses w/o coords or photos; warms score inline; default tag `community`
+POST /api/paddlingOut/admin/submissions/{id}/validate → publish; refuses an incomplete spot (spotSchema.publicSpotProblems); water type from pick/hint/name; warms score inline
 POST /api/paddlingOut/admin/submissions/{id}/reject   → hide + delete every prefixed photo; body {rejectionReason}
 GET  /api/paddlingOut/admin/spots[/{id}]      → whole catalogue incl. hidden, with isPublic/photos/hasCachedScore
-PATCH /api/paddlingOut/admin/spots/{id}       → edit whitelisted fields, tags, archived (publish toggle); audit → paddling_spot_audit
+PATCH /api/paddlingOut/admin/spots/{id}       → edit whitelisted fields, archived (publish toggle); live spots must stay complete; audit → paddling_spot_audit
+GET  /api/paddlingOut/admin/fact-proposals?status= → Kortex → Facts: official-feed (NPS) changes awaiting review → spot_fact_proposals, spot_fact_runs
+POST /api/paddlingOut/admin/fact-proposals/{id}/approve|reject → approve writes through spotFacts gate (body {as:'closure'} only for NPS "Park Closure"); daily job spotSourcesRefresh fills the queue
 POST /api/paddlingOut/admin/spots/{id}/images (multipart) / DELETE …/images?path=  → photo add/remove (ownership-checked)
 POST /api/paddlingOut/admin/spots/{id}/warm-score → recompute cached score now
 GET  /api/paddleScore?location={lat},{lon}    → ML score for custom location
