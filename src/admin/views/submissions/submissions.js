@@ -37,6 +37,9 @@ let openEditorId = null;
 // id → the server's reason an Approve was refused (422: no water type, no
 // coordinates, no photos, no name). Shown on the card until the spot is edited.
 const approveBlocked = new Map();
+const WATER_TYPES = ['lake', 'reservoir', 'river', 'coastal', 'bay', 'canal'];
+// id → the water type the reviewer picked on the card (survives re-renders).
+const pickedWaterType = new Map();
 
 // Live DOM references, re-bound on every init() (the view module is cached but
 // init runs on each navigation, replacing the container's contents).
@@ -98,6 +101,15 @@ export async function init(STATE) { // eslint-disable-line no-unused-vars
     else if (action === 'edit') toggleEditor(id);
   });
 
+  listEl.addEventListener('change', (e) => {
+    const sel = e.target.closest('[data-wt-for]');
+    if (!sel) return;
+    pickedWaterType.set(sel.dataset.wtFor, sel.value);
+    approveBlocked.delete(sel.dataset.wtFor);
+    const flag = sel.closest('.submission-card')?.querySelector('.sub-flag--blocked');
+    if (flag) flag.remove();
+  });
+
   const refreshBtn = container.querySelector('#submissions-refresh');
   if (refreshBtn) refreshBtn.addEventListener('click', () => load());
 
@@ -134,9 +146,21 @@ async function load() {
 
 async function approve(id, btn) {
   const card = btn.closest('.submission-card');
+  // The water type rides with Approve, so it is never a separate Edit → Save
+  // round trip. The server also falls back to the submitter's answer and the
+  // name, and only refuses when none of them says what the water is.
+  const sel = card && card.querySelector(`[data-wt-for="${CSS.escape(id)}"]`);
+  const waterType = sel ? sel.value : '';
+  if (sel && !waterType) {
+    approveBlocked.set(id, 'Pick a water type, then Approve.');
+    renderList();
+    const again = listEl.querySelector(`[data-wt-for="${CSS.escape(id)}"]`);
+    if (again) again.focus();
+    return;
+  }
   setCardBusy(card, true, 'approve');
   try {
-    const result = await postAction(id, 'validate', {});
+    const result = await postAction(id, 'validate', waterType ? { waterType } : {});
     markStatus(id, 'validated');
     const score = result && result.paddleScore;
     if (score && score.warmed) {
@@ -152,11 +176,11 @@ async function approve(id, btn) {
     console.error('[Submissions] Approve failed:', err);
     showError(err.message || 'Failed to approve submission.');
     if (err.status === 422) {
-      // The spot is missing something only an admin can set (usually the
-      // water type, which a public submission never fills in). Say so on the
-      // card and open the editor so the fix is one tap away.
+      // The spot is missing something only an admin can set (coordinates,
+      // photos, a name, or a water type nothing could infer). Say so on the
+      // card; open the editor only when the fix lives there.
       approveBlocked.set(id, err.message);
-      openEditorId = id;
+      if (!/water type/i.test(err.message)) openEditorId = id;
       renderList();
     } else {
       setCardBusy(card, false);
@@ -233,8 +257,10 @@ async function mountEditor(id) {
           Object.assign(sub, {
             lakeName: fresh.title || fresh.lakeName, city: fresh.city, region: fresh.region, country: fresh.country,
             launchHint: fresh.launchHint, text: fresh.text, parkingAvl: fresh.parkingAvl, restroomsAvl: fresh.restroomsAvl,
-            location: fresh.location, tags: fresh.tags, imgSrc: (fresh.images || []).map((i) => i.url)
+            location: fresh.location, tags: fresh.tags, imgSrc: (fresh.images || []).map((i) => i.url),
+            waterType: fresh.waterType || null
           });
+          if (fresh.waterType) pickedWaterType.set(id, fresh.waterType);
         }
         renderList();
       }
@@ -352,7 +378,8 @@ function submissionCard(sub) {
     ? `<button type="button" class="btn btn-secondary" data-action="edit" data-id="${jsAttr(id)}">${editing ? 'Close editor' : 'Edit'}</button>`
     : '';
   const actions = status === 'pending'
-    ? `<div class="sub-actions">
+    ? `${waterTypePicker(sub, id)}
+       <div class="sub-actions">
          <button type="button" class="btn btn-success" data-action="approve" data-id="${jsAttr(id)}">Approve</button>
          <button type="button" class="btn btn-danger" data-action="reject" data-id="${jsAttr(id)}">Reject</button>
          ${editBtn}
@@ -394,6 +421,22 @@ function submissionCard(sub) {
       <div class="sub-editor" data-editor-for="${jsAttr(id)}" ${editing ? '' : 'hidden'}></div>
     </article>
   `;
+}
+
+/** Water type, chosen on the card. Pre-filled: the spot's, else the submitter's answer, else the name. */
+function waterTypePicker(sub, id) {
+  const value = pickedWaterType.get(id) || sub.waterType || sub.suggestedWaterType || '';
+  const from = pickedWaterType.has(id) || sub.waterType ? ''
+    : sub.suggestedWaterTypeSource === 'submitter' ? 'submitter said so'
+    : sub.suggestedWaterTypeSource === 'name' ? 'from the name, check it' : '';
+  return `<label class="sub-wt">
+      <span class="sub-field-label">Water type</span>
+      <select data-wt-for="${jsAttr(id)}" aria-label="Water type">
+        <option value=""${value ? '' : ' selected'}>Pick one…</option>
+        ${WATER_TYPES.map((t) => `<option value="${t}"${value === t ? ' selected' : ''}>${t[0].toUpperCase() + t.slice(1)}</option>`).join('')}
+      </select>
+      ${from ? `<span class="sub-wt-src">${escapeHtml(from)}</span>` : ''}
+    </label>`;
 }
 
 function statusBadge(status) {
