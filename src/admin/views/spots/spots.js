@@ -2,7 +2,7 @@
  * Spots View Module — the Paddling Out catalogue.
  *
  * Every spot (curated and community, published, hidden, pending) with the
- * public-visibility verdict, photos, score-cache state and tags. Inline edit
+ * public-visibility verdict, photos, score-cache state and water type. Inline edit
  * via the shared spot editor; a publish toggle on `archived`.
  *
  * Endpoints (platform admin): GET /paddlingOut/admin/spots + the editor's.
@@ -12,7 +12,7 @@
  */
 
 import { escapeHtml, jsAttr, showSuccess, showError } from '../../js/utils.js';
-import { renderEditor, bindEditor, fetchSpots, patchSpot, safeImageUrl, DEFAULT_TAGS } from './spot-editor.js';
+import { renderEditor, bindEditor, fetchSpots, patchSpot, safeImageUrl } from './spot-editor.js';
 
 const FILTERS = [
   { key: 'all',       label: 'All',        match: () => true },
@@ -23,7 +23,6 @@ const FILTERS = [
 ];
 
 let spots = [];
-let tagLabels = DEFAULT_TAGS;
 let filter = 'all';
 let query = '';
 let openId = null;
@@ -42,7 +41,7 @@ export async function init(STATE) { // eslint-disable-line no-unused-vars
     <header class="view-header">
       <div>
         <h1>Paddling Spots</h1>
-        <p class="view-subtitle">Every lake, river and ramp in the catalogue. Edit copy, location, photos and tags; publish or hide.</p>
+        <p class="view-subtitle">Every lake, river and ramp in the catalogue. Edit copy, location and photos; publish or hide.</p>
       </div>
       <button type="button" class="btn btn-secondary" id="spots-refresh">Refresh</button>
     </header>
@@ -89,7 +88,6 @@ async function load() {
   try {
     const data = await fetchSpots();
     spots = Array.isArray(data.spots) ? data.spots : [];
-    if (data.tags && typeof data.tags === 'object') tagLabels = data.tags;
     renderTabs(); renderList();
   } catch (err) {
     console.error('[Spots] load failed:', err);
@@ -131,7 +129,8 @@ function row(s) {
   const score = s.hasCachedScore
     ? `<span class="sp-score" title="Cached paddle score">${Number(s.rating).toFixed(1)}</span>`
     : (s.isPublic ? `<span class="sp-score sp-score--none" title="No cached score yet">—</span>` : '');
-  const tags = (s.tags || []).map(t => `<span class="sp-tag">${escapeHtml(tagLabels[t] || t)}</span>`).join('');
+  // Water type is required on a live spot; a missing one is shown, not hidden.
+  const tags = `<span class="sp-tag">${escapeHtml(s.waterType || 'no water type')}</span>`;
   const canPublish = !s.communitySubmission || String(s.submissionStatus || '').toLowerCase() === 'validated';
   const pubBtn = s.isPublic
     ? `<button type="button" class="btn btn-secondary btn-sm" data-action="hide" data-id="${jsAttr(s.id)}">Hide</button>`
@@ -184,7 +183,7 @@ function mountEditor(id) {
   const host = listEl.querySelector(`[data-editor-for="${CSS.escape(id)}"]`);
   if (!spot || !host) return;
   host.hidden = false;
-  host.innerHTML = renderEditor(spot, tagLabels);
+  host.innerHTML = renderEditor(spot);
   bindEditor(host, {
     onChange: (fresh) => {
       if (!fresh) return;

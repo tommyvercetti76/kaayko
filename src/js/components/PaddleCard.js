@@ -72,9 +72,6 @@
       youtubeURL: spot.youtubeURL || '',
       waterType: spot.waterType || null,
       coverageGrade: (spot.cellCoverage && spot.cellCoverage.grade) || null,
-      // Admin display tags (API whitelists them; labels are fixed here so the
-      // chip text is never user-influenced).
-      tags: (Array.isArray(spot.tags) ? spot.tags : []).filter(function (t) { return TAG_LABELS[t]; }).slice(0, 3),
       // The raw paddleScore block, kept so the card can show WHY (see whyState).
       // Never read for the displayed number — that stays `rating` above.
       score: (spot.paddleScore && typeof spot.paddleScore === 'object') ? spot.paddleScore : null,
@@ -109,22 +106,8 @@
     return img;
   }
 
-  var TAG_LABELS = {
-    'community': 'Community', 'new': 'New', 'verified': 'Verified', 'staff-pick': 'Staff pick',
-    'seasonal': 'Seasonal', 'river': 'River', 'boat-ramp': 'Boat ramp'
-  };
-
-  // Top-left chip row on the media box; empty when the spot has no tags.
-  function buildTags(data) {
-    if (!data.tags.length) return null;
-    var wrap = el('div', 'pcard-tags');
-    data.tags.forEach(function (t) {
-      var chip = el('span', 'pcard-tag pcard-tag--' + t);
-      chip.textContent = TAG_LABELS[t];
-      wrap.appendChild(chip);
-    });
-    return wrap;
-  }
+  // No corner chip (13 Oct 2026). Free-form admin tags made the same kind of
+  // spot read COMMUNITY, VERIFIED or BOAT RAMP; the schema no longer has tags.
 
   // Canonical 3-tier scale (matches prefs.js paddleScoreColor + the verdict labels).
   function scoreMeta(rating) {
@@ -479,9 +462,6 @@
       media.appendChild(fav);
     }
 
-    var tagsMin = buildTags(data);
-    if (tagsMin) media.appendChild(tagsMin);
-
     // meta overlay
     var meta = el('div', 'pcard-meta');
     var title = el('span', 'pcard-title'); title.textContent = data.title;
@@ -571,8 +551,6 @@
       window.location.href = '/paddlingout/forecast?id=' + encodeURIComponent(data.id);
     });
     media.appendChild(badge);
-    var tagsFull = buildTags(data);
-    if (tagsFull) media.appendChild(tagsFull);
 
     // dots
     var dots = el('div', 'carousel-dots');

@@ -17,7 +17,7 @@
 
 import { apiFetch } from '../../js/config.js';
 import { escapeHtml, jsAttr, formatDate, showSuccess, showError, showInfo } from '../../js/utils.js';
-import { renderEditor, bindEditor, fetchSpot, saveEditorIfDirty, DEFAULT_TAGS } from '../spots/spot-editor.js';
+import { renderEditor, bindEditor, fetchSpot, saveEditorIfDirty } from '../spots/spot-editor.js';
 
 // ---------------------------------------------------------------------------
 // Module state
@@ -32,7 +32,6 @@ const FILTERS = [
 
 let allSubmissions = [];
 let currentFilter = 'pending';
-let tagLabels = DEFAULT_TAGS;
 let openEditorId = null;
 // id → the server's reason an Approve was refused (422: no water type, no
 // coordinates, no photos, no name). Shown on the card until the spot is edited.
@@ -148,7 +147,6 @@ async function load() {
     allSubmissions = Array.isArray(data)
       ? data
       : (Array.isArray(data && data.submissions) ? data.submissions : []);
-    if (data && data.tags && typeof data.tags === 'object') tagLabels = data.tags;
 
     refreshUI();
   } catch (err) {
@@ -248,7 +246,7 @@ async function postAction(id, action, bodyObj) {
 
 // ---------------------------------------------------------------------------
 // Inline edit (shared spot editor) — lets an admin fix a name, move the pin,
-// swap a photo or set tags BEFORE approving, instead of rejecting a nearly-
+// swap a photo or set the water type BEFORE approving, instead of rejecting a nearly-
 // right entry.
 // ---------------------------------------------------------------------------
 
@@ -265,7 +263,7 @@ async function mountEditor(id) {
   host.innerHTML = '<div class="loading">Loading spot…</div>';
   try {
     const spot = await fetchSpot(id);
-    host.innerHTML = renderEditor(spot, tagLabels);
+    host.innerHTML = renderEditor(spot);
     // Start the editor on the same water type the card offers.
     const sub = allSubmissions.find((s) => (s.spotId || s.id) === id);
     const offered = pickedWaterType.get(id) || (sub && sub.suggestedWaterType);
@@ -284,7 +282,7 @@ async function mountEditor(id) {
           Object.assign(sub, {
             lakeName: fresh.title || fresh.lakeName, city: fresh.city, region: fresh.region, country: fresh.country,
             launchHint: fresh.launchHint, text: fresh.text, parkingAvl: fresh.parkingAvl, restroomsAvl: fresh.restroomsAvl,
-            location: fresh.location, tags: fresh.tags, imgSrc: (fresh.images || []).map((i) => i.url),
+            location: fresh.location, imgSrc: (fresh.images || []).map((i) => i.url),
             waterType: fresh.waterType || null
           });
           if (fresh.waterType) pickedWaterType.set(id, fresh.waterType);
@@ -387,9 +385,6 @@ function submissionCard(sub) {
          is ${escapeHtml(String(sub.possibleDuplicateOf.distanceMetres))} m away${sub.possibleDuplicateOf.isPublic ? ' and already published' : ' (not public)'}.
          <a href="#/spots">Open Spots ↗</a></div>`
     : '';
-  const tags = Array.isArray(sub.tags) && sub.tags.length
-    ? `<div class="sub-tags">${sub.tags.map((t) => `<span class="sp-tag">${escapeHtml(tagLabels[t] || t)}</span>`).join('')}</div>`
-    : '';
   const blocked = status === 'pending' && approveBlocked.has(id)
     ? `<div class="sub-flag sub-flag--blocked" role="alert">${escapeHtml(approveBlocked.get(id))}</div>`
     : '';
@@ -435,7 +430,6 @@ function submissionCard(sub) {
         ${launchHint}
         ${description}
         ${note}
-        ${tags}
         <div class="sub-amenities">${boolPill('Parking', sub.parkingAvl)}${boolPill('Restrooms', sub.restroomsAvl)}</div>
         <div class="sub-meta">
           <span class="sub-meta-item">By ${submitter}</span>

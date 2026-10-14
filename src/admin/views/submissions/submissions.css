@@ -408,4 +408,3 @@
 }
 .sub-flag--blocked { border-color: rgba(229, 115, 115, 0.5); background: rgba(229, 115, 115, 0.08); }
 .sub-flag a { color: var(--gold-primary, #d4a84b); text-decoration: none; margin-left: 6px; }
-.sub-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0; }

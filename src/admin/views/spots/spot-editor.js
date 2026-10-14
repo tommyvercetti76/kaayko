@@ -16,11 +16,6 @@
 import { apiFetch, AUTH, CONFIG } from '../../js/config.js';
 import { escapeHtml, jsAttr, showSuccess, showError } from '../../js/utils.js';
 
-export const DEFAULT_TAGS = {
-  'community': 'Community', 'new': 'New', 'verified': 'Verified', 'staff-pick': 'Staff pick',
-  'seasonal': 'Seasonal', 'river': 'River', 'boat-ramp': 'Boat ramp'
-};
-
 const WATER_TYPES = ['', 'lake', 'reservoir', 'river', 'coastal', 'bay', 'canal'];
 const MAX_UPLOAD = 5;
 const MAX_PER_SPOT = 8;
@@ -43,9 +38,8 @@ function hintLine(h) {
   return bits.length ? `<span class="se-hint">Submitter said: ${escapeHtml(bits.join(' · '))}</span>` : '';
 }
 
-export function renderEditor(spot, tagLabels = DEFAULT_TAGS) {
+export function renderEditor(spot) {
   const c = coords(spot);
-  const tags = Array.isArray(spot.tags) ? spot.tags : [];
   const images = Array.isArray(spot.images) ? spot.images : [];
   const yn = (v) => v === 'Y' || v === true || v === 'true';
 
@@ -79,8 +73,9 @@ export function renderEditor(spot, tagLabels = DEFAULT_TAGS) {
         <label>Country
           <input name="country" type="text" maxlength="80" value="${escapeHtml(spot.country || '')}">
         </label>
-        <label>Subtitle
-          <input name="subtitle" type="text" maxlength="160" value="${escapeHtml(spot.subtitle || '')}" placeholder="Auto from city, region, country">
+        <label>Shown as
+          <output class="se-derived">${escapeHtml(spot.subtitle || '—')}</output>
+          <span class="se-hint">Built from city, state and country. US spots leave the country off.</span>
         </label>
         <label>Latitude
           <input name="lat" type="number" step="0.00001" min="-85" max="85" value="${c ? c.lat.toFixed(5) : ''}">
@@ -115,12 +110,6 @@ export function renderEditor(spot, tagLabels = DEFAULT_TAGS) {
         </label>
         </div>
         </details>
-        <fieldset class="se-wide se-tags">
-          <legend>Display tags <span class="se-hint">shown as chips on the card</span></legend>
-          ${Object.entries(tagLabels).map(([key, label]) => `
-            <label class="se-tag"><input type="checkbox" name="tags" value="${jsAttr(key)}"${tags.includes(key) ? ' checked' : ''}> ${escapeHtml(label)}</label>
-          `).join('')}
-        </fieldset>
       </div>
 
       <div class="se-photos-head">
@@ -167,9 +156,8 @@ function fieldError(form, name, msg) {
 export function collectPatch(form) {
   const fd = new FormData(form);
   const patch = {};
-  ['title', 'city', 'region', 'country', 'subtitle', 'launchHint', 'text', 'parkingAvl', 'restroomsAvl', 'youtubeURL', 'waterType']
+  ['title', 'city', 'region', 'country', 'launchHint', 'text', 'parkingAvl', 'restroomsAvl', 'youtubeURL', 'waterType']
     .forEach(k => { patch[k] = String(fd.get(k) ?? '').trim(); });
-  patch.tags = fd.getAll('tags');
   for (const k of ['facts', 'status']) {
     const raw = String(fd.get(k) ?? '').trim().replace(/[\u201C\u201D\u201E\u2033]/g, '"').replace(/[\u2018\u2019\u2032]/g, "'");
     if (!raw) { patch[k] = null; continue; }
