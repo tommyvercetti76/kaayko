@@ -104,6 +104,26 @@
     return { rating: n, color: paddleScoreColor(n), label, severity, display: n.toFixed(1) };
   }
 
+  // ── Why + how sure (14 Oct 2026) ────────────────────────────────────────────
+  // The score used to be shown as "3.0 / 5", a precision a model with a
+  // typical error of ±0.6 does not have, and with no reason. The band leads;
+  // the reason is the model's own account of what held it down
+  // (`explanations`, measured server-side); the number is a small aside.
+  function scoreReason(explanations, rating) {
+    if (!Array.isArray(explanations)) return null;           // no account → say nothing
+    if (explanations.length && explanations[0] && explanations[0].text) return localizeUnits(explanations[0].text);
+    const n = _num(rating);
+    if (n == null) return null;
+    return n >= 3.7 ? 'Nothing holding it back' : 'No single weather factor stands out';
+  }
+  function scoreScale(rating, uncertainty) {
+    const n = _num(rating);
+    if (n == null) return '';
+    const v = Math.round(n * 2) / 2;
+    const mae = uncertainty && _num(uncertainty.residualMae);
+    return `${v % 1 ? v.toFixed(1) : v} of 5` + (mae != null ? ` · typical error ±${mae.toFixed(1)}` : '');
+  }
+
   // ── Card style (list layout: 'full' detailed | 'minimal' image-tile) ─────────
   // Default is 'minimal' — first-time visitors land in the image-first look; only an
   // explicit 'full' choice opts out.
@@ -294,7 +314,7 @@
     getUnits, isMetric, setUnits,
     fmtTemp, fmtWind, fmtPrecip, fmtDist, fmtHeight, fmtArea, fmtVolume, fmtFlow, localizeUnits,
     kaaykoApiBase, registerFavPainter,
-    paddleScoreColor, scoreMeta,
+    paddleScoreColor, scoreMeta, scoreReason, scoreScale,
     getCardStyle, setCardStyle,
     BOAT_TYPES, getBoatType, setBoatType, boatTypeLabel, craftParam, withCraft,
     getArea, clearArea,

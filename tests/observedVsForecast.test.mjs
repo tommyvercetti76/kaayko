@@ -20,6 +20,8 @@ import { fileURLToPath } from 'node:url';
 
 const HERO = fileURLToPath(new URL('../src/js/components/RatingHero.js', import.meta.url));
 const HEAT = fileURLToPath(new URL('../src/js/components/KonditionsHeatmap.js', import.meta.url));
+// The shared escape helper the components use (window.KaaykoUtil.escapeHtml).
+const UTIL = fileURLToPath(new URL('../src/js/util.js', import.meta.url));
 
 const PREFS = {
   fmtTemp: v => `${v}°C`, fmtWind: v => `${v} km/h`,
@@ -55,11 +57,12 @@ function renderHero(extra = {}) {
   const ctx = {
     window: { KaaykoPrefs: PREFS, KaaykoIcons: { get: () => '' } },
     localStorage: { getItem: () => null, setItem() {} },
-    document: { createElement: () => captured },
+    document: { createElement: () => captured, getElementById: () => null, readyState: 'complete', addEventListener() {} },
     requestAnimationFrame: () => {},
     console: { log() {}, warn() {}, error() {} }
   };
   vm.createContext(ctx);
+  vm.runInContext(fs.readFileSync(UTIL, 'utf8'), ctx, { filename: UTIL });
   vm.runInContext(fs.readFileSync(HERO, 'utf8'), ctx, { filename: HERO });
   const hero = new ctx.window.RatingHero();
   // Trinity River's observed hero reading, 18 Sep 2026.
@@ -93,11 +96,13 @@ function renderHeatmap(hour = 13) {
   const container = sink();
   const ctx = {
     window: { KaaykoPrefs: PREFS, KaaykoIcons: { get: () => '' } },
+    document: { getElementById: () => null, readyState: 'complete', addEventListener() {} },
     console: { log() {}, warn() {}, error() {} },
     // Trinity River, 18 Sep 2026 — the afternoon the two surfaces disagreed.
     Date: pinnedClock(2026, 8, 18, hour)
   };
   vm.createContext(ctx);
+  vm.runInContext(fs.readFileSync(UTIL, 'utf8'), ctx, { filename: UTIL });
   vm.runInContext(fs.readFileSync(HEAT, 'utf8'), ctx, { filename: HEAT });
   // The same clock hour of the forecast, which reads 35.4 °C — not 33.9.
   const hourly = {};

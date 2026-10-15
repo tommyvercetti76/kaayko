@@ -333,6 +333,9 @@ function renderHero(currentData, forecastData, spot) {
       // When the stored score was computed. The hero prints its age rather
       // than claiming "NOW" over a number from the last warm cycle.
       computedAt: currentData.paddleScore.computedAt || currentData.metadata?.cachedAt || null,
+      // The model's own account of what held the score down, and its error
+      explanations: currentData.paddleScore.explanations,
+      uncertainty: currentData.paddleScore.uncertainty || null,
       penalties: penaltiesApplied,
       originalRating: currentData.paddleScore.originalMLRating || rating,
       totalPenalty: penaltiesApplied.length > 0
@@ -424,7 +427,8 @@ function applyNightGate(currentData, forecastData) {
       if (!T.isAhead(days[d], h, now, d)) continue;
       const r = parseFloat(hd.rating ?? hd.prediction?.rating);
       if (isNaN(r)) continue;
-      next = { dayIndex: d, date: days[d].date || null, hour: h, rating: Math.round(r * 2) / 2 };
+      next = { dayIndex: d, date: days[d].date || null, hour: h, rating: Math.round(r * 2) / 2,
+        explanations: hd.prediction?.explanations, uncertainty: hd.prediction?.uncertainty || currentData?.paddleScore?.uncertainty || null };
       break outer;
     }
   }
@@ -439,17 +443,23 @@ function applyNightGate(currentData, forecastData) {
     : '';
   const hourWord = next ? formatHourDisplay(next.hour) : '';
 
+  const word = label ? label.charAt(0) + label.slice(1).toLowerCase() : '';
+  const reason = next && P.scoreReason ? P.scoreReason(next.explanations, next.rating) : null;
+  const scale = next && P.scoreScale ? P.scoreScale(next.rating, next.uncertainty) : '';
+  const esc = (t) => window.KaaykoUtil.escapeHtml(t);
   mark.classList.add('is-night');
   mark.innerHTML =
     '<div class="night-mark" role="img" aria-label="After dark — Kaayko scores daylight paddling only' +
-      (next ? `. Next daylight score ${next.rating.toFixed(1)} out of 5 at ${dayWord} ${hourWord}` : '') + '">' +
+      (next ? `. Next daylight window ${dayWord} at ${hourWord}: ${esc(word)}${reason ? ', ' + esc(reason) : ''}. ${esc(scale)}` : '') + '">' +
       '<div class="night-eyebrow">After dark</div>' +
       '<div class="night-copy">We score daylight paddling only</div>' +
       (next
         ? '<div class="night-next">' +
             '<span class="night-next-label">Next daylight window</span>' +
-            `<span class="night-next-score" style="color:${color}">${next.rating.toFixed(1)}<span class="night-next-denom">/ 5</span></span>` +
-            `<span class="night-next-when">${dayWord} at ${hourWord} · <span style="color:${color}">${label}</span></span>` +
+            `<span class="night-next-score" style="color:${color}">${esc(word)}</span>` +
+            (reason ? `<span class="night-next-reason">${esc(reason)}</span>` : '') +
+            `<span class="night-next-when">${dayWord} at ${hourWord}</span>` +
+            `<span class="night-next-scale">${esc(scale)}</span>` +
           '</div>'
         : '') +
     '</div>';

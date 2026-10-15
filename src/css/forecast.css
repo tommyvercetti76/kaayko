@@ -1242,3 +1242,27 @@ main.forecast-main {
 .kbg-closed-note { margin: 0 0 0.5rem; font-size: 0.85rem; color: rgba(232, 228, 220, 0.7); }
 .kbg-closed.is-season { border-color: rgba(143, 178, 214, 0.5); background: rgba(143, 178, 214, 0.08); }
 .kbg-closed.is-season .kbg-closed-eyebrow { color: #9cc0e6; }
+
+/* ── Band + reason (14 Oct 2026): the band leads, the number is an aside ── */
+.score-mark-verdict {
+  font-family: var(--font-serif);
+  font-size: clamp(2.6rem, 4.6vw, 3.6rem);
+  font-weight: 600;
+  line-height: 1.05;
+}
+.score-mark-reason {
+  margin-top: 0.45rem;
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  line-height: 1.3;
+  color: rgba(237,232,223,0.9);
+}
+.score-mark-scale, .night-next-scale {
+  font-family: var(--font-sans);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.night-next-score { font-size: 2.1rem; }
+.night-next-reason { font-family: var(--font-serif); font-size: 1rem; color: rgba(237,232,223,0.9); }

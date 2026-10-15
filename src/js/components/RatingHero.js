@@ -96,7 +96,7 @@ class RatingHero {
           <!-- ── Score Ring ── -->
           <div class="rating-section">
             <div class="paddle-score-label">Paddle Score</div>
-            ${this.buildScoreRing(rating)}
+            ${this.buildScoreRing(rating, weather)}
             <!-- AUDIT-2026-09-18 #6: this hero reads an OBSERVATION
                  (current.json). The 3-day strip below it reads a FORECAST.
                  They legitimately disagree — on Trinity River, 33.9 °C here vs
@@ -192,7 +192,7 @@ class RatingHero {
 
   // ── SVG Donut Ring ────────────────────────────────────────────────────────
 
-  buildScoreRing(rating) {
+  buildScoreRing(rating, weather = {}) {
     // The score as typography, not a widget: a monumental serif numeral over a
     // ten-segment half-point meter (one chamfered tick per 0.5 — the scale
     // itself made visible). The old donut ring was the one curve-heavy,
@@ -206,11 +206,20 @@ class RatingHero {
       i < filled ? `<i class="on" style="background:${color}"></i>` : '<i></i>'
     ).join('');
 
+    // The band leads and the reason follows; the number is an aside with its
+    // typical error. "3.0 / 5" in a 5 rem numeral claimed a precision the
+    // model (±0.6) does not have, and said nothing about why (14 Oct 2026).
+    const P = window.KaaykoPrefs;
+    const reason = P.scoreReason ? P.scoreReason(weather.explanations, r) : null;
+    const scale = P.scoreScale ? P.scoreScale(r, weather.uncertainty) : `${display} of 5`;
+    const esc = (t) => window.KaaykoUtil.escapeHtml(t);
+    const word = label.charAt(0) + label.slice(1).toLowerCase();
     return `
-      <div class="score-mark" role="img" aria-label="Paddle score ${display} out of 5 — ${label.toLowerCase()}">
-        <div class="score-mark-number" aria-hidden="true">${display}<span class="score-mark-denom">/ 5</span></div>
+      <div class="score-mark" role="img" aria-label="${esc(word)}${reason ? '. ' + esc(reason) : ''}. ${esc(scale)}">
+        <div class="score-mark-verdict" aria-hidden="true" style="color:${color}">${esc(word)}</div>
+        ${reason ? `<div class="score-mark-reason" aria-hidden="true">${esc(reason)}</div>` : ''}
         <div class="score-meter" aria-hidden="true">${ticks}</div>
-        <div class="ring-label" aria-hidden="true" style="color:${color}">${label}</div>
+        <div class="score-mark-scale" aria-hidden="true">${esc(scale)}</div>
       </div>
     `;
   }

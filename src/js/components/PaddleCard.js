@@ -168,9 +168,18 @@
     if (!s) return { state: 'unknown', factors: [], night: null };
     if (s.rating == null) return { state: 'unscored', factors: [], night: night };
 
-    if (!pens && !adjs) return { state: night ? 'night' : 'unknown', factors: [], night: night };
+    // The model's own account (explanations, 14 Oct 2026). Scores computed
+    // before it existed carry none: then empty penalty lists are NOT "nothing
+    // moved it" — the model may be holding the score down — so say nothing.
+    var expl = s && Array.isArray(s.explanations) ? s.explanations : null;
+    if (!pens && !adjs && !expl) return { state: night ? 'night' : 'unknown', factors: [], night: night };
+    if (!expl && s.mlModelUsed) return { state: night ? 'night' : 'unknown', factors: [], night: night };
 
     var factors = [];
+    (expl || []).forEach(function (e) {
+      if (!e) return;
+      pushFactor(factors, e.text, e.value);                 // value is the points it costs (negative)
+    });
     (pens || []).forEach(function (p) {
       if (!p) return;
       var amt = finite(p.amount);

@@ -329,8 +329,14 @@
                 <span class="khm-panel-kind">${nowCell ? 'Observed' : 'Forecast'}</span>
                 <span class="khm-panel-verdict" style="color:${col}">${label}</span>
               </div>
-              <div class="khm-panel-score" style="color:${col}">${score != null ? score.toFixed(1) : '—'}<sub>/5</sub></div>
+              <div class="khm-panel-scale">${score != null && window.KaaykoPrefs?.scoreScale ? window.KaaykoUtil.escapeHtml(window.KaaykoPrefs.scoreScale(score)) : '—'}</div>
             </div>
+            ${(() => {
+              const P = window.KaaykoPrefs;
+              const ex = nowCell ? currentData?.paddleScore?.explanations : hd.prediction?.explanations;
+              const why = P && P.scoreReason ? P.scoreReason(ex, score) : null;
+              return why ? `<p class="khm-panel-why">${window.KaaykoUtil.escapeHtml(why)}</p>` : '';
+            })()}
             <div class="khm-macros">
               ${macros.map(m=>`
                 <div class="khm-macro">

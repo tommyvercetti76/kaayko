@@ -285,3 +285,7 @@
 /* An hour after dark at the lake: no score, the same as every other surface. */
 /* same voice as the hero's night line (.night-copy): the site serif, not the system font */
 .khm-panel-night { margin: 0.4rem 0 0; font-family: var(--font-serif); font-size: 1.05rem; line-height: 1.35; color: rgba(237, 232, 223, 0.85); }
+
+/* The model's reason for this hour's band (14 Oct 2026) */
+.khm-panel-why { margin: 0.35rem 0 0.6rem; font-size: 0.95rem; line-height: 1.35; color: rgba(237,232,223,0.9); }
+.khm-panel-scale { font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(237,232,223,0.6); align-self: center; }
