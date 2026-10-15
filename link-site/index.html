@@ -245,7 +245,7 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
 .inline-form .field { flex:1 1 auto; min-width:0; margin:0 }
 .inline-form .btn-submit { width:auto; margin:0; padding:12px 18px; flex:0 0 auto }
 
-/* ── PROOF: real scans from the sample workspace ── */
+/* ── PROOF: the sample workspace (simulated scans, plus any real ones) ── */
 .tiers { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--sp-4) }
 .tier { display:flex; flex-direction:column; gap:6px; padding:var(--sp-5); min-width:0; border:1px solid rgba(181,147,90,.18); background:rgba(5,7,14,.6); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); transition:border-color var(--dur-normal), box-shadow var(--dur-slow) }
 .tier:hover { border-color:rgba(181,147,90,.4); box-shadow:var(--glow-md) }
@@ -319,6 +319,9 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
 .kstory .klink { font-style:italic; font-size:inherit; letter-spacing:0; text-transform:none; color:var(--gold-bright); border-bottom:1px solid var(--gold); padding-bottom:.2cqw }
 .kstory .klink:hover { color:#fff; border-bottom-color:var(--gold-bright) }
 .kface.back .case-rule { font-family:var(--mono); font-style:normal; font-size:2.6cqw; color:var(--dim); margin-top:1.5cqw }
+.ksample { position:absolute; top:2.4cqw; right:2.4cqw; z-index:2; font-style:normal; font-size:max(11px,2.2cqw); letter-spacing:.04em; line-height:1; padding:1cqw 1.6cqw; border-radius:999px; background:rgba(5,7,14,.82); color:var(--fg); border:1px solid rgba(181,147,90,.45); pointer-events:none; white-space:nowrap }
+.kface.back .ksample { position:static; align-self:flex-start; margin-bottom:.6cqw }
+.cases-note { text-align:center; max-width:62ch; margin:var(--sp-5) auto 0; color:var(--dim) }
 .ktap { text-align:center; margin-top:var(--sp-3); font-style:italic; font-size:.78rem; letter-spacing:.22em; text-transform:uppercase; color:var(--dim) }
 .everything { text-align:center; margin-top:var(--sp-7); font-style:italic; color:var(--muted); font-size:.98rem; padding-top:var(--sp-5); border-top:1px solid var(--gold-line) }
 .everything b { color:var(--gold-bright); font-weight:500 }
@@ -668,16 +671,17 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
 
 
 <!-- ═══ THREE USES ═══ -->
-<section class="section" id="cases" aria-label="Three uses, three real codes">
-  <h2 class="section-label reveal">three cards, three codes</h2>
+<section class="section" id="cases" aria-label="Three uses, three sample codes">
+  <h2 class="section-label reveal">three sample cards</h2>
   <p class="section-title reveal">Create. Share. Track.</p>
   <div class="cases">
     <article class="case">
       <div class="kcard" role="button" tabindex="0" aria-label="Lake McDonald postcard. Activate to turn it over." data-flip>
-        <div class="kface front"><img src="/assets/cards/lake-mcdonald-postcard.jpg?v=25" alt="Lake McDonald postcard" width="1200" height="800" loading="lazy"></div>
+        <div class="kface front"><img src="/assets/cards/lake-mcdonald-postcard.jpg?v=25" alt="Lake McDonald postcard" width="1200" height="800" loading="lazy"><span class="ksample">Simulated scans</span></div>
         <div class="kface back">
-          <h3>Rohan, who paddles every lake he can drive to</h3>
-          <p class="kstory">He <a class="klink" href="#make" data-stop>creates</a> one code per lake and pastes the sticker at the put-in, so the next paddler gets the day&rsquo;s score before the boat is off the roof.</p>
+          <span class="ksample">Sample code &middot; simulated scans</span>
+          <h3>A postcard for one lake</h3>
+          <p class="kstory"><a class="klink" href="#make" data-stop>Create</a> one code per lake and put it where the boats go in. A scan opens that lake&rsquo;s paddle score for today.</p>
           <p class="case-rule">kaay.link/kx-lakecard</p>
         </div>
       </div>
@@ -685,10 +689,11 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
     </article>
     <article class="case">
       <div class="kcard" role="button" tabindex="0" aria-label="Mom's Shop card. Activate to turn it over." data-flip>
-        <div class="kface front"><img src="/assets/cards/moms-shop-card.jpg?v=25" alt="Mom's Shop card" width="1200" height="800" loading="lazy"></div>
+        <div class="kface front"><img src="/assets/cards/moms-shop-card.jpg?v=25" alt="Mom's Shop card" width="1200" height="800" loading="lazy"><span class="ksample">Simulated scans</span></div>
         <div class="kface back">
-          <h3>Asha, 60, who opened her shelf this summer</h3>
-          <p class="kstory">Four totes on kaay.store. Friends get her card and 20% off at the till. She <a class="klink" href="#manage" data-demo-code="KX-DEMO-SHELF" data-stop>tracks</a> who used it, from which stall, and at what hour.</p>
+          <span class="ksample">Sample code &middot; simulated scans</span>
+          <h3>A card for a market stall</h3>
+          <p class="kstory">Four totes on kaay.store, and a card that gives friends 20% off at the till. <a class="klink" href="#manage" data-demo-code="KX-DEMO-SHELF" data-stop>See</a> when it is scanned, on which phones, from which countries.</p>
           <p class="case-rule">kaay.link/mum-shop-20</p>
         </div>
       </div>
@@ -696,16 +701,18 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
     </article>
     <article class="case">
       <div class="kcard" role="button" tabindex="0" aria-label="An evening of music card. Activate to turn it over." data-flip>
-        <div class="kface front"><img src="/assets/cards/music-gathering-card.jpg?v=25" alt="An evening of music card" width="1200" height="800" loading="lazy"></div>
+        <div class="kface front"><img src="/assets/cards/music-gathering-card.jpg?v=25" alt="An evening of music card" width="1200" height="800" loading="lazy"><span class="ksample">Simulated scans</span></div>
         <div class="kface back">
-          <h3>Rehan, who hosts an evening of music once a month</h3>
-          <p class="kstory">One poster on the grocery board, the same code <a class="klink" href="#manage" data-demo-code="KX-DEMO-BAITHAK" data-stop>shared</a> on the neighbourhood group. It asks one thing, <i>are you coming?</i>, so by dusk he knows how many cushions to lay out.</p>
+          <span class="ksample">Sample code &middot; simulated scans</span>
+          <h3>A poster that asks one question</h3>
+          <p class="kstory">One poster on a notice board, the same code <a class="klink" href="#manage" data-demo-code="KX-DEMO-BAITHAK" data-stop>shared</a> in a group chat. It asks <i>are you coming?</i> before the page opens, so the host can count heads.</p>
           <p class="case-rule">kaay.link/kx-baithak</p>
         </div>
       </div>
       <p class="ktap">Tap the card</p>
     </article>
   </div>
+  <p class="note cases-note reveal">The three codes are live and lead to real pages. Their dashboards run on simulated scans, refreshed weekly; real scans of a printed card are kept and counted with them.</p>
   <p class="everything reveal"><b>Every code, free:</b> device routing &middot; night and day destinations &middot; caps, end dates, fallback &middot; one question at the scan &middot; a preview of what the code will do &middot; safety checks &middot; scans by day, hour, device, country &middot; findings &middot; CSV &middot; read-only reports</p>
 </section>
 

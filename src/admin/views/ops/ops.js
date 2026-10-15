@@ -128,20 +128,24 @@ function jobsBody() {
     <button type="button" class="ops-btn" data-act="job" data-job="/kortex/security/rescan">Re-scan destinations</button>
     <button type="button" class="ops-btn" data-act="job" data-job="/kortex/digest/trigger">Run weekly digest</button>
   </div><pre class="ops-out" id="ops-job-out" hidden></pre>
-  <p class="ops-empty">The sample workspace refreshes itself weekly; a manual reseed uses the sync key from the server shell.</p>`;
+  <p class="ops-empty">The sample workspace refreshes itself weekly (generated scans only; real scans of the printed cards are kept). A manual reseed is POST /kortex/demo/seed, super-admin only.</p>`;
 }
+// A dot is lit only by an answer that says so. A failed or missing answer is
+// never shown as healthy: it reads "could not be read", with the error.
 function healthBody() {
-  const h = state.health || {}, c = state.caps || {};
+  const h = state.health, c = state.caps;
   const flag = (on, label, note) => `<li><i class="ops-dot ${on ? 'is-on' : ''}"></i><b>${esc(label)}</b><span>${esc(note)}</span></li>`;
+  const unread = (key) => `could not be read: ${state.errors[key] || 'no answer'}`;
   const alerts = (state.alerts || []).slice(0, 8);
+  const apiUp = !!h && h.success === true;
   return `<ul class="ops-flags">
-    ${flag(h.status === 'ok' || h.success !== false, 'API', h.version ? `v${h.version}` : 'answering')}
-    ${flag(c.email, 'Email delivery', c.email ? 'recovery and code mail switched on' : 'not configured: recovery works without mail; code emails are queued')}
-    ${flag(true, 'Free tier', `${c.linkLimit || '?'} links · ${c.analyticsDays || '?'}-day detail · ${c.lifetimeDays || '?'}-day lifetime · ${c.maxWindows || '?'} windows`)}
-    ${flag(true, 'Sessions', `${c.sessionHours || '?'} h access-code sessions`)}
+    ${flag(apiUp, 'API', h ? (apiUp ? `answering${h.version ? ` · v${h.version}` : ''}` : `answered without success: ${h.status || 'unknown'}`) : unread('api'))}
+    ${c ? flag(c.email === true, 'Email delivery', c.email ? 'a mail server is configured; whether mail arrives shows in the mail queue, not here' : 'not configured: access codes and recovery codes cannot be emailed') : flag(false, 'Email delivery', unread('caps'))}
+    ${c ? flag(true, 'Free tier', `${c.linkLimit} links · ${c.analyticsDays}-day detail · ${c.lifetimeDays}-day lifetime · ${c.maxWindows} windows`) : flag(false, 'Free tier', unread('caps'))}
+    ${c ? flag(true, 'Sessions', `${c.sessionHours} h access-code sessions`) : ''}
   </ul>
   <h4 class="ops-h4">Recent security alerts</h4>
-  ${alerts.length ? `<ul class="ops-list ops-list-compact">${alerts.map(a => `<li class="ops-row"><div class="ops-row-main"><div class="ops-row-title"><span class="ops-chip is-${esc(a.severity || 'info')}">${esc(a.severity || 'info')}</span> <b>${esc(a.type || 'alert')}</b> <span class="ops-row-when">${esc(ago(msOf(a, 'timestampMs', 'timestamp')))}</span></div><div class="ops-row-sub">${esc((a.code ? `${a.code} · ` : '') + (a.detail || a.reason || a.message || ''))}</div></div></li>`).join('')}</ul>` : empty('No alerts recorded.')}`;
+  ${state.errors.alerts ? `<p class="ops-empty ops-err">Alerts could not be read: ${esc(state.errors.alerts)}</p>` : alerts.length ? `<ul class="ops-list ops-list-compact">${alerts.map(a => `<li class="ops-row"><div class="ops-row-main"><div class="ops-row-title"><span class="ops-chip is-${esc(a.severity || 'info')}">${esc(a.severity || 'info')}</span> <b>${esc(a.type || 'alert')}</b> <span class="ops-row-when">${esc(ago(msOf(a, 'timestampMs', 'timestamp')))}</span></div><div class="ops-row-sub">${esc((a.code ? `${a.code} · ` : '') + (a.detail || a.reason || a.message || ''))}</div></div></li>`).join('')}</ul>` : empty('No alerts recorded.')}`;
 }
 
 function render() {
@@ -176,14 +180,19 @@ async function load() {
     support: () => call('/kortex/support').then(d => d.requests || []),
     tenants: () => call('/kortex/tenants').then(d => d.tenants || d.data || []),
     alerts: () => call('/kortex/security/alerts').then(d => d.alerts || []),
-    health: () => call('/kortex/health').catch(() => ({ status: 'ok' })),
-    caps: () => call('/kortex/guest/capabilities').catch(() => ({}))
+    health: () => call('/kortex/health'),
+    caps: () => call('/kortex/guest/capabilities')
   };
   const results = await Promise.allSettled(Object.entries(tasks).map(([k, fn]) => fn().then(v => [k, v])));
   results.forEach((r, i) => {
     const key = Object.keys(tasks)[i];
     if (r.status === 'fulfilled') state[key] = r.value[1];
-    else { state[key] = Array.isArray(state[key]) ? [] : state[key]; state.errors[key === 'alerts' || key === 'caps' ? 'health' : key] = r.reason.message; }
+    else {
+      // health/caps/alerts failures are shown line by line inside the Health card, not as a blank card.
+      const own = { health: 'api', caps: 'caps', alerts: 'alerts' }[key];
+      state[key] = own ? null : (Array.isArray(state[key]) ? [] : state[key]);
+      state.errors[own || key] = r.reason.message;
+    }
   });
   render();
 }

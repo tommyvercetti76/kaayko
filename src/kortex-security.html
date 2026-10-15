@@ -53,7 +53,7 @@ code { font-family:ui-monospace,Menlo,monospace; font-size:.92em; color:var(--go
     <tr><td>Daily totals</td><td>Counts per day per code: scans, delivered, lost, QR versus tap, device and country totals. No visitor keys.</td><td>The life of the link.</td></tr>
     <tr><td>Answers</td><td>If a code asks a question: the choice, the party size, the time, a hash of the client so a second answer replaces the first. No name, no address.</td><td>400 days.</td></tr>
     <tr><td>Access code</td><td>A salted hash. We cannot read it back or re-send it.</td><td>While the workspace exists.</td></tr>
-    <tr><td>Email</td><td>Only if you attach one: a salted hash plus the address, for delivery. Delivery is not switched on yet, so nothing is sent.</td><td>While the workspace exists.</td></tr>
+    <tr><td>Email</td><td>Only if you attach one: the address, to send your access code and any replacement code you ask for, plus a salted hash of it so a recovery request can find the workspace. Nothing else is sent to it.</td><td>While the workspace exists.</td></tr>
     <tr><td>Audit trail</td><td>Who changed a link and when: old destination, new destination, actor.</td><td>While the workspace exists.</td></tr>
   </table>
 
@@ -62,7 +62,7 @@ code { font-family:ui-monospace,Menlo,monospace; font-size:.92em; color:var(--go
     <tr><th>Processor</th><th>What for</th><th>Where</th></tr>
     <tr><td>Google Cloud (Firebase)</td><td>Hosting, the redirect and API functions, the database, secrets.</td><td><code>us-central1</code>, United States</td></tr>
     <tr><td>Stripe</td><td>Card payments for paid plans. We never see the card number.</td><td>United States and the European Union</td></tr>
-    <tr><td>Zoho Mail</td><td>Outbound email (access-code delivery, receipts), once delivery is switched on.</td><td>United States and India</td></tr>
+    <tr><td>Zoho Mail</td><td>Outbound email: access codes, replacement codes and receipts.</td><td>United States and India</td></tr>
     <tr><td>Google Fonts</td><td>The two typefaces on these pages.</td><td>Global</td></tr>
   </table>
   <p>No advertising pixels, no third-party analytics on kaay.link or kaayko.com/kortex. We do not sell data. A data processing agreement for organisations is available on request; write to the address at the foot of this page.</p>

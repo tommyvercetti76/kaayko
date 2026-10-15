@@ -413,9 +413,11 @@ function variationOf(link) {
     const country = tallyOf(pts, 'country')[0];
     const qr = Math.round(pts.filter(p => p.source === 'qr').length / n * 100);
     const band = h => { const s = Number(h); const f = x => x === 0 ? '12 am' : x < 12 ? `${x} am` : x === 12 ? '12 pm' : `${x - 12} pm`; return `${f(s)} and ${f((s + 3) % 24)}`; };
-    const bits = [`This week ${n} ${n === 1 ? 'person' : 'people'} opened your page from this card${people ? `, about ${people} different ${people === 1 ? 'person' : 'people'}` : ''}.`];
-    if (hours) bits.push(`Most scanned it between ${band(hours.value)}.`);
-    if (country && country.value !== '—') bits.push(`${Math.round(country.clicks / n * 100)}% were in ${COUNTRY[country.value] || country.value}.`);
+    // n counts scans, not people: one person can scan many times. People are the separate, coverage-checked estimate.
+    const days = a.window && a.window.retentionDays;
+    const bits = [`${days ? `In the last ${days} days` : 'Lately'} this card was opened ${n} ${n === 1 ? 'time' : 'times'}${people ? `, by about ${people} different ${people === 1 ? 'person' : 'people'}` : ''}.`];
+    if (hours) bits.push(`Most scans came between ${band(hours.value)}.`);
+    if (country && country.value !== '—') bits.push(`${Math.round(country.clicks / n * 100)}% came from ${COUNTRY[country.value] || country.value}.`);
     bits.push(qr >= 50 ? `${qr}% scanned the printed code; the rest tapped the link.` : `${100 - qr}% tapped the link; ${qr}% scanned the printed code.`);
     return `<p class="ac-plain">${bits.join(' ')}</p>`;
   }

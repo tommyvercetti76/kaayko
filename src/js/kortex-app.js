@@ -552,7 +552,7 @@ function renderWorkspace(ws, revived) {
   if (!ws) return;
   if (wsLinks.length && !demoFocus) loadOverview(ws); else $('ws-overview').hidden = true;
   $('ws-meta').innerHTML = demoFocus
-    ? `<b>Sample card</b> · read-only · scans simulated to a realistic rhythm, refreshed weekly · your own code opens your own`
+    ? `<b>Sample card</b> · read-only · scans simulated to a realistic rhythm, refreshed weekly, plus any real scans of the printed card · your own code opens your own`
     : `<b>${ws.links}</b> of ${ws.linkLimit} free links · live until <b>${fmtDate(ws.expiresAt)}</b> · ${ws.hasEmail ? `recovery email <b>${escapeHtml(ws.email)}</b>` : 'no email on file'}${revived ? ` · <b>${revived} link${revived === 1 ? '' : 's'} revived</b>` : ''}`;
   ['ws-email', 'ws-email-dot', 'ws-rotate', 'ws-export'].forEach(id => { const el = $(id); if (el && demoFocus) el.hidden = true; });
   $('ws-lifetime').textContent = `Free links stay live for ${Math.round(ws.lifetimeDays / 30)} months and renew every time you open them with your code. Scan detail covers the last ${ws.analyticsDays} days; lifetime totals never reset.`;
