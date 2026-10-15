@@ -56,6 +56,9 @@ export async function init(state) {
   // Load HTML template
   await loadBillingHTML();
   
+  // Back from Stripe Checkout: turn the plan on now rather than waiting for the webhook
+  await confirmReturnFromCheckout();
+  
   // Load current subscription
   await loadSubscription();
   
@@ -63,6 +66,39 @@ export async function init(state) {
   setupEventListeners();
   
   console.log('✅ Billing view initialized');
+}
+
+/**
+ * Stripe returns the buyer to ?billing=success&session_id=cs_…  The server reads
+ * that session from Stripe and, if it is paid and for this workspace, switches
+ * the plan on, so the pricing page's "the plan is on at once" holds even when the
+ * webhook is slow. The query is then removed so a reload does not repeat it.
+ */
+async function confirmReturnFromCheckout() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('billing') !== 'success' || !params.get('session_id')) return;
+  try {
+    const res = await apiFetch('/billing/confirm-checkout', {
+      method: 'POST',
+      body: JSON.stringify({ sessionId: params.get('session_id') })
+    });
+    const data = res ? await res.json().catch(() => ({})) : {};
+    if (res && res.ok && data.success) {
+      const name = PLANS[data.plan]?.name || data.plan;
+      utils.showSuccess(`Payment received. ${name} is on.`);
+    } else if (data.code === 'NOT_PAID') {
+      utils.showInfo('Payment is still processing. Your plan switches on as soon as Stripe confirms it.');
+    } else {
+      utils.showError('We could not confirm that payment. If you were charged, write to kortex@kaayko.com.');
+    }
+  } catch (err) {
+    console.error('Confirm checkout failed:', err);
+  } finally {
+    params.delete('billing');
+    params.delete('session_id');
+    const q = params.toString();
+    history.replaceState(null, '', `${window.location.pathname}${q ? `?${q}` : ''}${window.location.hash}`);
+  }
 }
 
 /**
