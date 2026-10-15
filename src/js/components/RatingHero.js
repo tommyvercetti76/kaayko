@@ -174,9 +174,14 @@ class RatingHero {
       </div>
     `;
 
+    // ONE root for both blocks. This used to keep only firstElementChild, so
+    // the "Was this score accurate?" widget below the score was never put on
+    // the page and never wired: not one vote was ever recorded (found
+    // 14 Oct 2026). Those votes are the only real-world check on the score.
     const container = document.createElement('div');
+    container.className = 'rating-hero-root';
     container.innerHTML = heroHTML;
-    this.element = container.firstElementChild;
+    this.element = container;
 
     // Animate the ring after a tick (CSS transition from 0 → target)
     requestAnimationFrame(() => {

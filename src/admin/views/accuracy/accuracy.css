@@ -1,0 +1,13 @@
+@import url('../submissions/submissions.css');
+.ac-card { padding: var(--space-lg); margin-bottom: 12px; }
+.ac-card h2 { margin: 0 0 12px; font-size: 15px; }
+.ac-sub { display: block; font-size: 11px; font-weight: 400; color: var(--text-muted); }
+.ac-card h2 .ac-sub { display: inline; margin-left: 6px; }
+.ac-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.ac-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 560px; }
+.ac-table th, .ac-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border-subtle); vertical-align: top; }
+.ac-table thead th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-weight: 600; }
+.ac-table tbody th { font-weight: 600; }
+.ac-alt { color: var(--text-muted); font-size: 11px; }
+.ac-hint, .ac-empty, .ac-votes { font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin: 8px 0 0; }
+.ac-notes { margin: 0; padding-left: 18px; font-size: 13px; color: var(--text-secondary); line-height: 1.55; }

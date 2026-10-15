@@ -8,9 +8,11 @@ import { fileURLToPath } from 'node:url';
 
 const f = (p) => fileURLToPath(new URL(p, import.meta.url));
 
+let lastRoot = null;
 function hero(weather, units = 'imperial') {
   let html = '';
   const node = { set innerHTML(v) { html = String(v); }, get innerHTML() { return html; },
+    querySelector: () => null, querySelectorAll: () => [], addEventListener() {},
     get firstElementChild() { return { querySelector: () => null, querySelectorAll: () => [], addEventListener() {} }; } };
   const store = { kaayko_units: units };
   const document = { createElement: () => node, getElementById: () => null, readyState: 'complete', addEventListener() {},
@@ -24,7 +26,7 @@ function hero(weather, units = 'imperial') {
   for (const p of ['../src/js/prefs.js', '../src/js/util.js', '../src/js/components/RatingHero.js']) {
     vm.runInContext(fs.readFileSync(f(p), 'utf8'), ctx, { filename: p });
   }
-  new ctx.RatingHero().render(3.0, {}, { temperature: 12, windSpeed: 4, windDirection: 'SW', uvIndex: 0, cloudCover: 100, ...weather });
+  lastRoot = new ctx.RatingHero().render(3.0, {}, { temperature: 12, windSpeed: 4, windDirection: 'SW', uvIndex: 0, cloudCover: 100, ...weather });
   return html;
 }
 
@@ -42,4 +44,10 @@ test('a score with no account of why says nothing rather than inventing one', ()
 
 test('an empty account says no single factor stands out', () => {
   assert.match(hero({ explanations: [] }), /No single weather factor stands out/);
+});
+
+test('the "Was this score accurate?" vote is part of what the hero puts on the page', () => {
+  const h = hero({});
+  assert.match(lastRoot.innerHTML, /paddle-feedback/);           // was dropped: only the first block was returned
+  assert.match(lastRoot.innerHTML, /skill-level-section/);
 });

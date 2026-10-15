@@ -31,6 +31,7 @@ export const ROUTES = {
   submissions: '/submissions',
   spots: '/spots',
   facts: '/facts',
+  accuracy: '/accuracy',
   orders: '/orders',
   products: '/products',
   cards: '/cards',

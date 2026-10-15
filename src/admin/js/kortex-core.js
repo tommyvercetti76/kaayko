@@ -87,6 +87,11 @@ const VIEW_CONFIGS = {
     css: 'views/facts/facts.css',
     container: '#facts-view'
   },
+  accuracy: {
+    module: '../views/accuracy/accuracy.js',
+    css: 'views/accuracy/accuracy.css',
+    container: '#accuracy-view'
+  },
   orders: {
     module: '../views/orders/orders.js',
     css: 'views/orders/orders.css',

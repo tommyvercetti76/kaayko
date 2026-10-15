@@ -100,6 +100,7 @@ POST /api/paddlingOut/admin/submissions/{id}/reject   → hide + delete every pr
 GET  /api/paddlingOut/admin/spots[/{id}]      → whole catalogue incl. hidden, with isPublic/photos/hasCachedScore
 PATCH /api/paddlingOut/admin/spots/{id}       → edit whitelisted fields, archived (publish toggle); live spots must stay complete; audit → paddling_spot_audit
 GET  /api/paddlingOut/admin/fact-proposals?status= → Kortex → Facts: official-feed (NPS) changes awaiting review → spot_fact_proposals, spot_fact_runs
+GET  /api/paddlingOut/admin/accuracy        → Kortex → Accuracy: forecast_verification_summary/latest (daily job forecastVerification, NWS stations in data/verification-stations.json as the yardstick only)
 POST /api/paddlingOut/admin/fact-proposals/{id}/approve|reject → approve writes through spotFacts gate (body {as:'closure'} only for NPS "Park Closure"); daily job spotSourcesRefresh fills the queue
 POST /api/paddlingOut/admin/spots/{id}/images (multipart) / DELETE …/images?path=  → photo add/remove (ownership-checked)
 POST /api/paddlingOut/admin/spots/{id}/warm-score → recompute cached score now
