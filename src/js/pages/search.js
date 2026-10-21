@@ -192,7 +192,9 @@
       state.coveredNear = coveredWithin(lat, lng, state.radiusKm);
       var url = API + '/nearbyWater?lat=' + lat + '&lng=' + lng + '&radius=' + state.radiusKm +
         '&q=' + encodeURIComponent(inputEl.value.trim()) + (o.force ? '&refresh=1' : '');
-      return U.fetchJson(url, { timeoutMs: 15000 });
+      // The API waits up to 12 s on USGS before falling back; 15 s here cut
+      // that answer off and showed "timed out" instead of what it found.
+      return U.fetchJson(url, { timeoutMs: 20000 });
     }).then(function (r) {
       if (myGen !== gen) return;
       var d = r.data || {};
