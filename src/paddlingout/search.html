@@ -226,7 +226,11 @@
          optional is folded; the place line replaces three filled fields; the
          legal note sits by the button. Every check and every id is unchanged,
          and a person still reviews every entry before it is public. -->
-    <p class="launch-note">Add a lake, river or boat ramp. Two photos and a pin; a person checks every entry before it goes public.</p>
+    <!-- Streamlined for phones (21 Oct 2026): one way in per step. Where = the
+         Find tab's own pattern (name + GPS button, map under it); the place
+         fields only appear if the pin's place can't be looked up; the footer
+         is one button that names the next step. -->
+    <p class="launch-note">Two photos and a pin. A person checks every entry before it goes public.</p>
 
     <section class="submit-card" id="form-card">
       <form id="submit-entry-form" novalidate>
@@ -242,8 +246,8 @@
             <input id="images" name="images" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple>
             <span class="image-drop-main">
               <span class="image-drop-copy">
-                <strong>Start here &mdash; add 2&ndash;5 photos</strong>
-                <span>Shot at the ramp, a photo carries its own GPS, and the rest of this form fills itself in. Show the water and the launch.</span>
+                <strong>Add 2&ndash;5 photos</strong>
+                <span>The water and the launch. Taken at the ramp, they place the pin for you.</span>
               </span>
               <span class="image-count" id="image-count">0 selected</span>
             </span>
@@ -252,30 +256,32 @@
           <span class="field-msg" id="images-msg" aria-live="polite"></span>
         </div>
 
-        <!-- 2 · Where: name (it places the pin), then the pin itself -->
+        <!-- 2 · Where: the name (or your location) puts the pin down; drag it onto the put-in -->
         <label data-field="lakeName" class="name-field">
-          <span class="label-text"><span class="step-n">2</span>Lake or water body<span class="req" aria-hidden="true">*</span></span>
-          <input id="lakeName" name="lakeName" maxlength="120" placeholder="Start typing — Dillon Reservoir" autocomplete="off"
-                 role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lakeName-suggest">
+          <span class="label-text"><span class="step-n">2</span>Where is it<span class="req" aria-hidden="true">*</span></span>
+          <span class="name-row">
+            <input id="lakeName" name="lakeName" maxlength="120" placeholder="Lake, river or reservoir name" autocomplete="off"
+                   aria-label="Lake, river or reservoir name"
+                   role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lakeName-suggest">
+            <button class="btn-gps" id="use-location" type="button" title="Use my location" aria-label="Use my location" data-kicon-raw="gps"></button>
+          </span>
           <div class="search-suggest" id="lakeName-suggest" role="listbox" hidden></div>
           <span class="field-msg" id="lakeName-msg" aria-live="polite"></span>
         </label>
         <div class="field-group" data-field="coords">
-          <span class="label-text">Put-in on the map<span class="req" aria-hidden="true">*</span></span>
           <div class="loc-lock photo-fix" id="photo-fix" aria-live="polite">
             <span id="photo-fix-text"></span>
             <button type="button" id="photo-fix-clear">Clear</button>
           </div>
           <div id="pin-map" class="pin-map pp-map" aria-label="Map. Tap to drop the pin, drag it onto the exact launch point."></div>
-          <p class="pin-hint">Picking the name drops the pin; a ramp photo places it exactly. <strong>Drag the pin</strong> onto the put-in.</p>
-          <div class="where-actions">
-            <button class="mini-btn" id="use-location" type="button">Use my location</button>
+          <div class="pin-row">
+            <p class="pin-hint"><strong>Drag the pin</strong> onto the put-in.</p>
             <details class="coord-manual">
-              <summary>Enter coordinates instead</summary>
+              <summary>Coordinates</summary>
               <div class="coord-row">
                 <input id="lat" name="lat" inputmode="decimal" placeholder="Latitude" aria-label="Latitude">
                 <input id="lng" name="lng" inputmode="decimal" placeholder="Longitude" aria-label="Longitude">
-                <button class="mini-btn" id="find-coords" type="button">Find</button>
+                <button class="mini-btn" id="find-coords" type="button">Go</button>
               </div>
             </details>
           </div>
@@ -397,12 +403,9 @@
           </div>
         </details>
 
+        <!-- Anonymous unless ticked: unticked sends contactPreference=anonymous, as the radios did -->
         <div class="field-group" data-field="contact">
-          <span class="label-text">Submit as</span>
-          <div class="choice-row">
-            <label class="choice"><input type="radio" name="contactPreference" value="anonymous" checked> Anonymous</label>
-            <label class="choice"><input type="radio" name="contactPreference" value="email"> Email me when it is live</label>
-          </div>
+          <label class="choice email-opt"><input type="checkbox" name="contactPreference" value="email"> Email me when it&rsquo;s live</label>
         </div>
         <label class="email-wrap" id="email-wrap" hidden data-field="email">
           <span class="label-text">Email<span class="req" aria-hidden="true">*</span></span>
@@ -410,17 +413,18 @@
           <span class="field-msg" id="email-msg" aria-live="polite"></span>
         </label>
 
-        <p class="fineprint">
-          Public launches only &middot; photos must be yours &middot; we keep your entry, and with it a one-way hash of your IP address and your browser’s user-agent, to stop spam. <a href="/privacy">What we keep</a> &middot; <a href="/paddlingout/methodology">How scores work</a>
-        </p>
-        <details class="declined"><summary>What gets an entry declined</summary>
-          <ul>
-            <li>No public access &mdash; private docks, fenced ramps, permit-only shorelines.</li>
-            <li>Photos that are not yours or do not show the water and launch.</li>
-            <li>A launch that is already on the map, or a pin far from the real put-in.</li>
-            <li>Conditions we cannot forecast safely (dams, spillways, active rapids).</li>
-          </ul>
-        </details>
+        <!-- The IP-hash note stays on the form: /privacy does not cover lake submissions. -->
+        <div class="fineprint">
+          Public launches and your own photos only. To stop spam we keep a one-way hash of your IP and browser. <a href="/privacy">Privacy</a> &middot;
+          <details class="declined"><summary>What gets declined</summary>
+            <ul>
+              <li>No public access &mdash; private docks, fenced ramps, permit-only shorelines.</li>
+              <li>Photos that are not yours or do not show the water and launch.</li>
+              <li>A launch that is already on the map, or a pin far from the real put-in.</li>
+              <li>Conditions we cannot forecast safely (dams, spillways, active rapids).</li>
+            </ul>
+          </details>
+        </div>
 
         <div class="actions">
           <div class="todo-wrap">

@@ -193,27 +193,34 @@
     return Number.isFinite(n) ? n : null;
   }
 
+  let placePending = 0;   // reverse lookups in flight
+  function hasPin() { return parseCoord(field('lat').value) !== null && parseCoord(field('lng').value) !== null; }
+  function placeWaiting() { return !hasPin() || placePending > 0; }
+
   const CHECKS = [
     { key: 'images', label: () => selectedImages.length ? ('Add ' + (MIN_IMAGES - selectedImages.length) + ' more photo' + (MIN_IMAGES - selectedImages.length === 1 ? '' : 's')) : 'Add 2 photos',
       focus: () => imageDrop,
       test: () => optimizing ? 'Still optimizing your photos.' : validateImageFiles(selectedImages) },
-    { key: 'coords', label: 'Drop the pin', focus: () => document.getElementById('pin-map') || field('lat'),
+    { key: 'coords', label: 'Place the pin', focus: () => document.getElementById('pin-map') || field('lat'),
       test: () => {
         const lat = parseCoord(field('lat').value);
         const lng = parseCoord(field('lng').value);
-        if (lat === null || lng === null) return 'Place the pin: tap Find, Use my location, or the map.';
+        if (lat === null || lng === null) return 'Type the lake name, tap the map, or use your location.';
         if (lat < -85 || lat > 85 || lng < -180 || lng > 180) return 'Those coordinates are off the map.';
         if (Math.abs(lat) < 0.01 && Math.abs(lng) < 0.01) return 'That pin is in the ocean off Africa. Drop it on the water you mean.';
         return '';
       } },
     { key: 'lakeName', label: 'Name the water', focus: 'lakeName',
       test: () => field('lakeName').value.trim().length >= 2 ? '' : 'Lake or water body name is required.' },
-    { key: 'city', label: 'Nearest town', focus: 'city',
-      test: () => field('city').value.trim().length >= 2 ? '' : 'City or nearest town is required.' },
-    { key: 'region', label: 'State / region', focus: () => field('regionText').hidden ? field('region') : field('regionText'),
-      test: () => regionValue().length >= 2 ? '' : 'State or region is required.' },
-    { key: 'country', label: 'Country', focus: 'country',
-      test: () => field('country').value.trim() ? '' : 'Country is required.' },
+    // City / state / country come from the pin. They are only asked for when
+    // there is a pin and looking up its place failed — before that, "place
+    // the pin" is the one thing to do, not four.
+    { key: 'city', label: 'Add the nearest town', focus: 'city',
+      test: () => placeWaiting() || field('city').value.trim().length >= 2 ? '' : 'City or nearest town is required.' },
+    { key: 'region', label: 'Add the state', focus: () => field('regionText').hidden ? field('region') : field('regionText'),
+      test: () => placeWaiting() || regionValue().length >= 2 ? '' : 'State or region is required.' },
+    { key: 'country', label: 'Add the country', focus: 'country',
+      test: () => placeWaiting() || field('country').value.trim() ? '' : 'Country is required.' },
     { key: 'email', label: 'Your email', focus: 'email',
       test: () => {
         if (currentPreference() !== 'email') return '';
@@ -265,9 +272,12 @@
       li.appendChild(a);
       todoEl.appendChild(li);
     });
+    form.classList.toggle('place-wait', placeWaiting());
     const n = missing.length;
     submitBtn.classList.toggle('is-incomplete', n > 0);
-    submitBtn.textContent = submitting ? 'Submitting…' : (n > 0 ? (n === 1 ? '1 item left' : n + ' items left') : 'Submit entry');
+    // One instruction, not a count: "Next: add 2 photos". Tapping it goes there.
+    const next = n > 0 ? (typeof missing[0].label === 'function' ? missing[0].label() : missing[0].label) : '';
+    submitBtn.textContent = submitting ? 'Submitting…' : (n > 0 ? 'Next: ' + next.charAt(0).toLowerCase() + next.slice(1) : 'Submit entry');
     submitBtn.setAttribute('aria-describedby', n > 0 ? 'todo' : '');
     return missing;
   }
@@ -291,7 +301,7 @@
     const wrap = e.target.closest('[data-field]');
     if (wrap) touched.add(wrap.getAttribute('data-field'));
     if (e.target.name === 'contactPreference') {
-      const wantsEmail = e.target.value === 'email';
+      const wantsEmail = e.target.checked;
       emailWrap.hidden = !wantsEmail;
       if (!wantsEmail) { emailInput.value = ''; touched.delete('email'); }
     }
@@ -657,8 +667,15 @@
   async function reverseFill(lat, lng, opts) {
     opts = opts || {};
     const seq = ++reverseSeq;
-    const place = await window.KaaykoGeo.reverse(lat, lng);
-    if (seq !== reverseSeq || !place) return null;      // superseded or unknown
+    placePending++; refreshReadiness();
+    let place = null;
+    try { place = await window.KaaykoGeo.reverse(lat, lng); } finally { placePending--; }
+    if (seq !== reverseSeq) return null;                 // superseded
+    if (!place) {                                         // unknown: the place fields open
+      refreshReadiness();
+      if (!field('city').value.trim()) setStatus('Couldn’t look up this spot. Add the town, state and country below.', 'error');
+      return null;
+    }
     const changed = fillPlace(place, !!opts.overwrite);
     if (opts.lock) {
       const parts = [place.city, place.region, place.country].filter(Boolean).join(', ');
@@ -720,16 +737,15 @@
   var useLocBtn = document.getElementById('use-location');
   useLocBtn.addEventListener('click', function () {
     if (!navigator.geolocation || window.isSecureContext === false) {
-      setStatus('Location needs a secure (https) connection. Use Find, or tap the map instead.', 'error');
+      setStatus('Location needs a secure (https) connection. Type the lake name or tap the map instead.', 'error');
       return;
     }
     function requestOnce() {
-      var label = useLocBtn.textContent;
-      useLocBtn.disabled = true; useLocBtn.textContent = 'Locating…';
+      useLocBtn.disabled = true; useLocBtn.classList.add('loading'); useLocBtn.setAttribute('aria-busy', 'true');
       setStatus('Reading your location once to place the pin.', '');
       navigator.geolocation.getCurrentPosition(
         async function (pos) {
-          useLocBtn.disabled = false; useLocBtn.textContent = label;
+          useLocBtn.disabled = false; useLocBtn.classList.remove('loading'); useLocBtn.removeAttribute('aria-busy');
           var la = pos.coords.latitude, ln = pos.coords.longitude, acc = Math.round(pos.coords.accuracy || 0);
           pinIsFromName = false;
           writeCoords(la, ln); centerPin(la, ln, acc > 500 ? 12 : 15);
@@ -738,20 +754,20 @@
           const place = await reverseFill(la, ln, { overwrite: true, lock: true });
           setStatus(place
             ? (acc && acc > 150 ? 'Approximate fix (±' + acc + ' m). ' : '') + 'Place filled in. Drag the pin onto the exact put-in, then add photos.'
-            : 'Pin placed. Could not look up the place name; fill city, state and country by hand.', place ? 'ok' : '');
+            : 'Pin placed. Couldn’t look up the place, so add the town, state and country below.', place ? 'ok' : '');
         },
         function (err) {
-          useLocBtn.disabled = false; useLocBtn.textContent = label;
-          setStatus(err && err.code === 1 ? 'No problem, location stays private. Use Find, or tap the map to place the pin.'
-            : err && err.code === 3 ? 'Location timed out. Use Find, or tap the map to place the pin.'
-            : 'Couldn’t get your location. Use Find, or tap the map to place the pin.', 'error');
+          useLocBtn.disabled = false; useLocBtn.classList.remove('loading'); useLocBtn.removeAttribute('aria-busy');
+          setStatus(err && err.code === 1 ? 'No problem, location stays private. Type the lake name or tap the map.'
+            : err && err.code === 3 ? 'Location timed out. Type the lake name or tap the map.'
+            : 'Couldn’t get your location. Type the lake name or tap the map.', 'error');
         },
         { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
       );
     }
     if (navigator.permissions && navigator.permissions.query) {
       navigator.permissions.query({ name: 'geolocation' })
-        .then(function (st) { if (st.state === 'denied') setStatus('Location is blocked for this site in your browser settings. Use Find, or tap the map instead.', 'error'); else requestOnce(); })
+        .then(function (st) { if (st.state === 'denied') setStatus('Location is blocked for this site in your browser settings. Type the lake name or tap the map.', 'error'); else requestOnce(); })
         .catch(requestOnce);
     } else requestOnce();
   });
@@ -767,6 +783,9 @@
   let pinMoveTimer = null;
   function onPinMoved(lat, lng, message) {
     touched.add('coords'); refreshReadiness(); setStatus(message, 'ok');
+    // The place fields are hidden until needed, so a first tap must look the
+    // place up too. Only a place the person typed by hand is left alone.
+    if (!field('city').value.trim()) { clearTimeout(pinMoveTimer); reverseFill(lat, lng, { overwrite: true, lock: true }); return; }
     if (!locationLocked) return;
     clearTimeout(pinMoveTimer);
     pinMoveTimer = setTimeout(function () { reverseFill(lat, lng, { overwrite: true, lock: true }); }, 700);

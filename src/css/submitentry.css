@@ -475,9 +475,6 @@
 
 /* ── Add a lake, rebuilt for speed (3 Oct 2026) ─────────────────────────── */
 .step-n { display: inline-grid; place-items: center; width: 1.35rem; height: 1.35rem; margin-right: 0.5rem; border: 1px solid rgba(217,189,123,0.55); border-radius: 50%; font-size: 0.68rem; color: var(--gold-bright); vertical-align: 1px; }
-.where-actions { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0.6rem 1rem; margin-top: 0.6rem; }
-.where-actions .mini-btn { flex: 0 0 auto; }
-.coord-manual { flex: 1 1 220px; }
 .coord-manual summary, .opt-details summary, .declined summary { cursor: pointer; color: var(--gold-bright); font-family: var(--font-sans); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; list-style-position: inside; min-height: 44px; display: flex; align-items: center; gap: 0.4rem; }
 .coord-manual summary { min-height: 40px; }
 .coord-manual .coord-row { margin-top: 0.5rem; }
@@ -491,5 +488,32 @@
 /* The button and what is still missing stay in reach on a phone */
 @media (max-width: 700px) {
   .submit-shell .actions { position: sticky; bottom: 0; z-index: 5; margin: 0 -1rem -1rem; padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom)); background: linear-gradient(180deg, rgba(13,12,10,0.86), rgba(13,12,10,0.98)); border-top: 1px solid rgba(181,147,90,0.22); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
-  .submit-shell .todo { max-height: 4.4rem; overflow: auto; }
+}
+
+/* ── Streamlined for phones (21 Oct 2026) ───────────────────────────────── */
+/* Where: the Find tab's pattern — name and GPS button on one row, map below */
+.name-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.name-row .btn-gps { min-width: 52px; }
+.pin-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 1rem; margin-top: 0.35rem; }
+.pin-row .pin-hint { margin: 0; }
+.coord-manual { flex: 0 0 auto; }
+.coord-manual[open] { flex-basis: 100%; }
+.coord-manual summary { min-height: 44px; }
+.coord-manual .coord-row { grid-template-columns: 1fr 1fr auto; margin-top: 0; }
+/* No pin yet, or its place is still being looked up: nothing to ask about the place */
+.place-wait .place-fields { display: none; }
+/* Small print: one short paragraph, not a block of capitals */
+.submit-shell .fineprint { font-family: var(--font-serif); font-size: 0.85rem; letter-spacing: 0; text-transform: none; line-height: 1.5; }
+.fineprint .declined { display: inline; }
+.fineprint .declined summary { display: inline; min-height: 0; text-transform: none; letter-spacing: 0; font-family: var(--font-serif); font-size: inherit; color: var(--gold-bright); }
+.fineprint .declined[open] ul { display: block; margin-top: 0.4rem; }
+.email-opt { display: inline-flex; width: auto; }
+.email-opt input { width: auto; }
+/* Footer: the button names the next step; the checklist stays for screen readers */
+.submit-shell .todo { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.submit-shell .form-status:empty { display: none; }
+.submit-shell .form-status { min-height: 0; font-size: 0.9rem; line-height: 1.35; }
+@media (max-width: 700px) {
+  .submit-shell .actions { gap: 0.4rem; padding-top: 0.6rem; padding-bottom: calc(0.6rem + env(safe-area-inset-bottom)); }
+  .submit-shell .submit-btn { width: 100%; }
 }
