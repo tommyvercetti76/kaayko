@@ -835,7 +835,6 @@
     payload.append('country', field('country').value.trim());
     payload.append('lat', String(lat));
     payload.append('lng', String(lng));
-    payload.append('launchHint', field('launchHint').value.trim());
     payload.append('description', field('description').value.trim());
     payload.append('parkingAvl', field('parkingAvl').checked ? 'Y' : 'N');
     payload.append('restroomsAvl', field('restroomsAvl').checked ? 'Y' : 'N');

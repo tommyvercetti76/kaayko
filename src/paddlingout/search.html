@@ -318,9 +318,13 @@
         <details class="opt-details">
           <summary><span class="step-n">3</span>More about this water <span class="opt">optional</span></summary>
           <div class="opt-body">
-            <label data-field="launchHint">
-              <span class="label-text">Where exactly to launch</span>
-              <input id="launchHint" name="launchHint" maxlength="160" placeholder="Main public boat ramp, north shore, park entrance">
+            <!-- One box (21 Oct 2026): "Where exactly to launch" and "Short note" merged.
+                 It posts as description, which becomes the spot's text on the paddle
+                 card. The forecast page's separate Launch row (launchHint) is now set
+                 by the reviewer in the spot editor, not by the submitter. -->
+            <label data-field="description">
+              <span class="label-text">Where to launch, and what to know</span>
+              <textarea id="description" name="description" maxlength="360" placeholder="Main ramp on the north shore, $5 day pass. Windy after noon."></textarea>
             </label>
             <!-- Trimmed 21 Oct 2026: water type, put-in, fee and motors were four
                  dropdowns the upload parser never accepted (not in SUBMISSION_FIELDS),
@@ -331,10 +335,6 @@
               <label class="choice"><input type="checkbox" id="parkingAvl" name="parkingAvl" value="Y"> Parking</label>
               <label class="choice"><input type="checkbox" id="restroomsAvl" name="restroomsAvl" value="Y"> Restrooms</label>
             </fieldset>
-            <label data-field="description">
-              <span class="label-text">Short note</span>
-              <textarea id="description" name="description" maxlength="360" placeholder="One useful thing paddlers should know before driving out."></textarea>
-            </label>
           </div>
         </details>
 
