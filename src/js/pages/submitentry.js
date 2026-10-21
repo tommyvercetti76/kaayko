@@ -837,13 +837,8 @@
     payload.append('lng', String(lng));
     payload.append('launchHint', field('launchHint').value.trim());
     payload.append('description', field('description').value.trim());
-    payload.append('parkingAvl', field('parkingAvl').value);
-    payload.append('restroomsAvl', field('restroomsAvl').value);
-    // Hints for the reviewer (never published as facts without a source)
-    ['waterType', 'launchType', 'fee', 'motors'].forEach(function (k) {
-      var el = document.getElementById(k);
-      if (el && el.value) payload.append(k, el.value);
-    });
+    payload.append('parkingAvl', field('parkingAvl').checked ? 'Y' : 'N');
+    payload.append('restroomsAvl', field('restroomsAvl').checked ? 'Y' : 'N');
     payload.append('contactPreference', preference);
     payload.append('anonymous', preference !== 'email' ? 'true' : 'false');
     payload.append('email', preference === 'email' ? emailInput.value.trim() : '');
