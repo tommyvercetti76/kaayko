@@ -198,6 +198,9 @@
       var d = r.data || {};
       if (!r.ok || !d.success) { state.mode = 'error'; state.error = r.aborted ? 'Search timed out. Try again.' : 'Search failed. Check your connection and try again.'; render(); return; }
       state.cached = !!d.cached; state.sources = Array.isArray(d.sources) ? d.sources : [];
+      // The US lake database (USGS) did not answer, so the list may be missing
+      // the very lake under the pin. Say that, never "no water found".
+      state.degraded = !!d.degraded;
       var bodies = (d.waterBodies || []).filter(function (b) { return Number.isFinite(Number(b.lat)) && Number.isFinite(Number(b.lng)); })
         .map(function (b) { b.lat = Number(b.lat); b.lng = Number(b.lng); return b; });
       state.bodies = bodies.slice(0, 15).filter(function (b) { return !bodyIsCovered(b); });
@@ -330,8 +333,10 @@
       resultsHeader.classList.remove('visible');
       var typed = (state.query || '').trim();
       resultsList.innerHTML = '<div class="empty-state"><div class="mat">' + (I ? I.get('search') : '') + '</div>' +
-        '<h3>' + (typed ? 'We don\u2019t cover ' + U.escapeHtml(typed) + ' yet' : 'No water found near ' + U.escapeHtml(state.label)) + '</h3>' +
-        '<p>' + (typed
+        '<h3>' + (state.degraded ? 'The lake database isn\u2019t answering' : typed ? 'We don\u2019t cover ' + U.escapeHtml(typed) + ' yet' : 'No water found near ' + U.escapeHtml(state.label)) + '</h3>' +
+        '<p>' + (state.degraded
+          ? 'The USGS service we read US lakes from is slow right now, so this search came back incomplete. Try again in a minute.'
+          : typed
           ? 'You are on it \u2014 add it and it goes in the map for everyone. The name and the pin carry over.'
           : 'Try a larger lake name, a nearby city, or drag the pin somewhere else.') + '</p>' +
         '<button class="btn-request-lake" type="button" data-action="request">' +
@@ -356,6 +361,7 @@
       rows.set(keyOf(b.lat, b.lng), row);
       resultsList.appendChild(row);
     });
+    if (state.degraded) { var dn = document.createElement('p'); dn.className = 'search-status error'; dn.textContent = 'The USGS lake database is slow right now, so nearby lakes may be missing. Refresh in a minute.'; resultsList.appendChild(dn); }
     if (state.scoreNote) { var note = document.createElement('p'); note.className = 'search-status error'; note.textContent = state.scoreNote; resultsList.appendChild(note); }
     renderScores();
   }

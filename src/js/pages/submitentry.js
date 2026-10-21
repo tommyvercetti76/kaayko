@@ -400,6 +400,16 @@
       refreshReadiness();
       return;
     }
+    // Same for a pin the person put down by hand (tap, drag, typed
+    // coordinates, their location). The geocoder's point for a lake is the
+    // middle of its polygon — on a dendritic reservoir that can be a field —
+    // so it only ever fills an empty pin or replaces one a name put there.
+    if (!pinIsFromName && field('lat').value.trim() && field('lng').value.trim()) {
+      setStatus('Name set. The pin stays where you put it.', 'ok');
+      refreshReadiness();
+      return;
+    }
+    pinIsFromName = true;
     writeCoords(option.lat, option.lng);
     centerPin(option.lat, option.lng, 14);   // lake scale; the ramp is a drag away
     touched.add('coords');
@@ -450,6 +460,10 @@
   // dragged. Nothing about the upload changes — the bytes that leave the
   // browser are still stripped.
   let coordsFromPhoto = false;
+  // True only while the pin sits where a lake NAME put it (a picked
+  // suggestion, or Find with no coordinates typed). Any hand placement clears
+  // it, and from then on a name never moves the pin.
+  let pinIsFromName = false;
   const photoFix = document.getElementById('photo-fix');
   const photoFixText = document.getElementById('photo-fix-text');
 
@@ -493,7 +507,7 @@
     if (!mayTakeFixFromPhoto()) return;
 
     const fix = hit.fix;
-    coordsFromPhoto = true;
+    coordsFromPhoto = true; pinIsFromName = false;
     writeCoords(fix.lat, fix.lng);
     centerPin(fix.lat, fix.lng, 17);           // ramp scale, not lake scale
     touched.add('coords');
@@ -655,18 +669,46 @@
     return changed ? place : null;
   }
 
+  // Typed coordinates → pin there. Shared by Find and the fields' change event.
+  async function placeTypedCoords() {
+    const la = parseCoord(field('lat').value), ln = parseCoord(field('lng').value);
+    if (la === null || ln === null) return false;
+    if (la < -85 || la > 85 || ln < -180 || ln > 180) { setStatus('Those coordinates are off the map.', 'error'); return true; }
+    coordsFromPhoto = false; pinIsFromName = false; hidePhotoFix();
+    writeCoords(la, ln);
+    centerPin(la, ln, 15);
+    touched.add('coords'); refreshReadiness();
+    setStatus('Pin placed at ' + la.toFixed(5) + ', ' + ln.toFixed(5) + '. Drag it if the ramp is a few steps off.', 'ok');
+    await reverseFill(la, ln, { overwrite: true, lock: true });
+    return true;
+  }
+
+  // Find sits beside the coordinate fields, so coordinates are what it finds.
+  // It used to ignore them and geocode name + city + state instead — and with
+  // the name still blank that query is just "Coleman County, Texas", whose
+  // centroid is a field miles from any water. It threw a correctly placed pin
+  // there and called it "Pin dropped". Now: typed coordinates win; with none,
+  // it looks up the LAKE NAME (the place only narrows it), and never a town.
   async function inferCoordinates() {
-    const query = [field('lakeName').value, field('city').value, regionValue(), field('country').value]
+    const latTyped = field('lat').value.trim(), lngTyped = field('lng').value.trim();
+    if (latTyped || lngTyped) {
+      if (await placeTypedCoords()) return true;
+      setStatus('Enter both latitude and longitude as numbers, e.g. 31.89299 and -99.45663.', 'error');
+      return false;
+    }
+    const name = field('lakeName').value.trim();
+    if (!name) { setStatus('Type latitude and longitude, or name the water first.', 'error'); return false; }
+    const query = [name, field('city').value, regionValue(), field('country').value]
       .map(v => v.trim()).filter(Boolean).join(', ');
-    if (!query) { setStatus('Add the lake name and place first.', 'error'); return false; }
-    setStatus('Finding coordinates…', '');
+    setStatus('Finding ' + name + '…', '');
     const geo = await window.KaaykoGeo.forward(query);
     if (!geo) { setStatus('No match for that name. Tap the map to place the pin, or use your location.', 'error'); return false; }
+    pinIsFromName = true;
     writeCoords(geo.lat, geo.lng);
     centerPin(geo.lat, geo.lng, 14);
     fillPlace(geo.address, false);
     touched.add('coords'); refreshReadiness();
-    setStatus('Pin dropped. Drag it to the exact launch or boat ramp.', 'ok');
+    setStatus('Pin dropped on ' + name + '. Drag it to the exact launch or boat ramp.', 'ok');
     return true;
   }
 
@@ -689,6 +731,7 @@
         async function (pos) {
           useLocBtn.disabled = false; useLocBtn.textContent = label;
           var la = pos.coords.latitude, ln = pos.coords.longitude, acc = Math.round(pos.coords.accuracy || 0);
+          pinIsFromName = false;
           writeCoords(la, ln); centerPin(la, ln, acc > 500 ? 12 : 15);
           touched.add('coords'); refreshReadiness();
           setStatus('Pin placed. Looking up the place…', '');
@@ -738,6 +781,7 @@
       center: has ? [lat0, lng0] : [39.5, -98.35], zoom: has ? 13 : 4,
       pickable: true, draggable: true, scrollWheelZoom: false,
       onPick: function (lat, lng, how) {
+        pinIsFromName = false;
         writeCoords(lat, lng);
         onPinMoved(lat, lng, how === 'drag' ? 'Pin moved. Coordinates updated.' : 'Pin placed. Coordinates updated.');
         if (how === 'tap') picker.setPin(lat, lng, {});
@@ -746,10 +790,7 @@
     if (has) picker.setPin(lat0, lng0, {});
   }
   ['lat', 'lng'].forEach(function (id) {
-    field(id).addEventListener('change', function () {
-      var la = parseCoord(field('lat').value), ln = parseCoord(field('lng').value);
-      if (la !== null && ln !== null) { centerPin(la, ln, 13); if (locationLocked) onPinMoved(la, ln, 'Coordinates updated.'); }
-    });
+    field(id).addEventListener('change', placeTypedCoords);
   });
 
   // ── Submit ────────────────────────────────────────────────────────
