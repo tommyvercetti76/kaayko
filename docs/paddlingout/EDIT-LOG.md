@@ -9,8 +9,10 @@ Newest first. What changed, why, the commit, whether it is live, and how it was 
 - **Commits:** kaayko-api `08a8e7c` → `df08ae8` (nearbyWater degraded flag, /locate, server-filled place,
   details-after-submit, suggest-an-edit, edits hidden from old Kortex cards, OSM water filter);
   kaayko `7594e5e` → this entry's commit.
-- **Live:** API yes. Frontend on preview channel `addlake-v2` only, awaiting the owner's phone check
-  (kaayko.com still serves the old form). browser-check on the preview: 48/48.
+- **Live:** API and hosting (kaayko.com + kaay.store), shipped 21 Oct 2026 on the owner's word
+  ("do not serve old forms"): the old submitentry.js/css return 404 on kaayko.com, /paddlingout/submitentry
+  301s to the new Add tab with its query. browser-check on production: 48/48 (both sites, phone, desktop,
+  320×568, landscape). Share card URL versioned (?v=20261021) because /assets/** is cached immutable.
 - **Add a lake:** four screens (photos → "Where do you put in?" on a cross map → "Which water is this?"
   from USGS → sent, then note / parking / restrooms / email). One photo minimum (owner decision).
   Town, county, state and country come from the pin (Census TIGERweb; OSM outside the US).
