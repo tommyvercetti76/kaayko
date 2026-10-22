@@ -343,11 +343,13 @@
 .pcard-ring-val { position: relative; font-family: 'Josefin Sans', Arial, sans-serif; font-size: 0.82rem; font-weight: 600; color: #fff; font-variant-numeric: tabular-nums; }
 .pcard-ring-spin { width: 22px; height: 22px; border: 2px solid rgba(181,147,90,0.25); border-top-color: #d9bd7b; border-radius: 50%; animation: pcardSpin 0.9s linear infinite; }
 @keyframes pcardSpin { to { transform: rotate(360deg); } }
-.pcard-row-fav { width: 34px !important; height: 34px !important; }
+/* 44 px targets and readable labels on phones (audit 21 Oct 2026; were 34 px / 9.9 px) */
+.pcard-row-fav { width: 44px !important; height: 44px !important; }
 .pcard-row-actions { display: flex; gap: 0.35rem; }
 .pcard-row-action {
-  height: 34px; padding: 0 0.7rem; border: 1px solid rgba(181,147,90,0.36); background: transparent; color: #b5935a; cursor: pointer;
-  font-family: 'Josefin Sans', Arial, sans-serif; font-size: 0.62rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+  min-height: 44px; min-width: 44px; padding: 0 0.85rem; border: 1px solid rgba(181,147,90,0.36); background: transparent; color: #b5935a; cursor: pointer;
+  font-family: 'Josefin Sans', Arial, sans-serif; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+  justify-content: center;
   display: inline-flex; align-items: center; gap: 0.3rem;
 }
 .pcard-row-action svg { width: 16px; height: 16px; }

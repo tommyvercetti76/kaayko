@@ -44,6 +44,11 @@ const PHONE = { name: 'phone', width: 390, height: 844, mobile: true, tz: 'Ameri
   ua: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1' };
 const DESKTOP = { name: 'desktop', width: 1440, height: 900, mobile: false, ua: null, tz: 'America/Chicago' };
 const FAR = { ...PHONE, name: 'phone@IST', tz: 'Asia/Kolkata' };
+// Short screens broke what 390×844 never showed (phone audit, 21 Oct 2026): the
+// search tour's button off-screen, a pinned map leaving one result visible,
+// and the Add map hidden behind its own button. Checked on the search page only.
+const SMALL = { ...PHONE, name: 'phone 320×568', width: 320, height: 568 };
+const LANDSCAPE = { ...PHONE, name: 'phone landscape', width: 844, height: 390 };
 
 const results = [];
 const record = (page, view, ok, detail) => results.push({ page, view, ok, detail });
@@ -366,6 +371,40 @@ async function main() {
         const n = await ev('document.querySelectorAll(".product-card, [data-product-id], .card").length');
         return n >= 1 ? [] : ['no product tiles'];
       }, { settle: 5000 });
+    }
+
+    for (const view of [SMALL, LANDSCAPE]) {
+      await checkPage(b.port, 'search, short screen', `${BASE}/paddlingout/search`, view, async (ev) => {
+        const r = await ev(`(async () => {
+          const o = document.getElementById('search-tour'); o.scrollTop = o.scrollHeight;
+          await new Promise(ok => setTimeout(ok, 200));
+          const g = document.getElementById('search-tour-go').getBoundingClientRect();
+          return { tourOpen: o.classList.contains('visible'), goReachable: g.top >= 0 && g.bottom <= innerHeight,
+                   panel: getComputedStyle(document.getElementById('search-panel')).position, hscroll: document.documentElement.scrollWidth > innerWidth + 1 };
+        })()`);
+        const p = [];
+        if (r.tourOpen && !r.goReachable) p.push('the tour\'s "Start exploring" cannot be reached');
+        if (r.panel === 'sticky') p.push('search + map stay pinned on a short screen (one result visible)');
+        if (r.hscroll) p.push('page scrolls sideways');
+        return p;
+      }, { settle: 3000 });
+      await checkPage(b.port, 'add map, short screen', `${BASE}/paddlingout/search?mode=add&name=Lake%20Coleman&lat=32.0412&lng=-99.4733`, view, async (ev) => {
+        const r = await ev(`(async () => {
+          const c = document.createElement('canvas'); c.width = 320; c.height = 240; c.getContext('2d').fillRect(0, 0, 320, 240);
+          const blob = await new Promise(ok => c.toBlob(ok, 'image/jpeg', 0.8));
+          const dt = new DataTransfer(); dt.items.add(new File([blob], 'launch.jpg', { type: 'image/jpeg' }));
+          const input = document.getElementById('al-files'); input.files = dt.files; input.dispatchEvent(new Event('change', { bubbles: true }));
+          await new Promise(ok => setTimeout(ok, 1200));
+          document.getElementById('al-next').click();
+          await new Promise(ok => setTimeout(ok, 1500));
+          const x = document.querySelector('.al-cross').getBoundingClientRect(), btn = document.getElementById('al-next').getBoundingClientRect();
+          return { step: document.getElementById('al').dataset.step, crossTop: Math.round(x.top), crossBottom: Math.round(x.bottom), btnTop: Math.round(btn.top) };
+        })()`);
+        const p = [];
+        if (r.step !== 'pin') p.push(`after a photo the flow is on "${r.step}"`);
+        if (r.crossTop < 0 || r.crossBottom > r.btnTop) p.push(`the put-in cross (${r.crossTop}–${r.crossBottom}px) is not above the button (${r.btnTop}px)`);
+        return p;
+      }, { settle: 4000 });
     }
   } finally { await b.close(); }
 

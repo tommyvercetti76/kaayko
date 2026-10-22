@@ -68,8 +68,19 @@
       searchAt(lat, lng, how === 'drag' ? 'this spot' : lat.toFixed(3) + ', ' + lng.toFixed(3), r,
         { pin: how !== 'drag', fly: false });
     },
-    onMove: function () { if (state.mode === 'results' || state.mode === 'empty') hereBtn.hidden = false; }
+    // Only after the PERSON moves the map. The fly-to and fit that follow
+    // every search used to raise it at once (phone audit, 21 Oct 2026),
+    // covering the pins with a button nobody had asked for yet.
+    onMove: function () { if (userMoved && (state.mode === 'results' || state.mode === 'empty')) hereBtn.hidden = false; }
   });
+  var userMoved = false;
+  if (picker && picker.map) {
+    picker.map.on('dragstart', function () { userMoved = true; });
+    var mapEl = picker.map.getContainer();
+    mapEl.addEventListener('wheel', function () { userMoved = true; }, { passive: true });
+    mapEl.addEventListener('touchstart', function (e) { if (e.touches && e.touches.length > 1) userMoved = true; }, { passive: true });
+    mapEl.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('.leaflet-control-zoom')) userMoved = true; });
+  }
   hereBtn.addEventListener('click', function () {
     if (!picker) return;
     var c = picker.center();
@@ -130,7 +141,11 @@
     if (q.length < 3) return;
     G.suggest(q).then(function (list) {
       if (inputEl.value.trim() !== q) return;           // stale
-      state.suggestions = covered.concat(list.filter(function (x) { return !covered.some(function (c) { return c.value === x.value; }); }));
+      var rest = list.filter(function (x) { return !covered.some(function (c) { return c.value === x.value; }); });
+      // Nearest to what the map shows first: "Lake Coleman" from a US map is Texas, not Victoria.
+      var mc = picker && picker.center ? picker.center() : null;
+      if (mc) rest.sort(function (a, b) { return U.haversineKm(mc.lat, mc.lng, a.lat, a.lng) - U.haversineKm(mc.lat, mc.lng, b.lat, b.lng); });
+      state.suggestions = covered.concat(rest);
       state.suggestIndex = -1; renderSuggestions();
     });
   }, 300);
@@ -181,6 +196,7 @@
     o = o || {};
     var myGen = ++gen;
     state.center = { lat: lat, lng: lng }; state.label = label || 'this location';
+    userMoved = false;
     state.radiusKm = U.clamp(parseInt(radiusKm, 10) || 30, 10, 60);
     state.mode = 'searching'; state.error = ''; state.scoreNote = ''; state.scores = new Map(); rows = new Map(); state._fitted = false;
     if (picker) {
@@ -318,6 +334,10 @@
   // ── Render ─────────────────────────────────────────────────────────────────
   function render() {
     renderArea();
+    // The "?" is onboarding: once there are results it only sat on top of
+    // them (and on the refresh button). It comes back on the idle screen.
+    var help = document.getElementById('search-tour-help');
+    if (help) help.hidden = state.mode !== 'idle';
     popularSection.style.display = (state.mode === 'idle') ? '' : 'none';
     refreshBtn.style.display = (state.mode === 'results') ? 'inline-flex' : 'none';
     if (state.mode === 'searching') {
@@ -347,8 +367,11 @@
     }
     var n = state.bodies.length;
     resultsCount.textContent = n ? (n + (state.coveredNear.length ? ' more ' : ' ') + (n === 1 ? 'spot' : 'spots') + ' near ' + state.label) : ('Spots we cover near ' + state.label);
-    var src = state.sources.map(function (s) { return String(s).toUpperCase(); }).join(' + ');
-    resultsHint.textContent = (src ? src + ' ' : '') + (state.cached ? '· cached' : '· live');
+    // People read "Lake data: USGS", not "FIRESTORE · cached" (phone audit, 21 Oct 2026).
+    var SOURCE_NAMES = { nhd: 'USGS', usgs: 'USGS', hydrolakes: 'HydroLAKES', osm: 'OpenStreetMap' };
+    var src = state.sources.map(function (s) { return SOURCE_NAMES[String(s).toLowerCase()]; }).filter(Boolean)
+      .filter(function (v, i, a) { return a.indexOf(v) === i; });
+    resultsHint.textContent = src.length ? 'Lake data: ' + src.join(', ') : '';
     resultsHeader.classList.add('visible');
     resultsList.innerHTML = '';
     state.bodies.forEach(function (b, idx) {

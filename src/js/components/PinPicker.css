@@ -21,3 +21,6 @@
   font-family: 'Cormorant Garamond', Georgia, serif; font-size: 0.95rem; padding: 4px 8px;
 }
 .pp-map .leaflet-tooltip-top::before { border-top-color: rgba(181,147,90,0.4); }
+
+/* 44 px tap area around the 30 px result pin (PinPicker resultIcon) */
+.pp-hit { display: flex; align-items: center; justify-content: center; }

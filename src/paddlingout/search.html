@@ -262,8 +262,6 @@
             <button type="button" class="al-gps" id="al-gps" aria-label="Go to my location" data-kicon-raw="gps"></button>
             <div class="search-suggest al-suggest" id="al-search-list" role="listbox" hidden></div>
           </div>
-          <!-- on the map, not under it: below the map it sits behind the button on a phone -->
-          <p class="al-msg al-mapnote" id="al-pin-msg" aria-live="polite"></p>
         </div>
       </section>
 
@@ -277,6 +275,7 @@
           <input id="al-other" maxlength="120" autocomplete="off" placeholder="e.g. Lake Scarborough">
         </label>
         <p class="al-msg" id="al-water-msg" aria-live="polite"></p>
+        <p class="al-fine">Public launches and your own photos only. To stop spam we keep a one-way hash of your IP. <a href="/privacy#lake-submissions">Privacy</a></p>
       </section>
 
       <!-- Suggest an edit (one screen; the pin step is reused for "Move the launch") -->
@@ -301,6 +300,7 @@
         </div>
         <label class="al-field"><span class="al-label">Email me when it&rsquo;s reviewed <i>optional</i></span><input id="al-e-email" type="email" autocomplete="email" placeholder="you@example.com"></label>
         <p class="al-msg" id="al-edit-msg" aria-live="polite"></p>
+        <p class="al-fine">Public launches and your own photos only. To stop spam we keep a one-way hash of your IP. <a href="/privacy#lake-submissions">Privacy</a></p>
       </section>
 
       <!-- 4 · Sent -->
@@ -325,8 +325,11 @@
       </section>
 
       <div class="al-foot" id="al-foot">
+        <!-- only the button, and what the button just said: "Put in here" answers here,
+             right above itself (on the map it covered the cross in landscape, under
+             the map it hid behind the button on a phone). Small print lives in the screens. -->
+        <p class="al-msg al-footmsg" id="al-pin-msg" aria-live="polite"></p>
         <button type="button" class="al-primary" id="al-next">Add photos</button>
-        <p class="al-fine" id="al-fine">Public launches and your own photos only. To stop spam we keep a one-way hash of your IP. <a href="/privacy#lake-submissions">Privacy</a></p>
       </div>
       <!-- Honeypot: invisible to people, filled by form bots. Never label it. -->
       <input class="al-hp" type="text" id="al-website" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">

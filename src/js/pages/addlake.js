@@ -59,7 +59,7 @@
   function say(id, text, kind) {
     var el = $(id); if (!el) return;
     el.textContent = text || '';
-    el.className = 'al-msg' + (id === 'al-pin-msg' ? ' al-mapnote' : '') + (kind ? ' is-' + kind : '');
+    el.className = 'al-msg' + (id === 'al-pin-msg' ? ' al-footmsg' : '') + (kind ? ' is-' + kind : '');
     // A problem the person has to act on must be on screen, not under the button.
     if (text && (kind === 'error' || kind === 'warn') && id !== 'al-pin-msg') {
       setTimeout(function () { try { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {} }, 30);
@@ -87,6 +87,7 @@
       if (i === idx) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
     });
     $('al-back').hidden = idx <= 0 || step === 'sent';
+    if (step !== 'pin') say('al-pin-msg', '');
     if (step === 'pin') enterPin();
     if (step === 'water') enterWater();
     renderFoot();
@@ -94,7 +95,10 @@
       try { history[opts.replace ? 'replaceState' : 'pushState']({ al: step }, ''); } catch (e) {}
     }
     if (!opts.quiet) {
-      window.scrollTo({ top: 0 });
+      // Short screens (320×568, landscape): the site header and tabs pushed the
+      // choice — pre-picked water included — under the button. Start at the question.
+      var sec = root.querySelector('.al-step[data-step="' + step + '"]');
+      window.scrollTo({ top: window.innerHeight < 700 && sec ? Math.max(0, sec.getBoundingClientRect().top + window.scrollY - 8) : 0 });
       var h = root.querySelector('.al-step[data-step="' + step + '"] .al-h');
       if (h) setTimeout(function () { try { h.focus({ preventScroll: true }); } catch (e) {} }, 50);
     }
@@ -122,7 +126,6 @@
   function renderFoot() {
     var foot = $('al-foot');
     foot.hidden = S.step === 'sent';
-    $('al-fine').hidden = !(S.step === 'water' || S.step === 'edit');
     var label = 'Next', disabled = false;
     if (S.step === 'photos') {
       if (S.optimizing) { label = 'Preparing photos…'; disabled = true; }
@@ -280,6 +283,14 @@
     }, 90);
     S.allowOnWater = false;
     say('al-pin-msg', '');
+    // Small phones and landscape: header, tabs and title left the map under
+    // the button (320×568) or entirely below it (844×390). Bring the map up.
+    if (window.innerHeight < 700) {
+      setTimeout(function () {
+        var top = root.querySelector('.al-mapwrap').getBoundingClientRect().top + window.scrollY - 8;
+        window.scrollTo({ top: Math.max(0, top) });
+      }, 120);
+    }
   }
 
   function locate(lat, lng) {
@@ -306,7 +317,7 @@
     var top = loc && loc.waters && loc.waters[0];
     if (top && top.inside && top.edgeM > ON_WATER_WARN_M && !S.allowOnWater) {
       var el = $('al-pin-msg');
-      el.className = 'al-msg al-mapnote is-warn';
+      el.className = 'al-msg al-footmsg is-warn';
       el.textContent = 'That is out on ' + top.name + ', about ' + metres(top.edgeM) + ' from shore. Slide the map so the cross is on the shore where you launch.';
       var keep = document.createElement('button');
       keep.type = 'button'; keep.className = 'al-link'; keep.textContent = 'It is right, keep it';
@@ -420,7 +431,10 @@
     }
     var box = $('al-waters');
     rows.forEach(function (r) { box.appendChild(choiceEl(r.name, r.meta, function () { S.water = { name: r.name, type: r.type }; S.otherOpen = false; syncChoices(); })); });
-    box.appendChild(choiceEl('Something else', 'Type the name', function () { S.otherOpen = true; S.water = null; syncChoices(); setTimeout(function () { $('al-other').focus(); }, 30); }, true));
+    box.appendChild(choiceEl('Something else', 'Type the name', function () {
+      S.otherOpen = true; S.water = null; syncChoices();
+      setTimeout(function () { $('al-other').focus(); $('al-other').scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 30);
+    }, true));
     if (!rows.length) { S.otherOpen = true; }
     syncChoices();
   }

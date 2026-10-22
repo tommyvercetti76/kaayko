@@ -38,10 +38,12 @@
   function resultIcon(p) {
     var bg = p.cover ? 'var(--gold, #b5935a)' : (p.color || '#555');
     var label = p.cover ? '◆' : (p.label != null ? p.label : '–');
+    // The pin draws 30 px; the tap area around it is 44 px (phone audit,
+    // 21 Oct 2026: "tap any pin to open that lake" was a 30 px target).
     return L.divIcon({
-      className: '',
+      className: 'pp-hit',
       html: '<div class="pp-pin' + (p.cover ? ' cover' : '') + '" style="background:' + bg + '"><span>' + label + '</span></div>',
-      iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -28]
+      iconSize: [44, 44], iconAnchor: [22, 37], popupAnchor: [0, -35]
     });
   }
 

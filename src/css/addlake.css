@@ -22,6 +22,7 @@
 .al-back::before { content: '\2039'; font-size: 1.3rem; margin-right: 0.35rem; vertical-align: -2px; }
 .al-steps { display: flex; gap: 1.1rem; margin: 0 0 0 auto; padding: 0; list-style: none; }
 .al-steps li {
+  white-space: nowrap;
   font: 600 0.68rem var(--font-sans); letter-spacing: 0.14em; text-transform: uppercase;
   color: rgba(237, 232, 223, 0.42); display: flex; align-items: center; gap: 0.4rem;
 }
@@ -107,7 +108,7 @@
 .al-thumb { position: relative; aspect-ratio: 1; overflow: hidden; clip-path: var(--clip-sm); background: #111; }
 .al-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .al-thumb button {
-  position: absolute; top: 4px; right: 4px; width: 36px; height: 36px; border-radius: 50%; border: 0; cursor: pointer;
+  position: absolute; top: 2px; right: 2px; width: 44px; height: 44px; border-radius: 50%; border: 0; cursor: pointer;
   background: rgba(8, 8, 8, 0.78); color: #fff; font: 1.15rem/1 var(--font-sans);
 }
 .al-thumb.is-busy::after { content: ''; position: absolute; inset: 0; background: rgba(8, 8, 8, 0.45); }
@@ -142,13 +143,13 @@
 }
 .al-gps.is-busy { animation: al-pulse 1s ease-in-out infinite; }
 @keyframes al-pulse { 50% { opacity: 0.45; } }
-.al-mapnote {
-  position: absolute; left: 10px; right: 10px; bottom: 22px; z-index: 650; margin: 0;
-  padding: 0.75rem 0.9rem; clip-path: var(--clip-sm); background: rgba(10, 10, 9, 0.94);
-  border-left: 3px solid var(--gold-bright); color: var(--fg); font-style: normal;
+/* What "Put in here" answered, right above it (phone audit, 21 Oct 2026). */
+.al-footmsg {
+  margin: 0 0 0.55rem; padding: 0.7rem 0.9rem; clip-path: var(--clip-sm);
+  background: rgba(10, 10, 9, 0.96); border-left: 3px solid var(--gold-bright); color: var(--fg); font-style: normal;
 }
-.al-mapnote.is-error { border-left-color: var(--bad); color: var(--fg); }
-.al-mapnote .al-link { display: block; padding: 0.3rem 0 0; min-height: 40px; }
+.al-footmsg.is-error { border-left-color: var(--bad); }
+.al-footmsg .al-link { display: block; padding: 0.3rem 0 0; min-height: 44px; }
 .al-suggest { position: absolute; top: 56px; left: 0; right: 0; z-index: 700; max-height: 50vh; overflow: auto; }
 
 /* ── Which water is this? ────────────────────────────────────────────── */
@@ -214,3 +215,19 @@ html[data-lake-edit] .lake-modes { display: none; }
   .al-gps.is-busy { animation: none; }
   .al-primary { transition: none; }
 }
+
+/* ── Phone audit fixes (21 Oct 2026) ─────────────────────────────────── */
+/* Fields scrolled into view stop clear of the sticky button. */
+.al input, .al textarea { scroll-margin-top: 80px; scroll-margin-bottom: 120px; }
+/* 320 px: the step labels wrapped ("PUT- / IN"). */
+@media (max-width: 360px) {
+  .al-steps { gap: 0.7rem; }
+  .al-steps li { font-size: 0.62rem; letter-spacing: 0.1em; }
+}
+/* Short screens (320×568, any phone in landscape): the map is scrolled to the
+   top by addlake.js and sized to end above the button. */
+@media (max-height: 700px) {
+  .al-mapwrap { height: max(220px, calc(100dvh - 96px)); }
+  .al-sub { margin-bottom: 0.7rem; }
+}
+.al-fine { margin-top: 1.1rem; text-align: left; }

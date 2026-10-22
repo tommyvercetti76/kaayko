@@ -419,3 +419,35 @@ html[data-lake-mode="add"] .tour-help { display: none !important; }
   /* the tab row (45px) sits between the header and the sticky panel */
   .lake-modes ~ .search-page .search-panel { height: calc(100vh - 155px); }
 }
+
+/* ── Phone audit fixes (21 Oct 2026) ───────────────────────────────────────
+   Measured at 320×568, 360×740, 390/430 portrait, 844×390 landscape, 768×1024. */
+/* The tour box was taller than a 320×568 screen and a landscape phone, and
+   the overlay centred it without scrolling: "Start exploring" was off-screen.
+   Auto margins centre it when it fits and top-align it (scrollable) when not. */
+.tour-overlay.visible { align-items: flex-start; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.tour-box { margin: auto; }
+@media (max-height: 680px) {
+  .tour-box { padding: 18px 18px 16px; }
+  .tour-box h2 { font-size: 1.4rem; margin-bottom: 0.7rem; }
+  .tour-step { margin-bottom: 8px; }
+}
+.tour-help { width: 44px; height: 44px; }
+.tour-help[hidden] { display: none; }
+/* Pinned search + map took 57% of a 320×568 screen and 83% of a landscape
+   phone, leaving ~1 result card visible. Pin it only where there is room. */
+@media (max-width: 899px) and (max-height: 700px) {
+  .search-panel { position: relative; }
+}
+/* 44 px touch targets (were 24–34 px) */
+.search-clear-btn { right: 0; width: 44px; height: 44px; padding: 0; align-items: center; justify-content: center; }
+.search-clear-btn.visible { display: flex; }
+.popular-chip { min-height: 44px; }
+.btn-save-area, .btn-refresh { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+.btn-request-lake { height: 44px; font-size: 0.72rem; }
+.pp-map .leaflet-control-zoom a { width: 44px; height: 44px; line-height: 44px; font-size: 22px; }
+/* The legend sat as faint text on light tiles, under the "Tap the map" hint. */
+.map-legend { padding: 5px 9px; background: rgba(8, 8, 8, 0.78); color: rgba(237, 232, 223, 0.92); gap: 10px; font-size: 0.6rem; }
+.search-map-hint { top: 12px; bottom: auto; }
+.tour-go { min-height: 48px; }
+.lake-mode { font-size: 0.78rem; }
