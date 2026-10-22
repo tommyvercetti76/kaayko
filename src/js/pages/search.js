@@ -420,7 +420,7 @@
     if (!list.length) { suggestEl.hidden = true; suggestEl.innerHTML = ''; return; }
     suggestEl.innerHTML = list.map(function (s, i) {
       return '<div class="search-suggest-item" role="option" id="sg-' + i + '" aria-selected="' + (i === state.suggestIndex) + '" data-i="' + i + '">' +
-        '<span>' + U.escapeHtml(s.value) + '</span>' + (s.covered ? '<span class="tag">We cover</span>' : '') + '</div>';
+        '<span>' + U.escapeHtml(s.label || s.value) + '</span>' + (s.covered ? '<span class="tag">We cover</span>' : '') + '</div>';
     }).join('');
     suggestEl.hidden = false;
   }

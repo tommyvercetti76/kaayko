@@ -59,7 +59,11 @@
   function say(id, text, kind) {
     var el = $(id); if (!el) return;
     el.textContent = text || '';
-    el.className = 'al-msg' + (kind ? ' is-' + kind : '');
+    el.className = 'al-msg' + (id === 'al-pin-msg' ? ' al-mapnote' : '') + (kind ? ' is-' + kind : '');
+    // A problem the person has to act on must be on screen, not under the button.
+    if (text && (kind === 'error' || kind === 'warn') && id !== 'al-pin-msg') {
+      setTimeout(function () { try { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {} }, 30);
+    }
   }
   function metres(m) {
     if (m == null) return '';
@@ -302,7 +306,7 @@
     var top = loc && loc.waters && loc.waters[0];
     if (top && top.inside && top.edgeM > ON_WATER_WARN_M && !S.allowOnWater) {
       var el = $('al-pin-msg');
-      el.className = 'al-msg is-warn';
+      el.className = 'al-msg al-mapnote is-warn';
       el.textContent = 'That is out on ' + top.name + ', about ' + metres(top.edgeM) + ' from shore. Slide the map so the cross is on the shore where you launch.';
       var keep = document.createElement('button');
       keep.type = 'button'; keep.className = 'al-link'; keep.textContent = 'It is right, keep it';
@@ -342,7 +346,11 @@
     if (q.length < 3 || !G) { options = []; renderOptions(); return; }
     G.suggest(q).then(function (list) {
       if (searchEl.value.trim() !== q) return;
-      options = (list || []).map(function (s) { return { label: s.value || s.name, lat: s.lat, lng: s.lng, zoom: s.water ? 15 : 13 }; });
+      options = (list || []).map(function (s) { return { label: s.label || s.value || s.name, lat: s.lat, lng: s.lng, zoom: s.water ? 15 : 13 }; });
+      // Nearest to what the map shows first: "Lake Coleman" from a US map is
+      // the Texas one, not Victoria, Australia.
+      var c = picker && picker.center();
+      if (c) options.sort(function (x, y) { return U.haversineKm(c.lat, c.lng, x.lat, x.lng) - U.haversineKm(c.lat, c.lng, y.lat, y.lng); });
       renderOptions();
     });
   }, 260);

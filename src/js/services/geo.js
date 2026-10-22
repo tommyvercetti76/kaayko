@@ -3,7 +3,10 @@
  * Exposes window.KaaykoGeo. Requires util.js. No DOM.
  *
  *   forward(query)          → { lat, lng, label, radiusKm, address } | null
- *   suggest(query)          → [{ name, value, lat, lng, water, radiusKm }]  (ranked, ≤6)
+ *   suggest(query)          → [{ name, value, label, lat, lng, water, radiusKm }]  (ranked, ≤6)
+ *                             label = "Dillon Reservoir · Dillon, Colorado" — always says the
+ *                             state (and the country outside the US); value stays the old
+ *                             3-part string some callers put back into an input.
  *   reverse(lat, lng)       → { city, region, country, countryCode, water, displayName } | null
  *
  * All three go through the API's cached Nominatim proxies (never Nominatim
@@ -86,9 +89,16 @@
           // first part is the thing itself, the rest is where it is. Joining
           // the raw slices re-inserted the leading spaces, so trim each part.
           var parts = String(d.display_name || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+          // Two rows called "Lake Coleman" are only tellable apart by their
+          // state (Texas vs Victoria, Australia): say it on every row.
+          var a = d.address || {};
+          var town = a.city || a.town || a.village || a.hamlet || a.county || '';
+          var country = a.country_code && a.country_code.toLowerCase() !== 'us' ? a.country : '';
+          var where = [town !== parts[0] ? town : '', a.state || a.region || a.province || '', country].filter(Boolean).join(', ');
           return {
             name: parts[0] || '',
             value: parts.slice(0, 3).join(', '),
+            label: (parts[0] || '') + (where ? ' · ' + where : ''),
             lat: parseFloat(d.lat), lng: parseFloat(d.lon),
             // Whether this is actually water, so a list can say so. Both the
             // Search page and Add-a-lake read it; neither should have to

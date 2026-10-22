@@ -116,7 +116,8 @@
 .al-strip:empty { display: none; }
 
 /* ── Where do you put in? ────────────────────────────────────────────── */
-.al-mapwrap { position: relative; height: clamp(320px, calc(100dvh - 330px), 640px); clip-path: var(--clip-lg); background: #0d0d0f; }
+/* ends above the sticky button (≈ 80 px) so nothing on the map hides behind it */
+.al-mapwrap { position: relative; height: clamp(300px, calc(100dvh - 400px), 640px); clip-path: var(--clip-lg); background: #0d0d0f; }
 .al-map { position: absolute; inset: 0; height: 100% !important; z-index: 0; }
 .al-map .leaflet-top.leaflet-left { top: 66px; }
 .al-map .leaflet-control-attribution { font-size: 9px; }
@@ -141,6 +142,13 @@
 }
 .al-gps.is-busy { animation: al-pulse 1s ease-in-out infinite; }
 @keyframes al-pulse { 50% { opacity: 0.45; } }
+.al-mapnote {
+  position: absolute; left: 10px; right: 10px; bottom: 22px; z-index: 650; margin: 0;
+  padding: 0.75rem 0.9rem; clip-path: var(--clip-sm); background: rgba(10, 10, 9, 0.94);
+  border-left: 3px solid var(--gold-bright); color: var(--fg); font-style: normal;
+}
+.al-mapnote.is-error { border-left-color: var(--bad); color: var(--fg); }
+.al-mapnote .al-link { display: block; padding: 0.3rem 0 0; min-height: 40px; }
 .al-suggest { position: absolute; top: 56px; left: 0; right: 0; z-index: 700; max-height: 50vh; overflow: auto; }
 
 /* ── Which water is this? ────────────────────────────────────────────── */
@@ -200,7 +208,7 @@ html[data-lake-edit] .lake-modes { display: none; }
 
 @media (min-width: 760px) {
   .al { padding-top: 1.25rem; }
-  .al-mapwrap { height: clamp(380px, calc(100vh - 360px), 640px); }
+  .al-mapwrap { height: clamp(360px, calc(100vh - 400px), 640px); }
 }
 @media (prefers-reduced-motion: reduce) {
   .al-gps.is-busy { animation: none; }

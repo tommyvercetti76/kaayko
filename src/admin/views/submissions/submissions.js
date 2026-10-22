@@ -147,7 +147,8 @@ async function load() {
   if (listEl) listEl.innerHTML = '<div class="loading">Loading submissions…</div>';
 
   try {
-    const res = await apiFetch('/paddlingOut/admin/submissions');
+    // kinds=all: this card knows suggested edits (an older one would key them on spotId)
+    const res = await apiFetch('/paddlingOut/admin/submissions?kinds=all');
     if (!res) return; // 401 → apiFetch already triggered logout
     if (!res.ok) throw new Error(`Failed to load submissions (${res.status})`);
 
