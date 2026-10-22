@@ -63,7 +63,12 @@
    boxes around small controls — they are links, not badges. */
 .po-btn {
   flex-shrink: 0;
-  height: 36px;
+  /* 44 px tap target (phone audit, 21 Oct 2026: were 36–39 px, the only
+     controls on the page under 44). The 4 px each way are taken back with
+     negative margins, so the header row is exactly as tall as before. */
+  height: 44px;
+  min-width: 44px;
+  margin-top: -4px;
   padding: 0 0.5rem;
   border: 0;
   background: transparent;
@@ -73,7 +78,7 @@
   gap: 0.4rem;
   cursor: pointer;
   text-decoration: none;
-  margin-bottom: 0.15rem;
+  margin-bottom: calc(0.15rem - 4px);
   transition: color 0.18s ease, background 0.18s ease;
 }
 .po-btn:hover { color: var(--poh-gold-bright); }
@@ -99,7 +104,7 @@
 .po-btn--primary.is-current { box-shadow: none; background: var(--poh-gold); }
 
 /* Back chevron — plain */
-.po-back { width: 36px; padding: 0; justify-content: center; }
+.po-back { width: 44px; padding: 0; justify-content: center; }
 
 .po-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
 

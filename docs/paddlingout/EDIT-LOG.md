@@ -4,6 +4,28 @@ Newest first. What changed, why, the commit, whether it is live, and how it was 
 
 ---
 
+## 2026-10-21 · Add a lake rebuilt; Suggest an edit; phone audit; one set of numbers
+
+- **Commits:** kaayko-api `08a8e7c` → `df08ae8` (nearbyWater degraded flag, /locate, server-filled place,
+  details-after-submit, suggest-an-edit, edits hidden from old Kortex cards, OSM water filter);
+  kaayko `7594e5e` → this entry's commit.
+- **Live:** API yes. Frontend on preview channel `addlake-v2` only, awaiting the owner's phone check
+  (kaayko.com still serves the old form). browser-check on the preview: 48/48.
+- **Add a lake:** four screens (photos → "Where do you put in?" on a cross map → "Which water is this?"
+  from USGS → sent, then note / parking / restrooms / email). One photo minimum (owner decision).
+  Town, county, state and country come from the pin (Census TIGERweb; OSM outside the US).
+- **Suggest an edit:** `/paddlingout/search?mode=add&edit=<spotId>`, linked from every forecast page.
+  Reviewed in Kortex → Submissions with a tick per change.
+- **Phone audit** at 320×568, 360×740, 390×844, 430×932, 844×390, 768×1024: tour unreachable on small
+  and landscape phones, pinned map took 57–83% of short screens, Add map hidden behind its button in
+  landscape, 24–36 px targets. All fixed; browser-check gained 320×568 and landscape passes.
+- **Numbers:** "22 hand-picked" was two errors (17 are curated; 7 more were added by paddlers). Pages and
+  the share card now say 17 hand-picked; no page states the total, which grows with each approval.
+  `check-spot-count.js` compares "hand-picked" with curated spots only.
+- **Header:** every Paddling Out header button is a 44 px target (was 36–39), header height unchanged.
+
+---
+
 ## 2026-10-03 18:50 CDT · The pages say what runs; FAQ removed; one look for lakes with no score
 
 - **Live:** hosting + API; browser-check 42/42 on production.

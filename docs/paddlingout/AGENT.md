@@ -43,11 +43,11 @@ Live state from the September audit:
 |---|---|---|---|
 | Directory | `src/paddlingout.html`, `src/js/paddlingout.js`, `src/js/components/PaddleCard.js` | Public lake grid, favorites-first sorting, forecast/rate/add-lake CTAs | `GET /api/paddlingOut` |
 | Forecast | `src/paddlingout/forecast.html`, `src/css/forecast.css`, `src/js/services/apiClient.js` | Main lake forecast, score context, heatmap, custom coordinate support | `GET /api/paddlingOut/:id`, `GET /api/fastForecast`, `GET /api/paddleScore` |
-| Search | `src/paddlingout/search.html`, `src/js/searchPage.js` | City/GPS/search-result flow for nearby water | `GET /api/paddlingOut/geocode`, `GET /api/nearbyWater`, `POST /api/paddleScore/batch` |
-| Add lake | `src/paddlingout/submitentry.html` | Public community submission form | `POST /api/paddlingOut/submitEntry` |
+| Search (Find tab) | `src/paddlingout/search.html`, `src/js/pages/search.js` | City/GPS/search-result flow for nearby water | `GET /api/paddlingOut/geocode`, `GET /api/nearbyWater`, `POST /api/paddleScore/batch` |
+| Add a lake (Add tab of search) | `src/paddlingout/search.html`, `src/js/pages/addlake.js` | Photos → put-in on a cross map → which water → sent; details after; Suggest an edit (`?mode=add&edit=<id>`). `submitentry.html` only forwards old links | `GET /api/paddlingOut/locate`, `POST …/submitEntry`, `POST …/submissions/:id/details`, `POST …/spots/:id/suggest` |
 | Rate | `src/paddlingout/rate.html` | Public no-auth rating form | `POST /api/paddleScore/publicRating` |
 | Trainer | `src/paddlingout/trainer/index.html` | React model/tourist trainer bundle | `/api/paddle-trainer/*`, partial backend only |
-| Settings | `src/paddlingout/settings.html`, `src/js/paddlingPrefs.js` | Device-local units, craft, saved areas, favorites | local storage |
+| Settings | `src/paddlingout/settings.html`, `src/js/prefs.js` | Device-local units, craft, saved areas, favorites | local storage |
 
 ## Non-Negotiable Product Truths
 

@@ -18,15 +18,15 @@
 | Storage | Firebase Cloud Storage |
 
 **Key shared files:**
-- `kaayko/src/js/services/apiClient.js` — base API client (fetch wrapper with caching + fallback)
-- `kaayko/src/js/kaayko_apiClient.js` — store/product API client (separate from apiClient.js)
-- `kaayko/src/js/header.js` — shared header component (used across all pages)
-- `kaayko/src/js/main.js` — main bootstrap
-- `kaayko/src/js/kaayko-main.js` — main app init
+- `kaayko/src/js/prod-config.js` — `KAAYKO_API_BASE`, the ONE API base every page reads (via `KaaykoUtil.apiBase()`)
+- `kaayko/src/js/services/apiClient.js` — Paddling Out forecast client (fetch wrapper with caching + fallback)
+- `kaayko/src/js/services/storeApi.js` — store client (timeouts; store rebuild 12 Sep 2026)
+- `kaayko/src/kreator/js/kreator-api.js` — kreator portal client (HMAC session token)
+- `kaayko/src/js/header.js` — shared header component (store/site pages; Paddling Out uses `PoHeader.js`)
 - `kaayko-api/functions/api/index.js` — Express app root
 - `kaayko/firebase.json` — hosting rewrites (all `/api/**` → function)
 
-⚠️ **Note:** There are 3 separate API clients (`apiClient.js`, `kaayko_apiClient.js`, `kreator-api.js`) with inconsistent error handling patterns.
+(`kaayko_apiClient.js`, `main.js` and `kaayko-main.js` were deleted in the store and P9 cleanups; there is one API base now, three clients by product.)
 
 ---
 
@@ -78,12 +78,11 @@
 - `kaayko/src/js/components/PinPicker.js` — `PinPicker`: the ONE Leaflet wrapper (tap-to-pick, draggable pin, result pins) — used by Search and Add-a-lake
 - `kaayko/src/js/components/PaddleCard.js` — `PaddleCard.create(spot, {variant: minimal|full|row})` — every lake on screen, search results included
 - `kaayko/src/js/components/PoHeader.js` — the one page header
-- `kaayko/src/css/po-tokens.css` — design tokens (loaded last on every paddling page); `css/search.css` — search layout (sticky map panel + results)
+- `kaayko/src/css/tokens.css` — the only token sheet; `css/po-system.css` — chamfers + field styles (po-tokens.css was folded into these); `css/search.css` — search layout (map panel pinned only on screens ≥700 px tall)
+- `kaayko/src/js/pages/search.js` — Find tab; `js/pages/addlake.js` + `css/addlake.css` — Add a lake + Suggest an edit
 - `kaayko/src/js/services/apiClient.js` — fetch wrapper with fallback generation + caching
 - `kaayko/src/js/components/RatingHero.js` — paddle score display
-- `kaayko/src/js/components/WeatherStats.js` — weather data
 - `kaayko/src/js/components/SafetyWarnings.js` — safety alerts
-- `kaayko/src/js/customLocation.js` — custom location search
 - `kaayko/src/js/advancedModal.js` — spot detail modal
 
 **APIs used:**
@@ -471,7 +470,7 @@ kutzDays/{date}/exercises/{id}  → exercise log
 **Pages:**
 | URL | File |
 |-----|------|
-| `/karma` | `kaayko/src/karma.html` |
+| `/karma` | 301 → https://kaay.school (karma.html removed) |
 | `/karma/kameras/**` | `kaayko/src/karma/kameras/index.html` |
 | `/karma/mp3/**` | `kaayko/src/karma/mp3/index.html` |
 | `/karma/schools/somalwar/**` | → Cloud Run `cool-schools` service (no local file) |

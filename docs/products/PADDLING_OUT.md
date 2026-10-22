@@ -10,8 +10,9 @@ Paddling Out is the public paddle-conditions experience on `kaayko.com/paddlingo
 |---|---|---|
 | `/paddlingout` | `src/paddlingout.html`, `src/js/paddlingout.js` | Main public lake directory. |
 | `/paddlingout/forecast?id=<spotId>` | `src/paddlingout/forecast.html` | Primary score and forecast page. |
-| `/paddlingout/search` | `src/paddlingout/search.html`, `src/js/searchPage.js` | Nearby water search by text, saved area, or GPS. |
-| `/paddlingout/submitentry` | `src/paddlingout/submitentry.html` | "Add your own lake" community submission form. |
+| `/paddlingout/search` | `src/paddlingout/search.html`, `src/js/pages/search.js` | Find tab: nearby water by text, saved area, or GPS. |
+| `/paddlingout/search?mode=add` | `src/paddlingout/search.html`, `src/js/pages/addlake.js` | Add tab: add a lake (photos → put-in → water → sent); `&edit=<spotId>` suggests an edit to a live spot. |
+| `/paddlingout/submitentry` | `src/paddlingout/submitentry.html` | Forwarder only: old links, bookmarks and QR codes → `/paddlingout/search?mode=add` with their query. |
 | `/paddlingout/rate?id=<spotId>` | `src/paddlingout/rate.html` | Public rating form for actual paddle feedback. |
 | `/paddlingout/trainer` | `src/paddlingout/trainer/index.html` | React trainer/tourist bundle; backend coverage is partial. |
 | `/paddlingout/settings` | `src/paddlingout/settings.html` | Device-local preferences. |

@@ -164,7 +164,7 @@ Views under `src/admin/views/<name>/` are `.js`/`.css` modules lazy-loaded by th
 
 | URL | File |
 |-----|------|
-| `/karma` | `src/karma.html` |
+| `/karma` | 301 → https://kaay.school (no local file) |
 | `/karma/kameras/**` | `src/karma/kameras/index.html` |
 | `/karma/mp3/**` | `src/karma/mp3/index.html` |
 | `/karma/schools/somalwar/**` | Cloud Run `cool-schools` service (dynamic, no local file) |

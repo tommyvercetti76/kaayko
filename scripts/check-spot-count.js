@@ -8,6 +8,12 @@
  * Static HTML cannot read the API, so the number stays hardcoded. This makes
  * it drift loudly instead of silently: it fails when the files disagree with
  * each other, and warns when they disagree with production.
+ *
+ * "Hand-picked" means CURATED: spots without communitySubmission, each with its
+ * own written page. It used to be compared with every live spot, so each
+ * approved community lake made the curated claim "wrong" and the pages ended up
+ * saying "22 hand-picked" for 17 curated + 7 paddler-added (21 Oct 2026). The
+ * total grows with every approval, so no page states it.
  */
 const fs = require('fs');
 const path = require('path');
@@ -54,15 +60,15 @@ const places = [...new Set([...found.values()].flat())].length;
     });
     const body = await res.json();
     const rows = Array.isArray(body) ? body : (body.data || body.spots || []);
-    const live = rows.length;
-    if (!live) throw new Error('empty spot list');
+    if (!rows.length) throw new Error('empty spot list');
+    const live = rows.filter((s) => s.communitySubmission !== true).length;
     if (String(live) !== claimed) {
-      console.warn(`Spot count WARNING: pages say ${claimed}, production serves ${live}.`);
+      console.warn(`Spot count WARNING: pages say ${claimed} hand-picked, production has ${live} curated spots (${rows.length} in all).`);
       console.warn(`  Update all ${places} places: sed -i '' 's/${claimed} hand-picked/${live} hand-picked/g' \\`);
       console.warn(`    ${FILES.map((f) => 'src/' + f).join(' ')}`);
       process.exit(0);           // a warning, not a build break — the API may be down
     }
-    console.log(`Spot count check passed — ${claimed} in ${places} places, ${live} live.`);
+    console.log(`Spot count check passed — ${claimed} hand-picked in ${places} places, ${live} curated live (${rows.length} in all).`);
   } catch (err) {
     console.log(`Spot count check: ${claimed} used consistently in ${places} places (live count unavailable: ${err.message}).`);
   }
