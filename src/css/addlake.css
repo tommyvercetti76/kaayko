@@ -1,0 +1,208 @@
+/* Add a lake + Suggest an edit (21 Oct 2026) — styles for addlake.js.
+   One question per screen, one primary button in a sticky foot. Built for a
+   375 px phone first: 16 px inputs (no iOS zoom), 48 px+ targets, labels at
+   12.5 px, placeholders at >= 4.5:1. Uses tokens.css; chamfers use the same
+   --clip-* shapes as po-system.css. */
+
+.al {
+  max-width: 560px; margin: 0 auto;
+  padding: 0.75rem max(1rem, env(safe-area-inset-left)) 0 max(1rem, env(safe-area-inset-right));
+  min-height: calc(100dvh - 125px);
+  display: flex; flex-direction: column;
+  color: var(--fg);
+}
+.al[data-step="pin"] { max-width: 760px; }
+
+/* ── Top: back + step dots ───────────────────────────────────────────── */
+.al-top { display: flex; align-items: center; justify-content: space-between; min-height: 44px; gap: 1rem; }
+.al-back {
+  min-height: 44px; padding: 0 0.25rem 0 0; background: none; border: 0; cursor: pointer;
+  color: var(--gold-bright); font: 600 0.78rem var(--font-sans); letter-spacing: 0.12em; text-transform: uppercase;
+}
+.al-back::before { content: '\2039'; font-size: 1.3rem; margin-right: 0.35rem; vertical-align: -2px; }
+.al-steps { display: flex; gap: 1.1rem; margin: 0 0 0 auto; padding: 0; list-style: none; }
+.al-steps li {
+  font: 600 0.68rem var(--font-sans); letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgba(237, 232, 223, 0.42); display: flex; align-items: center; gap: 0.4rem;
+}
+.al-steps li::before { content: ''; width: 7px; height: 7px; border-radius: 50%; border: 1px solid currentColor; }
+.al-steps li.is-done { color: var(--gold); }
+.al-steps li.is-done::before { background: currentColor; }
+.al-steps li.is-current { color: var(--gold-bright); }
+.al-steps li.is-current::before { background: currentColor; box-shadow: 0 0 0 3px rgba(217, 189, 123, 0.18); }
+.al[data-mode="edit"] .al-steps, .al[data-step="sent"] .al-steps { visibility: hidden; }
+
+/* ── A screen ────────────────────────────────────────────────────────── */
+/* display rules below (.al-field, .al-drop…) must never beat [hidden] */
+.al [hidden] { display: none !important; }
+.al-step { padding: 0.5rem 0 1.25rem; }
+.al-step[hidden] { display: none !important; }
+.al-h {
+  margin: 0.5rem 0 0.4rem; outline: none;
+  font: 600 clamp(1.7rem, 7vw, 2.2rem)/1.08 var(--font-serif); letter-spacing: -0.01em; color: var(--fg);
+}
+.al-sub { margin: 0 0 1.1rem; color: var(--muted); font: 1.08rem/1.45 var(--font-serif); }
+.al-sub b { color: var(--fg); font-weight: 600; }
+
+.al-label {
+  display: block; margin-bottom: 0.45rem;
+  font: 600 0.78rem var(--font-sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-bright);
+}
+.al-label i { font-style: normal; color: var(--muted); letter-spacing: 0.04em; text-transform: none; margin-left: 0.3rem; }
+.al-field { display: block; margin: 0 0 1.1rem; }
+.al input[type="text"], .al input[type="email"], .al input[type="search"], .al input:not([type]), .al textarea {
+  width: 100%; box-sizing: border-box; min-height: 50px; padding: 0.75rem 0.9rem;
+  background: rgba(181, 147, 90, 0.07); border: 1px solid rgba(181, 147, 90, 0.32); border-radius: 0;
+  clip-path: var(--clip-sm); color: var(--fg); font: 16px/1.4 var(--font-serif); outline: none;
+}
+.al textarea { min-height: 104px; resize: vertical; }
+.po-page .al input::placeholder, .po-page .al textarea::placeholder, .al input::placeholder, .al textarea::placeholder { color: rgba(237, 232, 223, 0.55); }
+.al input:focus, .al textarea:focus { border-color: var(--gold-bright); background: rgba(181, 147, 90, 0.11); }
+
+.al-msg { min-height: 1.2em; margin: 0.6rem 0 0; font: italic 1rem/1.4 var(--font-serif); color: var(--muted); }
+.al-msg:empty { display: none; }
+.al-msg.is-error { color: var(--bad); font-style: normal; }
+.al-msg.is-ok { color: var(--ok); }
+.al-msg.is-warn { color: var(--gold-bright); font-style: normal; }
+.al-msg button { margin-left: 0.4rem; }
+
+/* ── Buttons ─────────────────────────────────────────────────────────── */
+.al-primary {
+  width: 100%; min-height: 54px; border: 0; cursor: pointer; clip-path: var(--clip-md);
+  background: linear-gradient(135deg, #e6cd8e, var(--gold)); color: var(--gold-ink, #141210);
+  font: 600 0.92rem var(--font-sans); letter-spacing: 0.16em; text-transform: uppercase;
+  transition: filter 0.15s ease, opacity 0.15s ease;
+}
+.al-primary:hover { filter: brightness(1.06); }
+.al-primary:disabled { cursor: default; opacity: 1; background: rgba(181, 147, 90, 0.16); color: rgba(237, 232, 223, 0.55); }
+.al-primary:focus-visible, .al-secondary:focus-visible, .al-choice:focus-visible, .al-link:focus-visible, .al-back:focus-visible {
+  outline: 2px solid var(--gold-bright); outline-offset: 2px;
+}
+.al-secondary {
+  min-height: 46px; padding: 0 1.1rem; cursor: pointer; clip-path: var(--clip-sm);
+  background: rgba(181, 147, 90, 0.12); border: 1px solid rgba(181, 147, 90, 0.42); color: var(--gold-bright);
+  font: 600 0.78rem var(--font-sans); letter-spacing: 0.12em; text-transform: uppercase;
+}
+.al-link {
+  background: none; border: 0; padding: 0.6rem 0; min-height: 44px; cursor: pointer;
+  color: var(--gold-bright); font: 1.02rem var(--font-serif); text-decoration: underline; text-underline-offset: 3px;
+}
+
+/* ── Photos ──────────────────────────────────────────────────────────── */
+.al-drop {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;
+  min-height: 168px; cursor: pointer; clip-path: var(--clip-lg);
+  background: rgba(181, 147, 90, 0.07); border: 1px dashed rgba(181, 147, 90, 0.55);
+  color: var(--gold-bright); transition: background 0.15s ease;
+}
+.al-drop:hover, .al-drop.is-dragging { background: rgba(181, 147, 90, 0.13); }
+.al-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.al-drop-plus { font: 300 2.4rem/1 var(--font-sans); }
+.al-drop-label { font: 600 0.82rem var(--font-sans); letter-spacing: 0.14em; text-transform: uppercase; }
+.al-drop.is-compact, .al-drop--small { min-height: 64px; flex-direction: row; gap: 0.6rem; }
+.al-drop.is-compact .al-drop-plus, .al-drop--small .al-drop-plus { font-size: 1.6rem; }
+.al-drop.is-full { display: none; }
+.al-thumbs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; margin-top: 0.75rem; }
+.al-thumbs:empty { display: none; }
+.al-thumb { position: relative; aspect-ratio: 1; overflow: hidden; clip-path: var(--clip-sm); background: #111; }
+.al-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.al-thumb button {
+  position: absolute; top: 4px; right: 4px; width: 36px; height: 36px; border-radius: 50%; border: 0; cursor: pointer;
+  background: rgba(8, 8, 8, 0.78); color: #fff; font: 1.15rem/1 var(--font-sans);
+}
+.al-thumb.is-busy::after { content: ''; position: absolute; inset: 0; background: rgba(8, 8, 8, 0.45); }
+.al-strip { display: flex; gap: 0.4rem; margin: 0 0 1.1rem; overflow-x: auto; }
+.al-strip img { width: 76px; height: 76px; object-fit: cover; clip-path: var(--clip-sm); flex: none; }
+.al-strip:empty { display: none; }
+
+/* ── Where do you put in? ────────────────────────────────────────────── */
+.al-mapwrap { position: relative; height: clamp(320px, calc(100dvh - 330px), 640px); clip-path: var(--clip-lg); background: #0d0d0f; }
+.al-map { position: absolute; inset: 0; height: 100% !important; z-index: 0; }
+.al-map .leaflet-top.leaflet-left { top: 66px; }
+.al-map .leaflet-control-attribution { font-size: 9px; }
+/* The cross is the pin: the map moves under it, so nothing small has to be dragged. */
+.al-cross { position: absolute; left: 50%; top: 50%; width: 56px; height: 56px; margin: -28px 0 0 -28px; pointer-events: none; z-index: 500; }
+.al-cross::before, .al-cross::after { content: ''; position: absolute; background: #141210; box-shadow: 0 0 0 1.5px #e6cd8e; }
+.al-cross::before { left: 50%; top: 0; bottom: 0; width: 2px; margin-left: -1px; }
+.al-cross::after { top: 50%; left: 0; right: 0; height: 2px; margin-top: -1px; }
+.al-mapwrap::after {
+  content: ''; position: absolute; left: 50%; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; z-index: 501;
+  border-radius: 50%; background: #e6cd8e; border: 2px solid #141210; pointer-events: none;
+}
+.al-mapbar { position: absolute; top: 10px; left: 10px; right: 10px; z-index: 600; display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+/* po-system.css styles every .po-page input with !important (and a four-:not()
+   selector) after this file; over map tiles the search box needs a solid dark
+   fill to read, so it is addressed by id. */
+#al-search, #al-search:focus { background: rgba(10, 10, 9, 0.92) !important; border-bottom-color: rgba(217, 189, 123, 0.6) !important; }
+.al-gps {
+  width: 50px; min-height: 50px; cursor: pointer; clip-path: var(--clip-sm); font-size: 22px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(10, 10, 9, 0.9); border: 1px solid rgba(181, 147, 90, 0.42); color: var(--gold-bright);
+}
+.al-gps.is-busy { animation: al-pulse 1s ease-in-out infinite; }
+@keyframes al-pulse { 50% { opacity: 0.45; } }
+.al-suggest { position: absolute; top: 56px; left: 0; right: 0; z-index: 700; max-height: 50vh; overflow: auto; }
+
+/* ── Which water is this? ────────────────────────────────────────────── */
+.al-choices { display: grid; gap: 0.55rem; }
+.al-choice {
+  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0.2rem 0.8rem; text-align: left;
+  width: 100%; min-height: 64px; padding: 0.7rem 1rem; cursor: pointer; clip-path: var(--clip-md);
+  background: rgba(181, 147, 90, 0.07); border: 1px solid rgba(181, 147, 90, 0.3); color: var(--fg);
+}
+.al-choice-name { font: 600 1.2rem/1.2 var(--font-serif); }
+.al-choice-meta { grid-column: 1; font: 0.8rem var(--font-sans); letter-spacing: 0.04em; color: var(--muted); }
+.al-choice-mark {
+  grid-row: 1 / span 2; grid-column: 2; width: 24px; height: 24px; border-radius: 50%;
+  border: 1.5px solid rgba(181, 147, 90, 0.6);
+}
+.al-choice[aria-checked="true"] { background: rgba(181, 147, 90, 0.16); border-color: var(--gold-bright); }
+.al-choice[aria-checked="true"] .al-choice-mark { background: var(--gold-bright); box-shadow: inset 0 0 0 4px #141210; border-color: var(--gold-bright); }
+.al-choice--other .al-choice-name { font: 600 0.82rem var(--font-sans); letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold-bright); }
+#al-other-wrap { margin-top: 0.8rem; }
+
+/* ── Toggles (parking / restrooms) ───────────────────────────────────── */
+.al-toggles { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0 0 1.1rem; }
+.al-tog {
+  display: inline-flex; align-items: center; gap: 0.55rem; min-height: 46px; padding: 0 1rem; cursor: pointer;
+  clip-path: var(--clip-sm); background: rgba(181, 147, 90, 0.07); border: 1px solid rgba(181, 147, 90, 0.3);
+  font: 600 0.8rem var(--font-sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--fg);
+}
+.al-tog input { width: 20px; height: 20px; margin: 0; accent-color: #d9bd7b; }
+.al-tog:has(input:checked) { border-color: var(--gold-bright); background: rgba(181, 147, 90, 0.16); }
+
+.al-inline { display: flex; align-items: center; justify-content: space-between; gap: 1rem; color: var(--muted); font: 1.02rem var(--font-serif); }
+
+/* ── Sent ────────────────────────────────────────────────────────────── */
+.al-extras {
+  margin: 0.4rem 0 1.4rem; padding: 1.1rem 1rem 1rem; clip-path: var(--clip-lg);
+  background: rgba(181, 147, 90, 0.05); border: 1px solid rgba(181, 147, 90, 0.24);
+}
+.al-extras[hidden] { display: none; }
+.al-extras-h { margin: 0 0 1rem; font: 600 0.82rem var(--font-sans); letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold-bright); }
+.al-extras-h span { margin-left: 0.4rem; color: var(--muted); letter-spacing: 0.04em; text-transform: none; font-weight: 400; }
+.al-after { display: grid; gap: 0.4rem; justify-items: center; }
+
+/* ── Foot: the one button ────────────────────────────────────────────── */
+.al-foot {
+  position: sticky; bottom: 0; z-index: 800; margin-top: auto;
+  padding: 0.7rem 0 calc(0.75rem + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, rgba(8, 8, 8, 0), rgba(8, 8, 8, 0.94) 22%, #080808);
+}
+.al-foot[hidden] { display: none; }
+.al-fine { margin: 0.55rem 0 0; font: 0.86rem/1.45 var(--font-serif); color: var(--muted); text-align: center; }
+.al-fine a { color: var(--gold-bright); }
+.al-fine[hidden] { display: none; }
+.al-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+
+/* Editing hides the Find / Add tabs: it is neither. */
+html[data-lake-edit] .lake-modes { display: none; }
+
+@media (min-width: 760px) {
+  .al { padding-top: 1.25rem; }
+  .al-mapwrap { height: clamp(380px, calc(100vh - 360px), 640px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .al-gps.is-busy { animation: none; }
+  .al-primary { transition: none; }
+}

@@ -629,6 +629,7 @@ function renderLocationInfo(location, spot) {
     <div class="loc-row loc-amenities"><span class="loc-label">Amenities</span><span class="amenities-list">
       ${amenities.map(item => `<span class="amenity-pill ${item.available ? 'available' : 'unavailable'}">${item.available ? '✓' : '—'} ${item.label}</span>`).join('')}
     </span></div>
+    ${spot?.id && !String(spot.id).startsWith('custom_') ? `<a class="loc-edit" href="/paddlingout/search?mode=add&amp;edit=${encodeURIComponent(spot.id)}">Something wrong or missing? Suggest an edit</a>` : ''}
   `;
   renderLocalTips(spot);
   renderPrepBlock(Array.isArray(spot?.tips) ? spot.tips : []);

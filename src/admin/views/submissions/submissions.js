@@ -7,6 +7,14 @@
  *   POST /paddlingOut/admin/submissions/:id/validate  → approve (publishes spot)
  *   POST /paddlingOut/admin/submissions/:id/reject    → reject (deletes images)
  *
+ * Two kinds share the queue (21 Oct 2026):
+ *   new  — a lake not on the map yet; its id IS its spot id.
+ *   edit — a suggested change to a live spot (communityEdits.js). Its id is
+ *          `edit-…` and `spotId` is the spot it would change, so a card's id
+ *          is NOT always spotId: approving an edit by spotId would approve
+ *          that spot's own original submission instead. Approve sends the
+ *          ticked changes only ({ fields: [...] }).
+ *
  * SECURITY: every displayed field (lakeName, city, region, country, launchHint,
  * description, contactEmail, image URLs, spotId) is USER-SUBMITTED and untrusted.
  * All text is escaped with escapeHtml, all id values placed into HTML attributes
@@ -159,6 +167,8 @@ async function load() {
 
 async function approve(id, btn) {
   const card = btn.closest('.submission-card');
+  const sub = allSubmissions.find((s) => cardId(s) === id);
+  if (sub && sub.kind === 'edit') return approveEdit(id, card);
   // The water type rides with Approve, so it is never a separate Edit → Save
   // round trip. The server also falls back to the submitter's answer and the
   // name, and only refuses when none of them says what the water is.
@@ -205,6 +215,24 @@ async function approve(id, btn) {
   }
 }
 
+async function approveEdit(id, card) {
+  const fields = [...card.querySelectorAll('[data-change]:checked')].map((c) => c.dataset.change);
+  if (!fields.length) { showError('Tick at least one change to apply, or Reject.'); return; }
+  setCardBusy(card, true, 'approve');
+  try {
+    const result = await postAction(id, 'validate', { fields });
+    markStatus(id, 'validated');
+    const sub = allSubmissions.find((s) => cardId(s) === id);
+    if (sub) sub.appliedFields = result.applied || fields;
+    showSuccess(`Applied: ${(result.applied || fields).map(changeLabel).join(', ')}.`);
+    refreshUI();
+  } catch (err) {
+    console.error('[Submissions] Approve edit failed:', err);
+    showError(err.message || 'Failed to apply the edit.');
+    setCardBusy(card, false);
+  }
+}
+
 async function reject(id, btn) {
   const reason = window.prompt('Reason for rejecting this submission? (optional — leave blank to reject without a note)');
   if (reason === null) return; // user cancelled
@@ -215,7 +243,8 @@ async function reject(id, btn) {
     const trimmed = reason.trim();
     await postAction(id, 'reject', trimmed ? { rejectionReason: trimmed } : {});
     markStatus(id, 'rejected');
-    showInfo('Submission rejected. Uploaded images were deleted.');
+    const was = allSubmissions.find((s) => cardId(s) === id);
+    showInfo(was && was.kind === 'edit' ? 'Edit rejected. The live spot is unchanged; its new photos were deleted.' : 'Submission rejected. Uploaded images were deleted.');
     refreshUI();
   } catch (err) {
     console.error('[Submissions] Reject failed:', err);
@@ -346,11 +375,12 @@ function renderList() {
 
   const sorted = items.slice().sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt));
   listEl.innerHTML = sorted.map(submissionCard).join('');
-  if (openEditorId && sorted.some((s) => (s.spotId || s.id) === openEditorId)) mountEditor(openEditorId);
+  if (openEditorId && sorted.some((s) => s.kind !== 'edit' && cardId(s) === openEditorId)) mountEditor(openEditorId);
 }
 
 function submissionCard(sub) {
-  const id = sub.spotId || sub.id || '';
+  if (sub.kind === 'edit') return editCard(sub);
+  const id = cardId(sub);
   const status = getStatus(sub);
   const name = escapeHtml(sub.lakeName || 'Untitled spot');
 
@@ -426,6 +456,7 @@ function submissionCard(sub) {
           <span class="sub-coord-text">${escapeHtml(coordText)}</span>
           ${mapLink}
         </div>
+        ${sourceLines(sub)}
         ${dup}
         ${launchHint}
         ${description}
@@ -444,10 +475,111 @@ function submissionCard(sub) {
   `;
 }
 
+/** Where the place and the name came from (spotLocate on the server). */
+function sourceLines(sub) {
+  const out = [];
+  const p = sub.place;
+  if (p && sub.placeSource) {
+    const src = sub.placeSource === 'census' ? 'US Census' : sub.placeSource === 'osm' ? 'OpenStreetMap' : sub.placeSource;
+    const town = p.town ? (p.townDistanceKm === 0 ? `in ${p.town}` : `${p.townDistanceKm != null ? p.townDistanceKm + ' km from ' : 'near '}${p.town}`) : '';
+    out.push(`Place from the pin (${src}): ${[town, p.county].filter(Boolean).join(' · ')}`);
+  } else if (sub.kind !== 'edit' && sub.placeSource === 'submitter') {
+    out.push('Place typed by the submitter (lookup unavailable)');
+  }
+  const m = sub.waterMatch;
+  if (m && m.name) {
+    out.push(`Name matches ${m.source === 'usgs' ? 'USGS' : 'OpenStreetMap'}: ${m.name}${m.inside ? ' (pin is on the water)' : m.distanceM != null ? ` · ${m.distanceM} m from the pin` : ''}`);
+  } else if (Array.isArray(sub.waterCandidates) && sub.waterCandidates.length) {
+    out.push(`Typed name. Mapped water near the pin: ${sub.waterCandidates.join(', ')}`);
+  }
+  return out.length ? `<div class="sub-sources">${out.map((l) => `<div>${escapeHtml(l)}</div>`).join('')}</div>` : '';
+}
+
+const CHANGE_LABELS = { title: 'Name', location: 'Launch pin', text: 'Note', parkingAvl: 'Parking', restroomsAvl: 'Restrooms', photos: 'Photos' };
+function changeLabel(k) { return CHANGE_LABELS[k] || k; }
+function yesNo(v) { return v === 'Y' || v === true ? 'Yes' : 'No'; }
+function gmaps(loc) {
+  const lat = Number(loc && loc.latitude), lng = Number(loc && loc.longitude);
+  return Number.isFinite(lat) && Number.isFinite(lng) ? `https://www.google.com/maps?q=${lat},${lng}` : null;
+}
+
+/** A suggested edit: what is live now → what was proposed, one tick per change. */
+function editCard(sub) {
+  const id = cardId(sub);
+  const status = getStatus(sub);
+  const live = sub.live || {};
+  const pr = sub.proposed || {};
+  const pending = status === 'pending';
+  const rows = [];
+  const row = (key, from, to, extra = '') => {
+    const applied = Array.isArray(sub.appliedFields) ? sub.appliedFields.includes(key) : null;
+    const tick = pending
+      ? `<input type="checkbox" data-change="${jsAttr(key)}" checked aria-label="Apply ${escapeHtml(changeLabel(key))}">`
+      : `<span class="sub-change-state">${applied === null ? '' : applied ? 'Applied' : 'Not applied'}</span>`;
+    rows.push(`<label class="sub-change">${tick}<span class="sub-change-key">${escapeHtml(changeLabel(key))}</span>
+      <span class="sub-change-from">${from}</span><span class="sub-change-arrow" aria-hidden="true">→</span><span class="sub-change-to">${to}</span>${extra}</label>`);
+  };
+  if (pr.title !== undefined) row('title', escapeHtml(live.title || '—'), escapeHtml(pr.title));
+  if (pr.location) {
+    const a = gmaps(live.location), b = gmaps(pr.location);
+    const place = ['city', 'region', 'country'].filter((k) => pr[k]).map((k) => escapeHtml(pr[k])).join(', ');
+    row('location',
+      a ? `<a href="${escapeHtml(a)}" target="_blank" rel="noopener">current ↗</a>` : '—',
+      b ? `<a href="${escapeHtml(b)}" target="_blank" rel="noopener">proposed ↗</a>` : '—',
+      `<span class="sub-change-note">moved ${escapeHtml(String(sub.movedMetres ?? '?'))} m${place ? ` · place becomes ${place}` : ''}</span>`);
+  }
+  if (pr.text !== undefined) row('text', escapeHtml(live.text || '(none)'), escapeHtml(pr.text || '(removed)'));
+  if (pr.parkingAvl) row('parkingAvl', yesNo(live.parkingAvl), yesNo(pr.parkingAvl));
+  if (pr.restroomsAvl) row('restroomsAvl', yesNo(live.restroomsAvl), yesNo(pr.restroomsAvl));
+  const newPhotos = safeImages(sub.pendingImgSrc);
+  if (newPhotos.length || (sub.appliedFields || []).includes('photos')) {
+    row('photos', `${(live.imgSrc || []).length} now`, `+${newPhotos.length || (sub.photosAdded || []).length}`,
+      newPhotos.length ? `<span class="sub-change-thumbs">${newPhotos.map((u) => `<img src="${escapeHtml(u)}" alt="" loading="lazy">`).join('')}</span>` : '');
+  }
+  const hero = safeImages(live.imgSrc)[0];
+  const submitter = sub.anonymous ? 'Anonymous' : escapeHtml(sub.contactEmail || 'Anonymous');
+  const created = sub.createdAt ? escapeHtml(formatDate(sub.createdAt)) : '—';
+  const spotLink = sub.spotExists === false ? '<span class="sub-flag sub-flag--blocked">The spot no longer exists.</span>'
+    : `<a class="sub-map-link" href="/paddlingout/forecast?id=${encodeURIComponent(sub.spotId)}" target="_blank" rel="noopener">Open the live spot ↗</a>`;
+  const note = status === 'rejected' && sub.rejectionReason
+    ? `<div class="sub-field"><span class="sub-field-label">Rejection reason</span><span class="sub-field-val">${escapeHtml(sub.rejectionReason)}</span></div>` : '';
+  const actions = pending
+    ? `<div class="sub-actions">
+         <button type="button" class="btn btn-success" data-action="approve" data-id="${jsAttr(id)}">Apply ticked</button>
+         <button type="button" class="btn btn-danger" data-action="reject" data-id="${jsAttr(id)}">Reject</button>
+       </div>` : '';
+  return `
+    <article class="submission-card submission-card--edit" data-card-id="${jsAttr(id)}">
+      <div class="sub-media">
+        ${hero ? `<img class="sub-hero" src="${escapeHtml(hero)}" alt="" loading="lazy">` : '<div class="sub-hero sub-hero--empty">No photos</div>'}
+      </div>
+      <div class="sub-body">
+        <div class="sub-head">
+          <div class="sub-head-text">
+            <span class="sub-kind">Suggested edit</span>
+            <h3 class="sub-title">${escapeHtml(live.title || sub.lakeName || 'Spot')}</h3>
+            <div class="sub-loc">${spotLink}</div>
+          </div>
+          ${statusBadge(status)}
+        </div>
+        <div class="sub-changes">${rows.join('') || '<div class="sub-field-val">No changes recorded.</div>'}</div>
+        ${note}
+        <div class="sub-meta">
+          <span class="sub-meta-item">By ${submitter}</span>
+          <span class="sub-meta-sep">•</span>
+          <span class="sub-meta-item">${created}</span>
+        </div>
+        ${actions}
+      </div>
+    </article>`;
+}
+
 /** Water type, chosen on the card. Pre-filled: the spot's, else the submitter's answer, else the name. */
 function waterTypePicker(sub, id) {
   const value = pickedWaterType.get(id) || sub.waterType || sub.suggestedWaterType || '';
   const from = pickedWaterType.has(id) || sub.waterType ? ''
+    : sub.suggestedWaterTypeSource === 'usgs' ? 'USGS classes it so'
+    : sub.suggestedWaterTypeSource === 'osm' || sub.suggestedWaterTypeSource === 'hydrolakes' ? 'from the map, check it'
     : sub.suggestedWaterTypeSource === 'submitter' ? 'submitter said so'
     : sub.suggestedWaterTypeSource === 'name' ? 'from the name, check it' : '';
   return `<label class="sub-wt">
@@ -521,12 +653,17 @@ function setCardBusy(card, busy, which) {
 }
 
 function markStatus(id, status) {
-  const sub = allSubmissions.find((s) => (s.spotId || s.id) === id);
+  const sub = allSubmissions.find((s) => cardId(s) === id);
   if (sub) sub.status = status;
 }
 
 function pendingCount() {
   return allSubmissions.filter((s) => getStatus(s) === 'pending').length;
+}
+
+/** The id the queue routes use: an edit's own id, a new lake's spot id. */
+function cardId(sub) {
+  return sub && sub.kind === 'edit' ? (sub.id || '') : ((sub && (sub.spotId || sub.id)) || '');
 }
 
 function getStatus(sub) {

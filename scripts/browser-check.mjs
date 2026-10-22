@@ -298,19 +298,46 @@ async function main() {
       if (far) continue;   // the far viewer only re-reads the lake pages
 
       // ── 4b. Find or add: one page. The old add address forwards, filled in.
+      //    Add a lake is screens (21 Oct 2026): photos → cross map → water → sent.
       await checkPage(b.port, 'find or add', `${BASE}/paddlingout/submitentry?name=Dillon%20Reservoir&lat=39.6175&lng=-106.0526`, view, async (ev) => {
-        const r = await ev(`({ url: location.pathname + location.search, title: (document.getElementById('po-title') || {}).textContent, actions: document.querySelectorAll('.po-actions .po-btn').length, add: !document.getElementById('add-pane').hidden, find: !document.getElementById('find-pane').hidden, name: document.getElementById('lakeName').value, mapH: document.getElementById('pin-map').offsetHeight, pin: !!document.querySelector('#pin-map .leaflet-marker-icon') })`);
+        const r = await ev(`({ url: location.pathname + location.search, title: (document.getElementById('po-title') || {}).textContent, actions: document.querySelectorAll('.po-actions .po-btn').length, add: !document.getElementById('add-pane').hidden, find: !document.getElementById('find-pane').hidden, step: document.getElementById('al').dataset.step, next: document.getElementById('al-next').textContent })`);
         const p = [];
         if (!/^\/paddlingout\/search\?mode=add/.test(r.url)) p.push(`old add address landed on ${r.url}`);
         if (!r.add || r.find) p.push('the Add tab is not the one showing');
         if (r.title !== 'Add a lake') p.push(`header says "${r.title}"`);
-        if (r.name !== 'Dillon Reservoir') p.push('the name did not carry over');
-        if (r.mapH < 200 || !r.pin) p.push(`add map ${r.mapH}px tall, pin ${r.pin ? 'placed' : 'missing'}`);
+        if (r.step !== 'photos' || r.next !== 'Add photos') p.push(`first screen is "${r.step}" with button "${r.next}"`);
         if (r.actions !== 2) p.push(`header has ${r.actions} actions, expected Find-or-add + Settings`);
+        // A photo moves it on; the map opens where Find left off (the hand-off).
+        const pin = await ev(`(async () => {
+          const c = document.createElement('canvas'); c.width = 320; c.height = 240; c.getContext('2d').fillRect(0, 0, 320, 240);
+          const blob = await new Promise(ok => c.toBlob(ok, 'image/jpeg', 0.8));
+          const dt = new DataTransfer(); dt.items.add(new File([blob], 'launch.jpg', { type: 'image/jpeg' }));
+          const input = document.getElementById('al-files'); input.files = dt.files; input.dispatchEvent(new Event('change', { bubbles: true }));
+          await new Promise(ok => setTimeout(ok, 1200));
+          document.getElementById('al-next').click();
+          await new Promise(ok => setTimeout(ok, 1500));
+          return { step: document.getElementById('al').dataset.step, mapH: document.getElementById('al-map').offsetHeight, tiles: document.querySelectorAll('#al-map .leaflet-tile').length, sub: document.getElementById('al-pin-sub').textContent, next: document.getElementById('al-next').textContent };
+        })()`);
+        if (pin.step !== 'pin') p.push(`after a photo the flow is on "${pin.step}"`);
+        if (pin.mapH < 280) p.push(`put-in map is ${pin.mapH}px tall`);
+        if (!/shore where you put in/.test(pin.sub)) p.push('the Find hand-off (name + pin) did not reach the map');
+        if (pin.next !== 'Put in here') p.push(`map button reads "${pin.next}"`);
         const back = await ev(`(document.getElementById('mode-find').click(), new Promise(ok => setTimeout(() => ok({ find: !document.getElementById('find-pane').hidden, mapH: document.getElementById('search-map').offsetHeight }), 600)))`);
         if (!back.find || back.mapH < 150) p.push(`back to Find: pane ${back.find ? 'shown' : 'hidden'}, map ${back.mapH}px`);
         return p;
       }, { settle: 5000 });
+
+      // ── 4c. Suggest an edit: the spot's values, no Find/Add tabs.
+      await checkPage(b.port, 'suggest an edit', `${BASE}/paddlingout/search?mode=add&edit=whiterock`, view, async (ev) => {
+        const r = await ev(`({ title: (document.getElementById('po-title') || {}).textContent, tabs: document.querySelector('.lake-modes') ? getComputedStyle(document.querySelector('.lake-modes')).display : 'none', step: document.getElementById('al').dataset.step, name: document.getElementById('al-e-name').value, next: document.getElementById('al-next').textContent, disabled: document.getElementById('al-next').disabled })`);
+        const p = [];
+        if (r.title !== 'Suggest an edit') p.push(`header says "${r.title}"`);
+        if (r.tabs !== 'none') p.push('the Find / Add tabs show on an edit');
+        if (r.step !== 'edit') p.push(`screen is "${r.step}"`);
+        if (r.name !== 'White Rock Lake') p.push(`name field holds "${r.name}"`);
+        if (!r.disabled || r.next !== 'No changes yet') p.push(`unchanged edit button reads "${r.next}" (${r.disabled ? 'disabled' : 'enabled'})`);
+        return p;
+      }, { settle: 7000 });
 
       // ── 5. Stories
       await checkPage(b.port, 'stories', `${BASE}/stories`, view, async (ev) =>

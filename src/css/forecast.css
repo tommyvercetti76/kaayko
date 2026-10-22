@@ -1266,3 +1266,11 @@ main.forecast-main {
 }
 .night-next-score { font-size: 2.1rem; }
 .night-next-reason { font-family: var(--font-serif); font-size: 1rem; color: rgba(237,232,223,0.9); }
+
+/* "Suggest an edit" (21 Oct 2026): goes to the review queue, changes nothing until approved */
+.loc-edit {
+  display: inline-flex; align-items: center; min-height: 44px; margin-top: 0.4rem;
+  color: var(--gold-bright, #d9bd7b); font-family: var(--font-serif, Georgia, serif); font-size: 1rem;
+  text-decoration: underline; text-underline-offset: 3px;
+}
+.loc-edit:hover { color: var(--fg, #ede8df); }

@@ -112,7 +112,7 @@
   <script src="/js/services/spotTime.js"></script>
   <script src="/js/components/PaddleCard.js"></script>
 
-  <link rel="stylesheet" href="/css/submitentry.css">
+  <link rel="stylesheet" href="/css/addlake.css">
   <link rel="stylesheet" href="/css/search.css">
   <link rel="stylesheet" href="/js/components/PinPicker.css">
   <link rel="stylesheet" href="/js/components/PaddleCard.css">
@@ -140,10 +140,12 @@
       var add = /(?:^|[?&])mode=add(?:&|$)/.test(location.search);
       if (!add) return;
       document.documentElement.setAttribute('data-lake-mode', 'add');
+      // Suggest an edit runs on the Add screens but is neither tab.
+      if (/(?:^|[?&])edit=[a-zA-Z0-9_-]+/.test(location.search)) document.documentElement.setAttribute('data-lake-edit', '');
       var f = document.getElementById('mode-find'), a = document.getElementById('mode-add');
       f.setAttribute('aria-selected', 'false'); f.tabIndex = -1;
       a.setAttribute('aria-selected', 'true'); a.tabIndex = 0;
-      if (window.PoHeader) PoHeader.setTitle('Add a lake');
+      if (window.PoHeader) PoHeader.setTitle(document.documentElement.hasAttribute('data-lake-edit') ? 'Suggest an edit' : 'Add a lake');
     })();
   </script>
   <main class="search-page" id="find-pane" role="tabpanel" aria-labelledby="mode-find">
@@ -220,161 +222,114 @@
     </div>
   </main>
   <section class="add-pane" id="add-pane" role="tabpanel" aria-labelledby="mode-add" hidden>
-  <div class="submit-shell">
-    <!-- Add a lake, rebuilt for speed (3 Oct 2026): what is required comes first
-         and in the order a person thinks of it: photos, then where. Everything
-         optional is folded; the place line replaces three filled fields; the
-         legal note sits by the button. Every check and every id is unchanged,
-         and a person still reviews every entry before it is public. -->
-    <!-- Streamlined for phones (21 Oct 2026): one way in per step. Where = the
-         Find tab's own pattern (name + GPS button, map under it); the place
-         fields only appear if the pin's place can't be looked up; the footer
-         is one button that names the next step. -->
-    <p class="launch-note">Two photos and a pin. A person checks every entry before it goes public.</p>
+    <!-- Add a lake, rebuilt 21 Oct 2026: one question per screen, one button.
+         Photos → "Where do you put in?" (move the map under a fixed cross) →
+         "Which water is this?" (USGS answers, one tap) → Sent. The server
+         fills in town, county, state and country from the pin; the note,
+         amenities and email are asked AFTER the entry is in. The same screens
+         run "Suggest an edit" (?mode=add&edit=<spotId>). Logic: addlake.js. -->
+    <div class="al" id="al" data-step="photos">
+      <div class="al-top">
+        <button type="button" class="al-back" id="al-back" hidden>Back</button>
+        <ol class="al-steps" id="al-steps" aria-label="Steps">
+          <li data-s="photos">Photos</li><li data-s="pin">Put-in</li><li data-s="water">Water</li>
+        </ol>
+      </div>
 
-    <section class="submit-card" id="form-card">
-      <form id="submit-entry-form" novalidate>
-        <!-- Honeypot: invisible to people, filled by form bots. Never label it. -->
-        <div class="honeypot" aria-hidden="true">
-          <input name="website" type="text" tabindex="-1" autocomplete="off">
-        </div>
-
-        <!-- 1 · Photos -->
-        <div class="field-group" data-field="images">
-          <span class="label-text"><span class="step-n">1</span>Photos<span class="req" aria-hidden="true">*</span></span>
-          <label class="image-drop" id="image-drop" tabindex="0">
-            <input id="images" name="images" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple>
-            <span class="image-drop-main">
-              <span class="image-drop-copy">
-                <strong>Add 2&ndash;5 photos</strong>
-                <span>The water and the launch. Taken at the ramp, they place the pin for you.</span>
-              </span>
-              <span class="image-count" id="image-count">0 selected</span>
-            </span>
-            <span class="image-previews" id="image-previews" aria-live="polite"></span>
-          </label>
-          <span class="field-msg" id="images-msg" aria-live="polite"></span>
-        </div>
-
-        <!-- 2 · Where: the name (or your location) puts the pin down; drag it onto the put-in -->
-        <label data-field="lakeName" class="name-field">
-          <span class="label-text"><span class="step-n">2</span>Where is it<span class="req" aria-hidden="true">*</span></span>
-          <span class="name-row">
-            <input id="lakeName" name="lakeName" maxlength="120" placeholder="Lake, river or reservoir name" autocomplete="off"
-                   aria-label="Lake, river or reservoir name"
-                   role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="lakeName-suggest">
-            <button class="btn-gps" id="use-location" type="button" title="Use my location" aria-label="Use my location" data-kicon-raw="gps"></button>
-          </span>
-          <div class="search-suggest" id="lakeName-suggest" role="listbox" hidden></div>
-          <span class="field-msg" id="lakeName-msg" aria-live="polite"></span>
+      <!-- 1 · Photos -->
+      <section class="al-step" data-step="photos" aria-labelledby="al-h-photos">
+        <h2 class="al-h" id="al-h-photos" tabindex="-1">Show us the launch</h2>
+        <p class="al-sub">A photo of where you put in, with the water in it. Up to five.</p>
+        <label class="al-drop" id="al-drop">
+          <input type="file" id="al-files" accept="image/*" multiple>
+          <span class="al-drop-plus" aria-hidden="true">+</span>
+          <span class="al-drop-label" id="al-drop-label">Add photos</span>
         </label>
-        <div class="field-group" data-field="coords">
-          <div class="loc-lock photo-fix" id="photo-fix" aria-live="polite">
-            <span id="photo-fix-text"></span>
-            <button type="button" id="photo-fix-clear">Clear</button>
+        <div class="al-thumbs" id="al-thumbs"></div>
+        <p class="al-msg" id="al-photos-msg" aria-live="polite"></p>
+      </section>
+
+      <!-- 2 · Where do you put in? -->
+      <section class="al-step" data-step="pin" aria-labelledby="al-h-pin" hidden>
+        <h2 class="al-h" id="al-h-pin" tabindex="-1">Where do you put in?</h2>
+        <p class="al-sub" id="al-pin-sub">Move the map until the cross sits on the launch.</p>
+        <div class="al-mapwrap">
+          <div id="al-map" class="al-map pp-map" aria-label="Map. Move it so the cross in the middle sits on the launch."></div>
+          <div class="al-cross" aria-hidden="true"></div>
+          <div class="al-mapbar">
+            <input id="al-search" type="search" placeholder="Search a lake or town" autocomplete="off" enterkeyhint="search"
+                   role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="al-search-list" aria-label="Search a lake, town or coordinates">
+            <button type="button" class="al-gps" id="al-gps" aria-label="Go to my location" data-kicon-raw="gps"></button>
+            <div class="search-suggest al-suggest" id="al-search-list" role="listbox" hidden></div>
           </div>
-          <div id="pin-map" class="pin-map pp-map" aria-label="Map. Tap to drop the pin, drag it onto the exact launch point."></div>
-          <div class="pin-row">
-            <p class="pin-hint"><strong>Drag the pin</strong> onto the put-in.</p>
-            <details class="coord-manual">
-              <summary>Coordinates</summary>
-              <div class="coord-row">
-                <input id="lat" name="lat" inputmode="decimal" placeholder="Latitude" aria-label="Latitude">
-                <input id="lng" name="lng" inputmode="decimal" placeholder="Longitude" aria-label="Longitude">
-                <button class="mini-btn" id="find-coords" type="button">Go</button>
-              </div>
-            </details>
-          </div>
-          <span class="field-msg" id="coords-msg" aria-live="polite"></span>
         </div>
-        <div class="loc-lock" id="loc-lock" aria-live="polite">
-          <span id="loc-lock-text">City, state and country filled from your location</span>
-          <button type="button" id="loc-unlock">Change</button>
-        </div>
-        <div class="grid-two place-fields">
-          <label data-field="city">
-            <span class="label-text">City or nearest town<span class="req" aria-hidden="true">*</span></span>
-            <input id="city" name="city" maxlength="80" placeholder="Dallas" autocomplete="address-level2">
-            <span class="field-msg" id="city-msg" aria-live="polite"></span>
-          </label>
-          <label data-field="region">
-            <span class="label-text">State / region<span class="req" aria-hidden="true">*</span></span>
-            <div class="select-wrap" id="region-select-wrap">
-              <select id="region" name="region"></select>
-            </div>
-            <input id="regionText" name="regionText" maxlength="80" class="region-text" placeholder="State or region" hidden>
-            <span class="field-msg" id="region-msg" aria-live="polite"></span>
-          </label>
-        </div>
-        <label data-field="country" class="place-fields">
-          <span class="label-text">Country<span class="req" aria-hidden="true">*</span></span>
-          <div class="select-wrap">
-            <select id="country" name="country"></select>
-          </div>
-          <span class="field-msg" id="country-msg" aria-live="polite"></span>
+        <p class="al-msg" id="al-pin-msg" aria-live="polite"></p>
+      </section>
+
+      <!-- 3 · Which water is this? -->
+      <section class="al-step" data-step="water" aria-labelledby="al-h-water" hidden>
+        <h2 class="al-h" id="al-h-water" tabindex="-1">Which water is this?</h2>
+        <p class="al-sub" id="al-place">Looking up this spot…</p>
+        <div class="al-choices" id="al-waters" role="radiogroup" aria-labelledby="al-h-water"></div>
+        <label class="al-field" id="al-other-wrap" hidden>
+          <span class="al-label">Name of the water</span>
+          <input id="al-other" maxlength="120" autocomplete="off" placeholder="e.g. Lake Scarborough">
         </label>
+        <p class="al-msg" id="al-water-msg" aria-live="polite"></p>
+      </section>
 
-        <!-- 3 · Optional: everything a reviewer finds useful, folded -->
-        <details class="opt-details">
-          <summary><span class="step-n">3</span>More about this water <span class="opt">optional</span></summary>
-          <div class="opt-body">
-            <!-- One box (21 Oct 2026): "Where exactly to launch" and "Short note" merged.
-                 It posts as description, which becomes the spot's text on the paddle
-                 card. The forecast page's separate Launch row (launchHint) is now set
-                 by the reviewer in the spot editor, not by the submitter. -->
-            <label data-field="description">
-              <span class="label-text">Where to launch, and what to know</span>
-              <textarea id="description" name="description" maxlength="360" placeholder="Main ramp on the north shore, $5 day pass. Windy after noon."></textarea>
-            </label>
-            <!-- Trimmed 21 Oct 2026: water type, put-in, fee and motors were four
-                 dropdowns the upload parser never accepted (not in SUBMISSION_FIELDS),
-                 so nothing anyone picked ever arrived. The reviewer sets water type.
-                 Parking and restrooms are published on the forecast page: same Y/N. -->
-            <fieldset class="amenities">
-              <legend class="label-text">What&rsquo;s there</legend>
-              <label class="choice"><input type="checkbox" id="parkingAvl" name="parkingAvl" value="Y"> Parking</label>
-              <label class="choice"><input type="checkbox" id="restroomsAvl" name="restroomsAvl" value="Y"> Restrooms</label>
-            </fieldset>
+      <!-- Suggest an edit (one screen; the pin step is reused for "Move the launch") -->
+      <section class="al-step" data-step="edit" aria-labelledby="al-h-edit" hidden>
+        <h2 class="al-h" id="al-h-edit" tabindex="-1">Suggest an edit</h2>
+        <p class="al-sub" id="al-edit-sub">Loading…</p>
+        <div class="al-strip" id="al-cur-photos"></div>
+        <label class="al-field"><span class="al-label">Name</span><input id="al-e-name" maxlength="120" autocomplete="off"></label>
+        <div class="al-field">
+          <span class="al-label">Launch</span>
+          <div class="al-inline"><span id="al-e-pin">Where the pin is now</span><button type="button" class="al-secondary" id="al-e-move">Move it</button></div>
+        </div>
+        <label class="al-field"><span class="al-label">Where to launch, and what to know</span><textarea id="al-e-note" maxlength="360"></textarea></label>
+        <div class="al-toggles">
+          <label class="al-tog"><input type="checkbox" id="al-e-parking"> Parking</label>
+          <label class="al-tog"><input type="checkbox" id="al-e-restrooms"> Restrooms</label>
+        </div>
+        <div class="al-field">
+          <span class="al-label">Add photos</span>
+          <label class="al-drop al-drop--small"><input type="file" id="al-e-files" accept="image/*" multiple><span class="al-drop-plus" aria-hidden="true">+</span><span class="al-drop-label">Add photos</span></label>
+          <div class="al-thumbs" id="al-e-thumbs"></div>
+        </div>
+        <label class="al-field"><span class="al-label">Email me when it&rsquo;s reviewed <i>optional</i></span><input id="al-e-email" type="email" autocomplete="email" placeholder="you@example.com"></label>
+        <p class="al-msg" id="al-edit-msg" aria-live="polite"></p>
+      </section>
+
+      <!-- 4 · Sent -->
+      <section class="al-step" data-step="sent" aria-labelledby="al-h-sent" hidden>
+        <h2 class="al-h" id="al-h-sent" tabindex="-1">Sent. Thank you.</h2>
+        <p class="al-sub" id="al-sent-sub">A person checks every entry before it goes on the map.</p>
+        <form class="al-extras" id="al-extras" novalidate>
+          <h3 class="al-extras-h">Help the next paddler <span>optional</span></h3>
+          <label class="al-field"><span class="al-label">Anything to know?</span><textarea id="al-note" maxlength="360" placeholder="Ramp on the north side, $5 day pass. Windy after noon."></textarea></label>
+          <div class="al-toggles">
+            <label class="al-tog"><input type="checkbox" id="al-parking"> Parking</label>
+            <label class="al-tog"><input type="checkbox" id="al-restrooms"> Restrooms</label>
           </div>
-        </details>
-
-        <!-- Anonymous unless ticked: unticked sends contactPreference=anonymous, as the radios did -->
-        <div class="field-group" data-field="contact">
-          <label class="choice email-opt"><input type="checkbox" name="contactPreference" value="email"> Email me when it&rsquo;s live</label>
+          <label class="al-field"><span class="al-label">Email me when it&rsquo;s live</span><input id="al-email" type="email" autocomplete="email" placeholder="you@example.com"></label>
+          <button type="submit" class="al-secondary" id="al-save">Save</button>
+          <p class="al-msg" id="al-extras-msg" aria-live="polite"></p>
+        </form>
+        <div class="al-after">
+          <button type="button" class="al-primary" id="al-another">Add another lake</button>
+          <button type="button" class="al-link" id="al-tomap">Back to the map</button>
         </div>
-        <label class="email-wrap" id="email-wrap" hidden data-field="email">
-          <span class="label-text">Email<span class="req" aria-hidden="true">*</span></span>
-          <input id="email" name="email" type="email" maxlength="254" placeholder="you@example.com" autocomplete="email">
-          <span class="field-msg" id="email-msg" aria-live="polite"></span>
-        </label>
+      </section>
 
-        <!-- The IP-hash note stays on the form: /privacy does not cover lake submissions. -->
-        <div class="fineprint">
-          Public launches and your own photos only. To stop spam we keep a one-way hash of your IP and browser. <a href="/privacy">Privacy</a> &middot;
-          <details class="declined"><summary>What gets declined</summary>
-            <ul>
-              <li>No public access &mdash; private docks, fenced ramps, permit-only shorelines.</li>
-              <li>Photos that are not yours or do not show the water and launch.</li>
-              <li>A launch that is already on the map, or a pin far from the real put-in.</li>
-              <li>Conditions we cannot forecast safely (dams, spillways, active rapids).</li>
-            </ul>
-          </details>
-        </div>
-
-        <div class="actions">
-          <div class="todo-wrap">
-            <span class="form-status" id="form-status" aria-live="polite"></span>
-            <ul class="todo" id="todo" aria-label="Still needed"></ul>
-          </div>
-          <button class="submit-btn" id="submit-btn" type="submit">Submit entry</button>
-        </div>
-      </form>
-    </section>
-    <section class="success-panel" id="success-panel">
-      <h2>Entry received</h2>
-      <p id="success-copy"></p>
-    </section>
-  </div>
+      <div class="al-foot" id="al-foot">
+        <button type="button" class="al-primary" id="al-next">Add photos</button>
+        <p class="al-fine" id="al-fine">Public launches and your own photos only. To stop spam we keep a one-way hash of your IP. <a href="/privacy#lake-submissions">Privacy</a></p>
+      </div>
+      <!-- Honeypot: invisible to people, filled by form bots. Never label it. -->
+      <input class="al-hp" type="text" id="al-website" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+    </div>
   </section>
 
   <footer class="site-footer">
@@ -388,7 +343,7 @@
   </footer>
 
   <script src="/js/services/exifgps.js"></script>
-  <script src="/js/pages/submitentry.js"></script>
+  <script src="/js/pages/addlake.js"></script>
   <script src="/js/pages/search.js"></script>
 
   <!-- First-time tour -->

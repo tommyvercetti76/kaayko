@@ -96,7 +96,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
   <div class="pp-header">
     <div class="pp-eyebrow">Kaayko</div>
     <h1 class="pp-title">Privacy Policy</h1>
-    <p class="pp-subtitle">Last updated: September 21, 2026</p>
+    <p class="pp-subtitle">Last updated: October 21, 2026</p>
   </div>
 
   <div class="pp-section">
@@ -125,6 +125,14 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
       <li><strong>Location Queries:</strong> When using Paddling Out, you may provide location coordinates or lake names.</li>
       <li><strong>Paddle Ratings:</strong> Anonymous condition ratings submitted through Rate Your Paddle and the Paddle Trainer. We store a device fingerprint to prevent duplicate submissions (one rating per device per spot per day), not to identify you. If you allow location access when rating, GPS proximity to the spot is recorded as a quality signal.</li>
       <li><strong>Communications:</strong> If you contact us, we may retain your email address and message content.</li>
+    </ul>
+    <h3 id="lake-submissions">Lake submissions and suggested edits (Paddling Out)</h3>
+    <ul>
+      <li><strong>What you send:</strong> your photos, the launch pin, the name of the water, and anything optional you add afterwards (a note, whether there is parking or restrooms). Location, camera and date data inside the photo files is removed on our server before anything is stored. Your email is collected only if you ask to hear back.</li>
+      <li><strong>What we add:</strong> from the pin alone, our server looks up the town, county and state (U.S. Census Bureau) and the water nearby (U.S. Geological Survey), or OpenStreetMap outside the US. Only the coordinates are sent to them.</li>
+      <li><strong>To stop spam:</strong> a keyed one-way hash of your IP address and your browser&rsquo;s user-agent string are stored with the entry. The IP address itself is not stored.</li>
+      <li><strong>Who sees it:</strong> a person at Kaayko reviews every entry and edit. Once approved, the photos, name, pin, note and amenities are public on Paddling Out. Your email, the IP hash and the user-agent are never shown.</li>
+      <li><strong>How long:</strong> entries are kept with the spot. Photos of a rejected entry or edit are deleted; photos sent with an edit are held at an unlisted address until they are reviewed. To have an entry or your email removed, write to us (see Contact).</li>
     </ul>
     <h3>Automatically Collected</h3>
     <ul>
@@ -198,6 +206,7 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
       <li><strong>GitHub:</strong> The Forge Gallery page lists images directly from the public Forge repository via api.github.com and raw.githubusercontent.com</li>
       <li><strong>OpenStreetMap:</strong> Map tiles on Paddling Out load from tile.openstreetmap.org, so your browser requests them directly. Place-name search and reverse geocoding are proxied through our own server to Nominatim (also OpenStreetMap), so your query reaches them without your IP address</li>
       <li><strong>U.S. Geological Survey:</strong> Lake and reservoir geometry for searches inside the United States comes from the USGS National Hydrography Dataset (hydro.nationalmap.gov), queried by our server, not your browser</li>
+      <li><strong>U.S. Census Bureau:</strong> When you add a lake or suggest an edit, the town, county and state for the pin come from the Census Bureau&rsquo;s TIGERweb service (tigerweb.geo.census.gov), queried by our server with the coordinates only</li>
     </ul>
     <p>We may also disclose information if required by law, court order, or to protect our rights and safety.</p>
   </div>

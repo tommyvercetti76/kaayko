@@ -92,11 +92,14 @@ GET  /api/paddlingOut                          → all PUBLIC paddle spots + cac
 GET  /api/paddlingOut/{id}                    → single spot detail (404 if hidden)
 GET  /api/paddlingOut/geocode?q=              → cached Nominatim forward proxy
 GET  /api/paddlingOut/reverse-geocode?lat=&lng= → cached Nominatim reverse → {city,region,country,water}
-POST /api/paddlingOut/submitEntry             → community spot (multipart, 2–5 photos, EXIF stripped, honeypot `website`)
---- platform admin only (requirePlatformAdmin; X-Admin-Key also works) ---
-GET  /api/paddlingOut/admin/submissions       → review queue (+ possibleDuplicateOf flag)
-POST /api/paddlingOut/admin/submissions/{id}/validate → publish; refuses an incomplete spot (spotSchema.publicSpotProblems); water type from pick/hint/name; warms score inline
-POST /api/paddlingOut/admin/submissions/{id}/reject   → hide + delete every prefixed photo; body {rejectionReason}
+GET  /api/paddlingOut/locate?lat=&lng=        → water near the pin (USGS NHD, ranked by distance to shore; inside/edgeM) + place (Census TIGERweb: town, county, state); OSM/HydroLAKES outside the US (spotLocate.js)
+POST /api/paddlingOut/submitEntry             → community spot (multipart, 1–5 photos, EXIF stripped, honeypot `website`); place derived server-side from the pin; returns a one-time detailsToken
+POST /api/paddlingOut/submissions/{id}/details → JSON {token, note, parkingAvl, restroomsAvl, email} after submit; 24 h, pending only (communityEdits.js)
+POST /api/paddlingOut/spots/{id}/suggest      → suggested edit to a live spot (multipart, 0–5 photos) → paddling_lake_submissions kind:'edit'; photos wait in images/paddling_out_pending/
+--- platform admin only (requireAuth + requireAdmin + requirePlatformAdmin; the X-Admin-Key way in was removed 3 Oct 2026) ---
+GET  /api/paddlingOut/admin/submissions       → review queue, new lakes and edits (+ possibleDuplicateOf, place/water sources; edits carry proposed + live)
+POST /api/paddlingOut/admin/submissions/{id}/validate → new: publish; refuses an incomplete spot (spotSchema.publicSpotProblems); water type from pick/USGS/hint/name; warms score inline. edit: body {fields:[…]} applies only those changes, copies ticked photos in under the spot's naming rule, audits
+POST /api/paddlingOut/admin/submissions/{id}/reject   → new: hide + delete every prefixed photo; edit: live spot untouched, pending photos deleted; body {rejectionReason}
 GET  /api/paddlingOut/admin/spots[/{id}]      → whole catalogue incl. hidden, with isPublic/photos/hasCachedScore
 PATCH /api/paddlingOut/admin/spots/{id}       → edit whitelisted fields, archived (publish toggle); live spots must stay complete; audit → paddling_spot_audit
 GET  /api/paddlingOut/admin/fact-proposals?status= → Kortex → Facts: official-feed (NPS) changes awaiting review → spot_fact_proposals, spot_fact_runs
@@ -115,13 +118,16 @@ GET  /api/docs                                 → API spec (spec.yaml / spec.js
 
 **API files (all under `kaayko-api/functions/api/weather/`):**
 - `kaayko-api/functions/api/weather/paddlingout.js` — paddle spots route
+- `kaayko-api/functions/api/weather/spotLocate.js` — /locate: USGS water + Census place for a pin (also used by submit and edits)
+- `kaayko-api/functions/api/weather/communityEdits.js` — details-after-submit + suggest-an-edit + approve/reject of edits
+- `kaayko-api/functions/api/weather/nominatim.js` — the one Nominatim queue (≤1 req/s) for geocode, reverse-geocode and locate
 - `kaayko-api/functions/api/weather/paddleScore.js` — ML scoring model
 - `kaayko-api/functions/api/weather/fastForecast.js` — cached weather
 - `kaayko-api/functions/api/weather/forecast.js` — premium on-demand
 - `kaayko-api/functions/api/weather/nearbyWater.js` — nearby water search
 - `kaayko-api/functions/api/core/` — health check, docs endpoints
 
-**Firestore collections:** `paddlingSpots`, `paddling_lake_submissions` (review record per community spot), `paddling_lake_submission_keys` (7-day dedupe), `lake_submission_rate_limits`, `paddle_score_cache`, `paddling_spot_audit` (append-only admin edit log), `forecast_cache`, `current_conditions_cache`, `public_paddle_ratings`, `rate_limits`
+**Firestore collections:** `paddlingSpots`, `paddling_lake_submissions` (review record per community spot AND per suggested edit — `kind: 'new'|'edit'`; edits are `edit-<hex>` with `spotId` = the spot they would change), `paddling_lake_submission_keys` (7-day dedupe), `lake_submission_rate_limits`, `paddle_score_cache`, `paddling_spot_audit` (append-only admin edit log), `forecast_cache`, `current_conditions_cache`, `public_paddle_ratings`, `rate_limits`
 **Admin UI:** Kortex SPA → Submissions (`src/admin/views/submissions/`) and Spots (`src/admin/views/spots/`, shared editor `spot-editor.js`)
 **External services:** Open-Meteo API (free, no auth), Marine API
 **Auth required:** No

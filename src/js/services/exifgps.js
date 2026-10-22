@@ -3,7 +3,7 @@
  *
  * A ramp photo is taken standing on the ramp, so its EXIF GPS IS the launch
  * point. This reads that fix before anything else touches the file: the
- * canvas resize in submitentry.js re-encodes and drops EXIF, and the API
+ * canvas resize in addlake.js re-encodes and drops EXIF, and the API
  * strips it from pass-through files too, so the coordinate has to be lifted
  * here or it is gone. Nothing is uploaded — the bytes stay local and the
  * photo that goes to the server is still metadata-free.
