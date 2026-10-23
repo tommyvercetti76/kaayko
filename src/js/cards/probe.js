@@ -21,7 +21,7 @@
  */
 export async function run({ label, setSkin, setInspect, att, grab, quiet, parts }) {
   const [name, skin, mode = ''] = String(label).split(':');
-  if (mode === 'art' || mode === 'flat') parts(mode);
+  if (mode === 'art' || mode === 'flat' || mode === 'nogloss') parts(mode);
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const frame = () => new Promise((r) => requestAnimationFrame(r));
   await sleep(1500);

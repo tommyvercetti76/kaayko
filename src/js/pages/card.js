@@ -96,7 +96,7 @@ const write = (el, prop, val) => { if (el && el.style[prop] !== val) el.style[pr
 const SIG = 14;               // the sheen gradient's own sigma is a fourteenth of the card, see .sheen
 const RELIEF_FLOOR = 0.02;
 let quiet = false;            // the probe rig, isolating the light
-let reliefParts = 'all';      // the probe rig, weighing the relief: 'all' | 'art' | 'flat'
+let reliefParts = 'all';      // the probe rig, weighing the relief: 'all' | 'art' | 'flat' | 'nogloss'
 
 /** The layers of one face, found once. `stills` is filled by layStills. */
 function faceLayers(host) {
@@ -130,6 +130,11 @@ function lit(rx, ry) {
   const shade = (engraved ? 0.10 + o.shade * 0.62 : 0.07 + o.shade * 0.60).toFixed(3);
   const rim = Math.min(1, o.fres * 5).toFixed(3);
   const foil = `rotate(${(o.L.x * 46).toFixed(1)}deg)`, foilO = (o.peak * 0.5).toFixed(3);
+  // The engraved ink's gloss: the same glint, tighter (a hard ink catches a
+  // smaller highlight than paper does), seen only through the letters. Capped
+  // at .6 so the ink at its brightest is still read as ink.
+  const gloss = `${at} rotate(${o.angle.toFixed(1)}deg) scale(${(o.s1 * SIG * 0.6).toFixed(3)}, ${(o.s2 * SIG * 0.6).toFixed(3)})`;
+  const glossO = Math.max(RELIEF_FLOOR, Math.min(0.6, o.peak * 0.7)).toFixed(3);
   // The relief: how much of each still shows is how far the lamp is on that side.
   const still = (wt) => Math.max(RELIEF_FLOOR, Math.min(1, wt * 1.7)).toFixed(3);
   const stills = { xp: still(o.weights.xp), xn: still(o.weights.xn), yp: still(o.weights.yp), yn: still(o.weights.yn) };
@@ -139,6 +144,7 @@ function lit(rx, ry) {
     write(f.shade, 'opacity', shade);
     write(f.foil, 'transform', foil); write(f.foil, 'opacity', foilO);
     write(f.rim, 'opacity', rim);
+    if (f.gloss) { write(f.gloss, 'transform', gloss); write(f.gloss, 'opacity', glossO); }
     for (const dir in f.stills) for (const st of f.stills[dir]) write(st.el, 'opacity', (stills[dir] * st.k).toFixed(3));
   }
   // The glow on the wall: the lamp itself, seen from the eye, on the desk's plane.
@@ -558,6 +564,7 @@ function scheduleRelief(c, delayMs, fade = 0) {
   const seq = ++reliefSeq;
   for (const f of layersOf()) {
     f.stills = {};
+    dropGloss(f);
     // On a timed switch the old relief fades out on the same clock as the
     // face under it, and the new impression fades in on it. Otherwise the
     // change is a cut, as a new card is.
@@ -684,7 +691,68 @@ function layStills(f, c, e, params) {
     t.style.opacity = String(RELIEF_FLOOR);
     wrap.appendChild(t); f.stills[dir].push({ el: t, k: 1 });
   }
+  if (tw && reliefParts !== 'nogloss') layGloss(f, texts, tw, wrap);
   f.relief.appendChild(wrap);
+}
+
+/* ── the ink's gloss ─────────────────────────────────────────────────────────
+   The animal catches the light because it has no ink: its strokes ARE the
+   relief, and they swing from shadow to white as the card turns. The type is
+   solid ink, so the stills above could only ever draw a hairline round it —
+   measured, the colour inside a letter moved 2–5 levels over a full turn
+   while the animal's moved 156. So the letters get the lamp's own glint,
+   masked to their shapes: the same ellipse that crosses the paper, seen only
+   through the ink, moved by the same transform. No filter primitives; one
+   masked layer per face, raster once per card. Kortex is the flat job and
+   has no type relief (reliefType returns null), so it never gets here.     */
+function dropGloss(f) {
+  f.gloss = null;
+  if (f.glossUrl) { URL.revokeObjectURL(f.glossUrl); f.glossUrl = null; }
+}
+
+/** The letters of one face as an alpha mask, drawn with the page's own fonts at the browser's own glyph positions. */
+function typeMask(texts, win) {
+  const k = Math.min(2, Math.max(1, (cardW * (window.devicePixelRatio || 1)) / 1050));
+  const cv = document.createElement('canvas');
+  cv.width = Math.ceil(win.w * k); cv.height = Math.ceil(win.h * k);
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(k, 0, 0, k, -win.x * k, -win.y * k);
+  ctx.fillStyle = '#000';
+  for (const t of texts) {
+    const cs = getComputedStyle(t);
+    ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const str = t.textContent || '';
+    const n = t.getNumberOfChars ? t.getNumberOfChars() : 0;
+    for (let i = 0; i < n; i++) {
+      let p; try { p = t.getStartPositionOfChar(i); } catch (_) { continue; }
+      ctx.fillText(str[i], p.x, p.y);
+    }
+  }
+  return cv;
+}
+
+function layGloss(f, texts, tw, wrap) {
+  const win = document.createElement('div');
+  win.className = 'gloss-win';
+  placeStill(win, tw);
+  const g = document.createElement('i');
+  g.className = 'gloss';
+  // The glint's own frame is the whole face (it is the sheen's geometry), so
+  // the layer is sized and placed in face terms inside the type's window.
+  g.style.cssText = `left:${(-tw.x / tw.w * 100).toFixed(3)}%;top:${((300 - tw.y) / tw.h * 100).toFixed(3)}%;width:${(1050 / tw.w * 100).toFixed(3)}%`;
+  win.appendChild(g);
+  wrap.appendChild(win);
+  const seq = reliefSeq;
+  // The mask waits for the fonts, or it would be drawn in a stand-in face and
+  // sit beside the real letters instead of on them.
+  document.fonts.ready.then(() => new Promise((ok) => typeMask(texts, tw).toBlob(ok))).then((blob) => {
+    if (!blob || seq !== reliefSeq || !win.isConnected) return;
+    dropGloss(f);
+    const url = URL.createObjectURL(blob);
+    f.glossUrl = url;
+    for (const p of ['maskImage', 'webkitMaskImage']) win.style[p] = `url(${url})`;
+    f.gloss = g;
+  }).catch((err) => console.warn('card: gloss —', err));
 }
 
 /* The fingertip reader. Where a browser can vibrate it ticks per letter; where
