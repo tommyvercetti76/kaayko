@@ -2,7 +2,7 @@
  * pages/card.js — the collectible card (/card): lighting model, flip, inspect, QR.
  * Moved out of card.html on 12 Sep 2026 unchanged.
  */
-import { front, back, SCREEN, BACK, ART_EXTENT, ART_COLUMN } from '/js/cards/render.js?v=1a80180';
+import { front, back, frontArt, SCREEN, BACK, ART_EXTENT } from '/js/cards/render.js?v=1a80180';
 import { engravedFor, stockOf, embossParams, reliefType, DIRS } from '/js/cards/skins/engraved.js?v=1a80180';
 import { embossOf, stillCanvas } from '/js/cards/emboss.js?v=1a80180';
 import { readFace, warmArt } from '/js/cards/relief.js?v=1a80180';
@@ -407,7 +407,6 @@ on(card, 'keydown', (e) => {
 const KEY = 'kaayko.card.skin';
 const skinBtn = document.getElementById('skin');
 const skinStage = document.getElementById('skin-stage');
-const stockEl = document.getElementById('stock');
 let engraved = false;
 
 // The skull comes apart into gold dust and settles as the rose. Built on the
@@ -630,12 +629,13 @@ const placeStill = (el, win, W = 1050, H = 600) => {
 
 /**
  * Where the art FILE sits on this face, in the face's units — the same
- * arithmetic render.js used to draw it: the front's column, which the file
- * fills exactly; or the back's box, into which the animal's measured extent
- * is fitted, so the file itself hangs past the box on every side.
+ * arithmetic render.js used to draw it: on the front, render.js's own
+ * frontArt() for the screen card (the animal framed at its extent in the
+ * widened column); on the back, the box into which the animal's measured
+ * extent is fitted. Either way the file hangs past the box on every side.
  */
 function artRect(face, c) {
-  if (face !== 'b') return { x: ART_COLUMN.x, y: ART_COLUMN.y, w: ART_COLUMN.w, h: ART_COLUMN.h };
+  if (face !== 'b') return frontArt(c, SCREEN).file;
   const ex = ART_EXTENT[c.art || c.slug] || { x: 0, y: 0, w: 802, h: 1200 };
   const k = Math.min(BACK.ghostW / ex.w, BACK.ghostH / ex.h);
   return {
@@ -646,8 +646,8 @@ function artRect(face, c) {
 }
 
 /** The window the animal's layers are cut to: its box, plus a margin for the relief, inside the sheet. */
-function artWindow(face, W = 1050, H = 600) {
-  const box = face === 'b' ? { x: BACK.ghostX, y: BACK.ghostY, w: BACK.ghostW, h: BACK.ghostH } : ART_COLUMN;
+function artWindow(face, c, W = 1050, H = 600) {
+  const box = face === 'b' ? { x: BACK.ghostX, y: BACK.ghostY, w: BACK.ghostW, h: BACK.ghostH } : frontArt(c, SCREEN).box;
   const m = Math.ceil(Math.max(box.w, box.h) * 0.06) + 2;
   const x0 = Math.max(0, box.x - m), y0 = Math.max(0, box.y - m);
   const x1 = Math.min(W, box.x + box.w + m), y1 = Math.min(H, box.y + box.h + m);
@@ -656,7 +656,7 @@ function artWindow(face, W = 1050, H = 600) {
 
 /** One canvas of the animal, in a layer cut to the window, placed where the file is. */
 function artLayer(face, c, imageData, cls) {
-  const win = artWindow(face), rect = artRect(face, c);
+  const win = artWindow(face, c), rect = artRect(face, c);
   const el = document.createElement('div');
   el.className = cls;
   placeStill(el, win);
@@ -785,7 +785,8 @@ function attachReaders(c) {
   const artHref = `/assets/cards/art/${c.art || c.slug}.png`;
   // Where the animal is on each face. The front's column covers from the
   // origin; the back's picture is boxed on the right and fitted inside.
-  const FRONT_ART = { x: 0, y: 0, w: 401, h: 600, fit: 'slice' };
+  const fa = frontArt(c, SCREEN);
+  const FRONT_ART = { ...fa.box, fit: fa.fit, crop: fa.crop };
   const BACK_ART = { x: BACK.ghostX, y: BACK.ghostY, w: BACK.ghostW, h: BACK.ghostH, fit: 'meet',
                      crop: ART_EXTENT[c.art || c.slug] || null };
   warmArt(artHref, FRONT_ART); warmArt(artHref, BACK_ART);
@@ -827,9 +828,6 @@ function show(i, { focus = false, relief = 'soon', fade = 0 } = {}) {
   // The back gets the same art, ghosted behind its words.
   draw(backEl, back(c, brand, { index: at + 1, total: series.length, artHref, skin: skinB }),
        `${c.name}, back of the card`, fade);
-  // The stock is named in text, so the one thing separating two cards is never
-  // carried by a colour difference a reader may not be able to see.
-  stockEl.textContent = engraved ? `${stockOf(c).name} \u00b7 ${stockOf(c).note}` : '';
   // The card prints its own name in 50pt caps directly above this; repeating it
   // here was the page reading itself out loud. Only the link is not on the card
   // already — because the one on the card is ink, and this one is a link.

@@ -40,7 +40,7 @@ globalThis.document ??= {
   getElementById: () => null,
 };
 
-const { front, back, wrap, hostOf, qrRects, BACK, backWrap, PRINT, SCREEN, ART_EXTENT } = await import('/js/cards/render.js');
+const { front, back, frontArt, wrap, hostOf, qrRects, BACK, backWrap, PRINT, SCREEN, ART_EXTENT } = await import('/js/cards/render.js');
 const { engravedFor } = await import('/js/cards/skins/engraved.js');
 
 const INDEX = fileURLToPath(new URL('../src/assets/cards/index.json', import.meta.url));
@@ -199,6 +199,20 @@ test('SCREEN — the printed card still carries all three, and PRINT itself is u
   assert.ok(/stroke-width="0\.9"/.test(f) && /<rect x="0" y="0" width="8"/.test(b));
   assert.ok(Object.isFrozen(SCREEN) && Object.isFrozen(PRINT));
   assert.equal(PRINT.address, true); assert.equal(PRINT.rule, true); assert.equal(PRINT.backSpine, true); assert.equal(PRINT.factSize, 15);
+});
+
+test('SCREEN — the front animal is framed at its extent in the wider column, never clipped', () => {
+  for (const c of idx.cards) {
+    const { box, file, crop } = frontArt(c, SCREEN);
+    assert.equal(box.x + box.w + SCREEN.artPad, SCREEN.artW, `${c.slug}: column`);
+    const drawnW = crop.w * file.w / 802, drawnH = crop.h * file.h / 1200;
+    assert.ok(drawnW <= box.w + 0.01 && drawnH <= box.h + 0.01, `${c.slug}: the animal would be clipped`);
+    assert.ok(Math.abs(drawnW - box.w) < 0.5 || Math.abs(drawnH - box.h) < 0.5, `${c.slug}: the animal fills neither the width nor the height`);
+    // Larger than the print card draws it (half the file, sliced into 401).
+    assert.ok(drawnW > crop.w * 0.5, `${c.slug}: the animal is not larger than on the printed card`);
+  }
+  const f = front(idx.cards[0], { qr, artHref: artOf(idx.cards[0]), skin: SCREEN });
+  assert.match(f, /<text x="526" /, 'words start 56 after the 470 column');
 });
 
 test('SCREEN — the larger type still fits: two hook rows, three back rows, names inside their columns', () => {

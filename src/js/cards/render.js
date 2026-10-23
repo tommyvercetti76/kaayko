@@ -100,9 +100,16 @@ export const PRINT = Object.freeze({
  * and spends the room on larger type. Added 22 Oct 2026. The printed card is
  * PRINT and is not touched by this: tests/cardRender pins its bytes.
  *
+ * 23 Oct 2026: the animal is larger. The print column is 401 of 1050 and most
+ * animals are wider than tall, so inside it they could not grow; the screen
+ * card widens the column to 470 and frames the animal at its measured extent
+ * (ART_EXTENT, as the back does) inside a 20-unit margin — 16–34% larger. The
+ * words start at 526 and may run to 1010, 40 from the edge like every other
+ * margin on the card.
+ *
  * Sizes are checked against the columns, measured in Cormorant: "Paddling Out"
- * is 507 units at 96 in the front's 523, and 380 at 72 in the back's 392. The
- * hook wraps at 25 characters at 46 and the back line at backWrap(36) = 24, and
+ * is about 465 units at 90 in the front's 484 (getBBox: ends at 991 of 1010), and 380 at 72 in the back's 392. The
+ * hook wraps at 24 characters at 46 and the back line at backWrap(36) = 24, and
  * the test suite asserts every card fits in two and three rows.
  */
 export const SCREEN = Object.freeze({
@@ -111,9 +118,12 @@ export const SCREEN = Object.freeze({
   rule: false,
   backSpine: false,
   factSize: 17,
+  artW: 470,
+  artFit: "extent",
+  artPad: 20,
   type: Object.freeze({
-    name:     Object.freeze({ ...PRINT.type.name, size: 96, y: 214 }),
-    hook:     Object.freeze({ ...PRINT.type.hook, size: 46, y: 296, step: 56, wrap: 25 }),
+    name:     Object.freeze({ ...PRINT.type.name, size: 90, y: 214 }),
+    hook:     Object.freeze({ ...PRINT.type.hook, size: 46, y: 296, step: 56, wrap: 24 }),
     backName: Object.freeze({ ...PRINT.type.backName, size: 72, y: 184 }),
     backLine: Object.freeze({ ...PRINT.type.backLine, size: 36, y: 252 }),
   }),
@@ -252,6 +262,26 @@ export function qrRects(qr, x, y, size, fill = "#1E1810") {
 }
 
 /**
+ * Where the front's animal is: the column (`box`) and where the 802x1200 art
+ * FILE lands in face units (`file`). PRINT fills its 401 column with the file
+ * (`slice`); a skin with artFit "extent" frames the animal's measured extent
+ * inside the column, so the page's relief and fingertip reader can lay their
+ * layers exactly where the card draws it.
+ */
+export function frontArt(card, skin = PRINT) {
+  const aw = skin.artW || AW;
+  if (skin.artFit !== "extent") return { box: { x: 0, y: 0, w: aw, h: H }, file: { x: 0, y: 0, w: aw, h: H }, crop: null, fit: "slice" };
+  const p = skin.artPad || 0;
+  const box = { x: p, y: p, w: aw - 2 * p, h: H - 2 * p };
+  const ex = ART_EXTENT[card.art || card.slug] || { x: 0, y: 0, w: 802, h: 1200 };
+  const k = Math.min(box.w / ex.w, box.h / ex.h);
+  return {
+    box, crop: ex, fit: "meet",
+    file: { x: box.x + (box.w - ex.w * k) / 2 - ex.x * k, y: box.y + (box.h - ex.h * k) / 2 - ex.y * k, w: 802 * k, h: 1200 * k },
+  };
+}
+
+/**
  * @param {object} card   {slug, name, hook, url, host, accent, art}
  * @param {object} opts   {qr, artHref, total, index}
  */
@@ -259,9 +289,10 @@ export function front(card, { qr, artHref, skin = PRINT } = {}) {
   const accent = skin.accentOf(card);
   const F = skin.textFilter ? ` filter="${skin.textFilter}"` : "";
   const T = skin.type;
+  const aw = skin.artW || AW, tx = aw + 56;     // PRINT: 401 and 457, as always
   const lines = wrap(card.hook, T.hook.wrap);
   const hook = lines.map((line, i) =>
-    `<text x="${TX}" y="${T.hook.y + i * T.hook.step}"${F} style="font:${T.hook.weight} ${T.hook.size}px ${skin.serif};${T.hook.italic ? "font-style:italic;" : ""}${track(T.hook.track)}fill:${accent}">${esc(line)}</text>`
+    `<text x="${tx}" y="${T.hook.y + i * T.hook.step}"${F} style="font:${T.hook.weight} ${T.hook.size}px ${skin.serif};${T.hook.italic ? "font-style:italic;" : ""}${track(T.hook.track)}fill:${accent}">${esc(line)}</text>`
   ).join("");
 
   // The art fills the whole column. It used to be a square dropped at y=100 in a
@@ -269,24 +300,30 @@ export function front(card, { qr, artHref, skin = PRINT } = {}) {
   // each art file carried its own near-cream background, those bands were a
   // visibly different colour from the picture. The art files are now cut to this
   // column's shape and painted on this exact CREAM, so the seam disappears.
-  const img = artHref && skin.art
-    ? `<image href="${esc(artHref)}" x="0" y="0" width="${AW}" height="${H}" preserveAspectRatio="xMidYMid slice"/>`
-    : "";
+  let img = "";
+  if (artHref && skin.art) {
+    if (skin.artFit === "extent") {
+      const { box, crop } = frontArt(card, skin);
+      img = `<svg x="${box.x}" y="${box.y}" width="${box.w}" height="${box.h}" viewBox="${crop.x} ${crop.y} ${crop.w} ${crop.h}" preserveAspectRatio="xMidYMid meet"><image href="${esc(artHref)}" x="0" y="0" width="802" height="1200"/></svg>`;
+    } else {
+      img = `<image href="${esc(artHref)}" x="0" y="0" width="${AW}" height="${H}" preserveAspectRatio="xMidYMid slice"/>`;
+    }
+  }
   const art = img && skin.artFilter ? `<g filter="${skin.artFilter}">${img}</g>` : img;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="3.5in" height="2in"
      viewBox="0 0 ${W} ${H}" data-property="${esc(card.slug)}">
 ${skin.defs}<rect width="${W}" height="${H}" fill="${skin.paper}"/>
-<rect x="0" y="0" width="${AW}" height="${H}" fill="${skin.cream}"/>
+<rect x="0" y="0" width="${aw}" height="${H}" fill="${skin.cream}"/>
 ${art}
-${skin.spine ? `<rect x="${AW}" y="0" width="6" height="${H}" fill="${accent}"/>` : ""}${skin.plate || ""}
-<text x="${TX}" y="${T.name.y}"${F} style="font:${T.name.weight} ${nameSize(card, T.name.size)}px ${skin.serif};${track(T.name.track)}fill:${skin.ink}">${esc(cased(card.name, T.name.caps))}</text>
+${skin.spine ? `<rect x="${aw}" y="0" width="6" height="${H}" fill="${accent}"/>` : ""}${skin.plate || ""}
+<text x="${tx}" y="${T.name.y}"${F} style="font:${T.name.weight} ${nameSize(card, T.name.size)}px ${skin.serif};${track(T.name.track)}fill:${skin.ink}">${esc(cased(card.name, T.name.caps))}</text>
 ${hook}
 <!-- The rule used to sit at y=380 while the QR box started at y=358, so the
      line ran straight through the code. Everything below the rule now starts
      below it: the address on the left, the code on the right, the mark beneath. -->
-${skin.rule ? `<path d="M${TX} 380 H980" stroke="${skin.mute}" stroke-width="0.9" opacity=".32"/>
-` : ""}${skin.address ? `<text x="${TX}" y="432"${F} style="font:400 30px ${skin.serif};fill:${skin.mute}">${esc(hostOf(card))}</text>
+${skin.rule ? `<path d="M${tx} 380 H980" stroke="${skin.mute}" stroke-width="0.9" opacity=".32"/>
+` : ""}${skin.address ? `<text x="${tx}" y="432"${F} style="font:400 30px ${skin.serif};fill:${skin.mute}">${esc(hostOf(card))}</text>
 ` : ""}${skin.qrBox ? `<rect x="858" y="406" width="122" height="122" rx="4" fill="${skin.qrPaper}" stroke="${skin.mute}" stroke-width="1"/>` : ""}
 ${qr ? qrRects(qr, 867, 415, 104, skin.qrInk) : ""}
 <text x="919" y="566" text-anchor="middle"${F}

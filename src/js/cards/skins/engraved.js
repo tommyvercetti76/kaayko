@@ -93,11 +93,13 @@ const DEBOSS_DEFAULT = Object.freeze({ blur: 1.1, scale: 1.5, tone: ".11" });
  * the joke of six slightly different jobs. On a screen it read as a mistake,
  * the card changing size under your thumb. The paper still differs card to
  * card (STOCKS), which is where the joke always lived. Sizes are for the
- * screen card: "PADDLING OUT" at 56 tracked 6 ends at about 935 of 980, and a
- * hook at 34 wraps at 32 characters into two rows that end above the QR.
+ * screen card: "PADDLING OUT" at 56 tracked 6 ends at 1004 of 1010, and a
+ * hook at 40 wraps at 26 characters into two rows that end above the QR.
  */
 const NAME = Object.freeze({ size: 56, weight: 500, y: 204, track: 6, caps: true });
-const HOOK = Object.freeze({ size: 34, weight: 300, y: 278, step: 44, wrap: 32, track: .6, italic: true });
+// The hook was 34 at weight 300: a hairline italic in a muted ink, and on a
+// phone it was not readable. 40 at 400 is (23 Oct 2026).
+const HOOK = Object.freeze({ size: 40, weight: 400, y: 284, step: 50, wrap: 26, track: .4, italic: true });
 
 const FALLBACK = Object.freeze({ name: "Bone", hex: "#F7EEE1", note: "Silian Rail" });
 
