@@ -1,733 +1,684 @@
-<!DOCTYPE html>
-<html lang="en" prefix="og: http://ogp.me/ns#">
+<!doctype html>
+<html lang="en" class="card-page">
 <head>
-  <script src="/js/prod-config.js"></script>
-  <script src="/js/site-features.js"></script>
-  <!-- Fetched before the body exists: the call after #pg-home must not wait on the network -->
-  <script src="/js/pages/home-entrance.js"></script>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+<script src="/js/prod-config.js?v=3526885"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- The home page since 22 Oct 2026; it was /card, and /card now redirects
+     here (firebase.json). The landing it replaced is kept, unlinked and
+     noindex, at /archive/home-2026. -->
+<title>Kaayko — Paddling Out, Stories, Forge, Kortex, Store &amp; School</title>
+<meta name="description" content="Six things Kaayko runs, one card each: Paddling Out forecasts for 17 hand-picked spots and lakes paddlers add, Stories from the water, Forge, Kortex smart links, the Store and School.">
+<meta name="author" content="Kaayko">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+<link rel="canonical" href="https://kaayko.com/">
+<meta name="theme-color" content="#0B0A08">
+<link rel="icon" type="image/png" href="/favicon-32x32.png">
 
-  <title>Kaayko — Paddling Forecasts & Forge</title>
-  <meta name="description" content="Kaayko delivers AI-powered paddle condition forecasts for 17 hand-picked spots and lakes paddlers add, stories from the water, and Forge — an open-source local-first AI workstation. Know before you paddle." />
-  <meta name="author" content="Kaayko">
-  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-  <link rel="canonical" href="https://kaayko.com/" />
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://kaayko.com/">
+<meta property="og:title" content="Kaayko — six things, one card each">
+<meta property="og:description" content="Paddling Out forecasts for 17 hand-picked spots and lakes paddlers add, Stories from the water, Forge, Kortex, the Store and School.">
+<meta property="og:image" content="https://kaayko.com/assets/kaayko-og.png?v=20261021">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Kaayko — Paddling forecasts and Forge">
+<meta property="og:site_name" content="Kaayko">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@kaayko">
+<meta name="twitter:creator" content="@kaayko">
+<meta name="twitter:title" content="Kaayko — six things, one card each">
+<meta name="twitter:description" content="Paddling Out forecasts for 17 hand-picked spots and lakes paddlers add, Stories, Forge, Kortex, the Store and School.">
+<meta name="twitter:image" content="https://kaayko.com/assets/kaayko-og.png?v=20261021">
+<meta name="twitter:image:alt" content="Kaayko paddling forecast app">
 
-  <!-- Open Graph -->
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://kaayko.com/">
-  <meta property="og:title" content="Kaayko — Paddling Forecasts & Forge">
-  <meta property="og:description" content="AI-powered paddle condition forecasts for 17 hand-picked spots and lakes paddlers add, stories from the water, and Forge, an open-source local-first AI workstation. Know before you go." />
-  <meta property="og:image" content="https://kaayko.com/assets/kaayko-og.png?v=20261021">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Kaayko — Paddling forecasts and Forge">
-  <meta property="og:site_name" content="Kaayko">
-  <meta property="og:locale" content="en_US">
-
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:site" content="@kaayko">
-  <meta name="twitter:creator" content="@kaayko">
-  <meta name="twitter:title" content="Kaayko — Paddling Forecasts & Forge">
-  <meta name="twitter:description" content="AI-powered paddle condition forecasts for 17 hand-picked spots and lakes paddlers add. Know before you paddle." />
-  <meta name="twitter:image" content="https://kaayko.com/assets/kaayko-og.png?v=20261021">
-  <meta name="twitter:image:alt" content="Kaayko paddling forecast app">
-
-  <!-- Schema.org — connected @graph so Google can resolve "Kaayko" as one entity.
-       @id cross-links + external sameAs give the corroboration a Knowledge Panel /
-       AI-Overview "Official Website" link needs. -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Organization",
-        "@id": "https://kaayko.com/#organization",
-        "name": "Kaayko",
-        "alternateName": "Kaayko Paddling",
-        "url": "https://kaayko.com/",
-        "logo": {
-          "@type": "ImageObject",
-          "@id": "https://kaayko.com/#logo",
-          "url": "https://kaayko.com/kaayko-logo-512.png",
-          "width": 512,
-          "height": 512,
-          "caption": "Kaayko"
-        },
-        "image": { "@id": "https://kaayko.com/#logo" },
-        "description": "Kaayko delivers AI-powered paddle condition forecasts, stories from the water, and Forge — an open-source local-first AI workstation.",
-        "founder": {
-          "@type": "Person",
-          "@id": "https://kaayko.com/#founder",
-          "name": "Rohan Ramekar",
-          "url": "https://kaayko.com/about",
-          "sameAs": [
-            "https://github.com/tommyvercetti76",
-            "https://www.youtube.com/@travelingout"
-          ]
-        },
-        "sameAs": [
-          "https://www.youtube.com/@travelingout",
-          "https://github.com/tommyvercetti76"
-        ],
-        "contactPoint": {
-          "@type": "ContactPoint",
-          "contactType": "customer support",
-          "url": "https://kaayko.com/about"
-        }
+<!-- Schema.org — the connected @graph that lets Google resolve "Kaayko" as one
+     entity. Moved here unchanged from the old landing; it belongs on "/" and
+     only on "/". -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://kaayko.com/#organization",
+      "name": "Kaayko",
+      "alternateName": "Kaayko Paddling",
+      "url": "https://kaayko.com/",
+      "logo": {
+        "@type": "ImageObject",
+        "@id": "https://kaayko.com/#logo",
+        "url": "https://kaayko.com/kaayko-logo-512.png",
+        "width": 512,
+        "height": 512,
+        "caption": "Kaayko"
       },
-      {
-        "@type": "WebSite",
-        "@id": "https://kaayko.com/#website",
-        "name": "Kaayko",
-        "url": "https://kaayko.com/",
-        "description": "AI-powered paddle condition forecasts for 17 hand-picked spots and lakes paddlers add, stories from the water, and Forge, an open-source AI workstation.",
-        "publisher": { "@id": "https://kaayko.com/#organization" },
-        "inLanguage": "en-US",
-        "potentialAction": {
-          "@type": "SearchAction",
-          "target": {
-            "@type": "EntryPoint",
-            "urlTemplate": "https://kaayko.com/paddlingout/search?q={search_term_string}"
-          },
-          "query-input": "required name=search_term_string"
-        }
+      "image": { "@id": "https://kaayko.com/#logo" },
+      "description": "Kaayko delivers AI-powered paddle condition forecasts, stories from the water, and Forge — an open-source local-first AI workstation.",
+      "founder": {
+        "@type": "Person",
+        "@id": "https://kaayko.com/#founder",
+        "name": "Rohan Ramekar",
+        "url": "https://kaayko.com/about",
+        "sameAs": [
+          "https://github.com/tommyvercetti76",
+          "https://www.youtube.com/@travelingout"
+        ]
+      },
+      "sameAs": [
+        "https://www.youtube.com/@travelingout",
+        "https://github.com/tommyvercetti76"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer support",
+        "url": "https://kaayko.com/about"
       }
-    ]
-  }
-  </script>
-
-  <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <link rel="preload" href="/fonts/home/bebas-neue-normal-400.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="/fonts/home/cormorant-garamond-italic-500.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="modulepreload" href="/js/kit.js">
-  <link rel="icon" type="image/png" href="/favicon-32x32.png">
-  <link rel="stylesheet" href="/css/storeAccess.css">
-  <meta name="theme-color" content="#080808">
-
-  <style>
-    /* Self-hosted (OFL, licences beside the files). "block": the page never
-       paints a stand-in face and swaps it mid-entrance; the entrance waits
-       for these (js/pages/home-entrance.js). */
-    @font-face { font-family: "Bebas Neue"; font-style: normal; font-weight: 400; font-display: block; src: url("/fonts/home/bebas-neue-normal-400.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-    @font-face { font-family: "Cormorant Garamond"; font-style: italic; font-weight: 500; font-display: block; src: url("/fonts/home/cormorant-garamond-italic-500.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-    @font-face { font-family: "Cormorant Garamond"; font-style: normal; font-weight: 500; font-display: swap; src: url("/fonts/home/cormorant-garamond-normal-500.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    :root {
-      --bg: #080808;
-      --panel-a: #0d0c0a;
-      --panel-b: #111315;
-      --panel-c: #10110d;
-      --panel-d: #0c1012;
-      --fg: #ede8df;
-      --muted: rgba(237, 232, 223, 0.58);
-      --line: rgba(181, 147, 90, 0.74);
-      --gold: #b5935a;
-      --gold-bright: #d9bd7b;
-      --ease: cubic-bezier(0.76, 0, 0.24, 1);
-    }
-
-    html,
-    body {
-      width: 100%;
-      min-height: 100%;
-      background: var(--bg);
-      color: var(--fg);
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-      min-height: 100vh;
-      min-height: 100dvh;
-      font-family: "Cormorant Garamond", Georgia, serif;
-    }
-
-    .shell {
-      position: relative;
-      min-height: 100vh;
-      min-height: 100dvh;
-      overflow: hidden;
-      isolation: isolate;
-    }
-
-    .brand-ghost {
-      position: fixed;
-      inset: 50% auto auto 50%;
-      width: min(38vw, 340px);
-      min-width: 180px;
-      opacity: 0.035;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-      z-index: -1;
-    }
-
-    .page {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 360ms ease;
-    }
-
-    .page.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .choice {
-      position: relative;
-      flex: 1;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      border: 0;
-      appearance: none;
-      background: var(--panel-a);
-      color: inherit;
-      cursor: pointer;
-      overflow: hidden;
-      text-decoration: none;
-      transition: filter 320ms ease;
-    }
-
-    .choice.secondary {
-      background: var(--panel-b);
-    }
-
-    /* Home: five panels — Paddling Out · Stories · Forge · YouTube · Store.
-       Stories takes the base panel colour; the others keep theirs. */
-    #pg-home .choice.primary {
-      background: var(--panel-d);
-    }
-
-    #pg-home .choice.tertiary {
-      background: var(--panel-c);
-    }
-
-    #pg-home .choice.secondary {
-      background: var(--panel-b);
-    }
-
-    .choice::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(135deg, rgba(255, 255, 255, 0.035), transparent 42%);
-      opacity: 0;
-      transition: opacity 220ms ease;
-    }
-
-    .choice-glow {
-      position: absolute;
-      left: 0;
-      top: 0;
-      z-index: 0;
-      width: clamp(220px, 34vw, 520px);
-      aspect-ratio: 1;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(217, 189, 123, 0.46), rgba(217, 189, 123, 0.18) 34%, transparent 68%);
-      opacity: 0;
-      pointer-events: none;
-      transform: translate3d(-50%, -50%, 0);
-      transition: opacity 260ms ease;
-      will-change: transform, opacity;
-    }
-
-    /* Subheader sits directly under its headline — heading, then subheading,
-       then the CTA row. Its space is reserved at all times so revealing it
-       never nudges the block. */
-    .choice-sub {
-      position: relative;
-      z-index: 1;
-      margin-top: clamp(0.7rem, 1.6vh, 1.1rem);
-      max-width: min(78%, 30ch);
-      color: var(--muted);
-      font-family: "Cormorant Garamond", Georgia, serif;
-      font-size: clamp(0.76rem, 1.5vw, 0.94rem);
-      font-style: italic;
-      letter-spacing: 0.11em;
-      line-height: 1.45;
-      opacity: 0;
-      text-align: center;
-      transform: translateY(6px);
-      transition: opacity 320ms ease, transform 320ms var(--ease);
-    }
-
-    .choice-label {
-      position: relative;
-      z-index: 1;
-      font-family: "Bebas Neue", Impact, sans-serif;
-      width: min(78%, 10.5em);
-      max-width: calc(100% - clamp(2rem, 8vw, 7rem));
-      font-size: clamp(3.2rem, 7.2vw, 7rem);
-      font-weight: 400;
-      letter-spacing: 0.08em;
-      line-height: 0.92;
-      text-align: center;
-      text-transform: uppercase;
-      /* Wraps rather than spills — a two-word headline in a squeezed panel
-         breaks at its space instead of running under the divider. Scramble
-         preserves spaces, so the break point never jitters. */
-      overflow-wrap: break-word;
-      transition: color 260ms ease;
-    }
-
-    /* Size changes animate only for hover and focus, never on load: they are
-       switched on a frame after the layout is final (home-entrance.js) */
-    #pg-home.is-in .choice-label {
-      transition: color 260ms ease, transform 360ms var(--ease), font-size 420ms var(--ease);
-    }
-
-    /* Until the layout is placed, a headline could only show at the wrong
-       size, so it is not shown. Without JavaScript it appears at 3 s. */
-    /* While home-entrance.js builds the layout nothing animates (it then
-       styles the final layout once and lifts this) */
-    #pg-home.is-placing,
-    #pg-home.is-placing * {
-      transition: none !important;
-    }
-
-    #pg-home:not(.is-placed) .choice-label {
-      visibility: hidden;
-      animation: home-reveal 0s linear 3s forwards;
-    }
-
-    @keyframes home-reveal {
-      to { visibility: visible; }
-    }
-
-    .seam {
-      position: absolute;
-      left: 7%;
-      right: 7%;
-      top: 50%;
-      z-index: 3;
-      height: 1px;
-      /* Every divider carries the wordmark, so every divider gets the same
-         gap cut into it — no line is ever left with an empty notch. */
-      background: linear-gradient(
-        to right,
-        var(--line) 30%,
-        transparent 30%,
-        transparent 70%,
-        var(--line) 70%
-      );
-      pointer-events: none;
-      transform: scaleX(0);
-      transform-origin: center;
-      transition: transform 760ms cubic-bezier(0.16, 1, 0.3, 1) 120ms, top 440ms var(--ease), left 440ms var(--ease);
-    }
-
-    .page.is-in .seam {
-      transform: scaleX(1);
-    }
-
-    .mark {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      z-index: 4;
-      /* Centred on the seam — the gap in the line keeps it clean */
-      transform: translate(-50%, -50%);
-      color: var(--gold);
-      font-size: clamp(0.82rem, 2.2vw, 1.1rem);
-      font-style: italic;
-      letter-spacing: 0.62em;
-      opacity: 0;
-      pointer-events: none;
-      text-transform: lowercase;
-      /* Fire exactly when seam completes: 120ms delay + 760ms draw = 880ms */
-      transition: opacity 300ms ease-out 880ms, top 440ms var(--ease), left 440ms var(--ease);
-      white-space: nowrap;
-    }
-
-    .page.is-in .mark {
-      opacity: 0.86;
-    }
-
-    .footer {
-      /* fixed (not absolute) so ABOUT/Inventory stay pinned with the splash
-         choices. The splash is the page now; there is nothing below it to
-         scroll up through except the site footer. */
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: max(1rem, env(safe-area-inset-bottom));
-      z-index: 8;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      padding: 0 clamp(1.15rem, 5vw, 3.2rem);
-      pointer-events: none;
-    }
-
-    .footer a {
-      color: rgba(181, 147, 90, 0.48);
-      font-family: "Cormorant Garamond", Georgia, serif;
-      font-size: clamp(0.7rem, 1.55vw, 0.84rem);
-      font-style: italic;
-      letter-spacing: 0.24em;
-      text-decoration: none;
-      text-transform: uppercase;
-      transition: color 220ms ease, transform 300ms var(--ease);
-      pointer-events: auto;
-      white-space: nowrap;
-    }
-
-    .footer a:hover,
-    .footer a:focus-visible {
-      color: var(--gold-bright);
-    }
-
-    .choice:focus-visible,
-    .footer a:focus-visible {
-      outline: 1px solid var(--gold-bright);
-      outline-offset: 8px;
-    }
-
-    @media (hover: hover) and (pointer: fine) {
-      .choice:hover::before,
-      .choice:focus-visible::before {
-        opacity: 1;
-      }
-
-      .choice:hover .choice-label,
-      .choice:focus-visible .choice-label {
-        color: var(--gold-bright);
-      }
-
-      .choice:hover .choice-sub,
-      .choice:focus-visible .choice-sub {
-        opacity: 1;
-        transform: translateY(0);
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://kaayko.com/#website",
+      "name": "Kaayko",
+      "url": "https://kaayko.com/",
+      "description": "AI-powered paddle condition forecasts for 17 hand-picked spots and lakes paddlers add, stories from the water, and Forge, an open-source AI workstation.",
+      "publisher": { "@id": "https://kaayko.com/#organization" },
+      "inLanguage": "en-US",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://kaayko.com/paddlingout/search?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
       }
     }
+  ]
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Josefin+Sans:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════════════════════
+   Kaayko — the card.
 
-    .choice.is-hot::before {
-      opacity: 1;
-    }
+   One object, lit by one lamp. The sheen is not a moving gradient pretending
+   to be light: there is a lamp at a point in the room, the card carries its
+   true attitude, and the glint is where the lamp's reflection is actually
+   seen — a plane mirror, solved, in cards/lamp.js. The same lamp dims the
+   sheet as it turns away, lights the rim at grazing angles, and throws the
+   emboss's shadow. Foil hue shifts with the angle because that is what foil
+   does.
 
-    .choice.is-hot .choice-glow {
-      opacity: 1;
-    }
+   On a phone, Inspect picks the card up so it can be turned in the hand. The
+   QR stays a QR: it is the one thing on the card you can actually use.
+   ═══════════════════════════════════════════════════════════════════════════ */
 
-    /* Highlighted — by hover, by focus, or because the panel is open.
-       The headline warms and its subheader comes up; the underline belongs
-       to the CTAs alone. */
-    .choice.is-hot .choice-label,
-    .choice--wide .choice-label {
-      color: var(--gold-bright);
-    }
+:root {
+  --ink: #0B0A08;
+  --ink-2: #131009;
+  --paper: #F4EEDF;
+  --gold: #B5935A;
+  --gold-lit: #F0D9A0;
+  --dim: rgba(244, 238, 223, .48);
+  --dimmer: rgba(244, 238, 223, .26);
+  --hair: rgba(181, 147, 90, .22);
+  --serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --sans: 'Josefin Sans', Futura, 'Century Gothic', Avenir, sans-serif;
 
-    .choice.is-hot .choice-sub,
-    .choice--wide .choice-sub {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  /* The lighting model writes NOTHING here while it runs. Every number it
+     produces goes straight onto a layer's own style as a transform or an
+     opacity — the compositor changes those without repainting a pixel. It
+     used to write custom properties on the card, and WebKit inherits those
+     through the whole subtree and repaints every filtered SVG element under
+     it in answer: 283ms a frame on an iPhone, measured. The one set left is
+     the relief's resting state, for a page that never runs the loop
+     (reduced motion): the room's lamp on a card at rest, so the emboss
+     still shows rather than a flat sheet. */
+  --lxp: 0; --lxn: .42; --lyp: 0; --lyn: .14;
+}
 
-    @media (min-width: 720px) {
-      .page {
-        flex-direction: row;
-      }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--ink); color: var(--paper); overflow-x: clip; }
+/* The page changes colour on the same clock as the skull becomes the rose
+   (MORPH_MS in pages/card.js). One-time transitions of colour on a few
+   elements; nothing here runs while the card turns. */
+html, body { transition: background-color 1.15s ease, color 1.15s ease; }
+.eyebrow h1 em, .cap, .now i, .now .to-product, .stock, .hint button, .colophon a { transition: color 1.15s ease, border-color 1.15s ease; }
+/* The arriving face, during a timed switch: over the old one, on its own layer. */
+#face-front, #face-back { position: relative; }
+.face .incoming { position: absolute; inset: 0; will-change: opacity; }
+body {
+  font-family: var(--serif);
+  min-height: 100svh;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+.cap {
+  font-family: var(--sans); font-weight: 300;
+  font-size: 10.5px; letter-spacing: .28em; text-transform: uppercase;
+  color: var(--dim);
+}
 
-      .seam {
-        top: 7%;
-        bottom: 7%;
-        left: 50%;
-        right: auto;
-        width: 1px;
-        height: auto;
-        transform: scaleY(0);
-      }
+/* ── the room ──────────────────────────────────────────────────────────── */
+.room {
+  position: relative;
+  /* The lamp below is inset -20%, which on a 375px phone is 75px of real
+     scrollable width hanging off the right edge. It made the page scroll
+     sideways, and because the content is centred in the SCROLL box rather than
+     the viewport it also pushed the card off-centre — 20px of margin on the
+     left against 2.5px on the right. `clip` contains the bleed without making
+     a scroll container, which `hidden` on the body could not do from there. */
+  overflow: clip;
+  min-height: 100svh;
+  display: grid;
+  /* header / stage / colophon. The stage takes whatever is left and centres
+     the card in it, so the card holds its place while the header is free to
+     be as tall or as short as it likes. */
+  grid-template-rows: auto 1fr auto;
+  place-items: center;
+  padding: clamp(22px, 4vw, 40px) 20px clamp(28px, 5vw, 48px);
+  padding-bottom: max(28px, env(safe-area-inset-bottom));
+  isolation: isolate;
+}
+/* the lamp itself — the one light the card is lit by, seen on the wall behind
+   it. A real element, not a pseudo-element, so the model can move it with a
+   transform written straight onto it: repainting a viewport-sized gradient
+   every frame was the second-largest paint on the page, and a custom
+   property on the room would reach the card under it. */
+.lamp {
+  position: absolute; inset: -20%;
+  background: radial-gradient(33% 33% at 50% 50%,
+    rgba(181, 147, 90, .16), rgba(181, 147, 90, .04) 42%, transparent 70%);
+  transform: translate(-12vw, -30vh);
+  will-change: transform;
+  z-index: -1; pointer-events: none;
+}
 
-      .page.is-in .seam {
-        transform: scaleY(1);
-      }
+.stage { display: grid; gap: clamp(16px, 3vw, 30px); justify-items: center; align-content: center; width: 100%; max-width: 980px; }
+@media(max-width: 600px){
+  /* On a phone the card is the page. Everything under it is caption. */
+  .stage{ gap: 14px; }
+  .eyebrow h1{ font-size: clamp(26px, 8vw, 34px); }
+  .colophon{ padding-top: 6px; }
+}
 
-      .mark {
-        writing-mode: vertical-rl;
-        /* On desktop restore centred position — vertical seam gap handles the line */
-        transform: translate(-50%, -50%);
-        background: none;
-        padding: 0;
-      }
+.eyebrow { display: grid; gap: 6px; justify-items: center; text-align: center; align-self: start; padding-bottom: clamp(10px, 2vw, 18px); }
+.eyebrow h1 {
+  margin: 0; font-weight: 300; font-size: clamp(30px, 6vw, 52px); letter-spacing: .01em;
+}
+.eyebrow h1 em { font-style: italic; color: var(--gold-lit); }
+.eyebrow p { margin: 0; max-width: 34ch; color: var(--dim); font-size: clamp(15px, 2.4vw, 18px); line-height: 1.55; }
 
-      /* Gap in the middle so the mark text never sits on the line */
-      .seam {
-        background: linear-gradient(
-          to bottom,
-          var(--line) 36%,
-          transparent 36%,
-          transparent 64%,
-          var(--line) 64%
-        );
-      }
-    }
+/* ── the card ──────────────────────────────────────────────────────────── */
+.card-wrap {
+  position: relative;
+  perspective: 1400px;
+  /* 100% of the ROOM's padded content box, not of the viewport: 90vw is wider
+     than the space the room's own 20px gutters leave, which is where the last
+     2.5px of the off-centre came from. */
+  width: min(100%, 600px);
+  touch-action: pan-y;
+}
+.card {
+  position: relative;
+  aspect-ratio: 3.5 / 2;
+  /* A drag across the card selected its type — blue over "PADDLING OUT" in a
+     screenshot, the long-press selection sheet on a phone. It is an object. */
+  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  transform-style: preserve-3d;
+  /* Written by the loop straight onto the element. Never scaled: a change of
+     scale on the card re-rasters every layer under it in WebKit, and the
+     one frame that did (picking it up at 1.06) cost 330ms. */
+  transform: rotateX(0deg) rotateY(0deg);
+  will-change: transform;
+  transition: transform .55s cubic-bezier(.2, .8, .2, 1);
+  cursor: pointer;
+  border-radius: 10px;
+}
+.card.is-live { transition: none; }
+.face {
+  position: absolute; inset: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  backface-visibility: hidden;
+  transform: rotateY(0deg);
+  transition: transform .7s cubic-bezier(.2, .8, .2, 1);
+  box-shadow:
+    0 2px 3px rgba(0,0,0,.5),
+    0 24px 60px rgba(0,0,0,.62),
+    0 0 0 1px rgba(181,147,90,.20);
+  background: var(--paper);
+}
+/* The flip is four class rules and not a custom property, for the same
+   reason as everything else here: a property on the card would change the
+   computed style of every element under it. */
+.face.back { transform: rotateY(180deg); }
+.card.is-flipped .face.front { transform: rotateY(180deg); }
+.card.is-flipped .face.back { transform: rotateY(360deg); }
+.face img, .face svg { display: block; width: 100%; height: 100%; }
 
-    @media (max-width: 520px) {
-      .choice-label {
-        width: min(84%, 9.6em);
-        max-width: calc(100% - 1.5rem);
-        font-size: clamp(3rem, 15vw, 5.2rem);
-        letter-spacing: 0.055em;
-      }
+/* ── what the light does to the face ──────────────────────────────────────
+   Every layer here is its own compositing layer, and every number the model
+   writes lands in a transform or an opacity. Nothing repaints while the card
+   turns: not the face, not the relief, not the drawn card under them. */
+.face > i, .face > .relief { position: absolute; inset: 0; pointer-events: none; border-radius: 10px; }
+.shade, .wash, .sheen, .foil, .rim-lit, .relief .stills > div { will-change: transform, opacity; }
 
-      .choice-sub {
-        font-size: 0.76rem;
-        letter-spacing: 0.08em;
-      }
+/* Lambert. The whole face dims as it turns away from the lamp and clears as
+   it turns toward it — the term that makes a turned card read as lit rather
+   than merely tilted. A plain wash with an opacity, so it composites the
+   same on either face in every engine. */
+/* The exposure is set for the glint, not the paper: a floor of shade on the
+   whole sheet, so that the lamp's reflection — which cannot be brighter than
+   white on a screen — still stands off the stock around it. A card under one
+   lamp in a dark room does look like this. */
+.shade { background: #1c1610; opacity: 0; }
 
-      .footer {
-        padding-inline: 1rem;
-      }
+/* The glint, and the wash around it. One Gaussian each, drawn ONCE as a
+   circle a card-width across, and then moved, turned and stretched into the
+   ellipse the model fitted — with a transform, which costs nothing. The
+   stops are exp(-r²/2σ²) at half-sigma steps with σ a fourteenth of the
+   card's width, so a scale of 14σ is the model's sigma exactly. */
+.sheen, .wash {
+  inset: auto; left: 0; top: 50%; width: 100%; aspect-ratio: 1; border-radius: 0;
+  background: radial-gradient(circle closest-side,
+    rgba(255, 252, 240, 1) 0%, rgba(255, 252, 240, .88) 7.1%, rgba(255, 252, 240, .61) 14.3%,
+    rgba(255, 252, 240, .32) 21.4%, rgba(255, 252, 240, .135) 28.6%, rgba(255, 252, 240, .044) 35.7%,
+    rgba(255, 252, 240, .011) 42.9%, rgba(255, 252, 240, 0) 50%);
+  transform: translateY(-50%) scale(3);
+  opacity: 0;
+}
+.wash { transform: translateY(-50%) scale(6); }
+/* The foil. Gold does not brighten evenly — it shifts hue across the sweep.
+   Oversized so that turning it never shows a corner. */
+.foil {
+  inset: -30%; border-radius: 0;
+  background: linear-gradient(74deg,
+    transparent 34%, rgba(255, 226, 150, .40) 46%,
+    rgba(255, 250, 232, .58) 50%, rgba(198, 150, 92, .40) 55%, transparent 68%);
+  opacity: 0;
+  mix-blend-mode: overlay;
+}
+/* Fresnel: grazing angles reflect more, so the rim lights up as the card
+   turns. A still hairline, and a lit one whose opacity is the term. */
+.rim { box-shadow: inset 0 0 0 1px rgba(255, 244, 214, .10); }
+.rim-lit {
+  box-shadow: inset 0 0 0 1px rgba(255, 244, 214, .55), inset 0 0 26px rgba(255, 240, 200, .22);
+  opacity: 0;
+}
+/* The relief, engraved only: four stills of the emboss, each lit from one
+   side, each shown by as much as the lamp is on that side. See
+   cards/skins/engraved.js for why four pictures and not one lamp. */
+/* The relief is laid a moment after the card and fades in — the raster of
+   its layers is the one expensive thing on the page, and it must not land in
+   a frame that is showing motion. Under reduced motion it simply appears. */
+.relief { overflow: hidden; opacity: 0; transition: opacity .55s ease; will-change: opacity; }
+.relief.is-set { opacity: 1; }
+/* The animal is five canvases — the impression's tint, then four stills
+   lit from the four sides — computed once from the art in cards/emboss.js
+   and cut to the animal's window. Not filters: on iOS a filter costs per
+   primitive, and two hundred of them cost the switch 267ms. The lit stills
+   arrive in their own wrapper a moment after the tint and fade in. */
+.relief > div, .relief .stills > div { position: absolute; inset: 0; overflow: hidden; }
+.relief .stills { opacity: 0; transition: opacity .55s ease; }
+.relief .stills.is-set { opacity: 1; }
+.relief canvas { position: absolute; display: block; }
+.relief svg { display: block; width: 100%; height: 100%; }
+.relief [data-dir="xp"] { opacity: calc(var(--lxp) * 1.7); }
+.relief [data-dir="xn"] { opacity: calc(var(--lxn) * 1.7); }
+.relief [data-dir="yp"] { opacity: calc(var(--lyp) * 1.7); }
+.relief [data-dir="yn"] { opacity: calc(var(--lyn) * 1.7); }
+.grain {
+  opacity: .16; mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+}
 
-      .footer a {
-        font-size: 0.66rem;
-        letter-spacing: 0.18em;
-      }
-    }
+/* The series strip. Eight markers, the way an album page numbers its spaces.
+   It is a radiogroup, so arrow keys move through it like a real control. */
+.series { display: grid; gap: 10px; justify-items: center; width: 100%; }
+/* One slider, not five numbered boxes. The numbers named nothing — the card's
+   own name is already printed under it — so the strip only has to show where
+   you are in the series and let you move. The button stays 44px tall for a
+   thumb; the visible bar is the thin part. */
+.marks { display: flex; gap: 6px; justify-content: center; align-items: center; min-height: 44px; }
+.mark {
+  width: 26px; height: 44px; padding: 0;
+  border: 0; background: transparent; cursor: pointer;
+  display: grid; place-items: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.mark::before {
+  content: ""; display: block;
+  width: 18px; height: 3px; border-radius: 999px;
+  background: var(--hair);
+  transition: width .32s cubic-bezier(.2,.8,.2,1), background .24s ease;
+}
+.mark:hover::before { background: var(--gold); }
+.mark[aria-checked="true"] { width: 44px; }
+.mark[aria-checked="true"]::before { width: 36px; background: var(--gold-lit); }
+.mark:focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; border-radius: 8px; }
+@media (prefers-reduced-motion: reduce) { .mark::before { transition: none; } }
+.now { text-align: center; display: grid; gap: 3px; min-height: 24px; }
+.now b { font-weight: 400; font-size: clamp(17px, 2.6vw, 21px); }
+.now i { color: var(--dim); font-size: 14px; font-style: normal; max-width: 56ch; display: inline-block; }
+.now .to-product { color: var(--gold-lit); border-bottom: 1px solid rgba(240,217,160,.35); }
+.now .to-product:hover { border-bottom-color: var(--gold-lit); }
 
-    @media (prefers-reduced-motion: reduce) {
-      *,
-      *::before,
-      *::after {
-        scroll-behavior: auto !important;
-        transition-duration: 0.01ms !important;
-        animation-duration: 0.01ms !important;
-      }
-    }
+/* ── the mode control ───────────────────────────────────────────────── */
+.mode {
+  position: absolute; top: clamp(14px, 2.4vw, 24px); right: clamp(14px, 2.4vw, 24px); z-index: 2;
+  display: block; padding: 8px; margin: 0;
+  background: none; border: 0; cursor: pointer; line-height: 0;
+  -webkit-tap-highlight-color: transparent;
+  opacity: .72; transition: opacity .25s, transform .25s;
+}
+.mode:hover, .mode:focus-visible { opacity: 1; transform: translateY(-1px); }
+.mode:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 8px; }
+/* Gold linework on nothing — the page supplies the black. The files are built
+   that way (a luminance mask over one gold), so no filter runs here and the
+   mark reads the same on every browser. */
+.mode-stage { position: relative; display: block; width: 30px; height: 42px; }
+@media(max-width: 600px){ .mode-stage { width: 26px; height: 36px; } }
+.mode img {
+  position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain;
+  transition: opacity .18s ease;
+}
+/* Two resting states. The skull is the set in colour; the rose is the set
+   engraved. Between them, when a person presses it, the skull comes apart
+   into gold dust and settles as the rose — see cards/morph.js. While the
+   dust is in the air neither drawing is on the page; the rose comes back
+   under the last of it. */
+.mode-rose { opacity: 0; }
+.mode[data-mode="rose"] .mode-skull { opacity: 0; }
+.mode[data-mode="rose"] .mode-rose  { opacity: 1; }
+.mode .mode-stage.is-dusting img { opacity: 0; }
+.mode-dust {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 300%; height: 300%; pointer-events: none; opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) { .mode-dust { display: none; } }
 
-    /* ── Expandable panels (Forge, Store) ─────────────────────────────── */
+/* ── inspect ────────────────────────────────────────────────────────── */
+.hint { display: flex; gap: 14px; align-items: center; }
+/* A held card is a touch gesture. Where there is a fine pointer the cursor is
+   already the lamp and the card already follows it, so the control is not
+   offered. */
+@media (hover: hover) and (pointer: fine) { .hint { display: none; } }
+/* The frame loop is never started under reduced motion, so Inspect would lift
+   the card and then draw nothing you did with it. Not offered. */
+@media (prefers-reduced-motion: reduce) { .hint { display: none; } }
+.card.is-inspecting {
+  transition: none;
+  /* No cursor change, deliberately: `cursor` is inherited, and an inherited
+     property changing on the card reaches every filtered SVG element under
+     it, which WebKit answers with a repaint — 300ms in the frame the card
+     was picked up, measured, for a cursor no touch screen has. Off the
+     table is the desk shadow below. It used to grow by six percent as well,
+     and that one change of scale re-rastered every layer under it. */
+}
+.card-wrap.is-inspecting { touch-action: none; }
+/* The settle folds a 180° coast into is-flipped and zeroes the angle in one
+   frame. Both faces tween their flip over .7s unless told not to, so a card
+   that had landed on its back snapped to the front and turned over again. */
+.card.is-inspecting .face { transition: none; }
+/* The shadow a held card throws on the desk: its own flat layer under the
+   card, faded in by opacity. It used to be a change of box-shadow on the
+   faces, and that repainted both of them — with their filters — in the very
+   frame the card was picked up: 300ms, measured. A desk shadow does not turn
+   with the card in any case. */
+.desk {
+  position: absolute; inset: 0; border-radius: 10px; pointer-events: none;
+  box-shadow: 0 46px 90px rgba(0,0,0,.72), 0 4px 6px rgba(0,0,0,.4);
+  opacity: 0; transition: opacity .35s ease; will-change: opacity;
+}
+.card-wrap.is-inspecting .desk { opacity: 1; }
+.hint button {
+  background: none; border: 1px solid var(--hair); color: var(--dim);
+  border-radius: 999px; padding: 7px 16px; cursor: pointer;
+  font-family: var(--sans); font-size: 10.5px; letter-spacing: .22em; text-transform: uppercase;
+  transition: color .2s, border-color .2s;
+}
+.hint button:hover { color: var(--gold-lit); border-color: var(--gold); }
+.hint button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
 
-    .panel-menu {
-      flex-direction: column;
-      cursor: pointer;
-    }
 
-    /* Highlighting any section widens it to half the axis, leaving a quarter
-       each to the other two. Same rule for all three — the seams and
-       wordmarks are repositioned by JS to match, at every breakpoint. */
-    #pg-home .choice {
-      transition: filter 320ms ease, flex 520ms var(--ease);
-    }
 
-    .choice--wide {
-      flex: 2;
-    }
 
-    /* Panel-count font scaling — set via JS on data-panels attribute.
-       Three panels are narrower, so the headline also gets more of its
-       panel to work with — "PADDLING OUT" holds one line at every width. */
-    [data-panels="3"] .choice-label {
-      width: min(94%, 13em);
-      max-width: calc(100% - clamp(1rem, 2.4vw, 2rem));
-      font-size: clamp(2.4rem, 5vw, 5rem);
-      letter-spacing: 0.06em;
-    }
+.colophon {
+  align-self: end;
+  width: 100%; max-width: 980px; padding-top: 22px; border-top: 1px solid var(--hair);
+  display: flex; flex-wrap: wrap; gap: 0 26px; justify-content: space-between; align-items: center;
+}
+.colophon-links { display: flex; flex-wrap: wrap; gap: 0 22px; }
+/* 44px tall for a thumb; the type stays caption-sized. */
+.colophon a { display: inline-flex; align-items: center; min-height: 44px; }
+.colophon a:hover { color: var(--gold-lit); }
+.colophon a:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
 
-    [data-panels="4"] .choice-label {
-      font-size: clamp(1.8rem, 3.5vw, 3.5rem);
-      letter-spacing: 0.04em;
-    }
+@media (prefers-reduced-motion: reduce) {
+  html, body, .card, .face, .relief, .relief .stills, .eyebrow h1 em, .cap, .now i, .now .to-product, .stock, .hint button, .colophon a { transition: none; }
+  .relief, .relief .stills { opacity: 1; }
+  .sheen, .wash, .foil, .shade { display: none; }
+}
 
-    [data-panels="5"] .choice-label {
-      font-size: clamp(1.5rem, 2.9vw, 3rem);
-      letter-spacing: 0.035em;
-    }
+/* ═══════════════════════════════════════════════════════════════════════════
+   The engraved set — opt-in, off by default.
 
-    /* While one section is wide the other two are down to a quarter — step
-       their headlines back so they stay clear of the dividers */
-    #pg-home:has(.choice--wide) .choice:not(.choice--wide) .choice-label {
-      font-size: clamp(1.6rem, 2.9vw, 3.1rem);
-      letter-spacing: 0.05em;
-    }
+   The card's own words, colours and faces are the skin's job and live in
+   js/cards/skins/engraved.js. This block is the ROOM: the jewel-box gives way
+   to a bright cold desk, because an engraver's card is looked at in daylight
+   and not held up to a lamp. Everything here is a re-declaration of the seven
+   variables the rest of the sheet already reads, so no rule below :root needs
+   to know the skin exists.
 
-    /* ── CTA row inside a panel ───────────────────────────────────────── */
-    /* Collapsed by default so the headline stays optically centred */
-    .cta-group {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      gap: clamp(1.6rem, 3.2vw, 2.8rem);
-      max-width: 92%;
-      max-height: 0;
-      margin-top: 0;
-      overflow: hidden;
-      opacity: 0;
-      pointer-events: none;
-      transition: max-height 420ms var(--ease),
-                  margin-top 420ms var(--ease),
-                  opacity 280ms ease 100ms;
-    }
+   --dim carries body copy and sits at .72 because .62 measured 3.96:1 against
+   this background, and text has to clear 4.5. The control's border gets its own
+   value: at --hair's weight a button outline measured 2.07:1, under the 3:1 a
+   non-text control needs to be found at all.
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root[data-skin="engraved"] {
+  --ink: #141619;                       /* a cold slate desk, lit from nowhere */
+  --ink-2: #101215;
+  --paper: #EDEAE2;
+  --gold: #8E9099;
+  --gold-lit: #D8DAE0;
+  --dim: rgba(237, 234, 226, .66);
+  --dimmer: rgba(237, 234, 226, .40);
+  --hair: rgba(237, 234, 226, .22);
+}
+/* This room was bright at first, on the reasoning that the scene is a daylit
+   conference room. That was wrong for the wrong reason: relief is read from a
+   shadow, and a bright flat field leaves a one-unit shadow nothing to fall
+   against — the embossing was there and simply could not be seen. Dark and
+   cold instead, so the cream sits in it as a lit object. Still nothing like
+   the warm gold jewel-box of the colour card: that room is a lamp, this one
+   is an office at night. */
+/* Centred and fully faded inside its own box, like the warm one: this lamp
+   MOVES with the pointer, and a glow anchored to the top edge of its
+   element was cut off by that edge — which then travelled across the
+   screen as a hard grey line whenever the pointer sat low. */
+:root[data-skin="engraved"] .lamp {
+  background: radial-gradient(33% 33% at 50% 50%, rgba(198,210,228,.11), rgba(198,210,228,.03) 46%, transparent 70%);
+}
+/* Foil is the one thing an engraver never sells: gone, not dimmed. The sheen
+   stays, because cotton rag does catch the light — it just catches it white
+   and softly instead of gold and hard. Satin paper is two lobes, a glint and
+   the wash round it, and both come from the same lamp: the model writes one
+   centre and two ellipses. No blend mode, deliberately: the card is inside
+   transform-style: preserve-3d with backface-visibility on each face, and
+   WebKit drops mix-blend-mode in that situation — which is why the front
+   glistened and the back did not, on a browser that is WebKit underneath. */
+:root[data-skin="engraved"] .foil { display: none; }
+/* The paper's exposure — a stronger glint, a broader wash, a floor of shade
+   — is set by the model per skin, on the elements, not here. */
+/* The model computes in the frame of whichever face is up, so nothing here
+   is mirrored for the back: the numbers arrive already in that face's own x. */
 
-    .panel--open .cta-group {
-      max-height: 4rem;
-      margin-top: clamp(1.3rem, 3vh, 2rem);
-      opacity: 1;
-      pointer-events: auto;
-    }
+/* .rim never reaches zero on its own: at --fres 0 it still paints a warm
+   hairline, which five cards in a row multiply into a visible gold grid. */
+:root[data-skin="engraved"] .rim { box-shadow: inset 0 0 0 1px rgba(36,31,25,.07); }
+/* Tooth stays — cotton rag has plenty — but it stops being gold-tinted noise. */
+:root[data-skin="engraved"] .grain {
+  /* Tooth stays — cotton rag has plenty — but it stops being gold-tinted
+     noise, and it stops relying on a blend mode that WebKit discards inside
+     the card's 3D context. */
+  opacity: .06; filter: saturate(0); mix-blend-mode: normal;
+}
+:root[data-skin="engraved"] .face {
+  box-shadow: 0 2px 4px rgba(0,0,0,.55), 0 26px 60px rgba(0,0,0,.68), 0 0 0 1px rgba(255,255,255,.06);
+}
+/* The control that turns it on, and the one line of copy that explains the set. */
+.hint button[aria-pressed="true"] { color: var(--gold-lit); border-color: var(--gold); }
+:root[data-skin="engraved"] .hint button { border-color: rgba(237,234,226,.34); }
+/* Engraved, each bar wears the stock its card is printed on — the one place
+   the five papers are seen together, and the chrome keeps its shape. */
+:root[data-skin="engraved"] .mark::before { background: var(--stock, var(--hair)); opacity: .5; }
+:root[data-skin="engraved"] .mark:hover::before { opacity: .8; }
+:root[data-skin="engraved"] .mark[aria-checked="true"]::before {
+  background: var(--stock, var(--gold-lit)); opacity: 1; height: 4px;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.35);
+}
 
-    .cta {
-      position: relative;
-      flex: 0 1 auto;
-      min-width: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      appearance: none;
-      border: 0;
-      background: none;
-      color: inherit;
-      cursor: pointer;
-      padding: 0.1rem 0 0.2rem;
-      font-family: "Cormorant Garamond", Georgia, serif;
-      text-align: center;
-      text-decoration: none;
-    }
+/* The card owns the gesture once it can be read.
 
-    .cta:focus-visible {
-      outline: none;
-    }
+   `touch-action: pan-y` on the wrap let the browser take any drag with a
+   vertical component and turn it into a page scroll — which fires
+   pointercancel and ends the trace mid-letter. On a phone that looked exactly
+   like haptics that do not work: the first tick would land and everything
+   after it was swallowed by the scroller. The page still scrolls everywhere
+   except across the face of the card itself. */
+:root[data-skin="engraved"] .card-wrap { touch-action: none; }
 
-    /* The label carries the whole affordance — no rule under it, no
-       explanatory line beneath it. */
-    .cta-label {
-      color: rgba(237, 232, 223, 0.92);
-      font-size: clamp(0.78rem, 1.35vw, 0.9rem);
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      white-space: nowrap;
-      transition: color 220ms ease;
-    }
 
-    .cta:hover .cta-label,
-    .cta:focus-visible .cta-label,
-    .cta:active .cta-label {
-      color: var(--gold-bright);
-    }
+/* ── the trace ──────────────────────────────────────────────────────────────
+   What the fingertip is reading, drawn where it is reading it. On Android it
+   accompanies a real tick; on an iPhone, where the Vibration API has never
+   existed, it IS the feature — so it has to be legible on its own rather than
+   decoration over the top of something else.
 
-    /* Touch has no hover to lean on — every section states what it is,
-       rising in just after its headline starts to resolve */
-    @media (hover: none), (pointer: coarse) {
-      .page.is-lit .choice-sub {
-        opacity: 1;
-        transform: none;
-        transition-delay: 200ms;
-      }
-    }
+   The shape says what was found: tight on a letter, a bar along a rule, wide
+   and soft over the animal.                                                  */
+.stylus { position: absolute; inset: auto; width: 0; height: 0; pointer-events: none; z-index: 3; }
+.stylus::before {
+  content: ""; position: absolute; left: 0; top: 0;
+  transform: translate(-50%, -50%);
+  border-radius: 999px; opacity: 0;
+  transition: opacity .12s ease, width .12s ease, height .12s ease;
+  width: 0; height: 0;
+}
+.stylus[data-on="glyph"]::before {
+  opacity: 1; width: 21px; height: 21px;
+  box-shadow: 0 0 0 1.5px rgba(36,31,25,.62), 0 0 0 4px rgba(255,255,255,.55), 0 0 14px 4px rgba(255,255,255,.9);
+}
+.stylus[data-on="rule"]::before {
+  opacity: 1; width: 52px; height: 8px; border-radius: 4px;
+  box-shadow: 0 0 0 1.5px rgba(36,31,25,.5), 0 0 12px 3px rgba(255,255,255,.85);
+}
+.stylus[data-on="plate"]::before {
+  opacity: 1; width: 15px; height: 15px;
+  box-shadow: 0 0 0 2.5px rgba(36,31,25,.6), 0 0 10px 3px rgba(255,255,255,.8);
+}
+.stylus[data-on="art"]::before {
+  opacity: .95; width: 34px; height: 34px;
+  box-shadow: 0 0 0 1.5px rgba(36,31,25,.36), 0 0 20px 8px rgba(255,255,255,.85);
+}
+@media (prefers-reduced-motion: reduce) { .stylus::before { transition: none; } }
 
-    /* The scramble runs in an overlay over the real headline, which holds its
-       box (transparent) the whole time, so nothing resizes or rewraps */
-    #pg-home .choice-label.is-veiled {
-      color: transparent;
-    }
-
-    .label-scramble {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: var(--fg);
-      pointer-events: none;
-    }
-
-    .label-scramble-line {
-      display: block;
-      white-space: nowrap;
-    }
-
-    /* The splash is the page. The words about what Kaayko builds live on
-       /about, which the footer links; they used to be repeated here as an
-       essay under the fold, and a landing page that keeps going after the
-       landing is a landing page nobody trusted to land. */
-
-    .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-  </style>
+.stock {
+  margin: 0; text-align: center; min-height: 1.3em;
+  font-family: var(--sans); font-size: 10px; letter-spacing: .28em;
+  text-transform: uppercase; color: var(--dimmer);
+}
+</style>
 </head>
 <body>
+<main class="room" id="room">
+  <i class="lamp" id="lamp" aria-hidden="true"></i>
 
+  <!-- The whole control is the icon. A skull is the set as it is; press it and
+       the set goes engraved, and a rose says so. Anyone who recognises either
+       does not need a label, and the aria-label tells everyone else. It lives
+       in the corner, out of the column, so it never moves the card. -->
+  <button type="button" class="mode" id="skin" aria-pressed="false" aria-label="American Psycho" data-mode="skull">
+    <span class="mode-stage" id="skin-stage" aria-hidden="true">
+      <img class="mode-skull" id="mode-skull" src="/assets/card/skull.webp" alt="" width="30" height="42" decoding="async">
+      <img class="mode-rose"  id="mode-rose"  src="/assets/card/rose.webp" alt="" width="30" height="42" decoding="async">
+      <canvas class="mode-dust" id="mode-dust" width="90" height="126"></canvas>
+    </span>
+  </button>
 
-  <main class="shell" aria-label="Kaayko landing">
-    <h1 class="sr-only">Kaayko &mdash; Paddling Out, Stories, Forge, Kortex, the Store and School</h1>
-    <img class="brand-ghost" src="/kaayko-logo-512.png" alt="" aria-hidden="true">
+  <!-- Header and colophon are rows of the room, not members of the stage: the
+       stage is centred in whatever is left between them, so the card sits in
+       the same place whatever the header says. -->
+  <div class="eyebrow">
+    <p class="cap">Kaayko</p>
+    <h1>Why not?</h1>
+  </div>
 
-    <section class="page active" id="pg-home" aria-label="Kaayko">
-      <a class="choice primary" href="/paddlingout" target="_blank" rel="noopener noreferrer">
-        <span class="choice-label" data-text="Paddling Out">Paddling Out</span>
-        <span class="choice-sub">Know before you paddle</span>
-      </a>
-      <a class="choice" id="panel-stories" href="/stories" target="_blank" rel="noopener noreferrer">
-        <span class="choice-label" data-text="Stories">Stories</span>
-        <span class="choice-sub">Field notes from the water</span>
-      </a>
-      <section class="choice tertiary panel-menu" id="panel-forge" aria-label="Forge" tabindex="0">
-        <span class="choice-label" data-text="Forge">Forge</span>
-        <span class="choice-sub">Open-source local-first AI workstation</span>
-        <div class="cta-group" aria-label="Forge options">
-          <a class="cta" href="/forge-gallery">
-            <span class="cta-label">Gallery</span>
-          </a>
-          <a class="cta" href="https://github.com/tommyvercetti76/Forge" rel="noopener noreferrer">
-            <span class="cta-label">Code</span>
-          </a>
+  <div class="stage">
+
+    <div class="card-wrap">
+      <i class="desk" aria-hidden="true"></i>
+      <div class="card" id="card" role="button" tabindex="0"
+           aria-label="The Kaayko card. Activate to turn it over.">
+        <div class="face front">
+          <div id="face-front" role="img" aria-label="Front of the Kaayko card"></div>
+          <div class="relief" aria-hidden="true"></div>
+          <i class="shade"></i><i class="foil"></i><i class="wash"></i><i class="sheen"></i><i class="grain"></i><i class="rim"></i><i class="rim-lit"></i>
+          <i class="stylus" aria-hidden="true"></i>
         </div>
-      </section>
-
-      <a class="choice secondary" id="panel-youtube" href="https://www.youtube.com/@travelingout" target="_blank" rel="noopener noreferrer" data-feature="youtube">
-        <span class="choice-label" data-text="YouTube">YouTube</span>
-        <span class="choice-sub">Traveling Out — the channel</span>
-      </a>
-
-      <section class="choice secondary panel-menu" id="panel-store" aria-label="Store" tabindex="0" data-feature="store">
-        <span class="choice-label" data-text="Store">Store</span>
-        <span class="choice-sub">Invite only — for now</span>
-        <div class="cta-group" aria-label="Store options">
-          <button class="cta" id="cta-access" type="button">
-            <span class="cta-label">Access</span>
-          </button>
-          <button class="cta" id="cta-request" type="button">
-            <span class="cta-label">Request</span>
-          </button>
+        <div class="face back">
+          <div id="face-back" role="img" aria-label="Back of the Kaayko card"></div>
+          <div class="relief" aria-hidden="true"></div>
+          <i class="shade"></i><i class="foil"></i><i class="wash"></i><i class="sheen"></i><i class="grain"></i><i class="rim"></i><i class="rim-lit"></i>
+          <i class="stylus" aria-hidden="true"></i>
         </div>
-      </section>
-    </section>
-    <!-- Inline on purpose: sets the panel count, dividers and wordmarks before the first paint -->
-    <script>window.KaaykoHomeEntrance && window.KaaykoHomeEntrance(document.getElementById("pg-home"));</script>
+      </div>
+    </div>
 
-    <nav class="footer" aria-label="Splash links">
-      <!-- Only shown while the YouTube panel is off — the panel replaces it -->
-      <a href="https://www.youtube.com/@travelingout" rel="noopener noreferrer" data-feature-off="youtube">YouTube</a>
-      <a href="/about">About</a>
-      <a href="/card">Inventory</a>
-      <a href="/privacy">Privacy</a>
+    <div class="series">
+      <div class="marks" id="marks" role="radiogroup" aria-label="Choose a card from the series"></div>
+      <p class="now" id="now"><b>&nbsp;</b><i>&nbsp;</i></p>
+    </div>
+
+    <p class="stock" id="stock"></p>
+
+    <!-- Tapping the card turns it over; that needed no button. On a phone the
+         card can also be picked up: hold Inspect and it comes off the table,
+         drag it round, let go and it settles — spun past halfway, it settles on
+         its other face. The handset's own tilt used to do a version of this on
+         its own and was never quite in anyone's hands. -->
+    <div class="hint">
+      <button type="button" id="inspect" aria-pressed="false">Inspect</button>
+    </div>
+
+  </div>
+
+  <!-- Every property already has a card in the series with its own address on
+       the face; listing them again here would be the same links twice. What
+       the footer carries is what no card does: a person to write to, and the
+       old landing's footer — YouTube, About, Privacy. Its fourth link,
+       Inventory, pointed at this page. -->
+  <footer class="colophon">
+    <a class="cap" href="mailto:help@kaayko.com">help@kaayko.com</a>
+    <nav class="colophon-links" aria-label="Footer">
+      <a class="cap" href="https://www.youtube.com/@travelingout" rel="noopener noreferrer">YouTube</a>
+      <a class="cap" href="/about">About</a>
+      <a class="cap" href="/privacy">Privacy</a>
     </nav>
-  </main>
+  </footer>
+</main>
 
-
-
-
-
-  <script src="/js/storeAccess.js"></script>
-  <script type="module" src="/js/pages/index.js"></script>
-
+<!-- Versioned deliberately. This page (it was card.html) is served no-store and revalidates, but
+     a phone browser will happily keep a module it already has and hand you a
+     page that is half new and half last week — which is what happened: the
+     control still said "Bone" on a device the server had already been sending
+     "American Psycho" to for an hour. The query changes when the build does,
+     so a stale module cannot be reached. -->
+<script src="/js/vendor/qrcode-generator.js?v=3526885"></script>
+<script type="module" src="/js/pages/card.js?v=3526885"></script>
 </body>
 </html>

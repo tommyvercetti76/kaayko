@@ -134,7 +134,7 @@
           ]
         },
         {
-          "source": "/card.html",
+          "source": "/index.html",
           "headers": [
             {
               "key": "Cache-Control",
@@ -143,7 +143,7 @@
           ]
         },
         {
-          "source": "/card",
+          "source": "/",
           "headers": [
             {
               "key": "Cache-Control",
@@ -345,6 +345,16 @@
         }
       ],
       "redirects": [
+        {
+          "source": "/card",
+          "destination": "/",
+          "type": 301
+        },
+        {
+          "source": "/card.html",
+          "destination": "/",
+          "type": 301
+        },
         {
           "source": "/paddlingout/submitentry",
           "destination": "/paddlingout/search?mode=add",
@@ -562,10 +572,6 @@
           "destination": "/order-status.html"
         },
         {
-          "source": "/card",
-          "destination": "/card.html"
-        },
-        {
           "source": "/shipping",
           "destination": "/shipping.html"
         },
@@ -591,7 +597,8 @@
         "**/tenant*.html",
         "**/alumni*.html",
         "about.html",
-        "privacy.html"
+        "privacy.html",
+        "**/archive/**"
       ],
       "headers": [
         {
@@ -909,10 +916,6 @@
           "destination": "/order-status.html"
         },
         {
-          "source": "/card",
-          "destination": "/card.html"
-        },
-        {
           "source": "/shipping",
           "destination": "/shipping.html"
         },
@@ -926,6 +929,16 @@
         }
       ],
       "redirects": [
+        {
+          "source": "/card",
+          "destination": "https://kaayko.com/",
+          "type": 301
+        },
+        {
+          "source": "/card.html",
+          "destination": "https://kaayko.com/",
+          "type": 301
+        },
         {
           "source": "/paddlingout/submitentry",
           "destination": "/paddlingout/search?mode=add",

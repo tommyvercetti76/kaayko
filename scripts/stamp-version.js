@@ -4,7 +4,7 @@
  *
  * WHY THIS EXISTS
  * ---------------
- * card.html is served `no-cache` and revalidates on every load, so the page
+ * index.html (the card; it was card.html) is served `no-store` and revalidates on every load, so the page
  * itself is always current. Its ES modules are a different matter: a phone
  * browser will keep a module it already has and hand back a page that is half
  * new and half last week. That is not hypothetical — the control on a live
@@ -25,7 +25,7 @@ const root = path.join(__dirname, '..');
 const rev = execSync('git rev-parse --short HEAD', { cwd: root }).toString().trim();
 
 const FILES = [
-  'src/card.html',
+  'src/index.html',
   'src/js/pages/card.js',
   // The 404 deals the same deck, from the same modules.
   'src/404.html',

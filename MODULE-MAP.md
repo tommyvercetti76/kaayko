@@ -51,7 +51,7 @@
 **Pages:**
 | URL | File |
 |-----|------|
-| `/` | `kaayko/src/index.html` (split Kaayko landing: Paddling Out / Forge / Store, then Store access layer) |
+| `/` | `kaayko/src/index.html` — the card (was `/card` until 22 Oct 2026). Old split landing archived at `/archive/home-2026` |
 | `/paddlingout` | `kaayko/src/paddlingout.html` |
 | `/about` | `kaayko/src/about.html` |
 | `/stories` | `kaayko/src/stories.html` → `js/stories/library.js` (the Library: "Paddling Out 2" open at Chapter III with sealed chapters listed, "Paddling Out 1" sealed with its eight lakes; no prose that is not his) |
@@ -147,7 +147,7 @@ GET  /api/docs                                 → API spec (spec.yaml / spec.js
 | `/store/about` (kaay.store `/about`) | `kaayko/src/store-about.html` | inline (5 lines) → `js/store-about.js` |
 | `/store/privacy` (kaay.store `/privacy`) | `kaayko/src/store-privacy.html` | — |
 | `/shipping`, `/fly` | `kaayko/src/shipping.html` | `js/pages/shipping.js` |
-| `/card` | `kaayko/src/card.html` | `js/pages/card.js` |
+| `/` (was `/card`; 301 since 22 Oct 2026) | `kaayko/src/index.html` | `js/pages/card.js` |
 | `/testimonials` | `kaayko/src/testimonials.html` | `js/testimonials.js` |
 
 Every store page loads, in this order: `js/prod-config.js` (the API base, in `<head>`), `css/tokens.css` before any other stylesheet, then classic `js/header.js` (theme toggle, cart badge) and ONE page module. `scripts/check-store-pages.js` enforces ≤ 30 inline JS lines per page.

@@ -12,7 +12,7 @@ Core covers the paddle forecast app and static marketing pages.
 | `/privacy` | `kaayko/src/privacy.html` — static |
 | `/valentine` | `kaayko/src/valentine.html` — seasonal campaign (uses `/api/valentine` endpoint) |
 | `/redirect` | `kaayko/src/redirect.html` — redirect loader (spinner UI, used by smart link flow) |
-| `/` | `kaayko/src/index.html` — redirects → /paddlingout |
+| `/` | `kaayko/src/index.html` — the card (was `/card` until 22 Oct 2026; `/card` 301s to `/`). Old landing archived at `/archive/home-2026` |
 | `/404` | `kaayko/src/404.html` — Firebase default error page |
 
 ## JS files (paddlingout)

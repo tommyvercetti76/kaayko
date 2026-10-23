@@ -67,7 +67,7 @@ const SCREENS = {
     opts: [['Start flying', () => begin(), true],
            ['How it works', () => show('how')],
            ['Today’s board', () => show('board')],
-           ['Back to the cards', () => { location.href = '/card'; }]]
+           ['Back to the cards', () => { location.href = 'https://kaayko.com/'; }]]
   }),
   how: () => ({
     kicker: 'How it works',
@@ -95,7 +95,7 @@ const SCREENS = {
     opts: [['Resume', () => { hide(); game.resume(); key.disabled = false; showDrop(game.carrying); }, true],
            ['Start again', () => begin()],
            ['How it works', () => show('how')],
-           ['Back to the cards', () => { location.href = '/card'; }]]
+           ['Back to the cards', () => { location.href = 'https://kaayko.com/'; }]]
   }),
   over: (r) => ({
     kicker: r.score >= best && r.score > 0 ? 'A new best' : 'Down',
@@ -108,7 +108,7 @@ const SCREENS = {
     opts: [['Fly again', () => begin(), true],
            ['Today’s board', () => show('board')],
            ['How it works', () => show('how')],
-           ['Back to the cards', () => { location.href = '/card'; }]]
+           ['Back to the cards', () => { location.href = 'https://kaayko.com/'; }]]
   })
 };
 

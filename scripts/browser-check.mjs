@@ -350,11 +350,11 @@ async function main() {
       await checkPage(b.port, 'story', `${BASE}/stories/never-give-up`, view, async (ev) =>
         (await ev('document.querySelectorAll("h2.chapter").length')) >= 6 ? [] : ['chapters missing']);
 
-      // ── 6. /card: renders, and survives a full stop/start
-      await checkPage(b.port, 'card', `${BASE}/card`, view, async (ev) => {
+      // ── 6. the home page (the card; it was /card): renders, and survives a full stop/start
+      await checkPage(b.port, 'home (card)', `${BASE}/`, view, async (ev) => {
         const before = await ev('({ front: !!document.querySelector("#face-front svg"), marks: document.querySelectorAll("#marks .mark").length, api: !!window.KaaykoCard, coarse: matchMedia("(pointer: coarse)").matches })');
         const p = [];
-        // /card has separate touch and mouse code paths; it once shipped blank on every phone
+        // The card has separate touch and mouse code paths; it once shipped blank on every phone
         // because only the mouse one was looked at. The phone run must really be a touch device.
         if (before.coarse !== view.mobile) p.push(`expected ${view.mobile ? 'a touch' : 'a mouse'} pointer, got ${before.coarse ? 'touch' : 'mouse'}`);
         if (!before.front) p.push('card front not drawn');
