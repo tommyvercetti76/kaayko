@@ -10,6 +10,40 @@ checked, and how to undo it.
 
 ---
 
+## 2026-10-22 · Follow-up: the card is centred; contact moves to About and Privacy
+
+- **Commits:** `a61f106` (the change), `983de6b` (module stamp)
+- **Live:** yes, kaayko.com and kaay.store, 22 Oct 2026
+- **Why:** the card sat 80px above centre on a 1440×900 desktop and ~155px on a
+  375×812 phone. The room centred card + marks + caption + Inspect together
+  between the header and footer, so the card always rode high.
+- **What:** the room is three rows — header, card, everything below — with the
+  outer two equal (`1fr auto 1fr`) and equal top/bottom padding, so the card is on
+  the screen's centre. Its width is capped by height from measured row sizes
+  (183–221px below it), short desktop screens (≤820px tall, fine pointer) close up
+  the row below instead of shrinking the card, and screens ≤500px tall (landscape
+  phones) put the card under a smaller header and let the rest scroll. The caption
+  `<p>` lost its default 28px of margin and the stock line collapses when empty
+  (colour set). Footer: YouTube · About · Privacy, centred; help@kaayko.com removed.
+- **About:** a labelled Contact block, `/about#contact` — questions, orders, press,
+  partnerships — with the mailto button (44px). Take a card / YouTube stay below it.
+- **Privacy:** every help@kaayko.com is a mailto link (the CCPA/GDPR one pre-fills
+  "Privacy Request"), Contact (`/privacy#contact`) covers all inquiries, the Store is
+  no longer called "invite-only" (that gate was retired Sep 2026), Last updated
+  22 Oct 2026.
+- **Checked:** card centre offset measured with getBoundingClientRect, colour and
+  engraved: 1920×1080, 1440×900, 1366×768, 1366×657, 1280×720, 1280×650, 1024×768,
+  768×1024, 390×844, 375×812, 375×667, 360×740 all 0px with no scroll; 320×568 2px
+  (4px scroll); landscape 740×360 / 667×375 card fully in the first screen, 23–28px
+  below centre. On the preview channel: /card 301, all six cards centred as dealt,
+  flip, Inspect, footer links land on /about and /privacy with #contact present;
+  `npm run verify`, no new verify-seo findings, `npm run browser-check` on the
+  preview and on production.
+- **Undo:** `git revert --no-edit 983de6b a61f106`, `npm run stamp`, commit, then
+  `firebase deploy --only hosting:kaaykostore,hosting:kaay-store`.
+
+---
+
 ## 2026-10-22 · The card is the home page
 
 - **Commits:** `df677f7` (the move), `adcd5c6` (module stamp), `4d27e80`
