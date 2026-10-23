@@ -195,8 +195,8 @@ async function main() {
   try {
     for (const view of [PHONE, DESKTOP, FAR]) {
       const far = view === FAR;
-      // ── 2. homepage: one headline size from the first frame, only the entrance moves
-      await checkPage(b.port, 'home', `${BASE}/`, view, async (ev) => {
+      // ── 2. the old landing (/ until 22 Oct 2026, archived): one headline size from the first frame, only the entrance moves
+      await checkPage(b.port, 'archived landing', `${BASE}/archive/home-2026`, view, async (ev) => {
         const r = await ev('({ t: [...new Set(window.__bc.transitions)], sizes: [...window.__bc.sizes], panels: document.getElementById("pg-home").dataset.panels, cls: document.getElementById("pg-home").className })');
         const allowed = new Set(['transform .seam', 'opacity .mark', 'opacity .choice-sub', 'transform .choice-sub']);
         const extra = r.t.filter((x) => !allowed.has(x));
