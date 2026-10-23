@@ -17,6 +17,7 @@
  * gets out.
  */
 import { front, back, SCREEN } from '/js/cards/render.js?v=6d94ba6';
+import { artUrl } from '/js/cards/art.js?v=8da5571';
 import { esc, apiBase } from '/js/kit.js?v=6d94ba6';
 
 const hand = document.getElementById('hand');
@@ -61,7 +62,7 @@ function deal({ cards, brand }) {
   const n = cards.length;
   hand.style.setProperty('--n', String(n));
   hand.innerHTML = cards.map((c, i) => {
-    const art = `/assets/cards/art/${c.art || c.slug}.png`;
+    const art = artUrl(c);
     const off = i - (n - 1) / 2;   // a hand: fanned about its middle, the outer cards lower
     // The <li> never moves, so the place you point at stays put while the card in it
     // lifts, turns and makes way; a moving hover target is what made the hand flicker.

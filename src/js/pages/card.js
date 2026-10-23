@@ -10,6 +10,7 @@ import { rest, step, clamp } from '/js/cards/attitude.js?v=6d94ba6';
 import { lightFace, v } from '/js/cards/lamp.js?v=6d94ba6';
 import { dustMorph } from '/js/cards/morph.js?v=6d94ba6';
 import { esc, apiBase } from '/js/kit.js?v=6d94ba6';
+import { artUrl } from '/js/cards/art.js?v=8da5571';
 
 /* ── the light ─────────────────────────────────────────────────────────────
    One lamp. Everything the eye reads as light on this card — the glint, its
@@ -646,7 +647,7 @@ function scheduleRelief(c, delayMs, fade = 0) {
   if (!engraved) return;
   const alive = () => engraved && seq === reliefSeq && series[at] === c;
   const params = embossParams(c);
-  const emboss = embossOf(`/assets/cards/art/${c.art || c.slug}.png`, params);
+  const emboss = embossOf(artUrl(c), params);
   emboss.then((e) => {
     if (!alive()) return;
     for (const f of layersOf()) { f.relief.innerHTML = ''; layTint(f, c, e, params); }
@@ -842,7 +843,7 @@ function unread() { readers.forEach((d) => d.detach()); readers = []; }
 function attachReaders(c) {
   unread();
   if (!engraved || !touchy) return;
-  const artHref = `/assets/cards/art/${c.art || c.slug}.png`;
+  const artHref = artUrl(c);
   // Where the animal is on each face. The front's column covers from the
   // origin; the back's picture is boxed on the right and fitted inside.
   const fa = frontArt(c, SCREEN);
@@ -900,7 +901,7 @@ function layTypeLater(c, e, params) {
 
 function switchSkin() {
   const c = series[at];
-  const artHref = `/assets/cards/art/${c.art || c.slug}.png`;
+  const artHref = artUrl(c);
   const skinF = engraved ? engravedFor(c, SCREEN, 'f') : SCREEN;
   const skinB = engraved ? engravedFor(c, SCREEN, 'b') : SCREEN;
   const faces = [
@@ -929,7 +930,7 @@ function switchSkin() {
     const seq = ++reliefSeq;
     for (const f of layersOf()) { f.stills = {}; f.tint = null; dropGloss(f); f.relief.innerHTML = ''; f.relief.classList.remove('is-set'); }
     const params = embossParams(c);
-    embossOf(`/assets/cards/art/${c.art || c.slug}.png`, params).then((e) => {
+    embossOf(artUrl(c), params).then((e) => {
       if (seq !== reliefSeq || !engraved || series[at] !== c) return;
       for (const f of layersOf()) {
         f.relief.style.transition = 'none';
@@ -941,7 +942,7 @@ function switchSkin() {
       }
     }).catch((err) => console.warn('card: relief —', err));
   }
-  switching = { t0: performance.now(), toEngraved: engraved, incoming, c, emboss: engraved ? embossOf(`/assets/cards/art/${c.art || c.slug}.png`, embossParams(c)) : null };
+  switching = { t0: performance.now(), toEngraved: engraved, incoming, c, emboss: engraved ? embossOf(artUrl(c), embossParams(c)) : null };
   if (still) finishSwitch();
 }
 
@@ -1000,7 +1001,7 @@ function show(i, { focus = false, relief = 'soon', fade = 0 } = {}) {
   typeRamp = 0; typeGain = 1;
   at = (i + series.length) % series.length;
   const c = series[at];
-  const artHref = `/assets/cards/art/${c.art || c.slug}.png`;
+  const artHref = artUrl(c);
   // A skin per face: the filter ids inside it are document-wide, and both faces
   // live in the same document.
   // SCREEN, not PRINT: the web card carries no address, rule or back edge,
@@ -1028,7 +1029,7 @@ function show(i, { focus = false, relief = 'soon', fade = 0 } = {}) {
   // The engraved relief for this card, computed while nothing is happening, so
   // a switch to the engraved set lays it from cache instead of on the tap.
   if (!engraved) {
-    const warm = () => { if (series[at] === c && !engraved) embossOf(`/assets/cards/art/${c.art || c.slug}.png`, embossParams(c)).catch(() => {}); };
+    const warm = () => { if (series[at] === c && !engraved) embossOf(artUrl(c), embossParams(c)).catch(() => {}); };
     if ('requestIdleCallback' in window) requestIdleCallback(warm, { timeout: 1500 }); else later(warm, 600);
   }
   // The readers measure the face's glyphs, so they wait for the face that
@@ -1059,6 +1060,10 @@ function show(i, { focus = false, relief = 'soon', fade = 0 } = {}) {
   if (stopped || !series.length) return;   // stopped while the catalog was loading
 
   paintMarks();
+  // The other cards' art, fetched while nothing is happening, so a swipe to
+  // any of them finds the picture already here (WebP, cached for a year).
+  const prefetchArt = () => series.forEach((c, i) => { if (i !== at) { const im = new Image(); im.decoding = 'async'; im.src = artUrl(c); } });
+  if ('requestIdleCallback' in window) requestIdleCallback(prefetchArt, { timeout: 2500 }); else later(prefetchArt, 1200);
   on(marks, 'click', (e) => {
     const b = e.target.closest('.mark');
     // The card already up is not dealt again: that turned a card you were
