@@ -229,6 +229,7 @@ a { color: inherit; text-decoration: none; }
 /* ── the card ──────────────────────────────────────────────────────────── */
 .card-wrap {
   position: relative;
+  /* Set by pages/card.js to four card-widths, whatever the card's size. */
   perspective: 1400px;
   /* 100% of the ROOM's padded content box, not of the viewport: 90vw is wider
      than the space the room's own 20px gutters leave, which is where the last
@@ -455,29 +456,19 @@ a { color: inherit; text-decoration: none; }
   /* No cursor change, deliberately: `cursor` is inherited, and an inherited
      property changing on the card reaches every filtered SVG element under
      it, which WebKit answers with a repaint — 300ms in the frame the card
-     was picked up, measured, for a cursor no touch screen has. Off the
-     table is the desk shadow below. It used to grow by six percent as well,
-     and that one change of scale re-rastered every layer under it. */
+     was picked up, measured, for a cursor no touch screen has. It used to
+     grow by six percent as well, and that one change of scale re-rastered
+     every layer under it. */
 }
 .card-wrap.is-inspecting { touch-action: none; }
 /* The settle folds a 180° coast into is-flipped and zeroes the angle in one
    frame. Both faces tween their flip over .7s unless told not to, so a card
    that had landed on its back snapped to the front and turned over again. */
 .card.is-inspecting .face { transition: none; }
-/* The shadow a held card throws on the desk: its own flat layer under the
-   card, faded in by opacity. It used to be a change of box-shadow on the
-   faces, and that repainted both of them — with their filters — in the very
-   frame the card was picked up: 300ms, measured. A desk shadow does not turn
-   with the card in any case. */
-.desk {
-  /* Scaled by the card's own turn every frame (pages/card.js loop): it was a
-     flat card-sized rectangle, so a card turned edge-on in the hand stood in
-     front of a black card-shaped frame. A shadow narrows as its card does. */
-  position: absolute; inset: 0; border-radius: 10px; pointer-events: none;
-  box-shadow: 0 46px 90px rgba(0,0,0,.72), 0 4px 6px rgba(0,0,0,.4);
-  opacity: 0; transition: opacity .35s ease; will-change: opacity;
-}
-.card-wrap.is-inspecting .desk { opacity: 1; }
+/* There is no desk shadow (removed 23 Oct 2026). It was a flat card-sized
+   layer under the card that faded in when the card was held: it cannot turn
+   with the card, so a card turned edge-on stood in front of a dark card-shaped
+   panel. The faces' own drop shadow turns with them. */
 
 /* Pinned to the bottom of the lower row, so it sits at the foot of the screen. */
 .colophon {
@@ -650,7 +641,6 @@ a { color: inherit; text-decoration: none; }
 
   <div class="zone">
   <div class="card-wrap">
-    <i class="desk" aria-hidden="true"></i>
     <div class="card" id="card" role="button" tabindex="0"
          aria-label="The Kaayko card. Activate to turn it over; drag it to turn it in your hand.">
       <div class="face front"><div class="face-in">

@@ -63,17 +63,20 @@ const TILT = 11;                            // degrees the card leans toward the
 // and unwatchable. This close, a turn of thirty degrees walks the glint
 // from one edge to the other, and it sits on the sheet at rest.
 const ROOM_LAMP = v(-0.42, -0.14, 0.9);
-const PERSPECTIVE = parseFloat(getComputedStyle(cardWrap).perspective) || 1400;
+// The eye is four card-widths from the card, at every card size. The CSS
+// perspective was a fixed 1400px: four widths of a 353px phone card, but under
+// two of the 720px desktop one — so a card turned in the hand on a desktop
+// swung its near edge at the viewer and ran taller than the window.
+const EYE_CARDS = 4;
 const lampEl = document.getElementById('lamp');
-const deskEl = cardWrap.querySelector('.desk');
 
-let eye = v(0, 0, PERSPECTIVE / 600), cardW = 600, cardBox = null, roomBox = null;
-/** Where the eye is, in card widths: the CSS perspective over the card's real width. */
+let eye = v(0, 0, EYE_CARDS), cardW = 600, cardBox = null, roomBox = null;
+/** The card's real width, and the perspective set from it. */
 function measure() {
   cardBox = cardWrap.getBoundingClientRect();
   roomBox = room.getBoundingClientRect();
   cardW = cardBox.width || 600;
-  eye = v(0, 0, PERSPECTIVE / cardW);
+  cardWrap.style.perspective = `${Math.round(cardW * EYE_CARDS)}px`;   // runs before write() exists
 }
 measure();
 on(window, 'resize', measure);
@@ -201,10 +204,6 @@ function loop(t) {
   if (switching) stepSwitch(t);
   if (typeRamp) { typeGain = smooth((t - typeRamp) / 350); if (typeGain >= 1) typeRamp = 0; }
   lit(att.rx, att.ry);
-  if (deskEl) {
-    const rad = Math.PI / 180;
-    write(deskEl, 'transform', `scale(${Math.max(0.02, Math.abs(Math.cos(att.ry * rad))).toFixed(3)}, ${Math.max(0.02, Math.abs(Math.cos(att.rx * rad))).toFixed(3)})`);
-  }
   write(card, 'transform', `rotateX(${att.rx.toFixed(2)}deg) rotateY(${att.ry.toFixed(2)}deg)`);
   raf = requestAnimationFrame(loop);
 }
