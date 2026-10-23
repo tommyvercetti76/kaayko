@@ -53,6 +53,14 @@ export const PRINT = Object.freeze({
   accentOf: (card) => card.accent || "#8A5A2B",
   /** The animal: filling the front column, ghosted on the back. */
   art: true,
+  /** The address under the hook (front) and under the line (back). The QR says it already. */
+  address: true,
+  /** The hairline above the address on each face. */
+  rule: true,
+  /** The coloured edge down the left of the BACK. Only read when `spine` is on. */
+  backSpine: true,
+  /** The three facts at the foot of the back, in print units. */
+  factSize: 15,
   /** A filter applied to the animal, or "". A skin can deboss it into the stock. */
   artFilter: "",
   /** The coloured edge, 6 units on the front and 8 on the back. */
@@ -82,6 +90,35 @@ export const PRINT = Object.freeze({
   defs: "",
   /** A filter attribute value applied to every line of type, or "". */
   textFilter: "",
+});
+
+/**
+ * The card as the website shows it. Same geometry, same object — but on a
+ * screen the QR and the link under the card already carry the address, so the
+ * face drops the printed address, the hairline above it and the back's
+ * coloured edge (which the lamp shaded into what read as a gradient strip),
+ * and spends the room on larger type. Added 22 Oct 2026. The printed card is
+ * PRINT and is not touched by this: tests/cardRender pins its bytes.
+ *
+ * Sizes are checked against the columns, measured in Cormorant: "Paddling Out"
+ * is 507 units at 96 in the front's 523, and 380 at 72 in the back's 392. The
+ * hook wraps at 25 characters at 46 and the back line at backWrap(36) = 24, and
+ * the test suite asserts every card fits in two and three rows.
+ */
+export const SCREEN = Object.freeze({
+  ...PRINT,
+  address: false,
+  rule: false,
+  backSpine: false,
+  factSize: 17,
+  /** engravedFor() scales the engraved set's own type by this, for the same reason. */
+  engravedScale: 1.12,
+  type: Object.freeze({
+    name:     Object.freeze({ ...PRINT.type.name, size: 96, y: 214 }),
+    hook:     Object.freeze({ ...PRINT.type.hook, size: 46, y: 296, step: 56, wrap: 25 }),
+    backName: Object.freeze({ ...PRINT.type.backName, size: 72, y: 184 }),
+    backLine: Object.freeze({ ...PRINT.type.backLine, size: 36, y: 252 }),
+  }),
 });
 
 import { esc } from "/js/kit.js?v=a61f106";
@@ -250,9 +287,9 @@ ${hook}
 <!-- The rule used to sit at y=380 while the QR box started at y=358, so the
      line ran straight through the code. Everything below the rule now starts
      below it: the address on the left, the code on the right, the mark beneath. -->
-<path d="M${TX} 380 H980" stroke="${skin.mute}" stroke-width="0.9" opacity=".32"/>
-<text x="${TX}" y="432"${F} style="font:400 30px ${skin.serif};fill:${skin.mute}">${esc(hostOf(card))}</text>
-${skin.qrBox ? `<rect x="858" y="406" width="122" height="122" rx="4" fill="${skin.qrPaper}" stroke="${skin.mute}" stroke-width="1"/>` : ""}
+${skin.rule ? `<path d="M${TX} 380 H980" stroke="${skin.mute}" stroke-width="0.9" opacity=".32"/>
+` : ""}${skin.address ? `<text x="${TX}" y="432"${F} style="font:400 30px ${skin.serif};fill:${skin.mute}">${esc(hostOf(card))}</text>
+` : ""}${skin.qrBox ? `<rect x="858" y="406" width="122" height="122" rx="4" fill="${skin.qrPaper}" stroke="${skin.mute}" stroke-width="1"/>` : ""}
 ${qr ? qrRects(qr, 867, 415, 104, skin.qrInk) : ""}
 <text x="919" y="566" text-anchor="middle"${F}
       style="font:300 24px ${skin.sans};fill:${skin.mute};letter-spacing:7px">KAAYKO</text>
@@ -319,7 +356,7 @@ export function back(card, brand = {}, { index = 1, total = 5, artHref, skin = P
   const factRow = facts.map((f, k) => {
     const y = BACK.factsY + k * BACK.factStep;
     return `<path d="M${L} ${y - 5} H${L + 22}" stroke="${accent}" stroke-width="1.4" opacity=".85"/>
-<text x="${L + 36}" y="${y}"${F} style="font:300 15px ${skin.sans};fill:${skin.ink};letter-spacing:3px">${esc(String(f).toUpperCase())}</text>`;
+<text x="${L + 36}" y="${y}"${F} style="font:300 ${skin.factSize}px ${skin.sans};fill:${skin.ink};letter-spacing:3px">${esc(String(f).toUpperCase())}</text>`;
   }).join("\n");
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="3.5in" height="2in"
@@ -329,7 +366,7 @@ ${skin.defs}<rect width="${W}" height="${H}" fill="${skin.paper}"/>
      thing that makes a card recognisably its own at arm's length — and nothing
      is printed over it, at any opacity, on any stock. -->
 ${ghost}
-${skin.spine ? `<rect x="0" y="0" width="8" height="${H}" fill="${accent}"/>` : ""}${skin.plate || ""}
+${skin.spine && skin.backSpine ? `<rect x="0" y="0" width="8" height="${H}" fill="${accent}"/>` : ""}${skin.plate || ""}
 
 <text x="${L}" y="86"${F} style="font:300 22px ${skin.sans};fill:${skin.mute};letter-spacing:9px">${esc(label)}</text>
 <text x="${L}" y="${T.backName.y}"${F} style="font:${T.backName.weight} ${nameSize(card, T.backName.size)}px ${skin.serif};${track(T.backName.track)}fill:${skin.ink}">${esc(cased(card.name || "", T.backName.caps))}</text>
@@ -338,9 +375,9 @@ ${lineSvg}
 <!-- Stops at the type column's edge, so it never runs across the animal. The
      address sits directly under it, at the size of a caption rather than a
      headline. Both drop a line when the sentence above them takes two. -->
-<path d="M${L} ${ruleY} H${L + (BACK.textRight - L) / 2}" stroke="${skin.mute}" stroke-width="0.9" opacity=".28"/>
-<text x="${L}" y="${hostY}"${F} style="font:400 24px ${skin.serif};fill:${skin.mute}">${esc(hostOf(card))}</text>
-${factRow}
+${skin.rule ? `<path d="M${L} ${ruleY} H${L + (BACK.textRight - L) / 2}" stroke="${skin.mute}" stroke-width="0.9" opacity=".28"/>
+` : ""}${skin.address ? `<text x="${L}" y="${hostY}"${F} style="font:400 24px ${skin.serif};fill:${skin.mute}">${esc(hostOf(card))}</text>
+` : ""}${factRow}
 
 <text x="${W - BACK.pad}" y="${BACK.indexY}" text-anchor="end"${F}
       style="font:300 12px ${skin.sans};fill:${skin.mute};letter-spacing:5px">${index} OF ${total}</text>

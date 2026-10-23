@@ -40,7 +40,8 @@ globalThis.document ??= {
   getElementById: () => null,
 };
 
-const { front, back, wrap, hostOf, qrRects, BACK, backWrap, PRINT, ART_EXTENT } = await import('/js/cards/render.js');
+const { front, back, wrap, hostOf, qrRects, BACK, backWrap, PRINT, SCREEN, ART_EXTENT } = await import('/js/cards/render.js');
+const { engravedFor } = await import('/js/cards/skins/engraved.js');
 
 const INDEX = fileURLToPath(new URL('../src/assets/cards/index.json', import.meta.url));
 const idx = JSON.parse(fs.readFileSync(INDEX, 'utf8'));
@@ -162,6 +163,59 @@ test('THE BACK — the words and the animal never touch', () => {
     for (const f of (c.facts || [])) {
       const right = 88 + 36 + String(f).length * (15 * 0.62 + 3);
       assert.ok(right <= BACK.textRight, `${c.slug}: fact "${f}" reaches x=${right.toFixed(0)}`);
+    }
+  }
+});
+
+/*
+ * THE SCREEN SKIN (22 Oct 2026). The website draws the same object with no
+ * address, no hairline and no coloured back edge, and spends that room on
+ * larger type. It must never reach the printed card (the hashes above), and
+ * its larger type must still fit the same columns, in both the colour set and
+ * the engraved set built on it. Widths were also measured with getBBox in the
+ * page's own fonts: widest front line 963 of 980, widest back line 468 of 480.
+ */
+const screenFaces = (c) => [
+  ['colour', front(c, { qr, artHref: artOf(c), skin: SCREEN }), back(c, idx.brand || {}, { index: 1, total: 6, artHref: artOf(c), skin: SCREEN })],
+  ['engraved', front(c, { qr, artHref: artOf(c), skin: engravedFor(c, SCREEN, 'f') }), back(c, idx.brand || {}, { index: 1, total: 6, artHref: artOf(c), skin: engravedFor(c, SCREEN, 'b') })],
+];
+
+test('SCREEN — the web card prints no address, no hairline and no back edge', () => {
+  for (const c of idx.cards) {
+    for (const [mode, f, b] of screenFaces(c)) {
+      for (const [face, svg] of [['front', f], ['back', b]]) {
+        assert.ok(!svg.includes(`>${hostOf(c)}<`), `${c.slug} ${mode} ${face}: address still drawn`);
+        assert.ok(!/stroke-width="0\.9"/.test(svg), `${c.slug} ${mode} ${face}: hairline still drawn`);
+      }
+      assert.ok(!/<rect x="0" y="0" width="8"/.test(b), `${c.slug} ${mode}: back edge still drawn`);
+    }
+  }
+});
+
+test('SCREEN — the printed card still carries all three, and PRINT itself is unchanged', () => {
+  const c = idx.cards[0];
+  const f = front(c, { qr, artHref: artOf(c) }), b = back(c, idx.brand || {}, { index: 1, total: 6, artHref: artOf(c) });
+  assert.ok(f.includes(`>${hostOf(c)}<`) && b.includes(`>${hostOf(c)}<`));
+  assert.ok(/stroke-width="0\.9"/.test(f) && /<rect x="0" y="0" width="8"/.test(b));
+  assert.ok(Object.isFrozen(SCREEN) && Object.isFrozen(PRINT));
+  assert.equal(PRINT.address, true); assert.equal(PRINT.rule, true); assert.equal(PRINT.backSpine, true); assert.equal(PRINT.factSize, 15);
+});
+
+test('SCREEN — the larger type still fits: two hook rows, three back rows, names inside their columns', () => {
+  for (const c of idx.cards) {
+    const hook = wrap(c.hook, SCREEN.type.hook.wrap, 99);
+    assert.ok(hook.length <= 2, `${c.slug}: hook needs ${hook.length} rows at wrap ${SCREEN.type.hook.wrap}`);
+    // Two hook rows end above the QR box (y 406), so they may use the column's full width.
+    assert.ok(SCREEN.type.hook.y + SCREEN.type.hook.step < 406 - 10, 'second hook row runs into the QR box');
+    const rows = wrap(c.line || c.hook, backWrap(SCREEN.type.backLine.size), 99);
+    assert.ok(rows.length <= 3, `${c.slug}: back line needs ${rows.length} rows`);
+    const lastRow = SCREEN.type.backLine.y + (rows.length - 1) * Math.round(SCREEN.type.backLine.size * BACK.lineStep);
+    assert.ok(lastRow <= BACK.factsY - 40, `${c.slug}: back line ends at y=${lastRow}, too near the facts at ${BACK.factsY}`);
+    const nameW = String(c.name).length * SCREEN.type.backName.size * BACK.em;
+    assert.ok(88 + nameW <= BACK.textRight, `${c.slug}: back name reaches x=${(88 + nameW).toFixed(0)}`);
+    for (const fct of (c.facts || [])) {
+      const right = 88 + 36 + String(fct).length * (SCREEN.factSize * 0.62 + 3);
+      assert.ok(right <= BACK.textRight, `${c.slug}: fact "${fct}" reaches x=${right.toFixed(0)}`);
     }
   }
 });

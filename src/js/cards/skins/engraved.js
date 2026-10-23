@@ -224,7 +224,9 @@ export function reliefType(card, face) {
  * both depend on which card it is.
  *
  * @param {object} card   a card record; only `slug` is read
- * @param {object} PRINT  the default skin, which this one starts from
+ * @param {object} PRINT  the skin this one starts from: render.js's PRINT, or its
+ *                        SCREEN, whose `engravedScale` sets the type a size up
+ *                        (the screen faces carry no address, so there is room)
  */
 export function engravedFor(card, PRINT, face = "f") {
   // The filter ids the page builds from this are per card AND per face: an
@@ -232,6 +234,13 @@ export function engravedFor(card, PRINT, face = "f") {
   const { slug } = idFor(card, face);
   const stock = STOCKS[slug] || FALLBACK;
   const v = VARIATION[slug] || VARIATION.kaayko;
+  // Scaled from the variation's own numbers, so the five still differ by the
+  // same ratios. wrap() counts characters, so it shrinks as the type grows.
+  const k = PRINT.engravedScale || 1;
+  const name = k === 1 ? v.type.name : { ...v.type.name, size: Math.round(v.type.name.size * k) };
+  const hook = k === 1 ? v.type.hook : { ...v.type.hook, size: Math.round(v.type.hook.size * k),
+    step: Math.round(v.type.hook.step * k), wrap: Math.floor(v.type.hook.wrap / k),
+    y: v.type.hook.y + Math.round((k - 1) * v.type.name.size * 1.2) };
 
   return {
     ...PRINT,
@@ -263,16 +272,16 @@ export function engravedFor(card, PRINT, face = "f") {
     type: Object.freeze({
       // Caps, size and tracking are the variation's, not the skin's: this is
       // where one card stops being the same job as the one beside it.
-      name:     Object.freeze({ ...PRINT.type.name, ...v.type.name }),
+      name:     Object.freeze({ ...PRINT.type.name, ...name }),
       // wrap() counts characters and knows nothing about the font, so a hook
       // set smaller must be allowed more of them or it breaks early.
-      hook:     Object.freeze({ ...PRINT.type.hook, ...v.type.hook }),
+      hook:     Object.freeze({ ...PRINT.type.hook, ...hook }),
       // The back's column is 392px and the name is set in caps with wide
       // tracking, which is what made "PADDLING OUT" 445px at the old size.
       // Smaller and tighter here than on the front; the test suite measures
       // it against BACK.textRight.
-      backName: Object.freeze({ ...PRINT.type.backName, weight: v.type.name.weight, size: Math.round(v.type.name.size * .74), y: 176, track: Math.max(0, v.type.name.track - 4), caps: v.type.name.caps }),
-      backLine: Object.freeze({ ...PRINT.type.backLine, size: 24, y: 230, track: .5 }),
+      backName: Object.freeze({ ...PRINT.type.backName, weight: name.weight, size: Math.round(name.size * .74), y: 176, track: Math.max(0, name.track - 4), caps: name.caps }),
+      backLine: Object.freeze({ ...PRINT.type.backLine, size: Math.round(24 * k), y: 230 + Math.round((k - 1) * 60), track: .5 }),
     }),
   };
 }

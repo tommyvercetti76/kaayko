@@ -16,7 +16,7 @@
  * a reader without scripts, or with a network that drops the module, still
  * gets out.
  */
-import { front, back, PRINT } from '/js/cards/render.js?v=a61f106';
+import { front, back, SCREEN } from '/js/cards/render.js?v=a61f106';
 import { esc, apiBase } from '/js/kit.js?v=a61f106';
 
 const hand = document.getElementById('hand');
@@ -69,8 +69,8 @@ function deal({ cards, brand }) {
   <div class="mini-pose">
     <a class="mini-card" href="${esc(c.url)}" aria-label="${esc(spoken(c))}">
       <span class="mini-turn">
-        <span class="mini-face mini-front">${front(c, { qr: qrFor(c.url), artHref: art, skin: PRINT })}</span>
-        <span class="mini-face mini-back">${back(c, brand, { index: i + 1, total: n, artHref: art, skin: PRINT })}</span>
+        <span class="mini-face mini-front">${front(c, { qr: qrFor(c.url), artHref: art, skin: SCREEN })}</span>
+        <span class="mini-face mini-back">${back(c, brand, { index: i + 1, total: n, artHref: art, skin: SCREEN })}</span>
       </span>
     </a>
   </div>

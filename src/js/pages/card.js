@@ -2,7 +2,7 @@
  * pages/card.js — the collectible card (/card): lighting model, flip, inspect, QR.
  * Moved out of card.html on 12 Sep 2026 unchanged.
  */
-import { front, back, PRINT, BACK, ART_EXTENT, ART_COLUMN } from '/js/cards/render.js?v=a61f106';
+import { front, back, SCREEN, BACK, ART_EXTENT, ART_COLUMN } from '/js/cards/render.js?v=a61f106';
 import { engravedFor, stockOf, embossParams, reliefType, DIRS } from '/js/cards/skins/engraved.js?v=a61f106';
 import { embossOf, stillCanvas } from '/js/cards/emboss.js?v=a61f106';
 import { readFace, warmArt } from '/js/cards/relief.js?v=a61f106';
@@ -696,8 +696,10 @@ function show(i, { focus = false, relief = 'soon', fade = 0 } = {}) {
   const artHref = `/assets/cards/art/${c.art || c.slug}.png`;
   // A skin per face: the filter ids inside it are document-wide, and both faces
   // live in the same document.
-  const skinF = engraved ? engravedFor(c, PRINT, 'f') : PRINT;
-  const skinB = engraved ? engravedFor(c, PRINT, 'b') : PRINT;
+  // SCREEN, not PRINT: the web card carries no address, rule or back edge,
+  // and larger type. The printed card is render.js's PRINT and is not drawn here.
+  const skinF = engraved ? engravedFor(c, SCREEN, 'f') : SCREEN;
+  const skinB = engraved ? engravedFor(c, SCREEN, 'b') : SCREEN;
   draw(frontEl, front(c, { qr: qrFor(c.url), artHref, skin: skinF }),
        `${c.name}, front of the card`, fade);
   // The back gets the same art, ghosted behind its words.
