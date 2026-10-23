@@ -2,7 +2,7 @@
  * pages/card.js — the collectible card (/card): lighting model, flip, inspect, QR.
  * Moved out of card.html on 12 Sep 2026 unchanged.
  */
-import { front, back, frontArt, SCREEN, BACK, ART_EXTENT } from '/js/cards/render.js?v=f247684';
+import { front, back, frontArt, backArt, SCREEN } from '/js/cards/render.js?v=f247684';
 import { engravedFor, stockOf, embossParams, reliefType, DIRS } from '/js/cards/skins/engraved.js?v=f247684';
 import { embossOf, stillCanvas } from '/js/cards/emboss.js?v=f247684';
 import { readFace, warmArt } from '/js/cards/relief.js?v=f247684';
@@ -95,6 +95,14 @@ let raf = 0, target = { x: .5, y: .35 }, cur = { x: .5, y: .35 }, live = false;
 const write = (el, prop, val) => { if (el && el.style[prop] !== val) el.style[prop] = val; };
 const SIG = 14;               // the sheen gradient's own sigma is a fourteenth of the card, see .sheen
 const RELIEF_FLOOR = 0.02;
+// How far the engraved material stands up, 0 (flat) to 1 (full relief). It is
+// 1 except while the set is switching, when it rises as the colour drains and
+// sinks as the colour fills (switchSkin). Applied per layer, in lit(), like
+// every other light on the card — never as a fade over the group.
+let reliefGain = 1;
+// The lettering's share of the relief, ramped in on its own (typeRamp): its
+// layers are laid a beat after the animal's so the two never cost one frame.
+let typeGain = 1, typeRamp = 0;
 let quiet = false;            // the probe rig, isolating the light
 let reliefParts = 'all';      // the probe rig, weighing the relief: 'all' | 'art' | 'flat' | 'nogloss'
 
@@ -144,8 +152,9 @@ function lit(rx, ry) {
     write(f.shade, 'opacity', shade);
     write(f.foil, 'transform', foil); write(f.foil, 'opacity', foilO);
     write(f.rim, 'opacity', rim);
-    if (f.gloss) { write(f.gloss, 'transform', gloss); write(f.gloss, 'opacity', glossO); }
-    for (const dir in f.stills) for (const st of f.stills[dir]) write(st.el, 'opacity', (stills[dir] * st.k).toFixed(3));
+    if (f.gloss) { write(f.gloss, 'transform', gloss); write(f.gloss, 'opacity', Math.max(RELIEF_FLOOR, glossO * reliefGain * typeGain).toFixed(3)); }
+    for (const dir in f.stills) for (const st of f.stills[dir]) write(st.el, 'opacity', (Math.max(RELIEF_FLOOR, stills[dir] * reliefGain * (st.type ? typeGain : 1)) * st.k).toFixed(3));
+    if (f.tint) write(f.tint.el, 'opacity', (f.tint.k * Math.max(RELIEF_FLOOR, reliefGain)).toFixed(3));
   }
   // The glow on the wall: the lamp itself, seen from the eye, on the desk's plane.
   if (cardBox && roomBox && lampEl) {
@@ -185,6 +194,8 @@ function loop(t) {
   // leaning to a pointer or turning in a hand. The model works in the frame
   // of whichever face is up: at 180° the back is square to the viewer exactly
   // as the front is at 0°, and a full turn ends where it began.
+  if (switching) stepSwitch(t);
+  if (typeRamp) { typeGain = smooth((t - typeRamp) / 350); if (typeGain >= 1) typeRamp = 0; }
   lit(att.rx, att.ry);
   write(card, 'transform', `rotateX(${att.rx.toFixed(2)}deg) rotateY(${att.ry.toFixed(2)}deg)`);
   raf = requestAnimationFrame(loop);
@@ -454,13 +465,17 @@ function setSkin(on, { save = true } = {}) {
   // for the new faces — and the relief, which is the expensive raster,
   // rises into the paper only after the dust has settled.
   const timed = save && !still;
-  if (series.length) { paintMarks(); show(at, { relief: timed ? 'after-morph' : 'soon', fade: timed ? MORPH_MS : 0 }); if (wasFlipped) card.classList.add('is-flipped'); }
+  if (series.length) {
+    paintMarks();
+    if (timed) switchSkin();
+    else { show(at, { relief: 'soon' }); if (wasFlipped) card.classList.add('is-flipped'); }
+  }
   if (save) frame(() => morphNow(engraved ? 'to' : 'back'));
 }
 
 on(skinBtn, 'click', (e) => {
   e.stopPropagation();
-  if (morph && morph.busy()) return;       // let the dust land
+  if ((morph && morph.busy()) || switching) return;       // let the dust land
   setSkin(!engraved);
 });
 
@@ -495,9 +510,9 @@ let series = [], brand = {}, at = 0;
    in secure static mode and refuses to load the external art file. */
 /* How long the skull takes to become the rose, and so how long the card
    takes to change stock under it: the two are one gesture and run on one
-   clock. The stylesheet's 1.15s transitions on the page's colours are this
+   clock. The stylesheet's .9s transitions on the page's colours are this
    number too. */
-const MORPH_MS = 1150;
+const MORPH_MS = 900;
 
 function draw(el, svg, label, fade = 0) {
   el.setAttribute('aria-label', label);
@@ -576,6 +591,7 @@ function scheduleRelief(c, delayMs, fade = 0) {
   const seq = ++reliefSeq;
   for (const f of layersOf()) {
     f.stills = {};
+    f.tint = null;
     dropGloss(f);
     // On a timed switch the old relief fades out on the same clock as the
     // face under it, and the new impression fades in on it. Otherwise the
@@ -600,7 +616,8 @@ function scheduleRelief(c, delayMs, fade = 0) {
   reliefTimer = later(() => {
     emboss.then((e) => {
       if (!alive()) return;
-      for (const f of layersOf()) layStills(f, c, e, params);
+      for (const f of layersOf()) layStills(f, c, e, params, 'art');
+      later(() => { if (alive()) layTypeLater(c, e, params); }, 260);
       // Two frames: one for the insert to be laid out, one for the transition to
       // have something to start from. The raster lands in the first.
       frame(() => frame(() => {
@@ -635,19 +652,15 @@ const placeStill = (el, win, W = 1050, H = 600) => {
  * extent is fitted. Either way the file hangs past the box on every side.
  */
 function artRect(face, c) {
-  if (face !== 'b') return frontArt(c, SCREEN).file;
-  const ex = ART_EXTENT[c.art || c.slug] || { x: 0, y: 0, w: 802, h: 1200 };
-  const k = Math.min(BACK.ghostW / ex.w, BACK.ghostH / ex.h);
-  return {
-    x: BACK.ghostX + (BACK.ghostW - ex.w * k) / 2 - ex.x * k,
-    y: BACK.ghostY + (BACK.ghostH - ex.h * k) / 2 - ex.y * k,
-    w: 802 * k, h: 1200 * k,
-  };
+  return (face === 'b' ? backArt(c, SCREEN) : frontArt(c, SCREEN)).file;
 }
+
+/** The back's animal is the front's, seen through the sheet: drawn mirrored. */
+const MIRRORED = { xp: 'xn', xn: 'xp', yp: 'yp', yn: 'yn' };
 
 /** The window the animal's layers are cut to: its box, plus a margin for the relief, inside the sheet. */
 function artWindow(face, c, W = 1050, H = 600) {
-  const box = face === 'b' ? { x: BACK.ghostX, y: BACK.ghostY, w: BACK.ghostW, h: BACK.ghostH } : frontArt(c, SCREEN).box;
+  const box = (face === 'b' ? backArt(c, SCREEN) : frontArt(c, SCREEN)).box;
   const m = Math.ceil(Math.max(box.w, box.h) * 0.06) + 2;
   const x0 = Math.max(0, box.x - m), y0 = Math.max(0, box.y - m);
   const x1 = Math.min(W, box.x + box.w + m), y1 = Math.min(H, box.y + box.h + m);
@@ -661,7 +674,7 @@ function artLayer(face, c, imageData, cls) {
   el.className = cls;
   placeStill(el, win);
   const cv = stillCanvas(imageData);
-  cv.style.cssText = `position:absolute;left:${((rect.x - win.x) / win.w * 100).toFixed(2)}%;top:${((rect.y - win.y) / win.h * 100).toFixed(2)}%;width:${(rect.w / win.w * 100).toFixed(2)}%;height:${(rect.h / win.h * 100).toFixed(2)}%`;
+  cv.style.cssText = `position:absolute;left:${((rect.x - win.x) / win.w * 100).toFixed(2)}%;top:${((rect.y - win.y) / win.h * 100).toFixed(2)}%;width:${(rect.w / win.w * 100).toFixed(2)}%;height:${(rect.h / win.h * 100).toFixed(2)}%${face === 'b' && backArt(c, SCREEN).mirror ? ';transform:scaleX(-1)' : ''}`;
   el.appendChild(cv);
   return el;
 }
@@ -670,28 +683,36 @@ function artLayer(face, c, imageData, cls) {
 function layTint(f, c, e, params) {
   const face = f.host === backEl ? 'b' : 'f';
   const el = artLayer(face, c, e.tint, 'art tint');
-  el.style.opacity = face === 'b' ? String(params.ghost) : '1';
+  const k = face === 'b' ? params.ghost : 1;
+  el.style.opacity = String(k * Math.max(RELIEF_FLOOR, reliefGain));
+  f.tint = { el, k };
   f.relief.appendChild(el);
 }
 
 /** Phase two: the four lit stills of the animal, and of the type. */
-function layStills(f, c, e, params) {
+function layStills(f, c, e, params, part = 'all') {
   const face = f.host === backEl ? 'b' : 'f';
   const ghost = face === 'b' ? params.ghost : 1;
-  const wrap = document.createElement('div');
-  wrap.className = 'stills';
-  const type = reliefParts === 'art' ? null : reliefType(c, face);
-  const svg = f.host.querySelector('svg');
+  // 'art' lays the animal's stills in a new wrap; 'type' adds the lettering's
+  // stills and gloss to the wrap already there; 'all' does both at once.
+  let wrap = part === 'type' ? f.relief.querySelector('.stills') : null;
+  const fresh = !wrap;
+  if (fresh) { wrap = document.createElement('div'); wrap.className = 'stills'; }
+  const type = reliefParts === 'art' || part === 'art' ? null : reliefType(c, face);
+  const svgs = f.host.querySelectorAll(':scope > svg');
+  const svg = svgs[svgs.length - 1];                  // the arriving face, mid-switch
   const texts = svg ? [...svg.querySelectorAll('text')] : [];
   const tw = type && texts.length ? typeWindow(texts) : null;
   const flat = reliefParts === 'flat' ? (html) => html.replace(/ filter="url\(#[^"]+\)"/g, '') : (html) => html;
-  f.stills = {};
+  if (part !== 'type') f.stills = {};
   for (const dir of Object.keys(DIRS)) {
-    f.stills[dir] = [];
-    const a = artLayer(face, c, e[dir], 'art');
-    a.dataset.dir = dir;
-    a.style.opacity = String(RELIEF_FLOOR);
-    wrap.appendChild(a); f.stills[dir].push({ el: a, k: ghost });
+    f.stills[dir] ??= [];
+    if (part !== 'type') {
+      const a = artLayer(face, c, e[face === 'b' && backArt(c, SCREEN).mirror ? MIRRORED[dir] : dir], 'art');
+      a.dataset.dir = dir;
+      a.style.opacity = String(RELIEF_FLOOR);
+      wrap.appendChild(a); f.stills[dir].push({ el: a, k: ghost });
+    }
     if (!tw) continue;
     // The lettering is the face's own <text>, cloned: it is never set twice,
     // so it cannot drift from what the card says.
@@ -702,10 +723,10 @@ function layStills(f, c, e, params) {
     for (const el of texts) { const k = el.cloneNode(true); k.removeAttribute('filter'); g.appendChild(k); }
     placeStill(t, tw);
     t.style.opacity = String(RELIEF_FLOOR);
-    wrap.appendChild(t); f.stills[dir].push({ el: t, k: 1 });
+    wrap.appendChild(t); f.stills[dir].push({ el: t, k: 1, type: true });
   }
   if (tw && reliefParts !== 'nogloss') layGloss(f, texts, tw, wrap);
-  f.relief.appendChild(wrap);
+  if (fresh) f.relief.appendChild(wrap);
 }
 
 /* ── the ink's gloss ─────────────────────────────────────────────────────────
@@ -787,8 +808,8 @@ function attachReaders(c) {
   // origin; the back's picture is boxed on the right and fitted inside.
   const fa = frontArt(c, SCREEN);
   const FRONT_ART = { ...fa.box, fit: fa.fit, crop: fa.crop };
-  const BACK_ART = { x: BACK.ghostX, y: BACK.ghostY, w: BACK.ghostW, h: BACK.ghostH, fit: 'meet',
-                     crop: ART_EXTENT[c.art || c.slug] || null };
+  const ba = backArt(c, SCREEN);
+  const BACK_ART = { ...ba.box, fit: ba.fit, crop: ba.crop, mirror: ba.mirror };
   warmArt(artHref, FRONT_ART); warmArt(artHref, BACK_ART);
   for (const host of [frontEl, backEl]) {
     const svg = host.querySelector('svg');
@@ -812,8 +833,132 @@ function attachReaders(c) {
   }
 }
 
+/* ── changing the set: one motion ─────────────────────────────────────────────
+   It used to be three things in a row: the faces crossfaded for 1150ms, and
+   the relief — the raised paper, the whole point of the engraved set — was
+   laid only after the dust had landed, and popped in at 1400ms. Now it is one
+   gesture on one clock (MORPH_MS, which the skull's dust and the page's colour
+   transitions share):
+     to engraved — the colour drains out of the card while the material rises
+                   out of the paper: saturation goes to nothing, the engraved
+                   sheet takes over, and the relief's depth (reliefGain) grows
+                   from flat to full;
+     to colour   — the relief sinks flat while the colour fills back in: the
+                   colour face arrives grey and saturates.
+   The relief is laid in the first frame at zero depth (its one raster), and
+   from then on everything is opacity, a saturate filter on two faces, and the
+   per-layer writes lit() already makes every frame.                         */
+let switching = null;
+const smooth = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
+
+/** The lettering's relief and gloss, laid when nothing is moving and faded in. */
+function layTypeLater(c, e, params) {
+  if (!engraved || series[at] !== c) return;
+  typeGain = 0;
+  for (const f of layersOf()) layStills(f, c, e, params, 'type');
+  typeRamp = performance.now();
+}
+
+function switchSkin() {
+  const c = series[at];
+  const artHref = `/assets/cards/art/${c.art || c.slug}.png`;
+  const skinF = engraved ? engravedFor(c, SCREEN, 'f') : SCREEN;
+  const skinB = engraved ? engravedFor(c, SCREEN, 'b') : SCREEN;
+  const faces = [
+    [frontEl, front(c, { qr: qrFor(c.url), artHref, skin: skinF }), `${c.name}, front of the card`],
+    [backEl, back(c, brand, { index: at + 1, total: series.length, artHref, skin: skinB }), `${c.name}, back of the card`],
+  ];
+  const incoming = faces.map(([host, svg, label]) => {
+    host.setAttribute('aria-label', label);
+    const svgs = [...host.querySelectorAll(':scope > svg')];
+    for (const n of svgs.slice(0, -1)) n.remove();           // anything left from an earlier switch
+    const old = svgs[svgs.length - 1] || null;
+    host.insertAdjacentHTML('beforeend', svg);
+    const nu = host.lastElementChild;
+    nu.classList.add('incoming');
+    nu.style.opacity = '0';
+    if (!engraved) nu.style.filter = 'saturate(0)';
+    if (old) old.style.willChange = 'opacity, filter';
+    return { old, nu };
+  });
+  [...marks.children].forEach((b, j) => { b.setAttribute('aria-checked', String(j === at)); b.tabIndex = j === at ? 0 : -1; });
+  unread();
+  if (engraved) {
+    // Laid now, at depth zero, so the rise has something to rise.
+    reliefGain = 0;
+    cancelLater(reliefTimer);
+    const seq = ++reliefSeq;
+    for (const f of layersOf()) { f.stills = {}; f.tint = null; dropGloss(f); f.relief.innerHTML = ''; f.relief.classList.remove('is-set'); }
+    const params = embossParams(c);
+    embossOf(`/assets/cards/art/${c.art || c.slug}.png`, params).then((e) => {
+      if (seq !== reliefSeq || !engraved || series[at] !== c) return;
+      for (const f of layersOf()) {
+        f.relief.style.transition = 'none';
+        layTint(f, c, e, params);
+        layStills(f, c, e, params, 'art');
+        f.relief.classList.add('is-set');
+        const st = f.relief.querySelector('.stills');
+        if (st) { st.style.transition = 'none'; st.classList.add('is-set'); }
+      }
+    }).catch((err) => console.warn('card: relief —', err));
+  }
+  switching = { t0: performance.now(), toEngraved: engraved, incoming, c, emboss: engraved ? embossOf(`/assets/cards/art/${c.art || c.slug}.png`, embossParams(c)) : null };
+  if (still) finishSwitch();
+}
+
+function stepSwitch(now) {
+  const s = switching;
+  const p = Math.min(1, (now - s.t0) / MORPH_MS);
+  // The two faces set different type, so they hand over quickly in the middle
+  // rather than crossfading for long — two typefaces over each other read as
+  // a smudge. The colour goes first; the material moves after the handover.
+  for (const { old, nu } of s.incoming) {
+    if (s.toEngraved) {
+      if (old) {
+        old.style.filter = `saturate(${(1 - smooth(p / 0.4)).toFixed(3)})`;
+        old.style.opacity = (1 - smooth((p - 0.35) / 0.2)).toFixed(3);
+      }
+      nu.style.opacity = smooth((p - 0.45) / 0.25).toFixed(3);
+    } else {
+      if (old) old.style.opacity = (1 - smooth((p - 0.3) / 0.2)).toFixed(3);
+      nu.style.opacity = smooth((p - 0.4) / 0.25).toFixed(3);
+      nu.style.filter = `saturate(${smooth((p - 0.45) / 0.55).toFixed(3)})`;
+    }
+  }
+  reliefGain = s.toEngraved ? smooth((p - 0.45) / 0.55) : 1 - smooth(p / 0.5);
+  if (p >= 1) finishSwitch();
+}
+
+function finishSwitch() {
+  const s = switching;
+  if (!s) return;
+  switching = null;
+  for (const { old, nu } of s.incoming) {
+    if (old && old.parentElement) old.remove();
+    nu.classList.remove('incoming');
+    nu.style.opacity = ''; nu.style.filter = '';
+  }
+  for (const f of layersOf()) {
+    f.relief.style.transition = '';
+    const st = f.relief.querySelector('.stills');
+    if (st) st.style.transition = '';
+    if (!s.toEngraved) { f.stills = {}; f.tint = null; dropGloss(f); f.relief.innerHTML = ''; f.relief.classList.remove('is-set'); }
+  }
+  reliefGain = 1;
+  if (s.toEngraved && series[at] === s.c) {
+    attachReaders(s.c);
+    const params = embossParams(s.c);
+    // 200ms after the motion: the dust and the rose have landed by then, so
+    // the lettering's one raster falls in a frame where nothing is moving.
+    s.emboss.then((e) => later(() => layTypeLater(s.c, e, params), 200)).catch(() => {});
+  }
+  measure();
+}
+
 function show(i, { focus = false, relief = 'soon', fade = 0 } = {}) {
   if (!series.length) return;
+  if (switching) { switching = null; reliefGain = 1; }
+  typeRamp = 0; typeGain = 1;
   at = (i + series.length) % series.length;
   const c = series[at];
   const artHref = `/assets/cards/art/${c.art || c.slug}.png`;
@@ -841,6 +986,12 @@ function show(i, { focus = false, relief = 'soon', fade = 0 } = {}) {
   // 1400ms: the dust lands at 1150 and the rose has faded in by 1330. The
   // raster must fall in a still moment, and this is the first one.
   scheduleRelief(c, relief === 'after-morph' ? 1400 : 16, fade);
+  // The engraved relief for this card, computed while nothing is happening, so
+  // a switch to the engraved set lays it from cache instead of on the tap.
+  if (!engraved) {
+    const warm = () => { if (series[at] === c && !engraved) embossOf(`/assets/cards/art/${c.art || c.slug}.png`, embossParams(c)).catch(() => {}); };
+    if ('requestIdleCallback' in window) requestIdleCallback(warm, { timeout: 1500 }); else later(warm, 600);
+  }
   // The readers measure the face's glyphs, so they wait for the face that
   // is arriving rather than reading the one on its way out.
   if (fade) later(() => { if (series[at] === c) attachReaders(c); }, fade + 60);

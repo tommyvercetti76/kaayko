@@ -121,6 +121,15 @@ export const SCREEN = Object.freeze({
   artW: 470,
   artFit: "extent",
   artPad: 20,
+  // The back shows the front's animal where it would be if the card were
+  // paper you could see through: the same box, mirrored across the card, the
+  // picture flipped left to right — the same photo, turned over. So the type
+  // column on the back runs to 40 short of it, and the index goes (the strip
+  // under the card already says which card this is).
+  backArt: "mirror",
+  backTextRight: 560,
+  backIndex: false,
+  ghostOpacity: ".14",
   type: Object.freeze({
     name:     Object.freeze({ ...PRINT.type.name, size: 90, y: 214 }),
     hook:     Object.freeze({ ...PRINT.type.hook, size: 46, y: 296, step: 56, wrap: 24 }),
@@ -222,7 +231,7 @@ export const ART_EXTENT = Object.freeze({
 });
 
 /** How many characters of the back line fit in the type column at this size. */
-export const backWrap = (size) => Math.floor((BACK.textRight - 88) / (size * BACK.em));
+export const backWrap = (size, right = BACK.textRight) => Math.floor((right - 88) / (size * BACK.em));
 
 /** A letter-spacing declaration, or nothing at all when a skin does not track. */
 const track = (px) => (px ? `letter-spacing:${px}px;` : "");
@@ -278,6 +287,30 @@ export function frontArt(card, skin = PRINT) {
   return {
     box, crop: ex, fit: "meet",
     file: { x: box.x + (box.w - ex.w * k) / 2 - ex.x * k, y: box.y + (box.h - ex.h * k) / 2 - ex.y * k, w: 802 * k, h: 1200 * k },
+  };
+}
+
+/**
+ * Where the back's animal is: its `box` and where the 802x1200 FILE lands, in
+ * face units, and whether it is drawn mirrored. PRINT boxes it right of the
+ * type column; a skin with backArt "mirror" puts the front's own box on the
+ * other side of the card and flips the picture inside it.
+ */
+export function backArt(card, skin = PRINT) {
+  const ex = ART_EXTENT[card.art || card.slug] || { x: 0, y: 0, w: 802, h: 1200 };
+  if (skin.backArt === "mirror") {
+    const f = frontArt(card, skin);
+    return {
+      box: { x: W - f.box.x - f.box.w, y: f.box.y, w: f.box.w, h: f.box.h },
+      file: { x: W - f.file.x - f.file.w, y: f.file.y, w: f.file.w, h: f.file.h },
+      crop: ex, fit: "meet", mirror: true,
+    };
+  }
+  const k = Math.min(BACK.ghostW / ex.w, BACK.ghostH / ex.h);
+  return {
+    box: { x: BACK.ghostX, y: BACK.ghostY, w: BACK.ghostW, h: BACK.ghostH },
+    file: { x: BACK.ghostX + (BACK.ghostW - ex.w * k) / 2 - ex.x * k, y: BACK.ghostY + (BACK.ghostH - ex.h * k) / 2 - ex.y * k, w: 802 * k, h: 1200 * k },
+    crop: ex, fit: "meet", mirror: false,
   };
 }
 
@@ -364,7 +397,10 @@ export function back(card, brand = {}, { index = 1, total = 5, artHref, skin = P
   // A nested <svg> whose viewBox is the animal's extent: the file is drawn at
   // its natural size inside it, and only that window is fitted to the box.
   const ex = ART_EXTENT[card.art || card.slug] || { x: 0, y: 0, w: 802, h: 1200 };
-  const ghost = artHref && skin.art
+  const mirrored = skin.backArt === "mirror" ? frontArt(card, skin).box : null;
+  const ghost = artHref && skin.art && mirrored
+    ? `<g opacity="${skin.ghostOpacity}"${skin.artFilter ? ` filter="${skin.artFilter}"` : ""}><g transform="matrix(-1 0 0 1 ${W} 0)"><svg x="${mirrored.x}" y="${mirrored.y}" width="${mirrored.w}" height="${mirrored.h}" viewBox="${ex.x} ${ex.y} ${ex.w} ${ex.h}" preserveAspectRatio="xMidYMid meet"><image href="${esc(artHref)}" x="0" y="0" width="802" height="1200"/></svg></g></g>`
+    : artHref && skin.art
     ? `<g opacity="${skin.ghostOpacity}"${skin.artFilter ? ` filter="${skin.artFilter}"` : ""}><svg x="${BACK.ghostX}" y="${BACK.ghostY}" width="${BACK.ghostW}" height="${BACK.ghostH}" viewBox="${ex.x} ${ex.y} ${ex.w} ${ex.h}" preserveAspectRatio="xMidYMid meet"><image href="${esc(artHref)}" x="0" y="0" width="802" height="1200"/></svg></g>`
     : "";
 
@@ -375,7 +411,7 @@ export function back(card, brand = {}, { index = 1, total = 5, artHref, skin = P
   // the drive. The rule and the address move down with it; the facts are
   // anchored to the foot, and the test suite checks the address clears them.
   const lineSize = T.backLine.size;
-  const lineRows = wrap(line, backWrap(lineSize), 3);
+  const lineRows = wrap(line, backWrap(lineSize, skin.backTextRight || BACK.textRight), 3);
   const lineStep = Math.round(lineSize * BACK.lineStep);
   const lineSvg = lineRows.map((row, i) =>
     `<text x="${L}" y="${T.backLine.y + i * lineStep}"${F} style="font:${T.backLine.weight} ${lineSize}px ${skin.serif};${track(T.backLine.track)}fill:${skin.mute}">${esc(row)}</text>`
@@ -413,9 +449,9 @@ ${lineSvg}
 ${skin.rule ? `<path d="M${L} ${ruleY} H${L + (BACK.textRight - L) / 2}" stroke="${skin.mute}" stroke-width="0.9" opacity=".28"/>
 ` : ""}${skin.address ? `<text x="${L}" y="${hostY}"${F} style="font:400 24px ${skin.serif};fill:${skin.mute}">${esc(hostOf(card))}</text>
 ` : ""}${factRow}
-
+${skin.backIndex === false ? "" : `
 <text x="${W - BACK.pad}" y="${BACK.indexY}" text-anchor="end"${F}
-      style="font:300 12px ${skin.sans};fill:${skin.mute};letter-spacing:5px">${index} OF ${total}</text>
+      style="font:300 12px ${skin.sans};fill:${skin.mute};letter-spacing:5px">${index} OF ${total}</text>`}
 </svg>`;
 }
 

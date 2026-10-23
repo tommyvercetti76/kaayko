@@ -144,11 +144,11 @@ html, body { margin: 0; background: var(--ink); color: var(--paper); overflow-x:
 /* The page changes colour on the same clock as the skull becomes the rose
    (MORPH_MS in pages/card.js). One-time transitions of colour on a few
    elements; nothing here runs while the card turns. */
-html, body { transition: background-color 1.15s ease, color 1.15s ease; }
-.eyebrow h1 em, .cap, .now i, .now .to-product, .colophon a { transition: color 1.15s ease, border-color 1.15s ease; }
+html, body { transition: background-color .9s ease, color .9s ease; }
+.eyebrow h1 em, .cap, .now i, .now .to-product, .colophon a { transition: color .9s ease, border-color .9s ease; }
 /* The arriving face, during a timed switch: over the old one, on its own layer. */
 #face-front, #face-back { position: relative; }
-.face .incoming { position: absolute; inset: 0; will-change: opacity; }
+.face .incoming { position: absolute; inset: 0; will-change: opacity, filter; }
 body {
   font-family: var(--serif);
   min-height: 100svh;

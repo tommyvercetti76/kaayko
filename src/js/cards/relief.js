@@ -189,7 +189,8 @@ export function readFace(svg, { artHref, artBox = { x: 0, y: 0, w: 401, h: 600, 
 
   /** Depth of the animal under a point, 0 when there is none. */
   function artDepth(ux, uy) {
-    const x = ux - ax, y = uy - ay;          // into the picture's own frame
+    let x = ux - ax; const y = uy - ay;      // into the picture's own frame
+    if (artBox.mirror) x = artBox.w - x;      // the back's picture is drawn flipped
     if (!art || x < 0 || y < 0 || x > art.boxW || y > art.boxH) return 0;
     const gx = Math.floor((x / art.boxW) * art.gw);
     const gy = Math.floor((y / art.boxH) * art.gh);

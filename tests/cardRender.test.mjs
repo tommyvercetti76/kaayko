@@ -40,7 +40,7 @@ globalThis.document ??= {
   getElementById: () => null,
 };
 
-const { front, back, frontArt, wrap, hostOf, qrRects, BACK, backWrap, PRINT, SCREEN, ART_EXTENT } = await import('/js/cards/render.js');
+const { front, back, frontArt, backArt, wrap, hostOf, qrRects, BACK, backWrap, PRINT, SCREEN, ART_EXTENT } = await import('/js/cards/render.js');
 const { engravedFor } = await import('/js/cards/skins/engraved.js');
 
 const INDEX = fileURLToPath(new URL('../src/assets/cards/index.json', import.meta.url));
@@ -215,13 +215,29 @@ test('SCREEN — the front animal is framed at its extent in the wider column, n
   assert.match(f, /<text x="526" /, 'words start 56 after the 470 column');
 });
 
+test('SCREEN — the back shows the front animal mirrored: same size, the other side, flipped', () => {
+  for (const c of idx.cards) {
+    const f = frontArt(c, SCREEN), b = backArt(c, SCREEN);
+    assert.equal(b.box.w, f.box.w); assert.equal(b.box.h, f.box.h); assert.equal(b.box.y, f.box.y);
+    assert.equal(b.box.x, 1050 - f.box.x - f.box.w, `${c.slug}: not mirrored across the card`);
+    assert.equal(b.mirror, true);
+    const svg = back(c, idx.brand || {}, { index: 1, total: 6, artHref: artOf(c), skin: SCREEN });
+    assert.match(svg, /<g transform="matrix\(-1 0 0 1 1050 0\)">/, `${c.slug}: picture not flipped`);
+    assert.ok(!/ OF 6</.test(svg), `${c.slug}: index still drawn`);
+    // The type column ends 40 short of the picture.
+    assert.equal(SCREEN.backTextRight, b.box.x - 40);
+  }
+  // PRINT keeps its own box, unmirrored.
+  assert.equal(backArt(idx.cards[0], PRINT).mirror, false);
+});
+
 test('SCREEN — the larger type still fits: two hook rows, three back rows, names inside their columns', () => {
   for (const c of idx.cards) {
     const hook = wrap(c.hook, SCREEN.type.hook.wrap, 99);
     assert.ok(hook.length <= 2, `${c.slug}: hook needs ${hook.length} rows at wrap ${SCREEN.type.hook.wrap}`);
     // Two hook rows end above the QR box (y 406), so they may use the column's full width.
     assert.ok(SCREEN.type.hook.y + SCREEN.type.hook.step < 406 - 10, 'second hook row runs into the QR box');
-    const rows = wrap(c.line || c.hook, backWrap(SCREEN.type.backLine.size), 99);
+    const rows = wrap(c.line || c.hook, backWrap(SCREEN.type.backLine.size, SCREEN.backTextRight), 99);
     assert.ok(rows.length <= 3, `${c.slug}: back line needs ${rows.length} rows`);
     const lastRow = SCREEN.type.backLine.y + (rows.length - 1) * Math.round(SCREEN.type.backLine.size * BACK.lineStep);
     assert.ok(lastRow <= BACK.factsY - 40, `${c.slug}: back line ends at y=${lastRow}, too near the facts at ${BACK.factsY}`);
