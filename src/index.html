@@ -205,7 +205,7 @@ a { color: inherit; text-decoration: none; }
 
 /* The card's zone. A size container, so the card is sized from the room it
    actually has (cq units) and never from a guessed reserve. */
-.zone { container-type: size; width: 100%; min-height: 0; display: grid; place-items: center; }
+.zone { container-type: size; width: 100%; min-height: 0; display: grid; place-items: center; touch-action: pan-y; }
 /* Under the zone: the series, its caption, the stock and the footer. */
 .below {
   width: 100%; max-width: 980px;
@@ -235,9 +235,9 @@ a { color: inherit; text-decoration: none; }
      without container units; the second is the real rule. */
   width: min(100%, 720px, max(240px, calc((100svh - 400px) * 1.75)));
   width: min(100cqw, 720px, max(220px, calc((100cqh - 32px) * 1.75)));
-  /* The card owns every gesture that starts on it — tap turns it over, a quick
-     swipe deals the next, press and hold picks it up. The page never needs to
-     scroll from a drag that starts on the card. */
+  /* The card owns every gesture that starts on it — tap turns it over, a drag
+     turns it in the hand. The page never needs to scroll from a drag that
+     starts on the card; a swipe in the zone around it deals the next one. */
   touch-action: none;
 }
 /* A phone on its side: a smaller header, and the page scrolls to the strip. */
@@ -645,7 +645,7 @@ a { color: inherit; text-decoration: none; }
   <div class="card-wrap">
     <i class="desk" aria-hidden="true"></i>
     <div class="card" id="card" role="button" tabindex="0"
-         aria-label="The Kaayko card. Activate to turn it over; press and hold to pick it up and turn it.">
+         aria-label="The Kaayko card. Activate to turn it over; drag it to turn it in your hand.">
       <div class="face front">
         <div id="face-front" role="img" aria-label="Front of the Kaayko card"></div>
         <div class="relief" aria-hidden="true"></div>

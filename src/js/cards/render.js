@@ -111,8 +111,6 @@ export const SCREEN = Object.freeze({
   rule: false,
   backSpine: false,
   factSize: 17,
-  /** engravedFor() scales the engraved set's own type by this, for the same reason. */
-  engravedScale: 1.12,
   type: Object.freeze({
     name:     Object.freeze({ ...PRINT.type.name, size: 96, y: 214 }),
     hook:     Object.freeze({ ...PRINT.type.hook, size: 46, y: 296, step: 56, wrap: 25 }),

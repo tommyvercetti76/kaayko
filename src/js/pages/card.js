@@ -244,6 +244,7 @@ function grabStart(e) {
   grab.wx = 0; grab.wy = 0;
   att.tx = att.rx; att.ty = att.ry;
   att.vx.v = 0; att.vy.v = 0;
+  grab.face = Math.round(att.ry / 180) * 180;   // the face it was picked up on
   try { card.setPointerCapture(e.pointerId); } catch (_) {}
 }
 
@@ -272,7 +273,9 @@ function grabEnd(e) {
   // on the face nearest THAT — so a flick spins it over and a nudge does not.
   att.vy.v = grab.wy; att.vx.v = grab.wx;
   const coastY = att.ry + grab.wy * INSPECT_SETTLE * 0.75;
-  att.ty = Math.round(coastY / 180) * 180;
+  // A flick turns it over once, never twice: a hard one used to coast past
+  // 270° and land face up again, which reads as the flick not working.
+  att.ty = clamp(Math.round(coastY / 180) * 180 - grab.face, 180) + grab.face;
   att.tx = 0;
 }
 
@@ -286,15 +289,25 @@ function settleInspect() {
   foldTurn(); att.ry = 0; att.ty = 0; att.vy.v = 0;
 }
 
-/* ── hold to pick it up ──────────────────────────────────────────────────────
-   There used to be an Inspect / Put it down button. Now the card is picked up
-   the way a card is: press on it and hold still for a moment. A tap still
-   turns it over and a quick swipe still deals the next one — both are over
-   before the hold is. Let go and it settles, then goes back on the table by
-   itself (putDownWhenStill, in the loop).                                     */
-const HOLD_MS = 240;           // long enough that a tap or a flick never trips it
-const HOLD_SLOP = 8;           // px of movement that means "swipe", not "hold"
+/* ── the card in the hand, by default ───────────────────────────────────────
+   There used to be an Inspect / Put it down button, and then a 240ms hold
+   before a drag would turn the card — while a plain drag dealt the next card,
+   which is not what a hand on a card expects. Now: a tap turns it over; any
+   drag that starts on the card turns it, at once, and a flick past halfway
+   lands it on its other face; holding still lifts it off the table too. Let
+   go and it settles, then goes back on the table by itself (putDownWhenStill,
+   in the loop). The next card is dealt from the strip, or by a swipe in the
+   space around the card — never by a drag on the card itself.             */
+const HOLD_MS = 240;           // holding still this long lifts the card
+const HOLD_SLOP = 8;           // px of movement that makes a press a turn, not a tap
 let hold = null;
+
+function liftWith(h) {
+  if (hold !== h || grab.on) return;
+  card.dataset.held = '1';
+  setInspect(true);
+  grabStart({ pointerId: h.id, clientX: h.x, clientY: h.y });
+}
 
 function holdCancel() { if (hold) { cancelLater(hold.timer); hold = null; } }
 
@@ -303,10 +316,8 @@ function holdStart(e) {
   holdCancel();
   const h = { id: e.pointerId, x: e.clientX, y: e.clientY, timer: 0 };
   h.timer = later(() => {
-    if (hold !== h) return;
-    card.dataset.held = '1';
-    setInspect(true);
-    grabStart({ pointerId: h.id, clientX: h.x, clientY: h.y });
+    if (hold !== h || grab.on) return;
+    liftWith(h);
     try { navigator.vibrate?.(8); } catch (_) {}
   }, HOLD_MS);
   hold = h;
@@ -314,12 +325,14 @@ function holdStart(e) {
 
 function holdMove(e) {
   if (!hold || e.pointerId !== hold.id) return;
-  if (grab.on) { hold.x = e.clientX; hold.y = e.clientY; return; }
-  if (Math.hypot(e.clientX - hold.x, e.clientY - hold.y) > HOLD_SLOP) holdCancel();
+  if (grab.on) return;
+  // Past the slop it is a turn: pick the card up from where the finger went
+  // down, and let grabMove take this same move from there.
+  if (Math.hypot(e.clientX - hold.x, e.clientY - hold.y) > HOLD_SLOP) { cancelLater(hold.timer); liftWith(hold); }
 }
 
 function holdEnd(e) {
-  if (hold && e.pointerId === hold.id) holdCancel();
+  if (hold && e.pointerId === hold.id) { cancelLater(hold.timer); hold = null; }
   if (grab.on) grabEnd(e);
   // The click that follows the release must not also turn the card over.
   if (card.dataset.held) later(() => { delete card.dataset.held; }, 0);
@@ -327,7 +340,7 @@ function holdEnd(e) {
 
 /** Once a released card has come to rest, it is back on the table. */
 function putDownWhenStill() {
-  if (!inspecting || grab.on || hold) return;
+  if (!inspecting || grab.on || (hold && grab.id === hold.id)) return;
   if (Math.abs(att.vy.v) > 2 || Math.abs(att.vx.v) > 2) return;
   if (Math.abs(att.ry - att.ty) > 0.4 || Math.abs(att.rx - att.tx) > 0.4) return;
   setInspect(false);
@@ -874,23 +887,24 @@ function show(i, { focus = false, relief = 'soon', fade = 0 } = {}) {
   // would otherwise deal the next card every time. A flick is fast; a read is
   // not. The gate only applies to the engraved set, so the colour card keeps
   // exactly the swipe it always had.
-  let x0 = null, y0 = 0, t0 = 0;
-  on(card, 'pointerdown', (e) => {
-    x0 = e.clientX; y0 = e.clientY; t0 = performance.now(); gestureMoved = 0;
-  });
+  // How far a press on the card travelled, so a turn is never also a tap.
+  let gx = null, gy = 0;
+  on(card, 'pointerdown', (e) => { gx = e.clientX; gy = e.clientY; gestureMoved = 0; });
   on(card, 'pointermove', (e) => {
-    if (x0 === null) return;
-    gestureMoved = Math.max(gestureMoved, Math.hypot(e.clientX - x0, e.clientY - y0));
+    if (gx === null) return;
+    gestureMoved = Math.max(gestureMoved, Math.hypot(e.clientX - gx, e.clientY - gy));
   }, { passive: true });
-  on(card, 'pointerup', (e) => {
+  // The next card is dealt by a swipe in the space AROUND the card (the drag
+  // on the card turns it), or from the strip under it.
+  const zone = cardWrap.parentElement;
+  let x0 = null, y0 = 0;
+  on(zone, 'pointerdown', (e) => { x0 = card.contains(e.target) ? null : e.clientX; y0 = e.clientY; });
+  on(zone, 'pointerup', (e) => {
     if (x0 === null) return;
-    const dx = e.clientX - x0, dt = performance.now() - t0; x0 = null;
-    if (!inspecting && Math.abs(dx) > 46 && (!engraved || dt < 420)) {
-      card.dataset.swiped = '1';
-      show(at + (dx < 0 ? 1 : -1));
-      later(() => { delete card.dataset.swiped; }, 0);
-    }
+    const dx = e.clientX - x0, dy = e.clientY - y0; x0 = null;
+    if (!inspecting && Math.abs(dx) > 46 && Math.abs(dx) > Math.abs(dy)) show(at + (dx < 0 ? 1 : -1));
   });
+  on(zone, 'pointercancel', () => { x0 = null; });
   show(0);
   // Unconditionally, not only when a preference exists: the control's label
   // lives in two places otherwise, and the copy in the HTML is the one nobody

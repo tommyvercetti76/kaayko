@@ -51,7 +51,8 @@ export const STOCKS = Object.freeze({
 });
 
 /**
- * Six jobs, four stocks and two halves of one compliment.
+ * Six jobs, four stocks and two halves of one compliment. Since 23 Oct 2026
+ * the jobs differ in paper and die only; the type is one spec (NAME, HOOK).
  *
  * Every stock and every lettering name above is one the scene actually says:
  * bone, eggshell, pale nimbus, white, off-white, Silian Rail, Romalian type,
@@ -68,56 +69,35 @@ export const STOCKS = Object.freeze({
  * lamp's business, see embossParams and cards/emboss.js.
  */
 const VARIATION = Object.freeze({
-  // Widest tracking of the five, and the only one whose hook is tracked too.
-  kaayko: Object.freeze({
-    relief: "raise",
-    type: { name: { size: 50, weight: 500, y: 188, track: 11, caps: true },
-            hook: { size: 26, weight: 300, y: 252, step: 36, wrap: 40, track: 1.6, italic: false } },
-  }),
-  // The die went deeper here: a longer shadow off the artwork, and the type
-  // set a shade smaller so the impression has room around it.
-  paddlingout: Object.freeze({
-    relief: "raise",
-    deboss: { blur: 1.35, scale: 1.9, tone: ".14" },
-    type: { name: { size: 46, weight: 500, y: 186, track: 7, caps: true },
-            hook: { size: 25, weight: 300, y: 248, step: 34, wrap: 42, track: .8, italic: true } },
-  }),
+  kaayko: Object.freeze({ relief: "raise" }),
+  // The die went deeper here: a longer shadow off the artwork.
+  paddlingout: Object.freeze({ relief: "raise", deboss: { blur: 1.35, scale: 1.9, tone: ".14" } }),
   // Paul Allen's card, the half the watermark did not take: the subtle
   // off-white, and the tasteful thickness of it. The die goes in deeper than
   // anywhere but Paddling Out, because thickness is the whole compliment.
-  stories: Object.freeze({
-    relief: "raise",
-    deboss: { blur: 1.25, scale: 1.75, tone: ".12" },
-    type: { name: { size: 48, weight: 500, y: 187, track: 8, caps: true },
-            hook: { size: 25, weight: 300, y: 250, step: 34, wrap: 42, track: 1, italic: true } },
-  }),
-  // The one that refuses to uppercase. Heavier, tighter, and the only card in
-  // the set whose name is still set the way a book would set it.
-  forge: Object.freeze({
-    relief: "raise",
-    type: { name: { size: 62, weight: 500, y: 196, track: 1.5, caps: false },
-            hook: { size: 25, weight: 300, y: 254, step: 34, wrap: 42, track: .6, italic: true } },
-  }),
+  stories: Object.freeze({ relief: "raise", deboss: { blur: 1.25, scale: 1.75, tone: ".12" } }),
+  forge: Object.freeze({ relief: "raise" }),
   // Flat. No die, no relief, no shoulder on a single letter. The saving is
   // real and so is the difference, once you have the other four beside it.
-  kortex: Object.freeze({
-    relief: "none",
-    deboss: { blur: 1.1, scale: .9, tone: ".07" },
-    type: { name: { size: 48, weight: 400, y: 188, track: 9, caps: true },
-            hook: { size: 26, weight: 300, y: 250, step: 35, wrap: 40, track: 1, italic: false } },
-  }),
-  // The lightest hand of the five, and the animal pushed up into a watermark
+  kortex: Object.freeze({ relief: "none", deboss: { blur: 1.1, scale: .9, tone: ".07" } }),
+  // The lightest hand of the six, and the animal pushed up into a watermark
   // rather than held down as an impression.
-  alumni: Object.freeze({
-    relief: "raise",
-    ghost: ".62",
-    deboss: { blur: .95, scale: 1.4, tone: ".10" },
-    type: { name: { size: 47, weight: 400, y: 187, track: 10, caps: true },
-            hook: { size: 25, weight: 300, y: 250, step: 34, wrap: 42, track: 1.2, italic: false } },
-  }),
+  alumni: Object.freeze({ relief: "raise", ghost: ".62", deboss: { blur: .95, scale: 1.4, tone: ".10" } }),
 });
 
 const DEBOSS_DEFAULT = Object.freeze({ blur: 1.1, scale: 1.5, tone: ".11" });
+
+/**
+ * One type spec for every card (23 Oct 2026). Each card used to set its own
+ * name (46–62, Forge alone in lower case) and a hook about half that size —
+ * the joke of six slightly different jobs. On a screen it read as a mistake,
+ * the card changing size under your thumb. The paper still differs card to
+ * card (STOCKS), which is where the joke always lived. Sizes are for the
+ * screen card: "PADDLING OUT" at 56 tracked 6 ends at about 935 of 980, and a
+ * hook at 34 wraps at 32 characters into two rows that end above the QR.
+ */
+const NAME = Object.freeze({ size: 56, weight: 500, y: 204, track: 6, caps: true });
+const HOOK = Object.freeze({ size: 34, weight: 300, y: 278, step: 44, wrap: 32, track: .6, italic: true });
 
 const FALLBACK = Object.freeze({ name: "Bone", hex: "#F7EEE1", note: "Silian Rail" });
 
@@ -194,9 +174,14 @@ export function embossParams(card) {
  */
 function typeFilter(id, dir) {
   const [ax, ay] = DIRS[dir];
+  // 23 Oct 2026: crisper and deeper. The shadow was 2.6 units with a 1.1 blur
+  // — 0.8px of haze on a phone, so the letters read as flat ink beside an
+  // animal that plainly stands up. A raised letter is read from a hard edge:
+  // a tight dark one away from the light and a bright one toward it, about a
+  // device pixel each at phone size.
   return `<filter id="${id}" x="-8%" y="-22%" width="116%" height="144%" color-interpolation-filters="sRGB">
-  <feDropShadow dx="${(-2.6 * ax).toFixed(2)}" dy="${(-2.6 * ay).toFixed(2)}" stdDeviation="1.1" flood-color="#8A8064" flood-opacity=".9"/>
-  <feDropShadow dx="${(1.7 * ax).toFixed(2)}" dy="${(1.7 * ay).toFixed(2)}" stdDeviation=".7" flood-color="#FFFFFF" flood-opacity="1"/>
+  <feDropShadow dx="${(-3.4 * ax).toFixed(2)}" dy="${(-3.4 * ay).toFixed(2)}" stdDeviation=".5" flood-color="#4A4130" flood-opacity=".8"/>
+  <feDropShadow dx="${(2.4 * ax).toFixed(2)}" dy="${(2.4 * ay).toFixed(2)}" stdDeviation=".35" flood-color="#FFFFFF" flood-opacity="1"/>
 </filter>`;
 }
 
@@ -224,9 +209,8 @@ export function reliefType(card, face) {
  * both depend on which card it is.
  *
  * @param {object} card   a card record; only `slug` is read
- * @param {object} PRINT  the skin this one starts from: render.js's PRINT, or its
- *                        SCREEN, whose `engravedScale` sets the type a size up
- *                        (the screen faces carry no address, so there is room)
+ * @param {object} PRINT  the skin this one starts from: render.js's PRINT, or the
+ *                        web card's SCREEN (no address, rule or back edge)
  */
 export function engravedFor(card, PRINT, face = "f") {
   // The filter ids the page builds from this are per card AND per face: an
@@ -234,13 +218,7 @@ export function engravedFor(card, PRINT, face = "f") {
   const { slug } = idFor(card, face);
   const stock = STOCKS[slug] || FALLBACK;
   const v = VARIATION[slug] || VARIATION.kaayko;
-  // Scaled from the variation's own numbers, so the five still differ by the
-  // same ratios. wrap() counts characters, so it shrinks as the type grows.
-  const k = PRINT.engravedScale || 1;
-  const name = k === 1 ? v.type.name : { ...v.type.name, size: Math.round(v.type.name.size * k) };
-  const hook = k === 1 ? v.type.hook : { ...v.type.hook, size: Math.round(v.type.hook.size * k),
-    step: Math.round(v.type.hook.step * k), wrap: Math.floor(v.type.hook.wrap / k),
-    y: v.type.hook.y + Math.round((k - 1) * v.type.name.size * 1.2) };
+  const name = NAME, hook = HOOK;
 
   return {
     ...PRINT,
@@ -270,8 +248,7 @@ export function engravedFor(card, PRINT, face = "f") {
     // shoulder from reliefType, over the top, under the lamp.
     textFilter: "",
     type: Object.freeze({
-      // Caps, size and tracking are the variation's, not the skin's: this is
-      // where one card stops being the same job as the one beside it.
+      // One spec for all six (NAME, HOOK above): the cards differ in paper, not type.
       name:     Object.freeze({ ...PRINT.type.name, ...name }),
       // wrap() counts characters and knows nothing about the font, so a hook
       // set smaller must be allowed more of them or it breaks early.
@@ -281,7 +258,7 @@ export function engravedFor(card, PRINT, face = "f") {
       // Smaller and tighter here than on the front; the test suite measures
       // it against BACK.textRight.
       backName: Object.freeze({ ...PRINT.type.backName, weight: name.weight, size: Math.round(name.size * .74), y: 176, track: Math.max(0, name.track - 4), caps: name.caps }),
-      backLine: Object.freeze({ ...PRINT.type.backLine, size: Math.round(24 * k), y: 230 + Math.round((k - 1) * 60), track: .5 }),
+      backLine: Object.freeze({ ...PRINT.type.backLine, size: 30, y: 238, track: .5 }),
     }),
   };
 }
