@@ -284,6 +284,8 @@ a { color: inherit; text-decoration: none; }
 .face.back { transform: rotateY(180deg); }
 .card.is-flipped .face.front { transform: rotateY(180deg); }
 .card.is-flipped .face.back { transform: rotateY(360deg); }
+/* A face change that is bookkeeping, not a turn (pages/card.js setFaceQuietly). */
+.card.no-turn .face { transition: none; }
 .face img, .face svg { display: block; width: 100%; height: 100%; }
 
 /* ── what the light does to the face ──────────────────────────────────────

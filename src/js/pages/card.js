@@ -224,8 +224,29 @@ const grab = { on: false, id: null, x: 0, y: 0, t: 0, wx: 0, wy: 0 };   // w = a
 /** Whatever half-turn the card is on, make it the real state and start at 0. */
 function foldTurn() {
   const half = Math.round(att.ry / 180);
-  if (half % 2 !== 0) card.classList.toggle('is-flipped');
   att.ry -= half * 180; att.ty -= half * 180;
+  if (half % 2 !== 0) {
+    // The card's angle and the face state change in the same frame, so the
+    // picture does not move at all: the card stops being "turned 180°" and
+    // starts being "flipped", which look identical.
+    write(card, 'transform', `rotateX(${att.rx.toFixed(2)}deg) rotateY(${att.ry.toFixed(2)}deg)`);
+    setFaceQuietly(!card.classList.contains('is-flipped'));
+  }
+}
+
+/**
+ * Which face is up, changed WITHOUT the faces' .7s turn. The only animated
+ * flip is one a person asked for — a tap, or a turn in the hand. Bookkeeping
+ * (folding a turn into the flip state) and a newly dealt card must never play
+ * one: putting a card down used to flip it over again in front of you, and a
+ * card dealt while you were reading a back spun round to its front.
+ */
+function setFaceQuietly(flipped) {
+  if (card.classList.contains('is-flipped') === flipped) return;
+  card.classList.add('no-turn');
+  card.classList.toggle('is-flipped', flipped);
+  void card.offsetWidth;                       // the new face transforms land untweened
+  frame(() => card.classList.remove('no-turn'));
 }
 
 function setInspect(on) {
@@ -443,6 +464,8 @@ const remember = (v) => { try { localStorage.setItem(KEY, v ? 'engraved' : 'prin
 const remembered = () => { try { return localStorage.getItem(KEY) === 'engraved'; } catch (_) { return false; } };
 
 function setSkin(on, { save = true } = {}) {
+  // A card in the hand is put down first, on whichever face it is nearest.
+  if (inspecting) { grab.on = false; grab.id = null; setInspect(false); }
   engraved = !!on;
   document.documentElement.dataset.skin = engraved ? 'engraved' : '';
   if (!engraved) document.documentElement.removeAttribute('data-skin');
@@ -531,6 +554,15 @@ function draw(el, svg, label, fade = 0) {
     for (const n of [...el.children]) if (n !== nu) n.remove();
     nu.classList.remove('incoming'); nu.style.transition = ''; nu.style.opacity = '';
   }, fade + 40);
+}
+
+/**
+ * The QR is for a card seen on a screen across a room — a desktop. On a phone
+ * it is a code you would have to scan with the phone it is on, so it is not
+ * drawn there, box and all (23 Oct 2026). KAAYKO stays in its corner.
+ */
+function frontOpts(c, artHref, skin) {
+  return fine ? { qr: qrFor(c.url), artHref, skin } : { qr: null, artHref, skin: { ...skin, qrBox: false } };
 }
 
 function qrFor(url) {
@@ -865,7 +897,7 @@ function switchSkin() {
   const skinF = engraved ? engravedFor(c, SCREEN, 'f') : SCREEN;
   const skinB = engraved ? engravedFor(c, SCREEN, 'b') : SCREEN;
   const faces = [
-    [frontEl, front(c, { qr: qrFor(c.url), artHref, skin: skinF }), `${c.name}, front of the card`],
+    [frontEl, front(c, frontOpts(c, artHref, skinF)), `${c.name}, front of the card`],
     [backEl, back(c, brand, { index: at + 1, total: series.length, artHref, skin: skinB }), `${c.name}, back of the card`],
   ];
   const incoming = faces.map(([host, svg, label]) => {
@@ -968,7 +1000,7 @@ function show(i, { focus = false, relief = 'soon', fade = 0 } = {}) {
   // and larger type. The printed card is render.js's PRINT and is not drawn here.
   const skinF = engraved ? engravedFor(c, SCREEN, 'f') : SCREEN;
   const skinB = engraved ? engravedFor(c, SCREEN, 'b') : SCREEN;
-  draw(frontEl, front(c, { qr: qrFor(c.url), artHref, skin: skinF }),
+  draw(frontEl, front(c, frontOpts(c, artHref, skinF)),
        `${c.name}, front of the card`, fade);
   // The back gets the same art, ghosted behind its words.
   draw(backEl, back(c, brand, { index: at + 1, total: series.length, artHref, skin: skinB }),
@@ -982,7 +1014,7 @@ function show(i, { focus = false, relief = 'soon', fade = 0 } = {}) {
     b.tabIndex = j === at ? 0 : -1;
     if (focus && j === at) b.focus();
   });
-  card.classList.remove('is-flipped');            // a new card arrives face up
+  setFaceQuietly(false);                          // a new card arrives face up — dealt, not turned
   // 1400ms: the dust lands at 1150 and the rose has faded in by 1330. The
   // raster must fall in a still moment, and this is the first one.
   scheduleRelief(c, relief === 'after-morph' ? 1400 : 16, fade);
@@ -1022,7 +1054,9 @@ function show(i, { focus = false, relief = 'soon', fade = 0 } = {}) {
   paintMarks();
   on(marks, 'click', (e) => {
     const b = e.target.closest('.mark');
-    if (b) show(Number(b.dataset.i));
+    // The card already up is not dealt again: that turned a card you were
+    // reading the back of over to its front.
+    if (b && Number(b.dataset.i) !== at) show(Number(b.dataset.i));
   });
   on(marks, 'keydown', (e) => {
     const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
