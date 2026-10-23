@@ -1,9 +1,56 @@
 # kaayko.com home page: edit log
 
-Every change to the landing page gets an entry here, newest first. The page is
-`src/index.html`, `src/js/pages/home-entrance.js`, `src/js/pages/index.js` and
-`src/fonts/home/`. Each entry records what changed, why, the commit, whether it is
-live, how it was checked, and how to undo it.
+Every change to the landing page gets an entry here, newest first. Since 22 Oct
+2026 the page is the card: `src/index.html` and `src/js/pages/card.js` with
+`src/js/cards/`. The split landing the entries below describe now lives at
+`src/archive/home-2026.html` (served at `/archive/home-2026`), still driven by
+`src/js/pages/home-entrance.js`, `src/js/pages/index.js` and `src/fonts/home/`.
+Each entry records what changed, why, the commit, whether it is live, how it was
+checked, and how to undo it.
+
+---
+
+## 2026-10-22 · The card is the home page
+
+- **Commits:** `df677f7` (the move), `adcd5c6` (module stamp), `4d27e80`
+  (browser-check follows the old landing to the archive)
+- **Live:** yes, kaayko.com and kaay.store, 22 Oct 2026
+- **What:** `src/card.html` became `src/index.html`; the old landing moved to
+  `src/archive/home-2026.html`, kept as it was except: `noindex`, no canonical, no
+  schema.org graph, title "the old landing (archived)", and its Inventory link
+  (`/card`) became Today (`/`). The new `/` carries the canonical, Open Graph and
+  the entity `@graph` the old one had, and is indexable (the card was `noindex`).
+- **Redirects:** `/card`, `/card.html` → 301 `/` on kaayko.com, and → 301
+  `https://kaayko.com/` on kaay.store (its `/` is the shop). Query strings survive.
+  The no-store Cache-Control header that was on `/card` is now on `/` and `/index.html`.
+  kaay.store ignores `**/archive/**`, so it never serves the old landing.
+- **Footer:** help@kaayko.com, then YouTube · About · Privacy (the old landing's
+  footer minus Inventory, which pointed at this page). Each link is 44 px tall.
+- **Also repointed:** About (Take a card, footer Inventory → Home), 404 (one
+  link to the deck), shipping's "Back to the cards" (absolute `https://kaayko.com/`,
+  because on kaay.store `/` is the shop), sitemap lastmod, `stamp-version.js`,
+  `check-store-pages.js`, `browser-check.mjs`, PAGE-MAP, MODULE-MAP.
+- **Not changed:** order emails in kaayko-api still link `kaayko.com/card`; the 301
+  carries them. The `/#store` invite modal is not on the new home — the store gate
+  was retired in Sep 2026 (`secretStore.js` returns early), so nothing bounces there.
+- **Checked:** `npm run verify` (all checks, 170 tests); `verify-seo.js` has no
+  findings that HEAD did not already have; curl of every redirect and header on a
+  preview channel and then on both live domains; browser pane at desktop, 375 px
+  touch and 320×568 (card drawn, no sideways scroll, footer fits); `npm run
+  browser-check` 48/48 on the preview channel and on production.
+
+### To undo
+
+```
+cd ~/Kaayko_v6/kaayko
+git revert --no-edit 4d27e80 adcd5c6 df677f7
+npm run stamp && git commit -qam "Stamp after undoing the card home page"
+firebase deploy --only hosting:kaaykostore,hosting:kaay-store
+git push
+```
+
+Or instantly: Firebase console → Hosting → kaaykostore and kaay-store → release
+history → roll back to the release before 2026-10-22.
 
 ---
 
