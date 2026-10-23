@@ -838,7 +838,11 @@ const touchy = matchMedia('(hover: none)').matches
   || matchMedia('(pointer: coarse)').matches
   || (navigator.maxTouchPoints || 0) > 0;
 
-function unread() { readers.forEach((d) => d.detach()); readers = []; }
+function unread() {
+  readers.forEach((d) => d.detach()); readers = [];
+  // And no ring left on either face, whatever the reader last said.
+  card.querySelectorAll('.stylus').forEach((st) => { st.dataset.on = ''; });
+}
 
 function attachReaders(c) {
   unread();

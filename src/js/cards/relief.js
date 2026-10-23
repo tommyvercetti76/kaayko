@@ -249,6 +249,10 @@ export function readFace(svg, { artHref, artBox = { x: 0, y: 0, w: 401, h: 600, 
   svg.addEventListener('pointermove', onMove, { passive: true });
   svg.addEventListener('pointerleave', onLeave, { passive: true });
   svg.addEventListener('pointercancel', onLeave, { passive: true });
+  // Lifting the finger ends the read. It used to wait for pointerleave, which
+  // never comes once the card has captured the pointer to turn it — so the
+  // trace stayed on the card as a ring that would not go away.
+  window.addEventListener('pointerup', onLeave, { passive: true });
 
   return function detach() {
     alive = false;
@@ -256,5 +260,7 @@ export function readFace(svg, { artHref, artBox = { x: 0, y: 0, w: 401, h: 600, 
     svg.removeEventListener('pointermove', onMove);
     svg.removeEventListener('pointerleave', onLeave);
     svg.removeEventListener('pointercancel', onLeave);
+    window.removeEventListener('pointerup', onLeave);
+    if (onRead) onRead(null, null);            // a detached reader leaves no trace behind
   };
 }
