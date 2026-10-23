@@ -7,7 +7,7 @@ import { engravedFor, stockOf, embossParams, reliefType, DIRS } from '/js/cards/
 import { embossOf, stillCanvas } from '/js/cards/emboss.js?v=5c97958';
 import { readFace, warmArt } from '/js/cards/relief.js?v=5c97958';
 import { rest, step, clamp } from '/js/cards/attitude.js?v=5c97958';
-import { lightFace, pointerLamp, v } from '/js/cards/lamp.js?v=5c97958';
+import { lightFace, v } from '/js/cards/lamp.js?v=5c97958';
 import { dustMorph } from '/js/cards/morph.js?v=5c97958';
 import { esc, apiBase } from '/js/kit.js?v=5c97958';
 
@@ -64,6 +64,7 @@ const TILT = 11;                            // degrees the card leans toward the
 const ROOM_LAMP = v(-0.42, -0.14, 0.9);
 const PERSPECTIVE = parseFloat(getComputedStyle(cardWrap).perspective) || 1400;
 const lampEl = document.getElementById('lamp');
+const deskEl = cardWrap.querySelector('.desk');
 
 let eye = v(0, 0, PERSPECTIVE / 600), cardW = 600, cardBox = null, roomBox = null;
 /** Where the eye is, in card widths: the CSS perspective over the card's real width. */
@@ -76,7 +77,7 @@ function measure() {
 measure();
 on(window, 'resize', measure);
 
-let raf = 0, target = { x: .5, y: .35 }, cur = { x: .5, y: .35 }, live = false;
+let raf = 0, target = { x: .5, y: .35 }, live = false;
 
 /* ── how the light is written ──────────────────────────────────────────────
    Straight onto each layer's own style, and NEVER as a custom property on
@@ -118,7 +119,11 @@ const layersOf = () => (faces ??= [faceLayers(frontEl), faceLayers(backEl)]);
 /** Light the card at this attitude, and the room behind it. */
 function lit(rx, ry) {
   if (quiet) return;
-  const lamp = (fine && !inspecting) ? pointerLamp(cur.x, cur.y) : ROOM_LAMP;
+  // One lamp, fixed in the room, on every device (23 Oct 2026). On a desktop
+  // the lamp used to BE the pointer, so a glint sat on the card under the
+  // cursor and a glow followed it round the wall — a light on the mouse. The
+  // card still leans to the pointer, so the light still moves across it.
+  const lamp = ROOM_LAMP;
   const o = lightFace({
     rx, ry, lamp, eye,
     // Paper: a soft glint in a broad wash. Foil: a tighter, harder one.
@@ -180,8 +185,6 @@ function loop(t) {
   // 60Hz laptop. Clamped, because a backgrounded tab returns a huge first step.
   const dt = lastT ? Math.min(0.25, (t - lastT) / 1000) : 1 / 60;
   lastT = t;
-  cur.x += (target.x - cur.x) * 0.14;
-  cur.y += (target.y - cur.y) * 0.14;
   if (grab.on) {
     // While held, the card is exactly where the finger put it. No spring: a
     // spring under a hand is what makes an object feel like it is on a string.
@@ -197,6 +200,10 @@ function loop(t) {
   if (switching) stepSwitch(t);
   if (typeRamp) { typeGain = smooth((t - typeRamp) / 350); if (typeGain >= 1) typeRamp = 0; }
   lit(att.rx, att.ry);
+  if (deskEl) {
+    const rad = Math.PI / 180;
+    write(deskEl, 'transform', `scale(${Math.max(0.02, Math.abs(Math.cos(att.ry * rad))).toFixed(3)}, ${Math.max(0.02, Math.abs(Math.cos(att.rx * rad))).toFixed(3)})`);
+  }
   write(card, 'transform', `rotateX(${att.rx.toFixed(2)}deg) rotateY(${att.ry.toFixed(2)}deg)`);
   raf = requestAnimationFrame(loop);
 }
