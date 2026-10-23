@@ -8,8 +8,8 @@
  *
  * Money helpers come from priceMap.js, the client's one price authority.
  */
-import '/js/util.js?v=3526885';
-export { money, priceCents, priceText } from '/js/priceMap.js?v=3526885';
+import '/js/util.js?v=df677f7';
+export { money, priceCents, priceText } from '/js/priceMap.js?v=df677f7';
 
 const U = window.KaaykoUtil;
 
