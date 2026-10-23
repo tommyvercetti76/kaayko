@@ -111,7 +111,7 @@
    emboss's shadow. Foil hue shifts with the angle because that is what foil
    does.
 
-   On a phone, Inspect picks the card up so it can be turned in the hand. The
+   Press and hold picks the card up so it can be turned in the hand. The
    QR stays a QR: it is the one thing on the card you can actually use.
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -145,7 +145,7 @@ html, body { margin: 0; background: var(--ink); color: var(--paper); overflow-x:
    (MORPH_MS in pages/card.js). One-time transitions of colour on a few
    elements; nothing here runs while the card turns. */
 html, body { transition: background-color 1.15s ease, color 1.15s ease; }
-.eyebrow h1 em, .cap, .now i, .now .to-product, .stock, .hint button, .colophon a { transition: color 1.15s ease, border-color 1.15s ease; }
+.eyebrow h1 em, .cap, .now i, .now .to-product, .stock, .colophon a { transition: color 1.15s ease, border-color 1.15s ease; }
 /* The arriving face, during a timed switch: over the old one, on its own layer. */
 #face-front, #face-back { position: relative; }
 .face .incoming { position: absolute; inset: 0; will-change: opacity; }
@@ -174,12 +174,14 @@ a { color: inherit; text-decoration: none; }
   overflow: clip;
   min-height: 100svh;
   display: grid;
-  /* header / card / everything below. The card has the middle row to itself
-     and the rows either side of it share what is left equally, so the card is
-     centred on the SCREEN. It used to be centred together with the marks, the
-     caption and Inspect, which left it 80px above centre on a desktop and 155px
-     on a phone. The padding is equal top and bottom for the same reason. */
-  grid-template-rows: 1fr auto 1fr;
+  /* header / the card's zone / the strip, caption and footer. The card is
+     centred in its zone, so the space above it (to "Why not?") equals the space
+     below it (to the strip) — which is what the eye reads as centred. It was
+     once centred on the screen's exact middle instead: correct to the pixel,
+     and still read as low, because the header is tall and the strip sat right
+     under it. The zone never shrinks below 180px; on a short screen the page
+     scrolls rather than the card going to nothing. */
+  grid-template-rows: auto minmax(180px, 1fr) auto;
   justify-items: center;
   /* The side gutter is 3vw (11px on a phone, 20px from 667 up): on a phone
      the card's width IS its size, so every pixel of gutter is card lost. */
@@ -201,16 +203,16 @@ a { color: inherit; text-decoration: none; }
   z-index: -1; pointer-events: none;
 }
 
-/* Everything under the card: the series, its caption, the stock, Inspect, and
-   the footer pinned to the bottom of the screen. */
+/* The card's zone. A size container, so the card is sized from the room it
+   actually has (cq units) and never from a guessed reserve. */
+.zone { container-type: size; width: 100%; min-height: 0; display: grid; place-items: center; }
+/* Under the zone: the series, its caption, the stock and the footer. */
 .below {
-  align-self: stretch; width: 100%; max-width: 980px;
+  width: 100%; max-width: 980px;
   display: flex; flex-direction: column; align-items: center;
-  gap: clamp(14px, 2.4vw, 22px); padding-top: clamp(16px, 3vw, 30px);
+  gap: clamp(12px, 2vw, 20px);
 }
 @media(max-width: 600px){
-  /* On a phone the card is the page. Everything under it is caption. */
-  .below{ gap: 12px; padding-top: 14px; }
   .eyebrow h1{ font-size: clamp(26px, 8vw, 34px); }
 }
 
@@ -228,32 +230,19 @@ a { color: inherit; text-decoration: none; }
   /* 100% of the ROOM's padded content box, not of the viewport: 90vw is wider
      than the space the room's own 20px gutters leave, which is where the last
      2.5px of the off-centre came from.
-     And no taller than the screen can hold with an equal row above and below
-     it. The row below is the taller one: marks, caption, stock, Inspect and the
-     footer measured 183–221px (desktop colour – phone engraved), so each row is
-     given 225px plus the room's padding. 1.75 is the card's width over its
-     height. The floor keeps it legible on a short landscape phone, where the
-     page then scrolls. */
-  width: min(100%, 720px, max(240px, calc((100svh - 450px - 2 * clamp(22px, 4vw, 40px)) * 1.75)));
-  align-self: center;
-  touch-action: pan-y;
+     And no taller than its zone allows with a 16px breath above and below.
+     1.75 is the card's width over its height. The first line is for a browser
+     without container units; the second is the real rule. */
+  width: min(100%, 720px, max(240px, calc((100svh - 400px) * 1.75)));
+  width: min(100cqw, 720px, max(220px, calc((100cqh - 32px) * 1.75)));
+  /* The card owns every gesture that starts on it — tap turns it over, a quick
+     swipe deals the next, press and hold picks it up. The page never needs to
+     scroll from a drag that starts on the card. */
+  touch-action: none;
 }
-/* A short desktop screen (a 768px laptop is ~650px of page) would otherwise
-   get a card 240px wide. There is no Inspect there, so the row below closes
-   up instead, measured at 156–181px, and the card keeps its size. */
-@media (max-height: 820px) and (hover: hover) and (pointer: fine) {
-  .below { gap: 12px; padding-top: 14px; }
-  .card-wrap { width: min(100%, 720px, max(240px, calc((100svh - 370px - 2 * clamp(22px, 4vw, 40px)) * 1.75))); }
-}
-/* A phone on its side is too short for header, card and the row below all at
-   once, and equal rows then centred the card in a page twice the screen's
-   height — 133px low with nothing but header in view. Here the card follows the
-   header and fills the first screen; the series and footer are a scroll away. */
+/* A phone on its side: a smaller header, and the page scrolls to the strip. */
 @media (max-height: 500px) {
-  .room { grid-template-rows: auto auto 1fr; }
   .eyebrow h1 { font-size: clamp(24px, 8vh, 34px); }
-  .card-wrap { margin-top: 10px; width: min(100%, 720px, max(240px, calc((100svh - 160px) * 1.75))); }
-  .below { gap: 12px; padding-top: 14px; }
 }
 .card {
   position: relative;
@@ -277,6 +266,10 @@ a { color: inherit; text-decoration: none; }
   border-radius: 10px;
   overflow: hidden;
   backface-visibility: hidden;
+  /* overflow + border-radius did not clip the composited light layers on an
+     iPhone: the lamp sits up-left, so the wash showed as a grey square behind
+     the top-left corner. clip-path clips them. */
+  clip-path: inset(0 round 10px);
   transform: rotateY(0deg);
   transition: transform .7s cubic-bezier(.2, .8, .2, 1);
   box-shadow:
@@ -434,15 +427,9 @@ a { color: inherit; text-decoration: none; }
 }
 @media (prefers-reduced-motion: reduce) { .mode-dust { display: none; } }
 
-/* ── inspect ────────────────────────────────────────────────────────── */
-.hint { display: flex; gap: 14px; align-items: center; }
-/* A held card is a touch gesture. Where there is a fine pointer the cursor is
-   already the lamp and the card already follows it, so the control is not
-   offered. */
-@media (hover: hover) and (pointer: fine) { .hint { display: none; } }
-/* The frame loop is never started under reduced motion, so Inspect would lift
-   the card and then draw nothing you did with it. Not offered. */
-@media (prefers-reduced-motion: reduce) { .hint { display: none; } }
+/* ── held ─────────────────────────────────────────────────────────────
+   Press and hold the card and it comes off the table; drag and it turns;
+   let go and it settles. There is no button for it any more. */
 .card.is-inspecting {
   transition: none;
   /* No cursor change, deliberately: `cursor` is inherited, and an inherited
@@ -468,14 +455,6 @@ a { color: inherit; text-decoration: none; }
   opacity: 0; transition: opacity .35s ease; will-change: opacity;
 }
 .card-wrap.is-inspecting .desk { opacity: 1; }
-.hint button {
-  background: none; border: 1px solid var(--hair); color: var(--dim);
-  border-radius: 999px; padding: 7px 16px; cursor: pointer;
-  font-family: var(--sans); font-size: 10.5px; letter-spacing: .22em; text-transform: uppercase;
-  transition: color .2s, border-color .2s;
-}
-.hint button:hover { color: var(--gold-lit); border-color: var(--gold); }
-.hint button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
 
 /* Pinned to the bottom of the lower row, so it sits at the foot of the screen. */
 .colophon {
@@ -489,7 +468,7 @@ a { color: inherit; text-decoration: none; }
 .colophon a:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
 
 @media (prefers-reduced-motion: reduce) {
-  html, body, .card, .face, .relief, .relief .stills, .eyebrow h1 em, .cap, .now i, .now .to-product, .stock, .hint button, .colophon a { transition: none; }
+  html, body, .card, .face, .relief, .relief .stills, .eyebrow h1 em, .cap, .now i, .now .to-product, .stock, .colophon a { transition: none; }
   .relief, .relief .stills { opacity: 1; }
   .sheen, .wash, .foil, .shade { display: none; }
 }
@@ -561,8 +540,6 @@ a { color: inherit; text-decoration: none; }
   box-shadow: 0 2px 4px rgba(0,0,0,.55), 0 26px 60px rgba(0,0,0,.68), 0 0 0 1px rgba(255,255,255,.06);
 }
 /* The control that turns it on, and the one line of copy that explains the set. */
-.hint button[aria-pressed="true"] { color: var(--gold-lit); border-color: var(--gold); }
-:root[data-skin="engraved"] .hint button { border-color: rgba(237,234,226,.34); }
 /* Engraved, each bar wears the stock its card is printed on — the one place
    the five papers are seen together, and the chrome keeps its shape. */
 :root[data-skin="engraved"] .mark::before { background: var(--stock, var(--hair)); opacity: .5; }
@@ -650,10 +627,11 @@ a { color: inherit; text-decoration: none; }
     <h1>Why not?</h1>
   </div>
 
+  <div class="zone">
   <div class="card-wrap">
     <i class="desk" aria-hidden="true"></i>
     <div class="card" id="card" role="button" tabindex="0"
-         aria-label="The Kaayko card. Activate to turn it over.">
+         aria-label="The Kaayko card. Activate to turn it over; press and hold to pick it up and turn it.">
       <div class="face front">
         <div id="face-front" role="img" aria-label="Front of the Kaayko card"></div>
         <div class="relief" aria-hidden="true"></div>
@@ -668,6 +646,7 @@ a { color: inherit; text-decoration: none; }
       </div>
     </div>
   </div>
+  </div>
 
   <div class="below">
 
@@ -678,14 +657,6 @@ a { color: inherit; text-decoration: none; }
 
     <p class="stock" id="stock"></p>
 
-    <!-- Tapping the card turns it over; that needed no button. On a phone the
-         card can also be picked up: hold Inspect and it comes off the table,
-         drag it round, let go and it settles — spun past halfway, it settles on
-         its other face. The handset's own tilt used to do a version of this on
-         its own and was never quite in anyone's hands. -->
-    <div class="hint">
-      <button type="button" id="inspect" aria-pressed="false">Inspect</button>
-    </div>
 
     <!-- Every property already has a card in the series with its own address
          on the face; listing them again here would be the same links twice.

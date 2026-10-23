@@ -173,7 +173,7 @@ function loop(t) {
     att.rx = att.tx; att.ry = att.ty;
   } else {
     step(att, dt, { smoothTime: inspecting ? INSPECT_SETTLE : 0.12 });
-    if (inspecting) settleInspect();
+    if (inspecting) { settleInspect(); putDownWhenStill(); }
   }
   // Lit from the true attitude, every frame, in both skins, whether it is
   // leaning to a pointer or turning in a hand. The model works in the frame
@@ -201,7 +201,6 @@ function loop(t) {
 const INSPECT_MAX_RX = 48;     // degrees of pitch before it stops following
 const INSPECT_SETTLE = 0.46;   // seconds — long enough to feel the coast
 const INSPECT_GAIN = 0.42;     // degrees per pixel of drag
-const inspectBtn = document.getElementById('inspect');
 let inspecting = false;
 const grab = { on: false, id: null, x: 0, y: 0, t: 0, wx: 0, wy: 0 };   // w = angular velocity, deg/s
 
@@ -216,8 +215,6 @@ function setInspect(on) {
   inspecting = !!on;
   card.classList.toggle('is-inspecting', inspecting);
   cardWrap.classList.toggle('is-inspecting', inspecting);
-  inspectBtn.setAttribute('aria-pressed', String(inspecting));
-  inspectBtn.textContent = inspecting ? 'Put it down' : 'Inspect';
   // A held card is being turned, not read: the fingertip readers — a glyph
   // scan and a vibration per feature on every pointermove — come off while
   // it is in the hand and go back on when it is put down.
@@ -283,14 +280,58 @@ function settleInspect() {
   foldTurn(); att.ry = 0; att.ty = 0; att.vy.v = 0;
 }
 
-if (inspectBtn) {
-  on(inspectBtn, 'click', (e) => { e.stopPropagation(); setInspect(!inspecting); });
-  on(card, 'pointerdown', grabStart);
-  on(card, 'pointermove', grabMove);
-  on(card, 'pointerup', grabEnd);
-  on(card, 'pointercancel', grabEnd);
-  on(card, 'lostpointercapture', grabEnd);
+/* ── hold to pick it up ──────────────────────────────────────────────────────
+   There used to be an Inspect / Put it down button. Now the card is picked up
+   the way a card is: press on it and hold still for a moment. A tap still
+   turns it over and a quick swipe still deals the next one — both are over
+   before the hold is. Let go and it settles, then goes back on the table by
+   itself (putDownWhenStill, in the loop).                                     */
+const HOLD_MS = 240;           // long enough that a tap or a flick never trips it
+const HOLD_SLOP = 8;           // px of movement that means "swipe", not "hold"
+let hold = null;
+
+function holdCancel() { if (hold) { cancelLater(hold.timer); hold = null; } }
+
+function holdStart(e) {
+  if (still || (e.pointerType === 'mouse' && e.button !== 0)) return;
+  holdCancel();
+  const h = { id: e.pointerId, x: e.clientX, y: e.clientY, timer: 0 };
+  h.timer = later(() => {
+    if (hold !== h) return;
+    card.dataset.held = '1';
+    setInspect(true);
+    grabStart({ pointerId: h.id, clientX: h.x, clientY: h.y });
+    try { navigator.vibrate?.(8); } catch (_) {}
+  }, HOLD_MS);
+  hold = h;
 }
+
+function holdMove(e) {
+  if (!hold || e.pointerId !== hold.id) return;
+  if (grab.on) { hold.x = e.clientX; hold.y = e.clientY; return; }
+  if (Math.hypot(e.clientX - hold.x, e.clientY - hold.y) > HOLD_SLOP) holdCancel();
+}
+
+function holdEnd(e) {
+  if (hold && e.pointerId === hold.id) holdCancel();
+  if (grab.on) grabEnd(e);
+  // The click that follows the release must not also turn the card over.
+  if (card.dataset.held) later(() => { delete card.dataset.held; }, 0);
+}
+
+/** Once a released card has come to rest, it is back on the table. */
+function putDownWhenStill() {
+  if (!inspecting || grab.on || hold) return;
+  if (Math.abs(att.vy.v) > 2 || Math.abs(att.vx.v) > 2) return;
+  if (Math.abs(att.ry - att.ty) > 0.4 || Math.abs(att.rx - att.tx) > 0.4) return;
+  setInspect(false);
+}
+
+on(card, 'pointerdown', holdStart);
+on(card, 'pointermove', (e) => { holdMove(e); grabMove(e); });
+on(card, 'pointerup', holdEnd);
+on(card, 'pointercancel', holdEnd);
+on(card, 'lostpointercapture', (e) => { if (grab.on) grabEnd(e); });
 
 function aim(e) {
   if (inspecting) return;
@@ -331,7 +372,7 @@ if (!still) {
 const flip = () => card.classList.toggle('is-flipped');
 // A swipe that changed the card must not also turn it over, and neither must
 // letting go of a card you were inspecting.
-on(card, 'click', (e) => { if (!inspecting && !card.dataset.swiped && gestureMoved < 8) flip(); });
+on(card, 'click', (e) => { if (!inspecting && !card.dataset.held && !card.dataset.swiped && gestureMoved < 8) flip(); });
 on(card, 'keydown', (e) => {
   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); }
 });
