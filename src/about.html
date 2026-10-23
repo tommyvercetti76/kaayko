@@ -429,6 +429,10 @@
     .closing h2 { font-family: var(--display); font-size: clamp(1.7rem, 5.5vw, 2.8rem); font-weight: 400; letter-spacing: 0.05em; line-height: 1; text-transform: uppercase; }
     .closing p { max-width: 46ch; margin: 1rem auto 0; color: var(--muted); font-style: italic; }
     .closing .actions { justify-content: center; margin-top: clamp(1.2rem, 3vw, 1.7rem); }
+    .closing .contact { display: grid; justify-items: center; gap: 0.7rem; margin-top: clamp(1.8rem, 4vw, 2.4rem); padding-top: clamp(1.4rem, 3vw, 1.8rem); border-top: 1px solid rgba(181, 147, 90, 0.18); max-width: 46ch; margin-left: auto; margin-right: auto; }
+    .closing .contact .label { margin: 0; color: var(--gold); }
+    .closing .contact .contact-line { margin: 0; font-style: normal; }
+    .closing .contact .btn { display: inline-flex; align-items: center; min-height: 44px; }
 
     .foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: clamp(1rem, 4vw, 2.4rem); padding: 2rem clamp(1.25rem, 5vw, 3rem) 3rem; background: var(--bg); }
     .foot a { color: rgba(181, 147, 90, 0.48); font-size: 0.72rem; font-style: italic; letter-spacing: 0.22em; text-decoration: none; text-transform: uppercase; transition: color 220ms ease; }
@@ -597,8 +601,14 @@
       Why is there no place for alumni to give back?
       Kaayko has answers to problems people are too lazy to ask about.
     </p>
-    <div class="actions reveal">
+    <!-- The one place to write to Kaayko. The home page footer used to carry
+         this address; since 22 Oct 2026 it lives here and on /privacy. -->
+    <div class="contact reveal" id="contact">
+      <p class="label">Contact</p>
+      <p class="contact-line">Questions, orders, press or partnerships &mdash; one inbox for all of it.</p>
       <a class="btn" href="mailto:help@kaayko.com">help@kaayko.com</a>
+    </div>
+    <div class="actions reveal">
       <a class="link" href="/">Take a card</a>
       <a class="link" href="https://www.youtube.com/@travelingout" rel="noopener noreferrer">YouTube</a>
     </div>

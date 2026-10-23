@@ -174,13 +174,15 @@ a { color: inherit; text-decoration: none; }
   overflow: clip;
   min-height: 100svh;
   display: grid;
-  /* header / stage / colophon. The stage takes whatever is left and centres
-     the card in it, so the card holds its place while the header is free to
-     be as tall or as short as it likes. */
-  grid-template-rows: auto 1fr auto;
-  place-items: center;
-  padding: clamp(22px, 4vw, 40px) 20px clamp(28px, 5vw, 48px);
-  padding-bottom: max(28px, env(safe-area-inset-bottom));
+  /* header / card / everything below. The card has the middle row to itself
+     and the rows either side of it share what is left equally, so the card is
+     centred on the SCREEN. It used to be centred together with the marks, the
+     caption and Inspect, which left it 80px above centre on a desktop and 155px
+     on a phone. The padding is equal top and bottom for the same reason. */
+  grid-template-rows: 1fr auto 1fr;
+  justify-items: center;
+  padding: clamp(22px, 4vw, 40px) 20px;
+  padding-bottom: max(clamp(22px, 4vw, 40px), env(safe-area-inset-bottom));
   isolation: isolate;
 }
 /* the lamp itself — the one light the card is lit by, seen on the wall behind
@@ -197,15 +199,20 @@ a { color: inherit; text-decoration: none; }
   z-index: -1; pointer-events: none;
 }
 
-.stage { display: grid; gap: clamp(16px, 3vw, 30px); justify-items: center; align-content: center; width: 100%; max-width: 980px; }
+/* Everything under the card: the series, its caption, the stock, Inspect, and
+   the footer pinned to the bottom of the screen. */
+.below {
+  align-self: stretch; width: 100%; max-width: 980px;
+  display: flex; flex-direction: column; align-items: center;
+  gap: clamp(14px, 2.4vw, 22px); padding-top: clamp(16px, 3vw, 30px);
+}
 @media(max-width: 600px){
   /* On a phone the card is the page. Everything under it is caption. */
-  .stage{ gap: 14px; }
+  .below{ gap: 12px; padding-top: 14px; }
   .eyebrow h1{ font-size: clamp(26px, 8vw, 34px); }
-  .colophon{ padding-top: 6px; }
 }
 
-.eyebrow { display: grid; gap: 6px; justify-items: center; text-align: center; align-self: start; padding-bottom: clamp(10px, 2vw, 18px); }
+.eyebrow { display: grid; gap: 6px; justify-items: center; text-align: center; align-self: start; }
 .eyebrow h1 {
   margin: 0; font-weight: 300; font-size: clamp(30px, 6vw, 52px); letter-spacing: .01em;
 }
@@ -218,9 +225,33 @@ a { color: inherit; text-decoration: none; }
   perspective: 1400px;
   /* 100% of the ROOM's padded content box, not of the viewport: 90vw is wider
      than the space the room's own 20px gutters leave, which is where the last
-     2.5px of the off-centre came from. */
-  width: min(100%, 600px);
+     2.5px of the off-centre came from.
+     And no taller than the screen can hold with an equal row above and below
+     it. The row below is the taller one: marks, caption, stock, Inspect and the
+     footer measured 183–221px (desktop colour – phone engraved), so each row is
+     given 225px plus the room's padding. 1.75 is the card's width over its
+     height. The floor keeps it legible on a short landscape phone, where the
+     page then scrolls. */
+  width: min(100%, 600px, max(240px, calc((100svh - 450px - 2 * clamp(22px, 4vw, 40px)) * 1.75)));
+  align-self: center;
   touch-action: pan-y;
+}
+/* A short desktop screen (a 768px laptop is ~650px of page) would otherwise
+   get a card 240px wide. There is no Inspect there, so the row below closes
+   up instead, measured at 156–181px, and the card keeps its size. */
+@media (max-height: 820px) and (hover: hover) and (pointer: fine) {
+  .below { gap: 12px; padding-top: 14px; }
+  .card-wrap { width: min(100%, 600px, max(240px, calc((100svh - 370px - 2 * clamp(22px, 4vw, 40px)) * 1.75))); }
+}
+/* A phone on its side is too short for header, card and the row below all at
+   once, and equal rows then centred the card in a page twice the screen's
+   height — 133px low with nothing but header in view. Here the card follows the
+   header and fills the first screen; the series and footer are a scroll away. */
+@media (max-height: 500px) {
+  .room { grid-template-rows: auto auto 1fr; }
+  .eyebrow h1 { font-size: clamp(24px, 8vh, 34px); }
+  .card-wrap { margin-top: 10px; width: min(100%, 600px, max(240px, calc((100svh - 160px) * 1.75))); }
+  .below { gap: 12px; padding-top: 14px; }
 }
 .card {
   position: relative;
@@ -361,7 +392,7 @@ a { color: inherit; text-decoration: none; }
 .mark[aria-checked="true"]::before { width: 36px; background: var(--gold-lit); }
 .mark:focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; border-radius: 8px; }
 @media (prefers-reduced-motion: reduce) { .mark::before { transition: none; } }
-.now { text-align: center; display: grid; gap: 3px; min-height: 24px; }
+.now { margin: 0; text-align: center; display: grid; gap: 3px; min-height: 24px; }
 .now b { font-weight: 400; font-size: clamp(17px, 2.6vw, 21px); }
 .now i { color: var(--dim); font-size: 14px; font-style: normal; max-width: 56ch; display: inline-block; }
 .now .to-product { color: var(--gold-lit); border-bottom: 1px solid rgba(240,217,160,.35); }
@@ -444,15 +475,12 @@ a { color: inherit; text-decoration: none; }
 .hint button:hover { color: var(--gold-lit); border-color: var(--gold); }
 .hint button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
 
-
-
-
+/* Pinned to the bottom of the lower row, so it sits at the foot of the screen. */
 .colophon {
-  align-self: end;
-  width: 100%; max-width: 980px; padding-top: 22px; border-top: 1px solid var(--hair);
-  display: flex; flex-wrap: wrap; gap: 0 26px; justify-content: space-between; align-items: center;
+  margin-top: auto;
+  width: 100%; padding-top: 8px; border-top: 1px solid var(--hair);
 }
-.colophon-links { display: flex; flex-wrap: wrap; gap: 0 22px; }
+.colophon nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 clamp(22px, 5vw, 40px); }
 /* 44px tall for a thumb; the type stays caption-sized. */
 .colophon a { display: inline-flex; align-items: center; min-height: 44px; }
 .colophon a:hover { color: var(--gold-lit); }
@@ -592,6 +620,8 @@ a { color: inherit; text-decoration: none; }
   font-family: var(--sans); font-size: 10px; letter-spacing: .28em;
   text-transform: uppercase; color: var(--dimmer);
 }
+/* Only the engraved set names its paper; in colour the line takes no room. */
+.stock:empty { display: none; }
 </style>
 </head>
 <body>
@@ -610,34 +640,34 @@ a { color: inherit; text-decoration: none; }
     </span>
   </button>
 
-  <!-- Header and colophon are rows of the room, not members of the stage: the
-       stage is centred in whatever is left between them, so the card sits in
-       the same place whatever the header says. -->
+  <!-- Three rows: the header, the card, and everything below it. The two
+       outer rows are always the same height, so the card is centred on the
+       screen whatever the header or the caption says. -->
   <div class="eyebrow">
     <p class="cap">Kaayko</p>
     <h1>Why not?</h1>
   </div>
 
-  <div class="stage">
-
-    <div class="card-wrap">
-      <i class="desk" aria-hidden="true"></i>
-      <div class="card" id="card" role="button" tabindex="0"
-           aria-label="The Kaayko card. Activate to turn it over.">
-        <div class="face front">
-          <div id="face-front" role="img" aria-label="Front of the Kaayko card"></div>
-          <div class="relief" aria-hidden="true"></div>
-          <i class="shade"></i><i class="foil"></i><i class="wash"></i><i class="sheen"></i><i class="grain"></i><i class="rim"></i><i class="rim-lit"></i>
-          <i class="stylus" aria-hidden="true"></i>
-        </div>
-        <div class="face back">
-          <div id="face-back" role="img" aria-label="Back of the Kaayko card"></div>
-          <div class="relief" aria-hidden="true"></div>
-          <i class="shade"></i><i class="foil"></i><i class="wash"></i><i class="sheen"></i><i class="grain"></i><i class="rim"></i><i class="rim-lit"></i>
-          <i class="stylus" aria-hidden="true"></i>
-        </div>
+  <div class="card-wrap">
+    <i class="desk" aria-hidden="true"></i>
+    <div class="card" id="card" role="button" tabindex="0"
+         aria-label="The Kaayko card. Activate to turn it over.">
+      <div class="face front">
+        <div id="face-front" role="img" aria-label="Front of the Kaayko card"></div>
+        <div class="relief" aria-hidden="true"></div>
+        <i class="shade"></i><i class="foil"></i><i class="wash"></i><i class="sheen"></i><i class="grain"></i><i class="rim"></i><i class="rim-lit"></i>
+        <i class="stylus" aria-hidden="true"></i>
+      </div>
+      <div class="face back">
+        <div id="face-back" role="img" aria-label="Back of the Kaayko card"></div>
+        <div class="relief" aria-hidden="true"></div>
+        <i class="shade"></i><i class="foil"></i><i class="wash"></i><i class="sheen"></i><i class="grain"></i><i class="rim"></i><i class="rim-lit"></i>
+        <i class="stylus" aria-hidden="true"></i>
       </div>
     </div>
+  </div>
+
+  <div class="below">
 
     <div class="series">
       <div class="marks" id="marks" role="radiogroup" aria-label="Choose a card from the series"></div>
@@ -655,21 +685,19 @@ a { color: inherit; text-decoration: none; }
       <button type="button" id="inspect" aria-pressed="false">Inspect</button>
     </div>
 
+    <!-- Every property already has a card in the series with its own address
+         on the face; listing them again here would be the same links twice.
+         The footer is the old landing's — YouTube, About, Privacy — less
+         Inventory, which pointed at this page. Contact (help@kaayko.com) lives
+         on About and Privacy, not here. -->
+    <footer class="colophon">
+      <nav aria-label="Footer">
+        <a class="cap" href="https://www.youtube.com/@travelingout" rel="noopener noreferrer">YouTube</a>
+        <a class="cap" href="/about">About</a>
+        <a class="cap" href="/privacy">Privacy</a>
+      </nav>
+    </footer>
   </div>
-
-  <!-- Every property already has a card in the series with its own address on
-       the face; listing them again here would be the same links twice. What
-       the footer carries is what no card does: a person to write to, and the
-       old landing's footer — YouTube, About, Privacy. Its fourth link,
-       Inventory, pointed at this page. -->
-  <footer class="colophon">
-    <a class="cap" href="mailto:help@kaayko.com">help@kaayko.com</a>
-    <nav class="colophon-links" aria-label="Footer">
-      <a class="cap" href="https://www.youtube.com/@travelingout" rel="noopener noreferrer">YouTube</a>
-      <a class="cap" href="/about">About</a>
-      <a class="cap" href="/privacy">Privacy</a>
-    </nav>
-  </footer>
 </main>
 
 <!-- Versioned deliberately. This page (it was card.html) is served no-store and revalidates, but
