@@ -69,7 +69,8 @@ const signature = (items) => items
 const metaLine = (item) => {
   const parts = [];
   if (item.gender && item.gender !== 'null') parts.push(esc(item.gender));
-  if (item.size) parts.push(`Size ${esc(item.size)}`);
+  // A magnet's option is its shape (24 Oct 2026); everything else has a size.
+  if (item.size) parts.push(`${/^(round|square)$/i.test(item.size) ? 'Shape' : 'Size'} ${esc(item.size)}`);
   return parts.join(' · ');
 };
 

@@ -119,7 +119,10 @@ def process_image(source: Path, output: Path) -> ProcessedImage:
 
         # 1) AI upscale or LANCZOS to a working canvas (>= TARGET_LONG_EDGE).
         upscaler_used = "lanczos"
-        if os.environ.get("KAAYKO_DISABLE_AI") != "1":
+        # Only when the source is SMALLER than the target. A 3600 px render went through a
+        # 4x upscale to 185 MP and PIL refused it as a decompression bomb (24 Oct 2026);
+        # a source already at size has nothing to gain from it.
+        if os.environ.get("KAAYKO_DISABLE_AI") != "1" and max(src_w, src_h) < TARGET_LONG_EDGE:
             ai_out = _ai_upscale(source, is_alpha=is_alpha)
             if ai_out is not None:
                 img = ai_out.convert("RGBA" if is_alpha else "RGB")

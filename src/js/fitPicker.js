@@ -107,6 +107,13 @@ export function isSoldOut(product) {
  * Keyed on the sizes the SKU actually stocks, not on productType: a type with
  * one size needs no picker, and a new apparel type needs no code here.
  */
+/** What the choice is called: a magnet's options are its shape (24 Oct 2026). */
+export const SHAPES = new Set(["round", "square"]);
+export function optionLabel(product) {
+  const opts = stockedSizes(product);
+  return opts.length && opts.every((o) => SHAPES.has(String(o).toLowerCase())) ? "Shape" : "Size";
+}
+
 export function needsPicker(product) {
   return stockedSizes(product).length > 1;
 }
@@ -314,7 +321,7 @@ export function createFitPicker(product, { onConfirm, showAction = true } = {}) 
     ${fitRow}
     <div class="fitp-row">
       <div class="fitp-legend" id="fitp-size-${uid}">
-        <span>Size</span>
+        <span>${esc(optionLabel(product))}</span>
         ${guideRows ? `<button type="button" class="fitp-guide-toggle" aria-expanded="false" aria-controls="fitp-guide-${uid}">Size guide</button>` : ""}
       </div>
       <div class="fitp-opts fitp-sizes" role="radiogroup" aria-labelledby="fitp-size-${uid}" data-group="size">
