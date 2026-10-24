@@ -395,6 +395,7 @@
       transition: border-color 0.18s ease, box-shadow 0.18s ease;
     }
     .co-input::placeholder { color: var(--muted); }   /* ≥4.5:1 in both themes */
+    @media (pointer: coarse) { .co-input { font-size: 16px; } }   /* iOS zooms into fields under 16px */
     .co-input:focus {
       outline: none;
       border-color: var(--gold);

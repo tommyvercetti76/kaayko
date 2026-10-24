@@ -143,6 +143,12 @@ function comingSoonStrip() {
  */
 function decorateCard(item, mixRank = 0) {
   const card = createCarouselItem(item);
+  // The first row on a desktop (two on a phone) is on screen at once; lazy-loading
+  // its covers left grey tiles on first paint.
+  if (mixRank < 4) {
+    const cover = card.querySelector("img.carousel-image");
+    if (cover) { cover.loading = "eager"; cover.fetchPriority = "high"; }
+  }
   card.dataset.facetMix = String(mixRank);
   card.dataset.facetType = (item.productType || "").toLowerCase();
   card.dataset.facetCategory = (item.category || "").toLowerCase();
@@ -178,13 +184,19 @@ export function getPriceValue(item) {
  * because items of a type share a creation date. Shoppers should meet the range, not a filing
  * cabinet with the dividers removed.
  */
+// At most this many featured products lead. All ten bottles were featured, so
+// "Featured & mixed" opened on ten bottles in a row (24 Oct 2026); the rest of the
+// featured now go first in their own type's lane and are dealt with the others.
+const FEATURED_LEAD = 4;
+
 function buildMixedOrder(items) {
   const rank = new Map();
   const featured = items.filter(i => i.featured === true);
-  const rest = items.filter(i => i.featured !== true);
+  const lead = featured.slice(0, FEATURED_LEAD);
+  const rest = [...featured.slice(FEATURED_LEAD), ...items.filter(i => i.featured !== true)];
 
   let n = 0;
-  for (const item of featured) rank.set(item, n++);
+  for (const item of lead) rank.set(item, n++);
 
   const queues = new Map();
   for (const item of rest) {
@@ -437,7 +449,10 @@ function applyBrowseState(carousel) {
     "price-desc": (a, b) => num(b, "facetPrice") - num(a, "facetPrice")
   };
   cards.sort(comparators[BROWSE_STATE.sort] || comparators.featured);
-  cards.forEach((card, i) => { card.style.order = String(i); });
+  // Move the nodes, not just the paint. CSS `order` re-ordered what you SAW, while
+  // Tab and screen readers still walked the creation order (WCAG 1.3.2 / 2.4.3).
+  cards.forEach((card) => { card.style.order = ""; });
+  grid.append(...cards);
 
   let shown = 0;
   for (const card of cards) {
@@ -1044,22 +1059,51 @@ function setupModalNav(container, count) {
 }
 
 /* ==========================================================================
-   3) The heart. A private mark, not a score: the count is never shown, there is
-   no "most loved" sort and no vote filter — the store keeps no social proof.
-   The vote still reaches the server as the one signal the owner reads.
+   3) The heart and its count. From 13 Sep 2026 the count was hidden ("no social
+   proof"); Rohan asked for it back on 24 Oct 2026. Still no "most loved" sort
+   and no vote filter — the number sits on the heart, nowhere else.
+
+   A love is remembered in this browser (LOVED_KEY). It used to be forgotten on
+   reload, so the empty heart invited a second +1 from the same person — harmless
+   while the count was hidden, inflation once it is shown.
    ========================================================================== */
+const LOVED_KEY = "kaayko.loved";
+function lovedSet() {
+  try { return new Set(JSON.parse(localStorage.getItem(LOVED_KEY) || "[]")); } catch (_) { return new Set(); }
+}
+function rememberLove(id, on) {
+  try {
+    const s = lovedSet();
+    if (on) s.add(id); else s.delete(id);
+    localStorage.setItem(LOVED_KEY, JSON.stringify([...s].slice(-500)));
+  } catch (_) { /* private browsing: the heart still works, it just forgets */ }
+}
+
 function createLikeButton(item) {
   const btn = document.createElement("button");
-  btn.className = "heart-button image-overlay-control material-icons";
+  btn.className = "heart-button image-overlay-control";
   btn.type = "button";
-  btn.setAttribute("aria-label", "Love this");
 
-  let liked = false;
+  const icon = document.createElement("span");
+  icon.className = "material-icons heart-icon";
+  icon.setAttribute("aria-hidden", "true");   // ligature text must not be read
+  const count = document.createElement("span");
+  count.className = "heart-count";
+  count.setAttribute("aria-hidden", "true");  // said in the label instead
+  btn.append(icon, count);
+
+  let liked = lovedSet().has(item.id);
+  let votes = Math.max(0, Number(item.votes) || 0);
 
   function refresh() {
     btn.classList.toggle("liked", liked);
+    btn.classList.toggle("has-count", votes > 0);
     btn.setAttribute("aria-pressed", String(liked));
-    btn.textContent = liked ? "favorite" : "favorite_border";
+    btn.setAttribute("aria-label", votes > 0
+      ? `Love ${item.title} — ${votes} ${votes === 1 ? "love" : "loves"}`
+      : `Love ${item.title}`);
+    icon.textContent = liked ? "favorite" : "favorite_border";
+    count.textContent = votes > 0 ? String(votes) : "";
   }
   refresh();
 
@@ -1067,12 +1111,16 @@ function createLikeButton(item) {
     e.stopPropagation();
     const delta = liked ? -1 : 1;
     liked = !liked;
+    votes = Math.max(0, votes + delta);
+    rememberLove(item.id, liked);
     refresh();
     try {
       await voteOnProduct(item.id, delta);
     } catch (err) {
       console.error("Vote error:", err);
       liked = !liked;
+      votes = Math.max(0, votes - delta);
+      rememberLove(item.id, liked);
       refresh();
     }
   });

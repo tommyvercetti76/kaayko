@@ -1083,6 +1083,33 @@ body.store-v2 {
   color: #111;
 }
 
+/* The heart grows into a pill when it carries a count (24 Oct 2026), and has a
+   44px hit area whatever its size — it was a bare 28px target on phones. */
+.store-v2 .heart-button.has-count {
+  width: auto;
+  min-width: 28px;
+  padding: 0 9px 0 7px;
+  gap: 4px;
+}
+.store-v2 .heart-button::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 999px;
+}
+.store-v2 .heart-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+.store-v2 .heart-count {
+  font-family: 'Josefin_Bold', 'Josefin Sans', Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  padding-top: 2px;              /* Josefin sits high; this centres it on the heart */
+}
+
 .store-v2 .image-indicator {
   position: absolute;
   left: 50%;
@@ -1804,6 +1831,13 @@ html.dark-theme .store-v2 .footer-elements {
 }
 
 .store-v2 .browse-search { min-width: 0; width: 190px; }
+/* On touch screens: iOS Safari zooms the whole page into any field set under
+   16px the moment it is focused, and 30px pills are a hard thumb target. */
+@media (pointer: coarse) {
+  .store-v2 .browse-search,
+  .store-v2 .browse-sort { font-size: 16px; min-height: 40px; }
+  .store-v2 .browse-chip { min-height: 40px; display: inline-flex; align-items: center; }
+}
 .store-v2 .browse-search::placeholder { color: var(--muted); opacity: 0.8; }
 .store-v2 .browse-search:focus-visible,
 .store-v2 .browse-sort:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }

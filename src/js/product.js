@@ -20,6 +20,11 @@ import { cartManager } from "/js/cartManager.js";
 import { esc } from "/js/kit.js";
 import { labelForType } from "/js/productTypes.js";
 
+/** A web address in already-escaped story text becomes a link; it used to print as
+ *  a bare URL (the India Post line on every stamp piece). Trailing punctuation stays text. */
+const linkify = (escaped) => escaped.replace(/https?:\/\/[^\s<]+[^\s<.,;:!?)]/g,
+  (url) => `<a href="${url}" target="_blank" rel="noopener">${url.replace(/^https?:\/\/(www\.)?/, "")}</a>`);
+
 function renderError(root, msg) {
   root.innerHTML = `
     <section class="animal-empty">
@@ -85,7 +90,7 @@ function renderProduct(product, openModalFn) {
 
       <aside class="pdp-file" data-voice="${esc(copy.voice)}">
         <h2 class="pdp-file-head">About this piece</h2>
-        <p class="pdp-story">${esc(copy.story)}</p>
+        <p class="pdp-story">${linkify(esc(copy.story))}</p>
         <dl class="pdp-rows">${rows}</dl>
         ${copy.atRisk ? `<p class="pdp-flag">On the IUCN Red List. We draw them while they are still here.</p>` : ""}
       </aside>
