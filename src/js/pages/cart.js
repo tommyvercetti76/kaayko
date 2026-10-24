@@ -101,7 +101,8 @@ function promoFieldMarkup() {
       </div>
       <p class="co-promo-note" id="co-promo-note" role="status" aria-live="polite">${
         state.promoNote ? esc(state.promoNote)
-        : r ? `${r.percent}% off${r.label ? ` ${esc(r.label)}` : r.scope === 'cart' ? ' the whole bag' : ' the pieces on that shelf'}. Taken off when you pay.`
+        : r && r.scope === 'cart' ? `${r.percent}% off the whole bag — already in your total.`
+        : r ? `${r.percent}% off${r.label ? ` ${esc(r.label)}` : ' the pieces on that shelf'}. Taken off when you pay.`
         : 'Have a code? Put it in.'
       }</p>
     </div>`;
@@ -153,8 +154,15 @@ function totals(items) {
     };
   }
   const subtotal = items.reduce((sum, i) => sum + (i.priceCents || 0) * (i.quantity || 1), 0);
-  return { subtotal, tax: 0, discount: 0, discountPercent: 0,
-           taxKnown: false, total: subtotal, authoritative: false };
+  // A whole-bag code is a flat percent of the bag, so the bag can show it before
+  // checkout prices it — same rounding and 50% cap as discounts.js. The server
+  // still decides (a per-order ceiling or a better patron deal can change it);
+  // once it answers, the branch above shows its figure.
+  const p = state.promo;
+  const percent = p && p.scope === 'cart' ? Math.max(0, Math.min(Number(p.percent) || 0, 50)) : 0;
+  const discount = Math.floor((subtotal * percent) / 100);
+  return { subtotal, tax: 0, discount, discountPercent: discount > 0 ? percent : 0,
+           taxKnown: false, total: subtotal - discount, authoritative: false };
 }
 
 /* ── Render ──────────────────────────────────────────────────── */
@@ -429,19 +437,23 @@ async function openCheckout() {
       state.promoNote = null;
     }
 
-    const before = totals(items).total;
+    const before = totals(items);
     state.pi = {
       clientSecret: data.clientSecret,
       paymentIntentId: data.paymentIntentId,
       totals: priced
     };
-    const after = totals(items).total;
+    const after = totals(items);
 
-    // Both numbers come from the same catalogue, so a mismatch means
-    // a price moved while the bag was open. Never quietly charge a
-    // different number than the one the shopper was looking at.
-    if (priced && before !== after) {
-      toast(`Prices updated — your total is now ${money(after)}.`, 'notice');
+    // Both subtotals come from the same catalogue, so a mismatch means a price
+    // moved while the bag was open. Never quietly charge a different number than
+    // the one the shopper was looking at. A discount the bag already showed is
+    // not news: it used to toast "Prices updated" for the shopper's own code
+    // (24 Oct 2026). Only a total that went UP past the bag's figure is said.
+    if (priced && before.subtotal !== after.subtotal) {
+      toast(`Prices updated — your total is now ${money(after.total)}.`, 'notice');
+    } else if (priced && after.total > before.total) {
+      toast(`Your discount came to ${money(after.discount)} — your total is ${money(after.total)}.`, 'notice');
     }
     state.cartSig = signature(items);
     state.step = 'checkout';
