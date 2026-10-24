@@ -34,16 +34,23 @@ C = Path("/Users/Rohan/Desktop/Kaayko_Catalogue_Sources")
 M = Path("/Users/Rohan/Desktop/Forge/generated/madhubani_animals")
 
 # upload name (product id = kaayko_<slug>_<type>) -> (art, medallion, has magnet product)
+# 24 Oct 2026 evening, Rohan: new art for the giant squirrel, pangolin, skimmer and
+# sloth bear (their round medallions looked poor as magnets); two new designs, the
+# golden langur and the cheetah of Kuno; the Gir MUG carries the live Gir magnet's
+# own drawing (lift_magnet_print.py), not the catalogue's newer lion; and the magnets
+# of five designs are hidden from the store (chinkara, sarus crane, lion, blackbuck
+# no. 2, african fish eagle) — their has_magnet is False here so no texture is built.
+F4 = Path("/Users/Rohan/Desktop/Forge/generated/madhubani_animals")
 DESIGNS = {
     "Barasingha": (C / "barasingha_tote/art/barasingha_barasingha.transparent.png", False, True),
     "Blackbuck": (C / "blackbuck_tote/art/04_blackbuck_madhubani_tshirt.transparent.png", False, True),
-    "Blackbuck2": (C / "blackbuck_tote_no_2/art/minimalist-madhubani-inspired-blackbuck-t-shirt-illustration.transparent.png", False, True),
+    "Blackbuck2": (C / "blackbuck_tote_no_2/art/minimalist-madhubani-inspired-blackbuck-t-shirt-illustration.transparent.png", False, False),
     "Crocodile": (C / "crocodile_tote/art/saltwater-crocodile_saltwater-crocodile.transparent.png", False, True),
     "FishingCat": (C / "fishing_cat_tote/art/fishing-cat_fishing-cat.transparent.png", False, True),
     "Florican": (C / "florican_tote/art/bengal-florican_bengal-florican.transparent.png", False, True),
     # the Gaur and Gir MAGNETS are the older live products: no new texture for them
     "Gaur": (C / "gaur_magnet/art/gaur_gaur.transparent.png", False, False),
-    "Gir": (C / "gir_lion_magnet/art/asiatic-lion_asiatic-lion.transparent.png", False, False),
+    "Gir": (C / "gir_lion_magnet/art/asiatic-lion_gir-magnet-original.transparent.png", False, False),
     "Langur": (C / "langur_tote/art/gray-langur_gray-langur.transparent.png", False, True),
     "Peacock": (C / "peacock_tote/art/peacock_peacock.transparent.png", False, True),
     "Pitta": (C / "indian_pitta_tote/art/indian-pitta_indian-pitta.transparent.png", False, True),
@@ -51,13 +58,29 @@ DESIGNS = {
     "Snow_Leopard": (C / "snow_leopard_tote/art/snow-leopard_snow-leopard.transparent.png", False, True),
     **{n: (M / "portfolio_v5_african_round_seed15000" / f"{f}.png", True, True) for n, f in {
         "Cheetah": "cheetah", "Secretary_Bird": "secretary-bird", "Plains_Zebra": "plains-zebra", "Hippo": "hippo",
-        "African_Elephant": "african-elephant", "African_Fish_Eagle": "african-fish-eagle", "Giraffe": "giraffe",
-        "Grey_Crowned_Crane": "grey-crowned-crane", "Lion": "lion", "White_Rhino": "white-rhino"}.items()},
-    **{n: (M / "portfolio_v4_indian_round_seed15100" / f"{f}.png", True, True) for n, f in {
-        "Indian_Giant_Squirrel": "indian-giant-squirrel", "Indian_Pangolin": "indian-pangolin",
-        "Indian_Skimmer": "indian-skimmer", "Chinkara": "chinkara", "Sarus_Crane": "sarus-crane",
-        "Sloth_Bear": "sloth-bear", "Red_Panda": "red-panda"}.items()},
+        "African_Elephant": "african-elephant", "Giraffe": "giraffe",
+        "Grey_Crowned_Crane": "grey-crowned-crane", "White_Rhino": "white-rhino"}.items()},
+    "African_Fish_Eagle": (M / "portfolio_v5_african_round_seed15000" / "african-fish-eagle.png", True, False),
+    "Lion": (M / "portfolio_v5_african_round_seed15000" / "lion.png", True, False),
+    "Red_Panda": (M / "portfolio_v4_indian_round_seed15100" / "red-panda.png", True, True),
+    "Chinkara": (M / "portfolio_v4_indian_round_seed15100" / "chinkara.png", True, False),
+    "Sarus_Crane": (M / "portfolio_v4_indian_round_seed15100" / "sarus-crane.png", True, False),
+    "Indian_Giant_Squirrel": (F4 / "portfolio_v4_guarded_seed9700" / "indian-giant-squirrel.png", False, True),
+    "Indian_Pangolin": (C / "indian_pangolin/art/indian-pangolin.transparent.png", False, True),
+    "Indian_Skimmer": (F4 / "portfolio_v4_hd1280_seed9600" / "indian-skimmer.png", False, True),
+    "Sloth_Bear": (C / "sloth_bear/art/sloth-bear.transparent.png", False, True),
+    "Golden_Langur": (C / "golden_langur/art/golden-langur.transparent.png", False, True),
+    "Kuno_Cheetah": (C / "kuno_cheetah/art/cheetah.transparent.png", False, True),
 }
+
+# The four C/... cut-outs above are cut_pockets.py runs on the Forge files (pockets of
+# card the edge flood could not reach printed as cream patches): golden-langur from
+# portfolio_v4_guarded_seed9700, indian-pangolin from portfolio_v4_hd1280_seed9600,
+# sloth-bear from portfolio_v4_hd1280_seed9700, cheetah from
+# portfolio_v5_african_fix_hd1280_seed13200.
+
+# a design whose park is not the one its art file was composed for
+NAME_OVERRIDE = {"Kuno_Cheetah": "KUNO"}
 
 PAPER = tuple(mg.PAPER)
 GLAZE = (249, 248, 245)
@@ -113,7 +136,7 @@ def main() -> int:
     for up, (art, medallion, has_magnet) in DESIGNS.items():
         if not art.exists():
             print("missing art", art); return 1
-        name = park(art)
+        name = NAME_OVERRIDE.get(up) or park(art)
         mug_id = f"kaayko_{slug(up)}_mug"
         index[mug_id] = {"kind": "mug", "wrap": save(mug_wrap(art, name, medallion), f"{mug_id}.wrap", 88)}
         if has_magnet:

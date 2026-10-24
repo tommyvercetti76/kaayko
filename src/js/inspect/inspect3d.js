@@ -3,14 +3,19 @@
  * page's cards are held (24 Oct 2026).
  *
  * The same hand as the cards (js/pages/card.js, js/cards/attitude.js):
- *   - a drag turns it at once, a rigid body under the finger, no smoothing;
+ *   - a drag turns it at once, a rigid body under the finger, both ways at once —
+ *     side to side and up and down, on a phone exactly as under a mouse;
  *   - let go and it coasts on the finger's last angular speed, then settles on the
- *     same critically damped spring (smoothDamp) — no overshoot, no bounce;
- *   - a magnet is a card: a tap or a flick turns it over ONCE, onto its other face;
- *   - a mug is round: it spins as far as you throw it, and tilts so you can look in;
- *   - holding still lifts it, and then it follows the finger up and down too.
- * On a phone a quick vertical swipe still scrolls the page; only a horizontal drag,
- * or a hold, takes the object.
+ *     same critically damped spring (smoothDamp);
+ *   - a mug is round: it spins as far as you throw it, and tips so you can look in;
+ *   - a magnet has nothing printed on its back, so it never turns round (Rohan, 24 Oct
+ *     2026): it tilts in the light up to MAG_YAW / MAG_PITCH, the last stretch of that
+ *     against a rubber band, and springs back to face you; a tap rocks it toward the
+ *     finger;
+ *   - holding still lifts it a little.
+ * On a phone a near-vertical swipe still scrolls the page (a page whose picture can
+ * never be scrolled past is a trap); anything wider than SCROLL_RATIO takes the object,
+ * and so does a hold.
  *
  * Real 3D (three.js, vendored at /js/vendor/three), lit by a studio drawn here — a
  * softbox high on the left, a strip light behind on the right — the same light as the
@@ -29,7 +34,9 @@ const SETTLE = 0.46;          // seconds — the cards' INSPECT_SETTLE
 const HOLD_MS = 240;          // holding still this long lifts it (the cards' HOLD_MS)
 const SLOP = 8;               // px before a press is a turn rather than a tap
 const MUG_PITCH = 34;         // how far a mug tips toward / away from you
-const MAG_PITCH = 48;         // the cards' INSPECT_MAX_RX
+const MAG_YAW = 50;           // how far a magnet tilts side to side — never far enough to show its back
+const MAG_PITCH = 40;         // and up and down
+const SCROLL_RATIO = 0.7;     // a touch drag with |dx| < 0.7·|dy| (within ~35° of vertical) is the page scrolling
 const D2R = Math.PI / 180;
 
 /* ── the studio ────────────────────────────────────────────────────────────────
@@ -154,7 +161,7 @@ export async function mountInspect(host, opts) {
   const canvas = document.createElement('canvas');
   canvas.className = 'insp-canvas';
   canvas.setAttribute('role', 'img');
-  canvas.setAttribute('aria-label', `${opts.title || 'The piece'} in 3D. Drag to turn it${kind === 'magnet' ? '; tap to turn it over' : ''}. Arrow keys turn it too.`);
+  canvas.setAttribute('aria-label', `${opts.title || 'The piece'} in 3D. Drag to ${kind === 'magnet' ? 'tilt it in the light' : 'turn it'}; the arrow keys do it too.`);
   canvas.tabIndex = 0;
   host.appendChild(canvas);
 
@@ -216,8 +223,13 @@ export async function mountInspect(host, opts) {
   const yaw = { a: kind === 'mug' ? -18 : 0, t: kind === 'mug' ? -18 : 0, v: { v: 0 } };
   const pitch = { a: restPitch, t: restPitch, v: { v: 0 } };
   const lean = { x: 0, y: 0 };
-  const grab = { on: false, lifted: false, id: null, x: 0, y: 0, t: 0, wx: 0, wy: 0, face: 0, sx: 0, sy: 0, moved: 0, timer: 0, axis: null };
+  const grab = { on: false, lifted: false, id: null, x: 0, y: 0, t: 0, wx: 0, wy: 0, ry: 0, rp: 0, sx: 0, sy: 0, moved: 0, timer: 0 };
   const maxPitch = kind === 'mug' ? MUG_PITCH : MAG_PITCH;
+  const maxYaw = kind === 'mug' ? Infinity : MAG_YAW;
+  // the rubber band: the finger's raw angle maps onto lim·tanh(raw/lim) — free near the
+  // middle, stiffer toward the limit, never past it
+  const band = (raw, lim) => (lim === Infinity ? raw : lim * Math.tanh(raw / lim));
+  const unband = (a, lim) => (lim === Infinity ? a : lim * Math.atanh(clamp(a / lim, 0.999)));
   let raf = 0, last = 0, lift = 0, liftV = { v: 0 };
 
   function draw(t) {
@@ -226,6 +238,9 @@ export async function mountInspect(host, opts) {
     if (!grab.on) {
       yaw.a = smoothDamp(yaw.a, yaw.t + lean.x, yaw.v, SETTLE, dt);
       pitch.a = smoothDamp(pitch.a, pitch.t + lean.y, pitch.v, SETTLE, dt);
+      if (kind === 'magnet') {          // a hard throw must not carry it round to its back
+        yaw.a = clamp(yaw.a, maxYaw * 1.08); pitch.a = clamp(pitch.a, maxPitch * 1.08);
+      }
     }
     lift = smoothDamp(lift, grab.on ? 1 : 0, liftV, 0.14, dt);
     if (obj) {
@@ -247,14 +262,15 @@ export async function mountInspect(host, opts) {
   /* the hand */
   function take(e) {
     grab.on = true; grab.id = e.pointerId; grab.x = e.clientX; grab.y = e.clientY; grab.t = performance.now();
-    grab.wx = grab.wy = 0; grab.face = Math.round(yaw.a / 180) * 180;
+    grab.wx = grab.wy = 0;
+    grab.ry = unband(yaw.a, maxYaw); grab.rp = unband(pitch.a, maxPitch);
     yaw.t = yaw.a; pitch.t = pitch.a; yaw.v.v = pitch.v.v = 0; lean.x = lean.y = 0;
     try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
     host.classList.add('is-held'); wake();
   }
   function down(e) {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
-    grab.sx = e.clientX; grab.sy = e.clientY; grab.moved = 0; grab.axis = null; grab.id = e.pointerId; grab.lifted = false;
+    grab.sx = e.clientX; grab.sy = e.clientY; grab.moved = 0; grab.id = e.pointerId; grab.lifted = false;
     if (e.pointerType === 'mouse') { take(e); return; }
     clearTimeout(grab.timer);
     grab.timer = setTimeout(() => { if (!grab.on && grab.id === e.pointerId) { grab.lifted = true; take({ pointerId: e.pointerId, clientX: grab.sx, clientY: grab.sy }); try { navigator.vibrate?.(8); } catch (_) {} } }, HOLD_MS);
@@ -265,18 +281,19 @@ export async function mountInspect(host, opts) {
     if (!grab.on) {
       if (grab.moved > SLOP) {
         clearTimeout(grab.timer);
-        // a horizontal start takes the object; a vertical one is the page scrolling
-        if (Math.abs(e.clientX - grab.sx) > Math.abs(e.clientY - grab.sy)) take({ pointerId: e.pointerId, clientX: grab.sx, clientY: grab.sy });
+        // anything but a near-vertical start takes the object; that one is the page scrolling
+        if (Math.abs(e.clientX - grab.sx) >= SCROLL_RATIO * Math.abs(e.clientY - grab.sy)) take({ pointerId: e.pointerId, clientX: grab.sx, clientY: grab.sy });
         else { grab.id = null; return; }
       } else return;
     }
     const now = performance.now(), dt = Math.max(1 / 240, (now - grab.t) / 1000);
     const dx = e.clientX - grab.x, dy = e.clientY - grab.y;
     grab.x = e.clientX; grab.y = e.clientY; grab.t = now;
-    yaw.a += dx * GAIN; yaw.t = yaw.a;
-    // pitch follows the finger only once the object is lifted (or under a mouse):
-    // a horizontal swipe should not wobble it
-    if (grab.lifted || e.pointerType === 'mouse') { pitch.a = clamp(pitch.a + dy * GAIN, maxPitch); pitch.t = pitch.a; }
+    // both axes follow the finger, on a phone as under a mouse (Rohan, 24 Oct 2026: a
+    // phone turned it in one plane only)
+    grab.ry += dx * GAIN; grab.rp += dy * GAIN;
+    yaw.a = band(grab.ry, maxYaw); yaw.t = yaw.a;
+    pitch.a = band(grab.rp, maxPitch); pitch.t = pitch.a;
     const a = 0.35;
     grab.wy = grab.wy * (1 - a) + (dx * GAIN / dt) * a;
     grab.wx = grab.wx * (1 - a) + (dy * GAIN / dt) * a;
@@ -290,17 +307,23 @@ export async function mountInspect(host, opts) {
       grab.on = false;
       try { canvas.releasePointerCapture(e.pointerId); } catch (_) {}
       host.classList.remove('is-held');
-      yaw.v.v = grab.wy; pitch.v.v = grab.wx;
-      const coast = yaw.a + grab.wy * SETTLE * 0.75;
       if (kind === 'magnet') {
-        // a card: settle on a face, and a flick turns it over once, never twice
-        yaw.t = clamp(Math.round(coast / 180) * 180 - grab.face, 180) + grab.face;
+        // back to facing you, carrying a little of the throw so it does not just stop
+        yaw.v.v = grab.wy * 0.4; pitch.v.v = grab.wx * 0.4;
+        yaw.t = 0;
       } else {
-        yaw.t = coast;                                 // a mug stops where its spin runs out
+        yaw.v.v = grab.wy; pitch.v.v = grab.wx;
+        yaw.t = yaw.a + grab.wy * SETTLE * 0.75;       // a mug stops where its spin runs out
       }
       pitch.t = restPitch;
     }
-    if (wasTap && kind === 'magnet' && e.type === 'pointerup') { yaw.t = Math.round(yaw.a / 180) * 180 + 180; }
+    if (wasTap && kind === 'magnet' && e.type === 'pointerup') {
+      // a tap rocks it toward the finger: the side you press goes in, then it settles
+      const r = canvas.getBoundingClientRect();
+      yaw.v.v = ((e.clientX - r.left) / r.width - 0.5) * 320;
+      pitch.v.v = ((e.clientY - r.top) / r.height - 0.5) * 320;
+      yaw.t = 0; pitch.t = restPitch;
+    }
     grab.id = null; grab.lifted = false;
     wake();
   }
@@ -313,13 +336,13 @@ export async function mountInspect(host, opts) {
     wake();
   }
   function leave() { if (!grab.on) { lean.x = lean.y = 0; wake(); } }
-  // once lifted on a touch screen, the page must not scroll under the finger
+  // once it has the finger on a touch screen, the page must not scroll under it
   function touchmove(e) { if (grab.on) e.preventDefault(); }
   function onKey(e) {
     const step = { ArrowLeft: -30, ArrowRight: 30 }[e.key];
-    if (step) { e.preventDefault(); yaw.t = (kind === 'magnet' ? Math.round(yaw.t / 180) * 180 : yaw.t) + (kind === 'magnet' ? Math.sign(step) * 180 : step); wake(); }
+    if (step && kind === 'mug') { e.preventDefault(); yaw.t += step; wake(); }
+    if (step && kind === 'magnet') { e.preventDefault(); yaw.t = clamp(step, maxYaw); wake(); setTimeout(() => { yaw.t = 0; wake(); }, 900); }
     if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); pitch.t = clamp(pitch.t + (e.key === 'ArrowUp' ? -12 : 12), maxPitch); wake(); setTimeout(() => { pitch.t = restPitch; wake(); }, 900); }
-    if ((e.key === 'Enter' || e.key === ' ') && kind === 'magnet') { e.preventDefault(); yaw.t = Math.round(yaw.t / 180) * 180 + 180; wake(); }
   }
   canvas.addEventListener('pointerdown', down);
   canvas.addEventListener('pointermove', move);

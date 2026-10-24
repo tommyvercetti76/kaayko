@@ -8,11 +8,6 @@
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_african-elephant_mug.wrap.202aff466e.webp"
  },
- "kaayko_african-fish-eagle_magnet": {
-  "kind": "magnet",
-  "round": "/assets/inspect/kaayko_african-fish-eagle_magnet.round.d02b682d8a.webp",
-  "square": "/assets/inspect/kaayko_african-fish-eagle_magnet.square.92f65072b3.webp"
- },
  "kaayko_african-fish-eagle_mug": {
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_african-fish-eagle_mug.wrap.035124e56d.webp"
@@ -25,11 +20,6 @@
  "kaayko_barasingha_mug": {
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_barasingha_mug.wrap.1753fd9ca2.webp"
- },
- "kaayko_blackbuck2_magnet": {
-  "kind": "magnet",
-  "round": "/assets/inspect/kaayko_blackbuck2_magnet.round.b8989cf569.webp",
-  "square": "/assets/inspect/kaayko_blackbuck2_magnet.square.9e0d520bb2.webp"
  },
  "kaayko_blackbuck2_mug": {
   "kind": "mug",
@@ -52,11 +42,6 @@
  "kaayko_cheetah_mug": {
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_cheetah_mug.wrap.ffb92ef941.webp"
- },
- "kaayko_chinkara_magnet": {
-  "kind": "magnet",
-  "round": "/assets/inspect/kaayko_chinkara_magnet.round.d3bba6434d.webp",
-  "square": "/assets/inspect/kaayko_chinkara_magnet.square.309308c994.webp"
  },
  "kaayko_chinkara_mug": {
   "kind": "mug",
@@ -95,7 +80,7 @@
  },
  "kaayko_gir_mug": {
   "kind": "mug",
-  "wrap": "/assets/inspect/kaayko_gir_mug.wrap.4eb12a8555.webp"
+  "wrap": "/assets/inspect/kaayko_gir_mug.wrap.6f8603674b.webp"
  },
  "kaayko_giraffe_magnet": {
   "kind": "magnet",
@@ -105,6 +90,15 @@
  "kaayko_giraffe_mug": {
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_giraffe_mug.wrap.4171dab23b.webp"
+ },
+ "kaayko_golden-langur_magnet": {
+  "kind": "magnet",
+  "round": "/assets/inspect/kaayko_golden-langur_magnet.round.6213a2170f.webp",
+  "square": "/assets/inspect/kaayko_golden-langur_magnet.square.beac3233c2.webp"
+ },
+ "kaayko_golden-langur_mug": {
+  "kind": "mug",
+  "wrap": "/assets/inspect/kaayko_golden-langur_mug.wrap.f61de754ab.webp"
  },
  "kaayko_grey-crowned-crane_magnet": {
   "kind": "magnet",
@@ -126,30 +120,39 @@
  },
  "kaayko_indian-giant-squirrel_magnet": {
   "kind": "magnet",
-  "round": "/assets/inspect/kaayko_indian-giant-squirrel_magnet.round.479f8584a6.webp",
-  "square": "/assets/inspect/kaayko_indian-giant-squirrel_magnet.square.73caad54d3.webp"
+  "round": "/assets/inspect/kaayko_indian-giant-squirrel_magnet.round.cb1da52d18.webp",
+  "square": "/assets/inspect/kaayko_indian-giant-squirrel_magnet.square.6f52e9159e.webp"
  },
  "kaayko_indian-giant-squirrel_mug": {
   "kind": "mug",
-  "wrap": "/assets/inspect/kaayko_indian-giant-squirrel_mug.wrap.11e5e5d0e0.webp"
+  "wrap": "/assets/inspect/kaayko_indian-giant-squirrel_mug.wrap.fa062ef0cb.webp"
  },
  "kaayko_indian-pangolin_magnet": {
   "kind": "magnet",
-  "round": "/assets/inspect/kaayko_indian-pangolin_magnet.round.c77c993a43.webp",
-  "square": "/assets/inspect/kaayko_indian-pangolin_magnet.square.654a0111ea.webp"
+  "round": "/assets/inspect/kaayko_indian-pangolin_magnet.round.f576f4ed1e.webp",
+  "square": "/assets/inspect/kaayko_indian-pangolin_magnet.square.8c962ee773.webp"
  },
  "kaayko_indian-pangolin_mug": {
   "kind": "mug",
-  "wrap": "/assets/inspect/kaayko_indian-pangolin_mug.wrap.8933a7698b.webp"
+  "wrap": "/assets/inspect/kaayko_indian-pangolin_mug.wrap.35ef6d4435.webp"
  },
  "kaayko_indian-skimmer_magnet": {
   "kind": "magnet",
-  "round": "/assets/inspect/kaayko_indian-skimmer_magnet.round.a9aeb3e66e.webp",
-  "square": "/assets/inspect/kaayko_indian-skimmer_magnet.square.5664dfb154.webp"
+  "round": "/assets/inspect/kaayko_indian-skimmer_magnet.round.c224bf13f3.webp",
+  "square": "/assets/inspect/kaayko_indian-skimmer_magnet.square.eea48e218d.webp"
  },
  "kaayko_indian-skimmer_mug": {
   "kind": "mug",
-  "wrap": "/assets/inspect/kaayko_indian-skimmer_mug.wrap.7c1d85696b.webp"
+  "wrap": "/assets/inspect/kaayko_indian-skimmer_mug.wrap.b77953d382.webp"
+ },
+ "kaayko_kuno-cheetah_magnet": {
+  "kind": "magnet",
+  "round": "/assets/inspect/kaayko_kuno-cheetah_magnet.round.1581c2caf4.webp",
+  "square": "/assets/inspect/kaayko_kuno-cheetah_magnet.square.c33c124e06.webp"
+ },
+ "kaayko_kuno-cheetah_mug": {
+  "kind": "mug",
+  "wrap": "/assets/inspect/kaayko_kuno-cheetah_mug.wrap.5c71ad45b0.webp"
  },
  "kaayko_langur_magnet": {
   "kind": "magnet",
@@ -159,11 +162,6 @@
  "kaayko_langur_mug": {
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_langur_mug.wrap.e018b0fe1e.webp"
- },
- "kaayko_lion_magnet": {
-  "kind": "magnet",
-  "round": "/assets/inspect/kaayko_lion_magnet.round.226722b667.webp",
-  "square": "/assets/inspect/kaayko_lion_magnet.square.b27879e755.webp"
  },
  "kaayko_lion_mug": {
   "kind": "mug",
@@ -214,11 +212,6 @@
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_red-panda_mug.wrap.ba92390dcf.webp"
  },
- "kaayko_sarus-crane_magnet": {
-  "kind": "magnet",
-  "round": "/assets/inspect/kaayko_sarus-crane_magnet.round.65a9058075.webp",
-  "square": "/assets/inspect/kaayko_sarus-crane_magnet.square.80e017317e.webp"
- },
  "kaayko_sarus-crane_mug": {
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_sarus-crane_mug.wrap.ba85606575.webp"
@@ -234,12 +227,12 @@
  },
  "kaayko_sloth-bear_magnet": {
   "kind": "magnet",
-  "round": "/assets/inspect/kaayko_sloth-bear_magnet.round.06663ac353.webp",
-  "square": "/assets/inspect/kaayko_sloth-bear_magnet.square.5d0c451084.webp"
+  "round": "/assets/inspect/kaayko_sloth-bear_magnet.round.49722bd214.webp",
+  "square": "/assets/inspect/kaayko_sloth-bear_magnet.square.86ae09f221.webp"
  },
  "kaayko_sloth-bear_mug": {
   "kind": "mug",
-  "wrap": "/assets/inspect/kaayko_sloth-bear_mug.wrap.85c2f9f7c5.webp"
+  "wrap": "/assets/inspect/kaayko_sloth-bear_mug.wrap.3ddcf839ef.webp"
  },
  "kaayko_snow-leopard_magnet": {
   "kind": "magnet",

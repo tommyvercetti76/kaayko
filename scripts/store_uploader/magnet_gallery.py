@@ -40,6 +40,7 @@ PARKS = {
     "african-fish-eagle": "MURCHISON", "chinkara": "GIR", "sarus-crane": "KEOLADEO",
     "sloth-bear": "BANDHAVGARH", "red-panda": "NAMDAPHA", "indian-pangolin": "TADOBA",
     "indian-giant-squirrel": "ANAMALAI", "indian-skimmer": "KUTCH",
+    "golden-langur": "MANAS",   # 24 Oct 2026 evening (Forge animals.json: manas, Assam)
 }
 
 

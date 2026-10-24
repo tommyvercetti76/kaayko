@@ -3,7 +3,10 @@
 mug_gallery.py — a drawing on a white 11 oz ceramic mug, shot like a product photograph.
 
 The mug is drawn, not photographed and not generated, and lit the way a studio lights
-white ceramic (rebuilt 24 Oct 2026 after Rohan found the first pass "inauthentic"):
+white ceramic (rebuilt 24 Oct 2026 after Rohan found the first pass "inauthentic"; that
+evening whitened, because beside the 3D view the photo read grey — its front wall sat
+at 220, the studio wall's own value; it now sits ~244, above the wall, as white ceramic
+does in a studio, and the turn into shadow is gentler, ~222 at u=0.6, not 166):
 
   key     a large softbox high on the left — diffuse shading round the cylinder, and its
           reflection as a soft vertical band in the glaze
@@ -144,7 +147,7 @@ def render(art_path: Path, name: str, medallion: bool = False) -> Image.Image:
     lam = np.clip(nx * KEY[0] + ny * KEY[1] + nz * KEY[2], 0, 1)
     hv = KEY + np.array([0, 0, 1], np.float32); hv /= np.linalg.norm(hv)
     spec = np.clip(nx * hv[0] + ny * hv[1] + nz * hv[2], 0, 1) ** 40
-    h_col = GLAZE * (0.62 + 0.38 * lam)[..., None] + 255 * (0.40 * spec)[..., None]
+    h_col = GLAZE * (0.80 + 0.20 * lam)[..., None] + 255 * (0.40 * spec)[..., None]
     h_col *= (1 - 0.10 * rho ** 4)[..., None]           # the tube's own edge falls off
     del dist, ni, nj, tidx, tnear, gx, gy, nrm
 
@@ -168,7 +171,7 @@ def render(art_path: Path, name: str, medallion: bool = False) -> Image.Image:
     lam = np.clip(u * KEY[0] + root * KEY[2], 0, 1)
     hgt = (Y - yt - e_top * root) / (1 + (e_bot - e_top) * root / Hb)   # height down the wall
     v = np.clip(hgt / Hb, 0, 1)
-    shade = 0.56 + 0.44 * lam
+    shade = 0.843 + 0.19 * lam                              # front (u=0) ~0.98 of the glaze
     shade *= 1 - 0.10 * (1 - root) ** 2                     # the cylinder turning away
     shade *= 1 - 0.07 * np.clip((v - 0.80) / 0.20, 0, 1) ** 2  # the floor's darker bounce near the foot
     shade *= 1 - 0.10 * soft(R * 0.035 - (y_bot - Y), 2)    # the foot's bevel
@@ -223,7 +226,7 @@ def render(art_path: Path, name: str, medallion: bool = False) -> Image.Image:
     y_back = yt - e_top * ri * rooti; y_front = yt + e_top * ri * rooti
     depth = np.clip((Y - y_back) / np.maximum(y_front - y_back, 1e-3), 0, 1)
     lam_in = np.clip(-ui * KEY[0] + rooti * KEY[2], 0, 1)    # the inner right wall faces the key
-    in_shade = (0.50 + 0.42 * lam_in) * (1 - 0.42 * depth ** 1.4)
+    in_shade = (0.70 + 0.28 * lam_in) * (1 - 0.30 * depth ** 1.4)
     out = out * (1 - inner[..., None]) + (GLAZE * in_shade[..., None]) * inner[..., None]
 
     # ── reduce, add grain, put back in the room ──────────────────────────────────

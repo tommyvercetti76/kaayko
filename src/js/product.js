@@ -92,7 +92,7 @@ function renderProduct(product, openModalFn) {
       </div>
 
       <aside class="pdp-file" data-voice="${esc(copy.voice)}">
-        <h2 class="pdp-file-head">About this piece</h2>
+        <h2 class="pdp-file-head">What inspired this piece</h2>
         <p class="pdp-story">${linkify(esc(copy.story))}</p>
         <dl class="pdp-rows">${rows}</dl>
         ${copy.atRisk ? `<p class="pdp-flag">On the IUCN Red List. We print them while they are still here.</p>` : ""}
@@ -235,7 +235,7 @@ function mountInspectFrame(product, root, thumbEls) {
     layer = document.createElement('div');
     layer.className = 'pdp-inspect';
     layer.hidden = true;
-    layer.innerHTML = `<p class="pdp-inspect-hint">${entry.kind === 'magnet' ? 'Drag to turn · tap to flip it over' : 'Drag to spin · hold to tip it'}</p>`;
+    layer.innerHTML = `<p class="pdp-inspect-hint">${entry.kind === 'magnet' ? 'Drag to tilt it in the light' : 'Drag to turn it any way'}</p>`;
     stage.appendChild(layer);
     view = await mountInspect(layer, {
       kind: entry.kind, wrap: entry.wrap, faces: { round: entry.round, square: entry.square },

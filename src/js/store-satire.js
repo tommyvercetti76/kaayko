@@ -7,15 +7,22 @@
  *             catalogue already talks this way ("Supreme / Shit"), so the PDP
  *             finishes the joke instead of apologising for it.
  *
- *   'field'   the wildlife totes and magnets. No jokes. These carry real
- *             animals and a real IUCN status, and a punchline next to
- *             "Critically Endangered" would be the wrong kind of funny.
+ *   'field'   the wildlife pieces — totes, magnets, mugs. "What inspired this
+ *             piece" (Rohan, 24 Oct 2026): the animal, the park the piece names,
+ *             its IUCN status, and one line about it. The line is about the
+ *             animal and never about its decline: a joke next to "Critically
+ *             Endangered" would still be the wrong kind of funny.
  *
- * Keyed by Firestore document id (stable; titles are not). Every entry keeps a
- * `title` for review only — nothing matches on it. A SKU with no entry falls
- * back to a theme-shaped default, so a new product is never blank on the page.
+ * The t-shirts are keyed by Firestore document id (stable; titles are not; each
+ * entry's `title` is for review only). The wildlife notes are keyed by ANIMAL, so a
+ * tote, a magnet and a mug of one design read the same: animalFor() maps a product
+ * id onto one. A product with neither falls back to a theme-shaped default, so a new
+ * product is never blank on the page.
  *
- * IUCN statuses are from the Red List and should be re-checked yearly.
+ * IUCN statuses are from the Red List and should be re-checked yearly. Checked
+ * 24 Oct 2026: the Asiatic lion was moved to Vulnerable in 2024 (this file said
+ * Endangered); the Masai giraffe's last published assessment is Endangered (2019),
+ * and IUCN has published none since its 2025 recognition as a species.
  */
 
 /* ── T-shirts ─────────────────────────────────────────────── */
@@ -156,27 +163,74 @@ const SATIRE = Object.freeze({
 /* ── Wildlife pieces ──────────────────────────────────────── */
 
 /**
- * Species behind each wildlife SKU, with its IUCN Red List status. No jokes
- * here on purpose — see the file header.
+ * One entry per animal: the species, its IUCN Red List status, the park its piece
+ * names (the word printed on the magnet or mug), and a line about it.
  */
 const FIELD = Object.freeze({
-  kaayko_gaur_magnet:        { species: "Indian gaur", latin: "Bos gaurus", status: "Vulnerable", range: "Forests of the Western Ghats and central India" },
-  kaayko_gir_magnet:         { species: "Asiatic lion", latin: "Panthera leo persica", status: "Endangered", range: "Gir, Gujarat — the last wild population on earth" },
-  kaayko_barahsingha_tote:   { species: "Barasingha", latin: "Rucervus duvaucelii", status: "Vulnerable", range: "Kanha and Dudhwa grasslands" },
-  kaayko_blackbuck_tote:     { species: "Blackbuck", latin: "Antilope cervicapra", status: "Least Concern", range: "Open grassland and scrub across India" },
-  kaayko_blackbuck2_tote:    { species: "Blackbuck", latin: "Antilope cervicapra", status: "Least Concern", range: "Open grassland and scrub across India" },
-  kaayko_croc_tote:          { species: "Mugger crocodile", latin: "Crocodylus palustris", status: "Vulnerable", range: "Rivers, lakes and marshes of the subcontinent" },
-  kaayko_fishingcat_tote:    { species: "Fishing cat", latin: "Prionailurus viverrinus", status: "Vulnerable", range: "Sundarbans and the wetlands of eastern India" },
-  kaayko_florican_tote:      { species: "Bengal florican", latin: "Houbaropsis bengalensis", status: "Critically Endangered", range: "A few hundred birds left in the Terai grasslands" },
-  kaayko_pitta_tote:         { species: "Indian pitta", latin: "Pitta brachyura", status: "Least Concern", range: "Deciduous forest, heard far more often than seen" },
-  kaayko_langur_tote:        { species: "Hanuman langur", latin: "Semnopithecus entellus", status: "Least Concern", range: "From city rooftops to Himalayan treeline" },
-  kaayko_peacock_tote:       { species: "Indian peafowl", latin: "Pavo cristatus", status: "Least Concern", range: "The whole subcontinent, unmissably" },
-  kaayko_racoon_tote:        { species: "Common raccoon", latin: "Procyon lotor", status: "Least Concern", range: "North America, and increasingly wherever it likes" },
-  "kaayko_snow-leopard_tote": { species: "Snow leopard", latin: "Panthera uncia", status: "Vulnerable", range: "Himalaya and Central Asian highlands, 3,000–5,000m" }
+  "barasingha":            { species: "Barasingha", latin: "Rucervus duvaucelii", status: "Vulnerable", park: "Kanha National Park, Madhya Pradesh", line: "Its name means twelve tines. Most stags take that as a target." },
+  "blackbuck":             { species: "Blackbuck", latin: "Antilope cervicapra", status: "Least Concern", park: "Velavadar Blackbuck National Park, Gujarat", line: "Only the males go black, and their horns keep spiralling as they age." },
+  "crocodile":             { species: "Mugger crocodile", latin: "Crocodylus palustris", status: "Vulnerable", park: "Ranganathittu Bird Sanctuary, Karnataka", line: "Has been seen balancing sticks on its snout in nesting season — bait, it seems, for birds out shopping for nest material." },
+  "fishingcat":            { species: "Fishing cat", latin: "Prionailurus viverrinus", status: "Vulnerable", park: "Sundarbans National Park, West Bengal", line: "A cat that dives in after its dinner, which most cats would call a breach of contract." },
+  "florican":              { species: "Bengal florican", latin: "Houbaropsis bengalensis", status: "Critically Endangered", park: "Manas National Park, Assam", line: "The male leaps straight up out of the tall grass to be noticed. Every leap counts." },
+  "gaur":                  { species: "Indian gaur", latin: "Bos gaurus", status: "Vulnerable", park: "Pench Tiger Reserve, Madhya Pradesh", line: "The largest wild cattle on earth; a bull can pass a tonne without trying." },
+  "asiatic-lion":          { species: "Asiatic lion", latin: "Panthera leo leo", status: "Vulnerable", park: "Gir National Park, Gujarat", line: "Down to a few dozen a century ago. Gujarat now counts close to nine hundred." },
+  "langur":                { species: "Hanuman langur", latin: "Semnopithecus entellus", status: "Least Concern", park: "Ranthambore National Park, Rajasthan", line: "Treated as sacred, which it reads as permission to raid the fruit stall." },
+  "peacock":               { species: "Indian peafowl", latin: "Pavo cristatus", status: "Least Concern", park: "Keoladeo National Park, Rajasthan", line: "India's national bird, and fully aware of it." },
+  "pitta":                 { species: "Indian pitta", latin: "Pitta brachyura", status: "Least Concern", park: "Tadoba-Andhari Tiger Reserve, Maharashtra", line: "Called navrang, nine colours, and it wears every one of them." },
+  "raccoon":               { species: "Common raccoon", latin: "Procyon lotor", status: "Least Concern", park: "", line: "Washes its food, or at least puts on a convincing performance of it." },
+  "snow-leopard":          { species: "Snow leopard", latin: "Panthera uncia", status: "Vulnerable", park: "Hemis National Park, Ladakh", line: "Sleeps with its tail wrapped round its face: a scarf it never has to look for." },
+  "cheetah":               { species: "Cheetah", latin: "Acinonyx jubatus", status: "Vulnerable", park: "Kgalagadi Transfrontier Park, Botswana and South Africa", line: "Nought to sixty in about three seconds, then a long sit-down in the shade." },
+  "kuno-cheetah":          { species: "Cheetah", latin: "Acinonyx jubatus", status: "Vulnerable", park: "Kuno National Park, Madhya Pradesh", line: "Declared extinct in India in 1952, back at Kuno since 2022. Seventy years is a long wait for the fastest animal on land." },
+  "secretary-bird":        { species: "Secretary bird", latin: "Sagittarius serpentarius", status: "Endangered", park: "Tsavo National Park, Kenya", line: "A bird of prey that hunts on foot, and settles matters with snakes by stamping on them." },
+  "plains-zebra":          { species: "Plains zebra", latin: "Equus quagga", status: "Near Threatened", park: "Etosha National Park, Namibia", line: "No two stripe patterns alike, and the stripes may keep the biting flies off too." },
+  "hippo":                 { species: "Hippopotamus", latin: "Hippopotamus amphibius", status: "Vulnerable", park: "Chobe National Park, Botswana", line: "Doesn't really swim: it walks, or bounces, along the riverbed." },
+  "african-elephant":      { species: "African savanna elephant", latin: "Loxodonta africana", status: "Endangered", park: "Amboseli National Park, Kenya", line: "Amboseli's elephants have been followed by researchers since 1972. They have earned some privacy." },
+  "giraffe":               { species: "Masai giraffe", latin: "Giraffa tippelskirchi", status: "Endangered (2019 assessment)", park: "Tarangire National Park, Tanzania", line: "Sleeps in bouts of a few minutes, often standing. With that neck, lying down is a project." },
+  "grey-crowned-crane":    { species: "Grey crowned crane", latin: "Balearica regulorum", status: "Endangered", park: "Akagera National Park, Rwanda", line: "One of only two cranes that roost in trees, and it dances for no obvious reason." },
+  "lion":                  { species: "Lion", latin: "Panthera leo", status: "Vulnerable", park: "Serengeti National Park, Tanzania", line: "Rests up to twenty hours a day and still runs the place." },
+  "african-fish-eagle":    { species: "African fish eagle", latin: "Haliaeetus vocifer", status: "Least Concern", park: "Murchison Falls National Park, Uganda", line: "Its call is so much a part of the river that it is known as the voice of Africa." },
+  "white-rhino":           { species: "White rhinoceros", latin: "Ceratotherium simum", status: "Near Threatened", park: "Kruger National Park, South Africa", line: "'White' is said to be a mishearing of 'wide', for its mouth. It is grey." },
+  "red-panda":             { species: "Red panda", latin: "Ailurus fulgens", status: "Endangered", park: "Namdapha National Park, Arunachal Pradesh", line: "It had the name 'panda' first. The black-and-white one borrowed it." },
+  "chinkara":              { species: "Chinkara", latin: "Gazella bennettii", status: "Least Concern", park: "Gir National Park, Gujarat", line: "Can go long stretches without drinking, taking its water from plants and dew." },
+  "sarus-crane":           { species: "Sarus crane", latin: "Antigone antigone", status: "Vulnerable", park: "Keoladeo National Park, Rajasthan", line: "The tallest flying bird in the world, and famous for pairing for life." },
+  "sloth-bear":            { species: "Sloth bear", latin: "Melursus ursinus", status: "Vulnerable", park: "Bandhavgarh National Park, Madhya Pradesh", line: "Not a sloth, and not slow: it vacuums up termites through a gap where two front teeth should be." },
+  "indian-pangolin":       { species: "Indian pangolin", latin: "Manis crassicaudata", status: "Endangered", park: "Tadoba-Andhari Tiger Reserve, Maharashtra", line: "The only mammal in a coat of scales, and when in doubt it simply rolls up." },
+  "indian-giant-squirrel": { species: "Indian giant squirrel", latin: "Ratufa indica", status: "Least Concern", park: "Anamalai Tiger Reserve, Tamil Nadu", line: "About a metre from nose to tail, much of it tail, and it rarely bothers coming down." },
+  "indian-skimmer":        { species: "Indian skimmer", latin: "Rynchops albicollis", status: "Endangered", park: "Marine National Park, Gulf of Kutch, Gujarat", line: "Flies low with its longer lower bill slicing the water, and snaps shut on whatever it meets." },
+  "golden-langur":         { species: "Golden langur", latin: "Trachypithecus geei", status: "Endangered", park: "Manas National Park, Assam", line: "Cream in summer, gold in winter, and found almost nowhere but western Assam and Bhutan." }
 });
+
+/** Product-id slugs that are not the animal's own key (older ids, spellings, second designs). */
+const ANIMAL_ALIAS = Object.freeze({
+  barahsingha: "barasingha", croc: "crocodile", racoon: "raccoon", gir: "asiatic-lion", blackbuck2: "blackbuck"
+});
+
+/** The animal behind a product, from its id: kaayko_<slug>_<tote|magnet|mug>. */
+export function animalFor(product) {
+  const m = /^kaayko_(.+)_(tote|magnet|mug)$/.exec(String(product?.id || ""));
+  if (!m) return null;
+  const key = ANIMAL_ALIAS[m[1]] || m[1];
+  return FIELD[key] ? key : null;
+}
 
 /** Statuses that deserve visual weight on the page. */
 const AT_RISK = new Set(["Vulnerable", "Endangered", "Critically Endangered"]);
+const atRisk = (status) => AT_RISK.has(String(status).replace(/\s*\(.*\)$/, ""));
+
+/** The rows every wildlife piece shows: the animal, the park, the status (Rohan, 24 Oct 2026). */
+function fieldRows(field, product) {
+  const park = String(product?.nationalPark || "").trim() || field.park;
+  // the row says what the place is: a reserve or a sanctuary is not a national park,
+  // and the raccoon tote's "North America" is a range
+  const label = /national park|transfrontier park/i.test(park) ? "National park"
+    : /reserve|sanctuary/i.test(park) ? "Protected area" : "Range";
+  return [
+    ["Animal", field.species],
+    ["Latin name", field.latin],
+    ...(park ? [[label, park]] : []),
+    ["IUCN status", field.status]
+  ];
+}
 
 /* ── Fallbacks ────────────────────────────────────────────── */
 
@@ -214,13 +268,13 @@ function editorialFrom(product) {
 
   if (!story && !rows.length) return null;
 
-  const field = FIELD[product?.id];
+  const field = FIELD[animalFor(product)];
   return {
     voice: field ? "field" : "satire",
     hook: String(product?.description || "").trim(),
-    story: story || (field ? `${field.species} — ${field.range}.` : ""),
-    rows: rows.length ? rows : (field ? [["Species", field.species], ["IUCN status", field.status]] : []),
-    atRisk: !!field && AT_RISK.has(field.status)
+    story: story || (field ? field.line : ""),
+    rows: rows.length ? rows : (field ? fieldRows(field, product) : []),
+    atRisk: !!field && atRisk(field.status)
   };
 }
 
@@ -233,16 +287,10 @@ export function satireFor(product) {
   const edited = editorialFrom(product);
   if (edited) return edited;
 
-  const field = FIELD[product?.id];
+  const field = FIELD[animalFor(product)];
 
   if (field) {
-    return {
-      voice: "field",
-      hook,
-      story: `${field.species} — ${field.range}. Designed in-house at Kaayko for this print run; no photograph, no stock art.`,
-      rows: [["Species", field.species], ["Latin", field.latin], ["IUCN status", field.status], ["Range", field.range]],
-      atRisk: AT_RISK.has(field.status)
-    };
+    return { voice: "field", hook, story: field.line, rows: fieldRows(field, product), atRisk: atRisk(field.status) };
   }
 
   const entry = SATIRE[product?.id];
@@ -265,9 +313,9 @@ export function satireFor(product) {
   };
 }
 
-/** Product ids that carry hand-written copy — used by the About page. */
+/** T-shirt ids with hand-written copy; wildlife copy is keyed by animal (animalFor). */
 export function curatedIds() {
-  return [...Object.keys(SATIRE), ...Object.keys(FIELD)];
+  return Object.keys(SATIRE);
 }
 
 export { FIELD, AT_RISK };
