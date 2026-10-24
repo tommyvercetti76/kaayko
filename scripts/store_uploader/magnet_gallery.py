@@ -390,6 +390,106 @@ def render_rect(art_path: Path, name: str, geo: dict, scale: float = 1.0, bleed:
     return Image.composite(ImageChops.multiply(canvas, layer), canvas, mask)
 
 
+# ── the badge layout (24 Oct 2026, Rohan: "names … KEEP them outside", "TOO hugging
+# borders. Space out gracefully") ─────────────────────────────────────────────────
+# One rule for every magnet: the name lives on the paper, never on the artwork — on an
+# arc along the top rim of a disc, straight across the top of a square — and the
+# drawing is fitted by its actual inked pixels into a safe zone well inside the edge.
+SAFE_ROUND = 0.70           # no ink beyond 70% of the disc's radius
+NAME_ARC = 0.835            # the name's baseline circle, in units of r
+SAFE_SQUARE = 0.16          # margin on every side of a square, in units of the half-side
+
+
+def _ink_points(a: Image.Image, step: int = 3):
+    al = np.asarray(a.split()[-1])[::step, ::step] > 40
+    ys, xs = np.nonzero(al)
+    return xs.astype(np.float32) * step, ys.astype(np.float32) * step
+
+
+def _prep_art(art_path: Path, medallion: bool) -> Image.Image:
+    a = key_background(Image.open(art_path))
+    if medallion:
+        a = ring_clip(a)
+    return trim(a)
+
+
+def _arc_name(layer, mask, name, cx, cy, radius, size):
+    """Letter-spaced name centred on the top of a circle, each glyph turned to the tangent."""
+    font = ImageFont.truetype(str(FONT), size)
+    track = size * TRACK
+    widths = [font.getlength(ch) for ch in name]
+    total = sum(widths) + track * (len(name) - 1)
+    ang = -np.pi / 2 - (total / radius) / 2          # start left of top, run clockwise
+    for ch, w in zip(name, widths):
+        mid = ang + (w / 2) / radius
+        gx, gy = cx + radius * np.cos(mid), cy + radius * np.sin(mid)
+        g = Image.new("L", (int(size * 2.2), int(size * 2.2)), 0)
+        ImageDraw.Draw(g).text((g.width / 2, g.height / 2), ch, font=font, fill=255, anchor="mm")
+        g = g.rotate(-np.degrees(mid + np.pi / 2), resample=Image.BICUBIC)
+        ox, oy = int(gx - g.width / 2), int(gy - g.height / 2)
+        layer.paste(Image.new("RGB", g.size, NAME_RGB), (ox, oy), g)
+        mask.paste(ImageChops.lighter(mask.crop((ox, oy, ox + g.width, oy + g.height)), g), (ox, oy))
+        ang += (w + track) / radius
+
+
+def render_badge(art_path: Path, name: str, geo: dict, scale: float = 1.0, shape: str = "round", medallion: bool = False) -> Image.Image:
+    W, H = (int(v * scale) for v in geo["canvas"])
+    a = _prep_art(art_path, medallion)
+    name = (name or "").upper()
+    xs, ys = _ink_points(a)
+
+    if shape == "round":
+        cx, cy, r = (geo["disc"][k] * scale for k in ("cx", "cy", "r"))
+        canvas = plate(W, H, cx, cy, r)
+        clip = Image.new("L", canvas.size, 0)
+        ImageDraw.Draw(clip).ellipse([cx - r + 2, cy - r + 2, cx + r - 2, cy + r - 2], fill=255)
+        # centre on the ink's own middle (a ring's centre for a medallion)
+        mx, my = (a.width / 2, a.height / 2) if medallion else ((xs.min() + xs.max()) / 2, (ys.min() + ys.max()) / 2)
+        reach = float(np.sqrt((xs - mx) ** 2 + (ys - my) ** 2).max()) or 1.0
+        safe = r * (SAFE_ROUND if name else SAFE_ROUND + 0.04)
+        k = safe / reach
+        acx, acy = cx, cy + (r * 0.05 if name else 0.0)
+    else:
+        box, s = rect_box(W, H, False, 1.0)
+        x0, y0, x1, y1 = box
+        canvas = rect_plate(W, H, box, s)
+        clip = rect_mask(canvas.size, box, s * RECT_RADIUS, inset=2)
+        m = SAFE_SQUARE * s * 2
+        top = y0 + (s * 0.42 if name else m)
+        rx0, ry0, rx1, ry1 = x0 + m, top, x1 - m, y1 - m
+        if medallion:
+            mx, my = a.width / 2, a.height / 2
+            reach = float(np.sqrt((xs - mx) ** 2 + (ys - my) ** 2).max()) or 1.0
+            k = min(rx1 - rx0, ry1 - ry0) / 2 / reach
+        else:
+            mx, my = (xs.min() + xs.max()) / 2, (ys.min() + ys.max()) / 2
+            k = min((rx1 - rx0) / max(1.0, xs.max() - xs.min()), (ry1 - ry0) / max(1.0, ys.max() - ys.min()))
+        acx, acy = (rx0 + rx1) / 2, (ry0 + ry1) / 2
+
+    layer = Image.new("RGB", canvas.size, (255, 255, 255))
+    mask = Image.new("L", canvas.size, 0)
+    art = a.resize((max(1, int(a.width * k)), max(1, int(a.height * k))), Image.LANCZOS)
+    px, py = int(acx - mx * k), int(acy - my * k)
+    layer.paste(art.convert("RGB"), (px, py), art.split()[-1])
+    am = Image.new("L", canvas.size, 0); am.paste(art.split()[-1], (px, py))
+    mask = ImageChops.lighter(mask, am)
+
+    if name:
+        if shape == "round":
+            size = int(r * 0.097)
+            # a long name gets smaller type before it gets a longer arc (max ~110 degrees)
+            font = ImageFont.truetype(str(FONT), size)
+            while size > r * 0.05 and (sum(font.getlength(c) for c in name) + size * TRACK * (len(name) - 1)) / (r * NAME_ARC) > np.radians(110):
+                size -= 2; font = ImageFont.truetype(str(FONT), size)
+            _arc_name(layer, mask, name, cx, cy, r * NAME_ARC, size)
+        else:
+            size = int(s * 0.115)
+            _name_row(layer, mask, name, (x0 + x1) / 2, y0 + s * 0.22, size)
+
+    mask = ImageChops.multiply(mask, clip).filter(ImageFilter.GaussianBlur(0.6))
+    return Image.composite(ImageChops.multiply(canvas, layer), canvas, mask)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("art", nargs="+"); ap.add_argument("--out", required=True)
@@ -399,6 +499,7 @@ def main():
     ap.add_argument("--bleed", choices=["auto", "on", "off"], default="auto", help="scene renders fill the disc edge to edge (auto: decided per file)")
     ap.add_argument("--medallion", action="store_true", help="renders composed as round medallions: fit the ring inside the rim, name at the bottom")
     ap.add_argument("--diecut", action="store_true", help="the magnet is the artwork's own shape (stamps), not a round disc")
+    ap.add_argument("--badge", action="store_true", help="the 24 Oct 2026 layout: name on the paper (arc on a disc, straight on a square), drawing fitted inside a safe zone")
     ap.add_argument("--ring-clip", action="store_true", help="medallion art: drop anything outside the drawn ring (engine signatures) before plating")
     ap.add_argument("--shape", choices=["round", "square", "rect"], default="round", help="round disc (default), a rounded square, or a 3:2 rounded rectangle")
     a = ap.parse_args()
@@ -413,6 +514,13 @@ def main():
     paths = [Path(p) for pat in a.art for p in (glob.glob(pat) or [pat])]
     for p in paths:
         stem = p.stem.replace(".transparent", "").replace("_transparent_4096", "").replace("_4096", "")
+        if a.badge:
+            hit = next((k for k in sorted(PARKS, key=len, reverse=True) if k in stem), None)
+            name = a.name if a.name is not None else (PARKS.get(hit, "") if hit else "")
+            im = render_badge(p, name, geo, scale, shape="round" if a.shape == "round" else "square", medallion=a.ring_clip)
+            dst = out / f"{stem}_{'' if a.shape == 'round' else 'square_'}magnet.png"; im.save(dst, optimize=True)
+            print(f"  {dst.name}  '{name}'  {im.size}")
+            continue
         if a.diecut:
             name = ""
             im = diecut(p, geo, scale)
