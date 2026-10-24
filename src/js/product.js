@@ -85,7 +85,7 @@ function renderProduct(product, openModalFn) {
         ${copy.hook ? `<p class="pdp-hook">${esc(copy.hook)}</p>` : ""}
         <p class="pdp-price">${esc(price)}</p>
         <div class="pdp-picker" id="pdp-picker"></div>
-        <p class="pdp-reassure">Printed to order · Two pieces to a bag · <a href="/legal/returns">Free returns within 30 days</a></p>
+        <p class="pdp-reassure">Printed to order · Two pieces to a bag · <a href="/legal/returns">30-day returns</a></p>
       </div>
 
       <aside class="pdp-file" data-voice="${esc(copy.voice)}">
