@@ -12,6 +12,7 @@ the edge. The art is multiplied into the paper, not pasted, so the disc's shadin
 
   python3 magnet_gallery.py ART.png --name "Hemis" --out DIR
   python3 magnet_gallery.py 'folder/*.transparent.png' --names names.json --out DIR
+  python3 magnet_gallery.py ART.png --shape rect --out DIR      # the 3:2 rectangle (24 Oct 2026)
 """
 from __future__ import annotations
 import argparse, glob, json, sys
@@ -31,6 +32,13 @@ PARKS = {
     "fishing-cat": "SUNDARBANS", "bengal-florican": "MANAS", "gaur": "PENCH",
     "asiatic-lion": "GIR", "gray-langur": "RANTHAMBORE", "peacock": "KEOLADEO",
     "indian-pitta": "TADOBA", "snow-leopard": "HEMIS", "raccoon": "",
+    # 24 Oct 2026 additions. Each is a place the animal is known for: the Bhimashankar
+    # sanctuary was founded for the giant squirrel; the Chambal holds India's largest
+    # skimmer colonies; Kruger the largest white-rhino herd; Makgadikgadi the zebra
+    # migration. The pangolin has no one place, so it carries no name.
+    "cheetah": "MAASAI MARA", "secretary-bird": "SERENGETI", "white-rhino": "KRUGER",
+    "plains-zebra": "MAKGADIKGADI", "hippo": "OKAVANGO", "indian-pangolin": "",
+    "indian-giant-squirrel": "BHIMASHANKAR", "indian-skimmer": "CHAMBAL",
 }
 
 
@@ -230,6 +238,105 @@ def diecut(art_path: Path, geo: dict, scale: float = 1.0) -> Image.Image:
     return out.convert("RGB")
 
 
+# ── the rectangle (24 Oct 2026) ────────────────────────────────────────────────
+# The same plate as the disc — wall, light from the upper-left, cast shadow, paper —
+# on a 3:2 card with rounded corners. A tall drawing (a secretary bird) gets the
+# card on its end. Sizes are in units of s, half the card's short side, the way the
+# disc's are in units of r.
+RECT_RATIO = 1.5
+RECT_RADIUS = 0.12          # corner radius, in units of s
+
+
+def rect_box(W: int, H: int, portrait: bool):
+    if portrait:
+        h = H * 0.84; w = h / RECT_RATIO
+    else:
+        w = W * 0.80; h = w / RECT_RATIO
+        if h > H * 0.80: h = H * 0.80; w = h * RECT_RATIO
+    x0, y0 = (W - w) / 2, (H - h) / 2
+    return (x0, y0, x0 + w, y0 + h), min(w, h) / 2
+
+
+def rect_mask(size, box, rad, inset=0.0):
+    m = Image.new("L", size, 0)
+    x0, y0, x1, y1 = box
+    ImageDraw.Draw(m).rounded_rectangle([x0 + inset, y0 + inset, x1 - inset, y1 - inset], radius=max(1, rad - inset), fill=255)
+    return m
+
+
+def rect_plate(W: int, H: int, box, s: float) -> Image.Image:
+    wall = Image.new("RGB", (2, 2))
+    for i, px in enumerate(WALL):
+        wall.putpixel((i % 2, i // 2), px)
+    out = wall.resize((W, H), Image.BICUBIC)
+    rad = s * RECT_RADIUS
+    x0, y0, x1, y1 = box
+    dx, dy = s * SHADOW["dx"], s * SHADOW["dy"]
+    sh = rect_mask((W, H), (x0 + dx, y0 + dy, x1 + dx, y1 + dy), rad).filter(ImageFilter.GaussianBlur(s * SHADOW["blur"]))
+    dark = ImageChops.multiply(out, Image.new("RGB", (W, H), tuple(int(255 * (1 - SHADOW["strength"])) for _ in range(3))))
+    out = Image.composite(dark, out, sh)
+    card = rect_mask((W, H), box, rad).filter(ImageFilter.GaussianBlur(max(1.0, s * 0.004)))
+    face = Image.new("RGB", (2, 2))
+    face.putpixel((0, 0), tuple(min(255, c + 4) for c in PAPER)); face.putpixel((1, 0), PAPER)
+    face.putpixel((0, 1), PAPER); face.putpixel((1, 1), tuple(c - 5 for c in PAPER))
+    return Image.composite(face.resize((W, H), Image.BICUBIC), out, card)
+
+
+def _name_row(layer, mask, name, cx, y, size):
+    font = ImageFont.truetype(str(FONT), size); track = size * TRACK
+    widths = [font.getlength(ch) for ch in name]
+    x = cx - (sum(widths) + track * (len(name) - 1)) / 2
+    ld, md = ImageDraw.Draw(layer), ImageDraw.Draw(mask)
+    for ch, w in zip(name, widths):
+        ld.text((x, y), ch, font=font, fill=NAME_RGB, anchor="lm")
+        md.text((x, y), ch, font=font, fill=255, anchor="lm")
+        x += w + track
+
+
+def render_rect(art_path: Path, name: str, geo: dict, scale: float = 1.0, bleed: bool = False) -> Image.Image:
+    W, H = (int(v * scale) for v in geo["canvas"])
+    raw = key_background(Image.open(art_path))
+    a = trim(raw)
+    portrait = (not bleed) and a.height > a.width * 1.08
+    box, s = rect_box(W, H, portrait)
+    x0, y0, x1, y1 = box
+    canvas = rect_plate(W, H, box, s)
+    layer = Image.new("RGB", canvas.size, (255, 255, 255))
+    mask = Image.new("L", canvas.size, 0)
+    size = int(s * 0.17)
+    name = (name or "").upper()
+    if bleed:
+        # a scene fills the card edge to edge; the name sits on a chip at the top
+        full = Image.open(art_path).convert("RGB")
+        k = max((x1 - x0) / full.width, (y1 - y0) / full.height) * 1.02
+        full = full.resize((int(full.width * k), int(full.height * k)), Image.LANCZOS)
+        layer.paste(full, (int((x0 + x1 - full.width) / 2), int((y0 + y1 - full.height) / 2)))
+        if name:
+            font = ImageFont.truetype(str(FONT), size); track = size * TRACK
+            tw = sum(font.getlength(ch) for ch in name) + track * (len(name) - 1); pad = size * 0.9
+            yy = y0 + s * 0.30
+            ImageDraw.Draw(layer, "RGBA").rounded_rectangle([(x0 + x1) / 2 - tw / 2 - pad, yy - size * 0.8, (x0 + x1) / 2 + tw / 2 + pad, yy + size * 0.8],
+                radius=size * 0.8, fill=(255, 253, 248, 255), outline=(NAME_RGB[0], NAME_RGB[1], NAME_RGB[2], 140), width=max(1, size // 14))
+            _name_row(layer, Image.new("L", canvas.size, 0), name, (x0 + x1) / 2, yy, size)
+        mask = rect_mask(canvas.size, box, s * RECT_RADIUS, inset=2).filter(ImageFilter.GaussianBlur(0.6))
+        return Image.composite(ImageChops.multiply(canvas, layer), canvas, mask)
+    # a figure on the paper: name across the top, the drawing centred under it
+    inset = s * 0.16
+    top = y0 + inset
+    if name:
+        _name_row(layer, mask, name, (x0 + x1) / 2, top + size * 0.6, size)
+    box_top = top + size * (1.9 if name else 0.0)
+    box_h, box_w = (y1 - inset) - box_top, (x1 - x0) - 2 * inset
+    k = min(box_w / a.width, box_h / a.height)
+    a = a.resize((max(1, int(a.width * k)), max(1, int(a.height * k))), Image.LANCZOS)
+    px, py = int((x0 + x1) / 2 - a.width / 2), int(box_top + (box_h - a.height) / 2)
+    layer.paste(a.convert("RGB"), (px, py), a.split()[-1])
+    am = Image.new("L", canvas.size, 0); am.paste(a.split()[-1], (px, py))
+    mask = ImageChops.lighter(mask, am)
+    mask = ImageChops.multiply(mask, rect_mask(canvas.size, box, s * RECT_RADIUS, inset=2)).filter(ImageFilter.GaussianBlur(0.6))
+    return Image.composite(ImageChops.multiply(canvas, layer), canvas, mask)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("art", nargs="+"); ap.add_argument("--out", required=True)
@@ -239,6 +346,7 @@ def main():
     ap.add_argument("--bleed", choices=["auto", "on", "off"], default="auto", help="scene renders fill the disc edge to edge (auto: decided per file)")
     ap.add_argument("--medallion", action="store_true", help="renders composed as round medallions: fit the ring inside the rim, name at the bottom")
     ap.add_argument("--diecut", action="store_true", help="the magnet is the artwork's own shape (stamps), not a round disc")
+    ap.add_argument("--shape", choices=["round", "rect"], default="round", help="round disc (default) or a 3:2 rounded rectangle")
     a = ap.parse_args()
     out = Path(a.out)
     if out.exists() and any(out.iterdir()):
@@ -264,8 +372,11 @@ def main():
                 name = PARKS.get(hit, "") if hit else ""
                 if hit is None: print(f"  (no park known for {stem})")
             bleed = a.bleed == "on" or (a.bleed == "auto" and is_scene(p))
-            im = render_bleed(p, name, geo, scale, medallion=True) if a.medallion else (render_bleed(p, name, geo, scale) if bleed else render(p, name, geo, scale))
-        dst = out / f"{stem}_magnet.png"; im.save(dst, optimize=True)
+            if a.shape == "rect":
+                im = render_rect(p, name, geo, scale, bleed=bleed)
+            else:
+                im = render_bleed(p, name, geo, scale, medallion=True) if a.medallion else (render_bleed(p, name, geo, scale) if bleed else render(p, name, geo, scale))
+        dst = out / f"{stem}_{'rect_' if a.shape == 'rect' else ''}magnet.png"; im.save(dst, optimize=True)
         print(f"  {dst.name}  '{name}'  {im.size}")
     return 0
 
