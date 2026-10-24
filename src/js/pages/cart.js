@@ -36,6 +36,7 @@ const state = {
   addressComplete: false,
   paymentComplete: false,
   emailValid: false,
+  email: '',            // from the Link email field (Stripe's, so not readable from the DOM)
   // Sales tax is computed server-side once the shipping address is
   // complete. Pay stays disabled until it is known — a shopper must never
   // be charged an un-taxed total while tax is nominally on.
@@ -220,13 +221,10 @@ function render() {
             <hr class="co-divider" />
             <h2 class="co-label">Contact</h2>
             <div class="co-fieldset">
-              <div class="co-field">
-                <label class="co-field-label" for="co-email">Email <span class="co-req">*</span></label>
-                <input class="co-input" type="email" id="co-email" autocomplete="email"
-                       inputmode="email" placeholder="you@example.com" required
-                       aria-describedby="co-email-error" aria-invalid="false" />
-                <div class="co-error" id="co-email-error" role="alert">Please enter a valid email</div>
-              </div>
+              <!-- Stripe's Link email field: it labels and checks itself, the
+                   payment form's "save my info" box reuses it instead of asking
+                   again, and a returning Link shopper gets address + card filled. -->
+              <div class="co-field" id="co-email-element"></div>
               <div class="co-field">
                 <label class="co-field-label" for="co-phone">Phone <span class="co-opt">(optional)</span></label>
                 <input class="co-input" type="tel" id="co-phone" autocomplete="tel"
@@ -519,18 +517,16 @@ function mountStripe() {
     });
     paymentElement.on('change', (e) => { state.paymentComplete = e.complete; refreshReady(); });
 
-    const email = document.getElementById('co-email');
-    const emailError = document.getElementById('co-email-error');
-    email.addEventListener('input', () => {
-      const v = email.value.trim();
-      state.emailValid = validEmail(v);
-      const bad = v.length > 0 && !state.emailValid;
-      email.classList.toggle('is-invalid', bad);
-      email.setAttribute('aria-invalid', bad ? 'true' : 'false');
-      emailError.classList.toggle('is-shown', bad);
+    // The email field is Stripe's Link one. Our own input used to sit here, and
+    // Link's "save my info" box then asked for the same email again (24 Oct 2026).
+    const linkAuth = state.elements.create('linkAuthentication');
+    linkAuth.mount(document.getElementById('co-email-element'));
+    linkAuth.on('change', (e) => {
+      state.email = (e.value && e.value.email || '').trim();
+      state.emailValid = !!e.complete && validEmail(state.email);
       refreshReady();
     });
-    email.focus();
+    linkAuth.on('ready', () => { try { linkAuth.focus(); } catch (_) {} });
   } catch (err) {
     console.error('stripe mount failed:', err);
     host.innerHTML = `
@@ -660,17 +656,10 @@ async function calculateTax(address) {
 async function submitPayment() {
   if (!state.stripe || !state.elements) return;
 
-  const email = document.getElementById('co-email');
   const phone = document.getElementById('co-phone');
-  const emailError = document.getElementById('co-email-error');
-  const customerEmail = email.value.trim();
+  const customerEmail = state.email;
 
-  if (!validEmail(customerEmail)) {
-    email.classList.add('is-invalid');
-    emailError.classList.add('is-shown');
-    email.focus();
-    return;
-  }
+  if (!validEmail(customerEmail)) { refreshReady(); return; }   // Pay is disabled until it is valid
 
   const primary = document.getElementById('co-primary');
   const stickyBtn = document.getElementById('co-sticky-btn');

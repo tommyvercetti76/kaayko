@@ -34,6 +34,15 @@ function ensure() {
       '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>' +
     '</button>';
   el.querySelector('.ktoast-close').addEventListener('click', hide);
+  // A toast you are reaching for must not leave under your finger: hold it while
+  // pointed at or focused, and give it its time again when you move away.
+  const hold = () => clearTimeout(hideTimer);
+  const resume = () => { clearTimeout(hideTimer); hideTimer = setTimeout(hide, 2500); };
+  el.addEventListener('pointerenter', hold);
+  el.addEventListener('pointerdown', hold);
+  el.addEventListener('focusin', hold);
+  el.addEventListener('pointerleave', resume);
+  el.addEventListener('focusout', resume);
   document.body.appendChild(el);
   return el;
 }
@@ -69,7 +78,8 @@ export function show(message, { kind = 'notice', action = null, ms } = {}) {
   void node.offsetWidth;
   node.classList.add('is-visible');
   clearTimeout(hideTimer);
-  hideTimer = setTimeout(hide, typeof ms === 'number' ? ms : HOLD_MS[k]);
+  // A toast with a next step (Go to bag) is the way forward, not a notice: 9 s.
+  hideTimer = setTimeout(hide, typeof ms === 'number' ? ms : (action && action.href ? 9000 : HOLD_MS[k]));
   return node;
 }
 

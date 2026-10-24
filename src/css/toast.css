@@ -50,6 +50,9 @@
   text-decoration: none;
   white-space: nowrap;
 }
+/* display:inline-flex above beats the [hidden] attribute, so a toast with no
+   action painted an empty dark pill (24 Oct 2026). */
+.ktoast-action[hidden] { display: none; }
 .ktoast-action:hover { background: var(--gold-bright, #eccf9c); color: var(--bg, #080808); }
 
 .ktoast-close {
