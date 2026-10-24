@@ -30,7 +30,8 @@ const routes = [
   { loc: '/forge-gallery', source: 'src/forge-gallery.html', changefreq: 'monthly', priority: '0.6' },
   { loc: '/kreator', source: 'src/kreator/index.html', changefreq: 'monthly', priority: '0.6' },
   { loc: '/kreator/apply', source: 'src/kreator/apply.html', changefreq: 'monthly', priority: '0.5' },
-  { loc: '/kortex', source: 'src/kortex.html', changefreq: 'monthly', priority: '0.5' },
+  // NOTE: /kortex is absent since 24 Oct 2026 — its canonical is https://kaay.link/,
+  // the product's own domain, and a sitemap lists canonical URLs only.
   // NOTE: /admin/tenant-registration is intentionally absent — internal B2B signup,
   // marked noindex,nofollow. It should never be submitted for indexing.
 ];

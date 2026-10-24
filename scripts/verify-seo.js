@@ -69,14 +69,16 @@ try {
       note(`${rel}: expected exactly one <footer>, found ${footers.length}`);
       continue;
     }
-    if (!/<footer class="site-footer( is-light)?">/.test(html)) {
+    if (!/<footer class="site-footer( is-light)?( is-colophon)?">/.test(html)) {
       note(`${rel}: footer is not the shared .site-footer component`);
     }
     if (!html.includes('/css/footer.css')) note(`${rel}: does not load /css/footer.css`);
     const body = html.match(/<footer[\s\S]*?<\/footer>/i)[0];
-    if (!/&copy;/.test(body)) note(`${rel}: footer has no copyright line`);
+    // The colophon (About, Privacy — the home card's footer) has no copyright line.
+    const colophon = /class="site-footer[^"]*is-colophon/.test(body);
+    if (!colophon && !/&copy;/.test(body)) note(`${rel}: footer has no copyright line`);
     if (!/<nav aria-label="Footer">/.test(body)) note(`${rel}: footer has no nav`);
-    if (!/id="year"/.test(body)) note(`${rel}: footer year span missing`);
+    if (!colophon && !/id="year"/.test(body)) note(`${rel}: footer year span missing`);
     // The year is stamped by js/util.js (classic), or by js/kit.js / any page
     // module that imports it. Mirrors hasYearStamp() in scripts/apply-footer.js —
     // this used to look for the literal 'kaayko-footer-year', which is in no page
@@ -86,7 +88,12 @@ try {
 }
 
 // ── resolve a URL path to a source file, mirroring firebase cleanUrls ───────
-const fb = JSON.parse(read('firebase.json')).hosting;
+// `hosting` became an array of sites (kaayko.com, kaay.store, kaay.link). Read as
+// one object it had no `rewrites`, so every rewritten URL (/store/about,
+// /kortex/signin…) was reported broken (fixed 24 Oct 2026). kaayko.com is the
+// site whose links this checks.
+const hostingCfg = JSON.parse(read('firebase.json')).hosting;
+const fb = Array.isArray(hostingCfg) ? (hostingCfg.find((h) => h.site === 'kaaykostore') || hostingCfg[0]) : hostingCfg;
 const patterns = [...(fb.rewrites || []), ...(fb.redirects || [])].map((r) => r.source);
 const explicit = (p) =>
   patterns.some((pat) =>
@@ -129,7 +136,10 @@ for (const url of locs) {
     if (/\.html($|\?)/.test(c)) note(`${file}: canonical is not extensionless (${c})`);
   }
 
-  const h1s = (html.match(/<h1[\s>]/gi) || []).length;
+  // A PoHeader mount renders the page's <h1> (js/components/PoHeader.js; an
+  // <h2> only with data-title-tag="h2"), so it counts as one.
+  const poH1 = /id="po-header"(?![^>]*data-title-tag="h2")[^>]*data-title=/.test(html) ? 1 : 0;
+  const h1s = (html.match(/<h1[\s>]/gi) || []).length + poH1;
   if (h1s !== 1) note(`${file}: expected exactly one <h1>, found ${h1s}`);
 }
 

@@ -54,8 +54,10 @@
         "height": 512,
         "caption": "Kaayko"
       },
-      "image": { "@id": "https://kaayko.com/#logo" },
-      "description": "Kaayko delivers AI-powered paddle condition forecasts, stories from the water, and Forge — an open-source local-first AI workstation.",
+      "image": {
+        "@id": "https://kaayko.com/#logo"
+      },
+      "description": "Kaayko runs six things, one card each on its home page: Paddling Out (paddle-condition forecasts), Stories (paddling days written down), Forge (an open-source, local-first AI studio), Kortex (QR codes you can change after printing, at kaay.link), the Store (printed to order, at kaay.store) and School (alumni networks, at kaay.school).",
       "founder": {
         "@type": "Person",
         "@id": "https://kaayko.com/#founder",
@@ -73,7 +75,9 @@
       "contactPoint": {
         "@type": "ContactPoint",
         "contactType": "customer support",
-        "url": "https://kaayko.com/about"
+        "email": "help@kaayko.com",
+        "url": "https://kaayko.com/about#contact",
+        "availableLanguage": "en"
       }
     },
     {
@@ -81,8 +85,10 @@
       "@id": "https://kaayko.com/#website",
       "name": "Kaayko",
       "url": "https://kaayko.com/",
-      "description": "AI-powered paddle condition forecasts for 17 hand-picked spots and lakes paddlers add, stories from the water, and Forge, an open-source AI workstation.",
-      "publisher": { "@id": "https://kaayko.com/#organization" },
+      "description": "Kaayko runs six things, one card each on its home page: Paddling Out (paddle-condition forecasts), Stories (paddling days written down), Forge (an open-source, local-first AI studio), Kortex (QR codes you can change after printing, at kaay.link), the Store (printed to order, at kaay.store) and School (alumni networks, at kaay.school).",
+      "publisher": {
+        "@id": "https://kaayko.com/#organization"
+      },
       "inLanguage": "en-US",
       "potentialAction": {
         "@type": "SearchAction",
@@ -91,7 +97,60 @@
           "urlTemplate": "https://kaayko.com/paddlingout/search?q={search_term_string}"
         },
         "query-input": "required name=search_term_string"
+      },
+      "hasPart": {
+        "@id": "https://kaayko.com/#products"
       }
+    },
+    {
+      "@type": "ItemList",
+      "@id": "https://kaayko.com/#products",
+      "name": "What Kaayko runs",
+      "numberOfItems": 6,
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Paddling Out",
+          "description": "So everybody comes home.",
+          "url": "https://kaayko.com/paddlingout"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Stories",
+          "description": "The lake was the easy part.",
+          "url": "https://kaayko.com/stories"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Forge",
+          "description": "Brahma's blessings and a MacBook.",
+          "url": "https://kaayko.com/forge"
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "name": "Kortex",
+          "description": "Print it once. Point it anywhere.",
+          "url": "https://kaay.link"
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "name": "Store",
+          "description": "Style, at exorbitant prices.",
+          "url": "https://kaay.store"
+        },
+        {
+          "@type": "ListItem",
+          "position": 6,
+          "name": "School",
+          "description": "From Future, Connecting past with present.",
+          "url": "https://kaay.school"
+        }
+      ]
     }
   ]
 }
@@ -471,6 +530,7 @@ a { color: inherit; text-decoration: none; }
    panel. The faces' own drop shadow turns with them. */
 
 /* Pinned to the bottom of the lower row, so it sits at the foot of the screen. */
+.all-six { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
 .colophon {
   margin-top: auto;
   width: 100%; padding-top: 8px; border-top: 1px solid var(--hair);
@@ -673,6 +733,21 @@ a { color: inherit; text-decoration: none; }
          The footer is the old landing's — YouTube, About, Privacy — less
          Inventory, which pointed at this page. Contact (help@kaayko.com) lives
          on About and Privacy, not here. -->
+    <!-- All six, as plain links. The deck shows one card's link at a time, so a
+         crawler (or a screen reader that will not swipe) used to find only
+         Paddling Out here. Off-screen, not display:none; outside the grid flow.
+         tabindex=-1: an invisible stop in the Tab order would be a focus trap for the
+         eye; the deck and the link under the card are the keyboard's way through. -->
+    <nav class="all-six" aria-label="Everything Kaayko runs">
+      <ul>
+        <li><a tabindex="-1" href="https://kaayko.com/paddlingout">Paddling Out</a></li>
+        <li><a tabindex="-1" href="https://kaayko.com/stories">Stories</a></li>
+        <li><a tabindex="-1" href="https://kaayko.com/forge">Forge</a></li>
+        <li><a tabindex="-1" href="https://kaay.link">Kortex</a></li>
+        <li><a tabindex="-1" href="https://kaay.store">Store</a></li>
+        <li><a tabindex="-1" href="https://kaay.school">School</a></li>
+      </ul>
+    </nav>
     <footer class="colophon">
       <nav aria-label="Footer">
         <a class="cap" href="https://www.youtube.com/@travelingout" rel="noopener noreferrer">YouTube</a>

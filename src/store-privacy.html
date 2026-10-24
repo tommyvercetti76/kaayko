@@ -8,6 +8,16 @@
   <meta name="description" content="What the Kaayko store collects when you buy something, who it is shared with, how long it is kept, and how to get it deleted." />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://kaayko.com/store/privacy" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Kaayko" />
+  <meta property="og:url" content="https://kaayko.com/store/privacy" />
+  <meta property="og:title" content="Store Privacy &amp; Data — Kaayko Store" />
+  <meta property="og:description" content="What the Kaayko store collects when you buy something, who it is shared with, how long it is kept, and how to get it deleted." />
+  <meta property="og:image" content="https://kaayko.com/assets/store-og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Store Privacy &amp; Data — Kaayko Store" />
+  <meta name="twitter:description" content="What the Kaayko store collects when you buy something, who it is shared with, how long it is kept, and how to get it deleted." />
+  <meta name="twitter:image" content="https://kaayko.com/assets/store-og.png" />
   <link rel="icon" type="image/png" href="/favicon-32x32.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,7 +56,7 @@
 
     <h2>Who we are</h2>
     <p>The Kaayko store is operated by Kaayko. For anything on this page, write to
-      <a data-support-email="text" href="mailto:rohanramekar17@gmail.com">rohanramekar17@gmail.com</a> and a human will answer. Under
+      <a data-support-email="text" href="mailto:help@kaayko.com">help@kaayko.com</a> and a human will answer. Under
       UK/EU data protection law we are the <em>controller</em> of the information described here.</p>
 
     <h2>What we collect, and only when</h2>
@@ -109,18 +119,25 @@
 
     <h2>What is stored in your browser</h2>
     <p>The store sets no advertising cookies and runs no analytics or tracking scripts — there is nothing here to
-      consent to. It uses your browser's local storage for three things, all of which stay on your device:</p>
+      consent to. It uses your browser's local storage for these, all of which stay on your device:</p>
     <ul>
       <li><code>kaayko_cart</code> — what is in your bag.</li>
       <li><code>kaayko.lastFit</code> — the size and fit you chose last time, so you do not re-pick it.</li>
       <li><code>darkTheme</code> — your display preference.</li>
+      <li><code>kaayko.loved</code> — the pieces you have hearted, so the heart stays filled.</li>
+      <li><code>kaayko.visitor</code> — a random ID sent with a heart so each person counts once. We store only a
+        keyed one-way hash of it (and of your network address) per heart, never the ID or the address; un-hearting
+        deletes the record.</li>
+      <li><code>kaayko.promo</code> — a discount code you applied or followed a link with, for up to 24 hours.</li>
     </ul>
     <p>Clearing your browser's site data removes all of them. Stripe sets its own cookies on its payment fields
-      for fraud prevention; those are strictly necessary to take a payment.</p>
+      for fraud prevention; those are strictly necessary to take a payment. The email field at checkout is Stripe's
+      Link field: if you already use Link, Stripe may offer to fill your saved address and card after sending you a
+      code, and saving your details with Link is an account between you and Stripe.</p>
 
     <h2>Your rights</h2>
     <p>You can ask us to show you what we hold, correct it, delete it, export it, or object to how we use it.
-      Email <a data-support-email="text" href="mailto:rohanramekar17@gmail.com">rohanramekar17@gmail.com</a> with the order number from
+      Email <a data-support-email="text" href="mailto:help@kaayko.com">help@kaayko.com</a> with the order number from
       your receipt (it looks like <code>KAAY-1042</code>). We reply within 30 days, free of charge.</p>
     <p><strong>One honest limit:</strong> we cannot delete the financial record of a sale before the law lets us,
       so a deletion request removes your name, email, phone and address from the order and leaves the anonymised
@@ -148,7 +165,7 @@
 
     <h2>Contact</h2>
     <p>Questions, requests, or a correction to anything on this page:
-      <a data-support-email="text" href="mailto:rohanramekar17@gmail.com">rohanramekar17@gmail.com</a>.</p>
+      <a data-support-email="text" href="mailto:help@kaayko.com">help@kaayko.com</a>.</p>
   </main>
 
   <footer class="site-footer is-light">

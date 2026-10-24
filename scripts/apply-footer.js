@@ -22,6 +22,10 @@ const { PAGES, LIGHT, render } = require('./footer-links');
 
 const root = path.resolve(__dirname, '..');
 const checkOnly = process.argv.includes('--check');
+// Optional page list (e.g. `node scripts/apply-footer.js about.html privacy.html`):
+// touch only those. Without one, every page in PAGES — including surfaces whose
+// drift is deliberate or someone else's (kortex.html), so name pages when in doubt.
+const only = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 
 const CSS_LINK = '<link rel="stylesheet" href="/css/footer.css">';
 // The footer year is stamped by js/util.js (classic) — or by js/kit.js, which
@@ -33,7 +37,7 @@ const hasYearStamp = (s) => s.includes('/js/util.js') || s.includes('/js/kit.js'
 let changed = 0;
 const drift = [];
 
-for (const [rel, setName] of Object.entries(PAGES)) {
+for (const [rel, setName] of Object.entries(PAGES).filter(([r]) => !only.length || only.includes(r))) {
   const file = path.join(root, 'src', rel);
   if (!fs.existsSync(file)) {
     console.warn(`  skip (missing): ${rel}`);

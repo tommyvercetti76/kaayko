@@ -100,3 +100,45 @@ html.dark-theme .site-footer.is-light a:hover { color: #d9bd7b; }
   }
   .site-footer nav { gap: 0.5rem 1rem; }
 }
+
+/* ── The colophon — the home card's footer, on the brand's own pages ─────────
+   About and Privacy wear exactly what kaayko.com/ wears (index.html .colophon):
+   YouTube · About · Privacy in small spaced caps, a hairline above, no copyright
+   line. Values copied from index.html's :root, literally, as everything here is.
+   The page you are on keeps its place in the row, in gold (aria-current).      */
+.site-footer.is-colophon {
+  margin-top: 2.5rem;
+  padding: 8px 1rem calc(8px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid rgba(181, 147, 90, 0.22);
+  color: rgba(244, 238, 223, 0.48);
+  font-family: "Josefin Sans", Futura, "Century Gothic", Avenir, sans-serif;
+  font-weight: 300;
+  font-size: 10.5px;
+  letter-spacing: 0.28em;
+  line-height: 1;
+}
+.site-footer.is-colophon nav {
+  gap: 0 clamp(22px, 5vw, 40px);
+  margin: 0;
+}
+.site-footer.is-colophon a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;                 /* a thumb's height; the type stays caption-sized */
+  color: rgba(244, 238, 223, 0.48);
+  font-weight: 300;
+  text-transform: uppercase;
+  border-bottom: 0;
+  transition: color 0.9s ease;
+}
+.site-footer.is-colophon a[aria-current="page"] { color: #B5935A; }
+.site-footer.is-colophon a:hover { color: #F0D9A0; border-bottom: 0; }
+.site-footer.is-colophon a:focus-visible {
+  color: #F0D9A0;
+  outline: 2px solid #B5935A;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-footer.is-colophon a { transition: none; }
+}

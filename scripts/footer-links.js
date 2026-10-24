@@ -20,6 +20,17 @@
 // The store set below stays untagged on purpose — checkout pages are already
 // inside the store flow, and a buyer mid-flow always keeps a way back.
 const SETS = {
+  // The brand's own pages — the home card (whose colophon this mirrors), About
+  // and Privacy. Exactly the home footer: YouTube · About · Privacy, small caps,
+  // a hairline above, no copyright line. The page you are on stays in the row,
+  // marked aria-current, so the three read as ONE footer (24 Oct 2026, Rohan:
+  // "consistent with that on home page"). Home's own copy is index.html .colophon.
+  brand: [
+    ['https://www.youtube.com/@travelingout', 'YouTube'],
+    ['/about', 'About'],
+    ['/privacy', 'Privacy'],
+  ],
+
   // Root and general-interest pages: show the products.
   site: [
     ['/paddlingout', 'Paddling Out'],
@@ -52,7 +63,7 @@ const SETS = {
     ['/kortex', 'Kortex'],
     ['/legal/kortex-terms', 'Terms'],
     ['/privacy', 'Privacy'],
-    ['mailto:rohan@kaayko.com', 'Contact'],
+    ['mailto:kortex@kaayko.com', 'Contact'],   // what the live Kortex pages say
   ],
 
   // Store and checkout: nothing that pulls a buyer out of the flow.
@@ -74,8 +85,8 @@ const PAGES = {
   // index.html is one fixed screen with its own pinned nav; a shared footer
   // under it was 131px of scroll that revealed nothing, since the splash
   // covers it. Not generated there.
-  'about.html': 'site',
-  'privacy.html': 'site',
+  'about.html': 'brand',
+  'privacy.html': 'brand',
   '404.html': 'site',
   'stories.html': 'site',
   'stories/never-give-up.html': 'site',
@@ -85,13 +96,15 @@ const PAGES = {
   'paddlingout/search.html': 'paddling',
   'paddlingout/methodology.html': 'paddling',
   'paddlingout/rate.html': 'paddling',
-  'paddlingout/submitentry.html': 'paddling',
   'paddlingout/forecast.html': 'paddling',
 
+  // Not here on purpose: paddlingout/submitentry.html (a noindex redirect stub
+  // into search?mode=add, no body to put a footer under) and kortex.html (Kortex
+  // has its own designed .foot — brand, Terms, Privacy, Support, Report — shared
+  // with kaay.link's copy). Both were listed until 24 Oct 2026 and failed every run.
   'forge.html': 'forge',
   'forge-gallery.html': 'forge',
 
-  'kortex.html': 'kortex',
   'legal/kortex-terms.html': 'kortex',
   'tenant.html': 'kortex',
 
@@ -121,26 +134,32 @@ const LIGHT = new Set([
 
 // `self` is the page's own URL path (e.g. '/about'). A link to the page you
 // are already on is not a relevant option, so it is dropped.
+// Sets drawn as the home colophon (.site-footer.is-colophon): every link kept,
+// the current page marked rather than dropped, and no copyright line.
+const COLOPHON = new Set(['brand']);
+
 function render(setName, { light = false, indent = '  ', self = null } = {}) {
   const all = SETS[setName];
   if (!all) throw new Error(`unknown footer set: ${setName}`);
-  const links = self ? all.filter(([href]) => href !== self) : all;
+  const colophon = COLOPHON.has(setName);
+  const links = self && !colophon ? all.filter(([href]) => href !== self) : all;
   const i = indent;
+  const cls = `site-footer${light ? ' is-light' : ''}${colophon ? ' is-colophon' : ''}`;
   return (
-    `${i}<footer class="site-footer${light ? ' is-light' : ''}">\n` +
+    `${i}<footer class="${cls}">\n` +
     `${i}  <nav aria-label="Footer">\n` +
     links
       .map(([href, label, feature]) => {
-        const ext = /^(https?:|mailto:)/.test(href);
         const rel = href.startsWith('http') ? ' rel="noopener noreferrer"' : '';
         const feat = feature ? ` data-feature="${feature}"` : '';
-        return `${i}    <a href="${href}"${rel}${feat}>${label}</a>`;
+        const cur = colophon && href === self ? ' aria-current="page"' : '';
+        return `${i}    <a href="${href}"${rel}${feat}${cur}>${label}</a>`;
       })
       .join('\n') +
     `\n${i}  </nav>\n` +
-    `${i}  <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>\n` +
+    (colophon ? '' : `${i}  <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>\n`) +
     `${i}</footer>`
   );
 }
 
-module.exports = { SETS, PAGES, LIGHT, render };
+module.exports = { SETS, PAGES, LIGHT, COLOPHON, render };

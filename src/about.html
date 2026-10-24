@@ -36,31 +36,33 @@
       "@id": "https://kaayko.com/about#page",
       "name": "About Kaayko",
       "url": "https://kaayko.com/about",
-      "description": "Paddling Out, Stories, Forge, Kortex and School \u2014 what each one is, with live data and real numbers.",
+      "description": "Paddling Out, Stories, Forge, Kortex and School — what each one is, with live data and real numbers, and where to write to us.",
       "mainEntity": {
-        "@id": "https://kaayko.com/about#founder"
+        "@id": "https://kaayko.com/#founder"
       },
       "publisher": {
-        "@type": "Organization",
-        "name": "Kaayko",
-        "url": "https://kaayko.com/"
+        "@id": "https://kaayko.com/#organization"
       },
-      "inLanguage": "en"
+      "inLanguage": "en-US",
+      "isPartOf": {
+        "@id": "https://kaayko.com/#website"
+      },
+      "about": {
+        "@id": "https://kaayko.com/#organization"
+      }
     },
     {
       "@type": "Person",
-      "@id": "https://kaayko.com/about#founder",
+      "@id": "https://kaayko.com/#founder",
       "name": "Rohan Ramekar",
       "url": "https://kaayko.com/about",
       "email": "help@kaayko.com",
-      "description": "Builds and maintains Kaayko \u2014 Paddling Out, Stories, Forge, Kortex and School \u2014 solo.",
+      "description": "Builds and maintains Kaayko — Paddling Out, Stories, Forge, Kortex and School — solo.",
       "worksFor": {
-        "@type": "Organization",
-        "name": "Kaayko",
-        "url": "https://kaayko.com/"
+        "@id": "https://kaayko.com/#organization"
       },
       "sameAs": [
-        "https://github.com/tommyvercetti76/Forge",
+        "https://github.com/tommyvercetti76",
         "https://www.youtube.com/@travelingout"
       ]
     },
@@ -83,7 +85,7 @@
     }
   ]
 }
-  </script>
+</script>
 
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -486,7 +488,7 @@
 
   <header class="topbar">
     <a class="topbar-home label" href="/">&larr; Kaayko</a>
-    <h1 class="label" style="color: rgba(181,147,90,0.45); pointer-events:none;">About Kaayko</h1>
+    <h1 class="label" style="color: rgba(181,147,90,0.8); pointer-events:none;">About Kaayko</h1><!-- was .45 = 2.2:1 on #080808, the page's only h1 unreadable; .8 = 4.8:1 (24 Oct 2026) -->
   </header>
 
   <main id="chapters">
@@ -610,22 +612,17 @@
     </div>
     <div class="actions reveal">
       <a class="link" href="/">Take a card</a>
-      <a class="link" href="https://www.youtube.com/@travelingout" rel="noopener noreferrer">YouTube</a>
+      <!-- YouTube lived here too until 24 Oct 2026; the footer under this — the home
+           page's own — carries it now, one line below. -->
     </div>
   </section>
 
-  <footer class="site-footer">
+  <footer class="site-footer is-colophon">
     <nav aria-label="Footer">
-      <a href="/paddlingout">Paddling Out</a>
-      <a href="/stories">Stories</a>
-      <a href="/forge">Forge</a>
-      <a href="https://kaay.link" rel="noopener noreferrer">Kortex</a>
-      <a href="/store" data-feature="store">Store</a>
-      <a href="https://kaay.school" rel="noopener noreferrer">School</a>
-      <a href="/">Home</a>
+      <a href="https://www.youtube.com/@travelingout" rel="noopener noreferrer">YouTube</a>
+      <a href="/about" aria-current="page">About</a>
       <a href="/privacy">Privacy</a>
     </nav>
-    <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
   </footer>
 
   <script src="/js/storeAccess.js"></script>

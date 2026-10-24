@@ -18,7 +18,9 @@
  * address a customer should write to. Keep them distinct.
  */
 (function () {
-  var SUPPORT_EMAIL = 'rohanramekar17@gmail.com';
+  // help@kaayko.com since 24 Oct 2026: the address About and Privacy already name as the one
+  // inbox for everything, orders included — one address across the whole site.
+  var SUPPORT_EMAIL = 'help@kaayko.com';
 
   // Every anchor marked data-support-email gets the address as both href and,
   // when it has no text of its own, its label. The markup keeps a working
