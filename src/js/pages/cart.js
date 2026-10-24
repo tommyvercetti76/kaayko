@@ -83,6 +83,7 @@ const PROMO_REFUSALS = {
   EXPIRED:          'That code has run out.',
   NO_ELIGIBLE_ITEMS:'That code does not cover anything in this bag.',
   PROMO_INACTIVE:   'That code is no longer on offer.',
+  USED_UP:          'That code has been used as many times as it can be.',
   EMPTY_CART:       'Nothing in the bag to discount.'
 };
 
@@ -100,7 +101,7 @@ function promoFieldMarkup() {
       <p class="co-promo-note" id="co-promo-note" role="status" aria-live="polite">${
         state.promoNote ? esc(state.promoNote)
         : r ? `${r.percent}% off${r.label ? ` ${esc(r.label)}` : r.scope === 'cart' ? ' the whole bag' : ' the pieces on that shelf'}. Taken off when you pay.`
-        : 'Have a code from a maker? Put it in.'
+        : 'Have a code? Put it in.'
       }</p>
     </div>`;
 }
@@ -625,6 +626,8 @@ async function calculateTax(address) {
       state.taxState = 'disabled';
       state.pi.totals = { ...state.pi.totals, taxCents: 0,
         totalCents: typeof data.totalCents === 'number' ? data.totalCents : state.pi.totals.totalCents };
+      // (The server's total already has any discount taken off; the discount
+      // line itself stays as checkout first priced it.)
       updateMoney();
       refreshReady();
       return;
@@ -633,7 +636,10 @@ async function calculateTax(address) {
       throw new Error('We could not calculate sales tax for that address. Please check it and try again.');
     }
     state.taxState = 'ok';
-    state.pi.totals = { subtotalCents: data.subtotalCents, taxCents: data.taxCents, totalCents: data.totalCents };
+    // Keep the discount line: the tax answer adds tax to the discounted total, it
+    // does not replace the pricing. Replacing it hid the discount row (24 Oct 2026).
+    state.pi.totals = { ...state.pi.totals, subtotalCents: data.subtotalCents, taxCents: data.taxCents, totalCents: data.totalCents,
+      discountCents: typeof data.discountCents === 'number' ? data.discountCents : state.pi.totals.discountCents };
     updateMoney();
     // The server changed the PaymentIntent's amount. Elements caches it,
     // so without this the payment form keeps showing (and some wallet
