@@ -503,6 +503,8 @@ POST /api/presets                      → create preset (auth required)
 | Collection | Module | Description |
 |------------|--------|-------------|
 | `kaaykoproducts` | store | Product catalog |
+| `product_votes` | store | One doc per visitor love: `{HMAC(VOTE_PEPPER, product|visitor)}` → `{productId, ipKey, createdAt}`. Written only by `api/products/votes.js` in a transaction with `kaaykoproducts.votes` (24 Oct 2026) |
+| `product_vote_ips` | store | Distinct visitors per network per product (cap 5; IPv6 by /64), keyed by HMAC — never an IP |
 | `orders` | store, kortex | Checkout orders |
 | `payment_intents` | store | Stripe payment intents |
 | `paddlingSpots` | core | Paddle forecast spots. Enrichment fields (v2.1+): `waterType` (lake\|river\|ramp), `cellCoverage` (FCC BDC-derived, null until computed), `localTips[]` (editorial), `hydrology` (river gauge, Phase 6) — seeded via `kaayko-api/functions/scripts/seed-spot-enrichment.js` from `data/spot-enrichment.json`, never community-supplied |

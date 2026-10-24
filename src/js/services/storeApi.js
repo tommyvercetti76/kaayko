@@ -109,10 +109,12 @@ export async function getProduct(productId) {
 }
 
 /** POST /products/:id/vote  body {voteChange: 1|-1}. Throws ApiError. */
-export async function voteOnProduct(productId, voteChange) {
+export async function voteOnProduct(productId, voteChange, visitorId = null) {
   if (!productId) throw new ApiError('voteOnProduct requires a productId');
   if (voteChange !== 1 && voteChange !== -1) throw new ApiError('voteOnProduct requires +1 or -1');
-  const r = await request(`/products/${encodeURIComponent(productId)}/vote`, { method: 'POST', body: { voteChange } });
+  // visitorId lets the server count one love per visitor (api/products/votes.js).
+  const body = visitorId ? { voteChange, visitorId } : { voteChange };
+  const r = await request(`/products/${encodeURIComponent(productId)}/vote`, { method: 'POST', body });
   if (!r.ok) throw toError(r, 'Voting');
   return r.data;
 }

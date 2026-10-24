@@ -1068,6 +1068,19 @@ function setupModalNav(container, count) {
    while the count was hidden, inflation once it is shown.
    ========================================================================== */
 const LOVED_KEY = "kaayko.loved";
+// Who is loving, so the server counts one love per visitor per product. Random,
+// kept in this browser only; the server stores an HMAC of it, never the id.
+const VISITOR_KEY = "kaayko.visitor";
+function visitorId() {
+  try {
+    let v = localStorage.getItem(VISITOR_KEY) || "";
+    if (!/^[A-Za-z0-9_-]{16,64}$/.test(v)) {
+      v = crypto.randomUUID().replace(/-/g, "");
+      localStorage.setItem(VISITOR_KEY, v);
+    }
+    return v;
+  } catch (_) { return null; }   // private browsing: the server falls back to the network
+}
 function lovedSet() {
   try { return new Set(JSON.parse(localStorage.getItem(LOVED_KEY) || "[]")); } catch (_) { return new Set(); }
 }
@@ -1115,7 +1128,13 @@ function createLikeButton(item) {
     rememberLove(item.id, liked);
     refresh();
     try {
-      await voteOnProduct(item.id, delta);
+      const r = await voteOnProduct(item.id, delta, visitorId());
+      // The server's word wins: it knows loves this browser forgot.
+      if (r && typeof r.votes === "number") {
+        votes = Math.max(0, r.votes);
+        if (typeof r.voted === "boolean") { liked = r.voted; rememberLove(item.id, liked); }
+        refresh();
+      }
     } catch (err) {
       console.error("Vote error:", err);
       liked = !liked;
