@@ -1,7 +1,7 @@
 /**
  * cartManager.js — the bag. One instance, persisted in localStorage.
  *
- *   • At most 2 distinct products (by productId); quantity is structurally 1.
+ *   • At most 5 distinct products (by productId); quantity is structurally 1. (2 until 24 Oct 2026.)
  *   • Money is integer cents (`priceCents`), never a display string. The server
  *     re-prices every line at checkout; this figure is only what the shopper sees
  *     before that happens. See priceMap.js.
@@ -11,7 +11,7 @@
  */
 
 const STORAGE_KEY = 'kaayko_cart';
-const MAX_DISTINCT = 2;
+export const MAX_DISTINCT = 5;
 
 /** One-time migration for bags saved before 12 Sep 2026, which held price as "$29.99". */
 function migrate(item) {

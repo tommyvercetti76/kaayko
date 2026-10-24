@@ -206,7 +206,7 @@ function render() {
       <section class="co-bag">
         <h2 class="co-label">Items</h2>
         ${items.map(itemMarkup).join('')}
-        <p class="co-bag-note">A bag holds up to two pieces. ${SHIP_TIME}. Free US shipping, and 30 days to change your mind.</p>
+        <p class="co-bag-note">A bag holds up to five pieces. ${SHIP_TIME}. Free US shipping, and 30 days to change your mind.</p>
       </section>
 
       <aside class="co-aside">

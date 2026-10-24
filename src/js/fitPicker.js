@@ -29,7 +29,7 @@
  */
 
 import { priceText, priceCents } from "/js/priceMap.js";
-import { cartManager } from "/js/cartManager.js";
+import { cartManager, MAX_DISTINCT } from "/js/cartManager.js";
 import { esc } from "/js/kit.js";
 import { show as showToast } from "/js/components/Toast.js";
 
@@ -62,7 +62,9 @@ const SIZE_GUIDE = Object.freeze({
 });
 
 const FIT_PREF_KEY = "kaayko.lastFit";
-const MAX_UNIQUE_PRODUCTS = 2;
+// One limit, in cartManager.js (five since 24 Oct 2026). This file kept its own
+// copy, set to 2, which refused a third piece after the bag itself allowed five.
+const MAX_UNIQUE_PRODUCTS = MAX_DISTINCT;
 
 let pickerSeq = 0;
 
@@ -165,7 +167,7 @@ export function defaultSelection(product) {
    ========================================================================== */
 
 /**
- * The bag holds two unique products. Check BEFORE opening a picker so nobody
+ * The bag holds MAX_DISTINCT unique products. Check BEFORE opening a picker so nobody
  * is rejected after choosing a fit and a size.
  * @returns {boolean} true when the cap blocks this product (alert already shown)
  */

@@ -43,9 +43,15 @@ test('addItem stores priceCents, keeps the first image, and announces once', () 
   assert.equal(cartManager.getTotalCents(), 5498);
 });
 
-test('a bag holds two distinct products and refuses a third', () => {
+test('a bag holds five distinct products and refuses a sixth (two until 24 Oct 2026)', () => {
+  for (const id of ['p3', 'p4', 'p5']) {
+    assert.equal(cartManager.addItem({ productId: id, title: id, priceCents: 1999, imgSrc: 'c.webp', size: 'M', gender: 'Female' }), true);
+  }
+  assert.equal(cartManager.getCount(), 5);
   assert.equal(cartManager.canAddNewProduct(), false);
-  assert.equal(cartManager.addItem({ productId: 'p3', title: 'Third', priceCents: 1999, imgSrc: 'c.webp', size: 'M', gender: 'Female' }), false);
+  assert.equal(cartManager.addItem({ productId: 'p6', title: 'Sixth', priceCents: 1999, imgSrc: 'c.webp', size: 'M', gender: 'Female' }), false);
+  assert.equal(cartManager.getCount(), 5);
+  for (const id of ['p3', 'p4', 'p5']) cartManager.removeItem(id);   // back to the two the next tests expect
   assert.equal(cartManager.getCount(), 2);
 });
 

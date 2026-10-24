@@ -239,7 +239,7 @@ export function satireFor(product) {
     return {
       voice: "field",
       hook,
-      story: `${field.species} — ${field.range}. Illustrated by hand for this print run; no photograph, no stock art.`,
+      story: `${field.species} — ${field.range}. Designed in-house at Kaayko for this print run; no photograph, no stock art.`,
       rows: [["Species", field.species], ["Latin", field.latin], ["IUCN status", field.status], ["Range", field.range]],
       atRisk: AT_RISK.has(field.status)
     };
