@@ -106,6 +106,7 @@ export function populateCarousel(items) {
   const mixRank = buildMixedOrder(visibleItems);
   for (const item of visibleItems) grid.appendChild(decorateCard(item, mixRank.get(item) ?? 0));
   carousel.appendChild(grid);
+  stagger(grid);
   carousel.appendChild(buildBrowseEmpty());
 
   const soon = comingSoonStrip();
@@ -322,9 +323,99 @@ function syncBrowseToUrl() {
   }, 250);
 }
 
+/* ── The staggered wall (24 Oct 2026) ────────────────────────────────────────
+   Every tile keeps the shape of the thing in it — a bottle and a tee stand tall, a
+   tote and a magnet sit square, a mug sits wide (storestyle.css, "Tile shapes") — so
+   cards differ in height, and the grid packs them like prints on a wall: rows
+   STAGGER_ROW px high, each card spanning its own height, so a card takes the first
+   column with room. Placement follows DOM order, which the sort already sets, so Tab
+   and screen readers go where the eye goes. A ResizeObserver re-reads a card whenever
+   it changes height (fonts arriving, the fit picker opening, the window resizing, a
+   card un-hidden by a filter). The first spans are set here, in the same task that
+   inserted the grid: the observer's first callback can come a frame late, and that
+   frame painted 98 cards stacked in a 100px grid (layout shift 0.65, 24 Oct 2026).
+   Without a ResizeObserver the grid stays the plain grid it was. */
+const STAGGER_ROW = 4;
+
+function stagger(grid) {
+  if (typeof ResizeObserver !== "function") return;
+  grid.classList.add("is-staggered");
+  const gap = () => parseFloat(getComputedStyle(grid).getPropertyValue("--stagger-gap")) || 28;
+  const span = (h, g) => `span ${Math.max(1, Math.ceil((h + g) / STAGGER_ROW))}`;
+  const cards = [...grid.children];
+  const g = gap();
+  const heights = cards.map((card) => card.offsetHeight);     // one layout, then only writes
+  cards.forEach((card, i) => { card.style.gridRowEnd = span(heights[i], g); });
+  const ro = new ResizeObserver((entries) => {
+    const g2 = gap();
+    for (const e of entries) {
+      const next = span(e.borderBoxSize?.[0]?.blockSize ?? e.target.offsetHeight, g2);
+      if (e.target.style.gridRowEnd !== next) e.target.style.gridRowEnd = next;
+    }
+  });
+  for (const card of cards) ro.observe(card);
+}
+
+/* ── Shop by kind (24 Oct 2026) ──────────────────────────────────────────────
+   One tile per product type in place of the row of text chips: a real product of
+   that type (the most loved one), the count and the price, so a shopper sees what is
+   behind a tile before spending a tap. A tile is the same filter a chip was
+   (BROWSE_STATE.type); "Everything" is a collage of the others. On a phone the tiles
+   are compact rows, two to a line, so the products still start near the top. */
+function shelfCover(list) {
+  const best = list.slice().sort((a, b) =>
+    ((Number(b.votes) || 0) - (Number(a.votes) || 0)) ||
+    ((b.featured === true) - (a.featured === true)) ||
+    (getCreatedAtMs(b) - getCreatedAtMs(a)))[0];
+  return best ? (best.previewSrc?.[0] || best.imgSrc?.[0] || "") : "";
+}
+
+function shelfPrice(list) {
+  const prices = list.map(getPriceValue).filter((v) => v > 0);
+  if (!prices.length) return "";
+  const lo = Math.min(...prices), hi = Math.max(...prices);
+  return `${lo === hi ? "" : "from "}${money(Math.round(lo * 100))}`;
+}
+
+function buildShelf(items, types, carousel) {
+  const shelf = document.createElement("div");
+  shelf.className = "browse-shelf";
+  shelf.setAttribute("role", "group");
+  shelf.setAttribute("aria-label", "Shop by kind");
+  const byType = new Map(types.map(([t]) => [t, items.filter((it) => (it.productType || "other").toLowerCase() === t)]));
+
+  const mkTile = (value, label, list, picture) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "shelf-tile";
+    b.dataset.value = value;
+    b.setAttribute("aria-pressed", String(BROWSE_STATE.type === value));
+    const price = shelfPrice(list);
+    b.innerHTML = `
+      <span class="shelf-img${value === "all" ? " shelf-collage" : ""}" aria-hidden="true">${picture}</span>
+      <span class="shelf-text">
+        <span class="shelf-name">${esc(label)}</span>
+        <span class="shelf-meta">${list.length}${price ? ` · ${esc(price)}` : ""}</span>
+      </span>`;
+    b.addEventListener("click", () => {
+      BROWSE_STATE.type = value;
+      applyBrowseState(carousel);
+    });
+    return b;
+  };
+  const img = (src) => src ? `<img src="${esc(src)}" alt="" decoding="async" />` : "";
+
+  const collage = types.slice(0, 4).map(([t]) => img(shelfCover(byType.get(t)))).join("");
+  shelf.appendChild(mkTile("all", "Everything", items, collage));
+  for (const [type] of types) {
+    const list = byType.get(type);
+    shelf.appendChild(mkTile(type, labelForType(type), list, img(shelfCover(list))));
+  }
+  return shelf;
+}
+
 /**
- * Sort + type + search, in one row above the grid. Type chips carry live counts so a shopper can
- * see what is behind each one before spending a click.
+ * The shelf of kinds, then search + sort + count in one row under it.
  */
 function buildBrowseToolbar(items, carousel) {
   readBrowseFromUrl();
@@ -340,27 +431,7 @@ function buildBrowseToolbar(items, carousel) {
     counts.set(t, (counts.get(t) || 0) + 1);
   }
   const types = [...counts.entries()].sort((a, b) => b[1] - a[1]);
-
-  const chips = document.createElement("div");
-  chips.className = "browse-chips";
-  chips.setAttribute("role", "group");
-  chips.setAttribute("aria-label", "Filter by product type");
-  const mkChip = (value, label, count) => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "browse-chip";
-    b.dataset.value = value;
-    b.setAttribute("aria-pressed", String(BROWSE_STATE.type === value));
-    b.innerHTML = `<span>${label}</span><span class="browse-chip-count">${count}</span>`;
-    b.addEventListener("click", () => {
-      BROWSE_STATE.type = value;
-      applyBrowseState(carousel);
-    });
-    return b;
-  };
-  chips.appendChild(mkChip("all", "Everything", items.length));
-  for (const [type, count] of types) chips.appendChild(mkChip(type, labelForType(type), count));
-  bar.appendChild(chips);
+  bar.appendChild(buildShelf(items, types, carousel));
 
   const right = document.createElement("div");
   right.className = "browse-controls";
@@ -461,8 +532,8 @@ function applyBrowseState(carousel) {
     if (visible) shown += 1;
   }
 
-  for (const chip of carousel.querySelectorAll(".browse-chip")) {
-    chip.setAttribute("aria-pressed", String(chip.dataset.value === BROWSE_STATE.type));
+  for (const tile of carousel.querySelectorAll(".shelf-tile")) {
+    tile.setAttribute("aria-pressed", String(tile.dataset.value === BROWSE_STATE.type));
   }
   const active = anyBrowseActive();
   const refined = BROWSE_STATE.themes.length + BROWSE_STATE.tags.length;

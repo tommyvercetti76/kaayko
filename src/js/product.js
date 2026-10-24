@@ -2,7 +2,8 @@
  * THE product page — every type, one layout. (/animals/<slug> forwards here.)
  *
  * Three things live here and nowhere else on this route:
- *   - the gallery (main image + thumbs, click to zoom)
+ *   - the gallery (main image + thumbs, click to zoom), and for a mug or a magnet a
+ *     3D frame you can hold and turn over (js/inspect/inspect3d.js)
  *   - the buy block, which mounts the shared fit picker from /js/fitPicker.js
  *     directly beside the product rather than in a modal over it
  *   - "the file": the satirical dossier (or, for wildlife pieces, the field
@@ -73,8 +74,10 @@ function renderProduct(product, openModalFn) {
   root.innerHTML = `
     <article class="pdp">
       <div class="pdp-gallery">
-        <div class="product-gallery-main pdp-main" id="pg-main" role="button" tabindex="0" aria-label="${esc(product.title)} — open full-size image">
-          <img id="pg-main-img" src="${esc(previews[0])}" alt="${esc(product.title)}" />
+        <div class="pdp-stage">
+          <div class="product-gallery-main pdp-main" id="pg-main" role="button" tabindex="0" aria-label="${esc(product.title)} — open full-size image">
+            <img id="pg-main-img" src="${esc(previews[0])}" alt="${esc(product.title)}" />
+          </div>
         </div>
         ${previews.length > 1 ? `<div class="product-thumbs">${thumbs}</div>` : ""}
       </div>
@@ -110,8 +113,10 @@ function renderProduct(product, openModalFn) {
       x.classList.toggle('active', k === frame);
       x.setAttribute('aria-pressed', k === frame ? 'true' : 'false');
     });
+    inspect?.hide();
   }
   thumbEls.forEach(t => t.addEventListener('click', () => setFrame(parseInt(t.dataset.idx, 10))));
+  const inspect = mountInspectFrame(product, root, thumbEls);
 
   // Zoom on click, and on Enter/Space since the wrapper acts as a button.
   const main = document.getElementById('pg-main');
@@ -184,6 +189,98 @@ function renderProduct(product, openModalFn) {
   syncCta();
   cartManager.subscribe(syncCta);
   slot.appendChild(cta);
+}
+
+/* ── 3D ───────────────────────────────────────────────────────
+   A mug or a magnet with textures in /js/inspect/index.json gets a frame you can
+   hold: a "3D" thumb first in the row, and a layer over the photo frame (a sibling,
+   so the photo's own zoom and swipe never see the stage's drags). Nothing loads —
+   not the index, not three.js — for any other product, and if WebGL is missing the
+   thumb never appears. The magnet's Round / Square choice turns the stage's shape. */
+const INSPECT_TYPES = new Set(['mug', 'magnet']);
+
+function mountInspectFrame(product, root, thumbEls) {
+  if (!INSPECT_TYPES.has(product.productType)) return null;
+  const stage = root.querySelector('.pdp-stage');
+  let layer = null, view = null, thumb = null;
+
+  const pickedShape = () => {
+    const v = root.querySelector('#pdp-picker .fitp-sizes [aria-checked="true"]')?.dataset.value || '';
+    return /square/i.test(v) ? 'square' : 'round';
+  };
+
+  function show() {
+    if (!layer) return;
+    layer.hidden = false;
+    stage.classList.add('is-3d');
+    thumbEls.forEach((x) => { x.classList.remove('active'); x.setAttribute('aria-pressed', 'false'); });
+    thumb.classList.add('active'); thumb.setAttribute('aria-pressed', 'true');
+  }
+  function hide() {
+    if (!layer) return;
+    layer.hidden = true;
+    stage.classList.remove('is-3d');
+    thumb.classList.remove('active'); thumb.setAttribute('aria-pressed', 'false');
+  }
+
+  (async () => {
+    let entry;
+    try {
+      const res = await fetch('/js/inspect/index.json');
+      entry = res.ok ? (await res.json())[product.id] : null;
+    } catch (_) { entry = null; }
+    if (!entry) return;
+    const { mountInspect } = await import('/js/inspect/inspect3d.js');
+
+    layer = document.createElement('div');
+    layer.className = 'pdp-inspect';
+    layer.hidden = true;
+    layer.innerHTML = `<p class="pdp-inspect-hint">${entry.kind === 'magnet' ? 'Drag to turn · tap to flip it over' : 'Drag to spin · hold to tip it'}</p>`;
+    stage.appendChild(layer);
+    view = await mountInspect(layer, {
+      kind: entry.kind, wrap: entry.wrap, faces: { round: entry.round, square: entry.square },
+      shape: pickedShape(), title: product.title,
+    });
+    if (!view) { layer.remove(); layer = null; return; }   // no WebGL: photographs only
+    layer.addEventListener('pointerdown', () => layer.classList.add('was-held'), { once: true });
+
+    thumb = document.createElement('button');
+    thumb.type = 'button';
+    thumb.className = 'product-thumb product-thumb-3d';
+    thumb.setAttribute('aria-pressed', 'false');
+    thumb.setAttribute('aria-label', `Hold and turn the ${entry.kind} in 3D`);
+    thumb.innerHTML = '<span aria-hidden="true">3D</span>';
+    thumb.addEventListener('click', show);
+    let row = root.querySelector('.product-thumbs');
+    if (!row) {                                   // one photo: the row did not exist
+      row = document.createElement('div');
+      row.className = 'product-thumbs';
+      root.querySelector('.pdp-gallery').appendChild(row);
+      thumbEls.length || row.appendChild(photoThumb());
+    }
+    row.prepend(thumb);
+    show();
+
+    if (entry.kind === 'magnet') {
+      const picker = root.querySelector('#pdp-picker');
+      new MutationObserver(() => view.setShape(pickedShape()))
+        .observe(picker, { subtree: true, attributes: true, attributeFilter: ['aria-checked'] });
+    }
+  })().catch((err) => console.warn('3D view unavailable:', err));
+
+  // with a single photograph there are no thumbs to go back by; give it one
+  function photoThumb() {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'product-thumb';
+    b.setAttribute('aria-label', 'Show the photograph');
+    b.innerHTML = `<img src="${esc(root.querySelector('#pg-main-img').src)}" alt="" />`;
+    b.addEventListener('click', () => { hide(); b.classList.add('active'); });
+    thumbEls.push(b);
+    return b;
+  }
+
+  return { hide };
 }
 
 export async function productPageInit(productID, { openModal }) {

@@ -1,0 +1,349 @@
+/**
+ * inspect/inspect3d.js — hold a mug or a magnet and turn it over, the way the home
+ * page's cards are held (24 Oct 2026).
+ *
+ * The same hand as the cards (js/pages/card.js, js/cards/attitude.js):
+ *   - a drag turns it at once, a rigid body under the finger, no smoothing;
+ *   - let go and it coasts on the finger's last angular speed, then settles on the
+ *     same critically damped spring (smoothDamp) — no overshoot, no bounce;
+ *   - a magnet is a card: a tap or a flick turns it over ONCE, onto its other face;
+ *   - a mug is round: it spins as far as you throw it, and tilts so you can look in;
+ *   - holding still lifts it, and then it follows the finger up and down too.
+ * On a phone a quick vertical swipe still scrolls the page; only a horizontal drag,
+ * or a hold, takes the object.
+ *
+ * Real 3D (three.js, vendored at /js/vendor/three), lit by a studio drawn here — a
+ * softbox high on the left, a strip light behind on the right — the same light as the
+ * product photographs, so the photo and the object agree. Textures are made by
+ * scripts/store_uploader/inspect_textures.py from the code that drew the photographs.
+ *
+ *   const stage = await mountInspect(el, { kind: 'mug', wrap: url, title });
+ *   const stage = await mountInspect(el, { kind: 'magnet', faces: {round, square}, shape: 'round', title });
+ *   stage.setShape('square'); stage.destroy();
+ */
+import * as THREE from '/js/vendor/three/three.module.min.js';
+import { smoothDamp, clamp } from '/js/cards/attitude.js';
+
+const GAIN = 0.45;            // degrees per pixel of drag
+const SETTLE = 0.46;          // seconds — the cards' INSPECT_SETTLE
+const HOLD_MS = 240;          // holding still this long lifts it (the cards' HOLD_MS)
+const SLOP = 8;               // px before a press is a turn rather than a tap
+const MUG_PITCH = 34;         // how far a mug tips toward / away from you
+const MAG_PITCH = 48;         // the cards' INSPECT_MAX_RX
+const D2R = Math.PI / 180;
+
+/* ── the studio ────────────────────────────────────────────────────────────────
+   An equirectangular picture of the room the object sits in, for the glaze to
+   reflect: a big softbox up on the left, a narrow strip behind on the right, a
+   pale ceiling, a darker floor. Drawn on a canvas — no image to fetch.          */
+function studio(renderer) {
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 512;
+  const g = c.getContext('2d');
+  const sky = g.createLinearGradient(0, 0, 0, 512);
+  sky.addColorStop(0, '#d9d7d2'); sky.addColorStop(0.5, '#bdbab4'); sky.addColorStop(0.62, '#8f8c87'); sky.addColorStop(1, '#5f5d59');
+  g.fillStyle = sky; g.fillRect(0, 0, 1024, 512);
+  const box = (x, y, w, h, a) => {
+    const r = g.createRadialGradient(x + w / 2, y + h / 2, 4, x + w / 2, y + h / 2, Math.max(w, h) * 0.7);
+    r.addColorStop(0, `rgba(255,255,255,${a})`); r.addColorStop(0.55, `rgba(255,255,255,${a * 0.85})`); r.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = r; g.fillRect(x - w * 0.3, y - h * 0.3, w * 1.6, h * 1.6);
+  };
+  // equirect x: 512 is straight ahead (+z, behind the camera's view of the object
+  // is 0/1024). The key sits up and to the front-left, the strip behind on the right.
+  box(300, 120, 170, 150, 1.0);     // key softbox, front-left, high
+  box(760, 150, 46, 220, 0.9);      // strip, behind-right
+  box(470, 30, 260, 50, 0.5);       // ceiling bounce
+  const tex = new THREE.CanvasTexture(c);
+  tex.mapping = THREE.EquirectangularReflectionMapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const pm = new THREE.PMREMGenerator(renderer);
+  const env = pm.fromEquirectangular(tex).texture;
+  tex.dispose(); pm.dispose();
+  return env;
+}
+
+const loadTexture = (url) => new Promise((resolve, reject) => {
+  new THREE.TextureLoader().load(url, (t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; resolve(t); }, undefined, reject);
+});
+
+/* ── the mug: 82 mm across, 95 mm tall, an ear handle on the right ──────────── */
+function buildMug(wrap) {
+  const R = 41, H = 95, T = 3.6;                       // radius, height, wall
+  const group = new THREE.Group();
+  const glaze = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.32, clearcoat: 1, clearcoatRoughness: 0.06, envMapIntensity: 1.0 });
+  const printed = glaze.clone(); printed.map = wrap;
+  // the outer wall carries the print; u=0.5 (the print's centre) faces the camera
+  const wall = new THREE.CylinderGeometry(R, R, H - 6, 160, 1, true, Math.PI, Math.PI * 2);
+  const outer = new THREE.Mesh(wall, printed); outer.position.y = H / 2; group.add(outer);
+  // the rest of the body, turned on a lathe: foot bevel, rounded lip, inner wall, floor
+  const p = [];
+  p.push(new THREE.Vector2(0.01, 0), new THREE.Vector2(R - 4, 0), new THREE.Vector2(R - 1.2, 0.6), new THREE.Vector2(R, 3.01));
+  const lip = [];
+  for (let i = 0; i <= 10; i++) { const a = (i / 10) * Math.PI; lip.push(new THREE.Vector2(R - T / 2 + (T / 2) * Math.cos(a), H - 3 + 3 * Math.sin(a) * 0.9)); }
+  const body = new THREE.LatheGeometry([new THREE.Vector2(R, H - 3.01), ...lip, new THREE.Vector2(R - T, H - 6), new THREE.Vector2(R - T, 9), new THREE.Vector2(R - T - 2, 7), new THREE.Vector2(0.01, 7)], 160);
+  const foot = new THREE.LatheGeometry(p, 160);
+  group.add(new THREE.Mesh(body, glaze), new THREE.Mesh(foot, glaze));
+  // the handle: a tube along an ear-shaped curve, thicker where it leaves the top
+  const curve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(R - 2, 74, 0), new THREE.Vector3(R + 14, 79, 0), new THREE.Vector3(R + 25, 64, 0),
+    new THREE.Vector3(R + 25, 40, 0), new THREE.Vector3(R + 16, 22, 0), new THREE.Vector3(R - 2, 21, 0),
+  ]);
+  const tube = new THREE.TubeGeometry(curve, 140, 5.4, 28, false);
+  const pos = tube.attributes.position; const n = 141, rs = 29;   // taper: radius 5.4 at the top to 4.3 at the foot
+  for (let i = 0; i < n; i++) {
+    const c0 = curve.getPointAt(i / 140); const k = 1 - 0.2 * (i / 140);
+    for (let j = 0; j < rs; j++) {
+      const idx = i * rs + j;
+      pos.setXYZ(idx, c0.x + (pos.getX(idx) - c0.x) * k, c0.y + (pos.getY(idx) - c0.y) * k, c0.z + (pos.getZ(idx) - c0.z) * k);
+    }
+  }
+  tube.computeVertexNormals();
+  group.add(new THREE.Mesh(tube, glaze));
+  group.position.y = -H / 2;                        // turn about the mug's middle
+  const pivot = new THREE.Group(); pivot.add(group);
+  return { pivot, size: 150, materials: [glaze, printed], disposables: [wall, body, foot, tube] };
+}
+
+/* ── the magnet: a printed face, a thin cream edge, a dark magnetic back ─────── */
+function faceShape(shape, h) {
+  const s = new THREE.Shape();
+  if (shape === 'round') { s.absarc(0, 0, h, 0, Math.PI * 2, false); return s; }
+  const r = h * 0.12;                                // magnet_gallery.RECT_RADIUS
+  s.moveTo(-h + r, -h); s.lineTo(h - r, -h); s.quadraticCurveTo(h, -h, h, -h + r);
+  s.lineTo(h, h - r); s.quadraticCurveTo(h, h, h - r, h); s.lineTo(-h + r, h);
+  s.quadraticCurveTo(-h, h, -h, h - r); s.lineTo(-h, -h + r); s.quadraticCurveTo(-h, -h, -h + r, -h);
+  return s;
+}
+
+function planarUV(geo, h) {
+  const p = geo.attributes.position; const uv = new Float32Array(p.count * 2);
+  for (let i = 0; i < p.count; i++) { uv[i * 2] = p.getX(i) / (2 * h) + 0.5; uv[i * 2 + 1] = p.getY(i) / (2 * h) + 0.5; }
+  geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+}
+
+function backTexture() {
+  const c = document.createElement('canvas'); c.width = c.height = 512;
+  const g = c.getContext('2d');
+  g.fillStyle = '#26262a'; g.fillRect(0, 0, 512, 512);
+  g.fillStyle = 'rgba(255,255,255,0.07)'; g.font = '600 34px "Josefin Sans", Arial, sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  if (g.letterSpacing !== undefined) g.letterSpacing = '9px';
+  g.fillText('KAAYKO', 256, 256);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+
+function buildMagnet(face, shape) {
+  const h = 38, d = 3.4;                           // 76 mm across, 3.4 mm thick
+  const pivot = new THREE.Group();
+  const sh = faceShape(shape, h);
+  const edge = new THREE.ExtrudeGeometry(sh, { depth: d, bevelEnabled: true, bevelThickness: 0.5, bevelSize: 0.5, bevelSegments: 4, curveSegments: 96 });
+  edge.translate(0, 0, -d / 2);
+  const edgeMat = new THREE.MeshPhysicalMaterial({ color: 0xf3f1ec, roughness: 0.55 });
+  const front = new THREE.ShapeGeometry(sh, 96); planarUV(front, h); front.translate(0, 0, d / 2 + 0.51);
+  // planar UVs taken before the half-turn: the turn itself un-mirrors the back
+  const back = new THREE.ShapeGeometry(sh, 96); planarUV(back, h); back.rotateY(Math.PI); back.translate(0, 0, -d / 2 - 0.51);
+  const frontMat = new THREE.MeshPhysicalMaterial({ map: face, roughness: 0.4, clearcoat: 0.8, clearcoatRoughness: 0.12 });
+  const bt = backTexture();
+  const backMat = new THREE.MeshStandardMaterial({ map: bt, roughness: 0.92, metalness: 0 });
+  pivot.add(new THREE.Mesh(edge, edgeMat), new THREE.Mesh(front, frontMat), new THREE.Mesh(back, backMat));
+  return { pivot, size: 92, materials: [edgeMat, frontMat, backMat], disposables: [edge, front, back, bt] };
+}
+
+/* ── the stage ──────────────────────────────────────────────────────────────── */
+export async function mountInspect(host, opts) {
+  const kind = opts.kind;
+  const canvas = document.createElement('canvas');
+  canvas.className = 'insp-canvas';
+  canvas.setAttribute('role', 'img');
+  canvas.setAttribute('aria-label', `${opts.title || 'The piece'} in 3D. Drag to turn it${kind === 'magnet' ? '; tap to turn it over' : ''}. Arrow keys turn it too.`);
+  canvas.tabIndex = 0;
+  host.appendChild(canvas);
+
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'low-power' });
+  } catch (_) { canvas.remove(); return null; }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.NeutralToneMapping;
+  renderer.toneMappingExposure = 1.12;
+  const scene = new THREE.Scene();
+  scene.environment = studio(renderer);
+  const keyLight = new THREE.DirectionalLight(0xffffff, 1.1); keyLight.position.set(-1.1, 1.3, 1.4); scene.add(keyLight);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8782, 0.35));
+  const camera = new THREE.PerspectiveCamera(26, 1, 1, 2000);
+
+  // the object
+  let obj, shape = opts.shape || 'round';
+  const faces = {};
+  async function build() {
+    if (obj) { scene.remove(obj.pivot); obj.disposables.forEach((x) => x.dispose()); obj.materials.forEach((m) => m.dispose()); }
+    if (kind === 'mug') obj = buildMug(await loadTexture(opts.wrap));
+    else {
+      faces[shape] = faces[shape] || await loadTexture(opts.faces[shape]);
+      obj = buildMagnet(faces[shape], shape);
+    }
+    scene.add(obj.pivot);
+    fit();
+  }
+
+  // a soft contact shadow under a mug, so it stands on something
+  let floor = null;
+  if (kind === 'mug') {
+    const c = document.createElement('canvas'); c.width = c.height = 256;
+    const g = c.getContext('2d'); const r = g.createRadialGradient(128, 128, 10, 128, 128, 128);
+    r.addColorStop(0, 'rgba(0,0,0,0.42)'); r.addColorStop(0.55, 'rgba(0,0,0,0.16)'); r.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = r; g.fillRect(0, 0, 256, 256);
+    const ft = new THREE.CanvasTexture(c);
+    floor = new THREE.Mesh(new THREE.PlaneGeometry(150, 150), new THREE.MeshBasicMaterial({ map: ft, transparent: true, depthWrite: false }));
+    floor.rotation.x = -Math.PI / 2; floor.position.y = -47.6; scene.add(floor);
+  }
+
+  // camera: a little above, telephoto, framed to the host
+  const restPitch = kind === 'mug' ? 0 : 0;
+  function fit() {
+    const w = host.clientWidth || 400, hgt = host.clientHeight || w;
+    renderer.setSize(w, hgt, false);
+    camera.aspect = w / hgt;
+    const dist = (obj ? obj.size : 120) / 2 / Math.tan((camera.fov * D2R) / 2) / Math.min(1, camera.aspect) * 1.12;
+    const lift = kind === 'mug' ? 0.32 : 0.0;
+    camera.position.set(0, dist * lift, dist);
+    camera.lookAt(0, kind === 'mug' ? -3 : 0, 0);
+    camera.updateProjectionMatrix();
+    wake();
+  }
+
+  /* motion: yaw (unbounded) and pitch (bounded), each on its own spring */
+  const yaw = { a: kind === 'mug' ? -18 : 0, t: kind === 'mug' ? -18 : 0, v: { v: 0 } };
+  const pitch = { a: restPitch, t: restPitch, v: { v: 0 } };
+  const lean = { x: 0, y: 0 };
+  const grab = { on: false, lifted: false, id: null, x: 0, y: 0, t: 0, wx: 0, wy: 0, face: 0, sx: 0, sy: 0, moved: 0, timer: 0, axis: null };
+  const maxPitch = kind === 'mug' ? MUG_PITCH : MAG_PITCH;
+  let raf = 0, last = 0, lift = 0, liftV = { v: 0 };
+
+  function draw(t) {
+    raf = 0;
+    const dt = last ? Math.min(0.25, (t - last) / 1000) : 1 / 60; last = t;
+    if (!grab.on) {
+      yaw.a = smoothDamp(yaw.a, yaw.t + lean.x, yaw.v, SETTLE, dt);
+      pitch.a = smoothDamp(pitch.a, pitch.t + lean.y, pitch.v, SETTLE, dt);
+    }
+    lift = smoothDamp(lift, grab.on ? 1 : 0, liftV, 0.14, dt);
+    if (obj) {
+      // 'XYZ': spin about the object's own axis first, then tip about the SCREEN's
+      // horizontal, so a tip always comes toward you whichever way it has been spun
+      obj.pivot.rotation.set(pitch.a * D2R, yaw.a * D2R, 0, 'XYZ');
+      const s = 1 + 0.035 * lift; obj.pivot.scale.setScalar(s);
+      obj.pivot.position.y = 2.5 * lift;
+    }
+    if (floor) floor.material.opacity = 1 - 0.35 * lift;
+    renderer.render(scene, camera);
+    const moving = grab.on || Math.abs(yaw.a - (yaw.t + lean.x)) > 0.02 || Math.abs(pitch.a - (pitch.t + lean.y)) > 0.02
+      || Math.abs(yaw.v.v) > 0.05 || Math.abs(pitch.v.v) > 0.05 || Math.abs(lift - (grab.on ? 1 : 0)) > 0.002;
+    if (moving) raf = requestAnimationFrame(draw);
+    else last = 0;
+  }
+  function wake() { if (!raf) raf = requestAnimationFrame(draw); }
+
+  /* the hand */
+  function take(e) {
+    grab.on = true; grab.id = e.pointerId; grab.x = e.clientX; grab.y = e.clientY; grab.t = performance.now();
+    grab.wx = grab.wy = 0; grab.face = Math.round(yaw.a / 180) * 180;
+    yaw.t = yaw.a; pitch.t = pitch.a; yaw.v.v = pitch.v.v = 0; lean.x = lean.y = 0;
+    try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+    host.classList.add('is-held'); wake();
+  }
+  function down(e) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    grab.sx = e.clientX; grab.sy = e.clientY; grab.moved = 0; grab.axis = null; grab.id = e.pointerId; grab.lifted = false;
+    if (e.pointerType === 'mouse') { take(e); return; }
+    clearTimeout(grab.timer);
+    grab.timer = setTimeout(() => { if (!grab.on && grab.id === e.pointerId) { grab.lifted = true; take({ pointerId: e.pointerId, clientX: grab.sx, clientY: grab.sy }); try { navigator.vibrate?.(8); } catch (_) {} } }, HOLD_MS);
+  }
+  function move(e) {
+    if (e.pointerId !== grab.id) { if (e.pointerType === 'mouse' && !grab.on) hover(e); return; }
+    grab.moved = Math.max(grab.moved, Math.hypot(e.clientX - grab.sx, e.clientY - grab.sy));
+    if (!grab.on) {
+      if (grab.moved > SLOP) {
+        clearTimeout(grab.timer);
+        // a horizontal start takes the object; a vertical one is the page scrolling
+        if (Math.abs(e.clientX - grab.sx) > Math.abs(e.clientY - grab.sy)) take({ pointerId: e.pointerId, clientX: grab.sx, clientY: grab.sy });
+        else { grab.id = null; return; }
+      } else return;
+    }
+    const now = performance.now(), dt = Math.max(1 / 240, (now - grab.t) / 1000);
+    const dx = e.clientX - grab.x, dy = e.clientY - grab.y;
+    grab.x = e.clientX; grab.y = e.clientY; grab.t = now;
+    yaw.a += dx * GAIN; yaw.t = yaw.a;
+    // pitch follows the finger only once the object is lifted (or under a mouse):
+    // a horizontal swipe should not wobble it
+    if (grab.lifted || e.pointerType === 'mouse') { pitch.a = clamp(pitch.a + dy * GAIN, maxPitch); pitch.t = pitch.a; }
+    const a = 0.35;
+    grab.wy = grab.wy * (1 - a) + (dx * GAIN / dt) * a;
+    grab.wx = grab.wx * (1 - a) + (dy * GAIN / dt) * a;
+    wake();
+  }
+  function up(e) {
+    clearTimeout(grab.timer);
+    if (e.pointerId !== grab.id) return;
+    const wasTap = !grab.on || grab.moved <= SLOP;
+    if (grab.on) {
+      grab.on = false;
+      try { canvas.releasePointerCapture(e.pointerId); } catch (_) {}
+      host.classList.remove('is-held');
+      yaw.v.v = grab.wy; pitch.v.v = grab.wx;
+      const coast = yaw.a + grab.wy * SETTLE * 0.75;
+      if (kind === 'magnet') {
+        // a card: settle on a face, and a flick turns it over once, never twice
+        yaw.t = clamp(Math.round(coast / 180) * 180 - grab.face, 180) + grab.face;
+      } else {
+        yaw.t = coast;                                 // a mug stops where its spin runs out
+      }
+      pitch.t = restPitch;
+    }
+    if (wasTap && kind === 'magnet' && e.type === 'pointerup') { yaw.t = Math.round(yaw.a / 180) * 180 + 180; }
+    grab.id = null; grab.lifted = false;
+    wake();
+  }
+  // under a mouse at rest, it leans a little toward the pointer, as the cards do
+  function hover(e) {
+    if (grab.on) return;
+    const r = canvas.getBoundingClientRect();
+    lean.x = ((e.clientX - r.left) / r.width - 0.5) * 14;
+    lean.y = ((e.clientY - r.top) / r.height - 0.5) * 10;
+    wake();
+  }
+  function leave() { if (!grab.on) { lean.x = lean.y = 0; wake(); } }
+  // once lifted on a touch screen, the page must not scroll under the finger
+  function touchmove(e) { if (grab.on) e.preventDefault(); }
+  function onKey(e) {
+    const step = { ArrowLeft: -30, ArrowRight: 30 }[e.key];
+    if (step) { e.preventDefault(); yaw.t = (kind === 'magnet' ? Math.round(yaw.t / 180) * 180 : yaw.t) + (kind === 'magnet' ? Math.sign(step) * 180 : step); wake(); }
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); pitch.t = clamp(pitch.t + (e.key === 'ArrowUp' ? -12 : 12), maxPitch); wake(); setTimeout(() => { pitch.t = restPitch; wake(); }, 900); }
+    if ((e.key === 'Enter' || e.key === ' ') && kind === 'magnet') { e.preventDefault(); yaw.t = Math.round(yaw.t / 180) * 180 + 180; wake(); }
+  }
+  canvas.addEventListener('pointerdown', down);
+  canvas.addEventListener('pointermove', move);
+  canvas.addEventListener('pointerup', up);
+  canvas.addEventListener('pointercancel', up);
+  canvas.addEventListener('pointerleave', leave);
+  canvas.addEventListener('touchmove', touchmove, { passive: false });
+  canvas.addEventListener('keydown', onKey);
+  const ro = new ResizeObserver(() => fit()); ro.observe(host);
+
+  await build();
+  host.classList.add('is-ready');
+  wake();
+
+  return {
+    async setShape(next) {
+      if (kind !== 'magnet' || next === shape || !opts.faces[next]) return;
+      shape = next; await build(); wake();
+    },
+    destroy() {
+      cancelAnimationFrame(raf); ro.disconnect();
+      if (obj) { obj.disposables.forEach((x) => x.dispose()); obj.materials.forEach((m) => m.dispose()); }
+      Object.values(faces).forEach((t) => t.dispose());
+      scene.environment?.dispose(); renderer.dispose(); canvas.remove();
+    },
+  };
+}

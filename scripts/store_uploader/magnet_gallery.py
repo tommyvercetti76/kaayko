@@ -432,31 +432,27 @@ def _arc_name(layer, mask, name, cx, cy, radius, size):
         ang += (w + track) / radius
 
 
-def render_badge(art_path: Path, name: str, geo: dict, scale: float = 1.0, shape: str = "round", medallion: bool = False) -> Image.Image:
-    W, H = (int(v * scale) for v in geo["canvas"])
+def badge_face(art_path: Path, name: str, shape: str = "round", medallion: bool = False, size: int = 2048):
+    """The magnet's printed face alone, size x size, in its own frame: (ink layer on
+    white, ink mask, outline). The photograph (render_badge) and the 3D inspect
+    texture (inspect_textures.py) both come from here, so they can never disagree."""
     a = _prep_art(art_path, medallion)
     name = (name or "").upper()
     xs, ys = _ink_points(a)
-
+    h = size / 2                                   # r of the disc, or s of the square
+    cx = cy = h
     if shape == "round":
-        cx, cy, r = (geo["disc"][k] * scale for k in ("cx", "cy", "r"))
-        canvas = plate(W, H, cx, cy, r)
-        clip = Image.new("L", canvas.size, 0)
-        ImageDraw.Draw(clip).ellipse([cx - r + 2, cy - r + 2, cx + r - 2, cy + r - 2], fill=255)
-        # centre on the ink's own middle (a ring's centre for a medallion)
+        outline = Image.new("L", (size, size), 0)
+        ImageDraw.Draw(outline).ellipse([2, 2, size - 2, size - 2], fill=255)
         mx, my = (a.width / 2, a.height / 2) if medallion else ((xs.min() + xs.max()) / 2, (ys.min() + ys.max()) / 2)
         reach = float(np.sqrt((xs - mx) ** 2 + (ys - my) ** 2).max()) or 1.0
-        safe = r * (SAFE_ROUND if name else SAFE_ROUND + 0.04)
-        k = safe / reach
-        acx, acy = cx, cy + (r * 0.05 if name else 0.0)
+        k = h * (SAFE_ROUND if name else SAFE_ROUND + 0.04) / reach
+        acx, acy = cx, cy + (h * 0.05 if name else 0.0)
     else:
-        box, s = rect_box(W, H, False, 1.0)
-        x0, y0, x1, y1 = box
-        canvas = rect_plate(W, H, box, s)
-        clip = rect_mask(canvas.size, box, s * RECT_RADIUS, inset=2)
-        m = SAFE_SQUARE * s * 2
-        top = y0 + (s * 0.42 if name else m)
-        rx0, ry0, rx1, ry1 = x0 + m, top, x1 - m, y1 - m
+        outline = rect_mask((size, size), (0, 0, size, size), h * RECT_RADIUS, inset=2)
+        m = SAFE_SQUARE * h * 2
+        top = (h * 0.42 if name else m)
+        rx0, ry0, rx1, ry1 = m, top, size - m, size - m
         if medallion:
             mx, my = a.width / 2, a.height / 2
             reach = float(np.sqrt((xs - mx) ** 2 + (ys - my) ** 2).max()) or 1.0
@@ -465,28 +461,40 @@ def render_badge(art_path: Path, name: str, geo: dict, scale: float = 1.0, shape
             mx, my = (xs.min() + xs.max()) / 2, (ys.min() + ys.max()) / 2
             k = min((rx1 - rx0) / max(1.0, xs.max() - xs.min()), (ry1 - ry0) / max(1.0, ys.max() - ys.min()))
         acx, acy = (rx0 + rx1) / 2, (ry0 + ry1) / 2
-
-    layer = Image.new("RGB", canvas.size, (255, 255, 255))
-    mask = Image.new("L", canvas.size, 0)
+    layer = Image.new("RGB", (size, size), (255, 255, 255))
+    mask = Image.new("L", (size, size), 0)
     art = a.resize((max(1, int(a.width * k)), max(1, int(a.height * k))), Image.LANCZOS)
     px, py = int(acx - mx * k), int(acy - my * k)
     layer.paste(art.convert("RGB"), (px, py), art.split()[-1])
-    am = Image.new("L", canvas.size, 0); am.paste(art.split()[-1], (px, py))
+    am = Image.new("L", (size, size), 0); am.paste(art.split()[-1], (px, py))
     mask = ImageChops.lighter(mask, am)
-
     if name:
         if shape == "round":
-            size = int(r * 0.097)
+            fs = int(h * 0.097)
             # a long name gets smaller type before it gets a longer arc (max ~110 degrees)
-            font = ImageFont.truetype(str(FONT), size)
-            while size > r * 0.05 and (sum(font.getlength(c) for c in name) + size * TRACK * (len(name) - 1)) / (r * NAME_ARC) > np.radians(110):
-                size -= 2; font = ImageFont.truetype(str(FONT), size)
-            _arc_name(layer, mask, name, cx, cy, r * NAME_ARC, size)
+            font = ImageFont.truetype(str(FONT), fs)
+            while fs > h * 0.05 and (sum(font.getlength(c) for c in name) + fs * TRACK * (len(name) - 1)) / (h * NAME_ARC) > np.radians(110):
+                fs -= 2; font = ImageFont.truetype(str(FONT), fs)
+            _arc_name(layer, mask, name, cx, cy, h * NAME_ARC, fs)
         else:
-            size = int(s * 0.115)
-            _name_row(layer, mask, name, (x0 + x1) / 2, y0 + s * 0.22, size)
+            _name_row(layer, mask, name, cx, h * 0.22, int(h * 0.115))
+    return layer, ImageChops.multiply(mask, outline), outline
 
-    mask = ImageChops.multiply(mask, clip).filter(ImageFilter.GaussianBlur(0.6))
+
+def render_badge(art_path: Path, name: str, geo: dict, scale: float = 1.0, shape: str = "round", medallion: bool = False) -> Image.Image:
+    W, H = (int(v * scale) for v in geo["canvas"])
+    if shape == "round":
+        cx, cy, r = (geo["disc"][k] * scale for k in ("cx", "cy", "r"))
+        canvas = plate(W, H, cx, cy, r)
+        x0, y0, side = cx - r, cy - r, 2 * r
+    else:
+        box, s_ = rect_box(W, H, False, 1.0)
+        canvas = rect_plate(W, H, box, s_)
+        x0, y0, side = box[0], box[1], box[2] - box[0]
+    layer_f, mask_f, _ = badge_face(art_path, name, shape, medallion, size=int(round(side)))
+    layer = Image.new("RGB", canvas.size, (255, 255, 255)); layer.paste(layer_f, (int(round(x0)), int(round(y0))))
+    mask = Image.new("L", canvas.size, 0); mask.paste(mask_f, (int(round(x0)), int(round(y0))))
+    mask = mask.filter(ImageFilter.GaussianBlur(0.6))
     return Image.composite(ImageChops.multiply(canvas, layer), canvas, mask)
 
 

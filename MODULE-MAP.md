@@ -160,9 +160,10 @@ Every store page loads, in this order: `js/prod-config.js` (the API base, in `<h
 - `kaayko/src/js/cartManager.js` — the bag (`priceCents`, max 2 products, `kaayko:cartchange` event, `window.cartManager` for classic scripts)
 - `kaayko/src/js/components/Toast.js` + `css/toast.css` — the one notice
 - `kaayko/src/js/header.js` — theme toggle, cart badge, home link
-- `kaayko/src/js/kaayko_ui.js` — the grid, ONE browse state (sort · type · search · themes · tags; folded haystack per card, word-prefix search, `?q=`/`?type=`), image modal, the private heart; `js/fitPicker.js` — THE size/fit picker; `js/kaaykoFilterModal.js` — the Refine dialog (theme + tags) driving that same state
+- `kaayko/src/js/kaayko_ui.js` — the grid (a staggered wall: per-type tile shapes, `stagger()` row spans) under a picture shelf of kinds (`buildShelf()`), ONE browse state (sort · type · search · themes · tags; folded haystack per card, word-prefix search, `?q=`/`?type=`), image modal, the private heart; `js/fitPicker.js` — THE size/fit picker; `js/kaaykoFilterModal.js` — the Refine dialog (theme + tags) driving that same state
 - `kaayko/src/order-status.html` → `js/pages/order-status.js` — `/order/:number?t=…` on both hosts; `order-success.html` → `js/pages/order-success.js` asks `/orders/lookup` for the number
 - `kaayko/src/js/product.js`, `js/animal.js`, `js/store-about.js`, `js/store-satire.js` — PDP renderers and copy
+- `kaayko/src/js/inspect/inspect3d.js` — the PDP's 3D frame for mugs and magnets (three.js r165, vendored `js/vendor/three/`); which products have one is `js/inspect/index.json`, written with the textures by `scripts/store_uploader/inspect_textures.py`. No API, no Firestore
 - `kaayko/src/js/services/promo.js` — promo codes (a maker's `?promo=` link, the cart's code field): `GET /promo/{code}`, held under `kaayko.promo`. The store has NO games (all deleted 24 Oct 2026). Kaayko Shipping (`/fly`, `/shipping` on kaayko.com only, unlinked, noindex) is `js/pages/shipping.js` → `js/shipping/{game,board}.js`
 - `kaayko/src/js/storeAccess.js`, `js/secretStore.js` — invite gate (classic)
 - Deleted: `kaayko_apiClient.js`, `kaayko-main.js`, `about-dynamic.js`
