@@ -163,7 +163,7 @@ Every store page loads, in this order: `js/prod-config.js` (the API base, in `<h
 - `kaayko/src/js/kaayko_ui.js` — the grid, ONE browse state (sort · type · search · themes · tags; folded haystack per card, word-prefix search, `?q=`/`?type=`), image modal, the private heart; `js/fitPicker.js` — THE size/fit picker; `js/kaaykoFilterModal.js` — the Refine dialog (theme + tags) driving that same state
 - `kaayko/src/order-status.html` → `js/pages/order-status.js` — `/order/:number?t=…` on both hosts; `order-success.html` → `js/pages/order-success.js` asks `/orders/lookup` for the number
 - `kaayko/src/js/product.js`, `js/animal.js`, `js/store-about.js`, `js/store-satire.js` — PDP renderers and copy
-- `kaayko/src/js/arcade-widget.js` → `arcade/beggathon.js` — the one game (the Beggathon) on PDPs and at the bag; `arcade/reward.js` wraps `storeApi.request()`. `arcade/cabinet.js`, `play.js`, `gameRules.js`, `shipping.js` are the retired machines, unreferenced by any page
+- `kaayko/src/js/services/promo.js` — promo codes (a maker's `?promo=` link, the cart's code field): `GET /promo/{code}`, held under `kaayko.promo`. The store has NO games (all deleted 24 Oct 2026). Kaayko Shipping (`/fly`, `/shipping` on kaayko.com only, unlinked, noindex) is `js/pages/shipping.js` → `js/shipping/{game,board}.js`
 - `kaayko/src/js/storeAccess.js`, `js/secretStore.js` — invite gate (classic)
 - Deleted: `kaayko_apiClient.js`, `kaayko-main.js`, `about-dynamic.js`
 
@@ -176,7 +176,7 @@ POST /products/{id}/vote               → body: { voteChange: 1 | -1 }
 GET  /animals/{slug}                   → { animal, products }
 
 # Checkout (browser origin must be first-party or a Firebase preview channel — config/origins.js)
-POST /createPaymentIntent              → { checkoutSession, rewardCode, arcadeToken, items:[{productId,size,gender,quantity}] }
+POST /createPaymentIntent              → { checkoutSession, promoCode, items:[{productId,size,gender,quantity}] }  (discounts: api/checkout/discounts.js — promo or patron, whichever helps more; 2 orders/month/email)
 POST /createPaymentIntent/tax          → { paymentIntentId, address }
 POST /createPaymentIntent/updateEmail  → { paymentIntentId, email, phone }
 POST /createPaymentIntent/webhook      → Stripe webhook (no auth, raw body)
@@ -187,8 +187,8 @@ POST /orders/lookup                    → { paymentIntentId, clientSecret } →
 POST /admin/orders/refund              → platform admin; { parentOrderId, amountCents?, reason? } through Stripe
 POST /admin/orders/cancel              → platform admin; full refund + every line cancelled, refuses shipped orders
 
-# Arcade
-GET  /arcade/challenge?productId&game  POST /arcade/solve  POST /arcade/beg/start  POST /arcade/beg/solve  GET /arcade/reward/{code}
+# Promo codes
+GET  /promo/{code}                     → { success, kind:'promo', valid, percent, scope:'store'|'cart', storeSlug, label, expired }  (404 NO_PROMO)
 ```
 
 **Checks:** `cd kaayko && npm run check && npm test` (see `package.json`).
