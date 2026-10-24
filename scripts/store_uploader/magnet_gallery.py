@@ -12,7 +12,7 @@ the edge. The art is multiplied into the paper, not pasted, so the disc's shadin
 
   python3 magnet_gallery.py ART.png --name "Hemis" --out DIR
   python3 magnet_gallery.py 'folder/*.transparent.png' --names names.json --out DIR
-  python3 magnet_gallery.py ART.png --shape rect --out DIR      # the 3:2 rectangle (24 Oct 2026)
+  python3 magnet_gallery.py ART.png --shape square --out DIR    # a rounded square (24 Oct 2026); --shape rect is 3:2
 """
 from __future__ import annotations
 import argparse, glob, json, sys
@@ -32,13 +32,14 @@ PARKS = {
     "fishing-cat": "SUNDARBANS", "bengal-florican": "MANAS", "gaur": "PENCH",
     "asiatic-lion": "GIR", "gray-langur": "RANTHAMBORE", "peacock": "KEOLADEO",
     "indian-pitta": "TADOBA", "snow-leopard": "HEMIS", "raccoon": "",
-    # 24 Oct 2026 additions. Each is a place the animal is known for: the Bhimashankar
-    # sanctuary was founded for the giant squirrel; the Chambal holds India's largest
-    # skimmer colonies; Kruger the largest white-rhino herd; Makgadikgadi the zebra
-    # migration. The pangolin has no one place, so it carries no name.
-    "cheetah": "MAASAI MARA", "secretary-bird": "SERENGETI", "white-rhino": "KRUGER",
-    "plains-zebra": "MAKGADIKGADI", "hippo": "OKAVANGO", "indian-pangolin": "",
-    "indian-giant-squirrel": "BHIMASHANKAR", "indian-skimmer": "CHAMBAL",
+    # 24 Oct 2026 additions: the park each render was COMPOSED for (Forge
+    # brand/madhubani/animals.json), so the name on the magnet matches its habitat.
+    "cheetah": "KGALAGADI", "secretary-bird": "TSAVO", "plains-zebra": "ETOSHA",
+    "hippo": "CHOBE", "white-rhino": "KRUGER", "african-elephant": "AMBOSELI",
+    "giraffe": "TARANGIRE", "lion": "SERENGETI", "grey-crowned-crane": "AKAGERA",
+    "african-fish-eagle": "MURCHISON", "chinkara": "GIR", "sarus-crane": "KEOLADEO",
+    "sloth-bear": "BANDHAVGARH", "red-panda": "NAMDAPHA", "indian-pangolin": "TADOBA",
+    "indian-giant-squirrel": "ANAMALAI", "indian-skimmer": "KUTCH",
 }
 
 
@@ -80,10 +81,34 @@ def key_background(im: Image.Image, tol: int = 30) -> Image.Image:
     # "transparent" files are not always transparent: some carry a cream card with a few
     # stray soft pixels, so min(alpha) alone says opaque when it is not. Key the card
     # whenever almost nothing is actually cut out.
-    if (al < 16).mean() > 0.02:
-        return im
+    # Decide by the corners: a cut-out file has transparent corners. A file that is 2%
+    # transparent somewhere but still sits on an opaque card (the gaur) was skipped by
+    # the old whole-image test and plated with its card (24 Oct 2026).
+    h_, w_ = al.shape
+    if max(al[2, 2], al[2, w_ - 3], al[h_ - 3, 2], al[h_ - 3, w_ - 3]) < 16:
+        # Transparent corners — but an opaque card can sit INSIDE a transparent margin
+        # (the gaur). Look at the corners of what is left after trimming; if they are
+        # opaque, key that card the same way.
+        bb = im.split()[-1].point(lambda v: 255 if v >= 16 else 0).getbbox()
+        if not bb:
+            return im
+        inner = im.crop(bb)
+        ia = np.asarray(inner.split()[-1]); ih, iw = ia.shape
+        if min(ia[2, 2], ia[2, iw - 3], ia[ih - 3, 2], ia[ih - 3, iw - 3]) < 200:
+            return im
+        flat = Image.new("RGBA", inner.size); flat.paste(inner.convert("RGB"))
+        keyed = key_background(flat.convert("RGB"), tol)
+        out = Image.new("RGBA", im.size, (0, 0, 0, 0)); out.paste(keyed, bb[:2])
+        return out
     rgb = np.asarray(im.convert("RGB")).astype(np.int16); H, W = rgb.shape[:2]
-    corner = np.median(np.stack([rgb[2, 2], rgb[2, W - 3], rgb[H - 3, 2], rgb[H - 3, W - 3]]), axis=0)
+    # The card's colour is the commonest colour round the border, not the median of the
+    # four corners: a ground band that runs off the bottom (the gaur) put two of four
+    # corners in red, the median landed between white and red, and nothing was keyed.
+    border = np.concatenate([rgb[2, :], rgb[H - 3, :], rgb[:, 2], rgb[:, W - 3]])
+    q = (border // 8).astype(np.int32)
+    keys, counts = np.unique(q[:, 0] * 1024 + q[:, 1] * 32 + q[:, 2], return_counts=True)
+    top = keys[counts.argmax()]
+    corner = np.median(border[(q[:, 0] * 1024 + q[:, 1] * 32 + q[:, 2]) == top], axis=0)
     near = np.abs(rgb - corner).max(axis=2) <= tol
     small = im.convert("RGB").resize((512, int(512 * H / W)), Image.BILINEAR)
     for pt in ((1, 1), (small.width - 2, 1), (1, small.height - 2), (small.width - 2, small.height - 2)):
@@ -247,12 +272,14 @@ RECT_RATIO = 1.5
 RECT_RADIUS = 0.12          # corner radius, in units of s
 
 
-def rect_box(W: int, H: int, portrait: bool):
-    if portrait:
-        h = H * 0.84; w = h / RECT_RATIO
+def rect_box(W: int, H: int, portrait: bool, ratio: float = RECT_RATIO):
+    if ratio == 1.0:                       # the square: the disc's own footprint
+        w = h = min(W, H) * 0.66
+    elif portrait:
+        h = H * 0.84; w = h / ratio
     else:
-        w = W * 0.80; h = w / RECT_RATIO
-        if h > H * 0.80: h = H * 0.80; w = h * RECT_RATIO
+        w = W * 0.80; h = w / ratio
+        if h > H * 0.80: h = H * 0.80; w = h * ratio
     x0, y0 = (W - w) / 2, (H - h) / 2
     return (x0, y0, x0 + w, y0 + h), min(w, h) / 2
 
@@ -293,17 +320,43 @@ def _name_row(layer, mask, name, cx, y, size):
         x += w + track
 
 
-def render_rect(art_path: Path, name: str, geo: dict, scale: float = 1.0, bleed: bool = False) -> Image.Image:
+def ring_clip(im: Image.Image) -> Image.Image:
+    """A medallion's drawing lives inside its ring. The engine sometimes signs the
+    corner outside it (a scrawl under the sloth bear, a spiral by the skimmer); the
+    disc hides that, a square shows it. Keep only the centred circle."""
+    im = im.convert("RGBA")
+    w, h = im.size
+    # The ring's radius, measured: the outermost radius at which the drawing covers most
+    # of the circle. A signature covers a few degrees, so it never qualifies.
+    al = np.asarray(im.split()[-1]) > 40
+    cy, cx = h / 2, w / 2
+    th = np.linspace(0, 2 * np.pi, 360, endpoint=False)
+    ring = None
+    for rr in np.arange(min(w, h) * 0.5, min(w, h) * 0.30, -max(1.0, min(w, h) / 400)):
+        xs = np.clip((cx + rr * np.cos(th)).astype(int), 0, w - 1)
+        ys = np.clip((cy + rr * np.sin(th)).astype(int), 0, h - 1)
+        if al[ys, xs].mean() > 0.6:
+            ring = rr; break
+    r = (ring + min(w, h) * 0.006) if ring else min(w, h) * 0.495
+    m = Image.new("L", im.size, 0)
+    ImageDraw.Draw(m).ellipse([w / 2 - r, h / 2 - r, w / 2 + r, h / 2 + r], fill=255)
+    im.putalpha(ImageChops.multiply(im.split()[-1], m))
+    return im
+
+
+def render_rect(art_path: Path, name: str, geo: dict, scale: float = 1.0, bleed: bool = False, ratio: float = RECT_RATIO, clip_ring: bool = False) -> Image.Image:
     W, H = (int(v * scale) for v in geo["canvas"])
     raw = key_background(Image.open(art_path))
+    if clip_ring:
+        raw = ring_clip(raw)
     a = trim(raw)
     portrait = (not bleed) and a.height > a.width * 1.08
-    box, s = rect_box(W, H, portrait)
+    box, s = rect_box(W, H, portrait, ratio)
     x0, y0, x1, y1 = box
     canvas = rect_plate(W, H, box, s)
     layer = Image.new("RGB", canvas.size, (255, 255, 255))
     mask = Image.new("L", canvas.size, 0)
-    size = int(s * 0.17)
+    size = int(s * 0.115)              # the disc's name is r * 0.092 on a larger face; this reads the same
     name = (name or "").upper()
     if bleed:
         # a scene fills the card edge to edge; the name sits on a chip at the top
@@ -346,7 +399,8 @@ def main():
     ap.add_argument("--bleed", choices=["auto", "on", "off"], default="auto", help="scene renders fill the disc edge to edge (auto: decided per file)")
     ap.add_argument("--medallion", action="store_true", help="renders composed as round medallions: fit the ring inside the rim, name at the bottom")
     ap.add_argument("--diecut", action="store_true", help="the magnet is the artwork's own shape (stamps), not a round disc")
-    ap.add_argument("--shape", choices=["round", "rect"], default="round", help="round disc (default) or a 3:2 rounded rectangle")
+    ap.add_argument("--ring-clip", action="store_true", help="medallion art: drop anything outside the drawn ring (engine signatures) before plating")
+    ap.add_argument("--shape", choices=["round", "square", "rect"], default="round", help="round disc (default), a rounded square, or a 3:2 rounded rectangle")
     a = ap.parse_args()
     out = Path(a.out)
     if out.exists() and any(out.iterdir()):
@@ -372,11 +426,11 @@ def main():
                 name = PARKS.get(hit, "") if hit else ""
                 if hit is None: print(f"  (no park known for {stem})")
             bleed = a.bleed == "on" or (a.bleed == "auto" and is_scene(p))
-            if a.shape == "rect":
-                im = render_rect(p, name, geo, scale, bleed=bleed)
+            if a.shape in ("rect", "square"):
+                im = render_rect(p, name, geo, scale, bleed=bleed, ratio=1.0 if a.shape == "square" else RECT_RATIO, clip_ring=a.ring_clip)
             else:
                 im = render_bleed(p, name, geo, scale, medallion=True) if a.medallion else (render_bleed(p, name, geo, scale) if bleed else render(p, name, geo, scale))
-        dst = out / f"{stem}_{'rect_' if a.shape == 'rect' else ''}magnet.png"; im.save(dst, optimize=True)
+        dst = out / f"{stem}_{'' if a.shape == 'round' else a.shape + '_'}magnet.png"; im.save(dst, optimize=True)
         print(f"  {dst.name}  '{name}'  {im.size}")
     return 0
 
