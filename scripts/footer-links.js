@@ -105,7 +105,6 @@ const PAGES = {
   'store-privacy.html': 'store',
   'legal/terms.html': 'store',
   'legal/returns.html': 'store',
-  'legal/games.html': 'store',
   'legal/shipping.html': 'store',
 };
 
@@ -117,7 +116,7 @@ const LIGHT = new Set([
   'stories.html', 'stories/never-give-up.html', 'testimonials.html',
   'store.html', 'cart.html', 'product.html', 'animal.html',
   'order-status.html', 'store-about.html', 'store-privacy.html',
-  'legal/terms.html', 'legal/returns.html', 'legal/shipping.html', 'legal/games.html',
+  'legal/terms.html', 'legal/returns.html', 'legal/shipping.html',
 ]);
 
 // `self` is the page's own URL path (e.g. '/about'). A link to the page you

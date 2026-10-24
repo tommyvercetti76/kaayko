@@ -2,8 +2,8 @@
  * pages/shipping.js — Kaayko Shipping, the endless delivery game (/shipping, /fly).
  * Moved out of shipping.html on 12 Sep 2026 unchanged apart from the shared esc().
  */
-import { shipping, stageAt, phaseFor, PHASES } from '/js/arcade/shipping.js';
-import { rows, post, clear } from '/js/arcade/board.js';
+import { shipping, stageAt, phaseFor, PHASES } from '/js/shipping/game.js';
+import { rows, post, clear } from '/js/shipping/board.js';
 import { esc } from '/js/kit.js';
 
 const $ = (id) => document.getElementById(id);

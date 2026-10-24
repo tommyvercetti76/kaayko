@@ -12,7 +12,7 @@ import { setProductTypes } from "/js/productTypes.js";
 import { populateCarousel, setupModalCloseHandlers } from "/js/kaayko_ui.js";
 import { storeOriginalProducts } from "/js/kaaykoFilterModal.js";
 import { esc } from "/js/kit.js";
-import { checkCode, savePromo, savedReward } from "/js/arcade/reward.js";
+import { checkPromo, savePromo, savedPromo } from "/js/services/promo.js";
 import { show as showToast } from "/js/components/Toast.js";
 
 void cartManager;
@@ -36,10 +36,10 @@ function renderFailure(message) {
 async function holdPromo(raw) {
   const code = String(raw || "").trim().toUpperCase().slice(0, 32);
   if (!code) return null;
-  const held = savedReward();
-  if (held?.kind === "promo" && held.code === code) return { code, percent: held.percent, label: held.label || null };
-  const res = await checkCode(code);
-  if (!res?.success || res.kind !== "promo" || !res.valid) return null;
+  const held = savedPromo();
+  if (held?.code === code) return { code, percent: held.percent, label: held.label || null };
+  const res = await checkPromo(code);
+  if (!res?.success || !res.valid) return null;
   savePromo({ code, percent: res.percent, scope: res.scope, label: res.label });
   showToast(`${res.percent}% off is held for your bag.`, { kind: "good" });
   return { code, percent: res.percent, label: res.label || null };

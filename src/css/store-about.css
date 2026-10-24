@@ -120,7 +120,6 @@ body.about-v2 {
 .about-make { margin: 0 0 48px; }
 
 .about-make h3,
-.about-game h3,
 .about-collection h3 {
   margin: 0 0 8px;
   font-family: 'Cormorant Garamond', Georgia, serif;
@@ -158,15 +157,8 @@ body.about-v2 {
 }
 
 .make-list a,
-.game-feedback a,
-.col-empty a,
-.game-empty a { color: var(--gold); text-underline-offset: 2px; }
+.col-empty a { color: var(--gold); text-underline-offset: 2px; }
 
-/* ── Wild Guess ──────────────────────────────────────────── */
-
-.about-game { margin: 0 0 48px; }
-
-.game-intro,
 .col-intro {
   margin: 0 0 18px;
   font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
@@ -174,133 +166,6 @@ body.about-v2 {
   color: var(--muted);
 }
 
-.game {
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 24px;
-  background: var(--surface);
-  min-height: 240px;
-}
-
-.game-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
-  font-size: 11px;
-  letter-spacing: .16em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.game-prompt {
-  margin: 18px 0 20px;
-  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.6;
-  color: var(--muted);
-}
-
-.game-prompt strong {
-  display: inline-block;
-  margin-top: 6px;
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-style: italic;
-  font-weight: 600;
-  font-size: clamp(22px, 3.4vw, 32px);
-  line-height: 1.25;
-  color: var(--fg);
-}
-
-.game-options { display: flex; flex-wrap: wrap; gap: 10px; }
-
-.game-option {
-  flex: 1 1 auto;
-  min-height: 46px;
-  padding: 0 18px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface-2);
-  color: var(--fg);
-  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
-  font-size: 14px;
-  cursor: pointer;
-  transition: border-color .15s ease, background-color .15s ease;
-}
-
-.game-option:hover:not(:disabled) { border-color: var(--gold); }
-.game-option:disabled { cursor: default; }
-
-/* Right and wrong carry a border and a fill, never colour alone (1.4.1);
-   the text feedback below states the outcome regardless. */
-.game-option.is-right {
-  border-color: var(--good);
-  background: color-mix(in srgb, var(--good) 16%, transparent);
-  color: var(--fg);
-}
-
-.game-option.is-wrong {
-  border-color: #b3402f;
-  background: color-mix(in srgb, #b3402f 14%, transparent);
-  color: var(--fg);
-  text-decoration: line-through;
-}
-
-.game-feedback {
-  margin: 18px 0 0;
-  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
-  font-size: 15px;
-  color: var(--muted);
-  min-height: 1.4em;
-}
-
-.game-next,
-.game-again {
-  margin-top: 14px;
-  min-height: 44px;
-  padding: 0 22px;
-  border: 0;
-  border-radius: 10px;
-  background: var(--gold);
-  color: var(--bg);
-  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
-  font-size: 12px;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-
-html.dark-theme .game-next,
-html.dark-theme .game-again { color: #0d0f0d; }
-
-.game-done { text-align: center; padding: 22px 0; }
-
-.game-final {
-  margin: 0;
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-weight: 600;
-  font-size: clamp(44px, 8vw, 72px);
-  line-height: 1;
-  color: var(--fg);
-}
-
-.game-verdict {
-  margin: 10px 0 0;
-  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
-  font-size: 16px;
-  color: var(--muted);
-}
-
-.game-empty {
-  margin: 0;
-  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
-  font-size: 15px;
-  color: var(--muted);
-}
-
-.game-option:focus-visible,
-.game-next:focus-visible,
-.game-again:focus-visible,
 .col-item:focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: 2px;
@@ -379,8 +244,6 @@ html.dark-theme .game-again { color: #0d0f0d; }
 
 @media (max-width: 720px) {
   .about-halves { grid-template-columns: 1fr; gap: 18px; }
-  .game-options { flex-direction: column; }
-  .game-option { flex: 1 1 auto; }
 }
 
 

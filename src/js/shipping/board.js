@@ -1,5 +1,5 @@
 /**
- * arcade/board.js — the temporary board for Kaayko Shipping.
+ * shipping/board.js — the temporary board for Kaayko Shipping.
  *
  * Temporary means what it says: the board is stamped with the local date and
  * anything from another day is dropped on read. Nobody's name is sent anywhere;

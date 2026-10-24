@@ -1,5 +1,5 @@
 /**
- * arcade/shipping.js — Kaayko Shipping.
+ * shipping/game.js — Kaayko Shipping.
  *
  * A SEPARATE game from the scored Mail Run on a product page. It shares no code
  * with gameRules.js and posts nothing to a server, on purpose: that game is worth

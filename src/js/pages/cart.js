@@ -8,7 +8,7 @@
  * catalogue (kaayko-api/functions/api/checkout/pricing.js).
  */
 import { cartManager } from '/js/cartManager.js';
-import { savedReward, clearReward, checkCode, minutesLeft, clientToken, savePromo } from '/js/arcade/reward.js';
+import { savedPromo, clearPromo, checkPromo, savePromo } from '/js/services/promo.js';
 import { esc, money } from '/js/kit.js';
 import { createPaymentIntent, calculateTax as requestTax, updateContact } from '/js/services/storeApi.js';
 import { show as showToast } from '/js/components/Toast.js';
@@ -42,10 +42,10 @@ const state = {
   taxState: 'idle',     // 'idle' | 'pending' | 'ok' | 'disabled' | 'error'
   taxKey: null,         // address the current tax figure was computed for
   taxTimer: null,
-  // A reward code won at a machine or at the Beggathon. Held here only so the
+  // A promo code held from a maker's link or typed in. Held here only so the
   // field can be pre-filled; the API re-checks it and decides what it is worth.
-  reward: savedReward(),
-  rewardNote: null      // why the last code was refused, in the shopper's words
+  promo: savedPromo(),
+  promoNote: null       // why the last code was refused, in the shopper's words
 };
 
 /* ── Helpers ─────────────────────────────────────────────────── */
@@ -74,45 +74,33 @@ const metaLine = (item) => {
 
 const validEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
-/* ── Reward codes ────────────────────────────────────────────────
-   Won at the Beggathon — on a product page or below the bag — for up
-   to 10% off everything. (The machines and their 2% codes were retired
-   on 13 Sep 2026; the 'eligible' scope below only outlives them by an
-   hour, which is how long any code lasts.) Every
-   code dies one hour after it is minted, used or not — that is the
-   API's rule and the field below only reports it. The discount
-   itself is computed by the server when the payment intent is
-   created; nothing here takes a cent off on its own.               */
-const REWARD_REFUSALS = {
+/* ── Promo codes ─────────────────────────────────────────────────
+   A code handed out on purpose — a maker's friends' rate. The
+   discount itself is computed by the server when the payment intent
+   is created; nothing here takes a cent off on its own.            */
+const PROMO_REFUSALS = {
   NO_SUCH_CODE:     'No such code.',
-  ALREADY_REDEEMED: 'That code has already been used.',
-  EXPIRED:          'That code has expired. They only last an hour.',
-  WRONG_OWNER:      'That code was won under a different email.',
+  EXPIRED:          'That code has run out.',
   NO_ELIGIBLE_ITEMS:'That code does not cover anything in this bag.',
   PROMO_INACTIVE:   'That code is no longer on offer.',
-  EMPTY_CART:       'Nothing in the bag to discount.',
-  LOCKED:           'No discount applies while you are carrying a paste penalty. Beg it off on any product page.',
-  VOIDED:           'That code was won before you pasted. Pasting cancelled it.'
+  EMPTY_CART:       'Nothing in the bag to discount.'
 };
 
-function rewardFieldMarkup() {
-  const r = state.reward;
-  const left = r ? minutesLeft(r) : 0;
+function promoFieldMarkup() {
+  const r = state.promo;
   return `
-    <div class="co-reward" id="co-reward">
-      <label class="co-field-label" for="co-reward-input">Discount code <span class="co-opt">(optional)</span></label>
-      <div class="co-reward-row">
-        <input class="co-input" id="co-reward-input" type="text" inputmode="text"
-               autocomplete="off" spellcheck="false" placeholder="KAY-XXXXX-XXXXX"
-               value="${esc(r?.code || '')}" aria-describedby="co-reward-note" />
-        <button type="button" class="co-reward-btn" id="co-reward-apply">${r ? 'Remove' : 'Apply'}</button>
+    <div class="co-promo" id="co-promo">
+      <label class="co-field-label" for="co-promo-input">Discount code <span class="co-opt">(optional)</span></label>
+      <div class="co-promo-row">
+        <input class="co-input" id="co-promo-input" type="text" inputmode="text"
+               autocomplete="off" spellcheck="false" placeholder="CODE"
+               value="${esc(r?.code || '')}" aria-describedby="co-promo-note" />
+        <button type="button" class="co-promo-btn" id="co-promo-apply">${r ? 'Remove' : 'Apply'}</button>
       </div>
-      <p class="co-reward-note" id="co-reward-note" role="status" aria-live="polite">${
-        state.rewardNote ? esc(state.rewardNote)
-        : r?.kind === 'promo' ? `${r.percent}% off${r.label ? ` ${esc(r.label)}` : r.scope === 'cart' ? ' the whole bag' : ' the pieces on that shelf'}. Taken off when you pay.`
-        : r ? `${r.percent}% held${r.scope === 'cart' ? ' against the whole bag' : ' against the eligible items'}. ${
-            left > 0 ? `Expires in ${left} minute${left === 1 ? '' : 's'}.` : 'Expired.'}`
-        : 'Won one on a product page? Put it in. Codes last an hour.'
+      <p class="co-promo-note" id="co-promo-note" role="status" aria-live="polite">${
+        state.promoNote ? esc(state.promoNote)
+        : r ? `${r.percent}% off${r.label ? ` ${esc(r.label)}` : r.scope === 'cart' ? ' the whole bag' : ' the pieces on that shelf'}. Taken off when you pay.`
+        : 'Have a code from a maker? Put it in.'
       }</p>
     </div>`;
 }
@@ -157,15 +145,13 @@ function totals(items) {
       tax: server.taxCents || 0,
       discount: server.discountCents || 0,
       discountPercent: server.discountPercent || 0,
-      surcharge: server.surchargeCents || 0,
-      surchargePercent: server.surchargePercent || 0,
       taxKnown,
       total: server.totalCents,
       authoritative: true
     };
   }
   const subtotal = items.reduce((sum, i) => sum + (i.priceCents || 0) * (i.quantity || 1), 0);
-  return { subtotal, tax: 0, discount: 0, discountPercent: 0, surcharge: 0, surchargePercent: 0,
+  return { subtotal, tax: 0, discount: 0, discountPercent: 0,
            taxKnown: false, total: subtotal, authoritative: false };
 }
 
@@ -222,16 +208,12 @@ function render() {
               <span>Discount${t.discountPercent ? ` · ${t.discountPercent}%` : ''}</span>
               <span id="co-discount">&minus;${money(t.discount)}</span>
             </div>
-            <div class="co-money-row is-surcharge" id="co-surcharge-row" ${t.surcharge > 0 ? '' : 'hidden'}>
-              <span>Paste penalty${t.surchargePercent ? ` &middot; ${t.surchargePercent}%` : ''}</span>
-              <span id="co-surcharge">+${money(t.surcharge)}</span>
-            </div>
             <div class="co-money-row"><span>Shipping</span><span>Free</span></div>
             <div class="co-money-row ${t.taxKnown ? '' : 'is-pending'}" id="co-tax-row"><span>Sales tax</span><span id="co-tax">${t.taxKnown ? money(t.tax) : 'Calculated from your address'}</span></div>
             <div class="co-money-row is-total"><span>Total</span><span id="co-total">${money(t.total)}</span></div>
           </div>
 
-          ${rewardFieldMarkup()}
+          ${promoFieldMarkup()}
 
           <div class="co-step ${state.step === 'checkout' ? 'is-open' : ''}" id="co-step">
             <hr class="co-divider" />
@@ -284,7 +266,7 @@ function render() {
     btn.addEventListener('click', () => cartManager.removeItem(btn.dataset.remove));
   });
 
-  wireRewardField();
+  wirePromoField();
 
   const primary = document.getElementById('co-primary');
   const stickyBtn = document.getElementById('co-sticky-btn');
@@ -332,17 +314,17 @@ function itemMarkup(item, index = 0) {
     </article>`;
 }
 
-function wireRewardField() {
-  const input = document.getElementById('co-reward-input');
-  const btn = document.getElementById('co-reward-apply');
-  const note = document.getElementById('co-reward-note');
+function wirePromoField() {
+  const input = document.getElementById('co-promo-input');
+  const btn = document.getElementById('co-promo-apply');
+  const note = document.getElementById('co-promo-note');
   if (!input || !btn) return;
 
   const apply = async () => {
-    if (state.reward) {                       // the button reads Remove
-      clearReward();
-      state.reward = null;
-      state.rewardNote = null;
+    if (state.promo) {                        // the button reads Remove
+      clearPromo();
+      state.promo = null;
+      state.promoNote = null;
       state.pi = null;                        // it was priced with the code
       state.step = 'bag';
       render();
@@ -352,31 +334,15 @@ function wireRewardField() {
     if (!code) return;
     btn.disabled = true;
     note.textContent = 'Checking…';
-    const res = await checkCode(code);
+    const res = await checkPromo(code);
     btn.disabled = false;
 
-    if (!res?.success) { note.textContent = 'No such code.'; return; }
-    if (res.kind === 'promo') {
-      if (!res.valid) { note.textContent = res.expired ? 'That code has run out.' : REWARD_REFUSALS.PROMO_INACTIVE; return; }
-      state.reward = { code, percent: res.percent, scope: res.scope, kind: 'promo', label: res.label || null, expiresAt: null };
-      savePromo(state.reward);
-      state.rewardNote = null; state.pi = null; state.step = 'bag';
-      render();
-      return;
-    }
-    if (res.expired)   { note.textContent = 'That code has expired. They only last an hour.'; return; }
-    if (res.redeemed)  { note.textContent = 'That code has already been used.'; return; }
-    if (res.voided)    { note.textContent = 'That code was won before you pasted. Pasting cancelled it.'; return; }
-    if (res.locked)    { note.textContent = REWARD_REFUSALS.LOCKED; return; }
-
-    state.reward = {
-      code, percent: res.percent, scope: res.scope, game: res.game,
-      expiresAt: Date.now() + (res.minutesLeft || 0) * 60000
-    };
-    try { localStorage.setItem('kaayko.arcade.reward', JSON.stringify(state.reward)); } catch (_) {}
-    state.rewardNote = null;
-    state.pi = null;
-    state.step = 'bag';
+    if (res?.code === 'OFFLINE') { note.textContent = 'We could not check that code. Try again in a moment.'; return; }
+    if (!res?.success) { note.textContent = PROMO_REFUSALS.NO_SUCH_CODE; return; }
+    if (!res.valid) { note.textContent = res.expired ? PROMO_REFUSALS.EXPIRED : PROMO_REFUSALS.PROMO_INACTIVE; return; }
+    state.promo = { code, percent: res.percent, scope: res.scope, label: res.label || null };
+    savePromo(state.promo);
+    state.promoNote = null; state.pi = null; state.step = 'bag';
     render();
   };
 
@@ -416,10 +382,7 @@ async function openCheckout() {
       // One nonce per bag session: retries reuse the same PaymentIntent,
       // and no other shopper can ever derive the same key.
       checkoutSession: checkoutSessionNonce(),
-      rewardCode: state.reward?.code || null,
-      // The arcade token. The server reads its standing: a paste surcharge is
-      // added here, and a code won before a strike stops counting.
-      arcadeToken: clientToken(),
+      promoCode: state.promo?.code || null,
       items: items.map(i => ({
         productId: i.productId,
         size: i.size ?? null,
@@ -450,23 +413,21 @@ async function openCheckout() {
           subtotalCents: data.subtotalCents ?? data.amount,
           totalCents: data.amount,
           discountCents: data.discountCents || 0,
-          discountPercent: data.discountPercent || 0,
-          surchargeCents: data.surchargeCents || 0,
-          surchargePercent: data.surchargePercent || 0
+          discountPercent: data.discountPercent || 0
         }
       : null;
 
     // A code the server would not honour is worth saying out loud once, here,
     // rather than leaving a shopper to wonder where their discount went.
-    if (data.rewardReason) {
-      state.rewardNote = REWARD_REFUSALS[data.rewardReason] || 'That code was not accepted.';
-      if (data.rewardReason !== 'NO_ELIGIBLE_ITEMS' && data.rewardReason !== 'EMPTY_CART') {
-        clearReward();
-        state.reward = null;
+    if (data.promoReason) {
+      state.promoNote = PROMO_REFUSALS[data.promoReason] || 'That code was not accepted.';
+      if (data.promoReason !== 'NO_ELIGIBLE_ITEMS' && data.promoReason !== 'EMPTY_CART') {
+        clearPromo();
+        state.promo = null;
       }
-      toast(state.rewardNote, 'notice');
+      toast(state.promoNote, 'notice');
     } else if (data.discountCents > 0) {
-      state.rewardNote = null;
+      state.promoNote = null;
     }
 
     const before = totals(items).total;
@@ -630,13 +591,6 @@ function updateMoney() {
     dRow.hidden = !(t.discount > 0);
     set('co-discount', `\u2212${money(t.discount)}`);
     dRow.firstElementChild.textContent = t.discountPercent ? `Discount \u00b7 ${t.discountPercent}%` : 'Discount';
-  }
-  const sRow = document.getElementById('co-surcharge-row');
-  if (sRow) {
-    sRow.hidden = !(t.surcharge > 0);
-    set('co-surcharge', `+${money(t.surcharge)}`);
-    sRow.firstElementChild.textContent = t.surchargePercent
-      ? `Paste penalty \u00b7 ${t.surchargePercent}%` : 'Paste penalty';
   }
   if (t.taxKnown) setTaxRow(t.tax > 0 ? money(t.tax) : 'None for this address');
   const label = `Pay ${money(t.total)}`;

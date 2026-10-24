@@ -14,7 +14,7 @@
  *
  * Run: node scripts/check-shipping.js
  */
-import { PHASES, phaseFor, stageAt } from "../src/js/arcade/shipping.js";
+import { PHASES, phaseFor, stageAt } from "../src/js/shipping/game.js";
 
 /* localStorage shim — board.js is browser code and expects one to exist. */
 const mem = new Map();
@@ -23,7 +23,7 @@ globalThis.localStorage = {
   setItem: (k, v) => mem.set(k, String(v)),
   removeItem: (k) => mem.delete(k)
 };
-const { checkName, post, rows, clear } = await import("../src/js/arcade/board.js");
+const { checkName, post, rows, clear } = await import("../src/js/shipping/board.js");
 
 let fails = 0;
 const ok = (cond, what) => {

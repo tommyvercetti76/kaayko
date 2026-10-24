@@ -607,7 +607,8 @@
         "**/alumni*.html",
         "about.html",
         "privacy.html",
-        "**/archive/**"
+        "**/archive/**",
+        "shipping.html"
       ],
       "headers": [
         {
@@ -932,14 +933,6 @@
         {
           "source": "/order/**",
           "destination": "/order-status.html"
-        },
-        {
-          "source": "/shipping",
-          "destination": "/shipping.html"
-        },
-        {
-          "source": "/fly",
-          "destination": "/shipping.html"
         },
         {
           "source": "**",
