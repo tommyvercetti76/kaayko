@@ -62,6 +62,9 @@ function renderProduct(product, openModalFn) {
 
   // Thumbnails are real buttons so keyboard users can reach every image
   // (2.1.1). The button carries the name; the picture inside is decorative.
+  // a mug, magnet or bottle gets its "3D" thumb in the first paint, waiting, so the row
+  // never reflows when the 3D view arrives (it shifted the page 0.06 on a phone)
+  const has3d = INSPECT_TYPES.has(product.productType);
   const thumbs = previews.map((url, i) => `
     <button type="button" class="product-thumb${i === 0 ? ' active' : ''}" data-idx="${i}" aria-label="Show image ${i + 1} of ${previews.length}" aria-pressed="${i === 0}">
       <img src="${esc(url)}" alt="" loading="lazy" />
@@ -81,7 +84,7 @@ function renderProduct(product, openModalFn) {
             <img id="pg-main-img" src="${esc(previews[0])}" alt="${esc(product.title)}" />
           </div>
         </div>
-        ${previews.length > 1 ? `<div class="product-thumbs">${thumbs}</div>` : ""}
+        ${previews.length > 1 || has3d ? `<div class="product-thumbs">${has3d ? THUMB_3D_PENDING : ""}${thumbs}</div>` : ""}
       </div>
 
       <div class="pdp-buy">
@@ -90,7 +93,7 @@ function renderProduct(product, openModalFn) {
         ${copy.hook ? `<p class="pdp-hook">${esc(copy.hook)}</p>` : ""}
         <p class="pdp-price">${esc(price)}</p>
         <div class="pdp-picker" id="pdp-picker"></div>
-        <p class="pdp-reassure">Printed to order · Five pieces to a bag · <a href="/legal/returns">30-day returns</a></p>
+        <p class="pdp-reassure">Printed to order, on its way within 10 business days · Free US shipping · <a href="/legal/returns">30-day returns</a></p>
       </div>
 
       <aside class="pdp-file" data-voice="${esc(copy.voice)}">
@@ -105,7 +108,7 @@ function renderProduct(product, openModalFn) {
   // One place sets the frame: thumbs, a swipe on the picture, and the arrow keys
   // all go through it, so the active thumb can never disagree with the image.
   const mainImg = document.getElementById('pg-main-img');
-  const thumbEls = [...root.querySelectorAll('.product-thumb')];
+  const thumbEls = [...root.querySelectorAll('.product-thumb:not(.product-thumb-3d)')];
   let frame = 0;
   function setFrame(i) {
     const n = previews.length;
@@ -200,11 +203,20 @@ function renderProduct(product, openModalFn) {
    not the index, not three.js — for any other product, and if WebGL is missing the
    thumb never appears. The magnet's Round / Square choice turns the stage's shape. */
 const INSPECT_TYPES = new Set(['mug', 'magnet', 'bottle']);
+const THUMB_3D_PENDING = '<button type="button" class="product-thumb product-thumb-3d is-pending" aria-pressed="false" disabled aria-label="3D view loading"><span aria-hidden="true">3D</span></button>';
 
 function mountInspectFrame(product, root, thumbEls) {
   if (!INSPECT_TYPES.has(product.productType)) return null;
   const stage = root.querySelector('.pdp-stage');
-  let layer = null, view = null, thumb = null;
+  let layer = null, view = null;
+  const thumb = root.querySelector('.product-thumb-3d');
+  // no 3D after all (not in the index, or no WebGL): the waiting thumb goes, and with a
+  // single photograph the row it held open goes too
+  const drop = () => {
+    const row = thumb?.parentElement;
+    thumb?.remove();
+    if (row && row.querySelectorAll('.product-thumb').length <= 1) row.remove();
+  };
 
   const pickedShape = () => {
     const v = root.querySelector('#pdp-picker .fitp-sizes [aria-checked="true"]')?.dataset.value || '';
@@ -231,7 +243,7 @@ function mountInspectFrame(product, root, thumbEls) {
       const res = await fetch('/js/inspect/index.json');
       entry = res.ok ? (await res.json())[product.id] : null;
     } catch (_) { entry = null; }
-    if (!entry) return;
+    if (!entry) { drop(); return; }
     const { mountInspect } = await import('/js/inspect/inspect3d.js');
 
     layer = document.createElement('div');
@@ -243,24 +255,13 @@ function mountInspectFrame(product, root, thumbEls) {
       kind: entry.kind, wrap: entry.wrap, faces: { round: entry.round, square: entry.square },
       shape: pickedShape(), title: product.title,
     });
-    if (!view) { layer.remove(); layer = null; return; }   // no WebGL: photographs only
+    if (!view) { layer.remove(); layer = null; drop(); return; }   // no WebGL: photographs only
     layer.addEventListener('pointerdown', () => layer.classList.add('was-held'), { once: true });
 
-    thumb = document.createElement('button');
-    thumb.type = 'button';
-    thumb.className = 'product-thumb product-thumb-3d';
-    thumb.setAttribute('aria-pressed', 'false');
+    thumb.disabled = false;
+    thumb.classList.remove('is-pending');
     thumb.setAttribute('aria-label', `Hold and turn the ${entry.kind} in 3D`);
-    thumb.innerHTML = '<span aria-hidden="true">3D</span>';
     thumb.addEventListener('click', show);
-    let row = root.querySelector('.product-thumbs');
-    if (!row) {                                   // one photo: the row did not exist
-      row = document.createElement('div');
-      row.className = 'product-thumbs';
-      root.querySelector('.pdp-gallery').appendChild(row);
-      thumbEls.length || row.appendChild(photoThumb());
-    }
-    row.prepend(thumb);
     show();
 
     if (entry.kind === 'magnet') {
@@ -268,19 +269,7 @@ function mountInspectFrame(product, root, thumbEls) {
       new MutationObserver(() => view.setShape(pickedShape()))
         .observe(picker, { subtree: true, attributes: true, attributeFilter: ['aria-checked'] });
     }
-  })().catch((err) => console.warn('3D view unavailable:', err));
-
-  // with a single photograph there are no thumbs to go back by; give it one
-  function photoThumb() {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'product-thumb';
-    b.setAttribute('aria-label', 'Show the photograph');
-    b.innerHTML = `<img src="${esc(root.querySelector('#pg-main-img').src)}" alt="" />`;
-    b.addEventListener('click', () => { hide(); b.classList.add('active'); });
-    thumbEls.push(b);
-    return b;
-  }
+  })().catch((err) => { console.warn('3D view unavailable:', err); drop(); });
 
   return { hide };
 }

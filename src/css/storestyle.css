@@ -1405,7 +1405,11 @@ html.dark-theme .store-v2 .footer-elements {
 16) Store controls polish (scoped)
 ---------------------------------------------------------- */
 .store-v2 .header {
-  background: linear-gradient(180deg, rgba(10, 11, 9, 0.96), rgba(10, 11, 9, 0.82));
+  /* frosted, not see-through: at 82% with no blur the grid's photos and titles read
+     straight through the brand as the page scrolls under it (audit, 24 Oct 2026) */
+  background: linear-gradient(180deg, rgba(10, 11, 9, 0.97), rgba(10, 11, 9, 0.9));
+  -webkit-backdrop-filter: blur(16px) saturate(1.15);
+  backdrop-filter: blur(16px) saturate(1.15);
   border: none;
   border-bottom: 1px solid rgba(181, 147, 90, 0.18);
   border-radius: 0;

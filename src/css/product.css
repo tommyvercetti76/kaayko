@@ -169,6 +169,7 @@ body.product-v2 {
 }
 .product-v2 .pdp-inspect.was-held .pdp-inspect-hint { opacity: 0; }
 
+.product-v2 .product-thumb-3d.is-pending { opacity: .4; cursor: default; }
 .product-v2 .product-thumb-3d {
   display: grid;
   place-items: center;
@@ -255,6 +256,14 @@ body.product-v2 {
 
 .product-v2 .pdp-reassure a { color: var(--gold); text-underline-offset: 2px; }
 
+/* links inside the dark "What inspired this piece" panel were the browser's default
+   blue on near-black (the India Post line on every stamp bottle) */
+.product-v2 .pdp-story a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
+
+/* "← All products" was a 13px-tall target on a phone: pad it to a thumb's size
+   without moving the type */
+.product-v2 .animal-breadcrumb a { display: inline-block; padding: 14px 10px 14px 0; margin: -14px 0; }
+
 /* ── The file ────────────────────────────────────────────── */
 
 /* Inverted on purpose: a dossier should read as a different document from the
@@ -302,7 +311,7 @@ body.product-v2 {
 
 .product-v2 .pdp-row dt {
   font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: .16em;
   text-transform: uppercase;
   color: rgba(212, 182, 132, 0.86);

@@ -194,34 +194,32 @@ export function getPriceValue(item) {
 }
 
 /**
- * Default browse order: featured products lead, then everything else is dealt round-robin across
- * product types. Without this the grid still reads as blocks — six bottles, then eleven totes —
- * because items of a type share a creation date. Shoppers should meet the range, not a filing
- * cabinet with the dividers removed.
+ * Default browse order: products are dealt round-robin across product types from the
+ * very first card, featured ones first within their own type. Without the deal the grid
+ * reads as blocks — six bottles, then eleven totes — because items of a type share a
+ * creation date. Shoppers should meet the range, not a filing cabinet with the
+ * dividers removed.
+ *
+ * History: all ten bottles were featured, so "Featured & mixed" opened on ten bottles;
+ * capped at four leading (24 Oct 2026), it still opened on four near-identical bottle
+ * photographs. Now featured decides the order WITHIN a type, and the lane holding the
+ * most featured pieces is dealt first, so the first row is a bottle, a mug, a magnet, a
+ * tee — the range at a glance.
  */
-// At most this many featured products lead. All ten bottles were featured, so
-// "Featured & mixed" opened on ten bottles in a row (24 Oct 2026); the rest of the
-// featured now go first in their own type's lane and are dealt with the others.
-const FEATURED_LEAD = 4;
-
 function buildMixedOrder(items) {
   const rank = new Map();
-  const featured = items.filter(i => i.featured === true);
-  const lead = featured.slice(0, FEATURED_LEAD);
-  const rest = [...featured.slice(FEATURED_LEAD), ...items.filter(i => i.featured !== true)];
-
-  let n = 0;
-  for (const item of lead) rank.set(item, n++);
-
   const queues = new Map();
-  for (const item of rest) {
+  // items arrive featured-first, then newest (populateCarousel), so each lane keeps that order
+  for (const item of items) {
     const key = (item.productType || "other").toLowerCase();
     if (!queues.has(key)) queues.set(key, []);
     queues.get(key).push(item);
   }
-  // Largest groups first so the deal stays even as smaller queues run dry.
-  const lanes = [...queues.values()].sort((a, b) => b.length - a.length);
-  for (let i = 0; lanes.some(q => q.length); i++) {
+  const featured = (q) => q.filter((i) => i.featured === true).length;
+  // the most featured lane first, then the largest, so the deal stays even as small queues run dry
+  const lanes = [...queues.values()].sort((a, b) => (featured(b) - featured(a)) || (b.length - a.length));
+  let n = 0;
+  while (lanes.some((q) => q.length)) {
     for (const lane of lanes) {
       const next = lane.shift();
       if (next) rank.set(next, n++);

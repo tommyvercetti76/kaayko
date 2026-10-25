@@ -32,6 +32,7 @@
 }
 
 .fitp-guide-toggle {
+  position: relative;
   background: none;
   border: 0;
   padding: 0;
@@ -42,6 +43,9 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+/* an 11px-tall link is a hard thumb target; a 44px invisible hit area keeps the type */
+.fitp-guide-toggle::before { content: ""; position: absolute; left: -8px; right: -8px; top: 50%; height: 44px; transform: translateY(-50%); }
 
 .fitp-opts {
   display: flex;
@@ -154,6 +158,9 @@
 }
 
 html.dark-theme .fitp-confirm { color: #0d0f0d; }
+/* in a phone's two-up grid card the label "Add to bag · $24.99" wrapped onto two
+   lines; a tighter setting keeps it on one */
+.fitp-slot .fitp-confirm { padding: 0 10px; font-size: 12px; letter-spacing: .07em; white-space: nowrap; }
 .fitp-confirm:hover { opacity: .88; }
 .fitp-confirm:disabled { opacity: .5; cursor: not-allowed; }
 

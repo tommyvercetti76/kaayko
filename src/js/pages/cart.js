@@ -178,7 +178,7 @@ function render() {
   if (items.length === 0) {
     root.innerHTML = `
       <div class="co-empty">
-        <h2>Your bag is empty</h2>
+        <h1>Your bag is empty</h1>
         <p>Nothing here yet. Have a look at what is in the shop.</p>
         <a href="store"><span class="material-icons" style="font-size:18px">arrow_back</span> Back to store</a>
       </div>`;

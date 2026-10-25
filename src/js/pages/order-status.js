@@ -27,7 +27,7 @@ const day = (iso) => iso ? new Date(iso).toLocaleDateString('en-US', { month: 's
 function notFound() {
   panel.innerHTML = `
     <div class="os-state">
-      <h2>No order by that link.</h2>
+      <h1>No order by that link.</h1>
       <p>Open the link from your receipt email again, or reply to the receipt and we will look it up by hand.</p>
       <p><a href="/store">Back to the store</a></p>
     </div>`;
@@ -117,6 +117,6 @@ export function render(order) {   // exported so the page can be exercised with 
   } catch (err) {
     if (err && err.status === 404) return notFound();
     console.error('order status failed:', err);
-    panel.innerHTML = `<div class="os-state"><h2>The store is not answering.</h2><p>Try again in a moment, or reply to your receipt.</p></div>`;
+    panel.innerHTML = `<div class="os-state"><h1>The store is not answering.</h1><p>Try again in a moment, or reply to your receipt.</p></div>`;
   }
 })();

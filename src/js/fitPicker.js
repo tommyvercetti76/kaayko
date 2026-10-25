@@ -188,6 +188,19 @@ export function bagCapReached(product) {
 }
 
 /**
+ * The photo of what was chosen, at preview size: a magnet's photos are one per shape
+ * in the order of its sizes (Round, Square), so a Square magnet shows square in the
+ * bag — it showed the round one until 24 Oct 2026. The server freezes the same choice
+ * onto the order (pricing.imageForChoice). The bag drew a 3600px original as a 70px
+ * thumbnail; the preview is what it needs.
+ */
+function photoFor(product, size) {
+  const sizes = Array.isArray(product?.availableSizes) ? product.availableSizes : [];
+  const i = String(product?.productType || "").toLowerCase() === "magnet" && sizes.length > 1 ? Math.max(0, sizes.indexOf(size)) : 0;
+  return product?.previewSrc?.[i] || product?.imgSrc?.[i] || product?.previewSrc?.[0] || product?.imgSrc?.[0] || "";
+}
+
+/**
  * Put a product in the bag with an explicit selection. The single write path —
  * every surface goes through here so the toast, the remembered fit and the
  * bag cap can never drift apart.
@@ -199,13 +212,14 @@ export function addToBag(product, { size, gender } = {}) {
   if (isSoldOut(product)) return false;
   if (bagCapReached(product)) return false;
 
+  const chosen = size || stockedSizes(product)[0] || "One Size";
   const ok = cm.addItem({
     productId: product.id,
     title: product.title,
     subtitle: product.description,
     priceCents: priceCents(product),
-    imgSrc: product.imgSrc,
-    size: size || stockedSizes(product)[0] || "One Size",
+    imgSrc: photoFor(product, chosen),
+    size: chosen,
     gender: gender || null
   });
 
