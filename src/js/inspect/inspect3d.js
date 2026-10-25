@@ -12,6 +12,10 @@
  *     2026): it tilts in the light up to MAG_YAW / MAG_PITCH, the last stretch of that
  *     against a rubber band, and springs back to face you; a tap rocks it toward the
  *     finger;
+ *   - a bottle is round too: it spins freely so the stamp can be read all the way round;
+ *   - turning winds you in: the further the finger travels in one hold, the closer the
+ *     camera comes to the printed design (up to ZOOM_MAX), and letting go eases it back
+ *     out to the whole object (Rohan, 24 Oct 2026);
  *   - holding still lifts it a little.
  * On a phone a near-vertical swipe still scrolls the page (a page whose picture can
  * never be scrolled past is a trap); anything wider than SCROLL_RATIO takes the object,
@@ -24,6 +28,7 @@
  *
  *   const stage = await mountInspect(el, { kind: 'mug', wrap: url, title });
  *   const stage = await mountInspect(el, { kind: 'magnet', faces: {round, square}, shape: 'round', title });
+ *   const stage = await mountInspect(el, { kind: 'bottle', wrap: url, title });
  *   stage.setShape('square'); stage.destroy();
  */
 import * as THREE from '/js/vendor/three/three.module.min.js';
@@ -37,6 +42,8 @@ const MUG_PITCH = 34;         // how far a mug tips toward / away from you
 const MAG_YAW = 50;           // how far a magnet tilts side to side — never far enough to show its back
 const MAG_PITCH = 40;         // and up and down
 const SCROLL_RATIO = 0.7;     // a touch drag with |dx| < 0.7·|dy| (within ~35° of vertical) is the page scrolling
+const WIND = 140;             // degrees of finger travel that take the zoom ~63% of the way in
+const ZOOM_MAX = { mug: 1.8, bottle: 2.3, magnet: 1.5 };
 const D2R = Math.PI / 180;
 
 /* ── the studio ────────────────────────────────────────────────────────────────
@@ -155,13 +162,51 @@ function buildMagnet(face, shape) {
   return { pivot, size: 92, materials: [edgeMat, frontMat, backMat], disposables: [edge, front, back, bt] };
 }
 
+/* ── the bottle: a 20 oz steel bottle, white powder coat, a stamp wrapped round it ──
+   Measured off the product photographs (24 Oct 2026): height 4.34 diameters to the top
+   of the cap, a milk-bottle shoulder, a brushed steel cap 0.67 diameters across, and
+   the print band centred 47% of the way up. Those photographs are generated mockups
+   and disagree with each other by ~20%, so what is certain decides the print: it is the
+   stamp scan itself, never stretched. A landscape stamp at its own proportions goes
+   once round (the mockups all show it continuing round the back); a portrait one is a
+   panel at the band's full height. */
+function buildBottle(stamp) {
+  const R = 35, C = 2 * Math.PI * R;
+  const group = new THREE.Group();
+  const coat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.42, clearcoat: 0.35, clearcoatRoughness: 0.3 });
+  const steel = new THREE.MeshPhysicalMaterial({ color: 0xeeeeec, metalness: 1, roughness: 0.17, envMapIntensity: 1.4 });
+  // the powder-coated body, turned on a lathe: rounded foot, straight wall, shoulder, neck
+  const prof = [new THREE.Vector2(0.01, 0), new THREE.Vector2(R - 5, 0), new THREE.Vector2(R - 1.6, 0.9), new THREE.Vector2(R - 0.3, 2.6), new THREE.Vector2(R, 4.5), new THREE.Vector2(R, 233)];
+  for (let i = 1; i <= 16; i++) {
+    const t = (i / 16) * Math.PI / 2;
+    prof.push(new THREE.Vector2(R - (R - 21) * (1 - Math.cos(t)), 233 + 50 * Math.sin(t)));
+  }
+  prof.push(new THREE.Vector2(21, 286), new THREE.Vector2(0.01, 286));
+  const body = new THREE.LatheGeometry(prof, 192);
+  // the cap: brushed steel, a little wider than the neck, its top edge rounded
+  const capP = [new THREE.Vector2(0.01, 304), new THREE.Vector2(22, 304), new THREE.Vector2(23.3, 303.2), new THREE.Vector2(23.6, 301.5),
+    new THREE.Vector2(23.6, 286.5), new THREE.Vector2(23, 285), new THREE.Vector2(21.2, 284.6)];
+  const cap = new THREE.LatheGeometry(capP, 128);
+  // the stamp: its own proportions; the band no taller than the straight wall allows
+  const aspect = stamp.image.width / stamp.image.height;
+  const h = Math.min(C / aspect, 168);
+  const f = Math.min(1, (h * aspect) / C);              // how far round it goes
+  const wall = new THREE.CylinderGeometry(R + 0.12, R + 0.12, h, 192, 1, true, -Math.PI * f, 2 * Math.PI * f);
+  const printed = coat.clone(); printed.map = stamp;   // the stamp already sits on the coat's white
+  const band = new THREE.Mesh(wall, printed); band.position.y = 143.75;
+  group.add(new THREE.Mesh(body, coat), new THREE.Mesh(cap, steel), band);
+  group.position.y = -152;                          // turn about the bottle's middle
+  const pivot = new THREE.Group(); pivot.add(group);
+  return { pivot, size: 318, focusY: 143.75 - 152, materials: [coat, steel, printed], disposables: [body, cap, wall] };
+}
+
 /* ── the stage ──────────────────────────────────────────────────────────────── */
 export async function mountInspect(host, opts) {
   const kind = opts.kind;
   const canvas = document.createElement('canvas');
   canvas.className = 'insp-canvas';
   canvas.setAttribute('role', 'img');
-  canvas.setAttribute('aria-label', `${opts.title || 'The piece'} in 3D. Drag to ${kind === 'magnet' ? 'tilt it in the light' : 'turn it'}; the arrow keys do it too.`);
+  canvas.setAttribute('aria-label', `${opts.title || 'The piece'} in 3D. Drag to ${kind === 'magnet' ? 'tilt it in the light' : 'turn it'}; turning draws you in to the design. The arrow keys turn it too.`);
   canvas.tabIndex = 0;
   host.appendChild(canvas);
 
@@ -185,6 +230,7 @@ export async function mountInspect(host, opts) {
   async function build() {
     if (obj) { scene.remove(obj.pivot); obj.disposables.forEach((x) => x.dispose()); obj.materials.forEach((m) => m.dispose()); }
     if (kind === 'mug') obj = buildMug(await loadTexture(opts.wrap));
+    else if (kind === 'bottle') obj = buildBottle(await loadTexture(opts.wrap));
     else {
       faces[shape] = faces[shape] || await loadTexture(opts.faces[shape]);
       obj = buildMagnet(faces[shape], shape);
@@ -193,39 +239,58 @@ export async function mountInspect(host, opts) {
     fit();
   }
 
-  // a soft contact shadow under a mug, so it stands on something
+  // a soft contact shadow under a mug or a bottle, so it stands on something
   let floor = null;
-  if (kind === 'mug') {
+  if (kind === 'mug' || kind === 'bottle') {
     const c = document.createElement('canvas'); c.width = c.height = 256;
     const g = c.getContext('2d'); const r = g.createRadialGradient(128, 128, 10, 128, 128, 128);
     r.addColorStop(0, 'rgba(0,0,0,0.42)'); r.addColorStop(0.55, 'rgba(0,0,0,0.16)'); r.addColorStop(1, 'rgba(0,0,0,0)');
     g.fillStyle = r; g.fillRect(0, 0, 256, 256);
     const ft = new THREE.CanvasTexture(c);
-    floor = new THREE.Mesh(new THREE.PlaneGeometry(150, 150), new THREE.MeshBasicMaterial({ map: ft, transparent: true, depthWrite: false }));
-    floor.rotation.x = -Math.PI / 2; floor.position.y = -47.6; scene.add(floor);
+    const span = kind === 'mug' ? 150 : 130;
+    floor = new THREE.Mesh(new THREE.PlaneGeometry(span, span), new THREE.MeshBasicMaterial({ map: ft, transparent: true, depthWrite: false }));
+    floor.rotation.x = -Math.PI / 2; floor.position.y = kind === 'mug' ? -47.6 : -152.4; scene.add(floor);
   }
 
   // camera: a little above, telephoto, framed to the host
-  const restPitch = kind === 'mug' ? 0 : 0;
+  const restPitch = 0;
+  const round = kind !== 'magnet';                   // mugs and bottles spin freely
+  const basePos = new THREE.Vector3(), baseLook = new THREE.Vector3(), focus = new THREE.Vector3(), look = new THREE.Vector3();
   function fit() {
     const w = host.clientWidth || 400, hgt = host.clientHeight || w;
     renderer.setSize(w, hgt, false);
     camera.aspect = w / hgt;
-    const dist = (obj ? obj.size : 120) / 2 / Math.tan((camera.fov * D2R) / 2) / Math.min(1, camera.aspect) * 1.12;
-    const lift = kind === 'mug' ? 0.32 : 0.0;
-    camera.position.set(0, dist * lift, dist);
-    camera.lookAt(0, kind === 'mug' ? -3 : 0, 0);
+    // the bottle is tall: fit its height; the others fit whichever side is tighter
+    const dist = (obj ? obj.size : 120) / 2 / Math.tan((camera.fov * D2R) / 2) / (kind === 'bottle' ? 1 : Math.min(1, camera.aspect)) * 1.12;
+    const lift = kind === 'mug' ? 0.32 : kind === 'bottle' ? 0.12 : 0.0;
+    basePos.set(0, dist * lift, dist);
+    baseLook.set(0, kind === 'mug' ? -3 : 0, 0);
+    focus.set(0, obj?.focusY ?? 0, 0);              // where the winding-in aims: the print
     camera.updateProjectionMatrix();
+    place();
     wake();
+  }
+  // the camera at the current zoom: closer by 1/zoom, aimed from the whole object toward
+  // the print, and levelling off as it comes in — from above, a close mug shows you its
+  // inside, not its design
+  const offset = new THREE.Vector3();
+  function place() {
+    const k = (zoom - 1) / Math.max(0.001, zMax - 1);
+    look.copy(baseLook).lerp(focus, k);
+    offset.copy(basePos).sub(baseLook); offset.y *= 1 - 0.85 * k;
+    camera.position.copy(offset).multiplyScalar(1 / zoom).add(look);
+    camera.lookAt(look);
   }
 
   /* motion: yaw (unbounded) and pitch (bounded), each on its own spring */
   const yaw = { a: kind === 'mug' ? -18 : 0, t: kind === 'mug' ? -18 : 0, v: { v: 0 } };
+  const zMax = ZOOM_MAX[kind] || 1.5;
+  let zoom = 1; const zoomV = { v: 0 };
   const pitch = { a: restPitch, t: restPitch, v: { v: 0 } };
   const lean = { x: 0, y: 0 };
-  const grab = { on: false, lifted: false, id: null, x: 0, y: 0, t: 0, wx: 0, wy: 0, ry: 0, rp: 0, sx: 0, sy: 0, moved: 0, timer: 0 };
-  const maxPitch = kind === 'mug' ? MUG_PITCH : MAG_PITCH;
-  const maxYaw = kind === 'mug' ? Infinity : MAG_YAW;
+  const grab = { on: false, lifted: false, id: null, x: 0, y: 0, t: 0, wx: 0, wy: 0, ry: 0, rp: 0, sx: 0, sy: 0, moved: 0, timer: 0, wind: 0 };
+  const maxPitch = round ? MUG_PITCH : MAG_PITCH;
+  const maxYaw = round ? Infinity : MAG_YAW;
   // the rubber band: the finger's raw angle maps onto lim·tanh(raw/lim) — free near the
   // middle, stiffer toward the limit, never past it
   const band = (raw, lim) => (lim === Infinity ? raw : lim * Math.tanh(raw / lim));
@@ -243,6 +308,9 @@ export async function mountInspect(host, opts) {
       }
     }
     lift = smoothDamp(lift, grab.on ? 1 : 0, liftV, 0.14, dt);
+    const zoomTo = grab.on ? 1 + (zMax - 1) * (1 - Math.exp(-grab.wind / WIND)) : 1;
+    zoom = smoothDamp(zoom, zoomTo, zoomV, grab.on ? 0.3 : 0.55, dt);
+    place();
     if (obj) {
       // 'XYZ': spin about the object's own axis first, then tip about the SCREEN's
       // horizontal, so a tip always comes toward you whichever way it has been spun
@@ -253,7 +321,8 @@ export async function mountInspect(host, opts) {
     if (floor) floor.material.opacity = 1 - 0.35 * lift;
     renderer.render(scene, camera);
     const moving = grab.on || Math.abs(yaw.a - (yaw.t + lean.x)) > 0.02 || Math.abs(pitch.a - (pitch.t + lean.y)) > 0.02
-      || Math.abs(yaw.v.v) > 0.05 || Math.abs(pitch.v.v) > 0.05 || Math.abs(lift - (grab.on ? 1 : 0)) > 0.002;
+      || Math.abs(yaw.v.v) > 0.05 || Math.abs(pitch.v.v) > 0.05 || Math.abs(lift - (grab.on ? 1 : 0)) > 0.002
+      || Math.abs(zoom - zoomTo) > 0.002 || Math.abs(zoomV.v) > 0.002;
     if (moving) raf = requestAnimationFrame(draw);
     else last = 0;
   }
@@ -262,7 +331,7 @@ export async function mountInspect(host, opts) {
   /* the hand */
   function take(e) {
     grab.on = true; grab.id = e.pointerId; grab.x = e.clientX; grab.y = e.clientY; grab.t = performance.now();
-    grab.wx = grab.wy = 0;
+    grab.wx = grab.wy = 0; grab.wind = 0;
     grab.ry = unband(yaw.a, maxYaw); grab.rp = unband(pitch.a, maxPitch);
     yaw.t = yaw.a; pitch.t = pitch.a; yaw.v.v = pitch.v.v = 0; lean.x = lean.y = 0;
     try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
@@ -292,6 +361,7 @@ export async function mountInspect(host, opts) {
     // both axes follow the finger, on a phone as under a mouse (Rohan, 24 Oct 2026: a
     // phone turned it in one plane only)
     grab.ry += dx * GAIN; grab.rp += dy * GAIN;
+    grab.wind += Math.hypot(dx, dy) * GAIN;          // the winding: total travel, any direction
     yaw.a = band(grab.ry, maxYaw); yaw.t = yaw.a;
     pitch.a = band(grab.rp, maxPitch); pitch.t = pitch.a;
     const a = 0.35;
@@ -340,7 +410,7 @@ export async function mountInspect(host, opts) {
   function touchmove(e) { if (grab.on) e.preventDefault(); }
   function onKey(e) {
     const step = { ArrowLeft: -30, ArrowRight: 30 }[e.key];
-    if (step && kind === 'mug') { e.preventDefault(); yaw.t += step; wake(); }
+    if (step && round) { e.preventDefault(); yaw.t += step; wake(); }
     if (step && kind === 'magnet') { e.preventDefault(); yaw.t = clamp(step, maxYaw); wake(); setTimeout(() => { yaw.t = 0; wake(); }, 900); }
     if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); pitch.t = clamp(pitch.t + (e.key === 'ArrowUp' ? -12 : 12), maxPitch); wake(); setTimeout(() => { pitch.t = restPitch; wake(); }, 900); }
   }

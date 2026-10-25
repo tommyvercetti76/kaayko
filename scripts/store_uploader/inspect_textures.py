@@ -6,6 +6,9 @@ models (js/inspect/inspect3d.js), written to src/assets/inspect/.
   magnet  <productId>.round.<hash>.webp, <productId>.square.<hash>.webp — the printed face alone, from
           magnet_gallery.badge_face (the same code that drew the product photographs),
           on the magnet's paper, transparent outside its outline.
+  bottle  <docId>.bottle.<hash>.webp — the stamp scan the bottle carries, on the bottle's white,
+          its perforated edge drawn as the faint line the product photographs show. Wrapped
+          by inspect3d.js at its own proportions (never stretched).
   mug     <productId>.wrap.<hash>.webp — the mug's whole outer wall unrolled: circumference
           across, height down (82 mm x 95 mm, so 2.71:1). The print sits where it sits in
           the photographs: centred on the front, 0.92 rad either side, in the band from
@@ -79,6 +82,24 @@ DESIGNS = {
 # sloth-bear from portfolio_v4_hd1280_seed9700, cheetah from
 # portfolio_v5_african_fix_hd1280_seed13200.
 
+# Bottles: Firestore doc id -> the stamp scan printed on it (24 Oct 2026; paired by eye
+# against each bottle's photographs). Batch one's art is ~/Bottles/*stamp_x4.png (the
+# README in Forge/generated/kaayko_bottles calls these the source artwork); batch two's
+# is ~/Desktop/Kaayko_Stamps_v2.
+BOT = Path("/Users/Rohan/Bottles"); ST2 = Path("/Users/Rohan/Desktop/Kaayko_Stamps_v2")
+BOTTLES = {
+    "2GlQkjNqJH1NyOIUmQ0J": BOT / "Poststamp_x4.png",            # India Postage
+    "BeL1gqbF5Y6kWWJWeHFc": BOT / "AerialPoststamp_x4.png",      # First Aerial Post (portrait: a panel)
+    "RWVJFJK0Q6tGeLawtRuY": BOT / "Evreststamp_x4.png",          # Conquest of Everest (the purple 2 As)
+    "Z1vamuFaTPvjkWHFJhle": BOT / "Tiger2stamp_x4.png",          # Bengal Tiger (the walking tiger, 50 nP)
+    "kGg8Q8df5bbcN8tLFx6Z": BOT / "Tigerstamp_x4.png",           # Tiger Conservation (IUCN, 1969)
+    "mydE423HVE2f3rrpxcM6": BOT / "IndianRailwaysstamp_x4.png",  # Indian Railways
+    "QKF9TpsYM6bCl8De4M9n": ST2 / "BlueMagpie_HD.png",           # Blue Magpie
+    "5tAMxZe9eHJmwIjp9nJL": ST2 / "k2_HD.png",                   # K2
+    "L0ZawQe4EOrDrk3EvG16": ST2 / "RiverDolphin.png",            # River Dolphin
+    "yzCMEUlvYkoAdDInOgEE": ST2 / "Woodpecker_HD.png",           # Woodpecker
+}
+
 # a design whose park is not the one its art file was composed for
 NAME_OVERRIDE = {"Kuno_Cheetah": "KUNO"}
 
@@ -121,6 +142,22 @@ def mug_wrap(art: Path, name: str, medallion: bool, width: int = 4096) -> Image.
     return wrap
 
 
+def bottle_wrap(stamp: Path, width: int = 2048) -> Image.Image:
+    """The stamp on white, its perforated outline a faint line, at its own proportions."""
+    from PIL import ImageFilter
+    s = Image.open(stamp).convert("RGBA")
+    s = s.resize((width, round(width * s.height / s.width)), Image.LANCZOS)
+    al = s.split()[-1]
+    edge = al.filter(ImageFilter.MaxFilter(5)).point(lambda v: 255 if v > 128 else 0)
+    inner = al.filter(ImageFilter.MinFilter(3)).point(lambda v: 255 if v > 128 else 0)
+    from PIL import ImageChops
+    line = ImageChops.subtract(edge, inner).filter(ImageFilter.GaussianBlur(0.8))
+    out = Image.new("RGB", s.size, (255, 255, 255))
+    out.paste(Image.new("RGB", s.size, (214, 211, 205)), (0, 0), line.point(lambda v: int(v * 0.55)))
+    out.paste(s.convert("RGB"), (0, 0), al)
+    return out
+
+
 def save(img: Image.Image, stem: str, quality: int) -> str:
     """Write <stem>.<sha1[:10]>.webp and return its site path."""
     buf = io.BytesIO(); img.save(buf, "WEBP", quality=quality, method=6)
@@ -146,9 +183,14 @@ def main() -> int:
                 entry[shape] = save(magnet_face(art, name, shape, medallion), f"{mid}.{shape}", 90)
             index[mid] = entry
         print("  ", up, name or "(no park)")
+    for doc, stamp in BOTTLES.items():
+        if not stamp.exists():
+            print("missing stamp", stamp); return 1
+        index[doc] = {"kind": "bottle", "wrap": save(bottle_wrap(stamp), f"{doc}.bottle", 90)}
+        print("  ", doc, stamp.name)
     INDEX.write_text(json.dumps(index, indent=1, sort_keys=True) + "\n")
     keep = {Path(u).name for e in index.values() for k, u in e.items() if k != "kind"}
-    for old in OUT.glob("kaayko_*.webp"):
+    for old in OUT.glob("*.webp"):
         if old.name not in keep: old.unlink()
     (OUT / "index.json").unlink(missing_ok=True)
     print(len(index), "products,", len(keep), "textures ->", OUT, "; index ->", INDEX)

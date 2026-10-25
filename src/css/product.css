@@ -178,6 +178,25 @@ body.product-v2 {
   color: var(--fg);
 }
 
+/* ── You may also like (js/product.js mountSuggestions) ──────────
+   The store's own cards on the store's staggered wall; eight on a wide screen, six
+   on a tablet, four on a phone, so it is a glance, not a second store. */
+.product-v2 .pdp-suggest {
+  margin: 8px 0 72px;
+  padding-top: 32px;
+  border-top: 1px solid var(--line);
+}
+.product-v2 .pdp-suggest-head {
+  margin: 0 0 22px;
+  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+@media (max-width: 1199px) { .product-v2 .pdp-suggest .carousel-item:nth-child(n + 7) { display: none; } }
+@media (max-width: 639px)  { .product-v2 .pdp-suggest .carousel-item:nth-child(n + 5) { display: none; } }
+
 /* ── Buy block ───────────────────────────────────────────── */
 
 .product-v2 .pdp-buy {

@@ -117,6 +117,20 @@ export function populateCarousel(items) {
 }
 
 /**
+ * A short wall of the store's own cards — the heart, the bag button, the fit picker,
+ * the staggered tile shapes — for "You may also like" under a product page (24 Oct
+ * 2026). Same cards as the store, so nothing about them can drift apart.
+ */
+export function mountProductGrid(container, items) {
+  const grid = document.createElement("div");
+  grid.className = "carousel-section-items store-grid";
+  items.forEach((item, i) => grid.appendChild(decorateCard(item, i)));
+  container.appendChild(grid);
+  stagger(grid);
+  return grid;
+}
+
+/**
  * One quiet line under the grid naming the types that are on their way and what they
  * will cost (registry rows with status "coming_soon"). Nothing to click and nothing to
  * join: the brand does not collect emails. Flipping the row to "live" on the server and

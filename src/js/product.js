@@ -2,7 +2,7 @@
  * THE product page — every type, one layout. (/animals/<slug> forwards here.)
  *
  * Three things live here and nowhere else on this route:
- *   - the gallery (main image + thumbs, click to zoom), and for a mug or a magnet a
+ *   - the gallery (main image + thumbs, click to zoom), and for a mug, a magnet or a bottle a
  *     3D frame you can hold and turn over (js/inspect/inspect3d.js)
  *   - the buy block, which mounts the shared fit picker from /js/fitPicker.js
  *     directly beside the product rather than in a modal over it
@@ -16,10 +16,12 @@
 import { priceText } from "/js/priceMap.js";
 import { createFitPicker, needsPicker, addDirect, isSoldOut } from "/js/fitPicker.js";
 import { satireFor } from "/js/store-satire.js";
-import { getProduct, friendlyMessage } from "/js/services/storeApi.js";
+import { getProduct, getCatalogue, friendlyMessage } from "/js/services/storeApi.js";
 import { cartManager } from "/js/cartManager.js";
 import { esc } from "/js/kit.js";
 import { labelForType } from "/js/productTypes.js";
+import { pickSuggestions } from "/js/suggest.js";
+import { mountProductGrid } from "/js/kaayko_ui.js";
 
 /** A web address in already-escaped story text becomes a link; it used to print as
  *  a bare URL (the India Post line on every stamp piece). Trailing punctuation stays text. */
@@ -192,12 +194,12 @@ function renderProduct(product, openModalFn) {
 }
 
 /* ── 3D ───────────────────────────────────────────────────────
-   A mug or a magnet with textures in /js/inspect/index.json gets a frame you can
+   A mug, a magnet or a bottle with textures in /js/inspect/index.json gets a frame you can
    hold: a "3D" thumb first in the row, and a layer over the photo frame (a sibling,
    so the photo's own zoom and swipe never see the stage's drags). Nothing loads —
    not the index, not three.js — for any other product, and if WebGL is missing the
    thumb never appears. The magnet's Round / Square choice turns the stage's shape. */
-const INSPECT_TYPES = new Set(['mug', 'magnet']);
+const INSPECT_TYPES = new Set(['mug', 'magnet', 'bottle']);
 
 function mountInspectFrame(product, root, thumbEls) {
   if (!INSPECT_TYPES.has(product.productType)) return null;
@@ -283,12 +285,32 @@ function mountInspectFrame(product, root, thumbEls) {
   return { hide };
 }
 
+/* ── You may also like ───────────────────────────────────────
+   Under every product: the same animal in its other forms, then the same part of the
+   world (or theme), then the same kind of thing (js/suggest.js), drawn with the store's
+   own cards. Loaded after the product, so it never holds the page up; if the catalogue
+   cannot be reached the section simply does not appear. */
+async function mountSuggestions(product, root) {
+  let items;
+  try { items = (await getCatalogue({ timeoutMs: 10000 })).products; } catch (_) { return; }
+  const picks = pickSuggestions(product, items, 8);
+  if (!picks.length) return;
+  const section = document.createElement('section');
+  section.className = 'pdp-suggest';
+  section.setAttribute('aria-labelledby', 'pdp-suggest-head');
+  section.innerHTML = '<h2 class="pdp-suggest-head" id="pdp-suggest-head">You may also like</h2>';
+  root.appendChild(section);
+  mountProductGrid(section, picks);
+}
+
 export async function productPageInit(productID, { openModal }) {
   const root = document.getElementById('product-root');
   if (!root || !productID) return renderError(root, "Product not found");
 
   try {
-    renderProduct(await getProduct(productID), openModal);
+    const product = await getProduct(productID);
+    renderProduct(product, openModal);
+    mountSuggestions(product, root);
   } catch (err) {
     if (err?.status === 404) return renderError(root, "Product not found");
     console.error('product fetch failed:', err);
