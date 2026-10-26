@@ -1,11 +1,15 @@
 /**
- * pages/cart.js — the bag and the checkout (/cart).
+ * pages/cart.js — the bag and the checkout (/cart), on one screen.
  *
  * Moved out of cart.html on 12 Sep 2026. Money is integer cents end to end: the
  * bag stores priceCents, the server answers in cents, and money() is the only
  * place a figure becomes a string. The Stripe publishable key comes from
  * prod-config.js; prices are never sent — the server re-derives them from the
  * catalogue (kaayko-api/functions/api/checkout/pricing.js).
+ *
+ * One screen since 25 Oct 2026: the bag, contact, delivery and payment are all
+ * here from the start. It used to be a bag screen whose "Continue" re-drew a
+ * near-identical page with the payment form in it.
  */
 import { cartManager } from '/js/cartManager.js';
 import { savedPromo, clearPromo, checkPromo, savePromo } from '/js/services/promo.js';
@@ -15,38 +19,41 @@ import { show as showToast } from '/js/components/Toast.js';
 
 const STRIPE_KEY = window.KAAYKO_STRIPE_PK;
 
-/* ── Checkout state ──────────────────────────────────────────────
-   The payment intent is created ONCE, when the shopper actively
-   continues to checkout — not on every render. The old page called
-   initPayment() from renderCart(), which was itself wired to a
-   cart subscription and a debounced resize handler, so a stray
-   window resize minted a fresh Stripe PaymentIntent and a
-   Firestore document.                                             */
 // Must say the same thing as /legal/shipping — that page is the promise,
 // this is the reminder.
 const SHIP_TIME = 'Made to order · on its way within 10 business days';
 
+/* ── Checkout state ──────────────────────────────────────────────
+   The payment intent is made ONCE per bag: when the page opens with
+   something in it, and again only when the bag or the code changes.
+   (The old page minted one on every render, which a window resize
+   triggered.) A reload of the same bag gets the same intent back:
+   the server keys it on this tab's checkout nonce plus the bag.     */
 const state = {
-  step: 'bag',          // 'bag' | 'checkout'
   pi: null,             // { clientSecret, paymentIntentId, totals }
   elements: null,
   stripe: null,
+  parts: {},            // the mounted Stripe elements, to focus what is missing
   creating: false,
+  prepError: null,      // why the intent could not be made, in the shopper's words
   cartSig: null,        // cart signature the current intent was priced for
   addressComplete: false,
   paymentComplete: false,
   emailValid: false,
+  paying: false,
   email: '',            // from the Link email field (Stripe's, so not readable from the DOM)
+  address: null,        // the last address typed: carried into a re-made form
   // Sales tax is computed server-side once the shipping address is
-  // complete. Pay stays disabled until it is known — a shopper must never
-  // be charged an un-taxed total while tax is nominally on.
+  // complete. Pay waits until it is known — a shopper must never be
+  // charged an un-taxed total while tax is nominally on.
   taxState: 'idle',     // 'idle' | 'pending' | 'ok' | 'disabled' | 'error'
   taxKey: null,         // address the current tax figure was computed for
   taxTimer: null,
   // A promo code held from a maker's link or typed in. Held here only so the
   // field can be pre-filled; the API re-checks it and decides what it is worth.
   promo: savedPromo(),
-  promoNote: null       // why the last code was refused, in the shopper's words
+  promoNote: null,      // why the last code was refused, in the shopper's words
+  promoOpen: false      // the code field is behind a link until it is wanted
 };
 
 /* ── Helpers ─────────────────────────────────────────────────── */
@@ -76,6 +83,21 @@ const metaLine = (item) => {
 
 const validEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
+// One nonce per bag: retries and reloads of the same bag reuse one
+// PaymentIntent, and no other shopper can ever derive the same key.
+const NONCE = 'kaayko_checkout_session';
+function checkoutSessionNonce() {
+  try {
+    let n = sessionStorage.getItem(NONCE);
+    if (!n) {
+      n = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+        : 'cs-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12);
+      sessionStorage.setItem(NONCE, n);
+    }
+    return n;
+  } catch (e) { return ''; }   // no storage: server issues a fresh intent per call
+}
+
 /* ── Promo codes ─────────────────────────────────────────────────
    A code handed out on purpose — a maker's friends' rate. The
    discount itself is computed by the server when the payment intent
@@ -91,9 +113,14 @@ const PROMO_REFUSALS = {
 
 function promoFieldMarkup() {
   const r = state.promo;
+  if (!r && !state.promoOpen && !state.promoNote) {
+    return `<div class="co-promo" id="co-promo">
+      <button type="button" class="co-promo-toggle" id="co-promo-toggle" aria-expanded="false">Have a discount code?</button>
+    </div>`;
+  }
   return `
     <div class="co-promo" id="co-promo">
-      <label class="co-field-label" for="co-promo-input">Discount code <span class="co-opt">(optional)</span></label>
+      <label class="co-field-label" for="co-promo-input">Discount code</label>
       <div class="co-promo-row">
         <input class="co-input" id="co-promo-input" type="text" inputmode="text"
                autocomplete="off" spellcheck="false" placeholder="CODE"
@@ -104,7 +131,7 @@ function promoFieldMarkup() {
         state.promoNote ? esc(state.promoNote)
         : r && r.scope === 'cart' ? `${r.percent}% off the whole bag — already in your total.`
         : r ? `${r.percent}% off${r.label ? ` ${esc(r.label)}` : ' the pieces on that shelf'}. Taken off when you pay.`
-        : 'Have a code? Put it in.'
+        : ''
       }</p>
     </div>`;
 }
@@ -166,7 +193,10 @@ function totals(items) {
            taxKnown: false, total: subtotal - discount, authoritative: false };
 }
 
-/* ── Render ──────────────────────────────────────────────────── */
+/* ── Render ──────────────────────────────────────────────────────
+   Drawn once per bag. A cart notification that changes nothing (another
+   tab, a badge refresh) only updates figures: re-drawing would tear the
+   Stripe fields out from under a shopper who is typing in them.      */
 
 function render() {
   const root = document.getElementById('co-content');
@@ -183,36 +213,51 @@ function render() {
         <a href="store"><span class="material-icons" style="font-size:18px">arrow_back</span> Back to store</a>
       </div>`;
     sticky.classList.remove('is-active');
-    state.step = 'bag';
-    state.pi = null;
+    watchPay(null);
+    dropIntent();
     return;
   }
 
-  // The bag changed underneath an intent priced for a different
-  // bag — drop back to review so a correctly priced one is made.
-  if (state.pi && state.cartSig !== signature(items)) {
-    state.pi = null;
-    state.elements = null;
-    state.step = 'bag';
+  const sig = signature(items);
+  if (state.pi && state.cartSig === sig && document.getElementById('co-payment-element')) {
+    updateMoney();
+    return;
   }
+  // The bag changed underneath an intent priced for a different bag: price it again.
+  if (state.pi && state.cartSig !== sig) dropIntent();
 
   const t = totals(items);
 
   root.innerHTML = `
     <div class="co-masthead">
-      <h1>Your bag</h1>
-      <p>${items.length} ${items.length === 1 ? 'piece' : 'pieces'}, chosen well.</p>
+      <h1>Checkout</h1>
+      <p>${items.length} ${items.length === 1 ? 'piece' : 'pieces'} · Free US shipping · 30-day returns</p>
     </div>
     <div class="co-layout">
-      <section class="co-bag">
-        <h2 class="co-label">Items</h2>
-        ${items.map(itemMarkup).join('')}
-        <p class="co-bag-note">A bag holds up to five pieces. ${SHIP_TIME}. Free US shipping, and 30 days to change your mind.</p>
+      <section class="co-details" aria-label="Your details">
+        <h2 class="co-label">Contact</h2>
+        <!-- Stripe's Link email field: it labels and checks itself, the payment
+             form's "save my info" box reuses it instead of asking again, and a
+             returning Link shopper gets address + card filled. -->
+        <div class="co-field" id="co-email-element"></div>
+
+        <h2 class="co-label">Delivery</h2>
+        <div id="co-address-element"></div>
+
+        <h2 class="co-label">Payment</h2>
+        <div id="co-payment-element">
+          <div class="co-skeleton"><i></i><i></i><i></i></div>
+        </div>
       </section>
 
       <aside class="co-aside">
-        <div class="co-card">
-          <h2 class="co-label">Summary</h2>
+        <section class="co-bag" aria-labelledby="co-bag-head">
+          <h2 class="co-label" id="co-bag-head">Your bag</h2>
+          ${items.map(itemMarkup).join('')}
+          <p class="co-bag-note">${SHIP_TIME}.</p>
+        </section>
+
+        <div class="co-card co-summary">
           <div class="co-money">
             <div class="co-money-row"><span>Subtotal</span><span id="co-subtotal">${money(t.subtotal)}</span></div>
             <div class="co-money-row is-discount" id="co-discount-row" ${t.discount > 0 ? '' : 'hidden'}>
@@ -220,52 +265,18 @@ function render() {
               <span id="co-discount">&minus;${money(t.discount)}</span>
             </div>
             <div class="co-money-row"><span>Shipping</span><span>Free</span></div>
-            <div class="co-money-row ${t.taxKnown ? '' : 'is-pending'}" id="co-tax-row"><span>Sales tax</span><span id="co-tax">${t.taxKnown ? money(t.tax) : 'Calculated from your address'}</span></div>
+            <div class="co-money-row ${t.taxKnown ? '' : 'is-pending'}" id="co-tax-row"><span>Sales tax</span><span id="co-tax">${t.taxKnown ? money(t.tax) : 'From your address'}</span></div>
             <div class="co-money-row is-total"><span>Total</span><span id="co-total">${money(t.total)}</span></div>
           </div>
 
           ${promoFieldMarkup()}
 
-          <div class="co-step ${state.step === 'checkout' ? 'is-open' : ''}" id="co-step">
-            <hr class="co-divider" />
-            <h2 class="co-label">Contact</h2>
-            <div class="co-fieldset">
-              <!-- Stripe's Link email field: it labels and checks itself, the
-                   payment form's "save my info" box reuses it instead of asking
-                   again, and a returning Link shopper gets address + card filled. -->
-              <div class="co-field" id="co-email-element"></div>
-              <div class="co-field">
-                <label class="co-field-label" for="co-phone">Phone <span class="co-opt">(optional)</span></label>
-                <input class="co-input" type="tel" id="co-phone" autocomplete="tel"
-                       placeholder="+1 (555) 123-4567" />
-              </div>
-            </div>
-
-            <p class="co-legal" style="text-align:left;margin:0 0 4px">Your address and contact details are used to ship this order and are kept only as long as our <a href="/store/privacy">Privacy Policy</a> says.</p>
-
-            <hr class="co-divider" />
-            <h2 class="co-label">Shipping &amp; payment</h2>
-            <div id="co-address-element"></div>
-            <div id="co-payment-element">
-              <div class="co-skeleton"><i></i><i></i><i></i></div>
-              <p class="co-loading-note">Preparing secure payment…</p>
-            </div>
-          </div>
-
-          <button id="co-primary" class="co-btn" ${state.step === 'checkout' ? 'aria-describedby="co-ready-hint"' : ''}>
-            ${state.step === 'checkout' ? `Pay ${money(t.total)}` : `Continue · ${money(t.total)}`}
-          </button>
-          ${state.step === 'checkout' ? `
-          <p class="co-ready-hint" id="co-ready-hint" aria-live="polite">Enter your email, shipping address and card details to pay.</p>
-          <p class="co-legal">By placing this order you agree to our
-            <a href="/legal/terms">Terms of Sale</a>,
-            <a href="/legal/returns">Returns Policy</a> and
-            <a href="/legal/shipping">Shipping Policy</a>.</p>` : ''}
-          <p class="co-reassure">
-            ${state.step === 'checkout'
-              ? 'Payments are handled by Stripe. Card details never touch Kaayko servers.'
-              : `${SHIP_TIME} · Free US shipping · 30-day returns`}
-          </p>
+          <button id="co-primary" class="co-btn" type="button" aria-describedby="co-ready-hint">Pay ${money(t.total)}</button>
+          <p class="co-ready-hint" id="co-ready-hint" aria-live="polite"></p>
+          <p class="co-legal"><span class="material-icons" aria-hidden="true">lock</span> Paid securely through Stripe; card details never reach Kaayko.
+            By paying you agree to our <a href="/legal/terms">Terms of Sale</a>, <a href="/legal/returns">Returns</a> and
+            <a href="/legal/shipping">Shipping</a> policies. Your address is used to ship this order and kept only as our
+            <a href="/store/privacy">Privacy Policy</a> says.</p>
         </div>
       </aside>
     </div>`;
@@ -273,34 +284,33 @@ function render() {
   root.querySelectorAll('[data-remove]').forEach(btn => {
     btn.addEventListener('click', () => cartManager.removeItem(btn.dataset.remove));
   });
-
   wirePromoField();
 
   const primary = document.getElementById('co-primary');
   const stickyBtn = document.getElementById('co-sticky-btn');
+  stickyBtn.textContent = `Pay ${money(t.total)}`;
+  primary.addEventListener('click', pay);
+  stickyBtn.onclick = pay;
+  watchPay(primary);
 
-  sticky.classList.add('is-active');
-  stickyBtn.textContent = state.step === 'checkout' ? `Pay ${money(t.total)}` : `Continue · ${money(t.total)}`;
-  const stickyMeta = document.getElementById('co-sticky-meta');
-  if (stickyMeta) stickyMeta.innerHTML = state.step === 'checkout'
-    ? 'By paying you agree to our <a href="/legal/terms">Terms</a>, <a href="/legal/returns">Returns</a> and <a href="/legal/shipping">Shipping</a> policies.'
-    : 'Free US shipping · 30-day returns';
+  if (state.pi) mountStripe();
+  else if (state.prepError) showPrepFailure();
+  else prepare();
+  refreshReady();
+}
 
-  if (state.step === 'bag') {
-    primary.disabled = false;
-    stickyBtn.disabled = false;
-    primary.addEventListener('click', openCheckout);
-    stickyBtn.onclick = openCheckout;
-  } else {
-    primary.disabled = true;
-    stickyBtn.disabled = true;
-    primary.addEventListener('click', submitPayment);
-    stickyBtn.onclick = () => {
-      document.getElementById('co-payment-element')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      submitPayment();
-    };
-    mountStripe();
-  }
+/* The bar at the foot of a phone carries Pay only until the real button is on
+   screen. It used to stay put, so at the end of the page the site footer sat
+   between the order and the button that pays for it. */
+let payWatch = null;
+function watchPay(button) {
+  if (payWatch) { payWatch.disconnect(); payWatch = null; }
+  const sticky = document.getElementById('co-sticky');
+  if (!button || !('IntersectionObserver' in window)) return;
+  payWatch = new IntersectionObserver(([e]) => {
+    sticky.classList.toggle('is-active', !e.isIntersecting && e.boundingClientRect.top > 0);
+  });
+  payWatch.observe(button);
 }
 
 function itemMarkup(item, index = 0) {
@@ -312,7 +322,7 @@ function itemMarkup(item, index = 0) {
            onerror="this.classList.add('is-broken')" />
       <div class="co-item-body">
         <h3 class="co-item-title">${esc(item.title)}</h3>
-        <p class="co-item-meta">${meta}${meta ? '<br>' : ''}Quantity ${qty}</p>
+        <p class="co-item-meta">${meta}${meta && qty > 1 ? ' · ' : ''}${qty > 1 ? `Quantity ${qty}` : ''}</p>
       </div>
       <div class="co-item-side">
         <span class="co-item-price">${money((item.priceCents || 0) * qty)}</span>
@@ -323,6 +333,15 @@ function itemMarkup(item, index = 0) {
 }
 
 function wirePromoField() {
+  const toggle = document.getElementById('co-promo-toggle');
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      state.promoOpen = true;
+      redrawPromo();
+      document.getElementById('co-promo-input')?.focus();
+    });
+    return;
+  }
   const input = document.getElementById('co-promo-input');
   const btn = document.getElementById('co-promo-apply');
   const note = document.getElementById('co-promo-note');
@@ -333,8 +352,7 @@ function wirePromoField() {
       clearPromo();
       state.promo = null;
       state.promoNote = null;
-      state.pi = null;                        // it was priced with the code
-      state.step = 'bag';
+      dropIntent();                           // it was priced with the code
       render();
       return;
     }
@@ -350,7 +368,8 @@ function wirePromoField() {
     if (!res.valid) { note.textContent = res.expired ? PROMO_REFUSALS.EXPIRED : PROMO_REFUSALS.PROMO_INACTIVE; return; }
     state.promo = { code, percent: res.percent, scope: res.scope, label: res.label || null };
     savePromo(state.promo);
-    state.promoNote = null; state.pi = null; state.step = 'bag';
+    state.promoNote = null;
+    dropIntent();
     render();
   };
 
@@ -358,39 +377,46 @@ function wirePromoField() {
   input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); apply(); } });
 }
 
-/* ── Step 2: create the intent, then mount Stripe ─────────────── */
+function redrawPromo() {
+  const block = document.getElementById('co-promo');
+  if (!block) return;
+  block.outerHTML = promoFieldMarkup();
+  wirePromoField();
+}
 
-async function openCheckout() {
+/* ── The intent ─────────────────────────────────────────────────
+   A new bag or a new code gets a new intent, under a new nonce: the
+   server's idempotency key is nonce + bag, and Stripe refuses a key
+   reused with a different amount — which a code applied after the
+   intent existed used to hit.                                       */
+function dropIntent() {
+  try { sessionStorage.removeItem(NONCE); } catch (e) {}
+  state.pi = null;
+  state.elements = null;
+  state.parts = {};
+  state.cartSig = null;
+  state.prepError = null;
+  state.addressComplete = state.paymentComplete = false;
+  state.taxState = 'idle';
+  state.taxKey = null;
+}
+
+async function prepare() {
   if (state.creating) return;
   const items = cartManager.getItems();
   if (!items.length) return;
+  const sig = signature(items);
+  const code = state.promo?.code || null;
 
   state.creating = true;
-  const primary = document.getElementById('co-primary');
-  const stickyBtn = document.getElementById('co-sticky-btn');
-  if (primary) { primary.disabled = true; primary.textContent = 'Preparing…'; }
-  if (stickyBtn) { stickyBtn.disabled = true; stickyBtn.textContent = 'Preparing…'; }
-
+  let again = false;
   try {
     // Only identifiers and quantities are sent. Prices are resolved
     // server-side from the product catalogue — the client does not
     // get a say in what it is charged.
-    function checkoutSessionNonce() {
-      try {
-        let n = sessionStorage.getItem('kaayko_checkout_session');
-        if (!n) {
-          n = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
-            : 'cs-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12);
-          sessionStorage.setItem('kaayko_checkout_session', n);
-        }
-        return n;
-      } catch (e) { return ''; }   // no storage: server issues a fresh intent per call
-    }
     const res = await createPaymentIntent({
-      // One nonce per bag session: retries reuse the same PaymentIntent,
-      // and no other shopper can ever derive the same key.
       checkoutSession: checkoutSessionNonce(),
-      promoCode: state.promo?.code || null,
+      promoCode: code,
       items: items.map(i => ({
         productId: i.productId,
         size: i.size ?? null,
@@ -398,6 +424,14 @@ async function openCheckout() {
         quantity: i.quantity || 1
       }))
     });
+
+    // The bag or the code changed while we waited: that answer prices
+    // something nobody is buying any more. Ask again for what is there.
+    if (signature(cartManager.getItems()) !== sig || (state.promo?.code || null) !== code) {
+      dropIntent();             // that nonce has an intent now; the next one needs its own
+      again = true;
+      return;
+    }
 
     const data = res.data || {};
     if (!res.ok || !data.clientSecret) {
@@ -434,16 +468,13 @@ async function openCheckout() {
         state.promo = null;
       }
       toast(state.promoNote, 'notice');
+      redrawPromo();
     } else if (data.discountCents > 0) {
       state.promoNote = null;
     }
 
     const before = totals(items);
-    state.pi = {
-      clientSecret: data.clientSecret,
-      paymentIntentId: data.paymentIntentId,
-      totals: priced
-    };
+    state.pi = { clientSecret: data.clientSecret, paymentIntentId: data.paymentIntentId, totals: priced };
     const after = totals(items);
 
     // Both subtotals come from the same catalogue, so a mismatch means a price
@@ -456,20 +487,34 @@ async function openCheckout() {
     } else if (priced && after.total > before.total) {
       toast(`Your discount came to ${money(after.discount)} — your total is ${money(after.total)}.`, 'notice');
     }
-    state.cartSig = signature(items);
-    state.step = 'checkout';
-    state.addressComplete = state.paymentComplete = state.emailValid = false;
-    state.taxState = 'idle'; state.taxKey = null;
-    render();
-    document.getElementById('co-step')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    state.cartSig = sig;
+    updateMoney();
+    mountStripe();
   } catch (err) {
     console.error('checkout init failed:', err);
-    toast(err.message || 'Could not start checkout. Please try again.');
-    state.step = 'bag';
-    render();
+    state.prepError = err.message || 'Could not start checkout. Please try again.';
+    showPrepFailure();
   } finally {
     state.creating = false;
+    refreshReady();
+    if (again) render();
   }
+}
+
+function showPrepFailure() {
+  const host = document.getElementById('co-payment-element');
+  if (!host) return;
+  host.innerHTML = `
+    <div class="co-failure">
+      <span class="material-icons">error_outline</span>
+      <p>${esc(state.prepError || 'We could not load the payment form.')}</p>
+      <button type="button" id="co-retry">Try again</button>
+    </div>`;
+  document.getElementById('co-retry').addEventListener('click', () => {
+    state.prepError = null;
+    host.innerHTML = '<div class="co-skeleton"><i></i><i></i><i></i></div>';
+    prepare();
+  });
 }
 
 function mountStripe() {
@@ -477,13 +522,15 @@ function mountStripe() {
 
   const host = document.getElementById('co-payment-element');
   const addressHost = document.getElementById('co-address-element');
+  const emailHost = document.getElementById('co-email-element');
+  if (!host || !addressHost || !emailHost) return;
 
   try {
     const dark = document.documentElement.classList.contains('dark-theme');
     const css = getComputedStyle(document.body);
     const token = (name, fallback) => (css.getPropertyValue(name).trim() || fallback);
 
-    state.stripe = Stripe(STRIPE_KEY);
+    state.stripe = state.stripe || Stripe(STRIPE_KEY);
     state.elements = state.stripe.elements({
       clientSecret: state.pi.clientSecret,
       appearance: {
@@ -512,36 +559,44 @@ function mountStripe() {
       fields: { billingDetails: { address: 'auto' } }
     });
 
+    // The phone rides with the address it belongs to, optional, instead of a
+    // field of its own; a re-made form (new bag, new code) keeps what was typed.
+    const kept = state.address;
     const addressElement = state.elements.create('address', {
       mode: 'shipping',
-      allowedCountries: ['US']
+      allowedCountries: ['US'],
+      fields: { phone: 'always' },
+      validation: { phone: { required: 'never' } },
+      ...(kept ? { defaultValues: { name: kept.name, phone: kept.phone, address: kept.address } } : {})
     });
     const paymentElement = state.elements.create('payment');
+    // The email field is Stripe's Link one. Our own input used to sit here, and
+    // Link's "save my info" box then asked for the same email again (24 Oct 2026).
+    const linkAuth = state.elements.create('linkAuthentication',
+      state.email ? { defaultValues: { email: state.email } } : {});
 
     host.innerHTML = '';
+    linkAuth.mount(emailHost);
     addressElement.mount(addressHost);
     paymentElement.mount(host);
+    state.parts = { email: linkAuth, address: addressElement, payment: paymentElement };
 
     addressElement.on('change', (e) => {
       state.addressComplete = e.complete;
+      if (e.value) state.address = e.value;
       if (e.complete && e.value && e.value.address) scheduleTax(e.value.address);
       else if (state.taxState !== 'disabled') { state.taxState = 'idle'; setTaxRow(null); }
       refreshReady();
     });
     paymentElement.on('change', (e) => { state.paymentComplete = e.complete; refreshReady(); });
-
-    // The email field is Stripe's Link one. Our own input used to sit here, and
-    // Link's "save my info" box then asked for the same email again (24 Oct 2026).
-    const linkAuth = state.elements.create('linkAuthentication');
-    linkAuth.mount(document.getElementById('co-email-element'));
     linkAuth.on('change', (e) => {
       state.email = (e.value && e.value.email || '').trim();
       state.emailValid = !!e.complete && validEmail(state.email);
       refreshReady();
     });
-    linkAuth.on('ready', () => { try { linkAuth.focus(); } catch (_) {} });
   } catch (err) {
     console.error('stripe mount failed:', err);
+    state.elements = null;
     host.innerHTML = `
       <div class="co-failure">
         <span class="material-icons">error_outline</span>
@@ -551,27 +606,54 @@ function mountStripe() {
   }
 }
 
-function refreshReady() {
-  const taxSettled = state.taxState === 'ok' || state.taxState === 'disabled';
-  const ready = state.addressComplete && state.paymentComplete && state.emailValid && taxSettled;
-  const primary = document.getElementById('co-primary');
-  const stickyBtn = document.getElementById('co-sticky-btn');
-  if (primary) primary.disabled = !ready;
-  if (stickyBtn) stickyBtn.disabled = !ready;
+/* ── Ready, and what is still missing ────────────────────────────
+   Pay never greys out. A grey button says "no" without saying why;
+   pressed early it marks Stripe's own fields and takes the shopper to
+   the first thing left to fill in.                                   */
+function missing() {
+  const m = [];
+  if (!state.emailValid) m.push('email');
+  if (!state.addressComplete) m.push('address');
+  if (!state.paymentComplete) m.push('payment');
+  return m;
+}
+const taxSettled = () => state.taxState === 'ok' || state.taxState === 'disabled';
+const isReady = () => !!state.elements && !missing().length && taxSettled();
 
-  // Say what is still missing, in words, where a screen reader hears it.
-  const hint = document.getElementById('co-ready-hint');
-  if (hint) {
-    const missing = [];
-    if (!state.emailValid) missing.push('your email');
-    if (!state.addressComplete) missing.push('a shipping address');
-    if (!state.paymentComplete) missing.push('card details');
-    let text = '';
-    if (missing.length) text = `Enter ${missing.join(', ').replace(/, ([^,]*)$/, ' and $1')} to pay.`;
-    else if (state.taxState === 'pending') text = 'Calculating sales tax…';
-    else if (state.taxState === 'error') text = 'Sales tax could not be calculated for that address.';
-    hint.textContent = text;
+function refreshReady() {
+  const ready = isReady();
+  for (const b of [document.getElementById('co-primary'), document.getElementById('co-sticky-btn')]) {
+    if (!b) continue;
+    b.classList.toggle('is-waiting', !ready);
+    b.disabled = state.paying;
   }
+
+  const hint = document.getElementById('co-ready-hint');
+  if (!hint) return;
+  const words = { email: 'your email', address: 'a delivery address', payment: 'card details' };
+  const m = missing().map(k => words[k]);
+  let text = '';
+  if (!state.elements) text = state.prepError ? '' : 'Getting secure payment ready…';
+  else if (m.length) text = `Add ${m.join(', ').replace(/, ([^,]*)$/, ' and $1')} to pay.`;
+  else if (state.taxState === 'pending') text = 'Working out sales tax…';
+  else if (state.taxState === 'error') text = 'Sales tax could not be worked out for that address.';
+  hint.textContent = text;
+}
+
+async function pay() {
+  if (state.paying) return;
+  if (isReady()) return submitPayment();
+  if (!state.elements) {
+    if (state.prepError) { state.prepError = null; render(); }
+    return;
+  }
+  // Stripe draws its own "incomplete" messages on its fields; then go there.
+  try { await state.elements.submit(); } catch (_) {}
+  const first = missing()[0] || (state.taxState === 'error' ? 'address' : null);
+  if (!first) return;          // only the tax figure is outstanding; the hint says so
+  const host = document.getElementById({ email: 'co-email-element', address: 'co-address-element', payment: 'co-payment-element' }[first]);
+  host?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  try { state.parts[first]?.focus(); } catch (_) {}
 }
 
 /* ── Sales tax ────────────────────────────────────────────────────
@@ -587,8 +669,8 @@ function setTaxRow(label, pending = false) {
   const row = document.getElementById('co-tax-row');
   const cell = document.getElementById('co-tax');
   if (!row || !cell) return;
-  row.classList.toggle('is-pending', !!pending);
-  cell.textContent = label == null ? 'Calculated from your address' : label;
+  row.classList.toggle('is-pending', !!pending || label == null);
+  cell.textContent = label == null ? 'From your address' : label;
 }
 
 function updateMoney() {
@@ -599,15 +681,14 @@ function updateMoney() {
   const dRow = document.getElementById('co-discount-row');
   if (dRow) {
     dRow.hidden = !(t.discount > 0);
-    set('co-discount', `\u2212${money(t.discount)}`);
-    dRow.firstElementChild.textContent = t.discountPercent ? `Discount \u00b7 ${t.discountPercent}%` : 'Discount';
+    set('co-discount', `−${money(t.discount)}`);
+    dRow.firstElementChild.textContent = t.discountPercent ? `Discount · ${t.discountPercent}%` : 'Discount';
   }
   if (t.taxKnown) setTaxRow(t.tax > 0 ? money(t.tax) : 'None for this address');
-  const label = `Pay ${money(t.total)}`;
-  const primary = document.getElementById('co-primary');
-  const stickyBtn = document.getElementById('co-sticky-btn');
-  if (primary && state.step === 'checkout' && !/Processing/.test(primary.textContent)) primary.textContent = label;
-  if (stickyBtn && state.step === 'checkout' && !/Processing/.test(stickyBtn.textContent)) stickyBtn.textContent = label;
+  if (!state.paying) {
+    set('co-primary', `Pay ${money(t.total)}`);
+    set('co-sticky-btn', `Pay ${money(t.total)}`);
+  }
 }
 
 async function calculateTax(address) {
@@ -622,7 +703,7 @@ async function calculateTax(address) {
   try {
     const res = await requestTax({ paymentIntentId: state.pi.paymentIntentId, address });
     const data = res.data || {};
-    if (key !== state.taxKey) return;                     // address changed meanwhile
+    if (key !== state.taxKey || !state.pi) return;        // address or bag changed meanwhile
     if (res.offline || res.timeout) {
       throw new Error(res.offline
         ? 'We could not reach the tax service. Check your connection and try again.'
@@ -667,23 +748,24 @@ async function calculateTax(address) {
 /* ── Confirm ─────────────────────────────────────────────────── */
 
 async function submitPayment() {
-  if (!state.stripe || !state.elements) return;
+  if (!state.stripe || !state.elements || !isReady()) return;
 
-  const phone = document.getElementById('co-phone');
   const customerEmail = state.email;
-
-  if (!validEmail(customerEmail)) { refreshReady(); return; }   // Pay is disabled until it is valid
-
-  const primary = document.getElementById('co-primary');
-  const stickyBtn = document.getElementById('co-sticky-btn');
+  const phone = (state.address && state.address.phone || '').trim() || null;
+  const setButtons = (label) => {
+    for (const id of ['co-primary', 'co-sticky-btn']) {
+      const b = document.getElementById(id);
+      if (b) { b.disabled = state.paying; b.textContent = label; }
+    }
+  };
   const restore = () => {
-    const t = totals(cartManager.getItems());
-    if (primary) { primary.disabled = false; primary.textContent = `Pay ${money(t.total)}`; }
-    if (stickyBtn) { stickyBtn.disabled = false; stickyBtn.textContent = `Pay ${money(t.total)}`; }
+    state.paying = false;
+    setButtons(`Pay ${money(totals(cartManager.getItems()).total)}`);
+    refreshReady();
   };
 
-  if (primary) { primary.disabled = true; primary.textContent = 'Processing…'; }
-  if (stickyBtn) { stickyBtn.disabled = true; stickyBtn.textContent = 'Processing…'; }
+  state.paying = true;
+  setButtons('Processing…');
 
   // Contact details are recorded here — when the shopper has actually
   // typed them, not at render time. There is no consent checkbox: the
@@ -700,7 +782,7 @@ async function submitPayment() {
     const contactRes = await updateContact({
       paymentIntentId: state.pi.paymentIntentId,
       email: customerEmail,
-      phone: phone.value.trim() || null
+      phone
     });
     if (!contactRes.ok) {
       const body = contactRes.data || {};
@@ -721,7 +803,7 @@ async function submitPayment() {
       payment_method_data: {
         billing_details: {
           email: customerEmail,
-          phone: phone.value.trim() || undefined
+          phone: phone || undefined
         }
       }
     }

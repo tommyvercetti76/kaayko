@@ -176,13 +176,13 @@
 
     .co-page { max-width: 1180px; margin: 0 auto; }
 
-    .co-masthead { margin-bottom: clamp(24px, 4vw, 40px); }
+    .co-masthead { margin-bottom: clamp(20px, 3vw, 32px); }
 
     .co-masthead h1 {
       margin: 0;
       font-family: var(--co-serif);
       font-weight: 500;
-      font-size: clamp(34px, 6vw, 54px);
+      font-size: clamp(30px, 4.4vw, 44px);
       line-height: 1.04;
       letter-spacing: -0.01em;
       color: var(--fg);
@@ -195,12 +195,20 @@
       color: var(--muted);
     }
 
+    /* One screen (25 Oct 2026). Desktop: the details on the left, the bag and
+       the total on the right, staying in view. Phone: the bag, then the
+       details, then the total and Pay — .co-aside steps aside (display:
+       contents) so its two parts can sit either side of the form. */
     .co-layout {
       display: grid;
-      grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.85fr);
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.9fr);
+      grid-template-areas: "details aside";
       gap: var(--co-gap);
       align-items: start;
     }
+    .co-details { grid-area: details; min-width: 0; }
+    .co-details .co-label { margin-top: 30px; }
+    .co-details .co-label:first-child { margin-top: 0; }
 
     /* ── Section label (house style: gold serif small caps) ────────── */
     .co-label {
@@ -220,16 +228,16 @@
 
     .co-item {
       display: grid;
-      grid-template-columns: 92px minmax(0, 1fr) auto;
-      gap: 18px;
+      grid-template-columns: 64px minmax(0, 1fr) auto;
+      gap: 14px;
       align-items: start;
-      padding: 20px 0;
+      padding: 14px 0;
       border-bottom: 1px solid var(--line);
     }
     .co-item:first-of-type { border-top: 1px solid var(--line); }
 
     .co-item-image {
-      width: 92px;
+      width: 64px;
       aspect-ratio: 4 / 5;
       border-radius: 10px;
       object-fit: cover;
@@ -244,10 +252,10 @@
     .co-item-body { min-width: 0; }
 
     .co-item-title {
-      margin: 0 0 6px;
+      margin: 0 0 4px;
       font-family: var(--co-serif);
       font-weight: 600;
-      font-size: 20px;
+      font-size: 18px;
       line-height: 1.2;
       color: var(--fg);
     }
@@ -291,14 +299,14 @@
     .co-item-remove:hover { color: var(--fg); }
 
     .co-bag-note {
-      margin: 18px 0 0;
+      margin: 12px 0 0;
       font-family: var(--co-sans);
       font-size: 12px;
       color: var(--muted);
     }
 
     /* ── Summary card ──────────────────────────────────────────────── */
-    .co-aside { position: sticky; top: 84px; min-width: 0; }
+    .co-aside { grid-area: aside; position: sticky; top: 84px; min-width: 0; display: grid; gap: 22px; }
 
     .co-card {
       padding: clamp(20px, 2.4vw, 28px);
@@ -354,21 +362,6 @@
     .co-btn:active:not(:disabled) { transform: translateY(1px); }
     .co-btn:disabled { opacity: 0.38; cursor: not-allowed; }
     .co-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
-
-    .co-reassure {
-      margin: 14px 0 0;
-      text-align: center;
-      font-family: var(--co-sans);
-      font-size: 12px;
-      line-height: 1.6;
-      color: var(--muted);
-    }
-
-    /* ── Checkout step (revealed after "Continue") ─────────────────── */
-    .co-step { display: none; }
-    .co-step.is-open { display: block; }
-
-    .co-fieldset { margin-bottom: 18px; }
 
     .co-field { margin-bottom: 14px; }
 
@@ -431,6 +424,21 @@
       color: var(--muted);
     }
     .co-legal a { color: var(--gold); text-underline-offset: 2px; }
+    .co-legal .material-icons { font-size: 13px; vertical-align: -2px; color: var(--gold); }
+    /* the discount code waits behind a link until it is wanted */
+    .co-promo-toggle {
+      justify-self: start;
+      padding: 6px 0;
+      border: 0;
+      background: none;
+      font-family: var(--co-sans);
+      font-size: 13px;
+      color: var(--gold);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+    }
+    .co-promo-toggle:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
     .co-money-row.is-pending span:last-child { color: var(--muted); font-style: italic; }
 
 
@@ -544,8 +552,9 @@
       border-top: 1px solid var(--line);
     }
     .co-sticky .co-btn { margin-top: 0; }
-    /* The summary card already carries the primary action on wide
-       screens; the sticky bar is the small-screen stand-in for it. */
+    /* Phones only, and only while the real Pay button is still below the
+       screen (js/pages/cart.js watches it). It used to stay put, so at the end
+       of the page the footer sat between the order and the button. */
     @media (max-width: 900px) {
       .co-sticky.is-active { display: block; }
     }
@@ -559,14 +568,9 @@
     }
     .co-masthead { animation: co-rise 0.4s var(--co-ease) both; }
     .co-aside    { animation: co-rise 0.46s var(--co-ease) 0.06s both; }
-    .co-step.is-open { animation: co-reveal 0.44s var(--co-ease) both; }
 
     @keyframes co-rise {
       from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: none; }
-    }
-    @keyframes co-reveal {
-      from { opacity: 0; transform: translateY(-6px); }
       to   { opacity: 1; transform: none; }
     }
 
@@ -575,35 +579,20 @@
 
     /* ── Responsive ────────────────────────────────────────────────── */
     @media (max-width: 900px) {
-      .co-layout { grid-template-columns: minmax(0, 1fr); }
-      .co-aside { position: static; }
-      /* The sticky bar is fixed to the viewport, so clearance has to sit on
-         the LAST element in flow. Padding on .co-wrapper alone left the
-         footer — its sibling — underneath the bar. */
-      .co-wrapper { padding-bottom: 32px; }
-      body.co-root .site-footer {
-        padding-bottom: calc(2.5rem + 118px + env(safe-area-inset-bottom));
+      .co-layout {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas: "bag" "details" "summary";
       }
-      /* The sticky bar is the primary action here — don't show it twice. */
-      .co-card > #co-primary,
-      .co-card > .co-reassure { display: none; }
+      .co-aside { display: contents; }
+      .co-bag { grid-area: bag; }
+      .co-summary { grid-area: summary; }
+      .co-wrapper { padding-bottom: 32px; }
     }
 
-    @media (max-width: 480px) {
-      .co-item { grid-template-columns: 72px minmax(0, 1fr); gap: 14px; }
-      .co-item-image { width: 72px; }
-      .co-item-side {
-        grid-column: 2;
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-      }
-    }
 
     @media (prefers-reduced-motion: reduce) {
       .co-skeleton i,
-      .co-item, .co-masthead, .co-aside, .co-step.is-open {
+      .co-item, .co-masthead, .co-aside {
         animation: none;
       }
       .co-btn, .co-input, .co-topbar-back, .co-item-remove, .co-empty a {
@@ -630,8 +619,7 @@
   </main>
 
   <div class="co-sticky" id="co-sticky">
-    <button id="co-sticky-btn" class="co-btn">Continue · $0.00</button>
-    <p class="co-reassure" id="co-sticky-meta">Free US shipping · 30-day returns</p>
+    <button id="co-sticky-btn" class="co-btn" type="button">Pay</button>
   </div>
 
   <footer class="site-footer is-light">
