@@ -238,6 +238,33 @@ function fieldRows(field, product) {
   ];
 }
 
+/* ── What inspired the stamp pieces ───────────────────────────
+   The bottles and the stamp t-shirts carry copy written in Kortex, and it was the same
+   paragraph sixteen times ("a real stamp, reproduced from a high-resolution scan…"),
+   with nothing about what the stamp is FOR (Rohan, 25 Oct 2026). Each gets the story
+   of its stamp first, and the wildlife ones their animal and IUCN status; the Kortex
+   copy follows unchanged. Keyed by Firestore document id. Every fact here was checked
+   25 Oct 2026 (issue dates against stamp catalogues and Wikipedia's lists of Indian
+   stamps); what could not be checked (the Chandragupta stamp's year) is not claimed. */
+const INSPIRED = Object.freeze({
+  "2GlQkjNqJH1NyOIUmQ0J": { title: "India Postage Bottle", line: "Issued in 1954 for a hundred years of Indian postage stamps. Its plane and its pigeon are the two speeds the post has always run at." },
+  "5tAMxZe9eHJmwIjp9nJL": { title: "K2 Bottle", line: "K2 is the second-highest mountain on earth, the one climbers call the Savage Mountain. It sat for India Post's 1988 Himalayan Peaks set without complaint." },
+  "BeL1gqbF5Y6kWWJWeHFc": { title: "First Aerial Post Bottle", line: "Fifty years after the world's first official airmail flew from Allahabad to Naini on 18 February 1911 — a route of about six miles, which is still the hardest part of any delivery." },
+  "L0ZawQe4EOrDrk3EvG16": { title: "River Dolphin Bottle", line: "The Ganges river dolphin is nearly blind and finds its way through the silt by sound. It is India's national aquatic animal.", animal: { species: "Ganges river dolphin", latin: "Platanista gangetica", status: "Endangered" } },
+  "QKF9TpsYM6bCl8De4M9n": { title: "Blue Magpie Bottle", line: "From India Post's 1968 set of four Indian birds. The red-billed blue magpie trails a tail longer than the rest of it.", animal: { species: "Red-billed blue magpie", latin: "Urocissa erythroryncha", status: "Least Concern" } },
+  "RWVJFJK0Q6tGeLawtRuY": { title: "Conquest of Everest Bottle", line: "The date on the stamp, 29.5.53, is the morning Tenzing Norgay and Edmund Hillary stood on top of Everest." },
+  "Z1vamuFaTPvjkWHFJhle": { title: "Bengal Tiger Bottle", line: "A tiger walking out of the grass on a 50 naye paise stamp, from the years when India's tigers were still being counted down, not up.", animal: { species: "Bengal tiger", latin: "Panthera tigris tigris", status: "Endangered" } },
+  "kGg8Q8df5bbcN8tLFx6Z": { title: "Tiger Conservation Bottle", line: "Issued in 1969, when the International Union for Conservation of Nature met in New Delhi. Four years later India launched Project Tiger.", animal: { species: "Bengal tiger", latin: "Panthera tigris tigris", status: "Endangered" } },
+  "mydE423HVE2f3rrpxcM6": { title: "Indian Railways Bottle", line: "A hundred years of Indian railways: the first passenger train ran from Bombay to Thane on 16 April 1853. The stamp parks the old engine beside the new." },
+  "yzCMEUlvYkoAdDInOgEE": { title: "Woodpecker Bottle", line: "The 50 paise bird in India Post's 1968 set: the brown-fronted woodpecker of the western Himalaya, captioned simply \"Woodpecker\".", animal: { species: "Brown-fronted woodpecker", latin: "Dendrocoptes auriceps", status: "Least Concern" } },
+  "8PnFf6bH3fwiH1dTCkFR": { title: "Sandrokoptos", line: "Sandrokottos is what the Greeks called Chandragupta Maurya, who built India's first great empire around 321 BCE — and, the story goes, gave it all up to become a Jain monk.", rows: [["Stamp", "Chandragupta Maurya, ₹4"]] },
+  "ILCeSIYh1FI7K13Ur8ez": { title: "Queen", line: "Ahilyabai Holkar ruled Malwa from Maheshwar for nearly thirty years and rebuilt temples across India, Kashi Vishwanath among them. This stamp marked 200 years since her death, in 1996.", rows: [["Stamp", "Ahilyabai Holkar, ₹2"], ["Issued", "25 August 1996"]] },
+  "MHLoIviEod8xPRHoEwj4": { title: "Pt. Beethoven", line: "India Post marked Beethoven's 200th birthday on 16 December 1970 with this stamp. The \"Pandit\" is our addition; we think he earned it.", rows: [["Stamp", "Beethoven, 20 paise"], ["Issued", "16 December 1970"]] },
+  "qCI4Eiyxdt6SI9VT45qX": { title: "Abe", line: "India issued this stamp on 15 April 1965, a hundred years to the day after Lincoln died. Abe, to his friends.", rows: [["Stamp", "Abraham Lincoln, 15 paise"], ["Issued", "15 April 1965"]] },
+  "u1y09H1U1ozUasNKwOrU": { title: "Freedom", line: "India's 1976 airmail for the American Revolution Bicentennial carries Archibald Willard's painting The Spirit of '76: two drummers and a fifer, still marching.", rows: [["Stamp", "American Revolution Bicentennial airmail, ₹2.80"], ["Issued", "29 May 1976"]] },
+  "xyVsWqTkPcVbaiOCX0vv": { title: "The Great Climb", line: "In May 1965 nine climbers of the Indian Everest Expedition reached the summit, a record that stood for years. This stamp followed on Independence Day.", rows: [["Stamp", "Indian Mt Everest Expedition, 15 paise"], ["Issued", "15 August 1965"]] }
+});
+
 /* ── Fallbacks ────────────────────────────────────────────── */
 
 const THEME_STORY = Object.freeze({
@@ -275,12 +302,21 @@ function editorialFrom(product) {
   if (!story && !rows.length) return null;
 
   const field = FIELD[animalFor(product)];
+  const inspired = INSPIRED[product?.id];
+  const base = rows.length ? rows : (field ? fieldRows(field, product) : []);
+  // a stamp's animal goes first, unless the Kortex rows already name it
+  const animalRows = inspired?.animal && !base.some(([k]) => /^(animal|species)$/i.test(k))
+    ? [["Animal", inspired.animal.species], ["Latin name", inspired.animal.latin], ["IUCN status", inspired.animal.status]]
+    : [];
+  // the stamp's own rows lead; Kortex's "Artwork: Original postage stamp" says less than they do
+  const stampRows = inspired?.rows || [];
+  const kept = stampRows.length ? base.filter(([k, v]) => !(k === "Artwork" && /^original postage stamp$/i.test(v))) : base;
   return {
     voice: field ? "field" : "satire",
     hook: String(product?.description || "").trim(),
-    story: story || (field ? field.line : ""),
-    rows: rows.length ? rows : (field ? fieldRows(field, product) : []),
-    atRisk: !!field && atRisk(field.status)
+    story: [inspired?.line, story || (field ? field.line : "")].filter(Boolean).join(" "),
+    rows: [...stampRows, ...animalRows, ...kept],
+    atRisk: (!!field && atRisk(field.status)) || (!!inspired?.animal && atRisk(inspired.animal.status))
   };
 }
 

@@ -406,6 +406,7 @@ export async function mountInspect(host, opts) {
     grab.on = true; grab.id = e.pointerId; grab.x = e.clientX; grab.y = e.clientY; grab.t = performance.now();
     grab.wx = grab.wy = 0; grab.wind = 0;
     grab.ry = unband(yaw.a, maxYaw); grab.rp = unband(pitch.a, maxPitch);
+    grab.trail = [[performance.now(), grab.ry, grab.rp]];   // where the throw is measured from
     yaw.t = yaw.a; pitch.t = pitch.a; yaw.v.v = pitch.v.v = 0; lean.x = lean.y = 0;
     try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
     host.classList.add('is-held'); wake();
@@ -428,7 +429,7 @@ export async function mountInspect(host, opts) {
         else { grab.id = null; return; }
       } else return;
     }
-    const now = performance.now(), dt = Math.max(1 / 240, (now - grab.t) / 1000);
+    const now = performance.now();
     const dx = e.clientX - grab.x, dy = e.clientY - grab.y;
     grab.x = e.clientX; grab.y = e.clientY; grab.t = now;
     // both axes follow the finger, on a phone as under a mouse (Rohan, 24 Oct 2026: a
@@ -437,9 +438,14 @@ export async function mountInspect(host, opts) {
     grab.wind += Math.hypot(dx, dy) * GAIN;          // the winding: total travel, any direction
     yaw.a = band(grab.ry, maxYaw); yaw.t = yaw.a;
     pitch.a = band(grab.rp, maxPitch); pitch.t = pitch.a;
-    const a = 0.35;
-    grab.wy = grab.wy * (1 - a) + (dx * GAIN / dt) * a;
-    grab.wx = grab.wx * (1 - a) + (dy * GAIN / dt) * a;
+    // the throw: angle covered over the last ~80 ms, not a smoothed per-event rate —
+    // Safari on a phone delivers few, uneven moves for a quick flick, and an average
+    // of them under-counted the throw (a fast flick turned the mug ~50°, not ~85°)
+    grab.trail.push([now, grab.ry, grab.rp]);
+    while (grab.trail.length > 2 && now - grab.trail[0][0] > 80) grab.trail.shift();
+    const [t0, ry0, rp0] = grab.trail[0], span = Math.max(1 / 240, (now - t0) / 1000);
+    grab.wy = (grab.ry - ry0) / span;
+    grab.wx = (grab.rp - rp0) / span;
     wake();
   }
   function up(e) {
