@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- the theme before the first paint: header.js set it at the end of <body>, so a
+       dark-mode shopper saw a light frame on every page open (25 Oct 2026) -->
+  <script>try { if (localStorage.getItem('darkTheme') === 'enabled') document.documentElement.classList.add('dark-theme'); } catch (e) {}</script>
   <script src="/js/prod-config.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />

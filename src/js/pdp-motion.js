@@ -96,7 +96,8 @@
     if (!link || !img) return;
     lift(img);
     put(FLY, { src: img.currentSrc || img.src, from: box(img), to: link.pathname, t: Date.now() });
-    put(BACK, { href: link.getAttribute('href'), from: location.href, store: !isPDP });
+    // `top`: where the card sat on screen, so coming back can put it there again
+    put(BACK, { href: link.getAttribute('href'), from: location.href, store: !isPDP, top: box(img).y });
   }, true);
 
   /* ── Leaving a product page any other way: the frame is what goes home ── */
@@ -149,14 +150,35 @@
   }
   function onScreen(el) { var r = el.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; }
 
+  /* Scroll the card back to where it sat when it was tapped. A page restored
+     from the back/forward cache is already there (nothing moves); a reloaded
+     one opened at the top, and the shopper had to find their place again
+     (iPhone Safari, every time, 25 Oct 2026). */
+  function putBack(img, b) {
+    if (typeof b.top !== 'number') return;
+    var dy = img.getBoundingClientRect().top - b.top;
+    if (Math.abs(dy) < 2) return;
+    // the store scrolls <body>, not the window (storestyle.css's html,body{height:100%})
+    var el = img.parentElement;
+    while (el && el !== document.body && !(el.scrollHeight > el.clientHeight && /auto|scroll/.test(getComputedStyle(el).overflowY))) el = el.parentElement;
+    // 'instant': the store asks for smooth scrolling, and a smooth restore was
+    // half a second of the page visibly rolling down to the card (filmed)
+    var jump = function (s) { s.scrollTo({ top: s.scrollTop + dy, behavior: 'instant' }); };
+    var was = el ? el.scrollTop : 0;
+    if (el) jump(el);
+    if (!el || el.scrollTop === was) jump(document.scrollingElement || document.documentElement);
+  }
+
   function home() {
     var d = get(HOME), b = get(BACK);
     if (!fresh(d) || !b) return false;
     var img = cardImg(b);
-    if (img ? !onScreen(img) : !d.src) return false;
+    if (!img && !d.src) return false;
     drop(HOME);
     var f = takeOff(img ? img.currentSrc || img.src : d.src, d.from, 'home');
     function settle(img) {
+      putBack(img, b);
+      if (!onScreen(img)) { img.removeAttribute('data-hero-land'); fade(); return; }
       land(f, d.from, img, HOME_MS, function () { img.removeAttribute('data-hero-land'); });
     }
     if (img) { img.setAttribute('data-hero-land', ''); settle(img); return true; }
@@ -170,10 +192,7 @@
       if (!img) return;
       stop();
       img.setAttribute('data-hero-land', '');          // hidden before it can paint
-      requestAnimationFrame(function () {              // measured once the grid has laid out
-        if (onScreen(img)) settle(img);
-        else { img.removeAttribute('data-hero-land'); fade(); }
-      });
+      requestAnimationFrame(function () { settle(img); });   // once the grid has laid out
     });
     var timer = setTimeout(function () { stop(); fade(); }, 1500);
     function stop() { mo.disconnect(); clearTimeout(timer); }
