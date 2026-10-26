@@ -115,6 +115,8 @@ body.product-v2 {
 }
 
 .product-v2 .product-thumb.active { box-shadow: 0 0 0 2px var(--fg); }
+/* in the dark theme --fg is light, and a light ring round a light tile is no ring at all */
+html.dark-theme .product-v2 .product-thumb.active { box-shadow: 0 0 0 2px var(--gold); }
 .product-v2 .product-thumb:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 .product-v2 .product-thumb img {
   width: 100%; height: 100%; object-fit: cover; display: block;
@@ -172,10 +174,12 @@ html.dark-theme .product-v2 .pdp-inspect.kind-bottle { background: radial-gradie
 }
 .product-v2 .pdp-inspect.was-held .pdp-inspect-hint { opacity: 0; }
 
-.product-v2 .product-thumb-3d.is-pending { opacity: .4; cursor: default; }
-.product-v2 .product-thumb-3d {
+.product-v2 button.product-thumb-3d.is-pending { opacity: .4; cursor: default; }
+.product-v2 button.product-thumb-3d {
   /* the tile is always the light image ground, so its label is always dark ink — in the
-     dark theme --fg went light and the label all but vanished (25 Oct 2026) */
+     dark theme --fg went light and the label all but vanished (25 Oct 2026). `button.`
+     because storestyle.css's `.product-v2 button.product-thumb` (color: inherit,
+     display: block) outweighed the plain class and won. */
   color: #24211c;
   display: grid;
   place-items: center;
