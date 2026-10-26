@@ -14,6 +14,9 @@
 import { cartManager } from '/js/cartManager.js';
 import { savedPromo, clearPromo, checkPromo, savePromo } from '/js/services/promo.js';
 import { esc, money } from '/js/kit.js';
+// Prices may SHOW in ₹ (currency.js); the charge is always US dollars, so Pay and the
+// "You pay" line use money(), and every figure stays US cents underneath.
+import { price, priceSpan, paint, label, repaint, mountCurrencySwitch } from '/js/services/currency.js';
 import { createPaymentIntent, calculateTax as requestTax, updateContact } from '/js/services/storeApi.js';
 import { show as showToast } from '/js/components/Toast.js';
 
@@ -261,14 +264,15 @@ function render() {
 
         <div class="co-card co-summary">
           <div class="co-money">
-            <div class="co-money-row"><span>Subtotal</span><span id="co-subtotal">${money(t.subtotal)}</span></div>
+            <div class="co-money-row"><span>Subtotal</span>${priceSpan(t.subtotal).replace('<span class="px"', '<span class="px" id="co-subtotal"')}</div>
             <div class="co-money-row is-discount" id="co-discount-row" ${t.discount > 0 ? '' : 'hidden'}>
               <span>Discount${t.discountPercent ? ` · ${t.discountPercent}%` : ''}</span>
-              <span id="co-discount">&minus;${money(t.discount)}</span>
+              ${priceSpan(-t.discount).replace('<span class="px"', '<span class="px" id="co-discount"')}
             </div>
             <div class="co-money-row"><span>Shipping</span><span>Free</span></div>
-            <div class="co-money-row ${t.taxKnown ? '' : 'is-pending'}" id="co-tax-row"><span>Sales tax</span><span id="co-tax">${t.taxKnown ? money(t.tax) : 'From your address'}</span></div>
-            <div class="co-money-row is-total"><span>Total</span><span id="co-total">${money(t.total)}</span></div>
+            <div class="co-money-row ${t.taxKnown ? '' : 'is-pending'}" id="co-tax-row"><span>Sales tax</span>${t.taxKnown ? priceSpan(t.tax).replace('<span class="px"', '<span class="px" id="co-tax"') : '<span id="co-tax">From your address</span>'}</div>
+            <div class="co-money-row is-total"><span>Total</span>${priceSpan(t.total).replace('<span class="px"', '<span class="px" id="co-total"')}</div>
+            <p class="co-charge" id="co-charge" data-charge-cents="${t.total}" hidden></p>
           </div>
 
           ${promoFieldMarkup()}
@@ -284,6 +288,8 @@ function render() {
     </div>`;
 
   // A slip of the thumb should not cost the piece: Remove offers it back.
+  repaint(root);                 // the "You pay $… in US dollars" line under the total, in ₹
+
   root.querySelectorAll('[data-remove]').forEach(btn => {
     btn.addEventListener('click', () => {
       const gone = cartManager.getItem(btn.dataset.remove);
@@ -336,7 +342,7 @@ function itemMarkup(item, index = 0) {
         <p class="co-item-meta">${meta}${meta && qty > 1 ? ' · ' : ''}${qty > 1 ? `Quantity ${qty}` : ''}</p>
       </div>
       <div class="co-item-side">
-        <span class="co-item-price">${money((item.priceCents || 0) * qty)}</span>
+        <span class="co-item-price">${priceSpan((item.priceCents || 0) * qty)}</span>
         <button class="co-item-remove" data-remove="${esc(item.productId)}"
                 aria-label="Remove ${esc(item.title)}">Remove</button>
       </div>
@@ -494,9 +500,9 @@ async function prepare() {
     // not news: it used to toast "Prices updated" for the shopper's own code
     // (24 Oct 2026). Only a total that went UP past the bag's figure is said.
     if (priced && before.subtotal !== after.subtotal) {
-      toast(`Prices updated — your total is now ${money(after.total)}.`, 'notice');
+      toast(`Prices updated — your total is now ${price(after.total)}.`, 'notice');
     } else if (priced && after.total > before.total) {
-      toast(`Your discount came to ${money(after.discount)} — your total is ${money(after.total)}.`, 'notice');
+      toast(`Your discount came to ${price(after.discount)} — your total is ${price(after.total)}.`, 'notice');
     }
     state.cartSig = sig;
     updateMoney();
@@ -683,26 +689,30 @@ function scheduleTax(address) {
   state.taxTimer = setTimeout(() => calculateTax(address), 350);
 }
 
-function setTaxRow(label, pending = false) {
+/** The tax cell holds words ("Calculating…") or an amount in US cents (a number). */
+function setTaxRow(value, pending = false) {
   const row = document.getElementById('co-tax-row');
   const cell = document.getElementById('co-tax');
   if (!row || !cell) return;
-  row.classList.toggle('is-pending', !!pending || label == null);
-  cell.textContent = label == null ? 'From your address' : label;
+  row.classList.toggle('is-pending', !!pending || value == null);
+  if (typeof value === 'number') paint(cell, value);
+  else label(cell, value == null ? 'From your address' : value);
 }
 
 function updateMoney() {
   const t = totals(cartManager.getItems());
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-  set('co-subtotal', money(t.subtotal));
-  set('co-total', money(t.total));
+  paint(document.getElementById('co-subtotal'), t.subtotal);
+  paint(document.getElementById('co-total'), t.total);
+  const charge = document.getElementById('co-charge');
+  if (charge) { charge.dataset.chargeCents = String(t.total); repaint(charge.parentElement); }
   const dRow = document.getElementById('co-discount-row');
   if (dRow) {
     dRow.hidden = !(t.discount > 0);
-    set('co-discount', `−${money(t.discount)}`);
+    paint(document.getElementById('co-discount'), -t.discount);
     dRow.firstElementChild.textContent = t.discountPercent ? `Discount · ${t.discountPercent}%` : 'Discount';
   }
-  if (t.taxKnown) setTaxRow(t.tax > 0 ? money(t.tax) : 'None for this address');
+  if (t.taxKnown) setTaxRow(t.tax > 0 ? t.tax : 'None for this address');
   if (!state.paying) {
     set('co-primary', `Pay ${money(t.total)}`);
     set('co-sticky-btn', `Pay ${money(t.total)}`);
@@ -838,5 +848,6 @@ async function submitPayment() {
    Subscribed to cart changes only. The old page also re-rendered on
    a debounced window resize, and rendering created a payment
    intent — so resizing the window spent Stripe objects.           */
+mountCurrencySwitch(document.querySelector('.site-footer'), 'is-footer');
 cartManager.subscribe(render);
 render();

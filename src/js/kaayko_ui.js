@@ -14,12 +14,13 @@ import { cartManager } from "/js/cartManager.js";
 import { attachExpandingPicker, needsPicker, isSoldOut } from "/js/fitPicker.js";
 
 // Price: priceMap.js is the client's one authority (a mirror of the server's).
-import { priceCents, priceText } from "/js/priceMap.js";
+import { priceCents } from "/js/priceMap.js";
 
 // Type names and order come from the registry the API sent with the catalogue
 // (productTypes.js); unknown / missing productType lands in "Other".
 import { labelForType, comingSoonTypes, searchTermsFor } from "/js/productTypes.js";
-import { esc, money } from "/js/kit.js";
+import { esc } from "/js/kit.js";
+import { paint, priceSpan, currency, mountCurrencySwitch } from "/js/services/currency.js";
 
 // A product is "new" if it was created in the last NEW_WINDOW_DAYS days.
 const NEW_WINDOW_DAYS = 14;
@@ -143,7 +144,7 @@ function comingSoonStrip() {
   aside.className = "coming-soon";
   aside.setAttribute("aria-label", "Coming soon");
   const items = soon.map((t) =>
-    `<span class="coming-soon-item">${esc(t.label)}<span class="coming-soon-price">${esc(money(t.priceCents))}</span></span>`
+    `<span class="coming-soon-item">${esc(t.label)}<span class="coming-soon-price">${priceSpan(t.priceCents)}</span></span>`
   ).join("");
   aside.innerHTML = `
     <p class="coming-soon-eyebrow">Coming soon</p>
@@ -386,7 +387,7 @@ function shelfPrice(list) {
   const prices = list.map(getPriceValue).filter((v) => v > 0);
   if (!prices.length) return "";
   const lo = Math.min(...prices), hi = Math.max(...prices);
-  return `${lo === hi ? "" : "from "}${money(Math.round(lo * 100))}`;
+  return `${lo === hi ? "" : "from "}${priceSpan(Math.round(lo * 100))}`;   // markup: repainted on a currency switch
 }
 
 function buildShelf(items, types, carousel) {
@@ -407,7 +408,7 @@ function buildShelf(items, types, carousel) {
       <span class="shelf-img${value === "all" ? " shelf-collage" : ""}" aria-hidden="true">${picture}</span>
       <span class="shelf-text">
         <span class="shelf-name">${esc(label)}</span>
-        <span class="shelf-meta">${list.length}${price ? ` · ${esc(price)}` : ""}</span>
+        <span class="shelf-meta">${list.length}${price ? ` · ${price}` : ""}</span>
       </span>`;
     b.addEventListener("click", () => {
       BROWSE_STATE.type = value;
@@ -500,6 +501,9 @@ function buildBrowseToolbar(items, carousel) {
   right.appendChild(clear);
 
   bar.appendChild(right);
+  // A shopper seeing ₹ is told, right here, that it is approximate and the charge is in
+  // dollars, with a way back; everyone else finds the switch in the footer.
+  if (currency() === "INR") mountCurrencySwitch(bar, "is-toolbar");
   return bar;
 }
 
@@ -780,10 +784,10 @@ function createCarouselItem(item) {
   // Convert price symbols to actual dollar amount - use actualPrice if available
   const actualPrice = document.createElement("p");
   actualPrice.className = "actual-price";
-  // priceText() in priceMap.js tests `typeof === "number"`; this used to test
+  // priceCents() in priceMap.js tests `typeof === "number"`; this used to test
   // truthiness, so a product priced 0 showed the "$" tier here and $0.00 on the
   // PDP. One rule, one place.
-  actualPrice.textContent = priceText(item);
+  paint(actualPrice, priceCents(item));     // repainted in place if the shopper switches $ / ₹
 
   priceContainer.append(actualPrice);
 

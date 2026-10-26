@@ -5,7 +5,8 @@
  * the store page already does that better.
  */
 
-import { priceText } from "/js/priceMap.js";
+import { priceCents } from "/js/priceMap.js";
+import { priceSpan, currencyReady, mountCurrencySwitch } from "/js/services/currency.js";
 import { getAllProducts } from "/js/services/storeApi.js";
 import { esc } from "/js/kit.js";
 
@@ -55,7 +56,7 @@ function renderExhibits(products) {
             <span class="exhibit-no">Exhibit ${String.fromCharCode(65 + i)}</span>
             ${p.imgSrc?.[0] ? `<img class="exhibit-img" src="${esc(p.imgSrc[0])}" alt="${esc(p.title)}" loading="lazy">` : ""}
             <span class="exhibit-title">${esc(p.title)}</span>
-            <span class="exhibit-price">${esc(priceText(p))}</span>
+            <span class="exhibit-price">${priceSpan(priceCents(p))}</span>
           </a>
           <p class="exhibit-caption">${esc(caption)}</p>
           <a class="exhibit-buy" href="${esc(pdpUrl(p))}">Buy it anyway &rarr;</a>
@@ -71,7 +72,8 @@ function renderExhibits(products) {
 export async function storeAboutInit() {
   let products = [];
   try {
-    products = (await getAllProducts()).filter((p) => p.isAvailable === true);
+    mountCurrencySwitch(document.querySelector(".site-footer"), "is-footer");
+    products = (await Promise.all([getAllProducts(), currencyReady()]))[0].filter((p) => p.isAvailable === true);
     renderExhibits(products);
   } catch (err) {
     console.error("about: catalogue fetch failed:", err);

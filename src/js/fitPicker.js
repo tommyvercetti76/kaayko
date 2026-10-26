@@ -28,7 +28,8 @@
  *    fit comes back on its own, with no code change.
  */
 
-import { priceText, priceCents } from "/js/priceMap.js";
+import { priceCents } from "/js/priceMap.js";
+import { priceSpan } from "/js/services/currency.js";
 import { cartManager, MAX_DISTINCT } from "/js/cartManager.js";
 import { esc } from "/js/kit.js";
 import { show as showToast } from "/js/components/Toast.js";
@@ -359,8 +360,10 @@ export function createFitPicker(product, { onConfirm, showAction = true } = {}) 
   function syncConfirm() {
     if (!confirmBtn) return;
     const inBag = !!cartManager.hasProduct(product.id);
-    const price = priceText(product);
-    confirmBtn.textContent = inBag ? "Update bag" : `Add to bag${price ? ` · ${price}` : ""}`;
+    const cents = priceCents(product);
+    // the price is a repaintable span: a $ / ₹ switch updates the button in place
+    if (inBag) confirmBtn.textContent = "Update bag";
+    else confirmBtn.innerHTML = `Add to bag${cents ? ` · ${priceSpan(cents)}` : ""}`;
     confirmBtn.disabled = !sel.size;
   }
 

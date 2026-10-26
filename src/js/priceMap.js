@@ -23,6 +23,19 @@ export function money(cents) {
   return `${sign}$${(Math.abs(Math.round(cents)) / 100).toFixed(2)}`;
 }
 
+/**
+ * Integer US cents → "≈ ₹1,665" at `rate` rupees to the dollar, rounded to whole rupees and
+ * grouped the Indian way (₹1,00,000). Always marked approximate: the store charges dollars
+ * and the shopper's bank converts at its own rate (Rohan, 25 Oct 2026). Anything that is
+ * not a finite amount, or no usable rate → "".
+ */
+export function approxRupees(cents, rate) {
+  if (typeof cents !== "number" || !Number.isFinite(cents)) return "";
+  if (typeof rate !== "number" || !Number.isFinite(rate) || rate <= 0) return "";
+  const rupees = Math.round((Math.abs(cents) / 100) * rate);
+  return `≈ ${cents < 0 ? "−" : ""}₹${rupees.toLocaleString("en-IN")}`;
+}
+
 /** Integer cents the server would charge for this product, or null if it cannot be priced. */
 export function priceCents(product) {
   const ap = product?.actualPrice;

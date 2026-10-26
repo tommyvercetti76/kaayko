@@ -6,7 +6,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { money, priceCents, priceText } from '../src/js/priceMap.js';
+import { money, priceCents, priceText, approxRupees } from '../src/js/priceMap.js';
 
 test('money formats integer cents and nothing else', () => {
   assert.equal(money(2499), '$24.99');
@@ -57,4 +57,16 @@ test('priceText is money(priceCents)', () => {
   assert.equal(priceText({ actualPrice: 29.99 }), '$29.99');
   assert.equal(priceText({ price: '$$' }), '');
   assert.equal(priceText({}), '');
+});
+
+test('approxRupees: whole rupees, Indian grouping, always marked approximate', () => {
+  assert.equal(approxRupees(1999, 94.94), '≈ ₹1,898');          // 19.99 × 94.94 = 1897.85
+  assert.equal(approxRupees(999, 94.94), '≈ ₹948');
+  assert.equal(approxRupees(105397, 95), '≈ ₹1,00,127');          // lakh grouping
+  assert.equal(approxRupees(-500, 94.94), '≈ −₹475');             // a discount
+  assert.equal(approxRupees(0, 94.94), '≈ ₹0');
+  assert.equal(approxRupees(1999, 0), '');                        // no usable rate: nothing, never ₹0
+  assert.equal(approxRupees(1999, NaN), '');
+  assert.equal(approxRupees(1999, undefined), '');
+  assert.equal(approxRupees('1999', 94.94), '');                  // a string is never money
 });

@@ -3,7 +3,8 @@
  * Fetches /api/animals/<slug> and paints the editorial layout.
  */
 
-import { priceText } from "/js/priceMap.js";
+import { priceCents } from "/js/priceMap.js";
+import { priceSpan } from "/js/services/currency.js";
 import { attachExpandingPicker } from "/js/fitPicker.js";
 import { getAnimal } from "/js/services/storeApi.js";
 import { cartManager } from "/js/cartManager.js";
@@ -62,7 +63,7 @@ function heroBuy(p) {
       <div class="variant-img" data-zoom role="button" tabindex="0" aria-label="${esc(p.title)} — open full-size image">${variantImage(p)}</div>
       <div class="an-buy-meta">
         <h2 class="variant-title">${esc(p.title)}</h2>
-        <span class="variant-price">${esc(priceText(p))}</span>
+        <span class="variant-price">${priceSpan(priceCents(p))}</span>
         <button type="button" class="variant-cta" data-add-to-bag>
           <span class="material-icons cta-check" style="display:none" aria-hidden="true">check</span>
           <span class="cta-label">Add to bag</span>
@@ -174,7 +175,7 @@ function renderVariants(animal, products) {
       <div class="variant-img" data-zoom role="button" tabindex="0" aria-label="${esc(p.title)} — open full-size image">${variantImage(p)}</div>
       <div class="variant-meta">
         <h3 class="variant-title">${esc(p.title)}</h3>
-        <span class="variant-price">${esc(priceText(p))}</span>
+        <span class="variant-price">${priceSpan(priceCents(p))}</span>
       </div>
       ${p.description ? `<p class="variant-description">${esc(p.description)}</p>` : ""}
       <button type="button" class="variant-cta" data-add-to-bag>

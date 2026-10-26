@@ -2021,3 +2021,33 @@ html.dark-theme .store-v2 .browse-search::placeholder { color: rgba(212, 182, 13
 }
 .store-v2 .co-money-row.is-discount { color: var(--gold); }
 .store-v2 .co-money-row.is-discount[hidden] { display: none; }
+
+/* ── Prices in ₹ (25 Oct 2026) ─────────────────────────────────────────────
+   services/currency.js: the switch line, and the dollar charge under a ₹ price. */
+.fx-switch {
+  margin: 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted, var(--fg));
+}
+.fx-switch .fx-toggle {
+  margin-left: 4px;
+  padding: 6px 2px;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.fx-switch .fx-toggle:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.store-v2 .browse-toolbar .fx-switch.is-toolbar { flex-basis: 100%; order: 99; }
+.site-footer .fx-switch.is-footer { margin: 10px auto 0; text-align: center; font-size: 12px; }
+.product-v2 .pdp-fx-charge {
+  margin: -12px 0 0;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px;
+  color: var(--muted, var(--fg));
+}

@@ -8,6 +8,7 @@
 import { cartManager } from "/js/cartManager.js";           // the bag exists before the header paints its badge
 import "/js/sustainabilityAlert.js";                          // window.showSustainabilityAlert for the fit picker
 import { catalogueFirst, friendlyMessage } from "/js/services/storeApi.js";
+import { currencyReady, mountCurrencySwitch } from "/js/services/currency.js";
 import { setProductTypes } from "/js/productTypes.js";
 import { populateCarousel, setupModalCloseHandlers } from "/js/kaayko_ui.js";
 import { storeOriginalProducts } from "/js/kaaykoFilterModal.js";
@@ -49,6 +50,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // The catalogue's images are the product; the context menu is not a download button.
   document.addEventListener("contextmenu", (e) => e.preventDefault());
   setupModalCloseHandlers();
+  mountCurrencySwitch(document.querySelector(".site-footer"), "is-footer");
 
   let products;
   try {
@@ -56,7 +58,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     // and on a new visit within a minute; older than that, a new visit asks afresh
     // (storeApi.js, "The catalogue, kept")
     const back = performance.getEntriesByType?.("navigation")?.[0]?.type === "back_forward";
-    const catalogue = await catalogueFirst({ maxAgeMs: back ? undefined : 60 * 1000 });
+    // the ₹ rate (India) is asked for alongside, so the grid draws once, in the right currency
+    const [catalogue] = await Promise.all([
+      catalogueFirst({ maxAgeMs: back ? undefined : 60 * 1000 }),
+      currencyReady({ timeoutMs: 1500 }),
+    ]);
     products = catalogue.products;
     setProductTypes(catalogue.productTypes);   // labels, section order, the coming-soon line
   } catch (err) {

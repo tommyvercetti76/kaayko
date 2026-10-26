@@ -13,7 +13,8 @@
  * css/pdp-motion.css names it for the shared-element transition from the grid.
  */
 
-import { priceText, priceCents } from "/js/priceMap.js";
+import { priceCents } from "/js/priceMap.js";
+import { priceSpan, repaint, currencyReady, mountCurrencySwitch } from "/js/services/currency.js";
 import { createFitPicker, needsPicker, addDirect, isSoldOut } from "/js/fitPicker.js";
 import { satireFor } from "/js/store-satire.js";
 import { productFirst, catalogueFirst, friendlyMessage } from "/js/services/storeApi.js";
@@ -115,7 +116,7 @@ function renderProduct(product, openModalFn) {
   describe(product, previews[0]);
 
   const copy = satireFor(product);
-  const price = priceText(product);
+  const cents = priceCents(product);
 
   // Thumbnails are real buttons so keyboard users can reach every image
   // (2.1.1). The button carries the name; the picture inside is decorative.
@@ -148,7 +149,8 @@ function renderProduct(product, openModalFn) {
         <p class="pdp-eyebrow">${esc(eyebrowFor(product))}</p>
         <h1 class="pdp-title">${esc(product.title)}</h1>
         ${copy.hook ? `<p class="pdp-hook">${esc(copy.hook)}</p>` : ""}
-        <p class="pdp-price">${esc(price)}</p>
+        <p class="pdp-price">${priceSpan(cents)}</p>
+        <p class="pdp-fx-charge" data-charge-cents="${cents || ''}" hidden></p>
         <div class="pdp-picker" id="pdp-picker"></div>
         <p class="pdp-reassure">Printed to order, on its way within 10 business days · Free US shipping · <a href="/legal/returns">30-day returns</a></p>
         <button type="button" class="pdp-share" id="pdp-share">Share this piece</button>
@@ -165,6 +167,7 @@ function renderProduct(product, openModalFn) {
   // ── Gallery ──────────────────────────────────────────────
   // One place sets the frame: thumbs, a swipe on the picture, and the arrow keys
   // all go through it, so the active thumb can never disagree with the image.
+  repaint(root);                 // the "You pay $… in US dollars" line, when prices show in ₹
   const mainImg = document.getElementById('pg-main-img');
   const thumbEls = [...root.querySelectorAll('.product-thumb:not(.product-thumb-3d)')];
   let frame = 0;
@@ -260,7 +263,9 @@ function renderProduct(product, openModalFn) {
   cta.className = 'fitp-confirm pdp-single-cta';
   const syncCta = () => {
     const inBag = !!cartManager.hasProduct(product.id);
-    cta.textContent = inBag ? 'In your bag · View bag' : `Add to bag${price ? ` · ${price}` : ''}`;
+    // the price is a repaintable span, so a $ / ₹ switch updates the button too
+    if (inBag) cta.textContent = 'In your bag · View bag';
+    else cta.innerHTML = `Add to bag${cents ? ` · ${priceSpan(cents)}` : ''}`;
   };
   cta.addEventListener('click', () => addDirect(product));
   syncCta();
@@ -379,9 +384,13 @@ export async function productPageInit(productID, { openModal }) {
   try {
     // from the kept catalogue when it is there: the page opens on its details at once;
     // a quiet refresh redraws it only if this product has changed meanwhile
-    const product = await productFirst(productID, {
-      onFresh: (fresh) => { renderProduct(fresh, openModal); mountSuggestions(fresh, root); }
-    });
+    mountCurrencySwitch(document.querySelector('.site-footer'), 'is-footer');
+    const [product] = await Promise.all([
+      productFirst(productID, {
+        onFresh: (fresh) => { renderProduct(fresh, openModal); mountSuggestions(fresh, root); }
+      }),
+      currencyReady({ timeoutMs: 900 }),   // ₹ for India: the price draws once, in rupees
+    ]);
     renderProduct(product, openModal);
     mountSuggestions(product, root);
   } catch (err) {
