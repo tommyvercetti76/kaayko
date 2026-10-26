@@ -225,7 +225,8 @@ export function addToBag(product, { size, gender } = {}) {
     priceCents: priceCents(product),
     imgSrc: photoFor(product, chosen),
     size: chosen,
-    gender: gender || null
+    gender: gender || null,
+    storeName: product.byMaker ? product.storeName : null
   });
 
   if (!ok) {

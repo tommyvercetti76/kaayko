@@ -14,6 +14,7 @@ import { populateCarousel, setupModalCloseHandlers } from "/js/kaayko_ui.js";
 import { storeOriginalProducts } from "/js/kaaykoFilterModal.js";
 import { esc } from "/js/kit.js";
 import { checkPromo, savePromo, savedPromo } from "/js/services/promo.js";
+import { set as keepForCheckout } from "/js/services/safeStorage.js";
 import { show as showToast } from "/js/components/Toast.js";
 
 void cartManager;
@@ -76,6 +77,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const params = new URLSearchParams(location.search);
   const pid = params.get("productID") || params.get("id");
+  // A patron's own link (kaay.store/?patron=…): kept for checkout, which prices
+  // the patron from this signed token and nothing else.
+  const patron = params.get("patron");
+  if (patron && /^[a-f0-9]{32}\.[A-Za-z0-9_-]{32}$/.test(patron)) {
+    keepForCheckout("kaayko.patron", patron);
+    params.delete("patron");
+    history.replaceState(null, "", location.pathname + (params.toString() ? `?${params}` : "") + location.hash);
+  }
   // A maker's shelf: kaay.store/kreator/<handle> (a Kreator shop's own address,
   // also kaay.link/<handle>), the older kaay.store/s/<slug>, or /store?store=<slug>.
   const pathSegs = location.pathname.split("/").filter(Boolean);

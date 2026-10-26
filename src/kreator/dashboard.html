@@ -597,6 +597,8 @@
     }
     
     .product-note { font-size: 12px; color: #f59e0b; margin: 6px 0 0; }
+    .product-actions { display: flex; gap: 6px; flex-wrap: wrap; padding: 0 var(--space-md) var(--space-md); }
+    .product-actions .btn { padding: 6px 12px; font-size: 13px; }
     .shop-card { margin-bottom: var(--space-xl); }
     .shop-card-body { display: flex; gap: var(--space-lg); align-items: center; flex-wrap: wrap; }
     .shop-qr { background: #fff; padding: 8px; border-radius: 8px; flex: none; }
@@ -1210,6 +1212,7 @@
               <div class="form-group">
                 <label class="form-label" for="profile-bio">Shop Description</label>
                 <textarea id="profile-bio" class="form-input" rows="3" maxlength="300" placeholder="Shown at the top of your shop page. Up to 300 characters."></textarea>
+                <p class="form-hint" id="profile-bio-note">Shown at the top of your shop once Kaayko has approved it.</p>
               </div>
               
               <button type="submit" class="btn btn-kreator">
@@ -1287,7 +1290,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <div>
                 <strong style="color: var(--text-primary);">Delete Account</strong>
-                <p style="font-size: 13px; color: var(--text-muted);">Permanently delete your seller account and all data</p>
+                <p style="font-size: 13px; color: var(--text-muted);">Closes your shop and removes your personal details. Records of past sales are kept for accounting.</p>
               </div>
               <button id="delete-account-btn" class="btn" style="background: #ef4444; color: white; border: none;">Delete Account</button>
             </div>
@@ -1365,7 +1368,13 @@
         setVal('profile-email', user.email);
         setVal('profile-phone', user.phone);
         setVal('profile-location', user.location);
-        setVal('profile-bio', user.bio);
+        setVal('profile-bio', user.pendingBio || user.bio);
+        const bioNote = document.getElementById('profile-bio-note');
+        if (bioNote) {
+          bioNote.textContent = user.pendingBio
+            ? 'Your new description is waiting for Kaayko\'s review. Shoppers still see the previous one.'
+            : (user.bioNote ? `Kaayko did not publish your last description: ${user.bioNote}` : 'Shown at the top of your shop once Kaayko has approved it.');
+        }
         
         showShop(user);
         
@@ -1461,21 +1470,53 @@
       }
       const info = document.createElement('div');
       info.className = 'product-info';
-      const status = p.adminHidden ? ['inactive', 'Paused by Kaayko']
+      const status = p.sellerSuspended ? ['inactive', 'Shop suspended']
+        : p.adminHidden ? ['inactive', 'Paused by Kaayko']
         : p.reviewStatus === 'pending' ? ['inactive', 'In review']
         : p.reviewStatus === 'rejected' ? ['inactive', 'Sent back']
         : p.isAvailable ? ['active', 'Live'] : ['inactive', 'Hidden'];
       info.innerHTML = `<h4>${esc(p.title)}</h4>
         <p class="product-price">${typeof p.actualPrice === 'number' ? `$${p.actualPrice.toFixed(2)}` : ''}</p>
         <span class="product-status ${status[0]}">${status[1]}</span>
-        ${p.reviewStatus === 'rejected' && p.reviewNote ? `<p class="product-note">Kaayko: ${esc(p.reviewNote)}</p>` : ''}`;
+        ${p.pendingReview ? `<p class="product-note">Your latest changes are waiting for review; this version stays on sale.</p>` : ''}
+        ${p.reviewNote ? `<p class="product-note">Kaayko: ${esc(p.reviewNote)}</p>` : ''}`;
       card.appendChild(info);
+      // Edit, hide or show, delete: the seller's own controls (there were none).
+      const actions = document.createElement('div');
+      actions.className = 'product-actions';
+      const button = (label, act) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn btn-secondary btn-sm'; b.textContent = label; b.dataset.act = act; b.dataset.id = p.id; return b; };
+      actions.append(button('Edit', 'edit'));
+      if (!p.adminHidden && !p.sellerSuspended) actions.append(button(p.isAvailable ? 'Hide' : 'Show', p.isAvailable ? 'hide' : 'show'));
+      actions.append(button('Delete', 'delete'));
+      card.appendChild(actions);
       return card;
     }
     
+    async function onProductAction(e) {
+      const b = e.target.closest('button[data-act]');
+      if (!b || b.disabled) return;
+      const { act, id } = b.dataset;
+      if (act === 'edit') { location.href = `/kreator/add-product?edit=${encodeURIComponent(id)}`; return; }
+      if (act === 'delete' && !confirm('Delete this listing? It comes off the store, and you cannot undo this here. Past orders are kept.')) return;
+      b.disabled = true;
+      try {
+        const res = act === 'delete'
+          ? await authed(`/kreators/products/${encodeURIComponent(id)}`, { method: 'DELETE' })
+          : await authed(`/kreators/products/${encodeURIComponent(id)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isAvailable: act === 'show' }) });
+        const body = await res.json().catch(() => ({}));
+        if (!body.success) throw new Error(body.message || 'That did not work');
+        loadProducts();
+      } catch (err) {
+        b.disabled = false;
+        alert(err.message);
+      }
+    }
+    document.getElementById('all-products')?.addEventListener('click', onProductAction);
+    document.getElementById('products-overview')?.addEventListener('click', onProductAction);
+    
     function renderProducts(container, products, limit) {
       if (!container) return;
-      if (!products.length) return; // keep the page's empty state
+      if (!products.length) { container.innerHTML = '<div class="empty-state"><span class="material-icons">inventory_2</span><h3>No products yet</h3><p>Add your first product to start selling</p><a href="./add-product" class="btn btn-kreator">Add Product</a></div>'; return; }
       container.replaceChildren(...products.slice(0, limit || products.length).map(productCard));
     }
     
@@ -1528,7 +1569,7 @@
         document.getElementById('earnings-month').textContent = money(totals.monthNetCents);
         document.getElementById('earnings-total').textContent = money(totals.netCents);
         const count = (...st) => lines.filter(l => st.includes(l.status)).length;
-        document.getElementById('orders-pending').textContent = count('processing', 'paid', 'succeeded');
+        document.getElementById('orders-pending').textContent = lines.filter(l => /^processing/.test(String(l.status))).length;
         document.getElementById('orders-processing').textContent = count('ready_to_ship');
         document.getElementById('orders-shipped').textContent = count('shipped');
         document.getElementById('orders-completed').textContent = count('delivered');
@@ -1579,7 +1620,7 @@
       try {
         const result = await updateProfile(updates);
         if (result?.success) {
-          alert('Profile updated.');
+          alert(result.data?.pendingBio ? 'Saved. Your new shop description is waiting for Kaayko\'s review.' : 'Profile updated.');
           loadUserData();
         } else {
           throw new Error(result?.message || 'Failed to update');
@@ -1620,7 +1661,7 @@
     
     // Delete Account
     document.getElementById('delete-account-btn').addEventListener('click', async () => {
-      const confirmed = prompt('This deletes your seller account and takes every listing off the store. Type "DELETE" to confirm:');
+      const confirmed = prompt('This closes your shop: every listing comes off the store, your shop address stops working, and your personal details are removed. Records of past sales are kept. Type "DELETE" to confirm:');
       
       if (confirmed !== 'DELETE') {
         alert('Account deletion cancelled.');

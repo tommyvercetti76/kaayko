@@ -368,13 +368,19 @@
             <div class="error-icon">
               <span class="material-icons">error_outline</span>
             </div>
-            <h2 class="error-title">Invalid or Expired Link</h2>
+            <h2 class="error-title">This link no longer works</h2>
             <p class="error-message" id="error-message">
-              This invitation link is no longer valid. It may have expired or already been used.
+              Activation links last 24 hours, and a newer one replaces an older one.
             </p>
-            <a href="apply" class="btn btn-kreator btn-large" style="width: 100%;">
-              Apply Again
-            </a>
+            <!-- An approved seller asks for a fresh link (POST /kreators/onboarding/new-link).
+                 Until 26 Oct 2026 the only button was Apply Again, which refuses an approved email. -->
+            <form id="new-link-form" class="new-link-form" novalidate>
+              <label class="form-label" for="new-link-email">Approved already? Send yourself a new link</label>
+              <input type="email" id="new-link-email" class="form-input" placeholder="The email you applied with" autocomplete="email" required>
+              <button type="submit" class="btn btn-kreator btn-large" style="width: 100%; margin-top: 12px;" id="new-link-btn">Email me a new link</button>
+              <p class="form-hint" id="new-link-status" role="status"></p>
+            </form>
+            <p style="margin-top: 16px; font-size: 13px;">Not approved yet? <a href="/kreator/check-status">Check your application</a> or <a href="/kreator/apply">apply</a>.</p>
           </div>
         </div>
         
@@ -486,7 +492,7 @@
   </div>
 
   <script type="module">
-    import { verifyMagicLink, completeOnboarding, AUTH } from './js/kreator-api.js';
+    import { verifyMagicLink, completeOnboarding, AUTH, CONFIG } from './js/kreator-api.js';
     
     let magicToken = null;
     let kreatorData = null;
@@ -504,7 +510,9 @@
     // Verify token on page load
     async function verifyToken() {
       if (!magicToken) {
-        showError('No invitation token provided. Please use the link from your email.');
+        showError(urlParams.get('expired')
+          ? 'That activation link has expired or was replaced by a newer one.'
+          : 'This page needs the link from your approval email.');
         return;
       }
       
@@ -539,6 +547,28 @@
       document.getElementById('error-message').textContent = message;
       showState('error-state');
     }
+    
+    document.getElementById('new-link-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('new-link-email').value.trim();
+      const status = document.getElementById('new-link-status');
+      const btn = document.getElementById('new-link-btn');
+      if (!email) { status.textContent = 'Enter the email you applied with.'; return; }
+      btn.disabled = true;
+      try {
+        const res = await fetch(`${CONFIG.API_BASE}/kreators/onboarding/new-link`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email })
+        });
+        const body = await res.json().catch(() => ({}));
+        status.textContent = res.status === 429
+          ? 'Too many tries. Wait a while and try again.'
+          : (body.message || 'If that email belongs to an approved seller, a new link is on its way.');
+      } catch (_) {
+        status.textContent = 'No connection. Try again.';
+      } finally {
+        btn.disabled = false;
+      }
+    });
     
     // Password visibility toggle
     window.togglePassword = function(fieldId) {

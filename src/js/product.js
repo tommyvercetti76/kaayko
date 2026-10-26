@@ -396,7 +396,10 @@ export async function productPageInit(productID, { openModal }) {
     mountCurrencySwitch(document.querySelector('.site-footer'), 'is-footer');
     const [product] = await Promise.all([
       productFirst(productID, {
-        onFresh: (fresh) => { renderProduct(fresh, openModal); mountSuggestions(fresh, root); }
+        onFresh: (fresh) => {
+          if (!fresh) return renderError(root, "This piece is no longer available");
+          renderProduct(fresh, openModal); mountSuggestions(fresh, root);
+        }
       }),
       currencyReady({ timeoutMs: 900 }),   // ₹ for India: the price draws once, in rupees
     ]);

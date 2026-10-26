@@ -110,7 +110,7 @@ class CartManager {
    * (null when the product cannot be priced — the server will refuse it at checkout).
    * @returns {boolean} false when the bag is full
    */
-  addItem({ productId, title, subtitle, priceCents = null, imgSrc, size, gender }) {
+  addItem({ productId, title, subtitle, priceCents = null, imgSrc, size, gender, storeName = null }) {
     const existingIndex = this.cart.findIndex((i) => i.productId === productId);
     const item = {
       productId,
@@ -120,6 +120,8 @@ class CartManager {
       imgSrc: Array.isArray(imgSrc) ? imgSrc[0] : imgSrc,
       size,
       gender,
+      // An independent maker's name, so the bag and checkout say who sells it.
+      storeName: typeof storeName === 'string' && storeName ? storeName.slice(0, 80) : null,
       addedAt: Date.now()
     };
     if (existingIndex >= 0) {

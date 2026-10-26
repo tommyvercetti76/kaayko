@@ -97,11 +97,15 @@ async function applications(status) {
 }
 
 async function sellers() {
-  const [active, waiting] = await Promise.all([
+  const [active, waiting, suspended] = await Promise.all([
     getJson('/kreators/admin/list?status=active&limit=100'),
     getJson('/kreators/admin/list?status=pending_password&limit=100'),
+    getJson('/kreators/admin/list?status=suspended&limit=100'),
   ]);
-  const rows = [...(waiting.kreators || []), ...(active.kreators || [])].map(sellerCard).join('');
+  // A seller with a shop description waiting comes first.
+  const all = [...(suspended.kreators || []), ...(waiting.kreators || []), ...(active.kreators || [])]
+    .sort((a, b) => Number(!!b.pendingBio) - Number(!!a.pendingBio));
+  const rows = all.map(sellerCard).join('');
   return rows || empty('No sellers yet.');
 }
 
@@ -110,32 +114,48 @@ async function listings(status) {
   return (data.listings || []).map(listingCard).join('') || empty(status === 'pending' ? 'No listings waiting for review.' : 'No live kreator listings.');
 }
 
+function listingFields(v) {
+  const img = (v.imgSrc || []).map(safeUrl).filter(Boolean);
+  return `${img.length ? `<div class="kreators-photos">${img.map((u) => `<a href="${escapeHtml(u)}" target="_blank" rel="noopener"><img src="${escapeHtml(u)}" alt="" loading="lazy"></a>`).join('')}</div>` : ''}
+      <p class="kreators-desc"><strong>${escapeHtml(v.title || '')}</strong> — ${escapeHtml(v.description || '')}</p>
+      <dl class="kreators-rows">
+        ${row('Kind', escapeHtml([v.category, v.productType].filter(Boolean).join(' · ')))}
+        ${row('Options', escapeHtml((v.availableSizes || []).join(', ')))}
+        ${row('Tags', escapeHtml((v.tags || []).join(', ')))}
+        ${row('Story', escapeHtml(v.storyCopy || ''))}
+      </dl>`;
+}
+
 function listingCard(p) {
-  const img = (p.imgSrc || []).map(safeUrl).filter(Boolean);
-  const actions = p.reviewStatus === 'pending'
+  const waiting = p.reviewStatus === 'pending' || !!p.pendingEdit;
+  // version: what the reviewer is looking at; an edit after this makes the API refuse.
+  const ver = `data-version="${escapeHtml(String(p.reviewVersion || 0))}"`;
+  const actions = waiting
     ? `<div class="kreators-actions">
-         <button type="button" class="btn btn-primary" data-act="list-approve" data-id="${escapeHtml(p.id)}">Approve — put on the store</button>
-         <button type="button" class="btn btn-secondary" data-act="list-reject" data-id="${escapeHtml(p.id)}">Send back…</button>
+         <button type="button" class="btn btn-primary" data-act="list-approve" data-id="${escapeHtml(p.id)}" ${ver}>${p.pendingEdit ? 'Approve the changes' : 'Approve — put on the store'}</button>
+         <button type="button" class="btn btn-secondary" data-act="list-reject" data-id="${escapeHtml(p.id)}" ${ver}>${p.pendingEdit ? 'Keep the current version…' : 'Send back…'}</button>
        </div>`
-    : `<div class="kreators-actions"><button type="button" class="btn btn-secondary" data-act="list-reject" data-id="${escapeHtml(p.id)}">Take down and send back…</button></div>`;
+    : `<div class="kreators-actions"><button type="button" class="btn btn-secondary" data-act="list-reject" data-id="${escapeHtml(p.id)}" ${ver}>Take down and send back…</button></div>`;
+  const badge = p.sellerSuspended ? ['rejected', 'seller suspended'] : p.pendingEdit ? ['pending', 'live · changes waiting'] : p.reviewStatus === 'approved' ? ['approved', 'live'] : ['pending', 'waiting'];
   return `
     <article class="kreators-item">
       <header class="kreators-item-head">
         <div>
           <h3>${escapeHtml(p.title)} · $${Number(p.actualPrice || 0).toFixed(2)}</h3>
-          <p>${escapeHtml(p.storeName || '')} · ${escapeHtml(p.sellerEmail || '')}</p>
+          <p>${escapeHtml(p.storeName || '')} · ${escapeHtml(p.sellerEmail || '')} · ${p.isAvailable ? 'seller has it switched on' : 'seller has it switched off'}</p>
         </div>
-        <span class="kreators-status kreators-status-${p.reviewStatus === 'approved' ? 'approved' : 'pending'}">${p.reviewStatus === 'approved' ? 'live' : 'waiting'}</span>
+        <span class="kreators-status kreators-status-${badge[0]}">${badge[1]}</span>
       </header>
-      ${img.length ? `<div class="kreators-photos">${img.map((u) => `<a href="${escapeHtml(u)}" target="_blank" rel="noopener"><img src="${escapeHtml(u)}" alt="" loading="lazy"></a>`).join('')}</div>` : ''}
-      <p class="kreators-desc">${escapeHtml(p.description || '')}</p>
+      ${p.pendingEdit
+        ? `<div class="kreators-compare">
+             <section><h4>On sale now</h4>${listingFields(p)}</section>
+             <section><h4>Proposed (changed: ${escapeHtml(p.pendingEdit.changed.join(', '))})</h4>${listingFields(p.pendingEdit)}</section>
+           </div>`
+        : listingFields(p)}
       <dl class="kreators-rows">
-        ${row('Kind', escapeHtml([p.category, p.productType].filter(Boolean).join(' · ')))}
-        ${row('Options', escapeHtml((p.availableSizes || []).join(', ')))}
-        ${row('Tags', escapeHtml((p.tags || []).join(', ')))}
-        ${row('Story', escapeHtml(p.storyCopy || ''))}
-        ${row('Seller has it', p.isAvailable ? 'switched on' : 'switched off')}
+        ${row('Shop description', escapeHtml(p.storeBio || ''))}
         ${row('Submitted', escapeHtml(p.submittedForReviewAt ? formatDate(p.submittedForReviewAt) : ''))}
+        ${row('Last note', escapeHtml(p.reviewNote || ''))}
       </dl>
       ${actions}
     </article>`;
@@ -223,6 +243,7 @@ function shopLines(k) {
 
 function sellerCard(k) {
   const waiting = k.status === 'pending_password';
+  const suspended = k.status === 'suspended';
   return `
     <article class="kreators-item">
       <header class="kreators-item-head">
@@ -230,9 +251,13 @@ function sellerCard(k) {
           <h3>${escapeHtml(k.businessName || k.displayName || '(no name)')}</h3>
           <p>${escapeHtml([k.firstName, k.lastName].filter(Boolean).join(' '))} · <a href="mailto:${escapeHtml(k.email)}">${escapeHtml(k.email)}</a></p>
         </div>
-        <span class="kreators-status kreators-status-${waiting ? 'pending' : 'approved'}">${waiting ? 'not activated' : 'active'}</span>
+        <span class="kreators-status kreators-status-${suspended ? 'rejected' : waiting ? 'pending' : 'approved'}">${suspended ? 'suspended' : waiting ? 'not activated' : 'active'}</span>
       </header>
       ${shopLines(k)}
+      ${suspended ? `<p class="kreators-shopless">Suspended: ${escapeHtml(k.suspendReason || '')}. Every listing is off sale and the shop page reads closed.</p>` : ''}
+      ${k.pendingBio ? `<div class="kreators-bio"><p><strong>New shop description waiting:</strong> ${escapeHtml(k.pendingBio)}</p>
+        <p class="kreators-shopless">Shoppers still see: ${escapeHtml(k.bio || '(none)')}</p>
+        <div class="kreators-actions"><button type="button" class="btn btn-primary" data-act="bio-approve" data-uid="${escapeHtml(k.uid)}">Publish it</button><button type="button" class="btn btn-secondary" data-act="bio-reject" data-uid="${escapeHtml(k.uid)}">Return it…</button></div></div>` : ''}
       <dl class="kreators-rows">
         ${row('Listings', escapeHtml(String(k.stats?.totalProducts ?? 0)))}
         ${row('Location', escapeHtml(k.location || ''))}
@@ -243,6 +268,9 @@ function sellerCard(k) {
         ${!k.storeHandle
           ? `<button type="button" class="btn btn-secondary" data-act="address" data-uid="${escapeHtml(k.uid)}" data-name="${escapeHtml(k.businessName || '')}">Give shop address…</button>`
           : k.storeLinkReady ? '' : `<button type="button" class="btn btn-primary" data-act="finish-link" data-uid="${escapeHtml(k.uid)}" data-handle="${escapeHtml(k.storeHandle)}">Finish kaay.link link</button>`}
+        ${suspended
+          ? `<button type="button" class="btn btn-secondary" data-act="reinstate" data-uid="${escapeHtml(k.uid)}">Reinstate</button>`
+          : `<button type="button" class="btn btn-secondary" data-act="suspend" data-uid="${escapeHtml(k.uid)}" data-name="${escapeHtml(k.businessName || '')}">Suspend…</button>`}
       </div>
     </article>`;
 }
@@ -266,7 +294,8 @@ async function chooseHandle(name) {
 async function onAction(e) {
   const btn = e.target.closest('[data-act]');
   if (!btn || btn.disabled) return;
-  const { act, id, uid, name, handle: knownHandle } = btn.dataset;
+  const { act, id, uid, name, handle: knownHandle, version } = btn.dataset;
+  const mailNote = (d, who) => (d && d.emailQueued ? `${who} has been emailed.` : `The email to ${who.toLowerCase()} did NOT queue.`);
   try {
     if (act === 'approve') {
       const handle = await chooseHandle(name);
@@ -297,19 +326,38 @@ async function onAction(e) {
       showSuccess(`kaay.link/${knownHandle} now opens the shop.`);
     } else if (act === 'list-approve') {
       btn.disabled = true;
-      await getJson(`/kreators/admin/listings/${encodeURIComponent(id)}/review`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ decision: 'approve' }) });
-      showSuccess('Approved. It is on the store, and the seller has been told.');
+      const d = await getJson(`/kreators/admin/listings/${encodeURIComponent(id)}/review`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ decision: 'approve', version: Number(version) }) });
+      (d.emailQueued ? showSuccess : showError)(`${d.outcome === 'changes-approved' ? 'Changes are live.' : 'Approved: it is on the store.'} ${mailNote(d, 'The seller')}`);
     } else if (act === 'list-reject') {
       const note = prompt('What should the seller change? They see this.', '');
       if (!note || note.trim().length < 5) return;
       btn.disabled = true;
-      await getJson(`/kreators/admin/listings/${encodeURIComponent(id)}/review`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ decision: 'reject', note: note.trim() }) });
-      showSuccess('Sent back. It is off the store and the seller has the note.');
+      const d = await getJson(`/kreators/admin/listings/${encodeURIComponent(id)}/review`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ decision: 'reject', note: note.trim(), version: Number(version) }) });
+      const what = { 'changes-returned': 'Changes returned; the current version stays on sale.', 'taken-down': 'Taken off the store.', returned: 'Sent back.' }[d.outcome] || 'Done.';
+      (d.emailQueued ? showSuccess : showError)(`${what} ${mailNote(d, 'The seller')}`);
     } else if (act === 'resend') {
-      if (!confirm('Send a new activation link? The previous link stops working.')) return;
+      if (!confirm('Send a new activation link? The old one keeps working until the new email has gone.')) return;
       btn.disabled = true;
       const data = await getJson(`/kreators/admin/${encodeURIComponent(uid)}/resend-link`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
-      showSuccess(`New activation link emailed to ${data.email}.`);
+      if (data.emailQueued) showSuccess(`New activation link emailed to ${data.email}.`);
+      else showError(`The email did NOT queue, so nothing changed: ${data.email}'s current link still works. Check Mail health and try again.`);
+    } else if (act === 'suspend') {
+      const reason = prompt(`Suspend ${name || 'this seller'}? Every listing comes off sale, their sessions end and their shop reads closed.\n\nWhy? (kept in the audit log)`, '');
+      if (!reason || reason.trim().length < 5) return;
+      btn.disabled = true;
+      const d = await getJson(`/kreators/admin/${encodeURIComponent(uid)}/status`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'suspended', reason: reason.trim() }) });
+      showSuccess(`Suspended. ${d.listings} listing${d.listings === 1 ? '' : 's'} off sale.`);
+    } else if (act === 'reinstate') {
+      if (!confirm('Reinstate this seller? Their approved listings go back on sale.')) return;
+      btn.disabled = true;
+      await getJson(`/kreators/admin/${encodeURIComponent(uid)}/status`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'active' }) });
+      showSuccess('Reinstated.');
+    } else if (act === 'bio-approve' || act === 'bio-reject') {
+      const note = act === 'bio-reject' ? prompt('Why is the description not published? The seller sees this.', '') : '';
+      if (act === 'bio-reject' && (!note || note.trim().length < 5)) return;
+      btn.disabled = true;
+      const d = await getJson(`/kreators/admin/${encodeURIComponent(uid)}/bio`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ decision: act === 'bio-approve' ? 'approve' : 'reject', note: (note || '').trim() }) });
+      (d.emailQueued ? showSuccess : showError)(`${act === 'bio-approve' ? 'Published.' : 'Returned.'} ${mailNote(d, 'The seller')}`);
     }
     await render();
   } catch (err) {

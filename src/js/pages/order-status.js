@@ -53,7 +53,7 @@ function lines(order) {
     <li class="os-line">
       ${it.imgSrc ? `<img class="os-line-img" src="${esc(it.imgSrc)}" alt="" loading="lazy">` : '<span class="os-line-img is-blank" aria-hidden="true"></span>'}
       <span class="os-line-body">
-        <span class="os-line-title">${esc(it.productTitle)}</span>
+        <span class="os-line-title">${esc(it.productTitle)}${it.storeName ? ` <span class="os-line-meta">by ${esc(it.storeName)}</span>` : ''}</span>
         <span class="os-line-meta">${esc([it.gender, it.size].filter(Boolean).join(' · ') || 'One size')} · Qty ${esc(String(it.quantity))}${it.status === 'cancelled' ? ' · cancelled' : ''}</span>
       </span>
       <span class="os-line-money">${esc(money(it.lineTotalCents))}</span>
@@ -62,9 +62,11 @@ function lines(order) {
 
 export function render(order) {   // exported so the page can be exercised with a fixture without an order
   document.title = `Order ${order.orderNumber} — Kaayko`;
+  // An order with a piece from an independent maker is not all printed by us.
+  const withMaker = (order.items || []).some((it) => it.storeName);
   const lede = {
-    paid: 'Paid and in the queue. We print each order ourselves, one at a time.',
-    making: 'Being printed and packed. You will get an email with tracking the moment it ships.',
+    paid: withMaker ? 'Paid and in the queue.' : 'Paid and in the queue. We print each order ourselves, one at a time.',
+    making: withMaker ? 'Being made and packed. You will get an email with tracking the moment it ships.' : 'Being printed and packed. You will get an email with tracking the moment it ships.',
     shipped: 'On its way. The tracking link below is the carrier’s own.',
     delivered: 'Delivered. Thirty days to change your mind, unworn and unwashed.',
     cancelled: 'Cancelled before it shipped.',

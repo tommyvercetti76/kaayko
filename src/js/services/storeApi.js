@@ -151,7 +151,9 @@ export async function catalogueFirst({ maxAgeMs } = {}) {
 
 /**
  * A product from the kept catalogue when it is there, else fetched. `onFresh(product)`
- * is called if the quiet refresh finds that this product has changed.
+ * is called if the quiet refresh finds that this product has changed, and
+ * `onFresh(null)` if it is no longer in the store at all (taken off sale, sent
+ * back to review): the kept copy used to stay buyable on the page for a day.
  */
 export async function productFirst(productId, { onFresh } = {}) {
   const hit = keptCatalogue()?.products.find((p) => p.id === productId);
@@ -159,8 +161,10 @@ export async function productFirst(productId, { onFresh } = {}) {
   const pending = refreshQuietly();
   if (pending && onFresh) {
     pending.then((fresh) => {
-      const now = fresh && fresh.products.find((p) => p.id === productId);
-      if (now && seen(now) !== seen(hit)) onFresh(now);
+      if (!fresh) return;
+      const now = fresh.products.find((p) => p.id === productId);
+      if (!now) onFresh(null);
+      else if (seen(now) !== seen(hit)) onFresh(now);
     });
   }
   return hit;

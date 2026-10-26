@@ -40,6 +40,7 @@ const state = {
   parts: {},            // the mounted Stripe elements, to focus what is missing
   creating: false,
   prepError: null,      // why the intent could not be made, in the shopper's words
+  unavailableId: null,  // the bag line checkout refused, when it named one
   cartSig: null,        // cart signature the current intent was priced for
   addressComplete: false,
   paymentComplete: false,
@@ -369,13 +370,15 @@ function itemMarkup(item, index = 0) {
   const href = `/store/p/${encodeURIComponent(item.productId)}`;
   const qty = item.quantity || 1;
   return `
-    <article class="co-item" style="--co-i:${index}">
+    <article class="co-item${item.productId === state.unavailableId ? ' is-unavailable' : ''}" style="--co-i:${index}">
       <a class="co-item-link" href="${href}" tabindex="-1" aria-hidden="true">
         <img class="co-item-image" src="${esc(item.imgSrc)}" alt=""
              onerror="this.classList.add('is-broken')" />
       </a>
       <div class="co-item-body">
         <h3 class="co-item-title"><a href="${href}">${esc(item.title)}</a></h3>
+        ${item.storeName ? `<p class="co-item-maker">by ${esc(item.storeName)}, an independent maker</p>` : ''}
+        ${item.productId === state.unavailableId ? '<p class="co-item-maker" style="color:#b3261e;font-style:normal">No longer available</p>' : ''}
         <p class="co-item-meta">${meta}${meta && qty > 1 ? ' · ' : ''}${qty > 1 ? `Quantity ${qty}` : ''}</p>
       </div>
       <div class="co-item-side">
@@ -471,6 +474,8 @@ async function prepare() {
     const res = await createPaymentIntent({
       checkoutSession: checkoutSessionNonce(),
       promoCode: code,
+      // A patron's signed link (kaay.store/?patron=…), kept by the store page.
+      patronToken: storeGet('kaayko.patron') || undefined,
       items: items.map(i => ({
         productId: i.productId,
         size: i.size ?? null,
@@ -488,6 +493,9 @@ async function prepare() {
     }
 
     const data = res.data || {};
+    // One piece can no longer be bought (taken off sale, sent back to review, a
+    // size gone): name it and offer to remove it, instead of a dead "Bad Request".
+    state.unavailableId = (!res.ok && res.status < 500 && data.productId) ? String(data.productId) : null;
     if (!res.ok || !data.clientSecret) {
       // Offline or a timeout means the request never got an answer — say so.
       // A 4xx is something the shopper can act on ("that piece just sold
@@ -562,9 +570,23 @@ function showPrepFailure() {
     <div class="co-failure">
       <span class="material-icons">error_outline</span>
       <p>${esc(state.prepError || 'We could not load the payment form.')}</p>
-      <button type="button" id="co-retry">Try again</button>
+      ${state.unavailableId && cartManager.getItem(state.unavailableId)
+        ? `<button type="button" id="co-drop-unavailable">Remove it and continue</button>`
+        : `<button type="button" id="co-retry">Try again</button>`}
     </div>`;
-  document.getElementById('co-retry').addEventListener('click', () => {
+  // Mark the refused line in the bag too (the bag drew before checkout answered).
+  const line = state.unavailableId && document.querySelector(`[data-remove="${CSS.escape(state.unavailableId)}"]`)?.closest('.co-item');
+  if (line && !line.classList.contains('is-unavailable')) {
+    line.classList.add('is-unavailable');
+    line.querySelector('.co-item-title')?.insertAdjacentHTML('afterend', '<p class="co-item-maker" style="color:#b3261e;font-style:normal">No longer available</p>');
+  }
+  document.getElementById('co-drop-unavailable')?.addEventListener('click', () => {
+    const id = state.unavailableId;
+    state.unavailableId = null;
+    state.prepError = null;
+    cartManager.removeItem(id);   // the bag re-renders and prepares again without it
+  });
+  document.getElementById('co-retry')?.addEventListener('click', () => {
     state.prepError = null;
     host.innerHTML = '<div class="co-skeleton"><i></i><i></i><i></i></div>';
     prepare();

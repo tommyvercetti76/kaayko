@@ -326,8 +326,8 @@
         <span class="material-icons">arrow_back</span>
       </a>
       <div class="page-title">
-        <h1>Add New Product</h1>
-        <p>List a new item for sale on Kaayko</p>
+        <h1 id="page-heading">Add New Product</h1>
+        <p id="page-sub">List a new item for sale on Kaayko</p>
       </div>
     </header>
     
@@ -445,13 +445,67 @@
     
     const ALLOWED = ['image/jpeg', 'image/png', 'image/webp'];
     let selectedImages = [];
+    let keptImages = [];   // an edited listing's current photos still wanted, in order
     let types = [];
+    // ?edit=<id> edits a listing (26 Oct 2026: sellers had no way to change one,
+    // though the review emails told them to "edit it in your seller dashboard").
+    const editId = new URLSearchParams(location.search).get('edit');
     
     // The live product types, from the same registry the API checks against.
-    fetch(`${CONFIG.API_BASE}/products/types`)
+    const typesReady = fetch(`${CONFIG.API_BASE}/products/types`)
       .then(r => r.json())
       .then(d => { types = (d.types || d.data || d.productTypes || []).filter(t => t.status === 'live'); fillTypes(); })
       .catch(() => fillTypes());
+    
+    if (editId) loadForEdit(editId);
+    
+    async function loadForEdit(id) {
+      document.getElementById('page-heading').textContent = 'Edit Product';
+      document.getElementById('page-sub').textContent = 'Changes to the words, photos or options are reviewed before shoppers see them. Price and stock change at once.';
+      saveBtn.innerHTML = '<span class="material-icons" style="font-size: 18px;">save</span> Save Changes';
+      try {
+        const res = await fetch(`${CONFIG.API_BASE}/kreators/products/${encodeURIComponent(id)}`, { headers: { Authorization: `Bearer ${AUTH.token}` } });
+        if (res.status === 401) { AUTH.logout('session_expired'); return; }
+        const body = await res.json();
+        if (!body.success) { showStatus(body.message || 'Could not load this listing.', 'error'); return; }
+        // What the seller sees is the listing with any changes already waiting.
+        const p = { ...body.data, ...(body.data.pendingReview && body.data.pendingEdit ? body.data.pendingEdit : {}) };
+        await typesReady;
+        const set = (elId, v) => { document.getElementById(elId).value = v ?? ''; };
+        set('product-title', p.title);
+        set('product-description', p.description);
+        descriptionEl.dispatchEvent(new Event('input'));
+        set('product-price', typeof p.actualPrice === 'number' ? p.actualPrice.toFixed(2) : '');
+        set('product-quantity', p.stockQuantity || p.maxQuantity || 1);
+        categoryEl.value = p.category || '';
+        fillTypes();
+        typeEl.value = p.productType || 'other';
+        sizesEl.value = (p.availableSizes || []).join(', ');
+        set('product-tags', (p.tags || []).join(', '));
+        set('product-story', p.storyCopy || '');
+        keptImages = [...(p.imgSrc || [])];
+        keptImages.forEach(addKeptPreview);
+        if (body.data.pendingReview) showStatus('Earlier changes to this listing are waiting for Kaayko\'s review. Saving again replaces them; the current version stays on sale meanwhile.', 'success');
+      } catch (_) {
+        showStatus('Could not load this listing. Check your connection and try again.', 'error');
+      }
+    }
+    
+    function addKeptPreview(url) {
+      const div = document.createElement('div');
+      div.className = 'image-preview';
+      const img = document.createElement('img');
+      img.alt = 'Current photo';
+      img.src = url;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'remove-btn';
+      btn.setAttribute('aria-label', 'Remove this photo');
+      btn.innerHTML = '<span class="material-icons" style="font-size: 16px;">close</span>';
+      btn.addEventListener('click', () => { keptImages = keptImages.filter(u => u !== url); div.remove(); });
+      div.append(img, btn);
+      imagePreviews.appendChild(div);
+    }
     
     function fillTypes() {
       const cat = categoryEl.value;
@@ -507,7 +561,7 @@
     function handleFiles(files) {
       const skipped = [];
       for (const file of files) {
-        if (selectedImages.length >= 5) { skipped.push(`${file.name} (5 photos at most)`); continue; }
+        if (keptImages.length + selectedImages.length >= 5) { skipped.push(`${file.name} (5 photos at most)`); continue; }
         if (!ALLOWED.includes(file.type)) { skipped.push(`${file.name} (not JPEG, PNG or WebP)`); continue; }
         if (file.size > 5 * 1024 * 1024) { skipped.push(`${file.name} (over 5 MB)`); continue; }
         
@@ -563,7 +617,7 @@
       }
       if (description.length < 20) { showStatus('The description needs at least 20 characters.', 'error'); return; }
       if (!sizes.length) { showStatus('Add at least one option, for example One Size.', 'error'); return; }
-      if (!selectedImages.length) { showStatus('Add at least one photo.', 'error'); return; }
+      if (!keptImages.length && !selectedImages.length) { showStatus('Add at least one photo.', 'error'); return; }
       
       saveBtn.disabled = true;
       saveBtn.innerHTML = '<span class="material-icons" style="font-size: 18px;">hourglass_empty</span> Saving...';
@@ -578,14 +632,15 @@
         formData.append('productType', productType);
         formData.append('tags', JSON.stringify(tags));
         formData.append('availableSizes', JSON.stringify(sizes));
-        if (story) formData.append('storyCopy', story);
+        if (story || editId) formData.append('storyCopy', story);
+        if (editId) formData.append('keepImages', JSON.stringify(keptImages));
         
         selectedImages.forEach((img) => {
           formData.append('images', img);
         });
         
-        const response = await fetch(`${CONFIG.API_BASE}/kreators/products`, {
-          method: 'POST',
+        const response = await fetch(`${CONFIG.API_BASE}/kreators/products${editId ? `/${encodeURIComponent(editId)}` : ''}`, {
+          method: editId ? 'PUT' : 'POST',
           headers: {
             'Authorization': `Bearer ${AUTH.token}`
           },
@@ -596,7 +651,7 @@
         const result = await response.json().catch(() => ({}));
         
         if (result.success) {
-          showStatus('Listed. Kaayko reviews every new piece before it goes on the store; we email you when it is live.', 'success');
+          showStatus(editId ? (result.message || 'Saved.') : 'Listed. Kaayko reviews every new piece before it goes on the store; we email you when it is live.', 'success');
           setTimeout(() => {
             window.location.href = '/kreator/dashboard#products';
           }, 2200);
