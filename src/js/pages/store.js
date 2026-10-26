@@ -115,8 +115,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (info) document.title = `${info.name} - Kaayko Store`;
       if (carousel) carousel.innerHTML = `
         <div class="store-empty">
-          <h2>${info ? esc(info.name) : "No products found"}</h2>
-          <p>${info ? (info.open ? "This shop has nothing on the shelf yet. Come back soon." : "This shop has closed.") : "This store doesn't have any products yet."}</p>
+          <h2>${info ? esc(info.name) : shop?.status === 404 ? "No shop here" : "No products found"}</h2>
+          <p>${info ? (info.open ? "This shop has nothing on the shelf yet. Come back soon." : "This shop has closed.") : shop?.status === 404 ? "There is no shop at this address. Check the link, or browse everything below." : "This store doesn't have any products yet."}</p>
           <a href="/store" class="store-back-link">Browse All Products</a>
         </div>`;
       return;
