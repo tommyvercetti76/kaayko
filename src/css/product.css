@@ -136,6 +136,9 @@ body.product-v2 {
   transition: opacity 260ms ease;
 }
 .product-v2 .pdp-inspect.is-ready { opacity: 1; }
+/* the bottle stands in a photographer's studio: the light grey sweep of its photographs */
+.product-v2 .pdp-inspect.kind-bottle { background: radial-gradient(120% 85% at 50% 38%, #f6f5f3 0%, #e7e5e1 55%, #d6d3ce 100%); }
+html.dark-theme .product-v2 .pdp-inspect.kind-bottle { background: radial-gradient(120% 85% at 50% 38%, #3a3834 0%, #262421 60%, #171614 100%); }
 .product-v2 .pdp-inspect[hidden] { display: none; }
 
 .product-v2 .insp-canvas {

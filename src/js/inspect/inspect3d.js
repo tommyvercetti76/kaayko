@@ -162,42 +162,89 @@ function buildMagnet(face, shape) {
   return { pivot, size: 92, materials: [edgeMat, frontMat, backMat], disposables: [edge, front, back, bt] };
 }
 
-/* ── the bottle: a 20 oz steel bottle, white powder coat, a stamp wrapped round it ──
-   Measured off the product photographs (24 Oct 2026): height 4.34 diameters to the top
-   of the cap, a milk-bottle shoulder, a brushed steel cap 0.67 diameters across, and
-   the print band centred 47% of the way up. Those photographs are generated mockups
-   and disagree with each other by ~20%, so what is certain decides the print: it is the
-   stamp scan itself, never stretched. A landscape stamp at its own proportions goes
-   once round (the mockups all show it continuing round the back); a portrait one is a
-   panel at the band's full height. */
+/* ── the bottle: a 20 oz steel bottle, white satin coat, a stamp wrapped round it ──
+   Rebuilt 25 Oct 2026 after Rohan found the first one "ordinary". What makes the real
+   bottle read as one, from the product photographs at full size:
+     - a polished steel cap, a touch wider at its rim than at its foot, with a softly
+       domed top — mirror steel only reads as steel when it reflects strong lights
+       against dark gaps, so the bottle gets its own studio (studioRoom, below);
+     - a short white neck with a bead under the cap, and a broad, soft milk-bottle
+       shoulder (an ogee, not a quarter circle);
+     - a satin white coat with long vertical highlights from strip lights, the print
+       under the same light;
+     - a real shadow on the floor and a tight contact shadow where it stands.
+   The print is the stamp scan itself, never stretched, on a fixed-width wrap (see the
+   band, below). */
+function bezier(p0, p1, p2, p3, t) {
+  const u = 1 - t;
+  return new THREE.Vector2(
+    u * u * u * p0[0] + 3 * u * u * t * p1[0] + 3 * u * t * t * p2[0] + t * t * t * p3[0],
+    u * u * u * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t * t * t * p3[1]);
+}
+
 function buildBottle(stamp) {
-  const R = 35, C = 2 * Math.PI * R;
+  // Proportions from the photographs (25 Oct 2026): 3.9 diameters tall with the cap; the
+  // cap 0.67 across on a neck nearly as wide; the shoulder full by a quarter of the way
+  // down. (The first build was 4.37 tall with a thin neck and read as a wine bottle.)
+  const R = 35, C = 2 * Math.PI * R, WALL_TOP = 202, TOP = 271.5;
   const group = new THREE.Group();
-  const coat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.42, clearcoat: 0.35, clearcoatRoughness: 0.3 });
-  const steel = new THREE.MeshPhysicalMaterial({ color: 0xeeeeec, metalness: 1, roughness: 0.17, envMapIntensity: 1.4 });
-  // the powder-coated body, turned on a lathe: rounded foot, straight wall, shoulder, neck
-  const prof = [new THREE.Vector2(0.01, 0), new THREE.Vector2(R - 5, 0), new THREE.Vector2(R - 1.6, 0.9), new THREE.Vector2(R - 0.3, 2.6), new THREE.Vector2(R, 4.5), new THREE.Vector2(R, 233)];
-  for (let i = 1; i <= 16; i++) {
-    const t = (i / 16) * Math.PI / 2;
-    prof.push(new THREE.Vector2(R - (R - 21) * (1 - Math.cos(t)), 233 + 50 * Math.sin(t)));
-  }
-  prof.push(new THREE.Vector2(21, 286), new THREE.Vector2(0.01, 286));
+  const coat = new THREE.MeshPhysicalMaterial({ color: 0xf7f7f4, roughness: 0.34, clearcoat: 0.7, clearcoatRoughness: 0.14 });
+  const steel = new THREE.MeshPhysicalMaterial({ color: 0xe4e4e0, metalness: 1, roughness: 0.2, envMapIntensity: 1.2 });
+  // the body on a lathe: a rounded foot, the straight wall, the ogee shoulder, the neck and its bead
+  const prof = [[0.01, 1.0], [R - 8, 0.5], [R - 4.5, 0.12], [R - 2.2, 0.8], [R - 0.7, 2.4], [R, 5.2], [R, WALL_TOP]].map(([r, y]) => new THREE.Vector2(r, y));
+  for (let k = 1; k <= 30; k++) prof.push(bezier([R, WALL_TOP], [R, 228], [21, 230], [20.5, 242], k / 30));
+  [[20.5, 244.5], [21.3, 245.1], [21.6, 246.2], [21.3, 247.3], [20.4, 247.7], [20.4, 249.5], [0.01, 249.5]].forEach(([r, y]) => prof.push(new THREE.Vector2(r, y)));
   const body = new THREE.LatheGeometry(prof, 192);
-  // the cap: brushed steel, a little wider than the neck, its top edge rounded
-  const capP = [new THREE.Vector2(0.01, 304), new THREE.Vector2(22, 304), new THREE.Vector2(23.3, 303.2), new THREE.Vector2(23.6, 301.5),
-    new THREE.Vector2(23.6, 286.5), new THREE.Vector2(23, 285), new THREE.Vector2(21.2, 284.6)];
-  const cap = new THREE.LatheGeometry(capP, 128);
-  // the stamp: its own proportions; the band no taller than the straight wall allows
+  // the cap: a steel shell, flaring a little to a rolled rim, domed on top
+  const capP = [[20.2, 248.2], [22.6, 248.2], [23.05, 248.7], [23.25, 249.6], [23.35, 262], [23.7, 266.8], [23.85, 268],
+    [23.65, 269.4], [23.0, 270.2], [20.8, 270.8], [12, 271.3], [0.01, TOP]].map(([r, y]) => new THREE.Vector2(r, y));
+  const cap = new THREE.LatheGeometry(capP, 160);
+  // the stamp: a print-on-demand wrap is a fixed WIDTH — three quarters of the way round
+  // (every photograph shows white coat at the back and a stamp edge at the side) — and the
+  // stamp's own proportions set its height, so a wide stamp is a short band and the portrait
+  // Aerial Post a tall panel, as the photographs show; never stretched. Centred 47% up.
   const aspect = stamp.image.width / stamp.image.height;
-  const h = Math.min(C / aspect, 168);
-  const f = Math.min(1, (h * aspect) / C);              // how far round it goes
-  const wall = new THREE.CylinderGeometry(R + 0.12, R + 0.12, h, 192, 1, true, -Math.PI * f, 2 * Math.PI * f);
+  const ARC = 0.75;
+  const h = Math.min((ARC * C) / aspect, WALL_TOP - 14);
+  const f = (h * aspect) / C;                           // how far round it goes
+  const mid = Math.max(9 + h / 2, Math.min(0.47 * TOP, WALL_TOP - 2 - h / 2));
+  const wall = new THREE.CylinderGeometry(R + 0.08, R + 0.08, h, 192, 1, true, -Math.PI * f, 2 * Math.PI * f);
   const printed = coat.clone(); printed.map = stamp;   // the stamp already sits on the coat's white
-  const band = new THREE.Mesh(wall, printed); band.position.y = 143.75;
-  group.add(new THREE.Mesh(body, coat), new THREE.Mesh(cap, steel), band);
-  group.position.y = -152;                          // turn about the bottle's middle
+  const meshes = [new THREE.Mesh(body, coat), new THREE.Mesh(cap, steel), new THREE.Mesh(wall, printed)];
+  meshes[2].position.y = mid;
+  meshes.forEach((m) => { m.castShadow = true; group.add(m); });
+  group.position.y = -TOP / 2;                      // turn about the bottle's middle
   const pivot = new THREE.Group(); pivot.add(group);
-  return { pivot, size: 318, focusY: 143.75 - 152, materials: [coat, steel, printed], disposables: [body, cap, wall] };
+  return { pivot, size: TOP + 6, focusY: mid - TOP / 2, base: -TOP / 2, materials: [coat, steel, printed], disposables: [body, cap, wall] };
+}
+
+/* ── the bottle's studio ───────────────────────────────────────────────────────
+   A room for the bottle to reflect, rendered once into an environment map: dark walls,
+   a pale floor, and area lights the way a product photographer sets them — a tall
+   strip softbox front-left (the long highlight down the coat), a hotter strip
+   behind-right (the bright edge that separates the silhouette), a kicker behind-left,
+   an overhead box (the cap's top) and a dim card behind the camera. Built from planes,
+   like three's RoomEnvironment, so nothing is fetched. */
+function studioRoom(renderer) {
+  const room = new THREE.Scene();
+  const walls = new THREE.Mesh(new THREE.BoxGeometry(24, 14, 24), new THREE.MeshBasicMaterial({ color: 0x34322f, side: THREE.BackSide }));
+  walls.position.y = 3; room.add(walls);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(24, 24), new THREE.MeshBasicMaterial({ color: 0xb9b6b0 }));
+  floor.rotation.x = -Math.PI / 2; floor.position.y = -3.9; room.add(floor);
+  const light = (w, h, x, y, z, k) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    m.material.color.setScalar(k); m.position.set(x, y, z); m.lookAt(0, 0, 0); room.add(m);
+  };
+  light(2.6, 9, -7, 2, 3.6, 8);       // key strip, front-left
+  light(1.3, 9, 7.6, 2, -2.6, 13);    // rim strip, behind-right
+  light(1.0, 8, -6.4, 2, -5, 4);      // kicker, behind-left
+  light(9, 6, 0, 9.6, 1.2, 3.2);      // overhead
+  light(12, 5, 0, 1, 11.6, 0.9);      // fill card behind the camera
+  const pm = new THREE.PMREMGenerator(renderer);
+  const env = pm.fromScene(room, 0.025).texture;
+  pm.dispose();
+  room.traverse((o) => { o.geometry?.dispose?.(); o.material?.dispose?.(); });
+  return env;
 }
 
 /* ── the stage ──────────────────────────────────────────────────────────────── */
@@ -219,10 +266,31 @@ export async function mountInspect(host, opts) {
   renderer.toneMapping = THREE.NeutralToneMapping;
   renderer.toneMappingExposure = 1.12;
   const scene = new THREE.Scene();
-  scene.environment = studio(renderer);
-  const keyLight = new THREE.DirectionalLight(0xffffff, 1.1); keyLight.position.set(-1.1, 1.3, 1.4); scene.add(keyLight);
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8782, 0.35));
-  const camera = new THREE.PerspectiveCamera(26, 1, 1, 2000);
+  host.classList.add(`kind-${kind}`);
+  const bottle = kind === 'bottle';
+  scene.environment = bottle ? studioRoom(renderer) : studio(renderer);
+  const keyLight = new THREE.DirectionalLight(0xffffff, bottle ? 1.3 : 1.1);
+  if (bottle) {
+    // the key casts a real shadow on the floor: high and soft, the way a studio box
+    // throws one — short and pale, not a late-afternoon wedge
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFShadowMap;    // PCF honours radius (the blur); PCFSoft does not
+    keyLight.position.set(-120, 560, 260);
+    keyLight.castShadow = true;
+    keyLight.shadow.mapSize.set(2048, 2048);
+    Object.assign(keyLight.shadow.camera, { left: -300, right: 300, top: 300, bottom: -300, near: 100, far: 1400 });
+    keyLight.shadow.radius = 14; keyLight.shadow.blurSamples = 16; keyLight.shadow.bias = -0.0004;
+  } else {
+    keyLight.position.set(-1.1, 1.3, 1.4);
+  }
+  scene.add(keyLight);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8782, bottle ? 0.18 : 0.35));
+  let catcher = null;
+  if (bottle) {
+    catcher = new THREE.Mesh(new THREE.PlaneGeometry(1400, 1400), new THREE.ShadowMaterial({ opacity: 0.13 }));
+    catcher.rotation.x = -Math.PI / 2; catcher.receiveShadow = true; scene.add(catcher);
+  }
+  const camera = new THREE.PerspectiveCamera(bottle ? 23 : 26, 1, 1, 3000);
 
   // the object
   let obj, shape = opts.shape || 'round';
@@ -236,6 +304,10 @@ export async function mountInspect(host, opts) {
       obj = buildMagnet(faces[shape], shape);
     }
     scene.add(obj.pivot);
+    if (obj.base !== undefined) {                   // the floor sits where the bottle stands
+      if (catcher) catcher.position.y = obj.base - 0.1;
+      if (floor) floor.position.y = obj.base + 0.2;
+    }
     fit();
   }
 
@@ -247,9 +319,9 @@ export async function mountInspect(host, opts) {
     r.addColorStop(0, 'rgba(0,0,0,0.42)'); r.addColorStop(0.55, 'rgba(0,0,0,0.16)'); r.addColorStop(1, 'rgba(0,0,0,0)');
     g.fillStyle = r; g.fillRect(0, 0, 256, 256);
     const ft = new THREE.CanvasTexture(c);
-    const span = kind === 'mug' ? 150 : 130;
+    const span = kind === 'mug' ? 150 : 96;          // the bottle's is a tight contact shadow; its cast shadow is real
     floor = new THREE.Mesh(new THREE.PlaneGeometry(span, span), new THREE.MeshBasicMaterial({ map: ft, transparent: true, depthWrite: false }));
-    floor.rotation.x = -Math.PI / 2; floor.position.y = kind === 'mug' ? -47.6 : -152.4; scene.add(floor);
+    floor.rotation.x = -Math.PI / 2; floor.position.y = kind === 'mug' ? -47.6 : -152.6; scene.add(floor);
   }
 
   // camera: a little above, telephoto, framed to the host
@@ -261,8 +333,9 @@ export async function mountInspect(host, opts) {
     renderer.setSize(w, hgt, false);
     camera.aspect = w / hgt;
     // the bottle is tall: fit its height; the others fit whichever side is tighter
-    const dist = (obj ? obj.size : 120) / 2 / Math.tan((camera.fov * D2R) / 2) / (kind === 'bottle' ? 1 : Math.min(1, camera.aspect)) * 1.12;
-    const lift = kind === 'mug' ? 0.32 : kind === 'bottle' ? 0.12 : 0.0;
+    // the bottle stands tall in its frame, the way a product shot frames it
+    const dist = (obj ? obj.size : 120) / 2 / Math.tan((camera.fov * D2R) / 2) / (kind === 'bottle' ? 1 : Math.min(1, camera.aspect)) * (kind === 'bottle' ? 1.07 : 1.12);
+    const lift = kind === 'mug' ? 0.32 : kind === 'bottle' ? 0.08 : 0.0;
     basePos.set(0, dist * lift, dist);
     baseLook.set(0, kind === 'mug' ? -3 : 0, 0);
     focus.set(0, obj?.focusY ?? 0, 0);              // where the winding-in aims: the print

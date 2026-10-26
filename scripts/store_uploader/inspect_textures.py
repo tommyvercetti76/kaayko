@@ -143,10 +143,24 @@ def mug_wrap(art: Path, name: str, medallion: bool, width: int = 4096) -> Image.
 
 
 def bottle_wrap(stamp: Path, width: int = 2048) -> Image.Image:
-    """The stamp on white, its perforated outline a faint line, at its own proportions."""
+    """The stamp on white, its perforated outline a faint line, at its own proportions.
+
+    The scan's paper is cream; printed on the bottle's white coat it reads as white (the
+    photographs show a white margin, and a cream one looked like a stuck-on label in 3D,
+    25 Oct 2026), so the scan is white-balanced on its own margin first."""
     from PIL import ImageFilter
+    import numpy as np
     s = Image.open(stamp).convert("RGBA")
     s = s.resize((width, round(width * s.height / s.width)), Image.LANCZOS)
+    a = np.asarray(s).astype(np.float32)
+    H, W = a.shape[:2]; m = max(4, int(min(H, W) * 0.035))
+    edge = np.zeros((H, W), bool); edge[:m] = edge[-m:] = True; edge[:, :m] = edge[:, -m:] = True
+    paper = a[..., :3][edge & (a[..., 3] > 200)]
+    paper = paper[paper.mean(axis=1) > np.percentile(paper.mean(axis=1), 40)]   # the paper, not the art's edge
+    if len(paper):
+        gain = np.clip(252.0 / np.median(paper, axis=0), 1.0, 1.15)
+        a[..., :3] = np.clip(a[..., :3] * gain, 0, 255)
+        s = Image.fromarray(a.astype(np.uint8), "RGBA")
     al = s.split()[-1]
     edge = al.filter(ImageFilter.MaxFilter(5)).point(lambda v: 255 if v > 128 else 0)
     inner = al.filter(ImageFilter.MinFilter(3)).point(lambda v: 255 if v > 128 else 0)
