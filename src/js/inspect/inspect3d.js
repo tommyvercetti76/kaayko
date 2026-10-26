@@ -33,6 +33,7 @@
  */
 import * as THREE from '/js/vendor/three/three.module.min.js';
 import { smoothDamp, clamp } from '/js/cards/attitude.js';
+import { makeGarment, garmentBox, knitMap, panelTexture } from '/js/inspect/cloth.js';
 
 const GAIN = 0.45;            // degrees per pixel of drag
 const SETTLE = 0.46;          // seconds — the cards' INSPECT_SETTLE
@@ -43,7 +44,11 @@ const MAG_YAW = 50;           // how far a magnet tilts side to side — never f
 const MAG_PITCH = 40;         // and up and down
 const SCROLL_RATIO = 0.7;     // a touch drag with |dx| < 0.7·|dy| (within ~35° of vertical) is the page scrolling
 const WIND = 140;             // degrees of finger travel that take the zoom ~63% of the way in
-const ZOOM_MAX = { mug: 1.8, bottle: 2.3, magnet: 1.5 };
+const ZOOM_MAX = { mug: 1.8, bottle: 2.3, magnet: 1.5, tee: 2.0, tote: 1.8 };
+const CLOTH = new Set(['tee', 'tote']);
+const CLOTH_PITCH = 22;       // a hanging thing tips less: past this it would swing off its hook
+const HANGER_LAG = 0.13;      // seconds: how far behind the finger a hanger turns
+const HANGER_SPIN = 320;      // degrees per second: the fastest a thrown hanger turns
 const D2R = Math.PI / 180;
 
 /* ── the studio ────────────────────────────────────────────────────────────────
@@ -218,6 +223,144 @@ function buildBottle(stamp) {
   return { pivot, size: TOP + 6, focusY: mid - TOP / 2, base: -TOP / 2, materials: [coat, steel, printed], disposables: [body, cap, wall] };
 }
 
+/* ── the t-shirt, on a hanger ──────────────────────────────────────────────────
+   A unisex tee cut as the photographs show it: 73 cm across the sleeves, 72 cm
+   from the shoulder seam to the hem, a crew neck dipping 8.5 cm in front and 2 cm
+   behind. It hangs on a walnut hanger from a chrome hook; the shoulders ride the
+   hanger and the rest is cloth (cloth.js). The print sits where a print-on-demand
+   tee carries it: centred, its top a hand below the collar.                    */
+const TEE_DROP = 10.5;                                  // hook to the shoulder seam, cm
+function teeOutline(neck, depth) {
+  // the right half from the collar round to the hem, mirrored for the left
+  const right = [...neck, [9.5, 0], [23, -4.5], [36.5, -17], [30, -26.5], [26.5, -23.5], [27.5, -71]];
+  return [[0, depth], ...right, [0, -72], ...right.slice().reverse().map(([x, y]) => [-x, y])]
+    .map(([x, y]) => [x, y - TEE_DROP]);
+}
+function teeCut() {
+  return {
+    front: teeOutline([[3.5, -7.7], [6.6, -5.6], [8.7, -2.9]], -8.5),     // crew neck, front
+    back: teeOutline([[3.5, -1.9], [6.6, -1.2], [8.7, -0.4]], -2),        // and behind
+  };
+}
+
+function ribbon(points, width, thick) {
+  // a flat band along a curve (a strap), its face turned toward the camera's side
+  const curve = new THREE.CatmullRomCurve3(points.map((p) => new THREE.Vector3(...p)));
+  const N = 48, pos = [], idx = [];
+  const side = new THREE.Vector3(), tan = new THREE.Vector3(), up = new THREE.Vector3(0, 0, 1);
+  for (let i = 0; i <= N; i++) {
+    const t = i / N, p = curve.getPointAt(t);
+    curve.getTangentAt(t, tan);
+    side.crossVectors(tan, up).normalize();
+    const nrm = new THREE.Vector3().crossVectors(side, tan).normalize();
+    for (const [a, b] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+      pos.push(p.x + side.x * a * width / 2 + nrm.x * b * thick / 2, p.y + side.y * a * width / 2 + nrm.y * b * thick / 2, p.z + side.z * a * width / 2 + nrm.z * b * thick / 2);
+    }
+  }
+  for (let i = 0; i < N; i++) {
+    for (let k = 0; k < 4; k++) {
+      const a = i * 4 + k, b = i * 4 + ((k + 1) % 4), c = a + 4, d = b + 4;
+      idx.push(a, c, b, b, c, d);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setIndex(idx); g.computeVertexNormals();
+  return g;
+}
+
+const SHADES = { black: '#302f32', white: '#f2f1ee', blue: '#2c3b57', navy: '#24304a', grey: '#7d7d7f', gray: '#7d7d7f' };
+const shade = (name, fallback) => SHADES[String(name || '').toLowerCase()] || fallback;
+const darker = (hex, k) => '#' + [1, 3, 5].map((i) => Math.round(parseInt(hex.slice(i, i + 2), 16) * k).toString(16).padStart(2, '0')).join('');
+
+function buildTee(print, opts = {}) {
+  const color = shade(opts.color, SHADES.black);
+  const { front, back } = teeCut();
+  const cell = 1.9;
+  const box = garmentBox(front, back, cell);
+  const D = TEE_DROP;
+  const hemY = -72 - D;
+  const stitches = [[-27.3, hemY + 1.6, 27.3, hemY + 1.6], [36.0 - 1.1, -17 - D - 0.6, 29.6 - 1.1, -26.5 - D - 0.2], [-36.0 + 1.1, -17 - D - 0.6, -29.6 + 1.1, -26.5 - D - 0.2]];
+  const w = opts.printW || 24;
+  const knit = knitMap('tee');
+  const cloth = makeGarment({
+    front, back, cell, box, gap: 1.6, knit, sheen: color === SHADES.white ? 0xffffff : 0x9a9a9a,
+    frontMap: panelTexture({ outline: front, box, color, print, printRect: { x: 0, y: -D - (opts.printTop ?? 9.5), w }, stitches }),
+    backMap: panelTexture({ outline: back, box, color, stitches }),
+    innerMap: panelTexture({ outline: back, box, color: darker(color, 0.82), label: -D - 2.4 }),
+    // open at the collar, the hem and the two cuffs; sewn everywhere else
+    open: (x, y) => (y > -D - 10.6 && Math.abs(x) < 10.8) || y < hemY + 2.2
+      || Math.min(segDistXY(x, y, 36.5, -17 - D, 30, -26.5 - D), segDistXY(x, y, -36.5, -17 - D, -30, -26.5 - D)) < 1.8,
+    // the shoulders lie on the hanger
+    pin: (x, y) => { const ax = Math.abs(x); return ax >= 7 && ax <= 23.6 && y >= -D - 4.5 * Math.max(0, ax - 9.5) / 13.5 - 1.7; },
+    // a hung tee keeps its sleeves out and its collar round; the body swings
+    memory: (x, y) => {
+      const ax = Math.abs(x), yy = y + D;
+      if (ax > 24.5 && yy > -30) return 0.03;
+      if (yy > -11) return 0.022;
+      return 0.004 + 0.011 * Math.max(0, 1 + yy / 72);
+    },
+  });
+  // the hanger: a walnut bar under the shoulders, a chrome hook above the collar
+  const wood = new THREE.MeshPhysicalMaterial({ color: 0x5b3b24, roughness: 0.42, clearcoat: 0.6, clearcoatRoughness: 0.25 });
+  const chrome = new THREE.MeshPhysicalMaterial({ color: 0xdedede, metalness: 1, roughness: 0.18 });
+  const bar = new THREE.TubeGeometry(new THREE.CatmullRomCurve3([[-22, -4.4], [-11, -1.2], [0, -0.2], [11, -1.2], [22, -4.4]]
+    .map(([x, y]) => new THREE.Vector3(x, y - D + 0.4, 0))), 60, 0.75, 12, false);
+  const hook = new THREE.TubeGeometry(new THREE.CatmullRomCurve3([[0, -D + 0.6], [0, -5], [0, -1.2], [1.4, 0.6], [3.1, -0.4], [3.3, -2.0]]
+    .map(([x, y]) => new THREE.Vector3(x, y, 0))), 60, 0.32, 10, false);
+  const pivot = new THREE.Group();
+  pivot.add(new THREE.Mesh(bar, wood), new THREE.Mesh(hook, chrome));
+  return {
+    pivot, world: cloth.meshes, cloth, size: 96, centerY: -45, focusY: -D - (opts.printTop ?? 9.5) - 11,
+    materials: [...cloth.materials, wood, chrome], disposables: [...cloth.disposables, bar, hook, knit,
+      ...cloth.materials.map((m) => m.map).filter(Boolean)],
+  };
+}
+function segDistXY(px, py, ax, ay, bx, by) {
+  const dx = bx - ax, dy = by - ay;
+  const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)));
+  return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+}
+
+/* ── the tote, hung by its straps ──────────────────────────────────────────────
+   A 38 × 41 cm natural cotton tote, two panels sewn up the sides and across the
+   bottom, open at the mouth, hanging by its two straps from a brass hook. The
+   strap ends hold the mouth; the bag below is cloth.                            */
+const TOTE_DROP = 27;
+function buildTote(print, opts = {}) {
+  const color = opts.color || '#ece4d2';
+  const D = TOTE_DROP;
+  const body = [[-19, 0], [19, 0], [19, -39.6], [18.4, -40.6], [17.4, -41], [-17.4, -41], [-18.4, -40.6], [-19, -39.6]].map(([x, y]) => [x, y - D]);
+  const cell = 1.8;
+  const box = garmentBox(body, body, cell);
+  const knit = knitMap('tote');
+  const aspect = print ? print.width / print.height : 1;
+  const w = Math.min(opts.printW || 27, 29 * aspect);
+  const cloth = makeGarment({
+    front: body, back: body, cell, box, gap: 1.1, knit, sheen: 0xffffff, bend: 0.2,
+    frontMap: panelTexture({ outline: body, box, color, print, printRect: { x: 0, y: -D - (opts.printTop ?? 6.5), w }, stitches: [[-18.8, -D - 2.4, 18.8, -D - 2.4]] }),
+    backMap: panelTexture({ outline: body, box, color, stitches: [[-18.8, -D - 2.4, 18.8, -D - 2.4]] }),
+    innerMap: panelTexture({ outline: body, box, color: darker(color.length === 7 ? color : '#ece4d2', 0.9) }),
+    open: (x, y) => y > -D - 1.2,
+    pin: (x, y) => { const ax = Math.abs(x); return y > -D - 1.4 && ax > 7.4 && ax < 12.6; },
+    memory: (x, y) => (y > -D - 3 ? 0.05 : 0.002 + 0.008 * Math.max(0, 1 + (y + D) / 41)),
+  });
+  const canvasMat = new THREE.MeshPhysicalMaterial({ color, roughness: 0.95, sheen: 1, sheenRoughness: 0.6, sheenColor: new THREE.Color(0xffffff), normalMap: knit, normalScale: new THREE.Vector2(0.4, 0.4) });
+  const brass = new THREE.MeshPhysicalMaterial({ color: 0xc9a25a, metalness: 1, roughness: 0.28 });
+  const straps = [-1, 1].flatMap((sx) => [-1, 1].map((sz) => ribbon([
+    [sx * 10, -D - 0.3, sz * 0.75], [sx * 9.4, -D + 7, sz * 0.7], [sx * 6.2, -D + 18, sz * 0.45], [sx * 2.4, -2.2, sz * 0.18], [sx * 0.4, 0.2, 0]], 2.6, 0.28)));
+  const hook = new THREE.TubeGeometry(new THREE.CatmullRomCurve3([[0, -0.4], [0, 2.5], [1.2, 4.2], [2.6, 3.4], [2.7, 1.9]]
+    .map(([x, y]) => new THREE.Vector3(x, y, 0))), 48, 0.34, 10, false);
+  const pivot = new THREE.Group();
+  straps.forEach((g) => pivot.add(new THREE.Mesh(g, canvasMat)));
+  pivot.add(new THREE.Mesh(hook, brass));
+  return {
+    pivot, world: cloth.meshes, cloth, size: 74, centerY: -34, focusY: -D - (opts.printTop ?? 6.5) - 13,
+    materials: [...cloth.materials, canvasMat, brass], disposables: [...cloth.disposables, ...straps, hook, knit,
+      ...cloth.materials.map((m) => m.map).filter(Boolean)],
+  };
+}
+
 /* ── the bottle's studio ───────────────────────────────────────────────────────
    A room for the bottle to reflect, rendered once into an environment map: dark walls,
    a pale floor, and area lights the way a product photographer sets them — a tall
@@ -296,14 +439,22 @@ export async function mountInspect(host, opts) {
   let obj, shape = opts.shape || 'round';
   const faces = {};
   async function build() {
-    if (obj) { scene.remove(obj.pivot); obj.disposables.forEach((x) => x.dispose()); obj.materials.forEach((m) => m.dispose()); }
+    if (obj) { scene.remove(obj.pivot); obj.world?.forEach((m) => scene.remove(m)); obj.disposables.forEach((x) => x.dispose()); obj.materials.forEach((m) => m.dispose()); }
     if (kind === 'mug') obj = buildMug(await loadTexture(opts.wrap));
     else if (kind === 'bottle') obj = buildBottle(await loadTexture(opts.wrap));
+    else if (CLOTH.has(kind)) {
+      // the print is drawn into the fabric's own texture, so its loader texture is done with
+      const t = opts.print ? await loadTexture(opts.print) : null;
+      const garment = { color: opts.color, printW: opts.printW, printTop: opts.printTop };
+      obj = kind === 'tee' ? buildTee(t?.image, garment) : buildTote(t?.image, garment);
+      t?.dispose();
+    }
     else {
       faces[shape] = faces[shape] || await loadTexture(opts.faces[shape]);
       obj = buildMagnet(faces[shape], shape);
     }
     scene.add(obj.pivot);
+    obj.world?.forEach((m) => scene.add(m));        // cloth lives in world space, not on the pivot
     if (obj.base !== undefined) {                   // the floor sits where the bottle stands
       if (catcher) catcher.position.y = obj.base - 0.1;
       if (floor) floor.position.y = obj.base + 0.2;
@@ -336,9 +487,10 @@ export async function mountInspect(host, opts) {
     // the bottle stands tall in its frame, the way a product shot frames it; a mug or a
     // magnet fills it about as its photograph does (1.12 left them looking shrunken)
     const dist = (obj ? obj.size : 120) / 2 / Math.tan((camera.fov * D2R) / 2) / (kind === 'bottle' ? 1 : Math.min(1, camera.aspect)) * (kind === 'bottle' ? 1.07 : 1.0);
-    const lift = kind === 'mug' ? 0.32 : kind === 'bottle' ? 0.08 : 0.0;
-    basePos.set(0, dist * lift, dist);
-    baseLook.set(0, kind === 'mug' ? -3 : 0, 0);
+    const lift = kind === 'mug' ? 0.32 : kind === 'bottle' ? 0.08 : CLOTH.has(kind) ? 0.05 : 0.0;
+    const aim = obj?.centerY ?? (kind === 'mug' ? -3 : 0);
+    basePos.set(0, aim + dist * lift, dist);
+    baseLook.set(0, aim, 0);
     focus.set(0, obj?.focusY ?? 0, 0);              // where the winding-in aims: the print
     camera.updateProjectionMatrix();
     place();
@@ -366,7 +518,8 @@ export async function mountInspect(host, opts) {
   const pitch = { a: restPitch, t: restPitch, v: { v: 0 } };
   const lean = { x: 0, y: 0 };
   const grab = { on: false, lifted: false, id: null, x: 0, y: 0, t: 0, wx: 0, wy: 0, ry: 0, rp: 0, sx: 0, sy: 0, moved: 0, timer: 0, wind: 0 };
-  const maxPitch = round ? MUG_PITCH : MAG_PITCH;
+  const heavy = CLOTH.has(kind);
+  const maxPitch = heavy ? CLOTH_PITCH : round ? MUG_PITCH : MAG_PITCH;
   const maxYaw = round ? Infinity : MAG_YAW;
   // the rubber band: the finger's raw angle maps onto lim·tanh(raw/lim) — free near the
   // middle, stiffer toward the limit, never past it
@@ -377,9 +530,12 @@ export async function mountInspect(host, opts) {
   function draw(t) {
     raf = 0;
     const dt = last ? Math.min(0.25, (t - last) / 1000) : 1 / 60; last = t;
-    if (!grab.on) {
-      yaw.a = smoothDamp(yaw.a, yaw.t + lean.x, yaw.v, SETTLE, dt);
-      pitch.a = smoothDamp(pitch.a, pitch.t + lean.y, pitch.v, SETTLE, dt);
+    // a hanger has weight: under the finger it follows through a short spring, not
+    // rigidly, so a flick swings the cloth instead of wringing it (filmed 25 Oct 2026)
+    if (!grab.on || heavy) {
+      const lag = grab.on ? HANGER_LAG : SETTLE;
+      yaw.a = smoothDamp(yaw.a, yaw.t + lean.x, yaw.v, lag, dt);
+      pitch.a = smoothDamp(pitch.a, pitch.t + lean.y, pitch.v, lag, dt);
       if (kind === 'magnet') {          // a hard throw must not carry it round to its back
         yaw.a = clamp(yaw.a, maxYaw * 1.08); pitch.a = clamp(pitch.a, maxPitch * 1.08);
       }
@@ -395,11 +551,14 @@ export async function mountInspect(host, opts) {
       const s = 1 + 0.035 * lift; obj.pivot.scale.setScalar(s);
       obj.pivot.position.y = 2.5 * lift;
     }
+    // the cloth follows the hanger through the fabric, and keeps moving after it stops
+    let flowing = false;
+    if (obj?.cloth) { obj.pivot.updateMatrixWorld(true); flowing = obj.cloth.step(dt, obj.pivot.matrixWorld); }
     if (floor) floor.material.opacity = 1 - 0.35 * lift;
     renderer.render(scene, camera);
     const moving = grab.on || Math.abs(yaw.a - (yaw.t + lean.x)) > 0.02 || Math.abs(pitch.a - (pitch.t + lean.y)) > 0.02
       || Math.abs(yaw.v.v) > 0.05 || Math.abs(pitch.v.v) > 0.05 || Math.abs(lift - (grab.on ? 1 : 0)) > 0.002
-      || Math.abs(zoom - zoomTo) > 0.002 || Math.abs(zoomV.v) > 0.002;
+      || Math.abs(zoom - zoomTo) > 0.002 || Math.abs(zoomV.v) > 0.002 || flowing;
     if (moving) raf = requestAnimationFrame(draw);
     else last = 0;
   }
@@ -440,8 +599,8 @@ export async function mountInspect(host, opts) {
     // phone turned it in one plane only)
     grab.ry += dx * GAIN; grab.rp += dy * GAIN;
     grab.wind += Math.hypot(dx, dy) * GAIN;          // the winding: total travel, any direction
-    yaw.a = band(grab.ry, maxYaw); yaw.t = yaw.a;
-    pitch.a = band(grab.rp, maxPitch); pitch.t = pitch.a;
+    yaw.t = band(grab.ry, maxYaw); pitch.t = band(grab.rp, maxPitch);
+    if (!heavy) { yaw.a = yaw.t; pitch.a = pitch.t; }
     // the throw: angle covered over the last ~80 ms, not a smoothed per-event rate —
     // Safari on a phone delivers few, uneven moves for a quick flick, and an average
     // of them under-counted the throw (a fast flick turned the mug ~50°, not ~85°)
@@ -464,6 +623,12 @@ export async function mountInspect(host, opts) {
         // back to facing you, carrying a little of the throw so it does not just stop
         yaw.v.v = grab.wy * 0.4; pitch.v.v = grab.wx * 0.4;
         yaw.t = 0;
+      } else if (CLOTH.has(kind)) {
+        // a hanger twists back on its hook: the throw spins it, and it comes to rest
+        // facing you, print first, however far it went
+        const spin = clamp(grab.wy, HANGER_SPIN);
+        yaw.v.v = spin; pitch.v.v = clamp(grab.wx, HANGER_SPIN / 3);
+        yaw.t = Math.round((yaw.a + spin * SETTLE * 0.75) / 360) * 360;
       } else {
         yaw.v.v = grab.wy; pitch.v.v = grab.wx;
         yaw.t = yaw.a + grab.wy * SETTLE * 0.75;       // a mug stops where its spin runs out
@@ -517,7 +682,7 @@ export async function mountInspect(host, opts) {
     },
     destroy() {
       cancelAnimationFrame(raf); ro.disconnect();
-      if (obj) { obj.disposables.forEach((x) => x.dispose()); obj.materials.forEach((m) => m.dispose()); }
+      if (obj) { obj.world?.forEach((m) => scene.remove(m)); obj.disposables.forEach((x) => x.dispose()); obj.materials.forEach((m) => m.dispose()); }
       Object.values(faces).forEach((t) => t.dispose());
       scene.environment?.dispose(); renderer.dispose(); canvas.remove();
     },

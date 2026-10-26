@@ -274,7 +274,7 @@ function renderProduct(product, openModalFn) {
    so the photo's own zoom and swipe never see the stage's drags). Nothing loads —
    not the index, not three.js — for any other product, and if WebGL is missing the
    thumb never appears. The magnet's Round / Square choice turns the stage's shape. */
-const INSPECT_TYPES = new Set(['mug', 'magnet', 'bottle']);
+const INSPECT_TYPES = new Set(['mug', 'magnet', 'bottle', 'tshirt', 'tote']);
 const THUMB_3D_PENDING = '<button type="button" class="product-thumb product-thumb-3d is-pending" aria-pressed="false" disabled aria-label="3D view loading"><span aria-hidden="true">3D</span></button>';
 
 function mountInspectFrame(product, root, thumbEls) {
@@ -325,11 +325,14 @@ function mountInspectFrame(product, root, thumbEls) {
     // the resize on showing cleared it to a blank stage for a frame
     layer = document.createElement('div');
     layer.className = 'pdp-inspect';
-    layer.innerHTML = `<p class="pdp-inspect-hint">${entry.kind === 'magnet' ? 'Drag to tilt it in the light' : 'Drag to turn it any way'}</p>`;
+    const hint = entry.kind === 'magnet' ? 'Drag to tilt it in the light' : entry.kind === 'tee' || entry.kind === 'tote' ? 'Drag to turn it, and watch it swing' : 'Drag to turn it any way';
+    layer.innerHTML = `<p class="pdp-inspect-hint">${hint}</p>`;
     stage.appendChild(layer);
     view = await mountInspect(layer, {
       kind: entry.kind, wrap: entry.wrap, faces: { round: entry.round, square: entry.square },
       shape: pickedShape(), title: product.title,
+      // a tee or a tote: the print, and the cloth it is on
+      print: entry.print, color: entry.color || (product.colors || [])[0], printW: entry.printW, printTop: entry.printTop,
     });
     if (!view) { layer.remove(); layer = null; drop(); return; }   // no WebGL: photographs only
     layer.addEventListener('pointerdown', () => layer.classList.add('was-held'), { once: true });

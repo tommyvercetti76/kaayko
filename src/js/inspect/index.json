@@ -3,17 +3,66 @@
   "kind": "bottle",
   "wrap": "/assets/inspect/2GlQkjNqJH1NyOIUmQ0J.bottle.2c8c28ce69.webp"
  },
+ "3uIpQlJEnvR1sDqaBLj5": {
+  "color": "black",
+  "kind": "tee",
+  "print": "/assets/inspect/3uIpQlJEnvR1sDqaBLj5.print.5b7e5af09c.webp",
+  "printTop": 11.9,
+  "printW": 30.0
+ },
+ "48NMICFJI5p0JeHDfzqA": {
+  "color": "#313132",
+  "kind": "tee",
+  "print": "/assets/inspect/48NMICFJI5p0JeHDfzqA.print.6ce46bd683.webp",
+  "printTop": 13.7,
+  "printW": 35.0
+ },
  "5tAMxZe9eHJmwIjp9nJL": {
   "kind": "bottle",
   "wrap": "/assets/inspect/5tAMxZe9eHJmwIjp9nJL.bottle.b06658d3dd.webp"
+ },
+ "8PnFf6bH3fwiH1dTCkFR": {
+  "color": "black",
+  "kind": "tee",
+  "print": "/assets/inspect/8PnFf6bH3fwiH1dTCkFR.print.83d985d7d5.webp",
+  "printTop": 15.9,
+  "printW": 19.7
  },
  "BeL1gqbF5Y6kWWJWeHFc": {
   "kind": "bottle",
   "wrap": "/assets/inspect/BeL1gqbF5Y6kWWJWeHFc.bottle.7b24d95a2e.webp"
  },
+ "ILCeSIYh1FI7K13Ur8ez": {
+  "color": "black",
+  "kind": "tee",
+  "print": "/assets/inspect/ILCeSIYh1FI7K13Ur8ez.print.dd07ab0508.webp",
+  "printTop": 17.1,
+  "printW": 11.2
+ },
  "L0ZawQe4EOrDrk3EvG16": {
   "kind": "bottle",
   "wrap": "/assets/inspect/L0ZawQe4EOrDrk3EvG16.bottle.ae88ea85ed.webp"
+ },
+ "LY46yu4JYwulIRmSAEg3": {
+  "color": "black",
+  "kind": "tee",
+  "print": "/assets/inspect/LY46yu4JYwulIRmSAEg3.print.b5d49c4f82.webp",
+  "printTop": 14.7,
+  "printW": 21.1
+ },
+ "MHLoIviEod8xPRHoEwj4": {
+  "color": "black",
+  "kind": "tee",
+  "print": "/assets/inspect/MHLoIviEod8xPRHoEwj4.print.b616820bf3.webp",
+  "printTop": 15.7,
+  "printW": 18.3
+ },
+ "Pqtt6rIQVbTBtKj4TQYh": {
+  "color": "black",
+  "kind": "tee",
+  "print": "/assets/inspect/Pqtt6rIQVbTBtKj4TQYh.print.40a3a8cbd1.webp",
+  "printTop": 18.2,
+  "printW": 21.8
  },
  "QKF9TpsYM6bCl8De4M9n": {
   "kind": "bottle",
@@ -23,9 +72,37 @@
   "kind": "bottle",
   "wrap": "/assets/inspect/RWVJFJK0Q6tGeLawtRuY.bottle.c9cd67ff6b.webp"
  },
+ "XxOtSWqOLvFzLEVSSAwQ": {
+  "color": "black",
+  "kind": "tee",
+  "print": "/assets/inspect/XxOtSWqOLvFzLEVSSAwQ.print.c7e736feb5.webp",
+  "printTop": 16.7,
+  "printW": 25.2
+ },
  "Z1vamuFaTPvjkWHFJhle": {
   "kind": "bottle",
   "wrap": "/assets/inspect/Z1vamuFaTPvjkWHFJhle.bottle.d284a72096.webp"
+ },
+ "ceTDbeFfKG7UppCbUBM7": {
+  "color": "black",
+  "kind": "tee",
+  "print": "/assets/inspect/ceTDbeFfKG7UppCbUBM7.print.beda530887.webp",
+  "printTop": 25.7,
+  "printW": 20.0
+ },
+ "fByEJnlvdwayXv4OhIER": {
+  "color": "black",
+  "kind": "tee",
+  "print": "/assets/inspect/fByEJnlvdwayXv4OhIER.print.c0db96cf2a.webp",
+  "printTop": 15.5,
+  "printW": 22.4
+ },
+ "hYOk6UuqAoKChJ1dU9Tc": {
+  "color": "white",
+  "kind": "tee",
+  "print": "/assets/inspect/hYOk6UuqAoKChJ1dU9Tc.print.cf3b49bbdc.webp",
+  "printTop": 11.2,
+  "printW": 12.8
  },
  "kGg8Q8df5bbcN8tLFx6Z": {
   "kind": "bottle",
@@ -40,6 +117,10 @@
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_african-elephant_mug.wrap.202aff466e.webp"
  },
+ "kaayko_barahsingha_tote": {
+  "kind": "tote",
+  "print": "/assets/inspect/kaayko_barahsingha_tote.print.9d2c416798.webp"
+ },
  "kaayko_barasingha_magnet": {
   "kind": "magnet",
   "round": "/assets/inspect/kaayko_barasingha_magnet.round.13941f12bb.webp",
@@ -49,6 +130,10 @@
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_barasingha_mug.wrap.1753fd9ca2.webp"
  },
+ "kaayko_blackbuck2_tote": {
+  "kind": "tote",
+  "print": "/assets/inspect/kaayko_blackbuck2_tote.print.d36dde0aa1.webp"
+ },
  "kaayko_blackbuck_magnet": {
   "kind": "magnet",
   "round": "/assets/inspect/kaayko_blackbuck_magnet.round.104ac7e867.webp",
@@ -57,6 +142,10 @@
  "kaayko_blackbuck_mug": {
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_blackbuck_mug.wrap.1a6ca014c2.webp"
+ },
+ "kaayko_blackbuck_tote": {
+  "kind": "tote",
+  "print": "/assets/inspect/kaayko_blackbuck_tote.print.98764d96ff.webp"
  },
  "kaayko_bobcat_magnet": {
   "kind": "magnet",
@@ -85,6 +174,10 @@
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_cheetah_mug.wrap.b5699070d3.webp"
  },
+ "kaayko_croc_tote": {
+  "kind": "tote",
+  "print": "/assets/inspect/kaayko_croc_tote.print.5c270d1034.webp"
+ },
  "kaayko_crocodile_magnet": {
   "kind": "magnet",
   "round": "/assets/inspect/kaayko_crocodile_magnet.round.deec29c487.webp",
@@ -103,6 +196,10 @@
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_fishingcat_mug.wrap.8404306343.webp"
  },
+ "kaayko_fishingcat_tote": {
+  "kind": "tote",
+  "print": "/assets/inspect/kaayko_fishingcat_tote.print.d1b472f976.webp"
+ },
  "kaayko_florican_magnet": {
   "kind": "magnet",
   "round": "/assets/inspect/kaayko_florican_magnet.round.5bd673a64d.webp",
@@ -111,6 +208,10 @@
  "kaayko_florican_mug": {
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_florican_mug.wrap.b8efe2bf71.webp"
+ },
+ "kaayko_florican_tote": {
+  "kind": "tote",
+  "print": "/assets/inspect/kaayko_florican_tote.print.d9c120e8c5.webp"
  },
  "kaayko_gaur_magnet": {
   "kind": "magnet",
@@ -218,6 +319,10 @@
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_langur_mug.wrap.e018b0fe1e.webp"
  },
+ "kaayko_langur_tote": {
+  "kind": "tote",
+  "print": "/assets/inspect/kaayko_langur_tote.print.662d50084c.webp"
+ },
  "kaayko_masked-finfoot_magnet": {
   "kind": "magnet",
   "round": "/assets/inspect/kaayko_masked-finfoot_magnet.round.87bfb83701.webp",
@@ -236,6 +341,10 @@
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_peacock_mug.wrap.af9a6e1bce.webp"
  },
+ "kaayko_peacock_tote": {
+  "kind": "tote",
+  "print": "/assets/inspect/kaayko_peacock_tote.print.827ef0bb77.webp"
+ },
  "kaayko_pitta_magnet": {
   "kind": "magnet",
   "round": "/assets/inspect/kaayko_pitta_magnet.round.f2b6d95a73.webp",
@@ -244,6 +353,10 @@
  "kaayko_pitta_mug": {
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_pitta_mug.wrap.a3ef71f4b1.webp"
+ },
+ "kaayko_pitta_tote": {
+  "kind": "tote",
+  "print": "/assets/inspect/kaayko_pitta_tote.print.606edbfa37.webp"
  },
  "kaayko_plains-zebra_magnet": {
   "kind": "magnet",
@@ -262,6 +375,10 @@
  "kaayko_raccoon_mug": {
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_raccoon_mug.wrap.377a6b9d56.webp"
+ },
+ "kaayko_racoon_tote": {
+  "kind": "tote",
+  "print": "/assets/inspect/kaayko_racoon_tote.print.537d3d0854.webp"
  },
  "kaayko_red-panda_magnet": {
   "kind": "magnet",
@@ -308,6 +425,10 @@
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_snow-leopard_mug.wrap.6de6f7e8a4.webp"
  },
+ "kaayko_snow-leopard_tote": {
+  "kind": "tote",
+  "print": "/assets/inspect/kaayko_snow-leopard_tote.print.6408f33dfb.webp"
+ },
  "kaayko_white-rhino_magnet": {
   "kind": "magnet",
   "round": "/assets/inspect/kaayko_white-rhino_magnet.round.a5c51b63ac.webp",
@@ -320,6 +441,41 @@
  "mydE423HVE2f3rrpxcM6": {
   "kind": "bottle",
   "wrap": "/assets/inspect/mydE423HVE2f3rrpxcM6.bottle.053ef37163.webp"
+ },
+ "qCI4Eiyxdt6SI9VT45qX": {
+  "color": "black",
+  "kind": "tee",
+  "print": "/assets/inspect/qCI4Eiyxdt6SI9VT45qX.print.f1125e701b.webp",
+  "printTop": 15.6,
+  "printW": 19.0
+ },
+ "u1y09H1U1ozUasNKwOrU": {
+  "color": "black",
+  "kind": "tee",
+  "print": "/assets/inspect/u1y09H1U1ozUasNKwOrU.print.2aca069646.webp",
+  "printTop": 15.7,
+  "printW": 23.0
+ },
+ "wV77tYkmibVgOQqEezX4": {
+  "color": "black",
+  "kind": "tee",
+  "print": "/assets/inspect/wV77tYkmibVgOQqEezX4.print.a02ca933d1.webp",
+  "printTop": 12.9,
+  "printW": 17.5
+ },
+ "xyVsWqTkPcVbaiOCX0vv": {
+  "color": "black",
+  "kind": "tee",
+  "print": "/assets/inspect/xyVsWqTkPcVbaiOCX0vv.print.b592ef51b5.webp",
+  "printTop": 17.1,
+  "printW": 27.6
+ },
+ "y2ROcdW0AbjKCDDDV0bv": {
+  "color": "black",
+  "kind": "tee",
+  "print": "/assets/inspect/y2ROcdW0AbjKCDDDV0bv.print.651c4f2ba2.webp",
+  "printTop": 18.2,
+  "printW": 18.3
  },
  "yzCMEUlvYkoAdDInOgEE": {
   "kind": "bottle",

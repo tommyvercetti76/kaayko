@@ -114,6 +114,73 @@ OLD_MAGNETS = {
     "kaayko_gir_magnet": Path("/Users/Rohan/Desktop/Kaayko_Tote/_processed/kaayko_gir_magnet/0.webp"),
 }
 
+# Totes (25 Oct 2026, Rohan: 3D for every product): product id -> the drawing printed on it
+TOTE_ART = {
+    "kaayko_barahsingha_tote": C / "barasingha_tote/art/barasingha_barasingha.transparent.png",
+    "kaayko_blackbuck_tote": C / "blackbuck_tote/art/04_blackbuck_madhubani_tshirt.transparent.png",
+    "kaayko_blackbuck2_tote": C / "blackbuck_tote_no_2/art/minimalist-madhubani-inspired-blackbuck-t-shirt-illustration.transparent.png",
+    "kaayko_croc_tote": C / "crocodile_tote/art/saltwater-crocodile_saltwater-crocodile.transparent.png",
+    "kaayko_fishingcat_tote": C / "fishing_cat_tote/art/fishing-cat_fishing-cat.transparent.png",
+    "kaayko_florican_tote": C / "florican_tote/art/bengal-florican_bengal-florican.transparent.png",
+    "kaayko_langur_tote": C / "langur_tote/art/gray-langur_gray-langur.transparent.png",
+    "kaayko_peacock_tote": C / "peacock_tote/art/peacock_peacock.transparent.png",
+    "kaayko_pitta_tote": C / "indian_pitta_tote/art/indian-pitta_indian-pitta.transparent.png",
+    "kaayko_racoon_tote": C / "racoon_tote/art/raccoon_raccoon.transparent.png",
+    "kaayko_snow-leopard_tote": C / "snow_leopard_tote/art/snow-leopard_snow-leopard.transparent.png",
+}
+# Stamp tees with the stamp scan on disk: doc id -> (scan, the tee's flat-lay photograph,
+# from which the print's size and place on the chest are measured)
+TS = Path("/Users/Rohan/Desktop/Kaayko_TShirts_v2")
+STAMP_TEES = {
+    "u1y09H1U1ozUasNKwOrU": (TS / "Revolution.jpg", TS / "Revolution1.png"),    # Freedom
+    "ILCeSIYh1FI7K13Ur8ez": (TS / "Queen.jpg", TS / "Queen4.png"),              # Queen
+    "MHLoIviEod8xPRHoEwj4": (TS / "Beethoven.jpg", TS / "Beethoven1.png"),      # Pt. Beethoven
+    "8PnFf6bH3fwiH1dTCkFR": (TS / "Maurya.jpg", TS / "Chandragupta1.png"),      # Sandrokoptos
+}
+
+# Tees whose artwork exists only as photographs (MANIFEST.md): the print is lifted off
+# the photo named here (a flat-lay where there is one), keyed off its fabric, and
+# upscaled. doc id -> (photo, the colour the tee is in that photo)
+U = C
+LIFTED_TEES = {
+    "qCI4Eiyxdt6SI9VT45qX": (U / "abe/upload_set/Abe1.png", "black"),                       # Abe
+    "fByEJnlvdwayXv4OhIER": (U / "assault_bae/upload_set/AssaultBae_3.png", "black"),        # Assault Bae
+    # every photograph of Broke is a WHITE tee; the catalogue lists Black (GAPS.md, 25 Oct 2026)
+    "hYOk6UuqAoKChJ1dU9Tc": (U / "broke/upload_set/Broke_3.png", "white"),                  # Broke
+    "XxOtSWqOLvFzLEVSSAwQ": (U / "hurry_up_and_live/upload_set/Live_3.png", "black"),        # Hurry Up and Live
+    "y2ROcdW0AbjKCDDDV0bv": (U / "life_is_opinion/upload_set/Lifeisopinion_1.png", "black"), # Life is opinion
+    "wV77tYkmibVgOQqEezX4": (U / "nagpur/upload_set/Nagpur_1.png", "black"),                 # Nagpur
+    "LY46yu4JYwulIRmSAEg3": (U / "no_running_your/upload_set/NoRunning_1.png", "black"),     # No running your..
+    "ceTDbeFfKG7UppCbUBM7": (U / "pikachu/upload_set/Pikachutya_1.png", "black"),            # Pikachu
+    "Pqtt6rIQVbTBtKj4TQYh": (U / "self_aint_body/upload_set/nobody1.webp", "black"),        # Self ain't body
+    "3uIpQlJEnvR1sDqaBLj5": (U / "straight_outta_sabarmati/upload_set/StraightOutta_2.png", "black"),
+    "xyVsWqTkPcVbaiOCX0vv": (U / "the_great_climb/upload_set/Everest1.png", "black"),       # The Great Climb
+}
+# HTMLK is black ink on a charcoal tee, too close to its fabric to be found on its own:
+# its area on the flat-lay is given by hand
+TONAL_TEES = {"48NMICFJI5p0JeHDfzqA": (U / "htmlk/upload_set/HTMLK1.png", (0.35, 0.19, 0.70, 0.54))}
+# Not in 3D: Courage (gFWf7rDGw8bNxxRz2yTf) — every photograph of it is a HOODIE, and a
+# hoodie is not a tee; it waits for the right garment (GAPS.md, 25 Oct 2026).
+UPSCALE_PY = Path("/Users/Rohan/.venv-upscale/bin/python")
+
+
+def upscaled(img: Image.Image, tag: str) -> Image.Image:
+    """A lifted print, 4x through Real-ESRGAN's graphics model (ai_upscale.py), capped at
+    1600 px; as it is when the upscaler is not installed."""
+    import subprocess, tempfile
+    if not UPSCALE_PY.exists():
+        return img
+    with tempfile.TemporaryDirectory() as td:
+        src, dst = Path(td) / f"{tag}.png", Path(td) / f"{tag}.x4.png"
+        img.save(src)
+        r = subprocess.run([str(UPSCALE_PY), str(Path(__file__).with_name("ai_upscale.py")), str(src), str(dst), "--model", "anime", "--scale", "4"],
+                           capture_output=True, text=True)
+        if r.returncode != 0 or not dst.exists():
+            print("   upscale failed:", (r.stderr or r.stdout)[-300:]); return img
+        out = Image.open(dst).convert("RGBA"); out.load()
+    s = max(out.size)
+    return out if s <= 1600 else out.resize((round(out.width * 1600 / s), round(out.height * 1600 / s)), Image.LANCZOS)
+
 # a design whose park is not the one its art file was composed for
 NAME_OVERRIDE = {"Kuno_Cheetah": "KUNO", "Canyon_Wren": "ZION", "Himalayan_Marmot": "HEMIS",
                  "Masked_Finfoot": "SUNDARBANS", "Small_Clawed_Otter": "SUNDARBANS", "Bobcat": "BIG BEND"}
@@ -188,9 +255,11 @@ def bottle_wrap(stamp: Path, width: int = 2048) -> Image.Image:
     return out
 
 
-def save(img: Image.Image, stem: str, quality: int) -> str:
-    """Write <stem>.<sha1[:10]>.webp and return its site path."""
-    buf = io.BytesIO(); img.save(buf, "WEBP", quality=quality, method=6)
+def save(img: Image.Image, stem: str, quality: int, exact: bool = False) -> str:
+    """Write <stem>.<sha1[:10]>.webp and return its site path. `exact` keeps the colour
+    under transparent pixels (a garment print's soft edge); off, the bytes — and so the
+    names — of the textures already live stay what they were."""
+    buf = io.BytesIO(); img.save(buf, "WEBP", quality=quality, method=6, exact=exact)
     data = buf.getvalue()
     name = f"{stem}.{hashlib.sha1(data).hexdigest()[:10]}.webp"
     (OUT / name).write_bytes(data)
@@ -224,8 +293,36 @@ def main() -> int:
             print("missing stamp", stamp); return 1
         index[doc] = {"kind": "bottle", "wrap": save(bottle_wrap(stamp), f"{doc}.bottle", 90)}
         print("  ", doc, stamp.name)
+    import garment_prints as gp
+    for pid, art in TOTE_ART.items():
+        if not art.exists():
+            print("missing art", art); return 1
+        index[pid] = {"kind": "tote", "print": save(gp.tote_print(art), f"{pid}.print", 90, exact=True)}
+        print("  ", pid, art.name)
+    for doc, (scan, flat) in STAMP_TEES.items():
+        if not scan.exists() or not flat.exists():
+            print("missing", scan, flat); return 1
+        w, top = gp.measure_print(flat)
+        index[doc] = {"kind": "tee", "print": save((lambda st: upscaled(st, doc) if max(st.size) < 900 else st)(gp.stamp_print(scan)), f"{doc}.print", 90, exact=True),
+                      "printW": float(w), "printTop": float(top), "color": "black"}
+        print("  ", doc, scan.name, f"{w} cm wide, {top} cm below the collar")
+    for doc, (photo, color) in LIFTED_TEES.items():
+        if not photo.exists():
+            print("missing photo", photo); return 1
+        img, w, top, _ = gp.lift_print(photo, color)
+        # a print-on-demand tee prints at most 12 in (30 cm) across; a photograph of
+        # someone wearing it measures less surely than a flat-lay
+        w = min(w, 30.0)
+        index[doc] = {"kind": "tee", "print": save(upscaled(img, doc), f"{doc}.print", 90, exact=True),
+                      "printW": float(w), "printTop": float(top), "color": color}
+        print("  ", doc, photo.name, f"lifted, {w} cm wide, {top} cm below the collar")
+    for doc, (photo, box) in TONAL_TEES.items():
+        img, w, top, fabric = gp.lift_tonal(photo, box)
+        index[doc] = {"kind": "tee", "print": save(upscaled(img, doc), f"{doc}.print", 90, exact=True),
+                      "printW": float(w), "printTop": float(top), "color": fabric}
+        print("  ", doc, photo.name, f"tonal, {w} cm wide, fabric {fabric}")
     INDEX.write_text(json.dumps(index, indent=1, sort_keys=True) + "\n")
-    keep = {Path(u).name for e in index.values() for k, u in e.items() if k != "kind"}
+    keep = {Path(u).name for e in index.values() for u in e.values() if isinstance(u, str) and u.startswith("/assets/")}
     for old in OUT.glob("*.webp"):
         if old.name not in keep: old.unlink()
     (OUT / "index.json").unlink(missing_ok=True)
