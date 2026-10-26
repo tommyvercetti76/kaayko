@@ -7,7 +7,7 @@
  */
 import { cartManager } from "/js/cartManager.js";           // the bag exists before the header paints its badge
 import "/js/sustainabilityAlert.js";                          // window.showSustainabilityAlert for the fit picker
-import { getCatalogue, friendlyMessage } from "/js/services/storeApi.js";
+import { catalogueFirst, friendlyMessage } from "/js/services/storeApi.js";
 import { setProductTypes } from "/js/productTypes.js";
 import { populateCarousel, setupModalCloseHandlers } from "/js/kaayko_ui.js";
 import { storeOriginalProducts } from "/js/kaaykoFilterModal.js";
@@ -52,7 +52,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   let products;
   try {
-    const catalogue = await getCatalogue();
+    // the kept catalogue first: the grid is up at once on the way back from a product,
+    // and on a new visit within a minute; older than that, a new visit asks afresh
+    // (storeApi.js, "The catalogue, kept")
+    const back = performance.getEntriesByType?.("navigation")?.[0]?.type === "back_forward";
+    const catalogue = await catalogueFirst({ maxAgeMs: back ? undefined : 60 * 1000 });
     products = catalogue.products;
     setProductTypes(catalogue.productTypes);   // labels, section order, the coming-soon line
   } catch (err) {

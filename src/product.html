@@ -5,6 +5,22 @@
        dark-mode shopper saw a light frame on every page open (25 Oct 2026) -->
   <script>try { if (localStorage.getItem('darkTheme') === 'enabled') document.documentElement.classList.add('dark-theme'); } catch (e) {}</script>
   <script src="/js/prod-config.js"></script>
+  <!-- every module the page runs, asked for at once: they used to arrive in four
+       rounds, each waiting on the one before (519 ms to the product's name, 25 Oct 2026) -->
+  <link rel="modulepreload" href="/js/pages/pdp.js">
+  <link rel="modulepreload" href="/js/product.js">
+  <link rel="modulepreload" href="/js/kaayko_ui.js">
+  <link rel="modulepreload" href="/js/store-satire.js">
+  <link rel="modulepreload" href="/js/suggest.js">
+  <link rel="modulepreload" href="/js/fitPicker.js">
+  <link rel="modulepreload" href="/js/services/storeApi.js">
+  <link rel="modulepreload" href="/js/kit.js">
+  <link rel="modulepreload" href="/js/components/Toast.js">
+  <link rel="modulepreload" href="/js/priceMap.js">
+  <link rel="modulepreload" href="/js/util.js">
+  <link rel="modulepreload" href="/js/productTypes.js">
+  <link rel="modulepreload" href="/js/cartManager.js">
+  <link rel="modulepreload" href="/js/sustainabilityAlert.js">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 

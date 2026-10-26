@@ -91,7 +91,79 @@ export async function getCatalogue({ timeoutMs = 12000 } = {}) {
   const d = r.data;
   const products = Array.isArray(d) ? d : (d && d.products) || [];
   const productTypes = d && !Array.isArray(d) && Array.isArray(d.productTypes) ? d.productTypes : [];
+  keep({ products, productTypes });
   return { products, productTypes };
+}
+
+/* ── The catalogue, kept ─────────────────────────────────────────────────
+   Fetched once and kept in this browser, so a product page opens on its own
+   details at once — no wait, no skeleton — and the store redraws at once on
+   the way back. Every product page used to fetch its product again on every
+   open (Rohan, 25 Oct 2026: "fetch once and always quickly opened/closed").
+   The list carries exactly the fields /products/:id does (checked 25 Oct
+   2026), 156 KB for 102 products.
+   A kept copy older than FRESH_MS is refreshed quietly behind the page. A
+   price shown from it is never what is charged: checkout re-prices every line
+   on the server (pricing.js) and says so if a price moved.                  */
+const KEEP = 'kaayko:catalogue:v1';
+const FRESH_MS = 60 * 1000;              // younger than this: not even a quiet refresh
+const KEEP_MAX_MS = 24 * 60 * 60 * 1000; // older than this: not shown, fetched afresh
+let kept;                                // parsed once per page
+
+function keep(catalogue) {
+  kept = { t: Date.now(), ...catalogue };
+  try { localStorage.setItem(KEEP, JSON.stringify(kept)); } catch (_) { /* full or private: the network still works */ }
+}
+
+/** The kept catalogue, or null when there is none (or it is a day old). */
+export function keptCatalogue() {
+  if (kept === undefined) {
+    try { kept = JSON.parse(localStorage.getItem(KEEP) || 'null'); } catch (_) { kept = null; }
+  }
+  return kept && Array.isArray(kept.products) && Date.now() - kept.t < KEEP_MAX_MS ? kept : null;
+}
+
+let refreshing = null;
+function refreshQuietly() {
+  const k = keptCatalogue();
+  if (k && Date.now() - k.t < FRESH_MS) return null;
+  refreshing = refreshing || getCatalogue().catch(() => null).finally(() => { refreshing = null; });
+  return refreshing;
+}
+
+/** What a shopper sees of a product; a change in any of it is worth redrawing for. */
+const seen = (p) => p && JSON.stringify([p.title, p.actualPrice, p.soldOut, p.isAvailable, p.availableSizes,
+  p.productType, p.imgSrc, p.previewSrc, p.description]);
+
+/**
+ * The catalogue from the kept copy when there is one (refreshed quietly if old), else
+ * fetched. `maxAgeMs`: a kept copy older than this is fetched afresh instead — the
+ * store's own fresh visits use a minute, so a product uploaded a moment ago is there
+ * on the next visit (Rohan tests in production); if that fetch fails, the kept copy
+ * still beats an error.
+ */
+export async function catalogueFirst({ maxAgeMs } = {}) {
+  const k = keptCatalogue();
+  const use = (c) => ({ products: c.products, productTypes: c.productTypes || [] });
+  if (k && (maxAgeMs === undefined || Date.now() - k.t < maxAgeMs)) { refreshQuietly(); return use(k); }
+  try { return await getCatalogue(); } catch (err) { if (k) return use(k); throw err; }
+}
+
+/**
+ * A product from the kept catalogue when it is there, else fetched. `onFresh(product)`
+ * is called if the quiet refresh finds that this product has changed.
+ */
+export async function productFirst(productId, { onFresh } = {}) {
+  const hit = keptCatalogue()?.products.find((p) => p.id === productId);
+  if (!hit) return getProduct(productId);
+  const pending = refreshQuietly();
+  if (pending && onFresh) {
+    pending.then((fresh) => {
+      const now = fresh && fresh.products.find((p) => p.id === productId);
+      if (now && seen(now) !== seen(hit)) onFresh(now);
+    });
+  }
+  return hit;
 }
 
 /** GET /products → the array. Throws ApiError. */

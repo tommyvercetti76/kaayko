@@ -16,7 +16,7 @@
 import { priceText, priceCents } from "/js/priceMap.js";
 import { createFitPicker, needsPicker, addDirect, isSoldOut } from "/js/fitPicker.js";
 import { satireFor } from "/js/store-satire.js";
-import { getProduct, getCatalogue, friendlyMessage } from "/js/services/storeApi.js";
+import { productFirst, catalogueFirst, friendlyMessage } from "/js/services/storeApi.js";
 import { cartManager } from "/js/cartManager.js";
 import { esc } from "/js/kit.js";
 import { labelForType } from "/js/productTypes.js";
@@ -358,7 +358,7 @@ function mountInspectFrame(product, root, thumbEls) {
    cannot be reached the section simply does not appear. */
 async function mountSuggestions(product, root) {
   let items;
-  try { items = (await getCatalogue({ timeoutMs: 10000 })).products; } catch (_) { return; }
+  try { items = (await catalogueFirst()).products; } catch (_) { return; }
   const picks = pickSuggestions(product, items, 8);
   if (!picks.length) return;
   const section = document.createElement('section');
@@ -374,7 +374,11 @@ export async function productPageInit(productID, { openModal }) {
   if (!root || !productID) return renderError(root, "Product not found");
 
   try {
-    const product = await getProduct(productID);
+    // from the kept catalogue when it is there: the page opens on its details at once;
+    // a quiet refresh redraws it only if this product has changed meanwhile
+    const product = await productFirst(productID, {
+      onFresh: (fresh) => { renderProduct(fresh, openModal); mountSuggestions(fresh, root); }
+    });
     renderProduct(product, openModal);
     mountSuggestions(product, root);
   } catch (err) {
