@@ -47,7 +47,6 @@ F4 = Path("/Users/Rohan/Desktop/Forge/generated/madhubani_animals")
 DESIGNS = {
     "Barasingha": (C / "barasingha_tote/art/barasingha_barasingha.transparent.png", False, True),
     "Blackbuck": (C / "blackbuck_tote/art/04_blackbuck_madhubani_tshirt.transparent.png", False, True),
-    "Blackbuck2": (C / "blackbuck_tote_no_2/art/minimalist-madhubani-inspired-blackbuck-t-shirt-illustration.transparent.png", False, False),
     "Crocodile": (C / "crocodile_tote/art/saltwater-crocodile_saltwater-crocodile.transparent.png", False, True),
     "FishingCat": (C / "fishing_cat_tote/art/fishing-cat_fishing-cat.transparent.png", False, True),
     "Florican": (C / "florican_tote/art/bengal-florican_bengal-florican.transparent.png", False, True),
@@ -59,22 +58,30 @@ DESIGNS = {
     "Pitta": (C / "indian_pitta_tote/art/indian-pitta_indian-pitta.transparent.png", False, True),
     "Raccoon": (C / "racoon_tote/art/raccoon_raccoon.transparent.png", False, True),
     "Snow_Leopard": (C / "snow_leopard_tote/art/snow-leopard_snow-leopard.transparent.png", False, True),
+    # 25 Oct 2026: the cheetah's round medallion replaced by Forge's HD render (Rohan);
+    # the cut-out is cut_pockets.py on portfolio_v5_african_hd1280_seed13000/cheetah.png
+    # (the card under its belly printed as a beige patch)
+    "Cheetah": (C / "cheetah_hd/art/cheetah.transparent.png", False, True),
     **{n: (M / "portfolio_v5_african_round_seed15000" / f"{f}.png", True, True) for n, f in {
-        "Cheetah": "cheetah", "Secretary_Bird": "secretary-bird", "Plains_Zebra": "plains-zebra", "Hippo": "hippo",
+        "Secretary_Bird": "secretary-bird", "Plains_Zebra": "plains-zebra", "Hippo": "hippo",
         "African_Elephant": "african-elephant", "Giraffe": "giraffe",
         "Grey_Crowned_Crane": "grey-crowned-crane", "White_Rhino": "white-rhino"}.items()},
-    "African_Fish_Eagle": (M / "portfolio_v5_african_round_seed15000" / "african-fish-eagle.png", True, False),
-    "Lion": (M / "portfolio_v5_african_round_seed15000" / "lion.png", True, False),
     "Red_Panda": (M / "portfolio_v4_indian_round_seed15100" / "red-panda.png", True, True),
-    "Chinkara": (M / "portfolio_v4_indian_round_seed15100" / "chinkara.png", True, False),
-    "Sarus_Crane": (M / "portfolio_v4_indian_round_seed15100" / "sarus-crane.png", True, False),
     "Indian_Giant_Squirrel": (F4 / "portfolio_v4_guarded_seed9700" / "indian-giant-squirrel.png", False, True),
     "Indian_Pangolin": (C / "indian_pangolin/art/indian-pangolin.transparent.png", False, True),
     "Indian_Skimmer": (F4 / "portfolio_v4_hd1280_seed9600" / "indian-skimmer.png", False, True),
     "Sloth_Bear": (C / "sloth_bear/art/sloth-bear.transparent.png", False, True),
     "Golden_Langur": (C / "golden_langur/art/golden-langur.transparent.png", False, True),
     "Kuno_Cheetah": (C / "kuno_cheetah/art/cheetah.transparent.png", False, True),
+    # 25 Oct 2026, Rohan: five new designs, each a mug and a magnet
+    "Canyon_Wren": (F4.parent / "us_parks_20x8_tshirts_v1/parks/zion/canyon-wren/effort_01/render.png", False, True),
+    "Himalayan_Marmot": (F4 / "portfolio_v3/himalayan-marmot/base.png", False, True),
+    "Masked_Finfoot": (F4 / "portfolio_v3/masked-finfoot/base.png", False, True),
+    "Small_Clawed_Otter": (F4 / "portfolio_v3/small-clawed-otter/base.png", False, True),
+    "Bobcat": (C / "bobcat/art/bobcat.png", False, True),          # was ~/Desktop/BOBCat.png
 }
+# Hidden from the store (mug and magnet) on 24-25 Oct 2026 at Rohan's request, so no
+# textures are built for them: Sarus_Crane, Lion, Chinkara, African_Fish_Eagle, Blackbuck2.
 
 # The four C/... cut-outs above are cut_pockets.py runs on the Forge files (pockets of
 # card the edge flood could not reach printed as cream patches): golden-langur from
@@ -101,7 +108,9 @@ BOTTLES = {
 }
 
 # a design whose park is not the one its art file was composed for
-NAME_OVERRIDE = {"Kuno_Cheetah": "KUNO"}
+NAME_OVERRIDE = {"Kuno_Cheetah": "KUNO", "Canyon_Wren": "ZION", "Himalayan_Marmot": "HEMIS",
+                 "Masked_Finfoot": "SUNDARBANS", "Small_Clawed_Otter": "SUNDARBANS", "Bobcat": "BIG BEND"}
+# (the parks Forge composed each render for: brand/madhubani/animals.json, the us_parks folder)
 
 PAPER = tuple(mg.PAPER)
 GLAZE = (249, 248, 245)

@@ -36,6 +36,8 @@ test('then the same part of the world, ahead of a more-loved piece from elsewher
   assert.equal(regionFor({ id: 'kaayko_lion_mug' }), 'africa');
   assert.equal(regionFor({ id: 'kaayko_gaur_mug' }), 'india');
   assert.equal(regionFor({ id: 'kaayko_raccoon_mug' }), null);
+  assert.equal(regionFor({ id: 'kaayko_bobcat_mug' }), 'americas');
+  assert.equal(regionFor({ id: 'kaayko_canyon-wren_magnet' }), 'americas');
 });
 
 test('no wall of one kind: at most half the list of a type beyond the same animal', () => {

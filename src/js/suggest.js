@@ -5,7 +5,7 @@
  * the store's own cards. The order is what a shopper would reach for next:
  *
  *   1. the same animal in its other forms — the sloth bear tote, magnet and mug;
- *   2. the same part of the world (Indian or African wildlife), or, for pieces with
+ *   2. the same part of the world (Indian, African or American wildlife), or, for pieces with
  *      no animal (t-shirts, stamp bottles), the same theme;
  *   3. the same kind of thing (and, for a wildlife piece, any other wildlife);
  *   4. then what people love most (votes), then the newest.
@@ -19,12 +19,14 @@ import { animalFor, FIELD } from "/js/store-satire.js";
 export const capFor = (n) => Math.max(2, Math.ceil(n / 2));
 const AFRICA = /Kenya|Tanzania|Namibia|Botswana|South Africa|Uganda|Rwanda/;
 
-/** "india" | "africa" | null — from the park the piece names. */
+const AMERICAS = /Utah|Texas|Wyoming|Colorado|Washington|Montana|Arizona|North America/;
+
+/** "india" | "africa" | "americas" | null — from the park the piece names. */
 export function regionFor(product) {
   const a = animalFor(product);
   const park = a ? FIELD[a].park : "";
   if (!park) return null;
-  return AFRICA.test(park) ? "africa" : "india";
+  return AFRICA.test(park) ? "africa" : AMERICAS.test(park) ? "americas" : "india";
 }
 
 const created = (p) => {

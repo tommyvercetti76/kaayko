@@ -40,10 +40,6 @@
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_african-elephant_mug.wrap.202aff466e.webp"
  },
- "kaayko_african-fish-eagle_mug": {
-  "kind": "mug",
-  "wrap": "/assets/inspect/kaayko_african-fish-eagle_mug.wrap.035124e56d.webp"
- },
  "kaayko_barasingha_magnet": {
   "kind": "magnet",
   "round": "/assets/inspect/kaayko_barasingha_magnet.round.13941f12bb.webp",
@@ -52,10 +48,6 @@
  "kaayko_barasingha_mug": {
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_barasingha_mug.wrap.1753fd9ca2.webp"
- },
- "kaayko_blackbuck2_mug": {
-  "kind": "mug",
-  "wrap": "/assets/inspect/kaayko_blackbuck2_mug.wrap.af8cbf6582.webp"
  },
  "kaayko_blackbuck_magnet": {
   "kind": "magnet",
@@ -66,18 +58,32 @@
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_blackbuck_mug.wrap.1a6ca014c2.webp"
  },
+ "kaayko_bobcat_magnet": {
+  "kind": "magnet",
+  "round": "/assets/inspect/kaayko_bobcat_magnet.round.a316ac5cb6.webp",
+  "square": "/assets/inspect/kaayko_bobcat_magnet.square.eb71c699f7.webp"
+ },
+ "kaayko_bobcat_mug": {
+  "kind": "mug",
+  "wrap": "/assets/inspect/kaayko_bobcat_mug.wrap.7ee5370ce1.webp"
+ },
+ "kaayko_canyon-wren_magnet": {
+  "kind": "magnet",
+  "round": "/assets/inspect/kaayko_canyon-wren_magnet.round.5836e4406d.webp",
+  "square": "/assets/inspect/kaayko_canyon-wren_magnet.square.fe67d336e8.webp"
+ },
+ "kaayko_canyon-wren_mug": {
+  "kind": "mug",
+  "wrap": "/assets/inspect/kaayko_canyon-wren_mug.wrap.0ed884d3e6.webp"
+ },
  "kaayko_cheetah_magnet": {
   "kind": "magnet",
-  "round": "/assets/inspect/kaayko_cheetah_magnet.round.9c953c71df.webp",
-  "square": "/assets/inspect/kaayko_cheetah_magnet.square.4e20bf41fc.webp"
+  "round": "/assets/inspect/kaayko_cheetah_magnet.round.17bcfcd75f.webp",
+  "square": "/assets/inspect/kaayko_cheetah_magnet.square.38bc543b23.webp"
  },
  "kaayko_cheetah_mug": {
   "kind": "mug",
-  "wrap": "/assets/inspect/kaayko_cheetah_mug.wrap.ffb92ef941.webp"
- },
- "kaayko_chinkara_mug": {
-  "kind": "mug",
-  "wrap": "/assets/inspect/kaayko_chinkara_mug.wrap.b6e6607e19.webp"
+  "wrap": "/assets/inspect/kaayko_cheetah_mug.wrap.b5699070d3.webp"
  },
  "kaayko_crocodile_magnet": {
   "kind": "magnet",
@@ -141,6 +147,15 @@
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_grey-crowned-crane_mug.wrap.78c31bcc62.webp"
  },
+ "kaayko_himalayan-marmot_magnet": {
+  "kind": "magnet",
+  "round": "/assets/inspect/kaayko_himalayan-marmot_magnet.round.1b1c229aad.webp",
+  "square": "/assets/inspect/kaayko_himalayan-marmot_magnet.square.e734fac02c.webp"
+ },
+ "kaayko_himalayan-marmot_mug": {
+  "kind": "mug",
+  "wrap": "/assets/inspect/kaayko_himalayan-marmot_mug.wrap.ed9a79132f.webp"
+ },
  "kaayko_hippo_magnet": {
   "kind": "magnet",
   "round": "/assets/inspect/kaayko_hippo_magnet.round.a32d6f1e0c.webp",
@@ -195,9 +210,14 @@
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_langur_mug.wrap.e018b0fe1e.webp"
  },
- "kaayko_lion_mug": {
+ "kaayko_masked-finfoot_magnet": {
+  "kind": "magnet",
+  "round": "/assets/inspect/kaayko_masked-finfoot_magnet.round.87bfb83701.webp",
+  "square": "/assets/inspect/kaayko_masked-finfoot_magnet.square.0b29e5302f.webp"
+ },
+ "kaayko_masked-finfoot_mug": {
   "kind": "mug",
-  "wrap": "/assets/inspect/kaayko_lion_mug.wrap.6fe3f21f88.webp"
+  "wrap": "/assets/inspect/kaayko_masked-finfoot_mug.wrap.64963865d1.webp"
  },
  "kaayko_peacock_magnet": {
   "kind": "magnet",
@@ -244,10 +264,6 @@
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_red-panda_mug.wrap.ba92390dcf.webp"
  },
- "kaayko_sarus-crane_mug": {
-  "kind": "mug",
-  "wrap": "/assets/inspect/kaayko_sarus-crane_mug.wrap.ba85606575.webp"
- },
  "kaayko_secretary-bird_magnet": {
   "kind": "magnet",
   "round": "/assets/inspect/kaayko_secretary-bird_magnet.round.99bf2f4e18.webp",
@@ -265,6 +281,15 @@
  "kaayko_sloth-bear_mug": {
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_sloth-bear_mug.wrap.3ddcf839ef.webp"
+ },
+ "kaayko_small-clawed-otter_magnet": {
+  "kind": "magnet",
+  "round": "/assets/inspect/kaayko_small-clawed-otter_magnet.round.b32cd3fb35.webp",
+  "square": "/assets/inspect/kaayko_small-clawed-otter_magnet.square.a165988061.webp"
+ },
+ "kaayko_small-clawed-otter_mug": {
+  "kind": "mug",
+  "wrap": "/assets/inspect/kaayko_small-clawed-otter_mug.wrap.2cd9ebd686.webp"
  },
  "kaayko_snow-leopard_magnet": {
   "kind": "magnet",

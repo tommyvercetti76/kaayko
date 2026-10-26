@@ -197,7 +197,13 @@ const FIELD = Object.freeze({
   "indian-pangolin":       { species: "Indian pangolin", latin: "Manis crassicaudata", status: "Endangered", park: "Tadoba-Andhari Tiger Reserve, Maharashtra", line: "The only mammal in a coat of scales, and when in doubt it simply rolls up." },
   "indian-giant-squirrel": { species: "Indian giant squirrel", latin: "Ratufa indica", status: "Least Concern", park: "Anamalai Tiger Reserve, Tamil Nadu", line: "About a metre from nose to tail, much of it tail, and it rarely bothers coming down." },
   "indian-skimmer":        { species: "Indian skimmer", latin: "Rynchops albicollis", status: "Endangered", park: "Marine National Park, Gulf of Kutch, Gujarat", line: "Flies low with its longer lower bill slicing the water, and snaps shut on whatever it meets." },
-  "golden-langur":         { species: "Golden langur", latin: "Trachypithecus geei", status: "Endangered", park: "Manas National Park, Assam", line: "Cream in summer, gold in winter, and found almost nowhere but western Assam and Bhutan." }
+  "golden-langur":         { species: "Golden langur", latin: "Trachypithecus geei", status: "Endangered", park: "Manas National Park, Assam", line: "Cream in summer, gold in winter, and found almost nowhere but western Assam and Bhutan." },
+  // 25 Oct 2026. The masked finfoot was moved to Critically Endangered in 2022 (BirdLife: 108-304 mature birds).
+  "canyon-wren":           { species: "Canyon wren", latin: "Catherpes mexicanus", status: "Least Concern", park: "Zion National Park, Utah", line: "Sings a cascade of notes that tumbles down the canyon walls, then creeps up the rock after it." },
+  "himalayan-marmot":      { species: "Himalayan marmot", latin: "Marmota himalayana", status: "Least Concern", park: "Hemis National Park, Ladakh", line: "Sleeps through most of the Himalayan winter in a family burrow — one way to handle four thousand metres." },
+  "masked-finfoot":        { species: "Masked finfoot", latin: "Heliopais personatus", status: "Critically Endangered", park: "Sundarbans National Park, West Bengal", line: "Swims low like a cormorant, walks like a rail, and is among the hardest birds in Asia to see." },
+  "small-clawed-otter":    { species: "Asian small-clawed otter", latin: "Aonyx cinereus", status: "Vulnerable", park: "Sundarbans National Park, West Bengal", line: "The smallest otter in the world, finding its food by touch with nimble, nearly clawless fingers." },
+  "bobcat":                { species: "Bobcat", latin: "Lynx rufus", status: "Least Concern", park: "Big Bend National Park, Texas", line: "Named for its short, bobbed tail, and about twice the size of a house cat." }
 });
 
 /** Product-id slugs that are not the animal's own key (older ids, spellings, second designs). */
