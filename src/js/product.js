@@ -13,7 +13,7 @@
  * css/pdp-motion.css names it for the shared-element transition from the grid.
  */
 
-import { priceText } from "/js/priceMap.js";
+import { priceText, priceCents } from "/js/priceMap.js";
 import { createFitPicker, needsPicker, addDirect, isSoldOut } from "/js/fitPicker.js";
 import { satireFor } from "/js/store-satire.js";
 import { getProduct, getCatalogue, friendlyMessage } from "/js/services/storeApi.js";
@@ -22,18 +22,74 @@ import { esc } from "/js/kit.js";
 import { labelForType } from "/js/productTypes.js";
 import { pickSuggestions } from "/js/suggest.js";
 import { mountProductGrid } from "/js/kaayko_ui.js";
+import { show as showToast } from "/js/components/Toast.js";
 
 /** A web address in already-escaped story text becomes a link; it used to print as
  *  a bare URL (the India Post line on every stamp piece). Trailing punctuation stays text. */
 const linkify = (escaped) => escaped.replace(/https?:\/\/[^\s<]+[^\s<.,;:!?)]/g,
   (url) => `<a href="${url}" target="_blank" rel="noopener">${url.replace(/^https?:\/\/(www\.)?/, "")}</a>`);
 
+// It borrowed the animal page's `.animal-empty`, which only that page styles, so a
+// mistyped product link showed bare browser text and a blue link (25 Oct 2026).
 function renderError(root, msg) {
+  document.title = `${msg} · Kaayko`;
   root.innerHTML = `
-    <section class="animal-empty">
-      <h2>${esc(msg)}</h2>
-      <a href="/store">← Browse the store</a>
+    <section class="pdp-missing">
+      <h1>${esc(msg)}</h1>
+      <p>It may have sold out or moved. Everything we make is in the store.</p>
+      <a class="pdp-missing-cta" href="/store">Browse the store</a>
     </section>`;
+}
+
+/* ── What search engines read ────────────────────────────────────
+   Every product page used to carry the same description, no canonical
+   address (kaayko.com and kaay.store serve the same page twice) and no
+   product data. Google runs this script; a social preview does not, so
+   share cards stay the store's own until pages are rendered server-side. */
+const CANONICAL_ORIGIN = 'https://kaayko.com';
+
+function describe(product, image) {
+  const url = `${CANONICAL_ORIGIN}/store/p/${encodeURIComponent(product.id)}`;
+  const text = String(product.description || '').replace(/\s+/g, ' ').trim();
+  const summary = text.length > 155 ? `${text.slice(0, 152).replace(/\s+\S*$/, '')}…` : text;
+  const head = document.head;
+  const meta = (attr, key, value) => {
+    if (!value) return;
+    let m = head.querySelector(`meta[${attr}="${key}"]`);
+    if (!m) { m = document.createElement('meta'); m.setAttribute(attr, key); head.appendChild(m); }
+    m.setAttribute('content', value);
+  };
+  meta('name', 'description', summary);
+  meta('property', 'og:title', `${product.title} · Kaayko`);
+  meta('property', 'og:description', summary);
+  meta('property', 'og:url', url);
+  if (image) meta('property', 'og:image', new URL(image, location.href).href);
+
+  let canonical = head.querySelector('link[rel="canonical"]');
+  if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; head.appendChild(canonical); }
+  canonical.href = url;
+
+  const cents = priceCents(product);
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.title,
+    sku: product.id,
+    description: text || undefined,
+    image: (product.previewSrc || product.imgSrc || []).slice(0, 3).map((u) => new URL(u, location.href).href),
+    brand: { '@type': 'Brand', name: 'Kaayko' },
+    offers: Number.isFinite(cents) && cents > 0 ? {
+      '@type': 'Offer',
+      url,
+      priceCurrency: 'USD',
+      price: (cents / 100).toFixed(2),
+      itemCondition: 'https://schema.org/NewCondition',
+      availability: isSoldOut(product) ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock'
+    } : undefined
+  };
+  let ld = head.querySelector('script[data-pdp-ld]');
+  if (!ld) { ld = document.createElement('script'); ld.type = 'application/ld+json'; ld.dataset.pdpLd = ''; head.appendChild(ld); }
+  ld.textContent = JSON.stringify(data);
 }
 
 /** "Originals · T-Shirt" — theme first, then what the thing physically is (registry name). */
@@ -56,6 +112,7 @@ function renderProduct(product, openModalFn) {
   const previews = (product.previewSrc && product.previewSrc.length === product.imgSrc.length)
     ? product.previewSrc
     : product.imgSrc;
+  describe(product, previews[0]);
 
   const copy = satireFor(product);
   const price = priceText(product);
@@ -94,6 +151,7 @@ function renderProduct(product, openModalFn) {
         <p class="pdp-price">${esc(price)}</p>
         <div class="pdp-picker" id="pdp-picker"></div>
         <p class="pdp-reassure">Printed to order, on its way within 10 business days · Free US shipping · <a href="/legal/returns">30-day returns</a></p>
+        <button type="button" class="pdp-share" id="pdp-share">Share this piece</button>
       </div>
 
       <aside class="pdp-file" data-voice="${esc(copy.voice)}">
@@ -124,6 +182,20 @@ function renderProduct(product, openModalFn) {
   const inspect = mountInspectFrame(product, root, thumbEls);
 
   // Zoom on click, and on Enter/Space since the wrapper acts as a button.
+  // Share the page as the shopper sees it: the phone's own share sheet where
+  // there is one, else the address on the clipboard.
+  document.getElementById('pdp-share')?.addEventListener('click', async () => {
+    const url = location.origin + location.pathname;
+    try {
+      if (navigator.share) { await navigator.share({ title: `${product.title} · Kaayko`, url }); return; }
+      await navigator.clipboard.writeText(url);
+      showToast('Link copied.', { kind: 'good' });
+    } catch (err) {
+      if (err && err.name === 'AbortError') return;      // the shopper closed the sheet
+      showToast('Could not share from this browser. Copy the address bar instead.', { kind: 'notice' });
+    }
+  });
+
   const main = document.getElementById('pg-main');
   let swiped = false;
   main.addEventListener('click', () => { if (swiped) { swiped = false; return; } openModalFn(product); });

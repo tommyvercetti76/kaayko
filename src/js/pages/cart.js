@@ -61,7 +61,7 @@ const state = {
 // product titles from Firestore, so nothing is interpolated into HTML unescaped.
 
 /** The checkout speaks in errors unless told otherwise. */
-const toast = (message, kind = 'error') => showToast(message, { kind });
+const toast = (message, kind = 'error', action = null) => showToast(message, { kind, action });
 
 // A stable fingerprint of what is in the bag. If this changes after
 // an intent exists, the intent was priced for a different bag.
@@ -204,6 +204,7 @@ function render() {
   const sticky = document.getElementById('co-sticky');
 
   document.getElementById('co-count').textContent = items.length;
+  document.title = items.length ? 'Checkout — Kaayko' : 'Your bag — Kaayko';
 
   if (items.length === 0) {
     root.innerHTML = `
@@ -242,6 +243,7 @@ function render() {
         <div class="co-field" id="co-email-element"></div>
 
         <h2 class="co-label">Delivery</h2>
+        <p class="co-note">We deliver within the United States.</p>
         <div id="co-address-element"></div>
 
         <h2 class="co-label">Payment</h2>
@@ -281,8 +283,13 @@ function render() {
       </aside>
     </div>`;
 
+  // A slip of the thumb should not cost the piece: Remove offers it back.
   root.querySelectorAll('[data-remove]').forEach(btn => {
-    btn.addEventListener('click', () => cartManager.removeItem(btn.dataset.remove));
+    btn.addEventListener('click', () => {
+      const gone = cartManager.getItem(btn.dataset.remove);
+      cartManager.removeItem(btn.dataset.remove);
+      if (gone) toast(`${gone.title} removed.`, 'notice', { label: 'Undo', onClick: () => cartManager.addItem(gone) });
+    });
   });
   wirePromoField();
 
@@ -315,13 +322,17 @@ function watchPay(button) {
 
 function itemMarkup(item, index = 0) {
   const meta = metaLine(item);
+  // the piece's own page, to look again before paying
+  const href = `/store/p/${encodeURIComponent(item.productId)}`;
   const qty = item.quantity || 1;
   return `
     <article class="co-item" style="--co-i:${index}">
-      <img class="co-item-image" src="${esc(item.imgSrc)}" alt="${esc(item.title)}"
-           onerror="this.classList.add('is-broken')" />
+      <a class="co-item-link" href="${href}" tabindex="-1" aria-hidden="true">
+        <img class="co-item-image" src="${esc(item.imgSrc)}" alt=""
+             onerror="this.classList.add('is-broken')" />
+      </a>
       <div class="co-item-body">
-        <h3 class="co-item-title">${esc(item.title)}</h3>
+        <h3 class="co-item-title"><a href="${href}">${esc(item.title)}</a></h3>
         <p class="co-item-meta">${meta}${meta && qty > 1 ? ' · ' : ''}${qty > 1 ? `Quantity ${qty}` : ''}</p>
       </div>
       <div class="co-item-side">
@@ -517,6 +528,39 @@ function showPrepFailure() {
   });
 }
 
+/* Stripe's fields wear the page's palette, read from the tokens, and change with
+   it: switching the theme after the form appeared used to leave it in the old one. */
+function appearance() {
+  const dark = document.documentElement.classList.contains('dark-theme');
+  const css = getComputedStyle(document.body);
+  const token = (name, fallback) => (css.getPropertyValue(name).trim() || fallback);
+  return {
+    theme: dark ? 'night' : 'stripe',
+    variables: {
+      colorPrimary: token('--gold', '#8b6f3a'),
+      colorBackground: token('--surface-2', dark ? '#141613' : '#ffffff'),
+      colorText: token('--fg', dark ? '#f5efe2' : '#1a1815'),
+      colorTextSecondary: token('--muted', '#4d4740'),
+      colorDanger: token('--co-danger', '#a83826'),
+      fontFamily: "'Josefin Sans', Arial, sans-serif",
+      spacingUnit: '4px',
+      borderRadius: '10px'
+    },
+    rules: {
+      '.Label': { fontSize: '12px', fontWeight: '500', letterSpacing: '0.04em', marginBottom: '7px' },
+      '.Input': { border: `1px solid ${token('--co-input-border', 'rgba(26,24,21,0.45)')}`, padding: '12px 14px' },
+      '.Input:focus': {
+        border: `1px solid ${token('--gold', '#8b6f3a')}`,
+        boxShadow: `0 0 0 3px ${dark ? 'rgba(212,182,132,0.20)' : 'rgba(139,111,58,0.18)'}`
+      },
+      '.Tab': { border: `1px solid ${token('--line', 'rgba(26,24,21,0.12)')}` },
+      '.Tab--selected': { borderColor: token('--gold', '#8b6f3a') }
+    }
+  };
+}
+new MutationObserver(() => { try { state.elements?.update({ appearance: appearance() }); } catch (_) {} })
+  .observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
 function mountStripe() {
   if (!state.pi || state.elements) return;
 
@@ -526,36 +570,10 @@ function mountStripe() {
   if (!host || !addressHost || !emailHost) return;
 
   try {
-    const dark = document.documentElement.classList.contains('dark-theme');
-    const css = getComputedStyle(document.body);
-    const token = (name, fallback) => (css.getPropertyValue(name).trim() || fallback);
-
     state.stripe = state.stripe || Stripe(STRIPE_KEY);
     state.elements = state.stripe.elements({
       clientSecret: state.pi.clientSecret,
-      appearance: {
-        theme: dark ? 'night' : 'stripe',
-        variables: {
-          colorPrimary: token('--gold', '#8b6f3a'),
-          colorBackground: token('--surface-2', dark ? '#141613' : '#ffffff'),
-          colorText: token('--fg', dark ? '#f5efe2' : '#1a1815'),
-          colorTextSecondary: token('--muted', '#4d4740'),
-          colorDanger: token('--co-danger', '#a83826'),
-          fontFamily: "'Josefin Sans', Arial, sans-serif",
-          spacingUnit: '4px',
-          borderRadius: '10px'
-        },
-        rules: {
-          '.Label': { fontSize: '12px', fontWeight: '500', letterSpacing: '0.04em', marginBottom: '7px' },
-          '.Input': { border: `1px solid ${token('--co-input-border', 'rgba(26,24,21,0.45)')}`, padding: '12px 14px' },
-          '.Input:focus': {
-            border: `1px solid ${token('--gold', '#8b6f3a')}`,
-            boxShadow: `0 0 0 3px ${dark ? 'rgba(212,182,132,0.20)' : 'rgba(139,111,58,0.18)'}`
-          },
-          '.Tab': { border: `1px solid ${token('--line', 'rgba(26,24,21,0.12)')}` },
-          '.Tab--selected': { borderColor: token('--gold', '#8b6f3a') }
-        }
-      },
+      appearance: appearance(),
       fields: { billingDetails: { address: 'auto' } }
     });
 

@@ -6,6 +6,7 @@
  *
  *   Toast.show('Added to bag', { kind: 'good', action: { label: 'Go to bag', href: '/cart' } })
  *   Toast.show('That card was declined.', { kind: 'error' })
+ *   Toast.show('Mug removed.', { action: { label: 'Undo', onClick: () => … } })
  *
  * kind: 'good' | 'notice' | 'error'. Errors use role="alert" and stay 7 s; the
  * rest role="status" and 5 s. Styles in css/toast.css (tokens from the store
@@ -20,6 +21,7 @@ const HOLD_MS = { good: 5000, notice: 5000, error: 7000 };
 
 let el = null;
 let hideTimer = 0;
+let onAction = null;   // an action that is a button (Undo), not a link
 
 function ensure() {
   if (el && el.isConnected) return el;
@@ -34,6 +36,14 @@ function ensure() {
       '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>' +
     '</button>';
   el.querySelector('.ktoast-close').addEventListener('click', hide);
+  el.querySelector('.ktoast-action').addEventListener('click', (e) => {
+    if (!onAction) return;                 // a link: let it go where it points
+    e.preventDefault();
+    const run = onAction;
+    onAction = null;
+    hide();
+    run();
+  });
   // A toast you are reaching for must not leave under your finger: hold it while
   // pointed at or focused, and give it its time again when you move away.
   const hold = () => clearTimeout(hideTimer);
@@ -65,13 +75,16 @@ export function show(message, { kind = 'notice', action = null, ms } = {}) {
   node.querySelector('.ktoast-icon').innerHTML = ICONS[k];
   node.querySelector('.ktoast-msg').textContent = message;
   const a = node.querySelector('.ktoast-action');
-  if (action && action.href) {
+  onAction = action && typeof action.onClick === 'function' ? action.onClick : null;
+  if (action && (action.href || onAction)) {
     a.textContent = action.label || 'Open';
-    a.href = action.href;
+    a.href = action.href || '#';
+    if (onAction) a.setAttribute('role', 'button'); else a.removeAttribute('role');
     a.hidden = false;
   } else {
     a.hidden = true;
     a.removeAttribute('href');
+    a.removeAttribute('role');
   }
   // Re-trigger the entrance when a message replaces a visible one.
   node.classList.remove('is-visible');
@@ -79,7 +92,7 @@ export function show(message, { kind = 'notice', action = null, ms } = {}) {
   node.classList.add('is-visible');
   clearTimeout(hideTimer);
   // A toast with a next step (Go to bag) is the way forward, not a notice: 9 s.
-  hideTimer = setTimeout(hide, typeof ms === 'number' ? ms : (action && action.href ? 9000 : HOLD_MS[k]));
+  hideTimer = setTimeout(hide, typeof ms === 'number' ? ms : (action && (action.href || onAction) ? 9000 : HOLD_MS[k]));
   return node;
 }
 

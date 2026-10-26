@@ -440,3 +440,61 @@ html.dark-theme .product-v2 .pdp-inspect { background: radial-gradient(120% 85% 
 .product-v2 body,
 body.product-v2 { overflow-x: hidden; }
 
+
+/* ── Share, and the page for a product that is not there ─────── */
+.product-v2 .pdp-share {
+  align-self: flex-start;
+  margin-top: -10px;           /* sits with the line above it, not a section of its own */
+  padding: 8px 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  letter-spacing: .04em;
+  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.product-v2 .pdp-share:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+.pdp-missing {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  min-height: 52vh;
+  align-content: center;
+  padding: 48px 16px;
+  text-align: center;
+}
+.pdp-missing h1 {
+  margin: 0;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 500;
+  font-size: clamp(30px, 5vw, 44px);
+  color: var(--fg);
+}
+.pdp-missing p {
+  margin: 0;
+  max-width: 40ch;
+  font-family: 'Josefin_Light', 'Josefin Sans', Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.pdp-missing-cta {
+  display: inline-flex;
+  align-items: center;
+  min-height: 46px;
+  margin-top: 10px;
+  padding: 0 24px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--fg);
+  text-decoration: none;
+  font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+  font-size: 13px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.pdp-missing-cta:hover, .pdp-missing-cta:focus-visible { border-color: var(--gold); color: var(--gold); }

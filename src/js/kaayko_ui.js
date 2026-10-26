@@ -531,7 +531,20 @@ function applyBrowseState(carousel) {
     "price-asc":  (a, b) => num(a, "facetPrice") - num(b, "facetPrice"),
     "price-desc": (a, b) => num(b, "facetPrice") - num(a, "facetPrice")
   };
-  cards.sort(comparators[BROWSE_STATE.sort] || comparators.featured);
+  const order = comparators[BROWSE_STATE.sort] || comparators.featured;
+  // While searching, pieces NAMED for the words come first, in the chosen sort;
+  // pieces that only mention them follow. "tiger" listed the Indian Pitta tote
+  // (its description says "tiger") above the Bengal Tiger bottle (25 Oct 2026).
+  const words = searchWords(BROWSE_STATE.query);
+  if (words.length) {
+    const named = new Map(cards.map((card) => {
+      const name = foldSearch(card.querySelector(".title-link")?.textContent || "").split(/\s+/);
+      return [card, words.every((w) => name.some((t) => t.startsWith(w))) ? 0 : 1];
+    }));
+    cards.sort((a, b) => (named.get(a) - named.get(b)) || order(a, b));
+  } else {
+    cards.sort(order);
+  }
   // Move the nodes, not just the paint. CSS `order` re-ordered what you SAW, while
   // Tab and screen readers still walked the creation order (WCAG 1.3.2 / 2.4.3).
   cards.forEach((card) => { card.style.order = ""; });

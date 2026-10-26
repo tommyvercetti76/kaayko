@@ -117,10 +117,28 @@
       .os-step.is-now { border-left-color: var(--gold); }
     }
     @media (prefers-reduced-motion: reduce) { .os-track { transition: none; } }
+    .os-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 56px; padding: 0 clamp(16px, 4vw, 32px);
+      border-bottom: 1px solid var(--line);
+    }
+    .os-topbar a {
+      display: inline-flex; align-items: center; min-height: 44px;
+      color: var(--fg); text-decoration: none;
+      font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
+      font-size: 13px; letter-spacing: .08em;
+    }
+    .os-topbar-brand { letter-spacing: .22em !important; text-transform: uppercase; }
   </style>
 </head>
 
 <body class="store-v2 os-root">
+  <!-- a way home and a name: the page used to open on bare text with neither -->
+  <header class="os-topbar">
+    <a href="/store" class="os-topbar-back">&larr; Store</a>
+    <a href="/store" class="os-topbar-brand">Kaayko</a>
+  </header>
+
   <main class="os-wrapper">
     <div class="os-panel" id="os-panel" aria-live="polite">
       <div class="os-state"><h1>Finding your order…</h1></div>
@@ -135,6 +153,7 @@
       <a href="/legal/terms">Terms</a>
       <a href="/legal/returns">Returns</a>
       <a href="/legal/shipping">Shipping</a>
+      <a href="mailto:help@kaayko.com">Help</a>
     </nav>
     <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
   </footer>
