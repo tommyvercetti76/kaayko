@@ -174,12 +174,14 @@ html.dark-theme .product-v2 .pdp-inspect.kind-bottle { background: radial-gradie
 
 .product-v2 .product-thumb-3d.is-pending { opacity: .4; cursor: default; }
 .product-v2 .product-thumb-3d {
+  /* the tile is always the light image ground, so its label is always dark ink — in the
+     dark theme --fg went light and the label all but vanished (25 Oct 2026) */
+  color: #24211c;
   display: grid;
   place-items: center;
   font-family: 'Josefin_Medium', 'Josefin Sans', Arial, sans-serif;
   font-size: 15px;
   letter-spacing: .14em;
-  color: var(--fg);
 }
 
 /* ── You may also like (js/product.js mountSuggestions) ──────────

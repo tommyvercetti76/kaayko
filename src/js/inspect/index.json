@@ -112,9 +112,17 @@
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_florican_mug.wrap.b8efe2bf71.webp"
  },
+ "kaayko_gaur_magnet": {
+  "kind": "magnet",
+  "round": "/assets/inspect/kaayko_gaur_magnet.round.159ae87c9e.webp"
+ },
  "kaayko_gaur_mug": {
   "kind": "mug",
   "wrap": "/assets/inspect/kaayko_gaur_mug.wrap.62ca2c10f6.webp"
+ },
+ "kaayko_gir_magnet": {
+  "kind": "magnet",
+  "round": "/assets/inspect/kaayko_gir_magnet.round.5347129cb3.webp"
  },
  "kaayko_gir_mug": {
   "kind": "mug",

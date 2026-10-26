@@ -27,6 +27,48 @@ from PIL import Image
 from scipy import ndimage
 
 
+def flat_face(src: Path, size: int = 1536, paper_rgb=(246, 246, 247)) -> Image.Image:
+    """The whole printed face, flat-lit: the disc cut from the photograph with the light
+    divided out, on the magnet's own paper, transparent outside the circle. Used for the
+    3D view of the older Gaur and Gir magnets, whose faces exist only as photographs
+    (25 Oct 2026) — label and all, exactly as printed."""
+    a = np.asarray(Image.open(src).convert("RGB"), np.float32)
+    cx, cy, r, paper = _disc_and_paper(a)
+    C = np.clip(a / np.maximum(paper, 1), 0, 1) * np.array(paper_rgb, np.float32)
+    k = 0.985 * r                                        # inside the rim's own shading
+    x0, y0 = int(round(cx - k)), int(round(cy - k)); side = int(round(2 * k))
+    im = Image.fromarray(C.astype(np.uint8)).crop((x0, y0, x0 + side, y0 + side)).resize((size, size), Image.LANCZOS)
+    Y, X = np.mgrid[0:size, 0:size].astype(np.float32)
+    rr = np.hypot(X - (size - 1) / 2, Y - (size - 1) / 2)
+    alpha = np.clip((size / 2 - rr) / 1.5, 0, 1) * 255
+    im = im.convert("RGBA"); im.putalpha(Image.fromarray(alpha.astype(np.uint8)))
+    return im
+
+
+def _disc_and_paper(a: np.ndarray):
+    """The face's centre and radius, and the light on its bare paper (a quadratic per channel)."""
+    H, W = a.shape[:2]
+    luma = a.mean(axis=2); chroma = a.max(axis=2) - a.min(axis=2)
+    lab, n = ndimage.label((luma > 236) & (chroma < 14))
+    if not n:
+        raise SystemExit("no white face found")
+    sizes = ndimage.sum(np.ones_like(luma), lab, range(1, n + 1))
+    disc = ndimage.binary_fill_holes(lab == (int(np.argmax(sizes)) + 1))
+    cy, cx = ndimage.center_of_mass(disc)
+    r = float(np.sqrt(disc.sum() / np.pi))
+    Y, X = np.mgrid[0:H, 0:W].astype(np.float64)   # float64: the quadratic fit overflows float32 matmul
+    rr = np.hypot(X - cx, Y - cy) / r
+    bare = (rr < 0.95) & (luma > 236) & (chroma < 14)
+    ys, xs = np.nonzero(bare)
+    pick = np.random.default_rng(0).choice(len(xs), size=min(60000, len(xs)), replace=False)
+    u = (xs[pick] - cx) / r; v = (ys[pick] - cy) / r
+    A = np.stack([np.ones_like(u), u, v, u * u, u * v, v * v], 1)
+    U = (X - cx) / r; V = (Y - cy) / r
+    basis = np.stack([np.ones_like(U), U, V, U * U, U * V, V * V], -1)
+    paper = np.stack([np.einsum('hwk,k->hw', basis, np.linalg.lstsq(A, a[ys[pick], xs[pick], c].astype(np.float64), rcond=None)[0]) for c in range(3)], -1)
+    return cx, cy, r, paper
+
+
 def lift(src: Path, keep_label: bool = False) -> Image.Image:
     a = np.asarray(Image.open(src).convert("RGB"), np.float32)
     H, W = a.shape[:2]

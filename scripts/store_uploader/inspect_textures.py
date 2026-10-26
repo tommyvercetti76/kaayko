@@ -107,6 +107,13 @@ BOTTLES = {
     "yzCMEUlvYkoAdDInOgEE": ST2 / "Woodpecker_HD.png",           # Woodpecker
 }
 
+# The two older live magnets (Gaur, Gir): their faces exist only as photographs, so the
+# 3D face is lifted off the original photograph, flat-lit, label and all (25 Oct 2026).
+OLD_MAGNETS = {
+    "kaayko_gaur_magnet": Path("/Users/Rohan/Desktop/Kaayko_Tote/_processed/kaayko_gaur_magnet/0.webp"),
+    "kaayko_gir_magnet": Path("/Users/Rohan/Desktop/Kaayko_Tote/_processed/kaayko_gir_magnet/0.webp"),
+}
+
 # a design whose park is not the one its art file was composed for
 NAME_OVERRIDE = {"Kuno_Cheetah": "KUNO", "Canyon_Wren": "ZION", "Himalayan_Marmot": "HEMIS",
                  "Masked_Finfoot": "SUNDARBANS", "Small_Clawed_Otter": "SUNDARBANS", "Bobcat": "BIG BEND"}
@@ -206,6 +213,12 @@ def main() -> int:
                 entry[shape] = save(magnet_face(art, name, shape, medallion), f"{mid}.{shape}", 90)
             index[mid] = entry
         print("  ", up, name or "(no park)")
+    import lift_magnet_print as lmp
+    for pid, photo in OLD_MAGNETS.items():
+        if not photo.exists():
+            print("missing photo", photo); return 1
+        index[pid] = {"kind": "magnet", "round": save(lmp.flat_face(photo), f"{pid}.round", 90)}
+        print("  ", pid, "face lifted from", photo.name)
     for doc, stamp in BOTTLES.items():
         if not stamp.exists():
             print("missing stamp", stamp); return 1
