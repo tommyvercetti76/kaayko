@@ -47,6 +47,16 @@ html[data-hero-flying="out"] .product-gallery-main img,
 html[data-hero-flying="out"] .product-gallery-skeleton img,
 html[data-hero-flying="out"] .an-art img { visibility: hidden; }
 
+/* Coming back to a store that was reloaded rather than restored (iPhone Safari,
+   every time): its page waits, unseen, until the card the photo is going home to
+   is drawn and scrolled into place, then fades in under the landing photo. It
+   used to fade in as a skeleton at the top and jump to the shopper's place — the
+   flash Rohan saw on 25 Oct 2026. The header is the same on both pages and stays. */
+html[data-hero-wait] body > main,
+html[data-hero-wait] body > footer { opacity: 0; }
+html[data-hero-unwait] body > main,
+html[data-hero-unwait] body > footer { transition: opacity 260ms ease-out; }
+
 /* Where it lands while the product loads. The skeleton stops pulsing under it,
    or the photo would breathe with it (it turned a black tee grey). */
 .pdp-hero-preview { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }

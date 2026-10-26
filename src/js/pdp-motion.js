@@ -178,6 +178,7 @@
     var f = takeOff(img ? img.currentSrc || img.src : d.src, d.from, 'home');
     function settle(img) {
       putBack(img, b);
+      showPage();                 // in place now: fade the store in under the photo
       if (!onScreen(img)) { img.removeAttribute('data-hero-land'); fade(); return; }
       land(f, d.from, img, HOME_MS, function () { img.removeAttribute('data-hero-land'); });
     }
@@ -186,7 +187,8 @@
     // Not restored from the back/forward cache (iPhone Safari reloaded the store
     // every time when filmed, 25 Oct 2026), so the card does not exist yet. The
     // photo waits where it was and settles once its card is drawn, or fades if
-    // the card never shows on screen.
+    // the card never shows on screen. The page waits with it, unseen (pdp-motion.css).
+    root.setAttribute('data-hero-wait', '');
     var mo = new MutationObserver(function () {
       var img = cardImg(b);
       if (!img) return;
@@ -196,9 +198,19 @@
     });
     var timer = setTimeout(function () { stop(); fade(); }, 1500);
     function stop() { mo.disconnect(); clearTimeout(timer); }
-    function fade() { f.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: 'forwards' }).onfinish = function () { done(f); }; }
+    function fade() {
+      showPage();
+      f.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: 'forwards' }).onfinish = function () { done(f); };
+    }
     mo.observe(document.body || root, { childList: true, subtree: true });
     return true;
+  }
+
+  function showPage() {
+    if (!root.hasAttribute('data-hero-wait')) return;
+    root.setAttribute('data-hero-unwait', '');
+    root.removeAttribute('data-hero-wait');
+    setTimeout(function () { root.removeAttribute('data-hero-unwait'); }, 320);
   }
 
   function reveal() {
