@@ -418,8 +418,16 @@ function buildShelf(items, types, carousel) {
   };
   const img = (src) => src ? `<img src="${esc(src)}" alt="" decoding="async" />` : "";
 
-  const collage = types.slice(0, 4).map(([t]) => img(shelfCover(byType.get(t)))).join("");
-  shelf.appendChild(mkTile("all", "Everything", items, collage));
+  // Four covers make the 2×2 collage. A maker's shelf often has one or two kinds:
+  // fill from other pieces, and below four show one whole cover rather than a
+  // quarter-filled grid.
+  const covers = [...new Set([
+    ...types.map(([t]) => shelfCover(byType.get(t))),
+    ...items.map((it) => shelfCover([it]))
+  ].filter(Boolean))].slice(0, 4);
+  const everything = mkTile("all", "Everything", items, covers.length >= 4 ? covers.map(img).join("") : img(covers[0]));
+  if (covers.length < 4) everything.querySelector(".shelf-img").classList.remove("shelf-collage");
+  shelf.appendChild(everything);
   for (const [type] of types) {
     const list = byType.get(type);
     shelf.appendChild(mkTile(type, labelForType(type), list, img(shelfCover(list))));

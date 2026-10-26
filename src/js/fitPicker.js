@@ -89,6 +89,9 @@ export function stockedSizes(product) {
  * catalogue's own answer, with productType (tshirt, hoodie) as the fallback.
  */
 function isApparel(product) {
+  // A maker's clothing is not cut to our blanks: no fit row (it would put a
+  // "Women's" on an order the maker never offered) and no chest guide below.
+  if (product?.byMaker) return false;
   if (/^apparel$/i.test(norm(product?.category))) return true;
   return /^(tshirt|t-shirt|tee|hoodie|sweatshirt)$/i.test(norm(product?.productType));
 }
@@ -328,7 +331,7 @@ export function createFitPicker(product, { onConfirm, showAction = true } = {}) 
       </div>
     </div>` : "";
 
-  const guideRows = sizes
+  const guideRows = (product?.byMaker ? [] : sizes)
     .filter((s) => SIZE_GUIDE[s.toUpperCase()])
     .map((s) => `<tr><th scope="row">${esc(s)}</th><td>${SIZE_GUIDE[s.toUpperCase()]}"</td></tr>`)
     .join("");

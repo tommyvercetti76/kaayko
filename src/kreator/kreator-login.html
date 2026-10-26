@@ -646,6 +646,8 @@
       showAlert('You have been logged out.', 'success');
     } else if (message === 'session_expired') {
       showAlert('Your session has expired. Please sign in again.');
+    } else if (message === 'account_deleted') {
+      showAlert('Your seller account is deleted and your listings are off the store.', 'success');
     } else if (message === 'application_pending') {
       showAlert('Your application is pending review. We will email you when approved.', 'success');
     }

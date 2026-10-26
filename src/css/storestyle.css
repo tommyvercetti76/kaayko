@@ -603,6 +603,10 @@ Bag full — "Five to a bag" (js/sustainabilityAlert.js)
   content: ''; display: block; width: min(38%, 220px); height: 1px; margin: 14px auto 0;
   background: linear-gradient(90deg, transparent, var(--color-accent, #a8843c), transparent);
 }
+.store-banner-bio {
+  margin: 0 auto 12px; max-width: 34em; font-size: .98rem; line-height: 1.5;
+  color: var(--muted, #6b6156);
+}
 .store-banner-promo {
   margin: 12px auto 0; max-width: 34em; font-style: italic; font-size: 1.02rem;
   color: var(--color-accent, #a8843c);

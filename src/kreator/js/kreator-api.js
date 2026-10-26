@@ -4,9 +4,14 @@
  */
 
 // Configuration
+const IS_LOCAL_HOST = ['localhost', '127.0.0.1'].includes(location.hostname);
+
 const CONFIG = {
-  // Environment: 'local' or 'production'
-  ENVIRONMENT: localStorage.getItem('kreator_environment') || 'production',
+  // Environment: 'local' or 'production'. A page served from localhost talks to
+  // the emulators unless told otherwise — it used to default to production, so a
+  // local test application landed in the live kreator_applications.
+  ENVIRONMENT: (() => { try { return localStorage.getItem('kreator_environment'); } catch (_) { return null; } })()
+    || (IS_LOCAL_HOST ? 'local' : 'production'),
   
   // API endpoints
   LOCAL_API: 'http://127.0.0.1:5001/kaaykostore/us-central1/api',
@@ -34,6 +39,10 @@ const AUTH = {
     
     if (token && kreatorStr) {
       try {
+        // A session lasts 7 days. An expired one used to count as signed in, so
+        // the login page bounced straight back to a dashboard that could not load.
+        const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+        if (payload.exp && payload.exp * 1000 < Date.now()) { this.clear(); return false; }
         this.token = token;
         this.kreator = JSON.parse(kreatorStr);
         return true;
@@ -73,17 +82,38 @@ const AUTH = {
   
   requireAuth() {
     if (!this.isAuthenticated()) {
-      window.location.href = './kreator-login';
+      window.location.href = '/kreator/kreator-login';
       return false;
     }
     return true;
   },
   
-  logout() {
+  // Signs out everywhere: the server bumps the account's session version, so a
+  // copied or stolen token dies too. It used to clear this browser only.
+  async logout(message) {
+    const token = this.token || localStorage.getItem('kreator_auth_token');
+    if (token && !message) {
+      try {
+        await fetch(`${CONFIG.API_BASE}/kreators/auth/logout`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+      } catch (_) { /* offline: still sign this browser out */ }
+    }
     this.clear();
-    window.location.href = './kreator-login';
+    window.location.href = `/kreator/kreator-login?message=${message || 'logged_out'}`;
   }
 };
+
+/** Firebase Auth, pointed at the Auth emulator when the API is the emulator. */
+function firebaseAuth() {
+  if (typeof firebase === 'undefined' || !firebase.auth) {
+    throw new Error('Sign-in did not load. Please refresh the page.');
+  }
+  const auth = firebase.auth();
+  if (CONFIG.ENVIRONMENT === 'local' && !auth.__kaaykoEmulator) {
+    auth.useEmulator('http://127.0.0.1:9099');
+    auth.__kaaykoEmulator = true;
+  }
+  return auth;
+}
 
 /**
  * Base API fetch wrapper
@@ -102,10 +132,11 @@ async function apiFetch(endpoint, options = {}) {
       }
     });
     
-    // Handle 401 - redirect to login
-    if (response.status === 401) {
-      console.error('❌ Authentication required');
-      AUTH.logout();
+    // A signed-in call that comes back 401 means the session expired or was
+    // revoked. Public calls (sign-in with a bad token) return their own message.
+    if (response.status === 401 && AUTH.token) {
+      console.error('❌ Session expired');
+      AUTH.logout('session_expired');
       return null;
     }
     
@@ -124,10 +155,16 @@ async function parseResponse(response) {
     throw new Error('No response received');
   }
   
-  const data = await response.json();
+  const data = await response.json().catch(() => ({}));
   
   if (!response.ok) {
-    throw new Error(data.error || data.message || `HTTP ${response.status}`);
+    // The useful words are in `details` (validation) or `message`; `error` is a
+    // label like "Validation Error" that told applicants nothing.
+    const details = Array.isArray(data.details) ? data.details.join(' ') : '';
+    const err = new Error(details || data.message || data.error || `HTTP ${response.status}`);
+    err.code = data.code;
+    err.status = response.status;
+    throw err;
   }
   
   return data;
@@ -197,11 +234,25 @@ export async function completeOnboarding(token, password, displayName = null) {
  * @param {string} password - Password
  */
 export async function login(email, password) {
-  const response = await apiFetch('/kreators/auth/login', {
+  let credential;
+  try {
+    credential = await firebaseAuth().signInWithEmailAndPassword(email, password);
+  } catch (e) {
+    const code = e && e.code;
+    if (code === 'auth/too-many-requests') throw new Error('Too many attempts. Wait a minute, or reset your password.');
+    if (code === 'auth/network-request-failed') throw new Error('No connection. Check your network and try again.');
+    throw new Error('That email and password do not match a seller account.');
+  }
+  const idToken = await credential.user.getIdToken();
+  // The Firebase sign-in is only the credential for this exchange; the seller
+  // session is the token the API returns.
+  firebaseAuth().signOut().catch(() => {});
+
+  const response = await fetch(`${CONFIG.API_BASE}/kreators/auth/signin`, {
     method: 'POST',
-    body: JSON.stringify({ email, password })
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ idToken })
   });
-  
   const data = await parseResponse(response);
   
   if (data.success && data.data.token) {
@@ -217,17 +268,14 @@ export async function login(email, password) {
  */
 export async function signInWithGoogle() {
   // Firebase Auth is loaded globally in the HTML
-  if (typeof firebase === 'undefined' || !firebase.auth) {
-    throw new Error('Firebase Auth not loaded. Please refresh the page.');
-  }
-  
+  const auth = firebaseAuth();
   const provider = new firebase.auth.GoogleAuthProvider();
   provider.addScope('email');
   provider.addScope('profile');
   
   try {
     console.log('[Kreator Auth] Starting Google sign-in popup...');
-    const result = await firebase.auth().signInWithPopup(provider);
+    const result = await auth.signInWithPopup(provider);
     const user = result.user;
     const idToken = await user.getIdToken();
     
@@ -355,30 +403,21 @@ export async function changePassword(currentPassword, newPassword) {
 }
 
 /**
- * Request password reset
+ * Request password reset. Firebase Auth emails the reset link and hosts the
+ * page that sets the new password. This used to post to /kreators/auth/forgot-
+ * password, which never existed, and always said "check your email".
  * @param {string} email - Kreator email
  */
 export async function requestPasswordReset(email) {
-  const response = await apiFetch('/kreators/auth/forgot-password', {
-    method: 'POST',
-    body: JSON.stringify({ email })
-  });
-  
-  return parseResponse(response);
-}
-
-/**
- * Reset password with token
- * @param {string} token - Reset token
- * @param {string} newPassword - New password
- */
-export async function resetPassword(token, newPassword) {
-  const response = await apiFetch('/kreators/auth/reset-password', {
-    method: 'POST',
-    body: JSON.stringify({ token, newPassword })
-  });
-  
-  return parseResponse(response);
+  try {
+    await firebaseAuth().sendPasswordResetEmail(email);
+  } catch (e) {
+    // Do not reveal whether an address has an account.
+    if (e && e.code !== 'auth/user-not-found' && e.code !== 'auth/invalid-email') {
+      throw new Error('Could not send the reset email. Please try again.');
+    }
+  }
+  return { success: true };
 }
 
 /**
@@ -453,7 +492,7 @@ export function getAuthState() {
  * Logout
  */
 export function logout() {
-  AUTH.logout();
+  return AUTH.logout();
 }
 
 /**

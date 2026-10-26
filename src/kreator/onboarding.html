@@ -442,6 +442,10 @@
                 <span class="material-icons">close</span>
                 One number
               </div>
+              <div class="requirement" id="req-special">
+                <span class="material-icons">close</span>
+                One symbol, like ! ? # or @
+              </div>
               <div class="requirement" id="req-match">
                 <span class="material-icons">close</span>
                 Passwords match
@@ -482,7 +486,7 @@
   </div>
 
   <script type="module">
-    import { verifyMagicLink, completeOnboarding } from './js/kreator-api.js';
+    import { verifyMagicLink, completeOnboarding, AUTH } from './js/kreator-api.js';
     
     let magicToken = null;
     let kreatorData = null;
@@ -557,7 +561,9 @@
         length: password.length >= 8,
         uppercase: /[A-Z]/.test(password),
         lowercase: /[a-z]/.test(password),
-        number: /[0-9]/.test(password)
+        number: /[0-9]/.test(password),
+        // The server requires one of these (kreatorService PASSWORD_REQUIREMENTS)
+        special: /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password)
       };
       
       // Update requirement indicators
@@ -565,6 +571,7 @@
       updateRequirement('req-uppercase', requirements.uppercase);
       updateRequirement('req-lowercase', requirements.lowercase);
       updateRequirement('req-number', requirements.number);
+      updateRequirement('req-special', requirements.special);
       
       // Calculate strength
       const metCount = Object.values(requirements).filter(Boolean).length;
@@ -580,7 +587,7 @@
       } else if (metCount === 2) {
         strengthFill.className = 'strength-fill fair';
         strengthText.textContent = 'Fair password';
-      } else if (metCount === 3) {
+      } else if (metCount <= 4) {
         strengthFill.className = 'strength-fill good';
         strengthText.textContent = 'Good password';
       } else {
@@ -631,7 +638,7 @@
       
       // Validate password requirements
       const reqs = checkPasswordStrength(password);
-      if (!reqs.length || !reqs.uppercase || !reqs.lowercase || !reqs.number) {
+      if (!reqs.length || !reqs.uppercase || !reqs.lowercase || !reqs.number || !reqs.special) {
         alert('Please meet all password requirements.');
         return;
       }
@@ -655,6 +662,9 @@
         const result = await completeOnboarding(magicToken, password, displayName || null);
         
         if (result.success) {
+          // A different seller signed in on this browser must not be where
+          // "Go to Dashboard" lands.
+          AUTH.clear();
           showState('success-state');
           
           // Countdown redirect

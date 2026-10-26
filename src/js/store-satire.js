@@ -323,6 +323,20 @@ function editorialFrom(product) {
 export function satireFor(product) {
   const hook = String(product?.description || "").trim();
 
+  // A piece from an independent maker speaks in the maker's words, never the
+  // house's satire ("Threat level: Undetermined" on someone's linocut).
+  if (product?.byMaker) {
+    const maker = String(product.storeName || "").trim() || "an independent maker";
+    const options = Array.isArray(product.availableSizes) ? product.availableSizes.filter(Boolean) : [];
+    return {
+      voice: "maker",
+      hook,
+      story: String(product.storyCopy || "").trim() || `Made by ${maker}, an independent maker selling on Kaayko.`,
+      rows: [["Made by", maker], ...(options.length ? [["Options", options.join(", ")]] : [])],
+      atRisk: false
+    };
+  }
+
   // Copy edited in Kortex wins over anything shipped in this file. The maps
   // below stay as the default for every product nobody has edited yet, so
   // there is no migration and no blank panel.

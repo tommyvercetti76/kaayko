@@ -34,6 +34,7 @@ export const ROUTES = {
   accuracy: '/accuracy',
   orders: '/orders',
   products: '/products',
+  kreators: '/kreators',
   cards: '/cards',
   ops: '/ops',
 };

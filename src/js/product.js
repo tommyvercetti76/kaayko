@@ -61,7 +61,7 @@ function describe(product, image) {
     m.setAttribute('content', value);
   };
   meta('name', 'description', summary);
-  meta('property', 'og:title', `${product.title} · Kaayko`);
+  meta('property', 'og:title', `${titleFor(product)} · Kaayko`);
   meta('property', 'og:description', summary);
   meta('property', 'og:url', url);
   if (image) meta('property', 'og:image', new URL(image, location.href).href);
@@ -78,7 +78,7 @@ function describe(product, image) {
     sku: product.id,
     description: text || undefined,
     image: (product.previewSrc || product.imgSrc || []).slice(0, 3).map((u) => new URL(u, location.href).href),
-    brand: { '@type': 'Brand', name: 'Kaayko' },
+    brand: { '@type': 'Brand', name: product.byMaker && product.storeName ? product.storeName : 'Kaayko' },
     offers: Number.isFinite(cents) && cents > 0 ? {
       '@type': 'Offer',
       url,
@@ -93,11 +93,17 @@ function describe(product, image) {
   ld.textContent = JSON.stringify(data);
 }
 
+/** A maker's piece names its maker wherever the house would otherwise be assumed. */
+function titleFor(product) {
+  return product.byMaker && product.storeName ? `${product.title} by ${product.storeName}` : product.title;
+}
+
 /** "Originals · T-Shirt" — theme first, then what the thing physically is (registry name). */
 function eyebrowFor(product) {
   const type = labelForType(product.productType, { singular: true })
     || (String(product.category || "").toLowerCase() === "apparel" ? "T-Shirt" : "");
-  return [product.theme, type].filter(Boolean).join(" · ") || "Kaayko";
+  const lead = product.byMaker ? product.storeName : product.theme;
+  return [lead, type].filter(Boolean).join(" · ") || "Kaayko";
 }
 
 function renderProduct(product, openModalFn) {
@@ -107,7 +113,7 @@ function renderProduct(product, openModalFn) {
     return;
   }
 
-  document.title = `${product.title} · Kaayko`;
+  document.title = `${titleFor(product)} · Kaayko`;
 
   // Preview tier for thumbnails and the main display; zoom opens full res.
   const previews = (product.previewSrc && product.previewSrc.length === product.imgSrc.length)
@@ -148,11 +154,14 @@ function renderProduct(product, openModalFn) {
       <div class="pdp-buy">
         <p class="pdp-eyebrow">${esc(eyebrowFor(product))}</p>
         <h1 class="pdp-title">${esc(product.title)}</h1>
+        ${product.byMaker && product.storeSlug ? `<p class="pdp-seller">Sold by <a href="/store?store=${encodeURIComponent(product.storeSlug)}">${esc(product.storeName || "an independent maker")}</a>, an independent maker</p>` : ""}
         ${copy.hook ? `<p class="pdp-hook">${esc(copy.hook)}</p>` : ""}
         <p class="pdp-price">${priceSpan(cents)}</p>
         <p class="pdp-fx-charge" data-charge-cents="${cents || ''}" data-charge-style="pdp" hidden></p>
         <div class="pdp-picker" id="pdp-picker"></div>
-        <p class="pdp-reassure">Printed to order, on its way within 10 business days · Free US shipping · <a href="/legal/returns">30-day returns</a></p>
+        <p class="pdp-reassure">${product.byMaker
+          ? `Made by ${esc(product.storeName || "the maker")} · Free US shipping`
+          : `Printed to order, on its way within 10 business days · Free US shipping · <a href="/legal/returns">30-day returns</a>`}</p>
         <button type="button" class="pdp-share" id="pdp-share">Share this piece</button>
       </div>
 

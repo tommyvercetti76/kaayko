@@ -23,6 +23,20 @@
   
   <!-- Styles -->
   <link rel="stylesheet" href="css/kreator-base.css">
+
+  <!-- Firebase Auth: only for "Email me a link" (password reset) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script>
+    firebase.initializeApp({
+      apiKey: "AIzaSyC59ECKLt3rowOoavF76hV_djb--W4jekA",
+      authDomain: "kaaykostore.firebaseapp.com",
+      projectId: "kaaykostore",
+      appId: "1:87383373015:web:ee1ce56d4f5192ec67ec92",
+      storageBucket: "kaaykostore.firebasestorage.app",
+      messagingSenderId: "87383373015"
+    });
+  </script>
   
   <style>
     /* Dashboard-specific styles */
@@ -577,6 +591,21 @@
       gap: var(--space-lg);
     }
     
+    /* The phone menu button is fixed top-left; keep each view's heading clear of it. */
+    @media (max-width: 768px) {
+      .main-content { padding-top: 76px; }
+    }
+    
+    .product-note { font-size: 12px; color: #f59e0b; margin: 6px 0 0; }
+    .shop-card { margin-bottom: var(--space-xl); }
+    .shop-card-body { display: flex; gap: var(--space-lg); align-items: center; flex-wrap: wrap; }
+    .shop-qr { background: #fff; padding: 8px; border-radius: 8px; flex: none; }
+    .shop-lines { min-width: 0; flex: 1; }
+    .shop-lines p { margin: 0 0 6px; overflow-wrap: anywhere; }
+    .shop-lines a { color: var(--kreator-primary); }
+    .shop-label { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin-top: 8px !important; }
+    .shop-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px !important; }
+    
     .product-card {
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
@@ -858,28 +887,20 @@
             <span class="material-icons">pending_actions</span>
           </div>
           <div class="banner-content">
-            <h3>Complete your seller setup</h3>
-            <p>Finish these steps to start receiving orders</p>
+            <h3>Get your shop on the shelf</h3>
+            <p>Your shop appears to shoppers once it has a live listing</p>
             <div class="setup-checklist">
               <div class="setup-item complete" id="setup-profile">
                 <span class="material-icons">check_circle</span>
-                Profile
-              </div>
-              <div class="setup-item pending" id="setup-payment">
-                <span class="material-icons">radio_button_unchecked</span>
-                Payment Info
+                Account active
               </div>
               <div class="setup-item pending" id="setup-products">
                 <span class="material-icons">radio_button_unchecked</span>
-                Add Products
-              </div>
-              <div class="setup-item pending" id="setup-shipping">
-                <span class="material-icons">radio_button_unchecked</span>
-                Shipping Settings
+                List your first piece
               </div>
             </div>
           </div>
-          <a href="#" class="btn btn-kreator" data-view="settings">Complete Setup</a>
+          <a href="./add-product" class="btn btn-kreator">Add a product</a>
         </div>
         
         <!-- Stats Grid -->
@@ -898,15 +919,15 @@
           </div>
           <div class="stat-card">
             <div class="stat-icon">💰</div>
-            <div class="stat-label">Revenue</div>
+            <div class="stat-label">Sales</div>
             <div class="stat-value" id="stat-revenue">$0.00</div>
-            <div class="stat-change">This month</div>
+            <div class="stat-change">This month, after discounts</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon">⭐</div>
-            <div class="stat-label">Rating</div>
-            <div class="stat-value" id="stat-rating">--</div>
-            <div class="stat-change">From customers</div>
+            <div class="stat-icon">🟢</div>
+            <div class="stat-label">Live</div>
+            <div class="stat-value" id="stat-live">0</div>
+            <div class="stat-change">Listings shoppers can buy</div>
           </div>
         </div>
         
@@ -927,7 +948,7 @@
             </div>
             <div class="quick-action-text">
               <h4>View My Store</h4>
-              <p>See your public store page</p>
+              <p id="view-store-url">See your public store page</p>
             </div>
           </a>
           <a href="#" class="quick-action-card" data-view="orders">
@@ -935,8 +956,8 @@
               <span class="material-icons">local_shipping</span>
             </div>
             <div class="quick-action-text">
-              <h4>Manage Orders</h4>
-              <p>Process and ship orders</p>
+              <h4>Orders</h4>
+              <p>What has sold</p>
             </div>
           </a>
           <a href="#" class="quick-action-card" data-view="earnings">
@@ -944,10 +965,30 @@
               <span class="material-icons">account_balance</span>
             </div>
             <div class="quick-action-text">
-              <h4>View Earnings</h4>
-              <p>Track your revenue</p>
+              <h4>Earnings</h4>
+              <p>Sales to date</p>
             </div>
           </a>
+        </div>
+        
+        <!-- Your shop: its own address, short link and QR (set when Kaayko approves you) -->
+        <div class="card shop-card" id="shop-card" hidden>
+          <div class="card-header">
+            <h3 class="section-title">Your shop</h3>
+          </div>
+          <div class="card-body shop-card-body">
+            <img id="shop-qr" class="shop-qr" alt="QR code for your shop" width="132" height="132">
+            <div class="shop-lines">
+              <p class="shop-label">Shop address</p>
+              <p><a id="shop-url" target="_blank" rel="noopener"></a></p>
+              <p class="shop-label">Short link (what the QR opens)</p>
+              <p><a id="shop-link" target="_blank" rel="noopener"></a></p>
+              <p class="shop-actions">
+                <button type="button" class="btn btn-secondary" id="shop-copy">Copy short link</button>
+                <a class="btn btn-secondary" id="shop-qr-download" download>Download QR</a>
+              </p>
+            </div>
+          </div>
         </div>
         
         <div class="dashboard-grid">
@@ -1044,22 +1085,22 @@
         <header class="view-header">
           <div>
             <h1>Orders</h1>
-            <p>Manage and fulfill customer orders</p>
+            <p>Every sale of your pieces. Kaayko holds the buyer's details and arranges delivery with you.</p>
           </div>
         </header>
         
         <div class="stats-grid" style="margin-bottom: var(--space-xl);">
           <div class="stat-card">
             <div class="stat-icon">⏳</div>
-            <div class="stat-label">Pending</div>
+            <div class="stat-label">Processing</div>
             <div class="stat-value" id="orders-pending">0</div>
-            <div class="stat-change">Awaiting processing</div>
+            <div class="stat-change">Paid, not yet shipped</div>
           </div>
           <div class="stat-card">
             <div class="stat-icon">📦</div>
-            <div class="stat-label">Processing</div>
+            <div class="stat-label">Ready to ship</div>
             <div class="stat-value" id="orders-processing">0</div>
-            <div class="stat-change">Being prepared</div>
+            <div class="stat-change">Packed</div>
           </div>
           <div class="stat-card">
             <div class="stat-icon">🚚</div>
@@ -1069,9 +1110,9 @@
           </div>
           <div class="stat-card">
             <div class="stat-icon">✅</div>
-            <div class="stat-label">Completed</div>
+            <div class="stat-label">Delivered</div>
             <div class="stat-value" id="orders-completed">0</div>
-            <div class="stat-change">Delivered</div>
+            <div class="stat-change">Arrived</div>
           </div>
         </div>
         
@@ -1097,54 +1138,24 @@
         
         <div class="stats-grid" style="margin-bottom: var(--space-xl);">
           <div class="stat-card">
-            <div class="stat-icon">💵</div>
-            <div class="stat-label">Available Balance</div>
-            <div class="stat-value" id="earnings-balance">$0.00</div>
-            <div class="stat-change">Ready to withdraw</div>
-          </div>
-          <div class="stat-card">
             <div class="stat-icon">📈</div>
             <div class="stat-label">This Month</div>
             <div class="stat-value" id="earnings-month">$0.00</div>
-            <div class="stat-change">Net earnings</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">⏳</div>
-            <div class="stat-label">Pending</div>
-            <div class="stat-value" id="earnings-pending">$0.00</div>
-            <div class="stat-change">Awaiting settlement</div>
+            <div class="stat-change">Sales after discounts and refunds</div>
           </div>
           <div class="stat-card">
             <div class="stat-icon">💰</div>
-            <div class="stat-label">Total Earned</div>
+            <div class="stat-label">All Time</div>
             <div class="stat-value" id="earnings-total">$0.00</div>
-            <div class="stat-change">All time</div>
+            <div class="stat-change">Sales after discounts and refunds</div>
           </div>
         </div>
-        
-        <div class="dashboard-grid">
-          <div class="card">
-            <div class="card-header">
-              <h3 class="section-title">Earnings Overview</h3>
-            </div>
-            <div class="card-body">
-              <div class="chart-container">
-                <span class="material-icons">show_chart</span>
-                <p>Earnings chart coming soon</p>
-              </div>
-            </div>
-          </div>
-          
-          <div class="card">
-            <div class="card-header">
-              <h3 class="section-title">Recent Payouts</h3>
-            </div>
-            <div class="card-body" id="recent-payouts">
-              <div class="empty-state" style="padding: var(--space-lg);">
-                <span class="material-icons" style="font-size: 36px;">account_balance_wallet</span>
-                <h3 style="font-size: 14px;">No payouts yet</h3>
-                <p style="font-size: 12px;">Payouts are processed weekly</p>
-              </div>
+        <div class="card">
+          <div class="card-body">
+            <div class="empty-state" style="padding: var(--space-lg);">
+              <span class="material-icons" style="font-size: 36px;">account_balance_wallet</span>
+              <h3 style="font-size: 14px;">Payouts are not in the dashboard yet</h3>
+              <p style="font-size: 12px;">These figures are what shoppers paid for your pieces. Kaayko arranges payment for your sales with you directly.</p>
             </div>
           </div>
         </div>
@@ -1176,7 +1187,8 @@
               
               <div class="form-group">
                 <label class="form-label" for="profile-businessName">Business Name</label>
-                <input type="text" id="profile-businessName" class="form-input" placeholder="Your business name">
+                <input type="text" id="profile-businessName" class="form-input" placeholder="Your business name" disabled>
+                <p class="form-hint">Your shop name is on every listing and in your shop's address. Write to us to change it.</p>
               </div>
               
               <div class="form-group">
@@ -1196,8 +1208,8 @@
               </div>
               
               <div class="form-group">
-                <label class="form-label" for="profile-bio">Store Description</label>
-                <textarea id="profile-bio" class="form-input" rows="3" placeholder="Tell customers about your store and what you sell..."></textarea>
+                <label class="form-label" for="profile-bio">Shop Description</label>
+                <textarea id="profile-bio" class="form-input" rows="3" maxlength="300" placeholder="Shown at the top of your shop page. Up to 300 characters."></textarea>
               </div>
               
               <button type="submit" class="btn btn-kreator">
@@ -1217,78 +1229,27 @@
         
         <div class="card" style="margin-bottom: var(--space-xl);">
           <div class="card-header">
-            <h3 class="section-title">Payment Information</h3>
+            <h3 class="section-title">Payouts and shipping</h3>
           </div>
           <div class="card-body">
-            <div class="empty-state" style="padding: var(--space-lg);">
-              <span class="material-icons" style="font-size: 36px;">account_balance</span>
-              <h3 style="font-size: 14px;">Connect your bank account</h3>
-              <p style="font-size: 12px;">Add payment details to receive payouts</p>
-              <button class="btn btn-kreator" style="margin-top: var(--space-md);">
-                Connect Bank
-              </button>
-            </div>
+            <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.6;">
+              When one of your pieces sells, we email you the piece, the option and the quantity, and it appears under Orders.
+              Kaayko holds the buyer's shipping details and arranges delivery and payment with you directly. Bank details and
+              shipping settings are not collected in the dashboard yet.
+            </p>
           </div>
         </div>
-        
-        <div class="card" style="margin-bottom: var(--space-xl);">
-          <div class="card-header">
-            <h3 class="section-title">Shipping Settings</h3>
-          </div>
-          <div class="card-body">
-            <form id="shipping-form">
-              <div class="form-group">
-                <label class="form-label" for="shipping-origin">Ship From Address</label>
-                <input type="text" id="shipping-origin" class="form-input" placeholder="Your warehouse/pickup address">
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label" for="shipping-capability">Shipping Coverage</label>
-                <select id="shipping-capability" class="form-input">
-                  <option value="domestic_only">Domestic (USA) Only</option>
-                  <option value="north_america">North America</option>
-                  <option value="international">International</option>
-                  <option value="local_pickup">Local Pickup Only</option>
-                </select>
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label" for="fulfillment-time">Typical Fulfillment Time</label>
-                <select id="fulfillment-time" class="form-input">
-                  <option value="1-2_days">1-2 business days</option>
-                  <option value="3-5_days">3-5 business days</option>
-                  <option value="1-2_weeks">1-2 weeks</option>
-                  <option value="2-4_weeks">2-4 weeks (custom)</option>
-                  <option value="varies">Varies by product</option>
-                </select>
-              </div>
-              
-              <button type="submit" class="btn btn-kreator">
-                Save Shipping Settings
-              </button>
-            </form>
-          </div>
-        </div>
-        
         <div class="card">
           <div class="card-header">
             <h3 class="section-title">Security</h3>
           </div>
           <div class="card-body">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-lg);">
-              <div>
-                <strong style="color: var(--text-primary);">Change Password</strong>
-                <p style="font-size: 13px; color: var(--text-muted);">Update your account password</p>
-              </div>
-              <button class="btn btn-secondary">Change</button>
-            </div>
-            
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <div>
-                <strong style="color: var(--text-primary);">Two-Factor Authentication</strong>
-                <p style="font-size: 13px; color: var(--text-muted);">Add an extra layer of security</p>
+                <strong style="color: var(--text-primary);">Change Password</strong>
+                <p style="font-size: 13px; color: var(--text-muted);">We email you a link to set a new one</p>
               </div>
-              <button class="btn btn-secondary">Enable</button>
+              <button class="btn btn-secondary" id="change-password-btn">Email me a link</button>
             </div>
           </div>
         </div>
@@ -1337,18 +1298,31 @@
   </div>
 
   <script type="module">
-    import { AUTH, getProfile, updateProfile } from './js/kreator-api.js';
+    import { AUTH, CONFIG, updateProfile, requestPasswordReset } from './js/kreator-api.js';
 
-    const _isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-    const API_BASE = _isLocal
-      ? 'http://127.0.0.1:5001/kaaykostore/us-central1/api'
-      : 'https://api-vwcc5j4qda-uc.a.run.app';
+    const API_BASE = CONFIG.API_BASE;
     
-    // Initialize auth - use stored data, don't redirect
+    // An expired session counts as signed out (AUTH.init checks the expiry).
     if (!AUTH.init()) {
-      window.location.href = './kreator-login';
+      window.location.href = '/kreator/kreator-login';
       throw new Error('Not authenticated');
     }
+    
+    /** A signed-in call. A 401 means the session ended: back to sign-in, not an empty dashboard. */
+    async function authed(path, init = {}) {
+      const response = await fetch(`${API_BASE}${path}`, {
+        ...init,
+        headers: { ...(init.headers || {}), Authorization: `Bearer ${AUTH.token}` }
+      });
+      if (response.status === 401) {
+        AUTH.logout('session_expired');
+        throw new Error('Session expired');
+      }
+      return response;
+    }
+    
+    const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const money = (cents) => `$${((cents || 0) / 100).toFixed(2)}`;
     
     // Get stored kreator data immediately
     const storedKreator = AUTH.kreator;
@@ -1368,189 +1342,205 @@
       welcomeMessage.textContent = `Welcome back, ${displayName}!`;
     }
     
-    // Load full user data from API (non-blocking, won't redirect on failure)
+    let kreatorEmail = storedKreator?.email || '';
+    
     async function loadUserData() {
       try {
-        // Direct API call without requireAuth redirect
-        const response = await fetch(`${API_BASE}/kreators/me`, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${AUTH.token}`
-          }
-        });
-        
-        if (!response.ok) {
-          console.warn('[Dashboard] Could not fetch profile, using stored data');
-          return;
-        }
-        
+        const response = await authed('/kreators/me');
+        if (!response.ok) return;
         const result = await response.json();
+        if (!(result?.success && result.data)) return;
+        const user = result.data;
+        kreatorEmail = user.email || kreatorEmail;
+        const displayName = user.businessName || user.displayName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Seller';
+        sidebarName.textContent = displayName;
+        sidebarEmail.textContent = user.email || '';
+        sidebarAvatar.textContent = displayName.charAt(0).toUpperCase();
+        welcomeMessage.textContent = `Welcome back, ${displayName}!`;
         
-        if (result?.success && result.data) {
-          const user = result.data;
-          const displayName = user.businessName || user.displayName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Seller';
-          
-          sidebarName.textContent = displayName;
-          sidebarEmail.textContent = user.email || storedKreator?.email || '';
-          sidebarAvatar.textContent = displayName.charAt(0).toUpperCase();
-          welcomeMessage.textContent = `Welcome back, ${displayName}!`;
-          
-          // Update profile form if elements exist
-          const setVal = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
-          setVal('profile-firstName', user.firstName);
-          setVal('profile-lastName', user.lastName);
-          setVal('profile-businessName', user.businessName);
-          setVal('profile-email', user.email);
-          setVal('profile-phone', user.phone);
-          setVal('profile-location', user.location);
-          setVal('profile-bio', user.bio);
-          
-          // Show setup banner for new users
-          if (!user.setupComplete) {
-            const banner = document.getElementById('setup-banner');
-            if (banner) banner.style.display = 'flex';
-          }
-        }
+        const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+        setVal('profile-firstName', user.firstName);
+        setVal('profile-lastName', user.lastName);
+        setVal('profile-businessName', user.businessName);
+        setVal('profile-email', user.email);
+        setVal('profile-phone', user.phone);
+        setVal('profile-location', user.location);
+        setVal('profile-bio', user.bio);
+        
+        showShop(user);
+        
+        const google = document.getElementById('google-email');
+        if (google) google.textContent = user.googleUid ? 'Connected' : 'Not connected — you can still sign in with Google at your seller email';
       } catch (error) {
-        console.warn('[Dashboard] Profile fetch failed, using stored data:', error.message);
+        console.warn('[Dashboard] Profile fetch failed:', error.message);
       }
     }
     
-    // Generate store slug from business name
-    function generateStoreSlug(businessName) {
-      return businessName
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '')
-        .substring(0, 50);
+    // Same rule as the API (kreatorProductRoutes): the shop name slug plus the
+    // first six characters of the account id, so two shops with one name differ.
+    // It used to drop the suffix and link to a shelf that does not exist.
+    function storeSlugFor(kreator) {
+      const name = (kreator?.businessName || kreator?.displayName || 'store')
+        .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').substring(0, 50);
+      return `${name}-${String(kreator?.uid || '').substring(0, 6).toLowerCase()}`;
     }
     
-    // Set up View My Store link
-    function updateViewStoreLink() {
-      const viewStoreLink = document.getElementById('view-store-link');
-      if (viewStoreLink && storedKreator) {
-        const storeName = storedKreator.businessName || storedKreator.displayName || 'store';
-        const storeSlug = generateStoreSlug(storeName);
-        viewStoreLink.href = `https://kaayko.com/store?store=${encodeURIComponent(storeSlug)}`;
-      }
+    function updateViewStoreLink(slug, shopUrl) {
+      const link = document.getElementById('view-store-link');
+      const label = document.getElementById('view-store-url');
+      if (!link || !slug) return;
+      const url = shopUrl || `https://kaay.store/s/${encodeURIComponent(slug)}`;
+      link.href = url;
+      link.rel = 'noopener';
+      if (label) label.textContent = url.replace('https://', '');
+    }
+    updateViewStoreLink(storeSlugFor(storedKreator));
+    
+    /** The shop's own address, kaay.link link and QR, once Kaayko has given it one. */
+    function showShop(user) {
+      if (!user.storeHandle) return;
+      const card = document.getElementById('shop-card');
+      const url = document.getElementById('shop-url');
+      const link = document.getElementById('shop-link');
+      url.href = user.storeUrl; url.textContent = user.storeUrl.replace('https://', '');
+      link.href = user.storeLink; link.textContent = user.storeLink.replace('https://', '');
+      // Locally the QR comes from the emulated API; in production from kaay.link.
+      const qr = CONFIG.ENVIRONMENT === 'local' ? `${API_BASE}/qr/${encodeURIComponent(user.storeHandle)}.png` : user.storeQr;
+      document.getElementById('shop-qr').src = qr;
+      const download = document.getElementById('shop-qr-download');
+      download.href = qr;
+      download.setAttribute('download', `${user.storeHandle}-qr.png`);
+      document.getElementById('shop-copy').onclick = async () => {
+        try { await navigator.clipboard.writeText(user.storeLink); alert('Short link copied.'); }
+        catch (_) { prompt('Copy your short link:', user.storeLink); }
+      };
+      card.hidden = false;
+      updateViewStoreLink(user.storeHandle, user.storeUrl);
     }
     
-    // Initialize store link
-    updateViewStoreLink();
-    
-    // View navigation
+    // View navigation (the URL hash names the view, so add-product can land on Products)
     const navItems = document.querySelectorAll('.nav-item');
     const views = document.querySelectorAll('.view');
-    const quickActionCards = document.querySelectorAll('.quick-action-card[data-view]');
-    const viewAllLinks = document.querySelectorAll('.view-all-link[data-view]');
+    const sidebar = document.querySelector('.sidebar');
     
     function switchView(viewId) {
-      // Update nav
-      navItems.forEach(item => {
-        item.classList.toggle('active', item.dataset.view === viewId);
-      });
-      
-      // Update views
-      views.forEach(view => {
-        view.classList.toggle('active', view.id === `${viewId}-view`);
-      });
-      
-      // Close mobile menu
-      document.querySelector('.sidebar').classList.remove('active');
+      if (!document.getElementById(`${viewId}-view`)) viewId = 'dashboard';
+      navItems.forEach(item => item.classList.toggle('active', item.dataset.view === viewId));
+      views.forEach(view => view.classList.toggle('active', view.id === `${viewId}-view`));
+      // The phone menu slides on .open (kreator-base.css); this used to toggle
+      // .active, so the menu, Settings and Sign Out never opened on a phone.
+      sidebar.classList.remove('open');
+      if (location.hash.slice(1) !== viewId) history.replaceState(null, '', viewId === 'dashboard' ? location.pathname : `#${viewId}`);
     }
     
-    // Nav item clicks
-    navItems.forEach(item => {
-      item.addEventListener('click', (e) => {
+    document.querySelectorAll('[data-view]').forEach(el => {
+      el.addEventListener('click', (e) => {
         e.preventDefault();
-        const viewId = item.dataset.view;
-        if (viewId) switchView(viewId);
+        if (el.dataset.view) switchView(el.dataset.view);
       });
     });
+    window.addEventListener('hashchange', () => switchView(location.hash.slice(1) || 'dashboard'));
+    switchView(location.hash.slice(1) || 'dashboard');
     
-    // Quick action clicks
-    quickActionCards.forEach(card => {
-      card.addEventListener('click', (e) => {
-        e.preventDefault();
-        const viewId = card.dataset.view;
-        if (viewId) switchView(viewId);
-      });
+    document.getElementById('mobile-menu-toggle').addEventListener('click', () => {
+      sidebar.classList.toggle('open');
     });
     
-    // View all links
-    viewAllLinks.forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const viewId = link.dataset.view;
-        if (viewId) switchView(viewId);
-      });
-    });
+    function productCard(p) {
+      const card = document.createElement('div');
+      card.className = 'product-card';
+      card.dataset.id = p.id;
+      const cover = p.imgSrc?.[0];
+      if (cover) {
+        const img = document.createElement('img');
+        img.src = cover;
+        img.alt = p.title || '';
+        img.className = 'product-image';
+        img.loading = 'lazy';
+        card.appendChild(img);
+      }
+      const info = document.createElement('div');
+      info.className = 'product-info';
+      const status = p.adminHidden ? ['inactive', 'Paused by Kaayko']
+        : p.reviewStatus === 'pending' ? ['inactive', 'In review']
+        : p.reviewStatus === 'rejected' ? ['inactive', 'Sent back']
+        : p.isAvailable ? ['active', 'Live'] : ['inactive', 'Hidden'];
+      info.innerHTML = `<h4>${esc(p.title)}</h4>
+        <p class="product-price">${typeof p.actualPrice === 'number' ? `$${p.actualPrice.toFixed(2)}` : ''}</p>
+        <span class="product-status ${status[0]}">${status[1]}</span>
+        ${p.reviewStatus === 'rejected' && p.reviewNote ? `<p class="product-note">Kaayko: ${esc(p.reviewNote)}</p>` : ''}`;
+      card.appendChild(info);
+      return card;
+    }
     
-    // Load products for the products view
+    function renderProducts(container, products, limit) {
+      if (!container) return;
+      if (!products.length) return; // keep the page's empty state
+      container.replaceChildren(...products.slice(0, limit || products.length).map(productCard));
+    }
+    
     async function loadProducts() {
       try {
-        const response = await fetch(`${API_BASE}/kreators/products`, {
-          headers: {
-            'Authorization': `Bearer ${AUTH.token}`
-          }
-        });
-        
+        const response = await authed('/kreators/products');
         const result = await response.json();
-        
-        if (result.success && result.data) {
-          renderProductsList(result.data);
-          document.getElementById('products-count').textContent = result.data.length;
+        if (!(result.success && Array.isArray(result.data))) return;
+        const products = result.data;
+        const live = products.filter(p => p.isAvailable && !p.adminHidden && (p.reviewStatus || 'approved') === 'approved');
+        document.getElementById('products-count').textContent = products.length;
+        document.getElementById('stat-total-products').textContent = products.length;
+        document.getElementById('stat-live').textContent = live.length;
+        renderProducts(document.getElementById('all-products'), products);
+        renderProducts(document.getElementById('products-overview'), products, 3);
+        if (products[0]?.storeSlug && !document.getElementById('shop-url').href) updateViewStoreLink(products[0].storeSlug);
+        const banner = document.getElementById('setup-banner');
+        if (banner) banner.style.display = live.length ? 'none' : 'flex';
+        if (products.length) {
+          const step = document.getElementById('setup-products');
+          step.className = 'setup-item complete';
+          step.querySelector('.material-icons').textContent = 'check_circle';
         }
       } catch (error) {
-        console.warn('Failed to load products:', error);
+        console.warn('Failed to load products:', error.message);
       }
     }
     
-    function renderProductsList(products) {
-      const container = document.getElementById('all-products');
-      if (!container) {
-        console.warn('[Dashboard] products container not found');
-        return;
-      }
-      
-      if (products.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <span class="material-icons" style="font-size:48px;">inventory_2</span>
-            <h3>No products yet</h3>
-            <p>Add your first product to start selling on Kaayko</p>
-            <a href="./add-product" class="btn btn-kreator">Add Your First Product</a>
-          </div>
-        `;
-        return;
-      }
-      
-      container.innerHTML = products.map(p => {
-        // Handle both actualPrice (number) and price (symbol like $$)
-        const priceDisplay = p.actualPrice 
-          ? `$${p.actualPrice.toFixed(2)}`
-          : (typeof p.price === 'number' ? `$${p.price.toFixed(2)}` : p.price);
-        
-        return `
-          <div class="product-card" data-id="${p.id}">
-            <img src="${p.imgSrc?.[0] || '/assets/placeholder.png'}" alt="${p.title}" class="product-image">
-            <div class="product-info">
-              <h4>${p.title}</h4>
-              <p class="product-price">${priceDisplay}</p>
-              <span class="product-status ${p.isAvailable ? 'active' : 'inactive'}">${p.isAvailable ? 'Active' : 'Inactive'}</span>
-            </div>
-          </div>
-        `;
-      }).join('');
+    function orderRow(l) {
+      const row = document.createElement('div');
+      row.className = 'activity-item';
+      const when = l.createdAt ? new Date(l.createdAt).toLocaleDateString() : '';
+      row.innerHTML = `<div class="activity-icon info"><span class="material-icons">shopping_bag</span></div>
+        <div class="activity-content">
+          <div class="activity-text">${esc(l.productTitle)} · ${esc(l.option || 'One Size')} × ${esc(l.quantity)} — ${money(l.netCents)}</div>
+          <div class="activity-time">${esc(l.orderNumber || '')} · ${esc(String(l.status).replace(/_/g, ' '))} · ${esc(when)}</div>
+        </div>`;
+      return row;
     }
     
-    // Load products on init
-    loadProducts();
-    
-    // Mobile menu toggle
-    document.getElementById('mobile-menu-toggle').addEventListener('click', () => {
-      document.querySelector('.sidebar').classList.toggle('active');
-    });
+    async function loadOrders() {
+      try {
+        const response = await authed('/kreators/orders');
+        const result = await response.json();
+        if (!(result.success && result.data)) return;
+        const { lines, totals } = result.data;
+        document.getElementById('orders-count').textContent = totals.orders;
+        document.getElementById('stat-orders').textContent = totals.monthOrders;
+        document.getElementById('stat-revenue').textContent = money(totals.monthNetCents);
+        document.getElementById('earnings-month').textContent = money(totals.monthNetCents);
+        document.getElementById('earnings-total').textContent = money(totals.netCents);
+        const count = (...st) => lines.filter(l => st.includes(l.status)).length;
+        document.getElementById('orders-pending').textContent = count('processing', 'paid', 'succeeded');
+        document.getElementById('orders-processing').textContent = count('ready_to_ship');
+        document.getElementById('orders-shipped').textContent = count('shipped');
+        document.getElementById('orders-completed').textContent = count('delivered');
+        if (lines.length) {
+          const feed = (n) => { const f = document.createElement('div'); f.className = 'activity-feed'; f.append(...lines.slice(0, n).map(orderRow)); return f; };
+          document.getElementById('recent-orders').replaceChildren(feed(5));
+          document.getElementById('all-orders').replaceChildren(feed(lines.length));
+        }
+      } catch (error) {
+        console.warn('Failed to load orders:', error.message);
+      }
+    }
     
     // Theme toggle
     const themeToggle = document.getElementById('theme-toggle');
@@ -1568,8 +1558,9 @@
       themeToggle.innerHTML = `<span class="material-icons">${isLight ? 'light_mode' : 'dark_mode'}</span>`;
     });
     
-    // Logout
-    document.getElementById('logout-btn').addEventListener('click', () => {
+    // Sign out everywhere (the server revokes every session for this account)
+    document.getElementById('logout-btn').addEventListener('click', (e) => {
+      e.preventDefault();
       AUTH.logout();
     });
     
@@ -1580,7 +1571,6 @@
       const updates = {
         firstName: document.getElementById('profile-firstName').value.trim(),
         lastName: document.getElementById('profile-lastName').value.trim(),
-        businessName: document.getElementById('profile-businessName').value.trim(),
         phone: document.getElementById('profile-phone').value.trim(),
         location: document.getElementById('profile-location').value.trim(),
         bio: document.getElementById('profile-bio').value.trim()
@@ -1589,35 +1579,36 @@
       try {
         const result = await updateProfile(updates);
         if (result?.success) {
-          alert('Profile updated successfully!');
+          alert('Profile updated.');
           loadUserData();
         } else {
-          throw new Error(result?.error || 'Failed to update');
+          throw new Error(result?.message || 'Failed to update');
         }
       } catch (error) {
         alert('Failed to update profile: ' + error.message);
       }
     });
     
+    document.getElementById('change-password-btn')?.addEventListener('click', async () => {
+      try {
+        await requestPasswordReset(kreatorEmail);
+        alert(`We sent a link to ${kreatorEmail}. It lets you set a new password.`);
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+    
     // Disconnect Google
     document.getElementById('disconnect-google-btn').addEventListener('click', async () => {
-      if (!confirm('Are you sure you want to disconnect your Google account? You will need to set a password to log in.')) {
+      if (!confirm('Disconnect your Google account? You can still sign in with your seller email and password.')) {
         return;
       }
       
       try {
-        const response = await fetch(`${API_BASE}/kreators/auth/google/disconnect`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${AUTH.token}`
-          }
-        });
-        
+        const response = await authed('/kreators/auth/google/disconnect', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
         const result = await response.json();
-        
         if (result.success) {
-          alert('Google account disconnected. Please set a password to continue using your account.');
+          alert('Google account disconnected.');
           loadUserData();
         } else {
           throw new Error(result.message || 'Failed to disconnect');
@@ -1629,7 +1620,7 @@
     
     // Delete Account
     document.getElementById('delete-account-btn').addEventListener('click', async () => {
-      const confirmed = prompt('This will permanently delete your account and all data. Type "DELETE" to confirm:');
+      const confirmed = prompt('This deletes your seller account and takes every listing off the store. Type "DELETE" to confirm:');
       
       if (confirmed !== 'DELETE') {
         alert('Account deletion cancelled.');
@@ -1637,19 +1628,11 @@
       }
       
       try {
-        const response = await fetch(`${API_BASE}/kreators/me`, {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${AUTH.token}`
-          }
-        });
-        
+        const response = await authed('/kreators/me', { method: 'DELETE', headers: { 'Content-Type': 'application/json' } });
         const result = await response.json();
-        
         if (result.success) {
           alert('Your account has been deleted.');
-          AUTH.logout();
+          AUTH.logout('account_deleted');
         } else {
           throw new Error(result.message || 'Failed to delete account');
         }
@@ -1660,10 +1643,8 @@
     
     // Initialize
     loadUserData();
-    
-    // Set demo counts (will be replaced with real data)
-    document.getElementById('products-count').textContent = '0';
-    document.getElementById('orders-count').textContent = '0';
+    loadProducts();
+    loadOrders();
   </script>
 </body>
 </html>

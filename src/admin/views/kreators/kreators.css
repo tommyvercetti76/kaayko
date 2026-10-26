@@ -1,0 +1,73 @@
+/* ============================================================================
+   KREATORS VIEW — seller applications and sellers.
+   Same dark theme and tab pattern as Submissions.
+   ============================================================================ */
+
+.kreators-card { padding: 0; overflow: hidden; }
+
+.kreators-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: var(--space-md) var(--space-lg) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.kreators-tab {
+  padding: 9px 14px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.kreators-tab:hover { color: var(--text-secondary); }
+.kreators-tab.active { color: var(--gold-primary); border-bottom-color: var(--gold-primary); }
+
+.kreators-list { display: grid; gap: var(--space-md); padding: var(--space-lg); }
+.kreators-empty { color: var(--text-muted); font-size: 14px; margin: 0; }
+
+.kreators-item {
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: var(--space-md) var(--space-lg);
+  min-width: 0;
+}
+.kreators-item-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.kreators-item-head h3 { margin: 0; font-size: 16px; color: var(--text-primary); }
+.kreators-item-head p { margin: 4px 0 0; font-size: 13px; color: var(--text-secondary); overflow-wrap: anywhere; }
+.kreators-item-head a { color: inherit; }
+
+.kreators-status {
+  flex: none;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  background: rgba(212, 168, 75, 0.12);
+  color: #d9bd7b;
+}
+.kreators-status-approved { background: rgba(143, 188, 106, 0.14); color: #8fbc6a; }
+.kreators-status-rejected,
+.kreators-status-expired { background: rgba(248, 113, 113, 0.12); color: #f87171; }
+
+.kreators-desc { margin: 12px 0; font-size: 14px; line-height: 1.5; color: var(--text-primary); overflow-wrap: anywhere; }
+
+.kreators-rows { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px 16px; margin: 0; }
+.kreators-row { min-width: 0; }
+.kreators-row dt { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); }
+.kreators-row dd { margin: 2px 0 0; font-size: 13px; color: var(--text-secondary); overflow-wrap: anywhere; }
+.kreators-row a { color: var(--gold-primary); }
+
+.kreators-actions { display: flex; gap: 8px; margin-top: var(--space-md); flex-wrap: wrap; }
+
+.kreators-shop { display: flex; gap: 12px; align-items: center; margin: 12px 0; }
+.kreators-shop img { background: #fff; padding: 4px; border-radius: 6px; flex: none; }
+.kreators-shop div { display: grid; gap: 4px; min-width: 0; }
+.kreators-shop a { color: var(--gold-primary); font-size: 13px; overflow-wrap: anywhere; }
+.kreators-shopless { color: var(--text-muted); font-size: 13px; margin: 12px 0; }
+.kreators-photos { display: flex; gap: 8px; margin: 12px 0 0; flex-wrap: wrap; }
+.kreators-photos img { width: 96px; height: 96px; object-fit: cover; border-radius: 6px; display: block; }

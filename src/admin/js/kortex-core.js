@@ -102,6 +102,11 @@ const VIEW_CONFIGS = {
     css: 'views/products/products.css',
     container: '#products-view'
   },
+  kreators: {
+    module: '../views/kreators/kreators.js',
+    css: 'views/kreators/kreators.css',
+    container: '#kreators-view'
+  },
   cards: {
     module: '../views/cards/cards.js',
     css: 'views/cards/cards.css',

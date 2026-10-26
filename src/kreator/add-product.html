@@ -297,6 +297,13 @@
       border: 1px solid var(--success);
     }
     
+    .field-hint {
+      display: block;
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
     @media (max-width: 600px) {
       .form-row {
         grid-template-columns: 1fr;
@@ -333,87 +340,65 @@
           
           <div class="form-group">
             <label class="form-label" for="product-title">Product Title *</label>
-            <input type="text" id="product-title" class="form-input" placeholder="e.g., Classic Adventure Tee" required maxlength="100">
+            <input type="text" id="product-title" class="form-input" placeholder="e.g., Lake Whatcom linocut magnet" required maxlength="120">
           </div>
           
           <div class="form-group">
             <label class="form-label" for="product-description">Description *</label>
-            <textarea id="product-description" class="form-input" rows="4" placeholder="Describe your product..." required maxlength="500"></textarea>
+            <textarea id="product-description" class="form-input" rows="4" placeholder="What it is, what it is made of, how big it is" required minlength="20" maxlength="300"></textarea>
+            <small class="field-hint" id="description-count">20–300 characters</small>
           </div>
           
           <div class="form-row">
             <div class="form-group">
               <label class="form-label" for="product-price">Price (USD) *</label>
-              <input type="number" id="product-price" class="form-input" placeholder="29.99" step="0.01" min="0.99" max="9999.99" required>
+              <input type="number" id="product-price" class="form-input" placeholder="12.00" step="0.01" min="1" max="500" required>
             </div>
             <div class="form-group">
               <label class="form-label" for="product-quantity">Stock Quantity *</label>
-              <input type="number" id="product-quantity" class="form-input" placeholder="100" min="1" max="9999" required>
+              <input type="number" id="product-quantity" class="form-input" placeholder="25" min="1" max="999" step="1" required>
             </div>
           </div>
         </div>
         
         <div class="form-section">
-          <h3 class="form-section-title">Category & Tags</h3>
+          <h3 class="form-section-title">What it is</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="product-category">Category *</label>
+              <!-- The store's closed set (config/productTypes.js CATEGORIES). Six of the
+                   old nine options were refused by the API with a 400. -->
+              <select id="product-category" class="form-input" required>
+                <option value="">Select category...</option>
+                <option value="apparel">Clothing</option>
+                <option value="accessories">Accessories (magnets, totes, prints)</option>
+                <option value="drinkware">Drinkware</option>
+                <option value="other">Something else</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="product-type">Type *</label>
+              <select id="product-type" class="form-input" required disabled>
+                <option value="">Pick a category first</option>
+              </select>
+            </div>
+          </div>
           
           <div class="form-group">
-            <label class="form-label" for="product-category">Category *</label>
-            <select id="product-category" class="form-input" required>
-              <option value="">Select category...</option>
-              <option value="apparel">Apparel & Clothing</option>
-              <option value="accessories">Accessories</option>
-              <option value="art">Art & Prints</option>
-              <option value="digital">Digital Products</option>
-              <option value="souvenirs">Souvenirs & Gifts</option>
-              <option value="coaching">Coaching & Sessions</option>
-              <option value="courses">Courses & Education</option>
-              <option value="fitness">Fitness & Sports</option>
-              <option value="other">Other</option>
-            </select>
+            <label class="form-label" for="product-sizes">Options shoppers choose from *</label>
+            <input type="text" id="product-sizes" class="form-input" placeholder="e.g., Small, Large — or One Size" required maxlength="300">
+            <small class="field-hint">Comma separated: sizes, shapes or volumes. A shopper must pick one, and it is printed on the order.</small>
           </div>
           
           <div class="form-group">
             <label class="form-label" for="product-tags">Tags (comma separated)</label>
-            <input type="text" id="product-tags" class="form-input" placeholder="e.g., casual, summer, outdoor">
-          </div>
-        </div>
-        
-        <div class="form-section">
-          <h3 class="form-section-title">Sizes & Colors</h3>
-          
-          <div class="form-group">
-            <label class="form-label">Available Sizes</label>
-            <div class="size-options" id="size-options">
-              <label class="size-option" data-size="XS">
-                <input type="checkbox" name="sizes" value="XS">
-                <span>XS</span>
-              </label>
-              <label class="size-option" data-size="S">
-                <input type="checkbox" name="sizes" value="S">
-                <span>S</span>
-              </label>
-              <label class="size-option" data-size="M">
-                <input type="checkbox" name="sizes" value="M" checked>
-                <span>M</span>
-              </label>
-              <label class="size-option" data-size="L">
-                <input type="checkbox" name="sizes" value="L" checked>
-                <span>L</span>
-              </label>
-              <label class="size-option" data-size="XL">
-                <input type="checkbox" name="sizes" value="XL">
-                <span>XL</span>
-              </label>
-              <label class="size-option" data-size="XXL">
-                <input type="checkbox" name="sizes" value="XXL">
-                <span>XXL</span>
-              </label>
-            </div>
+            <input type="text" id="product-tags" class="form-input" placeholder="e.g., lake, linocut, washington">
           </div>
           
           <div class="form-group">
-            <label class="form-label" for="product-colors">Available Colors (comma separated)</label>
-            <input type="text" id="product-colors" class="form-input" placeholder="e.g., Black, White, Navy">
+            <label class="form-label" for="product-story">The story behind it</label>
+            <textarea id="product-story" class="form-input" rows="3" maxlength="600" placeholder="Optional. Shown on the product page under &quot;What inspired this piece&quot;."></textarea>
           </div>
         </div>
         
@@ -421,9 +406,9 @@
           <h3 class="form-section-title">Product Images</h3>
           
           <div class="image-upload-area" id="image-upload-area">
-            <input type="file" id="product-images" accept="image/*" multiple style="display: none;">
+            <input type="file" id="product-images" accept="image/jpeg,image/png,image/webp" multiple style="display: none;">
             <span class="material-icons">cloud_upload</span>
-            <p>Click or drag images here<br><small>Up to 5 images, max 5MB each</small></p>
+            <p>Click or drag photos here *<br><small>1 to 5 photos · JPEG, PNG or WebP · 5 MB each · the first is the cover</small></p>
           </div>
           <div class="image-previews" id="image-previews"></div>
         </div>
@@ -440,11 +425,11 @@
   </div>
 
   <script type="module">
-    import { AUTH } from './js/kreator-api.js';
+    import { AUTH, CONFIG } from './js/kreator-api.js';
     
-    // Check auth
+    // Check auth (an expired session counts as signed out)
     if (!AUTH.init()) {
-      window.location.href = './kreator-login';
+      window.location.href = '/kreator/kreator-login';
     }
     
     const form = document.getElementById('product-form');
@@ -453,18 +438,47 @@
     const imageUploadArea = document.getElementById('image-upload-area');
     const imageInput = document.getElementById('product-images');
     const imagePreviews = document.getElementById('image-previews');
+    const categoryEl = document.getElementById('product-category');
+    const typeEl = document.getElementById('product-type');
+    const sizesEl = document.getElementById('product-sizes');
+    const descriptionEl = document.getElementById('product-description');
     
+    const ALLOWED = ['image/jpeg', 'image/png', 'image/webp'];
     let selectedImages = [];
+    let types = [];
     
-    // Size options toggle
-    document.querySelectorAll('.size-option').forEach(option => {
-      const checkbox = option.querySelector('input');
-      if (checkbox.checked) option.classList.add('selected');
-      
-      option.addEventListener('click', () => {
-        checkbox.checked = !checkbox.checked;
-        option.classList.toggle('selected', checkbox.checked);
-      });
+    // The live product types, from the same registry the API checks against.
+    fetch(`${CONFIG.API_BASE}/products/types`)
+      .then(r => r.json())
+      .then(d => { types = (d.types || d.data || d.productTypes || []).filter(t => t.status === 'live'); fillTypes(); })
+      .catch(() => fillTypes());
+    
+    function fillTypes() {
+      const cat = categoryEl.value;
+      typeEl.innerHTML = '';
+      if (!cat) {
+        typeEl.disabled = true;
+        typeEl.append(new Option('Pick a category first', ''));
+        return;
+      }
+      typeEl.disabled = false;
+      types.filter(t => t.category === cat).forEach(t => typeEl.append(new Option(t.singular, t.key)));
+      typeEl.append(new Option('My own kind of thing', 'other'));
+      fillSizes();
+    }
+    
+    function fillSizes() {
+      const t = types.find(x => x.key === typeEl.value);
+      sizesEl.value = t ? t.sizes.join(', ') : 'One Size';
+    }
+    
+    categoryEl.addEventListener('change', fillTypes);
+    typeEl.addEventListener('change', fillSizes);
+    
+    const countEl = document.getElementById('description-count');
+    descriptionEl.addEventListener('input', () => {
+      const n = descriptionEl.value.trim().length;
+      countEl.textContent = n < 20 ? `${n} / 300 · at least 20` : `${n} / 300`;
     });
     
     // Image upload
@@ -487,43 +501,46 @@
     
     imageInput.addEventListener('change', (e) => {
       handleFiles(e.target.files);
+      imageInput.value = '';
     });
     
     function handleFiles(files) {
+      const skipped = [];
       for (const file of files) {
-        if (selectedImages.length >= 5) break;
-        if (!file.type.startsWith('image/')) continue;
-        if (file.size > 5 * 1024 * 1024) continue;
+        if (selectedImages.length >= 5) { skipped.push(`${file.name} (5 photos at most)`); continue; }
+        if (!ALLOWED.includes(file.type)) { skipped.push(`${file.name} (not JPEG, PNG or WebP)`); continue; }
+        if (file.size > 5 * 1024 * 1024) { skipped.push(`${file.name} (over 5 MB)`); continue; }
         
         selectedImages.push(file);
         
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const div = document.createElement('div');
-          div.className = 'image-preview';
-          div.innerHTML = `
-            <img src="${e.target.result}" alt="Preview">
-            <button type="button" class="remove-btn" data-index="${selectedImages.length - 1}">
-              <span class="material-icons" style="font-size: 16px;">close</span>
-            </button>
-          `;
-          imagePreviews.appendChild(div);
-          
-          div.querySelector('.remove-btn').addEventListener('click', (evt) => {
-            const idx = parseInt(evt.currentTarget.dataset.index);
-            selectedImages.splice(idx, 1);
-            div.remove();
-            updatePreviewIndexes();
-          });
-        };
-        reader.readAsDataURL(file);
+        // Keyed by the File itself: the old index was read inside the async
+        // onload, so every preview removed the last photo, not its own.
+        const div = document.createElement('div');
+        div.className = 'image-preview';
+        const img = document.createElement('img');
+        img.alt = 'Preview';
+        img.src = URL.createObjectURL(file);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'remove-btn';
+        btn.setAttribute('aria-label', `Remove ${file.name}`);
+        btn.innerHTML = '<span class="material-icons" style="font-size: 16px;">close</span>';
+        btn.addEventListener('click', () => {
+          selectedImages = selectedImages.filter(f => f !== file);
+          URL.revokeObjectURL(img.src);
+          div.remove();
+        });
+        div.append(img, btn);
+        imagePreviews.appendChild(div);
       }
+      if (skipped.length) showStatus(`Not added: ${skipped.join('; ')}`, 'error');
     }
     
-    function updatePreviewIndexes() {
-      imagePreviews.querySelectorAll('.remove-btn').forEach((btn, i) => {
-        btn.dataset.index = i;
-      });
+    const list = (v) => v.split(',').map(x => x.trim()).filter(Boolean);
+    
+    function resetButton() {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '<span class="material-icons" style="font-size: 18px;">save</span> Save Product';
     }
     
     // Form submission
@@ -531,22 +548,22 @@
       e.preventDefault();
       
       const title = document.getElementById('product-title').value.trim();
-      const description = document.getElementById('product-description').value.trim();
+      const description = descriptionEl.value.trim();
       const price = document.getElementById('product-price').value;
       const quantity = document.getElementById('product-quantity').value;
-      const category = document.getElementById('product-category').value;
-      const tags = document.getElementById('product-tags').value;
-      const colors = document.getElementById('product-colors').value;
+      const category = categoryEl.value;
+      const productType = typeEl.value;
+      const sizes = list(sizesEl.value);
+      const tags = list(document.getElementById('product-tags').value);
+      const story = document.getElementById('product-story').value.trim();
       
-      const sizes = [];
-      document.querySelectorAll('input[name="sizes"]:checked').forEach(cb => {
-        sizes.push(cb.value);
-      });
-      
-      if (!title || !description || !price || !category) {
+      if (!title || !description || !price || !category || !productType) {
         showStatus('Please fill in all required fields', 'error');
         return;
       }
+      if (description.length < 20) { showStatus('The description needs at least 20 characters.', 'error'); return; }
+      if (!sizes.length) { showStatus('Add at least one option, for example One Size.', 'error'); return; }
+      if (!selectedImages.length) { showStatus('Add at least one photo.', 'error'); return; }
       
       saveBtn.disabled = true;
       saveBtn.innerHTML = '<span class="material-icons" style="font-size: 18px;">hourglass_empty</span> Saving...';
@@ -558,19 +575,16 @@
         formData.append('price', price);
         formData.append('quantity', quantity);
         formData.append('category', category);
-        formData.append('tags', JSON.stringify(tags.split(',').map(t => t.trim()).filter(Boolean)));
+        formData.append('productType', productType);
+        formData.append('tags', JSON.stringify(tags));
         formData.append('availableSizes', JSON.stringify(sizes));
-        formData.append('availableColors', JSON.stringify(colors.split(',').map(c => c.trim()).filter(Boolean)));
+        if (story) formData.append('storyCopy', story);
         
-        selectedImages.forEach((img, idx) => {
+        selectedImages.forEach((img) => {
           formData.append('images', img);
         });
         
-        const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-        const apiBase = isLocal
-          ? 'http://127.0.0.1:5001/kaaykostore/us-central1/api'
-          : 'https://api-vwcc5j4qda-uc.a.run.app';
-        const response = await fetch(`${apiBase}/kreators/products`, {
+        const response = await fetch(`${CONFIG.API_BASE}/kreators/products`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${AUTH.token}`
@@ -578,22 +592,21 @@
           body: formData
         });
         
-        const result = await response.json();
+        if (response.status === 401) { AUTH.logout('session_expired'); return; }
+        const result = await response.json().catch(() => ({}));
         
         if (result.success) {
-          showStatus('Product created successfully! Redirecting...', 'success');
+          showStatus('Listed. Kaayko reviews every new piece before it goes on the store; we email you when it is live.', 'success');
           setTimeout(() => {
-            window.location.href = './dashboard#products';
-          }, 1500);
+            window.location.href = '/kreator/dashboard#products';
+          }, 2200);
         } else {
           showStatus(result.message || 'Failed to create product', 'error');
-          saveBtn.disabled = false;
-          saveBtn.innerHTML = '<span class="material-icons" style="font-size: 18px;">save</span> Save Product';
+          resetButton();
         }
       } catch (error) {
         showStatus('Network error. Please try again.', 'error');
-        saveBtn.disabled = false;
-        saveBtn.innerHTML = '<span class="material-icons" style="font-size: 18px;">save</span> Save Product';
+        resetButton();
       }
     });
     

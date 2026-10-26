@@ -239,6 +239,18 @@ html.dark-theme .product-v2 .product-thumb.active { box-shadow: 0 0 0 2px var(--
   color: var(--fg);
 }
 
+/* A maker's piece: who made it, before anything else is said about it. */
+.product-v2 .pdp-seller {
+  margin: -4px 0 0;
+  font-size: 15px;
+  color: var(--muted);
+}
+.product-v2 .pdp-seller a {
+  color: var(--gold-bright);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* The catalogue's own punchline, given the size it has always deserved. */
 .product-v2 .pdp-hook {
   margin: 0;

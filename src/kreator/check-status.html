@@ -394,6 +394,21 @@
           `;
           break;
           
+        case 'expired':
+        case 'closed':
+          statusIcon.classList.add('rejected');
+          statusIcon.querySelector('.material-icons').textContent = 'history';
+          statusTitle.textContent = data.status === 'expired' ? 'Application Expired' : 'Application Closed';
+          statusMessage.textContent = data.status === 'expired'
+            ? 'This application was not reviewed within 30 days. You are welcome to apply again.'
+            : 'This seller account was closed. You are welcome to apply again.';
+          actionButtons.innerHTML = `
+            <a href="/kreator/apply" class="btn btn-secondary" style="width: 100%;">
+              Apply Again
+            </a>
+          `;
+          break;
+          
         default:
           statusIcon.classList.add('pending');
           statusIcon.querySelector('.material-icons').textContent = 'help_outline';
@@ -402,7 +417,7 @@
       }
       
       // Update details
-      document.getElementById('detail-id').textContent = data.applicationId;
+      document.getElementById('detail-id').textContent = data.applicationId || data.id || '-';
       document.getElementById('detail-date').textContent = data.submittedAt 
         ? new Date(data.submittedAt).toLocaleDateString() 
         : '-';

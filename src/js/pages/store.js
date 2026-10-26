@@ -7,7 +7,7 @@
  */
 import { cartManager } from "/js/cartManager.js";           // the bag exists before the header paints its badge
 import "/js/sustainabilityAlert.js";                          // window.showSustainabilityAlert for the fit picker
-import { catalogueFirst, friendlyMessage } from "/js/services/storeApi.js";
+import { catalogueFirst, friendlyMessage, request } from "/js/services/storeApi.js";
 import { currencyReady, mountCurrencySwitch } from "/js/services/currency.js";
 import { setProductTypes } from "/js/productTypes.js";
 import { populateCarousel, setupModalCloseHandlers } from "/js/kaayko_ui.js";
@@ -76,9 +76,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const params = new URLSearchParams(location.search);
   const pid = params.get("productID") || params.get("id");
-  // A maker's shelf: /store?store=<slug> or the short form kaay.store/s/<slug>.
+  // A maker's shelf: kaay.store/kreator/<handle> (a Kreator shop's own address,
+  // also kaay.link/<handle>), the older kaay.store/s/<slug>, or /store?store=<slug>.
   const pathSegs = location.pathname.split("/").filter(Boolean);
-  const pathSlug = pathSegs[0] === "s" && pathSegs[1] ? decodeURIComponent(pathSegs[1]) : "";
+  const pathSlug = (pathSegs[0] === "s" || pathSegs[0] === "kreator") && pathSegs[1] ? decodeURIComponent(pathSegs[1]).toLowerCase() : "";
   const storeSlug = params.get("store") || pathSlug;
   // A maker's card can carry her friends' rate: kaay.store/s/<slug>?promo=CODE.
   // The server says what the code is worth; this only holds it for the bag.
@@ -99,10 +100,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     const storeProducts = products.filter((p) => p.storeSlug === storeSlug);
     const carousel = document.getElementById("carousel");
     if (!storeProducts.length) {
+      // A shop with nothing on sale yet, or one that has closed: say which, by name.
+      const shop = await request(`/products/store/${encodeURIComponent(storeSlug)}`, { timeoutMs: 6000 }).catch(() => null);
+      const info = shop && shop.ok ? shop.data?.store : null;
+      if (info) document.title = `${info.name} - Kaayko Store`;
       if (carousel) carousel.innerHTML = `
         <div class="store-empty">
-          <h2>No products found</h2>
-          <p>This store doesn't have any products yet.</p>
+          <h2>${info ? esc(info.name) : "No products found"}</h2>
+          <p>${info ? (info.open ? "This shop has nothing on the shelf yet. Come back soon." : "This shop has closed.") : "This store doesn't have any products yet."}</p>
           <a href="/store" class="store-back-link">Browse All Products</a>
         </div>`;
       return;
@@ -115,9 +120,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       banner.innerHTML = `
         <div class="store-banner-content">
           <h2 class="store-banner-name">${esc(storeName)}</h2>
-          <p class="store-banner-count">${storeProducts.length} piece${storeProducts.length !== 1 ? "s" : ""}, printed to order</p>
+          <p class="store-banner-count">${storeProducts.length} piece${storeProducts.length !== 1 ? "s" : ""}${storeProducts[0].byMaker ? " by an independent maker" : ", printed to order"}</p>
+          ${storeProducts[0].storeBio ? `<p class="store-banner-bio">${esc(storeProducts[0].storeBio)}</p>` : ""}
           ${promoHeld ? `<p class="store-banner-promo">${esc(promoHeld.percent)}% off for friends is held for your bag. Code ${esc(promoHeld.code)}.</p>` : ""}
-          <a href="/" class="store-banner-link">All pieces</a>
+          <a href="/store" class="store-banner-link">All pieces</a>
         </div>`;
       carousel.parentNode.insertBefore(banner, carousel);
     }
