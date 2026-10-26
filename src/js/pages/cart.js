@@ -12,6 +12,7 @@
  * near-identical page with the payment form in it.
  */
 import { cartManager } from '/js/cartManager.js';
+import { get as storeGet, set as storeSet, remove as storeRemove } from '/js/services/safeStorage.js';
 import { savedPromo, clearPromo, checkPromo, savePromo } from '/js/services/promo.js';
 import { esc, money } from '/js/kit.js';
 // Prices may SHOW in ₹ (currency.js); the charge is always US dollars, so Pay and the
@@ -91,11 +92,11 @@ const validEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 const NONCE = 'kaayko_checkout_session';
 function checkoutSessionNonce() {
   try {
-    let n = sessionStorage.getItem(NONCE);
+    let n = storeGet(NONCE);
     if (!n) {
       n = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
         : 'cs-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12);
-      sessionStorage.setItem(NONCE, n);
+      storeSet(NONCE, n);
     }
     return n;
   } catch (e) { return ''; }   // no storage: server issues a fresh intent per call
@@ -443,7 +444,7 @@ function redrawPromo() {
    reused with a different amount — which a code applied after the
    intent existed used to hit.                                       */
 function dropIntent() {
-  try { sessionStorage.removeItem(NONCE); } catch (e) {}
+  storeRemove(NONCE);
   state.pi = null;
   state.elements = null;
   state.parts = {};

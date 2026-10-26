@@ -183,7 +183,9 @@
       return;
     }
 
-    global.localStorage.setItem(global.atob("a2FheWtvU3RvcmVBY2Nlc3M="), global.atob("Z3JhbnRlZA=="));
+    // localStorage, else a cookie (a browser that blocks storage threw here, 26 Oct 2026)
+    try { global.localStorage.setItem(global.atob("a2FheWtvU3RvcmVBY2Nlc3M="), global.atob("Z3JhbnRlZA==")); }
+    catch (_) { try { global.document.cookie = "kaaykoStoreAccess=granted; path=/; max-age=31536000; samesite=lax"; } catch (_e) { /* this visit only */ } }
 
     // Haptic confirmation (gentle double-pulse)
     if (global.navigator.vibrate) global.navigator.vibrate([30, 60, 30]);

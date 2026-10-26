@@ -10,7 +10,7 @@
  */
 
 import { voteOnProduct } from "/js/services/storeApi.js";
-import { cartManager } from "/js/cartManager.js";
+import { cartManager, carryBag } from "/js/cartManager.js";
 import { attachExpandingPicker, needsPicker, isSoldOut } from "/js/fitPicker.js";
 
 // Price: priceMap.js is the client's one authority (a mirror of the server's).
@@ -771,7 +771,7 @@ function createCarouselItem(item) {
   // Description text is also a link to the PDP — wider tap target.
   if (pdpUrl) {
     descEl.style.cursor = "pointer";
-    descEl.addEventListener("click", () => { window.location.href = pdpUrl; });
+    descEl.addEventListener("click", () => { window.location.href = carryBag(pdpUrl); });
   }
 
   const footer = document.createElement("div");
@@ -815,7 +815,7 @@ function createCarouselItem(item) {
       return;
     }
     if (pdpUrl) {
-      window.location.href = pdpUrl;
+      window.location.href = carryBag(pdpUrl);   // the bag goes along where storage is blocked
       return;
     }
     openModal(item);

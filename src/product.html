@@ -3,7 +3,7 @@
 <head>
   <!-- the theme before the first paint: header.js set it at the end of <body>, so a
        dark-mode shopper saw a light frame on every page open (25 Oct 2026) -->
-  <script>try { if (localStorage.getItem('darkTheme') === 'enabled') document.documentElement.classList.add('dark-theme'); } catch (e) {}</script>
+  <script>var t; try { t = localStorage.getItem('darkTheme'); } catch (e) { t = (document.cookie.match(/(?:^|; )darkTheme=([^;]*)/) || [])[1]; } if (t === 'enabled') document.documentElement.classList.add('dark-theme');</script>
   <script src="/js/prod-config.js"></script>
   <!-- every module the page runs, asked for at once: they used to arrive in four
        rounds, each waiting on the one before (519 ms to the product's name, 25 Oct 2026) -->

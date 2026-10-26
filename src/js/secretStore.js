@@ -22,6 +22,22 @@ const validateAccess = (i) => {
 // Additional security through obscurity
 const securityLayer = btoa('access_control_enabled');
 
+// The access flag: localStorage, else a first-party cookie. A browser that blocks
+// storage threw on the bare localStorage calls, so the gate could neither check nor
+// grant access (26 Oct 2026). The inline lock in store.html reads the same cookie.
+function hasStoreAccess() {
+  try { return localStorage.getItem(atob('a2FheWtvU3RvcmVBY2Nlc3M=')) === atob('Z3JhbnRlZA=='); } catch (_) { /* blocked */ }
+  try { return /(?:^|; )kaaykoStoreAccess=granted(?:;|$)/.test(document.cookie); } catch (_) { return false; }
+}
+function grantStoreAccess() {
+  try { localStorage.setItem(atob('a2FheWtvU3RvcmVBY2Nlc3M='), atob('Z3JhbnRlZA==')); return; } catch (_) { /* blocked */ }
+  try { document.cookie = 'kaaykoStoreAccess=granted; path=/; max-age=31536000; samesite=lax'; } catch (_) { /* this visit only */ }
+}
+function clearStoreAccess() {
+  try { localStorage.removeItem(atob('a2FheWtvU3RvcmVBY2Nlc3M=')); } catch (_) { /* blocked */ }
+  try { document.cookie = 'kaaykoStoreAccess=; path=/; max-age=0; samesite=lax'; } catch (_) { /* nothing kept */ }
+}
+
 // Neutral access hints. These were deliberately insulting; a buyer who
 // mistypes a code should not be called stupid on the way to paying.
 
@@ -70,8 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (hasKortexBypass) {
     const linkRef = urlParams.get('ref');
     console.log(`✅ Kortex smart link bypass detected (${linkRef}) - granting store access`);
-    const accessKey = atob('a2FheWtvU3RvcmVBY2Nlc3M=');
-    localStorage.setItem(accessKey, atob('Z3JhbnRlZA=='));
+    grantStoreAccess();
     
     // Clean URL by removing bypass parameters
     const cleanUrl = window.location.pathname;
@@ -80,8 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // Check access persistence
-  const accessKey = atob('a2FheWtvU3RvcmVBY2Nlc3M=');
-  const hasAccess = localStorage.getItem(accessKey) === atob('Z3JhbnRlZA==');
+  const hasAccess = hasStoreAccess();
   
   if (!hasAccess) {
     if (onStoreDomain) {
@@ -351,7 +365,7 @@ function showSecretModal() {
     if (validateAccess(enteredKeyword)) {
       console.log('✅ Access granted');
       // Grant persistent access
-      localStorage.setItem(atob('a2FheWtvU3RvcmVBY2Nlc3M='), atob('Z3JhbnRlZA=='));
+      grantStoreAccess();
       
       // Success animation with gold theme
       modal.style.transform = 'scale(1.05)';
@@ -458,8 +472,7 @@ document.addEventListener('click', function(e) {
                       target.textContent.trim() === 'Store');
   
   if (isStoreLink) {
-    const accessKey = atob('a2FheWtvU3RvcmVBY2Nlc3M=');
-    const hasAccess = localStorage.getItem(accessKey) === atob('Z3JhbnRlZA==');
+    const hasAccess = hasStoreAccess();
     if (!hasAccess) {
       e.preventDefault();
       console.log('🔐 Store link clicked without access, redirecting to keyword entry');
@@ -473,7 +486,7 @@ document.addEventListener('click', function(e) {
 // Development utility (obfuscated)
 window[atob('Y2xlYXJTdG9yZUFjY2Vzcw==')] = function() {
   if (btoa(prompt('Dev key?')) === 'YWRtaW4xMjM=') {
-    localStorage.removeItem(atob('a2FheWtvU3RvcmVBY2Nlc3M='));
+    clearStoreAccess();
     console.log('Dev mode: Access cleared');
   }
 };

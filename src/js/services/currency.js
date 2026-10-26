@@ -24,6 +24,7 @@
  */
 import { money, approxRupees, approxRupeesSum, priceCents } from '/js/priceMap.js';
 import { request } from '/js/services/storeApi.js';
+import { get as storeGet, set as storeSet } from '/js/services/safeStorage.js';
 
 const PREF = 'kaayko:currency';          // 'USD' | 'INR', set only by the switch or a link
 const KEEP = 'kaayko:fx:usdinr:v1';      // { rate, asOf, source, t }
@@ -32,30 +33,9 @@ const FRESH_MS = 12 * 60 * 60 * 1000;
 const USABLE_MS = 7 * 24 * 60 * 60 * 1000; // a week-old rate still beats none if /fx is down
 const RETRY_MS = 10 * 60 * 1000;
 
-/* Storage: localStorage, else sessionStorage, else a first-party cookie, else this
-   page's memory. A browser that blocks storage used to forget the shopper's choice
-   on every page (audit, 26 Oct 2026). */
-const memory = {};
-const cookieName = (k) => k.replace(/[^a-z0-9]/gi, '_');
-const store = {
-  get(k) {
-    for (const s of ['localStorage', 'sessionStorage']) {
-      try { const v = window[s].getItem(k); if (v !== null) return v; } catch (_) { /* blocked */ }
-    }
-    try {
-      const m = document.cookie.match(new RegExp(`(?:^|; )${cookieName(k)}=([^;]*)`));
-      if (m) return decodeURIComponent(m[1]);
-    } catch (_) { /* blocked */ }
-    return k in memory ? memory[k] : null;
-  },
-  set(k, v) {
-    memory[k] = v;
-    for (const s of ['localStorage', 'sessionStorage']) {
-      try { window[s].setItem(k, v); return; } catch (_) { /* blocked: try the next */ }
-    }
-    try { document.cookie = `${cookieName(k)}=${encodeURIComponent(v)}; path=/; max-age=31536000; samesite=lax`; } catch (_) { /* memory only */ }
-  },
-};
+// localStorage, else sessionStorage, else a cookie, else memory (safeStorage.js): a
+// browser that blocks storage used to forget the shopper's choice on every page
+const store = { get: storeGet, set: storeSet };
 
 function inIndia() {
   try {

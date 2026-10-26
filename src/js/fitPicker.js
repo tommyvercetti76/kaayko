@@ -30,7 +30,8 @@
 
 import { priceCents } from "/js/priceMap.js";
 import { priceSpan } from "/js/services/currency.js";
-import { cartManager, MAX_DISTINCT } from "/js/cartManager.js";
+import { cartManager, MAX_DISTINCT, carryBag } from "/js/cartManager.js";
+import { get as storeGet, set as storeSet } from "/js/services/safeStorage.js";
 import { esc } from "/js/kit.js";
 import { show as showToast } from "/js/components/Toast.js";
 
@@ -132,7 +133,7 @@ export function fitsFor(product) {
 
 export function readFitPref() {
   try {
-    const parsed = JSON.parse(localStorage.getItem(FIT_PREF_KEY) || "null");
+    const parsed = JSON.parse(storeGet(FIT_PREF_KEY) || "null");
     return parsed && typeof parsed === "object" ? parsed : null;
   } catch (_) {
     return null;
@@ -141,7 +142,7 @@ export function readFitPref() {
 
 export function saveFitPref(gender, size) {
   try {
-    localStorage.setItem(FIT_PREF_KEY, JSON.stringify({ gender, size }));
+    storeSet(FIT_PREF_KEY, JSON.stringify({ gender, size }));
   } catch (_) { /* private mode / quota — losing a convenience is not an error */ }
 }
 
@@ -241,7 +242,7 @@ export function addToBag(product, { size, gender } = {}) {
 export function addDirect(product) {
   if (isSoldOut(product)) return false;
   if (cartManager.hasProduct(product.id)) {
-    window.location.href = "/cart";
+    window.location.href = carryBag("/cart");
     return true;
   }
   return addToBag(product, { size: stockedSizes(product)[0] || "One Size", gender: null });

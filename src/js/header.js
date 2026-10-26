@@ -29,9 +29,21 @@ function updateThemeToggleIcon(btn, isDark) {
  *    Reads/stores preference, toggles .dark-theme on <html>,
  *    and wires up the crescent button.
  *───────────────────────────────────────────────────────────────────────────*/
+/* The theme preference: localStorage, else a cookie. A browser that blocks storage
+   made the bare localStorage call throw, and that stopped this file before it drew
+   the menu and the bag icon (26 Oct 2026). Same cookie the inline <head> script reads. */
+function readThemePref() {
+  try { return localStorage.getItem(DARK_KEY); } catch (_) { /* blocked */ }
+  try { const m = document.cookie.match(/(?:^|; )darkTheme=([^;]*)/); return m ? m[1] : null; } catch (_) { return null; }
+}
+function writeThemePref(value) {
+  try { localStorage.setItem(DARK_KEY, value); return; } catch (_) { /* blocked */ }
+  try { document.cookie = `darkTheme=${value}; path=/; max-age=31536000; samesite=lax`; } catch (_) { /* this page only */ }
+}
+
 function initializeDarkMode() {
   const root = document.documentElement;
-  const isDark = localStorage.getItem(DARK_KEY) === "enabled";
+  const isDark = readThemePref() === "enabled";
   root.classList.toggle("dark-theme", isDark);
 
   const btn = document.querySelector(".theme-toggle-icon");
@@ -41,7 +53,7 @@ function initializeDarkMode() {
 
   btn.addEventListener("click", () => {
     const nowEnabled = root.classList.toggle("dark-theme");
-    localStorage.setItem(DARK_KEY, nowEnabled ? "enabled" : "disabled");
+    writeThemePref(nowEnabled ? "enabled" : "disabled");
     updateThemeToggleIcon(btn, nowEnabled);
   });
 }
@@ -126,7 +138,8 @@ function initializeHomeNavigation() {
   homeElement.setAttribute('role', 'link');
   homeElement.setAttribute('tabindex', '0');
   homeElement.setAttribute('aria-label', inStore ? 'Kaayko Store home' : 'Kaayko home');
-  const go = () => { window.location.href = destination; };
+  // the bag goes along where the browser keeps it only in the address (cartManager.js)
+  const go = () => { window.location.href = window.cartManager?.carryBag?.(destination) || destination; };
   homeElement.addEventListener('click', go);
   homeElement.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
@@ -172,9 +185,8 @@ function mountCartBadge() {
  * Init all header/UI behavior once DOM is ready
  *───────────────────────────────────────────────────────────────────────────*/
 document.addEventListener("DOMContentLoaded", () => {
-  initializeDarkMode();
-  populateMenu();
-  setupMobileMenu();
-  initializeHomeNavigation();
-  mountCartBadge();
+  // each on its own: one failing must not leave the header without its bag icon
+  [initializeDarkMode, populateMenu, setupMobileMenu, initializeHomeNavigation, mountCartBadge].forEach((step) => {
+    try { step(); } catch (e) { console.error(`header: ${step.name} failed`, e); }
+  });
 });
