@@ -137,11 +137,13 @@ html.dark-theme .product-v2 .product-thumb.active { box-shadow: 0 0 0 2px var(--
   opacity: 0;
   transition: opacity 260ms ease;
 }
-.product-v2 .pdp-inspect.is-ready { opacity: 1; }
-/* the bottle stands in a photographer's studio: the light grey sweep of its photographs */
-.product-v2 .pdp-inspect.kind-bottle { background: radial-gradient(120% 85% at 50% 38%, #f6f5f3 0%, #e7e5e1 55%, #d6d3ce 100%); }
-html.dark-theme .product-v2 .pdp-inspect.kind-bottle { background: radial-gradient(120% 85% at 50% 38%, #3a3834 0%, #262421 60%, #171614 100%); }
-.product-v2 .pdp-inspect[hidden] { display: none; }
+.product-v2 .pdp-inspect.is-ready.is-shown { opacity: 1; }
+.product-v2 .pdp-inspect:not(.is-shown) { pointer-events: none; }   /* until chosen, the photo under it stays live */
+/* every piece stands in a photographer's studio: the light grey sweep of its own
+   photographs, so choosing 3D changes the object, not the room (the cream ground
+   made a 3D mug read as shrunken next to its photo, 25 Oct 2026) */
+.product-v2 .pdp-inspect { background: radial-gradient(120% 85% at 50% 38%, #f6f5f3 0%, #e7e5e1 55%, #d6d3ce 100%); }
+html.dark-theme .product-v2 .pdp-inspect { background: radial-gradient(120% 85% at 50% 38%, #3a3834 0%, #262421 60%, #171614 100%); }
 
 .product-v2 .insp-canvas {
   display: block;

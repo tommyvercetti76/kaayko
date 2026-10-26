@@ -333,15 +333,19 @@ export async function mountInspect(host, opts) {
     renderer.setSize(w, hgt, false);
     camera.aspect = w / hgt;
     // the bottle is tall: fit its height; the others fit whichever side is tighter
-    // the bottle stands tall in its frame, the way a product shot frames it
-    const dist = (obj ? obj.size : 120) / 2 / Math.tan((camera.fov * D2R) / 2) / (kind === 'bottle' ? 1 : Math.min(1, camera.aspect)) * (kind === 'bottle' ? 1.07 : 1.12);
+    // the bottle stands tall in its frame, the way a product shot frames it; a mug or a
+    // magnet fills it about as its photograph does (1.12 left them looking shrunken)
+    const dist = (obj ? obj.size : 120) / 2 / Math.tan((camera.fov * D2R) / 2) / (kind === 'bottle' ? 1 : Math.min(1, camera.aspect)) * (kind === 'bottle' ? 1.07 : 1.0);
     const lift = kind === 'mug' ? 0.32 : kind === 'bottle' ? 0.08 : 0.0;
     basePos.set(0, dist * lift, dist);
     baseLook.set(0, kind === 'mug' ? -3 : 0, 0);
     focus.set(0, obj?.focusY ?? 0, 0);              // where the winding-in aims: the print
     camera.updateProjectionMatrix();
     place();
-    wake();
+    // draw now, not on the next frame: setSize has just cleared the canvas, and a
+    // frame painted in between is a blank stage (filmed on a phone, 25 Oct 2026)
+    cancelAnimationFrame(raf);
+    draw(performance.now());
   }
   // the camera at the current zoom: closer by 1/zoom, aimed from the whole object toward
   // the print, and levelling off as it comes in — from above, a close mug shows you its

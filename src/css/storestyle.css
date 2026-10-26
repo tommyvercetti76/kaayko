@@ -906,6 +906,9 @@ body.store-v2 {
   overflow: visible;
   max-width: none;
   margin: 0;
+  /* a phone's default tap flash painted the photo solid blue for the 300 ms
+     before the product page opened; the photo flying out is the feedback */
+  -webkit-tap-highlight-color: transparent;
 }
 
 .store-v2 .carousel-item:hover {

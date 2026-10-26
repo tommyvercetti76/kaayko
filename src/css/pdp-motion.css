@@ -1,38 +1,17 @@
 /*─────────────────────────────────────────────────────────────────────────────
-  Store → product transition.
+  Store ⇄ product transition.
 
-  Deliberately one effect and nothing else: the tapped photograph travels from
-  the grid card to the hero, and the page cross-fades under it. Fast, standard
-  easing, no overshoot.
+  One effect: the tapped photograph grows from its card into the product frame,
+  and shrinks back into the card on the way out, while the page cross-fades
+  under it. js/pdp-motion.js draws the photograph (.hero-fly) and moves it;
+  this file only places it above the browser's page fade.
 
   Removed, because together they read as a jumbled mess: per-region staggered
-  entrances (four separate transition names animating on four different delays
-  over a cross-fading root), scroll-driven parallax on the hero, scroll-driven
-  fades on every section, and a press-scale on the cards. Each seemed small on
-  its own; layered they made the page feel slow and busy.
+  entrances, scroll-driven parallax on the hero, scroll-driven fades on every
+  section, and a press-scale on the cards.
   ─────────────────────────────────────────────────────────────────────────────*/
 
 @view-transition { navigation: auto; }
-
-/* One shared element. js/pdp-motion.js stamps the tapped card image on the
-   store; these are its counterparts on the two product pages. */
-.animal-v2 .an-art img,
-.animal-v2 .an-art .pdp-hero-preview,
-.product-v2 .product-gallery-main img,
-.product-v2 .product-gallery-skeleton .pdp-hero-preview {
-  view-transition-name: product-hero;
-}
-
-/* Show only the destination image while it travels. Cross-fading a
-   cover-cropped thumbnail into a contained illustration reads as a smear. */
-::view-transition-old(product-hero) { display: none; }
-::view-transition-new(product-hero) { animation: none; height: 100%; object-fit: contain; }
-
-::view-transition-group(product-hero) {
-  animation-duration: 340ms;
-  animation-timing-function: cubic-bezier(.4, 0, .2, 1);
-  z-index: 5;
-}
 
 /* The page underneath: a plain, quick cross-fade. */
 ::view-transition-old(root) { animation: pdp-out 160ms ease-in both; }
@@ -40,12 +19,53 @@
 @keyframes pdp-in  { from { opacity: 0; } to { opacity: 1; } }
 @keyframes pdp-out { from { opacity: 1; } to { opacity: 0; } }
 
-/* Placeholder painted into the hero frame before first render, so the
-   photograph has somewhere to land while the real image loads. */
+/* The photograph in flight. It is where it should be from frame one, so it
+   never fades in, and it rides above the page fade. */
+.hero-fly {
+  position: fixed;
+  z-index: 2147483000;
+  margin: 0;
+  object-fit: cover;
+  background: var(--v2-image-bg);
+  pointer-events: none;
+  view-transition-name: hero-fly;
+}
+::view-transition-group(hero-fly) { animation: none; z-index: 5; }
+::view-transition-new(hero-fly) { animation: none; }
+
+/* What it flew from. Untouched, it fades with its page; once the flyer is
+   up, the slot it left is empty. On the way home that means a 3D view gives
+   way to the photograph on the first frame: dissolving one into the other
+   instead was filmed and read as a double exposure. */
+::view-transition-old(hero-src) { animation: pdp-out 160ms ease-in both; }
+html[data-hero-flying]::view-transition-old(hero-src) { display: none; }
+
+/* While it flies, what it will land on stays hidden, so there is one
+   photograph on screen, never two. */
+html[data-hero-flying] [data-hero-land],
+html[data-hero-flying="out"] .product-gallery-main img,
+html[data-hero-flying="out"] .product-gallery-skeleton img,
+html[data-hero-flying="out"] .an-art img { visibility: hidden; }
+
+/* Where it lands while the product loads. The skeleton stops pulsing under it,
+   or the photo would breathe with it (it turned a black tee grey). */
 .pdp-hero-preview { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
 .animal-v2 .an-hero.is-product .pdp-hero-preview,
 .product-v2 .pdp-hero-preview { width: 100%; height: 100%; object-fit: cover; }
+.product-v2 .product-shell.skeleton .product-gallery-skeleton:has(.pdp-hero-preview) {
+  position: relative;
+  overflow: hidden;
+  animation: none;
+  background: var(--v2-image-bg);
+}
+
+/* When the product itself arrives, its words fade in over the skeleton's bars
+   rather than popping in. The gallery does not: the photo is already there. */
+.product-v2 .pdp-buy,
+.product-v2 .pdp-file { animation: pdp-in 240ms ease-out both; }
 
 @media (prefers-reduced-motion: reduce) {
   @view-transition { navigation: none; }
+  .product-v2 .pdp-buy,
+  .product-v2 .pdp-file { animation: none; }
 }

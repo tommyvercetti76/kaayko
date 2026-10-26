@@ -223,16 +223,18 @@ function mountInspectFrame(product, root, thumbEls) {
     return /square/i.test(v) ? 'square' : 'round';
   };
 
+  // The layer stays laid out the whole time and only fades (CSS .is-shown): the
+  // canvas keeps its size, so choosing 3D is a crossfade with no blank frame.
   function show() {
     if (!layer) return;
-    layer.hidden = false;
+    layer.classList.add('is-shown');
     stage.classList.add('is-3d');
     thumbEls.forEach((x) => { x.classList.remove('active'); x.setAttribute('aria-pressed', 'false'); });
     thumb.classList.add('active'); thumb.setAttribute('aria-pressed', 'true');
   }
   function hide() {
     if (!layer) return;
-    layer.hidden = true;
+    layer.classList.remove('is-shown');
     stage.classList.remove('is-3d');
     thumb.classList.remove('active'); thumb.setAttribute('aria-pressed', 'false');
   }
@@ -246,9 +248,11 @@ function mountInspectFrame(product, root, thumbEls) {
     if (!entry) { drop(); return; }
     const { mountInspect } = await import('/js/inspect/inspect3d.js');
 
+    // laid out from the start and transparent until it is drawn and chosen (CSS
+    // .is-ready.is-shown): built while hidden it rendered at a stand-in size, and
+    // the resize on showing cleared it to a blank stage for a frame
     layer = document.createElement('div');
     layer.className = 'pdp-inspect';
-    layer.hidden = true;
     layer.innerHTML = `<p class="pdp-inspect-hint">${entry.kind === 'magnet' ? 'Drag to tilt it in the light' : 'Drag to turn it any way'}</p>`;
     stage.appendChild(layer);
     view = await mountInspect(layer, {
@@ -261,8 +265,9 @@ function mountInspectFrame(product, root, thumbEls) {
     thumb.disabled = false;
     thumb.classList.remove('is-pending');
     thumb.setAttribute('aria-label', `Hold and turn the ${entry.kind} in 3D`);
+    // 3D waits to be asked for. Switching to it on its own swapped the photo the
+    // shopper had just tapped for a smaller render on another ground (25 Oct 2026).
     thumb.addEventListener('click', show);
-    show();
 
     if (entry.kind === 'magnet') {
       const picker = root.querySelector('#pdp-picker');
