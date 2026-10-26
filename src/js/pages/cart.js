@@ -16,7 +16,7 @@ import { savedPromo, clearPromo, checkPromo, savePromo } from '/js/services/prom
 import { esc, money } from '/js/kit.js';
 // Prices may SHOW in ₹ (currency.js); the charge is always US dollars, so Pay and the
 // "You pay" line use money(), and every figure stays US cents underneath.
-import { price, priceSpan, paint, label, repaint, mountCurrencySwitch } from '/js/services/currency.js';
+import { price, priceSpan, paint, label, repaint, mountCurrencySwitch, indiaShopper } from '/js/services/currency.js';
 import { createPaymentIntent, calculateTax as requestTax, updateContact } from '/js/services/storeApi.js';
 import { show as showToast } from '/js/components/Toast.js';
 
@@ -165,6 +165,29 @@ function friendlyPaymentError(error) {
   return error.message || 'That payment could not be completed. Please try again.';
 }
 
+/* Many cards issued in India come with international online payments switched off
+   (a Reserve Bank of India rule since 2020), and this store charges in US dollars:
+   for a shopper in India, a decline says what to switch on (audit, 26 Oct 2026). */
+const INDIA_CARD_TIP = 'If your card was issued in India, switch on international online payments in your bank’s app, then try again.';
+function declineCopy(error) {
+  const text = friendlyPaymentError(error);
+  const declined = error && (error.type === 'card_error' || error.decline_code);
+  const fixable = !error || !['incorrect_cvc', 'incorrect_number', 'expired_card'].includes(error.decline_code || error.code);
+  return declined && fixable && indiaShopper() ? `${text} ${INDIA_CARD_TIP}` : text;
+}
+
+/* A total's parts, so its ₹ figure is the sum of the ₹ lines above it (each part is
+   converted and rounded, then added). Only when the parts truly add up to the dollar
+   figure — a server-priced bag whose prices moved shows the plain conversion. */
+function moneyParts(t, items) {
+  const lines = items.map((i) => (i.priceCents || 0) * (i.quantity || 1));
+  if (lines.reduce((a, b) => a + b, 0) !== t.subtotal) return { subtotal: undefined, total: undefined };
+  const total = [...lines];
+  if (t.discount > 0) total.push(-t.discount);
+  if (t.taxKnown && t.tax > 0) total.push(t.tax);
+  return { subtotal: lines, total: total.reduce((a, b) => a + b, 0) === t.total ? total : undefined };
+}
+
 /* ── Totals (integer cents) ───────────────────────────────────────
    Once the server has priced the bag it is the authority: the API
    resolves every price from Firestore rather than trusting what the
@@ -231,6 +254,7 @@ function render() {
   if (state.pi && state.cartSig !== sig) dropIntent();
 
   const t = totals(items);
+  const parts = moneyParts(t, items);
 
   root.innerHTML = `
     <div class="co-masthead">
@@ -250,6 +274,7 @@ function render() {
         <div id="co-address-element"></div>
 
         <h2 class="co-label">Payment</h2>
+        <p class="co-note" data-fx-india hidden>Paying with a card issued in India? Switch on international online payments in your bank’s app first: many come with them off.</p>
         <div id="co-payment-element">
           <div class="co-skeleton"><i></i><i></i><i></i></div>
         </div>
@@ -264,14 +289,14 @@ function render() {
 
         <div class="co-card co-summary">
           <div class="co-money">
-            <div class="co-money-row"><span>Subtotal</span>${priceSpan(t.subtotal).replace('<span class="px"', '<span class="px" id="co-subtotal"')}</div>
+            <div class="co-money-row"><span>Subtotal</span>${priceSpan(t.subtotal, '', parts.subtotal).replace('<span class="px"', '<span class="px" id="co-subtotal"')}</div>
             <div class="co-money-row is-discount" id="co-discount-row" ${t.discount > 0 ? '' : 'hidden'}>
               <span>Discount${t.discountPercent ? ` · ${t.discountPercent}%` : ''}</span>
               ${priceSpan(-t.discount).replace('<span class="px"', '<span class="px" id="co-discount"')}
             </div>
             <div class="co-money-row"><span>Shipping</span><span>Free</span></div>
             <div class="co-money-row ${t.taxKnown ? '' : 'is-pending'}" id="co-tax-row"><span>Sales tax</span>${t.taxKnown ? priceSpan(t.tax).replace('<span class="px"', '<span class="px" id="co-tax"') : '<span id="co-tax">From your address</span>'}</div>
-            <div class="co-money-row is-total"><span>Total</span>${priceSpan(t.total).replace('<span class="px"', '<span class="px" id="co-total"')}</div>
+            <div class="co-money-row is-total"><span>Total</span>${priceSpan(t.total, '', parts.total).replace('<span class="px"', '<span class="px" id="co-total"')}</div>
             <p class="co-charge" id="co-charge" data-charge-cents="${t.total}" hidden></p>
           </div>
 
@@ -302,6 +327,7 @@ function render() {
   const primary = document.getElementById('co-primary');
   const stickyBtn = document.getElementById('co-sticky-btn');
   stickyBtn.textContent = `Pay ${money(t.total)}`;
+  stickyNote(t, parts.total);
   primary.addEventListener('click', pay);
   stickyBtn.onclick = pay;
   watchPay(primary);
@@ -310,6 +336,16 @@ function render() {
   else if (state.prepError) showPrepFailure();
   else prepare();
   refreshReady();
+}
+
+/* Under the sticky Pay on a phone, when prices show in ₹: the ₹ total and that the
+   charge is in dollars. "Pay $19.98" under a page of ₹ figures, with the reason off
+   screen, read as a mistake (audit, 26 Oct 2026). */
+function stickyNote(t, parts) {
+  const note = document.getElementById('co-sticky-note');
+  if (!note) return;
+  paint(note.querySelector('.px'), t.total, parts);
+  repaint(note.parentElement);
 }
 
 /* The bar at the foot of a phone carries Pay only until the real button is on
@@ -500,9 +536,9 @@ async function prepare() {
     // not news: it used to toast "Prices updated" for the shopper's own code
     // (24 Oct 2026). Only a total that went UP past the bag's figure is said.
     if (priced && before.subtotal !== after.subtotal) {
-      toast(`Prices updated — your total is now ${price(after.total)}.`, 'notice');
+      toast(`Prices updated — your total is now ${price(after.total, moneyParts(after, items).total)}.`, 'notice');
     } else if (priced && after.total > before.total) {
-      toast(`Your discount came to ${price(after.discount)} — your total is ${price(after.total)}.`, 'notice');
+      toast(`Your discount came to ${price(after.discount)} — your total is ${price(after.total, moneyParts(after, items).total)}.`, 'notice');
     }
     state.cartSig = sig;
     updateMoney();
@@ -701,11 +737,13 @@ function setTaxRow(value, pending = false) {
 
 function updateMoney() {
   const t = totals(cartManager.getItems());
+  const parts = moneyParts(t, cartManager.getItems());
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-  paint(document.getElementById('co-subtotal'), t.subtotal);
-  paint(document.getElementById('co-total'), t.total);
+  paint(document.getElementById('co-subtotal'), t.subtotal, parts.subtotal);
+  paint(document.getElementById('co-total'), t.total, parts.total);
   const charge = document.getElementById('co-charge');
   if (charge) { charge.dataset.chargeCents = String(t.total); repaint(charge.parentElement); }
+  stickyNote(t, parts.total);
   const dRow = document.getElementById('co-discount-row');
   if (dRow) {
     dRow.hidden = !(t.discount > 0);
@@ -839,7 +877,7 @@ async function submitPayment() {
 
   if (error) {
     console.error('payment error:', error);
-    toast(friendlyPaymentError(error), 'error');
+    toast(declineCopy(error), 'error');
     restore();
   }
 }

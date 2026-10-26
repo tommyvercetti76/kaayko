@@ -30,10 +30,24 @@ export function money(cents) {
  * not a finite amount, or no usable rate → "".
  */
 export function approxRupees(cents, rate) {
-  if (typeof cents !== "number" || !Number.isFinite(cents)) return "";
+  return approxRupeesSum([cents], rate);
+}
+
+/**
+ * The same, for a figure made of parts — a bag's lines, less its discount, plus tax —
+ * converted part by part and then added, so a ₹ total is always the sum of the ₹ lines
+ * printed above it. (Converting the dollar total on its own showed two lines of ≈ ₹948
+ * over a total of ≈ ₹1,897; audit, 26 Oct 2026.)
+ */
+export function approxRupeesSum(parts, rate) {
+  if (!Array.isArray(parts) || !parts.length) return "";
   if (typeof rate !== "number" || !Number.isFinite(rate) || rate <= 0) return "";
-  const rupees = Math.round((Math.abs(cents) / 100) * rate);
-  return `≈ ${cents < 0 ? "−" : ""}₹${rupees.toLocaleString("en-IN")}`;
+  let rupees = 0;
+  for (const c of parts) {
+    if (typeof c !== "number" || !Number.isFinite(c)) return "";
+    rupees += Math.sign(c) * Math.round((Math.abs(c) / 100) * rate);
+  }
+  return `≈ ${rupees < 0 ? "−" : ""}₹${Math.abs(rupees).toLocaleString("en-IN")}`;
 }
 
 /** Integer cents the server would charge for this product, or null if it cannot be priced. */

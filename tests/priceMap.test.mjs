@@ -6,7 +6,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { money, priceCents, priceText, approxRupees } from '../src/js/priceMap.js';
+import { money, priceCents, priceText, approxRupees, approxRupeesSum } from '../src/js/priceMap.js';
 
 test('money formats integer cents and nothing else', () => {
   assert.equal(money(2499), '$24.99');
@@ -69,4 +69,15 @@ test('approxRupees: whole rupees, Indian grouping, always marked approximate', (
   assert.equal(approxRupees(1999, NaN), '');
   assert.equal(approxRupees(1999, undefined), '');
   assert.equal(approxRupees('1999', 94.94), '');                  // a string is never money
+});
+
+test('approxRupeesSum: a total is the sum of the rupee lines above it', () => {
+  // two $9.99 magnets: ≈ ₹948 each; converting $19.98 whole gave ≈ ₹1,897
+  assert.equal(approxRupees(1998, 94.94), '≈ ₹1,897');
+  assert.equal(approxRupeesSum([999, 999], 94.94), '≈ ₹1,896');
+  assert.equal(approxRupeesSum([2499, 999, -350, 210], 94.94), '≈ ₹3,188');   // 2373 + 948 − 332 + 199, each rounded
+  assert.equal(approxRupeesSum([-999], 94.94), '≈ −₹948');
+  assert.equal(approxRupeesSum([], 94.94), '');
+  assert.equal(approxRupeesSum([999, NaN], 94.94), '');
+  assert.equal(approxRupeesSum([999], 0), '');
 });

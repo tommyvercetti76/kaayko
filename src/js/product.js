@@ -150,7 +150,7 @@ function renderProduct(product, openModalFn) {
         <h1 class="pdp-title">${esc(product.title)}</h1>
         ${copy.hook ? `<p class="pdp-hook">${esc(copy.hook)}</p>` : ""}
         <p class="pdp-price">${priceSpan(cents)}</p>
-        <p class="pdp-fx-charge" data-charge-cents="${cents || ''}" hidden></p>
+        <p class="pdp-fx-charge" data-charge-cents="${cents || ''}" data-charge-style="pdp" hidden></p>
         <div class="pdp-picker" id="pdp-picker"></div>
         <p class="pdp-reassure">Printed to order, on its way within 10 business days · Free US shipping · <a href="/legal/returns">30-day returns</a></p>
         <button type="button" class="pdp-share" id="pdp-share">Share this piece</button>
@@ -265,7 +265,7 @@ function renderProduct(product, openModalFn) {
     const inBag = !!cartManager.hasProduct(product.id);
     // the price is a repaintable span, so a $ / ₹ switch updates the button too
     if (inBag) cta.textContent = 'In your bag · View bag';
-    else cta.innerHTML = `Add to bag${cents ? ` · ${priceSpan(cents)}` : ''}`;
+    else cta.innerHTML = `<span class="fitp-confirm-label">Add to bag</span>${cents ? `<span class="fitp-confirm-price"><span class="fitp-sep"> · </span>${priceSpan(cents)}</span>` : ''}`;
   };
   cta.addEventListener('click', () => addDirect(product));
   syncCta();

@@ -573,6 +573,13 @@
       border-top: 1px solid var(--line);
     }
     .co-sticky .co-btn { margin-top: 0; }
+    .co-sticky-note {
+      margin: 6px 0 0;
+      text-align: center;
+      font-family: var(--co-sans);
+      font-size: 12px;
+      color: var(--muted);
+    }
     /* Phones only, and only while the real Pay button is still below the
        screen (js/pages/cart.js watches it). It used to stay put, so at the end
        of the page the footer sat between the order and the button. */
@@ -641,6 +648,7 @@
 
   <div class="co-sticky" id="co-sticky">
     <button id="co-sticky-btn" class="co-btn" type="button">Pay</button>
+    <p class="co-sticky-note" id="co-sticky-note" data-fx-rupees hidden><span class="px"></span> total · you pay in US dollars</p>
   </div>
 
   <footer class="site-footer is-light">

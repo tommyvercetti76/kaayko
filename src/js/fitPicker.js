@@ -363,7 +363,9 @@ export function createFitPicker(product, { onConfirm, showAction = true } = {}) 
     const cents = priceCents(product);
     // the price is a repaintable span: a $ / ₹ switch updates the button in place
     if (inBag) confirmBtn.textContent = "Update bag";
-    else confirmBtn.innerHTML = `Add to bag${cents ? ` · ${priceSpan(cents)}` : ""}`;
+    // label and price are separate pieces, so a narrow card can put the price on its own
+    // line instead of cutting it off ("ADD TO BAG · ≈ ₹2,3" at 320 px; audit, 26 Oct 2026)
+    else confirmBtn.innerHTML = `<span class="fitp-confirm-label">Add to bag</span>${cents ? `<span class="fitp-confirm-price"><span class="fitp-sep"> · </span>${priceSpan(cents)}</span>` : ""}`;
     confirmBtn.disabled = !sel.size;
   }
 

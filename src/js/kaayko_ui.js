@@ -408,7 +408,7 @@ function buildShelf(items, types, carousel) {
       <span class="shelf-img${value === "all" ? " shelf-collage" : ""}" aria-hidden="true">${picture}</span>
       <span class="shelf-text">
         <span class="shelf-name">${esc(label)}</span>
-        <span class="shelf-meta">${list.length}${price ? ` · ${price}` : ""}</span>
+        <span class="shelf-meta">${list.length}${price ? `<span class="shelf-sep"> · </span><span class="shelf-price">${price}</span>` : ""}</span>
       </span>`;
     b.addEventListener("click", () => {
       BROWSE_STATE.type = value;

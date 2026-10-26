@@ -2043,6 +2043,34 @@ html.dark-theme .store-v2 .browse-search::placeholder { color: rgba(212, 182, 13
   cursor: pointer;
 }
 .fx-switch .fx-toggle:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+/* a 44px touch target round a small text link (it was 32px tall) */
+.fx-switch .fx-toggle { position: relative; }
+.fx-switch .fx-toggle::before {
+  content: "";
+  position: absolute;
+  left: -6px;
+  right: -6px;
+  top: 50%;
+  height: 44px;
+  transform: translateY(-50%);
+}
+.fx-switch:focus { outline: none; }
+
+/* A shelf tile on a narrow phone puts its price on its own line, rather than running
+   it over the tile's edge ("102 · from ≈ ₹948" at 320 px; audit, 26 Oct 2026) — only
+   where it would not fit. A container query measures the tile's INSIDE (padding out):
+   dollar figures fit down to 140px of it (a 360px phone), rupee figures — longer — down
+   to 160px (html.fx-inr, set by services/currency.js). Measured, 26 Oct 2026. */
+.store-v2 .shelf-tile { container-type: inline-size; }
+.store-v2 .shelf-meta .px { white-space: nowrap; }
+@container (max-width: 139px) {
+  .store-v2 .shelf-meta .shelf-sep { display: none; }
+  .store-v2 .shelf-meta .shelf-price { display: block; white-space: normal; }
+}
+@container (max-width: 159px) {
+  html.fx-inr .store-v2 .shelf-meta .shelf-sep { display: none; }
+  html.fx-inr .store-v2 .shelf-meta .shelf-price { display: block; white-space: normal; }
+}
 .store-v2 .browse-toolbar .fx-switch.is-toolbar { flex-basis: 100%; order: 99; }
 .site-footer .fx-switch.is-footer { margin: 10px auto 0; text-align: center; font-size: 12px; }
 .product-v2 .pdp-fx-charge {

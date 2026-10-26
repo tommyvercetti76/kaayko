@@ -189,3 +189,22 @@ html.dark-theme .fitp-confirm { color: #0d0f0d; }
 @media (prefers-reduced-motion: reduce) {
   .fitp-slot { transition: none; }
 }
+
+/* A narrow grid card puts the price under "Add to bag" instead of cutting it off
+   ("ADD TO BAG · ≈ ₹2,3" at 320px; audit, 26 Oct 2026); only where it would not fit:
+   "· $24.99" fits a 157px button, "· ≈ ₹2,373" a 172px one (html.fx-inr while prices
+   show in rupees). The button's own row is the container it measures. */
+.fitp-actions { container-type: inline-size; }
+.fitp-confirm .fitp-confirm-price { white-space: nowrap; }
+@container (max-width: 150px) {
+  .fitp-actions .fitp-confirm { white-space: normal; line-height: 1.3; padding: 7px 8px; }
+  .fitp-actions .fitp-confirm .fitp-sep { display: none; }
+  .fitp-actions .fitp-confirm .fitp-confirm-label,
+  .fitp-actions .fitp-confirm .fitp-confirm-price { display: block; }
+}
+@container (max-width: 169px) {
+  html.fx-inr .fitp-actions .fitp-confirm { white-space: normal; line-height: 1.3; padding: 7px 8px; }
+  html.fx-inr .fitp-actions .fitp-confirm .fitp-sep { display: none; }
+  html.fx-inr .fitp-actions .fitp-confirm .fitp-confirm-label,
+  html.fx-inr .fitp-actions .fitp-confirm .fitp-confirm-price { display: block; }
+}
