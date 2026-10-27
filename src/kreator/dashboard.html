@@ -608,6 +608,14 @@
     .shop-label { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin-top: 8px !important; }
     .shop-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px !important; }
     .product-qr { font-size: 12px; margin: 6px 0 0; overflow-wrap: anywhere; }
+    .session-list { padding: 0 var(--space-md) var(--space-sm); display: grid; gap: 6px; }
+    .session-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; }
+    .session-row small { color: var(--text-muted); }
+    .session-row.is-cancelled { opacity: 0.6; }
+    .session-row .btn { padding: 4px 10px; font-size: 12px; flex: none; }
+    .session-more { display: grid; gap: 6px; }
+    .session-more > summary { cursor: pointer; font-size: 13px; color: var(--text-muted); }
+    .session-more[open] > summary { margin-bottom: 6px; }
     .product-qr a { color: var(--kreator-primary); }
     .qr-usage { color: var(--text-muted); margin: 0 0 var(--space-lg); }
     .qr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-lg); }
@@ -1607,6 +1615,7 @@
         ${p.reviewNote ? `<p class="product-note">Kaayko: ${esc(p.reviewNote)}</p>`
           : lastNote ? `<p class="product-note">Kaayko's last note (${esc(String(lastNote.at || '').slice(0, 10))}): ${esc(lastNote.note)}</p>` : ''}`;
       card.appendChild(info);
+      if (p.productType === 'lesson') card.appendChild(sessionList(p));
       // Edit, hide or show, delete: the seller's own controls (there were none).
       const actions = document.createElement('div');
       actions.className = 'product-actions';
@@ -1618,10 +1627,71 @@
       return card;
     }
     
+    /** "Sat 14 Nov 2026 · 7:00 AM PST": the same label the store shows (services/lessons.js). */
+    function sessionLabel(startsAt, timeZone) {
+      try {
+        const parts = new Intl.DateTimeFormat('en-US', { timeZone, weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' }).formatToParts(new Date(startsAt));
+        const get = (t) => (parts.find((x) => x.type === t) || {}).value || '';
+        return `${get('weekday')} ${get('day')} ${get('month')} ${get('year')} · ${get('hour')}:${get('minute')} ${get('dayPeriod')} ${get('timeZoneName')}`.replace(/\s+/g, ' ').trim();
+      } catch (_) { return new Date(startsAt).toLocaleString(); }
+    }
+
+    /** A lesson's coming sessions: seats booked, and a Cancel that refunds everyone booked. */
+    function sessionList(p) {
+      const box = document.createElement('div');
+      box.className = 'session-list';
+      const tz = p.lesson && p.lesson.timeZone;
+      const now = Date.now();
+      const coming = (p.sessions || []).filter((x) => Date.parse(x.startsAt) > now).sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt));
+      if (!coming.length) { box.innerHTML = '<p class="product-note">No coming sessions. Add dates with Edit.</p>'; return box; }
+      // Every coming session gets its Cancel: a booked one can be called off only here.
+      // A called-off session still holding seats has refunds on the way (or failed): retry.
+      const row = (x) => {
+        const label = esc(sessionLabel(x.startsAt, tz));
+        const booked = Number(x.booked) || 0;
+        const btn = (text, retry) => `<button type="button" class="btn btn-secondary btn-sm" data-act="cancel-session" data-id="${esc(p.id)}" data-sid="${esc(x.id)}" data-label="${label}" data-booked="${booked}"${retry ? ' data-retry="1"' : ''}>${text}</button>`;
+        return `
+        <div class="session-row${x.cancelled ? ' is-cancelled' : ''}">
+          <span>${label}<br><small>${x.cancelled ? (booked ? `Cancelled · ${booked} refund${booked === 1 ? '' : 's'} on the way` : 'Cancelled') : `${booked} of ${x.seats} booked`}</small></span>
+          ${x.cancelled ? (booked ? btn('Retry refunds', true) : '') : btn('Cancel', false)}
+        </div>`;
+      };
+      const SHOWN = 6;
+      box.innerHTML = coming.slice(0, SHOWN).map(row).join('')
+        + (coming.length > SHOWN ? `<details class="session-more"><summary>${coming.length - SHOWN} more</summary>${coming.slice(SHOWN).map(row).join('')}</details>` : '');
+      return box;
+    }
+
     async function onProductAction(e) {
       const b = e.target.closest('button[data-act]');
       if (!b || b.disabled) return;
       const { act, id } = b.dataset;
+      if (act === 'cancel-session') {
+        const booked = Number(b.dataset.booked) || 0;
+        let reason = '';
+        if (b.dataset.retry) {
+          if (!confirm(`Retry the refunds for ${b.dataset.label}? Anyone already refunded is not refunded again.`)) return;
+        } else {
+          if (!confirm(`Cancel ${b.dataset.label}?${booked ? ` ${booked} booked: each gets a full refund and an email.` : ' Nobody has booked it yet.'} This cannot be undone.`)) return;
+          if (booked) {
+            const note = prompt('A short note for the people booked (optional), e.g. "Storm forecast".', '');
+            if (note === null) return;   // the prompt's Cancel backs out of the whole thing
+            reason = note;
+          }
+        }
+        b.disabled = true;
+        try {
+          const res = await authed(`/kreators/products/${encodeURIComponent(id)}/sessions/${encodeURIComponent(b.dataset.sid)}/cancel`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reason }) });
+          const body = await res.json().catch(() => ({}));
+          if (!body.success) throw new Error(body.message || 'The session was not cancelled');
+          alert(body.message);
+          loadProducts();
+        } catch (err) {
+          b.disabled = false;
+          alert(err.message);
+        }
+        return;
+      }
       if (act === 'edit') { location.href = `/kreator/add-product?edit=${encodeURIComponent(id)}`; return; }
       if (act === 'delete' && !confirm('Delete this listing? It comes off the store, and you cannot undo this here. Past orders are kept.')) return;
       b.disabled = true;
@@ -1675,9 +1745,13 @@
       const row = document.createElement('div');
       row.className = 'activity-item';
       const when = l.createdAt ? new Date(l.createdAt).toLocaleDateString() : '';
-      row.innerHTML = `<div class="activity-icon info"><span class="material-icons">shopping_bag</span></div>
+      // A booking names the session and who is coming (first name only).
+      const what = l.lesson
+        ? `${esc(l.productTitle)} · ${esc(l.lesson.label || l.option || '')} · ${esc(l.quantity)} seat${l.quantity === 1 ? '' : 's'}${l.attendee ? ` · ${esc(l.attendee)}` : ''}`
+        : `${esc(l.productTitle)} · ${esc(l.option || 'One Size')} × ${esc(l.quantity)}`;
+      row.innerHTML = `<div class="activity-icon info"><span class="material-icons">${l.lesson ? 'event' : 'shopping_bag'}</span></div>
         <div class="activity-content">
-          <div class="activity-text">${esc(l.productTitle)} · ${esc(l.option || 'One Size')} × ${esc(l.quantity)} — ${money(l.netCents)}</div>
+          <div class="activity-text">${what} — ${money(l.netCents)}</div>
           <div class="activity-time">${esc(l.orderNumber || '')} · ${esc(String(l.status).replace(/_/g, ' '))} · ${esc(when)}</div>
         </div>`;
       return row;

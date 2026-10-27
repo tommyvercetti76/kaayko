@@ -114,7 +114,12 @@ export function isSoldOut(product) {
  */
 /** What the choice is called: a magnet's options are its shape (24 Oct 2026). */
 export const SHAPES = new Set(["round", "square"]);
+/** A lesson: sold in dated sessions, one seat per booking (27 Oct 2026). */
+export const isLessonItem = (p) => String(p?.productType || "").toLowerCase() === "lesson";
+/** What "nothing left" is called: a lesson with no open session is not "sold out". */
+export const soldOutText = (p) => (isLessonItem(p) ? "Fully booked" : "Sold out");
 export function optionLabel(product) {
+  if (isLessonItem(product)) return "Session";   // a lesson's options are its dated sessions
   const opts = stockedSizes(product);
   return opts.length && opts.every((o) => SHAPES.has(String(o).toLowerCase())) ? "Shape" : "Size";
 }
@@ -227,7 +232,8 @@ export function addToBag(product, { size, gender } = {}) {
     imgSrc: photoFor(product, chosen),
     size: chosen,
     gender: gender || null,
-    storeName: product.byMaker ? product.storeName : null
+    storeName: product.byMaker ? product.storeName : null,
+    kind: isLessonItem(product) ? "lesson" : null
   });
 
   if (!ok) {
@@ -240,13 +246,24 @@ export function addToBag(product, { size, gender } = {}) {
 }
 
 /**
+ * In the bag as this page offers it. A lesson whose bagged session has closed is
+ * not: the one open session replaces it, rather than sending the shopper back to
+ * a bag that refuses it.
+ */
+export function inBagAsShown(product) {
+  const item = cartManager.getItem(product.id);
+  if (!item) return false;
+  return !isLessonItem(product) || stockedSizes(product).includes(item.size);
+}
+
+/**
  * One-tap path for SKUs with nothing to choose (totes, magnets, prints).
  * A product already in the bag routes to the bag rather than silently
  * re-adding or — as an earlier version did — silently deleting itself.
  */
 export function addDirect(product) {
   if (isSoldOut(product)) return false;
-  if (cartManager.hasProduct(product.id)) {
+  if (inBagAsShown(product)) {
     window.location.href = carryBag("/cart");
     return true;
   }

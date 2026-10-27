@@ -107,7 +107,8 @@
   gap: 12px;
 }
 
-/* ─── Cart Navigation Button ────────────────────────────────────────────── */
+/* ─── Cart Navigation Button (and the Kreator program mark beside it) ───── */
+.kreator-nav-button,
 .cart-nav-button {
   position: relative;
   display: inline-flex;
@@ -123,9 +124,14 @@
   text-decoration: none;
 }
 
+.kreator-nav-button:hover,
 .cart-nav-button:hover {
   opacity: 1;
   transform: translateY(-2px);
+}
+.kreator-nav-button:focus-visible {
+  outline: 2px solid var(--gold, #b5935a);
+  outline-offset: 2px;
 }
 
 .header-icon-svg {
@@ -157,6 +163,7 @@
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+html.dark-theme .kreator-nav-button,
 html.dark-theme .cart-nav-button {
   color: var(--color-brand-gold);
 }

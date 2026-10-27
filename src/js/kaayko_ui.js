@@ -11,7 +11,7 @@
 
 import { voteOnProduct } from "/js/services/storeApi.js";
 import { cartManager, carryBag } from "/js/cartManager.js";
-import { attachExpandingPicker, needsPicker, isSoldOut } from "/js/fitPicker.js";
+import { attachExpandingPicker, needsPicker, isSoldOut, soldOutText } from "/js/fitPicker.js";
 
 // Price: priceMap.js is the client's one authority (a mirror of the server's).
 import { priceCents } from "/js/priceMap.js";
@@ -731,7 +731,7 @@ function createCarouselItem(item) {
   if (isSoldOut(item)) {
     const flag = document.createElement("span");
     flag.className = "sold-out-flag";
-    flag.textContent = "Sold out";
+    flag.textContent = soldOutText(item);
     imgContainer.append(flag);
   }
   const indicator = createImageIndicator(item.imgSrc.length, 0);
@@ -1306,8 +1306,8 @@ function createBuyButton(item) {
       container.classList.add("is-sold-out");
       trigger.disabled = true;
       icon.style.display = "none";
-      label.textContent = "Sold out";
-      trigger.setAttribute("aria-label", `${item.title} is sold out`);
+      label.textContent = soldOutText(item);
+      trigger.setAttribute("aria-label", `${item.title}: ${soldOutText(item).toLowerCase()}`);
       return;
     }
 

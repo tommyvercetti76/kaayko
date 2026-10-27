@@ -33,7 +33,14 @@ function notFound() {
     </div>`;
 }
 
+const isLessonsOnly = (order) => (order.items || []).length > 0 && order.items.every((it) => it.lesson);
+const lengthText = (min) => (!min ? '' : min % 60 === 0 ? `${min / 60} hour${min === 60 ? '' : 's'}` : `${min} minutes`);
+
 function steps(order) {
+  if (isLessonsOnly(order) && order.status !== 'cancelled' && order.status !== 'refunded') {
+    // A lesson has no parcel to follow: it is booked, and the details are below.
+    return `<p class="os-closed">Booked. Full refund if you cancel at least 48 hours before your session: reply to your receipt. If the teacher cancels, you get a full refund automatically.</p>`;
+  }
   if (order.status === 'cancelled' || order.status === 'refunded') {
     const refunded = order.refundedCents > 0 ? ` ${money(order.refundedCents)} has gone back to your card; banks take five to ten business days to show it.` : '';
     return `<p class="os-closed">This order was ${order.status === 'refunded' ? 'refunded' : 'cancelled'}${order.cancelledAt ? ` on ${esc(day(order.cancelledAt))}` : ''}.${esc(refunded)}</p>`;
@@ -54,7 +61,10 @@ function lines(order) {
       ${it.imgSrc ? `<img class="os-line-img" src="${esc(it.imgSrc)}" alt="" loading="lazy">` : '<span class="os-line-img is-blank" aria-hidden="true"></span>'}
       <span class="os-line-body">
         <span class="os-line-title">${esc(it.productTitle)}${it.storeName ? ` <span class="os-line-meta">by ${esc(it.storeName)}</span>` : ''}</span>
-        <span class="os-line-meta">${esc([it.gender, it.size].filter(Boolean).join(' · ') || 'One size')} · Qty ${esc(String(it.quantity))}${it.status === 'cancelled' ? ' · cancelled' : ''}</span>
+        ${it.lesson ? `
+        <span class="os-line-meta">Lesson · ${esc(it.lesson.label || it.size || '')} · ${esc(lengthText(it.lesson.durationMin))}${it.status === 'cancelled' ? ' · cancelled' : ''}</span>
+        <span class="os-line-meta">${esc(it.lesson.format === 'online' ? 'Online' : (it.lesson.area || 'In person'))}${it.lesson.details ? ` · ${it.lesson.format === 'online' ? 'How to join' : 'Where to meet'}: ${esc(it.lesson.details)}` : ''}</span>` : `
+        <span class="os-line-meta">${esc([it.gender, it.size].filter(Boolean).join(' · ') || 'One size')} · Qty ${esc(String(it.quantity))}${it.status === 'cancelled' ? ' · cancelled' : ''}</span>`}
       </span>
       <span class="os-line-money">${esc(money(it.lineTotalCents))}</span>
     </li>`).join('')}</ul>`;
@@ -72,6 +82,9 @@ export function render(order) {   // exported so the page can be exercised with 
     cancelled: 'Cancelled before it shipped.',
     refunded: 'Refunded.'
   }[order.status] || '';
+  const ledeText = isLessonsOnly(order) && order.status !== 'cancelled' && order.status !== 'refunded'
+    ? 'Your lesson is booked. When, how long and where are below, and in your receipt.'
+    : lede;
 
   const shipTo = order.shipTo ? [order.shipTo.name, [order.shipTo.city, order.shipTo.state].filter(Boolean).join(', ')].filter(Boolean).join(' · ') : '';
   const tracking = order.tracking ? `
@@ -87,7 +100,7 @@ export function render(order) {   // exported so the page can be exercised with 
   panel.innerHTML = `
     <p class="os-eyebrow">Your order</p>
     <h1>${esc(order.orderNumber)}</h1>
-    <p class="os-lede">${esc(lede)}</p>
+    <p class="os-lede">${esc(ledeText)}</p>
     ${steps(order)}
     <div class="os-card">
       <span class="os-label">In the bag</span>
@@ -98,17 +111,25 @@ export function render(order) {   // exported so the page can be exercised with 
       <span class="os-label">Order</span>
       <dl style="margin:0">
         <div class="os-row"><dt>Placed</dt><dd>${esc(order.placedAt ? new Date(order.placedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '—')}</dd></div>
-        ${shipTo ? `<div class="os-row"><dt>Ship to</dt><dd>${esc(shipTo)}</dd></div>` : ''}
+        ${shipTo ? `<div class="os-row"><dt>${isLessonsOnly(order) ? 'Booked by' : 'Ship to'}</dt><dd>${esc(shipTo)}</dd></div>` : ''}
         <div class="os-row"><dt>Subtotal</dt><dd>${esc(money(order.subtotalCents))}</dd></div>
         ${order.discountCents > 0 ? `<div class="os-row"><dt>Discount</dt><dd>&minus;${esc(money(order.discountCents))}</dd></div>` : ''}
-        <div class="os-row"><dt>Shipping</dt><dd>Free</dd></div>
+        ${isLessonsOnly(order) ? '' : '<div class="os-row"><dt>Shipping</dt><dd>Free</dd></div>'}
         <div class="os-row"><dt>Sales tax</dt><dd>${esc(order.taxCents > 0 ? money(order.taxCents) : 'None')}</dd></div>
         <div class="os-row is-total"><dt>Total paid</dt><dd>${esc(money(order.totalCents))}</dd></div>
         ${order.refundedCents > 0 ? `<div class="os-row"><dt>Refunded</dt><dd>${esc(money(order.refundedCents))}</dd></div>` : ''}
       </dl>
     </div>
-    <p class="os-help">Changed your mind? Before it ships, reply to your receipt with the order number and it is cancelled and refunded in full.
-      After that, thirty days under the <a href="/legal/returns">Returns Policy</a>. Delivery times are in the <a href="/legal/shipping">Shipping Policy</a>.</p>`;
+    ${helpLine(order)}`;
+}
+
+/** How to change your mind: goods before they ship, lessons up to 48 hours before. */
+function helpLine(order) {
+  const lessons = '<a href="/legal/returns#lessons">Lessons</a>: reply to your receipt at least 48 hours before the session for a full refund; if the teacher cancels, you are refunded in full automatically.';
+  if (isLessonsOnly(order)) return `<p class="os-help">Changed your mind? ${lessons}</p>`;
+  const goods = `Changed your mind? Before it ships, reply to your receipt with the order number and it is cancelled and refunded in full.
+      After that, thirty days under the <a href="/legal/returns">Returns Policy</a>. Delivery times are in the <a href="/legal/shipping">Shipping Policy</a>.`;
+  return `<p class="os-help">${goods}${(order.items || []).some((it) => it.lesson) ? ` ${lessons}` : ''}</p>`;
 }
 
 (async () => {

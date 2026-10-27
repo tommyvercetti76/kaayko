@@ -59,6 +59,8 @@ const FILTERS = [
   { key: 'delivered',    label: 'Delivered',    match: (s) => s === 'delivered' },
   { key: 'returned',     label: 'Returned',     match: (s) => s === 'returned' },
   { key: 'cancelled',    label: 'Cancelled',    match: (s) => s === 'cancelled' },
+  // Booked lessons (27 Oct 2026): nothing to pack, so never under Needs action.
+  { key: 'booked',       label: 'Lessons',      match: (s) => s === 'booked' },
   { key: 'all',          label: 'All',          match: () => true }
 ];
 
@@ -69,7 +71,8 @@ const STATUS_LABELS = {
   delivered: 'Delivered',
   returned: 'Returned',
   cancelled: 'Cancelled',
-  mixed: 'Part-shipped'
+  mixed: 'Part-shipped',
+  booked: 'Lesson booked'
 };
 
 const PAGE_SIZE = 100;
@@ -659,7 +662,9 @@ function orderCard(shipment) {
           <span class="order-item-title">${escapeHtml(it.productTitle || 'Untitled product')}</span>
           ${it.kreatorId ? `<span class="order-item-maker">Kreator: ${escapeHtml(it.storeName || 'an independent maker')}</span>` : ''}
           ${it.refundedCents > 0 ? `<span class="order-item-variant">Refunded ${escapeHtml(money(it.refundedCents, currency))}</span>` : ''}
-          <span class="order-item-variant">${variant || 'No size / gender recorded'}</span>
+          <span class="order-item-variant">${it.lesson
+            ? `Lesson · ${escapeHtml(it.lesson.label || '')} · ${escapeHtml(it.lesson.format === 'online' ? 'Online' : (it.lesson.area || 'In person'))}`
+            : (variant || 'No size / gender recorded')}</span>
           ${lineRefund}
         </span>
         <span class="order-item-money">${escapeHtml(money(it.lineTotalCents, currency))}</span>
@@ -778,6 +783,10 @@ function actionsFor(shipment, status, id) {
   if (status === 'pending') {
     buttons.push(btn('btn-secondary', 'Start packing', { action: 'status', status: 'processing', id }));
   }
+  // A lesson only: no parcel. A buyer who cancels 48+ hours before gets a full refund.
+  if (status === 'booked') {
+    buttons.push(btn('btn-danger', 'Cancel & refund', { action: 'cancel-open', id }));
+  }
   if (status === 'pending' || status === 'processing' || status === 'mixed') {
     buttons.push(canShip
       ? btn('btn-success', 'Mark shipped', { action: 'ship-open', id })
@@ -864,6 +873,7 @@ function statusBadge(status) {
     pending:    'badge-warning',
     processing: 'badge-info',
     shipped:    'badge-success',
+    booked:     'badge-info',
     delivered:  'badge-success',
     returned:   'badge-error',
     cancelled:  'badge-error',
@@ -905,7 +915,10 @@ function findShipment(parentOrderId) {
  * order whose items disagree is reported as `mixed` rather than pretending.
  */
 function statusOf(shipment) {
-  const items = Array.isArray(shipment && shipment.items) ? shipment.items : [];
+  const all = Array.isArray(shipment && shipment.items) ? shipment.items : [];
+  // A lesson beside goods stays 'booked' for good: the goods say where the order is.
+  const goods = all.filter((i) => !i.lesson);
+  const items = goods.length ? goods : all;
   const statuses = [...new Set(items.map((i) => String(i.orderStatus || '').toLowerCase()).filter(Boolean))];
   if (statuses.length === 1) return statuses[0];
   if (statuses.length > 1) return 'mixed';
@@ -916,7 +929,8 @@ function applyLocalStatus(parentOrderId, status, extra) {
   const shipment = findShipment(parentOrderId);
   if (!shipment) return;
   shipment.orderStatus = status;
-  if (Array.isArray(shipment.items)) shipment.items.forEach((i) => { i.orderStatus = status; });
+  // The API moves a lesson only when the whole order is cancelled.
+  if (Array.isArray(shipment.items)) shipment.items.forEach((i) => { if (!i.lesson || status === 'cancelled') i.orderStatus = status; });
   if (extra) Object.assign(shipment, extra);
 }
 

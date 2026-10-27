@@ -251,6 +251,34 @@ html.dark-theme .product-v2 .product-thumb.active { box-shadow: 0 0 0 2px var(--
   text-underline-offset: 3px;
 }
 
+/* A lesson: how long, where, how many sessions are open — the facts before the dates. */
+.product-v2 .pdp-lesson {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+  font-size: 15px;
+}
+.product-v2 .pdp-lesson div {
+  display: grid;
+  grid-template-columns: 6.5em 1fr;
+  gap: 8px;
+}
+.product-v2 .pdp-lesson dt {
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding-top: 2px;
+}
+.product-v2 .pdp-lesson dd {
+  margin: 0;
+  min-width: 0;
+}
+.product-v2 .pdp-lesson-hint {
+  color: var(--muted);
+  font-size: 13px;
+}
+
 /* The catalogue's own punchline, given the size it has always deserved. */
 .product-v2 .pdp-hook {
   margin: 0;

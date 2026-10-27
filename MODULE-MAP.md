@@ -360,6 +360,11 @@ GET/POST/PUT/DELETE /api/billing/subscriptions
 > Every approved piece also gets its own code, `kaay.link/<handle>/<piece>` (QR codes,
 > 26 Oct 2026, `services/productLinks.js`): made on approval, 25 per shop unless raised,
 > shown with scan counts under **QR codes** in the dashboard.
+> **Lessons** (27 Oct 2026, `services/lessons.js`): a listing of type `lesson` (category
+> `services`) sold in dated sessions with seats, in person or online. Booking closes 24 h
+> before; full refund for a cancellation 48 h+ before (the owner refunds the line in
+> Kortex); a teacher's "Cancel session" refunds every booking automatically. The meeting
+> point / video link is private: emailed to buyers, never in the public API.
 
 **Pages:**
 | URL | File |
@@ -401,6 +406,7 @@ GET  /api/kreators/orders                         → their sold lines (money + 
 GET  /api/kreators/qr-codes                       → shop code + one per approved piece, with scans (all time, 30 days) and opens
 GET|POST|PUT|DELETE /api/kreators/products        → listings (multipart from req.rawBody; review on create/edit)
 POST /api/kreators/auth/logout                    → revokes every session (sessionVersion)
+POST /api/kreators/products/{id}/sessions/{sid}/cancel {reason?} → teacher cancels a lesson session: full refund + email per booking
 POST /api/kreators/auth/google/connect {idToken}  → a Google sign-in at the seller's own email turns Google on
 POST /api/kreators/auth/google/disconnect         → googleSignInOff: Google no longer opens the account
 
@@ -422,10 +428,12 @@ PUT  /api/kreators/admin/{uid}/qr-limit           {limit}  → product QR codes 
 - `kaayko-api/functions/api/kreators/kreatorProductRoutes.js` — listings (one validator, the house editor's rules)
 - `kaayko-api/functions/services/storeHandles.js` — shop addresses (registry, reserved words, kaay.link link)
 - `kaayko-api/functions/services/productLinks.js` — a piece's own kaay.link + QR (make on approval, limit, retire, scans)
+- `kaayko-api/functions/services/lessons.js` — lesson sessions: time zones, labels, what a seller may change, what is bookable
+- `kaayko-api/functions/services/lessonBookings.js` — booked lines: `refundBookedLine` (full refund once — teacher cancel, or a payment that landed after its session was cancelled/moved/started) and `updateBookedDetails` (an approved change of where/how to join reaches everyone booked, by email)
 - `kaayko-api/functions/services/listingPhotos.js` — listing photos wait in `kreator_pending/` (download-token URL only) until approved; unsold photos are deleted
 - `kaayko-api/functions/api/kreators/testRoutes.js` — mounted only when the emulator runs Auth AND Firestore too
 
-**Firestore collections:** `kreator_applications`, `kreators`, `store_handles` (`{handle}` → `{kreatorId, storeName, status: active|retired, linkCode}`; never released), `kaaykoproducts` (kreator listings carry `kreatorId`, `storeSlug` = handle, `reviewStatus`, `reviewHistory`, `storeBio`, `taxCode`, `qrCode`/`qrLink`/`qrImage`/`qrStatus`), `kreators.qrLimit`, `short_links` (`{handle}`, `metadata.kind: 'kreator_store'`; `{handle}--{piece}`, `metadata.kind: 'kreator_product'` — both kinds settable only by the Kreator code, `createShortLink(data, {kreatorLink: true})`), `click_events` (scans: `metadata.source == 'qr'`), `orders`/`payment_intents` lines (`kreatorId`, `storeSlug`, `storeName`, `discountShareCents`), `admin_audit_logs`
+**Firestore collections:** `kreator_applications`, `kreators`, `store_handles` (`{handle}` → `{kreatorId, storeName, status: active|retired, linkCode}`; never released), `kaaykoproducts` (kreator listings carry `kreatorId`, `storeSlug` = handle, `reviewStatus`, `reviewHistory`, `storeBio`, `taxCode`, `qrCode`/`qrLink`/`qrImage`/`qrStatus`; a lesson also `lesson` {format, area, details (private), durationMin, timeZone} and `sessions` [{id, startsAt, seats, booked, cancelled}]), `kreators.qrLimit`, order lines' `lesson` + `seatBooked`/`seatReleased`/`seatStale`/`teacherCancelRefund`, `short_links` (`{handle}`, `metadata.kind: 'kreator_store'`; `{handle}--{piece}`, `metadata.kind: 'kreator_product'` — both kinds settable only by the Kreator code, `createShortLink(data, {kreatorLink: true})`), `click_events` (scans: `metadata.source == 'qr'`), `orders`/`payment_intents` lines (`kreatorId`, `storeSlug`, `storeName`, `discountShareCents`), `admin_audit_logs`
 **External services:** Firebase Auth (password + Google), the `mail` queue
 **Auth required:** Public: apply, check-status, shop pages. Activation link: onboarding. Seller session: dashboard, add-product. `requirePlatformAdmin`: /api/kreators/admin/*
 **Production prerequisite:** the `SESSION_SECRET` secret (bound to `api` in `functions/index.js`)

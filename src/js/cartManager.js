@@ -110,7 +110,7 @@ class CartManager {
    * (null when the product cannot be priced — the server will refuse it at checkout).
    * @returns {boolean} false when the bag is full
    */
-  addItem({ productId, title, subtitle, priceCents = null, imgSrc, size, gender, storeName = null }) {
+  addItem({ productId, title, subtitle, priceCents = null, imgSrc, size, gender, storeName = null, kind = null }) {
     const existingIndex = this.cart.findIndex((i) => i.productId === productId);
     const item = {
       productId,
@@ -122,6 +122,8 @@ class CartManager {
       gender,
       // An independent maker's name, so the bag and checkout say who sells it.
       storeName: typeof storeName === 'string' && storeName ? storeName.slice(0, 80) : null,
+      // 'lesson' for a booked session (the size is the session); the bag words it so.
+      kind: kind === 'lesson' ? 'lesson' : null,
       addedAt: Date.now()
     };
     if (existingIndex >= 0) {

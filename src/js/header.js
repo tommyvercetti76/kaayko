@@ -182,11 +182,40 @@ function mountCartBadge() {
 }
 
 /** ───────────────────────────────────────────────────────────────────────────
+ * 8) The Kreator program
+ *    A storefront mark beside the bag on every store page: makers and teachers
+ *    who want to sell here find the program (kaayko.com/kreator). A new tab, so
+ *    a shopper's bag and place on the shelf stay where they were (27 Oct 2026).
+ *───────────────────────────────────────────────────────────────────────────*/
+function mountKreatorLink() {
+  const controls = document.querySelector(".header-controls");
+  if (!controls || controls.querySelector(".kreator-nav-button")) return;
+  if (!document.body.classList.contains("store-v2")) return;
+
+  const link = document.createElement("a");
+  link.href = "https://kaayko.com/kreator";
+  link.target = "_blank";
+  link.rel = "noopener";
+  link.className = "kreator-nav-button";
+  link.title = "Sell on Kaayko";
+  link.setAttribute("aria-label", "Sell your work or teach on Kaayko (opens in a new tab)");
+  link.innerHTML = `
+    <svg class="header-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5.2 4.5h13.6L20.5 9.5H3.5z"></path>
+      <path d="M3.5 9.5a2.83 2.83 0 0 0 5.67 0a2.83 2.83 0 0 0 5.66 0a2.83 2.83 0 0 0 5.67 0"></path>
+      <path d="M5 12.4v7.1h14v-7.1"></path>
+      <path d="M10 19.5v-4.3h4v4.3"></path>
+    </svg>`;
+  const bag = controls.querySelector(".cart-nav-button");
+  controls.insertBefore(link, bag || controls.firstChild);
+}
+
+/** ───────────────────────────────────────────────────────────────────────────
  * Init all header/UI behavior once DOM is ready
  *───────────────────────────────────────────────────────────────────────────*/
 document.addEventListener("DOMContentLoaded", () => {
   // each on its own: one failing must not leave the header without its bag icon
-  [initializeDarkMode, populateMenu, setupMobileMenu, initializeHomeNavigation, mountCartBadge].forEach((step) => {
+  [initializeDarkMode, populateMenu, setupMobileMenu, initializeHomeNavigation, mountCartBadge, mountKreatorLink].forEach((step) => {
     try { step(); } catch (e) { console.error(`header: ${step.name} failed`, e); }
   });
 });

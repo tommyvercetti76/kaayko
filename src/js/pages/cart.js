@@ -26,6 +26,8 @@ const STRIPE_KEY = window.KAAYKO_STRIPE_PK;
 // Must say the same thing as /legal/shipping — that page is the promise,
 // this is the reminder.
 const SHIP_TIME = 'Made to order · on its way within 10 business days';
+// Same rule as /legal/returns#lessons and the receipt (api/email/policy.js).
+const LESSON_CANCEL = 'Lessons: full refund if you cancel at least 48 hours before; always in full if the teacher cancels';
 
 /* ── Checkout state ──────────────────────────────────────────────
    The payment intent is made ONCE per bag: when the page opens with
@@ -79,6 +81,8 @@ const signature = (items) => items
 // one-size goods (see js/animal.js) — the old page printed the
 // literal string "null" next to the size.
 const metaLine = (item) => {
+  // A lesson's "size" is the session booked (27 Oct 2026).
+  if (item.kind === 'lesson') return `Lesson · ${esc(item.size || '')}`;
   const parts = [];
   if (item.gender && item.gender !== 'null') parts.push(esc(item.gender));
   // A magnet's option is its shape (24 Oct 2026); everything else has a size.
@@ -257,11 +261,20 @@ function render() {
 
   const t = totals(items);
   const parts = moneyParts(t, items);
+  // A bag of lessons ships nothing: no shipping promises, and the address is for
+  // the receipt and sales tax. A mixed bag states both.
+  const lessonCount = items.filter((i) => i.kind === 'lesson').length;
+  const lessonsOnly = lessonCount > 0 && lessonCount === items.length;
+  const goodsCount = items.length - lessonCount;
+  const summary = [
+    goodsCount ? `${goodsCount} ${goodsCount === 1 ? 'piece' : 'pieces'} · Free US shipping · 30-day returns` : '',
+    lessonCount ? `${lessonCount} ${lessonCount === 1 ? 'lesson' : 'lessons'} · full refund up to 48 hours before` : ''
+  ].filter(Boolean).join(' · ');
 
   root.innerHTML = `
     <div class="co-masthead">
       <h1>Checkout</h1>
-      <p>${items.length} ${items.length === 1 ? 'piece' : 'pieces'} · Free US shipping · 30-day returns</p>
+      <p>${summary}</p>
     </div>
     <div class="co-layout">
       <section class="co-details" aria-label="Your details">
@@ -271,8 +284,8 @@ function render() {
              returning Link shopper gets address + card filled. -->
         <div class="co-field" id="co-email-element"></div>
 
-        <h2 class="co-label">Delivery</h2>
-        <p class="co-note">We deliver within the United States.</p>
+        <h2 class="co-label">${lessonsOnly ? 'Your address' : 'Delivery'}</h2>
+        <p class="co-note">${lessonsOnly ? 'For your receipt and sales tax. Lessons are not shipped; the time and place are emailed to you.' : 'We deliver within the United States.'}</p>
         <div id="co-address-element"></div>
 
         <h2 class="co-label">Payment</h2>
@@ -286,7 +299,8 @@ function render() {
         <section class="co-bag" aria-labelledby="co-bag-head">
           <h2 class="co-label" id="co-bag-head">Your bag</h2>
           ${items.map(itemMarkup).join('')}
-          <p class="co-bag-note">${SHIP_TIME}.</p>
+          ${goodsCount ? `<p class="co-bag-note">${SHIP_TIME}.</p>` : ''}
+          ${lessonCount ? `<p class="co-bag-note">${LESSON_CANCEL}.</p>` : ''}
         </section>
 
         <div class="co-card co-summary">
@@ -296,7 +310,7 @@ function render() {
               <span>Discount${t.discountPercent ? ` · ${t.discountPercent}%` : ''}</span>
               ${priceSpan(-t.discount).replace('<span class="px"', '<span class="px" id="co-discount"')}
             </div>
-            <div class="co-money-row"><span>Shipping</span><span>Free</span></div>
+            ${lessonsOnly ? '' : '<div class="co-money-row"><span>Shipping</span><span>Free</span></div>'}
             <div class="co-money-row ${t.taxKnown ? '' : 'is-pending'}" id="co-tax-row"><span>Sales tax</span>${t.taxKnown ? priceSpan(t.tax).replace('<span class="px"', '<span class="px" id="co-tax"') : '<span id="co-tax">From your address</span>'}</div>
             <div class="co-money-row is-total"><span>Total</span>${priceSpan(t.total, '', parts.total).replace('<span class="px"', '<span class="px" id="co-total"')}</div>
             <p class="co-charge" id="co-charge" data-charge-cents="${t.total}" hidden></p>
@@ -308,7 +322,7 @@ function render() {
           <p class="co-ready-hint" id="co-ready-hint" aria-live="polite"></p>
           <p class="co-legal"><span class="material-icons" aria-hidden="true">lock</span> Paid securely through Stripe; card details never reach Kaayko.
             By paying you agree to our <a href="/legal/terms">Terms of Sale</a>, <a href="/legal/returns">Returns</a> and
-            <a href="/legal/shipping">Shipping</a> policies. Your address is used to ship this order and kept only as our
+            <a href="/legal/shipping">Shipping</a> policies. Your address is used ${lessonsOnly ? 'for your receipt and sales tax' : 'to ship this order'} and kept only as our
             <a href="/store/privacy">Privacy Policy</a> says.</p>
         </div>
       </aside>
@@ -364,6 +378,14 @@ function watchPay(button) {
   payWatch.observe(button);
 }
 
+/** What the refused line says: a lesson's session closed, the lesson itself may well be open. */
+function unavailableNote(item) {
+  if (item && item.kind === 'lesson') {
+    return `<p class="co-item-maker" style="color:#b3261e;font-style:normal">That session is no longer open. <a href="/store/p/${encodeURIComponent(item.productId)}">Choose another</a></p>`;
+  }
+  return '<p class="co-item-maker" style="color:#b3261e;font-style:normal">No longer available</p>';
+}
+
 function itemMarkup(item, index = 0) {
   const meta = metaLine(item);
   // the piece's own page, to look again before paying
@@ -378,7 +400,7 @@ function itemMarkup(item, index = 0) {
       <div class="co-item-body">
         <h3 class="co-item-title"><a href="${href}">${esc(item.title)}</a></h3>
         ${item.storeName ? `<p class="co-item-maker">by ${esc(item.storeName)}, an independent maker</p>` : ''}
-        ${item.productId === state.unavailableId ? '<p class="co-item-maker" style="color:#b3261e;font-style:normal">No longer available</p>' : ''}
+        ${item.productId === state.unavailableId ? unavailableNote(item) : ''}
         <p class="co-item-meta">${meta}${meta && qty > 1 ? ' · ' : ''}${qty > 1 ? `Quantity ${qty}` : ''}</p>
       </div>
       <div class="co-item-side">
@@ -578,7 +600,7 @@ function showPrepFailure() {
   const line = state.unavailableId && document.querySelector(`[data-remove="${CSS.escape(state.unavailableId)}"]`)?.closest('.co-item');
   if (line && !line.classList.contains('is-unavailable')) {
     line.classList.add('is-unavailable');
-    line.querySelector('.co-item-title')?.insertAdjacentHTML('afterend', '<p class="co-item-maker" style="color:#b3261e;font-style:normal">No longer available</p>');
+    line.querySelector('.co-item-title')?.insertAdjacentHTML('afterend', unavailableNote(cartManager.getItem(state.unavailableId)));
   }
   document.getElementById('co-drop-unavailable')?.addEventListener('click', () => {
     const id = state.unavailableId;
@@ -713,7 +735,9 @@ function refreshReady() {
 
   const hint = document.getElementById('co-ready-hint');
   if (!hint) return;
-  const words = { email: 'your email', address: 'a delivery address', payment: 'card details' };
+  const bag = cartManager.getItems();
+  const lessonsOnly = bag.length > 0 && bag.every((i) => i.kind === 'lesson');
+  const words = { email: 'your email', address: lessonsOnly ? 'your address' : 'a delivery address', payment: 'card details' };
   const m = missing().map(k => words[k]);
   let text = '';
   if (!state.elements) text = state.prepError ? '' : 'Getting secure payment ready…';

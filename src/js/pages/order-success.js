@@ -78,6 +78,21 @@ set('ok-date', new Date().toLocaleDateString('en-US', {
   }
 })();
 
-// Unconditional, and first — the payment succeeded regardless of what
-// the lookup above does.
+// The page's words are for things that ship. A lesson is booked, and its refund
+// rule is 48 hours, not 30 days: read the bag for that before it is cleared.
+try {
+  const bag = cartManager.getItems();
+  const lessons = bag.filter((i) => i.kind === 'lesson').length;
+  if (lessons) {
+    const rule = '<a href="/legal/returns#lessons">Lessons</a>: reply to your receipt at least 48 hours before the session for a full refund; if the teacher cancels, you are refunded in full automatically.';
+    if (lessons === bag.length) {
+      set('ok-lede', `Your ${lessons > 1 ? 'lessons are' : 'lesson is'} booked. A receipt with the time, and where to meet or how to join, is on its way.`);
+      document.getElementById('ok-next').innerHTML = `Questions about this booking? Reply to your receipt email and it reaches us directly. ${rule}`;
+    } else {
+      document.getElementById('ok-next').insertAdjacentHTML('beforeend', ` ${rule}`);
+    }
+  }
+} catch (err) { console.warn('lesson copy:', err); }
+
+// Unconditional — the payment succeeded regardless of what the lookup above does.
 try { cartManager.clear(); } catch (err) { console.warn('cart clear failed:', err); }

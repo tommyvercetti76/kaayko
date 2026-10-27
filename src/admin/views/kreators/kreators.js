@@ -116,13 +116,21 @@ async function listings(status) {
   return (data.listings || []).map(listingCard).join('') || empty(status === 'pending' ? 'No listings waiting for review.' : 'No live kreator listings.');
 }
 
+/** A lesson under review: what buyers are promised, and the private details they are sent. */
+function lessonRows(l) {
+  const min = Number(l.durationMin) || 0;
+  const length = !min ? '' : min % 60 === 0 ? `${min / 60} h` : `${min} min`;
+  return `${row('Lesson', escapeHtml([l.format === 'online' ? 'Online' : 'In person', l.area, length, l.timeZone].filter(Boolean).join(' · ')))}
+        ${row('Sent to buyers', escapeHtml(l.details || ''))}`;
+}
+
 function listingFields(v) {
   const img = (v.imgSrc || []).map(safeUrl).filter(Boolean);
   return `${img.length ? `<div class="kreators-photos">${img.map((u) => `<a href="${escapeHtml(u)}" target="_blank" rel="noopener"><img src="${escapeHtml(u)}" alt="" loading="lazy"></a>`).join('')}</div>` : ''}
       <p class="kreators-desc"><strong>${escapeHtml(v.title || '')}</strong> — ${escapeHtml(v.description || '')}</p>
       <dl class="kreators-rows">
         ${row('Kind', escapeHtml([v.category, v.productType].filter(Boolean).join(' · ')))}
-        ${row('Options', escapeHtml((v.availableSizes || []).join(', ')))}
+        ${v.lesson ? lessonRows(v.lesson) : row('Options', escapeHtml((v.availableSizes || []).join(', ')))}
         ${row('Tags', escapeHtml((v.tags || []).join(', ')))}
         ${row('Story', escapeHtml(v.storyCopy || ''))}
       </dl>`;
@@ -156,6 +164,7 @@ function listingCard(p) {
         : listingFields(p)}
       <dl class="kreators-rows">
         ${row('Shop description', escapeHtml(p.storeBio || ''))}
+        ${Array.isArray(p.sessions) ? row('Sessions', p.sessions.length ? p.sessions.map((x) => `${escapeHtml(x.label)} · ${x.cancelled ? 'cancelled' : `${x.booked} of ${x.seats} booked`}`).join('<br>') : 'None yet') : ''}
         ${row('Submitted', escapeHtml(p.submittedForReviewAt ? formatDate(p.submittedForReviewAt) : ''))}
         ${row('Last note', escapeHtml(p.reviewNote || ''))}
         ${row('Earlier notes', (p.reviewHistory || []).filter((h) => h && h.note).slice(-3).reverse()

@@ -297,6 +297,14 @@
       border: 1px solid var(--success);
     }
     
+    /* A lesson's sessions: date, time, seats, one row each; wraps on a phone. */
+    .session-edit { display: grid; grid-template-columns: 1.3fr 1fr 0.8fr auto; gap: 8px; align-items: center; margin-bottom: 8px; }
+    .session-edit .s-note { grid-column: 1 / -1; font-size: 12px; color: var(--text-muted); margin-top: -4px; }
+    .session-edit .remove-session { background: none; border: 1px solid var(--border-subtle); color: var(--text-muted); padding: 8px 10px; cursor: pointer; border-radius: 8px; }
+    .lesson-format { display: flex; gap: 16px; flex-wrap: wrap; }
+    .lesson-format label { display: flex; gap: 6px; align-items: center; cursor: pointer; }
+    @media (max-width: 600px) { .session-edit { grid-template-columns: 1fr 1fr; } }
+
     .field-hint {
       display: block;
       margin-top: 6px;
@@ -374,6 +382,7 @@
                 <option value="apparel">Clothing</option>
                 <option value="accessories">Accessories (magnets, totes, prints)</option>
                 <option value="drinkware">Drinkware</option>
+                <option value="services">Lessons and classes</option>
                 <option value="other">Something else</option>
               </select>
             </div>
@@ -385,7 +394,48 @@
             </div>
           </div>
           
-          <div class="form-group">
+          <!-- A lesson (27 Oct 2026): sold in dated sessions with seats; replaces the options and stock fields. -->
+          <div id="lesson-fields" hidden>
+            <div class="form-group">
+              <span class="form-label">Where it happens *</span>
+              <div class="lesson-format">
+                <label><input type="radio" name="lesson-format" value="in_person" checked> In person</label>
+                <label><input type="radio" name="lesson-format" value="online"> Online</label>
+              </div>
+            </div>
+            <div class="form-group" id="lesson-area-group">
+              <label class="form-label" for="lesson-area">Town or area, shown on the listing *</label>
+              <input type="text" id="lesson-area" class="form-input" maxlength="60" placeholder="e.g., Bellingham, WA">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="lesson-details" id="lesson-details-label">Meeting point, sent only to people who book *</label>
+              <textarea id="lesson-details" class="form-input" rows="2" maxlength="600" placeholder="e.g., Boulevard Park, by the pier steps. Bring a camera with a charged battery."></textarea>
+              <small class="field-hint">Changing it later? Once Kaayko approves the change, everyone already booked into a coming session is emailed the new details.</small>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="lesson-duration">Length *</label>
+                <select id="lesson-duration" class="form-input">
+                  <option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60">1 hour</option>
+                  <option value="90">90 minutes</option><option value="120" selected>2 hours</option><option value="150">2½ hours</option>
+                  <option value="180">3 hours</option><option value="240">4 hours</option><option value="300">5 hours</option>
+                  <option value="360">6 hours</option><option value="480">8 hours</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="lesson-tz">Time zone of the session times *</label>
+                <select id="lesson-tz" class="form-input"></select>
+              </div>
+            </div>
+            <div class="form-group">
+              <span class="form-label">Sessions *</span>
+              <div id="lesson-sessions"></div>
+              <button type="button" class="btn btn-secondary" id="add-session"><span class="material-icons" style="font-size:16px">add</span> Add a session</button>
+              <small class="field-hint">Each session is a date, a start time and how many seats. Booking closes 24 hours before a session; one seat per booking. A session people have booked keeps its time: cancel it from your dashboard to refund them.</small>
+            </div>
+          </div>
+
+          <div class="form-group" id="sizes-group">
             <label class="form-label" for="product-sizes">Options shoppers choose from *</label>
             <input type="text" id="product-sizes" class="form-input" placeholder="e.g., Small, Large — or One Size" required maxlength="300">
             <small class="field-hint">Comma separated: sizes, shapes or volumes. A shopper must pick one, and it is printed on the order.</small>
@@ -481,6 +531,8 @@
         fillTypes();
         typeEl.value = p.productType || 'other';
         sizesEl.value = (p.availableSizes || []).join(', ');
+        syncLessonMode();
+        if (p.productType === 'lesson') fillLesson(p.lesson || {}, body.data.sessions || []);
         set('product-tags', (p.tags || []).join(', '));
         set('product-story', p.storyCopy || '');
         keptImages = [...(p.imgSrc || [])];
@@ -517,7 +569,8 @@
       }
       typeEl.disabled = false;
       types.filter(t => t.category === cat).forEach(t => typeEl.append(new Option(t.singular, t.key)));
-      typeEl.append(new Option('My own kind of thing', 'other'));
+      if (cat !== 'services') typeEl.append(new Option('My own kind of thing', 'other'));
+      syncLessonMode();
       fillSizes();
     }
     
@@ -526,8 +579,101 @@
       sizesEl.value = t ? t.sizes.join(', ') : 'One Size';
     }
     
+    /* ── Lessons (27 Oct 2026) ────────────────────────────────────────── */
+    const lessonBox = document.getElementById('lesson-fields');
+    const sessionsBox = document.getElementById('lesson-sessions');
+    const tzEl = document.getElementById('lesson-tz');
+    const quantityEl = document.getElementById('product-quantity');
+    const isLessonMode = () => typeEl.value === 'lesson';
+    const ZONES = [['America/Los_Angeles', 'Pacific (Los Angeles)'], ['America/Denver', 'Mountain (Denver)'], ['America/Phoenix', 'Arizona (Phoenix)'],
+      ['America/Chicago', 'Central (Chicago)'], ['America/New_York', 'Eastern (New York)'], ['America/Anchorage', 'Alaska'], ['Pacific/Honolulu', 'Hawaii']];
+    const myZone = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (_) { return 'America/Los_Angeles'; } })();
+    ZONES.forEach(([v, l]) => tzEl.append(new Option(l, v)));
+    if (!ZONES.some(([v]) => v === myZone)) tzEl.append(new Option(myZone, myZone));
+    tzEl.value = ZONES.some(([v]) => v === myZone) ? myZone : myZone;
+
+    function syncLessonMode() {
+      const on = isLessonMode();
+      lessonBox.hidden = !on;
+      document.getElementById('sizes-group').hidden = on;
+      sizesEl.required = !on;
+      quantityEl.closest('.form-group').hidden = on;
+      quantityEl.required = !on;
+      if (on && !sessionsBox.children.length) addSessionRow();
+      syncFormat();
+    }
+    function syncFormat() {
+      const online = (document.querySelector('input[name="lesson-format"]:checked') || {}).value === 'online';
+      document.getElementById('lesson-area-group').hidden = online;
+      document.getElementById('lesson-details-label').textContent = online
+        ? 'Video link or how to join, sent only to people who book *'
+        : 'Meeting point, sent only to people who book *';
+    }
+    document.querySelectorAll('input[name="lesson-format"]').forEach((r) => r.addEventListener('change', syncFormat));
+
+    /** One session row. A booked one keeps its date and time; its seats cannot drop below the bookings. */
+    function addSessionRow(x = {}) {
+      const row = document.createElement('div');
+      row.className = 'session-edit';
+      if (x.id) row.dataset.id = x.id;
+      const booked = Number(x.booked) || 0;
+      const lock = booked > 0 ? 'readonly' : '';
+      row.innerHTML = `
+        <input type="date" class="form-input s-date" aria-label="Date" required ${lock} value="${x.date || ''}">
+        <input type="time" class="form-input s-time" aria-label="Start time" required step="300" ${lock} value="${x.time || ''}">
+        <input type="number" class="form-input s-seats" aria-label="Seats" min="${Math.max(1, booked)}" max="50" step="1" required value="${x.seats || 6}">
+        ${booked > 0 ? '<span></span>' : '<button type="button" class="remove-session" aria-label="Remove this session">Remove</button>'}
+        <span class="s-note">${booked > 0 ? `${booked} booked: the time is fixed. Cancel it from your dashboard to refund them.` : ''}</span>`;
+      row.querySelector('.remove-session')?.addEventListener('click', () => row.remove());
+      sessionsBox.appendChild(row);
+    }
+    document.getElementById('add-session').addEventListener('click', () => addSessionRow());
+
+    /** A stored session's local date and time in the lesson's zone, for the form. */
+    function localParts(startsAt, timeZone) {
+      const parts = new Intl.DateTimeFormat('en-US', { timeZone, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).formatToParts(new Date(startsAt));
+      const get = (t) => parts.find((x) => x.type === t).value;
+      return { date: `${get('year')}-${get('month')}-${get('day')}`, time: `${get('hour')}:${get('minute')}` };
+    }
+
+    function fillLesson(l = {}, sessions = []) {
+      const fmt = l.format === 'online' ? 'online' : 'in_person';
+      document.querySelector(`input[name="lesson-format"][value="${fmt}"]`).checked = true;
+      document.getElementById('lesson-area').value = l.area && l.area !== 'Online' ? l.area : '';
+      document.getElementById('lesson-details').value = l.details || '';
+      if (l.durationMin) document.getElementById('lesson-duration').value = String(l.durationMin);
+      if (l.timeZone) {
+        if (![...tzEl.options].some((o) => o.value === l.timeZone)) tzEl.append(new Option(l.timeZone, l.timeZone));
+        tzEl.value = l.timeZone;
+      }
+      sessionsBox.innerHTML = '';
+      const now = Date.now();
+      sessions.filter((x) => !x.cancelled && Date.parse(x.startsAt) > now)
+        .sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt))
+        .forEach((x) => addSessionRow({ id: x.id, booked: x.booked, seats: x.seats, ...localParts(x.startsAt, l.timeZone || myZone) }));
+      syncFormat();
+    }
+
+    function readLesson() {
+      const format = (document.querySelector('input[name="lesson-format"]:checked') || {}).value || 'in_person';
+      const sessions = [...sessionsBox.querySelectorAll('.session-edit')].map((row) => ({
+        ...(row.dataset.id ? { id: row.dataset.id } : {}),
+        date: row.querySelector('.s-date').value,
+        time: row.querySelector('.s-time').value,
+        seats: Number(row.querySelector('.s-seats').value)
+      }));
+      return {
+        format,
+        area: format === 'online' ? 'Online' : document.getElementById('lesson-area').value.trim(),
+        details: document.getElementById('lesson-details').value.trim(),
+        durationMin: Number(document.getElementById('lesson-duration').value),
+        timeZone: tzEl.value,
+        sessions
+      };
+    }
+
     categoryEl.addEventListener('change', fillTypes);
-    typeEl.addEventListener('change', fillSizes);
+    typeEl.addEventListener('change', () => { fillSizes(); syncLessonMode(); });
     
     const countEl = document.getElementById('description-count');
     descriptionEl.addEventListener('input', () => {
@@ -616,7 +762,14 @@
         return;
       }
       if (description.length < 20) { showStatus('The description needs at least 20 characters.', 'error'); return; }
-      if (!sizes.length) { showStatus('Add at least one option, for example One Size.', 'error'); return; }
+      const lesson = isLessonMode() ? readLesson() : null;
+      if (!lesson && !sizes.length) { showStatus('Add at least one option, for example One Size.', 'error'); return; }
+      if (lesson) {
+        if (lesson.format === 'in_person' && lesson.area.length < 2) { showStatus('Say where the lesson happens, e.g. Bellingham, WA.', 'error'); return; }
+        if (lesson.details.length < 5) { showStatus(lesson.format === 'online' ? 'Add the video link or how people join.' : 'Add the meeting point.', 'error'); return; }
+        if (!lesson.sessions.length) { showStatus('Add at least one session.', 'error'); return; }
+        if (lesson.sessions.some((x) => !x.date || !x.time || !(x.seats >= 1))) { showStatus('Each session needs a date, a start time and seats.', 'error'); return; }
+      }
       if (!keptImages.length && !selectedImages.length) { showStatus('Add at least one photo.', 'error'); return; }
       
       saveBtn.disabled = true;
@@ -627,11 +780,12 @@
         formData.append('title', title);
         formData.append('description', description);
         formData.append('price', price);
-        formData.append('quantity', quantity);
+        if (!lesson) formData.append('quantity', quantity);
         formData.append('category', category);
         formData.append('productType', productType);
         formData.append('tags', JSON.stringify(tags));
-        formData.append('availableSizes', JSON.stringify(sizes));
+        if (lesson) formData.append('lesson', JSON.stringify(lesson));
+        else formData.append('availableSizes', JSON.stringify(sizes));
         if (story || editId) formData.append('storyCopy', story);
         if (editId) formData.append('keepImages', JSON.stringify(keptImages));
         

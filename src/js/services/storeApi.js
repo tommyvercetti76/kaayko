@@ -133,7 +133,7 @@ function refreshQuietly() {
 
 /** What a shopper sees of a product; a change in any of it is worth redrawing for. */
 const seen = (p) => p && JSON.stringify([p.title, p.actualPrice, p.soldOut, p.isAvailable, p.availableSizes,
-  p.productType, p.imgSrc, p.previewSrc, p.description]);
+  p.productType, p.imgSrc, p.previewSrc, p.description, p.lesson]);   // a lesson's seats left and where
 
 /**
  * The catalogue from the kept copy when there is one (refreshed quietly if old), else

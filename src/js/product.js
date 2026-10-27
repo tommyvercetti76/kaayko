@@ -15,7 +15,7 @@
 
 import { priceCents } from "/js/priceMap.js";
 import { priceSpan, repaint, currencyReady, mountCurrencySwitch } from "/js/services/currency.js";
-import { createFitPicker, needsPicker, addDirect, isSoldOut } from "/js/fitPicker.js";
+import { createFitPicker, needsPicker, addDirect, inBagAsShown, isSoldOut, isLessonItem } from "/js/fitPicker.js";
 import { satireFor } from "/js/store-satire.js";
 import { productFirst, catalogueFirst, friendlyMessage } from "/js/services/storeApi.js";
 import { cartManager } from "/js/cartManager.js";
@@ -99,6 +99,29 @@ function titleFor(product) {
 }
 
 /** "Originals · T-Shirt" — theme first, then what the thing physically is (registry name). */
+/** How long, where, and how many sessions are open, for a lesson. */
+function lessonFacts(product) {
+  const l = product.lesson || {};
+  const min = Number(l.durationMin) || 0;
+  const length = !min ? "" : min % 60 === 0 ? `${min / 60} hour${min === 60 ? "" : "s"}` : `${min} minutes`;
+  const where = l.format === "online"
+    ? "Online · the link is emailed when you book"
+    : `${l.area || "In person"} · the meeting point is emailed when you book`;
+  const sessions = Array.isArray(l.sessions) ? l.sessions : [];
+  const row = (k, v) => (v ? `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>` : "");
+  // Always name the dates: with one session there is no picker to show it.
+  const dates = sessions.slice(0, 4).map((x) => `${esc(x.label)} · ${x.seatsLeft} seat${x.seatsLeft === 1 ? "" : "s"} left`);
+  const more = sessions.length > 4 ? `<br>${sessions.length - 4} more below` : "";
+  const sessionsRow = sessions.length
+    ? `<div><dt>${sessions.length === 1 ? "Session" : "Sessions"}</dt><dd>${dates.join("<br>")}${more}${sessions.length > 1 ? "<br><span class=\"pdp-lesson-hint\">Pick one below.</span>" : ""}</dd></div>`
+    : row("Sessions", "None open right now");
+  return `<dl class="pdp-lesson">
+      ${row("Length", length)}
+      ${row("Where", where)}
+      ${sessionsRow}
+    </dl>`;
+}
+
 function eyebrowFor(product) {
   const type = labelForType(product.productType, { singular: true })
     || (String(product.category || "").toLowerCase() === "apparel" ? "T-Shirt" : "");
@@ -158,11 +181,14 @@ function renderProduct(product, openModalFn) {
         ${copy.hook ? `<p class="pdp-hook">${esc(copy.hook)}</p>` : ""}
         <p class="pdp-price">${priceSpan(cents)}</p>
         <p class="pdp-fx-charge" data-charge-cents="${cents || ''}" data-charge-style="pdp" hidden></p>
+        ${isLessonItem(product) ? lessonFacts(product) : ""}
         <div class="pdp-picker" id="pdp-picker"></div>
-        <p class="pdp-reassure">${product.byMaker
+        <p class="pdp-reassure">${isLessonItem(product)
+          ? `One seat per booking · Booking closes ${product.lesson?.bookingCutoffHours || 24} hours before · <a href="/legal/returns#lessons">Full refund up to ${product.lesson?.cancelHours || 48} hours before</a>`
+          : product.byMaker
           ? `Made by ${esc(product.storeName || "the maker")} · Free US shipping`
           : `Printed to order, on its way within 10 business days · Free US shipping · <a href="/legal/returns">30-day returns</a>`}</p>
-        <button type="button" class="pdp-share" id="pdp-share">Share this piece</button>
+        <button type="button" class="pdp-share" id="pdp-share">Share this ${isLessonItem(product) ? "lesson" : "piece"}</button>
       </div>
 
       <aside class="pdp-file" data-voice="${esc(copy.voice)}">
@@ -256,7 +282,7 @@ function renderProduct(product, openModalFn) {
   if (isSoldOut(product)) {
     const note = document.createElement('p');
     note.className = 'pdp-sold-out';
-    note.textContent = 'Sold out';
+    note.textContent = isLessonItem(product) ? 'No sessions open right now. The teacher adds new dates here.' : 'Sold out';
     slot.appendChild(note);
     return;
   }
@@ -271,10 +297,12 @@ function renderProduct(product, openModalFn) {
   cta.type = 'button';
   cta.className = 'fitp-confirm pdp-single-cta';
   const syncCta = () => {
-    const inBag = !!cartManager.hasProduct(product.id);
+    const inBag = inBagAsShown(product);
+    // A lesson in the bag for a session that has closed: this one takes its place.
+    const swap = !inBag && cartManager.hasProduct(product.id);
     // the price is a repaintable span, so a $ / ₹ switch updates the button too
     if (inBag) cta.textContent = 'In your bag · View bag';
-    else cta.innerHTML = `<span class="fitp-confirm-label">Add to bag</span>${cents ? `<span class="fitp-confirm-price"><span class="fitp-sep"> · </span>${priceSpan(cents)}</span>` : ''}`;
+    else cta.innerHTML = `<span class="fitp-confirm-label">${swap ? 'Book this session instead' : 'Add to bag'}</span>${cents ? `<span class="fitp-confirm-price"><span class="fitp-sep"> · </span>${priceSpan(cents)}</span>` : ''}`;
   };
   cta.addEventListener('click', () => addDirect(product));
   syncCta();
