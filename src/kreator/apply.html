@@ -322,6 +322,12 @@
     }
     
     /* Form Row */
+    .cond { margin: 8px 0 20px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.08); }
+    .cond[hidden], [hidden] { display: none !important; }
+    .cond-title { font-size: 1.05rem; margin: 0 0 6px; }
+    .choice-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .choice { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; cursor: pointer; }
+    .choice:has(input:checked) { border-color: #10b981; background: rgba(16,185,129,0.08); }
     .form-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -857,70 +863,162 @@
           
           <!-- Step 3: Operations & Fulfillment -->
           <div class="form-step" data-step="3">
-            <h2 class="step-title">Operations & Fulfillment</h2>
-            <p class="step-description">Shipping, inventory, and business operations</p>
-            
-            <div class="form-group">
-              <label class="form-label" for="location">Business Location *</label>
-              <input type="text" id="location" class="form-input" placeholder="City, State/Province, Country" required>
-            </div>
-            
+            <h2 class="step-title">Where you are, and how it reaches people</h2>
+            <p class="step-description">Kaayko works with makers and teachers based in the United States, for now.</p>
+
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label" for="shippingCapability">Shipping Capability *</label>
-                <select id="shippingCapability" class="form-input" required>
-                  <option value="">Select...</option>
-                  <option value="domestic_only">Domestic (USA) Only</option>
-                  <option value="north_america">North America</option>
-                  <option value="international">International</option>
-                  <option value="local_pickup">Local Pickup Only</option>
-                </select>
+                <label class="form-label" for="city">City *</label>
+                <input type="text" id="city" class="form-input" maxlength="60" placeholder="e.g., Bellingham" required>
               </div>
-              
               <div class="form-group">
-                <label class="form-label" for="fulfillmentTime">Fulfillment Time *</label>
-                <select id="fulfillmentTime" class="form-input" required>
-                  <option value="">Select...</option>
-                  <option value="1-2_days">1-2 business days</option>
-                  <option value="3-5_days">3-5 business days</option>
-                  <option value="1-2_weeks">1-2 weeks</option>
-                  <option value="2-4_weeks">2-4 weeks (custom)</option>
-                  <option value="varies">Varies by product</option>
-                </select>
+                <label class="form-label" for="state">State *</label>
+                <select id="state" class="form-input" required><option value="">Select...</option><option value="AL">AL</option><option value="AK">AK</option><option value="AZ">AZ</option><option value="AR">AR</option><option value="CA">CA</option><option value="CO">CO</option><option value="CT">CT</option><option value="DE">DE</option><option value="DC">DC</option><option value="FL">FL</option><option value="GA">GA</option><option value="HI">HI</option><option value="ID">ID</option><option value="IL">IL</option><option value="IN">IN</option><option value="IA">IA</option><option value="KS">KS</option><option value="KY">KY</option><option value="LA">LA</option><option value="ME">ME</option><option value="MD">MD</option><option value="MA">MA</option><option value="MI">MI</option><option value="MN">MN</option><option value="MS">MS</option><option value="MO">MO</option><option value="MT">MT</option><option value="NE">NE</option><option value="NV">NV</option><option value="NH">NH</option><option value="NJ">NJ</option><option value="NM">NM</option><option value="NY">NY</option><option value="NC">NC</option><option value="ND">ND</option><option value="OH">OH</option><option value="OK">OK</option><option value="OR">OR</option><option value="PA">PA</option><option value="RI">RI</option><option value="SC">SC</option><option value="SD">SD</option><option value="TN">TN</option><option value="TX">TX</option><option value="UT">UT</option><option value="VT">VT</option><option value="VA">VA</option><option value="WA">WA</option><option value="WV">WV</option><option value="WI">WI</option><option value="WY">WY</option><option value="PR">PR</option></select>
               </div>
             </div>
-            
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label" for="inventoryManagement">Inventory Approach *</label>
-                <select id="inventoryManagement" class="form-input" required>
-                  <option value="">Select...</option>
-                  <option value="ready_stock">Ready stock / Warehouse</option>
-                  <option value="made_to_order">Made-to-order</option>
-                  <option value="dropship">Dropship</option>
-                  <option value="hybrid">Hybrid</option>
-                </select>
+
+            <!-- Goods: the maker ships (Seller Terms 7–8) -->
+            <div class="cond" id="goods-ops" hidden>
+              <h3 class="cond-title">Your pieces</h3>
+              <p class="form-hint">You ship your own orders, inside the US, with tracking, within 5 business days of the order. Kaayko takes the payment and sends the buyer their receipt.</p>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="fulfillmentTime">How soon you ship *</label>
+                  <select id="fulfillmentTime" class="form-input">
+                    <option value="">Select...</option>
+                    <option value="1-2_days">1–2 business days</option>
+                    <option value="3-5_days">3–5 business days</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="inventoryManagement">How you make them *</label>
+                  <select id="inventoryManagement" class="form-input">
+                    <option value="">Select...</option>
+                    <option value="ready_stock">Made ahead, in stock</option>
+                    <option value="made_to_order">Made to order</option>
+                    <option value="hybrid">Some of each</option>
+                  </select>
+                </div>
               </div>
-              
-              <div class="form-group">
-                <label class="form-label" for="yearsInBusiness">Years in Business</label>
-                <select id="yearsInBusiness" class="form-input">
-                  <option value="">Select...</option>
-                  <option value="new">Just starting</option>
-                  <option value="1-2">1-2 years</option>
-                  <option value="3-5">3-5 years</option>
-                  <option value="5-10">5-10 years</option>
-                  <option value="10+">10+ years</option>
-                </select>
-              </div>
+              <label class="checkbox-group">
+                <input type="checkbox" id="agreedToShip">
+                <span class="checkbox-label">I ship my own orders within 5 business days and add the tracking number in my seller dashboard.</span>
+              </label>
             </div>
-            
+
+            <!-- Lessons: what a teacher is asked -->
+            <div class="cond" id="teaching" hidden>
+              <h3 class="cond-title">Your teaching</h3>
+              <p class="form-hint">A person reads every answer. Specific beats polished.</p>
+              <div class="form-group">
+                <label class="form-label" for="t-subjects">What you teach *</label>
+                <input type="text" id="t-subjects" class="form-input" maxlength="120" placeholder="e.g., Landscape photography for beginners">
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="t-practice">How long you have practised it *</label>
+                  <select id="t-practice" class="form-input"><option value="">Select...</option><option value="under_1">Under a year</option><option value="1_2">1–2 years</option><option value="3_5">3–5 years</option><option value="6_10">6–10 years</option><option value="over_10">Over 10 years</option></select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="t-teaching">How long you have taught it *</label>
+                  <select id="t-teaching" class="form-input"><option value="">Select...</option><option value="under_1">Under a year</option><option value="1_2">1–2 years</option><option value="3_5">3–5 years</option><option value="6_10">6–10 years</option><option value="over_10">Over 10 years</option></select>
+                </div>
+              </div>
+              <div class="form-group">
+                <span class="form-label">Where you teach *</span>
+                <div class="choice-row">
+                  <label class="choice"><input type="checkbox" name="t-format" value="in_person"> In person</label>
+                  <label class="choice"><input type="checkbox" name="t-format" value="online"> Online</label>
+                </div>
+              </div>
+              <div class="form-group" id="t-area-group" hidden>
+                <label class="form-label" for="t-area">Where, in person *</label>
+                <input type="text" id="t-area" class="form-input" maxlength="80" placeholder="e.g., Bellingham, WA and nearby parks">
+              </div>
+              <div class="form-group" id="t-platform-group" hidden>
+                <label class="form-label" for="t-platform">Video tool you teach on *</label>
+                <select id="t-platform" class="form-input">
+                  <option value="">Select...</option><option value="zoom">Zoom</option><option value="google_meet">Google Meet</option><option value="teams">Microsoft Teams</option><option value="other">Something else</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="t-group">Usual group size *</label>
+                  <select id="t-group" class="form-input">
+                    <option value="">Select...</option><option value="one_to_one">One to one</option><option value="2_5">2–5 people</option><option value="6_12">6–12 people</option><option value="13_plus">13 or more</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="t-audience">Who it is for *</label>
+                  <select id="t-audience" class="form-input">
+                    <option value="">Select...</option><option value="adults">Adults (18+)</option><option value="with_guardian">Under-18s too, with a parent or guardian there</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="t-outline">A typical session, start to finish *</label>
+                <textarea id="t-outline" class="form-input" rows="4" maxlength="1000" placeholder="e.g., We meet at the pier at 6:45, check camera settings, walk the shoreline for the first light, stop twice to review shots, and finish with a 15-minute edit on one photo each."></textarea>
+                <p class="form-hint">At least 80 characters. This is what we read first.</p>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="t-credentials">Training, certificates, awards (optional)</label>
+                <textarea id="t-credentials" class="form-input" rows="2" maxlength="500" placeholder="e.g., Certified by PPA; exhibited at ...; 8 years running workshops at ..."></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="t-links">Links to your work or a sample class (optional, up to 3)</label>
+                <textarea id="t-links" class="form-input" rows="2" maxlength="900" placeholder="https://… one per line"></textarea>
+              </div>
+              <div id="t-safety" hidden>
+                <div class="form-group">
+                  <label class="form-label" for="t-safety-plan">How you keep people safe in person *</label>
+                  <textarea id="t-safety-plan" class="form-input" rows="3" maxlength="600" placeholder="e.g., I call off sessions in lightning or high wind, meet in public places, carry a first-aid kit and share an emergency contact."></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="t-firstaid">First-aid training *</label>
+                  <select id="t-firstaid" class="form-input">
+                    <option value="">Select...</option><option value="current">Current</option><option value="expired">Lapsed</option><option value="none">None</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="t-insurance">Liability insurance *</label>
+                  <select id="t-insurance" class="form-input">
+                    <option value="">Select...</option><option value="yes">Yes</option><option value="no">No</option><option value="not_sure">Not sure</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="t-languages">Languages you teach in</label>
+                  <input type="text" id="t-languages" class="form-input" maxlength="80" placeholder="English">
+                </div>
+              </div>
+              <div class="form-group">
+                <span class="form-label">Does any session involve… (tick all that apply)</span>
+                <div class="choice-row">
+                  <label class="choice"><input type="checkbox" name="t-risk" value="water"> Water</label>
+                  <label class="choice"><input type="checkbox" name="t-risk" value="heights"> Heights or climbing</label>
+                  <label class="choice"><input type="checkbox" name="t-risk" value="vehicles"> Driving or boating people</label>
+                  <label class="choice"><input type="checkbox" name="t-risk" value="food"> Food</label>
+                  <label class="choice"><input type="checkbox" name="t-risk" value="alcohol"> Alcohol</label>
+                  <label class="choice"><input type="checkbox" name="t-risk" value="strenuous"> Strenuous exercise</label>
+                </div>
+                <p class="form-hint">Any of these needs liability insurance; Kaayko asks for the certificate before your first lesson goes live.</p>
+              </div>
+              <label class="checkbox-group" id="t-bgcheck-row" hidden>
+                <input type="checkbox" id="t-bgcheck">
+                <span class="checkbox-label">I will complete a background check if Kaayko asks, because my classes can include under-18s.</span>
+              </label>
+              <label class="checkbox-group">
+                <input type="checkbox" id="t-attests">
+                <span class="checkbox-label">I am 18 or over. I teach every session myself (any assistant is named in the listing), take every payment through Kaayko, and never offer anything in return for a rating.</span>
+              </label>
+            </div>
+
             <div class="form-group">
-              <label class="form-label" for="otherPlatforms">Other Selling Platforms</label>
-              <input type="text" id="otherPlatforms" class="form-input" placeholder="e.g., Amazon, Etsy, own website">
-              <p class="form-hint">Helps us understand your e-commerce experience</p>
+              <label class="form-label" for="otherPlatforms">Where else you sell or teach (optional)</label>
+              <input type="text" id="otherPlatforms" class="form-input" placeholder="e.g., Etsy, Airbnb, your own website">
             </div>
-            
+
             <div class="form-actions">
               <button type="button" class="btn btn-secondary" onclick="prevStep()">
                 <span class="material-icons" style="font-size: 18px;">arrow_back</span>
@@ -965,8 +1063,8 @@
             <label class="checkbox-group">
               <input type="checkbox" id="termsAgree" required>
               <span class="checkbox-label">
-                I agree to the <a href="/legal/terms" target="_blank" rel="noopener">Seller Terms & Conditions</a> 
-                and understand that all products must meet Kaayko's quality standards.
+                I agree to the <a href="/legal/kreator-terms" target="_blank" rel="noopener">Kreator Seller Terms</a>:
+                a 15% commission, monthly payouts through Stripe, and buyer ratings after each order or lesson.
               </span>
             </label>
             
@@ -1052,10 +1150,44 @@
     
     let currentStep = 1;
     const totalSteps = 4;
-    
+    // The Kreator Seller Terms this page shows (kaayko-api config/kreatorTerms.js).
+    const TERMS_VERSION = '2026-10-27';
+    const GOODS = ['apparel', 'souvenirs', 'art', 'drinkware', 'sports', 'other'];
+    const chosen = () => [...document.querySelectorAll('input[name="categories"]:checked')].map((c) => c.value);
+    const formats = () => [...document.querySelectorAll('input[name="t-format"]:checked')].map((i) => i.value);
+    const val = (id) => document.getElementById(id).value.trim();
+
+    // Goods questions for makers, teaching questions for teachers; both for both.
+    function syncSections() {
+      const cats = chosen();
+      const f = formats();
+      document.getElementById('goods-ops').hidden = !cats.some((c) => GOODS.includes(c));
+      document.getElementById('teaching').hidden = !cats.includes('lessons');
+      document.getElementById('t-area-group').hidden = !f.includes('in_person');
+      document.getElementById('t-safety').hidden = !f.includes('in_person');
+      document.getElementById('t-platform-group').hidden = !f.includes('online');
+      document.getElementById('t-bgcheck-row').hidden = val('t-audience') !== 'with_guardian';
+    }
+    document.querySelectorAll('input[name="t-format"]').forEach((i) => i.addEventListener('change', syncSections));
+    document.getElementById('t-audience').addEventListener('change', syncSections);
+
+    function readTeaching() {
+      return {
+        subjects: val('t-subjects'), practiceYears: val('t-practice'), teachingYears: val('t-teaching'),
+        formats: formats(), serviceArea: val('t-area'), onlinePlatform: val('t-platform') || null,
+        groupSize: val('t-group'), audience: val('t-audience'), sessionOutline: val('t-outline'),
+        credentials: val('t-credentials'), sampleLinks: val('t-links').split(/\s+/).filter(Boolean),
+        safetyPlan: val('t-safety-plan'), firstAid: val('t-firstaid') || null, insurance: val('t-insurance'),
+        languages: val('t-languages') || 'English', backgroundCheckOk: document.getElementById('t-bgcheck').checked,
+        risks: [...document.querySelectorAll('input[name="t-risk"]:checked')].map((i) => i.value),
+        attests: document.getElementById('t-attests').checked
+      };
+    }
+
     // Navigation functions
     window.nextStep = function() {
       if (!validateCurrentStep()) return;
+      syncSections();
       
       if (currentStep < totalSteps) {
         document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.remove('active');
@@ -1145,26 +1277,33 @@
       }
       
       if (currentStep === 3) {
-        const location = document.getElementById('location').value.trim();
-        const shippingCapability = document.getElementById('shippingCapability').value;
-        const fulfillmentTime = document.getElementById('fulfillmentTime').value;
-        const inventoryManagement = document.getElementById('inventoryManagement').value;
-        
-        if (!location) {
-          showError('Please enter your business location');
-          return false;
+        if (val('city').length < 2) { showError('Please enter your city'); return false; }
+        if (!val('state')) { showError('Please choose your state'); return false; }
+        const cats = chosen();
+        if (cats.some((c) => GOODS.includes(c))) {
+          if (!val('fulfillmentTime')) { showError('Please say how soon you ship'); return false; }
+          if (!val('inventoryManagement')) { showError('Please say how you make your pieces'); return false; }
+          if (!document.getElementById('agreedToShip').checked) { showError('Please agree to ship your own orders, with tracking, within 5 business days'); return false; }
         }
-        if (!shippingCapability) {
-          showError('Please select your shipping capability');
-          return false;
-        }
-        if (!fulfillmentTime) {
-          showError('Please select your typical fulfillment time');
-          return false;
-        }
-        if (!inventoryManagement) {
-          showError('Please select your inventory management approach');
-          return false;
+        if (cats.includes('lessons')) {
+          const t = readTeaching();
+          const need = [
+            [t.subjects.length >= 3, 'Please say what you teach'],
+            [t.practiceYears && t.teachingYears, 'Please say how long you have practised and taught it'],
+            [t.formats.length, 'Please choose in person, online, or both'],
+            [!t.formats.includes('in_person') || t.serviceArea.length >= 2, 'Please say where you teach in person'],
+            [!t.formats.includes('online') || t.onlinePlatform, 'Please choose the video tool you teach on'],
+            [t.groupSize && t.audience, 'Please choose a group size and who it is for'],
+            [t.sessionOutline.length >= 80, 'Please walk us through a typical session (at least 80 characters)'],
+            [!t.formats.includes('in_person') || (t.safetyPlan.length >= 30 && t.firstAid), 'Please say how you keep people safe in person, and your first-aid training'],
+            [t.insurance, 'Please say whether you carry liability insurance'],
+            [!t.risks.length || t.insurance === 'yes', 'Lessons with water, heights, vehicles, food, alcohol or strenuous exercise need liability insurance'],
+            [t.attests, 'Please confirm you teach every session yourself, take every payment through Kaayko, and never offer anything for a rating'],
+            [t.audience !== 'with_guardian' || t.backgroundCheckOk, 'Teaching under-18s needs your agreement to a background check if Kaayko asks'],
+            [t.sampleLinks.length <= 3 && t.sampleLinks.every((u) => /^https:\/\//.test(u)), 'Links must start with https://, at most three']
+          ];
+          const miss = need.find(([ok]) => !ok);
+          if (miss) { showError(miss[1]); return false; }
         }
       }
       
@@ -1228,13 +1367,17 @@
         priceRange: document.getElementById('priceRange').value,
         productDescription: document.getElementById('productDescription').value.trim(),
         
-        // Operations
-        location: document.getElementById('location').value.trim(),
-        shippingCapability: document.getElementById('shippingCapability').value,
-        fulfillmentTime: document.getElementById('fulfillmentTime').value,
-        inventoryManagement: document.getElementById('inventoryManagement').value,
-        yearsInBusiness: document.getElementById('yearsInBusiness').value || null,
-        otherPlatforms: document.getElementById('otherPlatforms').value.trim() || null,
+        // Where (United States only, for now), and how it reaches people
+        city: val('city'),
+        state: val('state'),
+        country: 'US',
+        ...(categories.some((c) => GOODS.includes(c)) ? {
+          fulfillmentTime: val('fulfillmentTime'),
+          inventoryManagement: val('inventoryManagement'),
+          agreedToShip: document.getElementById('agreedToShip').checked
+        } : {}),
+        ...(categories.includes('lessons') ? { teaching: readTeaching() } : {}),
+        otherPlatforms: val('otherPlatforms') || null,
         
         // Additional
         hearAboutUs: document.getElementById('hearAboutUs').value || null,
@@ -1242,6 +1385,7 @@
         
         // Agreements
         agreedToTerms: true,
+        termsVersion: TERMS_VERSION,
         confirmedAuthenticity: true,
         
         // Metadata

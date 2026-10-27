@@ -115,9 +115,21 @@ function lessonFacts(product) {
   const sessionsRow = sessions.length
     ? `<div><dt>${sessions.length === 1 ? "Session" : "Sessions"}</dt><dd>${dates.join("<br>")}${more}${sessions.length > 1 ? "<br><span class=\"pdp-lesson-hint\">Pick one below.</span>" : ""}</dd></div>`
     : row("Sessions", "None open right now");
+  const LEVEL = { all: "All levels", beginner: "Beginner", intermediate: "Intermediate", advanced: "Advanced" };
+  const forWhom = l.audience === "with_guardian" ? "All ages; under-18s come with a parent or guardian" : "Adults (18+)";
+  // The API sends a rating only once it is fair to show (5 verified ratings, two sessions),
+  // as a snapshot renewed every few ratings.
+  const rating = product.rating
+    ? `${product.rating.average.toFixed(1)} / 5 from ${product.rating.count} people who came`
+    : "";
   return `<dl class="pdp-lesson">
       ${row("Length", length)}
       ${row("Where", where)}
+      ${row("Level", LEVEL[l.level] || "")}
+      ${row("Who", forWhom)}
+      ${row("Bring", l.bring || "")}
+      ${l.language && l.language !== "English" ? row("Taught in", l.language) : ""}
+      ${row("Rated", rating)}
       ${sessionsRow}
     </dl>`;
 }
@@ -178,6 +190,7 @@ function renderProduct(product, openModalFn) {
         <p class="pdp-eyebrow">${esc(eyebrowFor(product))}</p>
         <h1 class="pdp-title">${esc(product.title)}</h1>
         ${product.byMaker && product.storeSlug ? `<p class="pdp-seller">Sold by <a href="/store?store=${encodeURIComponent(product.storeSlug)}">${esc(product.storeName || "an independent maker")}</a>, an independent maker</p>` : ""}
+        ${product.byMaker && !isLessonItem(product) && product.rating ? `<p class="pdp-seller">Rated ${product.rating.average.toFixed(1)} / 5 by ${product.rating.count} buyers</p>` : ""}
         ${copy.hook ? `<p class="pdp-hook">${esc(copy.hook)}</p>` : ""}
         <p class="pdp-price">${priceSpan(cents)}</p>
         <p class="pdp-fx-charge" data-charge-cents="${cents || ''}" data-charge-style="pdp" hidden></p>

@@ -76,3 +76,8 @@
 .kreators-compare h4 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); }
 .kreators-bio { border-left: 3px solid var(--gold-primary); padding: 8px 12px; margin: 12px 0; }
 .kreators-bio p { margin: 0 0 6px; font-size: 13px; color: var(--text-secondary); overflow-wrap: anywhere; }
+
+/* A teacher's answers (27 Oct 2026) */
+.kreators-subhead { margin: 16px 0 8px; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-secondary); }
+.kreators-flag { margin-left: 8px; padding: 2px 8px; border-radius: 999px; font-size: 11px; text-transform: none; letter-spacing: 0; background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+.kreators-note { font-size: 12px; color: var(--text-secondary); align-self: center; }

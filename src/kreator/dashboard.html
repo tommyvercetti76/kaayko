@@ -613,6 +613,24 @@
     .session-row small { color: var(--text-muted); }
     .session-row.is-cancelled { opacity: 0.6; }
     .session-row .btn { padding: 4px 10px; font-size: 12px; flex: none; }
+    .ship-box { margin-top: 10px; padding: 10px 12px; border: 1px solid var(--border, rgba(255,255,255,0.1)); border-radius: 10px; display: grid; gap: 8px; font-size: 13px; }
+    .ship-box.is-late { border-color: #ef4444; }
+    .ship-by { font-weight: 600; }
+    .ship-box.is-late .ship-by { color: #ef4444; }
+    .ship-form { display: grid; grid-template-columns: 110px 1fr auto; gap: 8px; align-items: center; }
+    @media (max-width: 520px) { .ship-form { grid-template-columns: 1fr; } }
+    .payout-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .payout-paused { margin-top: 12px; padding: 10px 12px; border-left: 3px solid #d9a441; background: rgba(217,164,65,0.08); }
+    #payout-terms a { color: var(--gold-primary); }
+    .payout-line { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border, rgba(255,255,255,0.08)); font-size: 13px; flex-wrap: wrap; }
+    .payout-line > span:last-child { color: var(--text-muted); }
+    .rating-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
+    .rating-big { font-size: 34px; }
+    .rating-aspects { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin-bottom: 8px; }
+    .rating-aspect { display: flex; justify-content: space-between; padding: 8px 10px; border: 1px solid var(--border, rgba(255,255,255,0.08)); border-radius: 8px; font-size: 13px; }
+    .rating-item { padding: 10px 0; border-bottom: 1px solid var(--border, rgba(255,255,255,0.08)); font-size: 13px; }
+    .rating-comment { margin: 6px 0; font-style: italic; overflow-wrap: anywhere; }
+    .rating-flag { color: #ef4444; font-weight: 600; }
     .session-more { display: grid; gap: 6px; }
     .session-more > summary { cursor: pointer; font-size: 13px; color: var(--text-muted); }
     .session-more[open] > summary { margin-bottom: 6px; }
@@ -863,7 +881,11 @@
         </a>
         <a href="#" class="nav-item" data-view="earnings">
           <span class="nav-icon material-icons">payments</span>
-          <span>Earnings</span>
+          <span>Payouts</span>
+        </a>
+        <a href="#" class="nav-item" data-view="ratings">
+          <span class="nav-icon material-icons">star_rate</span>
+          <span>Ratings</span>
         </a>
         <a href="#" class="nav-item" data-view="profile">
           <span class="nav-icon material-icons">person</span>
@@ -954,9 +976,9 @@
           </div>
           <div class="stat-card">
             <div class="stat-icon">💰</div>
-            <div class="stat-label">Sales</div>
+            <div class="stat-label">You earn</div>
             <div class="stat-value" id="stat-revenue">$0.00</div>
-            <div class="stat-change">This month, after discounts</div>
+            <div class="stat-change">This month: 85% of the price, less refunds</div>
           </div>
           <div class="stat-card">
             <div class="stat-icon">🟢</div>
@@ -1000,8 +1022,8 @@
               <span class="material-icons">account_balance</span>
             </div>
             <div class="quick-action-text">
-              <h4>Earnings</h4>
-              <p>Sales to date</p>
+              <h4>Payouts</h4>
+              <p>What you earn, and when Stripe pays it</p>
             </div>
           </a>
         </div>
@@ -1138,22 +1160,22 @@
         <header class="view-header">
           <div>
             <h1>Orders</h1>
-            <p>Every sale of your pieces. Kaayko holds the buyer's details and arranges delivery with you.</p>
+            <p>Every sale of your pieces and every booking. You ship your own pieces within 5 business days and add the tracking here; the buyer is emailed it.</p>
           </div>
         </header>
         
         <div class="stats-grid" style="margin-bottom: var(--space-xl);">
           <div class="stat-card">
-            <div class="stat-icon">⏳</div>
-            <div class="stat-label">Processing</div>
+            <div class="stat-icon">📦</div>
+            <div class="stat-label">To ship</div>
             <div class="stat-value" id="orders-pending">0</div>
-            <div class="stat-change">Paid, not yet shipped</div>
+            <div class="stat-change">Paid, waiting for your tracking</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon">📦</div>
-            <div class="stat-label">Ready to ship</div>
+            <div class="stat-icon">⏰</div>
+            <div class="stat-label">Late</div>
             <div class="stat-value" id="orders-processing">0</div>
-            <div class="stat-change">Packed</div>
+            <div class="stat-change">Past the 5-business-day ship-by</div>
           </div>
           <div class="stat-card">
             <div class="stat-icon">🚚</div>
@@ -1180,40 +1202,75 @@
         </div>
       </div>
       
-      <!-- Earnings View -->
+      <!-- Payouts View (Seller Terms 3–6) -->
       <div id="earnings-view" class="view">
         <header class="view-header">
           <div>
-            <h1>Earnings</h1>
-            <p>Track your revenue and payouts</p>
+            <h1>Payouts</h1>
+            <p id="payout-terms">Kaayko keeps 15% of the price and pays the card fees and its own discount codes. You are paid monthly, through Stripe, for pieces shipped and lessons held at least 37 days before the statement.</p>
           </div>
         </header>
-        
+
+        <div class="card" style="margin-bottom: var(--space-lg);">
+          <div class="card-body payout-account" id="payout-account">
+            <p class="product-note">Loading…</p>
+          </div>
+        </div>
+
         <div class="stats-grid" style="margin-bottom: var(--space-xl);">
           <div class="stat-card">
-            <div class="stat-icon">📈</div>
-            <div class="stat-label">This Month</div>
-            <div class="stat-value" id="earnings-month">$0.00</div>
-            <div class="stat-change">Sales after discounts and refunds</div>
+            <div class="stat-icon">📦</div>
+            <div class="stat-label">Waiting to ship</div>
+            <div class="stat-value" id="pay-awaiting">$0.00</div>
+            <div class="stat-change">Earned once you add tracking</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon">💰</div>
-            <div class="stat-label">All Time</div>
-            <div class="stat-value" id="earnings-total">$0.00</div>
-            <div class="stat-change">Sales after discounts and refunds</div>
+            <div class="stat-icon">🗓️</div>
+            <div class="stat-label">Upcoming</div>
+            <div class="stat-value" id="pay-upcoming">$0.00</div>
+            <div class="stat-change" id="pay-next">Shipped or held, inside 37 days</div>
           </div>
+          <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-label">Next statement</div>
+            <div class="stat-value" id="pay-ready">$0.00</div>
+            <div class="stat-change">Paid in the next monthly payout</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">💸</div>
+            <div class="stat-label">Paid to you</div>
+            <div class="stat-value" id="pay-paid">$0.00</div>
+            <div class="stat-change" id="pay-held">All time</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom: var(--space-lg);">
+          <div class="card-header"><h3 class="section-title">Statements</h3></div>
+          <div class="card-body" id="payout-statements"><p class="product-note">None yet. The first one is drafted on the 1st of the month after a piece clears its 37 days.</p></div>
         </div>
         <div class="card">
-          <div class="card-body">
-            <div class="empty-state" style="padding: var(--space-lg);">
-              <span class="material-icons" style="font-size: 36px;">account_balance_wallet</span>
-              <h3 style="font-size: 14px;">Payouts are not in the dashboard yet</h3>
-              <p style="font-size: 12px;">These figures are what shoppers paid for your pieces. Kaayko arranges payment for your sales with you directly.</p>
-            </div>
-          </div>
+          <div class="card-header"><h3 class="section-title">Line by line</h3></div>
+          <div class="card-body" id="payout-lines"><p class="product-note">Nothing earned yet.</p></div>
         </div>
       </div>
-      
+
+      <!-- Ratings View -->
+      <div id="ratings-view" class="view">
+        <header class="view-header">
+          <div>
+            <h1>Ratings</h1>
+            <p>Kaayko asks everyone who books or buys from you how it went: whether it happened as promised, overall, and a few specifics.</p>
+          </div>
+        </header>
+        <div class="card" style="margin-bottom: var(--space-lg);">
+          <div class="card-body" id="ratings-summary"><p class="product-note">Loading…</p></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3 class="section-title">How it works</h3></div>
+          <div class="card-body" id="ratings-recent"><p class="product-note">Loading…</p></div>
+        </div>
+      </div>
+
       <!-- Profile View -->
       <div id="profile-view" class="view">
         <header class="view-header">
@@ -1566,6 +1623,8 @@
       sidebar.classList.remove('open');
       if (location.hash.slice(1) !== viewId) history.replaceState(null, '', viewId === 'dashboard' ? location.pathname : `#${viewId}`);
       if (viewId === 'qr' && typeof loadQrCodes === 'function') loadQrCodes();
+      if (viewId === 'earnings' && typeof loadPayouts === 'function') loadPayouts();
+      if (viewId === 'ratings' && typeof loadRatings === 'function') loadRatings();
     }
     
     document.querySelectorAll('[data-view]').forEach(el => {
@@ -1575,6 +1634,10 @@
       });
     });
     window.addEventListener('hashchange', () => switchView(location.hash.slice(1) || 'dashboard'));
+    // Stripe sends people back to ?payouts=done|again#earnings. Read it before the first view loads
+    // (on 'again' the payouts view asks for a fresh link itself) and drop it so a reload does not repeat it.
+    let payoutReturn = new URLSearchParams(location.search).get('payouts');
+    if (payoutReturn) history.replaceState(null, '', `${location.pathname}#earnings`);
     switchView(location.hash.slice(1) || 'dashboard');
     
     document.getElementById('mobile-menu-toggle').addEventListener('click', () => {
@@ -1604,6 +1667,7 @@
         && latest && latest.note && !['approved', 'changes-approved'].includes(latest.outcome) ? latest : null;
       const status = p.sellerSuspended ? ['inactive', 'Shop suspended']
         : p.adminHidden ? ['inactive', 'Paused by Kaayko']
+        : p.bookingPaused ? ['inactive', 'Bookings paused by Kaayko']
         : p.reviewStatus === 'pending' ? ['inactive', 'In review']
         : p.reviewStatus === 'rejected' ? ['inactive', 'Sent back']
         : p.isAvailable ? ['active', 'Live'] : ['inactive', 'Hidden'];
@@ -1611,6 +1675,7 @@
         <p class="product-price">${typeof p.actualPrice === 'number' ? `$${p.actualPrice.toFixed(2)}` : ''}</p>
         <span class="product-status ${status[0]}">${status[1]}</span>
         ${p.pendingReview ? `<p class="product-note">Your latest changes are waiting for review; this version stays on sale.</p>` : ''}
+        ${p.bookingPaused ? `<p class="product-note">New bookings are paused while Kaayko looks into a report; people already booked keep their place. Kaayko will be in touch.</p>` : ''}
         ${p.qrLink && p.qrStatus === 'ready' ? `<p class="product-qr">QR: <a href="#qr" data-view="qr">${esc(p.qrLink.replace('https://', ''))}</a></p>` : ''}
         ${p.reviewNote ? `<p class="product-note">Kaayko: ${esc(p.reviewNote)}</p>`
           : lastNote ? `<p class="product-note">Kaayko's last note (${esc(String(lastNote.at || '').slice(0, 10))}): ${esc(lastNote.note)}</p>` : ''}`;
@@ -1749,14 +1814,48 @@
       const what = l.lesson
         ? `${esc(l.productTitle)} · ${esc(l.lesson.label || l.option || '')} · ${esc(l.quantity)} seat${l.quantity === 1 ? '' : 's'}${l.attendee ? ` · ${esc(l.attendee)}` : ''}`
         : `${esc(l.productTitle)} · ${esc(l.option || 'One Size')} × ${esc(l.quantity)}`;
+      // A piece of yours waiting to ship: where it goes, by when, and the tracking form.
+      const a = l.shipTo;
+      const ship = a ? `<div class="ship-box${l.late ? ' is-late' : ''}">
+          <div class="ship-to"><strong>Ship to</strong><br>${esc(a.name || '')}<br>${esc(a.line1 || '')}${a.line2 ? `<br>${esc(a.line2)}` : ''}<br>${esc([a.city, a.state].filter(Boolean).join(', '))} ${esc(a.postalCode || '')}</div>
+          <div class="ship-by">${l.late ? 'Late — was due' : 'Ship by'} ${esc(l.shipBy ? new Date(l.shipBy).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'America/Los_Angeles' }) : '')} (end of day, Pacific)</div>
+          <form class="ship-form" data-line="${esc(l.lineId)}">
+            <select class="form-input" name="carrier" aria-label="Carrier"><option value="usps">USPS</option><option value="ups">UPS</option><option value="fedex">FedEx</option><option value="dhl">DHL</option><option value="other">Other</option></select>
+            <input class="form-input" name="tracking" placeholder="Tracking number" aria-label="Tracking number" required minlength="6" maxlength="40" autocomplete="off">
+            <button class="btn btn-primary btn-sm" type="submit">Mark shipped</button>
+          </form>
+        </div>` : '';
+      const tracking = l.tracking ? ` · ${l.tracking.url ? `<a href="${esc(l.tracking.url)}" target="_blank" rel="noopener">${esc(l.tracking.number)}</a>` : esc(l.tracking.number)}` : '';
       row.innerHTML = `<div class="activity-icon info"><span class="material-icons">${l.lesson ? 'event' : 'shopping_bag'}</span></div>
         <div class="activity-content">
-          <div class="activity-text">${what} — ${money(l.netCents)}</div>
-          <div class="activity-time">${esc(l.orderNumber || '')} · ${esc(String(l.status).replace(/_/g, ' '))} · ${esc(when)}</div>
+          <div class="activity-text">${what} — you earn ${money(l.netCents)}</div>
+          <div class="activity-time">${esc(l.orderNumber || '')} · ${esc(String(l.status).replace(/_/g, ' '))} · ${esc(when)}${tracking}</div>
+          ${ship}
         </div>`;
       return row;
     }
-    
+
+    // Mark shipped: the buyer gets the tracking email; the 37-day payout clock starts.
+    // On the document: the form appears under Recent orders on the home view too.
+    document.addEventListener('submit', async (e) => {
+      const form = e.target.closest('.ship-form');
+      if (!form) return;
+      e.preventDefault();
+      const btn = form.querySelector('button');
+      btn.disabled = true;
+      try {
+        const res = await authed(`/kreators/orders/${encodeURIComponent(form.dataset.line)}/ship`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ carrier: form.carrier.value, trackingNumber: form.tracking.value.trim() }) });
+        const body = await res.json().catch(() => ({}));
+        if (!body.success) throw new Error(body.message || 'It was not marked shipped');
+        loadOrders();
+        loadPayouts();
+      } catch (err) {
+        btn.disabled = false;
+        alert(err.message);
+      }
+    });
+
     async function loadOrders() {
       try {
         const response = await authed('/kreators/orders');
@@ -1766,11 +1865,9 @@
         document.getElementById('orders-count').textContent = totals.orders;
         document.getElementById('stat-orders').textContent = totals.monthOrders;
         document.getElementById('stat-revenue').textContent = money(totals.monthNetCents);
-        document.getElementById('earnings-month').textContent = money(totals.monthNetCents);
-        document.getElementById('earnings-total').textContent = money(totals.netCents);
         const count = (...st) => lines.filter(l => st.includes(l.status)).length;
-        document.getElementById('orders-pending').textContent = lines.filter(l => /^processing/.test(String(l.status))).length;
-        document.getElementById('orders-processing').textContent = count('ready_to_ship');
+        document.getElementById('orders-pending').textContent = lines.filter(l => l.shipTo).length;
+        document.getElementById('orders-processing').textContent = lines.filter(l => l.shipTo && l.late).length;
         document.getElementById('orders-shipped').textContent = count('shipped');
         document.getElementById('orders-completed').textContent = count('delivered');
         if (lines.length) {
@@ -1896,6 +1993,88 @@
     // Initialize
     loadUserData();
     loadProducts();
+    // Payouts (Seller Terms 5–6): Stripe Express set-up, what is earned and when, statements.
+    const PAY_STATE = {
+      not_started: ['Set up payouts', 'Kaayko pays you through Stripe. Set-up takes a few minutes on Stripe\'s own page: your bank account and identity, which Kaayko never sees.'],
+      incomplete: ['Finish setting up payouts', 'Stripe still needs a few details before it can pay you.'],
+      verifying: ['Check your payout set-up', 'Stripe is checking your details. If it needs anything more, it is listed on Stripe\'s page.'],
+      ready: ['Open your Stripe dashboard', 'Payouts are set up. Stripe sends what Kaayko transfers to your bank on your account\'s schedule.'],
+      action_needed: ['Update your payout details', 'Stripe needs something more from you before it can pay you. Your statements wait until it is done.'],
+      rejected: ['Email Kaayko', 'Stripe could not verify this payout account, so it cannot be paid. Write to help@kaayko.com and Kaayko will sort it out with you.'],
+      unavailable: ['Try again', 'Stripe did not answer just now.']
+    };
+    async function loadPayouts() {
+      try {
+        const res = await authed('/kreators/payouts');
+        const body = await res.json();
+        if (!body.success) throw new Error(body.message || 'Payouts did not load');
+        const d = body.data;
+        const [label, note] = PAY_STATE[d.account.state] || PAY_STATE.unavailable;
+        const state = d.account.state;
+        const action = state === 'ready' ? 'dashboard' : 'onboard';
+        const head = { ready: 'Payouts are on', action_needed: 'Payouts need your attention', rejected: 'Payouts cannot be made to this account' }[state] || 'Payouts are not set up yet';
+        const button = state === 'rejected'
+          ? `<a class="btn btn-primary" href="mailto:help@kaayko.com?subject=${encodeURIComponent('My payout account')}">${esc(label)}</a>`
+          : `<button type="button" class="btn ${state === 'ready' ? 'btn-secondary' : 'btn-primary'}" id="payout-go" data-go="${action}">${esc(label)}</button>`;
+        document.getElementById('payout-account').innerHTML = `<div class="payout-row"><div><strong>${esc(head)}</strong><p class="product-note">${esc(note)}${d.account.due ? ` ${d.account.due} item${d.account.due === 1 ? '' : 's'} still needed.` : ''}</p></div>${button}</div>
+          ${d.paused ? '<p class="product-note payout-paused">Your payouts are paused while Kaayko looks into a buyer\'s report. Kaayko will be in touch.</p>' : ''}`;
+        // Back from Stripe with an expired set-up link: ask for a fresh one straight away.
+        if (payoutReturn === 'again' && ['not_started', 'incomplete', 'action_needed'].includes(state)) { payoutReturn = null; document.getElementById('payout-go')?.click(); }
+        payoutReturn = null;
+        document.getElementById('payout-terms').innerHTML = `Kaayko keeps ${d.terms.commissionPct}% of the price and pays the card fees and its own discount codes. A sale is payable ${d.terms.payoutDelayDays} days after it ships or the lesson starts, and is paid with the next monthly statement, through Stripe. <a href="${esc(d.terms.url)}" target="_blank" rel="noopener">The Kreator Seller Terms</a>.`;
+        document.getElementById('pay-awaiting').textContent = money(d.sums.awaiting);
+        document.getElementById('pay-upcoming').textContent = money(d.sums.upcoming);
+        document.getElementById('pay-next').textContent = d.nextEligibleAt ? `Next clears ${new Date(d.nextEligibleAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}` : 'Shipped or held, inside 37 days';
+        document.getElementById('pay-ready').textContent = money(d.sums.ready + d.sums.inStatement);
+        document.getElementById('pay-paid').textContent = money(d.sums.paid);
+        document.getElementById('pay-held').textContent = d.sums.held ? `${money(d.sums.held)} on hold while Kaayko looks into something` : 'All time';
+        document.getElementById('payout-statements').innerHTML = d.statements.length
+          ? d.statements.map((x) => `<div class="payout-line"><span>${esc(x.period)} · ${esc(x.entries)} item${x.entries === 1 ? '' : 's'}</span><span>${money(x.totalCents)} · ${esc({ draft: 'being prepared', paying: 'being sent', paid: 'paid', empty: 'nothing to pay' }[x.status] || x.status)}</span></div>`).join('')
+          : '<p class="product-note">None yet. The first one is drafted on the 1st of the month after a piece clears its 37 days.</p>';
+        const STATUS = { awaiting_fulfilment: 'waiting to ship', scheduled: 'upcoming', in_statement: 'in a statement', paid: 'paid', void: 'refunded' };
+        document.getElementById('payout-lines').innerHTML = d.lines.length
+          ? d.lines.map((x) => `<div class="payout-line"><span>${esc(x.orderNumber || '')} · ${esc(x.productTitle)}${x.kind === 'adjustment' ? ` · correction (${esc(x.reason || '')})` : x.grossCents ? ` · ${money(x.grossCents)} less ${money(x.commissionCents)}` : ''}</span><span>${money(x.netCents)} · ${esc(x.held ? 'on hold: a card dispute' : x.status === 'void' && /chargeback/i.test(x.reason || '') ? 'chargeback' : STATUS[x.status] || x.status)}${x.status === 'scheduled' && x.eligibleAt ? ` from ${esc(new Date(x.eligibleAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }))}` : ''}</span></div>`).join('')
+          : '<p class="product-note">Nothing earned yet.</p>';
+      } catch (err) {
+        document.getElementById('payout-account').innerHTML = `<p class="product-note">${esc(err.message)}</p>`;
+      }
+    }
+    document.getElementById('earnings-view')?.addEventListener('click', async (e) => {
+      const b = e.target.closest('#payout-go');
+      if (!b) return;
+      b.disabled = true;
+      try {
+        const res = await authed(`/kreators/payouts/${b.dataset.go}`, { method: 'POST' });
+        const body = await res.json().catch(() => ({}));
+        if (!body.success || !body.data?.url) throw new Error(body.message || 'Stripe did not answer. Try again in a minute.');
+        location.href = body.data.url;
+      } catch (err) {
+        b.disabled = false;
+        alert(err.message);
+      }
+    });
+
+    // Ratings: a snapshot of the averages, renewed every few ratings, so no one answer shows.
+    async function loadRatings() {
+      try {
+        const res = await authed('/kreators/ratings');
+        const body = await res.json();
+        if (!body.success) throw new Error(body.message || 'Ratings did not load');
+        const d = body.data;
+        const s = d.summary;
+        const aspect = (k, label) => (s && s.aspects && s.aspects[k] != null ? `<div class="rating-aspect"><span>${label}</span><strong>${s.aspects[k].toFixed(1)} / 4</strong></div>` : '');
+        const standingNote = d.standing === 'review' ? ' Kaayko is looking into a recent report and will be in touch.' : d.standing === 'watch' ? ' Your ratings have slipped; Kaayko will be in touch with what buyers said.' : '';
+        document.getElementById('ratings-summary').innerHTML = s
+          ? `<div class="rating-head"><strong class="rating-big">${s.average.toFixed(1)}</strong><span>/ 5 from ${s.count} rating${s.count === 1 ? '' : 's'}</span></div>
+             <div class="rating-aspects">${aspect('accuracy', 'As described')}${aspect('clarity', 'Clear teaching')}${aspect('organisation', 'Organised, on time')}${aspect('quality', 'Quality')}${aspect('value', 'Worth the price')}</div>
+             <p class="product-note">Shoppers see the average and count on each listing once it has its own ${d.minPublic}. These figures move every few ratings, never one at a time.${standingNote}</p>`
+          : `<p class="product-note">Your averages appear here once ${d.minPublic} different buyers have rated you (from ${d.minSessions} different sessions, for lessons), and then move every few ratings, so no single answer can be picked out.</p>`;
+        document.getElementById('ratings-recent').innerHTML = '<p class="product-note">Kaayko asks every buyer, once, about an hour and a half after a lesson ends, or ten days after you ship (or after your ship-by date). Individual answers and notes stay with Kaayko. Never offer anything for a rating or ask a buyer to change one: it is against the Kreator Seller Terms and US law.</p>';
+      } catch (err) {
+        document.getElementById('ratings-summary').innerHTML = `<p class="product-note">${esc(err.message)}</p>`;
+      }
+    }
+
     loadOrders();
     loadQrCodes();
   </script>

@@ -52,7 +52,7 @@ const FULFILLMENT_FOR = {
 const CARRIERS = ['USPS', 'UPS', 'FEDEX', 'DHL'];
 
 const FILTERS = [
-  { key: 'needs_action', label: 'Needs action', match: (s) => s === 'pending' || s === 'processing' },
+  { key: 'needs_action', label: 'Needs action', match: (s) => s === 'pending' || s === 'processing' || s === 'maker_late' },
   { key: 'pending',      label: 'New',          match: (s) => s === 'pending' },
   { key: 'processing',   label: 'Packing',      match: (s) => s === 'processing' },
   { key: 'shipped',      label: 'Shipped',      match: (s) => s === 'shipped' },
@@ -61,6 +61,8 @@ const FILTERS = [
   { key: 'cancelled',    label: 'Cancelled',    match: (s) => s === 'cancelled' },
   // Booked lessons (27 Oct 2026): nothing to pack, so never under Needs action.
   { key: 'booked',       label: 'Lessons',      match: (s) => s === 'booked' },
+  // Orders a maker ships themselves (Seller Terms 7): Kaayko acts only when one is late.
+  { key: 'maker',        label: 'Makers ship',  match: (s) => s === 'maker' || s === 'maker_late' },
   { key: 'all',          label: 'All',          match: () => true }
 ];
 
@@ -72,7 +74,9 @@ const STATUS_LABELS = {
   returned: 'Returned',
   cancelled: 'Cancelled',
   mixed: 'Part-shipped',
-  booked: 'Lesson booked'
+  booked: 'Lesson booked',
+  maker: 'Maker ships',
+  maker_late: 'Maker late'
 };
 
 const PAGE_SIZE = 100;
@@ -660,7 +664,8 @@ function orderCard(shipment) {
         <span class="order-item-qty">${escapeHtml(String(it.quantity || 1))}×</span>
         <span class="order-item-main">
           <span class="order-item-title">${escapeHtml(it.productTitle || 'Untitled product')}</span>
-          ${it.kreatorId ? `<span class="order-item-maker">Kreator: ${escapeHtml(it.storeName || 'an independent maker')}</span>` : ''}
+          ${it.kreatorId ? `<span class="order-item-maker">Kreator: ${escapeHtml(it.storeName || 'an independent maker')}${!it.lesson && it.shipBy && ['pending', 'processing'].includes(String(it.orderStatus || '').toLowerCase())
+            ? ` · ships by ${escapeHtml(new Date(it.shipBy).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'America/Los_Angeles' }))} (PT)${it.makerShipState === 'late' || Date.parse(it.shipBy) < Date.now() ? ' · LATE' : ''}` : ''}${!it.lesson && it.trackingNumber ? ` · tracking ${escapeHtml(it.trackingNumber)}` : ''}</span>` : ''}
           ${it.refundedCents > 0 ? `<span class="order-item-variant">Refunded ${escapeHtml(money(it.refundedCents, currency))}</span>` : ''}
           <span class="order-item-variant">${it.lesson
             ? `Lesson · ${escapeHtml(it.lesson.label || '')} · ${escapeHtml(it.lesson.format === 'online' ? 'Online' : (it.lesson.area || 'In person'))}`
@@ -784,7 +789,8 @@ function actionsFor(shipment, status, id) {
     buttons.push(btn('btn-secondary', 'Start packing', { action: 'status', status: 'processing', id }));
   }
   // A lesson only: no parcel. A buyer who cancels 48+ hours before gets a full refund.
-  if (status === 'booked') {
+  // A maker's pieces only: the maker ships; Kaayko steps in only to call it off.
+  if (status === 'booked' || status === 'maker' || status === 'maker_late') {
     buttons.push(btn('btn-danger', 'Cancel & refund', { action: 'cancel-open', id }));
   }
   if (status === 'pending' || status === 'processing' || status === 'mixed') {
@@ -877,7 +883,9 @@ function statusBadge(status) {
     delivered:  'badge-success',
     returned:   'badge-error',
     cancelled:  'badge-error',
-    mixed:      'badge-warning'
+    mixed:      'badge-warning',
+    maker:      'badge-info',
+    maker_late: 'badge-error'
   };
   const cls = map[status] || 'badge-info';
   return `<span class="badge ${cls} order-status">${escapeHtml(STATUS_LABELS[status] || status)}</span>`;
@@ -917,8 +925,18 @@ function findShipment(parentOrderId) {
 function statusOf(shipment) {
   const all = Array.isArray(shipment && shipment.items) ? shipment.items : [];
   // A lesson beside goods stays 'booked' for good: the goods say where the order is.
+  // Kaayko's own goods say it first; a maker ships theirs (27 Oct 2026), so an order of
+  // maker pieces only is 'maker' until shipped — or 'maker_late' past its ship-by date.
   const goods = all.filter((i) => !i.lesson);
-  const items = goods.length ? goods : all;
+  const house = goods.filter((i) => !i.kreatorId);
+  const items = house.length ? house : goods.length ? goods : all;
+  if (!house.length && goods.length) {
+    const open = goods.filter((i) => ['pending', 'processing', ''].includes(String(i.orderStatus || '').toLowerCase()));
+    if (open.length) {
+      const late = open.some((i) => i.makerShipState === 'late' || (i.shipBy && Date.parse(i.shipBy) < Date.now()));
+      return late ? 'maker_late' : 'maker';
+    }
+  }
   const statuses = [...new Set(items.map((i) => String(i.orderStatus || '').toLowerCase()).filter(Boolean))];
   if (statuses.length === 1) return statuses[0];
   if (statuses.length > 1) return 'mixed';
@@ -937,7 +955,7 @@ function applyLocalStatus(parentOrderId, status, extra) {
 function needsActionCount() {
   return shipments.filter((s) => {
     const st = statusOf(s);
-    return st === 'pending' || st === 'processing' || st === 'mixed';
+    return st === 'pending' || st === 'processing' || st === 'mixed' || st === 'maker_late';
   }).length;
 }
 

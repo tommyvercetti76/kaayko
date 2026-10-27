@@ -35,14 +35,141 @@ const TABS = [
   { key: 'rejected', label: 'Rejected', load: () => applications('rejected') },
   { key: 'sellers',  label: 'Sellers',  load: sellers },
   { key: 'live',     label: 'Live listings', load: () => listings('approved') },
+  { key: 'ratings',  label: 'Ratings',  load: ratingsTab },
+  { key: 'payouts',  label: 'Payouts',  load: payoutsTab },
 ];
+
+const usd = (cents) => `$${((Number(cents) || 0) / 100).toFixed(2)}`;
+const STANDING = { review: ['rejected', 'needs a look'], watch: ['pending', 'slipping'], good: ['approved', 'rated well'], new: ['expired', 'too few to say'] };
+const URGENT_LABEL = { no_show: 'Teacher did not come', cancelled: 'Moved or called off without notice', not_arrived: 'Never arrived', damaged: 'Arrived damaged', unsafe: 'Did not feel safe' };
+
+/** Buyers' ratings (27 Oct 2026): who needs a look, and the reports holding a payout. */
+async function ratingsTab() {
+  const d = await getJson('/kreators/admin/ratings');
+  const urgent = (d.urgent || []).map((r) => `
+    <article class="kreators-item">
+      <header class="kreators-item-head">
+        <div><h3>${escapeHtml(r.storeName || r.kreatorId)} · ${escapeHtml(r.productTitle || '')}${r.sessionLabel ? ` · ${escapeHtml(r.sessionLabel)}` : ''}</h3>
+          <p>Order ${escapeHtml(r.orderNumber || r.parentOrderId || '')} · ${escapeHtml(r.atMs ? new Date(r.atMs).toLocaleString() : '')} · overall ${escapeHtml(String(r.answers?.overall ?? '—'))}/5</p></div>
+        <span class="kreators-status kreators-status-rejected">${escapeHtml((r.flags || []).filter((f) => URGENT_LABEL[f]).map((f) => URGENT_LABEL[f]).join(' · '))}</span>
+      </header>
+      ${r.note ? `<p class="kreators-desc">“${escapeHtml(r.note)}”</p>` : ''}
+      <div class="kreators-actions">${(r.holds || []).length
+        ? `<button type="button" class="btn btn-secondary" data-act="release-rating" data-id="${escapeHtml(r.lineId)}" data-name="${escapeHtml((r.holds || []).join(','))}">Resolved — release the payout hold</button><span class="kreators-note">Refund it from Orders if the buyer is owed.</span>`
+        : r.urgentPending ? '<span class="kreators-flag">The payout hold has not been placed yet; it is retried every hour.</span>'
+        : (r.flags || []).some((f) => URGENT_LABEL[f] && !(r.resolvedFlags || []).includes(f))
+          ? `<button type="button" class="btn btn-secondary" data-act="resolve-rating" data-id="${escapeHtml(r.lineId)}">Mark resolved</button><span class="kreators-note">No payout held; this takes it out of their standing.</span>`
+          : '<span class="kreators-note">Resolved.</span>'}</div>
+    </article>`).join('');
+  const people = (d.kreators || []).map((k) => {
+    const s = k.summary;
+    const [cls, label] = STANDING[k.standing.level] || STANDING.new;
+    return `
+    <article class="kreators-item">
+      <header class="kreators-item-head">
+        <div><h3>${escapeHtml(k.storeName || k.kreatorId)}</h3><p>${escapeHtml(k.standing.reason || '')}</p></div>
+        <span class="kreators-status kreators-status-${cls}">${escapeHtml(label)}</span>
+      </header>
+      ${s ? `<dl class="kreators-rows">
+        ${row('Overall', escapeHtml(s.average != null ? `${s.average} / 5 from ${s.count} (${s.responses} answered)` : `${s.responses} answered, none scored`))}
+        ${row('3 stars or below', escapeHtml(s.lowPct != null ? `${s.lowPct}%` : ''))}
+        ${row('Would book again', escapeHtml(s.rebookPct != null ? `${s.rebookPct}%` : ''))}
+        ${row('As described', escapeHtml(s.aspects.accuracy != null ? `${s.aspects.accuracy} / 4` : ''))}
+        ${row('Clear teaching', escapeHtml(s.aspects.clarity != null ? `${s.aspects.clarity} / 4` : ''))}
+        ${row('Organised', escapeHtml(s.aspects.organisation != null ? `${s.aspects.organisation} / 4` : ''))}
+        ${row('Quality', escapeHtml(s.aspects.quality != null ? `${s.aspects.quality} / 4` : ''))}
+        ${row('Worth the price', escapeHtml(s.aspects.value != null ? `${s.aspects.value} / 4` : ''))}
+        ${row('Reports', escapeHtml(Object.entries(s.flags || {}).filter(([f]) => f !== 'low').map(([f, n]) => `${n} ${f.replace(/_/g, ' ')}`).join(', ')))}
+        ${row('Left out', escapeHtml([s.insiders && `${s.insiders} who know them`, s.missed && `${s.missed} who missed it`].filter(Boolean).join(', ')))}
+      </dl>` : ''}
+      ${k.lessonsPaused ? `<div class="kreators-actions"><span class="kreators-flag">New lesson bookings paused after a safety report</span><button type="button" class="btn btn-secondary" data-act="resume-lessons" data-uid="${escapeHtml(k.kreatorId)}">Resume bookings</button></div>`
+        : s && s.sessions ? `<div class="kreators-actions"><button type="button" class="btn btn-secondary" data-act="pause-lessons" data-uid="${escapeHtml(k.kreatorId)}">Pause lesson bookings</button><span class="kreators-note">People already booked keep their place; the teacher is emailed.</span></div>` : ''}
+    </article>`;
+  }).join('');
+  return `${urgent ? `<h4 class="kreators-subhead">Reports holding a payout</h4>${urgent}` : ''}<h4 class="kreators-subhead">Kreators by standing</h4>${people || empty('No ratings yet. Buyers are asked after each lesson ends and ten days after a maker ships.')}`;
+}
+
+/** Monthly statements (Seller Terms 5–6). Money moves only on Pay. */
+async function payoutsTab() {
+  const d = await getJson('/kreators/admin/payouts');
+  const READY = { ready: 'Stripe ready', verifying: 'Stripe verifying', incomplete: 'Stripe set-up unfinished', action_needed: 'Stripe needs more from them', rejected: 'Stripe REJECTED the account', not_started: 'no Stripe account', unavailable: 'Stripe unreachable' };
+  const rows = (d.statements || []).map((s) => `
+    <article class="kreators-item">
+      <header class="kreators-item-head">
+        <div><h3>${escapeHtml(s.storeName)} · ${escapeHtml(usd(s.totalCents))}</h3>
+          <p>${escapeHtml(s.period)} · ${escapeHtml(String(s.entries))} item${s.entries === 1 ? '' : 's'} · ${escapeHtml(READY[s.payoutsState] || s.payoutsState)}${s.transferId ? ` · ${escapeHtml(s.transferId)}` : ''}</p></div>
+        <span class="kreators-status kreators-status-${s.status === 'paid' ? 'approved' : s.status === 'draft' ? 'pending' : 'expired'}">${escapeHtml(s.status)}</span>
+      </header>
+      ${s.lastError ? `<p class="kreators-desc">Last try: ${escapeHtml(s.lastError)}</p>` : ''}
+      ${s.status === 'draft' || s.status === 'paying'
+        ? `<div class="kreators-actions"><button type="button" class="btn btn-primary" data-act="pay" data-id="${escapeHtml(s.id)}" data-name="${escapeHtml(s.storeName)}" data-limit="${escapeHtml(String(s.totalCents))}">${s.transferMade ? 'Finish recording this payout' : `Pay ${escapeHtml(usd(s.totalCents))}…`}</button>
+            ${s.transferMade ? '<span class="kreators-note">The transfer was made; pressing this only finishes the records. It never sends money twice.</span>' : s.reportOpen ? '<span class="kreators-flag">Paused: a buyer\'s report about this seller is open (Ratings tab). Pay refuses until it is resolved.</span>' : s.payoutsState === 'ready' ? '' : '<span class="kreators-note">Stripe set-up may be unfinished; Pay checks with Stripe first.</span>'}</div>` : ''}
+    </article>`).join('');
+  const HOLD = (h) => h.startsWith('rating:') ? `buyer report: ${h.slice(7).replace(/_/g, ' ')}` : h.startsWith('dispute:') ? 'card dispute open'
+    : h.startsWith('dispute-review:') ? 'lost chargeback to assign' : h.startsWith('refund-review:') ? 'refund to assign' : h === 'review:own_purchase' ? 'bought by the seller'
+    : h === 'session-cancelled' ? 'teacher cancelled; refund not made' : h;
+  const held = (d.held || []).map((e) => {
+    const assign = (e.holds || []).some((h) => h.startsWith('refund-review:') || h.startsWith('dispute-review:'));
+    return `
+    <article class="kreators-item">
+      <header class="kreators-item-head">
+        <div><h3>${escapeHtml(e.storeName)} · ${escapeHtml(usd(e.netCents))}</h3><p>${escapeHtml(e.orderNumber || '')} · ${escapeHtml(e.productTitle)} · ${escapeHtml(e.status)}</p></div>
+        <span class="kreators-status kreators-status-pending">${escapeHtml((e.holds || []).map(HOLD).join(' · '))}</span>
+      </header>
+      <div class="kreators-actions">${assign
+        ? `<button type="button" class="btn btn-secondary" data-act="assign" data-id="${escapeHtml(e.id)}" data-name="charge">Charge to maker</button><button type="button" class="btn btn-secondary" data-act="assign" data-id="${escapeHtml(e.id)}" data-name="kaayko">Kaayko bears it</button>`
+        : `<button type="button" class="btn btn-secondary" data-act="release-hold" data-id="${escapeHtml(e.id)}">Release the hold</button>`}</div>
+    </article>`;
+  }).join('');
+  return `<div class="kreators-actions" style="margin-bottom:12px"><button type="button" class="btn btn-secondary" data-act="draft-statements">Draft statements now</button>
+    <span class="kreators-note">Statements are drafted on the 1st of each month from earnings 37+ days past shipping (or the lesson) with no hold. Nothing is sent until you press Pay.</span></div>
+    ${held ? `<h4 class="kreators-subhead">Held — not paid until you decide</h4>${held}` : ''}
+    <h4 class="kreators-subhead">Statements</h4>
+    ${rows || empty('No statements yet.')}`;
+}
 
 const LABELS = {
   priceRange: { under_25: 'Under $25', '25_50': '$25–50', '50_100': '$50–100', '100_250': '$100–250', '250_500': '$250–500', '500_plus': '$500+' },
   shippingCapability: { domestic_only: 'US only', north_america: 'North America', international: 'International', local_pickup: 'Local pickup' },
   fulfillmentTime: { '1-2_days': '1–2 days', '3-5_days': '3–5 days', '1-2_weeks': '1–2 weeks', '2-4_weeks': '2–4 weeks', varies: 'Varies' },
   inventoryManagement: { ready_stock: 'Ready stock', made_to_order: 'Made to order', dropship: 'Dropship', hybrid: 'Hybrid' },
+  years: { under_1: 'under a year', '1_2': '1–2 years', '3_5': '3–5 years', '6_10': '6–10 years', over_10: 'over 10 years' },
+  formats: { in_person: 'In person', online: 'Online' },
+  onlinePlatform: { zoom: 'Zoom', google_meet: 'Google Meet', teams: 'Teams', other: 'Other' },
+  groupSize: { one_to_one: 'One to one', '2_5': '2–5', '6_12': '6–12', '13_plus': '13+' },
+  audience: { adults: 'Adults (18+)', with_guardian: 'Under-18s with a guardian' },
+  firstAid: { current: 'Current', expired: 'Lapsed', none: 'None' },
+  insurance: { yes: 'Yes', no: 'No', not_sure: 'Not sure' },
 };
+
+/** What a teacher told the reviewer (27 Oct 2026): the answers worth reading before approving. */
+function teachingRows(t) {
+  if (!t) return '';
+  const links = (t.sampleLinks || []).map((u) => safeUrl(u)).filter(Boolean)
+    .map((u) => `<a href="${escapeHtml(u)}" target="_blank" rel="noopener noreferrer">${escapeHtml(u.replace(/^https:\/\//, '').slice(0, 60))}</a>`).join('<br>');
+  const flags = [
+    t.audience === 'with_guardian' ? 'teaches under-18s' : '',
+    (t.formats || []).includes('in_person') && t.firstAid !== 'current' ? 'first aid not current' : '',
+    t.insurance !== 'yes' ? 'no liability insurance' : '',
+    t.insuranceProofNeeded ? 'ask for the insurance certificate' : ''
+  ].filter(Boolean);
+  return `
+      <h4 class="kreators-subhead">Teaching${flags.length ? ` <span class="kreators-flag">${escapeHtml(flags.join(' · '))}</span>` : ''}</h4>
+      <dl class="kreators-rows">
+        ${row('Teaches', escapeHtml(t.subjects || ''))}
+        ${row('Practised / taught', escapeHtml(`${label('years', t.practiceYears)} / ${label('years', t.teachingYears)}`))}
+        ${row('Where', escapeHtml([(t.formats || []).map((f) => label('formats', f)).join(' + '), t.serviceArea, t.onlinePlatform ? label('onlinePlatform', t.onlinePlatform) : ''].filter(Boolean).join(' · ')))}
+        ${row('Group · for', escapeHtml(`${label('groupSize', t.groupSize)} · ${label('audience', t.audience)}`))}
+        ${row('A session', escapeHtml(t.sessionOutline || ''))}
+        ${row('Credentials', escapeHtml(t.credentials || ''))}
+        ${row('Safety', escapeHtml([t.safetyPlan, t.firstAid ? `First aid: ${label('firstAid', t.firstAid)}` : ''].filter(Boolean).join(' · ')))}
+        ${row('Insurance', escapeHtml(label('insurance', t.insurance)))}
+        ${row('Involves', escapeHtml((t.risks || []).join(', ')))}
+        ${row('Languages', escapeHtml(t.languages || ''))}
+        ${row('Work', links)}
+        ${t.audience === 'with_guardian' ? row('Background check', escapeHtml(t.backgroundCheckOk ? 'Agrees if asked' : 'Not agreed')) : ''}
+      </dl>`;
+}
 
 let current = 'pending';
 let listEl = null;
@@ -120,8 +247,31 @@ async function listings(status) {
 function lessonRows(l) {
   const min = Number(l.durationMin) || 0;
   const length = !min ? '' : min % 60 === 0 ? `${min / 60} h` : `${min} min`;
+  const LEVEL = { all: 'All levels', beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced' };
   return `${row('Lesson', escapeHtml([l.format === 'online' ? 'Online' : 'In person', l.area, length, l.timeZone].filter(Boolean).join(' · ')))}
+        ${row('Level · who', escapeHtml(`${LEVEL[l.level] || 'All levels'} · ${l.audience === 'with_guardian' ? 'under-18s with a guardian' : 'adults (18+)'}`))}
+        ${row('Bring', escapeHtml(l.bring || ''))}
+        ${row('Taught in', escapeHtml(l.language && l.language !== 'English' ? l.language : ''))}
         ${row('Sent to buyers', escapeHtml(l.details || ''))}`;
+}
+
+/** What the reviewer must weigh about the teacher of a lesson (Terms 6). */
+function teacherRows(p) {
+  if (!p.lesson || !p.teacher) return '';
+  const t = p.teacher;
+  const flags = [
+    !t.vetted && 'not vetted as a teacher',
+    p.lesson.audience === 'with_guardian' && !t.backgroundCheckOk && 'under-18s without a background-check agreement',
+    t.insuranceProofNeeded && 'insurance certificate needed before it goes live',
+    t.vetted && t.insurance !== 'yes' && 'no liability insurance',
+    p.lessonsPaused && 'lessons paused after a safety report'
+  ].filter(Boolean);
+  return `<h4 class="kreators-subhead">Teacher${flags.length ? ` <span class="kreators-flag">${escapeHtml(flags.join(' · '))}</span>` : ''}</h4>
+      <dl class="kreators-rows">
+        ${row('Teaches', escapeHtml(t.subjects || ''))}
+        ${row('Involves', escapeHtml((t.risks || []).join(', ')))}
+        ${row('First aid', escapeHtml(t.firstAid ? label('firstAid', t.firstAid) : ''))}
+      </dl>`;
 }
 
 function listingFields(v) {
@@ -162,6 +312,7 @@ function listingCard(p) {
              <section><h4>Proposed (changed: ${escapeHtml(p.pendingEdit.changed.join(', '))})</h4>${listingFields(p.pendingEdit)}</section>
            </div>`
         : listingFields(p)}
+      ${teacherRows(p)}
       <dl class="kreators-rows">
         ${row('Shop description', escapeHtml(p.storeBio || ''))}
         ${Array.isArray(p.sessions) ? row('Sessions', p.sessions.length ? p.sessions.map((x) => `${escapeHtml(x.label)} · ${x.cancelled ? 'cancelled' : `${x.booked} of ${x.seats} booked`}`).join('<br>') : 'None yet') : ''}
@@ -218,10 +369,10 @@ function applicationCard(a) {
         ${row('Sells', escapeHtml((a.productCategories || []).join(', ')))}
         ${row('Listings', escapeHtml(a.productCount || ''))}
         ${row('Price range', escapeHtml(label('priceRange', a.priceRange)))}
-        ${row('Ships', escapeHtml(label('shippingCapability', a.shippingCapability)))}
-        ${row('Fulfilment', escapeHtml(label('fulfillmentTime', a.fulfillmentTime)))}
+        ${row('Ships', escapeHtml(a.fulfillmentTime ? `${label('fulfillmentTime', a.fulfillmentTime)}${a.agreedToShip ? ', agreed to ship with tracking' : ''}` : ''))}
         ${row('Inventory', escapeHtml(label('inventoryManagement', a.inventoryManagement)))}
         ${row('Location', escapeHtml(a.location || ''))}
+        ${row('Terms', escapeHtml(a.termsVersion ? `Kreator Seller Terms ${a.termsVersion}` : ''))}
         ${row('Phone', escapeHtml(a.phone || ''))}
         ${row('Website', site ? `<a href="${escapeHtml(site)}" target="_blank" rel="noopener noreferrer">${escapeHtml(site)}</a>` : escapeHtml(a.website || ''))}
         ${row('Sells elsewhere', escapeHtml(a.otherPlatforms || ''))}
@@ -230,6 +381,7 @@ function applicationCard(a) {
         ${a.status === 'pending' ? row(expired ? 'Expired' : 'Expires', escapeHtml(expires ? formatDate(expires.toISOString()) : '')) : ''}
         ${row('Reason', escapeHtml(a.rejectionReason || ''))}
       </dl>
+      ${teachingRows(a.teaching)}
       ${actions}
     </article>`;
 }
@@ -284,6 +436,7 @@ function sellerCard(k) {
           : k.storeLinkReady ? '' : `<button type="button" class="btn btn-primary" data-act="finish-link" data-uid="${escapeHtml(k.uid)}" data-handle="${escapeHtml(k.storeHandle)}">Finish kaay.link link</button>`}
         ${k.storeLinkReady ? `<button type="button" class="btn btn-secondary" data-act="qr-make" data-uid="${escapeHtml(k.uid)}">Make missing QR codes</button>` : ''}
         <button type="button" class="btn btn-secondary" data-act="qr-limit" data-uid="${escapeHtml(k.uid)}" data-name="${escapeHtml(k.businessName || '')}" data-limit="${escapeHtml(String(k.qrLimit ?? 25))}">Change QR limit…</button>
+        <button type="button" class="btn btn-secondary" data-act="vet-teacher" data-uid="${escapeHtml(k.uid)}">${k.teaching ? 'Update teacher vetting…' : 'Vet as a teacher…'}</button>
         ${suspended
           ? `<button type="button" class="btn btn-secondary" data-act="reinstate" data-uid="${escapeHtml(k.uid)}">Reinstate</button>`
           : `<button type="button" class="btn btn-secondary" data-act="suspend" data-uid="${escapeHtml(k.uid)}" data-name="${escapeHtml(k.businessName || '')}">Suspend…</button>`}
@@ -385,6 +538,55 @@ async function onAction(e) {
       btn.disabled = true;
       const d = await getJson(`/kreators/admin/${encodeURIComponent(uid)}/qr-limit`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ limit }) });
       showSuccess(`QR limit ${d.limit}. ${d.used} in use${d.made ? `; ${d.made} new code${d.made === 1 ? '' : 's'} made` : ''}.`);
+    } else if (act === 'release-rating') {
+      if (!confirm('Mark this report resolved and release its payout hold? Only the rating hold is lifted; anything else waiting on the line stays.')) return;
+      btn.disabled = true;
+      await getJson(`/kreators/admin/earnings/${encodeURIComponent(id)}/release`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reasons: String(name || '').split(',').filter(Boolean) }) });
+      showSuccess('Resolved and released.');
+    } else if (act === 'resolve-rating') {
+      if (!confirm('Mark this report resolved? It stops counting in the Kreator\'s standing.')) return;
+      btn.disabled = true;
+      await getJson(`/kreators/admin/ratings/${encodeURIComponent(id)}/resolve`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      showSuccess('Resolved.');
+    } else if (act === 'vet-teacher') {
+      const subjects = prompt('What do they teach? (This vets them as a teacher, so they can list lessons.)', '');
+      if (!subjects || subjects.trim().length < 3) return;
+      const insurance = (prompt('Liability insurance? yes / no / not_sure', 'not_sure') || 'not_sure').trim().toLowerCase();
+      const bg = confirm('Have they agreed to a background check (needed to open a lesson to under-18s)? OK = yes, Cancel = no');
+      btn.disabled = true;
+      await getJson(`/kreators/admin/kreators/${encodeURIComponent(uid)}/teaching`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ subjects: subjects.trim(), insurance, backgroundCheckOk: bg }) });
+      showSuccess('Vetted as a teacher.');
+    } else if (act === 'release-hold') {
+      if (!confirm('Release the hold on this line? It is paid with the seller\'s next statement, and a buyer report counts as resolved.')) return;
+      btn.disabled = true;
+      await getJson(`/kreators/admin/earnings/${encodeURIComponent(id)}/release`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      showSuccess('Released.');
+    } else if (act === 'pause-lessons') {
+      if (!confirm('Pause new bookings of this Kreator\'s lessons? People already booked keep their place, and the teacher is emailed that Kaayko has paused them.')) return;
+      btn.disabled = true;
+      const d = await getJson(`/kreators/admin/kreators/${encodeURIComponent(uid)}/pause-lessons`, { method: 'POST' });
+      showSuccess(`${d.paused} lesson${d.paused === 1 ? '' : 's'} paused.`);
+    } else if (act === 'resume-lessons') {
+      if (!confirm('Resume new bookings of this Kreator\'s lessons? Do this only once the report has been looked into.')) return;
+      btn.disabled = true;
+      const d = await getJson(`/kreators/admin/kreators/${encodeURIComponent(uid)}/resume-lessons`, { method: 'POST' });
+      showSuccess(`${d.resumed} lesson${d.resumed === 1 ? '' : 's'} open for booking again.`);
+    } else if (act === 'assign') {
+      const charge = name === 'charge';
+      if (!confirm(charge ? 'Charge this to the maker? They earn nothing on this line (taken from a later statement if already paid).' : 'Kaayko bears it: the maker keeps this earning.')) return;
+      btn.disabled = true;
+      await getJson(`/kreators/admin/earnings/${encodeURIComponent(id)}/assign`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ outcome: charge ? 'charge' : 'kaayko' }) });
+      showSuccess(charge ? 'Charged to the maker.' : 'Released; Kaayko bears it.');
+    } else if (act === 'draft-statements') {
+      btn.disabled = true;
+      const d = await getJson('/kreators/admin/payouts/run', { method: 'POST' });
+      const extra = [d.paused && `${d.paused} seller${d.paused === 1 ? '' : 's'} paused by an open buyer report (Ratings tab)`, d.failed && `${d.failed} could not be drafted — try again`].filter(Boolean).join('; ');
+      showSuccess(`${d.statements ? `${d.statements} statement${d.statements === 1 ? '' : 's'} drafted.` : 'Nothing is due yet.'}${extra ? ` ${extra}.` : ''}`);
+    } else if (act === 'pay') {
+      if (!confirm(`Transfer ${usd(currentLimit)} to ${name} through Stripe now? This moves real money once Stripe is live.`)) return;
+      btn.disabled = true;
+      const d = await getJson(`/kreators/admin/payouts/${encodeURIComponent(id)}/pay`, { method: 'POST' });
+      showSuccess(d.status === 'paid' ? `Paid ${usd(d.totalCents)} (${d.transferId}).` : 'Nothing left to pay on that statement.');
     } else if (act === 'bio-approve' || act === 'bio-reject') {
       const note = act === 'bio-reject' ? prompt('Why is the description not published? The seller sees this.', '') : '';
       if (act === 'bio-reject' && (!note || note.trim().length < 5)) return;

@@ -427,6 +427,32 @@
                 <select id="lesson-tz" class="form-input"></select>
               </div>
             </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="lesson-level">Level *</label>
+                <select id="lesson-level" class="form-input">
+                  <option value="all">All levels</option><option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option><option value="advanced">Advanced</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="lesson-audience">Who can book *</label>
+                <select id="lesson-audience" class="form-input">
+                  <option value="adults">Adults (18+)</option>
+                  <option value="with_guardian">Under-18s too, with a parent or guardian there</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="lesson-bring">What to bring (shown to shoppers)</label>
+                <input type="text" id="lesson-bring" class="form-input" maxlength="200" placeholder="e.g., Any camera, warm layers, water">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="lesson-language">Taught in</label>
+                <input type="text" id="lesson-language" class="form-input" maxlength="40" placeholder="English">
+              </div>
+            </div>
             <div class="form-group">
               <span class="form-label">Sessions *</span>
               <div id="lesson-sessions"></div>
@@ -642,6 +668,10 @@
       document.getElementById('lesson-area').value = l.area && l.area !== 'Online' ? l.area : '';
       document.getElementById('lesson-details').value = l.details || '';
       if (l.durationMin) document.getElementById('lesson-duration').value = String(l.durationMin);
+      document.getElementById('lesson-level').value = l.level || 'all';
+      document.getElementById('lesson-audience').value = l.audience || 'adults';
+      document.getElementById('lesson-bring').value = l.bring || '';
+      document.getElementById('lesson-language').value = l.language && l.language !== 'English' ? l.language : '';
       if (l.timeZone) {
         if (![...tzEl.options].some((o) => o.value === l.timeZone)) tzEl.append(new Option(l.timeZone, l.timeZone));
         tzEl.value = l.timeZone;
@@ -668,6 +698,10 @@
         details: document.getElementById('lesson-details').value.trim(),
         durationMin: Number(document.getElementById('lesson-duration').value),
         timeZone: tzEl.value,
+        level: document.getElementById('lesson-level').value,
+        audience: document.getElementById('lesson-audience').value,
+        bring: document.getElementById('lesson-bring').value.trim(),
+        language: document.getElementById('lesson-language').value.trim() || 'English',
         sessions
       };
     }
