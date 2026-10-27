@@ -92,7 +92,7 @@ let searchQuery = '';
 
 function matchesSearch(s) {
   if (!searchQuery) return true;
-  const hay = [s.orderNumber, s.customerEmail, s.parentOrderId, ...(s.items || []).map((i) => i.productTitle)]
+  const hay = [s.orderNumber, s.customerEmail, s.parentOrderId, ...(s.items || []).map((i) => i.productTitle), ...(s.items || []).map((i) => i.storeName)]
     .filter(Boolean).join(' ').toLowerCase();
   return hay.includes(searchQuery);
 }
@@ -300,6 +300,7 @@ function onListClick(e) {
   if (action === 'refund-open')   { toggleForm(card, '.order-refund-form', true); return; }
   if (action === 'refund-close')  { toggleForm(card, '.order-refund-form', false); return; }
   if (action === 'refund-confirm') { confirmRefund(id, card); return; }
+  if (action === 'refund-line')   { refundLine(id, btn.dataset.item, card); return; }
   if (action === 'status') { changeStatus(id, card, btn.dataset.status); return; }
 }
 
@@ -316,6 +317,30 @@ async function postOrderAction(path, body) {
   if (!res) throw new Error('Not signed in');
   if (!res.ok) throw new Error(await errorMessage(res, `Request failed (${res.status})`));
   return res.json();
+}
+
+/**
+ * One line back to the card — a maker's piece that came off sale, a single return —
+ * leaving the rest of the order alone. The API refunds what the line cost after its
+ * discount plus its share of tax, and books it on that line (refundOrder itemIds).
+ * Refunding by amount spreads the money over every line, makers' included.
+ */
+async function refundLine(parentOrderId, itemId, card) {
+  const s = findShipment(parentOrderId);
+  const it = s && (s.items || []).find((i) => i.orderId === itemId);
+  if (!it) return;
+  const what = `"${it.productTitle || 'this piece'}" (${it.size || 'One Size'} × ${it.quantity || 1})`;
+  const reason = window.prompt(`Refund ${what} on ${s.orderNumber || 'this order'}?\n\nIt refunds what this line cost after any discount, plus its share of sales tax. The rest of the order is untouched. Stripe sends it back to the card; this cannot be undone.\n\nReason (kept with the refund):`, '');
+  if (reason === null) return;
+  setCardBusy(card, true);
+  try {
+    const r = await postOrderAction('/admin/orders/refund', { parentOrderId, itemIds: [itemId], reason: reason.trim() });
+    showSuccess(`Refund of ${money(r.amountCents || 0, s.currency)} for ${what} requested. The order updates and the customer is emailed when Stripe confirms.`);
+    await load();
+  } catch (err) {
+    showError(err && err.message ? err.message : 'Could not refund this line.');
+    setCardBusy(card, false);
+  }
 }
 
 /** Cancel before shipping: a full refund at Stripe and every line cancelled. */
@@ -610,7 +635,13 @@ function orderCard(shipment) {
   const currency = shipment.currency || 'usd';
 
   const items = Array.isArray(shipment.items) ? shipment.items : [];
+  const orderLeft = Math.max(0, (Number(shipment.orderTotalCents) || 0) - (Number(shipment.refundedCents) || 0));
   const rows = items.map((it) => {
+    // One line on its own (only worth offering when the order has more than one).
+    const lineLeft = (Number(it.lineTotalCents) || 0) - (Number(it.discountShareCents) || 0) - (Number(it.refundedCents) || 0);
+    const lineRefund = orderLeft > 0 && items.length > 1 && lineLeft > 0 && !['cancelled', 'returned'].includes(String(it.orderStatus || '').toLowerCase())
+      ? `<button type="button" class="order-line-refund" data-action="refund-line" data-id="${jsAttr(id)}" data-item="${jsAttr(it.orderId || '')}">Refund this line</button>`
+      : '';
     const variant = [it.gender, it.size]
       .filter((v) => v != null && String(v).trim() !== '')
       .map((v) => escapeHtml(v))
@@ -626,7 +657,10 @@ function orderCard(shipment) {
         <span class="order-item-qty">${escapeHtml(String(it.quantity || 1))}×</span>
         <span class="order-item-main">
           <span class="order-item-title">${escapeHtml(it.productTitle || 'Untitled product')}</span>
+          ${it.kreatorId ? `<span class="order-item-maker">Kreator: ${escapeHtml(it.storeName || 'an independent maker')}</span>` : ''}
+          ${it.refundedCents > 0 ? `<span class="order-item-variant">Refunded ${escapeHtml(money(it.refundedCents, currency))}</span>` : ''}
           <span class="order-item-variant">${variant || 'No size / gender recorded'}</span>
+          ${lineRefund}
         </span>
         <span class="order-item-money">${escapeHtml(money(it.lineTotalCents, currency))}</span>
       </li>`;

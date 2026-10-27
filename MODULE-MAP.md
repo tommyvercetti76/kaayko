@@ -357,6 +357,9 @@ GET/POST/PUT/DELETE /api/billing/subscriptions
 > (approve + choose the shop address) → activation email → set password → sign in →
 > list (waits for **listing review**) → live at `kaay.store/kreator/<handle>` and
 > `kaay.link/<handle>` → sale email to the seller, Orders in the dashboard.
+> Every approved piece also gets its own code, `kaay.link/<handle>/<piece>` (QR codes,
+> 26 Oct 2026, `services/productLinks.js`): made on approval, 25 per shop unless raised,
+> shown with scan counts under **QR codes** in the dashboard.
 
 **Pages:**
 | URL | File |
@@ -366,11 +369,12 @@ GET/POST/PUT/DELETE /api/billing/subscriptions
 | `/kreator/apply` | `kaayko/src/kreator/apply.html` |
 | `/kreator/check-status` | `kaayko/src/kreator/check-status.html` |
 | `/kreator/onboarding` | `kaayko/src/kreator/onboarding.html` (the emailed activation link) |
-| `/kreator/dashboard` | `kaayko/src/kreator/dashboard.html` (`#products`, `#orders`, … name the view) |
+| `/kreator/dashboard` | `kaayko/src/kreator/dashboard.html` (`#products`, `#qr`, `#orders`, … name the view) |
 | `/kreator/add-product` | `kaayko/src/kreator/add-product.html` |
 | `/kreator/forgot-password` | `kaayko/src/kreator/forgot-password.html` (Firebase Auth reset email) |
 | `/kreator/admin` | removed 3 Oct 2026; 301 → `/kreator`. Review is **Kortex → Kreators** (`src/admin/views/kreators/`) |
 | `kaay.store/kreator/<handle>` | a shop: `store.html` (kaay.store's catch-all); `/Kreator/<h>` 301s to lower case |
+| `kaay.link/<handle>/<piece>` | a piece's QR code → `kaay.store/store/p/<id>` (`kaayLinkRouter.js`; stored as code `<handle>--<piece>`) |
 | `kaay.link/<handle>` | the shop's short link (house-tenant Kortex link) + `kaay.link/qr/<handle>.png` |
 | ~~`/kreator/apply-old-social`~~ | `kaayko/src/kreator/apply-old-social.html` (legacy) |
 | ~~`/kreator/dashboard-old-influencer`~~ | `kaayko/src/kreator/dashboard-old-influencer.html` (legacy) |
@@ -394,9 +398,11 @@ GET  /api/kreators/me                             → profile incl. storeHandle/
 PUT  /api/kreators/me                             → name, phone, location, bio (bio → storeBio on listings)
 DELETE /api/kreators/me                           → unlists everything, retires the shop link, deletes the sign-in
 GET  /api/kreators/orders                         → their sold lines (money + piece, never buyer data)
+GET  /api/kreators/qr-codes                       → shop code + one per approved piece, with scans (all time, 30 days) and opens
 GET|POST|PUT|DELETE /api/kreators/products        → listings (multipart from req.rawBody; review on create/edit)
 POST /api/kreators/auth/logout                    → revokes every session (sessionVersion)
-POST /api/kreators/auth/google/connect|disconnect
+POST /api/kreators/auth/google/connect {idToken}  → a Google sign-in at the seller's own email turns Google on
+POST /api/kreators/auth/google/disconnect         → googleSignInOff: Google no longer opens the account
 
 # Platform admin (Kortex → Kreators)
 GET  /api/kreators/admin/applications?status=     → applications
@@ -407,16 +413,19 @@ GET  /api/kreators/admin/list?status=active|pending_password
 GET  /api/kreators/admin/listings?status=pending|approved
 PUT  /api/kreators/admin/listings/{id}/review     {decision, note} → on the store / sent back (emails seller)
 GET  /api/kreators/admin/store-address?name=|handle= → address + availability
-POST /api/kreators/admin/{uid}/store-address      {handle} → give/finish a shop address
+POST /api/kreators/admin/{uid}/store-address      {handle} → give/finish a shop address (also makes waiting piece codes)
+PUT  /api/kreators/admin/{uid}/qr-limit           {limit}  → product QR codes a shop may hold (default 25)
 ```
 
 **API files:**
 - `kaayko-api/functions/api/kreators/kreatorRoutes.js` — onboarding, sessions, profile, orders, admin
 - `kaayko-api/functions/api/kreators/kreatorProductRoutes.js` — listings (one validator, the house editor's rules)
 - `kaayko-api/functions/services/storeHandles.js` — shop addresses (registry, reserved words, kaay.link link)
+- `kaayko-api/functions/services/productLinks.js` — a piece's own kaay.link + QR (make on approval, limit, retire, scans)
+- `kaayko-api/functions/services/listingPhotos.js` — listing photos wait in `kreator_pending/` (download-token URL only) until approved; unsold photos are deleted
 - `kaayko-api/functions/api/kreators/testRoutes.js` — mounted only when the emulator runs Auth AND Firestore too
 
-**Firestore collections:** `kreator_applications`, `kreators`, `store_handles` (`{handle}` → `{kreatorId, storeName, status: active|retired, linkCode}`; never released), `kaaykoproducts` (kreator listings carry `kreatorId`, `storeSlug` = handle, `reviewStatus`, `storeBio`, `taxCode`), `short_links` (`{handle}`, `metadata.kind: 'kreator_store'`), `orders`/`payment_intents` lines (`kreatorId`, `storeSlug`, `storeName`, `discountShareCents`), `admin_audit_logs`
+**Firestore collections:** `kreator_applications`, `kreators`, `store_handles` (`{handle}` → `{kreatorId, storeName, status: active|retired, linkCode}`; never released), `kaaykoproducts` (kreator listings carry `kreatorId`, `storeSlug` = handle, `reviewStatus`, `reviewHistory`, `storeBio`, `taxCode`, `qrCode`/`qrLink`/`qrImage`/`qrStatus`), `kreators.qrLimit`, `short_links` (`{handle}`, `metadata.kind: 'kreator_store'`; `{handle}--{piece}`, `metadata.kind: 'kreator_product'` — both kinds settable only by the Kreator code, `createShortLink(data, {kreatorLink: true})`), `click_events` (scans: `metadata.source == 'qr'`), `orders`/`payment_intents` lines (`kreatorId`, `storeSlug`, `storeName`, `discountShareCents`), `admin_audit_logs`
 **External services:** Firebase Auth (password + Google), the `mail` queue
 **Auth required:** Public: apply, check-status, shop pages. Activation link: onboarding. Seller session: dashboard, add-product. `requirePlatformAdmin`: /api/kreators/admin/*
 **Production prerequisite:** the `SESSION_SECRET` secret (bound to `api` in `functions/index.js`)

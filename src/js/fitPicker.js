@@ -201,7 +201,8 @@ export function bagCapReached(product) {
  */
 function photoFor(product, size) {
   const sizes = Array.isArray(product?.availableSizes) ? product.availableSizes : [];
-  const i = String(product?.productType || "").toLowerCase() === "magnet" && sizes.length > 1 ? Math.max(0, sizes.indexOf(size)) : 0;
+  // House magnets only; a maker's photos are in the maker's own order (26 Oct 2026).
+  const i = !product?.byMaker && String(product?.productType || "").toLowerCase() === "magnet" && sizes.length > 1 ? Math.max(0, sizes.indexOf(size)) : 0;
   return product?.previewSrc?.[i] || product?.imgSrc?.[i] || product?.previewSrc?.[0] || product?.imgSrc?.[0] || "";
 }
 

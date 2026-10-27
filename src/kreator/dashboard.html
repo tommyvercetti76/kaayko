@@ -607,6 +607,26 @@
     .shop-lines a { color: var(--kreator-primary); }
     .shop-label { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin-top: 8px !important; }
     .shop-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px !important; }
+    .product-qr { font-size: 12px; margin: 6px 0 0; overflow-wrap: anywhere; }
+    .product-qr a { color: var(--kreator-primary); }
+    .qr-usage { color: var(--text-muted); margin: 0 0 var(--space-lg); }
+    .qr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-lg); }
+    .qr-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: var(--space-md); display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+    .qr-card.is-shop { border-color: var(--kreator-primary); }
+    .qr-card img.qr-img { width: 160px; height: 160px; align-self: center; background: #fff; padding: 8px; border-radius: 8px; }
+    .qr-card .qr-placeholder { width: 160px; height: 160px; align-self: center; border-radius: 8px; border: 1px dashed var(--border-subtle); display: grid; place-items: center; color: var(--text-muted); }
+    .qr-card h4 { margin: 0; font-size: 15px; overflow-wrap: anywhere; }
+    .qr-card .qr-kicker { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); margin: 0; }
+    .qr-card .qr-link { margin: 0; font-size: 13px; overflow-wrap: anywhere; }
+    .qr-card .qr-link a { color: var(--kreator-primary); }
+    .qr-card .qr-counts { margin: 0; font-size: 13px; color: var(--text-secondary, var(--text-muted)); }
+    .qr-card .qr-status { margin: 0; font-size: 13px; color: #f59e0b; }
+    .qr-card .qr-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: auto; }
+    .qr-card .qr-actions .btn { padding: 6px 12px; font-size: 13px; }
+    .qr-retired-section { margin-top: var(--space-xl); }
+    .qr-retired p { margin: 0 0 6px; font-size: 13px; overflow-wrap: anywhere; }
+    .qr-note { font-size: 13px; color: var(--text-muted); margin: var(--space-lg) 0 0; }
+    .qr-empty { color: var(--text-muted); }
     
     .product-card {
       background: var(--bg-card);
@@ -822,6 +842,11 @@
           <span class="nav-icon material-icons">inventory_2</span>
           <span>Products</span>
           <span class="nav-badge" id="products-count">0</span>
+        </a>
+        <a href="#" class="nav-item" data-view="qr">
+          <span class="nav-icon material-icons">qr_code_2</span>
+          <span>QR codes</span>
+          <span class="nav-badge" id="qr-count">0</span>
         </a>
         <a href="#" class="nav-item" data-view="orders">
           <span class="nav-icon material-icons">shopping_bag</span>
@@ -1082,6 +1107,24 @@
         </div>
       </div>
       
+      <!-- QR codes: the shop's own, and one for every approved piece (kaay.link, 26 Oct 2026) -->
+      <div id="qr-view" class="view">
+        <header class="view-header">
+          <div>
+            <h1>QR codes</h1>
+            <p>Every piece Kaayko approves gets its own kaay.link and QR code. Print them on tags, cards and at your stall: each opens that piece on kaay.store.</p>
+          </div>
+        </header>
+        <p class="qr-usage" id="qr-usage"></p>
+        <div class="qr-grid" id="qr-grid"><p class="qr-empty">Loading…</p></div>
+        <section class="qr-retired-section" id="qr-retired-section" hidden>
+          <h3 class="section-title">Codes of deleted pieces</h3>
+          <p class="qr-note">Already printed? They still work: they now open your shop page.</p>
+          <div class="qr-retired" id="qr-retired"></div>
+        </section>
+        <p class="qr-note">Scans count each time a code is scanned with a phone camera. Opens count every visit through the link, scanned or tapped. Kaayko never shows who scanned, where, or on what device.</p>
+      </div>
+
       <!-- Orders View -->
       <div id="orders-view" class="view">
         <header class="view-header">
@@ -1301,7 +1344,7 @@
   </div>
 
   <script type="module">
-    import { AUTH, CONFIG, updateProfile, requestPasswordReset } from './js/kreator-api.js';
+    import { AUTH, CONFIG, updateProfile, requestPasswordReset, connectGoogleSignIn } from './js/kreator-api.js';
 
     const API_BASE = CONFIG.API_BASE;
     
@@ -1378,8 +1421,20 @@
         
         showShop(user);
         
+        // Google sign-in matches a seller by email, so "off" has to be said plainly.
+        const googleOn = !!user.googleUid && user.googleSignInOff !== true;
         const google = document.getElementById('google-email');
-        if (google) google.textContent = user.googleUid ? 'Connected' : 'Not connected — you can still sign in with Google at your seller email';
+        if (google) {
+          google.textContent = googleOn ? `Connected${user.googleProfile?.email ? ` (${user.googleProfile.email})` : ''}`
+            : user.googleSignInOff ? 'Off: Google no longer opens this account. Sign in with your seller email and password.'
+            : 'Not connected. Signing in with Google at your seller email connects it.';
+        }
+        const googleBtn = document.getElementById('disconnect-google-btn');
+        if (googleBtn) {
+          googleBtn.textContent = googleOn ? 'Disconnect' : 'Connect';
+          googleBtn.dataset.act = googleOn ? 'disconnect' : 'connect';
+          googleBtn.style.color = googleOn ? '#f59e0b' : '';
+        }
       } catch (error) {
         console.warn('[Dashboard] Profile fetch failed:', error.message);
       }
@@ -1405,6 +1460,69 @@
     }
     updateViewStoreLink(storeSlugFor(storedKreator));
     
+    /**
+     * A code's QR image. kaayko.com serves the same image as kaay.link at /qr/<code>.png
+     * (hosting rewrite), and from this page's own origin "Download" really downloads:
+     * a browser ignores `download` on another site's URL and only opens the image.
+     * Locally it comes from the emulated API, which serves it under /kortex/qr/.
+     */
+    function qrImage(code) {
+      const file = `${encodeURIComponent(code)}.png`;
+      return CONFIG.ENVIRONMENT === 'local' ? `${API_BASE}/kortex/qr/${file}` : `/qr/${file}`;
+    }
+
+    /** The QR codes view: the shop's code, then one per piece (GET /kreators/qr-codes). */
+    async function loadQrCodes() {
+      const grid = document.getElementById('qr-grid');
+      try {
+        const response = await authed('/kreators/qr-codes');
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || 'Could not load your QR codes');
+        const { limit, used, shop, pieces, retired } = result.data;
+        document.getElementById('qr-count').textContent = used;
+        document.getElementById('qr-usage').textContent = `${used} of ${limit} piece codes in use. Deleting a piece frees its place; its printed code then opens your shop page.`;
+        const counts = (c) => `${c.scans} scan${c.scans === 1 ? '' : 's'} · ${c.scans30 == null ? '—' : c.scans30} in the last 30 days · ${c.opens} open${c.opens === 1 ? '' : 's'} in all`;
+        const card = (c, { kicker, title, isShop = false }) => {
+          if (!c.code) {
+            const why = c.status === 'in_review' ? 'Made when Kaayko approves this piece.'
+              : c.status === 'limit' ? `Your shop has used all ${limit} of its codes. Delete a piece to free one, or write to Kaayko for more.`
+              : c.status === 'pending' ? 'Its code is on its way. Open this page again in a minute.'
+              : 'Made as soon as your shop address on kaay.link is ready.';
+            return `<article class="qr-card"><div class="qr-placeholder"><span class="material-icons">qr_code_2</span></div>
+              <p class="qr-kicker">${esc(kicker)}</p><h4>${esc(title)}</h4><p class="qr-status">${esc(why)}</p></article>`;
+          }
+          const img = qrImage(c.code);
+          return `<article class="qr-card${isShop ? ' is-shop' : ''}">
+              <img class="qr-img" src="${esc(img)}" alt="QR code for ${esc(title)}" width="160" height="160" loading="lazy">
+              <p class="qr-kicker">${esc(kicker)}</p><h4>${esc(title)}</h4>
+              <p class="qr-link"><a href="${esc(c.link)}" target="_blank" rel="noopener">${esc(String(c.link).replace('https://', ''))}</a></p>
+              ${c.onSale === false ? '<p class="qr-status">Not on sale right now: the code opens its page, which says so.</p>' : ''}
+              <p class="qr-counts">${esc(counts(c))}</p>
+              <p class="qr-actions">
+                <a class="btn btn-secondary" href="${esc(img)}?size=1024" download="${esc(c.code)}-qr.png">Download</a>
+                <button type="button" class="btn btn-secondary" data-copy="${esc(c.link)}">Copy link</button>
+              </p></article>`;
+        };
+        const cards = [];
+        if (shop) cards.push(card(shop, { kicker: 'Your shop', title: 'Opens your whole shop', isShop: true }));
+        pieces.forEach((p) => cards.push(card(p, { kicker: 'Piece', title: p.title })));
+        grid.innerHTML = cards.join('') || '<p class="qr-empty">Your codes appear here once Kaayko approves your shop and your first piece.</p>';
+        const section = document.getElementById('qr-retired-section');
+        section.hidden = !retired.length;
+        document.getElementById('qr-retired').innerHTML = retired.map((r) =>
+          `<p><strong>${esc(r.title)}</strong> · ${esc(String(r.link || '').replace('https://', ''))} · ${esc(counts(r))}</p>`).join('');
+        grid.querySelectorAll('[data-copy]').forEach((b) => {
+          b.onclick = async () => {
+            try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = 'Copied'; setTimeout(() => { b.textContent = 'Copy link'; }, 1500); }
+            catch (_) { prompt('Copy this link:', b.dataset.copy); }
+          };
+        });
+      } catch (error) {
+        console.warn('[Dashboard] QR codes failed:', error.message);
+        grid.innerHTML = `<p class="qr-empty">${esc(error.message)}</p>`;
+      }
+    }
+
     /** The shop's own address, kaay.link link and QR, once Kaayko has given it one. */
     function showShop(user) {
       if (!user.storeHandle) return;
@@ -1413,11 +1531,10 @@
       const link = document.getElementById('shop-link');
       url.href = user.storeUrl; url.textContent = user.storeUrl.replace('https://', '');
       link.href = user.storeLink; link.textContent = user.storeLink.replace('https://', '');
-      // Locally the QR comes from the emulated API; in production from kaay.link.
-      const qr = CONFIG.ENVIRONMENT === 'local' ? `${API_BASE}/qr/${encodeURIComponent(user.storeHandle)}.png` : user.storeQr;
+      const qr = qrImage(user.storeHandle);
       document.getElementById('shop-qr').src = qr;
       const download = document.getElementById('shop-qr-download');
-      download.href = qr;
+      download.href = `${qr}?size=1024`;
       download.setAttribute('download', `${user.storeHandle}-qr.png`);
       document.getElementById('shop-copy').onclick = async () => {
         try { await navigator.clipboard.writeText(user.storeLink); alert('Short link copied.'); }
@@ -1440,6 +1557,7 @@
       // .active, so the menu, Settings and Sign Out never opened on a phone.
       sidebar.classList.remove('open');
       if (location.hash.slice(1) !== viewId) history.replaceState(null, '', viewId === 'dashboard' ? location.pathname : `#${viewId}`);
+      if (viewId === 'qr' && typeof loadQrCodes === 'function') loadQrCodes();
     }
     
     document.querySelectorAll('[data-view]').forEach(el => {
@@ -1470,6 +1588,12 @@
       }
       const info = document.createElement('div');
       info.className = 'product-info';
+      // An edit clears the current note; what Kaayko last asked for stays readable from
+      // the history — only the latest decision, and only if it sent something back (an
+      // approval after it means that note was dealt with).
+      const latest = Array.isArray(p.reviewHistory) && p.reviewHistory.length ? p.reviewHistory[p.reviewHistory.length - 1] : null;
+      const lastNote = !p.reviewNote && (p.reviewStatus !== 'approved' || p.pendingReview)
+        && latest && latest.note && !['approved', 'changes-approved'].includes(latest.outcome) ? latest : null;
       const status = p.sellerSuspended ? ['inactive', 'Shop suspended']
         : p.adminHidden ? ['inactive', 'Paused by Kaayko']
         : p.reviewStatus === 'pending' ? ['inactive', 'In review']
@@ -1479,7 +1603,9 @@
         <p class="product-price">${typeof p.actualPrice === 'number' ? `$${p.actualPrice.toFixed(2)}` : ''}</p>
         <span class="product-status ${status[0]}">${status[1]}</span>
         ${p.pendingReview ? `<p class="product-note">Your latest changes are waiting for review; this version stays on sale.</p>` : ''}
-        ${p.reviewNote ? `<p class="product-note">Kaayko: ${esc(p.reviewNote)}</p>` : ''}`;
+        ${p.qrLink && p.qrStatus === 'ready' ? `<p class="product-qr">QR: <a href="#qr" data-view="qr">${esc(p.qrLink.replace('https://', ''))}</a></p>` : ''}
+        ${p.reviewNote ? `<p class="product-note">Kaayko: ${esc(p.reviewNote)}</p>`
+          : lastNote ? `<p class="product-note">Kaayko's last note (${esc(String(lastNote.at || '').slice(0, 10))}): ${esc(lastNote.note)}</p>` : ''}`;
       card.appendChild(info);
       // Edit, hide or show, delete: the seller's own controls (there were none).
       const actions = document.createElement('div');
@@ -1640,8 +1766,18 @@
     });
     
     // Disconnect Google
-    document.getElementById('disconnect-google-btn').addEventListener('click', async () => {
-      if (!confirm('Disconnect your Google account? You can still sign in with your seller email and password.')) {
+    document.getElementById('disconnect-google-btn').addEventListener('click', async (event) => {
+      if (event.currentTarget.dataset.act === 'connect') {
+        try {
+          await connectGoogleSignIn();
+          alert('Google sign-in is on: your Google account at your seller email opens this account.');
+          loadUserData();
+        } catch (error) {
+          if (error.message !== 'Cancelled.') alert('Could not connect Google: ' + error.message);
+        }
+        return;
+      }
+      if (!confirm('Turn off Google sign-in? After this only your seller email and password open this account, and every device is signed out, this one included.')) {
         return;
       }
       
@@ -1649,8 +1785,9 @@
         const response = await authed('/kreators/auth/google/disconnect', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
         const result = await response.json();
         if (result.success) {
-          alert('Google account disconnected.');
-          loadUserData();
+          // Every session ended with it (the server bumped the session version).
+          alert('Google sign-in is off and every device is signed out. Sign in again with your seller email and password.');
+          AUTH.logout('logged_out');
         } else {
           throw new Error(result.message || 'Failed to disconnect');
         }
@@ -1686,6 +1823,7 @@
     loadUserData();
     loadProducts();
     loadOrders();
+    loadQrCodes();
   </script>
 </body>
 </html>

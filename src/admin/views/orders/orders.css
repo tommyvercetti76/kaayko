@@ -250,6 +250,28 @@
   color: var(--text-secondary);
 }
 
+/* "Refund this line": quiet, under the line it acts on. */
+.order-line-refund {
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  background: none;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.order-line-refund:hover { color: var(--text-primary); border-color: var(--text-secondary); }
+
+/* A Kreator's piece in the order: who made it, so it is not printed here by mistake. */
+.order-item-maker {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gold-primary);
+}
+
 .order-item-money {
   flex-shrink: 0;
   font-size: 13px;

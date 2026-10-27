@@ -842,6 +842,7 @@ function createCarouselItem(item) {
 /** The type word people already see in the meta line, so the name drops it. */
 const TYPE_WORDS = /\s*[-–·]?\s*\b(t-?shirts?|tees?|shirts?|totes?|tote bags?|bags?|bottles?|water bottles?|flasks?|magnets?|fridge magnets?|hoodies?|mugs?|stickers?)\b(?=\s*(?:[·\-–]\s*no\.?\s*\d+)?\s*$)/i;
 export function cardName(item) {
+  if (item.byMaker) return String(item.title || "").trim();   // a maker's title is theirs, word for word
   const raw = String(item.title || "").replace(/^kaayko\s+/i, "").trim();
   const short = raw.replace(TYPE_WORDS, "").replace(/^\s*[·\-–]\s*/, "").trim();
   return short.length >= 2 ? short : raw;
@@ -852,7 +853,14 @@ export function cardMeta(item) {
   const parts = [];
   if (isNew(item)) parts.push("New");
   const type = labelForType(item.productType, { singular: true });
-  if (type) parts.push(type);
+  // "Other" is the registry's bucket for a maker's own kind of thing; on a tile it says nothing.
+  if (type && !(item.byMaker && String(item.productType || '').toLowerCase() === 'other')) parts.push(type);
+  // A maker's piece says who made it. The stamp-year and theme lines are the house's:
+  // any year in a maker's description became "2025 stamp" (26 Oct 2026).
+  if (item.byMaker) {
+    if (item.storeName) parts.push(`by ${String(item.storeName).slice(0, 28)}`);
+    return parts.join(" · ");
+  }
   const year = String(item.description || "").match(/\b(1[89]\d{2}|20[0-2]\d)\b/);
   if (year) parts.push(`${year[1]} stamp`);
   else if (item.theme) parts.push(String(item.theme).slice(0, 24));

@@ -374,6 +374,31 @@ export async function connectGoogle(googleIdToken) {
 }
 
 /**
+ * Turn Google sign-in (back) on for the signed-in seller: a Google sign-in at the
+ * seller's own address, which the API checks (26 Oct 2026; nothing called connect
+ * before, and the route did not read what this sent). The Firebase session the
+ * popup opens is closed again; the seller session is unchanged.
+ */
+export async function connectGoogleSignIn() {
+  const auth = firebaseAuth();
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.addScope('email');
+  let idToken;
+  try {
+    const result = await auth.signInWithPopup(provider);
+    idToken = await result.user.getIdToken();
+  } catch (error) {
+    if (error.code === 'auth/popup-closed-by-user') throw new Error('Cancelled.');
+    throw error;
+  }
+  try {
+    return await connectGoogle(idToken);
+  } finally {
+    auth.signOut().catch(() => {});
+  }
+}
+
+/**
  * Disconnect Google account
  */
 export async function disconnectGoogle() {

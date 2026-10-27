@@ -726,6 +726,11 @@ function refreshReady() {
 async function pay() {
   if (state.paying) return;
   if (isReady()) return submitPayment();
+  // A piece in the bag can no longer be bought: Pay leads to it, and its Remove button.
+  if (state.unavailableId) {
+    document.getElementById('co-payment-element')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
   if (!state.elements) {
     if (state.prepError) { state.prepError = null; render(); }
     return;
@@ -808,6 +813,21 @@ async function calculateTax(address) {
       // (The server's total already has any discount taken off; the discount
       // line itself stays as checkout first priced it.)
       updateMoney();
+      refreshReady();
+      return;
+    }
+    // A piece came off sale after checkout priced the bag (the tax step checks
+    // again): name it and offer to remove it, as when checkout refuses it up front.
+    if (res.status === 409 && data.code === 'ITEM_UNAVAILABLE' && data.productId) {
+      state.taxState = 'error';
+      setTaxRow('Unavailable');
+      // The payment form is replaced by the refusal below; without these the hint and
+      // Pay pointed the shopper at their address instead of the piece to remove.
+      state.elements = null;
+      state.parts = {};
+      state.unavailableId = String(data.productId);
+      state.prepError = typeof data.error === 'string' ? data.error : 'A piece in your bag is no longer available.';
+      showPrepFailure();
       refreshReady();
       return;
     }

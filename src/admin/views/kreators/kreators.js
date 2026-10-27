@@ -14,6 +14,8 @@
  *   PUT  /kreators/admin/listings/:id/review {decision, note} → approve (on the store) or send back
  *   GET  /kreators/admin/store-address?name=|handle=      → the shop address and whether it is free
  *   POST /kreators/admin/:uid/store-address {handle}      → give a seller an address (kaay.store/kreator/<h>, kaay.link/<h>)
+ *   PUT  /kreators/admin/:uid/qr-limit {limit}            → how many product QR codes (kaay.link/<h>/<piece>) the shop may hold
+ *   POST /kreators/admin/:uid/qr-codes                    → make the codes its approved pieces are owed (safe to repeat)
  * Approving names the shop: kaay.store/kreator/<handle> and kaay.link/<handle>,
  * checked free on both and on every shelf before the account is created.
  * Every route is requirePlatformAdmin: a self-serve tenant admin gets 403.
@@ -156,6 +158,8 @@ function listingCard(p) {
         ${row('Shop description', escapeHtml(p.storeBio || ''))}
         ${row('Submitted', escapeHtml(p.submittedForReviewAt ? formatDate(p.submittedForReviewAt) : ''))}
         ${row('Last note', escapeHtml(p.reviewNote || ''))}
+        ${row('Earlier notes', (p.reviewHistory || []).filter((h) => h && h.note).slice(-3).reverse()
+          .map((h) => `${escapeHtml(String(h.at || '').slice(0, 10))} · ${escapeHtml(h.outcome || '')}: ${escapeHtml(h.note)}`).join('<br>'))}
       </dl>
       ${actions}
     </article>`;
@@ -260,6 +264,7 @@ function sellerCard(k) {
         <div class="kreators-actions"><button type="button" class="btn btn-primary" data-act="bio-approve" data-uid="${escapeHtml(k.uid)}">Publish it</button><button type="button" class="btn btn-secondary" data-act="bio-reject" data-uid="${escapeHtml(k.uid)}">Return it…</button></div></div>` : ''}
       <dl class="kreators-rows">
         ${row('Listings', escapeHtml(String(k.stats?.totalProducts ?? 0)))}
+        ${row('Product QR codes', escapeHtml(`${k.qrUsed ?? 0} of ${k.qrLimit ?? 25}`))}
         ${row('Location', escapeHtml(k.location || ''))}
         ${row('Approved', escapeHtml(k.createdAt ? formatDate(k.createdAt) : ''))}
       </dl>
@@ -268,6 +273,8 @@ function sellerCard(k) {
         ${!k.storeHandle
           ? `<button type="button" class="btn btn-secondary" data-act="address" data-uid="${escapeHtml(k.uid)}" data-name="${escapeHtml(k.businessName || '')}">Give shop address…</button>`
           : k.storeLinkReady ? '' : `<button type="button" class="btn btn-primary" data-act="finish-link" data-uid="${escapeHtml(k.uid)}" data-handle="${escapeHtml(k.storeHandle)}">Finish kaay.link link</button>`}
+        ${k.storeLinkReady ? `<button type="button" class="btn btn-secondary" data-act="qr-make" data-uid="${escapeHtml(k.uid)}">Make missing QR codes</button>` : ''}
+        <button type="button" class="btn btn-secondary" data-act="qr-limit" data-uid="${escapeHtml(k.uid)}" data-name="${escapeHtml(k.businessName || '')}" data-limit="${escapeHtml(String(k.qrLimit ?? 25))}">Change QR limit…</button>
         ${suspended
           ? `<button type="button" class="btn btn-secondary" data-act="reinstate" data-uid="${escapeHtml(k.uid)}">Reinstate</button>`
           : `<button type="button" class="btn btn-secondary" data-act="suspend" data-uid="${escapeHtml(k.uid)}" data-name="${escapeHtml(k.businessName || '')}">Suspend…</button>`}
@@ -294,7 +301,7 @@ async function chooseHandle(name) {
 async function onAction(e) {
   const btn = e.target.closest('[data-act]');
   if (!btn || btn.disabled) return;
-  const { act, id, uid, name, handle: knownHandle, version } = btn.dataset;
+  const { act, id, uid, name, handle: knownHandle, version, limit: currentLimit } = btn.dataset;
   const mailNote = (d, who) => (d && d.emailQueued ? `${who} has been emailed.` : `The email to ${who.toLowerCase()} did NOT queue.`);
   try {
     if (act === 'approve') {
@@ -327,7 +334,12 @@ async function onAction(e) {
     } else if (act === 'list-approve') {
       btn.disabled = true;
       const d = await getJson(`/kreators/admin/listings/${encodeURIComponent(id)}/review`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ decision: 'approve', version: Number(version) }) });
-      (d.emailQueued ? showSuccess : showError)(`${d.outcome === 'changes-approved' ? 'Changes are live.' : 'Approved: it is on the store.'} ${mailNote(d, 'The seller')}`);
+      // Approval makes the piece's own kaay.link + QR (services/productLinks.js); say which.
+      const qrNote = !d.qr ? '' : d.qr.status === 'ready' ? ` QR: ${String(d.qr.link || '').replace('https://', '')}.`
+        : d.qr.status === 'limit' ? ` No QR code: the shop has used all ${d.qr.limit} (Sellers → Change QR limit).`
+        : d.qr.status === 'waiting' ? ' QR code waits for the shop\'s kaay.link address.'
+        : d.qr.status === 'error' ? ' The QR code was NOT made — Sellers → "Make missing QR codes" retries it.' : '';
+      (d.emailQueued && (!d.qr || d.qr.status !== 'error') ? showSuccess : showError)(`${d.outcome === 'changes-approved' ? 'Changes are live.' : 'Approved: it is on the store.'}${qrNote} ${mailNote(d, 'The seller')}`);
     } else if (act === 'list-reject') {
       const note = prompt('What should the seller change? They see this.', '');
       if (!note || note.trim().length < 5) return;
@@ -352,6 +364,18 @@ async function onAction(e) {
       btn.disabled = true;
       await getJson(`/kreators/admin/${encodeURIComponent(uid)}/status`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'active' }) });
       showSuccess('Reinstated.');
+    } else if (act === 'qr-make') {
+      btn.disabled = true;
+      const d = await getJson(`/kreators/admin/${encodeURIComponent(uid)}/qr-codes`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      (d.failed ? showError : showSuccess)(`${d.made ? `${d.made} QR code${d.made === 1 ? '' : 's'} made` : 'No codes were missing'}; ${d.used} of ${d.limit} in use.${d.failed ? ` ${d.failed} could not be made — try again.` : ''}`);
+    } else if (act === 'qr-limit') {
+      const answer = prompt(`How many product QR codes may ${name || 'this shop'} hold? (now ${currentLimit}; 1–500)\n\nRaising it makes the codes its approved pieces are waiting for. Lowering it never removes a code already made.`, currentLimit);
+      if (answer === null) return;
+      const limit = Number(answer);
+      if (!Number.isInteger(limit) || limit < 1 || limit > 500) { showError('Enter a whole number from 1 to 500.'); return; }
+      btn.disabled = true;
+      const d = await getJson(`/kreators/admin/${encodeURIComponent(uid)}/qr-limit`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ limit }) });
+      showSuccess(`QR limit ${d.limit}. ${d.used} in use${d.made ? `; ${d.made} new code${d.made === 1 ? '' : 's'} made` : ''}.`);
     } else if (act === 'bio-approve' || act === 'bio-reject') {
       const note = act === 'bio-reject' ? prompt('Why is the description not published? The seller sees this.', '') : '';
       if (act === 'bio-reject' && (!note || note.trim().length < 5)) return;
