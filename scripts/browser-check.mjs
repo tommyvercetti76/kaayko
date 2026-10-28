@@ -360,7 +360,7 @@ async function main() {
         if (!r.you) p.push('no "Your lake here" card');
         if (!r.adds.length || r.adds.some(h => h !== '/paddlingout/search?mode=add&picks=1')) p.push(`Add buttons go to ${r.adds.join(', ')}`);
         if (!r.star) p.push('the header star is not marked current');
-        if (r.rules !== 9) p.push(`${r.rules} rules, expected 9`);
+        if (r.rules !== 10) p.push(`${r.rules} rules, expected 10`);   // 10 since "Your Mapmakers page" (28 Oct 2026)
         return p;
       }, { settle: 5000 });
 
