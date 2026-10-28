@@ -191,6 +191,11 @@
 .al-extras-h { margin: 0 0 1rem; font: 600 0.82rem var(--font-sans); letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold-bright); }
 .al-extras-h span { margin-left: 0.4rem; color: var(--muted); letter-spacing: 0.04em; text-transform: none; font-weight: 400; }
 .al-after { display: grid; gap: 0.4rem; justify-items: center; }
+/* Mapmakers (28 Oct 2026): the name for "Added by" + the monthly-picks opt-in */
+.al-maker { margin: 1.4rem 0 1.1rem; padding-top: 1.1rem; border-top: 1px solid rgba(181, 147, 90, 0.2); }
+.al-tog--wide { display: flex; width: 100%; box-sizing: border-box; padding: 0.7rem 1rem; line-height: 1.35; }
+.al-tog--wide input { flex: 0 0 auto; }
+.al-maker-fine { text-align: left; margin-top: 0.6rem; }
 
 /* ── Foot: the one button ────────────────────────────────────────────── */
 .al-foot {

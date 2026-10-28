@@ -80,6 +80,7 @@
 - `kaayko/src/js/components/PoHeader.js` — the one page header
 - `kaayko/src/css/tokens.css` — the only token sheet; `css/po-system.css` — chamfers + field styles (po-tokens.css was folded into these); `css/search.css` — search layout (map panel pinned only on screens ≥700 px tall)
 - `kaayko/src/js/pages/search.js` — Find tab; `js/pages/addlake.js` + `css/addlake.css` — Add a lake + Suggest an edit
+- `kaayko/src/paddlingout/mapmakers.html` — /paddlingout/mapmakers: Mapmakers (names on lakes, monthly picks, #rules). `kaayko-api/functions/api/weather/contributors.js` — contributor id, name rules, live-lake count (28 Oct 2026)
 - `kaayko/src/js/services/apiClient.js` — fetch wrapper with fallback generation + caching
 - `kaayko/src/js/components/RatingHero.js` — paddle score display
 - `kaayko/src/js/components/SafetyWarnings.js` — safety alerts
@@ -88,16 +89,16 @@
 **APIs used:**
 ```
 GET  /api/paddlingOut                          → all PUBLIC paddle spots + cached scores (no `tags`: removed 13 Oct 2026, schema in kaayko-api `spotSchema.js`)
-GET  /api/paddlingOut/{id}                    → single spot detail (404 if hidden)
+GET  /api/paddlingOut/{id}                    → single spot detail (404 if hidden); `addedBy` {name, lakes} on a community lake (null on curated) — Mapmakers, contributors.js
 GET  /api/paddlingOut/geocode?q=              → cached Nominatim forward proxy
 GET  /api/paddlingOut/reverse-geocode?lat=&lng= → cached Nominatim reverse → {city,region,country,water}
 GET  /api/paddlingOut/locate?lat=&lng=        → water near the pin (USGS NHD, ranked by distance to shore; inside/edgeM) + place (Census TIGERweb: town, county, state); OSM/HydroLAKES outside the US (spotLocate.js)
 POST /api/paddlingOut/submitEntry             → community spot (multipart, 1–5 photos, EXIF stripped, honeypot `website`); place derived server-side from the pin; returns a one-time detailsToken
-POST /api/paddlingOut/submissions/{id}/details → JSON {token, note, parkingAvl, restroomsAvl, email} after submit; 24 h, pending only (communityEdits.js)
+POST /api/paddlingOut/submissions/{id}/details → JSON {token, note, parkingAvl, restroomsAvl, email, creditName, mapmakerOptIn} after submit; 24 h, pending only (communityEdits.js). creditName = "Added by" (2–40 chars, never "Kaayko"); mapmakerOptIn needs an email
 POST /api/paddlingOut/spots/{id}/suggest      → suggested edit to a live spot (multipart, 0–5 photos) → paddling_lake_submissions kind:'edit'; photos wait in images/paddling_out_pending/
 --- platform admin only (requireAuth + requireAdmin + requirePlatformAdmin; the X-Admin-Key way in was removed 3 Oct 2026) ---
 GET  /api/paddlingOut/admin/submissions       → review queue, new lakes and edits (+ possibleDuplicateOf, place/water sources; edits carry proposed + live)
-POST /api/paddlingOut/admin/submissions/{id}/validate → new: publish; refuses an incomplete spot (spotSchema.publicSpotProblems); water type from pick/USGS/hint/name; warms score inline. edit: body {fields:[…]} applies only those changes, copies ticked photos in under the spot's naming rule, audits
+POST /api/paddlingOut/admin/submissions/{id}/validate → new: publish; refuses an incomplete spot (spotSchema.publicSpotProblems); water type from pick/USGS/hint/name; warms score inline; body `creditName` (the review card's box) → spot `addedBy`, submission `contributorId` (HMAC of the normalised email) + links that person's earlier lakes. edit: body {fields:[…]} applies only those changes, copies ticked photos in under the spot's naming rule, audits
 POST /api/paddlingOut/admin/submissions/{id}/reject   → new: hide + delete every prefixed photo; edit: live spot untouched, pending photos deleted; body {rejectionReason}
 GET  /api/paddlingOut/admin/spots[/{id}]      → whole catalogue incl. hidden, with isPublic/photos/hasCachedScore
 PATCH /api/paddlingOut/admin/spots/{id}       → edit whitelisted fields, archived (publish toggle); live spots must stay complete; audit → paddling_spot_audit

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en" class="dark-theme">
+<head>
+  <script src="/js/prod-config.js"></script>
+  <script>document.documentElement.classList.add('dark-theme');</script>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Kaayko Mapmakers — Add a Lake to Paddling Out</title>
+  <meta name="description" content="Paddling Out is mapped by the people who paddle it. Add a lake you know and your name goes on it. Each month we pick up to ten new lakes by hand.">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <link rel="canonical" href="https://kaayko.com/paddlingout/mapmakers">
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://kaayko.com/paddlingout/mapmakers">
+  <meta property="og:title" content="Kaayko Mapmakers — Add a Lake to Paddling Out">
+  <meta property="og:description" content="Add a lake you know and your name goes on it. Each month we pick up to ten new lakes by hand.">
+  <meta property="og:image" content="https://kaayko.com/assets/kaayko-og.png?v=20261021">
+  <meta property="og:site_name" content="Kaayko">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Kaayko Mapmakers — Add a Lake to Paddling Out">
+  <meta name="twitter:description" content="Add a lake you know and your name goes on it. Each month we pick up to ten new lakes by hand.">
+  <meta name="twitter:image" content="https://kaayko.com/assets/kaayko-og.png?v=20261021">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": "https://kaayko.com/paddlingout/mapmakers#page",
+        "name": "Kaayko Mapmakers",
+        "description": "How paddlers add lakes to Paddling Out, how their names appear on them, and how the monthly picks work.",
+        "url": "https://kaayko.com/paddlingout/mapmakers",
+        "inLanguage": "en",
+        "datePublished": "2026-10-28",
+        "isPartOf": { "@id": "https://kaayko.com/#website" },
+        "publisher": { "@id": "https://kaayko.com/#organization" }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://kaayko.com/" },
+          { "@type": "ListItem", "position": 2, "name": "Paddling Out", "item": "https://kaayko.com/paddlingout" },
+          { "@type": "ListItem", "position": 3, "name": "Mapmakers", "item": "https://kaayko.com/paddlingout/mapmakers" }
+        ]
+      }
+    ]
+  }
+  </script>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <meta name="theme-color" content="#080808">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/base.css">
+<style>
+:root {
+  --bg: #080808;
+  --surface: #18160f;
+  --fg: #ede8df;
+  --muted: rgba(237,232,223,0.6);
+  --gold: #b5935a;
+  --gold-bright: #d9bd7b;
+  --line: rgba(181,147,90,0.20);
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'Josefin Sans', Arial, sans-serif;
+}
+html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+.theme-toggle-icon { display: none !important; }
+
+/* body is display:flex (sticky footer); min-width:0 lets this flex item shrink
+   below its widest child instead of overflowing the mobile viewport. */
+.mm-wrap { max-width: 720px; width: 100%; box-sizing: border-box; min-width: 0; margin: 0 auto; padding: 0 1.25rem 3rem; }
+.mm-wrap > * { min-width: 0; max-width: 100%; }
+
+.mm-header { text-align: center; padding: 1.8rem 0 2rem; }
+.mm-eyebrow { font: 400 0.7rem var(--font-sans); letter-spacing: 0.28em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.4rem; }
+.mm-title { font: 400 clamp(2.6rem, 11vw, 4.2rem)/0.95 'Bebas Neue', var(--font-sans); letter-spacing: 0.06em; color: var(--fg); margin: 0; }
+.mm-subtitle { font: 400 italic clamp(1.05rem, 2.6vw, 1.25rem)/1.45 var(--font-serif); color: var(--muted); margin: 0.6rem auto 0; max-width: 32rem; }
+
+.mm-section { margin-bottom: 2.6rem; scroll-margin-top: 5rem; }
+.mm-section h2 {
+  font: 600 0.75rem var(--font-sans); letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--gold); margin: 0 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--line);
+}
+.mm-section p, .mm-section li {
+  font: 400 1.05rem var(--font-serif); color: var(--fg); line-height: 1.65; margin: 0 0 0.8rem;
+}
+.mm-section ul, .mm-section ol { padding-left: 1.2rem; margin: 0 0 1rem; }
+.mm-section li { margin-bottom: 0.45rem; }
+.mm-section strong { color: var(--gold-bright); font-weight: 600; }
+.mm-section a { color: var(--gold-bright); text-underline-offset: 3px; }
+.mm-section a:hover { color: var(--fg); }
+
+.mm-section .mm-steps { margin: 1rem 0 0; padding: 0; list-style: none; counter-reset: step; display: grid; gap: 0.55rem; }
+.mm-section .mm-steps li {
+  display: flex; gap: 0.85rem; align-items: baseline; margin: 0;
+  border: 1px solid var(--line); background: rgba(0,0,0,0.25); padding: 0.75rem 0.95rem;
+}
+.mm-steps li::before {
+  counter-increment: step; content: counter(step, decimal-leading-zero);
+  font: 600 0.8rem var(--font-sans); color: var(--gold); flex: 0 0 auto;
+}
+.mm-steps b { font: 600 0.78rem var(--font-sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--fg); display: block; margin-bottom: 0.15rem; }
+.mm-steps span { font: 400 1rem/1.5 var(--font-serif); color: rgba(237,232,223,0.8); display: block; }
+
+.mm-picks {
+  border: 1px solid rgba(217,189,123,0.35); background: linear-gradient(135deg, rgba(181,147,90,0.12), rgba(181,147,90,0.03));
+  padding: 1.2rem 1.25rem 0.6rem; margin: 0 0 1rem;
+}
+.mm-picks .mm-big { font: 400 clamp(1.9rem, 7vw, 2.6rem)/1 'Bebas Neue', var(--font-sans); letter-spacing: 0.05em; color: var(--gold-bright); margin: 0 0 0.6rem; }
+
+.mm-cta { display: grid; gap: 0.6rem; justify-items: center; margin: 2.4rem 0 2.8rem; }
+.mm-cta a.mm-btn {
+  display: flex; align-items: center; justify-content: center; width: 100%; max-width: 360px; min-height: 54px;
+  box-sizing: border-box; text-decoration: none; clip-path: var(--clip-md, polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px));
+  background: linear-gradient(135deg, #e6cd8e, var(--gold)); color: #141210;
+  font: 600 0.92rem var(--font-sans); letter-spacing: 0.16em; text-transform: uppercase;
+}
+.mm-cta a.mm-btn:hover { filter: brightness(1.06); }
+.mm-cta a.mm-btn:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 3px; }
+.mm-cta p { margin: 0; font: italic 0.95rem var(--font-serif); color: var(--muted); text-align: center; }
+
+.mm-rules ol { padding-left: 1.3rem; }
+.mm-rules li { font-size: 0.98rem; }
+.mm-meta { font: italic 0.92rem var(--font-serif); color: var(--muted); }
+
+.site-footer {
+  text-align: center; padding: 2.5rem 2rem;
+  font: 400 0.7rem var(--font-sans); letter-spacing: 0.12em; color: var(--muted);
+  background: var(--surface); border-top: 1px solid var(--line); margin-top: 2rem;
+}
+.site-footer nav { display: flex; justify-content: center; flex-wrap: wrap; gap: 1.2rem; margin-bottom: 0.8rem; }
+.site-footer a { color: var(--gold); text-decoration: none; font: 400 0.7rem var(--font-sans); letter-spacing: 0.12em; }
+.site-footer a:hover { color: var(--gold-bright); }
+.site-footer p { margin: 0.2rem 0 0; }
+</style>
+  <link rel="stylesheet" href="/css/footer.css">
+  <script src="/js/prefs.js"></script>
+  <script src="/js/util.js"></script>
+  <script src="/js/kaayko-icons.js" defer></script>
+  <link rel="stylesheet" href="/js/components/PoHeader.css">
+  <script src="/js/components/PoHeader.js"></script>
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/po-system.css">
+</head>
+<body>
+<div id="po-header" data-title="Mapmakers" data-title-tag="h2" data-eyebrow="Paddling Out" data-back="/paddlingout" data-current="none"></div>
+<script>PoHeader.mount()</script>
+
+<main class="mm-wrap">
+
+  <div class="mm-header">
+    <div class="mm-eyebrow">Kaayko Mapmakers</div>
+    <h1 class="mm-title">Put your lake on the map</h1>
+    <p class="mm-subtitle">The map is drawn by the people who paddle it. Add a lake you know, and your name goes on it.</p>
+  </div>
+
+  <section class="mm-section">
+    <h2 data-kicon="pin">How a lake gets here</h2>
+    <p>Paddling Out only lists water we can stand behind. Every lake a paddler sends is checked by a person at Kaayko before it appears: the pin, the photos and the water it names.</p>
+    <ol class="mm-steps">
+      <li><div><b>Add it</b><span>Photos of the water and the put-in, then the pin where you actually launch. A couple of minutes on a phone.</span></div></li>
+      <li><div><b>Sign it</b><span>On the last screen, give the name you want on it. Leave it blank to stay anonymous.</span></div></li>
+      <li><div><b>We check it</b><span>A person looks at every entry. If it can&rsquo;t go on the map, we tell you why, if you left an email.</span></div></li>
+      <li><div><b>It goes live</b><span>The lake&rsquo;s page says <em>Added by</em> and your name, with how many of your lakes are on Kaayko. On the map it carries a Community mark.</span></div></li>
+    </ol>
+  </section>
+
+  <section class="mm-section" id="picks">
+    <h2 data-kicon="star">The monthly picks</h2>
+    <div class="mm-picks">
+      <p class="mm-big">Up to ten a month</p>
+      <p>Each month we pick up to ten of the new lakes. We pick them by hand, for the photos, the pin and the note. Sending the most lakes doesn&rsquo;t decide it, and nothing is drawn at random. Some months we will pick fewer.</p>
+      <p>The people who found them get a Kaayko piece made for Mapmakers. It isn&rsquo;t sold in the store.</p>
+    </div>
+    <p><strong>To be considered</strong>, tick <em>Put this lake up for the monthly picks</em> on the last screen and leave your email. It is the only way we can reach you.</p>
+    <p>The first picks are made at the end of November 2026, and every lake added from today counts. Pieces ship to US addresses for now.</p>
+  </section>
+
+  <section class="mm-section">
+    <h2 data-kicon="eye">What we look for</h2>
+    <ul>
+      <li><strong>A public put-in.</strong> Somewhere anyone may launch, not a private dock or a back yard.</li>
+      <li><strong>Your own photos</strong> of the water and of the launch. No screenshots, nothing taken from another site.</li>
+      <li><strong>The pin on the launch,</strong> not the middle of the lake.</li>
+      <li><strong>Water that is not on the map yet.</strong> If it already is, use <em>Suggest an edit</em> on its page.</li>
+      <li><strong>A note that helps the next paddler:</strong> where to park, the fee, what the wind does after noon.</li>
+    </ul>
+  </section>
+
+  <section class="mm-section">
+    <h2 data-kicon="shield">Your name, your call</h2>
+    <p>Only the name you choose is shown. Your email is never shown. We use it to tell you when your lake is live and whether it is picked, and nothing else. To have your name taken off a lake at any time, write to <a href="mailto:help@kaayko.com">help@kaayko.com</a>. The details are in our <a href="/privacy#lake-submissions">privacy policy</a>.</p>
+  </section>
+
+  <div class="mm-cta">
+    <a class="mm-btn" href="/paddlingout/search?mode=add">Add a lake</a>
+    <p>Already know one we&rsquo;re missing? That&rsquo;s the one.</p>
+  </div>
+
+  <section class="mm-section mm-rules" id="rules">
+    <h2 data-kicon="document">The rules</h2>
+    <p class="mm-meta">Effective 28 October 2026.</p>
+    <ol>
+      <li><strong>Who can take part.</strong> Anyone may add a lake. To be picked you must be 18 or older and have given an email. Pieces ship to US addresses only for now.</li>
+      <li><strong>How picks are made.</strong> Kaayko picks up to ten new lakes each calendar month, judged on the photos, the accuracy of the pin and how useful the note is. Kaayko&rsquo;s choice is final. A month may have fewer than ten picks, or none. Only new lakes that Kaayko approves count; suggested edits do not.</li>
+      <li><strong>How often.</strong> One pick per person per month, however many lakes you add, and one piece per shipping address per month.</li>
+      <li><strong>Hearing from us.</strong> We email the people picked within seven days of the month&rsquo;s end. The email carries a personal link that works once. Claim your piece with it within 30 days, or it lapses.</li>
+      <li><strong>The piece.</strong> A Kaayko item made for Mapmakers, worth under $25. It cannot be exchanged for money or for another item.</li>
+      <li><strong>Nothing to buy.</strong> No purchase or payment is needed to take part or to receive a piece. Shipping is included.</li>
+      <li><strong>Your photos and your lake.</strong> You confirm the photos are yours and the launch is open to the public. You allow Kaayko to show your photos, pin, note and chosen name on Paddling Out. You can ask for your name to come off at any time.</li>
+      <li><strong>Changes.</strong> Kaayko may change or end the monthly picks at any time. Kaayko may refuse or withdraw a pick that breaks these rules, for example photos that are not yours or a launch that is not public.</li>
+      <li><strong>Not a safety endorsement.</strong> A lake on Paddling Out is not a statement that it is safe to paddle. Check the conditions and the local rules before you go.</li>
+    </ol>
+    <p>Questions: <a href="mailto:help@kaayko.com">help@kaayko.com</a>.</p>
+  </section>
+
+</main>
+
+  <footer class="site-footer">
+    <nav aria-label="Footer">
+      <a href="/paddlingout">Paddling Out</a>
+      <a href="/paddlingout/methodology">Methodology</a>
+      <a href="/about">About</a>
+      <a href="/privacy">Privacy</a>
+    </nav>
+    <p>&copy; <span id="year">2026</span> Kaayko. All rights reserved.</p>
+  </footer>
+
+</body>
+</html>

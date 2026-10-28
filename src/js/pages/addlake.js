@@ -496,10 +496,18 @@
     if (!S.result || !S.result.token) return;
     var email = $('al-email').value.trim();
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { say('al-extras-msg', 'That email address does not look right.', 'error'); return; }
+    // Mapmakers: the name for "Added by" and the monthly-picks opt-in. The
+    // server checks both again; the picks need an email to reach the person.
+    var name = $('al-name').value.replace(/\s+/g, ' ').trim();
+    var picks = $('al-picks').checked;
+    if (name && name.length < 2) { say('al-extras-msg', 'Use at least 2 characters for your name.', 'error'); $('al-name').focus(); return; }
+    if (picks && !email) { say('al-extras-msg', 'Add your email so we can tell you if your lake is picked.', 'error'); $('al-email').focus(); return; }
     var body = {
       token: S.result.token,
       parkingAvl: $('al-parking').checked ? 'Y' : 'N',
-      restroomsAvl: $('al-restrooms').checked ? 'Y' : 'N'
+      restroomsAvl: $('al-restrooms').checked ? 'Y' : 'N',
+      creditName: name,
+      mapmakerOptIn: picks
     };
     var note = $('al-note').value.trim();
     if (note) body.note = note;
@@ -511,7 +519,8 @@
     });
     btn.disabled = false; btn.textContent = 'Save';
     if (!r.ok || !r.data || !r.data.success) { say('al-extras-msg', errorText(r, 'Could not save. Please try again.'), 'error'); return; }
-    say('al-extras-msg', email ? 'Saved. We will email you when it is live.' : 'Saved. Thank you.', 'ok');
+    say('al-extras-msg', picks ? 'Saved. Your lake is up for the monthly picks, and we will email you when it is live.'
+      : email ? 'Saved. We will email you when it is live.' : 'Saved. Thank you.', 'ok');
   });
   $('al-another').addEventListener('click', startOver);
   $('al-tomap').addEventListener('click', function () {
@@ -520,8 +529,8 @@
   });
 
   function clearInputs() {
-    ['al-note', 'al-email', 'al-other', 'al-search', 'al-e-name', 'al-e-note', 'al-e-email'].forEach(function (id) { if ($(id)) $(id).value = ''; });
-    ['al-parking', 'al-restrooms', 'al-e-parking', 'al-e-restrooms'].forEach(function (id) { if ($(id)) $(id).checked = false; });
+    ['al-note', 'al-email', 'al-name', 'al-other', 'al-search', 'al-e-name', 'al-e-note', 'al-e-email'].forEach(function (id) { if ($(id)) $(id).value = ''; });
+    ['al-parking', 'al-restrooms', 'al-picks', 'al-e-parking', 'al-e-restrooms'].forEach(function (id) { if ($(id)) $(id).checked = false; });
     ['al-photos-msg', 'al-pin-msg', 'al-water-msg', 'al-extras-msg', 'al-edit-msg'].forEach(function (id) { say(id, ''); });
   }
   function startOver() {

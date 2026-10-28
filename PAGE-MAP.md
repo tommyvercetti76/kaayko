@@ -92,7 +92,8 @@ Agents: identify the page here, then look up the module in MODULE-MAP.md for ful
 | `/` | `src/index.html` → `js/pages/card.js` — the card (it was `/card` until 22 Oct 2026; `/card` and `/card.html` now 301 to `/`, and on kaay.store to `https://kaayko.com/`). `window.KaaykoCard.start()/stop()`; card modules carry `?v=` stamps, re-run `npm run stamp` when they change |
 | `/archive/home-2026` | `src/archive/home-2026.html` → `js/pages/home-entrance.js` + `js/pages/index.js` — the split landing that was `/` until 22 Oct 2026, kept unlinked and `noindex` (not served on kaay.store) |
 | `/paddlingout` | `src/paddlingout.html` |
-| `/paddlingout/forecast?id=` | `src/paddlingout/forecast.html` → `js/pages/forecast.js` (all page logic; lake-local time from `js/services/spotTime.js`; API shapes in `js/contracts/paddling.js`) |
+| `/paddlingout/forecast?id=` | `src/paddlingout/forecast.html` → `js/pages/forecast.js` (all page logic; lake-local time from `js/services/spotTime.js`; API shapes in `js/contracts/paddling.js`). The Spot card's first row is "Added by" on a community lake (`creditRow`) |
+| `/paddlingout/mapmakers` | `src/paddlingout/mapmakers.html` — Mapmakers: how paddlers add lakes, names on lakes, the monthly picks, `#rules` (static, no API; 28 Oct 2026) |
 | `/about` | `src/about.html` |
 | `/store` (kaay.store `/`) | `src/store.html` → `js/pages/store.js` |
 | `/cart` | `src/cart.html` → `js/pages/cart.js` |

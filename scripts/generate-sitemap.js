@@ -17,6 +17,7 @@ const routes = [
   { loc: '/paddlingout', source: 'src/paddlingout.html', changefreq: 'daily', priority: '1.0' },
   { loc: '/paddlingout/search', source: 'src/paddlingout/search.html', changefreq: 'weekly', priority: '0.9' },
   { loc: '/paddlingout/methodology', source: 'src/paddlingout/methodology.html', changefreq: 'monthly', priority: '0.8' },
+  { loc: '/paddlingout/mapmakers', source: 'src/paddlingout/mapmakers.html', changefreq: 'monthly', priority: '0.7' },
   // NOTE: /store is intentionally absent — it is invite-only and marked noindex.
   // Re-add here (and drop the noindex in src/store.html) only when the storefront
   // serves real, crawlable product content.

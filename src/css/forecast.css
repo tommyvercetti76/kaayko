@@ -1274,3 +1274,11 @@ main.forecast-main {
   text-decoration: underline; text-underline-offset: 3px;
 }
 .loc-edit:hover { color: var(--fg, #ede8df); }
+
+/* "Added by" on a lake a paddler sent in (Mapmakers, 28 Oct 2026) */
+.loc-credit .loc-credit-count { color: var(--muted, rgba(237,232,223,0.6)); font-size: 0.9rem; }
+.loc-credit .loc-credit-link {
+  margin-left: 0.4rem; font-family: var(--font-sans); font-size: 0.62rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--gold, #b5935a); text-decoration: none; white-space: nowrap;
+}
+.loc-credit .loc-credit-link:hover { color: var(--gold-bright, #d9bd7b); }

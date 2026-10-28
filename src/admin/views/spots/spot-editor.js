@@ -99,6 +99,9 @@ export function renderEditor(spot) {
         <label class="se-wide">YouTube URL
           <input name="youtubeURL" type="url" maxlength="300" value="${escapeHtml(spot.youtubeURL || '')}" placeholder="https://youtube.com/…">
         </label>
+        ${spot.communitySubmission && spot.submissionStatus === 'validated' ? `<label class="se-wide">Added by <span class="se-hint">Shown on the lake&rsquo;s page. Clear it if the person asks to be taken off.</span>
+          <input name="addedByName" type="text" maxlength="40" autocomplete="off" value="${escapeHtml(spot.addedByName || '')}" data-orig="${escapeHtml(spot.addedByName || '')}">
+        </label>` : ''}
         <details class="se-wide se-advanced"${spot.status || spot.facts ? ' open' : ''}>
         <summary>Advanced: closure &amp; know-before-you-go <span class="se-hint">JSON, optional. Leave empty if unsure</span></summary>
         <div class="se-grid">
@@ -171,6 +174,9 @@ export function collectPatch(form) {
     patch.lat = Number(lat); patch.lng = Number(lng);
   }
   if (!patch.title) return { field: 'title', error: 'Name cannot be empty.' };
+  // "Added by" is sent only when it changed, so an ordinary save never touches it.
+  const credit = form.querySelector('[name="addedByName"]');
+  if (credit && credit.value.trim() !== (credit.dataset.orig || '')) patch.addedByName = credit.value.trim();
   return { patch };
 }
 

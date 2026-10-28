@@ -318,6 +318,24 @@
   color: var(--text-muted);
 }
 
+/* Mapmakers (28 Oct 2026): the name on the lake + the monthly-picks opt-in */
+.sub-credit-input {
+  min-height: 40px;
+  max-width: 320px;
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-input, transparent);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 16px;
+}
+.sub-pill--picks {
+  color: var(--gold-primary, #d4a84b);
+  border-color: rgba(212, 168, 75, 0.45);
+  background: rgba(212, 168, 75, 0.08);
+}
+
 .sub-actions .btn {
   flex: 1;
   justify-content: center;

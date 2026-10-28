@@ -306,6 +306,29 @@
   color: rgba(237, 232, 223, 0.62);
 }
 
+/* ── "Community" chip (28 Oct 2026): a lake a paddler sent in. The only chip;
+   admin-typed tags were removed 13 Oct 2026 and stay removed. ─────────── */
+.pcard-tags {
+  position: absolute; top: 8px; left: 8px; z-index: 4;
+  display: flex; gap: 4px; max-width: 70%;
+  pointer-events: none;
+}
+.pcard-tag {
+  --cn: 5px;
+  display: inline-block;
+  padding: 4px 8px 3px;
+  font-family: 'Josefin Sans', Arial, sans-serif;
+  font-size: 0.56rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+  color: #f2e6c4;
+  background: rgba(12, 11, 9, 0.55);
+  -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
+  border: 1px solid rgba(217, 189, 123, 0.35);
+  clip-path: polygon(var(--cn) 0, calc(100% - var(--cn)) 0, 100% var(--cn), 100% calc(100% - var(--cn)),
+    calc(100% - var(--cn)) 100%, var(--cn) 100%, 0 calc(100% - var(--cn)), 0 var(--cn));
+}
+.pcard-tag--community { color: #d9bd7b; }
+.card .pcard-tags { top: 0.9rem; left: 0.9rem; }
+
 @media (prefers-reduced-motion: reduce) {
   .pcard--minimal, .pcard-img, .pcard-caret, .pcard-submit { transition: none; }
   .pcard.card-enter, .pcard--minimal.pcard-loved, .pcard-heart.go { animation: none; }

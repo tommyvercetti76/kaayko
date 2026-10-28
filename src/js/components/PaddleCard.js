@@ -72,6 +72,7 @@
       youtubeURL: spot.youtubeURL || '',
       waterType: spot.waterType || null,
       coverageGrade: (spot.cellCoverage && spot.cellCoverage.grade) || null,
+      community: spot.communitySubmission === true,
       // The raw paddleScore block, kept so the card can show WHY (see whyState).
       // Never read for the displayed number — that stays `rating` above.
       score: (spot.paddleScore && typeof spot.paddleScore === 'object') ? spot.paddleScore : null,
@@ -106,8 +107,20 @@
     return img;
   }
 
-  // No corner chip (13 Oct 2026). Free-form admin tags made the same kind of
-  // spot read COMMUNITY, VERIFIED or BOAT RAMP; the schema no longer has tags.
+  // One corner chip, and only this one (28 Oct 2026): "Community" on a lake a
+  // paddler sent in, read from the API's communitySubmission. Free-form admin
+  // tags (COMMUNITY / VERIFIED / BOAT RAMP for the same kind of spot) were
+  // removed on 13 Oct 2026 and stay removed. Who added it is on the lake's own
+  // page ("Added by"), not on the card.
+  function buildCommunityChip(data) {
+    if (!data.community) return null;
+    var wrap = el('div', 'pcard-tags');
+    var chip = el('span', 'pcard-tag pcard-tag--community');
+    chip.textContent = 'Community';
+    chip.title = 'Added by a paddler, checked by Kaayko';
+    wrap.appendChild(chip);
+    return wrap;
+  }
 
   // Canonical 3-tier scale (matches prefs.js paddleScoreColor + the verdict labels).
   function scoreMeta(rating) {
@@ -471,6 +484,9 @@
       media.appendChild(fav);
     }
 
+    var chipMin = buildCommunityChip(data);
+    if (chipMin) media.appendChild(chipMin);
+
     // meta overlay
     var meta = el('div', 'pcard-meta');
     var title = el('span', 'pcard-title'); title.textContent = data.title;
@@ -560,6 +576,8 @@
       window.location.href = '/paddlingout/forecast?id=' + encodeURIComponent(data.id);
     });
     media.appendChild(badge);
+    var chipFull = buildCommunityChip(data);
+    if (chipFull) media.appendChild(chipFull);
 
     // dots
     var dots = el('div', 'carousel-dots');

@@ -597,6 +597,17 @@ window.addEventListener('kaayko:unitschange', () => {
   if (__lastLocInfo) renderLocationInfo(__lastLocInfo.location, __lastLocInfo.spot);
 });
 
+// Who added a lake that came from a paddler (Mapmakers, 28 Oct 2026). The API
+// sends the name they chose and how many of their lakes are live, never who
+// they are; a curated spot has no `addedBy` and gets no row.
+function creditRow(spot) {
+  const by = spot?.addedBy;
+  if (!by) return '';
+  const who = by.name ? esc(by.name) : 'A paddler';
+  const more = by.name && by.lakes > 1 ? ` <span class="loc-credit-count">&middot; ${Number(by.lakes)} lakes on Kaayko</span>` : '';
+  return `<div class="loc-row loc-credit"><span class="loc-label">Added by</span><span>${who}${more} <a class="loc-credit-link" href="/paddlingout/mapmakers">Mapmakers</a></span></div>`;
+}
+
 function renderLocationInfo(location, spot) {
   if (!location) return;
   __lastLocInfo = { location, spot };
@@ -621,6 +632,7 @@ function renderLocationInfo(location, spot) {
 
   document.getElementById('locationInfo').innerHTML = `
     <div class="card-eyebrow">The Spot</div>
+    ${creditRow(spot)}
     <div class="loc-row"><span class="loc-label">Region</span><span>${esc(location.region || '—')}, ${esc(location.country || '—')}</span></div>
     <div class="loc-row"><span class="loc-label">Local Time</span><span>${formatLocalTime(location, spot)}</span></div>
     <div class="loc-row"><span class="loc-label">Coordinates</span><span>${coordsCell}</span></div>

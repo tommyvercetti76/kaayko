@@ -47,6 +47,8 @@ const approveBlocked = new Map();
 const WATER_TYPES = ['lake', 'reservoir', 'river', 'coastal', 'bay', 'canal'];
 // id → the water type the reviewer picked on the card (survives re-renders).
 const pickedWaterType = new Map();
+// id → the "Name on the lake" box as the reviewer left it (survives re-renders).
+const editedCredit = new Map();
 
 // Live DOM references, re-bound on every init() (the view module is cached but
 // init runs on each navigation, replacing the container's contents).
@@ -132,6 +134,11 @@ export async function init(STATE) { // eslint-disable-line no-unused-vars
     if (flag) flag.remove();
   });
 
+  listEl.addEventListener('input', (e) => {
+    if (!e.target.matches('[data-credit-for]')) return;
+    editedCredit.set(e.target.dataset.creditFor, e.target.value);
+  });
+
   const refreshBtn = container.querySelector('#submissions-refresh');
   if (refreshBtn) refreshBtn.addEventListener('click', () => load());
 
@@ -188,7 +195,13 @@ async function approve(id, btn) {
     // the old values. Save them first; a bad field stops the approval there.
     const editorHost = card && card.querySelector('.sub-editor');
     if (editorHost && !editorHost.hidden) await saveEditorIfDirty(editorHost);
-    const result = await postAction(id, 'validate', waterType ? { waterType } : {});
+    const body = waterType ? { waterType } : {};
+    // The name rides with Approve exactly as the box reads; empty = no name.
+    const creditBox = card && card.querySelector(`[data-credit-for="${CSS.escape(id)}"]`);
+    if (creditBox) body.creditName = creditBox.value.trim();
+    const result = await postAction(id, 'validate', body);
+    if (sub && result) sub.creditName = result.credit || null;
+    editedCredit.delete(id);
     markStatus(id, 'validated');
     const score = result && result.paddleScore;
     if (score && score.warmed) {
@@ -462,6 +475,7 @@ function submissionCard(sub) {
         ${launchHint}
         ${description}
         ${note}
+        ${mapmakerLines(sub, id, status)}
         <div class="sub-amenities">${boolPill('Parking', sub.parkingAvl)}${boolPill('Restrooms', sub.restroomsAvl)}</div>
         <div class="sub-meta">
           <span class="sub-meta-item">By ${submitter}</span>
@@ -474,6 +488,29 @@ function submissionCard(sub) {
       <div class="sub-editor" data-editor-for="${jsAttr(id)}" ${editing ? '' : 'hidden'}></div>
     </article>
   `;
+}
+
+/**
+ * Mapmakers (28 Oct 2026). The name the person asked to show is an editable box
+ * while the lake is pending — Approve publishes whatever it says, and an empty
+ * box leaves the lake unnamed. After Approve it reads as it appears publicly.
+ * Nobody is named who did not ask to be, so there is no box without a name.
+ */
+function mapmakerLines(sub, id, status) {
+  const picks = sub.mapmakerOptIn
+    ? '<div class="sub-amenities"><span class="sub-pill sub-pill--picks">Up for the monthly picks</span></div>'
+    : '';
+  if (status === 'pending' && sub.creditName) {
+    const value = editedCredit.has(id) ? editedCredit.get(id) : sub.creditName;
+    return `<label class="sub-field sub-credit">
+        <span class="sub-field-label">Name on the lake &middot; clear it to leave the lake unnamed</span>
+        <input type="text" class="sub-credit-input" maxlength="40" autocomplete="off" data-credit-for="${jsAttr(id)}" value="${escapeHtml(value)}">
+      </label>${picks}`;
+  }
+  const shown = status === 'validated' && sub.creditName
+    ? `<div class="sub-field"><span class="sub-field-label">On the lake</span><span class="sub-field-val">Added by ${escapeHtml(sub.creditName)}</span></div>`
+    : '';
+  return shown + picks;
 }
 
 /** Where the place and the name came from (spotLocate on the server). */

@@ -95,6 +95,7 @@ const PAGES = {
   'paddlingout.html': 'paddling',
   'paddlingout/search.html': 'paddling',
   'paddlingout/methodology.html': 'paddling',
+  'paddlingout/mapmakers.html': 'paddling',
   'paddlingout/rate.html': 'paddling',
   'paddlingout/forecast.html': 'paddling',
 
