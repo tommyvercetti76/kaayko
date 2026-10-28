@@ -129,44 +129,33 @@ async function payoutsTab() {
 }
 
 const LABELS = {
-  priceRange: { under_25: 'Under $25', '25_50': '$25–50', '50_100': '$50–100', '100_250': '$100–250', '250_500': '$250–500', '500_plus': '$500+' },
-  shippingCapability: { domestic_only: 'US only', north_america: 'North America', international: 'International', local_pickup: 'Local pickup' },
-  fulfillmentTime: { '1-2_days': '1–2 days', '3-5_days': '3–5 days', '1-2_weeks': '1–2 weeks', '2-4_weeks': '2–4 weeks', varies: 'Varies' },
-  inventoryManagement: { ready_stock: 'Ready stock', made_to_order: 'Made to order', dropship: 'Dropship', hybrid: 'Hybrid' },
   years: { under_1: 'under a year', '1_2': '1–2 years', '3_5': '3–5 years', '6_10': '6–10 years', over_10: 'over 10 years' },
   formats: { in_person: 'In person', online: 'Online' },
-  onlinePlatform: { zoom: 'Zoom', google_meet: 'Google Meet', teams: 'Teams', other: 'Other' },
-  groupSize: { one_to_one: 'One to one', '2_5': '2–5', '6_12': '6–12', '13_plus': '13+' },
   audience: { adults: 'Adults (18+)', with_guardian: 'Under-18s with a guardian' },
-  firstAid: { current: 'Current', expired: 'Lapsed', none: 'None' },
   insurance: { yes: 'Yes', no: 'No', not_sure: 'Not sure' },
 };
+
+/** Up to three links to the applicant's work (`website` on applications before 28 Oct 2026). */
+function linkList(urls) {
+  return (urls || []).map((u) => safeUrl(u)).filter(Boolean)
+    .map((u) => `<a href="${escapeHtml(u)}" target="_blank" rel="noopener noreferrer">${escapeHtml(u.replace(/^https?:\/\//, '').slice(0, 60))}</a>`).join('<br>');
+}
 
 /** What a teacher told the reviewer (27 Oct 2026): the answers worth reading before approving. */
 function teachingRows(t) {
   if (!t) return '';
-  const links = (t.sampleLinks || []).map((u) => safeUrl(u)).filter(Boolean)
-    .map((u) => `<a href="${escapeHtml(u)}" target="_blank" rel="noopener noreferrer">${escapeHtml(u.replace(/^https:\/\//, '').slice(0, 60))}</a>`).join('<br>');
   const flags = [
     t.audience === 'with_guardian' ? 'teaches under-18s' : '',
-    (t.formats || []).includes('in_person') && t.firstAid !== 'current' ? 'first aid not current' : '',
-    t.insurance !== 'yes' ? 'no liability insurance' : '',
     t.insuranceProofNeeded ? 'ask for the insurance certificate' : ''
   ].filter(Boolean);
   return `
       <h4 class="kreators-subhead">Teaching${flags.length ? ` <span class="kreators-flag">${escapeHtml(flags.join(' · '))}</span>` : ''}</h4>
       <dl class="kreators-rows">
         ${row('Teaches', escapeHtml(t.subjects || ''))}
-        ${row('Practised / taught', escapeHtml(`${label('years', t.practiceYears)} / ${label('years', t.teachingYears)}`))}
-        ${row('Where', escapeHtml([(t.formats || []).map((f) => label('formats', f)).join(' + '), t.serviceArea, t.onlinePlatform ? label('onlinePlatform', t.onlinePlatform) : ''].filter(Boolean).join(' · ')))}
-        ${row('Group · for', escapeHtml(`${label('groupSize', t.groupSize)} · ${label('audience', t.audience)}`))}
-        ${row('A session', escapeHtml(t.sessionOutline || ''))}
-        ${row('Credentials', escapeHtml(t.credentials || ''))}
-        ${row('Safety', escapeHtml([t.safetyPlan, t.firstAid ? `First aid: ${label('firstAid', t.firstAid)}` : ''].filter(Boolean).join(' · ')))}
-        ${row('Insurance', escapeHtml(label('insurance', t.insurance)))}
-        ${row('Involves', escapeHtml((t.risks || []).join(', ')))}
-        ${row('Languages', escapeHtml(t.languages || ''))}
-        ${row('Work', links)}
+        ${row('Done / taught', escapeHtml(`${label('years', t.practiceYears)} / ${label('years', t.teachingYears)}`))}
+        ${row('Where', escapeHtml((t.formats || []).map((f) => label('formats', f)).join(' + ')))}
+        ${row('Involves', escapeHtml((t.risks || []).length ? `${t.risks.join(', ')} · ${t.insurance === 'yes' ? 'says they are insured' : 'insurance not confirmed'}` : ''))}
+        ${row('For', escapeHtml(label('audience', t.audience)))}
         ${t.audience === 'with_guardian' ? row('Background check', escapeHtml(t.backgroundCheckOk ? 'Agrees if asked' : 'Not agreed')) : ''}
       </dl>`;
 }
@@ -182,7 +171,7 @@ export async function init() {
     <header class="view-header">
       <div>
         <h1>Kreators</h1>
-        <p class="view-subtitle">Seller applications and the sellers you have approved. Approving creates the account and emails the applicant an activation link.</p>
+        <p class="view-subtitle">Seller applications and the sellers you have approved. Approving creates the seller account (or uses the Kaayko sign-in the applicant already has) and emails them how to open it.</p>
       </div>
       <button type="button" class="btn btn-secondary" id="kreators-refresh">Refresh</button>
     </header>
@@ -263,14 +252,12 @@ function teacherRows(p) {
     !t.vetted && 'not vetted as a teacher',
     p.lesson.audience === 'with_guardian' && !t.backgroundCheckOk && 'under-18s without a background-check agreement',
     t.insuranceProofNeeded && 'insurance certificate needed before it goes live',
-    t.vetted && t.insurance !== 'yes' && 'no liability insurance',
     p.lessonsPaused && 'lessons paused after a safety report'
   ].filter(Boolean);
   return `<h4 class="kreators-subhead">Teacher${flags.length ? ` <span class="kreators-flag">${escapeHtml(flags.join(' · '))}</span>` : ''}</h4>
       <dl class="kreators-rows">
         ${row('Teaches', escapeHtml(t.subjects || ''))}
         ${row('Involves', escapeHtml((t.risks || []).join(', ')))}
-        ${row('First aid', escapeHtml(t.firstAid ? label('firstAid', t.firstAid) : ''))}
       </dl>`;
 }
 
@@ -344,17 +331,18 @@ function row(name, value) {
 }
 
 function applicationCard(a) {
-  const site = safeUrl(a.website);
   const expires = a.expiresAt ? new Date(a.expiresAt) : null;
   const expired = expires && expires < new Date() && a.status === 'pending';
-  const actions = a.status === 'pending' && !expired
+  // Past its 30 days it can still be answered: the applicant should not go unanswered because
+  // the review was late. Resending an activation email lives on the Sellers tab, which knows
+  // whether the seller has activated (here it offered a resend that failed for active sellers).
+  const actions = a.status === 'pending'
     ? `<div class="kreators-actions">
          <button type="button" class="btn btn-primary" data-act="approve" data-id="${escapeHtml(a.id)}" data-name="${escapeHtml(a.businessName || a.email)}">Approve…</button>
          <button type="button" class="btn btn-secondary" data-act="reject" data-id="${escapeHtml(a.id)}">Reject</button>
+         ${expired ? '<span class="kreators-note">Past 30 days: they may have applied again (approving says so if they have).</span>' : ''}
        </div>`
-    : a.status === 'approved' && a.kreatorId
-      ? `<div class="kreators-actions"><button type="button" class="btn btn-secondary" data-act="resend" data-uid="${escapeHtml(a.kreatorId)}">Resend activation link</button></div>`
-      : '';
+    : '';
   return `
     <article class="kreators-item">
       <header class="kreators-item-head">
@@ -367,16 +355,11 @@ function applicationCard(a) {
       <p class="kreators-desc">${escapeHtml(a.productDescription || '')}</p>
       <dl class="kreators-rows">
         ${row('Sells', escapeHtml((a.productCategories || []).join(', ')))}
-        ${row('Listings', escapeHtml(a.productCount || ''))}
-        ${row('Price range', escapeHtml(label('priceRange', a.priceRange)))}
-        ${row('Ships', escapeHtml(a.fulfillmentTime ? `${label('fulfillmentTime', a.fulfillmentTime)}${a.agreedToShip ? ', agreed to ship with tracking' : ''}` : ''))}
-        ${row('Inventory', escapeHtml(label('inventoryManagement', a.inventoryManagement)))}
+        ${row('Ships', escapeHtml(a.agreedToShip ? 'Agreed: within 5 business days, with tracking' : ''))}
         ${row('Location', escapeHtml(a.location || ''))}
         ${row('Terms', escapeHtml(a.termsVersion ? `Kreator Seller Terms ${a.termsVersion}` : ''))}
         ${row('Phone', escapeHtml(a.phone || ''))}
-        ${row('Website', site ? `<a href="${escapeHtml(site)}" target="_blank" rel="noopener noreferrer">${escapeHtml(site)}</a>` : escapeHtml(a.website || ''))}
-        ${row('Sells elsewhere', escapeHtml(a.otherPlatforms || ''))}
-        ${row('Notes', escapeHtml(a.additionalInfo || ''))}
+        ${row('Work', linkList(a.links || [a.website]))}
         ${row('Submitted', escapeHtml(a.submittedAt ? formatDate(a.submittedAt) : ''))}
         ${a.status === 'pending' ? row(expired ? 'Expired' : 'Expires', escapeHtml(expires ? formatDate(expires.toISOString()) : '')) : ''}
         ${row('Reason', escapeHtml(a.rejectionReason || ''))}
@@ -430,7 +413,7 @@ function sellerCard(k) {
         ${row('Approved', escapeHtml(k.createdAt ? formatDate(k.createdAt) : ''))}
       </dl>
       <div class="kreators-actions">
-        ${waiting ? `<button type="button" class="btn btn-secondary" data-act="resend" data-uid="${escapeHtml(k.uid)}">Resend activation link</button>` : ''}
+        ${waiting ? `<button type="button" class="btn btn-secondary" data-act="resend" data-uid="${escapeHtml(k.uid)}">Resend activation email</button>` : ''}
         ${!k.storeHandle
           ? `<button type="button" class="btn btn-secondary" data-act="address" data-uid="${escapeHtml(k.uid)}" data-name="${escapeHtml(k.businessName || '')}">Give shop address…</button>`
           : k.storeLinkReady ? '' : `<button type="button" class="btn btn-primary" data-act="finish-link" data-uid="${escapeHtml(k.uid)}" data-handle="${escapeHtml(k.storeHandle)}">Finish kaay.link link</button>`}
@@ -469,11 +452,13 @@ async function onAction(e) {
     if (act === 'approve') {
       const handle = await chooseHandle(name);
       if (!handle) return;
-      if (!confirm(`Approve ${name}?\n\nShop: kaay.store/kreator/${handle}\nShort link and QR: kaay.link/${handle}\n\nThis creates their seller account and emails them an activation link. The shop address cannot be changed later.`)) return;
+      if (!confirm(`Approve ${name}?\n\nShop: kaay.store/kreator/${handle}\nShort link and QR: kaay.link/${handle}\n\nThis creates their seller account and emails them how to open it (an activation link, or, if the email already signs in to Kaayko, to sign in as usual). The shop address cannot be changed later.`)) return;
       btn.disabled = true;
       const data = await getJson(`/kreators/admin/applications/${encodeURIComponent(id)}/approve`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ handle }) });
       const parts = [`Approved: kaay.store/kreator/${data.handle || handle}.`];
-      parts.push(data.emailQueued ? `Activation link emailed to ${data.kreatorEmail}.` : `The activation email did NOT queue — use Resend on the Sellers tab.`);
+      parts.push(!data.emailQueued ? 'The activation email did NOT queue — use Resend on the Sellers tab.'
+        : data.linkedAccount ? `${data.kreatorEmail} already signs in to Kaayko, so it is now their seller account too: they were emailed to sign in at the seller login as they already do (no new password).`
+          : `Activation link emailed to ${data.kreatorEmail}.`);
       if (data.handleError) parts.push(`Shop address not finished (${data.handleError}) — use Give shop address on the Sellers tab.`);
       (data.emailQueued && !data.handleError ? showSuccess : showError)(parts.join(' '));
     } else if (act === 'address') {
@@ -510,10 +495,10 @@ async function onAction(e) {
       const what = { 'changes-returned': 'Changes returned; the current version stays on sale.', 'taken-down': 'Taken off the store.', returned: 'Sent back.' }[d.outcome] || 'Done.';
       (d.emailQueued ? showSuccess : showError)(`${what} ${mailNote(d, 'The seller')}`);
     } else if (act === 'resend') {
-      if (!confirm('Send a new activation link? The old one keeps working until the new email has gone.')) return;
+      if (!confirm('Send the activation email again? A link sent before keeps working until the new email has gone.')) return;
       btn.disabled = true;
       const data = await getJson(`/kreators/admin/${encodeURIComponent(uid)}/resend-link`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
-      if (data.emailQueued) showSuccess(`New activation link emailed to ${data.email}.`);
+      if (data.emailQueued) showSuccess(data.linkedAccount ? `Emailed ${data.email} again: they sign in with their existing Kaayko sign-in.` : `New activation link emailed to ${data.email}.`);
       else showError(`The email did NOT queue, so nothing changed: ${data.email}'s current link still works. Check Mail health and try again.`);
     } else if (act === 'suspend') {
       const reason = prompt(`Suspend ${name || 'this seller'}? Every listing comes off sale, their sessions end and their shop reads closed.\n\nWhy? (kept in the audit log)`, '');

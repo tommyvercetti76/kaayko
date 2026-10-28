@@ -362,9 +362,12 @@
       background: var(--kreator-subtle);
     }
     
-    .category-option input { display: none; }
-    
-    .category-option.selected {
+    /* Visually hidden but focusable: the tile is a real checkbox for the keyboard and screen readers. */
+    .category-option { position: relative; }
+    .category-option input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+    .category-option:focus-within { outline: 2px solid var(--kreator-primary); outline-offset: 2px; }
+
+    .category-option:has(input:checked) {
       border-color: var(--kreator-primary);
       background: var(--kreator-subtle);
     }
@@ -675,19 +678,15 @@
           <div class="progress-steps">
             <div class="progress-step active" data-step="1">
               <div class="step-number">1</div>
-              <div class="step-label">Business</div>
+              <div class="step-label">You</div>
             </div>
             <div class="progress-step" data-step="2">
               <div class="step-number">2</div>
-              <div class="step-label">Products</div>
+              <div class="step-label">What you sell</div>
             </div>
             <div class="progress-step" data-step="3">
               <div class="step-number">3</div>
-              <div class="step-label">Operations</div>
-            </div>
-            <div class="progress-step" data-step="4">
-              <div class="step-number">4</div>
-              <div class="step-label">Submit</div>
+              <div class="step-label">Send</div>
             </div>
           </div>
         </div>
@@ -698,56 +697,51 @@
           <span id="error-message">Please fill in all required fields</span>
         </div>
         
+        <!-- Three short steps (28 Oct 2026; was four, about 34 inputs for a teacher). How each
+             piece or lesson works is asked when it is listed, and a person reviews that too. -->
         <form id="application-form">
-          <!-- Step 1: Business Information -->
+          <!-- Step 1: You -->
           <div class="form-step active" data-step="1">
-            <h2 class="step-title">Business Information</h2>
-            <p class="step-description">Tell us about you and your business</p>
+            <h2 class="step-title">About you</h2>
+            <p class="step-description">Kaayko works with makers and teachers based in the United States, for now.</p>
             
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label" for="firstName">First Name *</label>
-                <input type="text" id="firstName" class="form-input" placeholder="Your first name" required>
+                <label class="form-label" for="firstName">First name *</label>
+                <input type="text" id="firstName" class="form-input" autocomplete="given-name" required>
               </div>
-              
               <div class="form-group">
-                <label class="form-label" for="lastName">Last Name *</label>
-                <input type="text" id="lastName" class="form-input" placeholder="Your last name" required>
+                <label class="form-label" for="lastName">Last name *</label>
+                <input type="text" id="lastName" class="form-input" autocomplete="family-name" required>
               </div>
             </div>
             
             <div class="form-group">
-              <label class="form-label" for="email">Email Address *</label>
-              <input type="email" id="email" class="form-input" placeholder="you@company.com" required>
-              <p class="form-hint">We'll use this for all account communications</p>
+              <label class="form-label" for="email">Email *</label>
+              <input type="email" id="email" class="form-input" autocomplete="email" placeholder="you@example.com" required>
+              <p class="form-hint">If you already sign in to Kaayko, use that email: you will open your shop by signing in as usual.</p>
             </div>
             
-            <div class="form-group">
-              <label class="form-label" for="phone">Phone Number *</label>
-              <input type="tel" id="phone" class="form-input" placeholder="+1 (555) 123-4567" required>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="phone">Phone *</label>
+                <input type="tel" id="phone" class="form-input" autocomplete="tel" placeholder="+1 555 123 4567" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="businessName">Shop or brand name *</label>
+                <input type="text" id="businessName" class="form-input" maxlength="80" required>
+              </div>
             </div>
-            
-            <div class="form-group">
-              <label class="form-label" for="businessName">Business/Brand Name *</label>
-              <input type="text" id="businessName" class="form-input" placeholder="Your company or brand name" required>
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label" for="businessType">Business Type *</label>
-              <select id="businessType" class="form-input" required>
-                <option value="">Select business type...</option>
-                <option value="sole_proprietor">Sole Proprietor</option>
-                <option value="llc">LLC</option>
-                <option value="corporation">Corporation</option>
-                <option value="partnership">Partnership</option>
-                <option value="individual_maker">Individual Maker/Artisan</option>
-                <option value="manufacturer">Manufacturer</option>
-              </select>
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label" for="website">Website (Optional)</label>
-              <input type="url" id="website" class="form-input" placeholder="https://yourwebsite.com">
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="city">City *</label>
+                <input type="text" id="city" class="form-input" maxlength="60" autocomplete="address-level2" placeholder="e.g., Bellingham" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="state">State *</label>
+                <select id="state" class="form-input" autocomplete="address-level1" required><option value="">Select...</option><option value="AL">AL</option><option value="AK">AK</option><option value="AZ">AZ</option><option value="AR">AR</option><option value="CA">CA</option><option value="CO">CO</option><option value="CT">CT</option><option value="DE">DE</option><option value="DC">DC</option><option value="FL">FL</option><option value="GA">GA</option><option value="HI">HI</option><option value="ID">ID</option><option value="IL">IL</option><option value="IN">IN</option><option value="IA">IA</option><option value="KS">KS</option><option value="KY">KY</option><option value="LA">LA</option><option value="ME">ME</option><option value="MD">MD</option><option value="MA">MA</option><option value="MI">MI</option><option value="MN">MN</option><option value="MS">MS</option><option value="MO">MO</option><option value="MT">MT</option><option value="NE">NE</option><option value="NV">NV</option><option value="NH">NH</option><option value="NJ">NJ</option><option value="NM">NM</option><option value="NY">NY</option><option value="NC">NC</option><option value="ND">ND</option><option value="OH">OH</option><option value="OK">OK</option><option value="OR">OR</option><option value="PA">PA</option><option value="RI">RI</option><option value="SC">SC</option><option value="SD">SD</option><option value="TN">TN</option><option value="TX">TX</option><option value="UT">UT</option><option value="VT">VT</option><option value="VA">VA</option><option value="WA">WA</option><option value="WV">WV</option><option value="WI">WI</option><option value="WY">WY</option><option value="PR">PR</option></select>
+              </div>
             </div>
             
             <div class="form-actions">
@@ -758,14 +752,13 @@
             </div>
           </div>
           
-          <!-- Step 2: What You're Selling -->
+          <!-- Step 2: What you sell (and, for teachers, what a person needs to vet them) -->
           <div class="form-step" data-step="2">
-            <h2 class="step-title">What You're Selling</h2>
-            <p class="step-description">Select all categories that apply to your offerings</p>
+            <h2 class="step-title">What you sell</h2>
+            <p class="step-description">Choose everything that applies.</p>
             
             <div class="form-group">
-              <label class="form-label">Categories * (Select all that apply)</label>
-              <div class="category-grid">
+              <div class="category-grid" role="group" aria-label="What you sell">
                 <label class="category-option" data-category="apparel">
                   <input type="checkbox" name="categories" value="apparel">
                   <div class="category-icon"><span class="material-icons">checkroom</span></div>
@@ -777,17 +770,13 @@
                   <div class="category-icon"><span class="material-icons">redeem</span></div>
                   <span class="category-label">Souvenirs & Gifts</span>
                 </label>
-                
-                
-                
-                
+
                 <label class="category-option" data-category="art">
                   <input type="checkbox" name="categories" value="art">
                   <div class="category-icon"><span class="material-icons">palette</span></div>
                   <span class="category-label">Art & Crafts</span>
                 </label>
-                
-                
+
                 <label class="category-option" data-category="drinkware">
                   <input type="checkbox" name="categories" value="drinkware">
                   <div class="category-icon"><span class="material-icons">local_cafe</span></div>
@@ -805,8 +794,7 @@
                   <div class="category-icon"><span class="material-icons">photo_camera</span></div>
                   <span class="category-label">Lessons & Classes</span>
                 </label>
-                
-                
+
                 <label class="category-option" data-category="other">
                   <input type="checkbox" name="categories" value="other">
                   <div class="category-icon"><span class="material-icons">more_horiz</span></div>
@@ -815,113 +803,39 @@
               </div>
             </div>
             
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label" for="productCount">Products to List *</label>
-                <select id="productCount" class="form-input" required>
-                  <option value="">Select range...</option>
-                  <option value="1-5">1-5 products</option>
-                  <option value="6-20">6-20 products</option>
-                  <option value="21-50">21-50 products</option>
-                  <option value="51-100">51-100 products</option>
-                  <option value="100+">100+ products</option>
-                </select>
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label" for="priceRange">Price Range *</label>
-                <select id="priceRange" class="form-input" required>
-                  <option value="">Select price range...</option>
-                  <option value="under_25">Under $25</option>
-                  <option value="25_50">$25 - $50</option>
-                  <option value="50_100">$50 - $100</option>
-                  <option value="100_250">$100 - $250</option>
-                  <option value="250_500">$250 - $500</option>
-                  <option value="500_plus">$500+</option>
-                </select>
-              </div>
-            </div>
-            
             <div class="form-group">
-              <label class="form-label" for="productDescription">Describe Your Products *</label>
-              <textarea id="productDescription" class="form-input" rows="4" 
-                placeholder="Tell us about your products, what makes them unique, and why paddlers would love them..." required></textarea>
-              <p class="form-hint">Be specific about materials, craftsmanship, and unique selling points (minimum 50 characters)</p>
+              <label class="form-label" for="productDescription">What you make or teach, and what makes it good *</label>
+              <textarea id="productDescription" class="form-input" rows="4" maxlength="2000"
+                placeholder="Materials, how it is made or taught, why people come back..." required></textarea>
+              <p class="form-hint">At least 50 characters. A person reads every application.</p>
             </div>
-            
-            <div class="form-actions">
-              <button type="button" class="btn btn-secondary" onclick="prevStep()">
-                <span class="material-icons" style="font-size: 18px;">arrow_back</span>
-                Back
-              </button>
-              <button type="button" class="btn btn-kreator" onclick="nextStep()">
-                Continue
-                <span class="material-icons" style="font-size: 18px;">arrow_forward</span>
-              </button>
-            </div>
-          </div>
-          
-          <!-- Step 3: Operations & Fulfillment -->
-          <div class="form-step" data-step="3">
-            <h2 class="step-title">Where you are, and how it reaches people</h2>
-            <p class="step-description">Kaayko works with makers and teachers based in the United States, for now.</p>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label" for="city">City *</label>
-                <input type="text" id="city" class="form-input" maxlength="60" placeholder="e.g., Bellingham" required>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="state">State *</label>
-                <select id="state" class="form-input" required><option value="">Select...</option><option value="AL">AL</option><option value="AK">AK</option><option value="AZ">AZ</option><option value="AR">AR</option><option value="CA">CA</option><option value="CO">CO</option><option value="CT">CT</option><option value="DE">DE</option><option value="DC">DC</option><option value="FL">FL</option><option value="GA">GA</option><option value="HI">HI</option><option value="ID">ID</option><option value="IL">IL</option><option value="IN">IN</option><option value="IA">IA</option><option value="KS">KS</option><option value="KY">KY</option><option value="LA">LA</option><option value="ME">ME</option><option value="MD">MD</option><option value="MA">MA</option><option value="MI">MI</option><option value="MN">MN</option><option value="MS">MS</option><option value="MO">MO</option><option value="MT">MT</option><option value="NE">NE</option><option value="NV">NV</option><option value="NH">NH</option><option value="NJ">NJ</option><option value="NM">NM</option><option value="NY">NY</option><option value="NC">NC</option><option value="ND">ND</option><option value="OH">OH</option><option value="OK">OK</option><option value="OR">OR</option><option value="PA">PA</option><option value="RI">RI</option><option value="SC">SC</option><option value="SD">SD</option><option value="TN">TN</option><option value="TX">TX</option><option value="UT">UT</option><option value="VT">VT</option><option value="VA">VA</option><option value="WA">WA</option><option value="WV">WV</option><option value="WI">WI</option><option value="WY">WY</option><option value="PR">PR</option></select>
-              </div>
+            <div class="form-group">
+              <label class="form-label" for="links">Your work online (optional, up to 3)</label>
+              <textarea id="links" class="form-input" rows="2" maxlength="900" placeholder="https://… your site, a portfolio, a sample class: one per line"></textarea>
             </div>
 
             <!-- Goods: the maker ships (Seller Terms 7–8) -->
-            <div class="cond" id="goods-ops" hidden>
-              <h3 class="cond-title">Your pieces</h3>
-              <p class="form-hint">You ship your own orders, inside the US, with tracking, within 5 business days of the order. Kaayko takes the payment and sends the buyer their receipt.</p>
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label" for="fulfillmentTime">How soon you ship *</label>
-                  <select id="fulfillmentTime" class="form-input">
-                    <option value="">Select...</option>
-                    <option value="1-2_days">1–2 business days</option>
-                    <option value="3-5_days">3–5 business days</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="inventoryManagement">How you make them *</label>
-                  <select id="inventoryManagement" class="form-input">
-                    <option value="">Select...</option>
-                    <option value="ready_stock">Made ahead, in stock</option>
-                    <option value="made_to_order">Made to order</option>
-                    <option value="hybrid">Some of each</option>
-                  </select>
-                </div>
-              </div>
-              <label class="checkbox-group">
-                <input type="checkbox" id="agreedToShip">
-                <span class="checkbox-label">I ship my own orders within 5 business days and add the tracking number in my seller dashboard.</span>
-              </label>
-            </div>
+            <label class="checkbox-group" id="goods-ops" hidden>
+              <input type="checkbox" id="agreedToShip">
+              <span class="checkbox-label">I ship my own orders inside the US within 5 business days and add the tracking number in my seller dashboard.</span>
+            </label>
 
-            <!-- Lessons: what a teacher is asked -->
+            <!-- Lessons: what a person needs to vet a teacher -->
             <div class="cond" id="teaching" hidden>
               <h3 class="cond-title">Your teaching</h3>
-              <p class="form-hint">A person reads every answer. Specific beats polished.</p>
               <div class="form-group">
                 <label class="form-label" for="t-subjects">What you teach *</label>
                 <input type="text" id="t-subjects" class="form-input" maxlength="120" placeholder="e.g., Landscape photography for beginners">
               </div>
               <div class="form-row">
                 <div class="form-group">
-                  <label class="form-label" for="t-practice">How long you have practised it *</label>
-                  <select id="t-practice" class="form-input"><option value="">Select...</option><option value="under_1">Under a year</option><option value="1_2">1–2 years</option><option value="3_5">3–5 years</option><option value="6_10">6–10 years</option><option value="over_10">Over 10 years</option></select>
+                  <label class="form-label" for="t-practice">Years doing it *</label>
+                  <select id="t-practice" class="form-input"><option value="">Choose…</option><option value="under_1">Under a year</option><option value="1_2">1–2</option><option value="3_5">3–5</option><option value="6_10">6–10</option><option value="over_10">Over 10</option></select>
                 </div>
                 <div class="form-group">
-                  <label class="form-label" for="t-teaching">How long you have taught it *</label>
-                  <select id="t-teaching" class="form-input"><option value="">Select...</option><option value="under_1">Under a year</option><option value="1_2">1–2 years</option><option value="3_5">3–5 years</option><option value="6_10">6–10 years</option><option value="over_10">Over 10 years</option></select>
+                  <label class="form-label" for="t-teaching">Years teaching it *</label>
+                  <select id="t-teaching" class="form-input"><option value="">Choose…</option><option value="under_1">Under a year</option><option value="1_2">1–2</option><option value="3_5">3–5</option><option value="6_10">6–10</option><option value="over_10">Over 10</option></select>
                 </div>
               </div>
               <div class="form-group">
@@ -931,69 +845,8 @@
                   <label class="choice"><input type="checkbox" name="t-format" value="online"> Online</label>
                 </div>
               </div>
-              <div class="form-group" id="t-area-group" hidden>
-                <label class="form-label" for="t-area">Where, in person *</label>
-                <input type="text" id="t-area" class="form-input" maxlength="80" placeholder="e.g., Bellingham, WA and nearby parks">
-              </div>
-              <div class="form-group" id="t-platform-group" hidden>
-                <label class="form-label" for="t-platform">Video tool you teach on *</label>
-                <select id="t-platform" class="form-input">
-                  <option value="">Select...</option><option value="zoom">Zoom</option><option value="google_meet">Google Meet</option><option value="teams">Microsoft Teams</option><option value="other">Something else</option>
-                </select>
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label" for="t-group">Usual group size *</label>
-                  <select id="t-group" class="form-input">
-                    <option value="">Select...</option><option value="one_to_one">One to one</option><option value="2_5">2–5 people</option><option value="6_12">6–12 people</option><option value="13_plus">13 or more</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="t-audience">Who it is for *</label>
-                  <select id="t-audience" class="form-input">
-                    <option value="">Select...</option><option value="adults">Adults (18+)</option><option value="with_guardian">Under-18s too, with a parent or guardian there</option>
-                  </select>
-                </div>
-              </div>
               <div class="form-group">
-                <label class="form-label" for="t-outline">A typical session, start to finish *</label>
-                <textarea id="t-outline" class="form-input" rows="4" maxlength="1000" placeholder="e.g., We meet at the pier at 6:45, check camera settings, walk the shoreline for the first light, stop twice to review shots, and finish with a 15-minute edit on one photo each."></textarea>
-                <p class="form-hint">At least 80 characters. This is what we read first.</p>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="t-credentials">Training, certificates, awards (optional)</label>
-                <textarea id="t-credentials" class="form-input" rows="2" maxlength="500" placeholder="e.g., Certified by PPA; exhibited at ...; 8 years running workshops at ..."></textarea>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="t-links">Links to your work or a sample class (optional, up to 3)</label>
-                <textarea id="t-links" class="form-input" rows="2" maxlength="900" placeholder="https://… one per line"></textarea>
-              </div>
-              <div id="t-safety" hidden>
-                <div class="form-group">
-                  <label class="form-label" for="t-safety-plan">How you keep people safe in person *</label>
-                  <textarea id="t-safety-plan" class="form-input" rows="3" maxlength="600" placeholder="e.g., I call off sessions in lightning or high wind, meet in public places, carry a first-aid kit and share an emergency contact."></textarea>
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="t-firstaid">First-aid training *</label>
-                  <select id="t-firstaid" class="form-input">
-                    <option value="">Select...</option><option value="current">Current</option><option value="expired">Lapsed</option><option value="none">None</option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label" for="t-insurance">Liability insurance *</label>
-                  <select id="t-insurance" class="form-input">
-                    <option value="">Select...</option><option value="yes">Yes</option><option value="no">No</option><option value="not_sure">Not sure</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="t-languages">Languages you teach in</label>
-                  <input type="text" id="t-languages" class="form-input" maxlength="80" placeholder="English">
-                </div>
-              </div>
-              <div class="form-group">
-                <span class="form-label">Does any session involve… (tick all that apply)</span>
+                <span class="form-label">Does any session involve… (tick any)</span>
                 <div class="choice-row">
                   <label class="choice"><input type="checkbox" name="t-risk" value="water"> Water</label>
                   <label class="choice"><input type="checkbox" name="t-risk" value="heights"> Heights or climbing</label>
@@ -1002,21 +855,23 @@
                   <label class="choice"><input type="checkbox" name="t-risk" value="alcohol"> Alcohol</label>
                   <label class="choice"><input type="checkbox" name="t-risk" value="strenuous"> Strenuous exercise</label>
                 </div>
-                <p class="form-hint">Any of these needs liability insurance; Kaayko asks for the certificate before your first lesson goes live.</p>
               </div>
+              <label class="checkbox-group" id="t-insurance-row" hidden>
+                <input type="checkbox" id="t-insurance">
+                <span class="checkbox-label">I carry liability insurance that covers these sessions, and will send Kaayko the certificate before my first one goes live.</span>
+              </label>
+              <label class="checkbox-group">
+                <input type="checkbox" id="t-minors">
+                <span class="checkbox-label">Under-18s may come, with a parent or guardian there for the whole session.</span>
+              </label>
               <label class="checkbox-group" id="t-bgcheck-row" hidden>
                 <input type="checkbox" id="t-bgcheck">
-                <span class="checkbox-label">I will complete a background check if Kaayko asks, because my classes can include under-18s.</span>
+                <span class="checkbox-label">I will complete a background check if Kaayko asks.</span>
               </label>
               <label class="checkbox-group">
                 <input type="checkbox" id="t-attests">
                 <span class="checkbox-label">I am 18 or over. I teach every session myself (any assistant is named in the listing), take every payment through Kaayko, and never offer anything in return for a rating.</span>
               </label>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="otherPlatforms">Where else you sell or teach (optional)</label>
-              <input type="text" id="otherPlatforms" class="form-input" placeholder="e.g., Etsy, Airbnb, your own website">
             </div>
 
             <div class="form-actions">
@@ -1031,48 +886,29 @@
             </div>
           </div>
           
-          <!-- Step 4: Review & Submit -->
-          <div class="form-step" data-step="4">
-            <h2 class="step-title">Review & Submit</h2>
-            <p class="step-description">Almost there! Review and submit your application</p>
-            
-            <div class="info-box">
-              <span class="material-icons">info</span>
-              <p>Our team reviews all applications within <strong>2-3 business days</strong>. We'll email you with next steps once approved.</p>
-            </div>
+          <!-- Step 3: Send -->
+          <div class="form-step" data-step="3">
+            <h2 class="step-title">Send it</h2>
+            <p class="step-description">A person reviews every application, usually within 2–3 business days.</p>
             
             <div class="form-group">
-              <label class="form-label" for="hearAboutUs">How did you hear about Kaayko?</label>
+              <label class="form-label" for="hearAboutUs">How did you hear about Kaayko? (optional)</label>
               <select id="hearAboutUs" class="form-input">
-                <option value="">Select option...</option>
-                <option value="search">Search Engine (Google, etc.)</option>
-                <option value="social">Social Media</option>
-                <option value="referral">Referral from another seller</option>
+                <option value="">Choose…</option>
+                <option value="search">Search engine</option>
+                <option value="social">Social media</option>
+                <option value="referral">Another seller</option>
                 <option value="customer">I'm a Kaayko customer</option>
-                <option value="paddling_community">Paddling community/forum</option>
+                <option value="paddling_community">Paddling community</option>
                 <option value="other">Other</option>
               </select>
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label" for="additionalInfo">Anything else we should know?</label>
-              <textarea id="additionalInfo" class="form-input" rows="3" 
-                placeholder="Certifications, awards, media features, or anything that makes your brand stand out..."></textarea>
             </div>
             
             <label class="checkbox-group">
               <input type="checkbox" id="termsAgree" required>
               <span class="checkbox-label">
-                I agree to the <a href="/legal/kreator-terms" target="_blank" rel="noopener">Kreator Seller Terms</a>:
-                a 15% commission, monthly payouts through Stripe, and buyer ratings after each order or lesson.
-              </span>
-            </label>
-            
-            <label class="checkbox-group">
-              <input type="checkbox" id="authenticProducts" required>
-              <span class="checkbox-label">
-                I confirm that all products I list will be authentic, accurately described, 
-                and I have the legal right to sell them.
+                I agree to the <a href="/legal/kreator-terms" target="_blank" rel="noopener">Kreator Seller Terms</a>
+                (15% commission, monthly payouts through Stripe, buyer ratings), and everything I list is mine to sell and described accurately.
               </span>
             </label>
             
@@ -1082,7 +918,7 @@
                 Back
               </button>
               <button type="submit" class="btn btn-kreator" id="submit-btn">
-                <span class="btn-text">Submit Application</span>
+                <span class="btn-text">Send application</span>
                 <span class="loading-spinner" style="display: none;"></span>
               </button>
             </div>
@@ -1109,7 +945,7 @@
             <ol>
               <li><strong>Application Review</strong> — Our team reviews within 2-3 business days</li>
               <li><strong>Email Confirmation</strong> — You'll receive your application status via email</li>
-              <li><strong>Onboarding</strong> — If approved, we'll send you a link to set up your seller account</li>
+              <li><strong>Opening your shop</strong> — If approved, we email you how to open it. If you already sign in to Kaayko, you just sign in.</li>
               <li><strong>Start Listing</strong> — Add your products and start reaching our community!</li>
             </ol>
           </div>
@@ -1126,187 +962,80 @@
     </section>
   </div>
 
-  <!-- Category selection - separate script to ensure it always works -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Category selection handling
-      document.querySelectorAll('.category-option').forEach(option => {
-        option.addEventListener('click', function(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          
-          this.classList.toggle('selected');
-          const checkbox = this.querySelector('input[type="checkbox"]');
-          if (checkbox) {
-            checkbox.checked = this.classList.contains('selected');
-          }
-        });
-      });
-    });
-  </script>
-
   <script type="module">
     import { submitApplication } from './js/kreator-api.js';
     
     let currentStep = 1;
-    const totalSteps = 4;
+    const totalSteps = 3;
     // The Kreator Seller Terms this page shows (kaayko-api config/kreatorTerms.js).
     const TERMS_VERSION = '2026-10-27';
     const GOODS = ['apparel', 'souvenirs', 'art', 'drinkware', 'sports', 'other'];
-    const chosen = () => [...document.querySelectorAll('input[name="categories"]:checked')].map((c) => c.value);
-    const formats = () => [...document.querySelectorAll('input[name="t-format"]:checked')].map((i) => i.value);
+    const checked = (name) => [...document.querySelectorAll(`input[name="${name}"]:checked`)].map((i) => i.value);
     const val = (id) => document.getElementById(id).value.trim();
+    const ticked = (id) => document.getElementById(id).checked;
+    const links = () => val('links').split(/\s+/).filter(Boolean);
 
-    // Goods questions for makers, teaching questions for teachers; both for both.
+    // The shipping promise for makers, the teaching questions for teachers; both for both.
     function syncSections() {
-      const cats = chosen();
-      const f = formats();
+      const cats = checked('categories');
       document.getElementById('goods-ops').hidden = !cats.some((c) => GOODS.includes(c));
       document.getElementById('teaching').hidden = !cats.includes('lessons');
-      document.getElementById('t-area-group').hidden = !f.includes('in_person');
-      document.getElementById('t-safety').hidden = !f.includes('in_person');
-      document.getElementById('t-platform-group').hidden = !f.includes('online');
-      document.getElementById('t-bgcheck-row').hidden = val('t-audience') !== 'with_guardian';
+      document.getElementById('t-insurance-row').hidden = !checked('t-risk').length;
+      document.getElementById('t-bgcheck-row').hidden = !ticked('t-minors');
     }
-    document.querySelectorAll('input[name="t-format"]').forEach((i) => i.addEventListener('change', syncSections));
-    document.getElementById('t-audience').addEventListener('change', syncSections);
+    document.getElementById('application-form').addEventListener('change', syncSections);
 
     function readTeaching() {
       return {
         subjects: val('t-subjects'), practiceYears: val('t-practice'), teachingYears: val('t-teaching'),
-        formats: formats(), serviceArea: val('t-area'), onlinePlatform: val('t-platform') || null,
-        groupSize: val('t-group'), audience: val('t-audience'), sessionOutline: val('t-outline'),
-        credentials: val('t-credentials'), sampleLinks: val('t-links').split(/\s+/).filter(Boolean),
-        safetyPlan: val('t-safety-plan'), firstAid: val('t-firstaid') || null, insurance: val('t-insurance'),
-        languages: val('t-languages') || 'English', backgroundCheckOk: document.getElementById('t-bgcheck').checked,
-        risks: [...document.querySelectorAll('input[name="t-risk"]:checked')].map((i) => i.value),
-        attests: document.getElementById('t-attests').checked
+        formats: checked('t-format'), risks: checked('t-risk'), insurance: ticked('t-insurance') ? 'yes' : null,
+        audience: ticked('t-minors') ? 'with_guardian' : 'adults', backgroundCheckOk: ticked('t-bgcheck'),
+        attests: ticked('t-attests')
       };
     }
 
-    // Navigation functions
-    window.nextStep = function() {
-      if (!validateCurrentStep()) return;
-      syncSections();
-      
-      if (currentStep < totalSteps) {
-        document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.remove('active');
-        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.remove('active');
-        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.add('completed');
-        
-        currentStep++;
-        
-        document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.add('active');
-        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.add('active');
-        
-        // Scroll to top
-        document.querySelector('.form-section').scrollTop = 0;
-      }
-    };
-    
-    window.prevStep = function() {
-      if (currentStep > 1) {
-        document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.remove('active');
-        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.remove('active');
-        
-        currentStep--;
-        
-        document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.add('active');
-        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.remove('completed');
-        document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.add('active');
-        
-        hideError();
-      }
-    };
-    
+    function show(step) {
+      document.querySelectorAll('.form-step').forEach((el) => el.classList.toggle('active', Number(el.dataset.step) === step));
+      document.querySelectorAll('.progress-step').forEach((el) => {
+        const n = Number(el.dataset.step);
+        el.classList.toggle('active', n === step);
+        el.classList.toggle('completed', n < step);
+      });
+      currentStep = step;
+      document.querySelector('.form-section').scrollTop = 0;
+    }
+    window.nextStep = () => { if (validateCurrentStep() && currentStep < totalSteps) show(currentStep + 1); };
+    window.prevStep = () => { if (currentStep > 1) { hideError(); show(currentStep - 1); } };
+
+    // The first unmet rule of the step, as the applicant should read it; the server checks the same.
     function validateCurrentStep() {
       hideError();
-      
-      if (currentStep === 1) {
-        const firstName = document.getElementById('firstName').value.trim();
-        const lastName = document.getElementById('lastName').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const phone = document.getElementById('phone').value.trim();
-        const businessName = document.getElementById('businessName').value.trim();
-        const businessType = document.getElementById('businessType').value;
-        
-        if (!firstName || !lastName) {
-          showError('Please enter your first and last name');
-          return false;
-        }
-        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-          showError('Please enter a valid email address');
-          return false;
-        }
-        if (!phone) {
-          showError('Please enter your phone number');
-          return false;
-        }
-        if (!businessName) {
-          showError('Please enter your business or brand name');
-          return false;
-        }
-        if (!businessType) {
-          showError('Please select your business type');
-          return false;
-        }
-      }
-      
-      if (currentStep === 2) {
-        const categories = document.querySelectorAll('input[name="categories"]:checked');
-        const productCount = document.getElementById('productCount').value;
-        const priceRange = document.getElementById('priceRange').value;
-        const productDescription = document.getElementById('productDescription').value.trim();
-        
-        if (categories.length === 0) {
-          showError('Please select at least one product category');
-          return false;
-        }
-        if (!productCount) {
-          showError('Please select how many products you plan to list');
-          return false;
-        }
-        if (!priceRange) {
-          showError('Please select your typical price range');
-          return false;
-        }
-        if (!productDescription || productDescription.length < 50) {
-          showError('Please provide a more detailed product description (at least 50 characters)');
-          return false;
-        }
-      }
-      
-      if (currentStep === 3) {
-        if (val('city').length < 2) { showError('Please enter your city'); return false; }
-        if (!val('state')) { showError('Please choose your state'); return false; }
-        const cats = chosen();
-        if (cats.some((c) => GOODS.includes(c))) {
-          if (!val('fulfillmentTime')) { showError('Please say how soon you ship'); return false; }
-          if (!val('inventoryManagement')) { showError('Please say how you make your pieces'); return false; }
-          if (!document.getElementById('agreedToShip').checked) { showError('Please agree to ship your own orders, with tracking, within 5 business days'); return false; }
-        }
-        if (cats.includes('lessons')) {
-          const t = readTeaching();
-          const need = [
-            [t.subjects.length >= 3, 'Please say what you teach'],
-            [t.practiceYears && t.teachingYears, 'Please say how long you have practised and taught it'],
-            [t.formats.length, 'Please choose in person, online, or both'],
-            [!t.formats.includes('in_person') || t.serviceArea.length >= 2, 'Please say where you teach in person'],
-            [!t.formats.includes('online') || t.onlinePlatform, 'Please choose the video tool you teach on'],
-            [t.groupSize && t.audience, 'Please choose a group size and who it is for'],
-            [t.sessionOutline.length >= 80, 'Please walk us through a typical session (at least 80 characters)'],
-            [!t.formats.includes('in_person') || (t.safetyPlan.length >= 30 && t.firstAid), 'Please say how you keep people safe in person, and your first-aid training'],
-            [t.insurance, 'Please say whether you carry liability insurance'],
-            [!t.risks.length || t.insurance === 'yes', 'Lessons with water, heights, vehicles, food, alcohol or strenuous exercise need liability insurance'],
-            [t.attests, 'Please confirm you teach every session yourself, take every payment through Kaayko, and never offer anything for a rating'],
-            [t.audience !== 'with_guardian' || t.backgroundCheckOk, 'Teaching under-18s needs your agreement to a background check if Kaayko asks'],
-            [t.sampleLinks.length <= 3 && t.sampleLinks.every((u) => /^https:\/\//.test(u)), 'Links must start with https://, at most three']
-          ];
-          const miss = need.find(([ok]) => !ok);
-          if (miss) { showError(miss[1]); return false; }
-        }
-      }
-      
+      const rules = currentStep === 1 ? [
+        [val('firstName') && val('lastName'), 'Please enter your first and last name'],
+        [/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val('email')), 'Please enter a valid email address'],
+        [/^\+?[\d\s\-()]{7,20}$/.test(val('phone')), 'Please enter a phone number we can reach you on'],
+        [val('businessName').length >= 2, 'Please enter your shop or brand name'],
+        [val('city').length >= 2, 'Please enter your city'],
+        [val('state'), 'Please choose your state']
+      ] : currentStep === 2 ? (() => {
+        const cats = checked('categories');
+        const t = readTeaching();
+        const teaches = cats.includes('lessons');
+        return [
+          [cats.length, 'Please choose what you sell'],
+          [val('productDescription').length >= 50, 'Please say a little more about what you make or teach (at least 50 characters)'],
+          [links().length <= 3 && links().every((u) => /^https:\/\//.test(u)), 'Links must start with https://, at most three'],
+          [!cats.some((c) => GOODS.includes(c)) || ticked('agreedToShip'), 'Please agree to ship your own orders, with tracking, within 5 business days'],
+          [!teaches || t.subjects.length >= 3, 'Please say what you teach'],
+          [!teaches || (t.practiceYears && t.teachingYears), 'Please say how many years you have done it and taught it'],
+          [!teaches || t.formats.length, 'Please choose in person, online, or both'],
+          [!teaches || !t.risks.length || t.insurance === 'yes', 'Sessions with water, heights, vehicles, food, alcohol or strenuous exercise need liability insurance'],
+          [!teaches || t.audience !== 'with_guardian' || t.backgroundCheckOk, 'Teaching under-18s needs your agreement to a background check if Kaayko asks'],
+          [!teaches || t.attests, 'Please confirm you teach every session yourself, take every payment through Kaayko, and never offer anything for a rating']
+        ];
+      })() : [];
+      const miss = rules.find(([ok]) => !ok);
+      if (miss) { showError(miss[1]); return false; }
       return true;
     }
     
@@ -1326,11 +1055,8 @@
     document.getElementById('application-form').addEventListener('submit', async function(e) {
       e.preventDefault();
       
-      const termsAgree = document.getElementById('termsAgree').checked;
-      const authenticProducts = document.getElementById('authenticProducts').checked;
-      
-      if (!termsAgree || !authenticProducts) {
-        showError('Please agree to the terms and confirm product authenticity');
+      if (!ticked('termsAgree')) {
+        showError('Please agree to the Kreator Seller Terms');
         return;
       }
       
@@ -1338,57 +1064,30 @@
       const btnText = btn.querySelector('.btn-text');
       const spinner = btn.querySelector('.loading-spinner');
       
-      btnText.textContent = 'Submitting...';
+      btnText.textContent = 'Sending...';
       spinner.style.display = 'inline-block';
       btn.disabled = true;
       
-      // Gather categories
-      const categories = [];
-      document.querySelectorAll('input[name="categories"]:checked').forEach(cb => {
-        categories.push(cb.value);
-      });
-      
-      // Build application data
+      const categories = checked('categories');
       const applicationData = {
-        // Personal Info
-        firstName: document.getElementById('firstName').value.trim(),
-        lastName: document.getElementById('lastName').value.trim(),
-        email: document.getElementById('email').value.trim(),
-        phone: document.getElementById('phone').value.trim(),
-        
-        // Business Info
-        businessName: document.getElementById('businessName').value.trim(),
-        businessType: document.getElementById('businessType').value,
-        website: document.getElementById('website').value.trim() || null,
-        
-        // Product Info
-        productCategories: categories,
-        productCount: document.getElementById('productCount').value,
-        priceRange: document.getElementById('priceRange').value,
-        productDescription: document.getElementById('productDescription').value.trim(),
-        
-        // Where (United States only, for now), and how it reaches people
+        firstName: val('firstName'),
+        lastName: val('lastName'),
+        email: val('email'),
+        phone: val('phone'),
+        businessName: val('businessName'),
         city: val('city'),
         state: val('state'),
         country: 'US',
-        ...(categories.some((c) => GOODS.includes(c)) ? {
-          fulfillmentTime: val('fulfillmentTime'),
-          inventoryManagement: val('inventoryManagement'),
-          agreedToShip: document.getElementById('agreedToShip').checked
-        } : {}),
+        productCategories: categories,
+        productDescription: val('productDescription'),
+        links: links(),
+        ...(categories.some((c) => GOODS.includes(c)) ? { agreedToShip: ticked('agreedToShip') } : {}),
         ...(categories.includes('lessons') ? { teaching: readTeaching() } : {}),
-        otherPlatforms: val('otherPlatforms') || null,
-        
-        // Additional
-        hearAboutUs: document.getElementById('hearAboutUs').value || null,
-        additionalInfo: document.getElementById('additionalInfo').value.trim() || null,
-        
-        // Agreements
+        hearAboutUs: val('hearAboutUs') || null,
+        // One box covers both: the terms, and that what they list is theirs and described accurately.
         agreedToTerms: true,
         termsVersion: TERMS_VERSION,
         confirmedAuthenticity: true,
-        
-        // Metadata
         applicationType: 'seller',
         source: 'website'
       };
@@ -1414,7 +1113,7 @@
         console.error('Application error:', error);
         showError(error.message || 'Failed to submit application. Please try again.');
         
-        btnText.textContent = 'Submit Application';
+        btnText.textContent = 'Send application';
         spinner.style.display = 'none';
         btn.disabled = false;
       }

@@ -51,7 +51,9 @@ export function showSuccess(message, duration = 4000) {
   showToast(message, 'success', duration);
 }
 
-export function showError(message, duration = 5000) {
+// An error stays until it is closed: a refusal that faded after 5 s left the owner
+// not knowing why approving a seller failed (28 Oct 2026).
+export function showError(message, duration = 0) {
   showToast(message, 'error', duration);
 }
 
@@ -72,6 +74,7 @@ export function showToast(message, type = 'info', duration = 3000) {
   // Create toast element
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
+  toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
   
   // Icon based on type
   const icons = {
@@ -84,8 +87,9 @@ export function showToast(message, type = 'info', duration = 3000) {
   toast.innerHTML = `
     <div class="toast-icon">${icons[type] || icons.info}</div>
     <div class="toast-message">${escapeHtml(message)}</div>
-    <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+    <button type="button" class="toast-close" aria-label="Close">×</button>
   `;
+  toast.querySelector('.toast-close').addEventListener('click', () => toast.remove());
   
   // Add to container
   container.appendChild(toast);
@@ -93,11 +97,13 @@ export function showToast(message, type = 'info', duration = 3000) {
   // Trigger animation
   setTimeout(() => toast.classList.add('toast-show'), 10);
   
-  // Auto remove
-  setTimeout(() => {
-    toast.classList.remove('toast-show');
-    setTimeout(() => toast.remove(), 300);
-  }, duration);
+  // Auto remove (0 = until closed), never before a long message can be read.
+  if (duration > 0) {
+    setTimeout(() => {
+      toast.classList.remove('toast-show');
+      setTimeout(() => toast.remove(), 300);
+    }, Math.max(duration, 2000 + String(message).length * 45));
+  }
 }
 
 export function generateQRCodeURL(url, size = 512) {

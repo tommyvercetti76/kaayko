@@ -534,6 +534,10 @@
       .catch(() => fillTypes());
     
     if (editId) loadForEdit(editId);
+    // ?type=lesson opens the form on a lesson (the dashboard sends teachers here).
+    else if (new URLSearchParams(location.search).get('type') === 'lesson') {
+      typesReady.then(() => { categoryEl.value = 'services'; fillTypes(); typeEl.value = 'lesson'; syncLessonMode(); fillSizes(); });
+    }
     
     async function loadForEdit(id) {
       document.getElementById('page-heading').textContent = 'Edit Product';
