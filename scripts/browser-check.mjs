@@ -311,7 +311,7 @@ async function main() {
         if (!r.add || r.find) p.push('the Add tab is not the one showing');
         if (r.title !== 'Add a lake') p.push(`header says "${r.title}"`);
         if (r.step !== 'photos' || r.next !== 'Add photos') p.push(`first screen is "${r.step}" with button "${r.next}"`);
-        if (r.actions !== 2) p.push(`header has ${r.actions} actions, expected Find-or-add + Settings`);
+        if (r.actions !== 3) p.push(`header has ${r.actions} actions, expected Find-or-add + Mapmakers + Settings`);
         // A photo moves it on; the map opens where Find left off (the hand-off).
         const pin = await ev(`(async () => {
           const c = document.createElement('canvas'); c.width = 320; c.height = 240; c.getContext('2d').fillRect(0, 0, 320, 240);
@@ -345,6 +345,25 @@ async function main() {
       }, { settle: 7000 });
 
       // ── 5. Stories
+      // ── 4c. Mapmakers (28 Oct 2026): the photo loads, the rail shows every lake
+      //    paddlers added (as the API lists them), the counts match, and every
+      //    "Add a lake" opens the form with the picks box ticked.
+      await checkPage(b.port, 'mapmakers', `${BASE}/paddlingout/mapmakers`, view, async (ev) => {
+        const r = await ev(`({ hero: (document.querySelector('.mm-hero-img') || {}).naturalWidth || 0, lakes: document.querySelectorAll('.mm-lake:not(.mm-lake--you):not(.mm-lake--skel)').length, you: !!document.querySelector('.mm-lake--you a'), stats: (document.getElementById('mm-stats') || {}).textContent || '', adds: [...document.querySelectorAll('a.mm-btn')].map(a => a.getAttribute('href')), star: !!document.querySelector('.po-btn--mapmakers.is-current'), rules: document.querySelectorAll('#rules details').length })`);
+        const api = await fetch(`${BASE}/api/paddlingOut`).then(x => x.json()).catch(() => null);
+        const want = Array.isArray(api) ? api.filter(s => s.communitySubmission).length : null;
+        const p = [];
+        if (!r.hero) p.push('the hero photo did not load');
+        if (want === null) p.push('could not read the API to compare lakes');
+        else if (r.lakes !== want) p.push(`${r.lakes} lakes on the rail, API lists ${want} added by paddlers`);
+        if (Array.isArray(api) && !r.stats.includes(`${api.length}lakes on the map`)) p.push(`counts say "${r.stats}"`);
+        if (!r.you) p.push('no "Your lake here" card');
+        if (!r.adds.length || r.adds.some(h => h !== '/paddlingout/search?mode=add&picks=1')) p.push(`Add buttons go to ${r.adds.join(', ')}`);
+        if (!r.star) p.push('the header star is not marked current');
+        if (r.rules !== 9) p.push(`${r.rules} rules, expected 9`);
+        return p;
+      }, { settle: 5000 });
+
       await checkPage(b.port, 'stories', `${BASE}/stories`, view, async (ev) =>
         (await ev('document.querySelectorAll(".cover-wrap").length')) >= 1 ? [] : ['no story covers on the shelf']);
       await checkPage(b.port, 'story', `${BASE}/stories/never-give-up`, view, async (ev) =>
