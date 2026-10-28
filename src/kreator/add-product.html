@@ -622,8 +622,25 @@
     if (!ZONES.some(([v]) => v === myZone)) tzEl.append(new Option(myZone, myZone));
     tzEl.value = ZONES.some(([v]) => v === myZone) ? myZone : myZone;
 
+    // The form's words fit what is listed: a lesson used to be asked for a magnet's
+    // title, what it is made of and how big it is (28 Oct 2026).
+    const HINT_IDS = ['page-heading', 'page-sub', 'product-title', 'product-description', 'product-price'];
+    const hintOf = (el) => ('placeholder' in el ? el.placeholder : el.textContent);
+    const GOODS_HINTS = HINT_IDS.map((id) => hintOf(document.getElementById(id)));
+    const LESSON_HINTS = ['Add a lesson', 'Sold in dated sessions with seats. A person reviews it before it goes live.',
+      'e.g., Life lessons: 30 minutes, one to one', 'What happens in the session, and who it is for', '30.00'];
+    function syncHints(on) {
+      HINT_IDS.forEach((id, i) => {
+        const el = document.getElementById(id);
+        const text = (on ? LESSON_HINTS : GOODS_HINTS)[i];
+        if ('placeholder' in el) el.placeholder = text;
+        else if (!editId) el.textContent = text;
+      });
+    }
+
     function syncLessonMode() {
       const on = isLessonMode();
+      syncHints(on);
       lessonBox.hidden = !on;
       document.getElementById('sizes-group').hidden = on;
       sizesEl.required = !on;
@@ -638,6 +655,9 @@
       document.getElementById('lesson-details-label').textContent = online
         ? 'Video link or how to join, sent only to people who book *'
         : 'Meeting point, sent only to people who book *';
+      document.getElementById('lesson-details').placeholder = online
+        ? 'e.g., https://zoom.us/j/1234567890 (passcode 4242). Use a waiting room for one-to-one sessions.'
+        : 'e.g., Boulevard Park, by the pier steps. Bring a camera with a charged battery.';
     }
     document.querySelectorAll('input[name="lesson-format"]').forEach((r) => r.addEventListener('change', syncFormat));
 
@@ -657,7 +677,16 @@
       row.querySelector('.remove-session')?.addEventListener('click', () => row.remove());
       sessionsBox.appendChild(row);
     }
-    document.getElementById('add-session').addEventListener('click', () => addSessionRow());
+    // A new row repeats the last one a day later, seats and all: a one-to-one teacher
+    // otherwise changed 6 seats to 1 on every row (28 Oct 2026).
+    document.getElementById('add-session').addEventListener('click', () => {
+      const last = sessionsBox.lastElementChild;
+      if (!last) return addSessionRow();
+      const date = last.querySelector('.s-date').value;
+      const next = date ? new Date(`${date}T12:00:00Z`) : null;
+      if (next) next.setUTCDate(next.getUTCDate() + 1);
+      addSessionRow({ date: next ? next.toISOString().slice(0, 10) : '', time: last.querySelector('.s-time').value, seats: Number(last.querySelector('.s-seats').value) || undefined });
+    });
 
     /** A stored session's local date and time in the lesson's zone, for the form. */
     function localParts(startsAt, timeZone) {

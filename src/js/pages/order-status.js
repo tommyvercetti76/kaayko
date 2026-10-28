@@ -7,7 +7,7 @@
  * cached: the page asks every time it is opened.
  */
 import { getOrderStatus } from '/js/services/storeApi.js';
-import { esc, money } from '/js/kit.js';
+import { esc, money, linkify, yourTime } from '/js/kit.js';
 
 const panel = document.getElementById('os-panel');
 
@@ -62,8 +62,9 @@ function lines(order) {
       <span class="os-line-body">
         <span class="os-line-title">${esc(it.productTitle)}${it.storeName ? ` <span class="os-line-meta">by ${esc(it.storeName)}</span>` : ''}</span>
         ${it.lesson ? `
-        <span class="os-line-meta">Lesson · ${esc(it.lesson.label || it.size || '')} · ${esc(lengthText(it.lesson.durationMin))}${it.status === 'cancelled' ? ' · cancelled' : ''}</span>
-        <span class="os-line-meta">${esc(it.lesson.format === 'online' ? 'Online' : (it.lesson.area || 'In person'))}${it.lesson.details ? ` · ${it.lesson.format === 'online' ? 'How to join' : 'Where to meet'}: ${esc(it.lesson.details)}` : ''}</span>` : `
+        <span class="os-line-meta">Lesson · ${esc(it.lesson.label || it.size || '')}${esc(yourTime(it.lesson.startsAt, it.lesson.timeZone))} · ${esc(lengthText(it.lesson.durationMin))}${it.status === 'cancelled' ? ' · cancelled' : ''}</span>
+        <span class="os-line-meta">${esc(it.lesson.format === 'online' ? 'Online' : (it.lesson.area || 'In person'))}${it.lesson.details ? ` · ${it.lesson.format === 'online' ? 'How to join' : 'Where to meet'}: ${linkify(esc(it.lesson.details))}` : ''}</span>
+        ${it.lesson.calendarUrl && it.status !== 'cancelled' ? `<span class="os-line-meta"><a href="${esc(it.lesson.calendarUrl)}" target="_blank" rel="noopener">Add to Google Calendar</a></span>` : ''}` : `
         <span class="os-line-meta">${esc([it.gender, it.size].filter(Boolean).join(' · ') || 'One size')} · Qty ${esc(String(it.quantity))}${it.status === 'cancelled' ? ' · cancelled' : ''}</span>`}
       </span>
       <span class="os-line-money">${esc(money(it.lineTotalCents))}</span>

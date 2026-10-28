@@ -20,3 +20,22 @@ export const num       = U.num;
 export const fetchJson = U.fetchJson;
 export const apiBase   = U.apiBase;
 export const stampYear = U.stampYear;
+
+/** Web addresses in already-escaped text become links (a seller's story, a lesson's join link). */
+export const linkify = (escaped) => escaped.replace(/https?:\/\/[^\s<]+[^\s<.,;:!?)]/g,
+  (url) => `<a href="${url}" target="_blank" rel="noopener">${url.replace(/^https?:\/\/(www\.)?/, '')}</a>`);
+
+/**
+ * A session's start in the reader's own time zone, when that differs from the teacher's:
+ * " · 7:00 PM EDT your time", else "". The session label is always in the teacher's zone.
+ */
+export function yourTime(startsAt, teacherZone) {
+  const ms = Date.parse(startsAt);
+  if (!Number.isFinite(ms) || !teacherZone) return '';
+  try {
+    const at = (timeZone) => new Date(ms).toLocaleString('en-US', { timeZone, weekday: 'short', hour: 'numeric', minute: '2-digit' });
+    const mine = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (!mine || at(mine) === at(teacherZone)) return '';
+    return ` · ${new Date(ms).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })} your time`;
+  } catch (_) { return ''; }
+}

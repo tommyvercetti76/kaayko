@@ -328,11 +328,13 @@ export function satireFor(product) {
   if (product?.byMaker) {
     const maker = String(product.storeName || "").trim() || "an independent maker";
     const options = Array.isArray(product.availableSizes) ? product.availableSizes.filter(Boolean) : [];
+    // A lesson is taught, not made; its sessions are listed above with the time.
+    const lesson = String(product.productType || "").toLowerCase() === "lesson";
     return {
       voice: "maker",
       hook,
-      story: String(product.storyCopy || "").trim() || `Made by ${maker}, an independent maker selling on Kaayko.`,
-      rows: [["Made by", maker], ...(options.length ? [["Options", options.join(", ")]] : [])],
+      story: String(product.storyCopy || "").trim() || (lesson ? `Taught by ${maker}, an independent teacher on Kaayko.` : `Made by ${maker}, an independent maker selling on Kaayko.`),
+      rows: lesson ? [["Taught by", maker]] : [["Made by", maker], ...(options.length ? [["Options", options.join(", ")]] : [])],
       atRisk: false
     };
   }

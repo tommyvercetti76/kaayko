@@ -19,7 +19,7 @@ import { createFitPicker, needsPicker, addDirect, inBagAsShown, isSoldOut, isLes
 import { satireFor } from "/js/store-satire.js";
 import { productFirst, catalogueFirst, friendlyMessage } from "/js/services/storeApi.js";
 import { cartManager } from "/js/cartManager.js";
-import { esc } from "/js/kit.js";
+import { esc, linkify, yourTime } from "/js/kit.js";
 import { labelForType } from "/js/productTypes.js";
 import { pickSuggestions } from "/js/suggest.js";
 import { mountProductGrid } from "/js/kaayko_ui.js";
@@ -27,8 +27,6 @@ import { show as showToast } from "/js/components/Toast.js";
 
 /** A web address in already-escaped story text becomes a link; it used to print as
  *  a bare URL (the India Post line on every stamp piece). Trailing punctuation stays text. */
-const linkify = (escaped) => escaped.replace(/https?:\/\/[^\s<]+[^\s<.,;:!?)]/g,
-  (url) => `<a href="${url}" target="_blank" rel="noopener">${url.replace(/^https?:\/\/(www\.)?/, "")}</a>`);
 
 // It borrowed the animal page's `.animal-empty`, which only that page styles, so a
 // mistyped product link showed bare browser text and a blue link (25 Oct 2026).
@@ -110,7 +108,8 @@ function lessonFacts(product) {
   const sessions = Array.isArray(l.sessions) ? l.sessions : [];
   const row = (k, v) => (v ? `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>` : "");
   // Always name the dates: with one session there is no picker to show it.
-  const dates = sessions.slice(0, 4).map((x) => `${esc(x.label)} · ${x.seatsLeft} seat${x.seatsLeft === 1 ? "" : "s"} left`);
+  // The label is the teacher's zone; a buyer elsewhere (online, usually) also sees their own.
+  const dates = sessions.slice(0, 4).map((x) => `${esc(x.label)}${esc(yourTime(x.startsAt, l.timeZone))} · ${x.seatsLeft} seat${x.seatsLeft === 1 ? "" : "s"} left`);
   const more = sessions.length > 4 ? `<br>${sessions.length - 4} more below` : "";
   const sessionsRow = sessions.length
     ? `<div><dt>${sessions.length === 1 ? "Session" : "Sessions"}</dt><dd>${dates.join("<br>")}${more}${sessions.length > 1 ? "<br><span class=\"pdp-lesson-hint\">Pick one below.</span>" : ""}</dd></div>`
@@ -189,7 +188,7 @@ function renderProduct(product, openModalFn) {
       <div class="pdp-buy">
         <p class="pdp-eyebrow">${esc(eyebrowFor(product))}</p>
         <h1 class="pdp-title">${esc(product.title)}</h1>
-        ${product.byMaker && product.storeSlug ? `<p class="pdp-seller">Sold by <a href="/store?store=${encodeURIComponent(product.storeSlug)}">${esc(product.storeName || "an independent maker")}</a>, an independent maker</p>` : ""}
+        ${product.byMaker && product.storeSlug ? `<p class="pdp-seller">Sold by <a href="/store?store=${encodeURIComponent(product.storeSlug)}">${esc(product.storeName || "an independent maker")}</a>, an independent ${isLessonItem(product) ? "teacher" : "maker"}</p>` : ""}
         ${product.byMaker && !isLessonItem(product) && product.rating ? `<p class="pdp-seller">Rated ${product.rating.average.toFixed(1)} / 5 by ${product.rating.count} buyers</p>` : ""}
         ${copy.hook ? `<p class="pdp-hook">${esc(copy.hook)}</p>` : ""}
         <p class="pdp-price">${priceSpan(cents)}</p>
@@ -205,7 +204,7 @@ function renderProduct(product, openModalFn) {
       </div>
 
       <aside class="pdp-file" data-voice="${esc(copy.voice)}">
-        <h2 class="pdp-file-head">What inspired this piece</h2>
+        <h2 class="pdp-file-head">${isLessonItem(product) ? "About this lesson" : "What inspired this piece"}</h2>
         <p class="pdp-story">${linkify(esc(copy.story))}</p>
         <dl class="pdp-rows">${rows}</dl>
         ${copy.atRisk ? `<p class="pdp-flag">On the IUCN Red List. We print them while they are still here.</p>` : ""}
