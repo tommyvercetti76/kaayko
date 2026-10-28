@@ -330,6 +330,9 @@
   font: inherit;
   font-size: 16px;
 }
+.sub-flag--same { border-color: rgba(147, 160, 214, 0.45); background: rgba(147, 160, 214, 0.08); }
+.sub-same-list { margin: 4px 0 0; padding-left: 18px; }
+.sub-same-list li { margin: 2px 0; }
 .sub-pill--picks {
   color: var(--gold-primary, #d4a84b);
   border-color: rgba(212, 168, 75, 0.45);

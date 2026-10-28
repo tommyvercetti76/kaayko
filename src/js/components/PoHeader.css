@@ -121,6 +121,18 @@
   .po-title { font-size: 1.4rem; }
 }
 
+/* Three actions since 28 Oct 2026 (Mapmakers). On the narrowest phones the
+   spacing gives way, never the 44 px tap targets, so the title and eyebrow
+   keep one line each and the header stays as tall as it was. */
+@media (max-width: 380px) {
+  .po-page-header { gap: 0.4rem; padding-left: max(0.7rem, env(safe-area-inset-left)); padding-right: max(0.7rem, env(safe-area-inset-right)); }
+  .po-brand-row { gap: 0.25rem; }
+  .po-actions { gap: 0.1rem; }
+  .po-btn { padding: 0 0.3rem; }
+  .po-eyebrow { letter-spacing: 0.14em; white-space: nowrap; }
+  .po-title { font-size: 1.3rem; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .po-btn { transition: none; }
 }

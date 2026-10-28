@@ -80,7 +80,7 @@
 - `kaayko/src/js/components/PoHeader.js` — the one page header
 - `kaayko/src/css/tokens.css` — the only token sheet; `css/po-system.css` — chamfers + field styles (po-tokens.css was folded into these); `css/search.css` — search layout (map panel pinned only on screens ≥700 px tall)
 - `kaayko/src/js/pages/search.js` — Find tab; `js/pages/addlake.js` + `css/addlake.css` — Add a lake + Suggest an edit
-- `kaayko/src/paddlingout/mapmakers.html` — /paddlingout/mapmakers: Mapmakers (names on lakes, monthly picks, #rules). `kaayko-api/functions/api/weather/contributors.js` — contributor id, name rules, live-lake count (28 Oct 2026)
+- `kaayko/src/paddlingout/mapmakers.html` + `css/mapmakers.css` + `js/pages/mapmakers.js` — /paddlingout/mapmakers: Mapmakers (HD lake photos in `assets/mapmakers/`, live rail of community lakes from GET /paddlingOut, real counts, days to the first picks, folded #rules, a dock that keeps "Add a lake" one tap away). Linked from the PoHeader star on every Paddling Out page, the paddling footer set, About, Privacy, the list's Add tile and the Add flow. `?mode=add&picks=1` pre-ticks the picks box. `kaayko-api/functions/api/weather/contributors.js` — contributor id, name rules, live-lake count, and the reviewer-only "maybe the same person" (`sameSource` stored at submit, `samePerson` on GET /admin/submissions: same email > same network + browser > same network) (28 Oct 2026)
 - `kaayko/src/js/services/apiClient.js` — fetch wrapper with fallback generation + caching
 - `kaayko/src/js/components/RatingHero.js` — paddle score display
 - `kaayko/src/js/components/SafetyWarnings.js` — safety alerts
@@ -88,7 +88,7 @@
 
 **APIs used:**
 ```
-GET  /api/paddlingOut                          → all PUBLIC paddle spots + cached scores (no `tags`: removed 13 Oct 2026, schema in kaayko-api `spotSchema.js`)
+GET  /api/paddlingOut                          → all PUBLIC paddle spots + cached scores (+ `addedByName` on a community lake) (no `tags`: removed 13 Oct 2026, schema in kaayko-api `spotSchema.js`)
 GET  /api/paddlingOut/{id}                    → single spot detail (404 if hidden); `addedBy` {name, lakes} on a community lake (null on curated) — Mapmakers, contributors.js
 GET  /api/paddlingOut/geocode?q=              → cached Nominatim forward proxy
 GET  /api/paddlingOut/reverse-geocode?lat=&lng= → cached Nominatim reverse → {city,region,country,water}

@@ -1,0 +1,236 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   /paddlingout/mapmakers — Kaayko Mapmakers (28 Oct 2026).
+   Photo-led: a full-bleed lake, the live lakes paddlers added, the picks over
+   the water. Every section ends one tap from the Add form; the dock keeps that
+   tap on screen once the hero's button has scrolled away.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.mm-page {
+  --mm-bg: #080808;
+  --mm-fg: #ede8df;
+  --mm-muted: rgba(237, 232, 223, 0.66);
+  --mm-gold: #b5935a;
+  --mm-gold-bright: #d9bd7b;
+  --mm-line: rgba(181, 147, 90, 0.22);
+  --mm-serif: 'Cormorant Garamond', Georgia, serif;
+  --mm-sans: 'Josefin Sans', Arial, sans-serif;
+  --mm-display: 'Bebas Neue', 'Josefin Sans', Arial, sans-serif;
+  --mm-clip: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+  background: var(--mm-bg) !important;
+  color: var(--mm-fg);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+html.dark-theme { background: #080808; }
+.mm-page .theme-toggle-icon { display: none !important; }
+
+/* body is display:flex (sticky footer); min-width:0 lets main shrink on phones */
+.mm { width: 100%; min-width: 0; box-sizing: border-box; padding: 0; margin: 0; max-width: none; }
+.mm *, .mm *::before, .mm *::after { box-sizing: border-box; }
+
+/* ── Buttons ────────────────────────────────────────────────────────────── */
+.mm-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 52px; padding: 0 1.6rem; text-decoration: none;
+  clip-path: var(--mm-clip);
+  background: linear-gradient(135deg, #e6cd8e, var(--mm-gold)); color: #141210;
+  font: 600 0.9rem var(--mm-sans); letter-spacing: 0.16em; text-transform: uppercase;
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+.mm-btn:hover { filter: brightness(1.07); }
+.mm-btn:active { transform: translateY(1px); }
+.mm-btn:focus-visible, .mm-ghost:focus-visible { outline: 2px solid var(--mm-gold-bright); outline-offset: 3px; }
+.mm-ghost {
+  display: inline-flex; align-items: center; min-height: 52px; padding: 0 0.4rem;
+  color: var(--mm-fg); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: rgba(217, 189, 123, 0.6);
+  font: italic 1.08rem var(--mm-serif);
+}
+.mm-ghost:hover { color: var(--mm-gold-bright); }
+
+.mm-eyebrow { margin: 0 0 0.5rem; font: 600 0.72rem var(--mm-sans); letter-spacing: 0.3em; text-transform: uppercase; color: var(--mm-gold-bright); }
+
+/* ── 1 · Hero ───────────────────────────────────────────────────────────
+   Phone: the photo, then the words over its fade, so the lake and the two
+   paddlers stay in view. Wide: the words sit over the photo's dark left side. */
+.mm-hero { position: relative; isolation: isolate; }
+.mm-hero-media { position: relative; overflow: hidden; }
+.mm-hero-img {
+  display: block; width: 100%; aspect-ratio: 4 / 5; max-height: 74svh;
+  object-fit: cover; object-position: 63% 55%;
+  animation: mm-drift 26s ease-in-out infinite alternate;
+}
+.mm-hero-media::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(8, 8, 8, 0.25) 0%, rgba(8, 8, 8, 0) 22%, rgba(8, 8, 8, 0) 66%, #080808 97%);
+}
+@keyframes mm-drift { from { transform: scale(1.02); } to { transform: scale(1.09) translate3d(-1%, -1%, 0); } }
+.mm-hero-in { position: relative; z-index: 1; width: 100%; max-width: 980px; margin: -3.6rem auto 0; padding: 0 1.25rem 0.5rem; }
+.mm-h1 {
+  margin: 0; max-width: 12ch;
+  font: 400 clamp(3rem, 13vw, 6.4rem)/0.9 var(--mm-display); letter-spacing: 0.035em; color: #fff;
+  text-shadow: 0 2px 30px rgba(0, 0, 0, 0.35);
+}
+.mm-lede { margin: 1rem 0 1.5rem; max-width: 34rem; font: 400 clamp(1.12rem, 3.6vw, 1.35rem)/1.45 var(--mm-serif); color: rgba(237, 232, 223, 0.92); }
+.mm-hero-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1.2rem; }
+.mm-stats { display: flex; flex-wrap: wrap; gap: 0.25rem 0; margin: 1.3rem 0 0; padding: 0; list-style: none; font: 600 0.68rem/1.6 var(--mm-sans); letter-spacing: 0.14em; text-transform: uppercase; color: var(--mm-muted); }
+.mm-stats[hidden] { display: none; }
+.mm-stats li + li::before { content: '\00b7'; margin: 0 0.6rem; color: var(--mm-gold); }
+.mm-stats b { color: var(--mm-gold-bright); font-weight: 600; margin-right: 0.35rem; }
+.mm-credit { position: absolute; z-index: 1; right: 0.9rem; top: 0.7rem; margin: 0; font: italic 0.78rem var(--mm-serif); color: rgba(237, 232, 223, 0.6); }
+
+@media (min-width: 900px) {
+  .mm-hero { min-height: min(88svh, 780px); display: flex; align-items: flex-end; }
+  .mm-hero-media { position: absolute; inset: 0; z-index: -1; }
+  .mm-hero-img { height: 100%; aspect-ratio: auto; max-height: none; object-position: 50% 62%; }
+  .mm-hero-media::after { background: linear-gradient(90deg, rgba(8, 8, 8, 0.7) 0%, rgba(8, 8, 8, 0.25) 55%, rgba(8, 8, 8, 0) 100%), linear-gradient(180deg, rgba(8, 8, 8, 0) 55%, #080808 100%); }
+  .mm-hero-in { margin-top: 0; padding-bottom: 3rem; }
+  .mm-credit { top: auto; bottom: 0.8rem; right: 1.2rem; }
+}
+
+/* ── Bands ──────────────────────────────────────────────────────────────── */
+.mm-band { max-width: 980px; margin: 0 auto; padding: 3.2rem 1.25rem 0; }
+.mm-head { margin-bottom: 1.2rem; }
+.mm-h2 { margin: 0; font: 400 clamp(2rem, 7vw, 2.9rem)/1 var(--mm-display); letter-spacing: 0.04em; color: var(--mm-fg); }
+.mm-sub { margin: 0.35rem 0 0; font: italic 1.08rem/1.45 var(--mm-serif); color: var(--mm-muted); }
+
+/* ── 2 · Live rail of lakes paddlers added ──────────────────────────────── */
+.mm-rail-wrap { position: relative; }
+.mm-rail {
+  display: flex; gap: 0.8rem; margin: 0 -1.25rem; padding: 0.2rem 1.25rem 1rem; list-style: none;
+  overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0 1.25rem; overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+.mm-rail::-webkit-scrollbar { display: none; }
+.mm-rail:focus-visible { outline: 2px solid var(--mm-gold-bright); outline-offset: -2px; }
+.mm-lake { flex: 0 0 min(76vw, 300px); scroll-snap-align: start; }
+.mm-lake a {
+  position: relative; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden;
+  aspect-ratio: 4 / 5; padding: 1rem; text-decoration: none; color: var(--mm-fg);
+  clip-path: var(--mm-clip); background: #15130f;
+}
+.mm-lake img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  transition: transform 0.6s cubic-bezier(.2, .7, .2, 1);
+}
+.mm-lake a::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8, 8, 8, 0) 40%, rgba(8, 8, 8, 0.86) 100%); }
+.mm-lake a > span { position: relative; z-index: 1; }
+.mm-lake a:hover img, .mm-lake a:focus-visible img { transform: scale(1.06); }
+.mm-lake a:focus-visible { outline: 2px solid var(--mm-gold-bright); outline-offset: -2px; }
+.mm-chip {
+  position: absolute !important; top: 0.8rem; left: 0.8rem; padding: 4px 8px 3px;
+  font: 600 0.56rem var(--mm-sans); letter-spacing: 0.14em; text-transform: uppercase; color: var(--mm-gold-bright);
+  background: rgba(12, 11, 9, 0.6); border: 1px solid rgba(217, 189, 123, 0.35);
+}
+.mm-lake-t { font: 400 1.7rem/1 var(--mm-display); letter-spacing: 0.04em; }
+.mm-lake-p { margin-top: 0.2rem; font: italic 1rem var(--mm-serif); color: rgba(237, 232, 223, 0.8); }
+.mm-lake-by { margin-top: 0.55rem; font: 600 0.66rem var(--mm-sans); letter-spacing: 0.14em; text-transform: uppercase; color: var(--mm-gold-bright); }
+.mm-lake--you a {
+  justify-content: center; align-items: flex-start; gap: 0.5rem; background: rgba(181, 147, 90, 0.07);
+  border: 1px dashed rgba(217, 189, 123, 0.55); clip-path: none;
+}
+.mm-lake--you a::after { display: none; }
+.mm-you-plus { font: 400 3.4rem/0.8 var(--mm-display); color: var(--mm-gold-bright); }
+.mm-you-t { font: 400 1.9rem/1 var(--mm-display); letter-spacing: 0.04em; }
+.mm-you-s { font: italic 1.02rem/1.4 var(--mm-serif); color: var(--mm-muted); }
+.mm-lake--you a:hover { background: rgba(181, 147, 90, 0.14); }
+.mm-rail-btn {
+  position: absolute; top: calc(50% - 0.5rem); z-index: 2; width: 44px; height: 44px; transform: translateY(-50%);
+  display: none; align-items: center; justify-content: center; border: 1px solid rgba(217, 189, 123, 0.4);
+  background: rgba(8, 8, 8, 0.75); color: var(--mm-gold-bright); font: 400 1.6rem/1 var(--mm-serif); cursor: pointer;
+  clip-path: var(--mm-clip);
+}
+.mm-rail-btn.prev { left: -0.5rem; }
+.mm-rail-btn.next { right: -0.5rem; }
+@media (pointer: fine) and (min-width: 760px) { .mm-rail-btn { display: inline-flex; } }
+.mm-lake--skel a { background: linear-gradient(110deg, #141210 30%, #1d1a14 50%, #141210 70%); background-size: 200% 100%; animation: mm-shimmer 1.4s linear infinite; }
+@keyframes mm-shimmer { to { background-position: -200% 0; } }
+
+/* ── 3 · Steps ──────────────────────────────────────────────────────────── */
+.mm-steps { display: grid; gap: 0.7rem; margin: 0; padding: 0; list-style: none; }
+.mm-step {
+  position: relative; display: grid; gap: 0.3rem; height: 100%; padding: 1.2rem 1.2rem 1.25rem;
+  clip-path: var(--mm-clip); background: linear-gradient(135deg, rgba(181, 147, 90, 0.11), rgba(181, 147, 90, 0.03));
+  border: 1px solid var(--mm-line); color: var(--mm-fg); text-decoration: none;
+}
+a.mm-step:hover { background: linear-gradient(135deg, rgba(181, 147, 90, 0.2), rgba(181, 147, 90, 0.06)); }
+a.mm-step:focus-visible { outline: 2px solid var(--mm-gold-bright); outline-offset: 2px; }
+.mm-step-n { font: 400 2.4rem/1 var(--mm-display); color: var(--mm-gold); }
+.mm-step-t { font: 600 0.86rem var(--mm-sans); letter-spacing: 0.14em; text-transform: uppercase; }
+.mm-step-s { font: 400 1.06rem/1.5 var(--mm-serif); color: rgba(237, 232, 223, 0.82); }
+.mm-step-go { margin-top: 0.3rem; font: 600 0.74rem var(--mm-sans); letter-spacing: 0.16em; text-transform: uppercase; color: var(--mm-gold-bright); }
+@media (min-width: 760px) { .mm-steps { grid-template-columns: repeat(3, 1fr); } }
+
+/* ── 4 · The picks, over the water ──────────────────────────────────────
+   Phone: the photo whole, then the words over its fade. Wide: the words sit
+   over the photo's left side. */
+.mm-picks { position: relative; isolation: isolate; margin-top: 3.6rem; scroll-margin-top: 4rem; }
+.mm-picks-media { position: relative; overflow: hidden; }
+.mm-picks-img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; object-position: 50% 58%; }
+.mm-picks-media::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, #080808 0%, rgba(8, 8, 8, 0) 18%, rgba(8, 8, 8, 0) 55%, #080808 100%); }
+.mm-picks-in { position: relative; z-index: 1; max-width: 980px; margin: -4.2rem auto 0; padding: 0 1.25rem 4rem; }
+.mm-picks-h { display: flex; align-items: center; gap: 1rem; margin: 0 0 1.1rem; font: 400 clamp(1.7rem, 6vw, 2.4rem)/1.02 var(--mm-display); letter-spacing: 0.04em; color: #fff; }
+.mm-ten { font-size: clamp(5.5rem, 26vw, 9rem); line-height: 0.8; color: var(--mm-gold-bright); text-shadow: 0 0 40px rgba(217, 189, 123, 0.25); }
+.mm-picks-in > p:not(.mm-eyebrow) { max-width: 36rem; margin: 0 0 0.9rem; font: 400 1.14rem/1.6 var(--mm-serif); color: rgba(237, 232, 223, 0.92); }
+.mm-countdown { color: var(--mm-gold-bright) !important; font-style: italic !important; }
+.mm-need {
+  max-width: 36rem; margin: 1.2rem 0 1.5rem; padding: 0.95rem 1.1rem;
+  background: rgba(181, 147, 90, 0.08); border-left: 3px solid var(--mm-gold-bright);
+  font: 400 1.06rem/1.55 var(--mm-serif); color: rgba(237, 232, 223, 0.92);
+}
+.mm-need strong { color: var(--mm-gold-bright); font-weight: 600; }
+@media (min-width: 900px) {
+  .mm-picks { min-height: 640px; display: flex; align-items: center; }
+  .mm-picks-media { position: absolute; inset: 0; z-index: -1; }
+  .mm-picks-img { height: 100%; aspect-ratio: auto; }
+  .mm-picks-media::after { background: linear-gradient(90deg, rgba(8, 8, 8, 0.92) 0%, rgba(8, 8, 8, 0.72) 45%, rgba(8, 8, 8, 0.1) 100%), linear-gradient(180deg, #080808 0%, rgba(8, 8, 8, 0) 14%, rgba(8, 8, 8, 0) 86%, #080808 100%); }
+  .mm-picks-in { margin-top: 0; padding: 4rem 1.25rem; width: 100%; }
+  .mm-picks-in > * { max-width: 34rem; }
+}
+
+/* ── 5 · What we look for ───────────────────────────────────────────────── */
+.mm-looks { display: grid; grid-template-columns: 1fr; gap: 0.6rem; margin: 0; padding: 0; list-style: none; }
+.mm-looks li {
+  display: grid; grid-template-columns: 40px 1fr; grid-template-rows: auto auto; column-gap: 0.8rem; row-gap: 0.15rem;
+  padding: 0.95rem 1rem; border: 1px solid var(--mm-line); background: rgba(255, 255, 255, 0.015);
+}
+.mm-look-i { grid-row: 1 / span 2; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; color: var(--mm-gold-bright); background: rgba(181, 147, 90, 0.1); clip-path: var(--mm-clip); font-size: 1.15rem; }
+.mm-looks b { font: 600 0.8rem var(--mm-sans); letter-spacing: 0.12em; text-transform: uppercase; color: var(--mm-fg); align-self: end; }
+.mm-looks span:not(.mm-look-i) { font: 400 1.04rem/1.45 var(--mm-serif); color: rgba(237, 232, 223, 0.8); }
+.mm-looks a { color: var(--mm-gold-bright); }
+@media (min-width: 640px) { .mm-looks { grid-template-columns: 1fr 1fr; } }
+
+/* ── 6 · Rules, folded ──────────────────────────────────────────────────── */
+.mm-acc { border-top: 1px solid var(--mm-line); }
+.mm-acc details { border-bottom: 1px solid var(--mm-line); }
+.mm-acc summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 54px; padding: 0.6rem 0.2rem;
+  cursor: pointer; list-style: none; font: 600 0.82rem var(--mm-sans); letter-spacing: 0.12em; text-transform: uppercase; color: var(--mm-fg);
+}
+.mm-acc summary::-webkit-details-marker { display: none; }
+.mm-acc summary::after { content: '+'; flex: 0 0 auto; font: 400 1.5rem/1 var(--mm-serif); color: var(--mm-gold-bright); transition: transform 0.2s ease; }
+.mm-acc details[open] summary::after { transform: rotate(45deg); }
+.mm-acc summary:focus-visible { outline: 2px solid var(--mm-gold-bright); outline-offset: 2px; }
+.mm-acc p { margin: 0 0 1rem; padding: 0 0.2rem; font: 400 1.06rem/1.6 var(--mm-serif); color: rgba(237, 232, 223, 0.86); }
+.mm-acc a { color: var(--mm-gold-bright); }
+.mm-rules { padding-bottom: 6.5rem; }
+
+/* ── Dock: one tap to the form, always ──────────────────────────────────── */
+.mm-dock {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 900;
+  display: flex; align-items: center; justify-content: space-between; gap: 0.8rem;
+  padding: 0.7rem max(1rem, env(safe-area-inset-right)) calc(0.7rem + env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  background: linear-gradient(180deg, rgba(8, 8, 8, 0), rgba(8, 8, 8, 0.92) 28%, #080808);
+  transform: translateY(110%); transition: transform 0.28s cubic-bezier(.2, .7, .2, 1);
+}
+.mm-dock[hidden] { display: flex; visibility: hidden; }
+.mm-dock.is-on { transform: none; visibility: visible; }
+.mm-dock-t { font: italic 1.02rem var(--mm-serif); color: var(--mm-muted); }
+.mm-dock .mm-btn { flex: 0 0 auto; min-height: 48px; }
+@media (max-width: 380px) { .mm-dock-t { display: none; } .mm-dock .mm-btn { flex: 1 1 auto; } }
+@media (min-width: 900px) { .mm-dock { left: auto; right: 1.5rem; bottom: 1.5rem; padding: 0.6rem 0.6rem 0.6rem 1.2rem; background: rgba(12, 11, 9, 0.92); border: 1px solid var(--mm-line); clip-path: var(--mm-clip); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .mm-hero-img { animation: none; transform: scale(1.04); }
+  .mm-lake img, .mm-dock, .mm-acc summary::after { transition: none; }
+  .mm-lake--skel a { animation: none; }
+}

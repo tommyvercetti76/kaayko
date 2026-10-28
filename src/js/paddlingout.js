@@ -172,7 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tile.innerHTML =
         '<span class="plus" aria-hidden="true">+</span>' +
         '<span class="t">Add a lake</span>' +
-        '<span class="s">Anonymous is fine</span>';
+        '<span class="s">Sign it, or stay anonymous</span>';
       tile.addEventListener("click", openSubmitPage);
       tile.addEventListener("keydown", e => {
         if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openSubmitPage(); }
@@ -188,10 +188,10 @@ document.addEventListener("DOMContentLoaded", () => {
     card.innerHTML = `
       <div class="submit-entry-plus" aria-hidden="true">+</div>
       <div class="submit-entry-copy">
-        <span class="submit-entry-kicker">Community entry</span>
-        <h2>Add a new lake</h2>
-        <p>Tell us the water, the launch hint, and a few basics. Anonymous is fine.</p>
-        <span class="submit-entry-action">Submit entry</span>
+        <span class="submit-entry-kicker">Kaayko Mapmakers</span>
+        <h2>Add a lake you know</h2>
+        <p>Photos and the pin where you put in. Your name can go on it, and each month we pick up to ten by hand. Anonymous is fine too.</p>
+        <span class="submit-entry-action">Add a lake</span>
       </div>
     `;
     card.addEventListener("click", openSubmitPage);

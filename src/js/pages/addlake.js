@@ -531,6 +531,7 @@
   function clearInputs() {
     ['al-note', 'al-email', 'al-name', 'al-other', 'al-search', 'al-e-name', 'al-e-note', 'al-e-email'].forEach(function (id) { if ($(id)) $(id).value = ''; });
     ['al-parking', 'al-restrooms', 'al-picks', 'al-e-parking', 'al-e-restrooms'].forEach(function (id) { if ($(id)) $(id).checked = false; });
+    if (picksPreset && $('al-picks')) $('al-picks').checked = true;
     ['al-photos-msg', 'al-pin-msg', 'al-water-msg', 'al-extras-msg', 'al-edit-msg'].forEach(function (id) { say(id, ''); });
   }
   function startOver() {
@@ -639,9 +640,13 @@
 
   // ── Entry ──────────────────────────────────────────────────────────────
   var started = false;
+  // ?picks=1 (the Mapmakers page's buttons): the monthly-picks box starts ticked,
+  // one tap fewer. It still needs the email before Save, like any other time.
+  var picksPreset = false;
   window.KaaykoAddLake = {
     show: function (params) {
       var p = params || new URLSearchParams(location.search);
+      if (p.get('picks') === '1') { picksPreset = true; if ($('al-picks')) $('al-picks').checked = true; }
       var editId = p.get('edit');
       if (editId && /^[a-zA-Z0-9_-]+$/.test(editId)) { started = true; startEdit(editId); return; }
       if (S.mode === 'edit') {

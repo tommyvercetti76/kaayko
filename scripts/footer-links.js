@@ -43,6 +43,7 @@ const SETS = {
   // Anything under Paddling Out: stay in the paddling context.
   paddling: [
     ['/paddlingout', 'Paddling Out'],
+    ['/paddlingout/mapmakers', 'Mapmakers'],
     ['/paddlingout/methodology', 'Methodology'],
     ['/about', 'About'],
     ['/privacy', 'Privacy'],

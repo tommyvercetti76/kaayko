@@ -497,9 +497,9 @@ function submissionCard(sub) {
  * Nobody is named who did not ask to be, so there is no box without a name.
  */
 function mapmakerLines(sub, id, status) {
-  const picks = sub.mapmakerOptIn
+  const picks = (sub.mapmakerOptIn
     ? '<div class="sub-amenities"><span class="sub-pill sub-pill--picks">Up for the monthly picks</span></div>'
-    : '';
+    : '') + samePersonFlag(sub);
   if (status === 'pending' && sub.creditName) {
     const value = editedCredit.has(id) ? editedCredit.get(id) : sub.creditName;
     return `<label class="sub-field sub-credit">
@@ -511,6 +511,20 @@ function mapmakerLines(sub, id, status) {
     ? `<div class="sub-field"><span class="sub-field-label">On the lake</span><span class="sub-field-val">Added by ${escapeHtml(sub.creditName)}</span></div>`
     : '';
   return shown + picks;
+}
+
+/**
+ * Reviewer-only: other entries that may be the same person (contributors.js on
+ * the server — the same email, or the same network, with or without the same
+ * browser). Never shown publicly. A shared network is common, so it is a prompt
+ * to look before naming a lake or picking it, not a reason to reject.
+ */
+function samePersonFlag(sub) {
+  const list = Array.isArray(sub.samePerson) ? sub.samePerson : [];
+  if (!list.length) return '';
+  const statusWord = { validated: 'approved', rejected: 'rejected', pending: 'pending' };
+  const items = list.map((e) => `<li><strong>${escapeHtml(e.lakeName || e.id)}</strong> &middot; ${escapeHtml(statusWord[e.status] || e.status || '')}${e.kind === 'edit' ? ' edit' : ''}, ${e.hasEmail ? 'with an email' : 'no email'} &middot; <em>${escapeHtml(e.why || '')}</em></li>`).join('');
+  return `<div class="sub-flag sub-flag--same">Maybe the same person as ${list.length === 1 ? 'one other entry' : `${list.length} other entries`}:<ul class="sub-same-list">${items}</ul></div>`;
 }
 
 /** Where the place and the name came from (spotLocate on the server). */
