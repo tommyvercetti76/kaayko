@@ -233,6 +233,7 @@ export function addToBag(product, { size, gender } = {}) {
     size: chosen,
     gender: gender || null,
     storeName: product.byMaker ? product.storeName : null,
+    sellerTeam: product.byMaker && product.sellerTeam === true,
     kind: isLessonItem(product) ? "lesson" : null
   });
 

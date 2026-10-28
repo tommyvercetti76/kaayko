@@ -15,6 +15,7 @@ import { cartManager } from '/js/cartManager.js';
 import { get as storeGet, set as storeSet, remove as storeRemove } from '/js/services/safeStorage.js';
 import { savedPromo, clearPromo, checkPromo, savePromo } from '/js/services/promo.js';
 import { esc, money } from '/js/kit.js';
+import { sellerNote } from '/js/seller.js';
 // Prices may SHOW in ₹ (currency.js); the charge is always US dollars, so Pay and the
 // "You pay" line use money(), and every figure stays US cents underneath.
 import { price, priceSpan, paint, label, repaint, mountCurrencySwitch, indiaShopper } from '/js/services/currency.js';
@@ -399,7 +400,7 @@ function itemMarkup(item, index = 0) {
       </a>
       <div class="co-item-body">
         <h3 class="co-item-title"><a href="${href}">${esc(item.title)}</a></h3>
-        ${item.storeName ? `<p class="co-item-maker">by ${esc(item.storeName)}, an independent maker</p>` : ''}
+        ${item.storeName ? `<p class="co-item-maker">by ${esc(item.storeName)}, ${esc(sellerNote(item))}</p>` : ''}
         ${item.productId === state.unavailableId ? unavailableNote(item) : ''}
         <p class="co-item-meta">${meta}${meta && qty > 1 ? ' · ' : ''}${qty > 1 ? `Quantity ${qty}` : ''}</p>
       </div>

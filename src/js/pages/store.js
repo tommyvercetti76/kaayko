@@ -13,6 +13,7 @@ import { setProductTypes } from "/js/productTypes.js";
 import { populateCarousel, setupModalCloseHandlers } from "/js/kaayko_ui.js";
 import { storeOriginalProducts } from "/js/kaaykoFilterModal.js";
 import { esc } from "/js/kit.js";
+import { sellerNote } from "/js/seller.js";
 import { checkPromo, savePromo, savedPromo } from "/js/services/promo.js";
 import { set as keepForCheckout } from "/js/services/safeStorage.js";
 import { show as showToast } from "/js/components/Toast.js";
@@ -129,7 +130,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       banner.innerHTML = `
         <div class="store-banner-content">
           <h2 class="store-banner-name">${esc(storeName)}</h2>
-          <p class="store-banner-count">${storeProducts.length} piece${storeProducts.length !== 1 ? "s" : ""}${storeProducts[0].byMaker ? " by an independent maker" : ", printed to order"}</p>
+          <p class="store-banner-count">${storeProducts.length} ${storeProducts.every((p) => String(p.productType).toLowerCase() === "lesson") ? "lesson" : "piece"}${storeProducts.length !== 1 ? "s" : ""}${storeProducts[0].byMaker ? ` · ${esc(sellerNote(storeProducts[0]))}` : ", printed to order"}</p>
           ${storeProducts[0].storeBio ? `<p class="store-banner-bio">${esc(storeProducts[0].storeBio)}</p>` : ""}
           ${promoHeld ? `<p class="store-banner-promo">${esc(promoHeld.percent)}% off for friends is held for your bag. Code ${esc(promoHeld.code)}.</p>` : ""}
           <a href="/store" class="store-banner-link">All pieces</a>

@@ -360,7 +360,8 @@
           <div class="form-row">
             <div class="form-group">
               <label class="form-label" for="product-price">Price (USD) *</label>
-              <input type="number" id="product-price" class="form-input" placeholder="12.00" step="0.01" min="1" max="500" required>
+              <input type="number" id="product-price" class="form-input" placeholder="12.00" step="0.01" min="5" max="500" required>
+              <small class="field-hint">At least $5.00: below that, card and payout fees cost more than the sale earns.</small>
             </div>
             <div class="form-group">
               <label class="form-label" for="product-quantity">Stock Quantity *</label>
@@ -655,6 +656,12 @@
       document.getElementById('lesson-details-label').textContent = online
         ? 'Video link or how to join, sent only to people who book *'
         : 'Meeting point, sent only to people who book *';
+      // Online lessons are for adults (18+), for now: the under-18 choice is off while online.
+      const minors = document.querySelector('#lesson-audience option[value="with_guardian"]');
+      if (minors) {
+        minors.disabled = online;
+        if (online && document.getElementById('lesson-audience').value === 'with_guardian') document.getElementById('lesson-audience').value = 'adults';
+      }
       document.getElementById('lesson-details').placeholder = online
         ? 'e.g., https://zoom.us/j/1234567890 (passcode 4242). Use a waiting room for one-to-one sessions.'
         : 'e.g., Boulevard Park, by the pier steps. Bring a camera with a charged battery.';

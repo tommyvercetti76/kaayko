@@ -17,6 +17,7 @@ import { priceCents } from "/js/priceMap.js";
 import { priceSpan, repaint, currencyReady, mountCurrencySwitch } from "/js/services/currency.js";
 import { createFitPicker, needsPicker, addDirect, inBagAsShown, isSoldOut, isLessonItem } from "/js/fitPicker.js";
 import { satireFor } from "/js/store-satire.js";
+import { sellerNote } from "/js/seller.js";
 import { productFirst, catalogueFirst, friendlyMessage } from "/js/services/storeApi.js";
 import { cartManager } from "/js/cartManager.js";
 import { esc, linkify, yourTime } from "/js/kit.js";
@@ -188,7 +189,7 @@ function renderProduct(product, openModalFn) {
       <div class="pdp-buy">
         <p class="pdp-eyebrow">${esc(eyebrowFor(product))}</p>
         <h1 class="pdp-title">${esc(product.title)}</h1>
-        ${product.byMaker && product.storeSlug ? `<p class="pdp-seller">Sold by <a href="/store?store=${encodeURIComponent(product.storeSlug)}">${esc(product.storeName || "an independent maker")}</a>, an independent ${isLessonItem(product) ? "teacher" : "maker"}</p>` : ""}
+        ${product.byMaker && product.storeSlug ? `<p class="pdp-seller">Sold by <a href="/store?store=${encodeURIComponent(product.storeSlug)}">${esc(product.storeName || "an independent maker")}</a>, ${esc(sellerNote(product))}</p>` : ""}
         ${product.byMaker && !isLessonItem(product) && product.rating ? `<p class="pdp-seller">Rated ${product.rating.average.toFixed(1)} / 5 by ${product.rating.count} buyers</p>` : ""}
         ${copy.hook ? `<p class="pdp-hook">${esc(copy.hook)}</p>` : ""}
         <p class="pdp-price">${priceSpan(cents)}</p>
@@ -200,6 +201,7 @@ function renderProduct(product, openModalFn) {
           : product.byMaker
           ? `Made by ${esc(product.storeName || "the maker")} · Free US shipping`
           : `Printed to order, on its way within 10 business days · Free US shipping · <a href="/legal/returns">30-day returns</a>`}</p>
+        ${isLessonItem(product) ? `<p class="pdp-reassure">Lessons are teaching, not therapy or medical, legal or financial advice. In a crisis, call or text 988.</p>` : ""}
         <button type="button" class="pdp-share" id="pdp-share">Share this ${isLessonItem(product) ? "lesson" : "piece"}</button>
       </div>
 

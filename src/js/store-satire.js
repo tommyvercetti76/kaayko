@@ -24,6 +24,7 @@
  * Endangered); the Masai giraffe's last published assessment is Endangered (2019),
  * and IUCN has published none since its 2025 recognition as a species.
  */
+import { sellerNote } from "/js/seller.js";
 
 /* ── T-shirts ─────────────────────────────────────────────── */
 
@@ -333,7 +334,7 @@ export function satireFor(product) {
     return {
       voice: "maker",
       hook,
-      story: String(product.storyCopy || "").trim() || (lesson ? `Taught by ${maker}, an independent teacher on Kaayko.` : `Made by ${maker}, an independent maker selling on Kaayko.`),
+      story: String(product.storyCopy || "").trim() || `${lesson ? "Taught" : "Made"} by ${maker}, ${sellerNote(product)}.`,
       rows: lesson ? [["Taught by", maker]] : [["Made by", maker], ...(options.length ? [["Options", options.join(", ")]] : [])],
       atRisk: false
     };
