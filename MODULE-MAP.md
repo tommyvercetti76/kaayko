@@ -99,6 +99,8 @@ POST /api/paddlingOut/spots/{id}/suggest      → suggested edit to a live spot 
 --- platform admin only (requireAuth + requireAdmin + requirePlatformAdmin; the X-Admin-Key way in was removed 3 Oct 2026) ---
 GET  /api/paddlingOut/admin/submissions       → review queue, new lakes and edits (+ possibleDuplicateOf, place/water sources; edits carry proposed + live)
 POST /api/paddlingOut/admin/submissions/{id}/validate → new: publish; refuses an incomplete spot (spotSchema.publicSpotProblems); water type from pick/USGS/hint/name; warms score inline; body `creditName` (the review card's box) → spot `addedBy`, submission `contributorId` (HMAC of the normalised email) + links that person's earlier lakes. edit: body {fields:[…]} applies only those changes, copies ticked photos in under the spot's naming rule, audits
+POST /api/paddlingOut/mapmakers/claim/peek|checkout|confirm → the claim page (kaayko.com/paddlingout/claim#t=…): the lake + the store pieces a pick can be; a $0 Stripe Checkout for the chosen piece; confirm on return (mapmakerRoutes.js → services/mapmakerPicks.js)
+GET|POST /api/paddlingOut/admin/mapmakers/picks[/{id}/resend|release|revoke] → Kortex → Submissions: Pick, and the Picks tab (platform admin)
 POST /api/paddlingOut/admin/submissions/{id}/reject   → new: hide + delete every prefixed photo; edit: live spot untouched, pending photos deleted; body {rejectionReason}
 GET  /api/paddlingOut/admin/spots[/{id}]      → whole catalogue incl. hidden, with isPublic/photos/hasCachedScore
 PATCH /api/paddlingOut/admin/spots/{id}       → edit whitelisted fields, archived (publish toggle); live spots must stay complete; audit → paddling_spot_audit

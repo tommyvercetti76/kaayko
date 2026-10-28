@@ -36,6 +36,8 @@ const FILTERS = [
   { key: 'validated', label: 'Approved', match: (s) => s === 'validated' },
   { key: 'rejected',  label: 'Rejected', match: (s) => s === 'rejected' },
   { key: 'all',       label: 'All',      match: () => true },
+  // Mapmakers monthly picks (28 Oct 2026): not a status, its own list.
+  { key: 'picks',     label: 'Picks',    match: () => false, picks: true },
 ];
 
 let allSubmissions = [];
@@ -49,6 +51,9 @@ const WATER_TYPES = ['lake', 'reservoir', 'river', 'coastal', 'bay', 'canal'];
 const pickedWaterType = new Map();
 // id → the "Name on the lake" box as the reviewer left it (survives re-renders).
 const editedCredit = new Map();
+// The Picks tab: one month at a time from GET /paddlingOut/admin/mapmakers/picks.
+let picksData = null;
+let picksMonth = null;
 
 // Live DOM references, re-bound on every init() (the view module is cached but
 // init runs on each navigation, replacing the container's contents).
@@ -96,6 +101,7 @@ export async function init(STATE) { // eslint-disable-line no-unused-vars
     currentFilter = tab.dataset.filter || 'pending';
     renderTabs();
     renderList();
+    if (currentFilter === 'picks' && !picksData) loadPicks(picksMonth);
   });
 
   // Approve / Reject actions — delegated on the persistent list container.
@@ -108,6 +114,9 @@ export async function init(STATE) { // eslint-disable-line no-unused-vars
     if (action === 'approve') approve(id, btn);
     else if (action === 'reject') reject(id, btn);
     else if (action === 'edit') toggleEditor(id);
+    else if (action === 'pick') pickLake(id, btn);
+    else if (action === 'pick-resend' || action === 'pick-release' || action === 'pick-revoke') pickAction(id, action.slice(5), btn);
+    else if (action === 'picks-month') loadPicks(id);
   });
 
   // One water type per card: the picker above Approve and the editor's field
@@ -363,7 +372,7 @@ function refreshUI() {
 function renderTabs() {
   if (!tabsEl) return;
   tabsEl.innerHTML = FILTERS.map((f) => {
-    const count = allSubmissions.filter((s) => f.match(getStatus(s))).length;
+    const count = f.picks ? (picksData ? `${picksData.count}/${picksData.cap}` : '·') : allSubmissions.filter((s) => f.match(getStatus(s))).length;
     const active = f.key === currentFilter ? ' active' : '';
     return `<button type="button" class="submissions-tab${active}" data-filter="${f.key}">`
       + `${escapeHtml(f.label)}<span class="submissions-tab-count">${count}</span></button>`;
@@ -374,6 +383,7 @@ function renderList() {
   if (!listEl) return;
 
   const filter = FILTERS.find((f) => f.key === currentFilter) || FILTERS[0];
+  if (filter.picks) { renderPicks(); return; }
   const items = allSubmissions.filter((s) => filter.match(getStatus(s)));
 
   if (countEl) {
@@ -510,7 +520,122 @@ function mapmakerLines(sub, id, status) {
   const shown = status === 'validated' && sub.creditName
     ? `<div class="sub-field"><span class="sub-field-label">On the lake</span><span class="sub-field-val">Added by ${escapeHtml(sub.creditName)}</span></div>`
     : '';
-  return shown + picks;
+  return shown + picks + (status === 'validated' ? pickControl(sub, id) : '');
+}
+
+const PICK_STATUS = { issued: 'link sent, choosing', claiming: 'at checkout', claimed: 'claimed, to ship', held: 'held, needs you', shipped: 'shipped', expired: 'expired', revoked: 'withdrawn' };
+
+/** Approved + opted in + an email: the Pick control. Picked: its number and state. */
+function pickControl(sub, id) {
+  if (sub.pick) {
+    return `<div class="sub-amenities"><span class="sub-pill sub-pill--picks">Picked &middot; No. ${escapeHtml(String(sub.pick.number))} &middot; ${escapeHtml(PICK_STATUS[sub.pick.status] || sub.pick.status)}${sub.pick.piece ? ` &middot; ${escapeHtml(sub.pick.piece)}` : ''}${sub.pick.orderNumber ? ` &middot; ${escapeHtml(sub.pick.orderNumber)}` : ''}</span></div>`;
+  }
+  if (!sub.mapmakerOptIn || !sub.contactEmail) return '';
+  // The finder chooses the piece (any of Kaayko's own under the cap) from the link.
+  return `<div class="sub-pick">
+      <button type="button" class="btn btn-primary" data-action="pick" data-id="${jsAttr(id)}">Pick this lake</button>
+      <span class="picks-sub">The finder chooses one store piece under $25.</span>
+    </div>`;
+}
+
+async function pickLake(id, btn) {
+  const sub = allSubmissions.find((s) => cardId(s) === id);
+  const name = (sub && sub.lakeName) || 'this lake';
+  if (!window.confirm(`Pick ${name} for this month's Mapmakers? This emails the finder a link to choose one store piece, free.`)) return;
+  btn.disabled = true;
+  try {
+    const res = await apiFetch('/paddlingOut/admin/mapmakers/picks', { method: 'POST', body: JSON.stringify({ submissionId: id }) });
+    if (!res) throw new Error('Session expired. Please sign in again.');
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `Pick failed (${res.status})`);
+    if (sub) { sub.mapmakerPickId = data.pickId; sub.pick = { id: data.pickId, number: data.number, status: 'issued', piece: null }; }
+    picksData = null;
+    showSuccess(`Picked: No. ${data.number} of ${data.cap} this month. ${data.emailStatus === 'queued' ? 'The finder has been emailed.' : 'The email did not go: use Resend in Picks.'}`);
+    renderList();
+    renderTabs();
+  } catch (err) {
+    showError(err.message || 'Could not pick this lake.');
+    btn.disabled = false;
+  }
+}
+
+async function loadPicks(month) {
+  if (listEl && currentFilter === 'picks') listEl.innerHTML = '<div class="loading">Loading picks…</div>';
+  try {
+    const q = month ? `?month=${encodeURIComponent(month)}` : '';
+    const res = await apiFetch(`/paddlingOut/admin/mapmakers/picks${q}`);
+    if (!res) return;
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `Failed to load picks (${res.status})`);
+    picksData = data;
+    picksMonth = data.month;
+    renderTabs();
+    if (currentFilter === 'picks') renderPicks();
+  } catch (err) {
+    if (listEl && currentFilter === 'picks') listEl.innerHTML = `<div class="submissions-error">${escapeHtml(err.message)}</div>`;
+  }
+}
+
+function shiftMonth(month, by) {
+  const [y, m] = String(month).split('-').map(Number);
+  const d = new Date(Date.UTC(y, m - 1 + by, 1));
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+}
+
+/** The Picks tab: this month's picks, what each is waiting on, and what you can do. */
+function renderPicks() {
+  if (countEl) countEl.textContent = picksData ? `${picksData.count} of ${picksData.cap} picked in ${picksData.monthLabel}` : '';
+  if (!picksData) { listEl.innerHTML = '<div class="loading">Loading picks…</div>'; return; }
+  const nav = `<div class="picks-nav">
+      <button type="button" class="btn btn-secondary" data-action="picks-month" data-id="${jsAttr(shiftMonth(picksData.month, -1))}">&larr; Earlier</button>
+      <strong>${escapeHtml(picksData.monthLabel)}</strong>
+      <button type="button" class="btn btn-secondary" data-action="picks-month" data-id="${jsAttr(shiftMonth(picksData.month, 1))}">Later &rarr;</button>
+    </div>
+    <p class="picks-help">Pick from an approved lake&rsquo;s card (Approved tab). The finder gets a link to choose one of Kaayko&rsquo;s own pieces under $25 and claim it at $0; a claimed pick appears in Orders like any order, with the piece, the size and where to ship it. A held claim went to an address that already received a piece this month, or completed a checkout it had replaced.</p>`;
+  if (!picksData.picks.length) { listEl.innerHTML = `<div class="picks-panel">${nav}<div class="submissions-empty">No picks in ${escapeHtml(picksData.monthLabel)} yet.</div></div>`; return; }
+  const rows = picksData.picks.map((p) => {
+    const acts = [];
+    if (p.status === 'issued' || p.status === 'claiming') acts.push(['pick-resend', 'Resend link']);
+    if (p.status === 'held') acts.push(['pick-release', 'Release']);
+    if (!['shipped', 'revoked', 'expired'].includes(p.status)) acts.push(['pick-revoke', 'Withdraw']);
+    const when = p.tokenExpiresAt && (p.status === 'issued' || p.status === 'claiming') ? `link good until ${new Date(p.tokenExpiresAt).toLocaleDateString()}` : '';
+    const held = p.status === 'held' ? `<div class="picks-held">Held: ${escapeHtml(String(p.heldReason || '').replace(/_/g, ' '))}${p.shipTo ? ` &middot; ship to ${escapeHtml(p.shipTo.name)}, ${escapeHtml(p.shipTo.city)} ${escapeHtml(p.shipTo.state)}` : ''}</div>` : '';
+    return `<div class="picks-row picks-row--${escapeHtml(p.status)}">
+        <span class="picks-n">No. ${escapeHtml(String(p.number))}</span>
+        <div class="picks-main">
+          <strong>${escapeHtml(p.lakeName)}</strong> <span class="picks-sub">${escapeHtml(p.place || '')}</span>
+          <div class="picks-sub">${p.piece ? `${escapeHtml(p.piece)}${p.size ? ` (${escapeHtml(p.size)})` : ''}` : 'Piece not chosen yet'}${p.finderName ? ` &middot; for ${escapeHtml(p.finderName)}` : ''} &middot; ${escapeHtml(PICK_STATUS[p.status] || p.status)}${p.orderNumber ? ` &middot; ${escapeHtml(p.orderNumber)}` : ''}${when ? ` &middot; ${escapeHtml(when)}` : ''}${p.emailStatus === 'failed' ? ' &middot; <em>email failed</em>' : ''}</div>
+          ${held}
+        </div>
+        <div class="picks-acts">${acts.map(([a, l]) => `<button type="button" class="btn btn-secondary" data-action="${a}" data-id="${jsAttr(p.id)}">${l}</button>`).join('')}</div>
+      </div>`;
+  }).join('');
+  listEl.innerHTML = `<div class="picks-panel">${nav}${rows}</div>`;
+}
+
+async function pickAction(pickId, what, btn) {
+  const p = picksData && picksData.picks.find((x) => x.id === pickId);
+  const name = p ? `${p.lakeName} (No. ${p.number})` : 'this pick';
+  let body = {};
+  if (what === 'revoke') {
+    const reason = window.prompt(`Withdraw ${name}? The link stops working and an unshipped order is cancelled. Reason (kept in the log):`, '');
+    if (reason === null) return;
+    body = { reason };
+  } else if (what === 'release' && !window.confirm(`Release ${name}? An order is written and it ships like any other.`)) {
+    return;
+  }
+  btn.disabled = true;
+  try {
+    const res = await apiFetch(`/paddlingOut/admin/mapmakers/picks/${encodeURIComponent(pickId)}/${what}`, { method: 'POST', body: JSON.stringify(body) });
+    if (!res) throw new Error('Session expired. Please sign in again.');
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `Failed (${res.status})`);
+    showSuccess(what === 'resend' ? 'A new link was sent; the old one no longer works.' : what === 'release' ? `Released: ${data.orderNumber || 'order written'}.` : 'Withdrawn.');
+    await loadPicks(picksMonth);
+  } catch (err) {
+    showError(err.message || 'That did not work.');
+    btn.disabled = false;
+  }
 }
 
 /**

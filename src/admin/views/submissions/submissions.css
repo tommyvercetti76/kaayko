@@ -454,3 +454,19 @@
   .sub-change-from, .sub-change-arrow, .sub-change-to, .sub-change-note, .sub-change-thumbs { grid-column: 2; }
   .sub-change-arrow { display: none; }
 }
+
+/* ── Mapmakers picks (28 Oct 2026): the Pick control and the Picks tab ── */
+.picks-panel { grid-column: 1 / -1; min-width: 0; }
+.sub-pick { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 6px; }
+.sub-pick select { min-height: 40px; padding: 6px 10px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); background: var(--bg-input, transparent); color: var(--text-primary); font: inherit; }
+.picks-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 4px 0 8px; }
+.picks-help { font-size: 12px; color: var(--text-muted); margin: 0 0 12px; line-height: 1.5; }
+.picks-row { display: grid; grid-template-columns: 56px 1fr auto; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid var(--border-subtle); }
+.picks-n { font-weight: 700; color: var(--gold-primary, #d4a84b); }
+.picks-main { min-width: 0; }
+.picks-sub { font-size: 12px; color: var(--text-muted); }
+.picks-held { margin-top: 4px; font-size: 12px; color: #e5a573; }
+.picks-acts { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.picks-row--held { background: rgba(229, 165, 115, 0.06); }
+.picks-row--revoked, .picks-row--expired { opacity: 0.6; }
+@media (max-width: 640px) { .picks-row { grid-template-columns: 44px 1fr; } .picks-acts { grid-column: 1 / -1; justify-content: flex-start; } }
